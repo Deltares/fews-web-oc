@@ -16,6 +16,7 @@
       "webpack-env",
       "jest"
     ],
+    "typeRoots": [ "./types", "./node_modules/@types"],
     "paths": {
       "@/*": [
         "src/*"
@@ -36,6 +37,7 @@
     "tests/**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "types"
   ]
 }

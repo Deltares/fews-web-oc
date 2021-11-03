@@ -10,9 +10,12 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "fews-web-oc-components": "file:../fews-web-oc-components-0.1.0.tgz",
+    "mapbox-gl": "^2.5.1",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^9.1.2",
+    "vue2mapbox-gl": "^0.13.0",
     "vuetify": "^2.4.0",
     "vuex": "^3.4.0"
   },
