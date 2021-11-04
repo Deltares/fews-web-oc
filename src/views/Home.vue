@@ -1,15 +1,14 @@
 <template>
   <div>
-    <login-component />
+    What a lovely homepage
   </div>
 </template>
 
 <script lang="ts">
-import LoginComponent from '../components/LoginComponent.vue'
 import { Component, Vue } from 'vue-property-decorator'
 // import Oidc from 'oidc-client'
 
-@Component({ components: { LoginComponent } })
+@Component
 export default class Home extends Vue {
   mounted (): void {
     // console.log('mounted', window)

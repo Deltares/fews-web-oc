@@ -1,12 +1,15 @@
 <template>
-  <div>
-    <v-btn @click="login" outlined block>
+  <v-app-bar color="primary" dense app>
+    <img src="@/assets/images/deltares_logo.png" contain height="100%" />
+    <v-toolbar-title>Delft-fews web OC</v-toolbar-title>
+    <v-spacer />
+    <v-btn @click="login" text>
       Login
     </v-btn>
-    <v-btn @click="logout" outlined block>
+    <v-btn @click="logout" text>
       Logout
     </v-btn>
-  </div>
+  </v-app-bar>
 </template>
 
 <script lang="ts">
@@ -26,7 +29,7 @@ export default class LoginComponent extends Vue {
 </script>
 
 <style>
-.account {
+.navbar-logo {
   height: 100%;
 }
 </style>

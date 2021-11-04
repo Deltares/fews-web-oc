@@ -1,9 +1,10 @@
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
 import Home from '../views/Home.vue'
+import MapComponent from '../views/MapComponent.vue'
 import Silent from '../views/auth/Silent.vue'
 import Callback from '../views/auth/Callback.vue'
-import Logout from '../views/auth/Logout'
+import Logout from '../views/auth/Logout.vue'
 
 Vue.use(VueRouter)
 
@@ -12,6 +13,10 @@ const routes: Array<RouteConfig> = [
     path: '/',
     name: 'Home',
     component: Home
+  }, {
+    path: '/map',
+    name: 'MapComponent',
+    component: MapComponent
   }, {
     path: '/auth/silent',
     component: Silent

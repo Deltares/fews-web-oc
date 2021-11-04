@@ -9,9 +9,9 @@ import { Component, Vue } from 'vue-property-decorator'
 @Component
 export default class Logout extends Vue {
   mounted (): void {
-    new Oidc.UserManager()
+    new Oidc.UserManager({})
       .signoutRedirectCallback()
-      .then(user => (window.location = '/'))
+      .then(user => (window.location.href = '/'))
       .catch(err => console.error(err))
   }
 }
