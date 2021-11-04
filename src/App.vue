@@ -1,8 +1,18 @@
 <template>
   <div id="app">
+    <login-component />
     <router-view/>
   </div>
 </template>
+
+<script lang="ts">
+import LoginComponent from '../components/LoginComponent.vue'
+import { Component, Vue } from 'vue-property-decorator'
+
+@Component({ components: { LoginComponent } })
+export default class Home extends Vue {
+}
+</script>
 
 <style lang="scss">
 #app {
