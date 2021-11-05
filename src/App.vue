@@ -31,6 +31,11 @@
               Map
             </v-list-item-content>
           </v-list-item>
+          <v-list-item to="/ssd">
+            <v-list-item-content>
+              Schematic Status Display
+            </v-list-item-content>
+          </v-list-item>
         </v-list>
       </v-navigation-drawer>
     <v-main>

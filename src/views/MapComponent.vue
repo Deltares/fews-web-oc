@@ -1,5 +1,5 @@
 <template>
-  <div id="map">
+  <div>
     <v-mapbox
       :access-token="accessToken"
       map-style='https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
@@ -13,14 +13,12 @@
       :scroll-zoom="true"
       class="map"
       ref="map"
-      id="map"
     />
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-// import mapboxgl from 'mapbox-gl'
 
 @Component
 export default class MapComponent extends Vue {
@@ -32,7 +30,7 @@ export default class MapComponent extends Vue {
 </script>
 
 <style scoped>
-div#map {
+.map {
   height: 100%;
   width: 100%;
 }

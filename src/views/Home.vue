@@ -1,14 +1,47 @@
 <template>
   <div>
-    What a lovely homepage
+    <v-container>
+      <v-row>
+        <v-col v-for="(item, index) in items" :key="index">
+          <v-card>
+            <v-card-title :to="item.to">{{ item.title }}
+              <v-spacer/>
+              <v-btn icon :to="item.to">
+                <v-icon>mdi-share</v-icon>
+              </v-btn>
+            </v-card-title>
+            <component :is="item.component" style="height: 300px;">
+            </component>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-// import Oidc from 'oidc-client'
+import MapComponent from './MapComponent.vue'
+import SsdComponent from './SsdComponent.vue'
 
-@Component
+@Component({
+  components: {
+    MapComponent,
+    SsdComponent
+  }
+})
 export default class Home extends Vue {
+  items = [
+    {
+      title: 'WMS layers',
+      to: 'map',
+      component: 'map-component'
+    },
+    {
+      title: 'Schematic Status Display',
+      to: 'ssd',
+      component: 'ssd-component'
+    }
+  ]
 }
 </script>
