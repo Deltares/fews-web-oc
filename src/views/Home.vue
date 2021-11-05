@@ -1,8 +1,9 @@
 <template>
-  <div>
+  <div class="home-container" style="height: 100%; overflow-y: auto;">
+    <h1>Component Overview</h1>
     <v-container>
       <v-row>
-        <v-col v-for="(item, index) in items" :key="index" :cols="12" :md="6">
+        <v-col v-for="(item, index) in items" :key="index" :cols="12" :md="6"  :xl="4">
           <v-card>
             <v-card-title :to="item.to">{{ item.title }}
               <v-spacer/>

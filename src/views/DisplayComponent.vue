@@ -1,5 +1,6 @@
 <template>
-  <div>To be implemented
+  <div class="display-container">
+    <span style="font-size: 1.5rem">To be implemented</span>
   </div>
 </template>
 
@@ -12,8 +13,12 @@ export default class DisplayComponent extends Vue {
 </script>
 
 <style scoped>
-div#map {
-  height: 100%;
+.display-container {
+  display: flex;
   width: 100%;
+  height: 100%;
+  align-items:center;
+  justify-content:center;
+  background-color: lightgray;
 }
 </style>

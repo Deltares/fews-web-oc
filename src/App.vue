@@ -1,15 +1,23 @@
 <template>
-  <v-app>
+  <v-app id="app">
     <v-app-bar color="primary"
       dense
       app
+      dark
       :clipped-left="!this.$vuetify.rtl"
       :clipped-right="this.$vuetify.rtl"
+      src="water_pattern_by_nemaakos-d5n2v50.jpg"
     >
+      <template v-slot:img="{ props }">
+        <v-img
+          v-bind="props"
+          gradient="to top right, rgba(19,84,122,.9), rgba(8,51,101,.9)"
+        ></v-img>
+      </template>
       <v-app-bar-nav-icon @click="drawer = !drawer" />
-      <img src="@/assets/images/deltares_logo.png" contain height="100%" />
-      <v-toolbar-title>Delft-fews web OC</v-toolbar-title>
+      <v-toolbar-title>Delft-FEWS Web OC</v-toolbar-title>
       <v-spacer />
+      <img src="@/assets/images/deltares_logo.png" contain height="80%" />
       <login-component />
     </v-app-bar>
     <v-navigation-drawer
@@ -19,31 +27,44 @@
       clipped
       hide-overlay
       :right="this.$vuetify.rtl"
+      width="320"
       >
         <v-list>
           <v-list-item to="/">
+            <v-list-item-icon>
+              <v-icon>mdi-home</v-icon>
+            </v-list-item-icon>
             <v-list-item-content>
               Home
             </v-list-item-content>
           </v-list-item>
           <v-list-item to="/map">
+            <v-list-item-icon>
+              <v-icon>mdi-map</v-icon>
+            </v-list-item-icon>
             <v-list-item-content>
               Map
             </v-list-item-content>
           </v-list-item>
           <v-list-item to="/ssd">
+            <v-list-item-icon>
+              <v-icon>mdi-application-brackets-outline</v-icon>
+            </v-list-item-icon>
             <v-list-item-content>
               Schematic Status Display
             </v-list-item-content>
           </v-list-item>
           <v-list-item to="/display">
+            <v-list-item-icon>
+              <v-icon>mdi-chart-line</v-icon>
+            </v-list-item-icon>
             <v-list-item-content>
               Time Series Display
             </v-list-item-content>
           </v-list-item>
         </v-list>
       </v-navigation-drawer>
-    <v-main>
+    <v-main style="overflow-y: auto;">
       <router-view/>
     </v-main>
   </v-app>
@@ -61,7 +82,7 @@ export default class Home extends Vue {
 
 <style lang="scss">
 html {
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 
 #app {
@@ -70,6 +91,10 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+}
+
+.navbar {
+  background-image: linear-gradient(to bottom, rgba(240, 240, 240, 0.99), rgba(240, 240, 240,0.98));
 }
 
 </style>
