@@ -2,7 +2,7 @@
   <div>
     <v-container>
       <v-row>
-        <v-col v-for="(item, index) in items" :key="index">
+        <v-col v-for="(item, index) in items" :key="index" :cols="12" :md="6">
           <v-card>
             <v-card-title :to="item.to">{{ item.title }}
               <v-spacer/>
