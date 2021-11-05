@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="map-container">
     <v-mapbox
       :access-token="accessToken"
       map-style='https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
@@ -30,6 +30,10 @@ export default class MapComponent extends Vue {
 </script>
 
 <style scoped>
+.map-container {
+  height: 100%;
+}
+
 .map {
   height: 100%;
   width: 100%;
