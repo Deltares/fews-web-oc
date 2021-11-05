@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "fews-ssd-web-component": "file:fews-ssd-web-component-0.0.1.tgz",
     "mapbox-gl": "^2.5.1",
     "oidc-client": "^1.11.5",
     "vue": "^2.6.11",
