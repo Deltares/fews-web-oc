@@ -6,6 +6,7 @@ import SsdComponent from '../views/SsdComponent.vue'
 import Silent from '../views/auth/Silent.vue'
 import Callback from '../views/auth/Callback.vue'
 import Logout from '../views/auth/Logout.vue'
+import DisplayComponent from '../views/DisplayComponent.vue'
 
 Vue.use(VueRouter)
 
@@ -24,6 +25,11 @@ const routes: Array<RouteConfig> = [
     path: '/ssd',
     name: 'SsdComponent',
     component: SsdComponent
+  },
+  {
+    path: '/display',
+    name: 'DisplayComponent',
+    component: DisplayComponent
   },
   {
     path: '/auth/silent',

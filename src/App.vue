@@ -36,6 +36,11 @@
               Schematic Status Display
             </v-list-item-content>
           </v-list-item>
+          <v-list-item to="/display">
+            <v-list-item-content>
+              Time Series Display
+            </v-list-item-content>
+          </v-list-item>
         </v-list>
       </v-navigation-drawer>
     <v-main>

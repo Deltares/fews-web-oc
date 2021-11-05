@@ -23,11 +23,13 @@
 import { Component, Vue } from 'vue-property-decorator'
 import MapComponent from './MapComponent.vue'
 import SsdComponent from './SsdComponent.vue'
+import DisplayComponent from './DisplayComponent.vue'
 
 @Component({
   components: {
     MapComponent,
-    SsdComponent
+    SsdComponent,
+    DisplayComponent
   }
 })
 export default class Home extends Vue {
@@ -41,6 +43,11 @@ export default class Home extends Vue {
       title: 'Schematic Status Display',
       to: 'ssd',
       component: 'ssd-component'
+    },
+    {
+      title: 'Time Series Display',
+      to: 'display',
+      component: 'display-component'
     }
   ]
 }
