@@ -1,8 +1,19 @@
 <template>
   <v-app>
-    <login-component />
-    <v-main>
-      <v-navigation-drawer class="navbar" permanent absolute>
+    <v-app-bar color="primary" dense app>
+      <v-app-bar-nav-icon @click="drawer = !drawer" />
+      <img src="@/assets/images/deltares_logo.png" contain height="100%" />
+      <v-toolbar-title>Delft-fews web OC</v-toolbar-title>
+      <v-spacer />
+      <login-component />
+    </v-app-bar>
+    <v-navigation-drawer
+      v-model="drawer"
+      class="navbar"
+      app
+      clipped
+      :right="this.$vuetify.rtl"
+      >
         <v-list>
           <v-list-item to="/">
             <v-list-item-content>
@@ -16,6 +27,7 @@
           </v-list-item>
         </v-list>
       </v-navigation-drawer>
+    <v-main>
       <router-view/>
     </v-main>
   </v-app>
@@ -27,6 +39,7 @@ import { Component, Vue } from 'vue-property-decorator'
 
 @Component({ components: { LoginComponent } })
 export default class Home extends Vue {
+  drawer: boolean | null = null
 }
 </script>
 

@@ -1,8 +1,5 @@
 <template>
-  <v-app-bar color="primary" dense app>
-    <img src="@/assets/images/deltares_logo.png" contain height="100%" />
-    <v-toolbar-title>Delft-fews web OC</v-toolbar-title>
-    <v-spacer />
+  <div>
     <v-btn v-if="!user" @click="login" text>
       Login
     </v-btn>
@@ -12,7 +9,7 @@
         Logout
       </v-btn>
     </div>
-  </v-app-bar>
+  </div>
 </template>
 
 <script lang="ts">
