@@ -1,6 +1,11 @@
 <template>
   <v-app>
-    <v-app-bar color="primary" dense app>
+    <v-app-bar color="primary"
+      dense
+      app
+      :clipped-left="!this.$vuetify.rtl"
+      :clipped-right="this.$vuetify.rtl"
+    >
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       <img src="@/assets/images/deltares_logo.png" contain height="100%" />
       <v-toolbar-title>Delft-fews web OC</v-toolbar-title>
@@ -12,6 +17,7 @@
       class="navbar"
       app
       clipped
+      hide-overlay
       :right="this.$vuetify.rtl"
       >
         <v-list>
