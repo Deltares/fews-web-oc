@@ -4,6 +4,9 @@ import store from './store'
 import vuetify from './plugins/vuetify'
 import router from './router'
 import './plugins/vue2mapbox-gl'
+import auth from '@/services/auth'
+
+Vue.use(auth)
 
 Vue.config.productionTip = false
 

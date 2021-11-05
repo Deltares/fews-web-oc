@@ -17,14 +17,14 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import auth from '@/components/auth'
+import { User } from 'oidc-client'
 
 @Component
 export default class LoginComponent extends Vue {
-  user = null
+  user: User | null = null
 
   mounted (): void {
-    auth
+    this.$auth
       .getUser()
       .then(user => {
         this.user = user
@@ -36,11 +36,11 @@ export default class LoginComponent extends Vue {
   }
 
   login (): void {
-    auth.signinRedirect({ state: window.location.href })
+    this.$auth.signinRedirect({ state: window.location.href })
   }
 
   logout (): void {
-    auth.signoutRedirect({ state: '/portal' })
+    this.$auth.signoutRedirect({ state: '/portal' })
   }
 }
 </script>
