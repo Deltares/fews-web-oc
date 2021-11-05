@@ -3,12 +3,15 @@
     <img src="@/assets/images/deltares_logo.png" contain height="100%" />
     <v-toolbar-title>Delft-fews web OC</v-toolbar-title>
     <v-spacer />
-    <v-btn @click="login" text>
+    <v-btn v-if="!user" @click="login" text>
       Login
     </v-btn>
-    <v-btn @click="logout" text>
-      Logout
-    </v-btn>
+    <div v-else>
+      {{ user.profile.name }}
+      <v-btn @click="logout" text>
+        Logout
+      </v-btn>
+    </div>
   </v-app-bar>
 </template>
 
@@ -18,6 +21,20 @@ import auth from '@/components/auth'
 
 @Component
 export default class LoginComponent extends Vue {
+  user = null
+
+  mounted (): void {
+    auth
+      .getUser()
+      .then(user => {
+        this.user = user
+        console.log(this.user)
+      })
+      .catch(err => {
+        console.log({ err })
+      })
+  }
+
   login (): void {
     auth.signinRedirect({ state: window.location.href })
   }
