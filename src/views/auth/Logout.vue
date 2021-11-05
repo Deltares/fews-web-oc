@@ -3,15 +3,14 @@
 </template>
 
 <script lang="ts">
-import Oidc from 'oidc-client'
 import { Component, Vue } from 'vue-property-decorator'
 
 @Component
 export default class Logout extends Vue {
   mounted (): void {
-    new Oidc.UserManager({})
+    this.$auth
       .signoutRedirectCallback()
-      .then(user => (window.location.href = '/'))
+      .then(() => (window.location.href = '/'))
       .catch(err => console.error(err))
   }
 }
