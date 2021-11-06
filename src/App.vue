@@ -43,7 +43,7 @@
               <v-icon>mdi-map</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-              Map
+              WMS layers
             </v-list-item-content>
           </v-list-item>
           <v-list-item to="/ssd">
