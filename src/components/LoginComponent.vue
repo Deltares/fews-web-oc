@@ -1,13 +1,31 @@
 <template>
   <div>
     <v-btn v-if="!user" @click="login" text>
-      Login
+      Sign in
     </v-btn>
     <div v-else>
-      {{ user.profile.name }}
-      <v-btn @click="logout" text>
-        Logout
-      </v-btn>
+      <v-menu
+        bottom
+        offset-y
+      >
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            v-bind="attrs"
+            v-on="on"
+            small
+            fab>
+            {{ initials }}
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item>
+            <v-list-item-title>{{ user.profile.name }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item  @click="logout">
+            <v-list-item-action-text>Sign out</v-list-item-action-text>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </div>
   </div>
 </template>
@@ -38,6 +56,14 @@ export default class LoginComponent extends Vue {
 
   logout (): void {
     this.$auth.signoutRedirect({ state: '/portal' })
+  }
+
+  get initials (): string {
+    if (this.user?.profile?.name === undefined) return ''
+    return this.user.profile.name
+      .replace(/\b(\w)\w+/g, '$1')
+      .replace(/\s/g, '')
+      .toUpperCase()
   }
 }
 </script>
