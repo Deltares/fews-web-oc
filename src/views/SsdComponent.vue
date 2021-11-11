@@ -1,7 +1,7 @@
 <template>
   <div class="ssd-container">
     <div style="height: 10px;background-color: lightgray;"></div>
-    <schematic-status-display src="./demo-ssd.svg" style="height: calc(100% - 20px);">
+    <schematic-status-display src="https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN" style="height: calc(100% - 20px);">
     </schematic-status-display>
     <div style="height: 10px;background-color: lightgray;"></div>
   </div>
