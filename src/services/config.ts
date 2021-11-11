@@ -2,7 +2,7 @@ import Oidc from 'oidc-client'
 
 const publicPath = process.env.NODE_ENV === 'production'
   ? process.env.VUE_APP_PUBLIC_PATH
-  : '/'
+  : ''
 
 const baseUrl = window.location.origin + publicPath
 
