@@ -10,8 +10,10 @@ declare module 'vue/types/vue' {
   }
 }
 
+export const authenticationService = new Oidc.UserManager(oidcSettings)
+
 export default {
   install (Vue: any): void { // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
-    Vue.prototype.$auth = new Oidc.UserManager(oidcSettings)
+    Vue.prototype.$auth = authenticationService
   }
 }
