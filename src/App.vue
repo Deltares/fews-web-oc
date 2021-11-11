@@ -14,10 +14,10 @@
           gradient="to top right, rgba(19,84,122,.9), rgba(8,51,101,.9)"
         ></v-img>
       </template>
-      <v-app-bar-nav-icon @click="drawer = !drawer" />
+      <v-app-bar-nav-icon aria-label="Menu button" @click="drawer = !drawer" />
       <v-toolbar-title>Delft-FEWS Web OC</v-toolbar-title>
       <v-spacer />
-      <img src="@/assets/images/deltares_logo.png" contain height="80%" />
+      <img src="@/assets/images/deltares_logo.png" alt="Deltares" contain height="38px" />
       <login-component />
     </v-app-bar>
     <v-navigation-drawer
