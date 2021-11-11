@@ -34,6 +34,18 @@
 import { Component, Vue } from 'vue-property-decorator'
 import { User } from 'oidc-client'
 
+function firstUppercaseChar (str: string): string {
+  for (var i = 0; i < str.length; i++) {
+    const character = str[i]
+    if (character !== character.toLowerCase()) { return character }
+  }
+  return ''
+}
+
+function initialsFromName (givenName: string, familyName: string): string {
+  return firstUppercaseChar(givenName) + firstUppercaseChar(familyName)
+}
+
 @Component
 export default class LoginComponent extends Vue {
   user: User | null = null
@@ -43,7 +55,6 @@ export default class LoginComponent extends Vue {
       .getUser()
       .then(user => {
         this.user = user
-        console.log(this.user)
       })
       .catch(err => {
         console.log({ err })
@@ -59,11 +70,8 @@ export default class LoginComponent extends Vue {
   }
 
   get initials (): string {
-    if (this.user?.profile?.name === undefined) return ''
-    return this.user.profile.name
-      .replace(/\b(\w)\w+/g, '$1')
-      .replace(/\s/g, '')
-      .toUpperCase()
+    if (this.user?.profile?.given_name === undefined || this.user?.profile?.family_name === undefined) return ''
+    return initialsFromName(this.user.profile.given_name, this.user.profile.family_name)
   }
 }
 </script>
