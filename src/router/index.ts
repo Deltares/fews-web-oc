@@ -22,6 +22,7 @@ const routes: Array<RouteConfig> = [
   {
     path: '/login',
     name: 'Login',
+    meta: { layout: 'empty' },
     component: LoginView
   },
   {
@@ -44,14 +45,17 @@ const routes: Array<RouteConfig> = [
   },
   {
     path: '/auth/silent',
+    meta: { layout: 'empty' },
     component: Silent
   },
   {
     path: '/auth/callback',
+    meta: { layout: 'empty' },
     component: Callback
   },
   {
     path: '/auth/logout',
+    meta: { layout: 'empty' },
     component: Logout
   }
 ]
