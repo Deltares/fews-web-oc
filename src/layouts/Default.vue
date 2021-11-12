@@ -77,14 +77,10 @@ import { Component, Vue } from 'vue-property-decorator'
 @Component({ components: { LoginComponent } })
 export default class Home extends Vue {
   drawer: boolean | null = null
-
-  mounted (): void {
-    console.log('app')
-  }
 }
 </script>
 
-<style lang="scss">
+<style>
 html {
   overflow-y: auto;
 }
