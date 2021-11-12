@@ -21,6 +21,14 @@
           <v-list-item>
             <v-list-item-title>{{ user.profile.name }}</v-list-item-title>
           </v-list-item>
+          <v-list-item v-if="user.profile">
+            <v-list-item-icon>
+              <v-icon>mdi-account-key</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+            {{ user.profile.roles[0].toLowerCase() }}
+            </v-list-item-content>
+          </v-list-item>
           <v-list-item  @click="logout">
             <v-list-item-action-text>Sign out</v-list-item-action-text>
           </v-list-item>
