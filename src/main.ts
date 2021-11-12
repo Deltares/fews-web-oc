@@ -1,3 +1,4 @@
+import '@/router/class-component-hooks'
 import Vue from 'vue'
 import App from './App.vue'
 import store from './store'
