@@ -32,6 +32,5 @@ export default class App extends Vue {
 <style>
 html, body {
   margin: 0px;
-  overflow: hidden;
 }
 </style>
