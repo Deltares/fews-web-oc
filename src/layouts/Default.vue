@@ -6,7 +6,7 @@
       dark
       :clipped-left="!this.$vuetify.rtl"
       :clipped-right="this.$vuetify.rtl"
-      src="water_pattern_by_nemaakos-d5n2v50.jpg"
+      src="@/assets/images/water_pattern_by_nemaakos-d5n2v50.jpg"
     >
       <template v-slot:img="{ props }">
         <v-img
