@@ -1,5 +1,5 @@
 <template>
-  <div />
+  <div/>
 </template>
 
 <script lang="ts">
@@ -7,10 +7,12 @@ import { Component, Vue } from 'vue-property-decorator'
 
 @Component
 export default class Callback extends Vue {
-  mounted (): void {
+  created (): void {
     this.$auth
       .signinRedirectCallback()
-      .then(user => (window.location = user.state))
+      .then(user => {
+        this.$router.push({ name: user.state })
+      })
       .catch(err => console.error(err))
   }
 }

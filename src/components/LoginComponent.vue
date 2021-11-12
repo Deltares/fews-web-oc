@@ -62,7 +62,7 @@ export default class LoginComponent extends Vue {
   }
 
   login (): void {
-    this.$auth.signinRedirect({ state: window.location.href })
+    this.$auth.signinRedirect({ state: this.$route.name })
   }
 
   logout (): void {

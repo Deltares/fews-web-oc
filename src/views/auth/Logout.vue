@@ -1,5 +1,5 @@
 <template>
-  <div />
+  <div/>
 </template>
 
 <script lang="ts">
@@ -10,7 +10,7 @@ export default class Logout extends Vue {
   mounted (): void {
     this.$auth
       .signoutRedirectCallback()
-      .then(() => (window.location.href = '/'))
+      .then(() => (window.location.href = this.$router.options.base + 'login'))
       .catch(err => console.error(err))
   }
 }

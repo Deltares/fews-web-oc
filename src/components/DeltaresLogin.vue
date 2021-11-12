@@ -13,7 +13,8 @@ export default class Home extends Vue {
   name!: string
 
   login (): void {
-    this.$auth.signinRedirect({ state: this.$route.query.redirect })
+    const redirect = this.$route.query.redirect || 'Home'
+    this.$auth.signinRedirect({ state: redirect })
   }
 }
 </script>

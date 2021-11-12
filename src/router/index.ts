@@ -8,7 +8,13 @@ import Callback from '../views/auth/Callback.vue'
 import LoginView from '../views/LoginView.vue'
 import Logout from '../views/auth/Logout.vue'
 import DisplayComponent from '../views/DisplayComponent.vue'
-import { authenticationService } from '@/services/auth'
+import oidcSettings from '../services/config'
+import Oidc from 'oidc-client'
+
+Oidc.Log.logger = console
+Oidc.Log.level = Oidc.Log.WARN
+
+const authenticationService = new Oidc.UserManager(oidcSettings)
 
 Vue.use(VueRouter)
 
@@ -16,8 +22,8 @@ const routes: Array<RouteConfig> = [
   {
     path: '/',
     name: 'Home',
-    component: Home,
-    meta: { authorize: [] }
+    meta: { authorize: [] },
+    component: Home
   },
   {
     path: '/login',
@@ -27,19 +33,19 @@ const routes: Array<RouteConfig> = [
   },
   {
     path: '/map',
-    name: 'MapComponent',
+    name: 'Map',
     component: MapComponent,
     meta: { authorize: ['FEWS_FORECASTER'] }
   },
   {
     path: '/ssd',
-    name: 'SsdComponent',
+    name: 'Ssd',
     component: SsdComponent,
     meta: { authorize: ['FEWS_FORECASTER'] }
   },
   {
     path: '/display',
-    name: 'DisplayComponent',
+    name: 'Display',
     component: DisplayComponent,
     meta: { authorize: ['FEWS_FORECASTER'] }
   },
@@ -74,12 +80,12 @@ router.beforeEach(async (to, from, next) => {
 
   if (authorize) {
     if (!currentUser) {
-      return next({ path: '/login', query: { redirect: to.path } })
+      return next({ name: 'Login', query: { redirect: to.name } })
     }
 
     // TODO: check alle roles
     if (authorize.length && !authorize.includes(currentUser.profile.roles[0])) {
-      return next({ path: '/' })
+      return next({ name: 'Home' })
     }
   }
   next()
