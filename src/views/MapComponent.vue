@@ -42,7 +42,8 @@ export default class MapComponent extends Vue {
           type: 'raster',
           source: 'adoos',
           paint: {}
-        }
+        },
+        'aeroway-runway'
       )
     })
   }
