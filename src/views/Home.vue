@@ -11,7 +11,7 @@
                 <v-icon>mdi-share</v-icon>
               </v-btn>
             </v-card-title>
-            <component :is="item.component" style="height: 300px;">
+            <component :is="item.component" v-bind="item.props" style="height: 300px;">
             </component>
           </v-card>
         </v-col>
@@ -43,7 +43,8 @@ export default class Home extends Vue {
     {
       title: 'Schematic Status Display',
       to: 'ssd',
-      component: 'ssd-component'
+      component: 'ssd-component',
+      props: { src: 'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN' }
     },
     {
       title: 'Time Series Display',

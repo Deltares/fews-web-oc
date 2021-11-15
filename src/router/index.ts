@@ -41,6 +41,7 @@ const routes: Array<RouteConfig> = [
     path: '/ssd',
     name: 'Ssd',
     component: SsdComponent,
+    props: { src: 'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN' },
     meta: { authorize: ['FEWS_FORECASTER'] }
   },
   {
