@@ -4,14 +4,15 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
+import { User } from 'oidc-client-ts'
 
 @Component
 export default class Callback extends Vue {
   created (): void {
     this.$auth
       .signinRedirectCallback()
-      .then(user => {
-        this.$router.push({ name: user.state })
+      .then((user: User) => {
+        this.$router.push({ name: user.state as string })
       })
       .catch(err => console.error(err))
   }

@@ -80,12 +80,12 @@ router.beforeEach(async (to, from, next) => {
   const currentUser = await authenticationService.getUser()
 
   if (authorize) {
-    if (!currentUser) {
+    if (currentUser === null) {
       return next({ name: 'Login', query: { redirect: to.name } })
     }
 
     // TODO: check alle roles
-    const role = currentUser.profile.roles !== undefined ? currentUser.profile.roles[0] : 'guest'
+    const role = currentUser.profile.roles !== undefined ? (currentUser.profile as any).roles[0] : 'guest'
     if (authorize.length && !authorize.includes(role)) {
       return next({ name: 'Home' })
     }
