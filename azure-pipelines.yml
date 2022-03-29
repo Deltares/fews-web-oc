@@ -21,6 +21,6 @@ steps:
   displayName: 'npm install and build of Web Operator Client'
 
 - task: AzureStaticWebApp@0
-    inputs:
-      app_location: '/dist'
-      azure_static_web_apps_api_token: $(deployment_token)
+  inputs:
+    app_location: '/dist'
+    azure_static_web_apps_api_token: $(deployment_token)
