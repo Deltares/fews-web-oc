@@ -18,9 +18,11 @@ steps:
 - script: |
     npm install
     npm run build
-  displayName: 'npm install and build of Web Operator Client'
+  displayName: 'npm install and build of Web Operator Client'  
 
 - task: AzureStaticWebApp@0
   inputs:
-    app_location: '/dist'
+    app_location: 'dist'
+    api_location: ''
+    output_location: ''
     azure_static_web_apps_api_token: $(deployment_token)
