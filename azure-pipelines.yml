@@ -14,12 +14,22 @@ steps:
   inputs:
     versionSpec: '10.x'
   displayName: 'Install Node.js'
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Write your commands here
+      touch .env
+      echo 'VUE_APP_MAPBOX_TOKEN="$(VUE_APP_MAPBOX_TOKEN)"' >> .env
+      echo 'VUE_APP_AUTH_AUTHORITY="$(VUE_APP_AUTH_AUTHORITY)"' >> .env
+      echo 'VUE_APP_AUTH_ID="$(VUE_APP_AUTH_ID)"' >> .env
+      echo 'VUE_APP_AUTH_TYPE="code"' >> .env
+      echo 'VUE_APP_AUTH_SCOPE="openid"' >> .env
 
 - script: |
     npm install
     npm run build
   displayName: 'npm install and build of Web Operator Client'  
-
 - task: AzureStaticWebApp@0
   inputs:
     app_location: 'dist'
