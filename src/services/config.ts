@@ -1,11 +1,10 @@
-import Oidc from 'oidc-client'
+import { WebStorageStateStore } from 'oidc-client-ts'
 
 const publicPath = process.env.NODE_ENV === 'production'
   ? process.env.VUE_APP_PUBLIC_PATH
   : ''
 
 const baseUrl = window.location.origin + publicPath
-
 const oidcSettings = {
   authority: `${process.env.VUE_APP_AUTH_AUTHORITY}`,
   client_id: `${process.env.VUE_APP_AUTH_ID}`,
@@ -15,7 +14,7 @@ const oidcSettings = {
   response_type: `${process.env.VUE_APP_AUTH_TYPE}`,
   scope: `${process.env.VUE_APP_AUTH_SCOPE}`,
   post_logout_redirect_uri: `${baseUrl}/auth/logout`,
-  userStore: new Oidc.WebStorageStateStore({ store: window.localStorage }),
+  userStore: new WebStorageStateStore({ store: window.localStorage }),
   monitorSession: false,
   sessionChecksEnabled: true
 }

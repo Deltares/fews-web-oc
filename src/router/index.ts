@@ -9,12 +9,12 @@ import LoginView from '../views/LoginView.vue'
 import Logout from '../views/auth/Logout.vue'
 import DisplayComponent from '../views/DisplayComponent.vue'
 import oidcSettings from '../services/config'
-import Oidc from 'oidc-client'
+import { Log, UserManager } from 'oidc-client-ts'
 
-Oidc.Log.logger = console
-Oidc.Log.level = Oidc.Log.WARN
+Log.setLogger(console)
+Log.setLevel(Log.WARN)
 
-const authenticationService = new Oidc.UserManager(oidcSettings)
+const authenticationService = new UserManager(oidcSettings)
 
 Vue.use(VueRouter)
 

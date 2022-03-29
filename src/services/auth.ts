@@ -1,8 +1,8 @@
-import Oidc, { UserManager } from 'oidc-client'
+import { Log, UserManager } from 'oidc-client-ts'
 import oidcSettings from './config'
 
-Oidc.Log.logger = console
-Oidc.Log.level = Oidc.Log.WARN
+Log.setLogger(console)
+Log.setLevel(Log.WARN)
 
 declare module 'vue/types/vue' {
   interface Vue {
@@ -10,7 +10,7 @@ declare module 'vue/types/vue' {
   }
 }
 
-export const authenticationService = new Oidc.UserManager(oidcSettings)
+export const authenticationService = new UserManager(oidcSettings)
 
 export default {
   install (Vue: any): void { // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types

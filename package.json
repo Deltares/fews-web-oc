@@ -13,7 +13,7 @@
     "core-js": "^3.6.5",
     "fews-ssd-web-component": "file:fews-ssd-web-component-0.0.1.tgz",
     "mapbox-gl": "^2.5.1",
-    "oidc-client": "^1.11.5",
+    "oidc-client-ts": "^2.0.2",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^9.1.2",
