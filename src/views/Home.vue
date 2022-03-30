@@ -76,6 +76,7 @@ export default class Home extends Vue {
     // TODO key should be constructed from .env
     const sessionEntry = sessionStorage.getItem('oidc.user:https://login.microsoftonline.com/15f3fe0e-d712-4981-bc7c-fe949af215bb/v2.0:a64f0553-bce1-4883-8ba5-e0cc5c6bf988')
     console.log(sessionEntry)
+    if (!sessionEntry) return
     var oidcUser = JSON.parse(sessionEntry)
     console.log(oidcUser)
     const idToken = oidcUser.id_token
@@ -88,7 +89,8 @@ export default class Home extends Vue {
     const eu = this
     XMLHttpRequest.prototype.open = function (a = '', b = '') {
       console.log('Setting Bearer for ' + a + ' and ' + b + ' with ' + idToken)
-      listener.tempOpen.apply(this, arguments)
+      const argumentsTyped: any = arguments
+      listener.tempOpen.apply(this, argumentsTyped)
       if (oidcUser) {
         this.setRequestHeader('Authorization', 'Bearer ' + idToken)
       }
