@@ -36,4 +36,5 @@ steps:
     app_location: 'dist'
     api_location: ''
     output_location: ''
+    config_file_location: staticwebapp.config.json
     azure_static_web_apps_api_token: $(deployment_token)
