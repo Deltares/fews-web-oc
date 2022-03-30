@@ -52,47 +52,48 @@ export default class Home extends Vue {
       component: 'display-component'
     },
     {
-      title: 'SSD Authenticatie WebOC_Overzichtsscherm_WMCN (AllowTesting)',
+      title: 'SSD WebOC_Overzichtsscherm_WMCN (AllowTesting)',
       to: 'ssd',
       component: 'ssd-component',
       props: { src: 'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/ssd?request=GetDisplay&ssd=WebOC_Overzichtsscherm_WMCN' }
     },
     {
-      title: 'SSD Authenticatie WebOC_CompartimentIJsselmeer (AllowDeltares)',
+      title: 'SSD WebOC_CompartimentIJsselmeer (AllowDeltares)',
       to: 'ssd',
       component: 'ssd-component',
       props: { src: 'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/ssd?request=GetDisplay&ssd=WebOC_CompartimentIJsselmeer' }
     },
     {
-      title: 'SSD Authenticatie WebOC_NDB_10m (AllowForecasters)',
+      title: 'SSD WebOC_NDB_10m (AllowForecasters)',
       to: 'ssd',
       component: 'ssd-component',
       props: { src: 'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/ssd?request=GetDisplay&ssd=WebOC_IJsselmeergebied' }
     }
-
   ]
 
-  mounted () {
-    // TODO key should be constructed from .env
-    const sessionEntry = sessionStorage.getItem('oidc.user:https://login.microsoftonline.com/15f3fe0e-d712-4981-bc7c-fe949af215bb/v2.0:a64f0553-bce1-4883-8ba5-e0cc5c6bf988')
-    console.log(sessionEntry)
+  mounted (): void {
+    const sessionKey = 'oidc.user:' + process.env.VUE_APP_AUTH_AUTHORITY + ':' + process.env.VUE_APP_AUTH_ID
+    const sessionEntry = sessionStorage.getItem(sessionKey)
     if (!sessionEntry) return
-    var oidcUser = JSON.parse(sessionEntry)
+    const oidcUser = JSON.parse(sessionEntry)
     console.log(oidcUser)
     const idToken = oidcUser.id_token
     console.log(idToken)
     const listener = {
-      tempOpen: XMLHttpRequest.prototype.open,
-      tempSend: XMLHttpRequest.prototype.send
+      httpRequestOpenInterceptor: XMLHttpRequest.prototype.open,
+      httpRequestSendInterceptor: XMLHttpRequest.prototype.send
     }
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const eu = this
-    XMLHttpRequest.prototype.open = function (a = '', b = '') {
-      console.log('Setting Bearer for ' + a + ' and ' + b + ' with ' + idToken)
+    XMLHttpRequest.prototype.open = function (httpMethod = '', url = '') {
+      console.log('Setting Bearer for ' + httpMethod + ' and ' + url + ' with ' + idToken)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const argumentsTyped: any = arguments
-      listener.tempOpen.apply(this, argumentsTyped)
+      listener.httpRequestOpenInterceptor.apply(this, argumentsTyped)
       if (oidcUser) {
-        this.setRequestHeader('Authorization', 'Bearer ' + idToken)
+        if (url.includes('https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices')) {
+          this.setRequestHeader('Authorization', 'Bearer ' + idToken)
+        }
       }
       eu.$emit('start', this)
       this.addEventListener('load', function () {
