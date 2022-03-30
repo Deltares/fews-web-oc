@@ -44,7 +44,7 @@ export default class Home extends Vue {
       title: 'Schematic Status Display',
       to: 'ssd',
       component: 'ssd-component',
-      props: { src: 'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN' }
+      props: { src: `${this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')}/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN` }
     },
     {
       title: 'Time Series Display',
