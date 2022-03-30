@@ -14,7 +14,6 @@ const oidcSettings = {
   response_type: `${process.env.VUE_APP_AUTH_TYPE}`,
   scope: `${process.env.VUE_APP_AUTH_SCOPE}`,
   post_logout_redirect_uri: `${baseUrl}auth/logout`,
-  userStore: new WebStorageStateStore({ store: window.localStorage }),
   monitorSession: false,
   sessionChecksEnabled: true
 }
