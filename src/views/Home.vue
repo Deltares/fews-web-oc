@@ -50,7 +50,26 @@ export default class Home extends Vue {
       title: 'Time Series Display',
       to: 'display',
       component: 'display-component'
+    },
+    {
+      title: 'SSD Authenticatie WebOC_Overzichtsscherm_WMCN (AllowTesting)',
+      to: 'ssd',
+      component: 'ssd-component',
+      props: { src: 'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/ssd?request=GetDisplay&ssd=WebOC_Overzichtsscherm_WMCN' }
+    },
+    {
+      title: 'SSD Authenticatie WebOC_CompartimentIJsselmeer (AllowDeltares)',
+      to: 'ssd',
+      component: 'ssd-component',
+      props: { src: 'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/ssd?request=GetDisplay&ssd=WebOC_CompartimentIJsselmeer' }
+    },
+    {
+      title: 'SSD Authenticatie WebOC_NDB_10m (AllowForecasters)',
+      to: 'ssd',
+      component: 'ssd-component',
+      props: { src: 'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/ssd?request=GetDisplay&ssd=WebOC_IJsselmeergebied' }
     }
+
   ]
 }
 </script>
