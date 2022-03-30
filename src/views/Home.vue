@@ -71,5 +71,32 @@ export default class Home extends Vue {
     }
 
   ]
+
+  mounted () {
+    // TODO key should be constructed from .env
+    const sessionEntry = sessionStorage.getItem('oidc.user:https://login.microsoftonline.com/15f3fe0e-d712-4981-bc7c-fe949af215bb/v2.0:a64f0553-bce1-4883-8ba5-e0cc5c6bf988')
+    console.log(sessionEntry)
+    var oidcUser = JSON.parse(sessionEntry)
+    console.log(oidcUser)
+    const idToken = oidcUser.id_token
+    console.log(idToken)
+    const listener = {
+      tempOpen: XMLHttpRequest.prototype.open,
+      tempSend: XMLHttpRequest.prototype.send
+    }
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const eu = this
+    XMLHttpRequest.prototype.open = function (a = '', b = '') {
+      console.log('Setting Bearer for ' + a + ' and ' + b + ' with ' + idToken)
+      listener.tempOpen.apply(this, arguments)
+      if (oidcUser) {
+        this.setRequestHeader('Authorization', 'Bearer ' + idToken)
+      }
+      eu.$emit('start', this)
+      this.addEventListener('load', function () {
+        eu.$emit('finish', this)
+      })
+    }
+  }
 }
 </script>
