@@ -25,7 +25,7 @@ steps:
       echo 'VUE_APP_AUTH_ID="$(VUE_APP_AUTH_ID)"' >> .env
       echo 'VUE_APP_AUTH_TYPE="code"' >> .env
       echo 'VUE_APP_AUTH_SCOPE="openid"' >> .env
-      echo 'VUE_APP_PUBLIC_PATH=""' >> .env
+      echo 'VUE_APP_PUBLIC_PATH="/"' >> .env
 
 - script: |
     npm install
