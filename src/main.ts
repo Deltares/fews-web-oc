@@ -6,6 +6,7 @@ import vuetify from './plugins/vuetify'
 import router from './router'
 import './plugins/vue2mapbox-gl'
 import auth from '@/services/auth'
+import config from '@/services/application-config'
 import { defineCustomElements } from 'fews-ssd-web-component'
 
 defineCustomElements(window)
@@ -17,9 +18,15 @@ Vue.use(auth)
 
 Vue.config.productionTip = false
 
-new Vue({
-  store,
-  vuetify,
-  router,
-  render: h => h(App)
-}).$mount('#app')
+fetch('app-config.json')
+  .then(res => res.json())
+  .then(data => {
+    Vue.use(config, data)
+
+    new Vue({
+      store,
+      vuetify,
+      router,
+      render: h => h(App)
+    }).$mount('#app')
+  })
