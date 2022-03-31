@@ -48,7 +48,7 @@ export default class SsdComponent extends Vue {
   display: flex;
   background-color: lightgray;
   flex-direction: column;
-  overflow-x:scroll;
+  overflow-x: auto;
   white-space: nowrap;
 }
 

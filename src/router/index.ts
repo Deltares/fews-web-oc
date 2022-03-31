@@ -1,8 +1,7 @@
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
 import Home from '../views/Home.vue'
-import MapComponent from '../views/MapComponent.vue'
-import SsdComponent from '../views/SsdComponent.vue'
+import SsdView from '../views/SsdView.vue'
 import Silent from '../views/auth/Silent.vue'
 import Callback from '../views/auth/Callback.vue'
 import LoginView from '../views/LoginView.vue'
@@ -40,8 +39,7 @@ const routes: Array<RouteConfig> = [
   {
     path: '/ssd',
     name: 'Ssd',
-    component: SsdComponent,
-    props: { src: 'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN' },
+    component: SsdView,
     meta: { authorize: [] }
   },
   {
