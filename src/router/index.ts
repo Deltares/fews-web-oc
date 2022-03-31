@@ -32,23 +32,47 @@ const routes: Array<RouteConfig> = [
     component: LoginView
   },
   {
-    path: '/map',
+    path: '/current',
     name: 'Map',
-    component: MapComponent,
-    meta: { authorize: ['FEWS_FORECASTER'] }
+    component: Home,
+    meta: { authorize: [] }
   },
   {
     path: '/ssd',
     name: 'Ssd',
     component: SsdComponent,
     props: { src: 'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN' },
-    meta: { authorize: ['FEWS_FORECASTER'] }
+    meta: { authorize: [] }
+  },
+  {
+    path: '/explore',
+    name: 'Explore',
+    component: DisplayComponent,
+    meta: { authorize: [] }
   },
   {
     path: '/display',
     name: 'Display',
     component: DisplayComponent,
-    meta: { authorize: ['FEWS_FORECASTER'] }
+    meta: { authorize: [] }
+  },
+  {
+    path: '/tasks',
+    name: 'Tasks',
+    component: DisplayComponent,
+    meta: { authorize: [] }
+  },
+  {
+    path: '/system',
+    name: 'System',
+    component: DisplayComponent,
+    meta: { authorize: [] }
+  },
+  {
+    path: '/help',
+    name: 'Help',
+    component: DisplayComponent,
+    meta: { authorize: [] }
   },
   {
     path: '/auth/silent',

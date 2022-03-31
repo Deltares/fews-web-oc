@@ -14,36 +14,31 @@
           gradient="to top right, rgba(19,84,122,.9), rgba(8,51,101,.9)"
         ></v-img>
       </template>
-      <v-app-bar-nav-icon aria-label="Menu button" @click="drawer = !drawer" />
-      <v-toolbar-title>Delft-FEWS Web OC</v-toolbar-title>
-      <v-spacer />
-      <img src="@/assets/images/deltares_logo.png" alt="Deltares" contain height="38px" />
-      <login-component />
-    </v-app-bar>
-    <v-navigation-drawer
-      v-model="drawer"
-      class="navbar"
-      app
-      clipped
-      hide-overlay
-      :right="this.$vuetify.rtl"
-      width="320"
-      >
-        <v-list>
-          <v-list-item to="/">
+      <v-btn text depressed to="/home" class="home-title">Delft-FEWS Web OC</v-btn>
+      <v-menu offset-y>
+        <template v-slot:activator="{ on, attrs }">
+        <v-app-bar-nav-icon
+          aria-label="Menu button"
+          v-bind="attrs"
+          v-on="on"
+        >
+        </v-app-bar-nav-icon>
+        </template>
+        <v-list dense>
+          <v-list-item to="/current">
             <v-list-item-icon>
-              <v-icon>mdi-home</v-icon>
+              <v-icon>mdi-chili-alert</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-              Home
+              Current Status
             </v-list-item-content>
           </v-list-item>
-          <v-list-item to="/map">
+          <v-list-item to="/explore">
             <v-list-item-icon>
-              <v-icon>mdi-map</v-icon>
+              <v-icon>mdi-archive-search</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-              WMS layers
+              Explore Archive
             </v-list-item-content>
           </v-list-item>
           <v-list-item to="/ssd">
@@ -51,22 +46,95 @@
               <v-icon>mdi-application-brackets-outline</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-              Schematic Status Display
+              Schematic Status Displays
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item to="/tasks">
+            <v-list-item-icon>
+              <v-icon>mdi-clipboard-list</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              Tasks
             </v-list-item-content>
           </v-list-item>
           <v-list-item to="/display">
             <v-list-item-icon>
-              <v-icon>mdi-chart-line</v-icon>
+              <v-icon>mdi-application-cog</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-              Time Series Display
+              System
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item to="/help">
+            <v-list-item-icon>
+              <v-icon>mdi-help-circle</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              Help
             </v-list-item-content>
           </v-list-item>
         </v-list>
-      </v-navigation-drawer>
-    <v-main style="overflow-y: auto;">
-      <router-view/>
-    </v-main>
+      </v-menu>
+      <v-spacer />
+      <v-btn depressed text to="/current">
+        <v-icon>mdi-chili-alert</v-icon>
+        <v-chip small color="warning">1</v-chip>
+      </v-btn>
+      <v-menu offset-y>
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn
+          depressed
+          text
+          v-bind="attrs"
+          v-on="on"
+        >
+          <v-icon>mdi-clipboard-list</v-icon>
+          <v-chip small>1</v-chip>
+          <v-icon small>mdi-chevron-down</v-icon>
+        </v-btn>
+        </template>
+        <v-list dense>
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title>Task #1</v-list-item-title>
+              <v-progress-linear :value="50" color="green"></v-progress-linear>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title>Task #2</v-list-item-title>
+              <v-progress-linear indeterminate color="green"></v-progress-linear>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+      <v-menu offset-y>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            depressed
+            text
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon>mdi-help-circle</v-icon>
+            <v-chip small>1</v-chip>
+            <v-icon small>mdi-chevron-down</v-icon>
+          </v-btn>
+        </template>
+        <v-list dense>
+          <v-list-item>
+            <v-list-item-title>
+            New
+            </v-list-item-title>
+          <v-list-item-avatar><v-chip small>1</v-chip></v-list-item-avatar>
+          </v-list-item>
+          <v-divider />
+          <v-list-item>Help</v-list-item>
+        </v-list>
+      </v-menu>
+      <login-component />
+    </v-app-bar>
+    <router-view/>
   </v-app>
 </template>
 
@@ -97,4 +165,7 @@ html {
   background-image: linear-gradient(to bottom, rgba(240, 240, 240, 0.99), rgba(240, 240, 240,0.98));
 }
 
+.home-title {
+  text-transform: capitalize;
+}
 </style>
