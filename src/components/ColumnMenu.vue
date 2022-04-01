@@ -5,9 +5,9 @@
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
       <slot name="menu-title" :text="currentTitle" :depth="currentLevel" >
-        <v-toolbar-content>
+        <span>
           {{ currentTitle }}
-        </v-toolbar-content>
+        </span>
       </slot>
     </v-toolbar>
     <v-divider/>
@@ -18,13 +18,12 @@
       v-for="(item, i) in stack"
       v-bind:key="i"
       >
-    <v-list-item-group class="surface" active-class="primary--text">
+    <v-list-item-group class="surface">
       <v-list-item
         v-for="child in item.children"
         v-bind:key="child.id"
         @click="(event) => { onItemClick(event, child) }"
         :to="child.to"
-        active-class="primary--text"
         :class="getClass(child)"
       >
         <v-list-item-content>
@@ -73,7 +72,7 @@ export default class ColumnMenu extends Vue {
   }
 
   getClass (child: ColumnItem): string {
-    return child.name === this.active[0] ? 'primary--text' : ''
+    return child.id === this.active[0] ? 'primary--text v-list-item--active' : ''
   }
 
   onTitleClick (): void {
