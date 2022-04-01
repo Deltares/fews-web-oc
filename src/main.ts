@@ -18,7 +18,7 @@ Vue.use(auth)
 
 Vue.config.productionTip = false
 
-fetch('app-config.json')
+fetch(`${process.env.VUE_APP_PUBLIC_PATH}app-config.json`)
   .then(res => res.json())
   .then(data => {
     Vue.use(config, data)
