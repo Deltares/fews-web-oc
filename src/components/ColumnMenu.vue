@@ -5,9 +5,9 @@
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
       <slot name="menu-title" :text="currentTitle" :depth="currentLevel" >
-        <v-toolbar-title>
+        <v-toolbar-content>
           {{ currentTitle }}
-        </v-toolbar-title>
+        </v-toolbar-content>
       </slot>
     </v-toolbar>
     <v-divider/>
@@ -100,9 +100,13 @@ export default class ColumnMenu extends Vue {
     const stack = [...this.items]
     const path = [this.items[0].id]
     for (let i = 1; i < this.open.length; i++) {
-      const child = stack[i - 1].children.find(s => s.id === this.open[i])
-      stack.push(child)
-      path.push(child.id)
+      const parent = stack[i - 1]
+      if (parent.children !== undefined) {
+        const child = parent.children.find(c => c.id === this.open[i])
+        if (child === undefined) continue
+        stack.push(child)
+        path.push(child.id)
+      }
     }
     this.stack = stack
     this.path = path

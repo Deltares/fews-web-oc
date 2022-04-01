@@ -3,7 +3,6 @@
     <v-navigation-drawer
     v-model="drawer"
     app
-    absolute
     clipped
     hide-overlay
     :right="$vuetify.rtl"
@@ -31,6 +30,7 @@
         activatable
         open-on-click
         transition
+        dense
       >
       </v-treeview>
       <ColumnMenu
@@ -42,7 +42,7 @@
       </ColumnMenu>
     </v-navigation-drawer>
     <v-main style="overflow-y: auto; height: 100%">
-      <div style="height: calc(100% - 52px);">
+      <div style="height: calc(100% - 40px);">
       <SSDComponent src="https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN">
       </SSDComponent>
       </div>
@@ -73,8 +73,8 @@ import { ColumnItem } from '@/components/ColumnItem'
 })
 export default class SsdView extends Vue {
   drawer = true
-  active = []
-  open = []
+  active: string[] = []
+  open: string[] = []
   items: ColumnItem[] = []
   viewMode = 0
 
@@ -90,9 +90,9 @@ export default class SsdView extends Vue {
       {
         id: 'root',
         name: 'Overzichtschermen',
-        children: []
       }
     ]
+    items[0].children = []
     for (const displayGroup of capbilities.displayGroups) {
       const name = displayGroup.title.replace('Overzichtsschermen ', '')
       const children = []
@@ -102,7 +102,7 @@ export default class SsdView extends Vue {
       items[0].children.push({ id: displayGroup.name, name, children })
     }
     this.items = items
-    console.log(items)
+    this.open = [items[0].id]
   }
 
   @Watch('active')
