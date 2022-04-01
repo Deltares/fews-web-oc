@@ -18,7 +18,7 @@
       v-for="(item, i) in stack"
       v-bind:key="i"
       >
-    <v-list-item-group class="surface">
+    <v-list-item-group>
       <v-list-item
         v-for="child in item.children"
         v-bind:key="child.id"
@@ -29,9 +29,7 @@
         <v-list-item-content>
           <v-list-item-title v-text="child.name"></v-list-item-title>
         </v-list-item-content>
-        <v-list-item-icon v-if="child.children">
-          <v-icon>mdi-chevron-right</v-icon>
-        </v-list-item-icon>
+        <v-icon v-if="child.children">mdi-chevron-right</v-icon>
       </v-list-item>
     </v-list-item-group>
     </v-window-item>
@@ -95,7 +93,7 @@ export default class ColumnMenu extends Vue {
     this.$emit('click', event, item)
   }
 
-  updateStack () {
+  updateStack (): void {
     const stack = [...this.items]
     const path = [this.items[0].id]
     for (let i = 1; i < this.open.length; i++) {
