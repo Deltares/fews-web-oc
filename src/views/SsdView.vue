@@ -3,6 +3,7 @@
     <v-navigation-drawer
     v-model="drawer"
     app
+    absolute
     clipped
     hide-overlay
     :right="$vuetify.rtl"
@@ -40,41 +41,52 @@
       >
       </ColumnMenu>
     </v-navigation-drawer>
-    <v-main style="overflow-y: auto;">
-      <SSDComponent src="https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN"
-    />
+    <v-main style="overflow-y: auto; height: 100%">
+      <div style="height: calc(100% - 52px);">
+      <SSDComponent src="https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN">
+      </SSDComponent>
+      </div>
+      <DateTimeSlider class="date-time-slider">
+        <template slot="prepend">
+          <v-btn icon @click="toggleDrawer">
+            <v-icon>{{ drawerIcon }}</v-icon>
+          </v-btn>
+        </template>
+      </DateTimeSlider>
     </v-main>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from 'vue-property-decorator'
+import { Component, Vue, Watch } from 'vue-property-decorator'
 import SSDComponent from '@/components/SsdComponent.vue'
 import ColumnMenu from '@/components/ColumnMenu.vue'
+import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 
 @Component({
   components: {
+    ColumnMenu,
+    DateTimeSlider,
     SSDComponent,
-    ColumnMenu
   }
 })
 export default class SsdView extends Vue {
   drawer = true
   active = []
   open = []
-  items: ColumnItem = []
+  items: ColumnItem[] = []
   viewMode = 0
 
-  mounted () {
+  mounted (): void {
     this.loadCapabilities()
   }
 
-  async loadCapabilities () {
-    const response = await fetch('capabilities.json')
+  async loadCapabilities (): Promise<void> {
+    const response = await fetch('https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetCapabilities&format=application/json')
     const capbilities = await response.json()
     console.log(capbilities)
-    const items: ColumnItem = [
+    const items: ColumnItem[] = [
       {
         id: 'root',
         name: 'Overzichtschermen',
@@ -94,13 +106,21 @@ export default class SsdView extends Vue {
   }
 
   @Watch('active')
-  onActiveChange () {
+  onActiveChange (): void {
     console.log('update:active', this.active)
   }
 
   @Watch('open')
-  onOpenChange () {
+  onOpenChange (): void {
     console.log('update:open', this.open)
+  }
+
+  toggleDrawer (): void {
+    this.drawer = !this.drawer
+  }
+
+  get drawerIcon (): string {
+    return this.drawer ? 'mdi-chevron-double-left' : 'mdi-chevron-double-right'
   }
 }
 </script>
