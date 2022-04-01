@@ -29,6 +29,7 @@ export default class Home extends Vue {}
   background-image: url("../assets/images/D111-103_getijdenland_small.jpg");
   background-position-x: center;
   background-size: cover;
+  text-align: center;
   height: 100%;
   overflow-y: auto;
 }
@@ -36,5 +37,4 @@ export default class Home extends Vue {}
 .login-providers {
   margin: 50px;
 }
-
 </style>
