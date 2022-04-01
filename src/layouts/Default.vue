@@ -4,8 +4,8 @@
       dense
       app
       dark
-      :clipped-left="!this.$vuetify.rtl"
-      :clipped-right="this.$vuetify.rtl"
+      :clipped-left="!$vuetify.rtl"
+      :clipped-right="$vuetify.rtl"
       src="@/assets/images/water_pattern_by_nemaakos-d5n2v50.jpg"
     >
       <template v-slot:img="{ props }">
@@ -89,11 +89,15 @@
           v-on="on"
         >
           <v-icon>mdi-clipboard-list</v-icon>
-          <v-chip small>1</v-chip>
+          <v-chip small>2</v-chip>
           <v-icon small>mdi-chevron-down</v-icon>
         </v-btn>
         </template>
         <v-list dense>
+          <v-list-item to="/tasks">
+            Tasks
+          </v-list-item>
+          <v-divider />
           <v-list-item>
             <v-list-item-content>
               <v-list-item-title>Task #1</v-list-item-title>
@@ -157,12 +161,11 @@ html {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
 }
 
-.navbar {
-  background-image: linear-gradient(to bottom, rgba(240, 240, 240, 0.99), rgba(240, 240, 240,0.98));
+.view-sidebar {
+  background-image: linear-gradient(to bottom, rgba(240, 240, 240, 1), rgba(240, 240, 240, 1));
 }
 
 .home-title {
