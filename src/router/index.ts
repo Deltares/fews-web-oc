@@ -1,7 +1,8 @@
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
 import Home from '../views/Home.vue'
-import SsdView from '../views/SsdView.vue'
+import SchematicStatusDisplay from '../views/SchematicStatusDisplay.vue'
+import SpatialDisplay from '../views/SpatialDisplay.vue'
 import Silent from '../views/auth/Silent.vue'
 import Callback from '../views/auth/Callback.vue'
 import LoginView from '../views/LoginView.vue'
@@ -20,9 +21,7 @@ Vue.use(VueRouter)
 const routes: Array<RouteConfig> = [
   {
     path: '/',
-    name: 'Home',
-    meta: { authorize: [] },
-    component: Home
+    redirect: { name: 'Home' },
   },
   {
     path: '/login',
@@ -31,15 +30,31 @@ const routes: Array<RouteConfig> = [
     component: LoginView
   },
   {
-    path: '/current',
-    name: 'Map',
+    path: '/home',
+    name: 'Home',
     component: Home,
     meta: { authorize: [] }
   },
   {
-    path: '/ssd',
-    name: 'Ssd',
-    component: SsdView,
+    // /ssd/group/ScadaNZK-ARK/panel/NZK_ARK_10min
+    path: '/ssd/group/:groupId/panel/:panelId',
+    name: 'SchematicStatusDisplay',
+    component: SchematicStatusDisplay,
+    props: true,
+    meta: { authorize: [] }
+  },
+  {
+    path: '/spatial',
+    name: 'SpatialDisplay',
+    component: SpatialDisplay,
+    props: true,
+    meta: { authorize: [] }
+  },
+  {
+    path: '/series',
+    name: 'TimeSeriesDisplay',
+    component: DisplayComponent,
+    props: true,
     meta: { authorize: [] }
   },
   {
@@ -49,26 +64,8 @@ const routes: Array<RouteConfig> = [
     meta: { authorize: [] }
   },
   {
-    path: '/display',
-    name: 'Display',
-    component: DisplayComponent,
-    meta: { authorize: [] }
-  },
-  {
     path: '/tasks',
     name: 'Tasks',
-    component: DisplayComponent,
-    meta: { authorize: [] }
-  },
-  {
-    path: '/system',
-    name: 'System',
-    component: DisplayComponent,
-    meta: { authorize: [] }
-  },
-  {
-    path: '/help',
-    name: 'Help',
     component: DisplayComponent,
     meta: { authorize: [] }
   },

@@ -32,6 +32,9 @@
         transition
         dense
       >
+        <template slot="label" slot-scope="props">
+          <v-list-item :to="props.item.to">{{ props.item.name }}</v-list-item>
+        </template>
       </v-treeview>
       <ColumnMenu
         v-else
@@ -43,7 +46,7 @@
     </v-navigation-drawer>
     <v-main style="overflow-y: auto; height: 100%">
       <div style="height: calc(100% - 40px);">
-      <SSDComponent src="https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN">
+      <SSDComponent :src="`https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetDisplay&ssd=${panelId}`">
       </SSDComponent>
       </div>
       <DateTimeSlider class="date-time-slider">
@@ -58,7 +61,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from 'vue-property-decorator'
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import SSDComponent from '@/components/SsdComponent.vue'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
@@ -72,6 +75,12 @@ import { ColumnItem } from '@/components/ColumnItem'
   }
 })
 export default class SsdView extends Vue {
+  @Prop({ default: '', type: String })
+  panelId!: string
+
+  @Prop({ default: '', type: String })
+  groupId! : string
+
   drawer = true
   active: string[] = []
   open: string[] = []
@@ -79,6 +88,7 @@ export default class SsdView extends Vue {
   viewMode = 0
 
   mounted (): void {
+    console.log('mounted', this)
     this.loadCapabilities()
   }
 
@@ -97,7 +107,17 @@ export default class SsdView extends Vue {
       const name = displayGroup.title.replace('Overzichtsschermen ', '')
       const children = []
       for (const displayPanel of displayGroup.displayPanels) {
-        children.push({ id: displayPanel.name, name: displayPanel.title })
+        children.push({
+          id: displayPanel.name,
+          name: displayPanel.title,
+          to: {
+            name: 'SchematicStatusDisplay',
+            params: {
+              panelId: displayPanel.name,
+              groupId: displayGroup.name
+            }
+          }
+        })
       }
       items[0].children.push({ id: displayGroup.name, name, children })
     }

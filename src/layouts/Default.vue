@@ -18,52 +18,12 @@
         </v-app-bar-nav-icon>
         </template>
         <v-list dense>
-          <v-list-item to="/current">
+          <v-list-item v-for="item in menuItems" :key="item.id" :to="item.to">
             <v-list-item-icon>
-              <v-icon>mdi-chili-alert</v-icon>
+              <v-icon>{{ item.icon }}</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-              Current Status
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item to="/explore">
-            <v-list-item-icon>
-              <v-icon>mdi-archive-search</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              Explore Archive
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item to="/ssd">
-            <v-list-item-icon>
-              <v-icon>mdi-application-brackets-outline</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              Schematic Status Displays
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item to="/tasks">
-            <v-list-item-icon>
-              <v-icon>mdi-clipboard-list</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              Tasks
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item to="/display">
-            <v-list-item-icon>
-              <v-icon>mdi-application-cog</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              System
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item to="/help">
-            <v-list-item-icon>
-              <v-icon>mdi-help-circle</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              Help
+              {{item.id}}
             </v-list-item-content>
           </v-list-item>
         </v-list>
@@ -142,6 +102,14 @@ import { Component, Vue } from 'vue-property-decorator'
 @Component({ components: { LoginComponent } })
 export default class Home extends Vue {
   drawer: boolean | null = null
+  menuItems= [
+    { id: 'Overview', icon: 'mdi-apps', to: { name: 'Home' } },
+    { id: 'Schematic Status Display', icon: 'mdi-application-brackets-outline', to: { name: 'SchematicStatusDisplay', params: { groupId: '0', panelId: '0' } } },
+    { id: 'Spatial Display', icon: 'mdi-map', to: { name: 'SpatialDisplay' } },
+    { id: 'Time Series Display', icon: 'mdi-chart-sankey', to: { name: 'TimeSeriesDisplay' } },
+    { id: 'Explore Archive', icon: 'mdi-archive-search', to: { name: 'Explore' } },
+    { id: 'Tasks', icon: 'mdi-clipboard-list', to: { name: 'Tasks' } },
+  ]
 }
 </script>
 
