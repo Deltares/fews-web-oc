@@ -1,19 +1,12 @@
 <template>
   <v-app id="app">
-    <v-app-bar color="primary"
+    <v-app-bar color="#080C80"
       dense
       app
       dark
       :clipped-left="!$vuetify.rtl"
       :clipped-right="$vuetify.rtl"
-      src="@/assets/images/water_pattern_by_nemaakos-d5n2v50.jpg"
     >
-      <template v-slot:img="{ props }">
-        <v-img
-          v-bind="props"
-          gradient="to top right, rgba(19,84,122,.9), rgba(8,51,101,.9)"
-        ></v-img>
-      </template>
       <v-btn text depressed to="/home" class="home-title">Delft-FEWS Web OC</v-btn>
       <v-menu offset-y>
         <template v-slot:activator="{ on, attrs }">
