@@ -22,7 +22,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import MapComponent from './MapComponent.vue'
+import MapComponent from './SpatialDisplay.vue'
 import SsdComponent from '@/components/SsdComponent.vue'
 import DisplayComponent from './DisplayComponent.vue'
 
@@ -91,7 +91,7 @@ export default class Home extends Vue {
       const argumentsTyped: any = arguments
       listener.httpRequestOpenInterceptor.apply(this, argumentsTyped)
       if (oidcUser) {
-        if (url.includes('https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices')) {
+        if (url instanceof String && url.includes('https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices')) {
           this.setRequestHeader('Authorization', 'Bearer ' + idToken)
         }
       }
