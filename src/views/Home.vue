@@ -91,7 +91,7 @@ export default class Home extends Vue {
       const argumentsTyped: any = arguments
       listener.httpRequestOpenInterceptor.apply(this, argumentsTyped)
       if (oidcUser) {
-        if (url instanceof String && url.includes('https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices')) {
+        if (typeof url === 'string' && url.includes('https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices')) {
           this.setRequestHeader('Authorization', 'Bearer ' + idToken)
         }
       }
