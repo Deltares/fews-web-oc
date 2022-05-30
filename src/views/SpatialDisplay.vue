@@ -1,30 +1,91 @@
 <template>
-  <div class="map-container">
-    <v-mapbox
-      :access-token="accessToken"
-      map-style='https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
-      :center="[54, 25]"
-      :zoom="5"
-      :pitch="0"
-      :bearing="0"
-      :min-zoom="2"
-      :interactive="true"
-      :drag-pan="true"
-      :scroll-zoom="true"
-      class="map"
-      ref="map"
-    />
+  <div>
+    <v-navigation-drawer
+    v-model="drawer"
+    app
+    clipped
+    hide-overlay
+    :right="$vuetify.rtl"
+    width="320"
+    class="view-sidebar"
+    >
+      <v-toolbar dense flat>
+        <v-btn-toggle
+          v-model="viewMode"
+          color="primary"
+          dense
+          group
+          mandatory
+        >
+        <v-btn text><v-icon>mdi-file-tree</v-icon></v-btn>
+        <v-btn text><v-icon>mdi-view-week</v-icon></v-btn>
+        </v-btn-toggle>
+      </v-toolbar>
+      <v-divider />
+      <v-treeview
+        v-if="viewMode === 0"
+        :active.sync="active"
+        :items="items"
+        :open.sync="open"
+        activatable
+        open-on-click
+        transition
+        dense
+      >
+        <template slot="label" slot-scope="props">
+          <v-list-item :to="props.item.to">{{ props.item.name }}</v-list-item>
+        </template>
+      </v-treeview>
+      <ColumnMenu
+        v-else
+        :active.sync="active"
+        :items="items"
+        :open.sync="open"
+      >
+      </ColumnMenu>
+    </v-navigation-drawer>
+    <div class="map-container">
+      <v-mapbox
+        :access-token="accessToken"
+        map-style='https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+        :center="[54, 25]"
+        :zoom="5"
+        :pitch="0"
+        :bearing="0"
+        :min-zoom="2"
+        :interactive="true"
+        :drag-pan="true"
+        :scroll-zoom="true"
+        class="map"
+        ref="map"
+      />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import { Map } from 'mapbox-gl'
+import { ColumnItem } from '@/components/ColumnItem'
+import ColumnMenu from '@/components/ColumnMenu.vue'
+import DateTimeSlider from '@/components/DateTimeSlider.vue'
 
-@Component
+@Component({
+  components: {
+    ColumnMenu,
+    DateTimeSlider,
+  }
+})
 export default class MapComponent extends Vue {
   accessToken = process.env.VUE_APP_MAPBOX_TOKEN
+  open: string[] = []
+  items: ColumnItem[] = []
+  drawer = true
+  viewMode = 0
+
   mounted (): void {
+    console.log('mounted')
+    this.loadCapabilities()
     const map: Map = (this.$refs.map as any).map
     map.on('load', () => {
       map.addSource('adoos', {
@@ -46,6 +107,33 @@ export default class MapComponent extends Vue {
         'aeroway-runway'
       )
     })
+  }
+
+  async loadCapabilities (): Promise<void> {
+    const response = await fetch('https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/wms?request=GetCapabilities&format=application/json&onlyHeaders=true')
+    const capabilities = await response.json()
+    const layers = capabilities.layers
+    const groupNames = [...new Set(layers.map((l: any) => l.groupName))]
+    const items: ColumnItem[] = [
+      {
+        id: 'root',
+        name: 'Layers',
+      }
+    ]
+    items[0].children = []
+    for (const groupName of groupNames) {
+      const group = layers.find((l) => l.groupName === groupName)
+      const children: ColumnItem[] = []
+      for (const layer of layers.filter((l: any) => l.groupName === groupName)) {
+        children.push({
+          id: layer.name,
+          name: layer.title,
+        })
+      }
+      items[0].children.push({ id: group.groupName, name: group.groupTitle, children })
+    }
+    this.items = items
+    this.open = [items[0].id]
   }
 }
 </script>
