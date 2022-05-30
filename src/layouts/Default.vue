@@ -1,72 +1,97 @@
 <template>
   <v-app id="app">
-    <v-app-bar color="primary"
+    <v-app-bar color="#080C80"
       dense
       app
       dark
-      :clipped-left="!this.$vuetify.rtl"
-      :clipped-right="this.$vuetify.rtl"
-      src="@/assets/images/water_pattern_by_nemaakos-d5n2v50.jpg"
+      :clipped-left="!$vuetify.rtl"
+      :clipped-right="$vuetify.rtl"
     >
-      <template v-slot:img="{ props }">
-        <v-img
-          v-bind="props"
-          gradient="to top right, rgba(19,84,122,.9), rgba(8,51,101,.9)"
-        ></v-img>
-      </template>
-      <v-app-bar-nav-icon aria-label="Menu button" @click="drawer = !drawer" />
-      <v-toolbar-title>Delft-FEWS Web OC</v-toolbar-title>
-      <v-spacer />
-      <img src="@/assets/images/deltares_logo.png" alt="Deltares" contain height="38px" />
-      <login-component />
-    </v-app-bar>
-    <v-navigation-drawer
-      v-model="drawer"
-      class="navbar"
-      app
-      clipped
-      hide-overlay
-      :right="this.$vuetify.rtl"
-      width="320"
-      >
-        <v-list>
-          <v-list-item to="/">
+      <v-btn text depressed to="/home" class="home-title">Delft-FEWS Web OC</v-btn>
+      <v-menu offset-y>
+        <template v-slot:activator="{ on, attrs }">
+        <v-app-bar-nav-icon
+          aria-label="Menu button"
+          v-bind="attrs"
+          v-on="on"
+        >
+        </v-app-bar-nav-icon>
+        </template>
+        <v-list dense>
+          <v-list-item v-for="item in menuItems" :key="item.id" :to="item.to">
             <v-list-item-icon>
-              <v-icon>mdi-home</v-icon>
+              <v-icon>{{ item.icon }}</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-              Home
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item to="/map">
-            <v-list-item-icon>
-              <v-icon>mdi-map</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              WMS layers
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item to="/ssd">
-            <v-list-item-icon>
-              <v-icon>mdi-application-brackets-outline</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              Schematic Status Display
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item to="/display">
-            <v-list-item-icon>
-              <v-icon>mdi-chart-line</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              Time Series Display
+              {{item.id}}
             </v-list-item-content>
           </v-list-item>
         </v-list>
-      </v-navigation-drawer>
-    <v-main style="overflow-y: auto;">
-      <router-view/>
-    </v-main>
+      </v-menu>
+      <v-spacer />
+      <v-btn depressed text to="/current">
+        <v-icon>mdi-chili-alert</v-icon>
+        <v-chip small color="warning">1</v-chip>
+      </v-btn>
+      <v-menu offset-y>
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn
+          depressed
+          text
+          v-bind="attrs"
+          v-on="on"
+        >
+          <v-icon>mdi-clipboard-list</v-icon>
+          <v-chip small>2</v-chip>
+          <v-icon small>mdi-chevron-down</v-icon>
+        </v-btn>
+        </template>
+        <v-list dense>
+          <v-list-item to="/tasks">
+            Tasks
+          </v-list-item>
+          <v-divider />
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title>Task #1</v-list-item-title>
+              <v-progress-linear :value="50" color="green"></v-progress-linear>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title>Task #2</v-list-item-title>
+              <v-progress-linear indeterminate color="green"></v-progress-linear>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+      <v-menu offset-y>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            depressed
+            text
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon>mdi-help-circle</v-icon>
+            <v-chip small>1</v-chip>
+            <v-icon small>mdi-chevron-down</v-icon>
+          </v-btn>
+        </template>
+        <v-list dense>
+          <v-list-item>
+            <v-list-item-title>
+            New
+            </v-list-item-title>
+          <v-list-item-avatar><v-chip small>1</v-chip></v-list-item-avatar>
+          </v-list-item>
+          <v-divider />
+          <v-list-item>Help</v-list-item>
+        </v-list>
+      </v-menu>
+      <login-component />
+    </v-app-bar>
+    <router-view style="height: 100%;"/>
   </v-app>
 </template>
 
@@ -77,6 +102,14 @@ import { Component, Vue } from 'vue-property-decorator'
 @Component({ components: { LoginComponent } })
 export default class Home extends Vue {
   drawer: boolean | null = null
+  menuItems= [
+    { id: 'Overview', icon: 'mdi-apps', to: { name: 'Home' } },
+    { id: 'Schematic Status Display', icon: 'mdi-application-brackets-outline', to: { name: 'SchematicStatusDisplay', params: { groupId: '0', panelId: '0' } } },
+    { id: 'Spatial Display', icon: 'mdi-map', to: { name: 'SpatialDisplay' } },
+    { id: 'Time Series Display', icon: 'mdi-chart-sankey', to: { name: 'TimeSeriesDisplay' } },
+    { id: 'Explore Archive', icon: 'mdi-archive-search', to: { name: 'Explore' } },
+    { id: 'Tasks', icon: 'mdi-clipboard-list', to: { name: 'Tasks' } },
+  ]
 }
 </script>
 
@@ -89,12 +122,15 @@ html {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
+  background-color: rgba(240, 240, 240, 1);
 }
 
-.navbar {
-  background-image: linear-gradient(to bottom, rgba(240, 240, 240, 0.99), rgba(240, 240, 240,0.98));
+.view-sidebar {
+  background-image: linear-gradient(to bottom, rgba(240, 240, 240, 1), rgba(240, 240, 240, 1));
 }
 
+.home-title {
+  text-transform: capitalize;
+}
 </style>
