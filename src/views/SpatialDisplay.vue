@@ -127,7 +127,7 @@ export default class MapComponent extends Vue {
       for (const layer of layers.filter((l: any) => l.groupName === groupName)) {
         children.push({
           id: layer.name,
-          name: layer.title,
+          name: layer.title || layer.name,
         })
       }
       items[0].children.push({ id: group.groupName, name: group.groupTitle, children })
