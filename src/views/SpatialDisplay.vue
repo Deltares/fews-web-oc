@@ -122,7 +122,7 @@ export default class MapComponent extends Vue {
     ]
     items[0].children = []
     for (const groupName of groupNames) {
-      const group = layers.find((l) => l.groupName === groupName)
+      const group = layers.find((l: any) => l.groupName === groupName)
       const children: ColumnItem[] = []
       for (const layer of layers.filter((l: any) => l.groupName === groupName)) {
         children.push({
