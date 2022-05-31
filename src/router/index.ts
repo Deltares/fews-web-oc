@@ -44,7 +44,7 @@ const routes: Array<RouteConfig> = [
     meta: { authorize: [] }
   },
   {
-    path: '/map',
+    path: '/map/:layerName',
     name: 'SpatialDisplay',
     component: SpatialDisplay,
     props: true,

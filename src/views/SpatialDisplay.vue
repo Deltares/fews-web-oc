@@ -44,12 +44,12 @@
       >
       </ColumnMenu>
     </v-navigation-drawer>
-    <MapComponent/>
+    <MapComponent :layer="layerName"/>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue } from 'vue-property-decorator'
 import MapComponent from '@/components/MapComponent.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import ColumnMenu from '@/components/ColumnMenu.vue'
@@ -63,6 +63,9 @@ import DateTimeSlider from '@/components/DateTimeSlider.vue'
   }
 })
 export default class SpatialDisplay extends Vue {
+  @Prop({ default: '' })
+  layerName!: string
+
   active: string[] = []
   open: string[] = []
   items: ColumnItem[] = []
@@ -87,11 +90,17 @@ export default class SpatialDisplay extends Vue {
     items[0].children = []
     for (const groupName of groupNames) {
       const group = layers.find((l: any) => l.groupName === groupName)
-      const children: ColumnItem[] = []
+      const children = []
       for (const layer of layers.filter((l: any) => l.groupName === groupName)) {
         children.push({
           id: layer.name,
           name: layer.title || layer.name,
+          to: {
+            name: 'SpatialDisplay',
+            params: {
+              layerName: layer.name,
+            }
+          }
         })
       }
       items[0].children.push({ id: group.groupName, name: group.groupTitle, children })
