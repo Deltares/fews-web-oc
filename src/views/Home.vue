@@ -22,7 +22,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import MapComponent from './SpatialDisplay.vue'
+import MapComponent from '@/components/MapComponent.vue'
 import SsdComponent from '@/components/SsdComponent.vue'
 import DisplayComponent from './DisplayComponent.vue'
 

@@ -22,20 +22,13 @@
         </v-btn-toggle>
       </v-toolbar>
       <v-divider />
-      <v-treeview
+      <TreeMenu
         v-if="viewMode === 0"
         :active.sync="active"
         :items="items"
         :open.sync="open"
-        activatable
-        open-on-click
-        transition
-        dense
       >
-        <template slot="label" slot-scope="props">
-          <v-list-item :to="props.item.to">{{ props.item.name }}</v-list-item>
-        </template>
-      </v-treeview>
+      </TreeMenu>
       <ColumnMenu
         v-else
         :active.sync="active"
@@ -64,6 +57,7 @@
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import SSDComponent from '@/components/SsdComponent.vue'
 import ColumnMenu from '@/components/ColumnMenu.vue'
+import TreeMenu from '@/components/TreeMenu.vue'
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 
@@ -72,6 +66,7 @@ import { ColumnItem } from '@/components/ColumnItem'
     ColumnMenu,
     DateTimeSlider,
     SSDComponent,
+    TreeMenu,
   }
 })
 export default class SsdView extends Vue {
