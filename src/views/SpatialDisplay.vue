@@ -17,25 +17,18 @@
           group
           mandatory
         >
-        <v-btn text><v-icon>mdi-file-tree</v-icon></v-btn>
-        <v-btn text><v-icon>mdi-view-week</v-icon></v-btn>
+          <v-btn text><v-icon>mdi-file-tree</v-icon></v-btn>
+          <v-btn text><v-icon>mdi-view-week</v-icon></v-btn>
         </v-btn-toggle>
       </v-toolbar>
       <v-divider />
-      <v-treeview
+      <TreeMenu
         v-if="viewMode === 0"
         :active.sync="active"
         :items="items"
         :open.sync="open"
-        activatable
-        open-on-click
-        transition
-        dense
       >
-        <template slot="label" slot-scope="props">
-          <v-list-item :to="props.item.to">{{ props.item.name }}</v-list-item>
-        </template>
-      </v-treeview>
+      </TreeMenu>
       <ColumnMenu
         v-else
         :active.sync="active"
@@ -53,11 +46,13 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 import MapComponent from '@/components/MapComponent.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import ColumnMenu from '@/components/ColumnMenu.vue'
+import TreeMenu from '@/components/TreeMenu.vue'
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 
 @Component({
   components: {
     ColumnMenu,
+    TreeMenu,
     DateTimeSlider,
     MapComponent,
   }
