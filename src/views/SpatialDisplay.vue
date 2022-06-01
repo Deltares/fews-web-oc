@@ -37,7 +37,18 @@
       >
       </ColumnMenu>
     </v-navigation-drawer>
-    <MapComponent :layer="layerName"/>
+    <v-main style="overflow-y: auto; height: 100%">
+      <div style="height: calc(100% - 40px);">
+        <MapComponent :layer="layerName"/>
+      </div>
+      <DateTimeSlider class="date-time-slider">
+        <template slot="prepend">
+          <v-btn icon @click="toggleDrawer">
+            <v-icon>{{ drawerIcon }}</v-icon>
+          </v-btn>
+        </template>
+      </DateTimeSlider>
+    </v-main>
   </div>
 </template>
 
@@ -102,6 +113,14 @@ export default class SpatialDisplay extends Vue {
     }
     this.items = items
     this.open = [items[0].id]
+  }
+
+  toggleDrawer (): void {
+    this.drawer = !this.drawer
+  }
+
+  get drawerIcon (): string {
+    return this.drawer ? 'mdi-chevron-double-left' : 'mdi-chevron-double-right'
   }
 }
 </script>

@@ -14,7 +14,7 @@ module.exports = {
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-    'no-inferrable-types': 'off',
+    '@typescript-eslint/no-inferrable-types': 'off',
     'comma-dangle': 'off'
   },
   overrides: [
