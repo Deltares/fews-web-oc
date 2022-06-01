@@ -19,7 +19,7 @@
         </template>
         <v-list>
           <v-list-item>
-            <v-list-item-title>{{ user.profile.name }}</v-list-item-title>
+            <v-list-item-title>{{ user.profile.given_name }} {{ user.profile.family_name }}</v-list-item-title>
           </v-list-item>
           <v-list-item v-if="user.profile.roles">
             <v-list-item-icon>
