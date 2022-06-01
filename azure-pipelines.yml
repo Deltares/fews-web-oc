@@ -24,7 +24,7 @@ steps:
       echo 'VUE_APP_AUTH_AUTHORITY="$(VUE_APP_AUTH_AUTHORITY)"' >> .env
       echo 'VUE_APP_AUTH_ID="$(VUE_APP_AUTH_ID)"' >> .env
       echo 'VUE_APP_AUTH_TYPE="code"' >> .env
-      echo 'VUE_APP_AUTH_SCOPE="openid"' >> .env
+      echo 'VUE_APP_AUTH_SCOPE="openid,profile"' >> .env
       echo 'VUE_APP_PUBLIC_PATH="/"' >> .env
 
 - script: |
