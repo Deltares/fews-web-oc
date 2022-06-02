@@ -38,10 +38,15 @@
       </ColumnMenu>
     </v-navigation-drawer>
     <v-main style="overflow-y: auto; height: 100%">
-      <div style="height: calc(100% - 40px);">
-        <MapComponent :layer="layerName"/>
+      <div style="height: calc(100% - 48px);">
+        <MapComponent :layer="layerOptions"/>
       </div>
-      <DateTimeSlider class="date-time-slider">
+      <DateTimeSlider
+        class="date-time-slider"
+        v-model="currentTime"
+        :dates="times"
+        @update:now="setCurrentTime"
+      >
         <template slot="prepend">
           <v-btn icon @click="toggleDrawer">
             <v-icon>{{ drawerIcon }}</v-icon>
@@ -53,12 +58,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
+import WMSMixin from '@/mixins/WMSMixin'
 import MapComponent from '@/components/MapComponent.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
+import { DateController } from '@/lib/TimeControl/DateController'
 
 @Component({
   components: {
@@ -68,7 +75,7 @@ import DateTimeSlider from '@/components/DateTimeSlider.vue'
     MapComponent,
   }
 })
-export default class SpatialDisplay extends Vue {
+export default class SpatialDisplay extends Mixins(WMSMixin) {
   @Prop({ default: '' })
   layerName!: string
 
@@ -77,9 +84,14 @@ export default class SpatialDisplay extends Vue {
   items: ColumnItem[] = []
   drawer = true
   viewMode = 0
+  dateController!: DateController
+  currentTime: Date = new Date()
+  times: Date[] = []
 
   mounted (): void {
     this.loadCapabilities()
+    this.dateController = new DateController([])
+    this.onLayerChange()
   }
 
   async loadCapabilities (): Promise<void> {
@@ -115,12 +127,30 @@ export default class SpatialDisplay extends Vue {
     this.open = [items[0].id]
   }
 
+  setCurrentTime (): void {
+    this.dateController.selectDate(new Date())
+    this.currentTime = this.dateController.currentTime
+  }
+
+  @Watch('layerName')
+  async onLayerChange (): Promise<void> {
+    this.times = await this.getTimes(this.layerName)
+    this.dateController.dates = this.times
+    this.dateController.selectDate(this.currentTime)
+    this.currentTime = this.dateController.currentTime
+  }
+
   toggleDrawer (): void {
     this.drawer = !this.drawer
   }
 
   get drawerIcon (): string {
     return this.drawer ? 'mdi-chevron-double-left' : 'mdi-chevron-double-right'
+  }
+
+  get layerOptions (): any {
+    if (this.layerName) return { name: this.layerName, time: this.currentTime }
+    return {}
   }
 }
 </script>

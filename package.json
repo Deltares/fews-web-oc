@@ -12,7 +12,7 @@
     "@mdi/font": "^6.4.95",
     "core-js": "^3.6.5",
     "fews-ssd-web-component": "file:fews-ssd-web-component-0.0.1.tgz",
-    "mapbox-gl": "^2.5.1",
+    "mapbox-gl": "^2.8.2",
     "oidc-client-ts": "^2.0.2",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",

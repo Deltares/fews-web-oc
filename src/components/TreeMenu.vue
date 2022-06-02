@@ -1,7 +1,7 @@
 <template>
   <div class="tree-menu">
     <v-treeview
-      :active.sync="active"
+      :active="active"
       :items="items"
       :open="open"
       activatable
