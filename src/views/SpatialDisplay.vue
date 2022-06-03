@@ -88,9 +88,12 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   currentTime: Date = new Date()
   times: Date[] = []
 
+  created (): void {
+    this.dateController = new DateController([])
+  }
+
   mounted (): void {
     this.loadCapabilities()
-    this.dateController = new DateController([])
     this.onLayerChange()
   }
 
