@@ -34,11 +34,6 @@
       </SSDComponent>
     </div>
     <DateTimeSlider class="date-time-slider">
-      <template slot="prepend">
-        <v-btn icon @click="toggleDrawer">
-          <v-icon>{{ drawerIcon }}</v-icon>
-        </v-btn>
-      </template>
     </DateTimeSlider>
   </div>
 </template>
@@ -66,7 +61,6 @@ export default class SsdView extends Vue {
   @Prop({ default: '', type: String })
   groupId! : string
 
-  drawer = true
   active: string[] = []
   open: string[] = []
   items: ColumnItem[] = []
@@ -122,14 +116,6 @@ export default class SsdView extends Vue {
   @Watch('open')
   onOpenChange (): void {
     console.log('update:open', this.open)
-  }
-
-  toggleDrawer (): void {
-    this.drawer = !this.drawer
-  }
-
-  get drawerIcon (): string {
-    return this.drawer ? 'mdi-chevron-double-left' : 'mdi-chevron-double-right'
   }
 }
 </script>
