@@ -1,14 +1,6 @@
 <template>
   <div>
-    <v-navigation-drawer
-    v-model="drawer"
-    app
-    clipped
-    hide-overlay
-    :right="$vuetify.rtl"
-    width="320"
-    class="view-sidebar"
-    >
+    <portal to="web-oc-sidebar">
       <v-toolbar dense flat>
         <v-btn-toggle
           v-model="viewMode"
@@ -36,7 +28,7 @@
         :open.sync="open"
       >
       </ColumnMenu>
-    </v-navigation-drawer>
+    </portal>
     <v-main style="overflow-y: auto; height: 100%">
       <div style="height: calc(100% - 48px);">
         <MapComponent :layer="layerOptions"/>
@@ -49,11 +41,6 @@
         @input="debouncedSetLayerOptions"
         @timeupdate="updateTime"
       >
-        <template slot="prepend">
-          <v-btn icon @click="toggleDrawer">
-            <v-icon>{{ drawerIcon }}</v-icon>
-          </v-btn>
-        </template>
       </DateTimeSlider>
     </v-main>
   </div>
@@ -85,7 +72,6 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   active: string[] = []
   open: string[] = []
   items: ColumnItem[] = []
-  drawer = true
   viewMode = 0
   dateController!: DateController
   currentTime: Date = new Date()
@@ -140,6 +126,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     if (enabled) {
       this.dateController.selectDate(new Date())
       this.currentTime = this.dateController.currentTime
+      this.setLayerOptions()
     }
   }
 
@@ -155,14 +142,6 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     this.dateController.selectDate(this.currentTime)
     this.currentTime = this.dateController.currentTime
     this.setLayerOptions()
-  }
-
-  toggleDrawer (): void {
-    this.drawer = !this.drawer
-  }
-
-  get drawerIcon (): string {
-    return this.drawer ? 'mdi-chevron-double-left' : 'mdi-chevron-double-right'
   }
 
   setLayerOptions (): void {

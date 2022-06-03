@@ -8,12 +8,13 @@ import './plugins/vue2mapbox-gl'
 import auth from '@/services/auth'
 import config from '@/services/application-config'
 import { defineCustomElements } from 'fews-ssd-web-component'
+import PortalVue from 'portal-vue'
 
 defineCustomElements(window)
 // Optional: Provide an easy way to register the custom element.
 
 Vue.config.ignoredElements = ['schematic-status-display']
-
+Vue.use(PortalVue)
 Vue.use(auth)
 
 Vue.config.productionTip = false

@@ -41,14 +41,14 @@ const routes: Array<RouteConfig> = [
     name: 'SchematicStatusDisplay',
     component: SchematicStatusDisplay,
     props: true,
-    meta: { authorize: [] }
+    meta: { authorize: [], sidebar: true }
   },
   {
     path: '/map/:layerName',
     name: 'SpatialDisplay',
     component: SpatialDisplay,
     props: true,
-    meta: { authorize: [] }
+    meta: { authorize: [], sidebar: true }
   },
   {
     path: '/series',
