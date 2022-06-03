@@ -46,6 +46,8 @@
         v-model="currentTime"
         :dates="times"
         @update:now="setCurrentTime"
+        @input="debouncedSetLayerOptions"
+        @timeupdate="updateTime"
       >
         <template slot="prepend">
           <v-btn icon @click="toggleDrawer">
@@ -59,6 +61,7 @@
 
 <script lang="ts">
 import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
+import debounce from 'lodash/debounce'
 import WMSMixin from '@/mixins/WMSMixin'
 import MapComponent from '@/components/MapComponent.vue'
 import { ColumnItem } from '@/components/ColumnItem'
@@ -87,9 +90,12 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   dateController!: DateController
   currentTime: Date = new Date()
   times: Date[] = []
+  debouncedSetLayerOptions!: any
+  layerOptions: any = {}
 
   created (): void {
     this.dateController = new DateController([])
+    this.debouncedSetLayerOptions = debounce(this.setLayerOptions, 500, { leading: true, trailing: true })
   }
 
   mounted (): void {
@@ -130,8 +136,15 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     this.open = [items[0].id]
   }
 
-  setCurrentTime (): void {
-    this.dateController.selectDate(new Date())
+  setCurrentTime (enabled: boolean): void {
+    if (enabled) {
+      this.dateController.selectDate(new Date())
+      this.currentTime = this.dateController.currentTime
+    }
+  }
+
+  updateTime (date: Date): void {
+    this.dateController.selectDate(date)
     this.currentTime = this.dateController.currentTime
   }
 
@@ -151,9 +164,9 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     return this.drawer ? 'mdi-chevron-double-left' : 'mdi-chevron-double-right'
   }
 
-  get layerOptions (): any {
-    if (this.layerName) return { name: this.layerName, time: this.currentTime }
-    return {}
+  setLayerOptions (): void {
+    console.log('setLayerOptions', this.currentTime)
+    if (this.layerName) this.layerOptions = { name: this.layerName, time: this.currentTime }
   }
 }
 </script>
