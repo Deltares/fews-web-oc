@@ -1,7 +1,7 @@
 <template>
   <div class="ssd-container" ref="ssd-container" id="ssd-container" v-resize="resize">
-    <div class="tile-grid-content" :class="{hidden: isHidden}" :style="{width: width + 'px', height: height + 'px', 'margin-left': this.margin + 'px' }" ref="scroll-content">
-      <schematic-status-display :src="src" ref="ssd" @load="onLoad">
+    <div class="tile-grid-content" :class="{hidden: isHidden}" :style="{width: width + 'px', height: height + 'px', 'margin-left': margin + 'px' }" ref="scroll-content">
+      <schematic-status-display :src="src" ref="ssd" @load="onLoad" style="width: 100%;">
       </schematic-status-display>
     </div>
   </div>
