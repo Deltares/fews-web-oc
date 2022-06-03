@@ -48,7 +48,7 @@ export default class MapComponent extends Vue {
       if (e.sourceId === this.newLayerId && e.tile !== undefined && e.isSourceLoaded) {
         this.removeOldLayers()
         this.mapObject.setPaintProperty(
-          this.newLayerId,
+          e.sourceId,
           'raster-opacity',
           1
         )
