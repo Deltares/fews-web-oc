@@ -154,6 +154,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     this.dateController.dates = this.times
     this.dateController.selectDate(this.currentTime)
     this.currentTime = this.dateController.currentTime
+    this.setLayerOptions()
   }
 
   toggleDrawer (): void {
