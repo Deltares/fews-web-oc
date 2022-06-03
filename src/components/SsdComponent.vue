@@ -24,6 +24,17 @@ export default class SsdComponent extends Vue {
   pos = { top: 0, left: 0, x: 0, y: 0 };
   aspectRatio = 1
 
+  mounted (): void {
+    this.container = this.$refs['ssd-container'] as HTMLElement
+    this.resize()
+    document.addEventListener('pointerdown', this.mouseDownHandler)
+    this.container.addEventListener('wheel', this.mouseWheelHandler)
+  }
+
+  mouseWheelHandler (event: WheelEvent): void {
+    this.container.scrollLeft += event.deltaY
+  }
+
   mouseMoveHandler (event: PointerEvent): void {
     // How far the mouse has been moved
     const dx = event.clientX - this.pos.x
@@ -59,12 +70,6 @@ export default class SsdComponent extends Vue {
 
   onLoad (): void {
     this.resize()
-  }
-
-  mounted (): void {
-    this.container = this.$refs['ssd-container'] as HTMLElement
-    this.resize()
-    document.addEventListener('pointerdown', this.mouseDownHandler)
   }
 
   @Watch('src')
