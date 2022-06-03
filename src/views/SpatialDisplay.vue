@@ -37,17 +37,38 @@
       >
       </ColumnMenu>
     </v-navigation-drawer>
-    <MapComponent :layer="layerName"/>
+    <v-main style="overflow-y: auto; height: 100%">
+      <div style="height: calc(100% - 48px);">
+        <MapComponent :layer="layerOptions"/>
+      </div>
+      <DateTimeSlider
+        class="date-time-slider"
+        v-model="currentTime"
+        :dates="times"
+        @update:now="setCurrentTime"
+        @input="debouncedSetLayerOptions"
+        @timeupdate="updateTime"
+      >
+        <template slot="prepend">
+          <v-btn icon @click="toggleDrawer">
+            <v-icon>{{ drawerIcon }}</v-icon>
+          </v-btn>
+        </template>
+      </DateTimeSlider>
+    </v-main>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
+import debounce from 'lodash/debounce'
+import WMSMixin from '@/mixins/WMSMixin'
 import MapComponent from '@/components/MapComponent.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
+import { DateController } from '@/lib/TimeControl/DateController'
 
 @Component({
   components: {
@@ -57,7 +78,7 @@ import DateTimeSlider from '@/components/DateTimeSlider.vue'
     MapComponent,
   }
 })
-export default class SpatialDisplay extends Vue {
+export default class SpatialDisplay extends Mixins(WMSMixin) {
   @Prop({ default: '' })
   layerName!: string
 
@@ -66,9 +87,20 @@ export default class SpatialDisplay extends Vue {
   items: ColumnItem[] = []
   drawer = true
   viewMode = 0
+  dateController!: DateController
+  currentTime: Date = new Date()
+  times: Date[] = []
+  debouncedSetLayerOptions!: any
+  layerOptions: any = {}
+
+  created (): void {
+    this.dateController = new DateController([])
+    this.debouncedSetLayerOptions = debounce(this.setLayerOptions, 500, { leading: true, trailing: true })
+  }
 
   mounted (): void {
     this.loadCapabilities()
+    this.onLayerChange()
   }
 
   async loadCapabilities (): Promise<void> {
@@ -102,6 +134,40 @@ export default class SpatialDisplay extends Vue {
     }
     this.items = items
     this.open = [items[0].id]
+  }
+
+  setCurrentTime (enabled: boolean): void {
+    if (enabled) {
+      this.dateController.selectDate(new Date())
+      this.currentTime = this.dateController.currentTime
+    }
+  }
+
+  updateTime (date: Date): void {
+    this.dateController.selectDate(date)
+    this.currentTime = this.dateController.currentTime
+  }
+
+  @Watch('layerName')
+  async onLayerChange (): Promise<void> {
+    this.times = await this.getTimes(this.layerName)
+    this.dateController.dates = this.times
+    this.dateController.selectDate(this.currentTime)
+    this.currentTime = this.dateController.currentTime
+    this.setLayerOptions()
+  }
+
+  toggleDrawer (): void {
+    this.drawer = !this.drawer
+  }
+
+  get drawerIcon (): string {
+    return this.drawer ? 'mdi-chevron-double-left' : 'mdi-chevron-double-right'
+  }
+
+  setLayerOptions (): void {
+    console.log('setLayerOptions', this.currentTime)
+    if (this.layerName) this.layerOptions = { name: this.layerName, time: this.currentTime }
   }
 }
 </script>
