@@ -55,7 +55,7 @@ export default class DateTimeSlider extends Vue {
   intervalTimer: any = 0
   hideLabel = true
 
-  created (): void {
+  mounted (): void {
     this.updateIndexValueChange()
     this.currentDate = this.value
     this.$emit('update:now', this.useNow)
