@@ -29,20 +29,18 @@
       >
       </ColumnMenu>
     </portal>
-    <v-main style="overflow-y: auto; height: 100%">
-      <div style="height: calc(100% - 48px);">
-        <MapComponent :layer="layerOptions"/>
-      </div>
-      <DateTimeSlider
-        class="date-time-slider"
-        v-model="currentTime"
-        :dates="times"
-        @update:now="setCurrentTime"
-        @input="debouncedSetLayerOptions"
-        @timeupdate="updateTime"
-      >
-      </DateTimeSlider>
-    </v-main>
+    <div style="height: calc(100% - 48px);">
+      <MapComponent :layer="layerOptions"/>
+    </div>
+    <DateTimeSlider
+      class="date-time-slider"
+      v-model="currentTime"
+      :dates="times"
+      @update:now="setCurrentTime"
+      @input="debouncedSetLayerOptions"
+      @timeupdate="updateTime"
+    >
+    </DateTimeSlider>
   </div>
 </template>
 

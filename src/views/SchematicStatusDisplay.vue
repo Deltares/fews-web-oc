@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="web-oc-ssd">
     <portal to="web-oc-sidebar">
       <v-toolbar dense flat>
         <v-btn-toggle
@@ -29,19 +29,17 @@
       >
       </ColumnMenu>
     </portal>
-    <v-main style="overflow-y: auto; height: 100%">
-      <div style="height: calc(100% - 40px);">
+    <div style="height: calc(100% - 48px);">
       <SSDComponent :src="`${baseUrl}/ssd?request=GetDisplay&ssd=${panelId}`">
       </SSDComponent>
-      </div>
-      <DateTimeSlider class="date-time-slider">
-        <template slot="prepend">
-          <v-btn icon @click="toggleDrawer">
-            <v-icon>{{ drawerIcon }}</v-icon>
-          </v-btn>
-        </template>
-      </DateTimeSlider>
-    </v-main>
+    </div>
+    <DateTimeSlider class="date-time-slider">
+      <template slot="prepend">
+        <v-btn icon @click="toggleDrawer">
+          <v-icon>{{ drawerIcon }}</v-icon>
+        </v-btn>
+      </template>
+    </DateTimeSlider>
   </div>
 </template>
 
@@ -135,3 +133,9 @@ export default class SsdView extends Vue {
   }
 }
 </script>
+
+<style>
+.web-oc-ssd {
+  background-color: white;
+}
+</style>

@@ -121,7 +121,9 @@
       </v-list>
       <portal-target v-else name="web-oc-sidebar"/>
     </v-navigation-drawer>
-    <router-view style="height: 100%;"/>
+    <v-main>
+      <router-view style="height: 100%;"/>
+    </v-main>
   </v-app>
 </template>
 
