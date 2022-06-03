@@ -13,7 +13,7 @@
             <v-icon v-if="loading">mdi-loading mdi-spin</v-icon>
             <v-icon v-else>mdi-clock</v-icon>
           </v-btn>
-          <div style="margin:auto;width:15ch;flex:2 0 20%" class="body-2"> {{ dateString }}</div>
+          <div style="margin:auto;width:30ch;flex:2 0 20%" class="body-2"> {{ dateString }}</div>
         </div>
         <div style="display:flex;">
           <v-btn @mousedown="backward()" @mouseup="stopPlay" icon ref="BackButton">
