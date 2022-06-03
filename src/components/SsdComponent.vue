@@ -1,7 +1,9 @@
 <template>
   <div class="ssd-container" ref="ssd-container" id="ssd-container" v-resize="resize">
-    <div class="tile-grid-content" :class="{hidden: isHidden}" :style="{width: width + 'px', height: height + 'px', 'margin-left': margin + 'px' }" ref="scroll-content">
-      <schematic-status-display :src="src" ref="ssd" @load="onLoad" style="width: 100%;">
+    <div class="tile-grid-content" :class="{hidden: isHidden}"
+      :style="{ width: width + 'px', height: height + 'px', 'margin-left': margin.left + 'px', 'margin-top': margin.top + 'px', 'margin-bottom': margin.top + 'px' }"
+      ref="scroll-content">
+      <schematic-status-display class="web-oc-ssd" :src="src" ref="ssd" @load="onLoad" style="width: 100%;">
       </schematic-status-display>
     </div>
   </div>
@@ -19,16 +21,23 @@ export default class SsdComponent extends Vue {
   scrollContainer!: HTMLElement
   width = 100
   height = 100
-  margin = 0
+  margin = { top: 0, left: 0 }
   isHidden = false
   pos = { top: 0, left: 0, x: 0, y: 0 };
   aspectRatio = 1
+  fit = false
 
   mounted (): void {
     this.container = this.$refs['ssd-container'] as HTMLElement
     this.resize()
-    document.addEventListener('pointerdown', this.mouseDownHandler)
+    this.container.addEventListener('pointerdown', this.mouseDownHandler)
     this.container.addEventListener('wheel', this.mouseWheelHandler)
+    this.container.addEventListener('dblclick', this.dblClickHandler)
+  }
+
+  dblClickHandler (): void {
+    this.fit = !this.fit
+    this.resize()
   }
 
   mouseWheelHandler (event: WheelEvent): void {
@@ -73,21 +82,30 @@ export default class SsdComponent extends Vue {
   }
 
   @Watch('src')
-  resize (): any {
-    if (this.container === undefined) return '100%'
+  resize (): void {
+    if (this.container === undefined) return
     this.isHidden = true
+    this.margin = { top: 0, left: 0 }
     this.$nextTick(() => {
       this.setAspectRatio()
       let height = this.container.clientHeight
-      const margin = this.container.clientWidth - height * this.aspectRatio
-      if (margin < 0) {
+      let width = this.container.clientWidth
+      let margin = { top: 0, left: 0 }
+      const dx = this.container.clientWidth - height * this.aspectRatio
+      if (dx < 0 && !this.fit) {
+        // add space for scrollbar
         height = height - 15
-        this.margin = 0
+        width = height * this.aspectRatio
+      } else if (dx < 0) {
+        height = this.container.clientWidth / this.aspectRatio
+        margin = { top: (this.container.clientHeight - height) / 2, left: 0 }
       } else {
-        this.margin = margin / 2
+        width = height * this.aspectRatio
+        margin = { top: 0, left: dx / 2 }
       }
+      this.margin = margin
       this.height = height
-      this.width = height * this.aspectRatio
+      this.width = width
       this.isHidden = false
     })
   }
@@ -96,11 +114,14 @@ export default class SsdComponent extends Vue {
     const svgContainer = this.$refs.ssd as HTMLElement
     if (svgContainer && svgContainer.firstChild) {
       const svg = svgContainer.firstChild as SVGElement
-      const sizes = svg.getAttribute('viewBox')!.split(' ', 4).map(x => +x) as [number, number, number, number]
-      this.aspectRatio = +sizes[2] / +sizes[3]
-    } else {
-      this.aspectRatio = 1
+      const viewBox = svg.getAttribute('viewBox')
+      if (viewBox) {
+        const sizes = viewBox.split(' ', 4).map(x => +x) as [number, number, number, number]
+        this.aspectRatio = +sizes[2] / +sizes[3]
+        return
+      }
     }
+    this.aspectRatio = 1
   }
 }
 </script>
@@ -110,7 +131,7 @@ export default class SsdComponent extends Vue {
   height: 100%;
   width: 100%;
   display: flex;
-  background-color: white;
+  background-color: lightgray;
   flex-direction: column;
   overflow-x: auto;
   white-space: nowrap;
@@ -118,10 +139,14 @@ export default class SsdComponent extends Vue {
 
 .tile-grid-content {
   display: flex;
-  flex: 1 1 100px
+  flex: 1 1 100px;
 }
 
 .tile-grid-content.hidden {
   display: none;
+}
+
+.web-oc-ssd > svg {
+  background-color: #fff;
 }
 </style>
