@@ -1,32 +1,21 @@
 <template>
   <div class="web-oc-ssd">
     <portal to="web-oc-sidebar">
-      <v-toolbar dense flat>
-        <v-btn-toggle
-          v-model="viewMode"
-          color="primary"
-          dense
-          group
-          mandatory
-        >
-        <v-btn text><v-icon>mdi-file-tree</v-icon></v-btn>
-        <v-btn text><v-icon>mdi-view-week</v-icon></v-btn>
+      <v-toolbar dense flat v-if="!$vuetify.breakpoint.mobile">
+        <v-btn-toggle v-model="viewMode" color="primary" dense group mandatory>
+          <v-btn text>
+            <v-icon>mdi-file-tree</v-icon>
+          </v-btn>
+          <v-btn text>
+            <v-icon>mdi-view-week</v-icon>
+          </v-btn>
         </v-btn-toggle>
       </v-toolbar>
       <v-divider />
-      <TreeMenu
-        v-if="viewMode === 0"
-        :active.sync="active"
-        :items="items"
-        :open.sync="open"
-      >
+      <TreeMenu v-if="viewMode === 0 && !$vuetify.breakpoint.mobile" :active.sync="active" :items="items"
+        :open.sync="open">
       </TreeMenu>
-      <ColumnMenu
-        v-else
-        :active.sync="active"
-        :items="items"
-        :open.sync="open"
-      >
+      <ColumnMenu v-else :active.sync="active" :items="items" :open.sync="open">
       </ColumnMenu>
     </portal>
     <div style="height: calc(100% - 48px);">
