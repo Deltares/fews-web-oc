@@ -19,7 +19,8 @@
       </ColumnMenu>
     </portal>
     <div style="height: calc(100% - 48px);">
-      <SSDComponent :src="`${baseUrl}/ssd?request=GetDisplay&ssd=${panelId}`">
+      <SSDComponent
+        :src="`${baseUrl}/ssd?request=GetDisplay&ssd=${panelId}`">
       </SSDComponent>
     </div>
     <DateTimeSlider class="date-time-slider">
