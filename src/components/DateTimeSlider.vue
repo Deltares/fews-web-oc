@@ -1,13 +1,17 @@
 <template>
   <div>
-    <div style="display:flex;flex-direction:row;flex-grow:1;padding:2px 16px">
+    <v-slider v-model="index" :max="max" step="1" tick-size="6" tabindex="0" @input="onInput" hide-details
+      height="0">
+    </v-slider>
+    <div style="display:flex;flex-direction:row;flex-grow:1;padding:6px 16px">
       <slot name="prepend"></slot>
       <div style="width:1px;height:100%;max-height:100%;background-color:lightgray;">
       </div>
       <div style="display:flex;flex-grow:1;justify-content:space-between">
         <div style="display:flex;">
-          <v-btn icon :color="nowColor" @click="toggleNow" ref="NowButton">
-            <v-icon>mdi-clock</v-icon>
+          <v-btn icon :color="nowColor" @click="toggleNow">
+            <v-icon v-if="loading">mdi-loading mdi-spin</v-icon>
+            <v-icon v-else>mdi-clock</v-icon>
           </v-btn>
           <div style="margin:auto;width:30ch;flex:2 0 20%" class="body-2"> {{ dateString }}</div>
         </div>
@@ -39,28 +43,21 @@ import { Component, Prop, Watch, Vue } from 'vue-property-decorator'
 
 @Component
 export default class DateTimeSlider extends Vue {
-  @Prop({ default: () => { return new Date() } })
-  private value!: Date
+  @Prop({ default: () => { return new Date(1970) } }) private value!: Date
+  @Prop({ default: () => { return [new Date(1970)] } }) private dates!: Date[]
+  @Prop({ default: false, type: Boolean }) private loading!: boolean
+  @Prop({ default: false, type: Boolean }) private now!: boolean
 
-  @Prop({ default: () => { return [new Date()] } })
-  private dates!: Date[]
-
-  @Prop({ default: true })
-  private now!: boolean
-
-  index = 0
+  index: number = 0
   currentDate!: Date
-  useNow = true
-  isPlaying = false
+  useNow: boolean = true
+  isPlaying: boolean = false
   intervalTimer: any = 0
-
-  created (): void {
-    this.updateIndexValueChange()
-    this.currentDate = this.value
-  }
+  hideLabel = true
 
   mounted (): void {
-    this.useNow = this.now
+    this.updateIndexValueChange()
+    this.currentDate = this.value
     this.$emit('update:now', this.useNow)
   }
 
@@ -88,8 +85,7 @@ export default class DateTimeSlider extends Vue {
     } else {
       this.isPlaying = true
       this.useNow = false
-      this.$emit('update:now', this.useNow)
-      this.intervalTimer = setInterval(this.play, 200)
+      this.intervalTimer = setInterval(this.play, 1000)
     }
   }
 
@@ -110,12 +106,16 @@ export default class DateTimeSlider extends Vue {
   }
 
   @Watch('value')
-  @Watch('dates')
   updateIndexValueChange (): void {
     if (this.value && this.dates) {
       this.index = this.dates.findIndex((date: Date) => { return this.value.getTime() === date.getTime() })
       this.currentDate = this.dates[this.index]
     }
+  }
+
+  @Watch('now')
+  updateNow (): void {
+    this.useNow = this.now
   }
 
   toggleNow (): void {
@@ -129,9 +129,9 @@ export default class DateTimeSlider extends Vue {
         }
       }
       this.stopPlay()
+      this.updateDate()
     }
     this.$emit('update:now', this.useNow)
-    if (this.dates[this.index]) this.$emit('input', this.dates[this.index])
   }
 
   backward (step?: number): void {
@@ -161,6 +161,15 @@ export default class DateTimeSlider extends Vue {
 
   decrement (step = 1): void {
     this.index = Math.max(0, this.index - step)
+    this.inputChanged()
+  }
+
+  updateDate (): void {
+    this.currentDate = this.dates[this.index]
+  }
+
+  onInput (): void {
+    this.updateDate()
     this.inputChanged()
   }
 

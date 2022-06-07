@@ -35,4 +35,8 @@ html, body {
   font-size: 14px;
   line-height: 1.2;
 }
+
+.v-btn {
+  text-transform: capitalize !important;
+}
 </style>

@@ -1,14 +1,6 @@
 <template>
   <div>
-    <v-navigation-drawer
-    v-model="drawer"
-    app
-    clipped
-    hide-overlay
-    :right="$vuetify.rtl"
-    width="320"
-    class="view-sidebar"
-    >
+    <portal to="web-oc-sidebar">
       <v-toolbar dense flat>
         <v-btn-toggle
           v-model="viewMode"
@@ -36,7 +28,7 @@
         :open.sync="open"
       >
       </ColumnMenu>
-    </v-navigation-drawer>
+    </portal>
     <v-main style="overflow-y: auto; height: 100%">
       <div style="height: calc(100% - 40px);">
       <SSDComponent :src="`https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetDisplay&ssd=${panelId}`">
