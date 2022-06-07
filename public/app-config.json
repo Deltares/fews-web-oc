@@ -1,3 +1,3 @@
 {
-  "VUE_APP_FEWS_WEBSERVICES_URL": "https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices"
+  "VUE_APP_FEWS_WEBSERVICES_URL": "https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices"
 }
