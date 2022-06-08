@@ -72,13 +72,14 @@ export default class MapComponent extends Vue {
     this.counter += 1
     this.newLayerId = getFrameId(this.layer.name, this.counter)
     const source = this.mapObject.getSource(this.newLayerId)
+    const baseUrl = this.$config.get<string>('VUE_APP_FEWS_WEBSERVICES_URL')
     if (source === undefined) {
       const rasterSource: RasterSource = {
         type: 'raster',
         // use the tiles option to specify a WMS tile source URL
         // https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/
         tiles: [
-          `https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/wms?service=WMS&request=GetMap&version=1.3&layers=${this.layer.name}&crs=EPSG:3857&bbox={bbox-epsg-3857}&height=512&width=512&time=${time}`
+          `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${this.layer.name}&crs=EPSG:3857&bbox={bbox-epsg-3857}&height=512&width=512&time=${time}`
         ],
         tileSize: 512,
       }

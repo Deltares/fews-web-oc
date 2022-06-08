@@ -31,7 +31,7 @@
     </portal>
     <v-main style="overflow-y: auto; height: 100%">
       <div style="height: calc(100% - 40px);">
-      <SSDComponent :src="`https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetDisplay&ssd=${panelId}`">
+      <SSDComponent :src="`${baseUrl}/ssd?request=GetDisplay&ssd=${panelId}`">
       </SSDComponent>
       </div>
       <DateTimeSlider class="date-time-slider">
@@ -73,14 +73,18 @@ export default class SsdView extends Vue {
   open: string[] = []
   items: ColumnItem[] = []
   viewMode = 0
+  baseUrl = ''
+
+  created (): void {
+    this.baseUrl = this.$config.get<string>('VUE_APP_FEWS_WEBSERVICES_URL')
+  }
 
   mounted (): void {
-    console.log('mounted', this)
     this.loadCapabilities()
   }
 
   async loadCapabilities (): Promise<void> {
-    const response = await fetch('https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetCapabilities&format=application/json')
+    const response = await fetch(`${this.baseUrl}/ssd?request=GetCapabilities&format=application/json`)
     const capbilities = await response.json()
     console.log(capbilities)
     const items: ColumnItem[] = [

@@ -90,7 +90,8 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   }
 
   async loadCapabilities (): Promise<void> {
-    const response = await fetch('https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/wms?request=GetCapabilities&format=application/json&onlyHeaders=true')
+    const baseUrl = this.$config.get<string>('VUE_APP_FEWS_WEBSERVICES_URL')
+    const response = await fetch(`${baseUrl}/wms?request=GetCapabilities&format=application/json&onlyHeaders=true`)
     const capabilities = await response.json()
     const layers = capabilities.layers
     const groupNames = [...new Set(layers.map((l: any) => l.groupName))]
