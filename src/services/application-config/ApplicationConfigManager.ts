@@ -7,7 +7,7 @@ export class ApplicationConfigManager {
     this._config = config
   }
 
-  get (name: keyof ApplicationConfig): string {
+  get<T> (name: keyof ApplicationConfig): T {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = process.env[name] || this._config[name]
     if (value !== undefined) {

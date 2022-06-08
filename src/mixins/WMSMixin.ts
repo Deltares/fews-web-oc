@@ -7,7 +7,7 @@ export default class WMSMixin extends Vue {
   externalForecast: Date = new Date('invalid')
 
   created (): void {
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const baseUrl = this.$config.get<string>('VUE_APP_FEWS_WEBSERVICES_URL')
     let url!: URL
     try {
       url = new URL(baseUrl)

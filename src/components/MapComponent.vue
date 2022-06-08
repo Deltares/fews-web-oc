@@ -72,7 +72,7 @@ export default class MapComponent extends Vue {
     this.counter += 1
     this.newLayerId = getFrameId(this.layer.name, this.counter)
     const source = this.mapObject.getSource(this.newLayerId)
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const baseUrl = this.$config.get<string>('VUE_APP_FEWS_WEBSERVICES_URL')
     if (source === undefined) {
       const rasterSource: RasterSource = {
         type: 'raster',

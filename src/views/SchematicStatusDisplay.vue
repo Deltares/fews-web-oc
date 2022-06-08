@@ -76,7 +76,7 @@ export default class SsdView extends Vue {
   baseUrl = ''
 
   created (): void {
-    this.baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    this.baseUrl = this.$config.get<string>('VUE_APP_FEWS_WEBSERVICES_URL')
   }
 
   mounted (): void {

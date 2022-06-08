@@ -25,6 +25,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import MapComponent from '@/components/MapComponent.vue'
 import SsdComponent from '@/components/SsdComponent.vue'
 import DisplayComponent from './DisplayComponent.vue'
+import { RequestHeaderAuthorization } from '@/services/application-config/ApplicationConfig'
 
 @Component({
   components: {
@@ -44,7 +45,7 @@ export default class Home extends Vue {
       title: 'Schematic Status Display',
       to: 'ssd',
       component: 'ssd-component',
-      props: { src: `${this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')}/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN` }
+      props: { src: `${this.$config.get<string>('VUE_APP_FEWS_WEBSERVICES_URL')}/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN` }
     },
     {
       title: 'Time Series Display',
@@ -53,29 +54,24 @@ export default class Home extends Vue {
     },
   ]
 
-  mounted (): void {
-    const sessionKey = 'oidc.user:' + process.env.VUE_APP_AUTH_AUTHORITY + ':' + process.env.VUE_APP_AUTH_ID
-    const sessionEntry = sessionStorage.getItem(sessionKey)
-    if (!sessionEntry) return
-    const oidcUser = JSON.parse(sessionEntry)
-    console.log(oidcUser)
-    const idToken = oidcUser.id_token
-    console.log(idToken)
+  async mounted (): Promise<void> {
+    const oidcUser = await this.$auth.getUser()
+    if (oidcUser === null) return
     const listener = {
       httpRequestOpenInterceptor: XMLHttpRequest.prototype.open,
       httpRequestSendInterceptor: XMLHttpRequest.prototype.send
     }
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const eu = this
-    XMLHttpRequest.prototype.open = function (httpMethod = '', url = '') {
-      console.log('Setting Bearer for ' + httpMethod + ' and ' + url + ' with ' + idToken)
+    const authorizationType = this.$config.get<RequestHeaderAuthorization>('VUE_APP_REQEUST_HEADER_AUTHORIZATION')
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    XMLHttpRequest.prototype.open = function (method: string, url: string|URL, async?: boolean, username?: string, password?: string) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const argumentsTyped: any = arguments
       listener.httpRequestOpenInterceptor.apply(this, argumentsTyped)
-      if (oidcUser) {
-        if (typeof url === 'string' && url.includes('https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices')) {
-          this.setRequestHeader('Authorization', 'Bearer ' + idToken)
-        }
+      if (authorizationType === RequestHeaderAuthorization.BEARER) {
+        const idToken = oidcUser.id_token
+        this.setRequestHeader('Authorization', 'Bearer ' + idToken)
       }
       eu.$emit('start', this)
       this.addEventListener('load', function () {
