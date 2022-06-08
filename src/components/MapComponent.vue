@@ -28,7 +28,7 @@ function getFrameId (layerName: string, frame: number): string {
 
 @Component
 export default class MapComponent extends Vue {
-  @Prop({ default: {} })
+  @Prop({ default: () => { return {} } })
   layer!: any
 
   mapObject!: Map
