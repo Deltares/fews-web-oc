@@ -1,9 +1,9 @@
 export enum RequestHeaderAuthorization {
-  BEARER = 'bearer',
-  OFF = 'off',
+  BEARER = 'Bearer',
+  OFF = 'Off',
 }
 
-export interface ApplicationConfig {
+export type ApplicationConfig = {
   VUE_APP_FEWS_WEBSERVICES_URL: string;
   VUE_APP_REQEUST_HEADER_AUTHORIZATION: RequestHeaderAuthorization;
 }
