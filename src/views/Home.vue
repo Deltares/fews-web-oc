@@ -51,24 +51,6 @@ export default class Home extends Vue {
       to: 'display',
       component: 'display-component'
     },
-    {
-      title: 'SSD WebOC_Overzichtsscherm_WMCN (AllowTesting)',
-      to: 'ssd',
-      component: 'ssd-component',
-      props: { src: 'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/ssd?request=GetDisplay&ssd=WebOC_Overzichtsscherm_WMCN' }
-    },
-    {
-      title: 'SSD WebOC_CompartimentIJsselmeer (AllowDeltares)',
-      to: 'ssd',
-      component: 'ssd-component',
-      props: { src: 'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/ssd?request=GetDisplay&ssd=WebOC_CompartimentIJsselmeer' }
-    },
-    {
-      title: 'SSD WebOC_NDB_10m (AllowForecasters)',
-      to: 'ssd',
-      component: 'ssd-component',
-      props: { src: 'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/ssd?request=GetDisplay&ssd=WebOC_IJsselmeergebied' }
-    }
   ]
 
   mounted (): void {
