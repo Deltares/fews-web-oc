@@ -28,7 +28,7 @@ steps:
       echo 'VUE_APP_AUTH_TYPE="code"' >> .env
       echo 'VUE_APP_AUTH_SCOPE="openid"' >> .env
       echo 'VUE_APP_PUBLIC_PATH="/"' >> .env
-      echo 'VUE_APP_FEWS_WEBSERVICES_URL="https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/"
+      echo 'VUE_APP_FEWS_WEBSERVICES_URL="https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/"'
 
 - script: |
     npm install
