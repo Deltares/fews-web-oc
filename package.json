@@ -14,16 +14,19 @@
     "fews-ssd-requests": "file:fews-ssd-requests-0.2.1.tgz",
     "fews-ssd-web-component": "file:fews-ssd-web-component-0.0.1.tgz",
     "lodash": "^4.17.21",
+    "luxon": "^2.4.0",
     "mapbox-gl": "^2.8.2",
     "oidc-client-ts": "^2.0.2",
     "portal-vue": "^2.1.7",
+    "typescript-json-serializer": "^4.2.0",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^9.1.2",
     "vue-router": "^3.2.0",
     "vue2mapbox-gl": "^0.13.0",
     "vuetify": "^2.4.0",
-    "vuex": "^3.4.0"
+    "vuex": "^3.4.0",
+    "wb-charts": "file:wb-charts-master.tar.gz"
   },
   "devDependencies": {
     "@types/jest": "^24.0.19",

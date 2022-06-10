@@ -8,6 +8,7 @@ import Callback from '../views/auth/Callback.vue'
 import LoginView from '../views/LoginView.vue'
 import Logout from '../views/auth/Logout.vue'
 import DisplayComponent from '../views/DisplayComponent.vue'
+import TimeSeriesDisplay from '@/views/TimeSeriesDisplay.vue'
 import oidcSettings from '../services/config'
 import { Log, UserManager } from 'oidc-client-ts'
 
@@ -51,11 +52,12 @@ const routes: Array<RouteConfig> = [
     meta: { authorize: [], sidebar: true }
   },
   {
-    path: '/series',
+    // /ssd/group/ScadaNZK-ARK/panel/NZK_ARK_10min
+    path: '/series/group/:groupId/panel/:panelId',
     name: 'TimeSeriesDisplay',
-    component: DisplayComponent,
+    component: TimeSeriesDisplay,
     props: true,
-    meta: { authorize: [] }
+    meta: { authorize: [], sidebar: true }
   },
   {
     path: '/explore',
