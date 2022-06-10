@@ -31,7 +31,7 @@
     </portal>
     <v-main style="overflow-y: auto; height: 100%">
       <div>
-        Hoi :) - {{ workflowId }}
+        Hoi 😊 - {{ workflowId }}
         <time-series-component />
       </div>
     </v-main>
@@ -44,7 +44,6 @@ import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import TimeSeriesComponent from '@/components/TimeSeriesComponent/index.vue'
-import _ from 'lodash'
 
 @Component({
   components: {
@@ -72,18 +71,20 @@ export default class timeseriesView extends Vue {
     const response = await fetch('https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/rest/fewspiservice/v1/topology/nodes')
     const nodes = await response.json()
 
-    const recursiveUpdateNode: any = (nodes = {}) => {
-      const resultNodes: any = Object.entries(nodes).map(node => {
+    const recursiveUpdateNode: any = (nodes: any[]) => {
+      const resultNodes: any = nodes.map((node) => {
         const result: any = {
-          id: node[0],
-          name: _.get(node[1], 'name'),
-          children: recursiveUpdateNode(_.get(node[1], 'topologyNodes'))
+          id: node.id,
+          name: node.name,
+          icon: node.workflowId ? 'mdi-restart' : undefined
         }
-        if (_.get(node[1], 'workflowId')) {
+        if (node.topologyNodes) {
+          result.children = recursiveUpdateNode(node.topologyNodes)
+        } else {
           result.to = {
             name: 'TimeSeriesDisplay',
             params: {
-              workflowId: _.get(node[1], 'workflowId')
+              workflowId: node.id
             }
           }
         }
