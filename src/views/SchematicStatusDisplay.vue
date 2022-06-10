@@ -20,21 +20,23 @@
     </portal>
     <div style="height: calc(100% - 48px);">
       <SSDComponent
-        :src="`${baseUrl}/ssd?request=GetDisplay&ssd=${panelId}`">
+        :src="src">
       </SSDComponent>
     </div>
-    <DateTimeSlider class="date-time-slider">
+    <DateTimeSlider class="date-time-slider" v-model="timeIndex" :dates="dates" @input="debouncedUpdate">
     </DateTimeSlider>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
+import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 import SSDComponent from '@/components/SsdComponent.vue'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { ColumnItem } from '@/components/ColumnItem'
+import SSDMixin from '@/mixins/SSDMixin'
+import { debounce } from 'lodash'
 
 @Component({
   components: {
@@ -44,7 +46,7 @@ import { ColumnItem } from '@/components/ColumnItem'
     TreeMenu,
   }
 })
-export default class SsdView extends Vue {
+export default class SsdView extends Mixins(SSDMixin) {
   @Prop({ default: '', type: String })
   panelId!: string
 
@@ -56,46 +58,77 @@ export default class SsdView extends Vue {
   items: ColumnItem[] = []
   viewMode = 0
   baseUrl = ''
+  timeString = ''
+  debouncedUpdate!: () => void
 
-  created (): void {
+  async created (): Promise<void> {
     this.baseUrl = this.$config.get<string>('VUE_APP_FEWS_WEBSERVICES_URL')
+    this.debouncedUpdate = debounce(this.setTime, 500, { leading: true, trailing: true })
   }
 
-  mounted (): void {
-    this.loadCapabilities()
+  async mounted (): Promise<void> {
+    await this.loadCapabilities()
+    this.onGroupIdChange()
+    this.onPanelIdChange()
   }
 
-  async loadCapabilities (): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/ssd?request=GetCapabilities&format=application/json`)
-    const capbilities = await response.json()
-    console.log(capbilities)
+  @Watch('capabilities')
+  fillItems (): void {
     const items: ColumnItem[] = [
       {
         id: 'root',
         name: 'Overzichtschermen',
       }
     ]
-    items[0].children = []
-    for (const displayGroup of capbilities.displayGroups) {
-      const name = displayGroup.title.replace('Overzichtsschermen ', '')
-      const children = []
-      for (const displayPanel of displayGroup.displayPanels) {
-        children.push({
-          id: displayPanel.name,
-          name: displayPanel.title,
-          to: {
-            name: 'SchematicStatusDisplay',
-            params: {
-              panelId: displayPanel.name,
-              groupId: displayGroup.name
+    if (this.capabilities !== undefined) {
+      items[0].children = []
+      for (const displayGroup of this.capabilities.displayGroups) {
+        const name = displayGroup.title.replace('Overzichtsschermen ', '')
+        const children = []
+        for (const displayPanel of displayGroup.displayPanels) {
+          children.push({
+            id: displayPanel.name,
+            name: displayPanel.title,
+            to: {
+              name: 'SchematicStatusDisplay',
+              params: {
+                panelId: displayPanel.name,
+                groupId: displayGroup.name
+              }
             }
-          }
-        })
+          })
+        }
+        items[0].children.push({ id: displayGroup.name, name, children })
       }
-      items[0].children.push({ id: displayGroup.name, name, children })
     }
     this.items = items
     this.open = [items[0].id]
+  }
+
+  setTime (): void {
+    if (this.timeIndex !== null) {
+      this.timeString = this.timeIndex.toISOString()
+    } else {
+      this.timeString = ''
+    }
+  }
+
+  get src (): string {
+    if (this.timeIndex !== null) {
+      const time = this.timeIndex.toISOString().replace(/.\d+Z$/g, 'Z')
+      return `${this.baseUrl}/ssd?request=GetDisplay&ssd=${this.panelId}&time=${time}`
+    }
+    return `${this.baseUrl}/ssd?request=GetDisplay&ssd=${this.panelId}`
+  }
+
+  @Watch('groupId')
+  onGroupIdChange (): void {
+    this.selectGroup(this.groupId)
+  }
+
+  @Watch('panelId')
+  onPanelIdChange (): void {
+    this.selectPanel(this.panelId)
   }
 
   @Watch('active')
