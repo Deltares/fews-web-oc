@@ -30,7 +30,7 @@
       </v-btn>
       <slot name="toolbar-append" v-bind:refs="$refs"></slot>
     </v-toolbar>
-    <v-sheet fluid class="chart-with-chips">
+    <!-- <v-sheet fluid class="chart-with-chips">
       <div fluid :class="{'chart-with-legend': true }" >
         <div style="display:flex;flex:1 1; margin: 0 50px;">
         <v-chip-group column active-class="primary--text">
@@ -44,16 +44,16 @@
         </div>
         <div ref="chart-container" class="chart-container" :class="{ fullscreen : isFullscreen }" v-resize="resize"></div>
       </div>
-    </v-sheet>
+    </v-sheet> -->
   </div>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import * as wbCharts from 'wb-charts'
+// import * as wbCharts from 'wb-charts'
 import { ChartConfig, ChartSeries } from './lib/ChartConfig'
-import { Series } from './lib/TimeSeries'
-import { DateTime, Interval } from 'luxon'
+// import { Series } from './lib/TimeSeries'
+// import { DateTime, Interval } from 'luxon'
 
 interface Tag {
   id: string;
@@ -62,9 +62,9 @@ interface Tag {
   legendSvg: string;
 }
 
-export interface ChartStore {
-  [key: string]: wbCharts.Chart;
-}
+// export interface ChartStore {
+//   [key: string]: wbCharts.Chart;
+// }
 
 @Component
 export default class ConfigurableChart extends Vue {
@@ -83,11 +83,11 @@ export default class ConfigurableChart extends Vue {
   @Prop({ default: false })
   chartEditable!: boolean
 
-  @Prop()
-  series!: Record<string, Series>
+  // @Prop()
+  // series!: Record<string, Series>
 
-  @Prop({ default: () => Interval.fromDateTimes(DateTime.local(), DateTime.local()) })
-  period!: Interval
+  // @Prop({ default: () => Interval.fromDateTimes(DateTime.local(), DateTime.local()) })
+  // period!: Interval
 
   @Prop({ default: () => { Date() } })
   lastUpdated!: Date
@@ -103,166 +103,166 @@ export default class ConfigurableChart extends Vue {
   axis!: any // eslint-disable-line @typescript-eslint/no-explicit-any
   isFullscreen = false
   tags!: Tag[]
-  lines: ChartStore = {}
-  alertLinesVisitor!: wbCharts.AlertLines
+  // lines: ChartStore = {}
+  // alertLinesVisitor!: wbCharts.AlertLines
 
   created (): void {
     this.tags = []
   }
 
   mounted (): void {
-    const axisOptions: wbCharts.CartesianAxesOptions = {
-      x: [{ type: wbCharts.AxisType.time, position: wbCharts.AxisPosition.Bottom, showGrid: true }],
-      y: [{ position: wbCharts.AxisPosition.Left, showGrid: true, label: ' ', unit: ' ', nice: true },
-        { position: wbCharts.AxisPosition.Right, label: ' ', unit: ' ', nice: true }],
-      margin: { left: 50, right: 50 }
-    }
+    // const axisOptions: wbCharts.CartesianAxesOptions = {
+    //   x: [{ type: wbCharts.AxisType.time, position: wbCharts.AxisPosition.Bottom, showGrid: true }],
+    //   y: [{ position: wbCharts.AxisPosition.Left, showGrid: true, label: ' ', unit: ' ', nice: true },
+    //     { position: wbCharts.AxisPosition.Right, label: ' ', unit: ' ', nice: true }],
+    //   margin: { left: 50, right: 50 }
+    // }
 
-    const containerReference = this.$refs['chart-container'] as HTMLElement
-    this.axis = new wbCharts.CartesianAxis(containerReference, null, null, axisOptions)
-    const mouseOver = new wbCharts.MouseOver()
-    const zoom = new wbCharts.ZoomHandler()
-    const currentTime = new wbCharts.CurrentTime({ x: { axisIndex: 0 } })
-    const dstIndicator = new wbCharts.DstIndicator({ x: { axisIndex: 0 } })
+    // const containerReference = this.$refs['chart-container'] as HTMLElement
+    // this.axis = new wbCharts.CartesianAxis(containerReference, null, null, axisOptions)
+    // const mouseOver = new wbCharts.MouseOver()
+    // const zoom = new wbCharts.ZoomHandler()
+    // const currentTime = new wbCharts.CurrentTime({ x: { axisIndex: 0 } })
+    // const dstIndicator = new wbCharts.DstIndicator({ x: { axisIndex: 0 } })
 
-    this.alertLinesVisitor = new wbCharts.AlertLines(this.alertLines)
-    this.axis.accept(zoom)
-    this.axis.accept(this.alertLinesVisitor)
-    this.axis.accept(mouseOver)
-    this.axis.accept(currentTime)
-    this.axis.accept(dstIndicator)
-    this.resize()
-    if (this.value !== undefined) this.onValueChange()
-    window.addEventListener('resize', this.resize)
+    // this.alertLinesVisitor = new wbCharts.AlertLines(this.alertLines)
+    // this.axis.accept(zoom)
+    // this.axis.accept(this.alertLinesVisitor)
+    // this.axis.accept(mouseOver)
+    // this.axis.accept(currentTime)
+    // this.axis.accept(dstIndicator)
+    // this.resize()
+    // if (this.value !== undefined) this.onValueChange()
+    // window.addEventListener('resize', this.resize)
   }
 
-  get title (): string {
-    return this.value?.title !== undefined ? this.value.title : 'Title'
-  }
+  //   get title (): string {
+  //     return this.value?.title !== undefined ? this.value.title : 'Title'
+  //   }
 
-  @Watch('lastUpdated')
-  @Watch('value.lastUpdated')
-  @Watch('alertLines')
-  onValueChange (): void {
-    this.clearChart()
-    this.updateAlerts()
-    this.refreshChart()
-    this.setTags()
-    this.$forceUpdate()
-  }
+  //   @Watch('lastUpdated')
+  //   @Watch('value.lastUpdated')
+  //   @Watch('alertLines')
+  //   onValueChange (): void {
+  //     this.clearChart()
+  //     this.updateAlerts()
+  //     this.refreshChart()
+  //     this.setTags()
+  //     this.$forceUpdate()
+  //   }
 
-  @Watch('period')
-  onPeriodChange (): void {
-    if (this.period !== undefined && this.period.isValid) {
-      const domain: Date[] = [this.period.start.toJSDate(), this.period.end.toJSDate()]
-      this.axis.setOptions({ x: [{ domain }] })
-      this.axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
-    }
-  }
+  //   @Watch('period')
+  //   onPeriodChange (): void {
+  //     if (this.period !== undefined && this.period.isValid) {
+  //       const domain: Date[] = [this.period.start.toJSDate(), this.period.end.toJSDate()]
+  //       this.axis.setOptions({ x: [{ domain }] })
+  //       this.axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
+  //     }
+  //   }
 
-  beforeDestroy (): void {
-    window.removeEventListener('resize', this.resize)
-  }
+  //   beforeDestroy (): void {
+  //     window.removeEventListener('resize', this.resize)
+  //   }
 
-  get fullscreenIcon (): string {
-    return this.isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
-  }
+  //   get fullscreenIcon (): string {
+  //     return this.isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
+  //   }
 
-  updateAlerts (): void {
-    this.alertLinesVisitor.options = this.alertLines
-  }
+  //   updateAlerts (): void {
+  //     this.alertLinesVisitor.options = this.alertLines
+  //   }
 
-  refreshChart (): void {
-    const ids = Object.keys(this.lines)
-    const removeIds = Object.keys(this.lines)
-    if (this.value?.series === undefined) return
-    for (const series of this.value.series) {
-      if (!ids.includes(series.id)) {
-        this.addToChart(series)
-      }
-      const index = removeIds.findIndex((item) => { return item === series.id })
-      if (index >= 0) removeIds.splice(index, 1)
-    }
-    for (const id of removeIds) {
-      this.axis.removeChart(id)
-      delete this.lines[id]
-    }
-    if (this.value.yAxis) {
-      this.axis.setOptions(
-        {
-          y: [
-            this.value.yAxis[0],
-            this.value.yAxis[1]
-          ]
-        }
-      )
-    }
-    this.axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
-  }
+  //   refreshChart (): void {
+  //     const ids = Object.keys(this.lines)
+  //     const removeIds = Object.keys(this.lines)
+  //     if (this.value?.series === undefined) return
+  //     for (const series of this.value.series) {
+  //       if (!ids.includes(series.id)) {
+  //         this.addToChart(series)
+  //       }
+  //       const index = removeIds.findIndex((item) => { return item === series.id })
+  //       if (index >= 0) removeIds.splice(index, 1)
+  //     }
+  //     for (const id of removeIds) {
+  //       this.axis.removeChart(id)
+  //       delete this.lines[id]
+  //     }
+  //     if (this.value.yAxis) {
+  //       this.axis.setOptions(
+  //         {
+  //           y: [
+  //             this.value.yAxis[0],
+  //             this.value.yAxis[1]
+  //           ]
+  //         }
+  //       )
+  //     }
+  //     this.axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
+  //   }
 
-  clearChart (): void {
-    this.axis.removeAllCharts()
-    this.lines = {}
-  }
+  //   clearChart (): void {
+  //     this.axis.removeAllCharts()
+  //     this.lines = {}
+  //   }
 
-  addToChart (chartSeries: ChartSeries): void {
-    const id = chartSeries.id
-    const series = this.series[chartSeries.dataResources[0]]
-    const data = series?.data !== undefined ? series.data : []
-    if (chartSeries.type === 'line') {
-      this.lines[id] = new wbCharts.ChartLine(data, { toolTipFormatter: () => `${chartSeries.name}` })
-    } else {
-      this.lines[id] = new wbCharts.ChartMarker(data, { toolTipFormatter: () => `${chartSeries.name}` })
-    }
-    this.lines[id].addTo(
-      this.axis,
-      {
-        x: { key: 'x', axisIndex: 0 },
-        y: { key: 'y', axisIndex: chartSeries.options.y.axisIndex }
-      }, id, chartSeries.style)
-  }
+  //   addToChart (chartSeries: ChartSeries): void {
+  //     const id = chartSeries.id
+  //     const series = this.series[chartSeries.dataResources[0]]
+  //     const data = series?.data !== undefined ? series.data : []
+  //     if (chartSeries.type === 'line') {
+  //       this.lines[id] = new wbCharts.ChartLine(data, { toolTipFormatter: () => `${chartSeries.name}` })
+  //     } else {
+  //       this.lines[id] = new wbCharts.ChartMarker(data, { toolTipFormatter: () => `${chartSeries.name}` })
+  //     }
+  //     this.lines[id].addTo(
+  //       this.axis,
+  //       {
+  //         x: { key: 'x', axisIndex: 0 },
+  //         y: { key: 'y', axisIndex: chartSeries.options.y.axisIndex }
+  //       }, id, chartSeries.style)
+  //   }
 
-  setTags (): void {
-    const s = new XMLSerializer()
-    if (this.value?.series === undefined) {
-      this.tags = []
-    } else {
-      this.tags = this.value?.series.map((series) => {
-        const chart = this.lines[series.id]
-        return {
-          id: series.id,
-          name: series.name,
-          disabled: false,
-          legendSvg: s.serializeToString(chart.drawLegendSymbol(undefined, false))
-        }
-      })
-    }
-  }
+  //   setTags (): void {
+  //     const s = new XMLSerializer()
+  //     if (this.value?.series === undefined) {
+  //       this.tags = []
+  //     } else {
+  //       this.tags = this.value?.series.map((series) => {
+  //         const chart = this.lines[series.id]
+  //         return {
+  //           id: series.id,
+  //           name: series.name,
+  //           disabled: false,
+  //           legendSvg: s.serializeToString(chart.drawLegendSymbol(undefined, false))
+  //         }
+  //       })
+  //     }
+  //   }
 
-  toggleFullscreen (): void {
-    this.isFullscreen = !this.isFullscreen
-    this.$nextTick(() => {
-      this.axis.resize()
-    })
-  }
+  //   toggleFullscreen (): void {
+  //     this.isFullscreen = !this.isFullscreen
+  //     this.$nextTick(() => {
+  //       this.axis.resize()
+  //     })
+  //   }
 
-  toggleLine (id: string): void {
-    const tag = this.tags.find(tag => { return tag.id === id })
-    const visible = wbCharts.toggleChartVisisbility(this.axis, id)
-    if (tag) {
-      tag.disabled = !visible
-    }
-  }
+  //   toggleLine (id: string): void {
+  //     const tag = this.tags.find(tag => { return tag.id === id })
+  //     const visible = wbCharts.toggleChartVisisbility(this.axis, id)
+  //     if (tag) {
+  //       tag.disabled = !visible
+  //     }
+  //   }
 
-  removeTag (tag: Tag): void {
-    this.$emit('remove-series', [tag.id])
-  }
+  //   removeTag (tag: Tag): void {
+  //     this.$emit('remove-series', [tag.id])
+  //   }
 
-  resize (): void {
-    this.$nextTick(() => {
-      this.axis.resize()
-    })
-  }
+//   resize (): void {
+//     this.$nextTick(() => {
+//       this.axis.resize()
+//     })
+//   }
 }
 </script>
 

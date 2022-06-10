@@ -31,7 +31,7 @@
     </portal>
     <v-main style="overflow-y: auto; height: 100%">
       <div>
-        Hoi :)
+        Hoi :) - {{ workflowId }}
         <time-series-component />
       </div>
     </v-main>
@@ -44,6 +44,7 @@ import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import TimeSeriesComponent from '@/components/TimeSeriesComponent/index.vue'
+import _ from 'lodash'
 
 @Component({
   components: {
@@ -54,10 +55,7 @@ import TimeSeriesComponent from '@/components/TimeSeriesComponent/index.vue'
 })
 export default class timeseriesView extends Vue {
   @Prop({ default: '', type: String })
-  panelId!: string
-
-  @Prop({ default: '', type: String })
-  groupId! : string
+  workflowId!: string
 
   drawer = true
   active: string[] = []
@@ -67,38 +65,40 @@ export default class timeseriesView extends Vue {
 
   mounted (): void {
     console.log('mounted', this)
-    this.loadCapabilities()
+    this.loadNodes()
   }
 
-  async loadCapabilities (): Promise<void> {
-    const response = await fetch('https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices/ssd?request=GetCapabilities&format=application/json')
-    const capbilities = await response.json()
-    console.log(capbilities)
+  async loadNodes (): Promise<void> {
+    const response = await fetch('https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/rest/fewspiservice/v1/topology/nodes')
+    const nodes = await response.json()
+
+    const recursiveUpdateNode: any = (nodes = {}) => {
+      const resultNodes: any = Object.entries(nodes).map(node => {
+        const result: any = {
+          id: node[0],
+          name: _.get(node[1], 'name'),
+          children: recursiveUpdateNode(_.get(node[1], 'topologyNodes'))
+        }
+        if (_.get(node[1], 'workflowId')) {
+          result.to = {
+            name: 'TimeSeriesDisplay',
+            params: {
+              workflowId: _.get(node[1], 'workflowId')
+            }
+          }
+        }
+        return result
+      })
+      return resultNodes
+    }
     const items: ColumnItem[] = [
       {
         id: 'root',
-        name: 'Overzichtschermen',
+        name: 'Topologie',
+        children: recursiveUpdateNode(nodes.topologyNodes)
       }
     ]
-    items[0].children = []
-    for (const displayGroup of capbilities.displayGroups) {
-      const name = displayGroup.title.replace('Overzichtsschermen ', '')
-      const children = []
-      for (const displayPanel of displayGroup.displayPanels) {
-        children.push({
-          id: displayPanel.name,
-          name: displayPanel.title,
-          to: {
-            name: 'SchematicStatusDisplay',
-            params: {
-              panelId: displayPanel.name,
-              groupId: displayGroup.name
-            }
-          }
-        })
-      }
-      items[0].children.push({ id: displayGroup.name, name, children })
-    }
+
     this.items = items
     this.open = [items[0].id]
   }

@@ -52,8 +52,8 @@ const routes: Array<RouteConfig> = [
     meta: { authorize: [], sidebar: true }
   },
   {
-    // /ssd/group/ScadaNZK-ARK/panel/NZK_ARK_10min
-    path: '/series/group/:groupId/panel/:panelId',
+    // /series/workflow/Plateau1_MD
+    path: '/series/workflow/:workflowId',
     name: 'TimeSeriesDisplay',
     component: TimeSeriesDisplay,
     props: true,
