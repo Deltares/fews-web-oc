@@ -12,7 +12,14 @@
       @update:active="(event) => $emit('update:active',event)"
     >
       <template slot="label" slot-scope="props">
-        <v-list-item dense :to="props.item.to">{{ props.item.name }}</v-list-item>
+        <v-list-item dense :to="props.item.to">
+          <v-list-item-content>
+          {{ props.item.name }}
+          </v-list-item-content>
+          <v-list-item-icon v-if="props.item.icon">
+            <v-icon>{{ props.item.icon }}</v-icon>
+          </v-list-item-icon>
+        </v-list-item>
       </template>
     </v-treeview>
   </div>

@@ -73,7 +73,7 @@ export default class timeseriesView extends Vue {
 
     const recursiveUpdateNode: any = (nodes: any[]) => {
       const resultNodes: any = nodes.map((node) => {
-        const result: any = {
+        const result: ColumnItem = {
           id: node.id,
           name: node.name,
           icon: node.workflowId ? 'mdi-restart' : undefined
