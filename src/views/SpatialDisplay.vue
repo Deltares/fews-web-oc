@@ -1,48 +1,29 @@
 <template>
   <div>
     <portal to="web-oc-sidebar">
-      <v-toolbar dense flat>
-        <v-btn-toggle
-          v-model="viewMode"
-          color="primary"
-          dense
-          group
-          mandatory
-        >
-          <v-btn text><v-icon>mdi-file-tree</v-icon></v-btn>
-          <v-btn text><v-icon>mdi-view-week</v-icon></v-btn>
+      <v-toolbar v-if="!$vuetify.breakpoint.mobile" dense flat>
+        <v-btn-toggle v-model="viewMode" color="primary" dense group mandatory>
+          <v-btn text>
+            <v-icon>mdi-file-tree</v-icon>
+          </v-btn>
+          <v-btn text>
+            <v-icon>mdi-view-week</v-icon>
+          </v-btn>
         </v-btn-toggle>
       </v-toolbar>
       <v-divider />
-      <TreeMenu
-        v-if="viewMode === 0"
-        :active.sync="active"
-        :items="items"
-        :open.sync="open"
-      >
+      <TreeMenu v-if="viewMode === 0 && !$vuetify.breakpoint.mobile" :active.sync="active" :items="items"
+        :open.sync="open">
       </TreeMenu>
-      <ColumnMenu
-        v-else
-        :active.sync="active"
-        :items="items"
-        :open.sync="open"
-      >
+      <ColumnMenu v-else :active.sync="active" :items="items" :open.sync="open">
       </ColumnMenu>
     </portal>
-    <v-main style="overflow-y: auto; height: 100%">
-      <div style="height: calc(100% - 48px);">
-        <MapComponent :layer="layerOptions"/>
-      </div>
-      <DateTimeSlider
-        class="date-time-slider"
-        v-model="currentTime"
-        :dates="times"
-        @update:now="setCurrentTime"
-        @input="debouncedSetLayerOptions"
-        @timeupdate="updateTime"
-      >
-      </DateTimeSlider>
-    </v-main>
+    <div style="height: calc(100% - 48px);">
+      <MapComponent :layer="layerOptions" />
+    </div>
+    <DateTimeSlider class="date-time-slider" v-model="currentTime" :dates="times" @update:now="setCurrentTime"
+      @input="debouncedSetLayerOptions" @timeupdate="updateTime">
+    </DateTimeSlider>
   </div>
 </template>
 
@@ -138,7 +119,12 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
 
   @Watch('layerName')
   async onLayerChange (): Promise<void> {
-    this.times = await this.getTimes(this.layerName)
+    try {
+      this.times = await this.getTimes(this.layerName)
+    } catch {
+      console.log('no times')
+      this.times = []
+    }
     this.dateController.dates = this.times
     this.dateController.selectDate(this.currentTime)
     this.currentTime = this.dateController.currentTime

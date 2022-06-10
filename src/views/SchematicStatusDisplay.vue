@@ -1,57 +1,42 @@
 <template>
-  <div>
+  <div class="web-oc-ssd">
     <portal to="web-oc-sidebar">
-      <v-toolbar dense flat>
-        <v-btn-toggle
-          v-model="viewMode"
-          color="primary"
-          dense
-          group
-          mandatory
-        >
-        <v-btn text><v-icon>mdi-file-tree</v-icon></v-btn>
-        <v-btn text><v-icon>mdi-view-week</v-icon></v-btn>
+      <v-toolbar dense flat v-if="!$vuetify.breakpoint.mobile">
+        <v-btn-toggle v-model="viewMode" color="primary" dense group mandatory>
+          <v-btn text>
+            <v-icon>mdi-file-tree</v-icon>
+          </v-btn>
+          <v-btn text>
+            <v-icon>mdi-view-week</v-icon>
+          </v-btn>
         </v-btn-toggle>
       </v-toolbar>
       <v-divider />
-      <TreeMenu
-        v-if="viewMode === 0"
-        :active.sync="active"
-        :items="items"
-        :open.sync="open"
-      >
+      <TreeMenu v-if="viewMode === 0 && !$vuetify.breakpoint.mobile" :active.sync="active" :items="items"
+        :open.sync="open">
       </TreeMenu>
-      <ColumnMenu
-        v-else
-        :active.sync="active"
-        :items="items"
-        :open.sync="open"
-      >
+      <ColumnMenu v-else :active.sync="active" :items="items" :open.sync="open">
       </ColumnMenu>
     </portal>
-    <v-main style="overflow-y: auto; height: 100%">
-      <div style="height: calc(100% - 40px);">
-      <SSDComponent :src="`${baseUrl}/ssd?request=GetDisplay&ssd=${panelId}`">
+    <div style="height: calc(100% - 48px);">
+      <SSDComponent
+        :src="src">
       </SSDComponent>
-      </div>
-      <DateTimeSlider class="date-time-slider">
-        <template slot="prepend">
-          <v-btn icon @click="toggleDrawer">
-            <v-icon>{{ drawerIcon }}</v-icon>
-          </v-btn>
-        </template>
-      </DateTimeSlider>
-    </v-main>
+    </div>
+    <DateTimeSlider class="date-time-slider" v-model="timeIndex" :dates="dates" @input="debouncedUpdate">
+    </DateTimeSlider>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
+import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 import SSDComponent from '@/components/SsdComponent.vue'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { ColumnItem } from '@/components/ColumnItem'
+import SSDMixin from '@/mixins/SSDMixin'
+import { debounce } from 'lodash'
 
 @Component({
   components: {
@@ -61,59 +46,89 @@ import { ColumnItem } from '@/components/ColumnItem'
     TreeMenu,
   }
 })
-export default class SsdView extends Vue {
+export default class SsdView extends Mixins(SSDMixin) {
   @Prop({ default: '', type: String })
   panelId!: string
 
   @Prop({ default: '', type: String })
   groupId! : string
 
-  drawer = true
   active: string[] = []
   open: string[] = []
   items: ColumnItem[] = []
   viewMode = 0
   baseUrl = ''
+  timeString = ''
+  debouncedUpdate!: () => void
 
-  created (): void {
+  async created (): Promise<void> {
     this.baseUrl = this.$config.get<string>('VUE_APP_FEWS_WEBSERVICES_URL')
+    this.debouncedUpdate = debounce(this.setTime, 500, { leading: true, trailing: true })
   }
 
-  mounted (): void {
-    this.loadCapabilities()
+  async mounted (): Promise<void> {
+    await this.loadCapabilities()
+    this.onGroupIdChange()
+    this.onPanelIdChange()
   }
 
-  async loadCapabilities (): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/ssd?request=GetCapabilities&format=application/json`)
-    const capbilities = await response.json()
-    console.log(capbilities)
+  @Watch('capabilities')
+  fillItems (): void {
     const items: ColumnItem[] = [
       {
         id: 'root',
         name: 'Overzichtschermen',
       }
     ]
-    items[0].children = []
-    for (const displayGroup of capbilities.displayGroups) {
-      const name = displayGroup.title.replace('Overzichtsschermen ', '')
-      const children = []
-      for (const displayPanel of displayGroup.displayPanels) {
-        children.push({
-          id: displayPanel.name,
-          name: displayPanel.title,
-          to: {
-            name: 'SchematicStatusDisplay',
-            params: {
-              panelId: displayPanel.name,
-              groupId: displayGroup.name
+    if (this.capabilities !== undefined) {
+      items[0].children = []
+      for (const displayGroup of this.capabilities.displayGroups) {
+        const name = displayGroup.title.replace('Overzichtsschermen ', '')
+        const children = []
+        for (const displayPanel of displayGroup.displayPanels) {
+          children.push({
+            id: displayPanel.name,
+            name: displayPanel.title,
+            to: {
+              name: 'SchematicStatusDisplay',
+              params: {
+                panelId: displayPanel.name,
+                groupId: displayGroup.name
+              }
             }
-          }
-        })
+          })
+        }
+        items[0].children.push({ id: displayGroup.name, name, children })
       }
-      items[0].children.push({ id: displayGroup.name, name, children })
     }
     this.items = items
     this.open = [items[0].id]
+  }
+
+  setTime (): void {
+    if (this.timeIndex !== null) {
+      this.timeString = this.timeIndex.toISOString()
+    } else {
+      this.timeString = ''
+    }
+  }
+
+  get src (): string {
+    if (this.timeIndex !== null) {
+      const time = this.timeIndex.toISOString().replace(/.\d+Z$/g, 'Z')
+      return `${this.baseUrl}/ssd?request=GetDisplay&ssd=${this.panelId}&time=${time}`
+    }
+    return `${this.baseUrl}/ssd?request=GetDisplay&ssd=${this.panelId}`
+  }
+
+  @Watch('groupId')
+  onGroupIdChange (): void {
+    this.selectGroup(this.groupId)
+  }
+
+  @Watch('panelId')
+  onPanelIdChange (): void {
+    this.selectPanel(this.panelId)
   }
 
   @Watch('active')
@@ -125,13 +140,11 @@ export default class SsdView extends Vue {
   onOpenChange (): void {
     console.log('update:open', this.open)
   }
-
-  toggleDrawer (): void {
-    this.drawer = !this.drawer
-  }
-
-  get drawerIcon (): string {
-    return this.drawer ? 'mdi-chevron-double-left' : 'mdi-chevron-double-right'
-  }
 }
 </script>
+
+<style>
+.web-oc-ssd {
+  background-color: white;
+}
+</style>
