@@ -31,17 +31,32 @@ export default class SsdComponent extends Vue {
     this.container = this.$refs['ssd-container'] as HTMLElement
     this.resize()
     this.container.addEventListener('pointerdown', this.mouseDownHandler)
-    this.container.addEventListener('wheel', this.mouseWheelHandler)
+    this.container.addEventListener('wheel', this.mouseWheelHandler, { passive: true })
     this.container.addEventListener('dblclick', this.dblClickHandler)
+  }
+
+  destroy (): void {
+    this.container.removeEventListener('pointerdown', this.mouseDownHandler)
+    this.container.removeEventListener('wheel', this.mouseWheelHandler)
+    this.container.removeEventListener('dblclick', this.dblClickHandler)
   }
 
   dblClickHandler (): void {
     this.fit = !this.fit
-    this.resize()
+    this.setDimensions()
+    this.pos = { top: 0, left: 0, x: 0, y: 0 }
+    if (!this.fit) {
+      this.container.addEventListener('pointerdown', this.mouseDownHandler)
+      this.container.addEventListener('wheel', this.mouseWheelHandler, { passive: true })
+    } else {
+      this.container.removeEventListener('pointerdown', this.mouseDownHandler)
+      this.container.removeEventListener('wheel', this.mouseWheelHandler)
+    }
   }
 
   mouseWheelHandler (event: WheelEvent): void {
     this.container.scrollLeft += event.deltaY
+    this.pos.left = this.container.scrollLeft
   }
 
   mouseMoveHandler (event: PointerEvent): void {
@@ -73,41 +88,29 @@ export default class SsdComponent extends Vue {
   mouseUpHandler (): void {
     document.removeEventListener('pointermove', this.mouseMoveHandler)
     document.removeEventListener('pointerup', this.mouseUpHandler)
+    this.pos.left = this.container.scrollLeft
+    this.pos.top = this.container.scrollTop
     this.container.style.cursor = 'inherit'
     this.container.style.removeProperty('user-select')
+  }
+
+  restoreScrollPosition (): void {
+    this.container.scrollTop = this.pos.top
+    this.container.scrollLeft = this.pos.left
   }
 
   onLoad (): void {
     this.resize()
   }
 
-  @Watch('src')
   resize (): void {
     if (this.container === undefined) return
     this.isHidden = true
     this.margin = { top: 0, left: 0 }
-    this.$nextTick(() => {
-      this.setAspectRatio()
-      let height = this.container.clientHeight
-      let width = this.container.clientWidth
-      let margin = { top: 0, left: 0 }
-      const dx = this.container.clientWidth - height * this.aspectRatio
-      if (dx < 0 && !this.fit) {
-        // add space for scrollbar
-        height = height - 15
-        width = height * this.aspectRatio
-      } else if (dx < 0) {
-        height = this.container.clientWidth / this.aspectRatio
-        margin = { top: (this.container.clientHeight - height) / 2, left: 0 }
-      } else {
-        width = height * this.aspectRatio
-        margin = { top: 0, left: dx / 2 }
-      }
-      this.margin = margin
-      this.height = height
-      this.width = width
-      this.isHidden = false
-    })
+    this.setAspectRatio()
+    this.setDimensions()
+    this.isHidden = false
+    this.restoreScrollPosition()
   }
 
   setAspectRatio (): void {
@@ -123,6 +126,26 @@ export default class SsdComponent extends Vue {
     }
     this.aspectRatio = 1
   }
+
+  setDimensions (): void {
+    let height = this.container.clientHeight
+    let width = this.container.clientWidth
+    let margin = { top: 0, left: 0 }
+    const dx = this.container.clientWidth - height * this.aspectRatio
+    if (dx < 0 && !this.fit) {
+      // add space for scrollbar
+      width = height * this.aspectRatio
+    } else if (dx < 0) {
+      height = this.container.clientWidth / this.aspectRatio
+      margin = { top: (this.container.clientHeight - height) / 2, left: 0 }
+    } else {
+      width = height * this.aspectRatio
+      margin = { top: 0, left: dx / 2 }
+    }
+    this.margin = margin
+    this.height = height
+    this.width = width
+  }
 }
 </script>
 
@@ -133,7 +156,7 @@ export default class SsdComponent extends Vue {
   display: flex;
   background-color: lightgray;
   flex-direction: column;
-  overflow-x: auto;
+  overflow-x: hidden;
   white-space: nowrap;
 }
 
