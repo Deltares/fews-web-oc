@@ -79,14 +79,14 @@ export default class ColumnMenu extends Vue {
       this.path.pop()
     }
     this.$emit('update:active', [])
-    this.$emit('update:open', this.path)
+    this.$emit('update:open', [...this.path, ...this.open])
   }
 
   onItemClick (event: Event, item: ColumnItem): void {
     if (item.children) {
       this.stack.push(item)
       this.path.push(item.id)
-      this.$emit('update:open', this.path)
+      this.$emit('update:open', [...this.path, ...this.open])
     } else {
       this.$emit('update:active', [item.id])
     }
@@ -95,18 +95,25 @@ export default class ColumnMenu extends Vue {
 
   updateStack (): void {
     const stack = [...this.items]
-    const path = [this.items[0].id]
-    for (let i = 1; i < this.open.length; i++) {
-      const parent = stack[i - 1]
-      if (parent.children !== undefined) {
-        const child = parent.children.find(c => c.id === this.open[i])
-        if (child === undefined) continue
+    this.recursiveFind(stack, this.active[0])
+    this.stack = stack
+    this.path = stack.map((item) => item.id)
+  }
+
+  recursiveFind (stack: ColumnItem[], id: string): boolean {
+    const item = stack[stack.length - 1]
+    if (item.id === id) return true
+    if (item.children !== undefined) {
+      for (const child of item.children) {
         stack.push(child)
-        path.push(child.id)
+        if (this.recursiveFind(stack, id)) {
+          if (child.children === undefined) stack.pop()
+          return true
+        }
+        stack.pop()
       }
     }
-    this.stack = stack
-    this.path = path
+    return false
   }
 }
 </script>
