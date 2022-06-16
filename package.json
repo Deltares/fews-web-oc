@@ -11,6 +11,7 @@
   "dependencies": {
     "@mdi/font": "^6.4.95",
     "core-js": "^3.6.5",
+    "fews-ssd-requests": "git+https://gitlab+deploy-token-15:VTzhNJ7vAtAfB5sE-WWs@gitlab.vortech.nl/deltares/rwsos-viewer/fews-ssd-requests",
     "fews-ssd-web-component": "file:fews-ssd-web-component-0.0.1.tgz",
     "lodash": "^4.17.21",
     "mapbox-gl": "^2.8.2",
