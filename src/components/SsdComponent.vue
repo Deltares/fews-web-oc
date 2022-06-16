@@ -15,7 +15,7 @@ import { Component, Vue, Prop, Watch } from 'vue-property-decorator'
 @Component
 export default class SsdComponent extends Vue {
   @Prop({ default: '' })
-  src!: string
+    src!: string
 
   container!: HTMLElement
   scrollContainer!: HTMLElement
@@ -23,7 +23,7 @@ export default class SsdComponent extends Vue {
   height = 100
   margin = { top: 0, left: 0 }
   isHidden = false
-  pos = { top: 0, left: 0, x: 0, y: 0 };
+  pos = { top: 0, left: 0, x: 0, y: 0 }
   aspectRatio = 1
   fit = false
 

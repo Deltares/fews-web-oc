@@ -48,7 +48,7 @@ import { DateController } from '@/lib/TimeControl/DateController'
 })
 export default class SpatialDisplay extends Mixins(WMSMixin) {
   @Prop({ default: '' })
-  layerName!: string
+    layerName!: string
 
   active: string[] = []
   open: string[] = []

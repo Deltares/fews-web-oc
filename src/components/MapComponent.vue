@@ -29,7 +29,7 @@ function getFrameId (layerName: string, frame: number): string {
 @Component
 export default class MapComponent extends Vue {
   @Prop({ default: () => { return {} } })
-  layer!: any
+    layer!: any
 
   mapObject!: Map
   accessToken = process.env.VUE_APP_MAPBOX_TOKEN

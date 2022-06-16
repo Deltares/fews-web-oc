@@ -49,7 +49,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import { User } from 'oidc-client-ts'
 
 function firstUppercaseChar (str: string): string {
-  for (var i = 0; i < str.length; i++) {
+  for (let i = 0; i < str.length; i++) {
     const character = str[i]
     if (character !== character.toLowerCase()) { return character }
   }

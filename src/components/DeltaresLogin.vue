@@ -10,7 +10,7 @@ import { Component, Vue, Prop } from 'vue-property-decorator'
 @Component
 export default class Home extends Vue {
   @Prop()
-  name!: string
+    name!: string
 
   login (): void {
     const redirect = this.$route.query.redirect || 'Home'

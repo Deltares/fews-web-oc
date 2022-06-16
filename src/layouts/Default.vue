@@ -36,7 +36,7 @@ import { Component, Vue } from 'vue-property-decorator'
 @Component({ components: { LoginComponent } })
 export default class Home extends Vue {
   drawer: boolean | null = null
-  menuItems= [
+  menuItems = [
     { id: 'Overview', icon: 'mdi-apps', to: { name: 'Home' } },
     { id: 'Schematic Status Display', icon: 'mdi-application-brackets-outline', to: { name: 'SchematicStatusDisplay', params: { groupId: '0', panelId: '0' } } },
     { id: 'Spatial Display', icon: 'mdi-map', to: { name: 'SpatialDisplay', params: { layerName: '0' } } },

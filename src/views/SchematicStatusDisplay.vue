@@ -48,10 +48,10 @@ import { debounce } from 'lodash'
 })
 export default class SsdView extends Mixins(SSDMixin) {
   @Prop({ default: '', type: String })
-  panelId!: string
+    panelId!: string
 
   @Prop({ default: '', type: String })
-  groupId! : string
+    groupId! : string
 
   active: string[] = []
   open: string[] = []

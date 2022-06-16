@@ -4,7 +4,7 @@ import { datesFromPeriod, SsdWebserviceProvider, Capabilities, DisplayGroup, Dis
 @Component
 export default class SSDMixin extends Vue {
   capabilities: Capabilities = { title: '', displayGroups: [] }
-  currentGroup: DisplayGroup= { name: '', title: '', displayPanels: [] }
+  currentGroup: DisplayGroup = { name: '', title: '', displayPanels: [] }
   currentPanel: DisplayPanel = { title: '', name: '' }
   excludedGroupsNames: string[] = []
   dates: Date[] = []
