@@ -89,16 +89,16 @@ function convertTimeSeriesDisplayToWbCharts(r: any): ChartConfig {
       }
     }
     series.push(s)
-    const s2 = cloneDeep(s)
-
-    // s2.id = s.id + 'marker'
-    s2.type = 'marker'
-    s2.style = {
-      stroke: item.color,
-      fill: "none",
-      'stroke-width': item.lineWidth + 'px'
+    if (item.markerStyle !== undefined) {
+      const s2 = cloneDeep(s)
+      s2.type = 'marker'
+      s2.style = {
+        stroke: item.color,
+        fill: "none",
+        'stroke-width': item.lineWidth + 'px'
+      }
+      series.push(s2)
     }
-    series.push(s2)
   }
   config.series = series
   return config
