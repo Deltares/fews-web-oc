@@ -30,18 +30,24 @@
       </ColumnMenu>
     </portal>
     <div v-for="(display, index) in displays" :key="index">
-      {{ display.config.timeSeriesDisplay.title }}
-      <time-series-component :value="display.config.timeSeriesDisplay"/>
+      <time-series-component :value="display" :series="timeSeriesStore"/>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
+import { Component, Mixins, Prop, Vue, Watch } from 'vue-property-decorator'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import TimeSeriesComponent from '@/components/TimeSeriesComponent/index.vue'
+import SeriesStore from '@/mixins/SeriesStore'
+import {Series, SeriesUrlRequest} from '@/lib/TimeSeries'
+
+
+function convertTimeSeriesDisplayToWbCharts(r: any): any {
+  return r
+}
 
 @Component({
   components: {
@@ -50,7 +56,7 @@ import TimeSeriesComponent from '@/components/TimeSeriesComponent/index.vue'
     TimeSeriesComponent
   }
 })
-export default class TimeseriesView extends Vue {
+export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
   @Prop({ default: '', type: String })
   nodeId!: string
 
@@ -61,6 +67,7 @@ export default class TimeseriesView extends Vue {
   viewMode = 0
   baseUrl!: string
   displays = []
+  requests: Record<string, URL> = {}
 
   created (): void {
     this.baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
@@ -113,7 +120,41 @@ export default class TimeseriesView extends Vue {
   async onNodeChange (): Promise<void> {
     const response = await fetch(`${this.baseUrl}/rest/fewspiservice/v1/displaygroups?&nodeId=${this.nodeId}`)
     const json = await response.json()
-    this.displays = json.results
+    this.displays = json.results.map((result: any) => {
+      console.log(result.config)
+      if (result.config !== undefined) {
+        return convertTimeSeriesDisplayToWbCharts(result.config.timeSeriesDisplay)
+      } else {
+        return
+      }
+    })
+    const requests: Record<string, URL> = {}
+    for (const result of json.results) {
+      for (const r of result.requests) {
+        const url = new URL(`${this.baseUrl}/${r.request}`)
+        const piResponse = await fetch(url.toString())
+        const piSeries = await piResponse.json()
+        for (const index in piSeries.timeSeries) {
+          const t = piSeries.timeSeries[index]
+          const resourceId = `${r.key}[${index}]`
+          const resource = new SeriesUrlRequest('fews-pi', url.toString())
+          const series = new Series(resource)
+          series.header.name = `${t.header.stationName} - ${t.header.parameterId} (${t.header.moduleInstanceId})`
+          series.header.unit = t.header.units
+          series.header.parameter = t.header.parameterId
+          series.header.location = t.header.stationName
+          series.header.source = t.header.moduleInstanceId
+          series.start = new Date(`${t.header.startDate.date}T${t.header.startDate.time}`)
+          series.end = new Date(`${t.header.endDate.date}T${t.header.endDate.time}`)
+          series.data = t.events.map((event: any) => {
+            return {
+              x: new Date(`${event.date}T${event.time}`),
+              y: event.flag === 0 ? event.value : null}
+          })
+          this.timeSeriesStore[resourceId] = series
+        }
+      }
+    }
   }
 
   @Watch('active')
