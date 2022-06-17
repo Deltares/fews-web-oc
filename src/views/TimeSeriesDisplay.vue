@@ -29,12 +29,10 @@
       >
       </ColumnMenu>
     </portal>
-    <v-main style="overflow-y: auto; height: 100%">
-      <div v-for="(display, index) in displays" :key="index">
-        {{ display.config.timeSeriesDisplay.title }}
-        <time-series-component :value="display.config.timeSeriesDisplay"/>
-      </div>
-    </v-main>
+    <div v-for="(display, index) in displays" :key="index">
+      {{ display.config.timeSeriesDisplay.title }}
+      <time-series-component :value="display.config.timeSeriesDisplay"/>
+    </div>
   </div>
 </template>
 
@@ -52,7 +50,7 @@ import TimeSeriesComponent from '@/components/TimeSeriesComponent/index.vue'
     TimeSeriesComponent
   }
 })
-export default class timeseriesView extends Vue {
+export default class TimeseriesView extends Vue {
   @Prop({ default: '', type: String })
   nodeId!: string
 
