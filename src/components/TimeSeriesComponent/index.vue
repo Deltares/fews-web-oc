@@ -23,7 +23,7 @@
       <div fluid :class="{'chart-with-legend': true }" >
         <div style="display:flex;flex:1 1; margin: 0 50px;">
         <v-chip-group column active-class="primary--text">
-          <v-chip small v-for="tag in groups" :key="tag.id" @click="toggleLine(tag.id)" :disabled="tag.disabled">
+          <v-chip small v-for="tag in legendTags" :key="tag.id" @click="toggleLine(tag.id)" :disabled="tag.disabled">
             <div>
               <div style="margin-top:6px; margin-right: 5px;" v-html="tag.legendSvg"/>
             </div>
@@ -42,6 +42,7 @@ import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import * as wbCharts from 'wb-charts'
 import { ChartConfig, ChartSeries } from './lib/ChartConfig'
 import { Series } from '@/lib/TimeSeries'
+import { uniq } from 'lodash';
 
 interface Tag {
   id: string;
@@ -60,11 +61,11 @@ export default class ConfigurableChart extends Vue {
 
   axis!: any // eslint-disable-line @typescript-eslint/no-explicit-any
   isFullscreen = false
-  groups!: Tag[]
-  lines: any = {}
+  legendTags!: Tag[]
+  groups: Record<string, any> = {}
 
   created(): void {
-    this.groups = []
+    this.legendTags = []
   }
 
   mounted(): void {
@@ -112,7 +113,6 @@ export default class ConfigurableChart extends Vue {
     window.addEventListener('resize', this.resize)
   }
 
-
   @Watch('series')
   @Watch('value')
   onValueChange(): void {
@@ -131,8 +131,8 @@ export default class ConfigurableChart extends Vue {
   }
 
   refreshChart(): void {
-    const ids = Object.keys(this.lines)
-    const removeIds = Object.keys(this.lines)
+    const ids: string[] = this.axis.charts.map((c: any) => c.id)
+    const removeIds: string[] = this.axis.charts.map((c: any) => c.id)
     if (this.value?.series === undefined) return
     for (const series of this.value.series) {
       if (!ids.includes(series.id)) {
@@ -145,7 +145,6 @@ export default class ConfigurableChart extends Vue {
     }
     for (const id of removeIds) {
       this.axis.removeChart(id)
-      delete this.lines[id]
     }
     if (this.value.yAxis) {
       this.axis.setOptions({
@@ -167,23 +166,23 @@ export default class ConfigurableChart extends Vue {
 
   clearChart(): void {
     this.axis.removeAllCharts()
-    this.lines = {}
   }
 
   addToChart(chartSeries: ChartSeries): void {
     const id = chartSeries.id
     const series = this.series[chartSeries.dataResources[0]]
     const data = series?.data !== undefined ? series.data : []
+    let line
     if (chartSeries.type === 'line') {
-      this.lines[id] = new wbCharts.ChartLine(data, {
+      line = new wbCharts.ChartLine(data, {
         tooltip: { toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}` }
       })
     } else {
-      this.lines[id] = new wbCharts.ChartMarker(data, {
+      line = new wbCharts.ChartMarker(data, {
         tooltip: { toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}` }
       })
     }
-    this.lines[id].addTo(
+    line.addTo(
       this.axis, {
         x: {
           key: 'x',
@@ -198,16 +197,32 @@ export default class ConfigurableChart extends Vue {
 
   setTags(): void {
     const s = new XMLSerializer()
-    if (this.value?.series === undefined) {
-      this.groups = []
+    const series = this.value?.series
+    if (series === undefined) {
+      this.legendTags = []
     } else {
-      this.groups = this.value?.series.map((series) => {
-        const chart = this.lines[series.id]
+      const ids = uniq(series.map((s) => s.id))
+      this.legendTags = ids.map((id) => {
+        const legendSvg = document.createElement('svg')
+        legendSvg.setAttribute('width', '20')
+        legendSvg.setAttribute('height', '20')
+        legendSvg.setAttribute('viewBox', '0 0 20 20')
+        const svgGroup = document.createElement('g')
+        svgGroup.setAttribute('transform', 'translate(0 10)')
+        for (const chart of this.axis.charts) {
+          if (chart.id === id) {
+            let node = chart.drawLegendSymbol(undefined, true)
+            svgGroup.appendChild(node)
+          }
+        }
+        legendSvg.appendChild(svgGroup)
+        console.log(legendSvg)
+        const name = series.find((s) => s.id === id)?.name || ''
         return {
-          id: series.id,
-          name: series.name || '',
+          id: id,
+          name: name || '',
           disabled: false,
-          legendSvg: s.serializeToString(chart.drawLegendSymbol(undefined, false))
+          legendSvg: s.serializeToString(legendSvg)
         }
       })
     }
@@ -221,7 +236,7 @@ export default class ConfigurableChart extends Vue {
   }
 
   toggleLine(id: string): void {
-    const tag = this.groups.find(tag => {
+    const tag = this.legendTags.find(tag => {
       return tag.id === id
     })
     const visible = wbCharts.toggleChartVisisbility(this.axis, id)

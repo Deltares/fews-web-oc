@@ -42,8 +42,9 @@ import TreeMenu from '@/components/TreeMenu.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import TimeSeriesComponent from '@/components/TimeSeriesComponent/index.vue'
 import SeriesStore from '@/mixins/SeriesStore'
-import {Series, SeriesUrlRequest} from '@/lib/TimeSeries'
+import { Series, SeriesUrlRequest } from '@/lib/TimeSeries'
 import { ChartConfig, ChartSeries } from '@/components/TimeSeriesComponent/lib/ChartConfig'
+import { cloneDeep } from 'lodash'
 
 
 function convertTimeSeriesDisplayToWbCharts(r: any): ChartConfig {
@@ -63,10 +64,10 @@ function convertTimeSeriesDisplayToWbCharts(r: any): ChartConfig {
     const item = subplot.items[index]
     requestIds.push(item.request)
     const count = requestIds.filter((i) => i === item.request).length
-    series.push({
-      id: `${item.request}[${count-1}]`,
+    const s = {
+      id: `${item.request}[${count - 1}]`,
       dataResources: [
-        `${item.request}[${count-1}]`
+        `${item.request}[${count - 1}]`
       ],
       name: item.legend,
       unit: item.unit,
@@ -86,7 +87,18 @@ function convertTimeSeriesDisplayToWbCharts(r: any): ChartConfig {
         fill: "none",
         'stroke-width': item.lineWidth + 'px'
       }
-    })
+    }
+    series.push(s)
+    const s2 = cloneDeep(s)
+
+    // s2.id = s.id + 'marker'
+    s2.type = 'marker'
+    s2.style = {
+      stroke: item.color,
+      fill: "none",
+      'stroke-width': item.lineWidth + 'px'
+    }
+    series.push(s2)
   }
   config.series = series
   return config
