@@ -189,7 +189,7 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
           series.data = t.events.map((event: any) => {
             return {
               x: new Date(`${event.date}T${event.time}`),
-              y: event.flag === '0' ? +event.value : null}
+              y: event.flag === '8' ? null : +event.value}
           })
           Vue.set(this.timeSeriesStore, resourceId, series)
         }
