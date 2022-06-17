@@ -43,10 +43,53 @@ import { ColumnItem } from '@/components/ColumnItem'
 import TimeSeriesComponent from '@/components/TimeSeriesComponent/index.vue'
 import SeriesStore from '@/mixins/SeriesStore'
 import {Series, SeriesUrlRequest} from '@/lib/TimeSeries'
+import { ChartConfig, ChartSeries } from '@/components/TimeSeriesComponent/lib/ChartConfig'
 
 
-function convertTimeSeriesDisplayToWbCharts(r: any): any {
-  return r
+function convertTimeSeriesDisplayToWbCharts(r: any): ChartConfig {
+  const subplot = r.subplots[0]
+  const config: ChartConfig = {
+    title: r.title,
+    xAxis: [],
+    yAxis: [{
+      type: 'value',
+      location: subplot.items[0].yAxis.axisPosition,
+      label: subplot.items[0].yAxis.axisLabel,
+    }],
+  }
+  const series: ChartSeries[] = []
+  const requestIds: string[] = []
+  for (const index in subplot.items) {
+    const item = subplot.items[index]
+    requestIds.push(item.request)
+    const count = requestIds.filter((i) => i === item.request).length
+    series.push({
+      id: `${item.request}[${count-1}]`,
+      dataResources: [
+        `${item.request}[${count-1}]`
+      ],
+      name: item.legend,
+      unit: item.unit,
+      type: 'line',
+      options: {
+        x: {
+          key: "x",
+          axisIndex: 0
+        },
+        y: {
+          key: "y",
+          axisIndex: 0
+        },
+      },
+      style: {
+        stroke: item.color,
+        fill: "none",
+        'stroke-width': item.lineWidth + 'px'
+      }
+    })
+  }
+  config.series = series
+  return config
 }
 
 @Component({
@@ -74,7 +117,6 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
   }
 
   async mounted (): Promise<void> {
-    console.log('mounted', this)
     await this.loadNodes()
     this.onNodeChange()
   }
@@ -121,14 +163,12 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
     const response = await fetch(`${this.baseUrl}/rest/fewspiservice/v1/displaygroups?&nodeId=${this.nodeId}`)
     const json = await response.json()
     this.displays = json.results.map((result: any) => {
-      console.log(result.config)
       if (result.config !== undefined) {
         return convertTimeSeriesDisplayToWbCharts(result.config.timeSeriesDisplay)
       } else {
         return
       }
     })
-    const requests: Record<string, URL> = {}
     for (const result of json.results) {
       for (const r of result.requests) {
         const url = new URL(`${this.baseUrl}/${r.request}`)
@@ -149,9 +189,9 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
           series.data = t.events.map((event: any) => {
             return {
               x: new Date(`${event.date}T${event.time}`),
-              y: event.flag === 0 ? event.value : null}
+              y: event.flag === '0' ? +event.value : null}
           })
-          this.timeSeriesStore[resourceId] = series
+          Vue.set(this.timeSeriesStore, resourceId, series)
         }
       }
     }

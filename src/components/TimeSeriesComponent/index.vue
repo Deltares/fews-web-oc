@@ -1,16 +1,5 @@
-<i18n>
-{
-  "en": {
-    "chart-title": "Title"
-  },
-  "nl": {
-    "chart-title": "Titel"
-  }
-}
-</i18n>
-
 <template>
-  <div class="configurable-chart" :class="{ fullscreen: isFullscreen }" :id="id">
+  <div class="configurable-chart" :class="{ fullscreen: isFullscreen }">
     <v-btn
       v-if="isFullscreen"
       fab
@@ -53,7 +42,6 @@ import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import * as wbCharts from 'wb-charts'
 import { ChartConfig, ChartSeries } from './lib/ChartConfig'
 import { Series } from '@/lib/TimeSeries'
-// import { DateTime, Interval } from 'luxon'
 
 interface Tag {
   id: string;
@@ -62,41 +50,59 @@ interface Tag {
   legendSvg: string;
 }
 
-// export interface ChartStore {
-//   [key: string]: wbCharts.Chart;
-// }
-
 @Component
 export default class ConfigurableChart extends Vue {
-  @Prop()
-  value!: ChartConfig
+  @Prop({ default: () => { return {} }})
+    value!: ChartConfig
 
-  @Prop()
-  series!: Record<string, Series>
+  @Prop({ default: () => { return {} }})
+    series!: Record <string, Series>
 
   axis!: any // eslint-disable-line @typescript-eslint/no-explicit-any
   isFullscreen = false
   groups!: Tag[]
   lines: any = {}
-  // alertLinesVisitor!: wbCharts.AlertLines
 
-  created (): void {
+  created(): void {
     this.groups = []
   }
 
-  mounted (): void {
+  mounted(): void {
     const axisOptions: wbCharts.CartesianAxesOptions = {
-      x: [{ type: wbCharts.AxisType.time, position: wbCharts.AxisPosition.Bottom, showGrid: true }],
-      y: [{ position: wbCharts.AxisPosition.Left, showGrid: true, label: ' ', unit: ' ', nice: true },
-        { position: wbCharts.AxisPosition.Right, label: ' ', unit: ' ', nice: true }],
-      margin: { left: 50, right: 50 }
+      x: [{
+        type: wbCharts.AxisType.time,
+        position: wbCharts.AxisPosition.Bottom,
+        showGrid: true
+      }],
+      y: [{
+          position: wbCharts.AxisPosition.Left,
+          showGrid: true,
+          label: ' ',
+          unit: ' ',
+          nice: true
+        },
+        {
+          position: wbCharts.AxisPosition.Right,
+          label: ' ',
+          unit: ' ',
+          nice: true
+        }
+      ],
+      margin: {
+        left: 80,
+        right: 80
+      }
     }
 
     const containerReference = this.$refs['chart-container'] as HTMLElement
     this.axis = new wbCharts.CartesianAxis(containerReference, null, null, axisOptions)
     const mouseOver = new wbCharts.MouseOver()
     const zoom = new wbCharts.ZoomHandler()
-    const currentTime = new wbCharts.CurrentTime({ x: { axisIndex: 0 } })
+    const currentTime = new wbCharts.CurrentTime({
+      x: {
+        axisIndex: 0
+      }
+    })
 
     this.axis.accept(zoom)
     this.axis.accept(mouseOver)
@@ -106,127 +112,131 @@ export default class ConfigurableChart extends Vue {
     window.addEventListener('resize', this.resize)
   }
 
-    @Watch('value')
-    onValueChange (): void {
-      this.clearChart()
-      this.refreshChart()
-      this.setTags()
-      this.$forceUpdate()
+
+  @Watch('series')
+  @Watch('value')
+  onValueChange(): void {
+    this.clearChart()
+    this.refreshChart()
+    this.setTags()
+    this.$forceUpdate()
+  }
+
+  beforeDestroy(): void {
+    window.removeEventListener('resize', this.resize)
+  }
+
+  get fullscreenIcon (): string {
+    return this.isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
+  }
+
+  refreshChart(): void {
+    const ids = Object.keys(this.lines)
+    const removeIds = Object.keys(this.lines)
+    if (this.value?.series === undefined) return
+    for (const series of this.value.series) {
+      if (!ids.includes(series.id)) {
+        this.addToChart(series)
+      }
+      const index = removeIds.findIndex((item) => {
+        return item === series.id
+      })
+      if (index >= 0) removeIds.splice(index, 1)
     }
-
-  //   @Watch('period')
-  //   onPeriodChange (): void {
-  //     if (this.period !== undefined && this.period.isValid) {
-  //       const domain: Date[] = [this.period.start.toJSDate(), this.period.end.toJSDate()]
-  //       this.axis.setOptions({ x: [{ domain }] })
-  //       this.axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
-  //     }
-  //   }
-
-    beforeDestroy (): void {
-      window.removeEventListener('resize', this.resize)
+    for (const id of removeIds) {
+      this.axis.removeChart(id)
+      delete this.lines[id]
     }
+    if (this.value.yAxis) {
+      this.axis.setOptions({
+        y: [
+          this.value.yAxis[0],
+          this.value.yAxis[1]
+        ]
+      })
+    }
+    this.axis.redraw({
+      x: {
+        autoScale: true
+      },
+      y: {
+        autoScale: true
+      }
+    })
+  }
 
-  //   get fullscreenIcon (): string {
-  //     return this.isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
-  //   }
+  clearChart(): void {
+    this.axis.removeAllCharts()
+    this.lines = {}
+  }
 
-  //   updateAlerts (): void {
-  //     this.alertLinesVisitor.options = this.alertLines
-  //   }
-
-    refreshChart (): void {
-      const ids = Object.keys(this.lines)
-      const removeIds = Object.keys(this.lines)
-      if (this.value?.series === undefined) return
-      for (const series of this.value.series) {
-        if (!ids.includes(series.id)) {
-          this.addToChart(series)
+  addToChart(chartSeries: ChartSeries): void {
+    const id = chartSeries.id
+    const series = this.series[chartSeries.dataResources[0]]
+    const data = series?.data !== undefined ? series.data : []
+    if (chartSeries.type === 'line') {
+      this.lines[id] = new wbCharts.ChartLine(data, {
+        tooltip: { toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}` }
+      })
+    } else {
+      this.lines[id] = new wbCharts.ChartMarker(data, {
+        tooltip: { toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}` }
+      })
+    }
+    this.lines[id].addTo(
+      this.axis, {
+        x: {
+          key: 'x',
+          axisIndex: 0
+        },
+        y: {
+          key: 'y',
+          axisIndex: chartSeries.options.y.axisIndex
         }
-        const index = removeIds.findIndex((item) => { return item === series.id })
-        if (index >= 0) removeIds.splice(index, 1)
-      }
-      for (const id of removeIds) {
-        this.axis.removeChart(id)
-        delete this.lines[id]
-      }
-      if (this.value.yAxis) {
-        this.axis.setOptions(
-          {
-            y: [
-              this.value.yAxis[0],
-              this.value.yAxis[1]
-            ]
-          }
-        )
-      }
-      this.axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
+      }, id, chartSeries.style)
+  }
+
+  setTags(): void {
+    const s = new XMLSerializer()
+    if (this.value?.series === undefined) {
+      this.groups = []
+    } else {
+      this.groups = this.value?.series.map((series) => {
+        const chart = this.lines[series.id]
+        return {
+          id: series.id,
+          name: series.name || '',
+          disabled: false,
+          legendSvg: s.serializeToString(chart.drawLegendSymbol(undefined, false))
+        }
+      })
     }
+  }
 
-    clearChart (): void {
-      this.axis.removeAllCharts()
-      this.lines = {}
-    }
-
-    addToChart (chartSeries: ChartSeries): void {
-      const id = chartSeries.id
-      const series = this.series[chartSeries.dataResources[0]]
-      const data = series?.data !== undefined ? series.data : []
-      if (chartSeries.type === 'line') {
-        this.lines[id] = new wbCharts.ChartLine(data, { toolTipFormatter: () => `${chartSeries.name}` })
-      } else {
-        this.lines[id] = new wbCharts.ChartMarker(data, { toolTipFormatter: () => `${chartSeries.name}` })
-      }
-      this.lines[id].addTo(
-        this.axis,
-        {
-          x: { key: 'x', axisIndex: 0 },
-          y: { key: 'y', axisIndex: chartSeries.options.y.axisIndex }
-        }, id, chartSeries.style)
-    }
-
-    setTags (): void {
-      const s = new XMLSerializer()
-      if (this.value?.series === undefined) {
-        this.groups = []
-      } else {
-        this.groups = this.value?.series.map((series) => {
-          const chart = this.lines[series.id]
-          return {
-            id: series.id,
-            name: series.name,
-            disabled: false,
-            legendSvg: s.serializeToString(chart.drawLegendSymbol(undefined, false))
-          }
-        })
-      }
-    }
-
-  //   toggleFullscreen (): void {
-  //     this.isFullscreen = !this.isFullscreen
-  //     this.$nextTick(() => {
-  //       this.axis.resize()
-  //     })
-  //   }
-
-  //   toggleLine (id: string): void {
-  //     const tag = this.tags.find(tag => { return tag.id === id })
-  //     const visible = wbCharts.toggleChartVisisbility(this.axis, id)
-  //     if (tag) {
-  //       tag.disabled = !visible
-  //     }
-  //   }
-
-  //   removeTag (tag: Tag): void {
-  //     this.$emit('remove-series', [tag.id])
-  //   }
-
-  resize (): void {
+  toggleFullscreen(): void {
+    this.isFullscreen = !this.isFullscreen
     this.$nextTick(() => {
       this.axis.resize()
     })
   }
-}
+
+  toggleLine(id: string): void {
+    const tag = this.groups.find(tag => {
+      return tag.id === id
+    })
+    const visible = wbCharts.toggleChartVisisbility(this.axis, id)
+    if (tag) {
+      tag.disabled = !visible
+    }
+  }
+
+
+  resize(): void {
+    this.$nextTick(() => {
+      this.axis.resize()
+    })
+  }
+  }
 </script>
 
 <style>
@@ -286,3 +296,4 @@ export default class ConfigurableChart extends Vue {
   fill: currentColor;
 }
 </style>
+p

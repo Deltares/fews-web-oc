@@ -38,6 +38,4 @@ export interface ChartConfig {
   radialAxis?: Axis[];
   angularAxis?: Axis[];
   series?: ChartSeries[];
-  lastUpdated: Date;
-  reloadRequired: boolean;
 }
