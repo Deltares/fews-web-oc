@@ -49,8 +49,9 @@ export default class Home extends Vue {
     },
     {
       title: 'Time Series Display',
-      to: 'display',
-      component: 'display-component'
+      to: 'series',
+      component: 'time-series-component',
+      props: { src: `${this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')}/rest/fewspiservice/v1/topology/nodes` }
     },
   ]
 
