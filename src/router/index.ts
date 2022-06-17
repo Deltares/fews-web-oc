@@ -53,7 +53,7 @@ const routes: Array<RouteConfig> = [
   },
   {
     // /series/workflow/Plateau1_MD
-    path: '/series/workflow/:workflowId',
+    path: '/series/node/:nodeId',
     name: 'TimeSeriesDisplay',
     component: TimeSeriesDisplay,
     props: true,

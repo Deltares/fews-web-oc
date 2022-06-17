@@ -39,4 +39,40 @@ html, body {
 .v-btn {
   text-transform: capitalize !important;
 }
+
+.theme--light *::-webkit-scrollbar {
+  width: 15px;
+}
+
+.theme--light *::-webkit-scrollbar-track, *::-webkit-scrollbar-corner {
+  background: #e6e6e6;
+}
+
+.theme--light *::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border: solid 3px #e6e6e6;
+  border-radius: 7px;
+}
+
+.theme--light *::-webkit-scrollbar-thumb:hover {
+  background: #7d7d7d;
+}
+
+.theme--dark *::-webkit-scrollbar {
+  width: 15px;
+}
+
+.theme--dark *::-webkit-scrollbar-track, *::-webkit-scrollbar-corner {
+  background: #202020;
+}
+
+.theme--dark *::-webkit-scrollbar-thumb {
+  background: #757575;
+  border: solid 3px #202020;
+  border-radius: 7px;
+}
+
+.theme--dark *::-webkit-scrollbar-thumb:hover {
+  background: #9e9e9e;
+}
 </style>

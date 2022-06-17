@@ -5,5 +5,5 @@ export interface ColumnItem {
   name: string;
   children?: ColumnItem[];
   to?: Location;
-  icon: string;
+  icon?: string;
 }

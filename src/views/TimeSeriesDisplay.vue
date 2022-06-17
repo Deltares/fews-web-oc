@@ -30,9 +30,9 @@
       </ColumnMenu>
     </portal>
     <v-main style="overflow-y: auto; height: 100%">
-      <div>
-        Hoi 😊 - {{ workflowId }}
-        <time-series-component />
+      <div v-for="(display, index) in displays" :key="index">
+        {{ display.config.timeSeriesDisplay.title }}
+        <time-series-component :value="display.config.timeSeriesDisplay"/>
       </div>
     </v-main>
   </div>
@@ -54,21 +54,28 @@ import TimeSeriesComponent from '@/components/TimeSeriesComponent/index.vue'
 })
 export default class timeseriesView extends Vue {
   @Prop({ default: '', type: String })
-  workflowId!: string
+  nodeId!: string
 
   drawer = true
   active: string[] = []
   open: string[] = []
   items: ColumnItem[] = []
   viewMode = 0
+  baseUrl!: string
+  displays = []
 
-  mounted (): void {
+  created (): void {
+    this.baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+  }
+
+  async mounted (): Promise<void> {
     console.log('mounted', this)
-    this.loadNodes()
+    await this.loadNodes()
+    this.onNodeChange()
   }
 
   async loadNodes (): Promise<void> {
-    const response = await fetch('https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/rest/fewspiservice/v1/topology/nodes')
+    const response = await fetch(`${this.baseUrl}/rest/fewspiservice/v1/topology/nodes`)
     const nodes = await response.json()
 
     const recursiveUpdateNode: any = (nodes: any[]) => {
@@ -84,7 +91,7 @@ export default class timeseriesView extends Vue {
           result.to = {
             name: 'TimeSeriesDisplay',
             params: {
-              workflowId: node.id
+              nodeId: node.id
             }
           }
         }
@@ -102,6 +109,13 @@ export default class timeseriesView extends Vue {
 
     this.items = items
     this.open = [items[0].id]
+  }
+
+  @Watch('nodeId')
+  async onNodeChange (): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/rest/fewspiservice/v1/displaygroups?&nodeId=${this.nodeId}`)
+    const json = await response.json()
+    this.displays = json.results
   }
 
   @Watch('active')
