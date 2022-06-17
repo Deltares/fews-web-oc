@@ -11,6 +11,7 @@
   "dependencies": {
     "@mdi/font": "^6.4.95",
     "core-js": "^3.6.5",
+    "crypto-js": "^4.1.1",
     "fews-ssd-requests": "file:fews-ssd-requests-0.2.1.tgz",
     "fews-ssd-web-component": "file:fews-ssd-web-component-0.0.1.tgz",
     "lodash": "^4.17.21",
@@ -29,6 +30,7 @@
     "wb-charts": "file:wb-charts-master.tar.gz"
   },
   "devDependencies": {
+    "@types/crypto-js": "^4.1.1",
     "@types/jest": "^24.0.19",
     "@types/lodash": "^4.14.182",
     "@types/mapbox-gl": "^2.4.2",
