@@ -9,6 +9,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@deltares/fews-web-oc-components": "^0.1.1",
     "@mdi/font": "^6.4.95",
     "core-js": "^3.6.5",
     "crypto-js": "^4.1.1",
