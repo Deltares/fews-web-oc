@@ -41,3 +41,37 @@ The following settings can be provided:
 | `VUE_APP_FEWS_WEBSERVICES_URL`         | Url of the FewsWebServices, e.g. "https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices" |
 | `VUE_APP_REQEUST_HEADER_AUTHORIZATION` | 'Bearer': pass OIDC `id_token` as bearer for request to the FewsWebServices                           |
 |                                        | 'Off': no Authorization request header                                                                |
+
+
+## Installing the fews-web-oc-components package
+
+There are multiple ways to be able to install the package.
+
+**Through ~/.npmrc**
+
+Open the `~/.npmrc` file and write the following line:
+
+```text
+//npm.pkg.github.com/:_authToken=TOKEN
+```
+
+`TOKEN` should be replaced with a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) with the following scope:
+* read:packages
+
+**WARNING**
+DO NOT PUSH YOUR PERSONAL ACCESS TOKEN TO GITHUB
+
+**Through command line**
+
+Open a terminal in the project root and type:
+
+```commandline
+$ npm login --scope=@deltares --registry=https://npm.pkg.github.com
+
+> Username: GITHUB USERNAME
+> Password: PERSONAL ACCESS TOKEN WITH read:packages SCOPE
+> Email: PUBLIC-EMAIL-ADDRESS
+
+$ npm install
+
+```
