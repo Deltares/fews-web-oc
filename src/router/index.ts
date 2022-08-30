@@ -96,13 +96,10 @@ const router = new VueRouter({
 
 router.beforeEach(async (to, from, next) => {
   // redirect to login page if not logged in and trying to access a restricted page
-  console.log('authority = ', process.env.VUE_APP_AUTH_AUTHORITY)
   if (process.env.VUE_APP_AUTH_AUTHORITY)
   {
     const authorize = to.meta?.authorize
-
     const currentUser = await authenticationService.getUser()
-
     if (authorize) {
         if (currentUser === null) {
         return next({ name: 'Login', query: { redirect: to.name } })
