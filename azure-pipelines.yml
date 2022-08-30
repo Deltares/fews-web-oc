@@ -1,8 +1,3 @@
-# Node.js with Vue
-# Build a Node.js project that uses Vue.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger:
 - main
 
@@ -40,42 +35,3 @@ steps:
     api_location: ''
     output_location: ''
     azure_static_web_apps_api_token: $(deployment_token)
-
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: |
-      rm -rf dist
-      rm .env
-      echo 'VUE_APP_PUBLIC_PATH="/"' >> .env
-
-      mkdir -p dist/WEB-INF
-      cat > dist/WEB-INF/web.xml <<EOL
-        <?xml version="1.0" encoding="UTF-8"?>
-        <web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
-        <description>Delft-FEWS Web OC</description>
-        <!-- For the web oc all 404 errors need to redirect to the index.html page. -->
-        <error-page>
-        <error-code>404</error-code>
-        <location>/index.html</location>
-        </error-page>
-        </web-app>
-      EOL
-
-      cat > dist/app-config.json <<EOL
-      {
-        "VUE_APP_FEWS_WEBSERVICES_URL": "http://localhost:8080/FewsWebServices",
-        "VUE_APP_MAPBOX_TOKEN": "get a token at: https://account.mapbox.com/access-tokens",
-        "_VUE_APP_AUTH_AUTHORITY": "https://login.microsoftonline.com/MYTENANTID/",
-        "_VUE_APP_AUTH_ID": "app registration id",
-        "_VUE_APP_AUTH_TYPE": "code",
-        "_VUE_APP_AUTH_SCOPE": "openid"
-      }
-      EOL
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)/dist'
-    includeRootFolder: true
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-    replaceExistingArchive: true
