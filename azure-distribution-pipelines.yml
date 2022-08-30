@@ -29,11 +29,12 @@ steps:
         </error-page>
         </web-app>
       EOL
-#      Overwrite the app config.
+
       cat > public/app-config.json <<EOL
       {
         "VUE_APP_FEWS_WEBSERVICES_URL": "http://localhost:8080/FewsWebServices",
         "VUE_APP_MAPBOX_TOKEN": "get a token at: https://account.mapbox.com/access-tokens",
+        "README": "To Enable OIDC login, provide the following properties without the _ prefix."
         "_VUE_APP_AUTH_AUTHORITY": "https://login.microsoftonline.com/MYTENANTID/",
         "_VUE_APP_AUTH_ID": "app registration id",
         "_VUE_APP_AUTH_TYPE": "code",
