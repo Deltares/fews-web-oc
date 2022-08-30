@@ -96,19 +96,23 @@ const router = new VueRouter({
 
 router.beforeEach(async (to, from, next) => {
   // redirect to login page if not logged in and trying to access a restricted page
-  const authorize = to.meta?.authorize
+  console.log('authority = ', process.env.VUE_APP_AUTH_AUTHORITY)
+  if (process.env.VUE_APP_AUTH_AUTHORITY)
+  {
+    const authorize = to.meta?.authorize
 
-  const currentUser = await authenticationService.getUser()
+    const currentUser = await authenticationService.getUser()
 
-  if (authorize) {
-    if (currentUser === null) {
-      return next({ name: 'Login', query: { redirect: to.name } })
-    }
+    if (authorize) {
+        if (currentUser === null) {
+        return next({ name: 'Login', query: { redirect: to.name } })
+        }
 
-    // TODO: check alle roles
-    const role = currentUser.profile.roles !== undefined ? (currentUser.profile as any).roles[0] : 'guest'
-    if (authorize.length && !authorize.includes(role)) {
-      return next({ name: 'Home' })
+        // TODO: check alle roles
+        const role = currentUser.profile.roles !== undefined ? (currentUser.profile as any).roles[0] : 'guest'
+        if (authorize.length && !authorize.includes(role)) {
+        return next({ name: 'Home' })
+        }
     }
   }
   next()
