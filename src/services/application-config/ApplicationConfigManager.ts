@@ -7,13 +7,14 @@ export class ApplicationConfigManager {
     this._config = config
   }
 
-  get<T> (name: keyof ApplicationConfig): T {
+  get <T extends keyof ApplicationConfig>(name: T): ApplicationConfig[T] {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const value = process.env[name] || this._config[name]
-    if (value !== undefined) {
-      return process.env[name] || this._config[name]
-    } else {
-      throw new Error(`Cannot find config for '${name}'`)
+    const configValue = this._config[name]
+    if (configValue !== undefined ) return configValue
+    const envValue = process.env[name]
+    if (envValue !== undefined) {
+      return envValue
     }
+    throw new Error(`Cannot find config for '${name}'`)
   }
 }

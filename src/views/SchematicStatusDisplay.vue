@@ -62,7 +62,7 @@ export default class SsdView extends Mixins(SSDMixin) {
   debouncedUpdate!: () => void
 
   async created (): Promise<void> {
-    this.baseUrl = this.$config.get<string>('VUE_APP_FEWS_WEBSERVICES_URL')
+    this.baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     this.debouncedUpdate = debounce(this.setTime, 500, { leading: true, trailing: true })
   }
 

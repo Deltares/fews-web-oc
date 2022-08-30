@@ -45,7 +45,7 @@ export default class Home extends Vue {
       title: 'Schematic Status Display',
       to: 'ssd',
       component: 'ssd-component',
-      props: { src: `${this.$config.get<string>('VUE_APP_FEWS_WEBSERVICES_URL')}/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN` }
+      props: { src: `${this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')}/ssd?request=GetDisplay&ssd=Overzichtsscherm_WMCN` }
     },
     {
       title: 'Time Series Display',
@@ -64,7 +64,7 @@ export default class Home extends Vue {
     }
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const eu = this
-    const authorizationType = this.$config.get<RequestHeaderAuthorization>('VUE_APP_REQEUST_HEADER_AUTHORIZATION')
+    const authorizationType = this.$config.get('VUE_APP_REQEUST_HEADER_AUTHORIZATION')
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     XMLHttpRequest.prototype.open = function (method: string, url: string|URL, async?: boolean, username?: string, password?: string) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
