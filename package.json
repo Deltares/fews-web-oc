@@ -10,10 +10,10 @@
   },
   "dependencies": {
     "@deltares/fews-ssd-requests": "^0.2.3",
+    "@deltares/fews-ssd-webcomponent": "^0.2.3",
     "@mdi/font": "^6.4.95",
     "core-js": "^3.6.5",
     "crypto-js": "^4.1.1",
-    "fews-ssd-web-component": "file:fews-ssd-web-component-0.0.1.tgz",
     "lodash": "^4.17.21",
     "luxon": "^2.4.0",
     "mapbox-gl": "^2.8.2",

@@ -7,7 +7,7 @@ import router from './router'
 import './plugins/vue2mapbox-gl'
 import auth from '@/services/auth'
 import config from '@/services/application-config'
-import { defineCustomElements } from 'fews-ssd-web-component'
+import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
 import PortalVue from 'portal-vue'
 
 defineCustomElements(window)
