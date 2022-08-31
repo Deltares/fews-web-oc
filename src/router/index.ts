@@ -45,7 +45,7 @@ const routes: Array<RouteConfig> = [
     meta: { authorize: [], sidebar: true }
   },
   {
-    path: '/map/:layerName',
+    path: '/map/:layerName?',
     name: 'SpatialDisplay',
     component: SpatialDisplay,
     props: true,
@@ -53,7 +53,7 @@ const routes: Array<RouteConfig> = [
   },
   {
     // /series/workflow/Plateau1_MD
-    path: '/series/node/:nodeId',
+    path: '/series/node/:nodeId?',
     name: 'TimeSeriesDisplay',
     component: TimeSeriesDisplay,
     props: true,
