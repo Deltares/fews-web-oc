@@ -26,6 +26,7 @@ steps:
       echo 'VUE_APP_FEWS_WEBSERVICES_URL="https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/"'
 
 - script: |
+    cp docs/deployments/azure/staticwebapp.config.json .
     npm install
     npm run build
   displayName: 'npm install and build of Web Operator Client'  
