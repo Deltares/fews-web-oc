@@ -32,13 +32,14 @@ export default class MapComponent extends Vue {
     layer!: any
 
   mapObject!: Map
-  accessToken = process.env.VUE_APP_MAPBOX_TOKEN
+  accessToken: string = ''
   newLayerId!: string
   initialRenderDone = false
   counter = 0
   currentLayer: string = ''
 
   mounted (): void {
+    this.accessToken = this.$config.get('VUE_APP_MAPBOX_TOKEN')
     this.mapObject = (this.$refs.map as any).map
     this.mapObject.once('load', (e) => {
       this.initialRenderDone = true
