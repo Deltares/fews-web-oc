@@ -1,5 +1,5 @@
 import { Vue, Component } from 'vue-property-decorator'
-import { datesFromPeriod, SsdWebserviceProvider, Capabilities, DisplayGroup, DisplayPanel } from 'fews-ssd-requests' // eslint-disable-line no-unused-vars
+import { datesFromPeriod, SsdWebserviceProvider, Capabilities, DisplayGroup, DisplayPanel } from '@deltares/fews-ssd-requests' // eslint-disable-line no-unused-vars
 
 @Component
 export default class SSDMixin extends Vue {
