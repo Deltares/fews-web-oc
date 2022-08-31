@@ -37,7 +37,14 @@ Settings in the `.env` file are parsed on build time, while settings in the `app
 The following settings can be provided:
 
 | Key                                    | Description                                                                                           |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+|----------------------------------------|-------------------------------------------------------------------------------------------------------|
 | `VUE_APP_FEWS_WEBSERVICES_URL`         | Url of the FewsWebServices, e.g. "https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices" |
 | `VUE_APP_REQEUST_HEADER_AUTHORIZATION` | 'Bearer': pass OIDC `id_token` as bearer for request to the FewsWebServices                           |
 |                                        | 'Off': no Authorization request header                                                                |
+| `VUE_APP_AUTH_AUTHORITY`               | Url of the OIDC authority, e.g. "https://login.microsoftonline.com/MYTENANTID/".                      |
+|                                        | If not configured the web oc can be accessed without authentication.                                  |
+| `VUE_APP_MAPBOX_TOKEN`                 | Mapbox token. Can be retrieved from: https://account.mapbox.com/access-tokens.                        |
+
+For general documentation about the Web OC, please see: 
+
+[Documentation](docs/)
