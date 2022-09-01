@@ -19,7 +19,7 @@
       </ColumnMenu>
     </portal>
     <div style="height: calc(100% - 48px);">
-      <SSDComponent
+      <SSDComponent @action="onAction"
         :src="src">
       </SSDComponent>
     </div>
@@ -37,6 +37,7 @@ import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import SSDMixin from '@/mixins/SSDMixin'
 import { debounce } from 'lodash'
+import { Result } from '@deltares/fews-ssd-requests'
 
 @Component({
   components: {
@@ -116,9 +117,9 @@ export default class SsdView extends Mixins(SSDMixin) {
   get src (): string {
     if (this.timeIndex !== null) {
       const time = this.timeIndex.toISOString().replace(/.\d+Z$/g, 'Z')
-      return `${this.baseUrl}/ssd?request=GetDisplay&ssd=${this.panelId}&time=${time}`
+      return `${this.baseUrl}/FewsWebServices/ssd?request=GetDisplay&ssd=${this.panelId}&time=${time}`
     }
-    return `${this.baseUrl}/ssd?request=GetDisplay&ssd=${this.panelId}`
+    return `${this.baseUrl}/FewsWebServices/ssd?request=GetDisplay&ssd=${this.panelId}`
   }
 
   @Watch('groupId')
@@ -139,6 +140,46 @@ export default class SsdView extends Mixins(SSDMixin) {
   @Watch('open')
   onOpenChange (): void {
     console.log('update:open', this.open)
+  }
+
+  onAction (event: CustomEvent): void {
+    const results: Result[] = event.detail
+    if (results.length === 0) {
+      throw new Error('No left click actions defined for this object')
+    }
+    if (results[0].type === 'URL') { this.actionUrl(new URL(results[0].requests[0].request)) }
+    if (results[0].type === 'PDF') { this.actionUrl(new URL(results[0].requests[0].request)) }
+    if (results[0].type === 'SSD') { this.switchPanel(results[0].requests[0].request) }
+  }
+
+  actionUrl(url: URL) {
+    window.open(url.toString())
+  }
+
+  switchPanel (request: string) {
+    const url = new URL(this.baseUrl + request)
+    const panelId = url.searchParams.get('ssd')
+    if (panelId) {
+      const group = this.capabilities.displayGroups.find((g) => {
+        const index = g.displayPanels.findIndex((panel) => {
+          return panel.name === panelId
+        })
+        return index > -1
+      })
+      const groupId = group?.name
+      if (groupId) {
+        const index = this.excludedGroupsNames.findIndex((name:string) => {
+          return name === groupId
+        })
+        if (index === -1) {
+          this.$router.push({
+            name: 'SchematicStatusDisplay',
+            params: { groupId, panelId },
+            query: this.$route.query
+          }).finally(() => { document.title = `${this.currentPanel.title}` })
+        }
+      }
+    }
   }
 }
 </script>
