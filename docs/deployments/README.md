@@ -2,7 +2,7 @@
 
 The Delft-FEWS Web OC is distributed as a single page web application.
 When deployed to a server like Nginx or Tomcat it is required to make sure that all requests are mapped to the index.html page of the web oc.
-This means that the server will have to redirect all HTTP 404 errors to the index.html. How this is described will be explained in per deployment.
+This means that the server will have to redirect all HTTP 404 errors to the index.html. How this can be done is explained per deployment option.
 
 ## Tomcat
 
@@ -39,12 +39,11 @@ Using Azure DevOps a pipeline can be created to build and deploy the Delft-FEWS 
 The following is an example of a pipeline: [azure-pipelines.yml](azure/azure-pipelines.yml).
 To make sure all requests are redirected to the index.html, the following [staticwebapp.config.json](azure/staticwebapp.config.json) has to be added to the deployment.
 
-
 ## Delft-FEWS Standalone
 
-The Delft-FEWS Web OC can be deployed in a standalone as follows"
+The Delft-FEWS Web OC can be deployed in a Delft-FEWS Standalone as follows"
 
-In Modules folder of the Delft-FEWS Region Home folder, create a directory named: "weboc".
+In the "Modules" folder of the Delft-FEWS Region Home folder, create a directory named: "weboc".
 Unzip the Delft-FEWS Web OC distribution into that folder.
 Create a subfolder "WEB-INF" in the weboc folder.
 
@@ -68,9 +67,7 @@ version="3.0">
 
 Customize the app-config.json file where appropriate.
 
-After starting tomcat the Delft-FEWS Web OC is available at: http://localhost:8080
-
-
+After starting tomcat using F12 in the Standalone the Delft-FEWS Web OC is available at: http://localhost:8080
 
 ## Nginx
 TODO
