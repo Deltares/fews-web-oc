@@ -42,7 +42,7 @@ export default class Home extends Vue {
     { id: 'Spatial Display', icon: 'mdi-map', to: { name: 'SpatialDisplay' } },
     { id: 'Time Series Display', icon: 'mdi-chart-sankey', to: { name: 'TimeSeriesDisplay' } },
     { id: 'Explore Archive', icon: 'mdi-archive-search', to: { name: 'Explore' } },
-    { id: 'Tasks', icon: 'mdi-clipboard-list', to: { name: 'Tasks' } },
+    { id: 'System monitor', icon: 'mdi-clipboard-list', to: { name: 'SystemMonitor' } },
   ]
 
   toggleDrawer (): void {
