@@ -64,7 +64,7 @@ export default class Home extends Vue {
     }
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const eu = this
-    const authorizationType = this.$config.get('VUE_APP_REQEUST_HEADER_AUTHORIZATION')
+    const authorizationType = this.$config.get('VUE_APP_REQUEST_HEADER_AUTHORIZATION')
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     XMLHttpRequest.prototype.open = function (method: string, url: string|URL, async?: boolean, username?: string, password?: string) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
