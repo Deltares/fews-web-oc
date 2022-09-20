@@ -30,13 +30,14 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator'
+import {Header} from "@/components/systemmonitor/lib/header";
 
 @Component
 export default class ImportStatusComponent extends Vue {
   @Prop({default: ''})
   baseUrl!: string
 
-  headers: any = [
+  headers: Header[] = [
     {text: 'Source', value: 'dataFeed',},
     {text: 'Directory', value: 'directory',},
     {text: 'Last import time', value: 'lastImportTime'},

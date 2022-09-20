@@ -23,13 +23,14 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator'
+import {Header} from "@/components/systemmonitor/lib/header";
 
 @Component
 export default class RunningTasks extends Vue {
   @Prop({ default: '' })
   baseUrl!: string
 
-  headers: any = [
+  headers: Header[] = [
     {
       text: 'Task run id', value: 'id',
     },
@@ -48,7 +49,6 @@ export default class RunningTasks extends Vue {
   }
 
   async mounted(): Promise<void> {
-    console.log("runnning mounted"+this.baseUrl)
     this.active = true;
     await this.loadRunningTasks();
   }
