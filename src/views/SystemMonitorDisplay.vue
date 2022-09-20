@@ -5,10 +5,10 @@
         <v-tab>Running tasks</v-tab>
         <v-tab>Import status</v-tab>
         <v-tab-item :key="0">
-          <RunningTasks :base-url="this.baseUrl" :visible="this.selectedTab===0"></RunningTasks>
+          <RunningTasks :base-url="this.baseUrl" :time-out=2000 :visible="this.selectedTab===0"></RunningTasks>
         </v-tab-item>
         <v-tab-item :key="1">
-          <ImportStatusComponent :base-url="this.baseUrl" :visible="this.selectedTab===1"></ImportStatusComponent>
+          <ImportStatusComponent :base-url="this.baseUrl" :time-out=2000 :visible="this.selectedTab===1"></ImportStatusComponent>
         </v-tab-item>
       </v-tabs>
     </div>

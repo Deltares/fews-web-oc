@@ -23,14 +23,17 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator'
-import {Header} from "@/components/systemmonitor/lib/header";
+import {TableHeader} from "@/components/systemmonitor/lib/tableHeader";
 
 @Component
 export default class RunningTasks extends Vue {
   @Prop({ default: '' })
   baseUrl!: string
 
-  headers: Header[] = [
+  @Prop({default: 2000})
+  timeOut!: number
+
+  headers: TableHeader[] = [
     {
       text: 'Task run id', value: 'id',
     },
@@ -78,7 +81,7 @@ export default class RunningTasks extends Vue {
     } catch (error) {
       console.log(error)
     } finally {
-      setTimeout(this.loadRunningTasks, 2000)
+      setTimeout(this.loadRunningTasks, this.timeOut)
     }
   }
 }

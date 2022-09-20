@@ -30,14 +30,17 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator'
-import {Header} from "@/components/systemmonitor/lib/header";
+import {TableHeader} from "@/components/systemmonitor/lib/tableHeader";
 
 @Component
 export default class ImportStatusComponent extends Vue {
   @Prop({default: ''})
   baseUrl!: string
 
-  headers: Header[] = [
+  @Prop({default: 2000})
+  timeOut!: number
+
+  headers: TableHeader[] = [
     {text: 'Source', value: 'dataFeed',},
     {text: 'Directory', value: 'directory',},
     {text: 'Last import time', value: 'lastImportTime'},
@@ -75,7 +78,7 @@ export default class ImportStatusComponent extends Vue {
     } catch (error) {
       console.log(error)
     } finally {
-      setTimeout(this.loadRunningTasks, 2000)
+      setTimeout(this.loadRunningTasks, this.timeOut)
     }
   }
 }
