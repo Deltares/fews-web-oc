@@ -8,4 +8,6 @@ export type ApplicationConfig = {
   VUE_APP_AUTH_SCOPE: string;
   VUE_APP_REQUEST_HEADER_AUTHORIZATION: RequestHeaderAuthorization;
   VUE_APP_MAPBOX_TOKEN: string;
+  VUE_APP_AUTH_AUTHORITY: string;
+  VUE_APP_AUTH_ID: string;
 }
