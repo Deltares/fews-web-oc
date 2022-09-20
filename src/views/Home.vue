@@ -25,13 +25,15 @@ import { Component, Vue } from 'vue-property-decorator'
 import MapComponent from '@/components/MapComponent.vue'
 import SsdComponent from '@/components/SsdComponent.vue'
 import DisplayComponent from './DisplayComponent.vue'
+import SystemMonitor from './SystemMonitorDisplay.vue'
 import { RequestHeaderAuthorization } from '@/services/application-config/ApplicationConfig'
 
 @Component({
   components: {
     MapComponent,
     SsdComponent,
-    DisplayComponent
+    DisplayComponent,
+    SystemMonitor
   }
 })
 export default class Home extends Vue {
@@ -52,6 +54,11 @@ export default class Home extends Vue {
       to: 'series',
       component: 'time-series-component',
       props: { src: `${this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')}/rest/fewspiservice/v1/topology/nodes` }
+    },
+    {
+      title: 'System monitor',
+      to: 'systemmonitor',
+      component: 'system-monitor',
     },
   ]
 
