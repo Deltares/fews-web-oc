@@ -24,6 +24,9 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator'
 import {TableHeader} from "@/components/systemmonitor/lib/tableHeader";
+import {PiWebserviceProvider, TaskRunsFilter} from "@deltares/fews-pi-requests";
+import {TaskRunsResponse} from "@deltares/fews-pi-requests/src/response";
+import {TaskRun} from "@deltares/fews-pi-requests/src/response/tasks/taskRun";
 
 @Component
 export default class RunningTasks extends Vue {
@@ -44,7 +47,7 @@ export default class RunningTasks extends Vue {
     {text: 'Status', value: 'status'},
     {text: 'FDO', value: 'user'},
   ]
-  runningTasks: string[] = []
+  runningTasks: TaskRun[] = []
   active: boolean = false;
 
   destroyed() {
@@ -71,13 +74,13 @@ export default class RunningTasks extends Vue {
   async loadRunningTasks() {
     try {
       if (!this.active) return
-      const url = this.baseUrl + "/rest/fewspiservice/v1/taskruns?taskRunStatusIds=R&taskRunStatusIds=P&documentFormat=PI_JSON&onlyForecasts=false";
-      const res = await fetch(url, {
-        cache: "no-store",
-        method: "GET"
-      });
-      const json = await res.json();
-      this.runningTasks = json.taskRuns;
+      const provider = new PiWebserviceProvider(this.baseUrl);
+      const taskRunFilter: TaskRunsFilter = {
+        taskRunStatusIds: ["R", "P"],
+        onlyForecasts: false,
+      };
+      const res: TaskRunsResponse = await provider.getTaskRuns(taskRunFilter);
+      this.runningTasks = res.taskRuns;
     } catch (error) {
       console.log(error)
     } finally {
