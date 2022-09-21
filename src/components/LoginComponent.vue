@@ -19,7 +19,7 @@
         </template>
         <v-list>
           <v-list-item>
-            <v-list-item-title>{{ user.profile.given_name }} {{ user.profile.family_name }}</v-list-item-title>
+            <v-list-item-title>{{ user.profile.name }}</v-list-item-title>
           </v-list-item>
           <v-list-item v-if="user.profile.roles">
             <v-list-item-icon>
@@ -48,16 +48,14 @@
 import { Component, Vue } from 'vue-property-decorator'
 import { User } from 'oidc-client-ts'
 
-function firstUppercaseChar (str: string): string {
-  for (let i = 0; i < str.length; i++) {
-    const character = str[i]
-    if (character !== character.toLowerCase()) { return character }
+function initialsFromName (givenName: string): string {
+  let initials = ''
+  for (let i = 0; i < givenName.length; i++) {
+    const character = givenName[i]
+    if (character !== character.toLowerCase()) { initials = initials + character }
+    if (initials.length == 2) return initials;
   }
-  return ''
-}
-
-function initialsFromName (givenName: string, familyName: string): string {
-  return firstUppercaseChar(givenName) + firstUppercaseChar(familyName)
+  return initials
 }
 
 @Component
@@ -84,8 +82,8 @@ export default class LoginComponent extends Vue {
   }
 
   get initials (): string {
-    if (this.user?.profile?.given_name === undefined || this.user?.profile?.family_name === undefined) return ''
-    return initialsFromName(this.user.profile.given_name, this.user.profile.family_name)
+    if (this.user?.profile?.name === undefined) return ''
+    return initialsFromName(this.user.profile.name)
   }
 }
 </script>
