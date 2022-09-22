@@ -10,8 +10,10 @@
   },
   "dependencies": {
     "@deltares/fews-ssd-requests": "^0.2.3",
+    "@deltares/fews-pi-requests": "^0.5.12",
     "@deltares/fews-ssd-webcomponent": "^0.2.3",
     "@mdi/font": "^6.4.95",
+    "@types/node-fetch": "^2.6.2",
     "core-js": "^3.6.5",
     "crypto-js": "^4.1.1",
     "lodash": "^4.17.21",
