@@ -36,6 +36,6 @@ export default class WMSMixin extends Vue {
 
   async getLegendGraphic (layers: string): Promise<any> {
     const response = await this.wmsProvider.getLegendGraphic({ layers })
-    return response.legend
+    return response
   }
 }
