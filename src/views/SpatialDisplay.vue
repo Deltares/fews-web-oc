@@ -21,7 +21,7 @@
     <div style="height: calc(100% - 48px); position: relative">
       <MapComponent :layer="layerOptions" />
       <div class="colourbar">
-        <ColourBar v-model="legend" />
+        <ColourBar v-model="legend" v-if="legend.length > 0"/>
       </div>
     </div>
     <DateTimeSlider class="date-time-slider" v-model="currentTime" :dates="times" @update:now="setCurrentTime"
