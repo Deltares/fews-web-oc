@@ -79,7 +79,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     const items: ColumnItem[] = [
       {
         id: 'root',
-        name: 'Layers',
+        name: 'Layers'
       }
     ]
     items[0].children = []
@@ -90,6 +90,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
         children.push({
           id: layer.name,
           name: layer.title || layer.name,
+          nodata: layer.completelyMissing || false,
           to: {
             name: 'SpatialDisplay',
             params: {

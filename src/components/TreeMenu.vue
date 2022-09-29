@@ -12,7 +12,7 @@
       @update:active="(event) => $emit('update:active',event)"
     >
       <template slot="label" slot-scope="props">
-        <v-list-item dense :to="props.item.to">
+        <v-list-item dense :to="props.item.to" :disabled="props.item.nodata">
           <v-list-item-content>
           {{ props.item.name }}
           </v-list-item-content>
