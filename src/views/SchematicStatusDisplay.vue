@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
+import { Component, Mixins, Prop, Watch, Vue } from 'vue-property-decorator'
 import SSDComponent from '@/components/SsdComponent.vue'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
@@ -104,6 +104,15 @@ export default class SsdView extends Mixins(SSDMixin) {
     }
     this.items = items
     this.open = [items[0].id]
+    if (this.groupId === "") {
+      const groupId = this.capabilities.displayGroups[0].name
+      const panelId = this.capabilities.displayGroups[0].displayPanels[0].name
+      this.$router.push({
+        name: 'SchematicStatusDisplay',
+        params: { groupId, panelId },
+        query: this.$route.query
+      })
+    }
   }
 
   setTime (): void {
@@ -125,21 +134,19 @@ export default class SsdView extends Mixins(SSDMixin) {
   @Watch('groupId')
   onGroupIdChange (): void {
     this.selectGroup(this.groupId)
+    Vue.set(this.open, 1, this.groupId)
   }
 
   @Watch('panelId')
   onPanelIdChange (): void {
     this.selectPanel(this.panelId)
+    Vue.set(this.open, 2, this.panelId)
+    this.active = [this.panelId]
   }
 
   @Watch('active')
-  onActiveChange (): void {
-    console.log('update:active', this.active)
-  }
-
-  @Watch('open')
-  onOpenChange (): void {
-    console.log('update:open', this.open)
+  onActiveChange (newValue: string[], oldValue: string[]): void {
+    if (newValue.length === 0) this.active = oldValue
   }
 
   onAction (event: CustomEvent): void {

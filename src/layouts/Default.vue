@@ -38,7 +38,7 @@ export default class Home extends Vue {
   drawer: boolean | null = null
   menuItems = [
     { id: 'Overview', icon: 'mdi-apps', to: { name: 'Home' } },
-    { id: 'Schematic Status Display', icon: 'mdi-application-brackets-outline', to: { name: 'SchematicStatusDisplay', params: { groupId: '0', panelId: '0' } } },
+    { id: 'Schematic Status Display', icon: 'mdi-application-brackets-outline', to: { name: 'SchematicStatusDisplay' } },
     { id: 'Spatial Display', icon: 'mdi-map', to: { name: 'SpatialDisplay' } },
     { id: 'Time Series Display', icon: 'mdi-chart-sankey', to: { name: 'TimeSeriesDisplay' } },
     { id: 'Explore Archive', icon: 'mdi-archive-search', to: { name: 'Explore' } },
