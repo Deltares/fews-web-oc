@@ -31,6 +31,8 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator'
 import {TableHeader} from "@/components/systemmonitor/lib/tableHeader";
+import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
+import {ImportStatus} from "@deltares/fews-pi-requests/src/response/importStatus/importStatus"
 
 @Component
 export default class ImportStatusComponent extends Vue {
@@ -48,7 +50,7 @@ export default class ImportStatusComponent extends Vue {
     {text: 'Files imported', value: 'fileRead'},
     {text: 'Failed imports', value: 'fileFailed'},
   ]
-  importStatus: string[] = []
+  importStatus: ImportStatus[] = []
   active: boolean = false;
 
   destroyed() {
@@ -68,13 +70,9 @@ export default class ImportStatusComponent extends Vue {
   async loadRunningTasks() {
     try {
       if (!this.active) return
-      const url = this.baseUrl + "/rest/fewspiservice/v1/import/status?documentFormat=PI_JSON";
-      const res = await fetch(url, {
-        cache: "no-store",
-        method: "GET"
-      });
-      const json = await res.json();
-      this.importStatus = json.importStatus;
+      const provider = new PiWebserviceProvider(this.baseUrl);
+      const res = await provider.getImportStatus();
+      this.importStatus = res.importStatus;
     } catch (error) {
       console.log(error)
     } finally {
