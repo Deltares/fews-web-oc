@@ -9,9 +9,9 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@deltares/fews-ssd-requests": "^0.2.3",
+    "@deltares/fews-ssd-requests": "^0.2.7",
     "@deltares/fews-pi-requests": "^0.5.16",
-    "@deltares/fews-ssd-webcomponent": "^0.2.3",
+    "@deltares/fews-ssd-webcomponent": "^0.2.7",
     "@mdi/font": "^6.4.95",
     "@types/node-fetch": "^2.6.2",
     "core-js": "^3.6.5",
