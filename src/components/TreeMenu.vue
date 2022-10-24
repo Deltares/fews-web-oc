@@ -13,12 +13,16 @@
     >
       <template slot="label" slot-scope="props">
         <v-list-item dense :to="props.item.to" :disabled="props.item.nodata">
-          <v-list-item-content>
-          {{ props.item.name }}
-          </v-list-item-content>
-          <v-list-item-icon v-if="props.item.icon">
-            <v-icon>{{ props.item.icon }}</v-icon>
-          </v-list-item-icon>
+          <v-tooltip bottom open-delay="400">
+            <template v-slot:activator="{ on, attrs }">
+              <v-list-item-content
+                v-bind="attrs"
+                v-on="on">
+                {{ props.item.name }}
+              </v-list-item-content>
+            </template>
+            <span>{{ props.item.name }}</span>
+          </v-tooltip>
         </v-list-item>
       </template>
     </v-treeview>
