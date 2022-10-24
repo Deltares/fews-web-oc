@@ -19,7 +19,7 @@
       </ColumnMenu>
     </portal>
     <div style="height: calc(100% - 48px);">
-      <SSDComponent
+      <SSDComponent @action="onAction"
         :src="src">
       </SSDComponent>
     </div>
@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
+import { Component, Mixins, Prop, Watch, Vue } from 'vue-property-decorator'
 import SSDComponent from '@/components/SsdComponent.vue'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
@@ -37,6 +37,7 @@ import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import SSDMixin from '@/mixins/SSDMixin'
 import { debounce } from 'lodash'
+import { Result } from '@deltares/fews-ssd-requests'
 
 @Component({
   components: {
@@ -57,12 +58,12 @@ export default class SsdView extends Mixins(SSDMixin) {
   open: string[] = []
   items: ColumnItem[] = []
   viewMode = 0
-  baseUrl = ''
+  webServicesUrl = ''
   timeString = ''
   debouncedUpdate!: () => void
 
   async created (): Promise<void> {
-    this.baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    this.webServicesUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     this.debouncedUpdate = debounce(this.setTime, 500, { leading: true, trailing: true })
   }
 
@@ -103,6 +104,15 @@ export default class SsdView extends Mixins(SSDMixin) {
     }
     this.items = items
     this.open = [items[0].id]
+    if (this.groupId === "") {
+      const groupId = this.capabilities.displayGroups[0].name
+      const panelId = this.capabilities.displayGroups[0].displayPanels[0].name
+      this.$router.push({
+        name: 'SchematicStatusDisplay',
+        params: { groupId, panelId },
+        query: this.$route.query
+      })
+    }
   }
 
   setTime (): void {
@@ -116,29 +126,67 @@ export default class SsdView extends Mixins(SSDMixin) {
   get src (): string {
     if (this.timeIndex !== null) {
       const time = this.timeIndex.toISOString().replace(/.\d+Z$/g, 'Z')
-      return `${this.baseUrl}/ssd?request=GetDisplay&ssd=${this.panelId}&time=${time}`
+      return `${this.webServicesUrl}/ssd?request=GetDisplay&ssd=${this.panelId}&time=${time}`
     }
-    return `${this.baseUrl}/ssd?request=GetDisplay&ssd=${this.panelId}`
+    return `${this.webServicesUrl}/ssd?request=GetDisplay&ssd=${this.panelId}`
   }
 
   @Watch('groupId')
   onGroupIdChange (): void {
     this.selectGroup(this.groupId)
+    Vue.set(this.open, 1, this.groupId)
   }
 
   @Watch('panelId')
   onPanelIdChange (): void {
     this.selectPanel(this.panelId)
+    Vue.set(this.open, 2, this.panelId)
+    this.active = [this.panelId]
   }
 
   @Watch('active')
-  onActiveChange (): void {
-    console.log('update:active', this.active)
+  onActiveChange (newValue: string[], oldValue: string[]): void {
+    if (newValue.length === 0) this.active = oldValue
   }
 
-  @Watch('open')
-  onOpenChange (): void {
-    console.log('update:open', this.open)
+  onAction (event: CustomEvent): void {
+    const results: Result[] = event.detail
+    if (results.length === 0) {
+      throw new Error('No left click actions defined for this object')
+    }
+    if (results[0].type === 'URL') { this.actionUrl(new URL(results[0].requests[0].request)) }
+    if (results[0].type === 'PDF') { this.actionUrl(new URL(results[0].requests[0].request)) }
+    if (results[0].type === 'SSD') { this.switchPanel(results[0].requests[0].request) }
+  }
+
+  actionUrl(url: URL) {
+    window.open(url.toString())
+  }
+
+  switchPanel (request: string) {
+    const url = new URL(this.webServicesUrl + request)
+    const panelId = url.searchParams.get('ssd')
+    if (panelId) {
+      const group = this.capabilities.displayGroups.find((g) => {
+        const index = g.displayPanels.findIndex((panel) => {
+          return panel.name === panelId
+        })
+        return index > -1
+      })
+      const groupId = group?.name
+      if (groupId) {
+        const index = this.excludedGroupsNames.findIndex((name:string) => {
+          return name === groupId
+        })
+        if (index === -1) {
+          this.$router.push({
+            name: 'SchematicStatusDisplay',
+            params: { groupId, panelId },
+            query: this.$route.query
+          }).finally(() => { document.title = `${this.currentPanel.title}` })
+        }
+      }
+    }
   }
 }
 </script>

@@ -3,14 +3,14 @@
     <div class="tile-grid-content" :class="{hidden: isHidden}"
       :style="{ width: width + 'px', height: height + 'px', 'margin-left': margin.left + 'px', 'margin-top': margin.top + 'px', 'margin-bottom': margin.top + 'px' }"
       ref="scroll-content">
-      <schematic-status-display class="web-oc-ssd" :src="src" ref="ssd" @load="onLoad" style="width: 100%;">
+      <schematic-status-display class="web-oc-ssd" :src="src" ref="ssd" @load="onLoad" @action="onAction" style="width: 100%;">
       </schematic-status-display>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from 'vue-property-decorator'
+import { Component, Vue, Prop } from 'vue-property-decorator'
 
 @Component
 export default class SsdComponent extends Vue {
@@ -101,6 +101,10 @@ export default class SsdComponent extends Vue {
 
   onLoad (): void {
     this.resize()
+  }
+
+  onAction(e: CustomEvent): void {
+    this.$emit("action", e)
   }
 
   resize (): void {
