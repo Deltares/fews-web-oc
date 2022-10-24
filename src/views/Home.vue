@@ -78,8 +78,8 @@ export default class Home extends Vue {
       const argumentsTyped: any = arguments
       listener.httpRequestOpenInterceptor.apply(this, argumentsTyped)
       if (authorizationType === RequestHeaderAuthorization.BEARER) {
-        const idToken = oidcUser.id_token
-        this.setRequestHeader('Authorization', 'Bearer ' + idToken)
+        const accessToken = oidcUser.access_token
+        this.setRequestHeader('Authorization', 'Bearer ' + accessToken)
       }
       eu.$emit('start', this)
       this.addEventListener('load', function () {

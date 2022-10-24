@@ -11,38 +11,40 @@
       <v-icon>mdi-fullscreen-exit</v-icon>
     </v-btn>
     <v-toolbar :color="$vuetify.theme.dark ? '#1E1E1E' : '#FFFFFF'" dense flat style="flex-grow:0">
-      <v-spacer />
+      <v-spacer/>
       {{ value.title }}
-      <v-spacer />
+      <v-spacer/>
       <v-btn icon @click="toggleFullscreen()" v-if="!isFullscreen">
         <v-icon>mdi-fullscreen</v-icon>
       </v-btn>
       <slot name="toolbar-append" v-bind:refs="$refs"></slot>
     </v-toolbar>
     <v-sheet fluid class="chart-with-chips">
-      <div fluid :class="{'chart-with-legend': true }" >
+      <div fluid :class="{'chart-with-legend': true }">
         <div style="display:flex;flex:1 1; margin: 0 50px;">
-        <v-chip-group column active-class="primary--text">
-          <v-chip small v-for="tag in legendTags" :key="tag.id" @click="toggleLine(tag.id)" :disabled="tag.disabled">
-            <div>
-              <div style="margin-top:6px; margin-right: 5px;" v-html="tag.legendSvg"/>
-            </div>
-            {{ tag.name }}
-          </v-chip>
-        </v-chip-group>
+          <v-chip-group column active-class="primary--text">
+            <v-chip small v-for="tag in legendTags" :key="tag.id" @click="toggleLine(tag.id)" :disabled="tag.disabled">
+              <div>
+                <div style="margin-top:6px; margin-right: 5px;" v-html="tag.legendSvg"/>
+              </div>
+              {{ tag.name }}
+            </v-chip>
+          </v-chip-group>
         </div>
-        <div ref="chart-container" class="chart-container" :class="{ fullscreen : isFullscreen }" v-resize="resize"></div>
+        <div ref="chart-container" class="chart-container" :class="{ fullscreen : isFullscreen }"
+             v-resize="resize"></div>
       </div>
     </v-sheet>
   </div>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import {Vue, Component, Prop, Watch} from 'vue-property-decorator'
 import * as wbCharts from 'wb-charts'
-import { ChartConfig, ChartSeries } from './lib/ChartConfig'
-import { Series } from '@/lib/TimeSeries'
-import { uniq } from 'lodash';
+import {ChartConfig} from './lib/ChartConfig'
+import {ChartSeries} from './lib/ChartSeries'
+import {Series} from '@/lib/TimeSeries'
+import {uniq} from 'lodash';
 
 interface Tag {
   id: string;
@@ -53,16 +55,23 @@ interface Tag {
 
 @Component
 export default class ConfigurableChart extends Vue {
-  @Prop({ default: () => { return {} }})
-    value!: ChartConfig
+  @Prop({
+    default: () => {
+      return {}
+    }
+  })
+  value!: ChartConfig
 
-  @Prop({ default: () => { return {} }})
-    series!: Record <string, Series>
+  @Prop({
+    default: () => {
+      return {}
+    }
+  })
+  series!: Record<string, Series>
 
   axis!: any // eslint-disable-line @typescript-eslint/no-explicit-any
   isFullscreen = false
   legendTags!: Tag[]
-  groups: Record<string, any> = {}
 
   created(): void {
     this.legendTags = []
@@ -76,12 +85,12 @@ export default class ConfigurableChart extends Vue {
         showGrid: true
       }],
       y: [{
-          position: wbCharts.AxisPosition.Left,
-          showGrid: true,
-          label: ' ',
-          unit: ' ',
-          nice: true
-        },
+        position: wbCharts.AxisPosition.Left,
+        showGrid: true,
+        label: ' ',
+        unit: ' ',
+        nice: true
+      },
         {
           position: wbCharts.AxisPosition.Right,
           label: ' ',
@@ -126,7 +135,7 @@ export default class ConfigurableChart extends Vue {
     window.removeEventListener('resize', this.resize)
   }
 
-  get fullscreenIcon (): string {
+  get fullscreenIcon(): string {
     return this.isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
   }
 
@@ -175,11 +184,11 @@ export default class ConfigurableChart extends Vue {
     let line
     if (chartSeries.type === 'line') {
       line = new wbCharts.ChartLine(data, {
-        tooltip: { toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}` }
+        tooltip: {toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}`}
       })
     } else {
       line = new wbCharts.ChartMarker(data, {
-        tooltip: { toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}` }
+        tooltip: {toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}`}
       })
     }
     line.addTo(
@@ -251,7 +260,7 @@ export default class ConfigurableChart extends Vue {
       this.axis.resize()
     })
   }
-  }
+}
 </script>
 
 <style>
@@ -260,13 +269,13 @@ export default class ConfigurableChart extends Vue {
   flex-direction: column;
   flex-grow: 1;
   width: 100%;
-  padding: 0px;
+  padding: 0;
 }
 
 .fullscreen {
   position: fixed;
-  top: 0px;
-  right: 0px;
+  top: 0;
+  right: 0;
   width: 100%;
   height: 100%;
   z-index: 9000;
@@ -278,7 +287,7 @@ export default class ConfigurableChart extends Vue {
   flex-grow: 1;
   flex-shrink: 0;
   flex-basis: 100px;
-  padding: 0px;
+  padding: 0;
   /* background: #1E1E1E; */
 }
 
@@ -287,7 +296,7 @@ export default class ConfigurableChart extends Vue {
   flex-direction: column;
   width: 100%;
   height: 100%;
-  margin: 0px auto;
+  margin: 0 auto;
 }
 
 .chart-legend {
