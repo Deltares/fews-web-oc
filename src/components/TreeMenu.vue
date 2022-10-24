@@ -11,7 +11,7 @@
       @update:open="(event) => $emit('update:open',event)"
       @update:active="(event) => $emit('update:active',event)"
     >
-      <template slot="label" slot-scope="props">
+      <template v-slot:label="props">
         <v-list-item dense :to="props.item.to" :disabled="props.item.nodata">
           <v-tooltip bottom open-delay="400">
             <template v-slot:activator="{ on, attrs }">
