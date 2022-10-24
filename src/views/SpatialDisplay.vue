@@ -18,8 +18,11 @@
       <ColumnMenu v-else :active.sync="active" :items="items" :open.sync="open">
       </ColumnMenu>
     </portal>
-    <div style="height: calc(100% - 48px);">
+    <div style="height: calc(100% - 48px); position: relative">
       <MapComponent :layer="layerOptions" />
+      <div class="colourbar">
+        <ColourBar v-model="legend" v-if="legend.length > 0"/>
+      </div>
     </div>
     <DateTimeSlider class="date-time-slider" v-model="currentTime" :dates="times" @update:now="setCurrentTime"
       @input="debouncedSetLayerOptions" @timeupdate="updateTime">
@@ -37,9 +40,12 @@ import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController'
+import { ColourMap } from 'wb-charts'
+import ColourBar from '@/components/ColourBar.vue'
 
 @Component({
   components: {
+    ColourBar,
     ColumnMenu,
     TreeMenu,
     DateTimeSlider,
@@ -59,6 +65,8 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   times: Date[] = []
   debouncedSetLayerOptions!: any
   layerOptions: any = {}
+  legend: ColourMap = []
+  unit: string = ""
 
   created (): void {
     this.dateController = new DateController([])
@@ -129,12 +137,32 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     this.dateController.dates = this.times
     this.dateController.selectDate(this.currentTime)
     this.currentTime = this.dateController.currentTime
+    try {
+      const response = await this.getLegendGraphic(this.layerName)
+      this.legend = response.legend
+      this.unit = response.unit
+    } catch {
+      console.log('no legend')
+      this.legend = []
+      this.unit = ""
+    }
     this.setLayerOptions()
   }
 
   setLayerOptions (): void {
-    console.log('setLayerOptions', this.currentTime)
-    if (this.layerName) this.layerOptions = { name: this.layerName, time: this.currentTime }
+    if (this.layerName) { this.layerOptions = { name: this.layerName, time: this.currentTime } }
   }
 }
 </script>
+
+<style scoped>
+  .colourbar {
+    font-size: 0.825em;
+    z-index: 1000;
+    background-color: none;
+    width: 500px;
+    height: 100px;
+    position: absolute;
+    bottom: 10px;
+  }
+</style>

@@ -225,7 +225,6 @@ export default class ConfigurableChart extends Vue {
           }
         }
         legendSvg.appendChild(svgGroup)
-        console.log(legendSvg)
         const name = series.find((s) => s.id === id)?.name || ''
         return {
           id: id,
@@ -320,4 +319,3 @@ export default class ConfigurableChart extends Vue {
   fill: currentColor;
 }
 </style>
-p
