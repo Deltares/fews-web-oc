@@ -11,7 +11,7 @@ import * as wbCharts from 'wb-charts'
 
 @Component([])
 export default class ColourBar extends Vue {
-  @Prop() value!: wbCharts.ColourMap
+  @Prop({ default: () => { return [] }}) value!: wbCharts.ColourMap
 
   group: any
   colourBar?: wbCharts.ColourBar
@@ -21,6 +21,7 @@ export default class ColourBar extends Vue {
     const svg = d3.select("#colourbar")
     this.group = svg.append('g')
       .attr('transform', 'translate(50, 50)')
+    this.updateColourBar()
   }
 
   @Watch('$vuetify.breakpoint.mobile')
