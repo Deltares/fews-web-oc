@@ -23,6 +23,9 @@ export interface Layer {
   keywordList: KeywordList;
   styles: Style[];
   times?: string[];
+  completelyMissing?: boolean | null;
+  firstValueTime?: string | null;
+  lastValueTime?: string | null;
   externalForecastTime: string;
 }
 
@@ -32,5 +35,5 @@ export interface GetCapabilitiesResponse {
 }
 
 export interface GetLegendGraphicResponse {
-    legend: any;
+  legend: any;
 }

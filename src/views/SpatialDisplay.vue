@@ -72,14 +72,14 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
 
   async loadCapabilities (): Promise<void> {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const response = await fetch(`${baseUrl}/wms?request=GetCapabilities&format=application/json&onlyHeaders=true`)
+    const response = await fetch(`${baseUrl}/wms?request=GetCapabilities&format=application/json&onlyHeaders=false`)
     const capabilities = await response.json()
     const layers = capabilities.layers
     const groupNames = [...new Set(layers.map((l: any) => l.groupName))]
     const items: ColumnItem[] = [
       {
         id: 'root',
-        name: 'Layers',
+        name: 'Layers'
       }
     ]
     items[0].children = []
@@ -90,6 +90,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
         children.push({
           id: layer.name,
           name: layer.title || layer.name,
+          nodata: layer.completelyMissing || false,
           to: {
             name: 'SpatialDisplay',
             params: {

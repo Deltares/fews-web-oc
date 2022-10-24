@@ -11,8 +11,8 @@
       @update:open="(event) => $emit('update:open',event)"
       @update:active="(event) => $emit('update:active',event)"
     >
-      <template slot="label" slot-scope="props">
-        <v-list-item dense :to="props.item.to">
+      <template v-slot:label="props">
+        <v-list-item dense :to="props.item.to" :disabled="props.item.nodata">
           <v-tooltip bottom open-delay="400">
             <template v-slot:activator="{ on, attrs }">
               <v-list-item-content
@@ -23,9 +23,6 @@
             </template>
             <span>{{ props.item.name }}</span>
           </v-tooltip>
-          <v-list-item-icon v-if="props.item.icon">
-            <v-icon>{{ props.item.icon }}</v-icon>
-          </v-list-item-icon>
         </v-list-item>
       </template>
     </v-treeview>
@@ -33,27 +30,15 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator'
+import { Component, Prop, Vue } from 'vue-property-decorator'
 // eslint-disable-next-line no-unused-vars
-import {ColumnItem} from './ColumnItem'
+import { ColumnItem } from './ColumnItem'
 
 @Component
 export default class TreeMenu extends Vue {
-  @Prop({
-    default: () => {
-      return []
-    }
-  }) items!: ColumnItem[]
-  @Prop({
-    default: () => {
-      return []
-    }
-  }) open!: string[]
-  @Prop({
-    default: () => {
-      return []
-    }
-  }) active!: string[]
+  @Prop({ default: () => { return [] } }) items!: ColumnItem[]
+  @Prop({ default: () => { return [] } }) open!: string[]
+  @Prop({ default: () => { return [] } }) active!: string[]
 }
 </script>
 
