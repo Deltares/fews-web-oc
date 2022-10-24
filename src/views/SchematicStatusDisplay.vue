@@ -58,12 +58,12 @@ export default class SsdView extends Mixins(SSDMixin) {
   open: string[] = []
   items: ColumnItem[] = []
   viewMode = 0
-  baseUrl = ''
+  webServicesUrl = ''
   timeString = ''
   debouncedUpdate!: () => void
 
   async created (): Promise<void> {
-    this.baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    this.webServicesUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     this.debouncedUpdate = debounce(this.setTime, 500, { leading: true, trailing: true })
   }
 
@@ -117,9 +117,9 @@ export default class SsdView extends Mixins(SSDMixin) {
   get src (): string {
     if (this.timeIndex !== null) {
       const time = this.timeIndex.toISOString().replace(/.\d+Z$/g, 'Z')
-      return `${this.baseUrl}/FewsWebServices/ssd?request=GetDisplay&ssd=${this.panelId}&time=${time}`
+      return `${this.webServicesUrl}/ssd?request=GetDisplay&ssd=${this.panelId}&time=${time}`
     }
-    return `${this.baseUrl}/FewsWebServices/ssd?request=GetDisplay&ssd=${this.panelId}`
+    return `${this.webServicesUrl}/ssd?request=GetDisplay&ssd=${this.panelId}`
   }
 
   @Watch('groupId')
@@ -157,7 +157,7 @@ export default class SsdView extends Mixins(SSDMixin) {
   }
 
   switchPanel (request: string) {
-    const url = new URL(this.baseUrl + request)
+    const url = new URL(this.webServicesUrl + request)
     const panelId = url.searchParams.get('ssd')
     if (panelId) {
       const group = this.capabilities.displayGroups.find((g) => {
