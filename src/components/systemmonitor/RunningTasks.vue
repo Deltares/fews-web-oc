@@ -2,6 +2,7 @@
   <div>
     <v-data-table
       :headers="headers"
+      :no-data-text="noDataText"
       :items="runningTasks"
       :footer-props="{
             'items-per-page-options': [50, 100, 150],
@@ -35,6 +36,8 @@ export default class RunningTasks extends Vue {
 
   @Prop({default: 2000})
   timeOut!: number
+
+  private noDataText = "Loading data..";
 
   headers: TableHeader[] = [
     {
@@ -81,6 +84,7 @@ export default class RunningTasks extends Vue {
       };
       const res: TaskRunsResponse = await provider.getTaskRuns(taskRunFilter);
       this.runningTasks = res.taskRuns;
+      this.noDataText = "There are no running or pending tasks";
     } catch (error) {
       console.log(error)
     } finally {
