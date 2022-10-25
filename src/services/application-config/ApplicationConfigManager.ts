@@ -1,10 +1,12 @@
+import { UserManagerSettings } from 'oidc-client-ts'
 import { ApplicationConfig } from './ApplicationConfig'
+import oidcSettings from '../config'
 
 export class ApplicationConfigManager {
-  private _config: ApplicationConfig
+  _config!: ApplicationConfig
 
-  constructor (config: ApplicationConfig) {
-    this._config = config
+  update (config: Partial<ApplicationConfig>) {
+    this._config = { ...this._config, ...config}
   }
 
   get <T extends keyof ApplicationConfig>(name: T): ApplicationConfig[T] {
@@ -16,5 +18,16 @@ export class ApplicationConfigManager {
       return envValue
     }
     throw new Error(`Cannot find config for '${name}'`)
+  }
+
+  getUserManagerSettings(): UserManagerSettings {
+    return {
+      ...oidcSettings, ...{
+        authority: this.get('VUE_APP_AUTH_AUTHORITY'),
+        client_id: this.get('VUE_APP_AUTH_ID'),
+        scope: this.get('VUE_APP_AUTH_SCOPE'),
+        metadataUrl: this.get('VUE_APP_AUTH_METADATA_URL'),
+      }
+    }
   }
 }

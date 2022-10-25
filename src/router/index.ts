@@ -10,13 +10,11 @@ import Logout from '../views/auth/Logout.vue'
 import DisplayComponent from '../views/DisplayComponent.vue'
 import SystemMonitor from '../views/SystemMonitorDisplay.vue'
 import TimeSeriesDisplay from '@/views/TimeSeriesDisplay.vue'
-import oidcSettings from '../services/config'
+import { configManager } from '../services/application-config'
 import { Log, UserManager } from 'oidc-client-ts'
 
 Log.setLogger(console)
 Log.setLevel(Log.WARN)
-
-const authenticationService = new UserManager(oidcSettings)
 
 Vue.use(VueRouter)
 
@@ -97,20 +95,19 @@ const router = new VueRouter({
 
 router.beforeEach(async (to, from, next) => {
   // redirect to login page if not logged in and trying to access a restricted page
-  if (process.env.VUE_APP_AUTH_AUTHORITY)
-  {
-    const authorize = to.meta?.authorize
+  const settings = configManager.getUserManagerSettings()
+  const authorize = to.meta?.authorize
+  if (authorize && settings.authority) {
+    const settings = configManager.getUserManagerSettings()
+    const authenticationService = new UserManager(settings)
     const currentUser = await authenticationService.getUser()
-    if (authorize) {
-        if (currentUser === null) {
-        return next({ name: 'Login', query: { redirect: to.name } })
-        }
+    if (currentUser === null) {
+      return next({ name: 'Login', query: { redirect: to.name } })
+    }
 
-        // TODO: check alle roles
-        const role = currentUser.profile.roles !== undefined ? (currentUser.profile as any).roles[0] : 'guest'
-        if (authorize.length && !authorize.includes(role)) {
-        return next({ name: 'Home' })
-        }
+    const role = currentUser.profile.roles !== undefined ? (currentUser.profile as any).roles[0] : 'guest'
+    if (authorize.length && !authorize.includes(role)) {
+      return next({ name: 'Home' })
     }
   }
   next()

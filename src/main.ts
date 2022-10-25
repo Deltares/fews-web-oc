@@ -15,7 +15,6 @@ defineCustomElements(window)
 
 Vue.config.ignoredElements = ['schematic-status-display']
 Vue.use(PortalVue)
-Vue.use(auth)
 
 Vue.config.productionTip = false
 
@@ -23,6 +22,7 @@ fetch(`${process.env.BASE_URL}app-config.json`)
   .then(res => res.json())
   .then(data => {
     Vue.use(config, data)
+    Vue.use(auth)
 
     new Vue({
       store,
