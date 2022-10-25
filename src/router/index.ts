@@ -24,7 +24,7 @@ Vue.use(VueRouter)
 const routes: Array<RouteConfig> = [
   {
     path: '/',
-    redirect: { name: 'Filter' },
+    redirect: { name: 'FilterView' },
   },
   {
     path: '/login',
@@ -39,10 +39,20 @@ const routes: Array<RouteConfig> = [
     meta: { authorize: [] }
   },
   {
-    path: '/filter',
+    path: '/filter/:filterId?/:categoryId?',
     name: 'FilterView',
     component: FilterView,
-    meta: { authorize: [] }
+    props: true,
+    meta: { authorize: [], sidebar: true },
+    children: [
+      {
+        path: 'location/:locationId',
+        name: 'FilterViewWithLocation',
+        component: DisplayComponent,
+        props: true,
+        meta: { authorize: [], sidebar: true }
+      }
+    ]
   },
   {
     // /ssd/group/ScadaNZK-ARK/panel/NZK_ARK_10min

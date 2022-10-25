@@ -3,8 +3,6 @@
     <v-mapbox
       :access-token="accessToken"
       map-style='https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
-      :center="[5, 55]"
-      :zoom="5"
       :pitch="0"
       :bearing="0"
       :min-zoom="2"
@@ -14,6 +12,7 @@
       class="map"
       ref="map"
     >
+      <slot></slot>
     </v-mapbox>
   </div>
 </template>
