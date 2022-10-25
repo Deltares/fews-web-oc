@@ -39,7 +39,7 @@ const routes: Array<RouteConfig> = [
   },
   {
     // /ssd/group/ScadaNZK-ARK/panel/NZK_ARK_10min
-    path: '/ssd/group/:groupId/panel/:panelId',
+    path: '/ssd/:groupId?/:panelId?',
     name: 'SchematicStatusDisplay',
     component: SchematicStatusDisplay,
     props: true,
