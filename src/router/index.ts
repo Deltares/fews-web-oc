@@ -9,8 +9,11 @@ import LoginView from '../views/LoginView.vue'
 import Logout from '../views/auth/Logout.vue'
 import DisplayComponent from '../views/DisplayComponent.vue'
 import SystemMonitor from '../views/SystemMonitorDisplay.vue'
-import TimeSeriesDisplay from '@/views/TimeSeriesDisplay.vue'
 import { configManager } from '../services/application-config'
+import TimeSeriesDisplay from '../views/TimeSeriesDisplay.vue'
+import FilterView from '../views/FilterView.vue'
+
+import oidcSettings from '../services/config'
 import { Log, UserManager } from 'oidc-client-ts'
 
 Log.setLogger(console)
@@ -21,7 +24,7 @@ Vue.use(VueRouter)
 const routes: Array<RouteConfig> = [
   {
     path: '/',
-    redirect: { name: 'Home' },
+    redirect: { name: 'Filter' },
   },
   {
     path: '/login',
@@ -33,6 +36,12 @@ const routes: Array<RouteConfig> = [
     path: '/home',
     name: 'Home',
     component: Home,
+    meta: { authorize: [] }
+  },
+  {
+    path: '/filter',
+    name: 'FilterView',
+    component: FilterView,
     meta: { authorize: [] }
   },
   {
