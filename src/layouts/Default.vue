@@ -37,7 +37,7 @@ import { Component, Vue } from 'vue-property-decorator'
 export default class Home extends Vue {
   drawer: boolean | null = null
   menuItems = [
-    { id: 'Data View', icon: 'mdi-archive-search', to: { name: 'DataView' } },
+    { id: 'Data View', icon: 'mdi-archive-search', to: { name: 'DataViewer' } },
     { id: 'Schematic Status Display', icon: 'mdi-application-brackets-outline', to: { name: 'SchematicStatusDisplay' } },
     { id: 'Spatial Display', icon: 'mdi-map', to: { name: 'SpatialDisplay' } },
     { id: 'Time Series Display', icon: 'mdi-chart-sankey', to: { name: 'TimeSeriesDisplay' } },
