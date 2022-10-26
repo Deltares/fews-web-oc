@@ -9,8 +9,8 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@deltares/fews-ssd-requests": "^0.2.7",
     "@deltares/fews-pi-requests": "^0.5.17",
+    "@deltares/fews-ssd-requests": "^0.2.7",
     "@deltares/fews-ssd-webcomponent": "^0.2.7",
     "@deltares/fews-wms-requests": "^0.1.10",
     "@mdi/font": "^6.4.95",
@@ -18,7 +18,7 @@
     "core-js": "^3.6.5",
     "crypto-js": "^4.1.1",
     "lodash": "^4.17.21",
-    "luxon": "^2.4.0",
+    "luxon": "^2.5.0",
     "mapbox-gl": "^2.8.2",
     "oidc-client-ts": "^2.0.2",
     "portal-vue": "^2.1.7",
@@ -37,6 +37,7 @@
     "@types/d3": "^7.4.0",
     "@types/jest": "^24.0.19",
     "@types/lodash": "^4.14.182",
+    "@types/luxon": "^3.0.2",
     "@types/mapbox-gl": "^2.4.2",
     "@typescript-eslint/eslint-plugin": "^5.28.0",
     "@typescript-eslint/parser": "^5.28.0",
