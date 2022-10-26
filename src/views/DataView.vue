@@ -5,7 +5,7 @@
         <v-divider></v-divider>
         <v-subheader>filters</v-subheader>
         <v-list expand nav>
-          <v-list-item v-for="filter in filters" :key="filter.id" link :to="{ name: 'FilterView', params: { filterId: filter.id } }">
+          <v-list-item v-for="filter in filters" :key="filter.id" link :to="{ name: 'DataViewer', params: { filterId: filter.id } }">
             <v-list-item-icon>
               <v-icon>{{ filter.icon }}</v-icon>
             </v-list-item-icon>
@@ -17,7 +17,7 @@
         <v-divider></v-divider>
         <v-subheader>categories</v-subheader>
         <v-list expand nav>
-          <v-list-item v-for="(c, i) of categories" :key="i" :to="{ name: 'FilterView', params: { filterId, categoryId: c } }">
+          <v-list-item v-for="(c, i) of categories" :key="i" :to="{ name: 'DataViewer', params: { filterId, categoryId: c } }">
             <v-list-item-content>
               <v-list-item-title>{{ c }}</v-list-item-title>
             </v-list-item-content>
@@ -98,7 +98,7 @@ interface Parameter {
   }
 }
 )
-export default class FilterView extends Vue {
+export default class DataView extends Vue {
   @Prop({ default: '', type: String })
   filterId!: string
 
@@ -196,7 +196,7 @@ export default class FilterView extends Vue {
     }
     // const response = await this.webServiceProvider.getParameters(filter as any)
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const response = await fetch(`${baseUrl}/rest/fewspiservice/v1/locations?documentFormat=GEO_JSON&filterId=${this.currentFilterId}&showAttributes=true`)
+    const response = await fetch(`${baseUrl}/rest/fewspiservice/v1/locations?documentFormat=GEO_JSON&filterId=${this.currentFilterId}`)
     const locations: any = await response.json()
     this.layerA.source.data = locations
   }
@@ -216,7 +216,7 @@ export default class FilterView extends Vue {
   closeCharts() {
     if (this.hasSelectedLocation) {
       const params = this.$route.params
-      this.$router.push({ name: 'FilterView', params: { filterId: params.filterId, categoryId: params.categoryId } })
+      this.$router.push({ name: 'DataViewer', params: { filterId: params.filterId, categoryId: params.categoryId } })
     }
   }
 
@@ -231,7 +231,7 @@ export default class FilterView extends Vue {
   onLocationClick(e: any) {
     const locationId = e.features[0].properties.locationId
     console.log(locationId)
-    this.$router.push({name: 'FilterViewWithLocation', params: { filterId: this.filterId, categoryId: this.categoryId, locationId }})
+    this.$router.push({name: 'DataViewerWithLocation', params: { filterId: this.filterId, categoryId: this.categoryId, locationId }})
   }
 
   get hasSelectedLocation() {
@@ -295,6 +295,7 @@ export default class FilterView extends Vue {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  width: 50%;
   z-index: 1100;
 }
 

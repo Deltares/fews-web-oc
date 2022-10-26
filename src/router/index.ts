@@ -11,7 +11,7 @@ import DisplayComponent from '../views/DisplayComponent.vue'
 import SystemMonitor from '../views/SystemMonitorDisplay.vue'
 import { configManager } from '../services/application-config'
 import TimeSeriesDisplay from '../views/TimeSeriesDisplay.vue'
-import FilterView from '../views/FilterView.vue'
+import DataView from '../views/DataView.vue'
 
 import oidcSettings from '../services/config'
 import { Log, UserManager } from 'oidc-client-ts'
@@ -24,7 +24,7 @@ Vue.use(VueRouter)
 const routes: Array<RouteConfig> = [
   {
     path: '/',
-    redirect: { name: 'FilterView' },
+    redirect: { name: 'DataViewer' },
   },
   {
     path: '/login',
@@ -39,15 +39,15 @@ const routes: Array<RouteConfig> = [
     meta: { authorize: [] }
   },
   {
-    path: '/filter/:filterId?/:categoryId?',
-    name: 'FilterView',
-    component: FilterView,
+    path: '/dataviewer/:filterId?/:categoryId?',
+    name: 'DataViewer',
+    component: DataView,
     props: true,
     meta: { authorize: [], sidebar: true },
     children: [
       {
         path: 'location/:locationId',
-        name: 'FilterViewWithLocation',
+        name: 'DataViewerWithLocation',
         component: DisplayComponent,
         props: true,
         meta: { authorize: [], sidebar: true }
@@ -76,12 +76,6 @@ const routes: Array<RouteConfig> = [
     component: TimeSeriesDisplay,
     props: true,
     meta: { authorize: [], sidebar: true }
-  },
-  {
-    path: '/explore',
-    name: 'Explore',
-    component: DisplayComponent,
-    meta: { authorize: [] }
   },
   {
     path: '/systemmonitor',
