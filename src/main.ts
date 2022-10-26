@@ -22,7 +22,7 @@ fetch(`${process.env.BASE_URL}app-config.json`)
   .then(res => res.json())
   .then(data => {
     Vue.use(config, data)
-    if (configManager.authenticationIsEnabled()) {
+    if (configManager.authenticationIsEnabled) {
       Vue.use(auth)
     }
     new Vue({

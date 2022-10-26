@@ -22,7 +22,7 @@ export class ApplicationConfigManager {
     throw new Error(`Cannot find config for '${name}'`)
   }
 
-  authenticationIsEnabled(): boolean {
+  get authenticationIsEnabled(): boolean {
     return this._authenticationIsEnabled
   }
 
