@@ -8,7 +8,7 @@ export class ApplicationConfigManager {
 
   update (config: Partial<ApplicationConfig>) {
     this._config = { ...this._config, ...config}
-    this._authenticationIsEnabled = Object.keys(this._config).includes('VUE_APP_AUTH_AUTHORITY')
+    this._authenticationIsEnabled = Object.keys(this._config).includes('VUE_APP_AUTH_AUTHORITY') || !!process.env['VUE_APP_AUTH_AUTHORITY']
   }
 
   get <T extends keyof ApplicationConfig>(name: T): ApplicationConfig[T] {
