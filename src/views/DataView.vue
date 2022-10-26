@@ -31,7 +31,7 @@
       <div class="grid-map" v-show="showMap">
         <div class="map-container" style="height: calc(100% - 48px); position: relative;">
           <MapComponent :layer="layerOptions">
-            <v-mapbox-layer :options="layerA" clickable @click="onLocationClick"></v-mapbox-layer>
+            <v-mapbox-layer :options="locationsLayer" clickable @click="onLocationClick"></v-mapbox-layer>
           </MapComponent>
         </div>
         <div style="position: absolute; z-index: 1200; padding-left: 5px;">
@@ -168,26 +168,12 @@ export default class DataView extends Mixins(WMSMixin) {
 
   externalForecastTime = new Date()
 
-  layerA = {
-    'id': 'a',
+  locationsLayer = {
+    'id': 'locationsLayer',
     'type': 'circle',
     'source': {
       'type': 'geojson',
-      'data': {
-        'type': 'Feature',
-        'geometry': {
-          'type': 'Polygon',
-          'coordinates': [
-            [
-              [-1, 49],
-              [-1, 61],
-              [11, 61],
-              [11, 49],
-              [-1, 49]
-            ]
-          ]
-        }
-      }
+      'data': {}
     },
     'layout': {
       'visibility': 'visible'
@@ -256,7 +242,7 @@ export default class DataView extends Mixins(WMSMixin) {
     const response = await fetch(
       `${baseUrl}/rest/fewspiservice/v1/locations?documentFormat=GEO_JSON&filterId=${this.currentFilterId}&parameterGroupId=${this.currentCategoryId}`)
     const locations: any = await response.json()
-    this.layerA.source.data = locations
+    this.locationsLayer.source.data = locations
   }
 
   @Watch('categoryId')
