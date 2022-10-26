@@ -31,7 +31,7 @@
       <div class="grid-map" v-show="showMap">
         <div class="map-container" style="height: calc(100% - 48px); position: relative;">
           <MapComponent :layer="layerOptions">
-            <!-- <v-mapbox-layer :options="layerA" clickable @click="onLocationClick"></v-mapbox-layer> -->
+            <v-mapbox-layer :options="layerA" clickable @click="onLocationClick"></v-mapbox-layer>
           </MapComponent>
         </div>
         <div style="position: absolute; z-index: 1200; padding-left: 5px;">
@@ -254,7 +254,7 @@ export default class DataView extends Mixins(WMSMixin) {
     // const response = await this.webServiceProvider.getParameters(filter as any)
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const response = await fetch(
-      `${baseUrl}/rest/fewspiservice/v1/locations?documentFormat=GEO_JSON&filterId=${this.currentFilterId}`)
+      `${baseUrl}/rest/fewspiservice/v1/locations?documentFormat=GEO_JSON&filterId=${this.currentFilterId}&parameterGroupId=${this.currentCategoryId}`)
     const locations: any = await response.json()
     this.layerA.source.data = locations
   }
