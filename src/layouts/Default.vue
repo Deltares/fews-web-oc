@@ -13,7 +13,7 @@
       </v-tab>
       </v-tabs>
       <v-spacer />
-      <login-component />
+      <login-component v-if="$config.authenticationIsEnabled()"/>
     </v-app-bar>
     <v-navigation-drawer v-if="$route.meta.sidebar" v-model="drawer" app clipped hide-overlay :right="$vuetify.rtl" width="320"
       class="view-sidebar">
