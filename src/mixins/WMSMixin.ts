@@ -1,10 +1,11 @@
 import {Component, Vue} from 'vue-property-decorator'
-import {WMSProvider} from '@deltares/fews-wms-requests'
+import { WMSProvider, Layer } from '@deltares/fews-wms-requests'
 
 @Component
 export default class WMSMixin extends Vue {
   wmsProvider!: WMSProvider
   externalForecast: Date = new Date('invalid')
+  layers: Layer[] = []
 
   created (): void {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
@@ -17,6 +18,13 @@ export default class WMSMixin extends Vue {
       }
     }
     this.wmsProvider = new WMSProvider(url.toString() + '/wms')
+  }
+
+
+  async getCapabilities (): Promise<void> {
+    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const response = await fetch(`${baseUrl}/wms?request=GetCapabilities&format=application/json&onlyHeaders=false`)
+    this.layers = (await response.json()).layers
   }
 
   async getTimes (layers: string): Promise<Date[]> {

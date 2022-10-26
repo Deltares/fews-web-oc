@@ -27,11 +27,14 @@
     </portal>
     <div class="grid-root" :class="layoutClass">
       <div class="grid-map" v-show="showMap">
-        <div class="map-container">
-          <MapComponent>
+        <div class="map-container" style="height: calc(100% - 48px); position: relative;">
+          <MapComponent :layer="layerOptions">
             <v-mapbox-layer :options="layerA" clickable @click="onLocationClick"></v-mapbox-layer>
           </MapComponent>
         </div>
+        <DateTimeSlider class="date-time-slider" v-model="currentTime" :dates="times" @update:now="setCurrentTime"
+          @input="debouncedSetLayerOptions" @timeupdate="updateTime">
+        </DateTimeSlider>
     </div>
     <div class="grid-charts" ref="grid-charts" v-if="hasSelectedLocation && !$vuetify.breakpoint.mobile">
       <v-toolbar class="toolbar-charts" dense flat>
@@ -72,12 +75,16 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from 'vue-property-decorator'
+import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 import { PiWebserviceProvider } from "@deltares/fews-pi-requests";
-import { uniq } from 'lodash';
+import { debounce, uniq, intersection } from 'lodash';
 import { Location } from '@deltares/fews-pi-requests/src/response';
-import { Route } from 'vue-router';
 import MapComponent from '../components/MapComponent.vue'
+import WMSMixin from '@/mixins/WMSMixin'
+import { Layer } from '@/lib/wms';
+import { DateController } from '@/lib/TimeControl/DateController';
+import DateTimeSlider from '@/components/DateTimeSlider.vue'
+import { ColourMap } from 'wb-charts';
 
 interface Filter {
   id: string;
@@ -95,10 +102,11 @@ interface Parameter {
 @Component({
   components: {
     MapComponent,
+    DateTimeSlider
   }
 }
 )
-export default class DataView extends Vue {
+export default class DataView extends Mixins(WMSMixin) {
   @Prop({ default: '', type: String })
   filterId!: string
 
@@ -115,9 +123,23 @@ export default class DataView extends Vue {
   filters: Filter[] = []
   webServiceProvider!: PiWebserviceProvider
   parameters: Parameter[] = []
+
   currentFilterId: string = ''
   currentCategoryId: string = ''
   currentParameters: Parameter[] = []
+  currentLayers: Layer[] = []
+
+  dateController!: DateController
+  currentTime: Date = new Date()
+  times: Date[] = []
+  debouncedSetLayerOptions!: any
+
+  layerName: string = ''
+  layerOptions: any = {}
+
+  legend: ColourMap = []
+  unit: string = ""
+
   categories: string[] = []
   locations: Location[]=  []
   layerA = {
@@ -150,6 +172,10 @@ export default class DataView extends Vue {
     },
   }
 
+  created (): void {
+    this.dateController = new DateController([])
+    this.debouncedSetLayerOptions = debounce(this.setLayerOptions, 500, { leading: true, trailing: true })
+  }
 
   async mounted () {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
@@ -163,6 +189,7 @@ export default class DataView extends Vue {
     this.filters = filters
     this.currentFilterId = filters[0].id
     this.getParameters()
+    this.getCapabilities()
     this.setLayoutClass()
 
     // Force resize to fix strange starting position of the map, caused by
@@ -180,15 +207,12 @@ export default class DataView extends Vue {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const response = await fetch(`${baseUrl}/rest/fewspiservice/v1/parameters?documentFormat=PI_JSON&filterId=${this.currentFilterId}`)
     const parameters: Parameter[] = (await response.json()).timeSeriesParameters
-    console.log(parameters)
     this.parameters = parameters
     this.categories = uniq(parameters.map( p => p.parameterGroup))
     this.currentCategoryId = this.categories[0]
-    this.currentParameters = parameters.filter( (p) => p.parameterGroup === this.currentCategoryId )
     this.getLocations()
   }
 
-  @Watch('categoryId')
   async getLocations() {
     const filter = {
       filterId: this.currentFilterId,
@@ -201,6 +225,31 @@ export default class DataView extends Vue {
     this.layerA.source.data = locations
   }
 
+  @Watch('categoryId')
+  onCategoryChange(): void {
+    this.currentCategoryId = this.categoryId
+    this.currentParameters = this.parameters.filter( (p) => p.parameterGroup === this.currentCategoryId )
+    this.getLocations()
+    this.updateLayers()
+  }
+
+  async updateLayers() {
+    const currentParameterIds = this.currentParameters.map( p => p.id )
+    console.log('currentParameterIds', currentParameterIds, this.layers.length)
+    const currentLayers = this.layers.filter( l => {
+      const layerParameterIds = l.keywordList.filter( k => k.parameterId ).map( k => k.parameterId )
+      const intersect = intersection(currentParameterIds, layerParameterIds)
+      console.log(this.categoryId, intersect.length > 0, intersect)
+      return intersect.length > 0
+    })
+    console.log('currentLayers', currentLayers)
+    this.currentLayers = currentLayers
+    if (currentLayers.length > 0) {
+      this.layerName = currentLayers[0].name
+      console.log('setCurrent layer', this.layerName)
+      this.onLayerChange()
+    }
+  }
 
   setLayoutClass(): void {
     if (this.$vuetify.breakpoint.mobile) {
@@ -258,6 +307,49 @@ export default class DataView extends Vue {
 
   set dockMode(dockMode: string) {
     this.stateDockMode = dockMode
+  }
+
+  setCurrentTime (enabled: boolean): void {
+    if (enabled) {
+      this.dateController.selectDate(new Date())
+      this.currentTime = this.dateController.currentTime
+      this.setLayerOptions()
+    }
+  }
+
+  updateTime (date: Date): void {
+    this.dateController.selectDate(date)
+    this.currentTime = this.dateController.currentTime
+  }
+
+  @Watch('layerName')
+  async onLayerChange (): Promise<void> {
+    console.log('onLayerChange', this.layerName)
+    try {
+      this.times = await this.getTimes(this.layerName)
+    } catch {
+      console.log('no times')
+      this.times = []
+    }
+    this.dateController.dates = this.times
+    this.dateController.selectDate(this.currentTime)
+    this.currentTime = this.dateController.currentTime
+    console.log('currentLayer', this.layerName, this.currentTime)
+    try {
+      const response = await this.getLegendGraphic(this.layerName)
+      this.legend = response.legend
+      this.unit = response.unit
+    } catch {
+      console.log('no legend')
+      this.legend = []
+      this.unit = ""
+    }
+    this.setLayerOptions()
+  }
+
+  setLayerOptions (): void {
+    if (this.layerName) { this.layerOptions = { name: this.layerName, time: this.currentTime } }
+    console.log(this.layerOptions)
   }
 
 }
