@@ -163,7 +163,7 @@ export default class FilterView extends Vue {
     this.filters = filters
     this.currentFilterId = filters[0].id
     this.getParameters()
-    this.setLayoutClass(this.$route)
+    this.setLayoutClass()
 
     // Force resize to fix strange starting position of the map, caused by
     // the expandable navigation drawer.
@@ -201,10 +201,11 @@ export default class FilterView extends Vue {
     this.layerA.source.data = locations
   }
 
-  setLayoutClass(route: Route): void {
+
+  setLayoutClass(): void {
     if (this.$vuetify.breakpoint.mobile) {
       this.layoutClass = 'mobile'
-    } else if (route.params.locationId === undefined) {
+    } else if (this.locationId === '') {
       this.layoutClass = 'map-only'
       this.onResize()
     } else {
