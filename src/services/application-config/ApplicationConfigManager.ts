@@ -4,9 +4,11 @@ import oidcSettings from '../config'
 
 export class ApplicationConfigManager {
   _config!: ApplicationConfig
+  _authenticationIsEnabled: boolean = true
 
   update (config: Partial<ApplicationConfig>) {
     this._config = { ...this._config, ...config}
+    this._authenticationIsEnabled = Object.keys(this._config).includes('VUE_APP_AUTH_AUTHORITY')
   }
 
   get <T extends keyof ApplicationConfig>(name: T): ApplicationConfig[T] {
@@ -18,6 +20,10 @@ export class ApplicationConfigManager {
       return envValue
     }
     throw new Error(`Cannot find config for '${name}'`)
+  }
+
+  get authenticationIsEnabled(): boolean {
+    return this._authenticationIsEnabled
   }
 
   getUserManagerSettings(): UserManagerSettings {
