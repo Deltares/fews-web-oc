@@ -7,8 +7,11 @@ declare module 'vue/types/vue' {
   }
 }
 
+export const configManager = new ApplicationConfigManager()
+
 export default {
   install (Vue: any, config: ApplicationConfig): void { // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
-    Vue.prototype.$config = new ApplicationConfigManager(config)
+    configManager.update(config)
+    Vue.prototype.$config = configManager
   }
 }
