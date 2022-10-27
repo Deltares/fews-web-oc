@@ -70,4 +70,29 @@ Customize the app-config.json file where appropriate.
 After starting tomcat using F12 in the Standalone the Delft-FEWS Web OC is available at: http://localhost:8080
 
 ## Nginx
-TODO
+
+In Nginx the recommended way is to use try_files. See: https://router.vuejs.org/guide/essentials/history-mode.html#nginx
+
+An example Nginx configuration looks as follows:
+
+``` xml
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+
+    server_name _;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+```
+
+unzip the weboc.zip file into the Nginx html folder:
+
+/usr/share/nginx/html/
+
+the WebOC will be available in the root at port 80: http://mynginxserver/
