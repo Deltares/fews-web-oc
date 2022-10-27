@@ -24,6 +24,7 @@ steps:
       echo 'VUE_APP_AUTH_METADATA_URL="https://login.microsoftonline.com/15f3fe0e-d712-4981-bc7c-fe949af215bb/v2.0/.well-known/openid-configuration"'  >> .env
       echo 'VUE_APP_AUTH_SCOPE="openid profile email Offline_Access api://10309c77-251e-4157-a371-49b318d66f11/Delft-FEWSWebServices"' >> .env
       echo 'VUE_APP_PUBLIC_PATH="/"' >> .env
+      echo 'VUE_APP_REQUEST_HEADER_AUTHORIZATION="Bearer"'
       echo 'VUE_APP_FEWS_WEBSERVICES_URL="$(VUE_APP_FEWS_WEBSERVICES_URL)"' >> .env
 
 - script: |
