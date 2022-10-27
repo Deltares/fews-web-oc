@@ -83,6 +83,10 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     const response = await fetch(`${baseUrl}/wms?request=GetCapabilities&format=application/json&onlyHeaders=false`)
     const capabilities = await response.json()
     const layers = capabilities.layers
+    this.fillMenuItems(layers)
+  }
+
+  fillMenuItems (layers: any): void {
     const groupNames = [...new Set(layers.map((l: any) => l.groupName))]
     const items: ColumnItem[] = [
       {
