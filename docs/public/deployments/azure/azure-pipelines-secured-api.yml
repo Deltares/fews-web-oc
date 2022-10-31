@@ -17,6 +17,8 @@ steps:
     script: |
       touch .env
       echo 'VUE_APP_PUBLIC_PATH="/"' >> .env
+      echo 'VUE_APP_AUTH_TYPE="code"' >> .env
+      
       rm public/app-config.json      
       cat > public/app-config.json <<EOL
       {
@@ -25,7 +27,6 @@ steps:
       "VUE_APP_REQUEST_HEADER_AUTHORIZATION": "Bearer",
       "VUE_APP_AUTH_AUTHORITY": "$(VUE_APP_AUTH_AUTHORITY)",
       "VUE_APP_AUTH_ID": "$(VUE_APP_AUTH_ID)",
-      "VUE_APP_AUTH_TYPE": "code",
       "VUE_APP_AUTH_METADATA_URL": "https://login.microsoftonline.com/$(AZURE_TENANT_ID)/v2.0/.well-known/openid-configuration",
       "VUE_APP_AUTH_SCOPE": "openid profile email Offline_Access api://$(AZURE_APP_CLIENT_ID)/Delft-FEWSWebServices"            
       }
