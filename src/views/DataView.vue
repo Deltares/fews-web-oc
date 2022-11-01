@@ -32,7 +32,7 @@
         <div class="map-container" style="height: calc(100% - 48px); position: relative;">
           <MapComponent>
             <MapboxLayer :layer="layerOptions"></MapboxLayer>
-            <!-- <v-mapbox-layer :options="locationsLayer" clickable @click="onLocationClick"></v-mapbox-layer> -->
+            <v-mapbox-layer v-if="showLocationsLayer" :options="locationsLayer" clickable @click="onLocationClick"></v-mapbox-layer>
           </MapComponent>
         </div>
         <div style="position: absolute; z-index: 1200; padding-left: 5px;">
@@ -45,6 +45,7 @@
               :timeIndex="currentTime"
               @change="updateActiveLayer">
             </WMSLayerControl>
+            <LocationsLayerControl v-model="showLocationsLayer"/>
           </v-chip-group>
         </div>
         <DateTimeSlider class="date-time-slider" v-model="currentTime" :dates="times" @update:now="setCurrentTime"
@@ -101,6 +102,7 @@ import { DateController } from '@/lib/TimeControl/DateController';
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { ColourMap } from 'wb-charts';
 import WMSLayerControl, { WMSLayerControlValue } from '@/components/WMSLayerControl.vue'
+import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
 import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
 
 interface Filter {
@@ -121,6 +123,7 @@ interface Parameter {
     MapboxLayer,
     MapComponent,
     DateTimeSlider,
+    LocationsLayerControl,
     WMSLayerControl
   }
 })
@@ -172,6 +175,7 @@ export default class DataView extends Mixins(WMSMixin) {
 
   externalForecastTime = new Date()
 
+  showLocationsLayer = true
   locationsLayer = {
     'id': 'locationsLayer',
     'type': 'circle',
@@ -249,6 +253,7 @@ export default class DataView extends Mixins(WMSMixin) {
     } else {
       this.currentCategoryId = this.categoryId
     }
+    console.log('cat', this.currentCategoryId)
     this.getLocations()
   }
 
@@ -262,6 +267,7 @@ export default class DataView extends Mixins(WMSMixin) {
     const response = await fetch(
       `${baseUrl}rest/fewspiservice/v1/locations?documentFormat=GEO_JSON&filterId=${this.currentFilterId}&parameterGroupId=${this.currentCategoryId}`)
     const locations: any = await response.json()
+    this.locations = locations.features.map( (f: any) => { return f.properties })
     this.locationsLayer.source.data = locations
   }
 
