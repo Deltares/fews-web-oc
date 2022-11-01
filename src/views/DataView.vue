@@ -3,7 +3,7 @@
     <portal to="web-oc-sidebar">
       <div class="sidebar-content">
         <v-divider></v-divider>
-        <v-subheader>filters</v-subheader>
+        <v-subheader>Filters</v-subheader>
         <v-list expand nav>
           <v-list-item v-for="filter in filters" :key="filter.id" link
             :to="{ name: 'DataViewer', params: { filterId: filter.id } }">
@@ -16,7 +16,7 @@
           </v-list-item>
         </v-list>
         <v-divider></v-divider>
-        <v-subheader>categories</v-subheader>
+        <v-subheader>Parameter Group</v-subheader>
         <v-list expand nav>
           <v-list-item v-for="(c, i) of categories" :key="i"
             :to="{ name: 'DataViewer', params: { filterId, categoryId: c } }">
@@ -37,6 +37,7 @@
         <div style="position: absolute; z-index: 1200; padding-left: 5px;">
           <v-chip-group>
             <WMSLayerControl
+              v-if="currentLayers.length > 0"
               v-model="layerOptions"
               :time="externalForecastTime"
               :items="currentLayers"
@@ -195,17 +196,7 @@ export default class DataView extends Mixins(WMSMixin) {
   async mounted() {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     this.webServiceProvider = new PiWebserviceProvider(baseUrl)
-    const response = await fetch(`${baseUrl}/rest/fewspiservice/v1/filters?documentFormat=PI_JSON`)
-    const filters = (await response.json()).filters.map((f: Filter) => {
-      return {
-        ...f,
-        ...{
-          icon: `mdi-alpha-${f.name[0].toLowerCase()}-circle-outline`
-        }
-      }
-    })
-    this.filters = filters
-    this.currentFilterId = filters[0].id
+    await this.getFilters()
     this.getParameters()
     this.getCapabilities()
     this.setLayoutClass()
@@ -215,6 +206,26 @@ export default class DataView extends Mixins(WMSMixin) {
     window.dispatchEvent(new Event('resize'))
   }
 
+  async getFilters() {
+    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const response = await fetch(`${baseUrl}rest/fewspiservice/v1/filters?documentFormat=PI_JSON`)
+    const filters = (await response.json()).filters.map((f: Filter) => {
+      return {
+        ...f,
+        ...{
+          icon: `mdi-alpha-${f.name[0].toLowerCase()}-circle-outline`
+        }
+      }
+    })
+    this.filters = filters
+    const filterId =  filters[0].id
+    if (this.filterId === '') {
+      this.currentFilterId = filterId
+      this.$router.replace({ name: 'DataViewer', params: { filterId } })
+    } else {
+      this.currentFilterId = this.filterId
+    }
+  }
 
   @Watch('filterId')
   async getParameters() {
@@ -224,11 +235,17 @@ export default class DataView extends Mixins(WMSMixin) {
     // const response = await this.webServiceProvider.getParameters(filter as any)
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const response = await fetch(
-      `${baseUrl}/rest/fewspiservice/v1/parameters?documentFormat=PI_JSON&filterId=${this.currentFilterId}`)
+      `${baseUrl}rest/fewspiservice/v1/parameters?documentFormat=PI_JSON&filterId=${this.currentFilterId}`)
     const parameters: Parameter[] = (await response.json()).timeSeriesParameters
     this.parameters = parameters
     this.categories = uniq(parameters.map(p => p.parameterGroup))
-    this.currentCategoryId = this.categories[0]
+    const categoryId = this.categories[0]
+    if (this.categoryId === '') {
+      this.currentCategoryId = categoryId
+      this.$router.replace({ name: 'DataViewer', params: { filterId: this.filterId, categoryId } })
+    } else {
+      this.currentCategoryId = this.categoryId
+    }
     this.getLocations()
   }
 
@@ -240,7 +257,7 @@ export default class DataView extends Mixins(WMSMixin) {
     // const response = await this.webServiceProvider.getParameters(filter as any)
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const response = await fetch(
-      `${baseUrl}/rest/fewspiservice/v1/locations?documentFormat=GEO_JSON&filterId=${this.currentFilterId}&parameterGroupId=${this.currentCategoryId}`)
+      `${baseUrl}rest/fewspiservice/v1/locations?documentFormat=GEO_JSON&filterId=${this.currentFilterId}&parameterGroupId=${this.currentCategoryId}`)
     const locations: any = await response.json()
     this.locationsLayer.source.data = locations
   }
@@ -264,8 +281,10 @@ export default class DataView extends Mixins(WMSMixin) {
     this.currentLayers = currentLayers
     if (currentLayers.length > 0) {
       this.layerName = currentLayers[0].name
-      this.onLayerChange()
+    } else {
+      this.layerName = ''
     }
+    this.onLayerChange()
   }
 
   setLayoutClass(): void {
@@ -351,7 +370,6 @@ export default class DataView extends Mixins(WMSMixin) {
   }
 
   async onLayerChange(): Promise <void> {
-    console.log('onLayerChange', this.layerName)
     try {
       this.times = await this.getTimes(this.layerName)
     } catch {
@@ -372,28 +390,26 @@ export default class DataView extends Mixins(WMSMixin) {
   }
 
   async updateActiveLayer(value: WMSLayerControlValue): Promise<void> {
-    // window.dispatchEvent(new Event('resize'))
-    console.log('updateActiveLayer', value)
-    if (value.name !== this.layerName || (value.active)) {
+    if (value.name !== this.layerName && (value.active)) {
       this.layerName = value.name
       this.onLayerChange()
       this.setLayerOptions()
     }
     if (value.active === false) {
-      this.layerOptions = {}
+      this.layerOptions = null
     }
-    // this.setColourBar()
   }
 
   setLayerOptions(): void {
-    if (this.layerName) {
+    if (this.layerName !== '') {
       this.layerOptions = {
         name: this.layerName,
         time: this.currentTime,
         active: true
       }
+    } else {
+      this.layerOptions = null
     }
-    console.log(this.layerOptions)
   }
 }
 

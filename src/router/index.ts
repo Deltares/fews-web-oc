@@ -42,14 +42,14 @@ const routes: Array<RouteConfig> = [
     path: '/dataviewer/:filterId?/:categoryId?',
     name: 'DataViewer',
     component: DataView,
-    props: true,
+    props: route => ({...route.params, layerName: route.query.layerName }),
     meta: { authorize: [], sidebar: true },
     children: [
       {
         path: 'location/:locationId',
         name: 'DataViewerWithLocation',
         component: DisplayComponent,
-        props: true,
+        props: route => ({...route.params, layerName: route.query.layerName }),
         meta: { authorize: [], sidebar: true }
       }
     ]
