@@ -41,7 +41,7 @@
             @click="onChange(item.name)"
           >
             <v-list-item-title>
-              {{ item.title }}
+              {{ getTitle(item) }}
             </v-list-item-title>
             <v-list-item-icon>
               <v-icon v-show="item.name == layerName">mdi-check</v-icon>
@@ -102,7 +102,10 @@ export default class WMSLayerControl extends Vue {
 
   get layerLabel(): string {
     const selectedLayer = this.items?.find((layer: any) => { return layer.name === this.layerName})
-    return selectedLayer ? selectedLayer.title : ''
+    if (selectedLayer) {
+      return this.getTitle(selectedLayer)
+    }
+    return ''
   }
 
   @Watch("value", { deep: true})
@@ -111,6 +114,11 @@ export default class WMSLayerControl extends Vue {
     this.layerName = this.value.name;
     this.active = this.value.active
   }
+
+  getTitle(item: any) {
+    return item.title === '' ? item.name : item.title
+  }
+
 }
 </script>
 
