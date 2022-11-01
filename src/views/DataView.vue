@@ -30,8 +30,9 @@
     <div class="grid-root" :class="layoutClass">
       <div class="grid-map" v-show="showMap">
         <div class="map-container" style="height: calc(100% - 48px); position: relative;">
-          <MapComponent :layer="layerOptions">
-            <v-mapbox-layer :options="locationsLayer" clickable @click="onLocationClick"></v-mapbox-layer>
+          <MapComponent>
+            <MapboxLayer :layer="layerOptions"></MapboxLayer>
+            <!-- <v-mapbox-layer :options="locationsLayer" clickable @click="onLocationClick"></v-mapbox-layer> -->
           </MapComponent>
         </div>
         <div style="position: absolute; z-index: 1200; padding-left: 5px;">
@@ -100,6 +101,7 @@ import { DateController } from '@/lib/TimeControl/DateController';
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { ColourMap } from 'wb-charts';
 import WMSLayerControl, { WMSLayerControlValue } from '@/components/WMSLayerControl.vue'
+import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
 
 interface Filter {
   id: string;
@@ -116,6 +118,7 @@ interface Parameter {
 
 @Component({
   components: {
+    MapboxLayer,
     MapComponent,
     DateTimeSlider,
     WMSLayerControl

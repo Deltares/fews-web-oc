@@ -19,7 +19,9 @@
       </ColumnMenu>
     </portal>
     <div style="height: calc(100% - 48px); position: relative">
-      <MapComponent :layer="layerOptions" />
+      <MapComponent>
+        <MapboxLayer :layer="layerOptions" />
+      </MapComponent>
       <div class="colourbar">
         <ColourBar v-model="legend" v-if="legend.length > 0"/>
       </div>
@@ -35,6 +37,7 @@ import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 import debounce from 'lodash/debounce'
 import WMSMixin from '@/mixins/WMSMixin'
 import MapComponent from '@/components/MapComponent.vue'
+import MapboxLayer from '@/components/AnimatedMapboxLayer.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
@@ -49,6 +52,7 @@ import ColourBar from '@/components/ColourBar.vue'
     ColumnMenu,
     TreeMenu,
     DateTimeSlider,
+    MapboxLayer,
     MapComponent,
   }
 })
