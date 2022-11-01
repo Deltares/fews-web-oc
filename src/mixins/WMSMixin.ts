@@ -1,5 +1,5 @@
 import {Component, Vue} from 'vue-property-decorator'
-import {WMSProvider} from '@deltares/fews-wms-requests/src/wmsProvider'
+import {WMSProvider} from '@deltares/fews-wms-requests'
 
 @Component
 export default class WMSMixin extends Vue {
