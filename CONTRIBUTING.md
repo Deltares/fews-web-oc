@@ -8,3 +8,7 @@ Before merging a feature into the main branch, the following requirements have t
 - All unit tests and e2e tests have to succeed: npm run test:unit and test:e2e.
 - No lint errors are allowed: npm run lint
 - Sonarqube (https://sonarqube.deltares.nl/projects/) reports all A's.
+- Code coverage of libraries at least 80%.
+- Typescript types have to be used from the libraries.
+- Reusable vue components to web components.
+- Documentation up to date
