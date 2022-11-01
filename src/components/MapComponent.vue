@@ -57,12 +57,10 @@ export default class MapComponent extends Vue {
 
   @Watch('layer')
   onLayerChange (): void {
-    console.log('onLayerChange', this.layer)
     if (!this.initialRenderDone || this.layer === null ) return
     if (this.layer.name === undefined || this.layer.time === undefined) {
       return
     }
-    console.log('onLayerChange', this.layer)
     if (this.layer.name !== this.currentLayer) {
       this.counter += 1
       this.removeOldLayers()
@@ -75,7 +73,6 @@ export default class MapComponent extends Vue {
     const source = this.mapObject.getSource(this.newLayerId)
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     if (source === undefined) {
-      console.log('source', )
       const rasterSource: RasterSource = {
         type: 'raster',
         // use the tiles option to specify a WMS tile source URL
@@ -85,7 +82,6 @@ export default class MapComponent extends Vue {
         ],
         tileSize: 512,
       }
-      console.log('source', rasterSource)
       this.mapObject.addSource(this.newLayerId, rasterSource)
       const rasterLayer: RasterLayer = {
         id: this.newLayerId,
