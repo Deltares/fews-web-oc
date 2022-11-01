@@ -12,6 +12,7 @@
     "@deltares/fews-ssd-requests": "^0.2.7",
     "@deltares/fews-pi-requests": "^0.5.17",
     "@deltares/fews-ssd-webcomponent": "^0.2.7",
+    "@deltares/fews-wms-requests": "^0.1.9",
     "@mdi/font": "^6.4.95",
     "@types/node-fetch": "^2.6.2",
     "core-js": "^3.6.5",
