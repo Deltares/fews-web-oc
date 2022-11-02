@@ -1,40 +1,16 @@
 <template>
-  <div class="configurable-chart" :class="{ fullscreen: isFullscreen }">
-    <v-btn
-      v-if="isFullscreen"
-      fab
-      small
-      right
-      absolute
-      @click="toggleFullscreen()"
-    >
-      <v-icon>mdi-fullscreen-exit</v-icon>
-    </v-btn>
-    <v-toolbar :color="$vuetify.theme.dark ? '#1E1E1E' : '#FFFFFF'" dense flat style="flex-grow:0">
-      <v-spacer/>
-      {{ value.title }}
-      <v-spacer/>
-      <v-btn icon @click="toggleFullscreen()" v-if="!isFullscreen">
-        <v-icon>mdi-fullscreen</v-icon>
-      </v-btn>
-      <slot name="toolbar-append" v-bind:refs="$refs"></slot>
-    </v-toolbar>
-    <v-sheet fluid class="chart-with-chips">
-      <div fluid :class="{'chart-with-legend': true }">
-        <div style="display:flex;flex:1 1; margin: 0 50px;">
-          <v-chip-group column active-class="primary--text">
-            <v-chip small v-for="tag in legendTags" :key="tag.id" @click="toggleLine(tag.id)" :disabled="tag.disabled">
-              <div>
-                <div style="margin-top:6px; margin-right: 5px;" v-html="tag.legendSvg"/>
-              </div>
-              {{ tag.name }}
-            </v-chip>
-          </v-chip-group>
-        </div>
-        <div ref="chart-container" class="chart-container" :class="{ fullscreen : isFullscreen }"
-             v-resize="resize"></div>
-      </div>
-    </v-sheet>
+  <div class="chart-with-chips">
+    <div class="chart-controls">
+      <v-chip-group column active-class="primary--text">
+        <v-chip small v-for="tag in legendTags" :key="tag.id" @click="toggleLine(tag.id)" :disabled="tag.disabled">
+          <div>
+            <div style="margin-top:6px; margin-right: 5px;" v-html="tag.legendSvg"/>
+          </div>
+          {{ tag.name }}
+        </v-chip>
+      </v-chip-group>
+    </div>
+    <div ref="chart-container" class="chart-container"></div>
   </div>
 </template>
 
@@ -236,13 +212,6 @@ export default class ConfigurableChart extends Vue {
     }
   }
 
-  toggleFullscreen(): void {
-    this.isFullscreen = !this.isFullscreen
-    this.$nextTick(() => {
-      this.axis.resize()
-    })
-  }
-
   toggleLine(id: string): void {
     const tag = this.legendTags.find(tag => {
       return tag.id === id
@@ -263,59 +232,34 @@ export default class ConfigurableChart extends Vue {
 </script>
 
 <style>
-.configurable-chart {
+
+.chart-container {
   display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  width: 100%;
-  padding: 0;
-}
-
-.fullscreen {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 9000;
-}
-
-.chart-with-chips {
-  flex-direction: column;
-  width: 100%;
-  flex-grow: 1;
-  flex-shrink: 0;
-  flex-basis: 100px;
-  padding: 0;
-  /* background: #1E1E1E; */
-}
-
-.chart-with-legend {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-  margin: 0 auto;
-}
-
-.chart-legend {
   position: relative;
+  flex: 1 1 100px;
   width: 100%;
   fill: currentColor;
+  margin: 0px auto;
+  overflow: hidden;
+}
+
+.chart-controls {
+  display:flex;
+  flex:0;
+  margin: 0 50px;
+}
+
+.chart-container.hidden > svg {
+  display: none;
 }
 
 .chart-container.fullscreen {
   max-height: none;
 }
 
-.chart-container {
+.chart-with-chips {
   display: flex;
-  position: relative;
-  flex-basis: 500px;
-  max-height: 400px;
-  flex-grow: 4;
-  flex-shrink: 1;
-  width: 100%;
-  fill: currentColor;
+  flex-direction: column;
+  flex: 1 1 80%;
 }
 </style>

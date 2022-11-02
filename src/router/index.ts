@@ -7,7 +7,7 @@ import Silent from '../views/auth/Silent.vue'
 import Callback from '../views/auth/Callback.vue'
 import LoginView from '../views/LoginView.vue'
 import Logout from '../views/auth/Logout.vue'
-import DisplayComponent from '../views/DisplayComponent.vue'
+import ComponentsPanel from '../components/Layout/ComponentsPanel.vue'
 import SystemMonitor from '../views/SystemMonitorDisplay.vue'
 import { configManager } from '../services/application-config'
 import TimeSeriesDisplay from '../views/TimeSeriesDisplay.vue'
@@ -48,7 +48,7 @@ const routes: Array<RouteConfig> = [
       {
         path: 'location/:locationId',
         name: 'DataViewerWithLocation',
-        component: DisplayComponent,
+        component: ComponentsPanel,
         props: route => ({...route.params, layerName: route.query.layerName }),
         meta: { authorize: [], sidebar: true }
       }

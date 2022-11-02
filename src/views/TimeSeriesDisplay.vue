@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="display-container">
     <portal to="web-oc-sidebar">
       <v-toolbar dense flat>
         <v-btn-toggle
@@ -44,19 +44,18 @@
         </p>
       </v-card-text>
     </v-card>
-    <v-row>
-      <v-col :md="this.plots.length===1?12:10">
-        <div v-for="(display, index) in displays" :key="index">
-          <time-series-component :value="display" :series="timeSeriesStore"/>
-        </div>
-      </v-col>
-      <v-col md="2" v-if="this.plots.length>1">
+    <div style="height: 100%; width: 100%; display: flex; flex-direction: row">
+      <ComponentsPanel :displays="displays" :series="timeSeriesStore"/>
+      <div style="width: 200px;" v-if="plots.length > 1">
         <v-navigation-drawer
-          floating
+          width="200"
+          permanent
         >
-          <v-list dense rounded>
+          <v-subheader>Overview</v-subheader>
+          <v-list>
             <v-list-item-group
               v-model="selectedItem"
+              mandatory
               color="primary"
             >
               <v-list-item
@@ -70,8 +69,8 @@
             </v-list-item-group>
           </v-list>
         </v-navigation-drawer>
-      </v-col>
-    </v-row>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -80,13 +79,11 @@ import {Component, Mixins, Prop, Vue, Watch} from 'vue-property-decorator'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
 import {ColumnItem} from '@/components/ColumnItem'
-import TimeSeriesComponent from '@/components/TimeSeriesComponent/ConfigurableChart.vue'
+import ComponentsPanel from '@/components/Layout/ComponentsPanel.vue'
 import SeriesStore from '@/mixins/SeriesStore'
 import {Series, SeriesUrlRequest} from '@/lib/TimeSeries'
-import {ChartConfig} from '@/components/TimeSeriesComponent/lib/ChartConfig'
-import {ChartSeries} from '@/components/TimeSeriesComponent/lib/ChartSeries'
-import {cloneDeep} from 'lodash'
-import {PiWebserviceProvider, Event} from "@deltares/fews-pi-requests";
+import {DisplayConfig, DisplayType} from '@/lib/Layout/DisplayConfig'
+import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
 import {TopologyNode} from "@deltares/fews-pi-requests/src/response/topology/topologyNode";
 import {DisplayGroupsFilter} from "@deltares/fews-pi-requests/src/requestParameters/DisplayGroupsFilter";
 import {TimeSeriesResponse} from "@deltares/fews-pi-requests/src/response";
@@ -97,12 +94,13 @@ import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisp
   components: {
     ColumnMenu,
     TreeMenu,
-    TimeSeriesComponent
+    ComponentsPanel
   }
 })
 export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
   @Prop({default: '', type: String})
   nodeId!: string
+
   selectedItem: number = -1;
   active: string[] = []
   open: string[] = []
@@ -110,8 +108,8 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
   viewMode = 0
   warningMessage: string = "";
   baseUrl!: string
-  allDisplays: ChartConfig[][] = []
-  displays: ChartConfig[] = []
+  allDisplays: DisplayConfig[][] = []
+  displays: DisplayConfig[] = []
   requests: any[] = [];
   plots: string[] = [];
   webServiceProvider: PiWebserviceProvider = {} as PiWebserviceProvider;
@@ -152,7 +150,7 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
     const items: ColumnItem[] = [
       {
         id: 'root',
-        name: 'Topologie',
+        name: 'Topology',
         children: recursiveUpdateNode(nodes.topologyNodes)
       }
     ]
@@ -185,9 +183,18 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
 
     for (const result of response.results) {
       if (result.config === undefined) continue;
-      let display = [];
-      for (const subPlot of result.config.timeSeriesDisplay.subplots) {
-        display.push(convertTimeSeriesDisplayToWbCharts(subPlot, result.config.timeSeriesDisplay.title));
+      const display: DisplayConfig[] = [];
+      for (let i in result.config.timeSeriesDisplay.subplots) {
+        const subPlot = result.config.timeSeriesDisplay.subplots[i]
+        console.log(subPlot)
+        const title = result.config.timeSeriesDisplay.title
+        display.push({
+          id: `${title}-${i}`,
+          type: DisplayType.TimeSeriesComponent,
+          class: 'single',
+          title: result.config.timeSeriesDisplay.title,
+          config: timeSeriesDisplayToChartConfig(subPlot, title)
+        })
       }
       this.allDisplays.push(display);
       this.requests.push(result.requests);
@@ -198,6 +205,7 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
       return
     }
     this.displays = this.allDisplays[0];
+    console.log('onNodeChange', this.displays)
     await this.loadTimeSeries(0);
   }
 
@@ -218,7 +226,7 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
         series.header.source = timeSeries.header.moduleInstanceId
         series.start = new Date(`${timeSeries.header.startDate.date}T${timeSeries.header.startDate.time}`)
         series.end = new Date(`${timeSeries.header.endDate.date}T${timeSeries.header.endDate.time}`)
-        series.data = timeSeries.events.map((event: Event) => {
+        series.data = timeSeries.events.map((event) => {
           return {
             x: new Date(`${event.date}T${event.time}`),
             y: event.flag === '8' ? null : parseFloat(event.value)
@@ -241,3 +249,9 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
 
 }
 </script>
+
+<style scoped>
+.display-container {
+  height: 100%;
+}
+</style>
