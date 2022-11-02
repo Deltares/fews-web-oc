@@ -4,22 +4,34 @@
       <div class="sidebar-content">
         <v-divider></v-divider>
         <v-subheader>Filters</v-subheader>
-        <v-list expand nav>
-          <v-list-item v-for="filter in filters" :key="filter.id" link
-            :to="{ name: 'DataViewer', params: { filterId: filter.id } }">
-            <v-list-item-icon>
-              <v-icon>{{ filter.icon }}</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>{{ filter.name }}</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
+        <v-treeview
+          hoverable
+          open-on-click
+          dense
+          :items="filters"
+          item-children="child"
+          item-id="id"
+        >
+          <template v-slot:label="props">
+            <v-list-item dense :to="{ name: 'DataViewer', params: { filterId: props.item.id }}">
+              <v-tooltip bottom open-delay="400">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-list-item-content
+                    v-bind="attrs"
+                    v-on="on">
+                    {{ props.item.name }}
+                  </v-list-item-content>
+                </template>
+                <span>{{ props.item.name }}</span>
+              </v-tooltip>
+            </v-list-item>
+          </template>
+        </v-treeview>
         <v-divider></v-divider>
         <v-subheader>Parameter Group</v-subheader>
-        <v-list expand nav>
+        <v-list expand nav dense>
           <v-list-item v-for="(c, i) of categories" :key="i"
-            :to="{ name: 'DataViewer', params: { filterId, categoryId: c } }">
+            :to="routeForCategory(c)">
             <v-list-item-content>
               <v-list-item-title>{{ c }}</v-list-item-title>
             </v-list-item-content>
@@ -35,7 +47,7 @@
             <v-mapbox-layer v-if="showLocationsLayer" :options="locationsLayer" clickable @click="onLocationClick"></v-mapbox-layer>
           </MapComponent>
         </div>
-        <div style="position: absolute; z-index: 1200; padding-left: 5px;">
+        <div style="position: absolute; padding-left: 5px;">
           <v-chip-group>
             <WMSLayerControl
               v-if="currentLayers.length > 0"
@@ -70,9 +82,9 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <router-view @toggleFullscreen="toggleFullscreen"></router-view>
+        <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="toggleFullscreen"></router-view>
       </div>
-      <div class="grid-charts fullscreen" ref="grid-charts" v-if="hasSelectedLocation && $vuetify.breakpoint.mobile">
+      <div class="grid-charts fullscreen" ref="grid-charts" v-else-if="hasSelectedLocation">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-toolbar-title>
           </v-toolbar-title>
@@ -83,16 +95,15 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <router-view :message="currentParameters">
-        </router-view>
+        <router-view :displays="displays" @toggleFullscreen="toggleFullscreen"></router-view>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
-import { PiWebserviceProvider } from "@deltares/fews-pi-requests";
+import { Component, Mixins, Prop, Vue, Watch } from 'vue-property-decorator'
+import { PiWebserviceProvider, TimeSeriesResponse } from "@deltares/fews-pi-requests";
 import { debounce, uniq, intersection } from 'lodash';
 import { Location } from '@deltares/fews-pi-requests/src/response';
 import MapComponent from '../components/MapComponent.vue'
@@ -104,6 +115,10 @@ import { ColourMap } from 'wb-charts';
 import WMSLayerControl, { WMSLayerControlValue } from '@/components/WMSLayerControl.vue'
 import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
 import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
+import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
+import { Series, SeriesUrlRequest,  } from '@/lib/TimeSeries';
+import SeriesStore from '@/mixins/SeriesStore'
+import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
 
 interface Filter {
   id: string;
@@ -127,7 +142,7 @@ interface Parameter {
     WMSLayerControl
   }
 })
-export default class DataView extends Mixins(WMSMixin) {
+export default class DataView extends Mixins(WMSMixin, SeriesStore) {
   @Prop({
     default: '',
     type: String
@@ -154,7 +169,7 @@ export default class DataView extends Mixins(WMSMixin) {
   webServiceProvider!: PiWebserviceProvider
   parameters: Parameter[] = []
 
-  currentFilterId: string = ''
+  currentLocationId: string = ''
   currentCategoryId: string = ''
   currentParameters: Parameter[] = []
   currentLayers: Layer[] = []
@@ -173,6 +188,7 @@ export default class DataView extends Mixins(WMSMixin) {
   categories: string[] = []
   locations: Location[] = []
 
+  displays: DisplayConfig[] = []
   externalForecastTime = new Date()
 
   showLocationsLayer = true
@@ -207,7 +223,7 @@ export default class DataView extends Mixins(WMSMixin) {
     this.getParameters()
     this.getCapabilities()
     this.setLayoutClass()
-
+    this.currentLocationId = this.$route.params.locationId ?? ''
     // Force resize to fix strange starting position of the map, caused by
     // the expandable navigation drawer.
     window.dispatchEvent(new Event('resize'))
@@ -227,22 +243,20 @@ export default class DataView extends Mixins(WMSMixin) {
     this.filters = filters
     const filterId =  filters[0].id
     if (this.filterId === '') {
-      this.currentFilterId = filterId
       this.$router.replace({ name: 'DataViewer', params: { filterId } })
-    } else {
-      this.currentFilterId = this.filterId
     }
   }
 
   @Watch('filterId')
   async getParameters() {
+    if (this.filterId === '') return
     const filter = {
-      filterId: this.currentFilterId
+      filterId: this.filterId
     }
     // const response = await this.webServiceProvider.getParameters(filter as any)
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const response = await fetch(
-      `${baseUrl}rest/fewspiservice/v1/parameters?documentFormat=PI_JSON&filterId=${this.currentFilterId}`)
+      `${baseUrl}rest/fewspiservice/v1/parameters?documentFormat=PI_JSON&filterId=${this.filterId}`)
     const parameters: Parameter[] = (await response.json()).timeSeriesParameters
     this.parameters = parameters
     this.categories = uniq(parameters.map(p => p.parameterGroup))
@@ -259,16 +273,23 @@ export default class DataView extends Mixins(WMSMixin) {
 
   async getLocations() {
     const filter = {
-      filterId: this.currentFilterId,
+      filterId: this.filterId,
       parameterIds: 'H.obs'
     }
     // const response = await this.webServiceProvider.getParameters(filter as any)
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const response = await fetch(
-      `${baseUrl}rest/fewspiservice/v1/locations?documentFormat=GEO_JSON&filterId=${this.currentFilterId}&parameterGroupId=${this.currentCategoryId}`)
+      `${baseUrl}rest/fewspiservice/v1/locations?documentFormat=GEO_JSON&filterId=${this.filterId}&parameterGroupId=${this.currentCategoryId}`)
     const locations: any = await response.json()
     this.locations = locations.features.map( (f: any) => { return f.properties })
     this.locationsLayer.source.data = locations
+    const found = this.locations.findIndex( (l) => l.locationId === this.locationId) > -1
+    console.log('found', found, this.locationId)
+    if ( !found ) {
+      this.$router.replace({name: 'DataViewer', params: { filterId: this.filterId, categoryId: this.categoryId }})
+    } else {
+      this.onLocationChange()
+    }
   }
 
   @Watch('categoryId')
@@ -291,6 +312,7 @@ export default class DataView extends Mixins(WMSMixin) {
     if (currentLayers.length > 0) {
       this.layerName = currentLayers[0].name
     } else {
+      console.log('no layers')
       this.layerName = ''
     }
     this.onLayerChange()
@@ -330,14 +352,87 @@ export default class DataView extends Mixins(WMSMixin) {
 
   onLocationClick(e: any) {
     const locationId = e.features[0].properties.locationId
+    if (this.locationId === locationId) return
     this.$router.push({
       name: 'DataViewerWithLocation',
       params: {
         filterId: this.filterId,
         categoryId: this.categoryId,
-        locationId
+        locationId,
       }
     })
+  }
+
+  @Watch('locationId')
+  async onLocationChange() {
+    if (this.locationId === '') return
+    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const result = await fetch(`${baseUrl}rest/fewspiservice/v1/filters/actions?filterId=${this.filterId}&parameterGroupId=${this.categoryId}&locationIds=${this.locationId}`)
+    const response = await result.json()
+    const allDisplays = []
+    const requests = []
+    for (const result of response.results) {
+      if (result.config === undefined) continue;
+      const display: DisplayConfig[] = [];
+      for (let i in result.config.timeSeriesDisplay.subplots) {
+        const subPlot = result.config.timeSeriesDisplay.subplots[i]
+        console.log(subPlot)
+        const title = result.config.timeSeriesDisplay.title
+        display.push({
+          id: `${title}-${i}`,
+          type: DisplayType.TimeSeriesComponent,
+          title: result.config.timeSeriesDisplay.title,
+          class: 'single',
+          config: timeSeriesDisplayToChartConfig(subPlot, title)
+        })
+        console.log('chart config', timeSeriesDisplayToChartConfig(subPlot, title))
+      }
+
+      allDisplays.push(display);
+      requests.push(result.requests);
+    }
+
+    this.displays = allDisplays[0]
+    this.loadTimeSeries(requests[0])
+
+    // this.$router.push({
+    //   name: 'DataViewerWithLocation',
+    //   params: {
+    //     filterId: this.filterId,
+    //     categoryId: this.categoryId,
+    //     locationId: this.locationId
+    //   }
+    // })
+  }
+
+  private async loadTimeSeries(requests: any[]) {
+    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    for (const r in requests) {
+      const request = requests[r]
+      const url = new URL(`${baseUrl}/${request.request}`)
+      const piSeries: TimeSeriesResponse = await this.webServiceProvider.getTimeSeriesWithRelativeUrl(request.request);
+      for (const index in piSeries.timeSeries) {
+        const timeSeries = piSeries.timeSeries[index]
+        if (timeSeries.events === undefined) continue
+        const resourceId = `${request.key}`
+        const resource = new SeriesUrlRequest('fews-pi', url.toString())
+        const series = new Series(resource)
+        series.header.name = `${timeSeries.header.stationName} - ${timeSeries.header.parameterId} (${timeSeries.header.moduleInstanceId})`
+        series.header.unit = timeSeries.header.units
+        series.header.parameter = timeSeries.header.parameterId
+        series.header.location = timeSeries.header.stationName
+        series.header.source = timeSeries.header.moduleInstanceId
+        series.start = new Date(`${timeSeries.header.startDate.date}T${timeSeries.header.startDate.time}`)
+        series.end = new Date(`${timeSeries.header.endDate.date}T${timeSeries.header.endDate.time}`)
+        series.data = timeSeries.events.map((event) => {
+          return {
+            x: new Date(`${event.date}T${event.time}`),
+            y: event.flag === '8' ? null : parseFloat(event.value)
+          }
+        })
+        Vue.set(this.timeSeriesStore, resourceId, series)
+      }
+    }
   }
 
   get hasSelectedLocation() {
@@ -379,23 +474,33 @@ export default class DataView extends Mixins(WMSMixin) {
   }
 
   async onLayerChange(): Promise <void> {
-    try {
-      this.times = await this.getTimes(this.layerName)
-    } catch {
-      this.times = []
-    }
-    this.dateController.dates = this.times
-    this.dateController.selectDate(this.currentTime)
-    this.currentTime = this.dateController.currentTime
-    try {
-      const response = await this.getLegendGraphic(this.layerName)
-      this.legend = response.legend
-      this.unit = response.unit
-    } catch {
-      this.legend = []
-      this.unit = ""
+    if ( this.layerName !== '') {
+      try {
+        this.times = await this.getTimes(this.layerName)
+      } catch {
+        this.times = []
+      }
+      this.dateController.dates = this.times
+      this.dateController.selectDate(this.currentTime)
+      this.currentTime = this.dateController.currentTime
+      try {
+        const response = await this.getLegendGraphic(this.layerName)
+        this.legend = response.legend
+        this.unit = response.unit
+      } catch {
+        this.legend = []
+        this.unit = ""
+      }
     }
     this.setLayerOptions()
+  }
+
+  routeForCategory(categoryId: string) {
+    if (this.$route.name === 'DataViewerWithLocation') {
+      return { name: 'DataViewerWithLocation', params: { filterId: this.filterId, categoryId, locationId: this.locationId } }
+    } else {
+      return { name: 'DataViewer', params: { filterId: this.filterId, categoryId } }
+    }
   }
 
   async updateActiveLayer(value: WMSLayerControlValue): Promise<void> {
@@ -425,6 +530,10 @@ export default class DataView extends Mixins(WMSMixin) {
 </script>
 
 <style scoped>
+  .display-container {
+    height: 100%;
+  }
+
   .grid-root {
     display: flex;
     padding: 0px;
@@ -503,7 +612,6 @@ export default class DataView extends Mixins(WMSMixin) {
 
   .wms-layer-control-container {
     display: flex;
-    z-index: 1200;
     padding: 15px 50px 15px 50px;
   }
 
@@ -555,5 +663,17 @@ export default class DataView extends Mixins(WMSMixin) {
     flex-grow: 0;
     z-index: 1000;
   }
+
+.v-list-item--dense, .v-list--dense .v-list-item {
+  min-height: 28px !important;
+}
+
+.v-treeview--dense .v-treeview-node__root {
+  min-height: 28px !important;
+}
+
+.v-treeview-node__level {
+  width: 12px !important;
+}
 
 </style>
