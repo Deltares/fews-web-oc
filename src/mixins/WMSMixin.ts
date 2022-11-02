@@ -1,5 +1,5 @@
-import { Vue, Component } from 'vue-property-decorator'
-import { WMSProvider } from '@/lib/wms'
+import {Component, Vue} from 'vue-property-decorator'
+import {WMSProvider} from '@deltares/fews-wms-requests'
 
 @Component
 export default class WMSMixin extends Vue {
@@ -29,7 +29,9 @@ export default class WMSMixin extends Vue {
       if (capabilities.layers[0].firstValueTime) { firstValueDate = new Date(capabilities.layers[0].firstValueTime) }
       if (capabilities.layers[0].lastValueTime) { lastValueDate = new Date(capabilities.layers[0].lastValueTime) }
       valueDates = dates.filter(d => d >= firstValueDate && d <= lastValueDate)
-      this.externalForecast = new Date(capabilities.layers[0].keywordList.forecastTime)
+      if (capabilities.layers[0].keywordList && capabilities.layers[0].keywordList[0].forecastTime) {
+          this.externalForecast = new Date(capabilities.layers[0].keywordList[0].forecastTime)
+      }
     } else {
       valueDates = []
       this.externalForecast = new Date('invalid')
@@ -39,7 +41,6 @@ export default class WMSMixin extends Vue {
   }
 
   async getLegendGraphic (layers: string): Promise<any> {
-    const response = await this.wmsProvider.getLegendGraphic({ layers })
-    return response
+    return await this.wmsProvider.getLegendGraphic({layers})
   }
 }
