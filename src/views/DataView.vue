@@ -108,7 +108,7 @@ import { debounce, uniq, intersection } from 'lodash';
 import { Location } from '@deltares/fews-pi-requests/src/response';
 import MapComponent from '../components/MapComponent.vue'
 import WMSMixin from '@/mixins/WMSMixin'
-import { Layer } from '@/lib/wms';
+import { Layer } from '@deltares/fews-wms-requests';
 import { DateController } from '@/lib/TimeControl/DateController';
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { ColourMap } from 'wb-charts';
@@ -304,6 +304,7 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
   async updateLayers() {
     const currentParameterIds = this.currentParameters.map(p => p.id)
     const currentLayers = this.layers.filter(l => {
+      if (l.keywordList === undefined) return false
       const layerParameterIds = l.keywordList.filter(k => k.parameterId).map(k => k.parameterId)
       const intersect = intersection(currentParameterIds, layerParameterIds)
       return intersect.length > 0
