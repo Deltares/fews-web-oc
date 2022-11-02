@@ -5,4 +5,5 @@ export interface Axis {
   unit?: string;
   includeZero?: boolean
   domain?: number[] | Date[]
+  defaultDomain?: number[] | Date[]
 }

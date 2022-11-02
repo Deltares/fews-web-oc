@@ -3,25 +3,24 @@ import { ChartSeries } from "@/components/TimeSeriesComponent/lib/ChartSeries"
 import { cloneDeep } from "lodash"
 
 export function timeSeriesDisplayToChartConfig(subplot: any, title: string): ChartConfig {
+  const yAxis = subplot.items[0].yAxis
   const config: ChartConfig = {
     title: title,
     xAxis: [],
     yAxis: [{
       type: 'value',
-      location: subplot.items[0].yAxis.axisPosition,
-      label: subplot.items[0].yAxis.axisLabel,
+      location: yAxis.axisPosition,
+      label: yAxis.axisLabel,
+      defaultDomain: [yAxis.axisMinValue, yAxis.axisMaxValue]
     }],
   }
   const chartSeriesArray: ChartSeries[] = []
-  const requestIds: string[] = []
   for (const index in subplot.items) {
     const item = subplot.items[index]
-    requestIds.push(item.request)
-    const count = requestIds.filter((i) => i === item.request).length
     const chartSeries = {
-      id: `${item.request}[${count - 1}]`,
+      id: `${item.request}`,
       dataResources: [
-        `${item.request}[${count - 1}]`
+        `${item.request}`
       ],
       name: item.legend,
       unit: item.unit,

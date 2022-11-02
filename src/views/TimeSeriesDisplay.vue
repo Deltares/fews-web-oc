@@ -216,7 +216,7 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
       for (const index in piSeries.timeSeries) {
         const timeSeries = piSeries.timeSeries[index]
         if (timeSeries.events === undefined) continue
-        const resourceId = `${request.key}[${index}]`
+        const resourceId = `${request.key}`
         const resource = new SeriesUrlRequest('fews-pi', url.toString())
         const series = new Series(resource)
         series.header.name = `${timeSeries.header.stationName} - ${timeSeries.header.parameterId} (${timeSeries.header.moduleInstanceId})`
