@@ -12,7 +12,7 @@
   >
   <template v-slot:activator="{ on }">
     <v-chip pill v-on.self="on" :color="$vuetify.theme.dark ? 'rgba(0,0,0,.5)' : 'rgba(255,255,255,.5)'" style="backdrop-filter: blur(4px);">
-      <v-switch v-model="active" @click.stop @change="onChange(layerName)"></v-switch>
+      <v-switch v-model="active" @click.stop></v-switch>
       {{ layerLabel }}
       <span style="margin-left: 10px; padding: 0 10px; border-radius: 10px; background-color: rgba(0, 0, 0, 0.7); color: white;">{{formatedTime}}</span>
       <v-icon> mdi-chevron-down </v-icon>
@@ -64,15 +64,22 @@ export interface WMSLayerControlValue {
 
 @Component
 export default class WMSLayerControl extends Vue {
-  @Prop({ default: () => [] }) items!: any[];
+  @Prop({ default: () => [] })
+  items!: any[];
+
   @Prop({ default: () => { return {
     name: '',
-    active: true
   }}}) value!: WMSLayerControlValue;
-  @Prop({ default: '' }) time!: string;
-  @Prop({ default: () => { return new Date() } }) timeIndex!: Date;
 
-  active = true
+  @Prop({ default: '' })
+  time!: string;
+
+  @Prop({ default: () => { return new Date() } })
+  timeIndex!: Date;
+
+  @Prop({ default: true, type: Boolean})
+  showLayer!: boolean
+
   layerName: string = ''
   currentLayerMenu = false
 
@@ -82,7 +89,7 @@ export default class WMSLayerControl extends Vue {
   }
 
   onChange(id: string) {
-    this.$emit("change", { active: this.active, name: id} );
+    this.$emit("change", { name: id} );
   }
 
   closeMenu() {
@@ -95,7 +102,7 @@ export default class WMSLayerControl extends Vue {
     } else {
       const format = 'HH:mm ZZZZ'
       const timeZone = 'Europe/Amsterdam'
-      const dateTime = DateTime.fromJSDate(this.timeIndex).setZone( timeZone ).setLocale('nl-NL')
+      const dateTime = DateTime.fromJSDate(this.timeIndex).setZone( timeZone ).setLocale('en-GB')
       return dateTime.toFormat(format)
     }
   }
@@ -110,9 +117,15 @@ export default class WMSLayerControl extends Vue {
 
   @Watch("value", { deep: true})
   valueChange() {
-    console.log('value', this.value)
     this.layerName = this.value.name;
-    this.active = this.value.active
+  }
+
+  get active(): boolean {
+    return this.showLayer
+  }
+
+  set active(value: boolean) {
+    this.$emit('update:showLayer', value)
   }
 
   getTitle(item: any) {

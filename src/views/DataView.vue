@@ -43,7 +43,7 @@
       <div class="grid-map" v-show="showMap">
         <div class="map-container" style="height: calc(100% - 48px); position: relative;">
           <MapComponent>
-            <MapboxLayer :layer="layerOptions"></MapboxLayer>
+            <MapboxLayer v-if="showLayer" :layer="layerOptions"></MapboxLayer>
             <v-mapbox-layer v-if="showLocationsLayer" :options="locationsLayer" clickable @click="onLocationClick"></v-mapbox-layer>
           </MapComponent>
         </div>
@@ -52,6 +52,7 @@
             <WMSLayerControl
               v-if="currentLayers.length > 0"
               v-model="layerOptions"
+              :showLayer.sync="showLayer"
               :time="externalForecastTime"
               :items="currentLayers"
               :timeIndex="currentTime"
@@ -169,6 +170,7 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
   webServiceProvider!: PiWebserviceProvider
   parameters: Parameter[] = []
 
+  showLayer: boolean = true
   currentLocationId: string = ''
   currentCategoryId: string = ''
   currentParameters: Parameter[] = []
@@ -177,7 +179,7 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
   dateController!: DateController
   currentTime: Date = new Date()
   times: Date[] = []
-  debouncedSetLayerOptions!: any
+  debouncedSetLayerOptions!: () => void
 
   layerName: string = ''
   layerOptions: any = {}
@@ -520,13 +522,10 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
   }
 
   async updateActiveLayer(value: WMSLayerControlValue): Promise<void> {
-    if (value.name !== this.layerName && (value.active)) {
+    if (value.name !== this.layerName) {
       this.layerName = value.name
       this.onLayerChange()
       this.setLayerOptions()
-    }
-    if (value.active === false) {
-      this.layerOptions = null
     }
   }
 
