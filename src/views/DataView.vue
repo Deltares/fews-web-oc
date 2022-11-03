@@ -120,7 +120,7 @@ import { timeSeriesDisplayToChartConfig, polarChartConfig } from '@/lib/ChartCon
 import { Series, SeriesUrlRequest,  } from '@/lib/TimeSeries';
 import SeriesStore from '@/mixins/SeriesStore'
 import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
-import { FeatureCollection, Geometry, Point } from 'geojson';
+import { FeatureCollection, Geometry } from 'geojson';
 
 interface MapboxLayerOptions {
   name: string;
@@ -289,7 +289,7 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
     }
     const response = this.webServiceProvider.getLocations(filter)
     const geojson = (((await response) as any) as FeatureCollection<Geometry,Location>)
-    this.locations = geojson.features.map( (f: any) => { return f.properties })
+    this.locations = geojson.features.map( (f) => { return f.properties })
     this.locationsLayer.source.data = geojson
     const found = this.locations.findIndex( (l) => l.locationId === this.locationId) > -1
     if ( !found &&  this.locationId !== '') {
