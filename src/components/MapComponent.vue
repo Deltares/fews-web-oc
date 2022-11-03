@@ -76,8 +76,6 @@ export default class MapComponent extends Vue {
     if (source === undefined) {
       const rasterSource: RasterSource = {
         type: 'raster',
-        // use the tiles option to specify a WMS tile source URL
-        // https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/
         tiles: [
           `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${this.layer.name}&crs=EPSG:3857&bbox={bbox-epsg-3857}&height=512&width=512&time=${time}`
         ],
@@ -94,7 +92,7 @@ export default class MapComponent extends Vue {
             duration: 0,
             delay: 0
           },
-          'raster-fade-duration': 0,
+          // 'raster-fade-duration': 0,
         },
       }
       this.mapObject.addLayer(
