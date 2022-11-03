@@ -24,7 +24,8 @@ export default class WMSMixin extends Vue {
   async getCapabilities (): Promise<void> {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const response = await fetch(`${baseUrl}/wms?request=GetCapabilities&format=application/json&onlyHeaders=false`)
-    this.layers = (await response.json()).layers
+    const layers = (await response.json()).layers
+    this.layers = layers
   }
 
   async getTimes (layers: string): Promise<Date[]> {

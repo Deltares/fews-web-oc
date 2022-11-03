@@ -57,7 +57,12 @@ export default class AnimatedMapboxLayer extends Vue {
 
   @Watch('layer')
   onLayerChange (): void {
-    if (!this.isInitialized || this.layer === null ) return
+    if (!this.isInitialized) return
+    if (this.layer === null) {
+      this.removeLayer();
+      this.removeOldLayers();
+      return
+    }
     if (this.layer.name === undefined || this.layer.time === undefined) {
       return
     }
@@ -115,8 +120,10 @@ export default class AnimatedMapboxLayer extends Vue {
   removeLayer() {
     if(this.mapObject !== undefined) {
       const layerId = getFrameId(this.currentLayer, this.counter)
-      this.mapObject.removeLayer(layerId)
-      this.mapObject.removeSource(layerId)
+      if(this.mapObject.getSource(layerId) !== undefined) {
+        this.mapObject.removeLayer(layerId)
+        this.mapObject.removeSource(layerId)
+      }
     }
   }
 
