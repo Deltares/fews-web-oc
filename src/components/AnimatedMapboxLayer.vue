@@ -18,20 +18,29 @@ interface MapboxLayerOptions {
 @Component
 export default class AnimatedMapboxLayer extends Vue {
   @Prop({ default: () => { return null } })
-    layer!: MapboxLayerOptions | null
+  layer!: MapboxLayerOptions | null
 
   @Inject() getMap!: () => Map
 
   mapObject!: Map
   newLayerId!: string
-  initialRenderDone = false
+  isInitialized = false
   counter = 0
   currentLayer: string = ''
 
+  mounted() {
+    const map = this.getMap();
+    if(map && map.isStyleLoaded()) {
+      this.mapObject = map
+      this.isInitialized = true
+      this.onLayerChange();
+    }
+  }
+
   deferredMountedTo(map: Map) {
-    this.mapObject  = map
+    this.mapObject = map
     this.mapObject.once('load', () => {
-      this.initialRenderDone = true
+      this.isInitialized = true
       this.onLayerChange()
     })
     this.mapObject.on('data', async (e) => {
@@ -48,7 +57,7 @@ export default class AnimatedMapboxLayer extends Vue {
 
   @Watch('layer')
   onLayerChange (): void {
-    if (!this.initialRenderDone || this.layer === null ) return
+    if (!this.isInitialized || this.layer === null ) return
     if (this.layer.name === undefined || this.layer.time === undefined) {
       return
     }
@@ -102,6 +111,20 @@ export default class AnimatedMapboxLayer extends Vue {
       }
     }
   }
+
+  removeLayer() {
+    if(this.mapObject !== undefined) {
+      const layerId = getFrameId(this.currentLayer, this.counter)
+      this.mapObject.removeLayer(layerId)
+      this.mapObject.removeSource(layerId)
+    }
+  }
+
+  destroyed() {
+    this.removeLayer();
+    this.removeOldLayers();
+  }
+
 }
 </script>
 
