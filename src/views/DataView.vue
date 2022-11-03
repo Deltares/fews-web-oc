@@ -104,7 +104,7 @@
 
 <script lang="ts">
 import { Component, Mixins, Prop, Vue, Watch } from 'vue-property-decorator'
-import { PiWebserviceProvider, TimeSeriesResponse } from "@deltares/fews-pi-requests";
+import { DocumentFormat, PiWebserviceProvider, TimeSeriesResponse } from "@deltares/fews-pi-requests";
 import { debounce, uniq, intersection } from 'lodash';
 import { Location } from '@deltares/fews-pi-requests/src/response';
 import MapComponent from '../components/MapComponent.vue'
@@ -120,6 +120,7 @@ import { timeSeriesDisplayToChartConfig, polarChartConfig } from '@/lib/ChartCon
 import { Series, SeriesUrlRequest,  } from '@/lib/TimeSeries';
 import SeriesStore from '@/mixins/SeriesStore'
 import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
+import { FeatureCollection, Geometry, Point } from 'geojson';
 
 interface MapboxLayerOptions {
   name: string;
@@ -281,16 +282,15 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
 
   async getLocations() {
     const filter = {
+      documentFormat: DocumentFormat.GEO_JSON,
       filterId: this.filterId,
-      parameterIds: 'H.obs'
+      parameterGroupId: this.currentCategoryId,
+      showAttributes: false
     }
-    // const response = await this.webServiceProvider.getParameters(filter as any)
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const response = await fetch(
-      `${baseUrl}rest/fewspiservice/v1/locations?documentFormat=GEO_JSON&filterId=${this.filterId}&parameterGroupId=${this.currentCategoryId}`)
-    const locations: any = await response.json()
-    this.locations = locations.features.map( (f: any) => { return f.properties })
-    this.locationsLayer.source.data = locations
+    const response = this.webServiceProvider.getLocations(filter)
+    const geojson = (((await response) as any) as FeatureCollection<Geometry,Location>)
+    this.locations = geojson.features.map( (f: any) => { return f.properties })
+    this.locationsLayer.source.data = geojson
     const found = this.locations.findIndex( (l) => l.locationId === this.locationId) > -1
     if ( !found &&  this.locationId !== '') {
       this.$router.replace({name: 'DataViewer', params: { filterId: this.filterId, categoryId: this.categoryId }})
@@ -387,7 +387,6 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
       const display: DisplayConfig[] = [];
       for (let i in result.config.timeSeriesDisplay.subplots) {
         const subPlot = result.config.timeSeriesDisplay.subplots[i]
-        console.log(subPlot)
         const title = result.config.timeSeriesDisplay.title
         if (subPlot.items[0].legend.startsWith('Variantiedichtheid2D')) {
           display.push({
@@ -414,15 +413,6 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
 
     this.displays = allDisplays[0]
     this.loadTimeSeries(requests[0])
-
-    // this.$router.push({
-    //   name: 'DataViewerWithLocation',
-    //   params: {
-    //     filterId: this.filterId,
-    //     categoryId: this.categoryId,
-    //     locationId: this.locationId
-    //   }
-    // })
   }
 
   private async loadTimeSeries(requests: any[]) {
