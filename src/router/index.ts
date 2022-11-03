@@ -7,10 +7,13 @@ import Silent from '../views/auth/Silent.vue'
 import Callback from '../views/auth/Callback.vue'
 import LoginView from '../views/LoginView.vue'
 import Logout from '../views/auth/Logout.vue'
-import DisplayComponent from '../views/DisplayComponent.vue'
+import ComponentsPanel from '../components/Layout/ComponentsPanel.vue'
 import SystemMonitor from '../views/SystemMonitorDisplay.vue'
-import TimeSeriesDisplay from '@/views/TimeSeriesDisplay.vue'
 import { configManager } from '../services/application-config'
+import TimeSeriesDisplay from '../views/TimeSeriesDisplay.vue'
+import DataView from '../views/DataView.vue'
+
+import oidcSettings from '../services/config'
 import { Log, UserManager } from 'oidc-client-ts'
 
 Log.setLogger(console)
@@ -21,7 +24,7 @@ Vue.use(VueRouter)
 const routes: Array<RouteConfig> = [
   {
     path: '/',
-    redirect: { name: 'Home' },
+    redirect: { name: 'DataViewer' },
   },
   {
     path: '/login',
@@ -34,6 +37,22 @@ const routes: Array<RouteConfig> = [
     name: 'Home',
     component: Home,
     meta: { authorize: [] }
+  },
+  {
+    path: '/dataviewer/:filterId?/:categoryId?',
+    name: 'DataViewer',
+    component: DataView,
+    props: route => ({...route.params, layerName: route.query.layerName }),
+    meta: { authorize: [], sidebar: true },
+    children: [
+      {
+        path: 'location/:locationId',
+        name: 'DataViewerWithLocation',
+        component: ComponentsPanel,
+        props: route => ({...route.params, layerName: route.query.layerName }),
+        meta: { authorize: [], sidebar: true }
+      }
+    ]
   },
   {
     // /ssd/group/ScadaNZK-ARK/panel/NZK_ARK_10min
@@ -57,12 +76,6 @@ const routes: Array<RouteConfig> = [
     component: TimeSeriesDisplay,
     props: true,
     meta: { authorize: [], sidebar: true }
-  },
-  {
-    path: '/explore',
-    name: 'Explore',
-    component: DisplayComponent,
-    meta: { authorize: [] }
   },
   {
     path: '/systemmonitor',

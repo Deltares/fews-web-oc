@@ -19,7 +19,9 @@
       </ColumnMenu>
     </portal>
     <div style="height: calc(100% - 48px); position: relative">
-      <MapComponent :layer="layerOptions" />
+      <MapComponent>
+        <MapboxLayer :layer="layerOptions" />
+      </MapComponent>
       <div class="colourbar">
         <ColourBar v-model="legend" v-if="legend.length > 0"/>
       </div>
@@ -35,6 +37,7 @@ import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 import debounce from 'lodash/debounce'
 import WMSMixin from '@/mixins/WMSMixin'
 import MapComponent from '@/components/MapComponent.vue'
+import MapboxLayer from '@/components/AnimatedMapboxLayer.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
@@ -42,6 +45,12 @@ import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController'
 import { ColourMap } from 'wb-charts'
 import ColourBar from '@/components/ColourBar.vue'
+import { Layer } from '@deltares/fews-wms-requests'
+
+interface MapboxLayerOptions {
+  name: string;
+  time: Date;
+}
 
 @Component({
   components: {
@@ -49,6 +58,7 @@ import ColourBar from '@/components/ColourBar.vue'
     ColumnMenu,
     TreeMenu,
     DateTimeSlider,
+    MapboxLayer,
     MapComponent,
   }
 })
@@ -63,8 +73,8 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   dateController!: DateController
   currentTime: Date = new Date()
   times: Date[] = []
-  debouncedSetLayerOptions!: any
-  layerOptions: any = {}
+  debouncedSetLayerOptions!: () => void
+  layerOptions: MapboxLayerOptions | null = null
   legend: ColourMap = []
   unit: string = ""
 
@@ -83,7 +93,11 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     const response = await fetch(`${baseUrl}/wms?request=GetCapabilities&format=application/json&onlyHeaders=false`)
     const capabilities = await response.json()
     const layers = capabilities.layers
-    const groupNames = [...new Set(layers.map((l: any) => l.groupName))]
+    this.fillMenuItems(layers)
+  }
+
+  fillMenuItems (layers: Layer[]): void {
+    const groupNames = [...new Set(layers.map((l) => l.groupName))]
     const items: ColumnItem[] = [
       {
         id: 'root',
@@ -92,9 +106,10 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     ]
     items[0].children = []
     for (const groupName of groupNames) {
-      const group = layers.find((l: any) => l.groupName === groupName)
+      const group = layers.find((l) => l.groupName === groupName)
+      if (group === undefined) continue
       const children = []
-      for (const layer of layers.filter((l: any) => l.groupName === groupName)) {
+      for (const layer of layers.filter((l) => l.groupName === groupName)) {
         children.push({
           id: layer.name,
           name: layer.title || layer.name,
@@ -107,7 +122,9 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
           }
         })
       }
-      items[0].children.push({ id: group.groupName, name: group.groupTitle, children })
+      if ( group.groupName !== undefined && group.groupTitle !== undefined) {
+        items[0].children.push({ id: group.groupName, name: group.groupTitle, children })
+      }
     }
     this.items = items
     this.open = [items[0].id]

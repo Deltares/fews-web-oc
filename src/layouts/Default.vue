@@ -19,12 +19,12 @@
       class="view-sidebar">
       <portal-target name="web-oc-sidebar" />
     </v-navigation-drawer>
-    <v-main>
-      <v-btn v-if="$route.meta.sidebar && !($vuetify.breakpoint.mobile && drawer) " @click="toggleDrawer()" style="position: absolute; left: 0px; top: calc(50% - 18px); overflow: hidden-x; width: 30px;z-index: 90000; border-bottom-left-radius: 0px; border-top-left-radius: 0px; padding: 0px; min-width: 30px;">
-        <v-icon aria-label="Menu button">{{ drawer ? 'mdi-chevron-left' : 'mdi-chevron-right' }} </v-icon>
-      </v-btn>
+    <v-main id="main">
       <router-view style="height: 100%;">
       </router-view>
+      <v-btn v-if="$route.meta.sidebar && !($vuetify.breakpoint.mobile && drawer) " @click="toggleDrawer()" style="position: absolute; left: 0px; top: calc(50% - 18px); overflow: hidden-x; width: 30px; border-bottom-left-radius: 0px; border-top-left-radius: 0px; padding: 0px; min-width: 30px;">
+        <v-icon aria-label="Menu button">{{ drawer ? 'mdi-chevron-left' : 'mdi-chevron-right' }} </v-icon>
+      </v-btn>
     </v-main>
   </v-app>
 </template>
@@ -37,11 +37,10 @@ import { Component, Vue } from 'vue-property-decorator'
 export default class Home extends Vue {
   drawer: boolean | null = null
   menuItems = [
-    { id: 'Overview', icon: 'mdi-apps', to: { name: 'Home' } },
+    { id: 'Data View', icon: 'mdi-archive-search', to: { name: 'DataViewer' } },
     { id: 'Schematic Status Display', icon: 'mdi-application-brackets-outline', to: { name: 'SchematicStatusDisplay' } },
     { id: 'Spatial Display', icon: 'mdi-map', to: { name: 'SpatialDisplay' } },
     { id: 'Time Series Display', icon: 'mdi-chart-sankey', to: { name: 'TimeSeriesDisplay' } },
-    { id: 'Explore Archive', icon: 'mdi-archive-search', to: { name: 'Explore' } },
     { id: 'System monitor', icon: 'mdi-clipboard-list', to: { name: 'SystemMonitor' } },
   ]
 
@@ -60,8 +59,10 @@ export default class Home extends Vue {
 </script>
 
 <style>
-html {
-  overflow-y: auto;
+html, body {
+  margin: 0px;
+  overflow: hidden;
+  height: 100%;
 }
 
 #app {
@@ -70,6 +71,18 @@ html {
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
   background-color: rgba(240, 240, 240, 1);
+  height: 100%;
+  overflow: hidden;
+}
+
+#main {
+  height: 100%;
+  overflow: hidden;
+}
+
+.router-container {
+  padding: 0px;
+  height: 100%;
 }
 
 .view-sidebar {
