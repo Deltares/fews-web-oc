@@ -10,10 +10,15 @@ function getFrameId (layerName: string, frame: number): string {
   return `${layerName}-${frame}`
 }
 
+interface MapboxLayerOptions {
+  name: string;
+  time: Date;
+}
+
 @Component
 export default class AnimatedMapboxLayer extends Vue {
   @Prop({ default: () => { return null } })
-    layer!: any | null
+    layer!: MapboxLayerOptions | null
 
   @Inject() getMap!: () => Map
 
@@ -25,7 +30,7 @@ export default class AnimatedMapboxLayer extends Vue {
 
   deferredMountedTo(map: Map) {
     this.mapObject  = map
-    this.mapObject.once('load', (e) => {
+    this.mapObject.once('load', () => {
       this.initialRenderDone = true
       this.onLayerChange()
     })
@@ -61,8 +66,6 @@ export default class AnimatedMapboxLayer extends Vue {
     if (source === undefined) {
       const rasterSource: RasterSource = {
         type: 'raster',
-        // use the tiles option to specify a WMS tile source URL
-        // https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/
         tiles: [
           `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${this.layer.name}&crs=EPSG:3857&bbox={bbox-epsg-3857}&height=512&width=512&time=${time}`
         ],
@@ -79,7 +82,6 @@ export default class AnimatedMapboxLayer extends Vue {
             duration: 0,
             delay: 0
           },
-          'raster-fade-duration': 0,
         },
       }
       this.mapObject.addLayer(
