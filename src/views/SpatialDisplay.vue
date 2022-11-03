@@ -45,6 +45,12 @@ import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController'
 import { ColourMap } from 'wb-charts'
 import ColourBar from '@/components/ColourBar.vue'
+import { Layer } from '@deltares/fews-wms-requests'
+
+interface MapboxLayerOptions {
+  name: string;
+  time: Date;
+}
 
 @Component({
   components: {
@@ -67,8 +73,8 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   dateController!: DateController
   currentTime: Date = new Date()
   times: Date[] = []
-  debouncedSetLayerOptions!: any
-  layerOptions: any = {}
+  debouncedSetLayerOptions!: () => void
+  layerOptions: MapboxLayerOptions | null = null
   legend: ColourMap = []
   unit: string = ""
 
@@ -90,8 +96,8 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     this.fillMenuItems(layers)
   }
 
-  fillMenuItems (layers: any): void {
-    const groupNames = [...new Set(layers.map((l: any) => l.groupName))]
+  fillMenuItems (layers: Layer[]): void {
+    const groupNames = [...new Set(layers.map((l) => l.groupName))]
     const items: ColumnItem[] = [
       {
         id: 'root',
@@ -100,9 +106,10 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     ]
     items[0].children = []
     for (const groupName of groupNames) {
-      const group = layers.find((l: any) => l.groupName === groupName)
+      const group = layers.find((l) => l.groupName === groupName)
+      if (group === undefined) continue
       const children = []
-      for (const layer of layers.filter((l: any) => l.groupName === groupName)) {
+      for (const layer of layers.filter((l) => l.groupName === groupName)) {
         children.push({
           id: layer.name,
           name: layer.title || layer.name,
@@ -115,7 +122,9 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
           }
         })
       }
-      items[0].children.push({ id: group.groupName, name: group.groupTitle, children })
+      if ( group.groupName !== undefined && group.groupTitle !== undefined) {
+        items[0].children.push({ id: group.groupName, name: group.groupTitle, children })
+      }
     }
     this.items = items
     this.open = [items[0].id]
