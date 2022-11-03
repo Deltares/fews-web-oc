@@ -121,6 +121,12 @@ import { Series, SeriesUrlRequest,  } from '@/lib/TimeSeries';
 import SeriesStore from '@/mixins/SeriesStore'
 import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
 
+interface MapboxLayerOptions {
+  name: string;
+  time: Date;
+}
+
+
 interface Filter {
   id: string;
   name: string;
@@ -182,7 +188,7 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
   debouncedSetLayerOptions!: () => void
 
   layerName: string = ''
-  layerOptions: any = {}
+  layerOptions: MapboxLayerOptions | null = null
 
   legend: ColourMap = []
   unit: string = ""
@@ -221,10 +227,10 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
   async mounted() {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     this.webServiceProvider = new PiWebserviceProvider(baseUrl)
+    this.setLayoutClass()
     await this.getFilters()
     this.getParameters()
     this.getCapabilities()
-    this.setLayoutClass()
     this.currentLocationId = this.$route.params.locationId ?? ''
     // Force resize to fix strange starting position of the map, caused by
     // the expandable navigation drawer.
@@ -266,11 +272,11 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
     if (this.categoryId === '') {
       this.currentCategoryId = categoryId
       this.$router.replace({ name: 'DataViewer', params: { filterId: this.filterId, categoryId } })
+      this.getLocations()
     } else {
       this.currentCategoryId = this.categoryId
+      this.onCategoryChange()
     }
-    console.log('cat', this.currentCategoryId)
-    this.getLocations()
   }
 
   async getLocations() {
@@ -286,8 +292,7 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
     this.locations = locations.features.map( (f: any) => { return f.properties })
     this.locationsLayer.source.data = locations
     const found = this.locations.findIndex( (l) => l.locationId === this.locationId) > -1
-    console.log('found', found, this.locationId)
-    if ( !found ) {
+    if ( !found &&  this.locationId !== '') {
       this.$router.replace({name: 'DataViewer', params: { filterId: this.filterId, categoryId: this.categoryId }})
     } else {
       this.onLocationChange()
@@ -296,10 +301,14 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
 
   @Watch('categoryId')
   onCategoryChange(): void {
-    this.layerOptions = {}
     this.currentCategoryId = this.categoryId
     this.currentParameters = this.parameters.filter((p) => p.parameterGroup === this.currentCategoryId)
     this.getLocations()
+    this.updateLayers()
+  }
+
+  @Watch('layers')
+  afterGetCapabilities() {
     this.updateLayers()
   }
 
@@ -315,7 +324,6 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
     if (currentLayers.length > 0) {
       this.layerName = currentLayers[0].name
     } else {
-      console.log('no layers')
       this.layerName = ''
     }
     this.onLayerChange()
@@ -525,7 +533,6 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
     if (value.name !== this.layerName) {
       this.layerName = value.name
       this.onLayerChange()
-      this.setLayerOptions()
     }
   }
 
@@ -534,7 +541,6 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
       this.layerOptions = {
         name: this.layerName,
         time: this.currentTime,
-        active: true
       }
     } else {
       this.layerOptions = null

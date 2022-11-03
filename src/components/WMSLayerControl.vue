@@ -117,7 +117,11 @@ export default class WMSLayerControl extends Vue {
 
   @Watch("value", { deep: true})
   valueChange() {
-    this.layerName = this.value.name;
+    if (this.value === null) {
+      this.layerName = ''
+    } else {
+      this.layerName = this.value.name;
+    }
   }
 
   get active(): boolean {
