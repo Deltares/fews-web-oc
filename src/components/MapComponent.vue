@@ -92,7 +92,7 @@ export default class MapComponent extends Vue {
             duration: 0,
             delay: 0
           },
-          // 'raster-fade-duration': 0,
+          // See: https://github.com/Deltares/fews-web-oc/issues/51
         },
       }
       this.mapObject.addLayer(
