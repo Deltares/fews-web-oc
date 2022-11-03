@@ -7,5 +7,6 @@ export interface ChartConfig {
   yAxis?: Axis[];
   radialAxis?: Axis[];
   angularAxis?: Axis[];
+  colorAxis?: Axis[];
   series?: ChartSeries[];
 }

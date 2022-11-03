@@ -8,3 +8,16 @@ export interface ChartSeriesOptions {
     axisIndex: number;
   };
 }
+
+export interface PolarChartSeriesOptions {
+  radial: {
+    key: string;
+  };
+  angular: {
+    key: string;
+  };
+  color: {
+    key: string;
+  }
+}
+

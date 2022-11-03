@@ -115,7 +115,7 @@ import { ColourMap } from 'wb-charts';
 import WMSLayerControl, { WMSLayerControlValue } from '@/components/WMSLayerControl.vue'
 import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
 import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
-import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
+import { timeSeriesDisplayToChartConfig, polarChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 import { Series, SeriesUrlRequest,  } from '@/lib/TimeSeries';
 import SeriesStore from '@/mixins/SeriesStore'
 import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
@@ -379,14 +379,23 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
         const subPlot = result.config.timeSeriesDisplay.subplots[i]
         console.log(subPlot)
         const title = result.config.timeSeriesDisplay.title
-        display.push({
-          id: `${title}-${i}`,
-          type: DisplayType.TimeSeriesComponent,
-          title: result.config.timeSeriesDisplay.title,
-          class: 'single',
-          config: timeSeriesDisplayToChartConfig(subPlot, title)
-        })
-        console.log('chart config', timeSeriesDisplayToChartConfig(subPlot, title))
+        if (subPlot.items[0].legend.startsWith('Variantiedichtheid2D')) {
+          display.push({
+            id: `${title}-${i}`,
+            type: DisplayType.WaveSpectrum,
+            title: result.config.timeSeriesDisplay.title,
+            class: 'double',
+            config: polarChartConfig(subPlot, title)
+          })
+        } else {
+          display.push({
+            id: `${title}-${i}`,
+            type: DisplayType.TimeSeriesComponent,
+            title: result.config.timeSeriesDisplay.title,
+            class: 'single',
+            config: timeSeriesDisplayToChartConfig(subPlot, title)
+          })
+        }
       }
 
       allDisplays.push(display);
@@ -407,31 +416,37 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
   }
 
   private async loadTimeSeries(requests: any[]) {
+    this.timeSeriesStore = {}
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     for (const r in requests) {
       const request = requests[r]
       const url = new URL(`${baseUrl}/${request.request}`)
       const piSeries: TimeSeriesResponse = await this.webServiceProvider.getTimeSeriesWithRelativeUrl(request.request);
+      const resourceId = `${request.key}`
       for (const index in piSeries.timeSeries) {
         const timeSeries = piSeries.timeSeries[index]
-        if (timeSeries.events === undefined) continue
-        const resourceId = `${request.key}`
-        const resource = new SeriesUrlRequest('fews-pi', url.toString())
-        const series = new Series(resource)
-        series.header.name = `${timeSeries.header.stationName} - ${timeSeries.header.parameterId} (${timeSeries.header.moduleInstanceId})`
-        series.header.unit = timeSeries.header.units
-        series.header.parameter = timeSeries.header.parameterId
-        series.header.location = timeSeries.header.stationName
-        series.header.source = timeSeries.header.moduleInstanceId
-        series.start = new Date(`${timeSeries.header.startDate.date}T${timeSeries.header.startDate.time}`)
-        series.end = new Date(`${timeSeries.header.endDate.date}T${timeSeries.header.endDate.time}`)
-        series.data = timeSeries.events.map((event) => {
-          return {
-            x: new Date(`${event.date}T${event.time}`),
-            y: event.flag === '8' ? null : parseFloat(event.value)
-          }
-        })
-        Vue.set(this.timeSeriesStore, resourceId, series)
+        console.log('fetched', timeSeries)
+        if (timeSeries.events !== undefined) {
+          const resourceId = `${request.key}`
+          const resource = new SeriesUrlRequest('fews-pi', url.toString())
+          const series = new Series(resource)
+          series.header.name = `${timeSeries.header.stationName} - ${timeSeries.header.parameterId} (${timeSeries.header.moduleInstanceId})`
+          series.header.unit = timeSeries.header.units
+          series.header.parameter = timeSeries.header.parameterId
+          series.header.location = timeSeries.header.stationName
+          series.header.source = timeSeries.header.moduleInstanceId
+          series.start = new Date(`${timeSeries.header.startDate.date}T${timeSeries.header.startDate.time}`)
+          series.end = new Date(`${timeSeries.header.endDate.date}T${timeSeries.header.endDate.time}`)
+          series.data = timeSeries.events.map((event) => {
+            return {
+              x: new Date(`${event.date}T${event.time}`),
+              y: event.flag === '8' ? null : parseFloat(event.value)
+            }
+          })
+          Vue.set(this.timeSeriesStore, resourceId, series)
+        } else if ( (timeSeries as any).domains !== undefined) {
+          Vue.set(this.timeSeriesStore, resourceId, timeSeries)
+        }
       }
     }
   }

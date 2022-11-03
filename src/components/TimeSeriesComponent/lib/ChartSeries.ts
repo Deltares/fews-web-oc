@@ -1,5 +1,5 @@
 import * as CSS from "csstype";
-import {ChartSeriesOptions} from "./ChartSeriesOptions";
+import {ChartSeriesOptions, PolarChartSeriesOptions} from "./ChartSeriesOptions";
 
 export interface ChartSeries {
   id: string;
@@ -7,7 +7,7 @@ export interface ChartSeries {
   name: string;
   label?: string;
   type: string;
-  options: ChartSeriesOptions;
+  options: ChartSeriesOptions | PolarChartSeriesOptions;
   unit: string;
   style: CSS.SvgPropertiesHyphen;
 }

@@ -11,8 +11,9 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from "vue-property-decorator";
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import TimeSeriesComponent from '@/components/TimeSeriesComponent/ConfigurableChart.vue'
+import WaveSpectrum from '@/components/TimeSeriesComponent/WaveSpectrum.vue'
 import WindowComponent from "@/components/Layout/WindowComponent.vue"
 import { Series } from "@/lib/TimeSeries";
 import type { DisplayConfig } from '@/lib/Layout/DisplayConfig'
@@ -20,6 +21,7 @@ import type { DisplayConfig } from '@/lib/Layout/DisplayConfig'
 @Component({
   components: {
     TimeSeriesComponent,
+    WaveSpectrum,
     WindowComponent,
   },
 })
