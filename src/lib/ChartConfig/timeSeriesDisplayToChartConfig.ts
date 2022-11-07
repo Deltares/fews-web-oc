@@ -67,11 +67,57 @@ export function polarChartConfig(subplot: any, title: string) {
     }],
     radialAxis: [{
       type: 'value',
-      unit: 'mHz'
+      unit: 'Hz'
     }],
     colorAxis: [{
       type: 'value',
-      unit: 'cm²s'
+      unit: 'm²s'
+    }],
+  }
+  const chartSeriesArray: ChartSeries[] = []
+  for (const index in subplot.items) {
+    const item = subplot.items[index]
+    const chartSeries = {
+      id: `${item.request}`,
+      dataResources: [
+        `${item.request}`
+      ],
+      name: item.legend,
+      unit: item.unit,
+      type: 'polarspectrum',
+      options: {
+        radial: {
+          key: 'x'
+        },
+        angular: {
+          key: 'y'
+        },
+        color: {
+          key: 'v'
+        }
+      },
+      style: {}
+    }
+    chartSeriesArray.push(chartSeries)
+  }
+  config.series = chartSeriesArray
+  return config
+}
+
+export function histogramChartConfig(subplot: any, title: string) {
+  const config: ChartConfig = {
+    title: title,
+    angularAxis: [{
+      type: "degree",
+      unit: "˚"
+    }],
+    radialAxis: [{
+      type: 'value',
+      unit: 'Hz'
+    }],
+    colorAxis: [{
+      type: 'value',
+      unit: 'm²s'
     }],
   }
   console.log('polarChart', config)

@@ -140,30 +140,30 @@ export default class WaveSpectrum extends Vue {
   }
 
   convertData(chartSeries: ChartSeries, selectedTime: Date) {
-    console.log('convert', chartSeries)
     if (this.series === undefined) return []
-    console.log('series?', this.series)
-    const dataSeries = this.series[chartSeries.dataResources[0]]
-    const angleSeries = this.series[chartSeries.dataResources[0]]
-    const spreadSeries = this.series[chartSeries.dataResources[1]]
-    const energySeries = this.series[chartSeries.dataResources[2]]
-    console.log('series?', this.series[chartSeries.dataResources[0]])
-    if (angleSeries?.data === undefined || spreadSeries?.data === undefined) return []
-    const index = 0
-    if (index === undefined) return []
-    const angles = angleSeries.data[index]
-    this.plotTime = angles.x
-    this.setDateString()
-    const spreads = spreadSeries.data[index]
-    const energies = energySeries?.data !== undefined? energySeries.data[index] : undefined
-    if (angles.y !== undefined && spreads.y !== undefined) {
-      return angles.y.map((angle: number, freqIndex: number) => {
-        const spread = spreads.y[freqIndex]/2
-        const startFreq = freqIndex*10
-        return { x: [startFreq, startFreq+10] , y: [angle - spread , angle + spread], v: energies?.y !== undefined ? energies.y[freqIndex] : null}
-      })
+    const dataSeries = this.series[chartSeries.dataResources[0]] as any
+    if (dataSeries === undefined) return [{ x: [0, 0], y: [0, 0], v: null }]
+    const frequencies: number[] = dataSeries.domains[0].domainAxisValues[0].values.map((v: string) => { return +v[0] })
+    const directions: number[] = dataSeries.domains[0].domainAxisValues[1].values[0].map((v: string) => { return +v })
+    const data = []
+    const missingValue = dataSeries.header.missVal
+    const t = dataSeries.domains.length - 1
+    const events = dataSeries.domains[t].events[0]
+    const values = events.values
+    for (let f=0; f < frequencies.length; f++) {
+      const f1 = f === 0 ? 0 : frequencies[f - 1]
+      const f2 = frequencies[f + 1]
+      for (let d = 0; d < directions.length; d++) {
+        const direction = directions[d]
+        const v = values[f][d]
+        if (v !== missingValue) {
+          data.push({ x: [f1, f2], y: [direction, direction + 10], v })
+        }
+      }
     }
-    return [{x: [0, 0] , y: [0, 0], v: null}]
+    this.plotTime = new Date(`${events.date}T${events.time}Z`)
+    this.setDateString()
+    return data
   }
 
   setDateString() {
@@ -180,9 +180,10 @@ export default class WaveSpectrum extends Vue {
   toolTipFormatter(d: any) {
     const aUnit = this.value.angularAxis ? this.value.angularAxis[0].unit : ''
     const rUnit = this.value.radialAxis ? this.value.radialAxis[0].unit : ''
+    const vUnit = this.value.colorAxis ? this.value.colorAxis[0].unit : ''
     const decimals = 1
-    const colorValue = d.v !== null ? d.v.toFixed(decimals) : '-'
-    return `${colorValue} cm²s<br>${d.y[0].toFixed(decimals)}${aUnit}–${d.y[1].toFixed(decimals)}${aUnit}<br>${d.x[0].toFixed(decimals)}–${d.x[1].toFixed(decimals)}&#8201;${rUnit} `
+    const colorValue = d.v !== null ? d.v : '-'
+    return `${colorValue} ${vUnit}<br>${d.y[0].toFixed(decimals)}${aUnit}–${d.y[1].toFixed(decimals)}${aUnit}<br>${d.x[0].toFixed(decimals)}–${d.x[1].toFixed(decimals)}&#8201;${rUnit} `
   }
 
   @Watch('time')
