@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
-import Home from '../views/Home.vue'
 import SchematicStatusDisplay from '../views/SchematicStatusDisplay.vue'
 import SpatialDisplay from '../views/SpatialDisplay.vue'
 import Silent from '../views/auth/Silent.vue'
@@ -31,12 +30,6 @@ const routes: Array<RouteConfig> = [
     name: 'Login',
     meta: { layout: 'empty' },
     component: LoginView
-  },
-  {
-    path: '/home',
-    name: 'Home',
-    component: Home,
-    meta: { authorize: [] }
   },
   {
     path: '/dataviewer/:filterId?/:categoryId?',
@@ -119,7 +112,7 @@ router.beforeEach(async (to, from, next) => {
 
     const role = currentUser.profile.roles !== undefined ? (currentUser.profile as any).roles[0] : 'guest'
     if (authorize.length && !authorize.includes(role)) {
-      return next({ name: 'Home' })
+      return next({ name: 'DataViewer' })
     }
   }
   next()

@@ -8,12 +8,12 @@
 import { Component, Vue, Prop } from 'vue-property-decorator'
 
 @Component
-export default class Home extends Vue {
+export default class DeltaresLogin extends Vue {
   @Prop()
     name!: string
 
   login (): void {
-    const redirect = this.$route.query.redirect || 'Home'
+    const redirect = this.$route.query.redirect || 'DataViewer'
     this.$auth.signinRedirect({ state: redirect })
   }
 }
