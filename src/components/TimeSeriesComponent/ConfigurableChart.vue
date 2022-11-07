@@ -77,8 +77,8 @@ export default class ConfigurableChart extends Vue {
         }
       ],
       margin: {
-        left: 80,
-        right: 80
+        left: 50,
+        right: 50
       }
     }
 
@@ -256,7 +256,7 @@ export default class ConfigurableChart extends Vue {
 }
 
 .chart-labels {
-  padding: 0 10px;
+  padding: 0 50px;
 }
 
 .chart-container.hidden > svg {
