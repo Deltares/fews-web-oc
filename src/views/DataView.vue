@@ -240,7 +240,7 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
 
   async getFilters() {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const response = await fetch(`${baseUrl}rest/fewspiservice/v1/filters?documentFormat=PI_JSON`)
+    const response = await fetch(`${baseUrl}/rest/fewspiservice/v1/filters?documentFormat=PI_JSON`)
     const filters = (await response.json()).filters.map((f: Filter) => {
       return {
         ...f,
@@ -265,7 +265,7 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
     // const response = await this.webServiceProvider.getParameters(filter as any)
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const response = await fetch(
-      `${baseUrl}rest/fewspiservice/v1/parameters?documentFormat=PI_JSON&filterId=${this.filterId}`)
+      `${baseUrl}/rest/fewspiservice/v1/parameters?documentFormat=PI_JSON&filterId=${this.filterId}`)
     const parameters: Parameter[] = (await response.json()).timeSeriesParameters
     this.parameters = parameters
     this.categories = uniq(parameters.map(p => p.parameterGroup))
@@ -378,7 +378,7 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
   async onLocationChange() {
     if (this.locationId === '') return
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const result = await fetch(`${baseUrl}rest/fewspiservice/v1/filters/actions?filterId=${this.filterId}&parameterGroupId=${this.categoryId}&locationIds=${this.locationId}`)
+    const result = await fetch(`${baseUrl}/rest/fewspiservice/v1/filters/actions?filterId=${this.filterId}&parameterGroupId=${this.categoryId}&locationIds=${this.locationId}`)
     const response = await result.json()
     const allDisplays = []
     const requests = []
