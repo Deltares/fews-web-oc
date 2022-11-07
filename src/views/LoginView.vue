@@ -21,7 +21,7 @@ import DeltaresLogin from '@/components/DeltaresLogin.vue'
     DeltaresLogin
   }
 })
-export default class Home extends Vue {}
+export default class LoginView extends Vue {}
 </script>
 
 <style scoped>

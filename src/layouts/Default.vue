@@ -1,7 +1,7 @@
 <template>
   <v-app id="app">
     <v-app-bar color="#080C80" dense app dark :clipped-left="!$vuetify.rtl" :clipped-right="$vuetify.rtl">
-      <v-btn v-if="!$vuetify.breakpoint.mobile" text to="/home">Delft-FEWS Web OC</v-btn>
+      <v-btn v-if="!$vuetify.breakpoint.mobile" text>Delft-FEWS Web OC</v-btn>
       <v-tabs
         show-arrows
       >
@@ -34,7 +34,7 @@ import LoginComponent from '@/components/LoginComponent.vue'
 import { Component, Vue } from 'vue-property-decorator'
 
 @Component({ components: { LoginComponent } })
-export default class Home extends Vue {
+export default class Default extends Vue {
   drawer: boolean | null = null
   menuItems = [
     { id: 'Data View', icon: 'mdi-archive-search', to: { name: 'DataViewer' } },
