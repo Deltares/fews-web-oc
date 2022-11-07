@@ -1,5 +1,4 @@
 {
   "VUE_APP_FEWS_WEBSERVICES_URL": "https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices/",
-  "VUE_APP_MAPBOX_TOKEN": "pk.eyJ1Ijoic2lnZ3lmIiwiYSI6Il8xOGdYdlEifQ.3-JZpqwUa3hydjAJFXIlMA",
   "VUE_APP_REQUEST_HEADER_AUTHORIZATION": "Off"
 }
