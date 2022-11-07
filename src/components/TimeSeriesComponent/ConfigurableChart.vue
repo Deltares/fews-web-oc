@@ -1,7 +1,8 @@
 <template>
   <div class="chart-with-chips">
     <div class="chart-controls">
-      <v-chip-group column active-class="primary--text">
+      <div class="chart-controls-scroll">
+      <v-chip-group column active-class="primary--text" class="chart-labels">
         <v-chip small v-for="tag in legendTags" :key="tag.id" @click="toggleLine(tag.id)" :disabled="tag.disabled">
           <div>
             <div style="margin-top:6px; margin-right: 5px;" v-html="tag.legendSvg"/>
@@ -9,6 +10,7 @@
           {{ tag.name }}
         </v-chip>
       </v-chip-group>
+      </div>
     </div>
     <div ref="chart-container" class="chart-container"></div>
   </div>
@@ -246,7 +248,15 @@ export default class ConfigurableChart extends Vue {
 .chart-controls {
   display:flex;
   flex:0;
-  margin: 0 50px;
+  max-height: 300px;
+}
+
+.chart-controls-scroll {
+  overflow-y: auto;
+}
+
+.chart-labels {
+  padding: 0 10px;
 }
 
 .chart-container.hidden > svg {
