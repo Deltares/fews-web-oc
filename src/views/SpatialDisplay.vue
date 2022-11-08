@@ -122,8 +122,8 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
           }
         })
       }
-      if ( group.groupName !== undefined && group.groupTitle !== undefined) {
-        items[0].children.push({ id: group.groupName, name: group.groupTitle, children })
+      if ( group.groupName !== undefined ) {
+        items[0].children.push({ id: group.groupName, name: group.groupTitle || group.groupName, children })
       }
     }
     this.items = items
