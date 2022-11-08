@@ -25,7 +25,7 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator'
 import {TableHeader} from "@/components/systemmonitor/lib/tableHeader";
-import {PiWebserviceProvider, TaskRunsFilter} from "@deltares/fews-pi-requests";
+import {DocumentFormat, PiWebserviceProvider, TaskRunsFilter} from "@deltares/fews-pi-requests";
 import {TaskRunsResponse} from "@deltares/fews-pi-requests/src/response";
 import {TaskRun} from "@deltares/fews-pi-requests/src/response/tasks/taskRun";
 
@@ -80,6 +80,7 @@ export default class RunningTasks extends Vue {
       const provider = new PiWebserviceProvider(this.baseUrl);
       const taskRunFilter: TaskRunsFilter = {
         taskRunStatusIds: ["R", "P"],
+        documentFormat: DocumentFormat.PI_JSON,
         onlyForecasts: false,
       };
       const res: TaskRunsResponse = await provider.getTaskRuns(taskRunFilter);
