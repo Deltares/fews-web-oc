@@ -6,6 +6,7 @@ export enum RequestHeaderAuthorization {
 export type ApplicationConfig = {
   VUE_APP_AUTH_SCOPE: string;
   VUE_APP_AUTH_AUTHORITY: string;
+  VUE_APP_FEWS_ARCHIVE_WEBSERVICES_URL: string;
   VUE_APP_AUTH_METADATA_URL: string;
   VUE_APP_AUTH_ID: string;
   VUE_APP_REQUEST_HEADER_AUTHORIZATION: RequestHeaderAuthorization;
