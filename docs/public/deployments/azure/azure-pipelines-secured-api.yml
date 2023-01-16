@@ -17,7 +17,6 @@ steps:
     script: |
       touch .env
       echo 'VUE_APP_PUBLIC_PATH="/"' >> .env
-      echo 'VUE_APP_AUTH_TYPE="code"' >> .env
       
       rm public/app-config.json      
       cat > public/app-config.json <<EOL

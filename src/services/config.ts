@@ -11,7 +11,7 @@ const oidcSettings: UserManagerSettings = {
   client_id: `${process.env.VUE_APP_AUTH_ID}`,
   redirect_uri: `${baseUrl}auth/callback`,
   silent_redirect_uri: `${baseUrl}auth/silent`,
-  response_type: `${process.env.VUE_APP_AUTH_TYPE}`,
+  response_type: `code`,
   scope: `${process.env.VUE_APP_AUTH_SCOPE}`,
   post_logout_redirect_uri: `${baseUrl}auth/logout`,
   monitorSession: false,
