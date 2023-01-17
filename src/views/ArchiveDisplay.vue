@@ -54,7 +54,7 @@ import {FeatureCollection, Geometry} from "geojson";
 
 export default class DisplayComponent extends Vue {
 
-  archiveWebServiceProvider: PiArchiveWebserviceProvider = {} as PiArchiveWebserviceProvider;
+  archiveWebServiceProvider!: PiArchiveWebserviceProvider;
   baseUrl!: string;
   locations: Location[] = [];
   accessToken = this.$config.get('VUE_APP_MAPBOX_TOKEN');
