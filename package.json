@@ -18,7 +18,7 @@
     "core-js": "^3.6.5",
     "crypto-js": "^4.1.1",
     "lodash": "^4.17.21",
-    "luxon": "^2.5.0",
+    "luxon": "^3.0.0",
     "mapbox-gl": "^2.8.2",
     "oidc-client-ts": "^2.0.2",
     "portal-vue": "^2.1.7",
@@ -30,7 +30,7 @@
     "vue2mapbox-gl": "^0.13.0",
     "vuetify": "^2.4.0",
     "vuex": "^3.4.0",
-    "wb-charts": "file:wb-charts-2.0.1.tgz"
+    "wb-charts": "git+https://gitlab+deploy-token-5:UZM_NveFVkwy5ML1RDHo@gitlab.vortech.nl/deltares/wb-charts.git"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.1.1",

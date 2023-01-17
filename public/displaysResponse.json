@@ -1,0 +1,455 @@
+{
+  "resultsNotAvailableForRequest" : false,
+  "results" : [ {
+    "type" : "PI",
+    "requests" : [ {
+      "key" : "33b2d",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Moerdijk&parameterIds=H.verwacht&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH84&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b2f",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Moerdijk&parameterIds=H.verwacht&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH2012_HA&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b31",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Moerdijk&parameterIds=H.verwacht&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH2012&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    } ],
+    "config" : {
+      "timeSeriesDisplay" : {
+        "title" : "Moerdijk",
+        "subplots" : [ {
+          "items" : [ {
+            "type" : "line",
+            "legend" : "Waterstand verwacht LPH84",
+            "color" : "#7931df",
+            "lineStyle" : "dotted",
+            "lineWidth" : 1.0,
+            "locationId" : "Moerdijk",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)",
+              "axisMinValue" : 0.0,
+              "axisMaxValue" : 1.0
+            },
+            "request" : "33b2d"
+          }, {
+            "type" : "line",
+            "legend" : "Waterstand verwacht LPH2012_HA",
+            "color" : "#69c69f",
+            "lineStyle" : "solid;thick",
+            "lineWidth" : 1.0,
+            "locationId" : "Moerdijk",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)",
+              "axisMinValue" : 0.0,
+              "axisMaxValue" : 1.0
+            },
+            "request" : "33b2f"
+          }, {
+            "type" : "line",
+            "legend" : "Waterstand verwacht LPH2012",
+            "color" : "#43b7ba",
+            "lineStyle" : "solid",
+            "lineWidth" : 1.0,
+            "locationId" : "Moerdijk",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)",
+              "axisMinValue" : 0.0,
+              "axisMaxValue" : 1.0
+            },
+            "request" : "33b31"
+          } ]
+        } ]
+      }
+    }
+  }, {
+    "type" : "PI",
+    "requests" : [ {
+      "key" : "33b44",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Hellevoetsluis&parameterIds=H.verwacht&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH84&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b45",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Hellevoetsluis&parameterIds=H.verwacht&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH2012_HA&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b46",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Hellevoetsluis&parameterIds=H.verwacht&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH2012&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    } ],
+    "config" : {
+      "timeSeriesDisplay" : {
+        "title" : "Hellevoetsluis",
+        "subplots" : [ {
+          "items" : [ {
+            "type" : "line",
+            "legend" : "Waterstand verwacht LPH84",
+            "color" : "#7931df",
+            "lineStyle" : "dotted",
+            "lineWidth" : 1.0,
+            "locationId" : "Hellevoetsluis",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)",
+              "axisMinValue" : 0.0,
+              "axisMaxValue" : 1.0
+            },
+            "request" : "33b44"
+          }, {
+            "type" : "line",
+            "legend" : "Waterstand verwacht LPH2012_HA",
+            "color" : "#69c69f",
+            "lineStyle" : "solid;thick",
+            "lineWidth" : 1.0,
+            "locationId" : "Hellevoetsluis",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)",
+              "axisMinValue" : 0.0,
+              "axisMaxValue" : 1.0
+            },
+            "request" : "33b45"
+          }, {
+            "type" : "line",
+            "legend" : "Waterstand verwacht LPH2012",
+            "color" : "#43b7ba",
+            "lineStyle" : "solid",
+            "lineWidth" : 1.0,
+            "locationId" : "Hellevoetsluis",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)",
+              "axisMinValue" : 0.0,
+              "axisMaxValue" : 1.0
+            },
+            "request" : "33b46"
+          } ]
+        } ]
+      }
+    }
+  }, {
+    "type" : "PI",
+    "requests" : [ {
+      "key" : "33b47",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Haringvlietsluizen&parameterIds=Oppervlak.spui.simulatie&moduleInstanceIds=Plateau3_NDB_prep&qualifierIds=NONE&endForecastTime=2022-11-01T15%3A18%3A05Z&startTime=2022-10-31T15%3A18%3A05Z&endTime=2022-11-11T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b49",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_HISTORICAL&locationIds=Haringvlietsluizen&parameterIds=Aantal.spuiperiodes&moduleInstanceIds=Import_extern_NDB&qualifierIds=NONE&endForecastTime=2022-11-01T15%3A18%3A05Z&startTime=2022-10-31T15%3A18%3A05Z&endTime=2022-11-11T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b4b",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Haringvlietsluizen&parameterIds=Oppervlak.spui.simulatie&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH84&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&startTime=2022-10-31T15%3A18%3A05Z&endTime=2022-11-11T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b4d",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Moerdijk&parameterIds=H.verwacht&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH84&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b4f",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Hellevoetsluis&parameterIds=H.verwacht&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH84&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b51",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Stellendambuiten&parameterIds=H.verwacht&moduleInstanceIds=Plateau1_NDB_bewerkingen&qualifierIds=NONE&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    } ],
+    "config" : {
+      "timeSeriesDisplay" : {
+        "title" : "Spui oppervlak (LPH84)",
+        "forecastLegend" : "Extern: [1] 2022-11-01 11:00 GMT",
+        "subplots" : [ {
+          "items" : [ {
+            "type" : "line",
+            "legend" : "Hoogtij",
+            "color" : "#eff7ff",
+            "lineStyle" : "verticalLine",
+            "lineWidth" : 1.0,
+            "locationId" : "Haringvlietsluizen",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Oppervlak (m2)"
+            },
+            "request" : "33b47"
+          }, {
+            "type" : "line",
+            "legend" : "Aantal spuiperiodes Haringvlietsluizen",
+            "color" : "#000000",
+            "lineStyle" : "verticalLine",
+            "lineWidth" : 1.0,
+            "locationId" : "Haringvlietsluizen",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Dimensieloze parameters (-)"
+            },
+            "request" : "33b49"
+          }, {
+            "type" : "line",
+            "legend" : "RMM LPH84 simulatie",
+            "color" : "#b9b8b6",
+            "lineStyle" : "bar",
+            "lineWidth" : 1.0,
+            "locationId" : "Haringvlietsluizen",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Oppervlak (m2)"
+            },
+            "request" : "33b4b"
+          } ]
+        }, {
+          "items" : [ {
+            "type" : "line",
+            "legend" : "Moerdijk (LPH84)",
+            "color" : "#0000ff",
+            "lineStyle" : "constant",
+            "lineWidth" : 1.0,
+            "locationId" : "Moerdijk",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)"
+            },
+            "request" : "33b4d"
+          }, {
+            "type" : "line",
+            "legend" : "Hellevoetsluis (LPH84)",
+            "color" : "#8e35ef",
+            "lineStyle" : "constant",
+            "lineWidth" : 1.0,
+            "locationId" : "Hellevoetsluis",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)"
+            },
+            "request" : "33b4f"
+          }, {
+            "type" : "line",
+            "legend" : "Stellendam [1]",
+            "color" : "#ff0000",
+            "lineStyle" : "constant",
+            "lineWidth" : 1.0,
+            "locationId" : "Stellendambuiten",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)"
+            },
+            "thresholds" : [ {
+              "value" : 0.0,
+              "label" : "NAP",
+              "color" : "#000000"
+            } ],
+            "request" : "33b51"
+          } ]
+        } ]
+      }
+    }
+  }, {
+    "type" : "PI",
+    "requests" : [ {
+      "key" : "33b53",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Haringvlietsluizen&parameterIds=Oppervlak.spui.simulatie&moduleInstanceIds=Plateau3_NDB_prep&qualifierIds=NONE&endForecastTime=2022-11-01T15%3A18%3A05Z&startTime=2022-10-31T15%3A18%3A05Z&endTime=2022-11-11T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b55",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_HISTORICAL&locationIds=Haringvlietsluizen&parameterIds=Aantal.spuiperiodes&moduleInstanceIds=Import_extern_NDB&qualifierIds=NONE&endForecastTime=2022-11-01T15%3A18%3A05Z&startTime=2022-10-31T15%3A18%3A05Z&endTime=2022-11-11T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b57",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Haringvlietsluizen&parameterIds=Oppervlak.spui.simulatie&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH2012&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&startTime=2022-10-31T15%3A18%3A05Z&endTime=2022-11-11T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b59",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Moerdijk&parameterIds=H.verwacht&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH2012&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b5b",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Hellevoetsluis&parameterIds=H.verwacht&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH2012&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b5d",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Stellendambuiten&parameterIds=H.verwacht&moduleInstanceIds=Plateau1_NDB_bewerkingen&qualifierIds=NONE&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    } ],
+    "config" : {
+      "timeSeriesDisplay" : {
+        "title" : "Spui oppervlak (LPH2012)",
+        "forecastLegend" : "Extern: [1] 2022-11-01 11:00 GMT",
+        "subplots" : [ {
+          "items" : [ {
+            "type" : "line",
+            "legend" : "Hoogtij",
+            "color" : "#eff7ff",
+            "lineStyle" : "verticalLine",
+            "lineWidth" : 1.0,
+            "locationId" : "Haringvlietsluizen",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Oppervlak (m2)"
+            },
+            "request" : "33b53"
+          }, {
+            "type" : "line",
+            "legend" : "Aantal spuiperiodes Haringvlietsluizen",
+            "color" : "#000000",
+            "lineStyle" : "verticalLine",
+            "lineWidth" : 1.0,
+            "locationId" : "Haringvlietsluizen",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Dimensieloze parameters (-)"
+            },
+            "request" : "33b55"
+          }, {
+            "type" : "line",
+            "legend" : "RMM LPH2012 simulatie",
+            "color" : "#b9b8b6",
+            "lineStyle" : "bar",
+            "lineWidth" : 1.0,
+            "locationId" : "Haringvlietsluizen",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Oppervlak (m2)"
+            },
+            "request" : "33b57"
+          } ]
+        }, {
+          "items" : [ {
+            "type" : "line",
+            "legend" : "Moerdijk (LPH2012)",
+            "color" : "#0000ff",
+            "lineStyle" : "constant",
+            "lineWidth" : 1.0,
+            "locationId" : "Moerdijk",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)"
+            },
+            "request" : "33b59"
+          }, {
+            "type" : "line",
+            "legend" : "Hellevoetsluis (LPH2012)",
+            "color" : "#8e35ef",
+            "lineStyle" : "constant",
+            "lineWidth" : 1.0,
+            "locationId" : "Hellevoetsluis",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)"
+            },
+            "request" : "33b5b"
+          }, {
+            "type" : "line",
+            "legend" : "Stellendam [1]",
+            "color" : "#ff0000",
+            "lineStyle" : "constant",
+            "lineWidth" : 1.0,
+            "locationId" : "Stellendambuiten",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)"
+            },
+            "thresholds" : [ {
+              "value" : 0.0,
+              "label" : "NAP",
+              "color" : "#000000"
+            } ],
+            "request" : "33b5d"
+          } ]
+        } ]
+      }
+    }
+  }, {
+    "type" : "PI",
+    "requests" : [ {
+      "key" : "33b5f",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Haringvlietsluizen&parameterIds=Oppervlak.spui.simulatie&moduleInstanceIds=Plateau3_NDB_prep&qualifierIds=NONE&endForecastTime=2022-11-01T15%3A18%3A05Z&startTime=2022-10-31T15%3A18%3A05Z&endTime=2022-11-11T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b61",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_HISTORICAL&locationIds=Haringvlietsluizen&parameterIds=Aantal.spuiperiodes&moduleInstanceIds=Import_extern_NDB&qualifierIds=NONE&endForecastTime=2022-11-01T15%3A18%3A05Z&startTime=2022-10-31T15%3A18%3A05Z&endTime=2022-11-11T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b63",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Haringvlietsluizen&parameterIds=Oppervlak.spui.simulatie&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH2012_HA&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&startTime=2022-10-31T15%3A18%3A05Z&endTime=2022-11-11T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b65",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Moerdijk&parameterIds=H.verwacht&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH2012_HA&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b67",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Hellevoetsluis&parameterIds=H.verwacht&moduleInstanceIds=Import_extern_NDB&qualifierIds=LPH2012_HA&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    }, {
+      "key" : "33b69",
+      "request" : "rest/fewspiservice/v1/timeseries?timeSeriesType=EXTERNAL_FORECASTING&locationIds=Stellendambuiten&parameterIds=H.verwacht&moduleInstanceIds=Plateau1_NDB_bewerkingen&qualifierIds=NONE&timeStepMillis=600000&endForecastTime=2022-11-01T15%3A18%3A05Z&useDisplayUnits=true&documentFormat=PI_JSON"
+    } ],
+    "config" : {
+      "timeSeriesDisplay" : {
+        "title" : "Spui oppervlak (LPH2012-HA)",
+        "forecastLegend" : "Extern: [1] 2022-11-01 11:00 GMT",
+        "subplots" : [ {
+          "items" : [ {
+            "type" : "line",
+            "legend" : "Hoogtij",
+            "color" : "#eff7ff",
+            "lineStyle" : "verticalLine",
+            "lineWidth" : 1.0,
+            "locationId" : "Haringvlietsluizen",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Oppervlak (m2)"
+            },
+            "request" : "33b5f"
+          }, {
+            "type" : "line",
+            "legend" : "Aantal spuiperiodes Haringvlietsluizen",
+            "color" : "#000000",
+            "lineStyle" : "verticalLine",
+            "lineWidth" : 1.0,
+            "locationId" : "Haringvlietsluizen",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Dimensieloze parameters (-)"
+            },
+            "request" : "33b61"
+          }, {
+            "type" : "line",
+            "legend" : "RMM LPH2012-HA simulatie",
+            "color" : "#b9b8b6",
+            "lineStyle" : "bar",
+            "lineWidth" : 1.0,
+            "locationId" : "Haringvlietsluizen",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Oppervlak (m2)"
+            },
+            "request" : "33b63"
+          } ]
+        }, {
+          "items" : [ {
+            "type" : "line",
+            "legend" : "Moerdijk (LPH2012-HA)",
+            "color" : "#0000ff",
+            "lineStyle" : "constant",
+            "lineWidth" : 1.0,
+            "locationId" : "Moerdijk",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)"
+            },
+            "request" : "33b65"
+          }, {
+            "type" : "line",
+            "legend" : "Hellevoetsluis (LPH2012-HA)",
+            "color" : "#8e35ef",
+            "lineStyle" : "constant",
+            "lineWidth" : 1.0,
+            "locationId" : "Hellevoetsluis",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)"
+            },
+            "request" : "33b67"
+          }, {
+            "type" : "line",
+            "legend" : "Stellendam [1]",
+            "color" : "#ff0000",
+            "lineStyle" : "constant",
+            "lineWidth" : 1.0,
+            "locationId" : "Stellendambuiten",
+            "yAxis" : {
+              "axisPosition" : "left",
+              "axisLabel" : "Waterstand (m)"
+            },
+            "thresholds" : [ {
+              "value" : 0.0,
+              "label" : "NAP",
+              "color" : "#000000"
+            } ],
+            "request" : "33b69"
+          } ]
+        } ]
+      }
+    }
+  } ]
+}
