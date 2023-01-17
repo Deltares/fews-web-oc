@@ -42,13 +42,14 @@
     <v-row no-gutters>
       <v-col cols="6">
         <v-select
-          v-model="selectedLocations"
+          v-model="selectedLocationsSelectBox"
           :items="locations"
           item-text="locationName"
+          @change="updateLocations"
           label="Location"
-          multiple
-          chips
-          return-object
+        multiple
+        chips
+        return-object
         ></v-select>
       </v-col>
       <v-col cols="6">
@@ -233,7 +234,7 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col cols="12" class="d-flex justify-center">
+      <v-col cols="12" class="d-flex justify-end">
         <v-btn
           class="ma-2"
           color="primary"
@@ -266,6 +267,7 @@ export default class ArchiveDisplaySelectionComponent extends Vue {
       return {}
     }
   }) selectedLocations!: Location[]
+  selectedLocationsSelectBox: Location[] = [];
   baseUrl!: string;
   archiveWebServiceProvider: PiArchiveWebserviceProvider = {} as PiArchiveWebserviceProvider;
   menuStartTime: boolean = false;
@@ -294,15 +296,13 @@ export default class ArchiveDisplaySelectionComponent extends Vue {
   }
 
   @Watch('selectedLocations')
-  onItemsChange(): void {
-    this.$store.commit("archiveDisplayStore/setSelectedLocations", this.selectedLocations);
+  updateSelectedLocations(): void {
+    this.selectedLocationsSelectBox = this.selectedLocations;
   }
 
-  @Watch('$store.state.archiveDisplayStore.selectedLocations')
-  onSelectedLocationsChange(): void {
-    this.selectedLocations = this.$store.state.archiveDisplayStore.selectedLocations;
+  updateLocations(): void {
+    this.$emit("update:selectedLocations", this.selectedLocationsSelectBox)
   }
-
 
   async mounted(): Promise<void> {
     this.archiveWebServiceProvider = new PiArchiveWebserviceProvider(this.baseUrl);
