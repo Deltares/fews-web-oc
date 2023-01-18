@@ -17,10 +17,10 @@
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
-import { version } from '../../package.json'
+import packageConfig from '../../package.json'
 
 @Component
 export default class DotsMenu extends Vue {
-  packageVersion = version
+  packageVersion = packageConfig.version
 }
 </script>
