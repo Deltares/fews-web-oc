@@ -20,7 +20,7 @@ import { Vue, Component } from 'vue-property-decorator'
 import packageConfig from '../../package.json'
 
 @Component
-export default class DotsMenu extends Vue {
+export default class CogMenu extends Vue {
   packageVersion = packageConfig.version
 }
 </script>
