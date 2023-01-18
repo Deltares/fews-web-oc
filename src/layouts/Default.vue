@@ -13,6 +13,7 @@
       </v-tab>
       </v-tabs>
       <v-spacer />
+      <CogMenu/>
       <login-component v-if="$config.authenticationIsEnabled"/>
     </v-app-bar>
     <v-navigation-drawer v-if="$route.meta.sidebar" v-model="drawer" app clipped hide-overlay :right="$vuetify.rtl" width="320"
@@ -30,10 +31,16 @@
 </template>
 
 <script lang="ts">
+import CogMenu from '@/components/CogMenu.vue'
 import LoginComponent from '@/components/LoginComponent.vue'
 import { Component, Vue } from 'vue-property-decorator'
 
-@Component({ components: { LoginComponent } })
+@Component({
+  components: {
+    CogMenu,
+    LoginComponent
+  }
+})
 export default class Default extends Vue {
   drawer: boolean | null = null
   menuItems = [
