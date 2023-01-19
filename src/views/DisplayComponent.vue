@@ -19,6 +19,8 @@ export default class DisplayComponent extends Vue {
   height: 100%;
   align-items:center;
   justify-content:center;
+}
+.theme--light .display-container {
   background-color: lightgray;
 }
 </style>

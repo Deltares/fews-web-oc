@@ -158,10 +158,13 @@ export default class SsdComponent extends Vue {
   height: 100%;
   width: 100%;
   display: flex;
-  background-color: lightgray;
   flex-direction: column;
   overflow-x: hidden;
   white-space: nowrap;
+}
+
+.theme--light .ssd-container {
+  background-color: lightgray;
 }
 
 .tile-grid-content {
@@ -173,7 +176,11 @@ export default class SsdComponent extends Vue {
   display: none;
 }
 
-.web-oc-ssd > svg {
+.theme--light .web-oc-ssd > svg {
   background-color: #fff;
+}
+
+.theme--dark .web-oc-ssd > svg {
+  background-color: #606060;
 }
 </style>

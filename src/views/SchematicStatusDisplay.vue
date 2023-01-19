@@ -192,7 +192,7 @@ export default class SsdView extends Mixins(SSDMixin) {
 </script>
 
 <style>
-.web-oc-ssd {
+.theme--light .web-oc-ssd {
   background-color: white;
 }
 </style>
