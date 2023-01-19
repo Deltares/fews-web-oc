@@ -14,6 +14,7 @@
         <v-chip
           :color="getColor(item.status)"
           light
+          small
         >
           {{ item.status }}
         </v-chip>

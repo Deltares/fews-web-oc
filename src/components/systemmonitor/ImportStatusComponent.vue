@@ -13,6 +13,7 @@
         <v-chip
           :color="item.lastImportTimeBackgroundColor"
           light
+          small
         >
           {{ item.lastImportTime }}
         </v-chip>
@@ -21,6 +22,7 @@
         <v-chip
           :color="getColor(item.fileFailed)"
           light
+          small
         >
           {{ item.fileFailed }}
         </v-chip>
