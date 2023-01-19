@@ -12,6 +12,8 @@
       <template v-slot:[`item.lastImportTime`]="{ item }">
         <v-chip
           :color="item.lastImportTimeBackgroundColor"
+          light
+          small
         >
           {{ item.lastImportTime }}
         </v-chip>
@@ -19,6 +21,8 @@
       <template v-slot:[`item.fileFailed`]="{ item }">
         <v-chip
           :color="getColor(item.fileFailed)"
+          light
+          small
         >
           {{ item.fileFailed }}
         </v-chip>

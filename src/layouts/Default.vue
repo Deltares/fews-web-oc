@@ -76,10 +76,13 @@ html, body {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-  background-color: rgba(240, 240, 240, 1);
   height: 100%;
   overflow: hidden;
+}
+
+#app.theme--light {
+  background-color: rgba(240, 240, 240, 1);
+  color: #2c3e50;
 }
 
 #main {
@@ -92,7 +95,7 @@ html, body {
   height: 100%;
 }
 
-.view-sidebar {
+.theme--light .view-sidebar {
   background-image: linear-gradient(to bottom, rgba(240, 240, 240, 1), rgba(240, 240, 240, 1));
 }
 </style>

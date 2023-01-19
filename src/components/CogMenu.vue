@@ -1,11 +1,19 @@
 <template>
-  <v-menu left bottom>
+  <v-menu left bottom class="menu">
     <template v-slot:activator="{ on, attrs }">
       <v-btn icon v-bind="attrs" v-on="on">
         <v-icon>mdi-cog</v-icon>
       </v-btn>
     </template>
     <v-list>
+      <v-list-item>
+        <v-list-item-action>
+          <v-list-item-action-text>Theme</v-list-item-action-text>
+          <v-list-item-action>
+            <ThemeSelector v-model="theme" @input="onThemeChange"/>
+          </v-list-item-action>
+        </v-list-item-action>
+      </v-list-item>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>Version {{ packageVersion }}</v-list-item-title>
@@ -16,11 +24,24 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
-import { version } from '../../package.json'
+import { Component, Mixins } from 'vue-property-decorator'
+import ThemeMixin from '@/mixins/ThemeMixin'
+import ThemeSelector from '@/components/ThemeSelector.vue'
+import packageConfig from '../../package.json'
 
-@Component
-export default class DotsMenu extends Vue {
-  packageVersion = version
+@Component({
+  components: {
+    ThemeSelector
+  }
+})
+export default class CogMenu extends Mixins(ThemeMixin) {
+  packageVersion = packageConfig.version
 }
 </script>
+
+<style scoped>
+.menu {
+  position: relative;
+  z-index: 10000;
+}
+</style>

@@ -13,6 +13,8 @@
       <template v-slot:[`item.status`]="{ item }">
         <v-chip
           :color="getColor(item.status)"
+          light
+          small
         >
           {{ item.status }}
         </v-chip>
