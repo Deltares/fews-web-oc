@@ -4,7 +4,7 @@
       <v-chip-group column active-class="primary--text">
         <v-chip small v-for="tag in legendTags" :key="tag.id" @click="toggleLine(tag.id)" :disabled="tag.disabled">
           <div>
-            <div style="margin-top:6px; margin-right: 5px;" v-html="tag.legendSvg"/>
+            <div style="margin-top:6px; margin-right: 5px;" v-html="tag.legendSvg"></div>
           </div>
           {{ tag.name }}
         </v-chip>
@@ -241,6 +241,7 @@ export default class ConfigurableChart extends Vue {
   fill: currentColor;
   margin: 0px auto;
   overflow: hidden;
+  min-height: 400px;
 }
 
 .chart-controls {
