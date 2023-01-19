@@ -1,5 +1,5 @@
 <template>
-  <v-menu left bottom>
+  <v-menu left bottom class="menu">
     <template v-slot:activator="{ on, attrs }">
       <v-btn icon v-bind="attrs" v-on="on">
         <v-icon>mdi-cog</v-icon>
@@ -38,3 +38,10 @@ export default class CogMenu extends Mixins(ThemeMixin) {
   packageVersion = packageConfig.version
 }
 </script>
+
+<style scoped>
+.menu {
+  position: relative;
+  z-index: 10000;
+}
+</style>
