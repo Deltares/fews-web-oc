@@ -10,6 +10,7 @@ import ComponentsPanel from '../components/Layout/ComponentsPanel.vue'
 import SystemMonitor from '../views/SystemMonitorDisplay.vue'
 import { configManager } from '../services/application-config'
 import TimeSeriesDisplay from '../views/TimeSeriesDisplay.vue'
+import SSDTimeSeriesDisplay from '../views/SSDTimeSeriesDisplay.vue'
 import DataView from '../views/DataView.vue'
 
 import oidcSettings from '../services/config'
@@ -53,7 +54,16 @@ const routes: Array<RouteConfig> = [
     name: 'SchematicStatusDisplay',
     component: SchematicStatusDisplay,
     props: true,
-    meta: { authorize: [], sidebar: true }
+    meta: { authorize: [], sidebar: true },
+    children: [
+      {
+        path: ':objectId',
+        name: 'SSDTimeSeriesDisplay',
+        component: SSDTimeSeriesDisplay,
+        props: true,
+        meta: { authorize: [], sidebar: true }
+      }
+    ]
   },
   {
     path: '/map/:layerName?',
