@@ -56,6 +56,11 @@
       <router-view>
       </router-view>
     </div>
+    <div class="alert-div" v-if="showAlerts">
+      <v-alert v-model="showAlerts" type="error" dismissible>
+        {{ alertMessage }}
+      </v-alert>
+    </div>
   </div>
 </template>
 
@@ -68,7 +73,7 @@ import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import SSDMixin from '@/mixins/SSDMixin'
 import { debounce } from 'lodash'
-import { Result } from '@deltares/fews-ssd-requests'
+import { ActionType, Result } from '@deltares/fews-ssd-requests'
 
 @Component({
   components: {
@@ -87,6 +92,9 @@ export default class SsdView extends Mixins(SSDMixin) {
 
   @Prop({ default: '', type: String })
     objectId! : string
+
+  showAlerts: boolean = false
+  alertMessage: string = ''
 
   active: string[] = []
   open: string[] = []
@@ -243,12 +251,27 @@ export default class SsdView extends Mixins(SSDMixin) {
   onAction (event: CustomEvent<{ objectId: string, panelId: string, results: Result[]}>): void {
     const { panelId, objectId, results } = event.detail
     if (results.length === 0) {
+      this.alertMessage = "No left click actions defined for this object"
+      this.showAlerts = true
       throw new Error('No left click actions defined for this object')
     }
-    if (results[0].type === 'PI') { this.openTimeSeriesDisplay(panelId, objectId) }
-    if (results[0].type === 'URL') { this.actionUrl(new URL(results[0].requests[0].request)) }
-    if (results[0].type === 'PDF') { this.actionUrl(new URL(results[0].requests[0].request)) }
-    if (results[0].type === 'SSD') { this.switchPanel(results[0].requests[0].request) }
+    switch (results[0].type) {
+      case (ActionType.PI):
+        this.openTimeSeriesDisplay(panelId, objectId)
+        break
+      case (ActionType.URL):
+        this.actionUrl(new URL(results[0].requests[0].request))
+        break
+      case (ActionType.PDF):
+        this.actionUrl(new URL(results[0].requests[0].request))
+        break
+      case (ActionType.SSD):
+        this.switchPanel(results[0].requests[0].request)
+        break
+      default:
+        this.alertMessage = `Action '${results[0].type}' not supported yet.`
+        this.showAlerts = true
+    }
   }
 
   actionUrl(url: URL) {
@@ -418,4 +441,15 @@ export default class SsdView extends Mixins(SSDMixin) {
   display: flex;
   flex-direction: row;
 }
+.alert-div
+{
+  position: absolute;
+  margin: 0 auto;
+  width: 80%;
+  max-width: 100vw;
+  bottom: 0px;
+  right: 10%;
+  z-index: 9000;
+}
+
 </style>
