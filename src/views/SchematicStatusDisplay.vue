@@ -57,9 +57,11 @@
       </router-view>
     </div>
     <div class="alert-div" v-if="showAlerts">
-      <v-alert v-model="showAlerts" type="error" dismissible>
-        {{ alertMessage }}
-      </v-alert>
+      <div v-for="alert in activeAlerts" v-bind:key="alert.id">
+        <v-alert type="error" dismissible @input="(value) => dismissAlert(alert, value)">
+          {{ alert.message }}
+        </v-alert>
+      </div>
     </div>
   </div>
 </template>
@@ -74,6 +76,10 @@ import { ColumnItem } from '@/components/ColumnItem'
 import SSDMixin from '@/mixins/SSDMixin'
 import { debounce } from 'lodash'
 import { ActionType, Result } from '@deltares/fews-ssd-requests'
+import { namespace } from 'vuex-class'
+import { Alert } from '@/store/modules/alerts/types'
+
+const alertsModule = namespace('alerts')
 
 @Component({
   components: {
@@ -93,8 +99,12 @@ export default class SsdView extends Mixins(SSDMixin) {
   @Prop({ default: '', type: String })
     objectId! : string
 
-  showAlerts: boolean = false
-  alertMessage: string = ''
+  @alertsModule.Getter('listActive')
+    activeAlerts!: Alert[]
+  @alertsModule.Mutation('addAlert')
+    addAlert!: (alert: Alert) => void
+  @alertsModule.State('alerts')
+    alerts!: Alert[]
 
   active: string[] = []
   open: string[] = []
@@ -250,9 +260,9 @@ export default class SsdView extends Mixins(SSDMixin) {
 
   onAction (event: CustomEvent<{ objectId: string, panelId: string, results: Result[]}>): void {
     const { panelId, objectId, results } = event.detail
+    const now: Date = new Date()
     if (results.length === 0) {
-      this.alertMessage = "No left click actions defined for this object"
-      this.showAlerts = true
+      this.addAlert({ id: `undefined-action-${now.toISOString()}`, message: "No left click actions defined for this object", active: true})
       throw new Error('No left click actions defined for this object')
     }
     switch (results[0].type) {
@@ -269,9 +279,16 @@ export default class SsdView extends Mixins(SSDMixin) {
         this.switchPanel(results[0].requests[0].request)
         break
       default:
-        this.alertMessage = `Action '${results[0].type}' not supported yet.`
-        this.showAlerts = true
+        this.addAlert({ id: `action-${results[0].type}-${now.toISOString()}`, message: `Action '${results[0].type}' not supported yet.`, active: true})
     }
+  }
+
+  get showAlerts() {
+    return this.activeAlerts.length > 0
+  }
+
+  dismissAlert(alert: Alert, value: boolean) {
+    alert.active = value
   }
 
   actionUrl(url: URL) {
