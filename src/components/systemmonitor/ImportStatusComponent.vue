@@ -36,7 +36,7 @@
 import {Component, Prop, Vue} from 'vue-property-decorator'
 import {TableHeader} from "@/components/systemmonitor/lib/tableHeader";
 import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
-import {ImportStatus} from "@deltares/fews-pi-requests/src/response/importStatus/importStatus"
+import type { ImportStatus } from "@deltares/fews-pi-requests"
 
 @Component
 export default class ImportStatusComponent extends Vue {
