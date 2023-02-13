@@ -2,7 +2,7 @@
   <div class="chart-with-chips">
     <div class="chart-controls">
       <v-chip-group column active-class="primary--text">
-        <v-chip small v-for="tag in legendTags" :key="tag.id" @click="toggleLine(tag.id)" :disabled="tag.disabled">
+        <v-chip small v-for="tag in legendTags" :key="tag.id" @click="toggleLine(tag.id)" :outlined="tag.disabled">
           <div>
             <div style="margin-top:6px; margin-right: 5px;" v-html="tag.legendSvg"></div>
           </div>
@@ -47,7 +47,7 @@ export default class ConfigurableChart extends Vue {
 
   axis!: any // eslint-disable-line @typescript-eslint/no-explicit-any
   isFullscreen = false
-  legendTags!: Tag[]
+  legendTags: Tag[] = []
 
   created(): void {
     this.legendTags = []
@@ -263,4 +263,9 @@ export default class ConfigurableChart extends Vue {
   flex-direction: column;
   flex: 1 1 80%;
 }
+
+.v-chip--outlined {
+  opacity: 0.5;
+}
+
 </style>
