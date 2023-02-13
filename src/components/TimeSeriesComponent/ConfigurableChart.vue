@@ -1,7 +1,7 @@
 <template>
   <div class="chart-with-chips">
     <div class="chart-controls">
-      <v-chip-group column active-class="primary--text">
+      <v-chip-group column>
         <v-chip small v-for="tag in legendTags" :key="tag.id" @click="toggleLine(tag.id)" :outlined="tag.disabled">
           <div>
             <div style="margin-top:6px; margin-right: 5px;" v-html="tag.legendSvg"></div>
