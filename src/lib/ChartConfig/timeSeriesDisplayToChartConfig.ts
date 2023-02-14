@@ -42,7 +42,7 @@ export function timeSeriesDisplayToChartConfig(subplot: any, title: string): Cha
       }
     }
     chartSeriesArray.push(chartSeries)
-    if (item.markerStyle !== undefined) {
+    if (item.markerStyle !== undefined && item.markerStyle !== "none") {
       const chartSeriesClone = cloneDeep(chartSeries)
       chartSeriesClone.type = 'marker'
       chartSeriesClone.style = {
