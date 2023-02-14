@@ -10,7 +10,7 @@
         </v-chip>
       </v-chip-group>
     </div>
-    <div ref="chart-container" class="chart-container"></div>
+    <div ref="chart-container" class="chart-container"></div> 
   </div>
 </template>
 
@@ -105,6 +105,11 @@ export default class ConfigurableChart extends Vue {
     this.refreshChart()
     this.setTags()
     this.$forceUpdate()
+  }
+
+  get height(){
+    const containerReference = this.$refs['chart-container'] as HTMLElement
+    return containerReference.offsetHeight;
   }
 
   beforeDestroy(): void {
@@ -241,7 +246,7 @@ export default class ConfigurableChart extends Vue {
   fill: currentColor;
   margin: 0px auto;
   overflow: hidden;
-  min-height: 400px;
+  height: var(height)px;
 }
 
 .chart-controls {
