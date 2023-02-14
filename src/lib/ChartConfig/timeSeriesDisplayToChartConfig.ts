@@ -1,7 +1,6 @@
 import { ChartConfig } from "@/components/TimeSeriesComponent/lib/ChartConfig"
 import { ChartSeries } from "@/components/TimeSeriesComponent/lib/ChartSeries"
-import { cloneDeep } from "lodash"
-import { cssLineStyleFromFEWS } from "./Styles"
+import { cssLineStyleFromFEWS, chartMarkerFromFEWS as chartMarkerFromFEWS } from "./Styles"
 
 export function timeSeriesDisplayToChartConfig(subplot: any, title: string): ChartConfig {
   const yAxis = subplot.items[0].yAxis
@@ -18,7 +17,6 @@ export function timeSeriesDisplayToChartConfig(subplot: any, title: string): Cha
   const chartSeriesArray: ChartSeries[] = []
   for (const index in subplot.items) {
     const item = subplot.items[index]
-    console.log('item', item);
     const chartSeries = {
       id: `${item.request}`,
       dataResources: [
@@ -40,17 +38,18 @@ export function timeSeriesDisplayToChartConfig(subplot: any, title: string): Cha
       style: { 
         ...cssLineStyleFromFEWS(item.lineStyle),
         stroke: item.color,
-      }
+      },
     }
     chartSeriesArray.push(chartSeries)
     if (item.markerStyle !== undefined && item.markerStyle !== "none") {
-      const chartSeriesClone = cloneDeep(chartSeries)
+      const chartSeriesClone = structuredClone(chartSeries)
       chartSeriesClone.type = 'marker'
       chartSeriesClone.style = {
         stroke: item.color,
-        fill: "none",
-        'stroke-width': item.lineWidth + 'px'
+        fill: item.color,
+        'stroke-width': item.lineWidth + 'px',
       }
+      chartSeriesClone.marker = chartMarkerFromFEWS(item.markerStyle)
       chartSeriesArray.push(chartSeriesClone)
     }
   }

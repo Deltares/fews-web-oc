@@ -205,7 +205,6 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
       return
     }
     this.displays = this.allDisplays[0];
-    console.log('onNodeChange', this.displays)
     await this.loadTimeSeries(0);
   }
 

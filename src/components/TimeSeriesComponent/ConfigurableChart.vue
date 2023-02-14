@@ -17,6 +17,7 @@
 <script lang="ts">
 import {Vue, Component, Prop, Watch} from 'vue-property-decorator'
 import * as wbCharts from 'wb-charts'
+import * as d3 from 'd3'
 import {ChartConfig} from './lib/ChartConfig'
 import {ChartSeries} from './lib/ChartSeries'
 import {Series} from '@/lib/TimeSeries'
@@ -169,6 +170,7 @@ export default class ConfigurableChart extends Vue {
       })
     } else {
       line = new wbCharts.ChartMarker(data, {
+        symbol: chartSeries.marker,
         tooltip: {toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}`}
       })
     }
