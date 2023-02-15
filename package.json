@@ -30,7 +30,7 @@
     "vue2mapbox-gl": "^0.13.0",
     "vuetify": "^2.4.0",
     "vuex": "^3.4.0",
-    "wb-charts": "file:wb-charts-2.0.1.tgz"
+    "wb-charts": "file:wb-charts-master.tar.gz"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.1.1",
@@ -61,7 +61,7 @@
     "eslint-plugin-vue": "^8.7.1",
     "sass": "~1.32.0",
     "sass-loader": "^10.0.0",
-    "typescript": "~4.1.5",
+    "typescript": "^4.9.5",
     "vue-cli-plugin-vuetify": "~2.4.3",
     "vue-template-compiler": "^2.6.11",
     "vuetify-loader": "^1.7.3"
