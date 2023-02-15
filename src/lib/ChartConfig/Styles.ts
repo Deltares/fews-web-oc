@@ -1,4 +1,4 @@
-import { ChartMarkerOptions } from "@/components/TimeSeriesComponent/lib/ChartMarkerOptions"
+import { ChartMarkerOptions } from "@/components/TimeSeriesComponent/lib/ChartMarkerOptions.js"
 import * as CSS from "csstype"
 import * as d3 from "d3"
 
@@ -10,7 +10,7 @@ const d3Asterisk = 4
 const d3Triangle = 5
 const d3Wye = 6
 
-export function cssLineStyleFromFEWS(lineStyle: string): CSS.SvgPropertiesHyphen {
+export function cssLineStyleFromFews(lineStyle: string): CSS.SvgPropertiesHyphen {
     const style: CSS.SvgPropertiesHyphen = {}
 
     style['fill'] = "none"
@@ -38,9 +38,9 @@ export function cssLineStyleFromFEWS(lineStyle: string): CSS.SvgPropertiesHyphen
     return style
 }
 
-export function chartMarkerFromFEWS(style: string, pointSize: number = 3): ChartMarkerOptions {
+export function chartMarkerFromFews(style: string, pointSize: number = 3): ChartMarkerOptions {
     const marker: ChartMarkerOptions = {
-        id: 0, 
+        id: 0,
         size: (pointSize/0.75)**2
     }
 
