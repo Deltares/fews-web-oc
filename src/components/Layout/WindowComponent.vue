@@ -19,7 +19,7 @@
       </v-btn>
       <slot name="toolbar-append" v-bind:refs="$refs"></slot>
     </v-toolbar>
-    <v-sheet fluid style="display: flex; flex: 1 1 100%; flex-direction: column;">
+    <v-sheet fluid style="display: flex; flex: 1 1 100%; flex-direction: column; height: 100%">
       <slot></slot>
     </v-sheet>
   </div>

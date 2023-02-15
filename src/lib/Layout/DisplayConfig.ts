@@ -1,7 +1,8 @@
 import { ChartConfig } from "@/components/TimeSeriesComponent/lib/ChartConfig";
 
 export enum DisplayType {
-  TimeSeriesComponent = 'TimeSeriesComponent'
+  TimeSeriesChart = 'TimeSeriesChart',
+  TimeSeriesTable = 'TimeSeriesTable'
 }
 
 export interface DisplayConfig {

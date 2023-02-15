@@ -12,14 +12,16 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-import TimeSeriesComponent from '@/components/TimeSeriesComponent/ConfigurableChart.vue'
+import TimeSeriesChart from '@/components/TimeSeriesComponent/ConfigurableChart.vue'
+import TimeSeriesTable from '@/components/TimeSeriesComponent/TimeSeriesTable.vue'
 import WindowComponent from "@/components/Layout/WindowComponent.vue"
 import { Series } from "@/lib/TimeSeries";
 import type { DisplayConfig } from '@/lib/Layout/DisplayConfig'
 
 @Component({
   components: {
-    TimeSeriesComponent,
+    TimeSeriesChart,
+    TimeSeriesTable,
     WindowComponent,
   },
 })
