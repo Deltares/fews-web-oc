@@ -1,4 +1,6 @@
+import { SymbolType } from "d3"
+
 export interface ChartMarkerOptions {
-  id: number
+  id: SymbolType
   size: number
 }

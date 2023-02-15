@@ -1,14 +1,8 @@
 import { ChartMarkerOptions } from "@/components/TimeSeriesComponent/lib/ChartMarkerOptions.js"
 import * as CSS from "csstype"
-import * as d3 from "d3"
+import { symbolCircle, symbolCross, symbolDiamond2, symbolSquare, symbolSquare2, symbolTriangle2, symbolWye,  } from "d3"
 
-const d3Circle = 0
-const d3Cross = 1
-const d3Diamond = 2
-const d3Square = 3
-const d3Asterisk = 4
-const d3Triangle = 5
-const d3Wye = 6
+
 
 export function cssLineStyleFromFews(lineStyle: string): CSS.SvgPropertiesHyphen {
     const style: CSS.SvgPropertiesHyphen = {}
@@ -40,7 +34,7 @@ export function cssLineStyleFromFews(lineStyle: string): CSS.SvgPropertiesHyphen
 
 export function chartMarkerFromFews(style: string, pointSize: number = 3): ChartMarkerOptions {
     const marker: ChartMarkerOptions = {
-        id: 0,
+        id: symbolCircle,
         size: (pointSize/0.75)**2
     }
 
@@ -48,28 +42,28 @@ export function chartMarkerFromFews(style: string, pointSize: number = 3): Chart
         case "none":
             break
         case "diamond":
-            marker.id = d3Diamond
+            marker.id = symbolDiamond2
             break
         case "square":
-            marker.id = d3Square
+            marker.id = symbolSquare2
             break
         case "triangleup":
-            marker.id = d3Triangle
+            marker.id = symbolTriangle2
             break
         case "triangledown":
-            marker.id = d3Triangle
+            marker.id = symbolTriangle2
             break
         case "circle":
-            marker.id = d3Circle
+            marker.id = symbolCircle
             break
         case "x":
-            marker.id = d3Wye
+            marker.id = symbolWye
             break
         case "+":
-            marker.id = d3Cross
+            marker.id = symbolCross
             break
         case "rectangle":
-            marker.id = d3Square
+            marker.id = symbolSquare
             break
     }
     return marker
