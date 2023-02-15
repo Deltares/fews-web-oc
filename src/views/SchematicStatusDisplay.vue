@@ -1,5 +1,5 @@
 <template>
-  <div class="web-oc-ssd">
+  <div class="web-oc-ssd grid-root" :class="layoutClass">
     <portal to="web-oc-sidebar">
       <v-toolbar dense flat v-if="!$vuetify.breakpoint.mobile">
         <v-btn-toggle v-model="viewMode" color="primary" dense group mandatory>
@@ -18,13 +18,39 @@
       <ColumnMenu v-else :active.sync="active" :items="items" :open.sync="open">
       </ColumnMenu>
     </portal>
-    <div style="height: calc(100% - 48px);">
-      <SSDComponent @action="onAction"
-        :src="src">
-      </SSDComponent>
+    <div class="grid-map" v-show="true">
+      <div style="height: calc(100% - 48px)">
+        <SSDComponent @action="onAction" :src="src">
+        </SSDComponent>
+      </div>
+      <DateTimeSlider class="date-time-slider" v-model="timeIndex" :dates="dates" @input="debouncedUpdate">
+      </DateTimeSlider>
     </div>
-    <DateTimeSlider class="date-time-slider" v-model="timeIndex" :dates="dates" @input="debouncedUpdate">
-    </DateTimeSlider>
+    <div class="grid-charts" ref="grid-charts" v-if="objectId !== ''">
+      <v-toolbar dense flat style="flex: 0 0 auto;">
+        <v-toolbar-title>
+        </v-toolbar-title>
+        <v-spacer />
+        <v-toolbar-items>
+          <v-btn-toggle tile group>
+            <v-btn disabled v-if="!$vuetify.breakpoint.mobile" icon plain @click="openTimeSeriesWindow()">
+              <v-icon>mdi-dock-window</v-icon>
+            </v-btn>
+            <v-btn v-if="!$vuetify.breakpoint.mobile" icon plain @click="onDockModeChange('left')">
+              <v-icon>mdi-dock-left</v-icon>
+            </v-btn>
+            <v-btn v-if="!$vuetify.breakpoint.mobile" icon plain @click="onDockModeChange('right')">
+              <v-icon>mdi-dock-left</v-icon>
+            </v-btn>
+            <v-btn icon plain @click="closeCharts">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-btn-toggle>
+        </v-toolbar-items>
+      </v-toolbar>
+      <router-view>
+      </router-view>
+    </div>
   </div>
 </template>
 
@@ -54,13 +80,21 @@ export default class SsdView extends Mixins(SSDMixin) {
   @Prop({ default: '', type: String })
     groupId! : string
 
+  @Prop({ default: '', type: String })
+    objectId! : string
+
   active: string[] = []
   open: string[] = []
   items: ColumnItem[] = []
+  // currentObjectId: string = ''
   viewMode = 0
   webServicesUrl = ''
+
   timeString = ''
   debouncedUpdate!: () => void
+
+  layoutClass = 'right'
+  dockMode = 'right'
 
   async created (): Promise<void> {
     this.webServicesUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
@@ -144,16 +178,24 @@ export default class SsdView extends Mixins(SSDMixin) {
     this.active = [this.panelId]
   }
 
+  @Watch('objectId')
+  onObjectIdChange(newObjectId: string, oldObjectId: string) {
+    if (newObjectId === '' || oldObjectId === '') {
+      this.onResize()
+    }
+  }
+
   @Watch('active')
   onActiveChange (newValue: string[], oldValue: string[]): void {
     if (newValue.length === 0) this.active = oldValue
   }
 
-  onAction (event: CustomEvent): void {
-    const results: Result[] = event.detail
+  onAction (event: CustomEvent<{ objectId: string, panelId: string, results: Result[]}>): void {
+    const { panelId, objectId, results } = event.detail
     if (results.length === 0) {
       throw new Error('No left click actions defined for this object')
     }
+    if (results[0].type === 'PI') { this.openTimeSeriesDisplay(panelId, objectId) }
     if (results[0].type === 'URL') { this.actionUrl(new URL(results[0].requests[0].request)) }
     if (results[0].type === 'PDF') { this.actionUrl(new URL(results[0].requests[0].request)) }
     if (results[0].type === 'SSD') { this.switchPanel(results[0].requests[0].request) }
@@ -188,11 +230,135 @@ export default class SsdView extends Mixins(SSDMixin) {
       }
     }
   }
+
+  openTimeSeriesDisplay(panelId: string, objectId: string) {
+    this.$router.push( {name: 'SSDTimeSeriesDisplay', params: { objectId, panelId, groupId: this.groupId  }} )
+  }
+
+  closeCharts (): void {
+    if (this.objectId) {
+      this.$router.push({ name: 'SchematicStatusDisplay', params: { groupId: this.groupId, panelId: this.panelId }})
+    }
+  }
+
+  setLayoutClass(): void {
+    if (this.$vuetify.breakpoint.mobile) {
+      this.layoutClass = 'mobile'
+    } else {
+      this.onDockModeChange(this.dockMode)
+    }
+  }
+
+  @Watch('$vuetify.breakpoint.mobile')
+  onBreakpointChange (): void {
+    this.setLayoutClass()
+  }
+
+  @Watch('layoutClass')
+  onResize(): void {
+    window.dispatchEvent(new Event('resize'))
+  }
+
+  @Watch('objectId')
+  @Watch('dockMode')
+  changeLayout(): void {
+    if (this.objectId) {
+      console.log(this.objectId, this.dockMode, this.layoutClass)
+      if (this.layoutClass !== this.dockMode) {
+        this.layoutClass = this.dockMode
+      }
+    }
+  }
+
+  onDockModeChange(dockMode: string): void {
+    this.dockMode = dockMode
+    this.changeLayout()
+  }
 }
 </script>
 
-<style>
+<style scoped>
 .theme--light .web-oc-ssd {
   background-color: white;
+}
+
+.grid-map > .date-time-slider {
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+}
+
+.grid-root {
+  display: flex;
+}
+
+.grid-root.right {
+  height: 100%;
+  flex-direction: row;
+}
+
+.grid-root.left {
+  height: 100%;
+  flex-direction: row-reverse;
+}
+
+.grid-root.bottom {
+  flex-direction: column;
+}
+
+.grid-map {
+  position: relative;
+  display: flex;
+  max-width: 100%;
+  flex: 1 1 0px;
+  flex-direction: column;
+}
+
+.bottom > .grid-map {
+  height: 400px;
+  width: 100%;
+}
+
+.grid-charts {
+  display: none;
+  overflow: hidden;
+  width: 600px;
+  flex: 1 1 0px;
+  flex-direction: column;
+}
+
+.mobile > .grid-charts {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.right > .grid-charts,
+.left > .grid-charts {
+  display: flex;
+  height: 100%;
+  width: 50%;
+}
+
+.right > .grid-charts {
+  right: 0px;
+}
+
+.left > .grid-charts {
+  left: 0px;
+}
+
+.bottom > .grid-charts {
+  display: flex;
+  height: 400px;
+  width: 100%;
+  flex: 1 1 auto;
+}
+
+.grid-charts-footer {
+  width: 100%;
+  padding: 10px 10px 0px 10px;
+  display: flex;
+  flex-direction: row;
 }
 </style>

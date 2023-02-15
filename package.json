@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@deltares/fews-pi-requests": "^0.5.17",
-    "@deltares/fews-ssd-requests": "^0.2.7",
-    "@deltares/fews-ssd-webcomponent": "^0.2.7",
+    "@deltares/fews-ssd-requests": "^0.2.11",
+    "@deltares/fews-ssd-webcomponent": "^0.3.0-alpha.0",
     "@deltares/fews-wms-requests": "^0.1.10",
     "@mdi/font": "^6.4.95",
     "@types/node-fetch": "^2.6.2",
@@ -30,7 +30,7 @@
     "vue2mapbox-gl": "^0.13.0",
     "vuetify": "^2.4.0",
     "vuex": "^3.4.0",
-    "wb-charts": "file:wb-charts-master.tar.gz"
+    "wb-charts": "file:wb-charts-2.0.1.tgz"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.1.1",

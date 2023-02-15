@@ -1,5 +1,5 @@
 <template>
-  <div class="ssd-container" ref="ssd-container" id="ssd-container" v-resize="resize">
+  <div class="ssd-container" ref="ssd-container" id="ssd-container" v-resize="resize" :style="isHidden ? {} : { width: containerWidth + 'px'}">
     <div class="tile-grid-content" :class="{hidden: isHidden}"
       :style="{ width: width + 'px', height: height + 'px', 'margin-left': margin.left + 'px', 'margin-top': margin.top + 'px', 'margin-bottom': margin.top + 'px' }"
       ref="scroll-content">
@@ -22,10 +22,11 @@ export default class SsdComponent extends Vue {
   width = 100
   height = 100
   margin = { top: 0, left: 0 }
-  isHidden = false
+  isHidden = true
   pos = { top: 0, left: 0, x: 0, y: 0 }
   aspectRatio = 1
   fit = false
+  containerWidth = 0
 
   mounted (): void {
     this.container = this.$refs['ssd-container'] as HTMLElement
@@ -103,18 +104,20 @@ export default class SsdComponent extends Vue {
     this.resize()
   }
 
-  onAction(e: CustomEvent): void {
-    this.$emit("action", e)
+  onAction(event: CustomEvent): void {
+    this.$emit('action', event)
   }
 
   resize (): void {
     if (this.container === undefined) return
     this.isHidden = true
-    this.margin = { top: 0, left: 0 }
-    this.setAspectRatio()
-    this.setDimensions()
-    this.isHidden = false
-    this.restoreScrollPosition()
+    this.$nextTick(() => {
+      this.margin = { top: 0, left: 0 }
+      this.setAspectRatio()
+      this.setDimensions()
+      this.isHidden = false
+      this.restoreScrollPosition()
+    })
   }
 
   setAspectRatio (): void {
@@ -133,22 +136,23 @@ export default class SsdComponent extends Vue {
 
   setDimensions (): void {
     let height = this.container.clientHeight
-    let width = this.container.clientWidth
+    let width = this.container.offsetWidth
+    this.containerWidth = this.container.offsetWidth
     let margin = { top: 0, left: 0 }
-    const dx = this.container.clientWidth - height * this.aspectRatio
+    const dx = this.container.offsetWidth - height * this.aspectRatio
     if (dx < 0 && !this.fit) {
       // add space for scrollbar
       width = height * this.aspectRatio
     } else if (dx < 0) {
-      height = this.container.clientWidth / this.aspectRatio
+      height = this.container.offsetWidth / this.aspectRatio
       margin = { top: (this.container.clientHeight - height) / 2, left: 0 }
     } else {
       width = height * this.aspectRatio
       margin = { top: 0, left: dx / 2 }
     }
     this.margin = margin
-    this.height = height
     this.width = width
+    this.height = height
   }
 }
 </script>
@@ -156,20 +160,15 @@ export default class SsdComponent extends Vue {
 <style>
 .ssd-container {
   height: 100%;
-  width: 100%;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  overflow-x: scroll;
+  overflow-y: hidden;
   white-space: nowrap;
 }
 
 .theme--light .ssd-container {
   background-color: lightgray;
-}
-
-.tile-grid-content {
-  display: flex;
-  flex: 1 1 100px;
 }
 
 .tile-grid-content.hidden {
