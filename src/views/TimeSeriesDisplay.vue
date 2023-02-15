@@ -36,11 +36,11 @@
     <v-card
       class="my-auto mx-auto"
       max-width="800"
-      v-if="this.warningMessage.length!==0"
+      v-if="warningMessage.length!==0"
     >
       <v-card-text>
         <p class="text-h4 text--primary text-center">
-          {{this.warningMessage}}
+          {{warningMessage}}
         </p>
       </v-card-text>
     </v-card>
@@ -205,7 +205,6 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
       return
     }
     this.displays = this.allDisplays[0];
-    console.log('onNodeChange', this.displays)
     await this.loadTimeSeries(0);
   }
 

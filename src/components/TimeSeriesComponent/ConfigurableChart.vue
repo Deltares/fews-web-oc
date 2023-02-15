@@ -10,13 +10,14 @@
         </v-chip>
       </v-chip-group>
     </div>
-    <div ref="chart-container" class="chart-container"></div>
+    <div ref="chart-container" class="chart-container"></div> 
   </div>
 </template>
 
 <script lang="ts">
 import {Vue, Component, Prop, Watch} from 'vue-property-decorator'
 import * as wbCharts from 'wb-charts'
+import * as d3 from 'd3'
 import {ChartConfig} from './lib/ChartConfig'
 import {ChartSeries} from './lib/ChartSeries'
 import {Series} from '@/lib/TimeSeries'
@@ -107,6 +108,11 @@ export default class ConfigurableChart extends Vue {
     this.$forceUpdate()
   }
 
+  get height(){
+    const containerReference = this.$refs['chart-container'] as HTMLElement
+    return containerReference.offsetHeight;
+  }
+
   beforeDestroy(): void {
     window.removeEventListener('resize', this.resize)
   }
@@ -164,6 +170,7 @@ export default class ConfigurableChart extends Vue {
       })
     } else {
       line = new wbCharts.ChartMarker(data, {
+        symbol: chartSeries.marker,
         tooltip: {toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}`}
       })
     }
@@ -241,7 +248,7 @@ export default class ConfigurableChart extends Vue {
   fill: currentColor;
   margin: 0px auto;
   overflow: hidden;
-  min-height: 400px;
+  height: var(height)px;
 }
 
 .chart-controls {
