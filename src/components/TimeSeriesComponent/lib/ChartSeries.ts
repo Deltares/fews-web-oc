@@ -1,5 +1,5 @@
 import * as CSS from "csstype";
-import { ChartMarkerOptions } from "./ChartMarkerOptions";
+import { SymbolOptions } from "wb-charts";
 import { ChartSeriesOptions } from "./ChartSeriesOptions";
 
 export interface ChartSeries {
@@ -7,7 +7,7 @@ export interface ChartSeries {
   dataResources: string[];
   name: string;
   label?: string;
-  marker?: ChartMarkerOptions;
+  marker?: SymbolOptions;
   type: string;
   options: ChartSeriesOptions;
   unit: string;

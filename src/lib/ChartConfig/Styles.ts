@@ -1,21 +1,30 @@
-import { ChartMarkerOptions } from "@/components/TimeSeriesComponent/lib/ChartMarkerOptions.js"
 import * as CSS from "csstype"
-import { symbolCircle, symbolCross, symbolDiamond2, symbolSquare, symbolSquare2, symbolTriangle2, symbolWye,  } from "d3"
+import { SymbolOptions } from "wb-charts"
 
+const SymbolType = {
+  Circle: 0,
+  Cross: 1,
+  Diamond: 2,
+  Square: 3,
+  Asterisk: 4,
+  TriangleUp: 5,
+  Wye: 6
+} as const
 
+type SymbolType = (typeof SymbolType)[keyof typeof SymbolType];
 
-export function cssLineStyleFromFews(lineStyle: string): CSS.SvgPropertiesHyphen {
+export function cssStyleFromFewsLine(item: { lineStyle: string, color: string}): CSS.SvgPropertiesHyphen {
     const style: CSS.SvgPropertiesHyphen = {}
 
     style['fill'] = "none"
 
-    if (lineStyle.includes('thick')) {
+    if (item.lineStyle.includes('thick')) {
         style['stroke-width'] = '2px'
     } else {
         style['stroke-width'] = '1px'
     }
 
-    switch (lineStyle) {
+    switch (item.lineStyle) {
         case "none":
         case "solid":
             break
@@ -26,44 +35,55 @@ export function cssLineStyleFromFews(lineStyle: string): CSS.SvgPropertiesHyphen
             style['stroke-dasharray'] = '5 5 1 5'
             break
         case "dotted":
-            style['stroke-dasharray'] = '1 5'
+            style['stroke-dasharray'] = '2 3'
+            style['stroke-linecap'] = 'round'
             break
     }
+    style.stroke =  item.color === '#000000' ? 'currentColor' : item.color
     return style
 }
 
-export function chartMarkerFromFews(style: string, pointSize: number = 3): ChartMarkerOptions {
-    const marker: ChartMarkerOptions = {
-        id: symbolCircle,
-        size: (pointSize/0.75)**2
-    }
+export function cssStyleFromFewsMarker(item: { markerStyle: string, color: string}): CSS.SvgPropertiesHyphen {
+  const color = item.color === '#000000' ?'currentColor' : item.color
+  const style: CSS.SvgPropertiesHyphen = {
+    stroke: color,
+    fill: color,
+  }
+  return style
+}
 
+export function chartMarkerFromFews(style: string, pointSize: number = 3): SymbolOptions {
+    const marker: SymbolOptions = {
+        id: SymbolType.Circle,
+        size: (pointSize/0.75)**2,
+        skip: 1
+    }
     switch (style) {
         case "none":
             break
         case "diamond":
-            marker.id = symbolDiamond2
+            marker.id = SymbolType.Diamond
             break
         case "square":
-            marker.id = symbolSquare2
+            marker.id = SymbolType.Square
             break
         case "triangleup":
-            marker.id = symbolTriangle2
+            marker.id = SymbolType.TriangleUp
             break
         case "triangledown":
-            marker.id = symbolTriangle2
+            marker.id = SymbolType.TriangleUp
             break
         case "circle":
-            marker.id = symbolCircle
+            marker.id = SymbolType.Circle
             break
         case "x":
-            marker.id = symbolWye
+            marker.id = SymbolType.Wye
             break
         case "+":
-            marker.id = symbolCross
+            marker.id = SymbolType.Cross
             break
         case "rectangle":
-            marker.id = symbolSquare
+            marker.id = SymbolType.Square
             break
     }
     return marker

@@ -1,6 +1,6 @@
-import { ChartConfig } from "@/components/TimeSeriesComponent/lib/ChartConfig"
-import { ChartSeries } from "@/components/TimeSeriesComponent/lib/ChartSeries"
-import { cssLineStyleFromFews, chartMarkerFromFews } from "./Styles"
+import { ChartConfig } from "@/components/TimeSeriesComponent/lib/ChartConfig.js"
+import { ChartSeries } from "@/components/TimeSeriesComponent/lib/ChartSeries.js"
+import { cssStyleFromFewsLine, cssStyleFromFewsMarker, chartMarkerFromFews } from "./Styles"
 
 export function timeSeriesDisplayToChartConfig(subplot: any, title: string): ChartConfig {
   const yAxis = subplot.items[0].yAxis
@@ -35,10 +35,7 @@ export function timeSeriesDisplayToChartConfig(subplot: any, title: string): Cha
             axisIndex: 0
           },
         },
-        style: {
-          ...cssLineStyleFromFews(item.lineStyle),
-          stroke: item.color,
-        },
+        style: cssStyleFromFewsLine(item),
       }
       chartSeriesArray.push(chartSeries)
     }
@@ -61,11 +58,7 @@ export function timeSeriesDisplayToChartConfig(subplot: any, title: string): Cha
             axisIndex: 0
           },
         },
-        style: {
-          stroke: item.color,
-          fill: item.color,
-          'stroke-width': item.lineWidth + 'px',
-        },
+        style: cssStyleFromFewsMarker(item),
         marker: chartMarkerFromFews(item.markerStyle)
       }
       chartSeriesArray.push(chartSeries)
