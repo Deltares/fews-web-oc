@@ -2,9 +2,9 @@
   <div class="panel">
     <div class="panel-scroll">
       <WindowComponent v-for="display in displays" :key="display.id" :class="display.class"
-        :title="display.title" :types="display.types">
-        <template v-slot="{type}">
-          <component :is="type" :value="display.config" :series="series" :key="display.id">
+        :title="display.title" :displayTypes="display.types">
+        <template v-slot="{displayType}">
+          <component :is="displayType" :value="display.config" :series="series" :key="display.id">
           </component>
         </template>
       </WindowComponent>

@@ -10,7 +10,13 @@
     >
       <v-icon>mdi-fullscreen-exit</v-icon>
     </v-btn>
-    <v-toolbar :color="$vuetify.theme.dark ? '#1E1E1E' : '#FFFFFF'" dense flat style="flex-grow:0" extension-height="24px">
+    <v-toolbar
+      :color="$vuetify.theme.dark ? '#1E1E1E' : '#FFFFFF'"
+      dense
+      flat
+      style="flex-grow:0"
+      extension-height="24px"
+    > <!-- Set extension height, since default v-tab size is too large -->
       <v-spacer />
       {{ title }}
       <v-spacer />
@@ -18,25 +24,25 @@
         <v-icon>mdi-fullscreen</v-icon>
       </v-btn>
       <slot name="toolbar-append" v-bind:refs="$refs"></slot>
-      <template v-if="types.length > 1" v-slot:extension>
+      <template v-if="displayTypes.length > 1" v-slot:extension>
         <v-tabs v-model="tab" centered hide-slider>
-          <v-tab v-for="(type, index) in types" :key="index">
-            {{tabLabel(type)}}
+          <v-tab v-for="(displayType, index) in displayTypes" :key="index">
+            {{tabLabel(displayType)}}
           </v-tab>
         </v-tabs>
       </template>
     </v-toolbar>
     <v-sheet fluid class="component-container">
-      <v-tabs-items v-if="types.length > 1" v-model="tab" style="height: 100%;">
+      <v-tabs-items v-if="displayTypes.length > 1" v-model="tab" style="height: 100%;">
         <v-tab-item
-          v-for="(type, index) in types"
+          v-for="(displayType, index) in displayTypes"
           :key="index"
           style="height: 100%;"
         >
-          <slot :type="type"></slot>
+          <slot :displayType="displayType"></slot>
         </v-tab-item>
       </v-tabs-items>
-      <slot v-else :type="types[0]"></slot>
+      <slot v-else :displayType="displayTypes[0]"></slot>
     </v-sheet>
   </div>
 </template>
@@ -51,7 +57,7 @@ export default class WindowComponent extends Vue {
   @Prop( {default: '', type: String}) title!: string
   fullscreen = false
 
-  @Prop( {default: () => { return [] }}) types!: DisplayType[]
+  @Prop( {default: () => { return [] }}) displayTypes!: DisplayType[]
 
   tab: number = 0
 
@@ -63,14 +69,14 @@ export default class WindowComponent extends Vue {
     this.fullscreen = !this.fullscreen
   }
 
-  tabLabel (type: DisplayType): string {
-    switch (type) {
+  tabLabel (displayType: DisplayType): string {
+    switch (displayType) {
       case DisplayType.TimeSeriesChart:
         return "Chart"
       case DisplayType.TimeSeriesTable:
         return "Table";
       default:
-        return type ?? "";
+        return displayType ?? "";
     }
   }
 }

@@ -39,7 +39,7 @@ export default class TimeSeriesTable extends Vue {
   dateTimes: Date[] = []
 
   tableData: Record<string, unknown>[] = []
-  tableHeaders: {value: string, text: string, sortable: boolean}[] = []
+  tableHeaders: {value: string, text: string}[] = []
 
   mounted() {
     this.setHeaders()
@@ -49,10 +49,10 @@ export default class TimeSeriesTable extends Vue {
 
   setHeaders() {
     if (this.value?.series === undefined) return
-    const tableHeaders: {value: string, text: string, sortable: boolean}[] = []
-    tableHeaders.push({value: 'date', text: 'Date', sortable: true})
+    const tableHeaders: {value: string, text: string}[] = []
+    tableHeaders.push({value: 'date', text: 'Date'})
     this.value.series.forEach((chartSeries) => {
-      tableHeaders.push({value: chartSeries.id, text: this.formatHeader(chartSeries), sortable: false})
+      tableHeaders.push({value: chartSeries.id, text: this.formatHeader(chartSeries)})
     })
     this.tableHeaders = tableHeaders
   }
@@ -82,7 +82,15 @@ export default class TimeSeriesTable extends Vue {
     const seriesDef = this.value.series
     this.tableData = this.dateTimes.map((date: Date, index: number) => {
       const event: any = {}
-      event.date = date.toLocaleString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: false})
+      event.date = date.toLocaleString(undefined, {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: false
+      })
       for (const chartSeries of seriesDef) {
         const series = this.series[chartSeries.dataResources[0]]
         if (series === undefined) {
