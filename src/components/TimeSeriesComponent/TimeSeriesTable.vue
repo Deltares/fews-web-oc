@@ -73,7 +73,7 @@ export default class TimeSeriesTable extends Vue {
         }
       }
     }
-    dates.sort((a,b) => {return a.getTime() - b.getTime()})
+    dates.sort((a, b) => {return a.getTime() - b.getTime()})
     this.dateTimes = dates
   }
 
@@ -98,8 +98,8 @@ export default class TimeSeriesTable extends Vue {
 
   formatHeader(chartSeries: ChartSeries): string {
     const label = chartSeries.name ?? ''
-    const unit = chartSeries.unit !== undefined ? `[${chartSeries.unit}]` : ''
-    return `${label} ${unit}`
+    const header = chartSeries.unit !== undefined ? `${label} [${chartSeries.unit}]` : label
+    return header
   }
 
   @Watch('series')
