@@ -390,7 +390,7 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
         const title = result.config.timeSeriesDisplay.title
         display.push({
           id: `${title}-${i}`,
-          type: DisplayType.TimeSeriesChart,
+          types: [DisplayType.TimeSeriesChart, DisplayType.TimeSeriesTable],
           title: result.config.timeSeriesDisplay.title,
           class: 'single',
           config: timeSeriesDisplayToChartConfig(subPlot, title)

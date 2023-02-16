@@ -7,7 +7,7 @@ export enum DisplayType {
 
 export interface DisplayConfig {
   id: string;
-  type: DisplayType;
+  types: DisplayType[];
   title: string;
   class: string;
   config: Partial<ChartConfig>;
