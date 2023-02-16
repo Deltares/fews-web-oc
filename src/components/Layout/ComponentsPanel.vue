@@ -2,9 +2,11 @@
   <div class="panel">
     <div class="panel-scroll">
       <WindowComponent v-for="display in displays" :key="display.id" :class="display.class"
-        :title="display.title">
-        <component :is="display.type" :value="display.config" :series="series" :key="display.id">
-        </component>
+        :title="display.title" :displayTypes="display.types">
+        <template v-slot="{displayType}">
+          <component :is="displayType" :value="display.config" :series="series" :key="display.id">
+          </component>
+        </template>
       </WindowComponent>
     </div>
   </div>
@@ -12,14 +14,16 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-import TimeSeriesComponent from '@/components/TimeSeriesComponent/ConfigurableChart.vue'
+import TimeSeriesChart from '@/components/TimeSeriesComponent/ConfigurableChart.vue'
+import TimeSeriesTable from '@/components/TimeSeriesComponent/TimeSeriesTable.vue'
 import WindowComponent from "@/components/Layout/WindowComponent.vue"
 import { Series } from "@/lib/TimeSeries";
 import type { DisplayConfig } from '@/lib/Layout/DisplayConfig'
 
 @Component({
   components: {
-    TimeSeriesComponent,
+    TimeSeriesChart,
+    TimeSeriesTable,
     WindowComponent,
   },
 })

@@ -190,7 +190,7 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
         const title = result.config.timeSeriesDisplay.title
         display.push({
           id: `${title}-${i}`,
-          type: DisplayType.TimeSeriesComponent,
+          types: [DisplayType.TimeSeriesChart, DisplayType.TimeSeriesTable],
           class: 'single',
           title: result.config.timeSeriesDisplay.title,
           config: timeSeriesDisplayToChartConfig(subPlot, title)
