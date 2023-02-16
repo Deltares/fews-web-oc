@@ -19,17 +19,17 @@
       </v-btn>
       <slot name="toolbar-append" v-bind:refs="$refs"></slot>
       <template v-if="types.length > 1" v-slot:extension>
-        <v-tabs v-model="type" centered hide-slider>
-          <v-tab v-for="type, index in types" :key="index">
-            {{type}}
+        <v-tabs v-model="tab" centered hide-slider>
+          <v-tab v-for="(type, index) in types" :key="index">
+            {{tabLabel(type)}}
           </v-tab>
         </v-tabs>
       </template>
     </v-toolbar>
     <v-sheet fluid class="component-container">
-      <v-tabs-items v-if="types.length > 1" v-model="type" style="height: 100%;">
+      <v-tabs-items v-if="types.length > 1" v-model="tab" style="height: 100%;">
         <v-tab-item
-          v-for="type, index in types"
+          v-for="(type, index) in types"
           :key="index"
           style="height: 100%;"
         >
@@ -53,7 +53,7 @@ export default class WindowComponent extends Vue {
 
   @Prop( {default: () => { return [] }}) types!: DisplayType[]
 
-  type: DisplayType | null = null
+  tab: number = 0
 
   get fullscreenIcon (): string {
     return this.fullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
@@ -61,6 +61,17 @@ export default class WindowComponent extends Vue {
 
   toggleFullscreen (): void {
     this.fullscreen = !this.fullscreen
+  }
+
+  tabLabel (type: DisplayType): string {
+    switch (type) {
+      case DisplayType.TimeSeriesChart:
+        return "Chart"
+      case DisplayType.TimeSeriesTable:
+        return "Table";
+      default:
+        return type ?? "";
+    }
   }
 }
 
