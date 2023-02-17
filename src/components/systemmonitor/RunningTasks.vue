@@ -27,9 +27,8 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator'
 import {TableHeader} from "@/components/systemmonitor/lib/tableHeader";
-import {DocumentFormat, PiWebserviceProvider, TaskRunsFilter} from "@deltares/fews-pi-requests";
-import {TaskRunsResponse} from "@deltares/fews-pi-requests/src/response";
-import {TaskRun} from "@deltares/fews-pi-requests/src/response/tasks/taskRun";
+import { DocumentFormat, PiWebserviceProvider } from "@deltares/fews-pi-requests";
+import type { TaskRun, TaskRunsFilter, TaskRunsResponse } from "@deltares/fews-pi-requests";
 
 @Component
 export default class RunningTasks extends Vue {

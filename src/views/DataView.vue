@@ -106,7 +106,7 @@
 import { Component, Mixins, Prop, Vue, Watch } from 'vue-property-decorator'
 import { DocumentFormat, PiWebserviceProvider, TimeSeriesResponse } from "@deltares/fews-pi-requests";
 import { debounce, uniq, intersection } from 'lodash';
-import { Location } from '@deltares/fews-pi-requests/src/response';
+import { Location } from '@deltares/fews-pi-requests';
 import MapComponent from '../components/MapComponent.vue'
 import WMSMixin from '@/mixins/WMSMixin'
 import { Layer } from '@deltares/fews-wms-requests';
@@ -411,19 +411,22 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
       const request = requests[r]
       const url = new URL(`${baseUrl}/${request.request}`)
       const piSeries: TimeSeriesResponse = await this.webServiceProvider.getTimeSeriesWithRelativeUrl(request.request);
-      for (const index in piSeries.timeSeries) {
-        const timeSeries = piSeries.timeSeries[index]
+      if ( piSeries.timeSeries === undefined) continue
+      for (const timeSeries of piSeries.timeSeries) {
         if (timeSeries.events === undefined) continue
         const resourceId = `${request.key}`
         const resource = new SeriesUrlRequest('fews-pi', url.toString())
         const series = new Series(resource)
-        series.header.name = `${timeSeries.header.stationName} - ${timeSeries.header.parameterId} (${timeSeries.header.moduleInstanceId})`
-        series.header.unit = timeSeries.header.units
-        series.header.parameter = timeSeries.header.parameterId
-        series.header.location = timeSeries.header.stationName
-        series.header.source = timeSeries.header.moduleInstanceId
-        series.start = new Date(`${timeSeries.header.startDate.date}T${timeSeries.header.startDate.time}`)
-        series.end = new Date(`${timeSeries.header.endDate.date}T${timeSeries.header.endDate.time}`)
+        const header = timeSeries.header
+        if (header !== undefined) {
+          series.header.name = `${header.stationName} - ${header.parameterId} (${header.moduleInstanceId})`
+          series.header.unit = header.units
+          series.header.parameter = header.parameterId
+          series.header.location = header.stationName
+          series.header.source = header.moduleInstanceId
+          series.start = new Date(`${header.startDate.date}T${header.startDate.time}`)
+          series.end = new Date(`${header.endDate.date}T${header.endDate.time}`)
+        }
         series.data = timeSeries.events.map((event) => {
           return {
             x: new Date(`${event.date}T${event.time}`),

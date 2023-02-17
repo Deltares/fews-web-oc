@@ -84,10 +84,7 @@ import SeriesStore from '@/mixins/SeriesStore'
 import {Series, SeriesUrlRequest} from '@/lib/TimeSeries'
 import {DisplayConfig, DisplayType} from '@/lib/Layout/DisplayConfig'
 import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
-import {TopologyNode} from "@deltares/fews-pi-requests/src/response/topology/topologyNode";
-import {DisplayGroupsFilter} from "@deltares/fews-pi-requests/src/requestParameters/DisplayGroupsFilter";
-import {TimeSeriesResponse} from "@deltares/fews-pi-requests/src/response";
-import {DisplayGroupsResponse} from "@deltares/fews-pi-requests/src/response/displaygroups/displayGroupsResponse";
+import type { DisplayGroupsFilter, DisplayGroupsResponse, TimeSeriesResponse, TopologyNode } from "@deltares/fews-pi-requests";
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 
 @Component({
@@ -212,19 +209,22 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
     for (const request of this.requests[index]) {
       const url = new URL(`${this.baseUrl}/${request.request}`)
       const piSeries: TimeSeriesResponse = await this.webServiceProvider.getTimeSeriesWithRelativeUrl(request.request);
-      for (const index in piSeries.timeSeries) {
-        const timeSeries = piSeries.timeSeries[index]
+      if ( piSeries.timeSeries === undefined) continue
+      for (const timeSeries of piSeries.timeSeries) {
         if (timeSeries.events === undefined) continue
         const resourceId = `${request.key}`
         const resource = new SeriesUrlRequest('fews-pi', url.toString())
         const series = new Series(resource)
-        series.header.name = `${timeSeries.header.stationName} - ${timeSeries.header.parameterId} (${timeSeries.header.moduleInstanceId})`
-        series.header.unit = timeSeries.header.units
-        series.header.parameter = timeSeries.header.parameterId
-        series.header.location = timeSeries.header.stationName
-        series.header.source = timeSeries.header.moduleInstanceId
-        series.start = new Date(`${timeSeries.header.startDate.date}T${timeSeries.header.startDate.time}`)
-        series.end = new Date(`${timeSeries.header.endDate.date}T${timeSeries.header.endDate.time}`)
+        const header = timeSeries.header
+        if (header !== undefined) {
+          series.header.name = `${header.stationName} - ${header.parameterId} (${header.moduleInstanceId})`
+          series.header.unit = header.units
+          series.header.parameter = header.parameterId
+          series.header.location = header.stationName
+          series.header.source = header.moduleInstanceId
+          series.start = new Date(`${header.startDate.date}T${header.startDate.time}`)
+          series.end = new Date(`${header.endDate.date}T${header.endDate.time}`)
+        }
         series.data = timeSeries.events.map((event) => {
           return {
             x: new Date(`${event.date}T${event.time}`),
