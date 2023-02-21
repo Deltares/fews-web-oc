@@ -80,7 +80,7 @@ export default class TimeSeriesTable extends Vue {
   combineEvents() {
     if (this.value?.series === undefined) return
     const seriesDef = this.value.series
-    this.tableData = this.dateTimes.map((date: Date, index: number) => {
+    this.tableData = this.dateTimes.map((date: Date) => {
       const event: any = {}
       event.date = date.toLocaleString(undefined, {
         weekday: 'short',
@@ -96,8 +96,9 @@ export default class TimeSeriesTable extends Vue {
         if (series === undefined) {
           event[chartSeries.id] = null
         } else {
-          const data = series.data[index] ?? []
-          event[chartSeries.id] = data.y
+          const data = series.data ?? []
+          const selected = data.find((dataPoint: {x: Date, y: number}) => date.getTime() === dataPoint.x.getTime())
+          event[chartSeries.id] = selected !== undefined ? selected.y : null
         }
       }
       return event
