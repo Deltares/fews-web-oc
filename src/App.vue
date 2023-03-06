@@ -16,6 +16,10 @@ import Empty from '@/layouts/Empty.vue'
   }
 })
 export default class App extends Vue {
+  created (): void {
+    document.title = this.$config.get('VUE_APP_TITLE')
+  }
+
   get layout (): string {
     let layout = 'default'
     this.$route.matched.some(

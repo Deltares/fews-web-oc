@@ -12,4 +12,5 @@ export type ApplicationConfig = {
   VUE_APP_REQUEST_HEADER_AUTHORIZATION: RequestHeaderAuthorization;
   VUE_APP_FEWS_WEBSERVICES_URL: string;
   VUE_APP_MAPBOX_TOKEN: string;
+  VUE_APP_TITLE: string;
 }
