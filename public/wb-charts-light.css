@@ -260,7 +260,7 @@
 }
 
 .data-field{
-  font-family: sans-serif;
+  font-family: "RO-Sans", sans-serif !important;
   font-size: 1em;
 }
 

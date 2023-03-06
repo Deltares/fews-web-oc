@@ -30,6 +30,22 @@ export default class App extends Vue {
 </script>
 
 <style>
+.v-application {
+  font-family: "RO-Sans", sans-serif !important;
+ }
+
+.v-application .title {
+  font-family: "RO-Sans", sans-serif !important;
+}
+
+.v-application .body-2 {
+  font-family: "RO-Sans", sans-serif !important;
+}
+
+.v-application .text-h4 {
+  font-family: "RO-Sans", sans-serif !important;
+}
+
 html, body {
   margin: 0px;
   font-size: 14px;
