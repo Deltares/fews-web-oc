@@ -20,7 +20,7 @@
     </portal>
     <div class="grid-map" v-show="showMap">
       <div style="height: calc(100% - 48px)">
-        <SSDComponent @action="onAction" :src="src" :fitWidth="fitWidth">
+        <SSDComponent v-if="src!==''" @action="onAction" :src="src" :fitWidth="fitWidth">
         </SSDComponent>
       </div>
       <DateTimeSlider class="date-time-slider" v-model="timeIndex" :dates="dates" @input="debouncedUpdate" @update:now="updateFollowNow">
@@ -156,14 +156,16 @@ export default class SsdView extends Mixins(SSDMixin) {
     }
     this.items = items
     this.open = [items[0].id]
-    if (this.groupId === "") {
+    if (this.groupId === "" || this.panelId === "") {
       const groupId = this.capabilities.displayGroups[0].name
       const panelId = this.capabilities.displayGroups[0].displayPanels[0].name
-      this.$router.push({
-        name: 'SchematicStatusDisplay',
-        params: { groupId, panelId },
-        query: this.$route.query
-      })
+      if (groupId !== undefined && panelId !== undefined) {
+        this.$router.push({
+          name: 'SchematicStatusDisplay',
+          params: { groupId, panelId },
+          query: this.$route.query
+        })
+      }
     }
   }
 
@@ -209,7 +211,10 @@ export default class SsdView extends Mixins(SSDMixin) {
       const time = this.timeIndex.toISOString().replace(/.\d+Z$/g, 'Z')
       return `${this.webServicesUrl}/ssd?request=GetDisplay&ssd=${this.panelId}&time=${time}`
     }
-    return `${this.webServicesUrl}/ssd?request=GetDisplay&ssd=${this.panelId}`
+    if (this.panelId !== '') {
+      return `${this.webServicesUrl}/ssd?request=GetDisplay&ssd=${this.panelId}`
+    }
+    return ''
   }
 
   async updatePanel () {
@@ -304,7 +309,7 @@ export default class SsdView extends Mixins(SSDMixin) {
   }
 
   openTimeSeriesDisplay(panelId: string, objectId: string) {
-    this.$router.push( {name: 'SSDTimeSeriesDisplay', params: { objectId, panelId, groupId: this.groupId  }} )
+    this.$router.push( {name: 'SSDTimeSeriesDisplay', params: { objectId: objectId, panelId: panelId, groupId: this.groupId }} )
   }
 
   closeCharts (): void {
