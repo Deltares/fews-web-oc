@@ -19,6 +19,7 @@ import {Vue, Component, Prop, Watch} from 'vue-property-decorator'
 import {ChartConfig} from './lib/ChartConfig'
 import {ChartSeries} from './lib/ChartSeries'
 import {Series} from '@/lib/TimeSeries'
+import { uniq } from 'lodash'
 
 @Component
 export default class TimeSeriesTable extends Vue {
@@ -36,23 +37,35 @@ export default class TimeSeriesTable extends Vue {
   })
   series!: Record<string, Series>
 
+  seriesIds: string[] = []
+
   dateTimes: Date[] = []
 
   tableData: Record<string, unknown>[] = []
   tableHeaders: {value: string, text: string}[] = []
 
   mounted() {
-    this.setHeaders()
-    this.setDates()
-    this.combineEvents()
+    this.onSeriesChange()
+  }
+
+  setSeriesIds() {
+    // Some ChartSeries appear twice in the ChartConfig; once for a line and once for a marker.
+    // Only one of these has to be included in the table.
+    this.seriesIds = []
+    if (this.value?.series === undefined) return
+    this.seriesIds = uniq(this.value.series.map((s) => s.id))
   }
 
   setHeaders() {
     if (this.value?.series === undefined) return
     const tableHeaders: {value: string, text: string, width?: string}[] = []
     tableHeaders.push({value: 'date', text: 'Date', width: '170px'})
-    this.value.series.forEach((chartSeries) => {
-      tableHeaders.push({value: chartSeries.id, text: this.formatHeader(chartSeries)})
+    const seriesDef = this.value.series
+    this.seriesIds.forEach((seriesId) => {
+      const chartSeries = seriesDef.find((s) => s.id === seriesId)
+      if (chartSeries !== undefined) {
+        tableHeaders.push({ value: chartSeries.id, text: this.formatHeader(chartSeries)})
+      }
     })
     this.tableHeaders = tableHeaders
   }
@@ -91,7 +104,9 @@ export default class TimeSeriesTable extends Vue {
         minute: 'numeric',
         hour12: false
       })
-      for (const chartSeries of seriesDef) {
+      for (const seriesId of this.seriesIds) {
+        const chartSeries = seriesDef.find((s) => s.id === seriesId)
+        if (chartSeries === undefined) continue
         const series = this.series[chartSeries.dataResources[0]]
         if (series === undefined) {
           event[chartSeries.id] = null
@@ -107,12 +122,13 @@ export default class TimeSeriesTable extends Vue {
 
   formatHeader(chartSeries: ChartSeries): string {
     const label = chartSeries.name ?? ''
-    const header = chartSeries.unit !== undefined ? `${label} [${chartSeries.unit}]` : label
+    const header = chartSeries.unit ? `${label} [${chartSeries.unit}]` : label
     return header
   }
 
   @Watch('series')
   onSeriesChange (): void {
+    this.setSeriesIds()
     this.setHeaders()
     this.setDates()
     this.combineEvents()
