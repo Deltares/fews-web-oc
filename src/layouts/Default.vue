@@ -18,7 +18,7 @@
               <v-icon>{{ item.icon }}</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-               {{ item.id }}
+               {{ item.title }}
             </v-list-item-content>
           </v-list-item>
         </v-list>
@@ -52,10 +52,13 @@
 import { Component, Vue } from 'vue-property-decorator'
 import CogMenu from '@/components/CogMenu.vue'
 import LoginComponent from '@/components/LoginComponent.vue'
+
 import { namespace } from 'vuex-class'
 import { Alert } from '@/store/modules/alerts/types'
+import type { WebOCComponent } from '@/store/modules/fews-config/types'
 
 const alertsModule = namespace('alerts')
+const fewsConfigModule = namespace('fewsconfig')
 
 @Component({
   components: {
@@ -69,15 +72,10 @@ export default class Default extends Vue {
     activeAlerts!: Alert[]
   @alertsModule.State('alerts')
     alerts!: Alert[]
+  @fewsConfigModule.State('components')
+    webOCComponents!: { [key: string]: WebOCComponent }
 
   drawer: boolean | null = null
-  menuItems = [
-    { id: 'Data View', icon: 'mdi-archive-search', to: { name: 'DataViewer' } },
-    { id: 'Schematic Status Display', icon: 'mdi-application-brackets-outline', to: { name: 'SchematicStatusDisplay' } },
-    { id: 'Spatial Display', icon: 'mdi-map', to: { name: 'SpatialDisplay' } },
-    { id: 'Time Series Display', icon: 'mdi-chart-sankey', to: { name: 'TimeSeriesDisplay' } },
-    { id: 'System monitor', icon: 'mdi-clipboard-list', to: { name: 'SystemMonitor' } },
-  ]
 
   toggleDrawer (): void {
     this.drawer = !this.drawer
@@ -97,6 +95,18 @@ export default class Default extends Vue {
 
   dismissAlert(alert: Alert, value: boolean) {
     alert.active = value
+  }
+
+  get menuItems (): {id: string, to: {name: string}, title: string, icon: string}[] {
+    const menuItems = Object.values(this.webOCComponents).map(componentConfig => {
+      return {
+        id: componentConfig.id,
+        to: { name: componentConfig.component },
+        title: componentConfig.title,
+        icon: componentConfig.icon
+      }
+    })
+    return menuItems
   }
 }
 </script>

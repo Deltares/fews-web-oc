@@ -1,0 +1,17 @@
+{
+    "components":
+    [
+        {
+            "id": "ssd",
+            "component": "SchematicStatusDisplay",
+            "title": "Schematic Status Display",
+            "icon": "mdi-application-brackets-outline"
+        },
+        {
+            "id": "time_series_display",
+            "component": "TimeSeriesDisplay",
+            "title": "Time Series Display",
+            "icon": "mdi-chart-sankey"
+        }
+    ]
+}

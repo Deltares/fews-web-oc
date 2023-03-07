@@ -9,6 +9,11 @@ import { Vue, Component } from 'vue-property-decorator'
 import Default from '@/layouts/Default.vue'
 import Empty from '@/layouts/Empty.vue'
 
+import { namespace } from 'vuex-class'
+import type { WebOCComponent } from '@/store/modules/fews-config/types'
+
+const fewsConfigModule = namespace('fewsconfig')
+
 @Component({
   components: {
     Default,
@@ -16,8 +21,25 @@ import Empty from '@/layouts/Empty.vue'
   }
 })
 export default class App extends Vue {
+  @fewsConfigModule.Mutation('setComponents') setComponents!: (webOCComponents: { [key: string]: WebOCComponent }) => void
+
   created (): void {
     document.title = this.$config.get('VUE_APP_TITLE')
+    fetch(`${process.env.BASE_URL}fews-config.json`)
+      .then(res => res.json())
+      .then(fewsConfig => {
+        const webOCComponents: { [key: string]: WebOCComponent } = {}
+        for ( const componentConfig of fewsConfig.components ) {
+          const webOCComponent: WebOCComponent = {
+            id: componentConfig.id,
+            component: componentConfig.component,
+            title: componentConfig.title,
+            icon: componentConfig.icon
+          }
+          webOCComponents[componentConfig.id] = webOCComponent
+        }
+        this.setComponents(webOCComponents)
+      })
   }
 
   get layout (): string {
