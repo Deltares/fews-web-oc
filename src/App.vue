@@ -11,6 +11,7 @@ import Empty from '@/layouts/Empty.vue'
 
 import { namespace } from 'vuex-class'
 import type { WebOCComponent } from '@/store/modules/fews-config/types'
+import { routesViews } from '@/router'
 
 const fewsConfigModule = namespace('fewsconfig')
 
@@ -37,8 +38,13 @@ export default class App extends Vue {
             icon: componentConfig.icon
           }
           webOCComponents[componentConfig.id] = webOCComponent
+          const route = routesViews.find((route) => route.name === webOCComponent.component)
+          if (route !== undefined) {
+            this.$router.addRoute(route)
+          }
         }
         this.setComponents(webOCComponents)
+        this.$router.addRoute({path: '/', name: 'Default', redirect: { name: fewsConfig.components[0].component }})
       })
   }
 

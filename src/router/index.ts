@@ -22,17 +22,43 @@ Log.setLevel(Log.WARN)
 
 Vue.use(VueRouter)
 
-const routes: Array<RouteConfig> = [
-  {
-    path: '/',
-    redirect: { name: 'DataViewer' },
-  },
+const routesBase: Array<RouteConfig> = [
   {
     path: '/login',
     name: 'Login',
     meta: { layout: 'empty' },
     component: LoginView
   },
+  {
+    path: '/systemmonitor',
+    name: 'SystemMonitor',
+    component: SystemMonitor,
+    meta: { authorize: [] }
+  },
+  {
+    path: '/archivedisplay',
+    name: 'ArchiveDisplay',
+    component: ArchiveDisplay,
+    meta: { authorize: [] }
+  },
+  {
+    path: '/auth/silent',
+    meta: { layout: 'empty' },
+    component: Silent
+  },
+  {
+    path: '/auth/callback',
+    meta: { layout: 'empty' },
+    component: Callback
+  },
+  {
+    path: '/auth/logout',
+    meta: { layout: 'empty' },
+    component: Logout
+  }
+]
+
+export const routesViews: Array<RouteConfig> = [
   {
     path: '/dataviewer/:filterId?/:categoryId?',
     name: 'DataViewer',
@@ -80,40 +106,13 @@ const routes: Array<RouteConfig> = [
     component: TimeSeriesDisplay,
     props: true,
     meta: { authorize: [], sidebar: true }
-  },
-  {
-    path: '/systemmonitor',
-    name: 'SystemMonitor',
-    component: SystemMonitor,
-    meta: { authorize: [] }
-  },
-  {
-    path: '/archivedisplay',
-    name: 'ArchiveDisplay',
-    component: ArchiveDisplay,
-    meta: { authorize: [] }
-  },
-  {
-    path: '/auth/silent',
-    meta: { layout: 'empty' },
-    component: Silent
-  },
-  {
-    path: '/auth/callback',
-    meta: { layout: 'empty' },
-    component: Callback
-  },
-  {
-    path: '/auth/logout',
-    meta: { layout: 'empty' },
-    component: Logout
   }
 ]
 
 const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
-  routes
+  routes: routesBase
 })
 
 router.beforeEach(async (to, from, next) => {
