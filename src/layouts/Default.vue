@@ -1,7 +1,10 @@
 <template>
   <v-app id="app">
     <v-app-bar color="#080C80" dense app dark :clipped-left="!$vuetify.rtl" :clipped-right="$vuetify.rtl">
-      <v-btn v-if="!$vuetify.breakpoint.mobile" text>{{$config.get('VUE_APP_TITLE')}}</v-btn>
+      <v-btn v-if="!$vuetify.breakpoint.mobile" text :to="{ name: 'Default' }">
+        {{$config.get('VUE_APP_TITLE')}}
+        <v-icon right>mdi-home</v-icon>
+      </v-btn>
       <v-menu offset-y>
         <template v-slot:activator="{ on, attrs }">
         <v-app-bar-nav-icon

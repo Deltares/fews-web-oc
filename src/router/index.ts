@@ -128,7 +128,7 @@ router.beforeEach(async (to, from, next) => {
 
     const role = currentUser.profile.roles !== undefined ? (currentUser.profile as any).roles[0] : 'guest'
     if (authorize.length && !authorize.includes(role)) {
-      return next({ name: 'DataViewer' })
+      return next({ name: 'Default' })
     }
   }
   next()

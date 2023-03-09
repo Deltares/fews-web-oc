@@ -1,4 +1,5 @@
 export interface ConfigState {
+  defaultComponent?: string
   components: { [key: string]: WebOCComponent }
 }
 

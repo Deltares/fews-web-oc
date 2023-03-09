@@ -45,7 +45,8 @@ export default class App extends Vue {
           }
         }
         this.setComponents(webOCComponents)
-        const defaultPath = fewsConfig.components[0].params !== undefined ? { name: fewsConfig.components[0].component, params: fewsConfig.components[0].params } : { name: fewsConfig.components[0].component }
+        const defaultComponent = fewsConfig.defaultComponent !== undefined ? webOCComponents[fewsConfig.defaultComponent] : fewsConfig.components[0]
+        const defaultPath = defaultComponent.params !== undefined ? { name: defaultComponent.component, params: defaultComponent.params } : { name: defaultComponent.component }
         this.$router.addRoute({path: '/', name: 'Default', redirect: defaultPath})
       })
   }
