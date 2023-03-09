@@ -5,7 +5,11 @@
             "id": "ssd",
             "component": "SchematicStatusDisplay",
             "title": "Schematic Status Display",
-            "icon": "mdi-application-brackets-outline"
+            "icon": "mdi-application-brackets-outline",
+            "params": {
+                "groupId": "ScadaOverview",
+                "panelId": "overview"
+            }
         },
         {
             "id": "time_series_display",

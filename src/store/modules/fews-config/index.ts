@@ -13,8 +13,14 @@ export const fewsconfig: Module<ConfigState, RootState> = {
       state.components[componentConfig.id] = componentConfig
     },
 
-    setComponents (state: ConfigState, components: { [key: string]: WebOCComponent }) {
-      state.components = components
+    setComponents (state: ConfigState, webComponents: { [key: string]: WebOCComponent }) {
+      state.components = webComponents
+    }
+  },
+
+  getters: {
+    getComponentByComponentName: (state: ConfigState) => (componentName: string): WebOCComponent | undefined => {
+      return Object.values(state.components).find((webComponent: WebOCComponent) => webComponent.component === componentName)
     }
   },
 }

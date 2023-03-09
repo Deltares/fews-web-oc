@@ -7,4 +7,5 @@ export interface WebOCComponent {
   component: string
   title: string
   icon: string
+  params? : { [key: string]: string}
 }

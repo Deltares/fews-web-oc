@@ -71,8 +71,10 @@ import { debounce } from 'lodash'
 import { ActionType, Result } from '@deltares/fews-ssd-requests'
 import { namespace } from 'vuex-class'
 import { Alert } from '@/store/modules/alerts/types'
+import type { WebOCComponent } from '@/store/modules/fews-config/types'
 
 const alertsModule = namespace('alerts')
+const fewsConfigModule = namespace('fewsconfig')
 
 function absoluteUrl(urlString: string): URL {
   let url!: URL
@@ -95,6 +97,9 @@ function absoluteUrl(urlString: string): URL {
   }
 })
 export default class SsdView extends Mixins(SSDMixin) {
+  @fewsConfigModule.Getter('getComponentByComponentName')
+    getComponentByComponentName!: (componentName: string) => WebOCComponent | undefined
+
   @Prop({ default: '', type: String })
     panelId!: string
 
@@ -168,16 +173,18 @@ export default class SsdView extends Mixins(SSDMixin) {
     }
     this.items = items
     this.open = [items[0].id]
-    if (this.groupId === "" || this.panelId === "") {
-      const groupId = this.capabilities.displayGroups[0].name
-      const panelId = this.capabilities.displayGroups[0].displayPanels[0].name
-      if (groupId !== undefined && panelId !== undefined) {
-        this.$router.push({
-          name: 'SchematicStatusDisplay',
-          params: { groupId, panelId },
-          query: this.$route.query
-        })
-      }
+    if (this.panelId === "") {
+      // Because of the order of the optional params in the route,
+      // if panelId !== "" then groupId !== "" (and if groupId === "" then panelId === "").
+      const defaultParams = this.getComponentByComponentName('SchematicStatusDisplay')?.params
+      const groupId = this.groupId || (defaultParams?.groupId || this.capabilities.displayGroups[0].name)
+      this.selectGroup(groupId)
+      const panelId = ((groupId === defaultParams?.groupId) && (defaultParams?.panelId !== '')) ? defaultParams.panelId : this.currentGroup.displayPanels[0].name
+      this.$router.push({
+        name: 'SchematicStatusDisplay',
+        params: { groupId, panelId },
+        query: this.$route.query
+      })
     }
   }
 

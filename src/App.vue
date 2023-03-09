@@ -35,7 +35,8 @@ export default class App extends Vue {
             id: componentConfig.id,
             component: componentConfig.component,
             title: componentConfig.title,
-            icon: componentConfig.icon
+            icon: componentConfig.icon,
+            params: componentConfig.params
           }
           webOCComponents[componentConfig.id] = webOCComponent
           const route = routesViews.find((route) => route.name === webOCComponent.component)
@@ -44,7 +45,8 @@ export default class App extends Vue {
           }
         }
         this.setComponents(webOCComponents)
-        this.$router.addRoute({path: '/', name: 'Default', redirect: { name: fewsConfig.components[0].component }})
+        const defaultPath = fewsConfig.components[0].params !== undefined ? { name: fewsConfig.components[0].component, params: fewsConfig.components[0].params } : { name: fewsConfig.components[0].component }
+        this.$router.addRoute({path: '/', name: 'Default', redirect: defaultPath})
       })
   }
 

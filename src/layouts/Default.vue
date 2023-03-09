@@ -101,7 +101,7 @@ export default class Default extends Vue {
     const menuItems = Object.values(this.webOCComponents).map(componentConfig => {
       return {
         id: componentConfig.id,
-        to: { name: componentConfig.component },
+        to: componentConfig.params !== undefined ? { name: componentConfig.component, params: componentConfig.params } : { name: componentConfig.component },
         title: componentConfig.title,
         icon: componentConfig.icon
       }
