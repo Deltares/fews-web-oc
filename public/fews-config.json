@@ -16,7 +16,10 @@
             "id": "time_series_display",
             "component": "TimeSeriesDisplay",
             "title": "Time Series Display",
-            "icon": "mdi-chart-sankey"
+            "icon": "mdi-chart-sankey",
+            "params": {
+                "nodeId": "rtcKGT_Invoer"
+            }
         }
     ]
 }
