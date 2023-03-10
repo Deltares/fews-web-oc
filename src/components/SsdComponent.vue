@@ -1,6 +1,8 @@
 <template>
   <div class="ssd-container" ref="ssd-container" id="ssd-container" v-resize="resize" :style="isHidden ? {} : { width: containerWidth + 'px'}">
-    <v-btn class="fit-content-button" @click="dblClickHandler"> Click me </v-btn>
+    <v-btn fab class="fit-content-button" @click="fitWidthHeightHandler" elevation="4" fixed right bottom>
+      <v-icon> {{buttonIcon}} </v-icon>
+    </v-btn>
     <div class="tile-grid-content" :class="{hidden: isHidden}"
       :style="{ width: width + 'px', height: height + 'px', 'margin-left': margin.left + 'px', 'margin-top': margin.top + 'px', 'margin-bottom': margin.top + 'px' }"
       ref="scroll-content">
@@ -28,29 +30,32 @@ export default class SsdComponent extends Vue {
   aspectRatio = 1
   fitWidth = false
   containerWidth = 0
+  buttonIcon = "mdi-arrow-split-vertical"
 
   mounted (): void {
     this.container = this.$refs['ssd-container'] as HTMLElement
     this.resize()
     this.container.addEventListener('pointerdown', this.mouseDownHandler)
     this.container.addEventListener('wheel', this.mouseWheelHandler, { passive: true })
-    this.container.addEventListener('dblclick', this.dblClickHandler)
+    this.container.addEventListener('dblclick', this.fitWidthHeightHandler)
   }
 
   destroy (): void {
     this.container.removeEventListener('pointerdown', this.mouseDownHandler)
     this.container.removeEventListener('wheel', this.mouseWheelHandler)
-    this.container.removeEventListener('dblclick', this.dblClickHandler)
+    this.container.removeEventListener('dblclick', this.fitWidthHeightHandler)
   }
 
-  dblClickHandler (): void {
+  fitWidthHeightHandler (): void {
     this.fitWidth = !this.fitWidth
     this.setDimensions()
     this.pos = { top: 0, left: 0, x: 0, y: 0 }
     if (!this.fitWidth) {
+      this.buttonIcon = "mdi-arrow-split-vertical"
       this.container.addEventListener('pointerdown', this.mouseDownHandler)
       this.container.addEventListener('wheel', this.mouseWheelHandler, { passive: true })
     } else {
+      this.buttonIcon = "mdi-arrow-split-horizontal"
       this.container.removeEventListener('pointerdown', this.mouseDownHandler)
       this.container.removeEventListener('wheel', this.mouseWheelHandler)
     }
@@ -186,5 +191,6 @@ export default class SsdComponent extends Vue {
 }
 .fit-content-button {
   position: absolute;
+  padding: auto;
 }
 </style>
