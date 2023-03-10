@@ -1,5 +1,6 @@
 <template>
   <div class="ssd-container" ref="ssd-container" id="ssd-container" v-resize="resize" :style="isHidden ? {} : { width: containerWidth + 'px'}">
+    <v-btn class="fit-content-button" @click="dblClickHandler"> Click me </v-btn>
     <div class="tile-grid-content" :class="{hidden: isHidden}"
       :style="{ width: width + 'px', height: height + 'px', 'margin-left': margin.left + 'px', 'margin-top': margin.top + 'px', 'margin-bottom': margin.top + 'px' }"
       ref="scroll-content">
@@ -25,7 +26,7 @@ export default class SsdComponent extends Vue {
   isHidden = true
   pos = { top: 0, left: 0, x: 0, y: 0 }
   aspectRatio = 1
-  fit = false
+  fitWidth = false
   containerWidth = 0
 
   mounted (): void {
@@ -43,10 +44,10 @@ export default class SsdComponent extends Vue {
   }
 
   dblClickHandler (): void {
-    this.fit = !this.fit
+    this.fitWidth = !this.fitWidth
     this.setDimensions()
     this.pos = { top: 0, left: 0, x: 0, y: 0 }
-    if (!this.fit) {
+    if (!this.fitWidth) {
       this.container.addEventListener('pointerdown', this.mouseDownHandler)
       this.container.addEventListener('wheel', this.mouseWheelHandler, { passive: true })
     } else {
@@ -140,7 +141,7 @@ export default class SsdComponent extends Vue {
     this.containerWidth = this.container.offsetWidth
     let margin = { top: 0, left: 0 }
     const dx = this.container.offsetWidth - height * this.aspectRatio
-    if (dx < 0 && !this.fit) {
+    if (dx < 0 && !this.fitWidth) {
       // add space for scrollbar
       width = height * this.aspectRatio
     } else if (dx < 0) {
@@ -165,6 +166,7 @@ export default class SsdComponent extends Vue {
   overflow-x: scroll;
   overflow-y: hidden;
   white-space: nowrap;
+  position: relative;
 }
 
 .theme--light .ssd-container {
@@ -181,5 +183,8 @@ export default class SsdComponent extends Vue {
 
 .theme--dark .web-oc-ssd > svg {
   background-color: #606060;
+}
+.fit-content-button {
+  position: absolute;
 }
 </style>
