@@ -4,7 +4,7 @@
       :style="{ width: width + 'px', height: height + 'px', 'margin-left': margin.left + 'px', 'margin-top': margin.top + 'px', 'margin-bottom': margin.top + 'px' }"
       ref="scroll-content">
       <v-btn v-if="isButtonShown"
-      fab class="fit-content-button" @click="fitWidthHeightHandler" elevation="4" fixed right top>
+      fab class="fit-content-button" @click="fitWidthHeightHandler" elevation="4" fixed right top v-bind="sizeButton">
       <v-icon> {{buttonIcon}} </v-icon>
       </v-btn>
       <schematic-status-display class="web-oc-ssd" :src="src" ref="ssd" @load="onLoad" @action="onAction" style="width: 100%;">
@@ -49,6 +49,10 @@ export default class SsdComponent extends Vue {
     this.container.removeEventListener('wheel', this.mouseWheelHandler)
     this.container.removeEventListener('dblclick', this.fitWidthHeightHandler)
   }
+  get sizeButton() {
+      const size = {xs:'x-small',sm:'small', md:'', lg:'large',xl:'x-large'}[this.$vuetify.breakpoint.name]
+      return size ? { [size]: true } : {}
+    }
 
   showButton(): void {
     if (this.container && this.svgContainer) {
