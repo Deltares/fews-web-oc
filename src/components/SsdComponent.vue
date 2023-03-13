@@ -1,12 +1,12 @@
 <template>
   <div class="ssd-container" ref="ssd-container" id="ssd-container" v-resize="resize" :style="isHidden ? {} : { width: containerWidth + 'px'}">
-    <v-btn v-if="isButtonShown"
-    fab class="fit-content-button" @click="fitWidthHeightHandler" elevation="4" fixed right top>
-      <v-icon> {{buttonIcon}} </v-icon>
-    </v-btn>
     <div class="tile-grid-content" :class="{hidden: isHidden}"
       :style="{ width: width + 'px', height: height + 'px', 'margin-left': margin.left + 'px', 'margin-top': margin.top + 'px', 'margin-bottom': margin.top + 'px' }"
       ref="scroll-content">
+      <v-btn v-if="isButtonShown"
+      fab class="fit-content-button" @click="fitWidthHeightHandler" elevation="4" fixed right top>
+      <v-icon> {{buttonIcon}} </v-icon>
+      </v-btn>
       <schematic-status-display class="web-oc-ssd" :src="src" ref="ssd" @load="onLoad" @action="onAction" style="width: 100%;">
       </schematic-status-display>
     </div>
@@ -195,7 +195,6 @@ export default class SsdComponent extends Vue {
   overflow-x: scroll;
   overflow-y: hidden;
   white-space: nowrap;
-  position: relative;
 }
 
 .theme--light .ssd-container {
@@ -216,5 +215,8 @@ export default class SsdComponent extends Vue {
 .fit-content-button {
   position: absolute;
   padding: auto;
+}
+.scroll-content {
+  position: relative;
 }
 </style>
