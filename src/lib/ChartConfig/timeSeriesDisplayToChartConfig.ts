@@ -72,8 +72,8 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): Axis[] {
       return item.yAxis?.axisPosition === position
     })
     if (axisItem?.yAxis !== undefined) {
-      const yAxis = axisItem?.yAxis
-      const includeZero = yAxis.axisMinValue === 0 && yAxis.axisMaxValue !== undefined
+      const yAxis = axisItem.yAxis
+      const includeZero = yAxis.axisMinValue === 0 && yAxis.axisMaxValue === undefined
       const axis: Axis = {
         type: "value",
         location: position,
