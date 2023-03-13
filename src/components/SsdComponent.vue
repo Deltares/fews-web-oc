@@ -1,6 +1,7 @@
 <template>
   <div class="ssd-container" ref="ssd-container" id="ssd-container" v-resize="resize" :style="isHidden ? {} : { width: containerWidth + 'px'}">
-    <v-btn fab class="fit-content-button" @click="fitWidthHeightHandler" elevation="4" fixed right bottom>
+    <v-btn v-if="isButtonShown"
+    fab class="fit-content-button" @click="fitWidthHeightHandler" elevation="4" fixed right top>
       <v-icon> {{buttonIcon}} </v-icon>
     </v-btn>
     <div class="tile-grid-content" :class="{hidden: isHidden}"
@@ -13,15 +14,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from 'vue-property-decorator'
+import { Component, Vue, Prop, Ref } from 'vue-property-decorator'
 
 @Component
 export default class SsdComponent extends Vue {
   @Prop({ default: '' })
     src!: string
 
-  container!: HTMLElement
-  scrollContainer!: HTMLElement
+  @Ref('ssd-container') container!: HTMLElement;
+  @Ref('scroll-content') scrollContainer!: HTMLElement;
+  @Ref('ssd') svgContainer!: HTMLElement;
+
   width = 100
   height = 100
   margin = { top: 0, left: 0 }
@@ -31,6 +34,7 @@ export default class SsdComponent extends Vue {
   fitWidth = false
   containerWidth = 0
   buttonIcon = "mdi-arrow-split-vertical"
+  isButtonShown = false
 
   mounted (): void {
     this.container = this.$refs['ssd-container'] as HTMLElement
@@ -44,6 +48,18 @@ export default class SsdComponent extends Vue {
     this.container.removeEventListener('pointerdown', this.mouseDownHandler)
     this.container.removeEventListener('wheel', this.mouseWheelHandler)
     this.container.removeEventListener('dblclick', this.fitWidthHeightHandler)
+  }
+
+  showButton(): void {
+    if (this.container && this.svgContainer) {
+      const sizes = this.getSvgContainerSizes()
+      if (sizes) {
+        const condition =  this.containerWidth <= sizes[2]
+        this.isButtonShown = condition
+        return
+      }      
+    }
+    this.isButtonShown = false 
   }
 
   fitWidthHeightHandler (): void {
@@ -123,21 +139,29 @@ export default class SsdComponent extends Vue {
       this.setDimensions()
       this.isHidden = false
       this.restoreScrollPosition()
+      this.showButton()
     })
   }
 
   setAspectRatio (): void {
-    const svgContainer = this.$refs.ssd as HTMLElement
-    if (svgContainer && svgContainer.firstChild) {
-      const svg = svgContainer.firstChild as SVGElement
+    const sizes = this.getSvgContainerSizes()
+    if (sizes) { // check if sizes is empty
+      this.aspectRatio = +sizes[2] / +sizes[3]
+      return
+    }
+    this.aspectRatio = 1
+  }
+
+  getSvgContainerSizes(): number[] {
+    if (this.svgContainer && this.svgContainer.firstChild) {
+      const svg = this.svgContainer.firstChild as SVGElement
       const viewBox = svg.getAttribute('viewBox')
       if (viewBox) {
         const sizes = viewBox.split(' ', 4).map(x => +x) as [number, number, number, number]
-        this.aspectRatio = +sizes[2] / +sizes[3]
-        return
+        return sizes
       }
     }
-    this.aspectRatio = 1
+    return []
   }
 
   setDimensions (): void {
