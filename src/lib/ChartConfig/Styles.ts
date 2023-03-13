@@ -13,12 +13,12 @@ const SymbolType = {
 
 type SymbolType = (typeof SymbolType)[keyof typeof SymbolType];
 
-export function cssStyleFromFewsLine(item: { lineStyle: string, color: string}): CSS.SvgPropertiesHyphen {
+export function cssStyleFromFewsLine(item: { lineStyle?: string, color?: string}): CSS.SvgPropertiesHyphen {
     const style: CSS.SvgPropertiesHyphen = {}
 
     style['fill'] = "none"
 
-    if (item.lineStyle.includes('thick')) {
+    if (item.lineStyle !== undefined && item.lineStyle.includes('thick')) {
         style['stroke-width'] = '2px'
     } else {
         style['stroke-width'] = '1px'
@@ -43,7 +43,7 @@ export function cssStyleFromFewsLine(item: { lineStyle: string, color: string}):
     return style
 }
 
-export function cssStyleFromFewsMarker(item: { markerStyle: string, color: string}): CSS.SvgPropertiesHyphen {
+export function cssStyleFromFewsMarker(item: { markerStyle?: string, color?: string}): CSS.SvgPropertiesHyphen {
   const color = item.color === '#000000' ?'currentColor' : item.color
   const style: CSS.SvgPropertiesHyphen = {
     stroke: color,
