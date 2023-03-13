@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Ref } from 'vue-property-decorator'
+import { Component, Vue, Prop, Ref, Watch } from 'vue-property-decorator'
 
 @Component
 export default class SsdComponent extends Vue {
@@ -31,7 +31,7 @@ export default class SsdComponent extends Vue {
   isHidden = true
   pos = { top: 0, left: 0, x: 0, y: 0 }
   aspectRatio = 1
-  fitWidth = false
+  fitWidth = true
   containerWidth = 0
   buttonIcon = "mdi-arrow-split-vertical"
   isButtonShown = false
@@ -49,6 +49,7 @@ export default class SsdComponent extends Vue {
     this.container.removeEventListener('wheel', this.mouseWheelHandler)
     this.container.removeEventListener('dblclick', this.fitWidthHeightHandler)
   }
+
   get sizeButton() {
       const size = {xs:'x-small',sm:'small', md:'', lg:'large',xl:'x-large'}[this.$vuetify.breakpoint.name]
       return size ? { [size]: true } : {}
@@ -60,6 +61,11 @@ export default class SsdComponent extends Vue {
       if (sizes) {
         const condition =  this.containerWidth <= sizes[2]
         this.isButtonShown = condition
+        // automatically fit height if on mobile
+        this.fitWidth = false
+        this.buttonIcon = "mdi-arrow-split-vertical"
+        this.container.addEventListener('pointerdown', this.mouseDownHandler)
+        this.container.addEventListener('wheel', this.mouseWheelHandler, { passive: true })
         return
       }      
     }
