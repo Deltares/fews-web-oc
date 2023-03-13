@@ -67,17 +67,17 @@ function yAxisFromSubplot(subplot: any): Axis[] {
   const axes = []
   const positions = ["left", "right"]
   for (const position of positions) {
-    const AxisItem = subplot.items.find((item: any) => {
+    const axisItem = subplot.items.find((item: any) => {
       return item.yAxis.axisPosition === position
     })
-    if (AxisItem !== undefined) {
+    if (axisItem !== undefined) {
       axes.push({
         type: "value",
-        location: AxisItem.yAxis.axisPosition,
-        label: AxisItem.yAxis.axisLabel,
+        location: axisItem.yAxis.axisPosition,
+        label: axisItem.yAxis.axisLabel,
         defaultDomain: [
-          AxisItem.yAxis.axisMinValue,
-          AxisItem.yAxis.axisMaxValue,
+          axisItem.yAxis.axisMinValue,
+          axisItem.yAxis.axisMaxValue,
         ],
       })
     }
