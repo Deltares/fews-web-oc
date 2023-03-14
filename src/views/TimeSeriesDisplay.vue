@@ -206,34 +206,7 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
   }
 
   private async loadTimeSeries(index: number) {
-    for (const request of this.requests[index]) {
-      const url = new URL(`${this.baseUrl}/${request.request}`)
-      const piSeries: TimeSeriesResponse = await this.webServiceProvider.getTimeSeriesWithRelativeUrl(request.request);
-      if ( piSeries.timeSeries === undefined) continue
-      for (const timeSeries of piSeries.timeSeries) {
-        if (timeSeries.events === undefined) continue
-        const resourceId = `${request.key}`
-        const resource = new SeriesUrlRequest('fews-pi', url.toString())
-        const series = new Series(resource)
-        const header = timeSeries.header
-        if (header !== undefined) {
-          series.header.name = `${header.stationName} - ${header.parameterId} (${header.moduleInstanceId})`
-          series.header.unit = header.units
-          series.header.parameter = header.parameterId
-          series.header.location = header.stationName
-          series.header.source = header.moduleInstanceId
-          series.start = new Date(`${header.startDate.date}T${header.startDate.time}`)
-          series.end = new Date(`${header.endDate.date}T${header.endDate.time}`)
-        }
-        series.data = timeSeries.events.map((event) => {
-          return {
-            x: new Date(`${event.date}T${event.time}`),
-            y: event.flag === '8' ? null : parseFloat(event.value)
-          }
-        })
-        Vue.set(this.timeSeriesStore, resourceId, series)
-      }
-    }
+    this.updateTimeSeries(this.requests[index])
   }
 
   @Watch('active')
