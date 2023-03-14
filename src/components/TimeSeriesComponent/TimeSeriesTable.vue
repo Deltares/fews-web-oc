@@ -49,8 +49,8 @@ export default class TimeSeriesTable extends Vue {
 
   setHeaders() {
     if (this.value?.series === undefined) return
-    const tableHeaders: {value: string, text: string}[] = []
-    tableHeaders.push({value: 'date', text: 'Date'})
+    const tableHeaders: {value: string, text: string, width?: string}[] = []
+    tableHeaders.push({value: 'date', text: 'Date', width: '170px'})
     this.value.series.forEach((chartSeries) => {
       tableHeaders.push({value: chartSeries.id, text: this.formatHeader(chartSeries)})
     })
