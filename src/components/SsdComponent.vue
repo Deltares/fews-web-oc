@@ -3,9 +3,9 @@
     <div class="tile-grid-content" :class="{hidden: isHidden}"
       :style="{ width: width + 'px', height: height + 'px', 'margin-left': margin.left + 'px', 'margin-top': margin.top + 'px', 'margin-bottom': margin.top + 'px' }"
       ref="scroll-content">
-      <v-btn v-if="isButtonShown"
-      fab class="fit-content-button" @click="fitWidthHeightHandler" elevation="4" fixed right top v-bind="sizeButton">
-      <v-icon> {{buttonIcon}} </v-icon>
+      <v-btn v-if="showButton"
+      fab class="fit-content-button" @click="fitWidthHeightHandler" elevation="4" fixed right top v-bind="sizeFitButton">
+      <v-icon> {{iconFitButton}} </v-icon>
       </v-btn>
       <schematic-status-display class="web-oc-ssd" :src="src" ref="ssd" @load="onLoad" @action="onAction" style="width: 100%;">
       </schematic-status-display>
@@ -14,15 +14,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Ref, Watch } from 'vue-property-decorator'
+import { Component, Vue, Prop, Ref } from 'vue-property-decorator'
 
 @Component
 export default class SsdComponent extends Vue {
   @Prop({ default: '' })
     src!: string
 
+  // @Ref properties are defined in beforeMount hook
   @Ref('ssd-container') container!: HTMLElement;
-  @Ref('scroll-content') scrollContainer!: HTMLElement;
   @Ref('ssd') svgContainer!: HTMLElement;
 
   width = 100
@@ -33,11 +33,10 @@ export default class SsdComponent extends Vue {
   aspectRatio = 1
   fitWidth = true
   containerWidth = 0
-  buttonIcon = "mdi-arrow-split-vertical"
-  isButtonShown = false
+  showButton = false
 
   mounted (): void {
-    this.container = this.$refs['ssd-container'] as HTMLElement
+    this.fitWidth = this.$vuetify.breakpoint.mobile ? false : true, // if opened on mobile it fits the height otherwise the width
     this.resize()
     this.container.addEventListener('pointerdown', this.mouseDownHandler)
     this.container.addEventListener('wheel', this.mouseWheelHandler, { passive: true })
@@ -50,26 +49,29 @@ export default class SsdComponent extends Vue {
     this.container.removeEventListener('dblclick', this.fitWidthHeightHandler)
   }
 
-  get sizeButton() {
+  get sizeFitButton() {
       const size = {xs:'x-small',sm:'small', md:'', lg:'large',xl:'x-large'}[this.$vuetify.breakpoint.name]
       return size ? { [size]: true } : {}
     }
 
-  showButton(): void {
+  get iconFitButton() {
+    if (!this.fitWidth) {
+      return "mdi-arrow-split-vertical"
+    } else {
+      return "mdi-arrow-split-horizontal"
+    }
+  }
+
+  updateVisibilityFitButton(): void {
     if (this.container && this.svgContainer) {
       const sizes = this.getSvgContainerSizes()
       if (sizes) {
         const condition =  this.containerWidth <= sizes[2]
-        this.isButtonShown = condition
-        // automatically fit height if on mobile
-        this.fitWidth = false
-        this.buttonIcon = "mdi-arrow-split-vertical"
-        this.container.addEventListener('pointerdown', this.mouseDownHandler)
-        this.container.addEventListener('wheel', this.mouseWheelHandler, { passive: true })
-        return
+        this.showButton = condition
+        return 
       }      
     }
-    this.isButtonShown = false 
+    this.showButton = false
   }
 
   fitWidthHeightHandler (): void {
@@ -77,11 +79,9 @@ export default class SsdComponent extends Vue {
     this.setDimensions()
     this.pos = { top: 0, left: 0, x: 0, y: 0 }
     if (!this.fitWidth) {
-      this.buttonIcon = "mdi-arrow-split-vertical"
       this.container.addEventListener('pointerdown', this.mouseDownHandler)
       this.container.addEventListener('wheel', this.mouseWheelHandler, { passive: true })
     } else {
-      this.buttonIcon = "mdi-arrow-split-horizontal"
       this.container.removeEventListener('pointerdown', this.mouseDownHandler)
       this.container.removeEventListener('wheel', this.mouseWheelHandler)
     }
@@ -149,7 +149,7 @@ export default class SsdComponent extends Vue {
       this.setDimensions()
       this.isHidden = false
       this.restoreScrollPosition()
-      this.showButton()
+      this.updateVisibilityFitButton()
     })
   }
 
