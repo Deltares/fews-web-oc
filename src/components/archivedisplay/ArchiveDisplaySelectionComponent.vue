@@ -248,17 +248,15 @@
 
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from "vue-property-decorator";
-import {LocationsResponse} from "@deltares/fews-pi-requests/src/response/locations/locationsResponse";
-import {PiArchiveWebserviceProvider} from "@deltares/fews-pi-requests/src/piArchiveWebserviceProvider";
-import {
+import {PiArchiveWebserviceProvider} from "@deltares/fews-pi-requests";
+import type {
   ArchiveLocationsFilter,
-  DocumentFormat,
-  ParametersFilter
-} from "@deltares/fews-pi-requests/src/requestParameters";
+  ArchiveParameter,
+  Location,
+  ParametersFilter,
+} from "@deltares/fews-pi-requests";
+import { DocumentFormat } from "@deltares/fews-pi-requests";
 import {FeatureCollection, Geometry} from "geojson";
-import {Location, ParametersResponse} from "@deltares/fews-pi-requests/src/response";
-import {Parameter} from "@deltares/fews-pi-requests/src/response/parameters/parameter";
-
 
 @Component
 export default class ArchiveDisplaySelectionComponent extends Vue {
@@ -286,7 +284,7 @@ export default class ArchiveDisplaySelectionComponent extends Vue {
   sources: string[] = ["source1", "source2"];
   locations: Location[] = [];
   selectedParameters: string[] = [];
-  parameters: Parameter[] = [];
+  parameters: ArchiveParameter[] = [];
   selectedTimeSeriesType: string = "";
   timeSeriesTypes: string[] = ["external historical", "external forecasting", "simulated forecasting", "simulated historical"];
 
@@ -306,15 +304,17 @@ export default class ArchiveDisplaySelectionComponent extends Vue {
 
   async mounted(): Promise<void> {
     this.archiveWebServiceProvider = new PiArchiveWebserviceProvider(this.baseUrl);
-    const archiveLocationsFilter = {} as ArchiveLocationsFilter;
-    archiveLocationsFilter.documentFormat = DocumentFormat.GEO_JSON;
-    const locationsResponse: LocationsResponse = await this.archiveWebServiceProvider.getLocations(archiveLocationsFilter);
+    const archiveLocationsFilter = {
+      documentFormat: DocumentFormat.GEO_JSON
+    }
+    const locationsResponse = await this.archiveWebServiceProvider.getLocations(archiveLocationsFilter);
     const geoJsonResponse = (((await locationsResponse) as any) as FeatureCollection<Geometry, Location>);
     this.locations = geoJsonResponse.features.map((feature) => feature.properties);
 
-    const archiveParametersFilter = {} as ParametersFilter;
-    archiveParametersFilter.documentFormat = DocumentFormat.PI_JSON;
-    const parametersResponse: ParametersResponse = await this.archiveWebServiceProvider.getParameters(archiveParametersFilter);
+    const archiveParametersFilter = {
+      documentFormat: DocumentFormat.PI_JSON
+    }
+    const parametersResponse = await this.archiveWebServiceProvider.getParameters(archiveParametersFilter);
     this.parameters = parametersResponse.parameters;
   }
 

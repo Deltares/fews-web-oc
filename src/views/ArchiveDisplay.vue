@@ -33,14 +33,12 @@
 <script lang="ts">
 
 import {Component, Vue, Watch} from "vue-property-decorator";
-import {Location} from "@deltares/fews-pi-requests/src/response";
 import ArchiveDisplaySelectionComponent from "@/components/archivedisplay/ArchiveDisplaySelectionComponent.vue";
 import ArchiveTimeSeriesComponent from "@/components/archivedisplay/ArchiveTimeSeriesComponent.vue";
 import {Pane, Splitpanes} from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
-import {PiArchiveWebserviceProvider} from "@deltares/fews-pi-requests/src/piArchiveWebserviceProvider";
-import {ArchiveLocationsFilter, DocumentFormat} from "@deltares/fews-pi-requests/src/requestParameters";
-import {LocationsResponse} from "@deltares/fews-pi-requests/src/response/locations/locationsResponse";
+import {DocumentFormat, PiArchiveWebserviceProvider} from "@deltares/fews-pi-requests";
+import type {ArchiveLocationsFilter, ArchiveLocation } from "@deltares/fews-pi-requests";
 import {FeatureCollection, Geometry} from "geojson";
 
 @Component({
@@ -52,43 +50,43 @@ import {FeatureCollection, Geometry} from "geojson";
   }
 })
 
-export default class DisplayComponent extends Vue {
+export default class ArchiveDisplay extends Vue {
 
   archiveWebServiceProvider!: PiArchiveWebserviceProvider;
   baseUrl!: string;
-  locations: Location[] = [];
+  locations: ArchiveLocation[] = [];
   accessToken = this.$config.get('VUE_APP_MAPBOX_TOKEN');
   locationsLayer = {
-    'id': 'locationsLayer',
-    'type': 'circle',
-    'source': {
-      'type': 'geojson',
-      'data': {}
+    id: 'locationsLayer',
+    type: 'circle',
+    source: {
+      type: 'geojson',
+      data: {}
     },
-    'layout': {
-      'visibility': 'visible'
+    layout: {
+      visibility: 'visible'
     },
-    'paint': {
+    paint: {
       'circle-radius': 5,
       'circle-color': '#139f3f'
     },
   }
   selectedLocationsLayer = {
-    'id': 'selectedLocationsLayer',
-    'type': 'circle',
-    'source': {
-      'type': 'geojson',
-      'data': {}
+    id: 'selectedLocationsLayer',
+    type: 'circle',
+    source: {
+      type: 'geojson',
+      data: {}
     },
-    'layout': {
-      'visibility': 'visible'
+    layout: {
+      visibility: 'visible'
     },
-    'paint': {
+    paint: {
       'circle-radius': 6,
       'circle-color': '#0c1e38'
     }
   }
-  selectedLocations: Location[] = [];
+  selectedLocations: ArchiveLocation[] = [];
 
 
   created(): void {
@@ -101,10 +99,10 @@ export default class DisplayComponent extends Vue {
       documentFormat: DocumentFormat.GEO_JSON,
     };
 
-    const response: LocationsResponse = await this.archiveWebServiceProvider.getLocations(archiveLocationsFilter);
-    const geoJsonResponse = (((await response) as any) as FeatureCollection<Geometry, Location>);
-    this.locations = this.locations = geoJsonResponse.features.map((feature) => feature.properties);
-    this.locationsLayer.source.data = (((await response) as any) as FeatureCollection<Geometry, Location>);
+    const response = await this.archiveWebServiceProvider.getLocations(archiveLocationsFilter)
+    const geoJsonResponse = (((await response) as any) as FeatureCollection<Geometry, ArchiveLocation>)
+    this.locations = geoJsonResponse.features.map((feature) => feature.properties);
+    this.locationsLayer.source.data = (((await response) as any) as FeatureCollection<Geometry, ArchiveLocation>);
   }
 
 
@@ -115,12 +113,12 @@ export default class DisplayComponent extends Vue {
 
   selectLocation(e: any): void {
     const locationId = e.features[0].properties.locationId;
-    const selectedLocation: Location | undefined = this.locations.find(location => location.locationId == locationId);
+    const selectedLocation = this.locations.find(location => location.locationId == locationId);
     if (selectedLocation === undefined) return;
     this.addSelectedLocation(selectedLocation)
   }
 
-  addSelectedLocation(newLocation: Location): void {
+  addSelectedLocation(newLocation: ArchiveLocation): void {
     if (newLocation === undefined) return;
     const index = this.selectedLocations.findIndex(location => location.locationId === newLocation.locationId);
     if (index >= 0) {
@@ -132,11 +130,12 @@ export default class DisplayComponent extends Vue {
   }
 
   updateLocationSelectionOnMap() {
-    const selectedLocations: FeatureCollection<Geometry, Location> = {} as FeatureCollection<Geometry, Location>;
-    selectedLocations.features = [];
-    selectedLocations.type = "FeatureCollection";
+    const selectedLocations: FeatureCollection<Geometry, ArchiveLocation> = {
+      type: "FeatureCollection",
+      features: []
+    }
     const currentSelection = this.selectedLocations;
-    const existingLocations: FeatureCollection<Geometry, Location> = this.locationsLayer.source.data as FeatureCollection<Geometry, Location>;
+    const existingLocations = this.locationsLayer.source.data as FeatureCollection<Geometry, ArchiveLocation>;
     for (let feature of existingLocations.features) {
       const locationId = feature.properties.locationId;
       if (!currentSelection.find(location => location.locationId === locationId)) continue;
