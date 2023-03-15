@@ -44,7 +44,7 @@
         </p>
       </v-card-text>
     </v-card>
-    <v-toolbar v-if="$vuetify.breakpoint.mobile" dense>
+    <v-toolbar v-if="plots.length > 1 && $vuetify.breakpoint.mobile" dense>
       <v-spacer/>
       <v-menu offset-y>
         <template v-slot:activator="{ on, attrs }">
