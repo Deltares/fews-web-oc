@@ -20,6 +20,7 @@ import {ChartConfig} from './lib/ChartConfig'
 import {ChartSeries} from './lib/ChartSeries'
 import {Series} from '@/lib/TimeSeries'
 import { uniq } from 'lodash'
+import { DataTableHeader } from 'vuetify'
 
 @Component
 export default class TimeSeriesTable extends Vue {
@@ -42,7 +43,7 @@ export default class TimeSeriesTable extends Vue {
   dateTimes: Date[] = []
 
   tableData: Record<string, unknown>[] = []
-  tableHeaders: {value: string, text: string}[] = []
+  tableHeaders: DataTableHeader[] = []
 
   mounted() {
     this.onSeriesChange()
@@ -58,8 +59,8 @@ export default class TimeSeriesTable extends Vue {
 
   setHeaders() {
     if (this.value?.series === undefined) return
-    const tableHeaders: {value: string, text: string, width?: string}[] = []
-    tableHeaders.push({value: 'date', text: 'Date', width: '180px'})
+    const tableHeaders: DataTableHeader[] = []
+    tableHeaders.push({value: 'date', text: 'Date', width: '180px', class: 'sticky-column', cellClass:'sticky-column'})
     const seriesDef = this.value.series
     this.seriesIds.forEach((seriesId) => {
       const chartSeries = seriesDef.find((s) => s.id === seriesId)
@@ -151,7 +152,6 @@ export default class TimeSeriesTable extends Vue {
   flex-direction: column;
   width: 100%;
   height: 100%;
-  fill: currentColor;
   margin: auto;
   overflow-y: hidden;
 }
@@ -167,4 +167,22 @@ export default class TimeSeriesTable extends Vue {
 .v-data-table__wrapper {
   width: 100%;
 }
+
+.sticky-column {
+  position: -webkit-sticky;
+  position: sticky;
+  left: 0;
+}
+.v-data-table--fixed-header > .v-data-table__wrapper > table > thead > tr > th.sticky-column {
+  z-index: 3;
+}
+
+.theme--dark .sticky-column {
+  background-color: #1E1E1E;
+}
+
+.theme--light .sticky-column {
+  background-color: white;
+}
+
 </style>
