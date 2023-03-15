@@ -31,8 +31,8 @@
               mdi-skip-next
             </v-icon>
           </v-btn>
+          <slot name="append"></slot>
         </div>
-        <slot name="append"></slot>
       </div>
     </div>
   </div>

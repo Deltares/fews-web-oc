@@ -10,48 +10,53 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from 'vue-property-decorator'
+import { Component, Vue, Prop, Ref, Watch } from 'vue-property-decorator'
 
 @Component
 export default class SsdComponent extends Vue {
   @Prop({ default: '' })
-    src!: string
+    readonly src!: string
+  @Prop({ default: true })
+    readonly fitWidth!: boolean
 
-  container!: HTMLElement
-  scrollContainer!: HTMLElement
+  // @Ref properties are defined in beforeMount hook
+  @Ref('ssd-container') container!: HTMLElement;
+  @Ref('ssd') svgContainer!: HTMLElement;
+
   width = 100
   height = 100
   margin = { top: 0, left: 0 }
   isHidden = true
   pos = { top: 0, left: 0, x: 0, y: 0 }
   aspectRatio = 1
-  fit = false
   containerWidth = 0
+  fitWidthValue = true
 
   mounted (): void {
-    this.container = this.$refs['ssd-container'] as HTMLElement
     this.resize()
     this.container.addEventListener('pointerdown', this.mouseDownHandler)
     this.container.addEventListener('wheel', this.mouseWheelHandler, { passive: true })
-    this.container.addEventListener('dblclick', this.dblClickHandler)
+    this.fitWidthHeightHandler()
   }
 
   destroy (): void {
     this.container.removeEventListener('pointerdown', this.mouseDownHandler)
     this.container.removeEventListener('wheel', this.mouseWheelHandler)
-    this.container.removeEventListener('dblclick', this.dblClickHandler)
   }
 
-  dblClickHandler (): void {
-    this.fit = !this.fit
+
+  @Watch('$vuetify.breakpoint.mobile')
+  @Watch('fitWidth')
+  fitWidthHeightHandler (): void {
+    this.fitWidthValue = !this.$vuetify.breakpoint.mobile && this.fitWidth
     this.setDimensions()
     this.pos = { top: 0, left: 0, x: 0, y: 0 }
-    if (!this.fit) {
-      this.container.addEventListener('pointerdown', this.mouseDownHandler)
-      this.container.addEventListener('wheel', this.mouseWheelHandler, { passive: true })
-    } else {
+    if (this.fitWidthValue) {
       this.container.removeEventListener('pointerdown', this.mouseDownHandler)
       this.container.removeEventListener('wheel', this.mouseWheelHandler)
+    } else {
+      this.container.addEventListener('pointerdown', this.mouseDownHandler)
+      this.container.addEventListener('wheel', this.mouseWheelHandler, { passive: true })
     }
   }
 
@@ -121,17 +126,24 @@ export default class SsdComponent extends Vue {
   }
 
   setAspectRatio (): void {
-    const svgContainer = this.$refs.ssd as HTMLElement
-    if (svgContainer && svgContainer.firstChild) {
-      const svg = svgContainer.firstChild as SVGElement
+    const sizes = this.getSvgContainerSizes()
+    if (sizes) { // check if sizes is empty
+      this.aspectRatio = +sizes[2] / +sizes[3]
+      return
+    }
+    this.aspectRatio = 1
+  }
+
+  getSvgContainerSizes(): number[] {
+    if (this.svgContainer && this.svgContainer.firstChild) {
+      const svg = this.svgContainer.firstChild as SVGElement
       const viewBox = svg.getAttribute('viewBox')
       if (viewBox) {
         const sizes = viewBox.split(' ', 4).map(x => +x) as [number, number, number, number]
-        this.aspectRatio = +sizes[2] / +sizes[3]
-        return
+        return sizes
       }
     }
-    this.aspectRatio = 1
+    return []
   }
 
   setDimensions (): void {
@@ -140,7 +152,7 @@ export default class SsdComponent extends Vue {
     this.containerWidth = this.container.offsetWidth
     let margin = { top: 0, left: 0 }
     const dx = this.container.offsetWidth - height * this.aspectRatio
-    if (dx < 0 && !this.fit) {
+    if (dx < 0 && !this.fitWidthValue) {
       // add space for scrollbar
       width = height * this.aspectRatio
     } else if (dx < 0) {
@@ -181,5 +193,12 @@ export default class SsdComponent extends Vue {
 
 .theme--dark .web-oc-ssd > svg {
   background-color: #606060;
+}
+.fit-content-button {
+  position: absolute;
+  padding: auto;
+}
+.scroll-content {
+  position: relative;
 }
 </style>
