@@ -15,23 +15,18 @@ function parsePiDateTime(event: {date: string, time: string} , timeZone: string)
 }
 
 @Component
-export default class TimeSeriesStore extends Vue {
+export default class TimeSeriesMixin extends Vue {
   timeSeriesStore: Record<string, Series> = {}
-  webServiceProvider!: PiWebserviceProvider
-
-
-  mounted () {
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    this.webServiceProvider = new PiWebserviceProvider(baseUrl)
-  }
 
   async updateTimeSeries(requests: any[]
   ): Promise<void> {
+
+    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const webServiceProvider = new PiWebserviceProvider(baseUrl)
     for (const r in requests) {
       const request = requests[r]
-      const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
       const url = new URL(`${baseUrl}/${request.request}`)
-      const piSeries: TimeSeriesResponse = await this.webServiceProvider.getTimeSeriesWithRelativeUrl(request.request);
+      const piSeries: TimeSeriesResponse = await webServiceProvider.getTimeSeriesWithRelativeUrl(request.request);
       if ( piSeries.timeSeries === undefined) continue
       for (const timeSeries of piSeries.timeSeries) {
         if (timeSeries.events === undefined) continue

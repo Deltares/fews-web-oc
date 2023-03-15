@@ -104,7 +104,7 @@
 
 <script lang="ts">
 import { Component, Mixins, Prop, Vue, Watch } from 'vue-property-decorator'
-import { DocumentFormat, PiWebserviceProvider, TimeSeriesResponse } from "@deltares/fews-pi-requests";
+import { DocumentFormat, PiWebserviceProvider } from "@deltares/fews-pi-requests";
 import { debounce, uniq, intersection } from 'lodash';
 import { Location } from '@deltares/fews-pi-requests';
 import MapComponent from '../components/MapComponent.vue'
@@ -117,8 +117,7 @@ import WMSLayerControl, { WMSLayerControlValue } from '@/components/WMSLayerCont
 import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
 import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
-import { Series, SeriesUrlRequest,  } from '@/lib/TimeSeries';
-import SeriesStore from '@/mixins/SeriesStore'
+import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
 import { FeatureCollection, Geometry } from 'geojson';
 
@@ -150,7 +149,7 @@ interface Parameter {
     WMSLayerControl
   }
 })
-export default class DataView extends Mixins(WMSMixin, SeriesStore) {
+export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   @Prop({
     default: '',
     type: String
@@ -168,6 +167,8 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
     type: String
   })
   locationId!: string
+
+  webServiceProvider!: PiWebserviceProvider
 
   stateDockMode = 'right'
   layoutClass: string = 'map-only'

@@ -26,9 +26,8 @@ import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
 import {ColumnItem} from '@/components/ColumnItem'
 import ComponentsPanel from '@/components/Layout/ComponentsPanel.vue'
-import SeriesStore from '@/mixins/SeriesStore'
+import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import {DisplayConfig, DisplayType} from '@/lib/Layout/DisplayConfig'
-import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
 import {ActionWithConfigRequest, ClickType, SsdWebserviceProvider} from "@deltares/fews-ssd-requests";
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 
@@ -39,7 +38,7 @@ import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisp
     ComponentsPanel
   }
 })
-export default class SSDTimeSeriesDisplay extends Mixins(SeriesStore) {
+export default class SSDTimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
   @Prop({default: '', type: String})
   groupId!: string
 
@@ -55,7 +54,6 @@ export default class SSDTimeSeriesDisplay extends Mixins(SeriesStore) {
   items: ColumnItem[] = []
   viewMode = 0
   warningMessage: string = "";
-  baseUrl!: string
   allDisplays: DisplayConfig[][] = []
   displays: DisplayConfig[] = []
   requests: any[] = [];
@@ -63,14 +61,8 @@ export default class SSDTimeSeriesDisplay extends Mixins(SeriesStore) {
   ssdServiceProvider!: SsdWebserviceProvider
   action: any = ''
 
-  created(): void {
-    this.baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-  }
-
   async mounted(): Promise<void> {
-    console.log('mounted', this)
-    this.webServiceProvider = new PiWebserviceProvider(this.baseUrl);
-    this.ssdServiceProvider = new SsdWebserviceProvider(this.baseUrl)
+    this.ssdServiceProvider = new SsdWebserviceProvider(this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL'))
     this.onObjectIdChange()
   }
 

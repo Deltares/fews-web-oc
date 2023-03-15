@@ -80,8 +80,7 @@ import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
 import {ColumnItem} from '@/components/ColumnItem'
 import ComponentsPanel from '@/components/Layout/ComponentsPanel.vue'
-import SeriesStore from '@/mixins/SeriesStore'
-import {Series, SeriesUrlRequest} from '@/lib/TimeSeries'
+import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import {DisplayConfig, DisplayType} from '@/lib/Layout/DisplayConfig'
 import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
 import type { DisplayGroupsFilter, DisplayGroupsResponse, TimeSeriesResponse, TopologyNode } from "@deltares/fews-pi-requests";
@@ -94,7 +93,7 @@ import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisp
     ComponentsPanel
   }
 })
-export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
+export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
   @Prop({default: '', type: String})
   nodeId!: string
 
