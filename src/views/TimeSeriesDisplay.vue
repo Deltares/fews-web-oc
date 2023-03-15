@@ -44,9 +44,28 @@
         </p>
       </v-card-text>
     </v-card>
+    <v-toolbar v-if="plots.length > 1 && $vuetify.breakpoint.mobile" dense>
+      <v-spacer/>
+      <v-menu offset-y>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn text v-bind="attrs" v-on="on">{{ plots[selectedItem] }}<v-icon>mdi-chevron-down</v-icon>
+          </v-btn>
+        </template>
+        <v-list dense>
+          <v-list-item-group v-model="selectedItem" mandatory color="primary">
+            <v-list-item v-for="(plot, i) in plots" :key="i">
+              <v-list-item-content>
+                <v-list-item-title v-text="plot"></v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
+      </v-menu>
+      <v-spacer/>
+    </v-toolbar>
     <div style="height: 100%; width: 100%; display: flex; flex-direction: row">
       <ComponentsPanel :displays="displays" :series="timeSeriesStore"/>
-      <div style="width: 200px;" v-if="plots.length > 1">
+      <div style="width: 200px;" v-if="plots.length > 1 && !$vuetify.breakpoint.mobile">
         <v-navigation-drawer
           width="200"
           permanent

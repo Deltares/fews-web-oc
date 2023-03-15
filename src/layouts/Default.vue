@@ -2,16 +2,27 @@
   <v-app id="app">
     <v-app-bar color="#080C80" dense app dark :clipped-left="!$vuetify.rtl" :clipped-right="$vuetify.rtl">
       <v-btn v-if="!$vuetify.breakpoint.mobile" text>Delft-FEWS Web OC</v-btn>
-      <v-tabs
-        show-arrows
-      >
-      <v-tab v-for="item in menuItems" :key="item.id" :to="item.to">
-        <div style="width: 200px;">
-          <v-icon style="padding-right: 10px;">{{ item.icon }}</v-icon>
-          {{ item.id }}
-        </div>
-      </v-tab>
-      </v-tabs>
+      <v-menu offset-y>
+        <template v-slot:activator="{ on, attrs }">
+        <v-app-bar-nav-icon
+          aria-label="Menu button"
+          v-bind="attrs"
+          v-on="on"
+        >
+        </v-app-bar-nav-icon>
+        </template>
+        <v-list dense>
+          <v-subheader>Switch to</v-subheader>
+          <v-list-item v-for="item in menuItems" :key="item.id" :to="item.to">
+            <v-list-item-icon>
+              <v-icon>{{ item.icon }}</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+               {{ item.id }}
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-menu>
       <v-spacer />
       <CogMenu/>
       <login-component v-if="$config.authenticationIsEnabled"/>
@@ -23,7 +34,7 @@
     <v-main id="main">
       <router-view style="height: 100%;">
       </router-view>
-      <v-btn v-if="$route.meta.sidebar && !($vuetify.breakpoint.mobile && drawer) " @click="toggleDrawer()" style="position: absolute; left: 0px; top: calc(50% - 18px); overflow: hidden-x; width: 30px; border-bottom-left-radius: 0px; border-top-left-radius: 0px; padding: 0px; min-width: 30px;">
+      <v-btn v-if="$route.meta.sidebar && !($vuetify.breakpoint.mobile && drawer) " @click="toggleDrawer()" style="position: absolute; left: 0px; top: 5px; overflow: hidden-x; width: 30px; border-bottom-left-radius: 0px; border-top-left-radius: 0px; padding: 0px; min-width: 30px;">
         <v-icon aria-label="Menu button">{{ drawer ? 'mdi-chevron-left' : 'mdi-chevron-right' }} </v-icon>
       </v-btn>
     </v-main>

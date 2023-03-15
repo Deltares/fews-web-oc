@@ -50,8 +50,7 @@ export default class ComponentsPanel extends Vue {
   flex-direction: column;
   width: 100%;
   overflow-x: hidden;
-  overflow-y: auto;
-  height: 100%;
+  overflow-y: hidden;
 }
 
 .panel-scroll {
