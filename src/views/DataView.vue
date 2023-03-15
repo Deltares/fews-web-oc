@@ -104,7 +104,7 @@
 
 <script lang="ts">
 import { Component, Mixins, Prop, Vue, Watch } from 'vue-property-decorator'
-import { DocumentFormat, PiWebserviceProvider, TimeSeriesResponse } from "@deltares/fews-pi-requests";
+import { DocumentFormat, PiWebserviceProvider } from "@deltares/fews-pi-requests";
 import { debounce, uniq, intersection } from 'lodash';
 import { Location } from '@deltares/fews-pi-requests';
 import MapComponent from '../components/MapComponent.vue'
@@ -117,8 +117,7 @@ import WMSLayerControl, { WMSLayerControlValue } from '@/components/WMSLayerCont
 import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
 import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
-import { Series, SeriesUrlRequest,  } from '@/lib/TimeSeries';
-import SeriesStore from '@/mixins/SeriesStore'
+import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
 import { FeatureCollection, Geometry } from 'geojson';
 
@@ -150,7 +149,7 @@ interface Parameter {
     WMSLayerControl
   }
 })
-export default class DataView extends Mixins(WMSMixin, SeriesStore) {
+export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   @Prop({
     default: '',
     type: String
@@ -169,12 +168,13 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
   })
   locationId!: string
 
+  webServiceProvider!: PiWebserviceProvider
+
   stateDockMode = 'right'
   layoutClass: string = 'map-only'
   isFullscreenGraph = false
 
   filters: Filter[] = []
-  webServiceProvider!: PiWebserviceProvider
   parameters: Parameter[] = []
 
   showLayer: boolean = true
@@ -406,36 +406,8 @@ export default class DataView extends Mixins(WMSMixin, SeriesStore) {
   }
 
   private async loadTimeSeries(requests: any[]) {
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    for (const r in requests) {
-      const request = requests[r]
-      const url = new URL(`${baseUrl}/${request.request}`)
-      const piSeries: TimeSeriesResponse = await this.webServiceProvider.getTimeSeriesWithRelativeUrl(request.request);
-      if ( piSeries.timeSeries === undefined) continue
-      for (const timeSeries of piSeries.timeSeries) {
-        if (timeSeries.events === undefined) continue
-        const resourceId = `${request.key}`
-        const resource = new SeriesUrlRequest('fews-pi', url.toString())
-        const series = new Series(resource)
-        const header = timeSeries.header
-        if (header !== undefined) {
-          series.header.name = `${header.stationName} - ${header.parameterId} (${header.moduleInstanceId})`
-          series.header.unit = header.units
-          series.header.parameter = header.parameterId
-          series.header.location = header.stationName
-          series.header.source = header.moduleInstanceId
-          series.start = new Date(`${header.startDate.date}T${header.startDate.time}`)
-          series.end = new Date(`${header.endDate.date}T${header.endDate.time}`)
-        }
-        series.data = timeSeries.events.map((event) => {
-          return {
-            x: new Date(`${event.date}T${event.time}`),
-            y: event.flag === '8' ? null : parseFloat(event.value)
-          }
-        })
-        Vue.set(this.timeSeriesStore, resourceId, series)
-      }
-    }
+    this.timeSeriesStore = {}
+    this.updateTimeSeries(requests)
   }
 
   get hasSelectedLocation() {
