@@ -29,10 +29,7 @@ import {Series} from '@/lib/TimeSeries'
 import { uniq } from 'lodash'
 import { DataTableHeader } from 'vuetify'
 
-interface TableHeaders  {
-  value: string;
-  text: string;
-  width?: string;
+interface TableHeaders extends DataTableHeader {
   color?: string;
 }
 
