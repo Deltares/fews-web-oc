@@ -47,7 +47,7 @@
             <v-mapbox-layer v-if="showLocationsLayer" :options="locationsLayer" clickable @click="onLocationClick"></v-mapbox-layer>
           </MapComponent>
         </div>
-        <div style="position: absolute; padding-left: 5px;">
+        <div style="position: absolute; padding-left: 5px; left: 30px;">
           <v-chip-group>
             <WMSLayerControl
               v-if="currentLayers.length > 0"
