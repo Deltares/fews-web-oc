@@ -122,7 +122,7 @@ export default class TimeSeriesTable extends Vue {
 
   formatHeader(chartSeries: ChartSeries): string {
     const label = chartSeries.name ?? ''
-    const header = chartSeries.unit ? `${label} [${chartSeries.unit}]` : label
+    const header = label
     return header
   }
 
