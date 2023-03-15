@@ -20,10 +20,15 @@
     </portal>
     <div class="grid-map" v-show="true">
       <div style="height: calc(100% - 48px)">
-        <SSDComponent @action="onAction" :src="src">
+        <SSDComponent @action="onAction" :src="src" :fitWidth="fitWidth">
         </SSDComponent>
       </div>
       <DateTimeSlider class="date-time-slider" v-model="timeIndex" :dates="dates" @input="debouncedUpdate">
+        <template v-if="!$vuetify.breakpoint.mobile" v-slot:append>
+          <v-btn icon @click="fitWidth = !fitWidth">
+            <v-icon>{{iconFitButton}} </v-icon>
+          </v-btn>
+        </template>
       </DateTimeSlider>
     </div>
     <div class="grid-charts" ref="grid-charts" v-if="objectId !== ''">
@@ -89,6 +94,7 @@ export default class SsdView extends Mixins(SSDMixin) {
   // currentObjectId: string = ''
   viewMode = 0
   webServicesUrl = ''
+  fitWidth = true
 
   timeString = ''
   debouncedUpdate!: () => void
@@ -273,6 +279,10 @@ export default class SsdView extends Mixins(SSDMixin) {
   onDockModeChange(dockMode: string): void {
     this.dockMode = dockMode
     this.changeLayout()
+  }
+
+  get iconFitButton() {
+    return this.fitWidth ? 'mdi-fit-to-page' : 'mdi-fit-to-screen'
   }
 }
 </script>
