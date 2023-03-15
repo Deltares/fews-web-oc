@@ -12,6 +12,7 @@ import { configManager } from '../services/application-config'
 import TimeSeriesDisplay from '../views/TimeSeriesDisplay.vue'
 import SSDTimeSeriesDisplay from '../views/SSDTimeSeriesDisplay.vue'
 import DataView from '../views/DataView.vue'
+import ArchiveDisplay from '../views/ArchiveDisplay.vue'
 
 import oidcSettings from '../services/config'
 import { Log, UserManager } from 'oidc-client-ts'
@@ -84,6 +85,12 @@ const routes: Array<RouteConfig> = [
     path: '/systemmonitor',
     name: 'SystemMonitor',
     component: SystemMonitor,
+    meta: { authorize: [] }
+  },
+  {
+    path: '/archivedisplay',
+    name: 'ArchiveDisplay',
+    component: ArchiveDisplay,
     meta: { authorize: [] }
   },
   {
