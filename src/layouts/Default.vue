@@ -2,16 +2,27 @@
   <v-app id="app">
     <v-app-bar color="#080C80" dense app dark :clipped-left="!$vuetify.rtl" :clipped-right="$vuetify.rtl">
       <v-btn v-if="!$vuetify.breakpoint.mobile" text>Delft-FEWS Web OC</v-btn>
-      <v-tabs
-        show-arrows
-      >
-      <v-tab v-for="item in menuItems" :key="item.id" :to="item.to">
-        <div style="width: 200px;">
-          <v-icon style="padding-right: 10px;">{{ item.icon }}</v-icon>
-          {{ item.id }}
-        </div>
-      </v-tab>
-      </v-tabs>
+      <v-menu offset-y>
+        <template v-slot:activator="{ on, attrs }">
+        <v-app-bar-nav-icon
+          aria-label="Menu button"
+          v-bind="attrs"
+          v-on="on"
+        >
+        </v-app-bar-nav-icon>
+        </template>
+        <v-list dense>
+          <v-subheader>Switch to</v-subheader>
+          <v-list-item v-for="item in menuItems" :key="item.id" :to="item.to">
+            <v-list-item-icon>
+              <v-icon>{{ item.icon }}</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+               {{ item.id }}
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-menu>
       <v-spacer />
       <CogMenu/>
       <login-component v-if="$config.authenticationIsEnabled"/>
