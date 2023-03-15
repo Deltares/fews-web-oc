@@ -10,7 +10,14 @@
       disable-sort
       fixed-header
       hide-default-footer
-    ></v-data-table>
+    >
+    <template v-for="h in tableHeaders" v-slot:[`header.${h.value}`]>
+        <div class="table-header-indicator" :key="h.value">
+          <span class="table-header-indicator-text">{{ h.text }}</span>
+          <div class="table-header-indicator-color" :style="{'background-color': h.color}"></div>
+        </div>
+      </template>
+    </v-data-table>
   </div>
 </template>
 
@@ -21,6 +28,13 @@ import {ChartSeries} from './lib/ChartSeries'
 import {Series} from '@/lib/TimeSeries'
 import { uniq } from 'lodash'
 import { DataTableHeader } from 'vuetify'
+
+interface TableHeaders  {
+  value: string;
+  text: string;
+  width?: string;
+  color?: string;
+}
 
 @Component
 export default class TimeSeriesTable extends Vue {
@@ -43,7 +57,7 @@ export default class TimeSeriesTable extends Vue {
   dateTimes: Date[] = []
 
   tableData: Record<string, unknown>[] = []
-  tableHeaders: DataTableHeader[] = []
+  tableHeaders: TableHeaders[] = []
 
   mounted() {
     this.onSeriesChange()
@@ -59,13 +73,13 @@ export default class TimeSeriesTable extends Vue {
 
   setHeaders() {
     if (this.value?.series === undefined) return
-    const tableHeaders: DataTableHeader[] = []
+    const tableHeaders: TableHeaders[] = []
     tableHeaders.push({value: 'date', text: 'Date', width: '180px', class: 'sticky-column', cellClass:'sticky-column'})
     const seriesDef = this.value.series
     this.seriesIds.forEach((seriesId) => {
       const chartSeries = seriesDef.find((s) => s.id === seriesId)
       if (chartSeries !== undefined) {
-        tableHeaders.push({ value: chartSeries.id, text: this.formatHeader(chartSeries)})
+        tableHeaders.push({ value: chartSeries.id, text: this.formatHeader(chartSeries), color: chartSeries.style.stroke?.toString()})
       }
     })
     this.tableHeaders = tableHeaders
@@ -185,4 +199,19 @@ export default class TimeSeriesTable extends Vue {
   background-color: white;
 }
 
+.table-header-indicator {
+  display: flex;
+  height: 100%;
+  flex-direction: column
+}
+
+.table-header-indicator-text {
+  flex-grow: 1;
+}
+
+.table-header-indicator-color {
+  flex: 0 0 10px;
+  width: 100%;
+  margin-bottom: 5px;
+}
 </style>
