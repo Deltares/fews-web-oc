@@ -11,11 +11,9 @@
         </p>
       </v-card-text>
     </v-card>
-    <div style="height: 100%; width: 100%; display: flex; flex-direction: row">
-      <ComponentsPanel :displays="displays" :series="timeSeriesStore"/>
-      <div style="width: 200px;" v-if="plots.length === 0">
-        No plots
-      </div>
+    <ComponentsPanel :displays="displays" :series="timeSeriesStore"/>
+    <div style="width: 200px;" v-if="plots.length === 0">
+      No plots
     </div>
   </div>
 </template>
@@ -128,7 +126,8 @@ export default class SSDTimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
 
 <style scoped>
 .display-container {
+  display: flex;
   height: 100%;
-  background-color: aliceblue;
+  overflow-y: hidden;
 }
 </style>

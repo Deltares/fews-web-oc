@@ -332,7 +332,7 @@ export default class SsdView extends Mixins(SSDMixin) {
 .grid-charts {
   display: none;
   overflow: hidden;
-  width: 600px;
+  width: 100%;
   flex: 1 1 0px;
   flex-direction: column;
 }
