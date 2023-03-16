@@ -18,7 +18,7 @@
       <ColumnMenu v-else :active.sync="active" :items="items" :open.sync="open">
       </ColumnMenu>
     </portal>
-    <div class="grid-map" v-show="true">
+    <div class="grid-map" v-show="showMap">
       <div style="height: calc(100% - 48px)">
         <SSDComponent @action="onAction" :src="src" :fitWidth="fitWidth">
         </SSDComponent>
@@ -53,7 +53,7 @@
           </v-btn-toggle>
         </v-toolbar-items>
       </v-toolbar>
-      <router-view>
+      <router-view @toggleFullscreen="toggleFullscreen">
       </router-view>
     </div>
   </div>
@@ -102,6 +102,7 @@ export default class SsdView extends Mixins(SSDMixin) {
   viewMode = 0
   webServicesUrl = ''
   fitWidth = true
+  isFullscreenGraph = false
 
   timeString = ''
   debouncedUpdate!: () => void
@@ -312,6 +313,19 @@ export default class SsdView extends Mixins(SSDMixin) {
     }
   }
 
+  toggleFullscreen(isFullscreen: boolean) {
+    this.isFullscreenGraph = isFullscreen
+  }
+
+  get hasSelectedLocation() {
+    return this.objectId !== ''
+  }
+
+  get showMap() {
+    const isMobileGraphOpen = this.hasSelectedLocation && this.$vuetify.breakpoint.mobile
+    return !isMobileGraphOpen && !this.isFullscreenGraph
+  }
+
   setLayoutClass(): void {
     if (this.$vuetify.breakpoint.mobile) {
       this.layoutClass = 'mobile'
@@ -322,6 +336,7 @@ export default class SsdView extends Mixins(SSDMixin) {
 
   @Watch('$vuetify.breakpoint.mobile')
   onBreakpointChange (): void {
+    console.log('mobile', this.$vuetify.breakpoint.mobile )
     this.setLayoutClass()
   }
 
