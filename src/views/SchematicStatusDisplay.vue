@@ -56,13 +56,6 @@
       <router-view>
       </router-view>
     </div>
-    <div class="alert-div" v-if="showAlerts">
-      <div v-for="alert in activeAlerts" v-bind:key="alert.id">
-        <v-alert type="error" dismissible @input="(value) => dismissAlert(alert, value)">
-          {{ alert.message }}
-        </v-alert>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -99,12 +92,8 @@ export default class SsdView extends Mixins(SSDMixin) {
   @Prop({ default: '', type: String })
     objectId! : string
 
-  @alertsModule.Getter('listActive')
-    activeAlerts!: Alert[]
   @alertsModule.Mutation('addAlert')
     addAlert!: (alert: Alert) => void
-  @alertsModule.State('alerts')
-    alerts!: Alert[]
 
   active: string[] = []
   open: string[] = []
@@ -283,14 +272,6 @@ export default class SsdView extends Mixins(SSDMixin) {
     }
   }
 
-  get showAlerts() {
-    return this.activeAlerts.length > 0
-  }
-
-  dismissAlert(alert: Alert, value: boolean) {
-    alert.active = value
-  }
-
   actionUrl(url: URL) {
     window.open(url.toString())
   }
@@ -458,15 +439,4 @@ export default class SsdView extends Mixins(SSDMixin) {
   display: flex;
   flex-direction: row;
 }
-.alert-div
-{
-  position: absolute;
-  margin: 0 auto;
-  width: 80%;
-  max-width: 100vw;
-  bottom: 0px;
-  right: 10%;
-  z-index: 9000;
-}
-
 </style>

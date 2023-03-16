@@ -37,14 +37,25 @@
       <v-btn v-if="$route.meta.sidebar && !($vuetify.breakpoint.mobile && drawer) " @click="toggleDrawer()" style="position: absolute; left: 0px; top: 5px; overflow: hidden-x; width: 30px; border-bottom-left-radius: 0px; border-top-left-radius: 0px; padding: 0px; min-width: 30px;">
         <v-icon aria-label="Menu button">{{ drawer ? 'mdi-chevron-left' : 'mdi-chevron-right' }} </v-icon>
       </v-btn>
+      <div class="alert-div" v-if="showAlerts">
+        <div v-for="alert in activeAlerts" v-bind:key="alert.id">
+          <v-alert type="error" dismissible @input="(value) => dismissAlert(alert, value)">
+            {{ alert.message }}
+          </v-alert>
+        </div>
+      </div>
     </v-main>
   </v-app>
 </template>
 
 <script lang="ts">
+import { Component, Vue } from 'vue-property-decorator'
 import CogMenu from '@/components/CogMenu.vue'
 import LoginComponent from '@/components/LoginComponent.vue'
-import { Component, Vue } from 'vue-property-decorator'
+import { namespace } from 'vuex-class'
+import { Alert } from '@/store/modules/alerts/types'
+
+const alertsModule = namespace('alerts')
 
 @Component({
   components: {
@@ -53,6 +64,12 @@ import { Component, Vue } from 'vue-property-decorator'
   }
 })
 export default class Default extends Vue {
+
+  @alertsModule.Getter('listActive')
+    activeAlerts!: Alert[]
+  @alertsModule.State('alerts')
+    alerts!: Alert[]
+
   drawer: boolean | null = null
   menuItems = [
     { id: 'Data View', icon: 'mdi-archive-search', to: { name: 'DataViewer' } },
@@ -72,6 +89,14 @@ export default class Default extends Vue {
 
   get menuIcon (): string {
     return this.menuItems.find((item) => item.to.name === this.$route.name)?.icon || ''
+  }
+
+  get showAlerts() {
+    return this.activeAlerts.length > 0
+  }
+
+  dismissAlert(alert: Alert, value: boolean) {
+    alert.active = value
   }
 }
 </script>
@@ -108,5 +133,18 @@ html, body {
 
 .theme--light .view-sidebar {
   background-image: linear-gradient(to bottom, rgba(240, 240, 240, 1), rgba(240, 240, 240, 1));
+}
+</style>
+
+<style scoped>
+.alert-div
+{
+  position: absolute;
+  margin: 0 auto;
+  width: 80%;
+  max-width: 100vw;
+  bottom: 0px;
+  right: 10%;
+  z-index: 9000;
 }
 </style>
