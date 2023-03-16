@@ -4,7 +4,8 @@
 
 <script lang="ts">
 import { Component, Inject, Prop, Vue, Watch } from 'vue-property-decorator'
-import { Map, RasterLayer, RasterSource } from 'mapbox-gl'
+import { ImageSource, ImageSourceRaw, LngLatBounds, Map, RasterLayer } from 'mapbox-gl'
+import { toMercator } from '@turf/projection'
 
 function getFrameId (layerName: string, frame: number): string {
   return `${layerName}-${frame}`
@@ -13,6 +14,15 @@ function getFrameId (layerName: string, frame: number): string {
 interface MapboxLayerOptions {
   name: string;
   time: Date;
+}
+
+function wmsExtent130FromBounds(bounds: LngLatBounds) {
+  const sw = toMercator({ type: 'Point', coordinates: bounds.getSouthWest().toArray()})
+  const ne = toMercator({ type: 'Point', coordinates: bounds.getNorthEast().toArray() })
+  return [
+    ...sw.coordinates,
+    ...ne.coordinates
+  ]
 }
 
 @Component
@@ -43,6 +53,9 @@ export default class AnimatedMapboxLayer extends Vue {
       this.isInitialized = true
       this.onLayerChange()
     })
+    this.mapObject.on('moveend', () => {
+      this.updateSource()
+    })
     this.mapObject.on('data', async (e) => {
       if (e.sourceId === this.newLayerId && e.tile !== undefined && e.isSourceLoaded) {
         this.removeOldLayers()
@@ -52,6 +65,24 @@ export default class AnimatedMapboxLayer extends Vue {
           1
         )
       }
+    })
+  }
+
+  updateSource() {
+    if (this.layer === null) return
+    const time = this.layer.time.toISOString()
+    const source = this.mapObject.getSource(this.newLayerId) as ImageSource
+    const bounds = this.mapObject.getBounds()
+    const canvas = this.mapObject.getCanvas()
+    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    source.updateImage({
+      url: `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${this.layer.name}&crs=EPSG:3857&bbox=${wmsExtent130FromBounds(bounds)}&height=${canvas.height}&width=${canvas.width}&time=${time}`,
+      coordinates: [
+        bounds.getNorthWest().toArray(),
+        bounds.getNorthEast().toArray(),
+        bounds.getSouthEast().toArray(),
+        bounds.getSouthWest().toArray(),
+      ]
     })
   }
 
@@ -78,12 +109,17 @@ export default class AnimatedMapboxLayer extends Vue {
     const source = this.mapObject.getSource(this.newLayerId)
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     if (source === undefined) {
-      const rasterSource: RasterSource = {
-        type: 'raster',
-        tiles: [
-          `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${this.layer.name}&crs=EPSG:3857&bbox={bbox-epsg-3857}&height=512&width=512&time=${time}`
-        ],
-        tileSize: 512,
+      const bounds = this.mapObject.getBounds()
+      const canvas = this.mapObject.getCanvas()
+      const rasterSource: ImageSourceRaw = {
+        type: 'image',
+        url: `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${this.layer.name}&crs=EPSG:3857&bbox=${wmsExtent130FromBounds(bounds)}&height=${canvas.height}&width=${canvas.width}&time=${time}`,
+        coordinates: [
+          bounds.getNorthWest().toArray(),
+          bounds.getNorthEast().toArray(),
+          bounds.getSouthEast().toArray(),
+          bounds.getSouthWest().toArray(),
+        ]
       }
       this.mapObject.addSource(this.newLayerId, rasterSource)
       const rasterLayer: RasterLayer = {
@@ -96,6 +132,7 @@ export default class AnimatedMapboxLayer extends Vue {
             duration: 0,
             delay: 0
           },
+          'raster-fade-duration': 0,
         },
       }
       this.mapObject.addLayer(
