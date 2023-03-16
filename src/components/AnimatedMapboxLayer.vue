@@ -27,10 +27,10 @@ interface MapboxLayerOptions {
   time: Date;
 }
 
-function getMercatorBboxFromBounds(bounds: LngLatBounds) {
+function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
   const sw = toMercator(point(bounds.getSouthWest().toArray()))
   const ne = toMercator(point(bounds.getNorthEast().toArray()))
-  return [sw.geometry.coordinates, ne.geometry.coordinates]
+  return [...sw.geometry.coordinates, ...ne.geometry.coordinates]
 }
 
 @Component
