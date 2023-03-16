@@ -23,7 +23,7 @@
         <SSDComponent @action="onAction" :src="src" :fitWidth="fitWidth">
         </SSDComponent>
       </div>
-      <DateTimeSlider class="date-time-slider" v-model="timeIndex" :dates="dates" @input="debouncedUpdate">
+      <DateTimeSlider class="date-time-slider" v-model="timeIndex" :dates="dates" @input="debouncedUpdate" @update:now="updateFollowNow">
         <template v-if="!$vuetify.breakpoint.mobile" v-slot:append>
           <v-btn icon @click="fitWidth = !fitWidth">
             <v-icon>{{iconFitButton}} </v-icon>
@@ -98,6 +98,9 @@ export default class SsdView extends Mixins(SSDMixin) {
 
   timeString = ''
   debouncedUpdate!: () => void
+  restoreSelectedTime: boolean = true
+  autoRefreshFunction: number = -1
+  autoRefreshInterval: number = 2 * 60 * 1000
 
   layoutClass = 'right'
   dockMode = 'right'
@@ -105,15 +108,16 @@ export default class SsdView extends Mixins(SSDMixin) {
   async created (): Promise<void> {
     this.webServicesUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     this.debouncedUpdate = debounce(this.setTime, 500, { leading: true, trailing: true })
+    this.autoRefreshFunction = setInterval(() => {this.updatePanel()}, this.autoRefreshInterval)
   }
 
   async mounted (): Promise<void> {
     await this.loadCapabilities()
+    this.fillItems()
     this.onGroupIdChange()
     this.onPanelIdChange()
   }
 
-  @Watch('capabilities')
   fillItems (): void {
     const items: ColumnItem[] = [
       {
@@ -163,12 +167,48 @@ export default class SsdView extends Mixins(SSDMixin) {
     }
   }
 
+  updateFollowNow (followDefault: boolean) {
+    this.restoreSelectedTime = followDefault
+    if (this.restoreSelectedTime && this.autoRefreshFunction < 0) {
+      this.autoRefreshFunction = setInterval(() => {this.updatePanel()}, this.autoRefreshInterval)
+    } else if (!this.restoreSelectedTime && this.autoRefreshFunction > 0) {
+      clearInterval(this.autoRefreshFunction)
+      this.autoRefreshFunction = -1
+    }
+    this.setSelectedTime()
+  }
+
+  setSelectedTime () {
+    if (this.timeIndex === null || this.restoreSelectedTime) {
+      this.setTimeIndex()
+    } else {
+      this.timeIndex = this.findClosestDate(this.timeIndex, this.dates)
+    }
+  }
+
+  findClosestDate (date: Date, dates: Date[]): Date {
+    let index = dates.findIndex((d) => {
+      return d >= date
+    })
+    if (index === -1) {
+      index = date < dates[0] ? 0 : dates.length - 1
+    }
+    return dates[index]
+  }
+
   get src (): string {
     if (this.timeIndex !== null) {
       const time = this.timeIndex.toISOString().replace(/.\d+Z$/g, 'Z')
       return `${this.webServicesUrl}/ssd?request=GetDisplay&ssd=${this.panelId}&time=${time}`
     }
     return `${this.webServicesUrl}/ssd?request=GetDisplay&ssd=${this.panelId}`
+  }
+
+  async updatePanel () {
+    await this.loadCapabilities()
+    this.selectGroup(this.groupId)
+    this.selectPanel(this.panelId)
+    this.setSelectedTime()
   }
 
   @Watch('groupId')
@@ -180,6 +220,10 @@ export default class SsdView extends Mixins(SSDMixin) {
   @Watch('panelId')
   onPanelIdChange (): void {
     this.selectPanel(this.panelId)
+    // Set time to preserve restoreSelectedTime
+    this.setSelectedTime()
+    // Update the panel, which sets the time again
+    this.updatePanel()
     Vue.set(this.open, 2, this.panelId)
     this.active = [this.panelId]
   }
@@ -269,7 +313,6 @@ export default class SsdView extends Mixins(SSDMixin) {
   @Watch('dockMode')
   changeLayout(): void {
     if (this.objectId) {
-      console.log(this.objectId, this.dockMode, this.layoutClass)
       if (this.layoutClass !== this.dockMode) {
         this.layoutClass = this.dockMode
       }
@@ -283,6 +326,10 @@ export default class SsdView extends Mixins(SSDMixin) {
 
   get iconFitButton() {
     return this.fitWidth ? 'mdi-fit-to-page' : 'mdi-fit-to-screen'
+  }
+
+  beforeDestroy () {
+    clearInterval(this.autoRefreshFunction)
   }
 }
 </script>

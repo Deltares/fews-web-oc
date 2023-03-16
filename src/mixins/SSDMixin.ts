@@ -36,12 +36,7 @@ export default class SSDMixin extends Vue {
 
   async init (): Promise<void> {
     await this.loadCapabilities()
-    this.selectCurrentTime()
-  }
-
-  async update (): Promise<void> {
-    await this.loadCapabilities()
-    this.selectCurrentTime()
+    this.setTimeIndex()
   }
 
   async loadCapabilities (): Promise<void> {
@@ -76,7 +71,7 @@ export default class SSDMixin extends Vue {
     return false
   }
 
-  selectCurrentTime (): void {
+  setTimeIndex (): void {
     const now = this.currentPanel.dimension?.default ? new Date(this.currentPanel.dimension?.default) : new Date()
     if (!this.currentPanel.dimension) {
       return
