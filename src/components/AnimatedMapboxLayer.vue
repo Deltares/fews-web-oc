@@ -5,19 +5,21 @@
 <script lang="ts">
 import { Component, Inject, Prop, Vue, Watch } from 'vue-property-decorator'
 import { ImageSource, ImageSourceRaw, LngLatBounds, Map, RasterLayer } from 'mapbox-gl'
-import * as turf from "@turf/turf";
+import { point } from "@turf/helpers"
+import { toMercator } from "@turf/projection"
+
 
 function getFrameId (layerName: string, frame: number): string {
   return `${layerName}-${frame}`
 }
 
 function getCoordsFromBounds(bounds: LngLatBounds) {
-  return  [
-        bounds.getNorthWest().toArray(),
-        bounds.getNorthEast().toArray(),
-        bounds.getSouthEast().toArray(),
-        bounds.getSouthWest().toArray(),
-      ]
+  return [
+    bounds.getNorthWest().toArray(),
+    bounds.getNorthEast().toArray(),
+    bounds.getSouthEast().toArray(),
+    bounds.getSouthWest().toArray(),
+  ]
 }
 
 interface MapboxLayerOptions {
@@ -26,8 +28,8 @@ interface MapboxLayerOptions {
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds) {
-  const sw = turf.toMercator(turf.point(bounds.getSouthWest().toArray()))
-  const ne = turf.toMercator(turf.point(bounds.getNorthEast().toArray()))
+  const sw = toMercator(point(bounds.getSouthWest().toArray()))
+  const ne = toMercator(point(bounds.getNorthEast().toArray()))
   return [sw.geometry.coordinates, ne.geometry.coordinates]
 }
 
