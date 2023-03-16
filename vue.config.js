@@ -5,5 +5,13 @@ module.exports = {
   transpileDependencies: [
     'vuetify'
   ],
-  productionSourceMap: true
+  productionSourceMap: true,
+  devServer: {
+    proxy: {
+      '^/iwp/FewsWebServices/': {
+        target: 'https://rwsos-dataservices-ont.avi.deltares.nl',
+        changeOrigin: true
+      },
+    }
+  }
 }

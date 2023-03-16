@@ -74,6 +74,18 @@ import { Alert } from '@/store/modules/alerts/types'
 
 const alertsModule = namespace('alerts')
 
+function absoluteUrl(urlString: string): URL {
+  let url!: URL
+  try {
+    url = new URL(urlString)
+  } catch (error) {
+    if (error instanceof TypeError) {
+      url = new URL(urlString, document.baseURI)
+    }
+  }
+  return url
+}
+
 @Component({
   components: {
     ColumnMenu,
@@ -209,10 +221,10 @@ export default class SsdView extends Mixins(SSDMixin) {
   get src (): string {
     if (this.timeIndex !== null) {
       const time = this.timeIndex.toISOString().replace(/.\d+Z$/g, 'Z')
-      return `${this.webServicesUrl}/ssd?request=GetDisplay&ssd=${this.panelId}&time=${time}`
+      return absoluteUrl(`${this.webServicesUrl}/ssd?request=GetDisplay&ssd=${this.panelId}&time=${time}`).toString()
     }
     if (this.panelId !== '') {
-      return `${this.webServicesUrl}/ssd?request=GetDisplay&ssd=${this.panelId}`
+      return absoluteUrl(`${this.webServicesUrl}/ssd?request=GetDisplay&ssd=${this.panelId}`).toString()
     }
     return ''
   }
@@ -283,7 +295,7 @@ export default class SsdView extends Mixins(SSDMixin) {
   }
 
   switchPanel (request: string) {
-    const url = new URL(this.webServicesUrl + request)
+    const url = absoluteUrl(this.webServicesUrl + request)
     const panelId = url.searchParams.get('ssd')
     if (panelId) {
       const group = this.capabilities.displayGroups.find((g) => {
