@@ -68,7 +68,11 @@ import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import SSDMixin from '@/mixins/SSDMixin'
 import { debounce } from 'lodash'
-import { Result } from '@deltares/fews-ssd-requests'
+import { ActionType, Result } from '@deltares/fews-ssd-requests'
+import { namespace } from 'vuex-class'
+import { Alert } from '@/store/modules/alerts/types'
+
+const alertsModule = namespace('alerts')
 
 @Component({
   components: {
@@ -87,6 +91,9 @@ export default class SsdView extends Mixins(SSDMixin) {
 
   @Prop({ default: '', type: String })
     objectId! : string
+
+  @alertsModule.Mutation('addAlert')
+    addAlert!: (alert: Alert) => void
 
   active: string[] = []
   open: string[] = []
@@ -242,13 +249,27 @@ export default class SsdView extends Mixins(SSDMixin) {
 
   onAction (event: CustomEvent<{ objectId: string, panelId: string, results: Result[]}>): void {
     const { panelId, objectId, results } = event.detail
+    const now: Date = new Date()
     if (results.length === 0) {
+      this.addAlert({ id: `undefined-action-${now.toISOString()}`, message: "No left click actions defined for this object", active: true})
       throw new Error('No left click actions defined for this object')
     }
-    if (results[0].type === 'PI') { this.openTimeSeriesDisplay(panelId, objectId) }
-    if (results[0].type === 'URL') { this.actionUrl(new URL(results[0].requests[0].request)) }
-    if (results[0].type === 'PDF') { this.actionUrl(new URL(results[0].requests[0].request)) }
-    if (results[0].type === 'SSD') { this.switchPanel(results[0].requests[0].request) }
+    switch (results[0].type) {
+      case (ActionType.PI):
+        this.openTimeSeriesDisplay(panelId, objectId)
+        break
+      case (ActionType.URL):
+        this.actionUrl(new URL(results[0].requests[0].request))
+        break
+      case (ActionType.PDF):
+        this.actionUrl(new URL(results[0].requests[0].request))
+        break
+      case (ActionType.SSD):
+        this.switchPanel(results[0].requests[0].request)
+        break
+      default:
+        this.addAlert({ id: `action-${results[0].type}-${now.toISOString()}`, message: `Action '${results[0].type}' not supported yet.`, active: true})
+    }
   }
 
   actionUrl(url: URL) {
