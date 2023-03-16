@@ -99,6 +99,8 @@ export default class SsdView extends Mixins(SSDMixin) {
   timeString = ''
   debouncedUpdate!: () => void
   restoreSelectedTime: boolean = true
+  autoRefreshFunction: number = -1
+  autoRefreshInterval: number = 2 * 60 * 1000
 
   layoutClass = 'right'
   dockMode = 'right'
@@ -106,6 +108,7 @@ export default class SsdView extends Mixins(SSDMixin) {
   async created (): Promise<void> {
     this.webServicesUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     this.debouncedUpdate = debounce(this.setTime, 500, { leading: true, trailing: true })
+    this.autoRefreshFunction = setInterval(() => {this.updatePanel()}, this.autoRefreshInterval)
   }
 
   async mounted (): Promise<void> {
@@ -166,6 +169,12 @@ export default class SsdView extends Mixins(SSDMixin) {
 
   updateFollowNow (followDefault: boolean) {
     this.restoreSelectedTime = followDefault
+    if (this.restoreSelectedTime && this.autoRefreshFunction < 0) {
+      this.autoRefreshFunction = setInterval(() => {this.updatePanel()}, this.autoRefreshInterval)
+    } else if (!this.restoreSelectedTime && this.autoRefreshFunction > 0) {
+      clearInterval(this.autoRefreshFunction)
+      this.autoRefreshFunction = -1
+    }
     this.setSelectedTime()
   }
 
@@ -197,6 +206,8 @@ export default class SsdView extends Mixins(SSDMixin) {
 
   async updatePanel () {
     await this.loadCapabilities()
+    this.selectGroup(this.groupId)
+    this.selectPanel(this.panelId)
     this.setSelectedTime()
   }
 
@@ -315,6 +326,10 @@ export default class SsdView extends Mixins(SSDMixin) {
 
   get iconFitButton() {
     return this.fitWidth ? 'mdi-fit-to-page' : 'mdi-fit-to-screen'
+  }
+
+  beforeDestroy () {
+    clearInterval(this.autoRefreshFunction)
   }
 }
 </script>
