@@ -29,6 +29,18 @@ import {DisplayConfig, DisplayType} from '@/lib/Layout/DisplayConfig'
 import {ActionWithConfigRequest, ClickType, SsdWebserviceProvider} from "@deltares/fews-ssd-requests";
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 
+function absoluteUrl(urlString: string): URL {
+  let url!: URL
+  try {
+    url = new URL(urlString)
+  } catch (error) {
+    if (error instanceof TypeError) {
+      url = new URL(urlString, document.baseURI)
+    }
+  }
+  return url
+}
+
 @Component({
   components: {
     ColumnMenu,
@@ -59,7 +71,7 @@ export default class SSDTimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
   action: any = ''
 
   async mounted(): Promise<void> {
-    this.ssdServiceProvider = new SsdWebserviceProvider(this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL'))
+    this.ssdServiceProvider = new SsdWebserviceProvider(absoluteUrl(this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')).toString())
     this.onObjectIdChange()
   }
 

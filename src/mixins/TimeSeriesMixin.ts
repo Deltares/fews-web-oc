@@ -14,6 +14,18 @@ function parsePiDateTime(event: {date: string, time: string} , timeZone: string)
   return `${event.date}T${event.time}${timeZone}`
 }
 
+function absoluteUrl(urlString: string): URL {
+  let url!: URL
+  try {
+    url = new URL(urlString)
+  } catch (error) {
+    if (error instanceof TypeError) {
+      url = new URL(urlString, document.baseURI)
+    }
+  }
+  return url
+}
+
 @Component
 export default class TimeSeriesMixin extends Vue {
   timeSeriesStore: Record<string, Series> = {}
@@ -25,7 +37,7 @@ export default class TimeSeriesMixin extends Vue {
     const webServiceProvider = new PiWebserviceProvider(baseUrl)
     for (const r in requests) {
       const request = requests[r]
-      const url = new URL(`${baseUrl}/${request.request}`)
+      const url = absoluteUrl(`${baseUrl}/${request.request}`)
       const piSeries: TimeSeriesResponse = await webServiceProvider.getTimeSeriesWithRelativeUrl(request.request);
       if ( piSeries.timeSeries === undefined) continue
       for (const timeSeries of piSeries.timeSeries) {

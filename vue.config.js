@@ -1,9 +1,17 @@
 module.exports = {
   publicPath: process.env.NODE_ENV === 'production'
-    ? process.env.VUE_APP_PUBLIC_PATH
+    ? '__BASE_URL__'
     : '/',
   transpileDependencies: [
     'vuetify'
   ],
-  productionSourceMap: true
+  productionSourceMap: true,
+  devServer: {
+    proxy: {
+      '^/iwp/FewsWebServices/': {
+        target: 'https://rwsos-dataservices-ont.avi.deltares.nl',
+        changeOrigin: true
+      },
+    }
+  }
 }
