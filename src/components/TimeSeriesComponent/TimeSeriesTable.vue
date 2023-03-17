@@ -10,6 +10,7 @@
       disable-sort
       fixed-header
       hide-default-footer
+      mobile-breakpoint="0"
     >
     <template v-for="h in tableHeaders" v-slot:[`header.${h.value}`]>
         <div class="table-header-indicator" :key="h.value">
