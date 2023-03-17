@@ -46,7 +46,6 @@ export default class SSDTimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
   @Prop({default: '', type: String})
   objectId!: string
 
-  selectedItem: number = -1;
   active: string[] = []
   open: string[] = []
   items: ColumnItem[] = []
@@ -64,15 +63,9 @@ export default class SSDTimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
     this.onObjectIdChange()
   }
 
-  @Watch('selectedItem')
-  async onPlotChanged(): Promise<void> {
-    this.displays = this.allDisplays[this.selectedItem];
-    await this.loadTimeSeries(this.selectedItem);
-  }
-
-
   @Watch('objectId')
   async onObjectIdChange() {
+    if (this.panelId === '' || this.objectId === '') return
     const filter: ActionWithConfigRequest = {
       panelId: this.panelId,
       objectId: this.objectId,
@@ -85,7 +78,6 @@ export default class SSDTimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
 
 
   async onNodeChange(action: any): Promise<void> {
-    this.selectedItem = 0;
     this.timeSeriesStore = {}
     this.requests = [];
     this.plots = [];

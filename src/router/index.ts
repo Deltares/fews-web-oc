@@ -50,7 +50,7 @@ const routes: Array<RouteConfig> = [
     ]
   },
   {
-    // /ssd/group/ScadaNZK-ARK/panel/NZK_ARK_10min
+    // /ssd/ScadaNZK-ARK/NZK_ARK_10min
     path: '/ssd/:groupId?/:panelId?',
     name: 'SchematicStatusDisplay',
     component: SchematicStatusDisplay,
@@ -58,7 +58,7 @@ const routes: Array<RouteConfig> = [
     meta: { authorize: [], sidebar: true },
     children: [
       {
-        path: ':objectId',
+        path: '/ssd/:groupId/:panelId/:objectId',
         name: 'SSDTimeSeriesDisplay',
         component: SSDTimeSeriesDisplay,
         props: true,
