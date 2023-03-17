@@ -33,7 +33,7 @@
       </template>
     </v-toolbar>
     <v-sheet fluid class="component-container">
-      <v-tabs-items v-if="displayTypes.length > 1" v-model="tab" style="height: 100%;">
+      <v-tabs-items v-if="displayTypes.length > 1" v-model="tab" style="height: 100%;" touchless>
         <v-tab-item
           v-for="(displayType, index) in displayTypes"
           :key="index"
