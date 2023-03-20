@@ -1,7 +1,7 @@
 import { UserManagerSettings } from 'oidc-client-ts'
 
 const publicPath = process.env.NODE_ENV === 'production'
-  ? '__BASE_URL__'
+  ? process.env.VUE_APP_PUBLIC_PATH
   : '/'
 
 const baseUrl = window.location.origin + publicPath
