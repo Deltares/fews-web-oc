@@ -1,6 +1,6 @@
 module.exports = {
   publicPath: process.env.NODE_ENV === 'production'
-    ? '__BASE_URL__'
+    ? process.env.VUE_APP_PUBLIC_PATH
     : '/',
   transpileDependencies: [
     'vuetify'
