@@ -218,9 +218,9 @@ export default class ConfigurableChart extends Vue {
     const tag = this.legendTags.find(tag => {
       return tag.id === id
     })
-    const visible = wbCharts.toggleChartVisisbility(this.axis, id)
+    wbCharts.toggleChartVisisbility(this.axis, id)
     if (tag) {
-      tag.disabled = !visible
+      tag.disabled = !tag.disabled
     }
   }
 

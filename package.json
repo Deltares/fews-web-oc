@@ -35,7 +35,7 @@
     "vuex": "^3.4.0",
     "vuex-class": "^0.3.2",
     "vuex-module-decorators": "^1.2.0",
-    "wb-charts": "file:wb-charts-2.0.1.tgz"
+    "wb-charts": "file:wb-charts-2.1.2.tgz"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.1.1",
