@@ -1,5 +1,5 @@
 import { Vue, Component } from 'vue-property-decorator'
-import { datesFromPeriod, SsdWebserviceProvider, Capabilities, DisplayGroup, DisplayPanel } from 'fews-ssd-requests' // eslint-disable-line no-unused-vars
+import { datesFromPeriod, SsdWebserviceProvider, Capabilities, DisplayGroup, DisplayPanel } from '@deltares/fews-ssd-requests' // eslint-disable-line no-unused-vars
 
 @Component
 export default class SSDMixin extends Vue {
@@ -36,12 +36,7 @@ export default class SSDMixin extends Vue {
 
   async init (): Promise<void> {
     await this.loadCapabilities()
-    this.selectCurrentTime()
-  }
-
-  async update (): Promise<void> {
-    await this.loadCapabilities()
-    this.selectCurrentTime()
+    this.setTimeIndex()
   }
 
   async loadCapabilities (): Promise<void> {
@@ -76,7 +71,7 @@ export default class SSDMixin extends Vue {
     return false
   }
 
-  selectCurrentTime (): void {
+  setTimeIndex (): void {
     const now = this.currentPanel.dimension?.default ? new Date(this.currentPanel.dimension?.default) : new Date()
     if (!this.currentPanel.dimension) {
       return

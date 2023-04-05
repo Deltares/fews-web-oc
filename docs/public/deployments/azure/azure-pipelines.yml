@@ -1,0 +1,43 @@
+trigger:
+- main
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '14.x'
+  displayName: 'Install Node.js'
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      touch .env
+      echo 'VUE_APP_PUBLIC_PATH="/"' >> .env
+      
+      rm public/app-config.json      
+      cat > public/app-config.json <<EOL
+      {
+      "VUE_APP_FEWS_WEBSERVICES_URL": "$(VUE_APP_FEWS_WEBSERVICES_URL)",
+      "VUE_APP_MAPBOX_TOKEN": "$(VUE_APP_MAPBOX_TOKEN)",
+      "VUE_APP_REQUEST_HEADER_AUTHORIZATION": "Off",
+      "VUE_APP_AUTH_AUTHORITY": "$(VUE_APP_AUTH_AUTHORITY)",
+      "VUE_APP_AUTH_ID": "$(VUE_APP_AUTH_ID)",
+      "VUE_APP_AUTH_METADATA_URL": "https://login.microsoftonline.com/$(AZURE_TENANT_ID)/v2.0/.well-known/openid-configuration",
+      "VUE_APP_AUTH_SCOPE": "openid profile email Offline_Access api://$(AZURE_CLIENT_ID)/Delft-FEWSWebServices"            
+      }
+
+- script: |
+    cp docs/deployments/azure/staticwebapp.config.json .
+    npm install
+    npm run build
+  displayName: 'npm install and build of Web Operator Client'
+- task: AzureStaticWebApp@0
+  inputs:
+    app_location: '/'
+    api_location: ''
+    output_location: ''
+    azure_static_web_apps_api_token: $(deployment_token)

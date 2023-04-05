@@ -6,8 +6,8 @@ import vuetify from './plugins/vuetify'
 import router from './router'
 import './plugins/vue2mapbox-gl'
 import auth from '@/services/auth'
-import config from '@/services/application-config'
-import { defineCustomElements } from 'fews-ssd-web-component'
+import config, { configManager } from '@/services/application-config'
+import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
 import PortalVue from 'portal-vue'
 
 defineCustomElements(window)
@@ -15,7 +15,6 @@ defineCustomElements(window)
 
 Vue.config.ignoredElements = ['schematic-status-display']
 Vue.use(PortalVue)
-Vue.use(auth)
 
 Vue.config.productionTip = false
 
@@ -23,7 +22,9 @@ fetch(`${process.env.BASE_URL}app-config.json`)
   .then(res => res.json())
   .then(data => {
     Vue.use(config, data)
-
+    if (configManager.authenticationIsEnabled) {
+      Vue.use(auth)
+    }
     new Vue({
       store,
       vuetify,

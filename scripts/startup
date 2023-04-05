@@ -1,0 +1,14 @@
+#!/bin/sh
+if [ -z "${BASE_URL}" ]
+then
+  BASE_URL="/iwp"
+  echo "No BASE_URL specified using default '${BASE_URL}';"
+fi
+
+PUBLIC_ROOT="/usr/share/nginx/html/iwp"
+
+# Changes for BASE URL
+sed -i "s@__BASE_URL__@${BASE_URL}@g" ${PUBLIC_ROOT}/js/app.*.js
+sed -i "s@__BASE_URL__@${BASE_URL}@g" ${PUBLIC_ROOT}/index.html
+
+exec nginx -g 'daemon off;'

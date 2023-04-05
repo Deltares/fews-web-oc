@@ -1,0 +1,37 @@
+trigger:
+- main
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '14.x'
+  displayName: 'Install Node.js'
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      touch .env
+      echo 'VUE_APP_PUBLIC_PATH="/"' >> .env
+      
+      rm public/app-config.json      
+      cat > public/app-config.json <<EOL
+      {
+      "VUE_APP_FEWS_WEBSERVICES_URL": "$(VUE_APP_FEWS_WEBSERVICES_URL)",
+      "VUE_APP_MAPBOX_TOKEN": "$(VUE_APP_MAPBOX_TOKEN)"
+      }
+- script: |
+    cp docs/deployments/azure/staticwebapp.config.json .
+    npm install
+    npm run build
+  displayName: 'npm install and build of Web Operator Client'
+- task: AzureStaticWebApp@0
+  inputs:
+    app_location: '/'
+    api_location: ''
+    output_location: ''
+    azure_static_web_apps_api_token: $(deployment_token)

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="display-container">
     <portal to="web-oc-sidebar">
       <v-toolbar dense flat>
         <v-btn-toggle
@@ -9,11 +9,15 @@
           group
           mandatory
         >
-        <v-btn text><v-icon>mdi-file-tree</v-icon></v-btn>
-        <v-btn text><v-icon>mdi-view-week</v-icon></v-btn>
+          <v-btn text>
+            <v-icon>mdi-file-tree</v-icon>
+          </v-btn>
+          <v-btn text>
+            <v-icon>mdi-view-week</v-icon>
+          </v-btn>
         </v-btn-toggle>
       </v-toolbar>
-      <v-divider />
+      <v-divider/>
       <TreeMenu
         v-if="viewMode === 0"
         :active.sync="active"
@@ -29,116 +33,117 @@
       >
       </ColumnMenu>
     </portal>
-    <div v-for="(display, index) in displays" :key="index">
-      <time-series-component :value="display" :series="timeSeriesStore"/>
+    <v-card
+      class="my-auto mx-auto"
+      max-width="800"
+      v-if="warningMessage.length!==0"
+    >
+      <v-card-text>
+        <p class="text-h4 text--primary text-center">
+          {{warningMessage}}
+        </p>
+      </v-card-text>
+    </v-card>
+    <v-toolbar v-if="plots.length > 1 && $vuetify.breakpoint.mobile" dense>
+      <v-spacer/>
+      <v-menu offset-y>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn text v-bind="attrs" v-on="on">{{ plots[selectedItem] }}<v-icon>mdi-chevron-down</v-icon>
+          </v-btn>
+        </template>
+        <v-list dense>
+          <v-list-item-group v-model="selectedItem" mandatory color="primary">
+            <v-list-item v-for="(plot, i) in plots" :key="i">
+              <v-list-item-content>
+                <v-list-item-title v-text="plot"></v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
+      </v-menu>
+      <v-spacer/>
+    </v-toolbar>
+    <div style="height: 100%; width: 100%; display: flex; flex-direction: row">
+      <ComponentsPanel :displays="displays" :series="timeSeriesStore"/>
+      <div style="width: 200px;" v-if="plots.length > 1 && !$vuetify.breakpoint.mobile">
+        <v-navigation-drawer
+          width="200"
+          permanent
+        >
+          <v-subheader>Overview</v-subheader>
+          <v-list>
+            <v-list-item-group
+              v-model="selectedItem"
+              mandatory
+              color="primary"
+            >
+              <v-list-item
+                v-for="(plot, i) in plots"
+                :key="i"
+              >
+                <v-list-item-content>
+                  <v-list-item-title v-text="plot"></v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list-item-group>
+          </v-list>
+        </v-navigation-drawer>
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, Vue, Watch } from 'vue-property-decorator'
+import {Component, Mixins, Prop, Vue, Watch} from 'vue-property-decorator'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
-import { ColumnItem } from '@/components/ColumnItem'
-import TimeSeriesComponent from '@/components/TimeSeriesComponent/index.vue'
-import SeriesStore from '@/mixins/SeriesStore'
-import { Series, SeriesUrlRequest } from '@/lib/TimeSeries'
-import { ChartConfig, ChartSeries } from '@/components/TimeSeriesComponent/lib/ChartConfig'
-import { cloneDeep } from 'lodash'
-
-
-function convertTimeSeriesDisplayToWbCharts(r: any): ChartConfig {
-  const subplot = r.subplots[0]
-  const config: ChartConfig = {
-    title: r.title,
-    xAxis: [],
-    yAxis: [{
-      type: 'value',
-      location: subplot.items[0].yAxis.axisPosition,
-      label: subplot.items[0].yAxis.axisLabel,
-    }],
-  }
-  const series: ChartSeries[] = []
-  const requestIds: string[] = []
-  for (const index in subplot.items) {
-    const item = subplot.items[index]
-    requestIds.push(item.request)
-    const count = requestIds.filter((i) => i === item.request).length
-    const s = {
-      id: `${item.request}[${count - 1}]`,
-      dataResources: [
-        `${item.request}[${count - 1}]`
-      ],
-      name: item.legend,
-      unit: item.unit,
-      type: 'line',
-      options: {
-        x: {
-          key: "x",
-          axisIndex: 0
-        },
-        y: {
-          key: "y",
-          axisIndex: 0
-        },
-      },
-      style: {
-        stroke: item.color,
-        fill: "none",
-        'stroke-width': item.lineWidth + 'px'
-      }
-    }
-    series.push(s)
-    if (item.markerStyle !== undefined) {
-      const s2 = cloneDeep(s)
-      s2.type = 'marker'
-      s2.style = {
-        stroke: item.color,
-        fill: "none",
-        'stroke-width': item.lineWidth + 'px'
-      }
-      series.push(s2)
-    }
-  }
-  config.series = series
-  return config
-}
+import {ColumnItem} from '@/components/ColumnItem'
+import ComponentsPanel from '@/components/Layout/ComponentsPanel.vue'
+import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
+import {DisplayConfig, DisplayType} from '@/lib/Layout/DisplayConfig'
+import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
+import type { DisplayGroupsFilter, DisplayGroupsResponse, TimeSeriesResponse, TopologyNode } from "@deltares/fews-pi-requests";
+import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 
 @Component({
   components: {
     ColumnMenu,
     TreeMenu,
-    TimeSeriesComponent
+    ComponentsPanel
   }
 })
-export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
-  @Prop({ default: '', type: String })
+export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
+  @Prop({default: '', type: String})
   nodeId!: string
 
-  drawer = true
+  selectedItem: number = -1;
   active: string[] = []
   open: string[] = []
   items: ColumnItem[] = []
   viewMode = 0
+  warningMessage: string = "";
   baseUrl!: string
-  displays = []
-  requests: Record<string, URL> = {}
+  allDisplays: DisplayConfig[][] = []
+  displays: DisplayConfig[] = []
+  requests: any[] = [];
+  plots: string[] = [];
+  webServiceProvider: PiWebserviceProvider = {} as PiWebserviceProvider;
 
-  created (): void {
+  created(): void {
     this.baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
   }
 
-  async mounted (): Promise<void> {
+  async mounted(): Promise<void> {
+    this.webServiceProvider = new PiWebserviceProvider(this.baseUrl);
     await this.loadNodes()
-    this.onNodeChange()
+    await this.onNodeChange()
   }
 
-  async loadNodes (): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/rest/fewspiservice/v1/topology/nodes`)
-    const nodes = await response.json()
+  async loadNodes(): Promise<void> {
+    let nodes = await this.webServiceProvider.getTopologyNodes();
 
-    const recursiveUpdateNode: any = (nodes: any[]) => {
-      const resultNodes: any = nodes.map((node) => {
+    const recursiveUpdateNode = (nodes: TopologyNode[]) => {
+      return nodes.map((node) => {
         const result: ColumnItem = {
           id: node.id,
           name: node.name,
@@ -156,12 +161,11 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
         }
         return result
       })
-      return resultNodes
     }
     const items: ColumnItem[] = [
       {
         id: 'root',
-        name: 'Topologie',
+        name: 'Topology',
         children: recursiveUpdateNode(nodes.topologyNodes)
       }
     ]
@@ -170,61 +174,74 @@ export default class TimeSeriesDisplay extends Mixins(SeriesStore) {
     this.open = [items[0].id]
   }
 
+  @Watch('selectedItem')
+  async onPlotChanged(): Promise<void> {
+    this.displays = this.allDisplays[this.selectedItem];
+    await this.loadTimeSeries(this.selectedItem);
+  }
+
   @Watch('nodeId')
-  async onNodeChange (): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/rest/fewspiservice/v1/displaygroups?&nodeId=${this.nodeId}`)
-    const json = await response.json()
-    this.displays = json.results.map((result: any) => {
-      if (result.config !== undefined) {
-        return convertTimeSeriesDisplayToWbCharts(result.config.timeSeriesDisplay)
-      } else {
-        return
-      }
-    })
-    for (const result of json.results) {
-      for (const r of result.requests) {
-        const url = new URL(`${this.baseUrl}/${r.request}`)
-        const piResponse = await fetch(url.toString())
-        const piSeries = await piResponse.json()
-        for (const index in piSeries.timeSeries) {
-          const t = piSeries.timeSeries[index]
-          const resourceId = `${r.key}[${index}]`
-          const resource = new SeriesUrlRequest('fews-pi', url.toString())
-          const series = new Series(resource)
-          series.header.name = `${t.header.stationName} - ${t.header.parameterId} (${t.header.moduleInstanceId})`
-          series.header.unit = t.header.units
-          series.header.parameter = t.header.parameterId
-          series.header.location = t.header.stationName
-          series.header.source = t.header.moduleInstanceId
-          series.start = new Date(`${t.header.startDate.date}T${t.header.startDate.time}`)
-          series.end = new Date(`${t.header.endDate.date}T${t.header.endDate.time}`)
-          series.data = t.events.map((event: any) => {
-            return {
-              x: new Date(`${event.date}T${event.time}`),
-              y: event.flag === '8' ? null : +event.value}
-          })
-          Vue.set(this.timeSeriesStore, resourceId, series)
-        }
-      }
+  async onNodeChange(): Promise<void> {
+    const filter = {} as DisplayGroupsFilter;
+    filter.nodeId = this.nodeId;
+    const response: DisplayGroupsResponse = await this.webServiceProvider.getDisplayGroupsTimeSeriesInfo(filter);
+    this.selectedItem = 0;
+    this.allDisplays = [];
+    this.requests = [];
+    this.plots = [];
+    this.displays = [];
+    this.warningMessage = "";
+    if (response.resultsNotAvailableForRequest) {
+      this.warningMessage = "There are no plots configured for this node"
+      return
     }
+
+    for (const result of response.results) {
+      if (result.config === undefined) continue;
+      const display: DisplayConfig[] = [];
+      for (let i in result.config.timeSeriesDisplay.subplots) {
+        const subPlot = result.config.timeSeriesDisplay.subplots[i]
+        console.log(subPlot)
+        const title = result.config.timeSeriesDisplay.title
+        display.push({
+          id: `${title}-${i}`,
+          types: [DisplayType.TimeSeriesChart, DisplayType.TimeSeriesTable],
+          class: 'single',
+          title: result.config.timeSeriesDisplay.title,
+          config: timeSeriesDisplayToChartConfig(subPlot, title)
+        })
+      }
+      this.allDisplays.push(display);
+      this.requests.push(result.requests);
+      this.plots.push(result.config.timeSeriesDisplay.title)
+    }
+    if (this.plots.length === 0) {
+      this.warningMessage = "It was not possible to show plots for this node. Please check your config"
+      return
+    }
+    this.displays = this.allDisplays[0];
+    await this.loadTimeSeries(0);
+  }
+
+  private async loadTimeSeries(index: number) {
+    this.updateTimeSeries(this.requests[index])
   }
 
   @Watch('active')
-  onActiveChange (): void {
+  onActiveChange(): void {
     console.log('update:active', this.active)
   }
 
   @Watch('open')
-  onOpenChange (): void {
+  onOpenChange(): void {
     console.log('update:open', this.open)
   }
 
-  toggleDrawer (): void {
-    this.drawer = !this.drawer
-  }
-
-  get drawerIcon (): string {
-    return this.drawer ? 'mdi-chevron-double-left' : 'mdi-chevron-double-right'
-  }
 }
 </script>
+
+<style scoped>
+.display-container {
+  height: 100%;
+}
+</style>
