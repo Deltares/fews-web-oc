@@ -2,6 +2,16 @@
 
 ## Project setup
 
+### Set up a personal access token
+
+Create a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) with the following scope:
+
+- read:packages
+
+Assign the value of that token to an environmental variable `GITHUB_AUTH_TOKEN`.
+
+### Install packages
+
 ```
 npm install
 ```
@@ -55,37 +65,3 @@ The following settings can be provided:
 For general documentation about the Web OC, please see:
 
 [Documentation](docs/)
-
-## Installing the fews-web-oc-components package
-
-There are multiple ways to be able to install the package.
-
-**Through ~/.npmrc**
-
-Open the `~/.npmrc` file and write the following line:
-
-```text
-//npm.pkg.github.com/:_authToken=TOKEN
-```
-
-`TOKEN` should be replaced with a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) with the following scope:
-
-- read:packages
-
-**WARNING**
-DO NOT PUSH YOUR PERSONAL ACCESS TOKEN TO GITHUB
-
-**Through command line**
-
-Open a terminal in the project root and type:
-
-```commandline
-$ npm login --scope=@deltares --registry=https://npm.pkg.github.com
-
-> Username: GITHUB USERNAME
-> Password: PERSONAL ACCESS TOKEN WITH read:packages SCOPE
-> Email: PUBLIC-EMAIL-ADDRESS
-
-$ npm install
-
-```
