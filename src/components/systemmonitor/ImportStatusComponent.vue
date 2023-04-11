@@ -33,13 +33,14 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator'
+import {Component, Mixins, Prop} from 'vue-property-decorator'
 import {TableHeader} from "@/components/systemmonitor/lib/tableHeader";
 import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
+import PiRequestsMixin from '@/mixins/PiRequestsMixin';
 import type { ImportStatus } from "@deltares/fews-pi-requests"
 
 @Component
-export default class ImportStatusComponent extends Vue {
+export default class ImportStatusComponent extends Mixins(PiRequestsMixin) {
   @Prop({default: ''})
   baseUrl!: string
 
@@ -74,7 +75,7 @@ export default class ImportStatusComponent extends Vue {
   async loadRunningTasks() {
     try {
       if (!this.active) return
-      const provider = new PiWebserviceProvider(this.baseUrl);
+      const provider = new PiWebserviceProvider(this.baseUrl, {transformRequestFn: this.transformRequest});
       const res = await provider.getImportStatus();
       this.importStatus = res.importStatus;
     } catch (error) {
