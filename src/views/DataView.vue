@@ -105,6 +105,7 @@
 <script lang="ts">
 import { Component, Mixins, Prop, Vue, Watch } from 'vue-property-decorator'
 import { DocumentFormat, PiWebserviceProvider } from "@deltares/fews-pi-requests";
+import PiRequestsMixin from '@/mixins/PiRequestsMixin';
 import { debounce, uniq, intersection } from 'lodash';
 import { Location } from '@deltares/fews-pi-requests';
 import MapComponent from '../components/MapComponent.vue'
@@ -149,7 +150,7 @@ interface Parameter {
     WMSLayerControl
   }
 })
-export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin) {
+export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiRequestsMixin) {
   @Prop({
     default: '',
     type: String
@@ -227,7 +228,7 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   async mounted() {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    this.webServiceProvider = new PiWebserviceProvider(baseUrl)
+    this.webServiceProvider = new PiWebserviceProvider(baseUrl, {transformRequestFn: this.transformRequest})
     this.setLayoutClass()
     await this.getFilters()
     this.getParameters()
@@ -240,7 +241,8 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   async getFilters() {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const response = await fetch(`${baseUrl}/rest/fewspiservice/v1/filters?documentFormat=PI_JSON`)
+    const request = new Request(`${baseUrl}/rest/fewspiservice/v1/filters?documentFormat=PI_JSON`)
+    const response = await fetch( await this.transformRequest(request))
     const filters = (await response.json()).filters.map((f: Filter) => {
       return {
         ...f,
@@ -264,8 +266,9 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     }
     // const response = await this.webServiceProvider.getParameters(filter as any)
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const response = await fetch(
+    const request = new Request(
       `${baseUrl}/rest/fewspiservice/v1/parameters?documentFormat=PI_JSON&filterId=${this.filterId}`)
+    const response = await fetch( await this.transformRequest(request))
     const parameters: Parameter[] = (await response.json()).timeSeriesParameters
     this.parameters = parameters
     this.categories = uniq(parameters.map(p => p.parameterGroup))
@@ -378,7 +381,8 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   async onLocationChange() {
     if (this.locationId === '') return
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const result = await fetch(`${baseUrl}/rest/fewspiservice/v1/filters/actions?filterId=${this.filterId}&parameterGroupId=${this.categoryId}&locationIds=${this.locationId}`)
+    const request = new Request(`${baseUrl}/rest/fewspiservice/v1/filters/actions?filterId=${this.filterId}&parameterGroupId=${this.categoryId}&locationIds=${this.locationId}`)
+    const result = await fetch( await this.transformRequest(request))
     const response = await result.json()
     const allDisplays = []
     const requests = []

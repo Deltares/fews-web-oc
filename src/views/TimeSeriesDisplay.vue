@@ -94,7 +94,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Mixins, Prop, Vue, Watch} from 'vue-property-decorator'
+import {Component, Mixins, Prop, Watch} from 'vue-property-decorator'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
 import {ColumnItem} from '@/components/ColumnItem'
@@ -102,7 +102,8 @@ import ComponentsPanel from '@/components/Layout/ComponentsPanel.vue'
 import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import {DisplayConfig, DisplayType} from '@/lib/Layout/DisplayConfig'
 import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
-import type { DisplayGroupsFilter, DisplayGroupsResponse, TimeSeriesResponse, TopologyNode } from "@deltares/fews-pi-requests";
+import PiRequestsMixin from "@/mixins/PiRequestsMixin"
+import type { DisplayGroupsFilter, DisplayGroupsResponse, TopologyNode } from "@deltares/fews-pi-requests";
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 
 @Component({
@@ -112,7 +113,7 @@ import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisp
     ComponentsPanel
   }
 })
-export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
+export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequestsMixin) {
   @Prop({default: '', type: String})
   nodeId!: string
 
@@ -134,7 +135,7 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
   }
 
   async mounted(): Promise<void> {
-    this.webServiceProvider = new PiWebserviceProvider(this.baseUrl);
+    this.webServiceProvider = new PiWebserviceProvider(this.baseUrl, {transformRequestFn: this.transformRequest});
     await this.loadNodes()
     await this.onNodeChange()
   }

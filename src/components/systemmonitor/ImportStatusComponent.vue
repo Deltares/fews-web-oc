@@ -71,10 +71,20 @@ export default class ImportStatusComponent extends Vue {
     return "red";
   }
 
+  async transformRequest(request: Request): Promise<Request> {
+    const requestAuthHeaders = await this.$auth.getAuthorizationHeaders()
+    const requestInit = {
+      headers: requestAuthHeaders,
+      cache: "no-cache"
+    } as const
+    const newRequest = new Request(request, requestInit)
+    return newRequest
+  }
+
   async loadRunningTasks() {
     try {
       if (!this.active) return
-      const provider = new PiWebserviceProvider(this.baseUrl);
+      const provider = new PiWebserviceProvider(this.baseUrl, {transformRequestFn: this.transformRequest});
       const res = await provider.getImportStatus();
       this.importStatus = res.importStatus;
     } catch (error) {

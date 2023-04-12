@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Mixins, Prop, Vue, Watch} from 'vue-property-decorator'
+import {Component, Mixins, Prop, Watch} from 'vue-property-decorator'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
 import {ColumnItem} from '@/components/ColumnItem'

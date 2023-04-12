@@ -1,6 +1,7 @@
-import { Vue, Component } from 'vue-property-decorator'
+import { Component, Mixins, Vue } from 'vue-property-decorator'
 import { Series, SeriesUrlRequest } from '@/lib/TimeSeries'
 import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
+import PiRequestsMixin from "@/mixins/PiRequestsMixin"
 import type { TimeSeriesResponse } from '@deltares/fews-pi-requests'
 
 function timeZoneOffsetString (offset: number): string {
@@ -27,14 +28,14 @@ function absoluteUrl(urlString: string): URL {
 }
 
 @Component
-export default class TimeSeriesMixin extends Vue {
+export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
   timeSeriesStore: Record<string, Series> = {}
 
   async updateTimeSeries(requests: any[]
   ): Promise<void> {
 
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const webServiceProvider = new PiWebserviceProvider(baseUrl)
+    const webServiceProvider = new PiWebserviceProvider(baseUrl, {transformRequestFn: this.transformRequest})
     for (const r in requests) {
       const request = requests[r]
       const url = absoluteUrl(`${baseUrl}/${request.request}`)
