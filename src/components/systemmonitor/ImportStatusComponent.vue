@@ -33,14 +33,13 @@
 </template>
 
 <script lang="ts">
-import {Component, Mixins, Prop} from 'vue-property-decorator'
+import {Component, Prop, Vue} from 'vue-property-decorator'
 import {TableHeader} from "@/components/systemmonitor/lib/tableHeader";
 import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
-import PiRequestsMixin from '@/mixins/PiRequestsMixin';
 import type { ImportStatus } from "@deltares/fews-pi-requests"
 
 @Component
-export default class ImportStatusComponent extends Mixins(PiRequestsMixin) {
+export default class ImportStatusComponent extends Vue {
   @Prop({default: ''})
   baseUrl!: string
 
@@ -70,6 +69,16 @@ export default class ImportStatusComponent extends Mixins(PiRequestsMixin) {
   getColor(failure: number): string {
     if (failure == 0) return "white";
     return "red";
+  }
+
+  async transformRequest(request: Request): Promise<Request> {
+    const requestAuthHeaders = await this.$auth.getAuthorizationHeaders()
+    const requestInit = {
+      headers: requestAuthHeaders,
+      cache: "no-cache"
+    } as const
+    const newRequest = new Request(request, requestInit)
+    return newRequest
   }
 
   async loadRunningTasks() {
