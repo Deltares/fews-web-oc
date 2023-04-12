@@ -9,7 +9,7 @@ pool:
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '14.x'
+    versionSpec: '18.5.x'
   displayName: 'Install Node.js'
 - task: Bash@3
   inputs:
@@ -30,7 +30,7 @@ steps:
       "VUE_APP_AUTH_SCOPE": "openid profile email Offline_Access api://$(AZURE_APP_CLIENT_ID)/Delft-FEWSWebServices"            
       }
 - script: |
-    cp docs/deployments/azure/staticwebapp.config.json .
+    cp docs/public/deployments/azure/staticwebapp.config.json .
     npm install
     npm run build
   displayName: 'npm install and build of Web Operator Client'
