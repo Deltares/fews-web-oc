@@ -33,17 +33,6 @@
       >
       </ColumnMenu>
     </portal>
-    <v-card
-      class="my-auto mx-auto"
-      max-width="800"
-      v-if="warningMessage.length!==0"
-    >
-      <v-card-text>
-        <p class="text-h4 text--primary text-center">
-          {{warningMessage}}
-        </p>
-      </v-card-text>
-    </v-card>
     <v-toolbar v-if="plots.length > 1 && $vuetify.breakpoint.mobile" dense>
       <v-spacer/>
       <v-menu offset-y>
@@ -105,6 +94,7 @@ import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
 import PiRequestsMixin from "@/mixins/PiRequestsMixin"
 import type { DisplayGroupsFilter, DisplayGroupsResponse, TopologyNode } from "@deltares/fews-pi-requests";
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
+import ExternalWebPagePanel from "@/components/Layout/ExternalWebPagePanel.vue";
 
 @Component({
   components: {
@@ -117,12 +107,13 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
   @Prop({default: '', type: String})
   nodeId!: string
 
-  selectedItem: number = -1;
+  urlTopologyNodeMap: Map<string,string> = new Map<string, string>()
+  selectedItem: number = -1
   active: string[] = []
   open: string[] = []
   items: ColumnItem[] = []
   viewMode = 0
-  warningMessage: string = "";
+  url: string | undefined = "";
   baseUrl!: string
   allDisplays: DisplayConfig[][] = []
   displays: DisplayConfig[] = []
@@ -140,15 +131,43 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
     await this.onNodeChange()
   }
 
+  anyChildNodeIsVisible(nodes: TopologyNode[] | undefined): boolean {
+    if (nodes === undefined) return false;
+    for (const node of nodes) {
+      if (this.topologyNodeIsVisible(node)) return true;
+    }
+    return false;
+  }
+
+  topologyNodeIsVisible(node: TopologyNode): boolean {
+    if (node.url !== undefined) return true;
+    if (node.displayId !== undefined) return true;
+    if (node.displayGroupId !== undefined) return true;
+    return this.anyChildNodeIsVisible(node.topologyNodes);
+  }
+
+  fillNodeMap(node: TopologyNode, map: Map<string, string>) {
+    if (node.url !== undefined) {
+      map.set(node.id, node.url)
+    }
+    node.topologyNodes?.forEach(childNode => this.fillNodeMap(childNode, map));
+  }
+
+  getIcon(node: TopologyNode): string | undefined {
+    if (node.url) return 'mdi-share';
+    return undefined;
+  }
   async loadNodes(): Promise<void> {
     let nodes = await this.webServiceProvider.getTopologyNodes();
+    this.urlTopologyNodeMap.clear();
+    nodes.topologyNodes.forEach(node => this.fillNodeMap(node, this.urlTopologyNodeMap));
 
     const recursiveUpdateNode = (nodes: TopologyNode[]) => {
-      return nodes.map((node) => {
+      return nodes.filter(node => this.topologyNodeIsVisible(node)).map((node) => {
         const result: ColumnItem = {
           id: node.id,
           name: node.name,
-          icon: node.workflowId ? 'mdi-restart' : undefined
+          icon: this.getIcon(node)
         }
         if (node.topologyNodes) {
           result.children = recursiveUpdateNode(node.topologyNodes)
@@ -191,10 +210,9 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
     this.requests = [];
     this.plots = [];
     this.displays = [];
-    this.warningMessage = "";
-    if (response.resultsNotAvailableForRequest) {
-      this.warningMessage = "There are no plots configured for this node"
-      return
+    this.url = this.urlTopologyNodeMap.get(this.nodeId);
+    if (this.url !== undefined) {
+      window.open(this.url, this.url);
     }
 
     for (const result of response.results) {
@@ -202,7 +220,6 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
       const display: DisplayConfig[] = [];
       for (let i in result.config.timeSeriesDisplay.subplots) {
         const subPlot = result.config.timeSeriesDisplay.subplots[i]
-        console.log(subPlot)
         const title = result.config.timeSeriesDisplay.title
         display.push({
           id: `${title}-${i}`,
@@ -216,11 +233,7 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
       this.requests.push(result.requests);
       this.plots.push(result.config.timeSeriesDisplay.title)
     }
-    if (this.plots.length === 0) {
-      this.warningMessage = "It was not possible to show plots for this node. Please check your config"
-      return
-    }
-    this.displays = this.allDisplays[0];
+    this.displays = this.allDisplays.length > 0 ? this.allDisplays[0] : [];
     await this.loadTimeSeries(0);
   }
 
