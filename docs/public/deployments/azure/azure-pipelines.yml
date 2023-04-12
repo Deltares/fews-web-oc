@@ -9,7 +9,7 @@ pool:
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '14.x'
+    versionSpec: '18.5.x'
   displayName: 'Install Node.js'
 - task: Bash@3
   inputs:
@@ -31,7 +31,7 @@ steps:
       }
 
 - script: |
-    cp docs/deployments/azure/staticwebapp.config.json .
+    cp docs/public/deployments/azure/staticwebapp.config.json .
     npm install
     npm run build
   displayName: 'npm install and build of Web Operator Client'
