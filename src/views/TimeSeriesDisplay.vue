@@ -172,10 +172,15 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
         if (node.topologyNodes) {
           result.children = recursiveUpdateNode(node.topologyNodes)
         } else {
-          result.to = {
-            name: 'TimeSeriesDisplay',
-            params: {
-              nodeId: node.id
+          if(node.url !== undefined) {
+            result.href = node.url
+            result.target = node.url
+          } else {
+            result.to = {
+              name: 'TimeSeriesDisplay',
+              params: {
+                nodeId: node.id
+              }
             }
           }
         }
@@ -210,11 +215,6 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
     this.requests = [];
     this.plots = [];
     this.displays = [];
-    this.url = this.urlTopologyNodeMap.get(this.nodeId);
-    if (this.url !== undefined) {
-      window.open(this.url, this.url);
-    }
-
     for (const result of response.results) {
       if (result.config === undefined) continue;
       const display: DisplayConfig[] = [];
