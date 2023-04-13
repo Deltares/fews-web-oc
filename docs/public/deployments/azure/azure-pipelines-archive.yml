@@ -1,5 +1,10 @@
 trigger:
 - main
+paths:
+  include:
+    - src/*
+    - package.json
+
 
 pr: none
 
