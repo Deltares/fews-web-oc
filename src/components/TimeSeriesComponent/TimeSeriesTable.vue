@@ -72,7 +72,7 @@ export default class TimeSeriesTable extends Vue {
   setHeaders() {
     if (this.value?.series === undefined) return
     const tableHeaders: TableHeaders[] = []
-    tableHeaders.push({value: 'date', text: 'Date', width: '180px', class: 'sticky-column', cellClass:'sticky-column'})
+    tableHeaders.push({value: 'date', text: 'Date', width: '200px', class: 'sticky-column', cellClass:'sticky-column'})
     const seriesDef = this.value.series
     this.seriesIds.forEach((seriesId) => {
       const chartSeries = seriesDef.find((s) => s.id === seriesId)
@@ -115,6 +115,7 @@ export default class TimeSeriesTable extends Vue {
         day: 'numeric',
         hour: 'numeric',
         minute: 'numeric',
+        second: 'numeric',
         hour12: false
       })
       for (const seriesId of this.seriesIds) {
