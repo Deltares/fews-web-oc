@@ -12,7 +12,7 @@
       @update:active="(event) => $emit('update:active',event)"
     >
       <template v-slot:label="props">
-        <v-list-item dense :to="props.item.to" :disabled="props.item.nodata">
+        <v-list-item dense :to="props.item.to" :disabled="props.item.nodata" :href="props.item.href" :target="props.item.target"> 
           <v-tooltip bottom open-delay="400">
             <template v-slot:activator="{ on, attrs }">
               <v-list-item-content
@@ -23,6 +23,9 @@
             </template>
             <span>{{ props.item.name }}</span>
           </v-tooltip>
+          <v-icon v-if="props.item.icon !==undefined" small>
+            {{ props.item.icon }}
+          </v-icon>
         </v-list-item>
       </template>
     </v-treeview>

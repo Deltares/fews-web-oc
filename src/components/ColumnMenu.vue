@@ -24,13 +24,15 @@
         v-bind:key="child.id"
         @click="(event) => { onItemClick(event, child) }"
         :to="child.to"
+        :href="child.href"
+        :target="child.target"
         :class="getClass(child)"
       >
         <v-list-item-content>
-          <v-list-item-title v-text="child.name"></v-list-item-title>
+          <v-list-item-title>{{ child.name }}</v-list-item-title>
         </v-list-item-content>
         <v-icon v-if="child.children">mdi-chevron-right</v-icon>
-        <v-icon v-else-if="child.icon">{{ child.icon }}</v-icon>
+        <v-icon v-else-if="child.icon" small>{{ child.icon }}</v-icon>
       </v-list-item>
     </v-list-item-group>
     </v-window-item>
