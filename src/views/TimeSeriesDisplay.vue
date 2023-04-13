@@ -94,7 +94,6 @@ import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
 import PiRequestsMixin from "@/mixins/PiRequestsMixin"
 import type { DisplayGroupsFilter, DisplayGroupsResponse, TopologyNode } from "@deltares/fews-pi-requests";
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
-import ExternalWebPagePanel from "@/components/Layout/ExternalWebPagePanel.vue";
 
 @Component({
   components: {
