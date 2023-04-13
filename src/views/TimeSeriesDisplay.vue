@@ -44,7 +44,7 @@
           <v-list-item-group v-model="selectedItem" mandatory color="primary">
             <v-list-item v-for="(plot, i) in plots" :key="i">
               <v-list-item-content>
-                <v-list-item-title v-text="plot"></v-list-item-title>
+                <v-list-item-title>{{ plot }}</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list-item-group>
@@ -71,7 +71,7 @@
                 :key="i"
               >
                 <v-list-item-content>
-                  <v-list-item-title v-text="plot"></v-list-item-title>
+                  <v-list-item-title>{{ plot }}</v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
             </v-list-item-group>
