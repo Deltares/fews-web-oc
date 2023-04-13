@@ -31,4 +31,11 @@ export class AuthenticationManager extends UserManager{
         return {}
     }
   }
+
+  public async transformRequestAuth(request: Request): Promise<Request> {
+    const requestAuthHeaders = await this.getAuthorizationHeaders()
+    const requestInit = { headers: requestAuthHeaders}
+    const newRequest = new Request(request, requestInit)
+    return newRequest
+  }
 }

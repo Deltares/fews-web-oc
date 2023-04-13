@@ -18,7 +18,7 @@
               <v-icon>{{ item.icon }}</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-               {{ item.id }}
+               {{ item.title }}
             </v-list-item-content>
           </v-list-item>
         </v-list>
@@ -54,8 +54,11 @@ import CogMenu from '@/components/CogMenu.vue'
 import LoginComponent from '@/components/LoginComponent.vue'
 import { namespace } from 'vuex-class'
 import { Alert } from '@/store/modules/alerts/types'
+import type { WebOcComponent } from '@/store/modules/fews-config/types'
+import { ComponentTypeEnum } from '@/store/modules/fews-config/types'
 
 const alertsModule = namespace('alerts')
+const fewsConfigModule = namespace('fewsconfig')
 
 @Component({
   components: {
@@ -64,31 +67,23 @@ const alertsModule = namespace('alerts')
   }
 })
 export default class Default extends Vue {
-
   @alertsModule.Getter('listActive')
     activeAlerts!: Alert[]
   @alertsModule.State('alerts')
     alerts!: Alert[]
+  @fewsConfigModule.State('components')
+    webOcComponents!: { [key: string]: WebOcComponent }
+  @fewsConfigModule.Action('loadComponents')
+    loadComponents!: () => void
+
+  mounted(): void {
+    this.loadComponents()
+  }
 
   drawer: boolean | null = null
-  menuItems = [
-    { id: 'Data View', icon: 'mdi-archive-search', to: { name: 'DataViewer' } },
-    { id: 'Schematic Status Display', icon: 'mdi-application-brackets-outline', to: { name: 'SchematicStatusDisplay' } },
-    { id: 'Spatial Display', icon: 'mdi-map', to: { name: 'SpatialDisplay' } },
-    { id: 'Time Series Display', icon: 'mdi-chart-sankey', to: { name: 'TimeSeriesDisplay' } },
-    { id: 'System monitor', icon: 'mdi-clipboard-list', to: { name: 'SystemMonitor' } },
-  ]
 
   toggleDrawer (): void {
     this.drawer = !this.drawer
-  }
-
-  get menuLabel (): string {
-    return this.menuItems.find((item) => item.to.name === this.$route.name)?.id || ''
-  }
-
-  get menuIcon (): string {
-    return this.menuItems.find((item) => item.to.name === this.$route.name)?.icon || ''
   }
 
   get showAlerts() {
@@ -97,6 +92,35 @@ export default class Default extends Vue {
 
   dismissAlert(alert: Alert, value: boolean) {
     alert.active = value
+  }
+
+  getMenuIcon (componentConfig: WebOcComponent): string {
+    if (componentConfig.icon !== undefined) return componentConfig.icon
+    switch (componentConfig.component) {
+        case ComponentTypeEnum.DataViewer:
+          return 'mdi-archive-search'
+        case ComponentTypeEnum.SpatialDisplay:
+          return 'mdi-map'
+        case ComponentTypeEnum.SchematicStatusDisplay:
+          return 'mdi-application-brackets-outline'
+        case ComponentTypeEnum.TimeSeriesDisplay:
+          return 'mdi-chart-sankey'
+        case ComponentTypeEnum.SystemMonitor:
+          return 'mdi-clipboard-list'
+        default: return ''
+    }
+  }
+
+  get menuItems (): {id: string, to: {name: string}, title: string, icon: string}[] {
+    const menuItems = Object.values(this.webOcComponents).map(componentConfig => {
+      return {
+        id: componentConfig.id,
+        to: { name: componentConfig.component },
+        title: componentConfig.title,
+        icon: this.getMenuIcon(componentConfig)
+      }
+    })
+    return menuItems
   }
 }
 </script>

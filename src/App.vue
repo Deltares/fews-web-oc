@@ -8,6 +8,10 @@
 import { Vue, Component } from 'vue-property-decorator'
 import Default from '@/layouts/Default.vue'
 import Empty from '@/layouts/Empty.vue'
+import { User } from 'oidc-client-ts'
+import { namespace } from 'vuex-class'
+
+const fewsConfigModule = namespace('fewsconfig')
 
 @Component({
   components: {
@@ -16,6 +20,26 @@ import Empty from '@/layouts/Empty.vue'
   }
 })
 export default class App extends Vue {
+  @fewsConfigModule.Action('setFewsConfig')
+    setFewsConfig!: () => Promise<void>
+
+  async created(): Promise<void> {
+    // Authentication is enabled
+    if (this.$route.path === "/auth/callback") {
+      this.$auth
+      .signinRedirectCallback()
+      .then((user: User) => {
+        this.setFewsConfig()
+        this.$router.push({ name: user.state as string })
+      })
+      .catch(err => console.error(err))
+    }
+    // Authentication is not enabled
+    if (!this.$config.authenticationIsEnabled) {
+      this.setFewsConfig()
+    }
+  }
+
   get layout (): string {
     let layout = 'default'
     this.$route.matched.some(
