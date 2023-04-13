@@ -1,5 +1,11 @@
 trigger:
-- main
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - src/*
+      - package.json
 
 pr: none
 
