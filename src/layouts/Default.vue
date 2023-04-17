@@ -1,7 +1,9 @@
 <template>
   <v-app id="app">
     <v-app-bar color="#080C80" dense app dark :clipped-left="!$vuetify.rtl" :clipped-right="$vuetify.rtl">
-      <v-btn v-if="!$vuetify.breakpoint.mobile" text>Delft-FEWS Web OC</v-btn>
+      <v-btn v-if="!$vuetify.breakpoint.mobile" text :to="{ name: 'Home' }">
+        Delft-FEWS Web OC
+      </v-btn>
       <v-menu offset-y>
         <template v-slot:activator="{ on, attrs }">
         <v-app-bar-nav-icon

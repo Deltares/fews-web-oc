@@ -8,8 +8,9 @@
 import { Vue, Component } from 'vue-property-decorator'
 import Default from '@/layouts/Default.vue'
 import Empty from '@/layouts/Empty.vue'
-import { User } from 'oidc-client-ts'
 import { namespace } from 'vuex-class'
+import { WebOcComponent } from '@/store/modules/fews-config/types'
+import { routesViews } from '@/router'
 
 const fewsConfigModule = namespace('fewsconfig')
 
@@ -20,24 +21,31 @@ const fewsConfigModule = namespace('fewsconfig')
   }
 })
 export default class App extends Vue {
+  @fewsConfigModule.State('components')
+    webOcComponents!: { [key: string]: WebOcComponent }
   @fewsConfigModule.Action('setFewsConfig')
     setFewsConfig!: () => Promise<void>
 
   async created(): Promise<void> {
-    // Authentication is enabled
-    if (this.$route.path === "/auth/callback") {
-      this.$auth
-      .signinRedirectCallback()
-      .then((user: User) => {
-        this.setFewsConfig()
-        this.$router.push({ name: user.state as string })
-      })
-      .catch(err => console.error(err))
+    if (this.$config.authenticationIsEnabled) {
+      if (this.$route.path === "/auth/callback") {
+        const user = await this.$auth.signinRedirectCallback()
+        const path: string = user.state === null ? '/home' : user.state as string
+        this.$router.push({ path })
+      }
+      const user = await this.$auth.getUser()
+      if (user !== null) await this.setFewsConfig()
+    } else {
+      await this.setFewsConfig()
     }
-    // Authentication is not enabled
-    if (!this.$config.authenticationIsEnabled) {
-      this.setFewsConfig()
-    }
+    this.setRoutes()
+  }
+
+  setRoutes(): void {
+    Object.values(this.webOcComponents).forEach(webOcComponent => {
+      const route = routesViews.find((route) => route.name === webOcComponent.component)
+      if (route !== undefined) this.$router.addRoute(route)
+    })
   }
 
   get layout (): string {
