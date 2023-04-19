@@ -1,12 +1,12 @@
 import { configManager } from '@/services/application-config/'
 import { AuthenticationManager } from '@/services/authentication/AuthenticationManager'
 import type { WebOcComponent } from '@/store/modules/fews-config/types'
+import { PiWebserviceProvider } from "@deltares/fews-pi-requests";
 
 export async function getFewsConfig(): Promise<WebOcComponent[]> {
   const baseUrl = configManager.get('VUE_APP_FEWS_WEBSERVICES_URL')
-  const request = new Request(`${baseUrl}/rest/fewspiservice/v1/weboc/config?documentFormat=PI_JSON`)
-  const response = await fetch( await transformRequest(request))
-  const fewsConfig = await response.json()
+  const webServiceProvider = new PiWebserviceProvider(baseUrl, {transformRequestFn: transformRequest});
+  const fewsConfig = await webServiceProvider.getWebOcConfiguration()
   const webOcComponents: WebOcComponent[] = []
   for ( const componentConfig of fewsConfig.components ) {
     const webOcComponent: WebOcComponent = {
