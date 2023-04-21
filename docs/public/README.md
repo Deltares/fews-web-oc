@@ -26,3 +26,10 @@ https://deltares.github.io/fews-pi-requests/
 The Web OC can be customized using a Delf-FEWS Configuration.
 
 https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client
+
+## Delft-FEWS API
+
+Information on the Delft-FEWS APIs that are used by the Web OC can be found at:
+
+https://fewsdocs.deltares.nl/
+
