@@ -1,4 +1,4 @@
 {
-  "VUE_APP_FEWS_WEBSERVICES_URL":"http://localhost:8080/FewsWebServices",
-  "VUE_APP_MAPBOX_TOKEN":"pk.eyJ1IjoiZGVsZnRmZXdzcG0iLCJhIjoiY2xhMHhicnBhMDAwYzNxcWh1dXZ4N2ZncyJ9.To-nfPOXDKbhWQJRJ4ZDRw"
+  "VUE_APP_FEWS_WEBSERVICES_URL": "/iwp/FewsWebServices/",
+  "VUE_APP_REQUEST_HEADER_AUTHORIZATION": "Off"
 }
