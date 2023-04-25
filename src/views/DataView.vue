@@ -104,7 +104,7 @@
 
 <script lang="ts">
 import { Component, Mixins, Prop, Vue, Watch } from 'vue-property-decorator'
-import { DocumentFormat, PiWebserviceProvider } from "@deltares/fews-pi-requests";
+import {ActionRequest, DocumentFormat, PiWebserviceProvider} from "@deltares/fews-pi-requests";
 import PiRequestsMixin from '@/mixins/PiRequestsMixin';
 import { debounce, uniq, intersection } from 'lodash';
 import { Location } from '@deltares/fews-pi-requests';
@@ -409,7 +409,7 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
     this.loadTimeSeries(requests[0])
   }
 
-  private async loadTimeSeries(requests: any[]) {
+  private async loadTimeSeries(requests: ActionRequest[]) {
     this.timeSeriesStore = {}
     this.updateTimeSeries(requests)
   }

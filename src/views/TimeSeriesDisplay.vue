@@ -90,9 +90,9 @@ import {ColumnItem} from '@/components/ColumnItem'
 import ComponentsPanel from '@/components/Layout/ComponentsPanel.vue'
 import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import {DisplayConfig, DisplayType} from '@/lib/Layout/DisplayConfig'
-import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
+import {PiWebserviceProvider, ActionRequest} from "@deltares/fews-pi-requests";
 import PiRequestsMixin from "@/mixins/PiRequestsMixin"
-import type { DisplayGroupsFilter, DisplayGroupsResponse, TopologyNode } from "@deltares/fews-pi-requests";
+import type { TopologyActionFilter, ActionsResponse, TopologyNode } from "@deltares/fews-pi-requests";
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 
 @Component({
@@ -116,7 +116,7 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
   baseUrl!: string
   allDisplays: DisplayConfig[][] = []
   displays: DisplayConfig[] = []
-  requests: any[] = [];
+  requests: ActionRequest[][] = [];
   plots: string[] = [];
   webServiceProvider: PiWebserviceProvider = {} as PiWebserviceProvider;
 
@@ -133,7 +133,7 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
   anyChildNodeIsVisible(nodes: TopologyNode[] | undefined): boolean {
     if (nodes === undefined) return false;
     for (const node of nodes) {
-      if (this.topologyNodeIsVisible(node)) return true;
+      if (this.topologyNodeIsVisible(node)) return true
     }
     return false;
   }
@@ -141,7 +141,7 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
   topologyNodeIsVisible(node: TopologyNode): boolean {
     if (node.url !== undefined) return true;
     if (node.displayId !== undefined) return true;
-    if (node.displayGroupId !== undefined) return true;
+    if (node.displayGroups !== undefined && node.displayGroups.length > 0) return true
     return this.anyChildNodeIsVisible(node.topologyNodes);
   }
 
@@ -206,9 +206,9 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
 
   @Watch('nodeId')
   async onNodeChange(): Promise<void> {
-    const filter = {} as DisplayGroupsFilter;
+    const filter = {} as TopologyActionFilter;
     filter.nodeId = this.nodeId;
-    const response: DisplayGroupsResponse = await this.webServiceProvider.getDisplayGroupsTimeSeriesInfo(filter);
+    const response: ActionsResponse = await this.webServiceProvider.getTopologyActions(filter);
     this.selectedItem = 0;
     this.allDisplays = [];
     this.requests = [];
@@ -217,20 +217,19 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
     for (const result of response.results) {
       if (result.config === undefined) continue;
       const display: DisplayConfig[] = [];
-      for (let i in result.config.timeSeriesDisplay.subplots) {
-        const subPlot = result.config.timeSeriesDisplay.subplots[i]
-        const title = result.config.timeSeriesDisplay.title
+      const title = result.config.timeSeriesDisplay.title == undefined ? '' : result.config.timeSeriesDisplay.title
+      result.config.timeSeriesDisplay.subplots?.forEach((subPlot, index) => {
         display.push({
-          id: `${title}-${i}`,
+          id: `${title}-${index}`,
           types: [DisplayType.TimeSeriesChart, DisplayType.TimeSeriesTable],
           class: 'single',
-          title: result.config.timeSeriesDisplay.title,
+          title: title,
           config: timeSeriesDisplayToChartConfig(subPlot, title)
         })
-      }
+      })
       this.allDisplays.push(display);
       this.requests.push(result.requests);
-      this.plots.push(result.config.timeSeriesDisplay.title)
+      this.plots.push(title)
     }
     this.displays = this.allDisplays.length > 0 ? this.allDisplays[0] : [];
     await this.loadTimeSeries(0);
