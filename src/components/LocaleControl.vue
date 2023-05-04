@@ -5,12 +5,12 @@
     <v-btn-toggle
       v-model="$i18n.locale"
       mandatory
+      dense
     >
       <v-btn
         v-for="lang in langs"
         :key="lang.id"
         :value="lang.id"
-        width="148"
       >
       <span :class="`fi fi-${lang.flag}`"></span> {{ $t(lang.label) }}
       </v-btn>
