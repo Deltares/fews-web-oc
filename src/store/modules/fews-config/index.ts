@@ -4,10 +4,13 @@ import type { RootState } from '@/store/types';
 import type { ConfigState, WebOcComponent } from './types';
 import { getFewsConfig } from '@/lib/FewsConfig/fewsConfig'
 
+const WEBOC_CONFIG_PREFIX = 'delft-fews-weboc:config#'
+
 export const fewsconfig: Module<ConfigState, RootState> = {
   namespaced: true,
 
   state: (): ConfigState  => ({
+    version: "0.1.0",
     components: {}
   }),
 
@@ -22,31 +25,31 @@ export const fewsconfig: Module<ConfigState, RootState> = {
   },
 
   actions: {
-    saveComponents (context: ActionContext<ConfigState, RootState>) {
-      sessionStorage.setItem('weboccomponents', JSON.stringify(context.state.components))
+    saveConfig (context: ActionContext<ConfigState, RootState>) {
+      sessionStorage.setItem(`${WEBOC_CONFIG_PREFIX}${context.state.version}`, JSON.stringify(context.state))
     },
 
-    loadComponents (context: ActionContext<ConfigState, RootState>) {
-      const webOcComponents = sessionStorage.getItem('weboccomponents')
-      if (webOcComponents && typeof webOcComponents === 'string' && webOcComponents !== '') {
-        const components = JSON.parse(webOcComponents)
-        context.commit('setComponents', components)
+    loadConfig (context: ActionContext<ConfigState, RootState>) {
+      const webOcConfig = sessionStorage.getItem(`${WEBOC_CONFIG_PREFIX}${context.state.version}`)
+      if (webOcConfig && typeof webOcConfig === 'string' && webOcConfig !== '') {
+        const config = JSON.parse(webOcConfig)
+        context.commit('setComponents', config.components)
       }
     },
 
     deleteComponents (context: ActionContext<ConfigState, RootState>) {
-      sessionStorage.removeItem('weboccomponents')
+      sessionStorage.removeItem(`${WEBOC_CONFIG_PREFIX}${context.state.version}`)
       context.commit('setComponents', {})
     },
 
     async setFewsConfig (context: ActionContext<ConfigState, RootState>) {
-      context.dispatch('loadComponents')
+      context.dispatch('loadConfig')
       if (Object.keys(context.state.components).length === 0) {
         const webOcComponents = await getFewsConfig()
         for (const webOcComponent of webOcComponents) {
           context.commit('addComponent', webOcComponent)
         }
-        context.dispatch('saveComponents')
+        context.dispatch('saveConfig')
       }
     }
   }

@@ -1,11 +1,12 @@
 export interface ConfigState {
+  version: string
   components: { [key: string]: WebOcComponent }
 }
 
 export interface WebOcComponent {
   id: string
-  component: ComponentType
-  title: string
+  type: ComponentType
+  title?: string
   icon?: string
 }
 

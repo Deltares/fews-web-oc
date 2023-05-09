@@ -75,11 +75,11 @@ export default class Default extends Vue {
     alerts!: Alert[]
   @fewsConfigModule.State('components')
     webOcComponents!: { [key: string]: WebOcComponent }
-  @fewsConfigModule.Action('loadComponents')
-    loadComponents!: () => void
+  @fewsConfigModule.Action('loadConfig')
+    loadConfig!: () => void
 
   mounted(): void {
-    this.loadComponents()
+    this.loadConfig()
   }
 
   drawer: boolean | null = null
@@ -97,19 +97,20 @@ export default class Default extends Vue {
   }
 
   getMenuIcon (componentConfig: WebOcComponent): string {
+    console.log(componentConfig)
     if (componentConfig.icon !== undefined) return componentConfig.icon
-    switch (componentConfig.component) {
-        case ComponentTypeEnum.DataViewer:
-          return 'mdi-archive-search'
-        case ComponentTypeEnum.SpatialDisplay:
-          return 'mdi-map'
-        case ComponentTypeEnum.SchematicStatusDisplay:
-          return 'mdi-application-brackets-outline'
-        case ComponentTypeEnum.TimeSeriesDisplay:
-          return 'mdi-chart-sankey'
-        case ComponentTypeEnum.SystemMonitor:
-          return 'mdi-clipboard-list'
-        default: return ''
+    switch (componentConfig.type) {
+      case ComponentTypeEnum.DataViewer:
+        return 'mdi-archive-search'
+      case ComponentTypeEnum.SpatialDisplay:
+        return 'mdi-map'
+      case ComponentTypeEnum.SchematicStatusDisplay:
+        return 'mdi-application-brackets-outline'
+      case ComponentTypeEnum.TimeSeriesDisplay:
+        return 'mdi-chart-sankey'
+      case ComponentTypeEnum.SystemMonitor:
+        return 'mdi-clipboard-list'
+      default: return ''
     }
   }
 
@@ -117,8 +118,8 @@ export default class Default extends Vue {
     const menuItems = Object.values(this.webOcComponents).map(componentConfig => {
       return {
         id: componentConfig.id,
-        to: { name: componentConfig.component },
-        title: componentConfig.title,
+        to: { name: componentConfig.type },
+        title: componentConfig.title ?? '',
         icon: this.getMenuIcon(componentConfig)
       }
     })

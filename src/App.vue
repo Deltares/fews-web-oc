@@ -43,7 +43,7 @@ export default class App extends Vue {
 
   setRoutes(): void {
     Object.values(this.webOcComponents).forEach(webOcComponent => {
-      const route = routesViews.find((route) => route.name === webOcComponent.component)
+      const route = routesViews.find((route) => route.name === webOcComponent.type)
       if (route !== undefined) this.$router.addRoute(route)
     })
   }
