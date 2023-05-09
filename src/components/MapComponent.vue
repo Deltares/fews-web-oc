@@ -23,6 +23,11 @@ import { Component, Vue } from 'vue-property-decorator'
 @Component
 export default class MapComponent extends Vue {
   accessToken = this.$config.get('VUE_APP_MAPBOX_TOKEN')
+
+  beforeDestroy(){
+    var map:any = this.$refs.map;
+    map.map.resize = () => void 0;
+  }
 }
 </script>
 
