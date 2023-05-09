@@ -4,6 +4,7 @@ import App from './App.vue'
 import store from './store'
 import vuetify from './plugins/vuetify'
 import router from './router'
+import i18n from './i18n'
 import './plugins/vue2mapbox-gl'
 import auth from '@/services/authentication'
 import config, { configManager } from '@/services/application-config'
@@ -29,6 +30,7 @@ fetch(`${process.env.BASE_URL}app-config.json`)
       store,
       vuetify,
       router,
+      i18n,
       render: h => h(App)
     }).$mount('#app')
   })
