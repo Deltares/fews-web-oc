@@ -16,8 +16,7 @@
 
 <script lang="ts">
 import {Vue, Component, Prop, Watch} from 'vue-property-decorator'
-import * as wbCharts from 'wb-charts'
-import * as d3 from 'd3'
+import * as webOcCharts from '@deltares/fews-web-oc-charts'
 import {ChartConfig} from './lib/ChartConfig'
 import {ChartSeries} from './lib/ChartSeries'
 import {Series} from '@/lib/TimeSeries'
@@ -55,21 +54,21 @@ export default class ConfigurableChart extends Vue {
   }
 
   mounted(): void {
-    const axisOptions: wbCharts.CartesianAxesOptions = {
+    const axisOptions: webOcCharts.CartesianAxesOptions = {
       x: [{
-        type: wbCharts.AxisType.time,
-        position: wbCharts.AxisPosition.Bottom,
+        type: webOcCharts.AxisType.time,
+        position: webOcCharts.AxisPosition.Bottom,
         showGrid: true
       }],
       y: [{
-        position: wbCharts.AxisPosition.Left,
+        position: webOcCharts.AxisPosition.Left,
         showGrid: true,
         label: ' ',
         unit: ' ',
         nice: true
       },
         {
-          position: wbCharts.AxisPosition.Right,
+          position: webOcCharts.AxisPosition.Right,
           label: ' ',
           unit: ' ',
           nice: true
@@ -82,10 +81,10 @@ export default class ConfigurableChart extends Vue {
     }
 
     const containerReference = this.$refs['chart-container'] as HTMLElement
-    this.axis = new wbCharts.CartesianAxis(containerReference, null, null, axisOptions)
-    const mouseOver = new wbCharts.MouseOver()
-    const zoom = new wbCharts.ZoomHandler()
-    const currentTime = new wbCharts.CurrentTime({
+    this.axis = new webOcCharts.CartesianAxes(containerReference, null, null, axisOptions)
+    const mouseOver = new webOcCharts.MouseOver()
+    const zoom = new webOcCharts.ZoomHandler()
+    const currentTime = new webOcCharts.CurrentTime({
       x: {
         axisIndex: 0
       }
@@ -161,11 +160,11 @@ export default class ConfigurableChart extends Vue {
     const data = series?.data !== undefined ? series.data : []
     let line
     if (chartSeries.type === 'line') {
-      line = new wbCharts.ChartLine(data, {
+      line = new webOcCharts.ChartLine(data, {
         tooltip: {toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}`}
       })
     } else {
-      line = new wbCharts.ChartMarker(data, {
+      line = new webOcCharts.ChartMarker(data, {
         symbol: chartSeries.marker,
         tooltip: {toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}`}
       })
@@ -219,7 +218,7 @@ export default class ConfigurableChart extends Vue {
     const tag = this.legendTags.find(tag => {
       return tag.id === id
     })
-    wbCharts.toggleChartVisisbility(this.axis, id)
+    webOcCharts.toggleChartVisisbility(this.axis, id)
     if (tag) {
       tag.disabled = !tag.disabled
     }

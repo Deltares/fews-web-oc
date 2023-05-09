@@ -43,7 +43,7 @@ import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController'
-import { ColourMap } from 'wb-charts'
+import { ColourMap } from '@deltares/fews-web-oc-charts'
 import ColourBar from '@/components/ColourBar.vue'
 import { Layer } from '@deltares/fews-wms-requests'
 

@@ -7,14 +7,14 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import * as d3 from 'd3'
-import * as wbCharts from 'wb-charts'
+import * as webOcCharts from '@deltares/fews-web-oc-charts'
 
 @Component([])
 export default class ColourBar extends Vue {
-  @Prop({ default: () => { return [] }}) value!: wbCharts.ColourMap
+  @Prop({ default: () => { return [] }}) value!: webOcCharts.ColourMap
 
   group: any
-  colourBar?: wbCharts.ColourBar
+  colourBar?: webOcCharts.ColourBar
   isVisible: boolean = false
 
   mounted() {
@@ -36,12 +36,12 @@ export default class ColourBar extends Vue {
     // Remove possible previous colour map.
     this.group.selectAll("*").remove()
     // Create new colour bar and make it visible.
-    const options: wbCharts.ColourBarOptions = {
+    const options: webOcCharts.ColourBarOptions = {
       type: 'nonlinear',
       useGradients: true,
-      position: wbCharts.AxisPosition.Bottom
+      position: webOcCharts.AxisPosition.Bottom
     }
-    this.colourBar = new wbCharts.ColourBar(
+    this.colourBar = new webOcCharts.ColourBar(
       this.group as any,
       this.value,
       this.$vuetify.breakpoint.mobile ? 250 : 400, 30,
