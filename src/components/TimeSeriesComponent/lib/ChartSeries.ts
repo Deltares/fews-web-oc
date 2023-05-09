@@ -6,6 +6,9 @@ export interface ChartSeries {
   id: string;
   dataResources: string[];
   name: string;
+  visibleInPlot: boolean;
+  visibleInLegend: boolean;
+  visibleInTable: boolean;
   label?: string;
   marker?: SymbolOptions;
   type: string;
