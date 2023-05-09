@@ -1,20 +1,19 @@
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
+import HomeView from '../views/HomeView.vue'
 import SchematicStatusDisplay from '../views/SchematicStatusDisplay.vue'
 import SpatialDisplay from '../views/SpatialDisplay.vue'
 import Silent from '../views/auth/Silent.vue'
-import Callback from '../views/auth/Callback.vue'
 import LoginView from '../views/LoginView.vue'
 import Logout from '../views/auth/Logout.vue'
 import ComponentsPanel from '../components/Layout/ComponentsPanel.vue'
-import SystemMonitor from '../views/SystemMonitorDisplay.vue'
+import SystemMonitorDisplay from '../views/SystemMonitorDisplay.vue'
 import { configManager } from '../services/application-config'
 import TimeSeriesDisplay from '../views/TimeSeriesDisplay.vue'
 import SSDTimeSeriesDisplay from '../views/SSDTimeSeriesDisplay.vue'
 import DataView from '../views/DataView.vue'
 import ArchiveDisplay from '../views/ArchiveDisplay.vue'
 
-import oidcSettings from '../services/config'
 import { Log, UserManager } from 'oidc-client-ts'
 
 Log.setLogger(console)
@@ -22,10 +21,17 @@ Log.setLevel(Log.WARN)
 
 Vue.use(VueRouter)
 
-const routes: Array<RouteConfig> = [
+const routesBase: Array<RouteConfig> = [
   {
     path: '/',
-    redirect: { name: 'DataViewer' },
+    redirect: { name: 'Home' },
+    name: 'Default',
+  },
+  {
+    path: '/home',
+    name: 'Home',
+    meta: { authorize: [] },
+    component: HomeView
   },
   {
     path: '/login',
@@ -33,6 +39,22 @@ const routes: Array<RouteConfig> = [
     meta: { layout: 'empty' },
     component: LoginView
   },
+  {
+    path: '/auth/silent',
+    meta: { layout: 'empty' },
+    component: Silent
+  },
+  {
+    path: '/auth/callback',
+    meta: { layout: 'empty' },
+  },
+  {
+    path: '/auth/logout',
+    meta: { layout: 'empty' },
+    component: Logout
+  }
+]
+export const routesViews: Array<RouteConfig> = [
   {
     path: '/dataviewer/:filterId?/:categoryId?',
     name: 'DataViewer',
@@ -84,7 +106,7 @@ const routes: Array<RouteConfig> = [
   {
     path: '/systemmonitor',
     name: 'SystemMonitor',
-    component: SystemMonitor,
+    component: SystemMonitorDisplay,
     meta: { authorize: [] }
   },
   {
@@ -93,27 +115,12 @@ const routes: Array<RouteConfig> = [
     component: ArchiveDisplay,
     meta: { authorize: [] }
   },
-  {
-    path: '/auth/silent',
-    meta: { layout: 'empty' },
-    component: Silent
-  },
-  {
-    path: '/auth/callback',
-    meta: { layout: 'empty' },
-    component: Callback
-  },
-  {
-    path: '/auth/logout',
-    meta: { layout: 'empty' },
-    component: Logout
-  }
 ]
 
 const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
-  routes
+  routes: routesBase
 })
 
 router.beforeEach(async (to, from, next) => {
@@ -124,12 +131,12 @@ router.beforeEach(async (to, from, next) => {
     const authenticationService = new UserManager(settings)
     const currentUser = await authenticationService.getUser()
     if (currentUser === null) {
-      return next({ name: 'Login', query: { redirect: to.name } })
+      return next({ name: 'Login', query: { redirect: to.path } })
     }
 
     const role = currentUser.profile.roles !== undefined ? (currentUser.profile as any).roles[0] : 'guest'
     if (authorize.length && !authorize.includes(role)) {
-      return next({ name: 'DataViewer' })
+      return next({ name: 'Home' })
     }
   }
   next()

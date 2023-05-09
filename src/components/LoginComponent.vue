@@ -74,7 +74,7 @@ export default class LoginComponent extends Vue {
   }
 
   login (): void {
-    this.$auth.signinRedirect({ state: this.$route.name })
+    this.$auth.signinRedirect({ state: this.$route.path })
   }
 
   logout (): void {
