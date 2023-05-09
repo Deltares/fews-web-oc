@@ -6,17 +6,17 @@
       </v-btn>
     </template>
     <v-list>
+      <v-subheader>Theme</v-subheader>
       <v-list-item>
         <v-list-item-action>
-          <v-list-item-action-text>Theme</v-list-item-action-text>
           <v-list-item-action>
             <ThemeSelector v-model="theme" @input="onThemeChange"/>
           </v-list-item-action>
         </v-list-item-action>
       </v-list-item>
+      <v-subheader>Language</v-subheader>
       <v-list-item>
         <v-list-item-action>
-          <v-list-item-action-text>Language</v-list-item-action-text>
           <v-list-item-action>
             <locale-control/>
           </v-list-item-action>
