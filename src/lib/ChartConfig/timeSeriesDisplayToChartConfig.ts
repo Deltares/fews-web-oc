@@ -19,6 +19,9 @@ export function timeSeriesDisplayToChartConfig(subplot: TimeSeriesDisplaySubplot
         name: item.legend || "",
         unit: "",
         type: "line",
+        visibleInLegend: item.visibleInLegend,
+        visibleInPlot: item.visibleInPlot,
+        visibleInTable: item.visibleInTable,
         options: {
           x: {
             key: "x",
@@ -42,6 +45,9 @@ export function timeSeriesDisplayToChartConfig(subplot: TimeSeriesDisplaySubplot
         name: item.legend || "",
         unit: "",
         type: "marker",
+        visibleInLegend: item.visibleInLegend,
+        visibleInPlot: item.visibleInPlot,
+        visibleInTable: item.visibleInTable,
         options: {
           x: {
             key: "x",

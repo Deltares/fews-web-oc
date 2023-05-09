@@ -66,7 +66,7 @@ export default class TimeSeriesTable extends Vue {
     // Only one of these has to be included in the table.
     this.seriesIds = []
     if (this.value?.series === undefined) return
-    this.seriesIds = uniq(this.value.series.map((s) => s.id))
+    this.seriesIds = uniq(this.value.series.filter(series => series.visibleInTable).map((series) => series.id))
   }
 
   setHeaders() {

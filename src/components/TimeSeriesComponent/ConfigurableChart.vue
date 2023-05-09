@@ -121,6 +121,7 @@ export default class ConfigurableChart extends Vue {
     const removeIds: string[] = this.axis.charts.map((c: any) => c.id)
     if (this.value?.series === undefined) return
     for (const series of this.value.series) {
+      if (!series.visibleInPlot) continue
       if (!ids.includes(series.id)) {
         this.addToChart(series)
       }
@@ -188,7 +189,7 @@ export default class ConfigurableChart extends Vue {
     if (series === undefined) {
       this.legendTags = []
     } else {
-      const ids = uniq(series.map((s) => s.id))
+      const ids = uniq(series.filter(s => s.visibleInLegend).map((s) => s.id))
       this.legendTags = ids.map((id) => {
         const legendSvg = document.createElement('svg')
         legendSvg.setAttribute('width', '20')
