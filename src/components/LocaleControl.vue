@@ -22,7 +22,7 @@
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
-import "/node_modules/flag-icons/css/flag-icons.min.css";
+import "flag-icons/css/flag-icons.min.css";
 
 @Component
 export default class LocaleControl extends Vue {
