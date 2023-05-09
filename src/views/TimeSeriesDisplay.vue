@@ -217,7 +217,7 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
     for (const result of response.results) {
       if (result.config === undefined) continue;
       const display: DisplayConfig[] = [];
-      const title = result.config.timeSeriesDisplay.title == undefined ? '' : result.config.timeSeriesDisplay.title
+      const title = result.config.timeSeriesDisplay.title ?? ''
       result.config.timeSeriesDisplay.subplots?.forEach((subPlot, index) => {
         display.push({
           id: `${title}-${index}`,
