@@ -1,23 +1,17 @@
 <template>
-  <v-container fluid>
-    <v-row>
-      <v-col>
-    <v-btn-toggle
-      v-model="$i18n.locale"
-      mandatory
-      dense
+  <v-btn-toggle
+    v-model="$i18n.locale"
+    mandatory
+    dense
+  >
+    <v-btn
+      v-for="lang in langs"
+      :key="lang.id"
+      :value="lang.id"
     >
-      <v-btn
-        v-for="lang in langs"
-        :key="lang.id"
-        :value="lang.id"
-      >
-      <span :class="`fi fi-${lang.flag}`"></span> {{ $t(lang.label) }}
-      </v-btn>
-    </v-btn-toggle>
-      </v-col>
-    </v-row>
-  </v-container>
+    <span :class="`fi fi-${lang.flag}`"></span> {{ $t(lang.label) }}
+    </v-btn>
+  </v-btn-toggle>
 </template>
 
 <script lang="ts">
