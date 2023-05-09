@@ -113,7 +113,7 @@ import WMSMixin from '@/mixins/WMSMixin'
 import { Layer } from '@deltares/fews-wms-requests';
 import { DateController } from '@/lib/TimeControl/DateController';
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
-import { ColourMap } from 'wb-charts';
+import { ColourMap } from '@deltares/fews-web-oc-charts';
 import WMSLayerControl, { WMSLayerControlValue } from '@/components/WMSLayerControl.vue'
 import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
 import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';

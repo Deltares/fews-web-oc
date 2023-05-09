@@ -1,6 +1,5 @@
 .wb-charts svg {
   color: white;
-  fill: white;
 }
 
 .axis {
@@ -15,8 +14,8 @@
   font-size: 1em;
 }
 
-.axis-canvas {
-    fill: #606060;
+.canvas {
+    fill: rgb(54, 54, 54);
 }
 
 .legend {
@@ -36,11 +35,6 @@
 .grid text { display: none; }
 .grid .tick line { stroke: black;}
 .grid .tick.zero-crossing line { stroke-dasharray: none; stroke: white;}
-
-.charts g {
-  stroke: white;
-  color: white;
-}
 
 .view {
   fill: none;
@@ -99,19 +93,19 @@
 
 .cross-section-select {
   font-size: 1em;
-  stroke: white;
 }
 
-.cross-section-select > line {
+.cross-section-select line {
+  stroke: white;
   stroke-dasharray: 2 2;
 }
 
-.cross-section-select > text.date-label {
+.cross-section-select text.date-label {
   stroke: none;
   fill: white;
 }
 
-.cross-section-select > .data-point-per-line {
+.cross-section-select .data-point-per-line {
   stroke: none;
 }
 
@@ -153,7 +147,7 @@
   fill: white;
 }
 
-.mouse-events {
+.mouse {
   cursor: crosshair;
 }
 
@@ -175,7 +169,7 @@
   stroke-dasharray: 5, 2;
 }
 
-.mouse-events .overlay {
+.mouse .overlay {
   visibility: hidden;
 }
 
@@ -261,19 +255,4 @@
 .data-field{
   font-family: sans-serif;
   font-size: 1em;
-}
-
-.colourbar .tick text {
-  text-shadow: -1px 1px 2px black, 
-    1px 1px 2px black,
-    1px -1px 2px black,
-    -1px -1px 2px black;
-}
-
-.colourbar .tick line {
-  stroke: white;
-}
-
-.colourbar .axis .tick line {
-  filter: drop-shadow(0px 0px 2px black);
 }

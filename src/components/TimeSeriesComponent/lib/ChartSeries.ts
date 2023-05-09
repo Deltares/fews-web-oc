@@ -1,5 +1,5 @@
 import * as CSS from "csstype";
-import { SymbolOptions } from "wb-charts";
+import { SymbolOptions } from "@deltares/fews-web-oc-charts";
 import { ChartSeriesOptions } from "./ChartSeriesOptions";
 
 export interface ChartSeries {
