@@ -1,6 +1,6 @@
 import { Component, Mixins, Vue } from 'vue-property-decorator'
 import { Series, SeriesUrlRequest } from '@/lib/TimeSeries'
-import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
+import {ActionRequest, PiWebserviceProvider} from '@deltares/fews-pi-requests'
 import PiRequestsMixin from "@/mixins/PiRequestsMixin"
 import type { TimeSeriesResponse } from '@deltares/fews-pi-requests'
 
@@ -31,7 +31,7 @@ function absoluteUrl(urlString: string): URL {
 export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
   timeSeriesStore: Record<string, Series> = {}
 
-  async updateTimeSeries(requests: any[]
+  async updateTimeSeries(requests: ActionRequest[]
   ): Promise<void> {
 
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
