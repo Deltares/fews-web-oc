@@ -14,7 +14,7 @@ export default class DeltaresLogin extends Vue {
 
   login (): void {
     const redirect = this.$route.query.redirect || '/home'
-    this.$auth.signinRedirect({ state: redirect })
+    this.$auth.userManager.signinRedirect({ state: redirect })
   }
 }
 </script>

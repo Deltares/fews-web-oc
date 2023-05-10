@@ -24,7 +24,7 @@ fetch(`${process.env.BASE_URL}app-config.json`)
   .then(data => {
     Vue.use(config, data)
     if (configManager.authenticationIsEnabled) {
-      Vue.use(auth)
+      Vue.use(auth, configManager.getUserManagerSettings())
     }
     new Vue({
       store,

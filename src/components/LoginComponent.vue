@@ -63,7 +63,7 @@ export default class LoginComponent extends Vue {
   user: User | null = null
 
   mounted (): void {
-    this.$auth
+    this.$auth.userManager
       .getUser()
       .then(user => {
         this.user = user
@@ -74,11 +74,11 @@ export default class LoginComponent extends Vue {
   }
 
   login (): void {
-    this.$auth.signinRedirect({ state: this.$route.path })
+    this.$auth.userManager.signinRedirect({ state: this.$route.path })
   }
 
   logout (): void {
-    this.$auth.signoutRedirect({ state: '/portal' })
+    this.$auth.userManager.signoutRedirect({ state: '/portal' })
   }
 
   get initials (): string {

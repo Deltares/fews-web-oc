@@ -14,7 +14,7 @@ export default class Logout extends Vue {
     deleteComponents!: () => void
 
   mounted (): void {
-    this.$auth
+    this.$auth.userManager
       .signoutRedirectCallback()
       .then(() => {
         this.deleteComponents()
