@@ -1,11 +1,17 @@
 import {Component, Vue} from 'vue-property-decorator'
-import { WMSProvider, Layer } from '@deltares/fews-wms-requests'
+import {Layer, WMSProvider} from '@deltares/fews-wms-requests'
 
 @Component
 export default class WMSMixin extends Vue {
   wmsProvider!: WMSProvider
   externalForecast: Date = new Date('invalid')
   layers: Layer[] = []
+
+  async transformRequest(request: Request): Promise<Request> {
+    if (!this.$config.authenticationIsEnabled) return request
+    // $auth only exists if authentication is enabled.
+    return this.$auth.transformRequestAuth(request);
+  }
 
   created (): void {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
@@ -17,15 +23,12 @@ export default class WMSMixin extends Vue {
         url = new URL(baseUrl, document.baseURI)
       }
     }
-    this.wmsProvider = new WMSProvider(url.toString() + '/wms')
+    this.wmsProvider = new WMSProvider(url.toString() + '/wms', {transformRequestFn: this.transformRequest})
   }
 
-
   async getCapabilities (): Promise<void> {
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const response = await fetch(`${baseUrl}/wms?request=GetCapabilities&format=application/json&onlyHeaders=false`)
-    const layers = (await response.json()).layers
-    this.layers = layers
+    const capabilities = await this.wmsProvider.getCapabilities({})
+    this.layers = capabilities.layers
   }
 
   async getTimes (layers: string): Promise<Date[]> {

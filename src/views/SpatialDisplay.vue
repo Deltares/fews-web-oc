@@ -89,9 +89,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   }
 
   async loadCapabilities (): Promise<void> {
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const response = await fetch(`${baseUrl}/wms?request=GetCapabilities&format=application/json&onlyHeaders=false`)
-    const capabilities = await response.json()
+    const capabilities = await this.wmsProvider.getCapabilities({})
     const layers = capabilities.layers
     this.fillMenuItems(layers)
   }
