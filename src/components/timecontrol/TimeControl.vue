@@ -6,8 +6,8 @@
     class="menu"
   >
     <template v-slot:activator="{ on, attrs }">
-      <v-btn icon v-bind="attrs" v-on="on">
-        <v-icon>mdi-clock</v-icon>
+      <v-btn text v-bind="attrs" v-on="on">
+        <v-icon>mdi-clock</v-icon>{{ now.toLocaleTimeString('en-UK', { hour: '2-digit', minute: '2-digit', timeZoneName : 'short' }) }}
       </v-btn>
     </template>
     <v-card>
@@ -16,7 +16,7 @@
           {{ localeString(item) }}
         </v-list-item>
         <v-list-item>
-          Browser Time: {{ now.toLocaleTimeString('en-UK', { timeZoneName : 'short' }) }}
+          Browser Time: {{ now.toLocaleTimeString('en-UK', { hour: '2-digit', minute: '2-digit', timeZoneName : 'short' }) }}
         </v-list-item>
       </v-list>
       <v-card-actions>
@@ -37,19 +37,26 @@ const sytemTimeModule = namespace('systemTime')
 
 @Component
 export default class TimeControl extends Vue {
+  @sytemTimeModule.State('systemTime')
+  now!: Date
+
+  @sytemTimeModule.Getter('getSystemTime')
+  getSystemTime!: () => Date
+
+  @sytemTimeModule.Mutation('setInterval')
+  storeSetInterval!: (payload: any) => Date
 
   intervalItems = [
     '-P1D',
     '-P7D',
   ]
 
-  now = new Date()
-
   setInterval(interval: string) {
+    const now = this.getSystemTime()
     const duration = Duration.fromISO(interval)
-    const startDateTime = DateTime.fromJSDate(this.now).plus( duration)
-    const endDateTime = DateTime.fromJSDate(this.now)
-    this.$store.commit('systemTime/setInterval', { startTime: startDateTime.toJSDate(), endTime: endDateTime.toJSDate()})
+    const startDateTime = DateTime.fromJSDate(now).plus( duration)
+    const endDateTime = DateTime.fromJSDate(now)
+    this.storeSetInterval({ startTime: startDateTime.toJSDate(), endTime: endDateTime.toJSDate()})
   }
 
   localeString(item: string) {

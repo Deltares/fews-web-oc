@@ -1,26 +1,24 @@
-import { Module, Mutation, VuexModule } from 'vuex-module-decorators'
+
+import { Module } from 'vuex';
 import { SystemTimeState } from './types'
+import { RootState } from '../../types';
+import { getters } from './getters';
+import { actions } from './actions';
+import { mutations } from './mutations';
 
-@Module({ namespaced: true, name: 'systemTime' })
-export default class SystemTime extends VuexModule<SystemTimeState> {
-  systemTime: Date = new Date()
-  startTime: Date | null = null
-  endTime: Date | null = null
+export const state: SystemTimeState = {
+  systemTime: new Date(),
+  startTime: null,
+  endTime: null,
+  intervalTimer: null,
+};
 
-  @Mutation
-  setStartTime(startTime: Date) {
-    this.startTime = startTime
-  }
+const namespaced: boolean = true;
 
-  @Mutation
-  setEndTime(endTime: Date) {
-    this.endTime = endTime
-  }
-
-  @Mutation
-  setInterval(payload: { startTime: Date, endTime: Date}) {
-    console.log('system time store', payload.startTime, payload.endTime)
-    this.startTime = payload.startTime
-    this.endTime = payload.endTime
-  }
+export const systemTime: Module<SystemTimeState, RootState> = {
+  namespaced,
+  state,
+  getters,
+  actions,
+  mutations
 }

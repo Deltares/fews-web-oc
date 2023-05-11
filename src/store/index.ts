@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { RootState } from './types';
-import Alerts from '@/store/modules/alerts';
-import { fewsconfig } from '@/store/modules/fews-config';
-import SystemTime from '@/store/modules/system-time';
+import { RootState } from './types'
+import Alerts from '@/store/modules/alerts'
+import { fewsconfig } from '@/store/modules/fews-config'
+import { systemTime } from '@/store/modules/system-time'
 
 Vue.use(Vuex)
 
@@ -16,9 +16,10 @@ const store = new Vuex.Store<RootState>({
   },
   modules: {
     alerts: Alerts,
-    systemTime: SystemTime,
+    systemTime,
     fewsconfig
   }
 })
-console.log(store)
+
+store.dispatch('systemTime/startClock')
 export default store
