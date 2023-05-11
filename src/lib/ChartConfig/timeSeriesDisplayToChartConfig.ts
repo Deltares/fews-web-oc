@@ -27,6 +27,7 @@ export function timeSeriesDisplayToChartConfig(subplot: TimeSeriesDisplaySubplot
       for (const threshold of item.thresholds) {
         if (threshold.value === undefined) continue
         config.thresholds.push({
+          id: "Thresholds",
           x1: new Date(0),
           x2: new Date(8.64e15),
           value: threshold.value,
