@@ -3,6 +3,7 @@ import { Series, SeriesUrlRequest } from '@/lib/TimeSeries'
 import {ActionRequest, PiWebserviceProvider} from '@deltares/fews-pi-requests'
 import PiRequestsMixin from "@/mixins/PiRequestsMixin"
 import type { TimeSeriesResponse } from '@deltares/fews-pi-requests'
+import { DateTime, Interval } from 'luxon'
 
 function timeZoneOffsetString (offset: number): string {
   const offsetInMinutes = offset * 60
@@ -31,7 +32,7 @@ function absoluteUrl(urlString: string): URL {
 export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
   timeSeriesStore: Record<string, Series> = {}
 
-  async updateTimeSeries(requests: ActionRequest[]
+  async updateTimeSeries(requests: ActionRequest[], options?: { startTime: Date, endTime: Date, thinning: boolean}
   ): Promise<void> {
 
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
@@ -39,7 +40,27 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
     for (const r in requests) {
       const request = requests[r]
       const url = absoluteUrl(`${baseUrl}/${request.request}`)
-      const piSeries: TimeSeriesResponse = await webServiceProvider.getTimeSeriesWithRelativeUrl(request.request);
+      const queryParams = url.searchParams
+      const startTimeString = queryParams.get('startTime')
+      const endTimeString = queryParams.get('endTime')
+      if (options?.startTime
+         && options?.endTime) {
+        const startTime = DateTime.fromJSDate(options?.startTime, {zone: 'UTC'})
+        const endTime = DateTime.fromJSDate(options?.endTime, {zone: 'UTC'})
+        const intervalInMillis = Interval.fromDateTimes(startTime, endTime).length()
+        url.searchParams.set('startTime', startTime.toISO({ suppressMilliseconds: true}) ?? '')
+        url.searchParams.set('endTime', endTime.toISO({ suppressMilliseconds: true}) ?? '')
+        url.searchParams.set('thinning', `${intervalInMillis / window.outerWidth * 2}`)
+      } else if ( startTimeString !== null && endTimeString !== null) {
+        const startTime = DateTime.fromISO(startTimeString, {zone: 'UTC'})
+        const endTime = DateTime.fromISO(endTimeString, {zone: 'UTC'})
+        const intervalInMillis = Interval.fromDateTimes(startTime, endTime).length()
+        url.searchParams.set('startTime', startTime.toISO({ suppressMilliseconds: true}) ?? '')
+        url.searchParams.set('endTime', endTime.toISO({ suppressMilliseconds: true}) ?? '')
+        url.searchParams.set('thinning', `${intervalInMillis / window.outerWidth * 2}`)
+      }
+      const relativeUrl = request.request.split('?')[0] + url.search
+      const piSeries: TimeSeriesResponse = await webServiceProvider.getTimeSeriesWithRelativeUrl(relativeUrl);
       if ( piSeries.timeSeries === undefined) continue
       for (const timeSeries of piSeries.timeSeries) {
         if (timeSeries.events === undefined) continue
