@@ -93,7 +93,10 @@ import {DisplayConfig, DisplayType} from '@/lib/Layout/DisplayConfig'
 import {PiWebserviceProvider, ActionRequest} from "@deltares/fews-pi-requests";
 import PiRequestsMixin from "@/mixins/PiRequestsMixin"
 import type { TopologyActionFilter, ActionsResponse, TopologyNode } from "@deltares/fews-pi-requests";
+import { namespace } from 'vuex-class'
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
+
+const sytemTimeModule = namespace('systemTime')
 
 @Component({
   components: {
@@ -105,6 +108,11 @@ import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisp
 export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequestsMixin) {
   @Prop({default: '', type: String})
   nodeId!: string
+
+  @sytemTimeModule.State('startTime')
+    startTime!: Date
+  @sytemTimeModule.State('endTime')
+    endTime!: Date
 
   urlTopologyNodeMap: Map<string,string> = new Map<string, string>()
   selectedItem: number = -1
@@ -198,6 +206,13 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
     this.open = [items[0].id]
   }
 
+  @Watch('$store.state.systemTime.startTime')
+  async onTimeChanged(): Promise<void> {
+    console.log('systemTime')
+    await this.loadTimeSeries(this.selectedItem);
+  }
+
+
   @Watch('selectedItem')
   async onPlotChanged(): Promise<void> {
     this.displays = this.allDisplays[this.selectedItem];
@@ -236,7 +251,7 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
   }
 
   private async loadTimeSeries(index: number) {
-    this.updateTimeSeries(this.requests[index])
+    this.updateTimeSeries(this.requests[index], {startTime: this.startTime, endTime: this.endTime, thinning: true})
   }
 
   @Watch('active')
