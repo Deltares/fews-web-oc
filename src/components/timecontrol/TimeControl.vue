@@ -29,14 +29,14 @@
 
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator'
+import { Component, Vue } from 'vue-property-decorator'
 import { Duration, DateTime } from 'luxon'
 import { namespace } from 'vuex-class';
 
 const sytemTimeModule = namespace('systemTime')
 
 @Component
-export default class TimeControl {
+export default class TimeControl extends Vue {
 
   intervalItems = [
     '-P1D',
