@@ -10,7 +10,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@deltares/fews-pi-requests": "^0.6.3-alpha.2",
+    "@deltares/fews-pi-requests": "^0.6.3-alpha.3",
     "@deltares/fews-ssd-requests": "^0.2.11",
     "@deltares/fews-ssd-webcomponent": "^0.3.0-alpha.0",
     "@deltares/fews-web-oc-charts": "^3.0.0-alpha.6",
