@@ -46,6 +46,7 @@ import { DateController } from '@/lib/TimeControl/DateController'
 import { ColourMap } from '@deltares/fews-web-oc-charts'
 import ColourBar from '@/components/ColourBar.vue'
 import { Layer } from '@deltares/fews-wms-requests'
+import {LayerGroup} from "@deltares/fews-wms-requests/src/response/getCapabilitiesResponse";
 
 interface MapboxLayerOptions {
   name: string;
@@ -93,38 +94,56 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     const response = await fetch(`${baseUrl}/wms?request=GetCapabilities&format=application/json&onlyHeaders=false`)
     const capabilities = await response.json()
     const layers = capabilities.layers
-    this.fillMenuItems(layers)
+    const groups = capabilities.groups
+    this.fillMenuItems(layers, groups)
   }
 
-  fillMenuItems (layers: Layer[]): void {
-    const groupNames = [...new Set(layers.map((l) => l.groupName))]
+  fillMenuItems (layers: Layer[], groups: LayerGroup[]): void {
     const items: ColumnItem[] = [
       {
         id: 'root',
         name: 'Layers'
       }
     ]
-    items[0].children = []
-    for (const groupName of groupNames) {
-      const group = layers.find((l) => l.groupName === groupName)
-      if (group === undefined) continue
-      const children = []
-      for (const layer of layers.filter((l) => l.groupName === groupName)) {
-        children.push({
-          id: layer.name,
-          name: layer.title || layer.name,
-          nodata: layer.completelyMissing || false,
-          to: {
-            name: 'SpatialDisplay',
-            params: {
-              layerName: layer.name,
-            }
+    const rootNode = items[0]
+    let groupNodes = new Map<string, ColumnItem>();
+    for (const group of groups) {
+      const item: ColumnItem = {
+        id: group.name + '-' + group.title,
+        name: group.title,
+        children: []
+      }
+      groupNodes.set(group.name + '-' + group.title, item)
+    }
+    groupNodes.forEach( g=> {
+      console.log("Group: " + g?.id +  " -  " + g?.name)
+    })
+    rootNode.children = []
+    for (const group of groups) {
+      const groupNode = groupNodes.get(group.name + '-' + group.title)
+      if (group.groupName === undefined && groupNode !== undefined) { // no parent
+        rootNode.children.push(groupNode)
+      } else {
+        // attach to parent
+        if (groupNode !== undefined && group.groupName !== undefined) {
+          const parentNode = groupNodes.get(group.groupName + '-' + group.groupTitle)
+          parentNode?.children?.push(groupNode)}
+        }
+    }
+    for (const layer of layers) {
+      const groupNode = groupNodes.get(layer.groupName + '-' + layer.groupTitle)
+      const item: ColumnItem = {
+        id: layer.name,
+        name: layer.title || layer.name,
+        nodata: layer.completelyMissing || false,
+        to: {
+          name: 'SpatialDisplay',
+          params: {
+            layerName: layer.name,
           }
-        })
+        }
       }
-      if ( group.groupName !== undefined ) {
-        items[0].children.push({ id: group.groupName, name: group.groupTitle || group.groupName, children })
-      }
+      groupNode?.children?.push(item)
     }
     this.items = items
     this.open = [items[0].id]
