@@ -22,6 +22,22 @@ export function timeSeriesDisplayToChartConfig(subplot: TimeSeriesDisplaySubplot
       chartSeries.style = cssStyleFromFewsMarker(item)
       chartSeriesArray.push(chartSeries)
     }
+    if (item.thresholds !== undefined){
+      config.thresholds = []
+      for (const threshold of item.thresholds) {
+        if (threshold.value === undefined) continue
+        config.thresholds.push({
+          x1: new Date(0),
+          x2: new Date(8.64e15),
+          value: threshold.value,
+          description: threshold.label ?? '',
+          yAxisIndex: config.yAxis?.findIndex((yAxis) => {
+            return yAxis.location === item.yAxis?.axisPosition
+          }) ?? 0,
+          color: threshold.color ?? item.color,
+        })
+      }
+    }
   }
   config.series = chartSeriesArray
   return config

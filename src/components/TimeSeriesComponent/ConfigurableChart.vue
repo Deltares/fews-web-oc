@@ -19,8 +19,10 @@ import {Vue, Component, Prop, Watch} from 'vue-property-decorator'
 import * as webOcCharts from '@deltares/fews-web-oc-charts'
 import {ChartConfig} from './lib/ChartConfig'
 import {ChartSeries} from './lib/ChartSeries'
+import {ThresholdLine} from './lib/ThresholdLine'
 import {Series} from '@/lib/TimeSeries'
 import {uniq} from 'lodash';
+import * as d3 from 'd3'
 
 interface Tag {
   id: string;
@@ -44,6 +46,8 @@ export default class ConfigurableChart extends Vue {
     }
   })
   series!: Record<string, Series>
+  thresholdLines: ThresholdLine[] = []
+  thresholdLinesVisitor!: webOcCharts.AlertLines
 
   axis!: any // eslint-disable-line @typescript-eslint/no-explicit-any
   isFullscreen = false
@@ -90,6 +94,9 @@ export default class ConfigurableChart extends Vue {
       }
     })
 
+    this.thresholdLinesVisitor = new webOcCharts.AlertLines(this.thresholdLines)
+
+    this.axis.accept(this.thresholdLinesVisitor)
     this.axis.accept(zoom)
     this.axis.accept(mouseOver)
     this.axis.accept(currentTime)
@@ -140,6 +147,9 @@ export default class ConfigurableChart extends Vue {
         ]
       })
     }
+
+    this.setThresholdLines(this.value?.thresholds)
+
     this.axis.redraw({
       x: {
         autoScale: true
@@ -152,6 +162,20 @@ export default class ConfigurableChart extends Vue {
 
   clearChart(): void {
     this.axis.removeAllCharts()
+  }
+
+  setThresholdLines(thresholdLines: ThresholdLine[] | undefined): void {
+    if (thresholdLines === undefined) return
+    this.thresholdLines = thresholdLines
+    let defaultDomain: any = d3.extent(thresholdLines.map( l => l.value))
+    this.axis.setOptions(
+      {
+        y: [
+          { defaultDomain: defaultDomain, nice: true },
+        ]
+      }
+    )
+    this.thresholdLinesVisitor.options = this.thresholdLines
   }
 
   addToChart(chartSeries: ChartSeries): void {
