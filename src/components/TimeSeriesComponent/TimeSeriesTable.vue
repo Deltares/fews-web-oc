@@ -23,16 +23,14 @@
 </template>
 
 <script lang="ts">
-import {Vue, Component, Prop, Watch} from 'vue-property-decorator'
+import {Component, Prop, Vue, Watch} from 'vue-property-decorator'
 import {ChartConfig} from './lib/ChartConfig'
 import {ChartSeries} from './lib/ChartSeries'
 import {Series} from '@/lib/TimeSeries'
-import { uniq } from 'lodash'
-import { DataTableHeader } from 'vuetify'
-
-interface TableHeaders extends DataTableHeader {
-  color?: string;
-}
+import {getUniqueSeriesIds} from "@/components/TimeSeriesComponent/lib/getUniqueSeriesIds";
+import {TableHeaders} from "@/components/TimeSeriesComponent/lib/TableHeaders";
+import {createTableHeaders} from "@/components/TimeSeriesComponent/lib/createTableHeaders";
+import {createTableData} from './lib/createTableData';
 
 @Component
 export default class TimeSeriesTable extends Vue {
@@ -51,9 +49,6 @@ export default class TimeSeriesTable extends Vue {
   series!: Record<string, Series>
 
   seriesIds: string[] = []
-
-  dateTimes: Date[] = []
-
   tableData: Record<string, unknown>[] = []
   tableHeaders: TableHeaders[] = []
 
@@ -61,91 +56,11 @@ export default class TimeSeriesTable extends Vue {
     this.onSeriesChange()
   }
 
-  setSeriesIds() {
-    // Some ChartSeries appear twice in the ChartConfig; once for a line and once for a marker.
-    // Only one of these has to be included in the table.
-    this.seriesIds = []
-    if (this.value?.series === undefined) return
-    this.seriesIds = uniq(this.value.series.filter(series => series.visibleInTable).map((series) => series.id))
-  }
-
-  setHeaders() {
-    if (this.value?.series === undefined) return
-    const tableHeaders: TableHeaders[] = []
-    tableHeaders.push({value: 'date', text: 'Date', width: '200px', class: 'sticky-column', cellClass:'sticky-column'})
-    const seriesDef = this.value.series
-    this.seriesIds.forEach((seriesId) => {
-      const chartSeries = seriesDef.find((s) => s.id === seriesId)
-      if (chartSeries !== undefined) {
-        tableHeaders.push({ value: chartSeries.id, text: this.formatHeader(chartSeries), color: chartSeries.style.stroke?.toString()})
-      }
-    })
-    this.tableHeaders = tableHeaders
-  }
-
-  setDates() {
-    if (this.value?.series === undefined) {
-      this.dateTimes = []
-      return
-    }
-    const dates: Date[] = []
-    for (const chartSeries of this.value.series) {
-      const series = this.series[chartSeries.dataResources[0]]
-      if (series !== undefined) {
-        for (const event of series.data) {
-          if (dates.findIndex(date => {return date.getTime() === event.x.getTime()}) === -1) {
-            dates.push(event.x)
-          }
-        }
-      }
-    }
-    dates.sort((a, b) => {return a.getTime() - b.getTime()})
-    this.dateTimes = dates
-  }
-
-  combineEvents() {
-    if (this.value?.series === undefined) return
-    const seriesDef = this.value.series
-    this.tableData = this.dateTimes.map((date: Date) => {
-      const event: any = {}
-      event.date = date.toLocaleString(undefined, {
-        weekday: 'short',
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: false
-      })
-      for (const seriesId of this.seriesIds) {
-        const chartSeries = seriesDef.find((s) => s.id === seriesId)
-        if (chartSeries === undefined) continue
-        const series = this.series[chartSeries.dataResources[0]]
-        if (series === undefined) {
-          event[chartSeries.id] = null
-        } else {
-          const data = series.data ?? []
-          const selected = data.find((dataPoint: {x: Date, y: number}) => date.getTime() === dataPoint.x.getTime())
-          event[chartSeries.id] = selected !== undefined ? selected.y : null
-        }
-      }
-      return event
-    })
-  }
-
-  formatHeader(chartSeries: ChartSeries): string {
-    const label = chartSeries.name ?? ''
-    const header = label
-    return header
-  }
-
   @Watch('series')
-  onSeriesChange (): void {
-    this.setSeriesIds()
-    this.setHeaders()
-    this.setDates()
-    this.combineEvents()
+  onSeriesChange(): void {
+    this.seriesIds = getUniqueSeriesIds(this.value.series)
+    this.tableHeaders = createTableHeaders(this.value.series, this.seriesIds)
+    this.tableData = createTableData(this.value.series, this.series, this.seriesIds)
   }
 }
 </script>
