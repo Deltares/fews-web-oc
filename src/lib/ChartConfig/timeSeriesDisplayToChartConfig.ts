@@ -1,7 +1,7 @@
 import { Axis } from "@/components/TimeSeriesComponent/lib/Axis"
 import { ChartConfig } from "@/components/TimeSeriesComponent/lib/ChartConfig.js"
 import { ChartSeries } from "@/components/TimeSeriesComponent/lib/ChartSeries.js"
-import { TimeSeriesDisplaySubplot } from "@deltares/fews-pi-requests"
+import { TimeSeriesDisplaySubplot, TimeSeriesDisplaySubplotItem } from "@deltares/fews-pi-requests"
 import { cssStyleFromFewsLine, cssStyleFromFewsMarker, chartMarkerFromFews } from "./Styles"
 
 export function timeSeriesDisplayToChartConfig(subplot: TimeSeriesDisplaySubplot, title: string): ChartConfig {
@@ -13,61 +13,44 @@ export function timeSeriesDisplayToChartConfig(subplot: TimeSeriesDisplaySubplot
   const chartSeriesArray: ChartSeries[] = []
   for (const item of subplot.items) {
     if (item.lineStyle !== undefined && item.lineStyle !== "none") {
-      const chartSeries = {
-        id: `${item.request}`,
-        dataResources: [`${item.request}`],
-        name: item.legend || "",
-        unit: "",
-        type: "line",
-        visibleInLegend: item.visibleInLegend,
-        visibleInPlot: item.visibleInPlot,
-        visibleInTable: item.visibleInTable,
-        options: {
-          x: {
-            key: "x",
-            axisIndex: 0
-          },
-          y: {
-            key: "y",
-            axisIndex: config.yAxis?.findIndex((yAxis) => {
-              return yAxis.location === item.yAxis?.axisPosition
-            }) ?? 0
-          },
-        },
-        style: cssStyleFromFewsLine(item),
-      }
+      const chartSeries: ChartSeries = getChartSeries(item, "line", config)
       chartSeriesArray.push(chartSeries)
     }
     if (item.markerStyle !== undefined && item.markerStyle !== "none") {
-      const chartSeries = {
-        id: `${item.request}`,
-        dataResources: [`${item.request}`],
-        name: item.legend || "",
-        unit: "",
-        type: "marker",
-        visibleInLegend: item.visibleInLegend,
-        visibleInPlot: item.visibleInPlot,
-        visibleInTable: item.visibleInTable,
-        options: {
-          x: {
-            key: "x",
-            axisIndex: 0
-          },
-          y: {
-            key: "y",
-            axisIndex: config.yAxis?.findIndex((yAxis) => {
-              return yAxis.location === item.yAxis?.axisPosition
-            }) ?? 0
-          },
-        },
-        style: cssStyleFromFewsMarker(item),
-        marker: chartMarkerFromFews(item.markerStyle)
-      }
+      const chartSeries: ChartSeries = getChartSeries(item, "marker", config)
+      chartSeries.marker = chartMarkerFromFews(item.markerStyle)
+      chartSeries.style = cssStyleFromFewsMarker(item)
       chartSeriesArray.push(chartSeries)
     }
   }
   config.series = chartSeriesArray
   return config
+}
+
+function getChartSeries(item: TimeSeriesDisplaySubplotItem, seriesType: string, config: ChartConfig) {
+  return {
+    id: `${item.request}`,
+    dataResources: [`${item.request}`],
+    name: item.legend || "",
+    unit: "",
+    type: seriesType,
+    visibleInLegend: item.visibleInLegend,
+    visibleInPlot: item.visibleInPlot,
+    visibleInTable: item.visibleInTable,
+    options: {
+      x: {
+        key: "x",
+        axisIndex: 0
+      },
+      y: {
+        key: "y",
+        axisIndex: config.yAxis?.findIndex((yAxis) => {
+          return yAxis.location === item.yAxis?.axisPosition
+        }) ?? 0
+      },
+    },
+    style: cssStyleFromFewsLine(item),
+  }
 }
 
 function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): Axis[] {
