@@ -98,7 +98,7 @@ export default class ConfigurableChart extends Vue {
     window.addEventListener('resize', this.resize)
   }
 
-  @Watch('series')
+  @Watch('series', { deep: true})
   @Watch('value')
   onValueChange(): void {
     this.clearChart()
