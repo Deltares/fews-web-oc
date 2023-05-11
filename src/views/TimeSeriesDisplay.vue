@@ -239,16 +239,6 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
     this.updateTimeSeries(this.requests[index])
   }
 
-  @Watch('active')
-  onActiveChange(): void {
-    console.log('update:active', this.active)
-  }
-
-  @Watch('open')
-  onOpenChange(): void {
-    console.log('update:open', this.open)
-  }
-
 }
 </script>
 
