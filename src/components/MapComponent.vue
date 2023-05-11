@@ -19,6 +19,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
+import {ResourceType} from "mapbox-gl";
 
 @Component
 export default class MapComponent extends Vue {
@@ -29,17 +30,14 @@ export default class MapComponent extends Vue {
     map.map.resize = () => void 0;
   }
 
-  mounted(){
-    var map:any = this.$refs.map;
-
-    map.map._requestManager._transformRequestFn = (url: any, resourceType: any) => {
+  mounted() {
+    const map:any = this.$refs.map;
+    map.map._requestManager._transformRequestFn = (url: string, resourceType: ResourceType) => {
       if (!this.$config.authenticationIsEnabled) return {
         url: url
       }
       if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
         const requestAuthHeaders = this.$auth.getAuthorizationHeaders()
-        // todo request auth headers are async......
-        console.log(url)
         return {
           url: url,
           headers: requestAuthHeaders
