@@ -11,17 +11,29 @@
       </v-btn>
     </template>
     <v-card>
+      <v-subheader>Time range</v-subheader>
       <v-list>
-        <v-list-item v-for="(item) in intervalItems" :key="item" @click="setInterval(item)">
-          {{ localeString(item) }}
+        <v-list-item @click="setInterval(null)">
+          <v-list-item-title>
+            Default
+          </v-list-item-title>
+          <v-list-item-icon>
+              <v-icon v-show="selectedInterval === null" small>mdi-check</v-icon>
+            </v-list-item-icon>
         </v-list-item>
-        <v-list-item>
-          Browser Time: {{ now.toLocaleTimeString('en-UK', { hour: '2-digit', minute: '2-digit', timeZoneName : 'short' }) }}
+        <v-list-item v-for="(item) in intervalItems" :key="item" @click="setInterval(item)">
+          <v-list-item-title>
+            {{ localeString(item) }}
+            </v-list-item-title>
+            <v-list-item-icon>
+              <v-icon v-show="item === selectedInterval" small>mdi-check</v-icon>
+            </v-list-item-icon>
         </v-list-item>
       </v-list>
+      <v-divider />
       <v-card-actions>
-        <v-spacer />
-        <v-btn plain>Reset</v-btn>
+        <span class="mr-2">Browser time:</span>
+        <v-chip small>{{ now.toLocaleTimeString('en-UK', { hour: '2-digit', minute: '2-digit', timeZoneName : 'short' }) }}</v-chip>
       </v-card-actions>
     </v-card>
   </v-menu>
@@ -46,17 +58,23 @@ export default class TimeControl extends Vue {
   @sytemTimeModule.Mutation('setInterval')
   storeSetInterval!: (payload: any) => Date
 
+  selectedInterval: string|null = null
   intervalItems = [
     '-P1D',
     '-P7D',
   ]
 
-  setInterval(interval: string) {
+  setInterval(interval: string | null) {
     const now = this.getSystemTime()
-    const duration = Duration.fromISO(interval)
-    const startDateTime = DateTime.fromJSDate(now).plus( duration)
-    const endDateTime = DateTime.fromJSDate(now)
-    this.storeSetInterval({ startTime: startDateTime.toJSDate(), endTime: endDateTime.toJSDate()})
+    this.selectedInterval = interval
+    if (interval == null) {
+      this.storeSetInterval({ startTime: null, endTime: null})
+    } else {
+      const duration = Duration.fromISO(interval)
+      const startDateTime = DateTime.fromJSDate(now).plus( duration)
+      const endDateTime = DateTime.fromJSDate(now)
+      this.storeSetInterval({ startTime: startDateTime.toJSDate(), endTime: endDateTime.toJSDate()})
+    }
   }
 
   localeString(item: string) {
