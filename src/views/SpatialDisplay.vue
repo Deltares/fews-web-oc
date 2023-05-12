@@ -146,7 +146,6 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     try {
       this.times = await this.getTimes(this.layerName)
     } catch {
-      console.log('no times')
       this.times = []
     }
     this.dateController.dates = this.times
@@ -157,7 +156,6 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
       this.legend = response.legend
       this.unit = response.unit
     } catch {
-      console.log('no legend')
       this.legend = []
       this.unit = ""
     }
