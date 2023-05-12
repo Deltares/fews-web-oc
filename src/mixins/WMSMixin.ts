@@ -7,12 +7,6 @@ export default class WMSMixin extends Vue {
   externalForecast: Date = new Date('invalid')
   layers: Layer[] = []
 
-  async transformRequest(request: Request): Promise<Request> {
-    if (!this.$config.authenticationIsEnabled) return request
-    // $auth only exists if authentication is enabled.
-    return this.$auth.transformRequestAuth(request);
-  }
-
   created (): void {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     let url!: URL
@@ -68,8 +62,13 @@ export default class WMSMixin extends Vue {
     return valueDates
   }
 
-
   async getLegendGraphic (layers: string): Promise<any> {
     return await this.wmsProvider.getLegendGraphic({layers})
+  }
+
+  async transformRequest(request: Request): Promise<Request> {
+    if (!this.$config.authenticationIsEnabled) return request
+    // $auth only exists if authentication is enabled.
+    return this.$auth.transformRequestAuth(request);
   }
 }
