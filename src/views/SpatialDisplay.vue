@@ -89,9 +89,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   }
 
   async loadCapabilities (): Promise<void> {
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const response = await fetch(`${baseUrl}/wms?request=GetCapabilities&format=application/json&onlyHeaders=false`)
-    const capabilities = await response.json()
+    const capabilities = await this.wmsProvider.getCapabilities({})
     const layers = capabilities.layers
     this.fillMenuItems(layers)
   }
@@ -148,7 +146,6 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     try {
       this.times = await this.getTimes(this.layerName)
     } catch {
-      console.log('no times')
       this.times = []
     }
     this.dateController.dates = this.times
@@ -159,7 +156,6 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
       this.legend = response.legend
       this.unit = response.unit
     } catch {
-      console.log('no legend')
       this.legend = []
       this.unit = ""
     }
