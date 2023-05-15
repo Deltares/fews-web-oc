@@ -15,14 +15,15 @@
 </template>
 
 <script lang="ts">
-import {Vue, Component, Prop, Watch} from 'vue-property-decorator'
-import * as webOcCharts from '@deltares/fews-web-oc-charts'
-import {ChartConfig} from './lib/ChartConfig'
-import {ChartSeries} from './lib/ChartSeries'
-import {ThresholdLine} from './lib/ThresholdLine'
-import {Series} from '@/lib/TimeSeries'
-import {uniq} from 'lodash';
-import * as d3 from 'd3'
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import { AlertLines, CartesianAxesOptions, ChartLine, ChartMarker, toggleChartVisisbility} from '@deltares/fews-web-oc-charts'
+import { AxisPosition, AxisType, CartesianAxes, CurrentTime, MouseOver, ZoomHandler } from '@deltares/fews-web-oc-charts'
+import { ChartConfig } from './lib/ChartConfig'
+import { ChartSeries } from './lib/ChartSeries'
+import { ThresholdLine } from './lib/ThresholdLine'
+import { Series } from '@/lib/TimeSeries'
+import { uniq } from 'lodash'
+import { extent } from 'd3'
 
 interface Tag {
   id: string;
@@ -47,7 +48,7 @@ export default class ConfigurableChart extends Vue {
   })
   series!: Record<string, Series>
   thresholdLines: ThresholdLine[] = []
-  thresholdLinesVisitor!: webOcCharts.AlertLines
+  thresholdLinesVisitor!: AlertLines
 
   axis!: any // eslint-disable-line @typescript-eslint/no-explicit-any
   isFullscreen = false
@@ -58,21 +59,21 @@ export default class ConfigurableChart extends Vue {
   }
 
   mounted(): void {
-    const axisOptions: webOcCharts.CartesianAxesOptions = {
+    const axisOptions: CartesianAxesOptions = {
       x: [{
-        type: webOcCharts.AxisType.time,
-        position: webOcCharts.AxisPosition.Bottom,
+        type: AxisType.time,
+        position: AxisPosition.Bottom,
         showGrid: true
       }],
       y: [{
-        position: webOcCharts.AxisPosition.Left,
+        position: AxisPosition.Left,
         showGrid: true,
         label: ' ',
         unit: ' ',
         nice: true
       },
         {
-          position: webOcCharts.AxisPosition.Right,
+          position: AxisPosition.Right,
           label: ' ',
           unit: ' ',
           nice: true
@@ -85,16 +86,16 @@ export default class ConfigurableChart extends Vue {
     }
 
     const containerReference = this.$refs['chart-container'] as HTMLElement
-    this.axis = new webOcCharts.CartesianAxes(containerReference, null, null, axisOptions)
-    const mouseOver = new webOcCharts.MouseOver()
-    const zoom = new webOcCharts.ZoomHandler()
-    const currentTime = new webOcCharts.CurrentTime({
+    this.axis = new CartesianAxes(containerReference, null, null, axisOptions)
+    const mouseOver = new MouseOver()
+    const zoom = new ZoomHandler()
+    const currentTime = new CurrentTime({
       x: {
         axisIndex: 0
       }
     })
 
-    this.thresholdLinesVisitor = new webOcCharts.AlertLines(this.thresholdLines)
+    this.thresholdLinesVisitor = new AlertLines(this.thresholdLines)
 
     this.axis.accept(this.thresholdLinesVisitor)
     this.axis.accept(zoom)
@@ -179,7 +180,7 @@ export default class ConfigurableChart extends Vue {
       this.thresholdLines = thresholdLines
     }
 
-    let defaultDomain = d3.extent(thresholdLines.map( l => l.value))
+    let defaultDomain = extent(thresholdLines.map( l => l.value))
     if ( this.thresholdLines.length === 0 ){
       defaultDomain = [NaN, NaN]
     }
@@ -200,11 +201,11 @@ export default class ConfigurableChart extends Vue {
     const data = series?.data !== undefined ? series.data : []
     let line
     if (chartSeries.type === 'line') {
-      line = new webOcCharts.ChartLine(data, {
+      line = new ChartLine(data, {
         tooltip: {toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}`}
       })
     } else {
-      line = new webOcCharts.ChartMarker(data, {
+      line = new ChartMarker(data, {
         symbol: chartSeries.marker,
         tooltip: {toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}`}
       })
@@ -283,7 +284,7 @@ export default class ConfigurableChart extends Vue {
       this.setThresholdLines()
       this.axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
     } else{
-      webOcCharts.toggleChartVisisbility(this.axis, id)
+      toggleChartVisisbility(this.axis, id)
     }
   }
 
