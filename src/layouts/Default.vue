@@ -100,7 +100,6 @@ export default class Default extends Vue {
   }
 
   getMenuIcon (componentConfig: WebOcComponent): string {
-    console.log(componentConfig)
     if (componentConfig.icon !== undefined) return componentConfig.icon
     switch (componentConfig.type) {
       case ComponentTypeEnum.DataViewer:

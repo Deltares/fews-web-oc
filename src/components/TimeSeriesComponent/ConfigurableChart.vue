@@ -19,8 +19,10 @@ import {Vue, Component, Prop, Watch} from 'vue-property-decorator'
 import * as webOcCharts from '@deltares/fews-web-oc-charts'
 import {ChartConfig} from './lib/ChartConfig'
 import {ChartSeries} from './lib/ChartSeries'
+import {ThresholdLine} from './lib/ThresholdLine'
 import {Series} from '@/lib/TimeSeries'
 import {uniq} from 'lodash';
+import * as d3 from 'd3'
 
 interface Tag {
   id: string;
@@ -44,6 +46,8 @@ export default class ConfigurableChart extends Vue {
     }
   })
   series!: Record<string, Series>
+  thresholdLines: ThresholdLine[] = []
+  thresholdLinesVisitor!: webOcCharts.AlertLines
 
   axis!: any // eslint-disable-line @typescript-eslint/no-explicit-any
   isFullscreen = false
@@ -90,6 +94,9 @@ export default class ConfigurableChart extends Vue {
       }
     })
 
+    this.thresholdLinesVisitor = new webOcCharts.AlertLines(this.thresholdLines)
+
+    this.axis.accept(this.thresholdLinesVisitor)
     this.axis.accept(zoom)
     this.axis.accept(mouseOver)
     this.axis.accept(currentTime)
@@ -140,6 +147,9 @@ export default class ConfigurableChart extends Vue {
         ]
       })
     }
+
+    this.setThresholdLines()
+
     this.axis.redraw({
       x: {
         autoScale: true
@@ -152,6 +162,36 @@ export default class ConfigurableChart extends Vue {
 
   clearChart(): void {
     this.axis.removeAllCharts()
+  }
+
+  setThresholdLines(): void {
+    const thresholdLines = this.value?.thresholds
+    if (thresholdLines === undefined) return
+
+    const tag = this.legendTags.find(tag => {
+      return tag.id === 'Thresholds'
+    })
+
+    const disabled = tag?.disabled ?? false
+    if (disabled){
+      this.thresholdLines = []
+    } else {
+      this.thresholdLines = thresholdLines
+    }
+
+    let defaultDomain = d3.extent(thresholdLines.map( l => l.value))
+    if ( this.thresholdLines.length === 0 ){
+      defaultDomain = [NaN, NaN]
+    }
+
+    this.axis.setOptions(
+      {
+        y: [
+          { defaultDomain: defaultDomain, nice: true },
+        ]
+      }
+    )
+    this.thresholdLinesVisitor.options = this.thresholdLines
   }
 
   addToChart(chartSeries: ChartSeries): void {
@@ -190,12 +230,7 @@ export default class ConfigurableChart extends Vue {
     } else {
       const ids = uniq(series.filter(s => s.visibleInLegend).map((s) => s.id))
       this.legendTags = ids.map((id) => {
-        const legendSvg = document.createElement('svg')
-        legendSvg.setAttribute('width', '20')
-        legendSvg.setAttribute('height', '20')
-        legendSvg.setAttribute('viewBox', '0 0 20 20')
-        const svgGroup = document.createElement('g')
-        svgGroup.setAttribute('transform', 'translate(0 10)')
+        const { svgGroup, legendSvg }=createChip()
         for (const chart of this.axis.charts) {
           if (chart.id === id) {
             let node = chart.drawLegendSymbol(undefined, true)
@@ -212,15 +247,43 @@ export default class ConfigurableChart extends Vue {
         }
       })
     }
+    const thresholds = this.value?.thresholds
+    if (thresholds !== undefined) {
+      const { svgGroup, legendSvg }=createChip()
+      legendSvg.appendChild(svgGroup)
+      const thresholdLegend = {
+        id: 'Thresholds',
+        name: 'Thresholds',
+        disabled: false,
+        legendSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M13 14h-2V9h2m0 9h-2v-2h2M1 21h22L12 2L1 21Z"/></svg>'
+      }
+      this.legendTags.push(thresholdLegend)
+    }
+
+    function createChip() {
+      const legendSvg=document.createElement('svg')
+      legendSvg.setAttribute('width', '20')
+      legendSvg.setAttribute('height', '20')
+      legendSvg.setAttribute('viewBox', '0 0 20 20')
+      const svgGroup=document.createElement('g')
+      svgGroup.setAttribute('transform', 'translate(0 10)')
+      return { svgGroup, legendSvg }
+    }
   }
 
   toggleLine(id: string): void {
     const tag = this.legendTags.find(tag => {
       return tag.id === id
     })
-    webOcCharts.toggleChartVisisbility(this.axis, id)
     if (tag) {
       tag.disabled = !tag.disabled
+    }
+
+    if (id === 'Thresholds'){
+      this.setThresholdLines()
+      this.axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
+    } else{
+      webOcCharts.toggleChartVisisbility(this.axis, id)
     }
   }
 
