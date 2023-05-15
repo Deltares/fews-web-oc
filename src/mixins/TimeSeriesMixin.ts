@@ -52,17 +52,17 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
          && options?.endTime) {
         const startTime = DateTime.fromJSDate(options?.startTime, {zone: 'UTC'})
         const endTime = DateTime.fromJSDate(options?.endTime, {zone: 'UTC'})
-        const intervalInMillis = Interval.fromDateTimes(startTime, endTime).length()
-        url.searchParams.set('startTime', startTime.toISO({ suppressMilliseconds: true}) ?? '')
-        url.searchParams.set('endTime', endTime.toISO({ suppressMilliseconds: true}) ?? '')
-        url.searchParams.set('thinning', `${intervalInMillis / window.outerWidth}`)
+        const timeStepPerPixel = Math.round(Interval.fromDateTimes(startTime, endTime).length() / window.outerWidth /2)
+        url.searchParams.set('startTime', startTime.toISO({ suppressMilliseconds: true }) ?? '')
+        url.searchParams.set('endTime', endTime.toISO({ suppressMilliseconds: true }) ?? '')
+        url.searchParams.set('thinning', `${timeStepPerPixel}`)
       } else if ( startTimeString !== null && endTimeString !== null) {
         const startTime = DateTime.fromISO(startTimeString, {zone: 'UTC'})
         const endTime = DateTime.fromISO(endTimeString, {zone: 'UTC'})
-        const intervalInMillis = Interval.fromDateTimes(startTime, endTime).length()
-        url.searchParams.set('startTime', startTime.toISO({ suppressMilliseconds: true}) ?? '')
-        url.searchParams.set('endTime', endTime.toISO({ suppressMilliseconds: true}) ?? '')
-        url.searchParams.set('thinning', `${intervalInMillis / window.outerWidth}`)
+        const timeStepPerPixel =  Math.round(Interval.fromDateTimes(startTime, endTime).length() / window.outerWidth /2)
+        url.searchParams.set('startTime', startTime.toISO({ suppressMilliseconds: true }) ?? '')
+        url.searchParams.set('endTime', endTime.toISO({ suppressMilliseconds: true }) ?? '')
+        url.searchParams.set('thinning', `${timeStepPerPixel}`)
       }
       const resourceId = `${request.key}`
       const relativeUrl = request.request.split('?')[0] + url.search
