@@ -105,33 +105,36 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
         name: 'Layers'
       }
     ]
+    // build menu structure from the layer groups
     const rootNode = items[0]
     let groupNodes = new Map<string, ColumnItem>();
     for (const group of groups) {
       const item: ColumnItem = {
-        id: group.name + '-' + group.title,
+        id: group.path.toString(),
         name: group.title,
         children: []
       }
-      groupNodes.set(group.name + '-' + group.title, item)
+      groupNodes.set(group.path.toString(), item)
     }
-    groupNodes.forEach( g=> {
-      console.log("Group: " + g?.id +  " -  " + g?.name)
-    })
     rootNode.children = []
+    // attach layers to menu using the group path.
     for (const group of groups) {
-      const groupNode = groupNodes.get(group.name + '-' + group.title)
-      if (group.groupName === undefined && groupNode !== undefined) { // no parent
+      const groupNode = groupNodes.get(group.path.toString())
+      if (group.groupName === undefined && groupNode !== undefined) {
         rootNode.children.push(groupNode)
       } else {
-        // attach to parent
-        if (groupNode !== undefined && group.groupName !== undefined) {
-          const parentNode = groupNodes.get(group.groupName + '-' + group.groupTitle)
-          parentNode?.children?.push(groupNode)}
+        if (groupNode !== undefined && group.groupName !== undefined && group.path.length > 0) {
+          const parentPath = group.path.slice(0,-1)
+          if (parentPath !== undefined) {
+            const parentNode = groupNodes.get(parentPath.toString())
+            parentNode?.children?.push(groupNode)
+          }
         }
+      }
     }
+
     for (const layer of layers) {
-      const groupNode = groupNodes.get(layer.groupName + '-' + layer.groupTitle)
+      const groupNode = groupNodes.get(layer.path.toString())
       const item: ColumnItem = {
         id: layer.name,
         name: layer.title || layer.name,
