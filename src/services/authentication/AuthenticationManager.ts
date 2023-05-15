@@ -35,16 +35,10 @@ export class AuthenticationManager {
     }
   }
 
-  public transformRequestAuth(request: Request): Request {
+  public transformRequestAuth(request: Request, signal?: AbortSignal): Request {
     const requestAuthHeaders = this.getAuthorizationHeaders()
-    const requestInit = { headers: requestAuthHeaders}
-    return new Request(request, requestInit)
-  }
-
-  public transformRequest(request: Request): Request {
-    if (!configManager.authenticationIsEnabled) return request
-    // $auth only exists if authentication is enabled.
-    const newRequest = this.transformRequestAuth(request)
+    const requestInit = { headers: requestAuthHeaders, signal: signal}
+    const newRequest = new Request(request, requestInit)
     return newRequest
   }
 }

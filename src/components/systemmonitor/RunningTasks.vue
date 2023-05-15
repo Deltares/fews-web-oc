@@ -54,6 +54,7 @@ export default class RunningTasks extends Mixins(PiRequestsMixin) {
   ]
   runningTasks: TaskRun[] = []
   active: boolean = false;
+  abortController?: AbortController
 
   destroyed() {
     this.active = false;
@@ -79,7 +80,12 @@ export default class RunningTasks extends Mixins(PiRequestsMixin) {
   async loadRunningTasks() {
     try {
       if (!this.active) return
-      const provider = new PiWebserviceProvider(this.baseUrl, {transformRequestFn: this.transformRequest});
+      if (this.abortController !== undefined) {
+        this.abortController.abort()
+      }
+      this.abortController= new AbortController()
+      const transformRequest = this.getTransformRequest(this.abortController)
+      const provider = new PiWebserviceProvider(this.baseUrl, {transformRequestFn: transformRequest});
       const taskRunFilter: TaskRunsFilter = {
         taskRunStatusIds: ["R", "P"],
         documentFormat: DocumentFormat.PI_JSON,

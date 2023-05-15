@@ -103,24 +103,27 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, Vue, Watch } from 'vue-property-decorator'
-import {ActionRequest, DocumentFormat, PiWebserviceProvider} from "@deltares/fews-pi-requests";
-import PiRequestsMixin from '@/mixins/PiRequestsMixin';
+import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
+
+import type { Location } from "@deltares/fews-pi-requests";
+import { ActionRequest, DocumentFormat, PiWebserviceProvider} from "@deltares/fews-pi-requests";
+import type { Layer } from '@deltares/fews-wms-requests';
+import { ColourMap } from '@deltares/fews-web-oc-charts';
+
+import { FeatureCollection, Feature, Geometry } from 'geojson';
 import { debounce, uniq, intersection } from 'lodash';
-import { Location } from '@deltares/fews-pi-requests';
-import MapComponent from '../components/MapComponent.vue'
+
+import PiRequestsMixin from '@/mixins/PiRequestsMixin';
+import MapComponent from '@/components/MapComponent.vue'
 import WMSMixin from '@/mixins/WMSMixin'
-import { Layer } from '@deltares/fews-wms-requests';
 import { DateController } from '@/lib/TimeControl/DateController';
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
-import { ColourMap } from '@deltares/fews-web-oc-charts';
 import WMSLayerControl, { WMSLayerControlValue } from '@/components/WMSLayerControl.vue'
 import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
 import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
-import { FeatureCollection, Geometry } from 'geojson';
 
 interface MapboxLayerOptions {
   name: string;
@@ -228,7 +231,8 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
 
   async mounted() {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    this.webServiceProvider = new PiWebserviceProvider(baseUrl, {transformRequestFn: this.transformRequest})
+    const transformRequestFn = this.getTransformRequest()
+    this.webServiceProvider = new PiWebserviceProvider(baseUrl, {transformRequestFn})
     this.setLayoutClass()
     await this.getFilters()
     this.getParameters()
@@ -242,7 +246,8 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
   async getFilters() {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const request = new Request(`${baseUrl}/rest/fewspiservice/v1/filters?documentFormat=PI_JSON`)
-    const response = await fetch( await this.transformRequest(request))
+    const transformRequest = this.getTransformRequest()
+    const response = await fetch( await transformRequest(request))
     const filters = (await response.json()).filters.map((f: Filter) => {
       return {
         ...f,
@@ -261,14 +266,15 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
   @Watch('filterId')
   async getParameters() {
     if (this.filterId === '') return
-    const filter = {
-      filterId: this.filterId
-    }
+    // const filter = {
+    //   filterId: this.filterId
+    // }
     // const response = await this.webServiceProvider.getParameters(filter as any)
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const request = new Request(
       `${baseUrl}/rest/fewspiservice/v1/parameters?documentFormat=PI_JSON&filterId=${this.filterId}`)
-    const response = await fetch( await this.transformRequest(request))
+    const transformRequest = this.getTransformRequest()
+    const response = await fetch( await transformRequest(request))
     const parameters: Parameter[] = (await response.json()).timeSeriesParameters
     this.parameters = parameters
     this.categories = uniq(parameters.map(p => p.parameterGroup))
@@ -382,7 +388,8 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
     if (this.locationId === '') return
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const request = new Request(`${baseUrl}/rest/fewspiservice/v1/filters/actions?filterId=${this.filterId}&parameterGroupId=${this.categoryId}&locationIds=${this.locationId}`)
-    const result = await fetch( await this.transformRequest(request))
+    const transformRequest = this.getTransformRequest()
+    const result = await fetch( await transformRequest(request))
     const response = await result.json()
     const allDisplays = []
     const requests = []

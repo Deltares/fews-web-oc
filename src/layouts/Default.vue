@@ -1,7 +1,7 @@
 <template>
   <v-app id="app">
     <v-app-bar color="#080C80" dense app dark :clipped-left="!$vuetify.rtl" :clipped-right="$vuetify.rtl">
-      <v-btn v-if="!$vuetify.breakpoint.mobile" text :to="{ name: 'Home' }">
+      <v-btn v-if="!$vuetify.breakpoint.mobile" text :to="{ name: 'Home' }" class="fews-home">
         Delft-FEWS Web OC
       </v-btn>
       <v-menu offset-y>
@@ -26,6 +26,7 @@
         </v-list>
       </v-menu>
       <v-spacer />
+      <TimeControl/>
       <CogMenu/>
       <login-component v-if="$config.authenticationIsEnabled"/>
     </v-app-bar>
@@ -53,6 +54,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import CogMenu from '@/components/CogMenu.vue'
+import TimeControl from '@/components/timecontrol/TimeControl.vue'
 import LoginComponent from '@/components/LoginComponent.vue'
 import { namespace } from 'vuex-class'
 import { Alert } from '@/store/modules/alerts/types'
@@ -65,7 +67,8 @@ const fewsConfigModule = namespace('fewsconfig')
 @Component({
   components: {
     CogMenu,
-    LoginComponent
+    LoginComponent,
+    TimeControl,
   }
 })
 export default class Default extends Vue {
@@ -141,6 +144,10 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
   overflow: hidden;
+}
+
+.fews-home.v-btn {
+  text-transform: capitalize !important;
 }
 
 #app.theme--light {
