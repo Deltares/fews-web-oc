@@ -16,7 +16,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import { AlertLines, CartesianAxesOptions, ChartLine, ChartMarker, toggleChartVisisbility} from '@deltares/fews-web-oc-charts'
+import { AlertLines, CartesianAxesOptions, ChartLine, ChartMarker, WheelMode, toggleChartVisisbility} from '@deltares/fews-web-oc-charts'
 import { AxisPosition, AxisType, CartesianAxes, CurrentTime, MouseOver, ZoomHandler } from '@deltares/fews-web-oc-charts'
 import { ChartConfig } from './lib/ChartConfig'
 import { ChartSeries } from './lib/ChartSeries'
@@ -88,7 +88,7 @@ export default class ConfigurableChart extends Vue {
     const containerReference = this.$refs['chart-container'] as HTMLElement
     this.axis = new CartesianAxes(containerReference, null, null, axisOptions)
     const mouseOver = new MouseOver()
-    const zoom = new ZoomHandler()
+    const zoom = new ZoomHandler(WheelMode.X)
     const currentTime = new CurrentTime({
       x: {
         axisIndex: 0
