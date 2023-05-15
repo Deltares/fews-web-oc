@@ -103,34 +103,16 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
         name: 'Layers'
       }
     ]
-    // build menu structure from the layer groups
     const rootNode = items[0]
-    let groupNodes = new Map<string, ColumnItem>();
-    for (const group of groups) {
-      const item: ColumnItem = {
-        id: group.path.toString(),
-        name: group.title,
-        children: []
-      }
-      groupNodes.set(group.path.toString(), item)
-    }
     rootNode.children = []
-    // attach layers to menu using the group path.
-    for (const group of groups) {
-      const groupNode = groupNodes.get(group.path.toString())
-      if (group.groupName === undefined && groupNode !== undefined) {
-        rootNode.children.push(groupNode)
-      } else {
-        if (groupNode !== undefined && group.groupName !== undefined && group.path.length > 0) {
-          const parentPath = group.path.slice(0,-1)
-          if (parentPath !== undefined) {
-            const parentNode = groupNodes.get(parentPath.toString())
-            parentNode?.children?.push(groupNode)
-          }
-        }
-      }
-    }
+    let groupNodesMenuItemsMap = this.determineGroupNodesMap(groups);
+    this.buildMenuFromGroups(groups, groupNodesMenuItemsMap, rootNode);
+    this.attachLayersToMenu(layers, groupNodesMenuItemsMap);
+    this.items = items
+    this.open = [items[0].id]
+  }
 
+  private attachLayersToMenu(layers: Layer[], groupNodes: Map<string, ColumnItem>) {
     for (const layer of layers) {
       const groupNode = groupNodes.get(layer.path.toString())
       const item: ColumnItem = {
@@ -146,8 +128,36 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
       }
       groupNode?.children?.push(item)
     }
-    this.items = items
-    this.open = [items[0].id]
+  }
+
+  private buildMenuFromGroups(groups: LayerGroup[], groupNodes: Map<string, ColumnItem>, rootNode: ColumnItem) {
+    for (const group of groups) {
+      const groupNode = groupNodes.get(group.path.toString())
+      if (group.groupName === undefined && groupNode !== undefined) {
+        rootNode?.children?.push(groupNode)
+      } else {
+        if (groupNode !== undefined && group.groupName !== undefined && group.path.length > 0) {
+          const parentPath = group.path.slice(0, -1)
+          if (parentPath !== undefined) {
+            const parentNode = groupNodes.get(parentPath.toString())
+            parentNode?.children?.push(groupNode)
+          }
+        }
+      }
+    }
+  }
+
+  private determineGroupNodesMap(groups: LayerGroup[]): Map<string, ColumnItem> {
+    let groupNodes = new Map<string, ColumnItem>();
+    for (const group of groups) {
+      const item: ColumnItem = {
+        id: group.path.toString(),
+        name: group.title,
+        children: []
+      }
+      groupNodes.set(group.path.toString(), item)
+    }
+    return groupNodes;
   }
 
   setCurrentTime (enabled: boolean): void {
