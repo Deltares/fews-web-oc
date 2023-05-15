@@ -19,6 +19,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
+import {ResourceType} from "mapbox-gl";
 
 @Component
 export default class MapComponent extends Vue {
@@ -27,6 +28,25 @@ export default class MapComponent extends Vue {
   beforeDestroy(){
     var map:any = this.$refs.map;
     map.map.resize = () => void 0;
+  }
+
+  mounted() {
+    const map:any = this.$refs.map;
+    map.map._requestManager._transformRequestFn = (url: string, resourceType: ResourceType) => {
+      if (!this.$config.authenticationIsEnabled) return {
+        url: url
+      }
+      if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
+        const requestAuthHeaders = this.$auth.getAuthorizationHeaders()
+        return {
+          url: url,
+          headers: requestAuthHeaders
+        }
+      }
+      return {
+        url: url
+      }
+    }
   }
 }
 </script>

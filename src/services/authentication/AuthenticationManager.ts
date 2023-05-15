@@ -1,29 +1,32 @@
 import { configManager } from '../application-config/'
-import { UserManager } from "oidc-client-ts";
+import { UserManager, User, UserManagerSettings } from "oidc-client-ts";
 import { RequestHeaderAuthorization } from '../application-config/ApplicationConfig';
 
-export class AuthenticationManager extends UserManager{
-  private readonly _userManager: UserManager
+export class AuthenticationManager {
+  userManager!: UserManager
+  private user: User | null = null
 
-  public constructor() {
-    const settings = configManager.getUserManagerSettings()
-    super(settings)
-    this._userManager = new UserManager(settings)
+  init(settings: UserManagerSettings) {
+    this.userManager = new UserManager(settings)
+    this.userManager.getUser().then((user) => {
+      this.user = user
+    })
+    this.userManager.events.addUserLoaded((user: User) => {
+      this.user = user})
   }
 
-  public async getAccessToken(): Promise<string> {
-    const user = await this._userManager.getUser();
-    if (user && user.access_token) {
-        return user.access_token;
+  public getAccessToken(): string {
+    if (this.user !== null) {
+      return this.user.access_token;
     }
     return ''
   }
 
-  public async getAuthorizationHeaders(): Promise<HeadersInit> {
+  public getAuthorizationHeaders(): HeadersInit {
     if (!configManager.authenticationIsEnabled) return {}
     switch (configManager.get('VUE_APP_REQUEST_HEADER_AUTHORIZATION')){
       case (RequestHeaderAuthorization.BEARER): {
-        const token = await this.getAccessToken()
+        const token = this.getAccessToken()
         const requestAuthHeaders = {'Authorization': `Bearer ${token}`}
         return requestAuthHeaders
       }
@@ -32,10 +35,18 @@ export class AuthenticationManager extends UserManager{
     }
   }
 
-  public async transformRequestAuth(request: Request): Promise<Request> {
-    const requestAuthHeaders = await this.getAuthorizationHeaders()
+  public transformRequestAuth(request: Request): Request {
+    const requestAuthHeaders = this.getAuthorizationHeaders()
     const requestInit = { headers: requestAuthHeaders}
-    const newRequest = new Request(request, requestInit)
+    return new Request(request, requestInit)
+  }
+
+  public transformRequest(request: Request): Request {
+    if (!configManager.authenticationIsEnabled) return request
+    // $auth only exists if authentication is enabled.
+    const newRequest = this.transformRequestAuth(request)
     return newRequest
   }
 }
+
+export const authenticationManager = new AuthenticationManager()

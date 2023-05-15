@@ -29,11 +29,11 @@ export default class App extends Vue {
   async created(): Promise<void> {
     if (this.$config.authenticationIsEnabled) {
       if (this.$route.path === "/auth/callback") {
-        const user = await this.$auth.signinRedirectCallback()
+        const user = await this.$auth.userManager.signinRedirectCallback()
         const path: string = user.state === null ? '/home' : user.state as string
         this.$router.push({ path })
       }
-      const user = await this.$auth.getUser()
+      const user = await this.$auth.userManager.getUser()
       if (user !== null) await this.setFewsConfig()
     } else {
       await this.setFewsConfig()
