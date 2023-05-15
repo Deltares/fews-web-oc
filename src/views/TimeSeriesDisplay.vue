@@ -133,7 +133,8 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
   }
 
   async mounted(): Promise<void> {
-    this.webServiceProvider = new PiWebserviceProvider(this.baseUrl, {transformRequestFn: this.transformRequest});
+    const transformRequestFn = this.getTransformRequest()
+    this.webServiceProvider = new PiWebserviceProvider(this.baseUrl, {transformRequestFn});
     await this.loadNodes()
     await this.onNodeChange()
   }
@@ -208,10 +209,8 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
 
   @Watch('$store.state.systemTime.startTime')
   async onTimeChanged(): Promise<void> {
-    console.log('systemTime')
     await this.loadTimeSeries(this.selectedItem);
   }
-
 
   @Watch('selectedItem')
   async onPlotChanged(): Promise<void> {
