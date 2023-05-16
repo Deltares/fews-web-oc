@@ -46,6 +46,7 @@ import { DateController } from '@/lib/TimeControl/DateController'
 import { ColourMap } from '@deltares/fews-web-oc-charts'
 import ColourBar from '@/components/ColourBar.vue'
 import { Layer } from '@deltares/fews-wms-requests'
+import {LayerGroup} from "@deltares/fews-wms-requests/src/response/getCapabilitiesResponse";
 
 interface MapboxLayerOptions {
   name: string;
@@ -91,41 +92,72 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   async loadCapabilities (): Promise<void> {
     const capabilities = await this.wmsProvider.getCapabilities({})
     const layers = capabilities.layers
-    this.fillMenuItems(layers)
+    const groups = capabilities.groups
+    this.fillMenuItems(layers, groups)
   }
 
-  fillMenuItems (layers: Layer[]): void {
-    const groupNames = [...new Set(layers.map((l) => l.groupName))]
+  fillMenuItems (layers: Layer[], groups: LayerGroup[]): void {
     const items: ColumnItem[] = [
       {
         id: 'root',
         name: 'Layers'
       }
     ]
-    items[0].children = []
-    for (const groupName of groupNames) {
-      const group = layers.find((l) => l.groupName === groupName)
-      if (group === undefined) continue
-      const children = []
-      for (const layer of layers.filter((l) => l.groupName === groupName)) {
-        children.push({
-          id: layer.name,
-          name: layer.title || layer.name,
-          nodata: layer.completelyMissing || false,
-          to: {
-            name: 'SpatialDisplay',
-            params: {
-              layerName: layer.name,
-            }
-          }
-        })
-      }
-      if ( group.groupName !== undefined ) {
-        items[0].children.push({ id: group.groupName, name: group.groupTitle || group.groupName, children })
-      }
-    }
+    const rootNode = items[0]
+    rootNode.children = []
+    let groupNodesMenuItemsMap = this.determineGroupNodesMap(groups);
+    this.buildMenuFromGroups(groups, groupNodesMenuItemsMap, rootNode);
+    this.attachLayersToMenu(layers, groupNodesMenuItemsMap);
     this.items = items
     this.open = [items[0].id]
+  }
+
+  private attachLayersToMenu(layers: Layer[], groupNodes: Map<string, ColumnItem>) {
+    for (const layer of layers) {
+      const groupNode = groupNodes.get(layer.path.toString())
+      const item: ColumnItem = {
+        id: layer.name,
+        name: layer.title || layer.name,
+        nodata: layer.completelyMissing || false,
+        to: {
+          name: 'SpatialDisplay',
+          params: {
+            layerName: layer.name,
+          }
+        }
+      }
+      groupNode?.children?.push(item)
+    }
+  }
+
+  private buildMenuFromGroups(groups: LayerGroup[], groupNodes: Map<string, ColumnItem>, rootNode: ColumnItem) {
+    for (const group of groups) {
+      const groupNode = groupNodes.get(group.path.toString())
+      if (group.groupName === undefined && groupNode !== undefined) {
+        rootNode?.children?.push(groupNode)
+      } else {
+        if (groupNode !== undefined && group.groupName !== undefined && group.path.length > 0) {
+          const parentPath = group.path.slice(0, -1)
+          if (parentPath !== undefined) {
+            const parentNode = groupNodes.get(parentPath.toString())
+            parentNode?.children?.push(groupNode)
+          }
+        }
+      }
+    }
+  }
+
+  private determineGroupNodesMap(groups: LayerGroup[]): Map<string, ColumnItem> {
+    let groupNodes = new Map<string, ColumnItem>();
+    for (const group of groups) {
+      const item: ColumnItem = {
+        id: group.path.toString(),
+        name: group.title,
+        children: []
+      }
+      groupNodes.set(group.path.toString(), item)
+    }
+    return groupNodes;
   }
 
   setCurrentTime (enabled: boolean): void {

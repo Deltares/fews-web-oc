@@ -15,7 +15,7 @@
     "@deltares/fews-ssd-requests": "^0.2.11",
     "@deltares/fews-ssd-webcomponent": "^0.3.0-alpha.0",
     "@deltares/fews-web-oc-charts": "^3.0.0-alpha.7",
-    "@deltares/fews-wms-requests": "^0.1.11-alpha.1",
+    "@deltares/fews-wms-requests": "^0.1.11-alpha.4",
     "@mdi/font": "^6.4.95",
     "@turf/helpers": "^6.5.0",
     "@turf/projection": "^6.5.0",
