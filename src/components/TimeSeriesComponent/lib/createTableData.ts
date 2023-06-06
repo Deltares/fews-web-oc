@@ -25,14 +25,20 @@ export function createTableData(chartSeriesArray: ChartSeries[] | undefined, ser
     for ( const j in chartSeries ) {
       const s = chartSeries[j]
       const series = seriesRecord[s.dataResources[0]]
-      let value = undefined
+      let eventResult = {}
       if (series && series.data) {
         const event = series.data[p[j]]
         if (event && date.getTime() === event.x.getTime()) {
-          value = event.y
+          eventResult = {
+            value: event.y,
+            flag: event.flag,
+            flagSource: event.flagSource,
+            comment: event.comment,
+            user: event.user
+          }
           p[j]++
         }
-        result[s.id] = value
+        result[s.id] = eventResult
       }
     }
     return result
