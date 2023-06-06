@@ -4,6 +4,7 @@ import { RootState } from './types'
 import Alerts from '@/store/modules/alerts'
 import { fewsconfig } from '@/store/modules/fews-config'
 import { systemTime } from '@/store/modules/system-time'
+import { userSettings } from '@/store/modules/user-settings'
 
 Vue.use(Vuex)
 
@@ -17,7 +18,8 @@ const store = new Vuex.Store<RootState>({
   modules: {
     alerts: Alerts,
     systemTime,
-    fewsconfig
+    fewsconfig,
+    userSettings
   }
 })
 

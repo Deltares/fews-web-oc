@@ -14,22 +14,18 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
+import { namespace } from 'vuex-class'
+import { UserSettingsItem } from '@/store/modules/user-settings/types'
+
+const userSettingsModule = namespace('userSettings')
 
 @Component
 export default class DataView extends Vue {
-  value = 'm/s'
-  settings = [
-    { type: 'oneOfMultiple' , label: 'Wind speed', value: 'm/s', items: ['m/s', 'km/h', 'Bft', 'kts'], group: 'Units'},
-    { type: 'oneOfMultiple',  label: 'Wind direction', value: 'degree', items: ['degree', 'cardinal'], group: 'Units'},
-    { type: 'oneOfMultiple',  label: 'Theme', value: 'auto', items: ['auto', 'light', 'dark'], group: 'Theme'},
-    { type: 'oneOfMultiple',  label: 'Language', value: 'en', items: ['en', 'nl'], group: 'Locale'},
+  @userSettingsModule.State('groups')
+  groups!: string[]
 
-  ]
-  groups = ['Units', 'Theme', 'Locale']
-
-  settingsForGroup(id: string) {
-    return this.settings.filter((s) => s.group === id)
-  }
+  @userSettingsModule.Getter('settingsForGroup')
+  settingsForGroup!: (id: string) => UserSettingsItem[]
 }
 </script>
 
