@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import UserSettingsView from '../views/UserSettingsView.vue'
 import SchematicStatusDisplay from '../views/SchematicStatusDisplay.vue'
 import SpatialDisplay from '../views/SpatialDisplay.vue'
 import Silent from '../views/auth/Silent.vue'
@@ -32,6 +33,12 @@ const routesBase: Array<RouteConfig> = [
     name: 'About',
     meta: { authorize: [] },
     component: HomeView
+  },
+  {
+    path: '/settings',
+    name: 'UserSettingsView',
+    meta: { authorize: [] },
+    component: UserSettingsView
   },
   {
     path: '/login',
