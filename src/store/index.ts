@@ -20,7 +20,7 @@ interface Storage {
 }
 
 const vuexUserSettings = createPersistedState<RootState>({
-  key: 'delft-fews-webox:userSettings#1.0.0',
+  key: 'delft-fews-weboc:userSettings#1.0.0',
   paths: ['userSettings'],
   storage: window.localStorage,
   setState: (key: string, state: RootState, storage: Storage) => {
