@@ -11,10 +11,11 @@ export default class ThemeMixin extends Vue {
     // Then listen for changes for user theme preferences.
     this.mqDark.addEventListener('change', this.setThemeFromMediaQueryEvent)
     // Make sure the theme is set correctly upon creation of this component.
-    this.onThemeChange()
+    this.changeTheme(this.theme)
   }
 
-  onThemeChange(): void {
+  changeTheme(theme: ColourTheme): void {
+    this.theme = theme
     if (this.theme === ColourTheme.Auto) {
       this.setTheme(this.mqDark.matches)
     } else {

@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Mixins, Vue } from 'vue-property-decorator'
 import CogMenu from '@/components/CogMenu.vue'
 import TimeControl from '@/components/timecontrol/TimeControl.vue'
 import LoginComponent from '@/components/LoginComponent.vue'
@@ -63,6 +63,7 @@ import { namespace } from 'vuex-class'
 import { Alert } from '@/store/modules/alerts/types'
 import type { WebOcComponent } from '@/store/modules/fews-config/types'
 import { ComponentTypeEnum } from '@/store/modules/fews-config/types'
+import ThemeMixin from '@/mixins/ThemeMixin'
 
 const alertsModule = namespace('alerts')
 const fewsConfigModule = namespace('fewsconfig')
@@ -74,7 +75,7 @@ const fewsConfigModule = namespace('fewsconfig')
     TimeControl,
   }
 })
-export default class Default extends Vue {
+export default class Default extends Mixins(ThemeMixin) {
   @alertsModule.Getter('listActive')
     activeAlerts!: Alert[]
   @alertsModule.State('alerts')
@@ -83,6 +84,22 @@ export default class Default extends Vue {
     webOcComponents!: { [key: string]: WebOcComponent }
   @fewsConfigModule.Action('loadConfig')
     loadConfig!: () => void
+
+  created() {
+    this.$store.subscribe((mutation, state) => {
+      if (mutation.type.startsWith('userSettings/add')) {
+        switch(mutation.payload.id) {
+          case 'ui.theme':
+            this.changeTheme(mutation.payload.value)
+            break
+          case 'locale.language':
+            this.$i18n.locale = mutation.payload.value
+            break
+          default:
+        }
+      }
+    })
+  }
 
   mounted(): void {
     this.loadConfig()

@@ -42,9 +42,8 @@
 <script lang="ts">
 import {
   Component,
-  Mixins
+  Vue
 } from 'vue-property-decorator'
-import ThemeMixin from '@/mixins/ThemeMixin'
 import packageConfig from '../../package.json'
 
 import { namespace } from 'vuex-class'
@@ -54,7 +53,7 @@ import "flag-icons/css/flag-icons.min.css"
 const userSettingsModule = namespace('userSettings')
 
 @Component
-export default class CogMenu extends Mixins(ThemeMixin) {
+export default class CogMenu extends Vue {
   @userSettingsModule.Getter('listFavorite')
   listFavorite!: UserSettingsItem[]
   @userSettingsModule.Mutation('add')
