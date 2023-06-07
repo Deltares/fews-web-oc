@@ -3,15 +3,15 @@
     <h1>Settings</h1>
     <div v-for="g in groups" :key="g">
       <h2>{{ g }}</h2>
-      <v-row v-for="(s, i) of settingsForGroup(g)" :key="i" dense>
+      <v-row v-for="(s, i) of listByGroup(g)" :key="i" dense>
         <v-col cols="12" md="6">
           <v-select v-if="s.type === 'oneOfMultiple'" :label="s.label" v-model="s.value" :items="s.items"
             :append-outer-icon="s.favorite ? 'mdi-star' : 'mdi-star-outline'"
             outlined
             dense
             item-text="value"
-            @change="(e) => onValueChange(i, e)"
-            @click:append-outer="(e) => onFavoriteChange(i, e)"
+            @change="onValueChange(s)"
+            @click:append-outer="onFavoriteChange(s)"
             >
             <template v-slot:item="{ on, attrs, item}">
               <v-list-item
@@ -41,16 +41,19 @@ const userSettingsModule = namespace('userSettings')
 export default class DataView extends Vue {
   @userSettingsModule.State('groups')
   groups!: string[]
+  @userSettingsModule.Getter('listByGroup')
+  listByGroup!: (id: string) => UserSettingsItem[]
+  @userSettingsModule.Mutation('add')
+    addUserSetting!: (item: UserSettingsItem) => void
 
-  @userSettingsModule.Getter('settingsForGroup')
-  settingsForGroup!: (id: string) => UserSettingsItem[]
-
-  onValueChange(i: string, e: any) {
-    console.log(i, e)
+  onValueChange(item: UserSettingsItem) {
+    console.log(item)
   }
 
-  onFavoriteChange(i: string, e: any) {
-    console.log(i, e)
+  onFavoriteChange(item: UserSettingsItem) {
+    item.favorite = !item.favorite
+    this.addUserSetting(item)
+    console.log(item)
   }
 
 }

@@ -10,6 +10,7 @@ export interface UserSettingsWithIcon {
 }
 
 export interface UserSettingsItem {
+  id: string;
   type: UserSettingsType;
   label: string;
   value: string;
@@ -19,6 +20,7 @@ export interface UserSettingsItem {
 }
 
 export interface UserSettingsState {
-  settings: UserSettingsItem[]
-  groups: string[]
+  byId: Record<string, UserSettingsItem>;
+  allIds: string[];
+  groups: string[];
 }
