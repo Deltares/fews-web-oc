@@ -31,7 +31,6 @@ export default class App extends Vue {
     addUserSetting!: (item: UserSettingsItem) => void
 
   async created(): Promise<void> {
-    this.initUserSettings()
     if (this.$config.authenticationIsEnabled) {
       if (this.$route.path === "/auth/callback") {
         const user = await this.$auth.userManager.signinRedirectCallback()
@@ -44,34 +43,6 @@ export default class App extends Vue {
       await this.setFewsConfig()
     }
     this.setRoutes()
-  }
-
-
-  initUserSettings () {
-    const settings: UserSettingsItem[] = [
-      { id: 'units.wind-speed', type: 'oneOfMultiple' , label: 'Wind speed', value: 'm/s', items: [
-        { value: 'm/s' },
-        { value: 'km/l'},
-        { value: 'Bft' },
-        { value: 'kts' }
-      ], group: 'Units'},
-      { id: 'units.wind-direction', type: 'oneOfMultiple',  label: 'Wind direction', value: 'degree', items: [
-        { value: 'degree' },
-        { value: 'cardinal' }
-      ], group: 'Units'},
-      { id: 'ui.theme',  type: 'oneOfMultiple',  label: 'Theme', value: 'auto', items: [
-        { value: 'auto', icon: 'mdi-theme-light-dark'},
-        { value: 'light', icon: 'mdi-weather-sunny'},
-        { value: 'dark' , icon: 'mdi-weather-night'}
-      ], group: 'UI'},
-      { id: 'locale.language', type: 'oneOfMultiple',  label: 'Language', value: 'en', items: [
-        { icon: 'fi-au', value: 'en-au' },
-        { icon: 'fi-nl', value: 'nl' }
-      ], group: 'Locale'},
-    ]
-    for (let s of settings) {
-      this.addUserSetting(s)
-    }
   }
 
   setRoutes(): void {

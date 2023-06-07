@@ -44,16 +44,15 @@ export default class DataView extends Vue {
   @userSettingsModule.Getter('listByGroup')
   listByGroup!: (id: string) => UserSettingsItem[]
   @userSettingsModule.Mutation('add')
-    addUserSetting!: (item: UserSettingsItem) => void
+  addUserSetting!: (item: UserSettingsItem) => void
 
   onValueChange(item: UserSettingsItem) {
-    console.log(item)
+    this.addUserSetting(item)
   }
 
   onFavoriteChange(item: UserSettingsItem) {
     item.favorite = !item.favorite
     this.addUserSetting(item)
-    console.log(item)
   }
 
 }

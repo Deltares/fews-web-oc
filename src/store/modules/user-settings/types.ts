@@ -14,7 +14,7 @@ export interface UserSettingsItem {
   type: UserSettingsType;
   label: string;
   value: string;
-  items: string[] | UserSettingsWithIcon[];
+  items: UserSettingsWithIcon[];
   favorite?: boolean;
   group: string;
 }

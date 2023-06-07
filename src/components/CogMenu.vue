@@ -57,6 +57,8 @@ const userSettingsModule = namespace('userSettings')
 export default class CogMenu extends Mixins(ThemeMixin) {
   @userSettingsModule.Getter('listFavorite')
   listFavorite!: UserSettingsItem[]
+  @userSettingsModule.Mutation('add')
+  addUserSetting!: (item: UserSettingsItem) => void
 
   packageVersion = packageConfig.version
   items: UserSettingsItem[] = []
@@ -67,7 +69,7 @@ export default class CogMenu extends Mixins(ThemeMixin) {
   }
 
   onValueChange(item: UserSettingsItem) {
-    console.log(item)
+    this.addUserSetting(item)
   }
 }
 </script>
