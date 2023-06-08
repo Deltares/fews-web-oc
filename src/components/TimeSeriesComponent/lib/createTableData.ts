@@ -1,6 +1,7 @@
 import type {ChartSeries} from "@/components/TimeSeriesComponent/lib/ChartSeries";
 import {Series} from "@/lib/TimeSeries";
 import {uniqWith} from "lodash";
+import i18n from '@/i18n'
 
 export function createTableData(chartSeriesArray: ChartSeries[] | undefined, seriesRecord: Record<string, Series>, seriesIds: string[]): Record<string, unknown>[] {
   if (chartSeriesArray === undefined) return []
@@ -8,20 +9,10 @@ export function createTableData(chartSeriesArray: ChartSeries[] | undefined, ser
 
   const chartSeries = uniqWith(chartSeriesArray.filter((s) => seriesIds.includes(s.id)), (a,b) => {return a.id === b.id})
   const p = Array(seriesIds.length).fill(0)
-  const dateFormatter = new Intl.DateTimeFormat(undefined, {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-    hour12: false
-  })
 
   return dateTimes.map((date: Date) => {
     const result: any = {}
-    result.date = dateFormatter.format(date)
+    result.date = i18n.d(date, 'datatable')
     for ( const j in chartSeries ) {
       const s = chartSeries[j]
       const series = seriesRecord[s.dataResources[0]]

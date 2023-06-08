@@ -23,6 +23,16 @@ export const dateTimeFormats: VueI18n.DateTimeFormats = {
       hour: 'numeric',
       minute: 'numeric',
       hour12: false
+    },
+    datatable: {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false
     }
   },
   nl: {
@@ -47,6 +57,16 @@ export const dateTimeFormats: VueI18n.DateTimeFormats = {
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric'
+    },
+    datatable: {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false
     }
   }
 }
