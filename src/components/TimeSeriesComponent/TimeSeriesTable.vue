@@ -1,5 +1,11 @@
 <template>
   <div class="table-container">
+    <v-dialog
+      persistent
+      v-model="editDialog"
+    >
+      <EditableTimeSeriesTable :value="value" :series="series" :seriesId="editSeriesId" :tableData="tableData" @close="closeEditDialog"></EditableTimeSeriesTable>
+    </v-dialog>
     <v-data-table class="data-table"
       :headers="tableHeaders"
       :items="tableData"
@@ -15,7 +21,20 @@
     >
       <template v-for="h in tableHeaders" v-slot:[`header.${h.value}`]>
         <div class="table-header-indicator" :key="h.value">
-          <span class="table-header-indicator-text">{{ h.text }}</span>
+          <div class="table-header-indicator-text">
+            <span style="display: flex; margin:auto 0; flex: 2 1 auto; justify-self: flex-end;">
+              {{ h.text }}
+            </span>
+            <v-btn v-if="h.editable"
+              tile
+              icon
+              depressed
+              x-small
+              @click="editTimeSeries(h.value)"
+            >
+              <v-icon small>mdi-pencil-outline</v-icon>
+            </v-btn>
+          </div>
           <div class="table-header-indicator-color" :style="{'background-color': h.color}"></div>
         </div>
       </template>
@@ -82,11 +101,16 @@ import type {TimeSeriesFlag, TimeSeriesFlagSource} from '@deltares/fews-pi-reque
 import {getUniqueSeriesIds} from "@/components/TimeSeriesComponent/lib/getUniqueSeriesIds";
 import type {TableHeaders} from "@/components/TimeSeriesComponent/lib/TableHeaders";
 import {createTableHeaders} from "@/components/TimeSeriesComponent/lib/createTableHeaders";
-import {createTableData} from './lib/createTableData';
+import {createTableData} from '@/components/TimeSeriesComponent/lib/createTableData';
+import EditableTimeSeriesTable from '@/components/TimeSeriesComponent/EditableTimeSeriesTable.vue'
 
 const fewsPropertyModule = namespace('fewsProperties')
 
-@Component
+@Component({
+  components: {
+    EditableTimeSeriesTable,
+  },
+})
 export default class TimeSeriesTable extends Vue {
 
   @fewsPropertyModule.Getter('getFlags')
@@ -122,6 +146,10 @@ export default class TimeSeriesTable extends Vue {
   tableData: Record<string, unknown>[] = []
   tableHeaders: TableHeaders[] = []
 
+  editDialog: boolean = false
+  editSeriesId: string = ''
+  editTableData: Record<string, unknown>[] = []
+  editTableHeaders: TableHeaders[] = []
 
   async mounted(): Promise<void> {
     await this.loadFlags()
@@ -136,6 +164,14 @@ export default class TimeSeriesTable extends Vue {
     this.tableData = createTableData(this.value.series, this.series, this.seriesIds)
   }
 
+  editTimeSeries(seriesId: string) {
+    this.editDialog = true
+    this.editSeriesId = seriesId
+  }
+
+  closeEditDialog() {
+    this.editDialog = false
+  }
 }
 </script>
 
@@ -179,6 +215,11 @@ export default class TimeSeriesTable extends Vue {
   z-index: 3;
 }
 
+.v-data-table--dense > .v-data-table__wrapper > table > thead > tr > th {
+  height: 100% !important;
+  min-height: 32px;
+}
+
 .theme--dark .sticky-column {
   background-color: #1E1E1E;
 }
@@ -190,16 +231,19 @@ export default class TimeSeriesTable extends Vue {
 .table-header-indicator {
   display: flex;
   height: 100%;
-  flex-direction: column
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
 .table-header-indicator-text {
-  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  flex: 2 0 auto;
 }
 
 .table-header-indicator-color {
   flex: 0 0 10px;
   width: 100%;
-  margin-bottom: 5px;
 }
 </style>

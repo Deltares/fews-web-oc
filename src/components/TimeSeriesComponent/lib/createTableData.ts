@@ -36,6 +36,15 @@ export function createTableData(chartSeriesArray: ChartSeries[] | undefined, ser
   })
 }
 
+export function createEditTableData(tableData: Record<string, any>[], seriesId: string): Record<string, unknown>[] {
+  const editTableData = tableData.map((datum) => {
+    let result = { date: datum.date}
+    result = {...result, ...datum[seriesId]}
+    return result
+  })
+  return editTableData
+}
+
 function createDateTimes(chartSeriesArray: ChartSeries[] | undefined, seriesRecord: Record<string, Series>): Date[] {
   if (chartSeriesArray === undefined) {
     return []
