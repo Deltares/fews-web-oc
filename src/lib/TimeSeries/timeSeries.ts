@@ -1,5 +1,5 @@
 import { JsonObject, JsonProperty } from 'typescript-json-serializer'
-import { SeriesHeader } from './types'
+import type { SeriesHeader, SeriesDataEvent } from './types'
 import { SeriesResource, SeriesRequest, SeriesUrlRequest, SeriesDerived } from './timeSeriesResource'
 import MD5 from 'crypto-js/md5'
 
@@ -32,7 +32,7 @@ export class Series {
   @JsonProperty({ type: timeSeriesResourceType })
   resource: SeriesResource | SeriesRequest | SeriesUrlRequest | SeriesDerived
 
-  data?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  data?: SeriesDataEvent[];
   start?: Date;
   end?: Date;
   lastUpdated?: Date;

@@ -4,7 +4,7 @@
       persistent
       v-model="editDialog"
     >
-      <EditableTimeSeriesTable :value="value" :series="series" :seriesId="editSeriesId" :tableData="tableData" @close="closeEditDialog"></EditableTimeSeriesTable>
+      <EditableTimeSeriesTable :value="value" :series="series" :seriesId="editSeriesId" :tableData="tableData" @close="closeEditDialog" @update="onDataUpdate"></EditableTimeSeriesTable>
     </v-dialog>
     <v-data-table class="data-table"
       :headers="tableHeaders"
@@ -61,7 +61,7 @@
                       mdi-circle
                     </v-icon>
                   </div>
-                  {{ item[id].value }}
+                  {{ item[id].y }}
                 </span>
                 <div style="display: flex; flex: 0 0 auto; width: 16px;">
                   <v-icon
@@ -171,6 +171,11 @@ export default class TimeSeriesTable extends Vue {
 
   closeEditDialog() {
     this.editDialog = false
+  }
+
+  onDataUpdate(newData: Record<string, any>) {
+    this.$emit('update', newData)
+    console.log('onDataUpdate in TimeSeriesTable')
   }
 }
 </script>

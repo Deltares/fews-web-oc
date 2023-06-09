@@ -4,7 +4,7 @@
       <WindowComponent v-for="display in displays" :key="display.id" :class="display.class"
         :title="display.title" :displayTypes="display.types">
         <template v-slot="{displayType}">
-          <component :is="displayType" :value="display.config" :series="series" :key="display.id">
+          <component :is="displayType" :value="display.config" :series="series" :key="display.id" @update="onDataUpdate">
           </component>
         </template>
       </WindowComponent>
@@ -19,6 +19,7 @@ import TimeSeriesTable from '@/components/TimeSeriesComponent/TimeSeriesTable.vu
 import WindowComponent from "@/components/Layout/WindowComponent.vue"
 import { Series } from "@/lib/TimeSeries";
 import type { DisplayConfig } from '@/lib/Layout/DisplayConfig'
+import type { EditTableItem } from "../TimeSeriesComponent/lib/createTableData";
 
 @Component({
   components: {
@@ -40,6 +41,11 @@ export default class ComponentsPanel extends Vue {
 
   @Prop({default: () => {return {}} })
   series!: Record<string, Series>
+
+  onDataUpdate(newData: Record<string, EditTableItem>) {
+    this.$emit('update', newData)
+    console.log('onDataUpdate in ComponentsPanel')
+  }
 }
 </script>
 

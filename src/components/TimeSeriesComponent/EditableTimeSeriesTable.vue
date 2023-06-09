@@ -57,6 +57,7 @@
             reverse
             hide-details="true"
             height=24
+            @change="editItem(item)"
           >
             {{ item.value }}
           </v-text-field>
@@ -72,22 +73,9 @@
             hide-details="true"
             height=24
             :items="flagIds"
+            @change="editItem(item)"
           >
             {{ item.flag }}
-          </v-select>
-        </template>
-
-        <template v-slot:[`item.flagSource`]="{ item }">
-          <v-select
-            v-model="item.flagSource"
-            single-line
-            solo
-            dense
-            flat
-            hide-details="true"
-            height=24
-            :items="flagSourceIds"
-          >
           </v-select>
         </template>
 
@@ -101,6 +89,7 @@
             reverse
             hide-details="true"
             height=24
+            @change="editItem(item)"
           >
             {{ item.comment }}
           </v-text-field>
@@ -129,6 +118,7 @@ import type {TimeSeriesFlag, TimeSeriesFlagSource} from '@deltares/fews-pi-reque
 import type {TableHeaders} from "@/components/TimeSeriesComponent/lib/TableHeaders";
 import {createEditTableHeaders} from "@/components/TimeSeriesComponent/lib/createTableHeaders";
 import {createEditTableData} from '@/components/TimeSeriesComponent/lib/createTableData';
+import type {EditTableItem} from '@/components/TimeSeriesComponent/lib/createTableData';
 
 const fewsPropertyModule = namespace('fewsProperties')
 
@@ -167,47 +157,43 @@ export default class EditableTimeSeriesTable extends Vue {
   dialog: boolean = false
   editIndex: number = -1
   editDate: Date = new Date()
-  editEvent: any = {
-    date: '',
-    value: 0,
-    flag: 0,
-    flagSource: undefined,
-    comment: undefined,
-    user: undefined
-  }
-  defaultEvent: any = {
+  editedEvents: Record<string, EditTableItem> = {}
+  defaultEvent: EditTableItem = {
     date: this.$i18n.d(new Date(), 'datatable'),
-    value: 0,
-    flag: 0,
-    flagSource: undefined,
+    y: null,
+    flag: '0',
     comment: undefined,
     user: undefined
   }
 
-  editTableData: Record<string, unknown>[] = []
+  editTableData: EditTableItem[] = []
   tableHeaders: TableHeaders[] = []
 
   mounted() {
-    this.onSeriesIdChange()
+    this.updateTableData()
   }
 
   @Watch('seriesId')
-  onSeriesIdChange() {
+  @Watch('series', { deep: true})
+  @Watch('tableData', { deep: true})
+  updateTableData() {
     this.tableHeaders = createEditTableHeaders(this.value.series, this.seriesId)
     this.editTableData = createEditTableData(this.tableData, this.seriesId)
   }
 
   onSave() {
+    this.$emit('update',this.editedEvents)
     this.stopEdit()
   }
 
   stopEdit() {
+    this.editTableData = createEditTableData(this.tableData, this.seriesId)
+    this.editedEvents = {}
     this.$emit('close')
   }
 
-  editItem (item: any) {
-    this.editIndex = this.tableData.indexOf(item)
-    this.editEvent = Object.assign({}, item)
+  editItem (item: EditTableItem) {
+    Vue.set(this.editedEvents, item.date, item)
     this.dialog = true
   }
 

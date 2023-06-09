@@ -50,10 +50,10 @@ describe('create table data tests', () => {
 
     const resource = new SeriesUrlRequest('fews-pi', "test".toString())
     const firstSeries = new Series(resource)
-    firstSeries.data = [{x: new Date("2022-03-25"), y: 3}, {x: new Date("2022-03-26"), y: 4}]
+    firstSeries.data = [{x: new Date("2022-03-25"), y: 3, flag: "1"}, {x: new Date("2022-03-26"), y: 4, flag: "1"}]
 
     const secondSeries = new Series(resource)
-    secondSeries.data = [{x: new Date("2022-03-26"), y: 13}, {x: new Date("2022-03-27"), y: 14}]
+    secondSeries.data = [{x: new Date("2022-03-26"), y: 13,  flag: "0"}, {x: new Date("2022-03-27"), y: 14,  flag: "0"}]
 
     const seriesMap: Record<string, Series> = {
       "first": firstSeries,

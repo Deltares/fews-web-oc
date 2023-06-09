@@ -11,7 +11,7 @@
         </p>
       </v-card-text>
     </v-card>
-    <ComponentsPanel :displays="displays" :series="timeSeriesStore"/>
+    <ComponentsPanel :displays="displays" :series="timeSeriesStore" @update="onDataUpdate"/>
     <div style="width: 200px;" v-if="plots.length === 0">
       No plots
     </div>
@@ -28,6 +28,7 @@ import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import {DisplayConfig, DisplayType} from '@/lib/Layout/DisplayConfig'
 import {ActionWithConfigRequest, ClickType, SsdWebserviceProvider} from "@deltares/fews-ssd-requests";
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
+import type { EditTableItem } from '@/components/TimeSeriesComponent/lib'
 
 function absoluteUrl(urlString: string): URL {
   let url!: URL
@@ -124,6 +125,10 @@ export default class SSDTimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
 
   private async loadTimeSeries(index: number) {
     this.updateTimeSeries(this.requests[index])
+  }
+
+  onDataUpdate(newData: Record<string, EditTableItem>) {
+    console.log('onDataUpdate in SSDTimeSeriesDisplay: newData: ', newData)
   }
 }
 </script>

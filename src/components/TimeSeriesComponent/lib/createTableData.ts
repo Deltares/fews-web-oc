@@ -1,7 +1,12 @@
 import type {ChartSeries} from "@/components/TimeSeriesComponent/lib/ChartSeries";
 import {Series} from "@/lib/TimeSeries";
+import type {SeriesDataEvent} from "@/lib/TimeSeries";
 import {uniqWith} from "lodash";
 import i18n from '@/i18n'
+
+export interface EditTableItem extends Omit<SeriesDataEvent, 'x'> {
+  date: string
+}
 
 export function createTableData(chartSeriesArray: ChartSeries[] | undefined, seriesRecord: Record<string, Series>, seriesIds: string[]): Record<string, unknown>[] {
   if (chartSeriesArray === undefined) return []
@@ -16,17 +21,11 @@ export function createTableData(chartSeriesArray: ChartSeries[] | undefined, ser
     for ( const j in chartSeries ) {
       const s = chartSeries[j]
       const series = seriesRecord[s.dataResources[0]]
-      let eventResult = {}
+      let eventResult: SeriesDataEvent | Record<string, never> = { }
       if (series && series.data) {
         const event = series.data[p[j]]
         if (event && date.getTime() === event.x.getTime()) {
-          eventResult = {
-            value: event.y,
-            flag: event.flag,
-            flagSource: event.flagSource,
-            comment: event.comment,
-            user: event.user
-          }
+          eventResult = event
           p[j]++
         }
         result[s.id] = eventResult
@@ -36,11 +35,14 @@ export function createTableData(chartSeriesArray: ChartSeries[] | undefined, ser
   })
 }
 
-export function createEditTableData(tableData: Record<string, any>[], seriesId: string): Record<string, unknown>[] {
+export function createEditTableData(tableData: Record<string, unknown>[], seriesId: string): EditTableItem[] {
   const editTableData = tableData.map((datum) => {
-    let result = { date: datum.date}
-    result = {...result, ...datum[seriesId]}
-    return result
+    let result = {
+      date: datum.date as string
+    }
+    const event = datum[seriesId] as SeriesDataEvent | Record<string, never>
+    result = {...result, ...event}
+    return result as EditTableItem
   })
   return editTableData
 }
@@ -53,7 +55,7 @@ function createDateTimes(chartSeriesArray: ChartSeries[] | undefined, seriesReco
   for (const chartSeries of chartSeriesArray) {
     const series = seriesRecord[chartSeries.dataResources[0]]
     if (series !== undefined && series.data !== undefined) {
-      dates.push(...series.data.map((d: any) => d.x) )
+      dates.push(...series.data.map((d) => d.x) )
     }
   }
   return sortUniqueDates(dates)

@@ -53,7 +53,7 @@
       <v-spacer/>
     </v-toolbar>
     <div style="height: 100%; width: 100%; display: flex; flex-direction: row">
-      <ComponentsPanel :displays="displays" :series="timeSeriesStore"/>
+      <ComponentsPanel :displays="displays" :series="timeSeriesStore" @update="onDataUpdate"/>
       <div style="width: 200px;" v-if="plots.length > 1 && !$vuetify.breakpoint.mobile">
         <v-navigation-drawer
           width="200"
@@ -95,6 +95,7 @@ import PiRequestsMixin from "@/mixins/PiRequestsMixin"
 import type { TopologyActionFilter, ActionsResponse, TopologyNode } from "@deltares/fews-pi-requests";
 import { namespace } from 'vuex-class'
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
+import type { EditTableItem } from '@/components/TimeSeriesComponent/lib'
 
 const sytemTimeModule = namespace('systemTime')
 
@@ -254,6 +255,10 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
 
   private async loadTimeSeries(index: number) {
     this.updateTimeSeries(this.requests[index], {startTime: this.startTime, endTime: this.endTime, thinning: true})
+  }
+
+  onDataUpdate(newData: Record<string, EditTableItem>) {
+    console.log('onDataUpdate in TimeSeriesDisplay: newData: ', newData)
   }
 
 }

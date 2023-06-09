@@ -83,7 +83,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="toggleFullscreen"></router-view>
+        <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="toggleFullscreen" @update="onDataUpdate"></router-view>
       </div>
       <div class="grid-charts fullscreen" ref="grid-charts" v-else-if="hasSelectedLocation">
         <v-toolbar class="toolbar-charts" dense flat>
@@ -96,7 +96,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <router-view :displays="displays" @toggleFullscreen="toggleFullscreen"></router-view>
+        <router-view :displays="displays" @toggleFullscreen="toggleFullscreen" @update="onDataUpdate"></router-view>
       </div>
     </div>
   </div>
@@ -124,6 +124,7 @@ import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
+import type { EditTableItem } from '@/components/TimeSeriesComponent/lib';
 
 interface MapboxLayerOptions {
   name: string;
@@ -505,6 +506,10 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
     } else {
       this.layerOptions = null
     }
+  }
+
+  onDataUpdate(newData: Record<string, EditTableItem>) {
+    console.log('onDataUpdate in DataView: newData: ', newData)
   }
 }
 
