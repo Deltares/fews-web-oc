@@ -41,10 +41,10 @@
                   </v-icon>
                 </template>
                 <div>
-                  <v-icon>mdi-flag-variant</v-icon> {{ flagLabels[item[id].flag] }}
+                  <v-icon>mdi-flag-variant</v-icon> {{ getFlagName(item[id].flag) }}
                 </div>
                 <div v-if="item[id].flagSource !== undefined">
-                  <v-icon>mdi-access-point</v-icon> {{ item[id].flagSource }}
+                  <v-icon>mdi-access-point</v-icon> {{ getFlagSourceName(item[id].flagSource) }}
                 </div>
               </v-tooltip>
             </div>
@@ -77,15 +77,36 @@
 
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator'
+import { namespace } from 'vuex-class'
 import type {ChartConfig} from '@/components/TimeSeriesComponent/lib/ChartConfig'
 import {Series} from '@/lib/TimeSeries'
+import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
+import type {TimeSeriesFlag, TimeSeriesFlagSource} from '@deltares/fews-pi-requests';
 import {getUniqueSeriesIds} from "@/components/TimeSeriesComponent/lib/getUniqueSeriesIds";
 import type {TableHeaders} from "@/components/TimeSeriesComponent/lib/TableHeaders";
 import {createTableHeaders} from "@/components/TimeSeriesComponent/lib/createTableHeaders";
 import {createTableData} from './lib/createTableData';
 
+const fewsPropertyModule = namespace('fewsProperties')
+
 @Component
 export default class TimeSeriesTable extends Vue {
+
+  @fewsPropertyModule.Getter('getFlags')
+    flags!: TimeSeriesFlag[]
+  @fewsPropertyModule.Getter('getFlagSources')
+    flagSources!: TimeSeriesFlagSource[]
+  @fewsPropertyModule.Getter('getFlagColorByFlag')
+    getFlagColor!: (flag: number) => string | undefined
+  @fewsPropertyModule.Getter('getFlagNameByFlag')
+    getFlagName!: (flag: number) => string
+  @fewsPropertyModule.Getter('getFlagSourceNameByFlag')
+    getFlagSourceName!: (flag: number) => string
+  @fewsPropertyModule.Action('loadFlags')
+    loadFlags!: () => Promise<void>
+  @fewsPropertyModule.Action('loadFlagSources')
+    loadFlagSources!: () => Promise<void>
+
   @Prop({
     default: () => {
       return {}
@@ -104,10 +125,10 @@ export default class TimeSeriesTable extends Vue {
   tableData: Record<string, unknown>[] = []
   tableHeaders: TableHeaders[] = []
 
-  // TODO: Remove this. This should be an enum which we should get back from fews.
-  flagLabels: string[] = ["original reliable", "corrected reliable", "completed reliable", "original doubtful", "corrected doubtful", "completed doubtful", "original unreliable", "corrected unreliable", "completed unreliable", "original missing", "deleted", "set original reliable", "set original unreliable", "archive missing"]
 
-  mounted() {
+  async mounted(): Promise<void> {
+    await this.loadFlags()
+    await this.loadFlagSources()
     this.onSeriesChange()
   }
 
@@ -118,10 +139,6 @@ export default class TimeSeriesTable extends Vue {
     this.tableData = createTableData(this.value.series, this.series, this.seriesIds)
   }
 
-  getFlagColor(flag: number): string {
-    if (flag === 0) return 'none'
-    return 'red'
-  }
 }
 </script>
 
