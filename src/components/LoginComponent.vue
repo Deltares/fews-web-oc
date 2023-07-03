@@ -6,14 +6,16 @@
     <div v-else>
       <v-menu
         bottom
+        left
         offset-y
       >
         <template v-slot:activator="{ on, attrs }">
           <v-btn
             v-bind="attrs"
             v-on="on"
-            small
-            fab>
+            tile
+            text
+            >
             {{ initials }}
           </v-btn>
         </template>

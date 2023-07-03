@@ -1,17 +1,30 @@
 <template>
   <v-app id="app">
-    <v-app-bar color="#080C80" dense app dark :clipped-left="!$vuetify.rtl" :clipped-right="$vuetify.rtl">
-      <v-btn v-if="!$vuetify.breakpoint.mobile" text :to="{ name: 'Home' }" class="fews-home">
+    <v-app-bar color="#080C80" dense app dark>
+      <v-app-bar-nav-icon @click="toggleDrawer()"></v-app-bar-nav-icon>
+      <v-btn v-if="!$vuetify.breakpoint.mobile" text :to="{ name: 'About' }" class="fews-home">
         Delft-FEWS Web OC
       </v-btn>
-      <v-menu offset-y>
-        <template v-slot:activator="{ on, attrs }">
-        <v-app-bar-nav-icon
+      <v-spacer />
+      <TimeControl/>
+      <CogMenu/>
+    </v-app-bar>
+    <v-navigation-drawer v-model="drawer" app hide-overlay :right="$vuetify.rtl" width="320"
+      class="view-sidebar">
+      <v-toolbar dense fixed>
+        <v-spacer />
+        <login-component v-if="$config.authenticationIsEnabled"/>
+      </v-toolbar>
+      <v-menu offset-y left min-width="320">
+        <template v-slot:activator="{ on, attrs, value }">
+        <v-list-item
           aria-label="Menu button"
           v-bind="attrs"
           v-on="on"
         >
-        </v-app-bar-nav-icon>
+          <v-list-item-content>{{ currentItemTitle }}</v-list-item-content>
+          <v-list-item-icon><v-icon small>{{ value ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon></v-list-item-icon>
+        </v-list-item>
         </template>
         <v-list dense>
           <v-subheader>Switch to</v-subheader>
@@ -25,21 +38,11 @@
           </v-list-item>
         </v-list>
       </v-menu>
-      <v-spacer />
-      <TimeControl/>
-      <CogMenu/>
-      <login-component v-if="$config.authenticationIsEnabled"/>
-    </v-app-bar>
-    <v-navigation-drawer v-if="$route.meta.sidebar" v-model="drawer" app clipped hide-overlay :right="$vuetify.rtl" width="320"
-      class="view-sidebar">
       <portal-target name="web-oc-sidebar" />
     </v-navigation-drawer>
     <v-main id="main">
       <router-view style="height: 100%;">
       </router-view>
-      <v-btn v-if="$route.meta.sidebar && !($vuetify.breakpoint.mobile && drawer) " @click="toggleDrawer()" style="position: absolute; left: 0px; top: 5px; overflow: hidden-x; width: 30px; border-bottom-left-radius: 0px; border-top-left-radius: 0px; padding: 0px; min-width: 30px;">
-        <v-icon aria-label="Menu button">{{ drawer ? 'mdi-chevron-left' : 'mdi-chevron-right' }} </v-icon>
-      </v-btn>
       <div class="alert-div" v-if="showAlerts">
         <div v-for="alert in activeAlerts" v-bind:key="alert.id">
           <v-alert type="error" dismissible @input="(value) => dismissAlert(alert, value)">
@@ -126,6 +129,11 @@ export default class Default extends Vue {
       }
     })
     return menuItems
+  }
+
+  get currentItemTitle() {
+    const matchedRouteNames = this.$route.matched.map( m => m.name )
+    return this.menuItems.find(item => matchedRouteNames.includes(item.to.name))?.title ?? this.$route.name
   }
 }
 </script>
