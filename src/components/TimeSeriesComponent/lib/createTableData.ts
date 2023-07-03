@@ -27,7 +27,7 @@ export function createTableData(chartSeriesArray: ChartSeries[] | undefined, ser
       let value = undefined
       if (series && series.data) {
         const event = series.data[p[j]]
-        if (date.getTime() === event.x.getTime()) {
+        if (event && date.getTime() === event.x.getTime()) {
           value = event.y
           p[j]++
         }
