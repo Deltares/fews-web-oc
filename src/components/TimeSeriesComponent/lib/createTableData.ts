@@ -5,7 +5,7 @@ export function createTableData(chartSeriesArray: ChartSeries[] | undefined, ser
   if (chartSeriesArray === undefined) return []
   const dateTimes = createDateTimes(chartSeriesArray, seriesRecord)
 
-  const series = chartSeriesArray.filter((s) => seriesIds.includes(s.id))
+  const chartSeries = chartSeriesArray.filter((s) => seriesIds.includes(s.id))
   const p = Array(seriesIds.length).fill(0)
   const dateFormatter = new Intl.DateTimeFormat(undefined, {
     weekday: 'short',
@@ -21,16 +21,18 @@ export function createTableData(chartSeriesArray: ChartSeries[] | undefined, ser
   return dateTimes.map((date: Date, i: number) => {
     const result: any = {}
     result.date = dateFormatter.format(date)
-    for ( const j in series ) {
-      const s = series[j]
-      const data = seriesRecord[s.dataResources[0]]
-      const event = data.data[p[j]]
-      let value = null
-      if (date.getTime() === event.x.getTime()) {
-        value = event.y
-        p[j]++
+    for ( const j in chartSeries ) {
+      const s = chartSeries[j]
+      const series = seriesRecord[s.dataResources[0]]
+      let value = undefined
+      if (series && series.data) {
+        const event = series.data[p[j]]
+        if (date.getTime() === event.x.getTime()) {
+          value = event.y
+          p[j]++
+        }
+        result[s.id] = value
       }
-      result[s.id] = value
     } 
     return result
   })
