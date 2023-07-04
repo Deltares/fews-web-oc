@@ -23,6 +23,7 @@
     "core-js": "^3.6.5",
     "crypto-js": "^4.1.1",
     "flag-icons": "^6.6.6",
+    "jest-junit": "^15.0.0",
     "lodash": "^4.17.21",
     "luxon": "^3.3.0",
     "mapbox-gl": "^2.14.0",
@@ -78,5 +79,9 @@
     "vue-cli-plugin-vuetify": "~2.4.3",
     "vue-template-compiler": "^2.6.11",
     "vuetify-loader": "^1.7.3"
+  },
+  "jest-junit": {
+    "outputDirectory": "reports/",
+    "outputName": "junit.xml"
   }
 }
