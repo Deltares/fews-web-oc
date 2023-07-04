@@ -1,11 +1,12 @@
-import {ChartSeries} from "@/components/TimeSeriesComponent/lib/ChartSeries";
+import type {ChartSeries} from "@/components/TimeSeriesComponent/lib/ChartSeries";
 import {Series} from "@/lib/TimeSeries";
+import {uniqWith} from "lodash";
 
 export function createTableData(chartSeriesArray: ChartSeries[] | undefined, seriesRecord: Record<string, Series>, seriesIds: string[]): Record<string, unknown>[] {
   if (chartSeriesArray === undefined) return []
   const dateTimes = createDateTimes(chartSeriesArray, seriesRecord)
 
-  const chartSeries = chartSeriesArray.filter((s) => seriesIds.includes(s.id))
+  const chartSeries = uniqWith(chartSeriesArray.filter((s) => seriesIds.includes(s.id)), (a,b) => {return a.id === b.id})
   const p = Array(seriesIds.length).fill(0)
   const dateFormatter = new Intl.DateTimeFormat(undefined, {
     weekday: 'short',
@@ -18,7 +19,7 @@ export function createTableData(chartSeriesArray: ChartSeries[] | undefined, ser
     hour12: false
   })
 
-  return dateTimes.map((date: Date, i: number) => {
+  return dateTimes.map((date: Date) => {
     const result: any = {}
     result.date = dateFormatter.format(date)
     for ( const j in chartSeries ) {
@@ -33,7 +34,7 @@ export function createTableData(chartSeriesArray: ChartSeries[] | undefined, ser
         }
         result[s.id] = value
       }
-    } 
+    }
     return result
   })
 }
@@ -53,7 +54,7 @@ function createDateTimes(chartSeriesArray: ChartSeries[] | undefined, seriesReco
 }
 
 /**
-* 
+*
 * Sorts an array of dates in ascending order and removes any duplicate dates.
 * @param {Date[]} dates - The array of dates to be sorted and made unique.
 * @returns {Date[]} A new array of dates sorted in ascending order without any duplicates.
