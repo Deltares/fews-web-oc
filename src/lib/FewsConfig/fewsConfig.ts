@@ -10,7 +10,7 @@ export async function getFewsConfig(): Promise<WebOcComponent[]> {
   const fewsConfig = await webServiceProvider.getWebOcConfiguration()
   const webOcComponents: WebOcComponent[] = []
   for ( const componentConfig of fewsConfig.components ) {
-    webOcComponents.push(componentConfig)
+    webOcComponents.push(componentConfig as WebOcComponent)
   }
   return webOcComponents
 }
