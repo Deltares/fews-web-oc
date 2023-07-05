@@ -62,10 +62,10 @@ describe('create table data tests', () => {
       hour12: false
     }));
     expect(tableData[0]["first"]).toBe(3);
-    expect(tableData[0]["second"]).toBeNull();
+    expect(tableData[0]["second"]).toBeUndefined();
     expect(tableData[1]["first"]).toBe(4);
     expect(tableData[1]["second"]).toBe(13)
-    expect(tableData[2]["first"]).toBeNull()
+    expect(tableData[2]["first"]).toBeUndefined()
     expect(tableData[2]["second"]).toBe(14)
   })
 
