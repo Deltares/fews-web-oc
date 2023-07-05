@@ -5,24 +5,29 @@
       <h2>{{ g }}</h2>
       <v-row v-for="(s, i) of listByGroup(g)" :key="i" dense>
         <v-col cols="12" md="6">
-          <v-select v-if="s.type === 'oneOfMultiple'" :label="s.label" v-model="s.value" :items="s.items"
-            :append-outer-icon="s.favorite ? 'mdi-star' : 'mdi-star-outline'"
+          <v-select v-if="s.type === 'oneOfMultiple'" :label="s.label" v-model="s.value" :items="s.items" :disabled="s.disabled"
             outlined
             dense
             item-text="value"
             @change="onValueChange(s)"
-            @click:append-outer="onFavoriteChange(s)"
             >
             <template v-slot:item="{ on, attrs, item}">
               <v-list-item
                 v-bind="attrs"
                 v-on="on"
+                :disabled="item?.disabled"
               >
                 <v-icon v-if="item.icon" small class="mr-5">{{ item.icon }}</v-icon>
                 {{ item.value }}
               </v-list-item>
             </template>
           </v-select>
+          <v-switch inset v-else-if="s.type === 'boolean'" :label="s.label" v-model="s.value" :disabled="s.disabled"
+            @change="onValueChange(s)">
+          </v-switch>
+        </v-col>
+        <v-col cols="1">
+          <v-icon v-if="!s.disabled" @click="onFavoriteChange(s)">{{s.favorite ? 'mdi-star' : 'mdi-star-outline'}}</v-icon>
         </v-col>
       </v-row>
     </div>

@@ -1,11 +1,13 @@
 export const UserSettingsType = {
   oneOfMultiple: 'oneOfMultiple',
+  boolean: 'boolean'
 } as const
 
 export type UserSettingsType = (typeof UserSettingsType)[keyof typeof UserSettingsType];
 
 export interface UserSettingsWithIcon {
-  value: string;
+  value: string | boolean;
+  disabled?: boolean;
   icon?: string;
 }
 
@@ -13,8 +15,9 @@ export interface UserSettingsItem {
   id: string;
   type: UserSettingsType;
   label: string;
-  value: string;
-  items: UserSettingsWithIcon[];
+  value: string | boolean;
+  disabled?: boolean;
+  items?: UserSettingsWithIcon[];
   favorite?: boolean;
   group: string;
 }

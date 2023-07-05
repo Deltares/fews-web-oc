@@ -9,13 +9,22 @@
       </v-btn>
     </template>
     <v-list>
-      <v-subheader>Favorite settings</v-subheader>
-      <v-list-item v-for="(s, i) of listFavorite" :key="i">
-        <v-select v-if="s.type === 'oneOfMultiple'" :label="s.label" v-model="s.value" :items="s.items"
+      <v-list-item dense v-for="(s, i) of listFavorite" :key="i">
+        <v-list-item-content>
+        <template  v-if="s.type === 'oneOfMultiple'">
+        <v-list-item-title>{{ s.label }}</v-list-item-title>
+        <v-btn-toggle dense v-model="s.value" @change="onValueChange(s)"
+>
+          <v-btn v-for="item of s.items" :key="item.value" :value="item.value" :disabled="item.disabled">
+            <v-icon v-if="item.icon">{{ item.icon }}</v-icon>
+            <span v-else>{{ item.value }}</span>
+          </v-btn>
+        </v-btn-toggle>
+        </template>
+        <!-- <v-select v-if="s.type === 'oneOfMultiple'" :label="s.label" v-model="s.value" :items="s.items"
           outlined
           dense
           item-text="value"
-          @change="onValueChange(s)"
           >
           <template v-slot:item="{ on, attrs, item}">
             <v-list-item
@@ -26,15 +35,14 @@
               {{ item.value }}
             </v-list-item>
           </template>
-        </v-select>
+        </v-select> -->
+        <v-switch dense inset v-else-if="s.type === 'boolean'" v-model="s.value" :label="s.label" :disabled="s.disabled"
+          @change="onValueChange(s)">
+        </v-switch>
+        </v-list-item-content>
       </v-list-item>
       <v-divider />
       <v-list-item :to="{ name: 'UserSettingsView'}">All Settings</v-list-item>
-      <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>Version {{ packageVersion }}</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
     </v-list>
   </v-menu>
 </template>
@@ -44,7 +52,6 @@ import {
   Component,
   Vue
 } from 'vue-property-decorator'
-import packageConfig from '../../package.json'
 
 import { namespace } from 'vuex-class'
 import { UserSettingsItem } from '@/store/modules/user-settings/types'
@@ -59,7 +66,6 @@ export default class CogMenu extends Vue {
   @userSettingsModule.Mutation('add')
   addUserSetting!: (item: UserSettingsItem) => void
 
-  packageVersion = packageConfig.version
   items: UserSettingsItem[] = []
 
   created(): void {

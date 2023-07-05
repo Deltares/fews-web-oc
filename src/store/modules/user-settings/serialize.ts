@@ -12,16 +12,20 @@ export function serializeState(state: UserSettingsState): UserSettingsItem[] {
 
 export function deserializeState(json: string): Partial<RootState> {
     const defaultSettings: UserSettingsItem[] = [
-      { id: 'units.wind-speed', type: 'oneOfMultiple', label: 'Wind speed', value: 'm/s', items: [
-        { value: 'm/s' },
-        { value: 'km/h'},
-        { value: 'Bft' },
-        { value: 'kts' }
+      { id: 'units.displayUnits',  type: 'oneOfMultiple',  label: 'Display Units', value: 'display', items: [
+        { value: 'stored', icon: 'mdi-database'},
+        { value: 'display', icon: 'mdi-monitor'},
+        { value: 'custom' , icon: 'mdi-monitor-edit', disabled: true}
       ], group: 'Units'},
-      { id: 'units.wind-direction', type: 'oneOfMultiple', label: 'Wind direction', value: 'degree', items: [
-        { value: 'degree' },
-        { value: 'cardinal' }
+      { id: 'units.Discharge', type: 'oneOfMultiple', label: 'Discharge', value: 'ML/d', disabled: true, items: [
+        { value: 'm³/s' },
+        { value: 'ML/d'}
       ], group: 'Units'},
+      { id: 'units.Volume', type: 'oneOfMultiple', label: 'Volume', value: 'ML',  disabled: true, items: [
+        { value: 'm³' },
+        { value: 'ML' }
+      ], group: 'Units'},
+      { id: 'datum.water-level', type: 'boolean', label: 'Absolute vertical datum', value: true , group: 'Datum'},
       { id: 'ui.theme',  type: 'oneOfMultiple',  label: 'Theme', value: 'auto', items: [
         { value: 'auto', icon: 'mdi-theme-light-dark'},
         { value: 'light', icon: 'mdi-weather-sunny'},
