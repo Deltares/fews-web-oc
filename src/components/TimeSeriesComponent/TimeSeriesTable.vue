@@ -21,54 +21,52 @@
       </template>
       <template v-for="id in seriesIds" v-slot:[`item.${id}`]="{ item }">
         <td
-          :key="`${id}-${item.date}`"
+        :key="`${id}-${item.date}`"
         >
-          <div style="display: flex; justify-content: flex-start;">
-            <span style="display: flex; margin:auto 0; flex: 2 1 50%; justify-content: end; min-width: 50%;">
-              {{ item[id].value }}
-            </span>
-            <div style="display: flex; flex: 0 0 auto; width: 16px;">
-              <v-tooltip top max-width="200px">
-                <template v-slot:activator="{ on, attrs }">
-                  <v-icon
-                    v-show="item[id].flag > 0"
-                    small
-                    v-bind="attrs"
-                    v-on="on"
-                    :color="getFlagColor(item[id].flag)"
-                  >
-                    mdi-flag-variant-outline
-                  </v-icon>
-                </template>
-                <div>
-                  <v-icon>mdi-flag-variant</v-icon> {{ getFlagName(item[id].flag) }}
-                </div>
-                <div v-if="item[id].flagSource !== undefined">
-                  <v-icon>mdi-access-point</v-icon> {{ getFlagSourceName(item[id].flagSource) }}
-                </div>
-              </v-tooltip>
-            </div>
-            <div style="display: flex; flex: 0 0 auto; width: 16px;">
-              <v-tooltip top max-width="200px">
-                <template v-slot:activator="{ on, attrs }">
+          <v-tooltip
+            top
+            max-width="200px"
+            open-delay="250"
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <div style="display: flex; justify-content: flex-start;"
+              v-bind="attrs"
+              v-on="on">
+                <span style="display: flex; margin:auto 0; flex: 2 1 50%; justify-content: end; min-width: 50%;">
+                  <div style="display: flex; flex: 0 0 auto; width: 16px;">
+                    <v-icon
+                      v-show="item[id].flag > 0"
+                      x-small
+                      :color="getFlagColor(item[id].flag)"
+                    >
+                      mdi-circle
+                    </v-icon>
+                  </div>
+                  {{ item[id].value }}
+                </span>
+                <div style="display: flex; flex: 0 0 auto; width: 16px;">
                   <v-icon
                     v-if="item[id].comment !== undefined"
                     small
-                    v-bind="attrs"
-                    v-on="on"
                   >
                     mdi-comment-outline
                   </v-icon>
-                </template>
-                <div>
-                  <v-icon>mdi-account</v-icon> {{ item[id].user }}
                 </div>
-                <div>
-                  <v-icon>mdi-comment</v-icon> {{ item[id].comment }}
-                </div>
-              </v-tooltip>
+              </div>
+            </template>
+            <div v-show="item[id].flag !== undefined">
+              <v-icon>mdi-flag-variant</v-icon> {{ getFlagName(item[id].flag) }}
             </div>
-          </div>
+            <div v-show="item[id].flagSource !== undefined">
+              <v-icon>mdi-access-point</v-icon> {{ getFlagSourceName(item[id].flagSource) }}
+            </div>
+            <div v-show="item[id].user !== undefined">
+              <v-icon>mdi-account</v-icon> {{ item[id].user }}
+            </div>
+            <div v-show="item[id].comment !== undefined">
+              <v-icon>mdi-comment</v-icon> {{ item[id].comment }}
+            </div>
+          </v-tooltip>
         </td>
       </template>
     </v-data-table>
