@@ -114,6 +114,9 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
   @sytemTimeModule.State('endTime')
     endTime!: Date
 
+  static TIME_SERIES_DIALOG_PANEL: string = "time series dialog";
+
+
   urlTopologyNodeMap: Map<string,string> = new Map<string, string>()
   selectedItem: number = -1
   active: string[] = []
@@ -162,7 +165,7 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
   }
 
   getIcon(node: TopologyNode): string | undefined {
-    if (node.url && node.mainPanel !== "time series dialog") return 'mdi-share';
+    if (node.url && node.mainPanel !== TimeSeriesDisplay.TIME_SERIES_DIALOG_PANEL) return 'mdi-share';
     return undefined;
   }
   async loadNodes(): Promise<void> {
@@ -180,7 +183,7 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
         if (node.topologyNodes) {
           result.children = recursiveUpdateNode(node.topologyNodes)
         } else {
-          if (node.url !== undefined && node.mainPanel !== "time series dialog") {
+          if (node.url !== undefined && node.mainPanel !== TimeSeriesDisplay.TIME_SERIES_DIALOG_PANEL) {
             result.href = node.url
             result.target = node.url
           } else {
