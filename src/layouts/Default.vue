@@ -67,6 +67,7 @@ import ThemeMixin from '@/mixins/ThemeMixin'
 
 const alertsModule = namespace('alerts')
 const fewsConfigModule = namespace('fewsconfig')
+const userSettingsModule = namespace('userSettings')
 
 @Component({
   components: {
@@ -84,6 +85,9 @@ export default class Default extends Mixins(ThemeMixin) {
     webOcComponents!: { [key: string]: WebOcComponent }
   @fewsConfigModule.Action('loadConfig')
     loadConfig!: () => void
+  @userSettingsModule.Action('changeUseDisplayUnits')
+    changeUseDisplayUnits!: (value: string) => void
+
 
   created() {
     this.$store.subscribe((mutation, state) => {
@@ -94,6 +98,9 @@ export default class Default extends Mixins(ThemeMixin) {
             break
           case 'locale.language':
             this.$i18n.locale = mutation.payload.value
+            break
+          case 'units.displayUnits':
+            this.changeUseDisplayUnits(mutation.payload.value)
             break
           default:
         }
