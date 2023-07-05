@@ -162,7 +162,7 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
   }
 
   getIcon(node: TopologyNode): string | undefined {
-    if (node.url) return 'mdi-share';
+    if (node.url && node.mainPanel !== "time series dialog") return 'mdi-share';
     return undefined;
   }
   async loadNodes(): Promise<void> {
@@ -180,7 +180,7 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
         if (node.topologyNodes) {
           result.children = recursiveUpdateNode(node.topologyNodes)
         } else {
-          if(node.url !== undefined) {
+          if (node.url !== undefined && node.mainPanel !== "time series dialog") {
             result.href = node.url
             result.target = node.url
           } else {
