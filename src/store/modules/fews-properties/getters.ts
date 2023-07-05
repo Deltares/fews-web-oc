@@ -13,13 +13,13 @@ export const getters: GetterTree<FewsPropertiesState, RootState> = {
     return state.flagSources
   },
 
-  getFlagByFlag: state => (flagId: number): TimeSeriesFlag | undefined => {
+  getFlagByFlag: state => (flagId: string): TimeSeriesFlag | undefined => {
     if (state.flags === undefined) return
     const flag = state.flags.find(value => value.flag === flagId)
     return flag
   },
 
-  getFlagNameByFlag: (_state, getters, _rootState: RootState, _rootGetters) => (flagId: number): string => {
+  getFlagNameByFlag: (_state, getters, _rootState: RootState, _rootGetters) => (flagId: string): string => {
     const timeSeriesFlag = getters['getFlagByFlag'](flagId)
     return timeSeriesFlag !== undefined ? timeSeriesFlag.name : ''
   },
@@ -30,7 +30,7 @@ export const getters: GetterTree<FewsPropertiesState, RootState> = {
     return timeSeriesFlagSource !== undefined ? timeSeriesFlagSource.name : ''
   },
 
-  getFlagColorByFlag: _state => (flag: number): string | undefined => {
-    return flagColors[flag as keyof typeof flagColors]
+  getFlagColorByFlag: _state => (flagId: string): string | undefined => {
+    return flagColors[flagId as keyof typeof flagColors]
   }
 }

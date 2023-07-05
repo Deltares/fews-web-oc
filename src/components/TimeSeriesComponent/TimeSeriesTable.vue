@@ -80,7 +80,6 @@ import {Component, Prop, Vue, Watch} from 'vue-property-decorator'
 import { namespace } from 'vuex-class'
 import type {ChartConfig} from '@/components/TimeSeriesComponent/lib/ChartConfig'
 import {Series} from '@/lib/TimeSeries'
-import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
 import type {TimeSeriesFlag, TimeSeriesFlagSource} from '@deltares/fews-pi-requests';
 import {getUniqueSeriesIds} from "@/components/TimeSeriesComponent/lib/getUniqueSeriesIds";
 import type {TableHeaders} from "@/components/TimeSeriesComponent/lib/TableHeaders";

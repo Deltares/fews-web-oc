@@ -88,7 +88,7 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
               return {
                 x: new Date( parsePiDateTime(event, timeZone)),
                 y: event.value === missingValue ? null : +event.value,
-                flag: +event.flag,
+                flag: event.flag,
                 flagSource: event.flagSource,
                 comment: event.comment,
                 user: event.user,
