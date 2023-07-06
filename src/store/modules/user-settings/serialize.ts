@@ -27,7 +27,7 @@ export function deserializeState(json: string): Partial<RootState> {
         { value: 'm³/s' },
         { value: 'ML/d'}
       ], group: 'Units'},
-      { id: 'units.parameterGroup.Volume', type: 'oneOfMultiple', label: 'Volume', value: 'ML',  disabled: true, items: [
+      { id: 'units.parameterGroup.Volume', type: 'oneOfMultiple', label: 'Volume', value: 'ML', disabled: true, items: [
         { value: 'm³' },
         { value: 'ML' }
       ], group: 'Units'},
@@ -56,18 +56,18 @@ export function deserializeState(json: string): Partial<RootState> {
             if (state.userSettings !== undefined) {
               const id = settings.id
               if (state.userSettings.allIds.includes(id)) {
-                console.log('defaultState', id, state.userSettings.byId[id])
                 const s = state.userSettings.byId[id]
                 const defaultValue = s.value
-
+                s.favorite = settings.favorite
                 if ( state.userSettings.byId[id].type === 'oneOfMultiple' ) {
                   const items = state.userSettings.byId[id].items
                   const restoredValue = items?.map(i => i.value).includes(settings.value) ? settings.value : defaultValue
                   settings.value = restoredValue
                 }
-                state.userSettings.byId[settings.id] = {...settings, ...s}
+                const newSettings = {...settings, ...s}
+                state.userSettings.byId[settings.id] = newSettings
               } else {
-                console.warn('Old user setting', settings)
+                console.warn('Unkown user setting', settings)
               }
             }
         }
@@ -75,10 +75,11 @@ export function deserializeState(json: string): Partial<RootState> {
     return state
 }
 
-// export function rehydrateState(state: UserSettingsState): void {
-//     for (const id of state.allIds) {
-//         const settings = state.byId[id]
-//         console.log('rehydrateState', settings)
-//         state.byId[id] = settings
-//     }
-// }
+export function rehydrateState(state: UserSettingsState): void {
+    for (const id of state.allIds) {
+        const settings = state.byId[id]
+        state.byId[id] = settings
+    }
+    state.convertDatum = state.byId['datum.verticalDatum'].value as boolean
+    state.useDisplayUnits = state.byId['units.displayUnits'].value === 'display'
+}
