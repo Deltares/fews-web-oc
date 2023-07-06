@@ -24,7 +24,7 @@ export const getters: GetterTree<UserSettingsState, RootState> = {
     return result.filter((s) => s.group === id)
   },
   convertDatum: (state, getters, _rootState: RootState, rootGetters) => () => {
-    return state.byId['datum.water-level'].value
+    return state.byId['datum.verticalDatum'].value
   },
   useDisplayUnits: (state, getters, _rootState: RootState, rootGetters) => () => {
     return state.byId['datum'].value

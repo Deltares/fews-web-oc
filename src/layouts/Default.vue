@@ -103,7 +103,7 @@ export default class Default extends Mixins(ThemeMixin) {
           case 'units.displayUnits':
             this.changeUseDisplayUnits(mutation.payload.value)
             break
-          case 'datum.water-level':
+          case 'datum.verticalDatum':
             this.setConvertDatum(mutation.payload.value)
             break
           default:

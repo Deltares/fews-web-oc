@@ -31,7 +31,7 @@ export function deserializeState(json: string): Partial<RootState> {
         { value: 'm³' },
         { value: 'ML' }
       ], group: 'Units'},
-      { id: 'datum.water-level', type: 'boolean', label: 'Absolute vertical datum', value: true , group: 'Datum'},
+      { id: 'datum.verticalDatum', type: 'boolean', label: 'Absolute vertical datum', value: true, group: 'Datum'},
       { id: 'ui.theme',  type: 'oneOfMultiple',  label: 'Theme', value: 'auto', items: [
         { value: 'auto', icon: 'mdi-theme-light-dark'},
         { value: 'light', icon: 'mdi-weather-sunny'},
