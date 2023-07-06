@@ -9,7 +9,9 @@ import { mutations } from './mutations';
 export const state: UserSettingsState = {
   byId: {},
   allIds: [],
-  groups: ['Units', 'UI', 'Locale']
+  groups: ['Units', 'Datum', 'UI', 'Locale'],
+  useDisplayUnits: false,
+  convertDatum: true
 };
 
 const namespaced: boolean = true;

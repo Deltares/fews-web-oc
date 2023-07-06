@@ -26,4 +26,6 @@ export interface UserSettingsState {
   byId: Record<string, UserSettingsItem>;
   allIds: string[];
   groups: string[];
+  convertDatum: boolean;
+  useDisplayUnits: boolean;
 }

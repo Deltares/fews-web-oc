@@ -11,21 +11,25 @@ export const mutations: MutationTree<UserSettingsState> = {
     } else {
       Vue.set(state.allIds, index, item.id)
     }
-},
-remove(state, item: UserSettingsItem) {
-  const index = state.allIds.indexOf(item.id);
-  if (index > -1) {
-    Vue.delete(state.byId, item.id);
-    state.allIds.splice(index, 1);
-  }
-},
-removeById(state, id: string) {
-  const index = state.allIds.indexOf(id);
-  if (index > -1) {
-    Vue.delete(state.byId, id);
-    state.allIds.splice(index, 1);
-  }
-},
-
-
+  },
+  remove(state, item: UserSettingsItem) {
+    const index = state.allIds.indexOf(item.id);
+    if (index > -1) {
+      Vue.delete(state.byId, item.id);
+      state.allIds.splice(index, 1);
+    }
+  },
+  removeById(state, id: string) {
+    const index = state.allIds.indexOf(id);
+    if (index > -1) {
+      Vue.delete(state.byId, id);
+      state.allIds.splice(index, 1);
+    }
+  },
+  setConvertDatum(state, value: boolean) {
+    state.convertDatum = value
+  },
+  setUseDisplayUnits(state, value: boolean) {
+    state.useDisplayUnits = value
+  },
 }
