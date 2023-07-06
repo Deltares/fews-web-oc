@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Vue } from 'vue-property-decorator'
+import { Component, Mixins } from 'vue-property-decorator'
 import CogMenu from '@/components/CogMenu.vue'
 import TimeControl from '@/components/timecontrol/TimeControl.vue'
 import LoginComponent from '@/components/LoginComponent.vue'
@@ -87,7 +87,8 @@ export default class Default extends Mixins(ThemeMixin) {
     loadConfig!: () => void
   @userSettingsModule.Action('changeUseDisplayUnits')
     changeUseDisplayUnits!: (value: string) => void
-
+  @userSettingsModule.Mutation('setConvertDatum')
+    setConvertDatum!: (value: boolean) => void
 
   created() {
     this.$store.subscribe((mutation, state) => {
@@ -101,6 +102,9 @@ export default class Default extends Mixins(ThemeMixin) {
             break
           case 'units.displayUnits':
             this.changeUseDisplayUnits(mutation.payload.value)
+            break
+          case 'datum.water-level':
+            this.setConvertDatum(mutation.payload.value)
             break
           default:
         }
