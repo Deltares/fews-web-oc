@@ -9,7 +9,7 @@ export function serializeState(state: UserSettingsState): Partial<UserSettingsIt
       const cleanState = {
         id: rawState.id,
         value: rawState.value,
-        favor: rawState.favorite
+        favorite: rawState.favorite
       }
       serializedSettings.push(cleanState)
     }
