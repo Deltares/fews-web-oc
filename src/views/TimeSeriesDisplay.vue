@@ -97,6 +97,7 @@ import { namespace } from 'vuex-class'
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 
 const sytemTimeModule = namespace('systemTime')
+const userSettingsModule = namespace('userSettings')
 
 @Component({
   components: {
@@ -113,6 +114,10 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
     startTime!: Date
   @sytemTimeModule.State('endTime')
     endTime!: Date
+  @userSettingsModule.State('useDisplayUnits')
+    useDisplayUnits!: boolean
+  @userSettingsModule.State('convertDatum')
+    convertDatum!: boolean
 
   static TIME_SERIES_DIALOG_PANEL: string = "time series dialog";
 
@@ -168,6 +173,7 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
     if (node.url && node.mainPanel !== TimeSeriesDisplay.TIME_SERIES_DIALOG_PANEL) return 'mdi-share';
     return undefined;
   }
+
   async loadNodes(): Promise<void> {
     let nodes = await this.webServiceProvider.getTopologyNodes();
     this.urlTopologyNodeMap.clear();
@@ -210,6 +216,8 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
     this.open = [items[0].id]
   }
 
+  @Watch('useDisplayUnits')
+  @Watch('convertDatum')
   @Watch('$store.state.systemTime.startTime')
   async onTimeChanged(): Promise<void> {
     await this.loadTimeSeries(this.selectedItem);
@@ -253,7 +261,13 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
   }
 
   private async loadTimeSeries(index: number) {
-    this.updateTimeSeries(this.requests[index], {startTime: this.startTime, endTime: this.endTime, thinning: true})
+    this.updateTimeSeries(this.requests[index], {
+      startTime: this.startTime,
+      endTime: this.endTime,
+      thinning: true,
+      useDisplayUnits: this.useDisplayUnits,
+      convertDatum: this.convertDatum,
+    })
   }
 
 }

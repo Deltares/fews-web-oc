@@ -4,6 +4,15 @@ import {ActionRequest, PiWebserviceProvider} from '@deltares/fews-pi-requests'
 import PiRequestsMixin from "@/mixins/PiRequestsMixin"
 import { DateTime, Interval } from 'luxon'
 
+
+interface UpdateTimeSeriesOptions {
+  startTime: Date;
+  endTime: Date;
+  thinning: boolean;
+  convertDatum: boolean;
+  useDisplayUnits: boolean;
+}
+
 function timeZoneOffsetString (offset: number): string {
   const offsetInMinutes = offset * 60
   const minutes = offsetInMinutes % 60
@@ -32,8 +41,7 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
   timeSeriesStore: Record<string, Series> = {}
   controller: AbortController = new AbortController
 
-  async updateTimeSeries(requests: ActionRequest[], options?: { startTime: Date, endTime: Date, thinning: boolean}
-  ): Promise<void> {
+  async updateTimeSeries(requests: ActionRequest[], options?: UpdateTimeSeriesOptions): Promise<void> {
 
     this.controller.abort()
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
@@ -64,6 +72,13 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
         url.searchParams.set('endTime', endTime.toISO({ suppressMilliseconds: true }) ?? '')
         url.searchParams.set('thinning', `${timeStepPerPixel}`)
       }
+      if (options?.useDisplayUnits !== undefined) {
+        url.searchParams.set('useDisplayUnits', `${options?.useDisplayUnits}`)
+      }
+      if (options?.convertDatum) {
+        url.searchParams.set('convertDatum', `${options?.convertDatum}`)
+      }
+
       const resourceId = `${request.key}`
       const relativeUrl = request.request.split('?')[0] + url.search
       webServiceProvider.getTimeSeriesWithRelativeUrl(relativeUrl).then( piSeries =>
