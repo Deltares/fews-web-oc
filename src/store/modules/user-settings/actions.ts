@@ -12,6 +12,7 @@ export const actions: ActionTree<UserSettingsState, RootState>= {
         unitSettings.push( context.state.byId[id])
       }
     }
+    context.commit('setUseDisplayUnits', payload === 'display')
     if (payload !== 'custom') {
       const i = payload === 'stored' ? 0 : 1
       for (const s of unitSettings) {
