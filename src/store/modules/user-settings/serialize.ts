@@ -1,6 +1,7 @@
 import { RootState } from '../../types'
 import { UserSettingsItem, UserSettingsState } from './types'
 import { state as emptyState } from './index'
+import DefaultUserSettings from '@/assets/DefaultUserSettings.json'
 
 export function serializeState(state: UserSettingsState): Partial<UserSettingsItem>[] {
     const serializedSettings: Partial<UserSettingsItem>[] = []
@@ -17,31 +18,7 @@ export function serializeState(state: UserSettingsState): Partial<UserSettingsIt
 }
 
 export function deserializeState(json: string): Partial<RootState> {
-    const defaultSettings: UserSettingsItem[] = [
-      { id: 'units.displayUnits',  type: 'oneOfMultiple',  label: 'Display Units', value: 'display', items: [
-        { value: 'stored', icon: 'mdi-database'},
-        { value: 'display', icon: 'mdi-monitor'},
-        { value: 'custom' , icon: 'mdi-monitor-edit', disabled: true}
-      ], group: 'Units'},
-      { id: 'units.parameterGroup.Discharge', type: 'oneOfMultiple', label: 'Discharge', value: 'ML/d', disabled: true, items: [
-        { value: 'm³/s' },
-        { value: 'ML/d'}
-      ], group: 'Units'},
-      { id: 'units.parameterGroup.Volume', type: 'oneOfMultiple', label: 'Volume', value: 'ML', disabled: true, items: [
-        { value: 'm³' },
-        { value: 'ML' }
-      ], group: 'Units'},
-      { id: 'datum.verticalDatum', type: 'boolean', label: 'Absolute vertical datum', value: true, group: 'Datum'},
-      { id: 'ui.theme',  type: 'oneOfMultiple',  label: 'Theme', value: 'auto', items: [
-        { value: 'auto', icon: 'mdi-theme-light-dark'},
-        { value: 'light', icon: 'mdi-weather-sunny'},
-        { value: 'dark' , icon: 'mdi-weather-night'}
-      ], group: 'UI'},
-      { id: 'locale.language', type: 'oneOfMultiple', label: 'Language', value: 'en-au', items: [
-        { icon: 'fi-au', value: 'en-au' },
-        { icon: 'fi-nl', value: 'nl-nl' }
-      ], group: 'Locale'},
-    ]
+    const defaultSettings = DefaultUserSettings as UserSettingsItem[]
     const defaultState = emptyState
     defaultState.allIds = defaultSettings.map( item => item.id)
     const byId: Record<string,UserSettingsItem>= {}
