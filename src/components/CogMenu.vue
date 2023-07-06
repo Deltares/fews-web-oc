@@ -11,38 +11,26 @@
     <v-list>
       <v-list-item dense v-for="(s, i) of listFavorite" :key="i">
         <v-list-item-content>
-        <template  v-if="s.type === 'oneOfMultiple'">
-        <v-list-item-title>{{ s.label }}</v-list-item-title>
-        <v-btn-toggle dense v-model="s.value" @change="onValueChange(s)"
->
+        <v-list-item-action-text>
+          {{ s.label }}
+        </v-list-item-action-text>
+        <v-list-item-action  v-if="s.type === 'oneOfMultiple'">
+        <v-btn-toggle dense v-model="s.value" @change="onValueChange(s)">
           <v-btn v-for="item of s.items" :key="item.value" :value="item.value" :disabled="item.disabled">
             <v-icon v-if="item.icon">{{ item.icon }}</v-icon>
             <span v-else>{{ item.value }}</span>
           </v-btn>
         </v-btn-toggle>
-        </template>
-        <!-- <v-select v-if="s.type === 'oneOfMultiple'" :label="s.label" v-model="s.value" :items="s.items"
-          outlined
-          dense
-          item-text="value"
-          >
-          <template v-slot:item="{ on, attrs, item}">
-            <v-list-item
-              v-bind="attrs"
-              v-on="on"
-            >
-              <v-icon v-if="item.icon" small class="mr-5">{{ item.icon }}</v-icon>
-              {{ item.value }}
-            </v-list-item>
-          </template>
-        </v-select> -->
-        <v-switch dense inset v-else-if="s.type === 'boolean'" v-model="s.value" :label="s.label" :disabled="s.disabled"
+        </v-list-item-action>
+        <v-list-item-action v-else-if="s.type === 'boolean'">
+        <v-switch dense inset  v-model="s.value" :disabled="s.disabled"
           @change="onValueChange(s)">
         </v-switch>
+        </v-list-item-action>
         </v-list-item-content>
       </v-list-item>
       <v-divider />
-      <v-list-item :to="{ name: 'UserSettingsView'}">All Settings</v-list-item>
+      <v-list-item :to="{ name: 'UserSettingsView'}">All Settings ...</v-list-item>
     </v-list>
   </v-menu>
 </template>
