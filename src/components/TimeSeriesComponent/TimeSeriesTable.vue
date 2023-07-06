@@ -79,6 +79,9 @@
             <div v-show="item[id].flagSource !== undefined">
               <v-icon>mdi-access-point</v-icon> {{ getFlagSourceName(item[id].flagSource) }}
             </div>
+            <div v-show="item[id].valueSource !== undefined">
+              {{ item[id].valueSource }}
+            </div>
             <div v-show="item[id].user !== undefined">
               <v-icon>mdi-account</v-icon> {{ item[id].user }}
             </div>
@@ -114,15 +117,11 @@ const fewsPropertyModule = namespace('fewsProperties')
 export default class TimeSeriesTable extends Vue {
 
   @fewsPropertyModule.Getter('getFlags')
-    flags!: TimeSeriesFlag[]
+    flags!: Record<string,TimeSeriesFlag>
   @fewsPropertyModule.Getter('getFlagSources')
-    flagSources!: TimeSeriesFlagSource[]
+    flagSources!: Record<string,TimeSeriesFlagSource>
   @fewsPropertyModule.Getter('getFlagColorByFlag')
     getFlagColor!: (flag: number) => string | undefined
-  @fewsPropertyModule.Getter('getFlagNameByFlag')
-    getFlagName!: (flag: number) => string
-  @fewsPropertyModule.Getter('getFlagSourceNameByFlag')
-    getFlagSourceName!: (flag: number) => string
   @fewsPropertyModule.Action('loadFlags')
     loadFlags!: () => Promise<void>
   @fewsPropertyModule.Action('loadFlagSources')
@@ -176,6 +175,16 @@ export default class TimeSeriesTable extends Vue {
   onDataUpdate(newData: Record<string, any>) {
     this.$emit('update', newData)
     console.log('onDataUpdate in TimeSeriesTable')
+  }
+
+  getFlagName(flagId: string) {
+    if (flagId === undefined) return
+    return this.flags[flagId].name
+  }
+
+  getFlagSourceName(flagSourceId: string) {
+    if (flagSourceId === undefined) return
+    return this.flagSources[flagSourceId].name
   }
 }
 </script>

@@ -6,8 +6,8 @@ import { actions } from './actions';
 import { mutations } from './mutations';
 
 export const state: FewsPropertiesState = {
-  flags: [],
-  flagSources: []
+  flags: {},
+  flagSources: {}
 };
 
 const namespaced: boolean = true;

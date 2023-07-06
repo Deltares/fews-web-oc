@@ -8,7 +8,7 @@ export interface SeriesHeader {
   unit?: string;
 }
 
-export interface SeriesDataEvent extends Pick<TimeSeriesEvent, "flag" | "flagSource" | "user" | "comment"> {
+export interface SeriesDataEvent extends Pick<TimeSeriesEvent, "flag" | "flagSource" | "user" | "comment" | "valueSource"> {
   x: Date;
   y: number | null;
 }

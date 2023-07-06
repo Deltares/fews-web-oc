@@ -92,6 +92,7 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
                 flagSource: event.flagSource,
                 comment: event.comment,
                 user: event.user,
+                valueSource: event.valueSource
               }
             })
           }

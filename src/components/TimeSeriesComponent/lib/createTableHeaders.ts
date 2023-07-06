@@ -27,10 +27,10 @@ export function createEditTableHeaders(chartSeriesArray: ChartSeries[] | undefin
   if (chartSeries === undefined) return []
   const tableHeaders: TableHeaders[] = [
     {value: 'date', text: 'Date', width: '200px', class: 'sticky-column', cellClass: 'sticky-column', editable: false},
-    {value: 'value', text: formatHeader(chartSeries), color: chartSeries.style.stroke?.toString(), editable: false},
-    {value: 'flag', text: 'Flag', editable: false},
+    {value: 'y', text: formatHeader(chartSeries), color: chartSeries.style.stroke?.toString(), editable: false},
+    {value: 'flagOrigin', text: 'Flag origin', editable: false},
+    {value: 'flagQuality', text: 'Flag quality', editable: false},
     {value: 'flagSource', text: 'Flag source', editable: false},
-    {value: 'user', text: 'User', editable: false},
     {value: 'comment', text: 'Comment', editable: false},
   ]
   return tableHeaders

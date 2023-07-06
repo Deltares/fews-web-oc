@@ -24,6 +24,7 @@
     </v-toolbar>
     <div class="table-container">
       <v-data-table class="data-table edit"
+        v-model="selectedItems"
         :headers="tableHeaders"
         :items="editTableData"
         :items-per-page="-1"
@@ -34,6 +35,7 @@
         disable-sort
         hide-default-footer
         fixed-header
+        show-select
         mobile-breakpoint="0"
       >
         <template v-for="h in tableHeaders" v-slot:[`header.${h.value}`]>
@@ -47,9 +49,9 @@
           </div>
         </template>
 
-        <template v-slot:[`item.value`]="{ item }">
+        <template v-slot:[`item.y`]="{ item }">
           <v-text-field
-            v-model="item.value"
+            :value="item.y"
             single-line
             solo
             dense
@@ -57,25 +59,24 @@
             reverse
             hide-details="true"
             height=24
-            @change="editItem(item)"
+            @change="editValue(item, $event)"
           >
-            {{ item.value }}
+            {{ item.y }}
           </v-text-field>
         </template>
 
-        <template v-slot:[`item.flag`]="{ item }">
+        <template v-slot:[`item.flagQuality`]="{ item }">
           <v-select
-            v-model="item.flag"
+            v-model="item.flagQuality"
             single-line
             solo
             dense
             flat
             hide-details="true"
             height=24
-            :items="flagIds"
-            @change="editItem(item)"
+            :items="flagQualities"
+            @change="editFlagQuality(item, $event)"
           >
-            {{ item.flag }}
           </v-select>
         </template>
 
@@ -94,16 +95,6 @@
             {{ item.comment }}
           </v-text-field>
         </template>
-
-        <template v-slot:[`item.actions`]="{ item }">
-        <v-icon
-          small
-          class="mr-2"
-          @click="editItem(item)"
-        >
-          mdi-pencil
-        </v-icon>
-      </template>
       </v-data-table>
     </div>
   </v-card>
@@ -119,6 +110,7 @@ import type {TableHeaders} from "@/components/TimeSeriesComponent/lib/TableHeade
 import {createEditTableHeaders} from "@/components/TimeSeriesComponent/lib/createTableHeaders";
 import {createEditTableData} from '@/components/TimeSeriesComponent/lib/createTableData';
 import type {EditTableItem} from '@/components/TimeSeriesComponent/lib/createTableData';
+import { uniq } from 'lodash'
 
 const fewsPropertyModule = namespace('fewsProperties')
 
@@ -126,9 +118,9 @@ const fewsPropertyModule = namespace('fewsProperties')
 export default class EditableTimeSeriesTable extends Vue {
 
   @fewsPropertyModule.Getter('getFlags')
-    flags!: TimeSeriesFlag[]
+    flags!: Record<string,TimeSeriesFlag>
   @fewsPropertyModule.Getter('getFlagSources')
-    flagSources!: TimeSeriesFlagSource[]
+    flagSources!: Record<string,TimeSeriesFlagSource>
 
   @Prop({
     default: () => {
@@ -161,13 +153,16 @@ export default class EditableTimeSeriesTable extends Vue {
   defaultEvent: EditTableItem = {
     date: this.$i18n.d(new Date(), 'datatable'),
     y: null,
-    flag: '0',
+    flagOrigin: "COMPLETED",
+    flagQuality: "RELIABLE",
     comment: undefined,
     user: undefined
   }
 
   editTableData: EditTableItem[] = []
+  selectedItems: EditTableItem[] = []
   tableHeaders: TableHeaders[] = []
+  flagQualities: TimeSeriesFlag['quality'][] = []
 
   mounted() {
     this.updateTableData()
@@ -177,8 +172,9 @@ export default class EditableTimeSeriesTable extends Vue {
   @Watch('series', { deep: true})
   @Watch('tableData', { deep: true})
   updateTableData() {
+    this.setFlagQualities()
     this.tableHeaders = createEditTableHeaders(this.value.series, this.seriesId)
-    this.editTableData = createEditTableData(this.tableData, this.seriesId)
+    this.editTableData = createEditTableData(this.tableData, this.seriesId, this.flags)
   }
 
   onSave() {
@@ -187,9 +183,29 @@ export default class EditableTimeSeriesTable extends Vue {
   }
 
   stopEdit() {
-    this.editTableData = createEditTableData(this.tableData, this.seriesId)
+    this.editTableData = createEditTableData(this.tableData, this.seriesId, this.flags)
     this.editedEvents = {}
     this.$emit('close')
+  }
+
+  editValue (item: EditTableItem, value: number | null) {
+    if (item.y === null) {
+      // User adds new value
+      item.flagOrigin = "COMPLETED"
+      item.flagQuality = "RELIABLE"
+    } else {
+      // User changes existing value
+      item.flagOrigin = "CORRECTED"
+    }
+    item.y = value
+    item.valueSource = "MAN"
+    this.editItem(item)
+  }
+
+  editFlagQuality (item: EditTableItem, value: TimeSeriesFlag['quality']) {
+    item.flagQuality = value
+    item.flagSource = "MAN"
+    this.editItem(item)
   }
 
   editItem (item: EditTableItem) {
@@ -197,16 +213,25 @@ export default class EditableTimeSeriesTable extends Vue {
     this.dialog = true
   }
 
+  getFlagOrigin(flagId: string) {
+    if (flagId === undefined) return
+    return this.flags[flagId].source
+  }
+
+  setFlagQualities () {
+    const origins: TimeSeriesFlag['quality'][] = []
+    for (const flagId in this.flags) {
+      origins.push(this.flags[flagId].quality)
+    }
+    this.flagQualities = uniq(origins)
+  }
+
   get formTitle(): string {
     return this.editIndex === -1 ? 'New event' : 'Edit event'
   }
 
   get flagIds(): string[] {
-    return this.flags.map(flag => flag.flag)
-  }
-
-  get flagSourceIds(): (string | null)[] {
-    return this.flagSources.map(flagSource => flagSource.id)
+    return Object.keys(this.flags)
   }
 }
 

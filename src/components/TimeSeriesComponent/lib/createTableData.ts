@@ -3,9 +3,12 @@ import {Series} from "@/lib/TimeSeries";
 import type {SeriesDataEvent} from "@/lib/TimeSeries";
 import {uniqWith} from "lodash";
 import i18n from '@/i18n'
+import type { TimeSeriesFlag } from "@deltares/fews-pi-requests";
 
-export interface EditTableItem extends Omit<SeriesDataEvent, 'x'> {
+export interface EditTableItem extends Omit<SeriesDataEvent, 'x' | 'flag' > {
   date: string
+  flagOrigin?: TimeSeriesFlag['source']
+  flagQuality?: TimeSeriesFlag['quality']
 }
 
 export function createTableData(chartSeriesArray: ChartSeries[] | undefined, seriesRecord: Record<string, Series>, seriesIds: string[]): Record<string, unknown>[] {
@@ -35,13 +38,24 @@ export function createTableData(chartSeriesArray: ChartSeries[] | undefined, ser
   })
 }
 
-export function createEditTableData(tableData: Record<string, unknown>[], seriesId: string): EditTableItem[] {
-  const editTableData = tableData.map((datum) => {
-    let result = {
-      date: datum.date as string
-    }
+export function createEditTableData(tableData: Record<string, unknown>[], seriesId: string, flags: Record<string,TimeSeriesFlag>): EditTableItem[] {
+  const editTableData = tableData.filter((datum) => {
     const event = datum[seriesId] as SeriesDataEvent | Record<string, never>
-    result = {...result, ...event}
+    return event.flag !== undefined
+  }).map((datum) => {
+    const event = datum[seriesId] as SeriesDataEvent | Record<string, never>
+    const result: EditTableItem = {
+      date: datum.date as string,
+      y: event.y,
+      comment: event.comment,
+      user: event.user,
+      flagSource: event.flagSource
+    }
+    if (event.flag !== undefined) {
+      const flag = flags[event.flag]
+      result.flagOrigin = flag.source
+      result.flagQuality = flag.quality
+    }
     return result as EditTableItem
   })
   return editTableData
