@@ -22,11 +22,5 @@ export const getters: GetterTree<UserSettingsState, RootState> = {
   listByGroup: (state, getters, _rootState: RootState, rootGetters) => (id: string) => {
     const result = state.allIds.map(id => getters.find(id))
     return result.filter((s) => s.group === id)
-  },
-  convertDatum: (state, getters, _rootState: RootState, rootGetters) => () => {
-    return state.byId['datum.verticalDatum'].value
-  },
-  useDisplayUnits: (state, getters, _rootState: RootState, rootGetters) => () => {
-    return state.byId['datum'].value
-  },
+  }
 }
