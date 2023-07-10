@@ -2,7 +2,19 @@ import {ChartSeries} from "@/components/TimeSeriesComponent/lib/ChartSeries";
 import {ChartSeriesOptions} from "@/components/TimeSeriesComponent/lib/ChartSeriesOptions";
 import {createTableData} from "@/components/TimeSeriesComponent/lib/createTableData";
 import {Series, SeriesUrlRequest} from "@/lib/TimeSeries";
+import {allLocales} from "@/lib/Localization/Locales";
 
+jest.mock('../../../../src/lib/Localization/Locales', () => ({
+  allLocales: () => {
+    return {
+      keys: () => ['en'], resolve: (key: string) => ({
+        'en': {settings: {
+            'en': "Settings",
+            'nl': "Settings"
+          }},
+      }[key]), id: (key: string) => key,
+    };  }
+}))
 describe('create table data tests', () => {
   it('test empty series', () => {
     const chartSeries: ChartSeries[] = [];
@@ -61,12 +73,18 @@ describe('create table data tests', () => {
       second: 'numeric',
       hour12: false
     }));
-    expect(tableData[0]["first"]).toBe(3);
-    expect(tableData[0]["second"]).toBeUndefined();
-    expect(tableData[1]["first"]).toBe(4);
-    expect(tableData[1]["second"]).toBe(13)
-    expect(tableData[2]["first"]).toBeUndefined()
-    expect(tableData[2]["second"]).toBe(14)
+    const tableData0First: any = tableData[0]["first"]
+    const tableData0Second: any = tableData[0]["second"]
+    const tableData1First: any = tableData[1]["first"]
+    const tableData1Second: any = tableData[1]["second"]
+    const tableData2First: any = tableData[2]["first"]
+    const tableData2Second: any = tableData[2]["second"]
+    expect(tableData0First.value).toBe(3);
+    expect(JSON.stringify(tableData0Second)).toBe("{}")
+    expect(tableData1First.value).toBe(4);
+    expect(tableData1Second.value).toBe(13)
+    expect(JSON.stringify(tableData2First)).toBe("{}")
+    expect(tableData2Second.value).toBe(14)
   })
 
 })

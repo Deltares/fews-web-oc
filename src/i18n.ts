@@ -1,11 +1,12 @@
 import Vue from 'vue'
 import VueI18n, { LocaleMessages } from 'vue-i18n'
 import { dateTimeFormats } from './locales/dateTimeFormats'
+import {allLocales} from './lib/Localization/Locales'
 
 Vue.use(VueI18n)
 
 function loadLocaleMessages (): LocaleMessages {
-  const locales = require.context('./locales', true, /[A-Za-z0-9-_,\s]+\.json$/i)
+  const locales = allLocales()
   const messages: LocaleMessages = {}
   locales.keys().forEach(key => {
     const matched = key.match(/([A-Za-z0-9-_]+)\./i)
