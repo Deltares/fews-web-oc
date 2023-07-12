@@ -79,12 +79,12 @@ describe('create table data tests', () => {
     const tableData1Second: any = tableData[1]["second"]
     const tableData2First: any = tableData[2]["first"]
     const tableData2Second: any = tableData[2]["second"]
-    expect(tableData0First.value).toBe(3);
+    expect(tableData0First.y).toBe(3);
     expect(JSON.stringify(tableData0Second)).toBe("{}")
-    expect(tableData1First.value).toBe(4);
-    expect(tableData1Second.value).toBe(13)
+    expect(tableData1First.y).toBe(4);
+    expect(tableData1Second.y).toBe(13)
     expect(JSON.stringify(tableData2First)).toBe("{}")
-    expect(tableData2Second.value).toBe(14)
+    expect(tableData2Second.y).toBe(14)
   })
 
 })
