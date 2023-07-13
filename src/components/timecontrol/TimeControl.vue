@@ -6,8 +6,12 @@
     class="menu"
   >
     <template v-slot:activator="{ on, attrs }">
-      <v-btn text v-bind="attrs" v-on="on">
-        <v-icon>mdi-clock</v-icon>{{ now.toLocaleTimeString('en-UK', { hour: '2-digit', minute: '2-digit', timeZoneName : 'short' }) }}
+      <v-btn
+        v-bind="attrs"
+        v-on="on"
+        icon
+      >
+        <v-icon>mdi-clock-start</v-icon>
       </v-btn>
     </template>
     <v-card min-width="500">
