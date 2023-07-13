@@ -1,49 +1,74 @@
 <template>
   <div class="container">
-    <v-menu v-model="showDatePicker">
+    <v-tooltip right>
+      <template v-slot:activator="{ on: onTooltip }">
+        <v-menu v-model="showDatePicker">
+          <template v-slot:activator="{ on: onMenu, attrs }">
+            <v-text-field
+              v-model="selectedDate"
+              :label="label"
+              :prepend-icon="prependDateIcon"
+              readonly
+              v-bind="attrs"
+              v-on="{ ...onTooltip, ...onMenu }"
+            />
+          </template>
+          <v-date-picker
+            v-model="selectedDate"
+            no-title
+            scrollable
+            @input="onSelectedDateTimeChange"
+          />
+        </v-menu>
+      </template>
+      <span>
+        Set date for &ldquo;{{ label }}&rdquo;
+      </span>
+    </v-tooltip>
+
+    <v-tooltip right>
+      <template v-slot:activator="{ on: onTooltip }">
+        <v-menu v-model="showTimePicker">
+          <template v-slot:activator="{ on: onMenu, attrs }">
+            <v-text-field
+              v-model="selectedTime"
+              readonly
+              :prepend-icon="prependTimeIcon"
+              v-bind="attrs"
+              v-on="{ ...onTooltip, ...onMenu }"
+            />
+          </template>
+          <v-time-picker
+            v-model="selectedTime"
+            no-title
+            scrollable
+            @input="onSelectedDateTimeChange"
+          />
+        </v-menu>
+      </template>
+      <span>
+        Set time for &ldquo;{{ label }}&rdquo;
+      </span>
+    </v-tooltip>
+
+    <v-tooltip right>
       <template v-slot:activator="{ on, attrs }">
-        <v-text-field
-          v-model="selectedDate"
-          :label="label"
-          :prepend-icon="prependDateIcon"
-          readonly
+        <v-btn
           v-bind="attrs"
           v-on="on"
-        />
+          class="button"
+          icon
+          @click="setNow"
+        >
+          <v-icon>
+            mdi-timeline-clock-outline
+          </v-icon>
+        </v-btn>
       </template>
-      <v-date-picker
-        v-model="selectedDate"
-        no-title
-        scrollable
-        @input="onSelectedDateTimeChange"
-      />
-    </v-menu>
-    <v-menu v-model="showTimePicker">
-      <template v-slot:activator="{ on, attrs }">
-        <v-text-field
-          v-model="selectedTime"
-          readonly
-          :prepend-icon="prependTimeIcon"
-          v-bind="attrs"
-          v-on="on"
-        />
-      </template>
-      <v-time-picker
-        v-model="selectedTime"
-        no-title
-        scrollable
-        @input="onSelectedDateTimeChange"
-      />
-    </v-menu>
-    <v-btn
-      class="button"
-      icon
-      @click="setNow"
-    >
-      <v-icon>
-        mdi-timeline-clock-outline
-      </v-icon>
-    </v-btn>
+      <span>
+        Set current time for &ldquo;{{ label }}&rdquo;
+      </span>
+    </v-tooltip>
   </div>
 </template>
 
