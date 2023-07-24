@@ -12,6 +12,7 @@ import { configManager } from '../services/application-config'
 import TimeSeriesDisplay from '../views/TimeSeriesDisplay.vue'
 import SSDTimeSeriesDisplay from '../views/SSDTimeSeriesDisplay.vue'
 import DataView from '../views/DataView.vue'
+import MetocDataView from '../views/MetocDataView.vue'
 import ArchiveDisplay from '../views/ArchiveDisplay.vue'
 
 import { Log, UserManager } from 'oidc-client-ts'
@@ -65,6 +66,22 @@ export const routesViews: Array<RouteConfig> = [
       {
         path: 'location/:locationId',
         name: 'DataViewerWithLocation',
+        component: ComponentsPanel,
+        props: route => ({...route.params, layerName: route.query.layerName }),
+        meta: { authorize: [], sidebar: true }
+      }
+    ]
+  },
+  {
+    path: '/metoc/:filterId?/:categoryId?',
+    name: 'MetocDataViewer',
+    component: MetocDataView,
+    props: route => ({...route.params, layerName: route.query.layerName }),
+    meta: { authorize: [], sidebar: true },
+    children: [
+      {
+        path: 'location/:locationId',
+        name: 'MetocDataViewerWithLocation',
         component: ComponentsPanel,
         props: route => ({...route.params, layerName: route.query.layerName }),
         meta: { authorize: [], sidebar: true }

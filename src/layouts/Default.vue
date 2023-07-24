@@ -115,6 +115,8 @@ export default class Default extends Vue {
         return 'mdi-chart-sankey'
       case ComponentTypeEnum.SystemMonitor:
         return 'mdi-clipboard-list'
+      case ComponentTypeEnum.MetocDataViewer:
+        return 'mdi-flask-empty'
       default: return ''
     }
   }
