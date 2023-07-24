@@ -12,5 +12,11 @@ export async function getFewsConfig(): Promise<WebOcComponent[]> {
   for ( const componentConfig of fewsConfig.components ) {
     webOcComponents.push(componentConfig as WebOcComponent)
   }
+  // HACK: manually add the METOC data view to the list of components.
+  webOcComponents.push({
+    id: 'metocDataViewer',
+    type: 'MetocDataViewer',
+    title: 'METOC Data View'
+  })
   return webOcComponents
 }
