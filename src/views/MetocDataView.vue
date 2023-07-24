@@ -1,43 +1,7 @@
 <template>
   <div class="display-container">
     <portal to="web-oc-sidebar">
-      <div class="sidebar-content">
-        <v-divider></v-divider>
-        <v-subheader>Filters</v-subheader>
-        <v-treeview
-          hoverable
-          open-on-click
-          dense
-          :items="filters"
-          item-children="child"
-          item-id="id"
-        >
-          <template v-slot:label="props">
-            <v-list-item dense :to="{ name: 'DataViewer', params: { filterId: props.item.id }}">
-              <v-tooltip bottom open-delay="400">
-                <template v-slot:activator="{ on, attrs }">
-                  <v-list-item-content
-                    v-bind="attrs"
-                    v-on="on">
-                    {{ props.item.name }}
-                  </v-list-item-content>
-                </template>
-                <span>{{ props.item.name }}</span>
-              </v-tooltip>
-            </v-list-item>
-          </template>
-        </v-treeview>
-        <v-divider></v-divider>
-        <v-subheader>Parameter Group</v-subheader>
-        <v-list expand nav dense>
-          <v-list-item v-for="(c, i) of categories" :key="i"
-            :to="routeForCategory(c)">
-            <v-list-item-content>
-              <v-list-item-title>{{ c }}</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </div>
+      <MetocSidebar/>
     </portal>
     <div class="grid-root" :class="layoutClass">
       <div class="grid-map" v-show="showMap">
@@ -110,7 +74,7 @@ import { ActionRequest, DocumentFormat, PiWebserviceProvider} from "@deltares/fe
 import type { Layer } from '@deltares/fews-wms-requests';
 import { ColourMap } from '@deltares/fews-web-oc-charts';
 
-import { FeatureCollection, Feature, Geometry } from 'geojson';
+import { FeatureCollection, Geometry } from 'geojson';
 import { debounce, uniq, intersection } from 'lodash';
 
 import PiRequestsMixin from '@/mixins/PiRequestsMixin';
@@ -124,6 +88,8 @@ import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
+
+import MetocSidebar from '@/components/MetocSidebar.vue';
 
 interface MapboxLayerOptions {
   name: string;
@@ -150,7 +116,8 @@ interface Parameter {
     MapComponent,
     DateTimeSlider,
     LocationsLayerControl,
-    WMSLayerControl
+    WMSLayerControl,
+    MetocSidebar
   }
 })
 export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiRequestsMixin) {
