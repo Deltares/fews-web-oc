@@ -78,17 +78,15 @@ export const routesViews: Array<RouteConfig> = [
     component: MetocDataView,
     props: route => ({ ...route.params }),
     meta: { authorize: [], sidebar: true },
-    /*
     children: [
       {
         path: 'location/:locationId',
         name: 'MetocDataViewerWithLocation',
         component: ComponentsPanel,
-        props: route => ({...route.params, layerName: route.query.layerName }),
+        props: route => ({ ...route.params }),
         meta: { authorize: [], sidebar: true }
       }
     ]
-    */
   },
   {
     // /ssd/ScadaNZK-ARK/NZK_ARK_10min

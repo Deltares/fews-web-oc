@@ -201,8 +201,8 @@
 }
 
 .tooltip .tooltiptext {
-  background-color: black;
-  color: #fff;
+  background-color: white;
+  color: black;
   text-align: center;
   border-radius: 6px;
   padding: 5px 10px;
@@ -236,26 +236,26 @@
   top: 100%;
   left: 50%;
   margin-left: -5px;
-  border-color: black transparent transparent transparent;
+  border-color: white transparent transparent transparent;
 }
 .tooltip .tooltiptext.bottom::after {
   top: -10px;
   left: 50%;
   margin-left: -5px;
-  border-color: transparent transparent black transparent;
+  border-color: transparent transparent white transparent;
 }
 
 .tooltip .tooltiptext.left::after {
   top: 50%;
   left: 100%;
   margin-top: -5px;
-  border-color: transparent transparent transparent black;
+  border-color: transparent transparent transparent white;
 }
 .tooltip .tooltiptext.right::after {
   top: 50%;
   left: -10px;
   margin-top: -5px;
-  border-color: transparent black transparent transparent;
+  border-color: transparent white transparent transparent;
 }
 
 .data-field{

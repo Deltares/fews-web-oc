@@ -9,13 +9,13 @@
       <div class="grid-map" v-show="showMap">
         <div class="map-container" style="height: calc(100% - 48px); position: relative;">
           <MapComponent>
-            <MapboxLayer v-if="showLayer" :layer="layerOptions"/>
+            <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions"/>
             <v-mapbox-layer
               v-if="showLocationsLayer"
-              :options="locationsLayer"
+              :options="locationsLayerOptions"
               clickable
+              @click="onLocationClick"
             />
-            <!-- @click="onLocationClick" -->
           </MapComponent>
         </div>
         <div style="position: absolute; padding-left: 5px; left: 30px;">
@@ -35,13 +35,13 @@
         <v-toolbar class="toolbar-charts" dense flat>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn icon plain @click="onDockModeChange('left')">
+            <v-btn icon plain @click="setDockMode('left')">
               <v-icon>mdi-dock-left</v-icon>
             </v-btn>
-            <v-btn icon plain @click="onDockModeChange('bottom')">
+            <v-btn icon plain @click="setDockMode('bottom')">
               <v-icon>mdi-dock-bottom</v-icon>
             </v-btn>
-            <v-btn icon plain @click="onDockModeChange('right')">
+            <v-btn icon plain @click="setDockMode('right')">
               <v-icon>mdi-dock-right</v-icon>
             </v-btn>
             <v-btn icon plain @click="closeCharts">
@@ -71,6 +71,7 @@
 <script lang="ts">
 import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 import { debounce } from 'lodash';
+import type { MapLayerMouseEvent } from 'mapbox-gl'
 
 import type { Location } from "@deltares/fews-pi-requests";
 import { PiWebserviceProvider} from "@deltares/fews-pi-requests";
@@ -84,7 +85,8 @@ import {
   DataLayer,
   DataSource,
   fetchCategories,
-  fetchLocationsAsGeoJson
+  fetchLocationsAsGeoJson,
+  fetchTimeSeriesDisplaysAndRequests
 } from '@/lib/Topology';
 
 import PiRequestsMixin from '@/mixins/PiRequestsMixin';
@@ -131,7 +133,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   debouncedSetWMSLayerOptions!: () => void
 
   layerName: string = ''
-  layerOptions: MapboxLayerOptions | null = null
+  wmsLayerOptions: MapboxLayerOptions | null = null
 
   legend: ColourMap = []
   unit: string = ""
@@ -142,7 +144,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   externalForecastTime = new Date()
 
   showLocationsLayer = true
-  locationsLayer = {
+  locationsLayerOptions = {
     'id': 'locationsLayer',
     'type': 'circle',
     'source': {
@@ -175,16 +177,79 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 
     this.categories = await fetchCategories(this.webServiceProvider)
     this.onDataSourceChange()
+    this.onLocationChange()
 
     // Force resize to fix strange starting position of the map, caused by
     // the expandable navigation drawer.
     window.dispatchEvent(new Event('resize'))
   }
 
+  setWMSLayerOptions(): void {
+    if (this.times.length === 0) {
+      this.wmsLayerOptions = null
+    } else {
+      this.wmsLayerOptions = {
+        name: this.currentDataSource.wmsLayerId,
+        time: this.currentTime
+      }
+    }
+  }
+
+  /**
+   * Sets the WMS layer to the current time, if this is enabled.
+   *
+   * If tracking the current time is not enabled, this is a no-op.
+   *
+   * @param enabled Whether to set the WMS layer to the current time.
+   */
+   setCurrentTime(enabled: boolean): void {
+    if (enabled) {
+      this.dateController.selectDate(new Date())
+      this.currentTime = this.dateController.currentTime
+      this.setWMSLayerOptions()
+    }
+  }
+
+  /**
+   * Sets the chart panel dock mode.
+   *
+   * @param dockMode dock mode to set to, can be 'left', 'right', or 'bottom'.
+   */
+   setDockMode(dockMode: string) {
+    this.dockMode = dockMode
+    if (this.hasSelectedLocation) {
+      this.layoutClass = this.dockMode
+    }
+    // Call the resize handler to force a map update.
+    this.$nextTick(this.onResize)
+  }
+
+  /**
+   * Closes the chart panel.
+   *
+   * This updates the route to remove the locationId from it, effectively rerendering the component
+   * without the chart panel.
+   */
+  closeCharts(): void {
+    if (this.hasSelectedLocation) {
+      const params = { ...this.$route.params }
+      // Remove the locationId from the parameters.
+      delete params.locationId
+      this.$router.push({
+        name: 'MetocDataViewer',
+        params
+      })
+    }
+  }
+
+  toggleFullscreen(isFullscreen: boolean) {
+    this.isFullscreenGraph = isFullscreen
+  }
+
   /**
    * Updates the WMS layer, WMS layer times and locations for a new data source.
    */
-  @Watch('dataSourceId')
+   @Watch('dataSourceId')
   async onDataSourceChange(): Promise<void> {
     // Get WMS layer times for the currently selected data source.
     this.times = await this.getTimes(this.currentDataSource.wmsLayerId)
@@ -200,44 +265,21 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     const geojson = await fetchLocationsAsGeoJson(
       this.webServiceProvider, this.currentDataSource.filterIds
     )
-    this.locationsLayer.source.data = geojson
+    this.locationsLayerOptions.source.data = geojson
     this.locations = convertGeoJsonToFewsPiLocation(geojson)
   }
 
-  setWMSLayerOptions(): void {
-    if (this.times.length === 0) {
-      this.layerOptions = null
-    } else {
-      this.layerOptions = {
-        name: this.currentDataSource.wmsLayerId,
-        time: this.currentTime
-      }
-    }
-  }
+  @Watch('locationId')
+  async onLocationChange(): Promise<void> {
+    if (this.locationId === '') return
 
-  onDockModeChange(dockMode: string) {
-    this.dockMode = dockMode
-    if (this.hasSelectedLocation) {
-      this.layoutClass = this.dockMode
-    }
-    this.$nextTick(this.onResize)
-  }
+    const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
+      this.webServiceProvider, this.currentDataSource.filterIds, this.locationId
+    )
+    this.displays = displays
 
-  closeCharts() {
-    if (this.hasSelectedLocation) {
-      const params = this.$route.params
-      this.$router.push({
-        name: 'MetocDataViewer',
-        params: {
-          filterId: params.filterId,
-          categoryId: params.categoryId
-        }
-      })
-    }
-  }
-
-  toggleFullscreen(isFullscreen: boolean) {
-    this.isFullscreenGraph = isFullscreen
+    // Fetch time series for all displays.
+    await this.updateTimeSeries(requests)
   }
 
   onResize() {
@@ -245,18 +287,26 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   }
 
   /**
-   * Sets the WMS layer to the current time, if this is enabled.
+   * Updates the route upon clicking a location.
    *
-   * If tracking the current time is not enabled, this is a no-op.
+   * This effectively rerenders this component with the locationId set.
    *
-   * @param enabled Whether to set the WMS layer to the current time.
+   * @param event location layer click event.
    */
-  setCurrentTime(enabled: boolean): void {
-    if (enabled) {
-      this.dateController.selectDate(new Date())
-      this.currentTime = this.dateController.currentTime
-      this.setWMSLayerOptions()
-    }
+  onLocationClick(event: MapLayerMouseEvent): void {
+    if (!event.features) return
+    const locationId: string | undefined = event.features[0].properties?.locationId
+
+    // We don't need to do anything if we are already at this locationId.
+    if (!locationId || this.locationId === locationId) return
+
+    this.$router.push({
+      name: 'MetocDataViewerWithLocation',
+      params: {
+        ...this.$route.params,
+        locationId
+      }
+    })
   }
 
   get currentCategory(): Category {
