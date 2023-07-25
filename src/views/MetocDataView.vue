@@ -20,6 +20,10 @@
         </div>
         <div class="control-container">
           <v-chip-group>
+            <WMSInfoPanel
+              :layerName="layerName"
+              :externalForecastTime="externalForecast"
+            />
             <LocationsLayerControl v-model="showLocationsLayer"/>
           </v-chip-group>
         </div>
@@ -98,6 +102,7 @@ import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import MetocSidebar from '@/components/MetocSidebar.vue';
 import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
 import MapComponent from '@/components/MapComponent.vue'
+import WMSInfoPanel from '@/components/WMSInfoPanel.vue';
 
 interface MapboxLayerOptions {
   name: string;
@@ -106,11 +111,12 @@ interface MapboxLayerOptions {
 
 @Component({
   components: {
-    MapboxLayer,
-    MapComponent,
     DateTimeSlider,
     LocationsLayerControl,
-    MetocSidebar
+    MapboxLayer,
+    MapComponent,
+    MetocSidebar,
+    WMSInfoPanel
   }
 })
 export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiRequestsMixin) {
@@ -129,7 +135,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 
   showLayer: boolean = true
   wmsLayerOptions: MapboxLayerOptions | null = null
-  externalForecastTime = new Date()
   legend: ColourMap = []
   unit: string = ""
 
@@ -165,10 +170,15 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   }
 
   async mounted() {
+    // Create FEWS PI Webservices provider.
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const transformRequestFn = this.getTransformRequest()
     this.webServiceProvider = new PiWebserviceProvider(baseUrl, {transformRequestFn})
 
+    // Perform WMS getCapabilities request to obtain WMS layer metadata (e.g. titles).
+    await this.getCapabilities()
+
+    // Fetch categories and update WMS layer for the default selection.
     this.categories = await fetchCategories(this.webServiceProvider)
     this.onDataSourceChange()
     this.onLocationChange()
@@ -243,7 +253,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   /**
    * Updates the WMS layer, WMS layer times and locations for a new data source.
    */
-   @Watch('dataSourceId')
+  @Watch('dataSourceId')
   async onDataSourceChange(): Promise<void> {
     // Get WMS layer times for the currently selected data source.
     this.times = await this.getTimes(this.currentDataSource.wmsLayerId)
@@ -319,6 +329,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     const defaultDataSource = this.currentDataLayer.dataSources[0]
     if (!this.dataSourceId) return defaultDataSource
     return this.currentDataLayer.dataSources.find(dataSource => dataSource.id === this.dataSourceId) ?? defaultDataSource
+  }
+
+  get layerName(): string {
+    const layer = this.layers.find(layer => layer.name === this.currentDataSource.wmsLayerId)
+    return layer?.title ?? '—'
   }
 
   get showMap() {
