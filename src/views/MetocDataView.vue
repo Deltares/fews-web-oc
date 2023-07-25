@@ -109,20 +109,6 @@ interface MapboxLayerOptions {
   time: Date;
 }
 
-
-interface Filter {
-  id: string;
-  name: string;
-  icon ? : string;
-}
-
-interface Parameter {
-  id: string;
-  name: string;
-  icon ? : string;
-  parameterGroup: string;
-}
-
 @Component({
   components: {
     MapboxLayer,
@@ -145,14 +131,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   layoutClass: string = 'map-only'
   isFullscreenGraph = false
 
-  filters: Filter[] = []
-  parameters: Parameter[] = []
-
   showLayer: boolean = true
-  currentLocationId: string = ''
-  currentCategoryId: string = ''
-  currentParameters: Parameter[] = []
-  currentLayers: Layer[] = []
 
   dateController!: DateController
   currentTime: Date = new Date()
@@ -165,7 +144,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   legend: ColourMap = []
   unit: string = ""
 
-  // categories: string[] = []
   locations: Location[] = []
 
   displays: DisplayConfig[] = []
@@ -327,221 +305,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   set dockMode(dockMode: string) {
     this.stateDockMode = dockMode
   }
-
-  /*
-  async getFilters() {
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const request = new Request(`${baseUrl}/rest/fewspiservice/v1/filters?documentFormat=PI_JSON`)
-    const transformRequest = this.getTransformRequest()
-    const response = await fetch( await transformRequest(request))
-    const filters = (await response.json()).filters.map((f: Filter) => {
-      return {
-        ...f,
-        ...{
-          icon: `mdi-alpha-${f.name[0].toLowerCase()}-circle-outline`
-        }
-      }
-    })
-    this.filters = filters
-    const filterId =  filters[0].id
-    if (this.filterId === '') {
-      this.$router.replace({ name: 'MetocDataViewer', params: { filterId } })
-    }
-  }
-
-  @Watch('filterId')
-  async getParameters() {
-    if (this.filterId === '') return
-    // const filter = {
-    //   filterId: this.filterId
-    // }
-    // const response = await this.webServiceProvider.getParameters(filter as any)
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const request = new Request(
-      `${baseUrl}/rest/fewspiservice/v1/parameters?documentFormat=PI_JSON&filterId=${this.filterId}`)
-    const transformRequest = this.getTransformRequest()
-    const response = await fetch( await transformRequest(request))
-    const parameters: Parameter[] = (await response.json()).timeSeriesParameters
-    this.parameters = parameters
-    this.categories = uniq(parameters.map(p => p.parameterGroup))
-    const categoryId = this.categories[0]
-    if (this.categoryId === '') {
-      this.currentCategoryId = categoryId
-      this.$router.replace({ name: 'MetocDataViewer', params: { filterId: this.filterId, categoryId } })
-      this.getLocations()
-    } else {
-      this.currentCategoryId = this.categoryId
-      this.onCategoryChange()
-    }
-  }
-
-  async getLocations() {
-    const filter = {
-      documentFormat: DocumentFormat.GEO_JSON,
-      filterId: this.filterId,
-      parameterGroupId: this.currentCategoryId,
-      showAttributes: false
-    }
-    const response = this.webServiceProvider.getLocations(filter)
-    const geojson = (((await response) as any) as FeatureCollection<Geometry,Location>)
-    this.locations = geojson.features.map( (f) => { return f.properties })
-    this.locationsLayer.source.data = geojson
-    const found = this.locations.findIndex( (l) => l.locationId === this.locationId) > -1
-    if ( !found &&  this.locationId !== '') {
-      this.$router.replace({name: 'MetocDataViewer', params: { filterId: this.filterId, categoryId: this.categoryId }})
-    } else {
-      this.onLocationChange()
-    }
-  }
-
-  @Watch('categoryId')
-  onCategoryChange(): void {
-    this.currentCategoryId = this.categoryId
-    this.currentParameters = this.parameters.filter((p) => p.parameterGroup === this.currentCategoryId)
-    this.getLocations()
-    this.updateLayers()
-  }
-
-  @Watch('layers')
-  afterGetCapabilities() {
-    this.updateLayers()
-  }
-
-  async updateLayers() {
-    const currentParameterIds = this.currentParameters.map(p => p.id)
-    const currentLayers = this.layers.filter(l => {
-      if (l.keywordList === undefined) return false
-      const layerParameterIds = l.keywordList.filter(k => k.parameterId).map(k => k.parameterId)
-      const intersect = intersection(currentParameterIds, layerParameterIds)
-      return intersect.length > 0
-    })
-    this.currentLayers = currentLayers
-    if (currentLayers.length > 0) {
-      this.layerName = currentLayers[0].name
-    } else {
-      this.layerName = ''
-    }
-    this.onLayerChange()
-  }
-
-  setLayoutClass(): void {
-    if (this.$vuetify.breakpoint.mobile) {
-      this.layoutClass = 'mobile'
-    } else if (this.locationId === '') {
-      this.layoutClass = 'map-only'
-      this.onResize()
-    } else {
-      this.onDockModeChange(this.dockMode)
-    }
-  }
-  */
-
-  /*
-  onLocationClick(e: any) {
-    const locationId = e.features[0].properties.locationId
-    if (this.locationId === locationId) return
-    this.$router.push({
-      name: 'MetocDataViewerWithLocation',
-      params: {
-        filterId: this.filterId,
-        categoryId: this.categoryId,
-        locationId,
-      }
-    })
-  }
-
-  @Watch('locationId')
-  async onLocationChange() {
-    if (this.locationId === '') return
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const request = new Request(`${baseUrl}/rest/fewspiservice/v1/filters/actions?filterId=${this.filterId}&parameterGroupId=${this.categoryId}&locationIds=${this.locationId}`)
-    const transformRequest = this.getTransformRequest()
-    const result = await fetch( await transformRequest(request))
-    const response = await result.json()
-    const allDisplays = []
-    const requests = []
-    for (const result of response.results) {
-      if (result.config === undefined) continue;
-      const display: DisplayConfig[] = [];
-      for (let i in result.config.timeSeriesDisplay.subplots) {
-        const subPlot = result.config.timeSeriesDisplay.subplots[i]
-        const title = result.config.timeSeriesDisplay.title
-        display.push({
-          id: `${title}-${i}`,
-          types: [DisplayType.TimeSeriesChart, DisplayType.TimeSeriesTable],
-          title: result.config.timeSeriesDisplay.title,
-          class: 'single',
-          config: timeSeriesDisplayToChartConfig(subPlot, title)
-        })
-      }
-
-      allDisplays.push(display);
-      requests.push(result.requests);
-    }
-
-    this.displays = allDisplays[0]
-    this.loadTimeSeries(requests[0])
-  }
-  */
-
-  /*
-  private async loadTimeSeries(requests: ActionRequest[]) {
-    this.timeSeriesStore = {}
-    this.updateTimeSeries(requests)
-  }
-
-  async onLayerChange(): Promise <void> {
-    if ( this.layerName !== '') {
-      try {
-        this.times = await this.getTimes(this.layerName)
-      } catch {
-        this.times = []
-      }
-      this.dateController.dates = this.times
-      this.dateController.selectDate(this.currentTime)
-      this.currentTime = this.dateController.currentTime
-      try {
-        const response = await this.getLegendGraphic(this.layerName)
-        this.legend = response.legend
-        this.unit = response.unit
-      } catch {
-        this.legend = []
-        this.unit = ""
-      }
-    }
-    this.setLayerOptions()
-  }
-  */
-
-  /*
-  routeForCategory(categoryId: string) {
-    if (this.$route.name === 'MetocDataViewerWithLocation') {
-      return { name: 'MetocDataViewerWithLocation', params: { filterId: this.filterId, categoryId, locationId: this.locationId } }
-    } else {
-      return { name: 'MetocDataViewer', params: { filterId: this.filterId, categoryId } }
-    }
-  }
-  */
-
- /*
-  async updateActiveLayer(value: WMSLayerControlValue): Promise<void> {
-    if (value.name !== this.layerName) {
-      this.layerName = value.name
-      this.onLayerChange()
-    }
-  }
-
-  setLayerOptions(): void {
-    if (this.layerName !== '') {
-      this.layerOptions = {
-        name: this.layerName,
-        time: this.currentTime,
-      }
-    } else {
-      this.layerOptions = null
-    }
-  }
-  */
 }
 
 </script>
