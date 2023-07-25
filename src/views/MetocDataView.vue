@@ -32,9 +32,13 @@
             <LocationsLayerControl v-model="showLocationsLayer"/>
           </v-chip-group>
         </div>
-        <!-- <DateTimeSlider class="date-time-slider" v-model="currentTime" :dates="times" @update:now="setCurrentTime"
-          @input="debouncedSetLayerOptions" @timeupdate="updateTime">
-        </DateTimeSlider> -->
+        <DateTimeSlider
+          class="date-time-slider"
+          v-model="currentTime"
+          :dates="times"
+          @input="debouncedSetWMSLayerOptions"
+          @update:now="setCurrentTime"
+        />
       </div>
       <div class="grid-charts" ref="grid-charts" v-if="hasSelectedLocation && !$vuetify.breakpoint.mobile">
         <v-toolbar class="toolbar-charts" dense flat>
@@ -153,7 +157,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   dateController!: DateController
   currentTime: Date = new Date()
   times: Date[] = []
-  debouncedSetLayerOptions!: () => void
+  debouncedSetWMSLayerOptions!: () => void
 
   layerName: string = ''
   layerOptions: MapboxLayerOptions | null = null
@@ -186,15 +190,13 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 
   categories: Category[] = []
 
-  /*
   created(): void {
     this.dateController = new DateController([])
-    this.debouncedSetLayerOptions = debounce(this.setLayerOptions, 500, {
+    this.debouncedSetWMSLayerOptions = debounce(this.setWMSLayerOptions, 500, {
       leading: true,
       trailing: true
     })
   }
-  */
 
   async mounted() {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
@@ -220,6 +222,13 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     // Get WMS layer times for the currently selected data source, then update the current WMS
     // layer.
     this.times = await this.getTimes(this.currentDataSource.wmsLayerId)
+
+    // Select the WMS layer time closest to the currently selected time.
+    // TODO: change interface of date controller with setter and return value from selectDate?
+    this.dateController.dates = this.times
+    this.dateController.selectDate(this.currentTime ?? new Date())
+    this.currentTime = this.dateController.currentTime
+
     this.setWMSLayerOptions()
 
     const geojson = await fetchLocationsAsGeoJson(
@@ -235,7 +244,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     } else {
       this.layerOptions = {
         name: this.currentDataSource.wmsLayerId,
-        time: this.times[0]
+        time: this.currentTime
       }
     }
   }
@@ -267,6 +276,21 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 
   onResize() {
     window.dispatchEvent(new Event('resize'))
+  }
+
+  /**
+   * Sets the WMS layer to the current time, if this is enabled.
+   *
+   * If tracking the current time is not enabled, this is a no-op.
+   *
+   * @param enabled Whether to set the WMS layer to the current time.
+   */
+  setCurrentTime(enabled: boolean): void {
+    if (enabled) {
+      this.dateController.selectDate(new Date())
+      this.currentTime = this.dateController.currentTime
+      this.setWMSLayerOptions()
+    }
   }
 
   get currentCategory(): Category {
@@ -464,19 +488,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   private async loadTimeSeries(requests: ActionRequest[]) {
     this.timeSeriesStore = {}
     this.updateTimeSeries(requests)
-  }
-
-  setCurrentTime(enabled: boolean): void {
-    if (enabled) {
-      this.dateController.selectDate(new Date())
-      this.currentTime = this.dateController.currentTime
-      this.setLayerOptions()
-    }
-  }
-
-  updateTime(date: Date): void {
-    this.dateController.selectDate(date)
-    this.currentTime = this.dateController.currentTime
   }
 
   async onLayerChange(): Promise <void> {
