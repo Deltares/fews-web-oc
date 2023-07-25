@@ -189,7 +189,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   }
 
   setWMSLayerOptions(): void {
-    if (this.times.length === 0) {
+    if (this.times.length === 0 || !this.currentDataSource) {
       this.wmsLayerOptions = null
     } else {
       this.wmsLayerOptions = {
@@ -255,6 +255,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
    */
   @Watch('dataSourceId')
   async onDataSourceChange(): Promise<void> {
+    if (!this.currentDataSource) return
+
     // Get WMS layer times for the currently selected data source.
     this.times = await this.getTimes(this.currentDataSource.wmsLayerId)
 
@@ -275,7 +277,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 
   @Watch('locationId')
   async onLocationChange(): Promise<void> {
-    if (this.locationId === '') return
+    if (this.locationId === '' || !this.currentDataSource) return
 
     const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
       this.webServiceProvider, this.currentDataSource.filterIds, this.locationId
@@ -313,26 +315,32 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     })
   }
 
-  get currentCategory(): Category {
+  get currentCategory(): Category | null {
+    if (this.categories.length === 0) return null
+
     const defaultCategory = this.categories[0]
     if (!this.categoryId) return defaultCategory
     return this.categories.find(category => category.id === this.categoryId) ?? defaultCategory
   }
 
-  get currentDataLayer(): DataLayer {
+  get currentDataLayer(): DataLayer | null {
+    if (!this.currentCategory) return null
+
     const defaultDataLayer = this.currentCategory.dataLayers[0]
     if (!this.dataLayerId) return defaultDataLayer
     return this.currentCategory.dataLayers.find(dataLayer => dataLayer.id === this.dataLayerId) ?? defaultDataLayer
   }
 
-  get currentDataSource(): DataSource {
+  get currentDataSource(): DataSource | null {
+    if (!this.currentDataLayer) return null
+
     const defaultDataSource = this.currentDataLayer.dataSources[0]
     if (!this.dataSourceId) return defaultDataSource
     return this.currentDataLayer.dataSources.find(dataSource => dataSource.id === this.dataSourceId) ?? defaultDataSource
   }
 
   get layerName(): string {
-    const layer = this.layers.find(layer => layer.name === this.currentDataSource.wmsLayerId)
+    const layer = this.layers.find(layer => layer.name === this.currentDataSource?.wmsLayerId)
     return layer?.title ?? '—'
   }
 
