@@ -107,4 +107,16 @@ html, body {
 .theme--dark *::-webkit-scrollbar-thumb:hover {
   background: #9e9e9e;
 }
+
+
+.theme--light *:focus {
+  outline: 1px solid rgb(25, 118, 210) !important;
+  outline-offset: -1px;
+}
+
+.theme--dark *:focus {
+  outline: 1px solid rgb(33, 150, 243) !important;
+  outline-offset: -1px;
+}
+
 </style>
