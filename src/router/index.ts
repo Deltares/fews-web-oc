@@ -73,11 +73,12 @@ export const routesViews: Array<RouteConfig> = [
     ]
   },
   {
-    path: '/metoc/:filterId?/:categoryId?',
+    path: '/metoc/:categoryId?/:dataLayerId?/:dataSourceId?',
     name: 'MetocDataViewer',
     component: MetocDataView,
-    props: route => ({...route.params, layerName: route.query.layerName }),
+    props: route => ({ ...route.params }),
     meta: { authorize: [], sidebar: true },
+    /*
     children: [
       {
         path: 'location/:locationId',
@@ -87,6 +88,7 @@ export const routesViews: Array<RouteConfig> = [
         meta: { authorize: [], sidebar: true }
       }
     ]
+    */
   },
   {
     // /ssd/ScadaNZK-ARK/NZK_ARK_10min

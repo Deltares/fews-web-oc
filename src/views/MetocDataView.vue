@@ -1,19 +1,26 @@
 <template>
   <div class="display-container">
     <portal to="web-oc-sidebar">
-      <MetocSidebar/>
+      <MetocSidebar
+        :categories="categories"
+      />
     </portal>
     <div class="grid-root" :class="layoutClass">
       <div class="grid-map" v-show="showMap">
         <div class="map-container" style="height: calc(100% - 48px); position: relative;">
           <MapComponent>
-            <MapboxLayer v-if="showLayer" :layer="layerOptions"></MapboxLayer>
-            <v-mapbox-layer v-if="showLocationsLayer" :options="locationsLayer" clickable @click="onLocationClick"></v-mapbox-layer>
+            <MapboxLayer v-if="showLayer" :layer="layerOptions"/>
+            <v-mapbox-layer
+              v-if="showLocationsLayer"
+              :options="locationsLayer"
+              clickable
+            />
+            <!-- @click="onLocationClick" -->
           </MapComponent>
         </div>
         <div style="position: absolute; padding-left: 5px; left: 30px;">
           <v-chip-group>
-            <WMSLayerControl
+            <!-- <WMSLayerControl
               v-if="currentLayers.length > 0"
               v-model="layerOptions"
               :showLayer.sync="showLayer"
@@ -21,13 +28,13 @@
               :items="currentLayers"
               :timeIndex="currentTime"
               @change="updateActiveLayer">
-            </WMSLayerControl>
+            </WMSLayerControl> -->
             <LocationsLayerControl v-model="showLocationsLayer"/>
           </v-chip-group>
         </div>
-        <DateTimeSlider class="date-time-slider" v-model="currentTime" :dates="times" @update:now="setCurrentTime"
+        <!-- <DateTimeSlider class="date-time-slider" v-model="currentTime" :dates="times" @update:now="setCurrentTime"
           @input="debouncedSetLayerOptions" @timeupdate="updateTime">
-        </DateTimeSlider>
+        </DateTimeSlider> -->
       </div>
       <div class="grid-charts" ref="grid-charts" v-if="hasSelectedLocation && !$vuetify.breakpoint.mobile">
         <v-toolbar class="toolbar-charts" dense flat>
@@ -90,6 +97,8 @@ import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
 
 import MetocSidebar from '@/components/MetocSidebar.vue';
+import { Category, DataLayer, DataSource, fetchCategories, fetchLocationsAsGeoJson } from '@/lib/Topology';
+import { convertGeoJsonToFewsPiLocation } from '@/lib/Topology/locations';
 
 interface MapboxLayerOptions {
   name: string;
@@ -121,23 +130,10 @@ interface Parameter {
   }
 })
 export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiRequestsMixin) {
-  @Prop({
-    default: '',
-    type: String
-  })
-  filterId!: string
-
-  @Prop({
-    default: '',
-    type: String
-  })
-  categoryId!: string
-
-  @Prop({
-    default: '',
-    type: String
-  })
-  locationId!: string
+  @Prop({ default: '', type: String }) categoryId!: string
+  @Prop({ default: '', type: String }) dataLayerId!: string
+  @Prop({ default: '', type: String }) dataSourceId!: string
+  @Prop({ default: '', type: String }) locationId!: string
 
   webServiceProvider!: PiWebserviceProvider
 
@@ -165,7 +161,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   legend: ColourMap = []
   unit: string = ""
 
-  categories: string[] = []
+  // categories: string[] = []
   locations: Location[] = []
 
   displays: DisplayConfig[] = []
@@ -188,6 +184,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     },
   }
 
+  categories: Category[] = []
+
+  /*
   created(): void {
     this.dateController = new DateController([])
     this.debouncedSetLayerOptions = debounce(this.setLayerOptions, 500, {
@@ -195,21 +194,117 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
       trailing: true
     })
   }
+  */
 
   async mounted() {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const transformRequestFn = this.getTransformRequest()
     this.webServiceProvider = new PiWebserviceProvider(baseUrl, {transformRequestFn})
+
+    this.categories = await fetchCategories(this.webServiceProvider)
+    this.onDataSourceChange()
+
+    /*
     this.setLayoutClass()
     await this.getFilters()
     this.getParameters()
     this.getCapabilities()
-    this.currentLocationId = this.$route.params.locationId ?? ''
+    */
     // Force resize to fix strange starting position of the map, caused by
     // the expandable navigation drawer.
     window.dispatchEvent(new Event('resize'))
   }
 
+  @Watch('dataSourceId')
+  async onDataSourceChange(): Promise<void> {
+    // Get WMS layer times for the currently selected data source, then update the current WMS
+    // layer.
+    this.times = await this.getTimes(this.currentDataSource.wmsLayerId)
+    this.setWMSLayerOptions()
+
+    const geojson = await fetchLocationsAsGeoJson(
+      this.webServiceProvider, this.currentDataSource.filterIds
+    )
+    this.locationsLayer.source.data = geojson
+    this.locations = convertGeoJsonToFewsPiLocation(geojson)
+  }
+
+  setWMSLayerOptions(): void {
+    if (this.times.length === 0) {
+      this.layerOptions = null
+    } else {
+      this.layerOptions = {
+        name: this.currentDataSource.wmsLayerId,
+        time: this.times[0]
+      }
+    }
+  }
+
+  onDockModeChange(dockMode: string) {
+    this.dockMode = dockMode
+    if (this.hasSelectedLocation) {
+      this.layoutClass = this.dockMode
+    }
+    this.$nextTick(this.onResize)
+  }
+
+  closeCharts() {
+    if (this.hasSelectedLocation) {
+      const params = this.$route.params
+      this.$router.push({
+        name: 'MetocDataViewer',
+        params: {
+          filterId: params.filterId,
+          categoryId: params.categoryId
+        }
+      })
+    }
+  }
+
+  toggleFullscreen(isFullscreen: boolean) {
+    this.isFullscreenGraph = isFullscreen
+  }
+
+  onResize() {
+    window.dispatchEvent(new Event('resize'))
+  }
+
+  get currentCategory(): Category {
+    const defaultCategory = this.categories[0]
+    if (!this.categoryId) return defaultCategory
+    return this.categories.find(category => category.id === this.categoryId) ?? defaultCategory
+  }
+
+  get currentDataLayer(): DataLayer {
+    const defaultDataLayer = this.currentCategory.dataLayers[0]
+    if (!this.dataLayerId) return defaultDataLayer
+    return this.currentCategory.dataLayers.find(dataLayer => dataLayer.id === this.dataLayerId) ?? defaultDataLayer
+  }
+
+  get currentDataSource(): DataSource {
+    const defaultDataSource = this.currentDataLayer.dataSources[0]
+    if (!this.dataSourceId) return defaultDataSource
+    return this.currentDataLayer.dataSources.find(dataSource => dataSource.id === this.dataSourceId) ?? defaultDataSource
+  }
+
+  get showMap() {
+    const isMobileGraphOpen = this.hasSelectedLocation && this.$vuetify.breakpoint.mobile
+    return !isMobileGraphOpen && !this.isFullscreenGraph
+  }
+
+  get hasSelectedLocation() {
+    return this.locationId !== ''
+  }
+
+  get dockMode() {
+    return this.stateDockMode
+  }
+
+  set dockMode(dockMode: string) {
+    this.stateDockMode = dockMode
+  }
+
+  /*
   async getFilters() {
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const request = new Request(`${baseUrl}/rest/fewspiservice/v1/filters?documentFormat=PI_JSON`)
@@ -315,28 +410,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
       this.onDockModeChange(this.dockMode)
     }
   }
+  */
 
-  closeCharts() {
-    if (this.hasSelectedLocation) {
-      const params = this.$route.params
-      this.$router.push({
-        name: 'MetocDataViewer',
-        params: {
-          filterId: params.filterId,
-          categoryId: params.categoryId
-        }
-      })
-    }
-  }
-
-  toggleFullscreen(isFullscreen: boolean) {
-    this.isFullscreenGraph = isFullscreen
-  }
-
-  onResize() {
-    window.dispatchEvent(new Event('resize'))
-  }
-
+  /*
   onLocationClick(e: any) {
     const locationId = e.features[0].properties.locationId
     if (this.locationId === locationId) return
@@ -382,35 +458,12 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     this.displays = allDisplays[0]
     this.loadTimeSeries(requests[0])
   }
+  */
 
+  /*
   private async loadTimeSeries(requests: ActionRequest[]) {
     this.timeSeriesStore = {}
     this.updateTimeSeries(requests)
-  }
-
-  get hasSelectedLocation() {
-    return this.locationId !== ''
-  }
-
-  get showMap() {
-    const isMobileGraphOpen = this.hasSelectedLocation && this.$vuetify.breakpoint.mobile
-    return !isMobileGraphOpen && !this.isFullscreenGraph
-  }
-
-  onDockModeChange(dockMode: string) {
-    this.dockMode = dockMode
-    if (this.hasSelectedLocation) {
-      this.layoutClass = this.dockMode
-    }
-    this.$nextTick(this.onResize)
-  }
-
-  get dockMode() {
-    return this.stateDockMode
-  }
-
-  set dockMode(dockMode: string) {
-    this.stateDockMode = dockMode
   }
 
   setCurrentTime(enabled: boolean): void {
@@ -447,7 +500,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     }
     this.setLayerOptions()
   }
+  */
 
+  /*
   routeForCategory(categoryId: string) {
     if (this.$route.name === 'MetocDataViewerWithLocation') {
       return { name: 'MetocDataViewerWithLocation', params: { filterId: this.filterId, categoryId, locationId: this.locationId } }
@@ -455,7 +510,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
       return { name: 'MetocDataViewer', params: { filterId: this.filterId, categoryId } }
     }
   }
+  */
 
+ /*
   async updateActiveLayer(value: WMSLayerControlValue): Promise<void> {
     if (value.name !== this.layerName) {
       this.layerName = value.name
@@ -473,6 +530,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
       this.layerOptions = null
     }
   }
+  */
 }
 
 </script>

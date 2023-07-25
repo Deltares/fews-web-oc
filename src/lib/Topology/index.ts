@@ -1,2 +1,3 @@
 export * from './types'
-export * from './requests'
+export * from './category'
+export * from './locations'
