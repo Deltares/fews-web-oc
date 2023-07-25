@@ -472,7 +472,7 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
       try {
         const response = await this.getLegendGraphic(this.layerName)
         this.legend = response.legend
-        this.unit = response.unit
+        this.unit = response.unit ?? ''
       } catch {
         this.legend = []
         this.unit = ""
