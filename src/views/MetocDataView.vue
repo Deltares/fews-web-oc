@@ -7,7 +7,7 @@
     </portal>
     <div class="grid-root" :class="layoutClass">
       <div class="grid-map" v-show="showMap">
-        <div class="map-container" style="height: calc(100% - 48px); position: relative;">
+        <div class="map-container">
           <MapComponent>
             <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions"/>
             <v-mapbox-layer
@@ -18,7 +18,7 @@
             />
           </MapComponent>
         </div>
-        <div style="position: absolute; padding-left: 5px; left: 30px;">
+        <div class="control-container">
           <v-chip-group>
             <LocationsLayerControl v-model="showLocationsLayer"/>
           </v-chip-group>
@@ -406,8 +406,15 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 }
 
 .map-container {
+  position: relative;
   display: flex;
   flex: 1 1;
-  height: 100%;
+  height: calc(100% - 48px);
+}
+
+.control-container {
+  position: absolute;
+  padding-left: 5px;
+  left: 30px;
 }
 </style>
