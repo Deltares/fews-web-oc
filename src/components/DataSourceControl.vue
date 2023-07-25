@@ -30,6 +30,10 @@ export default class DataSourceControl extends Vue {
 
   selected: number | undefined = 0
 
+  mounted(): void {
+    this.onChangeValue()
+  }
+
   onChangeSelection(): void {
     const selectedDataSource = this.selected !== undefined ? this.items[this.selected] : null
     this.$emit('input', selectedDataSource)

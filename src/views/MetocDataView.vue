@@ -112,6 +112,7 @@ import MetocSidebar from '@/components/MetocSidebar.vue';
 import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
 import MapComponent from '@/components/MapComponent.vue'
 import WMSInfoPanel from '@/components/WMSInfoPanel.vue';
+import { Route } from 'vue-router';
 
 interface MapboxLayerOptions {
   name: string;
@@ -192,7 +193,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 
     // Fetch categories and update WMS layer for the default selection.
     this.categories = await fetchCategories(this.webServiceProvider)
-    this.currentDataSource = this.currentDataLayer?.dataSources[0] ?? null
+    this.setCurrentDataSourceFromRoute(this.$route)
     this.onDataSourceChange()
     this.onLocationChange()
 
@@ -266,7 +267,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   /**
    * Updates the WMS layer, WMS layer times and locations for a new data source.
    */
-  @Watch('dataSourceId')
+  @Watch('currentDataSource')
   async onDataSourceChange(): Promise<void> {
     // Always close chart panel; data sources will in general not have the same locations, or we
     // might have deselected a data source.
@@ -275,6 +276,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     if (!this.currentDataSource) {
       // Remove locations and WMS layer.
       this.times = []
+      this.externalForecast = new Date('invalid')
       this.locations = []
       this.locationsLayerOptions.source.data = []
       this.setWMSLayerOptions()
@@ -353,6 +355,25 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
         locationId
       }
     })
+  }
+
+  setCurrentDataSourceFromRoute(to: Route): void {
+    if (this.currentDataSource?.id !== to.params.dataSourceId) {
+      if (to.params.dataSourceId) {
+        const newCategory = this.categories.find(category => category.id === to.params.categoryId)
+        const newDataLayer = newCategory?.dataLayers.find(layer => layer.id === to.params.dataLayerId)
+        this.currentDataSource = newDataLayer?.dataSources.find(source => source.id === to.params.dataSourceId) ?? null
+      } else {
+        // If no data source was specified, set it to null. We still call onDataSourceChange as this
+        // will then clear the map of WMS layers and locations.
+        this.currentDataSource = null
+      }
+    }
+  }
+
+  beforeRouteUpdate(to: Route, _: Route, next: any) {
+    this.setCurrentDataSourceFromRoute(to)
+    next()
   }
 
   get currentCategory(): Category | null {
