@@ -20,9 +20,9 @@
         </div>
         <div class="control-container">
           <DataSourceControl
-            v-model="currentDataSource"
+            v-model="selectedDataSource"
             :items="dataSources"
-            @input="onDataSourceChange"
+            @input="onSelectDataSource"
           />
           <WMSInfoPanel
             :layerName="layerName"
@@ -139,7 +139,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 
   webServiceProvider!: PiWebserviceProvider
   categories: Category[] = []
-  currentDataSource: DataSource | null = null
+  selectedDataSource: DataSource | null = null
 
   dockMode = 'right'
   layoutClass: string = 'map-only'
@@ -193,8 +193,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 
     // Fetch categories and update WMS layer for the default selection.
     this.categories = await fetchCategories(this.webServiceProvider)
-    this.setCurrentDataSourceFromRoute(this.$route)
-    this.onDataSourceChange()
+    await this.onDataSourceChange()
     this.onLocationChange()
 
     // Force resize to fix strange starting position of the map, caused by
@@ -269,6 +268,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
    */
   @Watch('currentDataSource')
   async onDataSourceChange(): Promise<void> {
+    // Make sure that the data source selection control matches the URL.
+    this.selectedDataSource = this.currentDataSource
+
     // Always close chart panel; data sources will in general not have the same locations, or we
     // might have deselected a data source.
     this.closeCharts()
@@ -277,21 +279,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
       // Remove locations and WMS layer.
       this.times = []
       this.externalForecast = new Date('invalid')
+      this.legend = []
       this.locations = []
       this.locationsLayerOptions.source.data = []
       this.setWMSLayerOptions()
       return
-    }
-
-    // Update route if necessary (i.e. when selecting data source via control).
-    if (this.$route.params.dataSourceId !== this.currentDataSource.id) {
-      this.$router.push({
-        name: this.locationId ? 'MetocDataViewerWithLocation' : 'MetocDataViewer',
-        params: {
-          ...this.$route.params,
-          dataSourceId: this.currentDataSource.id
-        }
-      })
     }
 
     // Get WMS layer times for the currently selected data source.
@@ -334,6 +326,23 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     window.dispatchEvent(new Event('resize'))
   }
 
+  onSelectDataSource(): void {
+    // Update route if necessary (i.e. when selecting data source via control).
+    if (this.dataSourceId !== this.selectedDataSource?.id) {
+      let params = {}
+      if (this.selectedDataSource) {
+        params = { ...this.$route.params, dataSourceId: this.selectedDataSource.id }
+      } else {
+        params = { ...this.$route.params, dataSourceId: undefined }
+      }
+
+      this.$router.push({
+        name: this.locationId ? 'MetocDataViewerWithLocation' : 'MetocDataViewer',
+        params
+      })
+    }
+  }
+
   /**
    * Updates the route upon clicking a location.
    *
@@ -357,25 +366,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     })
   }
 
-  setCurrentDataSourceFromRoute(to: Route): void {
-    if (this.currentDataSource?.id !== to.params.dataSourceId) {
-      if (to.params.dataSourceId) {
-        const newCategory = this.categories.find(category => category.id === to.params.categoryId)
-        const newDataLayer = newCategory?.dataLayers.find(layer => layer.id === to.params.dataLayerId)
-        this.currentDataSource = newDataLayer?.dataSources.find(source => source.id === to.params.dataSourceId) ?? null
-      } else {
-        // If no data source was specified, set it to null. We still call onDataSourceChange as this
-        // will then clear the map of WMS layers and locations.
-        this.currentDataSource = null
-      }
-    }
-  }
-
-  beforeRouteUpdate(to: Route, _: Route, next: any) {
-    this.setCurrentDataSourceFromRoute(to)
-    next()
-  }
-
   get currentCategory(): Category | null {
     if (this.categories.length === 0) return null
 
@@ -390,6 +380,14 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     const defaultDataLayer = this.currentCategory.dataLayers[0]
     if (!this.dataLayerId) return defaultDataLayer
     return this.currentCategory.dataLayers.find(dataLayer => dataLayer.id === this.dataLayerId) ?? defaultDataLayer
+  }
+
+  get currentDataSource(): DataSource | null {
+    if (!this.currentDataLayer) return null
+
+    const defaultDataSource = this.currentDataLayer.dataSources[0]
+    if (!this.dataSourceId) return defaultDataSource
+    return this.currentDataLayer.dataSources.find(dataSource => dataSource.id === this.dataSourceId) ?? defaultDataSource
   }
 
   get dataSources(): DataSource[] {
