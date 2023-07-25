@@ -23,6 +23,7 @@
             <WMSInfoPanel
               :layerName="layerName"
               :externalForecastTime="externalForecast"
+              :unit="unit"
             />
             <LocationsLayerControl v-model="showLocationsLayer"/>
           </v-chip-group>

@@ -14,7 +14,7 @@
         :color="backgroundColor"
         class="chip"
       >
-      <span>{{ layerName }}</span>
+      <span>{{ layerName }} [{{ unit }}]</span>
       <v-icon>mdi-chevron-down</v-icon>
       </v-chip>
     </template>
@@ -33,6 +33,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 export default class WMSInfoPanel extends Vue {
   @Prop({ default: '' }) layerName!: string
   @Prop({ default: null }) externalForecastTime!: Date | null
+  @Prop({ default: '' }) unit!: string
 
   showInfoPanel: boolean = false
 
