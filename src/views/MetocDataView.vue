@@ -127,7 +127,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 
   webServiceProvider!: PiWebserviceProvider
 
-  stateDockMode = 'right'
+  dockMode = 'right'
   layoutClass: string = 'map-only'
   isFullscreenGraph = false
 
@@ -296,14 +296,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 
   get hasSelectedLocation() {
     return this.locationId !== ''
-  }
-
-  get dockMode() {
-    return this.stateDockMode
-  }
-
-  set dockMode(dockMode: string) {
-    this.stateDockMode = dockMode
   }
 }
 
