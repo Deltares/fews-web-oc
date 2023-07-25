@@ -24,12 +24,12 @@ Vue.use(VueRouter)
 const routesBase: Array<RouteConfig> = [
   {
     path: '/',
-    redirect: { name: 'Home' },
+    redirect: { name: 'About' },
     name: 'Default',
   },
   {
-    path: '/home',
-    name: 'Home',
+    path: '/about',
+    name: 'About',
     meta: { authorize: [] },
     component: HomeView
   },
@@ -136,7 +136,7 @@ router.beforeEach(async (to, from, next) => {
 
     const role = currentUser.profile.roles !== undefined ? (currentUser.profile as any).roles[0] : 'guest'
     if (authorize.length && !authorize.includes(role)) {
-      return next({ name: 'Home' })
+      return next({ name: 'About' })
     }
   }
   next()

@@ -3,7 +3,7 @@
     <v-card-title class="justify-center">
       Welcome to the Delft-FEWS Web OC!
     </v-card-title>
-    <v-card-text v-if="menuItems.length>0">
+    <v-card-text v-if="menuItems.length > 0">
       Select one of the following options to get started.
     </v-card-text>
     <v-card-text v-else>
@@ -19,6 +19,37 @@
         </v-list-item-content>
       </v-list-item>
     </v-list>
+    <v-card-text>
+      <v-row>
+        <v-col
+          cols="4"
+        >
+          WebOC
+        </v-col>
+        <v-col cols="6">
+          v{{ version }}
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col
+          cols="4"
+        >
+          Web Service
+        </v-col>
+        <v-col cols="6">
+          {{ webServiceVersion.implementation }} #{{webServiceVersion.buildNumber}} {{ webServiceVersion.buildType  === 'development' ? 'development' : ''  }}
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col
+          cols="12"
+        >
+          <a :href="webServiceUrl">{{ webServiceUrl }} </a>
+        </v-col>
+      </v-row>
+
+
+    </v-card-text>
   </v-card>
 </template>
 
@@ -27,6 +58,8 @@ import { Component, Vue } from 'vue-property-decorator'
 import { namespace } from 'vuex-class'
 import type { WebOcComponent } from '@/store/modules/fews-config/types'
 import { ComponentTypeEnum } from '@/store/modules/fews-config/types'
+import packageConfig from '../../package.json'
+import { PiWebserviceProvider, Version } from '@deltares/fews-pi-requests'
 
 const fewsConfigModule = namespace('fewsconfig')
 
@@ -36,9 +69,16 @@ export default class HomeView extends Vue {
     webOcComponents!: { [key: string]: WebOcComponent }
   @fewsConfigModule.Action('loadConfig')
     loadConfig!: () => void
+  version = packageConfig.version
+  webServiceVersion: Version | null = null
+  webServiceUrl: string = ''
 
-  mounted(): void {
+  async mounted(): Promise<void> {
     this.loadConfig()
+    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const webServiceProvider = new PiWebserviceProvider(baseUrl)
+    this.webServiceVersion = await (await webServiceProvider.getVersion()).version
+    this.webServiceUrl = `${baseUrl}${webServiceProvider.API_ENDPOINT}`
   }
 
   getMenuIcon (componentConfig: WebOcComponent): string {
