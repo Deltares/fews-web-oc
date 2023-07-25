@@ -31,7 +31,7 @@
           @update:now="setCurrentTime"
         />
       </div>
-      <div class="grid-charts" ref="grid-charts" v-if="hasSelectedLocation && !$vuetify.breakpoint.mobile">
+      <div class="grid-charts" v-if="hasSelectedLocation && !$vuetify.breakpoint.mobile">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -51,7 +51,7 @@
         </v-toolbar>
         <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="toggleFullscreen"></router-view>
       </div>
-      <div class="grid-charts fullscreen" ref="grid-charts" v-else-if="hasSelectedLocation">
+      <div class="grid-charts fullscreen" v-else-if="hasSelectedLocation">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-toolbar-title>
           </v-toolbar-title>
@@ -62,7 +62,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <router-view :displays="displays" @toggleFullscreen="toggleFullscreen"></router-view>
+        <router-view :displays="displays" @toggleFullscreen="toggleFullscreen"/>
       </div>
     </div>
   </div>
@@ -120,29 +120,25 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   @Prop({ default: '', type: String }) locationId!: string
 
   webServiceProvider!: PiWebserviceProvider
+  categories: Category[] = []
 
   dockMode = 'right'
   layoutClass: string = 'map-only'
   isFullscreenGraph = false
+  displays: DisplayConfig[] = []
 
   showLayer: boolean = true
+  wmsLayerOptions: MapboxLayerOptions | null = null
+  externalForecastTime = new Date()
+  legend: ColourMap = []
+  unit: string = ""
 
   dateController!: DateController
   currentTime: Date = new Date()
   times: Date[] = []
   debouncedSetWMSLayerOptions!: () => void
 
-  layerName: string = ''
-  wmsLayerOptions: MapboxLayerOptions | null = null
-
-  legend: ColourMap = []
-  unit: string = ""
-
   locations: Location[] = []
-
-  displays: DisplayConfig[] = []
-  externalForecastTime = new Date()
-
   showLocationsLayer = true
   locationsLayerOptions = {
     'id': 'locationsLayer',
@@ -157,10 +153,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     'paint': {
       'circle-radius': 6,
       'circle-color': '#B42222'
-    },
+    }
   }
-
-  categories: Category[] = []
 
   created(): void {
     this.dateController = new DateController([])
