@@ -19,14 +19,12 @@
           </MapComponent>
         </div>
         <div class="control-container">
-          <v-chip-group>
-            <WMSInfoPanel
-              :layerName="layerName"
-              :externalForecastTime="externalForecast"
-              :unit="unit"
-            />
-            <LocationsLayerControl v-model="showLocationsLayer"/>
-          </v-chip-group>
+          <WMSInfoPanel
+            :layerName="layerName"
+            :externalForecastTime="externalForecast"
+            :unit="unit"
+          />
+          <LocationsLayerControl v-model="showLocationsLayer"/>
         </div>
         <DateTimeSlider
           class="date-time-slider"
@@ -442,7 +440,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 
 .control-container {
   position: absolute;
-  padding-left: 5px;
+  padding: 10px 5px;
   left: 30px;
   z-index: 1200;
 }
