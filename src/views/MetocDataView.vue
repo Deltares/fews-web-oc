@@ -327,7 +327,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   }
 
   onSelectDataSource(): void {
-    // Update route if necessary (i.e. when selecting data source via control).
     if (this.dataSourceId !== this.selectedDataSource?.id) {
       let params = {}
       if (this.selectedDataSource) {
@@ -383,10 +382,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   }
 
   get currentDataSource(): DataSource | null {
-    if (!this.currentDataLayer) return null
-
+    if (!this.currentDataLayer || !this.dataSourceId) return null
     const defaultDataSource = this.currentDataLayer.dataSources[0]
-    if (!this.dataSourceId) return defaultDataSource
     return this.currentDataLayer.dataSources.find(dataSource => dataSource.id === this.dataSourceId) ?? defaultDataSource
   }
 
