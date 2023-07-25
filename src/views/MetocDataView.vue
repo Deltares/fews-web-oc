@@ -20,15 +20,6 @@
         </div>
         <div style="position: absolute; padding-left: 5px; left: 30px;">
           <v-chip-group>
-            <!-- <WMSLayerControl
-              v-if="currentLayers.length > 0"
-              v-model="layerOptions"
-              :showLayer.sync="showLayer"
-              :time="externalForecastTime"
-              :items="currentLayers"
-              :timeIndex="currentTime"
-              @change="updateActiveLayer">
-            </WMSLayerControl> -->
             <LocationsLayerControl v-model="showLocationsLayer"/>
           </v-chip-group>
         </div>
@@ -81,24 +72,20 @@
 import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 
 import type { Location } from "@deltares/fews-pi-requests";
-import { ActionRequest, DocumentFormat, PiWebserviceProvider} from "@deltares/fews-pi-requests";
-import type { Layer } from '@deltares/fews-wms-requests';
+import { PiWebserviceProvider} from "@deltares/fews-pi-requests";
 import { ColourMap } from '@deltares/fews-web-oc-charts';
 
-import { FeatureCollection, Geometry } from 'geojson';
-import { debounce, uniq, intersection } from 'lodash';
+import { debounce } from 'lodash';
 
 import PiRequestsMixin from '@/mixins/PiRequestsMixin';
 import MapComponent from '@/components/MapComponent.vue'
 import WMSMixin from '@/mixins/WMSMixin'
 import { DateController } from '@/lib/TimeControl/DateController';
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
-import WMSLayerControl, { WMSLayerControlValue } from '@/components/WMSLayerControl.vue'
 import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
 import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
-import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
-import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
+import { DisplayConfig } from '@/lib/Layout/DisplayConfig';
 
 import MetocSidebar from '@/components/MetocSidebar.vue';
 import { Category, DataLayer, DataSource, fetchCategories, fetchLocationsAsGeoJson } from '@/lib/Topology';
@@ -115,7 +102,6 @@ interface MapboxLayerOptions {
     MapComponent,
     DateTimeSlider,
     LocationsLayerControl,
-    WMSLayerControl,
     MetocSidebar
   }
 })
