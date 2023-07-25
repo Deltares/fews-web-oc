@@ -6,11 +6,9 @@ export class DateController {
     this.dates = dates
   }
 
-  selectDate (date: Date, round?: string): void {
+  selectDate (date: Date): void {
     if (this.dates === undefined || this.dates.length === 0) return
-    const index = this.dates.findIndex((date) => {
-      return date.getTime() + 10 * 60 * 1000 > date.getTime()
-    })
+    const index = this.dates.findIndex(cur => cur.getTime() + 10 * 60 * 1000 > date.getTime())
     if (index === -1) {
       if (this.dates[0].getTime() > date.getTime()) {
         this.currentTime = this.dates[0]
