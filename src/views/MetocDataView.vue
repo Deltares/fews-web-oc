@@ -70,26 +70,32 @@
 
 <script lang="ts">
 import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
+import { debounce } from 'lodash';
 
 import type { Location } from "@deltares/fews-pi-requests";
 import { PiWebserviceProvider} from "@deltares/fews-pi-requests";
 import { ColourMap } from '@deltares/fews-web-oc-charts';
 
-import { debounce } from 'lodash';
+import { DateController } from '@/lib/TimeControl/DateController';
+import type { DisplayConfig } from '@/lib/Layout/DisplayConfig';
+import {
+  convertGeoJsonToFewsPiLocation,
+  Category,
+  DataLayer,
+  DataSource,
+  fetchCategories,
+  fetchLocationsAsGeoJson
+} from '@/lib/Topology';
 
 import PiRequestsMixin from '@/mixins/PiRequestsMixin';
-import MapComponent from '@/components/MapComponent.vue'
-import WMSMixin from '@/mixins/WMSMixin'
-import { DateController } from '@/lib/TimeControl/DateController';
-import DateTimeSlider from '@/components/DateTimeSlider.vue'
-import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
-import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
 import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
-import { DisplayConfig } from '@/lib/Layout/DisplayConfig';
+import WMSMixin from '@/mixins/WMSMixin'
 
+import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
+import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import MetocSidebar from '@/components/MetocSidebar.vue';
-import { Category, DataLayer, DataSource, fetchCategories, fetchLocationsAsGeoJson } from '@/lib/Topology';
-import { convertGeoJsonToFewsPiLocation } from '@/lib/Topology/locations';
+import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
+import MapComponent from '@/components/MapComponent.vue'
 
 interface MapboxLayerOptions {
   name: string;
@@ -170,21 +176,17 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     this.categories = await fetchCategories(this.webServiceProvider)
     this.onDataSourceChange()
 
-    /*
-    this.setLayoutClass()
-    await this.getFilters()
-    this.getParameters()
-    this.getCapabilities()
-    */
     // Force resize to fix strange starting position of the map, caused by
     // the expandable navigation drawer.
     window.dispatchEvent(new Event('resize'))
   }
 
+  /**
+   * Updates the WMS layer, WMS layer times and locations for a new data source.
+   */
   @Watch('dataSourceId')
   async onDataSourceChange(): Promise<void> {
-    // Get WMS layer times for the currently selected data source, then update the current WMS
-    // layer.
+    // Get WMS layer times for the currently selected data source.
     this.times = await this.getTimes(this.currentDataSource.wmsLayerId)
 
     // Select the WMS layer time closest to the currently selected time.
@@ -192,9 +194,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     this.dateController.dates = this.times
     this.dateController.selectDate(this.currentTime ?? new Date())
     this.currentTime = this.dateController.currentTime
-
     this.setWMSLayerOptions()
 
+    // Get locations for the current data source.
     const geojson = await fetchLocationsAsGeoJson(
       this.webServiceProvider, this.currentDataSource.filterIds
     )
