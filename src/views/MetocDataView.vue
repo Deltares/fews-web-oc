@@ -340,150 +340,74 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 </script>
 
 <style scoped>
-  .display-container {
-    height: 100%;
-  }
-
-  .grid-root {
-    display: flex;
-    padding: 0px;
-    width: 100%;
-    height: 100%;
-  }
-
-  .grid-root.right {
-    flex-direction: row;
-  }
-
-  .grid-root.left {
-    flex-direction: row-reverse;
-  }
-
-  .grid-root.bottom {
-    flex-direction: column;
-  }
-
-  .grid-map {
-    display: flex;
-    flex-basis: 400px;
-    flex: 1 1 auto;
-    flex-direction: column;
-  }
-
-  .grid-charts {
-    display: none;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    width: 50%;
-    z-index: 1100;
-  }
-
-  .right>.grid-charts,
-  .left>.grid-charts {
-    height: 100%;
-    width: 50%;
-  }
-
-  .bottom>.grid-charts {
-    height: 50%;
-    width: 100%;
-  }
-
-  .grid-charts.fullscreen {
-    width: 100%;
-    flex-basis: 100%;
-    height: 100%;
-  }
-
-  .bottom>.grid-map {
-    height: 50%;
-    width: 100%;
-  }
-
-  .toolbar-charts {
-    flex: 0 0 auto;
-  }
-
-  .colourbar {
-    font-size: 0.825em;
-    z-index: 1000;
-    background-color: none;
-    margin-top: -50px;
-    width: 500px;
-    height: 100px;
-  }
-
-  .wms-panel {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .wms-layer-control-container {
-    display: flex;
-    padding: 15px 50px 15px 50px;
-  }
-
-  .map-only>.wms-panel>.wms-layer-control-container,
-  .right>.wms-panel>.wms-layer-control-container {
-    justify-content: flex-start;
-  }
-
-  .bottom>.wms-panel>.wms-layer-control-container,
-  .left>.wms-panel>.wms-layer-control-container {
-    justify-content: flex-end;
-  }
-
-  .mobile>.wms-panel>.wms-layer-control-container {
-    padding: 10px 0px;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .map-only>.wms-panel,
-  .right>.wms-panel {
-    left: 0px;
-    bottom: 80px;
-  }
-
-  .left>.wms-panel {
-    right: 0px;
-    bottom: 80px;
-  }
-
-  .bottom>.wms-panel {
-    top: 10px;
-    right: 0px;
-  }
-
-  .mobile>.wms-panel {
-    justify-content: center;
-    bottom: 80px;
-    width: 100%;
-  }
-
-  .map-container {
-    display: flex;
-    flex: 1 1;
-    height: 100%;
-  }
-
-  .datetime-control-container {
-    flex-grow: 0;
-    z-index: 1000;
-  }
-
-.v-list-item--dense, .v-list--dense .v-list-item {
-  min-height: 28px !important;
+.display-container {
+  height: 100%;
 }
 
-.v-treeview--dense .v-treeview-node__root {
-  min-height: 28px !important;
+.grid-root {
+  display: flex;
+  padding: 0px;
+  width: 100%;
+  height: 100%;
 }
 
-.v-treeview-node__level {
-  width: 12px !important;
+.grid-root.right {
+  flex-direction: row;
 }
 
+.grid-root.left {
+  flex-direction: row-reverse;
+}
+
+.grid-root.bottom {
+  flex-direction: column;
+}
+
+.grid-map {
+  display: flex;
+  flex-basis: 400px;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.grid-charts {
+  display: none;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  z-index: 1100;
+}
+
+.right > .grid-charts,
+.left > .grid-charts {
+  height: 100%;
+  width: 50%;
+}
+
+.bottom > .grid-charts {
+  height: 50%;
+  width: 100%;
+}
+
+.grid-charts.fullscreen {
+  width: 100%;
+  flex-basis: 100%;
+  height: 100%;
+}
+
+.bottom > .grid-map {
+  height: 50%;
+  width: 100%;
+}
+
+.toolbar-charts {
+  flex: 0 0 auto;
+}
+
+.map-container {
+  display: flex;
+  flex: 1 1;
+  height: 100%;
+}
 </style>
