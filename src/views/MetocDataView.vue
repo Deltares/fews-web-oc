@@ -34,6 +34,9 @@
           @input="debouncedSetWMSLayerOptions"
           @update:now="setCurrentTime"
         />
+        <div class="colourbar">
+          <ColourBar v-model="legend" v-if="legend.length > 0"/>
+        </div>
       </div>
       <div class="grid-charts" v-if="hasSelectedLocation && !$vuetify.breakpoint.mobile">
         <v-toolbar class="toolbar-charts" dense flat>
@@ -97,6 +100,7 @@ import PiRequestsMixin from '@/mixins/PiRequestsMixin';
 import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import WMSMixin from '@/mixins/WMSMixin'
 
+import ColourBar from '@/components/ColourBar.vue';
 import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import MetocSidebar from '@/components/MetocSidebar.vue';
@@ -111,6 +115,7 @@ interface MapboxLayerOptions {
 
 @Component({
   components: {
+    ColourBar,
     DateTimeSlider,
     LocationsLayerControl,
     MapboxLayer,
@@ -266,6 +271,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     this.dateController.selectDate(this.currentTime ?? new Date())
     this.currentTime = this.dateController.currentTime
     this.setWMSLayerOptions()
+
+    // Update the WMS layer legend.
+    const legend = await this.getLegendGraphic(this.currentDataSource.wmsLayerId)
+    this.unit = legend.unit ?? '—'
+    this.legend = legend.legend
 
     // Get locations for the current data source.
     const geojson = await fetchLocationsAsGeoJson(
@@ -433,5 +443,17 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   position: absolute;
   padding-left: 5px;
   left: 30px;
+  z-index: 1200;
+}
+
+.colourbar {
+  font-size: 0.825em;
+  z-index: 1000;
+  background-color: none;
+  width: 500px;
+  height: 100px;
+  position: absolute;
+  top: 0px;
+  left: -15px;
 }
 </style>
