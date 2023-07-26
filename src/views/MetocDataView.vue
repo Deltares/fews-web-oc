@@ -109,7 +109,6 @@ import MetocSidebar from '@/components/MetocSidebar.vue';
 import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
 import MapComponent from '@/components/MapComponent.vue'
 import WMSInfoPanel from '@/components/WMSInfoPanel.vue';
-import { Route } from 'vue-router';
 
 interface MapboxLayerOptions {
   name: string;
