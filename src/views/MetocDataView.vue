@@ -1,9 +1,7 @@
 <template>
   <div class="display-container">
     <portal to="web-oc-sidebar">
-      <MetocSidebar
-        :categories="categories"
-      />
+      <MetocSidebar :categories="categories"/>
     </portal>
     <div class="grid-root" :class="layoutClass">
       <div class="grid-map" v-show="showMap">
@@ -64,8 +62,7 @@
       </div>
       <div class="grid-charts fullscreen" v-else-if="hasSelectedLocation">
         <v-toolbar class="toolbar-charts" dense flat>
-          <v-toolbar-title>
-          </v-toolbar-title>
+          <v-toolbar-title/>
           <v-spacer />
           <v-toolbar-items>
             <v-btn icon plain @click="closeCharts">
