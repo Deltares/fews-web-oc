@@ -194,7 +194,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     // Fetch categories and update WMS layer for the default selection.
     this.categories = await fetchCategories(this.webServiceProvider)
     await this.onDataSourceChange()
-    this.onLocationChange()
+    await this.onLocationChange()
 
     // Force resize to fix strange starting position of the map, caused by
     // the expandable navigation drawer.
@@ -268,9 +268,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
    */
   @Watch('currentDataSource')
   async onDataSourceChange(): Promise<void> {
-    // Make sure that the data source selection control matches the URL.
-    this.selectedDataSource = this.currentDataSource
-
     // Always close chart panel; data sources will in general not have the same locations, or we
     // might have deselected a data source.
     this.closeCharts()
@@ -307,6 +304,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     )
     this.locationsLayerOptions.source.data = geojson
     this.locations = convertGeoJsonToFewsPiLocation(geojson)
+
+    // Make sure that the data source selection control matches the URL.
+    this.$nextTick(() => {
+      this.selectedDataSource = this.currentDataSource
+    })
   }
 
   @Watch('locationId')
@@ -327,7 +329,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   }
 
   onSelectDataSource(): void {
-    if (this.dataSourceId !== this.selectedDataSource?.id) {
+    const dataSourceMatches = this.dataSourceId === ''
+      ? this.selectedDataSource === null
+      : this.selectedDataSource?.id === this.dataSourceId
+    if (!dataSourceMatches) {
       let params = {}
       if (this.selectedDataSource) {
         params = { ...this.$route.params, dataSourceId: this.selectedDataSource.id }

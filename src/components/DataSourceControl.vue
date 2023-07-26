@@ -29,14 +29,32 @@ export default class DataSourceControl extends Vue {
   @Prop({ default: () => [] }) items!: DataSource[]
 
   selected: number | undefined = 0
+  isChangingItems: boolean = false
 
   mounted(): void {
     this.onChangeValue()
   }
 
   onChangeSelection(): void {
+    // Block this handler from executing when it is inadvertently triggered when changing the items
+    // of the v-chip-group. See documentation at onChangeItems.
+    if (this.isChangingItems) return
+
     const selectedDataSource = this.selected !== undefined ? this.items[this.selected] : null
     this.$emit('input', selectedDataSource)
+  }
+
+  /**
+   * Keep track of whether we are currently changing items.
+   *
+   * For some reason, v-chip-group emits a "change" event when both the items and the currently
+   * selected value are being changed simultaneously. By setting the boolean while the items are
+   * being changed, we block this event from continuing in the onChangeSelection handler.
+   */
+  @Watch('items')
+  onChangeItems(): void {
+    this.isChangingItems = true
+    this.$nextTick(() => { this.isChangingItems = false })
   }
 
   @Watch('value')
