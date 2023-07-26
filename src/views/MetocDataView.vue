@@ -257,6 +257,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
         params
       })
     }
+    this.onResize()
   }
 
   toggleFullscreen(isFullscreen: boolean) {
