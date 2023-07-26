@@ -484,7 +484,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   position: relative;
   display: flex;
   flex: 1 1;
-  height: calc(100% - 48px);
+  height: 100%;
 }
 
 .control-container {
