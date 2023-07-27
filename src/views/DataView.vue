@@ -45,6 +45,7 @@
           <MapComponent>
             <MapboxLayer v-if="showLayer" :layer="layerOptions"></MapboxLayer>
             <v-mapbox-layer v-if="showLocationsLayer" :options="locationsLayer" clickable @click="onLocationClick"></v-mapbox-layer>
+            <BoundingBoxSelector/>
           </MapComponent>
         </div>
         <div style="position: absolute; padding-left: 5px; left: 30px;">
@@ -124,6 +125,7 @@ import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
+import BoundingBoxSelector from '@/components/BoundingBoxSelector.vue'
 import { MapboxLayerOptions, convertBoundingBoxToLngLatBounds } from '@/components/AnimatedMapboxLayer.vue'
 import { LngLatBounds } from 'mapbox-gl'
 
@@ -147,7 +149,8 @@ interface Parameter {
     MapComponent,
     DateTimeSlider,
     LocationsLayerControl,
-    WMSLayerControl
+    WMSLayerControl,
+    BoundingBoxSelector
   }
 })
 export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiRequestsMixin) {
