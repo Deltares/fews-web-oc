@@ -79,7 +79,7 @@
 <script lang="ts">
 import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 import { debounce } from 'lodash';
-import type { MapLayerMouseEvent } from 'mapbox-gl'
+import type { MapLayerMouseEvent, CircleLayer, GeoJSONSourceRaw } from 'mapbox-gl'
 
 import type { Location } from "@deltares/fews-pi-requests";
 import { PiWebserviceProvider} from "@deltares/fews-pi-requests";
@@ -109,6 +109,26 @@ import MetocSidebar from '@/components/MetocSidebar.vue';
 import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
 import MapComponent from '@/components/MapComponent.vue'
 import WMSInfoPanel from '@/components/WMSInfoPanel.vue';
+
+const defaultGeoJsonSource: GeoJSONSourceRaw = {
+    'type': 'geojson',
+    'data': {
+      'type': 'FeatureCollection',
+      'features': []
+  }
+}
+const defaultLocationsLayerOptions: CircleLayer = {
+  'id': 'locationsLayer',
+  'type': 'circle',
+  'source': defaultGeoJsonSource,
+  'layout': {
+    'visibility': 'visible'
+  },
+  'paint': {
+    'circle-radius': 6,
+    'circle-color': '#B42222'
+  }
+}
 
 @Component({
   components: {
@@ -149,21 +169,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 
   locations: Location[] = []
   showLocationsLayer = true
-  locationsLayerOptions = {
-    'id': 'locationsLayer',
-    'type': 'circle',
-    'source': {
-      'type': 'geojson',
-      'data': {}
-    },
-    'layout': {
-      'visibility': 'visible'
-    },
-    'paint': {
-      'circle-radius': 6,
-      'circle-color': '#B42222'
-    }
-  }
+  locationsLayerOptions: CircleLayer = defaultLocationsLayerOptions
 
   created(): void {
     this.dateController = new DateController([])
@@ -292,7 +298,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
       this.externalForecast = new Date('invalid')
       this.legend = []
       this.locations = []
-      this.locationsLayerOptions.source.data = []
+      this.locationsLayerOptions.source = defaultGeoJsonSource
       this.setWMSLayerOptions()
       return
     }
@@ -316,7 +322,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     const geojson = await fetchLocationsAsGeoJson(
       this.webServiceProvider, this.currentDataSource.filterIds
     )
-    this.locationsLayerOptions.source.data = geojson
+    this.locationsLayerOptions.source = {
+      'type': 'geojson',
+      'data': geojson
+    }
     this.locations = convertGeoJsonToFewsPiLocation(geojson)
 
     // Make sure that the data source selection control matches the URL.
