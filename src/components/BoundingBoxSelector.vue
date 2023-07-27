@@ -7,7 +7,7 @@ import { Component, Vue, Inject } from 'vue-property-decorator'
 import { Map } from 'mapbox-gl'
 import MapboxDraw, {DrawEvent} from '@mapbox/mapbox-gl-draw'
 import DrawRectangle from "mapbox-gl-draw-rectangle-restrict-area"
-
+import {DownloadControl} from "../lib/DownloadControl"
 
 @Component
 export default class BoundingBoxSelector extends Vue {
@@ -26,6 +26,10 @@ export default class BoundingBoxSelector extends Vue {
         this.isInitialized = true
         this.addToMap()
     })
+    }
+
+    downloadBoundingBox() {
+        console.log("download")
     }
 
     select(e: DrawEvent) {
@@ -67,15 +71,16 @@ export default class BoundingBoxSelector extends Vue {
         const trashElement = document.querySelector(".mapbox-gl-draw_trash")
         if (trashElement !== null) {
             trashElement.addEventListener("click", () => {
-                this.draw.deleteAll();
-                })
+                this.draw.deleteAll()
+            })
         }
         const drawCombine = document.querySelector(".mapbox-gl-draw_polygon")
         if (drawCombine !== null) {
             drawCombine.addEventListener("click", () => {
-                this.draw.changeMode("draw_rectangle");
-    })
+                this.draw.changeMode("draw_rectangle")
+            })
         }
+        this.mapObject.addControl(new DownloadControl())
     }
 
     mounted() {
