@@ -320,10 +320,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
    */
   @Watch('currentDataSource')
   async onDataSourceChange(): Promise<void> {
-    // Always close chart panel; data sources will in general not have the same locations, or we
-    // might have deselected a data source.
-    this.closeCharts()
-
     if (!this.currentDataSource) {
       // Remove locations and WMS layer.
       this.times = []
@@ -394,7 +390,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
    */
   @Watch('locationId')
   async onLocationChange(): Promise<void> {
-    if (this.locationId === '' || !this.currentDataSource) return
+    if (this.locationId === '' || !this.currentDataSource) {
+      this.closeCharts()
+      return
+    }
 
     const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
       this.webServiceProvider, this.currentDataSource.filterIds, this.locationId
