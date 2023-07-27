@@ -14,7 +14,7 @@
         :color="backgroundColor"
         class="chip"
       >
-        <span class="mr-2">{{ layerName }} {{ unitLabel }}</span>
+        <span class="mr-2">{{ layerTitle }} {{ unitLabel }}</span>
         <v-icon>mdi-information-outline</v-icon>
       </v-chip>
     </template>
@@ -31,7 +31,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 
 @Component
 export default class WMSInfoPanel extends Vue {
-  @Prop({ default: '' }) layerName!: string
+  @Prop({ default: '' }) layerTitle!: string
   @Prop({ default: null }) externalForecastTime!: Date | null
   @Prop({ default: '' }) unit!: string
 

@@ -23,7 +23,7 @@
             @input="onSelectDataSource"
           />
           <WMSInfoPanel
-            :layerName="layerName"
+            :layerTitle="layerTitle"
             :externalForecastTime="externalForecast"
             :unit="unit"
           />
@@ -42,7 +42,7 @@
       </div>
       <div class="grid-charts" v-if="hasSelectedLocation && !$vuetify.breakpoint.mobile">
         <v-toolbar class="toolbar-charts" dense flat>
-          <v-spacer></v-spacer>
+          <v-spacer/>
           <v-toolbar-items>
             <v-btn icon plain @click="setDockMode('left')">
               <v-icon>mdi-dock-left</v-icon>
@@ -58,19 +58,19 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="toggleFullscreen"></router-view>
+        <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="setChartFullscreen"/>
       </div>
       <div class="grid-charts fullscreen" v-else-if="hasSelectedLocation">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-toolbar-title/>
-          <v-spacer />
+          <v-spacer/>
           <v-toolbar-items>
             <v-btn icon plain @click="closeCharts">
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <router-view :displays="displays" @toggleFullscreen="toggleFullscreen"/>
+        <router-view :displays="displays" @toggleFullscreen="setChartFullscreen"/>
       </div>
     </div>
   </div>
@@ -194,11 +194,17 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     await this.onDataSourceChange()
     await this.onLocationChange()
 
-    // Force resize to fix strange starting position of the map, caused by
-    // the expandable navigation drawer.
+    // Force resize to fix strange starting position of the map, caused by the expandable navigation
+    // drawer.
     window.dispatchEvent(new Event('resize'))
   }
 
+  /**
+   * Sets the default parameters for this route.
+   *
+   * This selects for first category, the first data layer in this category, and the first data
+   * source in this data layer.
+   */
   setDefaultRoute(): void {
     // Remove the locationId from the parameters.
     const defaultCategory = this.categories[0]
@@ -214,6 +220,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     })
   }
 
+  /**
+   * Sets WMS layer options to pass to Mapbox.
+   */
   setWMSLayerOptions(): void {
     if (this.times.length === 0 || !this.currentDataSource) {
       this.wmsLayerOptions = null
@@ -255,6 +264,15 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   }
 
   /**
+   * Enables/disables fullscreen mode for the current chart.
+   *
+   * @param isFullscreen whether the chart should be fullscreen.
+   */
+  setChartFullscreen(isFullscreen: boolean) {
+    this.isFullscreenGraph = isFullscreen
+  }
+
+  /**
    * Closes the chart panel.
    *
    * This updates the route to remove the locationId from it, effectively rerendering the component
@@ -271,10 +289,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
       })
     }
     this.onResize()
-  }
-
-  toggleFullscreen(isFullscreen: boolean) {
-    this.isFullscreenGraph = isFullscreen
   }
 
   /**
@@ -329,23 +343,12 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     })
   }
 
-  @Watch('locationId')
-  async onLocationChange(): Promise<void> {
-    if (this.locationId === '' || !this.currentDataSource) return
-
-    const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
-      this.webServiceProvider, this.currentDataSource.filterIds, this.locationId
-    )
-    this.displays = displays
-
-    // Fetch time series for all displays.
-    await this.updateTimeSeries(requests)
-  }
-
-  onResize() {
-    window.dispatchEvent(new Event('resize'))
-  }
-
+  /**
+   * Updates the view a user selects a data source with the data source control.
+   *
+   * This changes the route to reflect the new data source, which will result in onDataSourceChange
+   * being called after the route has been updated.
+   */
   onSelectDataSource(): void {
     const dataSourceMatches = this.dataSourceId === ''
       ? this.selectedDataSource === null
@@ -363,6 +366,24 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
         params
       })
     }
+  }
+
+  /**
+   * Updates the chart panel for a newly selected location.
+   */
+  @Watch('locationId')
+  async onLocationChange(): Promise<void> {
+    if (this.locationId === '' || !this.currentDataSource) return
+
+    const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
+      this.webServiceProvider, this.currentDataSource.filterIds, this.locationId
+    )
+    this.displays = displays
+
+    // Fetch time series for all displays.
+    await this.updateTimeSeries(requests)
+
+    this.onResize()
   }
 
   /**
@@ -388,6 +409,13 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     })
   }
 
+  /**
+   * Dispatches a resize event to make sure the map is updated to the new size.
+   */
+   onResize() {
+    window.dispatchEvent(new Event('resize'))
+  }
+
   get currentCategory(): Category | null {
     if (this.categories.length === 0) return null
     return this.categories.find(category => category.id === this.categoryId) ?? null
@@ -408,7 +436,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     return this.currentDataLayer?.dataSources ?? []
   }
 
-  get layerName(): string {
+  get layerTitle(): string {
     const layer = this.layers.find(layer => layer.name === this.currentDataSource?.wmsLayerId)
     return layer?.title ?? '—'
   }
