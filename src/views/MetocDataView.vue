@@ -14,6 +14,10 @@
               clickable
               @click="onLocationClick"
             />
+            <v-mapbox-layer
+              v-if="showLocationsLayer"
+              :options="selectedLocationsLayerOptions"
+            />
           </MapComponent>
         </div>
         <div class="control-container">
@@ -118,6 +122,21 @@ const defaultGeoJsonSource: GeoJSONSourceRaw = {
     features: []
   }
 }
+
+const defaultLocationPaintOptions: CirclePaint = {
+  'circle-radius': 5,
+  'circle-color': '#dfdfdf',
+  'circle-stroke-color': 'black',
+  'circle-stroke-width': 1
+}
+
+const selectedLocationPaintOptions: CirclePaint = {
+  'circle-radius': 8,
+  'circle-color': '#1976d2',
+  'circle-stroke-color': 'white',
+  'circle-stroke-width': 2
+}
+
 const defaultLocationsLayerOptions: CircleLayer = {
   id: 'locationsLayer',
   type: 'circle',
@@ -125,13 +144,13 @@ const defaultLocationsLayerOptions: CircleLayer = {
   layout: {
     visibility: 'visible'
   },
-  paint: {
-    'circle-radius': 5,
-    'circle-color': '#1976d2',
-    'circle-stroke-color': 'black',
-    'circle-stroke-width': 1
-  },
-  filter: ['literal', true]
+  paint: defaultLocationPaintOptions
+}
+const selectedLocationsLayerOptions: CircleLayer = {
+  ...defaultLocationsLayerOptions,
+  id: 'selected-locationslayer',
+  paint: selectedLocationPaintOptions,
+  filter: ['literal', false]
 }
 
 @Component({
@@ -176,6 +195,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   locations: Location[] = []
   showLocationsLayer = true
   locationsLayerOptions: CircleLayer = {...defaultLocationsLayerOptions}
+  selectedLocationsLayerOptions: CircleLayer = {...selectedLocationsLayerOptions}
 
   async mounted() {
     // Create FEWS PI Webservices provider.
@@ -287,6 +307,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
       'data': geojson
     }
     this.locationsLayerOptions.source = source
+    this.selectedLocationsLayerOptions.source = source
   }
 
   /**
@@ -294,6 +315,18 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
    */
   clearLocationsLayerData(): void {
     this.locationsLayerOptions.source = defaultGeoJsonSource
+    this.selectedLocationsLayerOptions.source = defaultGeoJsonSource
+  }
+
+  /**
+   * Sets filters on the locations layer to highlight the currently selected location.
+   */
+  setLocationsLayerFilters(): void {
+    if (this.locationId === '') {
+      this.selectedLocationsLayerOptions.filter = ['literal', false]
+    } else {
+      this.selectedLocationsLayerOptions.filter = ['==', ['get', 'locationId'], this.locationId]
+    }
   }
 
   /**
@@ -390,6 +423,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
    */
   @Watch('locationId')
   async onLocationChange(): Promise<void> {
+    this.setLocationsLayerFilters()
+
     if (this.locationId === '' || !this.currentDataSource) {
       this.closeCharts()
       return
