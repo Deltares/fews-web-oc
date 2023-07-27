@@ -33,6 +33,8 @@
           />
           <LocationsLayerSearchControl
             :showLocations.sync="showLocationsLayer"
+            :locationId.sync="selectedLocationId"
+            :locations="locations"
           />
         </div>
         <DateTimeSlider
@@ -194,6 +196,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     this.setWMSLayerOptions, 500, { leading: true, trailing: true }
   )
 
+  selectedLocationId: string | null = null
   locations: Location[] = []
   showLocationsLayer = true
   locationsLayerOptions: CircleLayer = {...defaultLocationsLayerOptions}
@@ -296,6 +299,26 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
    */
   setChartFullscreen(isFullscreen: boolean) {
     this.isFullscreenGraph = isFullscreen
+  }
+
+  /**
+   * Sets the location to navigate to, opening the appropriate chart panel.
+   *
+   * This updates the route, thus spawning the chart panel.
+   *
+   * @param locationId locationId to navigate to.
+   */
+  setLocation(locationId: string | null): void {
+    // We don't need to do anything if we are already at this locationId.
+    if (!locationId || this.locationId === locationId) return
+
+    this.$router.push({
+      name: 'MetocDataViewerWithLocation',
+      params: {
+        ...this.$route.params,
+        locationId
+      }
+    })
   }
 
   /**
@@ -431,9 +454,12 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     this.setLocationsLayerFilters()
 
     if (this.locationId === '' || !this.currentDataSource) {
+      this.selectedLocationId = null
       this.closeCharts()
       return
     }
+
+    this.selectedLocationId = this.locationId
 
     const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
       this.webServiceProvider, this.currentDataSource.filterIds, this.locationId
@@ -447,6 +473,14 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   }
 
   /**
+   * Updates the chart panel for a location selected from the locations control.
+   */
+  @Watch('selectedLocationId')
+  onSelectLocation(locationId: string | null): void {
+    this.setLocation(locationId)
+  }
+
+  /**
    * Updates the route upon clicking a location.
    *
    * This effectively rerenders this component with the locationId set.
@@ -455,18 +489,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
    */
   onLocationClick(event: MapLayerMouseEvent): void {
     if (!event.features) return
-    const locationId: string | undefined = event.features[0].properties?.locationId
+    const locationId: string | null = event.features[0].properties?.locationId ?? null
 
-    // We don't need to do anything if we are already at this locationId.
-    if (!locationId || this.locationId === locationId) return
-
-    this.$router.push({
-      name: 'MetocDataViewerWithLocation',
-      params: {
-        ...this.$route.params,
-        locationId
-      }
-    })
+    this.setLocation(locationId)
   }
 
   /**
