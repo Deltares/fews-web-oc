@@ -10,7 +10,7 @@ export const fewsconfig: Module<ConfigState, RootState> = {
   namespaced: true,
 
   state: (): ConfigState  => ({
-    version: "0.1.0",
+    version: "0.1.0-metoc",
     components: {}
   }),
 
