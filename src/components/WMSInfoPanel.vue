@@ -14,8 +14,8 @@
         :color="backgroundColor"
         class="chip"
       >
-      <span>{{ layerName }} [{{ unit }}]</span>
-      <v-icon>mdi-chevron-down</v-icon>
+        <span class="mr-2">{{ layerName }} [{{ unit }}]</span>
+        <v-icon>mdi-information-outline</v-icon>
       </v-chip>
     </template>
     <v-card class="info-panel">
