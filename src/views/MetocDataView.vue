@@ -624,6 +624,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   padding: 10px 5px;
   left: 30px;
   z-index: 1200;
+  display: flex;
+  gap: 5px;
 }
 
 .colourbar {
