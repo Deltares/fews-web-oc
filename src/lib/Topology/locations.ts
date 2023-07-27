@@ -4,9 +4,11 @@ import { FeatureCollection, Geometry } from "geojson"
 /**
  * Fetch locations for a list of filterIds as GeoJSON.
  *
- * @param provider FEWS PI Webservices provider
+ * This merges the results for all filterIds into a single GeoJSON object.
+ *
+ * @param provider FEWS PI Webservices provider.
  * @param filterIds List of filterIds for which to fetch locations as GeoJSON.
- * @returns GeoJSON result with locations for the specified filterIds.
+ * @returns GeoJSON result with locations for all specified filterIds.
  */
 export async function fetchLocationsAsGeoJson(
   provider: PiWebserviceProvider, filterIds: string[]
@@ -42,7 +44,7 @@ export function convertGeoJsonToFewsPiLocation(
 /**
  * Fetch locations for a single filterId.
  *
- * @param provider FEWS PI Webservices provider
+ * @param provider FEWS PI Webservices provider.
  * @param filterId FilterId for which to fetch locations as GeoJSON.
  * @returns GeoJSON result with locations for the specified filterId.
  */

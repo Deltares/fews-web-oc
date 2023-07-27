@@ -2,7 +2,16 @@ import { ActionsResponse, ActionRequest, PiWebserviceProvider } from "@deltares/
 import { DisplayType, DisplayConfig } from "@/lib/Layout/DisplayConfig";
 import { timeSeriesDisplayToChartConfig } from "@/lib/ChartConfig/timeSeriesDisplayToChartConfig";
 
-// TODO: Remove once this has been implemented in fews-pi-requests.
+/**
+ * Retrieves filter actions from the FEWS PI Webservice.
+ *
+ * @todo: Remove once this has been implemented in @deltares/fews-pi-requests.
+ *
+ * @param provider FEWS PI Webservices provider.
+ * @param filterId FilterId to get actions for.
+ * @param locationId LocationId to get the actions for.
+ * @returns Filter actions response for this location and these filters.
+ */
 async function getFilterActions(provider: PiWebserviceProvider, filterId: string, locationId: string): Promise<ActionsResponse> {
   // Hacky way to get the base URL from the provider.
   // TODO: will this work with authentication?
@@ -17,6 +26,16 @@ async function getFilterActions(provider: PiWebserviceProvider, filterId: string
   return data
 }
 
+/**
+ * Gathers displays and associated time series requests for filters and a location.
+ *
+ * The results for all filters are merged.
+ *
+ * @param provider FEWS PI Webservices provider.
+ * @param filterIds FilterIds to get displays and request for.
+ * @param locationId LocationId to get displays and requests for.
+ * @returns 2-tuple with the displays and associated time series requests for all filters.
+ */
 export async function fetchTimeSeriesDisplaysAndRequests(
   provider: PiWebserviceProvider, filterIds: string[], locationId: string
 ): Promise<[DisplayConfig[], ActionRequest[]]> {
@@ -32,6 +51,14 @@ export async function fetchTimeSeriesDisplaysAndRequests(
   return [displays, requests]
 }
 
+/**
+ * Gathers displays and associated time series requests for a single filter and location.
+ *
+ * @param provider FEWS PI Webservices provider.
+ * @param filterIds FilterIds to get displays and request for.
+ * @param locationId LocationId to get displays and requests for.
+ * @returns 2-tuple with the displays and associated time series requests.
+ */
 async function fetchTimeSeriesDisplaysAndRequestsForSingleFilterId(
   provider: PiWebserviceProvider, filterId: string, locationId: string
 ): Promise<[DisplayConfig[], ActionRequest[]]> {
