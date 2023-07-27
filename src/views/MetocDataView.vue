@@ -322,10 +322,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
    * Sets filters on the locations layer to highlight the currently selected location.
    */
   setLocationsLayerFilters(): void {
-    if (this.locationId === '') {
-      this.selectedLocationsLayerOptions.filter = ['literal', false]
-    } else {
+    if (this.hasSelectedLocation) {
       this.selectedLocationsLayerOptions.filter = ['==', ['get', 'locationId'], this.locationId]
+    } else {
+      this.selectedLocationsLayerOptions.filter = ['literal', false]
     }
   }
 
@@ -400,6 +400,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
    * being called after the route has been updated.
    */
   onSelectDataSource(): void {
+    // We should close the chart panel if we select a different data source.
+    this.closeCharts()
+
     const dataSourceMatches = this.dataSourceId === ''
       ? this.selectedDataSource === null
       : this.selectedDataSource?.id === this.dataSourceId
