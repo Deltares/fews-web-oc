@@ -103,17 +103,12 @@ import WMSMixin from '@/mixins/WMSMixin'
 
 import ColourBar from '@/components/ColourBar.vue';
 import DataSourceControl from '@/components/DataSourceControl.vue';
-import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
+import MapboxLayer, { MapboxLayerOptions } from '@/components/AnimatedMapboxLayer.vue';
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import MetocSidebar from '@/components/MetocSidebar.vue';
 import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
 import MapComponent from '@/components/MapComponent.vue'
 import WMSInfoPanel from '@/components/WMSInfoPanel.vue';
-
-interface MapboxLayerOptions {
-  name: string;
-  time: Date;
-}
 
 @Component({
   components: {
