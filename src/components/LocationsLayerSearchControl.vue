@@ -39,7 +39,7 @@ export default class LocationsLayerSearchControl extends Vue {
   }
 
   onSelectLocation(location: Location): void {
-    this.$emit('update:locationId', location.locationId)
+    this.$emit('update:locationId', location?.locationId ?? null)
   }
 
   @Watch('showLocations')

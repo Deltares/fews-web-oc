@@ -310,15 +310,19 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
    */
   setLocation(locationId: string | null): void {
     // We don't need to do anything if we are already at this locationId.
-    if (!locationId || this.locationId === locationId) return
+    if (this.locationId === locationId) return
 
-    this.$router.push({
-      name: 'MetocDataViewerWithLocation',
-      params: {
-        ...this.$route.params,
-        locationId
-      }
-    })
+    if (!locationId) {
+      this.closeCharts()
+    } else {
+      this.$router.push({
+        name: 'MetocDataViewerWithLocation',
+        params: {
+          ...this.$route.params,
+          locationId
+        }
+      })
+    }
   }
 
   /**
