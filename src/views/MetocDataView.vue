@@ -109,6 +109,7 @@ import MetocSidebar from '@/components/MetocSidebar.vue';
 import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
 import MapComponent from '@/components/MapComponent.vue'
 import WMSInfoPanel from '@/components/WMSInfoPanel.vue';
+import { Route } from 'vue-router';
 
 interface MapboxLayerOptions {
   name: string;
@@ -184,17 +185,39 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     const transformRequestFn = this.getTransformRequest()
     this.webServiceProvider = new PiWebserviceProvider(baseUrl, {transformRequestFn})
 
+    // Fetch category hierarchy from topology.
+    this.categories = await fetchCategories(this.webServiceProvider)
+
+    // Check whether we need to set the default route (i.e. if categoryId and/or dataLayerId are
+    // missing).
+    if (this.categoryId === '' || this.dataLayerId === '') this.setDefaultRoute()
+
     // Perform WMS getCapabilities request to obtain WMS layer metadata (e.g. titles).
     await this.getCapabilities()
 
-    // Fetch categories and update WMS layer for the default selection.
-    this.categories = await fetchCategories(this.webServiceProvider)
+    // Perform the necessary updates for the currently selected category, data layer and
+    // potentially data source.
     await this.onDataSourceChange()
     await this.onLocationChange()
 
     // Force resize to fix strange starting position of the map, caused by
     // the expandable navigation drawer.
     window.dispatchEvent(new Event('resize'))
+  }
+
+  setDefaultRoute(): void {
+    // Remove the locationId from the parameters.
+    const defaultCategory = this.categories[0]
+    const defaultDataLayer = defaultCategory.dataLayers[0]
+    const defaultDataSource = defaultDataLayer.dataSources[0]
+    this.$router.push({
+      name: 'MetocDataViewer',
+      params: {
+        categoryId: defaultCategory.id,
+        dataLayerId: defaultDataLayer.id,
+        dataSourceId: defaultDataSource.id
+      }
+    })
   }
 
   setWMSLayerOptions(): void {
@@ -369,24 +392,18 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 
   get currentCategory(): Category | null {
     if (this.categories.length === 0) return null
-
-    const defaultCategory = this.categories[0]
-    if (!this.categoryId) return defaultCategory
-    return this.categories.find(category => category.id === this.categoryId) ?? defaultCategory
+    return this.categories.find(category => category.id === this.categoryId) ?? null
   }
 
   get currentDataLayer(): DataLayer | null {
     if (!this.currentCategory) return null
 
-    const defaultDataLayer = this.currentCategory.dataLayers[0]
-    if (!this.dataLayerId) return defaultDataLayer
-    return this.currentCategory.dataLayers.find(dataLayer => dataLayer.id === this.dataLayerId) ?? defaultDataLayer
+    return this.currentCategory.dataLayers.find(dataLayer => dataLayer.id === this.dataLayerId) ?? null
   }
 
   get currentDataSource(): DataSource | null {
     if (!this.currentDataLayer || !this.dataSourceId) return null
-    const defaultDataSource = this.currentDataLayer.dataSources[0]
-    return this.currentDataLayer.dataSources.find(dataSource => dataSource.id === this.dataSourceId) ?? defaultDataSource
+    return this.currentDataLayer.dataSources.find(dataSource => dataSource.id === this.dataSourceId) ?? null
   }
 
   get dataSources(): DataSource[] {
