@@ -77,9 +77,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
+import { FeatureCollection, Geometry } from 'geojson';
 import { debounce } from 'lodash';
-import type { MapLayerMouseEvent, CircleLayer, GeoJSONSourceRaw } from 'mapbox-gl'
+import type { MapLayerMouseEvent, CircleLayer, GeoJSONSourceRaw, CirclePaint, Expression } from 'mapbox-gl'
+import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 
 import type { Location } from "@deltares/fews-pi-requests";
 import { PiWebserviceProvider} from "@deltares/fews-pi-requests";
@@ -111,23 +112,26 @@ import MapComponent from '@/components/MapComponent.vue'
 import WMSInfoPanel from '@/components/WMSInfoPanel.vue';
 
 const defaultGeoJsonSource: GeoJSONSourceRaw = {
-    'type': 'geojson',
-    'data': {
-      'type': 'FeatureCollection',
-      'features': []
+  type: 'geojson',
+  data: {
+    type: 'FeatureCollection',
+    features: []
   }
 }
 const defaultLocationsLayerOptions: CircleLayer = {
-  'id': 'locationsLayer',
-  'type': 'circle',
-  'source': defaultGeoJsonSource,
-  'layout': {
-    'visibility': 'visible'
+  id: 'locationsLayer',
+  type: 'circle',
+  source: defaultGeoJsonSource,
+  layout: {
+    visibility: 'visible'
   },
-  'paint': {
-    'circle-radius': 6,
-    'circle-color': '#B42222'
-  }
+  paint: {
+    'circle-radius': 5,
+    'circle-color': '#1976d2',
+    'circle-stroke-color': 'black',
+    'circle-stroke-width': 1
+  },
+  filter: ['literal', true]
 }
 
 @Component({
@@ -171,7 +175,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 
   locations: Location[] = []
   showLocationsLayer = true
-  locationsLayerOptions: CircleLayer = defaultLocationsLayerOptions
+  locationsLayerOptions: CircleLayer = {...defaultLocationsLayerOptions}
 
   async mounted() {
     // Create FEWS PI Webservices provider.
@@ -273,6 +277,26 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   }
 
   /**
+   * Updates the locations layers with new GeoJSON data.
+   *
+   * @param geojson GeoJSON object to set for the locations layers.
+   */
+  setLocationsLayerData(geojson: FeatureCollection<Geometry, Location>): void {
+    const source = {
+      ...defaultGeoJsonSource,
+      'data': geojson
+    }
+    this.locationsLayerOptions.source = source
+  }
+
+  /**
+   * Clears data from the locations layers.
+   */
+  clearLocationsLayerData(): void {
+    this.locationsLayerOptions.source = defaultGeoJsonSource
+  }
+
+  /**
    * Closes the chart panel.
    *
    * This updates the route to remove the locationId from it, effectively rerendering the component
@@ -307,7 +331,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
       this.legend = []
       this.unit = ''
       this.locations = []
-      this.locationsLayerOptions.source = defaultGeoJsonSource
+      this.clearLocationsLayerData()
       this.setWMSLayerOptions()
       return
     }
@@ -331,10 +355,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     const geojson = await fetchLocationsAsGeoJson(
       this.webServiceProvider, this.currentDataSource.filterIds
     )
-    this.locationsLayerOptions.source = {
-      'type': 'geojson',
-      'data': geojson
-    }
+    this.setLocationsLayerData(geojson)
     this.locations = convertGeoJsonToFewsPiLocation(geojson)
 
     // Make sure that the data source selection control matches the URL.
@@ -441,13 +462,17 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     return layer?.title ?? '—'
   }
 
-  get showMap() {
+  get showMap(): boolean {
     const isMobileGraphOpen = this.hasSelectedLocation && this.$vuetify.breakpoint.mobile
     return !isMobileGraphOpen && !this.isFullscreenGraph
   }
 
-  get hasSelectedLocation() {
+  get hasSelectedLocation(): boolean {
     return this.locationId !== ''
+  }
+
+  get selectedLocationFilter(): Expression {
+    return ['==', 1, 0]
   }
 }
 
