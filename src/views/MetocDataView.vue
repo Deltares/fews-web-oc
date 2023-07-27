@@ -162,22 +162,16 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   legend: ColourMap = []
   unit: string = ""
 
-  dateController!: DateController
+  dateController: DateController = new DateController([])
   currentTime: Date = new Date()
   times: Date[] = []
-  debouncedSetWMSLayerOptions!: () => void
+  debouncedSetWMSLayerOptions = debounce(
+    this.setWMSLayerOptions, 500, { leading: true, trailing: true }
+  )
 
   locations: Location[] = []
   showLocationsLayer = true
   locationsLayerOptions: CircleLayer = defaultLocationsLayerOptions
-
-  created(): void {
-    this.dateController = new DateController([])
-    this.debouncedSetWMSLayerOptions = debounce(this.setWMSLayerOptions, 500, {
-      leading: true,
-      trailing: true
-    })
-  }
 
   async mounted() {
     // Create FEWS PI Webservices provider.
