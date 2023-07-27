@@ -56,6 +56,7 @@ export default class MetocSidebar extends Mixins(PiRequestsMixin) {
         children: dataLayerItems
       }
     })
+    this.openNodes = [this.$route.params.categoryId]
   }
 }
 </script>
