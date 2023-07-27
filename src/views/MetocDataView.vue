@@ -31,7 +31,9 @@
             :externalForecastTime="externalForecast"
             :unit="unit"
           />
-          <LocationsLayerControl v-model="showLocationsLayer"/>
+          <LocationsLayerSearchControl
+            :showLocations.sync="showLocationsLayer"
+          />
         </div>
         <DateTimeSlider
           class="date-time-slider"
@@ -111,7 +113,7 @@ import DataSourceControl from '@/components/DataSourceControl.vue';
 import MapboxLayer, { MapboxLayerOptions } from '@/components/AnimatedMapboxLayer.vue';
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import MetocSidebar from '@/components/MetocSidebar.vue';
-import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
+import LocationsLayerSearchControl from '@/components/LocationsLayerSearchControl.vue'
 import MapComponent from '@/components/MapComponent.vue'
 import WMSInfoPanel from '@/components/WMSInfoPanel.vue';
 
@@ -158,7 +160,7 @@ const selectedLocationsLayerOptions: CircleLayer = {
     ColourBar,
     DataSourceControl,
     DateTimeSlider,
-    LocationsLayerControl,
+    LocationsLayerSearchControl,
     MapboxLayer,
     MapComponent,
     MetocSidebar,
