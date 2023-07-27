@@ -97,6 +97,7 @@ function parseDataLayer(categoryNode: TopologyNode): DataLayer {
  */
 function isValidDataSource(node: TopologyNode): boolean {
   // TODO: remove cast once fews-pi-requests has been updated with the new response type.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data = node as any
   return data.filterIds && data.gridDisplaySelection?.plotId
 }
@@ -111,6 +112,7 @@ function isValidDataSource(node: TopologyNode): boolean {
  */
 function parseDataSource(dataLayerNode: TopologyNode): DataSource {
   // TODO: remove cast once fews-pi-requests has been updated with the new response type.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data = dataLayerNode as any
   return {
     id: data.id,
