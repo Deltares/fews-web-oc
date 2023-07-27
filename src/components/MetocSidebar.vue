@@ -1,6 +1,7 @@
 <template>
   <div>
     <TreeMenu
+      ref="tree"
       :active.sync="activeNodes"
       :items="nodes"
       :open.sync="openNodes"
@@ -9,7 +10,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 
 import type { Category } from '@/lib/Topology'
 import type { ColumnItem } from '@/components/ColumnItem';
@@ -24,11 +25,17 @@ import PiRequestsMixin from '@/mixins/PiRequestsMixin';
 export default class MetocSidebar extends Mixins(PiRequestsMixin) {
   @Prop({ default: () => [] }) categories!: Category[]
 
+  nodes: ColumnItem[] = []
   activeNodes: string[] = []
   openNodes: string[] = []
 
-  get nodes(): ColumnItem[] {
-    return this.categories.map(category => {
+  mounted() {
+    this.fillNodes()
+  }
+
+  @Watch('categories')
+  fillNodes(): void {
+    this.nodes = this.categories.map(category => {
       const dataLayerItems = category.dataLayers.map(dataLayer => {
         return {
           id: dataLayer.id,
