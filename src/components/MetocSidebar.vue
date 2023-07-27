@@ -24,8 +24,6 @@ import PiRequestsMixin from '@/mixins/PiRequestsMixin';
 export default class MetocSidebar extends Mixins(PiRequestsMixin) {
   @Prop({ default: () => [] }) categories!: Category[]
 
-  baseUrl: string = ''
-
   activeNodes: string[] = []
   openNodes: string[] = []
 
