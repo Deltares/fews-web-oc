@@ -14,7 +14,7 @@
         :color="backgroundColor"
         class="chip"
       >
-        <span class="mr-2">{{ layerName }} [{{ unit }}]</span>
+        <span class="mr-2">{{ layerName }} {{ unitLabel }}</span>
         <v-icon>mdi-information-outline</v-icon>
       </v-chip>
     </template>
@@ -47,6 +47,10 @@ export default class WMSInfoPanel extends Vue {
 
   get backgroundColor(): string {
     return this.$vuetify.theme.dark ? 'rgba(0,0,0,.5)' : 'rgba(255,255,255,.5)'
+  }
+
+  get unitLabel(): string {
+    return this.unit !== '' ? `[${this.unit}]` : ''
   }
 }
 </script>

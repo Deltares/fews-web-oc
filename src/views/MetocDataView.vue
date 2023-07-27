@@ -291,6 +291,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
       this.times = []
       this.externalForecast = new Date('invalid')
       this.legend = []
+      this.unit = ''
       this.locations = []
       this.locationsLayerOptions.source = defaultGeoJsonSource
       this.setWMSLayerOptions()
