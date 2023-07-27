@@ -57,6 +57,7 @@ export default class MetocSidebar extends Mixins(PiRequestsMixin) {
       }
     })
     this.openNodes = [this.$route.params.categoryId]
+    this.activeNodes = [this.$route.params.dataLayerId]
   }
 }
 </script>
