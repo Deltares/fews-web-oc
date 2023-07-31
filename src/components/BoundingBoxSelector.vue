@@ -80,7 +80,7 @@ export default class BoundingBoxSelector extends Vue {
                 this.draw.changeMode("draw_rectangle")
             })
         }
-        this.mapObject.addControl(new DownloadControl())
+        this.mapObject.addControl(new DownloadControl(this.bbox))
     }
 
     mounted() {
