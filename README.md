@@ -51,3 +51,5 @@ The following settings can be provided:
 For general documentation about the Web OC, please see: 
 
 [Documentation](docs/)
+
+Pipeline trigger test.
