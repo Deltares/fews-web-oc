@@ -38,6 +38,7 @@ import debounce from 'lodash/debounce'
 import WMSMixin from '@/mixins/WMSMixin'
 import MapComponent from '@/components/MapComponent.vue'
 import MapboxLayer from '@/components/AnimatedMapboxLayer.vue'
+import { MapboxLayerOptions } from '@/components/AnimatedMapboxLayer.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
@@ -47,10 +48,15 @@ import { ColourMap } from '@deltares/fews-web-oc-charts'
 import ColourBar from '@/components/ColourBar.vue'
 import { Layer } from '@deltares/fews-wms-requests'
 import {LayerGroup} from "@deltares/fews-wms-requests/src/response/getCapabilitiesResponse";
+import { toWgs84 } from '@turf/projection';
+import { point } from '@turf/helpers';
 
-interface MapboxLayerOptions {
-  name: string;
-  time: Date;
+interface BoundingBox {
+  crs: string;
+  minx: string;
+  miny: string;
+  maxx: string;
+  maxy: string;
 }
 
 @Component({
@@ -78,6 +84,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   layerOptions: MapboxLayerOptions | null = null
   legend: ColourMap = []
   unit: string = ""
+  layersBbox: {[key: string]: number[]} = {}
 
   created (): void {
     this.dateController = new DateController([])
@@ -127,7 +134,29 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
         }
       }
       groupNode?.children?.push(item)
+      if (layer.boundingBox) {
+        this.layersBbox[layer.name] = this.convertBoundingBoxToLatLngArray(layer.boundingBox)
+      }
     }
+  }
+
+  private convertBoundingBoxToLatLngArray(boundingBox: BoundingBox): [number, number, number, number] {
+    const crs = boundingBox.crs
+
+    const minx = parseFloat(boundingBox.minx)
+    const miny = parseFloat(boundingBox.miny)
+    const maxx = parseFloat(boundingBox.maxx)
+    const maxy = parseFloat(boundingBox.maxy)
+
+    const p1 = toWgs84(point([minx, miny], { crs: crs }))
+    const p2 = toWgs84(point([maxx, maxy], { crs: crs }))
+
+    return [
+      p1.geometry.coordinates[0],
+      p1.geometry.coordinates[1],
+      p2.geometry.coordinates[0],
+      p2.geometry.coordinates[1]
+    ]
   }
 
   private buildMenuFromGroups(groups: LayerGroup[], groupNodes: Map<string, ColumnItem>, rootNode: ColumnItem) {
@@ -195,7 +224,8 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   }
 
   setLayerOptions (): void {
-    if (this.layerName) { this.layerOptions = { name: this.layerName, time: this.currentTime } }
+    if (this.layerName) { 
+      this.layerOptions = { name: this.layerName, time: this.currentTime, bbox: this.layersBbox[this.layerName] } }
   }
 }
 </script>
