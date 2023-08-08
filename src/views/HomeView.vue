@@ -36,7 +36,7 @@
         >
           Web Service
         </v-col>
-        <v-col cols="6">
+        <v-col v-if="webServiceVersion !== null" cols="6">
           {{ webServiceVersion.implementation }} #{{webServiceVersion.buildNumber}} {{ webServiceVersion.buildType  === 'development' ? 'development' : ''  }}
         </v-col>
       </v-row>
