@@ -8,7 +8,6 @@ import { ImageSource, ImageSourceRaw, LngLatBounds, Map, RasterLayer } from 'map
 import { point } from "@turf/helpers"
 import { toMercator } from "@turf/projection"
 
-
 function getFrameId (layerName: string, frame: number): string {
   return `${layerName}-${frame}`
 }
@@ -22,9 +21,21 @@ function getCoordsFromBounds(bounds: LngLatBounds) {
   ]
 }
 
-interface MapboxLayerOptions {
+function isBoundsWithinBounds(innerBounds: LngLatBounds, outerBounds: LngLatBounds) {
+  const innerNorthEast = innerBounds.getNorthEast();
+  const innerSouthWest = innerBounds.getSouthWest();
+  const outerNorthEast = outerBounds.getNorthEast();
+  const outerSouthWest = outerBounds.getSouthWest();
+
+  const isLngWithin = innerSouthWest.lng >= outerSouthWest.lng && innerNorthEast.lng <= outerNorthEast.lng;
+  const isLatWithin = innerSouthWest.lat >= outerSouthWest.lat && innerNorthEast.lat <= outerNorthEast.lat;
+  return isLngWithin && isLatWithin;
+}
+
+export interface MapboxLayerOptions {
   name: string;
   time: Date;
+  bbox:number[];
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
@@ -77,7 +88,7 @@ export default class AnimatedMapboxLayer extends Vue {
   }
 
   updateSource() {
-    if (this.layer === null) return
+    if (this.layer === null || this.newLayerId ) return
     const time = this.layer.time.toISOString()
     const source = this.mapObject.getSource(this.newLayerId) as ImageSource
     const bounds = this.mapObject.getBounds()
@@ -89,8 +100,26 @@ export default class AnimatedMapboxLayer extends Vue {
     })
   }
 
+  setDefaultZoom() {
+    if (this.layer === null || this.layer.bbox === undefined) return
+    if (this.mapObject && this.layer.bbox.length === 4) {
+      const bbox = this.layer.bbox
+      const currentBounds = this.mapObject.getBounds()
+      const bounds = new LngLatBounds(
+        [bbox[0], bbox[1]], // sw
+        [bbox[2], bbox[3]], // ne
+      )
+      if (isBoundsWithinBounds(currentBounds, bounds)) {
+          return
+        } else {
+          this.mapObject.fitBounds(bounds)
+        }
+      }
+  }
+
   @Watch('layer')
   onLayerChange (): void {
+    this.setDefaultZoom()
     if (!this.isInitialized) return
     if (this.layer === null) {
       this.removeLayer();
