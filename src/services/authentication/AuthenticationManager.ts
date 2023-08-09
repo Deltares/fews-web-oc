@@ -24,7 +24,7 @@ export class AuthenticationManager {
 
   public getAuthorizationHeaders(): HeadersInit {
     if (!configManager.authenticationIsEnabled) return {}
-    switch (configManager.get('VUE_APP_REQUEST_HEADER_AUTHORIZATION')){
+    switch (configManager.get('VITE_APP_REQUEST_HEADER_AUTHORIZATION')){
       case (RequestHeaderAuthorization.BEARER): {
         const token = this.getAccessToken()
         const requestAuthHeaders = {'Authorization': `Bearer ${token}`}

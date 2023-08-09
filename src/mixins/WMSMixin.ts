@@ -8,7 +8,7 @@ export default class WMSMixin extends Vue {
   layers: Layer[] = []
 
   created (): void {
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const baseUrl = this.$config.get('VITE_APP_FEWS_WEBSERVICES_URL')
     let url!: URL
     try {
       url = new URL(baseUrl)

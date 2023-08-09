@@ -256,7 +256,7 @@ import type {
   ParametersFilter,
 } from "@deltares/fews-pi-requests";
 import { DocumentFormat } from "@deltares/fews-pi-requests";
-import {FeatureCollection, Geometry} from "geojson";
+import type {FeatureCollection, Geometry} from "geojson";
 
 @Component
 export default class ArchiveDisplaySelectionComponent extends Vue {
@@ -290,7 +290,7 @@ export default class ArchiveDisplaySelectionComponent extends Vue {
 
 
   created(): void {
-    this.baseUrl = this.$config.get('VUE_APP_FEWS_ARCHIVE_WEBSERVICES_URL')
+    this.baseUrl = this.$config.get('VITE_APP_FEWS_ARCHIVE_WEBSERVICES_URL')
   }
 
   @Watch('selectedLocations')

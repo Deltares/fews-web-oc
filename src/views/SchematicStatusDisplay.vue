@@ -126,7 +126,7 @@ export default class SsdView extends Mixins(SSDMixin) {
   dockMode = 'right'
 
   async created (): Promise<void> {
-    this.webServicesUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    this.webServicesUrl = this.$config.get('VITE_APP_FEWS_WEBSERVICES_URL')
     this.debouncedUpdate = debounce(this.setTime, 500, { leading: true, trailing: true })
     this.autoRefreshFunction = setInterval(() => {this.updatePanel()}, this.autoRefreshInterval)
   }

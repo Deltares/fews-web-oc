@@ -22,18 +22,18 @@ steps:
     targetType: 'inline'
     script: |
       touch .env
-      echo 'VUE_APP_PUBLIC_PATH="/"' >> .env
+      echo 'VITE_APP_PUBLIC_PATH="/"' >> .env
       
       rm public/app-config.json      
       cat > public/app-config.json <<EOL
       {
-      "VUE_APP_FEWS_WEBSERVICES_URL": "$(VUE_APP_FEWS_WEBSERVICES_URL)",
-      "VUE_APP_MAPBOX_TOKEN": "$(VUE_APP_MAPBOX_TOKEN)",
-      "VUE_APP_REQUEST_HEADER_AUTHORIZATION": "Off",
-      "VUE_APP_AUTH_AUTHORITY": "$(VUE_APP_AUTH_AUTHORITY)",
-      "VUE_APP_AUTH_ID": "$(VUE_APP_AUTH_ID)",
-      "VUE_APP_AUTH_METADATA_URL": "https://login.microsoftonline.com/$(AZURE_TENANT_ID)/v2.0/.well-known/openid-configuration",
-      "VUE_APP_AUTH_SCOPE": "openid profile email Offline_Access api://$(AZURE_CLIENT_ID)/Delft-FEWSWebServices"            
+      "VITE_APP_FEWS_WEBSERVICES_URL": "$(VITE_APP_FEWS_WEBSERVICES_URL)",
+      "VITE_APP_MAPBOX_TOKEN": "$(VITE_APP_MAPBOX_TOKEN)",
+      "VITE_APP_REQUEST_HEADER_AUTHORIZATION": "Off",
+      "VITE_APP_AUTH_AUTHORITY": "$(VITE_APP_AUTH_AUTHORITY)",
+      "VITE_APP_AUTH_ID": "$(VITE_APP_AUTH_ID)",
+      "VITE_APP_AUTH_METADATA_URL": "https://login.microsoftonline.com/$(AZURE_TENANT_ID)/v2.0/.well-known/openid-configuration",
+      "VITE_APP_AUTH_SCOPE": "openid profile email Offline_Access api://$(AZURE_CLIENT_ID)/Delft-FEWSWebServices"            
       }
 
 - script: |

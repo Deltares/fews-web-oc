@@ -34,7 +34,7 @@ export default class ThemeMixin extends Vue {
     // Update wb-charts stylesheet such that charts also change to the selected theme.
     const css = document.getElementById('theme_css') as HTMLLinkElement
     if (css) {
-      css.href = isDark ? `${process.env.BASE_URL}wb-charts-dark.css` : `${process.env.BASE_URL}wb-charts-light.css`
+      css.href = isDark ? `${import.meta.env.BASE_URL}wb-charts-dark.css` : `${import.meta.env.BASE_URL}wb-charts-light.css`
     }
   }
 }

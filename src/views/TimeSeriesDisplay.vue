@@ -132,7 +132,7 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
   webServiceProvider: PiWebserviceProvider = {} as PiWebserviceProvider;
 
   created(): void {
-    this.baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    this.baseUrl = this.$config.get('VITE_APP_FEWS_WEBSERVICES_URL')
   }
 
   async mounted(): Promise<void> {

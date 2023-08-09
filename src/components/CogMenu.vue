@@ -14,14 +14,14 @@
           </v-list-item-action>
         </v-list-item-action>
       </v-list-item>
-      <v-subheader>Language</v-subheader>
+      <!-- <v-subheader>Language</v-subheader>
       <v-list-item>
         <v-list-item-action>
           <v-list-item-action>
             <locale-control/>
           </v-list-item-action>
         </v-list-item-action>
-      </v-list-item>
+      </v-list-item> -->
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>Version {{ packageVersion }}</v-list-item-title>
@@ -35,13 +35,13 @@
 import { Component, Mixins } from 'vue-property-decorator'
 import ThemeMixin from '@/mixins/ThemeMixin'
 import ThemeSelector from '@/components/ThemeSelector.vue'
-import LocaleControl from './LocaleControl.vue'
+// import LocaleControl from './LocaleControl.vue'
 import packageConfig from '../../package.json'
 
 @Component({
   components: {
     ThemeSelector,
-    LocaleControl
+    // LocaleControl
   }
 })
 export default class CogMenu extends Mixins(ThemeMixin) {

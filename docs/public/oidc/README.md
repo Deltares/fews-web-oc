@@ -38,14 +38,14 @@ In the app-config.json file of the Delft-FEWS Web OC, the following OIDC propert
 
 ``` json
 {
-  "VUE_APP_AUTH_AUTHORITY": "https://login.microsoftonline.com/MYTENANTID/",
-  "VUE_APP_AUTH_METADATA_URL": "https://login.microsoftonline.com/MYTENANTID/v2.0/.well-known/openid-configuration"
-  "VUE_APP_AUTH_ID": "MY-CLIENT_ID",
-  "VUE_APP_AUTH_SCOPE": "openid email <scopeURL>",
-  "VUE_APP_REQUEST_HEADER_AUTHORIZATION": "Bearer"
+  "VITE_APP_AUTH_AUTHORITY": "https://login.microsoftonline.com/MYTENANTID/",
+  "VITE_APP_AUTH_METADATA_URL": "https://login.microsoftonline.com/MYTENANTID/v2.0/.well-known/openid-configuration"
+  "VITE_APP_AUTH_ID": "MY-CLIENT_ID",
+  "VITE_APP_AUTH_SCOPE": "openid email <scopeURL>",
+  "VITE_APP_REQUEST_HEADER_AUTHORIZATION": "Bearer"
 }
 
 ```
 
-VUE_APP_AUTH_ID has to be the Application (client) id of the Delft-FEWS Web OC Test app registration.
-For the VUE_APP_AUTH_SCOPE, the value should be: "openid profile email Offline_Access api://myclientid/Delft-FEWSWebServices"
+VITE_APP_AUTH_ID has to be the Application (client) id of the Delft-FEWS Web OC Test app registration.
+For the VITE_APP_AUTH_SCOPE, the value should be: "openid profile email Offline_Access api://myclientid/Delft-FEWSWebServices"

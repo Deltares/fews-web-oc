@@ -4,7 +4,7 @@ import { PiWebserviceProvider } from "@deltares/fews-pi-requests";
 import { authenticationManager } from '@/services/authentication/AuthenticationManager';
 
 export async function getFewsConfig(): Promise<WebOcComponent[]> {
-  const baseUrl = configManager.get('VUE_APP_FEWS_WEBSERVICES_URL')
+  const baseUrl = configManager.get('VITE_APP_FEWS_WEBSERVICES_URL')
   const transformRequestFn = (request: Request) => Promise.resolve(authenticationManager.transformRequestAuth(request))
   const webServiceProvider = new PiWebserviceProvider(baseUrl, { transformRequestFn })
   const fewsConfig = await webServiceProvider.getWebOcConfiguration()

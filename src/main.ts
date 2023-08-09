@@ -4,8 +4,8 @@ import App from './App.vue'
 import store from './store'
 import vuetify from './plugins/vuetify'
 import router from './router'
-import i18n from './i18n'
-import './plugins/vue2mapbox-gl'
+// import i18n from './i18n'
+// import './plugins/vue2mapbox-gl'
 import auth from '@/services/authentication'
 import config, { configManager } from '@/services/application-config'
 import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
@@ -19,18 +19,21 @@ Vue.use(PortalVue)
 
 Vue.config.productionTip = false
 
-fetch(`${process.env.BASE_URL}app-config.json`)
+
+fetch(`${import.meta.env.BASE_URL}app-config.json`)
   .then(res => res.json())
   .then(data => {
     Vue.use(config, data)
     if (configManager.authenticationIsEnabled) {
       Vue.use(auth, configManager.getUserManagerSettings())
     }
-    new Vue({
+    const app = new Vue({
       store,
       vuetify,
       router,
-      i18n,
+      // i18n,
       render: h => h(App)
-    }).$mount('#app')
+    })
+    // Vue.use(i18n); // you must install `i18n` instance which is created by `createI18n`
+    app.$mount('#app')
   })

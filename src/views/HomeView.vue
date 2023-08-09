@@ -75,7 +75,7 @@ export default class HomeView extends Vue {
 
   async mounted(): Promise<void> {
     this.loadConfig()
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const baseUrl = this.$config.get('VITE_APP_FEWS_WEBSERVICES_URL')
     const webServiceProvider = new PiWebserviceProvider(baseUrl)
     this.webServiceVersion = await (await webServiceProvider.getVersion()).version
     this.webServiceUrl = `${baseUrl}${webServiceProvider.API_ENDPOINT}`

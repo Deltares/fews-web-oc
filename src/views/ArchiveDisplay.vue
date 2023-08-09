@@ -6,7 +6,7 @@
           <ArchiveDisplaySelectionComponent :selected-locations.sync="selectedLocations"></ArchiveDisplaySelectionComponent>
         </pane>
         <pane>
-          <v-mapbox
+          <!-- <v-mapbox
             :access-token="accessToken"
             map-style='https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
             :pitch="0"
@@ -21,7 +21,7 @@
           >
             <v-mapbox-layer :options="locationsLayer" @click="selectLocation" clickable></v-mapbox-layer>
             <v-mapbox-layer :options="selectedLocationsLayer"></v-mapbox-layer>
-          </v-mapbox>
+          </v-mapbox> -->
         </pane>
       </splitpanes>
     </pane>
@@ -39,7 +39,7 @@ import {Pane, Splitpanes} from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import {DocumentFormat, PiArchiveWebserviceProvider} from "@deltares/fews-pi-requests";
 import type {ArchiveLocationsFilter, ArchiveLocation } from "@deltares/fews-pi-requests";
-import {FeatureCollection, Geometry} from "geojson";
+import type {FeatureCollection, Geometry} from "geojson";
 
 @Component({
   components: {
@@ -55,7 +55,7 @@ export default class ArchiveDisplay extends Vue {
   archiveWebServiceProvider!: PiArchiveWebserviceProvider;
   baseUrl!: string;
   locations: ArchiveLocation[] = [];
-  accessToken = this.$config.get('VUE_APP_MAPBOX_TOKEN');
+  accessToken = this.$config.get('VITE_APP_MAPBOX_TOKEN');
   locationsLayer = {
     id: 'locationsLayer',
     type: 'circle',
@@ -90,7 +90,7 @@ export default class ArchiveDisplay extends Vue {
 
 
   created(): void {
-    this.baseUrl = this.$config.get('VUE_APP_FEWS_ARCHIVE_WEBSERVICES_URL')
+    this.baseUrl = this.$config.get('VITE_APP_FEWS_ARCHIVE_WEBSERVICES_URL')
   }
 
   async mounted(): Promise<void> {

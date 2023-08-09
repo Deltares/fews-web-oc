@@ -71,7 +71,7 @@ export default class SSDTimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
   action: any = ''
 
   async mounted(): Promise<void> {
-    this.ssdServiceProvider = new SsdWebserviceProvider(absoluteUrl(this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')).toString())
+    this.ssdServiceProvider = new SsdWebserviceProvider(absoluteUrl(this.$config.get('VITE_APP_FEWS_WEBSERVICES_URL')).toString())
     this.onObjectIdChange()
   }
 

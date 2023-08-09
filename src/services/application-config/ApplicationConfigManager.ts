@@ -8,14 +8,14 @@ export class ApplicationConfigManager {
 
   update (config: Partial<ApplicationConfig>) {
     this._config = { ...this._config, ...config}
-    this._authenticationIsEnabled = Object.keys(this._config).includes('VUE_APP_AUTH_AUTHORITY') || !!process.env['VUE_APP_AUTH_AUTHORITY']
+    this._authenticationIsEnabled = Object.keys(this._config).includes('VITE_APP_AUTH_AUTHORITY') || !!import.meta.env.VITE_APP_AUTH_AUTHORITY
   }
 
   get <T extends keyof ApplicationConfig>(name: T): ApplicationConfig[T] {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const configValue = this._config[name]
     if (configValue !== undefined ) return configValue
-    const envValue = process.env[name]
+    const envValue = import.meta.env[name]
     if (envValue !== undefined) {
       return envValue
     }
@@ -29,10 +29,10 @@ export class ApplicationConfigManager {
   getUserManagerSettings(): UserManagerSettings {
     return {
       ...oidcSettings, ...{
-        authority: this.get('VUE_APP_AUTH_AUTHORITY'),
-        client_id: this.get('VUE_APP_AUTH_ID'),
-        scope: this.get('VUE_APP_AUTH_SCOPE'),
-        metadataUrl: this.get('VUE_APP_AUTH_METADATA_URL'),
+        authority: this.get('VITE_APP_AUTH_AUTHORITY'),
+        client_id: this.get('VITE_APP_AUTH_ID'),
+        scope: this.get('VITE_APP_AUTH_SCOPE'),
+        metadataUrl: this.get('VITE_APP_AUTH_METADATA_URL'),
       }
     }
   }

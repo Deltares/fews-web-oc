@@ -82,7 +82,7 @@ export default class AnimatedMapboxLayer extends Vue {
     const source = this.mapObject.getSource(this.newLayerId) as ImageSource
     const bounds = this.mapObject.getBounds()
     const canvas = this.mapObject.getCanvas()
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const baseUrl = this.$config.get('VITE_APP_FEWS_WEBSERVICES_URL')
     source.updateImage({
       url: `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${this.layer.name}&crs=EPSG:3857&bbox=${getMercatorBboxFromBounds(bounds)}&height=${canvas.height}&width=${canvas.width}&time=${time}`,
       coordinates: getCoordsFromBounds(bounds)
@@ -110,7 +110,7 @@ export default class AnimatedMapboxLayer extends Vue {
     this.counter += 1
     this.newLayerId = getFrameId(this.layer.name, this.counter)
     const source = this.mapObject.getSource(this.newLayerId)
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const baseUrl = this.$config.get('VITE_APP_FEWS_WEBSERVICES_URL')
     if (source === undefined) {
       const bounds = this.mapObject.getBounds()
       const canvas = this.mapObject.getCanvas()

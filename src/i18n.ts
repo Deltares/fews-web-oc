@@ -1,25 +1,21 @@
 import Vue from 'vue'
-import VueI18n, { LocaleMessages } from 'vue-i18n'
+import { createI18n, castToVueI18n } from 'vue-i18n-bridge';
+import VueI18n from 'vue-i18n';
 import { dateTimeFormats } from './locales/dateTimeFormats'
+import messages from '@intlify/unplugin-vue-i18n/messages'
 
-Vue.use(VueI18n)
+Vue.use(VueI18n, { bridge: true })
 
-function loadLocaleMessages (): LocaleMessages {
-  const locales = require.context('./locales', true, /[A-Za-z0-9-_,\s]+\.json$/i)
-  const messages: LocaleMessages = {}
-  locales.keys().forEach(key => {
-    const matched = key.match(/([A-Za-z0-9-_]+)\./i)
-    if (matched && matched.length > 1) {
-      const locale = matched[1]
-      messages[locale] = locales(key)
-    }
-  })
-  return messages
-}
+const i18n = castToVueI18n(
+  createI18n({
+    legacy: false,
+    locale: import.meta.env.VITE_APP_I18N_LOCALE || 'nl',
+    fallbackLocale: import.meta.env.VITE_APP_I18N_FALLBACK_LOCALE || 'nl',
+    messages,
+    dateTimeFormats
+  },
+  VueI18n,
+  )
+)
 
-export default new VueI18n({
-  locale: process.env.VUE_APP_I18N_LOCALE || 'nl',
-  fallbackLocale: process.env.VUE_APP_I18N_FALLBACK_LOCALE || 'nl',
-  messages: loadLocaleMessages(),
-  dateTimeFormats
-})
+export default i18n

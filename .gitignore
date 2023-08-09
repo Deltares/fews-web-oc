@@ -2,7 +2,9 @@
 node_modules
 /dist
 /coverage
-/report
+/reports
+# vue2 to vue3 migration temporary files
+components.d.ts
 
 # local env files
 .env

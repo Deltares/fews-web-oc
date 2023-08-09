@@ -22,13 +22,13 @@ steps:
     targetType: 'inline'
     script: |
       touch .env
-      echo 'VUE_APP_PUBLIC_PATH="/"' >> .env
+      echo 'VITE_APP_PUBLIC_PATH="/"' >> .env
       
       rm public/app-config.json      
       cat > public/app-config.json <<EOL
       {
-      "VUE_APP_FEWS_WEBSERVICES_URL": "$(VUE_APP_FEWS_WEBSERVICES_URL)",
-      "VUE_APP_MAPBOX_TOKEN": "$(VUE_APP_MAPBOX_TOKEN)"
+      "VITE_APP_FEWS_WEBSERVICES_URL": "$(VITE_APP_FEWS_WEBSERVICES_URL)",
+      "VITE_APP_MAPBOX_TOKEN": "$(VITE_APP_MAPBOX_TOKEN)"
       }
 - script: |
     cp docs/public/deployments/azure/staticwebapp.config.json .

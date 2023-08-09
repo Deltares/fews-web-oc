@@ -44,7 +44,7 @@
         <div class="map-container" style="height: calc(100% - 48px); position: relative;">
           <MapComponent>
             <MapboxLayer v-if="showLayer" :layer="layerOptions"></MapboxLayer>
-            <v-mapbox-layer v-if="showLocationsLayer" :options="locationsLayer" clickable @click="onLocationClick"></v-mapbox-layer>
+            <!-- <v-mapbox-layer v-if="showLocationsLayer" :options="locationsLayer" clickable @click="onLocationClick"></v-mapbox-layer> -->
           </MapComponent>
         </div>
         <div style="position: absolute; padding-left: 5px; left: 30px;">
@@ -230,7 +230,7 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
   }
 
   async mounted() {
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const baseUrl = this.$config.get('VITE_APP_FEWS_WEBSERVICES_URL')
     const transformRequestFn = this.getTransformRequest()
     this.webServiceProvider = new PiWebserviceProvider(baseUrl, {transformRequestFn})
     this.setLayoutClass()
@@ -244,7 +244,7 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
   }
 
   async getFilters() {
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const baseUrl = this.$config.get('VITE_APP_FEWS_WEBSERVICES_URL')
     const request = new Request(`${baseUrl}/rest/fewspiservice/v1/filters?documentFormat=PI_JSON`)
     const transformRequest = this.getTransformRequest()
     const response = await fetch( await transformRequest(request))
@@ -270,7 +270,7 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
     //   filterId: this.filterId
     // }
     // const response = await this.webServiceProvider.getParameters(filter as any)
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const baseUrl = this.$config.get('VITE_APP_FEWS_WEBSERVICES_URL')
     const request = new Request(
       `${baseUrl}/rest/fewspiservice/v1/parameters?documentFormat=PI_JSON&filterId=${this.filterId}`)
     const transformRequest = this.getTransformRequest()
@@ -386,7 +386,7 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
   @Watch('locationId')
   async onLocationChange() {
     if (this.locationId === '') return
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const baseUrl = this.$config.get('VITE_APP_FEWS_WEBSERVICES_URL')
     const request = new Request(`${baseUrl}/rest/fewspiservice/v1/filters/actions?filterId=${this.filterId}&parameterGroupId=${this.categoryId}&locationIds=${this.locationId}`)
     const transformRequest = this.getTransformRequest()
     const result = await fetch( await transformRequest(request))

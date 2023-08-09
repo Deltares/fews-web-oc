@@ -1,6 +1,6 @@
 <template>
   <div class="map-container">
-    <v-mapbox
+    <!-- <v-mapbox
       :access-token="accessToken"
       map-style='https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
       :pitch="0"
@@ -13,7 +13,7 @@
       ref="map"
     >
       <slot></slot>
-    </v-mapbox>
+    </v-mapbox> -->
   </div>
 </template>
 
@@ -23,7 +23,7 @@ import {ResourceType} from "mapbox-gl";
 
 @Component
 export default class MapComponent extends Vue {
-  accessToken = this.$config.get('VUE_APP_MAPBOX_TOKEN')
+  accessToken = this.$config.get('VITE_APP_MAPBOX_TOKEN')
 
   beforeDestroy(){
     var map:any = this.$refs.map;

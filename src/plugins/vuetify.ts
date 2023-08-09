@@ -12,7 +12,7 @@ export default new Vuetify({
   },
   lang: {
     locales: { en, nl },
-    current: process.env.VUE_APP_I18N_LOCALE ?? 'nl',
+    current: import.meta.env.VITE_APP_I18N_LOCALE ?? 'nl',
   },
   breakpoint: {
     mobileBreakpoint: 'sm'

@@ -36,7 +36,7 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
   ): Promise<void> {
 
     this.controller.abort()
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const baseUrl = this.$config.get('VITE_APP_FEWS_WEBSERVICES_URL')
     this.controller = new AbortController()
     const transformRequest = this.getTransformRequest(this.controller)
     const webServiceProvider = new PiWebserviceProvider(baseUrl, {

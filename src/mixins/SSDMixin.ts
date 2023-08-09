@@ -22,7 +22,7 @@ export default class SSDMixin extends Vue {
 
   async created (): Promise<void> {
     let url!: URL
-    this.baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    this.baseUrl = this.$config.get('VITE_APP_FEWS_WEBSERVICES_URL')
     try {
       url = new URL(this.baseUrl)
     } catch (error) {
