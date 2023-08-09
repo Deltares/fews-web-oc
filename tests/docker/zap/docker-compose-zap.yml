@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  # https://cli.vuejs.org/guide/deployment.html#docker-nginx
+  ngnix-weboc:
+    container_name: ngnix-weboc
+    build:
+      context: ngnix-weboc
+      dockerfile: Dockerfile
+    image: deltares/delft-fews/ngnix-weboc:latest
+    restart: always
+    ports:
+      - "80:80"
+
+  zap:
+    container_name: zap
+    image: owasp/zap2docker-stable
+    command: "zap-full-scan.py -t http://ngnix-weboc -g gen.conf -r report.html -x report.xml -J report.json"
+    volumes:
+      - d:/temp/zap/report:/zap/wrk/:rw
+    depends_on:
+      - ngnix-weboc
+
+
+
+
