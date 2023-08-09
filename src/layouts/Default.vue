@@ -10,7 +10,7 @@
       class="view-sidebar">
       <v-toolbar dense fixed>
         <v-btn text :to="{ name: 'About' }" class="fews-home">
-          <v-img width="128" :src="logo"></v-img>
+          <v-img width="148" :src="logo"></v-img>
         </v-btn>
         <v-spacer />
         <login-component v-if="$config.authenticationIsEnabled"/>
