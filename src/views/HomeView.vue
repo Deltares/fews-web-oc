@@ -85,8 +85,8 @@ export default class HomeView extends Vue {
       document.title = publicConfig.general.title
     }
     if (publicConfig.general?.icons?.favicon) {
-      const faviconUrl = webServiceProvider.resourcesStaticUrl(publicConfig.general?.icons?.favicon)
-      const currentFavicon = document.querySelector("link[rel~='icon']")
+      const faviconUrl: string = webServiceProvider.resourcesStaticUrl(publicConfig.general?.icons?.favicon).toString()
+      const currentFavicon = document.querySelector("link[rel='icon']")
       currentFavicon?.setAttribute('href', faviconUrl.toString())
     }
   }

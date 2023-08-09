@@ -155,7 +155,8 @@ export default class Default extends Vue {
     const transformRequestFn = (request: Request) => Promise.resolve(authenticationManager.transformRequestAuth(request))
     const webServiceProvider = new PiWebserviceProvider(baseUrl, { transformRequestFn })
     const defaultLogo: string = `${process.env.BASE_URL}logo.png`
-    return this.webOcGeneral?.icons?.logo === undefined ? defaultLogo : webServiceProvider.resourcesStaticUrl(this.webOcGeneral.icons.logo)
+    const logo: string = this.webOcGeneral?.icons?.logo === undefined ? defaultLogo : webServiceProvider.resourcesStaticUrl(this.webOcGeneral.icons.logo).toString()
+    return logo
   }
 }
 </script>

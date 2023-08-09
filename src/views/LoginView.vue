@@ -2,11 +2,10 @@
   <v-app>
     <v-main class="login-container" id="web-oc-login-container-id">
       <div>
-        <img src="@/assets/images/deltares_logo.png" alt="Deltares" contain style="max-width: 80%"/>
-      </div>
-      <h1 style="color: white;">Delft-FEWS Web Operator Client</h1>
-      <div class="login-providers">
-        <deltares-login name="Deltares"/>
+        <h1 style="color: white;">{{ title }}</h1>
+        <div class="login-providers">
+          <deltares-login loginButtonText="Sign in"/>
+        </div>
       </div>
     </v-main>
   </v-app>
@@ -34,13 +33,17 @@ export default class LoginView extends Vue {
     if (publicConfig.general?.title) {
        this.title = publicConfig.general.title
     }
-    // var currentBackgroundImage = document.getElementById('web-oc-login-container-id')
-    // currentBackgroundImage?.style.setProperty("background-image","url('https://upload.wikimedia.org/wikipedia/commons/b/ba/Delta_2020-10-06_1330Z.png')")
-    // console.log(currentBackgroundImage?.style)
-    // Todo, once background image is available from
-    // if (publicConfig.general?.login?.backgroundImage) {
-    //   this.backgroundImage = publicConfig.general?.login?.backgroundImage
-    // }
+    if (publicConfig.general?.icons?.favicon) {
+      const faviconUrl = webServiceProvider.resourcesStaticUrl(publicConfig.general?.icons?.favicon)
+      const currentFavicon = document.querySelector("link[rel='icon']")
+      currentFavicon?.setAttribute('href', faviconUrl.toString())
+    }
+    if (publicConfig.general?.login?.backgroundImage) {
+      const backgroundImage: string = webServiceProvider.resourcesStaticUrl(publicConfig.general?.login?.backgroundImage).toString()
+      const currentBackgroundImage = document.getElementById('web-oc-login-container-id')
+      const backGroundUrl: string = "url('" + backgroundImage + "')"
+      currentBackgroundImage?.style.setProperty("background-image",backGroundUrl)
+    }
     document.title = this.title
   }
 }
