@@ -79,6 +79,16 @@ export default class HomeView extends Vue {
     const webServiceProvider = new PiWebserviceProvider(baseUrl)
     this.webServiceVersion = await (await webServiceProvider.getVersion()).version
     this.webServiceUrl = `${baseUrl}${webServiceProvider.API_ENDPOINT}`
+    const publicConfig = await (webServiceProvider.getWebOcPublicConfiguration())
+    document.title = 'Delft-FEWS Web OC'
+    if (publicConfig.general?.title) {
+      document.title = publicConfig.general.title
+    }
+    if (publicConfig.general?.icons?.favicon) {
+      const faviconUrl: string = webServiceProvider.resourcesStaticUrl(publicConfig.general?.icons?.favicon).toString()
+      const currentFavicon = document.querySelector("link[rel='icon']")
+      currentFavicon?.setAttribute('href', faviconUrl.toString())
+    }
   }
 
   getMenuIcon (componentConfig: WebOcComponent): string {
