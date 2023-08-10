@@ -43,6 +43,7 @@
           :dates="times"
           @input="debouncedSetWMSLayerOptions"
           @update:now="setCurrentTime"
+          floating
         />
         <div class="colourbar">
           <ColourBar v-model="legend" v-if="legend.length > 0"/>
@@ -645,5 +646,13 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   position: absolute;
   top: 0px;
   left: -15px;
+}
+
+.date-time-slider {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  width: 100%;
+  z-index: 100;
 }
 </style>

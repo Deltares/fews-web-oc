@@ -41,7 +41,7 @@
     </portal>
     <div class="grid-root" :class="layoutClass">
       <div class="grid-map" v-show="showMap">
-        <div class="map-container" style="height: calc(100% - 48px); position: relative;">
+        <div class="map-container">
           <MapComponent>
             <MapboxLayer v-if="showLayer" :layer="layerOptions"></MapboxLayer>
             <v-mapbox-layer v-if="showLocationsLayer" :options="locationsLayer" clickable @click="onLocationClick"></v-mapbox-layer>
@@ -61,9 +61,15 @@
             <LocationsLayerControl v-model="showLocationsLayer"/>
           </v-chip-group>
         </div>
-        <DateTimeSlider class="date-time-slider" v-model="currentTime" :dates="times" @update:now="setCurrentTime"
-          @input="debouncedSetLayerOptions" @timeupdate="updateTime">
-        </DateTimeSlider>
+        <DateTimeSlider
+          class="date-time-slider"
+          v-model="currentTime"
+          :dates="times"
+          @update:now="setCurrentTime"
+          @input="debouncedSetLayerOptions"
+          @timeupdate="updateTime"
+          floating
+        />
       </div>
       <div class="grid-charts" ref="grid-charts" v-if="hasSelectedLocation && !$vuetify.breakpoint.mobile">
         <v-toolbar class="toolbar-charts" dense flat>
@@ -643,8 +649,7 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
   }
 
   .map-container {
-    display: flex;
-    flex: 1 1;
+    width: 100%;
     height: 100%;
   }
 
@@ -653,16 +658,24 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
     z-index: 1000;
   }
 
-.v-list-item--dense, .v-list--dense .v-list-item {
-  min-height: 28px !important;
-}
+  .date-time-slider {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    z-index: 100;
+  }
 
-.v-treeview--dense .v-treeview-node__root {
-  min-height: 28px !important;
-}
+  .v-list-item--dense, .v-list--dense .v-list-item {
+    min-height: 28px !important;
+  }
 
-.v-treeview-node__level {
-  width: 12px !important;
-}
+  .v-treeview--dense .v-treeview-node__root {
+    min-height: 28px !important;
+  }
+
+  .v-treeview-node__level {
+    width: 12px !important;
+  }
 
 </style>
