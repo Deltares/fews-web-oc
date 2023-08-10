@@ -35,7 +35,7 @@ function isBoundsWithinBounds(innerBounds: LngLatBounds, outerBounds: LngLatBoun
 export interface MapboxLayerOptions {
   name: string;
   time: Date;
-  bbox:number[];
+  bbox: LngLatBounds;
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
@@ -102,13 +102,9 @@ export default class AnimatedMapboxLayer extends Vue {
 
   setDefaultZoom() {
     if (this.layer === null || this.layer.bbox === undefined) return
-    if (this.mapObject && this.layer.bbox.length === 4) {
-      const bbox = this.layer.bbox
+    if (this.mapObject) {
       const currentBounds = this.mapObject.getBounds()
-      const bounds = new LngLatBounds(
-        [bbox[0], bbox[1]], // sw
-        [bbox[2], bbox[3]], // ne
-      )
+      const bounds = this.layer.bbox
       if (isBoundsWithinBounds(currentBounds, bounds)) {
           return
         } else {

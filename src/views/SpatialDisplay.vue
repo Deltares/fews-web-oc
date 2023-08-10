@@ -50,14 +50,8 @@ import { Layer } from '@deltares/fews-wms-requests'
 import {LayerGroup} from "@deltares/fews-wms-requests/src/response/getCapabilitiesResponse";
 import { toWgs84 } from '@turf/projection';
 import { point } from '@turf/helpers';
-
-interface BoundingBox {
-  crs: string;
-  minx: string;
-  miny: string;
-  maxx: string;
-  maxy: string;
-}
+import { BoundingBox } from '@deltares/fews-wms-requests'
+import { LngLatBounds } from 'mapbox-gl'
 
 @Component({
   components: {
@@ -84,7 +78,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   layerOptions: MapboxLayerOptions | null = null
   legend: ColourMap = []
   unit: string = ""
-  layersBbox: {[key: string]: number[]} = {}
+  layersBbox: {[key: string]: LngLatBounds} = {}
 
   created (): void {
     this.dateController = new DateController([])
@@ -135,12 +129,12 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
       }
       groupNode?.children?.push(item)
       if (layer.boundingBox) {
-        this.layersBbox[layer.name] = this.convertBoundingBoxToLatLngArray(layer.boundingBox)
+        this.layersBbox[layer.name] = this.convertBoundingBoxToLngLatBounds(layer.boundingBox)
       }
     }
   }
 
-  private convertBoundingBoxToLatLngArray(boundingBox: BoundingBox): [number, number, number, number] {
+  private convertBoundingBoxToLngLatBounds(boundingBox: BoundingBox): LngLatBounds {
     const crs = boundingBox.crs
 
     const minx = parseFloat(boundingBox.minx)
@@ -150,13 +144,10 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
 
     const p1 = toWgs84(point([minx, miny], { crs: crs }))
     const p2 = toWgs84(point([maxx, maxy], { crs: crs }))
-
-    return [
-      p1.geometry.coordinates[0],
-      p1.geometry.coordinates[1],
-      p2.geometry.coordinates[0],
-      p2.geometry.coordinates[1]
-    ]
+    return  new LngLatBounds(
+        [p1.geometry.coordinates[0], p1.geometry.coordinates[1]], // sw
+        [p2.geometry.coordinates[0], p2.geometry.coordinates[1]], // ne
+      )
   }
 
   private buildMenuFromGroups(groups: LayerGroup[], groupNodes: Map<string, ColumnItem>, rootNode: ColumnItem) {
