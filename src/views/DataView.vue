@@ -234,17 +234,16 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
     this.setLayoutClass()
     await this.getFilters()
     this.getParameters()
+    await this.getCapabilities()
     this.loadLayersBbox()
-    this.getCapabilities()
     this.currentLocationId = this.$route.params.locationId ?? ''
     // Force resize to fix strange starting position of the map, caused by
     // the expandable navigation drawer.
     window.dispatchEvent(new Event('resize'))
   }
 
-  async loadLayersBbox (): Promise<void>{
-    const capabilities = await this.wmsProvider.getCapabilities({})
-    for (const layer of capabilities.layers) {
+  loadLayersBbox (): void {
+    for (const layer of this.layers) {
       if (layer.boundingBox) {
         this.layersBbox[layer.name] = convertBoundingBoxToLngLatBounds(layer.boundingBox)
       }
