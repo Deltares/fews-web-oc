@@ -4,7 +4,13 @@
       <WindowComponent v-for="display in displays" :key="display.id" :class="display.class"
         :title="display.title" :displayTypes="display.types">
         <template v-slot="{displayType}">
-          <component :is="displayType" :value="display.config" :series="series" :key="display.id">
+          <component
+            :is="displayType"
+            :value="display.config"
+            :series="series"
+            :key="display.id"
+            @zoom="xDomain => onZoom(xDomain, display)"
+          >
           </component>
         </template>
       </WindowComponent>
@@ -40,6 +46,10 @@ export default class ComponentsPanel extends Vue {
 
   @Prop({default: () => {return {}} })
   series!: Record<string, Series>
+
+  onZoom(xDomain: [Date, Date], display: DisplayConfig): void {
+    console.log(xDomain, display)
+  }
 }
 </script>
 

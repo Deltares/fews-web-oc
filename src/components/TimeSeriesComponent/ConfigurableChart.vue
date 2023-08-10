@@ -89,6 +89,14 @@ export default class ConfigurableChart extends Vue {
     this.axis = new CartesianAxes(containerReference, null, null, axisOptions)
     const mouseOver = new MouseOver()
     const zoom = new ZoomHandler(WheelMode.X)
+
+    // Monkey-patch the zoom method to include a custom zoom event emitter.
+    const originalZoom = zoom.zoom.bind(zoom)
+    zoom.zoom = (factor: number, point: [number, number]) => {
+      this.$emit('zoom', this.axis.xScales[0].domain())
+      originalZoom(factor, point)
+    }
+
     const currentTime = new CurrentTime({
       x: {
         axisIndex: 0
