@@ -24,14 +24,14 @@ function getCoordsFromBounds(bounds: LngLatBounds) {
 }
 
 function isBoundsWithinBounds(innerBounds: LngLatBounds, outerBounds: LngLatBounds) {
-  const innerNorthEast = innerBounds.getNorthEast();
-  const innerSouthWest = innerBounds.getSouthWest();
-  const outerNorthEast = outerBounds.getNorthEast();
-  const outerSouthWest = outerBounds.getSouthWest();
+  const innerNorthEast = innerBounds.getNorthEast()
+  const innerSouthWest = innerBounds.getSouthWest()
+  const outerNorthEast = outerBounds.getNorthEast()
+  const outerSouthWest = outerBounds.getSouthWest()
 
-  const isLngWithin = innerSouthWest.lng >= outerSouthWest.lng && innerNorthEast.lng <= outerNorthEast.lng;
-  const isLatWithin = innerSouthWest.lat >= outerSouthWest.lat && innerNorthEast.lat <= outerNorthEast.lat;
-  return isLngWithin && isLatWithin;
+  const isLngWithin = innerSouthWest.lng >= outerSouthWest.lng && innerNorthEast.lng <= outerNorthEast.lng
+  const isLatWithin = innerSouthWest.lat >= outerSouthWest.lat && innerNorthEast.lat <= outerNorthEast.lat
+  return isLngWithin && isLatWithin
 }
 
 export function convertBoundingBoxToLngLatBounds(boundingBox: BoundingBox): LngLatBounds {
