@@ -3,7 +3,7 @@
 	<xsl:output method="xml" indent="yes"/>
 
 	<!-- When set to 0, informational risks are skipped.	-->
-	<xsl:variable name="riskCodeLimit" select="1"/>
+	<xsl:variable name="riskCodeLimit" select="0"/>
 
 	<xsl:param name="sourceFolder"/>
 
