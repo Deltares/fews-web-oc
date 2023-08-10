@@ -15,6 +15,9 @@
 import { Component, Vue } from 'vue-property-decorator'
 import DeltaresLogin from '@/components/DeltaresLogin.vue'
 import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
+import {
+  WebOcGeneralConfig
+} from "@deltares/fews-pi-requests/lib/types/response/configuration/WebOcConfigurationResponse";
 
 @Component({
   components: {
@@ -30,22 +33,39 @@ export default class LoginView extends Vue {
     const webServiceProvider = new PiWebserviceProvider(baseUrl)
     this.webServiceUrl = `${baseUrl}${webServiceProvider.API_ENDPOINT}`
     const publicConfig = await (webServiceProvider.getWebOcConfiguration())
-    if (publicConfig.general?.title) {
-       this.title = publicConfig.general.title
+    const publicConfigGeneral = publicConfig.general
+    await this.initializeComponent(publicConfigGeneral, webServiceProvider)
+
+  }
+  async initializeComponent(generalConfig: WebOcGeneralConfig, webServiceProvider: PiWebserviceProvider): Promise<void> {
+    await this.setTitle(generalConfig)
+    await this.setFavicon(generalConfig, webServiceProvider)
+    await this.setBackgroundImage(generalConfig, webServiceProvider)
+    document.title = this.title
+  }
+
+  private async setTitle(generalConfig: WebOcGeneralConfig) {
+    if (generalConfig?.title) {
+      this.title = generalConfig.title
     }
-    if (publicConfig.general?.icons?.favicon) {
-      const faviconUrl = webServiceProvider.resourcesStaticUrl(publicConfig.general?.icons?.favicon)
+  }
+  private async setFavicon(generalConfig: WebOcGeneralConfig, webServiceProvider: PiWebserviceProvider) {
+    if (generalConfig?.icons?.favicon) {
+      const faviconUrl = webServiceProvider.resourcesStaticUrl(generalConfig.icons.favicon)
       const currentFavicon = document.querySelector("link[rel='icon']")
       currentFavicon?.setAttribute('href', faviconUrl.toString())
     }
-    if (publicConfig.general?.login?.backgroundImage) {
-      const backgroundImage: string = webServiceProvider.resourcesStaticUrl(publicConfig.general?.login?.backgroundImage).toString()
+  }
+
+  private async setBackgroundImage(generalConfig: WebOcGeneralConfig, webServiceProvider: PiWebserviceProvider) {
+    if (generalConfig?.login?.backgroundImage) {
+      const backgroundImage: string = webServiceProvider.resourcesStaticUrl(generalConfig.login.backgroundImage).toString()
       const currentBackgroundImage = document.getElementById('web-oc-login-container-id')
       const backGroundUrl: string = "url('" + backgroundImage + "')"
       currentBackgroundImage?.style.setProperty("background-image",backGroundUrl)
     }
-    document.title = this.title
   }
+
 }
 
 </script>

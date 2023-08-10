@@ -55,11 +55,11 @@ export const fewsconfig: Module<ConfigState, RootState> = {
     async setFewsConfig (context: ActionContext<ConfigState, RootState>) {
       context.dispatch('loadConfig')
       if (Object.keys(context.state.components).length === 0) {
-        const webOcComponents = await getFewsConfig()
-        for (const webOcComponent of webOcComponents.webOcComponents) {
+        const webOcConfiguration = await getFewsConfig()
+        for (const webOcComponent of webOcConfiguration.webOcComponents) {
           context.commit('addComponent', webOcComponent)
         }
-        context.commit("setGeneral", webOcComponents.general)
+        context.commit("setGeneral", webOcConfiguration.general)
         context.dispatch('saveConfig')
       }
     }
