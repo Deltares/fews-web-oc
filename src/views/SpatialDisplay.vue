@@ -83,14 +83,12 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   }
 
   mounted (): void {
-    this.loadLayersBbox()
     this.loadCapabilities()
     this.onLayerChange()
   }
 
-  async loadLayersBbox (): Promise<void>{
-    const capabilities = await this.wmsProvider.getCapabilities({})
-    for (const layer of capabilities.layers) {
+  loadLayersBbox (layers: Layer[]): void {
+    for (const layer of layers) {
       if (layer.boundingBox) {
         this.layersBbox[layer.name] = convertBoundingBoxToLngLatBounds(layer.boundingBox)
       }
@@ -102,6 +100,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     const layers = capabilities.layers
     const groups = capabilities.groups
     this.fillMenuItems(layers, groups)
+    this.loadLayersBbox(layers)
   }
 
   fillMenuItems (layers: Layer[], groups: LayerGroup[]): void {
