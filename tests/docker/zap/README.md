@@ -25,3 +25,5 @@ docker rm weboc-zap
 docker stop weboc-nginx
 docker rm weboc-nginx
 docker image rm  deltares/delft-fews/weboc-nginx
+
+# After zap has generated the report.xml the zap2junit.xsl transformation will create a junit compliant version from it.
