@@ -126,7 +126,9 @@ export default class AnimatedMapboxLayer extends Vue {
       if (isBoundsWithinBounds(currentBounds, bounds)) {
           return
         } else {
-          this.mapObject.fitBounds(bounds)
+          this.$nextTick(() => {
+            this.mapObject.fitBounds(bounds)
+          })
         }
       }
   }
