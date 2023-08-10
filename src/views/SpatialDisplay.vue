@@ -38,6 +38,7 @@ import debounce from 'lodash/debounce'
 import WMSMixin from '@/mixins/WMSMixin'
 import MapComponent from '@/components/MapComponent.vue'
 import MapboxLayer from '@/components/AnimatedMapboxLayer.vue'
+import { MapboxLayerOptions, convertBoundingBoxToLngLatBounds } from '@/components/AnimatedMapboxLayer.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
@@ -47,11 +48,7 @@ import { ColourMap } from '@deltares/fews-web-oc-charts'
 import ColourBar from '@/components/ColourBar.vue'
 import { Layer } from '@deltares/fews-wms-requests'
 import {LayerGroup} from "@deltares/fews-wms-requests/src/response/getCapabilitiesResponse";
-
-interface MapboxLayerOptions {
-  name: string;
-  time: Date;
-}
+import { LngLatBounds } from 'mapbox-gl'
 
 @Component({
   components: {
@@ -78,6 +75,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   layerOptions: MapboxLayerOptions | null = null
   legend: ColourMap = []
   unit: string = ""
+  layersBbox: {[key: string]: LngLatBounds} = {}
 
   created (): void {
     this.dateController = new DateController([])
@@ -85,8 +83,18 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   }
 
   mounted (): void {
+    this.loadLayersBbox()
     this.loadCapabilities()
     this.onLayerChange()
+  }
+
+  async loadLayersBbox (): Promise<void>{
+    const capabilities = await this.wmsProvider.getCapabilities({})
+    for (const layer of capabilities.layers) {
+      if (layer.boundingBox) {
+        this.layersBbox[layer.name] = convertBoundingBoxToLngLatBounds(layer.boundingBox)
+      }
+    }
   }
 
   async loadCapabilities (): Promise<void> {
@@ -195,7 +203,8 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   }
 
   setLayerOptions (): void {
-    if (this.layerName) { this.layerOptions = { name: this.layerName, time: this.currentTime } }
+    if (this.layerName) { 
+      this.layerOptions = { name: this.layerName, time: this.currentTime, bbox: this.layersBbox[this.layerName] } }
   }
 }
 </script>
