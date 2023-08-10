@@ -83,8 +83,8 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   }
 
   mounted (): void {
-    this.loadCapabilities()
     this.loadLayersBbox()
+    this.loadCapabilities()
     this.onLayerChange()
   }
 

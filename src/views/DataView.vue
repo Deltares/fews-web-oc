@@ -234,8 +234,8 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
     this.setLayoutClass()
     await this.getFilters()
     this.getParameters()
-    this.getCapabilities()
     this.loadLayersBbox()
+    this.getCapabilities()
     this.currentLocationId = this.$route.params.locationId ?? ''
     // Force resize to fix strange starting position of the map, caused by
     // the expandable navigation drawer.
