@@ -1,89 +1,101 @@
 <template>
   <div class="window-component" :class="{ fullscreen }" >
-    <v-btn
-      v-if="fullscreen"
-      fab
-      small
-      right
-      absolute
-      @click="toggleFullscreen()"
-    >
-      <v-icon>mdi-fullscreen-exit</v-icon>
-    </v-btn>
     <v-toolbar
       :color="$vuetify.theme.dark ? '#1E1E1E' : '#FFFFFF'"
       dense
       flat
-      style="flex-grow:0"
-      extension-height="24px"
-    > <!-- Set extension height, since default v-tab size is too large -->
+      class="toolbar"
+    >
       <v-spacer />
       {{ title }}
       <v-spacer />
-      <v-btn icon @click="toggleFullscreen()" v-if="!fullscreen">
-        <v-icon>mdi-fullscreen</v-icon>
-      </v-btn>
+      <v-btn-toggle class="mr-5" group @change="onDisplayTypeChange" mandatory>
+        <v-btn
+          v-for="item in displayTypeItems"
+          :key="item.value"
+          :aria-label="item.label"
+          small text
+        >
+          <v-icon>{{ item.icon }}</v-icon>
+        </v-btn>
+      </v-btn-toggle>
+      <v-btn small text @click="toggleFullscreen()">
+        <v-icon>{{ fullscreenIcon }}</v-icon>
+      </v-btn>  
       <slot name="toolbar-append" v-bind:refs="$refs"></slot>
-      <template v-if="displayTypes.length > 1" v-slot:extension>
-        <v-tabs v-model="tab" centered hide-slider>
-          <v-tab v-for="(displayType, index) in displayTypes" :key="index">
-            {{tabLabel(displayType)}}
-          </v-tab>
-        </v-tabs>
-      </template>
     </v-toolbar>
     <v-sheet fluid class="component-container">
-      <v-tabs-items v-if="displayTypes.length > 1" v-model="tab" style="height: 100%;" touchless>
-        <v-tab-item
-          v-for="(displayType, index) in displayTypes"
-          :key="index"
-          style="height: 100%;"
-        >
-          <slot :displayType="displayType"></slot>
-        </v-tab-item>
-      </v-tabs-items>
-      <slot v-else :displayType="displayTypes[0]"></slot>
+      <slot :displayType="displayType"></slot>
     </v-sheet>
   </div>
 </template>
 
 <script lang="ts">
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import { DisplayType } from '@/lib/Layout/DisplayConfig'
-import { Vue, Component, Prop } from 'vue-property-decorator'
 
+interface DisplayTypeItem {
+  icon: string
+  label: string
+  value: DisplayType
+}
 
 @Component
 export default class WindowComponent extends Vue {
   @Prop( {default: '', type: String}) title!: string
-  fullscreen = false
-
   @Prop( {default: () => { return [] }}) displayTypes!: DisplayType[]
 
-  tab: number = 0
+  fullscreen = false
 
-  get fullscreenIcon (): string {
+  displayType = DisplayType.TimeSeriesChart
+  displayTypeItems: DisplayTypeItem[] = []
+
+  mounted(): void {
+    this.updateDisplayTypeItems()
+  }
+
+  get fullscreenIcon(): string {
     return this.fullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
   }
 
-  toggleFullscreen (): void {
+  toggleFullscreen(): void {
     this.fullscreen = !this.fullscreen
   }
 
-  tabLabel (displayType: DisplayType): string {
-    switch (displayType) {
-      case DisplayType.TimeSeriesChart:
-        return "Chart"
-      case DisplayType.TimeSeriesTable:
-        return "Table";
-      default:
-        return displayType ?? "";
+  onDisplayTypeChange(selectedIndex: number): void {
+    this.displayType = this.displayTypeItems[selectedIndex].value
+  }
+
+  @Watch('displayTypes')
+  updateDisplayTypeItems(): void {
+    const displayTypeToItem = (displayType: DisplayType): DisplayTypeItem => {
+      switch (displayType) {
+        case DisplayType.TimeSeriesChart:
+          return {
+            icon: 'mdi-chart-line',
+            label: 'Chart',
+            value: displayType
+          }
+        case DisplayType.TimeSeriesTable:
+          return {
+            icon: 'mdi-table',
+            label: 'Table',
+            value: displayType
+          }
+        default:
+          return {
+            icon: 'mdi-alert',
+            label: 'Unknown display type',
+            value: displayType
+          }
+      }
     }
+    this.displayTypeItems = this.displayTypes.map(displayTypeToItem)
   }
 }
-
 </script>
 
-<style>
+<style scoped>
 .window-component {
   display: flex;
   flex-direction: column;
@@ -106,5 +118,9 @@ export default class WindowComponent extends Vue {
   flex: 1 1 100%;
   flex-direction: column;
   height: calc(100% - 72px)
+}
+
+.toolbar {
+  flex-grow: 0;
 }
 </style>
