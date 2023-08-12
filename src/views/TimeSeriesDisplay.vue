@@ -23,15 +23,14 @@
         :active.sync="active"
         :items="items"
         :open.sync="open"
-      >
-      </TreeMenu>
+      />
       <ColumnMenu
         v-else
+        rootName="Topology"
         :active.sync="active"
         :items="items"
         :open.sync="open"
-      >
-      </ColumnMenu>
+      />
     </portal>
     <v-toolbar v-if="plots.length > 1 && $vuetify.breakpoint.mobile" dense>
       <v-spacer/>
@@ -198,16 +197,9 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
         return result
       })
     }
-    const items: ColumnItem[] = [
-      {
-        id: 'root',
-        name: 'Topology',
-        children: recursiveUpdateNode(nodes.topologyNodes)
-      }
-    ]
 
-    this.items = items
-    this.open = [items[0].id]
+    this.items = recursiveUpdateNode(nodes.topologyNodes)
+    this.open = [this.items[0].id]
   }
 
   @Watch('$store.state.systemTime.startTime')

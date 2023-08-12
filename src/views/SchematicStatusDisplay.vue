@@ -12,11 +12,19 @@
         </v-btn-toggle>
       </v-toolbar>
       <v-divider />
-      <TreeMenu v-if="viewMode === 0 && !$vuetify.breakpoint.mobile" :active.sync="active" :items="items"
-        :open.sync="open">
-      </TreeMenu>
-      <ColumnMenu v-else :active.sync="active" :items="items" :open.sync="open">
-      </ColumnMenu>
+      <TreeMenu
+        v-if="viewMode === 0 && !$vuetify.breakpoint.mobile"
+        :active.sync="active"
+        :items="items"
+        :open.sync="open"
+      />
+      <ColumnMenu
+        v-else
+        rootName="Overzichtsschermen"
+        :active.sync="active"
+        :items="items"
+        :open.sync="open"
+      />
     </portal>
     <div class="grid-map" v-show="showMap">
       <div style="height: calc(100% - 48px)">
@@ -139,14 +147,8 @@ export default class SsdView extends Mixins(SSDMixin) {
   }
 
   fillItems (): void {
-    const items: ColumnItem[] = [
-      {
-        id: 'root',
-        name: 'Overzichtschermen',
-      }
-    ]
+    const items: ColumnItem[] = []
     if (this.capabilities !== undefined) {
-      items[0].children = []
       for (const displayGroup of this.capabilities.displayGroups) {
         const name = displayGroup.title.replace('Overzichtsschermen ', '')
         const children = []
@@ -163,7 +165,7 @@ export default class SsdView extends Mixins(SSDMixin) {
             }
           })
         }
-        items[0].children.push({ id: displayGroup.name, name, children })
+        items.push({ id: displayGroup.name, name, children })
       }
     }
     this.items = items

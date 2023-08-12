@@ -47,6 +47,7 @@ import { ColumnItem } from './ColumnItem'
 
 @Component
 export default class ColumnMenu extends Vue {
+  @Prop({ default: () => { return {} } }) rootName!: string
   @Prop({ default: () => { return {} } }) items!: ColumnItem[]
   @Prop({ default: () => { return {} } }) open!: string[]
   @Prop({ default: () => { return {} } }) active!: string[]
@@ -97,7 +98,12 @@ export default class ColumnMenu extends Vue {
   }
 
   updateStack (): void {
-    const stack = [...this.items]
+    const root: ColumnItem = {
+      id: 'root-item',
+      name: this.rootName,
+      children: [...this.items]
+    }
+    const stack = [root]
     this.recursiveFind(stack, this.active[0])
     this.stack = stack
     this.path = stack.map((item) => item.id)
