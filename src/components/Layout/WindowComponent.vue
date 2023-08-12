@@ -1,15 +1,5 @@
 <template>
   <div class="window-component" :class="{ fullscreen }" >
-    <v-btn
-      v-if="fullscreen"
-      fab
-      small
-      right
-      absolute
-      @click="toggleFullscreen()"
-    >
-      <v-icon>mdi-fullscreen-exit</v-icon>
-    </v-btn>
     <v-toolbar
       :color="$vuetify.theme.dark ? '#1E1E1E' : '#FFFFFF'"
       dense
@@ -19,20 +9,19 @@
       <v-spacer />
       {{ title }}
       <v-spacer />
-      <v-btn-toggle class="mr-2" @change="onDisplayTypeChange" mandatory>
+      <v-btn-toggle class="mr-5" group @change="onDisplayTypeChange" mandatory>
         <v-btn
           v-for="item in displayTypeItems"
           :key="item.value"
           :aria-label="item.label"
-          small icon
+          small text
         >
           <v-icon>{{ item.icon }}</v-icon>
         </v-btn>
       </v-btn-toggle>
-      <v-btn small icon @click="toggleFullscreen()" v-if="!fullscreen">
-        <v-icon>mdi-fullscreen</v-icon>
-      </v-btn>
-      <div class="mr-16" v-else></div>
+      <v-btn small text @click="toggleFullscreen()">
+        <v-icon>{{ fullscreenIcon }}</v-icon>
+      </v-btn>  
       <slot name="toolbar-append" v-bind:refs="$refs"></slot>
     </v-toolbar>
     <v-sheet fluid class="component-container">
