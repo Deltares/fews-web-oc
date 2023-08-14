@@ -20,9 +20,6 @@
 
 <script lang="ts">
 import {Component, Mixins, Prop, Watch} from 'vue-property-decorator'
-import ColumnMenu from '@/components/ColumnMenu.vue'
-import TreeMenu from '@/components/TreeMenu.vue'
-import {ColumnItem} from '@/components/ColumnItem'
 import ComponentsPanel from '@/components/Layout/ComponentsPanel.vue'
 import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import {DisplayConfig, DisplayType} from '@/lib/Layout/DisplayConfig'
@@ -43,8 +40,6 @@ function absoluteUrl(urlString: string): URL {
 
 @Component({
   components: {
-    ColumnMenu,
-    TreeMenu,
     ComponentsPanel
   }
 })
@@ -58,10 +53,6 @@ export default class SSDTimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
   @Prop({default: '', type: String})
   objectId!: string
 
-  active: string[] = []
-  open: string[] = []
-  items: ColumnItem[] = []
-  viewMode = 0
   warningMessage: string = "";
   allDisplays: DisplayConfig[][] = []
   displays: DisplayConfig[] = []

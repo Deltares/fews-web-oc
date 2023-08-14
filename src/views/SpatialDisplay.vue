@@ -12,11 +12,19 @@
         </v-btn-toggle>
       </v-toolbar>
       <v-divider />
-      <TreeMenu v-if="viewMode === 0 && !$vuetify.breakpoint.mobile" :active.sync="active" :items="items"
-        :open.sync="open">
-      </TreeMenu>
-      <ColumnMenu v-else :active.sync="active" :items="items" :open.sync="open">
-      </ColumnMenu>
+      <TreeMenu
+        v-if="viewMode === 0 && !$vuetify.breakpoint.mobile"
+        :active.sync="active"
+        :items="items"
+        :open.sync="open"
+      />
+      <ColumnMenu
+        v-else
+        rootName="Layers"
+        :active.sync="active"
+        :items="items"
+        :open.sync="open"
+      />
     </portal>
     <div style="height: calc(100% - 48px); position: relative">
       <MapComponent>
@@ -104,19 +112,11 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   }
 
   fillMenuItems (layers: Layer[], groups: LayerGroup[]): void {
-    const items: ColumnItem[] = [
-      {
-        id: 'root',
-        name: 'Layers'
-      }
-    ]
-    const rootNode = items[0]
-    rootNode.children = []
     let groupNodesMenuItemsMap = this.determineGroupNodesMap(groups);
-    this.buildMenuFromGroups(groups, groupNodesMenuItemsMap, rootNode);
+    const items = this.buildMenuFromGroups(groups, groupNodesMenuItemsMap);
     this.attachLayersToMenu(layers, groupNodesMenuItemsMap);
     this.items = items
-    this.open = [items[0].id]
+    this.open = []
   }
 
   private attachLayersToMenu(layers: Layer[], groupNodes: Map<string, ColumnItem>) {
@@ -137,11 +137,14 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     }
   }
 
-  private buildMenuFromGroups(groups: LayerGroup[], groupNodes: Map<string, ColumnItem>, rootNode: ColumnItem) {
+  private buildMenuFromGroups(
+    groups: LayerGroup[], groupNodes: Map<string, ColumnItem>
+  ): ColumnItem[] {
+    const items: ColumnItem[] = []
     for (const group of groups) {
       const groupNode = groupNodes.get(group.path.toString())
       if (group.groupName === undefined && groupNode !== undefined) {
-        rootNode?.children?.push(groupNode)
+        items.push(groupNode)
       } else {
         if (groupNode !== undefined && group.groupName !== undefined && group.path.length > 0) {
           const parentPath = group.path.slice(0, -1)
@@ -152,6 +155,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
         }
       }
     }
+    return items
   }
 
   private determineGroupNodesMap(groups: LayerGroup[]): Map<string, ColumnItem> {
