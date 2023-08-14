@@ -144,6 +144,7 @@ export default class AnimatedMapboxLayer extends Vue {
     if (this.layer.name === undefined || this.layer.time === undefined) {
       return
     }
+    const originalLayerName = this.currentLayer
     if (this.layer.name !== this.currentLayer) {
       this.counter += 1
       this.removeOldLayers()
@@ -155,7 +156,10 @@ export default class AnimatedMapboxLayer extends Vue {
     this.newLayerId = getFrameId(this.layer.name, this.counter)
     const source = this.mapObject.getSource(this.newLayerId)
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    this.setDefaultZoom()
+    if (this.currentLayer !== originalLayerName ) {
+      // set default zoom only if layer is changed
+      this.setDefaultZoom()
+    }
     if (source === undefined) {
       const bounds = this.mapObject.getBounds()
       const canvas = this.mapObject.getCanvas()
