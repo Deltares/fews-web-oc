@@ -2,8 +2,8 @@
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="xml" indent="yes"/>
 
-	<!-- When set to 0, informational risks are skipped.	-->
-	<xsl:variable name="riskCodeLimit" select="0"/>
+	<!-- When set to 1, minor risks are skipped.-->
+	<xsl:variable name="riskCodeLimit" select="1"/>
 
 	<xsl:param name="sourceFolder"/>
 

@@ -1,29 +1,11 @@
-# Configure the web service to be used by the web oc. On teamcity we do something similar like this:
+# nginx.conf
 
-cat > tests/docker/zap/weboc-nginx/app-config.json <<EOL
-{
-"VUE_APP_FEWS_WEBSERVICES_URL": "my webservice url",
-"VUE_APP_MAPBOX_TOKEN": "my token"
-}
-EOL
+The zap scanner run using NGINX. Specific security headers are added to the config to make the Web OC mostly compliant.
+In some cases the ZAP tool will report a warning that cannot be prevented. The following is a list of warnings and the reason they cannot be prevented:
 
-# Copy the latest weboc build to the ngnix build directory and build the nginx image with the weboc (we may also use a volume mount instead).
+-   CSP: style-src unsafe-inline: The web framework used by the Web OC (Vue JS) is using inline css.
+-   Sub Resource Integrity Attribute Missing: Not supported by the googles fonts css: <link rel="stylesheet" href="https://fonts.googleapis.com/css. See also: https://github.com/google/fonts/issues/473
+  - Timestamp Disclosure - Unix. False positive on: /js/chunk-vendors.ce1436d0.js
 
-docker compose --project-directory . build
-
-# Create a network to allow the zap scanner to connect to the weboc container.
-docker network create zapnet
-# Run the weboc detached.
-docker run -d --net zapnet --name weboc-nginx -t deltares/delft-fews/weboc-nginx:latest
-# Run the scanner until completion.
-docker run --name weboc-zap --net zapnet -v c:/temp/zap:/zap/wrk/:rw -t owasp/zap2docker-stable zap-full-scan.py -t http://weboc-nginx -g gen.conf -r report.html -x report.xml -J report.json
-
-# When doen, the report is in the zap directory
-
-docker stop weboc-zap
-docker rm weboc-zap
-docker stop weboc-nginx
-docker rm weboc-nginx
-docker image rm  deltares/delft-fews/weboc-nginx
-
-# After zap has generated the report.xml the zap2junit.xsl transformation will create a junit compliant version from it.
+# After zap has generated the report.xml the zap2junit.xsl transformation can be used to create a junit compliant version from it.
+# This can be used by teamcity to generate a test report.
