@@ -549,6 +549,7 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
   }
 
   .grid-map {
+    position: relative;
     display: flex;
     flex-basis: 400px;
     flex: 1 1 auto;
@@ -653,16 +654,11 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
     height: 100%;
   }
 
-  .datetime-control-container {
-    flex-grow: 0;
-    z-index: 1000;
-  }
-
   .date-time-slider {
     position: absolute;
     bottom: 0px;
     left: 0px;
-    width: 100%;
+    right: 0px;
     z-index: 100;
   }
 
