@@ -21,7 +21,7 @@ services:
 #    command: "npm clean && npm install && npm run test:e2e:cypress:headless"
     volumes:
 #    Overrule cypress baseUrl.
-      - $PWD/../../../tests/docker/cypress/cypress.config.ts:/e2e/cypress.config.ts
+      - $PWD/cypress.config.ts:/e2e/cypress.config.ts
       - $PWD/../../..:/e2e
     working_dir: /e2e
 
