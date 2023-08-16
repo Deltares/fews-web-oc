@@ -9,8 +9,8 @@ services:
     container_name: nginx-weboc
     image: nginx:latest
     volumes:
-      - ${PWD}/weboc:/app:rw
-      - ${PWD}/nginx.conf:/etc/nginx/nginx.conf
+      - ./weboc:/app:rw
+      - ./nginx.conf:/etc/nginx/nginx.conf
     restart: always
 
   cypress:
@@ -21,7 +21,7 @@ services:
 #    command: "npm clean && npm install && npm run test:e2e:cypress:headless"
     volumes:
 #    Overrule cypress baseUrl.
-      - $PWD/cypress.config.ts:/e2e/cypress.config.ts
-      - $PWD/../../..:/e2e
+      - ./cypress.config.ts:/e2e/cypress.config.ts
+      - ./../../..:/e2e
     working_dir: /e2e
 
