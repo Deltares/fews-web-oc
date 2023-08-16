@@ -25,6 +25,7 @@
     "@vue/cli": "^5.0.8",
     "core-js": "^3.6.5",
     "crypto-js": "^4.1.1",
+    "local-cypress": "^1.2.6",
     "flag-icons": "^6.6.6",
     "jest-junit": "^15.0.0",
     "lodash": "^4.17.21",

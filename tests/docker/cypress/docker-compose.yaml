@@ -1,0 +1,27 @@
+version: '3'
+
+# De weboc is expected to be in de weboc folder.
+# The nginx.con file adds security related headers.
+# On windows the volume mounts need to be absolute paths. PWD is not working.
+services:
+  # https://cli.vuejs.org/guide/deployment.html#docker-nginx
+  nginx-weboc:
+    container_name: nginx-weboc
+    image: nginx:latest
+    volumes:
+      - ${PWD}/weboc:/app:rw
+      - ${PWD}/nginx.conf:/etc/nginx/nginx.conf
+    restart: always
+
+  cypress:
+    container_name: cypress
+#    Make sure the version matches the one in the package.json
+    image: cypress/included:12.17.3
+
+#    command: "npm clean && npm install && npm run test:e2e:cypress:headless"
+    volumes:
+#    Overrule cypress baseUrl.
+      - $PWD/../../../tests/docker/cypress/cypress.config.ts:/e2e/cypress.config.ts
+      - $PWD/../../..:/e2e
+    working_dir: /e2e
+
