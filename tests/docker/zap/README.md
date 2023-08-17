@@ -1,29 +1,27 @@
-# Configure the web service to be used by the web oc. On teamcity we do something similar like this:
+# Cypress E2E tests.
 
-cat > tests/docker/zap/weboc-nginx/app-config.json <<EOL
+
+# Configure the web service to be used by the web oc. The weboc is in the dist folder that was created in the previous step.
+
+cat > dist/app-config.json <<EOL
 {
 "VUE_APP_FEWS_WEBSERVICES_URL": "my webservice url",
 "VUE_APP_MAPBOX_TOKEN": "my token"
 }
 EOL
 
-# Copy the latest weboc build to the ngnix build directory and build the nginx image with the weboc (we may also use a volume mount instead).
+# Remove all containers:
 
-docker compose --project-directory . build
+docker rm cypress
+docker rm nginx-weboc
 
-# Create a network to allow the zap scanner to connect to the weboc container.
-docker network create zapnet
-# Run the weboc detached.
-docker run -d --net zapnet --name weboc-nginx -t deltares/delft-fews/weboc-nginx:latest
-# Run the scanner until completion.
-docker run --name weboc-zap --net zapnet -v c:/temp/zap:/zap/wrk/:rw -t owasp/zap2docker-stable zap-full-scan.py -t http://weboc-nginx -g gen.conf -r report.html -x report.xml -J report.json
+cd tests/docker/cypress
 
-# When doen, the report is in the zap directory
+# Start the web oc in the background.
+docker compose up nginx-weboc -d
+# Run the cypress e2e tests.
+docker compose up cypress
 
-docker stop weboc-zap
-docker rm weboc-zap
-docker stop weboc-nginx
-docker rm weboc-nginx
-docker image rm  deltares/delft-fews/weboc-nginx
-
-# After zap has generated the report.xml the zap2junit.xsl transformation will create a junit compliant version from it.
+docker compose stop
+docker rm cypress
+docker rm nginx-weboc
