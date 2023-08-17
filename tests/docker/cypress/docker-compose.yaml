@@ -8,8 +8,9 @@ services:
   nginx-weboc:
     container_name: nginx-weboc
     image: nginx:latest
+#    Make sure to run npm build to create the dist folder.
     volumes:
-      - ./weboc:/app:rw
+      - ./../../../dist:/app:rw
       - ./nginx.conf:/etc/nginx/nginx.conf
     restart: always
 
@@ -20,7 +21,7 @@ services:
 
 #    command: "npm clean && npm install && npm run test:e2e:cypress:headless"
     volumes:
-#    Overrule cypress baseUrl.
+#    Set cypress baseUrl that is set to the docker weboc container.
       - ./cypress.config.ts:/e2e/cypress.config.ts
       - ./../../..:/e2e
     working_dir: /e2e
