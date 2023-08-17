@@ -7,7 +7,7 @@ describe('map', () => {
   })
 
   it('Open map', () => {
-    cy.title().should('eq', "Delft-FEWS WebOC")
+    cy.title().should('eq', "Delft-FEWS Web OC")
   })
 
 })
