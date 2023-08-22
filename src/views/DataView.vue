@@ -124,11 +124,8 @@ import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
-
-interface MapboxLayerOptions {
-  name: string;
-  time: Date;
-}
+import { MapboxLayerOptions, convertBoundingBoxToLngLatBounds } from '@/components/AnimatedMapboxLayer.vue'
+import { LngLatBounds } from 'mapbox-gl'
 
 
 interface Filter {
@@ -194,6 +191,7 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
 
   layerName: string = ''
   layerOptions: MapboxLayerOptions | null = null
+  layersBbox: {[key: string]: LngLatBounds} = {}
 
   legend: ColourMap = []
   unit: string = ""
@@ -236,11 +234,20 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
     this.setLayoutClass()
     await this.getFilters()
     this.getParameters()
-    this.getCapabilities()
+    await this.getCapabilities()
+    this.loadLayersBbox()
     this.currentLocationId = this.$route.params.locationId ?? ''
     // Force resize to fix strange starting position of the map, caused by
     // the expandable navigation drawer.
     window.dispatchEvent(new Event('resize'))
+  }
+
+  loadLayersBbox (): void {
+    for (const layer of this.layers) {
+      if (layer.boundingBox) {
+        this.layersBbox[layer.name] = convertBoundingBoxToLngLatBounds(layer.boundingBox)
+      }
+    }
   }
 
   async getFilters() {
@@ -501,6 +508,7 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
       this.layerOptions = {
         name: this.layerName,
         time: this.currentTime,
+        bbox: this.layersBbox[this.layerName]
       }
     } else {
       this.layerOptions = null

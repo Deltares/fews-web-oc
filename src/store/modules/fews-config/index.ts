@@ -3,6 +3,9 @@ import type { ActionContext, Module } from 'vuex'
 import type { RootState } from '@/store/types';
 import type { ConfigState, WebOcComponent } from './types';
 import { getFewsConfig } from '@/lib/FewsConfig/fewsConfig'
+import {
+  WebOcGeneralConfig
+} from "@deltares/fews-pi-requests/lib/types/response/configuration/WebOcConfigurationResponse";
 
 const WEBOC_CONFIG_PREFIX = 'delft-fews-weboc:config#'
 
@@ -11,7 +14,8 @@ export const fewsconfig: Module<ConfigState, RootState> = {
 
   state: (): ConfigState  => ({
     version: "0.1.0-metoc",
-    components: {}
+    components: {},
+    general: {}
   }),
 
   mutations: {
@@ -21,6 +25,10 @@ export const fewsconfig: Module<ConfigState, RootState> = {
 
     setComponents (state: ConfigState, components: { [key: string]: WebOcComponent }) {
       state.components = components
+    },
+
+    setGeneral (state: ConfigState, generalConfig: WebOcGeneralConfig) {
+      state.general = generalConfig
     }
   },
 
@@ -34,21 +42,24 @@ export const fewsconfig: Module<ConfigState, RootState> = {
       if (webOcConfig && typeof webOcConfig === 'string' && webOcConfig !== '') {
         const config = JSON.parse(webOcConfig)
         context.commit('setComponents', config.components)
+        context.commit('setGeneral', config.general)
       }
     },
 
     deleteComponents (context: ActionContext<ConfigState, RootState>) {
       sessionStorage.removeItem(`${WEBOC_CONFIG_PREFIX}${context.state.version}`)
       context.commit('setComponents', {})
+      context.commit('setGeneral', {})
     },
 
     async setFewsConfig (context: ActionContext<ConfigState, RootState>) {
       context.dispatch('loadConfig')
       if (Object.keys(context.state.components).length === 0) {
-        const webOcComponents = await getFewsConfig()
-        for (const webOcComponent of webOcComponents) {
+        const webOcConfiguration = await getFewsConfig()
+        for (const webOcComponent of webOcConfiguration.webOcComponents) {
           context.commit('addComponent', webOcComponent)
         }
+        context.commit("setGeneral", webOcConfiguration.general)
         context.dispatch('saveConfig')
       }
     }

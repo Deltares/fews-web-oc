@@ -2,9 +2,6 @@
   <v-app id="app">
     <v-app-bar color="#080C80" dense app dark>
       <v-app-bar-nav-icon @click="toggleDrawer()"></v-app-bar-nav-icon>
-      <v-btn v-if="!$vuetify.breakpoint.mobile" text :to="{ name: 'About' }" class="fews-home">
-        Delft-FEWS Web OC
-      </v-btn>
       <v-spacer />
       <TimeControl/>
       <CogMenu/>
@@ -12,10 +9,14 @@
     <v-navigation-drawer v-model="drawer" app hide-overlay :right="$vuetify.rtl" width="320"
       class="view-sidebar">
       <v-toolbar dense fixed>
+        <v-btn text :to="{ name: 'About' }" class="fews-home">
+          <v-img width="148" :src="logo"></v-img>
+        </v-btn>
         <v-spacer />
         <login-component v-if="$config.authenticationIsEnabled"/>
       </v-toolbar>
       <v-menu offset-y left min-width="320">
+
         <template v-slot:activator="{ on, attrs, value }">
         <v-list-item
           aria-label="Menu button"
@@ -63,6 +64,12 @@ import { namespace } from 'vuex-class'
 import { Alert } from '@/store/modules/alerts/types'
 import type { WebOcComponent } from '@/store/modules/fews-config/types'
 import { ComponentTypeEnum } from '@/store/modules/fews-config/types'
+import {
+  WebOcGeneralConfig
+} from "@deltares/fews-pi-requests/lib/types/response/configuration/WebOcConfigurationResponse";
+import {configManager} from "@/services/application-config";
+import {authenticationManager} from "@/services/authentication/AuthenticationManager";
+import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
 
 const alertsModule = namespace('alerts')
 const fewsConfigModule = namespace('fewsconfig')
@@ -81,6 +88,9 @@ export default class Default extends Vue {
     alerts!: Alert[]
   @fewsConfigModule.State('components')
     webOcComponents!: { [key: string]: WebOcComponent }
+  @fewsConfigModule.State('general')
+    webOcGeneral!: WebOcGeneralConfig
+
   @fewsConfigModule.Action('loadConfig')
     loadConfig!: () => void
 
@@ -133,9 +143,22 @@ export default class Default extends Vue {
     return menuItems
   }
 
+  get webOcTitle() {
+    return this?.webOcGeneral?.title === undefined ? 'Delft-FEWS Web OC' : this.webOcGeneral.title
+  }
+
   get currentItemTitle() {
     const matchedRouteNames = this.$route.matched.map( m => m.name )
     return this.menuItems.find(item => matchedRouteNames.includes(item.to.name))?.title ?? this.$route.name
+  }
+
+  get logo() {
+    const baseUrl = configManager.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const transformRequestFn = (request: Request) => Promise.resolve(authenticationManager.transformRequestAuth(request))
+    const webServiceProvider = new PiWebserviceProvider(baseUrl, { transformRequestFn })
+    const defaultLogo: string = `${process.env.BASE_URL}logo.png`
+    const logo: string = this.webOcGeneral?.icons?.logo === undefined ? defaultLogo : webServiceProvider.resourcesStaticUrl(this.webOcGeneral.icons.logo).toString()
+    return logo
   }
 }
 </script>
