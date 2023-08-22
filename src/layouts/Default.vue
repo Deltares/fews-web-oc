@@ -1,11 +1,5 @@
 <template>
-  <v-app id="app">
-    <v-app-bar color="#080C80" density="compact">
-      <v-app-bar-nav-icon></v-app-bar-nav-icon>
-      <v-spacer />
-      <!-- <TimeControl/>
-      <CogMenu/> -->
-    </v-app-bar>
+  <v-layout id="app">
     <v-navigation-drawer v-model="drawer"  :location="isRtl ? 'right' : 'left'" width="320"
       class="view-sidebar">
       <v-toolbar density="compact" fixed>
@@ -13,8 +7,6 @@
           <v-img width="148"></v-img>
         </v-btn>
         <v-spacer />
-        <v-btn>WK</v-btn>
-        <!-- <login-component v-if="$config.authenticationIsEnabled"/> -->
       </v-toolbar>
       <v-menu offset-y left min-width="320">
         <template v-slot:activator="{ isActive, props }">
@@ -23,8 +15,10 @@
           v-bind="props"
           v-on="isActive"
         >
-          <!-- <v-list-item-content>{{ currentItemTitle }}</v-list-item-content> -->
-          <v-list-item-icon><v-icon small>{{ isActive ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon></v-list-item-icon>
+          <v-list-item-title> Component TBD</v-list-item-title>
+          <template v-slot:append>
+          <v-icon :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"></v-icon>
+        </template>
         </v-list-item>
         </template>
         <v-list density="compact">
@@ -41,7 +35,15 @@
       </v-menu>
       <portal-target name="web-oc-sidebar" />
     </v-navigation-drawer>
-    <v-main id="main">
+    <v-app-bar color="#080C80" density="compact">
+      <template v-slot:prepend>
+        <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      </template>
+      <v-spacer />
+      <v-btn variant="text" icon="mdi-dots-vertical"></v-btn>
+    </v-app-bar>
+
+    <v-main class="d-flex align-center justify-center" id="main">
       <router-view style="height: 100%;">
       </router-view>
       <!-- <div class="alert-div" v-if="showAlerts">
@@ -52,7 +54,7 @@
         </div>
       </div> -->
     </v-main>
-  </v-app>
+  </v-layout>
 </template>
 
 <script setup lang="ts">
@@ -80,15 +82,6 @@ html, body {
   overflow: hidden;
 }
 
-.fews-home.v-btn {
-  text-transform: capitalize !important;
-}
-
-#app.theme--light {
-  background-color: rgba(240, 240, 240, 1);
-  color: #2c3e50;
-}
-
 #main {
   height: 100%;
   overflow: hidden;
@@ -97,9 +90,5 @@ html, body {
 .router-container {
   padding: 0px;
   height: 100%;
-}
-
-.theme--light .view-sidebar {
-  background-image: linear-gradient(to bottom, rgba(240, 240, 240, 1), rgba(240, 240, 240, 1));
 }
 </style>
