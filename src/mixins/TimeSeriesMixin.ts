@@ -77,7 +77,9 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
           if (header !== undefined) {
             const missingValue: string = header.missVal
             const timeZone = piSeries.timeZone === undefined ? 'Z' : timeZoneOffsetString(+piSeries.timeZone)
+
             series.header.name = `${header.stationName} - ${header.parameterId} (${header.moduleInstanceId})`
+
             series.header.unit = header.units
             series.header.parameter = header.parameterId
             series.header.location = header.stationName

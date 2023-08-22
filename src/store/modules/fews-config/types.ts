@@ -16,7 +16,8 @@ export const ComponentTypeEnum = {
   SchematicStatusDisplay: 'SchematicStatusDisplay',
   TimeSeriesDisplay:      'TimeSeriesDisplay',
   SystemMonitor:          'SystemMonitor',
-  ArchiveDisplay:         'ArchiveDisplay'
+  ArchiveDisplay:         'ArchiveDisplay',
+  TopologyDisplay:        'TopologyDisplay'
 } as const
 
 export type ComponentType = (typeof ComponentTypeEnum)[keyof typeof ComponentTypeEnum];

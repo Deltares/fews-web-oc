@@ -22,7 +22,7 @@ function getCoordsFromBounds(bounds: LngLatBounds) {
   ]
 }
 
-interface MapboxLayerOptions {
+export interface MapboxLayerOptions {
   name: string;
   time: Date;
 }
