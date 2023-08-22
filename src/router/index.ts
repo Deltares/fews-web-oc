@@ -15,6 +15,8 @@ import DataView from '../views/DataView.vue'
 import ArchiveDisplay from '../views/ArchiveDisplay.vue'
 
 import { Log, UserManager } from 'oidc-client-ts'
+import TopologyDisplay from "../views/TopologyDisplay.vue";
+import ExplorerComponent from "@/components/explorer/ExplorerComponent.vue";
 
 Log.setLogger(console)
 Log.setLevel(Log.WARN)
@@ -92,6 +94,20 @@ export const routesViews: Array<RouteConfig> = [
     path: '/map/:layerName?',
     name: 'SpatialDisplay',
     component: SpatialDisplay,
+    props: true,
+    meta: { authorize: [], sidebar: true }
+  },
+  {
+    path: '/topology/node/:nodeId?',
+    name: 'TopologyDisplay',
+    component: TopologyDisplay,
+    props: true,
+    meta: { authorize: [], sidebar: true }
+  },
+  {
+    path: '/topology/explorer/:nodeId?/',
+    name: 'ExplorerComponent',
+    component: ExplorerComponent,
     props: true,
     meta: { authorize: [], sidebar: true }
   },

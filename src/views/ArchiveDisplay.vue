@@ -39,7 +39,7 @@ import {Pane, Splitpanes} from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import {DocumentFormat, PiArchiveWebserviceProvider} from "@deltares/fews-pi-requests";
 import type {ArchiveLocationsFilter, ArchiveLocation } from "@deltares/fews-pi-requests";
-import {FeatureCollection, Geometry} from "geojson";
+import {Feature, FeatureCollection, Geometry} from "geojson";
 
 @Component({
   components: {

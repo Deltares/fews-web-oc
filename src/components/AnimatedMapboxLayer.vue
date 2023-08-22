@@ -23,6 +23,7 @@ function getCoordsFromBounds(bounds: LngLatBounds) {
   ]
 }
 
+
 function isBoundsWithinBounds(innerBounds: LngLatBounds, outerBounds: LngLatBounds) {
   const innerNorthEast = innerBounds.getNorthEast()
   const innerSouthWest = innerBounds.getSouthWest()
@@ -49,6 +50,7 @@ export function convertBoundingBoxToLngLatBounds(boundingBox: BoundingBox): LngL
         [p2.geometry.coordinates[0], p2.geometry.coordinates[1]], // ne
       )
   }
+
 
 export interface MapboxLayerOptions {
   name: string;

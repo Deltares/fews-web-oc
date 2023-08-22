@@ -59,6 +59,7 @@ export default class TimeSeriesTable extends Vue {
   @Watch('series', {deep: true})
   onSeriesChange(): void {
     this.seriesIds = getUniqueSeriesIds(this.value.series)
+
     this.tableHeaders = createTableHeaders(this.value.series, this.seriesIds)
     this.tableData = createTableData(this.value.series, this.series, this.seriesIds)
   }
