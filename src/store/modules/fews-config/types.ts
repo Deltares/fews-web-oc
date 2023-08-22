@@ -1,7 +1,18 @@
+import {
+  WebOcGeneralConfig
+} from "@deltares/fews-pi-requests/lib/types/response/configuration/WebOcConfigurationResponse";
+
 export interface ConfigState {
   version: string
   components: { [key: string]: WebOcComponent }
+  general: WebOcGeneralConfig
 }
+
+export interface WebOcConfiguration {
+  general: WebOcGeneralConfig
+  webOcComponents: WebOcComponent[]
+}
+
 
 export interface WebOcComponent {
   id: string

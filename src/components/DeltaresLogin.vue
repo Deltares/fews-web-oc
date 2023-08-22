@@ -1,6 +1,6 @@
 <template>
   <v-btn @click="login" color="primary">
-    <v-icon>mdi-microsoft-windows</v-icon> Sign in with {{name}}
+    <v-icon>mdi-microsoft-windows</v-icon> {{loginButtonText}}
   </v-btn>
 </template>
 
@@ -10,7 +10,7 @@ import { Component, Vue, Prop } from 'vue-property-decorator'
 @Component
 export default class DeltaresLogin extends Vue {
   @Prop()
-    name!: string
+  loginButtonText!: string
 
   login (): void {
     const redirect = this.$route.query.redirect || '/about'

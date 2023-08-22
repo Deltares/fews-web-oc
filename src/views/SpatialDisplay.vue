@@ -12,11 +12,19 @@
         </v-btn-toggle>
       </v-toolbar>
       <v-divider />
-      <TreeMenu v-if="viewMode === 0 && !$vuetify.breakpoint.mobile" :active.sync="active" :items="items"
-        :open.sync="open">
-      </TreeMenu>
-      <ColumnMenu v-else :active.sync="active" :items="items" :open.sync="open">
-      </ColumnMenu>
+      <TreeMenu
+        v-if="viewMode === 0 && !$vuetify.breakpoint.mobile"
+        :active.sync="active"
+        :items="items"
+        :open.sync="open"
+      />
+      <ColumnMenu
+        v-else
+        rootName="Layers"
+        :active.sync="active"
+        :items="items"
+        :open.sync="open"
+      />
     </portal>
     <div style="height: calc(100% - 48px); position: relative">
       <MapComponent>
@@ -38,6 +46,7 @@ import debounce from 'lodash/debounce'
 import WMSMixin from '@/mixins/WMSMixin'
 import MapComponent from '@/components/MapComponent.vue'
 import MapboxLayer from '@/components/AnimatedMapboxLayer.vue'
+import { MapboxLayerOptions, convertBoundingBoxToLngLatBounds } from '@/components/AnimatedMapboxLayer.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import ColumnMenu from '@/components/ColumnMenu.vue'
 import TreeMenu from '@/components/TreeMenu.vue'
@@ -47,11 +56,7 @@ import { ColourMap } from '@deltares/fews-web-oc-charts'
 import ColourBar from '@/components/ColourBar.vue'
 import { Layer } from '@deltares/fews-wms-requests'
 import {LayerGroup} from "@deltares/fews-wms-requests/src/response/getCapabilitiesResponse";
-
-interface MapboxLayerOptions {
-  name: string;
-  time: Date;
-}
+import { LngLatBounds } from 'mapbox-gl'
 
 @Component({
   components: {
@@ -78,6 +83,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   layerOptions: MapboxLayerOptions | null = null
   legend: ColourMap = []
   unit: string = ""
+  layersBbox: {[key: string]: LngLatBounds} = {}
 
   created (): void {
     this.dateController = new DateController([])
@@ -89,27 +95,28 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     this.onLayerChange()
   }
 
+  loadLayersBbox (layers: Layer[]): void {
+    for (const layer of layers) {
+      if (layer.boundingBox) {
+        this.layersBbox[layer.name] = convertBoundingBoxToLngLatBounds(layer.boundingBox)
+      }
+    }
+  }
+
   async loadCapabilities (): Promise<void> {
     const capabilities = await this.wmsProvider.getCapabilities({})
     const layers = capabilities.layers
     const groups = capabilities.groups
     this.fillMenuItems(layers, groups)
+    this.loadLayersBbox(layers)
   }
 
   fillMenuItems (layers: Layer[], groups: LayerGroup[]): void {
-    const items: ColumnItem[] = [
-      {
-        id: 'root',
-        name: 'Layers'
-      }
-    ]
-    const rootNode = items[0]
-    rootNode.children = []
     let groupNodesMenuItemsMap = this.determineGroupNodesMap(groups);
-    this.buildMenuFromGroups(groups, groupNodesMenuItemsMap, rootNode);
+    const items = this.buildMenuFromGroups(groups, groupNodesMenuItemsMap);
     this.attachLayersToMenu(layers, groupNodesMenuItemsMap);
     this.items = items
-    this.open = [items[0].id]
+    this.open = []
   }
 
   private attachLayersToMenu(layers: Layer[], groupNodes: Map<string, ColumnItem>) {
@@ -130,11 +137,14 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     }
   }
 
-  private buildMenuFromGroups(groups: LayerGroup[], groupNodes: Map<string, ColumnItem>, rootNode: ColumnItem) {
+  private buildMenuFromGroups(
+    groups: LayerGroup[], groupNodes: Map<string, ColumnItem>
+  ): ColumnItem[] {
+    const items: ColumnItem[] = []
     for (const group of groups) {
       const groupNode = groupNodes.get(group.path.toString())
       if (group.groupName === undefined && groupNode !== undefined) {
-        rootNode?.children?.push(groupNode)
+        items.push(groupNode)
       } else {
         if (groupNode !== undefined && group.groupName !== undefined && group.path.length > 0) {
           const parentPath = group.path.slice(0, -1)
@@ -145,6 +155,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
         }
       }
     }
+    return items
   }
 
   private determineGroupNodesMap(groups: LayerGroup[]): Map<string, ColumnItem> {
@@ -186,7 +197,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     try {
       const response = await this.getLegendGraphic(this.layerName)
       this.legend = response.legend
-      this.unit = response.unit
+      this.unit = response.unit ?? ''
     } catch {
       this.legend = []
       this.unit = ""
@@ -195,7 +206,8 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   }
 
   setLayerOptions (): void {
-    if (this.layerName) { this.layerOptions = { name: this.layerName, time: this.currentTime } }
+    if (this.layerName) { 
+      this.layerOptions = { name: this.layerName, time: this.currentTime, bbox: this.layersBbox[this.layerName] } }
   }
 }
 </script>

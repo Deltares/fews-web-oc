@@ -7,7 +7,8 @@ import { Component, Inject, Prop, Vue, Watch } from 'vue-property-decorator'
 import { ImageSource, ImageSourceRaw, LngLatBounds, Map, RasterLayer } from 'mapbox-gl'
 import { point } from "@turf/helpers"
 import { toMercator } from "@turf/projection"
-
+import { BoundingBox } from '@deltares/fews-wms-requests'
+import { toWgs84 } from '@turf/projection';
 
 function getFrameId (layerName: string, frame: number): string {
   return `${layerName}-${frame}`
@@ -22,9 +23,39 @@ function getCoordsFromBounds(bounds: LngLatBounds) {
   ]
 }
 
+
+function isBoundsWithinBounds(innerBounds: LngLatBounds, outerBounds: LngLatBounds) {
+  const innerNorthEast = innerBounds.getNorthEast()
+  const innerSouthWest = innerBounds.getSouthWest()
+  const outerNorthEast = outerBounds.getNorthEast()
+  const outerSouthWest = outerBounds.getSouthWest()
+
+  const isLngWithin = innerSouthWest.lng >= outerSouthWest.lng && innerNorthEast.lng <= outerNorthEast.lng
+  const isLatWithin = innerSouthWest.lat >= outerSouthWest.lat && innerNorthEast.lat <= outerNorthEast.lat
+  return isLngWithin && isLatWithin
+}
+
+export function convertBoundingBoxToLngLatBounds(boundingBox: BoundingBox): LngLatBounds {
+    const crs = boundingBox.crs
+
+    const minx = parseFloat(boundingBox.minx)
+    const miny = parseFloat(boundingBox.miny)
+    const maxx = parseFloat(boundingBox.maxx)
+    const maxy = parseFloat(boundingBox.maxy)
+
+    const p1 = toWgs84(point([minx, miny], { crs: crs }))
+    const p2 = toWgs84(point([maxx, maxy], { crs: crs }))
+    return  new LngLatBounds(
+        [p1.geometry.coordinates[0], p1.geometry.coordinates[1]], // sw
+        [p2.geometry.coordinates[0], p2.geometry.coordinates[1]], // ne
+      )
+  }
+
+
 export interface MapboxLayerOptions {
   name: string;
   time: Date;
+  bbox: LngLatBounds;
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
@@ -77,7 +108,7 @@ export default class AnimatedMapboxLayer extends Vue {
   }
 
   updateSource() {
-    if (this.layer === null) return
+    if (this.layer === null ) return
     const time = this.layer.time.toISOString()
     const source = this.mapObject.getSource(this.newLayerId) as ImageSource
     const bounds = this.mapObject.getBounds()
@@ -87,6 +118,21 @@ export default class AnimatedMapboxLayer extends Vue {
       url: `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${this.layer.name}&crs=EPSG:3857&bbox=${getMercatorBboxFromBounds(bounds)}&height=${canvas.height}&width=${canvas.width}&time=${time}`,
       coordinates: getCoordsFromBounds(bounds)
     })
+  }
+
+  setDefaultZoom() {
+    if (this.layer === null || this.layer.bbox === undefined) return
+    if (this.mapObject) {
+      const currentBounds = this.mapObject.getBounds()
+      const bounds = this.layer.bbox
+      if (isBoundsWithinBounds(currentBounds, bounds)) {
+          return
+        } else {
+          this.$nextTick(() => {
+            this.mapObject.fitBounds(bounds)
+          })
+        }
+      }
   }
 
   @Watch('layer')
@@ -100,6 +146,7 @@ export default class AnimatedMapboxLayer extends Vue {
     if (this.layer.name === undefined || this.layer.time === undefined) {
       return
     }
+    const originalLayerName = this.currentLayer
     if (this.layer.name !== this.currentLayer) {
       this.counter += 1
       this.removeOldLayers()
@@ -111,6 +158,10 @@ export default class AnimatedMapboxLayer extends Vue {
     this.newLayerId = getFrameId(this.layer.name, this.counter)
     const source = this.mapObject.getSource(this.newLayerId)
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    if (this.currentLayer !== originalLayerName ) {
+      // set default zoom only if layer is changed
+      this.setDefaultZoom()
+    }
     if (source === undefined) {
       const bounds = this.mapObject.getBounds()
       const canvas = this.mapObject.getCanvas()
