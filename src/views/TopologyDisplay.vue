@@ -49,8 +49,8 @@
       <pane>
         <splitpanes class="default-theme">
           <pane v-if="showMap">
-            <explorer-component :topology-node="topologyNode"
-                                @updateLocations="updateLocations"></explorer-component>
+            <ExplorerComponent :topology-node="topologyNode"
+                                @updateLocations="updateLocations"></ExplorerComponent>
           </pane>
           <pane v-if="showTimeSeries">
             <v-toolbar v-if="plots.length > 1" dense>
@@ -84,29 +84,28 @@
 </template>
 <script lang="ts">
 
-import {Component, Mixins, Prop, Watch} from "vue-property-decorator";
-import TimeSeriesMixin from "@/mixins/TimeSeriesMixin";
-import PiRequestsMixin from "@/mixins/PiRequestsMixin";
-import {ColumnItem} from "@/components/ColumnItem";
+import {Component, Mixins, Prop, Watch} from "vue-property-decorator"
+import TimeSeriesMixin from "@/mixins/TimeSeriesMixin"
+import PiRequestsMixin from "@/mixins/PiRequestsMixin"
+import {ColumnItem} from "@/components/ColumnItem"
 import {
   ActionRequest,
-  ActionsResponse, Location,
-  PiWebserviceProvider,
+  ActionsResponse, PiWebserviceProvider,
   TopologyActionFilter,
   TopologyNode
-} from "@deltares/fews-pi-requests";
-import {DisplayConfig, DisplayType} from "@/lib/Layout/DisplayConfig";
-import ColumnMenu from "@/components/ColumnMenu.vue";
-import TreeMenu from "@/components/TreeMenu.vue";
-import ComponentsPanel from "@/components/Layout/ComponentsPanel.vue";
-import {TopologyDisplayTab} from "@/lib/TopologyDisplay/types";
-import {TopologyNodeResponse} from "@deltares/fews-pi-requests/lib/types/response/topology";
-import ExplorerComponent from "@/components/explorer/ExplorerComponent.vue";
+} from "@deltares/fews-pi-requests"
+import {DisplayConfig, DisplayType} from "@/lib/Layout/DisplayConfig"
+import ColumnMenu from "@/components/ColumnMenu.vue"
+import TreeMenu from "@/components/TreeMenu.vue"
+import ComponentsPanel from "@/components/Layout/ComponentsPanel.vue"
+import {TopologyDisplayTab} from "@/lib/TopologyDisplay/types"
+import {TopologyNodeResponse} from "@deltares/fews-pi-requests/lib/types/response/topology"
+import ExplorerComponent from "@/components/explorer/ExplorerComponent.vue"
 import {Pane, Splitpanes} from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
-import {timeSeriesDisplayToChartConfig} from "@/lib/ChartConfig/timeSeriesDisplayToChartConfig";
-import {namespace} from "vuex-class";
-import {fetchTimeSeriesDisplaysAndRequests} from "@/lib/TopologyDisplay/timeseriesdisplay";
+import {timeSeriesDisplayToChartConfig} from "@/lib/ChartConfig/timeSeriesDisplayToChartConfig"
+import {namespace} from "vuex-class"
+import {fetchTimeSeriesDisplaysAndRequests} from "@/lib/TopologyDisplay/timeseriesdisplay"
 
 const sytemTimeModule = namespace('systemTime')
 
@@ -125,7 +124,7 @@ export default class TopologyDisplay extends Mixins(TimeSeriesMixin, PiRequestsM
   @Prop({default: '', type: String})
   nodeId!: string
 
-  static TIME_SERIES_DIALOG_PANEL: string = "time series dialog";
+  static TIME_SERIES_DIALOG_PANEL: string = "time series dialog"
 
   @sytemTimeModule.State('startTime')
   startTime!: Date
@@ -138,20 +137,20 @@ export default class TopologyDisplay extends Mixins(TimeSeriesMixin, PiRequestsM
   columnItems: ColumnItem[] = []
   tabs: TopologyDisplayTab[] = []
   baseUrl!: string
-  webServiceProvider: PiWebserviceProvider = {} as PiWebserviceProvider;
+  webServiceProvider: PiWebserviceProvider = {} as PiWebserviceProvider
   urlTopologyNodeMap: Map<string, string> = new Map<string, string>()
   displays: DisplayConfig[] = []
-  selectedTab = null;
+  selectedTab = null
   allDisplays: DisplayConfig[][] = []
-  requests: ActionRequest[][] = [];
-  plots: string[] = [];
+  requests: ActionRequest[][] = []
+  plots: string[] = []
   selectedItem: number = -1
   wmsLayerId: string | undefined = ''
   filterIds: string[] | undefined = []
   topologyNode: TopologyNode | undefined = undefined
   showMap = true
   showTimeSeries = false
-  topologyMap: Map<string, TopologyNode> = new Map<string, TopologyNode>();
+  topologyMap: Map<string, TopologyNode> = new Map<string, TopologyNode>()
 
 
   created(): void {
@@ -160,12 +159,15 @@ export default class TopologyDisplay extends Mixins(TimeSeriesMixin, PiRequestsM
 
   async mounted(): Promise<void> {
     const transformRequestFn = this.getTransformRequest()
-    this.webServiceProvider = new PiWebserviceProvider(this.baseUrl, {transformRequestFn});
-    let nodes: TopologyNodeResponse = await this.webServiceProvider.getTopologyNodes();
+    this.webServiceProvider = new PiWebserviceProvider(this.baseUrl, {transformRequestFn})
+    let nodes: TopologyNodeResponse = await this.webServiceProvider.getTopologyNodes()
     this.createTopologyMap(nodes.topologyNodes, this.topologyMap)
     this.columnItems = await this.loadNodes(nodes)
     this.open = [this.columnItems[0].id]
     this.tabs = this.getTopologyTabs(nodes)
+    if (this.nodeId !== '') {
+      await this.onNodeChange()
+    }
 
   }
 
@@ -174,9 +176,9 @@ export default class TopologyDisplay extends Mixins(TimeSeriesMixin, PiRequestsM
     if (this.filterIds === undefined) return
     if (locationIds.length === 0) {
       if (this.topologyNode?.displayGroups !== undefined) {
-        await this.showDisplayGroupsTimeSeries()
+        await this.fetchDisplayGroupsTimeSeries()
       } else {
-        this.showTimeSeries = false;
+        this.showTimeSeries = false
       }
       return
     }
@@ -189,8 +191,8 @@ export default class TopologyDisplay extends Mixins(TimeSeriesMixin, PiRequestsM
 
   @Watch('selectedItem')
   async onPlotChanged(): Promise<void> {
-    this.displays = this.allDisplays[this.selectedItem];
-    await this.loadTimeSeries(this.selectedItem);
+    this.displays = this.allDisplays[this.selectedItem]
+    await this.loadTimeSeries(this.selectedItem)
   }
 
   @Watch('nodeId')
@@ -208,24 +210,24 @@ export default class TopologyDisplay extends Mixins(TimeSeriesMixin, PiRequestsM
 
 
       if (!this.showTimeSeries) return
-      this.showDisplayGroupsTimeSeries();
+      this.fetchDisplayGroupsTimeSeries()
     })
 
 
   }
 
-  private async showDisplayGroupsTimeSeries() {
-    const filter = {} as TopologyActionFilter;
-    filter.nodeId = this.nodeId;
-    const response: ActionsResponse = await this.webServiceProvider.getTopologyActions(filter);
-    this.selectedItem = 0;
-    this.allDisplays = [];
-    this.requests = [];
-    this.plots = [];
-    this.displays = [];
+  private async fetchDisplayGroupsTimeSeries(): Promise<void> {
+    const filter = {} as TopologyActionFilter
+    filter.nodeId = this.nodeId
+    const response: ActionsResponse = await this.webServiceProvider.getTopologyActions(filter)
+    this.selectedItem = 0
+    this.allDisplays = []
+    this.requests = []
+    this.plots = []
+    this.displays = []
     for (const result of response.results) {
-      if (result.config === undefined) continue;
-      const display: DisplayConfig[] = [];
+      if (result.config === undefined) continue
+      const display: DisplayConfig[] = []
       const title = result.config.timeSeriesDisplay.title ?? ''
       result.config.timeSeriesDisplay.subplots?.forEach((subPlot, index) => {
         display.push({
@@ -236,16 +238,16 @@ export default class TopologyDisplay extends Mixins(TimeSeriesMixin, PiRequestsM
           config: timeSeriesDisplayToChartConfig(subPlot, title)
         })
       })
-      this.allDisplays.push(display);
-      this.requests.push(result.requests);
+      this.allDisplays.push(display)
+      this.requests.push(result.requests)
       this.plots.push(title)
     }
-    this.displays = this.allDisplays.length > 0 ? this.allDisplays[0] : [];
-    await this.loadTimeSeries(0);
+    this.displays = this.allDisplays.length > 0 ? this.allDisplays[0] : []
+    await this.loadTimeSeries(0)
   }
 
   createTopologyMap(nodes: TopologyNode[] | undefined, topologyMap: Map<string, TopologyNode>) {
-    if (nodes === undefined) return undefined;
+    if (nodes === undefined) return undefined
     for (const node of nodes) {
       topologyMap.set(node.id, node)
       this.createTopologyMap(node.topologyNodes, topologyMap)
@@ -294,47 +296,47 @@ export default class TopologyDisplay extends Mixins(TimeSeriesMixin, PiRequestsM
   }
 
   getTopologyTabs(topologyNodeResponse: TopologyNodeResponse): TopologyDisplayTab[] {
-    const panels = []
+    const panels: TopologyDisplayTab[] = []
     const hasGrid = this.hasApplicableNodes(topologyNodeResponse.topologyNodes, node => node.gridDisplaySelection !== undefined || node.filterIds != undefined)
     const hasTimeSeriesDisplay = this.hasApplicableNodes(topologyNodeResponse.topologyNodes, node => node.displayGroups !== undefined)
     if (hasGrid || hasTimeSeriesDisplay) {
-      panels.push({id: "spatialDisplay", title: "Time Series Display"} as TopologyDisplayTab)
+      panels.push({id: "spatialDisplay", title: "Time Series Display"})
     }
-    return panels;
+    return panels
   }
 
 
   hasApplicableNodes(nodes: TopologyNode[] | undefined, callback: (node: TopologyNode) => boolean): boolean {
-    if (nodes === undefined) return false;
+    if (nodes === undefined) return false
     for (const node of nodes) {
-      if (callback(node)) return true;
+      if (callback(node)) return true
       if (this.hasApplicableNodes(node.topologyNodes, callback)) {
-        return true;
+        return true
       }
     }
-    return false;
+    return false
   }
 
   getIcon(node: TopologyNode): string | undefined {
-    if (node.url && node.mainPanel !== TopologyDisplay.TIME_SERIES_DIALOG_PANEL) return 'mdi-share';
-    return undefined;
+    if (node.url && node.mainPanel !== TopologyDisplay.TIME_SERIES_DIALOG_PANEL) return 'mdi-share'
+    return undefined
   }
 
   topologyNodeIsVisible(node: TopologyNode): boolean {
-    if (node.url !== undefined) return true;
+    if (node.url !== undefined) return true
     if (node.filterIds !== undefined && node.filterIds.length > 0) return true
     if (node.gridDisplaySelection !== undefined) return true
-    if (node.displayId !== undefined) return true;
+    if (node.displayId !== undefined) return true
     if (node.displayGroups !== undefined && node.displayGroups.length > 0) return true
-    return this.anyChildNodeIsVisible(node.topologyNodes);
+    return this.anyChildNodeIsVisible(node.topologyNodes)
   }
 
   anyChildNodeIsVisible(nodes: TopologyNode[] | undefined): boolean {
-    if (nodes === undefined) return false;
+    if (nodes === undefined) return false
     for (const node of nodes) {
       if (this.topologyNodeIsVisible(node)) return true
     }
-    return false;
+    return false
   }
 }
 </script>

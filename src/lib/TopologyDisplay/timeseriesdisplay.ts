@@ -62,7 +62,6 @@ async function fetchTimeSeriesDisplaysAndRequestsForSingleFilterId(
   provider: PiWebserviceProvider, filterId: string, locationIds: string[]
 ): Promise<[DisplayConfig[], ActionRequest[]]> {
   const response = await getFilterActions(provider, filterId, locationIds)
-  console.log(response)
 
   let displays: DisplayConfig[] = []
   let requests: ActionRequest[] = []

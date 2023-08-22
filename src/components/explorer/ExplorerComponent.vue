@@ -119,7 +119,6 @@ export default class ExplorerComponent extends Mixins(WMSMixin, TimeSeriesMixin,
   debouncedSetWMSLayerOptions = debounce(
     this.setWMSLayerOptions, 500, {leading: true, trailing: true}
   )
-  topologyMap: Map<string, TopologyNode> = new Map<string, TopologyNode>();
   dateController: DateController = new DateController([])
   legend: ColourMap = []
   unit: string = ""
@@ -135,14 +134,13 @@ export default class ExplorerComponent extends Mixins(WMSMixin, TimeSeriesMixin,
     await this.getCapabilities()
     const topologyResponse: TopologyNodeResponse = await this.webServiceProvider.getTopologyNodes();
     const nodes = topologyResponse.topologyNodes;
-    this.createTopologyMap(nodes, this.topologyMap)
 
     window.dispatchEvent(new Event('resize'))
   }
 
   @Watch('topologyNode', {deep: true})
   async onTopologyNodeChange(): Promise<void> {
-    this.filterIds = this.topologyNode.filterIds ? this.topologyNode.filterIds : []
+    this.filterIds = this.topologyNode.filterIds ?? []
     this.wmsLayerId = this.topologyNode.gridDisplaySelection?.plotId
     this.selectedLocations = []
     this.locations = []
@@ -179,14 +177,6 @@ export default class ExplorerComponent extends Mixins(WMSMixin, TimeSeriesMixin,
       this.dateController.selectDate(new Date())
       this.currentTime = this.dateController.currentTime
       this.setWMSLayerOptions()
-    }
-  }
-
-  createTopologyMap(nodes: TopologyNode[] | undefined, topologyMap: Map<string, TopologyNode>) {
-    if (nodes === undefined) return undefined;
-    for (const node of nodes) {
-      topologyMap.set(node.id, node)
-      this.createTopologyMap(node.topologyNodes, topologyMap)
     }
   }
 
