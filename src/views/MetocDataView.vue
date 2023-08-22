@@ -87,7 +87,7 @@
 <script lang="ts">
 import { FeatureCollection, Geometry } from 'geojson';
 import { debounce } from 'lodash';
-import type { MapLayerMouseEvent, CircleLayer, GeoJSONSourceRaw, CirclePaint, Expression } from 'mapbox-gl'
+import { type MapLayerMouseEvent, type CircleLayer, type GeoJSONSourceRaw, type CirclePaint, type Expression, LngLatBounds } from 'mapbox-gl'
 import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 
 import type { Location } from "@deltares/fews-pi-requests";
@@ -112,12 +112,13 @@ import WMSMixin from '@/mixins/WMSMixin'
 
 import ColourBar from '@/components/ColourBar.vue';
 import DataSourceControl from '@/components/DataSourceControl.vue';
-import MapboxLayer, { MapboxLayerOptions } from '@/components/AnimatedMapboxLayer.vue';
+import MapboxLayer, { MapboxLayerOptions, convertBoundingBoxToLngLatBounds } from '@/components/AnimatedMapboxLayer.vue';
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import MetocSidebar from '@/components/MetocSidebar.vue';
 import LocationsLayerSearchControl from '@/components/LocationsLayerSearchControl.vue'
 import MapComponent from '@/components/MapComponent.vue'
 import WMSInfoPanel from '@/components/WMSInfoPanel.vue';
+import { Layer } from '@deltares/fews-wms-requests';
 
 const defaultGeoJsonSource: GeoJSONSourceRaw = {
   type: 'geojson',
@@ -256,7 +257,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     if (this.times.length === 0 || !this.currentDataSource) {
       this.wmsLayerOptions = null
     } else {
+      const boundingBoxWms = this.currentWMSLayer?.boundingBox
+      const boundingBox = boundingBoxWms ? convertBoundingBoxToLngLatBounds(boundingBoxWms) : new LngLatBounds()
       this.wmsLayerOptions = {
+        bbox: boundingBox,
         name: this.currentDataSource.wmsLayerId,
         time: this.currentTime
       }
@@ -521,13 +525,17 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     return this.currentDataLayer.dataSources.find(dataSource => dataSource.id === this.dataSourceId) ?? null
   }
 
+  get currentWMSLayer(): Layer | null {
+    const layer = this.layers.find(layer => layer.name === this.currentDataSource?.wmsLayerId)
+    return layer ?? null
+  }
+
   get dataSources(): DataSource[] {
     return this.currentDataLayer?.dataSources ?? []
   }
 
   get layerTitle(): string {
-    const layer = this.layers.find(layer => layer.name === this.currentDataSource?.wmsLayerId)
-    return layer?.title ?? '—'
+    return this.currentWMSLayer?.title ?? '—'
   }
 
   get showMap(): boolean {
