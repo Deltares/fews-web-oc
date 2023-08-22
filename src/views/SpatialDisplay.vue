@@ -197,7 +197,7 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     try {
       const response = await this.getLegendGraphic(this.layerName)
       this.legend = response.legend
-      this.unit = response.unit
+      this.unit = response.unit ?? ''
     } catch {
       this.legend = []
       this.unit = ""
