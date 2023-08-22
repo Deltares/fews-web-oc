@@ -1,5 +1,5 @@
 import {Component, Vue} from 'vue-property-decorator'
-import {Layer, WMSProvider} from '@deltares/fews-wms-requests'
+import {GetLegendGraphicResponse, Layer, WMSProvider} from '@deltares/fews-wms-requests'
 
 @Component
 export default class WMSMixin extends Vue {
@@ -62,7 +62,7 @@ export default class WMSMixin extends Vue {
     return valueDates
   }
 
-  async getLegendGraphic (layers: string): Promise<any> {
+  async getLegendGraphic (layers: string): Promise<GetLegendGraphicResponse> {
     return await this.wmsProvider.getLegendGraphic({layers})
   }
 
