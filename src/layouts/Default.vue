@@ -13,7 +13,6 @@
         <v-list-item
           aria-label="Menu button"
           v-bind="props"
-          v-on="isActive"
         >
           <v-list-item-title> Component TBD</v-list-item-title>
           <template v-slot:append>
