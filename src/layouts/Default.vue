@@ -22,7 +22,7 @@
         </v-list-item>
         </template>
         <v-list density="compact">
-          <v-subheader>Switch to</v-subheader>
+          <v-list-subheader>Switch to</v-list-subheader>
           <!-- <v-list-item v-for="item in menuItems" :key="item.id" :to="item.to">
             <v-list-item-icon>
               <v-icon>{{ item.icon }}</v-icon>
