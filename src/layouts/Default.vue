@@ -33,7 +33,7 @@
           </v-list-item> -->
         </v-list>
       </v-menu>
-      <portal-target name="web-oc-sidebar" />
+      <div name="web-oc-sidebar-targer"></div>/
     </v-navigation-drawer>
     <v-app-bar color="#080C80" density="compact">
       <template v-slot:prepend>
