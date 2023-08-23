@@ -4,7 +4,6 @@ import Default from './layouts/Default.vue'
 
 <template>
   <Default style="height: 100%;">
-    <router-view style="height: 100%;"/>
   </Default>
 </template>
 
