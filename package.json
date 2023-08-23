@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@deltares/fews-pi-requests": "^0.6.3-beta.7",
     "vue": "^3.3.4",
+    "vue-router": "^4.2.4",
     "vuetify": "^3.3.14"
   },
   "devDependencies": {

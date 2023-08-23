@@ -44,15 +44,10 @@
     </v-app-bar>
 
     <v-main class="d-flex align-center justify-center" id="main">
-      <router-view style="height: 100%;">
-      </router-view>
-      <!-- <div class="alert-div" v-if="showAlerts">
-        <div v-for="alert in activeAlerts" v-bind:key="alert.id">
-          <v-alert type="error" dismissible @input="(value) => dismissAlert(alert, value)">
-            {{ alert.message }}
-          </v-alert>
-        </div>
-      </div> -->
+      <Suspense>
+        <router-view style="height: 100%;">
+        </router-view>
+      </Suspense>
     </v-main>
   </v-layout>
 </template>
