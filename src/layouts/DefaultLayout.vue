@@ -1,7 +1,11 @@
 <template>
   <v-layout id="app">
-    <v-navigation-drawer v-model="drawer"  :location="isRtl ? 'right' : 'left'" width="320"
-      class="view-sidebar">
+    <v-navigation-drawer
+      v-model="drawer"
+      :location="isRtl ? 'right' : 'left'"
+      width="320"
+      class="view-sidebar"
+    >
       <v-toolbar density="compact" fixed>
         <v-btn variant="text" :to="{ name: 'About' }" class="fews-home">
           <v-img width="148"></v-img>
@@ -9,16 +13,15 @@
         <v-spacer />
       </v-toolbar>
       <v-menu offset-y left min-width="320">
-        <template v-slot:activator="{ isActive, props }">
-        <v-list-item
-          aria-label="Menu button"
-          v-bind="props"
-        >
-          <v-list-item-title> Component TBD</v-list-item-title>
-          <template v-slot:append>
-          <v-icon :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"></v-icon>
-        </template>
-        </v-list-item>
+        <template #activator="{ isActive, props }">
+          <v-list-item aria-label="Menu button" v-bind="props">
+            <v-list-item-title> Component TBD</v-list-item-title>
+            <template #append>
+              <v-icon
+                :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+              ></v-icon>
+            </template>
+          </v-list-item>
         </template>
         <v-list density="compact">
           <v-list-subheader>Switch to</v-list-subheader>
@@ -32,37 +35,36 @@
           </v-list-item> -->
         </v-list>
       </v-menu>
-      <div name="web-oc-sidebar-targer"></div>/
+      <div name="web-oc-sidebar-targer"></div>
+      /
     </v-navigation-drawer>
     <v-app-bar color="#080C80" density="compact">
-      <template v-slot:prepend>
+      <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       </template>
       <v-spacer />
       <v-btn variant="text" icon="mdi-dots-vertical"></v-btn>
     </v-app-bar>
 
-    <v-main class="d-flex align-center justify-center" id="main">
+    <v-main id="main" class="d-flex align-center justify-center">
       <Suspense>
-        <router-view style="height: 100%;">
-        </router-view>
+        <router-view style="height: 100%"> </router-view>
       </Suspense>
     </v-main>
   </v-layout>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from 'vue'
 import { useRtl } from 'vuetify'
 
 const drawer = ref(true)
 const { isRtl } = useRtl()
-
-
 </script>
 
 <style>
-html, body {
+html,
+body {
   margin: 0px;
   overflow: hidden;
   height: 100%;

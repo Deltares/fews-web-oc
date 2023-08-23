@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import Default from './layouts/Default.vue'
+import DefaultLayout from './layouts/DefaultLayout.vue'
 </script>
 
 <template>
-  <Default style="height: 100%;">
-  </Default>
+  <DefaultLayout style="height: 100%"> </DefaultLayout>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

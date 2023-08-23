@@ -11,34 +11,34 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
     path: '/about',
     name: 'About',
     meta: { authorize: [] },
-    component: AboutView
+    component: AboutView,
   },
-//   {
-//     path: '/login',
-//     name: 'Login',
-//     meta: { layout: 'empty' },
-//     component: LoginView
-//   },
-//   {
-//     path: '/auth/silent',
-//     meta: { layout: 'empty' },
-//     component: Silent
-//   },
-//   {
-//     path: '/auth/callback',
-//     meta: { layout: 'empty' },
-//     component: Callback
-//   },
-//   {
-//     path: '/auth/logout',
-//     meta: { layout: 'empty' },
-//     component: Logout
-//   }
+  //   {
+  //     path: '/login',
+  //     name: 'Login',
+  //     meta: { layout: 'empty' },
+  //     component: LoginView
+  //   },
+  //   {
+  //     path: '/auth/silent',
+  //     meta: { layout: 'empty' },
+  //     component: Silent
+  //   },
+  //   {
+  //     path: '/auth/callback',
+  //     meta: { layout: 'empty' },
+  //     component: Callback
+  //   },
+  //   {
+  //     path: '/auth/logout',
+  //     meta: { layout: 'empty' },
+  //     component: Logout
+  //   }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: routesBase
+  routes: routesBase,
 })
 
 export default router
