@@ -2,7 +2,7 @@
   <v-app>
     <v-main class="login-container">
       <div>
-        <img src="/images/deltares_logo.png" alt="Deltares" contain style="max-width: 80%"/>
+        <img src="images/deltares_logo.png" alt="Deltares" contain style="max-width: 80%"/>
       </div>
       <h1 style="color: white;">Delft-FEWS Web Operator Client</h1>
       <div class="login-providers">
@@ -18,7 +18,7 @@ import DeltaresLogin from './DeltaresLogin.vue'
 
 <style scoped>
 .login-container {
-  background-image: url("/images/D111-103_getijdenland_small.jpg");
+  background-image: url("images/D111-103_getijdenland_small.jpg");
   background-position-x: center;
   background-size: cover;
   text-align: center;
