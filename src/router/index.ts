@@ -30,17 +30,17 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
   {
     path: '/login',
     name: 'Login',
-    meta: { layout: 'empty' },
+    meta: { layout: 'EmptyLayout' },
     component: LoginView,
   },
   {
     path: '/auth/silent',
-    meta: { layout: 'empty' },
+    meta: { layout: 'EmptyLayout' },
     component: Silent,
   },
   {
     path: '/auth/logout',
-    meta: { layout: 'empty' },
+    meta: { layout: 'EmptyLayout' },
     component: Logout,
   },
 ]
