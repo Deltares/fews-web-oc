@@ -1,17 +1,25 @@
 <template>
-  <div />
+  <div>
+    <slot></slot>
+  </div>
 </template>
 
 <script lang="ts">
-import { Component, Inject, Prop, Vue, Watch } from 'vue-property-decorator'
-import { ImageSource, ImageSourceRaw, LngLatBounds, Map, RasterLayer } from 'mapbox-gl'
-import { point } from "@turf/helpers"
-import { toMercator } from "@turf/projection"
-import { BoundingBox } from '@deltares/fews-wms-requests'
-import { toWgs84 } from '@turf/projection';
+import { Component, Inject, Prop, Vue, Watch } from "vue-property-decorator";
+import {
+  ImageSource,
+  ImageSourceRaw,
+  LngLatBounds,
+  Map,
+  RasterLayer,
+} from "mapbox-gl";
+import { point } from "@turf/helpers";
+import { toMercator } from "@turf/projection";
+import { BoundingBox } from "@deltares/fews-wms-requests";
+import { toWgs84 } from "@turf/projection";
 
-function getFrameId (layerName: string, frame: number): string {
-  return `${layerName}-${frame}`
+function getFrameId(layerName: string, frame: number): string {
+  return `${layerName}-${frame}`;
 }
 
 function getCoordsFromBounds(bounds: LngLatBounds) {
@@ -20,193 +28,226 @@ function getCoordsFromBounds(bounds: LngLatBounds) {
     bounds.getNorthEast().toArray(),
     bounds.getSouthEast().toArray(),
     bounds.getSouthWest().toArray(),
-  ]
+  ];
 }
 
-function isBoundsWithinBounds(innerBounds: LngLatBounds, outerBounds: LngLatBounds) {
-  const innerNorthEast = innerBounds.getNorthEast()
-  const innerSouthWest = innerBounds.getSouthWest()
-  const outerNorthEast = outerBounds.getNorthEast()
-  const outerSouthWest = outerBounds.getSouthWest()
+function isBoundsWithinBounds(
+  innerBounds: LngLatBounds,
+  outerBounds: LngLatBounds
+) {
+  const innerNorthEast = innerBounds.getNorthEast();
+  const innerSouthWest = innerBounds.getSouthWest();
+  const outerNorthEast = outerBounds.getNorthEast();
+  const outerSouthWest = outerBounds.getSouthWest();
 
-  const isLngWithin = innerSouthWest.lng >= outerSouthWest.lng && innerNorthEast.lng <= outerNorthEast.lng
-  const isLatWithin = innerSouthWest.lat >= outerSouthWest.lat && innerNorthEast.lat <= outerNorthEast.lat
-  return isLngWithin && isLatWithin
+  const isLngWithin =
+    innerSouthWest.lng >= outerSouthWest.lng &&
+    innerNorthEast.lng <= outerNorthEast.lng;
+  const isLatWithin =
+    innerSouthWest.lat >= outerSouthWest.lat &&
+    innerNorthEast.lat <= outerNorthEast.lat;
+  return isLngWithin && isLatWithin;
 }
 
-export function convertBoundingBoxToLngLatBounds(boundingBox: BoundingBox): LngLatBounds {
-    const crs = boundingBox.crs
+export function convertBoundingBoxToLngLatBounds(
+  boundingBox: BoundingBox
+): LngLatBounds {
+  const crs = boundingBox.crs;
 
-    const minx = parseFloat(boundingBox.minx)
-    const miny = parseFloat(boundingBox.miny)
-    const maxx = parseFloat(boundingBox.maxx)
-    const maxy = parseFloat(boundingBox.maxy)
+  const minx = parseFloat(boundingBox.minx);
+  const miny = parseFloat(boundingBox.miny);
+  const maxx = parseFloat(boundingBox.maxx);
+  const maxy = parseFloat(boundingBox.maxy);
 
-    const p1 = toWgs84(point([minx, miny], { crs: crs }))
-    const p2 = toWgs84(point([maxx, maxy], { crs: crs }))
-    return  new LngLatBounds(
-        [p1.geometry.coordinates[0], p1.geometry.coordinates[1]], // sw
-        [p2.geometry.coordinates[0], p2.geometry.coordinates[1]], // ne
-      )
-  }
+  const p1 = toWgs84(point([minx, miny], { crs: crs }));
+  const p2 = toWgs84(point([maxx, maxy], { crs: crs }));
+  return new LngLatBounds(
+    [p1.geometry.coordinates[0], p1.geometry.coordinates[1]], // sw
+    [p2.geometry.coordinates[0], p2.geometry.coordinates[1]] // ne
+  );
+}
 
 export interface MapboxLayerOptions {
   name: string;
   time: Date;
   bbox: LngLatBounds;
+  elevation?: number;
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
-  const sw = toMercator(point(bounds.getSouthWest().toArray()))
-  const ne = toMercator(point(bounds.getNorthEast().toArray()))
-  return [...sw.geometry.coordinates, ...ne.geometry.coordinates]
+  const sw = toMercator(point(bounds.getSouthWest().toArray()));
+  const ne = toMercator(point(bounds.getNorthEast().toArray()));
+  return [...sw.geometry.coordinates, ...ne.geometry.coordinates];
 }
 
 @Component
 export default class AnimatedMapboxLayer extends Vue {
-  @Prop({ default: () => { return null } })
-  layer!: MapboxLayerOptions | null
+  @Prop({
+    default: () => {
+      return null;
+    },
+  })
+  layer!: MapboxLayerOptions | null;
 
-  @Inject() getMap!: () => Map
+  @Inject() getMap!: () => Map;
 
-  mapObject!: Map
-  newLayerId!: string
-  isInitialized = false
-  counter = 0
-  currentLayer: string = ''
+  mapObject!: Map;
+  newLayerId!: string;
+  isInitialized = false;
+  counter = 0;
+  currentLayer: string = "";
 
   mounted() {
     const map = this.getMap();
-    if(map && map.isStyleLoaded()) {
-      this.mapObject = map
-      this.isInitialized = true
+    if (map && map.isStyleLoaded()) {
+      this.mapObject = map;
+      this.isInitialized = true;
       this.onLayerChange();
     }
   }
 
   deferredMountedTo(map: Map) {
-    this.mapObject = map
-    this.mapObject.once('load', () => {
-      this.isInitialized = true
-      this.onLayerChange()
-    })
-    this.mapObject.on('moveend', () => {
-      this.updateSource()
-    })
-    this.mapObject.on('data', async (e) => {
-      if (e.sourceId === this.newLayerId && e.tile !== undefined && e.isSourceLoaded) {
-        this.removeOldLayers()
-        this.mapObject.setPaintProperty(
-          e.sourceId,
-          'raster-opacity',
-          1
-        )
+    this.mapObject = map;
+    this.mapObject.once("load", () => {
+      this.isInitialized = true;
+      this.onLayerChange();
+    });
+    this.mapObject.on("moveend", () => {
+      this.updateSource();
+    });
+    this.mapObject.on("data", async (e) => {
+      if (
+        e.sourceId === this.newLayerId &&
+        e.tile !== undefined &&
+        e.isSourceLoaded
+      ) {
+        this.removeOldLayers();
+        this.mapObject.setPaintProperty(e.sourceId, "raster-opacity", 1);
       }
-    })
+    });
   }
 
   updateSource() {
-    if (this.layer === null ) return
-    const time = this.layer.time.toISOString()
-    const source = this.mapObject.getSource(this.newLayerId) as ImageSource
-    const bounds = this.mapObject.getBounds()
-    const canvas = this.mapObject.getCanvas()
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    if (this.layer === null) return;
+    const source = this.mapObject.getSource(this.newLayerId) as ImageSource;
+    const bounds = this.mapObject.getBounds();
+    const canvas = this.mapObject.getCanvas();
+    const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL");
+    let url = this.createGetMapUrl(baseUrl, bounds, canvas);
     source.updateImage({
-      url: `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${this.layer.name}&crs=EPSG:3857&bbox=${getMercatorBboxFromBounds(bounds)}&height=${canvas.height}&width=${canvas.width}&time=${time}`,
-      coordinates: getCoordsFromBounds(bounds)
-    })
+      url: url,
+      coordinates: getCoordsFromBounds(bounds),
+    });
+  }
+
+  private createGetMapUrl(
+    baseUrl: string,
+    bounds: LngLatBounds,
+    canvas: HTMLCanvasElement,
+  ) {
+    if (this.layer === null) return;
+    
+    const time = this.layer.time.toISOString();
+
+    let url = `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${
+      this.layer.name
+    }&crs=EPSG:3857&bbox=${getMercatorBboxFromBounds(bounds)}&height=${
+      canvas.height
+    }&width=${canvas.width}&time=${time}`
+    
+    if (this.layer.elevation) {
+      const elevation = this.layer.elevation.toString();
+      url += `&elevation=${elevation}`;
+    }
+    return url;
   }
 
   setDefaultZoom() {
-    if (this.layer === null || this.layer.bbox === undefined) return
+    if (this.layer === null || this.layer.bbox === undefined) return;
     if (this.mapObject) {
-      const currentBounds = this.mapObject.getBounds()
-      const bounds = this.layer.bbox
+      const currentBounds = this.mapObject.getBounds();
+      const bounds = this.layer.bbox;
       if (isBoundsWithinBounds(currentBounds, bounds)) {
-          return
-        } else {
-          this.$nextTick(() => {
-            this.mapObject.fitBounds(bounds)
-          })
-        }
+        return;
+      } else {
+        this.$nextTick(() => {
+          this.mapObject.fitBounds(bounds);
+        });
       }
+    }
   }
 
-  @Watch('layer')
-  onLayerChange (): void {
-    if (!this.isInitialized) return
+  @Watch("layer")
+  onLayerChange(): void {
+    if (!this.isInitialized) return;
     if (this.layer === null) {
       this.removeLayer();
       this.removeOldLayers();
-      return
+      return;
     }
     if (this.layer.name === undefined || this.layer.time === undefined) {
-      return
+      return;
     }
-    const originalLayerName = this.currentLayer
+    const originalLayerName = this.currentLayer;
     if (this.layer.name !== this.currentLayer) {
-      this.counter += 1
-      this.removeOldLayers()
-      this.counter = 0
-      this.currentLayer = this.layer.name
+      this.counter += 1;
+      this.removeOldLayers();
+      this.counter = 0;
+      this.currentLayer = this.layer.name;
     }
-    const time = this.layer.time.toISOString()
-    this.counter += 1
-    this.newLayerId = getFrameId(this.layer.name, this.counter)
-    const source = this.mapObject.getSource(this.newLayerId)
-    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    if (this.currentLayer !== originalLayerName ) {
+    this.counter += 1;
+    this.newLayerId = getFrameId(this.layer.name, this.counter);
+    const source = this.mapObject.getSource(this.newLayerId);
+    const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL");
+    if (this.currentLayer !== originalLayerName) {
       // set default zoom only if layer is changed
-      this.setDefaultZoom()
+      this.setDefaultZoom();
     }
     if (source === undefined) {
-      const bounds = this.mapObject.getBounds()
-      const canvas = this.mapObject.getCanvas()
+      const bounds = this.mapObject.getBounds();
+      const canvas = this.mapObject.getCanvas();
+      const url = this.createGetMapUrl(baseUrl, bounds, canvas)
       const rasterSource: ImageSourceRaw = {
-        type: 'image',
-        url: `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${this.layer.name}&crs=EPSG:3857&bbox=${getMercatorBboxFromBounds(bounds)}&height=${canvas.height}&width=${canvas.width}&time=${time}`,
-        coordinates: getCoordsFromBounds(bounds)
-      }
-      this.mapObject.addSource(this.newLayerId, rasterSource)
+        type: "image",
+        url: url,
+        coordinates: getCoordsFromBounds(bounds),
+      };
+      this.mapObject.addSource(this.newLayerId, rasterSource);
       const rasterLayer: RasterLayer = {
         id: this.newLayerId,
-        type: 'raster',
+        type: "raster",
         source: this.newLayerId,
         paint: {
-          'raster-opacity': 0,
-          'raster-opacity-transition': {
+          "raster-opacity": 0,
+          "raster-opacity-transition": {
             duration: 0,
-            delay: 0
+            delay: 0,
           },
-          'raster-fade-duration': 0,
+          "raster-fade-duration": 0,
         },
-      }
-      this.mapObject.addLayer(
-        rasterLayer,
-        'boundary_country_outline'
-      )
+      };
+      this.mapObject.addLayer(rasterLayer, "boundary_country_outline");
     }
   }
 
-  removeOldLayers (): void {
+  removeOldLayers(): void {
     for (let i = this.counter - 1; i > 0; i--) {
-      const oldLayerId = getFrameId(this.currentLayer, i)
+      const oldLayerId = getFrameId(this.currentLayer, i);
       if (this.mapObject.getLayer(oldLayerId)) {
-        this.mapObject.removeLayer(oldLayerId)
-        this.mapObject.removeSource(oldLayerId)
+        this.mapObject.removeLayer(oldLayerId);
+        this.mapObject.removeSource(oldLayerId);
       } else {
-        break
+        break;
       }
     }
   }
 
   removeLayer() {
-    if(this.mapObject !== undefined) {
-      const layerId = getFrameId(this.currentLayer, this.counter)
-      if(this.mapObject.getSource(layerId) !== undefined) {
-        this.mapObject.removeLayer(layerId)
-        this.mapObject.removeSource(layerId)
+    if (this.mapObject !== undefined) {
+      const layerId = getFrameId(this.currentLayer, this.counter);
+      if (this.mapObject.getSource(layerId) !== undefined) {
+        this.mapObject.removeLayer(layerId);
+        this.mapObject.removeSource(layerId);
       }
     }
   }
@@ -215,7 +256,5 @@ export default class AnimatedMapboxLayer extends Vue {
     this.removeLayer();
     this.removeOldLayers();
   }
-
 }
 </script>
-
