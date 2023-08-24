@@ -7,8 +7,8 @@
       class="view-sidebar"
     >
       <v-toolbar density="compact" fixed>
-        <v-btn variant="text" :to="{ name: 'About' }" class="fews-home">
-          <v-img width="148"></v-img>
+        <v-btn variant="text" width="140px" :to="{ name: 'About' }" class="fews-home">
+          <v-img width="130px" :src="defaultLogo"></v-img>
         </v-btn>
         <v-spacer />
       </v-toolbar>
@@ -67,6 +67,7 @@ import { ComponentTypeEnum, WebOcComponent } from '../lib/fews-config/types.ts'
 const store = useConfigStore()
 const drawer = ref(true)
 const { isRtl } = useRtl()
+const defaultLogo: string = './logo.png'
 
 onBeforeMount(async () => {
   console.log('onBeforeMount default')
