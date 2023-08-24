@@ -1,31 +1,34 @@
 <template>
   <div>
-    <v-slider 
+    <vue-slider 
     class="elevation-slider"
     :value="currentValue"
     :max="maxValue" 
-    :min="minValue" 
-    vertical
-    thumb-label="always"
-    @input="onInputChange">
-      <template v-slot:prepend>
-        <div style="background-color:rgba(0, 0, 0, 0.5);">
-          {{Math.round(minValue)}}
-        </div>
-      </template>
-      <template v-slot:append>
-        <div style="background-color:rgba(0, 0, 0, 0.5);">
-          {{Math.round(maxValue)}}
-        </div>
-      </template>
-    </v-slider>
+    :min="minValue"
+    :interval="stepSize" 
+    marks
+    direction="btt"
+    tooltip="always"
+    tooltipPlacement="left"
+    height="200px"
+    v-on:change="onInputChange">
+    <template v-slot:tooltip="{ value }">
+      <div class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text">{{ Math.round(value) }} meter</div>
+    </template>
+    </vue-slider>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Watch, Vue } from 'vue-property-decorator'
+import VueSlider from 'vue-slider-component'
+import 'vue-slider-component/theme/default.css'
 
-@Component
+@Component({
+    components: {
+      VueSlider
+    }
+  })
 export default class ElevationSlider extends Vue {
   @Prop({ default: () => { return 0 } }) value!: number
   @Prop({ default: () => { return 0 } }) minValue!: number
@@ -42,6 +45,10 @@ export default class ElevationSlider extends Vue {
     this.currentValue = this.value
   }
 
+  get stepSize(){
+    return Math.abs(this.maxValue - this.minValue) / 8
+  }
+
   onInputChange(event: any){
     this.$emit("input", event)
   }
@@ -52,8 +59,8 @@ export default class ElevationSlider extends Vue {
 .elevation-slider {
   z-index: 100;
   position: absolute;
-  right: 25px;
-  top: 40px;
+  right: 20px;
+  top: 50px;
 }
 
 </style>
