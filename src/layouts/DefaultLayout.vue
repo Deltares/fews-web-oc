@@ -7,7 +7,12 @@
       class="view-sidebar"
     >
       <v-toolbar density="compact" fixed>
-        <v-btn variant="text" width="140px" :to="{ name: 'About' }" class="fews-home">
+        <v-btn
+          variant="text"
+          width="140px"
+          :to="{ name: 'About' }"
+          class="fews-home"
+        >
           <v-img width="130px" :src="defaultLogo"></v-img>
         </v-btn>
         <v-spacer />
@@ -26,7 +31,7 @@
         <v-list density="compact">
           <v-list-subheader>Switch to</v-list-subheader>
           <v-list-item
-            v-for="(item, i) in items"
+            v-for="(item, i) in store.activeComponents"
             :key="i"
             :value="item"
             :to="item.to"
@@ -57,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useRtl } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
 import { onBeforeMount } from 'vue'
@@ -68,49 +73,19 @@ const drawer = ref(true)
 const currentItem = ref('')
 const { isRtl } = useRtl()
 const route = useRoute()
-const defaultLogo: string = './logo.png'
+const defaultLogo: string = '/logo.png'
 
 onBeforeMount(async () => {
   console.log('onBeforeMount default')
   currentItem.value = route.name?.toString() ?? ''
 })
 
-const items = computed(() => {
-  return Object.values(store.components).map((component: any) => {
-    return {
-      id: component.id,
-      to: { name: component.type },
-      title: component.title ?? '',
-      icon: getMenuIcon(component),
-    }
-  })
-})
-
 watch(
   () => route.name,
   async (name) => {
-    console.log('watch')
     currentItem.value = name?.toString() ?? ''
   },
 )
-
-function getMenuIcon(componentConfig: WebOcComponent): string {
-  if (componentConfig.icon !== undefined) return componentConfig.icon
-  switch (componentConfig.type) {
-    case ComponentTypeEnum.DataViewer:
-      return 'mdi-archive-search'
-    case ComponentTypeEnum.SpatialDisplay:
-      return 'mdi-map'
-    case ComponentTypeEnum.SchematicStatusDisplay:
-      return 'mdi-application-brackets-outline'
-    case ComponentTypeEnum.TimeSeriesDisplay:
-      return 'mdi-chart-sankey'
-    case ComponentTypeEnum.SystemMonitor:
-      return 'mdi-clipboard-list'
-    default:
-      return ''
-  }
-}
 </script>
 
 <style>
