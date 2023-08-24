@@ -38,8 +38,7 @@
           </v-list-item>
         </v-list>
       </v-menu>
-      <div name="web-oc-sidebar-targer"></div>
-      /
+      <div id="web-oc-sidebar-target"></div>
     </v-navigation-drawer>
     <v-app-bar color="#080C80" density="compact">
       <template #prepend>
@@ -66,7 +65,6 @@ import { onBeforeMount } from 'vue'
 import { ComponentTypeEnum, WebOcComponent } from '../lib/fews-config/types.ts'
 
 const store = useConfigStore()
-
 const drawer = ref(true)
 const { isRtl } = useRtl()
 
