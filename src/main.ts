@@ -9,6 +9,7 @@ import { createPinia } from 'pinia'
 const pinia = createPinia()
 const app = createApp(App)
 app.use(pinia)
+app.use(vuetify)
 
 fetch(`${import.meta.env.BASE_URL}app-config.json`)
   .then((res) => res.json())
@@ -18,6 +19,5 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
       authenticationManager.init(configManager.getUserManagerSettings())
     }
     app.use(router)
-    app.use(vuetify)
     app.mount('#app')
   })
