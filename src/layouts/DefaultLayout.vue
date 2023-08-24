@@ -60,28 +60,18 @@
 import { computed, ref, watch } from 'vue'
 import { useRtl } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
-import { routesViews } from '../router/index.ts'
 import { onBeforeMount } from 'vue'
-import { ComponentTypeEnum, WebOcComponent } from '../lib/fews-config/types.ts'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 
 const store = useConfigStore()
 const drawer = ref(true)
 const currentItem = ref('')
 const { isRtl } = useRtl()
-const router = useRouter()
 const route = useRoute()
 const defaultLogo: string = './logo.png'
 
 onBeforeMount(async () => {
   console.log('onBeforeMount default')
-  await store.setFewsConfig()
-  Object.values(store.components).forEach((component: any) => {
-    console.log(component)
-    const route = routesViews.find((route) => route.name === component.type)
-    console.log('add', route?.name)
-    if (route !== undefined) router.addRoute(route)
-  })
   currentItem.value = route.name?.toString() ?? ''
 })
 

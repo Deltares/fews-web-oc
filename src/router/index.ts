@@ -1,10 +1,17 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import {
+  createRouter,
+  createWebHistory,
+  NavigationGuardNext,
+  RouteLocationNormalized,
+  RouteRecordRaw,
+} from 'vue-router'
 import AboutView from '../views/AboutView.vue'
 import LoginView from '../views/auth/LoginView.vue'
 import Logout from '../views/auth/Logout.vue'
 import Silent from '../views/auth/Silent.vue'
 import { configManager } from '../services/application-config'
 import { authenticationManager } from '../services/authentication/AuthenticationManager'
+import { useConfigStore } from '../stores/config.ts'
 
 const Empty = () => import('../views/Empty.vue')
 
@@ -31,11 +38,6 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
     meta: { layout: 'empty' },
     component: Silent,
   },
-  //   {
-  //     path: '/auth/callback',
-  //     meta: { layout: 'empty' },
-  //     component: Callback
-  //   },
   {
     path: '/auth/logout',
     meta: { layout: 'empty' },
@@ -43,7 +45,7 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
   },
 ]
 
-export const routesViews: Readonly<RouteRecordRaw[]> = [
+export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/dataviewer/:filterId?/:categoryId?',
     name: 'DataViewer',
@@ -91,21 +93,61 @@ const router = createRouter({
   routes: routesBase,
 })
 
+let routesAreInitialized = false
+
+async function handleAuthorization(
+  to: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
+  next: NavigationGuardNext,
+  authorize: string[],
+) {
+  const currentUser = await authenticationManager.userManager.getUser()
+  if (currentUser === null) {
+    return next({ name: 'Login', query: { redirect: to.path } })
+  }
+
+  const role =
+    currentUser.profile.roles !== undefined
+      ? (currentUser.profile as any).roles[0]
+      : 'guest'
+
+  if (authorize.length && !authorize.includes(role)) {
+    return next({ name: 'About' })
+  }
+}
+
+async function addDynamicRoutes() {
+  console.log('init routes')
+  const store = useConfigStore()
+  await store.setFewsConfig()
+  Object.values(store.components).forEach((component: any) => {
+    const route = dynamicRoutes.find((route) => route.name === component.type)
+    if (route !== undefined) {
+      console.log('add', route.name)
+      router.addRoute(route)
+    }
+  })
+}
+
 router.beforeEach(async (to, _from, next) => {
-  // redirect to login page if not logged in and trying to access a restricted page
-  console.log('to', to)
   const authorize = to.meta?.authorize as string[]
   if (authorize && configManager.authenticationIsEnabled) {
-    const currentUser = await authenticationManager.userManager.getUser()
-    if (currentUser === null) {
-      return next({ name: 'Login', query: { redirect: to.path } })
-    }
-
-    const role = currentUser.profile.roles !== undefined ? (currentUser.profile as any).roles[0] : 'guest'
-    if (authorize.length && !authorize.includes(role)) {
-      return next({ name: 'About' })
-    }
+    await handleAuthorization(to, _from, next, authorize)
   }
+
+  if (!routesAreInitialized) {
+    await addDynamicRoutes()
+    routesAreInitialized = true
+    router.replace(to)
+  }
+
+  if (to.path === '/auth/callback') {
+    const user =
+      await authenticationManager.userManager.signinRedirectCallback()
+    const path: string = user.state === null ? '/about' : (user.state as string)
+    next({ path })
+  }
+
   next()
 })
 
