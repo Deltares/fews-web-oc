@@ -57,16 +57,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRtl } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
-import router, { routesViews } from '../router/index.ts'
+import { routesViews } from '../router/index.ts'
 import { onBeforeMount } from 'vue'
 import { ComponentTypeEnum, WebOcComponent } from '../lib/fews-config/types.ts'
+import { useRouter, useRoute } from 'vue-router'
 
 const store = useConfigStore()
 const drawer = ref(true)
+const currentItem = ref('')
 const { isRtl } = useRtl()
+const router = useRouter()
+const route = useRoute()
 const defaultLogo: string = './logo.png'
 
 onBeforeMount(async () => {
@@ -78,6 +82,7 @@ onBeforeMount(async () => {
     console.log('add', route?.name)
     if (route !== undefined) router.addRoute(route)
   })
+  currentItem.value = route.name?.toString() ?? ''
 })
 
 const items = computed(() => {
@@ -91,10 +96,13 @@ const items = computed(() => {
   })
 })
 
-const currentItem = computed(() => {
-    const matchedRouteNames = router.getRoutes().map( m => m.name )
-    return items.value.find(item => matchedRouteNames.includes(item.to.name))?.title ?? router.currentRoute.value
-})
+watch(
+  () => route.name,
+  async (name) => {
+    console.log('watch')
+    currentItem.value = name?.toString() ?? ''
+  },
+)
 
 function getMenuIcon(componentConfig: WebOcComponent): string {
   if (componentConfig.icon !== undefined) return componentConfig.icon
