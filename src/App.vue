@@ -3,7 +3,14 @@ import DefaultLayout from './layouts/DefaultLayout.vue'
 </script>
 
 <template>
-  <DefaultLayout style="height: 100%"> </DefaultLayout>
+  <Suspense>
+    <template #default>
+      <DefaultLayout style="height: 100%"> </DefaultLayout>
+    </template>
+    <template #fallback>
+      <span>Loading...</span>
+    </template>
+  </Suspense>
 </template>
 
 <style scoped></style>

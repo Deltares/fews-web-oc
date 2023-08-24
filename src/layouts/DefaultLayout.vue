@@ -15,7 +15,7 @@
       <v-menu offset-y left min-width="320">
         <template #activator="{ isActive, props }">
           <v-list-item aria-label="Menu button" v-bind="props">
-            <v-list-item-title> Component TBD</v-list-item-title>
+            <v-list-item-title>{{ currentItem }}</v-list-item-title>
             <template #append>
               <v-icon
                 :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"
@@ -25,14 +25,17 @@
         </template>
         <v-list density="compact">
           <v-list-subheader>Switch to</v-list-subheader>
-          <!-- <v-list-item v-for="item in menuItems" :key="item.id" :to="item.to">
-            <v-list-item-icon>
-              <v-icon>{{ item.icon }}</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-               {{ item.title }}
-            </v-list-item-content>
-          </v-list-item> -->
+          <v-list-item
+            v-for="(item, i) in items"
+            :key="i"
+            :value="item"
+            :to="item.to"
+          >
+            <template v-slot:prepend>
+              <v-icon :icon="item.icon"></v-icon>
+            </template>
+            <v-list-item-title v-text="item.title"></v-list-item-title>
+          </v-list-item>
         </v-list>
       </v-menu>
       <div name="web-oc-sidebar-targer"></div>
@@ -55,11 +58,62 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRtl } from 'vuetify'
+import { useConfigStore } from '../stores/config.ts'
+import router, { routesViews } from '../router/index.ts'
+import { onBeforeMount } from 'vue'
+import { ComponentTypeEnum, WebOcComponent } from '../lib/fews-config/types.ts'
+
+const store = useConfigStore()
 
 const drawer = ref(true)
 const { isRtl } = useRtl()
+
+onBeforeMount(async () => {
+  console.log('onBeforeMount default')
+  await store.setFewsConfig()
+  Object.values(store.components).forEach((component: any) => {
+    console.log(component)
+    const route = routesViews.find((route) => route.name === component.type)
+    console.log('add', route?.name)
+    if (route !== undefined) router.addRoute(route)
+  })
+})
+
+const items = computed(() => {
+  return Object.values(store.components).map((component: any) => {
+    return {
+      id: component.id,
+      to: { name: component.type },
+      title: component.title ?? '',
+      icon: getMenuIcon(component),
+    }
+  })
+})
+
+const currentItem = computed(() => {
+    const matchedRouteNames = router.getRoutes().map( m => m.name )
+    return items.value.find(item => matchedRouteNames.includes(item.to.name))?.title ?? router.currentRoute.value
+})
+
+function getMenuIcon(componentConfig: WebOcComponent): string {
+  if (componentConfig.icon !== undefined) return componentConfig.icon
+  switch (componentConfig.type) {
+    case ComponentTypeEnum.DataViewer:
+      return 'mdi-archive-search'
+    case ComponentTypeEnum.SpatialDisplay:
+      return 'mdi-map'
+    case ComponentTypeEnum.SchematicStatusDisplay:
+      return 'mdi-application-brackets-outline'
+    case ComponentTypeEnum.TimeSeriesDisplay:
+      return 'mdi-chart-sankey'
+    case ComponentTypeEnum.SystemMonitor:
+      return 'mdi-clipboard-list'
+    default:
+      return ''
+  }
+}
 </script>
 
 <style>
