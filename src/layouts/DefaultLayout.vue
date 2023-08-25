@@ -73,7 +73,7 @@ const drawer = ref(true)
 const currentItem = ref('')
 const { isRtl } = useRtl()
 const route = useRoute()
-const defaultLogo: string = '/logo.png'
+const defaultLogo: string = '/images/logo.png'
 
 onBeforeMount(async () => {
   console.log('onBeforeMount default')
