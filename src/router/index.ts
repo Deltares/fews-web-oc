@@ -7,6 +7,7 @@ import {
 } from 'vue-router'
 import AboutView from '../views/AboutView.vue'
 import LoginView from '../views/auth/LoginView.vue'
+import Callback from '../views/auth/Callback.vue'
 import Logout from '../views/auth/Logout.vue'
 import Silent from '../views/auth/Silent.vue'
 import { configManager } from '../services/application-config'
@@ -32,6 +33,11 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
     name: 'Login',
     meta: { layout: 'EmptyLayout' },
     component: LoginView,
+  },
+  {
+    path: '/auth/callback',
+    meta: { layout: 'EmptyLayout' },
+    component: Callback,
   },
   {
     path: '/auth/silent',
@@ -142,10 +148,17 @@ router.beforeEach(async (to, _from, next) => {
   }
 
   if (to.path === '/auth/callback') {
-    const user =
-      await authenticationManager.userManager.signinRedirectCallback()
-    const path: string = user.state === null ? '/about' : (user.state as string)
-    next({ path })
+    try {
+      const user =
+        await authenticationManager.userManager.signinRedirectCallback()
+      const path: string =
+        user.state === null ? '/about' : (user.state as string)
+      if (path !== '/auth/logout') {
+        next({ path })
+      }
+    } finally {
+      next({ name: 'About' })
+    }
   }
 
   next()
