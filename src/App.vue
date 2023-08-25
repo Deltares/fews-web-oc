@@ -8,15 +8,12 @@ import { useRoute } from 'vue-router';
 const route = useRoute()
 
 const layoutComponent = computed(() => {
-  route.matched.some((record) => {
-    switch(record.meta.layout) {
-        case 'EmptyLayout':
-          return EmptyLayout
-        default:
-          return DefaultLayout
-    }
-  })
-  return DefaultLayout
+  switch(route.meta.layout) {
+      case 'EmptyLayout':
+        return EmptyLayout
+      default:
+        return DefaultLayout
+  }
 })
 </script>
 
