@@ -9,21 +9,20 @@
       <v-toolbar density="compact" fixed>
         <v-btn
           variant="text"
-          width="140px"
           :to="{ name: 'About' }"
-          class="fews-home"
         >
-          <v-img width="130px" :src="defaultLogo"></v-img>
+          <img height="36" :src="defaultLogo">
         </v-btn>
         <v-spacer />
+        <login-component/>
       </v-toolbar>
-      <v-menu offset-y left min-width="320">
+      <v-menu origin="left" min-width="320">
         <template #activator="{ isActive, props }">
           <v-list-item aria-label="Menu button" v-bind="props">
             <v-list-item-title>{{ currentItem }}</v-list-item-title>
             <template #append>
               <v-icon
-                :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                :icon="isActive ? 'mdi-chevron-right' : 'mdi-chevron-right'"
               ></v-icon>
             </template>
           </v-list-item>
@@ -67,6 +66,7 @@ import { useRtl } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
 import { onBeforeMount } from 'vue'
 import { useRoute } from 'vue-router'
+import LoginComponent from '../views/auth/LoginComponent.vue'
 
 const store = useConfigStore()
 const drawer = ref(true)
