@@ -3,18 +3,10 @@ import { getFewsConfig } from '../lib/fews-config/index.js'
 import { WebOcGeneralConfig } from '@deltares/fews-pi-requests'
 import { ComponentTypeEnum, WebOcComponent } from '../lib/fews-config/types.js'
 
-const WEBOC_CONFIG_PREFIX = 'delft-fews-weboc:config#'
-
 interface State {
   version: string
   components: { [key: string]: WebOcComponent }
   general: WebOcGeneralConfig
-}
-
-interface Actions {
-  addComponent(component: WebOcComponent): void
-  setGeneral(config: WebOcGeneralConfig): void
-  setFewsConfig(): Promise<void>
 }
 
 function getMenuIcon(componentConfig: WebOcComponent): string {
@@ -35,8 +27,8 @@ function getMenuIcon(componentConfig: WebOcComponent): string {
   }
 }
 
-const useConfigStore = defineStore<'config', State, {}, Actions>('config', {
-  state: () => ({
+const useConfigStore = defineStore('config', {
+  state: (): State => ({
     version: '0.1.0',
     components: {},
     general: {},
