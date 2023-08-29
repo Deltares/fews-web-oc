@@ -13,7 +13,8 @@ import Silent from '../views/auth/Silent.vue'
 import { configManager } from '../services/application-config'
 import { authenticationManager } from '../services/authentication/AuthenticationManager'
 import { useConfigStore } from '../stores/config.ts'
-import SsdComponent from '../components/ssd-component/SsdComponent.vue'
+const SsdComponent = () =>  import('../components/ssd-component/SsdComponent.vue')
+const MapComponent = () =>  import('../components/map/MapComponent.vue')
 
 const Empty = () => import('../views/Empty.vue')
 
@@ -70,7 +71,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/map/:layerName?',
     name: 'SpatialDisplay',
-    component: Empty,
+    component: MapComponent,
     props: true,
     meta: { authorize: [], sidebar: true },
   },
