@@ -25,8 +25,10 @@ export class DownloadControl {
         this._btn.appendChild(icon);
         // add a function on btn click that prints bbox if defined
         this._btn.onclick = () => {
-            if ( this.bbox ) {
+            if ( this.bbox !== undefined) {
                 this._showPopup()
+            } else {
+                this._showErrorPopup("Select an area first to download data")
             }
         }
 
@@ -43,6 +45,7 @@ export class DownloadControl {
     }
     this._map = undefined
   }
+
   private _showPopup() {
     if (!this._popup) {
         this._popup = new Popup({
@@ -111,6 +114,54 @@ export class DownloadControl {
         // change this to download the data
         console.log("dx:", dx);
         console.log("dy:", dy);
+    }
+
+    private _showErrorPopup(errorMessage: string) {
+        if (!this._popup) {
+            this._popup = new Popup({
+                closeButton: true,
+                closeOnClick: false,
+                className: 'custom-popup-error'
+            });
+        }
+    
+        const popupContent = document.createElement("div");
+        popupContent.innerHTML = `
+            <style>
+                .custom-popup-error {
+                    font-family: 'Roboto', sans-serif; 
+                    color: #ff0000; 
+                    padding: 10px;
+                }
+    
+                .custom-popup-error p {
+                    margin: 0;
+                }
+    
+                .custom-popup-error button {
+                    background-color: #007bff;
+                    color: #fff;
+                    border: none;
+                    padding: 10px;
+                    cursor: pointer;
+                    width: 100%;
+                    margin-top: 10px;
+                }
+            </style>
+            <p>${errorMessage}</p>
+            <button id="close-btn">Close</button>
+        `;
+    
+        if (this._map) {
+            this._popup.setDOMContent(popupContent)
+                .setLngLat(this._map.getCenter())
+                .addTo(this._map);
+        }
+    
+        const closeBtn = popupContent.querySelector("#close-btn") as HTMLButtonElement;
+        closeBtn.onclick = () => {
+            this._popup?.remove();
+        }
     }
 }
 
