@@ -13,6 +13,7 @@ import Silent from '../views/auth/Silent.vue'
 import { configManager } from '../services/application-config'
 import { authenticationManager } from '../services/authentication/AuthenticationManager'
 import { useConfigStore } from '../stores/config.ts'
+import SsdComponent from '../components/ssd-component/SsdComponent.vue'
 
 const Empty = () => import('../views/Empty.vue')
 
@@ -62,7 +63,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/ssd/:groupId?/:panelId?',
     name: 'SchematicStatusDisplay',
-    component: Empty,
+    component: SsdComponent,
     props: true,
     meta: { authorize: [], sidebar: true },
   },
@@ -83,6 +84,12 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/systemmonitor',
     name: 'SystemMonitor',
+    component: Empty,
+    meta: { authorize: [] },
+  },
+  {
+    path: '/topology',
+    name: 'TopologyDisplay',
     component: Empty,
     meta: { authorize: [] },
   },

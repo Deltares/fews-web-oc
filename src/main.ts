@@ -5,9 +5,15 @@ import { authenticationManager } from './services/authentication/AuthenticationM
 import router from './router/index.js'
 import vuetify from './plugins/vuetify.js'
 import { createPinia } from 'pinia'
+import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
 
 const pinia = createPinia()
 const app = createApp(App)
+
+defineCustomElements(window)
+app.config.compilerOptions.isCustomElement = (tag) =>
+  tag === 'schematic-status-display'
+
 app.use(pinia)
 app.use(vuetify)
 
