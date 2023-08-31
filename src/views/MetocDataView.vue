@@ -26,6 +26,7 @@
               v-if="showLocationsLayer"
               :options="selectedLocationsLayerOptions"
             />
+            <Regridder/>
           </MapComponent>
         </div>
         <div class="control-container">
@@ -128,6 +129,7 @@ import LocationsLayerSearchControl from '@/components/LocationsLayerSearchContro
 import MapComponent from '@/components/MapComponent.vue'
 import WMSInfoPanel from '@/components/WMSInfoPanel.vue';
 import { Layer } from '@deltares/fews-wms-requests';
+import Regridder from '@/components/Regridder.vue'
 
 const defaultGeoJsonSource: GeoJSONSourceRaw = {
   type: 'geojson',
@@ -177,7 +179,8 @@ const selectedLocationsLayerOptions: CircleLayer = {
     MapboxLayer,
     MapComponent,
     MetocSidebar,
-    WMSInfoPanel
+    WMSInfoPanel,
+    Regridder
   }
 })
 export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiRequestsMixin) {
