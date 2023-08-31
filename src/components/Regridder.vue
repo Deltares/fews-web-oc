@@ -28,7 +28,7 @@
         </v-card>
       </v-dialog>
     </div>
-  </template>
+</template>
   
 
 <script lang="ts">
@@ -58,11 +58,12 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
     errorMessage = 'Select an area on the map before downloading the data.'
     bbox: number[] | undefined
     webServiceProvider!: PiWebserviceProvider
+    baseUrl: string | undefined
 
     created(): void {
-        const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+        this.baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
         const transformRequestFn = this.getTransformRequest()
-        this.webServiceProvider = new PiWebserviceProvider(baseUrl, {transformRequestFn})
+        this.webServiceProvider = new PiWebserviceProvider(this.baseUrl, {transformRequestFn})
     }
         
     deferredMountedTo(map: Map) {
@@ -118,7 +119,6 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
         this.draw.changeMode("draw_rectangle")
 
         this.mapObject.on('draw.create', this.select)
-        // this.mapObject.on('draw.update', this.select)
 
         const trashElement = document.querySelector(".mapbox-gl-draw_trash")
         if (trashElement !== null) {
@@ -140,7 +140,7 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
     }
 
     mounted() {
-    const map = this.getMap();
+    const map = this.getMap()
     if (map && map.loaded()) {
         this.mapObject = map
         this.isInitialized = true
@@ -151,12 +151,19 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
     const dx = parseFloat(this.dx)
     const dy = parseFloat(this.dy)
 
-    if (!isNaN(dx) && !isNaN(dy) && dx > 0 && dy > 0) {
-        // Perform your download operation with dx and dy
-        console.log('dx:', dx)
-        console.log('dy:', dy)
-        console.log('bbox:', this.bbox)
-        console.log(this.firstValueTime, this.lastValueTime)
+    if (!isNaN(dx) && !isNaN(dy) && dx > 0 && dy > 0 && this.bbox !== undefined)  {
+        const workflowId = 'Transformation_ASA_Grid_Wind'
+        const xMin = this.bbox[0]
+        const yMin = this.bbox[1]
+        const xMax = this.bbox[2]
+        const yMax = this.bbox[3]
+        const xCellSize = dx
+        const yCellSize = dy
+        const startTime = this.firstValueTime
+        const endTime = this.lastValueTime
+        // todo: change this with fews-pi-requests
+        const apiUrl = `${this.baseUrl}rest/fewspiservice/v1/processdata?workflowId=${workflowId}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&xCellSize=${xCellSize}&yCellSize=${yCellSize}&startTime=${startTime}&endTime=${endTime}`
+        this._downloadNetCDF(apiUrl)
         this.downloadDialog = false
     } else {
         // Handle invalid input
@@ -179,6 +186,47 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
     // reset error message
     this.errorMessage = 'Select an area on the map before downloading the data.'
     }
+
+    _downloadNetCDF(apiUrl: string) {
+        let fileName = 'openarchive-netcdf.nc'
+        // Use the Fetch API to make the request, change later to fews-pi-requests
+        fetch(apiUrl)
+        .then((response) => {
+            // set file name base on response header
+            const contentDisposition = response.headers.get('Content-Disposition')
+            if (contentDisposition) {
+            const fileNameMatch = contentDisposition.match(/filename=(.+)/)
+            if (fileNameMatch) {
+                fileName = fileNameMatch[1]
+            }
+            }
+            return response.blob();
+        })
+        .then((blob) => {
+            // Create a temporary URL for the Blob
+            const blobUrl = window.URL.createObjectURL(blob);
+
+            // Create a temporary anchor element to trigger the download
+            const downloadLink = document.createElement('a')
+            downloadLink.href = blobUrl
+            downloadLink.download = fileName
+            downloadLink.style.display = 'none'
+
+            // Append the anchor element to the DOM and click it to trigger the download
+            document.body.appendChild(downloadLink)
+            downloadLink.click()
+            downloadLink.remove()
+            window.URL.revokeObjectURL(blobUrl)
+            this.downloadDialog = false
+        })
+        .catch((error) => {
+            console.error('Error:', error)
+            // Handle the error and display an error message
+            this.closeDownloadDialog()
+            this.openErrorDialog('An error occurred while downloading data.')
+        })
+    }
+
 }
 </script>
   
