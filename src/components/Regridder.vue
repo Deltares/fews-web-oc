@@ -32,15 +32,20 @@
   
 
 <script lang="ts">
-import { Component, Vue, Inject} from 'vue-property-decorator'
+import { Component, Inject, Mixins, Prop} from 'vue-property-decorator'
 import { Map } from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import DrawRectangle from 'mapbox-gl-draw-rectangle-mode'
 import {DownloadControl} from "../lib/DownloadControl"
+import { PiWebserviceProvider} from "@deltares/fews-pi-requests";
+import PiRequestsMixin from '@/mixins/PiRequestsMixin';
 
 @Component
-export default class Regridder extends Vue {
+export default class Regridder extends Mixins(PiRequestsMixin) {
     @Inject() getMap!: () => Map
+
+    @Prop() firstValueTime!: string
+    @Prop() lastValueTime!: string
 
     mapObject!: Map
     isInitialized = false
@@ -52,6 +57,13 @@ export default class Regridder extends Vue {
     dy = ''
     errorMessage = 'Select an area on the map before downloading the data.'
     bbox: number[] | undefined
+    webServiceProvider!: PiWebserviceProvider
+
+    created(): void {
+        const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+        const transformRequestFn = this.getTransformRequest()
+        this.webServiceProvider = new PiWebserviceProvider(baseUrl, {transformRequestFn})
+    }
         
     deferredMountedTo(map: Map) {
         this.mapObject = map
@@ -144,8 +156,7 @@ export default class Regridder extends Vue {
         console.log('dx:', dx)
         console.log('dy:', dy)
         console.log('bbox:', this.bbox)
-
-        // Close the Vuetify dialog
+        console.log(this.firstValueTime, this.lastValueTime)
         this.downloadDialog = false
     } else {
         // Handle invalid input

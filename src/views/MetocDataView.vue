@@ -26,7 +26,10 @@
               v-if="showLocationsLayer"
               :options="selectedLocationsLayerOptions"
             />
-            <Regridder/>
+            <Regridder
+            :firstValueTime="firstValueTime"
+            :lastValueTime="lastValueTime"
+            />
           </MapComponent>
         </div>
         <div class="control-container">
@@ -556,6 +559,16 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   get currentWMSLayer(): Layer | null {
     const layer = this.layers.find(layer => layer.name === this.currentDataSource?.wmsLayerId)
     return layer ?? null
+  }
+
+  get firstValueTime(): string |  null {
+    if (this.times.length === 0) return null
+    return this.times[0].toISOString()
+   }
+
+  get lastValueTime(): string | null {
+    if (this.times.length === 0) return null
+    return this.times[this.times.length - 1].toISOString()
   }
 
   get dataSources(): DataSource[] {
