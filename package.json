@@ -28,7 +28,7 @@
     "lodash": "^4.17.21",
     "luxon": "^3.3.0",
     "mapbox-gl": "^2.14.0",
-    "mapbox-gl-draw-rectangle-restrict-area": "^3.1.5",
+    "mapbox-gl-draw-rectangle-mode": "^1.0.4",
     "oidc-client-ts": "^2.0.2",
     "portal-vue": "^2.1.7",
     "splitpanes": "^2.4.1",
