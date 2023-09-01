@@ -41,6 +41,7 @@ import DrawRectangle from '@/lib/MapBox/DrawRectangleMode'
 import { DownloadControl } from "../lib/MapBox/DownloadControl"
 import { PiWebserviceProvider } from "@deltares/fews-pi-requests"  
 import PiRequestsMixin from '@/mixins/PiRequestsMixin'  
+import { ProcessDataFilter } from '@deltares/fews-pi-requests'
 
 @Component
 export default class Regridder extends Mixins(PiRequestsMixin) {
@@ -60,12 +61,11 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
   errorMessage = 'Select an area on the map before downloading the data.'
   bbox: number[] | null = null
   webServiceProvider!: PiWebserviceProvider
-  baseUrl: string | null = null
 
   created(): void {
-    this.baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     const transformRequestFn = this.getTransformRequest()
-    this.webServiceProvider = new PiWebserviceProvider(this.baseUrl, { transformRequestFn })
+    this.webServiceProvider = new PiWebserviceProvider(baseUrl, { transformRequestFn })
   }
 
   deferredMountedTo(map: Map) {
@@ -151,17 +151,19 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
     const dy = parseFloat(this.dy)
 
     if (!isNaN(dx) && !isNaN(dy) && dx > 0 && dy > 0 && this.bbox !== null) {
-      const workflowId = 'Transformation_ASA_Grid_Wind' // todo: change this when available
-      const xMin = this.bbox[0]
-      const yMin = this.bbox[1]
-      const xMax = this.bbox[2]
-      const yMax = this.bbox[3]
-      const xCellSize = dx
-      const yCellSize = dy
-      const startTime = this.firstValueTime
-      const endTime = this.lastValueTime
-      // todo: change this with fews-pi-requests
-      const apiUrl = `${this.baseUrl}rest/fewspiservice/v1/processdata?workflowId=${workflowId}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&xCellSize=${xCellSize}&yCellSize=${yCellSize}&startTime=${startTime}&endTime=${endTime}`
+      const filter: ProcessDataFilter = {
+        workflowId: 'Transformation_ASA_Grid_Wind',
+        xMin: this.bbox[0],
+        yMin: this.bbox[1],
+        xMax: this.bbox[2],
+        yMax: this.bbox[3],
+        xCellSize: dx,
+        yCellSize: dy,
+        startTime: this.firstValueTime,
+        endTime: this.lastValueTime
+      } 
+
+      const apiUrl = this.webServiceProvider.processDataUrl(filter).toString()
       this.downloadDialog = false
       this.downloadNetCDF(apiUrl)
     } else {
