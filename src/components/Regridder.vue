@@ -37,10 +37,10 @@
 import { Component, Inject, Mixins, Prop } from 'vue-property-decorator'
 import { Map } from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
-import DrawRectangle from 'mapbox-gl-draw-rectangle-mode'
-import { DownloadControl } from "../lib/DownloadControl"
-import { PiWebserviceProvider } from "@deltares/fews-pi-requests";
-import PiRequestsMixin from '@/mixins/PiRequestsMixin';
+import DrawRectangle from '@/lib/MapBox/DrawRectangleMode'
+import { DownloadControl } from "../lib/MapBox/DownloadControl"
+import { PiWebserviceProvider } from "@deltares/fews-pi-requests"  
+import PiRequestsMixin from '@/mixins/PiRequestsMixin'  
 
 @Component
 export default class Regridder extends Mixins(PiRequestsMixin) {
@@ -201,11 +201,11 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
             fileName = fileNameMatch[1]
           }
         }
-        return response.blob();
+        return response.blob()  
       })
       .then((blob) => {
         // Create a temporary URL for the Blob
-        const blobUrl = window.URL.createObjectURL(blob);
+        const blobUrl = window.URL.createObjectURL(blob)  
 
         // Create a temporary anchor element to trigger the download
         const downloadLink = document.createElement('a')
