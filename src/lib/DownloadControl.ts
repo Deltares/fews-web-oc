@@ -1,60 +1,50 @@
-import {Map} from 'mapbox-gl'
-import Vue from 'vue'
+import Regridder from '@/components/Regridder.vue'
 
 export class DownloadControl {
-  bbox: any | undefined
-  private _map: Map | undefined
-  private _container: HTMLElement | undefined
-  private _btn: HTMLButtonElement | undefined
-  private _vueComponent: any
+  bbox: number[] | null = null
+  private container!: HTMLElement
+  private vueComponent: Regridder
 
-  constructor(bbox: any, vueComponent: Vue) {
+  constructor(bbox: number[] | null, vueComponent: Regridder) {
     this.bbox = bbox
-    this._vueComponent = vueComponent
+    this.vueComponent = vueComponent
   }
 
-  onAdd(map: Map) {
-    this._map = map
-
-    this._btn = document.createElement('button')
-    this._btn.className = 'mapboxgl-ctrl-download'
-    this._btn.type = 'button'
-
-    const icon = document.createElement('i')
-    icon.className = 'fas fa-download'
-
-    this._btn.appendChild(icon)
-    this._btn.onclick = () => {
-      if (this.bbox !== undefined) {
-        this._showPopup()
-      } else {
-        this._showErrorPopup()
-      }
+  onAdd() {
+    const btn = document.createElement('button')
+    btn.className = 'mapboxgl-ctrl-download'
+    btn.type = 'button'
+    if (this.bbox === null) {
+      btn.disabled = true
+    } else {
+      btn.disabled = false
     }
 
-    this._container = document.createElement('div')
-    this._container.className = 'mapboxgl-ctrl-group mapboxgl-ctrl'
-    this._container.appendChild(this._btn)
+    const icon = document.createElement('i')
+    icon.id = 'download-icon'
+    icon.className = 'mdi mdi-download mdi-24px'
 
-    return this._container
+    btn.appendChild(icon)
+    btn.onclick = () => {
+      this.showPopup()
+    }
+
+    this.container = document.createElement('div')
+    this.container.className = 'mapboxgl-ctrl-group mapboxgl-ctrl'
+    this.container.appendChild(btn)
+
+    return this.container
   }
 
   onRemove() {
-    if (this._container && this._container.parentNode) {
-      this._container.parentNode.removeChild(this._container)
-    }
-    this._map = undefined
-  }
-
-  private _showPopup() {
-    if (this._vueComponent) {
-        this._vueComponent.downloadDialog = true
+    if (this.container && this.container.parentNode) {
+      this.container.parentNode.removeChild(this.container)
     }
   }
 
-  private _showErrorPopup() {
-    if (this._vueComponent) {
-        this._vueComponent.errorDialog = true
+  private showPopup() {
+    if (this.vueComponent) {
+      this.vueComponent.downloadDialog = true
     }
   }
 }
