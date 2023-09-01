@@ -6,10 +6,8 @@
         <v-card-title>Download netCDF Data</v-card-title>
         <v-card-text>
           <v-form>
-            <v-text-field v-model="dx" type="number" label="Step size in x-direction [m]"
-              required></v-text-field>
-            <v-text-field v-model="dy" type="number" label="Step size in y-direction [m]"
-              required></v-text-field>
+            <v-text-field v-model="dx" type="number" label="Step size in x-direction [m]" required></v-text-field>
+            <v-text-field v-model="dy" type="number" label="Step size in y-direction [m]" required></v-text-field>
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -39,8 +37,8 @@ import { Map } from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import DrawRectangle from '@/lib/MapBox/DrawRectangleMode'
 import { DownloadControl } from "../lib/MapBox/DownloadControl"
-import { PiWebserviceProvider } from "@deltares/fews-pi-requests"  
-import PiRequestsMixin from '@/mixins/PiRequestsMixin'  
+import { PiWebserviceProvider } from "@deltares/fews-pi-requests"
+import PiRequestsMixin from '@/mixins/PiRequestsMixin'
 import { ProcessDataFilter } from '@deltares/fews-pi-requests'
 
 @Component
@@ -161,7 +159,7 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
         yCellSize: dy,
         startTime: this.firstValueTime,
         endTime: this.lastValueTime
-      } 
+      }
 
       const apiUrl = this.webServiceProvider.processDataUrl(filter).toString()
       this.downloadDialog = false
@@ -187,52 +185,48 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
     this.errorMessage = 'Select an area on the map before downloading the data.'
   }
 
-  private downloadNetCDF(apiUrl: string) {
+  private async downloadNetCDF(apiUrl: string) {
     let fileName = 'openarchive-netcdf.nc'
     const icon = document.querySelector('#download-icon')
     icon?.classList.remove('mdi-download')
     icon?.classList.add('mdi-loading')
     icon?.classList.add('mdi-spin')
-    fetch(apiUrl)
-      .then((response) => {
-        // set file name base on response header
-        const contentDisposition = response.headers.get('Content-Disposition')
-        if (contentDisposition) {
-          const fileNameMatch = contentDisposition.match(/filename=(.+)/)
-          if (fileNameMatch) {
-            fileName = fileNameMatch[1]
-          }
+    try {
+      const response = await fetch(apiUrl);
+      // Set file name based on response header
+      const contentDisposition = response.headers.get('Content-Disposition')
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(/filename=(.+)/)
+        if (fileNameMatch) {
+          fileName = fileNameMatch[1]
         }
-        return response.blob()  
-      })
-      .then((blob) => {
-        // Create a temporary URL for the Blob
-        const blobUrl = window.URL.createObjectURL(blob)  
+      }
 
-        // Create a temporary anchor element to trigger the download
-        const downloadLink = document.createElement('a')
-        downloadLink.href = blobUrl
-        downloadLink.download = fileName
-        downloadLink.style.display = 'none'
+      const blob = await response.blob()
 
-        // Append the anchor element to the DOM and click it to trigger the download
-        document.body.appendChild(downloadLink)
-        downloadLink.click()
-        downloadLink.remove()
-        window.URL.revokeObjectURL(blobUrl)
-        this.downloadDialog = false
-      })
-      .catch((error) => {
-        console.error('Error:', error)
-        // Handle the error and display an error message
-        this.openErrorDialog('An error occurred while downloading data.')
-      })
-      .finally(() => {
-        icon?.classList.remove('mdi-loading')
-        icon?.classList.remove('mdi-spin')
-        icon?.classList.add('mdi-download')
-      })
+      // Create a temporary URL for the Blob
+      const blobUrl = window.URL.createObjectURL(blob)
+
+      // Create a temporary anchor element to trigger the download
+      const downloadLink = document.createElement('a')
+      downloadLink.href = blobUrl
+      downloadLink.download = fileName
+      downloadLink.style.display = 'none'
+      // Append the anchor element to the DOM and click it to trigger the download
+      document.body.appendChild(downloadLink)
+      downloadLink.click()
+      downloadLink.remove()
+      window.URL.revokeObjectURL(blobUrl)
+      this.downloadDialog = false
+    } catch (error) {
+      console.error('Error:', error)
+      // Handle the error and display an error message
+      this.openErrorDialog('An error occurred while downloading data.')
+    } finally {
+      icon?.classList.remove('mdi-loading')
+      icon?.classList.remove('mdi-spin')
+      icon?.classList.add('mdi-download')
+    }
   }
-
 }
 </script>
