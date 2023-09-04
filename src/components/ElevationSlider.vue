@@ -1,20 +1,11 @@
 <template>
   <div>
-    <vue-slider 
-    class="elevation-slider"
-    :value="currentValue"
-    :max="maxValue" 
-    :min="minValue"
-    :interval="stepSize" 
-    marks
-    direction="btt"
-    tooltip="always"
-    tooltipPlacement="left"
-    height="200px"
-    v-on:change="onInputChange">
-    <template v-slot:tooltip="{ value }">
-      <div class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text">{{ Math.round(value) }} meter</div>
-    </template>
+    <vue-slider class="elevation-slider" :value="currentValue" :max="maxValue" :min="minValue" :interval="stepSize" marks
+      direction="btt" tooltip="always" tooltipPlacement="left" height="200px" v-on:change="onInputChange">
+      <template v-slot:tooltip="{ value }">
+        <div class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text">{{
+          Math.round(value) }} meter</div>
+      </template>
     </vue-slider>
   </div>
 </template>
@@ -25,31 +16,31 @@ import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 
 @Component({
-    components: {
-      VueSlider
-    }
-  })
+  components: {
+    VueSlider
+  }
+})
 export default class ElevationSlider extends Vue {
   @Prop({ default: () => { return 0 } }) value!: number
   @Prop({ default: () => { return 0 } }) minValue!: number
   @Prop({ default: () => { return 0 } }) maxValue!: number
 
   currentValue: number = 0
-  
-  mounted(){
+
+  mounted() {
     this.onValueChange()
   }
 
   @Watch("value")
-  onValueChange(){
+  onValueChange() {
     this.currentValue = this.value
   }
 
-  get stepSize(){
+  get stepSize() {
     return Math.abs(this.maxValue - this.minValue) / 8
   }
 
-  onInputChange(event: any){
+  onInputChange(event: any) {
     this.$emit("input", event)
   }
 }
@@ -62,5 +53,4 @@ export default class ElevationSlider extends Vue {
   right: 20px;
   top: 50px;
 }
-
 </style>
