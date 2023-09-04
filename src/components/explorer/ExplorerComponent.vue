@@ -38,7 +38,7 @@ import {PiWebserviceProvider, TopologyNode} from "@deltares/fews-pi-requests";
 import {Component, Mixins, Prop, Watch} from 'vue-property-decorator'
 import PiRequestsMixin from "@/mixins/PiRequestsMixin";
 import type {CircleLayer, CirclePaint, GeoJSONSourceRaw, MapLayerMouseEvent} from 'mapbox-gl'
-import MapboxLayer, {MapboxLayerOptions} from '@/components/AnimatedMapboxLayer.vue';
+import MapboxLayer, {convertBoundingBoxToLngLatBounds, MapboxLayerOptions} from '@/components/AnimatedMapboxLayer.vue';
 import WMSMixin from "@/mixins/WMSMixin";
 import TimeSeriesMixin from "@/mixins/TimeSeriesMixin";
 import MapComponent from "@/components/MapComponent.vue";
@@ -49,6 +49,7 @@ import ColourBar from "@/components/ColourBar.vue";
 import DateTimeSlider from "@/components/DateTimeSlider.vue";
 import {ColourMap} from "@deltares/fews-web-oc-charts";
 import {convertGeoJsonToFewsPiLocation, fetchLocationsAsGeoJson,} from '@/lib/TopologyDisplay';
+import {LngLatBounds} from "mapbox-gl";
 
 const defaultGeoJsonSource: GeoJSONSourceRaw = {
   type: 'geojson',
@@ -110,6 +111,7 @@ export default class ExplorerComponent extends Mixins(WMSMixin, TimeSeriesMixin,
   wmsLayerId: string | undefined = ''
 
   showLocationsLayer = true
+  layersBbox: {[key: string]: LngLatBounds} = {}
   wmsLayerOptions: MapboxLayerOptions | null = null
   currentTime: Date = new Date()
   times: Date[] = []
@@ -226,13 +228,23 @@ export default class ExplorerComponent extends Mixins(WMSMixin, TimeSeriesMixin,
   }
 
 
+  loadLayersBbox (): void {
+    for (const layer of this.layers) {
+      if (layer.boundingBox) {
+        this.layersBbox[layer.name] = convertBoundingBoxToLngLatBounds(layer.boundingBox)
+      }
+    }
+  }
+
   setWMSLayerOptions(): void {
+
     if (this.times.length === 0 || !this.wmsLayerId) {
       this.wmsLayerOptions = null
     } else {
       this.wmsLayerOptions = {
         name: this.wmsLayerId,
-        time: this.currentTime
+        time: this.currentTime,
+        bbox: this.layersBbox[this.wmsLayerId]
       }
     }
   }
