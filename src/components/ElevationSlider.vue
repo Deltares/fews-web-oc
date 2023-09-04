@@ -21,9 +21,9 @@ import 'vue-slider-component/theme/default.css'
   }
 })
 export default class ElevationSlider extends Vue {
-  @Prop({ default: () => { return 0 } }) value!: number
-  @Prop({ default: () => { return 0 } }) minValue!: number
-  @Prop({ default: () => { return 0 } }) maxValue!: number
+  @Prop({ default: 0 }) value!: number
+  @Prop({ default: 0 }) minValue!: number
+  @Prop({ default: 0 }) maxValue!: number
 
   currentValue: number = 0
 
