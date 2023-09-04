@@ -40,7 +40,7 @@ export default class ElevationSlider extends Vue {
     return Math.abs(this.maxValue - this.minValue) / 8
   }
 
-  onInputChange(event: any) {
+  onInputChange(event: Event) {
     this.$emit("input", event)
   }
 }
