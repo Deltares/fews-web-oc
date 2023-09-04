@@ -149,17 +149,21 @@ export default class AnimatedMapboxLayer extends Vue {
     
     const time = this.layer.time.toISOString();
 
-    let url = `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${
-      this.layer.name
-    }&crs=EPSG:3857&bbox=${getMercatorBboxFromBounds(bounds)}&height=${
-      canvas.height
-    }&width=${canvas.width}&time=${time}`
-    
+    const getMapUrl = new URL(`${baseUrl}/wms`)
+    getMapUrl.searchParams.append('service', 'WMS')
+    getMapUrl.searchParams.append('request', 'GetMap')
+    getMapUrl.searchParams.append('version', '1.3')
+    getMapUrl.searchParams.append('layers', this.layer.name)
+    getMapUrl.searchParams.append('crs', 'EPSG:3857')
+    getMapUrl.searchParams.append('bbox', `${getMercatorBboxFromBounds(bounds)}`)
+    getMapUrl.searchParams.append('height', `${canvas.height}`)
+    getMapUrl.searchParams.append('width', `${canvas.width}`)
+    getMapUrl.searchParams.append('time', `${time}`)
+
     if (this.layer.elevation) {
-      const elevation = this.layer.elevation.toString();
-      url += `&elevation=${elevation}`;
+      getMapUrl.searchParams.append('elevation', `${this.layer.elevation}`)
     }
-    return url;
+    return getMapUrl.toString();
   }
 
   setDefaultZoom() {
