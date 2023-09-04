@@ -9,7 +9,7 @@
           <MapComponent>
             <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions">
               <ElevationSlider
-                v-if="currentElevation !== undefined"
+                v-if="currentElevation !== null"
                 v-model="currentElevation"
                 :minValue="minElevation"
                 :maxValue="maxElevation"
@@ -207,9 +207,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     this.setWMSLayerOptions, 500, { leading: true, trailing: true }
   )
 
-  currentElevation: number|undefined = 0
-  minElevation: number|undefined = 0
-  maxElevation: number|undefined = 0
+  currentElevation: number|null = 0
+  minElevation: number|null = 0
+  maxElevation: number|null = 0
   
   selectedLocationId: string | null = null
   locations: Location[] = []
@@ -279,16 +279,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
         time: this.currentTime
       }
       
-      if (this.currentWMSLayer?.elevation !== undefined){
-        this.maxElevation = this.currentWMSLayer?.elevation.upperValue
-        this.minElevation = this.currentWMSLayer?.elevation.lowerValue
+        this.maxElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
+        this.minElevation = this.currentWMSLayer?.elevation?.lowerValue ?? null
         this.wmsLayerOptions.elevation = this.currentElevation
-      } else{
-        this.maxElevation = undefined
-        this.minElevation = undefined
-        this.currentElevation = undefined
-        this.wmsLayerOptions.elevation = undefined
-      }
+      
     }
   }
 
@@ -418,7 +412,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
       this.legend = []
       this.unit = ''
       this.locations = []
-      this.currentElevation = undefined
+      this.currentElevation = null
       this.clearLocationsLayerData()
       this.setWMSLayerOptions()
       return
@@ -434,9 +428,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     this.currentTime = this.dateController.currentTime
     
     // Select the elevation if present
-    if (this.currentWMSLayer?.elevation !== undefined){
-      this.currentElevation = this.currentWMSLayer.elevation.upperValue
-    }
+    this.currentElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
     
     this.setWMSLayerOptions()
 

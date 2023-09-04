@@ -71,7 +71,7 @@ export interface MapboxLayerOptions {
   name: string;
   time: Date;
   bbox: LngLatBounds;
-  elevation?: number;
+  elevation?: number|null;
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
