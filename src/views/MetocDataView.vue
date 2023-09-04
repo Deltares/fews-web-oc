@@ -7,7 +7,15 @@
       <div class="grid-map" v-show="showMap">
         <div class="map-container">
           <MapComponent>
-            <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions"/>
+            <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions">
+              <ElevationSlider
+                v-if="currentElevation !== null"
+                v-model="currentElevation"
+                :minValue="minElevation"
+                :maxValue="maxElevation"
+                @input="debouncedSetWMSLayerOptions"
+              />
+            </MapboxLayer>
             <v-mapbox-layer
               v-if="showLocationsLayer"
               :options="locationsLayerOptions"
@@ -114,6 +122,7 @@ import ColourBar from '@/components/ColourBar.vue';
 import DataSourceControl from '@/components/DataSourceControl.vue';
 import MapboxLayer, { MapboxLayerOptions, convertBoundingBoxToLngLatBounds } from '@/components/AnimatedMapboxLayer.vue';
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
+import ElevationSlider from '@/components/ElevationSlider.vue'
 import MetocSidebar from '@/components/MetocSidebar.vue';
 import LocationsLayerSearchControl from '@/components/LocationsLayerSearchControl.vue'
 import MapComponent from '@/components/MapComponent.vue'
@@ -163,6 +172,7 @@ const selectedLocationsLayerOptions: CircleLayer = {
     ColourBar,
     DataSourceControl,
     DateTimeSlider,
+    ElevationSlider,
     LocationsLayerSearchControl,
     MapboxLayer,
     MapComponent,
@@ -197,6 +207,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     this.setWMSLayerOptions, 500, { leading: true, trailing: true }
   )
 
+  currentElevation: number|null = 0
+  minElevation: number|null = 0
+  maxElevation: number|null = 0
+  
   selectedLocationId: string | null = null
   locations: Location[] = []
   showLocationsLayer = true
@@ -264,6 +278,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
         name: this.currentDataSource.wmsLayerId,
         time: this.currentTime
       }
+      
+        this.maxElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
+        this.minElevation = this.currentWMSLayer?.elevation?.lowerValue ?? null
+        this.wmsLayerOptions.elevation = this.currentElevation
+      
     }
   }
 
@@ -393,6 +412,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
       this.legend = []
       this.unit = ''
       this.locations = []
+      this.currentElevation = null
       this.clearLocationsLayerData()
       this.setWMSLayerOptions()
       return
@@ -406,6 +426,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     this.dateController.dates = this.times
     this.dateController.selectDate(this.currentTime ?? new Date())
     this.currentTime = this.dateController.currentTime
+    
+    // Select the elevation if present
+    this.currentElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
+    
     this.setWMSLayerOptions()
 
     // Update the WMS layer legend.
@@ -515,6 +539,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   }
 
   get currentDataLayer(): DataLayer | null {
+    
     if (!this.currentCategory) return null
 
     return this.currentCategory.dataLayers.find(dataLayer => dataLayer.id === this.dataLayerId) ?? null
