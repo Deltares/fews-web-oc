@@ -1,7 +1,7 @@
 <template>
   <div>
     <vue-slider class="elevation-slider" :value="currentValue" :max="maxValue" :min="minValue" :interval="stepSize" marks
-      direction="btt" tooltip="always" tooltipPlacement="left" height="200px" v-on:change="onInputChange">
+      direction="btt" tooltip="always" tooltipPlacement="left" height="200px" v-on:change="onInputChange" :hideLabel="true">
       <template v-slot:tooltip="{ value }">
         <div class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text">{{
           Math.round(value) }} meter</div>
