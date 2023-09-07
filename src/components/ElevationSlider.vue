@@ -51,6 +51,6 @@ export default class ElevationSlider extends Vue {
   z-index: 100;
   position: absolute;
   right: 20px;
-  top: 50px;
+  bottom: 50px;
 }
 </style>
