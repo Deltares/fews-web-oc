@@ -1,11 +1,14 @@
+import { DrawCustomModeThis, DrawCustomMode, MapMouseEvent, DrawActionableState, MapTouchEvent, DrawPolygon } from '@mapbox/mapbox-gl-draw';
+import { GeoJSON } from 'geojson'
+
 interface State {
   startPoint?: [number, number]  
   endPoint?: [number, number]  
-  rectangle: any
+  rectangle: DrawPolygon
 }
 
 const doubleClickZoom = {
-  enable: (ctx: any) => {
+  enable: (ctx: any) => { // library type definition is not complete
     setTimeout(() => {
       // First check we've got a map and some context.
       if (
@@ -19,21 +22,21 @@ const doubleClickZoom = {
       // Now check initial state wasn't false (we leave it disabled if so)
       if (!ctx._ctx.store.getInitialConfigValue("doubleClickZoom")) return  
       ctx.map.doubleClickZoom.enable()  
-    }, 0)  
+    })  
   },
-  disable: (ctx: any) => {
+  disable: (ctx: DrawCustomModeThis) => {
     setTimeout(() => {
       if (!ctx.map || !ctx.map.doubleClickZoom) return  
 
       // Always disable here, as it's necessary in some cases.
       ctx.map.doubleClickZoom.disable()  
-    }, 0)  
+    })  
   }
 }  
 
-const DrawRectangle = {
+const DrawRectangle: DrawCustomMode = {
   // When the mode starts this function will be called.
-  onSetup: function(this: any, opts: any) {
+  onSetup: function(this: DrawCustomModeThis, opts: any) {
     const rectangle = this.newFeature({
       type: "Feature",
       properties: {
@@ -51,14 +54,14 @@ const DrawRectangle = {
     this.updateUIClasses({ mouse: "add" })  
     this.setActionableState({
       trash: true
-    })  
+    } as DrawActionableState)  
 
     return {
       rectangle
     }  
   },
   // support mobile taps
-  onTap: function(this: any, state: State, e: any) {
+  onTap: function(this: any, state: State, e: MapTouchEvent) { // library type definition is not complete
     // emulate 'move mouse' to update feature coords
     if (state.startPoint) this.onMouseMove(state, e)  
 
@@ -66,7 +69,7 @@ const DrawRectangle = {
     this.onClick(state, e)  
   },
   // Whenever a user clicks on the map, Draw will call `onClick`
-  onClick: function(this: any, state: State, e: any) {
+  onClick: function(this: DrawCustomModeThis, state: State, e: MapMouseEvent) {
     // if state.startPoint exist, means its second click
     // change to simple_select mode
     if (
@@ -83,7 +86,7 @@ const DrawRectangle = {
     const startPoint: [number, number] = [e.lngLat.lng, e.lngLat.lat]  
     state.startPoint = startPoint  
   },
-  onMouseMove: function(this: any, state: State, e: any) {
+  onMouseMove: function(this: DrawCustomModeThis, state: State, e: MapMouseEvent) {
     // if startPoint, update the feature coordinates, using the bounding box concept
     // we are simply using the startingPoint coordinates and the current Mouse Position
     // coordinates to calculate the bounding box on the fly, which will be our rectangle
@@ -112,43 +115,45 @@ const DrawRectangle = {
     }
   },
   // Whenever a user clicks on a key while focused on the map, it will be sent here
-  onKeyUp: function(this: any, state: State, e: any) {
+  onKeyUp: function(this: DrawCustomModeThis, state: State, e: KeyboardEvent) {
     if (e.keyCode === 27) return this.changeMode("simple_select")  
   },
-  onStop: function(this: any, state: State) {
-    doubleClickZoom.enable(this)  
-    this.updateUIClasses({ mouse: "none" })  
-    this.activateUIButton()  
+  onStop: function (this: DrawCustomModeThis, state: State) {
+    doubleClickZoom.enable(this)
+    this.updateUIClasses({ mouse: "none" })
+    this.activateUIButton()
 
     // check to see if we've deleted this feature
-    if (this.getFeature(state.rectangle.id) === undefined) return  
+    if (typeof state.rectangle.id === 'string' && this.getFeature(state.rectangle.id) === undefined) return;
 
-    // remove the last added coordinate
-    state.rectangle.removeCoordinate("0.4")  
+    // Remove the last added coordinate
+    state.rectangle.removeCoordinate("0.4")
 
-    if (state.rectangle.isValid()) {
+    if (state.rectangle.isValid()) {  
       this.map.fire("draw.create", {
-        features: [state.rectangle.toGeoJSON()]
-      })  
+        features: [state.rectangle.toGeoJSON()],
+      })
     } else {
-      this.deleteFeature([state.rectangle.id], { silent: true })  
-      this.changeMode("simple_select", {}, { silent: true })  
+      if (typeof state.rectangle.id === "string") {
+        this.deleteFeature(state.rectangle.id, { silent: true })
+      }
+      this.changeMode("simple_select", {}, { silent: true })
     }
   },
-  toDisplayFeatures: function(this: any, state: State, geojson: any, display: any) {
-    const isActivePolygon = geojson.properties.id === state.rectangle.id  
+  toDisplayFeatures: function (this: DrawCustomModeThis, state: State, geojson: any,  display: (geojson: GeoJSON) => void) {
+    const isActivePolygon = geojson.properties.id === state.rectangle.id
     geojson.properties.active = isActivePolygon ? "true" : "false"  
 
     if (!isActivePolygon) return display(geojson)  
-
     // Only render the rectangular polygon if it has the starting point
-    if (!state.startPoint) return  
-    return display(geojson)  
+    if (!state.startPoint) return display(geojson)
+    return display(geojson)
   },
-  onTrash: function(this: any, state: State) {
-    this.deleteFeature([state.rectangle.id], { silent: true })  
+  onTrash: function(this: DrawCustomModeThis, state: State) {
+    if (typeof state.rectangle.id === "string") {
+      this.deleteFeature(state.rectangle.id, { silent: true })
+    }  
     this.changeMode("simple_select")  
   }
-}  
-
-export default DrawRectangle  
+}
+export default DrawRectangle
