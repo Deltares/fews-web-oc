@@ -110,7 +110,7 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       },
       modes: Object.assign(MapboxDraw.modes, {
         draw_rectangle: DrawRectangle,
-      } as any),
+      } as any),// library type definition is not complete
       defaultMode: 'simple_select',
     })
 
@@ -141,7 +141,6 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
     if (map && map.loaded()) {
       this.mapObject = map
       this.isInitialized = true
-      this.addToMap()
     }
   }
   downloadClicked() {
