@@ -111,7 +111,7 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       modes: Object.assign(MapboxDraw.modes, {
         draw_rectangle: DrawRectangle,
       } as any),
-      defaultMode: 'draw_rectangle',
+      defaultMode: 'simple_select',
     })
 
     this.mapObject.addControl(this.draw)
