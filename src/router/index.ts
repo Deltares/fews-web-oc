@@ -14,7 +14,7 @@ import { configManager } from '../services/application-config'
 import { authenticationManager } from '../services/authentication/AuthenticationManager'
 import { useConfigStore } from '../stores/config.ts'
 const SsdComponent = () =>  import('../components/ssd-component/SsdComponent.vue')
-const MapComponent = () =>  import('../components/map/MapComponent.vue')
+const SpatialDisplay = () =>  import('../views/SpatialDisplay.vue')
 
 const Empty = () => import('../views/Empty.vue')
 
@@ -71,7 +71,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/map/:layerName?',
     name: 'SpatialDisplay',
-    component: MapComponent,
+    component: SpatialDisplay,
     props: true,
     meta: { authorize: [], sidebar: true },
   },
