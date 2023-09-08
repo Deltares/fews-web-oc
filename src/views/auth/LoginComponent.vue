@@ -4,8 +4,7 @@
     <div v-else>
       <v-menu location="bottom" width="200">
         <template #activator="{ props }">
-          <v-btn v-bind="props" variant="text"           icon
->
+          <v-btn v-bind="props" variant="text" icon>
             {{ initials }}
           </v-btn>
         </template>
@@ -36,7 +35,7 @@
 import { onMounted } from 'vue'
 import { ref } from 'vue'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
-import { useRoute } from 'vue-router';
+import { useRoute } from 'vue-router'
 
 function initialsFromName(givenName: string): string {
   let initials = ''
@@ -63,10 +62,14 @@ onMounted((): void => {
       if (user) {
         requiresLogin.value = false
         if (user.profile?.name !== undefined) {
-          name.value = user.profile.email?.endsWith('@vortech.nl') ? `dr. ir. ${user.profile.name}` :  user.profile.name
+          name.value = user.profile.email?.endsWith('@vortech.nl')
+            ? `dr. ir. ${user.profile.name}`
+            : user.profile.name
           initials.value = initialsFromName(user.profile.name)
           console.log(user.profile)
-          roles.value = user.profile.roles ? user.profile.roles as string[] : [] 
+          roles.value = user.profile.roles
+            ? (user.profile.roles as string[])
+            : []
         }
       }
     })

@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
+import { useRoute } from 'vue-router'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
 
 const props = defineProps({

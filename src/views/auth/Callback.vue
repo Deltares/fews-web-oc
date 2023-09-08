@@ -3,7 +3,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager'
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
 
 onMounted(async () => {
   const router = useRouter()

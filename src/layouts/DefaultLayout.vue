@@ -7,14 +7,11 @@
       class="view-sidebar"
     >
       <v-toolbar density="compact" fixed>
-        <v-btn
-          variant="text"
-          :to="{ name: 'About' }"
-        >
-          <img height="36" :src="defaultLogo">
+        <v-btn variant="text" :to="{ name: 'About' }">
+          <img height="36" :src="defaultLogo" />
         </v-btn>
         <v-spacer />
-        <login-component/>
+        <login-component />
       </v-toolbar>
       <v-menu origin="left" min-width="320">
         <template #activator="{ isActive, props }">
@@ -61,10 +58,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onBeforeMount } from 'vue'
 import { useRtl } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
-import { onBeforeMount } from 'vue'
 import { useRoute } from 'vue-router'
 import LoginComponent from '../views/auth/LoginComponent.vue'
 
@@ -73,6 +69,7 @@ const drawer = ref(true)
 const currentItem = ref('')
 const { isRtl } = useRtl()
 const route = useRoute()
+
 const defaultLogo: string = '/images/logo.png'
 
 onBeforeMount(async () => {

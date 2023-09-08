@@ -11,9 +11,8 @@ onMounted((): void => {
     .then(() => {
       const store = useConfigStore()
       store.$reset()
-      
     })
     .catch((err) => console.error(err))
-    .finally(() =>  window.location.href = import.meta.env.BASE_URL + 'login')
+    .finally(() => (window.location.href = import.meta.env.BASE_URL + 'login'))
 })
 </script>

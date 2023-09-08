@@ -3,7 +3,9 @@ import { getFewsConfig } from '../lib/fews-config/index.js'
 import { WebOcGeneralConfig } from '@deltares/fews-pi-requests'
 import { ComponentTypeEnum, WebOcComponent } from '../lib/fews-config/types.js'
 
-interface State {
+const WEBOC_CONFIG_PREFIX = 'delft-fews-weboc:config#'
+
+interface ConfigState {
   version: string
   components: { [key: string]: WebOcComponent }
   general: WebOcGeneralConfig
@@ -27,44 +29,47 @@ function getMenuIcon(componentConfig: WebOcComponent): string {
   }
 }
 
-const useConfigStore = defineStore('config', {
-  state: (): State => ({
-    version: '0.1.0',
-    components: {},
-    general: {},
-  }),
+const useConfigStore = defineStore(
+  'config',
+  {
+    state: (): ConfigState => ({
+      version: '0.1.0',
+      components: {},
+      general: {},
+    }),
 
-  actions: {
-    addComponent(component: WebOcComponent) {
-      this.components[component.id] = component
-    },
+    actions: {
+      addComponent(component: WebOcComponent) {
+        this.components[component.id] = component
+      },
 
-    setGeneral(generalConfig: WebOcGeneralConfig) {
-      this.general = generalConfig
-    },
+      setGeneral(generalConfig: WebOcGeneralConfig) {
+        this.general = generalConfig
+      },
 
-    async setFewsConfig() {
-      if (Object.keys(this.components).length === 0) {
-        const webOcConfiguration = await getFewsConfig()
-        for (const webOcComponent of webOcConfiguration.webOcComponents) {
-          this.addComponent(webOcComponent)
+      async setFewsConfig() {
+        if (Object.keys(this.components).length === 0) {
+          const webOcConfiguration = await getFewsConfig()
+          for (const webOcComponent of webOcConfiguration.webOcComponents) {
+            this.addComponent(webOcComponent)
+          }
+          this.setGeneral(webOcConfiguration.general)
         }
-        this.setGeneral(webOcConfiguration.general)
-      }
+      },
+    },
+    getters: {
+      activeComponents: (state) => {
+        return Object.values(state.components).map((component: any) => {
+          return {
+            id: component.id,
+            to: { name: component.type },
+            title: component.title ?? '',
+            icon: getMenuIcon(component),
+          }
+        })
+      },
     },
   },
-  getters: {
-    activeComponents: (state) => { 
-      return Object.values(state.components).map((component: any) => {
-        return {
-          id: component.id,
-          to: { name: component.type },
-          title: component.title ?? '',
-          icon: getMenuIcon(component),
-        }
-      })      
-    }
-  },
-})
+)
 
 export { useConfigStore }
