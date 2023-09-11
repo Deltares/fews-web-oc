@@ -1,0 +1,234 @@
+<template>
+  <div>
+    <!-- Download Dialog -->
+    <v-dialog v-model="downloadDialog" max-width="500">
+      <v-card>
+        <v-card-title>Download netCDF Data</v-card-title>
+        <v-card-text>
+          <v-form>
+            <v-text-field v-model="dx" type="number" label="Step size in x-direction [m]" required></v-text-field>
+            <v-text-field v-model="dy" type="number" label="Step size in y-direction [m]" required></v-text-field>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="downloadClicked">Download</v-btn>
+          <v-btn color="error" @click="closeDownloadDialog">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Error Dialog -->
+    <v-dialog v-model="errorDialog" max-width="500">
+      <v-card>
+        <v-card-title>Error</v-card-title>
+        <v-card-text>{{ errorMessage }}</v-card-text>
+        <v-card-actions>
+          <v-btn color="error" @click="closeErrorDialog">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
+</template>
+
+
+<script lang="ts">
+import { Component, Inject, Mixins, Prop } from 'vue-property-decorator'
+import { Map } from 'mapbox-gl'
+import MapboxDraw from '@mapbox/mapbox-gl-draw'
+import DrawRectangle from '@/lib/MapBox/DrawRectangleMode'
+import { DownloadControl } from "../lib/MapBox/DownloadControl"
+import { PiWebserviceProvider } from "@deltares/fews-pi-requests"
+import PiRequestsMixin from '@/mixins/PiRequestsMixin'
+import { ProcessDataFilter } from '@deltares/fews-pi-requests'
+
+@Component
+export default class Regridder extends Mixins(PiRequestsMixin) {
+  @Inject() getMap!: () => Map
+
+  @Prop() firstValueTime!: string
+  @Prop() lastValueTime!: string
+
+  mapObject!: Map
+  isInitialized = false
+  draw!: MapboxDraw
+  downloadControl!: DownloadControl
+  downloadDialog = false
+  errorDialog = false
+  dx = '0.1'
+  dy = '0.1'
+  errorMessage = 'Select an area on the map before downloading the data.'
+  bbox: number[] | null = null
+  webServiceProvider!: PiWebserviceProvider
+
+  created(): void {
+    const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
+    const transformRequestFn = this.getTransformRequest()
+    this.webServiceProvider = new PiWebserviceProvider(baseUrl, { transformRequestFn })
+  }
+
+  deferredMountedTo(map: Map) {
+    this.mapObject = map
+    this.mapObject.dragRotate.disable()
+    this.mapObject.touchZoomRotate.disableRotation()
+    this.mapObject.once('load', () => {
+      this.isInitialized = true
+      this.addToMap()
+    })
+  }
+
+  refreshDownloadControl(bbox: number[] | null) {
+    if (this.downloadControl) {
+      this.mapObject.removeControl(this.downloadControl)
+    }
+    this.downloadControl = new DownloadControl(bbox, this)
+    this.mapObject.addControl(this.downloadControl)
+  }
+
+  select() {
+    const data = this.draw.getAll()
+    // get bbox from data
+    const geometry = data.features[0].geometry
+    if (geometry.type == "Polygon" && geometry.coordinates !== null) {
+      const coordinates = geometry.coordinates[0]
+      const x = coordinates.map(c => c[0])
+      const y = coordinates.map(c => c[1])
+      const xmin = Math.min(...x)
+      const xmax = Math.max(...x)
+      const ymin = Math.min(...y)
+      const ymax = Math.max(...y)
+      this.bbox = [xmin, ymin, xmax, ymax]
+      this.refreshDownloadControl(this.bbox)
+    }
+  }
+
+  addToMap() {
+    this.draw = new MapboxDraw({
+      displayControlsDefault: false,
+      controls: {
+        polygon: true,
+        trash: true,
+      },
+      modes: Object.assign(MapboxDraw.modes, {
+        draw_rectangle: DrawRectangle,
+      } as any),// library type definition is not complete
+      defaultMode: 'simple_select',
+    })
+
+    this.mapObject.addControl(this.draw)
+    this.mapObject.on('draw.create', this.select)
+
+    const trashElement = document.querySelector(".mapbox-gl-draw_trash") as HTMLElement
+    if (trashElement) {
+      trashElement.addEventListener("click", (event) => {
+        event.preventDefault()
+        this.draw.deleteAll()
+        this.refreshDownloadControl(null)
+      }, {capture: true}) // ensure that this handler is executed before the bubbling
+    }
+    const drawCombine = document.querySelector(".mapbox-gl-draw_polygon") as HTMLElement
+    if (drawCombine) {
+        drawCombine.setAttribute("title", "Select Area")
+        drawCombine.addEventListener("click", (event) => {
+          event.preventDefault()
+          this.draw.deleteAll()
+          this.draw.changeMode("draw_rectangle")
+        }, {capture: true}) // ensure that this handler is executed before the bubbling
+    }
+    // Create the DownloadControl initially
+    this.downloadControl = new DownloadControl(null, this)
+    this.mapObject.addControl(this.downloadControl)
+  }
+
+  mounted() {
+    const map = this.getMap()
+    if (map && map.loaded()) {
+      this.mapObject = map
+      this.isInitialized = true
+    }
+  }
+  downloadClicked() {
+    const dx = parseFloat(this.dx)
+    const dy = parseFloat(this.dy)
+
+    if (!isNaN(dx) && !isNaN(dy) && dx > 0 && dy > 0 && this.bbox !== null) {
+      const filter: ProcessDataFilter = {
+        workflowId: 'Transformation_ASA_Grid_Wind',
+        xMin: this.bbox[0],
+        yMin: this.bbox[1],
+        xMax: this.bbox[2],
+        yMax: this.bbox[3],
+        xCellSize: dx,
+        yCellSize: dy,
+        startTime: this.firstValueTime,
+        endTime: this.lastValueTime
+      }
+
+      const apiUrl = this.webServiceProvider.processDataUrl(filter).toString()
+      this.downloadDialog = false
+      this.downloadNetCDF(apiUrl)
+    } else {
+      // Handle invalid input
+      this.openErrorDialog('Invalid input. Please enter valid values for dx and dy.')
+    }
+  }
+
+  closeDownloadDialog() {
+    this.downloadDialog = false
+  }
+
+  openErrorDialog(errorMessage: string) {
+    this.errorMessage = errorMessage
+    this.errorDialog = true
+  }
+
+  closeErrorDialog() {
+    this.errorDialog = false
+    // reset error message
+    this.errorMessage = 'Select an area on the map before downloading the data.'
+  }
+
+  private async downloadNetCDF(apiUrl: string) {
+    let fileName = 'openarchive-netcdf.nc'
+    const icon = document.querySelector('#download-icon')
+    icon?.classList.remove('mdi-download')
+    icon?.classList.add('mdi-loading')
+    icon?.classList.add('mdi-spin')
+    try {
+      const response = await fetch(apiUrl);
+      // Set file name based on response header
+      const contentDisposition = response.headers.get('Content-Disposition')
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(/filename=(.+)/)
+        if (fileNameMatch) {
+          fileName = fileNameMatch[1]
+        }
+      }
+
+      const blob = await response.blob()
+
+      // Create a temporary URL for the Blob
+      const blobUrl = window.URL.createObjectURL(blob)
+
+      // Create a temporary anchor element to trigger the download
+      const downloadLink = document.createElement('a')
+      downloadLink.href = blobUrl
+      downloadLink.download = fileName
+      downloadLink.style.display = 'none'
+      // Append the anchor element to the DOM and click it to trigger the download
+      document.body.appendChild(downloadLink)
+      downloadLink.click()
+      downloadLink.remove()
+      window.URL.revokeObjectURL(blobUrl)
+      this.downloadDialog = false
+    } catch (error) {
+      console.error('Error:', error)
+      // Handle the error and display an error message
+      this.openErrorDialog('An error occurred while downloading data.')
+    } finally {
+      icon?.classList.remove('mdi-loading')
+      icon?.classList.remove('mdi-spin')
+      icon?.classList.add('mdi-download')
+    }
+  }
+}
+</script>

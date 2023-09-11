@@ -26,6 +26,10 @@
               v-if="showLocationsLayer"
               :options="selectedLocationsLayerOptions"
             />
+            <Regridder
+            :firstValueTime="firstValueTime"
+            :lastValueTime="lastValueTime"
+            />
           </MapComponent>
         </div>
         <div class="control-container">
@@ -128,6 +132,7 @@ import LocationsLayerSearchControl from '@/components/LocationsLayerSearchContro
 import MapComponent from '@/components/MapComponent.vue'
 import WMSInfoPanel from '@/components/WMSInfoPanel.vue';
 import { Layer } from '@deltares/fews-wms-requests';
+import Regridder from '@/components/Regridder.vue'
 
 const defaultGeoJsonSource: GeoJSONSourceRaw = {
   type: 'geojson',
@@ -177,7 +182,8 @@ const selectedLocationsLayerOptions: CircleLayer = {
     MapboxLayer,
     MapComponent,
     MetocSidebar,
-    WMSInfoPanel
+    WMSInfoPanel,
+    Regridder
   }
 })
 export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiRequestsMixin) {
@@ -553,6 +559,16 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   get currentWMSLayer(): Layer | null {
     const layer = this.layers.find(layer => layer.name === this.currentDataSource?.wmsLayerId)
     return layer ?? null
+  }
+
+  get firstValueTime(): string |  null {
+    if (this.times.length === 0) return null
+    return this.times[0].toISOString()
+   }
+
+  get lastValueTime(): string | null {
+    if (this.times.length === 0) return null
+    return this.times[this.times.length - 1].toISOString()
   }
 
   get dataSources(): DataSource[] {

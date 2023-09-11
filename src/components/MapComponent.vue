@@ -1,5 +1,6 @@
 <template>
   <div class="map-container">
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.0/mapbox-gl-draw.css" type="text/css">
     <v-mapbox
       :access-token="accessToken"
       map-style='https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
