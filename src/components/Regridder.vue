@@ -117,19 +117,22 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
     this.mapObject.addControl(this.draw)
     this.mapObject.on('draw.create', this.select)
 
-    const trashElement = document.querySelector(".mapbox-gl-draw_trash")
-    if (trashElement !== null) {
-      trashElement.addEventListener("click", () => {
+    const trashElement = document.querySelector(".mapbox-gl-draw_trash") as HTMLElement
+    if (trashElement) {
+      trashElement.addEventListener("click", (event) => {
+        event.preventDefault()
         this.draw.deleteAll()
         this.refreshDownloadControl(null)
-      })
+      }, {capture: true}) // ensure that this handler is executed before the bubbling
     }
-    const drawCombine = document.querySelector(".mapbox-gl-draw_polygon")
-    if (drawCombine !== null) {
-      drawCombine.addEventListener("click", () => {
-        this.draw.deleteAll()
-        this.draw.changeMode("draw_rectangle")
-      })
+    const drawCombine = document.querySelector(".mapbox-gl-draw_polygon") as HTMLElement
+    if (drawCombine) {
+        drawCombine.setAttribute("title", "Select Area")
+        drawCombine.addEventListener("click", (event) => {
+          event.preventDefault()
+          this.draw.deleteAll()
+          this.draw.changeMode("draw_rectangle")
+        }, {capture: true}) // ensure that this handler is executed before the bubbling
     }
     // Create the DownloadControl initially
     this.downloadControl = new DownloadControl(null, this)
