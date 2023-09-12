@@ -7,7 +7,7 @@
       <div class="grid-map" v-show="showMap">
         <div class="map-container">
           <MapComponent>
-            <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions">
+            <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions" @doubleClick="onLayerDoubleClick">
               <ElevationSlider
                 v-if="currentElevation !== null"
                 v-model="currentElevation"
@@ -113,7 +113,6 @@ import {
   fetchTimeSeriesDisplaysAndRequests
 } from '@/lib/Topology';
 
-import PiRequestsMixin from '@/mixins/PiRequestsMixin';
 import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import WMSMixin from '@/mixins/WMSMixin'
 
@@ -127,6 +126,8 @@ import LocationsLayerSearchControl from '@/components/LocationsLayerSearchContro
 import MapComponent from '@/components/MapComponent.vue'
 import { Layer } from '@deltares/fews-wms-requests';
 import Regridder from '@/components/Regridder.vue'
+import { toMercator } from '@turf/projection'
+import { point } from "@turf/helpers"
 
 const defaultGeoJsonSource: GeoJSONSourceRaw = {
   type: 'geojson',
@@ -179,7 +180,7 @@ const selectedLocationsLayerOptions: CircleLayer = {
     Regridder
   }
 })
-export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiRequestsMixin) {
+export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   @Prop({ default: '', type: String }) categoryId!: string
   @Prop({ default: '', type: String }) dataLayerId!: string
   @Prop({ default: '', type: String }) dataSourceId!: string
@@ -216,6 +217,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   showLocationsLayer = true
   locationsLayerOptions: CircleLayer = {...defaultLocationsLayerOptions}
   selectedLocationsLayerOptions: CircleLayer = {...selectedLocationsLayerOptions}
+
+  x: number|null = null
+  y: number|null = null
 
   async mounted() {
     // Create FEWS PI Webservices provider.
@@ -281,8 +285,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
       
         this.maxElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
         this.minElevation = this.currentWMSLayer?.elevation?.lowerValue ?? null
-        this.wmsLayerOptions.elevation = this.currentElevation
-      
+        this.wmsLayerOptions.elevation = this.currentElevation      
     }
   }
 
@@ -333,7 +336,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
    */
   setLocation(locationId: string | null): void {
     // We don't need to do anything if we are already at this locationId.
-    if (this.locationId === locationId) return
+        if (this.locationId === locationId) return
 
     if (!locationId) {
       this.closeCharts()
@@ -478,6 +481,13 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
         params
       })
     }
+  }
+
+  onLayerDoubleClick(event: MapLayerMouseEvent) {
+    console.log('double click', event)
+    const mercator = toMercator(point([event.lngLat.lng, event.lngLat.lat]))
+    this.x = mercator.geometry.coordinates[0]
+    this.y = mercator.geometry.coordinates[1]    
   }
 
   /**

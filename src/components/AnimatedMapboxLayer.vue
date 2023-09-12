@@ -81,7 +81,7 @@ function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
 }
 
 @Component
-export default class AnimatedMapboxLayer extends Vue {
+export default class AnimatedMapboxLayer extends  Vue {
   @Prop({
     default: () => {
       return null
@@ -181,6 +181,16 @@ export default class AnimatedMapboxLayer extends Vue {
     }
   }
 
+  setDoubleClickLayer() {
+    if (this.mapObject) {
+      // deactivate double click zoom
+      this.mapObject.doubleClickZoom.disable()
+      this.mapObject.on("dblclick", (e) => {
+        this.$emit("doubleClick", e)       
+      })
+    }
+  }
+
   @Watch("layer")
   onLayerChange(): void {
     if (!this.isInitialized) return
@@ -203,6 +213,7 @@ export default class AnimatedMapboxLayer extends Vue {
     this.newLayerId = getFrameId(this.layer.name, this.counter)
     const source = this.mapObject.getSource(this.newLayerId)
     const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")
+    this.setDoubleClickLayer()
     if (this.currentLayer !== originalLayerName) {
       // set default zoom only if layer is changed
       this.setDefaultZoom()
