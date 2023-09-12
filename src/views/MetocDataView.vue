@@ -38,11 +38,6 @@
             :items="dataSources"
             @input="onSelectDataSource"
           />
-          <WMSInfoPanel
-            :layerTitle="layerTitle"
-            :externalForecastTime="externalForecast"
-            :unit="unit"
-          />
           <LocationsLayerSearchControl
             :showLocations.sync="showLocationsLayer"
             :locationId.sync="selectedLocationId"
@@ -130,7 +125,6 @@ import ElevationSlider from '@/components/ElevationSlider.vue'
 import MetocSidebar from '@/components/MetocSidebar.vue';
 import LocationsLayerSearchControl from '@/components/LocationsLayerSearchControl.vue'
 import MapComponent from '@/components/MapComponent.vue'
-import WMSInfoPanel from '@/components/WMSInfoPanel.vue';
 import { Layer } from '@deltares/fews-wms-requests';
 import Regridder from '@/components/Regridder.vue'
 
@@ -182,7 +176,6 @@ const selectedLocationsLayerOptions: CircleLayer = {
     MapboxLayer,
     MapComponent,
     MetocSidebar,
-    WMSInfoPanel,
     Regridder
   }
 })
@@ -442,7 +435,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     const legend = await this.getLegendGraphic(this.currentDataSource.wmsLayerId)
     this.unit = legend.unit ?? '—'
     this.legend = legend.legend
-
+    
     // Update locations for the current data source.
     const geojson = await fetchLocationsAsGeoJson(
       this.webServiceProvider, this.currentDataSource.filterIds
