@@ -12,6 +12,7 @@ import * as webOcCharts from '@deltares/fews-web-oc-charts'
 @Component([])
 export default class ColourBar extends Vue {
   @Prop({ default: () => { return [] }}) value!: webOcCharts.ColourMap
+  @Prop({ default: ("") }) title!: string
 
   group: any
   colourBar?: webOcCharts.ColourBar
@@ -39,7 +40,8 @@ export default class ColourBar extends Vue {
     const options: webOcCharts.ColourBarOptions = {
       type: 'nonlinear',
       useGradients: true,
-      position: webOcCharts.AxisPosition.Bottom
+      position: webOcCharts.AxisPosition.Bottom,
+      title: this.title
     }
     this.colourBar = new webOcCharts.ColourBar(
       this.group as any,
