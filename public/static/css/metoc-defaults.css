@@ -1,3 +1,9 @@
+@import url("metoc-fonts.css");
+
+#app {
+    font-family: Roboto, Helvetica, Arial, sans-serif;
+}
+
 .axis {
   font-size: 1em;
 }
@@ -11,5 +17,223 @@
 }
 
 .legend {
+  font-size: 1em;
+}
+
+.axis path { stroke-width: 1px; }
+.axis .tick line { stroke-width: 1px; }
+.axis .tick text { stroke-width: 1px; }
+.grid {
+    fill: none;
+    stroke-width: 1px;
+    stroke-dasharray: 2px;
+}
+
+.grid text { display: none; }
+.grid .tick.zero-crossing line { stroke-dasharray: none; }
+
+.view {
+  fill: none;
+}
+
+.spinner {
+  /* fill: transparent; */
+  stroke: gray;
+  fill: none;
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-dasharray: 50.24;
+  -webkit-transform-origin: 10px 0px 0;
+  -moz-transform-origin: 10px 0px 0;
+  -ms-transform-origin: 10px 0px 0;
+  -o-transform-origin: 10px 0px 0;
+  transform-origin: 10px 0px 0;
+  -webkit-animation: spinner 2s linear infinite;
+  -moz-animation: spinner 2s linear infinite;
+  -ms-animation: spinner 2s linear infinite;
+  -o-animation: spinner 2s linear infinite;
+  animation: spinner 2s linear infinite;
+}
+
+@keyframes spinner {
+  0% {
+    transform: rotate(0deg);
+    stroke-dashoffset: 10.56;
+  }
+
+  50% {
+    transform: rotate(720deg);
+    stroke-dashoffset: 50.24;
+  }
+
+  100% {
+    transform: rotate(1080deg);
+    stroke-dashoffset: 10.56;
+  }
+}
+
+.level-select {
+  stroke: red;
+}
+
+.level-select > text {
+  stroke: none;
+  fill: red;
+}
+
+.level-select-handle {
+  stroke: red;
+  fill: red;
+  cursor: pointer;
+}
+
+.cross-section-select {
+  font-size: 1em;
+}
+
+.cross-section-select > line {
+  stroke-dasharray: 2 2;
+}
+
+.cross-section-select > text.date-label {
+  stroke: none;
+}
+
+.cross-section-select > .data-point-per-line {
+  stroke: none;
+}
+
+.cross-section-select-handle {
+  stroke: red;
+  fill: red;
+  cursor: pointer;
+}
+
+.current-time {
+  stroke: red;
+}
+
+.current-time-indicator {
+  /* stroke:red; */
+  fill: red
+}
+
+.current-time-indicator:hover>text {
+  visibility: visible;
+}
+
+.current-time-indicator>text {
+  visibility: hidden;
+  stroke:none;
+}
+
+.dst-indicator {
+  fill: orange
+}
+
+.dst-indicator:hover>text {
+  visibility: visible;
+}
+
+.dst-indicator>text {
+  visibility: hidden;
+  stroke: none;
+}
+
+.mouse-per-line {
+  cursor: crosshair;
+}
+
+.mouse-x > text {
+  -webkit-user-select:none;
+  user-select: none;
+}
+
+.brush .handle {
+  fill: white;
+  stroke: black;
+  stroke-width: .5px;
+}
+
+.brush .select-rect {
+  fill: rgba(111, 111, 111, 0.5);
+  stroke: white;
+  stroke-width: 1px;
+  stroke-dasharray: 5, 2;
+}
+
+.mouse .overlay {
+  visibility: hidden;
+}
+
+.mouse-over .mouse-line {
+  stroke-width: 1px;
+  stroke-dasharray: 5, 2, 2, 2;
+}
+
+.tooltip {
+  position: absolute;
+  display: inline-block;
+  top: 0px;
+  left: 0px;
+  pointer-events: none;
+  white-space: nowrap;
+  font-size: 1em;
+}
+
+.tooltip .tooltiptext {
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 10px;
+  z-index: 1;
+}
+
+.tooltip .tooltiptext:empty {
+  display: none;
+}
+
+.tooltip .tooltiptext.top {
+  transform: translate(-50%, calc(-100% - 5px));
+}
+.tooltip .tooltiptext.bottom {
+  transform: translate(-50%, 5px);
+}
+.tooltip .tooltiptext.left {
+  transform: translate(calc(-100% - 5px), -50%);
+}
+.tooltip .tooltiptext.right {
+  transform: translate(5px, -50%);
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  border-width: 5px;
+  border-style: solid;
+}
+.tooltip .tooltiptext.top::after {
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+}
+.tooltip .tooltiptext.bottom::after {
+  top: -10px;
+  left: 50%;
+  margin-left: -5px;
+}
+
+.tooltip .tooltiptext.left::after {
+  top: 50%;
+  left: 100%;
+  margin-top: -5px;
+}
+.tooltip .tooltiptext.right::after {
+  top: 50%;
+  left: -10px;
+  margin-top: -5px;
+}
+
+.data-field{
+  font-family: sans-serif;
   font-size: 1em;
 }
