@@ -1,21 +1,7 @@
+@import url("metoc-defaults.css");
+
 .wb-charts svg {
   color: black;
-}
-
-.axis {
-  font-size: 1em;
-}
-
-.front {
-  font-size: 1em;
-}
-
-.mouse-over {
-  font-size: 1em;
-}
-
-.legend {
-  font-size: 1em;
 }
 
 .canvas {
