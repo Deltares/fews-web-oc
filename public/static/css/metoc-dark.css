@@ -1,4 +1,9 @@
+@import url("metoc-fonts.css");
 @import url("metoc-defaults.css");
+
+#app {
+    font-family: Roboto, Helvetica, Arial, sans-serif;
+}
 
 .wb-charts svg {
   color: white;
