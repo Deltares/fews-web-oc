@@ -1,5 +1,7 @@
-.wb-charts svg {
-  color: white;
+@import url("metoc-fonts.css");
+
+#app {
+    font-family: Roboto, Helvetica, Arial, sans-serif;
 }
 
 .axis {
@@ -14,27 +16,21 @@
   font-size: 1em;
 }
 
-.canvas {
-    fill: rgb(54, 54, 54);
-}
-
 .legend {
   font-size: 1em;
 }
 
-.axis path { stroke-width: 1px; stroke: white;}
-.axis .tick line { stroke-width: 1px; stroke: white;}
-.axis .tick text { stroke-width: 1px; fill: white;}
+.axis path { stroke-width: 1px; }
+.axis .tick line { stroke-width: 1px; }
+.axis .tick text { stroke-width: 1px; }
 .grid {
     fill: none;
     stroke-width: 1px;
-    stroke: black;
     stroke-dasharray: 2px;
 }
 
 .grid text { display: none; }
-.grid .tick line { stroke: black;}
-.grid .tick.zero-crossing line { stroke-dasharray: none; stroke: white;}
+.grid .tick.zero-crossing line { stroke-dasharray: none; }
 
 .view {
   fill: none;
@@ -95,23 +91,21 @@
   font-size: 1em;
 }
 
-.cross-section-select line {
-  stroke: white;
+.cross-section-select > line {
   stroke-dasharray: 2 2;
 }
 
-.cross-section-select text.date-label {
+.cross-section-select > text.date-label {
   stroke: none;
-  fill: white;
 }
 
-.cross-section-select .data-point-per-line {
+.cross-section-select > .data-point-per-line {
   stroke: none;
 }
 
 .cross-section-select-handle {
-  stroke: white;
-  fill: white;
+  stroke: red;
+  fill: red;
   cursor: pointer;
 }
 
@@ -120,6 +114,7 @@
 }
 
 .current-time-indicator {
+  /* stroke:red; */
   fill: red
 }
 
@@ -130,7 +125,6 @@
 .current-time-indicator>text {
   visibility: hidden;
   stroke:none;
-  fill:white;
 }
 
 .dst-indicator {
@@ -144,10 +138,9 @@
 .dst-indicator>text {
   visibility: hidden;
   stroke: none;
-  fill: white;
 }
 
-.mouse {
+.mouse-per-line {
   cursor: crosshair;
 }
 
@@ -174,13 +167,8 @@
 }
 
 .mouse-over .mouse-line {
-  stroke: white;
   stroke-width: 1px;
   stroke-dasharray: 5, 2, 2, 2;
-}
-
-.mouse-over .mouse-per-line {
-  fill: white;
 }
 
 .tooltip {
@@ -194,8 +182,6 @@
 }
 
 .tooltip .tooltiptext {
-  background-color: black;
-  color: #fff;
   text-align: center;
   border-radius: 6px;
   padding: 5px 10px;
@@ -212,7 +198,6 @@
 .tooltip .tooltiptext.bottom {
   transform: translate(-50%, 5px);
 }
-
 .tooltip .tooltiptext.left {
   transform: translate(calc(-100% - 5px), -50%);
 }
@@ -230,26 +215,22 @@
   top: 100%;
   left: 50%;
   margin-left: -5px;
-  border-color: black transparent transparent transparent;
 }
 .tooltip .tooltiptext.bottom::after {
   top: -10px;
   left: 50%;
   margin-left: -5px;
-  border-color: transparent transparent black transparent;
 }
 
 .tooltip .tooltiptext.left::after {
   top: 50%;
   left: 100%;
   margin-top: -5px;
-  border-color: transparent transparent transparent black;
 }
 .tooltip .tooltiptext.right::after {
   top: 50%;
   left: -10px;
   margin-top: -5px;
-  border-color: transparent black transparent transparent;
 }
 
 .data-field{

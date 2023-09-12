@@ -1,0 +1,69 @@
+@import url("metoc-defaults.css");
+
+.wb-charts svg {
+  color: white;
+}
+
+.canvas {
+    fill: rgb(54, 54, 54);
+}
+
+.axis path { stroke: white;}
+.axis .tick line { stroke: white;}
+.axis .tick text { fill: white;}
+.grid {
+    stroke: black;
+}
+
+.grid .tick line { stroke: black;}
+.grid .tick.zero-crossing line { stroke: white;}
+
+.cross-section-select > line {
+  stroke: white;
+}
+
+.cross-section-select > text.date-label {
+  fill: white;
+}
+
+.cross-section-select-handle {
+  stroke: white;
+  fill: white;
+}
+
+.current-time-indicator>text {
+  fill:white;
+}
+
+.dst-indicator>text {
+  fill: white;
+}
+
+.mouse-over .mouse-line {
+  stroke: white;
+}
+
+.mouse-over .mouse-per-line {
+  fill: white;
+}
+
+.tooltip .tooltiptext {
+  background-color: black;
+  color: #fff;
+}
+
+.tooltip .tooltiptext.top::after {
+  border-color: black transparent transparent transparent;
+}
+
+.tooltip .tooltiptext.bottom::after {
+  border-color: transparent transparent black transparent;
+}
+
+.tooltip .tooltiptext.left::after {
+  border-color: transparent transparent transparent black;
+}
+
+.tooltip .tooltiptext.right::after {
+  border-color: transparent black transparent transparent;
+}
