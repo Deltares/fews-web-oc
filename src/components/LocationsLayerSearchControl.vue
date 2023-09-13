@@ -5,12 +5,12 @@
     pill
     label
   >
+    <v-icon>mdi-map-marker</v-icon>  
     <v-switch
       v-model="show"
       @click.stop
       @change="onShowChange"
     />
-    <v-icon>mdi-map-marker</v-icon>
     <v-autocomplete
       v-model="selectedLocation"
       label="Location"
