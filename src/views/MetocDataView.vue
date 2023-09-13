@@ -38,11 +38,6 @@
             :items="dataSources"
             @input="onSelectDataSource"
           />
-          <WMSInfoPanel
-            :layerTitle="layerTitle"
-            :externalForecastTime="externalForecast"
-            :unit="unit"
-          />
           <LocationsLayerSearchControl
             :showLocations.sync="showLocationsLayer"
             :locationId.sync="selectedLocationId"
@@ -57,7 +52,7 @@
           @update:now="setCurrentTime"
         />
         <div class="colourbar">
-          <ColourBar v-model="legend" v-if="legend.length > 0"/>
+          <ColourBar v-model="legend" :title="legendTitle" v-if="legend.length > 0"/>
         </div>
       </div>
       <div class="grid-charts" v-if="hasSelectedLocation && !$vuetify.breakpoint.mobile">
@@ -130,7 +125,6 @@ import ElevationSlider from '@/components/ElevationSlider.vue'
 import MetocSidebar from '@/components/MetocSidebar.vue';
 import LocationsLayerSearchControl from '@/components/LocationsLayerSearchControl.vue'
 import MapComponent from '@/components/MapComponent.vue'
-import WMSInfoPanel from '@/components/WMSInfoPanel.vue';
 import { Layer } from '@deltares/fews-wms-requests';
 import Regridder from '@/components/Regridder.vue'
 
@@ -182,7 +176,6 @@ const selectedLocationsLayerOptions: CircleLayer = {
     MapboxLayer,
     MapComponent,
     MetocSidebar,
-    WMSInfoPanel,
     Regridder
   }
 })
@@ -204,7 +197,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   showLayer: boolean = true
   wmsLayerOptions: MapboxLayerOptions | null = null
   legend: ColourMap = []
-  unit: string = ""
+  unit: string = ''
+  legendTitle: string = ''
 
   dateController: DateController = new DateController([])
   currentTime: Date = new Date()
@@ -416,6 +410,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
       this.times = []
       this.externalForecast = new Date('invalid')
       this.legend = []
+      this.legendTitle = ''
       this.unit = ''
       this.locations = []
       this.currentElevation = null
@@ -442,7 +437,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     const legend = await this.getLegendGraphic(this.currentDataSource.wmsLayerId)
     this.unit = legend.unit ?? '—'
     this.legend = legend.legend
-
+    this.legendTitle = `${this.currentWMSLayer?.title} [${this.unit}]`
+    
     // Update locations for the current data source.
     const geojson = await fetchLocationsAsGeoJson(
       this.webServiceProvider, this.currentDataSource.filterIds
@@ -684,7 +680,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   width: 500px;
   height: 100px;
   position: absolute;
-  top: 0px;
+  top: 30px;
   left: -15px;
 }
 </style>
