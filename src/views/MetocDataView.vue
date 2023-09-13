@@ -218,8 +218,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   locationsLayerOptions: CircleLayer = {...defaultLocationsLayerOptions}
   selectedLocationsLayerOptions: CircleLayer = {...selectedLocationsLayerOptions}
 
-  x: number|null = null
-  y: number|null = null
+  coordinates: number[] | null = null
 
   async mounted() {
     // Create FEWS PI Webservices provider.
@@ -351,11 +350,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     }
   }
   setCoordinates() {
-    if (!this.x || !this.y) {
+    if (!this.coordinates) {
       this.closeCharts()
     } else {
-      const xCoord: string = this.x.toString()
-      const yCoord: string = this.y.toString()
+      const xCoord: string = this.coordinates[0].toString()
+      const yCoord: string = this.coordinates[1].toString()
       this.$router.push({
         name: 'MetocDataViewerWithCoordinates',
         params: {
@@ -417,8 +416,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       })
     }
     if(this.hasSelectedCoordinates) {
-      this.x = null
-      this.y = null
+      this.coordinates = null
       const params = { ...this.$route.params }
       delete params.xCoord
       delete params.yCoord
@@ -512,8 +510,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   onLayerDoubleClick(event: MapLayerMouseEvent) {
     const mercator = toMercator(point([event.lngLat.lng, event.lngLat.lat]))
-    this.x = mercator.geometry.coordinates[0]
-    this.y = mercator.geometry.coordinates[1]
+    this.coordinates = [mercator.geometry.coordinates[0], mercator.geometry.coordinates[1]]
     this.setCoordinates()    
   }
 
@@ -622,7 +619,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   }
 
   get hasSelectedCoordinates(): boolean {
-    return this.x !== null && this.y !== null
+    return this.coordinates !== null 
   }
 
   get selectedLocationFilter(): Expression {
