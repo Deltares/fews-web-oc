@@ -349,6 +349,14 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       })
     }
   }
+
+  /**
+   * Sets the coordinates to navigate to, opening the appropriate chart panel.
+   * 
+   * This updates the route, thus spawning the chart panel.
+   * 
+   * @param coordinates coordinates to navigate to.
+   */
   setCoordinates() {
     if (!this.coordinates) {
       this.closeCharts()
@@ -508,12 +516,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     }
   }
 
-  onLayerDoubleClick(event: MapLayerMouseEvent) {
-    const mercator = toMercator(point([event.lngLat.lng, event.lngLat.lat]))
-    this.coordinates = [mercator.geometry.coordinates[0], mercator.geometry.coordinates[1]]
-    this.setCoordinates()    
-  }
-
   /**
    * Updates the chart panel for a newly selected location.
    */
@@ -539,6 +541,14 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
     this.onResize()
   }
+  /**
+   * Updates the chart panel for newly selected coordinates.
+   */
+
+  @Watch('coordinates')
+  async onCoordinatesChange(): Promise<void> {
+    //
+  }
 
   /**
    * Updates the chart panel for a location selected from the locations control.
@@ -560,6 +570,19 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     const locationId: string | null = event.features[0].properties?.locationId ?? null
 
     this.setLocation(locationId)
+  }
+
+  /**
+   * Updates the route upon double clicking a location.
+   * 
+   * This effectively rerenders this component with the coordinates set.
+   * 
+   * @param event location layer double click event.
+   */
+  onLayerDoubleClick(event: MapLayerMouseEvent) {
+    const mercator = toMercator(point([event.lngLat.lng, event.lngLat.lat]))
+    this.coordinates = [mercator.geometry.coordinates[0], mercator.geometry.coordinates[1]]
+    this.setCoordinates()    
   }
 
   /**
