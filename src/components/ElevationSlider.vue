@@ -4,7 +4,7 @@
       direction="btt" tooltip="always" tooltipPlacement="left" height="200px" v-on:change="onInputChange" :hideLabel="true" ref="slider">
       <template v-slot:tooltip="{ value }">
         <div class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text">{{
-          Math.round(value) }} meter</div>
+          Math.round(value) }} m MSL</div>
       </template>
     </vue-slider>
   </div>
