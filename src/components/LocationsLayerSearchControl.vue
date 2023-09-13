@@ -13,11 +13,12 @@
     />
     <v-autocomplete
       v-model="selectedLocation"
-      label="Location"
+      label="Search locations"
       :items="locations"
       item-text="locationName"
       return-object
       @input="onSelectLocation"
+      prepend-inner-icon="mdi-magnify"
     />
   </v-chip>
 </template>
