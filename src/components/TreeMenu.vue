@@ -50,11 +50,16 @@ export default class TreeMenu extends Vue {
   min-height: 28px !important;
 }
 
+.v-list-item--dense .v-list-item__content{
+  padding: 2px 0px;
+}
+
 .v-treeview--dense .v-treeview-node__root {
   min-height: 28px !important;
 }
 
 .v-treeview-node__level {
-  width: 12px !important;
+  width: 16px !important;
 }
+
 </style>
