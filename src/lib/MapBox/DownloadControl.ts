@@ -14,6 +14,10 @@ export class DownloadControl {
     const btn = document.createElement('button')
     btn.className = 'mapboxgl-ctrl-download'
     btn.type = 'button'
+    
+    // don't inherit the color from the app theme, that would make it invisible
+    btn.style.color = '#2c3e50'
+    
     if (this.bbox === null) {
       btn.disabled = true
     } else {
@@ -23,7 +27,7 @@ export class DownloadControl {
     const icon = document.createElement('i')
     icon.id = 'download-icon'
     icon.className = 'mdi mdi-download mdi-24px'
-
+    
     btn.appendChild(icon)
     btn.onclick = () => {
       this.showPopup()
