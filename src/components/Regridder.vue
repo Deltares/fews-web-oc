@@ -115,7 +115,12 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
     })
 
     const SimpleSelectMode = MapboxDraw.modes.simple_select as any
+
     SimpleSelectMode.clickOnVertex = () => undefined
+
+    SimpleSelectMode.toDisplayFeatures = function(state: any, geojson: any, display: any) {
+      display(geojson)
+    }
 
     const DirectSelectMode = MapboxDraw.modes.direct_select as any;
     DirectSelectMode.onMidpoint = () => undefined
