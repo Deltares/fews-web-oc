@@ -3,20 +3,22 @@
     class="chip"
     :color="backgroundColor"
     pill
+    label
   >
+    <v-icon>mdi-map-marker</v-icon>  
     <v-switch
       v-model="show"
       @click.stop
       @change="onShowChange"
     />
-    <v-icon>mdi-map-marker</v-icon>
     <v-autocomplete
       v-model="selectedLocation"
-      label="Location"
+      label="Search locations"
       :items="locations"
       item-text="locationName"
       return-object
       @input="onSelectLocation"
+      prepend-inner-icon="mdi-magnify"
     />
   </v-chip>
 </template>
