@@ -1,6 +1,7 @@
 import { ActionsResponse, ActionRequest, PiWebserviceProvider } from "@deltares/fews-pi-requests";
 import { DisplayType, DisplayConfig } from "@/lib/Layout/DisplayConfig";
 import { timeSeriesDisplayToChartConfig } from "@/lib/ChartConfig/timeSeriesDisplayToChartConfig";
+import { timeSeriesGridActionsFilter } from "@deltares/fews-pi-requests";
 
 /**
  * Retrieves filter actions from the FEWS PI Webservice.
@@ -12,7 +13,7 @@ import { timeSeriesDisplayToChartConfig } from "@/lib/ChartConfig/timeSeriesDisp
  * @param locationId LocationId to get the actions for.
  * @returns Filter actions response for this location and these filters.
  */
-async function getFilterActions(provider: PiWebserviceProvider, filterId: string, locationId: string): Promise<ActionsResponse> {
+async function getFilterLocationsActions(provider: PiWebserviceProvider, filterId: string, locationId: string): Promise<ActionsResponse> {
   // Hacky way to get the base URL from the provider.
   // TODO: will this work with authentication?
   const baseUrl = provider.locationsUrl({}).href.replace('/locations', '')
@@ -34,19 +35,20 @@ async function getFilterActions(provider: PiWebserviceProvider, filterId: string
  * @param provider FEWS PI Webservices provider.
  * @param filterIds FilterIds to get displays and request for.
  * @param locationId LocationId to get displays and requests for.
+ * @param coordinates Coordinates to get displays and requests for. 
  * @returns 2-tuple with the displays and associated time series requests for all filters.
  */
 export async function fetchTimeSeriesDisplaysAndRequests(
-  provider: PiWebserviceProvider, filterIds: string[], locationId: string
+  provider: PiWebserviceProvider, filterIds: string[], locationId?: string, coordsFilter?: timeSeriesGridActionsFilter
 ): Promise<[DisplayConfig[], ActionRequest[]]> {
   let displays: DisplayConfig[] = []
   let requests: ActionRequest[] = []
   for (const filterId of filterIds) {
-    const [displaysCur, requestsCur] = await fetchTimeSeriesDisplaysAndRequestsForSingleFilterId(
-      provider, filterId, locationId
-    )
-    displays = displays.concat(displaysCur)
-    requests = requests.concat(requestsCur)
+      const [displaysCur, requestsCur] = await fetchTimeSeriesDisplaysAndRequestsForSingleFilterId(
+        provider, filterId, locationId, coordsFilter
+      )
+      displays = displays.concat(displaysCur)
+      requests = requests.concat(requestsCur)
   }
   return [displays, requests]
 }
@@ -57,12 +59,27 @@ export async function fetchTimeSeriesDisplaysAndRequests(
  * @param provider FEWS PI Webservices provider.
  * @param filterIds FilterIds to get displays and request for.
  * @param locationId LocationId to get displays and requests for.
+ * @param coordinates Coordinates to get displays and requests for.
  * @returns 2-tuple with the displays and associated time series requests.
  */
 async function fetchTimeSeriesDisplaysAndRequestsForSingleFilterId(
-  provider: PiWebserviceProvider, filterId: string, locationId: string
+  provider: PiWebserviceProvider, filterId: string, locationId?: string, coordsFilter?: timeSeriesGridActionsFilter
 ): Promise<[DisplayConfig[], ActionRequest[]]> {
-  const response = await getFilterActions(provider, filterId, locationId)
+
+  let response: ActionsResponse | null = null
+  if (!locationId && !coordsFilter) {
+    throw new Error('Either locationId or coordinates filter must be specified')
+  } else if (locationId && coordsFilter) {
+    throw new Error('Only one of locationId or coordinates filter can be specified')
+  } else if (coordsFilter) {
+    response = await provider.getTimeSeriesGridActions(coordsFilter)
+  } else if (locationId) {
+    response = await getFilterLocationsActions(provider, filterId, locationId)
+  }
+
+  if (!response) {
+    throw new Error('No response received from FEWS PI Webservice')
+  }
 
   let displays: DisplayConfig[] = []
   let requests: ActionRequest[] = []

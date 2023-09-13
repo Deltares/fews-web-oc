@@ -99,6 +99,7 @@ import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 
 import type { Location } from "@deltares/fews-pi-requests";
 import { PiWebserviceProvider} from "@deltares/fews-pi-requests";
+import { timeSeriesGridActionsFilter } from "@deltares/fews-pi-requests";
 import { ColourMap } from '@deltares/fews-web-oc-charts';
 
 import { DateController } from '@/lib/TimeControl/DateController';
@@ -218,7 +219,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   locationsLayerOptions: CircleLayer = {...defaultLocationsLayerOptions}
   selectedLocationsLayerOptions: CircleLayer = {...selectedLocationsLayerOptions}
 
-  coordinates: number[] | null = null
+  coordinates: [number, number] | null = null
 
   async mounted() {
     // Create FEWS PI Webservices provider.
@@ -547,7 +548,36 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   @Watch('coordinates')
   async onCoordinatesChange(): Promise<void> {
-    //
+
+    if (!this.coordinates || !this.currentDataSource || !this.firstValueTime || !this.lastValueTime || !this.currentWMSLayer?.boundingBox) {
+      this.closeCharts()
+      return
+    }
+    // convert BoundingBox to bbox
+    const bbox = [
+      Number(this.currentWMSLayer?.boundingBox.minx), 
+      Number(this.currentWMSLayer?.boundingBox.miny), 
+      Number(this.currentWMSLayer?.boundingBox.maxx), 
+      Number(this.currentWMSLayer?.boundingBox.maxy)
+  ]
+    const coordsFilter: timeSeriesGridActionsFilter = {
+      layers: this.currentDataSource.filterIds[0],
+      x: this.coordinates[0],
+      y: this.coordinates[1],
+      startTime: this.firstValueTime,
+      endTime: this.lastValueTime,
+      bbox: bbox,
+      documentFormat: "PI_JSON"
+    }    
+    const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
+      this.webServiceProvider, this.currentDataSource.filterIds, '', coordsFilter
+    )
+    this.displays = displays
+
+    // Fetch time series for all displays.
+    await this.updateTimeSeries(requests)
+
+    this.onResize()
   }
 
   /**
