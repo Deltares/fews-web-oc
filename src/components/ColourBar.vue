@@ -1,6 +1,13 @@
 <template>
   <div id="legend" :class="isVisible ? 'invisible' : ''">
     <svg id="colourbar" width="500" height="100" style="fill:none;"></svg>
+    <div
+      class="background-box"
+      :class="[
+        $vuetify.breakpoint.mobile ? 'background-box-mobile' : 'background-box-desktop',
+        $vuetify.theme.dark ? 'background-box-dark' : 'background-box-light'
+      ]"
+    ></div>
   </div>
 </template>
 
@@ -56,5 +63,30 @@ export default class ColourBar extends Vue {
 <style scoped>
   #legend .invisible {
     display: none
+  }
+  
+  .background-box {
+    height: 85px;
+    opacity: 0.75;
+    position: absolute;
+    left: 25px;
+    bottom: -4px;
+    z-index: -1;
+  }
+
+  .background-box-dark {
+    background-color: black;
+  }
+
+  .background-box-light {
+    background-color: white;
+  }
+
+  .background-box-mobile {
+    width: 325px;
+  }
+
+  .background-box-desktop {
+    width: 450px;
   }
 </style>
