@@ -437,7 +437,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     const legend = await this.getLegendGraphic(this.currentDataSource.wmsLayerId)
     this.unit = legend.unit ?? '—'
     this.legend = legend.legend
-    this.legendTitle = `${this.currentWMSLayer?.title} [${this.unit}]`;
+    this.legendTitle = `${this.currentWMSLayer?.title} [${this.unit}]`
     
     // Update locations for the current data source.
     const geojson = await fetchLocationsAsGeoJson(
