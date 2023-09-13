@@ -1,7 +1,15 @@
 <template>
   <div>
-    <vue-slider class="elevation-slider" :value="currentValue" :max="maxValue" :min="minValue" :marks="marks" :interval="interval" lazy :keydownHook="onKeydown"
-      direction="btt" tooltip="always" tooltipPlacement="left" height="200px" v-on:change="onInputChange" :hideLabel="true" ref="slider">
+    <vue-slider class="elevation-slider"
+      :value="currentValue"
+      :max="maxValue"
+      :min="minValue"
+      :marks="marks"
+      :interval="interval"
+      :keydownHook="onKeydown"
+      v-on:change="onInputChange"
+      :hideLabel="true"
+      lazy direction="btt" tooltip="always" tooltipPlacement="left" height="200px" ref="slider">
       <template v-slot:tooltip="{ value }">
         <div class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text">{{
           Math.round(value) }} m MSL</div>
@@ -16,7 +24,7 @@ import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 
 
-function roundToNearest100(x: number) {
+function roundToNearest100 (x: number) {
   return Math.round(x / 100) * 100
 }
 
@@ -32,59 +40,60 @@ export default class ElevationSlider extends Vue {
   @Prop({ default: 0 }) maxValue!: number
 
   currentValue: number = 0
-  readonly stepDivision: number = 8
+  readonly numberOfMarks: number = 8
   marks: number[] = []
 
   mounted() {
     this.onValueChange()
 
-    const innerMarks = Array.from({length: this.stepDivision - 1}, (_, i) => (i + 1) * -roundToNearest100(this.stepSize))
+    const innerMarks = Array.from({length: this.numberOfMarks - 1}, (_, i) => (i + 1) * -roundToNearest100(this.stepSize))
     this.marks = [this.maxValue, ...innerMarks, this.minValue]
   }
 
   get interval() {
-    const difference = Math.abs(this.maxValue - this.minValue) 
+    const difference = Math.abs(this.maxValue - this.minValue)
     return difference / Math.round(difference)
   }
 
   @Watch("value")
   onValueChange() {
-    this.currentValue = this.value 
+    this.currentValue = this.value
   }
 
   onKeydown(e: KeyboardEvent) {
     const slider = this.$refs.slider as VueSlider
-    
-    let nextIndex = this.marks.findIndex((value) => value < this.currentValue)
-    nextIndex = nextIndex == -1 ? this.marks.length - 1 : nextIndex 
 
-    let previousIndex = this.currentValue === this.marks[nextIndex - 1] ? nextIndex - 2 : nextIndex - 1
-    previousIndex = previousIndex < 0 ? 0 : previousIndex
+    const indexAfterValue = this.marks.findIndex((value) => value < this.currentValue);
+    const nextIndex = indexAfterValue === -1 ? this.marks.length - 1 : indexAfterValue;
+    const previousIndex = indexAfterValue === -1 ? nextIndex : indexAfterValue - 1
 
-    let nextMarkIndex = 0
+    let newMarkIndex = 0;
+    const isOnMark = this.marks.includes(this.currentValue)
     switch (e.key) {
-      case "ArrowRight":
-        nextMarkIndex = previousIndex
-        break;
       case "ArrowLeft":
-        nextMarkIndex = nextIndex
-        break;
       case "ArrowUp":
-        nextMarkIndex = previousIndex
+        newMarkIndex = previousIndex;
+
+        // if we are currently on a mark our previous index is the current index
+        if (isOnMark) {
+          newMarkIndex -= 1
+        }
         break;
+      case "ArrowRight":
       case "ArrowDown":
-        nextMarkIndex = nextIndex
+        newMarkIndex = nextIndex;
         break;
       default:
-        return false
+        return false;
     }
 
-    slider.setValue(this.marks[nextMarkIndex])
+    newMarkIndex = Math.max(newMarkIndex, 0)
+    slider.setValue(this.marks[newMarkIndex])
     return false
   }
 
   get stepSize() {
-    return Math.abs(this.maxValue - this.minValue) / this.stepDivision 
+    return Math.abs(this.maxValue - this.minValue) / this.numberOfMarks
   }
 
   onInputChange(event: Event) {
