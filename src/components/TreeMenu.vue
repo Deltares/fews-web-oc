@@ -59,6 +59,7 @@ export default class TreeMenu extends Vue {
 }
 
 .v-treeview-node__level {
-  width: 12px !important;
+  width: 16px !important;
 }
+
 </style>
