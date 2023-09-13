@@ -351,6 +351,26 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     }
   }
 
+  setCoordinates(x: number| null, y: number| null) {
+    if (this.x === x && this.y === y) return
+
+    if (!x || !y) {
+      this.closeCharts()
+    } else {
+      const xCoord: string = x.toString()
+      const yCoord: string = y.toString()
+      console.log(xCoord, yCoord)
+      this.$router.push({
+        name: 'MetocDataViewerWithCoordinates',
+        params: {
+          ...this.$route.params,
+          xCoord,
+          yCoord
+        }
+      })
+    }
+    }
+
   /**
    * Updates the locations layers with new GeoJSON data.
    *
@@ -484,10 +504,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   }
 
   onLayerDoubleClick(event: MapLayerMouseEvent) {
-    console.log('double click', event)
     const mercator = toMercator(point([event.lngLat.lng, event.lngLat.lat]))
-    this.x = mercator.geometry.coordinates[0]
-    this.y = mercator.geometry.coordinates[1]    
+    const x = mercator.geometry.coordinates[0]
+    const y = mercator.geometry.coordinates[1]
+    this.setCoordinates(x, y)    
   }
 
   /**
