@@ -3,6 +3,7 @@
     class="chip"
     :color="backgroundColor"
     pill
+    label
   >
     <v-switch
       v-model="show"
