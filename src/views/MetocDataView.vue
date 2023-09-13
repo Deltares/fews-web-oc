@@ -55,7 +55,7 @@
           @update:now="setCurrentTime"
         />
       </div>
-      <div class="grid-charts" v-if="hasSelectedLocation && !$vuetify.breakpoint.mobile">
+      <div class="grid-charts" v-if="(hasSelectedLocation || hasSelectedCoordinates) && !$vuetify.breakpoint.mobile">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-spacer/>
           <v-toolbar-items>
@@ -75,7 +75,7 @@
         </v-toolbar>
         <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="setChartFullscreen"/>
       </div>
-      <div class="grid-charts fullscreen" v-else-if="hasSelectedLocation">
+      <div class="grid-charts fullscreen" v-else-if="(hasSelectedLocation || hasSelectedCoordinates)">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-toolbar-title/>
           <v-spacer/>
@@ -311,7 +311,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    */
    setDockMode(dockMode: string) {
     this.dockMode = dockMode
-    if (this.hasSelectedLocation) {
+    if (this.hasSelectedLocation || this.hasSelectedCoordinates) {
       this.layoutClass = this.dockMode
     }
     // Call the resize handler to force a map update.
@@ -350,16 +350,12 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       })
     }
   }
-
-  setCoordinates(x: number| null, y: number| null) {
-    if (this.x === x && this.y === y) return
-
-    if (!x || !y) {
+  setCoordinates() {
+    if (!this.x || !this.y) {
       this.closeCharts()
     } else {
-      const xCoord: string = x.toString()
-      const yCoord: string = y.toString()
-      console.log(xCoord, yCoord)
+      const xCoord: string = this.x.toString()
+      const yCoord: string = this.y.toString()
       this.$router.push({
         name: 'MetocDataViewerWithCoordinates',
         params: {
@@ -415,6 +411,17 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       const params = { ...this.$route.params }
       // Remove the locationId from the parameters.
       delete params.locationId
+      this.$router.push({
+        name: 'MetocDataViewer',
+        params
+      })
+    }
+    if(this.hasSelectedCoordinates) {
+      this.x = null
+      this.y = null
+      const params = { ...this.$route.params }
+      delete params.xCoord
+      delete params.yCoord
       this.$router.push({
         name: 'MetocDataViewer',
         params
@@ -505,9 +512,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   onLayerDoubleClick(event: MapLayerMouseEvent) {
     const mercator = toMercator(point([event.lngLat.lng, event.lngLat.lat]))
-    const x = mercator.geometry.coordinates[0]
-    const y = mercator.geometry.coordinates[1]
-    this.setCoordinates(x, y)    
+    this.x = mercator.geometry.coordinates[0]
+    this.y = mercator.geometry.coordinates[1]
+    this.setCoordinates()    
   }
 
   /**
@@ -612,6 +619,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   get hasSelectedLocation(): boolean {
     return this.locationId !== ''
+  }
+
+  get hasSelectedCoordinates(): boolean {
+    return this.x !== null && this.y !== null
   }
 
   get selectedLocationFilter(): Expression {
