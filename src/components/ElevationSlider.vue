@@ -1,6 +1,6 @@
 <template>
   <div>
-    <vue-slider class="elevation-slider" :value="currentValue" :max="maxValue" :min="minValue" :marks="marks" :interval="interval" lazy :keydownHook="onKeydown"
+    <vue-slider class="elevation-slider" :value="currentValue" :max="max" :min="min" :marks="marks" :interval="interval" lazy :keydownHook="onKeydown"
       direction="btt" tooltip="always" tooltipPlacement="left" height="200px" v-on:change="onInputChange" :hideLabel="true" ref="slider">
       <template v-slot:tooltip="{ value }">
         <div class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text">{{
@@ -42,9 +42,17 @@ export default class ElevationSlider extends Vue {
     this.marks = [this.maxValue, ...innerMarks, this.minValue]
   }
 
-  get interval() {
-    const difference = Math.abs(this.maxValue - this.minValue) 
+  get interval() : number {
+    const difference = Math.abs(this.max - this.min) 
     return difference / Math.round(difference)
+  }
+
+  get max(): number {
+    return Math.max(this.maxValue, 0)
+  }
+
+  get min(): number {
+    return Math.min(this.minValue, -100)
   }
 
   @Watch("value")
@@ -64,10 +72,10 @@ export default class ElevationSlider extends Vue {
     let nextMarkIndex = 0
     switch (e.key) {
       case "ArrowRight":
-        nextMarkIndex = previousIndex
+        nextMarkIndex = nextIndex
         break;
       case "ArrowLeft":
-        nextMarkIndex = nextIndex
+        nextMarkIndex = previousIndex
         break;
       case "ArrowUp":
         nextMarkIndex = previousIndex
