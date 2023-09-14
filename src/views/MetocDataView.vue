@@ -676,11 +676,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 .colourbar {
   font-size: 0.825em;
   z-index: 1000;
-  background-color: none;
-  width: 500px;
-  height: 100px;
+  width: 90%;
   position: absolute;
-  bottom: 80px;
-  left: -10px;
+  bottom: 10px;
+  left: 10px;
 }
 </style>

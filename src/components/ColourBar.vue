@@ -1,13 +1,9 @@
 <template>
   <div id="legend" :class="isVisible ? 'invisible' : ''">
-    <svg id="colourbar" width="500" height="100" style="fill:none;"></svg>
-    <div
-      class="background-box"
-      :class="[
-        $vuetify.breakpoint.mobile ? 'background-box-mobile' : 'background-box-desktop',
-        $vuetify.theme.dark ? 'background-box-dark' : 'background-box-light'
-      ]"
-    ></div>
+    <svg id="colourbar" class="colourbar" :class="[
+                                $vuetify.breakpoint.mobile ? 'colourbar-mobile' : 'colourbar-desktop',
+                                $vuetify.theme.dark ? 'colourbar-dark' : 'colourbar-light'
+                                ]"/>
   </div>
 </template>
 
@@ -64,29 +60,28 @@ export default class ColourBar extends Vue {
   #legend .invisible {
     display: none
   }
-  
-  .background-box {
-    height: 85px;
-    opacity: 0.75;
-    position: absolute;
-    left: 25px;
-    bottom: -4px;
-    z-index: -1;
+
+  .colourbar {
+    fill: none;
+    width: 100%;
+    max-width: 500px;
+    height: 120px;
+    border-radius: 7px;
   }
 
-  .background-box-dark {
-    background-color: black;
+  .colourbar-light {
+    background-color: rgba(255, 255, 255, 0.5);
   }
 
-  .background-box-light {
-    background-color: white;
+  .colourbar-dark {
+    background-color: rgba(0, 0, 0, 0.5);
   }
 
-  .background-box-mobile {
-    width: 325px;
+  .colourbar-mobile {
+    max-width: 350px;
   }
 
-  .background-box-desktop {
-    width: 450px;
+  .colourbar-desktop {
+    max-width: 500px;
   }
 </style>
