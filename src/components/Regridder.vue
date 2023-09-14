@@ -102,6 +102,66 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
   }
 
   addToMap() {
+    const customStyles = [
+      {
+        id: 'gl-draw-polygon-fill-inactive',
+        type: 'fill',
+        filter: ['all', ['==', 'active', 'false'],
+          ['==', '$type', 'Polygon'],
+          ['!=', 'mode', 'static']
+        ],
+        paint: {
+          'fill-color': '#626262',
+          'fill-outline-color': '#626262',
+          'fill-opacity': 0.1
+        }
+      },
+      {
+        id: 'gl-draw-polygon-fill-active',
+        type: 'fill',
+        filter: ['all', ['==', 'active', 'true'],
+          ['==', '$type', 'Polygon']
+        ],
+        paint: {
+          'fill-color': '#626262',
+          'fill-outline-color': '#626262',
+          'fill-opacity': 0
+        }
+      },
+      {
+        id: 'gl-draw-polygon-stroke-inactive',
+        type: 'line',
+        filter: ['all', ['==', 'active', 'false'],
+          ['==', '$type', 'Polygon'],
+          ['!=', 'mode', 'static']
+        ],
+        layout: {
+          'line-cap': 'round',
+          'line-join': 'round'
+        },
+        paint: {
+          'line-color': '#626262',
+          'line-width': 2
+        }
+      },
+      {
+        id: 'gl-draw-polygon-stroke-active',
+        type: 'line',
+        filter: ['all', ['==', 'active', 'true'],
+          ['==', '$type', 'Polygon']
+        ],
+        layout: {
+          'line-cap': 'round',
+          'line-join': 'round'
+        },
+        paint: {
+          'line-color': '#626262',
+          'line-dasharray': [0.2, 2],
+          'line-width': 2
+        }
+      },
+    ]
+
     this.draw = new MapboxDraw({
       displayControlsDefault: false,
       controls: {
@@ -111,9 +171,9 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       modes: Object.assign(MapboxDraw.modes, {
         draw_rectangle: DrawRectangle,
       } as any),// library type definition is not complete
+      styles: customStyles,
       defaultMode: 'simple_select',
     })
-
 
     this.mapObject.addControl(this.draw)
     this.mapObject.on('draw.create', this.select)
