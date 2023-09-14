@@ -2,8 +2,8 @@
   <div>
     <vue-slider class="elevation-slider"
       :value="currentValue"
-      :max="maxValue"
-      :min="minValue"
+      :max="max"
+      :min="min"
       :marks="marks"
       :interval="interval"
       :keydownHook="onKeydown"
@@ -50,9 +50,17 @@ export default class ElevationSlider extends Vue {
     this.marks = [this.maxValue, ...innerMarks, this.minValue]
   }
 
-  get interval() {
-    const difference = Math.abs(this.maxValue - this.minValue)
+  get interval(): number {
+    const difference = Math.abs(this.max - this.min)
     return difference / Math.round(difference)
+  }
+
+  get max(): number {
+    return Math.max(this.maxValue, 0)
+  }
+
+  get min(): number {
+    return Math.min(this.minValue, -100)
   }
 
   @Watch("value")
