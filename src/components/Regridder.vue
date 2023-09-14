@@ -114,8 +114,14 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       defaultMode: 'simple_select',
     })
 
+
     this.mapObject.addControl(this.draw)
     this.mapObject.on('draw.create', this.select)
+    this.mapObject.on("draw.modechange", (e) => {
+      if (e.mode === "direct_select") {
+        this.draw.changeMode("simple_select")
+      }
+    })
 
     const trashElement = document.querySelector(".mapbox-gl-draw_trash") as HTMLElement
     if (trashElement) {
