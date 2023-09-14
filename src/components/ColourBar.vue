@@ -24,7 +24,7 @@ export default class ColourBar extends Vue {
   mounted() {
     const svg = d3.select("#colourbar")
     this.group = svg.append('g')
-      .attr('transform', 'translate(50, 50)')
+      .attr('transform', 'translate(25, 30)')
     this.updateColourBar()
   }
 
@@ -65,7 +65,7 @@ export default class ColourBar extends Vue {
     fill: none;
     width: 100%;
     max-width: 500px;
-    height: 120px;
+    height: 85px;
     border-radius: 7px;
     backdrop-filter: blur(4px);
   }
@@ -79,10 +79,10 @@ export default class ColourBar extends Vue {
   }
 
   .colourbar-mobile {
-    max-width: 350px;
+    max-width: 300px;
   }
 
   .colourbar-desktop {
-    max-width: 500px;
+    max-width: 450px;
   }
 </style>
