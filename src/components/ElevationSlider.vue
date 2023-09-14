@@ -2,8 +2,8 @@
   <div>
     <vue-slider class="elevation-slider"
       :value="currentValue"
-      :max="max"
-      :min="min"
+      :max="maxValue"
+      :min="minValue"
       :marks="marks"
       :interval="interval"
       :keydownHook="onKeydown"
@@ -35,32 +35,26 @@ function roundToNearest100 (x: number) {
   }
 })
 export default class ElevationSlider extends Vue {
-  @Prop({ default: 0 }) value!: number
+  @Prop({ default: 1 }) value!: number
   @Prop({ default: 0 }) minValue!: number
-  @Prop({ default: 0 }) maxValue!: number
+  @Prop({ default: 10 }) maxValue!: number
 
   currentValue: number = 0
   readonly numberOfMarks: number = 8
   marks: number[] = []
 
-  mounted() {
+  beforeMount() {
     this.onValueChange()
+  }
 
+  mounted() {
     const innerMarks = Array.from({length: this.numberOfMarks - 1}, (_, i) => (i + 1) * -roundToNearest100(this.stepSize))
     this.marks = [this.maxValue, ...innerMarks, this.minValue]
   }
 
   get interval(): number {
-    const difference = Math.abs(this.max - this.min)
+    const difference = Math.abs(this.maxValue - this.minValue)
     return difference / Math.round(difference)
-  }
-
-  get max(): number {
-    return Math.max(this.maxValue, 0)
-  }
-
-  get min(): number {
-    return Math.min(this.minValue, -100)
   }
 
   @Watch("value")
