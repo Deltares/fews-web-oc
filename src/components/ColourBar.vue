@@ -67,6 +67,7 @@ export default class ColourBar extends Vue {
     max-width: 500px;
     height: 120px;
     border-radius: 7px;
+    backdrop-filter: blur(4px);
   }
 
   .colourbar-light {
