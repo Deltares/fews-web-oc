@@ -99,7 +99,7 @@ import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 
 import type { Location } from "@deltares/fews-pi-requests";
 import { PiWebserviceProvider} from "@deltares/fews-pi-requests";
-import { timeSeriesGridActionsFilter } from "@deltares/fews-pi-requests";
+import { timeSeriesGridActionsFilter, filterActionsFilter } from "@deltares/fews-pi-requests";
 import { ColourMap } from '@deltares/fews-web-oc-charts';
 
 import { DateController } from '@/lib/TimeControl/DateController';
@@ -532,8 +532,15 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
     this.selectedLocationId = this.locationId
 
+    const locationFilters = this.currentDataSource.filterIds.map(filterId => {
+      return {
+        filterId: filterId,
+        locationIds: this.locationId
+      }
+    })
+
     const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
-      this.webServiceProvider, this.currentDataSource.filterIds, this.locationId
+      this.webServiceProvider, locationFilters
     )
     this.displays = displays
 
@@ -570,7 +577,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       documentFormat: "PI_JSON"
     }    
     const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
-      this.webServiceProvider, this.currentDataSource.filterIds, '', coordsFilter
+      this.webServiceProvider, [coordsFilter]
     )
     this.displays = displays
 
