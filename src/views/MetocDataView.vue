@@ -31,18 +31,21 @@
             :lastValueTime="lastValueTime"
             />
           </MapComponent>
-        </div>
-        <div class="control-container">
-          <DataSourceControl
-            v-model="selectedDataSource"
-            :items="dataSources"
-            @input="onSelectDataSource"
-          />
-          <LocationsLayerSearchControl
-            :showLocations.sync="showLocationsLayer"
-            :locationId.sync="selectedLocationId"
-            :locations="locations"
-          />
+          <div class="control-container">
+            <DataSourceControl
+                v-model="selectedDataSource"
+                :items="dataSources"
+                @input="onSelectDataSource"
+                />
+            <LocationsLayerSearchControl
+                :showLocations.sync="showLocationsLayer"
+                :locationId.sync="selectedLocationId"
+                :locations="locations"
+                />
+          </div>
+          <div class="colourbar">
+            <ColourBar v-model="legend" :title="legendTitle" v-if="legend.length > 0"/>
+          </div>
         </div>
         <DateTimeSlider
           class="date-time-slider"
@@ -51,9 +54,6 @@
           @input="debouncedSetWMSLayerOptions"
           @update:now="setCurrentTime"
         />
-        <div class="colourbar">
-          <ColourBar v-model="legend" :title="legendTitle" v-if="legend.length > 0"/>
-        </div>
       </div>
       <div class="grid-charts" v-if="hasSelectedLocation && !$vuetify.breakpoint.mobile">
         <v-toolbar class="toolbar-charts" dense flat>
