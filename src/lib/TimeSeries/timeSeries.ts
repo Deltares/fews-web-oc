@@ -17,6 +17,15 @@ const timeSeriesResourceType = (resource: SeriesResource) => {
       return SeriesResource
   }
 }
+export interface domainAxisValue {
+  values: Array<string>
+  parameterId: string
+}
+
+export interface Domain {
+  domainAxisValues?: domainAxisValue[]
+  events: Array<any> // eslint-disable-line @typescript-eslint/no-explicit-any
+}
 
 @JsonObject()
 export class Series {
@@ -36,6 +45,7 @@ export class Series {
   start?: Date;
   end?: Date;
   lastUpdated?: Date;
+  domains?: Domain[]; 
 
   constructor (
     resource: SeriesResource | SeriesRequest | SeriesUrlRequest | SeriesDerived

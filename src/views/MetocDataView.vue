@@ -561,8 +561,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    * Updates the chart panel for newly selected coordinates.
    */
 
-  @Watch('xCoord')
-  @Watch('yCoord')
+  @Watch('xCoordyCoordcurrentElevation')
   async onCoordinatesChange(): Promise<void> {
 
     if (!this.coordinates || !this.currentDataSource || !this.firstValueTime || !this.lastValueTime || !this.currentWMSLayer?.boundingBox) {
@@ -583,15 +582,16 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       startTime: this.firstValueTime,
       endTime: this.lastValueTime,
       bbox: bbox,
-      documentFormat: "PI_JSON"
-    }    
+      documentFormat: "PI_JSON",
+      showVerticalProfile: this.currentWMSLayer?.elevation ? true : false
+    } 
     const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
       this.webServiceProvider, [coordsFilter]
     )
     this.displays = displays
 
     // Fetch time series for all displays.
-    await this.updateTimeSeries(requests)
+    await this.updateTimeSeries(requests, undefined ,this.currentElevation ? this.currentElevation : undefined)
 
     this.onResize()
   }
@@ -693,6 +693,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   get selectedLocationFilter(): Expression {
     return ['==', 1, 0]
+  }
+
+  get xCoordyCoordcurrentElevation(): string {
+    return `${this.xCoord}, ${this.yCoord}, ${this.currentElevation}`
   }
 }
 
