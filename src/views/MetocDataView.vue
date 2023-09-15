@@ -31,18 +31,21 @@
             :lastValueTime="lastValueTime"
             />
           </MapComponent>
-        </div>
-        <div class="control-container">
-          <DataSourceControl
-            v-model="selectedDataSource"
-            :items="dataSources"
-            @input="onSelectDataSource"
-          />
-          <LocationsLayerSearchControl
-            :showLocations.sync="showLocationsLayer"
-            :locationId.sync="selectedLocationId"
-            :locations="locations"
-          />
+          <div class="control-container">
+            <DataSourceControl
+                v-model="selectedDataSource"
+                :items="dataSources"
+                @input="onSelectDataSource"
+                />
+            <LocationsLayerSearchControl
+                :showLocations.sync="showLocationsLayer"
+                :locationId.sync="selectedLocationId"
+                :locations="locations"
+                />
+          </div>
+          <div class="colourbar">
+            <ColourBar v-model="legend" :title="legendTitle" v-if="legend.length > 0"/>
+          </div>
         </div>
         <DateTimeSlider
           class="date-time-slider"
@@ -51,9 +54,6 @@
           @input="debouncedSetWMSLayerOptions"
           @update:now="setCurrentTime"
         />
-        <div class="colourbar">
-          <ColourBar v-model="legend" :title="legendTitle" v-if="legend.length > 0"/>
-        </div>
       </div>
       <div class="grid-charts" v-if="hasSelectedLocation && !$vuetify.breakpoint.mobile">
         <v-toolbar class="toolbar-charts" dense flat>
@@ -667,6 +667,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 .control-container {
   position: absolute;
   padding: 10px 5px;
+  width: 80%;
   left: 30px;
   z-index: 1200;
   display: flex;
@@ -676,11 +677,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
 .colourbar {
   font-size: 0.825em;
   z-index: 1000;
-  background-color: none;
-  width: 500px;
-  height: 100px;
+  width: 90%;
   position: absolute;
-  bottom: 80px;
-  left: -10px;
+  bottom: 10px;
+  left: 10px;
 }
 </style>
