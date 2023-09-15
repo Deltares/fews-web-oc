@@ -75,6 +75,8 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
           if (header !== undefined) {
             const missingValue: string = header.missVal
             const timeZone = piSeries.timeZone === undefined ? 'Z' : timeZoneOffsetString(+piSeries.timeZone)
+            series.timeZone = timeZone
+            series.missingValue = missingValue
             series.header.name = `${header.stationName} - ${header.parameterId} (${header.moduleInstanceId})`
             series.header.unit = header.units
             series.header.parameter = header.parameterId
@@ -90,32 +92,40 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
                 }
               })
             } else if (elevation && timeSeries.domains !== undefined && timeSeries) {
-              const domainAxisValues = timeSeries.domains[0].domainAxisValues
-              if (domainAxisValues !== undefined) {
-                const domain: any = domainAxisValues[0]
-                // convert domain.values to an array of numbers
-                domain.values = domain.values.map((value: [string]) => {
-                  return +value[0]
-                })
-                // find the index of the closest number to the elevation 
-                const elevationIndex = domain.values.reduce((prev: number, curr: number, index: number) => {
-                  return (Math.abs(curr - elevation) < Math.abs(domain.values[prev] - elevation) ? index : prev)
-                }, 0)
-                
-                const events: any = timeSeries.domains.slice(1)
-                series.data = events.map((event: any) => {
-                  const e = event.events[0]                  
-                  return {
-                    x: new Date( parsePiDateTime(e, timeZone)),
-                    y: e.values[elevationIndex][0] === missingValue ? null : +e.values[elevationIndex][0]
-                  }
-                })
-              }
+              series.domains = timeSeries.domains   
+              this.updateTimeSeriesWithElevation(series, elevation)           
             } else {
               throw new Error('No data found')
             }
           }
           Vue.set(this.timeSeriesStore, resourceId, series)
+        }
+      })
+    }
+  }
+
+  updateTimeSeriesWithElevation (timeSeries: Series, elevation: number): void {
+    if (timeSeries.domains === undefined) {
+      throw new Error('No domains found')
+    }
+    const domainAxisValues = timeSeries.domains[0].domainAxisValues
+    if (domainAxisValues !== undefined) {
+      const domain= domainAxisValues[0]
+      // convert domain.values to an array of numbers
+      domain.values = domain.values.map((value: [string]) => {
+        return +value[0]
+      })
+      // find the index of the closest number to the elevation 
+      const elevationIndex = domain.values.reduce((prev: number, curr: number, index: number) => {
+        return (Math.abs(curr - elevation) < Math.abs(domain.values[prev] - elevation) ? index : prev)
+      }, 0)
+      
+      const events = timeSeries.domains.slice(1)
+      timeSeries.data = events.map((event: any) => {
+        const e = event.events[0]                  
+        return {
+          x: new Date( parsePiDateTime(e, timeSeries.timeZone? timeSeries.timeZone : 'Z')),
+          y: e.values[elevationIndex][0] === timeSeries.missingValue ? null : +e.values[elevationIndex][0]
         }
       })
     }
