@@ -99,7 +99,7 @@ import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 
 import type { Location } from "@deltares/fews-pi-requests";
 import { PiWebserviceProvider} from "@deltares/fews-pi-requests";
-import { timeSeriesGridActionsFilter, filterActionsFilter } from "@deltares/fews-pi-requests";
+import { timeSeriesGridActionsFilter } from "@deltares/fews-pi-requests";
 import { ColourMap } from '@deltares/fews-web-oc-charts';
 
 import { DateController } from '@/lib/TimeControl/DateController';
@@ -186,7 +186,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   @Prop({ default: '', type: String }) dataLayerId!: string
   @Prop({ default: '', type: String }) dataSourceId!: string
   @Prop({ default: '', type: String }) locationId!: string
-
+  @Prop({ default: '', type: String }) xCoord!: string
+  @Prop({ default: '', type: String }) yCoord!: string
+  
   webServiceProvider!: PiWebserviceProvider
   categories: Category[] = []
   selectedDataSource: DataSource | null = null
@@ -415,25 +417,20 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    * without the chart panel.
    */
   closeCharts(): void {
+    const params = { ...this.$route.params }
     if (this.hasSelectedLocation) {
-      const params = { ...this.$route.params }
       // Remove the locationId from the parameters.
       delete params.locationId
-      this.$router.push({
-        name: 'MetocDataViewer',
-        params
-      })
     }
     if(this.hasSelectedCoordinates) {
       this.coordinates = null
-      const params = { ...this.$route.params }
       delete params.xCoord
       delete params.yCoord
-      this.$router.push({
+    }
+    this.$router.push({
         name: 'MetocDataViewer',
         params
       })
-    }
     this.onResize()
   }
 
@@ -510,8 +507,19 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
         params = { ...this.$route.params, dataSourceId: undefined }
       }
 
+      let routeName: string
+      if (this.locationId) {
+        params = { ...params, locationId: this.locationId }
+        routeName = 'MetocDataViewerWithLocation'
+      } else if (this.coordinates) {
+        params = { ...params, xCoord: this.coordinates[0].toString(), yCoord: this.coordinates[1].toString() }
+        routeName = 'MetocDataViewerWithCoordinates'
+      } else {
+        routeName = 'MetocDataViewer'
+      }
+
       this.$router.push({
-        name: this.locationId ? 'MetocDataViewerWithLocation' : 'MetocDataViewer',
+        name: routeName,
         params
       })
     }
@@ -553,7 +561,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    * Updates the chart panel for newly selected coordinates.
    */
 
-  @Watch('coordinates')
+  @Watch('xCoord')
+  @Watch('yCoord')
   async onCoordinatesChange(): Promise<void> {
 
     if (!this.coordinates || !this.currentDataSource || !this.firstValueTime || !this.lastValueTime || !this.currentWMSLayer?.boundingBox) {
