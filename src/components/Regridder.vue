@@ -362,14 +362,14 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
 </script>
 
 <style scoped>
-.v-input >>> input[type="number"]:not(:hover) {
+.v-input >>> input[type="number"]:not(:hover):not(:focus) {
   -webkit-appearance: textfield;
   -moz-appearance: textfield;
   appearance: textfield;
 }
 
-.v-input >>> input[type=number]::-webkit-inner-spin-button:not(:hover),
-.v-input >>> input[type=number]::-webkit-outer-spin-button:not(:hover) {
+.v-input >>> input[type=number]::-webkit-inner-spin-button:not(:hover):not(:focus),
+.v-input >>> input[type=number]::-webkit-outer-spin-button:not(:hover):not(:focus) {
   -webkit-appearance: none;
 }
 </style>
