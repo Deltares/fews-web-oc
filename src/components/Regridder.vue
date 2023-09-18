@@ -14,6 +14,7 @@
                                 type="number"
                                 suffix="m"
                                 label="x-direction"
+                                min="0"
                                 step="0.1"
                                 required/>
                 </v-col>
@@ -23,6 +24,7 @@
                                 type="number"
                                 suffix="m"
                                 label="y-direction"
+                                min="0"
                                 step="0.1"
                                 required/>
                 </v-col>
@@ -34,6 +36,7 @@
                     <v-text-field v-model.number="bbox[3]"
                                   type="number"
                                   label="yMax"
+                                  min="0"
                                   step="0.1"
                                   @change="updateRectangle"
                                   required/>
@@ -43,7 +46,8 @@
                   <v-col cols="5">
                     <v-text-field v-model.number="bbox[0]"
                                   type="number"
-                                  label="yMax"
+                                  label="xMin"
+                                  min="0"
                                   step="0.1"
                                   @change="updateRectangle"
                                   required/>
@@ -51,7 +55,8 @@
                   <v-col cols="5">
                     <v-text-field v-model.number="bbox[2]"
                                   type="number"
-                                  label="yMax"
+                                  label="xMax"
+                                  min="0"
                                   step="0.1"
                                   @change="updateRectangle"
                                   required/>
@@ -61,7 +66,8 @@
                   <v-col cols="5">
                     <v-text-field v-model.number="bbox[1]"
                                   type="number"
-                                  label="yMax"
+                                  label="yMin"
+                                  min="0"
                                   step="0.1"
                                   @change="updateRectangle"
                                   required/>
@@ -72,8 +78,8 @@
           </v-form>
         </v-card-text>
         <v-card-actions>
-          <v-btn color="primary" @click="downloadClicked">Download</v-btn>
-          <v-btn color="error" @click="closeDownloadDialog">Close</v-btn>
+          <v-btn color="primary" class="ma-2" @click="downloadClicked">Download</v-btn>
+          <v-btn color="error" class="ma-2" @click="closeDownloadDialog">Close</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -356,14 +362,14 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
 </script>
 
 <style scoped>
-.v-input >>> input[type="number"] {
+.v-input >>> input[type="number"]:not(:hover) {
   -webkit-appearance: textfield;
   -moz-appearance: textfield;
   appearance: textfield;
 }
 
-.v-input >>> input[type=number]::-webkit-inner-spin-button,
-.v-input >>> input[type=number]::-webkit-outer-spin-button {
+.v-input >>> input[type=number]::-webkit-inner-spin-button:not(:hover),
+.v-input >>> input[type=number]::-webkit-outer-spin-button:not(:hover) {
   -webkit-appearance: none;
 }
 </style>
