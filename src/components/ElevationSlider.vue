@@ -111,6 +111,10 @@ export default class ElevationSlider extends Vue {
 </script>
 
 <style scoped>
+.vue-slider-dot-tooltip-text {
+  font-family: var(--font-primary)
+}
+
 .elevation-slider {
   z-index: 100;
   position: absolute;
