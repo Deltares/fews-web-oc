@@ -35,16 +35,16 @@ function roundToNearest100 (x: number) {
   }
 })
 export default class ElevationSlider extends Vue {
-  @Prop({ default: 1 }) value!: number
+  @Prop({ default: -1 }) value!: number
   @Prop({ default: 0 }) minValue!: number
-  @Prop({ default: 10 }) maxValue!: number
+  @Prop({ default: -10 }) maxValue!: number
 
   currentValue: number = 0
   readonly numberOfMarks: number = 8
   marks: number[] = []
 
   beforeMount() {
-    this.onValueChange()
+    this.currentValue = this.value
   }
 
   mounted() {
