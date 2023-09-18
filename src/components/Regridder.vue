@@ -219,6 +219,12 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       return false
     }
 
+    // Invalid when along x or y, min > max
+    if (this.bbox[0] > this.bbox[2] ||
+        this.bbox[1] > this.bbox[3]) {
+      return false
+    }
+
     const inputValues = [
       this.dx,
       this.dy,
