@@ -6,8 +6,39 @@
         <v-card-title>Download netCDF Data</v-card-title>
         <v-card-text>
           <v-form>
-            <v-text-field v-model="dx" type="number" label="Step size in x-direction [m]" required></v-text-field>
-            <v-text-field v-model="dy" type="number" label="Step size in y-direction [m]" required></v-text-field>
+            <v-container>
+              <v-row class="text-h6">Step Sizes</v-row>
+              <v-row>
+                <v-col cols="3">
+                  <v-text-field v-model="dx" type="number" suffix="m" label="x-direction" step="0.1" required></v-text-field>
+                </v-col>
+                <v-col cols="1"/>
+                <v-col cols="3">
+                  <v-text-field v-model="dy" type="number" suffix="m" label="y-direction" step="0.1" required></v-text-field>
+                </v-col>
+              </v-row>
+              <v-row v-if="bbox" class="text-h6">Bounding Box</v-row>
+              <v-row v-if="bbox">
+                <v-row justify="center">
+                  <v-col cols="5">
+                    <v-text-field v-model="bbox[3]" type="number" label="yMax" step="0.1" required></v-text-field>
+                  </v-col>
+                </v-row>
+                <v-row justify="space-between">
+                  <v-col cols="5">
+                    <v-text-field v-model="bbox[0]" type="number" label="xMin" step="0.1" required></v-text-field>
+                  </v-col>
+                  <v-col cols="5">
+                    <v-text-field v-model="bbox[2]" type="number" label="xMax" step="0.1" required></v-text-field>
+                  </v-col>
+                </v-row>
+                <v-row justify="center">
+                  <v-col cols="5">
+                    <v-text-field v-model="bbox[1]" type="number" label="yMin" step="0.1" required></v-text-field>
+                  </v-col>
+                </v-row>
+              </v-row>
+            </v-container>
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -54,8 +85,8 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
   downloadControl!: DownloadControl
   downloadDialog = false
   errorDialog = false
-  dx = '0.1'
-  dy = '0.1'
+  dx = 0.1
+  dy = 0.1
   errorMessage = 'Select an area on the map before downloading the data.'
   bbox: number[] | null = null
   webServiceProvider!: PiWebserviceProvider
@@ -152,19 +183,31 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       this.isInitialized = true
     }
   }
-  downloadClicked() {
-    const dx = parseFloat(this.dx)
-    const dy = parseFloat(this.dy)
 
-    if (!isNaN(dx) && !isNaN(dy) && dx > 0 && dy > 0 && this.bbox !== null) {
+  isValidInput() {
+    if (!this.bbox) {
+      return false
+    }
+
+    const inputValues = [
+      this.dx,
+      this.dy,
+      ...this.bbox
+    ]
+
+    return inputValues.every((v) => !isNaN(v) && v > 0)
+  }
+
+  downloadClicked() {
+    if (this.bbox && this.isValidInput()) {
       const filter: ProcessDataFilter = {
         workflowId: 'Transformation_ASA_Grid_Wind',
         xMin: this.bbox[0],
         yMin: this.bbox[1],
         xMax: this.bbox[2],
         yMax: this.bbox[3],
-        xCellSize: dx,
-        yCellSize: dy,
+        xCellSize: this.dx,
+        yCellSize: this.dy,
         startTime: this.firstValueTime,
         endTime: this.lastValueTime
       }
@@ -174,7 +217,7 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       this.downloadNetCDF(apiUrl)
     } else {
       // Handle invalid input
-      this.openErrorDialog('Invalid input. Please enter valid values for dx and dy.')
+      this.openErrorDialog('Invalid input. Please enter valid values for dx, dy and bounding box extremes.')
     }
   }
 
@@ -238,3 +281,16 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
   }
 }
 </script>
+
+<style scoped>
+.v-input >>> input[type="number"] {
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.v-input >>> input[type=number]::-webkit-inner-spin-button,
+.v-input >>> input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+</style>
