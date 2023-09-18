@@ -111,9 +111,9 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
           ['!=', 'mode', 'static']
         ],
         paint: {
-          'fill-color': '#626262',
+          'fill-color': '#c2bebe',
           'fill-outline-color': '#626262',
-          'fill-opacity': 0.1
+          'fill-opacity': 0.5
         }
       },
       {
@@ -123,9 +123,9 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
           ['==', '$type', 'Polygon']
         ],
         paint: {
-          'fill-color': '#626262',
+          'fill-color': '#c2bebe',
           'fill-outline-color': '#626262',
-          'fill-opacity': 0
+          'fill-opacity': 0.4
         }
       },
       {
@@ -140,7 +140,7 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
           'line-join': 'round'
         },
         paint: {
-          'line-color': '#626262',
+          'line-color': '#000000',
           'line-width': 2
         }
       },
@@ -155,7 +155,7 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
           'line-join': 'round'
         },
         paint: {
-          'line-color': '#626262',
+          'line-color': '#000000',
           'line-dasharray': [0.2, 2],
           'line-width': 2
         }
