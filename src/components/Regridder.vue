@@ -10,31 +10,31 @@
               <v-row class="text-h6">Step Sizes</v-row>
               <v-row>
                 <v-col cols="3">
-                  <v-text-field v-model="dx" type="number" suffix="m" label="x-direction" step="0.1" required></v-text-field>
+                  <v-text-field v-model.number="dx" type="number" suffix="m" label="x-direction" step="0.1" required></v-text-field>
                 </v-col>
                 <v-col cols="1"/>
                 <v-col cols="3">
-                  <v-text-field v-model="dy" type="number" suffix="m" label="y-direction" step="0.1" required></v-text-field>
+                  <v-text-field v-model.number="dy" type="number" suffix="m" label="y-direction" step="0.1" required></v-text-field>
                 </v-col>
               </v-row>
               <v-row v-if="bbox" class="text-h6">Bounding Box</v-row>
               <v-row v-if="bbox">
                 <v-row justify="center">
                   <v-col cols="5">
-                    <v-text-field v-model="bbox[3]" type="number" label="yMax" step="0.1" required></v-text-field>
+                    <v-text-field v-model.number="bbox[3]" type="number" label="yMax" step="0.1" @change="updateRectangle" required></v-text-field>
                   </v-col>
                 </v-row>
                 <v-row justify="space-between">
                   <v-col cols="5">
-                    <v-text-field v-model="bbox[0]" type="number" label="xMin" step="0.1" required></v-text-field>
+                    <v-text-field v-model.number="bbox[0]" type="number" label="xMin" step="0.1" @change="updateRectangle" required></v-text-field>
                   </v-col>
                   <v-col cols="5">
-                    <v-text-field v-model="bbox[2]" type="number" label="xMax" step="0.1" required></v-text-field>
+                    <v-text-field v-model.number="bbox[2]" type="number" label="xMax" step="0.1" @change="updateRectangle" required></v-text-field>
                   </v-col>
                 </v-row>
                 <v-row justify="center">
                   <v-col cols="5">
-                    <v-text-field v-model="bbox[1]" type="number" label="yMin" step="0.1" required></v-text-field>
+                    <v-text-field v-model.number="bbox[1]" type="number" label="yMin" step="0.1" @change="updateRectangle" required></v-text-field>
                   </v-col>
                 </v-row>
               </v-row>
@@ -184,7 +184,7 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
     }
   }
 
-  isValidInput() {
+  downloadInputsAreValid() {
     if (!this.bbox) {
       return false
     }
@@ -199,7 +199,7 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
   }
 
   downloadClicked() {
-    if (this.bbox && this.isValidInput()) {
+    if (this.bbox && this.downloadInputsAreValid()) {
       const filter: ProcessDataFilter = {
         workflowId: 'Transformation_ASA_Grid_Wind',
         xMin: this.bbox[0],
@@ -218,6 +218,43 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
     } else {
       // Handle invalid input
       this.openErrorDialog('Invalid input. Please enter valid values for dx, dy and bounding box extremes.')
+    }
+  }
+
+  updateRectangle() {
+    const data = this.draw.getAll()
+    // get bbox from data
+    const geometry = data.features[0].geometry
+    const featureId = data.features[0].id
+    if (geometry.type == "Polygon" && geometry.coordinates !== null && this.bbox) {
+      const coordinates = geometry.coordinates[0]
+
+      const x = coordinates.map(c => c[0])
+      const y = coordinates.map(c => c[1])
+
+      const xmin = Math.min(...x)
+      const xmax = Math.max(...x)
+      const ymin = Math.min(...y)
+      const ymax = Math.max(...y)
+
+      for (let i = 0; i < coordinates.length; i++) {
+        const point = coordinates[i];
+
+        if (point[0] === xmin) point[0] = this.bbox[0]
+        if (point[1] === ymin) point[1] = this.bbox[1]
+        if (point[0] === xmax) point[0] = this.bbox[2]
+        if (point[1] === ymax) point[1] = this.bbox[3]
+      }
+
+      this.draw.set({
+        type: "FeatureCollection",
+        features: [{
+          type: "Feature",
+          properties: {},
+          id: featureId,
+          geometry: { type: 'Polygon', coordinates: [coordinates]}
+        }]
+      })
     }
   }
 
