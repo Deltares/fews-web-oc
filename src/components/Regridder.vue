@@ -10,31 +10,61 @@
               <v-row class="text-h6">Step Sizes</v-row>
               <v-row>
                 <v-col cols="3">
-                  <v-text-field v-model.number="dx" type="number" suffix="m" label="x-direction" step="0.1" required></v-text-field>
+                  <v-text-field v-model.number="dx"
+                                type="number"
+                                suffix="m"
+                                label="x-direction"
+                                step="0.1"
+                                required/>
                 </v-col>
                 <v-col cols="1"/>
                 <v-col cols="3">
-                  <v-text-field v-model.number="dy" type="number" suffix="m" label="y-direction" step="0.1" required></v-text-field>
+                  <v-text-field v-model.number="dy"
+                                type="number"
+                                suffix="m"
+                                label="y-direction"
+                                step="0.1"
+                                required/>
                 </v-col>
               </v-row>
               <v-row v-if="bbox" class="text-h6">Bounding Box</v-row>
               <v-row v-if="bbox">
                 <v-row justify="center">
                   <v-col cols="5">
-                    <v-text-field v-model.number="bbox[3]" type="number" label="yMax" step="0.1" @change="updateRectangle" required></v-text-field>
+                    <v-text-field v-model.number="bbox[3]"
+                                  type="number"
+                                  label="yMax"
+                                  step="0.1"
+                                  @change="updateRectangle"
+                                  required/>
                   </v-col>
                 </v-row>
                 <v-row justify="space-between">
                   <v-col cols="5">
-                    <v-text-field v-model.number="bbox[0]" type="number" label="xMin" step="0.1" @change="updateRectangle" required></v-text-field>
+                    <v-text-field v-model.number="bbox[0]"
+                                  type="number"
+                                  label="yMax"
+                                  step="0.1"
+                                  @change="updateRectangle"
+                                  required/>
                   </v-col>
                   <v-col cols="5">
-                    <v-text-field v-model.number="bbox[2]" type="number" label="xMax" step="0.1" @change="updateRectangle" required></v-text-field>
+                    <v-text-field v-model.number="bbox[2]"
+                                  type="number"
+                                  label="yMax"
+                                  step="0.1"
+                                  @change="updateRectangle"
+                                  required/>
                   </v-col>
                 </v-row>
                 <v-row justify="center">
                   <v-col cols="5">
-                    <v-text-field v-model.number="bbox[1]" type="number" label="yMin" step="0.1" @change="updateRectangle" required></v-text-field>
+                    <v-text-field v-model.number="bbox[1]"
+                                  type="number"
+                                  label="yMax"
+                                  step="0.1"
+                                  @change="updateRectangle"
+                                  required/>
                   </v-col>
                 </v-row>
               </v-row>
