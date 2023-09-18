@@ -5,7 +5,7 @@
     pill
     label
   >
-    <v-icon>mdi-map-marker</v-icon>  
+    <v-icon class="mr-2">mdi-map-marker</v-icon>
     <v-switch
       v-model="show"
       @click.stop
@@ -13,12 +13,13 @@
     />
     <v-autocomplete
       v-model="selectedLocation"
-      label="Search locations"
+      placeholder="Search Locations"
       :items="locations"
       item-text="locationName"
       return-object
       @input="onSelectLocation"
       prepend-inner-icon="mdi-magnify"
+      class="ml-2"
     />
   </v-chip>
 </template>
