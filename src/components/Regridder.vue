@@ -31,43 +31,44 @@
               </v-row>
               <v-row v-if="bbox" class="text-h6">Bounding Box</v-row>
               <v-row v-if="bbox">
-                <v-row justify="center">
-                  <v-col cols="5">
-                    <v-text-field v-model.number="bbox[3]"
-                                  type="number"
-                                  label="yMax"
-                                  min="0"
-                                  step="0.1"
-                                  @change="updateRectangle"
-                                  required/>
-                  </v-col>
-                </v-row>
-                <v-row justify="space-between">
-                  <v-col cols="5">
+                <v-row justify="left">
+                  <v-col cols="3">
                     <v-text-field v-model.number="bbox[0]"
                                   type="number"
                                   label="xMin"
-                                  min="0"
+                                  :rules="[() => bbox[2] > bbox[0] || 'This value need to be smaller than Xmax']"
                                   step="0.1"
                                   @change="updateRectangle"
                                   required/>
                   </v-col>
-                  <v-col cols="5">
-                    <v-text-field v-model.number="bbox[2]"
+                  <v-col cols="1"/>
+                  <v-col cols="3">
+                    <v-text-field v-model.number="bbox[1]"
                                   type="number"
-                                  label="xMax"
-                                  min="0"
+                                  label="yMin"
+                                  :rules="[() => bbox[3] > bbox[1] || 'This value need to be smaller than Ymax']"
                                   step="0.1"
                                   @change="updateRectangle"
                                   required/>
                   </v-col>
                 </v-row>
-                <v-row justify="center">
-                  <v-col cols="5">
-                    <v-text-field v-model.number="bbox[1]"
+                <v-row justify="left">
+                  <v-col cols="3">
+                    <v-text-field v-model.number="bbox[2]"
                                   type="number"
-                                  label="yMin"
-                                  min="0"
+                                  label="xMax"
+                                  :rules="[() => bbox[2] > bbox[0] || 'This value need to be larger than Xmin']"
+                                  step="0.1"
+                                  @change="updateRectangle"
+                                  required/>
+                  </v-col>
+                  <v-col cols="1"/>
+                  <v-col cols="3">
+                    <!-- only show first two decimals -->
+                    <v-text-field v-model.number="bbox[3]"
+                                  type="number"
+                                  label="yMax"
+                                  :rules="[() => bbox[3] > bbox[1] || 'This value need to be larger than Ymin']"
                                   step="0.1"
                                   @change="updateRectangle"
                                   required/>
