@@ -7,7 +7,7 @@
       <div class="grid-map" v-show="showMap">
         <div class="map-container">
           <MapComponent>
-            <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions" @doubleClick="onLayerDoubleClick">
+            <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions" @doubleclick="onLayerDoubleClick">
               <ElevationSlider
                 v-if="currentElevation !== null"
                 v-model="currentElevation"
@@ -360,25 +360,22 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    * @param coordinates coordinates to navigate to.
    */
   setCoordinates(coords: number[]) {
-    if (!coords) {
-      this.closeCharts()
-    } else {
-      const xCoord: string = coords[0].toString()
-      const yCoord: string = coords[1].toString()
+    const xCoord: string = coords[0].toString()
+    const yCoord: string = coords[1].toString()
 
-      if (xCoord === this.xCoord && yCoord === this.yCoord) {
-        return
+    if (xCoord === this.xCoord && yCoord === this.yCoord) {
+      return
+    }
+
+    this.$router.push({
+      name: 'MetocDataViewerWithCoordinates',
+      params: {
+        ...this.$route.params,
+        xCoord,
+        yCoord
       }
-      this.$router.push({
-        name: 'MetocDataViewerWithCoordinates',
-        params: {
-          ...this.$route.params,
-          xCoord,
-          yCoord
-        }
-      })
-    }
-    }
+    })
+  }
 
   /**
    * Updates the locations layers with new GeoJSON data.

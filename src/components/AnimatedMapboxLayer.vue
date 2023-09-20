@@ -182,11 +182,11 @@ export default class AnimatedMapboxLayer extends  Vue {
   }
 
   setDoubleClickLayer() {
-    if (this.mapObject) {
+    if (this.mapObject && this.mapObject.doubleClickZoom.isEnabled()) {
       // deactivate double click zoom
       this.mapObject.doubleClickZoom.disable()
       this.mapObject.on("dblclick", (e) => {
-        this.$emit("doubleClick", e)       
+        this.$emit("doubleclick", e)
       })
     }
   }
