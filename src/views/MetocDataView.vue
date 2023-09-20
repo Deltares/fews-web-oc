@@ -221,8 +221,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   locationsLayerOptions: CircleLayer = {...defaultLocationsLayerOptions}
   selectedLocationsLayerOptions: CircleLayer = {...selectedLocationsLayerOptions}
 
-  coordinates: [number, number] | null = null
-
   async mounted() {
     // Create FEWS PI Webservices provider.
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
@@ -360,12 +358,16 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    *
    * @param coordinates coordinates to navigate to.
    */
-  setCoordinates() {
-    if (!this.coordinates) {
+  setCoordinates(coords: number[]) {
+    if (!coords) {
       this.closeCharts()
     } else {
-      const xCoord: string = this.coordinates[0].toString()
-      const yCoord: string = this.coordinates[1].toString()
+      const xCoord: string = coords[0].toString()
+      const yCoord: string = coords[1].toString()
+
+      if (xCoord === this.xCoord && yCoord === this.yCoord) {
+        return
+      }
       this.$router.push({
         name: 'MetocDataViewerWithCoordinates',
         params: {
@@ -427,7 +429,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       delete params.locationId
     }
     if(this.hasSelectedCoordinates) {
-      this.coordinates = null
       delete params.xCoord
       delete params.yCoord
     }
@@ -512,11 +513,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       }
 
       let routeName: string
-      if (this.locationId) {
+      if (this.hasSelectedLocation) {
         params = { ...params, locationId: this.locationId }
         routeName = 'MetocDataViewerWithLocation'
-      } else if (this.coordinates) {
-        params = { ...params, xCoord: this.coordinates[0].toString(), yCoord: this.coordinates[1].toString() }
+      } else if (this.hasSelectedCoordinates) {
+        params = { ...params, xCoord: this.xCoord, yCoord: this.yCoord }
         routeName = 'MetocDataViewerWithCoordinates'
       } else {
         routeName = 'MetocDataViewer'
@@ -536,9 +537,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   async onLocationChange(): Promise<void> {
     this.setLocationsLayerFilters()
 
-    if (this.locationId === '' || !this.currentDataSource) {
+    if (!this.hasSelectedLocation || !this.currentDataSource) {
       this.selectedLocationId = null
-      this.closeCharts()
       return
     }
 
@@ -568,8 +568,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   @Watch('xCoordyCoordcurrentElevation')
   async onCoordinatesChange(): Promise<void> {
 
-    if (!this.coordinates || !this.currentDataSource || !this.firstValueTime || !this.lastValueTime || !this.currentWMSLayer?.boundingBox) {
-      this.closeCharts()
+    if (!this.hasSelectedCoordinates || !this.currentDataSource || !this.firstValueTime || !this.lastValueTime || !this.currentWMSLayer?.boundingBox) {
       return
     }
     // convert BoundingBox to bbox
@@ -581,8 +580,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   ]
     const coordsFilter: timeSeriesGridActionsFilter = {
       layers: this.currentDataSource.filterIds[0],
-      x: this.coordinates[0],
-      y: this.coordinates[1],
+      x: +this.xCoord,
+      y: +this.yCoord,
       startTime: this.firstValueTime,
       endTime: this.lastValueTime,
       bbox: bbox,
@@ -631,8 +630,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    */
   onLayerDoubleClick(event: MapLayerMouseEvent) {
     const mercator = toMercator(point([event.lngLat.lng, event.lngLat.lat]))
-    this.coordinates = [mercator.geometry.coordinates[0], mercator.geometry.coordinates[1]]
-    this.setCoordinates()
+    this.setCoordinates(mercator.geometry.coordinates)
   }
 
   /**
@@ -692,7 +690,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   }
 
   get hasSelectedCoordinates(): boolean {
-    return this.coordinates !== null
+    return this.xCoord !== '' && this.yCoord !== ''
   }
 
   get selectedLocationFilter(): Expression {
