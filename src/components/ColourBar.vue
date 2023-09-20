@@ -67,15 +67,27 @@ export default class ColourBar extends Vue {
     max-width: 500px;
     height: 85px;
     border-radius: 7px;
-    backdrop-filter: blur(4px);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   .colourbar-light {
-    background-color: rgba(255, 255, 255, 0.5);
+    text-shadow:  #FFF 0px 0px 1px,
+                  #FFF 0px 0px 1px,
+                  #FFF 0px 0px 1px,
+                  #FFF 0px 0px 1px,
+                  #FFF 0px 0px 1px,
+                  #FFF 0px 0px 1px;
   }
 
   .colourbar-dark {
-    background-color: rgba(0, 0, 0, 0.5);
+    text-shadow:  #000 0px 0px 1px,
+                  #000 0px 0px 1px,
+                  #000 0px 0px 1px,
+                  #000 0px 0px 1px,
+                  #000 0px 0px 1px,
+                  #000 0px 0px 1px;
   }
 
   .colourbar-mobile {
