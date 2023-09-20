@@ -188,7 +188,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   @Prop({ default: '', type: String }) locationId!: string
   @Prop({ default: '', type: String }) xCoord!: string
   @Prop({ default: '', type: String }) yCoord!: string
-  
+
   webServiceProvider!: PiWebserviceProvider
   categories: Category[] = []
   selectedDataSource: DataSource | null = null
@@ -214,7 +214,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   currentElevation: number|null = 0
   minElevation: number|null = 0
   maxElevation: number|null = 0
-  
+
   selectedLocationId: string | null = null
   locations: Location[] = []
   showLocationsLayer = true
@@ -284,10 +284,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
         name: this.currentDataSource.wmsLayerId,
         time: this.currentTime
       }
-      
+
         this.maxElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
         this.minElevation = this.currentWMSLayer?.elevation?.lowerValue ?? null
-        this.wmsLayerOptions.elevation = this.currentElevation      
+        this.wmsLayerOptions.elevation = this.currentElevation
     }
   }
 
@@ -338,7 +338,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    */
   setLocation(locationId: string | null): void {
     // We don't need to do anything if we are already at this locationId.
-        if (this.locationId === locationId) return
+    if (this.locationId === locationId) return
 
     if (!locationId) {
       this.closeCharts()
@@ -355,9 +355,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   /**
    * Sets the coordinates to navigate to, opening the appropriate chart panel.
-   * 
+   *
    * This updates the route, thus spawning the chart panel.
-   * 
+   *
    * @param coordinates coordinates to navigate to.
    */
   setCoordinates() {
@@ -417,6 +417,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    * without the chart panel.
    */
   closeCharts(): void {
+    if (!this.hasSelectedCoordinates && !this.hasSelectedLocation) {
+      return
+    }
+
     const params = { ...this.$route.params }
     if (this.hasSelectedLocation) {
       // Remove the locationId from the parameters.
@@ -461,10 +465,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     this.dateController.dates = this.times
     this.dateController.selectDate(this.currentTime ?? new Date())
     this.currentTime = this.dateController.currentTime
-    
+
     // Select the elevation if present
     this.currentElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
-    
+
     this.setWMSLayerOptions()
 
     // Update the WMS layer legend.
@@ -472,7 +476,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     this.unit = legend.unit ?? '—'
     this.legend = legend.legend
     this.legendTitle = `${this.currentWMSLayer?.title} [${this.unit}]`
-    
+
     // Update locations for the current data source.
     const geojson = await fetchLocationsAsGeoJson(
       this.webServiceProvider, this.currentDataSource.filterIds
@@ -570,9 +574,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     }
     // convert BoundingBox to bbox
     const bbox = [
-      Number(this.currentWMSLayer?.boundingBox.minx), 
-      Number(this.currentWMSLayer?.boundingBox.miny), 
-      Number(this.currentWMSLayer?.boundingBox.maxx), 
+      Number(this.currentWMSLayer?.boundingBox.minx),
+      Number(this.currentWMSLayer?.boundingBox.miny),
+      Number(this.currentWMSLayer?.boundingBox.maxx),
       Number(this.currentWMSLayer?.boundingBox.maxy)
   ]
     const coordsFilter: timeSeriesGridActionsFilter = {
@@ -584,7 +588,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       bbox: bbox,
       documentFormat: "PI_JSON",
       showVerticalProfile: this.currentWMSLayer?.elevation ? true : false
-    } 
+    }
     const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
       this.webServiceProvider, [coordsFilter]
     )
@@ -620,15 +624,15 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   /**
    * Updates the route upon double clicking a location.
-   * 
+   *
    * This effectively rerenders this component with the coordinates set.
-   * 
+   *
    * @param event location layer double click event.
    */
   onLayerDoubleClick(event: MapLayerMouseEvent) {
     const mercator = toMercator(point([event.lngLat.lng, event.lngLat.lat]))
     this.coordinates = [mercator.geometry.coordinates[0], mercator.geometry.coordinates[1]]
-    this.setCoordinates()    
+    this.setCoordinates()
   }
 
   /**
@@ -644,7 +648,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   }
 
   get currentDataLayer(): DataLayer | null {
-    
+
     if (!this.currentCategory) return null
 
     return this.currentCategory.dataLayers.find(dataLayer => dataLayer.id === this.dataLayerId) ?? null
@@ -688,7 +692,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   }
 
   get hasSelectedCoordinates(): boolean {
-    return this.coordinates !== null 
+    return this.coordinates !== null
   }
 
   get selectedLocationFilter(): Expression {
