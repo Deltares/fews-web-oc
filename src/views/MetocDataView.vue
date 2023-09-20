@@ -241,6 +241,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     // potentially data source.
     await this.onDataSourceChange()
     await this.onLocationChange()
+    await this.onCoordinatesChange()
 
     // Force resize to fix strange starting position of the map, caused by the expandable navigation
     // drawer.
