@@ -32,8 +32,8 @@ export async function fetchTimeSeriesDisplaysAndRequests(
       const [displaysCur, requestsCur] = await fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
         provider, filter
       )
-      displays = displays.concat(displaysCur)
-      requests = requests.concat(requestsCur)
+    displays = displays.concat(displaysCur)
+    requests = requests.concat(requestsCur)
   }
   return [displays, requests]
 }
