@@ -110,15 +110,20 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
     }
     const domainAxisValues = timeSeries.domains[0].domainAxisValues
     if (domainAxisValues !== undefined) {
-      const domain= domainAxisValues[0]
-      // convert domain.values to an array of numbers
-      domain.values = domain.values.map((value: [string]) => {
-        return +value[0]
-      })
-      // find the index of the closest number to the elevation
-      const elevationIndex = domain.values.reduce((prev: number, curr: number, index: number) => {
-        return (Math.abs(curr - elevation) < Math.abs(domain.values[prev] - elevation) ? index : prev)
-      }, 0)
+      const domain = domainAxisValues[0]
+
+      if (!domain.values) return
+
+      let elevationIndex = 0
+      let closestValue = +domain.values[0]
+      for (let i = 0; i < domain.values.length; i++) {
+        const curr = +domain.values[i];
+
+        if (Math.abs(curr - elevation) < Math.abs(closestValue - elevation)) {
+          closestValue = curr
+          elevationIndex = i
+        }
+      }
 
       const events = timeSeries.domains.slice(1)
       timeSeries.data = events.map((event: any) => {
