@@ -1,6 +1,6 @@
 import { Component, Mixins, Vue } from 'vue-property-decorator'
 import { Series, SeriesUrlRequest } from '@/lib/TimeSeries'
-import {ActionRequest, PiWebserviceProvider} from '@deltares/fews-pi-requests'
+import {ActionRequest,DomainAxisEvent,PiWebserviceProvider} from '@deltares/fews-pi-requests'
 import PiRequestsMixin from "@/mixins/PiRequestsMixin"
 import { DateTime, Interval } from 'luxon'
 
@@ -11,7 +11,7 @@ function timeZoneOffsetString (offset: number): string {
   return `+${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}`
 }
 
-function parsePiDateTime(event: {date: string, time: string} , timeZone: string) {
+function parsePiDateTime(event: DomainAxisEvent, timeZone: string) {
   return `${event.date}T${event.time}${timeZone}`
 }
 
@@ -125,12 +125,11 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
         }
       }
 
-      const events = timeSeries.domains.slice(1)
-      timeSeries.data = events.map((event: any) => {
-        const e = event.events[0]
+      timeSeries.data = timeSeries.domains.slice(1).map(singleDomain => {
+        const e = singleDomain.events![0]
         return {
           x: new Date( parsePiDateTime(e, timeSeries.timeZone? timeSeries.timeZone : 'Z')),
-          y: e.values[elevationIndex][0] === timeSeries.missingValue ? null : +e.values[elevationIndex][0]
+          y: e.values![elevationIndex][0] === timeSeries.missingValue ? null : +e.values![elevationIndex][0]
         }
       })
     }
