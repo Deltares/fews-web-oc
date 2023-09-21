@@ -160,10 +160,10 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       const coordinates = geometry.coordinates[0]
       const x = coordinates.map(c => c[0])
       const y = coordinates.map(c => c[1])
-      const xmin = Math.min(...x)
-      const xmax = Math.max(...x)
-      const ymin = Math.min(...y)
-      const ymax = Math.max(...y)
+      const xmin = Math.round(Math.min(...x) * 1000) / 1000
+      const xmax = Math.round(Math.max(...x) * 1000) / 1000
+      const ymin = Math.round(Math.min(...y) * 1000) / 1000
+      const ymax = Math.round(Math.max(...y) * 1000) / 1000
       this.bbox = [xmin, ymin, xmax, ymax]
       this.refreshDownloadControl(this.bbox)
     }
