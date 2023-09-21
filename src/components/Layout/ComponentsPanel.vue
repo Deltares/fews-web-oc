@@ -7,6 +7,9 @@
           <component :is="displayType" :value="display.config" :series="series" :key="display.id">
           </component>
         </template>
+        <template v-slot:toolbar-append>
+          <CSVExportComponent :series="series" :value="display.config" class="csv-export"/>
+        </template>
       </WindowComponent>
     </div>
   </div>
@@ -17,6 +20,7 @@ import { Vue, Component, Prop } from "vue-property-decorator";
 import TimeSeriesChart from '@/components/TimeSeriesComponent/ConfigurableChart.vue'
 import TimeSeriesTable from '@/components/TimeSeriesComponent/TimeSeriesTable.vue'
 import WindowComponent from "@/components/Layout/WindowComponent.vue"
+import CSVExportComponent from '@/components/CSVExportComponent.vue'
 import { Series } from "@/lib/TimeSeries";
 import type { DisplayConfig } from '@/lib/Layout/DisplayConfig'
 
@@ -25,6 +29,7 @@ import type { DisplayConfig } from '@/lib/Layout/DisplayConfig'
     TimeSeriesChart,
     TimeSeriesTable,
     WindowComponent,
+    CSVExportComponent,
   },
 })
 export default class ComponentsPanel extends Vue {
@@ -78,5 +83,10 @@ export default class ComponentsPanel extends Vue {
   display: block;
   height: 400px;
   width: 100%;
+}
+
+.csv-export{
+  margin-left: auto;
+  padding: 10px 0px;
 }
 </style>

@@ -85,7 +85,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <router-view :displays="displays" @toggleFullscreen="setChartFullscreen"/>
+        <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="setChartFullscreen"/>
       </div>
     </div>
   </div>
