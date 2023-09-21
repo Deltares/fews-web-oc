@@ -95,7 +95,7 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
               series.domains = timeSeries.domains
               this.updateTimeSeriesWithElevation(series, elevation)
             } else {
-              throw new Error('No data found')
+              throw new Error('Timeseries data should include ' + (elevation ? 'domains' : 'events'))
             }
           }
           Vue.set(this.timeSeriesStore, resourceId, series)
