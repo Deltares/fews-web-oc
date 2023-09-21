@@ -125,11 +125,13 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
         }
       }
 
-      timeSeries.data = timeSeries.domains.slice(1).map(singleDomain => {
-        const e = singleDomain.events![0]
+      const domainsWithoutFirst = timeSeries.domains.slice(1)
+      timeSeries.data = domainsWithoutFirst.map(singleDomain => {
+        const event = singleDomain.events![0]
+        const eventValue = event.values![elevationIndex][0]
         return {
-          x: new Date( parsePiDateTime(e, timeSeries.timeZone? timeSeries.timeZone : 'Z')),
-          y: e.values![elevationIndex][0] === timeSeries.missingValue ? null : +e.values![elevationIndex][0]
+          x: new Date(parsePiDateTime(event, timeSeries.timeZone ?? 'Z')),
+          y: eventValue === timeSeries.missingValue ? null : +eventValue
         }
       })
     }
