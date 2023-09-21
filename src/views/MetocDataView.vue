@@ -633,11 +633,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       startTime: this.firstValueTime,
       endTime: this.lastValueTime,
       bbox: bbox,
-      documentFormat: "PI_JSON"
-    }
-
-    if (this.currentElevation !== null) {
-      coordsFilter.elevation = this.currentElevation
+      documentFormat: "PI_JSON",
+      showVerticalProfile: !!this.currentWMSLayer?.elevation
     }
 
     const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
