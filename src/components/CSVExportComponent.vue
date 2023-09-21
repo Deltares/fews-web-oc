@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Watch, Prop } from 'vue-property-decorator'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import { Series } from '@/lib/TimeSeries'
 import { ChartConfig } from './TimeSeriesComponent/lib/ChartConfig'
 import {getUniqueSeriesIds} from "@/components/TimeSeriesComponent/lib/getUniqueSeriesIds";
@@ -48,10 +48,9 @@ export default class CSVExportComponent extends Vue {
     this.tableData = createTableData(this.value.series, this.series, this.seriesIds)
 
     // Generate CSV header with columns for each time series.
-    let header = ""
-    forEach(this.tableHeaders, (h) => {
-      header += `"${h.text}"${separator}`
-    })
+    const header = this.tableHeaders.reduce((acc, h) => {
+      return `${acc}"${h.text}"${separator}`
+    }, "")
     lines.push(header)
 
     forEach(this.tableData, (d) => {
@@ -59,19 +58,18 @@ export default class CSVExportComponent extends Vue {
       forEach(this.tableHeaders, (h) => {
         // if this is not a numeric value or unknown, add quotes around it
         const value = `${d[h.value]}`
-        if (d[h.value] === null || d[h.value] === undefined) {
-          line += `${separator}`
+        if (!d[h.value]) {
+          line += separator
         } 
         else if(!isNaN(parseFloat(value))){
           line += `${d[h.value]}${separator}`
-        } else {
+        } 
+        else {
           line += `"${d[h.value]}"${separator}`
         }
       })
       lines.push(line)
     })
-    console.log('lines :>> ', lines);
-    console.log('this.value :>> ', this.value);
     let location = this.value.title
     // Replace spaces with underscores and convert to lowercase.
     location = location.toLowerCase().replaceAll(' ', '_')
