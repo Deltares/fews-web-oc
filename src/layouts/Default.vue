@@ -15,7 +15,7 @@
         <v-spacer />
         <login-component v-if="$config.authenticationIsEnabled"/>
       </v-toolbar>
-      <v-menu offset-y left min-width="320">
+      <v-menu offset-y left min-width="320" v-if="(menuItems.length > 1)">
 
         <template v-slot:activator="{ on, attrs, value }">
         <v-list-item
@@ -39,6 +39,7 @@
           </v-list-item>
         </v-list>
       </v-menu>
+      <div class="sidebar-title" v-else>{{ currentItemTitle }} </div>
       <portal-target name="web-oc-sidebar" />
     </v-navigation-drawer>
     <v-main id="main">
@@ -211,5 +212,10 @@ html, body {
   bottom: 0px;
   right: 10%;
   z-index: 9000;
+}
+
+.sidebar-title{
+  margin: 10px 25px;
+  font-size:1.4em;
 }
 </style>
