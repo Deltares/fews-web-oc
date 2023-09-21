@@ -88,7 +88,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <router-view :displays="displays" @toggleFullscreen="setChartFullscreen"/>
+        <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="setChartFullscreen"/>
       </div>
     </div>
   </div>
@@ -224,9 +224,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     this.setWMSLayerOptions, 500, { leading: true, trailing: true }
   )
 
-  currentElevation: number|null = 0
-  minElevation: number|null = 0
-  maxElevation: number|null = 0
+  currentElevation: number|null = null
+  minElevation: number|null = null
+  maxElevation: number|null = null
 
   selectedLocationId: string | null = null
   locations: Location[] = []

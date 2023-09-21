@@ -1,1 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;500&display=swap');
+
+:root {
+  --font-primary: Roboto, Helvetica, Arial, sans-serif;
+}
+

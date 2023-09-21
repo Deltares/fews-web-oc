@@ -2,8 +2,8 @@
   <div>
     <vue-slider class="elevation-slider"
       :value="currentValue"
-      :max="max"
-      :min="min"
+      :max="maxValue"
+      :min="minValue"
       :marks="marks"
       :interval="interval"
       :keydownHook="onKeydown"
@@ -35,32 +35,26 @@ function roundToNearest100 (x: number) {
   }
 })
 export default class ElevationSlider extends Vue {
-  @Prop({ default: 0 }) value!: number
+  @Prop({ default: -1 }) value!: number
   @Prop({ default: 0 }) minValue!: number
-  @Prop({ default: 0 }) maxValue!: number
+  @Prop({ default: -10 }) maxValue!: number
 
   currentValue: number = 0
   readonly numberOfMarks: number = 8
   marks: number[] = []
 
-  mounted() {
-    this.onValueChange()
+  beforeMount() {
+    this.currentValue = this.value
+  }
 
+  mounted() {
     const innerMarks = Array.from({length: this.numberOfMarks - 1}, (_, i) => (i + 1) * -roundToNearest100(this.stepSize))
     this.marks = [this.maxValue, ...innerMarks, this.minValue]
   }
 
   get interval(): number {
-    const difference = Math.abs(this.max - this.min)
+    const difference = Math.abs(this.maxValue - this.minValue)
     return difference / Math.round(difference)
-  }
-
-  get max(): number {
-    return Math.max(this.maxValue, 0)
-  }
-
-  get min(): number {
-    return Math.min(this.minValue, -100)
   }
 
   @Watch("value")
@@ -69,34 +63,33 @@ export default class ElevationSlider extends Vue {
   }
 
   onKeydown(e: KeyboardEvent) {
-    const slider = this.$refs.slider as VueSlider
+    let newValue: number | undefined = 0;
 
-    const indexAfterValue = this.marks.findIndex((value) => value < this.currentValue);
-    const nextIndex = indexAfterValue === -1 ? this.marks.length - 1 : indexAfterValue;
-    const previousIndex = indexAfterValue === -1 ? nextIndex : indexAfterValue - 1
-
-    let newMarkIndex = 0;
-    const isOnMark = this.marks.includes(this.currentValue)
     switch (e.key) {
       case "ArrowLeft":
       case "ArrowUp":
-        newMarkIndex = previousIndex;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore: findLast not defined for ts array type, fixed in ts-5.0
+        newValue = this.marks.findLast((value) => value > this.currentValue);
 
-        // if we are currently on a mark our previous index is the current index
-        if (isOnMark) {
-          newMarkIndex -= 1
+        if (newValue === undefined) {
+          newValue = this.marks[0]
         }
         break;
       case "ArrowRight":
       case "ArrowDown":
-        newMarkIndex = nextIndex;
+        newValue = this.marks.find((value) => value < this.currentValue);
+
+        if (newValue === undefined) {
+          newValue = this.marks[this.marks.length - 1]
+        }
         break;
       default:
         return false;
     }
 
-    newMarkIndex = Math.max(newMarkIndex, 0)
-    slider.setValue(this.marks[newMarkIndex])
+    const slider = this.$refs.slider as VueSlider
+    slider.setValue(newValue)
     return false
   }
 
@@ -111,6 +104,10 @@ export default class ElevationSlider extends Vue {
 </script>
 
 <style scoped>
+.vue-slider-dot-tooltip-text {
+  font-family: var(--font-primary)
+}
+
 .elevation-slider {
   z-index: 100;
   position: absolute;
