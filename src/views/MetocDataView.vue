@@ -7,7 +7,7 @@
       <div class="grid-map" v-show="showMap">
         <div class="map-container">
           <MapComponent>
-            <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions">
+            <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions" @doubleclick="onLayerDoubleClick">
               <ElevationSlider
                 v-if="currentElevation !== null"
                 v-model="currentElevation"
@@ -25,6 +25,9 @@
             <v-mapbox-layer
               v-if="showLocationsLayer"
               :options="selectedLocationsLayerOptions"
+            />
+            <v-mapbox-layer
+              :options="selectedCoordinatesLayerOptions"
             />
             <Regridder
             :firstValueTime="firstValueTime"
@@ -55,7 +58,7 @@
           @update:now="setCurrentTime"
         />
       </div>
-      <div class="grid-charts" v-if="hasSelectedLocation && !$vuetify.breakpoint.mobile">
+      <div class="grid-charts" v-if="(hasSelectedLocation || hasSelectedCoordinates) && !$vuetify.breakpoint.mobile">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-spacer/>
           <v-toolbar-items>
@@ -75,7 +78,7 @@
         </v-toolbar>
         <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="setChartFullscreen"/>
       </div>
-      <div class="grid-charts fullscreen" v-else-if="hasSelectedLocation">
+      <div class="grid-charts fullscreen" v-else-if="(hasSelectedLocation || hasSelectedCoordinates)">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-toolbar-title/>
           <v-spacer/>
@@ -99,6 +102,7 @@ import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 
 import type { Location } from "@deltares/fews-pi-requests";
 import { PiWebserviceProvider} from "@deltares/fews-pi-requests";
+import { timeSeriesGridActionsFilter } from "@deltares/fews-pi-requests";
 import { ColourMap } from '@deltares/fews-web-oc-charts';
 
 import { DateController } from '@/lib/TimeControl/DateController';
@@ -113,7 +117,6 @@ import {
   fetchTimeSeriesDisplaysAndRequests
 } from '@/lib/Topology';
 
-import PiRequestsMixin from '@/mixins/PiRequestsMixin';
 import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import WMSMixin from '@/mixins/WMSMixin'
 
@@ -127,6 +130,8 @@ import LocationsLayerSearchControl from '@/components/LocationsLayerSearchContro
 import MapComponent from '@/components/MapComponent.vue'
 import { Layer } from '@deltares/fews-wms-requests';
 import Regridder from '@/components/Regridder.vue'
+import { toMercator, toWgs84 } from '@turf/projection'
+import { point } from "@turf/helpers"
 
 const defaultGeoJsonSource: GeoJSONSourceRaw = {
   type: 'geojson',
@@ -166,6 +171,16 @@ const selectedLocationsLayerOptions: CircleLayer = {
   filter: ['literal', false]
 }
 
+const selectedCoordinatesLayerOptions: CircleLayer = {
+  id: 'coordinatesLayer',
+  type: 'circle',
+  source: defaultGeoJsonSource,
+  layout: {
+    visibility: 'visible'
+  },
+  paint: selectedLocationPaintOptions,
+}
+
 @Component({
   components: {
     ColourBar,
@@ -179,11 +194,13 @@ const selectedLocationsLayerOptions: CircleLayer = {
     Regridder
   }
 })
-export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiRequestsMixin) {
+export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   @Prop({ default: '', type: String }) categoryId!: string
   @Prop({ default: '', type: String }) dataLayerId!: string
   @Prop({ default: '', type: String }) dataSourceId!: string
   @Prop({ default: '', type: String }) locationId!: string
+  @Prop({ default: '', type: String }) xCoord!: string
+  @Prop({ default: '', type: String }) yCoord!: string
 
   webServiceProvider!: PiWebserviceProvider
   categories: Category[] = []
@@ -216,6 +233,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   showLocationsLayer = true
   locationsLayerOptions: CircleLayer = {...defaultLocationsLayerOptions}
   selectedLocationsLayerOptions: CircleLayer = {...selectedLocationsLayerOptions}
+  selectedCoordinatesLayerOptions: CircleLayer = {...selectedCoordinatesLayerOptions}
 
   async mounted() {
     // Create FEWS PI Webservices provider.
@@ -237,6 +255,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     // potentially data source.
     await this.onDataSourceChange()
     await this.onLocationChange()
+    await this.onCoordinatesChange()
 
     // Force resize to fix strange starting position of the map, caused by the expandable navigation
     // drawer.
@@ -278,11 +297,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
         name: this.currentDataSource.wmsLayerId,
         time: this.currentTime
       }
-      
+
         this.maxElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
         this.minElevation = this.currentWMSLayer?.elevation?.lowerValue ?? null
         this.wmsLayerOptions.elevation = this.currentElevation
-      
     }
   }
 
@@ -308,7 +326,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
    */
    setDockMode(dockMode: string) {
     this.dockMode = dockMode
-    if (this.hasSelectedLocation) {
+    if (this.hasSelectedLocation || this.hasSelectedCoordinates) {
       this.layoutClass = this.dockMode
     }
     // Call the resize handler to force a map update.
@@ -336,16 +354,46 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     if (this.locationId === locationId) return
 
     if (!locationId) {
-      this.closeCharts()
+      if (!this.hasSelectedCoordinates) {
+        this.closeCharts()
+      }
     } else {
       this.$router.push({
         name: 'MetocDataViewerWithLocation',
         params: {
           ...this.$route.params,
-          locationId
+          locationId,
+          xCoord: '',
+          yCoord: '',
         }
       })
     }
+  }
+
+  /**
+   * Sets the coordinates to navigate to, opening the appropriate chart panel.
+   *
+   * This updates the route, thus spawning the chart panel.
+   *
+   * @param coordinates coordinates to navigate to.
+   */
+  setCoordinates(coords: number[]) {
+    const xCoord: string = coords[0].toString()
+    const yCoord: string = coords[1].toString()
+
+    if (xCoord === this.xCoord && yCoord === this.yCoord) {
+      return
+    }
+
+    this.$router.push({
+      name: 'MetocDataViewerWithCoordinates',
+      params: {
+        ...this.$route.params,
+        locationId: '',
+        xCoord,
+        yCoord,
+      }
+    })
   }
 
   /**
@@ -382,21 +430,57 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   }
 
   /**
+   * Sets the coordinates for its layer if if they are set, otherwise clears them
+   */
+  setCoordinatesLayerData(): void {
+    if (!this.hasSelectedCoordinates) {
+      this.clearCoordinatesLayerData()
+      return
+    }
+
+    const geoJsonPoint = toWgs84([+this.xCoord, +this.yCoord])
+    const pointGeometry: Geometry = { coordinates: geoJsonPoint, type: "Point"}
+    this.selectedCoordinatesLayerOptions.source = {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        geometry: pointGeometry,
+        properties: {}
+      }
+    }
+  }
+
+  /**
+   * Clears data from the coordinates layer.
+   */
+  clearCoordinatesLayerData(): void {
+    this.selectedCoordinatesLayerOptions.source = defaultGeoJsonSource
+  }
+
+  /**
    * Closes the chart panel.
    *
    * This updates the route to remove the locationId from it, effectively rerendering the component
    * without the chart panel.
    */
   closeCharts(): void {
+    if (!this.hasSelectedCoordinates && !this.hasSelectedLocation) {
+      return
+    }
+
+    const params = { ...this.$route.params }
     if (this.hasSelectedLocation) {
-      const params = { ...this.$route.params }
       // Remove the locationId from the parameters.
       delete params.locationId
-      this.$router.push({
+    }
+    if(this.hasSelectedCoordinates) {
+      delete params.xCoord
+      delete params.yCoord
+    }
+    this.$router.push({
         name: 'MetocDataViewer',
         params
       })
-    }
     this.onResize()
   }
 
@@ -427,10 +511,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     this.dateController.dates = this.times
     this.dateController.selectDate(this.currentTime ?? new Date())
     this.currentTime = this.dateController.currentTime
-    
+
     // Select the elevation if present
     this.currentElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
-    
+
     this.setWMSLayerOptions()
 
     // Update the WMS layer legend.
@@ -438,7 +522,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     this.unit = legend.unit ?? '—'
     this.legend = legend.legend
     this.legendTitle = `${this.currentWMSLayer?.title} [${this.unit}]`
-    
+
     // Update locations for the current data source.
     const geojson = await fetchLocationsAsGeoJson(
       this.webServiceProvider, this.currentDataSource.filterIds
@@ -473,8 +557,19 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
         params = { ...this.$route.params, dataSourceId: undefined }
       }
 
+      let routeName: string
+      if (this.hasSelectedLocation) {
+        params = { ...params, locationId: this.locationId }
+        routeName = 'MetocDataViewerWithLocation'
+      } else if (this.hasSelectedCoordinates) {
+        params = { ...params, xCoord: this.xCoord, yCoord: this.yCoord }
+        routeName = 'MetocDataViewerWithCoordinates'
+      } else {
+        routeName = 'MetocDataViewer'
+      }
+
       this.$router.push({
-        name: this.locationId ? 'MetocDataViewerWithLocation' : 'MetocDataViewer',
+        name: routeName,
         params
       })
     }
@@ -486,22 +581,69 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   @Watch('locationId')
   async onLocationChange(): Promise<void> {
     this.setLocationsLayerFilters()
+    this.setCoordinatesLayerData()
 
-    if (this.locationId === '' || !this.currentDataSource) {
+    if (!this.hasSelectedLocation || !this.currentDataSource) {
       this.selectedLocationId = null
-      this.closeCharts()
       return
     }
 
     this.selectedLocationId = this.locationId
 
+    const locationFilters = this.currentDataSource.filterIds.map(filterId => {
+      return {
+        filterId: filterId,
+        locationIds: this.locationId
+      }
+    })
+
     const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
-      this.webServiceProvider, this.currentDataSource.filterIds, this.locationId
+      this.webServiceProvider, locationFilters
     )
     this.displays = displays
 
     // Fetch time series for all displays.
     await this.updateTimeSeries(requests)
+
+    this.onResize()
+  }
+  /**
+   * Updates the chart panel for newly selected coordinates.
+   */
+
+  @Watch('xCoordyCoordcurrentElevation')
+  async onCoordinatesChange(): Promise<void> {
+    this.setCoordinatesLayerData()
+    this.setLocationsLayerFilters()
+
+    if (!this.hasSelectedCoordinates || !this.currentDataSource || !this.firstValueTime || !this.lastValueTime || !this.currentWMSLayer?.boundingBox) {
+      return
+    }
+    // convert BoundingBox to bbox
+    const bbox = [
+      Number(this.currentWMSLayer?.boundingBox.minx),
+      Number(this.currentWMSLayer?.boundingBox.miny),
+      Number(this.currentWMSLayer?.boundingBox.maxx),
+      Number(this.currentWMSLayer?.boundingBox.maxy)
+  ]
+    const coordsFilter: timeSeriesGridActionsFilter = {
+      layers: this.currentDataSource.filterIds[0],
+      x: +this.xCoord,
+      y: +this.yCoord,
+      startTime: this.firstValueTime,
+      endTime: this.lastValueTime,
+      bbox: bbox,
+      documentFormat: "PI_JSON",
+      showVerticalProfile: !!this.currentWMSLayer?.elevation
+    }
+
+    const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
+      this.webServiceProvider, [coordsFilter]
+    )
+    this.displays = displays
+
+    // Fetch time series for all displays.
+    await this.updateTimeSeries(requests, undefined ,this.currentElevation ? this.currentElevation : undefined)
 
     this.onResize()
   }
@@ -529,6 +671,18 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   }
 
   /**
+   * Updates the route upon double clicking a location.
+   *
+   * This effectively rerenders this component with the coordinates set.
+   *
+   * @param event location layer double click event.
+   */
+  onLayerDoubleClick(event: MapLayerMouseEvent) {
+    const mercator = toMercator(point([event.lngLat.lng, event.lngLat.lat]))
+    this.setCoordinates(mercator.geometry.coordinates)
+  }
+
+  /**
    * Dispatches a resize event to make sure the map is updated to the new size.
    */
    onResize() {
@@ -541,7 +695,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
   }
 
   get currentDataLayer(): DataLayer | null {
-    
+
     if (!this.currentCategory) return null
 
     return this.currentCategory.dataLayers.find(dataLayer => dataLayer.id === this.dataLayerId) ?? null
@@ -584,8 +738,16 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin, PiR
     return this.locationId !== ''
   }
 
+  get hasSelectedCoordinates(): boolean {
+    return this.xCoord !== '' && this.yCoord !== ''
+  }
+
   get selectedLocationFilter(): Expression {
     return ['==', 1, 0]
+  }
+
+  get xCoordyCoordcurrentElevation(): string {
+    return `${this.xCoord}, ${this.yCoord}, ${this.currentElevation}`
   }
 }
 

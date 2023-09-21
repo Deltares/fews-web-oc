@@ -2,6 +2,7 @@ import { JsonObject, JsonProperty } from 'typescript-json-serializer'
 import { SeriesHeader } from './types'
 import { SeriesResource, SeriesRequest, SeriesUrlRequest, SeriesDerived } from './timeSeriesResource'
 import MD5 from 'crypto-js/md5'
+import { Domains } from '@deltares/fews-pi-requests'
 
 const timeSeriesResourceType = (resource: SeriesResource) => {
   switch (resource.type) {
@@ -36,6 +37,9 @@ export class Series {
   start?: Date;
   end?: Date;
   lastUpdated?: Date;
+  domains?: Domains[]; 
+  timeZone?: string;
+  missingValue?: string;
 
   constructor (
     resource: SeriesResource | SeriesRequest | SeriesUrlRequest | SeriesDerived

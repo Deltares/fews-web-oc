@@ -1,6 +1,6 @@
 import { Component, Mixins, Vue } from 'vue-property-decorator'
 import { Series, SeriesUrlRequest } from '@/lib/TimeSeries'
-import {ActionRequest, PiWebserviceProvider} from '@deltares/fews-pi-requests'
+import {ActionRequest,DomainAxisEvent,PiWebserviceProvider} from '@deltares/fews-pi-requests'
 import PiRequestsMixin from "@/mixins/PiRequestsMixin"
 import { DateTime, Interval } from 'luxon'
 
@@ -11,7 +11,7 @@ function timeZoneOffsetString (offset: number): string {
   return `+${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}`
 }
 
-function parsePiDateTime(event: {date: string, time: string} , timeZone: string) {
+function parsePiDateTime(event: DomainAxisEvent, timeZone: string) {
   return `${event.date}T${event.time}${timeZone}`
 }
 
@@ -32,9 +32,8 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
   timeSeriesStore: Record<string, Series> = {}
   controller: AbortController = new AbortController
 
-  async updateTimeSeries(requests: ActionRequest[], options?: { startTime: Date, endTime: Date, thinning: boolean}
+  async updateTimeSeries(requests: ActionRequest[], options?: { startTime: Date, endTime: Date, thinning: boolean}, elevation?: number
   ): Promise<void> {
-
     this.controller.abort()
     const baseUrl = this.$config.get('VUE_APP_FEWS_WEBSERVICES_URL')
     this.controller = new AbortController()
@@ -68,15 +67,16 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
       const relativeUrl = request.request.split('?')[0] + url.search
       webServiceProvider.getTimeSeriesWithRelativeUrl(relativeUrl).then( piSeries =>
       {
-        if ( piSeries.timeSeries !== undefined)
+        if ( piSeries?.timeSeries !== undefined)
         for (const timeSeries of piSeries.timeSeries) {
-          if (timeSeries.events === undefined) continue
           const resource = new SeriesUrlRequest('fews-pi', 'dummyUrl')
           const series = new Series(resource)
           const header = timeSeries.header
           if (header !== undefined) {
             const missingValue: string = header.missVal
             const timeZone = piSeries.timeZone === undefined ? 'Z' : timeZoneOffsetString(+piSeries.timeZone)
+            series.timeZone = timeZone
+            series.missingValue = missingValue
             series.header.name = `${header.stationName} - ${header.parameterId} (${header.moduleInstanceId})`
             series.header.unit = header.units
             series.header.parameter = header.parameterId
@@ -84,14 +84,54 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
             series.header.source = header.moduleInstanceId
             series.start = new Date(parsePiDateTime(header.startDate, timeZone) )
             series.end = new Date(parsePiDateTime(header.endDate, timeZone) )
-            series.data = timeSeries.events.map((event) => {
-              return {
-                x: new Date( parsePiDateTime(event, timeZone)),
-                y: event.value === missingValue ? null : +event.value
-              }
-            })
+            if (!elevation && timeSeries.events !== undefined) {
+              series.data = timeSeries.events.map((event) => {
+                return {
+                  x: new Date( parsePiDateTime(event, timeZone)),
+                  y: event.value === missingValue ? null : +event.value
+                }
+              })
+            } else if (elevation && timeSeries.domains !== undefined && timeSeries) {
+              series.domains = timeSeries.domains
+              this.updateTimeSeriesWithElevation(series, elevation)
+            } else {
+              throw new Error('Timeseries data should include ' + (elevation ? 'domains' : 'events'))
+            }
           }
           Vue.set(this.timeSeriesStore, resourceId, series)
+        }
+      })
+    }
+  }
+
+  updateTimeSeriesWithElevation (timeSeries: Series, elevation: number): void {
+    if (timeSeries.domains === undefined) {
+      throw new Error('No domains found')
+    }
+    const domainAxisValues = timeSeries.domains[0].domainAxisValues
+    if (domainAxisValues !== undefined) {
+      const domain = domainAxisValues[0]
+
+      if (!domain.values) return
+
+      let elevationIndex = 0
+      let closestValue = +domain.values[0]
+      for (let i = 0; i < domain.values.length; i++) {
+        const curr = +domain.values[i];
+
+        if (Math.abs(curr - elevation) < Math.abs(closestValue - elevation)) {
+          closestValue = curr
+          elevationIndex = i
+        }
+      }
+
+      const domainsWithoutFirst = timeSeries.domains.slice(1)
+      timeSeries.data = domainsWithoutFirst.map(singleDomain => {
+        const event = singleDomain.events![0]
+        const eventValue = event.values![elevationIndex][0]
+        return {
+          x: new Date(parsePiDateTime(event, timeSeries.timeZone ?? 'Z')),
+          y: eventValue === timeSeries.missingValue ? null : +eventValue
         }
       })
     }

@@ -1,29 +1,16 @@
 import { ActionsResponse, ActionRequest, PiWebserviceProvider } from "@deltares/fews-pi-requests";
 import { DisplayType, DisplayConfig } from "@/lib/Layout/DisplayConfig";
 import { timeSeriesDisplayToChartConfig } from "@/lib/ChartConfig/timeSeriesDisplayToChartConfig";
+import { timeSeriesGridActionsFilter, filterActionsFilter } from "@deltares/fews-pi-requests";
 
-/**
- * Retrieves filter actions from the FEWS PI Webservice.
- *
- * @todo: Remove once this has been implemented in @deltares/fews-pi-requests.
- *
- * @param provider FEWS PI Webservices provider.
- * @param filterId FilterId to get actions for.
- * @param locationId LocationId to get the actions for.
- * @returns Filter actions response for this location and these filters.
- */
-async function getFilterActions(provider: PiWebserviceProvider, filterId: string, locationId: string): Promise<ActionsResponse> {
-  // Hacky way to get the base URL from the provider.
-  // TODO: will this work with authentication?
-  const baseUrl = provider.locationsUrl({}).href.replace('/locations', '')
-  const actionsUrl = new URL(`${baseUrl}/filters/actions`)
-  actionsUrl.searchParams.append('filterId', filterId)
-  actionsUrl.searchParams.append('locationIds', locationId)
+type FilterArray = (timeSeriesGridActionsFilter | filterActionsFilter)[];
+// guard fuctions, needed because is not possible to use instanceof/ typeof on interfaces
+function isFilterActionsFilter(filter: timeSeriesGridActionsFilter | filterActionsFilter): filter is filterActionsFilter {
+  return (filter as filterActionsFilter).filterId !== undefined;
+}
 
-  const response = await fetch(actionsUrl)
-  const data: ActionsResponse = await response.json()
-
-  return data
+function isTimeSeriesGridActionsFilter(filter: timeSeriesGridActionsFilter | filterActionsFilter): filter is timeSeriesGridActionsFilter {
+  return (filter as timeSeriesGridActionsFilter).x !== undefined;
 }
 
 /**
@@ -34,17 +21,17 @@ async function getFilterActions(provider: PiWebserviceProvider, filterId: string
  * @param provider FEWS PI Webservices provider.
  * @param filterIds FilterIds to get displays and request for.
  * @param locationId LocationId to get displays and requests for.
+ * @param coordinates Coordinates to get displays and requests for. 
  * @returns 2-tuple with the displays and associated time series requests for all filters.
  */
 export async function fetchTimeSeriesDisplaysAndRequests(
-  provider: PiWebserviceProvider, filterIds: string[], locationId: string
-): Promise<[DisplayConfig[], ActionRequest[]]> {
+  provider: PiWebserviceProvider, filters: FilterArray): Promise<[DisplayConfig[], ActionRequest[]]> {
   let displays: DisplayConfig[] = []
   let requests: ActionRequest[] = []
-  for (const filterId of filterIds) {
-    const [displaysCur, requestsCur] = await fetchTimeSeriesDisplaysAndRequestsForSingleFilterId(
-      provider, filterId, locationId
-    )
+  for (const filter of filters) {
+      const [displaysCur, requestsCur] = await fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
+        provider, filter
+      )
     displays = displays.concat(displaysCur)
     requests = requests.concat(requestsCur)
   }
@@ -57,12 +44,22 @@ export async function fetchTimeSeriesDisplaysAndRequests(
  * @param provider FEWS PI Webservices provider.
  * @param filterIds FilterIds to get displays and request for.
  * @param locationId LocationId to get displays and requests for.
+ * @param coordinates Coordinates to get displays and requests for.
  * @returns 2-tuple with the displays and associated time series requests.
  */
-async function fetchTimeSeriesDisplaysAndRequestsForSingleFilterId(
-  provider: PiWebserviceProvider, filterId: string, locationId: string
+async function fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
+  provider: PiWebserviceProvider, filter: timeSeriesGridActionsFilter | filterActionsFilter
 ): Promise<[DisplayConfig[], ActionRequest[]]> {
-  const response = await getFilterActions(provider, filterId, locationId)
+
+  let response: ActionsResponse | null = null
+
+  if (isFilterActionsFilter(filter)) {
+    response = await provider.getFilterActions(filter)
+  } else if (isTimeSeriesGridActionsFilter(filter)) {
+    response = await provider.getTimeSeriesGridActions(filter)
+  } else {
+    throw new Error('Filter type not supported')
+  }
 
   let displays: DisplayConfig[] = []
   let requests: ActionRequest[] = []
