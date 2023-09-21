@@ -81,7 +81,7 @@ function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
 }
 
 @Component
-export default class AnimatedMapboxLayer extends  Vue {
+export default class AnimatedMapboxLayer extends Vue {
   @Prop({
     default: () => {
       return null
