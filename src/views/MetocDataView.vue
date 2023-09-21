@@ -26,6 +26,9 @@
               v-if="showLocationsLayer"
               :options="selectedLocationsLayerOptions"
             />
+            <v-mapbox-layer
+              :options="selectedCoordinatesLayerOptions"
+            />
             <Regridder
             :firstValueTime="firstValueTime"
             :lastValueTime="lastValueTime"
@@ -127,7 +130,7 @@ import LocationsLayerSearchControl from '@/components/LocationsLayerSearchContro
 import MapComponent from '@/components/MapComponent.vue'
 import { Layer } from '@deltares/fews-wms-requests';
 import Regridder from '@/components/Regridder.vue'
-import { toMercator } from '@turf/projection'
+import { toMercator, toWgs84 } from '@turf/projection'
 import { point } from "@turf/helpers"
 
 const defaultGeoJsonSource: GeoJSONSourceRaw = {
@@ -166,6 +169,16 @@ const selectedLocationsLayerOptions: CircleLayer = {
   id: 'selected-locationslayer',
   paint: selectedLocationPaintOptions,
   filter: ['literal', false]
+}
+
+const selectedCoordinatesLayerOptions: CircleLayer = {
+  id: 'coordinatesLayer',
+  type: 'circle',
+  source: defaultGeoJsonSource,
+  layout: {
+    visibility: 'visible'
+  },
+  paint: selectedLocationPaintOptions,
 }
 
 @Component({
@@ -220,6 +233,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   showLocationsLayer = true
   locationsLayerOptions: CircleLayer = {...defaultLocationsLayerOptions}
   selectedLocationsLayerOptions: CircleLayer = {...selectedLocationsLayerOptions}
+  selectedCoordinatesLayerOptions: CircleLayer = {...selectedCoordinatesLayerOptions}
 
   async mounted() {
     // Create FEWS PI Webservices provider.
@@ -340,13 +354,17 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     if (this.locationId === locationId) return
 
     if (!locationId) {
-      this.closeCharts()
+      if (!this.hasSelectedCoordinates) {
+        this.closeCharts()
+      }
     } else {
       this.$router.push({
         name: 'MetocDataViewerWithLocation',
         params: {
           ...this.$route.params,
-          locationId
+          locationId,
+          xCoord: '',
+          yCoord: '',
         }
       })
     }
@@ -371,8 +389,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       name: 'MetocDataViewerWithCoordinates',
       params: {
         ...this.$route.params,
+        locationId: '',
         xCoord,
-        yCoord
+        yCoord,
       }
     })
   }
@@ -408,6 +427,34 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     } else {
       this.selectedLocationsLayerOptions.filter = ['literal', false]
     }
+  }
+
+  /**
+   * Sets the coordinates for its layer if if they are set, otherwise clears them
+   */
+  setCoordinatesLayerData(): void {
+    if (!this.hasSelectedCoordinates) {
+      this.clearCoordinatesLayerData()
+      return
+    }
+
+    const geoJsonPoint = toWgs84([+this.xCoord, +this.yCoord])
+    const pointGeometry: Geometry = { coordinates: geoJsonPoint, type: "Point"}
+    this.selectedCoordinatesLayerOptions.source = {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        geometry: pointGeometry,
+        properties: {}
+      }
+    }
+  }
+
+  /**
+   * Clears data from the coordinates layer.
+   */
+  clearCoordinatesLayerData(): void {
+    this.selectedCoordinatesLayerOptions.source = defaultGeoJsonSource
   }
 
   /**
@@ -534,6 +581,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   @Watch('locationId')
   async onLocationChange(): Promise<void> {
     this.setLocationsLayerFilters()
+    this.setCoordinatesLayerData()
 
     if (!this.hasSelectedLocation || !this.currentDataSource) {
       this.selectedLocationId = null
@@ -565,6 +613,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   @Watch('xCoordyCoordcurrentElevation')
   async onCoordinatesChange(): Promise<void> {
+    this.setCoordinatesLayerData()
+    this.setLocationsLayerFilters()
 
     if (!this.hasSelectedCoordinates || !this.currentDataSource || !this.firstValueTime || !this.lastValueTime || !this.currentWMSLayer?.boundingBox) {
       return
