@@ -6,13 +6,81 @@
         <v-card-title>Download netCDF Data</v-card-title>
         <v-card-text>
           <v-form>
-            <v-text-field v-model="dx" type="number" label="Step size in x-direction [m]" required></v-text-field>
-            <v-text-field v-model="dy" type="number" label="Step size in y-direction [m]" required></v-text-field>
+            <v-container>
+              <v-row class="text-h6">Step Sizes</v-row>
+              <v-row>
+                <v-col cols="3">
+                  <v-text-field v-model.number="dx"
+                                type="number"
+                                suffix="m"
+                                label="x-direction"
+                                min="0"
+                                step="0.1"
+                                required/>
+                </v-col>
+                <v-col cols="1"/>
+                <v-col cols="3">
+                  <v-text-field v-model.number="dy"
+                                type="number"
+                                suffix="m"
+                                label="y-direction"
+                                min="0"
+                                step="0.1"
+                                required/>
+                </v-col>
+              </v-row>
+              <v-row v-if="bbox" class="text-h6">Bounding Box</v-row>
+              <v-row v-if="bbox">
+                <v-row justify="left">
+                  <v-col cols="3">
+                    <v-text-field v-model.number="bbox[0]"
+                                  type="number"
+                                  label="xMin"
+                                  :rules="[() => bbox[2] > bbox[0] || 'This value need to be smaller than Xmax']"
+                                  step="0.1"
+                                  @change="updateRectangle"
+                                  required/>
+                  </v-col>
+                  <v-col cols="1"/>
+                  <v-col cols="3">
+                    <v-text-field v-model.number="bbox[1]"
+                                  type="number"
+                                  label="yMin"
+                                  :rules="[() => bbox[3] > bbox[1] || 'This value need to be smaller than Ymax']"
+                                  step="0.1"
+                                  @change="updateRectangle"
+                                  required/>
+                  </v-col>
+                </v-row>
+                <v-row justify="left">
+                  <v-col cols="3">
+                    <v-text-field v-model.number="bbox[2]"
+                                  type="number"
+                                  label="xMax"
+                                  :rules="[() => bbox[2] > bbox[0] || 'This value need to be larger than Xmin']"
+                                  step="0.1"
+                                  @change="updateRectangle"
+                                  required/>
+                  </v-col>
+                  <v-col cols="1"/>
+                  <v-col cols="3">
+                    <!-- only show first two decimals -->
+                    <v-text-field v-model.number="bbox[3]"
+                                  type="number"
+                                  label="yMax"
+                                  :rules="[() => bbox[3] > bbox[1] || 'This value need to be larger than Ymin']"
+                                  step="0.1"
+                                  @change="updateRectangle"
+                                  required/>
+                  </v-col>
+                </v-row>
+              </v-row>
+            </v-container>
           </v-form>
         </v-card-text>
         <v-card-actions>
-          <v-btn color="primary" @click="downloadClicked">Download</v-btn>
-          <v-btn color="error" @click="closeDownloadDialog">Close</v-btn>
+          <v-btn color="primary" class="ma-2" @click="downloadClicked">Download</v-btn>
+          <v-btn color="error" class="ma-2" @click="closeDownloadDialog">Close</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -54,8 +122,8 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
   downloadControl!: DownloadControl
   downloadDialog = false
   errorDialog = false
-  dx = '0.1'
-  dy = '0.1'
+  dx = 0.1
+  dy = 0.1
   errorMessage = 'Select an area on the map before downloading the data.'
   bbox: number[] | null = null
   webServiceProvider!: PiWebserviceProvider
@@ -92,10 +160,10 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       const coordinates = geometry.coordinates[0]
       const x = coordinates.map(c => c[0])
       const y = coordinates.map(c => c[1])
-      const xmin = Math.min(...x)
-      const xmax = Math.max(...x)
-      const ymin = Math.min(...y)
-      const ymax = Math.max(...y)
+      const xmin = Math.round(Math.min(...x) * 1000) / 1000
+      const xmax = Math.round(Math.max(...x) * 1000) / 1000
+      const ymin = Math.round(Math.min(...y) * 1000) / 1000
+      const ymax = Math.round(Math.max(...y) * 1000) / 1000
       this.bbox = [xmin, ymin, xmax, ymax]
       this.refreshDownloadControl(this.bbox)
     }
@@ -212,19 +280,37 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       this.isInitialized = true
     }
   }
-  downloadClicked() {
-    const dx = parseFloat(this.dx)
-    const dy = parseFloat(this.dy)
 
-    if (!isNaN(dx) && !isNaN(dy) && dx > 0 && dy > 0 && this.bbox !== null) {
+  downloadInputsAreValid() {
+    if (!this.bbox) {
+      return false
+    }
+
+    // Invalid when along x or y, min > max
+    if (this.bbox[0] > this.bbox[2] ||
+        this.bbox[1] > this.bbox[3]) {
+      return false
+    }
+
+    const inputValues = [
+      this.dx,
+      this.dy,
+      ...this.bbox
+    ]
+
+    return inputValues.every((v) => !isNaN(v) && v > 0)
+  }
+
+  downloadClicked() {
+    if (this.bbox && this.downloadInputsAreValid()) {
       const filter: ProcessDataFilter = {
         workflowId: 'Transformation_ASA_Grid_Wind',
         xMin: this.bbox[0],
         yMin: this.bbox[1],
         xMax: this.bbox[2],
         yMax: this.bbox[3],
-        xCellSize: dx,
-        yCellSize: dy,
+        xCellSize: this.dx,
+        yCellSize: this.dy,
         startTime: this.firstValueTime,
         endTime: this.lastValueTime
       }
@@ -234,7 +320,44 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       this.downloadNetCDF(apiUrl)
     } else {
       // Handle invalid input
-      this.openErrorDialog('Invalid input. Please enter valid values for dx and dy.')
+      this.openErrorDialog('Invalid input. Please enter valid values for dx, dy and bounding box extremes.')
+    }
+  }
+
+  updateRectangle() {
+    const data = this.draw.getAll()
+    // get bbox from data
+    const geometry = data.features[0].geometry
+    const featureId = data.features[0].id
+    if (geometry.type == "Polygon" && geometry.coordinates !== null && this.bbox) {
+      const coordinates = geometry.coordinates[0]
+
+      const x = coordinates.map(c => c[0])
+      const y = coordinates.map(c => c[1])
+
+      const xmin = Math.min(...x)
+      const xmax = Math.max(...x)
+      const ymin = Math.min(...y)
+      const ymax = Math.max(...y)
+
+      for (let i = 0; i < coordinates.length; i++) {
+        const point = coordinates[i];
+
+        if (point[0] === xmin) point[0] = this.bbox[0]
+        if (point[1] === ymin) point[1] = this.bbox[1]
+        if (point[0] === xmax) point[0] = this.bbox[2]
+        if (point[1] === ymax) point[1] = this.bbox[3]
+      }
+
+      this.draw.set({
+        type: "FeatureCollection",
+        features: [{
+          type: "Feature",
+          properties: {},
+          id: featureId,
+          geometry: { type: 'Polygon', coordinates: [coordinates]}
+        }]
+      })
     }
   }
 
@@ -298,3 +421,16 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
   }
 }
 </script>
+
+<style scoped>
+.v-input >>> input[type="number"]:not(:hover):not(:focus) {
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.v-input >>> input[type=number]::-webkit-inner-spin-button:not(:hover):not(:focus),
+.v-input >>> input[type=number]::-webkit-outer-spin-button:not(:hover):not(:focus) {
+  -webkit-appearance: none;
+}
+</style>
