@@ -485,6 +485,12 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     this.onResize()
   }
 
+  @Watch('$route.params.dataLayerId')
+  onDataLayerIdChange() {
+    if (this.hasSelectedCoordinates) this.onCoordinatesChange()
+    if (this.hasSelectedLocation) this.onLocationChange()
+  }
+
   /**
    * Updates the WMS layer, WMS layer times and locations for a new data source.
    */

@@ -59,5 +59,30 @@ export default class MetocSidebar extends Mixins(PiRequestsMixin) {
     this.openNodes = [this.$route.params.categoryId]
     this.activeNodes = [this.$route.params.dataLayerId]
   }
+
+  @Watch('$route.params')
+  updateNodes(): void {
+    this.nodes.forEach(node => {
+      node.children?.forEach(nodeChild => {
+        const locationId = this.$route.params.locationId
+        const hasLocation = locationId !== ''
+
+        const xCoord = this.$route.params.xCoord
+        const yCoord = this.$route.params.yCoord
+        const hasCoord = xCoord !== ''
+
+        if (hasLocation) {
+          nodeChild.to!.name = 'MetocDataViewerWithLocation'
+          nodeChild.to!.params!.locationId = locationId
+        } else if (hasCoord) {
+          nodeChild.to!.name = 'MetocDataViewerWithCoordinates'
+          nodeChild.to!.params!.xCoord = xCoord
+          nodeChild.to!.params!.yCoord = yCoord
+        } else {
+          nodeChild.to!.name = 'MetocDataViewer'
+        }
+      })
+    })
+  }
 }
 </script>
