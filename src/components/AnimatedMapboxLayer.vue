@@ -194,6 +194,12 @@ export default class AnimatedMapboxLayer extends Vue {
     }
   }
 
+  enableTouchClickLocations() {
+    this.mapObject.on("touchend", "locationsLayer", (e) => {
+      this.$emit("touchclick", e)
+    })
+  }
+
   @Watch("layer")
   onLayerChange(): void {
     if (!this.isInitialized) return
@@ -216,7 +222,10 @@ export default class AnimatedMapboxLayer extends Vue {
     this.newLayerId = getFrameId(this.layer.name, this.counter)
     const source = this.mapObject.getSource(this.newLayerId)
     const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")
+
     this.enableDoubleClickLayer()
+    this.enableTouchClickLocations()
+
     if (this.currentLayer !== originalLayerName) {
       // set default zoom only if layer is changed
       this.setDefaultZoom()

@@ -7,7 +7,7 @@
       <div class="grid-map" v-show="showMap">
         <div class="map-container">
           <MapComponent>
-            <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions" @doubleclick="onLayerDoubleClick">
+            <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions" @doubleclick="onLayerDoubleClick" @touchclick="onLocationClick">
               <ElevationSlider
                 v-if="currentElevation !== null"
                 v-model="currentElevation"
@@ -97,7 +97,16 @@
 <script lang="ts">
 import { FeatureCollection, Geometry } from 'geojson';
 import { debounce } from 'lodash';
-import { type MapLayerMouseEvent, type CircleLayer, type GeoJSONSourceRaw, type CirclePaint, type Expression, LngLatBounds } from 'mapbox-gl'
+import {
+  type MapLayerMouseEvent,
+  type MapLayerTouchEvent,
+  type CircleLayer,
+  type GeoJSONSourceRaw,
+  type CirclePaint,
+  type Expression,
+  LngLatBounds
+} from 'mapbox-gl'
+
 import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 
 import type { Location } from "@deltares/fews-pi-requests";
@@ -675,7 +684,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    *
    * @param event location layer click event.
    */
-  onLocationClick(event: MapLayerMouseEvent): void {
+  onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
     if (!event.features) return
     const locationId: string | null = event.features[0].properties?.locationId ?? null
 
