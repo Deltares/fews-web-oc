@@ -132,6 +132,7 @@ import { Layer } from '@deltares/fews-wms-requests';
 import Regridder from '@/components/Regridder.vue'
 import { toMercator, toWgs84 } from '@turf/projection'
 import { point } from "@turf/helpers"
+import Vue from 'vue'
 
 const defaultGeoJsonSource: GeoJSONSourceRaw = {
   type: 'geojson',
@@ -611,7 +612,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    * Updates the chart panel for newly selected coordinates.
    */
 
-  @Watch('xCoordyCoordcurrentElevation')
+  @Watch('xCoordyCoord')
   async onCoordinatesChange(): Promise<void> {
     this.setCoordinatesLayerData()
     this.setLocationsLayerFilters()
@@ -646,6 +647,17 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     await this.updateTimeSeries(requests, undefined ,this.currentElevation ? this.currentElevation : undefined)
 
     this.onResize()
+  }
+
+  @Watch('currentElevation')
+  onCurrentElevationChange(): void {
+    if (!this.currentElevation) return
+
+    for (const resourceId in this.timeSeriesStore) {
+      const series = this.timeSeriesStore[resourceId];
+      this.updateTimeSeriesWithElevation(series, this.currentElevation)
+      Vue.set(this.timeSeriesStore, resourceId, series)
+    }
   }
 
   /**
@@ -746,8 +758,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     return ['==', 1, 0]
   }
 
-  get xCoordyCoordcurrentElevation(): string {
-    return `${this.xCoord}, ${this.yCoord}, ${this.currentElevation}`
+  get xCoordyCoord(): string {
+    return `${this.xCoord}, ${this.yCoord}`
   }
 }
 
