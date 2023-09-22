@@ -1,12 +1,10 @@
 <template>
-  <div>
-    <Teleport to="#web-oc-sidebar-target">
-      <ColumnMenu :active.sync="active" :items="items" :open.sync="open">
-      </ColumnMenu>
-    </Teleport>
-    <div style="height: calc(100% - 48px); position: relative">
-      <MapComponent> </MapComponent>
-    </div>
+  <Teleport to="#web-oc-sidebar-target">
+    <ColumnMenu :active.sync="active" :items="items" :open.sync="open">
+    </ColumnMenu>
+  </Teleport>
+  <div style="width: 100%; height: 100%; background-color: green;">
+    <MapComponent></MapComponent>
   </div>
 </template>
 
