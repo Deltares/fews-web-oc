@@ -58,7 +58,7 @@
           @update:now="setCurrentTime"
         />
       </div>
-      <div class="grid-charts" v-if="(hasSelectedLocation || hasSelectedCoordinates) && !$vuetify.breakpoint.mobile">
+      <div class="grid-charts" v-if="hasDataToDisplay && !$vuetify.breakpoint.mobile">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-spacer/>
           <v-toolbar-items>
@@ -78,7 +78,7 @@
         </v-toolbar>
         <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="setChartFullscreen"/>
       </div>
-      <div class="grid-charts fullscreen" v-else-if="(hasSelectedLocation || hasSelectedCoordinates)">
+      <div class="grid-charts fullscreen" v-else-if="hasDataToDisplay">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-toolbar-title/>
           <v-spacer/>
@@ -465,7 +465,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    * without the chart panel.
    */
   closeCharts(): void {
-    if (!this.hasSelectedCoordinates && !this.hasSelectedLocation) {
+    if (!this.hasDataToDisplay) {
       return
     }
 
@@ -742,7 +742,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   }
 
   get showMap(): boolean {
-    const isMobileGraphOpen = this.hasSelectedLocation && this.$vuetify.breakpoint.mobile
+    const isMobileGraphOpen = this.hasDataToDisplay && this.$vuetify.breakpoint.mobile
     return !isMobileGraphOpen && !this.isFullscreenGraph
   }
 
@@ -752,6 +752,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   get hasSelectedCoordinates(): boolean {
     return this.xCoord !== '' && this.yCoord !== ''
+  }
+
+  get hasDataToDisplay(): boolean {
+    return this.hasSelectedLocation || this.hasSelectedCoordinates
   }
 
   get selectedLocationFilter(): Expression {
