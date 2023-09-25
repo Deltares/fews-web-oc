@@ -302,9 +302,10 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
   }
 
   downloadClicked() {
+    const workflowId = `Regrid_${this.$route.params.dataSourceId}`
     if (this.bbox && this.downloadInputsAreValid()) {
       const filter: ProcessDataFilter = {
-        workflowId: 'Transformation_ASA_Grid_Wind',
+        workflowId: workflowId,
         xMin: this.bbox[0],
         yMin: this.bbox[1],
         xMax: this.bbox[2],
