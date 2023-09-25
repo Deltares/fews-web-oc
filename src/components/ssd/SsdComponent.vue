@@ -259,10 +259,12 @@ function setDimensions(): void {
 .theme--dark .web-oc-ssd > svg {
   background-color: #606060;
 }
+
 .fit-content-button {
   position: absolute;
   padding: auto;
 }
+
 .scroll-content {
   position: relative;
 }

@@ -3,7 +3,7 @@ import { getFewsConfig } from '../lib/fews-config/index.js'
 import { WebOcGeneralConfig } from '@deltares/fews-pi-requests'
 import { ComponentTypeEnum, WebOcComponent } from '../lib/fews-config/types.js'
 
-const WEBOC_CONFIG_PREFIX = 'delft-fews-weboc:config#'
+// const WEBOC_CONFIG_PREFIX = 'delft-fews-weboc:config#'
 
 interface ConfigState {
   version: string

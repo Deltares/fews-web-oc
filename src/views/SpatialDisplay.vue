@@ -14,15 +14,15 @@ import ColumnMenu from '../components/general/ColumnMenu.vue'
 import { ref, onMounted } from 'vue'
 import { ColumnItem } from '../components/general/ColumnItem'
 
-interface Props {
-  layerName?: string
-  style?: any
-}
+// interface Props {
+//   layerName?: string
+//   style?: any
+// }
 
-const props = withDefaults(defineProps<Props>(), {
-  layerName: '',
-  style: '',
-})
+// const props = withDefaults(defineProps<Props>(), {
+//   layerName: '',
+//   style: '',
+// })
 
 const active = ref<string[]>([])
 const open = ref<string[]>([])
