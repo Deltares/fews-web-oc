@@ -408,6 +408,8 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       document.body.appendChild(downloadLink)
       downloadLink.click()
       downloadLink.remove()
+      document.body.removeChild(downloadLink)
+      
       window.URL.revokeObjectURL(blobUrl)
       this.downloadDialog = false
     } catch (error) {
