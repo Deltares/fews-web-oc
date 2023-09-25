@@ -14,8 +14,8 @@
           </v-list-item-action>
         </v-list-item-action>
       </v-list-item>
-      <v-subheader>Language</v-subheader>
-      <v-list-item>
+      <v-subheader v-if="multipleLanguages">Language</v-subheader>
+      <v-list-item v-if="multipleLanguages">
         <v-list-item-action>
           <v-list-item-action>
             <locale-control/>
@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { Component, Mixins, Prop } from 'vue-property-decorator'
 import ThemeMixin from '@/mixins/ThemeMixin'
 import ThemeSelector from '@/components/ThemeSelector.vue'
 import LocaleControl from './LocaleControl.vue'
@@ -45,6 +45,8 @@ import packageConfig from '../../package.json'
   }
 })
 export default class CogMenu extends Mixins(ThemeMixin) {
+  @Prop({ default: () => { return true } }) multipleLanguages!: boolean
+
   packageVersion = packageConfig.version
 }
 </script>
