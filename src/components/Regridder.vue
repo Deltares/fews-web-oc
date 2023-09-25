@@ -31,7 +31,7 @@
               </v-row>
               <v-row v-if="bbox" class="text-h6">Bounding Box</v-row>
               <v-row v-if="bbox">
-                <v-row justify="left">
+                <v-row>
                   <v-col cols="3">
                     <v-text-field v-model.number="bbox[0]"
                                   type="number"
@@ -52,7 +52,7 @@
                                   required/>
                   </v-col>
                 </v-row>
-                <v-row justify="left">
+                <v-row>
                   <v-col cols="3">
                     <v-text-field v-model.number="bbox[2]"
                                   type="number"
