@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { ColumnItem } from './ColumnItem'
+import type { ColumnItem } from './ColumnItem'
 
 interface Props {
   items?: ColumnItem[]

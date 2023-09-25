@@ -17,7 +17,6 @@ import { ColumnItem } from '../components/general/ColumnItem'
 import SsdComponent from '../components/ssd/SsdComponent.vue'
 import { configManager } from '../services/application-config/index.ts'
 import { useSsd } from '../services/useSsd/index.ts'
-import { datesFromPeriod } from '@deltares/fews-ssd-requests'
 
 interface Props {
   groupId?: string
@@ -65,18 +64,10 @@ const items = computed(() => {
   return [{ id: 'root', name: 'Groups', children: result }]
 })
 
-const { capabilities, src, panel } = useSsd(
+const { capabilities, src } = useSsd(
   baseUrl,
   () => props.groupId,
   () => props.panelId,
   time,
 )
-
-const times = computed(() => {
-  if (panel.value?.dimension) {
-    const t = datesFromPeriod(panel.value.dimension?.period)
-    return t
-  }
-  return []
-})
 </script>

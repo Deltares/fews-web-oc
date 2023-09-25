@@ -1,10 +1,10 @@
-import { Location } from 'vue-router'
+import { RouteLocationRaw } from 'vue-router'
 
 export interface ColumnItem {
   id: string
   name: string
   children?: ColumnItem[]
-  to?: Location
+  to?: RouteLocationRaw
   href?: string
   target?: string
   icon?: string
