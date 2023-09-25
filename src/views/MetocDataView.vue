@@ -97,7 +97,7 @@
 <script lang="ts">
 import { FeatureCollection, Geometry } from 'geojson';
 import { debounce } from 'lodash';
-import { type MapLayerMouseEvent, type CircleLayer, type GeoJSONSourceRaw, type CirclePaint, type Expression, LngLatBounds } from 'mapbox-gl'
+import { type MapLayerMouseEvent, type CircleLayer, type GeoJSONSourceRaw, type CirclePaint, type Expression, LngLatBounds, GeoJSONSourceOptions } from 'mapbox-gl'
 import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 
 import type { Location } from "@deltares/fews-pi-requests";
@@ -133,6 +133,7 @@ import Regridder from '@/components/Regridder.vue'
 import { toMercator, toWgs84 } from '@turf/projection'
 import { point } from "@turf/helpers"
 import Vue from 'vue'
+import { NavigationGuardNext, Route } from 'vue-router';
 
 const defaultGeoJsonSource: GeoJSONSourceRaw = {
   type: 'geojson',
@@ -485,12 +486,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     this.onResize()
   }
 
-  @Watch('$route.params.dataLayerId')
-  onDataLayerIdChange() {
-    if (this.hasSelectedCoordinates) this.onCoordinatesChange()
-    if (this.hasSelectedLocation) this.onLocationChange()
-  }
-
   /**
    * Updates the WMS layer, WMS layer times and locations for a new data source.
    */
@@ -541,6 +536,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     this.$nextTick(() => {
       this.selectedDataSource = this.currentDataSource
     })
+
+    if (this.hasSelectedCoordinates) this.onCoordinatesChange()
+    if (this.hasSelectedLocation) this.onLocationChange()
   }
 
   /**
@@ -592,6 +590,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
     if (!this.hasSelectedLocation || !this.currentDataSource) {
       this.selectedLocationId = null
+      return
+    }
+
+    if (!this.locationIsInFeatures()) {
+      this.closeCharts()
       return
     }
 
@@ -664,6 +667,32 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       const series = this.timeSeriesStore[resourceId];
       this.updateTimeSeriesWithElevation(series, this.currentElevation)
       Vue.set(this.timeSeriesStore, resourceId, series)
+    }
+  }
+
+  beforeRouteUpdate(to: Route, from: Route, next: NavigationGuardNext) {
+    const goingToLocationRoute = to.params.locationId !== '' && to.params.locationId !== undefined
+    const goingToCoordRoute = to.params.xCoord !== '' && to.params.xCoord !== undefined
+    const sourceIdIsTheSame = to.params.dataSourceId === from.params.dataSourceId
+
+    if (goingToCoordRoute || goingToLocationRoute || sourceIdIsTheSame) {
+      next()
+      return
+    }
+
+    const locationId = from.params.locationId
+    const hasLocation = locationId !== '' && locationId !== undefined
+
+    const xCoord = from.params.xCoord
+    const yCoord = from.params.yCoord
+    const hasCoord = xCoord !== '' && xCoord !== undefined
+
+    if (hasLocation) {
+      this.$router.push({path: `${to.path}/location/${locationId}`})
+    } else if (hasCoord) {
+      this.$router.push({path: `${to.path}/coordinates/${xCoord}/${yCoord}`})
+    } else {
+      next()
     }
   }
 
@@ -763,6 +792,20 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   get selectedLocationFilter(): Expression {
     return ['==', 1, 0]
+  }
+
+  locationIsInFeatures(): boolean {
+    const source = this.locationsLayerOptions.source as GeoJSONSourceOptions
+
+    if (this.hasSelectedLocation && source.data) {
+      const featureCollection = source.data as FeatureCollection
+      const locationInFeatures = featureCollection.features.filter(feature => {
+        return feature.properties?.locationId === this.locationId
+      })
+      return locationInFeatures.length > 0
+    }
+
+    return false
   }
 
   get xCoordyCoord(): string {
