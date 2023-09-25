@@ -3,7 +3,7 @@
     <ColumnMenu :active.sync="active" :items="items" :open.sync="open">
     </ColumnMenu>
   </Teleport>
-  <div style="width: 100%; height: 100%; background-color: green;">
+  <div style="width: 100%; height: 100%; background-color: green">
     <MapComponent></MapComponent>
   </div>
 </template>
@@ -21,7 +21,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
-  style: ''
+  style: '',
 })
 
 const active = ref<string[]>([])

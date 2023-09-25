@@ -44,7 +44,12 @@ function findPanel(
  * @param url    The initial state, used until the first evaluation finishes
  * @param options
  */
-export function useSsd(baseUrl: string, groupId: any, panelId: any, time: any): UseSsdReturn {
+export function useSsd(
+  baseUrl: string,
+  groupId: any,
+  panelId: any,
+  time: any,
+): UseSsdReturn {
   const ssdProvider = new SsdWebserviceProvider(baseUrl)
 
   const isReady = ref(false)
@@ -77,11 +82,11 @@ export function useSsd(baseUrl: string, groupId: any, panelId: any, time: any): 
     const pId = toValue(panelId)
     const t = toValue(time)
     const c = capabilities.value
-    if ( c ) {
+    if (c) {
       const g = findGroup(c, gId)
       group.value = g
-      if ( g ) panel.value = findPanel(g, pId)
-    } 
+      if (g) panel.value = findPanel(g, pId)
+    }
 
     if (pId) {
       result = absoluteUrl(

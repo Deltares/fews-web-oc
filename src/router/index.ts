@@ -13,8 +13,9 @@ import Silent from '../views/auth/Silent.vue'
 import { configManager } from '../services/application-config'
 import { authenticationManager } from '../services/authentication/AuthenticationManager'
 import { useConfigStore } from '../stores/config.ts'
-const SchematicStatusDisplay = () =>  import('../views/SchematicStatusDisplay.vue')
-const SpatialDisplay = () =>  import('../views/SpatialDisplay.vue')
+const SchematicStatusDisplay = () =>
+  import('../views/SchematicStatusDisplay.vue')
+const SpatialDisplay = () => import('../views/SpatialDisplay.vue')
 
 const Empty = () => import('../views/Empty.vue')
 

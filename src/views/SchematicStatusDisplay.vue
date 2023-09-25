@@ -3,8 +3,8 @@
     <ColumnMenu :active.sync="active" :items="items" :open.sync="open">
     </ColumnMenu>
   </Teleport>
-  <div style="display: flex; flex-direction: column; height: 100%; width: 100%;">
-    <div style="flex: 100% 1 1; width: 100%;">
+  <div style="display: flex; flex-direction: column; height: 100%; width: 100%">
+    <div style="flex: 100% 1 1; width: 100%">
       <SsdComponent :src="src"></SsdComponent>
     </div>
   </div>
