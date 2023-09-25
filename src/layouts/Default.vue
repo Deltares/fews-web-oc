@@ -3,6 +3,8 @@
     <v-app-bar color="#080C80" dense app dark>
       <v-app-bar-nav-icon @click="toggleDrawer()"></v-app-bar-nav-icon>
       <v-spacer />
+      <div>{{ webOcTitle }}</div>
+      <v-spacer />
       <TimeControl/>
       <CogMenu/>
     </v-app-bar>
@@ -39,7 +41,6 @@
           </v-list-item>
         </v-list>
       </v-menu>
-      <div class="sidebar-title" v-else>{{ currentItemTitle }} </div>
       <portal-target name="web-oc-sidebar" />
     </v-navigation-drawer>
     <v-main id="main">
@@ -214,8 +215,4 @@ html, body {
   z-index: 9000;
 }
 
-.sidebar-title{
-  margin: 10px 25px;
-  font-size:1.4em;
-}
 </style>
