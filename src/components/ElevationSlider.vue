@@ -9,6 +9,7 @@
       :keydownHook="onKeydown"
       v-on:change="onInputChange"
       :hideLabel="true"
+      silent
       lazy direction="btt" tooltip="always" tooltipPlacement="left" height="200px" ref="slider">
       <template v-slot:tooltip="{ value }">
         <div class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text">{{
@@ -97,8 +98,22 @@ export default class ElevationSlider extends Vue {
     return Math.abs(this.maxValue - this.minValue) / this.numberOfMarks
   }
 
-  onInputChange(event: Event) {
-    this.$emit("input", event)
+  onInputChange(newValue: number) {
+    // When dragging slider value can have floating point error (e.g: 0.48999999999 instead of 4.9)
+    // since there is no hook for value we have to change it after the fact and set the component to silent
+    const valueIsInRange = this.maxValue >= newValue && this.minValue <= newValue
+
+    if (!valueIsInRange) {
+      const slider = this.$refs.slider as VueSlider
+      const clampedValue = Math.max(this.minValue, Math.min(newValue, this.maxValue))
+      this.$nextTick(() => {
+        slider.setValue(clampedValue)
+        this.$emit("input", clampedValue)
+      })
+      return
+    }
+
+    this.$emit("input", newValue)
   }
 }
 </script>
