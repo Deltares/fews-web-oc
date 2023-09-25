@@ -303,6 +303,7 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
 
   downloadClicked() {
     const workflowId = `Regrid_${this.$route.params.dataSourceId}`
+    const fileName = `regrid_${this.$route.params.dataSourceId}.nc`
     if (this.bbox && this.downloadInputsAreValid()) {
       const filter: ProcessDataFilter = {
         workflowId: workflowId,
@@ -318,7 +319,7 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
 
       const apiUrl = this.webServiceProvider.processDataUrl(filter).toString()
       this.downloadDialog = false
-      this.downloadNetCDF(apiUrl)
+      this.downloadNetCDF(apiUrl, fileName)
     } else {
       // Handle invalid input
       this.openErrorDialog('Invalid input. Please enter valid values for dx, dy and bounding box extremes.')
@@ -377,8 +378,7 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
     this.errorMessage = 'Select an area on the map before downloading the data.'
   }
 
-  private async downloadNetCDF(apiUrl: string) {
-    let fileName = 'openarchive-netcdf.nc'
+  private async downloadNetCDF(apiUrl: string, fileName: string) {
     const icon = document.querySelector('#download-icon')
     icon?.classList.remove('mdi-download')
     icon?.classList.add('mdi-loading')
