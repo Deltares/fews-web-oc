@@ -8,8 +8,28 @@
     >
     </ColumnMenu>
   </Teleport>
-  <div style="width: 100%; height: 100%; background-color: green">
-    <!-- <TimeSeriesChart :config="config" :series="series"></TimeSeriesChart> -->
+  <div style="dislay: flex; flex-direction: column; height: 100%">
+    <v-toolbar density="compact">
+      <v-spacer />
+      <v-menu offset-y>
+        <template v-slot:activator="{ props }">
+          <v-btn class="text-capitalize" variant="text" v-bind="props"
+            >{{ plotIds[selectedPlot] }}<v-icon>mdi-chevron-down</v-icon>
+          </v-btn>
+        </template>
+        <v-list v-model="selectedPlot" density="compact">
+          <v-list-item
+            v-for="(plot, i) in plotIds"
+            v-bind:key="i"
+            @click="selectedPlot = i"
+          >
+            <v-list-item-title>{{ plot }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+      <v-spacer />
+    </v-toolbar>
+    <div style="flex: 1 1 100%">{{ sublots }}</div>
   </div>
 </template>
 
@@ -21,8 +41,13 @@ import { ColumnItem } from '../components/general/ColumnItem'
 import { configManager } from '../services/application-config'
 import { useTopologyNodes } from '../services/useTopologyNodes/index.ts'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
+import { computed } from 'vue'
 
 const TIME_SERIES_DIALOG_PANEL: string = 'time series dialog'
+
+interface Props {
+  nodeId?: string
+}
 
 function anyChildNodeIsVisible(nodes: TopologyNode[] | undefined): boolean {
   if (nodes === undefined) return false
@@ -77,13 +102,34 @@ function getIcon(node: TopologyNode): string | undefined {
   return undefined
 }
 
+const props = withDefaults(defineProps<Props>(), {
+  nodeId: '',
+})
+
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const active = ref<string[]>([])
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
 
-const { nodes } = useTopologyNodes(baseUrl)
+const selectedPlot = ref(0)
+
+const { nodes, displays, sublots } = useTopologyNodes(
+  baseUrl,
+  () => props.nodeId,
+  selectedPlot,
+)
+
+const plotIds = computed(() => {
+  if (displays.value?.length) {
+    const ids = displays.value.map((d) => {
+      return d[0].title
+    })
+    return ids
+  } else {
+    return []
+  }
+})
 
 onMounted(async () => {})
 
