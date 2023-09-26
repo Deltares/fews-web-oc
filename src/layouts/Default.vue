@@ -5,8 +5,7 @@
       <v-spacer />
       <div>{{ webOcTitle }}</div>
       <v-spacer />
-      <TimeControl/>
-      <CogMenu/>
+      <CogMenu :multipleLanguages="false"/>
     </v-app-bar>
     <v-navigation-drawer v-model="drawer" app hide-overlay :right="$vuetify.rtl" width="320"
       class="view-sidebar">

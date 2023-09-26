@@ -12,8 +12,8 @@
                 <v-col cols="3">
                   <v-text-field v-model.number="dx"
                                 type="number"
-                                suffix="m"
-                                label="x-direction"
+                                suffix="°E"
+                                label="Longitude"
                                 min="0"
                                 step="0.1"
                                 required/>
@@ -22,8 +22,8 @@
                 <v-col cols="3">
                   <v-text-field v-model.number="dy"
                                 type="number"
-                                suffix="m"
-                                label="y-direction"
+                                suffix="°N"
+                                label="Latitude"
                                 min="0"
                                 step="0.1"
                                 required/>
@@ -31,11 +31,11 @@
               </v-row>
               <v-row v-if="bbox" class="text-h6">Bounding Box</v-row>
               <v-row v-if="bbox">
-                <v-row justify="left">
+                <v-row>
                   <v-col cols="3">
                     <v-text-field v-model.number="bbox[0]"
                                   type="number"
-                                  label="xMin"
+                                  label="Min. Latitude"
                                   :rules="[() => bbox[2] > bbox[0] || 'This value need to be smaller than Xmax']"
                                   step="0.1"
                                   @change="updateRectangle"
@@ -45,18 +45,18 @@
                   <v-col cols="3">
                     <v-text-field v-model.number="bbox[1]"
                                   type="number"
-                                  label="yMin"
+                                  label="Min. Longitude"
                                   :rules="[() => bbox[3] > bbox[1] || 'This value need to be smaller than Ymax']"
                                   step="0.1"
                                   @change="updateRectangle"
                                   required/>
                   </v-col>
                 </v-row>
-                <v-row justify="left">
+                <v-row>
                   <v-col cols="3">
                     <v-text-field v-model.number="bbox[2]"
                                   type="number"
-                                  label="xMax"
+                                  label="Max. Latitude"
                                   :rules="[() => bbox[2] > bbox[0] || 'This value need to be larger than Xmin']"
                                   step="0.1"
                                   @change="updateRectangle"
@@ -67,7 +67,7 @@
                     <!-- only show first two decimals -->
                     <v-text-field v-model.number="bbox[3]"
                                   type="number"
-                                  label="yMax"
+                                  label="Max. Longitude"
                                   :rules="[() => bbox[3] > bbox[1] || 'This value need to be larger than Ymin']"
                                   step="0.1"
                                   @change="updateRectangle"
@@ -302,9 +302,11 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
   }
 
   downloadClicked() {
+    const workflowId = `Regrid_${this.$route.params.dataSourceId}`
+    const fileName = `regrid_${this.$route.params.dataSourceId}.nc`
     if (this.bbox && this.downloadInputsAreValid()) {
       const filter: ProcessDataFilter = {
-        workflowId: 'Transformation_ASA_Grid_Wind',
+        workflowId: workflowId,
         xMin: this.bbox[0],
         yMin: this.bbox[1],
         xMax: this.bbox[2],
@@ -317,7 +319,7 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
 
       const apiUrl = this.webServiceProvider.processDataUrl(filter).toString()
       this.downloadDialog = false
-      this.downloadNetCDF(apiUrl)
+      this.downloadNetCDF(apiUrl, fileName)
     } else {
       // Handle invalid input
       this.openErrorDialog('Invalid input. Please enter valid values for dx, dy and bounding box extremes.')
@@ -376,8 +378,7 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
     this.errorMessage = 'Select an area on the map before downloading the data.'
   }
 
-  private async downloadNetCDF(apiUrl: string) {
-    let fileName = 'openarchive-netcdf.nc'
+  private async downloadNetCDF(apiUrl: string, fileName: string) {
     const icon = document.querySelector('#download-icon')
     icon?.classList.remove('mdi-download')
     icon?.classList.add('mdi-loading')
@@ -407,6 +408,8 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       document.body.appendChild(downloadLink)
       downloadLink.click()
       downloadLink.remove()
+      document.body.removeChild(downloadLink)
+      
       window.URL.revokeObjectURL(blobUrl)
       this.downloadDialog = false
     } catch (error) {
