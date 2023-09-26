@@ -7,7 +7,11 @@
       <div class="grid-map" v-show="showMap">
         <div class="map-container">
           <MapComponent>
-            <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions" @doubleclick="onLayerDoubleClick">
+            <MapboxLayer
+              v-if="showLayer"
+              :layer="wmsLayerOptions"
+              @doubleclick="onLayerDoubleClick"
+              @locationclick="onLocationClick">
               <ElevationSlider
                 v-if="currentElevation !== null"
                 v-model="currentElevation"
@@ -20,7 +24,6 @@
               v-if="showLocationsLayer"
               :options="locationsLayerOptions"
               clickable
-              @click="onLocationClick"
             />
             <v-mapbox-layer
               v-if="showLocationsLayer"
@@ -58,7 +61,7 @@
           @update:now="setCurrentTime"
         />
       </div>
-      <div class="grid-charts" v-if="(hasSelectedLocation || hasSelectedCoordinates) && !$vuetify.breakpoint.mobile">
+      <div class="grid-charts" v-if="hasDataToDisplay && !$vuetify.breakpoint.mobile">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-spacer/>
           <v-toolbar-items>
@@ -78,7 +81,7 @@
         </v-toolbar>
         <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="setChartFullscreen"/>
       </div>
-      <div class="grid-charts fullscreen" v-else-if="(hasSelectedLocation || hasSelectedCoordinates)">
+      <div class="grid-charts fullscreen" v-else-if="hasDataToDisplay">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-toolbar-title/>
           <v-spacer/>
@@ -97,7 +100,17 @@
 <script lang="ts">
 import { FeatureCollection, Geometry } from 'geojson';
 import { debounce } from 'lodash';
-import { type MapLayerMouseEvent, type CircleLayer, type GeoJSONSourceRaw, type CirclePaint, type Expression, LngLatBounds, GeoJSONSourceOptions } from 'mapbox-gl'
+import {
+  type MapLayerMouseEvent,
+  type MapLayerTouchEvent,
+  type CircleLayer,
+  type GeoJSONSourceRaw,
+  type CirclePaint,
+  type Expression,
+  LngLatBounds,
+  GeoJSONSourceOptions
+} from 'mapbox-gl'
+
 import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 
 import type { Location } from "@deltares/fews-pi-requests";
@@ -466,7 +479,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    * without the chart panel.
    */
   closeCharts(): void {
-    if (!this.hasSelectedCoordinates && !this.hasSelectedLocation) {
+    if (!this.hasDataToDisplay) {
       return
     }
 
@@ -716,7 +729,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    *
    * @param event location layer click event.
    */
-  onLocationClick(event: MapLayerMouseEvent): void {
+  onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
     if (!event.features) return
     const locationId: string | null = event.features[0].properties?.locationId ?? null
 
@@ -783,7 +796,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   }
 
   get showMap(): boolean {
-    const isMobileGraphOpen = this.hasSelectedLocation && this.$vuetify.breakpoint.mobile
+    const isMobileGraphOpen = this.hasDataToDisplay && this.$vuetify.breakpoint.mobile
     return !isMobileGraphOpen && !this.isFullscreenGraph
   }
 
@@ -793,6 +806,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   get hasSelectedCoordinates(): boolean {
     return this.xCoord !== '' && this.yCoord !== ''
+  }
+
+  get hasDataToDisplay(): boolean {
+    return this.hasSelectedLocation || this.hasSelectedCoordinates
   }
 
   get selectedLocationFilter(): Expression {
