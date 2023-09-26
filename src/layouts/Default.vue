@@ -218,4 +218,8 @@ html, body {
   margin: 10px 25px;
   font-size:1.4em;
 }
+
+.view-sidebar {
+  z-index: 10000
+}
 </style>
