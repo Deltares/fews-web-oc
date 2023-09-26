@@ -25,6 +25,7 @@ import { Series } from '@/lib/TimeSeries'
 import { uniq } from 'lodash'
 import { extent } from 'd3'
 import { CartesianAxisOptions } from '@deltares/fews-web-oc-charts/lib/types/Axis/cartesianAxisOptions'
+import { ScaleOptions } from '@deltares/fews-web-oc-charts/lib/types/Scale/scaleOptions'
 
 interface Tag {
   id: string;
@@ -141,15 +142,19 @@ export default class ConfigurableChart extends Vue {
     for (const id of removeIds) {
       this.axis.removeChart(id)
     }
-    if (this.value.yAxis) {
+
+    let extraYAxisDrawOptions: ScaleOptions = {}
+    const yAxis = this.value.yAxis as CartesianAxisOptions[]
+    if (yAxis) {
       const cartOptions: CartesianAxesOptions = {
         x: [],
-        y: [
-          this.value.yAxis[0] as CartesianAxisOptions,
-          this.value.yAxis[1] as CartesianAxisOptions
-        ]
+        y: yAxis
       }
       this.axis.setOptions(cartOptions)
+
+      if (yAxis.some(axis => axis.defaultDomain !== undefined)) {
+        extraYAxisDrawOptions.nice = false
+      }
     }
 
     this.setThresholdLines()
@@ -159,6 +164,7 @@ export default class ConfigurableChart extends Vue {
         autoScale: true
       },
       y: {
+        ...extraYAxisDrawOptions,
         autoScale: true
       }
     })
