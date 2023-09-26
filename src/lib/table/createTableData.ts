@@ -2,6 +2,14 @@ import type { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { uniqWith } from 'lodash'
 
+/**
+ *
+ * Creates table data based of the given series IDs, based on the chart series and the time series.
+ * @param {ChartSeries[] | undefined} chartSeriesArray - The array with the chart configuration per series.
+ * @param {Record<string, Series>} seriesRecord - The record of the time series.
+ * @param {string[]} seriesIds - An array of series IDs.
+ * @returns {Record<string, unknown>[]} - An array of records containing table data.
+ */
 export function createTableData(
   chartSeriesArray: ChartSeries[] | undefined,
   seriesRecord: Record<string, Series>,
@@ -48,6 +56,13 @@ export function createTableData(
   })
 }
 
+/**
+ *
+ * Creates an array of unique dates from the data in the chart series.
+ * @param {ChartSeries[]} chartSeriesArray - The array with the chart configuration per series.
+ * @param {Record<string, Series>} seriesRecord - The record of the time series.
+ * @returns {Date[]} An array of unique dates from the data in the chart series.
+ */
 function createDateTimes(
   chartSeriesArray: ChartSeries[] | undefined,
   seriesRecord: Record<string, Series>,
