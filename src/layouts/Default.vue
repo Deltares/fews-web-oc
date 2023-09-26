@@ -3,6 +3,8 @@
     <v-app-bar color="#080C80" dense app dark>
       <v-app-bar-nav-icon @click="toggleDrawer()"></v-app-bar-nav-icon>
       <v-spacer />
+      <div>{{ webOcTitle }}</div>
+      <v-spacer />
       <CogMenu :multipleLanguages="false"/>
     </v-app-bar>
     <v-navigation-drawer v-model="drawer" app hide-overlay :right="$vuetify.rtl" width="320"
@@ -38,7 +40,6 @@
           </v-list-item>
         </v-list>
       </v-menu>
-      <div class="sidebar-title" v-else>{{ currentItemTitle }} </div>
       <portal-target name="web-oc-sidebar" />
     </v-navigation-drawer>
     <v-main id="main">
@@ -213,8 +214,4 @@ html, body {
   z-index: 9000;
 }
 
-.sidebar-title{
-  margin: 10px 25px;
-  font-size:1.4em;
-}
 </style>
