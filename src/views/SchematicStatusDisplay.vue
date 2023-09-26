@@ -1,11 +1,10 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
-    <ColumnMenu :active.sync="active" :items="items" :open.sync="open">
-    </ColumnMenu>
+    <ColumnMenu :active.sync="active" :items="items" :open.sync="open"/>
   </Teleport>
-  <div style="display: flex; flex-direction: column; height: 100%; width: 100%">
-    <div style="flex: 100% 1 1; width: 100%">
-      <SsdComponent :src="src"></SsdComponent>
+  <div class="container">
+    <div class="ssd-container">
+      <SsdComponent :src="src"/>
     </div>
   </div>
 </template>
@@ -71,3 +70,17 @@ const { capabilities, src } = useSsd(
   time,
 )
 </script>
+
+<style scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.ssd-container {
+  flex: 100% 1 1;
+  width: 100%;
+}
+</style>
