@@ -36,14 +36,6 @@ function findPanel(
   })
 }
 
-/**
- * Reactive async state. Will not block your setup function and will trigger changes once
- * the promise is ready.
- *
- * @see https://vueuse.org/useAsyncState
- * @param url    The initial state, used until the first evaluation finishes
- * @param options
- */
 export function useSsd(
   baseUrl: string,
   groupId: MaybeRefOrGetter<string>,
