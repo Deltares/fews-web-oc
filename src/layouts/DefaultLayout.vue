@@ -51,7 +51,7 @@
 
     <v-main id="main" class="d-flex align-center justify-center">
       <Suspense>
-        <router-view style="height: 100%"> </router-view>
+        <router-view></router-view>
       </Suspense>
     </v-main>
   </v-layout>
