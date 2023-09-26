@@ -4,7 +4,7 @@
       :headers="headers"
       :items="importStatus"
       :footer-props="{
-        'items-per-page-options': [100, 200, 300],
+        'itemsPerPageOptions': [100, 200, 300],
       }"
       class="elevation-1"
     >
@@ -73,9 +73,8 @@ async function loadImportStatus() {
     if (!active) return
     const res = await webServiceProvider.getImportStatus()
     importStatus.value = res.importStatus
-    console.log(res.importStatus)
   } catch (error) {
-    console.log(error)
+    console.warn(error)
   } finally {
     setTimeout(loadImportStatus, props.timeOut)
   }

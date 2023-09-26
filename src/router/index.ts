@@ -13,7 +13,7 @@ import Silent from '../views/auth/Silent.vue'
 import { configManager } from '../services/application-config'
 import { authenticationManager } from '../services/authentication/AuthenticationManager'
 import { useConfigStore } from '../stores/config.ts'
-import SystemMonitorDisplay from '../views/SystemMonitorDisplay.vue'
+const SystemMonitorDisplay = () =>import('../views/SystemMonitorDisplay.vue')
 const SchematicStatusDisplay = () =>
   import('../views/SchematicStatusDisplay.vue')
 const SpatialDisplay = () => import('../views/SpatialDisplay.vue')
