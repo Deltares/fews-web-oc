@@ -3,7 +3,7 @@
     <v-app-bar color="#080C80" dense app dark>
       <v-app-bar-nav-icon @click="toggleDrawer()"></v-app-bar-nav-icon>
       <v-spacer />
-      <CogMenu/>
+      <CogMenu :multipleLanguages="false"/>
     </v-app-bar>
     <v-navigation-drawer v-model="drawer" app hide-overlay :right="$vuetify.rtl" width="320"
       class="view-sidebar">
