@@ -6,7 +6,7 @@ import type {
 } from '@deltares/fews-ssd-requests'
 import { ref, shallowRef, toValue, watchEffect } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl.ts'
-import type { Ref } from 'vue'
+import type { MaybeRefOrGetter, Ref } from 'vue'
 
 export interface UseSsdReturn {
   error: Ref<any>
@@ -46,9 +46,9 @@ function findPanel(
  */
 export function useSsd(
   baseUrl: string,
-  groupId: any,
-  panelId: any,
-  time: any,
+  groupId: MaybeRefOrGetter<string>,
+  panelId: MaybeRefOrGetter<string>,
+  time: MaybeRefOrGetter<string>,
 ): UseSsdReturn {
   const ssdProvider = new SsdWebserviceProvider(baseUrl)
 
