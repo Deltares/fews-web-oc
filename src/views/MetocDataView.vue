@@ -674,7 +674,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   @Watch('currentElevation')
   onCurrentElevationChange(): void {
     if (!this.currentElevation) return
-    if (this.timeSeriesStore.domains === undefined) return
 
     for (const resourceId in this.timeSeriesStore) {
       const series = this.timeSeriesStore[resourceId];
