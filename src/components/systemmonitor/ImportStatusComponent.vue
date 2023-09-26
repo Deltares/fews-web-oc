@@ -4,7 +4,7 @@
       :headers="headers"
       :items="importStatus"
       :footer-props="{
-        'itemsPerPageOptions': [100, 200, 300],
+        itemsPerPageOptions: [100, 200, 300],
       }"
       class="elevation-1"
     >

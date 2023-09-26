@@ -4,7 +4,7 @@
     :no-data-text="noDataText"
     :items="runningTasks"
     :footer-props="{
-      'itemsPerPageOptions': [50, 100, 150],
+      itemsPerPageOptions: [50, 100, 150],
     }"
     class="elevation-1"
   >
@@ -17,7 +17,6 @@
 </template>
 
 <script setup lang="ts">
-
 import {
   DocumentFormat,
   PiWebserviceProvider,
@@ -28,7 +27,7 @@ import {
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.ts'
 import { configManager } from '../../services/application-config'
 import { onMounted, onUnmounted, ref } from 'vue'
-import {VDataTable} from "vuetify/labs/VDataTable";
+import { VDataTable } from 'vuetify/labs/VDataTable'
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
   ? UnwrapReadonlyArrayType<I>
   : A
