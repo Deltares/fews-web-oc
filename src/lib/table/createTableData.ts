@@ -16,7 +16,7 @@ export function createTableData(
       return a.id === b.id
     },
   )
-  const p = Array(seriesIds.length).fill(0)
+  const pointers = Array(seriesIds.length).fill(0)
   const dateFormatter = new Intl.DateTimeFormat(undefined, {
     weekday: 'short',
     year: 'numeric',
@@ -36,10 +36,10 @@ export function createTableData(
       const series = seriesRecord[s.dataResources[0]]
       let value = undefined
       if (series && series.data) {
-        const event = series.data[p[j]]
+        const event = series.data[pointers[j]]
         if (event && date.getTime() === event.x.getTime()) {
           value = event.y
-          p[j]++
+          pointers[j]++
         }
         result[s.id] = value
       }
