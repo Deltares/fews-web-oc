@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { getUniqueSeriesIds } from '@/lib/charts/getUniqueSeriesIds'
@@ -55,8 +55,6 @@ const props = defineProps<Props>()
 const seriesIds = ref<string[]>([])
 const tableData = ref<Record<string, unknown>[]>([])
 const tableHeaders = ref<TableHeaders[]>([])
-
-onMounted(async () => {})
 
 watchEffect(() => {
   if (props.chartConfig === undefined) return
