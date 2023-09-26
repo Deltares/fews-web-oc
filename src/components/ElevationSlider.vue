@@ -8,6 +8,7 @@
       :interval="interval"
       :keydownHook="onKeydown"
       v-on:change="onInputChange"
+      @error="onError"
       :hideLabel="true"
       silent
       lazy direction="btt" tooltip="always" tooltipPlacement="left" height="200px" ref="slider">
@@ -98,21 +99,30 @@ export default class ElevationSlider extends Vue {
     return Math.abs(this.maxValue - this.minValue) / this.numberOfMarks
   }
 
-  onInputChange(newValue: number) {
-    // When dragging slider value can have floating point error (e.g: 0.48999999999 instead of 4.9)
-    // since there is no hook for value we have to change it after the fact and set the component to silent
-    const valueIsInRange = this.maxValue >= newValue && this.minValue <= newValue
+  // When dragging slider value can have floating point error (e.g: 0.48999999999 instead of 0.49)
+  // since there is no hook for value we have to change it after the fact
+  onError(type: number, _: string) {
+    const slider = this.$refs.slider as VueSlider
 
-    if (!valueIsInRange) {
-      const slider = this.$refs.slider as VueSlider
-      const clampedValue = Math.max(this.minValue, Math.min(newValue, this.maxValue))
-      this.$nextTick(() => {
-        slider.setValue(clampedValue)
-        this.$emit("input", clampedValue)
-      })
-      return
+    // enum ERROR_TYPE vue-slider-component
+    // import can not be resolved during runtime
+    const ERROR_MIN = 3
+    const ERROR_MAX = 4
+    switch (type) {
+      case ERROR_MIN:
+        this.$nextTick(() => {
+          slider.setValue(this.minValue)
+        })
+        break;
+      case ERROR_MAX:
+        this.$nextTick(() => {
+          slider.setValue(this.maxValue)
+        })
+        break;
     }
+  }
 
+  onInputChange(newValue: number) {
     this.$emit("input", newValue)
   }
 }
