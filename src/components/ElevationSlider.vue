@@ -101,7 +101,7 @@ export default class ElevationSlider extends Vue {
 
   // When dragging slider value can have floating point error (e.g: 0.48999999999 instead of 0.49)
   // since there is no hook for value we have to change it after the fact
-  onError(type: number, _: string) {
+  onError(type: number, message: string) {
     const slider = this.$refs.slider as VueSlider
 
     // enum ERROR_TYPE vue-slider-component
@@ -118,6 +118,9 @@ export default class ElevationSlider extends Vue {
         this.$nextTick(() => {
           slider.setValue(this.maxValue)
         })
+        break;
+      default:
+        console.error(message)
         break;
     }
   }
