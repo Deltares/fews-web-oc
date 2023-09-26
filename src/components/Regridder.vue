@@ -35,7 +35,7 @@
                   <v-col cols="3">
                     <v-text-field v-model.number="bbox[0]"
                                   type="number"
-                                  label="Min Latitude"
+                                  label="Min. Latitude"
                                   :rules="[() => bbox[2] > bbox[0] || 'This value need to be smaller than Xmax']"
                                   step="0.1"
                                   @change="updateRectangle"
@@ -45,7 +45,7 @@
                   <v-col cols="3">
                     <v-text-field v-model.number="bbox[1]"
                                   type="number"
-                                  label="Min Longitude"
+                                  label="Min. Longitude"
                                   :rules="[() => bbox[3] > bbox[1] || 'This value need to be smaller than Ymax']"
                                   step="0.1"
                                   @change="updateRectangle"
@@ -56,7 +56,7 @@
                   <v-col cols="3">
                     <v-text-field v-model.number="bbox[2]"
                                   type="number"
-                                  label="Max Latitude"
+                                  label="Max. Latitude"
                                   :rules="[() => bbox[2] > bbox[0] || 'This value need to be larger than Xmin']"
                                   step="0.1"
                                   @change="updateRectangle"
@@ -67,7 +67,7 @@
                     <!-- only show first two decimals -->
                     <v-text-field v-model.number="bbox[3]"
                                   type="number"
-                                  label="Max Longitude"
+                                  label="Max. Longitude"
                                   :rules="[() => bbox[3] > bbox[1] || 'This value need to be larger than Ymin']"
                                   step="0.1"
                                   @change="updateRectangle"
