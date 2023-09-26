@@ -77,4 +77,8 @@ export default class DataSourceControl extends Vue {
 .outer-chip {
   backdrop-filter: blur(4px);
 }
+
+.v-chip >>> .v-chip__content {
+  font-size: 1rem;
+}
 </style>
