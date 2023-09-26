@@ -45,7 +45,7 @@ import packageConfig from '../../package.json'
   }
 })
 export default class CogMenu extends Mixins(ThemeMixin) {
-  @Prop({ default: () => { return true } }) multipleLanguages!: boolean
+  @Prop({ default:  true }) multipleLanguages!: boolean
 
   packageVersion = packageConfig.version
 }
