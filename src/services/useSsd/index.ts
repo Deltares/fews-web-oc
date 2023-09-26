@@ -1,4 +1,7 @@
-import { SsdWebserviceProvider } from '@deltares/fews-ssd-requests'
+import {
+  datesFromPeriod,
+  SsdWebserviceProvider,
+} from '@deltares/fews-ssd-requests'
 import type {
   Capabilities,
   DisplayGroup,
@@ -16,6 +19,7 @@ export interface UseSsdReturn {
   src: Ref<string>
   group: Ref<DisplayGroup | undefined>
   panel: Ref<DisplayPanel | undefined>
+  dates: Ref<Date[]>
 }
 
 function findGroup(
@@ -51,6 +55,7 @@ export function useSsd(
   const src = ref('')
   const group = ref<DisplayGroup>()
   const panel = ref<DisplayPanel>()
+  const dates = ref<Date[]>([])
 
   async function loadCapabilities(): Promise<void> {
     isLoading.value = true
@@ -69,27 +74,35 @@ export function useSsd(
   loadCapabilities()
 
   watchEffect(() => {
-    let result = ''
-    const gId = toValue(groupId)
-    const pId = toValue(panelId)
-    const t = toValue(time)
-    const c = capabilities.value
-    if (c) {
-      const g = findGroup(c, gId)
-      group.value = g
-      if (g) panel.value = findPanel(g, pId)
+    const groupIdValue = toValue(groupId)
+    const panelIdValue = toValue(panelId)
+    const capabilitiesValue = capabilities.value
+
+    if (!capabilitiesValue) return
+
+    // Find the group and panel by ID in the capabilities.
+    group.value = findGroup(capabilitiesValue, groupIdValue)
+    if (group.value) panel.value = findPanel(group.value, panelIdValue)
+
+    if (!panel.value) return
+
+    // Update the available dates for this display.
+    if (panel.value.dimension) {
+      dates.value = datesFromPeriod(panel.value.dimension.period)
     }
 
-    if (pId) {
-      result = absoluteUrl(
-        `${baseUrl}/ssd?request=GetDisplay&ssd=${pId}`,
-      ).toString()
-      if (t) result = result + `&time=${t}`
-    }
-    src.value = result
+    // Update the source URL based on the found panel.
+    let sourceUrl = absoluteUrl(
+      `${baseUrl}/ssd?request=GetDisplay&ssd=${panelIdValue}`,
+    ).toString()
+    // If specified, add a time value.
+    const timeValue = toValue(time)
+    if (timeValue) sourceUrl += `&time=${timeValue}`
+
+    src.value = sourceUrl
   })
 
-  const shell = {
+  return {
     capabilities,
     isReady,
     isLoading,
@@ -97,7 +110,6 @@ export function useSsd(
     src,
     group,
     panel,
+    dates,
   }
-
-  return shell
 }
