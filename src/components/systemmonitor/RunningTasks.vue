@@ -28,7 +28,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.ts'
 import { configManager } from '../../services/application-config'
-import { onMounted, onUnmounted, reactive, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
   ? UnwrapReadonlyArrayType<I>
   : A
