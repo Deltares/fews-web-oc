@@ -27,7 +27,7 @@
         <v-list density="compact">
           <v-list-subheader>Switch to</v-list-subheader>
           <v-list-item
-            v-for="(item, i) in store.activeComponents"
+            v-for="(item, i) in configStore.activeComponents"
             :key="i"
             :value="item"
             :to="item.to"
@@ -53,6 +53,16 @@
       <Suspense>
         <router-view></router-view>
       </Suspense>
+      <div class="alert-container" v-if="alertsStore.hasActiveAlerts">
+        <v-alert
+          v-for="alert in alertsStore.activeAlerts"
+          type="error"
+          closable
+          @click:close="onCloseAlert(alert)"
+        >
+          {{ alert.message }}
+        </v-alert>
+      </div>
     </v-main>
   </v-layout>
 </template>
@@ -61,10 +71,13 @@
 import { ref, watch, onBeforeMount } from 'vue'
 import { useRtl } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
+import { Alert, useAlertsStore } from '../stores/alerts.ts'
 import { useRoute } from 'vue-router'
 import LoginComponent from '../views/auth/LoginComponent.vue'
 
-const store = useConfigStore()
+const configStore = useConfigStore()
+const alertsStore = useAlertsStore()
+
 const drawer = ref(true)
 const currentItem = ref('')
 const { isRtl } = useRtl()
@@ -83,6 +96,10 @@ watch(
     currentItem.value = name?.toString() ?? ''
   },
 )
+
+function onCloseAlert(alert: Alert) {
+  alert.active = false
+}
 </script>
 
 <style>
@@ -109,5 +126,20 @@ body {
 .router-container {
   padding: 0px;
   height: 100%;
+}
+</style>
+
+<style scoped>
+.alert-container {
+  position: absolute;
+  margin: 0 auto;
+  width: 80%;
+  max-width: 100vw;
+  bottom: 0px;
+  right: 10%;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 </style>
