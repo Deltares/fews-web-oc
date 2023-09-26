@@ -670,6 +670,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     }
   }
 
+
+  /**
+   * Causes on route changes to a different layer while having selected a location or coord
+   * to keep that location or coord for the new layer
+   */
   beforeRouteUpdate(to: Route, from: Route, next: NavigationGuardNext) {
     const goingToLocationRoute = to.params.locationId !== '' && to.params.locationId !== undefined
     const goingToCoordRoute = to.params.xCoord !== '' && to.params.xCoord !== undefined
@@ -681,15 +686,15 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     }
 
     const locationId = from.params.locationId
-    const hasLocation = locationId !== '' && locationId !== undefined
+    const comingFromLocationRoute = locationId !== '' && locationId !== undefined
 
     const xCoord = from.params.xCoord
     const yCoord = from.params.yCoord
-    const hasCoord = xCoord !== '' && xCoord !== undefined
+    const comingFromCoordRoute = xCoord !== '' && xCoord !== undefined
 
-    if (hasLocation) {
+    if (comingFromLocationRoute) {
       this.$router.push({path: `${to.path}/location/${locationId}`})
-    } else if (hasCoord) {
+    } else if (comingFromCoordRoute) {
       this.$router.push({path: `${to.path}/coordinates/${xCoord}/${yCoord}`})
     } else {
       next()
@@ -795,17 +800,18 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   }
 
   locationIsInFeatures(): boolean {
+    if (!this.hasSelectedLocation) return false
+
     const source = this.locationsLayerOptions.source as GeoJSONSourceOptions
+    if (!source?.data) return false
 
-    if (this.hasSelectedLocation && source.data) {
-      const featureCollection = source.data as FeatureCollection
-      const locationInFeatures = featureCollection.features.filter(feature => {
-        return feature.properties?.locationId === this.locationId
-      })
-      return locationInFeatures.length > 0
-    }
+    const featureCollection = source.data as FeatureCollection
 
-    return false
+    const locationInFeatures = featureCollection.features.filter(feature => {
+      return feature.properties?.locationId === this.locationId
+    })
+
+    return locationInFeatures.length > 0
   }
 
   get xCoordyCoord(): string {
