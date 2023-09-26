@@ -13,7 +13,7 @@ import Silent from '../views/auth/Silent.vue'
 import { configManager } from '../services/application-config'
 import { authenticationManager } from '../services/authentication/AuthenticationManager'
 import { useConfigStore } from '../stores/config.ts'
-import SystemMonitorDisplay from "../views/SystemMonitorDisplay.vue";
+import SystemMonitorDisplay from '../views/SystemMonitorDisplay.vue'
 const SchematicStatusDisplay = () =>
   import('../views/SchematicStatusDisplay.vue')
 const SpatialDisplay = () => import('../views/SpatialDisplay.vue')
@@ -74,7 +74,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     path: '/systemmonitor',
     name: 'SystemMonitor',
     component: SystemMonitorDisplay,
-    meta: { authorize: [] }
+    meta: { authorize: [] },
   },
   {
     path: '/map/:layerName?',
