@@ -7,7 +7,11 @@
       <div class="grid-map" v-show="showMap">
         <div class="map-container">
           <MapComponent>
-            <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions" @doubleclick="onLayerDoubleClick">
+            <MapboxLayer
+              v-if="showLayer"
+              :layer="wmsLayerOptions"
+              @doubleclick="onLayerDoubleClick"
+              @locationclick="onLocationClick">
               <ElevationSlider
                 v-if="currentElevation !== null"
                 v-model="currentElevation"
@@ -20,10 +24,9 @@
               v-if="showLocationsLayer"
               :options="locationsLayerOptions"
               clickable
-              @click="onLocationClick"
             />
             <v-mapbox-layer
-              v-if="showLocationsLayer"
+              v-if="showSelectedLocationsLayer"
               :options="selectedLocationsLayerOptions"
             />
             <v-mapbox-layer
@@ -58,7 +61,7 @@
           @update:now="setCurrentTime"
         />
       </div>
-      <div class="grid-charts" v-if="(hasSelectedLocation || hasSelectedCoordinates) && !$vuetify.breakpoint.mobile">
+      <div class="grid-charts" v-if="hasDataToDisplay && !$vuetify.breakpoint.mobile">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-spacer/>
           <v-toolbar-items>
@@ -78,7 +81,7 @@
         </v-toolbar>
         <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="setChartFullscreen"/>
       </div>
-      <div class="grid-charts fullscreen" v-else-if="(hasSelectedLocation || hasSelectedCoordinates)">
+      <div class="grid-charts fullscreen" v-else-if="hasDataToDisplay">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-toolbar-title/>
           <v-spacer/>
@@ -97,7 +100,17 @@
 <script lang="ts">
 import { FeatureCollection, Geometry } from 'geojson';
 import { debounce } from 'lodash';
-import { type MapLayerMouseEvent, type CircleLayer, type GeoJSONSourceRaw, type CirclePaint, type Expression, LngLatBounds } from 'mapbox-gl'
+import {
+  type MapLayerMouseEvent,
+  type MapLayerTouchEvent,
+  type CircleLayer,
+  type GeoJSONSourceRaw,
+  type CirclePaint,
+  type Expression,
+  LngLatBounds,
+  GeoJSONSourceOptions
+} from 'mapbox-gl'
+
 import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 
 import type { Location } from "@deltares/fews-pi-requests";
@@ -133,6 +146,7 @@ import Regridder from '@/components/Regridder.vue'
 import { toMercator, toWgs84 } from '@turf/projection'
 import { point } from "@turf/helpers"
 import Vue from 'vue'
+import { NavigationGuardNext, Route } from 'vue-router';
 
 const defaultGeoJsonSource: GeoJSONSourceRaw = {
   type: 'geojson',
@@ -231,7 +245,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   selectedLocationId: string | null = null
   locations: Location[] = []
-  showLocationsLayer = true
+  showLocationsLayer = false
   locationsLayerOptions: CircleLayer = {...defaultLocationsLayerOptions}
   selectedLocationsLayerOptions: CircleLayer = {...selectedLocationsLayerOptions}
   selectedCoordinatesLayerOptions: CircleLayer = {...selectedCoordinatesLayerOptions}
@@ -465,7 +479,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    * without the chart panel.
    */
   closeCharts(): void {
-    if (!this.hasSelectedCoordinates && !this.hasSelectedLocation) {
+    if (!this.hasDataToDisplay) {
       return
     }
 
@@ -535,6 +549,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     this.$nextTick(() => {
       this.selectedDataSource = this.currentDataSource
     })
+
+    if (this.hasSelectedCoordinates) this.onCoordinatesChange()
+    if (this.hasSelectedLocation) this.onLocationChange()
   }
 
   /**
@@ -583,14 +600,19 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   async onLocationChange(): Promise<void> {
     this.setLocationsLayerFilters()
     this.setCoordinatesLayerData()
-
+    
     if (!this.hasSelectedLocation || !this.currentDataSource) {
       this.selectedLocationId = null
       return
     }
 
-    this.selectedLocationId = this.locationId
+    if (!this.locationIsInFeatures()) {
+      this.closeCharts()
+      return
+    }
 
+    this.selectedLocationId = this.locationId
+    
     const locationFilters = this.currentDataSource.filterIds.map(filterId => {
       return {
         filterId: filterId,
@@ -660,6 +682,37 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     }
   }
 
+
+  /**
+   * Causes on route changes to a different layer while having selected a location or coord
+   * to keep that location or coord for the new layer
+   */
+  beforeRouteUpdate(to: Route, from: Route, next: NavigationGuardNext) {
+    const goingToLocationRoute = to.params.locationId !== '' && to.params.locationId !== undefined
+    const goingToCoordRoute = to.params.xCoord !== '' && to.params.xCoord !== undefined
+    const sourceIdIsTheSame = to.params.dataSourceId === from.params.dataSourceId
+
+    if (goingToCoordRoute || goingToLocationRoute || sourceIdIsTheSame) {
+      next()
+      return
+    }
+
+    const locationId = from.params.locationId
+    const comingFromLocationRoute = locationId !== '' && locationId !== undefined
+
+    const xCoord = from.params.xCoord
+    const yCoord = from.params.yCoord
+    const comingFromCoordRoute = xCoord !== '' && xCoord !== undefined
+
+    if (comingFromLocationRoute) {
+      this.$router.push({path: `${to.path}/location/${locationId}`})
+    } else if (comingFromCoordRoute) {
+      this.$router.push({path: `${to.path}/coordinates/${xCoord}/${yCoord}`})
+    } else {
+      next()
+    }
+  }
+
   /**
    * Updates the chart panel for a location selected from the locations control.
    */
@@ -675,7 +728,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    *
    * @param event location layer click event.
    */
-  onLocationClick(event: MapLayerMouseEvent): void {
+  onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
     if (!event.features) return
     const locationId: string | null = event.features[0].properties?.locationId ?? null
 
@@ -742,8 +795,12 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   }
 
   get showMap(): boolean {
-    const isMobileGraphOpen = this.hasSelectedLocation && this.$vuetify.breakpoint.mobile
+    const isMobileGraphOpen = this.hasDataToDisplay && this.$vuetify.breakpoint.mobile
     return !isMobileGraphOpen && !this.isFullscreenGraph
+  }
+
+  get showSelectedLocationsLayer(): boolean {
+    return this.hasSelectedLocation
   }
 
   get hasSelectedLocation(): boolean {
@@ -754,8 +811,27 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     return this.xCoord !== '' && this.yCoord !== ''
   }
 
+  get hasDataToDisplay(): boolean {
+    return this.hasSelectedLocation || this.hasSelectedCoordinates
+  }
+
   get selectedLocationFilter(): Expression {
     return ['==', 1, 0]
+  }
+
+  locationIsInFeatures(): boolean {
+    if (!this.hasSelectedLocation) return false
+
+    const source = this.locationsLayerOptions.source as GeoJSONSourceOptions
+    if (!source?.data) return false
+
+    const featureCollection = source.data as FeatureCollection
+
+    const locationInFeatures = featureCollection.features.filter(feature => {
+      return feature.properties?.locationId === this.locationId
+    })
+
+    return locationInFeatures.length > 0
   }
 
   get xCoordyCoord(): string {
