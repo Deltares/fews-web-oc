@@ -243,7 +243,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   selectedLocationId: string | null = null
   locations: Location[] = []
-  showLocationsLayer = true
+  showLocationsLayer = false
   locationsLayerOptions: CircleLayer = {...defaultLocationsLayerOptions}
   selectedLocationsLayerOptions: CircleLayer = {...selectedLocationsLayerOptions}
   selectedCoordinatesLayerOptions: CircleLayer = {...selectedCoordinatesLayerOptions}

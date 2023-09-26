@@ -37,6 +37,10 @@ export default class LocationsLayerSearchControl extends Vue {
   show: boolean = true
   selectedLocation: Location | null = null
 
+  mounted(): void{
+    this.onShowLocationsChange()
+  }
+
   onShowChange(): void {
     this.$emit('update:showLocations', this.show)
   }
