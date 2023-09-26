@@ -10,5 +10,6 @@ export interface DisplayConfig {
   types: DisplayType[]
   title: string
   class: string
-  config: Partial<ChartConfig>
+  requests: any[]
+  subplots: ChartConfig[]
 }

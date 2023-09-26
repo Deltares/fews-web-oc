@@ -8,33 +8,35 @@
     >
     </ColumnMenu>
   </Teleport>
-  <div style="dislay: flex; flex-direction: column; height: 100%">
-    <v-toolbar density="compact">
-      <v-spacer />
-      <v-menu offset-y>
-        <template v-slot:activator="{ props }">
-          <v-btn class="text-capitalize" variant="text" v-bind="props"
-            >{{ plotIds[selectedPlot] }}<v-icon>mdi-chevron-down</v-icon>
-          </v-btn>
+  <div style="dislay: flex; flex-direction: column; height: 100%; width: 100%">
+    <div style="flex: 1 1 100%">
+      <WindowComponent>
+        <template v-slot:toolbar>
+          <v-menu offset-y>
+            <template v-slot:activator="{ props }">
+              <v-btn class="text-capitalize" variant="text" v-bind="props"
+                >{{ plotIds[selectedPlot] }}<v-icon>mdi-chevron-down</v-icon>
+              </v-btn>
+            </template>
+            <v-list v-model="selectedPlot" density="compact">
+              <v-list-item
+                v-for="(plot, i) in plotIds"
+                v-bind:key="i"
+                @click="selectedPlot = i"
+              >
+                <v-list-item-title>{{ plot }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </template>
-        <v-list v-model="selectedPlot" density="compact">
-          <v-list-item
-            v-for="(plot, i) in plotIds"
-            v-bind:key="i"
-            @click="selectedPlot = i"
-          >
-            <v-list-item-title>{{ plot }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-      <v-spacer />
-    </v-toolbar>
-    <div style="flex: 1 1 100%">{{ sublots }}</div>
+        <TimeSeriesComponent :config="displayConfig">
+        </TimeSeriesComponent>
+      </WindowComponent>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// import TimeSeriesChart from '../components/charts/TimeSeriesChart.vue'
 import ColumnMenu from '../components/general/ColumnMenu.vue'
 import { ref, onMounted, watch } from 'vue'
 import { ColumnItem } from '../components/general/ColumnItem'
@@ -42,6 +44,8 @@ import { configManager } from '../services/application-config'
 import { useTopologyNodes } from '../services/useTopologyNodes/index.ts'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
+import WindowComponent from '../components/general/WindowComponent.vue'
+import TimeSeriesComponent from '../components/timeseries/TimeSeriesComponent.vue'
 
 const TIME_SERIES_DIALOG_PANEL: string = 'time series dialog'
 
@@ -114,7 +118,7 @@ const items = ref<ColumnItem[]>([])
 
 const selectedPlot = ref(0)
 
-const { nodes, displays, sublots } = useTopologyNodes(
+const { nodes, displays, displayConfig } = useTopologyNodes(
   baseUrl,
   () => props.nodeId,
   selectedPlot,
@@ -123,7 +127,7 @@ const { nodes, displays, sublots } = useTopologyNodes(
 const plotIds = computed(() => {
   if (displays.value?.length) {
     const ids = displays.value.map((d) => {
-      return d[0].title
+      return d.title
     })
     return ids
   } else {
@@ -142,4 +146,6 @@ function updateItems(): void {
 }
 
 watch(nodes, updateItems)
+watch(props, () => selectedPlot.value = 0 )
+
 </script>

@@ -5,14 +5,15 @@ import {
 } from '@deltares/fews-pi-requests'
 import { ref, shallowRef, toValue, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
-import { DisplayConfig, DisplayType } from '../../lib/display/DisplayConfig'
+import { DisplayConfig, DisplayType } from '../../lib/display/DisplayConfig.js'
 import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig'
+import { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 
 export interface UseTopologyNodesReturn {
   error: Ref<any>
   nodes: Ref<TopologyNode[] | undefined>
-  sublots: Ref<DisplayConfig[] | undefined>
-  displays: Ref<DisplayConfig[][] | undefined>
+  displayConfig: Ref<DisplayConfig | undefined>
+  displays: Ref<DisplayConfig[] | undefined>
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
 }
@@ -41,8 +42,8 @@ export function useTopologyNodes(
   const isReady = ref(false)
   const isLoading = ref(false)
   const nodes = ref<TopologyNode[]>()
-  const sublots = ref<DisplayConfig[]>()
-  const displays = ref<DisplayConfig[][]>()
+  const displayConfig = ref<DisplayConfig>()
+  const displays = ref<DisplayConfig[]>()
   const error = shallowRef<unknown | undefined>(undefined)
   const urlTopologyNodeMap: Map<string, string> = new Map<string, string>()
 
@@ -67,34 +68,38 @@ export function useTopologyNodes(
   loadTopologyNodes()
 
   watchEffect(async () => {
-    const _displays = []
+    const _displays: DisplayConfig[] = []
     const filter = {} as TopologyActionFilter
     filter.nodeId = toValue(nodeId)
     const _plotId = toValue(plotId)
     const response = await piProvider.getTopologyActions(filter)
     for (const result of response.results) {
       if (result.config === undefined) continue
-      const display: DisplayConfig[] = []
       const title = result.config.timeSeriesDisplay.title ?? ''
-      result.config.timeSeriesDisplay.subplots?.forEach((subPlot, index) => {
-        display.push({
-          id: `${title}-${index}`,
-          types: [DisplayType.TimeSeriesChart, DisplayType.TimeSeriesTable],
-          class: 'single',
-          title: title,
-          config: timeSeriesDisplayToChartConfig(subPlot, title),
-        })
-      })
+      let subplots: ChartConfig[] = []
+      if ( result.config.timeSeriesDisplay.subplots ) {
+        subplots = result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
+        return timeSeriesDisplayToChartConfig(subPlot, title)
+      })}
+      const display: DisplayConfig = {
+        id: title,
+        types: [DisplayType.TimeSeriesChart],
+        title,
+        class: 'singles',
+        requests: result.requests,
+        subplots,
+      }
       _displays.push(display)
     }
+    console.log(_displays[_plotId])
     displays.value = _displays
-    sublots.value = _displays[_plotId]
+    displayConfig.value = _displays[_plotId]
   })
 
   const shell = {
     nodes,
     displays,
-    sublots,
+    displayConfig,
     isReady,
     isLoading,
     error,
