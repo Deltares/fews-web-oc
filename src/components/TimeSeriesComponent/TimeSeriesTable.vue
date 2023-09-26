@@ -4,6 +4,7 @@
       :headers="tableHeaders"
       :items="tableData"
       :items-per-page="-1"
+      item-key="date"
       dense
       disable-filtering
       disable-pagination
@@ -12,11 +13,61 @@
       hide-default-footer
       mobile-breakpoint="0"
     >
-    <template v-for="h in tableHeaders" v-slot:[`header.${h.value}`]>
+      <template v-for="h in tableHeaders" v-slot:[`header.${h.value}`]>
         <div class="table-header-indicator" :key="h.value">
           <span class="table-header-indicator-text">{{ h.text }}</span>
           <div class="table-header-indicator-color" :style="{'background-color': h.color}"></div>
         </div>
+      </template>
+      <template v-for="id in seriesIds" v-slot:[`item.${id}`]="{ item }">
+        <td
+        :key="`${id}-${item.date}`"
+        >
+          <v-tooltip
+            top
+            max-width="200px"
+            open-delay="250"
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <div style="display: flex; justify-content: flex-start;"
+              v-bind="attrs"
+              v-on="on">
+                <span style="display: flex; margin:auto 0; flex: 2 1 50%; justify-content: end; min-width: 50%;">
+                  <div style="display: flex; flex: 0 0 auto; width: 16px;">
+                    <v-icon
+                      v-show="item[id].flag > 0"
+                      x-small
+                      :color="getFlagColor(item[id].flag)"
+                    >
+                      mdi-circle
+                    </v-icon>
+                  </div>
+                  {{ item[id].value }}
+                </span>
+                <div style="display: flex; flex: 0 0 auto; width: 16px;">
+                  <v-icon
+                    v-if="item[id].comment !== undefined"
+                    small
+                  >
+                    mdi-comment-outline
+                  </v-icon>
+                </div>
+              </div>
+            </template>
+            <div v-show="item[id].flag !== undefined">
+              <v-icon>mdi-flag-variant</v-icon> {{ getFlagName(item[id].flag) }}
+            </div>
+            <div v-show="item[id].flagSource !== undefined">
+              <v-icon>mdi-access-point</v-icon> {{ getFlagSourceName(item[id].flagSource) }}
+            </div>
+            <div v-show="item[id].user !== undefined">
+              <v-icon>mdi-account</v-icon> {{ item[id].user }}
+            </div>
+            <div v-show="item[id].comment !== undefined">
+              <v-icon>mdi-comment</v-icon> {{ item[id].comment }}
+            </div>
+          </v-tooltip>
+        </td>
       </template>
     </v-data-table>
   </div>
@@ -24,16 +75,35 @@
 
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator'
-import {ChartConfig} from './lib/ChartConfig'
-import {ChartSeries} from './lib/ChartSeries'
+import { namespace } from 'vuex-class'
+import type {ChartConfig} from '@/components/TimeSeriesComponent/lib/ChartConfig'
 import {Series} from '@/lib/TimeSeries'
+import type {TimeSeriesFlag, TimeSeriesFlagSource} from '@deltares/fews-pi-requests';
 import {getUniqueSeriesIds} from "@/components/TimeSeriesComponent/lib/getUniqueSeriesIds";
-import {TableHeaders} from "@/components/TimeSeriesComponent/lib/TableHeaders";
+import type {TableHeaders} from "@/components/TimeSeriesComponent/lib/TableHeaders";
 import {createTableHeaders} from "@/components/TimeSeriesComponent/lib/createTableHeaders";
 import {createTableData} from './lib/createTableData';
 
+const fewsPropertyModule = namespace('fewsProperties')
+
 @Component
 export default class TimeSeriesTable extends Vue {
+
+  @fewsPropertyModule.Getter('getFlags')
+    flags!: TimeSeriesFlag[]
+  @fewsPropertyModule.Getter('getFlagSources')
+    flagSources!: TimeSeriesFlagSource[]
+  @fewsPropertyModule.Getter('getFlagColorByFlag')
+    getFlagColor!: (flag: number) => string | undefined
+  @fewsPropertyModule.Getter('getFlagNameByFlag')
+    getFlagName!: (flag: number) => string
+  @fewsPropertyModule.Getter('getFlagSourceNameByFlag')
+    getFlagSourceName!: (flag: number) => string
+  @fewsPropertyModule.Action('loadFlags')
+    loadFlags!: () => Promise<void>
+  @fewsPropertyModule.Action('loadFlagSources')
+    loadFlagSources!: () => Promise<void>
+
   @Prop({
     default: () => {
       return {}
@@ -52,7 +122,10 @@ export default class TimeSeriesTable extends Vue {
   tableData: Record<string, unknown>[] = []
   tableHeaders: TableHeaders[] = []
 
-  mounted() {
+
+  async mounted(): Promise<void> {
+    await this.loadFlags()
+    await this.loadFlagSources()
     this.onSeriesChange()
   }
 
@@ -63,6 +136,7 @@ export default class TimeSeriesTable extends Vue {
     this.tableHeaders = createTableHeaders(this.value.series, this.seriesIds)
     this.tableData = createTableData(this.value.series, this.series, this.seriesIds)
   }
+
 }
 </script>
 
