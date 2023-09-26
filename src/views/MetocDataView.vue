@@ -26,7 +26,7 @@
               clickable
             />
             <v-mapbox-layer
-              v-if="showLocationsLayer"
+              v-if="showSelectedLocationsLayer"
               :options="selectedLocationsLayerOptions"
             />
             <v-mapbox-layer
@@ -595,14 +595,14 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   async onLocationChange(): Promise<void> {
     this.setLocationsLayerFilters()
     this.setCoordinatesLayerData()
-
+    
     if (!this.hasSelectedLocation || !this.currentDataSource) {
       this.selectedLocationId = null
       return
     }
 
     this.selectedLocationId = this.locationId
-
+    
     const locationFilters = this.currentDataSource.filterIds.map(filterId => {
       return {
         filterId: filterId,
@@ -756,6 +756,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   get showMap(): boolean {
     const isMobileGraphOpen = this.hasDataToDisplay && this.$vuetify.breakpoint.mobile
     return !isMobileGraphOpen && !this.isFullscreenGraph
+  }
+
+  get showSelectedLocationsLayer(): boolean {
+    return this.hasSelectedLocation
   }
 
   get hasSelectedLocation(): boolean {
