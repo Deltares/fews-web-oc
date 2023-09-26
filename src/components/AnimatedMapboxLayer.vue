@@ -7,6 +7,7 @@
 <script lang="ts">
 import { Component, Inject, Prop, Vue, Watch } from "vue-property-decorator"
 import {
+  EventData,
   ImageSource,
   ImageSourceRaw,
   LngLatBounds,
@@ -194,10 +195,12 @@ export default class AnimatedMapboxLayer extends Vue {
     }
   }
 
-  enableTouchClickLocations() {
-    this.mapObject.on("touchend", "locationsLayer", (e) => {
-      this.$emit("touchclick", e)
-    })
+  enableClickLocationsLayer() {
+    const handleLocationClick = (e: EventData) => {
+      this.$emit("locationclick", e)
+    }
+    this.mapObject.on("click", "locationsLayer", handleLocationClick)
+    this.mapObject.on("touchend", "locationsLayer", handleLocationClick)
   }
 
   @Watch("layer")
@@ -224,7 +227,7 @@ export default class AnimatedMapboxLayer extends Vue {
     const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")
 
     this.enableDoubleClickLayer()
-    this.enableTouchClickLocations()
+    this.enableClickLocationsLayer()
 
     if (this.currentLayer !== originalLayerName) {
       // set default zoom only if layer is changed

@@ -7,7 +7,11 @@
       <div class="grid-map" v-show="showMap">
         <div class="map-container">
           <MapComponent>
-            <MapboxLayer v-if="showLayer" :layer="wmsLayerOptions" @doubleclick="onLayerDoubleClick" @touchclick="onLocationClick">
+            <MapboxLayer
+              v-if="showLayer"
+              :layer="wmsLayerOptions"
+              @doubleclick="onLayerDoubleClick"
+              @locationclick="onLocationClick">
               <ElevationSlider
                 v-if="currentElevation !== null"
                 v-model="currentElevation"
@@ -20,7 +24,6 @@
               v-if="showLocationsLayer"
               :options="locationsLayerOptions"
               clickable
-              @click="onLocationClick"
             />
             <v-mapbox-layer
               v-if="showLocationsLayer"
