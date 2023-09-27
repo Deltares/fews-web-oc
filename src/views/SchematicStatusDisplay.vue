@@ -6,7 +6,6 @@
     <SsdComponent :src="src" @action="onAction" />
     <DateTimeSlider
       v-model:selectedDate="selectedDateSlider"
-      v-model:doFollowNow="doFollowNow"
       :dates="dates"
     />
   </div>
@@ -57,7 +56,6 @@ const open = ref<string[]>([])
 
 const selectedDate = ref<Date>(new Date())
 const selectedDateSlider = ref<Date>(selectedDate.value)
-const doFollowNow = ref(false)
 
 onMounted(() => {
   active.value = ['root']
