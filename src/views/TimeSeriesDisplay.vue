@@ -9,10 +9,10 @@
     </ColumnMenu>
   </Teleport>
   <div style="dislay: flex; flex-direction: column; height: 100%; width: 100%">
-    <div style="flex: 1 1 100%; height: 100%;">
+    <div style="flex: 1 1 100%; height: 100%">
       <WindowComponent>
         <template v-slot:toolbar>
-          <v-menu offset-y z-index='10000'>
+          <v-menu offset-y z-index="10000">
             <template v-slot:activator="{ props }">
               <v-btn class="text-capitalize" variant="text" v-bind="props"
                 >{{ plotIds[selectedPlot] }}<v-icon>mdi-chevron-down</v-icon>
@@ -60,7 +60,7 @@ import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
 import WindowComponent from '../components/general/WindowComponent.vue'
 import TimeSeriesComponent from '../components/timeseries/TimeSeriesComponent.vue'
-import { DisplayType } from '@/lib/display/DisplayConfig';
+import { DisplayType } from '@/lib/display/DisplayConfig'
 
 const TIME_SERIES_DIALOG_PANEL: string = 'time series dialog'
 
@@ -150,7 +150,6 @@ const plotIds = computed(() => {
   }
 })
 
-
 function updateItems(): void {
   if (nodes.value) {
     const _items = recursiveUpdateNode(nodes.value)
@@ -160,7 +159,7 @@ function updateItems(): void {
 }
 
 watch(nodes, updateItems)
-watch(props, () => selectedPlot.value = 0 )
+watch(props, () => (selectedPlot.value = 0))
 
 interface DisplayTypeItem {
   icon: string
@@ -181,5 +180,4 @@ const displayTypeItems: DisplayTypeItem[] = [
     value: DisplayType.TimeSeriesTable,
   },
 ]
-
 </script>

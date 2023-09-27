@@ -4,25 +4,25 @@
       <v-window v-model="tab">
         <v-window-item :value="DisplayType.TimeSeriesChart">
           <KeepAlive>
-          <TimeSeriesChart
-            v-for="(subplot, i) in subplots"
-            :config="subplot"
-            :series="series"
-            :key="`${subplot.title}-${i}`"
-            class="single"
-          >
-          </TimeSeriesChart>
+            <TimeSeriesChart
+              v-for="(subplot, i) in subplots"
+              :config="subplot"
+              :series="series"
+              :key="`${subplot.title}-${i}`"
+              class="single"
+            >
+            </TimeSeriesChart>
           </KeepAlive>
         </v-window-item>
         <v-window-item :value="DisplayType.TimeSeriesTable">
           <KeepAlive>
-          <TimeSeriesTable
-            :config="tableConfig"
-            :series="series"
-            :key="tableConfig.title"
-            class="single"
-          >
-          </TimeSeriesTable>
+            <TimeSeriesTable
+              :config="tableConfig"
+              :series="series"
+              :key="tableConfig.title"
+              class="single"
+            >
+            </TimeSeriesTable>
           </KeepAlive>
         </v-window-item>
       </v-window>
@@ -34,10 +34,13 @@
 import { computed, ref, watch } from 'vue'
 import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
-import { DisplayType, type DisplayConfig } from '../../lib/display/DisplayConfig.js'
+import {
+  DisplayType,
+  type DisplayConfig,
+} from '../../lib/display/DisplayConfig.js'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { useTimeSeries } from '../../services/useTimeSeries/index.ts'
-import { configManager } from '../../services/application-config';
+import { configManager } from '../../services/application-config'
 
 interface Props {
   config?: DisplayConfig
@@ -59,7 +62,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { series } = useTimeSeries( baseUrl, () => props.config.requests)
+const { series } = useTimeSeries(baseUrl, () => props.config.requests)
 
 const subplots = computed(() => {
   if (props.config) {
@@ -69,22 +72,29 @@ const subplots = computed(() => {
   }
 })
 
-const tableConfig = ref<ChartConfig>({ title: '', series: []})
+const tableConfig = ref<ChartConfig>({ title: '', series: [] })
 
-watch(() => props.config.subplots, (newSubplots) => {
-  const series = newSubplots.flatMap((subplot) => subplot.series).filter((series) => series.visibleInTable)
-  tableConfig.value = {
-    title: props.config.title,
-    series
-  }
-})
+watch(
+  () => props.config.subplots,
+  (newSubplots) => {
+    const series = newSubplots
+      .flatMap((subplot) => subplot.series)
+      .filter((series) => series.visibleInTable)
+    tableConfig.value = {
+      title: props.config.title,
+      series,
+    }
+  },
+)
 
 const tab = ref<DisplayType>(props.displayType)
 
-watch(() => props.displayType, () => {
-  tab.value = props.displayType
-})
-
+watch(
+  () => props.displayType,
+  () => {
+    tab.value = props.displayType
+  },
+)
 </script>
 
 <style>

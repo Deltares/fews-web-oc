@@ -1,7 +1,4 @@
-import {
-  ActionRequest,
-  PiWebserviceProvider,
-} from '@deltares/fews-pi-requests'
+import { ActionRequest, PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { ref, shallowRef, toValue, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl'

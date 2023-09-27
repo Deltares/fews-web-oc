@@ -5,7 +5,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import { ref, shallowRef, toValue, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
-import { DisplayConfig, DisplayType } from '../../lib/display/DisplayConfig.js'
+import { DisplayConfig } from '../../lib/display/DisplayConfig.js'
 import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig'
 import { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 
@@ -77,10 +77,11 @@ export function useTopologyNodes(
       if (result.config === undefined) continue
       const title = result.config.timeSeriesDisplay.title ?? ''
       let subplots: ChartConfig[] = []
-      if ( result.config.timeSeriesDisplay.subplots ) {
+      if (result.config.timeSeriesDisplay.subplots) {
         subplots = result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
-        return timeSeriesDisplayToChartConfig(subPlot, title)
-      })}
+          return timeSeriesDisplayToChartConfig(subPlot, title)
+        })
+      }
       const display: DisplayConfig = {
         id: title,
         title,

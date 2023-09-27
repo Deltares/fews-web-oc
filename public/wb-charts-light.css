@@ -12,7 +12,7 @@
 
 .mouse-over {
   font-size: 1em;
-  font-family: "RO-Sans", sans-serif !important;
+  font-family: 'RO-Sans', sans-serif !important;
 }
 
 .legend {
@@ -24,20 +24,36 @@
   fill: rgba(223, 223, 223);
 }
 
-.axis path { stroke-width: 1px; stroke: black;}
-.axis .tick line { stroke-width: 1px; stroke: black;}
-.axis .tick text { stroke-width: 1px; fill: black;}
+.axis path {
+  stroke-width: 1px;
+  stroke: black;
+}
+.axis .tick line {
+  stroke-width: 1px;
+  stroke: black;
+}
+.axis .tick text {
+  stroke-width: 1px;
+  fill: black;
+}
 .grid {
-    fill: none;
-    stroke-width: 1px;
-    stroke: black;
-    color: black;
-    stroke-dasharray: 2px;
+  fill: none;
+  stroke-width: 1px;
+  stroke: black;
+  color: black;
+  stroke-dasharray: 2px;
 }
 
-.grid text { display: none; }
-.grid .tick line { stroke: white;}
-.grid .tick.zero-crossing line { stroke-dasharray: none; stroke: black;}
+.grid text {
+  display: none;
+}
+.grid .tick line {
+  stroke: white;
+}
+.grid .tick.zero-crossing line {
+  stroke-dasharray: none;
+  stroke: black;
+}
 
 .charts > path {
   stroke: black;
@@ -101,7 +117,7 @@
 .cross-section-select {
   stroke: black;
   font-size: 1em;
-  font-family: "RO-Sans", sans-serif !important;
+  font-family: 'RO-Sans', sans-serif !important;
 }
 
 .cross-section-select > line {
@@ -128,32 +144,32 @@
 }
 
 .current-time {
-  stroke: #A90061;
+  stroke: #a90061;
 }
 
 .current-time-indicator {
-  fill: #A90061;
+  fill: #a90061;
 }
 
-.current-time-indicator:hover>text {
+.current-time-indicator:hover > text {
   visibility: visible;
 }
 
-.current-time-indicator>text {
+.current-time-indicator > text {
   visibility: hidden;
-  stroke:none;
-  fill:black;
+  stroke: none;
+  fill: black;
 }
 
 .dst-indicator {
-  fill: #FFB611;
+  fill: #ffb611;
 }
 
-.dst-indicator:hover>text {
+.dst-indicator:hover > text {
   visibility: visible;
 }
 
-.dst-indicator>text {
+.dst-indicator > text {
   visibility: hidden;
   stroke: none;
   fill: black;
@@ -164,14 +180,14 @@
 }
 
 .mouse-x > text {
-  -webkit-user-select:none;
+  -webkit-user-select: none;
   user-select: none;
 }
 
 .brush .handle {
   fill: white;
   stroke: black;
-  stroke-width: .5px;
+  stroke-width: 0.5px;
 }
 
 .brush .select-rect {
@@ -232,7 +248,7 @@
 }
 
 .tooltip .tooltiptext::after {
-  content: "";
+  content: '';
   position: absolute;
   border-width: 5px;
   border-style: solid;
@@ -263,12 +279,13 @@
   border-color: transparent white transparent transparent;
 }
 
-.data-field{
-  font-family: "RO-Sans", sans-serif !important;
+.data-field {
+  font-family: 'RO-Sans', sans-serif !important;
   font-size: 1em;
 }
 
-.data-field-value, .data-field-label {
+.data-field-value,
+.data-field-label {
   font-size: 1.2em;
-  font-family: "RO-Sans", sans-serif !important;
+  font-family: 'RO-Sans', sans-serif !important;
 }

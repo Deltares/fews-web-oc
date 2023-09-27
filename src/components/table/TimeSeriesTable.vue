@@ -69,10 +69,7 @@ const tableHeaders = ref<TableHeaders[]>([])
 watchEffect(() => {
   if (props.config === undefined) return
   seriesIds.value = getUniqueSeriesIds(props.config.series)
-  tableHeaders.value = createTableHeaders(
-    props.config.series,
-    seriesIds.value,
-  )
+  tableHeaders.value = createTableHeaders(props.config.series, seriesIds.value)
   if (props.series === undefined) return
   tableData.value = createTableData(
     props.config.series,
