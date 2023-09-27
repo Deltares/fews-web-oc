@@ -5,7 +5,7 @@
   <div class="container">
     <SsdComponent :src="src" @action="onAction" />
     <DateTimeSlider
-      v-model:selectedDate="selectedDate"
+      v-model:selectedDate="selectedDateSlider"
       v-model:doFollowNow="doFollowNow"
       :dates="dates"
     />
@@ -14,7 +14,8 @@
 
 <script setup lang="ts">
 import { ActionType, Result, ResultRequest } from '@deltares/fews-ssd-requests'
-import { ref, onMounted, computed } from 'vue'
+import debounce from 'lodash-es/debounce'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useAlertsStore } from '../stores/alerts.ts'
@@ -39,6 +40,8 @@ interface SsdActionEventPayload {
   results: Result[]
 }
 
+const sliderDebounceInterval = 500
+
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const alertsStore = useAlertsStore()
 const route = useRoute()
@@ -52,7 +55,8 @@ const props = withDefaults(defineProps<Props>(), {
 const active = ref<string[]>([])
 const open = ref<string[]>([])
 
-const selectedDate = ref(new Date())
+const selectedDate = ref<Date>(new Date())
+const selectedDateSlider = ref<Date>(selectedDate.value)
 const doFollowNow = ref(false)
 
 onMounted(() => {
@@ -88,6 +92,19 @@ const items = computed(() => {
   }
   return [{ id: 'root', name: 'Groups', children: result }]
 })
+
+// Debounce the selected date from the slider input, so we do not send hundreds of requests when
+// dragging the slider around.
+watch(
+  selectedDateSlider,
+  debounce(
+    () => {
+      selectedDate.value = selectedDateSlider.value
+    },
+    sliderDebounceInterval,
+    { leading: true, trailing: true },
+  ),
+)
 
 const { capabilities, src, dates } = useSsd(
   baseUrl,
