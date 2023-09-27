@@ -39,7 +39,7 @@ export default class CSVExportComponent extends Vue {
   seriesIds: string[] = []
   tableData: Record<string, unknown>[] = []
   tableHeaders: TableHeaders[] = []
-  
+
   downloadCSV() {
     const separator = ','
     const lines = []
@@ -60,10 +60,10 @@ export default class CSVExportComponent extends Vue {
         const value = `${d[h.value]}`
         if (!d[h.value]) {
           line += separator
-        } 
+        }
         else if(!isNaN(parseFloat(value))){
           line += `${d[h.value]}${separator}`
-        } 
+        }
         else {
           line += `"${d[h.value]}"${separator}`
         }
@@ -73,9 +73,11 @@ export default class CSVExportComponent extends Vue {
     let location = this.value.title
     // Replace spaces with underscores and convert to lowercase.
     location = location.toLowerCase().replaceAll(' ', '_')
-    
+
+    const params = this.$route.params
+    const coordinates = params.longitude !== '' ? `_lng${params.longitude}_lat${params.latitude}` : ''
     // generate a filename based on the category variable and location
-    const filename = `${this.$route.params.categoryId}_${this.$route.params.dataLayerId}_${location}.csv`
+    const filename = `${params.categoryId}_${params.dataLayerId}_${location}${coordinates}.csv`
 
     this.generateCSVFile(filename, lines)
   }
