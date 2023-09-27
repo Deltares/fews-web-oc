@@ -2,16 +2,10 @@
   <div>
     <vue-slider class="elevation-slider"
       :value="currentValue"
-      :max="maxValue"
-      :min="minValue"
       :marks="marks"
-      :interval="interval"
-      :keydownHook="onKeydown"
       v-on:change="onInputChange"
-      @error="onError"
       :hideLabel="true"
-      silent
-      lazy direction="btt" tooltip="always" tooltipPlacement="left" height="200px" ref="slider">
+      lazy direction="btt" tooltip="always" tooltipPlacement="left" height="200px">
       <template v-slot:tooltip="{ value }">
         <div class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text">{{
           Math.round(value) }} m MSL</div>
@@ -25,12 +19,6 @@ import { Component, Prop, Watch, Vue } from 'vue-property-decorator'
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 
-
-function roundToNearest100 (x: number) {
-  return Math.round(x / 100) * 100
-}
-
-
 @Component({
   components: {
     VueSlider
@@ -40,89 +28,17 @@ export default class ElevationSlider extends Vue {
   @Prop({ default: -1 }) value!: number
   @Prop({ default: 0 }) minValue!: number
   @Prop({ default: -10 }) maxValue!: number
+  @Prop({ default: () => [0, -1, -2]}) marks!: number[]
 
   currentValue: number = 0
-  readonly numberOfMarks: number = 8
-  marks: number[] = []
 
   beforeMount() {
     this.currentValue = this.value
   }
 
-  mounted() {
-    const innerMarks = Array.from({length: this.numberOfMarks - 1}, (_, i) => (i + 1) * -roundToNearest100(this.stepSize))
-    this.marks = [this.maxValue, ...innerMarks, this.minValue]
-  }
-
-  get interval(): number {
-    const difference = Math.abs(this.maxValue - this.minValue)
-    return difference / Math.round(difference)
-  }
-
   @Watch("value")
   onValueChange() {
     this.currentValue = this.value
-  }
-
-  onKeydown(e: KeyboardEvent) {
-    let newValue: number | undefined = 0;
-
-    switch (e.key) {
-      case "ArrowLeft":
-      case "ArrowUp":
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore: findLast not defined for ts array type, fixed in ts-5.0
-        newValue = this.marks.findLast((value) => value > this.currentValue);
-
-        if (newValue === undefined) {
-          newValue = this.marks[0]
-        }
-        break;
-      case "ArrowRight":
-      case "ArrowDown":
-        newValue = this.marks.find((value) => value < this.currentValue);
-
-        if (newValue === undefined) {
-          newValue = this.marks[this.marks.length - 1]
-        }
-        break;
-      default:
-        return false;
-    }
-
-    const slider = this.$refs.slider as VueSlider
-    slider.setValue(newValue)
-    return false
-  }
-
-  get stepSize() {
-    return Math.abs(this.maxValue - this.minValue) / this.numberOfMarks
-  }
-
-  // When dragging slider value can have floating point error (e.g: 0.48999999999 instead of 0.49)
-  // since there is no hook for value we have to change it after the fact
-  onError(type: number, message: string) {
-    const slider = this.$refs.slider as VueSlider
-
-    // enum ERROR_TYPE vue-slider-component
-    // import can not be resolved during runtime
-    const ERROR_MIN = 3
-    const ERROR_MAX = 4
-    switch (type) {
-      case ERROR_MIN:
-        this.$nextTick(() => {
-          slider.setValue(this.minValue)
-        })
-        break;
-      case ERROR_MAX:
-        this.$nextTick(() => {
-          slider.setValue(this.maxValue)
-        })
-        break;
-      default:
-        console.error(message)
-        break;
-    }
   }
 
   onInputChange(newValue: number) {

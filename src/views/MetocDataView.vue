@@ -17,6 +17,7 @@
                 v-model="currentElevation"
                 :minValue="minElevation"
                 :maxValue="maxElevation"
+                :marks="marks"
                 @input="debouncedSetWMSLayerOptions"
               />
             </MapboxLayer>
