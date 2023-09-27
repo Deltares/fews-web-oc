@@ -4,15 +4,18 @@
   </Teleport>
   <div class="container">
     <SsdComponent :src="src" @action="onAction" />
-    <DateTimeSlider
-      v-model:selectedDate="selectedDateSlider"
-      :dates="dates"
-    />
+    <DateTimeSlider v-model:selectedDate="selectedDateSlider" :dates="dates" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ActionType, Result, ResultRequest } from '@deltares/fews-ssd-requests'
+import {
+  ActionType,
+  DisplayGroup,
+  DisplayPanel,
+  Result,
+  ResultRequest,
+} from '@deltares/fews-ssd-requests'
 import debounce from 'lodash-es/debounce'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -115,6 +118,38 @@ const { capabilities, src, dates } = useSsd(
   () => props.panelId,
   selectedDateString,
 )
+
+// If the capabilities changes, make sure our currently selected groupId and panelId are still
+// valid. If invalid or empty, select the first group and panel.
+watch(capabilities, () => {
+  let group: DisplayGroup | null = null
+  let panel: DisplayPanel | null = null
+
+  if (props.groupId !== '' && capabilities.value) {
+    group =
+      capabilities.value.displayGroups.find(
+        (group) => group.name === props.groupId,
+      ) ?? null
+  }
+  if (props.panelId !== '' && group) {
+    panel =
+      group.displayPanels.find((panel) => panel.name === props.panelId) ?? null
+  }
+
+  if (!group || !panel) {
+    // Update the route with the first member of capabilities, but only if it exists.
+    const newGroupId = capabilities.value?.displayGroups[0].name
+    const newPanelId =
+      capabilities.value?.displayGroups[0]?.displayPanels[0]?.name
+    if (newGroupId && newPanelId) {
+      router.push({
+        name: 'SchematicStatusDisplay',
+        params: { groupId: newGroupId, panelId: newPanelId },
+        query: route.query,
+      })
+    }
+  }
+})
 
 function onGroupIdChange(): void {
   open.value[1] = props.groupId
