@@ -8,6 +8,6 @@ export interface ChartConfig {
   yAxis?: AxisOptions[]
   radialAxis?: AxisOptions[]
   angularAxis?: AxisOptions[]
-  series?: ChartSeries[]
+  series: ChartSeries[]
   thresholds?: ThresholdLine[]
 }

@@ -65,6 +65,7 @@ const props = withDefaults(defineProps<Props>(), {
   config: () => {
     return {
       title: '',
+      series: [],
     }
   },
   series: () => {

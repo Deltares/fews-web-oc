@@ -9,14 +9,23 @@
         class="single"
       >
       </TimeSeriesChart>
+      <TimeSeriesTable
+        :config="tableConfig"
+        :series="series"
+        :key="tableConfig.title"
+        class="single"
+      >
+      </TimeSeriesTable>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
+import TimeSeriesTable from '../table/TimeSeriesTable.vue'
 import type { DisplayConfig } from '../../lib/display/DisplayConfig.js'
+import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { useTimeSeries } from '../../services/useTimeSeries/index.ts'
 import { configManager } from '../../services/application-config';
 
@@ -47,6 +56,17 @@ const subplots = computed(() => {
     return []
   }
 })
+
+const tableConfig = ref<ChartConfig>({ title: '', series: []})
+
+watch(() => props.config, (newConfig) => {
+  const series = newConfig.subplots.flatMap((subplot) => subplot.series).filter((series) => series.visibleInTable)
+  tableConfig.value = {
+    title: newConfig.title,
+    series
+  }
+})
+
 </script>
 
 <style>
