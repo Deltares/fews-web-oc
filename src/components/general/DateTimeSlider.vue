@@ -52,22 +52,21 @@ interface Properties {
   dates: Date[]
   isLoading?: boolean
   doFollowNow?: boolean
+  playInterval?: number
+  followNowInterval?: number
 }
 
 const props = withDefaults(defineProps<Properties>(), {
   isLoading: false,
   doFollowNow: false,
+  playInterval: 1000,
+  followNowInterval: 10000,
 })
 const emit = defineEmits(['update:selectedDate', 'update:doFollowNow'])
 
 // Step size when playing an animation, and when clicking the previous and next frame buttons.
 const playIncrement = 1
 const stepIncrement = 1
-// Interval between frame updates in playback mode.
-const playInterval = 1000
-// Interval between time updates when "follow now" is enabled.
-const followNowInterval = 10000
-
 const dateIndex = ref(0)
 
 const isPlaying = ref(false)
@@ -98,10 +97,13 @@ watch(
 
 // When the input dates change, make sure the selected index is updated to point to the correct
 // member of the new dates array.
-watch(() => props.dates, (_, oldDates) => {
-  const oldDate = oldDates[dateIndex.value]
-  dateIndex.value = findIndexForDate(oldDate)
-})
+watch(
+  () => props.dates,
+  (_, oldDates) => {
+    const oldDate = oldDates[dateIndex.value]
+    dateIndex.value = findIndexForDate(oldDate)
+  },
+)
 
 const maxIndex = computed(() => Math.max(props.dates.length - 1, 0))
 
@@ -136,7 +138,7 @@ function startFollowNow(): void {
   doFollowNow.value = true
   stopPlay()
   setDateToNow()
-  followNowIntervalTimer = setInterval(setDateToNow, followNowInterval)
+  followNowIntervalTimer = setInterval(setDateToNow, props.followNowInterval)
 }
 
 function stopFollowNow(): void {
@@ -172,7 +174,7 @@ function togglePlay(): void {
 function startPlay(): void {
   isPlaying.value = true
   stopFollowNow()
-  playIntervalTimer = setInterval(play, playInterval)
+  playIntervalTimer = setInterval(play, props.playInterval)
 }
 
 function stopPlay(): void {
