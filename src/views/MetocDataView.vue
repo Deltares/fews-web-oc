@@ -143,8 +143,7 @@ import LocationsLayerSearchControl from '@/components/LocationsLayerSearchContro
 import MapComponent from '@/components/MapComponent.vue'
 import { Layer } from '@deltares/fews-wms-requests';
 import Regridder from '@/components/Regridder.vue'
-import { toMercator, toWgs84 } from '@turf/projection'
-import { point } from "@turf/helpers"
+import { toMercator } from '@turf/projection';
 import Vue from 'vue'
 import { NavigationGuardNext, Route } from 'vue-router';
 
@@ -214,8 +213,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   @Prop({ default: '', type: String }) dataLayerId!: string
   @Prop({ default: '', type: String }) dataSourceId!: string
   @Prop({ default: '', type: String }) locationId!: string
-  @Prop({ default: '', type: String }) xCoord!: string
-  @Prop({ default: '', type: String }) yCoord!: string
+  @Prop({ default: '', type: String }) longitude!: string
+  @Prop({ default: '', type: String }) latitude!: string
 
   webServiceProvider!: PiWebserviceProvider
   categories: Category[] = []
@@ -378,8 +377,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
         params: {
           ...this.$route.params,
           locationId,
-          xCoord: '',
-          yCoord: '',
+          longitude: '',
+          latitude: '',
         }
       })
     }
@@ -392,11 +391,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    *
    * @param coordinates coordinates to navigate to.
    */
-  setCoordinates(coords: number[]) {
-    const xCoord: string = coords[0].toString()
-    const yCoord: string = coords[1].toString()
+  setCoordinates([lng, lat]: number[]) {
+    const longitude: string = lng.toFixed(2).toString()
+    const latitude: string = lat.toFixed(2).toString()
 
-    if (xCoord === this.xCoord && yCoord === this.yCoord) {
+    if (longitude === this.longitude && latitude === this.latitude) {
       return
     }
 
@@ -405,8 +404,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       params: {
         ...this.$route.params,
         locationId: '',
-        xCoord,
-        yCoord,
+        longitude,
+        latitude,
       }
     })
   }
@@ -453,8 +452,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       return
     }
 
-    const geoJsonPoint = toWgs84([+this.xCoord, +this.yCoord])
-    const pointGeometry: Geometry = { coordinates: geoJsonPoint, type: "Point"}
+    const pointGeometry: Geometry = { coordinates: this.coordinates, type: "Point"}
     this.selectedCoordinatesLayerOptions.source = {
       type: 'geojson',
       data: {
@@ -580,7 +578,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
         params = { ...params, locationId: this.locationId }
         routeName = 'MetocDataViewerWithLocation'
       } else if (this.hasSelectedCoordinates) {
-        params = { ...params, xCoord: this.xCoord, yCoord: this.yCoord }
+        params = { ...params, xCoord: this.longitude, yCoord: this.latitude }
         routeName = 'MetocDataViewerWithCoordinates'
       } else {
         routeName = 'MetocDataViewer'
@@ -600,7 +598,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   async onLocationChange(): Promise<void> {
     this.setLocationsLayerFilters()
     this.setCoordinatesLayerData()
-    
+
     if (!this.hasSelectedLocation || !this.currentDataSource) {
       this.selectedLocationId = null
       return
@@ -612,7 +610,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     }
 
     this.selectedLocationId = this.locationId
-    
+
     const locationFilters = this.currentDataSource.filterIds.map(filterId => {
       return {
         filterId: filterId,
@@ -634,7 +632,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    * Updates the chart panel for newly selected coordinates.
    */
 
-  @Watch('xCoordyCoord')
+  @Watch('coordinates')
   async onCoordinatesChange(): Promise<void> {
     this.setCoordinatesLayerData()
     this.setLocationsLayerFilters()
@@ -648,11 +646,13 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       Number(this.currentWMSLayer?.boundingBox.miny),
       Number(this.currentWMSLayer?.boundingBox.maxx),
       Number(this.currentWMSLayer?.boundingBox.maxy)
-  ]
+    ]
+
+    const [x, y] = toMercator(this.coordinates)
     const coordsFilter: timeSeriesGridActionsFilter = {
       layers: this.currentDataSource.filterIds[0],
-      x: +this.xCoord,
-      y: +this.yCoord,
+      x: x,
+      y: y,
       startTime: this.firstValueTime,
       endTime: this.lastValueTime,
       bbox: bbox,
@@ -743,8 +743,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    * @param event location layer double click event.
    */
   onLayerDoubleClick(event: MapLayerMouseEvent) {
-    const mercator = toMercator(point([event.lngLat.lng, event.lngLat.lat]))
-    this.setCoordinates(mercator.geometry.coordinates)
+    this.setCoordinates(event.lngLat.toArray())
   }
 
   /**
@@ -808,7 +807,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   }
 
   get hasSelectedCoordinates(): boolean {
-    return this.xCoord !== '' && this.yCoord !== ''
+    return this.longitude !== '' && this.latitude !== ''
   }
 
   get hasDataToDisplay(): boolean {
@@ -834,8 +833,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     return locationInFeatures.length > 0
   }
 
-  get xCoordyCoord(): string {
-    return `${this.xCoord}, ${this.yCoord}`
+  get coordinates(): number[] {
+    return [+this.longitude, +this.latitude]
   }
 }
 
