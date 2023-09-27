@@ -12,7 +12,7 @@
     <div style="flex: 1 1 100%; height: 100%;">
       <WindowComponent>
         <template v-slot:toolbar>
-          <v-menu offset-y>
+          <v-menu offset-y z-index='10000'>
             <template v-slot:activator="{ props }">
               <v-btn class="text-capitalize" variant="text" v-bind="props"
                 >{{ plotIds[selectedPlot] }}<v-icon>mdi-chevron-down</v-icon>
