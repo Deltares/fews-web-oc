@@ -83,7 +83,6 @@ export function useTopologyNodes(
       })}
       const display: DisplayConfig = {
         id: title,
-        types: [DisplayType.TimeSeriesChart],
         title,
         class: 'singles',
         requests: result.requests,

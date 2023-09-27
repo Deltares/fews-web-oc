@@ -5,7 +5,6 @@
       <slot name="toolbar">
         {{ props.title }}
       </slot>
-      {{ props.title }}
       <v-spacer />
       <v-btn size="small" variant="text" @click="fullscreen = !fullscreen">
         <v-icon>{{ fullscreenIcon }}</v-icon>

@@ -1,21 +1,31 @@
 <template>
   <div class="panel">
     <div class="panel-scroll">
-      <TimeSeriesChart
-        v-for="(subplot, i) in subplots"
-        :config="subplot"
-        :series="series"
-        :key="`${subplot.title}-${i}`"
-        class="single"
-      >
-      </TimeSeriesChart>
-      <TimeSeriesTable
-        :config="tableConfig"
-        :series="series"
-        :key="tableConfig.title"
-        class="single"
-      >
-      </TimeSeriesTable>
+      <v-window v-model="tab">
+        <v-window-item :value="DisplayType.TimeSeriesChart">
+          <KeepAlive>
+          <TimeSeriesChart
+            v-for="(subplot, i) in subplots"
+            :config="subplot"
+            :series="series"
+            :key="`${subplot.title}-${i}`"
+            class="single"
+          >
+          </TimeSeriesChart>
+          </KeepAlive>
+        </v-window-item>
+        <v-window-item :value="DisplayType.TimeSeriesTable">
+          <KeepAlive>
+          <TimeSeriesTable
+            :config="tableConfig"
+            :series="series"
+            :key="tableConfig.title"
+            class="single"
+          >
+          </TimeSeriesTable>
+          </KeepAlive>
+        </v-window-item>
+      </v-window>
     </div>
   </div>
 </template>
@@ -24,13 +34,14 @@
 import { computed, ref, watch } from 'vue'
 import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
-import type { DisplayConfig } from '../../lib/display/DisplayConfig.js'
+import { DisplayType, type DisplayConfig } from '../../lib/display/DisplayConfig.js'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { useTimeSeries } from '../../services/useTimeSeries/index.ts'
 import { configManager } from '../../services/application-config';
 
 interface Props {
   config?: DisplayConfig
+  displayType: DisplayType
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -38,12 +49,13 @@ const props = withDefaults(defineProps<Props>(), {
     return {
       title: '',
       id: '',
-      types: [],
+      displayType: DisplayType.TimeSeriesChart,
       class: '',
       requests: [],
       subplots: [],
     }
   },
+  displayType: DisplayType.TimeSeriesChart,
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -59,12 +71,18 @@ const subplots = computed(() => {
 
 const tableConfig = ref<ChartConfig>({ title: '', series: []})
 
-watch(() => props.config, (newConfig) => {
-  const series = newConfig.subplots.flatMap((subplot) => subplot.series).filter((series) => series.visibleInTable)
+watch(() => props.config.subplots, (newSubplots) => {
+  const series = newSubplots.flatMap((subplot) => subplot.series).filter((series) => series.visibleInTable)
   tableConfig.value = {
-    title: newConfig.title,
+    title: props.config.title,
     series
   }
+})
+
+const tab = ref<DisplayType>(props.displayType)
+
+watch(() => props.displayType, () => {
+  tab.value = props.displayType
 })
 
 </script>
@@ -86,6 +104,15 @@ watch(() => props.config, (newConfig) => {
   flex-direction: column;
   overflow-x: hidden;
   overflow-y: auto;
+  height: 100%;
+}
+
+.v-window__container {
+  height: 100%;
+}
+
+.v-window-item {
+  display: flex;
   height: 100%;
 }
 

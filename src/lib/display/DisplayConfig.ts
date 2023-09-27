@@ -7,7 +7,6 @@ export enum DisplayType {
 
 export interface DisplayConfig {
   id: string
-  types: DisplayType[]
   title: string
   class: string
   requests: any[]
