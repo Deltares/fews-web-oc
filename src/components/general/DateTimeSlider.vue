@@ -92,6 +92,13 @@ watch(
   },
 )
 
+// When the input dates change, make sure the selected index is updated to point to the correct
+// member of the new dates array.
+watch(() => props.dates, (_, oldDates) => {
+  const oldDate = oldDates[dateIndex.value]
+  dateIndex.value = findIndexForDate(oldDate)
+})
+
 const maxIndex = computed(() => Math.max(props.dates.length - 1, 0))
 
 // Now and play button styling is dependent on properties.
