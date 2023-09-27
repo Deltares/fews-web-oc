@@ -59,6 +59,8 @@ const selectedDateSlider = ref<Date>(selectedDate.value)
 
 onMounted(() => {
   active.value = ['root']
+  onGroupIdChange()
+  onPanelIdChange()
 })
 
 const selectedDateString = computed(() => {
@@ -103,6 +105,9 @@ watch(
     { leading: true, trailing: true },
   ),
 )
+// Make sure the appropriate group in the menu is open, and the panel is selected.
+watch(() => props.groupId, onGroupIdChange)
+watch(() => props.panelId, onPanelIdChange)
 
 const { capabilities, src, dates } = useSsd(
   baseUrl,
@@ -110,6 +115,14 @@ const { capabilities, src, dates } = useSsd(
   () => props.panelId,
   selectedDateString,
 )
+
+function onGroupIdChange(): void {
+  open.value[1] = props.groupId
+}
+
+function onPanelIdChange(): void {
+  active.value = [props.panelId]
+}
 
 function onAction(event: CustomEvent<SsdActionEventPayload>): void {
   const { results } = event.detail
