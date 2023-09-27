@@ -57,7 +57,7 @@ export default class CogMenu extends Mixins(ThemeMixin) {
   z-index: 10000;
 }
 
-.v-subheader >>> {
+:deep(.v-subheader) {
   font-size: 1rem;
 }
 </style>

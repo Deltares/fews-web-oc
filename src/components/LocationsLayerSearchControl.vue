@@ -73,7 +73,7 @@ export default class LocationsLayerSearchControl extends Vue {
   backdrop-filter: blur(4px);
 }
 
-.v-list--dense >>> .v-list-item .v-list-item__title{
+:deep(.v-list-item .v-list-item__title) {
   font-size: 1rem
 }
 </style>

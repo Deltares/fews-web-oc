@@ -72,7 +72,7 @@ export default class ColourBar extends Vue {
     text-rendering: optimizeLegibility;
   }
 
-  .colourbar >>> g {
+  :deep(g) {
     font-family: var(--primary-font);
   }
 
