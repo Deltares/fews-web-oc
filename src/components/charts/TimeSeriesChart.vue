@@ -79,7 +79,6 @@ const legendTags = ref<Tag[]>([])
 const chartContainer = ref<HTMLElement>()
 
 onMounted(() => {
-  console.log('onMounted', props.config)
   const axisOptions: CartesianAxesOptions = {
     x: [
       {
@@ -109,7 +108,6 @@ onMounted(() => {
     },
   }
 
-  console.log(chartContainer)
   if (chartContainer.value) {
     axis = new CartesianAxes(chartContainer.value, null, null, axisOptions)
     const mouseOver = new MouseOver()

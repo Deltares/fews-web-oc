@@ -58,7 +58,6 @@ export function useTimeSeries(
 
   watchEffect(async () => {
     const _requests = toValue(requests)
-    console.log('requests', _requests)
     for (const r in _requests) {
       const request = _requests[r]
       const url = absoluteUrl(`${baseUrl}/${request.request}`)

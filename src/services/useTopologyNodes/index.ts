@@ -91,7 +91,6 @@ export function useTopologyNodes(
       }
       _displays.push(display)
     }
-    console.log(_displays[_plotId])
     displays.value = _displays
     displayConfig.value = _displays[_plotId]
   })
