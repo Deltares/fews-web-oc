@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import ColumnMenu from '../components/general/ColumnMenu.vue'
-import { ref, onMounted, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { ColumnItem } from '../components/general/ColumnItem'
 import { configManager } from '../services/application-config'
 import { useTopologyNodes } from '../services/useTopologyNodes/index.ts'
@@ -135,7 +135,6 @@ const plotIds = computed(() => {
   }
 })
 
-onMounted(async () => {})
 
 function updateItems(): void {
   if (nodes.value) {
