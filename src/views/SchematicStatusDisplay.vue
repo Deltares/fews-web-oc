@@ -67,6 +67,7 @@ const items = computed(() => {
   const result: ColumnItem[] = []
   if (capabilities.value !== undefined) {
     for (const displayGroup of capabilities.value.displayGroups) {
+      // TODO: this should not be hard-coded in here, but should fixed in the configuration?
       const name = displayGroup.title.replace('Overzichtsschermen ', '')
       const children = []
       for (const displayPanel of displayGroup.displayPanels) {
