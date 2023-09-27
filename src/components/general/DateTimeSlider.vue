@@ -65,12 +65,16 @@ const playIncrement = 1
 const stepIncrement = 1
 // Interval between frame updates in playback mode.
 const playInterval = 1000
+// Interval between time updates when "follow now" is enabled.
+const followNowInterval = 10000
+
+const dateIndex = ref(0)
 
 const isPlaying = ref(false)
 let playIntervalTimer: ReturnType<typeof setInterval> | null = null
 
-const dateIndex = ref(0)
 const doFollowNow = ref(props.doFollowNow)
+let followNowIntervalTimer: ReturnType<typeof setInterval> | null = null
 
 // Synchronise selectedDate property and local index variable.
 watch(dateIndex, (index) => emit('update:selectedDate', props.dates[index]))
@@ -120,12 +124,25 @@ const dateString = computed(() =>
 )
 
 function toggleFollowNow(): void {
-  setDoFollowNow(!doFollowNow.value)
+  doFollowNow.value = !doFollowNow.value
+  if (doFollowNow.value) {
+    startFollowNow()
+  } else {
+    stopFollowNow()
+  }
 }
 
-function setDoFollowNow(newDoFollowNow: boolean): void {
-  doFollowNow.value = newDoFollowNow
-  if (newDoFollowNow) setDateToNow()
+function startFollowNow(): void {
+  doFollowNow.value = true
+  stopPlay()
+  setDateToNow()
+  followNowIntervalTimer = setInterval(setDateToNow, followNowInterval)
+}
+
+function stopFollowNow(): void {
+  doFollowNow.value = false
+  if (followNowIntervalTimer) clearInterval(followNowIntervalTimer)
+  followNowIntervalTimer = null
 }
 
 function setDateToNow(): void {
@@ -154,7 +171,7 @@ function togglePlay(): void {
 
 function startPlay(): void {
   isPlaying.value = true
-  setDoFollowNow(false)
+  stopFollowNow()
   playIntervalTimer = setInterval(play, playInterval)
 }
 
@@ -174,12 +191,12 @@ function play(): void {
 }
 
 function stepBackward(): void {
-  setDoFollowNow(false)
+  stopFollowNow()
   decrement(stepIncrement)
 }
 
 function stepForward(): void {
-  setDoFollowNow(false)
+  stopFollowNow()
   increment(stepIncrement)
 }
 
