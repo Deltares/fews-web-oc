@@ -56,7 +56,8 @@
       <div class="alert-container" v-if="alertsStore.hasActiveAlerts">
         <v-alert
           v-for="alert in alertsStore.activeAlerts"
-          type="error"
+          color="error"
+          icon="mdi-alert"
           closable
           @click:close="onCloseAlert(alert)"
         >
