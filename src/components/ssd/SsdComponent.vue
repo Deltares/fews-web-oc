@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount } from 'vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 
 interface Props {
@@ -64,7 +64,6 @@ let aspectRatio = 1
 let fitWidthValue = true
 
 onMounted(() => {
-  console.log('test')
   resize()
   if (ssdContainer.value) {
     ssdContainer.value.addEventListener('pointerdown', mouseDownHandler)
@@ -83,10 +82,10 @@ onBeforeUnmount(() => {
   }
 })
 
-// @Watch('$vuetify.breakpoint.mobile')
-// @Watch('fitWidth')
+watch(mobile, fitWidthHeightHandler)
+watch(() => props.fitWidth, fitWidthHeightHandler)
 function fitWidthHeightHandler(): void {
-  fitWidthValue = !mobile && props.fitWidth
+  fitWidthValue = !mobile.value && props.fitWidth
   setDimensions()
   pos = { top: 0, left: 0, x: 0, y: 0 }
   if (ssdContainer.value) {
