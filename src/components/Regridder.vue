@@ -35,8 +35,8 @@
                   <v-col cols="3">
                     <v-text-field v-model.number="bbox[0]"
                                   type="number"
-                                  label="Min. Latitude"
-                                  :rules="[() => bbox[2] > bbox[0] || 'This value need to be smaller than Xmax']"
+                                  label="Min. Longitude"
+                                  :rules="[() => bbox[2] > bbox[0] || 'This value need to be smaller than Max. Longitude']"
                                   step="0.1"
                                   @change="updateRectangle"
                                   required/>
@@ -45,8 +45,8 @@
                   <v-col cols="3">
                     <v-text-field v-model.number="bbox[1]"
                                   type="number"
-                                  label="Min. Longitude"
-                                  :rules="[() => bbox[3] > bbox[1] || 'This value need to be smaller than Ymax']"
+                                  label="Min. Latitude"
+                                  :rules="[() => bbox[3] > bbox[1] || 'This value need to be smaller than Max. Latitude']"
                                   step="0.1"
                                   @change="updateRectangle"
                                   required/>
@@ -56,8 +56,8 @@
                   <v-col cols="3">
                     <v-text-field v-model.number="bbox[2]"
                                   type="number"
-                                  label="Max. Latitude"
-                                  :rules="[() => bbox[2] > bbox[0] || 'This value need to be larger than Xmin']"
+                                  label="Max. Longitude"
+                                  :rules="[() => bbox[2] > bbox[0] || 'This value need to be larger than Min. Longitude']"
                                   step="0.1"
                                   @change="updateRectangle"
                                   required/>
@@ -67,8 +67,8 @@
                     <!-- only show first two decimals -->
                     <v-text-field v-model.number="bbox[3]"
                                   type="number"
-                                  label="Max. Longitude"
-                                  :rules="[() => bbox[3] > bbox[1] || 'This value need to be larger than Ymin']"
+                                  label="Max. Latitude"
+                                  :rules="[() => bbox[3] > bbox[1] || 'This value need to be larger than Min. Latitude']"
                                   step="0.1"
                                   @change="updateRectangle"
                                   required/>
@@ -160,10 +160,10 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       const coordinates = geometry.coordinates[0]
       const x = coordinates.map(c => c[0])
       const y = coordinates.map(c => c[1])
-      const xmin = Math.round(Math.min(...x) * 1000) / 1000
-      const xmax = Math.round(Math.max(...x) * 1000) / 1000
-      const ymin = Math.round(Math.min(...y) * 1000) / 1000
-      const ymax = Math.round(Math.max(...y) * 1000) / 1000
+      const xmin = Math.round(Math.min(...x) * 10) / 10
+      const xmax = Math.round(Math.max(...x) * 10) / 10
+      const ymin = Math.round(Math.min(...y) * 10) / 10
+      const ymax = Math.round(Math.max(...y) * 10) / 10
       this.bbox = [xmin, ymin, xmax, ymax]
       this.refreshDownloadControl(this.bbox)
     }

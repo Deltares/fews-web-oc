@@ -16,7 +16,7 @@ import { ChartConfig } from './TimeSeriesComponent/lib/ChartConfig'
 import {getUniqueSeriesIds} from "@/components/TimeSeriesComponent/lib/getUniqueSeriesIds";
 import {TableHeaders} from "@/components/TimeSeriesComponent/lib/TableHeaders";
 import {createTableHeaders} from "@/components/TimeSeriesComponent/lib/createTableHeaders";
-import { createTableData } from './TimeSeriesComponent/lib/createTableData';
+import { createTableData, csvDateFormatter } from './TimeSeriesComponent/lib/createTableData';
 import { forEach } from 'lodash';
 
 
@@ -45,7 +45,7 @@ export default class CSVExportComponent extends Vue {
     const lines = []
     this.seriesIds = getUniqueSeriesIds(this.value.series)
     this.tableHeaders = createTableHeaders(this.value.series, this.seriesIds)
-    this.tableData = createTableData(this.value.series, this.series, this.seriesIds)
+    this.tableData = createTableData(this.value.series, this.series, this.seriesIds, csvDateFormatter)
 
     // Generate CSV header with columns for each time series.
     const header = this.tableHeaders.reduce((acc, h) => {

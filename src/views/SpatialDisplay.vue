@@ -26,7 +26,7 @@
         :open.sync="open"
       />
     </portal>
-    <div style="height: calc(100% - 48px); position: relative">
+    <div class="map-container">
       <MapComponent>
         <MapboxLayer :layer="layerOptions" />
       </MapComponent>
@@ -34,9 +34,15 @@
         <ColourBar v-model="legend" v-if="legend.length > 0"/>
       </div>
     </div>
-    <DateTimeSlider class="date-time-slider" v-model="currentTime" :dates="times" @update:now="setCurrentTime"
-      @input="debouncedSetLayerOptions" @timeupdate="updateTime">
-    </DateTimeSlider>
+    <DateTimeSlider
+      class="date-time-slider"
+      v-model="currentTime"
+      :dates="times"
+      @update:now="setCurrentTime"
+      @input="debouncedSetLayerOptions"
+      @timeupdate="updateTime"
+      floating
+    />
   </div>
 </template>
 
@@ -220,6 +226,19 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
     width: 500px;
     height: 100px;
     position: absolute;
-    bottom: 10px;
+    bottom: 85px;
+  }
+
+  .map-container {
+    width: 100%;
+    height: 100%;
+  }
+
+  .date-time-slider {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    z-index: 100;
   }
 </style>

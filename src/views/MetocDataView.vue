@@ -59,6 +59,7 @@
           :dates="times"
           @input="debouncedSetWMSLayerOptions"
           @update:now="setCurrentTime"
+          floating
         />
       </div>
       <div class="grid-charts" v-if="hasDataToDisplay && !$vuetify.breakpoint.mobile">
@@ -636,7 +637,16 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   async onCoordinatesChange(): Promise<void> {
     this.setCoordinatesLayerData()
     this.setLocationsLayerFilters()
+    await this.updateTimeSeriesxCoordyCoord()
+  }
 
+  @Watch('currentElevation')
+  async onCurrentElevationChange(): Promise<void> {
+    if (this.currentElevation === null) return
+    await this.updateTimeSeriesxCoordyCoord()
+  }
+
+  async updateTimeSeriesxCoordyCoord() {
     if (!this.hasSelectedCoordinates || !this.currentDataSource || !this.firstValueTime || !this.lastValueTime || !this.currentWMSLayer?.boundingBox) {
       return
     }
@@ -657,7 +667,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       endTime: this.lastValueTime,
       bbox: bbox,
       documentFormat: "PI_JSON",
-      showVerticalProfile: !!this.currentWMSLayer?.elevation
+    }
+
+    if (this.currentElevation !== null){
+      coordsFilter.elevation = this.currentElevation
     }
 
     const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
@@ -666,20 +679,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     this.displays = displays
 
     // Fetch time series for all displays.
-    await this.updateTimeSeries(requests, undefined ,this.currentElevation ? this.currentElevation : undefined)
+    await this.updateTimeSeries(requests)
 
     this.onResize()
-  }
-
-  @Watch('currentElevation')
-  onCurrentElevationChange(): void {
-    if (!this.currentElevation) return
-
-    for (const resourceId in this.timeSeriesStore) {
-      const series = this.timeSeriesStore[resourceId];
-      this.updateTimeSeriesWithElevation(series, this.currentElevation)
-      Vue.set(this.timeSeriesStore, resourceId, series)
-    }
   }
 
 
@@ -928,7 +930,15 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   z-index: 1000;
   width: 90%;
   position: absolute;
-  bottom: 10px;
+  bottom: 90px;
   left: 10px;
+}
+
+.date-time-slider {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  width: 100%;
+  z-index: 100;
 }
 </style>
