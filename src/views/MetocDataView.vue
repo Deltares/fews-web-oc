@@ -930,7 +930,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   z-index: 1000;
   width: 90%;
   position: absolute;
-  bottom: 10px;
+  bottom: 90px;
   left: 10px;
 }
 
