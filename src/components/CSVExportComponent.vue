@@ -74,8 +74,10 @@ export default class CSVExportComponent extends Vue {
     // Replace spaces with underscores and convert to lowercase.
     location = location.toLowerCase().replaceAll(' ', '_')
 
+    const params = this.$route.params
+    const coordinates = params.longitude !== '' ? `_lng${params.longitude}_lat${params.latitude}` : ''
     // generate a filename based on the category variable and location
-    const filename = `${this.$route.params.categoryId}_${this.$route.params.dataLayerId}_${location}.csv`
+    const filename = `${params.categoryId}_${params.dataLayerId}_${location}${coordinates}.csv`
 
     this.generateCSVFile(filename, lines)
   }

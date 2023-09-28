@@ -87,7 +87,7 @@ export const routesViews: Array<RouteConfig> = [
         meta: { authorize: [], sidebar: true }
       },
       {
-        path: 'coordinates/:xCoord/:yCoord',
+        path: 'coordinates/:longitude/:latitude',
         name: 'MetocDataViewerWithCoordinates',
         component: ComponentsPanel,
         props: route => ({ ...route.params }),
