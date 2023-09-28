@@ -24,6 +24,8 @@ import { ThresholdLine } from './lib/ThresholdLine'
 import { Series } from '@/lib/TimeSeries'
 import { uniq } from 'lodash'
 import { extent } from 'd3'
+import { CartesianAxisOptions } from '@deltares/fews-web-oc-charts/lib/types/Axis/cartesianAxisOptions'
+import { ScaleOptions } from '@deltares/fews-web-oc-charts/lib/types/Scale/scaleOptions'
 
 interface Tag {
   id: string;
@@ -50,7 +52,7 @@ export default class ConfigurableChart extends Vue {
   thresholdLines: ThresholdLine[] = []
   thresholdLinesVisitor!: AlertLines
 
-  axis!: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  axis!: CartesianAxes
   isFullscreen = false
   legendTags: Tag[] = []
 
@@ -140,13 +142,19 @@ export default class ConfigurableChart extends Vue {
     for (const id of removeIds) {
       this.axis.removeChart(id)
     }
-    if (this.value.yAxis) {
-      this.axis.setOptions({
-        y: [
-          this.value.yAxis[0],
-          this.value.yAxis[1]
-        ]
-      })
+
+    let extraYAxisDrawOptions: ScaleOptions = {}
+    const yAxis = this.value.yAxis as CartesianAxisOptions[]
+    if (yAxis) {
+      const cartOptions: CartesianAxesOptions = {
+        x: [],
+        y: yAxis
+      }
+      this.axis.setOptions(cartOptions)
+
+      if (yAxis.some(axis => axis.defaultDomain !== undefined)) {
+        extraYAxisDrawOptions.nice = false
+      }
     }
 
     this.setThresholdLines()
@@ -156,6 +164,7 @@ export default class ConfigurableChart extends Vue {
         autoScale: true
       },
       y: {
+        ...extraYAxisDrawOptions,
         autoScale: true
       }
     })
@@ -187,8 +196,9 @@ export default class ConfigurableChart extends Vue {
 
     this.axis.setOptions(
       {
+        x: [],
         y: [
-          { defaultDomain: defaultDomain, nice: true },
+          { defaultDomain: defaultDomain as [number, number], nice: true },
         ]
       }
     )
