@@ -117,15 +117,6 @@ watch(
   height: 100%;
 }
 
-.v-window__container {
-  height: 100%;
-}
-
-.v-window-item {
-  display: flex;
-  height: 100%;
-}
-
 .single {
   width: 100%;
   flex: 1 1 50%;
