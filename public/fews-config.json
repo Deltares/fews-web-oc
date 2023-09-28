@@ -13,6 +13,15 @@
             }
         },
         {
+            "id": "spatialDisplay",
+            "component": "SpatialDisplay",
+            "title": "Spatial Display",
+            "icon": "mdi-map",
+            "params": {
+                "layerName": "ER_1h"
+            }
+        },
+        {
             "id": "time_series_display",
             "component": "TimeSeriesDisplay",
             "title": "Time Series Display",
