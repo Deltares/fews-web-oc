@@ -16,7 +16,7 @@ import { ChartConfig } from './TimeSeriesComponent/lib/ChartConfig'
 import {getUniqueSeriesIds} from "@/components/TimeSeriesComponent/lib/getUniqueSeriesIds";
 import {TableHeaders} from "@/components/TimeSeriesComponent/lib/TableHeaders";
 import {createTableHeaders} from "@/components/TimeSeriesComponent/lib/createTableHeaders";
-import { createTableData } from './TimeSeriesComponent/lib/createTableData';
+import { createTableData, csvDateFormatter } from './TimeSeriesComponent/lib/createTableData';
 import { forEach } from 'lodash';
 
 
@@ -39,13 +39,13 @@ export default class CSVExportComponent extends Vue {
   seriesIds: string[] = []
   tableData: Record<string, unknown>[] = []
   tableHeaders: TableHeaders[] = []
-  
+
   downloadCSV() {
     const separator = ','
     const lines = []
     this.seriesIds = getUniqueSeriesIds(this.value.series)
     this.tableHeaders = createTableHeaders(this.value.series, this.seriesIds)
-    this.tableData = createTableData(this.value.series, this.series, this.seriesIds)
+    this.tableData = createTableData(this.value.series, this.series, this.seriesIds, csvDateFormatter)
 
     // Generate CSV header with columns for each time series.
     const header = this.tableHeaders.reduce((acc, h) => {
@@ -60,10 +60,10 @@ export default class CSVExportComponent extends Vue {
         const value = `${d[h.value]}`
         if (!d[h.value]) {
           line += separator
-        } 
+        }
         else if(!isNaN(parseFloat(value))){
           line += `${d[h.value]}${separator}`
-        } 
+        }
         else {
           line += `"${d[h.value]}"${separator}`
         }
@@ -73,7 +73,7 @@ export default class CSVExportComponent extends Vue {
     let location = this.value.title
     // Replace spaces with underscores and convert to lowercase.
     location = location.toLowerCase().replaceAll(' ', '_')
-    
+
     // generate a filename based on the category variable and location
     const filename = `${this.$route.params.categoryId}_${this.$route.params.dataLayerId}_${location}.csv`
 
