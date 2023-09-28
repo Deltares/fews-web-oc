@@ -1,5 +1,8 @@
 <template>
-  <div>
+  <div
+    class="time-slider-container"
+    :class="[themeClass, floatingClass]"
+  >
     <v-slider v-model="index" :max="max" step="1" tick-size="6" tabindex="0" @input="onInput" hide-details
       height="0">
     </v-slider>
@@ -47,6 +50,7 @@ export default class DateTimeSlider extends Vue {
   @Prop({ default: () => { return [new Date(1970)] } }) private dates!: Date[]
   @Prop({ default: false, type: Boolean }) private loading!: boolean
   @Prop({ default: false, type: Boolean }) private now!: boolean
+  @Prop({ default: false, type: Boolean }) private floating!: boolean
 
   index: number = 0
   currentDate!: Date
@@ -75,6 +79,14 @@ export default class DateTimeSlider extends Vue {
 
   get playColor (): string {
     return this.isPlaying ? 'orange' : ''
+  }
+
+  get themeClass (): string {
+    return this.$vuetify.theme.dark ? 'dark' : 'light'
+  }
+
+  get floatingClass (): string {
+    return this.floating ? 'floating' : 'non-floating'
   }
 
   togglePlay (): void {
@@ -183,8 +195,22 @@ export default class DateTimeSlider extends Vue {
 }
 </script>
 <style scoped>
-.time-slider-container {
-  height: 104px;
-  z-index: 100;
+.time-slider-container.non-floating {
+  height: 48px;
+}
+
+.time-slider-container.floating {
+  height: 63px;
+  background-clip: content-box;
+  padding: 0 15px 15px;
+  filter: drop-shadow(3px 3px 3px #888);
+}
+
+.time-slider-container.dark {
+  background-color: black;
+}
+
+.time-slider-container.light {
+  background-color: white;
 }
 </style>

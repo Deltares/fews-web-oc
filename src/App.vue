@@ -119,4 +119,17 @@ html, body {
   outline-offset: -1px;
 }
 
+/* Hacky way to get the Mapbox logo and attribution control to not be hidden behind the floating
+   date/time slider for the Data View and Spatial Display. */
+.mapboxgl-ctrl-logo {
+  position: relative;
+  left: 8px;
+  bottom: 70px;
+}
+
+.mapboxgl-ctrl-attrib {
+  position: relative;
+  bottom: 70px;
+  right: 15px;
+}
 </style>

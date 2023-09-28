@@ -59,6 +59,7 @@
           :dates="times"
           @input="debouncedSetWMSLayerOptions"
           @update:now="setCurrentTime"
+          floating
         />
       </div>
       <div class="grid-charts" v-if="hasDataToDisplay && !$vuetify.breakpoint.mobile">
@@ -931,5 +932,13 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   position: absolute;
   bottom: 10px;
   left: 10px;
+}
+
+.date-time-slider {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  width: 100%;
+  z-index: 100;
 }
 </style>
