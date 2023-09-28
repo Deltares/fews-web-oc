@@ -90,6 +90,8 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
                   y: event.value === missingValue ? null : +event.value
                 }
               })
+            } else {
+              throw new Error('Timeseries data should include events')
             }
           }
           Vue.set(this.timeSeriesStore, resourceId, series)
