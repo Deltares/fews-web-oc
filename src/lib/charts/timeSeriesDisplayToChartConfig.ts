@@ -1,4 +1,3 @@
-import type { Axis } from './types/Axis.js'
 import type { ChartConfig } from './types/ChartConfig.js'
 import type { ChartSeries } from './types/ChartSeries.js'
 import type {
@@ -10,6 +9,11 @@ import {
   cssStyleFromFewsMarker,
   chartMarkerFromFews,
 } from './styles'
+import {
+  AxisOptions,
+  AxisPosition,
+  AxisType,
+} from '@deltares/fews-web-oc-charts'
 
 export function timeSeriesDisplayToChartConfig(
   subplot: TimeSeriesDisplaySubplot,
@@ -19,6 +23,7 @@ export function timeSeriesDisplayToChartConfig(
     title: title,
     xAxis: [],
     yAxis: yAxisFromSubplot(subplot),
+    series: [],
   }
   const chartSeriesArray: ChartSeries[] = []
   for (const item of subplot.items) {
@@ -44,7 +49,7 @@ export function timeSeriesDisplayToChartConfig(
           description: threshold.label ?? '',
           yAxisIndex:
             config.yAxis?.findIndex((yAxis) => {
-              return yAxis.location === item.yAxis?.axisPosition
+              return yAxis.position === item.yAxis?.axisPosition
             }) ?? 0,
           color: threshold.color ?? item.color,
         })
@@ -78,7 +83,7 @@ function getChartSeries(
         key: 'y',
         axisIndex:
           config.yAxis?.findIndex((yAxis) => {
-            return yAxis.location === item.yAxis?.axisPosition
+            return yAxis.position === item.yAxis?.axisPosition
           }) ?? 0,
       },
     },
@@ -86,9 +91,9 @@ function getChartSeries(
   }
 }
 
-function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): Axis[] {
+function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
   const axes = []
-  const positions = ['left', 'right']
+  const positions = [AxisPosition.Left, AxisPosition.Right]
   for (const position of positions) {
     const axisItem = subplot.items.find((item) => {
       return item.yAxis?.axisPosition === position
@@ -97,9 +102,9 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): Axis[] {
       const yAxis = axisItem.yAxis
       const includeZero =
         yAxis.axisMinValue === 0 && yAxis.axisMaxValue === undefined
-      const axis: Axis = {
-        type: 'value',
-        location: position,
+      const axis: AxisOptions = {
+        type: AxisType.value,
+        position,
         label: yAxis.axisLabel,
         includeZero,
       }
@@ -107,7 +112,10 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): Axis[] {
         yAxis.axisMinValue !== undefined &&
         yAxis.axisMaxValue !== undefined
       ) {
-        const defaultDomain = [yAxis.axisMinValue, yAxis.axisMaxValue]
+        const defaultDomain: [number, number] = [
+          yAxis.axisMinValue,
+          yAxis.axisMaxValue,
+        ]
         axis.defaultDomain = defaultDomain
       }
       axes.push(axis)
