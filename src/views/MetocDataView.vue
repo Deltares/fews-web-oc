@@ -487,8 +487,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       delete params.locationId
     }
     if(this.hasSelectedCoordinates) {
-      delete params.xCoord
-      delete params.yCoord
+      delete params.longitude
+      delete params.latitude
     }
     this.$router.push({
         name: 'MetocDataViewer',
@@ -578,7 +578,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
         params = { ...params, locationId: this.locationId }
         routeName = 'MetocDataViewerWithLocation'
       } else if (this.hasSelectedCoordinates) {
-        params = { ...params, xCoord: this.longitude, yCoord: this.latitude }
+        params = { ...params, longitude: this.longitude, latitude: this.latitude }
         routeName = 'MetocDataViewerWithCoordinates'
       } else {
         routeName = 'MetocDataViewer'
@@ -689,7 +689,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    */
   beforeRouteUpdate(to: Route, from: Route, next: NavigationGuardNext) {
     const goingToLocationRoute = to.params.locationId !== '' && to.params.locationId !== undefined
-    const goingToCoordRoute = to.params.xCoord !== '' && to.params.xCoord !== undefined
+    const goingToCoordRoute = to.params.longitude !== '' && to.params.latitude !== undefined
     const sourceIdIsTheSame = to.params.dataSourceId === from.params.dataSourceId
 
     if (goingToCoordRoute || goingToLocationRoute || sourceIdIsTheSame) {
@@ -700,14 +700,14 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     const locationId = from.params.locationId
     const comingFromLocationRoute = locationId !== '' && locationId !== undefined
 
-    const xCoord = from.params.xCoord
-    const yCoord = from.params.yCoord
-    const comingFromCoordRoute = xCoord !== '' && xCoord !== undefined
+    const longitude = from.params.longitude
+    const latitude = from.params.latitude
+    const comingFromCoordRoute = longitude !== '' && longitude !== undefined
 
     if (comingFromLocationRoute) {
       this.$router.push({path: `${to.path}/location/${locationId}`})
     } else if (comingFromCoordRoute) {
-      this.$router.push({path: `${to.path}/coordinates/${xCoord}/${yCoord}`})
+      this.$router.push({path: `${to.path}/coordinates/${longitude}/${latitude}`})
     } else {
       next()
     }
