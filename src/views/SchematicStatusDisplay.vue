@@ -1,6 +1,12 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
-    <ColumnMenu :active.sync="active" :items="items" :open.sync="open" />
+    <ColumnMenu
+      rootName="Overzichtsschermen"
+      :active.sync="active"
+      :items="items"
+      :open.sync="open"
+    >
+    </ColumnMenu>
   </Teleport>
   <div class="container">
     <SsdComponent :src="src" @action="onAction" />
@@ -61,7 +67,6 @@ const selectedDate = ref<Date>(new Date())
 const selectedDateSlider = ref<Date>(selectedDate.value)
 
 onMounted(() => {
-  active.value = ['root']
   onGroupIdChange()
   onPanelIdChange()
 })

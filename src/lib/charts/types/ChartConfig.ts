@@ -1,13 +1,13 @@
 import { ChartSeries } from './ChartSeries'
-import { Axis } from './Axis'
 import { ThresholdLine } from './ThresholdLine'
+import { AxisOptions } from '@deltares/fews-web-oc-charts'
 
 export interface ChartConfig {
   title: string
-  xAxis?: Axis[]
-  yAxis?: Axis[]
-  radialAxis?: Axis[]
-  angularAxis?: Axis[]
-  series?: ChartSeries[]
+  xAxis?: AxisOptions[]
+  yAxis?: AxisOptions[]
+  radialAxis?: AxisOptions[]
+  angularAxis?: AxisOptions[]
+  series: ChartSeries[]
   thresholds?: ThresholdLine[]
 }

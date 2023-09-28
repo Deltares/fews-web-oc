@@ -17,7 +17,7 @@ const SystemMonitorDisplay = () => import('../views/SystemMonitorDisplay.vue')
 const SchematicStatusDisplay = () =>
   import('../views/SchematicStatusDisplay.vue')
 const SpatialDisplay = () => import('../views/SpatialDisplay.vue')
-
+const TimeSeriesDisplay = () => import('../views/TimeSeriesDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
@@ -86,7 +86,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/series/node/:nodeId?',
     name: 'TimeSeriesDisplay',
-    component: Empty,
+    component: TimeSeriesDisplay,
     props: true,
     meta: { authorize: [], sidebar: true },
   },

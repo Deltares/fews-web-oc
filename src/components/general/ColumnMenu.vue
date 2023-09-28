@@ -41,12 +41,14 @@ import { ref, computed, onMounted, watch } from 'vue'
 import type { ColumnItem } from './ColumnItem'
 
 interface Props {
+  rootName?: string
   items?: ColumnItem[]
   open?: string[]
   active?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  rootName: '',
   items: () => {
     return []
   },
@@ -108,12 +110,15 @@ function onItemClick(event: Event, item: ColumnItem): void {
 }
 
 function updateStack(): void {
-  const s = [...props.items]
-  if (props.active.length > 0) {
-    recursiveFind(s, props.active[0])
-    stack.value = s
-    path = s.map((item) => item.id)
+  const root: ColumnItem = {
+    id: 'root-item',
+    name: props.rootName,
+    children: [...props.items],
   }
+  const s = [root]
+  recursiveFind(s, props.active[0])
+  stack.value = s
+  path = s.map((item) => item.id)
 }
 
 function recursiveFind(stack: ColumnItem[], id: string): boolean {

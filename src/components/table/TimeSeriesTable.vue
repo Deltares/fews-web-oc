@@ -46,25 +46,33 @@ import { createTableData } from '@/lib/table/createTableData'
 import { watchEffect } from 'vue'
 
 interface Props {
-  chartConfig: ChartConfig | undefined
+  config: ChartConfig
   series: Record<string, Series>
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  config: () => {
+    return {
+      title: '',
+      series: [],
+    }
+  },
+  series: () => {
+    return {}
+  },
+})
 
 const seriesIds = ref<string[]>([])
 const tableData = ref<Record<string, unknown>[]>([])
 const tableHeaders = ref<TableHeaders[]>([])
 
 watchEffect(() => {
-  if (props.chartConfig === undefined) return
-  seriesIds.value = getUniqueSeriesIds(props.chartConfig.series)
-  tableHeaders.value = createTableHeaders(
-    props.chartConfig.series,
-    seriesIds.value,
-  )
+  if (props.config === undefined) return
+  seriesIds.value = getUniqueSeriesIds(props.config.series)
+  tableHeaders.value = createTableHeaders(props.config.series, seriesIds.value)
+  if (props.series === undefined) return
   tableData.value = createTableData(
-    props.chartConfig.series,
+    props.config.series,
     props.series,
     seriesIds.value,
   )
