@@ -1,23 +1,21 @@
 <template>
   <div class="slider-container">
-    <v-slider
+    <vue-slider
       v-model="dateIndex"
       :max="maxIndex"
       step="1"
       hide-details
-      thumb-size="15"
+      :dot-size="15"
+      :tooltip-formatter="() => dateString"
+      @change="stopFollowNow"
     />
   </div>
   <div class="controls-container">
     <slot name="prepend"></slot>
     <div class="now-tracking-control">
-      <v-btn
-        density="compact"
-        variant="flat"
-        :icon="nowButtonIcon"
-        :color="nowButtonColor"
-        @click="toggleFollowNow"
-      />
+      <v-btn density="compact" variant="flat" icon @click="toggleFollowNow">
+        <v-icon :color="nowButtonColor">{{ nowButtonIcon }}</v-icon>
+      </v-btn>
       <span class="text-body-2 selected-date">{{ dateString }}</span>
     </div>
     <v-spacer />
@@ -32,10 +30,11 @@
       <v-btn
         density="compact"
         variant="flat"
-        :icon="playButtonIcon"
-        :color="playButtonColor"
+        icon
         @click="togglePlay"
-      />
+      >
+        <v-icon :color="playButtonColor">{{ playButtonIcon }}</v-icon>
+      </v-btn>
       <v-btn
         density="compact"
         variant="flat"
@@ -50,7 +49,10 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import VueSlider from 'vue-slider-component'
+import { useTimeoutFn } from '@vueuse/core'
 
+/* import theme style */
 interface Properties {
   selectedDate: Date
   dates: Date[]
@@ -77,7 +79,11 @@ const isPlaying = ref(false)
 let playIntervalTimer: ReturnType<typeof setInterval> | null = null
 
 const doFollowNow = ref(props.doFollowNow)
-let followNowIntervalTimer: ReturnType<typeof setInterval> | null = null
+// let followNowIntervalTimer: ReturnType<typeof setInterval> | null = null
+
+const { start, stop } = useTimeoutFn(() => {
+  setDateToNow()
+}, props.followNowInterval)
 
 // Synchronise selectedDate property and local index variable.
 watch(dateIndex, (index) => emit('update:selectedDate', props.dates[index]))
@@ -142,13 +148,12 @@ function startFollowNow(): void {
   doFollowNow.value = true
   stopPlay()
   setDateToNow()
-  followNowIntervalTimer = setInterval(setDateToNow, props.followNowInterval)
+  start()
 }
 
 function stopFollowNow(): void {
   doFollowNow.value = false
-  if (followNowIntervalTimer) clearInterval(followNowIntervalTimer)
-  followNowIntervalTimer = null
+  stop()
 }
 
 function setDateToNow(): void {
@@ -214,6 +219,11 @@ function increment(step: number): void {
   dateIndex.value = Math.min(dateIndex.value + step, maxIndex.value)
 }
 </script>
+
+<style lang="scss">
+$themeColor: #6100ee;
+@import 'vue-slider-component/lib/theme/antd.scss';
+</style>
 
 <style>
 .slider-container {
