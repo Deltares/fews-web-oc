@@ -64,13 +64,29 @@ async function fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
   let displays: DisplayConfig[] = []
   let requests: ActionRequest[] = []
   for (const result of response.results) {
+    result.requests.forEach((request) => {
+      if (request.key === undefined) {
+        request.key = `${request.request}`
+      }
+    })
     if (!result.config) continue
 
     // Get configurations for each display, convert FEWS display configuration to
     // fews-web-oc-charts configuration.
+    const addSequence = (result.config.timeSeriesDisplay.subplots?.length ?? 0) > result.requests.length
     const title = result.config.timeSeriesDisplay.title ?? ''
     const displayCur = result.config.timeSeriesDisplay.subplots?.map(
       (subplot, index) => {
+        for (const item of subplot.items) {
+          if (item.request === undefined) {
+            item.request = result.requests[0].request
+            if (addSequence){
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              item.sequence = index
+            }
+          }
+        }
         return {
           id: `${title}-${index}`,
           types: [DisplayType.TimeSeriesChart, DisplayType.TimeSeriesTable],

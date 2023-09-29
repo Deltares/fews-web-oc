@@ -1,3 +1,7 @@
+import type { TimeSeriesDisplaySubplotItem as SubPlotItem,
+  TimeSeriesDisplaySubplotItemAxis } from "@deltares/fews-pi-requests";
+
+
 export interface SeriesHeader {
   name?: string;
   location?: string;
@@ -23,4 +27,14 @@ export enum SeriesOperationType {
   WaterDirection = 'water-direction',
   Amplitude = 'amplitude',
   VerticalClearance = 'vertical-clearance',
+}
+
+export interface TimeSeriesDisplaySubplotItem extends SubPlotItem{
+  sequence?: number;
+}
+
+
+export interface TimeSeriesDisplaySubplot {
+  xAxis?: TimeSeriesDisplaySubplotItemAxis;
+  items: TimeSeriesDisplaySubplotItem[];
 }
