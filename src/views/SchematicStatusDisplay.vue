@@ -12,6 +12,7 @@
     <SsdComponent :src="src" @action="onAction" />
     <DateTimeSlider v-model:selectedDate="selectedDateSlider" :dates="dates" />
   </div>
+  <router-view></router-view>
 </template>
 
 <script setup lang="ts">
@@ -165,8 +166,7 @@ function onPanelIdChange(): void {
 }
 
 function onAction(event: CustomEvent<SsdActionEventPayload>): void {
-  const { results } = event.detail
-
+  const { panelId, objectId, results } = event.detail
   const now = new Date()
   if (results.length === 0) {
     alertsStore.addAlert(
@@ -184,8 +184,9 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
     case ActionType.SSD:
       switchPanel(results[0].requests[0])
       break
-    // TODO: implement once time series display works.
     case ActionType.PI:
+      openTimeSeriesDisplay(panelId, objectId)
+      break
     default:
       alertsStore.addAlert(
         `action-${results[0].type}-${now.toISOString()}`,
@@ -216,6 +217,13 @@ function switchPanel(request: ResultRequest): void {
     name: 'SchematicStatusDisplay',
     params: { groupId, panelId },
     query: route.query,
+  })
+}
+
+function openTimeSeriesDisplay(panelId: string, objectId: string) {
+  router.push({
+    name: 'SSDTimeSeriesDisplay',
+    params: { objectId: objectId, panelId: panelId, groupId: props.groupId },
   })
 }
 </script>

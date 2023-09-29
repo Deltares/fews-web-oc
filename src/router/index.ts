@@ -16,6 +16,8 @@ import { useConfigStore } from '../stores/config.ts'
 const SystemMonitorDisplay = () => import('../views/SystemMonitorDisplay.vue')
 const SchematicStatusDisplay = () =>
   import('../views/SchematicStatusDisplay.vue')
+const SSDTimeSeriesDisplay = () =>
+  import('../components/ssd/SsdTimeSeriesDisplay.vue')
 const SpatialDisplay = () => import('../views/SpatialDisplay.vue')
 const TimeSeriesDisplay = () => import('../views/TimeSeriesDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
@@ -69,6 +71,15 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     component: SchematicStatusDisplay,
     props: true,
     meta: { authorize: [], sidebar: true },
+    children: [
+      {
+        path: '/ssd/:groupId/:panelId/:objectId',
+        name: 'SSDTimeSeriesDisplay',
+        component: SSDTimeSeriesDisplay,
+        props: true,
+        meta: { authorize: [], sidebar: true },
+      },
+    ],
   },
   {
     path: '/systemmonitor',
