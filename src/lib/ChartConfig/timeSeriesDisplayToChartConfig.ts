@@ -7,7 +7,6 @@ import { TimeSeriesDisplaySubplot, TimeSeriesDisplaySubplotItem } from "../TimeS
 export function timeSeriesDisplayToChartConfig(subplot: TimeSeriesDisplaySubplot, title: string): ChartConfig {
   const config: ChartConfig = {
     title: title,
-    sequence: subplot.items[0].sequence !== undefined ? subplot.items[0].sequence : undefined,
     xAxis: xAxisFromSubplot(subplot),
     yAxis: yAxisFromSubplot(subplot),
   }
@@ -49,6 +48,7 @@ function getChartSeries(item: TimeSeriesDisplaySubplotItem, seriesType: string, 
   return {
     id: `${item.request}${item.sequence !== undefined ? `-${item.sequence}` : ''}`,
     dataResources: [`${item.request}${item.sequence !== undefined ? `-${item.sequence}` : ''}`,],
+    sequence: item.sequence,
     name: item.legend || "",
     unit: "",
     type: seriesType,

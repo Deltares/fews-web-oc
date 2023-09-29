@@ -5,6 +5,7 @@ import { ChartSeriesOptions } from "./ChartSeriesOptions";
 export interface ChartSeries {
   id: string;
   dataResources: string[];
+  sequence?: number;
   name: string;
   visibleInPlot: boolean;
   visibleInLegend: boolean;

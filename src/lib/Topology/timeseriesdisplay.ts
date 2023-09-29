@@ -73,19 +73,31 @@ async function fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
 
     // Get configurations for each display, convert FEWS display configuration to
     // fews-web-oc-charts configuration.
-    const addSequence = (result.config.timeSeriesDisplay.subplots?.length ?? 0) > result.requests.length
+    const addSequence = (result.config.timeSeriesDisplay.subplots?.length ?? 0) > result.requests.length ||
+      result.config.timeSeriesDisplay.subplots?.some((subplot) => subplot.items.length > result.requests.length)
+
     const title = result.config.timeSeriesDisplay.title ?? ''
+
+    // for add a sequence number to the subplot items. Where the sequence number is counted first by items and then by subplots.
+    // e.g. subplot 1 has 2 items, subplot 2 has 2 items. Then the sequence numbers are:
+    // subplot 1 item 1: 0
+    // subplot 1 item 2: 2
+    // subplot 2 item 1: 1
+    // subplot 2 item 2: 3
+    result.config.timeSeriesDisplay.subplots?.forEach((subplot, subplotIndex) => {
+      subplot.items.forEach((item, itemIndex) => {
+        if (addSequence) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          item.sequence = subplotIndex + itemIndex * subplot.items.length
+        }
+      })
+    })
+
     const displayCur = result.config.timeSeriesDisplay.subplots?.map(
       (subplot, index) => {
         for (const item of subplot.items) {
-          if (item.request === undefined) {
-            item.request = result.requests[0].request
-            if (addSequence){
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              item.sequence = index
-            }
-          }
+          item.request ??= result.requests[0].request;
         }
         return {
           id: `${title}-${index}`,
