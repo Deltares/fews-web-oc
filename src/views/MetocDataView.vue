@@ -52,15 +52,15 @@
           <div class="colourbar">
             <ColourBar v-model="legend" :title="legendTitle" v-if="legend.length > 0"/>
           </div>
+          <DateTimeSlider
+            class="date-time-slider"
+            v-model="currentTime"
+            :dates="times"
+            @input="debouncedSetWMSLayerOptions"
+            @update:now="setCurrentTime"
+            floating
+          />
         </div>
-        <DateTimeSlider
-          class="date-time-slider"
-          v-model="currentTime"
-          :dates="times"
-          @input="debouncedSetWMSLayerOptions"
-          @update:now="setCurrentTime"
-          floating
-        />
       </div>
       <div class="grid-charts" v-if="hasDataToDisplay && !$vuetify.breakpoint.mobile">
         <v-toolbar class="toolbar-charts" dense flat>
