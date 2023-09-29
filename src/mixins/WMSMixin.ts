@@ -63,7 +63,9 @@ export default class WMSMixin extends Vue {
   }
 
   async getLegendGraphic (layers: string): Promise<GetLegendGraphicResponse> {
-    return await this.wmsProvider.getLegendGraphic({layers})
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return await this.wmsProvider.getLegendGraphic({layers, useDisplayUnits: true})
   }
 
   async transformRequest(request: Request): Promise<Request> {
