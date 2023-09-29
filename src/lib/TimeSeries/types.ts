@@ -1,5 +1,6 @@
-import { TimeSeriesDisplaySubplotItem as SubPlotItem,
+import type { TimeSeriesDisplaySubplotItem as SubPlotItem,
   TimeSeriesDisplaySubplotItemAxis } from "@deltares/fews-pi-requests";
+
 
 export interface SeriesHeader {
   name?: string;
