@@ -27,7 +27,7 @@ export function useSsdPi(
   baseUrl: string,
   panelId: MaybeRefOrGetter<string>,
   objectId: MaybeRefOrGetter<string>,
-  plotId: MaybeRefOrGetter<number>,
+  plotId?: MaybeRefOrGetter<number>,
 ): UseSsdPiReturn {
   const ssdProvider = new SsdWebserviceProvider(baseUrl)
 
@@ -45,7 +45,7 @@ export function useSsdPi(
       clickType: ClickType.LEFTSINGLECLICK,
       config: true,
     }
-    const _plotId = toValue(plotId)
+    const _plotId = toValue(plotId) ?? 0
     const action = await ssdProvider.getAction(filter)
     for (const result of action.results) {
       if (result.config === undefined) continue
