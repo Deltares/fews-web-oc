@@ -112,7 +112,7 @@ onMounted(() => {
   if (chartContainer.value) {
     axis = new CartesianAxes(chartContainer.value, null, null, axisOptions)
     const mouseOver = new MouseOver()
-    const zoom = new ZoomHandler(WheelMode.X)
+    const zoom = new ZoomHandler(WheelMode.NONE)
     const currentTime = new CurrentTime({
       x: {
         axisIndex: 0,
