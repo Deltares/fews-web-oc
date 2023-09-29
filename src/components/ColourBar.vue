@@ -72,6 +72,10 @@ export default class ColourBar extends Vue {
     text-rendering: optimizeLegibility;
   }
 
+  :deep(g) {
+    font-family: var(--primary-font);
+  }
+
   .colourbar-light {
     text-shadow:  #FFF 0px 0px 1px,
                   #FFF 0px 0px 1px,

@@ -214,4 +214,12 @@ html, body {
   z-index: 9000;
 }
 
+.sidebar-title{
+  margin: 10px 25px;
+  font-size:1.4em;
+}
+
+.view-sidebar {
+  z-index: 10000
+}
 </style>

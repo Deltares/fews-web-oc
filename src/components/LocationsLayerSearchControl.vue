@@ -19,7 +19,8 @@
       return-object
       @input="onSelectLocation"
       prepend-inner-icon="mdi-magnify"
-      class="ml-2"
+      class="ml-2 mt-3"
+      dense
     />
   </v-chip>
 </template>
@@ -70,5 +71,9 @@ export default class LocationsLayerSearchControl extends Vue {
 <style scoped>
 .chip {
   backdrop-filter: blur(4px);
+}
+
+:deep(.v-list-item .v-list-item__title) {
+  font-size: 1rem
 }
 </style>
