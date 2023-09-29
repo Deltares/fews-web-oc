@@ -62,15 +62,18 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
         url.searchParams.set('endTime', endTime.toISO({ suppressMilliseconds: true }) ?? '')
         url.searchParams.set('thinning', `${timeStepPerPixel}`)
       }
-      const resourceId = `${request.key}`
+      let resourceId = `${request.key}`
       const relativeUrl = request.request.split('?')[0] + url.search
       webServiceProvider.getTimeSeriesWithRelativeUrl(relativeUrl).then( piSeries =>
       {
         if ( piSeries?.timeSeries !== undefined)
-        for (const timeSeries of piSeries.timeSeries) {
+        for (const [index, timeSeries] of piSeries.timeSeries.entries()) {
           const resource = new SeriesUrlRequest('fews-pi', 'dummyUrl')
           const series = new Series(resource)
           const header = timeSeries.header
+          if (piSeries.timeSeries.length > 1){
+            resourceId = `${request.key}-${index}`
+          }
           if (header !== undefined) {
             const missingValue: string = header.missVal
             const timeZone = piSeries.timeZone === undefined ? 'Z' : timeZoneOffsetString(+piSeries.timeZone)

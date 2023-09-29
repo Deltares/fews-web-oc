@@ -4,6 +4,7 @@ import {ThresholdLine} from "./ThresholdLine";
 
 export interface ChartConfig {
   title: string;
+  sequence?: number;
   xAxis?: Axis[];
   yAxis?: Axis[];
   radialAxis?: Axis[];

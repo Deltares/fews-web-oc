@@ -1,13 +1,14 @@
 import { Axis } from "@/components/TimeSeriesComponent/lib/Axis"
 import { ChartConfig } from "@/components/TimeSeriesComponent/lib/ChartConfig.js"
 import { ChartSeries } from "@/components/TimeSeriesComponent/lib/ChartSeries.js"
-import { TimeSeriesDisplaySubplot, TimeSeriesDisplaySubplotItem } from "@deltares/fews-pi-requests"
 import { cssStyleFromFewsLine, cssStyleFromFewsMarker, chartMarkerFromFews } from "./Styles"
+import { TimeSeriesDisplaySubplot, TimeSeriesDisplaySubplotItem } from "../TimeSeries/types"
 
 export function timeSeriesDisplayToChartConfig(subplot: TimeSeriesDisplaySubplot, title: string): ChartConfig {
   const config: ChartConfig = {
     title: title,
-    xAxis: [],
+    sequence: subplot.items[0].sequence !== undefined ? subplot.items[0].sequence : undefined,
+    xAxis: xAxisFromSubplot(subplot),
     yAxis: yAxisFromSubplot(subplot),
   }
   const chartSeriesArray: ChartSeries[] = []
@@ -46,8 +47,8 @@ export function timeSeriesDisplayToChartConfig(subplot: TimeSeriesDisplaySubplot
 
 function getChartSeries(item: TimeSeriesDisplaySubplotItem, seriesType: string, config: ChartConfig) {
   return {
-    id: `${item.request}`,
-    dataResources: [`${item.request}`],
+    id: `${item.request}${item.sequence !== undefined ? `-${item.sequence}` : ''}`,
+    dataResources: [`${item.request}${item.sequence !== undefined ? `-${item.sequence}` : ''}`,],
     name: item.legend || "",
     unit: "",
     type: seriesType,
@@ -97,4 +98,24 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): Axis[] {
     }
   }
   return axes
+}
+
+function xAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): Axis[] {
+  const xAxis = subplot.xAxis
+  if (xAxis === undefined) return []
+  const includeZero = xAxis.axisMinValue === 0 && xAxis.axisMaxValue === undefined
+  const axis: Axis = {
+    type: "value",
+    label: xAxis.axisLabel,
+    location: "bottom",
+    includeZero
+  }
+  if (xAxis.axisMinValue !== undefined && xAxis.axisMaxValue !== undefined) {
+    const defaultDomain = [
+      xAxis.axisMinValue,
+      xAxis.axisMaxValue
+    ]
+    axis.defaultDomain = defaultDomain
+  }
+  return [axis]
 }
