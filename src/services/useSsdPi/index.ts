@@ -51,7 +51,11 @@ export function useSsdPi(
       if (result.config === undefined) continue
       const title = result.config.timeSeriesDisplay.title ?? ''
       let subplots: ChartConfig[] = []
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       if (result.config.timeSeriesDisplay.subplots) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         subplots = result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
           return timeSeriesDisplayToChartConfig(subPlot, title)
         })
