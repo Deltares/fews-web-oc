@@ -9,14 +9,14 @@
     </ColumnMenu>
   </Teleport>
   <div class="container">
-    <div class="child-container">
+    <div class="child-container" :class="{ hidden: hideSSD }">
       <SsdComponent :src="src" @action="onAction" ref="ssdComponent" />
       <DateTimeSlider
         v-model:selectedDate="selectedDateSlider"
         :dates="dates"
       />
     </div>
-    <div class="child-container" :class="{ hidden: objectId === '' }">
+    <div class="child-container" :class="{ mobile, hidden: objectId === '' }">
       <router-view @close="closeTimeSeriesDisplay"></router-view>
     </div>
   </div>
@@ -44,6 +44,7 @@ import { useSsd } from '../services/useSsd/index.ts'
 import ColumnMenu from '../components/general/ColumnMenu.vue'
 import DateTimeSlider from '../components/general/DateTimeSlider.vue'
 import SsdComponent from '../components/ssd/SsdComponent.vue'
+import { useDisplay } from 'vuetify'
 
 interface Props {
   groupId?: string
@@ -77,6 +78,8 @@ const open = ref<string[]>([])
 
 const selectedDate = ref<Date>(new Date())
 const selectedDateSlider = ref<Date>(selectedDate.value)
+
+const { mobile } = useDisplay()
 
 onMounted(() => {
   onGroupIdChange()
@@ -176,6 +179,10 @@ function onPanelIdChange(): void {
   active.value = [props.panelId]
 }
 
+const hideSSD = computed(() => {
+  return mobile.value && props.objectId !== ''
+})
+
 function onAction(event: CustomEvent<SsdActionEventPayload>): void {
   const { panelId, objectId, results } = event.detail
   const now = new Date()
@@ -272,7 +279,13 @@ function closeTimeSeriesDisplay(objectId: string): void {
   flex: 1 1 0px;
 }
 
+.child-container.mobile {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
 .child-container.hidden {
-  display: none;
+  display: none !important;
 }
 </style>
