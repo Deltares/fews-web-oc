@@ -21,6 +21,11 @@
             </v-btn>
           </v-btn-toggle>
         </template>
+        <template v-slot:toolbar-append>
+          <v-btn size="small" variant="text" @click="onClose">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
         <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
         </TimeSeriesComponent>
       </WindowComponent>
@@ -45,6 +50,8 @@ const props = withDefaults(defineProps<Props>(), {
   panelId: '',
   objectId: '',
 })
+
+const emit = defineEmits<{ (e: 'close', objectId: string): void }>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -73,4 +80,8 @@ const displayTypeItems: DisplayTypeItem[] = [
     value: DisplayType.TimeSeriesTable,
   },
 ]
+
+function onClose(): void {
+  emit('close', props.objectId)
+}
 </script>

@@ -9,10 +9,17 @@
     </ColumnMenu>
   </Teleport>
   <div class="container">
-    <SsdComponent :src="src" @action="onAction" />
-    <DateTimeSlider v-model:selectedDate="selectedDateSlider" :dates="dates" />
+    <div class="child-container">
+      <SsdComponent :src="src" @action="onAction" ref="ssdComponent" />
+      <DateTimeSlider
+        v-model:selectedDate="selectedDateSlider"
+        :dates="dates"
+      />
+    </div>
+    <div class="child-container" :class="{ hidden: objectId === '' }">
+      <router-view @close="closeTimeSeriesDisplay"></router-view>
+    </div>
   </div>
-  <router-view></router-view>
 </template>
 
 <script setup lang="ts">
@@ -41,6 +48,7 @@ import SsdComponent from '../components/ssd/SsdComponent.vue'
 interface Props {
   groupId?: string
   panelId?: string
+  objectId?: string
 }
 
 interface SsdActionEventPayload {
@@ -59,7 +67,10 @@ const router = useRouter()
 const props = withDefaults(defineProps<Props>(), {
   groupId: '',
   panelId: '',
+  objectId: '',
 })
+
+const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
 
 const active = ref<string[]>([])
 const open = ref<string[]>([])
@@ -221,18 +232,47 @@ function switchPanel(request: ResultRequest): void {
 }
 
 function openTimeSeriesDisplay(panelId: string, objectId: string) {
-  router.push({
-    name: 'SSDTimeSeriesDisplay',
-    params: { objectId: objectId, panelId: panelId, groupId: props.groupId },
-  })
+  router
+    .push({
+      name: 'SSDTimeSeriesDisplay',
+      params: { objectId: objectId, panelId: panelId, groupId: props.groupId },
+    })
+    .then(() => {
+      ssdComponent.value?.resize()
+    })
+}
+
+function closeTimeSeriesDisplay(objectId: string): void {
+  if (objectId) {
+    router
+      .push({
+        name: 'SchematicStatusDisplay',
+        params: { groupId: props.groupId, panelId: props.panelId },
+      })
+      .then(() => {
+        ssdComponent.value?.resize()
+      })
+  }
 }
 </script>
 
 <style scoped>
 .container {
   display: flex;
-  flex-direction: column;
-  height: 100%;
   width: 100%;
+  height: 100%;
+}
+
+.child-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  max-width: 100%;
+  flex: 1 1 0px;
+}
+
+.child-container.hidden {
+  display: none;
 }
 </style>
