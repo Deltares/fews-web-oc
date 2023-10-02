@@ -51,6 +51,8 @@ const ssdContainer = ref<HTMLElement>()
 const svgContainer = ref<HTMLElement>()
 
 const emit = defineEmits(['action', 'submit'])
+defineExpose({ resize })
+
 const { mobile } = useDisplay()
 
 const width = ref(100)
@@ -209,10 +211,10 @@ function getSvgContainerSizes(): number[] {
 }
 
 function setDimensions(): void {
-  if (ssdContainer.value) {
+  if (ssdContainer.value && aspectRatio) {
     let h = ssdContainer.value.clientHeight
     let w = ssdContainer.value.offsetWidth
-    containerWidth.value = w
+    containerWidth.value = ssdContainer.value.offsetWidth
     let m = { top: 0, left: 0 }
     const dx = w - h * aspectRatio
     if (dx < 0 && !fitWidthValue) {
@@ -235,7 +237,6 @@ function setDimensions(): void {
 <style>
 .ssd-container {
   height: 100%;
-  width: 100%;
   display: flex;
   flex-direction: column;
   overflow-x: scroll;
