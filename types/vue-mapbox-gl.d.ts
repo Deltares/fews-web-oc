@@ -1,4 +1,5 @@
 declare module '@studiometa/vue-mapbox-gl' {
+  import {AllGeoJSON, Position} from "@turf/helpers";
   export const MapboxMap: any
   export const MapboxMarker: any
   export const MapboxCluster: any
@@ -11,4 +12,12 @@ declare module '@studiometa/vue-mapbox-gl' {
   export const MapboxPopup: any
   export const MapboxSource: any
   export const StoreLocator: any
+
+  export const useMap: () => any
+
+  declare module 'turf/projection' {
+    export declare function toMercator<G = AllGeoJSON | Position>(geojson: G, options?: {
+      mutate?: boolean;
+    }): G;
+  }
 }
