@@ -9,7 +9,11 @@
     </ColumnMenu>
   </Teleport>
   <div class="container">
-    <div class="child-container" :class="{ hidden: hideSSD }">
+    <div
+      class="child-container"
+      :class="{ hidden: hideSSD }"
+      ref="ssdContainer"
+    >
       <SsdComponent :src="src" @action="onAction" ref="ssdComponent" />
       <DateTimeSlider
         v-model:selectedDate="selectedDateSlider"
@@ -45,6 +49,7 @@ import ColumnMenu from '../components/general/ColumnMenu.vue'
 import DateTimeSlider from '../components/general/DateTimeSlider.vue'
 import SsdComponent from '../components/ssd/SsdComponent.vue'
 import { useDisplay } from 'vuetify'
+import { useElementSize } from '@vueuse/core'
 
 interface Props {
   groupId?: string
@@ -72,6 +77,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
+const ssdContainer = ref<HTMLElement | null>(null)
 
 const active = ref<string[]>([])
 const open = ref<string[]>([])
@@ -181,6 +187,13 @@ function onPanelIdChange(): void {
 
 const hideSSD = computed(() => {
   return mobile.value && props.objectId !== ''
+})
+
+const ssdContainerSize = useElementSize(ssdContainer)
+watch(ssdContainerSize.width, () => {
+  if (ssdComponent.value) {
+    ssdComponent.value.resize()
+  }
 })
 
 function onAction(event: CustomEvent<SsdActionEventPayload>): void {
