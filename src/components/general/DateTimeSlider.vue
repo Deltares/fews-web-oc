@@ -81,14 +81,14 @@ let followNowIntervalTimer: ReturnType<typeof setInterval> | null = null
 
 // Synchronise selectedDate property and local index variable.
 watch(dateIndex, (index) => {
-    emit('update:selectedDate', props.dates[index])
+  emit('update:selectedDate', props.dates[index])
 })
 watch(
   () => props.selectedDate,
-    (selectedDate) => {
-        let index = findIndexForDate(selectedDate);
-        if (index == dateIndex.value) return
-        dateIndex.value = index
+  (selectedDate) => {
+    let index = findIndexForDate(selectedDate)
+    if (index == dateIndex.value) return
+    dateIndex.value = index
   },
 )
 
@@ -114,10 +114,10 @@ watch(
 )
 
 const maxIndex = computed(() => {
-    if (props.dates === undefined) {
-        return 0
-    }
-    return Math.max(props.dates.length - 1, 0)
+  if (props.dates === undefined) {
+    return 0
+  }
+  return Math.max(props.dates.length - 1, 0)
 })
 
 // Now and play button styling is dependent on properties.
@@ -166,7 +166,7 @@ function setDateToNow(): void {
 }
 
 function findIndexForDate(date: Date): number {
-  const index = props.dates.findIndex(current => current >= date)
+  const index = props.dates.findIndex((current) => current >= date)
   if (index === -1) {
     // No time was found that was larger than the current time, so use the first date.
     return 0
