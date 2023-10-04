@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, Ref, unref, watch } from 'vue'
+import { nextTick, onMounted, Ref, watch } from 'vue'
 // @ts-ignore
 import { toMercator } from '@turf/projection'
 import {
@@ -31,7 +31,7 @@ const props = withDefaults(defineProps<Props>(), {
   layer: undefined,
 })
 
-const { map } = useMap()
+const { map } = useMap() as { map: Ref<Map> }
 
 let mapObject!: Map
 let newLayerId!: string
@@ -40,9 +40,8 @@ let counter = 0
 let currentLayer: string = ''
 
 onMounted(() => {
-  const typeMap = map as Ref<Map>
-  if (unref<Map>(typeMap).isStyleLoaded()) {
-    mapObject = typeMap.value
+  if (map.value.isStyleLoaded()) {
+    mapObject = map.value
     addHooksToMapObject(mapObject)
     isInitialized = true
     onLayerChange()

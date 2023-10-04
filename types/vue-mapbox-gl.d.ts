@@ -13,7 +13,7 @@ declare module '@studiometa/vue-mapbox-gl' {
   export const MapboxSource: any
   export const StoreLocator: any
 
-  export const useMap: () => any
+  export const useMap: () => { map: Ref<Map> }
 
   declare module 'turf/projection' {
     export declare function toMercator<G = AllGeoJSON | Position>(
