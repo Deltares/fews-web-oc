@@ -32,10 +32,10 @@ import {
 import { configManager } from '@/services/application-config'
 import { LngLatBounds } from 'mapbox-gl'
 import { Layer, LayerGroup } from '@deltares/fews-wms-requests'
-import ColourBar from '@/components/ColourBar.vue'
+import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedMapboxLayer, {
   MapboxLayerOptions,
-} from '@/components/AnimatedMapboxLayer.vue'
+} from '@/components/wms/AnimatedMapboxLayer.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
