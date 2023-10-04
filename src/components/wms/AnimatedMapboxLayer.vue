@@ -33,7 +33,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { map } = useMap() as { map: Ref<Map> }
 
-let mapObject!: Map
 let newLayerId!: string
 let isInitialized = false
 let counter = 0
@@ -41,8 +40,7 @@ let currentLayer: string = ''
 
 onMounted(() => {
   if (map.value.isStyleLoaded()) {
-    mapObject = map.value
-    addHooksToMapObject(mapObject)
+    addHooksToMapObject()
     isInitialized = true
     onLayerChange()
   }
@@ -57,19 +55,18 @@ function getCoordsFromBounds(bounds: LngLatBounds) {
   ]
 }
 
-function addHooksToMapObject(map: Map) {
-  const mapObject = map
-  mapObject.once('load', () => {
+function addHooksToMapObject() {
+  map.value.once('load', () => {
     isInitialized = true
     onLayerChange()
   })
-  mapObject.on('moveend', () => {
+  map.value.on('moveend', () => {
     updateSource()
   })
-  mapObject.on('data', async (e) => {
+  map.value.on('data', async (e) => {
     if (e.sourceId === newLayerId && e.tile !== undefined && e.isSourceLoaded) {
       removeOldLayers()
-      mapObject.setPaintProperty(e.sourceId, 'raster-opacity', 1)
+      map.value.setPaintProperty(e.sourceId, 'raster-opacity', 1)
     }
   })
 }
@@ -77,9 +74,9 @@ function addHooksToMapObject(map: Map) {
 function updateSource() {
   if (props.layer === undefined) return
   const time = props.layer.time.toISOString()
-  const source = mapObject.getSource(newLayerId) as ImageSource
-  const bounds = mapObject.getBounds()
-  const canvas = mapObject.getCanvas()
+  const source = map.value.getSource(newLayerId) as ImageSource
+  const bounds = map.value.getBounds()
+  const canvas = map.value.getCanvas()
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   source.updateImage({
     url: `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${
@@ -99,14 +96,14 @@ function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
 
 function setDefaultZoom() {
   if (props.layer === undefined || props.layer.bbox === undefined) return
-  if (mapObject) {
-    const currentBounds = mapObject.getBounds()
+  if (map.value) {
+    const currentBounds = map.value.getBounds()
     const bounds = props.layer.bbox
     if (isBoundsWithinBounds(currentBounds, bounds)) {
       return
     } else {
       nextTick(() => {
-        mapObject.fitBounds(bounds)
+        map.value.fitBounds(bounds)
       })
     }
   }
@@ -131,11 +128,11 @@ function isBoundsWithinBounds(
 }
 
 function removeLayer() {
-  if (mapObject !== undefined) {
+  if (map.value !== undefined) {
     const layerId = getFrameId(currentLayer, counter)
-    if (mapObject.getSource(layerId) !== undefined) {
-      mapObject.removeLayer(layerId)
-      mapObject.removeSource(layerId)
+    if (map.value.getSource(layerId) !== undefined) {
+      map.value.removeLayer(layerId)
+      map.value.removeSource(layerId)
     }
   }
 }
@@ -174,7 +171,7 @@ function onLayerChange(): void {
   const time = props.layer.time.toISOString()
   counter += 1
   newLayerId = getFrameId(props.layer.name, counter)
-  const source = mapObject.getSource(newLayerId)
+  const source = map.value.getSource(newLayerId)
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   if (currentLayer !== originalLayerName) {
     // set default zoom only if layer is changed
@@ -182,8 +179,8 @@ function onLayerChange(): void {
   }
 
   if (source === undefined) {
-    const bounds = mapObject.getBounds()
-    const canvas = mapObject.getCanvas()
+    const bounds = map.value.getBounds()
+    const canvas = map.value.getCanvas()
     const rasterSource: ImageSourceRaw = {
       type: 'image',
       url: `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${
@@ -193,7 +190,7 @@ function onLayerChange(): void {
       }&width=${canvas.width}&time=${time}`,
       coordinates: getCoordsFromBounds(bounds),
     }
-    mapObject.addSource(newLayerId, rasterSource)
+    map.value.addSource(newLayerId, rasterSource)
     const rasterLayer: RasterLayer = {
       id: newLayerId,
       type: 'raster',
@@ -207,16 +204,16 @@ function onLayerChange(): void {
         'raster-fade-duration': 0,
       },
     }
-    mapObject.addLayer(rasterLayer, 'boundary_country_outline')
+    map.value.addLayer(rasterLayer, 'boundary_country_outline')
   }
 }
 
 function removeOldLayers(): void {
   for (let i = counter - 1; i > 0; i--) {
     const oldLayerId = getFrameId(currentLayer, i)
-    if (mapObject.getLayer(oldLayerId)) {
-      mapObject.removeLayer(oldLayerId)
-      mapObject.removeSource(oldLayerId)
+    if (map.value.getLayer(oldLayerId)) {
+      map.value.removeLayer(oldLayerId)
+      map.value.removeSource(oldLayerId)
     } else {
       break
     }
