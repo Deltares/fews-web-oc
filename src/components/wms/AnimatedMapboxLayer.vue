@@ -8,10 +8,11 @@ import { nextTick, onMounted, Ref, watch } from 'vue'
 import { toMercator } from '@turf/projection'
 import {
   ImageSource,
-  ImageSourceRaw,
+  type ImageSourceOptions,
+  type ImageSourceRaw,
   LngLatBounds,
   Map,
-  RasterLayer,
+  type RasterLayer,
 } from 'mapbox-gl'
 import { configManager } from '@/services/application-config'
 import { useMap } from '@studiometa/vue-mapbox-gl'
@@ -71,21 +72,26 @@ function addHooksToMapObject() {
   })
 }
 
-function updateSource() {
-  if (props.layer === undefined) return
+function getImageSourceOptions(): ImageSourceOptions {
+  if (props.layer === undefined) return {}
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const time = props.layer.time.toISOString()
-  const source = map.value.getSource(newLayerId) as ImageSource
   const bounds = map.value.getBounds()
   const canvas = map.value.getCanvas()
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  source.updateImage({
+  const imageSourceOptions = {
     url: `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${
       props.layer.name
     }&crs=EPSG:3857&bbox=${getMercatorBboxFromBounds(bounds)}&height=${
       canvas.height
     }&width=${canvas.width}&time=${time}`,
     coordinates: getCoordsFromBounds(bounds),
-  })
+  }
+  return imageSourceOptions
+}
+
+function updateSource() {
+  const source = map.value.getSource(newLayerId) as ImageSource
+  source.updateImage(getImageSourceOptions())
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
@@ -168,27 +174,18 @@ function onLayerChange(): void {
     currentLayer = props.layer.name
   }
 
-  const time = props.layer.time.toISOString()
   counter += 1
   newLayerId = getFrameId(props.layer.name, counter)
   const source = map.value.getSource(newLayerId)
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   if (currentLayer !== originalLayerName) {
     // set default zoom only if layer is changed
     setDefaultZoom()
   }
 
   if (source === undefined) {
-    const bounds = map.value.getBounds()
-    const canvas = map.value.getCanvas()
     const rasterSource: ImageSourceRaw = {
       type: 'image',
-      url: `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${
-        props.layer.name
-      }&crs=EPSG:3857&bbox=${getMercatorBboxFromBounds(bounds)}&height=${
-        canvas.height
-      }&width=${canvas.width}&time=${time}`,
-      coordinates: getCoordsFromBounds(bounds),
+      ...getImageSourceOptions(),
     }
     map.value.addSource(newLayerId, rasterSource)
     const rasterLayer: RasterLayer = {
