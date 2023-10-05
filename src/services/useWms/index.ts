@@ -19,7 +19,7 @@ export interface UseWmsReturn {
 
 export function useWmsLayer(
   baseUrl: string,
-  layerName: MaybeRefOrGetter,
+  layerName: MaybeRefOrGetter<string>,
 ): UseWmsReturn {
   const legendGraphic = ref<GetLegendGraphicResponse>()
   let wmsUrl = `${baseUrl.toString()}/wms`
@@ -27,10 +27,10 @@ export function useWmsLayer(
   const times = ref<Date[]>()
 
   async function loadTimes(): Promise<void> {
+    const _layers = toValue(layerName)
     try {
-      let layers = toValue(layerName)
       const capabilities = await wmsProvider.getCapabilities({
-        layers: layers,
+        layers: _layers,
         importFromExternalDataSource: false,
         onlyHeaders: false,
         forecastCount: 1,
@@ -40,7 +40,7 @@ export function useWmsLayer(
       if (capabilities.layers.length > 0) {
         selectedLayer = capabilities.layers[0]
         capabilities.layers.forEach((l) => {
-          if (l.name === layers) {
+          if (l.name === _layers) {
             selectedLayer = l
           }
         })
@@ -78,9 +78,11 @@ export function useWmsLayer(
   }
 
   async function loadCapabilities(): Promise<void> {
+    const _layers = toValue(layerName)
+    if (_layers === '') return
     try {
       legendGraphic.value = await wmsProvider.getLegendGraphic({
-        layers: toValue(layerName),
+        layers: _layers,
       })
     } catch (error) {
       console.log(error)
