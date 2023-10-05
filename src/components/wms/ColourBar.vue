@@ -19,8 +19,8 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { mobile } = useDisplay()
-let isVisible = ref<boolean>(true)
-let group: any = undefined
+const isVisible = ref<boolean>(true)
+let group: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
 watch(
   () => props.colourMap,

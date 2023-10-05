@@ -22,7 +22,7 @@ export function useWmsLayer(
   layerName: MaybeRefOrGetter<string>,
 ): UseWmsReturn {
   const legendGraphic = ref<GetLegendGraphicResponse>()
-  let wmsUrl = `${baseUrl.toString()}/wms`
+  const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl)
   const times = ref<Date[]>()
 
@@ -59,12 +59,6 @@ export function useWmsLayer(
           valueDates = dates.filter(
             (d) => d >= firstValueDate && d <= lastValueDate,
           )
-          if (
-            selectedLayer.keywordList &&
-            selectedLayer.keywordList[0].forecastTime
-          ) {
-            //this.externalForecast = new Date(selectedLayer.keywordList[0].forecastTime)
-          }
         } else {
           valueDates = []
         }
@@ -100,7 +94,7 @@ export function useWmsCapilities(
   baseUrl: string,
 ): Ref<GetCapabilitiesResponse | undefined> {
   const capabilities = ref<GetCapabilitiesResponse>()
-  let wmsUrl = `${baseUrl.toString()}/wms`
+  const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl)
 
   async function loadCapabilities(): Promise<void> {
