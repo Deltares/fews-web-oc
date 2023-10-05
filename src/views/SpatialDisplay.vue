@@ -8,7 +8,7 @@
       <animated-mapbox-layer :layer="layerOptions" />
     </MapComponent>
     <div class="colourbar">
-      <ColourBar :value="legend" />
+      <ColourBar :colourMap="legend" />
     </div>
     <DateTimeSlider
       v-model:selectedDate="currentTime"

@@ -11,11 +11,11 @@ import * as webOcCharts from '@deltares/fews-web-oc-charts'
 import { useDisplay } from 'vuetify'
 
 interface Props {
-  value?: webOcCharts.ColourMap
+  colourMap?: webOcCharts.ColourMap
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  value: undefined,
+  colourMap: undefined,
 })
 
 const { mobile } = useDisplay()
@@ -23,7 +23,7 @@ let isVisible = ref<boolean>(true)
 let group: any = undefined
 
 watch(
-  () => props.value,
+  () => props.colourMap,
   () => {
     updateColourBar()
   },
@@ -46,7 +46,7 @@ onMounted(() => {
 })
 
 function updateColourBar() {
-  if (!props.value) return
+  if (!props.colourMap) return
   if (group == undefined) return
 
   // Remove possible previous colour map.
@@ -59,7 +59,7 @@ function updateColourBar() {
   }
   new webOcCharts.ColourBar(
     group as any,
-    props.value,
+    props.colourMap,
     mobile ? 250 : 400,
     30,
     options,
