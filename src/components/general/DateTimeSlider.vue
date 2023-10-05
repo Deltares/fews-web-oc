@@ -81,8 +81,9 @@ let followNowIntervalTimer: ReturnType<typeof setInterval> | null = null
 
 // Synchronise selectedDate property and local index variable.
 watch(dateIndex, (index) => {
-  emit('update:selectedDate', props.dates[index])
+  emit('update:selectedDate', props.dates[index] ?? new Date())
 })
+
 watch(
   () => props.selectedDate,
   (selectedDate) => {

@@ -73,17 +73,12 @@ const legend = computed(() => {
 })
 
 watch(wmsLayerResponse.times, () => {
-  let timesValue = wmsLayerResponse.times.value
+  const timesValue = wmsLayerResponse.times.value
   if (timesValue) {
     times.value = timesValue
     dateController.dates = timesValue
-    if (currentTime.value === undefined) {
-      currentTime.value = timesValue[0]
-      dateController.selectDate(currentTime.value)
-    } else {
-      dateController.selectDate(currentTime.value)
-      currentTime.value = dateController.currentTime
-    }
+    dateController.selectDate(currentTime.value)
+    currentTime.value = dateController.currentTime
   }
   setLayerOptions()
 })

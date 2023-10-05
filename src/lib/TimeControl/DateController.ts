@@ -4,6 +4,7 @@ export class DateController {
 
   constructor(dates: Date[]) {
     this.dates = dates
+    this.currentTime = dates[0] ?? new Date()
   }
 
   getMatchingDate(date: Date): number {
@@ -19,10 +20,10 @@ export class DateController {
     return -1
   }
   selectDate(date: Date): void {
-    if (date === undefined) {
-      console.log('dd')
+    if (this.dates === undefined || this.dates.length === 0) {
+      this.currentTime = new Date()
+      return
     }
-    if (this.dates === undefined || this.dates.length === 0) return
     const index = this.getMatchingDate(date)
     if (index === -1) {
       if (this.dates[0].getTime() > date.getTime()) {

@@ -19,18 +19,16 @@ import { useMap } from '@studiometa/vue-mapbox-gl'
 import { point } from '@turf/helpers'
 
 export interface MapboxLayerOptions {
-  name: string
-  time: Date
-  bbox: LngLatBounds
+  name?: string
+  time?: Date
+  bbox?: LngLatBounds
 }
 
 interface Props {
-  layer: MapboxLayerOptions | undefined
+  layer?: MapboxLayerOptions
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  layer: undefined,
-})
+const props = withDefaults(defineProps<Props>(), {})
 
 const { map } = useMap() as { map: Ref<Map> }
 
@@ -73,7 +71,7 @@ function addHooksToMapObject() {
 }
 
 function getImageSourceOptions(): ImageSourceOptions {
-  if (props.layer === undefined) return {}
+  if (props.layer === undefined || props.layer.time === undefined) return {}
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const time = props.layer.time.toISOString()
   const bounds = map.value.getBounds()
