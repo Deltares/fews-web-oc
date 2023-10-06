@@ -201,8 +201,6 @@ function loadLayersBbox(layers: Layer[]): void {
   font-size: 0.825em;
   z-index: 1000;
   background-color: none;
-  width: 500px;
-  height: 100px;
   position: absolute;
   bottom: 80px;
 }
