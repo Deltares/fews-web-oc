@@ -12,7 +12,7 @@
     </div>
     <DateTimeSlider
       v-model:selectedDate="currentTime"
-      :dates="times"
+      :dates="times ?? []"
       @update:doFollowNow="setCurrentTime"
       @update:selectedDate="updateTime"
     />
@@ -57,8 +57,7 @@ onBeforeMount(() => {
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const dateController = new DateController([])
-const times = ref<Date[]>([])
-const wmsLayerResponse = useWmsLayer(baseUrl, () => props.layerName)
+const { legendGraphic, times } = useWmsLayer(baseUrl, () => props.layerName)
 const layersBbox: { [key: string]: LngLatBounds } = {}
 const currentTime = ref<Date>(new Date())
 const active = ref<string[]>(['root'])
@@ -69,11 +68,11 @@ let debouncedSetLayerOptions!: () => void
 const items = ref<ColumnItem[]>()
 
 const legend = computed(() => {
-  return wmsLayerResponse.legendGraphic.value?.legend
+  return legendGraphic.value?.legend
 })
 
-watch(wmsLayerResponse.times, () => {
-  const timesValue = wmsLayerResponse.times.value
+watch(times, () => {
+  const timesValue = times.value
   if (timesValue) {
     times.value = timesValue
     dateController.dates = timesValue
