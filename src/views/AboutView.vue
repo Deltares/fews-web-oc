@@ -1,9 +1,9 @@
 <template>
   <v-card class="home-card">
     <v-card-title class="justify-center">
-      Welcome to the Delft-FEWS Web OC!
+      Welcome to the {{ configStore.general.title ?? 'Delft-FEWS Web OC' }}!
     </v-card-title>
-    <v-card-text v-if="store.activeComponents.length > 0">
+    <v-card-text v-if="configStore.activeComponents.length > 0">
       Select one of the following options to get started.
     </v-card-text>
     <v-card-text v-else>
@@ -12,7 +12,7 @@
     </v-card-text>
     <v-list density="compact">
       <v-list-item
-        v-for="(item, i) in store.activeComponents"
+        v-for="(item, i) in configStore.activeComponents"
         :key="i"
         :value="item"
         :to="item.to"
@@ -64,7 +64,7 @@ const webServiceVersion = ref<Version>({
   buildNumber: '',
   buildTime: '',
 })
-const store = useConfigStore()
+const configStore = useConfigStore()
 
 onMounted(async () => {
   const webServiceProvider = new PiWebserviceProvider(webServiceUrl)

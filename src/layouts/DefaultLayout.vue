@@ -8,7 +8,7 @@
     >
       <v-toolbar density="compact" fixed>
         <v-btn variant="text" :to="{ name: 'About' }">
-          <img height="36" :src="defaultLogo" />
+          <img height="36" :src="configStore.logo" />
         </v-btn>
         <v-spacer />
         <login-component v-if="configManager.authenticationIsEnabled" />
@@ -85,10 +85,7 @@ const currentItem = ref('')
 const { isRtl } = useRtl()
 const route = useRoute()
 
-const defaultLogo: string = '/images/logo.png'
-
 onBeforeMount(async () => {
-  console.log('onBeforeMount default')
   currentItem.value = route.name?.toString() ?? ''
 })
 

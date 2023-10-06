@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
-import { getFewsConfig } from '../lib/fews-config/index.js'
+import {
+  getFewsConfig,
+  getResourcesStaticUrl,
+} from '../lib/fews-config/index.js'
 import { WebOcGeneralConfig } from '@deltares/fews-pi-requests'
 import { ComponentTypeEnum, WebOcComponent } from '../lib/fews-config/types.js'
 
@@ -67,6 +70,14 @@ const useConfigStore = defineStore('config', {
           icon: getMenuIcon(component),
         }
       })
+    },
+
+    logo: (state) => {
+      if (state.general.icons?.logo) {
+        return getResourcesStaticUrl(state.general.icons.logo)
+      } else {
+        return '/images/logo.png'
+      }
     },
   },
 })

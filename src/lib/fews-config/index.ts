@@ -18,3 +18,11 @@ export async function getFewsConfig(): Promise<WebOcConfiguration> {
     webOcComponents,
   }
 }
+
+export function getResourcesStaticUrl(resource: string) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const webServiceProvider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: transformRequestFn(),
+  })
+  return webServiceProvider.resourcesStaticUrl(resource).toString()
+}
