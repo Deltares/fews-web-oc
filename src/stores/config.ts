@@ -24,6 +24,8 @@ function getMenuIcon(componentConfig: WebOcComponent): string {
       return 'mdi-chart-sankey'
     case ComponentTypeEnum.SystemMonitor:
       return 'mdi-clipboard-list'
+    case ComponentTypeEnum.TopologyDisplay:
+      return 'mdi-map-marker-multiple'
     default:
       return ''
   }

@@ -3,7 +3,10 @@
     <v-card-title class="justify-center">
       Welcome to the Delft-FEWS Web OC!
     </v-card-title>
-    <v-card-text>
+    <v-card-text v-if="store.activeComponents.length > 0">
+      Select one of the following options to get started.
+    </v-card-text>
+    <v-card-text v-else>
       Unfortunately, you do not have access
       <v-icon>mdi-emoticon-sad-outline</v-icon>
     </v-card-text>
