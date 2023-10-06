@@ -8,6 +8,7 @@ import type { MaybeRefOrGetter, Ref } from 'vue'
 import { DisplayConfig } from '../../lib/display/DisplayConfig.js'
 import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig'
 import { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
+import { transformRequestFn } from '@/lib/requests/transformRequest.js'
 
 export interface UseTopologyNodesReturn {
   error: Ref<any>
@@ -37,7 +38,9 @@ export function useTopologyNodes(
   nodeId: MaybeRefOrGetter<string>,
   plotId: MaybeRefOrGetter<number>,
 ): UseTopologyNodesReturn {
-  const piProvider = new PiWebserviceProvider(baseUrl)
+  const piProvider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: transformRequestFn(),
+  })
 
   const isReady = ref(false)
   const isLoading = ref(false)
