@@ -51,7 +51,7 @@ import packageConfig from '../../package.json'
 import { PiWebserviceProvider, Version } from '@deltares/fews-pi-requests'
 import { onMounted } from 'vue'
 import { useConfigStore } from '../stores/config.ts'
-import {configManager} from "@/services/application-config";
+import { configManager } from '@/services/application-config'
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const version = ref(packageConfig.version)
