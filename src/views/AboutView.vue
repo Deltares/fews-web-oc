@@ -51,11 +51,11 @@ import packageConfig from '../../package.json'
 import { PiWebserviceProvider, Version } from '@deltares/fews-pi-requests'
 import { onMounted } from 'vue'
 import { useConfigStore } from '../stores/config.ts'
+import {configManager} from "@/services/application-config";
 
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const version = ref(packageConfig.version)
-const webServiceUrl = ref(
-  'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices',
-)
+const webServiceUrl = ref(baseUrl)
 const webServiceVersion = ref<Version>({
   implementation: '',
   buildType: '',
@@ -65,8 +65,6 @@ const webServiceVersion = ref<Version>({
 const store = useConfigStore()
 
 onMounted(async () => {
-  const baseUrl =
-    'https://rwsos-dataservices-ont.avi.deltares.nl/iwp/test/FewsWebServices'
   const webServiceProvider = new PiWebserviceProvider(baseUrl)
   webServiceVersion.value = await (
     await webServiceProvider.getVersion()
