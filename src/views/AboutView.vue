@@ -55,6 +55,7 @@ import { PiWebserviceProvider, Version } from '@deltares/fews-pi-requests'
 import { onMounted } from 'vue'
 import { useConfigStore } from '../stores/config.ts'
 import { configManager } from '@/services/application-config'
+import { transformRequestFn } from '@/lib/requests/transformRequest'
 
 const webServiceUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const version = ref(packageConfig.version)
@@ -67,7 +68,9 @@ const webServiceVersion = ref<Version>({
 const configStore = useConfigStore()
 
 onMounted(async () => {
-  const webServiceProvider = new PiWebserviceProvider(webServiceUrl)
+  const webServiceProvider = new PiWebserviceProvider(webServiceUrl, {
+    transformRequestFn: transformRequestFn(),
+  })
   webServiceVersion.value = await (
     await webServiceProvider.getVersion()
   ).version
