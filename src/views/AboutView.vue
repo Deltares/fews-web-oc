@@ -53,9 +53,8 @@ import { onMounted } from 'vue'
 import { useConfigStore } from '../stores/config.ts'
 import { configManager } from '@/services/application-config'
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const webServiceUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const version = ref(packageConfig.version)
-const webServiceUrl = ref(baseUrl)
 const webServiceVersion = ref<Version>({
   implementation: '',
   buildType: '',
@@ -65,7 +64,7 @@ const webServiceVersion = ref<Version>({
 const store = useConfigStore()
 
 onMounted(async () => {
-  const webServiceProvider = new PiWebserviceProvider(baseUrl)
+  const webServiceProvider = new PiWebserviceProvider(webServiceUrl)
   webServiceVersion.value = await (
     await webServiceProvider.getVersion()
   ).version
