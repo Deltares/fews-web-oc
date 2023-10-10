@@ -8,7 +8,7 @@ import {
 import { ref, shallowRef, toValue, watchEffect } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl.ts'
 import type { MaybeRefOrGetter, Ref } from 'vue'
-
+import { transformRequestFn } from '@/lib/requests/transformRequest'
 export interface UseSsdReturn {
   error: Ref<any>
   capabilities: Ref<SsdGetCapabilitiesResponse | undefined>
@@ -44,7 +44,9 @@ export function useSsd(
   panelId: MaybeRefOrGetter<string>,
   time: MaybeRefOrGetter<string>,
 ): UseSsdReturn {
-  const ssdProvider = new SsdWebserviceProvider(baseUrl)
+  const ssdProvider = new SsdWebserviceProvider(baseUrl, {
+    transformRequestFn: transformRequestFn(),
+  })
 
   const isReady = ref(false)
   const isLoading = ref(false)
