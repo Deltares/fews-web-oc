@@ -26,6 +26,7 @@
         @load="onLoad"
         @action="onAction"
         style="width: 100%"
+        :transformRequestFn="transformRequestFn()"
       >
       </schematic-status-display>
     </div>
@@ -36,6 +37,7 @@
 import { nextTick, onBeforeUnmount } from 'vue'
 import { ref, onMounted, watch } from 'vue'
 import { useDisplay } from 'vuetify'
+import { transformRequestFn } from '@/lib/requests/transformRequest'
 
 interface Props {
   src?: string
