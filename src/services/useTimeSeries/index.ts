@@ -5,7 +5,7 @@ import { absoluteUrl } from '../../lib/utils/absoluteUrl'
 import { DateTime, Interval } from 'luxon'
 import { Series } from '../../lib/timeseries/timeSeries'
 import { SeriesUrlRequest } from '../../lib/timeseries/timeSeriesResource'
-import { transformRequestFn } from '@/lib/requests/transformRequest'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 export interface UseTimeSeriesReturn {
   error: Ref<any>
@@ -58,7 +58,7 @@ export function useTimeSeries(
     controller.abort()
     controller = new AbortController()
     const piProvider = new PiWebserviceProvider(baseUrl, {
-      transformRequestFn: transformRequestFn(controller),
+      transformRequestFn: createTransformRequestFn(controller),
     })
     const _requests = toValue(requests)
     for (const r in _requests) {

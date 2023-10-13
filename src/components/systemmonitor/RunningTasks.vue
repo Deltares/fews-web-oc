@@ -27,7 +27,7 @@ import {
 import { configManager } from '../../services/application-config'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { VDataTable } from 'vuetify/labs/VDataTable'
-import { transformRequestFn } from '@/lib/requests/transformRequest'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
   ? UnwrapReadonlyArrayType<I>
   : A
@@ -39,7 +39,7 @@ const props = defineProps(['timeOut'])
 let noDataText = ref('Loading data..')
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const webServiceProvider = new PiWebserviceProvider(baseUrl, {
-  transformRequestFn: transformRequestFn(),
+  transformRequestFn: createTransformRequestFn(),
 })
 
 onUnmounted(() => {

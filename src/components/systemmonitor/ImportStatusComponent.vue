@@ -27,7 +27,7 @@ import { ImportStatus, PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { configManager } from '../../services/application-config'
 import { VDataTable } from 'vuetify/labs/VDataTable'
-import { transformRequestFn } from '@/lib/requests/transformRequest'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
   ? UnwrapReadonlyArrayType<I>
   : A
@@ -49,7 +49,7 @@ let active: boolean = false
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const webServiceProvider = new PiWebserviceProvider(baseUrl, {
-  transformRequestFn: transformRequestFn(),
+  transformRequestFn: createTransformRequestFn(),
 })
 
 onUnmounted(() => {

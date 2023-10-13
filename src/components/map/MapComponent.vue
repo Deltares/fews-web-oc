@@ -31,17 +31,17 @@ onBeforeMount(() => {
 function transformRequest(url: string, resourceType: ResourceType) {
   if (!configManager.authenticationIsEnabled)
     return {
-      url: url,
+      url,
     }
   if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
     const requestAuthHeaders = authenticationManager.getAuthorizationHeaders()
     return {
-      url: url,
+      url,
       headers: requestAuthHeaders,
     }
   }
   return {
-    url: url,
+    url,
   }
 }
 </script>

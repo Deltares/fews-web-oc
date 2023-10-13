@@ -11,7 +11,7 @@ import { toWgs84 } from '@turf/projection'
 import { point } from '@turf/helpers'
 import { LngLatBounds } from 'mapbox-gl'
 import { GetLegendGraphicResponse } from '@deltares/fews-wms-requests/src/response/getLegendGraphicResponse.ts'
-import { transformRequestFn } from '@/lib/requests/transformRequest'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 export interface UseWmsReturn {
   legendGraphic: Ref<GetLegendGraphicResponse | undefined>
@@ -25,7 +25,7 @@ export function useWmsLayer(
   const legendGraphic = ref<GetLegendGraphicResponse>()
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
-    transformRequestFn: transformRequestFn(),
+    transformRequestFn: createTransformRequestFn(),
   })
   const times = ref<Date[]>()
 
@@ -99,7 +99,7 @@ export function useWmsCapilities(
   const capabilities = ref<GetCapabilitiesResponse>()
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
-    transformRequestFn: transformRequestFn(),
+    transformRequestFn: createTransformRequestFn(),
   })
 
   async function loadCapabilities(): Promise<void> {

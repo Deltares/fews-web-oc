@@ -14,7 +14,7 @@ import {
   toValue,
   watchEffect,
 } from 'vue'
-import { transformRequestFn } from '@/lib/requests/transformRequest'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 export interface UseSsdPiReturn {
   displayConfig: Ref<DisplayConfig | undefined>
@@ -31,7 +31,7 @@ export function useSsdPi(
   plotId?: MaybeRefOrGetter<number>,
 ): UseSsdPiReturn {
   const ssdProvider = new SsdWebserviceProvider(baseUrl, {
-    transformRequestFn: transformRequestFn(),
+    transformRequestFn: createTransformRequestFn(),
   })
 
   const isReady = ref(false)
