@@ -4,7 +4,7 @@ import type { DisplayConfig } from '@/lib/display/DisplayConfig'
 import {
   ClickType,
   SsdWebserviceProvider,
-  ActionWithConfigRequest,
+  type ActionRequest,
 } from '@deltares/fews-ssd-requests'
 import {
   ref,
@@ -14,6 +14,7 @@ import {
   toValue,
   watchEffect,
 } from 'vue'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 export interface UseSsdPiReturn {
   displayConfig: Ref<DisplayConfig | undefined>
@@ -29,7 +30,9 @@ export function useSsdPi(
   objectId: MaybeRefOrGetter<string>,
   plotId?: MaybeRefOrGetter<number>,
 ): UseSsdPiReturn {
-  const ssdProvider = new SsdWebserviceProvider(baseUrl)
+  const ssdProvider = new SsdWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
 
   const isReady = ref(false)
   const isLoading = ref(false)
@@ -39,7 +42,7 @@ export function useSsdPi(
 
   watchEffect(async () => {
     const _displays: DisplayConfig[] = []
-    const filter: ActionWithConfigRequest = {
+    const filter: ActionRequest = {
       panelId: toValue(panelId),
       objectId: toValue(objectId),
       clickType: ClickType.LEFTSINGLECLICK,
@@ -51,12 +54,10 @@ export function useSsdPi(
       if (result.config === undefined) continue
       const title = result.config.timeSeriesDisplay.title ?? ''
       let subplots: ChartConfig[] = []
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       if (result.config.timeSeriesDisplay.subplots) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         subplots = result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           return timeSeriesDisplayToChartConfig(subPlot, title)
         })
       }

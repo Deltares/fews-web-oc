@@ -1,15 +1,18 @@
 <template>
   <v-card class="home-card">
     <v-card-title class="justify-center">
-      Welcome to the Delft-FEWS Web OC!
+      Welcome to the {{ configStore.general.title ?? 'Delft-FEWS Web OC' }}!
     </v-card-title>
-    <v-card-text>
+    <v-card-text v-if="configStore.activeComponents.length > 0">
+      Select one of the following options to get started.
+    </v-card-text>
+    <v-card-text v-else>
       Unfortunately, you do not have access
       <v-icon>mdi-emoticon-sad-outline</v-icon>
     </v-card-text>
     <v-list density="compact">
       <v-list-item
-        v-for="(item, i) in store.activeComponents"
+        v-for="(item, i) in configStore.activeComponents"
         :key="i"
         :value="item"
         :to="item.to"
@@ -52,6 +55,7 @@ import { PiWebserviceProvider, Version } from '@deltares/fews-pi-requests'
 import { onMounted } from 'vue'
 import { useConfigStore } from '../stores/config.ts'
 import { configManager } from '@/services/application-config'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 const webServiceUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const version = ref(packageConfig.version)
@@ -61,10 +65,12 @@ const webServiceVersion = ref<Version>({
   buildNumber: '',
   buildTime: '',
 })
-const store = useConfigStore()
+const configStore = useConfigStore()
 
 onMounted(async () => {
-  const webServiceProvider = new PiWebserviceProvider(webServiceUrl)
+  const webServiceProvider = new PiWebserviceProvider(webServiceUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
   webServiceVersion.value = await (
     await webServiceProvider.getVersion()
   ).version

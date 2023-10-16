@@ -8,10 +8,10 @@
     >
       <v-toolbar density="compact" fixed>
         <v-btn variant="text" :to="{ name: 'About' }">
-          <img height="36" :src="defaultLogo" />
+          <img height="36" :src="configStore.logo" />
         </v-btn>
         <v-spacer />
-        <login-component />
+        <login-component v-if="configManager.authenticationIsEnabled" />
       </v-toolbar>
       <v-menu origin="left" min-width="320">
         <template #activator="{ isActive, props }">
@@ -75,6 +75,7 @@ import { useConfigStore } from '../stores/config.ts'
 import { Alert, useAlertsStore } from '../stores/alerts.ts'
 import { useRoute } from 'vue-router'
 import LoginComponent from '../views/auth/LoginComponent.vue'
+import { configManager } from '@/services/application-config'
 
 const configStore = useConfigStore()
 const alertsStore = useAlertsStore()
@@ -84,10 +85,7 @@ const currentItem = ref('')
 const { isRtl } = useRtl()
 const route = useRoute()
 
-const defaultLogo: string = '/images/logo.png'
-
 onBeforeMount(async () => {
-  console.log('onBeforeMount default')
   currentItem.value = route.name?.toString() ?? ''
 })
 

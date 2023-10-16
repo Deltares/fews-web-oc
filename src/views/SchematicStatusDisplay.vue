@@ -27,12 +27,11 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ActionType,
-  DisplayGroup,
-  DisplayPanel,
-  Result,
-  ResultRequest,
+import type {
+  SsdActionResult,
+  SsdDisplayGroup,
+  SsdDisplayPanel,
+  SsdActionRequest,
 } from '@deltares/fews-ssd-requests'
 import debounce from 'lodash-es/debounce'
 import { ref, onMounted, computed, watch } from 'vue'
@@ -60,7 +59,7 @@ interface Props {
 interface SsdActionEventPayload {
   objectId: string
   panelId: string
-  results: Result[]
+  results: SsdActionResult[]
 }
 
 const sliderDebounceInterval = 500
@@ -148,8 +147,8 @@ const { capabilities, src, dates } = useSsd(
 // If the capabilities changes, make sure our currently selected groupId and panelId are still
 // valid. If invalid or empty, select the first group and panel.
 watch(capabilities, () => {
-  let group: DisplayGroup | null = null
-  let panel: DisplayPanel | null = null
+  let group: SsdDisplayGroup | null = null
+  let panel: SsdDisplayPanel | null = null
 
   if (props.groupId !== '' && capabilities.value) {
     group =
@@ -208,14 +207,13 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
   }
 
   switch (results[0].type) {
-    case ActionType.URL:
-    case ActionType.PDF:
+    case 'PDF':
       window.open(new URL(results[0].requests[0].request))
       break
-    case ActionType.SSD:
+    case 'SSD':
       switchPanel(results[0].requests[0])
       break
-    case ActionType.PI:
+    case 'PI':
       openTimeSeriesDisplay(panelId, objectId)
       break
     default:
@@ -226,7 +224,7 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
   }
 }
 
-function switchPanel(request: ResultRequest): void {
+function switchPanel(request: SsdActionRequest): void {
   if (!capabilities.value) return
 
   // We want to use the URL web API to parse the query parameters of the relative URL specified in

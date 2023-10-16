@@ -24,10 +24,10 @@ import {
   TaskRunsFilter,
   TaskRunsResponse,
 } from '@deltares/fews-pi-requests'
-import { authenticationManager } from '../../services/authentication/AuthenticationManager.ts'
 import { configManager } from '../../services/application-config'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { VDataTable } from 'vuetify/labs/VDataTable'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
   ? UnwrapReadonlyArrayType<I>
   : A
@@ -38,10 +38,8 @@ const props = defineProps(['timeOut'])
 
 let noDataText = ref('Loading data..')
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const transformRequestFn = (request: Request) =>
-  Promise.resolve(authenticationManager.transformRequestAuth(request))
 const webServiceProvider = new PiWebserviceProvider(baseUrl, {
-  transformRequestFn,
+  transformRequestFn: createTransformRequestFn(),
 })
 
 onUnmounted(() => {
@@ -65,7 +63,6 @@ onMounted(() => {
 })
 
 function getColor(status: any): string {
-  console.log(status)
   switch (status) {
     case 'pending':
       return 'light-gray'

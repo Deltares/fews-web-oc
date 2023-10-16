@@ -1,40 +1,38 @@
 import {
   datesFromPeriod,
   SsdWebserviceProvider,
-} from '@deltares/fews-ssd-requests'
-import type {
-  Capabilities,
-  DisplayGroup,
-  DisplayPanel,
+  type SsdGetCapabilitiesResponse,
+  type SsdDisplayGroup,
+  type SsdDisplayPanel,
 } from '@deltares/fews-ssd-requests'
 import { ref, shallowRef, toValue, watchEffect } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl.ts'
 import type { MaybeRefOrGetter, Ref } from 'vue'
-
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 export interface UseSsdReturn {
   error: Ref<any>
-  capabilities: Ref<Capabilities | undefined>
+  capabilities: Ref<SsdGetCapabilitiesResponse | undefined>
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
   src: Ref<string>
-  group: Ref<DisplayGroup | undefined>
-  panel: Ref<DisplayPanel | undefined>
+  group: Ref<SsdDisplayGroup | undefined>
+  panel: Ref<SsdDisplayPanel | undefined>
   dates: Ref<Date[]>
 }
 
 function findGroup(
-  capabilities: Capabilities,
+  capabilities: SsdGetCapabilitiesResponse,
   name: string,
-): DisplayGroup | undefined {
+): SsdDisplayGroup | undefined {
   return capabilities.displayGroups.find((g) => {
     return g.name === name
   })
 }
 
 function findPanel(
-  group: DisplayGroup,
+  group: SsdDisplayGroup,
   name: string,
-): DisplayPanel | undefined {
+): SsdDisplayPanel | undefined {
   return group.displayPanels.find((g) => {
     return g.name === name
   })
@@ -46,15 +44,17 @@ export function useSsd(
   panelId: MaybeRefOrGetter<string>,
   time: MaybeRefOrGetter<string>,
 ): UseSsdReturn {
-  const ssdProvider = new SsdWebserviceProvider(baseUrl)
+  const ssdProvider = new SsdWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
 
   const isReady = ref(false)
   const isLoading = ref(false)
-  const capabilities = ref<Capabilities>()
+  const capabilities = ref<SsdGetCapabilitiesResponse>()
   const error = shallowRef<unknown | undefined>(undefined)
   const src = ref('')
-  const group = ref<DisplayGroup>()
-  const panel = ref<DisplayPanel>()
+  const group = ref<SsdDisplayGroup>()
+  const panel = ref<SsdDisplayPanel>()
   const dates = ref<Date[]>([])
 
   async function loadCapabilities(): Promise<void> {
@@ -88,7 +88,9 @@ export function useSsd(
 
     // Update the available dates for this display.
     if (panel.value.dimension) {
-      dates.value = datesFromPeriod(panel.value.dimension.period)
+      if (panel.value.dimension.period) {
+        dates.value = datesFromPeriod(panel.value.dimension.period)
+      }
     }
 
     // Update the source URL based on the found panel.
