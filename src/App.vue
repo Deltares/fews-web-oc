@@ -131,5 +131,9 @@ html, body {
   position: relative;
   bottom: 70px;
   right: 15px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 </style>
