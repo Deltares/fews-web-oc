@@ -10,9 +10,18 @@
       v-on:change="onInputChange"
       :hideLabel="true"
       lazy direction="btt" tooltip="always" tooltipPlacement="left" height="200px" ref="slider">
-      <template v-slot:tooltip="{ value }">
-        <div class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text">{{
-          Math.round(value) }} m MSL</div>
+      <template v-slot:tooltip>
+        <div class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text" >
+          <v-text-field ref="tooltipInput" v-if="isEditingTooltip"
+            @keydown.escape.stop="disableTooltipEdit"
+            @keydown.enter.stop="acceptTooltipEdit"
+            @blur="acceptTooltipEdit"
+            v-model.number="currentTooltipValue"
+            type="number"
+            class="tooltip-input"
+          />
+          <div v-else @click="enableTooltipEdit">{{ Math.round(currentValue) }} m MSL</div>
+        </div>
       </template>
     </vue-slider>
   </div>
@@ -39,17 +48,43 @@ export default class ElevationSlider extends Vue {
   @Prop({ default: 0 }) minValue!: number
   @Prop({ default: -10 }) maxValue!: number
 
+  currentTooltipValue: number = 0
   currentValue: number = 0
   readonly numberOfMarks: number = 8
   marks: number[] = []
+  isEditingTooltip: boolean = false
 
   beforeMount() {
     this.currentValue = this.value
+    this.currentTooltipValue = this.currentValue
   }
 
   mounted() {
     const innerMarks = Array.from({length: this.numberOfMarks - 1}, (_, i) => (i + 1) * -roundToNearest100(this.stepSize))
     this.marks = [this.maxValue, ...innerMarks, this.minValue]
+  }
+
+
+  enableTooltipEdit() {
+    this.isEditingTooltip = true
+    this.currentTooltipValue = Math.round(this.currentValue)
+
+    this.$nextTick(() => {
+      const tooltipInputRef = this.$refs.tooltipInput as HTMLElement
+      tooltipInputRef.focus()
+    })
+  }
+
+  disableTooltipEdit() {
+    this.isEditingTooltip = false
+
+    const sliderRef = this.$refs.slider as VueSlider
+    sliderRef.focus()
+  }
+
+  acceptTooltipEdit() {
+    this.currentValue = Math.min(this.maxValue, Math.max(this.minValue, this.currentTooltipValue))
+    this.disableTooltipEdit()
   }
 
   get interval(): number {
@@ -71,25 +106,18 @@ export default class ElevationSlider extends Vue {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore: findLast not defined for ts array type, fixed in ts-5.0
         newValue = this.marks.findLast((value) => value > this.currentValue);
-
-        if (newValue === undefined) {
-          newValue = this.marks[0]
-        }
+        this.currentValue = newValue ?? this.marks[0]
         break;
       case "ArrowRight":
       case "ArrowDown":
         newValue = this.marks.find((value) => value < this.currentValue);
-
-        if (newValue === undefined) {
-          newValue = this.marks[this.marks.length - 1]
-        }
+        this.currentValue = newValue ?? this.marks[this.marks.length - 1]
         break;
-      default:
-        return false;
+      case "Enter":
+        this.enableTooltipEdit()
+        break;
     }
 
-    const slider = this.$refs.slider as VueSlider
-    slider.setValue(newValue)
     return false
   }
 
@@ -113,5 +141,12 @@ export default class ElevationSlider extends Vue {
   position: absolute;
   right: 20px;
   bottom: 100px;
+}
+
+.tooltip-input {
+  width: 70px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
 }
 </style>
