@@ -17,6 +17,8 @@
             @keydown.enter.stop="acceptTooltipEdit"
             @blur="acceptTooltipEdit"
             v-model.number="currentTooltipValue"
+            hide-spin-buttons
+            hide-details
             type="number"
             class="tooltip-input"
           />
@@ -72,6 +74,9 @@ export default class ElevationSlider extends Vue {
     this.$nextTick(() => {
       const tooltipInputRef = this.$refs.tooltipInput as HTMLElement
       tooltipInputRef.focus()
+
+      const sliderRef = this.$refs.slider as VueSlider
+      sliderRef.blur()
     })
   }
 
@@ -144,7 +149,7 @@ export default class ElevationSlider extends Vue {
 }
 
 .tooltip-input {
-  width: 70px;
+  width: 50px;
   height: 40px;
   margin: 0;
   padding: 0;
