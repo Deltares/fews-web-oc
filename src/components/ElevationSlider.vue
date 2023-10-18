@@ -6,15 +6,14 @@
       :min="minValue"
       :marks="marks"
       :interval="interval"
-      :keydownHook="onKeydown"
+      :keydownHook="onSliderKeydown"
       v-on:change="onInputChange"
       :hideLabel="true"
       lazy direction="btt" tooltip="always" tooltipPlacement="left" height="200px" ref="slider">
       <template v-slot:tooltip>
         <div class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text" >
           <v-text-field ref="tooltipInput" v-if="isEditingTooltip"
-            @keydown.escape.stop="disableTooltipEdit"
-            @keydown.enter.stop="acceptTooltipEdit"
+            @keydown.stop="onTooltipKeydown"
             @blur="acceptTooltipEdit"
             v-model.number="currentTooltipValue"
             hide-spin-buttons
@@ -102,7 +101,18 @@ export default class ElevationSlider extends Vue {
     this.currentValue = this.value
   }
 
-  onKeydown(e: KeyboardEvent) {
+  onTooltipKeydown(e: KeyboardEvent) {
+    switch (e.key) {
+      case "Enter":
+        this.acceptTooltipEdit()
+        break;
+      case "Escape":
+        this.disableTooltipEdit()
+        break;
+    }
+  }
+
+  onSliderKeydown(e: KeyboardEvent) {
     let newValue: number | undefined = 0;
 
     switch (e.key) {
