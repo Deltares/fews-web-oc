@@ -130,9 +130,14 @@ export default class ConfigurableChart extends Vue {
   setChartConfigValues(axisOptions: CartesianAxesOptions): void {
     const chartConfig = this.value
     const yAxisOptions = chartConfig.yAxis
+    const xAxisOptions = chartConfig.xAxis
 
     yAxisOptions?.forEach((axis, i) => {
       axisOptions.y[i].type = axis.type as AxisType
+    })
+
+    xAxisOptions?.forEach((axis, i) => {
+      axisOptions.x[i].type = axis.type as AxisType
     })
   }
 
