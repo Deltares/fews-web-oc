@@ -11,7 +11,7 @@
         </p>
       </v-card-text>
     </v-card>
-    <ComponentsPanel :displays="displays" :series="timeSeriesStore"/>
+    <ComponentsPanel :displays="displays" :series="seriesStore"/>
     <div style="width: 200px;" v-if="plots.length === 0">
       No plots
     </div>
@@ -81,7 +81,7 @@ export default class SSDTimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
 
 
   async onNodeChange(action: any): Promise<void> {
-    this.timeSeriesStore = {}
+    this.seriesStore = {}
     this.requests = [];
     this.plots = [];
     this.allDisplays = [];
@@ -98,7 +98,7 @@ export default class SSDTimeSeriesDisplay extends Mixins(TimeSeriesMixin) {
           types: [DisplayType.TimeSeriesChart, DisplayType.TimeSeriesTable],
           class: 'single',
           title: result.config.timeSeriesDisplay.title,
-          config: timeSeriesDisplayToChartConfig(subPlot, title)
+          config: Array(2).fill(timeSeriesDisplayToChartConfig(subPlot, title))
         })
       }
       this.allDisplays.push(display);

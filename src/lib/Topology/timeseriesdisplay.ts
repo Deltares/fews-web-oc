@@ -52,18 +52,34 @@ async function fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
 ): Promise<[DisplayConfig[], ActionRequest[]]> {
 
   let response: ActionsResponse | null = null
-
+  let elevationResponse: ActionsResponse | null = null
+  let hasElevation = false
   if (isFilterActionsFilter(filter)) {
     response = await provider.getFilterActions(filter)
   } else if (isTimeSeriesGridActionsFilter(filter)) {
     response = await provider.getTimeSeriesGridActions(filter)
+    hasElevation = filter.elevation !== undefined
+    if (hasElevation) {
+      elevationResponse = await provider.getTimeSeriesGridActions({
+        ...filter,
+        showVerticalProfile: true,
+        elevation: undefined
+      })
+      for (const result of elevationResponse.results) {
+        result.requests.forEach((request) => {
+          if (request.key === undefined) {
+            request.key = `${request.request}`
+          }
+        })
+      }
+    }
   } else {
     throw new Error('Filter type not supported')
   }
 
   let displays: DisplayConfig[] = []
   let requests: ActionRequest[] = []
-  for (const result of response.results) {
+  for (const [responseIndex, result] of response.results.entries()) {
     result.requests.forEach((request) => {
       if (request.key === undefined) {
         request.key = `${request.request}`
@@ -77,6 +93,11 @@ async function fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
       result.config.timeSeriesDisplay.subplots?.some((subplot) => subplot.items.length > result.requests.length)
 
     const title = result.config.timeSeriesDisplay.title ?? ''
+
+    let displayTypes = [DisplayType.TimeSeriesChart, DisplayType.TimeSeriesTable]
+    if (hasElevation) {
+      displayTypes = [DisplayType.ElevationChart, ...displayTypes]
+    }
 
     // for add a sequence number to the subplot items. Where the sequence number is counted first by items and then by subplots.
     // e.g. subplot 1 has 2 items, subplot 2 has 2 items. Then the sequence numbers are:
@@ -95,16 +116,30 @@ async function fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
     })
 
     const displayCur = result.config.timeSeriesDisplay.subplots?.map(
-      (subplot, index) => {
+      (subplot, subplotIndex) => {
         for (const item of subplot.items) {
           item.request ??= result.requests[0].request;
         }
+        const timeSeriesConfig = timeSeriesDisplayToChartConfig(subplot, title)
+        let config = Array(2).fill(timeSeriesConfig)
+
+        if (hasElevation) {
+          const elevationSubplot = elevationResponse?.results[responseIndex]?.config?.timeSeriesDisplay.subplots?.[subplotIndex]
+          if (elevationSubplot !== undefined) {
+            for (const item of elevationSubplot.items) {
+              item.request ??= elevationResponse?.results[responseIndex].requests[0].request
+            }
+            const elevationConfig = timeSeriesDisplayToChartConfig(elevationSubplot, title)
+            config = [elevationConfig, ...config]
+          }
+        }
+
         return {
-          id: `${title}-${index}`,
-          types: [DisplayType.TimeSeriesChart, DisplayType.TimeSeriesTable],
+          id: `${title}-${subplotIndex}-${hasElevation}`,
+          types: displayTypes,
           class: 'single',
           title: title,
-          config: timeSeriesDisplayToChartConfig(subplot, title)
+          config: config
         }
       }
     )
@@ -112,6 +147,12 @@ async function fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
 
     // Append requests for this time series to the list.
     requests = requests.concat(result.requests)
+  }
+
+  if (elevationResponse !== null) {
+    for (const result of elevationResponse.results) {
+      requests = requests.concat(result.requests)
+    }
   }
 
   return [displays, requests]

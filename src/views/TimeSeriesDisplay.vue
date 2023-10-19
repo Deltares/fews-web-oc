@@ -52,7 +52,7 @@
       <v-spacer/>
     </v-toolbar>
     <div style="height: 100%; width: 100%; display: flex; flex-direction: row">
-      <ComponentsPanel :displays="displays" :series="timeSeriesStore"/>
+      <ComponentsPanel :displays="displays" :series="seriesStore"/>
       <div style="width: 200px;" v-if="plots.length > 1 && !$vuetify.breakpoint.mobile">
         <v-navigation-drawer
           width="200"
@@ -233,7 +233,7 @@ export default class TimeSeriesDisplay extends Mixins(TimeSeriesMixin, PiRequest
           types: [DisplayType.TimeSeriesChart, DisplayType.TimeSeriesTable],
           class: 'single',
           title: title,
-          config: timeSeriesDisplayToChartConfig(subPlot, title)
+          config: Array(2).fill(timeSeriesDisplayToChartConfig(subPlot, title))
         })
       })
       this.allDisplays.push(display);
