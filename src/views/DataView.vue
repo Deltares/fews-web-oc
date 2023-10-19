@@ -89,7 +89,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="toggleFullscreen"></router-view>
+        <router-view :displays="displays" :series="seriesStore" @toggleFullscreen="toggleFullscreen"></router-view>
       </div>
       <div class="grid-charts fullscreen" ref="grid-charts" v-else-if="hasSelectedLocation">
         <v-toolbar class="toolbar-charts" dense flat>
@@ -417,7 +417,7 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
           types: [DisplayType.TimeSeriesChart, DisplayType.TimeSeriesTable],
           title: result.config.timeSeriesDisplay.title,
           class: 'single',
-          config: timeSeriesDisplayToChartConfig(subPlot, title)
+          config: Array(2).fill(timeSeriesDisplayToChartConfig(subPlot, title))
         })
       }
 
@@ -430,7 +430,7 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
   }
 
   private async loadTimeSeries(requests: ActionRequest[]) {
-    this.timeSeriesStore = {}
+    this.seriesStore = {}
     this.updateTimeSeries(requests)
   }
 

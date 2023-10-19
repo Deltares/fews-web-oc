@@ -82,6 +82,12 @@ export default class WindowComponent extends Vue {
             label: 'Table',
             value: displayType
           }
+        case DisplayType.ElevationChart:
+          return {
+            icon: 'mdi-tune-vertical',
+            label: 'ElevationChart',
+            value: displayType
+          }
         default:
           return {
             icon: 'mdi-alert',

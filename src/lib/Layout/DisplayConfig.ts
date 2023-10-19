@@ -2,7 +2,8 @@ import { ChartConfig } from "@/components/TimeSeriesComponent/lib/ChartConfig";
 
 export enum DisplayType {
   TimeSeriesChart = 'TimeSeriesChart',
-  TimeSeriesTable = 'TimeSeriesTable'
+  TimeSeriesTable = 'TimeSeriesTable',
+  ElevationChart = 'ElevationChart',
 }
 
 export interface DisplayConfig {
@@ -10,7 +11,7 @@ export interface DisplayConfig {
   types: DisplayType[];
   title: string;
   class: string;
-  config: Partial<ChartConfig>;
+  config: Partial<ChartConfig>[];
 }
 
 

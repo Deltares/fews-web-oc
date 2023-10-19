@@ -4,12 +4,12 @@
       <WindowComponent v-for="display in displays" :key="display.id" :class="display.class"
         :title="display.title" :displayTypes="display.types">
         <template v-slot="{displayType}">
-          <component :is="displayType" :value="display.config" :series="series" :key="display.id">
+          <component :is="displayType" :value="displayConfig(display, displayType)" :series="series" :key="display.id">
           </component>
         </template>
-        <template v-slot:toolbar-append>
-          <CSVExportComponent :series="series" :value="display.config" class="csv-export"/>
-        </template>
+        <!-- <template v-slot:toolbar-append>
+          <CSVExportComponent :series="series" :value="displayConfig(display, timeSeriesTableType)" class="csv-export"/>
+        </template> -->
       </WindowComponent>
     </div>
   </div>
@@ -18,15 +18,17 @@
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
 import TimeSeriesChart from '@/components/TimeSeriesComponent/ConfigurableChart.vue'
+import ElevationChart from '@/components/TimeSeriesComponent/ElevationChart.vue'
 import TimeSeriesTable from '@/components/TimeSeriesComponent/TimeSeriesTable.vue'
 import WindowComponent from "@/components/Layout/WindowComponent.vue"
 import CSVExportComponent from '@/components/CSVExportComponent.vue'
 import { Series } from "@/lib/TimeSeries";
-import type { DisplayConfig } from '@/lib/Layout/DisplayConfig'
+import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig'
 
 @Component({
   components: {
     TimeSeriesChart,
+    ElevationChart,
     TimeSeriesTable,
     WindowComponent,
     CSVExportComponent,
@@ -45,6 +47,13 @@ export default class ComponentsPanel extends Vue {
 
   @Prop({default: () => {return {}} })
   series!: Record<string, Series>
+
+  timeSeriesTableType = DisplayType.TimeSeriesTable
+
+  displayConfig(display: DisplayConfig, displayType: string){
+    const idx = Object.keys(display.types).filter((key: any) => display.types[key] === displayType)[0] ?? 0
+    return display.config[+idx]
+  }
 }
 </script>
 

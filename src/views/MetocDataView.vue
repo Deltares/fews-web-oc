@@ -81,7 +81,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="setChartFullscreen"/>
+        <router-view :displays="displays" :series="seriesStore" @toggleFullscreen="setChartFullscreen"/>
       </div>
       <div class="grid-charts fullscreen" v-else-if="hasDataToDisplay">
         <v-toolbar class="toolbar-charts" dense flat>
@@ -93,7 +93,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <router-view :displays="displays" :series="timeSeriesStore" @toggleFullscreen="setChartFullscreen"/>
+        <router-view :displays="displays" :series="seriesStore" @toggleFullscreen="setChartFullscreen"/>
       </div>
     </div>
   </div>
@@ -101,7 +101,7 @@
 
 <script lang="ts">
 import { FeatureCollection, Geometry } from 'geojson';
-import { debounce } from 'lodash';
+import _, { debounce } from 'lodash';
 import {
   type MapLayerMouseEvent,
   type MapLayerTouchEvent,
@@ -695,10 +695,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     const [displays, requests] = await fetchTimeSeriesDisplaysAndRequests(
       this.webServiceProvider, [coordsFilter]
     )
+
     this.displays = displays
 
     // Fetch time series for all displays.
-    await this.updateTimeSeries(requests)
+    await this.updateTimeSeries(requests, undefined, this.currentTime)
 
     this.onResize()
   }
