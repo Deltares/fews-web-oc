@@ -220,6 +220,6 @@ html, body {
 }
 
 .view-sidebar {
-  z-index: 10000
+  z-index: 150
 }
 </style>
