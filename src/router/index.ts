@@ -20,6 +20,7 @@ const SSDTimeSeriesDisplay = () =>
   import('../components/ssd/SsdTimeSeriesDisplay.vue')
 const SpatialDisplay = () => import('../views/SpatialDisplay.vue')
 const TimeSeriesDisplay = () => import('../views/TimeSeriesDisplay.vue')
+const TopologyDisplay = () => import('../views/TopologyDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
@@ -102,15 +103,9 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     meta: { authorize: [], sidebar: true },
   },
   {
-    path: '/systemmonitor',
-    name: 'SystemMonitor',
-    component: Empty,
-    meta: { authorize: [] },
-  },
-  {
     path: '/topology',
     name: 'TopologyDisplay',
-    component: Empty,
+    component: TopologyDisplay,
     meta: { authorize: [] },
   },
   {

@@ -53,7 +53,7 @@
 <script setup lang="ts">
 import ColumnMenu from '../components/general/ColumnMenu.vue'
 import { ref, watch } from 'vue'
-import { ColumnItem } from '../components/general/ColumnItem'
+import type { ColumnItem } from '../components/general/ColumnItem'
 import { configManager } from '../services/application-config'
 import { useTopologyNodes } from '../services/useTopologyNodes/index.ts'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
@@ -67,6 +67,35 @@ const TIME_SERIES_DIALOG_PANEL: string = 'time series dialog'
 interface Props {
   nodeId?: string
 }
+
+const props = withDefaults(defineProps<Props>(), {
+  nodeId: '',
+})
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+
+const active = ref<string[]>([])
+const open = ref<string[]>([])
+const items = ref<ColumnItem[]>([])
+
+const selectedPlot = ref(0)
+
+const { nodes, displays, displayConfig } = useTopologyNodes(
+  baseUrl,
+  () => props.nodeId,
+  selectedPlot,
+)
+
+const plotIds = computed(() => {
+  if (displays.value?.length) {
+    const ids = displays.value.map((d) => {
+      return d.title
+    })
+    return ids
+  } else {
+    return []
+  }
+})
 
 function anyChildNodeIsVisible(nodes: TopologyNode[] | undefined): boolean {
   if (nodes === undefined) return false
@@ -120,35 +149,6 @@ function getIcon(node: TopologyNode): string | undefined {
     return 'mdi-share'
   return undefined
 }
-
-const props = withDefaults(defineProps<Props>(), {
-  nodeId: '',
-})
-
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-
-const active = ref<string[]>([])
-const open = ref<string[]>([])
-const items = ref<ColumnItem[]>([])
-
-const selectedPlot = ref(0)
-
-const { nodes, displays, displayConfig } = useTopologyNodes(
-  baseUrl,
-  () => props.nodeId,
-  selectedPlot,
-)
-
-const plotIds = computed(() => {
-  if (displays.value?.length) {
-    const ids = displays.value.map((d) => {
-      return d.title
-    })
-    return ids
-  } else {
-    return []
-  }
-})
 
 function updateItems(): void {
   if (nodes.value) {

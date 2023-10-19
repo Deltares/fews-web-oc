@@ -19,11 +19,15 @@ export interface UseTopologyNodesReturn {
   isLoading: Ref<boolean>
 }
 
-function fillNodeMap(node: TopologyNode, map: Map<string, string>) {
-  if (node.url !== undefined) {
-    map.set(node.id, node.url)
+function createTopologyMap(
+  nodes: TopologyNode[] | undefined,
+  topologyMap: Map<string, TopologyNode>,
+) {
+  if (nodes === undefined) return undefined
+  for (const node of nodes) {
+    topologyMap.set(node.id, node)
+    createTopologyMap(node.topologyNodes, topologyMap)
   }
-  node.topologyNodes?.forEach((childNode) => fillNodeMap(childNode, map))
 }
 
 /**
@@ -48,7 +52,7 @@ export function useTopologyNodes(
   const displayConfig = ref<DisplayConfig>()
   const displays = ref<DisplayConfig[]>()
   const error = shallowRef<unknown | undefined>(undefined)
-  const urlTopologyNodeMap: Map<string, string> = new Map<string, string>()
+  const topologyMap: Map<string, TopologyNode> = new Map<string, TopologyNode>()
 
   async function loadTopologyNodes(): Promise<void> {
     isLoading.value = true
@@ -56,10 +60,8 @@ export function useTopologyNodes(
 
     try {
       const response = await piProvider.getTopologyNodes()
-      response.topologyNodes.forEach((node) =>
-        fillNodeMap(node, urlTopologyNodeMap),
-      )
       nodes.value = response.topologyNodes
+      createTopologyMap(nodes.value, topologyMap)
     } catch (error) {
       error = 'error-loading'
     } finally {
