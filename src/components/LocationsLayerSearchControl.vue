@@ -13,13 +13,14 @@
     />
     <v-autocomplete
       v-model="selectedLocation"
-      placeholder="Search Locations"
+      label="Search Locations"
+      single-line
       :items="locations"
       item-text="locationName"
       return-object
       @input="onSelectLocation"
       prepend-inner-icon="mdi-magnify"
-      class="ml-2 mt-3"
+      class="ml-2 mt-3 body-1"
       dense
     />
   </v-chip>
@@ -73,7 +74,9 @@ export default class LocationsLayerSearchControl extends Vue {
   backdrop-filter: blur(4px);
 }
 
+/* Change font size for v-autocomplete list items */
 :deep(.v-list-item .v-list-item__title) {
-  font-size: 1rem
+  font-size: 1rem;
+  font-weight: 400;
 }
 </style>
