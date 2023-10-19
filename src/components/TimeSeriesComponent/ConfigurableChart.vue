@@ -87,6 +87,8 @@ export default class ConfigurableChart extends Vue {
       }
     }
 
+    this.setChartConfigValues(axisOptions)
+
     const containerReference = this.$refs['chart-container'] as HTMLElement
     this.axis = new CartesianAxes(containerReference, null, null, axisOptions)
     const mouseOver = new MouseOver()
@@ -123,6 +125,20 @@ export default class ConfigurableChart extends Vue {
 
   get fullscreenIcon(): string {
     return this.isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
+  }
+
+  setChartConfigValues(axisOptions: CartesianAxesOptions): void {
+    const chartConfig = this.value
+    const yAxisOptions = chartConfig.yAxis
+    const xAxisOptions = chartConfig.xAxis
+
+    yAxisOptions?.forEach((axis, i) => {
+      axisOptions.y[i].type = axis.type as AxisType
+    })
+
+    xAxisOptions?.forEach((axis, i) => {
+      axisOptions.x[i].type = axis.type as AxisType
+    })
   }
 
   refreshChart(): void {

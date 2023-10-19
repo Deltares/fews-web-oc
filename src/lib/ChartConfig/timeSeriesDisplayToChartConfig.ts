@@ -81,8 +81,14 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): Axis[] {
     if (axisItem?.yAxis !== undefined) {
       const yAxis = axisItem.yAxis
       const includeZero = yAxis.axisMinValue === 0 && yAxis.axisMaxValue === undefined
+
+      // TODO: yAxis.axisType should instead be set in yAxis: TimeSeriesDisplaySubplotItemAxis
+      const isDegrees = yAxis.axisLabel?.includes("degrees") &&
+        yAxis.axisMinValue === 0 &&
+        yAxis.axisMaxValue === 360
+
       const axis: Axis = {
-        type: "value",
+        type: isDegrees ? "degrees" : "value",
         location: position,
         label: yAxis.axisLabel,
         includeZero
@@ -104,8 +110,14 @@ function xAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): Axis[] {
   const xAxis = subplot.xAxis
   if (xAxis === undefined) return []
   const includeZero = xAxis.axisMinValue === 0 && xAxis.axisMaxValue === undefined
+
+  // TODO: xAxis.axisType should instead be set in xAxis: TimeSeriesDisplaySubplotItemAxis
+  const isDegrees = xAxis.axisLabel?.includes("degrees") &&
+    xAxis.axisMinValue === 0 &&
+    xAxis.axisMaxValue === 360
+
   const axis: Axis = {
-    type: "value",
+    type: isDegrees ? "degrees" : "value",
     label: xAxis.axisLabel,
     location: "bottom",
     includeZero
