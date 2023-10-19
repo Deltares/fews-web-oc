@@ -25,7 +25,7 @@ Vue.use(VueRouter)
 const routesBase: Array<RouteConfig> = [
   {
     path: '/',
-    redirect: { name: 'About' },
+    redirect: { path: '/metoc' },
     name: 'Default',
   },
   {
