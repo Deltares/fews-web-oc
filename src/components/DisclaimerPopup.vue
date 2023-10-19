@@ -232,7 +232,7 @@
               sets out when and why we collect the data, exactly what that data is,
               and how it will be processed and, above all, protected. Please read the
               statement carefully, available on this website:
-              <a href="https://wetten.overheid.nl/BWBR0040940/2021-07-01">https://wetten.overheid.nl/BWBR0040940/2021-07-01</a>.</p>
+              https://wetten.overheid.nl/BWBR0040940/2021-07-01.</p>
           </li>
         </ul>
         <p>Article 8: Liability</p>
