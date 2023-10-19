@@ -7,6 +7,7 @@
       :marks="marks"
       :interval="interval"
       :keydownHook="onSliderKeydown"
+      @error="onError"
       v-on:change="onInputChange"
       :hideLabel="true"
       lazy direction="btt" tooltip="always" tooltipPlacement="left" height="200px" ref="slider">
@@ -34,8 +35,17 @@ import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 
 
-function roundToNearest100 (x: number) {
+function roundToNearest100(x: number) {
   return Math.round(x / 100) * 100
+}
+
+
+// Get decimal places of float (e.g. floatPrecision(54.6545) == 4)
+function floatPrecision(a: number) {
+  if (!isFinite(a)) return 0;
+  var e = 1, p = 0;
+  while (Math.round(a * e) / e !== a) { e *= 10; p++; }
+  return p;
 }
 
 
@@ -65,7 +75,6 @@ export default class ElevationSlider extends Vue {
     this.marks = [this.maxValue, ...innerMarks, this.minValue]
   }
 
-
   enableTooltipEdit() {
     this.isEditingTooltip = true
     this.currentTooltipValue = Math.round(this.currentValue)
@@ -91,9 +100,12 @@ export default class ElevationSlider extends Vue {
     this.disableTooltipEdit()
   }
 
+  onError() {
+    console.error({value: this.currentValue, min: this.minValue, max: this.maxValue, interval: this.interval})
+  }
+
   get interval(): number {
-    const difference = Math.abs(this.maxValue - this.minValue)
-    return difference / Math.round(difference)
+    return 10 ** -floatPrecision(this.maxValue - this.minValue)
   }
 
   @Watch("value")
