@@ -7,9 +7,9 @@
           <component :is="displayType" :value="displayConfig(display, displayType)" :series="series" :key="display.id">
           </component>
         </template>
-        <!-- <template v-slot:toolbar-append>
+        <template v-slot:toolbar-append>
           <CSVExportComponent :series="series" :value="displayConfig(display, timeSeriesTableType)" class="csv-export"/>
-        </template> -->
+        </template>
       </WindowComponent>
     </div>
   </div>
