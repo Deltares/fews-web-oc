@@ -5,6 +5,7 @@
       <v-spacer />
       <div>{{ webOcTitle }}</div>
       <v-spacer />
+      <DisclaimerPopup />
       <CogMenu :multipleLanguages="false"/>
     </v-app-bar>
     <v-navigation-drawer v-model="drawer" app hide-overlay :right="$vuetify.rtl" width="320"
@@ -59,6 +60,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import CogMenu from '@/components/CogMenu.vue'
+import DisclaimerPopup from '@/components/DisclaimerPopup.vue'
 import TimeControl from '@/components/timecontrol/TimeControl.vue'
 import LoginComponent from '@/components/LoginComponent.vue'
 import { namespace } from 'vuex-class'
@@ -78,6 +80,7 @@ const fewsConfigModule = namespace('fewsconfig')
 @Component({
   components: {
     CogMenu,
+    DisclaimerPopup,
     LoginComponent,
     TimeControl,
   }
