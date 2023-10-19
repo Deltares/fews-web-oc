@@ -16,14 +16,15 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import { AlertLines, CartesianAxesOptions, ChartLine, ChartMarker, WheelMode, toggleChartVisisbility} from '@deltares/fews-web-oc-charts'
-import { AxisPosition, AxisType, CartesianAxes, CurrentTime, MouseOver, ZoomHandler } from '@deltares/fews-web-oc-charts'
+import { CartesianAxesOptions, ChartLine, ChartMarker, WheelMode, toggleChartVisisbility} from '@deltares/fews-web-oc-charts'
+import { AxisPosition, AxisType, CartesianAxes, MouseOver, ZoomHandler } from '@deltares/fews-web-oc-charts'
 import { ChartConfig } from './lib/ChartConfig'
 import { ChartSeries } from './lib/ChartSeries'
-import { ThresholdLine } from './lib/ThresholdLine'
 import { Series } from '@/lib/TimeSeries'
 import { uniq } from 'lodash'
 import { extent } from 'd3'
+import { ScaleOptions } from '@deltares/fews-web-oc-charts/lib/types/Scale/scaleOptions'
+import { CartesianAxisOptions } from '@deltares/fews-web-oc-charts/lib/types/Axis/cartesianAxisOptions'
 
 interface Tag {
   id: string;
@@ -47,10 +48,7 @@ export default class ElevationChart extends Vue {
     }
   })
   series!: Record<string, Series>
-  thresholdLines: ThresholdLine[] = []
-  thresholdLinesVisitor!: AlertLines
-
-  axis!: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  axis!: CartesianAxes
   isFullscreen = false
   legendTags: Tag[] = []
 
@@ -63,6 +61,9 @@ export default class ElevationChart extends Vue {
       x: [{
         type: AxisType.value,
         position: AxisPosition.Bottom,
+        label: ' ',
+        unit: ' ',
+        nice: true,
         showGrid: true
       }],
       y: [{
@@ -85,8 +86,10 @@ export default class ElevationChart extends Vue {
       }
     }
 
+    this.setChartConfigValues(axisOptions)
+
     const containerReference = this.$refs['elevation-chart-container'] as HTMLElement
-    this.axis = new CartesianAxes(containerReference, null, null, axisOptions)
+    this.axis = new CartesianAxes(containerReference, 800, 1200, axisOptions)
     const mouseOver = new MouseOver()
     const zoom = new ZoomHandler(WheelMode.X)
     this.axis.accept(zoom)
@@ -113,6 +116,20 @@ export default class ElevationChart extends Vue {
     return this.isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
   }
 
+  setChartConfigValues(axisOptions: CartesianAxesOptions): void {
+    const chartConfig = this.value
+    const yAxisOptions = chartConfig.yAxis
+    const xAxisOptions = chartConfig.xAxis
+
+    yAxisOptions?.forEach((axis, i) => {
+      axisOptions.y[i].type = axis.type as AxisType
+    })
+
+    xAxisOptions?.forEach((axis, i) => {
+      axisOptions.x[i].type = axis.type as AxisType
+    })
+  }
+
   refreshChart(): void {
     const ids: string[] = this.axis.charts.map((c: any) => c.id)
     const removeIds: string[] = this.axis.charts.map((c: any) => c.id)
@@ -130,29 +147,34 @@ export default class ElevationChart extends Vue {
     for (const id of removeIds) {
       this.axis.removeChart(id)
     }
-    if (this.value.yAxis) {
-      this.axis.setOptions({
-        y: [
-          this.value.yAxis[0],
-          this.value.yAxis[1]
-        ]
-      })
+
+    let extraYAxisDrawOptions: ScaleOptions = {}
+    const yAxis = this.value.yAxis as CartesianAxisOptions[]
+
+    let extraXAxisDrawOptions: ScaleOptions = {}
+    const xAxis = this.value.xAxis as CartesianAxisOptions[]
+
+    if (yAxis || xAxis) {
+      const x = xAxis ?? []
+      const y = yAxis ?? []
+      const cartOptions: CartesianAxesOptions = {x, y}
+      this.axis.setOptions(cartOptions)
+
+      if (yAxis.some(axis => axis.defaultDomain !== undefined)) {
+        extraYAxisDrawOptions.nice = false
+      }
+      if (xAxis.some(axis => axis.defaultDomain !== undefined)) {
+        extraXAxisDrawOptions.nice = false
+      }
     }
-    if (this.value.xAxis){
-      this.axis.setOptions({
-        x: [
-            this.value.xAxis[0],
-            this.value.xAxis[1]
-          ]
-      })
-    }
-    console.log('this.value :>> ', this.value);
 
     this.axis.redraw({
       x: {
+        ...extraXAxisDrawOptions,
         autoScale: true
       },
       y: {
+        ...extraYAxisDrawOptions,
         autoScale: true
       }
     })
@@ -170,26 +192,16 @@ export default class ElevationChart extends Vue {
       return tag.id === 'Thresholds'
     })
 
-    const disabled = tag?.disabled ?? false
-    if (disabled){
-      this.thresholdLines = []
-    } else {
-      this.thresholdLines = thresholdLines
-    }
-
     let defaultDomain = extent(thresholdLines.map( l => l.value))
-    if ( this.thresholdLines.length === 0 ){
-      defaultDomain = [NaN, NaN]
-    }
 
     this.axis.setOptions(
       {
-        y: [
-          { defaultDomain: defaultDomain, nice: true },
-        ]
+        x: [
+          { defaultDomain: defaultDomain as [number, number], nice: true },
+        ],
+        y: []
       }
     )
-    this.thresholdLinesVisitor.options = this.thresholdLines
   }
 
   addToChart(chartSeries: ChartSeries): void {
@@ -209,11 +221,11 @@ export default class ElevationChart extends Vue {
     }
     line.addTo(
       this.axis, {
-        y: {
-          key: 'x',
-          axisIndex: 0
-        },
         x: {
+          key: 'x',
+          axisIndex: chartSeries.options.x.axisIndex
+        },
+        y: {
           key: 'y',
           axisIndex: chartSeries.options.y.axisIndex
         }
@@ -245,7 +257,7 @@ export default class ElevationChart extends Vue {
         }
       })
     }
-    
+
     function createChip() {
       const legendSvg=document.createElement('svg')
       legendSvg.setAttribute('width', '20')
@@ -265,14 +277,8 @@ export default class ElevationChart extends Vue {
       tag.disabled = !tag.disabled
     }
 
-    if (id === 'Thresholds'){
-      this.setThresholdLines()
-      this.axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
-    } else{
-      toggleChartVisisbility(this.axis, id)
-    }
+    toggleChartVisisbility(this.axis, id)
   }
-
 
   resize(): void {
     this.$nextTick(() => {

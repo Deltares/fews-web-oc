@@ -137,10 +137,10 @@ export default class TimeSeriesMixin extends Mixins(PiRequestsMixin) {
         if (eventValue?.includes(timeSeries.missingValue??"")){
           return null
         }
-        const y = eventValue === undefined ? null : +eventValue
+        const x = eventValue === undefined ? null : +eventValue
         return {
-          x: domainValue,
-          y
+          x,
+          y: domainValue
         }
       }
       ).filter((value) => value !== null);
