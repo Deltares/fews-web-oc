@@ -13,7 +13,7 @@
               @doubleclick="onLayerDoubleClick"
               @locationclick="onLocationClick">
               <ElevationSlider
-                v-if="currentElevation !== null"
+                v-if="currentElevation && minElevation && maxElevation"
                 v-model="currentElevation"
                 :minValue="minElevation"
                 :maxValue="maxElevation"
