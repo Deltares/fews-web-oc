@@ -2,9 +2,9 @@
   <Teleport to="#web-oc-sidebar-target">
     <ColumnMenu
       rootName="Topology"
-      :active.sync="active"
+      v-model:active="active"
       :items="items"
-      :open.sync="open"
+      v-model:open="open"
     >
     </ColumnMenu>
   </Teleport>
@@ -20,9 +20,27 @@ import { ref, watch } from 'vue'
 
 const WEB_BROWSER_DISPLAY: string = 'web browser display'
 
+interface Props {
+  nodeId?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  nodeId: '',
+})
+
 const active = ref<string[]>([])
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
+
+watch(
+  () => props.nodeId,
+  () => {
+    if (active.value[0] !== props.nodeId) {
+      active.value = [props.nodeId]
+    }
+  },
+  { immediate: true },
+)
 
 const nodes = ref<TopologyNode[]>()
 getTopologyNodes().then((response) => {
@@ -92,9 +110,7 @@ function getIcon(node: TopologyNode): string | undefined {
 
 function updateItems(): void {
   if (nodes.value) {
-    const _items = recursiveUpdateNode(nodes.value)
-    items.value = _items
-    open.value = [_items[0].id]
+    items.value = recursiveUpdateNode(nodes.value)
   }
 }
 

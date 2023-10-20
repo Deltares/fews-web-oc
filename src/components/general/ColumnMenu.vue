@@ -119,6 +119,7 @@ function updateStack(): void {
   recursiveFind(s, props.active[0])
   stack.value = s
   path = s.map((item) => item.id)
+  emit('update:open', [...path, ...props.open])
 }
 
 function recursiveFind(stack: ColumnItem[], id: string): boolean {

@@ -1,6 +1,6 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
-    <ColumnMenu :active.sync="active" :items="items" :open.sync="open">
+    <ColumnMenu v-model:active="active" :items="items" v-model:open="open">
     </ColumnMenu>
   </Teleport>
   <div class="container">

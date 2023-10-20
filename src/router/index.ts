@@ -110,6 +110,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     path: '/topology/node/:nodeId?',
     name: 'TopologyDisplay',
     component: TopologyDisplayView,
+    props: true,
     meta: { authorize: [], sidebar: true },
     children: [
       {
