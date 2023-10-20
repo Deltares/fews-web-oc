@@ -62,7 +62,10 @@ function recursiveUpdateNode(nodes: TopologyNode[]) {
         if (node.url !== undefined && node.mainPanel === WEB_BROWSER_DISPLAY) {
           result.href = node.url
           result.target = node.url
-        } else if (node.displayGroups !== undefined) {
+        } else if (
+          node.displayGroups !== undefined ||
+          node.displayId !== undefined
+        ) {
           result.to = {
             name: 'TopologyTimeSeries',
             params: {
