@@ -3,7 +3,7 @@
     class="time-slider-container"
     :class="[themeClass, floatingClass]"
   >
-    <v-slider v-model="index" :max="max" step="1" tick-size="6" tabindex="0" @input="onInput" hide-details
+    <v-slider v-model="index" :max="max" step="1" tick-size="6" tabindex="0" @input="onInput" @end="onInputEnd" hide-details
       height="0">
     </v-slider>
     <div style="display:flex;flex-direction:row;flex-grow:1;padding:6px 16px">
@@ -204,11 +204,13 @@ export default class DateTimeSlider extends Vue {
   increment (step = 1): void {
     this.index = Math.min(this.max, this.index + step)
     this.inputChanged()
+    this.onInputEnd()
   }
 
   decrement (step = 1): void {
     this.index = Math.max(0, this.index - step)
     this.inputChanged()
+    this.onInputEnd()
   }
 
   updateDate (): void {
@@ -218,6 +220,10 @@ export default class DateTimeSlider extends Vue {
   onInput (): void {
     this.updateDate()
     this.inputChanged()
+  }
+
+  onInputEnd (): void {
+    this.$emit('input-end')
   }
 
   inputChanged (): void {

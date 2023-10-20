@@ -57,6 +57,7 @@
             v-model="currentTime"
             :dates="times"
             @input="debouncedSetWMSLayerOptions"
+            @input-end="debouncedSetWMSLayerOptions.flush"
             @update:now="setCurrentTime"
             floating
           />
