@@ -108,14 +108,8 @@ export default class AnimatedMapboxLayer extends Vue {
       this.isInitialized = true
       this.onLayerChange()
 
-      const hasNotBeenDisabledYet = this.mapObject.doubleClickZoom.isEnabled()
-
-      // Only set events once otherwise they will trigger
-      // mulitple times after a layer change
-      if (hasNotBeenDisabledYet) {
-        this.enableDoubleClickLayer()
-        this.enableClickLocationsLayer()
-      }
+      this.enableDoubleClickLayer()
+      this.enableClickLocationsLayer()
     })
     this.mapObject.on("moveend", () => {
       this.updateSource()
