@@ -20,9 +20,16 @@
       return-object
       @input="onSelectLocation"
       prepend-inner-icon="mdi-magnify"
-      class="ml-2 mt-3 body-1"
+      class="ml-2 mt-3"
       dense
-    />
+    >
+      <template v-slot:label="label">
+        <span class="body-1">{{label}}</span>
+      </template>
+      <template v-slot:item="{ item, on, attrs }">
+        <v-list-item class="body-1" v-on="on" v-bind="attrs">{{item.locationName}}</v-list-item>
+      </template>
+    </v-autocomplete>
   </v-chip>
 </template>
 
@@ -72,11 +79,5 @@ export default class LocationsLayerSearchControl extends Vue {
 <style scoped>
 .chip {
   backdrop-filter: blur(4px);
-}
-
-/* Change font size for v-autocomplete list items */
-:deep(.v-list-item .v-list-item__title) {
-  font-size: 1rem;
-  font-weight: 400;
 }
 </style>
