@@ -1,76 +1,37 @@
 import {
   PiWebserviceProvider,
-  TopologyActionFilter,
-  TopologyNode,
+  type TopologyActionFilter,
 } from '@deltares/fews-pi-requests'
-import { ref, shallowRef, toValue, watchEffect } from 'vue'
+import { ref, toValue, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { DisplayConfig } from '../../lib/display/DisplayConfig.js'
 import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig'
 import { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.js'
 
-export interface UseTopologyNodesReturn {
-  error: Ref<any>
-  nodes: Ref<TopologyNode[] | undefined>
+export interface UseDisplayConfigReturn {
   displayConfig: Ref<DisplayConfig | undefined>
   displays: Ref<DisplayConfig[] | undefined>
-  isReady: Ref<boolean>
-  isLoading: Ref<boolean>
-}
-
-function createTopologyMap(
-  nodes: TopologyNode[] | undefined,
-  topologyMap: Map<string, TopologyNode>,
-) {
-  if (nodes === undefined) return undefined
-  for (const node of nodes) {
-    topologyMap.set(node.id, node)
-    createTopologyMap(node.topologyNodes, topologyMap)
-  }
 }
 
 /**
- * Reactive async state. Will not block your setup function and will trigger changes once
- * the promise is ready.
+ * Create the displays and the display configs of a node and selected time series display.
  *
- * @see https://vueuse.org/useAsyncState
- * @param url    The initial state, used until the first evaluation finishes
+ * @param {string} baseUrl  url of the FEWS web services.
+ * @param {string} nodeId  id of the topology node.
+ * @param {number} plotId  number of the plot node of a display group.
  */
-export function useTopologyNodes(
+export function useDisplayConfig(
   baseUrl: string,
   nodeId: MaybeRefOrGetter<string>,
   plotId: MaybeRefOrGetter<number>,
-): UseTopologyNodesReturn {
+): UseDisplayConfigReturn {
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
 
-  const isReady = ref(false)
-  const isLoading = ref(false)
-  const nodes = ref<TopologyNode[]>()
   const displayConfig = ref<DisplayConfig>()
   const displays = ref<DisplayConfig[]>()
-  const error = shallowRef<unknown | undefined>(undefined)
-  const topologyMap: Map<string, TopologyNode> = new Map<string, TopologyNode>()
-
-  async function loadTopologyNodes(): Promise<void> {
-    isLoading.value = true
-    isReady.value = false
-
-    try {
-      const response = await piProvider.getTopologyNodes()
-      nodes.value = response.topologyNodes
-      createTopologyMap(nodes.value, topologyMap)
-    } catch (error) {
-      error = 'error-loading'
-    } finally {
-      isLoading.value = false
-      isReady.value = true
-    }
-  }
-
-  loadTopologyNodes()
 
   watchEffect(async () => {
     const _displays: DisplayConfig[] = []
@@ -101,12 +62,8 @@ export function useTopologyNodes(
   })
 
   const shell = {
-    nodes,
     displays,
     displayConfig,
-    isReady,
-    isLoading,
-    error,
   }
 
   return shell

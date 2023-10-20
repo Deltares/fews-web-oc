@@ -14,29 +14,20 @@
 <script setup lang="ts">
 import type { ColumnItem } from '@/components/general/ColumnItem'
 import ColumnMenu from '@/components/general/ColumnMenu.vue'
-import { configManager } from '@/services/application-config'
-import { useTopologyNodes } from '@/services/useTopologyNodes'
+import { getTopologyNodes } from '@/lib/topology'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { ref, watch } from 'vue'
 
 const WEB_BROWSER_DISPLAY: string = 'web browser display'
 
-interface Props {
-  nodeId?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  nodeId: '',
-})
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-
 const active = ref<string[]>([])
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
 
-const selectedPlot = ref(0)
-
-const { nodes } = useTopologyNodes(baseUrl, () => props.nodeId, selectedPlot)
+const nodes = ref<TopologyNode[]>()
+getTopologyNodes().then((response) => {
+  nodes.value = response
+})
 
 function anyChildNodeIsVisible(nodes: TopologyNode[] | undefined): boolean {
   if (nodes === undefined) return false

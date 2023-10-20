@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { configManager } from '@/services/application-config'
-import { useTopologyNodes } from '@/services/useTopologyNodes/index.ts'
+import { useDisplayConfig } from '@/services/useTopologyNodes/index.ts'
 import { computed } from 'vue'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
@@ -62,7 +62,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const selectedPlot = ref(0)
 
-const { displays, displayConfig } = useTopologyNodes(
+const { displays, displayConfig } = useDisplayConfig(
   baseUrl,
   () => props.nodeId,
   selectedPlot,

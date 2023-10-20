@@ -55,12 +55,13 @@ import ColumnMenu from '../components/general/ColumnMenu.vue'
 import { ref, watch } from 'vue'
 import type { ColumnItem } from '../components/general/ColumnItem'
 import { configManager } from '../services/application-config'
-import { useTopologyNodes } from '../services/useTopologyNodes/index.ts'
+import { useDisplayConfig } from '../services/useTopologyNodes/index.ts'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
 import WindowComponent from '../components/general/WindowComponent.vue'
 import TimeSeriesComponent from '../components/timeseries/TimeSeriesComponent.vue'
 import { DisplayType } from '@/lib/display/DisplayConfig'
+import { getTopologyNodes } from '@/lib/topology'
 
 const TIME_SERIES_DIALOG_PANEL: string = 'time series dialog'
 
@@ -80,7 +81,12 @@ const items = ref<ColumnItem[]>([])
 
 const selectedPlot = ref(0)
 
-const { nodes, displays, displayConfig } = useTopologyNodes(
+const nodes = ref<TopologyNode[]>()
+getTopologyNodes().then((response) => {
+  nodes.value = response
+})
+
+const { displays, displayConfig } = useDisplayConfig(
   baseUrl,
   () => props.nodeId,
   selectedPlot,
