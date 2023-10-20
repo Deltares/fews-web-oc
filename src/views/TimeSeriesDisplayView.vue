@@ -8,59 +8,15 @@
     >
     </ColumnMenu>
   </Teleport>
-  <div style="dislay: flex; flex-direction: column; height: 100%; width: 100%">
-    <div style="flex: 1 1 100%; height: 100%">
-      <WindowComponent>
-        <template v-slot:toolbar>
-          <v-menu offset-y z-index="10000">
-            <template v-slot:activator="{ props }">
-              <v-btn class="text-capitalize" variant="text" v-bind="props"
-                >{{ plotIds[selectedPlot] }}<v-icon>mdi-chevron-down</v-icon>
-              </v-btn>
-            </template>
-            <v-list v-model="selectedPlot" density="compact">
-              <v-list-item
-                v-for="(plot, i) in plotIds"
-                v-bind:key="i"
-                @click="selectedPlot = i"
-              >
-                <v-list-item-title>{{ plot }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-          <v-btn-toggle class="mr-5" v-model="displayType" mandatory>
-            <v-btn
-              v-for="item in displayTypeItems"
-              :key="item.value"
-              :value="item.value"
-              :aria-label="item.label"
-              :text="item.label"
-              size="small"
-              variant="text"
-              class="text-capitalize"
-            >
-              <v-icon>{{ item.icon }}</v-icon>
-            </v-btn>
-          </v-btn-toggle>
-        </template>
-        <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
-        </TimeSeriesComponent>
-      </WindowComponent>
-    </div>
-  </div>
+  <TimeSeriesDisplay :nodeId="nodeId"></TimeSeriesDisplay>
 </template>
 
 <script setup lang="ts">
 import ColumnMenu from '../components/general/ColumnMenu.vue'
 import { ref, watch } from 'vue'
 import type { ColumnItem } from '../components/general/ColumnItem'
-import { configManager } from '../services/application-config'
-import { useDisplayConfig } from '../services/useTopologyNodes/index.ts'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
-import { computed } from 'vue'
-import WindowComponent from '../components/general/WindowComponent.vue'
-import TimeSeriesComponent from '../components/timeseries/TimeSeriesComponent.vue'
-import { DisplayType } from '@/lib/display/DisplayConfig'
+import TimeSeriesDisplay from '../components/timeseries/TimeSeriesDisplay.vue'
 import { getTopologyNodes } from '@/lib/topology'
 
 const TIME_SERIES_DIALOG_PANEL: string = 'time series dialog'
@@ -73,34 +29,23 @@ const props = withDefaults(defineProps<Props>(), {
   nodeId: '',
 })
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-
 const active = ref<string[]>([])
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
 
-const selectedPlot = ref(0)
+watch(
+  () => props.nodeId,
+  () => {
+    if (active.value[0] !== props.nodeId) {
+      active.value = [props.nodeId]
+    }
+  },
+  { immediate: true },
+)
 
 const nodes = ref<TopologyNode[]>()
 getTopologyNodes().then((response) => {
   nodes.value = response
-})
-
-const { displays, displayConfig } = useDisplayConfig(
-  baseUrl,
-  () => props.nodeId,
-  selectedPlot,
-)
-
-const plotIds = computed(() => {
-  if (displays.value?.length) {
-    const ids = displays.value.map((d) => {
-      return d.title
-    })
-    return ids
-  } else {
-    return []
-  }
 })
 
 function anyChildNodeIsVisible(nodes: TopologyNode[] | undefined): boolean {
@@ -165,25 +110,4 @@ function updateItems(): void {
 }
 
 watch(nodes, updateItems)
-watch(props, () => (selectedPlot.value = 0))
-
-interface DisplayTypeItem {
-  icon: string
-  label: string
-  value: DisplayType
-}
-
-const displayType = ref(DisplayType.TimeSeriesChart)
-const displayTypeItems: DisplayTypeItem[] = [
-  {
-    icon: 'mdi-chart-line',
-    label: 'Chart',
-    value: DisplayType.TimeSeriesChart,
-  },
-  {
-    icon: 'mdi-table',
-    label: 'Table',
-    value: DisplayType.TimeSeriesTable,
-  },
-]
 </script>
