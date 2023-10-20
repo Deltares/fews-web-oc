@@ -20,9 +20,10 @@
             hide-spin-buttons
             hide-details
             type="number"
-            class="tooltip-input"
+            dense
+            class="tooltip-input body-1"
           />
-          <div v-else @click="enableTooltipEdit">{{ Math.round(currentValue) }} m MSL</div>
+          <div v-else class="body-1" @click="enableTooltipEdit">{{ Math.round(currentValue) }} m MSL</div>
         </div>
       </template>
     </vue-slider>
@@ -172,7 +173,7 @@ export default class ElevationSlider extends Vue {
 
 .tooltip-input {
   width: 50px;
-  height: 40px;
+  height: 30px;
   margin: 0;
   padding: 0;
 }
