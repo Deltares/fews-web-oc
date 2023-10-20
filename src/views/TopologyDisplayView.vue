@@ -8,7 +8,7 @@
     >
     </ColumnMenu>
   </Teleport>
-  <div></div>
+  <router-view></router-view>
 </template>
 
 <script setup lang="ts">
@@ -19,7 +19,7 @@ import { useTopologyNodes } from '@/services/useTopologyNodes'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { ref, watch } from 'vue'
 
-const TIME_SERIES_DIALOG_PANEL: string = 'time series dialog'
+const WEB_BROWSER_DISPLAY: string = 'web browser display'
 
 interface Props {
   nodeId?: string
@@ -68,18 +68,17 @@ function recursiveUpdateNode(nodes: TopologyNode[]) {
       if (node.topologyNodes) {
         result.children = recursiveUpdateNode(node.topologyNodes)
       } else {
-        if (
-          node.url !== undefined &&
-          node.mainPanel !== TIME_SERIES_DIALOG_PANEL
-        ) {
+        if (node.url !== undefined && node.mainPanel === WEB_BROWSER_DISPLAY) {
           result.href = node.url
           result.target = node.url
+        } else if (node.displayGroups !== undefined) {
+          result.to = {
+            name: 'TopologyTimeSeries',
+            params: {
+              nodeId: node.id,
+            },
+          }
         } else {
-          result.wmsLayerId =
-            node.gridDisplaySelection !== undefined
-              ? node.gridDisplaySelection.plotId
-              : undefined
-          result.filterIds = node.filterIds ?? []
           result.to = {
             name: 'TopologyDisplay',
             params: {
@@ -93,8 +92,7 @@ function recursiveUpdateNode(nodes: TopologyNode[]) {
 }
 
 function getIcon(node: TopologyNode): string | undefined {
-  if (node.url && node.mainPanel !== TIME_SERIES_DIALOG_PANEL)
-    return 'mdi-share'
+  if (node.url && node.mainPanel === WEB_BROWSER_DISPLAY) return 'mdi-share'
   return undefined
 }
 

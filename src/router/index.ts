@@ -13,14 +13,18 @@ import Silent from '../views/auth/Silent.vue'
 import { configManager } from '../services/application-config'
 import { authenticationManager } from '../services/authentication/AuthenticationManager'
 import { useConfigStore } from '../stores/config.ts'
-const SystemMonitorDisplay = () => import('../views/SystemMonitorDisplay.vue')
-const SchematicStatusDisplay = () =>
-  import('../views/SchematicStatusDisplay.vue')
+const SystemMonitorDisplayView = () =>
+  import('../views/SystemMonitorDisplayView.vue')
+const SchematicStatusDisplayView = () =>
+  import('../views/SchematicStatusDisplayView.vue')
 const SSDTimeSeriesDisplay = () =>
   import('../components/ssd/SsdTimeSeriesDisplay.vue')
-const SpatialDisplay = () => import('../views/SpatialDisplay.vue')
-const TimeSeriesDisplay = () => import('../views/TimeSeriesDisplay.vue')
-const TopologyDisplay = () => import('../views/TopologyDisplay.vue')
+const SpatialDisplayView = () => import('../views/SpatialDisplayView.vue')
+const TimeSeriesDisplayView = () => import('../views/TimeSeriesDisplayView.vue')
+const TopologyDisplayView = () => import('../views/TopologyDisplayView.vue')
+const TimeSeriesDisplay = () =>
+  import('../components/timeseries/TimeSeriesDisplay.vue')
+
 const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
@@ -69,7 +73,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/ssd/:groupId?/:panelId?',
     name: 'SchematicStatusDisplay',
-    component: SchematicStatusDisplay,
+    component: SchematicStatusDisplayView,
     props: true,
     meta: { authorize: [], sidebar: true },
     children: [
@@ -85,28 +89,37 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/systemmonitor',
     name: 'SystemMonitor',
-    component: SystemMonitorDisplay,
+    component: SystemMonitorDisplayView,
     meta: { authorize: [] },
   },
   {
     path: '/map/:layerName?',
     name: 'SpatialDisplay',
-    component: SpatialDisplay,
+    component: SpatialDisplayView,
     props: true,
     meta: { authorize: [], sidebar: true },
   },
   {
     path: '/series/node/:nodeId?',
     name: 'TimeSeriesDisplay',
-    component: TimeSeriesDisplay,
+    component: TimeSeriesDisplayView,
     props: true,
     meta: { authorize: [], sidebar: true },
   },
   {
-    path: '/topology',
+    path: '/topology/node/:nodeId?',
     name: 'TopologyDisplay',
-    component: TopologyDisplay,
-    meta: { authorize: [] },
+    component: TopologyDisplayView,
+    meta: { authorize: [], sidebar: true },
+    children: [
+      {
+        path: '/topology/node/:nodeId/series/',
+        name: 'TopologyTimeSeries',
+        component: TimeSeriesDisplay,
+        props: true,
+        meta: { authorize: [], sidebar: true },
+      },
+    ],
   },
   {
     path: '/archivedisplay',

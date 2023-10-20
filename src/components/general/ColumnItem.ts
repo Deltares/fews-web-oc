@@ -8,6 +8,4 @@ export interface ColumnItem {
   href?: string
   target?: string
   icon?: string
-  filterIds?: string[]
-  wmsLayerId?: string
 }
