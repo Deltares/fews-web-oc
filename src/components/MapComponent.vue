@@ -3,7 +3,7 @@
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.0/mapbox-gl-draw.css" type="text/css">
     <v-mapbox
       :access-token="accessToken"
-      map-style='https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+      :map-style=styleUrl
       :pitch="0"
       :bearing="0"
       :min-zoom="2"
@@ -19,11 +19,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import {ResourceType} from "mapbox-gl";
 
 @Component
 export default class MapComponent extends Vue {
+  @Prop({default: `${process.env.BASE_URL}mapbox/styles/base.json`}) styleUrl!: string
   accessToken = this.$config.get('VUE_APP_MAPBOX_TOKEN')
 
   beforeDestroy(){
@@ -32,6 +33,7 @@ export default class MapComponent extends Vue {
   }
 
   mounted() {
+    console.log(this.styleUrl)
     const map:any = this.$refs.map;
     map.map._requestManager._transformRequestFn = (url: string, resourceType: ResourceType) => {
       if (!this.$config.authenticationIsEnabled) return {
@@ -48,6 +50,13 @@ export default class MapComponent extends Vue {
         url: url
       }
     }
+  }
+
+  @Watch('styleUrl')
+  updateStyle() {
+    console.log(`updating: ${this.styleUrl}`)
+    const map:any = this.$refs.map
+    map.map.setStyle(this.styleUrl)
   }
 }
 </script>

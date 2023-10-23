@@ -7,7 +7,7 @@
     <div class="grid-root" :class="layoutClass">
       <div class="grid-map" v-show="showMap">
         <div class="map-container">
-          <MapComponent>
+          <MapComponent :styleUrl="mapStyleUrl">
             <MapboxLayer
               v-if="showLayer"
               :layer="wmsLayerOptions"
@@ -49,6 +49,7 @@
                 :locationId.sync="selectedLocationId"
                 :locations="locations"
                 />
+            <MapStyleControl @update:style="setMapStyle"/>
           </div>
           <div class="colourbar">
             <ColourBar v-model="legend" :title="legendTitle" v-if="legend.length > 0" @rangeUpdate="setLegendRange"/>
@@ -149,6 +150,7 @@ import Regridder from '@/components/Regridder.vue'
 import { toMercator } from '@turf/projection';
 import Vue from 'vue'
 import { NavigationGuardNext, Route } from 'vue-router';
+import MapStyleControl from '@/components/MapStyleControl.vue';
 
 const defaultGeoJsonSource: GeoJSONSourceRaw = {
   type: 'geojson',
@@ -209,7 +211,8 @@ const selectedCoordinatesLayerOptions: CircleLayer = {
     MapComponent,
     MetocSidebar,
     Regridder,
-    SplashScreen
+    SplashScreen,
+    MapStyleControl
   }
 })
 export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
@@ -235,6 +238,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   legendRange: string|undefined = undefined
   unit: string = ''
   legendTitle: string = ''
+
+  mapStyleUrl: string = `${process.env.BASE_URL}mapbox/styles/base.json`
 
   dateController: DateController = new DateController([])
   currentTime: Date = new Date()
@@ -322,6 +327,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       this.wmsLayerOptions.elevation = this.currentElevation
       this.wmsLayerOptions.colorScaleRange = this.legendRange
     }
+  }
+
+  setMapStyle(styleUrl: string) {
+    this.mapStyleUrl = styleUrl
   }
 
   /**

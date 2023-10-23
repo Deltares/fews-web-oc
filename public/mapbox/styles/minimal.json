@@ -1,0 +1,247 @@
+{
+  "version": 8,
+  "name": "Positron-minimal",
+  "id": "voyager-minimal",
+  "owner": "Carto",
+  "metadata": {},
+  "sources": {
+    "carto": {
+      "type": "vector",
+      "url": "https://tiles.basemaps.cartocdn.com/vector/carto.streets/v1/tiles.json"
+    }
+  },
+  "sprite": "https://tiles.basemaps.cartocdn.com/gl/positron-gl-style/sprite",
+  "glyphs": "https://tiles.basemaps.cartocdn.com/fonts/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "background-color": "#fafaf8",
+        "background-opacity": 1
+      }
+    },
+        {
+      "id": "landcover",
+      "type": "fill",
+      "source": "carto",
+      "source-layer": "landcover",
+      "filter": [
+        "any",
+        [
+          "==",
+          "class",
+          "wood"
+        ],
+        [
+          "==",
+          "class",
+          "grass"
+        ],
+        [
+          "==",
+          "subclass",
+          "recreation_ground"
+        ]
+      ],
+      "paint": {
+        "fill-color": {
+          "stops": [
+            [
+              8,
+              "rgba(234, 241, 233, 0.5)"
+            ],
+            [
+              9,
+              "rgba(234, 241, 233, 0.5)"
+            ],
+            [
+              11,
+              "rgba(234, 241, 233, 0.5)"
+            ],
+            [
+              13,
+              "rgba(234, 241, 233, 0.5)"
+            ],
+            [
+              15,
+              "rgba(234, 241, 233, 0.5)"
+            ]
+          ]
+        },
+        "fill-opacity": 1
+      }
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "carto",
+      "source-layer": "water",
+      "minzoom": 0,
+      "maxzoom": 24,
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ]
+      ],
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "#d4dadc",
+        "fill-antialias": true,
+        "fill-translate-anchor": "map",
+        "fill-opacity": 1
+      }
+    },
+    {
+      "id": "water_shadow",
+      "type": "fill",
+      "source": "carto",
+      "source-layer": "water",
+      "minzoom": 0,
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ]
+      ],
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "transparent",
+        "fill-antialias": true,
+        "fill-translate-anchor": "map",
+        "fill-opacity": 1,
+        "fill-translate": {
+          "stops": [
+            [
+              0,
+              [
+                0,
+                2
+              ]
+            ],
+            [
+              6,
+              [
+                0,
+                1
+              ]
+            ],
+            [
+              14,
+              [
+                0,
+                1
+              ]
+            ],
+            [
+              17,
+              [
+                0,
+                2
+              ]
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "boundary_country_outline",
+      "type": "line",
+      "source": "carto",
+      "source-layer": "boundary",
+      "minzoom": 6,
+      "maxzoom": 24,
+      "filter": [
+        "all",
+        [
+          "==",
+          "admin_level",
+          2
+        ],
+        [
+          "==",
+          "maritime",
+          0
+        ]
+      ],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "#f3efed",
+        "line-opacity": 0.5,
+        "line-width": 8,
+        "line-offset": 0
+      }
+    },
+    {
+      "id": "boundary_country_inner",
+      "type": "line",
+      "source": "carto",
+      "source-layer": "boundary",
+      "minzoom": 0,
+      "filter": [
+        "all",
+        [
+          "==",
+          "admin_level",
+          2
+        ],
+        [
+          "==",
+          "maritime",
+          0
+        ]
+      ],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": {
+          "stops": [
+            [
+              4,
+              "#f2e6e7"
+            ],
+            [
+              5,
+              "#ebd6d8"
+            ],
+            [
+              6,
+              "#ebd6d8"
+            ]
+          ]
+        },
+        "line-opacity": 1,
+        "line-width": {
+          "stops": [
+            [
+              3,
+              1
+            ],
+            [
+              6,
+              1.5
+            ]
+          ]
+        },
+        "line-offset": 0
+      }
+    }
+  ]
+}
