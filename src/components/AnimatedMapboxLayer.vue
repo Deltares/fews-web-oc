@@ -194,12 +194,13 @@ export default class AnimatedMapboxLayer extends Vue {
       const url = this.createGetMapUrl()
       if (!url) continue
 
+      const bounds = this.mapObject.getBounds()
+
       // // Cache using html header
       // const img = new Image()
+      // // img.onload = () => this.cachedRequests[cacheKey] = { url: url, coordinates: getCoordsFromBounds(bounds) }
       // img.src = url
-      // img.onload = () => this.cachedRequests[cacheId] = url
 
-      const bounds = this.mapObject.getBounds()
       // Cache by creating local blob
       fetch(url)
         .then(response => response.blob())
@@ -213,7 +214,7 @@ export default class AnimatedMapboxLayer extends Vue {
   }
 
   getCacheKey(layer: MapboxLayerOptions) {
-    return layer.name + layer.time.toString()
+    return layer.name + this.mapObject.getBounds() + layer.time.toString()
   }
 
   private createGetMapUrl() {
