@@ -19,10 +19,6 @@ import { toMercator } from "@turf/projection"
 import { BoundingBox } from "@deltares/fews-wms-requests"
 import { toWgs84 } from "@turf/projection"
 
-function getFrameId(layerName: string, frame: number): string {
-  return `${layerName}-${frame}`
-}
-
 function getCoordsFromBounds(bounds: LngLatBounds) {
   return [
     bounds.getNorthWest().toArray(),
@@ -93,7 +89,6 @@ export default class AnimatedMapboxLayer extends Vue {
   @Inject() getMap!: () => Map
 
   mapObject!: Map
-  newLayerId!: string
   isInitialized = false
   counter = 0
   currentLayer: string = ""
@@ -112,17 +107,19 @@ export default class AnimatedMapboxLayer extends Vue {
     this.mapObject.once("load", () => {
       this.isInitialized = true
       this.onLayerChange()
+
+      this.enableDoubleClickLayer()
+      this.enableClickLocationsLayer()
     })
     this.mapObject.on("moveend", () => {
       this.updateSource()
     })
     this.mapObject.on("data", async (e) => {
       if (
-        e.sourceId === this.newLayerId &&
+        e.sourceId === this.currentLayer &&
         e.tile !== undefined &&
         e.isSourceLoaded
       ) {
-        this.removeOldLayers()
         this.mapObject.setPaintProperty(e.sourceId, "raster-opacity", 1)
       }
     })
@@ -130,7 +127,7 @@ export default class AnimatedMapboxLayer extends Vue {
 
   updateSource() {
     if (this.layer === null) return
-    const source = this.mapObject.getSource(this.newLayerId) as ImageSource
+    const source = this.mapObject.getSource(this.currentLayer) as ImageSource
     const bounds = this.mapObject.getBounds()
     const canvas = this.mapObject.getCanvas()
     const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")
@@ -139,6 +136,34 @@ export default class AnimatedMapboxLayer extends Vue {
       url: url,
       coordinates: getCoordsFromBounds(bounds),
     })
+  }
+
+  createSource() {
+    const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")
+    const bounds = this.mapObject.getBounds()
+    const canvas = this.mapObject.getCanvas()
+    const url = this.createGetMapUrl(baseUrl, bounds, canvas)
+
+    const rasterSource: ImageSourceRaw = {
+      type: "image",
+      url: url,
+      coordinates: getCoordsFromBounds(bounds),
+    }
+    this.mapObject.addSource(this.currentLayer, rasterSource)
+    const rasterLayer: RasterLayer = {
+      id: this.currentLayer,
+      type: "raster",
+      source: this.currentLayer,
+      paint: {
+        "raster-opacity": 0,
+        "raster-opacity-transition": {
+          duration: 0,
+          delay: 0,
+        },
+        "raster-fade-duration": 0,
+      },
+    }
+    this.mapObject.addLayer(rasterLayer, "boundary_country_outline")
   }
 
   private createGetMapUrl(
@@ -202,91 +227,44 @@ export default class AnimatedMapboxLayer extends Vue {
   @Watch("layer")
   onLayerChange(): void {
     if (!this.isInitialized) return
+
     if (this.layer === null) {
       this.removeLayer()
-      this.removeOldLayers()
       return
     }
+
     if (this.layer.name === undefined || this.layer.time === undefined) {
       return
     }
-    const originalLayerName = this.currentLayer
+
     if (this.layer.name !== this.currentLayer) {
-      this.counter += 1
-      this.removeOldLayers()
-      this.counter = 0
+      this.removeLayer()
       this.currentLayer = this.layer.name
-    }
-    this.counter += 1
-    this.newLayerId = getFrameId(this.layer.name, this.counter)
-    const source = this.mapObject.getSource(this.newLayerId)
-    const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")
 
-    const hasNotBeenDisabledYet = this.mapObject.doubleClickZoom.isEnabled()
-
-    // Only set events once otherwise they will trigger
-    // mulitple times after a layer change
-    if (hasNotBeenDisabledYet) {
-      this.enableDoubleClickLayer()
-      this.enableClickLocationsLayer()
-    }
-
-    if (this.currentLayer !== originalLayerName) {
       // set default zoom only if layer is changed
       this.setDefaultZoom()
     }
-    if (source === undefined) {
-      const bounds = this.mapObject.getBounds()
-      const canvas = this.mapObject.getCanvas()
-      const url = this.createGetMapUrl(baseUrl, bounds, canvas)
-      const rasterSource: ImageSourceRaw = {
-        type: "image",
-        url: url,
-        coordinates: getCoordsFromBounds(bounds),
-      }
-      this.mapObject.addSource(this.newLayerId, rasterSource)
-      const rasterLayer: RasterLayer = {
-        id: this.newLayerId,
-        type: "raster",
-        source: this.newLayerId,
-        paint: {
-          "raster-opacity": 0,
-          "raster-opacity-transition": {
-            duration: 0,
-            delay: 0,
-          },
-          "raster-fade-duration": 0,
-        },
-      }
-      this.mapObject.addLayer(rasterLayer, "boundary_country_outline")
-    }
-  }
 
-  removeOldLayers(): void {
-    for (let i = this.counter - 1; i > 0; i--) {
-      const oldLayerId = getFrameId(this.currentLayer, i)
-      if (this.mapObject.getLayer(oldLayerId)) {
-        this.mapObject.removeLayer(oldLayerId)
-        this.mapObject.removeSource(oldLayerId)
-      } else {
-        break
-      }
+
+    const source = this.mapObject.getSource(this.currentLayer)
+    if (source === undefined) {
+      this.createSource()
+    } else {
+      this.updateSource()
     }
   }
 
   removeLayer() {
     if (this.mapObject !== undefined) {
-      const layerId = getFrameId(this.currentLayer, this.counter)
-      if (this.mapObject.getSource(layerId) !== undefined) {
-        this.mapObject.removeLayer(layerId)
-        this.mapObject.removeSource(layerId)
+      if (this.mapObject.getSource(this.currentLayer) !== undefined) {
+        this.mapObject.removeLayer(this.currentLayer)
+        this.mapObject.removeSource(this.currentLayer)
       }
     }
   }
 
   destroyed() {
     this.removeLayer()
-    this.removeOldLayers()
   }
 }
 </script>
