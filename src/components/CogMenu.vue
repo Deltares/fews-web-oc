@@ -6,7 +6,7 @@
       </v-btn>
     </template>
     <v-list>
-      <v-subheader>Theme</v-subheader>
+      <v-subheader class="body-1">Theme</v-subheader>
       <v-list-item>
         <v-list-item-action>
           <v-list-item-action>
@@ -14,7 +14,7 @@
           </v-list-item-action>
         </v-list-item-action>
       </v-list-item>
-      <v-subheader v-if="multipleLanguages">Language</v-subheader>
+      <v-subheader v-if="multipleLanguages" class="body-1">Language</v-subheader>
       <v-list-item v-if="multipleLanguages">
         <v-list-item-action>
           <v-list-item-action>
@@ -57,7 +57,4 @@ export default class CogMenu extends Mixins(ThemeMixin) {
   z-index: 10000;
 }
 
-:deep(.v-subheader) {
-  font-size: 1rem;
-}
 </style>

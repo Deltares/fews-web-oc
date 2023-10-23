@@ -12,6 +12,7 @@
         v-for="item in items"
         :key="item.id"
         small
+        class="body-1"
       >
         {{ item.name }}
       </v-chip>
@@ -76,9 +77,5 @@ export default class DataSourceControl extends Vue {
 <style scoped>
 .outer-chip {
   backdrop-filter: blur(4px);
-}
-
-:deep(.v-chip__content) {
-  font-size: 1rem;
 }
 </style>
