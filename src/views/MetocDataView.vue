@@ -317,9 +317,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
         time: this.currentTime
       }
 
-        this.maxElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
-        this.minElevation = this.currentWMSLayer?.elevation?.lowerValue ?? null
-        this.wmsLayerOptions.elevation = this.currentElevation
+      this.maxElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
+      this.minElevation = this.currentWMSLayer?.elevation?.lowerValue ?? null
+      this.wmsLayerOptions.elevation = this.currentElevation
       this.wmsLayerOptions.colorScaleRange = this.legendRange
     }
   }
