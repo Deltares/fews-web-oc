@@ -1,11 +1,14 @@
 <template>
-  <div>
+  <div style="height: 100%; display: flex; flex-direction: column">
     <TreeMenu
       ref="tree"
       :active.sync="activeNodes"
       :items="nodes"
       :open.sync="openNodes"
     />
+    <div style="margin-top: auto">
+      <v-img class="ml-6 mb-6" max-width="64" contain :src="navyLogo" />
+    </div>
   </div>
 </template>
 
@@ -31,6 +34,10 @@ export default class MetocSidebar extends Mixins(PiRequestsMixin) {
 
   mounted() {
     this.fillNodes()
+  }
+
+  get navyLogo() {
+    return `${process.env.BASE_URL}images/navy_logo.png`
   }
 
   @Watch('categories')
