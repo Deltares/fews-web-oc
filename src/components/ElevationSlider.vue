@@ -135,11 +135,13 @@ export default class ElevationSlider extends Vue {
         // @ts-ignore: findLast not defined for ts array type, fixed in ts-5.0
         newValue = this.marks.findLast((value) => value > this.currentValue);
         this.currentValue = newValue ?? this.marks[0]
+        this.onInputChange(this.currentValue)
         break;
       case "ArrowRight":
       case "ArrowDown":
         newValue = this.marks.find((value) => value < this.currentValue);
         this.currentValue = newValue ?? this.marks[this.marks.length - 1]
+        this.onInputChange(this.currentValue)
         break;
       case "Enter":
         this.enableTooltipEdit()
