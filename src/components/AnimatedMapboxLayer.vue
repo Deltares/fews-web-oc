@@ -9,6 +9,7 @@ import { Component, Inject, Prop, Vue, Watch } from "vue-property-decorator"
 import {
   EventData,
   ImageSource,
+  ImageSourceOptions,
   ImageSourceRaw,
   LngLatBounds,
   Map,
@@ -92,6 +93,7 @@ export default class AnimatedMapboxLayer extends Vue {
   isInitialized = false
   counter = 0
   currentLayer: string = ""
+  cachedRequests: Record<string, ImageSourceOptions> = {}
 
   mounted() {
     const map = this.getMap()
@@ -128,10 +130,15 @@ export default class AnimatedMapboxLayer extends Vue {
   updateSource() {
     if (this.layer === null) return
     const source = this.mapObject.getSource(this.currentLayer) as ImageSource
+
+    const cachedRequest = this.cachedRequests[this.getCacheKey(this.layer)]
+    if (cachedRequest) {
+      source.updateImage(cachedRequest)
+      return
+    }
+
     const bounds = this.mapObject.getBounds()
-    const canvas = this.mapObject.getCanvas()
-    const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")
-    let url = this.createGetMapUrl(baseUrl, bounds, canvas)
+    const url = this.createGetMapUrl()
     source.updateImage({
       url: url,
       coordinates: getCoordsFromBounds(bounds),
@@ -139,16 +146,22 @@ export default class AnimatedMapboxLayer extends Vue {
   }
 
   createSource() {
-    const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")
-    const bounds = this.mapObject.getBounds()
-    const canvas = this.mapObject.getCanvas()
-    const url = this.createGetMapUrl(baseUrl, bounds, canvas)
+    if (this.layer === null) return
 
     const rasterSource: ImageSourceRaw = {
       type: "image",
-      url: url,
-      coordinates: getCoordsFromBounds(bounds),
     }
+
+    const cachedRequest = this.cachedRequests[this.getCacheKey(this.layer)]
+    if (cachedRequest) {
+      Object.assign(rasterSource, cachedRequest)
+    } else {
+      Object.assign(rasterSource, {
+        url: this.createGetMapUrl(),
+        coordinates: getCoordsFromBounds(this.mapObject.getBounds()),
+      })
+    }
+
     this.mapObject.addSource(this.currentLayer, rasterSource)
     const rasterLayer: RasterLayer = {
       id: this.currentLayer,
@@ -166,13 +179,49 @@ export default class AnimatedMapboxLayer extends Vue {
     this.mapObject.addLayer(rasterLayer, "boundary_country_outline")
   }
 
-  private createGetMapUrl(
-    baseUrl: string,
-    bounds: LngLatBounds,
-    canvas: HTMLCanvasElement,
-  ) {
+  populateCache() {
     if (this.layer === null) return
 
+    const milliSecondsInAnHour = 3.6e6
+    const cacheSize = 10
+    const oldTime = this.layer.time.valueOf()
+    for (let i = 1; i <= cacheSize; i++) {
+      this.layer.time.setTime(oldTime + (i * milliSecondsInAnHour))
+
+      const cacheKey = this.getCacheKey(this.layer)
+      if (this.cachedRequests[cacheKey]) continue
+
+      const url = this.createGetMapUrl()
+      if (!url) continue
+
+      // // Cache using html header
+      // const img = new Image()
+      // img.src = url
+      // img.onload = () => this.cachedRequests[cacheId] = url
+
+      const bounds = this.mapObject.getBounds()
+      // Cache by creating local blob
+      fetch(url)
+        .then(response => response.blob())
+        .then(blob => {
+          const blobUrl = URL.createObjectURL(blob)
+          this.cachedRequests[cacheKey] = { url: blobUrl, coordinates: getCoordsFromBounds(bounds) }
+        })
+    }
+
+    this.layer.time.setTime(oldTime)
+  }
+
+  getCacheKey(layer: MapboxLayerOptions) {
+    return layer.name + layer.time.toString()
+  }
+
+  private createGetMapUrl() {
+    if (this.layer === null) return
+
+    const bounds = this.mapObject.getBounds()
+    const canvas = this.mapObject.getCanvas()
+    const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")
     const time = this.layer.time.toISOString()
 
     const getMapUrl = new URL(`${baseUrl}/wms`)
@@ -245,6 +294,7 @@ export default class AnimatedMapboxLayer extends Vue {
       this.setDefaultZoom()
     }
 
+    this.populateCache()
 
     const source = this.mapObject.getSource(this.currentLayer)
     if (source === undefined) {
