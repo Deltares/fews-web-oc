@@ -33,7 +33,6 @@ export default class MapComponent extends Vue {
   }
 
   mounted() {
-    console.log(this.styleUrl)
     const map:any = this.$refs.map;
     map.map._requestManager._transformRequestFn = (url: string, resourceType: ResourceType) => {
       if (!this.$config.authenticationIsEnabled) return {
@@ -54,7 +53,6 @@ export default class MapComponent extends Vue {
 
   @Watch('styleUrl')
   updateStyle() {
-    console.log(`updating: ${this.styleUrl}`)
     const map:any = this.$refs.map
     map.map.setStyle(this.styleUrl)
   }

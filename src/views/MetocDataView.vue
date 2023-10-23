@@ -331,6 +331,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   setMapStyle(styleUrl: string) {
     this.mapStyleUrl = styleUrl
+
+    // Wait for the style to fully switch and add layers back.
+    // Not checked with events because `style.load` event does not work and
+    // the `styledata` event keeps firing after done.
+    setTimeout(this.onDataSourceChange, 500)
   }
 
   /**
