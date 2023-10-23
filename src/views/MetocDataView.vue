@@ -665,6 +665,13 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     await this.updateTimeSeriesxCoordyCoord()
   }
 
+  
+  @Watch('currentTime')
+  async onCurrentTimeChange(): Promise<void> {
+    if (this.currentElevation === null) return
+    await this.updateTimeSeriesxCoordyCoord()
+  }
+
   async updateTimeSeriesxCoordyCoord() {
     if (!this.hasSelectedCoordinates || !this.currentDataSource || !this.firstValueTime || !this.lastValueTime || !this.currentWMSLayer?.boundingBox) {
       return
