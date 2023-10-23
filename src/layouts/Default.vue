@@ -13,6 +13,7 @@
       <v-toolbar dense fixed>
         <v-btn text :to="{ name: 'About' }" class="fews-home">
           <v-img width="148" :src="logo"></v-img>
+          <v-img class="ml-4" max-width="38" contain :src="minDefLogo" />
         </v-btn>
         <v-spacer />
         <login-component v-if="$config.authenticationIsEnabled"/>
@@ -41,7 +42,7 @@
           </v-list-item>
         </v-list>
       </v-menu>
-      <portal-target name="web-oc-sidebar" />
+      <portal-target name="web-oc-sidebar" style="height: calc(100% - 48px)" />
     </v-navigation-drawer>
     <v-main id="main">
       <router-view style="height: 100%;">
@@ -154,6 +155,10 @@ export default class Default extends Vue {
   get currentItemTitle() {
     const matchedRouteNames = this.$route.matched.map( m => m.name )
     return this.menuItems.find(item => matchedRouteNames.includes(item.to.name))?.title ?? this.$route.name
+  }
+
+  get minDefLogo() {
+    return `${process.env.BASE_URL}images/mindef_logo.png`
   }
 
   get logo() {
