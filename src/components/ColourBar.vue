@@ -4,6 +4,28 @@
                                 $vuetify.breakpoint.mobile ? 'colourbar-mobile' : 'colourbar-desktop',
                                 $vuetify.theme.dark ? 'colourbar-dark' : 'colourbar-light'
                                 ]"/>
+    <v-text-field ref="minInput" v-if="isEditingMin"
+      @keydown.enter.stop="updatedRange"
+      @keydown.escape.stop="updatedRange"
+      @blur="updatedRange"
+      v-model.number="range.min"
+      hide-spin-buttons
+      hide-details
+      background-color="secondary"
+      type="number"
+      class="tooltip-input input-min"
+    />
+    <v-text-field ref="maxInput" v-if="isEditingMax"
+      @keydown.enter.stop="updatedRange"
+      @keydown.escape.stop="updatedRange"
+      @blur="updatedRange"
+      v-model.number="range.max"
+      hide-spin-buttons
+      hide-details
+      background-color="secondary"
+      type="number"
+      class="tooltip-input input-max"
+    />
   </div>
 </template>
 
@@ -20,6 +42,12 @@ export default class ColourBar extends Vue {
   group: any
   colourBar?: webOcCharts.ColourBar
   isVisible: boolean = false
+  range = {
+    min: 0,
+    max: 1
+  }
+  isEditingMin = false
+  isEditingMax = false
 
   mounted() {
     const svg = d3.select("#colourbar")
@@ -52,6 +80,36 @@ export default class ColourBar extends Vue {
       this.$vuetify.breakpoint.mobile ? 250 : 400, 30,
       options)
     this.isVisible = true
+
+    const firstChild = d3.select("#colourbar > g > g.axis").selectChild()
+    const lastChild = d3.select("#colourbar > g > g.axis").selectChild(':last-child')
+
+    this.range.min = firstChild.selectChild("text").property("innerHTML")
+    this.range.max = lastChild.selectChild("text").property("innerHTML")
+
+    firstChild.on('click', () => {
+      this.isEditingMin = true
+
+      this.$nextTick(() => {
+        const minInput = this.$refs.minInput as HTMLElement
+        minInput.focus()
+      })
+    })
+
+    lastChild.on('click', () => {
+      this.isEditingMax = true
+
+      this.$nextTick(() => {
+        const maxInput = this.$refs.maxInput as HTMLElement
+        maxInput.focus()
+      })
+    })
+  }
+
+  updatedRange() {
+    this.isEditingMin = false
+    this.isEditingMax = false
+    this.$emit("rangeUpdate", `${this.range.min},${this.range.max}`)
   }
 }
 </script>
@@ -63,8 +121,7 @@ export default class ColourBar extends Vue {
 
   .colourbar {
     fill: none;
-    width: 100%;
-    max-width: 500px;
+    width: 450px;
     height: 85px;
     border-radius: 7px;
     -webkit-font-smoothing: antialiased;
@@ -109,5 +166,27 @@ export default class ColourBar extends Vue {
 
   .colourbar-desktop {
     max-width: 450px;
+  }
+
+  .tooltip-input {
+    font-size: 12px;
+    width: 40px;
+    height: 40px;
+    bottom: -6px;
+    padding: 0;
+    position: absolute;
+    border-radius: 5px;
+  }
+
+  .tooltip-input:deep(input) {
+    padding: 8px;
+  }
+
+  .input-min {
+    left: 10px;
+  }
+
+  .input-max {
+    left: 405px;
   }
 </style>
