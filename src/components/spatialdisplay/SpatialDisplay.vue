@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="d-flex flex-column flex-grow-1 flex-shrink-1">
     <MapComponent>
       <animated-mapbox-layer :layer="layerOptions" />
     </MapComponent>
@@ -108,12 +108,5 @@ function updateTime(date: Date): void {
   background-color: none;
   position: absolute;
   bottom: 80px;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
 }
 </style>

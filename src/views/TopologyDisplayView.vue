@@ -8,20 +8,46 @@
     >
     </ColumnMenu>
   </Teleport>
-  <router-view></router-view>
+  <div class="d-flex flex-column h-100 w-100">
+    <v-tabs v-model="activeTab" class="d-flex flex-shrink-0">
+      <v-tab
+        v-for="displayTab in displayTabs"
+        :key="displayTab.id"
+        :href="displayTab.href"
+        :target="displayTab.target"
+        :to="displayTab.to"
+      >
+        {{ displayTab.title }}
+      </v-tab>
+    </v-tabs>
+    <div class="d-flex flex-column flex-shrink-1 flex-grow-0 h-100">
+      <router-view></router-view>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import type { ColumnItem } from '@/components/general/ColumnItem'
 import ColumnMenu from '@/components/general/ColumnMenu.vue'
-import { getTopologyNodes } from '@/lib/topology'
+import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
+import router from '@/router'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
+import { watchEffect } from 'vue'
 import { ref, watch } from 'vue'
+import type { RouteLocationRaw } from 'vue-router'
 
 const WEB_BROWSER_DISPLAY: string = 'web browser display'
 
 interface Props {
   nodeId?: string
+}
+
+interface DisplayTab {
+  id: string
+  title: string
+  href?: string
+  target?: string
+  to?: RouteLocationRaw
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -31,6 +57,9 @@ const props = withDefaults(defineProps<Props>(), {
 const active = ref<string[]>([])
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
+
+const activeTab = ref(0)
+const displayTabs = ref<DisplayTab[]>([])
 
 watch(
   () => props.nodeId,
@@ -43,8 +72,10 @@ watch(
 )
 
 const nodes = ref<TopologyNode[]>()
+const topologyMap = ref(new Map<string, TopologyNode>())
 getTopologyNodes().then((response) => {
   nodes.value = response
+  createTopologyMap(nodes.value, topologyMap.value)
 })
 
 function anyChildNodeIsVisible(nodes: TopologyNode[] | undefined): boolean {
@@ -76,36 +107,6 @@ function recursiveUpdateNode(nodes: TopologyNode[]) {
       }
       if (node.topologyNodes) {
         result.children = recursiveUpdateNode(node.topologyNodes)
-      } else {
-        if (node.url !== undefined && node.mainPanel === WEB_BROWSER_DISPLAY) {
-          result.href = node.url
-          result.target = node.url
-        } else if (
-          node.displayGroups !== undefined ||
-          node.displayId !== undefined
-        ) {
-          result.to = {
-            name: 'TopologyTimeSeries',
-            params: {
-              nodeId: node.id,
-            },
-          }
-        } else if (node.gridDisplaySelection !== undefined) {
-          result.to = {
-            name: 'TopologySpatialDisplay',
-            params: {
-              nodeId: node.id,
-              layerName: node.gridDisplaySelection?.plotId,
-            },
-          }
-        } else {
-          result.to = {
-            name: 'TopologyDisplay',
-            params: {
-              nodeId: node.id,
-            },
-          }
-        }
       }
       return result
     })
@@ -123,4 +124,55 @@ function updateItems(): void {
 }
 
 watch(nodes, updateItems)
+
+watchEffect(() => {
+  if (
+    displayTabs.value[activeTab.value] &&
+    displayTabs.value[activeTab.value].id.includes(active.value[0])
+  )
+    return
+  const node = topologyMap.value.get(active.value[0])
+  if (node === undefined || node.topologyNodes) return
+  const _displayTabs: DisplayTab[] = []
+  if (node.displayGroups !== undefined || node.displayId !== undefined) {
+    _displayTabs.push({
+      id: `${node.id}-timeseries`,
+      title: 'Time Series',
+      to: {
+        name: 'TopologyTimeSeries',
+        params: {
+          nodeId: node.id,
+        },
+      },
+    })
+  }
+  if (node.gridDisplaySelection !== undefined) {
+    _displayTabs.push({
+      id: `${node.id}-spatial`,
+      title: 'Spatial Display',
+      to: {
+        name: 'TopologySpatialDisplay',
+        params: {
+          nodeId: node.id,
+          layerName: node.gridDisplaySelection?.plotId,
+        },
+      },
+    })
+  }
+  if (node.url !== undefined) {
+    _displayTabs.push({
+      id: `${node.id}-${WEB_BROWSER_DISPLAY}`,
+      title: 'Link',
+      href: node.url,
+      target: node.url,
+    })
+  }
+  displayTabs.value = _displayTabs
+  activeTab.value = 0
+  if (_displayTabs.length > 0 && _displayTabs[0].to !== undefined) {
+    router.push(_displayTabs[0].to)
+  } else {
+    router.push({ name: 'TopologyDisplay', params: { nodeId: node.id } })
+  }
+})
 </script>
