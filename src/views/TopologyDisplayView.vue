@@ -8,7 +8,7 @@
     >
     </ColumnMenu>
   </Teleport>
-  <div class="d-flex flex-column h-100 w-100">
+  <Teleport to="#app-bar-content">
     <v-tabs v-model="activeTab" class="d-flex flex-shrink-0">
       <v-tab
         v-for="displayTab in displayTabs"
@@ -20,10 +20,8 @@
         {{ displayTab.title }}
       </v-tab>
     </v-tabs>
-    <div class="d-flex flex-column flex-shrink-1 flex-grow-0 h-100">
-      <router-view></router-view>
-    </div>
-  </div>
+  </Teleport>
+  <router-view></router-view>
 </template>
 
 <script setup lang="ts">

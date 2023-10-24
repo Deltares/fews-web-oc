@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-column flex-grow-1 flex-shrink-1">
+  <div class="d-flex flex-column flex-grow-1 flex-shrink-1 h-100">
     <MapComponent>
       <animated-mapbox-layer :layer="layerOptions" />
     </MapComponent>
