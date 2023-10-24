@@ -1,5 +1,6 @@
 <template>
   <div class="display-container">
+    <SplashScreen />
     <portal to="web-oc-sidebar">
       <MetocSidebar :categories="categories"/>
     </portal>
@@ -142,6 +143,7 @@ import ElevationSlider from '@/components/ElevationSlider.vue'
 import MetocSidebar from '@/components/MetocSidebar.vue';
 import LocationsLayerSearchControl from '@/components/LocationsLayerSearchControl.vue'
 import MapComponent from '@/components/MapComponent.vue'
+import SplashScreen from '@/components/SplashScreen.vue';
 import { Layer } from '@deltares/fews-wms-requests';
 import Regridder from '@/components/Regridder.vue'
 import { toMercator } from '@turf/projection';
@@ -206,7 +208,8 @@ const selectedCoordinatesLayerOptions: CircleLayer = {
     MapboxLayer,
     MapComponent,
     MetocSidebar,
-    Regridder
+    Regridder,
+    SplashScreen
   }
 })
 export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
@@ -879,7 +882,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   display: flex;
   flex-direction: column;
   width: 50%;
-  z-index: 1100;
+  z-index: 110;
 }
 
 .right > .grid-charts,
@@ -920,14 +923,14 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   padding: 10px 5px;
   width: 80%;
   left: 30px;
-  z-index: 1200;
+  z-index: 120;
   display: flex;
   gap: 5px;
 }
 
 .colourbar {
   font-size: 0.825em;
-  z-index: 1000;
+  z-index: 100;
   width: 90%;
   position: absolute;
   bottom: 90px;
