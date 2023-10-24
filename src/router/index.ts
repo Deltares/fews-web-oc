@@ -20,6 +20,8 @@ const SchematicStatusDisplayView = () =>
 const SSDTimeSeriesDisplay = () =>
   import('../components/ssd/SsdTimeSeriesDisplay.vue')
 const SpatialDisplayView = () => import('../views/SpatialDisplayView.vue')
+const SpatialDisplay = () =>
+  import('../components/spatialdisplay/SpatialDisplay.vue')
 const TimeSeriesDisplayView = () => import('../views/TimeSeriesDisplayView.vue')
 const TopologyDisplayView = () => import('../views/TopologyDisplayView.vue')
 const TimeSeriesDisplay = () =>
@@ -117,6 +119,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         path: '/topology/node/:nodeId/series/',
         name: 'TopologyTimeSeries',
         component: TimeSeriesDisplay,
+        props: true,
+        meta: { authorize: [], sidebar: true },
+      },
+      {
+        path: '/topology/node/:nodeId/map/:layerName?',
+        name: 'TopologySpatialDisplay',
+        component: SpatialDisplay,
         props: true,
         meta: { authorize: [], sidebar: true },
       },

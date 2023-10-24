@@ -90,6 +90,14 @@ function recursiveUpdateNode(nodes: TopologyNode[]) {
               nodeId: node.id,
             },
           }
+        } else if (node.gridDisplaySelection !== undefined) {
+          result.to = {
+            name: 'TopologySpatialDisplay',
+            params: {
+              nodeId: node.id,
+              layerName: node.gridDisplaySelection?.plotId,
+            },
+          }
         } else {
           result.to = {
             name: 'TopologyDisplay',
