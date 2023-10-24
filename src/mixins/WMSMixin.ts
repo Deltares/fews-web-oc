@@ -1,5 +1,5 @@
 import {Component, Vue} from 'vue-property-decorator'
-import {GetLegendGraphicResponse, Layer, WMSProvider} from '@deltares/fews-wms-requests'
+import {GetLegendGraphicFilter, GetLegendGraphicResponse, Layer, WMSProvider} from '@deltares/fews-wms-requests'
 
 @Component
 export default class WMSMixin extends Vue {
@@ -62,10 +62,15 @@ export default class WMSMixin extends Vue {
     return valueDates
   }
 
-  async getLegendGraphic (layers: string): Promise<GetLegendGraphicResponse> {
+  async getLegendGraphic (layers: string, colorScaleRange?: string): Promise<GetLegendGraphicResponse> {
+    const legendGraphicFilter: GetLegendGraphicFilter = {
+      layers,
+      colorscalerange: colorScaleRange
+    }
+
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    return await this.wmsProvider.getLegendGraphic({layers, useDisplayUnits: true})
+    return await this.wmsProvider.getLegendGraphic({...legendGraphicFilter, useDisplayUnits: true})
   }
 
   async transformRequest(request: Request): Promise<Request> {

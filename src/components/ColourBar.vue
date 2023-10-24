@@ -4,6 +4,8 @@
                                 $vuetify.breakpoint.mobile ? 'colourbar-mobile' : 'colourbar-desktop',
                                 $vuetify.theme.dark ? 'colourbar-dark' : 'colourbar-light'
                                 ]"/>
+    <LegendInput :value.sync="range.min" :maxValue="range.max" offset="10px" :isEditing.sync="isEditingMin"/>
+    <LegendInput :value.sync="range.max" :minValue="range.min" offset="405px" :isEditing.sync="isEditingMax"/>
   </div>
 </template>
 
@@ -11,8 +13,13 @@
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import * as d3 from 'd3'
 import * as webOcCharts from '@deltares/fews-web-oc-charts'
+import LegendInput from '@/components/LegendInput.vue'
 
-@Component([])
+@Component({
+  components: {
+    LegendInput
+  }
+})
 export default class ColourBar extends Vue {
   @Prop({ default: () => { return [] }}) value!: webOcCharts.ColourMap
   @Prop({ default: ("") }) title!: string
@@ -20,6 +27,12 @@ export default class ColourBar extends Vue {
   group: any
   colourBar?: webOcCharts.ColourBar
   isVisible: boolean = false
+  range = {
+    min: 0,
+    max: 1
+  }
+  isEditingMin = false
+  isEditingMax = false
 
   mounted() {
     const svg = d3.select("#colourbar")
@@ -52,6 +65,20 @@ export default class ColourBar extends Vue {
       this.$vuetify.breakpoint.mobile ? 250 : 400, 30,
       options)
     this.isVisible = true
+
+    const firstChild = d3.select("#colourbar > g > g.axis").selectChild()
+    const lastChild = d3.select("#colourbar > g > g.axis").selectChild(':last-child')
+
+    this.range.min = firstChild.selectChild("text").property("innerHTML")
+    this.range.max = lastChild.selectChild("text").property("innerHTML")
+
+    firstChild.on('click', () => this.isEditingMin = true)
+    lastChild.on('click', () => this.isEditingMax = true)
+  }
+
+  @Watch('range', {deep: true})
+  updatedRange() {
+    this.$emit("rangeUpdate", `${this.range.min},${this.range.max}`)
   }
 }
 </script>
@@ -63,8 +90,7 @@ export default class ColourBar extends Vue {
 
   .colourbar {
     fill: none;
-    width: 100%;
-    max-width: 500px;
+    width: 450px;
     height: 85px;
     border-radius: 7px;
     -webkit-font-smoothing: antialiased;

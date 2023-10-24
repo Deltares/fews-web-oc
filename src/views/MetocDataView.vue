@@ -51,7 +51,7 @@
                 />
           </div>
           <div class="colourbar">
-            <ColourBar v-model="legend" :title="legendTitle" v-if="legend.length > 0"/>
+            <ColourBar v-model="legend" :title="legendTitle" v-if="legend.length > 0" @rangeUpdate="setLegendRange"/>
           </div>
           <DateTimeSlider
             class="date-time-slider"
@@ -232,6 +232,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   showLayer: boolean = true
   wmsLayerOptions: MapboxLayerOptions | null = null
   legend: ColourMap = []
+  legendRange: string|undefined = undefined
   unit: string = ''
   legendTitle: string = ''
 
@@ -316,9 +317,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
         time: this.currentTime
       }
 
-        this.maxElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
-        this.minElevation = this.currentWMSLayer?.elevation?.lowerValue ?? null
-        this.wmsLayerOptions.elevation = this.currentElevation
+      this.maxElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
+      this.minElevation = this.currentWMSLayer?.elevation?.lowerValue ?? null
+      this.wmsLayerOptions.elevation = this.currentElevation
+      this.wmsLayerOptions.colorScaleRange = this.legendRange
     }
   }
 
@@ -501,6 +503,21 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     this.onResize()
   }
 
+  setLegendRange(newRange: string) {
+    this.legendRange = newRange
+    this.setWMSLayerOptions()
+    this.updateLegendGraphic()
+  }
+
+  async updateLegendGraphic() {
+    if (!this.currentDataSource) return
+
+    const legend = await this.getLegendGraphic(this.currentDataSource.wmsLayerId, this.legendRange)
+    this.unit = legend.unit ?? '—'
+    this.legend = legend.legend
+    this.legendTitle = `${this.currentWMSLayer?.title} [${this.unit}]`
+  }
+
   /**
    * Updates the WMS layer, WMS layer times and locations for a new data source.
    */
@@ -534,11 +551,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
     this.setWMSLayerOptions()
 
+    // Reset legendRange to get default value
+    this.legendRange = undefined
     // Update the WMS layer legend.
-    const legend = await this.getLegendGraphic(this.currentDataSource.wmsLayerId)
-    this.unit = legend.unit ?? '—'
-    this.legend = legend.legend
-    this.legendTitle = `${this.currentWMSLayer?.title} [${this.unit}]`
+    this.updateLegendGraphic()
 
     // Update locations for the current data source.
     const geojson = await fetchLocationsAsGeoJson(
@@ -931,7 +947,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 .colourbar {
   font-size: 0.825em;
   z-index: 100;
-  width: 90%;
   position: absolute;
   bottom: 90px;
   left: 10px;

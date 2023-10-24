@@ -69,6 +69,7 @@ export interface MapboxLayerOptions {
   time: Date
   bbox: LngLatBounds
   elevation?: number | null
+  colorScaleRange?: string
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
@@ -189,6 +190,11 @@ export default class AnimatedMapboxLayer extends Vue {
     if (this.layer.elevation) {
       getMapUrl.searchParams.append('elevation', `${this.layer.elevation}`)
     }
+
+    if (this.layer.colorScaleRange) {
+      getMapUrl.searchParams.append('colorScaleRange', `${this.layer.colorScaleRange}`)
+    }
+
     return getMapUrl.toString()
   }
 
