@@ -1,9 +1,8 @@
 <template>
-  <v-card>
+  <v-card class="rounded-xl">
     <v-card-title>USER TERMS AND CONDITIONS</v-card-title>
-    <v-card-text>
+    <v-card-text class="scroll">
       <!-- Generated from .docx file with word save as html -->
-      <div class=WordSection1>
         <p class=MsoNormal style='line-height:normal'><span lang=EN-GB
           style='font-size:10.0pt;font-family:"Arial",sans-serif'>The UAE Meteorological
           and Oceanographic Modelling and Prediction System (also referred to as METOC
@@ -547,7 +546,14 @@
             Chamber of Commerce and Industry under number 41146461. </span></p>
 
         <p class=MsoNoSpacing style='margin-right:13.05pt'><span lang=EN-GB style='font-size:10.0pt'>&nbsp;</span></p>
-      </div>
     </v-card-text>
   </v-card>
 </template>
+
+
+<style scoped>
+.scroll {
+  max-height: 80vh;
+  overflow-y: scroll;
+}
+</style>
