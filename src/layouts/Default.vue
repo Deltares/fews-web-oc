@@ -13,7 +13,6 @@
       <v-toolbar dense fixed>
         <v-btn text :to="{ name: 'About' }" class="fews-home">
           <v-img width="148" :src="logo"></v-img>
-          <v-img class="ml-4" max-width="38" contain :src="minDefLogo" />
         </v-btn>
         <v-spacer />
         <login-component v-if="$config.authenticationIsEnabled"/>
@@ -155,10 +154,6 @@ export default class Default extends Vue {
   get currentItemTitle() {
     const matchedRouteNames = this.$route.matched.map( m => m.name )
     return this.menuItems.find(item => matchedRouteNames.includes(item.to.name))?.title ?? this.$route.name
-  }
-
-  get minDefLogo() {
-    return `${process.env.BASE_URL}images/mindef_logo.png`
   }
 
   get logo() {
