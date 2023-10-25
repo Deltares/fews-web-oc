@@ -1,7 +1,6 @@
 import {
   createRouter,
   createWebHistory,
-  NavigationGuardNext,
   RouteLocationNormalized,
   RouteRecordRaw,
 } from 'vue-router'
@@ -166,11 +165,11 @@ async function handleAuthorization(
   to: RouteLocationNormalized,
   _from: RouteLocationNormalized,
   next: NavigationGuardNext,
-  authorize: string[]
+  authorize: string[],
 ) {
   const currentUser = await authenticationManager.userManager.getUser()
   if (currentUser === null) {
-    return next({ name: 'Login', query: { redirect: to.path } })
+    return { name: 'Login', query: { redirect: to.path } }
   }
 
   const role =
@@ -179,33 +178,26 @@ async function handleAuthorization(
       : 'guest'
 
   if (authorize.length && !authorize.includes(role)) {
-    return next({ name: 'About' })
+    return { name: 'About' }
   }
 }
 
 async function addDynamicRoutes() {
-  console.log('init routes')
   const store = useConfigStore()
   await store.setFewsConfig()
   Object.values(store.components).forEach((component: any) => {
     const route = dynamicRoutes.find((route) => route.name === component.type)
     if (route !== undefined) {
-      console.log('add', route.name)
       router.addRoute(route)
     }
   })
 }
 
-router.beforeEach(async (to, _from, next) => {
+router.beforeEach(async (to, _from) => {
   const authorize = to.meta?.authorize as string[]
   if (authorize && configManager.authenticationIsEnabled) {
-    await handleAuthorization(to, _from, next, authorize)
-  }
-
-  if (!routesAreInitialized) {
-    await addDynamicRoutes()
-    routesAreInitialized = true
-    router.replace(to)
+    const authPath = await handleAuthorization(to, _from, authorize)
+    if (authPath) return authPath
   }
 
   if (to.path === '/auth/callback') {
@@ -214,15 +206,19 @@ router.beforeEach(async (to, _from, next) => {
         await authenticationManager.userManager.signinRedirectCallback()
       const path: string =
         user.state === null ? '/about' : (user.state as string)
-      if (path !== '/auth/logout') {
-        next({ path })
-      }
-    } finally {
-      next({ name: 'About' })
+      return { path }
+    } catch (error) {
+      console.error(error)
     }
   }
 
-  next()
+  if (!routesAreInitialized) {
+    await addDynamicRoutes()
+    routesAreInitialized = true
+    router.replace(to)
+  }
+
+  return
 })
 
 export default router
