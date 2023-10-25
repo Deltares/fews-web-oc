@@ -88,8 +88,11 @@ export default class ElevationChart extends Vue {
 
     this.setChartConfigValues(axisOptions)
 
+    const chartWidth = 800
+    const chartHeight = 1200
+
     const containerReference = this.$refs['elevation-chart-container'] as HTMLElement
-    this.axis = new CartesianAxes(containerReference, 800, 1200, axisOptions)
+    this.axis = new CartesianAxes(containerReference, chartWidth, chartHeight, axisOptions)
     const mouseOver = new MouseOver()
     const zoom = new ZoomHandler(WheelMode.X)
     this.axis.accept(zoom)
@@ -144,10 +147,7 @@ export default class ElevationChart extends Vue {
       })
       if (index >= 0) removeIds.splice(index, 1)
     }
-    for (const id of removeIds) {
-      this.axis.removeChart(id)
-    }
-
+    removeIds.forEach( id => this.axis.removeChart(id))
     let extraYAxisDrawOptions: ScaleOptions = {}
     const yAxis = this.value.yAxis as CartesianAxisOptions[]
 
