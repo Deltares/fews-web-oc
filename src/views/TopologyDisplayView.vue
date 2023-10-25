@@ -73,7 +73,7 @@ const nodes = ref<TopologyNode[]>()
 const topologyMap = ref(new Map<string, TopologyNode>())
 getTopologyNodes().then((response) => {
   nodes.value = response
-  createTopologyMap(nodes.value, topologyMap.value)
+  topologyMap.value = createTopologyMap(nodes.value)
 })
 
 function anyChildNodeIsVisible(nodes: TopologyNode[] | undefined): boolean {

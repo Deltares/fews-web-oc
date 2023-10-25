@@ -11,15 +11,22 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
  * @param {TopologyNode[] | undefined} nodes - An array of TopologyNode objects or undefined.
  * @param {Map<string, TopologyNode>} topologyMap - A Map used to store the topology nodes.
  */
-export function createTopologyMap(
-  nodes: TopologyNode[] | undefined,
-  topologyMap: Map<string, TopologyNode>,
-) {
-  if (nodes === undefined) return undefined
-  for (const node of nodes) {
-    topologyMap.set(node.id, node)
-    createTopologyMap(node.topologyNodes, topologyMap)
+export function createTopologyMap(nodes: TopologyNode[] | undefined) {
+  const topologyMap = new Map<string, TopologyNode>()
+
+  function recursiveCreateTopologyMap(
+    nodes: TopologyNode[] | undefined,
+    topologyMap: Map<string, TopologyNode>,
+  ) {
+    if (nodes === undefined) return undefined
+    for (const node of nodes) {
+      topologyMap.set(node.id, node)
+      recursiveCreateTopologyMap(node.topologyNodes, topologyMap)
+    }
   }
+
+  recursiveCreateTopologyMap(nodes, topologyMap)
+  return topologyMap
 }
 
 /**
