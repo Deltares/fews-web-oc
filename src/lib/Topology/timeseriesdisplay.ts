@@ -86,12 +86,10 @@ async function fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
       }
     })
     if (!result.config) continue
+    const elevationResult = elevationResponse?.results[responseIndex]
 
     // Get configurations for each display, convert FEWS display configuration to
     // fews-web-oc-charts configuration.
-    const addSequence = (result.config.timeSeriesDisplay.subplots?.length ?? 0) > result.requests.length ||
-      result.config.timeSeriesDisplay.subplots?.some((subplot) => subplot.items.length > result.requests.length)
-
     const title = result.config.timeSeriesDisplay.title ?? ''
 
     let displayTypes = [DisplayType.TimeSeriesChart, DisplayType.TimeSeriesTable]
@@ -105,12 +103,28 @@ async function fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
     // subplot 1 item 2: 2
     // subplot 2 item 1: 1
     // subplot 2 item 2: 3
+    const addSequence = (result.config.timeSeriesDisplay.subplots?.length ?? 0) > result.requests.length ||
+      result.config.timeSeriesDisplay.subplots?.some((subplot) => subplot.items.length > result.requests.length)
+
     result.config.timeSeriesDisplay.subplots?.forEach((subplot, subplotIndex) => {
       subplot.items.forEach((item, itemIndex) => {
         if (addSequence) {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          item.sequence = subplotIndex + itemIndex * subplot.items.length
+          item.sequence = subplotIndex + itemIndex * result.config.timeSeriesDisplay.subplots.length
+        }
+      })
+    })
+
+    const addSequenceElevation = (elevationResult?.config?.timeSeriesDisplay.subplots?.length ?? 0) > result.requests.length ||
+      elevationResult?.config?.timeSeriesDisplay.subplots?.some((subplot) => subplot.items.length > result.requests.length)
+
+    elevationResult?.config?.timeSeriesDisplay.subplots?.forEach((subplot, subplotIndex) => {
+      subplot.items.forEach((item, itemIndex) => {
+        if (addSequenceElevation) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          item.sequence = subplotIndex + itemIndex * elevationResult.config.timeSeriesDisplay.subplots.length
         }
       })
     })
@@ -124,10 +138,10 @@ async function fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
         let config = Array(2).fill(timeSeriesConfig)
 
         if (hasElevation) {
-          const elevationSubplot = elevationResponse?.results[responseIndex]?.config?.timeSeriesDisplay.subplots?.[subplotIndex]
+          const elevationSubplot = elevationResult?.config?.timeSeriesDisplay.subplots?.[subplotIndex]
           if (elevationSubplot !== undefined) {
             for (const item of elevationSubplot.items) {
-              item.request ??= elevationResponse?.results[responseIndex].requests[0].request
+              item.request ??= elevationResult?.requests[0].request
             }
             const elevationConfig = timeSeriesDisplayToChartConfig(elevationSubplot, title)
             config = [elevationConfig, ...config]
