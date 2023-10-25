@@ -1,14 +1,22 @@
 <template>
   <div style="height: 100%; display: flex; flex-direction: column">
+    <v-container>
+      <v-row>
+        <v-col>
+          <v-img class="ml-6" max-width="42" contain :src="minDefLogo" />
+        </v-col>
+        <v-spacer/>
+        <v-col>
+          <v-img class="ml-6" max-width="42" contain :src="navyLogo" />
+        </v-col>
+      </v-row>
+    </v-container>
     <TreeMenu
       ref="tree"
       :active.sync="activeNodes"
       :items="nodes"
       :open.sync="openNodes"
     />
-    <div style="margin-top: auto">
-      <v-img class="ml-6 mb-6" max-width="64" contain :src="navyLogo" />
-    </div>
   </div>
 </template>
 
@@ -38,6 +46,10 @@ export default class MetocSidebar extends Mixins(PiRequestsMixin) {
 
   get navyLogo() {
     return `${process.env.BASE_URL}images/navy_logo.png`
+  }
+
+  get minDefLogo() {
+    return `${process.env.BASE_URL}images/mindef_logo.png`
   }
 
   @Watch('categories')
