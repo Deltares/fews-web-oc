@@ -26,6 +26,6 @@ export default class SplashScreen extends Vue {
 .terms-of-use-link {
   position: absolute;
   bottom: 12px;
-  right: 180px;
+  right: 20px;
 }
 </style>
