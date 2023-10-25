@@ -47,12 +47,12 @@ export function useWmsLayer(
           capabilities.layers[0]
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
   function loadTimes(): void {
-    let valueDates: Date[]
+    let valueDates: Date[] = []
     if (selectedLayer.value) {
       if (selectedLayer.value.times) {
         const dates = selectedLayer.value.times.map((time) => {
@@ -69,13 +69,9 @@ export function useWmsLayer(
         valueDates = dates.filter(
           (d) => d >= firstValueDate && d <= lastValueDate,
         )
-      } else {
-        valueDates = []
       }
-      times.value = valueDates
-    } else {
-      times.value = []
     }
+    times.value = valueDates
   }
 
   async function loadLegend(): Promise<void> {
@@ -86,7 +82,7 @@ export function useWmsLayer(
         layers: _layers,
       })
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -112,7 +108,7 @@ export function useWmsCapilities(
     try {
       capabilities.value = await wmsProvider.getCapabilities({})
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 

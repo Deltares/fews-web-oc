@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { configManager } from '@/services/application-config'
-import { useDisplayConfig } from '@/services/useTopologyNodes/index.ts'
+import { useDisplayConfig } from '@/services/useDisplayConfig/index.ts'
 import { computed } from 'vue'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
@@ -65,14 +65,12 @@ const { displays, displayConfig } = useDisplayConfig(
 )
 
 const plotIds = computed(() => {
-  if (displays.value?.length) {
-    const ids = displays.value.map((d) => {
+  if (displays.value && displays.value.length > 0) {
+    return displays.value.map((d) => {
       return d.title
     })
-    return ids
-  } else {
-    return []
   }
+  return []
 })
 
 watch(props, () => (selectedPlot.value = 0))

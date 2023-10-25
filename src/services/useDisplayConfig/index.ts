@@ -5,7 +5,7 @@ import {
 import { ref, toValue, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { DisplayConfig } from '../../lib/display/DisplayConfig.js'
-import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig'
+import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig.js'
 import { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.js'
 

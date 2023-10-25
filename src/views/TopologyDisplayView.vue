@@ -76,14 +76,6 @@ getTopologyNodes().then((response) => {
   topologyMap.value = createTopologyMap(nodes.value)
 })
 
-function anyChildNodeIsVisible(nodes: TopologyNode[] | undefined): boolean {
-  if (nodes === undefined) return false
-  for (const node of nodes) {
-    if (topologyNodeIsVisible(node)) return true
-  }
-  return false
-}
-
 function topologyNodeIsVisible(node: TopologyNode): boolean {
   if (node.url !== undefined) return true
   if (node.filterIds !== undefined && node.filterIds.length > 0) return true
@@ -91,7 +83,8 @@ function topologyNodeIsVisible(node: TopologyNode): boolean {
   if (node.displayId !== undefined) return true
   if (node.displayGroups !== undefined && node.displayGroups.length > 0)
     return true
-  return anyChildNodeIsVisible(node.topologyNodes)
+  if (node.topologyNodes === undefined) return false
+  return node.topologyNodes.some(topologyNodeIsVisible)
 }
 
 function recursiveUpdateNode(nodes: TopologyNode[]) {
@@ -123,6 +116,8 @@ function updateItems(): void {
 
 watch(nodes, updateItems)
 
+// Update the displayTabs if the active node changes (or if the topologyMap changes).
+// Redirect to the corresponding display of the updated activee tab
 watchEffect(() => {
   if (
     displayTabs.value[activeTab.value] &&
