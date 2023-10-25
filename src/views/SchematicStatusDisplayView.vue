@@ -2,9 +2,9 @@
   <Teleport to="#web-oc-sidebar-target">
     <ColumnMenu
       rootName="Overzichtsschermen"
-      :active.sync="active"
+      v-model:active="active"
       :items="items"
-      :open.sync="open"
+      v-model:open="open"
     >
     </ColumnMenu>
   </Teleport>

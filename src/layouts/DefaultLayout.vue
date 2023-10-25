@@ -45,6 +45,7 @@
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       </template>
+      <div id="app-bar-content"></div>
       <v-spacer />
       <v-btn variant="text" icon="mdi-dots-vertical"></v-btn>
     </v-app-bar>
