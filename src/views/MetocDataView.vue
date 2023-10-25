@@ -63,31 +63,19 @@
           />
         </div>
       </div>
-      <div class="grid-charts" v-if="hasDataToDisplay && !$vuetify.breakpoint.mobile">
+      <div class="grid-charts" :class="$vuetify.breakpoint.mobile? 'fullscreen' : ''" v-show="hasDataToDisplay">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-spacer/>
           <v-toolbar-items>
-            <v-btn icon plain @click="setDockMode('left')">
+            <v-btn icon plain @click="setDockMode('left')" v-if="!$vuetify.breakpoint.mobile">
               <v-icon>mdi-dock-left</v-icon>
             </v-btn>
-            <v-btn icon plain @click="setDockMode('bottom')">
+            <v-btn icon plain @click="setDockMode('bottom')" v-if="!$vuetify.breakpoint.mobile">
               <v-icon>mdi-dock-bottom</v-icon>
             </v-btn>
-            <v-btn icon plain @click="setDockMode('right')">
+            <v-btn icon plain @click="setDockMode('right')" v-if="!$vuetify.breakpoint.mobile">
               <v-icon>mdi-dock-right</v-icon>
             </v-btn>
-            <v-btn icon plain @click="closeCharts">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <router-view :displays="displays" :series="seriesStore" @toggleFullscreen="setChartFullscreen"/>
-      </div>
-      <div class="grid-charts fullscreen" v-else-if="hasDataToDisplay">
-        <v-toolbar class="toolbar-charts" dense flat>
-          <v-toolbar-title/>
-          <v-spacer/>
-          <v-toolbar-items>
             <v-btn icon plain @click="closeCharts">
               <v-icon>mdi-close</v-icon>
             </v-btn>
