@@ -8,14 +8,24 @@ export async function getFewsConfig(): Promise<WebOcConfiguration> {
   const webServiceProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
-  const fewsConfig = await webServiceProvider.getWebOcConfiguration()
-  const webOcComponents: WebOcComponent[] = []
-  for (const componentConfig of fewsConfig.components) {
-    webOcComponents.push(componentConfig as WebOcComponent)
+  let webOcConfiguration: WebOcConfiguration = {
+    general: {},
+    webOcComponents: [],
   }
-  return {
-    general: fewsConfig.general,
-    webOcComponents,
+  try {
+    const fewsConfig = await webServiceProvider.getWebOcConfiguration()
+    const webOcComponents: WebOcComponent[] = []
+    for (const componentConfig of fewsConfig.components) {
+      webOcComponents.push(componentConfig as WebOcComponent)
+    }
+    webOcConfiguration = {
+      general: fewsConfig.general,
+      webOcComponents,
+    }
+  } catch (error) {
+    console.error(error)
+  } finally {
+    return webOcConfiguration
   }
 }
 
