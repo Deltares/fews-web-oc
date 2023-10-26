@@ -5,18 +5,22 @@
       v-model:active="active"
       :items="items"
       v-model:open="open"
-    >
-    </ColumnMenu>
+    />
   </Teleport>
-  <SpatialDisplay></SpatialDisplay>
+  <SpatialDataDisplay :layerName="nodeId" />
+  <div class="child-container" :class="{ mobile }">
+    <router-view @close="closeTimeSeriesDisplay"></router-view>
+  </div>
 </template>
 
 <script setup lang="ts">
 import type { ColumnItem } from '@/components/general/ColumnItem'
-import SpatialDisplay from '@/components/spatialdisplay/SpatialDisplay.vue'
+import SpatialDataDisplay from '@/components/spatialdatadisplay/SpatialDataDisplay.vue'
 import ColumnMenu from '@/components/general/ColumnMenu.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { useDisplay } from 'vuetify'
 import { getTopologyNodes } from '@/lib/topology'
 
 interface Props {
@@ -26,6 +30,9 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   nodeId: '',
 })
+
+const { mobile } = useDisplay()
+const router = useRouter()
 
 const active = ref<string[]>([])
 const open = ref<string[]>([])
@@ -48,8 +55,12 @@ getTopologyNodes().then((response) => {
 })
 
 function topologyNodeIsVisible(node: TopologyNode): boolean {
-  if (node.filterIds !== undefined && node.filterIds.length > 0 && 
-      node.gridDisplaySelection?.plotId !== undefined) return true
+  if (
+    node.filterIds !== undefined &&
+    node.filterIds.length > 0 &&
+    node.gridDisplaySelection?.plotId !== undefined
+  )
+    return true
   if (node.topologyNodes === undefined) return false
   return node.topologyNodes.some(topologyNodeIsVisible)
 }
@@ -84,4 +95,15 @@ function updateItems(): void {
 
 watch(nodes, updateItems)
 
+function closeTimeSeriesDisplay(objectId: string): void {
+  if (objectId) {
+    router
+      .push({
+        name: 'SpatialDataDisplay',
+      })
+      .then(() => {
+        SpatialDataDisplay.value?.resize()
+      })
+  }
+}
 </script>
