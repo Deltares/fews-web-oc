@@ -20,6 +20,7 @@ export const ComponentTypeEnum = {
   SystemMonitor: 'SystemMonitor',
   ArchiveDisplay: 'ArchiveDisplay',
   TopologyDisplay: 'TopologyDisplay',
+  SpatialDataDisplay: 'SpatialDataDisplay',
 } as const
 
 export type ComponentType =

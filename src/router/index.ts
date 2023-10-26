@@ -26,6 +26,8 @@ const TimeSeriesDisplayView = () => import('../views/TimeSeriesDisplayView.vue')
 const TopologyDisplayView = () => import('../views/TopologyDisplayView.vue')
 const TimeSeriesDisplay = () =>
   import('../components/timeseries/TimeSeriesDisplay.vue')
+const SpatialDataDisplayView = () =>
+  import('../views/SpatialDataDisplayView.vue')
 
 const Empty = () => import('../views/Empty.vue')
 
@@ -132,6 +134,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     ],
   },
   {
+    path: '/datamap/node/:nodeId?',
+    name: 'SpatialDataDisplay',
+    component: SpatialDataDisplayView,
+    props: true,
+    meta: { authorize: [], sidebar: true },
+  },
+  {
     path: '/archivedisplay',
     name: 'ArchiveDisplay',
     component: Empty,
@@ -150,7 +159,7 @@ async function handleAuthorization(
   to: RouteLocationNormalized,
   _from: RouteLocationNormalized,
   next: NavigationGuardNext,
-  authorize: string[],
+  authorize: string[]
 ) {
   const currentUser = await authenticationManager.userManager.getUser()
   if (currentUser === null) {

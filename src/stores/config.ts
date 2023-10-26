@@ -29,6 +29,8 @@ function getMenuIcon(componentConfig: WebOcComponent): string {
       return 'mdi-clipboard-list'
     case ComponentTypeEnum.TopologyDisplay:
       return 'mdi-map-marker-multiple'
+    case ComponentTypeEnum.SpatialDataDisplay:
+      return 'mdi-flask-empty'
     default:
       return ''
   }
