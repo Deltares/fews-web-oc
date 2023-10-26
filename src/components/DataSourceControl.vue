@@ -7,6 +7,7 @@
       v-model="selected"
       @change="onChangeSelection"
       active-class="primary--text"
+      mandatory
     >
       <v-chip
         v-for="item in items"
