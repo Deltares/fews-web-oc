@@ -30,6 +30,9 @@ const SpatialDataDisplayView = () =>
   import('../views/SpatialDataDisplayView.vue')
 
 const UserSettingsView = () => import('../views/UserSettingsView.vue')
+const SpatialDataDisplayView = () =>
+  import('../views/SpatialDataDisplayView.vue')
+
 const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
