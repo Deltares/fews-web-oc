@@ -30,13 +30,19 @@ import AnimatedMapboxLayer, {
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
+import {
+  PiWebserviceProvider,
+  type Location,
+  TopologyNode,
+} from '@deltares/fews-pi-requests'
+import { fetchLocationsAsGeoJson } from '@/lib/topology'
 
 interface Props {
-  layerName?: string
+  node: TopologyNode
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  layerName: '',
+  node: undefined,
 })
 
 onBeforeMount(() => {
@@ -47,11 +53,12 @@ onBeforeMount(() => {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const piProvider = new PiWebserviceProvider(baseUrl)
 const dateController = new DateController([])
 
 const { selectedLayer, legendGraphic, times } = useWmsLayer(
   baseUrl,
-  () => props.layerName,
+  () => props.node.id,
 )
 
 const currentTime = ref<Date>(new Date())
@@ -82,9 +89,9 @@ function setCurrentTime(enabled: boolean): void {
 }
 
 function setLayerOptions(): void {
-  if (props.layerName) {
+  if (props.node.id) {
     layerOptions.value = {
-      name: props.layerName,
+      name: props.node.id,
       time: currentTime.value,
       bbox: selectedLayer.value?.boundingBox
         ? convertBoundingBoxToLngLatBounds(selectedLayer.value.boundingBox)

@@ -7,7 +7,7 @@
       v-model:open="open"
     />
   </Teleport>
-  <SpatialDataDisplay :layerName="nodeId" />
+  <SpatialDataDisplay :node="topologyMap.get(nodeId)" />
   <div class="child-container" :class="{ mobile }">
     <router-view @close="closeTimeSeriesDisplay"></router-view>
   </div>
@@ -21,7 +21,7 @@ import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
-import { getTopologyNodes } from '@/lib/topology'
+import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
 
 interface Props {
   nodeId?: string
@@ -49,9 +49,11 @@ watch(
 )
 
 const nodes = ref<TopologyNode[]>()
+const topologyMap = ref(new Map<string, TopologyNode>())
 
 getTopologyNodes().then((response) => {
   nodes.value = response
+  topologyMap.value = createTopologyMap(nodes.value)
 })
 
 function topologyNodeIsVisible(node: TopologyNode): boolean {
