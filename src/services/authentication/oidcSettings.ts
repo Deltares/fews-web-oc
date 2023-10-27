@@ -16,7 +16,6 @@ const oidcSettings: UserManagerSettings = {
   scope: `${import.meta.env.VITE_AUTH_SCOPE}`,
   post_logout_redirect_uri: `${baseUrl}auth/logout`,
   monitorSession: false,
-  // sessionChecksEnabled: true
 }
 
 export default oidcSettings
