@@ -32,10 +32,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, watch } from 'vue'
 import { ref } from 'vue'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
 import { useRoute } from 'vue-router'
+import type { User } from 'oidc-client-ts'
 
 function initialsFromName(givenName: string): string {
   let initials = ''
@@ -53,29 +54,42 @@ const route = useRoute()
 const initials = ref('')
 const roles = ref([''])
 const name = ref('')
+const user = ref<User | null>(null)
 const requiresLogin = ref(true)
 
-onMounted((): void => {
+function setUser() {
   authenticationManager.userManager
     .getUser()
-    .then((user) => {
-      if (user) {
-        requiresLogin.value = false
-        if (user.profile?.name !== undefined) {
-          name.value = user.profile.email?.endsWith('@vortech.nl')
-            ? `dr. ir. ${user.profile.name}`
-            : user.profile.name
-          initials.value = initialsFromName(user.profile.name)
-          console.log(user.profile)
-          roles.value = user.profile.roles
-            ? (user.profile.roles as string[])
-            : []
-        }
-      }
+    .then((response) => {
+      user.value = response
     })
     .catch((err) => {
-      console.log({ err })
+      console.error({ err })
     })
+}
+
+authenticationManager.userManager.events.addUserLoaded(() => {
+  requiresLogin.value = false
+  setUser()
+})
+
+onMounted((): void => {
+  setUser()
+})
+
+watch(user, () => {
+  if (user.value !== null) {
+    requiresLogin.value = false
+    if (user.value.profile?.name !== undefined) {
+      name.value = user.value.profile.name
+      initials.value = initialsFromName(user.value.profile.name)
+      roles.value = user.value.profile.roles
+        ? (user.value.profile.roles as string[])
+        : []
+    }
+  } else {
+    requiresLogin.value = true
+  }
 })
 
 function login(): void {
@@ -83,7 +97,7 @@ function login(): void {
 }
 
 function logout(): void {
-  console.log('logout')
+  requiresLogin.value = true
   authenticationManager.userManager.signoutRedirect({ state: '/login' })
 }
 </script>
