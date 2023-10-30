@@ -40,7 +40,9 @@ import {
 } from '../../lib/display/DisplayConfig.js'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { useTimeSeries } from '../../services/useTimeSeries/index.ts'
+import type { UseTimeSeriesOptions } from '../../services/useTimeSeries/index.ts'
 import { configManager } from '../../services/application-config'
+import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
   config?: DisplayConfig
@@ -61,8 +63,16 @@ const props = withDefaults(defineProps<Props>(), {
   displayType: DisplayType.TimeSeriesChart,
 })
 
+const store = useUserSettingsStore()
+
+const options = computed<UseTimeSeriesOptions>(() => {
+  return {
+    useDisplayUnits: store.useDisplayUnits,
+    convertDatum: store.convertDatum,
+  }
+})
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { series } = useTimeSeries(baseUrl, () => props.config.requests)
+const { series } = useTimeSeries(baseUrl, () => props.config.requests, options)
 
 const subplots = computed(() => {
   if (props.config) {
