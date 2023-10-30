@@ -16,12 +16,12 @@
           :aria-label="item.label"
           small text
         >
-          <v-icon>{{ item.icon }}</v-icon>
+          <v-icon :style="item.style">{{ item.icon }}</v-icon>
         </v-btn>
       </v-btn-toggle>
       <v-btn small text @click="toggleFullscreen()">
         <v-icon>{{ fullscreenIcon }}</v-icon>
-      </v-btn>  
+      </v-btn>
       <slot name="toolbar-append" v-bind:refs="$refs"></slot>
     </v-toolbar>
     <v-sheet fluid class="component-container">
@@ -38,6 +38,7 @@ interface DisplayTypeItem {
   icon: string
   label: string
   value: DisplayType
+  style?: string
 }
 
 @Component
@@ -84,9 +85,10 @@ export default class WindowComponent extends Vue {
           }
         case DisplayType.ElevationChart:
           return {
-            icon: 'mdi-tune-vertical',
+            icon: 'mdi-chart-ppf',
             label: 'ElevationChart',
-            value: displayType
+            value: displayType,
+            style: 'transform: rotate(180deg) scaleX(-1)'
           }
         default:
           return {
