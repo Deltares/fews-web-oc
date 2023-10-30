@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="showDialog" max-width="900">
-    <v-card v-if="!showDisclaimer">
+    <v-card v-if="!showDisclaimer" @click="showDialog = false">
       <v-img :src="splashUrl" />
       <a class="terms-of-use-link" @click="showDisclaimer = true">Terms of Use</a>
     </v-card>
