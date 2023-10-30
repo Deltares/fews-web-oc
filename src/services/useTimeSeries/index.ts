@@ -14,10 +14,12 @@ export interface UseTimeSeriesReturn {
   isLoading: Ref<boolean>
 }
 
-interface UseTimeSeriesOptions {
-  startTime: Date
-  endTime: Date
-  thinning: boolean
+export interface UseTimeSeriesOptions {
+  startTime?: Date
+  endTime?: Date
+  thinning?: boolean
+  convertDatum?: boolean
+  useDisplayUnits?: boolean
 }
 
 function timeZoneOffsetString(offset: number): string {
@@ -46,32 +48,34 @@ function parsePiDateTime(
 export function useTimeSeries(
   baseUrl: string,
   requests: MaybeRefOrGetter<ActionRequest[]>,
-  options?: UseTimeSeriesOptions,
+  options?: MaybeRefOrGetter<UseTimeSeriesOptions>,
 ): UseTimeSeriesReturn {
   let controller = new AbortController()
   const isReady = ref(false)
   const isLoading = ref(false)
   const series = ref<Record<string, Series>>({})
-  const error = shallowRef<unknown | undefined>(undefined)
+  const error = shallowRef<any | undefined>(undefined)
 
-  watchEffect(async () => {
+  watchEffect(() => {
     controller.abort()
     controller = new AbortController()
     const piProvider = new PiWebserviceProvider(baseUrl, {
       transformRequestFn: createTransformRequestFn(controller),
     })
     const _requests = toValue(requests)
+    const _options = toValue(options)
+
     for (const r in _requests) {
       const request = _requests[r]
       const url = absoluteUrl(`${baseUrl}/${request.request}`)
       const queryParams = url.searchParams
       const startTimeString = queryParams.get('startTime')
       const endTimeString = queryParams.get('endTime')
-      if (options?.startTime && options?.endTime) {
-        const startTime = DateTime.fromJSDate(options?.startTime, {
+      if (_options?.startTime && _options?.endTime) {
+        const startTime = DateTime.fromJSDate(_options.startTime, {
           zone: 'UTC',
         })
-        const endTime = DateTime.fromJSDate(options?.endTime, { zone: 'UTC' })
+        const endTime = DateTime.fromJSDate(_options?.endTime, { zone: 'UTC' })
         const timeStepPerPixel = Math.round(
           Interval.fromDateTimes(startTime, endTime).length() /
             window.outerWidth /
@@ -104,6 +108,13 @@ export function useTimeSeries(
         )
         url.searchParams.set('thinning', `${timeStepPerPixel}`)
       }
+      if (_options?.useDisplayUnits !== undefined) {
+        url.searchParams.set('useDisplayUnits', `${_options?.useDisplayUnits}`)
+      }
+      if (_options?.convertDatum) {
+        url.searchParams.set('convertDatum', `${_options?.convertDatum}`)
+      }
+
       const resourceId = `${request.key}`
       const relativeUrl = request.request.split('?')[0] + url.search
       piProvider.getTimeSeriesWithRelativeUrl(relativeUrl).then((piSeries) => {
