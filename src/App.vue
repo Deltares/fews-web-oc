@@ -1,14 +1,24 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import EmptyLayout from './layouts/EmptyLayout.vue'
 
 import { useRoute } from 'vue-router'
 import { useConfigStore } from '@/stores/config.ts'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
+import { useUserSettingsStore } from './stores/userSettings'
+import { useTheme } from 'vuetify'
+import { usePreferredDark } from '@vueuse/core'
 
 const route = useRoute()
 const configStore = useConfigStore()
+const userSettingsStore = useUserSettingsStore()
+const theme = useTheme()
+const usePrefersDark = usePreferredDark()
+
+onMounted(() => {
+  changeTheme('auto')
+})
 
 const layoutComponent = computed(() => {
   switch (route.meta.layout) {
@@ -36,6 +46,46 @@ watch(
     }
   },
 )
+
+function changeTheme(theme: string) {
+  if (theme === 'auto') {
+    setTheme(usePrefersDark.value)
+  } else {
+    console.log('theme', theme)
+    setTheme(theme === 'dark')
+  }
+}
+
+function setTheme(isDark: boolean): void {
+  theme.global.name.value = isDark ? 'dark' : 'light'
+  // Update wb-charts stylesheet such that charts also change to the selected theme.
+  const css = document.getElementById('theme_css') as HTMLLinkElement
+  if (css) {
+    css.href = isDark
+      ? `${import.meta.env.BASE_URL}wb-charts-dark.css`
+      : `${import.meta.env.BASE_URL}wb-charts-light.css`
+  }
+}
+
+userSettingsStore.$onAction(({ name, store, args }) => {
+  console.log(name)
+  if (name === 'add') {
+    const item = args[0]
+    console.log(item.id)
+    switch (item.id) {
+      case 'ui.theme':
+        changeTheme(item.value as string)
+        break
+      case 'units.displayUnits':
+        store.changeUseDisplayUnits(item.value as string)
+        break
+      case 'datum.verticalDatum':
+        store.convertDatum = item.value as boolean
+        break
+      default:
+    }
+  }
+})
 </script>
 
 <template>
