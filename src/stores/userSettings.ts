@@ -59,11 +59,9 @@ export const useUserSettingsStore = defineStore({
   }),
   getters: {
     listGroups: (state) => {
-      console.log('getter listGroup', state.groups)
       return state.groups
     },
     listByGroup: (state) => (group: string) => {
-      console.log('getter listByGroup', group, state.items)
       return state.items.filter((item) => item.group === group)
     },
     listFavorite: (state) => {
