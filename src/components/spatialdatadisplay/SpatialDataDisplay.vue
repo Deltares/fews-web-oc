@@ -139,7 +139,6 @@ function updateTime(date: Date): void {
   width: 80%;
   z-index: 120;
   position: absolute;
-  top: 90px;
   display: flex;
   padding: 10px 5px;
 }
