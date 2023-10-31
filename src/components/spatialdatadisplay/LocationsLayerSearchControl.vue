@@ -1,18 +1,20 @@
 <template>
   <v-chip class="chip" :style="{ backgroundColor: backgroundColor }" pill label>
-    <v-icon class="mr-2">mdi-map-marker</v-icon>
-    <v-switch v-model="show" @click.stop @change="onShowChange" />
+    <v-icon>mdi-map-marker</v-icon>
+    <v-switch class="ml-2 mt-5" v-model="show" @click.stop @change="onShowChange" />
     <v-autocomplete
       v-model="selectedLocation"
       label="Search Locations"
       single-line
       :items="locationNames"
-      item-text="locationName"
+      item-title="locationName"
       item-value="locationId"
       @update:model-value="onSelectLocation"
       prepend-inner-icon="mdi-magnify"
       class="ml-2 mt-3"
-      dense
+      density="compact"
+      variant="underlined"
+      style="width: 300px"
     >
       <template v-slot="{ item }">
         <v-list-item>{{ item.locationName }}</v-list-item>
