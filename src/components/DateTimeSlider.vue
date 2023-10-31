@@ -111,7 +111,7 @@ export default class DateTimeSlider extends Vue {
 
   play (): void {
     if (this.max === this.index) {
-      this.stopPlay()
+      this.index = 0
     } else {
       this.increment()
     }
