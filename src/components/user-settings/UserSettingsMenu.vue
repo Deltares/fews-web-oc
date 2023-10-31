@@ -20,7 +20,7 @@
           >
             <v-btn
               v-for="item of setting.items"
-              :key="(item.value as string)"
+              :key="item.value"
               :value="item.value"
               :disabled="item.disabled"
             >
