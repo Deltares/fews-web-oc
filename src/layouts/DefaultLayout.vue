@@ -47,10 +47,9 @@
       </template>
       <div id="app-bar-content"></div>
       <v-spacer />
-      <v-btn variant="text" icon="mdi-dots-vertical"></v-btn>
+      <user-settings-menu />
     </v-app-bar>
-
-    <v-main id="main" class="d-flex align-center justify-center">
+    <v-main id="main">
       <Suspense>
         <router-view></router-view>
       </Suspense>
@@ -76,6 +75,7 @@ import { useConfigStore } from '../stores/config.ts'
 import { Alert, useAlertsStore } from '../stores/alerts.ts'
 import { useRoute } from 'vue-router'
 import LoginComponent from '../views/auth/LoginComponent.vue'
+import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import { configManager } from '@/services/application-config'
 
 const configStore = useConfigStore()
