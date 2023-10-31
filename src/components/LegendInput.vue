@@ -6,7 +6,7 @@
     v-model.number="inputValue"
     hide-spin-buttons
     hide-details
-    background-color="secondary"
+    :background-color="$vuetify.theme.dark ? 'black' : 'white'"
     type="number"
     class="legend-input"
     :style="{left: offset}"
