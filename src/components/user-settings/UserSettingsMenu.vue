@@ -39,7 +39,7 @@
             v-model="setting.value"
             color="primary"
             :disabled="setting.disabled"
-            @change="onValueChange(setting)"
+            @update:modelValue="onValueChange(setting)"
             hide-details
           >
           </v-switch>
