@@ -5,10 +5,13 @@ import { authenticationManager } from './services/authentication/AuthenticationM
 import router from './router/index.js'
 import vuetify from './plugins/vuetify.js'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
 const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
+
 const app = createApp(App)
 
 defineCustomElements(window)
