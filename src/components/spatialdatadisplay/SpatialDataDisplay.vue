@@ -1,8 +1,20 @@
 <template>
   <div class="d-flex flex-column flex-grow-1 flex-shrink-1 h-100">
     <MapComponent>
-      <animated-mapbox-layer :layer="layerOptions" />
+      <AnimatedMapboxLayer :layer="layerOptions" />
+      <!-- <LocationsLayer
+          :locationsGeoJson="locationsGeoJson"
+          :locationId="selectedLocationId"
+          v-if="showLocationsLayer"
+        /> -->
     </MapComponent>
+    <div class="control-container">
+      <LocationsLayerSearchControl
+        :showLocations.sync="showLocationsLayer"
+        :locationId.sync="selectedLocationId"
+        :locationsGeoJson="locationsGeoJson"
+      />
+    </div>
     <div class="colourbar">
       <ColourBar :colourMap="legend" />
     </div>
@@ -17,7 +29,8 @@
 
 <script setup lang="ts">
 import MapComponent from '@/components/map/MapComponent.vue'
-import { ref, computed, onBeforeMount, watch } from 'vue'
+import LocationsLayerSearchControl from './LocationsLayerSearchControl.vue'
+import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
   useWmsLayer,
@@ -32,18 +45,17 @@ import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import {
   PiWebserviceProvider,
-  type Location,
-  TopologyNode,
+  type TopologyNode,
 } from '@deltares/fews-pi-requests'
 import { fetchLocationsAsGeoJson } from '@/lib/topology'
+import { Location } from '@deltares/fews-pi-requests'
+import { FeatureCollection, Geometry } from 'geojson'
 
 interface Props {
-  node: TopologyNode
+  node?: TopologyNode
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  node: undefined,
-})
+const props = defineProps<Props>()
 
 onBeforeMount(() => {
   debouncedSetLayerOptions = debounce(setLayerOptions, 500, {
@@ -58,7 +70,7 @@ const dateController = new DateController([])
 
 const { selectedLayer, legendGraphic, times } = useWmsLayer(
   baseUrl,
-  () => props.node.id,
+  () => props.node?.id ?? '',
 )
 
 const currentTime = ref<Date>(new Date())
@@ -67,6 +79,19 @@ let debouncedSetLayerOptions!: () => void
 
 const legend = computed(() => {
   return legendGraphic.value?.legend
+})
+
+const showLocationsLayer = ref<boolean>(true)
+const selectedLocationId = ref<string>('')
+
+const locationsGeoJson = ref<FeatureCollection<Geometry, Location>>()
+
+watchEffect(async () => {
+  if (!props.node?.filterIds) return
+  locationsGeoJson.value = await fetchLocationsAsGeoJson(
+    piProvider,
+    props.node.filterIds,
+  )
 })
 
 watch(times, () => {
@@ -89,7 +114,7 @@ function setCurrentTime(enabled: boolean): void {
 }
 
 function setLayerOptions(): void {
-  if (props.node.id) {
+  if (props.node?.id) {
     layerOptions.value = {
       name: props.node.id,
       time: currentTime.value,
@@ -109,11 +134,21 @@ function updateTime(date: Date): void {
 </script>
 
 <style scoped>
+.control-container {
+  font-size: 0.825em;
+  width: 80%;
+  z-index: 120;
+  position: absolute;
+  top: 90px;
+  display: flex;
+  padding: 10px 5px;
+}
+
 .colourbar {
   font-size: 0.825em;
   z-index: 1000;
   background-color: none;
   position: absolute;
-  bottom: 80px;
+  bottom: 90px;
 }
 </style>

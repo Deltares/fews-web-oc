@@ -7,7 +7,7 @@
       v-model:open="open"
     />
   </Teleport>
-  <SpatialDataDisplay :node="topologyMap.get(nodeId)" />
+  <SpatialDataDisplay :node="node" />
   <div class="child-container" :class="{ mobile }">
     <router-view @close="closeTimeSeriesDisplay"></router-view>
   </div>
@@ -18,7 +18,7 @@ import type { ColumnItem } from '@/components/general/ColumnItem'
 import SpatialDataDisplay from '@/components/spatialdatadisplay/SpatialDataDisplay.vue'
 import ColumnMenu from '@/components/general/ColumnMenu.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
@@ -27,9 +27,7 @@ interface Props {
   nodeId?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  nodeId: '',
-})
+const props = defineProps<Props>()
 
 const { mobile } = useDisplay()
 const router = useRouter()
@@ -41,6 +39,7 @@ const items = ref<ColumnItem[]>([])
 watch(
   () => props.nodeId,
   () => {
+    console.log('props.nodeId :>> ', props.nodeId)
     if (active.value[0] !== props.nodeId) {
       active.value = [props.nodeId]
     }
@@ -51,9 +50,14 @@ watch(
 const nodes = ref<TopologyNode[]>()
 const topologyMap = ref(new Map<string, TopologyNode>())
 
+const node = computed(() => {
+  return topologyMap.value.get(props.nodeId)
+})
+
 getTopologyNodes().then((response) => {
   nodes.value = response
   topologyMap.value = createTopologyMap(nodes.value)
+  console.log('topologyMap :>> ', topologyMap)
 })
 
 function topologyNodeIsVisible(node: TopologyNode): boolean {
