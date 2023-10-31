@@ -68,17 +68,6 @@ const onFavoriteChange = (item) => {
   item.favorite = !item.favorite
   onValueChange(item)
 }
-
-// const getComponentType = (item) => {
-//   // Determine the component type based on item.type
-//   console.log(item)
-//   if (item === undefined) return
-//   if (item.type === 'oneOfMultiple') {
-//     return 'v-select-component'; // Replace with your custom v-select component
-//   } else if (item.type === 'boolean') {
-//     return 'v-switch-component'; // Replace with your custom v-switch component
-//   }
-// }
 </script>
 
 <style scoped>
@@ -88,6 +77,4 @@ const onFavoriteChange = (item) => {
   row-gap: 20px;
   justify-content: space-between;
 }
-
-/* Add your component-specific styles here */
 </style>
