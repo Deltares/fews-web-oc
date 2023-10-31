@@ -63,7 +63,7 @@
           />
         </div>
       </div>
-      <div class="grid-charts" :class="$vuetify.breakpoint.mobile? 'fullscreen' : ''" v-show="hasDataToDisplay">
+      <div v-if="chartDataIsAvailable" class="grid-charts" :class="$vuetify.breakpoint.mobile? 'fullscreen' : ''" v-show="hasDataToDisplay">
         <v-toolbar class="toolbar-charts" dense flat>
           <v-spacer/>
           <v-toolbar-items>
@@ -475,6 +475,8 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       return
     }
 
+    this.displays = []
+
     const params = { ...this.$route.params }
     if (this.hasSelectedLocation) {
       // Remove the locationId from the parameters.
@@ -653,7 +655,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     await this.updateTimeSeriesxCoordyCoord()
   }
 
-  
+
   @Watch('currentTime')
   async onCurrentTimeChange(): Promise<void> {
     if (this.currentElevation === null) return
@@ -833,6 +835,10 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   get selectedLocationFilter(): Expression {
     return ['==', 1, 0]
+  }
+
+  get chartDataIsAvailable(): boolean {
+    return this.displays.length > 0
   }
 
   locationIsInFeatures(): boolean {
