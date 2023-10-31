@@ -49,6 +49,12 @@ export default class ConfigurableChart extends Vue {
     }
   })
   series!: Record<string, Series>
+
+  @Prop({ default: () => new Date() })
+  currentTime!: Date
+
+  axisTime: CurrentTime = new CurrentTime()
+
   thresholdLines: ThresholdLine[] = []
   thresholdLinesVisitor!: AlertLines
 
@@ -93,21 +99,28 @@ export default class ConfigurableChart extends Vue {
     this.axis = new CartesianAxes(containerReference, null, null, axisOptions)
     const mouseOver = new MouseOver()
     const zoom = new ZoomHandler(WheelMode.X)
-    const currentTime = new CurrentTime({
+    this.axisTime = new CurrentTime({
       x: {
         axisIndex: 0
       }
     })
+    this.axisTime.setDateTime(this.currentTime)
 
     this.thresholdLinesVisitor = new AlertLines(this.thresholdLines)
 
     this.axis.accept(this.thresholdLinesVisitor)
     this.axis.accept(zoom)
     this.axis.accept(mouseOver)
-    this.axis.accept(currentTime)
+    this.axis.accept(this.axisTime)
     this.resize()
     if (this.value !== undefined) this.onValueChange()
     window.addEventListener('resize', this.resize)
+  }
+
+  @Watch('currentTime')
+  onCurrentTimeChange() {
+    this.axisTime.setDateTime(this.currentTime)
+    this.onValueChange()
   }
 
   @Watch('series', { deep: true})

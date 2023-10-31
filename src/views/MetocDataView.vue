@@ -81,7 +81,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <router-view :displays="displays" :series="seriesStore" @toggleFullscreen="setChartFullscreen"/>
+        <router-view :displays="displays" :series="seriesStore" :currentTime="currentTime" @toggleFullscreen="setChartFullscreen"/>
       </div>
     </div>
   </div>
@@ -653,7 +653,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     await this.updateTimeSeriesxCoordyCoord()
   }
 
-  
+
   @Watch('currentTime')
   async onCurrentTimeChange(): Promise<void> {
     if (this.currentElevation === null) return
