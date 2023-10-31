@@ -11,21 +11,33 @@ export type UserSettingsType =
   (typeof UserSettingsType)[keyof typeof UserSettingsType]
 
 export interface UserSettingsWithIcon {
-  value: string | boolean
+  value: string
   disabled?: boolean
   icon?: string
 }
 
-export interface UserSettingsItem {
+export interface UserSettingsItemBoolean {
   id: string
-  type: UserSettingsType
+  type: 'boolean'
   label: string
-  value: string | boolean
+  value: boolean
+  disabled?: boolean
+  favorite?: boolean
+  group: string
+}
+
+export interface UserSettingsItemOneOf {
+  id: string
+  type: 'oneOfMultiple'
+  label: string
+  value: string
   disabled?: boolean
   items?: UserSettingsWithIcon[]
   favorite?: boolean
   group: string
 }
+
+export type UserSettingsItem = UserSettingsItemBoolean | UserSettingsItemOneOf
 
 export interface UserSettingsState {
   items: UserSettingsItem[]
@@ -69,9 +81,12 @@ export const useUserSettingsStore = defineStore({
       }
     },
     changeUseDisplayUnits(payload: string) {
-      const unitSettings = []
+      const unitSettings: UserSettingsItemOneOf[] = []
       for (const item of this.items) {
-        if (item.id.startsWith(parameterGroupKey)) {
+        if (
+          item.id.startsWith(parameterGroupKey) &&
+          item.type === 'oneOfMultiple'
+        ) {
           unitSettings.push(item)
         }
       }
