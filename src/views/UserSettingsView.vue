@@ -1,54 +1,56 @@
 <template>
-  <v-layout class="settings-container">
+  <v-container class="settings-container">
     <h1>Settings</h1>
     <div v-for="group in groups" :key="group">
       <v-card density="compact">
         <v-card-title>{{ group }}</v-card-title>
-        <v-list>
-          <v-list-item
+        <v-container>
+          <v-row
             v-for="(setting, index) in store.listByGroup(group)"
             :key="index"
             :disabled="setting?.disabled"
           >
-            <template v-slot:append>
+            <v-col class="d-flex">
+              <v-select
+                v-if="setting.type === 'oneOfMultiple'"
+                :label="setting.label"
+                v-model="setting.value"
+                :items="setting.items"
+                :disabled="setting.disabled"
+                variant="solo"
+                density="compact"
+                item-title="value"
+                item-value="value"
+                item-disabled="disabled"
+                @update:modelValue="onValueChange(setting)"
+                class="flex-1-1-100"
+              >
+              </v-select>
+              <v-switch
+                v-else-if="setting.type === 'boolean'"
+                :label="setting.label"
+                v-model="setting.value"
+                color="primary"
+                :disabled="setting.disabled"
+                @change="onValueChange(setting)"
+              >
+              </v-switch>
               <v-btn
                 color="grey-lighten-1"
                 icon="mdi-information"
                 variant="text"
+                class="flex-0-0"
               >
                 <v-icon @click="onFavoriteChange(setting)">{{
                   setting.favorite ? 'mdi-star' : 'mdi-star-outline'
                 }}</v-icon>
               </v-btn>
-            </template>
-            <v-select
-              v-if="setting.type === 'oneOfMultiple'"
-              :label="setting.label"
-              v-model="setting.value"
-              :items="setting.items"
-              :disabled="setting.disabled"
-              variant="solo"
-              density="compact"
-              item-title="value"
-              item-value="value"
-              item-disabled="disabled"
-              @update:modelValue="onValueChange(setting)"
-            >
-            </v-select>
-            <v-switch
-              v-else-if="setting.type === 'boolean'"
-              :label="setting.label"
-              v-model="setting.value"
-              color="primary"
-              :disabled="setting.disabled"
-              @change="onValueChange(setting)"
-            >
-            </v-switch>
-          </v-list-item>
-        </v-list>
+            </v-col>
+          </v-row>
+        </v-container>
       </v-card>
     </div>
-  </v-layout>
+  </v-container>
 </template>
 
 <script setup>
