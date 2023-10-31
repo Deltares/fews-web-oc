@@ -16,6 +16,7 @@
               <ElevationSlider
                 v-if="currentElevation && minElevation && maxElevation"
                 v-model="currentElevation"
+                :key="wmsLayerOptions?.name"
                 :minValue="minElevation"
                 :maxValue="maxElevation"
                 @input="debouncedSetWMSLayerOptions"
