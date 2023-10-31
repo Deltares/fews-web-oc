@@ -27,6 +27,9 @@
             >
               <v-icon v-if="item.icon">{{ item.icon }}</v-icon>
               <span v-else>{{ item.value }}</span>
+              <v-tooltip activator="parent" location="top">{{
+                item.value
+              }}</v-tooltip>
             </v-btn>
           </v-btn-toggle>
         </v-list-item-action>
