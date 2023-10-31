@@ -79,6 +79,16 @@ export const useUserSettingsStore = defineStore({
       } else {
         this.items[index] = item
       }
+      switch (item.id) {
+        case 'units.displayUnits':
+          this.changeUseDisplayUnits(item.value as string)
+          break
+        case 'datum.verticalDatum':
+          this.convertDatum = item.value as boolean
+          break
+        default:
+          break
+      }
     },
     changeUseDisplayUnits(payload: string) {
       const unitSettings: UserSettingsItemOneOf[] = []

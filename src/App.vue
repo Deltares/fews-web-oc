@@ -66,18 +66,12 @@ function setTheme(isDark: boolean): void {
   }
 }
 
-userSettingsStore.$onAction(({ name, store, args }) => {
+userSettingsStore.$onAction(({ name, args }) => {
   if (name === 'add') {
     const item = args[0]
     switch (item.id) {
       case 'ui.theme':
         changeTheme(item.value as string)
-        break
-      case 'units.displayUnits':
-        store.changeUseDisplayUnits(item.value as string)
-        break
-      case 'datum.verticalDatum':
-        store.convertDatum = item.value as boolean
         break
       default:
     }
