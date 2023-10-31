@@ -117,19 +117,30 @@ function updateItems(): void {
 watch(nodes, updateItems)
 
 // Update the displayTabs if the active node changes (or if the topologyMap changes).
-// Redirect to the corresponding display of the updated activee tab
+// Redirect to the corresponding display of the updated active tab.
 watchEffect(() => {
+  // Check if the current displayTab already matches the active node.
+  const activeNodeId = active.value[0]
+  const timeseriesTabId = `${activeNodeId}-timeseries`
+  const spatialTabId = `${activeNodeId}-spatial`
+  const urlTabId = `${activeNodeId}-${WEB_BROWSER_DISPLAY}`
   if (
     displayTabs.value[activeTab.value] &&
-    displayTabs.value[activeTab.value].id.includes(active.value[0])
+    (displayTabs.value[activeTab.value].id === timeseriesTabId ||
+      displayTabs.value[activeTab.value].id === spatialTabId ||
+      displayTabs.value[activeTab.value].id === urlTabId)
   )
     return
+
+  // Check if the active node is a leaf.
   const node = topologyMap.value.get(active.value[0])
   if (node === undefined || node.topologyNodes) return
+
+  // Create the displayTabs for the active node.
   const _displayTabs: DisplayTab[] = []
   if (node.displayGroups !== undefined || node.displayId !== undefined) {
     _displayTabs.push({
-      id: `${node.id}-timeseries`,
+      id: timeseriesTabId,
       title: 'Time Series',
       to: {
         name: 'TopologyTimeSeries',
@@ -141,7 +152,7 @@ watchEffect(() => {
   }
   if (node.gridDisplaySelection !== undefined) {
     _displayTabs.push({
-      id: `${node.id}-spatial`,
+      id: spatialTabId,
       title: 'Spatial Display',
       to: {
         name: 'TopologySpatialDisplay',
@@ -154,13 +165,15 @@ watchEffect(() => {
   }
   if (node.url !== undefined) {
     _displayTabs.push({
-      id: `${node.id}-${WEB_BROWSER_DISPLAY}`,
+      id: urlTabId,
       title: 'Link',
       href: node.url,
       target: node.url,
     })
   }
   displayTabs.value = _displayTabs
+
+  // Redirect to the first displayTab.
   activeTab.value = 0
   if (_displayTabs.length > 0 && _displayTabs[0].to !== undefined) {
     router.push(_displayTabs[0].to)
