@@ -47,11 +47,9 @@
       </template>
       <div id="app-bar-content"></div>
       <v-spacer />
-      <v-btn variant="text" icon="mdi-dots-vertical"></v-btn>
       <user-settings-menu />
     </v-app-bar>
-
-    <v-main id="main" class="d-flex align-center justify-center">
+    <v-main id="main">
       <Suspense>
         <router-view></router-view>
       </Suspense>
