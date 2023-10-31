@@ -51,7 +51,6 @@ function changeTheme(theme: string) {
   if (theme === 'auto') {
     setTheme(usePrefersDark.value)
   } else {
-    console.log('theme', theme)
     setTheme(theme === 'dark')
   }
 }
@@ -68,10 +67,8 @@ function setTheme(isDark: boolean): void {
 }
 
 userSettingsStore.$onAction(({ name, store, args }) => {
-  console.log(name)
   if (name === 'add') {
     const item = args[0]
-    console.log(item.id)
     switch (item.id) {
       case 'ui.theme':
         changeTheme(item.value as string)
@@ -99,4 +96,9 @@ userSettingsStore.$onAction(({ name, store, args }) => {
   </Suspense>
 </template>
 
-<style scoped></style>
+<style>
+.wb-charts,
+.tooltip {
+  font-size: 0.75rem;
+}
+</style>
