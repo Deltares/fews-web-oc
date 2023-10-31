@@ -4,7 +4,7 @@
       <WindowComponent v-for="display in displays" :key="display.id" :class="display.class"
         :title="display.title" :displayTypes="display.types">
         <template v-slot="{displayType}">
-          <component :is="displayType" :value="displayConfig(display, displayType)" :series="series" :key="display.id">
+          <component :is="displayType" :value="displayConfig(display, displayType)" :series="series" :currentTime="currentTime" :key="display.id">
           </component>
         </template>
         <template v-slot:toolbar-append>
@@ -47,6 +47,9 @@ export default class ComponentsPanel extends Vue {
 
   @Prop({default: () => {return {}} })
   series!: Record<string, Series>
+
+  @Prop({ default: () => new Date() })
+  currentTime!: Date
 
   timeSeriesTableType = DisplayType.TimeSeriesTable
 
