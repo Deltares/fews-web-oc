@@ -85,7 +85,7 @@ export default class WindowComponent extends Vue {
         case DisplayType.TimeSeriesTable:
           return {
             icon: 'mdi-table',
-            label: 'Table',
+            label: 'Time Series Table',
             value: displayType
           }
         case DisplayType.ElevationChart:
