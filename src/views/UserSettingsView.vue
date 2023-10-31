@@ -53,18 +53,18 @@
   </v-container>
 </template>
 
-<script setup>
-import { useUserSettingsStore } from '../stores/userSettings' // Import your Pinia store
+<script setup lang="ts">
+import { UserSettingsItem, useUserSettingsStore } from '../stores/userSettings'
 import { computed } from 'vue'
 
 const store = useUserSettingsStore()
 const groups = computed(() => store.listGroups)
 
-const onValueChange = (item) => {
+const onValueChange = (item: UserSettingsItem) => {
   store.add(item)
 }
 
-const onFavoriteChange = (item) => {
+const onFavoriteChange = (item: UserSettingsItem) => {
   item.favorite = !item.favorite
   onValueChange(item)
 }
