@@ -16,7 +16,12 @@
           :aria-label="item.label"
           small text
         >
-          <v-icon :style="item.style">{{ item.icon }}</v-icon>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon :style="item.style" v-on="on" v-bind="attrs">{{ item.icon }}</v-icon>
+            </template>
+            <span>{{item.label}}</span>
+          </v-tooltip>
         </v-btn>
       </v-btn-toggle>
       <v-btn small text @click="toggleFullscreen()">
@@ -74,7 +79,7 @@ export default class WindowComponent extends Vue {
         case DisplayType.TimeSeriesChart:
           return {
             icon: 'mdi-chart-line',
-            label: 'Chart',
+            label: 'Time Series Chart',
             value: displayType
           }
         case DisplayType.TimeSeriesTable:
@@ -86,7 +91,7 @@ export default class WindowComponent extends Vue {
         case DisplayType.ElevationChart:
           return {
             icon: 'mdi-chart-ppf',
-            label: 'ElevationChart',
+            label: 'Cross Section Chart',
             value: displayType,
             style: 'transform: rotate(180deg) scaleX(-1)'
           }
