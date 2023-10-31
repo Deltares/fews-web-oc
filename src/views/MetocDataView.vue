@@ -549,8 +549,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     const geojson = await fetchLocationsAsGeoJson(
       this.webServiceProvider, this.currentDataSource.filterIds
     )
-    this.setLocationsLayerData(geojson)
-    this.locations = convertGeoJsonToFewsPiLocation(geojson)
+
+    if (geojson) {
+      this.setLocationsLayerData(geojson)
+      this.locations = convertGeoJsonToFewsPiLocation(geojson)
+    }
 
     // Make sure that the data source selection control matches the URL.
     this.$nextTick(() => {
