@@ -1,5 +1,5 @@
 import { ActionRequest, PiWebserviceProvider } from '@deltares/fews-pi-requests'
-import { ref, shallowRef, toValue, watchEffect } from 'vue'
+import { onUnmounted, ref, shallowRef, toValue, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl'
 import { DateTime, Interval } from 'luxon'
@@ -152,6 +152,10 @@ export function useTimeSeries(
           }
       })
     }
+  })
+
+  onUnmounted(() => {
+    controller.abort()
   })
 
   const shell = {
