@@ -1,16 +1,23 @@
 <template>
-  <v-list class="interval-list">
+  <v-list class="interval-list" density="compact">
     <v-list-item :active="0 === selectedIndex" @click="onSelectInterval(0)">
       Default
       <template v-slot:append="{ isActive }">
         <v-icon v-show="isActive" small> mdi-check </v-icon>
       </template>
     </v-list-item>
+    <v-list-item :active="1 === selectedIndex">
+      Custom
+      <template v-slot:append="{ isActive }">
+        <v-icon v-show="isActive" small> mdi-check </v-icon>
+      </template>
+    </v-list-item>
+    <v-divider></v-divider>
     <v-list-item
       v-for="(item, index) in props.items"
       :key="index"
-      :active="index === selectedIndex - 1"
-      @click="onSelectInterval(index + 1)"
+      :active="index === selectedIndex - 2"
+      @click="onSelectInterval(index + 2)"
     >
       {{ intervalToLocaleString(item) }}
       <template v-slot:append="{ isActive }">
@@ -44,15 +51,17 @@ const selectedIndex = ref(0)
 const intervalToLocaleString = (interval: string) => {
   const duration = Duration.fromISO(interval)
   const startDateTime = DateTime.fromJSDate(props.now).plus(duration)
-  return startDateTime.toRelative()
+  return startDateTime.toRelative( { unit: ['months', 'weeks', 'days']})
 }
 
 const onSelectInterval = (index: number) => {
   let selectedInterval = undefined
   if (index === 0) {
     selectedInterval = 'default'
+  } else if (index === 1) {
+    selectedInterval = 'custom'
   } else {
-    selectedInterval = props.items[index - 1]
+    selectedInterval = props.items[index - 2]
   }
   emit('update:modelValue', selectedInterval)
 }
@@ -60,12 +69,13 @@ const onSelectInterval = (index: number) => {
 watch(
   () => props.modelValue,
   (newValue) => {
-    console.log('modelValue changed', newValue, props.items)
     if (newValue === 'default') {
       selectedIndex.value = 0
+     } else if (newValue === undefined) {
+      selectedIndex.value = 1
     } else {
       selectedIndex.value =
-        props.items.findIndex((entry) => entry === newValue) + 1
+        props.items.findIndex((entry) => entry === newValue) + 2
     }
   },
 )
