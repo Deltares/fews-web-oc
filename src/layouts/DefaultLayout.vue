@@ -129,7 +129,14 @@ body {
 }
 </style>
 
-<style scoped>
+<style>
+html,
+body {
+  margin: 0px;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
 .alert-container {
   position: absolute;
   margin: 0 auto;
