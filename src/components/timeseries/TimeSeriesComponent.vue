@@ -1,33 +1,37 @@
 <template>
-  <div class="panel">
-    <div class="panel-scroll">
-      <v-window v-model="tab">
-        <v-window-item :value="DisplayType.TimeSeriesChart">
-          <KeepAlive>
-            <TimeSeriesChart
-              v-for="(subplot, i) in subplots"
-              :config="subplot"
-              :series="series"
-              :key="`${subplot.title}-${i}`"
-              class="single"
-            >
-            </TimeSeriesChart>
-          </KeepAlive>
-        </v-window-item>
-        <v-window-item :value="DisplayType.TimeSeriesTable">
-          <KeepAlive>
-            <TimeSeriesTable
-              :config="tableConfig"
-              :series="series"
-              :key="tableConfig.title"
-              class="single"
-            >
-            </TimeSeriesTable>
-          </KeepAlive>
-        </v-window-item>
-      </v-window>
-    </div>
-  </div>
+  <v-window
+    v-model="tab"
+    class="d-flex flex-column overflow-y-auto flex-1-1-100 h-100"
+  >
+    <v-window-item
+      :value="DisplayType.TimeSeriesChart"
+      class="component-container"
+    >
+      <KeepAlive>
+        <TimeSeriesChart
+          v-for="(subplot, i) in subplots"
+          :config="subplot"
+          :series="series"
+          :key="`${subplot.title}-${i}`"
+        >
+        </TimeSeriesChart>
+      </KeepAlive>
+    </v-window-item>
+    <v-window-item
+      :value="DisplayType.TimeSeriesTable"
+      class="component-container"
+    >
+      <KeepAlive>
+        <TimeSeriesTable
+          :config="tableConfig"
+          :series="series"
+          :key="tableConfig.title"
+          class="single"
+        >
+        </TimeSeriesTable>
+      </KeepAlive>
+    </v-window-item>
+  </v-window>
 </template>
 
 <script setup lang="ts">
@@ -108,40 +112,9 @@ watch(
 </script>
 
 <style>
-.panel {
+.component-container {
   display: flex;
-  position: relative;
+  flex: 1 1 100%;
   flex-direction: column;
-  width: 100%;
-  max-height: 100%;
-  overflow-x: hidden;
-  overflow-y: hidden;
-}
-
-.panel-scroll {
-  display: flex;
-  position: relative;
-  flex-direction: column;
-  overflow-x: hidden;
-  overflow-y: auto;
-  height: 100%;
-}
-
-.single {
-  width: 100%;
-  flex: 1 1 50%;
-  min-height: 400px;
-}
-
-.double {
-  width: 100%;
-  flex: 1 1 50%;
-  min-height: 500px;
-}
-
-.panel-chart-container {
-  display: block;
-  height: 400px;
-  width: 100%;
 }
 </style>
