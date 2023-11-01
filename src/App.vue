@@ -95,4 +95,11 @@ userSettingsStore.$onAction(({ name, args }) => {
 .tooltip {
   font-size: 0.75rem;
 }
+
+.v-table--fixed-header > .v-table__wrapper > table > thead > tr > th {
+  border-bottom: 0 !important;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
 </style>

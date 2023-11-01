@@ -7,7 +7,12 @@ export function createTableHeaders(
 ): TableHeaders[] {
   if (chartSeriesArray === undefined) return []
   const tableHeaders: TableHeaders[] = []
-  tableHeaders.push({ key: 'date', title: 'Date', width: '300px' })
+  tableHeaders.push({
+    key: 'date',
+    title: 'Date',
+    minWidth: '200px',
+    class: 'sticky-column',
+  })
   seriesIds.forEach((seriesId) => {
     const chartSeries = chartSeriesArray.find((s) => s.id === seriesId)
     if (chartSeries !== undefined) {

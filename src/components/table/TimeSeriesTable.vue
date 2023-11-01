@@ -7,13 +7,17 @@
       :items-per-page="-1"
       density="compact"
       no-filter
-      sticky
+      fixed-header
+      height="100%"
       :footer-props="{ disablePagination: true, disableItemsPerPage: true }"
     >
       <template v-slot:headers="{ columns }">
         <tr>
           <template v-for="column in columns" :key="column.key">
-            <th>
+            <th
+              :style="{ minWidth: column.minWidth }"
+              :class="(column as TableHeaders).class"
+            >
               <div class="table-header-indicator">
                 <span class="table-header-indicator-text">{{
                   column.title
@@ -29,6 +33,9 @@
           </template>
         </tr>
       </template>
+      <template v-slot:item.date="{ item }">
+        <span class="sticky-column">{{ item.date }}</span>
+      </template>
       <template #bottom></template>
       <!-- hide footer -->
     </v-data-table>
@@ -36,14 +43,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watchEffect } from 'vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { getUniqueSeriesIds } from '@/lib/charts/getUniqueSeriesIds'
 import type { TableHeaders } from '@/lib/table/types/TableHeaders'
 import { createTableHeaders } from '@/lib/table/createTableHeaders'
 import { createTableData } from '@/lib/table/createTableData'
-import { watchEffect } from 'vue'
 
 interface Props {
   config: ChartConfig
@@ -106,8 +112,23 @@ watchEffect(() => {
   max-height: none;
 }
 
-.v-data-table__wrapper {
+.v-table__wrapper {
   width: 100%;
+}
+
+th.sticky-column {
+  position: sticky;
+  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+  left: 0;
+}
+
+.v-table--fixed-header
+  > .v-table__wrapper
+  > table
+  > thead
+  > tr
+  > th.sticky-column {
+  z-index: 3;
 }
 
 .table-header-indicator {
@@ -124,5 +145,14 @@ watchEffect(() => {
   flex: 0 0 10px;
   width: 100%;
   margin-bottom: 5px;
+}
+</style>
+
+<style>
+td:has(span.sticky-column) {
+  position: sticky;
+  left: 0;
+  background-color: rgb(var(--v-theme-surface));
+  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 </style>
