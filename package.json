@@ -10,7 +10,8 @@
     "test": "echo nothing to test yet",
     "lint": "npm run prettier",
     "prettier": "prettier . --check",
-    "format": "prettier .  --write"
+    "format": "prettier .  --write",
+    "sonar": "sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$SONAR_KEY -Dsonar.projectName='Delft-FEWS Web OC'"
   },
   "dependencies": {
     "@deltares/fews-pi-requests": "^0.6.3",
@@ -51,6 +52,7 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-vue": "^9.17.0",
     "prettier": "3.0.2",
+    "sonarqube-scanner": "^3.1.0",
     "typescript": "^5.0.2",
     "vite": "^4.4.5",
     "vue-tsc": "^1.8.5"
