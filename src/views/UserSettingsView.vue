@@ -2,48 +2,67 @@
   <v-container class="settings-container">
     <h1>Settings</h1>
     <div v-for="group in groups" :key="group">
+      <h2>{{ group }}</h2>
       <v-card density="compact">
-        <v-card-title>{{ group }}</v-card-title>
         <v-container>
           <v-row
             v-for="(setting, index) in store.listByGroup(group)"
             :key="index"
             :disabled="setting?.disabled"
           >
-            <v-col class="d-flex">
+            <v-col class="d-flex align-self-center">
+              {{ setting.label }}
+            </v-col>
+            <v-col class="d-flex justify-end">
               <v-select
                 v-if="setting.type === 'oneOfMultiple'"
                 :label="setting.label"
                 v-model="setting.value"
                 :items="setting.items"
                 :disabled="setting.disabled"
-                variant="solo"
+                variant="solo-filled"
                 density="compact"
                 item-title="value"
                 item-value="value"
-                item-disabled="disabled"
+                :item-props="true"
+                hide-details
+                single-line
+                flat
                 @update:modelValue="onValueChange(setting)"
                 class="flex-1-1-100"
               >
+              <template v-slot:item="{ props }">
+                  <v-list-item v-bind="props" :disabled="props?.disabled === true">
+                    <template v-slot:prepend>
+                      <v-icon>
+                    {{ props.icon }}
+                      </v-icon>
+                    </template>
+                  </v-list-item>
+                </template>
               </v-select>
               <v-switch
                 v-else-if="setting.type === 'boolean'"
-                :label="setting.label"
                 v-model="setting.value"
                 color="primary"
                 :disabled="setting.disabled"
+                hide-details
                 @update:modelValue="onValueChange(setting)"
+                class="d-flex justify-end"
               >
               </v-switch>
               <v-btn
                 color="grey-lighten-1"
                 icon="mdi-information"
                 variant="text"
-                class="flex-0-0"
+                class="flex-0-0 align-self-center"
               >
                 <v-icon @click="onFavoriteChange(setting)">{{
                   setting.favorite ? 'mdi-star' : 'mdi-star-outline'
                 }}</v-icon>
+                <v-tooltip activator="parent" location="top">
+                  Favorite
+                </v-tooltip>
               </v-btn>
             </v-col>
           </v-row>

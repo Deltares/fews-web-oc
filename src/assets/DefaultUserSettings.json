@@ -2,7 +2,7 @@
   {
     "id": "units.displayUnits",
     "type": "oneOfMultiple",
-    "label": "Display Units",
+    "label": "Unit System",
     "value": "display",
     "items": [
       {
