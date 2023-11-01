@@ -11,4 +11,5 @@ type DataTableHeader = DeepMutable<ReadonlyDataTableHeader>
 
 export interface TableHeaders extends DataTableHeader {
   color?: string
+  class?: string
 }
