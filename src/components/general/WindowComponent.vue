@@ -1,5 +1,5 @@
 <template>
-  <div class="window-component" :class="{ fullscreen }">
+  <div class="d-flex flex-column h-100 w-100" :class="{ fullscreen }">
     <v-toolbar density="compact" variant="flat" class="toolbar">
       <v-spacer />
       <slot name="toolbar">
@@ -36,14 +36,7 @@ const fullscreenIcon = computed(() => {
 </script>
 
 <style scoped>
-.window-component {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-}
-
-.window-component.fullscreen {
+.fullscreen {
   position: fixed;
   flex-grow: 1 1 80%;
   top: 0px;
