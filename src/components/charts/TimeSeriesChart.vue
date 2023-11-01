@@ -1,27 +1,27 @@
 <template>
-  <!-- <div class="chart-with-chips"> -->
-  <div class="chart-controls">
-    <v-chip-group column>
-      <v-chip
-        size="small"
-        :variant="tag.disabled ? 'text' : 'tonal'"
-        label
-        v-for="tag in legendTags"
-        :key="tag.id"
-        @click="toggleLine(tag.id)"
-      >
-        <div>
-          <div
-            style="margin-top: 6px; margin-right: 5px"
-            v-html="tag.legendSvg"
-          ></div>
-        </div>
-        {{ tag.name }}
-      </v-chip>
-    </v-chip-group>
+  <div class="chart-with-chips">
+    <div class="chart-controls">
+      <v-chip-group column>
+        <v-chip
+          size="small"
+          :variant="tag.disabled ? 'text' : 'tonal'"
+          label
+          v-for="tag in legendTags"
+          :key="tag.id"
+          @click="toggleLine(tag.id)"
+        >
+          <div>
+            <div
+              style="margin-top: 6px; margin-right: 5px"
+              v-html="tag.legendSvg"
+            ></div>
+          </div>
+          {{ tag.name }}
+        </v-chip>
+      </v-chip-group>
+    </div>
+    <div ref="chartContainer" class="chart-container"></div>
   </div>
-  <div ref="chartContainer" class="chart-container"></div>
-  <!-- </div> -->
 </template>
 
 <script setup lang="ts">
@@ -349,12 +349,12 @@ onBeforeUnmount(() => {
   max-height: none;
 }
 
-/* .chart-with-chips {
+.chart-with-chips {
   display: flex;
   flex-direction: column;
   flex: 1 1 80%;
   height: 100%;
-} */
+}
 
 .v-chip--outlined {
   opacity: 0.5;
