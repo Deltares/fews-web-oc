@@ -1,6 +1,6 @@
 <template>
   <v-app id="app">
-    <v-app-bar color="#080C80" dense app dark>
+    <v-app-bar :style="{backgroundImage: `url(${backgroundImageUrl})`}" dense app dark>
       <v-app-bar-nav-icon @click="toggleDrawer()"></v-app-bar-nav-icon>
       <v-spacer />
       <div>{{ webOcTitle }}</div>
@@ -163,6 +163,10 @@ export default class Default extends Vue {
     const defaultLogo: string = `${process.env.BASE_URL}logo.png`
     const logo: string = this.webOcGeneral?.icons?.logo === undefined ? defaultLogo : webServiceProvider.resourcesStaticUrl(this.webOcGeneral.icons.logo).toString()
     return logo
+  }
+
+  get backgroundImageUrl() {
+    return `${process.env.BASE_URL}images/blue_sky.jpg`
   }
 }
 </script>
