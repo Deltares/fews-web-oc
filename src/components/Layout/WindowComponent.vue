@@ -78,9 +78,10 @@ export default class WindowComponent extends Vue {
       switch (displayType) {
         case DisplayType.TimeSeriesChart:
           return {
-            icon: 'mdi-chart-line',
+            icon: 'mdi-chart-line-stacked',
             label: 'Time Series Chart',
-            value: displayType
+            value: displayType,
+            style: 'transform: rotate(90deg)'
           }
         case DisplayType.TimeSeriesTable:
           return {
@@ -90,10 +91,10 @@ export default class WindowComponent extends Vue {
           }
         case DisplayType.ElevationChart:
           return {
-            icon: 'mdi-chart-ppf',
+            icon: 'mdi-chart-line',
             label: 'Cross Section Chart',
             value: displayType,
-            style: 'transform: rotate(180deg) scaleX(-1)'
+            style: 'transform: rotate(90deg)'
           }
         default:
           return {
