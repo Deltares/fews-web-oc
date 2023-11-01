@@ -1,5 +1,6 @@
 import { JsonObject, JsonProperty } from 'typescript-json-serializer'
-import { SeriesHeader } from './types/SeriesHeader.js'
+import type { SeriesHeader } from './types/SeriesHeader.js'
+import type { SeriesData } from './types/SeriesData.js'
 import {
   SeriesResource,
   SeriesRequest,
@@ -37,7 +38,7 @@ export class Series {
   @JsonProperty({ type: timeSeriesResourceType })
   resource: SeriesResource | SeriesRequest | SeriesUrlRequest | SeriesDerived
 
-  data?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  data?: SeriesData[]
   start?: Date
   end?: Date
   lastUpdated?: Date

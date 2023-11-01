@@ -1,7 +1,11 @@
 import type { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { uniqWith } from 'lodash'
+import { SeriesData } from '../timeseries/types/SeriesData'
 
+interface TableSeriesData extends Omit<SeriesData, 'x' | 'y'> {
+  value: number | null
+}
 /**
  *
  * Creates table data based of the given series IDs, based on the chart series and the time series.
@@ -42,14 +46,20 @@ export function createTableData(
     for (const j in chartSeries) {
       const s = chartSeries[j]
       const series = seriesRecord[s.dataResources[0]]
-      let value = undefined
+      let eventResult: Partial<TableSeriesData> = {}
       if (series && series.data) {
         const event = series.data[pointers[j]]
         if (event && date.getTime() === event.x.getTime()) {
-          value = event.y
+          eventResult = {
+            value: event.y,
+            flag: event.flag,
+            flagSource: event.flagSource,
+            comment: event.comment,
+            user: event.user,
+          }
           pointers[j]++
         }
-        result[s.id] = value
+        result[s.id] = eventResult
       }
     }
     return result
