@@ -145,6 +145,10 @@ export function useTimeSeries(
                 return {
                   x: new Date(parsePiDateTime(event, timeZone)),
                   y: event.value === missingValue ? null : +event.value,
+                  flag: event.flag,
+                  flagSource: event.flagSource,
+                  comment: event.comment,
+                  user: event.user,
                 }
               })
             }
