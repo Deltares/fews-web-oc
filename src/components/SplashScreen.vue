@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="showDialog" max-width="900">
-    <v-card v-if="!showDisclaimer" @click="showDialog = false">
+    <v-card v-if="!showDisclaimer" @click="showDialog = false" style="cursor: default">
       <v-img :src="splashUrl" />
       <div class="overlay">
         <div class="black--text">Viewer Version {{packageVersion}}</div>
