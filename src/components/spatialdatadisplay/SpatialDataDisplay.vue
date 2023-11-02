@@ -107,10 +107,6 @@ watchEffect(async () => {
   )
 })
 
-watch(showLocationsLayer, () => {
-  console.log('showLocationsLayer :>> ', showLocationsLayer.value)
-})
-
 watch(selectedLayer, () => {
   locationsLayerId.value = `locations-layer-${selectedLayer.value?.name ?? ''}`
 })
