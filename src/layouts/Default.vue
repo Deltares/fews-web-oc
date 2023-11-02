@@ -12,7 +12,17 @@
       class="view-sidebar">
       <v-toolbar dense fixed>
         <v-btn text :to="{ name: 'About' }" class="fews-home">
-          <v-img width="148" :src="logo"></v-img>
+          <v-container>
+            <v-row>
+              <v-col>
+                <v-img max-width="38" contain :src="minDefLogo" />
+              </v-col>
+              <v-spacer/>
+              <v-col>
+                <v-img max-width="42" contain :src="navyLogo" />
+              </v-col>
+            </v-row>
+          </v-container>
         </v-btn>
         <v-spacer />
         <login-component v-if="$config.authenticationIsEnabled"/>
@@ -70,9 +80,6 @@ import { ComponentTypeEnum } from '@/store/modules/fews-config/types'
 import {
   WebOcGeneralConfig
 } from "@deltares/fews-pi-requests/lib/types/response/configuration/WebOcConfigurationResponse";
-import {configManager} from "@/services/application-config";
-import {authenticationManager} from "@/services/authentication/AuthenticationManager";
-import {PiWebserviceProvider} from "@deltares/fews-pi-requests";
 
 const alertsModule = namespace('alerts')
 const fewsConfigModule = namespace('fewsconfig')
@@ -156,13 +163,12 @@ export default class Default extends Vue {
     return this.menuItems.find(item => matchedRouteNames.includes(item.to.name))?.title ?? this.$route.name
   }
 
-  get logo() {
-    const baseUrl = configManager.get('VUE_APP_FEWS_WEBSERVICES_URL')
-    const transformRequestFn = (request: Request) => Promise.resolve(authenticationManager.transformRequestAuth(request))
-    const webServiceProvider = new PiWebserviceProvider(baseUrl, { transformRequestFn })
-    const defaultLogo: string = `${process.env.BASE_URL}logo.png`
-    const logo: string = this.webOcGeneral?.icons?.logo === undefined ? defaultLogo : webServiceProvider.resourcesStaticUrl(this.webOcGeneral.icons.logo).toString()
-    return logo
+  get navyLogo() {
+    return `${process.env.BASE_URL}images/navy_logo.png`
+  }
+
+  get minDefLogo() {
+    return `${process.env.BASE_URL}images/mindef_logo.png`
   }
 
   get backgroundImageUrl() {
