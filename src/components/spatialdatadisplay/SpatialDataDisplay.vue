@@ -7,12 +7,13 @@
         :key="locationsLayerId"
         id="locations-layer"
         :options="locationsLayerOptions"
+        clickable
       />
     </MapComponent>
     <div class="control-container">
       <LocationsLayerSearchControl
         @update:showLocations="onShowLocationsChange"
-        v-model:locationId="selectedLocationId"
+        v-model:selectedLocationId="selectedLocationId"
         :locationsGeoJson="locationsGeoJson"
       />
     </div>

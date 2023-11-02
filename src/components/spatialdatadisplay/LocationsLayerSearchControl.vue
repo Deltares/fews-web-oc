@@ -10,15 +10,15 @@
       v-model="selectedLocation"
       label="Search Locations"
       single-line
-      :items="locationNames"
+      :items="locations"
       item-title="locationName"
       item-value="locationId"
-      @update:model-value="onSelectLocation"
       prepend-inner-icon="mdi-magnify"
       class="ml-2 mt-3"
       density="compact"
       variant="underlined"
       style="width: 300px"
+      return-object
     >
       <template v-slot="{ item }">
         <v-list-item>{{ item.locationName }}</v-list-item>
@@ -28,46 +28,48 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { Location } from '@deltares/fews-pi-requests'
 import { FeatureCollection, Geometry } from 'geojson'
 import { convertGeoJsonToFewsPiLocation } from '@/lib/topology'
 
 interface Props {
-  locationId: string
+  selectedLocationId?: string
   locationsGeoJson?: FeatureCollection<Geometry, Location>
 }
-const props = withDefaults(defineProps<Props>(), {
-  locationId: '',
-  locationsGeoJson: undefined,
-})
+const props = defineProps<Props>()
 
-const emit = defineEmits(['update:showLocations', 'update:locationId'])
+const emit = defineEmits(['update:showLocations', 'update:selectedLocationId'])
 
 const showLocations = ref<boolean>(false)
-const locationId = ref<string | null>(null)
 const locations = ref<Location[]>([])
 const selectedLocation = ref<Location | null>(null)
 
 const onGeoJsonChange = () => {
   if (!props.locationsGeoJson) return
   locations.value = convertGeoJsonToFewsPiLocation(props.locationsGeoJson)
+  checkSelectedLocation()
 }
-
-const locationNames = computed(() => {
-  const names = locations.value.map((location) => location.locationName)
-  return names
-})
 
 watch(() => props.locationsGeoJson, onGeoJsonChange)
 
-watch(locationId, (newValue) => {
-  selectedLocation.value =
-    locations.value.find((location) => location.locationId === newValue) || null
+watch(selectedLocation, () => {
+  emit('update:selectedLocationId', selectedLocation.value?.locationId)
 })
 
-const onSelectLocation = (location: Location) => {
-  locationId.value = location ? location.locationId : null
+watch(
+  () => props.selectedLocationId,
+  () => {
+    if (!props.selectedLocationId) return
+    checkSelectedLocation()
+  },
+)
+
+function checkSelectedLocation() {
+  selectedLocation.value =
+    locations.value.find(
+      (location) => location.locationId === props.selectedLocationId,
+    ) || null
 }
 
 function onShowLocationsChange() {
