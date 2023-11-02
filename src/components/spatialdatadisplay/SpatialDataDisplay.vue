@@ -3,6 +3,7 @@
     <MapComponent>
       <AnimatedMapboxLayer :layer="layerOptions" />
       <MapboxLayer
+        v-if="showLocationsLayer"
         :key="locationsLayerId"
         id="locations-layer"
         :options="locationsLayerOptions"
@@ -10,8 +11,8 @@
     </MapComponent>
     <div class="control-container">
       <LocationsLayerSearchControl
-        :showLocations.sync="showLocationsLayer"
-        :locationId.sync="selectedLocationId"
+        @update:showLocations="onShowLocationsChange"
+        v-model:locationId="selectedLocationId"
         :locationsGeoJson="locationsGeoJson"
       />
     </div>
@@ -83,7 +84,11 @@ const legend = computed(() => {
   return legendGraphic.value?.legend
 })
 
-const showLocationsLayer = ref<boolean>(true)
+const showLocationsLayer = ref<boolean>(false)
+
+const onShowLocationsChange = (newValue: boolean) => {
+  showLocationsLayer.value = newValue
+}
 const selectedLocationId = ref<string>('')
 
 const locationsGeoJson = ref<FeatureCollection<Geometry, Location>>({
@@ -100,6 +105,10 @@ watchEffect(async () => {
     piProvider,
     props.node.filterIds,
   )
+})
+
+watch(showLocationsLayer, () => {
+  console.log('showLocationsLayer :>> ', showLocationsLayer.value)
 })
 
 watch(selectedLayer, () => {

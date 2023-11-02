@@ -1,7 +1,11 @@
 <template>
   <v-chip class="chip" :style="{ backgroundColor: backgroundColor }" pill label>
     <v-icon>mdi-map-marker</v-icon>
-    <v-switch class="ml-2 mt-5" v-model="show" @click.stop @change="onShowChange" />
+    <v-switch
+      class="ml-2 mt-5"
+      v-model="showLocations"
+      @change="onShowLocationsChange"
+    />
     <v-autocomplete
       v-model="selectedLocation"
       label="Search Locations"
@@ -30,15 +34,19 @@ import { FeatureCollection, Geometry } from 'geojson'
 import { convertGeoJsonToFewsPiLocation } from '@/lib/topology'
 
 interface Props {
+  locationId: string
   locationsGeoJson?: FeatureCollection<Geometry, Location>
 }
+const props = withDefaults(defineProps<Props>(), {
+  locationId: '',
+  locationsGeoJson: undefined,
+})
 
-const props = defineProps<Props>()
+const emit = defineEmits(['update:showLocations', 'update:locationId'])
 
-const showLocations = ref(true)
+const showLocations = ref<boolean>(false)
 const locationId = ref<string | null>(null)
 const locations = ref<Location[]>([])
-const show = ref(true)
 const selectedLocation = ref<Location | null>(null)
 
 const onGeoJsonChange = () => {
@@ -53,21 +61,17 @@ const locationNames = computed(() => {
 
 watch(() => props.locationsGeoJson, onGeoJsonChange)
 
-watch(showLocations, (newValue) => {
-  show.value = newValue
-})
-
 watch(locationId, (newValue) => {
   selectedLocation.value =
     locations.value.find((location) => location.locationId === newValue) || null
 })
 
-const onShowChange = () => {
-  showLocations.value = show.value
-}
-
 const onSelectLocation = (location: Location) => {
   locationId.value = location ? location.locationId : null
+}
+
+function onShowLocationsChange() {
+  emit('update:showLocations', showLocations.value)
 }
 
 const backgroundColor = ref<string>(
