@@ -31,11 +31,14 @@
                 @update:modelValue="onValueChange(setting)"
                 class="flex-1-1-100"
               >
-              <template v-slot:item="{ props }">
-                  <v-list-item v-bind="props" :disabled="props?.disabled === true">
+                <template v-slot:item="{ props }">
+                  <v-list-item
+                    v-bind="props"
+                    :disabled="props?.disabled === true"
+                  >
                     <template v-slot:prepend>
                       <v-icon>
-                    {{ props.icon }}
+                        {{ props.icon }}
                       </v-icon>
                     </template>
                   </v-list-item>
