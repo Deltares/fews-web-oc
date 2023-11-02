@@ -33,6 +33,7 @@ Key assumptions regarding the development process are:
 - Deltares will provide long-term support on the Web OC.
 
 ## Project time line
+
 | Time Period | Activities |
 |-------------|------------|
 | 2020 Q4     | International User Days. Presenting Web OC plans: [Vision 2025](https://oss.deltares.nl/web/delft-fews/vision-2025). |
