@@ -1,9 +1,9 @@
 <template>
   <v-app id="app">
-    <v-app-bar color="#080C80" dense app dark>
+    <v-app-bar :style="{backgroundImage: `url(${backgroundImageUrl})`, backgroundSize: 'cover'}" dense app dark>
       <v-app-bar-nav-icon @click="toggleDrawer()"></v-app-bar-nav-icon>
       <v-spacer />
-      <div>{{ webOcTitle }}</div>
+      <div class="banner-title text-h6">{{ webOcTitle }}</div>
       <v-spacer />
       <DisclaimerPopup />
       <CogMenu :multipleLanguages="false"/>
@@ -164,6 +164,10 @@ export default class Default extends Vue {
     const logo: string = this.webOcGeneral?.icons?.logo === undefined ? defaultLogo : webServiceProvider.resourcesStaticUrl(this.webOcGeneral.icons.logo).toString()
     return logo
   }
+
+  get backgroundImageUrl() {
+    return `${process.env.BASE_URL}images/blue_sky.jpg`
+  }
 }
 </script>
 
@@ -224,5 +228,9 @@ html, body {
 
 .view-sidebar {
   z-index: 100
+}
+
+.banner-title {
+  text-shadow: 1px 1px 10px #000;
 }
 </style>
