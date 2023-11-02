@@ -24,7 +24,6 @@ export async function fetchLocationsAsGeoJson(
       fetchLocationsAsGeoJsonForSingleFilterId(provider, filterId),
     ),
   )
-  console.log('allGeoJson :>> ', allGeoJson)
   // Merge them into a single GeoJSON.
   const geojson = allGeoJson.reduce((prev, cur) => {
     prev.features.concat(cur.features)
@@ -44,7 +43,6 @@ export async function fetchLocationsAsGeoJson(
 export function convertGeoJsonToFewsPiLocation(
   geojson: FeatureCollection<Geometry, Location>,
 ): Location[] {
-  console.log('geojson.features :>> ', geojson.features)
   return geojson.features.map((feature) => feature.properties)
 }
 

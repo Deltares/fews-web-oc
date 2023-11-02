@@ -2,11 +2,11 @@
   <div class="d-flex flex-column flex-grow-1 flex-shrink-1 h-100">
     <MapComponent>
       <AnimatedMapboxLayer :layer="layerOptions" />
-      <!-- <LocationsLayer
-          :locationsGeoJson="locationsGeoJson"
-          :locationId="selectedLocationId"
-          v-if="showLocationsLayer"
-        /> -->
+      <MapboxLayer
+        :key="locationsLayerId"
+        id="locations-layer"
+        :options="locationsLayerOptions"
+      />
     </MapComponent>
     <div class="control-container">
       <LocationsLayerSearchControl
@@ -35,6 +35,7 @@ import {
   convertBoundingBoxToLngLatBounds,
   useWmsLayer,
 } from '@/services/useWms'
+import { MapboxLayer } from '@studiometa/vue-mapbox-gl'
 import { configManager } from '@/services/application-config'
 import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedMapboxLayer, {
@@ -50,6 +51,7 @@ import {
 import { fetchLocationsAsGeoJson } from '@/lib/topology'
 import { Location } from '@deltares/fews-pi-requests'
 import { FeatureCollection, Geometry } from 'geojson'
+import useLocationsLayer from '@/services/useLocationsLayer'
 
 interface Props {
   node?: TopologyNode
@@ -84,7 +86,13 @@ const legend = computed(() => {
 const showLocationsLayer = ref<boolean>(true)
 const selectedLocationId = ref<string>('')
 
-const locationsGeoJson = ref<FeatureCollection<Geometry, Location>>()
+const locationsGeoJson = ref<FeatureCollection<Geometry, Location>>({
+  type: 'FeatureCollection',
+  features: [],
+})
+const { locationsLayerOptions } = useLocationsLayer(locationsGeoJson)
+
+const locationsLayerId = ref<string>('')
 
 watchEffect(async () => {
   if (!props.node?.filterIds) return
@@ -92,6 +100,10 @@ watchEffect(async () => {
     piProvider,
     props.node.filterIds,
   )
+})
+
+watch(selectedLayer, () => {
+  locationsLayerId.value = `locations-layer-${selectedLayer.value?.name ?? ''}`
 })
 
 watch(times, () => {

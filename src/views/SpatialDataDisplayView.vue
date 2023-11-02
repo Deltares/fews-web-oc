@@ -39,7 +39,6 @@ const items = ref<ColumnItem[]>([])
 watch(
   () => props.nodeId,
   () => {
-    console.log('props.nodeId :>> ', props.nodeId)
     if (active.value[0] !== props.nodeId) {
       active.value = [props.nodeId]
     }
@@ -57,7 +56,6 @@ const node = computed(() => {
 getTopologyNodes().then((response) => {
   nodes.value = response
   topologyMap.value = createTopologyMap(nodes.value)
-  console.log('topologyMap :>> ', topologyMap)
 })
 
 function topologyNodeIsVisible(node: TopologyNode): boolean {
