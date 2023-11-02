@@ -29,7 +29,7 @@ export default class DataSourceControl extends Vue {
   @Prop({ default: null }) value!: DataSource | null
   @Prop({ default: () => [] }) items!: DataSource[]
 
-  selected: number | undefined = 0
+  selected: number = 0
   isChangingItems: boolean = false
 
   mounted(): void {
@@ -62,9 +62,9 @@ export default class DataSourceControl extends Vue {
   onChangeValue() {
     if (this.value) {
       const index = this.items.findIndex(source => source.id === this.value?.id)
-      this.selected = index >= 0 ? index : undefined
+      this.selected = index >= 0 ? index : 0
     } else {
-      this.selected = undefined
+      this.selected = 0
     }
   }
 
