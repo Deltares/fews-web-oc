@@ -31,6 +31,10 @@ See [Web OC Delft-FEWS configuration ](configuration/). This page includes infor
 - Other WEB OC functional components
 - Permissions
 
+## Web OC Application configuration 
+
+See [Web OC Application configuration ](app_configuration/). This page includes information on the application configuration for Web OC.
+
 ## Web OC Deployment
 
 The Web OC can be built with npm:
