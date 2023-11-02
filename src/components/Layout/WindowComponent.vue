@@ -16,12 +16,17 @@
           :aria-label="item.label"
           small text
         >
-          <v-icon>{{ item.icon }}</v-icon>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon :style="item.style" v-on="on" v-bind="attrs">{{ item.icon }}</v-icon>
+            </template>
+            <span>{{item.label}}</span>
+          </v-tooltip>
         </v-btn>
       </v-btn-toggle>
       <v-btn small text @click="toggleFullscreen()">
         <v-icon>{{ fullscreenIcon }}</v-icon>
-      </v-btn>  
+      </v-btn>
       <slot name="toolbar-append" v-bind:refs="$refs"></slot>
     </v-toolbar>
     <v-sheet fluid class="component-container">
@@ -38,6 +43,7 @@ interface DisplayTypeItem {
   icon: string
   label: string
   value: DisplayType
+  style?: string
 }
 
 @Component
@@ -72,21 +78,23 @@ export default class WindowComponent extends Vue {
       switch (displayType) {
         case DisplayType.TimeSeriesChart:
           return {
-            icon: 'mdi-chart-line',
-            label: 'Chart',
-            value: displayType
+            icon: 'mdi-chart-line-stacked',
+            label: 'Time Series Chart',
+            value: displayType,
+            style: 'transform: rotate(90deg)'
           }
         case DisplayType.TimeSeriesTable:
           return {
             icon: 'mdi-table',
-            label: 'Table',
+            label: 'Time Series Table',
             value: displayType
           }
         case DisplayType.ElevationChart:
           return {
-            icon: 'mdi-tune-vertical',
-            label: 'ElevationChart',
-            value: displayType
+            icon: 'mdi-chart-line',
+            label: 'Cross Section Chart',
+            value: displayType,
+            style: 'transform: rotate(90deg)'
           }
         default:
           return {
