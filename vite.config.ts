@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
@@ -14,11 +15,15 @@ export default defineConfig({
   plugins: [
     vue({
       template: {
+        transformAssetUrls,
         compilerOptions: {
           isCustomElement: (tag) => tag === 'schematic-status-display',
           // ...
         },
       },
+    }),
+    vuetify({
+      autoImport: true,
     }),
   ],
   optimizeDeps: {
