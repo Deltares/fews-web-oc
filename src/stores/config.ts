@@ -78,7 +78,7 @@ const useConfigStore = defineStore('config', {
       if (state.general.icons?.logo) {
         return getResourcesStaticUrl(state.general.icons.logo)
       } else {
-        return '/images/logo.png'
+        return `${import.meta.env.BASE_URL}images/logo.png`
       }
     },
   },
