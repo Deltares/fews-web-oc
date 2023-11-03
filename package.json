@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
+    "build:deltares": "vue-tsc && env-cmd -f deltares.env vite build",
     "preview": "vite preview",
     "test": "echo nothing to test yet",
     "lint": "npm run prettier",
@@ -47,6 +48,7 @@
     "@vitejs/plugin-vue": "^4.4.0",
     "@vue/eslint-config-typescript": "^12.0.0",
     "csstype": "^3.1.2",
+    "env-cmd": "^10.1.0",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-vue": "^9.18.1",
