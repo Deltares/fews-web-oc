@@ -13,21 +13,34 @@ import { configManager } from '../services/application-config'
 import { authenticationManager } from '../services/authentication/AuthenticationManager'
 import { useConfigStore } from '../stores/config.ts'
 import { defineAsyncComponent } from 'vue'
-const SystemMonitorDisplayView = defineAsyncComponent(() =>
-  import('../views/SystemMonitorDisplayView.vue'))
-const SchematicStatusDisplayView = defineAsyncComponent(() =>
-  import('../views/SchematicStatusDisplayView.vue'))
-const SSDTimeSeriesDisplay = defineAsyncComponent(() =>
-  import('../components/ssd/SsdTimeSeriesDisplay.vue'))
-const SpatialDisplayView = defineAsyncComponent(() => import('../views/SpatialDisplayView.vue'))
-const SpatialDisplay = defineAsyncComponent(() =>
-  import('../components/spatialdisplay/SpatialDisplay.vue'))
-const TimeSeriesDisplayView = defineAsyncComponent(() => import('../views/TimeSeriesDisplayView.vue'))
-const TopologyDisplayView = defineAsyncComponent(() => import('../views/TopologyDisplayView.vue'))
-const TimeSeriesDisplay = defineAsyncComponent(() =>
-  import('../components/timeseries/TimeSeriesDisplay.vue'))
+const SystemMonitorDisplayView = defineAsyncComponent(
+  () => import('../views/SystemMonitorDisplayView.vue'),
+)
+const SchematicStatusDisplayView = defineAsyncComponent(
+  () => import('../views/SchematicStatusDisplayView.vue'),
+)
+const SSDTimeSeriesDisplay = defineAsyncComponent(
+  () => import('../components/ssd/SsdTimeSeriesDisplay.vue'),
+)
+const SpatialDisplayView = defineAsyncComponent(
+  () => import('../views/SpatialDisplayView.vue'),
+)
+const SpatialDisplay = defineAsyncComponent(
+  () => import('../components/spatialdisplay/SpatialDisplay.vue'),
+)
+const TimeSeriesDisplayView = defineAsyncComponent(
+  () => import('../views/TimeSeriesDisplayView.vue'),
+)
+const TopologyDisplayView = defineAsyncComponent(
+  () => import('../views/TopologyDisplayView.vue'),
+)
+const TimeSeriesDisplay = defineAsyncComponent(
+  () => import('../components/timeseries/TimeSeriesDisplay.vue'),
+)
 
-const UserSettingsView = defineAsyncComponent(() => import('../views/UserSettingsView.vue'))
+const UserSettingsView = defineAsyncComponent(
+  () => import('../views/UserSettingsView.vue'),
+)
 const Empty = defineAsyncComponent(() => import('../views/Empty.vue'))
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
