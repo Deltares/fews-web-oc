@@ -24,7 +24,7 @@
                     <template v-slot:activator="{ props }">
                       <v-icon v-bind="props">mdi-calendar-start</v-icon>
                     </template>
-                    <v-date-picker v-model="dates[0]" no-title hide-actions>
+                    <v-date-picker v-model="startDates" no-title hide-actions>
                       <template #header></template>
                     </v-date-picker>
                   </v-menu>
@@ -45,7 +45,7 @@
                     <template v-slot:activator="{ props }">
                       <v-icon v-bind="props">mdi-calendar-end</v-icon>
                     </template>
-                    <v-date-picker v-model="dates[1]" no-title hide-actions>
+                    <v-date-picker v-model="endDates" no-title hide-actions>
                       <template #header></template>
                     </v-date-picker>
                   </v-menu>
@@ -120,23 +120,38 @@ const intervalItems = [
 
 const dates = ref<[Date, Date]>([new Date(), new Date()])
 
+
+const startDates = computed({
+  get() {
+    return [dates.value[0]]
+  },
+  set(newValue: Date[]) {
+    dates.value[0] = newValue[0]
+  },
+})
+
+const endDates = computed({
+  get() {
+    return [dates.value[1]]
+  },
+  set(newValue: Date[]) {
+    dates.value[1] = newValue[0]
+  },
+})
+
 const startDateString = computed({
-  // getter
   get() {
     return DateTime.fromJSDate(dates.value[0]).toFormat(DATE_FMT)
   },
-  // setter
   set(newValue: string) {
     dates.value[0] = DateTime.fromFormat(newValue, DATE_FMT).toJSDate()
   },
 })
 
 const endDateString = computed({
-  // getter
   get() {
     return DateTime.fromJSDate(dates.value[1]).toFormat(DATE_FMT)
   },
-  // setter
   set(newValue: string) {
     dates.value[1] = DateTime.fromFormat(newValue, DATE_FMT).toJSDate()
   },
