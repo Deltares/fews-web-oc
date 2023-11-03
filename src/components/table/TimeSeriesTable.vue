@@ -36,6 +36,22 @@
       <template v-slot:item.date="{ item }">
         <span class="sticky-column">{{ item.date }}</span>
       </template>
+      <template v-for="id in seriesIds" v-slot:[`item.${id}`]="{ item }">
+        <v-chip v-if="item[id] !== undefined" variant="text">
+          <template
+            v-if="item[id].flag !== undefined && item[id].flag !== '0'"
+            v-slot:prepend
+          >
+            <v-icon start size="x-small" :color="getFlagColor(item[id].flag)">
+              mdi-circle
+            </v-icon>
+          </template>
+          {{ item[id].value }}
+          <template v-if="item[id].comment !== undefined" v-slot:append>
+            <v-icon end size="x-small"> mdi-comment-outline </v-icon>
+          </template>
+        </v-chip>
+      </template>
       <template #bottom></template>
       <!-- hide footer -->
     </v-data-table>
@@ -50,6 +66,7 @@ import { getUniqueSeriesIds } from '@/lib/charts/getUniqueSeriesIds'
 import type { TableHeaders } from '@/lib/table/types/TableHeaders'
 import { createTableHeaders } from '@/lib/table/createTableHeaders'
 import { createTableData } from '@/lib/table/createTableData'
+import { getFlagColor } from '@/lib/fews-properties/fewsProperties'
 
 interface Props {
   config: ChartConfig
