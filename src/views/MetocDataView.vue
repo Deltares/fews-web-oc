@@ -11,6 +11,7 @@
             <MapboxLayer
               v-if="showLayer"
               :layer="wmsLayerOptions"
+              @ctrldoubleclick="onLayerCtrlDoubleClick"
               @doubleclick="onLayerDoubleClick"
               @locationclick="onLocationClick">
               <ElevationSlider
@@ -756,6 +757,17 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     const locationId: string | null = event.features[0].properties?.locationId ?? null
 
     this.setLocation(locationId)
+  }
+
+  /**
+   * Updates the route upon double clicking a location while holding the control key.
+   *
+   * This effectively rerenders this component with the coordinates set and opens the vertical profile if present.
+   *
+   * @param event location layer double click event.
+   */
+  onLayerCtrlDoubleClick(event: MapLayerMouseEvent) {
+    this.setCoordinates(event.lngLat.toArray())
   }
 
   /**
