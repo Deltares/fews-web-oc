@@ -120,7 +120,6 @@ const intervalItems = [
 
 const dates = ref<[Date, Date]>([new Date(), new Date()])
 
-
 const startDates = computed({
   get() {
     return [dates.value[0]]

@@ -51,7 +51,7 @@ const selectedIndex = ref(0)
 const intervalToLocaleString = (interval: string) => {
   const duration = Duration.fromISO(interval)
   const startDateTime = DateTime.fromJSDate(props.now).plus(duration)
-  return startDateTime.toRelative( { unit: ['months', 'weeks', 'days']})
+  return startDateTime.toRelative({ unit: ['months', 'weeks', 'days'] })
 }
 
 const onSelectInterval = (index: number) => {
@@ -71,7 +71,7 @@ watch(
   (newValue) => {
     if (newValue === 'default') {
       selectedIndex.value = 0
-     } else if (newValue === undefined) {
+    } else if (newValue === undefined) {
       selectedIndex.value = 1
     } else {
       selectedIndex.value =
