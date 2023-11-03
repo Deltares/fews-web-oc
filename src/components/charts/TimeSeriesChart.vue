@@ -32,7 +32,7 @@ import {
   ChartLine,
   ChartMarker,
   WheelMode,
-  toggleChartVisisbility,
+  toggleChartVisibility,
 } from '@deltares/fews-web-oc-charts'
 import {
   AxisPosition,
@@ -139,14 +139,22 @@ const addToChart = (chartSeries: ChartSeries) => {
   if (chartSeries.type === 'line') {
     line = new ChartLine(data, {
       tooltip: {
-        toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}`,
+        toolTipFormatter: () => {
+          const tooltip = document.createElement('div')
+          tooltip.innerText = `${chartSeries.name} ${chartSeries.unit}`
+          return tooltip
+        },
       },
     })
   } else {
     line = new ChartMarker(data, {
       symbol: chartSeries.marker,
       tooltip: {
-        toolTipFormatter: () => `${chartSeries.name} ${chartSeries.unit}`,
+        toolTipFormatter: () => {
+          const tooltip = document.createElement('div')
+          tooltip.innerText = `${chartSeries.name} ${chartSeries.unit}`
+          return tooltip
+        },
       },
     })
   }
@@ -296,7 +304,7 @@ const toggleLine = (id: string) => {
     setThresholdLines()
     axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
   } else {
-    toggleChartVisisbility(axis, id)
+    toggleChartVisibility(axis, id)
   }
 }
 
