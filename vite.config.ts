@@ -5,6 +5,7 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   // Ensure the @ import alias still works
+  base: process.env.NODE_ENV === 'production' ? import.meta.env.VITE_PUBLIC_PATH : '/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
