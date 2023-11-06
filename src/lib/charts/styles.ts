@@ -1,4 +1,4 @@
-import * as CSS from 'csstype'
+import { SvgPropertiesHyphen } from 'csstype'
 import { SymbolOptions } from '@deltares/fews-web-oc-charts'
 
 const SymbolType = {
@@ -16,21 +16,34 @@ type SymbolType = (typeof SymbolType)[keyof typeof SymbolType]
 export function cssStyleFromFewsLine(item: {
   lineStyle?: string
   color?: string
-}): CSS.SvgPropertiesHyphen {
-  const style: CSS.SvgPropertiesHyphen = {}
+}): SvgPropertiesHyphen {
+  let style: SvgPropertiesHyphen = {}
 
   style['fill'] = 'none'
-
-  if (item.lineStyle !== undefined && item.lineStyle.includes('thick')) {
-    style['stroke-width'] = '2px'
-  } else {
-    style['stroke-width'] = '1px'
+  const re =
+    /(?<lineStyle>none|solid|dashed|dashdot|dotted)(;(?<lineWidth>thick))?/
+  if (item.lineStyle !== undefined) {
+    const matches = item.lineStyle.match(re)
+    if (matches?.groups?.lineWidth !== undefined) {
+      style = {
+        ...style,
+        ...cssStyleFromFewsLineStyle(matches.groups.lineStyle),
+      }
+    }
+    if (matches?.groups?.lineWidth !== undefined) {
+      style = {
+        ...style,
+        ...cssStyleFromFewsLineWidth(matches.groups.lineWidth),
+      }
+    }
   }
+  style.stroke = item.color === '#000000' ? 'currentColor' : item.color
+  return style
+}
 
-  switch (item.lineStyle) {
-    case 'none':
-    case 'solid':
-      break
+function cssStyleFromFewsLineStyle(lineStyle: string): SvgPropertiesHyphen {
+  const style = {}
+  switch (lineStyle) {
     case 'dashed':
       style['stroke-dasharray'] = '5 5'
       break
@@ -41,17 +54,33 @@ export function cssStyleFromFewsLine(item: {
       style['stroke-dasharray'] = '2 3'
       style['stroke-linecap'] = 'round'
       break
+    case 'none':
+    case 'solid':
+    default:
+      break
   }
-  style.stroke = item.color === '#000000' ? 'currentColor' : item.color
+  return style
+}
+
+function cssStyleFromFewsLineWidth(lineWidth: string): SvgPropertiesHyphen {
+  const style = {}
+  switch (lineWidth) {
+    case 'thick':
+      style['stroke-width'] = '2px'
+      break
+    default:
+      style['stroke-width'] = '1px'
+      break
+  }
   return style
 }
 
 export function cssStyleFromFewsMarker(item: {
   markerStyle?: string
   color?: string
-}): CSS.SvgPropertiesHyphen {
+}): SvgPropertiesHyphen {
   const color = item.color === '#000000' ? 'currentColor' : item.color
-  const style: CSS.SvgPropertiesHyphen = {
+  const style: SvgPropertiesHyphen = {
     stroke: color,
     fill: color,
   }
