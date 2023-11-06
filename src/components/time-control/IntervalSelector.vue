@@ -6,7 +6,7 @@
         <v-icon v-show="isActive" small> mdi-check </v-icon>
       </template>
     </v-list-item>
-    <v-list-item :active="1 === selectedIndex" @click="onSelectInterval(1)">
+    <v-list-item :active="1 === selectedIndex" @click="onSelectInterval(1)" disabled>
       Custom
       <template v-slot:append="{ isActive }">
         <v-icon v-show="isActive" small> mdi-check </v-icon>
