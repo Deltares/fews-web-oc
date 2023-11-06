@@ -8,7 +8,8 @@ import {
   cssStyleFromFewsLine,
   cssStyleFromFewsMarker,
   chartMarkerFromFews,
-} from './styles'
+  colorFromFewsColor,
+} from './styles.js'
 import {
   AxisOptions,
   AxisPosition,
@@ -51,7 +52,9 @@ export function timeSeriesDisplayToChartConfig(
             config.yAxis?.findIndex((yAxis) => {
               return yAxis.position === item.yAxis?.axisPosition
             }) ?? 0,
-          color: threshold.color ?? item.color,
+          color:
+            colorFromFewsColor(threshold.color) ??
+            colorFromFewsColor(item.color),
         })
       }
     }
