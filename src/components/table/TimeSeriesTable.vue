@@ -51,6 +51,28 @@
             <v-icon end size="x-small"> mdi-comment-outline </v-icon>
           </template>
         </v-chip>
+        <v-tooltip
+          activator="parent"
+          location="start"
+          max-width="200px"
+          open-delay="250"
+          v-if="showFlagInfoTooltip(item[id])"
+        >
+          <div v-show="item[id].flag !== undefined">
+            <v-icon>mdi-flag-variant</v-icon>
+            {{ store.getFlagName(item[id].flag) }}
+          </div>
+          <div v-show="item[id].flagSource !== undefined">
+            <v-icon>mdi-access-point</v-icon>
+            {{ store.getFlagSourceName(item[id].flagSource) }}
+          </div>
+          <div v-show="item[id].user !== undefined">
+            <v-icon>mdi-account</v-icon> {{ item[id].user }}
+          </div>
+          <div v-show="item[id].comment !== undefined">
+            <v-icon>mdi-comment</v-icon> {{ item[id].comment }}
+          </div>
+        </v-tooltip>
       </template>
       <template #bottom></template>
       <!-- hide footer -->
@@ -67,6 +89,7 @@ import type { TableHeaders } from '@/lib/table/types/TableHeaders'
 import { createTableHeaders } from '@/lib/table/createTableHeaders'
 import { createTableData } from '@/lib/table/createTableData'
 import { getFlagColor } from '@/lib/fews-properties/fewsProperties'
+import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 
 interface Props {
   config: ChartConfig
@@ -85,6 +108,10 @@ const props = withDefaults(defineProps<Props>(), {
   },
 })
 
+const store = useFewsPropertiesStore()
+store.loadFlags()
+store.loadFlagSources()
+
 const seriesIds = ref<string[]>([])
 const tableData = ref<Record<string, unknown>[]>([])
 const tableHeaders = ref<TableHeaders[]>([])
@@ -100,6 +127,13 @@ watchEffect(() => {
     seriesIds.value,
   )
 })
+
+function showFlagInfoTooltip(item: Record<string, unknown>) {
+  return (
+    item !== undefined &&
+    (item.flag !== undefined || item.comment !== undefined)
+  )
+}
 </script>
 
 <style scoped>
