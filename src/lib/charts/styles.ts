@@ -1,5 +1,5 @@
-import * as CSS from 'csstype'
-import { SymbolOptions } from '@deltares/fews-web-oc-charts'
+import type { SvgPropertiesHyphen } from 'csstype'
+import type { SymbolOptions } from '@deltares/fews-web-oc-charts'
 
 const SymbolType = {
   Circle: 0,
@@ -13,11 +13,16 @@ const SymbolType = {
 
 type SymbolType = (typeof SymbolType)[keyof typeof SymbolType]
 
+/**
+ * Converts FEWS line style and color to CSS style properties for SVG elements.
+ * @param item - An object containing lineStyle and color properties.
+ * @returns An object containing CSS style properties for SVG elements.
+ */
 export function cssStyleFromFewsLine(item: {
   lineStyle?: string
   color?: string
-}): CSS.SvgPropertiesHyphen {
-  const style: CSS.SvgPropertiesHyphen = {}
+}): SvgPropertiesHyphen {
+  const style: SvgPropertiesHyphen = {}
 
   style['fill'] = 'none'
 
@@ -42,22 +47,43 @@ export function cssStyleFromFewsLine(item: {
       style['stroke-linecap'] = 'round'
       break
   }
-  style.stroke = item.color === '#000000' ? 'currentColor' : item.color
+  style.stroke = colorFromFewsColor(item.color)
   return style
 }
 
+/**
+ * Returns the input color if it is not equal to '#000000', otherwise returns 'currentColor'.
+ * @param color - The input color to be checked.
+ * @returns css color.
+ */
+export function colorFromFewsColor<T = string | undefined>(color: T): T {
+  const currentColor = 'currentColor' as T
+  return color === '#000000' ? currentColor : color
+}
+
+/**
+ * Returns a CSS style object for a FEWS marker.
+ * @param item An object containing the marker style and color.
+ * @returns A CSS style object with stroke and fill properties set to the specified color.
+ */
 export function cssStyleFromFewsMarker(item: {
   markerStyle?: string
   color?: string
-}): CSS.SvgPropertiesHyphen {
-  const color = item.color === '#000000' ? 'currentColor' : item.color
-  const style: CSS.SvgPropertiesHyphen = {
+}): SvgPropertiesHyphen {
+  const color = colorFromFewsColor(item.color)
+  const style: SvgPropertiesHyphen = {
     stroke: color,
     fill: color,
   }
   return style
 }
 
+/**
+ * Returns a SymbolOptions object for a chart marker based on the given style and point size.
+ * @param style - The style of the chart marker.
+ * @param pointSize - The size of the chart marker.
+ * @returns A SymbolOptions object for the chart marker.
+ */
 export function chartMarkerFromFews(
   style: string,
   pointSize: number = 3,
