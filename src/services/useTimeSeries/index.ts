@@ -15,8 +15,8 @@ export interface UseTimeSeriesReturn {
 }
 
 export interface UseTimeSeriesOptions {
-  startTime?: Date
-  endTime?: Date
+  startTime?: Date | null
+  endTime?: Date | null
   thinning?: boolean
   convertDatum?: boolean
   useDisplayUnits?: boolean
@@ -71,40 +71,32 @@ export function useTimeSeries(
       const queryParams = url.searchParams
       const startTimeString = queryParams.get('startTime')
       const endTimeString = queryParams.get('endTime')
-      if (_options?.startTime && _options?.endTime) {
+      if (_options?.startTime ) {
         const startTime = DateTime.fromJSDate(_options.startTime, {
           zone: 'UTC',
         })
-        const endTime = DateTime.fromJSDate(_options?.endTime, { zone: 'UTC' })
-        const timeStepPerPixel = Math.round(
-          Interval.fromDateTimes(startTime, endTime).length() /
-            window.outerWidth /
-            2,
-        )
         url.searchParams.set(
           'startTime',
           startTime.toISO({ suppressMilliseconds: true }) ?? '',
         )
+      }
+      if (_options?.endTime ) {
+        const endTime = DateTime.fromJSDate(_options.endTime, {
+          zone: 'UTC',
+        })
         url.searchParams.set(
           'endTime',
           endTime.toISO({ suppressMilliseconds: true }) ?? '',
         )
-        url.searchParams.set('thinning', `${timeStepPerPixel}`)
-      } else if (startTimeString !== null && endTimeString !== null) {
-        const startTime = DateTime.fromISO(startTimeString, { zone: 'UTC' })
-        const endTime = DateTime.fromISO(endTimeString, { zone: 'UTC' })
+      }
+      // Set thinning
+      if (queryParams.get('startTime') !== null && queryParams.get('endTime') !== null) {
+        const startTime = DateTime.fromISO(queryParams.get('startTime'), { zone: 'UTC' })
+        const endTime = DateTime.fromISO(queryParams.get('endTime'), { zone: 'UTC' })
         const timeStepPerPixel = Math.round(
           Interval.fromDateTimes(startTime, endTime).length() /
             window.outerWidth /
             2,
-        )
-        url.searchParams.set(
-          'startTime',
-          startTime.toISO({ suppressMilliseconds: true }) ?? '',
-        )
-        url.searchParams.set(
-          'endTime',
-          endTime.toISO({ suppressMilliseconds: true }) ?? '',
         )
         url.searchParams.set('thinning', `${timeStepPerPixel}`)
       }

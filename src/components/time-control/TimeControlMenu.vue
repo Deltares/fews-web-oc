@@ -63,9 +63,10 @@
         <v-col>
           <interval-selector
             ref="intervalSelector"
-            v-model="selectedInterval"
+            v-model="store.selectedInterval"
             :items="intervalItems"
             :now="store.systemTime"
+            @update:modelValue="onIntervalChange"
           />
         </v-col>
       </v-row>
@@ -104,17 +105,11 @@ const rules = {
   },
 }
 
-let selectedInterval = ref<string>('default')
 const intervalItems = [
+  '-PT12H',
   '-P1D',
-  '-P2D',
-  '-P3D',
-  '-P4D',
-  '-P5D',
-  '-P6D',
-  '-P7D',
+  '-P1W',
   '-P2W',
-  '-P3W',
   '-P1M',
 ]
 
@@ -156,18 +151,10 @@ const endDateString = computed({
   },
 })
 
-// const storeIntervalFromDateTimes = () => {
-//   storeSetInterval({
-//     startDateTime,
-//     endDateTime,
-//   });
-// };
+function onIntervalChange() {
+  store.changeInterval()
+}
 
-// const storeIntervalFromIntervalString = () => {
-//   storeSetInterval({
-//     intervalString: selectedInterval,
-//   });
-// };
 </script>
 <style>
 .menu {
