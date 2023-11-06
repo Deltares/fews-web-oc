@@ -9,7 +9,10 @@
     <v-card width="500px">
       <v-row no-gutters>
         <v-col>
-          <v-form v-model="datesAreValid" :disabled="store.selectedInterval !== 'custom'">
+          <v-form
+            v-model="datesAreValid"
+            :disabled="store.selectedInterval !== 'custom'"
+          >
             <v-card-actions>
               <v-text-field
                 v-model="startDateString"
@@ -105,13 +108,7 @@ const rules = {
   },
 }
 
-const intervalItems = [
-  '-PT12H',
-  '-P1D',
-  '-P1W',
-  '-P2W',
-  '-P1M',
-]
+const intervalItems = ['-PT12H', '-P1D', '-P1W', '-P2W', '-P1M']
 
 const dates = ref<[Date, Date]>([new Date(), new Date()])
 
@@ -154,7 +151,6 @@ const endDateString = computed({
 function onIntervalChange() {
   store.changeInterval()
 }
-
 </script>
 <style>
 .menu {

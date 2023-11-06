@@ -71,7 +71,7 @@ export function useTimeSeries(
       const queryParams = url.searchParams
       const startTimeString = queryParams.get('startTime')
       const endTimeString = queryParams.get('endTime')
-      if (_options?.startTime ) {
+      if (_options?.startTime) {
         const startTime = DateTime.fromJSDate(_options.startTime, {
           zone: 'UTC',
         })
@@ -80,7 +80,7 @@ export function useTimeSeries(
           startTime.toISO({ suppressMilliseconds: true }) ?? '',
         )
       }
-      if (_options?.endTime ) {
+      if (_options?.endTime) {
         const endTime = DateTime.fromJSDate(_options.endTime, {
           zone: 'UTC',
         })
@@ -90,9 +90,16 @@ export function useTimeSeries(
         )
       }
       // Set thinning
-      if (queryParams.get('startTime') !== null && queryParams.get('endTime') !== null) {
-        const startTime = DateTime.fromISO(queryParams.get('startTime'), { zone: 'UTC' })
-        const endTime = DateTime.fromISO(queryParams.get('endTime'), { zone: 'UTC' })
+      if (
+        queryParams.get('startTime') !== null &&
+        queryParams.get('endTime') !== null
+      ) {
+        const startTime = DateTime.fromISO(queryParams.get('startTime'), {
+          zone: 'UTC',
+        })
+        const endTime = DateTime.fromISO(queryParams.get('endTime'), {
+          zone: 'UTC',
+        })
         const timeStepPerPixel = Math.round(
           Interval.fromDateTimes(startTime, endTime).length() /
             window.outerWidth /

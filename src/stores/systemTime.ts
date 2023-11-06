@@ -15,7 +15,7 @@ export const useSystemTimeStore = defineStore({
     intervalTimer: undefined,
     startTime: null,
     endTime: null,
-    selectedInterval: 'default'
+    selectedInterval: 'default',
   }),
   actions: {
     startClock() {
@@ -28,17 +28,15 @@ export const useSystemTimeStore = defineStore({
       clearInterval(this.intervalTimer)
       this.intervalTimer = undefined
     },
-   changeInterval() {
-    console.log('changeInterval', this.selectedInterval)
+    changeInterval() {
       if (!this.selectedInterval) return
-    
+
       if (this.selectedInterval === 'default') {
         // Use the FEWS default time interval.
         this.startTime = null
         this.endTime = null
       } else if (this.selectedInterval === 'custom') {
         // Use the custom time interval.
-
       } else {
         const now = this.systemTime
         const interval = this.selectedInterval.split('/')
@@ -56,7 +54,6 @@ export const useSystemTimeStore = defineStore({
             .toJSDate()
         }
       }
-    }
-
-  }
+    },
+  },
 })
