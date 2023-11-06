@@ -9,7 +9,7 @@
     <v-card width="500px">
       <v-row no-gutters>
         <v-col>
-          <v-form v-model="datesAreValid">
+          <v-form v-model="datesAreValid" :disabled="store.selectedInterval !== 'custom'">
             <v-card-actions>
               <v-text-field
                 v-model="startDateString"
@@ -98,10 +98,10 @@ const store = useSystemTimeStore()
 const datesAreValid = ref(true)
 const DATE_FMT = 'yyyy-MM-dd'
 const rules = {
-  required: (value: string) => (value !== undefined && !!value) || 'Vereist',
+  required: (value: string) => (value !== undefined && !!value) || 'Required',
   date: (value: string) => {
     const date = DateTime.fromFormat(value || '', DATE_FMT)
-    return !isNaN(date.valueOf()) || 'Ongeldige datum'
+    return !isNaN(date.valueOf()) || 'Invalid date'
   },
 }
 
