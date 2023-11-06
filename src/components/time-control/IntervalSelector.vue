@@ -6,7 +6,7 @@
         <v-icon v-show="isActive" small> mdi-check </v-icon>
       </template>
     </v-list-item>
-    <v-list-item :active="1 === selectedIndex">
+    <v-list-item :active="1 === selectedIndex" @click="onSelectInterval(1)">
       Custom
       <template v-slot:append="{ isActive }">
         <v-icon v-show="isActive" small> mdi-check </v-icon>
@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { DateTime, Duration } from 'luxon'
-import { ref, watch } from 'vue'
+import { onBeforeMount, ref, watch } from 'vue'
 
 interface Props {
   modelValue: string
@@ -49,14 +49,24 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits(['update:modelValue'])
 const selectedIndex = ref(0)
 
+onBeforeMount(() => {
+  updateIndex(props.modelValue)
+})
+
 const intervalToLocaleString = (interval: string) => {
   const parts = interval.split('/')
   if (parts.length === 2) {
-    const startDateTime = DateTime.fromJSDate(props.now).plus(Duration.fromISO(parts[0]))
-    const endDateTime = DateTime.fromJSDate(props.now).plus(Duration.fromISO(parts[1]))
-    return startDateTime.toRelative() + ' / ' +  endDateTime.toRelative()
+    const startDateTime = DateTime.fromJSDate(props.now).plus(
+      Duration.fromISO(parts[0]),
+    )
+    const endDateTime = DateTime.fromJSDate(props.now).plus(
+      Duration.fromISO(parts[1]),
+    )
+    return startDateTime.toRelative() + ' / ' + endDateTime.toRelative()
   } else {
-    const startDateTime = DateTime.fromJSDate(props.now).plus(Duration.fromISO(parts[0]))
+    const startDateTime = DateTime.fromJSDate(props.now).plus(
+      Duration.fromISO(parts[0]),
+    )
     return startDateTime.toRelative()
   }
 }
@@ -73,18 +83,20 @@ const onSelectInterval = (index: number) => {
   emit('update:modelValue', selectedInterval)
 }
 
+function updateIndex(newValue: string | undefined) {
+  if (newValue === 'default') {
+    selectedIndex.value = 0
+  } else if (newValue === undefined) {
+    selectedIndex.value = 1
+  } else {
+    selectedIndex.value =
+      props.items.findIndex((entry) => entry === newValue) + 2
+  }
+}
+
 watch(
   () => props.modelValue,
-  (newValue) => {
-    if (newValue === 'default') {
-      selectedIndex.value = 0
-    } else if (newValue === undefined) {
-      selectedIndex.value = 1
-    } else {
-      selectedIndex.value =
-        props.items.findIndex((entry) => entry === newValue) + 2
-    }
-  },
+  (newValue) => updateIndex(newValue),
 )
 </script>
 
