@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-column flex-grow-1 flex-shrink-1 h-100">
+  <div class="spatial-display d-flex flex-column flex-grow-1 flex-shrink-1 h-100">
     <MapComponent>
       <animated-mapbox-layer :layer="layerOptions" />
     </MapComponent>
@@ -11,6 +11,7 @@
       :dates="times ?? []"
       @update:doFollowNow="setCurrentTime"
       @update:selectedDate="updateTime"
+      class="spatial-display__slider"
     />
   </div>
 </template>
@@ -108,5 +109,21 @@ function updateTime(date: Date): void {
   background-color: none;
   position: absolute;
   bottom: 80px;
+}
+
+.spatial-display {
+  position: relative;
+}
+
+.spatial-display__slider {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  right: 5px;
+  z-index: 5;
+  border-radius: 5px;
+  backdrop-filter: blur(5px);
+  background-color: rgba(var(--v-theme-surface), .8);
+  box-shadow: 0 0 5px rgba(0, 0, 0, .5);
 }
 </style>
