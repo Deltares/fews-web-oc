@@ -90,10 +90,7 @@ export function useTimeSeries(
       // Set thinning
       const startTimeString = queryParams.get('startTime')
       const endTimeString = queryParams.get('endTime')
-      if (
-        startTimeString !== null &&
-        endTimeString !== null
-      ) {
+      if (startTimeString !== null && endTimeString !== null) {
         const startTime = DateTime.fromISO(startTimeString, {
           zone: 'UTC',
         })
