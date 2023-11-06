@@ -42,7 +42,7 @@ export function cssStyleFromFewsLine(item: {
 }
 
 function cssStyleFromFewsLineStyle(lineStyle: string): SvgPropertiesHyphen {
-  const style = {}
+  const style: SvgPropertiesHyphen = {}
   switch (lineStyle) {
     case 'dashed':
       style['stroke-dasharray'] = '5 5'
@@ -63,7 +63,7 @@ function cssStyleFromFewsLineStyle(lineStyle: string): SvgPropertiesHyphen {
 }
 
 function cssStyleFromFewsLineWidth(lineWidth: string): SvgPropertiesHyphen {
-  const style = {}
+  const style: SvgPropertiesHyphen = {}
   switch (lineWidth) {
     case 'thick':
       style['stroke-width'] = '2px'
