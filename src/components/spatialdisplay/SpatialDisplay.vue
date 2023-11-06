@@ -1,5 +1,7 @@
 <template>
-  <div class="spatial-display d-flex flex-column flex-grow-1 flex-shrink-1 h-100">
+  <div
+    class="spatial-display d-flex flex-column flex-grow-1 flex-shrink-1 h-100"
+  >
     <MapComponent>
       <animated-mapbox-layer :layer="layerOptions" />
     </MapComponent>
@@ -123,7 +125,7 @@ function updateTime(date: Date): void {
   z-index: 5;
   border-radius: 5px;
   backdrop-filter: blur(5px);
-  background-color: rgba(var(--v-theme-surface), .8);
-  box-shadow: 0 0 5px rgba(0, 0, 0, .5);
+  background-color: rgba(var(--v-theme-surface), 0.8);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 </style>
