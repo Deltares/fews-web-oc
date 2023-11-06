@@ -1,50 +1,52 @@
 <template>
-  <div class="slider-container">
-    <v-slider
-      v-model="dateIndex"
-      :max="maxIndex"
-      step="1"
-      hide-details
-      thumb-size="15"
-    />
-  </div>
-  <div class="controls-container">
-    <slot name="prepend"></slot>
-    <div class="now-tracking-control">
-      <v-btn
-        density="compact"
-        variant="flat"
-        :icon="nowButtonIcon"
-        :color="nowButtonColor"
-        @click="toggleFollowNow"
-      />
-      <span class="text-body-2 selected-date">{{ dateString }}</span>
-    </div>
-    <v-spacer />
-    <div class="play-controls">
-      <v-btn
-        density="compact"
-        variant="flat"
-        icon="mdi-skip-previous"
-        @mousedown="stepBackward"
-        @mouseup="stopPlay"
-      />
-      <v-btn
-        density="compact"
-        variant="flat"
-        :icon="playButtonIcon"
-        :color="playButtonColor"
-        @click="togglePlay"
-      />
-      <v-btn
-        density="compact"
-        variant="flat"
-        icon="mdi-skip-next"
-        @mousedown="stepForward"
-        @mouseup="stopPlay"
+  <div class="datetime-slider">
+    <div class="slider-container">
+      <v-slider
+        v-model="dateIndex"
+        :max="maxIndex"
+        step="1"
+        hide-details
+        thumb-size="15"
       />
     </div>
-    <slot name="append"></slot>
+    <div class="controls-container">
+      <slot name="prepend"></slot>
+      <div class="now-tracking-control">
+        <v-btn
+          density="compact"
+          variant="flat"
+          :icon="nowButtonIcon"
+          :color="nowButtonColor"
+          @click="toggleFollowNow"
+        />
+        <span class="text-body-2 selected-date">{{ dateString }}</span>
+      </div>
+      <v-spacer />
+      <div class="play-controls">
+        <v-btn
+          density="compact"
+          variant="flat"
+          icon="mdi-skip-previous"
+          @mousedown="stepBackward"
+          @mouseup="stopPlay"
+        />
+        <v-btn
+          density="compact"
+          variant="flat"
+          :icon="playButtonIcon"
+          :color="playButtonColor"
+          @click="togglePlay"
+        />
+        <v-btn
+          density="compact"
+          variant="flat"
+          icon="mdi-skip-next"
+          @mousedown="stepForward"
+          @mouseup="stopPlay"
+        />
+      </div>
+      <slot name="append"></slot>
+    </div>
   </div>
 </template>
 
@@ -225,7 +227,7 @@ function increment(step: number): void {
 }
 </script>
 
-<style>
+<style scoped>
 .slider-container {
   padding: 0px 10px;
 }
