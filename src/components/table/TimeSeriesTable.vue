@@ -131,9 +131,14 @@ th.sticky-column {
   z-index: 3;
 }
 
+.table-header {
+  vertical-align: bottom;
+  height: inherit !important;
+}
+
 .table-header-indicator {
   display: flex;
-  height: 100%;
+  min-height: calc(var(--v-table-header-height) - 16px) !important;
   flex-direction: column;
 }
 
