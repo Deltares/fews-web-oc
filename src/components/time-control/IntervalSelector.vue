@@ -13,6 +13,7 @@
       </template>
     </v-list-item>
     <v-divider></v-divider>
+    <v-list-subheader>Preset periods</v-list-subheader>
     <v-list-item
       v-for="(item, index) in props.items"
       :key="index"
@@ -49,9 +50,15 @@ const emit = defineEmits(['update:modelValue'])
 const selectedIndex = ref(0)
 
 const intervalToLocaleString = (interval: string) => {
-  const duration = Duration.fromISO(interval)
-  const startDateTime = DateTime.fromJSDate(props.now).plus(duration)
-  return startDateTime.toRelative({ unit: ['months', 'weeks', 'days'] })
+  const parts = interval.split('/')
+  if (parts.length === 2) {
+    const startDateTime = DateTime.fromJSDate(props.now).plus(Duration.fromISO(parts[0]))
+    const endDateTime = DateTime.fromJSDate(props.now).plus(Duration.fromISO(parts[1]))
+    return startDateTime.toRelative() + ' / ' +  endDateTime.toRelative()
+  } else {
+    const startDateTime = DateTime.fromJSDate(props.now).plus(Duration.fromISO(parts[0]))
+    return startDateTime.toRelative()
+  }
 }
 
 const onSelectInterval = (index: number) => {
