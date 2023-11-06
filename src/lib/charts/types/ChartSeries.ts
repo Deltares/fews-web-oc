@@ -1,6 +1,6 @@
-import * as CSS from 'csstype'
-import { SymbolOptions } from '@deltares/fews-web-oc-charts'
-import { ChartSeriesOptions } from './ChartSeriesOptions'
+import type { SvgPropertiesHyphen } from 'csstype'
+import type { SymbolOptions } from '@deltares/fews-web-oc-charts'
+import type { ChartSeriesOptions } from './ChartSeriesOptions'
 
 export interface ChartSeries {
   id: string
@@ -14,5 +14,5 @@ export interface ChartSeries {
   type: string
   options: ChartSeriesOptions
   unit: string
-  style: CSS.SvgPropertiesHyphen
+  style: SvgPropertiesHyphen
 }
