@@ -2,7 +2,7 @@
   <v-window v-model="tab" class="h-100 w-100">
     <v-window-item
       :value="DisplayType.TimeSeriesChart"
-      class="d-flex flex-column overflow-y-auto flex-1-1-100 h-100"
+      class="time-series-component__container scroll"
     >
       <KeepAlive>
         <TimeSeriesChart
@@ -16,7 +16,7 @@
     </v-window-item>
     <v-window-item
       :value="DisplayType.TimeSeriesTable"
-      class="component-container max-height"
+      class="time-series-component__container max-height"
     >
       <KeepAlive>
         <TimeSeriesTable
@@ -109,7 +109,7 @@ watch(
 </script>
 
 <style scoped>
-.component-container {
+.time-series-component__container {
   display: flex;
   flex: 1 1 100%;
   width: 100%;
