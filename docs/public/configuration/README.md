@@ -33,7 +33,7 @@ Topology nodes in the Web OC component TopologyDisplay can be linked using Topol
 | DisplayGroup              | DisplayGroupId  | Yes                  | Yes                |
 | Run Task                  | WorkFlowId      | Yes                  | Not yet            |
 | SchematicStatusDisplay    | PanelId         | 2024.01              | Not yet            |
-| System Monitor            | TabId           | 2024.01              | No yet             |
+| System Monitor            | TabId           | 2024.01              | Not yet             |
 
 **Spatial Display**
 
