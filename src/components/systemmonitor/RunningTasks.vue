@@ -9,8 +9,8 @@
     class="elevation-1"
   >
     <template v-slot:item.status="{ item }">
-      <v-chip :color="getColor(item.columns.status)">
-        {{ item.columns.status }}
+      <v-chip :color="getColor(item.status)">
+        {{ item.status }}
       </v-chip>
     </template>
   </v-data-table>
