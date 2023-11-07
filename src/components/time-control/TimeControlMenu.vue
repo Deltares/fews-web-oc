@@ -57,12 +57,6 @@
             </v-card-actions>
           </v-form>
         </v-col>
-        <!-- <v-col>
-            <DateTimeSelector v-model="startDateTime" label="From" prepend-date-icon="mdi-calendar-start"
-              prepend-time-icon="mdi-clock-start" @input="storeIntervalFromDateTimes" />
-            <DateTimeSelector v-model="endDateTime" label="To" prepend-date-icon="mdi-calendar-end"
-              prepend-time-icon="mdi-clock-end" @input="storeIntervalFromDateTimes" />
-          </v-col> -->
         <v-col>
           <interval-selector
             ref="intervalSelector"
@@ -90,7 +84,6 @@
 </template>
 
 <script setup lang="ts">
-// import DateTimeSelector from "./DateTimeSelector.vue";
 import IntervalSelector from './IntervalSelector.vue'
 
 import { ref, computed } from 'vue'
