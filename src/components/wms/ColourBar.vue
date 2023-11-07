@@ -63,6 +63,19 @@ function updateColourBar() {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  text-shadow:
+    rgb(var(--v-theme-background)) 0px 0px 1px,
+    rgb(var(--v-theme-background)) 0px 0px 1px,
+    rgb(var(--v-theme-background)) 0px 0px 1px,
+    rgb(var(--v-theme-background)) 0px 0px 1px,
+    rgb(var(--v-theme-background)) 0px 0px 1px,
+    rgb(var(--v-theme-background)) 0px 0px 1px;
+}
+
+.colourbar :deep(.axis .tick line) {
+  filter: drop-shadow(0px 0px 1px rgb(var(--v-theme-background)))
+    drop-shadow(0px 0px 1px rgb(var(--v-theme-background)))
+    drop-shadow(0px 0px 1px rgb(var(--v-theme-background)));
 }
 
 :deep(g) {
