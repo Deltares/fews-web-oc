@@ -10,6 +10,8 @@ import { useUserSettingsStore } from './stores/userSettings'
 import { useTheme } from 'vuetify'
 import { usePreferredDark } from '@vueuse/core'
 
+import '@/assets/fews-flags.css'
+
 const route = useRoute()
 const configStore = useConfigStore()
 const userSettingsStore = useUserSettingsStore()
