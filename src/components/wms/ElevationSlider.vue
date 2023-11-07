@@ -8,27 +8,39 @@
     :interval="interval"
     @error="onError"
     @update:model-value="onInputChange"
+    :keydownHook="onSliderKeydown"
     :hideLabel="true"
     lazy
     direction="btt"
     tooltip="always"
     tooltipPlacement="left"
     height="200px"
-    ref="slider"
+    ref="sliderComponent"
   >
     <template v-slot:tooltip>
       <div
         class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text"
       >
-        {{ Math.round(currentValue) }} {{ props.unit }}
+        <input
+          ref="tooltipInput"
+          v-if="isEditing"
+          v-model.number="editValue"
+          @blur="acceptEdit"
+          @keydown.stop="onKeydown"
+          type="number"
+          class="tooltip-input body-1"
+        />
+        <span v-else class="body-1" @click="activateEdit">{{
+          Math.round(currentValue)
+        }}</span>
+        {{ props.unit }}
       </div>
     </template>
   </vue-slider>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import { computed } from '@vue/reactivity'
+import { computed, nextTick, ref, onMounted, watch } from 'vue'
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/antd.css'
 
@@ -64,22 +76,22 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits(['update:modelValue'])
 
 const currentValue = ref(props.modelValue)
-// const currentTooltipValue = ref(0)
+const editValue = ref(0)
 const numberOfMarks = 8
 const marks = ref<number[]>([])
-// const isEditingTooltip = ref(false)
+const isEditing = ref(false)
 
-// const tooltipInput = ref<HTMLElement>()
-// const sliderComponent = ref<typeof VueSlider>()
+const tooltipInput = ref<HTMLElement>()
+const sliderComponent = ref<typeof VueSlider>()
 
 const stepSize = (props.maxValue - props.minValue) / numberOfMarks
 
-// const onSliderKeydown = (e: KeyboardEvent) => {
-//   if (e.key === 'Enter') {
-//     enableTooltipEdit()
-//   }
-//   return false
-// }
+const onSliderKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter') {
+    activateEdit()
+  }
+  return true
+}
 
 const onError = (err: Error) => {
   console.error(err)
@@ -90,31 +102,42 @@ const onInputChange = (value: number) => {
   emit('update:modelValue', value)
 }
 
-// const onTooltipKeydown = (e: KeyboardEvent) => {
-//   if (e.key === 'Enter') {
-//     acceptTooltipEdit()
-//   } else if (e.key === 'Escape') {
-//     disableTooltipEdit()
-//   }
-// }
+const onKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter') {
+    acceptEdit()
+  } else if (e.key === 'Escape') {
+    closeTooltip()
+  }
+}
 
-// const enableTooltipEdit = () => {
-//   isEditingTooltip.value = true
-//   currentTooltipValue.value = Math.round(currentValue.value)
-//   if (tooltipInput.value) tooltipInput.value.focus()
-//   if (sliderComponent.value) sliderComponent.value.blur()
-// }
+const activateEdit = () => {
+  isEditing.value = true
+  editValue.value = Math.round(currentValue.value)
+  nextTick(() => {
+    if (tooltipInput.value) {
+      tooltipInput.value.focus()
+    }
+    if (sliderComponent.value) sliderComponent.value.blur()
+  })
+}
 
-// const disableTooltipEdit = () => {
-//   isEditingTooltip.value = false
-//   if (sliderComponent.value) sliderComponent.value.focus()
-// }
+const closeTooltip = () => {
+  isEditing.value = false
+  if (sliderComponent.value) {
+    sliderComponent.value.focus({}, {})
+  }
+}
 
-// const acceptTooltipEdit = () => {
-//   currentValue.value = currentTooltipValue.value
-//   isEditingTooltip.value = false
-//   if (sliderComponent.value) sliderComponent.value.focus()
-// }
+const acceptEdit = () => {
+  if (editValue.value > props.maxValue) {
+    currentValue.value = props.maxValue
+  } else if (editValue.value < props.minValue) {
+    currentValue.value = props.minValue
+  } else {
+    currentValue.value = editValue.value
+  }
+  closeTooltip()
+}
 
 onMounted(() => {
   const innerMarks = Array.from(
