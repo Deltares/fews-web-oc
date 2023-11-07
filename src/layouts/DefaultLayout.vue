@@ -45,7 +45,7 @@
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       </template>
-      <div id="app-bar-content"></div>
+      <div class="app-bar-content" id="app-bar-content"></div>
       <v-spacer />
       <time-control-menu></time-control-menu>
       <user-settings-menu />
@@ -129,6 +129,10 @@ body {
 .router-container {
   padding: 0px;
   height: 100%;
+}
+
+.app-bar-content {
+  display: flex;
 }
 </style>
 
