@@ -11,27 +11,23 @@ import * as webOcCharts from '@deltares/fews-web-oc-charts'
 
 interface Props {
   colourMap?: webOcCharts.ColourMap
+  title?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  colourMap: undefined,
-})
+const props = withDefaults(defineProps<Props>(), {})
 
 const isVisible = ref<boolean>(true)
 let group: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
-watch(
-  () => props.colourMap,
-  () => {
-    updateColourBar()
-  },
-)
+watch([() => props.colourMap, () => props.title], () => {
+  updateColourBar()
+})
 
 onMounted(() => {
   const svg = d3.select('#colourbar')
   group = svg
     .append('g')
-    .attr('transform', 'translate(10, 5)')
+    .attr('transform', 'translate(10, 50)')
     .style('pointer-events', 'visiblePainted')
   updateColourBar()
 })
@@ -48,6 +44,7 @@ function updateColourBar() {
     type: 'nonlinear',
     useGradients: true,
     position: webOcCharts.AxisPosition.Bottom,
+    title: props.title,
   }
   new webOcCharts.ColourBar(group as any, props.colourMap, 250, 10, options)
   isVisible.value = true
@@ -62,7 +59,7 @@ function updateColourBar() {
 .colourbar {
   fill: none;
   width: 300px;
-  height: 35px;
+  height: 85px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
