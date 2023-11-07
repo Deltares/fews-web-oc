@@ -1,10 +1,9 @@
 <template>
-  <div />
+  <div></div>
 </template>
 
 <script setup lang="ts">
 import { nextTick, onMounted, Ref, watch } from 'vue'
-// @ts-ignore
 import { toMercator } from '@turf/projection'
 import {
   ImageSource,
@@ -19,9 +18,11 @@ import { useMap } from '@studiometa/vue-mapbox-gl'
 import { point } from '@turf/helpers'
 
 export interface MapboxLayerOptions {
-  name?: string
-  time?: Date
+  name: string
+  time: Date
   bbox?: LngLatBounds
+  elevation?: number | null
+  colorScaleRange?: string
 }
 
 interface Props {
@@ -76,12 +77,22 @@ function getImageSourceOptions(): ImageSourceOptions {
   const time = props.layer.time.toISOString()
   const bounds = map.value.getBounds()
   const canvas = map.value.getCanvas()
+
+  const getMapUrl = new URL(`${baseUrl}/wms`)
+  getMapUrl.searchParams.append('service', 'WMS')
+  getMapUrl.searchParams.append('request', 'GetMap')
+  getMapUrl.searchParams.append('version', '1.3')
+  getMapUrl.searchParams.append('layers', props.layer.name)
+  getMapUrl.searchParams.append('crs', 'EPSG:3857')
+  getMapUrl.searchParams.append('bbox', `${getMercatorBboxFromBounds(bounds)}`)
+  getMapUrl.searchParams.append('height', `${canvas.height}`)
+  getMapUrl.searchParams.append('width', `${canvas.width}`)
+  getMapUrl.searchParams.append('time', `${time}`)
+  if (props.layer.elevation) {
+    getMapUrl.searchParams.append('elevation', `${props.layer.elevation}`)
+  }
   const imageSourceOptions = {
-    url: `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${
-      props.layer.name
-    }&crs=EPSG:3857&bbox=${getMercatorBboxFromBounds(bounds)}&height=${
-      canvas.height
-    }&width=${canvas.width}&time=${time}`,
+    url: getMapUrl.toString(),
     coordinates: getCoordsFromBounds(bounds),
   }
   return imageSourceOptions
