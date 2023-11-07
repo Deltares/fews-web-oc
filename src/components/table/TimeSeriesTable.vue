@@ -1,5 +1,8 @@
 <template>
   <div class="table-container">
+    <v-tooltip v-model="tooltip" :activator="activator" :key="activator">
+      <table-tooltip v-bind="tooltipItem">/</table-tooltip>
+    </v-tooltip>
     <v-data-table
       class="data-table"
       :headers="tableHeaders as any"
@@ -37,42 +40,16 @@
         <span class="sticky-column">{{ item.date }}</span>
       </template>
       <template v-for="id in seriesIds" v-slot:[`item.${id}`]="{ item }">
-        <v-chip v-if="item[id] !== undefined" variant="text">
-          <template
-            v-if="item[id].flag !== undefined && item[id].flag !== '0'"
-            v-slot:prepend
-          >
-            <v-icon start size="x-small" :color="getFlagColor(item[id].flag)">
-              mdi-circle
-            </v-icon>
-          </template>
-          {{ item[id].value }}
-          <template v-if="item[id].comment !== undefined" v-slot:append>
-            <v-icon end size="x-small"> mdi-comment-outline </v-icon>
-          </template>
-        </v-chip>
-        <v-tooltip
-          activator="parent"
-          location="start"
-          max-width="200px"
-          open-delay="250"
-          v-if="showFlagInfoTooltip(item[id])"
+        <span
+          v-if="item[id]"
+          style="z-index: -1; width: 100%; display: inline-block;"
+          @mouseenter="(event) => showTooltip(event, item[id])"
+          @mouseleave="(event) => hideTooltip(event)"
         >
-          <div v-show="item[id].flag !== undefined">
-            <v-icon>mdi-flag-variant</v-icon>
-            {{ store.getFlagName(item[id].flag) }}
-          </div>
-          <div v-show="item[id].flagSource !== undefined">
-            <v-icon>mdi-access-point</v-icon>
-            {{ store.getFlagSourceName(item[id].flagSource) }}
-          </div>
-          <div v-show="item[id].user !== undefined">
-            <v-icon>mdi-account</v-icon> {{ item[id].user }}
-          </div>
-          <div v-show="item[id].comment !== undefined">
-            <v-icon>mdi-comment</v-icon> {{ item[id].comment }}
-          </div>
-        </v-tooltip>
+          <div class="circle" :class="item[id].flagClass"></div>
+          <span class="value">{{ item[id].value }}</span>
+          <span v-if="item[id].comment" class="mdi mdi-comment-outline"></span>
+        </span>
       </template>
       <template #bottom></template>
       <!-- hide footer -->
@@ -81,15 +58,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
+import { ref, watch } from 'vue'
+import { watchDebounced } from '@vueuse/core'
+import TableTooltip from './TableTooltip.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { getUniqueSeriesIds } from '@/lib/charts/getUniqueSeriesIds'
 import type { TableHeaders } from '@/lib/table/types/TableHeaders'
 import { createTableHeaders } from '@/lib/table/createTableHeaders'
 import { createTableData } from '@/lib/table/createTableData'
-import { getFlagColor } from '@/lib/fews-properties/fewsProperties'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
+import { onBeforeMount } from 'vue'
 
 interface Props {
   config: ChartConfig
@@ -113,30 +92,79 @@ store.loadFlags()
 store.loadFlagSources()
 
 const seriesIds = ref<string[]>([])
+const tooltip = ref<boolean>(false)
+const tooltipItem = ref<any>({})
+const activator = ref<string>('')
 const tableData = ref<Record<string, unknown>[]>([])
 const tableHeaders = ref<TableHeaders[]>([])
 
-watchEffect(() => {
+onBeforeMount(() => {
+  if (props.config !== undefined) {
+    seriesIds.value = getUniqueSeriesIds(props.config.series)
+    tableHeaders.value = createTableHeaders(
+      props.config.series,
+      seriesIds.value,
+    )
+  }
+
+  if (props.config !== undefined) {
+    tableData.value = createTableData(
+      props.config.series,
+      props.series,
+      seriesIds.value,
+    )
+  }
+})
+
+watch(props.config, () => {
   if (props.config === undefined) return
   seriesIds.value = getUniqueSeriesIds(props.config.series)
   tableHeaders.value = createTableHeaders(props.config.series, seriesIds.value)
-  if (props.series === undefined) return
-  tableData.value = createTableData(
-    props.config.series,
-    props.series,
-    seriesIds.value,
-  )
 })
 
-function showFlagInfoTooltip(item: Record<string, unknown>) {
-  return (
-    item !== undefined &&
-    (item.flag !== undefined || item.comment !== undefined)
-  )
+watchDebounced(
+  props.series,
+  () => {
+    if (props.series === undefined) return
+    tableData.value = createTableData(
+      props.config.series,
+      props.series,
+      seriesIds.value,
+    )
+  },
+  { debounce: 500, maxWait: 1000 },
+)
+
+const showTooltip = (event: any, item: any) => {
+  if (!item.tooltip) return
+  const id = 'tooltip' + Math.random().toString(16).slice(2)
+  const element = event.target
+  element.id = id
+  activator.value = `#${id}`
+  tooltip.value = true
+  tooltipItem.value = {
+    flag: store.getFlagName(item.flag),
+    flagSource: store.getFlagSourceName(item.flagSource),
+    flagClass: item.flagClass,
+    user: item.user,
+    comment: item.comment,
+  }
+}
+
+const hideTooltip = (event: any) => {
+  const element = event.target
+  element.id = null
+  activator.value = ''
+  tooltip.value = false
 }
 </script>
 
 <style scoped>
+.mdi {
+  margin: 2px;
+  color: #9e9e9e;
+}
+
 .table-container {
   display: flex;
   flex: 1 1 100%;
@@ -185,6 +213,7 @@ th.sticky-column {
 .table-header {
   vertical-align: bottom;
   height: inherit !important;
+  max-width: 150px;
 }
 
 .table-header-indicator {
@@ -201,6 +230,36 @@ th.sticky-column {
   flex: 0 0 10px;
   width: 100%;
   margin-bottom: 5px;
+}
+
+.circle {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin: auto 2px;
+}
+
+.FFFF00 {
+  background-color: #ffff00;
+}
+.FF8000 {
+  background-color: #ff8000;
+}
+.FF0000 {
+  background-color: #ff0000;
+}
+.FFC800 {
+  background-color: #ffc800;
+}
+.FFFFFF {
+  background-color: #ffffff;
+}
+
+.value {
+  display: inline-block;
+  line-height: 100%;
+  min-width: 10px;
 }
 </style>
 
