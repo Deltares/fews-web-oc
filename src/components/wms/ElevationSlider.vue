@@ -9,8 +9,7 @@
     @error="onError"
     @update:model-value="onInputChange"
     :keydownHook="onSliderKeydown"
-    :hideLabel="true"
-    lazy
+    hideLabel
     direction="btt"
     tooltip="always"
     tooltipPlacement="left"
@@ -41,6 +40,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, onMounted, watch } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/antd.css'
 
@@ -99,8 +99,12 @@ const onError = (err: Error) => {
 
 const onInputChange = (value: number) => {
   currentValue.value = value
-  emit('update:modelValue', value)
+  emitModelValue(value)
 }
+
+const emitModelValue = useDebounceFn((value: number) => {
+  emit('update:modelValue', value)
+}, 400)
 
 const onKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Enter') {
@@ -136,6 +140,7 @@ const acceptEdit = () => {
   } else {
     currentValue.value = editValue.value
   }
+  emitModelValue(currentValue.value)
   closeTooltip()
 }
 
