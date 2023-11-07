@@ -44,6 +44,7 @@ import { useTimeSeries } from '../../services/useTimeSeries/index.ts'
 import type { UseTimeSeriesOptions } from '../../services/useTimeSeries/index.ts'
 import { configManager } from '../../services/application-config'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { useSystemTimeStore } from '@/stores/systemTime'
 
 interface Props {
   config?: DisplayConfig
@@ -64,12 +65,15 @@ const props = withDefaults(defineProps<Props>(), {
   displayType: DisplayType.TimeSeriesChart,
 })
 
-const store = useUserSettingsStore()
+const settings = useUserSettingsStore()
+const store = useSystemTimeStore()
 
 const options = computed<UseTimeSeriesOptions>(() => {
   return {
-    useDisplayUnits: store.useDisplayUnits,
-    convertDatum: store.convertDatum,
+    useDisplayUnits: settings.useDisplayUnits,
+    convertDatum: settings.convertDatum,
+    startTime: store.startTime,
+    endTime: store.endTime,
   }
 })
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')

@@ -47,6 +47,7 @@
       </template>
       <div id="app-bar-content"></div>
       <v-spacer />
+      <time-control-menu></time-control-menu>
       <user-settings-menu />
     </v-app-bar>
     <v-main id="main">
@@ -76,6 +77,8 @@ import { Alert, useAlertsStore } from '../stores/alerts.ts'
 import { useRoute } from 'vue-router'
 import LoginComponent from '../views/auth/LoginComponent.vue'
 import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
+import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
+
 import { configManager } from '@/services/application-config'
 
 const configStore = useConfigStore()
