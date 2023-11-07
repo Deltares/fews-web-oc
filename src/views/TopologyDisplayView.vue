@@ -11,15 +11,24 @@
   <Teleport to="#app-bar-content">
     <v-tabs v-model="activeTab" class="d-flex flex-shrink-0">
       <v-tab
-        v-for="displayTab in displayTabs"
-        :key="displayTab.id"
-        :href="displayTab.href"
-        :target="displayTab.target"
-        :to="displayTab.to"
+        v-for="tab in displayTabs"
+        :key="tab.id"
+        :href="tab.href"
+        :target="tab.target"
+        :to="tab.to"
       >
-        {{ displayTab.title }}
+        {{ tab.title }}
+        <v-icon v-if="tab.href">mdi-share</v-icon>
       </v-tab>
     </v-tabs>
+    <v-btn
+      v-if="externalLink"
+      :href="externalLink"
+      target="_blank"
+      variant="text"
+      class="flex-0-0 align-self-center"
+      >Link<v-icon>mdi-share</v-icon></v-btn
+    >
   </Teleport>
   <router-view></router-view>
 </template>
@@ -58,6 +67,7 @@ const items = ref<ColumnItem[]>([])
 
 const activeTab = ref(0)
 const displayTabs = ref<DisplayTab[]>([])
+const externalLink = ref<string>('')
 
 watch(
   () => props.nodeId,
@@ -95,6 +105,7 @@ function recursiveUpdateNode(nodes: TopologyNode[]) {
         id: node.id,
         name: node.name,
         icon: getIcon(node),
+        href: getUrl(node),
       }
       if (node.topologyNodes) {
         result.children = recursiveUpdateNode(node.topologyNodes)
@@ -104,7 +115,12 @@ function recursiveUpdateNode(nodes: TopologyNode[]) {
 }
 
 function getIcon(node: TopologyNode): string | undefined {
-  if (node.url && node.mainPanel === WEB_BROWSER_DISPLAY) return 'mdi-share'
+  if (node.url && !node.topologyNodes && !node.displayGroups) return 'mdi-share'
+  return undefined
+}
+
+function getUrl(node: TopologyNode): string | undefined {
+  if (node.url && !node.topologyNodes && !node.displayGroups) return node.url
   return undefined
 }
 
@@ -164,12 +180,7 @@ watchEffect(() => {
     })
   }
   if (node.url !== undefined) {
-    _displayTabs.push({
-      id: urlTabId,
-      title: 'Link',
-      href: node.url,
-      target: node.url,
-    })
+    externalLink.value = node.url
   }
   displayTabs.value = _displayTabs
 
