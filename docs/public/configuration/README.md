@@ -9,9 +9,10 @@ Key files in the FEWS Configuration to get started with Web OC are:
 - WebOperatorClient.xml (SystemConfigFiles). Configure available Web OC components as well as general items like title and logo: https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client
 - WebServices.xml (PiServiceConfigFiles). Web OC highly depends on what data is made available through FewsWebServices, Use this configuration file to configure a filterId, permissions etc.: https://publicwiki.deltares.nl/pages/viewpage.action?pageId=220266993
 
-Please note that Web OC will always use the system time of the Web OC users device as Web OC system time. This time setting can not be modified by Web OC configuration.
-
 Although Web OC will run without any further adjustments to the Delft-FEWS configuration, its strongly recommended to spend some time on your Topology configuration in relation to Web OC (see below).
+
+### System time
+Please note that Web OC will always use the system time of the Web OC users device as Web OC system time. This time setting can not be modified by Web OC configuration.
 
 ## Web OC navigation using Topology
 - While the Web OC does not aim to become a copy of the "thick" client, it is explicitly built based on the underlying FEWS configuration. Think of items such as display groups, SSD, filters, grid plots, etc.
@@ -40,7 +41,7 @@ Web OC will show a map, displaying the configured plotId linked to the selected 
 
 **Filters**
 
-Web OC will show a map, displaying all locations configured in the filterId linked to the selected topology node. Locations are also listed in a drop down menu. Use the ```<filterId>``` item in Toplogy.xml to configure a filterId. By selecting a location on the map or from the list, time series graphs will be displayed for all parameters configured in Filters.xml for the linked filterId. Time series graphs are grouped by parameterGroup. The period shown in the graph corresponds to the configured relative view period of the time series in the Filters.xml 
+Web OC will show a map, displaying all locations configured in the filterId linked to the selected topology node. Locations are also listed in a drop down menu. Use the ```<filterId>``` item in Toplogy.xml to configure a filterId. By selecting a location on the map or from the list, time series graphs will be displayed for all parameters configured in Filters.xml for the linked filterId. Time series graphs are grouped by parameterGroup. The period shown in the graph corresponds to the configured relative view period (relative to Web OC system time) of the time series in the Filters.xml 
 
 **Web Browser**
 
