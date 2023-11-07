@@ -9,12 +9,16 @@
       class="elevation-1"
     >
       <template v-slot:[`item.lastImportTime`]="{ item }">
-        <v-chip :color="item.lastImportTimeBackgroundColor" light small
+        <v-chip
+          size="small"
+          :color="item.lastImportTimeBackgroundColor"
+          light
+          small
           >{{ item.lastImportTime }}
         </v-chip>
       </template>
       <template v-slot:[`item.fileFailed`]="{ item }">
-        <v-chip :color="getColor(item.fileFailed)" light small>
+        <v-chip size="small" :color="getColor(item.fileFailed)" light small>
           {{ item.fileFailed }}
         </v-chip>
       </template>
