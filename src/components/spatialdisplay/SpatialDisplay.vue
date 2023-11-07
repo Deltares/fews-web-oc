@@ -99,7 +99,8 @@ watch(
       if (currentElevation.value < min) currentElevation.value = min
       minElevation.value = min
       maxElevation.value = max
-      elevationUnit.value = (layer.elevation as ElevationWithUnitSymbol).unitSymbol ?? ''
+      elevationUnit.value =
+        (layer.elevation as ElevationWithUnitSymbol).unitSymbol ?? ''
     }
   },
   { immediate: true },
