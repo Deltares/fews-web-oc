@@ -12,7 +12,6 @@ import { point } from '@turf/helpers'
 import { LngLatBounds } from 'mapbox-gl'
 import { GetLegendGraphicResponse } from '@deltares/fews-wms-requests/src/response/getLegendGraphicResponse.ts'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-
 export interface UseWmsReturn {
   selectedLayer: Ref<Layer | undefined>
   legendGraphic: Ref<GetLegendGraphicResponse | undefined>
@@ -22,6 +21,7 @@ export interface UseWmsReturn {
 export function useWmsLayer(
   baseUrl: string,
   layerName: MaybeRefOrGetter<string>,
+  useDisplayUnits: MaybeRefOrGetter<boolean>,
 ): UseWmsReturn {
   const legendGraphic = ref<GetLegendGraphicResponse>()
   const wmsUrl = `${baseUrl}/wms`
@@ -76,10 +76,12 @@ export function useWmsLayer(
 
   async function loadLegend(): Promise<void> {
     const _layers = toValue(layerName)
+    const _useDisplayUnits = toValue(useDisplayUnits)
     if (_layers === '') return
     try {
       legendGraphic.value = await wmsProvider.getLegendGraphic({
         layers: _layers,
+        useDisplayUnits: _useDisplayUnits,
       })
     } catch (error) {
       console.error(error)

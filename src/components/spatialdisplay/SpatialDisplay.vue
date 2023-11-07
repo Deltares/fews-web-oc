@@ -42,6 +42,7 @@ import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
+import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -65,12 +66,15 @@ onBeforeMount(() => {
   })
 })
 
+const settings = useUserSettingsStore()
+
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const dateController = new DateController([])
 
 const { selectedLayer, legendGraphic, times } = useWmsLayer(
   baseUrl,
   () => props.layerName,
+  () => settings.useDisplayUnits,
 )
 
 const currentElevation = ref<number>(0)
