@@ -12,25 +12,35 @@
     </v-toolbar>
     <v-window v-model="currentLevel">
       <v-window-item v-for="(item, i) in stack" v-bind:key="i">
-        <v-list-item
-          v-for="child in item.children"
-          v-bind:key="child.id"
-          @click="
-            (event) => {
-              onItemClick(event, child)
-            }
-          "
-          :to="child.to"
-          :href="child.href"
-          :target="child.target"
-          :class="getClass(child)"
-        >
-          <v-list-item-title>{{ child.name }}</v-list-item-title>
-          <template v-slot:append>
-            <v-icon v-if="child.children">mdi-chevron-right</v-icon>
-            <v-icon v-else-if="child.icon" small>{{ child.icon }}</v-icon>
-          </template>
-        </v-list-item>
+        <template v-for="child in item.children" v-bind:key="child.id">
+          <v-list-item
+            v-if="child.href"
+            :href="child.href"
+            target="_blank"
+            :class="getClass(child)"
+          >
+            <v-list-item-title>{{ child.name }}</v-list-item-title>
+            <template v-slot:append>
+              <v-icon>mdi-share</v-icon>
+            </template>
+          </v-list-item>
+          <v-list-item
+            v-else
+            @click="
+              (event) => {
+                onItemClick(event, child)
+              }
+            "
+            :to="child.to"
+            :class="getClass(child)"
+          >
+            <v-list-item-title>{{ child.name }}</v-list-item-title>
+            <template v-slot:append>
+              <v-icon v-if="child.children">mdi-chevron-right</v-icon>
+              <v-icon v-else-if="child.icon" small>{{ child.icon }}</v-icon>
+            </template>
+          </v-list-item>
+        </template>
       </v-window-item>
     </v-window>
   </div>
