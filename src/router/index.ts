@@ -137,14 +137,14 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     meta: { authorize: [], sidebar: true },
     children: [
       {
-        path: '/topology/node/:nodeId/series/',
+        path: '/topology/node/:nodeId?/series/',
         name: 'TopologyTimeSeries',
         component: TimeSeriesDisplay,
         props: true,
         meta: { authorize: [], sidebar: true },
       },
       {
-        path: '/topology/node/:nodeId/map/:layerName?',
+        path: '/topology/node/:nodeId?/map/:layerName?',
         name: 'TopologySpatialDisplay',
         component: SpatialDisplay,
         props: true,
