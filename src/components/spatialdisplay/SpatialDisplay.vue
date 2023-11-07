@@ -5,7 +5,7 @@
     <MapComponent>
       <animated-mapbox-layer :layer="layerOptions" />
     </MapComponent>
-    <div class="colourbar">
+    <div class="colourbar-container">
       <ColourBar :colourMap="legend" />
     </div>
     <DateTimeSlider
@@ -105,7 +105,7 @@ function updateTime(date: Date): void {
 </script>
 
 <style scoped>
-.colourbar {
+.colourbar-container {
   font-size: 0.825em;
   z-index: 1000;
   background-color: none;
