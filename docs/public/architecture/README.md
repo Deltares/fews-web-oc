@@ -11,6 +11,20 @@ Diagram below shows the software architecture of the Web OC in relation to Delft
 
 ![Web OC diagram](./web_oc_diagram.png)
 
+## Technical framework
+
+The following software frameworks are used to develop Web OC
+
+|              | Delft-FEWS Web OC         |
+| ------------ | ------------------------- |
+| Language     | Typescript and Javascript |
+| Framework    | Vue.js (Vue 3)            |
+| UI Framework | Vuetify3 + Vite           |
+| Maps         | Mapbox                    |
+| Charts       | d3js + custom, eCharts    |
+
+*Please note that we are currently in the proces of migrating Web OC from the Vue 2 to Vue 3 framework*.
+
 ## Licensing and Software distribution
  
 Components 1 (Delft-FEWS database) and 2 (FewsWebServices API) in the diagram above are already part of the Delft-FEWS software suite. The license under which these components are made available and the manner in which they are provided will not change with introduction of the Web OC. Additionally, Deltares intends to offer new components 3 to 6 as in addition to the current Delft-FEWS software:

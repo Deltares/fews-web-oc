@@ -37,18 +37,14 @@ Key assumptions regarding the development process are:
 | Time Period | Activities |
 |-------------|------------|
 | 2020 Q4     | International User Days. Presenting Web OC plans: [Vision 2025](https://oss.deltares.nl/web/delft-fews/vision-2025). |
-| 2021 Q1-Q2  | Define use-cases and key assumptions and MVP. |
-|             | First steps towards technical architecture: Involve both Deltares and external colleagues. |
-| 2021 Q3-Q4  | Start development work. |
-| 2021 Q4     | International User Days. Present architecture and 3rd party collaboration.|
-|             | Interactive sessions on key functionality. |
-| 2022 Q1     | Third-party testing of reusability Web OC building blocks. |
-| 2022 Q1-Q4  | Continuation of development work. |
-|             | User feedback session during CSB meeting and NL/INT User Days. |
-| 2022 Q4     | International User Days. Demonstration / Plug & Play session Web OC / UI/UX Design session. |
-| 2023 Q1-Q4  | Continuation of development work. |
-| 2023 Q4     | International User Days. Presentation status Web OC Developments. |
-|             | 2023.02 Delft-FEWS Web OC MVP Release. Software available on [GitHub](https://github.com/Deltares/fews-web-oc). |
+| 2021        | Define use-cases and key assumptions and MVP.<br>First steps towards technical architecture: Involve both Deltares and external colleagues. |
+|             | Start development work. |
+|             | International User Days. Present architecture and 3rd party collaboration.<br>Interactive sessions on key functionality.|
+| 2022        | Third-party testing of reusability Web OC building blocks. |
+|             | Continuation of development work.<br>User feedback session during CSB meeting and NL/INT User Days. |
+|             | International User Days. Demonstration / Plug & Play session Web OC / UI/UX Design session. |
+| 2023        | Continuation of development work. |
+|             | International User Days. Presentation status Web OC Developments.<br>Dec 2023 **2023.02 Delft-FEWS Web OC MVP Release.** Software available on [GitHub](https://github.com/Deltares/fews-web-oc). |
 | 2024 onwards| Web OC Development in line with the current Delft-FEWS business model. |
 
 ## Present status
