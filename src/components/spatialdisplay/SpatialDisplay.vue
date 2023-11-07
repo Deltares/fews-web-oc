@@ -13,8 +13,8 @@
         :unit="elevationUnit"
       ></ElevationSlider>
     </MapComponent>
-    <div class="colourbar">
-      <ColourBar :colourMap="legend" />
+    <div class="colourbar-container">
+      <ColourBar :colourMap="legend" :title="legendTitle" />
     </div>
     <DateTimeSlider
       v-model:selectedDate="currentTime"
@@ -110,6 +110,14 @@ watch(currentElevation, () => {
   setLayerOptions()
 })
 
+const legendTitle = computed(() => {
+  if (!selectedLayer.value) return ''
+  const unitString = legendGraphic.value?.unit
+    ? ` [${legendGraphic.value?.unit}]`
+    : ''
+  return `${selectedLayer.value?.title}${unitString}`
+})
+
 watch(times, () => {
   const timesValue = times.value
   if (timesValue) {
@@ -151,11 +159,12 @@ function updateTime(date: Date): void {
 </script>
 
 <style scoped>
-.colourbar {
+.colourbar-container {
+  position: absolute;
+  pointer-events: none;
   font-size: 0.825em;
   z-index: 1000;
   background-color: none;
-  position: absolute;
   bottom: 80px;
 }
 

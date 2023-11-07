@@ -108,14 +108,6 @@ function attachLayersToMenu(
 </script>
 
 <style scoped>
-.colourbar {
-  font-size: 0.825em;
-  z-index: 1000;
-  background-color: none;
-  position: absolute;
-  bottom: 80px;
-}
-
 .container {
   display: flex;
   flex-direction: column;
