@@ -32,7 +32,7 @@ Key assumptions regarding the development process are:
 - An initial Minimum Viable Product (MVP) version of the Web OC will likely include functionality to: 1) visualize data (time series, map fields, SCADA displays, also including associated information such as thresholds), 2) dispatching jobs, 3) visualize monitoring information, 4). Aanpassen, link naar presentaties
 - Deltares will provide long-term support on the Web OC.
 
-## Project time line
+## Project timeline
 
 | Time Period | Activities |
 |-------------|------------|
