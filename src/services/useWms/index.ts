@@ -81,6 +81,8 @@ export function useWmsLayer(
     try {
       legendGraphic.value = await wmsProvider.getLegendGraphic({
         layers: _layers,
+        // Enable when fews-wms-requests is updated
+        //@ts-ignore
         useDisplayUnits: _useDisplayUnits,
       })
     } catch (error) {
