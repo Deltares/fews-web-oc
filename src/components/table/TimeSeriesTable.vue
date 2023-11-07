@@ -51,7 +51,10 @@
             :class="`flag-background-color--${item[id].flag}`"
           ></div>
           <span class="value">{{ item[id].value }}</span>
-          <span v-if="item[id].comment" class="mdi mdi-comment-outline"></span>
+          <span
+            v-if="item[id].comment"
+            class="comment-icon mdi mdi-comment-outline"
+          ></span>
         </span>
       </template>
       <template #bottom></template>
@@ -163,11 +166,6 @@ const hideTooltip = (event: any) => {
 </script>
 
 <style scoped>
-.mdi {
-  margin: 2px;
-  color: #9e9e9e;
-}
-
 .table-container {
   display: flex;
   flex: 1 1 100%;
@@ -247,7 +245,14 @@ th.sticky-column {
   z-index: -1;
   width: 100%;
   display: inline-block;
+  min-width: 80px;
 }
+
+.comment-icon {
+  margin: 2px;
+  color: #9e9e9e;
+}
+
 .value {
   display: inline-block;
   line-height: 100%;

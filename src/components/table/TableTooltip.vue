@@ -7,10 +7,10 @@
     <v-icon>mdi-access-point</v-icon>
     {{ props.flagSource }}
   </div>
-  <div v-show="props.user"><v-icon>mdi-account</v-icon> {{ props.user }}</div>
   <div v-show="props.comment">
     <v-icon>mdi-comment</v-icon> {{ props.comment }}
   </div>
+  <div v-show="props.user"><v-icon>mdi-account</v-icon> {{ props.user }}</div>
 </template>
 
 <script setup lang="ts">
