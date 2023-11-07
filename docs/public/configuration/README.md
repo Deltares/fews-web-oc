@@ -31,9 +31,9 @@ Topology nodes in the Web OC component TopologyDisplay can be linked using Topol
 | Filters                   | FilterId        | Yes                  | Yes                |
 | Web Browser               | url             | Yes                  | Yes                |
 | DisplayGroup              | DisplayGroupId  | Yes                  | Yes                |
-| Run Task                  | WorkFlowId      | Yes                  | No                 |
-| SchematicStatusDisplay    | PanelId         | No                   | No                 |
-| System Monitor            | TabId           | No                   | No                 |
+| Run Task                  | WorkFlowId      | Yes                  | Not yet            |
+| SchematicStatusDisplay    | PanelId         | 2024.01              | Not yet            |
+| System Monitor            | TabId           | 2024.01              | No yet             |
 
 **Spatial Display**
 
