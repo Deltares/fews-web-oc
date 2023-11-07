@@ -6,7 +6,7 @@
       <animated-mapbox-layer :layer="layerOptions" />
     </MapComponent>
     <div class="colourbar-container">
-      <ColourBar :colourMap="legend" />
+      <ColourBar :colourMap="legend" :title="legendTitle" />
     </div>
     <DateTimeSlider
       v-model:selectedDate="currentTime"
@@ -63,6 +63,14 @@ let debouncedSetLayerOptions!: () => void
 
 const legend = computed(() => {
   return legendGraphic.value?.legend
+})
+
+const legendTitle = computed(() => {
+  if (!selectedLayer.value) return ''
+  const unitString = legendGraphic.value?.unit
+    ? ` [${legendGraphic.value?.unit}]`
+    : ''
+  return `${selectedLayer.value?.title}${unitString}`
 })
 
 watch(times, () => {
