@@ -29,7 +29,10 @@ watch(
 
 onMounted(() => {
   const svg = d3.select('#colourbar')
-  group = svg.append('g').attr('transform', 'translate(10, 0)')
+  group = svg
+    .append('g')
+    .attr('transform', 'translate(10, 5)')
+    .style('pointer-events', 'visiblePainted')
   updateColourBar()
 })
 
@@ -58,8 +61,8 @@ function updateColourBar() {
 
 .colourbar {
   fill: none;
-  width: 265px;
-  height: 31px;
+  width: 300px;
+  height: 35px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;

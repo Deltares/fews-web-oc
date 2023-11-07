@@ -152,10 +152,11 @@ function updateTime(date: Date): void {
 
 <style scoped>
 .colourbar-container {
+  position: absolute;
+  pointer-events: none;
   font-size: 0.825em;
   z-index: 1000;
   background-color: none;
-  position: absolute;
   bottom: 80px;
 }
 
