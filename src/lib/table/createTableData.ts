@@ -2,11 +2,9 @@ import type { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { uniqWith } from 'lodash'
 import { SeriesData } from '../timeseries/types/SeriesData'
-import { getFlagColor } from '@/lib/fews-properties/fewsProperties'
 
 interface TableSeriesData extends Omit<SeriesData, 'x' | 'y'> {
   value: number | null
-  flagClass: string
   tooltip: boolean
 }
 /**
@@ -57,8 +55,7 @@ export function createTableData(
             value: event.y,
             flag: event.flag,
             flagSource: event.flagSource,
-            flagClass: getFlagColor(event.flag),
-            tooltip: event.flag !== undefined || event.comment !== undefined, 
+            tooltip: event.flag !== undefined || event.comment !== undefined,
             comment: event.comment,
             user: event.user,
           }

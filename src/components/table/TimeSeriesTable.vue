@@ -1,7 +1,7 @@
 <template>
   <div class="table-container">
     <v-tooltip v-model="tooltip" :activator="activator" :key="activator">
-      <table-tooltip v-bind="tooltipItem">/</table-tooltip>
+      <TableTooltip v-bind="tooltipItem">/</TableTooltip>
     </v-tooltip>
     <v-data-table
       class="data-table"
@@ -42,11 +42,14 @@
       <template v-for="id in seriesIds" v-slot:[`item.${id}`]="{ item }">
         <span
           v-if="item[id]"
-          style="z-index: -1; width: 100%; display: inline-block;"
+          class="table-cell-with-flag"
           @mouseenter="(event) => showTooltip(event, item[id])"
           @mouseleave="(event) => hideTooltip(event)"
         >
-          <div class="circle" :class="item[id].flagClass"></div>
+          <div
+            class="circle"
+            :class="`flag-background-color--${item[id].flag}`"
+          ></div>
           <span class="value">{{ item[id].value }}</span>
           <span v-if="item[id].comment" class="mdi mdi-comment-outline"></span>
         </span>
@@ -143,9 +146,9 @@ const showTooltip = (event: any, item: any) => {
   activator.value = `#${id}`
   tooltip.value = true
   tooltipItem.value = {
-    flag: store.getFlagName(item.flag),
+    flag: item.flag,
+    flagName: store.getFlagName(item.flag),
     flagSource: store.getFlagSourceName(item.flagSource),
-    flagClass: item.flagClass,
     user: item.user,
     comment: item.comment,
   }
@@ -240,22 +243,11 @@ th.sticky-column {
   margin: auto 2px;
 }
 
-.FFFF00 {
-  background-color: #ffff00;
+.table-cell-with-flag {
+  z-index: -1;
+  width: 100%;
+  display: inline-block;
 }
-.FF8000 {
-  background-color: #ff8000;
-}
-.FF0000 {
-  background-color: #ff0000;
-}
-.FFC800 {
-  background-color: #ffc800;
-}
-.FFFFFF {
-  background-color: #ffffff;
-}
-
 .value {
   display: inline-block;
   line-height: 100%;

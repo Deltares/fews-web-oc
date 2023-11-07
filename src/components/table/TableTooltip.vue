@@ -1,10 +1,10 @@
 <template>
-  <div v-show="props.flag" >
-    <v-icon :class="props.flagClass">mdi-flag-variant</v-icon>
-    {{ props.flag }}
+  <div v-show="props.flag">
+    <v-icon :class="`flag-color--${props.flag}`">mdi-flag-variant</v-icon>
+    {{ props.flagName }}
   </div>
   <div v-show="props.flagSource">
-    <v-icon :class="props.flagClass">mdi-access-point</v-icon>
+    <v-icon>mdi-access-point</v-icon>
     {{ props.flagSource }}
   </div>
   <div v-show="props.user"><v-icon>mdi-account</v-icon> {{ props.user }}</div>
@@ -16,35 +16,19 @@
 <script setup lang="ts">
 interface Props {
   flag?: string
+  flagName?: string
   flagSource?: string
-  flagClass?: string
   user?: string
   comment?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   flag: '',
+  flagName: '',
   flagSource: '',
-  flagClass: '',
   user: '',
   comment: '',
 })
 </script>
 
-<style scoped>
-.FFFF00 {
-  color: #ffff00;
-}
-.FF8000 {
-  color: #ff8000;
-}
-.FF0000 {
-  color: #ff0000;
-}
-.FFC800 {
-  color: #ffc800;
-}
-.FFFFFF {
-  color: #ffffff;
-}
-</style>
+<style scoped></style>
