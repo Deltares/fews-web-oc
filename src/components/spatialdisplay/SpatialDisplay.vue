@@ -3,7 +3,15 @@
     class="spatial-display d-flex flex-column flex-grow-1 flex-shrink-1 h-100"
   >
     <MapComponent>
-      <animated-mapbox-layer :layer="layerOptions" />
+      <animated-mapbox-layer :layer="layerOptions"> </animated-mapbox-layer>
+      <ElevationSlider
+        v-if="layerHasEleveation"
+        v-model="currentElevation"
+        :key="layerOptions?.name"
+        :min-value="minElevation"
+        :max-value="maxElevation"
+        :unit="elevationUnit"
+      ></ElevationSlider>
     </MapComponent>
     <div class="colourbar">
       <ColourBar :colourMap="legend" />
@@ -30,9 +38,17 @@ import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedMapboxLayer, {
   MapboxLayerOptions,
 } from '@/components/wms/AnimatedMapboxLayer.vue'
+import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
+
+interface ElevationWithUnitSymbol {
+  units?: string
+  lowerValue?: number
+  upperValue?: number
+  unitSymbol: string
+}
 
 interface Props {
   layerName?: string
@@ -57,12 +73,40 @@ const { selectedLayer, legendGraphic, times } = useWmsLayer(
   () => props.layerName,
 )
 
+const currentElevation = ref<number>(0)
+const minElevation = ref<number>(-Infinity)
+const maxElevation = ref<number>(Infinity)
+const elevationUnit = ref('')
+
 const currentTime = ref<Date>(new Date())
 const layerOptions = ref<MapboxLayerOptions>()
 let debouncedSetLayerOptions!: () => void
 
 const legend = computed(() => {
   return legendGraphic.value?.legend
+})
+const layerHasEleveation = computed(() => {
+  return selectedLayer.value?.elevation !== undefined
+})
+
+watch(
+  selectedLayer,
+  (layer) => {
+    if (layer?.elevation) {
+      const max = layer.elevation.upperValue ?? 0
+      const min = layer.elevation.lowerValue ?? 0
+      if (currentElevation.value > max) currentElevation.value = max
+      if (currentElevation.value < min) currentElevation.value = min
+      minElevation.value = min
+      maxElevation.value = max
+      elevationUnit.value = (layer.elevation as ElevationWithUnitSymbol).unitSymbol ?? ''
+    }
+  },
+  { immediate: true },
+)
+
+watch(currentElevation, () => {
+  setLayerOptions()
 })
 
 watch(times, () => {
@@ -93,6 +137,7 @@ function setLayerOptions(): void {
         ? convertBoundingBoxToLngLatBounds(selectedLayer.value.boundingBox)
         : undefined,
     }
+    layerOptions.value.elevation = currentElevation.value
   }
 }
 
