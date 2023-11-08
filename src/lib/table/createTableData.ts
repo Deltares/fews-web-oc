@@ -6,7 +6,7 @@ import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import type { TimeSeriesFlag } from '@deltares/fews-pi-requests'
 
 const store = useFewsPropertiesStore()
-interface TableSeriesData extends Omit<SeriesData, 'x' | 'y'> {
+export interface TableSeriesData extends Omit<SeriesData, 'x' | 'y'> {
   value: number | null
   tooltip: boolean
   flagOrigin?: TimeSeriesFlag['source']
@@ -18,13 +18,13 @@ interface TableSeriesData extends Omit<SeriesData, 'x' | 'y'> {
  * @param {ChartSeries[] | undefined} chartSeriesArray - The array with the chart configuration per series.
  * @param {Record<string, Series>} seriesRecord - The record of the time series.
  * @param {string[]} seriesIds - An array of series IDs.
- * @returns {Record<string, unknown>[]} - An array of records containing table data.
+ * @returns {Record<string, Partial<TableSeriesData> | string>[]} - An array of records containing table data.
  */
 export function createTableData(
   chartSeriesArray: ChartSeries[] | undefined,
   seriesRecord: Record<string, Series>,
   seriesIds: string[],
-): Record<string, unknown>[] {
+): Record<string, Partial<TableSeriesData> | string>[] {
   if (chartSeriesArray === undefined) return []
   const dateTimes = createDateTimes(chartSeriesArray, seriesRecord)
 
@@ -46,7 +46,7 @@ export function createTableData(
   })
 
   const data = dateTimes.map((date: Date) => {
-    const result: any = {}
+    const result: Record<string, Partial<TableSeriesData> | string> = {}
     result.date = dateFormatter.format(date)
     for (const j in chartSeries) {
       const s = chartSeries[j]
