@@ -10,7 +10,7 @@
             :key="index"
             :disabled="setting?.disabled"
           >
-            <v-col class="d-flex align-self-center">
+            <v-col class="d-flex align-self-center" cols="4">
               {{ setting.label }}
             </v-col>
             <v-col class="d-flex justify-end">
