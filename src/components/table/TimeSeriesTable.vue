@@ -14,6 +14,15 @@
       height="100%"
       :footer-props="{ disablePagination: true, disableItemsPerPage: true }"
     >
+      <template v-slot:top>
+        <v-toolbar v-if="isEditing" density="compact" variant="flat">
+          <v-toolbar-title> Edit data</v-toolbar-title>
+          <v-spacer>
+            <v-btn append-icon="mdi-content-save-outline" disabled>Save</v-btn>
+            <v-btn append-icon="mdi-close" @click="stopEdit()">Cancel</v-btn>
+          </v-spacer>
+        </v-toolbar>
+      </template>
       <template v-slot:headers="{ columns }">
         <tr>
           <template v-for="column in columns" :key="column.key">
@@ -24,17 +33,37 @@
               <div class="table-header-indicator">
                 <div class="table-header-indicator-text">
                   <span>{{ column.title }}</span>
-                  <v-btn
-                    v-if="(column as TableHeaders).editable"
-                    size="x-small"
-                    variant="text"
-                    icon="mdi-pencil"
-                    @click="
-                      (event: Event) => {
-                        editTimeSeries(event, column.key)
-                      }
-                    "
-                  ></v-btn>
+                  <template v-if="(column as TableHeaders).editable">
+                    <template v-if="isEditingTimeSeries(column.key as string)">
+                      <v-btn
+                        size="x-small"
+                        variant="text"
+                        icon="mdi-content-save"
+                        disabled
+                      ></v-btn>
+                      <v-btn
+                        size="x-small"
+                        variant="text"
+                        icon="mdi-pencil-off"
+                        @click="
+                          (event: Event) => {
+                            stopEditTimeSeries(event, column.key as string)
+                          }
+                        "
+                      ></v-btn>
+                    </template>
+                    <v-btn
+                      v-else
+                      size="x-small"
+                      variant="text"
+                      icon="mdi-pencil"
+                      @click="
+                        (event: Event) => {
+                          editTimeSeries(event, column.key as string)
+                        }
+                      "
+                    ></v-btn>
+                  </template>
                 </div>
                 <div
                   class="table-header-indicator-color"
@@ -217,9 +246,25 @@ const hideTooltip = (event: any) => {
   tooltip.value = false
 }
 
-function editTimeSeries(event: Event, seriesId: string | null) {
+function editTimeSeries(event: Event, seriesId: string) {
   isEditing.value = true
   if (seriesId !== null) editedSeriesIds.value.push(seriesId)
+}
+
+function stopEdit() {
+  isEditing.value = false
+  editedSeriesIds.value = []
+}
+
+function stopEditTimeSeries(event: Event, seriesId: string) {
+  const index = editedSeriesIds.value.indexOf(seriesId)
+  if (index > -1) editedSeriesIds.value.splice(index, 1)
+  if (editedSeriesIds.value.length === 0) isEditing.value = false
+}
+
+function isEditingTimeSeries(seriesId: string) {
+  if (seriesId === null) return false
+  return editedSeriesIds.value.includes(seriesId)
 }
 </script>
 
