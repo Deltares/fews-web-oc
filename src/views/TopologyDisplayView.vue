@@ -47,6 +47,7 @@ const WEB_BROWSER_DISPLAY: string = 'web browser display'
 
 interface Props {
   nodeId?: string
+  layerName?: string
 }
 
 interface DisplayTab {
