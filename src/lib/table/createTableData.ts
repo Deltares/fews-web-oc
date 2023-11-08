@@ -2,10 +2,15 @@ import type { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { uniqWith } from 'lodash'
 import { SeriesData } from '../timeseries/types/SeriesData'
+import { useFewsPropertiesStore } from '@/stores/fewsProperties'
+import type { TimeSeriesFlag } from '@deltares/fews-pi-requests'
 
+const store = useFewsPropertiesStore()
 interface TableSeriesData extends Omit<SeriesData, 'x' | 'y'> {
   value: number | null
   tooltip: boolean
+  flagOrigin?: TimeSeriesFlag['source']
+  flagQuality?: TimeSeriesFlag['quality']
 }
 /**
  *
@@ -57,6 +62,13 @@ export function createTableData(
             tooltip: event.flag !== undefined || event.comment !== undefined,
             comment: event.comment,
             user: event.user,
+          }
+          if (event.flag !== undefined && store.flags !== undefined) {
+            const flag = store.flags[event.flag]
+            if (flag !== undefined) {
+              eventResult.flagOrigin = flag.source
+              eventResult.flagQuality = flag.quality
+            }
           }
           pointers[j]++
         }

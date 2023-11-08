@@ -22,9 +22,20 @@
               :class="(column as TableHeaders).class"
             >
               <div class="table-header-indicator">
-                <span class="table-header-indicator-text">{{
-                  column.title
-                }}</span>
+                <div class="table-header-indicator-text">
+                  <span>{{ column.title }}</span>
+                  <v-btn
+                    v-if="(column as TableHeaders).editable"
+                    size="x-small"
+                    variant="text"
+                    icon="mdi-pencil"
+                    @click="
+                      (event: Event) => {
+                        editTimeSeries(event, column.key)
+                      }
+                    "
+                  ></v-btn>
+                </div>
                 <div
                   class="table-header-indicator-color"
                   :style="{
@@ -40,22 +51,59 @@
         <span class="sticky-column">{{ item.date }}</span>
       </template>
       <template v-for="id in seriesIds" v-slot:[`item.${id}`]="{ item }">
-        <span
-          v-if="item[id]"
-          class="table-cell-with-flag"
-          @mouseenter="(event) => showTooltip(event, item[id])"
-          @mouseleave="(event) => hideTooltip(event)"
+        <!-- Table cell when editing data -->
+        <div
+          v-if="
+            isEditing &&
+            editedSeriesIds.length > 0 &&
+            editedSeriesIds.includes(id)
+          "
+          class="table-cell-editable"
         >
-          <div
-            class="circle"
-            :class="`flag-background-color--${item[id].flag}`"
-          ></div>
-          <span class="value">{{ item[id].value }}</span>
+          <input
+            :ref="`${item.date}-${id}-value`"
+            v-model.number="item[id].value"
+            class="table-cell-input"
+            type="number"
+          />
+          <select
+            :ref="`${item.date}-${id}-flagquality`"
+            class="table-cell-input"
+          >
+            <option
+              v-for="flagQuality in store.flagQualities"
+              :key="flagQuality as string"
+              :value="flagQuality"
+            >
+              {{ flagQuality }}
+            </option>
+          </select>
+          <input
+            :ref="`${item.date}-${id}-comment`"
+            v-model="item[id].comment"
+            class="table-cell-input"
+            type="text"
+          />
+        </div>
+        <!-- Table cell when not editing data. Shows additional info about flags. -->
+        <template v-else>
           <span
-            v-if="item[id].comment"
-            class="comment-icon mdi mdi-comment-outline"
-          ></span>
-        </span>
+            v-if="item[id]"
+            class="table-cell-with-flag"
+            @mouseenter="(event) => showTooltip(event, item[id])"
+            @mouseleave="(event) => hideTooltip(event)"
+          >
+            <div
+              class="circle"
+              :class="`flag-background-color--${item[id].flag}`"
+            ></div>
+            <span class="value">{{ item[id].value }}</span>
+            <span
+              v-if="item[id].comment"
+              class="comment-icon mdi mdi-comment-outline"
+            ></span>
+          </span>
+        </template>
       </template>
       <template #bottom></template>
       <!-- hide footer -->
@@ -94,7 +142,9 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const store = useFewsPropertiesStore()
-store.loadFlags()
+store.loadFlags().then(() => {
+  store.setFlagQualities()
+})
 store.loadFlagSources()
 
 const seriesIds = ref<string[]>([])
@@ -103,6 +153,9 @@ const tooltipItem = ref<any>({})
 const activator = ref<string>('')
 const tableData = ref<Record<string, unknown>[]>([])
 const tableHeaders = ref<TableHeaders[]>([])
+
+const isEditing = ref<boolean>(false)
+const editedSeriesIds = ref<string[]>([])
 
 onBeforeMount(() => {
   if (props.config !== undefined) {
@@ -162,6 +215,11 @@ const hideTooltip = (event: any) => {
   element.id = null
   activator.value = ''
   tooltip.value = false
+}
+
+function editTimeSeries(event: Event, seriesId: string | null) {
+  isEditing.value = true
+  if (seriesId !== null) editedSeriesIds.value.push(seriesId)
 }
 </script>
 
@@ -246,6 +304,21 @@ th.sticky-column {
   width: 100%;
   display: inline-block;
   min-width: 80px;
+}
+
+.table-cell-editable {
+  z-index: -1;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  min-width: 240px;
+}
+
+.table-cell-input {
+  display: flex;
+  line-height: 100%;
+  min-width: 80px;
+  color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
 }
 
 .comment-icon {
