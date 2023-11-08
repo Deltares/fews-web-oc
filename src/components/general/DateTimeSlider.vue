@@ -14,7 +14,7 @@
       <div class="now-tracking-control">
         <v-btn
           density="compact"
-          variant="flat"
+          variant="text"
           :icon="nowButtonIcon"
           :color="nowButtonColor"
           @click="toggleFollowNow"
@@ -25,21 +25,21 @@
       <div class="play-controls">
         <v-btn
           density="compact"
-          variant="flat"
+          variant="text"
           icon="mdi-skip-previous"
           @mousedown="stepBackward"
           @mouseup="stopPlay"
         />
         <v-btn
           density="compact"
-          variant="flat"
+          variant="text"
           :icon="playButtonIcon"
           :color="playButtonColor"
           @click="togglePlay"
         />
         <v-btn
           density="compact"
-          variant="flat"
+          variant="text"
           icon="mdi-skip-next"
           @mousedown="stepForward"
           @mouseup="stopPlay"
@@ -240,7 +240,7 @@ function increment(step: number): void {
 
 .selected-date {
   margin: auto;
-  width: 30ch;
+  width: 20ch;
   flex: 2 0 20%;
 }
 
