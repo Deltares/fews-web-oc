@@ -12,6 +12,7 @@ export function createTableHeaders(
     title: 'Date',
     minWidth: '24ch',
     class: 'table-header sticky-column',
+    editable: false,
   })
   seriesIds.forEach((seriesId) => {
     const chartSeries = chartSeriesArray.find((s) => s.id === seriesId)
@@ -21,6 +22,7 @@ export function createTableHeaders(
         title: formatHeader(chartSeries),
         color: chartSeries.style.stroke?.toString(),
         class: 'table-header',
+        editable: true,
       })
     }
   })
