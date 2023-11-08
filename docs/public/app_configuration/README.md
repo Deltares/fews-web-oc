@@ -14,4 +14,6 @@ The following settings can be provided:
 | `VUE_APP_AUTH_METADATA_URL`             | Url of the OIDC meta data, e.g. "https://login.microsoftonline.com/MYTENANTID/v2.0/.well-known/openid-configuration". |
 | `VUE_APP_AUTH_SCOPE`                    | Scope, e.g. "openid profile email Offline_Access api://myclientid/Delft-FEWSWebServices".                             |
 | `VUE_APP_REQUEST_HEADER_AUTHORIZATION`  | Url of the OIDC meta data, e.g. "https://login.microsoftonline.com/MYTENANTID/v2.0/.well-known/openid-configuration". |
-| `VUE_APP_MAPBOX_TOKEN`                   | Mapbox token. Can be retrieved from: https://account.mapbox.com/access-tokens. 
+| `VUE_APP_MAPBOX_TOKEN`                   | Mapbox token. Can be retrieved from: https://account.mapbox.com/access-tokens.                                       |
+
+Note in the Vue 3 version all settings should use `VITE_` instead off `VUE_APP_`.
