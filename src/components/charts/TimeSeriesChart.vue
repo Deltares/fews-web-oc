@@ -104,8 +104,8 @@ onMounted(() => {
       },
     ],
     margin: {
-      left: 80,
-      right: 80,
+      left: 50,
+      right: 50,
     },
   }
 
