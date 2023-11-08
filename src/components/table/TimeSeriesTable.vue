@@ -81,58 +81,23 @@
       </template>
       <template v-for="id in seriesIds" v-slot:[`item.${id}`]="{ item }">
         <!-- Table cell when editing data -->
-        <div
+        <TableCellEdit
           v-if="
             isEditing &&
             editedSeriesIds.length > 0 &&
             editedSeriesIds.includes(id)
           "
-          class="table-cell-editable"
-        >
-          <input
-            :ref="`${item.date}-${id}-value`"
-            v-model.number="item[id].value"
-            class="table-cell-input"
-            type="number"
-          />
-          <select
-            :ref="`${item.date}-${id}-flagquality`"
-            class="table-cell-input"
-          >
-            <option
-              v-for="flagQuality in store.flagQualities"
-              :key="flagQuality as string"
-              :value="flagQuality"
-            >
-              {{ flagQuality }}
-            </option>
-          </select>
-          <input
-            :ref="`${item.date}-${id}-comment`"
-            v-model="item[id].comment"
-            class="table-cell-input"
-            type="text"
-          />
-        </div>
+          :id="id"
+          :item="item"
+        ></TableCellEdit>
         <!-- Table cell when not editing data. Shows additional info about flags. -->
-        <template v-else>
-          <span
-            v-if="item[id]"
-            class="table-cell-with-flag"
-            @mouseenter="(event) => showTooltip(event, item[id])"
-            @mouseleave="(event) => hideTooltip(event)"
-          >
-            <div
-              class="circle"
-              :class="`flag-background-color--${item[id].flag}`"
-            ></div>
-            <span class="value">{{ item[id].value }}</span>
-            <span
-              v-if="item[id].comment"
-              class="comment-icon mdi mdi-comment-outline"
-            ></span>
-          </span>
-        </template>
+        <TableCell
+          v-else
+          :id="id"
+          :item="item"
+          @mouseenter="(event) => showTooltip(event, item[id])"
+          @mouseleave="(event) => hideTooltip(event)"
+        ></TableCell>
       </template>
       <template #bottom></template>
       <!-- hide footer -->
@@ -149,9 +114,14 @@ import { Series } from '@/lib/timeseries/timeSeries'
 import { getUniqueSeriesIds } from '@/lib/charts/getUniqueSeriesIds'
 import type { TableHeaders } from '@/lib/table/types/TableHeaders'
 import { createTableHeaders } from '@/lib/table/createTableHeaders'
-import { createTableData } from '@/lib/table/createTableData'
+import {
+  type TableSeriesData,
+  createTableData,
+} from '@/lib/table/createTableData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import { onBeforeMount } from 'vue'
+import TableCellEdit from '@/components/table/TableCellEdit.vue'
+import TableCell from '@/components/table/TableCell.vue'
 
 interface Props {
   config: ChartConfig
@@ -180,7 +150,7 @@ const seriesIds = ref<string[]>([])
 const tooltip = ref<boolean>(false)
 const tooltipItem = ref<any>({})
 const activator = ref<string>('')
-const tableData = ref<Record<string, unknown>[]>([])
+const tableData = ref<Record<string, Partial<TableSeriesData> | string>[]>([])
 const tableHeaders = ref<TableHeaders[]>([])
 
 const isEditing = ref<boolean>(false)
@@ -334,47 +304,6 @@ th.sticky-column {
   flex: 0 0 10px;
   width: 100%;
   margin-bottom: 5px;
-}
-
-.circle {
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  margin: auto 2px;
-}
-
-.table-cell-with-flag {
-  z-index: -1;
-  width: 100%;
-  display: inline-block;
-  min-width: 80px;
-}
-
-.table-cell-editable {
-  z-index: -1;
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  min-width: 240px;
-}
-
-.table-cell-input {
-  display: flex;
-  line-height: 100%;
-  min-width: 80px;
-  color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
-}
-
-.comment-icon {
-  margin: 2px;
-  color: #9e9e9e;
-}
-
-.value {
-  display: inline-block;
-  line-height: 100%;
-  min-width: 10px;
 }
 </style>
 
