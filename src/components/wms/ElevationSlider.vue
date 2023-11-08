@@ -169,9 +169,9 @@ watch(() => props.modelValue, onValueChange)
 }
 
 .elevation-slider {
-  z-index: 100;
+  z-index: 2000;
   position: absolute;
-  right: 20px;
+  right: 5px;
   bottom: 100px;
 }
 
