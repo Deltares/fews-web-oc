@@ -4,6 +4,9 @@
   >
     <MapComponent>
       <animated-mapbox-layer :layer="layerOptions"> </animated-mapbox-layer>
+      <div class="colourbar-container">
+      <ColourBar :colourMap="legend" :title="legendTitle" />
+    </div>
       <ElevationSlider
         v-if="layerHasEleveation"
         v-model="currentElevation"
@@ -12,10 +15,8 @@
         :max-value="maxElevation"
         :unit="elevationUnit"
       ></ElevationSlider>
+
     </MapComponent>
-    <div class="colourbar-container">
-      <ColourBar :colourMap="legend" :title="legendTitle" />
-    </div>
     <DateTimeSlider
       v-model:selectedDate="currentTime"
       :dates="times ?? []"
