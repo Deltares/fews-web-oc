@@ -10,7 +10,7 @@ export function createTableHeaders(
   tableHeaders.push({
     key: 'date',
     title: 'Date',
-    minWidth: '230px',
+    minWidth: '24ch',
     class: 'table-header sticky-column',
   })
   seriesIds.forEach((seriesId) => {
