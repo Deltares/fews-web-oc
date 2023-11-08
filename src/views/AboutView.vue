@@ -1,7 +1,7 @@
 <template>
   <v-card class="home-card">
     <v-card-title class="justify-center">
-      Welcome to the {{ configStore.general.title ?? 'Delft-FEWS Web OC' }}!
+      {{ configStore.general.title ?? 'Delft-FEWS Web OC' }}
     </v-card-title>
     <v-card-text v-if="configStore.activeComponents.length > 0">
       Select one of the following options to get started.
