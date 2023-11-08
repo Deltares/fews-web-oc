@@ -31,9 +31,8 @@ export function createTableData(
   )
   const pointers = Array(seriesIds.length).fill(0)
   const dateFormatter = new Intl.DateTimeFormat(undefined, {
-    weekday: 'short',
     year: 'numeric',
-    month: 'short',
+    month: 'numeric',
     day: 'numeric',
     hour: 'numeric',
     minute: 'numeric',
