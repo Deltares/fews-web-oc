@@ -8,7 +8,6 @@ import {
   loadTimeSeriesFlags,
 } from '@/lib/fews-properties/fewsProperties.js'
 import { uniq } from 'lodash'
-
 interface FewsPropertiesState {
   flags?: TimeSeriesFlag[]
   flagSources?: TimeSeriesFlagSource[]
@@ -24,11 +23,13 @@ const useFewsPropertiesStore = defineStore('fewsProperties', {
 
   actions: {
     async loadFlags() {
+      if (this.flags !== undefined && this.flags.length > 0) return
       const flags = await loadTimeSeriesFlags()
       this.flags = flags
     },
 
     async loadFlagSources() {
+      if (this.flagSources !== undefined && this.flagSources.length > 0) return
       const flagSources = await loadTimeSeriesFlagSources()
       this.flagSources = flagSources
     },

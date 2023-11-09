@@ -141,10 +141,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const store = useFewsPropertiesStore()
-store.loadFlags().then(() => {
-  store.setFlagQualities()
-})
-store.loadFlagSources()
 
 const seriesIds = ref<string[]>([])
 const tooltip = ref<boolean>(false)
@@ -165,13 +161,17 @@ onBeforeMount(() => {
     )
   }
 
-  if (props.config !== undefined) {
-    tableData.value = createTableData(
-      props.config.series,
-      props.series,
-      seriesIds.value,
-    )
-  }
+  store.loadFlags().then(() => {
+    store.setFlagQualities()
+    if (props.config !== undefined) {
+      tableData.value = createTableData(
+        props.config.series,
+        props.series,
+        seriesIds.value,
+      )
+    }
+  })
+  store.loadFlagSources()
 })
 
 watch(props.config, () => {
