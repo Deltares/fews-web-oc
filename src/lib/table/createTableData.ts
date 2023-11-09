@@ -6,8 +6,7 @@ import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import type { TimeSeriesFlag } from '@deltares/fews-pi-requests'
 
 const store = useFewsPropertiesStore()
-export interface TableSeriesData extends Omit<SeriesData, 'x' | 'y'> {
-  value: number | null
+export interface TableSeriesData extends Omit<SeriesData, 'x'> {
   tooltip: boolean
   flagOrigin?: TimeSeriesFlag['source']
   flagQuality?: TimeSeriesFlag['quality']
@@ -56,12 +55,8 @@ export function createTableData(
         const event = series.data[pointers[j]]
         if (event && date.getTime() === event.x.getTime()) {
           eventResult = {
-            value: event.y,
-            flag: event.flag,
-            flagSource: event.flagSource,
             tooltip: event.flag !== undefined || event.comment !== undefined,
-            comment: event.comment,
-            user: event.user,
+            ...event,
           }
           if (event.flag !== undefined && store.flags !== undefined) {
             const flag = store.flags[event.flag]
