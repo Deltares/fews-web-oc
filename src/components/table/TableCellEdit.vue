@@ -1,14 +1,17 @@
 <template>
   <div class="table-cell-editable">
     <input
-      :ref="`${props.item.date}-${id}-value`"
-      v-model.number="(props.item[id] as Partial<TableSeriesData>).value"
+      :ref="`${props.item.date}-${props.id}-value`"
+      v-model.number="currentItem.y"
       class="table-cell-input"
       type="number"
+      @change="(event) => editValue(event, currentItem.y)"
     />
     <select
-      :ref="`${props.item.date}-${id}-flagquality`"
+      :ref="`${props.item.date}-${props.id}-flagquality`"
       class="table-cell-input"
+      v-model="currentItem.flagQuality"
+      @change="(event) => editFlagQuality(event)"
     >
       <option
         v-for="flagQuality in store.flagQualities"
@@ -19,10 +22,11 @@
       </option>
     </select>
     <input
-      :ref="`${props.item.date}-${id}-comment`"
-      v-model="(props.item[id] as Partial<TableSeriesData>).comment"
+      :ref="`${props.item.date}-${props.id}-comment`"
+      v-model="currentItem.comment"
       class="table-cell-input"
       type="text"
+      @change="editItem"
     />
   </div>
 </template>
@@ -30,6 +34,8 @@
 <script setup lang="ts">
 import type { TableSeriesData } from '@/lib/table/createTableData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
+import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
+import { ref } from 'vue'
 
 interface Props {
   id: string
@@ -38,7 +44,48 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const emit = defineEmits(['update:item'])
+
+const currentItem = ref<Partial<TableSeriesData>>({
+  ...(props.item[props.id] as Partial<TableSeriesData>),
+})
+
 const store = useFewsPropertiesStore()
+
+function editItem() {
+  const flag = store.flags?.find(
+    (flag) =>
+      flag.source === currentItem.value.flagOrigin &&
+      flag.quality === currentItem.value.flagQuality,
+  )
+  if (flag) {
+    currentItem.value.flag = flag.flag as TimeSeriesEvent['flag']
+  }
+  const updatedItem = {
+    date: props.item.date,
+    [props.id]: currentItem.value,
+  }
+  emit('update:item', updatedItem)
+}
+
+function editValue(event: Event, value: number | null | undefined) {
+  const oldItem = props.item[props.id] as Partial<TableSeriesData>
+  if (oldItem.y === null) {
+    // User adds new value
+    currentItem.value.flagOrigin = 'COMPLETED'
+    currentItem.value.flagQuality = 'RELIABLE'
+  } else {
+    // User changes existing value
+    currentItem.value.flagOrigin = 'CORRECTED'
+  }
+  currentItem.value.flagSource = 'MAN'
+  editItem()
+}
+
+function editFlagQuality(event: Event) {
+  currentItem.value.flagSource = 'MAN'
+  editItem()
+}
 </script>
 
 <style scoped>

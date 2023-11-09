@@ -7,7 +7,7 @@
       class="circle"
       :class="`flag-background-color--${(props.item[id] as Partial<TableSeriesData>).flag}`"
     ></div>
-    <span class="value">{{ (props.item[id] as Partial<TableSeriesData>).value }}</span>
+    <span class="value">{{ (props.item[id] as Partial<TableSeriesData>).y }}</span>
     <span
       v-if="(props.item[id] as Partial<TableSeriesData>).comment"
       class="comment-icon mdi mdi-comment-outline"
