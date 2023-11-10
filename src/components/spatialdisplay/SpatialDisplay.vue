@@ -181,7 +181,7 @@ function updateTime(date: Date): void {
   bottom: 5px;
   left: 5px;
   right: 5px;
-  z-index: 5;
+  z-index: 1000;
   border-radius: 5px;
   backdrop-filter: blur(5px);
   background-color: rgba(var(--v-theme-surface), 0.8);
