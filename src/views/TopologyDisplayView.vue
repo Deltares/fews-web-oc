@@ -30,7 +30,7 @@
       >Link<v-icon>mdi-share</v-icon></v-btn
     >
   </Teleport>
-  <router-view></router-view>
+  <router-view :workflowId="currentNode?.workflowId"></router-view>
 </template>
 
 <script setup lang="ts">
@@ -70,22 +70,29 @@ const activeTab = ref(0)
 const displayTabs = ref<DisplayTab[]>([])
 const externalLink = ref<string>('')
 
+const nodes = ref<TopologyNode[]>()
+const currentNode = ref<TopologyNode>()
+const topologyMap = ref(new Map<string, TopologyNode>())
+
+getTopologyNodes().then((response) => {
+  nodes.value = response
+  topologyMap.value = createTopologyMap(nodes.value)
+  currentNode.value = topologyMap.value.get(props.nodeId)
+})
+
 watch(
   () => props.nodeId,
   () => {
     if (active.value[0] !== props.nodeId) {
       active.value = [props.nodeId]
     }
+    if (currentNode.value?.id === props.nodeId) {
+      return
+    }
+    currentNode.value = topologyMap.value.get(props.nodeId)
   },
   { immediate: true },
 )
-
-const nodes = ref<TopologyNode[]>()
-const topologyMap = ref(new Map<string, TopologyNode>())
-getTopologyNodes().then((response) => {
-  nodes.value = response
-  topologyMap.value = createTopologyMap(nodes.value)
-})
 
 function topologyNodeIsVisible(node: TopologyNode): boolean {
   if (node.url !== undefined) return true
