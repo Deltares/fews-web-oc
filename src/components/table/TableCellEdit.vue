@@ -32,14 +32,14 @@
 </template>
 
 <script setup lang="ts">
-import type { TableSeriesData } from '@/lib/table/createTableData'
+import type { TableSeriesData } from '@/lib/table/tableData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 import { ref } from 'vue'
 
 interface Props {
   id: string
-  item: Record<string, string | Partial<TableSeriesData>>
+  item: Record<string, Date | Partial<TableSeriesData>>
 }
 
 const props = defineProps<Props>()
@@ -70,7 +70,7 @@ function editItem() {
 
 function editValue(event: Event, value: number | null | undefined) {
   const oldItem = props.item[props.id] as Partial<TableSeriesData>
-  if (oldItem.y === null) {
+  if (oldItem.y === null || oldItem.y === undefined) {
     // User adds new value
     currentItem.value.flagOrigin = 'COMPLETED'
     currentItem.value.flagQuality = 'RELIABLE'

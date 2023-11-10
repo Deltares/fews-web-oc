@@ -16,11 +16,11 @@
 </template>
 
 <script setup lang="ts">
-import type { TableSeriesData } from '@/lib/table/createTableData'
+import type { TableSeriesData } from '@/lib/table/tableData'
 
 interface Props {
   id: string
-  item: Record<string, string | Partial<TableSeriesData>>
+  item: Record<string, Date | Partial<TableSeriesData>>
 }
 
 const props = defineProps<Props>()

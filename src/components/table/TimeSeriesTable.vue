@@ -18,7 +18,12 @@
         <v-toolbar v-if="isEditing" density="compact" variant="flat">
           <v-toolbar-title> Edit data</v-toolbar-title>
           <v-spacer>
-            <v-btn append-icon="mdi-content-save-outline" disabled>Save</v-btn>
+            <v-btn
+              append-icon="mdi-content-save-outline"
+              @click="saveAll()"
+              :disabled="newTableData.length === 0"
+              >Save</v-btn
+            >
             <v-btn append-icon="mdi-close" @click="stopEdit()">Cancel</v-btn>
           </v-spacer>
         </v-toolbar>
@@ -34,34 +39,15 @@
                 <div class="table-header-indicator-text">
                   <span>{{ column.title }}</span>
                   <template v-if="(column as TableHeaders).editable">
-                    <template v-if="isEditingTimeSeries(column.key as string)">
-                      <v-btn
-                        size="x-small"
-                        variant="text"
-                        icon="mdi-content-save"
-                        disabled
-                      ></v-btn>
-                      <v-btn
-                        size="x-small"
-                        variant="text"
-                        icon="mdi-pencil-off"
-                        @click="
-                          (event: Event) => {
-                            stopEditTimeSeries(event, column.key as string)
-                          }
-                        "
-                      ></v-btn>
-                    </template>
                     <v-btn
-                      v-else
                       size="x-small"
                       variant="text"
-                      icon="mdi-pencil"
-                      @click="
-                        (event: Event) => {
-                          editTimeSeries(event, column.key as string)
-                        }
+                      :icon="
+                        isEditingTimeSeries(column.key as string)
+                          ? 'mdi-pencil-off'
+                          : 'mdi-pencil'
                       "
+                      @click="toggleEditTimeSeries(column.key as string)"
                     ></v-btn>
                   </template>
                 </div>
@@ -77,7 +63,7 @@
         </tr>
       </template>
       <template v-slot:item.date="{ item }">
-        <span class="sticky-column">{{ item.date }}</span>
+        <span class="sticky-column">{{ dateFormatter.format(item.date) }}</span>
       </template>
       <template v-for="id in seriesIds" v-slot:[`item.${id}`]="{ item }">
         <!-- Table cell when editing data -->
@@ -89,6 +75,7 @@
           "
           :id="id"
           :item="item"
+          @update:item="(event) => onUpdateItem(event)"
         ></TableCellEdit>
         <!-- Table cell when not editing data. Shows additional info about flags. -->
         <TableCell
@@ -116,8 +103,10 @@ import type { TableHeaders } from '@/lib/table/types/TableHeaders'
 import { createTableHeaders } from '@/lib/table/createTableHeaders'
 import {
   type TableSeriesData,
+  dateFormatter,
   createTableData,
-} from '@/lib/table/createTableData'
+  tableDataToTimeSeries,
+} from '@/lib/table/tableData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import { onBeforeMount } from 'vue'
 import TableCellEdit from '@/components/table/TableCellEdit.vue'
@@ -140,13 +129,16 @@ const props = withDefaults(defineProps<Props>(), {
   },
 })
 
+const emit = defineEmits(['change'])
+
 const store = useFewsPropertiesStore()
 
 const seriesIds = ref<string[]>([])
 const tooltip = ref<boolean>(false)
 const tooltipItem = ref<any>({})
 const activator = ref<string>('')
-const tableData = ref<Record<string, Partial<TableSeriesData> | string>[]>([])
+const tableData = ref<Record<string, Partial<TableSeriesData> | Date>[]>([])
+const newTableData = ref<Record<string, Partial<TableSeriesData> | Date>[]>([])
 const tableHeaders = ref<TableHeaders[]>([])
 
 const isEditing = ref<boolean>(false)
@@ -216,25 +208,61 @@ const hideTooltip = (event: any) => {
   tooltip.value = false
 }
 
-function editTimeSeries(event: Event, seriesId: string) {
+function stopEdit() {
+  isEditing.value = false
+  editedSeriesIds.value = []
+  newTableData.value = []
+}
+
+function saveAll() {
+  const newTimeSeriesData = tableDataToTimeSeries(newTableData.value)
+  emit('change', newTimeSeriesData)
+  stopEdit()
+}
+
+function toggleEditTimeSeries(seriesId: string) {
+  if (isEditingTimeSeries(seriesId)) {
+    stopEditTimeSeries(seriesId)
+  } else {
+    editTimeSeries(seriesId)
+  }
+}
+
+function editTimeSeries(seriesId: string) {
   isEditing.value = true
   if (seriesId !== null) editedSeriesIds.value.push(seriesId)
 }
 
-function stopEdit() {
-  isEditing.value = false
-  editedSeriesIds.value = []
-}
-
-function stopEditTimeSeries(event: Event, seriesId: string) {
+function stopEditTimeSeries(seriesId: string) {
   const index = editedSeriesIds.value.indexOf(seriesId)
-  if (index > -1) editedSeriesIds.value.splice(index, 1)
-  if (editedSeriesIds.value.length === 0) isEditing.value = false
+  if (index > -1) {
+    editedSeriesIds.value.splice(index, 1)
+    if (editedSeriesIds.value.length === 0) stopEdit()
+    else {
+      for (let i = newTableData.value.length - 1; i >= 0; i--) {
+        if (newTableData.value[i][seriesId] !== undefined) {
+          delete newTableData.value[i][seriesId]
+          if (Object.keys(newTableData.value[i]).length === 1) {
+            newTableData.value.splice(i, 1)
+          }
+        }
+      }
+    }
+  }
 }
 
 function isEditingTimeSeries(seriesId: string) {
   if (seriesId === null) return false
   return editedSeriesIds.value.includes(seriesId)
+}
+
+function onUpdateItem(event: Record<string, Partial<TableSeriesData> | Date>) {
+  const index = newTableData.value.findIndex((item) => item.date === event.date)
+  if (index > -1) {
+    newTableData.value[index] = { ...newTableData.value[index], ...event }
+  } else {
+    newTableData.value.push(event)
+  }
 }
 </script>
 
