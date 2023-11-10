@@ -70,7 +70,7 @@ import DrawRectangle from '@/lib/mapbox/DrawRectangleMode.js'
 import { useControl, useMap } from '@studiometa/vue-mapbox-gl'
 import customStyles from '@/assets/mapbox-draw-polygon-styles.json'
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
-import { computed, ref, unref, onMounted, watch } from 'vue'
+import { computed, ref, unref, onMounted } from 'vue'
 
 const root = ref<HTMLElement>()
 
