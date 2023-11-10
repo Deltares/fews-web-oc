@@ -22,6 +22,8 @@
     "@deltares/fews-wms-requests": "^0.1.11-alpha.4",
     "@mapbox/mapbox-gl-draw": "^1.4.3",
     "@studiometa/vue-mapbox-gl": "^2.2.0",
+    "@turf/bbox": "^7.0.0-alpha.2",
+    "@turf/bbox-polygon": "^7.0.0-alpha.2",
     "@turf/helpers": "^7.0.0-alpha.2",
     "@turf/projection": "^7.0.0-alpha.2",
     "@vueuse/core": "^10.5.0",
