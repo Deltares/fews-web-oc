@@ -169,7 +169,7 @@ function updateTime(date: Date): void {
   font-size: 0.825em;
   z-index: 1000;
   background-color: none;
-  bottom: 80px;
+  bottom: 60px;
 }
 
 .spatial-display {
