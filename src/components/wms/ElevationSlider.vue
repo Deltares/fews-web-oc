@@ -172,7 +172,7 @@ watch(() => props.modelValue, onValueChange)
   z-index: 2000;
   position: absolute;
   right: 5px;
-  bottom: 100px;
+  bottom: 115px;
 }
 
 .tooltip-input {
