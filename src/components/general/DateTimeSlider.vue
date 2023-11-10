@@ -1,15 +1,15 @@
 <template>
   <div class="datetime-slider">
     <div class="slider-container">
-      <v-slider
+      <vue-slider
         v-model="dateIndex"
         :max="maxIndex"
         step="1"
-        hide-details
-        thumb-size="15"
-      />
+        :tooltipFormatter="dateString"
+      >
+      </vue-slider>
     </div>
-    <div class="controls-container">
+    <div class="datetime-slider__actions">
       <slot name="prepend"></slot>
       <div class="now-tracking-control">
         <v-btn
@@ -19,7 +19,7 @@
           :color="nowButtonColor"
           @click="toggleFollowNow"
         />
-        <span class="text-body-2 selected-date">{{ dateString }}</span>
+        <span class="datetime-slider__datefield">{{ dateString }}</span>
       </div>
       <v-spacer />
       <div class="play-controls">
@@ -52,6 +52,8 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import VueSlider from 'vue-slider-component'
+import 'vue-slider-component/theme/antd.css'
 
 interface Properties {
   selectedDate: Date
@@ -232,15 +234,15 @@ function increment(step: number): void {
   padding: 0px 10px;
 }
 
-.controls-container {
+.datetime-slider__actions {
   display: flex;
   flex-direction: row;
-  padding: 0 16px 10px;
+  padding: 0px 10px 6px;
 }
 
-.selected-date {
+.datetime-slider__datefield {
   margin: auto;
-  width: 20ch;
+  width: 24ch;
   flex: 2 0 20%;
 }
 
