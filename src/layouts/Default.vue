@@ -11,7 +11,7 @@
     <v-navigation-drawer v-model="drawer" app hide-overlay :right="$vuetify.rtl" width="320"
       class="view-sidebar">
       <v-toolbar dense fixed>
-        <v-btn text :to="{ name: 'About' }" class="fews-home">
+        <v-btn text disabled class="fews-home">
           <v-container>
             <v-row>
               <v-col>
