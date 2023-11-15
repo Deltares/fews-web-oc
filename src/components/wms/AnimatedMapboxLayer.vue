@@ -33,9 +33,7 @@ const props = withDefaults(defineProps<Props>(), {})
 
 const { map } = useMap() as { map: Ref<Map> }
 
-let newLayerId!: string
 let isInitialized = false
-let counter = 0
 let currentLayer: string = ''
 
 onMounted(() => {
@@ -64,8 +62,11 @@ function addHooksToMapObject() {
     updateSource()
   })
   map.value.on('data', async (e) => {
-    if (e.sourceId === newLayerId && e.tile !== undefined && e.isSourceLoaded) {
-      removeOldLayers()
+    if (
+      e.sourceId === currentLayer &&
+      e.tile !== undefined &&
+      e.isSourceLoaded
+    ) {
       map.value.setPaintProperty(e.sourceId, 'raster-opacity', 1)
     }
   })
@@ -98,9 +99,33 @@ function getImageSourceOptions(): ImageSourceOptions {
   return imageSourceOptions
 }
 
+function createSource() {
+  const mapObject = map.value
+
+  const rasterSource: ImageSourceRaw = {
+    type: 'image',
+    ...getImageSourceOptions(),
+  }
+  mapObject.addSource(currentLayer, rasterSource)
+  const rasterLayer: RasterLayer = {
+    id: currentLayer,
+    type: 'raster',
+    source: currentLayer,
+    paint: {
+      'raster-opacity': 0,
+      'raster-opacity-transition': {
+        duration: 0,
+        delay: 0,
+      },
+      'raster-fade-duration': 0,
+    },
+  }
+  mapObject.addLayer(rasterLayer, 'boundary_country_outline')
+}
+
 function updateSource() {
-  const source = map.value.getSource(newLayerId) as ImageSource
-  source.updateImage(getImageSourceOptions())
+  const source = map.value.getSource(currentLayer) as ImageSource
+  if (source !== undefined) source.updateImage(getImageSourceOptions())
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
@@ -144,16 +169,11 @@ function isBoundsWithinBounds(
 
 function removeLayer() {
   if (map.value !== undefined) {
-    const layerId = getFrameId(currentLayer, counter)
-    if (map.value.getSource(layerId) !== undefined) {
-      map.value.removeLayer(layerId)
-      map.value.removeSource(layerId)
+    if (map.value.getSource(currentLayer) !== undefined) {
+      map.value.removeLayer(currentLayer)
+      map.value.removeSource(currentLayer)
     }
   }
-}
-
-function getFrameId(layerName: string, frame: number): string {
-  return `${layerName}-${frame}`
 }
 
 watch(
@@ -168,61 +188,23 @@ function onLayerChange(): void {
   if (props.layer === undefined) return
   if (props.layer === null) {
     removeLayer()
-    removeOldLayers()
     return
   }
   if (props.layer.name === undefined || props.layer.time === undefined) {
     return
   }
 
-  const originalLayerName = currentLayer
   if (props.layer.name !== currentLayer) {
-    counter += 1
-    removeOldLayers()
-    counter = 0
+    removeLayer()
     currentLayer = props.layer.name
-  }
-
-  counter += 1
-  newLayerId = getFrameId(props.layer.name, counter)
-  const source = map.value.getSource(newLayerId)
-  if (currentLayer !== originalLayerName) {
-    // set default zoom only if layer is changed
     setDefaultZoom()
   }
 
+  const source = map.value.getSource(currentLayer)
   if (source === undefined) {
-    const rasterSource: ImageSourceRaw = {
-      type: 'image',
-      ...getImageSourceOptions(),
-    }
-    map.value.addSource(newLayerId, rasterSource)
-    const rasterLayer: RasterLayer = {
-      id: newLayerId,
-      type: 'raster',
-      source: newLayerId,
-      paint: {
-        'raster-opacity': 0,
-        'raster-opacity-transition': {
-          duration: 0,
-          delay: 0,
-        },
-        'raster-fade-duration': 0,
-      },
-    }
-    map.value.addLayer(rasterLayer, 'boundary_country_outline')
-  }
-}
-
-function removeOldLayers(): void {
-  for (let i = counter - 1; i > 0; i--) {
-    const oldLayerId = getFrameId(currentLayer, i)
-    if (map.value.getLayer(oldLayerId)) {
-      map.value.removeLayer(oldLayerId)
-      map.value.removeSource(oldLayerId)
-    } else {
-      break
-    }
+    createSource()
+  } else {
+    updateSource()
   }
 }
 </script>
