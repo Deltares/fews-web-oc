@@ -3,7 +3,7 @@
     class="time-slider-container"
     :class="[themeClass, floatingClass]"
   >
-    <v-slider v-model="index" :max="max" step="1" tick-size="6" tabindex="0" @input="onInput" hide-details
+    <v-slider v-model="index" :max="max" step="1" tick-size="6" tabindex="0" @input="onInput" @end="onInputEnd" hide-details
       height="0">
     </v-slider>
     <div style="display:flex;flex-direction:row;flex-grow:1;padding:6px 16px">
@@ -17,9 +17,19 @@
               mdi-skip-previous
             </v-icon>
           </v-btn>
-          <v-btn :color="playColor" icon @click="togglePlay" ref="PlayButton">
+          <v-btn :color="playColor(speed.base)" icon @click="togglePlay(speed.base)" ref="PlayButton">
             <v-icon>
-              {{ isPlaying ? 'mdi-pause' : 'mdi-play' }}
+              {{ isPlayingAtSpeed(speed.base) ? 'mdi-pause' : 'mdi-play' }}
+            </v-icon>
+          </v-btn>
+          <v-btn :color="playColor(speed.twoTimes)" icon @click="togglePlay(speed.twoTimes)" ref="TwoTimesButton">
+            <v-icon>
+              {{ isPlayingAtSpeed(speed.twoTimes) ? 'mdi-pause' : 'mdi-chevron-double-right' }}
+            </v-icon>
+          </v-btn>
+          <v-btn :color="playColor(speed.fourTimes)" icon @click="togglePlay(speed.fourTimes)" ref="FourTimesButton">
+            <v-icon>
+              {{ isPlayingAtSpeed(speed.fourTimes) ? 'mdi-pause' : 'mdi-chevron-triple-right' }}
             </v-icon>
           </v-btn>
           <v-btn @mousedown="forward()" @mouseup="stopPlay" icon ref="ForwardButton">
@@ -58,6 +68,12 @@ export default class DateTimeSlider extends Vue {
   isPlaying: boolean = false
   intervalTimer: any = 0
   hideLabel = true
+  speed = {
+    base: 1000,
+    twoTimes: 500,
+    fourTimes: 250
+  }
+  timeout: number = this.speed.base
 
   mounted (): void {
     this.updateIndexValueChange()
@@ -77,8 +93,12 @@ export default class DateTimeSlider extends Vue {
     return this.useNow ? 'orange' : ''
   }
 
-  get playColor (): string {
-    return this.isPlaying ? 'orange' : ''
+  isPlayingAtSpeed(speed: number) {
+    return this.isPlaying && this.timeout === speed
+  }
+
+  playColor(speed: number): string {
+    return this.isPlayingAtSpeed(speed) ? 'orange' : ''
   }
 
   get themeClass (): string {
@@ -89,16 +109,17 @@ export default class DateTimeSlider extends Vue {
     return this.floating ? 'floating' : 'non-floating'
   }
 
-  togglePlay (): void {
-    if (this.isPlaying) {
-      this.isPlaying = false
-      clearInterval(this.intervalTimer)
-      this.intervalTimer = 0
-    } else {
-      this.isPlaying = true
-      this.useNow = false
-      this.intervalTimer = setInterval(this.play, 1000)
+  togglePlay (newTimeOut: number): void {
+    if (this.isPlayingAtSpeed(newTimeOut)) {
+      this.stopPlay()
+      return
     }
+
+    this.isPlaying = true
+    this.useNow = false
+    this.timeout = newTimeOut
+    clearInterval(this.intervalTimer)
+    this.intervalTimer = setInterval(this.play, this.timeout)
   }
 
   stopPlay (): void {
@@ -169,11 +190,13 @@ export default class DateTimeSlider extends Vue {
   increment (step = 1): void {
     this.index = Math.min(this.max, this.index + step)
     this.inputChanged()
+    this.onInputEnd()
   }
 
   decrement (step = 1): void {
     this.index = Math.max(0, this.index - step)
     this.inputChanged()
+    this.onInputEnd()
   }
 
   updateDate (): void {
@@ -183,6 +206,10 @@ export default class DateTimeSlider extends Vue {
   onInput (): void {
     this.updateDate()
     this.inputChanged()
+  }
+
+  onInputEnd (): void {
+    this.$emit('input-end')
   }
 
   inputChanged (): void {
