@@ -303,13 +303,13 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       this.wmsLayerOptions = {
         bbox: boundingBox,
         name: this.currentDataSource.wmsLayerId,
-        time: this.currentTime
+        time: this.currentTime,
+        elevation: this.currentElevation,
+        colorScaleRange: this.legendRange
       }
 
       this.maxElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
       this.minElevation = this.currentWMSLayer?.elevation?.lowerValue ?? null
-      this.wmsLayerOptions.elevation = this.currentElevation
-      this.wmsLayerOptions.colorScaleRange = this.legendRange
     }
   }
 
@@ -495,9 +495,13 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   }
 
   setLegendRange(newRange: string) {
+    const rangeWasDefined = this.legendRange !== undefined
     this.legendRange = newRange
-    this.setWMSLayerOptions()
-    this.updateLegendGraphic()
+
+    if (rangeWasDefined) {
+      this.setWMSLayerOptions()
+      this.updateLegendGraphic()
+    }
   }
 
   async updateLegendGraphic() {
@@ -540,12 +544,12 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     // Select the elevation if present
     this.currentElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
 
-    this.setWMSLayerOptions()
-
     // Reset legendRange to get default value
     this.legendRange = undefined
     // Update the WMS layer legend.
     this.updateLegendGraphic()
+
+    this.setWMSLayerOptions()
 
     // Update locations for the current data source.
     const geojson = await fetchLocationsAsGeoJson(
