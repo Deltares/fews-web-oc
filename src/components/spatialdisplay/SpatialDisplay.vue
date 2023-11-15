@@ -8,7 +8,7 @@
         v-if="selectBbox"
         v-model="features"
         ref="drawControl"
-        default-mode="draw_polygon"
+        default-mode="draw_rectangle"
         :displayControlsDefault="false"
       />
       <div v-if="workflowId" class="workflows-container d-flex flex-row">
