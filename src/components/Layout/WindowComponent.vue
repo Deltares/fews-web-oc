@@ -78,10 +78,9 @@ export default class WindowComponent extends Vue {
       switch (displayType) {
         case DisplayType.TimeSeriesChart:
           return {
-            icon: 'mdi-chart-line-stacked',
+            icon: 'mdi-chart-line',
             label: 'Time Series Chart',
-            value: displayType,
-            style: 'transform: rotate(90deg)'
+            value: displayType
           }
         case DisplayType.TimeSeriesTable:
           return {
