@@ -1,0 +1,100 @@
+import * as GeoTIFF from 'geotiff'
+
+import { Color, Colormap } from "./colormap"
+import { createTexture } from './textures'
+
+export class VelocityImage {
+  constructor(
+    private data: Uint8Array,
+    readonly width: number,
+    readonly height: number,
+    readonly uOffset: number,
+    readonly vOffset: number,
+    readonly uScale: number,
+    readonly vScale: number
+  ) {}
+
+  maxVelocity(): [number, number] {
+    const computeU = (r: number) => r * this.uScale + this.uOffset
+    const computeV = (g: number) => g * this.vScale + this.vOffset
+
+    return [
+      Math.max(computeU(0), computeU(1)),
+      Math.max(computeV(0), computeV(1))
+    ]
+  }
+
+  toTexture(gl: WebGL2RenderingContext, interpolate: boolean): WebGLTexture {
+    return createTexture(gl, interpolate ? gl.LINEAR : gl.NEAREST, this.data, this.width, this.height)
+  }
+}
+
+/**
+ * Fetches a colormap for a WMS layer from the FEWS web services.
+ *
+ * @param baseUrl base URL of the FEWS WMS service.
+ * @param layer layer to obtain the legend for.
+ * @returns Colormap fetched from the FEWS WMS service.
+ */
+export async function fetchWMSColormap(baseUrl: string, layer: string): Promise<Colormap> {
+  // TODO: use fews-wms-requests and its types.
+  const url = `${baseUrl}?request=GetLegendGraphic&format=application/json&version=1.3&layers=${layer}`
+  const json = await (await fetch(url)).json() as { legend: { lowerValue: number, color: string }[] }
+
+  return new Colormap(
+    json.legend.map(entry => entry.lowerValue),
+    json.legend.map(entry => Color.fromHex(entry.color))
+  )
+}
+
+export async function fetchWMSAvailableTimes(baseUrl: string, layer: string): Promise<string[]> {
+  const getCapabilitiesUrl = `${baseUrl}?request=GetCapabilities&format=application/json&version=1.3&layers=${layer}`
+  const response = await fetch(getCapabilitiesUrl)
+  const capabilities = await response.json()
+
+  console.assert(capabilities.layers !== undefined && capabilities.layers.length === 1)
+  return capabilities.layers[0].times
+}
+
+export async function fetchWMSVelocityField(
+  baseUrl: string,
+  layer: string,
+  style: string,
+  time: string,
+  boundingBox: [number, number, number, number],
+  width: number,
+  height: number
+): Promise<VelocityImage> {
+
+  const boundingBoxString = boundingBox.join(',')
+  const url = `${baseUrl}?service=WMS&request=GetMap&version=1.3&layers=${layer}&styles=${style}&transparent=true&crs=EPSG%3A3857&showContours=false&time=${time}&uppercase=false&width=${width}&height=${height}&bbox=${boundingBoxString}&format=image%2Ftiff&convertUVToRG=true`
+  const response = await fetch(url)
+  const arrayBuffer = await response.arrayBuffer()
+
+  const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer)
+  const image = await tiff.getImage()
+  const fileDirectory = image.getFileDirectory()
+
+  // Assume we have 8-bit data per channel.
+  console.assert(fileDirectory.BitsPerSample.every((numBits: number) => numBits === 8))
+
+  // Get image data, it should always have unsigned 8-bit integers for each channel.
+  // For some mysterious reason, the GeoTIFF types say that this function produces a Int8Array,
+  // while in reality it produces a Uint8Array.
+  const dataUntyped = await image.readRasters({ interleave: true }) as unknown
+  const data = dataUntyped as Uint8Array
+
+  // Get offsets and scales for the image. We multiply the scales by 255, since 255 of an unsigned
+  // 8-bit integer corresponds to a texture value of 1.0 in WebGL.
+  const receivedWidth = fileDirectory.ImageWidth
+  const receivedHeight = fileDirectory.ImageLength
+  const uOffset = fileDirectory.ModelTiepoint[0]
+  const vOffset = fileDirectory.ModelTiepoint[1]
+  const uScale = fileDirectory.ModelPixelScale[0] * 255
+  const vScale = fileDirectory.ModelPixelScale[1] * 255
+
+  return new VelocityImage(
+    data, receivedWidth, receivedHeight,
+    uOffset, vOffset, uScale, vScale
+  )
+}
