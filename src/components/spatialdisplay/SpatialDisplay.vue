@@ -191,7 +191,7 @@
 <script setup lang="ts">
 import MapComponent from '@/components/map/MapComponent.vue'
 import { ref, computed, onBeforeMount, watch } from 'vue'
-import { BBox, Feature } from 'geojson'
+import type { BBox, Feature } from 'geojson'
 
 import {
   convertBoundingBoxToLngLatBounds,
