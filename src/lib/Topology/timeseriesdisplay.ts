@@ -21,7 +21,7 @@ function isTimeSeriesGridActionsFilter(filter: timeSeriesGridActionsFilter | fil
  * @param provider FEWS PI Webservices provider.
  * @param filterIds FilterIds to get displays and request for.
  * @param locationId LocationId to get displays and requests for.
- * @param coordinates Coordinates to get displays and requests for. 
+ * @param coordinates Coordinates to get displays and requests for.
  * @returns 2-tuple with the displays and associated time series requests for all filters.
  */
 export async function fetchTimeSeriesDisplaysAndRequests(
@@ -94,7 +94,7 @@ async function fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
 
     let displayTypes = [DisplayType.TimeSeriesChart, DisplayType.TimeSeriesTable]
     if (hasElevation) {
-      displayTypes = [DisplayType.ElevationChart, ...displayTypes]
+      displayTypes = [...displayTypes, DisplayType.ElevationChart]
     }
 
     // for add a sequence number to the subplot items. Where the sequence number is counted first by items and then by subplots.
