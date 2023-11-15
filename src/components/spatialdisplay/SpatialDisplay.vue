@@ -11,8 +11,8 @@
         default-mode="draw_rectangle"
         :displayControlsDefault="false"
       />
-      <div v-if="workflowId" class="workflows-container d-flex flex-row">
-        <v-chip class="pl-0 pr-0 justify-center" width="400">
+      <div v-if="workflowId" class="workflows__container d-flex flex-row">
+        <v-chip pill class="workflows__chip pl-0 pr-0 justify-center" width="400">
           <v-btn
             icon="mdi-cog-play"
             size="x-small"
@@ -392,13 +392,16 @@ function roundToStep(value: number, step: number): number {
 </script>
 
 <style scoped>
-.workflows-container {
+.workflows__container {
   position: absolute;
   font-size: 0.825em;
   z-index: 1000;
-  background-color: none;
   left: 10px;
   top: 10px;
+}
+
+.workflows__chip {
+  background-color: rgba(var(--v-theme-surface), 0.8);
 }
 
 .workflows--running {
