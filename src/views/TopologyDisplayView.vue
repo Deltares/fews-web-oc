@@ -1,10 +1,29 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
-    <ColumnMenu
+    <v-toolbar density="compact">
+      <v-btn-toggle rounded="0" v-model="menuType">
+        <v-btn variant="text" value="treemenu">
+          <v-icon>mdi-file-tree</v-icon>
+        </v-btn>
+        <v-btn variant="text" value="columnmenu">
+          <v-icon>mdi-view-week</v-icon>
+        </v-btn>
+      </v-btn-toggle>
+    </v-toolbar>
+    <TreeMenu
+      v-if="menuType === 'treemenu'"
       rootName="Topology"
       v-model:active="active"
       :items="items"
-      v-model:open="open"
+      :open="open"
+    >
+    </TreeMenu>
+    <ColumnMenu
+      v-else-if="menuType === 'columnmenu'"
+      rootName="Topology"
+      v-model:active="active"
+      :items="items"
+      :open="open"
     >
     </ColumnMenu>
   </Teleport>
@@ -31,12 +50,17 @@
       ><v-icon>mdi-share</v-icon>Link</v-btn
     >
   </Teleport>
-  <router-view></router-view>
+  <router-view v-slot="{ Component }">
+    <keep-alive include="SpatialDisplay">
+      <component :is="Component" />
+    </keep-alive>
+  </router-view>
 </template>
 
 <script setup lang="ts">
 import type { ColumnItem } from '@/components/general/ColumnItem'
 import ColumnMenu from '@/components/general/ColumnMenu.vue'
+import TreeMenu from '@/components/general/TreeMenu.vue'
 import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
 import router from '@/router'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
@@ -67,6 +91,7 @@ const props = withDefaults(defineProps<Props>(), {
 const active = ref<string[]>([])
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
+const menuType = ref('treemenu')
 
 const activeTab = ref(0)
 const displayTabs = ref<DisplayTab[]>([])
@@ -109,6 +134,12 @@ function recursiveUpdateNode(nodes: TopologyNode[]) {
         name: node.name,
         icon: getIcon(node),
         href: getUrl(node),
+        to: {
+          name: 'TopologyDisplay',
+          params: {
+            nodeId: node.id,
+          },
+        },
       }
       if (node.topologyNodes) {
         result.children = recursiveUpdateNode(node.topologyNodes)
@@ -130,6 +161,7 @@ function getUrl(node: TopologyNode): string | undefined {
 function updateItems(): void {
   if (nodes.value) {
     items.value = recursiveUpdateNode(nodes.value)
+    console.log('updateItems', items.value)
   }
 }
 
