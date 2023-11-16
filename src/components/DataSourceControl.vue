@@ -1,22 +1,27 @@
 <template>
   <v-chip
     :color="backgroundColor"
-    class="outer-chip"
+    pill
+    label
+    class="outer-chip px-1"
   >
-    <v-chip-group
+    <v-btn-toggle
       v-model="selected"
       @change="onChangeSelection"
+      mandatory
+      group
       active-class="primary--text"
     >
-      <v-chip
+      <v-btn
         v-for="item in items"
         :key="item.id"
         small
+        plain
         class="body-1"
       >
         {{ item.name }}
-      </v-chip>
-    </v-chip-group>
+      </v-btn>
+    </v-btn-toggle>
   </v-chip>
 </template>
 
