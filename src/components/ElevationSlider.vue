@@ -23,7 +23,8 @@
             dense
             class="tooltip-input body-1"
           />
-          <div v-else class="body-1" @click="enableTooltipEdit">{{ Math.round(currentValue) }} m MSL</div>
+          <span v-else class="body-1" @click="enableTooltipEdit">{{ Math.round(currentValue) }}</span>
+          {{ unit }}
         </div>
       </template>
     </vue-slider>
@@ -59,6 +60,7 @@ export default class ElevationSlider extends Vue {
   @Prop({ default: -1 }) value!: number
   @Prop({ default: 0 }) minValue!: number
   @Prop({ default: -10 }) maxValue!: number
+  @Prop({ default: '' }) unit!: string
 
   currentTooltipValue: number = 0
   currentValue: number = 0

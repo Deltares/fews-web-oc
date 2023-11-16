@@ -19,6 +19,7 @@
                 :key="wmsLayerOptions?.name"
                 :minValue="minElevation"
                 :maxValue="maxElevation"
+                :unit="elevationUnit"
                 @input="debouncedSetWMSLayerOptions"
               />
             </MapboxLayer>
@@ -188,6 +189,14 @@ const selectedCoordinatesLayerOptions: CircleLayer = {
   paint: selectedLocationPaintOptions,
 }
 
+interface ElevationWithUnitSymbol {
+  units?: string
+  lowerValue?: number
+  upperValue?: number
+  unitSymbol: string
+}
+
+
 @Component({
   components: {
     ColourBar,
@@ -236,6 +245,7 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   currentElevation: number|null = null
   minElevation: number|null = null
   maxElevation: number|null = null
+  elevationUnit: string = ''
 
   selectedLocationId: string | null = null
   locations: Location[] = []
@@ -309,8 +319,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
         colorScaleRange: this.legendRange
       }
 
-      this.maxElevation = this.currentWMSLayer?.elevation?.upperValue ?? null
-      this.minElevation = this.currentWMSLayer?.elevation?.lowerValue ?? null
+      const elevation = (this.currentWMSLayer?.elevation as ElevationWithUnitSymbol)
+
+      this.maxElevation = elevation?.upperValue ?? null
+      this.minElevation = elevation?.lowerValue ?? null
+      this.elevationUnit = elevation?.unitSymbol ?? ''
     }
   }
 
