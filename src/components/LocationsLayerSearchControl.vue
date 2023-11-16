@@ -1,6 +1,6 @@
 <template>
   <v-chip
-    class="chip"
+    class="locations-control__chip px-1"
     :color="backgroundColor"
     pill
     label
@@ -15,12 +15,15 @@
       v-model="selectedLocation"
       label="Search Locations"
       single-line
+      hide-details
+      flat
+      rounded
       :items="locations"
       item-text="locationName"
       return-object
       @input="onSelectLocation"
       prepend-inner-icon="mdi-magnify"
-      class="ml-2 mt-3"
+      class="locations-control__autocomplete mb-1 pa"
       dense
     >
       <template v-slot:label="label">
@@ -77,7 +80,14 @@ export default class LocationsLayerSearchControl extends Vue {
 </script>
 
 <style scoped>
-.chip {
+.locations-control__chip {
   backdrop-filter: blur(4px);
+}
+</style>
+
+<style>
+.locations-control__autocomplete.v-text-field--rounded > .v-input__control > .v-input__slot {
+  padding-right: 2px; 
+  padding-left: 2px;
 }
 </style>
