@@ -12,6 +12,7 @@
       @change="onShowChange"
     />
     <v-autocomplete
+      v-if="showLocations"
       v-model="selectedLocation"
       label="Search Locations"
       single-line
@@ -22,7 +23,6 @@
       item-text="locationName"
       return-object
       @input="onSelectLocation"
-      prepend-inner-icon="mdi-magnify"
       class="locations-control__autocomplete mb-1 pa"
       dense
     >
