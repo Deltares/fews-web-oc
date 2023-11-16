@@ -12,19 +12,22 @@
       @change="onShowChange"
     />
     <v-autocomplete
-      v-if="showLocations"
-      v-model="selectedLocation"
-      label="Search Locations"
-      single-line
-      hide-details
-      flat
-      rounded
-      :items="locations"
-      item-text="locationName"
-      return-object
-      @input="onSelectLocation"
-      class="locations-control__autocomplete mb-1 pa"
-      dense
+        v-if="showLocations"
+        v-model="selectedLocation"
+        label="Search Locations"
+        single-line
+        hide-details
+        flat
+        rounded
+        :items="locations"
+        item-text="locationName"
+        return-object
+        @input="onSelectLocation"
+        class="locations-control__autocomplete mb-1 pa"
+        dense
+        :menu-props="{
+            auto: true,
+            }"
     >
       <template v-slot:label="label">
         <span class="body-1">{{label}}</span>
