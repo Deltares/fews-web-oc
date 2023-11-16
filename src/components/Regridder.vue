@@ -407,9 +407,9 @@ export default class Regridder extends Mixins(PiRequestsMixin) {
       // Append the anchor element to the DOM and click it to trigger the download
       document.body.appendChild(downloadLink)
       downloadLink.click()
-      downloadLink.remove()
       document.body.removeChild(downloadLink)
-      
+      downloadLink.remove()
+
       window.URL.revokeObjectURL(blobUrl)
       this.downloadDialog = false
     } catch (error) {
