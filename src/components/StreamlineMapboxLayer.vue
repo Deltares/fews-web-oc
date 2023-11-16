@@ -7,7 +7,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator"
 import type { MapboxLayerOptions } from '@/components/AnimatedMapboxLayer.vue';
-import { Map, type MapboxOptions } from 'mapbox-gl';
+import { Map } from 'mapbox-gl';
 import { WMSStreamlineLayer, type WMSStreamlineLayerOptions } from '@/lib/StreamLines/layer'
 import { StreamlineStyle } from "@/lib/StreamLines/render";
 
@@ -52,21 +52,7 @@ export default class StreamlineMapboxLayer extends Vue {
   currentLayer: string = ""
 
   deferredMountedTo(map: Map) {
-    map.getCanvasContainer().style.visibility = 'hidden'
-    const div = this.$refs['mapboxgl-map'] as HTMLElement
-    const mapOptions: MapboxOptions = {
-      accessToken: this.$config.get('VUE_APP_MAPBOX_TOKEN'),
-      container: div,
-      style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-      minZoom: 2,
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      useWebGL2: true
-    }
-    const mapGL = new Map(mapOptions)
-    mapGL.touchZoomRotate.disableRotation()
-    mapGL.touchPitch.disable()
-    this.mapObject = mapGL
+    this.mapObject = map
 
     this.mapObject.once("load", () => {
       this.isInitialized = true
