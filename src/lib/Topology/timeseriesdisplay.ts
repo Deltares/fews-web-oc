@@ -139,7 +139,7 @@ async function fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
               item.request ??= elevationResult?.requests[0].request
             }
             const elevationConfig = timeSeriesDisplayToChartConfig(elevationSubplot, title)
-            config = [elevationConfig, ...config]
+            config = [...config, elevationConfig]
           }
         }
 
