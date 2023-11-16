@@ -100,34 +100,29 @@ async function fetchTimeSeriesDisplaysAndRequestsForSingleFilter(
     // for add a sequence number to the subplot items. Where the sequence number is counted first by items and then by subplots.
     // e.g. subplot 1 has 2 items, subplot 2 has 2 items. Then the sequence numbers are:
     // subplot 1 item 1: 0
-    // subplot 1 item 2: 2
-    // subplot 2 item 1: 1
+    // subplot 1 item 2: 1
+    // subplot 2 item 1: 2
     // subplot 2 item 2: 3
     const addSequence = (result.config.timeSeriesDisplay.subplots?.length ?? 0) > result.requests.length ||
       result.config.timeSeriesDisplay.subplots?.some((subplot) => subplot.items.length > result.requests.length)
 
-    result.config.timeSeriesDisplay.subplots?.forEach((subplot, subplotIndex) => {
-      subplot.items.forEach((item, itemIndex) => {
-        if (addSequence) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          item.sequence = subplotIndex + itemIndex * result.config.timeSeriesDisplay.subplots.length
-        }
-      })
-    })
+    let idx = 0;
+
+    result.config.timeSeriesDisplay?.subplots?.forEach(({ items }) =>
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      items.forEach((item) => (addSequence && (item.sequence = idx++)))
+    )
 
     const addSequenceElevation = (elevationResult?.config?.timeSeriesDisplay.subplots?.length ?? 0) > result.requests.length ||
       elevationResult?.config?.timeSeriesDisplay.subplots?.some((subplot) => subplot.items.length > result.requests.length)
 
-    elevationResult?.config?.timeSeriesDisplay.subplots?.forEach((subplot, subplotIndex) => {
-      subplot.items.forEach((item, itemIndex) => {
-        if (addSequenceElevation) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          item.sequence = subplotIndex + itemIndex * elevationResult.config.timeSeriesDisplay.subplots.length
-        }
-      })
-    })
+    idx = 0
+    elevationResult?.config?.timeSeriesDisplay.subplots?.forEach(({ items }) =>
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      items.forEach((item) => (addSequenceElevation && (item.sequence = idx++)))
+    );
 
     const displayCur = result.config.timeSeriesDisplay.subplots?.map(
       (subplot, subplotIndex) => {
