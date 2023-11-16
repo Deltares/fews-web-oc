@@ -91,7 +91,7 @@ export default class WindowComponent extends Vue {
         case DisplayType.ElevationChart:
           return {
             icon: 'mdi-chart-line',
-            label: 'Cross Section Chart',
+            label: 'Vertical profile',
             value: displayType,
             style: 'transform: rotate(90deg)'
           }
