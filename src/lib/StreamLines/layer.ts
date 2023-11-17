@@ -101,6 +101,10 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
     return this.map
   }
 
+  get visualiserInitialised(): boolean {
+    return this.visualiser !== null && this.visualiser.isInitialised
+  }
+
   private get size(): [number, number] {
     if (!this.gl) throw new Error('Not initialised.')
     // const width = this.gl
@@ -142,8 +146,8 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
     await this.onMapBoundsChange(false)
 
     this.map
-      .on('moveend', () => this.onMapBoundsChange(true))
-      .on('resize', () => this.onMapResize())
+      .on('moveend',  this.onMapMove)
+      .on('resize', this.onResize)
 
     if (this.onLoad) this.onLoad()
   }
@@ -177,6 +181,15 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
       offsetY: -2 * (yCentreCur - yCentreWMS) / heightCur
     }
     this.visualiser?.setScaling(scaling)
+  }
+
+  onRemove(): void {
+    this.visualiser?.stop()
+    if (this.map !== null) {
+      this.map
+        .off('moveend', this.onMapMove)
+        .off('resize', this.onResize)
+    }
   }
 
   async setTimeIndex(index: number): Promise<void> {
@@ -243,6 +256,14 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
 
     // Fetch a new WMS picture for the new size.
     await this.onMapBoundsChange(true)
+  }
+
+  onResize = (event: Event) => {
+    this.onMapResize()
+  }
+
+  onMapMove = (event: DragEvent) => {
+    this.onMapBoundsChange(true)
   }
 
   private async onMapBoundsChange(doResetParticles: boolean): Promise<void> {

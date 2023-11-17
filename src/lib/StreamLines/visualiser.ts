@@ -109,6 +109,12 @@ export class StreamlineVisualiser {
     return this._fps
   }
 
+  get isInitialised(): boolean {
+    return (this.particlePropagator !== null &&
+      this.particleRenderer !== null &&
+      this.finalRenderer !== null)
+  }
+
   initialise(colormap: Colormap): void {
     // Create shader programs for streamline rendering.
     const programUpdateParticles = ShaderProgram.fromShaderSources(

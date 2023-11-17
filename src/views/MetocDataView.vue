@@ -8,12 +8,7 @@
       <div class="grid-map" v-show="showMap">
         <div class="map-container">
           <MapComponent>
-            <StreamlineMapboxLayer
-              v-if="isStreamlineLayer"
-              :layer="wmsLayerOptions">
-            </StreamlineMapboxLayer>
             <MapboxLayer
-              v-else
               :layer="wmsLayerOptions"
               @doubleclick="onLayerDoubleClick"
               @locationclick="onLocationClick">
@@ -143,8 +138,6 @@ import { Layer } from '@deltares/fews-wms-requests';
 import Regridder from '@/components/Regridder.vue'
 import { toMercator } from '@turf/projection';
 import { NavigationGuardNext, Route } from 'vue-router';
-import StreamlineLayers from '@/assets/streamline-layers.json'
-import StreamlineMapboxLayer from '@/components/StreamlineMapboxLayer.vue';
 
 const defaultGeoJsonSource: GeoJSONSourceRaw = {
   type: 'geojson',
@@ -210,7 +203,6 @@ interface ElevationWithUnitSymbol {
     ElevationSlider,
     LocationsLayerSearchControl,
     MapboxLayer,
-    StreamlineMapboxLayer,
     MapComponent,
     MetocSidebar,
     Regridder,
@@ -330,12 +322,6 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
       this.minElevation = elevation?.lowerValue ?? null
       this.elevationUnit = elevation?.unitSymbol ?? ''
     }
-  }
-
-  get isStreamlineLayer() {
-    if (this.currentDataSource?.wmsLayerId === undefined) return false
-    const layerIds = StreamlineLayers.layers.map(layer => layer.id)
-    return layerIds.includes(this.currentDataSource?.wmsLayerId)
   }
 
   /**
