@@ -1,7 +1,26 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
+    <v-toolbar v-if="!mobile" density="compact">
+      <v-btn-toggle rounded="0" v-model="menuType">
+        <v-btn variant="text" value="treemenu">
+          <v-icon>mdi-file-tree</v-icon>
+        </v-btn>
+        <v-btn variant="text" value="columnmenu">
+          <v-icon>mdi-view-week</v-icon>
+        </v-btn>
+      </v-btn-toggle>
+    </v-toolbar>
+    <TreeMenu
+      v-if="menuType === 'treemenu' && !mobile"
+      rootName="SchematicsStatus"
+      v-model:active="active"
+      :items="items"
+      :open="open"
+    >
+    </TreeMenu>
     <ColumnMenu
-      rootName="Overzichtsschermen"
+      v-else-if="menuType === 'columnmenu' || mobile"
+      rootName="SchematicsStatus"
       v-model:active="active"
       :items="items"
       v-model:open="open"
@@ -45,6 +64,7 @@ import type { ColumnItem } from '../components/general/ColumnItem'
 import { useSsd } from '../services/useSsd/index.ts'
 
 import ColumnMenu from '../components/general/ColumnMenu.vue'
+import TreeMenu from '@/components/general/TreeMenu.vue'
 import DateTimeSlider from '../components/general/DateTimeSlider.vue'
 import SsdComponent from '../components/ssd/SsdComponent.vue'
 import { useDisplay } from 'vuetify'
@@ -85,6 +105,7 @@ const selectedDate = ref<Date>(new Date())
 const selectedDateSlider = ref<Date>(selectedDate.value)
 
 const { mobile } = useDisplay()
+const menuType = ref('treemenu')
 
 onMounted(() => {
   onGroupIdChange()

@@ -1,6 +1,30 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
-    <ColumnMenu v-model:active="active" :items="items" v-model:open="open">
+    <v-toolbar v-if="!mobile" density="compact">
+      <v-btn-toggle rounded="0" v-model="menuType">
+        <v-btn variant="text" value="treemenu">
+          <v-icon>mdi-file-tree</v-icon>
+        </v-btn>
+        <v-btn variant="text" value="columnmenu">
+          <v-icon>mdi-view-week</v-icon>
+        </v-btn>
+      </v-btn-toggle>
+    </v-toolbar>
+    <TreeMenu
+      v-if="menuType === 'treemenu' && !mobile"
+      rootName="SpatialDisplay"
+      v-model:active="active"
+      :items="items"
+      :open="open"
+    >
+    </TreeMenu>
+    <ColumnMenu
+      v-else-if="menuType === 'columnmenu' || mobile"
+      rootName="SpatialDisplay"
+      v-model:active="active"
+      :items="items"
+      :open="open"
+    >
     </ColumnMenu>
   </Teleport>
   <SpatialDisplay :layer-name="props.layerName"></SpatialDisplay>
@@ -8,12 +32,14 @@
 
 <script setup lang="ts">
 import ColumnMenu from '../components/general/ColumnMenu.vue'
+import TreeMenu from '@/components/general/TreeMenu.vue'
 import { ref, watch } from 'vue'
 import { ColumnItem } from '../components/general/ColumnItem'
 import { useWmsCapilities } from '@/services/useWms'
 import { configManager } from '@/services/application-config'
 import { Layer, LayerGroup } from '@deltares/fews-wms-requests'
 import SpatialDisplay from '@/components/spatialdisplay/SpatialDisplay.vue'
+import { useDisplay } from 'vuetify'
 
 interface Props {
   layerName?: string
@@ -29,6 +55,9 @@ const capabilities = useWmsCapilities(baseUrl)
 const active = ref<string[]>(['root'])
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>()
+const menuType = ref('treemenu')
+
+const { mobile } = useDisplay()
 
 watch(capabilities, () => {
   if (capabilities.value === undefined) return []

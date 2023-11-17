@@ -1,6 +1,6 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
-    <v-toolbar density="compact">
+    <v-toolbar v-if="!mobile" density="compact">
       <v-btn-toggle rounded="0" v-model="menuType">
         <v-btn variant="text" value="treemenu">
           <v-icon>mdi-file-tree</v-icon>
@@ -11,7 +11,7 @@
       </v-btn-toggle>
     </v-toolbar>
     <TreeMenu
-      v-if="menuType === 'treemenu'"
+      v-if="menuType === 'treemenu' && !mobile"
       rootName="Topology"
       v-model:active="active"
       :items="items"
@@ -19,7 +19,7 @@
     >
     </TreeMenu>
     <ColumnMenu
-      v-else-if="menuType === 'columnmenu'"
+      v-else-if="menuType === 'columnmenu' || mobile"
       rootName="Topology"
       v-model:active="active"
       :items="items"
@@ -66,6 +66,7 @@ import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { watchEffect } from 'vue'
 import { ref, watch } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
+import { useDisplay } from 'vuetify'
 
 const WEB_BROWSER_DISPLAY: string = 'web browser display'
 
@@ -94,6 +95,8 @@ const menuType = ref('treemenu')
 const activeTab = ref(0)
 const displayTabs = ref<DisplayTab[]>([])
 const externalLink = ref<string>('')
+
+const { mobile } = useDisplay()
 
 watch(
   () => props.nodeId,
