@@ -193,6 +193,7 @@ export default class AnimatedMapboxLayer extends Vue {
 
     if (this.layer.colorScaleRange) {
       getMapUrl.searchParams.append('colorScaleRange', `${this.layer.colorScaleRange}`)
+      getMapUrl.searchParams.append('useDisplayUnits', 'true')
     }
 
     return getMapUrl.toString()
