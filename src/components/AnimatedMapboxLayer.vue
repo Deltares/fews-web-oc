@@ -180,6 +180,9 @@ export default class AnimatedMapboxLayer extends Vue {
       this.updateStreamlineLayer()
       this.configureAutoAdjustSettings()
     })
+    if (this.mapObject.getLayer(this.streamlineLayer.id) !== undefined) {
+      this.mapObject.removeLayer(this.streamlineLayer.id)
+    }
     this.mapObject.addLayer(this.streamlineLayer)
   }
 
