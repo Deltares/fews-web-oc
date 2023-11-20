@@ -177,9 +177,19 @@ export default class AnimatedMapboxLayer extends Vue {
     }
     this.streamlineLayer = new WMSStreamlineLayer(layerOptions)
     this.streamlineLayer.on('load', () => {
+      this.updateStreamlineLayer()
       this.configureAutoAdjustSettings()
     })
     this.mapObject.addLayer(this.streamlineLayer)
+  }
+
+  updateStreamlineLayer() {
+    if (this.layer === null || this.streamlineLayer === null) return
+    const timeString = this.layer.time.toISOString().slice(0,-5)+"Z"
+    if (timeString !== this.streamlineLayer.time) {
+      const timeIndex = this.streamlineLayer.times.indexOf(timeString)
+      this.streamlineLayer.setTimeIndex(timeIndex)
+    }
   }
 
   updateSource() {
@@ -306,28 +316,38 @@ export default class AnimatedMapboxLayer extends Vue {
     }
 
     if (this.layer.name !== this.currentLayer) {
+      // Create a new layer
       this.removeLayer()
       this.currentLayer = this.layer.name
 
       if (streamlineLayerIds.includes(this.currentLayer)) {
         // This is a streamline layer
         this.createStreamlineLayer()
-        this.enableDoubleClickLayer()
-        this.enableClickLocationsLayer()
+      } else {
+        const source = this.mapObject.getSource(this.currentLayer)
+        if (source === undefined) {
+          this.createSource()
+        }
       }
+      this.enableDoubleClickLayer()
+      this.enableClickLocationsLayer()
 
       // set default zoom only if layer is changed
       this.setDefaultZoom()
-    }
 
-    if (this.currentLayer !== '' && !streamlineLayerIds.includes(this.currentLayer)) {
-      const source = this.mapObject.getSource(this.currentLayer)
-      if (source === undefined) {
-        this.createSource()
-        this.enableDoubleClickLayer()
-        this.enableClickLocationsLayer()
+    } else if (this.currentLayer !== '') {
+      // Update existing layer
+      if (streamlineLayerIds.includes(this.currentLayer)) {
+        if (this.streamlineLayer !== null) {
+          if (this.mapObject.getLayer(this.streamlineLayer.id) !== undefined) {
+            this.updateStreamlineLayer()
+          }
+        }
       } else {
-        this.updateSource()
+        const source = this.mapObject.getSource(this.currentLayer)
+        if (source !== undefined) {
+          this.updateSource()
+        }
       }
     }
   }
