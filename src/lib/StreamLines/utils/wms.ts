@@ -47,13 +47,14 @@ export async function fetchWMSColormap(baseUrl: string, layer: string): Promise<
   )
 }
 
-export async function fetchWMSAvailableTimes(baseUrl: string, layer: string): Promise<string[]> {
+export async function fetchWMSAvailableTimesAndElevations(baseUrl: string, layer: string): Promise<{times: string[], elevationBounds: [number, number] | null}> {
   const getCapabilitiesUrl = `${baseUrl}?request=GetCapabilities&format=application/json&version=1.3&layers=${layer}`
   const response = await fetch(getCapabilitiesUrl)
   const capabilities = await response.json()
 
   console.assert(capabilities.layers !== undefined && capabilities.layers.length === 1)
-  return capabilities.layers[0].times
+  const elevationBounds = (capabilities.layers[0].elevation !== undefined ? [+capabilities.layers[0].elevation.lowerValue, +capabilities.layers[0].elevation.upperValue] : null) as [number, number] | null
+  return { times: capabilities.layers[0].times, elevationBounds: elevationBounds}
 }
 
 export async function fetchWMSVelocityField(
@@ -63,11 +64,31 @@ export async function fetchWMSVelocityField(
   time: string,
   boundingBox: [number, number, number, number],
   width: number,
-  height: number
+  height: number,
+  elevation?: number
 ): Promise<VelocityImage> {
 
-  const boundingBoxString = boundingBox.join(',')
-  const url = `${baseUrl}?service=WMS&request=GetMap&version=1.3&layers=${layer}&styles=${style}&transparent=true&crs=EPSG%3A3857&showContours=false&time=${time}&uppercase=false&width=${width}&height=${height}&bbox=${boundingBoxString}&format=image%2Ftiff&convertUVToRG=true`
+  const url = new URL(baseUrl)
+  url.searchParams.append('service', 'WMS')
+  url.searchParams.append('request', 'GetMap')
+  url.searchParams.append('version', '1.3')
+  url.searchParams.append('layers', layer)
+  url.searchParams.append('styles', style)
+  url.searchParams.append('transparent', 'true')
+  url.searchParams.append('crs', 'EPSG:3857')
+  url.searchParams.append('showContours', 'false')
+  url.searchParams.append('time', time)
+  url.searchParams.append('uppercase', 'false')
+  url.searchParams.append('width', `${width}`)
+  url.searchParams.append('height', `${height}`)
+  url.searchParams.append('bbox', `${boundingBox.join(',')}`)
+  url.searchParams.append('format', 'image/tiff')
+  url.searchParams.append('convertUVToRG', 'true')
+
+  if (elevation !== undefined) {
+    url.searchParams.append('elevation', `${elevation}`)
+  }
+
   const response = await fetch(url)
   const arrayBuffer = await response.arrayBuffer()
 

@@ -10,7 +10,7 @@ import {
   StreamlineStyle,
   StreamlineVisualiser,
   StreamlineVisualiserOptions,
-  fetchWMSAvailableTimes,
+  fetchWMSAvailableTimesAndElevations,
   fetchWMSColormap,
   fetchWMSVelocityField
 } from '.'
@@ -60,6 +60,8 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
   private visualiser: StreamlineVisualiser | null
 
   private boundingBoxWMS: [number, number, number, number] | null
+  private _elevation: number | undefined
+  private _elevationBounds: [number, number] | null
 
   private _times: string[]
   private _timeIndex: number
@@ -74,6 +76,7 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
     this.visualiser = null
 
     this.boundingBoxWMS = null
+    this._elevationBounds = null
 
     this._times = []
     this._timeIndex = 0
@@ -91,6 +94,10 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
 
   get time(): string {
     return this._times[this._timeIndex]
+  }
+
+  get elevation(): number | undefined {
+    return this._elevation
   }
 
   get fps(): number {
@@ -128,6 +135,7 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
 
     this._times = []
     this._timeIndex = 0
+    this._elevationBounds = null
 
     // Fetch colormap and use it to initialise the visualiser.
     const colormap = await fetchWMSColormap(
@@ -138,10 +146,12 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
 
     // Fetch available WMS times, then set the current WMS time to the first
     // available time.
-    this._times = await fetchWMSAvailableTimes(
+    const response = await fetchWMSAvailableTimesAndElevations(
       this.options.baseUrl,
       this.options.layer
     )
+    this._times = response.times
+    this._elevationBounds = response.elevationBounds
 
     await this.onMapBoundsChange(false)
 
@@ -193,11 +203,29 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
     this.visualiser = null
   }
 
-  async setTimeIndex(index: number): Promise<void> {
+  setTimeIndex(index: number): void {
     if (index < 0 || index > this.times.length - 1) {
       throw new Error('Invalid time index.')
     }
     this._timeIndex = index
+  }
+
+  setElevation(elevation: number): void {
+    if (this._elevationBounds === null || elevation < this._elevationBounds[0] || elevation > this._elevationBounds[1]) {
+      throw new Error('Invalid elevation.')
+    }
+    this._elevation = elevation
+  }
+
+
+  async updateLayer(timeIndex?: number, elevation?: number): Promise<void> {
+    if (timeIndex === undefined && elevation === undefined) return
+    if (timeIndex !== undefined) {
+      this.setTimeIndex(timeIndex)
+    }
+    if (elevation !== undefined) {
+      this.setElevation(elevation)
+    }
     await this.onMapBoundsChange(false)
   }
 
@@ -293,7 +321,8 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
       this.time,
       boundingBox,
       widthWMS,
-      heightWMS
+      heightWMS,
+      this.elevation
     )
 
     if (this.visualiser !== null) {

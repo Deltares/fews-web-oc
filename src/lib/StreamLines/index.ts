@@ -1,7 +1,7 @@
 export { StreamlineStyle } from './render'
 export { StreamlineVisualiser, StreamlineVisualiserOptions } from './visualiser'
 export {
-  fetchWMSAvailableTimes,
+  fetchWMSAvailableTimesAndElevations,
   fetchWMSColormap,
   fetchWMSVelocityField
 } from './utils/wms'

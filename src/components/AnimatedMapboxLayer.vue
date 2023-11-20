@@ -189,9 +189,10 @@ export default class AnimatedMapboxLayer extends Vue {
   updateStreamlineLayer() {
     if (this.layer === null || this.streamlineLayer === null) return
     const timeString = this.layer.time.toISOString().slice(0,-5)+"Z"
-    if (timeString !== this.streamlineLayer.time) {
+    if (timeString !== this.streamlineLayer.time || this.layer.elevation !== this.streamlineLayer.elevation) {
       const timeIndex = this.streamlineLayer.times.indexOf(timeString)
-      this.streamlineLayer.setTimeIndex(timeIndex)
+      const elevation = this.layer.elevation ?? undefined
+      this.streamlineLayer.updateLayer(timeIndex, elevation)
     }
   }
 
