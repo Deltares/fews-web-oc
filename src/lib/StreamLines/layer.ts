@@ -187,9 +187,10 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
     this.visualiser?.stop()
     if (this.map !== null) {
       this.map
-        .off('moveend', this.onMapMove)
-        .off('resize', this.onResize)
+      .off('moveend', this.onMapMove)
+      .off('resize', this.onResize)
     }
+    this.visualiser = null
   }
 
   async setTimeIndex(index: number): Promise<void> {
@@ -295,14 +296,16 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
       heightWMS
     )
 
-    // Stop the animation and clear the frame to prevent jarring flashes while
-    // the canvas is repositioned.
-    this.visualiser.stop()
+    if (this.visualiser !== null) {
+      // Stop the animation and clear the frame to prevent jarring flashes while
+      // the canvas is repositioned.
+      this.visualiser.stop()
 
-    this.boundingBoxWMS = boundingBox
-    this.visualiser.setVelocityImage(velocityImage, doResetParticles)
-    // Start the animation if it is not yet running; start is a no-op if the
-    // animation is already running.
-    this.visualiser.start(() => this.map?.triggerRepaint())
+      this.boundingBoxWMS = boundingBox
+      this.visualiser.setVelocityImage(velocityImage, doResetParticles)
+      // Start the animation if it is not yet running; start is a no-op if the
+      // animation is already running.
+      this.visualiser.start(() => this.map?.triggerRepaint())
+    }
   }
 }
