@@ -173,7 +173,8 @@ export default class AnimatedMapboxLayer extends Vue {
       numParticles: 10000,
       particleSize: 4,
       speedFactor: 0.2,
-      fadeAmountPerSecond: 3
+      fadeAmountPerSecond: 3,
+      colorScaleRange: this.layer?.colorScaleRange ?? undefined,
     }
     this.streamlineLayer = new WMSStreamlineLayer(layerOptions)
     this.streamlineLayer.on('load', () => {
@@ -189,10 +190,11 @@ export default class AnimatedMapboxLayer extends Vue {
   updateStreamlineLayer() {
     if (this.layer === null || this.streamlineLayer === null) return
     const timeString = this.layer.time.toISOString().slice(0,-5)+"Z"
-    if (timeString !== this.streamlineLayer.time || this.layer.elevation !== this.streamlineLayer.elevation) {
+    if (timeString !== this.streamlineLayer.time || this.layer.elevation !== this.streamlineLayer.elevation || this.layer.colorScaleRange !== this.streamlineLayer.colorScaleRange) {
       const timeIndex = this.streamlineLayer.times.indexOf(timeString)
       const elevation = this.layer.elevation ?? undefined
-      this.streamlineLayer.updateLayer(timeIndex, elevation)
+      const colorScaleRange = this.layer.colorScaleRange ?? undefined
+      this.streamlineLayer.updateLayer(timeIndex, elevation, colorScaleRange)
     }
   }
 

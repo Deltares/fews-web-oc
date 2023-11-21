@@ -50,6 +50,7 @@ export class StreamlineVisualiser {
   private doReset: boolean
   private velocityImage: VelocityImage | null
   private newVelocityImage: VelocityImage | null
+  private colorMap: Colormap | null
   private frameId: number | null
   private dtMin: number
   private _fps: number
@@ -79,6 +80,7 @@ export class StreamlineVisualiser {
     this.doReset = false
     this.velocityImage = null
     this.newVelocityImage = null
+    this.colorMap = null
     this.frameId = null
     this.dtMin = 0
     this._fps = 60
@@ -456,5 +458,13 @@ export class StreamlineVisualiser {
     this.particlePropagator.setVelocityImage(velocityImage)
     this.finalRenderer.setVelocityImage(velocityImage)
     this.dtMin = this.computeMinimumTimeStep()
+  }
+
+  updateColorMap(colorMap: Colormap): void {
+    if (!this.finalRenderer) {
+      throw new Error('Cannot set colormap for uninitialised visualiser.')
+    }
+    this.colorMap = colorMap
+    this.finalRenderer.setColorMap(this.colorMap)
   }
 }

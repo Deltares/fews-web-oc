@@ -2,6 +2,7 @@ import * as GeoTIFF from 'geotiff'
 
 import { Color, Colormap } from "./colormap"
 import { createTexture } from './textures'
+import { color } from 'd3'
 
 export class VelocityImage {
   constructor(
@@ -36,9 +37,12 @@ export class VelocityImage {
  * @param layer layer to obtain the legend for.
  * @returns Colormap fetched from the FEWS WMS service.
  */
-export async function fetchWMSColormap(baseUrl: string, layer: string): Promise<Colormap> {
+export async function fetchWMSColormap(baseUrl: string, layer: string, colorScaleRange?: string): Promise<Colormap> {
   // TODO: use fews-wms-requests and its types.
-  const url = `${baseUrl}?request=GetLegendGraphic&format=application/json&version=1.3&layers=${layer}`
+  let url = `${baseUrl}?request=GetLegendGraphic&format=application/json&version=1.3&layers=${layer}`
+  if (colorScaleRange !== undefined) {
+    url = `${url}&colorscalerange=${colorScaleRange}`
+  }
   const json = await (await fetch(url)).json() as { legend: { lowerValue: number, color: string }[] }
 
   return new Colormap(
@@ -65,7 +69,8 @@ export async function fetchWMSVelocityField(
   boundingBox: [number, number, number, number],
   width: number,
   height: number,
-  elevation?: number
+  elevation?: number,
+  colorScaleRange?: string
 ): Promise<VelocityImage> {
 
   const url = new URL(baseUrl)
@@ -87,6 +92,10 @@ export async function fetchWMSVelocityField(
 
   if (elevation !== undefined) {
     url.searchParams.append('elevation', `${elevation}`)
+  }
+
+  if (colorScaleRange !== undefined) {
+    url.searchParams.append('colorScaleRange', `${colorScaleRange}`)
   }
 
   const response = await fetch(url)

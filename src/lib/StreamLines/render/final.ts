@@ -81,6 +81,11 @@ export class FinalRenderer {
     this.velocityTexture = velocityImage.toTexture(this.program.gl, false)
   }
 
+  setColorMap(colormap: Colormap) {
+    this.colormap = colormap
+    this.colormapTexture = this.colormap.toTexture(this.program.gl, FinalRenderer.NUM_SEGMENTS_COLORMAP)
+  }
+
   private bindUniforms(scaling: BoundingBoxScaling): void {
     if (!this.velocityImage) {
       throw new Error(

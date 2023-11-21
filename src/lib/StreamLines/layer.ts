@@ -24,6 +24,7 @@ export interface WMSStreamlineLayerOptions {
   particleSize: number
   speedFactor: number
   fadeAmountPerSecond: number
+  colorScaleRange?: string
   downsampleFactorWMS?: number
 }
 
@@ -62,6 +63,7 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
   private boundingBoxWMS: [number, number, number, number] | null
   private _elevation: number | undefined
   private _elevationBounds: [number, number] | null
+  private _colorScaleRange: string | undefined
 
   private _times: string[]
   private _timeIndex: number
@@ -77,6 +79,8 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
 
     this.boundingBoxWMS = null
     this._elevationBounds = null
+
+    this._colorScaleRange = this.options.colorScaleRange
 
     this._times = []
     this._timeIndex = 0
@@ -98,6 +102,10 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
 
   get elevation(): number | undefined {
     return this._elevation
+  }
+
+  get colorScaleRange(): string | undefined {
+    return this._colorScaleRange
   }
 
   get fps(): number {
@@ -140,7 +148,8 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
     // Fetch colormap and use it to initialise the visualiser.
     const colormap = await fetchWMSColormap(
       this.options.baseUrl,
-      this.options.layer
+      this.options.layer,
+      this.options.colorScaleRange
     )
     this.visualiser.initialise(colormap)
 
@@ -217,14 +226,16 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
     this._elevation = elevation
   }
 
-
-  async updateLayer(timeIndex?: number, elevation?: number): Promise<void> {
+  async updateLayer(timeIndex?: number, elevation?: number, colorScaleRange?: string): Promise<void> {
     if (timeIndex === undefined && elevation === undefined) return
     if (timeIndex !== undefined) {
       this.setTimeIndex(timeIndex)
     }
     if (elevation !== undefined) {
       this.setElevation(elevation)
+    }
+    if (colorScaleRange !== undefined) {
+      this._colorScaleRange = colorScaleRange
     }
     await this.onMapBoundsChange(false)
   }
@@ -322,7 +333,8 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
       boundingBox,
       widthWMS,
       heightWMS,
-      this.elevation
+      this.elevation,
+      this.colorScaleRange
     )
 
     if (this.visualiser !== null) {
@@ -332,6 +344,12 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
 
       this.boundingBoxWMS = boundingBox
       this.visualiser.setVelocityImage(velocityImage, doResetParticles)
+      const colormap = await fetchWMSColormap(
+        this.options.baseUrl,
+        this.options.layer,
+        this.colorScaleRange
+      )
+      this.visualiser.updateColorMap(colormap)
       // Start the animation if it is not yet running; start is a no-op if the
       // animation is already running.
       this.visualiser.start(() => this.map?.triggerRepaint())
