@@ -36,6 +36,7 @@
             "
             :to="child.to"
             :class="getClass(child)"
+            :disabled="child.nodata"
           >
             <v-list-item-title>{{ child.name }}</v-list-item-title>
             <template v-slot:append>

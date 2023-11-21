@@ -128,6 +128,7 @@ function attachLayersToMenu(
     const item: ColumnItem = {
       id: layer.name,
       name: layer.title || layer.name,
+      nodata: layer.completelyMissing || false,
       to: {
         name: 'SpatialDisplay',
         params: {
