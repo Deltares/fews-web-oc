@@ -40,8 +40,26 @@
           >
             <v-list-item-title>{{ child.name }}</v-list-item-title>
             <template v-slot:append>
-              <v-icon v-if="child.children?.length">mdi-chevron-right</v-icon>
-              <v-icon v-else-if="child.icon" small>{{ child.icon }}</v-icon>
+              <v-tooltip v-if="child.nodata">
+                <template v-slot:activator="{ props }">
+                  <v-icon v-bind="props" class="allow-disabled-hover"
+                    >mdi-alert-octagon-outline</v-icon
+                  >
+                </template>
+                <div v-if="child.children">
+                  <div>{{ child.name }}'s children are missing data:</div>
+                  <ul class="ml-4">
+                    <li v-for="grandChild in child.children">
+                      {{ grandChild.name }}
+                    </li>
+                  </ul>
+                </div>
+                <span v-else>{{ child.name }} has no data.</span>
+              </v-tooltip>
+              <div v-else>
+                <v-icon v-if="child.children">mdi-chevron-right</v-icon>
+                <v-icon v-else-if="child.icon" small>{{ child.icon }}</v-icon>
+              </div>
             </template>
           </v-list-item>
         </template>
@@ -151,3 +169,9 @@ function recursiveFind(stack: ColumnItem[], id: string): boolean {
   return false
 }
 </script>
+
+<style scoped>
+.allow-disabled-hover {
+  pointer-events: auto;
+}
+</style>
