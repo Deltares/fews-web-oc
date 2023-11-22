@@ -164,6 +164,7 @@ export default class AnimatedMapboxLayer extends Vue {
   }
 
   createStreamlineLayer() {
+    const layer = StreamlineLayers.layers.find(layer => layer.id === this.currentLayer)
     const layerOptions: WMSStreamlineLayerOptions = {
       baseUrl: `${this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")}/wms`,
       layer: this.currentLayer,
@@ -175,6 +176,7 @@ export default class AnimatedMapboxLayer extends Vue {
       speedFactor: 0.2,
       fadeAmountPerSecond: 3,
       colorScaleRange: this.layer?.colorScaleRange ?? undefined,
+      useMagnitude: layer?.useMagnitude ?? false,
     }
     this.streamlineLayer = new WMSStreamlineLayer(layerOptions)
     this.streamlineLayer.on('load', () => {

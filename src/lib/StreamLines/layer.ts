@@ -24,6 +24,7 @@ export interface WMSStreamlineLayerOptions {
   particleSize: number
   speedFactor: number
   fadeAmountPerSecond: number
+  useMagnitude: boolean
   colorScaleRange?: string
   downsampleFactorWMS?: number
 }
@@ -333,6 +334,7 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
       boundingBox,
       widthWMS,
       heightWMS,
+      this.options.useMagnitude,
       this.elevation,
       this.colorScaleRange
     )

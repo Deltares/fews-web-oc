@@ -1,7 +1,21 @@
 {
     "layers": [
         {
+            "id": "oceanographic_currents_d3d"
+        },
+        {
             "id": "oceanographic_currents_cmems"
+        },
+        {
+            "id": "oceanographic_waves_swan",
+            "useMagnitude": true
+        },
+        {
+            "id": "oceanographic_waves_ww3",
+            "useMagnitude": true
+        },
+        {
+            "id": "meteo_wind_10m_gfs"
         }
     ]
 }

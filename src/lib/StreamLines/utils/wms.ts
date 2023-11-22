@@ -69,6 +69,7 @@ export async function fetchWMSVelocityField(
   boundingBox: [number, number, number, number],
   width: number,
   height: number,
+  useMagnitude: boolean,
   elevation?: number,
   colorScaleRange?: string
 ): Promise<VelocityImage> {
@@ -88,7 +89,11 @@ export async function fetchWMSVelocityField(
   url.searchParams.append('height', `${height}`)
   url.searchParams.append('bbox', `${boundingBox.join(',')}`)
   url.searchParams.append('format', 'image/tiff')
-  url.searchParams.append('convertUVToRG', 'true')
+  if (useMagnitude) {
+    url.searchParams.append('convertMagnitudeDirectiontoRG', 'true')
+  } else {
+    url.searchParams.append('convertUVToRG', 'true')
+  }
 
   if (elevation !== undefined) {
     url.searchParams.append('elevation', `${elevation}`)
