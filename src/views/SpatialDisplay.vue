@@ -51,7 +51,7 @@ import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
 import debounce from 'lodash/debounce'
 import WMSMixin from '@/mixins/WMSMixin'
 import MapComponent from '@/components/MapComponent.vue'
-import MapboxLayer from '@/components/AnimatedMapboxLayer.vue'
+import MapboxLayer, { LayerType } from '@/components/AnimatedMapboxLayer.vue'
 import { MapboxLayerOptions, convertBoundingBoxToLngLatBounds } from '@/components/AnimatedMapboxLayer.vue'
 import { ColumnItem } from '@/components/ColumnItem'
 import ColumnMenu from '@/components/ColumnMenu.vue'
@@ -212,8 +212,8 @@ export default class SpatialDisplay extends Mixins(WMSMixin) {
   }
 
   setLayerOptions (): void {
-    if (this.layerName) { 
-      this.layerOptions = { name: this.layerName, time: this.currentTime, bbox: this.layersBbox[this.layerName] } }
+    if (this.layerName) {
+      this.layerOptions = { name: this.layerName, time: this.currentTime, bbox: this.layersBbox[this.layerName], layerType: LayerType.Static} }
   }
 }
 </script>

@@ -24,8 +24,6 @@ import { WMSStreamlineLayer, type WMSStreamlineLayerOptions } from '@/lib/Stream
 import { StreamlineStyle } from "@/lib/StreamLines/render";
 import StreamlineLayers from '@/assets/streamline-layers.json'
 
-const streamlineLayerIds = StreamlineLayers.layers.map(layer => layer.id)
-
 function getCoordsFromBounds(bounds: LngLatBounds) {
   return [
     bounds.getNorthWest().toArray(),
@@ -71,12 +69,18 @@ export function convertBoundingBoxToLngLatBounds(
   )
 }
 
+export enum LayerType {
+  Streamline = 'streamline',
+  Static = 'static',
+}
+
 export interface MapboxLayerOptions {
   name: string
   time: Date
   bbox: LngLatBounds
   elevation?: number | null
   colorScaleRange?: string
+  layerType:LayerType
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
@@ -100,6 +104,7 @@ export default class AnimatedMapboxLayer extends Vue {
   isInitialized = false
   counter = 0
   currentLayer: string = ""
+  currentLayerType: LayerType = LayerType.Static
   streamlineLayer: WMSStreamlineLayer | null = null
 
   created() {
@@ -323,12 +328,13 @@ export default class AnimatedMapboxLayer extends Vue {
       return
     }
 
-    if (this.layer.name !== this.currentLayer) {
+    if (this.layer.name !== this.currentLayer || this.layer.layerType !== this.currentLayerType) {
       // Create a new layer
       this.removeLayer()
       this.currentLayer = this.layer.name
+      this.currentLayerType = this.layer.layerType
 
-      if (streamlineLayerIds.includes(this.currentLayer)) {
+      if (this.currentLayerType === LayerType.Streamline) {
         // This is a streamline layer
         this.createStreamlineLayer()
       } else {
@@ -345,7 +351,7 @@ export default class AnimatedMapboxLayer extends Vue {
 
     } else if (this.currentLayer !== '') {
       // Update existing layer
-      if (streamlineLayerIds.includes(this.currentLayer)) {
+      if (this.currentLayerType === LayerType.Streamline) {
         if (this.streamlineLayer !== null) {
           if (this.mapObject.getLayer(this.streamlineLayer.id) !== undefined) {
             this.updateStreamlineLayer()
@@ -363,7 +369,7 @@ export default class AnimatedMapboxLayer extends Vue {
   removeLayer() {
     if (this.mapObject !== undefined) {
       this.mapObject.off("dblclick", this.onDblClick)
-      if (streamlineLayerIds.includes(this.currentLayer)) {
+      if (this.currentLayerType === LayerType.Streamline) {
         if (this.streamlineLayer !== null) {
           if (this.mapObject.getLayer(this.streamlineLayer.id) !== undefined) {
             this.mapObject.removeLayer(this.streamlineLayer.id)
