@@ -7,17 +7,22 @@
 <script lang="ts">
 import { Component, Inject, Prop, Vue, Watch } from "vue-property-decorator"
 import {
-  EventData,
+  type EventData,
   ImageSource,
   ImageSourceRaw,
   LngLatBounds,
   Map,
+  type MapDataEvent,
   RasterLayer,
+MapMouseEvent,
 } from "mapbox-gl"
 import { point } from "@turf/helpers"
 import { toMercator } from "@turf/projection"
 import { BoundingBox } from "@deltares/fews-wms-requests"
 import { toWgs84 } from "@turf/projection"
+import { WMSStreamlineLayer, type WMSStreamlineLayerOptions } from '@/lib/StreamLines/layer'
+import { StreamlineStyle } from "@/lib/StreamLines/render";
+import StreamlineLayers from '@/assets/streamline-layers.json'
 
 function getCoordsFromBounds(bounds: LngLatBounds) {
   return [
@@ -64,12 +69,18 @@ export function convertBoundingBoxToLngLatBounds(
   )
 }
 
+export enum LayerType {
+  Streamline = 'streamline',
+  Static = 'static',
+}
+
 export interface MapboxLayerOptions {
   name: string
   time: Date
   bbox: LngLatBounds
   elevation?: number | null
   colorScaleRange?: string
+  layerType:LayerType
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
@@ -93,8 +104,10 @@ export default class AnimatedMapboxLayer extends Vue {
   isInitialized = false
   counter = 0
   currentLayer: string = ""
+  currentLayerType: LayerType = LayerType.Static
+  streamlineLayer: WMSStreamlineLayer | null = null
 
-  mounted() {
+  created() {
     const map = this.getMap()
     if (map && map.isStyleLoaded()) {
       this.mapObject = map
@@ -108,22 +121,88 @@ export default class AnimatedMapboxLayer extends Vue {
     this.mapObject.once("load", () => {
       this.isInitialized = true
       this.onLayerChange()
+    })
+  }
 
-      this.enableDoubleClickLayer()
-      this.enableClickLocationsLayer()
-    })
-    this.mapObject.on("moveend", () => {
-      this.updateSource()
-    })
-    this.mapObject.on("data", async (e) => {
-      if (
-        e.sourceId === this.currentLayer &&
-        e.tile !== undefined &&
-        e.isSourceLoaded
-      ) {
-        this.mapObject.setPaintProperty(e.sourceId, "raster-opacity", 1)
+  onMapMoveEnd = (e: Event) => {
+    this.updateSource()
+  }
+
+  onMapData(e: MapDataEvent & EventData) {
+    if (
+      e.sourceId === this.currentLayer &&
+      e.tile !== undefined &&
+      e.isSourceLoaded
+    ) {
+      this.mapObject.setPaintProperty(e.sourceId, "raster-opacity", 1)
+    }
+  }
+
+  configureAutoAdjustSettings(): void {
+    // Attempt to fix frame rate issues by reducing the "quality" of the
+    // streamlines, i.e. reduce the number of substeps per frame.
+    const desiredFrameRate = 30
+    const margin = 5
+
+    let maxDisplacement = WMSStreamlineLayer.MAX_PARTICLE_DISPLACEMENT
+    const adjustFactor = 1.1
+    const maxDisplacementMin = 2
+    const maxDisplacementMax = 100
+    const adjustQuality = () => {
+      if (this.streamlineLayer === null) return
+      if (this.streamlineLayer.fps < desiredFrameRate - margin) {
+        maxDisplacement = Math.min(
+          maxDisplacement * adjustFactor,
+          maxDisplacementMax
+        )
+      } else if (this.streamlineLayer.fps > desiredFrameRate + margin) {
+        maxDisplacement = Math.max(
+          maxDisplacement / adjustFactor,
+          maxDisplacementMin
+        )
       }
+      if (this.streamlineLayer.visualiserInitialised) {
+        this.streamlineLayer.updateVisualiserOptions({ maxDisplacement })
+      }
+    }
+    window.setInterval(adjustQuality, 100)
+  }
+
+  createStreamlineLayer() {
+    const layer = StreamlineLayers.layers.find(layer => layer.id === this.currentLayer)
+    const layerOptions: WMSStreamlineLayerOptions = {
+      baseUrl: `${this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")}/wms`,
+      layer: this.currentLayer,
+      style: 'Select a style',
+      downsampleFactorWMS: 4,
+      streamlineStyle: StreamlineStyle.LightParticlesOnMagnitude,
+      numParticles: 10000,
+      particleSize: 4,
+      speedFactor: 0.2,
+      fadeAmountPerSecond: 3,
+      colorScaleRange: this.layer?.colorScaleRange ?? undefined,
+      useMagnitude: layer?.useMagnitude ?? false,
+    }
+    this.streamlineLayer = new WMSStreamlineLayer(layerOptions)
+    this.streamlineLayer.on('load', () => {
+      this.updateStreamlineLayer()
+      this.configureAutoAdjustSettings()
     })
+    if (this.mapObject.getLayer(this.streamlineLayer.id) !== undefined) {
+      this.mapObject.removeLayer(this.streamlineLayer.id)
+    }
+    this.mapObject.addLayer(this.streamlineLayer)
+  }
+
+  updateStreamlineLayer() {
+    if (this.layer === null || this.streamlineLayer === null) return
+    const timeString = this.layer.time.toISOString().slice(0,-5)+"Z"
+    if (timeString !== this.streamlineLayer.time || this.layer.elevation !== this.streamlineLayer.elevation || this.layer.colorScaleRange !== this.streamlineLayer.colorScaleRange) {
+      const timeIndex = this.streamlineLayer.times.indexOf(timeString)
+      const elevation = this.layer.elevation ?? undefined
+      const colorScaleRange = this.layer.colorScaleRange ?? undefined
+      this.streamlineLayer.updateLayer(timeIndex, elevation, colorScaleRange)
+    }
   }
 
   updateSource() {
@@ -165,6 +244,8 @@ export default class AnimatedMapboxLayer extends Vue {
       },
     }
     this.mapObject.addLayer(rasterLayer, "boundary_country_outline")
+    this.mapObject.on("moveend", this.onMapMoveEnd)
+    this.mapObject.on("data", this.onMapData)
   }
 
   private createGetMapUrl(
@@ -214,21 +295,24 @@ export default class AnimatedMapboxLayer extends Vue {
     }
   }
 
+  onDblClick = (event: MapMouseEvent & EventData) => {
+    this.$emit("doubleclick", event)
+  }
+
   enableDoubleClickLayer() {
     // deactivate double click zoom
     this.mapObject.doubleClickZoom.disable()
 
-    this.mapObject.on("dblclick", (e) => {
-      this.$emit("doubleclick", e)
-    })
+    this.mapObject.on("dblclick", this.onDblClick)
   }
 
-  enableClickLocationsLayer() {
-    const handleLocationClick = (e: EventData) => {
+  handleLocationClick = (e: EventData) => {
       this.$emit("locationclick", e)
     }
-    this.mapObject.on("click", "locationsLayer", handleLocationClick)
-    this.mapObject.on("touchend", "locationsLayer", handleLocationClick)
+
+  enableClickLocationsLayer() {
+    this.mapObject.on("click", "locationsLayer", this.handleLocationClick)
+    this.mapObject.on("touchend", "locationsLayer", this.handleLocationClick)
   }
 
   @Watch("layer")
@@ -244,28 +328,61 @@ export default class AnimatedMapboxLayer extends Vue {
       return
     }
 
-    if (this.layer.name !== this.currentLayer) {
+    if (this.layer.name !== this.currentLayer || this.layer.layerType !== this.currentLayerType) {
+      // Create a new layer
       this.removeLayer()
       this.currentLayer = this.layer.name
+      this.currentLayerType = this.layer.layerType
+
+      if (this.currentLayerType === LayerType.Streamline) {
+        // This is a streamline layer
+        this.createStreamlineLayer()
+      } else {
+        const source = this.mapObject.getSource(this.currentLayer)
+        if (source === undefined) {
+          this.createSource()
+        }
+      }
+      this.enableDoubleClickLayer()
+      this.enableClickLocationsLayer()
 
       // set default zoom only if layer is changed
       this.setDefaultZoom()
-    }
 
-
-    const source = this.mapObject.getSource(this.currentLayer)
-    if (source === undefined) {
-      this.createSource()
-    } else {
-      this.updateSource()
+    } else if (this.currentLayer !== '') {
+      // Update existing layer
+      if (this.currentLayerType === LayerType.Streamline) {
+        if (this.streamlineLayer !== null) {
+          if (this.mapObject.getLayer(this.streamlineLayer.id) !== undefined) {
+            this.updateStreamlineLayer()
+          }
+        }
+      } else {
+        const source = this.mapObject.getSource(this.currentLayer)
+        if (source !== undefined) {
+          this.updateSource()
+        }
+      }
     }
   }
 
   removeLayer() {
     if (this.mapObject !== undefined) {
-      if (this.mapObject.getSource(this.currentLayer) !== undefined) {
-        this.mapObject.removeLayer(this.currentLayer)
-        this.mapObject.removeSource(this.currentLayer)
+      this.mapObject.off("dblclick", this.onDblClick)
+      if (this.currentLayerType === LayerType.Streamline) {
+        if (this.streamlineLayer !== null) {
+          if (this.mapObject.getLayer(this.streamlineLayer.id) !== undefined) {
+            this.mapObject.removeLayer(this.streamlineLayer.id)
+            this.streamlineLayer = null
+          }
+        }
+      } else {
+        if (this.mapObject.getSource(this.currentLayer) !== undefined) {
+          this.mapObject.off("moveend", this.onMapMoveEnd)
+          this.mapObject.off("data", this.onMapData)
+          this.mapObject.removeLayer(this.currentLayer)
+          this.mapObject.removeSource(this.currentLayer)
+        }
       }
     }
   }

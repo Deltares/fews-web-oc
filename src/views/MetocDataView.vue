@@ -9,7 +9,6 @@
         <div class="map-container">
           <MapComponent>
             <MapboxLayer
-              v-if="showLayer"
               :layer="wmsLayerOptions"
               @doubleclick="onLayerDoubleClick"
               @locationclick="onLocationClick">
@@ -46,6 +45,11 @@
                 :items="dataSources"
                 @input="onSelectDataSource"
                 />
+            <LayerTypeControl
+              v-if = "isStreamLineLayer"
+              v-model="layerType"
+              @input="setWMSLayerOptions"
+              />
             <LocationsLayerSearchControl
                 :showLocations.sync="showLocationsLayer"
                 :locationId.sync="selectedLocationId"
@@ -128,7 +132,8 @@ import WMSMixin from '@/mixins/WMSMixin'
 
 import ColourBar from '@/components/ColourBar.vue';
 import DataSourceControl from '@/components/DataSourceControl.vue';
-import MapboxLayer, { MapboxLayerOptions, convertBoundingBoxToLngLatBounds } from '@/components/AnimatedMapboxLayer.vue';
+import MapboxLayer, { LayerType, MapboxLayerOptions, convertBoundingBoxToLngLatBounds } from '@/components/AnimatedMapboxLayer.vue';
+import LayerTypeControl from '@/components/LayerTypeControl.vue';
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import ElevationSlider from '@/components/ElevationSlider.vue'
 import MetocSidebar from '@/components/MetocSidebar.vue';
@@ -138,8 +143,10 @@ import SplashScreen from '@/components/SplashScreen.vue';
 import { Layer } from '@deltares/fews-wms-requests';
 import Regridder from '@/components/Regridder.vue'
 import { toMercator } from '@turf/projection';
-import Vue from 'vue'
 import { NavigationGuardNext, Route } from 'vue-router';
+
+import StreamlineLayers from '@/assets/streamline-layers.json'
+const streamlineLayerIds = StreamlineLayers.layers.map(layer => layer.id)
 
 const defaultGeoJsonSource: GeoJSONSourceRaw = {
   type: 'geojson',
@@ -203,6 +210,7 @@ interface ElevationWithUnitSymbol {
     DataSourceControl,
     DateTimeSlider,
     ElevationSlider,
+    LayerTypeControl,
     LocationsLayerSearchControl,
     MapboxLayer,
     MapComponent,
@@ -228,12 +236,12 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
   isFullscreenGraph = false
   displays: DisplayConfig[] = []
 
-  showLayer: boolean = true
   wmsLayerOptions: MapboxLayerOptions | null = null
   legend: ColourMap = []
   legendRange: string|undefined = undefined
   unit: string = ''
   legendTitle: string = ''
+  layerType: LayerType = LayerType.Static
 
   dateController: DateController = new DateController([])
   currentTime: Date = new Date()
@@ -306,17 +314,18 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
    * Sets WMS layer options to pass to Mapbox.
    */
   setWMSLayerOptions(): void {
-    if (this.times.length === 0 || !this.currentDataSource) {
+    if (this.times.length === 0 || !this.currentDataSource || !this.currentWMSLayer) {
       this.wmsLayerOptions = null
     } else {
-      const boundingBoxWms = this.currentWMSLayer?.boundingBox
+      const boundingBoxWms = this.currentWMSLayer.boundingBox
       const boundingBox = boundingBoxWms ? convertBoundingBoxToLngLatBounds(boundingBoxWms) : new LngLatBounds()
       this.wmsLayerOptions = {
         bbox: boundingBox,
         name: this.currentDataSource.wmsLayerId,
         time: this.currentTime,
         elevation: this.currentElevation,
-        colorScaleRange: this.legendRange
+        colorScaleRange: this.legendRange,
+        layerType: this.layerType,
       }
 
       const elevation = (this.currentWMSLayer?.elevation as ElevationWithUnitSymbol)
@@ -562,6 +571,9 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
     this.legendRange = undefined
     // Update the WMS layer legend.
     this.updateLegendGraphic()
+
+    // Set the layerType
+    this.layerType = this.isStreamLineLayer ? LayerType.Streamline : LayerType.Static
 
     this.setWMSLayerOptions()
 
@@ -832,6 +844,11 @@ export default class MetocDataView extends Mixins(WMSMixin, TimeSeriesMixin) {
 
   get layerTitle(): string {
     return this.currentWMSLayer?.title ?? '—'
+  }
+
+  get isStreamLineLayer(): boolean {
+    if (!this.currentDataSource) return false
+    return streamlineLayerIds.includes(this.currentDataSource.wmsLayerId)
   }
 
   get showMap(): boolean {

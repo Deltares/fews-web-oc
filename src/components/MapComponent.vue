@@ -10,6 +10,7 @@
       :interactive="true"
       :drag-pan="true"
       :scroll-zoom="true"
+      :useWebGL2="true"
       class="map"
       ref="map"
     >

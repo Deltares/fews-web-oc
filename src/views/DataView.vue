@@ -126,7 +126,7 @@ import { DateController } from '@/lib/TimeControl/DateController';
 import DateTimeSlider from '@/components/DateTimeSlider.vue'
 import WMSLayerControl, { WMSLayerControlValue } from '@/components/WMSLayerControl.vue'
 import LocationsLayerControl from '@/components/LocationsLayerControl.vue'
-import MapboxLayer from '@/components/AnimatedMapboxLayer.vue';
+import MapboxLayer, { LayerType } from '@/components/AnimatedMapboxLayer.vue';
 import { timeSeriesDisplayToChartConfig } from '@/lib/ChartConfig/timeSeriesDisplayToChartConfig'
 import TimeSeriesMixin from '@/mixins/TimeSeriesMixin'
 import { DisplayConfig, DisplayType } from '@/lib/Layout/DisplayConfig';
@@ -514,7 +514,8 @@ export default class DataView extends Mixins(WMSMixin, TimeSeriesMixin, PiReques
       this.layerOptions = {
         name: this.layerName,
         time: this.currentTime,
-        bbox: this.layersBbox[this.layerName]
+        bbox: this.layersBbox[this.layerName],
+        layerType: LayerType.Static
       }
     } else {
       this.layerOptions = null
