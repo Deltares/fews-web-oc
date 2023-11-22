@@ -69,8 +69,8 @@ export default class ColourBar extends Vue {
     const firstChild = d3.select("#colourbar > g > g.axis").selectChild()
     const lastChild = d3.select("#colourbar > g > g.axis").selectChild(':last-child')
 
-    this.range.min = firstChild.selectChild("text").property("innerHTML")
-    this.range.max = lastChild.selectChild("text").property("innerHTML")
+    this.range.min = this.value[0].lowerValue
+    this.range.max = this.value[this.value.length - 1].lowerValue
 
     firstChild.on('click', () => this.isEditingMin = true)
     lastChild.on('click', () => this.isEditingMax = true)
