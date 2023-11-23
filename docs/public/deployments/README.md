@@ -96,3 +96,16 @@ unzip the weboc.zip file into the Nginx html folder:
 /usr/share/nginx/html/
 
 the WebOC will be available in the root at port 80: http://mynginxserver/
+
+## Access to FewsWebServices
+
+Please note that every user of Web OC requires direct access to the FewsWebServices endpoints by default. If needed, FewsWebServices requests can be re-directed. Please find an apache example below.
+
+```
+# Redirect FewsWebServices requests to local server.
+<Location /weboc/fewswebservices>
+    ProxyPass http://fewswebservices_host_name:port
+    ProxyPassReverse http://fewswebservices_host_name:port
+</Location>
+
+```
