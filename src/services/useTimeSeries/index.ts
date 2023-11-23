@@ -1,4 +1,9 @@
-import { ActionRequest, PiWebserviceProvider } from '@deltares/fews-pi-requests'
+import {
+  ActionRequest,
+  PiWebserviceProvider,
+  type TimeSeriesFilter,
+  type TimeSeriesEvent,
+} from '@deltares/fews-pi-requests'
 import { onUnmounted, ref, shallowRef, toValue, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl'
@@ -166,4 +171,36 @@ export function useTimeSeries(
   }
 
   return shell
+}
+
+export async function postTimeSeriesEdit(
+  baseUrl: string,
+  requests: ActionRequest[],
+  data: Record<string, TimeSeriesEvent[]>,
+) {
+  const piProvider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
+  for (const timeSeriesId in data) {
+    const events = data[timeSeriesId]
+    const request = requests.find((r) => r.key === timeSeriesId)
+    if (request === undefined) continue
+    const url = absoluteUrl(`${baseUrl}${request.editRequest}`)
+    const queryParams = url.searchParams
+    const timeSeriesSetIndex = +(queryParams.get('timeSeriesSetIndex') ?? -1)
+    const locationId = queryParams.get('locationId') ?? ''
+    const filter: TimeSeriesFilter = {
+      timeSeriesSetIndex,
+      locationIds: [locationId],
+      onlyHeaders: true,
+    }
+    const piSeriesHeaders = await piProvider.getTimeSeries(filter)
+    const timeSeriesEdit = {
+      version: piSeriesHeaders.version,
+      timeZone: piSeriesHeaders.timeZone,
+      timeSeries: [{ events }],
+    }
+    piProvider.postTimeSeriesEdit(url.toString(), timeSeriesEdit)
+  }
 }

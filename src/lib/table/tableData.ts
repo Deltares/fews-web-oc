@@ -99,19 +99,19 @@ function dateToPiDateTime(dateTime: Date): {
  *
  * Creates time series data from table data.
  * @param {Record<string, Partial<TableSeriesData> | Date>[]} tableData - An array of records containing table data.
- * @returns {Record<string, Partial<TimeSeriesEvent>[]>} - An array of records containing time series data. The keys are the series IDs.
+ * @returns {Record<string, TimeSeriesEvent[]>} - An array of records containing time series data. The keys are the series IDs.
  */
 export function tableDataToTimeSeries(
   tableData: Record<string, Partial<TableSeriesData> | Date>[],
-): Record<string, Partial<TimeSeriesEvent>[]> {
-  const newTimeSeriesData: Record<string, Partial<TimeSeriesEvent>[]> = {}
+): Record<string, TimeSeriesEvent[]> {
+  const newTimeSeriesData: Record<string, TimeSeriesEvent[]> = {}
   tableData.forEach((tableItem) => {
     const date = tableItem.date as Date
     const { date: piDate, time: piTime } = dateToPiDateTime(date)
     Object.keys(tableItem).forEach((key) => {
       if (key !== 'date') {
-        const tableDatum = tableItem[key] as Partial<TableSeriesData>
-        const timeSeriesEvent: Partial<TimeSeriesEvent> = {
+        const tableDatum = tableItem[key] as TableSeriesData
+        const timeSeriesEvent: TimeSeriesEvent = {
           date: piDate,
           time: piTime,
           value: tableDatum.y?.toString() ?? '',
