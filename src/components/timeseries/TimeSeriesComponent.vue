@@ -24,6 +24,7 @@
           :series="series"
           :key="tableConfig.title"
           class="single"
+          @change="(event) => onDataChange(event)"
         >
         </TimeSeriesTable>
       </KeepAlive>
@@ -40,11 +41,15 @@ import {
   type DisplayConfig,
 } from '../../lib/display/DisplayConfig.js'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
-import { useTimeSeries } from '../../services/useTimeSeries/index.ts'
+import {
+  postTimeSeriesEdit,
+  useTimeSeries,
+} from '../../services/useTimeSeries/index.ts'
 import type { UseTimeSeriesOptions } from '../../services/useTimeSeries/index.ts'
 import { configManager } from '../../services/application-config'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useSystemTimeStore } from '@/stores/systemTime'
+import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 
 interface Props {
   config?: DisplayConfig
@@ -78,6 +83,10 @@ const options = computed<UseTimeSeriesOptions>(() => {
 })
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { series } = useTimeSeries(baseUrl, () => props.config.requests, options)
+
+function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
+  postTimeSeriesEdit(baseUrl, props.config.requests, newData)
+}
 
 const subplots = computed(() => {
   if (props.config) {
