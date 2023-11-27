@@ -19,7 +19,7 @@ Please note that Web OC will always use the system time of the Web OC users devi
 - The current FEWS Client has a multitude of tree/folder structures (Filters, Spatial Display, Topology, Display Groups, Manual Forecast) that we prefer not to duplicate in Web OC. Ideally, we want to use a single menu/folder structure from which various data displays can be accessed, and actions can be taken.
 - The architecture of the Web OC lends itself to the development of different functional components and displays for specific use. Nonetheless, we want to offer basic components that provide an excellent starting point for many users.
 
-When we want to limit ourselves to a single menu/folder structure configured in FEWS for navigation in Web OC, it is logical to base this on Topology.xml. In Web OC, the entire Topology structure is displayed, to which the Web OC user has access via FewsWebServices. By assigning viewPermissions in Topology.xml, it is possible to configure nodes for Web OC users that do not affect usage in the "thick" client. If authentication is not used for Web OC, permissions can still be utilized by configuring "defaultUser" in WebServices.xml (https://publicwiki.deltares.nl/pages/viewpage.action?pageId=220266993). The Web OC component that utilizes Topology.xml is TopologyDisplay.
+When we want to limit ourselves to a single menu/folder structure configured in FEWS for navigation in Web OC, it is logical to base this on Topology.xml. In Web OC, the entire Topology structure is displayed, to which the Web OC user has access via FewsWebServices. 
 
 For the general configuration of Topology.xml, please refer to https://publicwiki.deltares.nl/display/FEWSDOC/24+Topology.
 
@@ -33,7 +33,7 @@ Topology nodes in the Web OC component TopologyDisplay can be linked using Topol
 | DisplayGroup              | DisplayGroupId  | Yes                  | Yes                |
 | Run Task                  | WorkFlowId      | Yes                  | Not yet            |
 | SchematicStatusDisplay    | PanelId         | 2024.01              | Not yet            |
-| System Monitor            | TabId           | 2024.01              | Not yet             |
+| System Monitor            | TabId           | 2024.01              | Not yet            |
 
 **Spatial Display**
 
@@ -55,6 +55,9 @@ Web OC will show a time series graph and a drop down menu for selection of displ
 
 The period shown in the graph corresponds to the configured relative view period in DisplayGroups.xml
 
+### Permissions
+By assigning viewPermissions in Topology.xml, it is possible to configure nodes for Web OC users that do not affect usage in the "thick" client. If authentication is not used for Web OC, permissions can still be utilized by configuring "defaultUser" in WebServices.xml (https://publicwiki.deltares.nl/pages/viewpage.action?pageId=220266993). The Web OC component that utilizes Topology.xml is TopologyDisplay.
+
 ## Other WEB OC functional components
 
 Next to the Topology Display, three additional components can be configured in WebOperatorClient.xml: spatialDisplay, systemMonitor and schematicStatusDisplay.
@@ -64,6 +67,3 @@ Next to the Topology Display, three additional components can be configured in W
 **systemMonitor**: “Import status” and “Running Tasks” components of system monitor will be displayed in Web OC.
 
 **schematicStatusDisplay**: A tree view will list all SSD displayGroups including all displayPanels (configured permissions respected) available to FewsWebServices. Most click-actions on displayPanels are supported: https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+Schematic+Status+Display+%28SSD%29+Web+Service 
-
-## Permissions
-To be added
