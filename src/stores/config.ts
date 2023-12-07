@@ -6,12 +6,13 @@ import {
 import { WebOcGeneralConfig } from '@deltares/fews-pi-requests'
 import { ComponentTypeEnum, WebOcComponent } from '../lib/fews-config/types.js'
 
-// const WEBOC_CONFIG_PREFIX = 'delft-fews-weboc:config#'
-
+interface WebOcConfigGeneral extends WebOcGeneralConfig {
+  defaultComponent?: string
+}
 interface ConfigState {
   version: string
   components: { [key: string]: WebOcComponent }
-  general: WebOcGeneralConfig
+  general: WebOcConfigGeneral
 }
 
 function getMenuIcon(componentConfig: WebOcComponent): string {
@@ -77,6 +78,12 @@ const useConfigStore = defineStore('config', {
         return getResourcesStaticUrl(state.general.icons.logo)
       } else {
         return `${import.meta.env.BASE_URL}images/logo.png`
+      }
+    },
+
+    defaultComponent: (state) => {
+      if (state.general.defaultComponent) {
+        return state.components[state.general.defaultComponent]
       }
     },
   },
