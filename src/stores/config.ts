@@ -73,6 +73,16 @@ const useConfigStore = defineStore('config', {
       })
     },
 
+    componentByType: (
+      state,
+    ): ((componentType: string) => WebOcComponent | undefined) => {
+      return (componentType: string) => {
+        return Object.values(state.components).find(
+          (component) => component.type === componentType,
+        )
+      }
+    },
+
     logo: (state) => {
       if (state.general.icons?.logo) {
         return getResourcesStaticUrl(state.general.icons.logo)
