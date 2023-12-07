@@ -31,11 +31,6 @@ const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
   {
-    path: '/',
-    redirect: { name: 'About' },
-    name: 'Default',
-  },
-  {
     path: '/about',
     name: 'About',
     meta: { authorize: [] },
@@ -179,6 +174,20 @@ async function addDynamicRoutes() {
       router.addRoute(route)
     }
   })
+  const defaultRoute = {
+    path: '/',
+    redirect: { name: 'About' },
+    name: 'Default',
+  }
+  if (store.defaultComponent !== undefined) {
+    const route = dynamicRoutes.find(
+      (route) => route.name === store.defaultComponent!.type,
+    )
+    if (route !== undefined) {
+      defaultRoute.redirect = { name: route.name as string }
+    }
+  }
+  router.addRoute(defaultRoute)
 }
 
 router.beforeEach(async (to, _from) => {
@@ -192,8 +201,7 @@ router.beforeEach(async (to, _from) => {
     try {
       const user =
         await authenticationManager.userManager.signinRedirectCallback()
-      const path: string =
-        user.state === null ? '/about' : (user.state as string)
+      const path: string = user.state === null ? '/' : (user.state as string)
       return { path }
     } catch (error) {
       console.error(error)
