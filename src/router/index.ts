@@ -153,7 +153,6 @@ let routesAreInitialized = false
 
 async function handleAuthorization(
   to: RouteLocationNormalized,
-  _from: RouteLocationNormalized,
   authorize: string[],
 ) {
   const currentUser = await authenticationManager.userManager.getUser()
@@ -185,7 +184,7 @@ async function addDynamicRoutes() {
 router.beforeEach(async (to, _from) => {
   const authorize = to.meta?.authorize as string[]
   if (authorize && configManager.authenticationIsEnabled) {
-    const authPath = await handleAuthorization(to, _from, authorize)
+    const authPath = await handleAuthorization(to, authorize)
     if (authPath) return authPath
   }
 
@@ -204,7 +203,7 @@ router.beforeEach(async (to, _from) => {
   if (!routesAreInitialized) {
     await addDynamicRoutes()
     routesAreInitialized = true
-    router.replace(to)
+    return to
   }
 
   return
