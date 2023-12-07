@@ -16,9 +16,10 @@
         :href="tab.href"
         :target="tab.target"
         :to="tab.to"
+        class="text-capitalize"
       >
+        <v-icon>{{ tab.icon }}</v-icon>
         {{ tab.title }}
-        <v-icon v-if="tab.href">mdi-share</v-icon>
       </v-tab>
     </v-tabs>
     <v-btn
@@ -26,8 +27,8 @@
       :href="externalLink"
       target="_blank"
       variant="text"
-      class="flex-0-0 align-self-center"
-      >Link<v-icon>mdi-share</v-icon></v-btn
+      class="flex-0-0 align-self-center text-capitalize"
+      ><v-icon>mdi-share</v-icon>Link</v-btn
     >
   </Teleport>
   <router-view></router-view>
@@ -56,6 +57,7 @@ interface DisplayTab {
   href?: string
   target?: string
   to?: RouteLocationRaw
+  icon: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -155,22 +157,10 @@ watchEffect(() => {
 
   // Create the displayTabs for the active node.
   const _displayTabs: DisplayTab[] = []
-  if (node.displayGroups !== undefined || node.displayId !== undefined) {
-    _displayTabs.push({
-      id: timeseriesTabId,
-      title: 'Time Series',
-      to: {
-        name: 'TopologyTimeSeries',
-        params: {
-          nodeId: node.id,
-        },
-      },
-    })
-  }
   if (node.gridDisplaySelection !== undefined) {
     _displayTabs.push({
       id: spatialTabId,
-      title: 'Spatial Display',
+      title: 'Map',
       to: {
         name: 'TopologySpatialDisplay',
         params: {
@@ -178,6 +168,20 @@ watchEffect(() => {
           layerName: node.gridDisplaySelection?.plotId,
         },
       },
+      icon: 'mdi-map',
+    })
+  }
+  if (node.displayGroups !== undefined || node.displayId !== undefined) {
+    _displayTabs.push({
+      id: timeseriesTabId,
+      title: 'Charts',
+      to: {
+        name: 'TopologyTimeSeries',
+        params: {
+          nodeId: node.id,
+        },
+      },
+      icon: 'mdi-chart-multiple',
     })
   }
   if (node.url !== undefined) {
