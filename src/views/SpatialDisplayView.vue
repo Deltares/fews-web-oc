@@ -1,7 +1,13 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
     <v-toolbar v-if="!mobile" density="compact">
-      <v-btn-toggle rounded="0" v-model="menuType">
+      <v-btn-toggle
+        v-model="menuType"
+        variant="tonal"
+        divided
+        density="compact"
+        class="ma-2"
+      >
         <v-btn variant="text" value="treemenu">
           <v-icon>mdi-file-tree</v-icon>
         </v-btn>
