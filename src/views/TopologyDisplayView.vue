@@ -26,7 +26,18 @@
     </ColumnMenu>
   </Teleport>
   <Teleport to="#app-bar-content">
-    <v-tabs v-model="activeTab" class="d-flex flex-shrink-0">
+    <v-btn-toggle
+      v-if="showLeafsAsButton"
+      v-model="activeLeafNode"
+      variant="tonal"
+      divided
+      density="compact"
+      class="ma-2"
+      ><v-btn v-for="item in nodeButtons" :to="item.to">{{
+        item.name
+      }}</v-btn></v-btn-toggle
+    >
+    <v-tabs v-if="displayTabs.length > 1" v-model="activeTab" class="d-flex flex-shrink-0">
       <v-tab
         v-for="tab in displayTabs"
         :key="tab.id"
@@ -61,8 +72,10 @@ import ColumnMenu from '@/components/general/ColumnMenu.vue'
 import TreeMenu from '@/components/general/TreeMenu.vue'
 import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
 import router from '@/router'
+import { useConfigStore } from '@/stores/config'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { watchEffect } from 'vue'
+import { computed } from 'vue'
 import { ref, watch } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { useDisplay } from 'vuetify'
@@ -87,6 +100,8 @@ const props = withDefaults(defineProps<Props>(), {
   nodeId: '',
 })
 
+const configStore = useConfigStore()
+
 const active = ref<string[]>([])
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
@@ -94,6 +109,9 @@ const menuType = ref('treemenu')
 
 const activeTab = ref(0)
 const displayTabs = ref<DisplayTab[]>([])
+
+const activeLeafNode = ref(0)
+const nodeButtons = ref<any[]>([])
 const externalLink = ref<string>('')
 
 const { mobile } = useDisplay()
@@ -107,6 +125,13 @@ watch(
   },
   { immediate: true },
 )
+
+const showLeafsAsButton = computed(() => {
+  const value =
+    configStore.getComponentByType('TopologyDisplay').showLeafNodesAsButtons
+  console.log(value)
+  return value
+})
 
 const nodes = ref<TopologyNode[]>()
 const topologyMap = ref(new Map<string, TopologyNode>())
@@ -126,7 +151,7 @@ function topologyNodeIsVisible(node: TopologyNode): boolean {
   return node.topologyNodes.some(topologyNodeIsVisible)
 }
 
-function recursiveUpdateNode(nodes: TopologyNode[]) {
+function recursiveUpdateNode(nodes: TopologyNode[], skipLeaves = false) {
   return nodes
     .filter((node) => topologyNodeIsVisible(node))
     .map((node) => {
@@ -140,14 +165,41 @@ function recursiveUpdateNode(nodes: TopologyNode[]) {
           params: {
             nodeId: node.id,
           },
-        },
+        }
       }
       if (node.topologyNodes) {
-        result.children = recursiveUpdateNode(node.topologyNodes)
+        const items = recursiveUpdateNode(node.topologyNodes, skipLeaves)
+        if (skipLeaves) {
+          const itemsWithChildren = items.filter((i) => i.children)
+          result.children = itemsWithChildren
+        } else {
+          result.children = items
+        }
       }
       return result
     })
 }
+
+
+function nodeButtonItems(nodes: TopologyNode[]) {
+  return nodes
+    .filter((node) => topologyNodeIsVisible(node))
+    .map((node) => {
+      const result: ColumnItem ={
+        id: node.id,
+        name: node.name,
+        icon: getIcon(node),
+        to: {
+          name: 'TopologyDisplay',
+          params: {
+            nodeId: node.id
+          }
+        }
+      }
+      return result
+    })
+}
+
 
 function getIcon(node: TopologyNode): string | undefined {
   if (node.url && !node.topologyNodes && !node.displayGroups) return 'mdi-share'
@@ -161,7 +213,7 @@ function getUrl(node: TopologyNode): string | undefined {
 
 function updateItems(): void {
   if (nodes.value) {
-    items.value = recursiveUpdateNode(nodes.value)
+    items.value = recursiveUpdateNode(nodes.value, showLeafsAsButton.value)
   }
 }
 
@@ -171,7 +223,7 @@ watch(nodes, updateItems)
 // Redirect to the corresponding display of the updated active tab.
 watchEffect(() => {
   // Check if the current displayTab already matches the active node.
-  const activeNodeId = active.value[0]
+  const activeNodeId = props.nodeId
   const timeseriesTabId = `${activeNodeId}-timeseries`
   const spatialTabId = `${activeNodeId}-spatial`
   const urlTabId = `${activeNodeId}-${WEB_BROWSER_DISPLAY}`
@@ -184,8 +236,11 @@ watchEffect(() => {
     return
 
   // Check if the active node is a leaf.
-  const node = topologyMap.value.get(active.value[0])
-  if (node === undefined || node.topologyNodes) return
+  const node = topologyMap.value.get(activeNodeId)
+  if (node === undefined) return
+  if (node.topologyNodes) {
+    nodeButtons.value = nodeButtonItems(node.topologyNodes)
+  }
 
   // Create the displayTabs for the active node.
   const _displayTabs: DisplayTab[] = []
@@ -196,7 +251,7 @@ watchEffect(() => {
       to: {
         name: 'TopologySpatialDisplay',
         params: {
-          nodeId: node.id,
+          nodeId: activeNodeId,
           layerName: node.gridDisplaySelection?.plotId,
         },
       },
@@ -210,7 +265,7 @@ watchEffect(() => {
       to: {
         name: 'TopologyTimeSeries',
         params: {
-          nodeId: node.id,
+          nodeId: activeNodeId,
         },
       },
       icon: 'mdi-chart-multiple',
@@ -226,7 +281,7 @@ watchEffect(() => {
   if (_displayTabs.length > 0 && _displayTabs[0].to !== undefined) {
     router.push(_displayTabs[0].to)
   } else {
-    router.push({ name: 'TopologyDisplay', params: { nodeId: node.id } })
+    router.push({ name: 'TopologyDisplay', params: { nodeId: activeNodeId } })
   }
 })
 </script>
