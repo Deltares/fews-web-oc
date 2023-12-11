@@ -1,6 +1,6 @@
 <template>
   <template v-for="item in props.items" :key="item.id">
-    <template v-if="item.children">
+    <template v-if="item.children?.length">
       <v-list-group :value="item.id">
         <template v-slot:activator="{ props }">
           <v-list-item v-bind="props">
