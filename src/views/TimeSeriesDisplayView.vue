@@ -1,11 +1,6 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
-    <ColumnMenu
-      rootName="Topology"
-      v-model:active="active"
-      :items="items"
-      v-model:open="open"
-    >
+    <ColumnMenu v-model:active="active" :items="items" v-model:open="open">
     </ColumnMenu>
   </Teleport>
   <TimeSeriesDisplay :nodeId="nodeId"></TimeSeriesDisplay>

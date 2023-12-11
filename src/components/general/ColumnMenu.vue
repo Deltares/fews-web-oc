@@ -1,14 +1,17 @@
 <template>
   <div>
     <v-toolbar density="compact">
-      <v-btn v-if="currentLevel" icon @click="onTitleClick">
-        <v-icon>mdi-arrow-left</v-icon>
-      </v-btn>
-      <slot name="menu-title" :text="currentTitle" :depth="currentLevel">
-        <v-list-item>
-          {{ currentTitle }}
-        </v-list-item>
-      </slot>
+      <v-list-item @click="onTitleClick">
+        <template v-slot:prepend v-if="currentLevel" icon>
+          <v-icon>mdi-arrow-left</v-icon>
+        </template>
+
+        <slot name="menu-title" :text="currentTitle" :depth="currentLevel">
+          <v-list-item-title>
+            {{ currentTitle }}
+          </v-list-item-title>
+        </slot>
+      </v-list-item>
     </v-toolbar>
     <v-window v-model="currentLevel">
       <v-window-item v-for="(item, i) in stack" v-bind:key="i">
@@ -51,14 +54,12 @@ import { ref, computed, onMounted, watch } from 'vue'
 import type { ColumnItem } from './ColumnItem'
 
 interface Props {
-  rootName?: string
   items?: ColumnItem[]
   open?: string[]
   active?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  rootName: '',
   items: () => {
     return []
   },
@@ -78,7 +79,6 @@ onMounted((): void => {
 const currentTitle = computed((): string => {
   const s = stack.value
   const title = s.length > 0 ? s[s.length - 1].name : ''
-  if (title === props.rootName) return ''
   return title
 })
 
@@ -123,8 +123,8 @@ function onItemClick(event: Event, item: ColumnItem): void {
 
 function updateStack(): void {
   const root: ColumnItem = {
-    id: 'root-item',
-    name: props.rootName,
+    id: 'rootNode',
+    name: '',
     children: [...props.items],
   }
   const s = [root]

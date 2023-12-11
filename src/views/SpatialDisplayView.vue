@@ -12,7 +12,6 @@
     </v-toolbar>
     <TreeMenu
       v-if="menuType === 'treemenu' && !mobile"
-      rootName="SpatialDisplay"
       v-model:active="active"
       :items="items"
       :open="open"
@@ -20,7 +19,6 @@
     </TreeMenu>
     <ColumnMenu
       v-else-if="menuType === 'columnmenu' || mobile"
-      rootName="SpatialDisplay"
       v-model:active="active"
       :items="items"
       :open="open"
@@ -73,7 +71,7 @@ function fillMenuItems(layers: Layer[], groups: LayerGroup[]): ColumnItem[] {
   let groupNodesMenuItemsMap = determineGroupNodesMap(groups)
   const newItems = buildMenuFromGroups(groups, groupNodesMenuItemsMap)
   attachLayersToMenu(layers, groupNodesMenuItemsMap)
-  return [{ id: 'root', name: 'Groups', children: newItems }]
+  return newItems
 }
 
 function buildMenuFromGroups(

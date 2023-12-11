@@ -26,13 +26,11 @@
 import type { ColumnItem } from './ColumnItem.js'
 
 interface Props {
-  rootName?: string
   items?: ColumnItem[]
   active?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  rootName: '',
   items: () => {
     return []
   },

@@ -12,7 +12,6 @@
     </v-toolbar>
     <TreeMenu
       v-if="menuType === 'treemenu' && !mobile"
-      rootName="SchematicsStatus"
       v-model:active="active"
       :items="items"
       :open="open"
@@ -20,7 +19,6 @@
     </TreeMenu>
     <ColumnMenu
       v-else-if="menuType === 'columnmenu' || mobile"
-      rootName="SchematicsStatus"
       v-model:active="active"
       :items="items"
       v-model:open="open"
@@ -139,7 +137,7 @@ const items = computed(() => {
       result.push({ id: displayGroup.name, name, children })
     }
   }
-  return [{ id: 'root', name: 'Groups', children: result }]
+  return result
 })
 
 // Debounce the selected date from the slider input, so we do not send hundreds of requests when
