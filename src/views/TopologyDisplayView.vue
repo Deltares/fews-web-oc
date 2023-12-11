@@ -12,7 +12,6 @@
     </v-toolbar>
     <TreeMenu
       v-if="menuType === 'treemenu' && !mobile"
-      rootName="Topology"
       v-model:active="active"
       :items="items"
       :open="open"
@@ -20,7 +19,6 @@
     </TreeMenu>
     <ColumnMenu
       v-else-if="menuType === 'columnmenu' || mobile"
-      rootName="Topology"
       v-model:active="active"
       :items="items"
       :open="open"

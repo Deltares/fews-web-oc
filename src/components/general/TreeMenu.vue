@@ -10,14 +10,12 @@ import { ColumnItem } from './ColumnItem'
 import TreeMenuItem from './TreeMenuItem.vue'
 
 interface Props {
-  rootName?: string
   items?: ColumnItem[]
   open?: string[]
   active?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  rootName: '',
   items: () => {
     return []
   },
