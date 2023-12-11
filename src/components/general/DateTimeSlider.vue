@@ -4,9 +4,32 @@
       <vue-slider
         v-model="dateIndex"
         :max="maxIndex"
+        :marks="marks"
+        :hide-label="hideLabel"
         step="1"
         :tooltipFormatter="dateString"
       >
+        <template v-slot:step="{ active, style, activeStyle }">
+          <div
+            :class="[
+              'vue-slider-mark-step',
+              { 'vue-slider-mark-step-active': active },
+            ]"
+            :style="active ? activeStyle : style"
+            @mouseover="hideLabel = false"
+            @mouseleave="hideLabel = true"
+          ></div>
+        </template>
+        <template v-slot:label="{ label }">
+          <span
+            :class="[
+              'vue-slider-mark-label',
+              'vue-slider-dot-tooltip-inner',
+              'custom-label',
+            ]"
+            >{{ label }}</span
+          >
+        </template>
       </vue-slider>
     </div>
     <div class="datetime-slider__actions">
@@ -52,6 +75,9 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { scaleTime } from 'd3-scale'
+import { DateTime } from 'luxon'
+
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/antd.css'
 
@@ -82,6 +108,35 @@ let playIntervalTimer: ReturnType<typeof setInterval> | null = null
 
 const doFollowNow = ref(props.doFollowNow)
 let followNowIntervalTimer: ReturnType<typeof setInterval> | null = null
+
+const hideLabel = ref(true)
+
+const marks = computed(() => {
+  const dayMarks: Record<string, any> = {}
+  const dateScale = scaleTime().domain(props.dates)
+  const ticks = dateScale.ticks(5)
+  let tickIndex = 0
+  let now = DateTime.now()
+  const remainder = 10 - (now.minute % 10)
+  now = now.plus({ minutes: remainder }).startOf('minute')
+  for (const index in props.dates) {
+    const date = DateTime.fromJSDate(props.dates[index])
+    if (
+      tickIndex < ticks.length &&
+      date.toMillis() >= ticks[tickIndex].getTime()
+    ) {
+      tickIndex++
+      dayMarks[index] = {
+        label: date.toJSDate().toLocaleString(undefined, {
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+        }),
+      }
+    }
+  }
+  return dayMarks
+})
 
 // Synchronise selectedDate property and local index variable.
 watch(dateIndex, (index) => {
@@ -256,5 +311,11 @@ function increment(step: number): void {
   display: flex;
   flex-direction: row;
   gap: 10px;
+}
+
+.vue-slider-mark-label.custom-label {
+  position: absolute;
+  top: -25px;
+  transform: translate(-50%, -100%);
 }
 </style>
