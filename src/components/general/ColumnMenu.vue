@@ -78,6 +78,7 @@ onMounted((): void => {
 const currentTitle = computed((): string => {
   const s = stack.value
   const title = s.length > 0 ? s[s.length - 1].name : ''
+  if (title === props.rootName) return ''
   return title
 })
 
