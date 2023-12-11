@@ -1,15 +1,14 @@
 <template v-else>
-  <span
-    v-if="props.item[id]"
-    class="table-cell-with-flag"
-  >
+  <span v-if="tableSeriesDatum" class="table-cell-with-flag">
     <div
       class="circle"
-      :class="`flag-background-color--${(props.item[id] as Partial<TableSeriesData>).flag}`"
+      :class="`flag-background-color--${tableSeriesDatum.flag}`"
     ></div>
-    <span class="value">{{ (props.item[id] as Partial<TableSeriesData>).y }}</span>
+    <span class="value">
+      {{ tableSeriesDatum.y }}
+    </span>
     <span
-      v-if="(props.item[id] as Partial<TableSeriesData>).comment"
+      v-if="tableSeriesDatum.comment"
       class="comment-icon mdi mdi-comment-outline"
     ></span>
   </span>
@@ -17,6 +16,7 @@
 
 <script setup lang="ts">
 import type { TableSeriesData } from '@/lib/table/tableData'
+import { computed } from 'vue'
 
 interface Props {
   id: string
@@ -25,6 +25,21 @@ interface Props {
 
 const props = defineProps<Props>()
 
+function isTableSeriesData(
+  item: Date | Partial<TableSeriesData>,
+): item is Partial<TableSeriesData> {
+  return (item as Partial<TableSeriesData>).y !== undefined
+}
+
+const tableSeriesDatum = computed(() => {
+  if (
+    props.item[props.id] !== undefined &&
+    isTableSeriesData(props.item[props.id])
+  ) {
+    return props.item[props.id] as Partial<TableSeriesData>
+  }
+  return undefined
+})
 </script>
 
 <style scoped>
