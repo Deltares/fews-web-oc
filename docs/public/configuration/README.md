@@ -67,3 +67,6 @@ Next to the Topology Display, three additional components can be configured in W
 **systemMonitor**: “Import status” and “Running Tasks” components of system monitor will be displayed in Web OC.
 
 **schematicStatusDisplay**: A tree view will list all SSD displayGroups including all displayPanels (configured permissions respected) available to FewsWebServices. Most click-actions on displayPanels are supported: https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+Schematic+Status+Display+%28SSD%29+Web+Service 
+
+## Known issues
+- The FewsWebServices _thinning_ option is used (https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+PI+REST+Web+Service#FEWSPIRESTWebService-GETtimeseries) while retreiving data for Web OC timeseries graphs and tables. This function tries to keep the peaks and gaps and minimizes the number of time steps that have to be retrieved. Eventually, _thinning_ should not be used for timeseries tables. In future releases of Web OC _thinning_ will only be used for timeseries graphs.
