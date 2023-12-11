@@ -17,7 +17,14 @@
           </v-list-item>
         </v-list>
       </v-menu>
-      <v-btn-toggle class="mr-5" v-model="displayType" mandatory>
+      <v-btn-toggle
+        v-model="displayType"
+        mandatory
+        variant="tonal"
+        divided
+        density="compact"
+        class="ma-2"
+      >
         <v-btn
           v-for="item in displayTypeItems"
           :key="item.value"
