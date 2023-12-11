@@ -111,6 +111,7 @@ function onTitleClick(): void {
 function onItemClick(event: Event, item: ColumnItem): void {
   const s = stack.value
   if (item.children) {
+    event.preventDefault()
     s.push(item)
     path.push(item.id)
     emit('update:open', [...path, ...props.open])
