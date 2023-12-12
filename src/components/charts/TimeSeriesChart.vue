@@ -5,9 +5,14 @@
       class="chart-controls"
       rounded
       :max-height="expanded ? undefined : LEGEND_HEIGHT"
+      :min-height="LEGEND_HEIGHT"
       :elevation="expanded ? 6 : 0"
     >
-      <v-chip-group ref="chipGroup" column style="overflow-y: hidden">
+      <v-chip-group
+        ref="chipGroup"
+        column
+        :class="['chart-legend', { 'chart-legend--large': requiresExpand }]"
+      >
         <v-chip
           size="small"
           :variant="tag.disabled ? 'text' : 'tonal'"
@@ -383,7 +388,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex: 0;
   margin: 5px 10px;
-  padding: 0px 0px 10px 40px;
+  padding: 0px 0px 0px 40px;
   overflow: hidden;
 }
 
@@ -393,6 +398,15 @@ onBeforeUnmount(() => {
 
 .chart-container.fullscreen {
   max-height: none;
+}
+
+.chart-legend {
+  overflow-y: hidden;
+  align-self: end;
+}
+
+.chart-legend.chart-legend--large {
+  align-self: start;
 }
 
 .chart-with-chips {
