@@ -1,7 +1,13 @@
 <template>
   <div class="chart-with-chips">
-    <div class="chart-controls">
-      <v-chip-group column>
+    <div ref="chartContainer" class="chart-container"></div>
+    <v-sheet
+      class="chart-controls"
+      rounded
+      :max-height="expanded ? undefined : LEGEND_HEIGHT"
+      :elevation="expanded ? 6 : 0"
+    >
+      <v-chip-group ref="chipGroup" column style="overflow-y: hidden">
         <v-chip
           size="small"
           :variant="tag.disabled ? 'text' : 'tonal'"
@@ -19,8 +25,14 @@
           {{ tag.name }}
         </v-chip>
       </v-chip-group>
-    </div>
-    <div ref="chartContainer" class="chart-container"></div>
+      <v-btn
+        v-show="requiresExpand"
+        :icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+        size="small"
+        variant="plain"
+        @click="toggleExpand"
+      ></v-btn>
+    </v-sheet>
   </div>
 </template>
 
@@ -48,6 +60,9 @@ import type { ThresholdLine } from '../../lib/charts/types/ThresholdLine.js'
 import { Series } from '../../lib/timeseries/timeSeries.js'
 import uniq from 'lodash-es/uniq'
 import { extent } from 'd3'
+import { VChipGroup } from 'vuetify/components'
+
+const LEGEND_HEIGHT = 76
 
 interface Props {
   config?: ChartConfig
@@ -78,6 +93,9 @@ let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
 const legendTags = ref<Tag[]>([])
 const chartContainer = ref<HTMLElement>()
+const chipGroup = ref<VChipGroup>()
+const expanded = ref(false)
+const requiresExpand = ref(false)
 
 onMounted(() => {
   const axisOptions: CartesianAxesOptions = {
@@ -104,6 +122,7 @@ onMounted(() => {
       },
     ],
     margin: {
+      top: 110,
       left: 50,
       right: 50,
     },
@@ -311,13 +330,29 @@ const toggleLine = (id: string) => {
 const resize = () => {
   nextTick(() => {
     axis.resize()
+    setLegendSize()
   })
+}
+
+function setLegendSize() {
+  const contentHeight = chipGroup.value?.$el.scrollHeight
+  if (contentHeight && contentHeight > LEGEND_HEIGHT) {
+    console.log('true')
+    requiresExpand.value = true
+  } else {
+    requiresExpand.value = false
+  }
+}
+
+function toggleExpand() {
+  expanded.value = !expanded.value
 }
 
 const onValueChange = () => {
   clearChart()
   refreshChart()
   setTags()
+  setLegendSize()
 }
 
 const beforeDestroy = () => {
@@ -344,9 +379,12 @@ onBeforeUnmount(() => {
 }
 
 .chart-controls {
+  position: absolute;
   display: flex;
   flex: 0;
-  margin: 0 50px;
+  margin: 5px 10px;
+  padding: 0px 0px 10px 40px;
+  overflow: hidden;
 }
 
 .chart-container.hidden > svg {
@@ -359,6 +397,7 @@ onBeforeUnmount(() => {
 
 .chart-with-chips {
   display: flex;
+  position: relative;
   flex-direction: column;
   flex: 1 1 80%;
   height: 100%;
