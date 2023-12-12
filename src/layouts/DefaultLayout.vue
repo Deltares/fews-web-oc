@@ -7,7 +7,7 @@
       class="view-sidebar"
     >
       <v-toolbar density="compact" fixed>
-        <v-btn variant="text" :to="{ name: 'About' }">
+        <v-btn variant="text" :to="{ name: 'Default' }">
           <img height="36" :src="configStore.logo" />
         </v-btn>
         <v-spacer />
