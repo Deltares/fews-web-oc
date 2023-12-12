@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onBeforeMount } from 'vue'
+import { ref, watchEffect } from 'vue'
 import { useRtl } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
 import { Alert, useAlertsStore } from '../stores/alerts.ts'
@@ -89,16 +89,13 @@ const currentItem = ref('')
 const { isRtl } = useRtl()
 const route = useRoute()
 
-onBeforeMount(async () => {
-  currentItem.value = route.name?.toString() ?? ''
+watchEffect(async () => {
+  const component = configStore.activeComponents.find(
+    (c) => c.to.name === route.name,
+  )
+  const routeName = component ? component.title : route.name?.toString()
+  currentItem.value = routeName
 })
-
-watch(
-  () => route.name,
-  async (name) => {
-    currentItem.value = name?.toString() ?? ''
-  },
-)
 
 function onCloseAlert(alert: Alert) {
   alert.active = false
