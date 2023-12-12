@@ -35,7 +35,7 @@ const useFewsPropertiesStore = defineStore('fewsProperties', {
     },
 
     setFlagQualities() {
-      const qualities: TimeSeriesFlag['quality'][] = []
+      const qualities: TimeSeriesFlag['quality'][] = [null]
       if (this.flags !== undefined) {
         for (const flag of this.flags) {
           qualities.push(flag.quality)
