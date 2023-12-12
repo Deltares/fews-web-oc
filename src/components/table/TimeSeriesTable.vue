@@ -15,7 +15,12 @@
       :footer-props="{ disablePagination: true, disableItemsPerPage: true }"
     >
       <template v-slot:top>
-        <v-toolbar v-if="isEditing" density="compact" variant="flat" class="table-edit-toolbar">
+        <v-toolbar
+          v-if="isEditing"
+          density="compact"
+          variant="flat"
+          class="table-edit-toolbar"
+        >
           <v-toolbar-title>Edit data</v-toolbar-title>
           <v-spacer>
             <v-btn
@@ -33,7 +38,14 @@
           <template v-for="column in columns" :key="column.key">
             <th
               :style="{ minWidth: column.minWidth }"
-              :class="[(column as TableHeaders).class, { 'table-header--editing': isEditingTimeSeries(column.key as string)}]"
+              :class="[
+                (column as TableHeaders).class,
+                {
+                  'table-header--editing': isEditingTimeSeries(
+                    column.key as string,
+                  ),
+                },
+              ]"
             >
               <div class="table-header-indicator">
                 <div class="table-header-indicator-text">
@@ -345,7 +357,7 @@ th.sticky-column {
 }
 
 .table-header.table-header--editing::before {
-  position:absolute;
+  position: absolute;
   height: 20px;
   width: 100%;
   content: '';
