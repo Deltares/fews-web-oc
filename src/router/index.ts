@@ -80,7 +80,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     meta: { authorize: [], sidebar: true },
     children: [
       {
-        path: '/ssd/:groupId/:panelId/:objectId',
+        path: '/ssd/:groupId?/:panelId?/:objectId',
         name: 'SSDTimeSeriesDisplay',
         component: SSDTimeSeriesDisplay,
         props: true,
@@ -174,17 +174,17 @@ async function addDynamicRoutes() {
       router.addRoute(route)
     }
   })
-  const defaultRoute = {
+  const defaultRoute: any = {
     path: '/',
     redirect: { name: 'About' },
     name: 'Default',
   }
   if (store.defaultComponent !== undefined) {
-    const route = dynamicRoutes.find(
-      (route) => route.name === store.defaultComponent!.type,
-    )
-    if (route !== undefined) {
-      defaultRoute.redirect = { name: route.name as string }
+    if (router.hasRoute(store.defaultComponent.type)) {
+      defaultRoute.redirect = {
+        name: store.defaultComponent.type,
+        params: (store.defaultComponent as any).defaultPath,
+      }
     }
   }
   router.addRoute(defaultRoute)
