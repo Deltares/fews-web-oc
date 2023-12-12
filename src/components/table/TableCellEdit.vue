@@ -3,19 +3,20 @@
     <input
       :ref="`${props.item.date}-${props.id}-value`"
       v-model.number="currentItem.y"
-      class="table-cell-input"
+      class="table-cell-edit"
       type="number"
+      placeholder="value"
       @change="(event) => editValue(event, currentItem.y)"
-    />
+    >
     <select
       :ref="`${props.item.date}-${props.id}-flagquality`"
-      class="table-cell-input"
+      class="table-cell-edit"
       v-model="currentItem.flagQuality"
       @change="(event) => editFlagQuality(event)"
     >
       <option
         v-for="flagQuality in store.flagQualities"
-        :key="flagQuality as string"
+        :key="(flagQuality as string)"
         :value="flagQuality"
       >
         {{ flagQuality }}
@@ -24,10 +25,11 @@
     <input
       :ref="`${props.item.date}-${props.id}-comment`"
       v-model="currentItem.comment"
-      class="table-cell-input"
+      class="table-cell-edit"
       type="text"
+      placeholder="comment"
       @change="editItem"
-    />
+    >
   </div>
 </template>
 
@@ -97,11 +99,30 @@ function editFlagQuality(event: Event) {
   min-width: 240px;
 }
 
-.table-cell-input {
+input.table-cell-edit {
   display: flex;
   line-height: 100%;
-  padding: 4px 0px;
-  min-width: 80px;
+  padding: 4px;
+  min-width: 5ch;
   color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+}
+select.table-cell-edit {
+  display: flex;
+  line-height: 100%;
+  padding: 4px;
+  min-width: 12ch;
+  color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+}
+
+.table-cell-edit::placeholder {
+  opacity: 0;
+}
+
+.table-cell-editable:hover > .table-cell-edit::placeholder {
+  opacity: 1;
+}
+
+select.table-cell-edit > option {
+  background-color: rgb(var(--v-theme-surface));
 }
 </style>
