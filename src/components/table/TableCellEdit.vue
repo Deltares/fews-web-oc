@@ -7,7 +7,7 @@
       type="number"
       placeholder="value"
       @change="(event) => editValue(event, currentItem.y)"
-    >
+    />
     <select
       :ref="`${props.item.date}-${props.id}-flagquality`"
       class="table-cell-edit"
@@ -16,7 +16,7 @@
     >
       <option
         v-for="flagQuality in store.flagQualities"
-        :key="(flagQuality as string)"
+        :key="flagQuality as string"
         :value="flagQuality"
       >
         {{ flagQuality }}
@@ -29,7 +29,7 @@
       type="text"
       placeholder="comment"
       @change="editItem"
-    >
+    />
   </div>
 </template>
 
@@ -111,7 +111,7 @@ select.table-cell-edit {
   line-height: 100%;
   padding: 4px;
   min-width: 12ch;
-  color: currentColor;;
+  color: currentColor;
 }
 
 .table-cell-edit::placeholder {
