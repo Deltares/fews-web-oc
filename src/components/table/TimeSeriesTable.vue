@@ -33,7 +33,7 @@
           <template v-for="column in columns" :key="column.key">
             <th
               :style="{ minWidth: column.minWidth }"
-              :class="(column as TableHeaders).class"
+              :class="[(column as TableHeaders).class, { 'table-header--editing': isEditingTimeSeries(column.key as string)}]"
             >
               <div class="table-header-indicator">
                 <div class="table-header-indicator-text">
@@ -332,6 +332,30 @@ th.sticky-column {
   flex: 0 0 10px;
   width: 100%;
   margin-bottom: 5px;
+}
+
+.theme--dark :deep(.table-header.table-header--editing) {
+  background: repeating-linear-gradient(
+    45deg,
+    rgb(var(--v-theme-surface)) 0px,
+    rgb(var(--v-theme-surface)) 10px,
+    rgb(100, 90, 0) 10px,
+    rgb(100, 90, 0) 20px
+  ) !important;
+}
+
+.table-header.table-header--editing::before {
+  position:absolute;
+  height: 20px;
+  width: 100%;
+  content: '';
+  background: repeating-linear-gradient(
+    45deg,
+    rgb(var(--v-theme-surface)) 0px,
+    rgb(var(--v-theme-surface)) 10px,
+    rgb(255, 233, 0) 10px,
+    rgb(255, 233, 0) 20px
+  ) !important;
 }
 
 .table-edit-toolbar {
