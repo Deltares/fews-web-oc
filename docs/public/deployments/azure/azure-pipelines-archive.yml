@@ -41,5 +41,6 @@ steps:
     inputs:
       app_location: '/'
       api_location: ''
+      app_artifact_location: 'dist'
       output_location: ''
       azure_static_web_apps_api_token: $(deployment_token)
