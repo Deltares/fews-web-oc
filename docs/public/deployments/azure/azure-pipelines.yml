@@ -48,7 +48,5 @@ steps:
     inputs:
       app_location: '/'
       api_location: ''
-      output_location: '$(System.DefaultWorkingDirectory)/dist'
-      skip_app_build: true
       app_build_command: 'npm run build'
       azure_static_web_apps_api_token: $(deployment_token)
