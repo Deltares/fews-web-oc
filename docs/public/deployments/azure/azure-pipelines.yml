@@ -48,7 +48,6 @@ steps:
     inputs:
       app_location: '/'
       api_location: ''
-      output_location: ''
-      skip_app_build: true
-      app_artifact_location: '$(System.DefaultWorkingDirectory)/dist'
+      app_build_command: 'npm run build'
+      api_build_command: 'rm -rf ./node_modules/@next/swc-* && rm -rf ./.next/cache'
       azure_static_web_apps_api_token: $(deployment_token)
