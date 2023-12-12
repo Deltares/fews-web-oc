@@ -104,14 +104,14 @@ input.table-cell-edit {
   line-height: 100%;
   padding: 4px;
   min-width: 5ch;
-  color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+  color: currentColor;
 }
 select.table-cell-edit {
   display: flex;
   line-height: 100%;
   padding: 4px;
   min-width: 12ch;
-  color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+  color: currentColor;;
 }
 
 .table-cell-edit::placeholder {
