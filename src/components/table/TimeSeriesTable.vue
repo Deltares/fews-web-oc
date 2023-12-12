@@ -15,8 +15,8 @@
       :footer-props="{ disablePagination: true, disableItemsPerPage: true }"
     >
       <template v-slot:top>
-        <v-toolbar v-if="isEditing" density="compact" variant="flat">
-          <v-toolbar-title> Edit data</v-toolbar-title>
+        <v-toolbar v-if="isEditing" density="compact" variant="flat" class="table-edit-toolbar">
+          <v-toolbar-title>Edit data</v-toolbar-title>
           <v-spacer>
             <v-btn
               append-icon="mdi-content-save-outline"
@@ -332,6 +332,12 @@ th.sticky-column {
   flex: 0 0 10px;
   width: 100%;
   margin-bottom: 5px;
+}
+
+.table-edit-toolbar {
+  position: fixed;
+  top: 48px;
+  z-index: 1;
 }
 </style>
 
