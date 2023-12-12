@@ -42,6 +42,7 @@ steps:
       npm --version
       node --version
       npm run build
+      ls -al $(System.DefaultWorkingDirectory)/dist
     displayName: 'npm install and build of Web Operator Client'
   - task: AzureStaticWebApp@0
     inputs:
@@ -49,5 +50,5 @@ steps:
       api_location: ''
       output_location: ''
       skip_app_build: true
-      app_artifact_location: 'dist'
+      app_artifact_location: '$(System.DefaultWorkingDirectory)/dist'
       azure_static_web_apps_api_token: $(deployment_token)
