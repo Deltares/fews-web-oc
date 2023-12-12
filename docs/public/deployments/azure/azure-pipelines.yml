@@ -48,5 +48,6 @@ steps:
       app_location: '/'
       api_location: ''
       output_location: ''
+      skip_app_build: true
       app_artifact_location: 'dist'
       azure_static_web_apps_api_token: $(deployment_token)
