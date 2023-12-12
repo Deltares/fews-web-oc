@@ -36,7 +36,7 @@ Choose the Delft-FEWS Web OC Web Services API.
 
 In the app-config.json file of the Delft-FEWS Web OC, the following OIDC properties have to be set:
 
-``` json
+```json
 {
   "VITE_AUTH_AUTHORITY": "https://login.microsoftonline.com/MYTENANTID/",
   "VITE_AUTH_METADATA_URL": "https://login.microsoftonline.com/MYTENANTID/v2.0/.well-known/openid-configuration"

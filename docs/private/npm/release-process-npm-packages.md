@@ -8,14 +8,13 @@ For the SSD Requests library use:
 
 for the other libraries use:
 
-    npm version 0.2.7.alpha.0 
+    npm version 0.2.7.alpha.0
     git push origin v0.2.7.alpha.0
     git push
 
-
 The following steps are performed with git:
 
-Update the version in package.json and create a tag: 
+Update the version in package.json and create a tag:
 
     npm version 0.5.17-alpha.0
 

@@ -11,9 +11,9 @@ The Delft-FEWS Web OC can be deployed in Tomcat as follows:
 In the webapps folder of tomcat, create a directory named: "ROOT".
 Unzip the Delft-FEWS Web OC distribution into that folder.
 Create a subfolder "WEB-INF" in the ROOT folder.
-Create the file "[web.xml](tomcat/ROOT/WEB-INF/web.xml)" in the WEB-INF folder. 
+Create the file "[web.xml](tomcat/ROOT/WEB-INF/web.xml)" in the WEB-INF folder.
 
-``` xml
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="http://java.sun.com/xml/ns/javaee"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -49,7 +49,7 @@ Create a subfolder "WEB-INF" in the weboc folder.
 
 Create the file "[web.xml](delftfews-sa/Modules/weboc/WEB-INF/web.xml)" in the WEB-INF folder.
 
-``` xml
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="http://java.sun.com/xml/ns/javaee"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -75,7 +75,7 @@ In Nginx the recommended way is to use try_files. See: https://router.vuejs.org/
 
 An example Nginx configuration looks as follows:
 
-``` xml
+```xml
 server {
     listen 80 default_server;
     listen [::]:80 default_server;

@@ -23,7 +23,7 @@ See [Technical Architecture](architecture/). This page includes information on t
 - Release management
 - Support and Maintanance
 
-## Web OC Delft-FEWS configuration 
+## Web OC Delft-FEWS configuration
 
 See [Web OC Delft-FEWS configuration ](configuration/). This page includes information on the Delft-FEWS configration for Web OC and in addtion covers the folowing:
 
@@ -31,7 +31,7 @@ See [Web OC Delft-FEWS configuration ](configuration/). This page includes infor
 - Other WEB OC functional components
 - Permissions
 
-## Web OC Application configuration 
+## Web OC Application configuration
 
 See [Web OC Application configuration ](app_configuration/). This page includes information on the application configuration for Web OC.
 
@@ -40,8 +40,9 @@ See [Web OC Application configuration ](app_configuration/). This page includes 
 The Web OC can be built with npm:
 
 ```
-npm run build 
+npm run build
 ```
+
 A dist folder is created that can be used to deploy the web oc to different platforms, like Azure, Tomcat and Nginx.
 
 See [Deployments](deployments/) for more information on how to run Web OC stand-alone and/or from a webserver.
