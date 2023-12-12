@@ -100,6 +100,7 @@ function editFlagQuality(event: Event) {
 .table-cell-input {
   display: flex;
   line-height: 100%;
+  padding: 4px 0px;
   min-width: 80px;
   color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
 }
