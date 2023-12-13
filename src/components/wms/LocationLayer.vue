@@ -7,10 +7,16 @@
       :options="locationsLayerOptions"
       clickable
     />
-    <v-chip class="chip" :style="{ backgroundColor: backgroundColor }" pill label>
+    <v-chip
+      class="chip"
+      :style="{ backgroundColor: backgroundColor }"
+      pill
+      label
+    >
       <v-icon>mdi-map-marker</v-icon>
       <v-switch
         class="ml-2 mt-5"
+        color="primary"
         :model-value="showLocationsLayer"
         @update:model-value="onShowLocationsLayerChange"
       />
@@ -54,7 +60,7 @@ const locationsGeoJson = ref<
 const showLocationsLayer = ref<boolean>(true)
 const { locationsLayerOptions } = useLocationsLayer(locationsGeoJson)
 
-const locationLayerSource = "location-layer"
+const locationLayerSource = 'location-layer'
 
 watchEffect(async () => {
   if (!props.filterIds) return
