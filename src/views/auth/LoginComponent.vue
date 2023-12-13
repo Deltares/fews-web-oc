@@ -10,18 +10,6 @@
         </template>
         <v-list density="compact">
           <v-list-item>{{ name }}</v-list-item>
-          <v-list-item v-if="roles.length">
-            <template v-slot:prepend>
-              <v-icon>mdi-account-eye</v-icon>
-            </template>
-            <v-list-item-title>{{ roles[0].toLowerCase() }}</v-list-item-title>
-          </v-list-item>
-          <v-list-item v-else>
-            <template v-slot:prepend>
-              <v-icon>mdi-account-eye</v-icon>
-            </template>
-            <v-list-item-title>Guest</v-list-item-title>
-          </v-list-item>
           <v-list-item @click="logout">
             <v-list-item-title>Sign out</v-list-item-title>
           </v-list-item>
