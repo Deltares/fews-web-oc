@@ -31,6 +31,11 @@ const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
   {
+    path: '/',
+    name: 'Default',
+    redirect: 'About'
+  },
+  {
     path: '/about',
     name: 'About',
     meta: { authorize: [] },
@@ -174,20 +179,17 @@ async function addDynamicRoutes() {
       router.addRoute(route)
     }
   })
-  const defaultRoute: any = {
-    path: '/',
-    redirect: { name: 'About' },
-    name: 'Default',
-  }
   if (store.defaultComponent !== undefined) {
     if (router.hasRoute(store.defaultComponent.type)) {
-      defaultRoute.redirect = {
-        name: store.defaultComponent.type,
-        params: (store.defaultComponent as any).defaultPath,
-      }
+      router.removeRoute('Default')
+      router.addRoute({
+        path: '/',
+        redirect: { name: store.defaultComponent.type,
+        params: (store.defaultComponent as any).defaultPath, },
+        name: 'Default',
+      })
     }
   }
-  router.addRoute(defaultRoute)
 }
 
 router.beforeEach(async (to, _from) => {
@@ -211,6 +213,7 @@ router.beforeEach(async (to, _from) => {
   if (!routesAreInitialized) {
     await addDynamicRoutes()
     routesAreInitialized = true
+    if (to.redirectedFrom) return to.redirectedFrom
     return to
   }
 
