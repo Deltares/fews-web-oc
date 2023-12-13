@@ -1,5 +1,9 @@
-import { DocumentFormat, Location, PiWebserviceProvider } from "@deltares/fews-pi-requests"
-import { FeatureCollection, Geometry } from "geojson"
+import {
+  DocumentFormat,
+  Location,
+  PiWebserviceProvider,
+} from '@deltares/fews-pi-requests'
+import { FeatureCollection, Geometry } from 'geojson'
 
 /**
  * Fetch locations for a list of filterIds as GeoJSON.
@@ -11,14 +15,15 @@ import { FeatureCollection, Geometry } from "geojson"
  * @returns GeoJSON result with locations for all specified filterIds.
  */
 export async function fetchLocationsAsGeoJson(
-  baseUrl:string, filterIds: string[]
+  baseUrl: string,
+  filterIds: string[],
 ): Promise<FeatureCollection<Geometry, Location>> {
   // Fetch GeoJSON for all filterIds.
   const provider = new PiWebserviceProvider(baseUrl)
   const allGeoJson = await Promise.all(
-    filterIds.map(
-      filterId => fetchLocationsAsGeoJsonForSingleFilterId(provider, filterId)
-    )
+    filterIds.map((filterId) =>
+      fetchLocationsAsGeoJsonForSingleFilterId(provider, filterId),
+    ),
   )
   // Merge them into a single GeoJSON.
   const geojson = allGeoJson.reduce((prev, cur) => {
@@ -37,9 +42,9 @@ export async function fetchLocationsAsGeoJson(
  * @returns List of FEWS PI locations.
  */
 export function convertGeoJsonToFewsPiLocation(
-  geojson: FeatureCollection<Geometry, Location>
+  geojson: FeatureCollection<Geometry, Location>,
 ): Location[] {
-  return geojson.features.map(feature => feature.properties)
+  return geojson.features.map((feature) => feature.properties)
 }
 
 /**
@@ -50,15 +55,16 @@ export function convertGeoJsonToFewsPiLocation(
  * @returns GeoJSON result with locations for the specified filterId.
  */
 async function fetchLocationsAsGeoJsonForSingleFilterId(
-    provider: PiWebserviceProvider, filterId: string
+  provider: PiWebserviceProvider,
+  filterId: string,
 ): Promise<FeatureCollection<Geometry, Location>> {
   const filter = {
     documentFormat: DocumentFormat.GEO_JSON,
-    filterId: filterId
+    filterId: filterId,
   }
   // TODO: Remove cast to any when fews-pi-requests supports GeoJSON response in LocationResponse
   //       type.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const response = (await provider.getLocations(filter) as any)
+  const response = (await provider.getLocations(filter)) as any
   return response as FeatureCollection<Geometry, Location>
 }
