@@ -33,7 +33,7 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
   {
     path: '/',
     name: 'Default',
-    redirect: 'About'
+    redirect: 'About',
   },
   {
     path: '/about',
@@ -184,12 +184,23 @@ async function addDynamicRoutes() {
       router.removeRoute('Default')
       router.addRoute({
         path: '/',
-        redirect: { name: store.defaultComponent.type,
-        params: (store.defaultComponent as any).defaultPath, },
+        redirect: { name: store.defaultComponent.type },
         name: 'Default',
       })
     }
   }
+}
+
+function fillRouteParams(to: RouteLocationNormalized) {
+  const store = useConfigStore()
+  if (to.name) {
+    const component = store.getComponentByType(to.name as string)
+    if (component !== undefined) {
+      const defaultPath = component.defaultPath
+      to.params = { ...defaultPath, ...to.params }
+    }
+  }
+  return to
 }
 
 router.beforeEach(async (to, _from) => {
@@ -217,6 +228,7 @@ router.beforeEach(async (to, _from) => {
     return to
   }
 
+  to = fillRouteParams(to)
   return
 })
 

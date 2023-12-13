@@ -10,6 +10,7 @@ export interface WebOcComponent {
   type: ComponentType
   title?: string
   icon?: string
+  defaultPath?: any
 }
 
 export const ComponentTypeEnum = {

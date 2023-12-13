@@ -73,7 +73,7 @@ const useConfigStore = defineStore('config', {
       })
     },
 
-    componentByType: (
+    getComponentByType: (
       state,
     ): ((componentType: string) => WebOcComponent | undefined) => {
       return (componentType: string) => {
