@@ -87,7 +87,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     meta: { sidebar: true },
     children: [
       {
-        path: '/ssd/:groupId?/:panelId?/:objectId',
+        path: '/ssd/:groupId?/:panelId?/object/:objectId',
         name: 'SSDTimeSeriesDisplay',
         component: SSDTimeSeriesDisplay,
         props: true,
