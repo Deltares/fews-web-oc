@@ -1,3 +1,3 @@
-<template>Redirecting after logout</template>
+<template>Redirecting after callback</template>
 
 <script setup lang="ts"></script>
