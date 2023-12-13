@@ -17,7 +17,6 @@ const currentItem = ref('')
 const route = useRoute()
 
 onBeforeMount(async () => {
-  console.log('onBeforeMount default')
   currentItem.value = route.name?.toString() ?? ''
 })
 

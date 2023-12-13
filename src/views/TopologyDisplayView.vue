@@ -162,7 +162,6 @@ function getUrl(node: TopologyNode): string | undefined {
 function updateItems(): void {
   if (nodes.value) {
     items.value = recursiveUpdateNode(nodes.value)
-    console.log('updateItems', items.value)
   }
 }
 

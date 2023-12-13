@@ -342,7 +342,6 @@ const resize = () => {
 function setLegendSize() {
   const contentHeight = chipGroup.value?.$el.scrollHeight
   if (contentHeight && contentHeight > LEGEND_HEIGHT) {
-    console.log('true')
     requiresExpand.value = true
   } else {
     requiresExpand.value = false
