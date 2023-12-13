@@ -8,13 +8,19 @@
         <ColourBar :colourMap="legend" :title="legendTitle" />
       </div>
       <ElevationSlider
-        v-if="layerHasEleveation"
+        v-if="layerHasElevation"
         v-model="currentElevation"
         :key="layerOptions?.name"
         :min-value="minElevation"
         :max-value="maxElevation"
         :unit="elevationUnit"
       ></ElevationSlider>
+      <mapbox-layer
+        :id="props.layerName"
+        :source="selectedLayer"
+        :options="locationsLayerOptions"
+        clickable
+    />
     </MapComponent>
     <DateTimeSlider
       v-model:selectedDate="currentTime"
@@ -38,6 +44,7 @@ import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedMapboxLayer, {
   MapboxLayerOptions,
 } from '@/components/wms/AnimatedMapboxLayer.vue'
+import { MapboxLayer } from '@studiometa/vue-mapbox-gl'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
@@ -45,6 +52,7 @@ import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { getTopologyNodes, createTopologyMap, fetchLocationsAsGeoJson, convertGeoJsonToFewsPiLocation} from '@/lib/topology'
 import type { Location } from "@deltares/fews-pi-requests"
+import useLocationsLayer from '@/services/useLocationsLayer'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -83,8 +91,13 @@ const currentElevation = ref<number>(0)
 const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationUnit = ref('')
+const locationsGeoJson = ref<GeoJSON.FeatureCollection<GeoJSON.Geometry, Location>>({
+  type: 'FeatureCollection',
+  features: [],
+})
 const locations = ref<Location[]>([])
 const filterIds = ref<string[]>([])
+const { locationsLayerOptions } = useLocationsLayer(locationsGeoJson)
 
 const nodes = await getTopologyNodes()
 const topologyMap = createTopologyMap(nodes)
@@ -98,7 +111,7 @@ let debouncedSetLayerOptions!: () => void
 const legend = computed(() => {
   return legendGraphic.value?.legend
 })
-const layerHasEleveation = computed(() => {
+const layerHasElevation = computed(() => {
   return selectedLayer.value?.elevation !== undefined
 })
 
@@ -174,9 +187,8 @@ function updateTime(date: Date): void {
 
 async function setLocations(): Promise<void> {
   if (!filterIds) return
-  const geojson = await fetchLocationsAsGeoJson(baseUrl, filterIds.value)
-  locations.value = convertGeoJsonToFewsPiLocation(geojson)
-  console.log("locations", locations.value)
+  locationsGeoJson.value = await fetchLocationsAsGeoJson(baseUrl, filterIds.value)
+  locations.value = convertGeoJsonToFewsPiLocation(locationsGeoJson.value)
 }
 </script>
 
