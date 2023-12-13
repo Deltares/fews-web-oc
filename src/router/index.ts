@@ -38,7 +38,6 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
   {
     path: '/about',
     name: 'About',
-    meta: { authorize: [] },
     component: AboutView,
   },
   {
@@ -49,16 +48,19 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
   },
   {
     path: '/auth/callback',
+    name: 'AuthCallback',
     meta: { layout: 'EmptyLayout' },
     component: Callback,
   },
   {
     path: '/auth/silent',
+    name: 'AuthSilent',
     meta: { layout: 'EmptyLayout' },
     component: Silent,
   },
   {
     path: '/auth/logout',
+    name: 'AuthLogout',
     meta: { layout: 'EmptyLayout' },
     component: Logout,
   },
@@ -82,14 +84,14 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     name: 'SchematicStatusDisplay',
     component: SchematicStatusDisplayView,
     props: true,
-    meta: { authorize: [], sidebar: true },
+    meta: { sidebar: true },
     children: [
       {
         path: '/ssd/:groupId?/:panelId?/:objectId',
         name: 'SSDTimeSeriesDisplay',
         component: SSDTimeSeriesDisplay,
         props: true,
-        meta: { authorize: [], sidebar: true },
+        meta: { sidebar: true },
       },
     ],
   },
@@ -97,42 +99,41 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     path: '/systemmonitor',
     name: 'SystemMonitor',
     component: SystemMonitorDisplayView,
-    meta: { authorize: [] },
   },
   {
     path: '/map/:layerName?',
     name: 'SpatialDisplay',
     component: SpatialDisplayView,
     props: true,
-    meta: { authorize: [], sidebar: true },
+    meta: { sidebar: true },
   },
   {
     path: '/series/node/:nodeId?',
     name: 'TimeSeriesDisplay',
     component: TimeSeriesDisplayView,
     props: true,
-    meta: { authorize: [], sidebar: true },
+    meta: { sidebar: true },
   },
   {
     path: '/topology/node/:nodeId?',
     name: 'TopologyDisplay',
     component: TopologyDisplayView,
     props: true,
-    meta: { authorize: [], sidebar: true },
+    meta: { sidebar: true },
     children: [
       {
         path: '/topology/node/:nodeId?/series/',
         name: 'TopologyTimeSeries',
         component: TimeSeriesDisplay,
         props: true,
-        meta: { authorize: [], sidebar: true },
+        meta: { sidebar: true },
       },
       {
         path: '/topology/node/:nodeId?/map/:layerName?',
         name: 'TopologySpatialDisplay',
         component: SpatialDisplay,
         props: true,
-        meta: { authorize: [], sidebar: true },
+        meta: { sidebar: true },
       },
     ],
   },
@@ -140,7 +141,6 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     path: '/archivedisplay',
     name: 'ArchiveDisplay',
     component: Empty,
-    meta: { authorize: [] },
   },
 ]
 
@@ -153,20 +153,10 @@ let routesAreInitialized = false
 
 async function handleAuthorization(
   to: RouteLocationNormalized,
-  authorize: string[],
 ) {
   const currentUser = await authenticationManager.userManager.getUser()
   if (currentUser === null) {
     return { name: 'Login', query: { redirect: to.path } }
-  }
-
-  const role =
-    currentUser.profile.roles !== undefined
-      ? (currentUser.profile as any).roles[0]
-      : 'guest'
-
-  if (authorize.length && !authorize.includes(role)) {
-    return { name: 'About' }
   }
 }
 
@@ -204,21 +194,24 @@ function fillRouteParams(to: RouteLocationNormalized) {
 }
 
 router.beforeEach(async (to, _from) => {
-  const authorize = to.meta?.authorize as string[]
-  if (authorize && configManager.authenticationIsEnabled) {
-    const authPath = await handleAuthorization(to, authorize)
-    if (authPath) return authPath
-  }
-
-  if (to.path === '/auth/callback') {
+  if (to.name === 'Login' || to.name === 'AuthSilent' || to.name === 'AuthLogout') return
+  if (to.name === 'AuthCallback') {
     try {
       const user =
         await authenticationManager.userManager.signinRedirectCallback()
+      console.log('callback user: ', user)
       const path: string = user.state === null ? '/' : (user.state as string)
+      console.log('Redirecting to: ' + path)
       return { path }
     } catch (error) {
       console.error(error)
+      return { name: 'Default' }
     }
+  }
+
+  if (configManager.authenticationIsEnabled) {
+    const authPath = await handleAuthorization(to)
+    if (authPath) return authPath
   }
 
   if (!routesAreInitialized) {
