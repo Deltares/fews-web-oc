@@ -43,6 +43,8 @@ import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { getTopologyNodes, createTopologyMap, fetchLocationsAsGeoJson, convertGeoJsonToFewsPiLocation} from '@/lib/topology'
+import type { Location } from "@deltares/fews-pi-requests"
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -81,6 +83,13 @@ const currentElevation = ref<number>(0)
 const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationUnit = ref('')
+const locations = ref<Location[]>([])
+const filterIds = ref<string[]>([])
+
+const nodes = await getTopologyNodes()
+const topologyMap = createTopologyMap(nodes)
+filterIds.value = topologyMap.get(props.layerName)?.filterIds ?? []
+await setLocations()
 
 const currentTime = ref<Date>(new Date())
 const layerOptions = ref<MapboxLayerOptions>()
@@ -92,6 +101,8 @@ const legend = computed(() => {
 const layerHasEleveation = computed(() => {
   return selectedLayer.value?.elevation !== undefined
 })
+
+watch(selectedLayer, setLocations)
 
 watch(
   selectedLayer,
@@ -159,6 +170,13 @@ function updateTime(date: Date): void {
   dateController.selectDate(date)
   currentTime.value = dateController.currentTime
   debouncedSetLayerOptions()
+}
+
+async function setLocations(): Promise<void> {
+  if (!filterIds) return
+  const geojson = await fetchLocationsAsGeoJson(baseUrl, filterIds.value)
+  locations.value = convertGeoJsonToFewsPiLocation(geojson)
+  console.log("locations", locations.value)
 }
 </script>
 

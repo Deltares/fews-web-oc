@@ -1,3 +1,4 @@
+export * from './locations'
 import { configManager } from '../../services/application-config/index.ts'
 import {
   PiWebserviceProvider,
