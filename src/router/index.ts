@@ -181,21 +181,25 @@ async function addDynamicRoutes() {
   }
 }
 
-function fillRouteParams(to: RouteLocationNormalized) {
+function defaultRouteParams(to: RouteLocationNormalized) {
   const store = useConfigStore()
-  if (to.name) {
-    const component = store.getComponentByType(to.name as string)
-    if (component !== undefined) {
-      const defaultPath = component.defaultPath
-      to.params = { ...defaultPath, ...to.params }
+  const route = to.name === undefined ? router.resolve(to) : to
+  const component = store.getComponentByType(route.name as string)
+  if (component !== undefined) {
+    const defaultPath = component.defaultPath
+    const params = to.params
+    for (const key in defaultPath) {
+      if (defaultPath[key] !== undefined) {
+        params[key] = params[key] || defaultPath[key]
+      }
     }
+    return params
   }
-  return to
+  return to.params
 }
 
 router.beforeEach(async (to, from) => {
-  router.resolve(to.path)
-  let redirect = '/'
+  let redirect: string | undefined = undefined
   if (to.name === 'Login' || to.name === 'AuthLogout') return
   if (to.name === 'AuthCallback') {
     try {
@@ -208,17 +212,22 @@ router.beforeEach(async (to, from) => {
   }
 
   if (configManager.authenticationIsEnabled) {
-    const authPath = await handleAuthorization(to)
-    if (authPath) return authPath
+    const redirectToLogin = await handleAuthorization(to)
+    if (redirectToLogin) return redirectToLogin
   }
 
   if (!routesAreInitialized) {
     await addDynamicRoutes()
     routesAreInitialized = true
-    return redirect
+    if (redirect) {
+      return redirect
+    } else if(to.path === '/about' && from.path === '/') {
+      return from
+    } else {
+      return to
+    }
   }
-
-  to = fillRouteParams(to)
+  to.params = defaultRouteParams(to)
   return
 })
 
