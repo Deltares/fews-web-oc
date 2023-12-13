@@ -2,7 +2,7 @@
   <div>
     <MapboxLayer
       :id="`location-layer-${props.layerName}`"
-      :source="`location-layer-${props.selectedLayer}`"
+      :source="locationLayerSource"
       :options="locationsLayerOptions"
       clickable
     />
@@ -10,11 +10,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
+import { Ref, ref, watchEffect, computed } from 'vue'
 import { configManager } from '@/services/application-config'
 import { fetchLocationsAsGeoJson } from '@/lib/topology'
 import { Location } from '@deltares/fews-pi-requests'
-import { MapboxLayer } from '@studiometa/vue-mapbox-gl'
+import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
+import { Map, GeoJSONSource } from 'mapbox-gl'
 
 import useLocationsLayer from '@/services/useLocationsLayer'
 
@@ -32,6 +33,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { map } = useMap() as { map: Ref<Map> }
 
 const locationsGeoJson = ref<
   GeoJSON.FeatureCollection<GeoJSON.Geometry, Location>
@@ -42,11 +44,17 @@ const locationsGeoJson = ref<
 
 const { locationsLayerOptions } = useLocationsLayer(locationsGeoJson)
 
+const locationLayerSource = computed(() => `location-layer-${props.selectedLayer}`)
+
 watchEffect(async () => {
   if (!props.filterIds) return
   locationsGeoJson.value = await fetchLocationsAsGeoJson(
     baseUrl,
     props.filterIds,
   )
+  const source = map.value.getSource(locationLayerSource.value) as GeoJSONSource
+  if (source) {
+    source.setData(locationsGeoJson.value)
+  }
 })
 </script>
