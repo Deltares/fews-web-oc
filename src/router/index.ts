@@ -33,7 +33,7 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
   {
     path: '/',
     name: 'Default',
-    redirect: 'About',
+    component: AboutView,
   },
   {
     path: '/about',
@@ -222,11 +222,8 @@ router.beforeEach(async (to, from) => {
     routesAreInitialized = true
     if (redirect) {
       return redirect
-    } else if (to.path === '/about' && from.path === '/') {
-      return from
-    } else {
-      return to
     }
+    return to
   }
   to.params = defaultRouteParams(to)
   return
