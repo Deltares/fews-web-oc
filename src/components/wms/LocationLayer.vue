@@ -1,8 +1,8 @@
 <template>
   <div>
     <MapboxLayer
-      :id="props.layerName"
-      :source="props.selectedLayer"
+      :id="`location-layer-${props.layerName}`"
+      :source="`location-layer-${props.selectedLayer}`"
       :options="locationsLayerOptions"
       clickable
     />
