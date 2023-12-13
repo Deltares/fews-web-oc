@@ -16,8 +16,6 @@
         :unit="elevationUnit"
       ></ElevationSlider>
       <LocationLayer
-        :layerName="props.layerName"
-        :selectedLayer="selectedLayer?.name"
         :filterIds="filterIds"
       />
     </MapComponent>
