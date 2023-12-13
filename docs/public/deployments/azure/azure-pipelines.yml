@@ -37,7 +37,7 @@ steps:
         }
 
   - script: |
-     
+
       npm install
       npm --version
       node --version
@@ -46,7 +46,7 @@ steps:
     displayName: 'npm install and build of Web Operator Client'
   - task: AzureStaticWebApp@0
     inputs:
-# When used with skip_app_build: true, this value is the app's build output location.
+      # When used with skip_app_build: true, this value is the app's build output location.
       app_location: '/dist'
       api_location: ''
       skip_app_build: 'true'
