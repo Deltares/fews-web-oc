@@ -15,7 +15,7 @@ const props = defineProps({
 const route = useRoute()
 
 function login(): void {
-  const redirect = route.query.redirect || '/about'
+  const redirect = route.query.redirect ?? '/'
   authenticationManager.userManager.signinRedirect({ state: redirect })
 }
 </script>

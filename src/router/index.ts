@@ -156,7 +156,7 @@ async function handleAuthorization(
 ) {
   const currentUser = await authenticationManager.userManager.getUser()
   if (currentUser === null) {
-    return { name: 'Login', query: { redirect: to.path } }
+    return { name: 'Login', query: { redirect: to.redirectedFrom?.path ?? to.path } }
   }
 }
 
@@ -193,19 +193,17 @@ function fillRouteParams(to: RouteLocationNormalized) {
   return to
 }
 
-router.beforeEach(async (to, _from) => {
-  if (to.name === 'Login' || to.name === 'AuthSilent' || to.name === 'AuthLogout') return
+router.beforeEach(async (to, from) => {
+  router.resolve(to.path)
+  let redirect = '/'
+  if (to.name === 'Login' || to.name === 'AuthLogout') return
   if (to.name === 'AuthCallback') {
     try {
       const user =
         await authenticationManager.userManager.signinRedirectCallback()
-      console.log('callback user: ', user)
-      const path: string = user.state === null ? '/' : (user.state as string)
-      console.log('Redirecting to: ' + path)
-      return { path }
+      if ( user.state ) redirect = user.state.toString()
     } catch (error) {
       console.error(error)
-      return { name: 'Default' }
     }
   }
 
@@ -217,8 +215,7 @@ router.beforeEach(async (to, _from) => {
   if (!routesAreInitialized) {
     await addDynamicRoutes()
     routesAreInitialized = true
-    if (to.redirectedFrom) return to.redirectedFrom
-    return to
+    return redirect
   }
 
   to = fillRouteParams(to)
