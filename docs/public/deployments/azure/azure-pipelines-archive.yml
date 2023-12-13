@@ -31,17 +31,17 @@ steps:
         "VITE_MAPBOX_TOKEN": "$(VITE_MAPBOX_TOKEN)"
         }
   - script: |
-      cp docs/public/deployments/azure/staticwebapp.config.json .
       npm install
       npm --version
       node --version
       npm run build
+      cp docs/public/deployments/azure/staticwebapp.config.json dist
     displayName: 'npm install and build of Web Operator Client'
   - task: AzureStaticWebApp@0
     inputs:
-      app_location: '/'
+      # When used with skip_app_build: true, this value is the app's build output location.
+      app_location: '/dist'
       api_location: ''
-      skip_app_build: true
-      app_artifact_location: 'dist'
-      output_location: ''
+      skip_app_build: 'true'
+      verbose: 'true'
       azure_static_web_apps_api_token: $(deployment_token)
