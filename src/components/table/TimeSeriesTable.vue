@@ -357,7 +357,7 @@ th.sticky-column {
 }
 
 .table-header.table-header--editing::before {
-  position: absolute;
+  display: flex;
   height: 20px;
   width: 100%;
   content: '';
