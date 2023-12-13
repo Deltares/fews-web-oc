@@ -151,12 +151,13 @@ const router = createRouter({
 
 let routesAreInitialized = false
 
-async function handleAuthorization(
-  to: RouteLocationNormalized,
-) {
+async function handleAuthorization(to: RouteLocationNormalized) {
   const currentUser = await authenticationManager.userManager.getUser()
   if (currentUser === null) {
-    return { name: 'Login', query: { redirect: to.redirectedFrom?.path ?? to.path } }
+    return {
+      name: 'Login',
+      query: { redirect: to.redirectedFrom?.path ?? to.path },
+    }
   }
 }
 
@@ -205,7 +206,7 @@ router.beforeEach(async (to, from) => {
     try {
       const user =
         await authenticationManager.userManager.signinRedirectCallback()
-      if ( user.state ) redirect = user.state.toString()
+      if (user.state) redirect = user.state.toString()
     } catch (error) {
       console.error(error)
     }
@@ -221,7 +222,7 @@ router.beforeEach(async (to, from) => {
     routesAreInitialized = true
     if (redirect) {
       return redirect
-    } else if(to.path === '/about' && from.path === '/') {
+    } else if (to.path === '/about' && from.path === '/') {
       return from
     } else {
       return to
