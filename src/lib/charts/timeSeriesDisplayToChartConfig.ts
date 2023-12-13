@@ -26,6 +26,7 @@ export function timeSeriesDisplayToChartConfig(
     series: [],
   }
   const chartSeriesArray: ChartSeries[] = []
+  config.thresholds = []
   for (const item of subplot.items) {
     if (item.lineStyle !== undefined && item.lineStyle !== 'none') {
       const chartSeries: ChartSeries = getChartSeries(item, 'line', config)
@@ -38,7 +39,6 @@ export function timeSeriesDisplayToChartConfig(
       chartSeriesArray.push(chartSeries)
     }
     if (item.thresholds !== undefined) {
-      config.thresholds = []
       for (const threshold of item.thresholds) {
         if (threshold.value === undefined) continue
         config.thresholds.push({
