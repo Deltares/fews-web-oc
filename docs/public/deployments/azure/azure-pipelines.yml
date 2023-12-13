@@ -37,11 +37,12 @@ steps:
         }
 
   - script: |
-      cp docs/public/deployments/azure/staticwebapp.config.json .
+     
       npm install
       npm --version
       node --version
       npm run build
+      cp docs/public/deployments/azure/staticwebapp.config.json dist
     displayName: 'npm install and build of Web Operator Client'
   - task: AzureStaticWebApp@0
     inputs:
