@@ -15,12 +15,11 @@
         :max-value="maxElevation"
         :unit="elevationUnit"
       ></ElevationSlider>
-      <mapbox-layer
-        :id="props.layerName"
-        :source="selectedLayer"
-        :options="locationsLayerOptions"
-        clickable
-    />
+      <LocationLayer
+        :layerName="props.layerName"
+        :selectedLayer="selectedLayer?.name"
+        :filterIds="filterIds"
+      />
     </MapComponent>
     <DateTimeSlider
       v-model:selectedDate="currentTime"
@@ -44,15 +43,13 @@ import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedMapboxLayer, {
   MapboxLayerOptions,
 } from '@/components/wms/AnimatedMapboxLayer.vue'
-import { MapboxLayer } from '@studiometa/vue-mapbox-gl'
+import LocationLayer from '@/components/wms/LocationLayer.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { getTopologyNodes, createTopologyMap, fetchLocationsAsGeoJson, convertGeoJsonToFewsPiLocation} from '@/lib/topology'
-import type { Location } from "@deltares/fews-pi-requests"
-import useLocationsLayer from '@/services/useLocationsLayer'
+import { getTopologyNodes, createTopologyMap } from '@/lib/topology'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -91,18 +88,9 @@ const currentElevation = ref<number>(0)
 const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationUnit = ref('')
-const locationsGeoJson = ref<GeoJSON.FeatureCollection<GeoJSON.Geometry, Location>>({
-  type: 'FeatureCollection',
-  features: [],
-})
-const locations = ref<Location[]>([])
-const filterIds = ref<string[]>([])
-const { locationsLayerOptions } = useLocationsLayer(locationsGeoJson)
 
 const nodes = await getTopologyNodes()
 const topologyMap = createTopologyMap(nodes)
-filterIds.value = topologyMap.get(props.layerName)?.filterIds ?? []
-await setLocations()
 
 const currentTime = ref<Date>(new Date())
 const layerOptions = ref<MapboxLayerOptions>()
@@ -114,8 +102,9 @@ const legend = computed(() => {
 const layerHasElevation = computed(() => {
   return selectedLayer.value?.elevation !== undefined
 })
-
-watch(selectedLayer, setLocations)
+const filterIds = computed(() => {
+  return topologyMap.get(selectedLayer.value?.name ?? '')?.filterIds ?? []
+})
 
 watch(
   selectedLayer,
@@ -183,12 +172,6 @@ function updateTime(date: Date): void {
   dateController.selectDate(date)
   currentTime.value = dateController.currentTime
   debouncedSetLayerOptions()
-}
-
-async function setLocations(): Promise<void> {
-  if (!filterIds) return
-  locationsGeoJson.value = await fetchLocationsAsGeoJson(baseUrl, filterIds.value)
-  locations.value = convertGeoJsonToFewsPiLocation(locationsGeoJson.value)
 }
 </script>
 
