@@ -15,9 +15,9 @@
     "sonar": "sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$SONAR_KEY -Dsonar.projectName='Delft-FEWS Web OC'"
   },
   "dependencies": {
-    "@deltares/fews-pi-requests": "^0.6.3",
-    "@deltares/fews-ssd-requests": "^0.3.1-alpha.1",
-    "@deltares/fews-ssd-webcomponent": "^0.3.1-alpha.1",
+    "@deltares/fews-pi-requests": "^1.0.0-rc.0",
+    "@deltares/fews-ssd-requests": "^1.0.0-rc.1",
+    "@deltares/fews-ssd-webcomponent": "^1.0.0-rc.1",
     "@deltares/fews-web-oc-charts": "^3.0.0-alpha.18",
     "@deltares/fews-wms-requests": "^0.1.11-alpha.4",
     "@studiometa/vue-mapbox-gl": "^2.2.0",
