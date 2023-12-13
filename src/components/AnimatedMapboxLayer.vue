@@ -218,6 +218,7 @@ export default class AnimatedMapboxLayer extends Vue {
     })
   }
 
+
   createSource() {
     const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")
     const bounds = this.mapObject.getBounds()
@@ -230,6 +231,7 @@ export default class AnimatedMapboxLayer extends Vue {
       coordinates: getCoordsFromBounds(bounds),
     }
     this.mapObject.addSource(this.currentLayer, rasterSource)
+
     const rasterLayer: RasterLayer = {
       id: this.currentLayer,
       type: "raster",
@@ -243,9 +245,41 @@ export default class AnimatedMapboxLayer extends Vue {
         "raster-fade-duration": 0,
       },
     }
-    this.mapObject.addLayer(rasterLayer, "boundary_country_outline")
+    this.mapObject.addLayer(rasterLayer,"boundary_country_outline")
     this.mapObject.on("moveend", this.onMapMoveEnd)
     this.mapObject.on("data", this.onMapData)
+  }
+  createCoastline() {
+    this.mapObject.addSource("coastline_outline", {
+      type: "vector",
+      url: "mapbox://mapbox.mapbox-streets-v8",
+    })
+
+    this.mapObject.addLayer({
+      id: "coastline_outline",
+      type: "line",
+      source: "coastline_outline",
+      "source-layer": "water",
+      layout: {},
+      paint: {
+        "line-color": "#fff", // Main line color
+        "line-width": 3, // Main line width
+        "line-opacity": 0.5, // Main line opacity
+      },
+    },"boundary_country_outline");
+
+    this.mapObject.addLayer({
+      id: "coastline_outline2",
+      type: "line",
+      source: "coastline_outline",
+      "source-layer": "water",
+      layout: {},
+      paint: {
+        "line-color": "#000", // Main line color
+        "line-width": 1, // Main line width
+        "line-opacity": 0.5, // Main line opacity
+      },
+    },"boundary_country_outline");
   }
 
   private createGetMapUrl(
@@ -343,6 +377,7 @@ export default class AnimatedMapboxLayer extends Vue {
           this.createSource()
         }
       }
+      this.createCoastline()
       this.enableDoubleClickLayer()
       this.enableClickLocationsLayer()
 
@@ -369,6 +404,9 @@ export default class AnimatedMapboxLayer extends Vue {
   removeLayer() {
     if (this.mapObject !== undefined) {
       this.mapObject.off("dblclick", this.onDblClick)
+      this.mapObject.getLayer("coastline_outline") !== undefined && this.mapObject.removeLayer("coastline_outline")
+      this.mapObject.getLayer("coastline_outline2") !== undefined && this.mapObject.removeLayer("coastline_outline2")
+      this.mapObject.getSource("coastline_outline") !== undefined && this.mapObject.removeSource("coastline_outline")
       if (this.currentLayerType === LayerType.Streamline) {
         if (this.streamlineLayer !== null) {
           if (this.mapObject.getLayer(this.streamlineLayer.id) !== undefined) {
