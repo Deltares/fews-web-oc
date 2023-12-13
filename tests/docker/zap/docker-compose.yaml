@@ -12,12 +12,12 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
     restart: always
     ports:
-      - "80:80"
+      - '80:80'
 
   # The report ./folder is mounted to generate the zap report.
   zap:
     container_name: zap
     image: owasp/zap2docker-stable
-    command: "zap-full-scan.py -t http://nginx-weboc -j -g gen.conf -r report.html -x report.xml -J report.json"
+    command: 'zap-full-scan.py -t http://nginx-weboc -j -g gen.conf -r report.html -x report.xml -J report.json'
     volumes:
       - ./report:/zap/wrk/:rw
