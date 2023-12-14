@@ -1,6 +1,6 @@
 <template>
   <v-btn @click="login" color="primary">
-    <v-icon>mdi-microsoft-windows</v-icon> Sign in with {{ props.name }}
+    <v-icon>mdi-microsoft-windows</v-icon> Sign in
   </v-btn>
 </template>
 

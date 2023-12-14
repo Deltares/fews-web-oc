@@ -1,13 +1,7 @@
 <template>
   <v-app>
     <v-main class="login-container">
-      <div>
-        <img
-          src="/images/deltares_logo.png"
-          alt="Deltares"
-          contain
-          style="max-width: 80%"
-        />
+      <div>&nbsp;
       </div>
       <h1 style="color: white">Delft-FEWS Web Operator Client</h1>
       <div class="login-providers">
