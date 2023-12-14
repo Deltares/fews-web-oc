@@ -122,7 +122,56 @@ function createSource() {
   }
   mapObject.addLayer(rasterLayer, 'boundary_country_outline')
 }
+function createCoastline() {
+  const mapObject = map.value
+  mapObject.addSource('coastline_outline', {
+    type: 'vector',
+    url: 'mapbox://mapbox.mapbox-streets-v8',
+  })
+  mapObject.addLayer(
+    {
+      id: 'coastline_outline',
+      type: 'line',
+      source: 'coastline_outline',
+      'source-layer': 'water',
+      layout: {},
+      paint: {
+        'line-color': '#fff', // Main line color
+        'line-width': 3, // Main line width
+        'line-opacity': 0.5, // Main line opacity
+      },
+    },
+    'boundary_country_outline',
+  )
+  mapObject.addLayer(
+    {
+      id: 'coastline_outline2',
+      type: 'line',
+      source: 'coastline_outline',
+      'source-layer': 'water',
+      layout: {},
+      paint: {
+        'line-color': '#000', // Main line color
+        'line-width': 1, // Main line width
+        'line-opacity': 0.5, // Main line opacity
+      },
+    },
+    'boundary_country_outline',
+  )
+}
 
+function removeCoastline() {
+  const mapObject = map.value
+  if (mapObject.getLayer('coastline_outline') !== undefined) {
+    mapObject.removeLayer('coastline_outline')
+  }
+  if (mapObject.getLayer('coastline_outline2') !== undefined) {
+    mapObject.removeLayer('coastline_outline2')
+  }
+  if (mapObject.getSource('coastline_outline') !== undefined) {
+    mapObject.removeSource('coastline_outline')
+  }
+}
 function updateSource() {
   const source = map.value.getSource(currentLayer) as ImageSource
   if (source !== undefined) source.updateImage(getImageSourceOptions())
@@ -188,6 +237,7 @@ function onLayerChange(): void {
   if (props.layer === undefined) return
   if (props.layer === null) {
     removeLayer()
+    removeCoastline()
     return
   }
   if (props.layer.name === undefined || props.layer.time === undefined) {
@@ -196,6 +246,7 @@ function onLayerChange(): void {
 
   if (props.layer.name !== currentLayer) {
     removeLayer()
+    removeCoastline()
     currentLayer = props.layer.name
     setDefaultZoom()
   }
@@ -203,6 +254,7 @@ function onLayerChange(): void {
   const source = map.value.getSource(currentLayer)
   if (source === undefined) {
     createSource()
+    createCoastline()
   } else {
     updateSource()
   }
