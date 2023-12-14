@@ -138,7 +138,7 @@ body {
 html,
 body {
   margin: 0px;
-  font-size: 14px;
+  font-size: 1em;
   line-height: 1.2;
 }
 

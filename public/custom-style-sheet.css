@@ -11,6 +11,10 @@
   overflow-x: hidden;
 }
 
+.v-btn {
+  font-size: 1em !important;
+}
+
 .v-list-item {
   min-height: 28px !important;
   padding-top: 2px !important;
