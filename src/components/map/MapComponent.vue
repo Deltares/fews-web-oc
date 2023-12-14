@@ -9,6 +9,7 @@
     :interactive="true"
     :drag-pan="true"
     :scroll-zoom="true"
+    :maxPitch="0"
     :transformRequest="transformRequest"
   >
     <slot></slot>
