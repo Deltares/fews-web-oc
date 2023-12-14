@@ -1,5 +1,10 @@
 <template>
-  <v-list class="tree-menu" :opened="opened" open-strategy="multiple" density="compact">
+  <v-list
+    class="tree-menu"
+    :opened="opened"
+    open-strategy="multiple"
+    density="compact"
+  >
     <TreeMenuItem :items="props.items" :active="active"></TreeMenuItem>
   </v-list>
 </template>
@@ -42,4 +47,3 @@ const opened = computed({
   color: aqua;
 }
 </style>
-
