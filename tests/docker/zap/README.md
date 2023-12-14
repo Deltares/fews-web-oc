@@ -1,7 +1,9 @@
 # nginx.conf
 
 The zap scanner run using NGINX. Specific security headers are added to the config to make the Web OC mostly compliant.
-In some cases the ZAP tool will report a warning that cannot be prevented. The following is a list of warnings and the reason they cannot be prevented:
+In some cases the ZAP tool will report a warning that cannot be prevented.
+In the weboc-zap.conf file these warnings are excluded with an explanation why.
+Among them are:
 
 - CSP: style-src unsafe-inline: The web framework used by the Web OC (Vue JS) is using inline css.
 - Sub Resource Integrity Attribute Missing: Not supported by the googles fonts css: <link rel="stylesheet" href="https://fonts.googleapis.com/css. See also: https://github.com/google/fonts/issues/473
