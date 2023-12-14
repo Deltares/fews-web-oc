@@ -67,13 +67,7 @@ function changeTheme(theme: string) {
 
 function setTheme(isDark: boolean): void {
   theme.global.name.value = isDark ? 'dark' : 'light'
-  // Update wb-charts stylesheet such that charts also change to the selected theme.
-  const css = document.getElementById('theme_css') as HTMLLinkElement
-  if (css) {
-    css.href = isDark
-      ? `${import.meta.env.BASE_URL}wb-charts-dark.css`
-      : `${import.meta.env.BASE_URL}wb-charts-light.css`
-  }
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
 }
 
 userSettingsStore.$onAction(({ name, args }) => {

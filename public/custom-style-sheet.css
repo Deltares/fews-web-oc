@@ -1,3 +1,317 @@
+:root {
+  --contrast-color-dark: white;
+  --contrast-color-light: black;
+  --theme-color-dark: black;
+  --theme-color-light: white;
+  --canvas-fill-dark: rgb(54, 54, 54);
+  --canvas-fill-light: rgb(223, 223, 223);
+}
+
+[data-theme='dark'] {
+  --contrast-color: var(--contrast-color-dark);
+  --theme-color: var(var(--theme-color-dark));
+  --canvas-fill: var(var(--canvas-fill-dark));
+}
+
+[data-theme='light'] {
+  --contrast-color: var(--contrast-color-light);
+  --theme-color: var(var(--theme-color-light));
+  --canvas-fill: var(var(--canvas-fill-light));
+}
+
+.wb-charts svg {
+  color: var(--contrast-color);
+}
+
+.axis {
+  font-size: 1em;
+}
+
+.front {
+  font-size: 1em;
+}
+
+.mouse-over {
+  font-size: 1em;
+  font-family: 'RO-Sans', sans-serif !important;
+}
+
+.canvas {
+  fill: var(--canvas-fill);
+}
+
+.legend {
+  font-size: 1em;
+}
+
+.axis path {
+  stroke-width: 1px;
+  stroke: var(--contrast-color);
+}
+.axis .tick line {
+  stroke-width: 1px;
+  stroke: var(--contrast-color);
+}
+.axis .tick text {
+  stroke-width: 1px;
+  fill: var(--contrast-color);
+}
+.grid {
+  fill: none;
+  stroke-width: 1px;
+  color: var(--theme-color);
+  stroke: black;
+  stroke-dasharray: 2px;
+}
+
+.grid text {
+  display: none;
+}
+.grid .tick line {
+  stroke: var(--theme-color);
+}
+.grid .tick.zero-crossing line {
+  stroke-dasharray: none;
+  stroke: var(--contrast-color);
+}
+
+.charts > path {
+  stroke: var(--contrast-color);
+}
+
+.view {
+  fill: none;
+}
+
+.spinner {
+  /* fill: transparent; */
+  stroke: gray;
+  fill: none;
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-dasharray: 50.24;
+  -webkit-transform-origin: 10px 0px 0;
+  -moz-transform-origin: 10px 0px 0;
+  -ms-transform-origin: 10px 0px 0;
+  -o-transform-origin: 10px 0px 0;
+  transform-origin: 10px 0px 0;
+  -webkit-animation: spinner 2s linear infinite;
+  -moz-animation: spinner 2s linear infinite;
+  -ms-animation: spinner 2s linear infinite;
+  -o-animation: spinner 2s linear infinite;
+  animation: spinner 2s linear infinite;
+}
+
+@keyframes spinner {
+  0% {
+    transform: rotate(0deg);
+    stroke-dashoffset: 10.56;
+  }
+
+  50% {
+    transform: rotate(720deg);
+    stroke-dashoffset: 50.24;
+  }
+
+  100% {
+    transform: rotate(1080deg);
+    stroke-dashoffset: 10.56;
+  }
+}
+
+.level-select {
+  stroke: red;
+}
+
+.level-select > text {
+  stroke: none;
+  fill: red;
+}
+
+.level-select-handle {
+  stroke: red;
+  fill: red;
+  cursor: pointer;
+}
+
+.cross-section-select {
+  stroke: var(--contrast-color);
+  font-size: 1em;
+  font-family: 'RO-Sans', sans-serif !important;
+}
+
+.cross-section-select line {
+  stroke: var(--contrast-color);
+  stroke-dasharray: 2 2;
+}
+
+.cross-section-select text.date-label {
+  stroke: none;
+  fill: var(--contrast-color);
+}
+
+.cross-section-select .data-point-per-line {
+  stroke:;
+}
+
+.cross-section-select rect {
+  fill: var(--theme-color);
+}
+
+.cross-section-select-handle {
+  stroke: var(--contrast-color);
+  fill: var(--contrast-color);
+  cursor: pointer;
+}
+
+.current-time {
+  stroke: #a90061;
+}
+
+.current-time-indicator {
+  fill: #a90061;
+}
+
+.current-time-indicator:hover > text {
+  visibility: visible;
+}
+
+.current-time-indicator > text {
+  visibility: hidden;
+  stroke: none;
+  fill: var(--contrast-color);
+}
+
+.dst-indicator {
+  fill: #ffb611;
+}
+
+.dst-indicator:hover > text {
+  visibility: visible;
+}
+
+.dst-indicator > text {
+  visibility: hidden;
+  stroke: none;
+  fill: var(--contrast-color);
+}
+
+.mouse-per-line {
+  cursor: crosshair;
+}
+
+.mouse-x > text {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.brush .handle {
+  fill: white;
+  stroke: black;
+  stroke-width: 0.5px;
+}
+
+.brush .select-rect {
+  fill: rgba(111, 111, 111, 0.5);
+  stroke: white;
+  stroke-width: 1px;
+  stroke-dasharray: 5, 2;
+}
+
+.mouse .overlay {
+  visibility: hidden;
+}
+
+.mouse-over .mouse-line {
+  stroke: var(--contrast-color);
+  stroke-width: 1px;
+  stroke-dasharray: 5, 2, 2, 2;
+}
+
+.mouse-over .mouse-per-line {
+  fill: var(--contrast-color);
+}
+
+.tooltip {
+  position: absolute;
+  display: inline-block;
+  top: 0px;
+  left: 0px;
+  pointer-events: none;
+  white-space: nowrap;
+  font-size: 1em;
+}
+
+.tooltip .tooltiptext {
+  background-color: var(--theme-color);
+  color: var(--contrast-color);
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 10px;
+  z-index: 1;
+}
+
+.tooltip .tooltiptext:empty {
+  display: none;
+}
+
+.tooltip .tooltiptext.top {
+  transform: translate(-50%, calc(-100% - 5px));
+}
+.tooltip .tooltiptext.bottom {
+  transform: translate(-50%, 5px);
+}
+
+.tooltip .tooltiptext.left {
+  transform: translate(calc(-100% - 5px), -50%);
+}
+.tooltip .tooltiptext.right {
+  transform: translate(5px, -50%);
+}
+
+.tooltip .tooltiptext::after {
+  content: '';
+  position: absolute;
+  border-width: 5px;
+  border-style: solid;
+}
+.tooltip .tooltiptext.top::after {
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-color: var(--theme-color) transparent transparent transparent;
+}
+.tooltip .tooltiptext.bottom::after {
+  top: -10px;
+  left: 50%;
+  margin-left: -5px;
+  border-color: transparent transparent var(--theme-color) transparent;
+}
+
+.tooltip .tooltiptext.left::after {
+  top: 50%;
+  left: 100%;
+  margin-top: -5px;
+  border-color: transparent transparent transparent var(--theme-color);
+}
+.tooltip .tooltiptext.right::after {
+  top: 50%;
+  left: -10px;
+  margin-top: -5px;
+  border-color: transparent var(--theme-color) transparent transparent;
+}
+
+.data-field {
+  font-family: 'RO-Sans', sans-serif !important;
+  font-size: 1em;
+}
+
+.data-field-value,
+.data-field-label {
+  font-size: 1.2em;
+  font-family: 'RO-Sans', sans-serif !important;
+}
+
 #web-oc-sidebar-target {
   flex: 1 1 auto;
   min-height: 0;
