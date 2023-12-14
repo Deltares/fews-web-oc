@@ -90,10 +90,11 @@ const { isRtl } = useRtl()
 const route = useRoute()
 
 watchEffect(async () => {
-  const component = configStore.activeComponents.find(
-    (c) => c.to.name === route.name,
-  )
-  const routeName = component ? component.title : route.name?.toString()
+  const parentRoute = route.matched[0]
+  const parentRouteName =
+    parentRoute !== undefined ? parentRoute.name?.toString() ?? '' : ''
+  const activeComponent = configStore.getComponentByType(parentRouteName)
+  const routeName = activeComponent?.title ?? parentRouteName
   currentItem.value = routeName
 })
 
