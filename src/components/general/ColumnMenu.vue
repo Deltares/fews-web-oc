@@ -1,8 +1,8 @@
 <template>
   <div>
     <v-toolbar density="compact">
-      <v-list-item @click="onTitleClick">
-        <template v-slot:prepend v-if="currentLevel" icon>
+      <v-list-item @click="onTitleClick" v-if="currentLevel">
+        <template v-slot:prepend icon>
           <v-icon>mdi-arrow-left</v-icon>
         </template>
 
