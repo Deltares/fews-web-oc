@@ -20,6 +20,7 @@ const usePrefersDark = usePreferredDark()
 
 onMounted(() => {
   changeTheme('auto')
+  setCustomStyleSheet()
 })
 
 const layoutComponent = computed(() => {
@@ -48,6 +49,13 @@ watch(
     }
   },
 )
+
+function setCustomStyleSheet() {
+  const css = document.getElementById('custom_css') as HTMLLinkElement
+  if (css) {
+    css.href = configStore.customStyleSheet
+  }
+}
 
 function changeTheme(theme: string) {
   if (theme === 'auto') {

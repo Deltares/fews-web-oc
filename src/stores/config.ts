@@ -8,6 +8,7 @@ import { ComponentTypeEnum, WebOcComponent } from '../lib/fews-config/types.js'
 
 interface WebOcConfigGeneral extends WebOcGeneralConfig {
   defaultComponent?: string
+  customStyleSheet?: string
 }
 interface ConfigState {
   version: string
@@ -94,6 +95,14 @@ const useConfigStore = defineStore('config', {
     defaultComponent: (state) => {
       if (state.general.defaultComponent) {
         return state.components[state.general.defaultComponent]
+      }
+    },
+
+    customStyleSheet: (state) => {
+      if (state.general.customStyleSheet) {
+        return getResourcesStaticUrl(state.general.customStyleSheet)
+      } else {
+        return `${import.meta.env.BASE_URL}custom-style-sheet.css`
       }
     },
   },
