@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Inject, Prop, Vue, Watch } from "vue-property-decorator"
+import { Component, Inject, Prop, Vue, Watch } from "vue-property-decorator";
 import {
   type EventData,
   ImageSource,
@@ -14,15 +14,18 @@ import {
   Map,
   type MapDataEvent,
   RasterLayer,
-MapMouseEvent,
-} from "mapbox-gl"
-import { point } from "@turf/helpers"
-import { toMercator } from "@turf/projection"
-import { BoundingBox } from "@deltares/fews-wms-requests"
-import { toWgs84 } from "@turf/projection"
-import { WMSStreamlineLayer, type WMSStreamlineLayerOptions } from '@/lib/StreamLines/layer'
+  MapMouseEvent,
+} from "mapbox-gl";
+import { point } from "@turf/helpers";
+import { toMercator } from "@turf/projection";
+import { BoundingBox } from "@deltares/fews-wms-requests";
+import { toWgs84 } from "@turf/projection";
+import {
+  WMSStreamlineLayer,
+  type WMSStreamlineLayerOptions,
+} from "@/lib/StreamLines/layer";
 import { StreamlineStyle } from "@/lib/StreamLines/render";
-import StreamlineLayers from '@/assets/streamline-layers.json'
+import StreamlineLayers from "@/assets/streamline-layers.json";
 
 function getCoordsFromBounds(bounds: LngLatBounds) {
   return [
@@ -30,103 +33,103 @@ function getCoordsFromBounds(bounds: LngLatBounds) {
     bounds.getNorthEast().toArray(),
     bounds.getSouthEast().toArray(),
     bounds.getSouthWest().toArray(),
-  ]
+  ];
 }
 
 function isBoundsWithinBounds(
   innerBounds: LngLatBounds,
   outerBounds: LngLatBounds
 ) {
-  const innerNorthEast = innerBounds.getNorthEast()
-  const innerSouthWest = innerBounds.getSouthWest()
-  const outerNorthEast = outerBounds.getNorthEast()
-  const outerSouthWest = outerBounds.getSouthWest()
+  const innerNorthEast = innerBounds.getNorthEast();
+  const innerSouthWest = innerBounds.getSouthWest();
+  const outerNorthEast = outerBounds.getNorthEast();
+  const outerSouthWest = outerBounds.getSouthWest();
 
   const isLngWithin =
     innerSouthWest.lng >= outerSouthWest.lng &&
-    innerNorthEast.lng <= outerNorthEast.lng
+    innerNorthEast.lng <= outerNorthEast.lng;
   const isLatWithin =
     innerSouthWest.lat >= outerSouthWest.lat &&
-    innerNorthEast.lat <= outerNorthEast.lat
-  return isLngWithin && isLatWithin
+    innerNorthEast.lat <= outerNorthEast.lat;
+  return isLngWithin && isLatWithin;
 }
 
 export function convertBoundingBoxToLngLatBounds(
   boundingBox: BoundingBox
 ): LngLatBounds {
-  const crs = boundingBox.crs
+  const crs = boundingBox.crs;
 
-  const minx = parseFloat(boundingBox.minx)
-  const miny = parseFloat(boundingBox.miny)
-  const maxx = parseFloat(boundingBox.maxx)
-  const maxy = parseFloat(boundingBox.maxy)
+  const minx = parseFloat(boundingBox.minx);
+  const miny = parseFloat(boundingBox.miny);
+  const maxx = parseFloat(boundingBox.maxx);
+  const maxy = parseFloat(boundingBox.maxy);
 
-  const p1 = toWgs84(point([minx, miny], { crs: crs }))
-  const p2 = toWgs84(point([maxx, maxy], { crs: crs }))
+  const p1 = toWgs84(point([minx, miny], { crs: crs }));
+  const p2 = toWgs84(point([maxx, maxy], { crs: crs }));
   return new LngLatBounds(
     [p1.geometry.coordinates[0], p1.geometry.coordinates[1]], // sw
     [p2.geometry.coordinates[0], p2.geometry.coordinates[1]] // ne
-  )
+  );
 }
 
 export enum LayerType {
-  Streamline = 'streamline',
-  Static = 'static',
+  Streamline = "streamline",
+  Static = "static",
 }
 
 export interface MapboxLayerOptions {
-  name: string
-  time: Date
-  bbox: LngLatBounds
-  elevation?: number | null
-  colorScaleRange?: string
-  layerType:LayerType
+  name: string;
+  time: Date;
+  bbox: LngLatBounds;
+  elevation?: number | null;
+  colorScaleRange?: string;
+  layerType: LayerType;
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
-  const sw = toMercator(point(bounds.getSouthWest().toArray()))
-  const ne = toMercator(point(bounds.getNorthEast().toArray()))
-  return [...sw.geometry.coordinates, ...ne.geometry.coordinates]
+  const sw = toMercator(point(bounds.getSouthWest().toArray()));
+  const ne = toMercator(point(bounds.getNorthEast().toArray()));
+  return [...sw.geometry.coordinates, ...ne.geometry.coordinates];
 }
 
 @Component
 export default class AnimatedMapboxLayer extends Vue {
   @Prop({
     default: () => {
-      return null
+      return null;
     },
   })
-  layer!: MapboxLayerOptions | null
+  layer!: MapboxLayerOptions | null;
 
-  @Inject() getMap!: () => Map
+  @Inject() getMap!: () => Map;
 
-  mapObject!: Map
-  isInitialized = false
-  counter = 0
-  currentLayer: string = ""
-  currentLayerType: LayerType = LayerType.Static
-  streamlineLayer: WMSStreamlineLayer | null = null
+  mapObject!: Map;
+  isInitialized = false;
+  counter = 0;
+  currentLayer: string = "";
+  currentLayerType: LayerType = LayerType.Static;
+  streamlineLayer: WMSStreamlineLayer | null = null;
 
   created() {
-    const map = this.getMap()
+    const map = this.getMap();
     if (map && map.isStyleLoaded()) {
-      this.mapObject = map
-      this.isInitialized = true
-      this.onLayerChange()
+      this.mapObject = map;
+      this.isInitialized = true;
+      this.onLayerChange();
     }
   }
 
   deferredMountedTo(map: Map) {
-    this.mapObject = map
+    this.mapObject = map;
     this.mapObject.once("load", () => {
-      this.isInitialized = true
-      this.onLayerChange()
-    })
+      this.isInitialized = true;
+      this.onLayerChange();
+    });
   }
 
   onMapMoveEnd = (e: Event) => {
-    this.updateSource()
-  }
+    this.updateSource();
+  };
 
   onMapData(e: MapDataEvent & EventData) {
     if (
@@ -134,46 +137,48 @@ export default class AnimatedMapboxLayer extends Vue {
       e.tile !== undefined &&
       e.isSourceLoaded
     ) {
-      this.mapObject.setPaintProperty(e.sourceId, "raster-opacity", 1)
+      this.mapObject.setPaintProperty(e.sourceId, "raster-opacity", 1);
     }
   }
 
   configureAutoAdjustSettings(): void {
     // Attempt to fix frame rate issues by reducing the "quality" of the
     // streamlines, i.e. reduce the number of substeps per frame.
-    const desiredFrameRate = 30
-    const margin = 5
+    const desiredFrameRate = 30;
+    const margin = 5;
 
-    let maxDisplacement = WMSStreamlineLayer.MAX_PARTICLE_DISPLACEMENT
-    const adjustFactor = 1.1
-    const maxDisplacementMin = 2
-    const maxDisplacementMax = 100
+    let maxDisplacement = WMSStreamlineLayer.MAX_PARTICLE_DISPLACEMENT;
+    const adjustFactor = 1.1;
+    const maxDisplacementMin = 2;
+    const maxDisplacementMax = 100;
     const adjustQuality = () => {
-      if (this.streamlineLayer === null) return
+      if (this.streamlineLayer === null) return;
       if (this.streamlineLayer.fps < desiredFrameRate - margin) {
         maxDisplacement = Math.min(
           maxDisplacement * adjustFactor,
           maxDisplacementMax
-        )
+        );
       } else if (this.streamlineLayer.fps > desiredFrameRate + margin) {
         maxDisplacement = Math.max(
           maxDisplacement / adjustFactor,
           maxDisplacementMin
-        )
+        );
       }
       if (this.streamlineLayer.visualiserInitialised) {
-        this.streamlineLayer.updateVisualiserOptions({ maxDisplacement })
+        this.streamlineLayer.updateVisualiserOptions({ maxDisplacement });
       }
-    }
-    window.setInterval(adjustQuality, 100)
+    };
+    window.setInterval(adjustQuality, 100);
   }
 
   createStreamlineLayer() {
-    const layer = StreamlineLayers.layers.find(layer => layer.id === this.currentLayer)
+    const layer = StreamlineLayers.layers.find(
+      (layer) => layer.id === this.currentLayer
+    );
     const layerOptions: WMSStreamlineLayerOptions = {
       baseUrl: `${this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")}/wms`,
       layer: this.currentLayer,
-      style: 'Select a style',
+      style: "Select a style",
       downsampleFactorWMS: 4,
       streamlineStyle: StreamlineStyle.LightParticlesOnMagnitude,
       numParticles: 10000,
@@ -182,55 +187,58 @@ export default class AnimatedMapboxLayer extends Vue {
       fadeAmountPerSecond: 3,
       colorScaleRange: this.layer?.colorScaleRange ?? undefined,
       useMagnitude: layer?.useMagnitude ?? false,
-    }
-    this.streamlineLayer = new WMSStreamlineLayer(layerOptions)
-    this.streamlineLayer.on('load', () => {
-      this.updateStreamlineLayer()
-      this.configureAutoAdjustSettings()
-    })
+    };
+    this.streamlineLayer = new WMSStreamlineLayer(layerOptions);
+    this.streamlineLayer.on("load", () => {
+      this.updateStreamlineLayer();
+      this.configureAutoAdjustSettings();
+    });
     if (this.mapObject.getLayer(this.streamlineLayer.id) !== undefined) {
-      this.mapObject.removeLayer(this.streamlineLayer.id)
+      this.mapObject.removeLayer(this.streamlineLayer.id);
     }
-    this.mapObject.addLayer(this.streamlineLayer)
+    this.mapObject.addLayer(this.streamlineLayer);
   }
 
   updateStreamlineLayer() {
-    if (this.layer === null || this.streamlineLayer === null) return
-    const timeString = this.layer.time.toISOString().slice(0,-5)+"Z"
-    if (timeString !== this.streamlineLayer.time || this.layer.elevation !== this.streamlineLayer.elevation || this.layer.colorScaleRange !== this.streamlineLayer.colorScaleRange) {
-      const timeIndex = this.streamlineLayer.times.indexOf(timeString)
-      const elevation = this.layer.elevation ?? undefined
-      const colorScaleRange = this.layer.colorScaleRange ?? undefined
-      this.streamlineLayer.updateLayer(timeIndex, elevation, colorScaleRange)
+    if (this.layer === null || this.streamlineLayer === null) return;
+    const timeString = this.layer.time.toISOString().slice(0, -5) + "Z";
+    if (
+      timeString !== this.streamlineLayer.time ||
+      this.layer.elevation !== this.streamlineLayer.elevation ||
+      this.layer.colorScaleRange !== this.streamlineLayer.colorScaleRange
+    ) {
+      const timeIndex = this.streamlineLayer.times.indexOf(timeString);
+      const elevation = this.layer.elevation ?? undefined;
+      const colorScaleRange = this.layer.colorScaleRange ?? undefined;
+      this.streamlineLayer.updateLayer(timeIndex, elevation, colorScaleRange);
     }
   }
 
   updateSource() {
-    if (this.layer === null) return
-    const source = this.mapObject.getSource(this.currentLayer) as ImageSource
-    const bounds = this.mapObject.getBounds()
-    const canvas = this.mapObject.getCanvas()
-    const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")
-    let url = this.createGetMapUrl(baseUrl, bounds, canvas)
+    if (this.layer === null) return;
+    const source = this.mapObject.getSource(this.currentLayer) as ImageSource;
+    const bounds = this.mapObject.getBounds();
+    const canvas = this.mapObject.getCanvas();
+    const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL");
+    let url = this.createGetMapUrl(baseUrl, bounds, canvas);
     source.updateImage({
       url: url,
       coordinates: getCoordsFromBounds(bounds),
-    })
+    });
   }
 
-
   createSource() {
-    const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL")
-    const bounds = this.mapObject.getBounds()
-    const canvas = this.mapObject.getCanvas()
-    const url = this.createGetMapUrl(baseUrl, bounds, canvas)
+    const baseUrl = this.$config.get("VUE_APP_FEWS_WEBSERVICES_URL");
+    const bounds = this.mapObject.getBounds();
+    const canvas = this.mapObject.getCanvas();
+    const url = this.createGetMapUrl(baseUrl, bounds, canvas);
 
     const rasterSource: ImageSourceRaw = {
       type: "image",
       url: url,
       coordinates: getCoordsFromBounds(bounds),
-    }
-    this.mapObject.addSource(this.currentLayer, rasterSource)
+    };
+    this.mapObject.addSource(this.currentLayer, rasterSource);
 
     const rasterLayer: RasterLayer = {
       id: this.currentLayer,
@@ -244,158 +252,172 @@ export default class AnimatedMapboxLayer extends Vue {
         },
         "raster-fade-duration": 0,
       },
-    }
-    this.mapObject.addLayer(rasterLayer,"boundary_country_outline")
-    this.mapObject.on("moveend", this.onMapMoveEnd)
-    this.mapObject.on("data", this.onMapData)
+    };
+    this.mapObject.addLayer(rasterLayer, "boundary_country_outline");
+    this.mapObject.on("moveend", this.onMapMoveEnd);
+    this.mapObject.on("data", this.onMapData);
   }
   createCoastline() {
     this.mapObject.addSource("coastline_outline", {
       type: "vector",
       url: "mapbox://mapbox.mapbox-streets-v8",
-    })
+    });
 
-    this.mapObject.addLayer({
-      id: "coastline_outline",
-      type: "line",
-      source: "coastline_outline",
-      "source-layer": "water",
-      layout: {},
-      paint: {
-        "line-color": "#fff", // Main line color
-        "line-width": 3, // Main line width
-        "line-opacity": 0.5, // Main line opacity
+    this.mapObject.addLayer(
+      {
+        id: "coastline_outline",
+        type: "line",
+        source: "coastline_outline",
+        "source-layer": "water",
+        layout: {},
+        paint: {
+          "line-color": "#fff", // Main line color
+          "line-width": 3, // Main line width
+          "line-opacity": 0.5, // Main line opacity
+        },
       },
-    },"boundary_country_outline");
+      "boundary_country_outline"
+    );
 
-    this.mapObject.addLayer({
-      id: "coastline_outline2",
-      type: "line",
-      source: "coastline_outline",
-      "source-layer": "water",
-      layout: {},
-      paint: {
-        "line-color": "#000", // Main line color
-        "line-width": 1, // Main line width
-        "line-opacity": 0.5, // Main line opacity
+    this.mapObject.addLayer(
+      {
+        id: "coastline_outline2",
+        type: "line",
+        source: "coastline_outline",
+        "source-layer": "water",
+        layout: {},
+        paint: {
+          "line-color": "#000", // Main line color
+          "line-width": 1, // Main line width
+          "line-opacity": 0.5, // Main line opacity
+        },
       },
-    },"boundary_country_outline");
+      "boundary_country_outline"
+    );
   }
 
   private createGetMapUrl(
     baseUrl: string,
     bounds: LngLatBounds,
-    canvas: HTMLCanvasElement,
+    canvas: HTMLCanvasElement
   ) {
-    if (this.layer === null) return
+    if (this.layer === null) return;
 
-    const time = this.layer.time.toISOString()
+    const time = this.layer.time.toISOString();
 
-    const getMapUrl = new URL(`${baseUrl}/wms`)
-    getMapUrl.searchParams.append('service', 'WMS')
-    getMapUrl.searchParams.append('request', 'GetMap')
-    getMapUrl.searchParams.append('version', '1.3')
-    getMapUrl.searchParams.append('layers', this.layer.name)
-    getMapUrl.searchParams.append('crs', 'EPSG:3857')
-    getMapUrl.searchParams.append('bbox', `${getMercatorBboxFromBounds(bounds)}`)
-    getMapUrl.searchParams.append('height', `${canvas.height}`)
-    getMapUrl.searchParams.append('width', `${canvas.width}`)
-    getMapUrl.searchParams.append('time', `${time}`)
+    const getMapUrl = new URL(`${baseUrl}/wms`);
+    getMapUrl.searchParams.append("service", "WMS");
+    getMapUrl.searchParams.append("request", "GetMap");
+    getMapUrl.searchParams.append("version", "1.3");
+    getMapUrl.searchParams.append("layers", this.layer.name);
+    getMapUrl.searchParams.append("crs", "EPSG:3857");
+    getMapUrl.searchParams.append(
+      "bbox",
+      `${getMercatorBboxFromBounds(bounds)}`
+    );
+    getMapUrl.searchParams.append("height", `${canvas.height}`);
+    getMapUrl.searchParams.append("width", `${canvas.width}`);
+    getMapUrl.searchParams.append("time", `${time}`);
 
     if (this.layer.elevation) {
-      getMapUrl.searchParams.append('elevation', `${this.layer.elevation}`)
+      getMapUrl.searchParams.append("elevation", `${this.layer.elevation}`);
     }
 
     if (this.layer.colorScaleRange) {
-      getMapUrl.searchParams.append('colorScaleRange', `${this.layer.colorScaleRange}`)
-      getMapUrl.searchParams.append('useDisplayUnits', 'true')
+      getMapUrl.searchParams.append(
+        "colorScaleRange",
+        `${this.layer.colorScaleRange}`
+      );
+      getMapUrl.searchParams.append("useDisplayUnits", "true");
     }
 
-    return getMapUrl.toString()
+    return getMapUrl.toString();
   }
 
   setDefaultZoom() {
-    if (this.layer === null || this.layer.bbox === undefined) return
+    if (this.layer === null || this.layer.bbox === undefined) return;
     if (this.mapObject) {
-      const currentBounds = this.mapObject.getBounds()
-      const bounds = this.layer.bbox
+      const currentBounds = this.mapObject.getBounds();
+      const bounds = this.layer.bbox;
       if (isBoundsWithinBounds(currentBounds, bounds)) {
-        return
+        return;
       } else {
         this.$nextTick(() => {
-          this.mapObject.fitBounds(bounds)
-        })
+          this.mapObject.fitBounds(bounds);
+        });
       }
     }
   }
 
   onDblClick = (event: MapMouseEvent & EventData) => {
-    this.$emit("doubleclick", event)
-  }
+    this.$emit("doubleclick", event);
+  };
 
   enableDoubleClickLayer() {
     // deactivate double click zoom
-    this.mapObject.doubleClickZoom.disable()
+    this.mapObject.doubleClickZoom.disable();
 
-    this.mapObject.on("dblclick", this.onDblClick)
+    this.mapObject.on("dblclick", this.onDblClick);
   }
 
   handleLocationClick = (e: EventData) => {
-      this.$emit("locationclick", e)
-    }
+    this.$emit("locationclick", e);
+  };
 
   enableClickLocationsLayer() {
-    this.mapObject.on("click", "locationsLayer", this.handleLocationClick)
-    this.mapObject.on("touchend", "locationsLayer", this.handleLocationClick)
+    this.mapObject.on("click", "locationsLayer", this.handleLocationClick);
+    this.mapObject.on("touchend", "locationsLayer", this.handleLocationClick);
   }
 
   @Watch("layer")
   onLayerChange(): void {
-    if (!this.isInitialized) return
+    if (!this.isInitialized) return;
 
     if (this.layer === null) {
-      this.removeLayer()
-      return
+      this.removeLayer();
+      return;
     }
 
     if (this.layer.name === undefined || this.layer.time === undefined) {
-      return
+      return;
     }
 
-    if (this.layer.name !== this.currentLayer || this.layer.layerType !== this.currentLayerType) {
+    if (
+      this.layer.name !== this.currentLayer ||
+      this.layer.layerType !== this.currentLayerType
+    ) {
       // Create a new layer
-      this.removeLayer()
-      this.currentLayer = this.layer.name
-      this.currentLayerType = this.layer.layerType
+      this.removeLayer();
+      this.currentLayer = this.layer.name;
+      this.currentLayerType = this.layer.layerType;
 
       if (this.currentLayerType === LayerType.Streamline) {
         // This is a streamline layer
-        this.createStreamlineLayer()
+        this.createStreamlineLayer();
       } else {
-        const source = this.mapObject.getSource(this.currentLayer)
+        const source = this.mapObject.getSource(this.currentLayer);
         if (source === undefined) {
-          this.createSource()
+          this.createSource();
         }
       }
-      this.createCoastline()
-      this.enableDoubleClickLayer()
-      this.enableClickLocationsLayer()
+      this.createCoastline();
+      this.enableDoubleClickLayer();
+      this.enableClickLocationsLayer();
 
       // set default zoom only if layer is changed
-      this.setDefaultZoom()
-
-    } else if (this.currentLayer !== '') {
+      this.setDefaultZoom();
+    } else if (this.currentLayer !== "") {
       // Update existing layer
       if (this.currentLayerType === LayerType.Streamline) {
         if (this.streamlineLayer !== null) {
           if (this.mapObject.getLayer(this.streamlineLayer.id) !== undefined) {
-            this.updateStreamlineLayer()
+            this.updateStreamlineLayer();
           }
         }
       } else {
-        const source = this.mapObject.getSource(this.currentLayer)
+        const source = this.mapObject.getSource(this.currentLayer);
         if (source !== undefined) {
-          this.updateSource()
+          this.updateSource();
         }
       }
     }
@@ -403,30 +425,33 @@ export default class AnimatedMapboxLayer extends Vue {
 
   removeLayer() {
     if (this.mapObject !== undefined) {
-      this.mapObject.off("dblclick", this.onDblClick)
-      this.mapObject.getLayer("coastline_outline") !== undefined && this.mapObject.removeLayer("coastline_outline")
-      this.mapObject.getLayer("coastline_outline2") !== undefined && this.mapObject.removeLayer("coastline_outline2")
-      this.mapObject.getSource("coastline_outline") !== undefined && this.mapObject.removeSource("coastline_outline")
+      this.mapObject.off("dblclick", this.onDblClick);
+      this.mapObject.getLayer("coastline_outline") !== undefined &&
+        this.mapObject.removeLayer("coastline_outline");
+      this.mapObject.getLayer("coastline_outline2") !== undefined &&
+        this.mapObject.removeLayer("coastline_outline2");
+      this.mapObject.getSource("coastline_outline") !== undefined &&
+        this.mapObject.removeSource("coastline_outline");
       if (this.currentLayerType === LayerType.Streamline) {
         if (this.streamlineLayer !== null) {
           if (this.mapObject.getLayer(this.streamlineLayer.id) !== undefined) {
-            this.mapObject.removeLayer(this.streamlineLayer.id)
-            this.streamlineLayer = null
+            this.mapObject.removeLayer(this.streamlineLayer.id);
+            this.streamlineLayer = null;
           }
         }
       } else {
         if (this.mapObject.getSource(this.currentLayer) !== undefined) {
-          this.mapObject.off("moveend", this.onMapMoveEnd)
-          this.mapObject.off("data", this.onMapData)
-          this.mapObject.removeLayer(this.currentLayer)
-          this.mapObject.removeSource(this.currentLayer)
+          this.mapObject.off("moveend", this.onMapMoveEnd);
+          this.mapObject.off("data", this.onMapData);
+          this.mapObject.removeLayer(this.currentLayer);
+          this.mapObject.removeSource(this.currentLayer);
         }
       }
     }
   }
 
   destroyed() {
-    this.removeLayer()
+    this.removeLayer();
   }
 }
 </script>
