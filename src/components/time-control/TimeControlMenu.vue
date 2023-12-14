@@ -101,7 +101,7 @@ const rules = {
   },
 }
 
-const intervalItems = ['-PT12H', '-P1D', '-P1W', '-P2W', '-P1M']
+const intervalItems = ['-PT12H', '-P1D', '-P1W', '-P2W', '-P1M', '-P1D/P11D']
 
 const dates = ref<[Date, Date]>([new Date(), new Date()])
 
