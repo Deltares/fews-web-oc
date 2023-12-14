@@ -11,6 +11,12 @@
   overflow-x: hidden;
 }
 
+.v-list-item {
+  min-height: 28px !important;
+  padding-top: 2px !important;
+  padding-bottom: 0px !important;
+}
+
 .v-navigation-drawer__content {
   display: flex;
   flex-direction: column;
