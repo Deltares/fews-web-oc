@@ -1,0 +1,15 @@
+#web-oc-sidebar-target {
+  flex: 1 1 auto;
+}
+
+.tree-menu {
+  max-height: 100%;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+}
+
+.v-navigation-drawer__content {
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden !important;
+}
