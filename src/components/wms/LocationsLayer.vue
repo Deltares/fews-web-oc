@@ -3,7 +3,7 @@
     <MapboxLayer
       v-if="showLocationsLayer"
       id="location-layer"
-      :source="locationLayerSource"
+      :source="locationsLayerSource"
       :options="locationsLayerOptions"
       clickable
     />
@@ -60,7 +60,7 @@ const locationsGeoJson = ref<
 const showLocationsLayer = ref<boolean>(true)
 const { locationsLayerOptions } = useLocationsLayer(locationsGeoJson)
 
-const locationLayerSource = 'location-layer'
+const locationsLayerSource = 'location-layer'
 
 watchEffect(async () => {
   if (!props.filterIds) return
@@ -68,7 +68,7 @@ watchEffect(async () => {
     baseUrl,
     props.filterIds,
   )
-  const source = map.value.getSource(locationLayerSource) as GeoJSONSource
+  const source = map.value.getSource(locationsLayerSource) as GeoJSONSource
   if (source) {
     source.setData(locationsGeoJson.value)
   }

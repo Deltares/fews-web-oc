@@ -15,7 +15,7 @@
         :max-value="maxElevation"
         :unit="elevationUnit"
       ></ElevationSlider>
-      <LocationLayer :filterIds="filterIds" />
+      <LocationsLayer :filterIds="filterIds" />
     </MapComponent>
     <DateTimeSlider
       v-model:selectedDate="currentTime"
@@ -39,7 +39,7 @@ import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedMapboxLayer, {
   MapboxLayerOptions,
 } from '@/components/wms/AnimatedMapboxLayer.vue'
-import LocationLayer from '@/components/wms/LocationLayer.vue'
+import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
