@@ -1,8 +1,7 @@
 <template>
   <v-app>
     <v-main class="login-container">
-      <div>&nbsp;
-      </div>
+      <div>&nbsp;</div>
       <h1 style="color: white">Delft-FEWS Web Operator Client</h1>
       <div class="login-providers">
         <deltares-login name="Deltares" />

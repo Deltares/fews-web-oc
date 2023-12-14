@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-btn v-if="requiresLogin" @click="login" variant="text"> Sign in </v-btn>
+    <v-btn v-if="requiresLogin" @click="login" variant="text"> Sign in</v-btn>
     <div v-else>
       <v-menu location="bottom" width="200">
         <template #activator="{ props }">
