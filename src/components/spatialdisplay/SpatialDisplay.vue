@@ -8,13 +8,14 @@
         <ColourBar :colourMap="legend" :title="legendTitle" />
       </div>
       <ElevationSlider
-        v-if="layerHasEleveation"
+        v-if="layerHasElevation"
         v-model="currentElevation"
         :key="layerOptions?.name"
         :min-value="minElevation"
         :max-value="maxElevation"
         :unit="elevationUnit"
       ></ElevationSlider>
+      <LocationLayer :filterIds="filterIds" />
     </MapComponent>
     <DateTimeSlider
       v-model:selectedDate="currentTime"
@@ -38,11 +39,13 @@ import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedMapboxLayer, {
   MapboxLayerOptions,
 } from '@/components/wms/AnimatedMapboxLayer.vue'
+import LocationLayer from '@/components/wms/LocationLayer.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { getTopologyNodes, createTopologyMap } from '@/lib/topology'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -82,6 +85,9 @@ const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationUnit = ref('')
 
+const nodes = await getTopologyNodes()
+const topologyMap = createTopologyMap(nodes)
+
 const currentTime = ref<Date>(new Date())
 const layerOptions = ref<MapboxLayerOptions>()
 let debouncedSetLayerOptions!: () => void
@@ -89,8 +95,11 @@ let debouncedSetLayerOptions!: () => void
 const legend = computed(() => {
   return legendGraphic.value?.legend
 })
-const layerHasEleveation = computed(() => {
+const layerHasElevation = computed(() => {
   return selectedLayer.value?.elevation !== undefined
+})
+const filterIds = computed(() => {
+  return topologyMap.get(selectedLayer.value?.name ?? '')?.filterIds ?? []
 })
 
 watch(
