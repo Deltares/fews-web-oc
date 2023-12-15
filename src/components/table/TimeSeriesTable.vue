@@ -7,14 +7,12 @@
       class="data-table"
       :headers="tableHeaders as any"
       :items="tableData"
-      :items-per-page="-1"
+      items-per-page="100"
       density="compact"
       no-filter
       fixed-header
       height="100%"
-      :footer-props="{ disablePagination: true, disableItemsPerPage: true }"
     >
-      <!-- <template v-slot:bottom> </template> -->
       <template v-slot:headers="{ columns }">
         <tr>
           <template v-for="column in columns" :key="column.key">
