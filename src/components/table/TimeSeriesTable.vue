@@ -37,7 +37,7 @@
                     >
                       <v-btn
                         prepend-icon="mdi-content-save-outline"
-                        @click="save(column.key)"
+                        @click="save(column.key as string)"
                         :disabled="newTableData.length === 0"
                         color="primary"
                         variant="flat"
