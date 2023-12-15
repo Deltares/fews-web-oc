@@ -55,6 +55,12 @@ watch(
     const css = document.getElementById('custom_css') as HTMLLinkElement
     if (css) {
       css.href = configStore.customStyleSheet
+      const uiThemeItem = userSettingsStore.items.find(
+        (item) => item.id === 'ui.theme',
+      )
+      if (uiThemeItem) {
+        changeTheme(uiThemeItem.value as string)
+      }
     }
   },
 )
