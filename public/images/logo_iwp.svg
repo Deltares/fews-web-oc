@@ -1,0 +1,21 @@
+<!-- <?xml version="1.0" encoding="UTF-8" standalone="no" ?> -->
+<svg viewbox="0 0 27 36" width="27" height="36" preserveAspectRatio="xMinYMin meet" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="2" width="6" height="6" style="fill:rgb(3,170,162);" />
+  <rect x="14" y="2" width="6" height="6" style="fill:rgb(200,24,62);" />
+  <rect x="21" y="2" width="6" height="6" style="fill:rgb(178,224,30);" />
+
+  <rect x="7" y="9" width="6" height="6" style="fill:rgb(0,89,38);" />
+  <rect x="14" y="9" width="6" height="6" style="fill:rgb(190,111,21);" />
+  <rect x="21" y="9" width="6" height="6" style="fill:rgb(37,151,80);" />
+
+  <rect x="0" y="16" width="6" height="6" style="fill:rgb(18,100,167);" />
+  <rect x="7" y="16" width="6" height="6" style="fill:rgb(56,15,82);" />
+  <rect x="21" y="16" width="6" height="6" style="fill:rgb(196,152,11);" />
+
+  <rect x="0" y="23" width="6" height="6" style="fill:rgb(105,214,243);" />
+  <rect x="7" y="23" width="6" height="6" style="fill:rgb(244,102,46);" />
+  <rect x="14" y="23" width="6" height="6" style="fill:rgb(249,115,128);" />
+
+  <rect x="0" y="30" width="6" height="6" style="fill:rgb(224,138,36);" />
+  <rect x="21" y="30" width="6" height="6" style="fill:rgb(137,40,136);" />
+</svg>
