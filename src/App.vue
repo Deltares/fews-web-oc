@@ -20,7 +20,6 @@ const usePrefersDark = usePreferredDark()
 
 onMounted(() => {
   changeTheme('auto')
-  setCustomStyleSheet()
 })
 
 const layoutComponent = computed(() => {
@@ -50,12 +49,15 @@ watch(
   },
 )
 
-function setCustomStyleSheet() {
-  const css = document.getElementById('custom_css') as HTMLLinkElement
-  if (css) {
-    css.href = configStore.customStyleSheet
-  }
-}
+watch(
+  () => configStore.general.customStyleSheet,
+  () => {
+    const css = document.getElementById('custom_css') as HTMLLinkElement
+    if (css) {
+      css.href = configStore.customStyleSheet
+    }
+  },
+)
 
 function changeTheme(theme: string) {
   if (theme === 'auto') {
@@ -67,7 +69,7 @@ function changeTheme(theme: string) {
 
 function setTheme(isDark: boolean): void {
   theme.global.name.value = isDark ? 'dark' : 'light'
-  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light')
 }
 
 userSettingsStore.$onAction(({ name, args }) => {
