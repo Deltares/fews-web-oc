@@ -9,14 +9,14 @@
 
 [data-theme='dark'] {
   --contrast-color: var(--contrast-color-dark);
-  --theme-color: var(var(--theme-color-dark));
-  --canvas-fill: var(var(--canvas-fill-dark));
+  --theme-color: var(--theme-color-dark);
+  --canvas-fill: var(--canvas-fill-dark);
 }
 
 [data-theme='light'] {
   --contrast-color: var(--contrast-color-light);
-  --theme-color: var(var(--theme-color-light));
-  --canvas-fill: var(var(--canvas-fill-light));
+  --theme-color: var(--theme-color-light);
+  --canvas-fill: var(--canvas-fill-light);
 }
 
 .wb-charts svg {
