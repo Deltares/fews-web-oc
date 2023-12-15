@@ -1,6 +1,7 @@
 import { configManager } from '../application-config/'
 import { UserManager, User, UserManagerSettings } from 'oidc-client-ts'
 import { RequestHeaderAuthorization } from '../application-config/ApplicationConfig'
+import { mergeHeaders } from '@/lib/requests/transformRequest'
 
 export class AuthenticationManager {
   userManager!: UserManager
@@ -23,22 +24,27 @@ export class AuthenticationManager {
     return ''
   }
 
-  public getAuthorizationHeaders(): HeadersInit {
-    if (!configManager.authenticationIsEnabled) return {}
+  public getAuthorizationHeaders(): Headers {
+    if (!configManager.authenticationIsEnabled) return new Headers({})
     switch (configManager.get('VITE_REQUEST_HEADER_AUTHORIZATION')) {
       case RequestHeaderAuthorization.BEARER: {
         const token = this.getAccessToken()
-        const requestAuthHeaders = { Authorization: `Bearer ${token}` }
+        const requestAuthHeaders = new Headers({
+          Authorization: `Bearer ${token}`,
+        })
         return requestAuthHeaders
       }
       default:
-        return {}
+        return new Headers({})
     }
   }
 
   public transformRequestAuth(request: Request, signal?: AbortSignal): Request {
     const requestAuthHeaders = this.getAuthorizationHeaders()
-    const requestInit = { headers: requestAuthHeaders, signal: signal }
+    const requestInit = {
+      headers: mergeHeaders(request.headers, requestAuthHeaders),
+      signal: signal,
+    }
     const newRequest = new Request(request, requestInit)
     return newRequest
   }
