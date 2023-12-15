@@ -16,10 +16,10 @@ const route = useRoute()
 const configStore = useConfigStore()
 const userSettingsStore = useUserSettingsStore()
 const theme = useTheme()
-const usePrefersDark = usePreferredDark()
+const prefersDark = usePreferredDark()
 
 onMounted(() => {
-  changeTheme('auto')
+  updateTheme()
 })
 
 const layoutComponent = computed(() => {
@@ -49,11 +49,16 @@ watch(
   },
 )
 
-function changeTheme(theme: string) {
-  if (theme === 'auto') {
-    setTheme(usePrefersDark.value)
-  } else {
-    setTheme(theme === 'dark')
+watch(prefersDark, () => updateTheme())
+
+function updateTheme(theme?: string) {
+  const themeSetting = theme ? theme : userSettingsStore.get('ui.theme')?.value
+  if (typeof themeSetting === 'string') {
+    if (themeSetting === 'auto') {
+      setTheme(prefersDark.value)
+    } else {
+      setTheme(themeSetting === 'dark')
+    }
   }
 }
 
@@ -73,7 +78,7 @@ userSettingsStore.$onAction(({ name, args }) => {
     const item = args[0]
     switch (item.id) {
       case 'ui.theme':
-        changeTheme(item.value as string)
+        updateTheme(item.value as string)
         break
       default:
     }

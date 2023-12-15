@@ -67,6 +67,9 @@ export const useUserSettingsStore = defineStore({
     listFavorite: (state) => {
       return state.items.filter((item) => item.favorite)
     },
+    get: (state) => (id: string) => {
+      return state.items.find((item) => item.id === id)
+    },
   },
   actions: {
     add(item: UserSettingsItem) {
