@@ -103,13 +103,14 @@ function dateToPiDateTime(dateTime: Date): {
  */
 export function tableDataToTimeSeries(
   tableData: Record<string, Partial<TableSeriesData> | Date>[],
+  seriesIds: string[],
 ): Record<string, TimeSeriesEvent[]> {
   const newTimeSeriesData: Record<string, TimeSeriesEvent[]> = {}
   tableData.forEach((tableItem) => {
     const date = tableItem.date as Date
     const { date: piDate, time: piTime } = dateToPiDateTime(date)
     Object.keys(tableItem).forEach((key) => {
-      if (key !== 'date') {
+      if (seriesIds.includes(key)) {
         const tableDatum = tableItem[key] as TableSeriesData
         const timeSeriesEvent: TimeSeriesEvent = {
           date: piDate,
