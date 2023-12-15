@@ -53,6 +53,7 @@ function parsePiDateTime(
 export function useTimeSeries(
   baseUrl: string,
   requests: MaybeRefOrGetter<ActionRequest[]>,
+  lastUpdated: MaybeRefOrGetter<Date | undefined>,
   options?: MaybeRefOrGetter<UseTimeSeriesOptions>,
 ): UseTimeSeriesReturn {
   let controller = new AbortController()
@@ -64,6 +65,7 @@ export function useTimeSeries(
   watchEffect(() => {
     controller.abort()
     controller = new AbortController()
+    toValue(lastUpdated)
     const piProvider = new PiWebserviceProvider(baseUrl, {
       transformRequestFn: createTransformRequestFn(controller),
     })
@@ -201,6 +203,6 @@ export async function postTimeSeriesEdit(
       timeZone: piSeriesHeaders.timeZone,
       timeSeries: [{ events }],
     }
-    piProvider.postTimeSeriesEdit(url.toString(), timeSeriesEdit)
+    await piProvider.postTimeSeriesEdit(url.toString(), timeSeriesEdit)
   }
 }
