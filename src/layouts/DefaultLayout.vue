@@ -103,29 +103,36 @@ watchEffect(async () => {
 
 watch(() => configStore.general, setLogo)
 
-function setLogo() {
+async function setLogo() {
   const defaultLogo = `${import.meta.env.BASE_URL}images/logo.png`
   const logoRelPath = configStore.general.icons?.logo
+
   if (logoRelPath) {
-    fetch(getResourcesStaticUrl(logoRelPath), { method: 'HEAD' }).then(
-      (response) => {
-        if (response.ok) {
-          logoSrc.value = getResourcesStaticUrl(logoRelPath)
-        } else {
-          const localUrl = `${import.meta.env.BASE_URL}images/${logoRelPath}`
-          fetch(localUrl, { method: 'HEAD' }).then((response) => {
-            if (response.ok) {
-              logoSrc.value = localUrl
-            } else {
-              logoSrc.value = defaultLogo
-            }
-          })
-        }
-      },
-    )
-  } else {
-    logoSrc.value = defaultLogo
+    const remoteUrl = getResourcesStaticUrl(logoRelPath)
+    const localUrl = `${import.meta.env.BASE_URL}images/${logoRelPath}`
+
+    try {
+      const remoteResponse = await fetch(remoteUrl, { method: 'HEAD' })
+      if (remoteResponse.ok) {
+        logoSrc.value = remoteUrl
+        return
+      }
+    } catch (error) {
+      // Handle fetch error
+    }
+
+    try {
+      const localResponse = await fetch(localUrl, { method: 'HEAD' })
+      if (localResponse.ok) {
+        logoSrc.value = localUrl
+        return
+      }
+    } catch (error) {
+      // Handle fetch error
+    }
   }
+
+  logoSrc.value = defaultLogo
 }
 
 function onCloseAlert(alert: Alert) {
