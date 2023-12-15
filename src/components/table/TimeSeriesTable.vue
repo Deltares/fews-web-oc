@@ -14,25 +14,7 @@
       height="100%"
       :footer-props="{ disablePagination: true, disableItemsPerPage: true }"
     >
-      <template v-slot:top>
-        <v-toolbar
-          v-if="isEditing"
-          density="compact"
-          variant="flat"
-          class="table-edit-toolbar"
-        >
-          <v-toolbar-title>Edit data</v-toolbar-title>
-          <v-spacer>
-            <v-btn
-              append-icon="mdi-content-save-outline"
-              @click="saveAll()"
-              :disabled="newTableData.length === 0"
-              >Save</v-btn
-            >
-            <v-btn append-icon="mdi-close" @click="stopEdit()">Cancel</v-btn>
-          </v-spacer>
-        </v-toolbar>
-      </template>
+      <!-- <template v-slot:bottom> </template> -->
       <template v-slot:headers="{ columns }">
         <tr>
           <template v-for="column in columns" :key="column.key">
@@ -51,14 +33,33 @@
                 <div class="table-header-indicator-text">
                   <span>{{ column.title }}</span>
                   <template v-if="(column as TableHeaders).editable">
+                    <div
+                      v-if="isEditingTimeSeries(column.key as string)"
+                      class="table-header__actions"
+                    >
+                      <v-btn
+                        prepend-icon="mdi-content-save-outline"
+                        @click="save(column.key)"
+                        :disabled="newTableData.length === 0"
+                        color="primary"
+                        variant="flat"
+                        size="small"
+                        class="mr-5 my-2"
+                        >Save</v-btn
+                      >
+                      <v-btn
+                        size="small"
+                        variant="flat"
+                        class="my-2"
+                        @click="stopEditTimeSeries(column.key || '')"
+                        >Cancel</v-btn
+                      >
+                    </div>
                     <v-btn
+                      v-else
                       size="x-small"
                       variant="text"
-                      :icon="
-                        isEditingTimeSeries(column.key as string)
-                          ? 'mdi-pencil-off'
-                          : 'mdi-pencil'
-                      "
+                      icon="mdi-pencil"
                       @click="toggleEditTimeSeries(column.key as string)"
                     ></v-btn>
                   </template>
@@ -98,7 +99,6 @@
           @mouseleave="(event) => hideTooltip(event)"
         ></TableCell>
       </template>
-      <template #bottom></template>
       <!-- hide footer -->
     </v-data-table>
   </div>
@@ -226,10 +226,12 @@ function stopEdit() {
   newTableData.value = []
 }
 
-function saveAll() {
-  const newTimeSeriesData = tableDataToTimeSeries(newTableData.value)
+function save(seriesId: string) {
+  const newTimeSeriesData = tableDataToTimeSeries(newTableData.value, [
+    seriesId,
+  ])
   emit('change', newTimeSeriesData)
-  stopEdit()
+  stopEditTimeSeries(seriesId)
 }
 
 function toggleEditTimeSeries(seriesId: string) {
@@ -346,34 +348,10 @@ th.sticky-column {
   margin-bottom: 5px;
 }
 
-.theme--dark :deep(.table-header.table-header--editing) {
-  background: repeating-linear-gradient(
-    45deg,
-    rgb(var(--v-theme-surface)) 0px,
-    rgb(var(--v-theme-surface)) 10px,
-    rgb(100, 90, 0) 10px,
-    rgb(100, 90, 0) 20px
-  ) !important;
-}
-
-.table-header.table-header--editing::before {
+.table-header__actions {
   display: flex;
-  height: 20px;
-  width: 100%;
-  content: '';
-  background: repeating-linear-gradient(
-    45deg,
-    rgb(var(--v-theme-surface)) 0px,
-    rgb(var(--v-theme-surface)) 10px,
-    rgb(255, 233, 0) 10px,
-    rgb(255, 233, 0) 20px
-  ) !important;
-}
-
-.table-edit-toolbar {
-  position: fixed;
-  top: 48px;
-  z-index: 1;
+  flex-direction: row;
+  justify-content: flex-end;
 }
 </style>
 
@@ -383,5 +361,29 @@ td:has(span.sticky-column) {
   left: 0;
   background-color: rgb(var(--v-theme-surface));
   border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.web-oc-ssd > svg {
+  background-color: #fff;
+}
+
+.v-theme--light td:has(div.table-cell-editable) {
+  background: repeating-linear-gradient(
+    45deg,
+    rgb(var(--v-theme-surface)) 0px,
+    rgb(var(--v-theme-surface)) 12.73px,
+    rgb(240, 240, 240) 12.73px,
+    rgb(240, 240, 240) 25.46px
+  );
+}
+
+.v-theme--dark td:has(div.table-cell-editable) {
+  background: repeating-linear-gradient(
+    45deg,
+    rgb(var(--v-theme-surface)) 0px,
+    rgb(var(--v-theme-surface)) 12.73px,
+    rgba(15, 15, 15) 12.73px,
+    rgba(15, 15, 15) 25.46px
+  );
 }
 </style>
