@@ -100,7 +100,7 @@ const useConfigStore = defineStore('config', {
 
     customStyleSheet: (state) => {
       if (state.general.customStyleSheet) {
-        return state.general.customStyleSheet
+        return `/${state.general.customStyleSheet}`
       } else {
         return `${import.meta.env.BASE_URL}custom-style-sheet.css`
       }
