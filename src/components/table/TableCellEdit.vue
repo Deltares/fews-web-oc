@@ -105,6 +105,7 @@ function editFlagQuality(event: Event) {
 }
 
 .table-cell-editable input[type='checkbox'] {
+  display: none;
   margin-right: 5px;
   width: 1.5em;
   border: 1px solid currentColor;
