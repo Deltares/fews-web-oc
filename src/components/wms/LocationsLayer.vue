@@ -35,6 +35,9 @@ const props = withDefaults(defineProps<Props>(), {
     return []
   },
 })
+
+const emit = defineEmits(['click'])
+
 const backgroundColor = ref<string>(
   window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
     ? 'rgba(0,0,0,.5)'
@@ -71,8 +74,8 @@ function onShowLocationsLayerChange(): void {
   showLocationsLayer.value = !showLocationsLayer.value
 }
 
-function onLocationClick(e: any): void {
-  console.log('onLocationClick: event:', e)
+function onLocationClick(event: Event): void {
+  emit('click', event)
 }
 </script>
 
