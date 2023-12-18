@@ -1,0 +1,21 @@
+:root {
+  --font-family: Avenir, Helvetica, Arial, sans-serif;
+  --theme-color-dark: black;
+  --theme-color-light: white;
+  --contrast-color-dark: white;
+  --contrast-color-light: black;
+  --canvas-fill-dark: rgb(54, 54, 54);
+  --canvas-fill-light: rgb(223, 223, 223);
+}
+
+[data-theme='dark'] {
+  --contrast-color: var(--contrast-color-dark);
+  --theme-color: var(--theme-color-dark);
+  --canvas-fill: var(--canvas-fill-dark);
+}
+
+[data-theme='light'] {
+  --contrast-color: var(--contrast-color-light);
+  --theme-color: var(--theme-color-light);
+  --canvas-fill: var(--canvas-fill-light);
+}
