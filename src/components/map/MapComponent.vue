@@ -9,8 +9,8 @@
     :interactive="true"
     :drag-pan="true"
     :scroll-zoom="true"
-    :maxPitch="0"
     :transformRequest="transformRequest"
+    @mb-created="setMapInstance"
   >
     <slot></slot>
   </mapbox-map>
@@ -20,14 +20,21 @@
 import { onBeforeMount, ref } from 'vue'
 import { MapboxMap } from '@studiometa/vue-mapbox-gl'
 import { configManager } from '../../services/application-config'
-import type { ResourceType } from 'mapbox-gl'
+import type { Map, ResourceType } from 'mapbox-gl'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 
 const accessToken = ref('')
+const map = ref<Map | undefined>()
 
 onBeforeMount(() => {
   accessToken.value = configManager.get('VITE_MAPBOX_TOKEN')
 })
+
+function setMapInstance(mapInstance: Map) {
+  mapInstance.dragRotate.disable()
+  mapInstance.touchZoomRotate.disableRotation()
+  map.value = mapInstance
+}
 
 function transformRequest(url: string, resourceType: ResourceType) {
   if (!configManager.authenticationIsEnabled)
