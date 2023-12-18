@@ -23,7 +23,12 @@ import { configManager } from '@/services/application-config'
 import { fetchLocationsAsGeoJson } from '@/lib/topology'
 import { Location } from '@deltares/fews-pi-requests'
 import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
-import { Map, GeoJSONSource } from 'mapbox-gl'
+import {
+  Map,
+  GeoJSONSource,
+  type MapLayerMouseEvent,
+  type MapLayerTouchEvent,
+} from 'mapbox-gl'
 
 import useLocationsLayer from '@/services/useLocationsLayer'
 
@@ -74,7 +79,7 @@ function onShowLocationsLayerChange(): void {
   showLocationsLayer.value = !showLocationsLayer.value
 }
 
-function onLocationClick(event: Event): void {
+function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   emit('click', event)
 }
 </script>
