@@ -9,6 +9,7 @@ import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { useUserSettingsStore } from './stores/userSettings'
 import { useTheme } from 'vuetify'
 import { usePreferredDark } from '@vueuse/core'
+import { useDark, useToggle } from '@vueuse/core'
 
 import '@/assets/fews-flags.css'
 
@@ -17,6 +18,13 @@ const configStore = useConfigStore()
 const userSettingsStore = useUserSettingsStore()
 const theme = useTheme()
 const prefersDark = usePreferredDark()
+const isDark = useDark({
+  selector: 'html',
+  attribute: 'data-theme',
+  valueDark: 'dark',
+  valueLight: 'light',
+})
+const toggleDark = useToggle(isDark)
 
 onMounted(() => {
   updateTheme()
@@ -78,9 +86,11 @@ function updateTheme(theme?: string) {
   }
 }
 
-function setTheme(isDark: boolean): void {
-  theme.global.name.value = isDark ? 'dark' : 'light'
-  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light')
+function setTheme(setDark: boolean): void {
+  theme.global.name.value = setDark ? 'dark' : 'light'
+  if (setDark !== isDark.value) {
+    toggleDark()
+  }
 }
 
 userSettingsStore.$onAction(({ name, args }) => {
