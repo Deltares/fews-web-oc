@@ -6,12 +6,7 @@
     :options="locationsLayerOptions"
     @mb-click="onLocationClick"
   />
-  <v-chip
-    class="chip"
-    :style="{ backgroundColor: backgroundColor }"
-    pill
-    label
-  >
+  <v-chip class="chip" :style="{ backgroundColor: backgroundColor }" pill label>
     <v-icon>mdi-map-marker</v-icon>
     <v-switch
       class="ml-2 mt-5"
