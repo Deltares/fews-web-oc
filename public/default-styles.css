@@ -1,5 +1,5 @@
 .wb-charts svg {
-  color: black;
+  color: var(--contrast-color);
 }
 
 .axis {
@@ -15,32 +15,31 @@
   font-family: 'RO-Sans', sans-serif !important;
 }
 
+.canvas {
+  fill: var(--canvas-fill);
+}
+
 .legend {
   font-size: 1em;
 }
 
-.canvas {
-  /* 0.87 * 255 = 223 */
-  fill: rgba(223, 223, 223);
-}
-
 .axis path {
   stroke-width: 1px;
-  stroke: black;
+  stroke: var(--contrast-color);
 }
 .axis .tick line {
   stroke-width: 1px;
-  stroke: black;
+  stroke: var(--contrast-color);
 }
 .axis .tick text {
   stroke-width: 1px;
-  fill: black;
+  fill: var(--contrast-color);
 }
 .grid {
   fill: none;
   stroke-width: 1px;
+  color: var(--theme-color);
   stroke: black;
-  color: black;
   stroke-dasharray: 2px;
 }
 
@@ -48,15 +47,15 @@
   display: none;
 }
 .grid .tick line {
-  stroke: white;
+  stroke: var(--theme-color);
 }
 .grid .tick.zero-crossing line {
   stroke-dasharray: none;
-  stroke: black;
+  stroke: var(--contrast-color);
 }
 
 .charts > path {
-  stroke: black;
+  stroke: var(--contrast-color);
 }
 
 .view {
@@ -115,31 +114,32 @@
 }
 
 .cross-section-select {
-  stroke: black;
+  stroke: var(--contrast-color);
   font-size: 1em;
   font-family: 'RO-Sans', sans-serif !important;
 }
 
-.cross-section-select > line {
+.cross-section-select line {
+  stroke: var(--contrast-color);
   stroke-dasharray: 2 2;
 }
 
 .cross-section-select text.date-label {
   stroke: none;
-  fill: black;
+  fill: var(--contrast-color);
 }
 
 .cross-section-select .data-point-per-line {
-  stroke: black;
+  stroke:;
 }
 
 .cross-section-select rect {
-  fill: white;
+  fill: var(--theme-color);
 }
 
 .cross-section-select-handle {
-  stroke: black;
-  fill: black;
+  stroke: var(--contrast-color);
+  fill: var(--contrast-color);
   cursor: pointer;
 }
 
@@ -158,7 +158,7 @@
 .current-time-indicator > text {
   visibility: hidden;
   stroke: none;
-  fill: black;
+  fill: var(--contrast-color);
 }
 
 .dst-indicator {
@@ -172,7 +172,7 @@
 .dst-indicator > text {
   visibility: hidden;
   stroke: none;
-  fill: black;
+  fill: var(--contrast-color);
 }
 
 .mouse-per-line {
@@ -202,13 +202,13 @@
 }
 
 .mouse-over .mouse-line {
-  stroke: black;
+  stroke: var(--contrast-color);
   stroke-width: 1px;
   stroke-dasharray: 5, 2, 2, 2;
 }
 
 .mouse-over .mouse-per-line {
-  fill: black;
+  fill: var(--contrast-color);
 }
 
 .tooltip {
@@ -222,8 +222,8 @@
 }
 
 .tooltip .tooltiptext {
-  background-color: white;
-  color: black;
+  background-color: var(--theme-color);
+  color: var(--contrast-color);
   text-align: center;
   border-radius: 6px;
   padding: 5px 10px;
@@ -240,6 +240,7 @@
 .tooltip .tooltiptext.bottom {
   transform: translate(-50%, 5px);
 }
+
 .tooltip .tooltiptext.left {
   transform: translate(calc(-100% - 5px), -50%);
 }
@@ -257,26 +258,26 @@
   top: 100%;
   left: 50%;
   margin-left: -5px;
-  border-color: white transparent transparent transparent;
+  border-color: var(--theme-color) transparent transparent transparent;
 }
 .tooltip .tooltiptext.bottom::after {
   top: -10px;
   left: 50%;
   margin-left: -5px;
-  border-color: transparent transparent white transparent;
+  border-color: transparent transparent var(--theme-color) transparent;
 }
 
 .tooltip .tooltiptext.left::after {
   top: 50%;
   left: 100%;
   margin-top: -5px;
-  border-color: transparent transparent transparent white;
+  border-color: transparent transparent transparent var(--theme-color);
 }
 .tooltip .tooltiptext.right::after {
   top: 50%;
   left: -10px;
   margin-top: -5px;
-  border-color: transparent white transparent transparent;
+  border-color: transparent var(--theme-color) transparent transparent;
 }
 
 .data-field {
