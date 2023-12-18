@@ -15,7 +15,7 @@
         :max-value="maxElevation"
         :unit="elevationUnit"
       ></ElevationSlider>
-      <LocationsLayer :filterIds="filterIds" />
+      <LocationsLayer :filterIds="filterIds" @click="onLocationClick" />
     </MapComponent>
     <DateTimeSlider
       v-model:selectedDate="currentTime"
@@ -61,6 +61,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
 })
+
+const emit = defineEmits(['location-click'])
 
 onBeforeMount(() => {
   debouncedSetLayerOptions = debounce(setLayerOptions, 500, {
@@ -150,6 +152,13 @@ function setCurrentTime(enabled: boolean): void {
   }
 }
 
+function updateTime(date: Date): void {
+  if (dateController.currentTime.getTime() === date.getTime()) return
+  dateController.selectDate(date)
+  currentTime.value = dateController.currentTime
+  debouncedSetLayerOptions()
+}
+
 function setLayerOptions(): void {
   if (props.layerName) {
     layerOptions.value = {
@@ -163,11 +172,8 @@ function setLayerOptions(): void {
   }
 }
 
-function updateTime(date: Date): void {
-  if (dateController.currentTime.getTime() === date.getTime()) return
-  dateController.selectDate(date)
-  currentTime.value = dateController.currentTime
-  debouncedSetLayerOptions()
+function onLocationClick(event: Event): void {
+  emit('location-click', event)
 }
 </script>
 
