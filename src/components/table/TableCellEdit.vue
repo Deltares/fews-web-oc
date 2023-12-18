@@ -80,7 +80,6 @@ function editValue(event: Event, value: number | null | undefined) {
   } else {
     // User changes existing value. Origin is not allowed to be changed.
     currentItem.value.flagOrigin = oldItem.flagOrigin
-
   }
   currentItem.value.flagSource = 'MAN'
   editItem()
