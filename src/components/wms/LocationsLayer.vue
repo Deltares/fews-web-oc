@@ -1,27 +1,25 @@
 <template>
-  <div>
-    <MapboxLayer
-      v-if="showLocationsLayer"
-      id="location-layer"
-      :source="locationsLayerSource"
-      :options="locationsLayerOptions"
-      clickable
+  <MapboxLayer
+    v-if="showLocationsLayer"
+    id="location-layer"
+    :source="locationsLayerSource"
+    :options="locationsLayerOptions"
+    @mb-click="onLocationClick"
+  />
+  <v-chip
+    class="chip"
+    :style="{ backgroundColor: backgroundColor }"
+    pill
+    label
+  >
+    <v-icon>mdi-map-marker</v-icon>
+    <v-switch
+      class="ml-2 mt-5"
+      color="primary"
+      :model-value="showLocationsLayer"
+      @update:model-value="onShowLocationsLayerChange"
     />
-    <v-chip
-      class="chip"
-      :style="{ backgroundColor: backgroundColor }"
-      pill
-      label
-    >
-      <v-icon>mdi-map-marker</v-icon>
-      <v-switch
-        class="ml-2 mt-5"
-        color="primary"
-        :model-value="showLocationsLayer"
-        @update:model-value="onShowLocationsLayerChange"
-      />
-    </v-chip>
-  </div>
+  </v-chip>
 </template>
 
 <script setup lang="ts">
@@ -76,6 +74,10 @@ watchEffect(async () => {
 
 function onShowLocationsLayerChange(): void {
   showLocationsLayer.value = !showLocationsLayer.value
+}
+
+function onLocationClick(e: any): void {
+  console.log('onLocationClick: event:', e)
 }
 </script>
 
