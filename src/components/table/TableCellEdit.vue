@@ -78,7 +78,7 @@ function editValue(event: Event, value: number | null | undefined) {
     currentItem.value.flagOrigin = 'COMPLETED'
     currentItem.value.flagQuality = 'RELIABLE'
   } else {
-    // User changes existing value. Origin stays the sam.e
+    // User changes existing value. Origin is not allowed to be changed.
     currentItem.value.flagOrigin = oldItem.flagOrigin
 
   }
