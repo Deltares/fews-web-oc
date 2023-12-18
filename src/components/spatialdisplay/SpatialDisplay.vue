@@ -46,6 +46,7 @@ import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { getTopologyNodes, createTopologyMap } from '@/lib/topology'
+import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -172,8 +173,8 @@ function setLayerOptions(): void {
   }
 }
 
-function onLocationClick(event: Event): void {
-  emit('location-click', event)
+function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
+  emit('location-click', event, filterIds.value)
 }
 </script>
 
