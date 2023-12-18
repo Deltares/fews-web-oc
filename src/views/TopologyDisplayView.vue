@@ -288,3 +288,9 @@ watchEffect(() => {
   }
 })
 </script>
+
+<style scoped>
+.v-btn-group {
+  color: inherit;
+}
+</style>
