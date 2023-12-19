@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vue-tsc && vite build",
     "build:deltares": "vue-tsc && env-cmd -f deltares.env vite build",
+    "build:weboc": "vue-tsc && vite build --base=/weboc/",
     "preview": "vite preview",
     "test": "echo nothing to test yet",
     "lint": "npm run prettier",
