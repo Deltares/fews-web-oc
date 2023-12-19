@@ -145,6 +145,15 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         component: SpatialDisplay,
         props: true,
         meta: { sidebar: true },
+        children: [
+          {
+            path: '/topology/node/:nodeId?/map/:layerName?/location/:locationId',
+            name: 'TopologySpatialTimeSeriesDisplay',
+            component: SpatialTimeSeriesDisplay,
+            props: true,
+            meta: { sidebar: true },
+          },
+        ],
       },
     ],
   },

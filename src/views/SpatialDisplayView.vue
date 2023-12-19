@@ -31,41 +31,19 @@
     >
     </ColumnMenu>
   </Teleport>
-
-  <div class="container">
-    <div class="child-container" :class="{ hidden: hideMap }">
-      <SpatialDisplay
-        :layer-name="props.layerName"
-        @location-click="onLocationClick"
-      ></SpatialDisplay>
-    </div>
-    <div
-      class="child-container"
-      :class="{
-        mobile,
-        hidden: hideTimeSeries,
-      }"
-    >
-      <router-view
-        @close="closeTimeSeriesDisplay"
-        :filterIds="filterIds"
-      ></router-view>
-    </div>
-  </div>
+  <SpatialDisplay :layer-name="props.layerName" />
 </template>
 
 <script setup lang="ts">
 import ColumnMenu from '../components/general/ColumnMenu.vue'
 import TreeMenu from '@/components/general/TreeMenu.vue'
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { ColumnItem } from '../components/general/ColumnItem'
 import { useWmsCapilities } from '@/services/useWms'
 import { configManager } from '@/services/application-config'
 import { Layer, LayerGroup } from '@deltares/fews-wms-requests'
 import SpatialDisplay from '@/components/spatialdisplay/SpatialDisplay.vue'
 import { useDisplay } from 'vuetify'
-import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
-import { useRouter } from 'vue-router'
 
 interface Props {
   layerName?: string
@@ -75,9 +53,6 @@ const props = withDefaults(defineProps<Props>(), {
   layerName: '',
 })
 
-const filterIds = ref<string[]>([])
-const locationId = ref<string | null>(null)
-
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const capabilities = useWmsCapilities(baseUrl)
 
@@ -85,8 +60,6 @@ const active = ref<string[]>(['root'])
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>()
 const menuType = ref('treemenu')
-
-const router = useRouter()
 
 const { mobile } = useDisplay()
 
@@ -163,52 +136,6 @@ function attachLayersToMenu(
       },
     }
     groupNode?.children?.push(item)
-  }
-}
-
-const hideTimeSeries = computed(() => {
-  return (
-    locationId.value === null ||
-    filterIds.value.length === 0 ||
-    filterIds.value[0] === ''
-  )
-})
-
-const hideMap = computed(() => {
-  mobile.value && !hideTimeSeries.value
-})
-
-function onLocationClick(
-  event: MapLayerMouseEvent | MapLayerTouchEvent,
-  filterActionIds: string[],
-): void {
-  filterIds.value = filterActionIds
-  if (!event.features) return
-  const location: string | null =
-    event.features[0].properties?.locationId ?? null
-  locationId.value = location
-  if (locationId.value !== null) {
-    openLocationTimeSeriesDisplay()
-  }
-}
-
-function openLocationTimeSeriesDisplay() {
-  router.push({
-    name: 'SpatialTimeSeriesDisplay',
-    params: {
-      layerName: props.layerName,
-      locationId: locationId.value,
-    },
-  })
-}
-
-function closeTimeSeriesDisplay(location: string): void {
-  if (location) {
-    router.push({
-      name: 'SpatialDisplay',
-      params: { layerName: props.layerName },
-    })
-    locationId.value = null
   }
 }
 </script>
