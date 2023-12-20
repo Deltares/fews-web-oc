@@ -161,6 +161,16 @@ const legendTitle = computed(() => {
 })
 
 watch(
+  () => legendGraphic.value?.legend,
+  () => {
+    colorScaleRange.value =
+      `${legend.value?.[0].lowerValue},${legend.value?.[
+        legend.value?.length - 1
+      ].lowerValue}` ?? undefined
+  },
+)
+
+watch(
   () => props.times,
   () => {
     if (props.times) {

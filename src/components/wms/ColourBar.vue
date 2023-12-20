@@ -37,13 +37,14 @@ const emit = defineEmits(['update:colorScaleRange'])
 
 const isVisible = ref<boolean>(true)
 const range = ref<Range>({
-  min: props.colorScaleRange
-    ? parseFloat(props.colorScaleRange.split(',')[0])
-    : 0,
-  max: props.colorScaleRange
-    ? parseFloat(props.colorScaleRange.split(',')[1])
-    : 1,
+    min: props.colorScaleRange
+        ? parseFloat(props.colorScaleRange.split(',')[0])
+        : 0,
+    max: props.colorScaleRange
+        ? parseFloat(props.colorScaleRange.split(',')[1])
+        : 1,
 })
+
 const isEditingMin = ref<boolean>(false)
 const isEditingMax = ref<boolean>(false)
 let group: d3.Selection<SVGGElement, unknown, HTMLElement, any>
@@ -57,8 +58,14 @@ onMounted(() => {
   updateColourBar()
 })
 
-watch([props], () => {
+watch(props, () => {
   updateColourBar()
+})
+
+watch(() => props.colorScaleRange, (newColorScaleRange) => {
+    const [min, max] = newColorScaleRange?.split(',') ?? '0, 1'
+    range.value.min = parseFloat(min)
+    range.value.max = parseFloat(max)
 })
 
 watch(
