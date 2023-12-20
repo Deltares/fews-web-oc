@@ -45,7 +45,7 @@ npm run build
 
 A dist folder is created that can be used to deploy the web oc to different platforms, like Azure, Tomcat and Nginx.
 
-See [Deployments](deployments/) for more information on how to run Web OC stand-alone and/or from a webserver.
+See [Build and Deploy](deployments/) for more information on how to build and run the Web OC stand-alone and/or from a webserver.
 
 ## Authentication and Authorization with Open ID Connect
 

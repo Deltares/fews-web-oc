@@ -1,6 +1,34 @@
-# Delft-FEWS Web OC Deployments
+# Delft-FEWS Web OC Builds and Deployments
 
 The Delft-FEWS Web OC is distributed as a single page web application.
+
+# Building a distribution
+
+# NPM and Node.js
+To build a distribution npm version 9.5 node.js version 18.15 are required.
+
+To create a distribution that is run in the root path of a webserver, use:
+
+```
+npm run build
+```
+
+To create a distribution that is run in the weboc path of a webserver, put a .env file in the root of the project folder:
+
+``` .env
+VITE_PUBLIC_PATH="/weboc/"
+```
+
+Now build the distribution with the following command:
+
+```
+npm run build:weboc
+```
+
+The dist folder contains the weboc application that can be deployed in either the root or weboc path.
+
+# Deploying
+
 When deployed to a server like Nginx or Tomcat it is required to make sure that all requests are mapped to the index.html page of the web oc.
 This means that the server will have to redirect all HTTP 404 errors to the index.html. How this can be done is explained per deployment option.
 
