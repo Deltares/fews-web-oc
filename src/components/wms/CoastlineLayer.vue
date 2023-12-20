@@ -33,7 +33,6 @@
 
 <script setup lang="ts">
 import { Ref, ref, watchEffect } from 'vue'
-import { configManager } from '@/services/application-config'
 import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
 import { Map } from 'mapbox-gl'
 
