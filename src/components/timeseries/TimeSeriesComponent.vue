@@ -72,6 +72,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const settings = useUserSettingsStore()
 const store = useSystemTimeStore()
+const lastUpdated = ref<Date>(new Date())
 
 const options = computed<UseTimeSeriesOptions>(() => {
   return {
@@ -82,10 +83,16 @@ const options = computed<UseTimeSeriesOptions>(() => {
   }
 })
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { series } = useTimeSeries(baseUrl, () => props.config.requests, options)
+const { series } = useTimeSeries(
+  baseUrl,
+  () => props.config.requests,
+  lastUpdated,
+  options,
+)
 
-function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
-  postTimeSeriesEdit(baseUrl, props.config.requests, newData)
+async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
+  await postTimeSeriesEdit(baseUrl, props.config.requests, newData)
+  lastUpdated.value = new Date()
 }
 
 const subplots = computed(() => {

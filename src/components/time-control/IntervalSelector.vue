@@ -17,7 +17,7 @@
       </template>
     </v-list-item>
     <v-divider></v-divider>
-    <v-list-subheader>Backward period presets</v-list-subheader>
+    <v-list-subheader>Period presets</v-list-subheader>
     <v-list-item
       v-for="(item, index) in props.items"
       :key="index"

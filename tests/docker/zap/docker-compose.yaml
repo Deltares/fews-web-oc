@@ -15,9 +15,11 @@ services:
       - '80:80'
 
   # The report ./folder is mounted to generate the zap report.
+  # The web-zap.conf contains the exclusions that are marked as false positives.
   zap:
     container_name: zap
     image: owasp/zap2docker-stable
-    command: 'zap-full-scan.py -t http://nginx-weboc -j -g gen.conf -r report.html -x report.xml -J report.json'
+    command: 'zap-full-scan.py -t http://nginx-weboc -j -g gen.conf -j -c /weboc-zap.conf  -r report.html -x report.xml -J report.json'
     volumes:
+      - ./weboc-zap.conf:/weboc-zap.conf:ro
       - ./report:/zap/wrk/:rw

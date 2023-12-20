@@ -1,5 +1,6 @@
 <template>
   <div class="table-cell-editable">
+    <input type="checkbox" @change="(event) => selectItem(event)" />
     <input
       :ref="`${props.item.date}-${props.id}-value`"
       v-model.number="currentItem.y"
@@ -84,6 +85,10 @@ function editValue(event: Event, value: number | null | undefined) {
   editItem()
 }
 
+function selectItem(event: Event) {
+  console.log(event)
+}
+
 function editFlagQuality(event: Event) {
   currentItem.value.flagSource = 'MAN'
   editItem()
@@ -97,6 +102,17 @@ function editFlagQuality(event: Event) {
   display: flex;
   flex-direction: row;
   min-width: 240px;
+}
+
+.table-cell-editable input[type='checkbox'] {
+  display: none;
+  margin-right: 5px;
+  width: 1.5em;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  background-color: rgb(var(--v-theme-surface));
+  color: currentColor;
+  cursor: pointer;
 }
 
 input.table-cell-edit {

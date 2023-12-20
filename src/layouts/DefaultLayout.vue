@@ -8,7 +8,7 @@
     >
       <v-toolbar density="compact" fixed>
         <v-btn variant="text" :to="{ name: 'Default' }">
-          <img height="36" :src="configStore.logo" />
+          <img height="36" :src="logoSrc" />
         </v-btn>
         <v-spacer />
         <login-component v-if="configManager.authenticationIsEnabled" />
@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
+import { ref, watch, watchEffect } from 'vue'
 import { useRtl } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
 import { Alert, useAlertsStore } from '../stores/alerts.ts'
@@ -80,6 +80,7 @@ import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
 
 import { configManager } from '@/services/application-config'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 
 const configStore = useConfigStore()
 const alertsStore = useAlertsStore()
@@ -89,13 +90,50 @@ const currentItem = ref('')
 const { isRtl } = useRtl()
 const route = useRoute()
 
+const logoSrc = ref('')
+
 watchEffect(async () => {
-  const component = configStore.activeComponents.find(
-    (c) => c.to.name === route.name,
-  )
-  const routeName = component ? component.title : route.name?.toString()
+  const parentRoute = route.matched[0]
+  const parentRouteName =
+    parentRoute !== undefined ? parentRoute.name?.toString() ?? '' : ''
+  const activeComponent = configStore.getComponentByType(parentRouteName)
+  const routeName = activeComponent?.title ?? parentRouteName
   currentItem.value = routeName
 })
+
+watch(() => configStore.general, setLogo)
+
+async function setLogo() {
+  const defaultLogo = `${import.meta.env.BASE_URL}images/logo.png`
+  const logoRelPath = configStore.general.icons?.logo
+
+  if (logoRelPath) {
+    const remoteUrl = getResourcesStaticUrl(logoRelPath)
+    const localUrl = `${import.meta.env.BASE_URL}images/${logoRelPath}`
+
+    try {
+      const remoteResponse = await fetch(remoteUrl, { method: 'HEAD' })
+      if (remoteResponse.ok) {
+        logoSrc.value = remoteUrl
+        return
+      }
+    } catch (error) {
+      // Handle fetch error
+    }
+
+    try {
+      const localResponse = await fetch(localUrl, { method: 'HEAD' })
+      if (localResponse.ok) {
+        logoSrc.value = localUrl
+        return
+      }
+    } catch (error) {
+      // Handle fetch error
+    }
+  }
+
+  logoSrc.value = defaultLogo
+}
 
 function onCloseAlert(alert: Alert) {
   alert.active = false
