@@ -7,36 +7,37 @@
     @keydown.escape.stop="disableEdit"
     @blur="acceptEdit"
     class="legend-input"
-    :style="{ left: offset }"
+    :style="{ top: offsetTop, left: offsetLeft }"
   />
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { ref, watch, nextTick, defineProps, defineEmits } from 'vue'
 
 interface LegendInputProps {
+  parentId?: string
   value?: number
   minValue?: number
   maxValue?: number
-  offset?: string
   isEditing?: boolean
 }
 
 const emit = defineEmits(['update:value', 'update:isEditing'])
 
 const props = withDefaults(defineProps<LegendInputProps>(), {
+  parentId: '',
   value: 0,
   minValue: -999999999,
   maxValue: 999999999,
-  offset: '',
-  isEditing: false,
+  isEditing: true,
 })
 const inputValue = ref<number>(0)
-const enabled = ref<boolean>(false)
+const enabled = ref<boolean>(true)
 const inputRef = ref<HTMLInputElement | null>(null)
 
 const disableEdit = () => {
-  enabled.value = false
+//   enabled.value = false
   emit('update:isEditing', enabled.value)
 }
 
@@ -47,6 +48,29 @@ const acceptEdit = () => {
 
   disableEdit()
 }
+
+const getParentBoundingClientRect = (parentId: string | null) => {
+  if (parentId == null) return { top: '0px', left: '0px' }
+
+  const parent = document.getElementById(parentId)
+  if (parent == null) return { top: '0px', left: '0px' }
+
+  const rect = parent.getBoundingClientRect()
+  console.log('rect :>> ', rect);
+  return { top: `${rect.top}px`, left: `${rect.left}px` }
+}
+
+const offsetTop = computed(
+  () => getParentBoundingClientRect(props.parentId).top,
+)
+
+const offsetLeft = computed(
+  () => {
+    const left = getParentBoundingClientRect(props.parentId).left
+    console.log('left :>> ', left);
+    return left
+  }
+)
 
 watch(
   () => props.isEditing,
@@ -70,6 +94,9 @@ const focusInput = () => {
 
 <style scoped>
 .legend-input {
+  width: 40px;
+  height: 40px;
+  position: absolute;   
   font-size: 12px;
   padding: 0;
   border-radius: 5px;

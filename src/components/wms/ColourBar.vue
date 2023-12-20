@@ -2,11 +2,13 @@
   <div id="legend" :class="isVisible ? 'invisible' : ''">
     <svg id="colourbar" class="colourbar"></svg>
     <LegendInput
+      parentId="min-legend"
       v-model:value="range.min"
       :maxValue="range.max"
       v-model:isEditing="isEditingMin"
     />
     <LegendInput
+      parentId="max-legend"
       v-model:value="range.max"
       :minValue="range.min"
       v-model:isEditing="isEditingMax"
@@ -37,16 +39,16 @@ const emit = defineEmits(['update:colorScaleRange'])
 
 const isVisible = ref<boolean>(true)
 const range = ref<Range>({
-    min: props.colorScaleRange
-        ? parseFloat(props.colorScaleRange.split(',')[0])
-        : 0,
-    max: props.colorScaleRange
-        ? parseFloat(props.colorScaleRange.split(',')[1])
-        : 1,
+  min: props.colorScaleRange
+    ? parseFloat(props.colorScaleRange.split(',')[0])
+    : 0,
+  max: props.colorScaleRange
+    ? parseFloat(props.colorScaleRange.split(',')[1])
+    : 1,
 })
 
 const isEditingMin = ref<boolean>(false)
-const isEditingMax = ref<boolean>(false)
+const isEditingMax = ref<boolean>(true)
 let group: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
 onMounted(() => {
@@ -62,11 +64,14 @@ watch(props, () => {
   updateColourBar()
 })
 
-watch(() => props.colorScaleRange, (newColorScaleRange) => {
+watch(
+  () => props.colorScaleRange,
+  (newColorScaleRange) => {
     const [min, max] = newColorScaleRange?.split(',') ?? '0, 1'
     range.value.min = parseFloat(min)
     range.value.max = parseFloat(max)
-})
+  },
+)
 
 watch(
   range,
@@ -100,6 +105,8 @@ function updateColourBar() {
 
   firstChild.on('click', () => (isEditingMin.value = true))
   lastChild.on('click', () => (isEditingMax.value = true))
+  firstChild.attr('id', 'min-legend')
+  lastChild.attr('id', 'max-legend')
 }
 </script>
 
