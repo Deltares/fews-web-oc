@@ -96,7 +96,7 @@ const focusInput = () => {
 .legend-input {
   width: 40px;
   height: 40px;
-  position: absolute;   
+  position: fixed;   
   font-size: 12px;
   padding: 0;
   border-radius: 5px;
