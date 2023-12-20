@@ -4,7 +4,6 @@
     id="location-layer"
     :source="locationsLayerSource"
     :options="locationsLayerOptions"
-    @mb-click="onLocationClick"
   />
   <v-chip class="chip" :style="{ backgroundColor: backgroundColor }" pill label>
     <v-icon>mdi-map-marker</v-icon>
@@ -62,6 +61,22 @@ const showLocationsLayer = ref<boolean>(true)
 const { locationsLayerOptions } = useLocationsLayer(locationsGeoJson)
 
 const locationsLayerSource = 'location-layer'
+
+map.value.on('click', 'location-layer', (e) => {
+  const features = map.value.queryRenderedFeatures(e.point, {
+    layers: ['location-layer'],
+  })
+  if (!features.length) return
+  onLocationClick(e)
+})
+
+map.value.on('mouseenter', 'location-layer', () => {
+  map.value.getCanvas().style.cursor = 'pointer'
+})
+
+map.value.on('mouseleave', 'location-layer', () => {
+  map.value.getCanvas().style.cursor = ''
+})
 
 watchEffect(async () => {
   if (!props.filterIds) return
