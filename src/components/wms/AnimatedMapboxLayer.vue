@@ -122,7 +122,6 @@ function createSource() {
   }
   mapObject.addLayer(rasterLayer, 'boundary_country_outline')
 }
-
 function updateSource() {
   const source = map.value.getSource(currentLayer) as ImageSource
   if (source !== undefined) source.updateImage(getImageSourceOptions())
