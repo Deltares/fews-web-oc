@@ -35,7 +35,7 @@
 import { Ref, ref, watchEffect } from 'vue'
 import { configManager } from '@/services/application-config'
 import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
-import { Map, VectorSource } from 'mapbox-gl'
+import { Map } from 'mapbox-gl'
 
 const backgroundColor = ref<string>(
   window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -43,7 +43,6 @@ const backgroundColor = ref<string>(
     : 'rgba(255,255,255,.5)',
 )
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { map } = useMap() as { map: Ref<Map> }
 
 const showCoastlineLayer = ref<boolean>(false)
@@ -76,14 +75,6 @@ const coastlineLayerOptions2 = {
     'line-color': '#fff',
     'line-width': 3,
   },
-}
-
-function removeCoastline() {
-  const mapObject = map.value
-
-  if (mapObject.getSource(coastlineLayerSource) !== undefined) {
-    mapObject.removeSource(coastlineLayerSource)
-  }
 }
 
 watchEffect(async () => {
