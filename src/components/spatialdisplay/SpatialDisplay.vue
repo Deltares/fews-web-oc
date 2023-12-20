@@ -47,7 +47,7 @@ import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { getTopologyNodes, createTopologyMap } from '@/lib/topology'
-import CoastlineLayer from "@/components/wms/CoastlineLayer.vue";
+import CoastlineLayer from '@/components/wms/CoastlineLayer.vue'
 
 interface ElevationWithUnitSymbol {
   units?: string

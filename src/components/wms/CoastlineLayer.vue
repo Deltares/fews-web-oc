@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <MapboxLayer
       v-if="showCoastlineLayer"
       id="coastline_layer2"
@@ -36,8 +35,7 @@
 import { Ref, ref, watchEffect } from 'vue'
 import { configManager } from '@/services/application-config'
 import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
-import {Map, VectorSource} from 'mapbox-gl'
-
+import { Map, VectorSource } from 'mapbox-gl'
 
 const backgroundColor = ref<string>(
   window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -47,7 +45,6 @@ const backgroundColor = ref<string>(
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { map } = useMap() as { map: Ref<Map> }
-
 
 const showCoastlineLayer = ref<boolean>(false)
 const coastlineLayerSource = 'coastline_source'
@@ -90,10 +87,9 @@ function removeCoastline() {
 }
 
 watchEffect(async () => {
-
-if (showCoastlineLayer.value) {
-  createCoastline()
-}
+  if (showCoastlineLayer.value) {
+    createCoastline()
+  }
 })
 
 function onshowCoastlineLayerChange(): void {
