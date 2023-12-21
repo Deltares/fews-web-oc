@@ -5,6 +5,12 @@
     :source="locationsLayerSource"
     :options="locationsLayerOptions"
   />
+  <MapboxLayer
+    v-if="showSelectedLocation"
+    id="selected-location-layer"
+    :source="selectedLocationSource"
+    :options="selectedLocationOptions"
+  />
   <v-chip class="chip" :style="{ backgroundColor: backgroundColor }" pill label>
     <v-icon>mdi-map-marker</v-icon>
     <v-switch
@@ -17,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+import { FeatureCollection, Geometry } from 'geojson'
 import { Ref, ref, watchEffect } from 'vue'
 import { configManager } from '@/services/application-config'
 import { fetchLocationsAsGeoJson } from '@/lib/topology'
@@ -29,7 +36,9 @@ import {
   type MapLayerTouchEvent,
 } from 'mapbox-gl'
 
-import useLocationsLayer from '@/services/useLocationsLayer'
+import useLocationsLayer, {
+  useSelectedLocation,
+} from '@/services/useLocationsLayer'
 
 interface Props {
   filterIds: string[]
@@ -57,16 +66,30 @@ const locationsGeoJson = ref<
   type: 'FeatureCollection',
   features: [],
 })
+
+const selectedLocationGeoJson = ref<
+  GeoJSON.FeatureCollection<GeoJSON.Geometry, Location>
+>({
+  type: 'FeatureCollection',
+  features: [],
+})
+
 const showLocationsLayer = ref<boolean>(true)
+const showSelectedLocation = ref<boolean>(true)
+
 const { locationsLayerOptions } = useLocationsLayer(locationsGeoJson)
+const { selectedLocationOptions } = useSelectedLocation(selectedLocationGeoJson)
 
 const locationsLayerSource = 'location-layer'
+const selectedLocationSource = 'selected-location-layer'
 
 map.value.on('click', 'location-layer', (e) => {
   const features = map.value.queryRenderedFeatures(e.point, {
     layers: ['location-layer'],
   })
   if (!features.length) return
+
+  setSelectedLocation([features[0]])
   onLocationClick(e)
 })
 
@@ -90,8 +113,23 @@ watchEffect(async () => {
   }
 })
 
+function setSelectedLocation(location: any): void {
+  showSelectedLocation.value = true
+  const source = map.value.getSource(selectedLocationSource) as GeoJSONSource
+  if (source) {
+    const selectedLocationGeoJson: FeatureCollection<Geometry, Location> = {
+      type: 'FeatureCollection',
+      features: location,
+    }
+    source.setData(selectedLocationGeoJson)
+  }
+}
+
 function onShowLocationsLayerChange(): void {
   showLocationsLayer.value = !showLocationsLayer.value
+  if (!showLocationsLayer.value) {
+    showSelectedLocation.value = false
+  }
 }
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
