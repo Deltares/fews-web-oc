@@ -32,6 +32,19 @@ const defaultLocationsLayerOptions: CircleLayer = {
   paint: defaultLocationPaintOptions,
 }
 
+const defaultSelectedLocationOptions: CircleLayer = {
+  id: 'selectedLocationsLayer',
+  type: 'circle',
+  source: defaultGeoJsonSource,
+  layout: {
+    visibility: 'visible',
+  },
+  paint: {
+    'circle-radius': 6,
+    'circle-color': '#0c1e38',
+  },
+}
+
 export default function useLocationsLayer(
   geojson: MaybeRefOrGetter<FeatureCollection<Geometry, Location>>,
 ) {
@@ -55,5 +68,31 @@ export default function useLocationsLayer(
 
   return {
     locationsLayerOptions,
+  }
+}
+
+export function useSelectedLocation(
+  geojson: MaybeRefOrGetter<FeatureCollection<Geometry, Location>>,
+) {
+  const selectedLocationOptions: Ref<CircleLayer> = ref({
+    ...defaultSelectedLocationOptions,
+  })
+  watch(geojson, () => {
+    const _geojson = toValue(geojson)
+
+    if (!_geojson) {
+      return {
+        selectedLocationOptions,
+      }
+    }
+    const source = {
+      ...defaultGeoJsonSource,
+      data: _geojson,
+    }
+    selectedLocationOptions.value.source = source
+  })
+
+  return {
+    selectedLocationOptions,
   }
 }
