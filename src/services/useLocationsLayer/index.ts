@@ -15,41 +15,28 @@ const defaultGeoJsonSource: GeoJSONSourceRaw = {
   },
 }
 
-const defaultLocationPaintOptions: CirclePaint = {
+const defaultLocationPaintOptions: Ref<CirclePaint> = ref({
   'circle-radius': 5,
   'circle-color': '#dfdfdf',
   'circle-stroke-color': 'black',
   'circle-stroke-width': 1,
-}
+})
 
-const defaultLocationsLayerOptions: CircleLayer = {
+const defaultLocationsLayerOptions: Ref<CircleLayer> = ref({
   id: 'locationsLayer',
   type: 'circle',
   source: defaultGeoJsonSource,
   layout: {
     visibility: 'visible',
   },
-  paint: defaultLocationPaintOptions,
-}
-
-const defaultSelectedLocationOptions: CircleLayer = {
-  id: 'selectedLocationsLayer',
-  type: 'circle',
-  source: defaultGeoJsonSource,
-  layout: {
-    visibility: 'visible',
-  },
-  paint: {
-    'circle-radius': 6,
-    'circle-color': '#0c1e38',
-  },
-}
+  paint: defaultLocationPaintOptions.value,
+})
 
 export default function useLocationsLayer(
   geojson: MaybeRefOrGetter<FeatureCollection<Geometry, Location>>,
 ) {
   const locationsLayerOptions: Ref<CircleLayer> = ref({
-    ...defaultLocationsLayerOptions,
+    ...defaultLocationsLayerOptions.value,
   })
   watch(geojson, () => {
     const _geojson = toValue(geojson)
@@ -68,31 +55,5 @@ export default function useLocationsLayer(
 
   return {
     locationsLayerOptions,
-  }
-}
-
-export function useSelectedLocation(
-  geojson: MaybeRefOrGetter<FeatureCollection<Geometry, Location>>,
-) {
-  const selectedLocationOptions: Ref<CircleLayer> = ref({
-    ...defaultSelectedLocationOptions,
-  })
-  watch(geojson, () => {
-    const _geojson = toValue(geojson)
-
-    if (!_geojson) {
-      return {
-        selectedLocationOptions,
-      }
-    }
-    const source = {
-      ...defaultGeoJsonSource,
-      data: _geojson,
-    }
-    selectedLocationOptions.value.source = source
-  })
-
-  return {
-    selectedLocationOptions,
   }
 }
