@@ -100,22 +100,22 @@ function highlightSelectedLocationOnMap() {
     'match',
     ['get', 'locationId'],
     selectedLocationId.value,
-    '#0c1e38',
-    '#dfdfdf',
+    '#0c1e38', // color for selected location
+    '#dfdfdf', // default color
   ])
   map.value.setPaintProperty(locationsLayerSource, 'circle-stroke-color', [
     'match',
     ['get', 'locationId'],
     selectedLocationId.value,
-    'white',
-    'black',
+    'white', // stroke color for selected location
+    'black', // default stroke color
   ])
   map.value.setPaintProperty(locationsLayerSource, 'circle-radius', [
     'match',
     ['get', 'locationId'],
     selectedLocationId.value,
-    7,
-    5,
+    7, // radius for selected location
+    5, // default radius
   ])
 }
 
