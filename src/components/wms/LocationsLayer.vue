@@ -33,11 +33,13 @@ import useLocationsLayer from '@/services/useLocationsLayer'
 
 interface Props {
   filterIds: string[]
+  locationId?: string | null
 }
 const props = withDefaults(defineProps<Props>(), {
   filterIds: () => {
     return []
   },
+  locationId: null,
 })
 
 const emit = defineEmits(['click'])
@@ -61,7 +63,6 @@ const locationsGeoJson = ref<
 const showLocationsLayer = ref<boolean>(true)
 const { locationsLayerOptions } = useLocationsLayer(locationsGeoJson)
 const locationsLayerSource = 'location-layer'
-const selectedLocationId: Ref<string | null> = ref(null)
 
 map.value.on('click', 'location-layer', (e) => {
   const features = map.value.queryRenderedFeatures(e.point, {
@@ -69,8 +70,6 @@ map.value.on('click', 'location-layer', (e) => {
   })
   if (!features.length) return
 
-  selectedLocationId.value = features[0].properties?.locationId ?? null
-  highlightSelectedLocationOnMap()
   onLocationClick(e)
 })
 
@@ -80,6 +79,10 @@ map.value.on('mouseenter', 'location-layer', () => {
 
 map.value.on('mouseleave', 'location-layer', () => {
   map.value.getCanvas().style.cursor = ''
+})
+
+watchEffect(() => {
+  highlightSelectedLocationOnMap()
 })
 
 watchEffect(async () => {
@@ -95,25 +98,25 @@ watchEffect(async () => {
 })
 
 function highlightSelectedLocationOnMap() {
-  if (!selectedLocationId.value) return
+  if (props.locationId === undefined || !props.locationId) return
   map.value.setPaintProperty(locationsLayerSource, 'circle-color', [
     'match',
     ['get', 'locationId'],
-    selectedLocationId.value,
+    props.locationId,
     '#0c1e38', // color for selected location
     '#dfdfdf', // default color
   ])
   map.value.setPaintProperty(locationsLayerSource, 'circle-stroke-color', [
     'match',
     ['get', 'locationId'],
-    selectedLocationId.value,
+    props.locationId,
     'white', // stroke color for selected location
     'black', // default stroke color
   ])
   map.value.setPaintProperty(locationsLayerSource, 'circle-radius', [
     'match',
     ['get', 'locationId'],
-    selectedLocationId.value,
+    props.locationId,
     7, // radius for selected location
     5, // default radius
   ])

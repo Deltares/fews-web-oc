@@ -15,7 +15,7 @@
         :max-value="maxElevation"
         :unit="elevationUnit"
       ></ElevationSlider>
-      <LocationsLayer :filterIds="filterIds" @click="onLocationClick" />
+      <LocationsLayer :filterIds="filterIds" :locationId="props.locationId" @click="onLocationClick" />
     </MapComponent>
     <DateTimeSlider
       v-model:selectedDate="currentTime"
@@ -57,10 +57,12 @@ interface ElevationWithUnitSymbol {
 
 interface Props {
   layerName?: string
+  locationId?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
+  locationId: null,
 })
 
 const emit = defineEmits(['location-click'])
