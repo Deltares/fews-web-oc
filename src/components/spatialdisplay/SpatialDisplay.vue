@@ -3,6 +3,7 @@
     <div class="child-container" :class="{ hidden: hideMap }">
       <SpatialDisplayComponent
         :layer-name="props.layerName"
+        :location-id="locationId"
         @location-click="onLocationClick"
       ></SpatialDisplayComponent>
     </div>
