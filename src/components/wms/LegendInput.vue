@@ -1,13 +1,17 @@
 <template>
-  <input
+  <v-text-field
     ref="inputRef"
     v-if="enabled"
     v-model.number="inputValue"
     @keydown.enter.stop="acceptEdit"
     @keydown.escape.stop="disableEdit"
     @blur="acceptEdit"
+    variant="solo"
+    density="compact"
+    single-line
+    hide-details
     class="legend-input"
-    :style="{ top: offsetTop, left: offsetLeft }"
+    :style="{ left: offsetLeft }"
   />
 </template>
 
@@ -48,26 +52,12 @@ const acceptEdit = () => {
   disableEdit()
 }
 
-const getParentBoundingClientRect = (parentId: string | null) => {
-  if (parentId == null) return { top: '0px', left: '0px' }
-
-  const parent = document.getElementById(parentId)
-  if (parent == null) return { top: '0px', left: '0px' }
-
-  const rect = parent.getBoundingClientRect()
-  console.log('rect :>> ', rect);
-  return { top: `${rect.top}px`, left: `${rect.left}px` }
-}
-
-const offsetTop = computed(
-  () => getParentBoundingClientRect(props.parentId).top,
-)
-
 const offsetLeft = computed(
   () => {
-    const left = getParentBoundingClientRect(props.parentId).left
-    console.log('left :>> ', left);
-    return left
+    const parent = document.getElementById(props.parentId)
+    const offset = parent?.getAttribute('transform')?.split(',')[0].split('(')[1]
+    const left = +(offset ?? 0)
+    return left + 'px'
   }
 )
 
@@ -94,11 +84,23 @@ const focusInput = () => {
 <style scoped>
 .legend-input {
   width: 40px;
-  height: 40px;
-  position: fixed;   
+  position: absolute;   
+  bottom: -6px;
   font-size: 12px;
   padding: 0;
   border-radius: 5px;
+  transform: translateY(-10px);
+}
+
+:deep(input) {
+  transform: translateY(-5px);
+  text-align: center;
+  padding: 0;
+  margin: 0;
+}
+
+:deep(.v-input__control) {
+  height: 30px;
 }
 
 .legend-input input {
