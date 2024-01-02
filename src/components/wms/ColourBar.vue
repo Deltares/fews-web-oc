@@ -48,7 +48,7 @@ const range = ref<Range>({
 })
 
 const isEditingMin = ref<boolean>(false)
-const isEditingMax = ref<boolean>(true)
+const isEditingMax = ref<boolean>(false)
 let group: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
 onMounted(() => {

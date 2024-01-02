@@ -30,15 +30,14 @@ const props = withDefaults(defineProps<LegendInputProps>(), {
   value: 0,
   minValue: -999999999,
   maxValue: 999999999,
-  isEditing: true,
+  isEditing: false,
 })
 const inputValue = ref<number>(0)
-const enabled = ref<boolean>(true)
+const enabled = ref<boolean>(false)
 const inputRef = ref<HTMLInputElement | null>(null)
 
 const disableEdit = () => {
-//   enabled.value = false
-  emit('update:isEditing', enabled.value)
+  emit('update:isEditing', false)
 }
 
 const acceptEdit = () => {
