@@ -4,15 +4,16 @@
       <SpatialDisplayComponent
         :layer-name="props.layerName"
         :location-id="locationId"
+        v-model:filter-ids="filterIds"
         @location-click="onLocationClick"
       ></SpatialDisplayComponent>
     </div>
     <div
       class="child-container"
       :class="{
-        mobile,
-        hidden: hideTimeSeries,
+        mobile
       }"
+      v-if="!hideTimeSeries"
     >
       <router-view
         @close="closeTimeSeriesDisplay"
@@ -37,11 +38,17 @@ const props = withDefaults(defineProps<Props>(), {
   layerName: '',
 })
 
-const filterIds = ref<string[]>([])
-const locationId = ref<string | null>(null)
-
 const route = useRoute()
 const router = useRouter()
+
+const filterIds = ref<string[]>([])
+const routeLocation = typeof route.params.locationId === 'string' ? route.params.locationId : null
+const locationId = ref<string | null>(routeLocation)
+
+if (locationId.value) {
+  openLocationTimeSeriesDisplay()
+}
+
 
 const { mobile } = useDisplay()
 
@@ -58,10 +65,8 @@ const hideMap = computed(() => {
 })
 
 function onLocationClick(
-  event: MapLayerMouseEvent | MapLayerTouchEvent,
-  filterActionIds: string[],
+  event: MapLayerMouseEvent | MapLayerTouchEvent
 ): void {
-  filterIds.value = filterActionIds
   if (!event.features) return
   const location: string | null =
     event.features[0].properties?.locationId ?? null

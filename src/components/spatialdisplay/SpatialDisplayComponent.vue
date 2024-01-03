@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import MapComponent from '@/components/map/MapComponent.vue'
-import { ref, computed, onBeforeMount, watch } from 'vue'
+import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
   useWmsLayer,
@@ -65,7 +65,7 @@ const props = withDefaults(defineProps<Props>(), {
   locationId: null,
 })
 
-const emit = defineEmits(['location-click'])
+const emit = defineEmits(['location-click', 'update:filter-ids'])
 
 onBeforeMount(() => {
   debouncedSetLayerOptions = debounce(setLayerOptions, 500, {
@@ -105,6 +105,10 @@ const layerHasElevation = computed(() => {
 })
 const filterIds = computed(() => {
   return topologyMap.get(selectedLayer.value?.name ?? '')?.filterIds ?? []
+})
+
+watchEffect(() => {
+  emit('update:filter-ids', filterIds.value)
 })
 
 watch(
@@ -176,7 +180,7 @@ function setLayerOptions(): void {
 }
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
-  emit('location-click', event, filterIds.value)
+  emit('location-click', event)
 }
 </script>
 
