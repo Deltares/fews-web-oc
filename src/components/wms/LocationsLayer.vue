@@ -98,25 +98,28 @@ watchEffect(async () => {
 })
 
 function highlightSelectedLocationOnMap() {
-  if (props.locationId === undefined || !props.locationId) return
+  if (!map.value.getSource(locationsLayerSource)) return
+
+  // Set color to default if no layer is available
+  const locationId = props.locationId ?? 'noLayerSelected'
   map.value.setPaintProperty(locationsLayerSource, 'circle-color', [
     'match',
     ['get', 'locationId'],
-    props.locationId,
+    locationId,
     '#0c1e38', // color for selected location
     '#dfdfdf', // default color
   ])
   map.value.setPaintProperty(locationsLayerSource, 'circle-stroke-color', [
     'match',
     ['get', 'locationId'],
-    props.locationId,
+    locationId,
     'white', // stroke color for selected location
     'black', // default stroke color
   ])
   map.value.setPaintProperty(locationsLayerSource, 'circle-radius', [
     'match',
     ['get', 'locationId'],
-    props.locationId,
+    locationId,
     7, // radius for selected location
     5, // default radius
   ])
