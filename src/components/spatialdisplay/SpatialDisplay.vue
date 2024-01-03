@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
@@ -42,13 +42,16 @@ const route = useRoute()
 const router = useRouter()
 
 const filterIds = ref<string[]>([])
-const routeLocation = typeof route.params.locationId === 'string' ? route.params.locationId : null
-const locationId = ref<string | null>(routeLocation)
+const locationId = ref<string | null>(null)
+
+watchEffect(() => {
+  const routeLocation = typeof route.params.locationId === 'string' ? route.params.locationId : null
+  locationId.value = routeLocation
+})
 
 if (locationId.value) {
   openLocationTimeSeriesDisplay()
 }
-
 
 const { mobile } = useDisplay()
 
