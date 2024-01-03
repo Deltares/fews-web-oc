@@ -17,11 +17,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ref, watch, nextTick, defineProps, defineEmits } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 
 interface LegendInputProps {
-  parentId?: string
-  value?: number
+  parentId: string
+  value: number
   minValue?: number
   maxValue?: number
   isEditing?: boolean
@@ -30,15 +30,13 @@ interface LegendInputProps {
 const emit = defineEmits(['update:value', 'update:isEditing'])
 
 const props = withDefaults(defineProps<LegendInputProps>(), {
-  parentId: '',
-  value: 0,
   minValue: -999999999,
   maxValue: 999999999,
   isEditing: false,
 })
 const inputValue = ref<number>(0)
 const enabled = ref<boolean>(false)
-const inputRef = ref<HTMLInputElement | null>(null)
+const inputRef = ref<HTMLInputElement>()
 
 const disableEdit = () => {
   emit('update:isEditing', false)
@@ -52,14 +50,12 @@ const acceptEdit = () => {
   disableEdit()
 }
 
-const offsetLeft = computed(
-  () => {
-    const parent = document.getElementById(props.parentId)
-    const offset = parent?.getAttribute('transform')?.split(',')[0].split('(')[1]
-    const left = +(offset ?? 0)
-    return left + 'px'
-  }
-)
+const offsetLeft = computed(() => {
+  const parent = document.getElementById(props.parentId)
+  const offset = parent?.getAttribute('transform')?.split(',')[0].split('(')[1]
+  const left = +(offset ?? 0)
+  return left + 'px'
+})
 
 watch(
   () => props.isEditing,
@@ -75,7 +71,7 @@ watch(
 
 const focusInput = () => {
   nextTick(() => {
-    if (inputRef.value == null) return
+    if (!inputRef.value) return
     inputRef.value.focus()
   })
 }
@@ -84,7 +80,7 @@ const focusInput = () => {
 <style scoped>
 .legend-input {
   width: 40px;
-  position: absolute;   
+  position: absolute;
   bottom: -6px;
   font-size: 12px;
   padding: 0;

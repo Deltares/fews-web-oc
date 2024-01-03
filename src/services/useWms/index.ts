@@ -88,13 +88,16 @@ export function useWmsLegend(
   useDisplayUnits: MaybeRefOrGetter<boolean>,
   colorScaleRange?: MaybeRefOrGetter<string | undefined>,
 ): Ref<GetLegendGraphicResponse | undefined> {
+  let controller = new AbortController()
   const wmsUrl = `${baseUrl}/wms`
-  const wmsProvider = new WMSProvider(wmsUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
   const legendGraphic = ref<GetLegendGraphicResponse>()
 
   async function loadLegend(): Promise<void> {
+    controller.abort("getLegend aborted")
+    controller = new AbortController()
+    const wmsProvider = new WMSProvider(wmsUrl, {
+      transformRequestFn: createTransformRequestFn(controller),
+    })
     const _layers = toValue(layerName)
     const _useDisplayUnits = toValue(useDisplayUnits)
     const _colorScaleRange = toValue(colorScaleRange)

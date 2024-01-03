@@ -30,22 +30,13 @@ type Range = {
 interface Props {
   colourMap?: webOcCharts.ColourMap
   title?: string
-  colorScaleRange?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {})
+const props = defineProps<Props>()
 
-const emit = defineEmits(['update:colorScaleRange'])
+const range = defineModel<Range>('range', { required: true })
 
 const isVisible = ref<boolean>(true)
-const range = ref<Range>({
-  min: props.colorScaleRange
-    ? parseFloat(props.colorScaleRange.split(',')[0])
-    : 0,
-  max: props.colorScaleRange
-    ? parseFloat(props.colorScaleRange.split(',')[1])
-    : 1,
-})
 
 const isEditingMin = ref<boolean>(false)
 const isEditingMax = ref<boolean>(false)
@@ -60,26 +51,8 @@ onMounted(() => {
   updateColourBar()
 })
 
-watch(props, () => {
-  updateColourBar()
-})
 
-watch(
-  () => props.colorScaleRange,
-  (newColorScaleRange) => {
-    const [min, max] = newColorScaleRange?.split(',') ?? '0, 1'
-    range.value.min = parseFloat(min)
-    range.value.max = parseFloat(max)
-  },
-)
-
-watch(
-  range,
-  () => {
-    emit('update:colorScaleRange', `${range.value.min},${range.value.max}`)
-  },
-  { deep: true },
-)
+watch(props, updateColourBar)
 
 function updateColourBar() {
   if (!props.colourMap) return

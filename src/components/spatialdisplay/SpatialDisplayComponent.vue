@@ -9,7 +9,8 @@
       <ColourBar
         :colourMap="legend"
         :title="legendTitle"
-        v-model:colorScaleRange="colorScaleRange"
+        v-model:range="colorScaleRange"
+        v-if="colorScaleRange"
       />
     </div>
     <ElevationSlider
@@ -43,7 +44,7 @@
 
 <script setup lang="ts">
 import MapComponent from '@/components/map/MapComponent.vue'
-import { ref, computed, onBeforeMount, watch } from 'vue'
+import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
   useWmsLegend,
@@ -109,19 +110,35 @@ const currentTime = ref<Date>(new Date())
 const layerOptions = ref<MapboxLayerOptions>()
 let debouncedSetLayerOptions!: () => void
 
-const colorScaleRange = ref<string | undefined>(undefined)
+const colorScaleRange = ref<{min: number, max: number}>()
+const colorScaleRangeString = computed(() => {
+  if (!colorScaleRange.value) return
+  if (colorScaleRange.value.min === undefined) return
+  if (colorScaleRange.value.max === undefined) return
+  return `${colorScaleRange.value.min},${colorScaleRange.value.max}`
+})
+const legendLayerName = ref(props.layerName)
 const settings = useUserSettingsStore()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const legendGraphic = useWmsLegend(
   baseUrl,
-  () => props.layerName,
+  legendLayerName,
   () => settings.useDisplayUnits,
-  colorScaleRange,
+  colorScaleRangeString 
 )
 
 const legend = computed(() => {
   return legendGraphic.value?.legend
 })
+
+watchEffect(() => { 
+  if (!legend.value) return
+  colorScaleRange.value = {
+    min: legend.value[0].lowerValue,
+    max: legend.value[legend.value.length - 1].lowerValue,
+  }
+})
+
 const layerHasElevation = computed(() => {
   return props.layerCapabilities?.elevation !== undefined
 })
@@ -129,6 +146,8 @@ const layerHasElevation = computed(() => {
 watch(
   () => props.layerCapabilities,
   (layer) => {
+    legendLayerName.value = props.layerName
+    colorScaleRange.value = undefined
     if (layer?.elevation) {
       const max = layer.elevation.upperValue ?? 0
       const min = layer.elevation.lowerValue ?? 0
@@ -159,16 +178,6 @@ const legendTitle = computed(() => {
     : ''
   return `${props.layerCapabilities.title}${unitString}`
 })
-
-watch(
-  () => legendGraphic.value?.legend,
-  () => {
-    colorScaleRange.value =
-      `${legend.value?.[0].lowerValue},${legend.value?.[
-        legend.value?.length - 1
-      ].lowerValue}` ?? undefined
-  },
-)
 
 watch(
   () => props.times,
@@ -208,7 +217,7 @@ function setLayerOptions(): void {
         : undefined,
     }
     layerOptions.value.elevation = currentElevation.value
-    layerOptions.value.colorScaleRange = colorScaleRange.value
+    layerOptions.value.colorScaleRange = colorScaleRangeString.value
   } else {
     layerOptions.value = undefined
   }
