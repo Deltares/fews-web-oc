@@ -15,7 +15,11 @@
         :max-value="maxElevation"
         :unit="elevationUnit"
       ></ElevationSlider>
-      <LocationsLayer :filterIds="filterIds" :locationId="props.locationId" @click="onLocationClick" />
+      <LocationsLayer
+        :filterIds="filterIds"
+        :locationId="props.locationId"
+        @click="onLocationClick"
+      />
     </MapComponent>
     <DateTimeSlider
       v-model:selectedDate="currentTime"
