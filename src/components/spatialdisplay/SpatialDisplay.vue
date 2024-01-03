@@ -12,7 +12,7 @@
       class="child-container"
       :class="{
         mobile,
-        hidden: hideTimeSeries
+        hidden: hideTimeSeries,
       }"
     >
       <router-view
@@ -45,7 +45,8 @@ const filterIds = ref<string[]>([])
 const locationId = ref<string | null>(null)
 
 watchEffect(() => {
-  const routeLocation = typeof route.params.locationId === 'string' ? route.params.locationId : null
+  const routeLocation =
+    typeof route.params.locationId === 'string' ? route.params.locationId : null
   locationId.value = routeLocation
 })
 
@@ -67,9 +68,7 @@ const hideMap = computed(() => {
   mobile.value && !hideTimeSeries.value
 })
 
-function onLocationClick(
-  event: MapLayerMouseEvent | MapLayerTouchEvent
-): void {
+function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   if (!event.features) return
   const location: string | null =
     event.features[0].properties?.locationId ?? null
@@ -110,7 +109,8 @@ function closeTimeSeriesDisplay(location: string): void {
  * to keep that location for the new layer
  */
 onBeforeRouteUpdate((to, from, next) => {
-  const goingToLocationRoute = to.params.locationId !== '' && to.params.locationId !== undefined
+  const goingToLocationRoute =
+    to.params.locationId !== '' && to.params.locationId !== undefined
   const sourceIdIsTheSame = to.params.layerName === from.params.layerName
 
   if (goingToLocationRoute || sourceIdIsTheSame) {
@@ -123,7 +123,7 @@ onBeforeRouteUpdate((to, from, next) => {
 
   if (comingFromLocationRoute) {
     router.push({
-      path: `${to.path}/location/${locationId}`
+      path: `${to.path}/location/${locationId}`,
     })
   } else {
     next()
