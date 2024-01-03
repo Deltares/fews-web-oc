@@ -11,9 +11,9 @@
     <div
       class="child-container"
       :class="{
-        mobile
+        mobile,
+        hidden: hideTimeSeries
       }"
-      v-if="!hideTimeSeries"
     >
       <router-view
         @close="closeTimeSeriesDisplay"
