@@ -28,7 +28,7 @@ import { computed, ref, watchEffect } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 
 interface Props {
   layerName?: string
@@ -104,6 +104,31 @@ function closeTimeSeriesDisplay(location: string): void {
     locationId.value = null
   }
 }
+
+/**
+ * Causes on route changes to a different layer while having selected a location
+ * to keep that location for the new layer
+ */
+onBeforeRouteUpdate((to, from, next) => {
+  const goingToLocationRoute = to.params.locationId !== '' && to.params.locationId !== undefined
+  const sourceIdIsTheSame = to.params.layerName === from.params.layerName
+
+  if (goingToLocationRoute || sourceIdIsTheSame) {
+    next()
+    return
+  }
+
+  const locationId = from.params.locationId
+  const comingFromLocationRoute = locationId !== '' && locationId !== undefined
+
+  if (comingFromLocationRoute) {
+    router.push({
+      path: `${to.path}/location/${locationId}`
+    })
+  } else {
+    next()
+  }
+})
 </script>
 
 <style scoped>
