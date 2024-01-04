@@ -63,13 +63,17 @@ const { displayConfig } = useDisplayConfigFilter(
   () => props.locationId,
 )
 
-watch(() => displayConfig, () => {
-  if (!displayConfig.value) return
+watch(
+  () => displayConfig,
+  () => {
+    if (!displayConfig.value) return
 
-  if (displayConfig.value.subplots.length < 1) {
-    onClose()
-  } 
-}, { deep: true })
+    if (displayConfig.value.subplots.length < 1) {
+      onClose()
+    }
+  },
+  { deep: true },
+)
 
 interface DisplayTypeItem {
   icon: string

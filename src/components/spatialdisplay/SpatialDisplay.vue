@@ -118,7 +118,7 @@ onBeforeRouteUpdate((to, from, next) => {
     return
   }
 
-  const comingFromLocationRoute = 
+  const comingFromLocationRoute =
     from.params.locationId !== '' && from.params.locationId !== undefined
 
   if (comingFromLocationRoute) {
