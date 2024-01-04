@@ -113,17 +113,17 @@ onBeforeRouteUpdate((to, from, next) => {
     to.params.locationId !== '' && to.params.locationId !== undefined
   const sourceIdIsTheSame = to.params.layerName === from.params.layerName
 
-  if (goingToLocationRoute || sourceIdIsTheSame) {
+  if (goingToLocationRoute || (sourceIdIsTheSame && !locationId.value)) {
     next()
     return
   }
 
-  const locationId = from.params.locationId
-  const comingFromLocationRoute = locationId !== '' && locationId !== undefined
+  const comingFromLocationRoute = 
+    from.params.locationId !== '' && from.params.locationId !== undefined
 
   if (comingFromLocationRoute) {
     router.push({
-      path: `${to.path}/location/${locationId}`,
+      path: `${to.path}/location/${from.params.locationId}`,
     })
   } else {
     next()
