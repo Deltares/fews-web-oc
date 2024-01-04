@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
@@ -62,6 +62,14 @@ const { displayConfig } = useDisplayConfigFilter(
   () => props.filterIds,
   () => props.locationId,
 )
+
+watch(() => displayConfig, () => {
+  if (!displayConfig.value) return
+
+  if (displayConfig.value.subplots.length < 1) {
+    onClose()
+  } 
+}, { deep: true })
 
 interface DisplayTypeItem {
   icon: string
