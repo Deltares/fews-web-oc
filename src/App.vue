@@ -18,12 +18,7 @@ const configStore = useConfigStore()
 const userSettingsStore = useUserSettingsStore()
 const theme = useTheme()
 const prefersDark = usePreferredDark()
-const isDark = useDark({
-  selector: 'html',
-  attribute: 'data-theme',
-  valueDark: 'dark',
-  valueLight: 'light',
-})
+const isDark = useDark()
 const toggleDark = useToggle(isDark)
 
 onMounted(() => {
