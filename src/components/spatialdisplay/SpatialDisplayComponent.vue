@@ -130,16 +130,21 @@ const legendTitle = computed(() => {
   return `${selectedLayer.value?.title}${unitString}`
 })
 
-watch(times, () => {
-  const timesValue = times.value
-  if (timesValue) {
-    times.value = timesValue
-    dateController.dates = timesValue
-    dateController.selectDate(currentTime.value)
-    currentTime.value = dateController.currentTime
-  }
-  setLayerOptions()
-})
+watch(
+  times,
+  () => {
+    const timesValue = times.value
+    if (timesValue) {
+      times.value = timesValue
+      dateController.dates = timesValue
+      dateController.selectDate(currentTime.value)
+      currentTime.value = dateController.currentTime
+    }
+    setLayerOptions()
+  },
+
+  { immediate: true },
+)
 
 function setCurrentTime(enabled: boolean): void {
   if (enabled) {
