@@ -21,7 +21,7 @@
               variant="text"
               class="text-capitalize"
             >
-              <v-icon>{{ item.icon }}</v-icon>
+              <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
             </v-btn>
           </v-btn-toggle>
         </template>
@@ -77,6 +77,7 @@ interface DisplayTypeItem {
   icon: string
   label: string
   value: DisplayType
+  iconStyle?: string
 }
 
 const displayType = ref(DisplayType.TimeSeriesChart)
@@ -90,6 +91,12 @@ const displayTypeItems: DisplayTypeItem[] = [
     icon: 'mdi-table',
     label: 'Table',
     value: DisplayType.TimeSeriesTable,
+  },
+  {
+    icon: 'mdi-chart-line',
+    label: 'Vertical profile',
+    value: DisplayType.TimeSeriesElevationChart,
+    iconStyle: 'transform: rotate(90deg)',
   },
 ]
 
