@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import { useSsdPi } from '@/services/useSsdPi/index.ts'
 import WindowComponent from '@/components/general/WindowComponent.vue'
@@ -60,6 +60,14 @@ const { displayConfig } = useSsdPi(
   () => props.panelId,
   () => props.objectId,
 )
+
+watch(() => displayConfig, () => {
+  if (!displayConfig.value) return
+
+  if (displayConfig.value.subplots.length < 1) {
+    onClose()
+  } 
+}, { deep: true })
 
 interface DisplayTypeItem {
   icon: string
