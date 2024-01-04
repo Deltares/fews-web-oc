@@ -178,7 +178,7 @@ function recursiveUpdateNode(nodes: TopologyNode[], skipLeaves = false) {
           name: 'TopologySpatialDisplay',
           params: {
             nodeId: node.id,
-            layerName: node.gridDisplaySelection?.plotId
+            layerName: node.gridDisplaySelection?.plotId,
           },
         },
       }
@@ -207,7 +207,7 @@ function nodeButtonItems(nodes: TopologyNode[]) {
           name: 'TopologySpatialDisplay',
           params: {
             nodeId: node.id,
-            layerName: node.gridDisplaySelection?.plotId
+            layerName: node.gridDisplaySelection?.plotId,
           },
         },
       }
