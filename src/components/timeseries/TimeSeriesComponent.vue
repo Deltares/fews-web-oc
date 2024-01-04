@@ -29,12 +29,27 @@
         </TimeSeriesTable>
       </KeepAlive>
     </v-window-item>
+    <v-window-item
+      :value="DisplayType.TimeSeriesElevationChart"
+      class="time-series-component__container scroll"
+    >
+      <KeepAlive>
+        <TimeSeriesElevationChart
+          v-for="(subplot, i) in subplots"
+          :config="subplot"
+          :series="series"
+          :key="`${subplot.title}-${i}`"
+        >
+        </TimeSeriesElevationChart>
+      </KeepAlive>
+    </v-window-item>
   </v-window>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
+import TimeSeriesElevationChart from '../charts/TimeSeriesElevationChart.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
 import {
   DisplayType,
