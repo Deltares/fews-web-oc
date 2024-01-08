@@ -55,7 +55,6 @@ import {
   AxisPosition,
   AxisType,
   CartesianAxes,
-  CurrentTime,
   MouseOver,
   ZoomHandler,
 } from '@deltares/fews-web-oc-charts'
@@ -64,7 +63,6 @@ import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
 import type { ThresholdLine } from '../../lib/charts/types/ThresholdLine.js'
 import { Series } from '../../lib/timeseries/timeSeries.js'
 import uniq from 'lodash-es/uniq'
-import { extent } from 'd3'
 import { VChipGroup } from 'vuetify/components'
 
 const LEGEND_HEIGHT = 76
@@ -106,9 +104,12 @@ onMounted(() => {
   const axisOptions: CartesianAxesOptions = {
     x: [
       {
-        type: AxisType.time,
+        type: AxisType.value,
         position: AxisPosition.Bottom,
         showGrid: true,
+        label: ' ',
+        unit: ' ',
+        nice: true,
       },
     ],
     y: [
@@ -133,22 +134,19 @@ onMounted(() => {
     },
   }
 
+  const chartWidth = 800
+  const chartHeight = 1200
+
   if (chartContainer.value) {
-    axis = new CartesianAxes(chartContainer.value, null, null, axisOptions)
+    axis = new CartesianAxes(chartContainer.value, chartWidth, chartHeight, axisOptions)
     const mouseOver = new MouseOver()
     const zoom = new ZoomHandler(WheelMode.NONE)
-    const currentTime = new CurrentTime({
-      x: {
-        axisIndex: 0,
-      },
-    })
 
     thresholdLinesVisitor = new AlertLines(thresholdLines)
 
     axis.accept(thresholdLinesVisitor)
     axis.accept(zoom)
     axis.accept(mouseOver)
-    axis.accept(currentTime)
     resize()
     if (props.config !== undefined) refreshChart()
     window.addEventListener('resize', resize)
@@ -187,7 +185,7 @@ const addToChart = (chartSeries: ChartSeries) => {
     {
       x: {
         key: 'x',
-        axisIndex: 0,
+        axisIndex: chartSeries.options.x.axisIndex,
       },
       y: {
         key: 'y',
@@ -197,32 +195,6 @@ const addToChart = (chartSeries: ChartSeries) => {
     id,
     chartSeries.style,
   )
-}
-
-const setThresholdLines = () => {
-  const thresholdLinesData = props.config.thresholds
-  if (thresholdLinesData === undefined) return
-
-  const tag = legendTags.value.find((tag) => {
-    return tag.id === 'Thresholds'
-  })
-
-  const disabled = tag?.disabled ?? false
-  if (disabled) {
-    thresholdLines = []
-  } else {
-    thresholdLines = thresholdLinesData
-  }
-
-  let defaultDomain = extent(thresholdLinesData.map((l) => l.value))
-  if (thresholdLines.length === 0 || defaultDomain[0] === undefined) {
-    defaultDomain = [NaN, NaN]
-  }
-
-  axis.setOptions({
-    y: [{ defaultDomain: defaultDomain, nice: true }],
-  })
-  thresholdLinesVisitor.options = thresholdLines
 }
 
 const clearChart = () => {
@@ -251,8 +223,6 @@ const refreshChart = () => {
       y: [props.config.yAxis[0], props.config.yAxis[1]],
     })
   }
-
-  setThresholdLines()
 
   axis.redraw({
     x: {
@@ -291,19 +261,6 @@ const setTags = () => {
       }
     })
   }
-  const thresholdsData = props.config?.thresholds
-  if (thresholdsData !== undefined) {
-    const { svgGroup, legendSvg } = createChip()
-    legendSvg.appendChild(svgGroup)
-    const thresholdLegend = {
-      id: 'Thresholds',
-      name: 'Thresholds',
-      disabled: false,
-      legendSvg:
-        '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M13 14h-2V9h2m0 9h-2v-2h2M1 21h22L12 2L1 21Z"/></svg>',
-    }
-    legendTags.value.push(thresholdLegend)
-  }
 
   function createChip() {
     const legendSvg = document.createElement('svg')
@@ -324,12 +281,7 @@ const toggleLine = (id: string) => {
     tag.disabled = !tag.disabled
   }
 
-  if (id === 'Thresholds') {
-    setThresholdLines()
-    axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
-  } else {
-    toggleChartVisibility(axis, id)
-  }
+  toggleChartVisibility(axis, id)
 }
 
 const resize = () => {
