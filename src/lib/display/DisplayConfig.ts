@@ -3,7 +3,7 @@ import { ChartConfig } from '../charts/types/ChartConfig.js'
 export enum DisplayType {
   TimeSeriesChart = 'TimeSeriesChart',
   TimeSeriesTable = 'TimeSeriesTable',
-  TimeSeriesElevationChart = 'TimeSeriesElevationChart',
+  ElevationChart = 'ElevationChart',
 }
 
 export interface DisplayConfig {
