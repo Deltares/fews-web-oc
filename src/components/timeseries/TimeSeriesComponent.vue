@@ -30,7 +30,7 @@
       </KeepAlive>
     </v-window-item>
     <v-window-item
-      :value="DisplayType.TimeSeriesElevationChart"
+      :value="DisplayType.ElevationChart"
       class="time-series-component__container scroll"
     >
       <KeepAlive>

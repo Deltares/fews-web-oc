@@ -95,7 +95,7 @@ const displayTypeItems: DisplayTypeItem[] = [
   {
     icon: 'mdi-chart-line',
     label: 'Vertical profile',
-    value: DisplayType.TimeSeriesElevationChart,
+    value: DisplayType.ElevationChart,
     iconStyle: 'transform: rotate(90deg)',
   },
 ]
