@@ -5,7 +5,7 @@
     :source="locationsLayerSource"
     :options="locationsLayerOptions"
   />
-  <v-chip class="chip" :style="{ backgroundColor: backgroundColor }" pill label>
+  <v-chip class="locations-layer__chip" pill label>
     <v-icon>mdi-map-marker</v-icon>
     <v-switch
       class="ml-2 mt-5"
@@ -43,12 +43,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits(['click'])
-
-const backgroundColor = ref<string>(
-  window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'rgba(0,0,0,.5)'
-    : 'rgba(255,255,255,.5)',
-)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { map } = useMap() as { map: Ref<Map> }
@@ -135,13 +129,14 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 </script>
 
 <style scoped>
-.chip {
-  backdrop-filter: blur(4px);
+.locations-layer__chip {
   position: absolute;
   font-size: 0.825em;
   z-index: 1000;
-  background-color: none;
   top: 10px;
   left: 10px;
+  backdrop-filter: blur(5px);
+  background-color: rgba(var(--v-theme-surface), 0.8);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 </style>
