@@ -258,6 +258,9 @@ watchEffect(() => {
           nodeId: activeNodeId,
           layerName: node.gridDisplaySelection?.plotId,
         },
+        query: {
+          filterIds: node.filterIds?.join(','),
+        },
       },
       icon: 'mdi-map',
     })
@@ -270,6 +273,9 @@ watchEffect(() => {
         name: 'TopologyTimeSeries',
         params: {
           nodeId: activeNodeId,
+        },
+        query: {
+          filterIds: node.filterIds?.join(','),
         },
       },
       icon: 'mdi-chart-multiple',
