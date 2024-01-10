@@ -315,11 +315,6 @@ watchEffect(() => {
     const to = _displayTabs[0].to
     if (to.params?.layerName === undefined) {
       router.push(_displayTabs[0].to)
-    } else if (
-      props.nodeId !== to.params.nodeId ||
-      props.layerName !== to.params.layerName
-    ) {
-      router.push(_displayTabs[0].to)
     }
   } else {
     activeTab.value = 0
