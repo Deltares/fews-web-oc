@@ -13,6 +13,7 @@
       :unit="elevationUnit"
     ></ElevationSlider>
     <LocationsLayer
+      v-if="filterIds"
       :filterIds="filterIds"
       :locationId="props.locationId"
       @click="onLocationClick"
