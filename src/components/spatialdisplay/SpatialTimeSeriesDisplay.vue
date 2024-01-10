@@ -6,7 +6,12 @@
           <v-spacer />
           {{ displayConfig?.title }}
           <v-spacer />
-          <v-btn-toggle class="mr-5" v-model="displayType" mandatory>
+          <v-btn-toggle
+            class="mr-5"
+            v-model="displayType"
+            mandatory
+            density="compact"
+          >
             <v-btn
               v-for="item in displayTypeItems"
               :key="item.value"
