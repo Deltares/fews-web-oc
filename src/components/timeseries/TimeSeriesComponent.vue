@@ -1,5 +1,5 @@
 <template>
-  <v-window v-model="tab" class="h-100 w-100" :touch="() => false">
+  <v-window v-model="tab" class="h-100 w-100" :touch="false">
     <v-window-item
       :value="DisplayType.TimeSeriesChart"
       class="time-series-component__container scroll"
