@@ -249,4 +249,18 @@ router.beforeEach(async (to, from) => {
   return
 })
 
+export function findParentRoute(
+  route: RouteLocationNormalized,
+): RouteRecordNormalized | null {
+  let found: RouteRecordNormalized | null = null
+  router.getRoutes().forEach((r) => {
+    r.children.forEach((child) => {
+      if (child.name === route.name) {
+        found = r
+      }
+    })
+  })
+  return found
+}
+
 export default router
