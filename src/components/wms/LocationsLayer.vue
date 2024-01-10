@@ -1,9 +1,17 @@
 <template>
-  <MapboxLayer v-if="showLocationsLayer" id="location-layer" :options="defaultLocationsLayerOptions" />
+  <MapboxLayer
+    v-if="showLocationsLayer"
+    id="location-layer"
+    :options="defaultLocationsLayerOptions"
+  />
   <v-chip class="locations-layer__chip" pill label>
     <v-icon>mdi-map-marker</v-icon>
-    <v-switch class="ml-2 mt-5" color="primary" :model-value="showLocationsLayer"
-      @update:model-value="onShowLocationsLayerChange" />
+    <v-switch
+      class="ml-2 mt-5"
+      color="primary"
+      :model-value="showLocationsLayer"
+      @update:model-value="onShowLocationsLayerChange"
+    />
   </v-chip>
 </template>
 

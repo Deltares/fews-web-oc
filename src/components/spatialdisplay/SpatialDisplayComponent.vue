@@ -1,34 +1,30 @@
 <template>
-  <div
-    class="spatial-display d-flex flex-column flex-grow-1 flex-shrink-1 h-100"
-  >
-    <MapComponent>
-      <animated-mapbox-layer :layer="layerOptions"> </animated-mapbox-layer>
-      <div class="colourbar-container">
-        <ColourBar :colourMap="legend" :title="legendTitle" />
-      </div>
-      <ElevationSlider
-        v-if="layerHasElevation"
-        v-model="currentElevation"
-        :key="layerOptions?.name"
-        :min-value="minElevation"
-        :max-value="maxElevation"
-        :unit="elevationUnit"
-      ></ElevationSlider>
-      <LocationsLayer
-        :filterIds="filterIds"
-        :locationId="props.locationId"
-        @click="onLocationClick"
-      />
-    </MapComponent>
-    <DateTimeSlider
-      v-model:selectedDate="currentTime"
-      :dates="times ?? []"
-      @update:doFollowNow="setCurrentTime"
-      @update:selectedDate="updateTime"
-      class="spatial-display__slider"
+  <MapComponent>
+    <animated-mapbox-layer :layer="layerOptions"> </animated-mapbox-layer>
+    <div class="colourbar-container">
+      <ColourBar :colourMap="legend" :title="legendTitle" />
+    </div>
+    <ElevationSlider
+      v-if="layerHasElevation"
+      v-model="currentElevation"
+      :key="layerOptions?.name"
+      :min-value="minElevation"
+      :max-value="maxElevation"
+      :unit="elevationUnit"
+    ></ElevationSlider>
+    <LocationsLayer
+      :filterIds="filterIds"
+      :locationId="props.locationId"
+      @click="onLocationClick"
     />
-  </div>
+  </MapComponent>
+  <DateTimeSlider
+    v-model:selectedDate="currentTime"
+    :dates="times ?? []"
+    @update:doFollowNow="setCurrentTime"
+    @update:selectedDate="updateTime"
+    class="spatial-display__slider"
+  />
 </template>
 
 <script setup lang="ts">
