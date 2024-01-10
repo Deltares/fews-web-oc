@@ -85,6 +85,7 @@ function openLocationTimeSeriesDisplay() {
   router.push({
     name: routeName,
     params: {
+      nodeId: route.params.nodeId,
       layerName: props.layerName,
       locationId: locationId.value,
     },
@@ -98,7 +99,10 @@ function closeTimeSeriesDisplay(location: string): void {
       .replace('SpatialTimeSeriesDisplay', 'SpatialDisplay')
     router.push({
       name: routeName,
-      params: { layerName: props.layerName },
+      params: {
+        nodeId: route.params.nodeId,
+        layerName: props.layerName,
+      },
     })
     locationId.value = null
   }
@@ -108,13 +112,12 @@ function closeTimeSeriesDisplay(location: string): void {
  * Causes on route changes to a different layer while having selected a location
  * to keep that location for the new layer
  */
-onBeforeRouteUpdate((to, from, next) => {
+onBeforeRouteUpdate((to, from) => {
   const goingToLocationRoute =
     to.params.locationId !== '' && to.params.locationId !== undefined
   const sourceIdIsTheSame = to.params.layerName === from.params.layerName
 
   if (goingToLocationRoute || (sourceIdIsTheSame && !locationId.value)) {
-    next()
     return
   }
 
@@ -125,8 +128,6 @@ onBeforeRouteUpdate((to, from, next) => {
     router.push({
       path: `${to.path}/location/${from.params.locationId}`,
     })
-  } else {
-    next()
   }
 })
 </script>
