@@ -17,6 +17,7 @@
           </v-list-item>
         </v-list>
       </v-menu>
+      <v-spacer />
       <v-btn-toggle
         v-model="displayType"
         mandatory
