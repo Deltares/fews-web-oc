@@ -1,26 +1,17 @@
 <template>
-  <MapboxLayer
-    v-if="showLocationsLayer"
-    id="location-layer"
-    :options="defaultLocationsLayerOptions"
-  />
+  <MapboxLayer id="location-layer" :options="defaultLocationsLayerOptions" />
   <v-chip class="locations-layer__chip" pill label>
     <v-icon>mdi-map-marker</v-icon>
-    <v-switch
-      class="ml-2 mt-5"
-      color="primary"
-      :model-value="showLocationsLayer"
-      @update:model-value="onShowLocationsLayerChange"
-    />
+    <v-switch class="ml-2 mt-5" color="primary" v-model="showLocationsLayer" />
   </v-chip>
 </template>
 
 <script setup lang="ts">
-import { Ref, ref, watchEffect } from 'vue'
+import { Ref, ref, watch, watchEffect } from 'vue'
 import { configManager } from '@/services/application-config'
 import { fetchLocationsAsGeoJson } from '@/lib/topology'
-import { Location } from '@deltares/fews-pi-requests'
 import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
+import { FeatureCollection, Geometry, GeoJsonProperties } from 'geojson'
 import {
   Map,
   GeoJSONSource,
@@ -41,15 +32,17 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['click'])
 
+const emptyFeatureCollection: FeatureCollection<Geometry, GeoJsonProperties> = {
+  type: 'FeatureCollection',
+  features: [],
+}
+
 const defaultLocationsLayerOptions: CircleLayer = {
   id: 'location-layer',
   type: 'circle',
   source: {
     type: 'geojson',
-    data: {
-      type: 'FeatureCollection',
-      features: [],
-    },
+    data: emptyFeatureCollection,
   },
   layout: {
     visibility: 'visible',
@@ -67,11 +60,8 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { map } = useMap() as { map: Ref<Map> }
 
 const locationsGeoJson = ref<
-  GeoJSON.FeatureCollection<GeoJSON.Geometry, Location>
->({
-  type: 'FeatureCollection',
-  features: [],
-})
+  GeoJSON.FeatureCollection<GeoJSON.Geometry, GeoJsonProperties>
+>(emptyFeatureCollection)
 
 const showLocationsLayer = ref<boolean>(true)
 const locationsLayerSourceId = 'location-layer'
@@ -93,16 +83,26 @@ map.value.on('mouseleave', 'location-layer', () => {
   map.value.getCanvas().style.cursor = ''
 })
 
-watchEffect(() => {
-  highlightSelectedLocationOnMap()
-})
+watch(
+  () => props.locationId,
+  () => {
+    highlightSelectedLocationOnMap()
+  },
+)
 
 watchEffect(async () => {
   if (!props.filterIds) return
-  locationsGeoJson.value = await fetchLocationsAsGeoJson(
-    baseUrl,
-    props.filterIds.split(','),
-  )
+  if (showLocationsLayer.value) {
+    locationsGeoJson.value = await fetchLocationsAsGeoJson(
+      baseUrl,
+      props.filterIds.split(','),
+    )
+  } else {
+    locationsGeoJson.value = emptyFeatureCollection
+  }
+})
+
+watch(locationsGeoJson, () => {
   const source = map.value.getSource(locationsLayerSourceId) as GeoJSONSource
   if (source) {
     source.setData(locationsGeoJson.value)
@@ -149,10 +149,6 @@ function highlightSelectedLocationOnMap() {
       2,
       1,
     ])
-}
-
-function onShowLocationsLayerChange(): void {
-  showLocationsLayer.value = !showLocationsLayer.value
 }
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
