@@ -2,6 +2,7 @@ import {
   createRouter,
   createWebHistory,
   RouteLocationNormalized,
+  RouteRecordNormalized,
   RouteRecordRaw,
 } from 'vue-router'
 import AboutView from '../views/AboutView.vue'
@@ -73,6 +74,11 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
   },
 ]
 
+const propsForTopology = (route: RouteLocationNormalized) => ({
+  ...route.params,
+  filterIds: route.query.filterIds,
+})
+
 export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/dataviewer/:filterId?/:categoryId?',
@@ -136,21 +142,21 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         path: '/topology/node/:nodeId?/series/',
         name: 'TopologyTimeSeries',
         component: TimeSeriesDisplay,
-        props: true,
+        props: (route) => propsForTopology(route),
         meta: { sidebar: true },
       },
       {
         path: '/topology/node/:nodeId?/map/:layerName?',
         name: 'TopologySpatialDisplay',
         component: SpatialDisplay,
-        props: true,
+        props: (route) => propsForTopology(route),
         meta: { sidebar: true },
         children: [
           {
             path: '/topology/node/:nodeId?/map/:layerName?/location/:locationId',
             name: 'TopologySpatialTimeSeriesDisplay',
             component: SpatialTimeSeriesDisplay,
-            props: true,
+            props: (route) => propsForTopology(route),
             meta: { sidebar: true },
           },
         ],

@@ -3,133 +3,99 @@
     <div class="child-container" :class="{ hidden: hideMap }">
       <SpatialDisplayComponent
         :layer-name="props.layerName"
-        :location-id="locationId"
-        v-model:filter-ids="filterIds"
+        :location-id="props.locationId"
+        :filter-ids="props.filterIds"
         @location-click="onLocationClick"
       ></SpatialDisplayComponent>
     </div>
-    <div
-      class="child-container"
-      :class="{
-        mobile,
-        hidden: hideTimeSeries,
-      }"
-    >
+    <div v-if="props.locationId" class="child-container">
       <router-view
         @close="closeTimeSeriesDisplay"
-        :filterIds="filterIds"
+        :filterIds="props.filterIds"
       ></router-view>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue'
+import { computed, ref, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
-import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { findParentRoute } from '@/router'
+import { onMounted } from 'vue'
 
 interface Props {
   layerName?: string
+  locationId?: string
+  filterIds?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
+  filterIds: '',
 })
 
 const route = useRoute()
 const router = useRouter()
-
-const filterIds = ref<string[]>([])
-const locationId = ref<string | null>(null)
-
-watchEffect(() => {
-  const routeLocation =
-    typeof route.params.locationId === 'string' ? route.params.locationId : null
-  locationId.value = routeLocation
-})
-
-if (locationId.value) {
-  openLocationTimeSeriesDisplay()
-}
-
 const { mobile } = useDisplay()
 
-const hideTimeSeries = computed(() => {
-  return (
-    locationId.value === null ||
-    filterIds.value.length === 0 ||
-    filterIds.value[0] === ''
-  )
+const currentLocationId = ref<string>('')
+
+onMounted(() => {
+  currentLocationId.value === props.locationId
 })
 
 const hideMap = computed(() => {
-  mobile.value && !hideTimeSeries.value
+  mobile.value && props.locationId
 })
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   if (!event.features) return
-  const location: string | null =
-    event.features[0].properties?.locationId ?? null
-  locationId.value = location
-  if (locationId.value !== null) {
-    openLocationTimeSeriesDisplay()
-  }
+  const location: string | undefined = event.features[0].properties?.locationId
+  if (location) openLocationTimeSeriesDisplay(location)
 }
 
-function openLocationTimeSeriesDisplay() {
+function openLocationTimeSeriesDisplay(locationId: string) {
   const routeName = route.name
     ?.toString()
     .replace('SpatialDisplay', 'SpatialTimeSeriesDisplay')
+  currentLocationId.value = locationId
   router.push({
     name: routeName,
     params: {
       nodeId: route.params.nodeId,
       layerName: props.layerName,
-      locationId: locationId.value,
+      locationId,
     },
+    query: route.query,
   })
 }
 
-function closeTimeSeriesDisplay(location: string): void {
-  if (location) {
-    const routeName = route.name
-      ?.toString()
-      .replace('SpatialTimeSeriesDisplay', 'SpatialDisplay')
+function closeTimeSeriesDisplay(): void {
+  const parentRoute = findParentRoute(route)
+  if (parentRoute !== null) {
+    currentLocationId.value = ''
     router.push({
-      name: routeName,
+      name: parentRoute.name,
       params: {
         nodeId: route.params.nodeId,
         layerName: props.layerName,
       },
+      query: route.query,
     })
-    locationId.value = null
   }
 }
 
-/**
- * Causes on route changes to a different layer while having selected a location
- * to keep that location for the new layer
- */
-onBeforeRouteUpdate((to, from) => {
-  const goingToLocationRoute =
-    to.params.locationId !== '' && to.params.locationId !== undefined
-  const sourceIdIsTheSame = to.params.layerName === from.params.layerName
-
-  if (goingToLocationRoute || (sourceIdIsTheSame && !locationId.value)) {
-    return
-  }
-
-  const comingFromLocationRoute =
-    from.params.locationId !== '' && from.params.locationId !== undefined
-
-  if (comingFromLocationRoute) {
-    router.push({
-      path: `${to.path}/location/${from.params.locationId}`,
-    })
-  }
-})
+watch(
+  () => props.layerName,
+  () => {
+    if (currentLocationId.value && !props.locationId) {
+      openLocationTimeSeriesDisplay(currentLocationId.value)
+    }
+  },
+)
 </script>
 
 <style scoped>
@@ -152,9 +118,5 @@ onBeforeRouteUpdate((to, from) => {
   display: flex;
   height: 100%;
   width: 100%;
-}
-
-.child-container.hidden {
-  display: none !important;
 }
 </style>

@@ -30,14 +30,12 @@ import {
 } from 'mapbox-gl'
 
 interface Props {
-  filterIds: string[]
+  filterIds: string
   locationId?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  filterIds: () => {
-    return []
-  },
+  filterIds: '',
   locationId: null,
 })
 
@@ -102,7 +100,7 @@ watchEffect(async () => {
   if (!props.filterIds) return
   locationsGeoJson.value = await fetchLocationsAsGeoJson(
     baseUrl,
-    props.filterIds,
+    props.filterIds.split(','),
   )
   const source = map.value.getSource(locationsLayerSourceId) as GeoJSONSource
   if (source) {

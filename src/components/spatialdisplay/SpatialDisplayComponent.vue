@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import MapComponent from '@/components/map/MapComponent.vue'
-import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
+import { ref, computed, onBeforeMount, watch } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
   useWmsLayer,
@@ -45,7 +45,6 @@ import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { getTopologyNodes, createTopologyMap } from '@/lib/topology'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
 
 interface ElevationWithUnitSymbol {
@@ -57,15 +56,15 @@ interface ElevationWithUnitSymbol {
 
 interface Props {
   layerName?: string
-  locationId?: string | null
+  locationId?: string
+  filterIds?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
-  locationId: null,
 })
 
-const emit = defineEmits(['location-click', 'update:filter-ids'])
+const emit = defineEmits(['location-click'])
 
 onBeforeMount(() => {
   debouncedSetLayerOptions = debounce(setLayerOptions, 500, {
@@ -90,9 +89,6 @@ const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationUnit = ref('')
 
-const nodes = await getTopologyNodes()
-const topologyMap = createTopologyMap(nodes)
-
 const currentTime = ref<Date>(new Date())
 const layerOptions = ref<MapboxLayerOptions>()
 let debouncedSetLayerOptions!: () => void
@@ -102,13 +98,6 @@ const legend = computed(() => {
 })
 const layerHasElevation = computed(() => {
   return selectedLayer.value?.elevation !== undefined
-})
-const filterIds = computed(() => {
-  return topologyMap.get(selectedLayer.value?.name ?? '')?.filterIds ?? []
-})
-
-watchEffect(() => {
-  emit('update:filter-ids', filterIds.value)
 })
 
 watch(
