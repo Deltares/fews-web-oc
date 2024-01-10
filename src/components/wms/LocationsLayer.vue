@@ -21,12 +21,11 @@ import {
 } from 'mapbox-gl'
 
 interface Props {
-  filterIds: string
+  filterIds: string[]
   locationId?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  filterIds: '',
   locationId: null,
 })
 
@@ -95,7 +94,7 @@ watchEffect(async () => {
   if (showLocationsLayer.value) {
     locationsGeoJson.value = await fetchLocationsAsGeoJson(
       baseUrl,
-      props.filterIds.split(','),
+      props.filterIds,
     )
   } else {
     locationsGeoJson.value = emptyFeatureCollection

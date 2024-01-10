@@ -49,13 +49,12 @@ import { useDisplayConfigFilter } from '@/services/useDisplayConfig'
 interface Props {
   layerName?: string
   locationId?: string
-  filterIds?: string
+  filterIds?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
   locationId: '',
-  filterIds: '',
 })
 
 const emit = defineEmits<{ (e: 'close', locationId: string): void }>()
@@ -64,7 +63,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const { displayConfig } = useDisplayConfigFilter(
   baseUrl,
-  () => props.filterIds.split(','),
+  () => props.filterIds,
   () => props.locationId,
 )
 

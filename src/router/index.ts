@@ -74,11 +74,6 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
   },
 ]
 
-const propsForTopology = (route: RouteLocationNormalized) => ({
-  ...route.params,
-  filterIds: route.query.filterIds,
-})
-
 export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/dataviewer/:filterId?/:categoryId?',
@@ -142,21 +137,21 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         path: '/topology/node/:nodeId?/series/',
         name: 'TopologyTimeSeries',
         component: TimeSeriesDisplay,
-        props: (route) => propsForTopology(route),
+        props: true,
         meta: { sidebar: true },
       },
       {
         path: '/topology/node/:nodeId?/map/:layerName?',
         name: 'TopologySpatialDisplay',
         component: SpatialDisplay,
-        props: (route) => propsForTopology(route),
+        props: true,
         meta: { sidebar: true },
         children: [
           {
             path: '/topology/node/:nodeId?/map/:layerName?/location/:locationId',
             name: 'TopologySpatialTimeSeriesDisplay',
             component: SpatialTimeSeriesDisplay,
-            props: (route) => propsForTopology(route),
+            props: true,
             meta: { sidebar: true },
           },
         ],
