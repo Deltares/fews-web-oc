@@ -38,6 +38,7 @@
       variant="tonal"
       divided
       density="compact"
+      mandatory
       class="ma-2"
       ><v-btn v-for="item in nodeButtons" :to="item.to">{{ item.name }}</v-btn>
     </v-btn-toggle>
@@ -82,12 +83,13 @@ import type { ColumnItem } from '@/components/general/ColumnItem'
 import ColumnMenu from '@/components/general/ColumnMenu.vue'
 import TreeMenu from '@/components/general/TreeMenu.vue'
 import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
-import router from '@/router'
+import { useRouter } from 'vue-router'
+
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { watchEffect } from 'vue'
 import { computed } from 'vue'
 import { ref, watch } from 'vue'
-import type { RouteLocationRaw } from 'vue-router'
+import type { RouteLocationNamedRaw } from 'vue-router'
 import { useDisplay } from 'vuetify'
 
 const WEB_BROWSER_DISPLAY: string = 'web browser display'
@@ -99,11 +101,12 @@ interface Props {
 }
 
 interface DisplayTab {
+  type: string
   id: string
   title: string
   href?: string
   target?: string
-  to?: RouteLocationRaw
+  to: RouteLocationNamedRaw
   icon: string
 }
 
@@ -117,6 +120,7 @@ const items = ref<ColumnItem[]>([])
 const menuType = ref('treemenu')
 
 const activeTab = ref(0)
+const activeTabType = ref('')
 const displayTabs = ref<DisplayTab[]>([])
 
 const activeLeafNode = ref(0)
@@ -124,6 +128,8 @@ const nodeButtons = ref<any[]>([])
 const externalLink = ref<string>('')
 
 const { mobile } = useDisplay()
+
+const router = useRouter()
 
 watch(
   () => props.nodeId,
@@ -250,6 +256,7 @@ watchEffect(() => {
   const _displayTabs: DisplayTab[] = []
   if (node.gridDisplaySelection !== undefined) {
     _displayTabs.push({
+      type: 'map',
       id: spatialTabId,
       title: 'Map',
       to: {
@@ -267,6 +274,7 @@ watchEffect(() => {
   }
   if (node.displayGroups !== undefined || node.displayId !== undefined) {
     _displayTabs.push({
+      type: 'charts',
       id: timeseriesTabId,
       title: 'Charts',
       to: {
@@ -287,10 +295,31 @@ watchEffect(() => {
   displayTabs.value = _displayTabs
 
   // Redirect to the first displayTab.
-  activeTab.value = 0
-  if (_displayTabs.length > 0 && _displayTabs[0].to !== undefined) {
-    router.push(_displayTabs[0].to)
+  if (_displayTabs.length > 0) {
+    if (activeTabType.value) {
+      const tabIndex = _displayTabs.findIndex((t) => {
+        return t.type === activeTabType.value
+      })
+      if (tabIndex > -1) {
+        activeTab.value = tabIndex
+        router.push(_displayTabs[tabIndex].to)
+        return
+      }
+    }
+    activeTab.value = 0
+    activeTabType.value = _displayTabs[0].type
+    const to = _displayTabs[0].to
+    if (to.params?.layerName === undefined) {
+      router.push(_displayTabs[0].to)
+    } else if (
+      props.nodeId !== to.params.nodeId ||
+      props.layerName !== to.params.layerName
+    ) {
+      router.push(_displayTabs[0].to)
+    }
   } else {
+    activeTab.value = 0
+    activeTabType.value = ''
     router.push({ name: 'TopologyDisplay', params: { nodeId: activeNodeId } })
   }
 })
