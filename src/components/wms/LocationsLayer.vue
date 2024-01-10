@@ -57,9 +57,10 @@ const defaultLocationsLayerOptions: CircleLayer = {
   paint: {
     'circle-radius': 5,
     'circle-color': '#dfdfdf',
+    'circle-opacity': 0.5,
     'circle-stroke-color': 'black',
-    'circle-stroke-width': 1,
-  }
+    'circle-stroke-width': 1.5,
+  },
 }
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -134,14 +135,20 @@ function highlightSelectedLocationOnMap() {
     7, // radius for selected location
     5, // default radius
   ]),
-  map.value.setLayoutProperty(locationsLayerSourceId, 'circle-sort-key', [
-    'match',
-    ['get', 'locationId'],
-    locationId,
-    2, // radius for selected location
-    1, // default radius
-  ])
-
+    map.value.setPaintProperty(locationsLayerSourceId, 'circle-opacity', [
+      'match',
+      ['get', 'locationId'],
+      locationId,
+      0.8,
+      0.5,
+    ]),
+    map.value.setLayoutProperty(locationsLayerSourceId, 'circle-sort-key', [
+      'match',
+      ['get', 'locationId'],
+      locationId,
+      2,
+      1,
+    ])
 }
 
 function onShowLocationsLayerChange(): void {
