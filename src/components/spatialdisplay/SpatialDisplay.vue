@@ -29,12 +29,11 @@ import { onMounted } from 'vue'
 interface Props {
   layerName?: string
   locationId?: string
-  filterIds?: string
+  filterIds?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
-  filterIds: '',
 })
 
 const route = useRoute()

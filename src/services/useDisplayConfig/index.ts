@@ -93,7 +93,7 @@ export function useDisplayConfig(
  */
 export function useDisplayConfigFilter(
   baseUrl: string,
-  filterIds: MaybeRefOrGetter<string[]>,
+  filterIds: MaybeRefOrGetter<string[] | undefined>,
   locationIds: MaybeRefOrGetter<string>,
 ): UseDisplayConfigReturn {
   const piProvider = new PiWebserviceProvider(baseUrl, {
@@ -105,13 +105,15 @@ export function useDisplayConfigFilter(
 
   watchEffect(async () => {
     const filter = {} as filterActionsFilter
-    filter.filterId = toValue(filterIds)[0]
-    filter.locationIds = toValue(locationIds)
-
-    const response = await piProvider.getFilterActions(filter)
-    const _displays = actionsResponseToDisplayConfig(response)
-    displays.value = _displays
-    displayConfig.value = _displays[0]
+    const _filterIds = toValue(filterIds)
+    if (_filterIds !== undefined) {
+      filter.filterId = _filterIds[0]
+      filter.locationIds = toValue(locationIds)
+      const response = await piProvider.getFilterActions(filter)
+      const _displays = actionsResponseToDisplayConfig(response)
+      displays.value = _displays
+      displayConfig.value = _displays[0]
+    }
   })
 
   const shell = {

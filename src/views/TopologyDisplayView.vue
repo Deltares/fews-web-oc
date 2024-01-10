@@ -73,7 +73,7 @@
   </Teleport>
   <router-view v-slot="{ Component }">
     <keep-alive include="SpatialDisplay">
-      <component :is="Component" />
+      <component :is="Component" :filter-ids="filterIds" />
     </keep-alive>
   </router-view>
 </template>
@@ -118,6 +118,8 @@ const active = ref<string[]>([])
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
 const menuType = ref('treemenu')
+
+const filterIds = ref<string[]>([])
 
 const activeTab = ref(0)
 const activeTabType = ref('')
@@ -247,7 +249,13 @@ watchEffect(() => {
 
   // Check if the active node is a leaf.
   const node = topologyMap.value.get(activeNodeId)
-  if (node === undefined) return
+  if (node === undefined) {
+    filterIds.value = []
+    return
+  }
+  if (node.filterIds) {
+    filterIds.value = node.filterIds
+  }
   if (node.topologyNodes) {
     nodeButtons.value = nodeButtonItems(node.topologyNodes)
   }
@@ -265,9 +273,6 @@ watchEffect(() => {
           nodeId: activeNodeId,
           layerName: node.gridDisplaySelection?.plotId,
         },
-        query: {
-          filterIds: node.filterIds?.join(','),
-        },
       },
       icon: 'mdi-map',
     })
@@ -281,9 +286,6 @@ watchEffect(() => {
         name: 'TopologyTimeSeries',
         params: {
           nodeId: activeNodeId,
-        },
-        query: {
-          filterIds: node.filterIds?.join(','),
         },
       },
       icon: 'mdi-chart-multiple',

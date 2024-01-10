@@ -58,7 +58,7 @@ interface ElevationWithUnitSymbol {
 interface Props {
   layerName?: string
   locationId?: string
-  filterIds?: string
+  filterIds?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
