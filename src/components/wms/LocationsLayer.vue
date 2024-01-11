@@ -1,17 +1,20 @@
 <template>
   <MapboxLayer id="location-layer" :options="defaultLocationsLayerOptions" />
-  <v-chip class="locations-layer__chip" pill label>
-    <v-icon>mdi-map-marker</v-icon>
-    <v-switch class="ml-2 mt-5" color="primary" v-model="showLocationsLayer" />
+  <v-chip class="locations-layer__chip" pill label size="small">
+    <v-btn @click="showLocationsLayer = !showLocationsLayer" density="compact" icon>
+        <v-icon>{{ showLocationsLayer ? 'mdi-map-marker' : 'mdi-map-marker-off' }}</v-icon>
+    </v-btn>
+    <LocationsSearchControl v-if="showLocationsLayer" :locations="locations"/>
   </v-chip>
 </template>
 
 <script setup lang="ts">
 import { Ref, ref, watch, watchEffect } from 'vue'
 import { configManager } from '@/services/application-config'
-import { fetchLocationsAsGeoJson } from '@/lib/topology'
+import { convertGeoJsonToFewsPiLocation, fetchLocationsAsGeoJson } from '@/lib/topology'
 import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
-import { FeatureCollection, Geometry, GeoJsonProperties } from 'geojson'
+import { FeatureCollection, Geometry } from 'geojson'
+import { type Location } from '@deltares/fews-pi-requests'
 import {
   Map,
   GeoJSONSource,
@@ -19,6 +22,7 @@ import {
   type MapLayerTouchEvent,
   type CircleLayer,
 } from 'mapbox-gl'
+import LocationsSearchControl from './LocationsSearchControl.vue'
 
 interface Props {
   filterIds: string[]
@@ -31,7 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['click'])
 
-const emptyFeatureCollection: FeatureCollection<Geometry, GeoJsonProperties> = {
+const emptyFeatureCollection: FeatureCollection<Geometry, Location> = {
   type: 'FeatureCollection',
   features: [],
 }
@@ -59,11 +63,12 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { map } = useMap() as { map: Ref<Map> }
 
 const locationsGeoJson = ref<
-  GeoJSON.FeatureCollection<GeoJSON.Geometry, GeoJsonProperties>
+  GeoJSON.FeatureCollection<GeoJSON.Geometry, Location>
 >(emptyFeatureCollection)
 
 const showLocationsLayer = ref<boolean>(true)
 const locationsLayerSourceId = 'location-layer'
+const locations = ref<Location[]>([])
 
 map.value.on('click', 'location-layer', (e) => {
   const features = map.value.queryRenderedFeatures(e.point, {
@@ -105,6 +110,7 @@ watch(locationsGeoJson, () => {
   const source = map.value.getSource(locationsLayerSourceId) as GeoJSONSource
   if (source) {
     source.setData(locationsGeoJson.value)
+    locations.value = convertGeoJsonToFewsPiLocation(locationsGeoJson.value)
   }
 })
 
