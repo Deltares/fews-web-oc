@@ -89,7 +89,7 @@ import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { watchEffect } from 'vue'
 import { computed } from 'vue'
 import { ref, watch } from 'vue'
-import type { RouteLocationNamedRaw } from 'vue-router'
+import { type RouteLocationNamedRaw, onBeforeRouteUpdate } from 'vue-router'
 import { useDisplay } from 'vuetify'
 
 const WEB_BROWSER_DISPLAY: string = 'web browser display'
@@ -229,38 +229,10 @@ function updateItems(): void {
   }
 }
 
-watch(nodes, updateItems)
-
-// Update the displayTabs if the active node changes (or if the topologyMap changes).
-// Redirect to the corresponding display of the updated active tab.
-watchEffect(() => {
-  // Check if the current displayTab already matches the active node.
-  const activeNodeId = props.nodeId
+function displayTabsForNode(node: TopologyNode) {
+  const activeNodeId = node.id
   const timeseriesTabId = `${activeNodeId}-timeseries`
   const spatialTabId = `${activeNodeId}-spatial`
-  const urlTabId = `${activeNodeId}-${WEB_BROWSER_DISPLAY}`
-  if (
-    displayTabs.value[activeTab.value] &&
-    (displayTabs.value[activeTab.value].id === timeseriesTabId ||
-      displayTabs.value[activeTab.value].id === spatialTabId ||
-      displayTabs.value[activeTab.value].id === urlTabId)
-  )
-    return
-
-  // Check if the active node is a leaf.
-  const node = topologyMap.value.get(activeNodeId)
-  if (node === undefined) {
-    filterIds.value = []
-    return
-  }
-  if (node.filterIds) {
-    filterIds.value = node.filterIds
-  }
-  if (node.topologyNodes) {
-    nodeButtons.value = nodeButtonItems(node.topologyNodes)
-  }
-
-  // Create the displayTabs for the active node.
   const _displayTabs: DisplayTab[] = []
   if (node.gridDisplaySelection !== undefined) {
     _displayTabs.push({
@@ -291,38 +263,59 @@ watchEffect(() => {
       icon: 'mdi-chart-multiple',
     })
   }
+  return _displayTabs
+}
+
+watch(nodes, updateItems)
+
+// Update the displayTabs if the active node changes (or if the topologyMap changes).
+// Redirect to the corresponding display of the updated active tab.
+watchEffect(() => {
+  // Check if the current displayTab already matches the active node.
+  const activeNodeId = props.nodeId
+
+  // Check if the active node is a leaf.
+  const node = topologyMap.value.get(activeNodeId)
+  if (node === undefined) {
+    filterIds.value = []
+    return
+  }
+  if (node.filterIds) {
+    filterIds.value = node.filterIds
+  }
+  if (node.topologyNodes) {
+    nodeButtons.value = nodeButtonItems(node.topologyNodes)
+  }
+
+  // Create the displayTabs for the active node.
+  const _displayTabs = displayTabsForNode(node)
+  displayTabs.value = _displayTabs
+
   if (node.url !== undefined) {
     externalLink.value = node.url
   }
-  displayTabs.value = _displayTabs
+})
 
-  // Redirect to the first displayTab.
-  if (_displayTabs.length > 0) {
-    if (activeTabType.value) {
-      const tabIndex = _displayTabs.findIndex((t) => {
-        return t.type === activeTabType.value
-      })
-      if (tabIndex > -1) {
-        activeTab.value = tabIndex
-        router.push(_displayTabs[tabIndex].to)
-        return
+onBeforeRouteUpdate((to, from) => {
+  // only fetch the user if the id changed as maybe only the query or the hash changed
+  if (typeof to.params.nodeId === 'string') {
+    const menuNode = topologyMap.value.get(to.params.nodeId)
+    if (to.name === 'TopologyDisplay') {
+      const tabs = displayTabsForNode(menuNode as any)
+      if (activeTabType.value) {
+        const tabIndex = tabs.findIndex((t) => {
+          return t.type === activeTabType.value
+        })
+        if (tabIndex > -1) {
+          activeTab.value = tabIndex
+          activeTabType.value = tabs[tabIndex].type
+          return tabs[tabIndex].to
+        }
       }
+      activeTab.value = 0
+      activeTabType.value = tabs[0].type
+      return tabs[0].to
     }
-    activeTab.value = 0
-    activeTabType.value = _displayTabs[0].type
-    const to = _displayTabs[0].to
-    if (to.params?.layerName === undefined) {
-      router.push(_displayTabs[0].to)
-    } else if (
-      props.nodeId !== to.params.nodeId ||
-      props.layerName !== to.params.layerName
-    ) {
-      router.push(_displayTabs[0].to)
-    }
-  } else {
-    activeTab.value = 0
-    activeTabType.value = ''
-    router.push({ name: 'TopologyDisplay', params: { nodeId: activeNodeId } })
   }
 })
 </script>
