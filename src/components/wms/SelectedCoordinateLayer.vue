@@ -6,7 +6,7 @@
 import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
 import { FeatureCollection, Geometry, GeoJsonProperties } from 'geojson'
 import { Map, type CircleLayer, GeoJSONSource } from 'mapbox-gl'
-import { Ref, watch } from 'vue'
+import { Ref, watch, computed } from 'vue'
 
 interface Props {
   latitude?: number
@@ -23,34 +23,35 @@ const emptyFeatureCollection: FeatureCollection<Geometry, GeoJsonProperties> = {
 }
 const layerSourceId = 'selected-coordinate-layer'
 
-watch(
-  () => props.longitude,
-  () => {
-    const source = map.value.getSource(layerSourceId) as GeoJSONSource
-
-    let data: Parameters<typeof source.setData>[0] = emptyFeatureCollection
-    if (props.longitude && props.latitude) {
-      const pointGeometry: Geometry = {
+const sourceData = computed<
+  | GeoJSON.Feature<GeoJSON.Geometry>
+  | GeoJSON.FeatureCollection<GeoJSON.Geometry>
+>(() => {
+  if (props.latitude && props.longitude) {
+    return {
+      type: 'Feature',
+      geometry: {
         type: 'Point',
         coordinates: [props.longitude, props.latitude],
-      }
-      data = {
-        type: 'Feature',
-        geometry: pointGeometry,
-        properties: {},
-      }
+      },
+      properties: {},
     }
+  }
 
-    if (source) source.setData(data)
-  },
-)
+  return emptyFeatureCollection
+})
+
+watch(sourceData, () => {
+  const source = map.value.getSource(layerSourceId) as GeoJSONSource
+  if (source) source.setData(sourceData.value)
+})
 
 const defaultLayerOptions: CircleLayer = {
   id: layerSourceId,
   type: 'circle',
   source: {
     type: 'geojson',
-    data: emptyFeatureCollection,
+    data: sourceData.value,
   },
   layout: {
     visibility: 'visible',
