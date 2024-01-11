@@ -1,11 +1,6 @@
 import { UserManagerSettings } from 'oidc-client-ts'
 
-const publicPath =
-  import.meta.env.NODE_ENV === 'production'
-    ? import.meta.env.VITE_PUBLIC_PATH
-    : '/'
-
-const baseUrl = window.location.origin + publicPath
+const baseUrl = window.location.origin + import.meta.env.BASE_URL
 const oidcSettings: UserManagerSettings = {
   authority: `${import.meta.env.VITE_AUTH_AUTHORITY}`,
   metadataUrl: `${import.meta.env.VITE_AUTH_METADATA_URL}`,
