@@ -12,24 +12,21 @@ import { point } from '@turf/helpers'
 import { LngLatBounds } from 'mapbox-gl'
 import { GetLegendGraphicResponse } from '@deltares/fews-wms-requests/src/response/getLegendGraphicResponse.ts'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+
 export interface UseWmsReturn {
-  selectedLayer: Ref<Layer | undefined>
-  legendGraphic: Ref<GetLegendGraphicResponse | undefined>
+  layerCapabilities: Ref<Layer | undefined>
   times: Ref<Date[] | undefined>
 }
-
-export function useWmsLayer(
+export function useWmsLayerCapabilities(
   baseUrl: string,
   layerName: MaybeRefOrGetter<string>,
-  useDisplayUnits: MaybeRefOrGetter<boolean>,
 ): UseWmsReturn {
-  const legendGraphic = ref<GetLegendGraphicResponse>()
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
   const times = ref<Date[]>()
-  const selectedLayer = ref<Layer>()
+  const layerCapabilities = ref<Layer>()
 
   async function loadLayer(): Promise<void> {
     const _layers = toValue(layerName)
@@ -42,7 +39,7 @@ export function useWmsLayer(
         forecastCount: 1,
       })
       if (capabilities.layers.length > 0) {
-        selectedLayer.value =
+        layerCapabilities.value =
           capabilities.layers.find((l) => l.name === _layers) ??
           capabilities.layers[0]
       }
@@ -53,18 +50,18 @@ export function useWmsLayer(
 
   function loadTimes(): void {
     let valueDates: Date[] = []
-    if (selectedLayer.value) {
-      if (selectedLayer.value.times) {
-        const dates = selectedLayer.value.times.map((time) => {
+    if (layerCapabilities.value) {
+      if (layerCapabilities.value.times) {
+        const dates = layerCapabilities.value.times.map((time) => {
           return new Date(time)
         })
         let firstValueDate = dates[0]
         let lastValueDate = dates[dates.length - 1]
-        if (selectedLayer.value.firstValueTime) {
-          firstValueDate = new Date(selectedLayer.value.firstValueTime)
+        if (layerCapabilities.value.firstValueTime) {
+          firstValueDate = new Date(layerCapabilities.value.firstValueTime)
         }
-        if (selectedLayer.value.lastValueTime) {
-          lastValueDate = new Date(selectedLayer.value.lastValueTime)
+        if (layerCapabilities.value.lastValueTime) {
+          lastValueDate = new Date(layerCapabilities.value.lastValueTime)
         }
         valueDates = dates.filter(
           (d) => d >= firstValueDate && d <= lastValueDate,
@@ -73,6 +70,25 @@ export function useWmsLayer(
     }
     times.value = valueDates
   }
+
+  watchEffect(() => {
+    loadLayer().then(() => {
+      loadTimes()
+    })
+  })
+  return { layerCapabilities, times }
+}
+
+export function useWmsLegend(
+  baseUrl: string,
+  layerName: MaybeRefOrGetter<string>,
+  useDisplayUnits: MaybeRefOrGetter<boolean>,
+): Ref<GetLegendGraphicResponse | undefined> {
+  const wmsUrl = `${baseUrl}/wms`
+  const wmsProvider = new WMSProvider(wmsUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const legendGraphic = ref<GetLegendGraphicResponse>()
 
   async function loadLegend(): Promise<void> {
     const _layers = toValue(layerName)
@@ -92,11 +108,8 @@ export function useWmsLayer(
 
   watchEffect(() => {
     loadLegend()
-    loadLayer().then(() => {
-      loadTimes()
-    })
   })
-  return { selectedLayer, legendGraphic, times }
+  return legendGraphic
 }
 
 export function useWmsCapilities(

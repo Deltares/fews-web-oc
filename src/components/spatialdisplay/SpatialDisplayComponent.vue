@@ -22,7 +22,10 @@
       :locationId="props.locationId"
       @changeLocationId="onLocationChange"
     />
-    <SelectedCoordinateLayer :longitude="props.longitude" :latitude="props.latitude" />
+    <SelectedCoordinateLayer
+      :longitude="props.longitude"
+      :latitude="props.latitude"
+    />
   </MapComponent>
   <DateTimeSlider
     v-model:selectedDate="currentTime"
@@ -38,9 +41,8 @@ import MapComponent from '@/components/map/MapComponent.vue'
 import { ref, computed, onBeforeMount, watch } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
-  useWmsLayer,
+  useWmsLegend,
 } from '@/services/useWms'
-import { configManager } from '@/services/application-config'
 import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedMapboxLayer, {
   MapboxLayerOptions,
@@ -52,7 +54,9 @@ import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
+import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
+import { configManager } from '@/services/application-config'
+import { Layer } from '@deltares/fews-wms-requests'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -63,6 +67,9 @@ interface ElevationWithUnitSymbol {
 
 interface Props {
   layerName?: string
+  times?: Date[]
+  layerCapabilities?: Layer
+  elevation?: number
   locationId?: string
   filterIds?: string[]
   latitude?: number
@@ -76,8 +83,6 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits([
   'changeLocationId',
   'coordinate-click',
-  'update:times',
-  'update:selectedLayer',
   'update:elevation',
 ])
 
@@ -88,16 +93,7 @@ onBeforeMount(() => {
   })
 })
 
-const settings = useUserSettingsStore()
-
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const dateController = new DateController([])
-
-const { selectedLayer, legendGraphic, times } = useWmsLayer(
-  baseUrl,
-  () => props.layerName,
-  () => settings.useDisplayUnits,
-)
 
 const currentElevation = ref<number>(0)
 const minElevation = ref<number>(-Infinity)
@@ -108,15 +104,23 @@ const currentTime = ref<Date>(new Date())
 const layerOptions = ref<MapboxLayerOptions>()
 let debouncedSetLayerOptions!: () => void
 
+const settings = useUserSettingsStore()
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const legendGraphic = useWmsLegend(
+  baseUrl,
+  () => props.layerName,
+  () => settings.useDisplayUnits,
+)
+
 const legend = computed(() => {
   return legendGraphic.value?.legend
 })
 const layerHasElevation = computed(() => {
-  return selectedLayer.value?.elevation !== undefined
+  return props.layerCapabilities?.elevation !== undefined
 })
 
 watch(
-  selectedLayer,
+  () => props.layerCapabilities,
   (layer) => {
     if (layer?.elevation) {
       const max = layer.elevation.upperValue ?? 0
@@ -128,9 +132,8 @@ watch(
       elevationUnit.value =
         (layer.elevation as ElevationWithUnitSymbol).unitSymbol ?? ''
     }
-    emit('update:selectedLayer', selectedLayer.value)
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 
 watch(currentElevation, () => {
@@ -139,27 +142,24 @@ watch(currentElevation, () => {
 })
 
 const legendTitle = computed(() => {
-  if (!selectedLayer.value) return ''
+  if (!props.layerCapabilities) return ''
   const unitString = legendGraphic.value?.unit
     ? ` [${legendGraphic.value?.unit}]`
     : ''
-  return `${selectedLayer.value?.title}${unitString}`
+  return `${props.layerCapabilities.title}${unitString}`
 })
 
 watch(
-  times,
+  () => props.times,
   () => {
-    const timesValue = times.value
-    if (timesValue) {
-      times.value = timesValue
-      dateController.dates = timesValue
+    if (props.times) {
+      dateController.dates = props.times
       dateController.selectDate(currentTime.value)
       currentTime.value = dateController.currentTime
     }
     setLayerOptions()
-    emit('update:times', times.value)
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 
 function setCurrentTime(enabled: boolean): void {
@@ -182,8 +182,8 @@ function setLayerOptions(): void {
     layerOptions.value = {
       name: props.layerName,
       time: currentTime.value,
-      bbox: selectedLayer.value?.boundingBox
-        ? convertBoundingBoxToLngLatBounds(selectedLayer.value.boundingBox)
+      bbox: props.layerCapabilities?.boundingBox
+        ? convertBoundingBoxToLngLatBounds(props.layerCapabilities.boundingBox)
         : undefined,
     }
     layerOptions.value.elevation = currentElevation.value

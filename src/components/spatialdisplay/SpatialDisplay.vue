@@ -8,8 +8,8 @@
         :longitude="props.longitude"
         :filter-ids="props.filterIds"
         @changeLocationId="onLocationChange"
-        v-model:times="times"
-        v-model:selected-layer="selectedLayer"
+        :layer-capabilities="layerCapabilities"
+        :times="times"
         v-model:elevation="elevation"
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
@@ -17,10 +17,7 @@
     <div v-if="props.locationId" class="child-container">
       <router-view
         @close="closeTimeSeriesDisplay"
-        :filterIds="props.filterIds"
-        :times="times"
-        :selectedLayer="selectedLayer"
-        :elevation="elevation"
+        :filter="filter"
       ></router-view>
     </div>
   </div>
@@ -30,11 +27,19 @@
 import { computed, ref, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
+import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
+import { configManager } from '@/services/application-config'
 import { useRoute, useRouter } from 'vue-router'
 import { findParentRoute } from '@/router'
 import { onMounted } from 'vue'
-import { Layer } from '@deltares/fews-wms-requests'
-import { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
+import { useWmsLayerCapabilities } from '@/services/useWms'
+import {
+  filterActionsFilter,
+  timeSeriesGridActionsFilter,
+} from '@deltares/fews-pi-requests'
+import { toMercator } from '@turf/projection'
+import { useUserSettingsStore } from '@/stores/userSettings'
+import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 
 interface Props {
   layerName?: string
@@ -53,9 +58,70 @@ const route = useRoute()
 const router = useRouter()
 const { mobile } = useDisplay()
 
+const settings = useUserSettingsStore()
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { layerCapabilities, times } = useWmsLayerCapabilities(
+  baseUrl,
+  () => props.layerName,
+)
+
+function getFilterActionsFilter(): filterActionsFilter {
+  return {
+    locationIds: props.locationId,
+    filterId: props.filterIds ? props.filterIds[0] : undefined,
+  }
+}
+
+function getTimeSeriesGridActionsFilter():
+  | timeSeriesGridActionsFilter
+  | undefined {
+  if (!props.longitude || !props.latitude) return
+  if (!layerCapabilities.value?.boundingBox) return
+  if (!layerCapabilities.value?.firstValueTime) return
+  if (!layerCapabilities.value?.lastValueTime) return
+
+  const [x, y] = toMercator([props.longitude, props.latitude])
+
+  const { minx, miny, maxx, maxy } = layerCapabilities.value.boundingBox
+  const bbox = [minx, miny, maxx, maxy].map(Number)
+
+  const startTime = layerCapabilities.value.firstValueTime
+  const endTime = layerCapabilities.value.lastValueTime
+
+  return {
+    layers: props.layerName,
+    x,
+    y,
+    startTime,
+    endTime,
+    bbox,
+    documentFormat: 'PI_JSON',
+    elevation: elevation.value,
+  }
+}
+
+const options = computed<UseDisplayConfigOptions>(() => {
+  return {
+    useDisplayUnits: settings.useDisplayUnits,
+    convertDatum: settings.convertDatum,
+  }
+})
+
+const filter = computed<
+  filterActionsFilter | timeSeriesGridActionsFilter | undefined
+>(() => {
+  if (props.locationId) {
+    const filter = getFilterActionsFilter()
+    return { ...filter, ...options }
+  }
+
+  if (props.longitude && props.latitude) {
+    const filter = getTimeSeriesGridActionsFilter()
+    return { ...filter, ...options }
+  }
+})
+
 const currentLocationId = ref<string>('')
-const times = ref<Date[]>()
-const selectedLayer = ref<Layer>()
 const elevation = ref<number>()
 
 onMounted(() => {
