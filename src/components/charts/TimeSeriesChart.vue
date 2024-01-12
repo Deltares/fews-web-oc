@@ -43,7 +43,6 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import { watchDebounced } from '@vueuse/core'
 import {
   AlertLines,
   CartesianAxesOptions,
@@ -67,6 +66,7 @@ import { Series } from '../../lib/timeseries/timeSeries.js'
 import uniq from 'lodash-es/uniq'
 import { extent } from 'd3'
 import { VChipGroup } from 'vuetify/components'
+import { difference } from 'lodash-es'
 
 const LEGEND_HEIGHT = 76
 
@@ -364,7 +364,18 @@ const beforeDestroy = () => {
   window.removeEventListener('resize', resize)
 }
 
-watchDebounced(props.series, onValueChange, { debounce: 100, maxWait: 250 })
+watch(
+  () => Object.keys(props.series),
+  (newValue, oldValue) => {
+    const newSeriesIds = difference(newValue, oldValue)
+    const requiredSeriesIds = props.config?.series.filter((s) =>
+      newSeriesIds.includes(s.id),
+    )
+    if (requiredSeriesIds.length > 0) {
+      onValueChange()
+    }
+  },
+)
 watch(props.config, onValueChange)
 
 onBeforeUnmount(() => {
