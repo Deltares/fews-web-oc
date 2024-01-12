@@ -55,7 +55,7 @@ import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue
 import { DisplayType } from '@/lib/display/DisplayConfig'
 
 interface Props {
-  nodeId?: string
+  nodeId?: string | string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -68,7 +68,13 @@ const selectedPlot = ref(0)
 
 const { displays, displayConfig } = useDisplayConfig(
   baseUrl,
-  () => props.nodeId,
+  () => {
+    if (typeof props.nodeId === 'string') {
+      return props.nodeId
+    } else {
+      return props.nodeId[props.nodeId.length - 1]
+    }
+  },
   selectedPlot,
 )
 
