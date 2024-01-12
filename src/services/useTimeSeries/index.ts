@@ -11,6 +11,7 @@ import { DateTime, Interval } from 'luxon'
 import { Series } from '../../lib/timeseries/timeSeries'
 import { SeriesUrlRequest } from '../../lib/timeseries/timeSeriesResource'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { difference } from 'lodash-es'
 
 export interface UseTimeSeriesReturn {
   error: Ref<any>
@@ -61,6 +62,7 @@ export function useTimeSeries(
   const isLoading = ref(false)
   const series = ref<Record<string, Series>>({})
   const error = shallowRef<any | undefined>(undefined)
+  const MAX_SERIES = 20
 
   watchEffect(() => {
     controller.abort()
@@ -71,8 +73,9 @@ export function useTimeSeries(
     })
     const _requests = toValue(requests)
     const _options = toValue(options)
-    Object.assign(series.value, {})
 
+    const currentSeriesIds = Object.keys(series.value)
+    const updatedDeriesIds = []
     for (const r in _requests) {
       const request = _requests[r]
       const url = absoluteUrl(`${baseUrl}/${request.request}`)
@@ -120,6 +123,7 @@ export function useTimeSeries(
       }
 
       const resourceId = `${request.key}`
+      updatedDeriesIds.push(resourceId)
       const relativeUrl = request.request.split('?')[0] + url.search
       piProvider.getTimeSeriesWithRelativeUrl(relativeUrl).then((piSeries) => {
         if (piSeries.timeSeries !== undefined)
@@ -159,6 +163,12 @@ export function useTimeSeries(
             series.value[resourceId] = _series
           }
       })
+    }
+    const oldSeriesIds = difference(currentSeriesIds, updatedDeriesIds)
+    if (oldSeriesIds.length > MAX_SERIES) {
+      for (const seriesId of oldSeriesIds) {
+        delete series.value[seriesId]
+      }
     }
   })
 
