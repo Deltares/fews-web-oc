@@ -11,7 +11,6 @@ import { DateTime, Interval } from 'luxon'
 import { Series } from '../../lib/timeseries/timeSeries'
 import { SeriesUrlRequest } from '../../lib/timeseries/timeSeriesResource'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import { difference } from 'lodash-es'
 
 export interface UseTimeSeriesReturn {
   error: Ref<any>
