@@ -11,6 +11,7 @@ import { DateTime, Interval } from 'luxon'
 import { Series } from '../../lib/timeseries/timeSeries'
 import { SeriesUrlRequest } from '../../lib/timeseries/timeSeriesResource'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { difference } from 'lodash-es'
 
 export interface UseTimeSeriesReturn {
   error: Ref<any>
@@ -71,6 +72,7 @@ export function useTimeSeries(
     })
     const _requests = toValue(requests)
     const _options = toValue(options)
+    Object.assign(series.value, {})
 
     for (const r in _requests) {
       const request = _requests[r]
