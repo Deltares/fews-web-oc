@@ -16,6 +16,7 @@
           <v-btn-toggle
             density="compact"
             v-model="setting.value"
+            mandatory
             @update:model-value="onValueChange(setting)"
           >
             <v-btn
