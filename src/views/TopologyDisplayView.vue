@@ -108,6 +108,7 @@ import type { ColumnItem } from '@/components/general/ColumnItem'
 import ColumnMenu from '@/components/general/ColumnMenu.vue'
 import TreeMenu from '@/components/general/TreeMenu.vue'
 import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
+import { useConfigStore } from '@/stores/config'
 
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { watchEffect } from 'vue'
@@ -134,6 +135,9 @@ interface DisplayTab {
 
 const props = defineProps<Props>()
 
+const configStore = useConfigStore()
+const { mobile } = useDisplay()
+
 const active = ref<string[]>([])
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
@@ -150,8 +154,6 @@ const nodeButtons = ref<any[]>([])
 const activeParentId = ref('')
 
 const externalLink = ref<string>('')
-
-const { mobile } = useDisplay()
 
 watch(
   () => props.nodeId,
@@ -171,7 +173,8 @@ watch(
 )
 
 const showLeafsAsButton = computed(() => {
-  return false
+  const component = configStore.getComponentByType('TopologyDisplay')
+  return component?.showLeafNodesAsButtons ?? false
 })
 
 const nodes = ref<TopologyNode[]>()
