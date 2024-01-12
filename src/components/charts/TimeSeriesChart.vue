@@ -43,6 +43,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { watchDebounced } from '@vueuse/core'
 import {
   AlertLines,
   CartesianAxesOptions,
@@ -363,7 +364,7 @@ const beforeDestroy = () => {
   window.removeEventListener('resize', resize)
 }
 
-watch(props.series, onValueChange, { deep: true })
+watchDebounced(props.series, onValueChange, { debounce: 200, maxWait: 1000 })
 watch(props.config, onValueChange)
 
 onBeforeUnmount(() => {
