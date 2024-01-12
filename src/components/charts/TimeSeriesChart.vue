@@ -364,7 +364,7 @@ const beforeDestroy = () => {
   window.removeEventListener('resize', resize)
 }
 
-watchDebounced(props.series, onValueChange, { debounce: 200, maxWait: 1000 })
+watchDebounced(props.series, onValueChange, { debounce: 100, maxWait: 250 })
 watch(props.config, onValueChange)
 
 onBeforeUnmount(() => {
