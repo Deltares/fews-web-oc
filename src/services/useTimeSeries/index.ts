@@ -159,6 +159,7 @@ export function useTimeSeries(
                   user: event.user,
                 }
               })
+              _series.lastUpdated = new Date()
             }
             series.value[resourceId] = _series
           }

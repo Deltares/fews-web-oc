@@ -365,11 +365,14 @@ const beforeDestroy = () => {
 }
 
 watch(
-  () => Object.keys(props.series),
+  () =>
+    Object.keys(props.series).map(
+      (k) => `${k}-${props.series[k].lastUpdated?.getTime()}`,
+    ),
   (newValue, oldValue) => {
     const newSeriesIds = difference(newValue, oldValue)
     const requiredSeriesIds = props.config?.series.filter((s) =>
-      newSeriesIds.includes(s.id),
+      newSeriesIds.map((id) => id.split('-')[0]).includes(s.id),
     )
     if (requiredSeriesIds.length > 0) {
       onValueChange()
