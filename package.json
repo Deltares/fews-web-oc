@@ -9,7 +9,7 @@
     "build:deltares": "vue-tsc && env-cmd -f deltares.env vite build",
     "build:weboc": "vue-tsc && vite build --base=/weboc/",
     "preview": "vite preview",
-    "test": "echo nothing to test yet",
+    "test": "vitest",
     "lint": "npm run prettier",
     "prettier": "prettier . --check",
     "format": "prettier .  --write",
@@ -56,11 +56,13 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-vue": "^9.18.1",
     "geojson": "^0.5.0",
+    "jsdom": "^23.2.0",
     "prettier": "3.0.3",
     "sonarqube-scanner": "^3.1.0",
     "typescript": "^5.2.2",
-    "vite": "^5.0.11",
     "vite-plugin-vuetify": "^2.0.1",
+    "vite": "^5.0.11",
+    "vitest": "^1.2.0",
     "vue-tsc": "^1.8.22"
   },
   "volta": {
