@@ -4,7 +4,7 @@ import {
   type TimeSeriesFilter,
   type TimeSeriesEvent,
 } from '@deltares/fews-pi-requests'
-import { onUnmounted, ref, shallowRef, toValue, watchEffect } from 'vue'
+import { onUnmounted, ref, shallowRef, toValue, watch } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl'
 import { DateTime, Interval } from 'luxon'
@@ -64,10 +64,9 @@ export function useTimeSeries(
   const error = shallowRef<any | undefined>(undefined)
   const MAX_SERIES = 20
 
-  watchEffect(() => {
+  watch([lastUpdated, requests, options], () => {
     controller.abort()
     controller = new AbortController()
-    toValue(lastUpdated)
     const piProvider = new PiWebserviceProvider(baseUrl, {
       transformRequestFn: createTransformRequestFn(controller),
     })
