@@ -15,6 +15,7 @@
         <v-list-item-action v-if="setting.type === 'oneOfMultiple'">
           <v-btn-toggle
             density="compact"
+            class="my-2"
             v-model="setting.value"
             mandatory
             @update:model-value="onValueChange(setting)"
@@ -39,6 +40,7 @@
             density="compact"
             v-model="setting.value"
             color="primary"
+            class="ml-3"
             :disabled="setting.disabled"
             @update:modelValue="onValueChange(setting)"
             hide-details
