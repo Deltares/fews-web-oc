@@ -1,12 +1,19 @@
+@import '../fonts/exo-2/fonts.css';
+
 :root {
-  --font-family: Avenir, Helvetica, Arial, sans-serif;
+  --font-family: 'Exo 2', sans-serif;
   --theme-color: white;
   --contrast-color: black;
   --canvas-fill: rgb(223, 223, 223);
+  --weboc-app-bar-bg-color: #080c80;
 }
 
 .dark {
   --contrast-color: rgb(255, 255, 255);
   --theme-color: black;
   --canvas-fill: rgb(54, 54, 54);
+}
+
+body {
+  font-family: var(--font-family);
 }
