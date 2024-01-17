@@ -36,14 +36,14 @@
             "
             :to="child.to"
             :class="getClass(child)"
-            :disabled="child.nodata"
+            :disabled="child.disabled"
           >
             <v-list-item-title>{{ child.name }}</v-list-item-title>
             <template v-slot:append>
-              <v-tooltip v-if="child.nodata">
+              <v-tooltip v-if="child.tooltipText">
                 <template v-slot:activator="{ props }">
-                  <v-icon v-bind="props" class="allow-disabled-hover"
-                    >mdi-alert-octagon-outline</v-icon
+                  <v-icon v-bind="props" class="allow-disabled-hover" size="x-small"
+                    >{{ child.icon }}</v-icon
                   >
                 </template>
                 <div v-if="child.children">

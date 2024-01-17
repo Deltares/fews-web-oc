@@ -125,16 +125,22 @@ function attachLayersToMenu(
 ) {
   for (const layer of layers) {
     const groupNode = groupNodes.get(layer.path.toString())
+    const noData = layer.completelyMissing || false
     const item: ColumnItem = {
       id: layer.name,
       name: layer.title || layer.name,
-      nodata: layer.completelyMissing || false,
-      to: {
+      disabled: noData,
+    }
+    if (!noData) {
+      item.to = {
         name: 'SpatialDisplay',
         params: {
           layerName: layer.name,
         },
-      },
+      }
+    } else {
+      item.tooltipText = 'No data available'
+      item.icon = 'mdi-alert-circle-outline'
     }
     groupNode?.children?.push(item)
   }
