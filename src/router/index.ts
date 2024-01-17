@@ -210,14 +210,21 @@ function defaultRouteParams(to: RouteLocationNormalized) {
   if (component !== undefined) {
     const defaultPath = component.defaultPath
     const params = to.params
+    let requiresRedirect = false
     for (const key in defaultPath) {
       if (defaultPath[key] !== undefined) {
-        params[key] = params[key] || defaultPath[key]
+        if (!params[key]) {
+          params[key] = defaultPath[key]
+          requiresRedirect = true
+        }
       }
     }
-    return params
+    if (requiresRedirect) {
+      to.params = params
+      return to
+    }
   }
-  return to.params
+  return
 }
 
 router.beforeEach(async (to, from) => {
@@ -246,8 +253,7 @@ router.beforeEach(async (to, from) => {
     }
     return to
   }
-  to.params = defaultRouteParams(to)
-  return
+  return defaultRouteParams(to)
 })
 
 export function findParentRoute(
