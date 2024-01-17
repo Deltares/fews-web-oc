@@ -20,6 +20,7 @@
     /* Enable when vue-slider-component fixed its code*/
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
+    "experimentalDecorators": true,
 
     /* Paths */
     "baseUrl": ".",
