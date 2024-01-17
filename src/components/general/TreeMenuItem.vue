@@ -13,11 +13,35 @@
     <v-list-item v-else-if="item.href" :href="item.href" target="_blank">
       <v-list-item-title>{{ item.name }}</v-list-item-title>
       <template v-slot:append>
-        <v-icon>mdi-share</v-icon>
+        <v-icon size="x-small">{{ item.icon }}</v-icon>
       </template>
     </v-list-item>
-    <v-list-item v-else :to="item.to" style="margin-right: 10px">
+    <v-list-item
+      v-else
+      :to="item.to"
+      style="margin-right: 10px"
+      :disabled="item.disabled"
+    >
       <v-list-item-title>{{ item.name }}</v-list-item-title>
+      <template v-slot:append>
+        <v-tooltip v-if="item.tooltipText">
+          <template v-slot:activator="{ props }">
+            <v-icon
+              v-bind="props"
+              class="allow-disabled-hover"
+              size="x-small"
+              >{{ item.icon }}</v-icon
+            >
+          </template>
+          {{ item.tooltipText }}
+        </v-tooltip>
+        <v-icon
+          v-else-if="item.icon"
+          size="x-small"
+          style="pointer-events: auto"
+          >{{ item.icon }}
+        </v-icon>
+      </template>
     </v-list-item>
   </template>
 </template>

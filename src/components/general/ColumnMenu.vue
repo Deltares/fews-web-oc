@@ -36,11 +36,25 @@
             "
             :to="child.to"
             :class="getClass(child)"
+            :disabled="child.disabled"
           >
             <v-list-item-title>{{ child.name }}</v-list-item-title>
             <template v-slot:append>
-              <v-icon v-if="child.children?.length">mdi-chevron-right</v-icon>
-              <v-icon v-else-if="child.icon" small>{{ child.icon }}</v-icon>
+              <v-tooltip v-if="item.tooltipText">
+                <template v-slot:activator="{ props }">
+                  <v-icon
+                    v-bind="props"
+                    class="allow-disabled-hover"
+                    size="x-small"
+                    >{{ item.icon }}</v-icon
+                  >
+                </template>
+                {{ item.tooltipText }}
+              </v-tooltip>
+              <div v-else>
+                <v-icon v-if="child.children">mdi-chevron-right</v-icon>
+                <v-icon v-else-if="child.icon" small>{{ child.icon }}</v-icon>
+              </div>
             </template>
           </v-list-item>
         </template>
@@ -150,3 +164,9 @@ function recursiveFind(stack: ColumnItem[], id: string): boolean {
   return false
 }
 </script>
+
+<style>
+.allow-disabled-hover {
+  pointer-events: auto;
+}
+</style>
