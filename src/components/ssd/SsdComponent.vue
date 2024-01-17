@@ -20,7 +20,7 @@
     >
       <schematic-status-display
         v-if="src"
-        class="web-oc-ssd"
+        class="weboc-ssd"
         :src="src"
         ref="svgContainer"
         @load="onLoad"
@@ -246,7 +246,7 @@ function setDimensions(): void {
   white-space: nowrap;
 }
 
-.theme--light .ssd-container {
+.v-theme--light .ssd-container {
   background-color: lightgray;
 }
 
@@ -254,11 +254,11 @@ function setDimensions(): void {
   display: none;
 }
 
-.theme--light .web-oc-ssd > svg {
+.v-theme--light .weboc-ssd > svg {
   background-color: #fff;
 }
 
-.theme--dark .web-oc-ssd > svg {
+.v-theme--dark .weboc-ssd > svg {
   background-color: #606060;
 }
 

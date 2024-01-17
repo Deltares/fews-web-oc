@@ -361,10 +361,6 @@ td:has(span.sticky-column) {
   border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
-.web-oc-ssd > svg {
-  background-color: #fff;
-}
-
 .v-theme--light td:has(div.table-cell-editable) {
   background: repeating-linear-gradient(
     45deg,
