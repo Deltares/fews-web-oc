@@ -41,7 +41,7 @@
       </v-menu>
       <div id="web-oc-sidebar-target"></div>
     </v-navigation-drawer>
-    <v-app-bar color="#080C80" density="compact">
+    <v-app-bar :color="appBarColor" density="compact">
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       </template>
@@ -91,6 +91,28 @@ const { isRtl } = useRtl()
 const route = useRoute()
 
 const logoSrc = ref('')
+const appBarColor = ref('')
+
+watch(
+  () => configStore.general,
+  async () => {
+    const css = document.getElementById('custom-style-sheet') as HTMLLinkElement
+    if (css) {
+      css.href = configStore.customStyleSheet
+    } else {
+      const link = document.createElement('link')
+      link.id = 'custom-style-sheet'
+      link.rel = 'stylesheet'
+      link.href = configStore.customStyleSheet
+      link.onload = () => {
+        appBarColor.value = getComputedStyle(document.body).getPropertyValue(
+          '--weboc-app-bar-bg-color',
+        )
+      }
+      document.head.appendChild(link)
+    }
+  },
+)
 
 watchEffect(async () => {
   const parentRoute = route.matched[0]
