@@ -30,9 +30,9 @@
 import { ImportStatus, PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { configManager } from '../../services/application-config'
-import { type VDataTable } from 'vuetify/components';
+import { type VDataTable } from 'vuetify/components'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-type ReadonlyDataTableHeader = typeof VDataTable['headers']
+type ReadonlyDataTableHeader = (typeof VDataTable)['headers']
 
 const props = defineProps(['timeOut'])
 
