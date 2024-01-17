@@ -65,7 +65,8 @@
                 <div
                   class="table-header-indicator-color"
                   :style="{
-                    'background-color': (column as unknown as TableHeaders).color,
+                    'background-color': (column as unknown as TableHeaders)
+                      .color,
                   }"
                 ></div>
               </div>
@@ -74,7 +75,9 @@
         </tr>
       </template>
       <template v-slot:item.date="{ item }">
-        <span class="sticky-column">{{ dateFormatter.format(item.date as Date) }}</span>
+        <span class="sticky-column">{{
+          dateFormatter.format(item.date as Date)
+        }}</span>
       </template>
       <template v-for="id in seriesIds" v-slot:[`item.${id}`]="{ item }">
         <!-- Table cell when editing data -->

@@ -27,7 +27,12 @@
                     <template v-slot:activator="{ props }">
                       <v-icon v-bind="props">mdi-calendar-start</v-icon>
                     </template>
-                    <v-date-picker v-model="startDates" multiple no-title hide-actions>
+                    <v-date-picker
+                      v-model="startDates"
+                      multiple
+                      no-title
+                      hide-actions
+                    >
                       <template #header></template>
                     </v-date-picker>
                   </v-menu>
@@ -48,7 +53,12 @@
                     <template v-slot:activator="{ props }">
                       <v-icon v-bind="props">mdi-calendar-end</v-icon>
                     </template>
-                    <v-date-picker v-model="endDates" multiple no-title hide-actions>
+                    <v-date-picker
+                      v-model="endDates"
+                      multiple
+                      no-title
+                      hide-actions
+                    >
                       <template #header></template>
                     </v-date-picker>
                   </v-menu>
