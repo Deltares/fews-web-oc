@@ -55,6 +55,7 @@
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-vue": "^9.18.1",
+    "geojson": "^0.5.0",
     "prettier": "3.0.3",
     "sonarqube-scanner": "^3.1.0",
     "typescript": "^5.2.2",
