@@ -28,7 +28,7 @@ watch(
 )
 </script>
 
-<style>
+<style scoped>
 html,
 body {
   margin: 0px;
@@ -37,20 +37,7 @@ body {
 }
 
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   height: 100%;
   overflow: hidden;
-}
-
-#main {
-  height: 100%;
-  overflow: hidden;
-}
-
-.router-container {
-  padding: 0px;
-  height: 100%;
 }
 </style>
