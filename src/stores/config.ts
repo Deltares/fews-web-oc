@@ -89,9 +89,9 @@ const useConfigStore = defineStore('config', {
 
     customStyleSheet: (state) => {
       if (state.general.customStyleSheet) {
-        return `/${state.general.customStyleSheet}`
+        return `${import.meta.env.BASE_URL}${state.general.customStyleSheet}`
       } else {
-        return `${import.meta.env.BASE_URL}custom-style-sheet.css`
+        return `${import.meta.env.BASE_URL}weboc-default-style.css`
       }
     },
   },
