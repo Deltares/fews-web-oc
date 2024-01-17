@@ -1,3 +1,14 @@
+<template>
+  <Suspense>
+    <template #default>
+      <component style="height: 100%" :is="layoutComponent"></component>
+    </template>
+    <template #fallback>
+      <span>Loading...</span>
+    </template>
+  </Suspense>
+</template>
+
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import DefaultLayout from './layouts/DefaultLayout.vue'
@@ -52,22 +63,6 @@ watch(
   },
 )
 
-watch(
-  () => configStore.general.customStyleSheet,
-  () => {
-    const css = document.getElementById('custom_css') as HTMLLinkElement
-    if (css) {
-      css.href = configStore.customStyleSheet
-      const uiThemeItem = userSettingsStore.items.find(
-        (item) => item.id === 'ui.theme',
-      )
-      if (uiThemeItem) {
-        updateTheme(uiThemeItem.value as string)
-      }
-    }
-  },
-)
-
 watch(prefersDark, () => updateTheme())
 
 function updateTheme(theme?: string) {
@@ -100,17 +95,6 @@ userSettingsStore.$onAction(({ name, args }) => {
   }
 })
 </script>
-
-<template>
-  <Suspense>
-    <template #default>
-      <component style="height: 100%" :is="layoutComponent"></component>
-    </template>
-    <template #fallback>
-      <span>Loading...</span>
-    </template>
-  </Suspense>
-</template>
 
 <style>
 .wb-charts,
