@@ -45,7 +45,7 @@
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       </template>
-      <div class="app-bar-content" id="app-bar-content"></div>
+      <div id="app-bar-content"></div>
       <v-spacer />
       <time-control-menu></time-control-menu>
       <user-settings-menu />
@@ -171,14 +171,6 @@ body {
 }
 
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  height: 100%;
-  overflow: hidden;
-}
-
-#main {
   height: 100%;
   overflow: hidden;
 }
@@ -186,10 +178,6 @@ body {
 .router-container {
   padding: 0px;
   height: 100%;
-}
-
-.app-bar-content {
-  display: flex;
 }
 </style>
 
