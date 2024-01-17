@@ -24,7 +24,7 @@
           >
             <v-list-item-title>{{ child.name }}</v-list-item-title>
             <template v-slot:append>
-              <v-icon>mdi-share</v-icon>
+              <v-icon size="xsmall">{{ item.icon }}</v-icon>
             </template>
           </v-list-item>
           <v-list-item
