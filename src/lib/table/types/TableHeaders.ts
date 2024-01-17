@@ -1,15 +1,8 @@
-import type { VDataTable } from 'vuetify/lib/labs/components.mjs'
+import type { VDataTable } from 'vuetify/components'
 
-type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
-  ? UnwrapReadonlyArrayType<I>
-  : A
-type DT = InstanceType<typeof VDataTable>
-type ReadonlyDataTableHeader = UnwrapReadonlyArrayType<DT['headers']>
+type ReadonlyDataTableHeader = typeof VDataTable['headers']
 
-type DeepMutable<T> = { -readonly [P in keyof T]: DeepMutable<T[P]> }
-type DataTableHeader = DeepMutable<ReadonlyDataTableHeader>
-
-export interface TableHeaders extends DataTableHeader {
+export interface TableHeaders extends ReadonlyDataTableHeader {
   color?: string
   class?: string
   editable: boolean

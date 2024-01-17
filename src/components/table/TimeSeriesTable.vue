@@ -19,7 +19,7 @@
             <th
               :style="{ minWidth: column.minWidth }"
               :class="[
-                (column as TableHeaders).class,
+                (column as unknown as TableHeaders).class,
                 {
                   'table-header--editing': isEditingTimeSeries(
                     column.key as string,
@@ -30,7 +30,7 @@
               <div class="table-header-indicator">
                 <div class="table-header-indicator-text">
                   <span>{{ column.title }}</span>
-                  <template v-if="(column as TableHeaders).editable">
+                  <template v-if="(column as unknown as TableHeaders).editable">
                     <div
                       v-if="isEditingTimeSeries(column.key as string)"
                       class="table-header__actions"
@@ -65,7 +65,7 @@
                 <div
                   class="table-header-indicator-color"
                   :style="{
-                    'background-color': (column as TableHeaders).color,
+                    'background-color': (column as unknown as TableHeaders).color,
                   }"
                 ></div>
               </div>
@@ -74,7 +74,7 @@
         </tr>
       </template>
       <template v-slot:item.date="{ item }">
-        <span class="sticky-column">{{ dateFormatter.format(item.date) }}</span>
+        <span class="sticky-column">{{ dateFormatter.format(item.date as Date) }}</span>
       </template>
       <template v-for="id in seriesIds" v-slot:[`item.${id}`]="{ item }">
         <!-- Table cell when editing data -->
