@@ -172,6 +172,8 @@ function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
       'SpatialTimeSeriesDisplay',
       'SpatialTimeSeriesDisplayWithCoordinates',
     )
+  if (!routeName || !router.hasRoute(routeName)) return
+
   router.push({
     name: routeName,
     params: {
