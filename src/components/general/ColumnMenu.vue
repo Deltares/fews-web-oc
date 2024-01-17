@@ -40,21 +40,16 @@
           >
             <v-list-item-title>{{ child.name }}</v-list-item-title>
             <template v-slot:append>
-              <v-tooltip v-if="child.tooltipText">
+              <v-tooltip v-if="item.tooltipText">
                 <template v-slot:activator="{ props }">
-                  <v-icon v-bind="props" class="allow-disabled-hover" size="x-small"
-                    >{{ child.icon }}</v-icon
+                  <v-icon
+                    v-bind="props"
+                    class="allow-disabled-hover"
+                    size="x-small"
+                    >{{ item.icon }}</v-icon
                   >
                 </template>
-                <div v-if="child.children">
-                  <div>{{ child.name }}'s children are missing data:</div>
-                  <ul class="ml-4">
-                    <li v-for="grandChild in child.children">
-                      {{ grandChild.name }}
-                    </li>
-                  </ul>
-                </div>
-                <span v-else>{{ child.name }} has no data.</span>
+                {{ item.tooltipText }}
               </v-tooltip>
               <div v-else>
                 <v-icon v-if="child.children">mdi-chevron-right</v-icon>
@@ -170,7 +165,7 @@ function recursiveFind(stack: ColumnItem[], id: string): boolean {
 }
 </script>
 
-<style scoped>
+<style>
 .allow-disabled-hover {
   pointer-events: auto;
 }
