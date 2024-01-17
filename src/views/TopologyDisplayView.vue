@@ -114,7 +114,13 @@ import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { watchEffect } from 'vue'
 import { computed } from 'vue'
 import { ref, watch } from 'vue'
-import { type RouteLocationNamedRaw, onBeforeRouteUpdate } from 'vue-router'
+import {
+  type RouteLocationNamedRaw,
+  onBeforeRouteUpdate,
+  RouteLocationNormalized,
+  useRoute,
+  useRouter,
+} from 'vue-router'
 import { useDisplay } from 'vuetify'
 
 interface Props {
@@ -155,6 +161,9 @@ const activeParentId = ref('')
 
 const externalLink = ref<string>('')
 
+const route = useRoute()
+const router = useRouter()
+
 watch(
   () => props.nodeId,
   () => {
@@ -179,9 +188,14 @@ const showLeafsAsButton = computed(() => {
 
 const nodes = ref<TopologyNode[]>()
 const topologyMap = ref(new Map<string, TopologyNode>())
+
 getTopologyNodes().then((response) => {
   nodes.value = response
   topologyMap.value = createTopologyMap(nodes.value)
+  const to = reroute(route)
+  if (to) {
+    router.push(to)
+  }
 })
 
 function topologyNodeIsVisible(node: TopologyNode): boolean {
@@ -307,9 +321,11 @@ watch(nodes, updateItems)
 // Redirect to the corresponding display of the updated active tab.
 watchEffect(() => {
   // Check if the current displayTab already matches the active node.
-  if (props.nodeId === undefined) return
+  if (!props.nodeId) return
   const activeNodeId = Array.isArray(props.nodeId)
-    ? props.nodeId[props.nodeId.length - 1]
+    ? props.nodeId.length > 1
+      ? props.nodeId[props.nodeId.length - 1]
+      : props.nodeId[0]
     : props.nodeId
 
   const parentNodeIdNodeId = Array.isArray(props.nodeId)
@@ -332,6 +348,7 @@ watchEffect(() => {
   }
 
   // Create the displayTabs for the active node.
+  if (node === undefined) return
   const _displayTabs = displayTabsForNode(node, parentNodeIdNodeId)
   displayTabs.value = _displayTabs
 
@@ -340,9 +357,23 @@ watchEffect(() => {
   }
 })
 
-onBeforeRouteUpdate((to) => {
-  if (showLeafsAsButton.value && typeof to.params.nodeId === 'string') {
-    const menuNode = topologyMap.value.get(to.params.nodeId) as any
+onBeforeRouteUpdate(reroute)
+
+function reroute(to: RouteLocationNormalized) {
+  if (!to.params.nodeId) {
+    if (topologyMap.value.size === 0) return
+    const parentNodeId = topologyMap.value.entries().next().value[0]
+    to.params.nodeId = parentNodeId
+    return to
+  }
+  if (
+    (showLeafsAsButton.value && typeof to.params.nodeId === 'string') ||
+    (Array.isArray(to.params.nodeId) && to.params.nodeId.length === 1)
+  ) {
+    const parentNodeId = Array.isArray(to.params.nodeId)
+      ? to.params.nodeId[0]
+      : to.params.nodeId
+    const menuNode = topologyMap.value.get(parentNodeId) as any
     if (to.name === 'TopologyDisplay') {
       const sources = nodeButtonItems(menuNode)
       if (activeParentId.value) {
@@ -360,12 +391,15 @@ onBeforeRouteUpdate((to) => {
       return sources[0].to
     }
   } else {
-    const leafNodeId =
-      typeof to.params.nodeId === 'string'
-        ? to.params.nodeId
-        : to.params.nodeId[to.params.nodeId.length - 1]
+    const leafNodeId = Array.isArray(to.params.nodeId)
+      ? to.params.nodeId.length > 1
+        ? to.params.nodeId[to.params.nodeId.length - 1]
+        : to.params.nodeId[0]
+      : to.params.nodeId
     const parentNodeId =
-      typeof to.params.nodeId === 'string' ? undefined : to.params.nodeId[0]
+      Array.isArray(to.params.nodeId) && to.params.nodeId.length > 1
+        ? to.params.nodeId[0]
+        : undefined
     const menuNode = topologyMap.value.get(leafNodeId)
     if (to.name === 'TopologyDisplay') {
       const tabs = displayTabsForNode(menuNode as any, parentNodeId)
@@ -384,8 +418,7 @@ onBeforeRouteUpdate((to) => {
       return tabs[0].to
     }
   }
-  // }
-})
+}
 </script>
 
 <style scoped>
