@@ -93,7 +93,7 @@
       target="_blank"
       variant="text"
       class="flex-0-0 align-self-center text-capitalize"
-      ><v-icon>mdi-share</v-icon>Link</v-btn
+      ><v-icon>mdi-open-in-new</v-icon>Link</v-btn
     >
   </Teleport>
   <router-view v-slot="{ Component }">
@@ -245,7 +245,8 @@ function nodeButtonItems(node: TopologyNode) {
 }
 
 function getIcon(node: TopologyNode): string | undefined {
-  if (node.url && !node.topologyNodes && !node.displayGroups) return 'mdi-share'
+  if (node.url && !node.topologyNodes && !node.displayGroups)
+    return 'mdi-open-in-new'
   return undefined
 }
 
