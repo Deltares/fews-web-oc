@@ -139,30 +139,3 @@ function attachLayersToMenu(
   }
 }
 </script>
-
-<style scoped>
-.container {
-  display: flex;
-  width: 100%;
-  height: 100%;
-}
-
-.child-container {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: 50%;
-  max-width: 100%;
-  flex: 1 1 0px;
-}
-
-.child-container.mobile {
-  display: flex;
-  height: 100%;
-  width: 100%;
-}
-
-.child-container.hidden {
-  display: none !important;
-}
-</style>
