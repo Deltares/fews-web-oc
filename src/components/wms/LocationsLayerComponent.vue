@@ -82,8 +82,8 @@ watch(locationsGeoJson, () => {
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   if (!event.features) return
-  const location: string | undefined = event.features[0].properties?.locationId
-  if (location) onLocationChange(location)
+  const locationId: string | undefined = event.features[0].properties?.locationId
+  if (locationId) onLocationChange(locationId)
 }
 
 function onLocationChange(locationId: string | null): void {
