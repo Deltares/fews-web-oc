@@ -6,6 +6,7 @@
   --contrast-color: black;
   --canvas-fill: rgb(223, 223, 223);
   --weboc-app-bar-bg-color: #080c80;
+  --weboc-app-bar-bg-image: url('/images/blue_sky.jpg');
 }
 
 .dark {
