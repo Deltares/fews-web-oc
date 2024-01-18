@@ -4,47 +4,54 @@
     label="Search Locations"
     single-line
     hide-details
-    flat
     rounded
     :items="props.locations"
     item-title="locationName"
     item-value="locationId"
     return-object
-    class="locations-control__autocomplete mb-1 pa"
-    dense
+    style="width: 250px"
+    density="compact"
   >
+    <template v-slot:item="{ props }">
+      <v-list-item v-bind="props" width="250px" />
+    </template>
   </v-autocomplete>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, watchEffect } from 'vue'
+import { ref, watch } from 'vue'
 import { type Location } from '@deltares/fews-pi-requests'
 
 interface Props {
   locations: Location[]
+  selectedLocationId: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   locations: () => [],
+  selectedLocationId: null,
 })
 
-const emit = defineEmits(['click'])
+const emit = defineEmits(['update:selectedLocationId'])
 
 const selectedLocation = ref<Location | null>(null)
+
+watch(
+  () => props.selectedLocationId,
+  () => {
+    selectedLocation.value =
+      props.locations.find(
+        (location) => location.locationId === props.selectedLocationId,
+      ) ?? null
+  },
+)
 
 watch(selectedLocation, onSelectLocation)
 function onSelectLocation(newValue: Location | null) {
   if (newValue === null) {
     return
   }
-  console.log('newValue :>> ', newValue)
-  emit('click', newValue)
-}
-
-watchEffect(onLocationChange)
-
-function onLocationChange(){
-  console.log('props.locations :>> ', props.locations)
+  emit('update:selectedLocationId', newValue.locationId)
 }
 </script>
 

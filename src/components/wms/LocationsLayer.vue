@@ -1,17 +1,30 @@
 <template>
   <MapboxLayer id="location-layer" :options="defaultLocationsLayerOptions" />
   <v-chip class="locations-layer__chip" pill label size="small">
-    <v-btn @click="showLocationsLayer = !showLocationsLayer" density="compact" icon>
-        <v-icon>{{ showLocationsLayer ? 'mdi-map-marker' : 'mdi-map-marker-off' }}</v-icon>
+    <v-btn
+      @click="showLocationsLayer = !showLocationsLayer"
+      density="compact"
+      icon
+    >
+      <v-icon>{{
+        showLocationsLayer ? 'mdi-map-marker' : 'mdi-map-marker-off'
+      }}</v-icon>
     </v-btn>
-    <LocationsSearchControl v-if="showLocationsLayer" :locations="locations"/>
+    <LocationsSearchControl
+      v-if="showLocationsLayer"
+      :locations="locations"
+      v-model:selectedLocationId="selectedLocationId"
+    />
   </v-chip>
 </template>
 
 <script setup lang="ts">
 import { Ref, ref, watch, watchEffect } from 'vue'
 import { configManager } from '@/services/application-config'
-import { convertGeoJsonToFewsPiLocation, fetchLocationsAsGeoJson } from '@/lib/topology'
+import {
+  convertGeoJsonToFewsPiLocation,
+  fetchLocationsAsGeoJson,
+} from '@/lib/topology'
 import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
 import { FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
@@ -34,6 +47,15 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits(['click'])
+
+const selectedLocationId = ref<string | null>(null)
+
+watch(
+  () => props.locationId,
+  () => {
+    selectedLocationId.value = props.locationId
+  },
+)
 
 const emptyFeatureCollection: FeatureCollection<Geometry, Location> = {
   type: 'FeatureCollection',
@@ -87,8 +109,7 @@ map.value.on('mouseleave', 'location-layer', () => {
   map.value.getCanvas().style.cursor = ''
 })
 
-watch(
-  () => props.locationId,
+watch(selectedLocationId,
   () => {
     highlightSelectedLocationOnMap()
   },
@@ -118,7 +139,7 @@ function highlightSelectedLocationOnMap() {
   if (!map.value.getSource(locationsLayerSourceId)) return
 
   // Set color to default if no layer is available
-  const locationId = props.locationId ?? 'noLayerSelected'
+  const locationId = selectedLocationId.value ?? 'noLayerSelected'
   map.value.setPaintProperty(locationsLayerSourceId, 'circle-color', [
     'match',
     ['get', 'locationId'],
