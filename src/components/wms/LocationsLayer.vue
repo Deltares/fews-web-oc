@@ -19,6 +19,7 @@ import {
   type MapLayerTouchEvent,
   type CircleLayer,
 } from 'mapbox-gl'
+import { onMounted } from 'vue'
 
 interface Props {
   filterIds: string[]
@@ -64,6 +65,10 @@ const locationsGeoJson = ref<
 
 const showLocationsLayer = ref<boolean>(true)
 const locationsLayerSourceId = 'location-layer'
+
+onMounted(() => {
+  highlightSelectedLocationOnMap()
+})
 
 map.value.on('click', 'location-layer', (e) => {
   const features = map.value.queryRenderedFeatures(e.point, {
