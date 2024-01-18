@@ -8,7 +8,7 @@
     :interval="interval"
     :keydownHook="onSliderKeydown"
     hideLabel
-    :silent="true"
+    silent
     direction="btt"
     tooltip="always"
     tooltipPlacement="left"

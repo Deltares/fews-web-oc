@@ -8,6 +8,7 @@
         :hide-label="hideLabel"
         step="1"
         :tooltipFormatter="dateString"
+        silent
         @change="stopFollowNow"
       >
         <template v-slot:step="{ active, style, activeStyle }">
