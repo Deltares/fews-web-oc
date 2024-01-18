@@ -53,15 +53,19 @@
       <v-list-item :to="{ name: 'UserSettingsView' }"
         >All Settings ...</v-list-item
       >
+      <v-divider />
+      <v-list-item> Version {{ configStore.version }} </v-list-item>
     </v-list>
   </v-menu>
 </template>
 
 <script setup lang="ts">
+import { useConfigStore } from '@/stores/config'
 import type { UserSettingsItem } from '../../stores/userSettings'
 import { useUserSettingsStore } from '../../stores/userSettings'
 
 const store = useUserSettingsStore()
+const configStore = useConfigStore()
 
 function onValueChange(item: UserSettingsItem) {
   store.add(item)
