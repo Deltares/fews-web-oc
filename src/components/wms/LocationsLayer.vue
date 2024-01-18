@@ -73,11 +73,9 @@ map.value.on('mouseleave', 'location-layer', () => {
   map.value.getCanvas().style.cursor = ''
 })
 
-watchEffect(
-  () => {
-    highlightSelectedLocationOnMap()
-  },
-)
+watchEffect(() => {
+  highlightSelectedLocationOnMap()
+})
 
 watch(
   () => props.locationsGeoJson,
