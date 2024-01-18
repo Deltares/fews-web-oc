@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, watchEffect } from 'vue'
 import { type Location } from '@deltares/fews-pi-requests'
 
 interface Props {
@@ -36,15 +36,12 @@ const emit = defineEmits(['changeLocationId'])
 
 const selectedLocation = ref<Location | null>(null)
 
-watch(
-  () => props.selectedLocationId,
-  () => {
-    selectedLocation.value =
-      props.locations.find(
-        (location) => location.locationId === props.selectedLocationId,
-      ) ?? null
-  },
-)
+watchEffect(() => {
+  selectedLocation.value =
+    props.locations.find(
+      (location) => location.locationId === props.selectedLocationId,
+    ) ?? null
+})
 
 watch(selectedLocation, onSelectLocation)
 function onSelectLocation(newValue: Location | null) {
