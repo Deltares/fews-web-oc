@@ -96,7 +96,7 @@ function getTimeSeriesGridActionsFilter():
     endTime,
     bbox,
     documentFormat: 'PI_JSON',
-    elevation: elevation.value,
+    elevation: elevation.value ?? layerCapabilities.value.elevation?.lowerValue,
   }
 }
 
@@ -123,7 +123,7 @@ const filter = computed<
 })
 
 const currentLocationId = ref<string>('')
-const elevation = ref<number>()
+const elevation = ref<number | undefined>()
 
 onMounted(() => {
   currentLocationId.value === props.locationId
