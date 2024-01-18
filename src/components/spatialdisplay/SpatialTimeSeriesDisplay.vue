@@ -39,12 +39,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import { DisplayType } from '@/lib/display/DisplayConfig'
-import { useDisplayConfigFilter } from '@/services/useDisplayConfig'
+import {
+  UseDisplayConfigOptions,
+  useDisplayConfigFilter,
+} from '@/services/useDisplayConfig'
+import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
   layerName?: string
@@ -61,10 +65,20 @@ const emit = defineEmits<{ (e: 'close', locationId: string): void }>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
+const settings = useUserSettingsStore()
+
+const options = computed<UseDisplayConfigOptions>(() => {
+  return {
+    useDisplayUnits: settings.useDisplayUnits,
+    convertDatum: settings.convertDatum,
+  }
+})
+
 const { displayConfig } = useDisplayConfigFilter(
   baseUrl,
   () => props.filterIds,
   () => props.locationId,
+  options,
 )
 
 watch(

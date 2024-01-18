@@ -1,7 +1,6 @@
 import {
   PiWebserviceProvider,
   type filterActionsFilter,
-  type TopologyActionFilter,
   type ActionsResponse,
 } from '@deltares/fews-pi-requests'
 import { ref, toValue, watchEffect } from 'vue'
@@ -14,6 +13,11 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest.js'
 export interface UseDisplayConfigReturn {
   displayConfig: Ref<DisplayConfig | undefined>
   displays: Ref<DisplayConfig[] | undefined>
+}
+
+export interface UseDisplayConfigOptions {
+  convertDatum?: boolean
+  useDisplayUnits?: boolean
 }
 
 /**
@@ -57,6 +61,7 @@ export function useDisplayConfig(
   baseUrl: string,
   nodeId: MaybeRefOrGetter<string>,
   plotId: MaybeRefOrGetter<number>,
+  options?: MaybeRefOrGetter<UseDisplayConfigOptions>,
 ): UseDisplayConfigReturn {
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -66,9 +71,11 @@ export function useDisplayConfig(
   const displays = ref<DisplayConfig[]>()
 
   watchEffect(async () => {
-    const filter = {} as TopologyActionFilter
+    let filter: any = {}
     filter.nodeId = toValue(nodeId)
     const _plotId = toValue(plotId)
+    const _options = toValue(options)
+    filter = { ...filter, ..._options }
     const response = await piProvider.getTopologyActions(filter)
     const _displays = actionsResponseToDisplayConfig(response)
     displays.value = _displays
@@ -95,6 +102,7 @@ export function useDisplayConfigFilter(
   baseUrl: string,
   filterIds: MaybeRefOrGetter<string[] | undefined>,
   locationIds: MaybeRefOrGetter<string>,
+  options?: MaybeRefOrGetter<UseDisplayConfigOptions>,
 ): UseDisplayConfigReturn {
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -104,11 +112,13 @@ export function useDisplayConfigFilter(
   const displays = ref<DisplayConfig[]>()
 
   watchEffect(async () => {
-    const filter = {} as filterActionsFilter
+    let filter = {} as filterActionsFilter
     const _filterIds = toValue(filterIds)
+    const _options = toValue(options)
     if (_filterIds !== undefined) {
       filter.filterId = _filterIds[0]
       filter.locationIds = toValue(locationIds)
+      filter = { ...filter, ..._options }
       const response = await piProvider.getFilterActions(filter)
       const _displays = actionsResponseToDisplayConfig(response)
       displays.value = _displays
