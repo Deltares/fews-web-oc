@@ -48,6 +48,27 @@
       </div>
       <v-spacer />
       <div class="play-controls">
+        <v-menu offset="25" transition="fade-transition">
+          <template v-slot:activator="{ props }">
+            <v-btn
+              v-bind="props"
+              density="compact"
+              variant="text"
+              icon="mdi-timer-cog-outline"
+            />
+          </template>
+
+          <v-list class="pa-1">
+            <v-list-item
+              v-for="speed in availableSpeeds"
+              :active="speed === currentSpeed"
+              rounded
+              density="compact"
+              @click="setSpeed(speed)"
+              :title="formatSpeed(speed)"
+            />
+          </v-list>
+        </v-menu>
         <v-btn
           density="compact"
           variant="text"
@@ -107,6 +128,10 @@ const emit = defineEmits(['update:selectedDate', 'update:doFollowNow'])
 const playIncrement = 1
 const stepIncrement = 1
 const dateIndex = ref(0)
+
+const defaultSpeed = 1
+const currentSpeed = ref(defaultSpeed)
+const availableSpeeds = [0.5, 1, 2, 4]
 
 const isPlaying = ref(false)
 let playIntervalTimer: ReturnType<typeof setInterval> | null = null
@@ -263,7 +288,10 @@ function togglePlay(): void {
 function startPlay(): void {
   isPlaying.value = true
   stopFollowNow()
-  playIntervalTimer = setInterval(play, props.playInterval)
+  playIntervalTimer = setInterval(
+    play,
+    props.playInterval * (1 / currentSpeed.value),
+  )
 }
 
 function stopPlay(): void {
@@ -297,6 +325,18 @@ function decrement(step: number): void {
 
 function increment(step: number): void {
   dateIndex.value = Math.min(dateIndex.value + step, maxIndex.value)
+}
+
+function setSpeed(speed: number) {
+  currentSpeed.value = speed
+  if (isPlaying.value) {
+    stopPlay()
+    startPlay()
+  }
+}
+
+function formatSpeed(speed: number) {
+  return speed === defaultSpeed ? 'Normal' : `${speed}x`
 }
 </script>
 
