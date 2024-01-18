@@ -3,8 +3,7 @@
     <div style="flex: 1 1 100%; height: 100%">
       <WindowComponent>
         <template v-slot:toolbar>
-          <v-spacer />
-          {{ displayConfig?.title }}
+          <span class="mx-5">{{ displayConfig?.title }}</span>
           <v-spacer />
           <v-btn-toggle class="mr-5" v-model="displayType" mandatory>
             <v-btn
