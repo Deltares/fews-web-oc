@@ -47,7 +47,6 @@ import {
 } from '../../services/useTimeSeries/index.ts'
 import type { UseTimeSeriesOptions } from '../../services/useTimeSeries/index.ts'
 import { configManager } from '../../services/application-config'
-import { useUserSettingsStore } from '@/stores/userSettings'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 
@@ -70,14 +69,11 @@ const props = withDefaults(defineProps<Props>(), {
   displayType: DisplayType.TimeSeriesChart,
 })
 
-const settings = useUserSettingsStore()
 const store = useSystemTimeStore()
 const lastUpdated = ref<Date>(new Date())
 
 const options = computed<UseTimeSeriesOptions>(() => {
   return {
-    useDisplayUnits: settings.useDisplayUnits,
-    convertDatum: settings.convertDatum,
     startTime: store.startTime,
     endTime: store.endTime,
   }

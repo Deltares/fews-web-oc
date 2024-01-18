@@ -24,8 +24,6 @@ export interface UseTimeSeriesOptions {
   startTime?: Date | null
   endTime?: Date | null
   thinning?: boolean
-  convertDatum?: boolean
-  useDisplayUnits?: boolean
 }
 
 function timeZoneOffsetString(offset: number): string {
@@ -113,12 +111,6 @@ export function useTimeSeries(
             2,
         )
         url.searchParams.set('thinning', `${timeStepPerPixel}`)
-      }
-      if (_options?.useDisplayUnits !== undefined) {
-        url.searchParams.set('useDisplayUnits', `${_options?.useDisplayUnits}`)
-      }
-      if (_options?.convertDatum) {
-        url.searchParams.set('convertDatum', `${_options?.convertDatum}`)
       }
 
       const resourceId = `${request.key}`
