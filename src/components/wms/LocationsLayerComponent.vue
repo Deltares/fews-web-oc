@@ -9,6 +9,7 @@
     <v-btn
       @click="showLocationsLayer = !showLocationsLayer"
       density="compact"
+      variant="plain"
       icon
     >
       <v-icon>{{
