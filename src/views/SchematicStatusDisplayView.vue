@@ -34,7 +34,7 @@
   <div class="container">
     <div
       class="child-container"
-      :class="{ hidden: hideSSD }"
+      :class="{ 'd-none': hideSSD }"
       ref="ssdContainer"
     >
       <SsdComponent :src="src" @action="onAction" ref="ssdComponent" />
@@ -43,7 +43,7 @@
         :dates="dates"
       />
     </div>
-    <div class="child-container" :class="{ mobile, hidden: objectId === '' }">
+    <div class="child-container" :class="{ mobile, 'd-none': objectId === '' }">
       <router-view @close="closeTimeSeriesDisplay"></router-view>
     </div>
   </div>
@@ -316,12 +316,7 @@ function closeTimeSeriesDisplay(objectId: string): void {
 }
 
 .child-container.mobile {
-  display: flex;
   height: 100%;
   width: 100%;
-}
-
-.child-container.hidden {
-  display: none !important;
 }
 </style>

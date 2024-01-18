@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="child-container" :class="{ hidden: hideMap }">
+    <div class="child-container" :class="{ 'd-none': hideMap }">
       <SpatialDisplayComponent
         :layer-name="props.layerName"
         :location-id="props.locationId"
@@ -34,6 +34,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
+  locationId: '',
 })
 
 const route = useRoute()
@@ -47,7 +48,7 @@ onMounted(() => {
 })
 
 const hideMap = computed(() => {
-  mobile.value && props.locationId
+  return mobile.value && props.locationId
 })
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
@@ -114,7 +115,6 @@ watch(
 }
 
 .child-container.mobile {
-  display: flex;
   height: 100%;
   width: 100%;
 }
