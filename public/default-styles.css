@@ -1,3 +1,13 @@
+body {
+  font-family: var(--font-family);
+}
+
+svg.wb-charts,
+.axis,
+.labels {
+  font-family: var(--font-family);
+}
+
 .wb-charts svg {
   color: var(--contrast-color);
 }
