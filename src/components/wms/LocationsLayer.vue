@@ -49,7 +49,7 @@ const defaultLocationsLayerOptions: CircleLayer = {
   paint: {
     'circle-radius': 5,
     'circle-color': '#dfdfdf',
-    'circle-opacity': 0.5,
+    'circle-opacity': 0.75,
     'circle-stroke-color': 'black',
     'circle-stroke-width': 1.5,
   },
@@ -134,13 +134,6 @@ function highlightSelectedLocationOnMap() {
     7, // radius for selected location
     5, // default radius
   ]),
-    map.value.setPaintProperty(locationsLayerSourceId, 'circle-opacity', [
-      'match',
-      ['get', 'locationId'],
-      locationId,
-      0.8,
-      0.5,
-    ]),
     map.value.setLayoutProperty(locationsLayerSourceId, 'circle-sort-key', [
       'match',
       ['get', 'locationId'],
