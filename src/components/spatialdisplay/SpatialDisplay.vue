@@ -111,13 +111,14 @@ const filter = computed<
   filterActionsFilter | timeSeriesGridActionsFilter | undefined
 >(() => {
   if (props.locationId) {
-    const filter = getFilterActionsFilter()
-    return { ...filter, ...options }
+    return { ...getFilterActionsFilter(), ...options.value }
   }
 
   if (props.longitude && props.latitude) {
-    const filter = getTimeSeriesGridActionsFilter()
-    return { ...filter, ...options }
+    return {
+      ...getTimeSeriesGridActionsFilter(),
+      useDisplayUnits: options.value.useDisplayUnits,
+    }
   }
 })
 
