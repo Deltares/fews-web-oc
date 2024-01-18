@@ -42,7 +42,7 @@ export async function fetchLocationsAsGeoJson(
  * @returns List of FEWS PI locations.
  */
 export function convertGeoJsonToFewsPiLocation(
-  geojson: GeoJSON.FeatureCollection<GeoJSON.Geometry, Location>,
+  geojson: FeatureCollection<Geometry, Location>,
 ): Location[] {
   return geojson.features.map((feature) => feature.properties)
 }
