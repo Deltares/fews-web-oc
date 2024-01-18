@@ -21,7 +21,6 @@
 import { computed, ref, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
-import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
 import { useRoute, useRouter } from 'vue-router'
 import { findParentRoute } from '@/router'
 import { onMounted } from 'vue'

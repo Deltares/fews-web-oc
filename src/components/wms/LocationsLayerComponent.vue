@@ -88,7 +88,6 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 function onLocationChange(locationId: string | null): void {
   emit('changeLocationId', locationId)
 }
-
 </script>
 
 <style scoped>
