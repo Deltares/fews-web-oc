@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { Ref, watch } from 'vue'
+import { Ref, watch, watchEffect } from 'vue'
 import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
 import { FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
@@ -73,8 +73,7 @@ map.value.on('mouseleave', 'location-layer', () => {
   map.value.getCanvas().style.cursor = ''
 })
 
-watch(
-  () => props.selectedLocationId,
+watchEffect(
   () => {
     highlightSelectedLocationOnMap()
   },
