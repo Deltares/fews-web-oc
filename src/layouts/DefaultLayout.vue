@@ -41,7 +41,7 @@
       </v-menu>
       <div id="web-oc-sidebar-target"></div>
     </v-navigation-drawer>
-    <v-app-bar :color="appBarColor" density="compact">
+    <v-app-bar :style="appBarStyle" density="compact">
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       </template>
@@ -81,6 +81,7 @@ import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
 
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
+import { StyleValue } from 'vue'
 
 const configStore = useConfigStore()
 const alertsStore = useAlertsStore()
@@ -91,7 +92,7 @@ const { isRtl } = useRtl()
 const route = useRoute()
 
 const logoSrc = ref('')
-const appBarColor = ref('')
+const appBarStyle = ref<StyleValue>()
 
 watch(
   () => configStore.general,
@@ -105,9 +106,11 @@ watch(
       link.rel = 'stylesheet'
       link.href = configStore.customStyleSheet
       link.onload = () => {
-        appBarColor.value = getComputedStyle(document.body).getPropertyValue(
-          '--weboc-app-bar-bg-color',
-        )
+        appBarStyle.value = {
+          backgroundColor: 'var(--weboc-app-bar-bg-color)',
+          backgroundImage: 'var(--weboc-app-bar-bg-image)',
+          backgroundSize: 'cover',
+        }
       }
       document.head.appendChild(link)
     }
