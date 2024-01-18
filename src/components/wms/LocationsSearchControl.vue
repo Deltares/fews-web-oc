@@ -32,7 +32,7 @@ const props = withDefaults(defineProps<Props>(), {
   selectedLocationId: null,
 })
 
-const emit = defineEmits(['update:selectedLocationId'])
+const emit = defineEmits(['changeLocationId'])
 
 const selectedLocation = ref<Location | null>(null)
 
@@ -51,7 +51,7 @@ function onSelectLocation(newValue: Location | null) {
   if (newValue === null) {
     return
   }
-  emit('update:selectedLocationId', newValue.locationId)
+  emit('changeLocationId', newValue.locationId)
 }
 </script>
 

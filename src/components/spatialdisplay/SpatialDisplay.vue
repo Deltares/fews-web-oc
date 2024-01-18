@@ -5,7 +5,7 @@
         :layer-name="props.layerName"
         :location-id="props.locationId"
         :filter-ids="props.filterIds"
-        @location-click="onLocationClick"
+        @changeLocationId="onLocationChange"
       ></SpatialDisplayComponent>
     </div>
     <div v-if="props.locationId" class="child-container">
@@ -51,10 +51,9 @@ const hideMap = computed(() => {
   return mobile.value && props.locationId
 })
 
-function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
-  if (!event.features) return
-  const location: string | undefined = event.features[0].properties?.locationId
-  if (location) openLocationTimeSeriesDisplay(location)
+function onLocationChange(locationId: string | null): void {
+  if (!locationId) return
+  openLocationTimeSeriesDisplay(locationId)
 }
 
 function openLocationTimeSeriesDisplay(locationId: string) {
