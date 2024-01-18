@@ -261,10 +261,10 @@ function stopPlay(): void {
 }
 
 function play(): void {
-  increment(playIncrement)
   if (dateIndex.value === maxIndex.value) {
-    stopPlay()
+    dateIndex.value = 0
   }
+  increment(playIncrement)
 }
 
 function stepBackward(): void {
