@@ -54,7 +54,7 @@
               v-bind="props"
               density="compact"
               variant="text"
-              icon="mdi-timer-cog-outline"
+              icon="mdi-play-speed"
             />
           </template>
 
