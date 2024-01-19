@@ -20,6 +20,8 @@ export interface UseSsdReturn {
   dates: Ref<Date[]>
 }
 
+const REFRESH_INTERVAL = 1000 * 60 * 5 // 5 minutes
+
 function findGroup(
   capabilities: SsdGetCapabilitiesResponse,
   name: string,
@@ -72,6 +74,7 @@ export function useSsd(
   }
 
   loadCapabilities()
+  setInterval(loadCapabilities, REFRESH_INTERVAL)
 
   watchEffect(() => {
     const groupIdValue = toValue(groupId)
