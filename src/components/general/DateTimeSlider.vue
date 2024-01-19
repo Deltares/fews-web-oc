@@ -3,12 +3,12 @@
     <div class="slider-container">
       <vue-slider
         v-model="dateIndex"
-        :max="maxIndex"
         :marks="marks"
         :hide-label="hideLabel"
         step="1"
         :tooltipFormatter="dateString"
         silent
+        :max="maxIndex"
         @change="stopFollowNow"
       >
         <template v-slot:step="{ active, style, activeStyle }">
@@ -80,11 +80,14 @@ import { computed, ref, watch } from 'vue'
 import { scaleTime } from 'd3-scale'
 import { DateTime } from 'luxon'
 
+import { onMounted } from 'vue'
+import { findDateIndex } from '@/lib/utils/findDateIndex'
+
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/antd.css'
 
 interface Properties {
-  selectedDate: Date
+  selectedDate?: Date
   dates: Date[]
   isLoading?: boolean
   doFollowNow?: boolean
@@ -94,9 +97,9 @@ interface Properties {
 
 const props = withDefaults(defineProps<Properties>(), {
   isLoading: false,
-  doFollowNow: false,
+  doFollowNow: true,
   playInterval: 1000,
-  followNowInterval: 10000,
+  followNowInterval: 60000,
 })
 const emit = defineEmits(['update:selectedDate', 'update:doFollowNow'])
 
@@ -112,6 +115,12 @@ const doFollowNow = ref(props.doFollowNow)
 let followNowIntervalTimer: ReturnType<typeof setInterval> | null = null
 
 const hideLabel = ref(true)
+
+onMounted(() => {
+  if (props.doFollowNow) {
+    startFollowNow()
+  }
+})
 
 const marks = computed(() => {
   const dayMarks: Record<string, any> = {}
@@ -142,14 +151,15 @@ const marks = computed(() => {
 
 // Synchronise selectedDate property and local index variable.
 watch(dateIndex, (index) => {
-  emit('update:selectedDate', props.dates[index] ?? new Date())
+  emit('update:selectedDate', props.dates[index])
 })
 
 watch(
   () => props.selectedDate,
   (selectedDate) => {
-    let index = findIndexForDate(selectedDate)
-    if (index == dateIndex.value) return
+    if (selectedDate === undefined) return
+    let index = findDateIndex(props.dates, selectedDate)
+    if (index === dateIndex.value) return
     dateIndex.value = index
   },
 )
@@ -158,6 +168,7 @@ watch(
 watch(doFollowNow, (doFollowNow) => {
   emit('update:doFollowNow', doFollowNow)
 })
+
 watch(
   () => props.doFollowNow,
   (doFollowNowProp) => {
@@ -169,9 +180,20 @@ watch(
 // member of the new dates array.
 watch(
   () => props.dates,
-  (_, oldDates) => {
-    const oldDate = oldDates[dateIndex.value]
-    dateIndex.value = findIndexForDate(oldDate)
+  () => {
+    if (doFollowNow.value) {
+      setDateToNow()
+      if (
+        props.selectedDate?.getTime() !== props.dates[dateIndex.value].getTime()
+      ) {
+        emit('update:selectedDate', props.dates[dateIndex.value])
+      }
+    } else {
+      if (props.selectedDate) {
+        const oldDate = props.selectedDate
+        dateIndex.value = findDateIndex(props.dates, oldDate)
+      }
+    }
   },
 )
 
@@ -224,17 +246,7 @@ function stopFollowNow(): void {
 
 function setDateToNow(): void {
   const now = new Date()
-  dateIndex.value = findIndexForDate(now)
-}
-
-function findIndexForDate(date: Date): number {
-  const index = props.dates.findIndex((current) => current >= date)
-  if (index === -1) {
-    // No time was found that was larger than the current time, so use the first date.
-    return 0
-  } else {
-    return index
-  }
+  dateIndex.value = findDateIndex(props.dates, now)
 }
 
 function togglePlay(): void {
