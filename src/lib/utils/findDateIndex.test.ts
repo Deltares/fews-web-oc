@@ -81,7 +81,7 @@ test('should return the last index of the array if the target date is after the 
     new Date('2022-04-01'),
   ]
   const targetDate = new Date('2022-05-01')
-  const expectedIndex = dates.length-1
+  const expectedIndex = dates.length - 1
 
   const result = findDateIndex(dates, targetDate)
 
