@@ -18,6 +18,7 @@
       <router-view
         @close="closeTimeSeriesDisplay"
         :filter="filter"
+        v-if="filter"
       ></router-view>
     </div>
   </div>
@@ -65,15 +66,18 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
   () => props.layerName,
 )
 
-function getFilterActionsFilter(): filterActionsFilter {
+function getFilterActionsFilter(): filterActionsFilter &
+  UseDisplayConfigOptions {
   return {
     locationIds: props.locationId,
     filterId: props.filterIds ? props.filterIds[0] : undefined,
+    useDisplayUnits: settings.useDisplayUnits,
+    convertDatum: settings.convertDatum,
   }
 }
 
 function getTimeSeriesGridActionsFilter():
-  | timeSeriesGridActionsFilter
+  | (timeSeriesGridActionsFilter & UseDisplayConfigOptions)
   | undefined {
   if (!props.longitude || !props.latitude) return
   if (!layerCapabilities.value?.boundingBox) return
@@ -97,28 +101,18 @@ function getTimeSeriesGridActionsFilter():
     bbox,
     documentFormat: 'PI_JSON',
     elevation: elevation.value ?? layerCapabilities.value.elevation?.lowerValue,
+    useDisplayUnits: settings.useDisplayUnits,
+    // Should be available according to the docs, but errors
+    // convertDatum: settings.convertDatum,
   }
 }
 
-const options = computed<UseDisplayConfigOptions>(() => {
-  return {
-    useDisplayUnits: settings.useDisplayUnits,
-    convertDatum: settings.convertDatum,
-  }
-})
-
-const filter = computed<
-  filterActionsFilter | timeSeriesGridActionsFilter | undefined
->(() => {
+const filter = computed(() => {
   if (props.locationId) {
-    return { ...getFilterActionsFilter(), ...options.value }
+    return getFilterActionsFilter()
   }
-
   if (props.longitude && props.latitude) {
-    return {
-      ...getTimeSeriesGridActionsFilter(),
-      useDisplayUnits: options.value.useDisplayUnits,
-    }
+    return getTimeSeriesGridActionsFilter()
   }
 })
 
