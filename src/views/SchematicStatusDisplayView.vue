@@ -117,6 +117,7 @@ onMounted(() => {
 })
 
 const selectedDateString = computed(() => {
+  if (selectedDate.value === undefined) return ''
   const dateString = selectedDate.value.toISOString()
   return dateString.substring(0, 19) + 'Z'
 })
