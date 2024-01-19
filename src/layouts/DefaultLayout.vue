@@ -40,6 +40,20 @@
         </v-list>
       </v-menu>
       <div id="web-oc-sidebar-target"></div>
+      <v-btn prepend-icon="mdi-information" class="ma-2 info-button">
+        <span>Info</span>
+        <v-menu
+          location="top"
+          activator="parent"
+          :transition="false"
+          :close-on-content-click="false"
+        >
+          <v-list>
+            <v-list-item :href="'/'">Go to home</v-list-item>
+            <v-list-item>Version {{ configStore.version }}</v-list-item>
+          </v-list>
+        </v-menu>
+      </v-btn>
     </v-navigation-drawer>
     <v-app-bar :color="appBarColor" density="compact">
       <template #prepend>
@@ -168,6 +182,8 @@ body {
   margin: 0px;
   overflow: hidden;
   height: 100%;
+  font-size: 14px;
+  line-height: 1.2;
 }
 
 #app {
@@ -178,15 +194,6 @@ body {
 .router-container {
   padding: 0px;
   height: 100%;
-}
-</style>
-
-<style>
-html,
-body {
-  margin: 0px;
-  font-size: 14px;
-  line-height: 1.2;
 }
 
 .alert-container {
@@ -200,5 +207,18 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+</style>
+
+<style scoped>
+.info-button {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+}
+
+/* Needed as on page refresh we get that the menu is in the wrong location */
+:deep(.v-overlay__content) {
+  left: 12px !important;
 }
 </style>
