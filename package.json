@@ -9,7 +9,7 @@
     "build:deltares": "vue-tsc && env-cmd -f deltares.env vite build",
     "build:weboc": "vue-tsc && vite build --base=/weboc/",
     "preview": "vite preview",
-    "test": "vitest",
+    "test": "vitest run",
     "lint": "npm run prettier",
     "prettier": "prettier . --check",
     "format": "prettier .  --write",
