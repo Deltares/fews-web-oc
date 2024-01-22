@@ -77,14 +77,12 @@ watchEffect(() => {
   highlightSelectedLocationOnMap()
 })
 
-watchEffect(
-  () => {
-    const source = map.value.getSource(locationsLayerSourceId) as GeoJSONSource
-    if (source) {
-      source.setData(props.locationsGeoJson)
-    }
-  },
-)
+watchEffect(() => {
+  const source = map.value.getSource(locationsLayerSourceId) as GeoJSONSource
+  if (source) {
+    source.setData(props.locationsGeoJson)
+  }
+})
 
 function highlightSelectedLocationOnMap() {
   if (!map.value.getSource(locationsLayerSourceId)) return
