@@ -41,7 +41,7 @@
       </v-menu>
       <div id="web-oc-sidebar-target"></div>
     </v-navigation-drawer>
-    <v-app-bar :style="appBarStyle" density="compact">
+    <v-app-bar :color="appBarColor" :style="appBarStyle" density="compact">
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       </template>
@@ -93,6 +93,7 @@ const route = useRoute()
 
 const logoSrc = ref('')
 const appBarStyle = ref<StyleValue>()
+const appBarColor = ref<string>('')
 
 watch(
   () => configStore.general,
@@ -107,10 +108,12 @@ watch(
       link.href = configStore.customStyleSheet
       link.onload = () => {
         appBarStyle.value = {
-          backgroundColor: 'var(--weboc-app-bar-bg-color)',
           backgroundImage: 'var(--weboc-app-bar-bg-image)',
           backgroundSize: 'cover',
         }
+        appBarColor.value = getComputedStyle(document.body).getPropertyValue(
+          '--weboc-app-bar-bg-color',
+        )
       }
       document.head.appendChild(link)
     }
