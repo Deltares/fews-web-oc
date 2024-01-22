@@ -13,7 +13,7 @@
     density="compact"
   >
     <template v-slot:item="{ props }">
-      <v-list-item v-bind="props" width="250px" density="compact"/>
+      <v-list-item v-bind="props" width="250px" density="compact" />
     </template>
   </v-autocomplete>
 </template>
