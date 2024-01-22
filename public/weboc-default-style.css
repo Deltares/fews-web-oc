@@ -1,5 +1,6 @@
 @import '../fonts/exo-2/fonts.css';
 @import './default-styles.css';
+@import './vuetifiy-overrule.css';
 
 :root {
   --font-family: 'Exo 2', sans-serif;
