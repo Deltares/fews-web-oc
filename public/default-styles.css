@@ -140,7 +140,7 @@ svg.wb-charts,
 }
 
 .cross-section-select .data-point-per-line {
-  stroke:;
+  stroke: var(--contrast-color);
 }
 
 .cross-section-select rect {
