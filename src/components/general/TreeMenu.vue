@@ -1,5 +1,5 @@
 <template>
-  <v-list :opened="opened" open-strategy="multiple" density="compact">
+  <v-list :opened="opened" open-strategy="multiple" density="compact" class="weboc-treemenu" :lines="false">
     <TreeMenuItem :items="props.items" :active="active"></TreeMenuItem>
   </v-list>
 </template>
