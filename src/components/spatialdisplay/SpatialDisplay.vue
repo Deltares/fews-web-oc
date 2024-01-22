@@ -5,7 +5,7 @@
         :layer-name="props.layerName"
         :location-id="props.locationId"
         :filter-ids="props.filterIds"
-        @location-click="onLocationClick"
+        @changeLocationId="onLocationChange"
       ></SpatialDisplayComponent>
     </div>
     <div v-if="props.locationId" class="child-container">
@@ -21,7 +21,6 @@
 import { computed, ref, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
-import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
 import { useRoute, useRouter } from 'vue-router'
 import { findParentRoute } from '@/router'
 import { onMounted } from 'vue'
@@ -51,10 +50,9 @@ const hideMap = computed(() => {
   return mobile.value && props.locationId
 })
 
-function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
-  if (!event.features) return
-  const location: string | undefined = event.features[0].properties?.locationId
-  if (location) openLocationTimeSeriesDisplay(location)
+function onLocationChange(locationId: string | null): void {
+  if (!locationId) return
+  openLocationTimeSeriesDisplay(locationId)
 }
 
 function openLocationTimeSeriesDisplay(locationId: string) {

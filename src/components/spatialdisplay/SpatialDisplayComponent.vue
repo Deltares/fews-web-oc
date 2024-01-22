@@ -12,11 +12,11 @@
       :max-value="maxElevation"
       :unit="elevationUnit"
     ></ElevationSlider>
-    <LocationsLayer
+    <LocationsLayerComponent
       v-if="filterIds"
       :filterIds="filterIds"
       :locationId="props.locationId"
-      @click="onLocationClick"
+      @changeLocationId="onLocationChange"
     />
   </MapComponent>
   <DateTimeSlider
@@ -40,13 +40,12 @@ import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedMapboxLayer, {
   MapboxLayerOptions,
 } from '@/components/wms/AnimatedMapboxLayer.vue'
-import LocationsLayer from '@/components/wms/LocationsLayer.vue'
+import LocationsLayerComponent from '@/components/wms/LocationsLayerComponent.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -65,7 +64,7 @@ const props = withDefaults(defineProps<Props>(), {
   layerName: '',
 })
 
-const emit = defineEmits(['location-click'])
+const emit = defineEmits(['changeLocationId'])
 
 onBeforeMount(() => {
   debouncedSetLayerOptions = debounce(setLayerOptions, 500, {
@@ -173,8 +172,8 @@ function setLayerOptions(): void {
   }
 }
 
-function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
-  emit('location-click', event)
+function onLocationChange(locationId: string | null): void {
+  emit('changeLocationId', locationId)
 }
 </script>
 
