@@ -77,8 +77,7 @@ watchEffect(() => {
   highlightSelectedLocationOnMap()
 })
 
-watch(
-  () => props.locationsGeoJson,
+watchEffect(
   () => {
     const source = map.value.getSource(locationsLayerSourceId) as GeoJSONSource
     if (source) {
