@@ -1,4 +1,5 @@
 @import 'fonts/RO/fonts.css';
+@import './default-styles.css';
 
 :root {
   --font-family: 'RO-Sans', sans-serif;
