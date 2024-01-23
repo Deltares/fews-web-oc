@@ -45,7 +45,3 @@
   outline: 1px solid rgb(33, 150, 243) !important;
   outline-offset: -1px;
 }
-
-.v-list-item--density-compact.v-list-item--one-line {
-  min-height: 30px !important;
-}
