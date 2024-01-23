@@ -114,11 +114,15 @@ const filter = computed(() => {
   }
 })
 
-const currentLocationId = ref<string>('')
+const currentLocationId = ref<string>()
+const currentLatitude = ref<string>()
+const currentLongitude = ref<string>()
 const elevation = ref<number | undefined>()
 
 onMounted(() => {
-  currentLocationId.value === props.locationId
+  currentLocationId.value = props.locationId
+  currentLatitude.value = props.latitude
+  currentLongitude.value = props.longitude
 })
 
 const hideMap = computed(() => {
@@ -136,6 +140,8 @@ function openLocationTimeSeriesDisplay(locationId: string) {
     .replace('SpatialDisplay', 'SpatialTimeSeriesDisplay')
     .replace('WithCoordinates', '')
   currentLocationId.value = locationId
+  currentLatitude.value = undefined
+  currentLongitude.value =  undefined
   router.push({
     name: routeName,
     params: {
@@ -167,6 +173,9 @@ function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
     )
   if (!routeName || !router.hasRoute(routeName)) return
 
+  currentLatitude.value = latitude.toFixed(3)
+  currentLongitude.value = longitude.toFixed(3)
+  currentLocationId.value = undefined
   router.push({
     name: routeName,
     params: {
@@ -199,6 +208,9 @@ watch(
   () => {
     if (currentLocationId.value && !props.locationId) {
       openLocationTimeSeriesDisplay(currentLocationId.value)
+    }
+    if ((currentLatitude.value && currentLongitude.value) && (!props.latitude && !props.longitude)) {
+      openCoordinatesTimeSeriesDisplay(+currentLatitude.value, +currentLongitude.value)
     }
   },
 )
