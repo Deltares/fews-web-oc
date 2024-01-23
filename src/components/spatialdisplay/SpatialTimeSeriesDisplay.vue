@@ -30,7 +30,12 @@
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </template>
-        <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
+        <TimeSeriesComponent
+          :config="displayConfig"
+          :elevation-chart-config="elevationChartDisplayconfig"
+          :current-time="props.currentTime"
+          :displayType="displayType"
+        >
         </TimeSeriesComponent>
       </WindowComponent>
     </div>
@@ -52,6 +57,8 @@ import { computed } from 'vue'
 
 interface Props {
   filter: filterActionsFilter | timeSeriesGridActionsFilter
+  elevationChartFilter?: timeSeriesGridActionsFilter
+  currentTime?: Date
 }
 
 const props = defineProps<Props>()
@@ -67,6 +74,23 @@ watch(
     if (!displayConfig.value) return
 
     if (displayConfig.value.subplots.length < 1) {
+      onClose()
+    }
+  },
+  { deep: true },
+)
+
+const elevationChartFilter = computed(() => props.elevationChartFilter ?? {})
+const { displayConfig: elevationChartDisplayconfig } = useDisplayConfigFilter(
+  baseUrl,
+  elevationChartFilter,
+)
+watch(
+  () => elevationChartDisplayconfig,
+  () => {
+    if (!elevationChartDisplayconfig.value) return
+
+    if (elevationChartDisplayconfig.value.subplots.length < 1) {
       onClose()
     }
   },

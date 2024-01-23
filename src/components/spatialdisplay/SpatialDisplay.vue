@@ -11,6 +11,7 @@
         :layer-capabilities="layerCapabilities"
         :times="times"
         v-model:elevation="elevation"
+        v-model:current-time="currentTime"
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
     </div>
@@ -18,6 +19,8 @@
       <router-view
         @close="closeTimeSeriesDisplay"
         :filter="filter"
+        :elevation-chart-filter="elevationChartFilter"
+        :current-time="currentTime"
       ></router-view>
     </div>
   </div>
@@ -98,7 +101,7 @@ function getTimeSeriesGridActionsFilter():
     endTime,
     bbox,
     documentFormat: 'PI_JSON',
-    elevation: elevation.value ?? layerCapabilities.value.elevation?.lowerValue,
+    elevation: elevation.value ?? layerCapabilities.value.elevation?.upperValue,
     useDisplayUnits: settings.useDisplayUnits,
     // Should be available according to the docs, but errors
     // convertDatum: settings.convertDatum,
@@ -114,10 +117,21 @@ const filter = computed(() => {
   }
 })
 
+const elevationChartFilter = computed(() => {
+  if (!layerCapabilities.value?.elevation) return
+  const actionsFilter = getTimeSeriesGridActionsFilter()
+  return {
+    ...actionsFilter,
+    elevation: undefined,
+    showVerticalProfile: true,
+  }
+})
+
 const currentLocationId = ref<string>()
 const currentLatitude = ref<string>()
 const currentLongitude = ref<string>()
 const elevation = ref<number | undefined>()
+const currentTime = ref<Date>()
 
 onMounted(() => {
   currentLocationId.value = props.locationId

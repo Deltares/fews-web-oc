@@ -3,6 +3,7 @@ import {
   PiWebserviceProvider,
   type TimeSeriesFilter,
   type TimeSeriesEvent,
+  DomainAxisEventValuesStringArray,
 } from '@deltares/fews-pi-requests'
 import { onUnmounted, ref, shallowRef, toValue, watch } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
@@ -12,6 +13,7 @@ import { Series } from '../../lib/timeseries/timeSeries'
 import { SeriesUrlRequest } from '../../lib/timeseries/timeSeriesResource'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { difference } from 'lodash-es'
+import { SeriesData } from '@/lib/timeseries/types/SeriesData'
 
 export interface UseTimeSeriesReturn {
   error: Ref<any>
@@ -24,6 +26,9 @@ export interface UseTimeSeriesOptions {
   startTime?: Date | null
   endTime?: Date | null
   thinning?: boolean
+  convertDatum?: boolean
+  useDisplayUnits?: boolean
+  showVerticalProfile?: boolean
 }
 
 function timeZoneOffsetString(offset: number): string {
@@ -54,6 +59,7 @@ export function useTimeSeries(
   requests: MaybeRefOrGetter<ActionRequest[]>,
   lastUpdated: MaybeRefOrGetter<Date | undefined>,
   options?: MaybeRefOrGetter<UseTimeSeriesOptions>,
+  selectedTime?: MaybeRefOrGetter<Date | undefined>,
 ): UseTimeSeriesReturn {
   let controller = new AbortController()
   const isReady = ref(false)
@@ -62,14 +68,15 @@ export function useTimeSeries(
   const error = shallowRef<any | undefined>(undefined)
   const MAX_SERIES = 20
 
-  watch([lastUpdated, requests, options], () => {
-    controller.abort()
+  watch([lastUpdated, selectedTime, requests, options], () => {
+    controller.abort("Timeseries request triggered again before finishing.")
     controller = new AbortController()
     const piProvider = new PiWebserviceProvider(baseUrl, {
       transformRequestFn: createTransformRequestFn(controller),
     })
     const _requests = toValue(requests)
     const _options = toValue(options)
+    const _selectedTime = toValue(selectedTime)
 
     const currentSeriesIds = Object.keys(series.value)
     const updatedSeriesIds: string[] = []
@@ -128,7 +135,7 @@ export function useTimeSeries(
             const _series = new Series(resource)
             const header = timeSeries.header
             if (header !== undefined) {
-              const missingValue: string = header.missVal
+              _series.missingValue = header.missVal
               const timeZone =
                 piSeries.timeZone === undefined
                   ? 'Z'
@@ -144,16 +151,21 @@ export function useTimeSeries(
                 parsePiDateTime(header.startDate, timeZone),
               )
               _series.end = new Date(parsePiDateTime(header.endDate, timeZone))
-              _series.data = timeSeries.events.map((event) => {
-                return {
-                  x: new Date(parsePiDateTime(event, timeZone)),
-                  y: event.value === missingValue ? null : +event.value,
-                  flag: event.flag,
-                  flagSource: event.flagSource,
-                  comment: event.comment,
-                  user: event.user,
-                }
-              })
+              if (timeSeries.events) {
+                _series.data = timeSeries.events.map((event) => {
+                  return {
+                    x: new Date(parsePiDateTime(event, timeZone)),
+                    y: event.value === _series.missingValue ? null : +event.value,
+                    flag: event.flag,
+                    flagSource: event.flagSource,
+                    comment: event.comment,
+                    user: event.user,
+                  }
+                })
+              } else if (timeSeries.domains && _selectedTime) {
+                _series.domains = timeSeries.domains
+                fillSeriesForElevation(_series, _selectedTime)
+              }
               _series.lastUpdated = new Date()
             }
             series.value[resourceId] = _series
@@ -169,7 +181,7 @@ export function useTimeSeries(
   })
 
   onUnmounted(() => {
-    controller.abort()
+    controller.abort("useTimeSeries unmounted.")
   })
 
   const shell = {
@@ -211,5 +223,50 @@ export async function postTimeSeriesEdit(
       timeSeries: [{ events }],
     }
     await piProvider.postTimeSeriesEdit(url.toString(), timeSeriesEdit)
+  }
+}
+
+function fillSeriesForElevation(timeSeries: Series, date: Date): void {
+  if (timeSeries.domains === undefined) {
+    throw new Error('No domains found')
+  }
+  const domainAxisValues = timeSeries.domains[0].domainAxisValues
+  if (domainAxisValues !== undefined) {
+    const domain = domainAxisValues[0]
+    if (domain.values === undefined || domain.values.length < 1) {
+      throw new Error('No domain values found')
+    }
+
+    // convert domain.values to an array of numbers
+    const domainValues = domain.values.map(
+      (value: DomainAxisEventValuesStringArray) => {
+        return +value[0]
+      },
+    )
+    const events = timeSeries.domains.slice(1)
+
+    // find the event in the events that matches the date
+    const event = events.find((event) => {
+      const time = event.events![0].time
+      const day = event.events![0].date
+      const eventDate = new Date(`${day}T${time}.000Z`)
+      return eventDate.getTime() === date.getTime()
+    })
+
+    timeSeries.data = domainValues
+      .map((domainValue, index) => {
+        const eventValue = event?.events?.[0]?.values?.[index]
+        if (eventValue?.includes(timeSeries.missingValue ?? '')) {
+          return
+        }
+        const eventFlag = event?.events?.[0]?.flag
+        const x = eventValue === undefined ? null : +eventValue
+        return {
+          x,
+          y: domainValue,
+          flag: eventFlag,
+        }
+      })
+      .filter((value) => !!value) as SeriesData[]
   }
 }

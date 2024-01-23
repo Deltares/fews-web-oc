@@ -34,13 +34,13 @@
       class="time-series-component__container scroll"
     >
       <KeepAlive>
-        <TimeSeriesElevationChart
-          v-for="(subplot, i) in subplots"
+        <ElevationChart
+          v-for="(subplot, i) in elevationChartSubplots"
           :config="subplot"
-          :series="series"
+          :series="elevationChartSeries"
           :key="`${subplot.title}-${i}`"
         >
-        </TimeSeriesElevationChart>
+        </ElevationChart>
       </KeepAlive>
     </v-window-item>
   </v-window>
@@ -49,7 +49,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
-import TimeSeriesElevationChart from '../charts/TimeSeriesElevationChart.vue'
+import ElevationChart from '../charts/ElevationChart.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
 import {
   DisplayType,
@@ -67,7 +67,9 @@ import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 
 interface Props {
   config?: DisplayConfig
+  elevationChartConfig?: DisplayConfig
   displayType: DisplayType
+  currentTime?: Date
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -76,6 +78,16 @@ const props = withDefaults(defineProps<Props>(), {
       title: '',
       id: '',
       displayType: DisplayType.TimeSeriesChart,
+      class: '',
+      requests: [],
+      subplots: [],
+    }
+  },
+  elevationChartConfig: () => {
+    return {
+      title: '',
+      id: '',
+      displayType: DisplayType.ElevationChart,
       class: '',
       requests: [],
       subplots: [],
@@ -100,6 +112,13 @@ const { series } = useTimeSeries(
   lastUpdated,
   options,
 )
+const { series: elevationChartSeries } = useTimeSeries(
+  baseUrl,
+  () => props.elevationChartConfig.requests,
+  lastUpdated,
+  options,
+  () => props.currentTime,
+)
 
 async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
   await postTimeSeriesEdit(baseUrl, props.config.requests, newData)
@@ -109,6 +128,14 @@ async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
 const subplots = computed(() => {
   if (props.config) {
     return props.config.subplots
+  } else {
+    return []
+  }
+})
+
+const elevationChartSubplots = computed(() => {
+  if (props.elevationChartConfig) {
+    return props.elevationChartConfig.subplots
   } else {
     return []
   }
