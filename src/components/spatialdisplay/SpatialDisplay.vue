@@ -141,7 +141,7 @@ function openLocationTimeSeriesDisplay(locationId: string) {
     .replace('WithCoordinates', '')
   currentLocationId.value = locationId
   currentLatitude.value = undefined
-  currentLongitude.value =  undefined
+  currentLongitude.value = undefined
   router.push({
     name: routeName,
     params: {
@@ -209,8 +209,16 @@ watch(
     if (currentLocationId.value && !props.locationId) {
       openLocationTimeSeriesDisplay(currentLocationId.value)
     }
-    if ((currentLatitude.value && currentLongitude.value) && (!props.latitude && !props.longitude)) {
-      openCoordinatesTimeSeriesDisplay(+currentLatitude.value, +currentLongitude.value)
+    if (
+      currentLatitude.value &&
+      currentLongitude.value &&
+      !props.latitude &&
+      !props.longitude
+    ) {
+      openCoordinatesTimeSeriesDisplay(
+        +currentLatitude.value,
+        +currentLongitude.value,
+      )
     }
   },
 )
