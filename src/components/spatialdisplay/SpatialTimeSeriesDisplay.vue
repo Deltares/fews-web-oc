@@ -3,10 +3,9 @@
     <div style="flex: 1 1 100%; height: 100%">
       <WindowComponent>
         <template v-slot:toolbar>
-          <span class="mx-5">{{ displayConfig?.title }}</span>
+          <span class="ml-5">{{ displayConfig?.title }}</span>
           <v-spacer />
           <v-btn-toggle
-            class="mr-5"
             v-model="displayType"
             mandatory
             density="compact"
@@ -85,17 +84,6 @@ const { displayConfig: elevationChartDisplayconfig } = useDisplayConfigFilter(
   baseUrl,
   elevationChartFilter,
 )
-watch(
-  () => elevationChartDisplayconfig,
-  () => {
-    if (!elevationChartDisplayconfig.value) return
-
-    if (elevationChartDisplayconfig.value.subplots.length < 1) {
-      onClose()
-    }
-  },
-  { deep: true },
-)
 
 interface DisplayTypeItem {
   icon: string
@@ -105,24 +93,31 @@ interface DisplayTypeItem {
 }
 
 const displayType = ref(DisplayType.TimeSeriesChart)
-const displayTypeItems: DisplayTypeItem[] = [
-  {
-    icon: 'mdi-chart-line',
-    label: 'Chart',
-    value: DisplayType.TimeSeriesChart,
-  },
-  {
-    icon: 'mdi-table',
-    label: 'Table',
-    value: DisplayType.TimeSeriesTable,
-  },
-  {
-    icon: 'mdi-chart-line',
-    label: 'Vertical profile',
-    value: DisplayType.ElevationChart,
-    iconStyle: 'transform: rotate(90deg)',
-  },
-]
+const displayTypeItems = computed<DisplayTypeItem[]>(() => {
+  const displayItems: DisplayTypeItem[] = [
+    {
+      icon: 'mdi-chart-line',
+      label: 'Chart',
+      value: DisplayType.TimeSeriesChart,
+    },
+    {
+      icon: 'mdi-table',
+      label: 'Table',
+      value: DisplayType.TimeSeriesTable,
+    },
+  ]
+
+  if ((elevationChartDisplayconfig.value?.subplots?.length ?? 0) > 0) {
+    displayItems.push({
+      icon: 'mdi-chart-line',
+      label: 'Vertical profile',
+      value: DisplayType.ElevationChart,
+      iconStyle: 'transform: rotate(90deg)',
+    })
+  }
+
+  return displayItems
+})
 
 function onClose(): void {
   emit('close')
