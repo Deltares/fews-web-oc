@@ -30,7 +30,12 @@
               <div class="table-header-indicator">
                 <div class="table-header-indicator-text">
                   <span>{{ column.title }}</span>
-                  <template v-if="(column as unknown as TableHeaders).editable">
+                  <template
+                    v-if="
+                      (column as unknown as TableHeaders).editable &&
+                      !readOnlyMode
+                    "
+                  >
                     <div
                       v-if="isEditingTimeSeries(column.key as string)"
                       class="table-header__actions"
@@ -121,6 +126,7 @@ import {
   tableDataToTimeSeries,
 } from '@/lib/table/tableData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
+import { useConfigStore } from '@/stores/config'
 import { onBeforeMount } from 'vue'
 import TableCellEdit from '@/components/table/TableCellEdit.vue'
 import TableCell from '@/components/table/TableCell.vue'
@@ -145,6 +151,8 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits(['change'])
 
 const store = useFewsPropertiesStore()
+const configStore = useConfigStore()
+const readOnlyMode = ref<boolean>(configStore.general.readonlyMode ?? false)
 
 const seriesIds = ref<string[]>([])
 const tooltip = ref<boolean>(false)
