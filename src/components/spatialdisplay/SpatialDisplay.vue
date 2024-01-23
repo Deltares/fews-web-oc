@@ -191,7 +191,9 @@ function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
 function closeTimeSeriesDisplay(): void {
   const parentRoute = findParentRoute(route)
   if (parentRoute !== null) {
-    currentLocationId.value = ''
+    currentLocationId.value = undefined
+    currentLatitude.value = undefined
+    currentLongitude.value = undefined
     router.push({
       name: parentRoute.name,
       params: {
