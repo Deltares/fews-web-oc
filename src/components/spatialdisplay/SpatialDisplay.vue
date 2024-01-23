@@ -14,11 +14,10 @@
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
     </div>
-    <div v-if="props.locationId" class="child-container">
+    <div v-if="filter" class="child-container">
       <router-view
         @close="closeTimeSeriesDisplay"
         :filter="filter"
-        v-if="filter"
       ></router-view>
     </div>
   </div>
@@ -46,13 +45,12 @@ interface Props {
   layerName?: string
   locationId?: string
   filterIds?: string[]
-  latitude?: number
-  longitude?: number
+  latitude?: string
+  longitude?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
-  locationId: '',
 })
 
 const route = useRoute()
@@ -84,7 +82,7 @@ function getTimeSeriesGridActionsFilter():
   if (!layerCapabilities.value?.firstValueTime) return
   if (!layerCapabilities.value?.lastValueTime) return
 
-  const [x, y] = toMercator([props.longitude, props.latitude])
+  const [x, y] = toMercator([+props.longitude, +props.latitude])
 
   const { minx, miny, maxx, maxy } = layerCapabilities.value.boundingBox
   const bbox = [minx, miny, maxx, maxy].map(Number)

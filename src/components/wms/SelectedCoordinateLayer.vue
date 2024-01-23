@@ -9,8 +9,8 @@ import { Map, type CircleLayer, GeoJSONSource } from 'mapbox-gl'
 import { Ref, watch, computed } from 'vue'
 
 interface Props {
-  latitude?: number
-  longitude?: number
+  latitude?: string
+  longitude?: string
 }
 
 const props = defineProps<Props>()
@@ -32,7 +32,7 @@ const sourceData = computed<
       type: 'Feature',
       geometry: {
         type: 'Point',
-        coordinates: [props.longitude, props.latitude],
+        coordinates: [+props.longitude, +props.latitude],
       },
       properties: {},
     }

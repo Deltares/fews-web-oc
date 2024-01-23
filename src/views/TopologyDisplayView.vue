@@ -127,8 +127,8 @@ interface Props {
   nodeId?: string | string[]
   layerName?: string
   locationId?: string
-  latitude?: number
-  longitude?: number
+  latitude?: string
+  longitude?: string
 }
 
 interface DisplayTab {

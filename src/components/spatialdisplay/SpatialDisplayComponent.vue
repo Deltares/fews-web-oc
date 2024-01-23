@@ -28,8 +28,9 @@
     />
   </MapComponent>
   <DateTimeSlider
+    v-if="times"
     v-model:selectedDate="currentTime"
-    :dates="times ?? []"
+    :dates="times"
     @update:doFollowNow="setCurrentTime"
     @update:selectedDate="updateTime"
     class="spatial-display__slider"
@@ -72,8 +73,8 @@ interface Props {
   elevation?: number
   locationId?: string
   filterIds?: string[]
-  latitude?: number
-  longitude?: number
+  latitude?: string
+  longitude?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
