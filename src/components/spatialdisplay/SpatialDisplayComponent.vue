@@ -56,7 +56,7 @@ import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
 import { configManager } from '@/services/application-config'
-import { Layer } from '@deltares/fews-wms-requests'
+import type { Layer } from '@deltares/fews-wms-requests'
 
 interface ElevationWithUnitSymbol {
   units?: string

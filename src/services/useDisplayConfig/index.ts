@@ -2,7 +2,7 @@ import {
   PiWebserviceProvider,
   type filterActionsFilter,
   type ActionsResponse,
-  timeSeriesGridActionsFilter,
+  type timeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
 import { ref, toValue, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
@@ -22,7 +22,7 @@ export interface UseDisplayConfigOptions {
 }
 
 type Filter = timeSeriesGridActionsFilter | filterActionsFilter
-// guard fuctions, needed because is not possible to use instanceof/ typeof on interfaces
+// Guard functions, needed because it is not possible to use instanceof/typeof on interfaces
 function isFilterActionsFilter(filter: Filter): filter is filterActionsFilter {
   return (filter as filterActionsFilter).filterId !== undefined
 }
