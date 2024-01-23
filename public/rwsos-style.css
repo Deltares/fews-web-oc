@@ -1,4 +1,6 @@
 @import 'fonts/RO/fonts.css';
+@import './default-styles.css';
+@import './vuetifiy-overrule.css';
 
 :root {
   --font-family: 'RO-Sans', sans-serif;

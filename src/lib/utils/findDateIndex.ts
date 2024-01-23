@@ -7,7 +7,6 @@
 export function findDateIndex(dates: Date[], targetDate: Date): number {
   let left = 0
   let right = dates.length - 1
-  console.log('target', targetDate, right)
 
   while (left < right) {
     const mid = Math.floor((left + right) / 2)
@@ -21,11 +20,3 @@ export function findDateIndex(dates: Date[], targetDate: Date): number {
   }
   return left
 }
-
-// export function findDateIndex(dates: Date[], targetDate: Date): number {
-//     let index = 0;
-//     while (index < dates.length && dates[index] <= targetDate) {
-//         index++
-//     }
-//     return index;
-// }

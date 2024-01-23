@@ -4,7 +4,7 @@
     label="Search Locations"
     single-line
     hide-details
-    rounded
+    rounded="0"
     :items="props.locations"
     item-title="locationName"
     item-value="locationId"
@@ -13,7 +13,7 @@
     density="compact"
   >
     <template v-slot:item="{ props }">
-      <v-list-item v-bind="props" width="250px" />
+      <v-list-item v-bind="props" width="250px" density="compact" />
     </template>
   </v-autocomplete>
 </template>
@@ -51,16 +51,3 @@ function onSelectLocation(newValue: Location | null) {
   emit('changeLocationId', newValue.locationId)
 }
 </script>
-
-<style scoped>
-.locations-layer__chip {
-  position: absolute;
-  font-size: 0.825em;
-  z-index: 1000;
-  top: 10px;
-  left: 10px;
-  backdrop-filter: blur(5px);
-  background-color: rgba(var(--v-theme-surface), 0.8);
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-}
-</style>
