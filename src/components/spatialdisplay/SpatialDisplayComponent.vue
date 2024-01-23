@@ -1,6 +1,10 @@
 <template>
   <MapComponent>
-    <animated-mapbox-layer :layer="layerOptions"> </animated-mapbox-layer>
+    <animated-mapbox-layer
+      :layer="layerOptions"
+      @doubleclick="onCoordinateClick"
+    >
+    </animated-mapbox-layer>
     <div class="colourbar-container">
       <ColourBar :colourMap="legend" :title="legendTitle" />
     </div>
@@ -18,6 +22,7 @@
       :locationId="props.locationId"
       @changeLocationId="onLocationChange"
     />
+    <SelectedCoordinateLayer :longitude="props.longitude" :latitude="props.latitude" />
   </MapComponent>
   <DateTimeSlider
     v-model:selectedDate="currentTime"
@@ -41,11 +46,13 @@ import AnimatedMapboxLayer, {
   MapboxLayerOptions,
 } from '@/components/wms/AnimatedMapboxLayer.vue'
 import LocationsLayerComponent from '@/components/wms/LocationsLayerComponent.vue'
+import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -58,13 +65,21 @@ interface Props {
   layerName?: string
   locationId?: string
   filterIds?: string[]
+  latitude?: number
+  longitude?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
 })
 
-const emit = defineEmits(['changeLocationId'])
+const emit = defineEmits([
+  'changeLocationId',
+  'coordinate-click',
+  'update:times',
+  'update:selectedLayer',
+  'update:elevation',
+])
 
 onBeforeMount(() => {
   debouncedSetLayerOptions = debounce(setLayerOptions, 500, {
@@ -113,12 +128,14 @@ watch(
       elevationUnit.value =
         (layer.elevation as ElevationWithUnitSymbol).unitSymbol ?? ''
     }
+    emit('update:selectedLayer', selectedLayer.value)
   },
   { immediate: true },
 )
 
 watch(currentElevation, () => {
   setLayerOptions()
+  emit('update:elevation', currentElevation.value)
 })
 
 const legendTitle = computed(() => {
@@ -140,6 +157,7 @@ watch(
       currentTime.value = dateController.currentTime
     }
     setLayerOptions()
+    emit('update:times', times.value)
   },
   { immediate: true },
 )
@@ -174,6 +192,12 @@ function setLayerOptions(): void {
 
 function onLocationChange(locationId: string | null): void {
   emit('changeLocationId', locationId)
+}
+
+function onCoordinateClick(
+  event: MapLayerMouseEvent | MapLayerTouchEvent,
+): void {
+  emit('coordinate-click', event)
 }
 </script>
 

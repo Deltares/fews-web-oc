@@ -286,17 +286,15 @@ function openTimeSeriesDisplay(panelId: string, objectId: string) {
     })
 }
 
-function closeTimeSeriesDisplay(objectId: string): void {
-  if (objectId) {
-    router
-      .push({
-        name: 'SchematicStatusDisplay',
-        params: { groupId: props.groupId, panelId: props.panelId },
-      })
-      .then(() => {
-        ssdComponent.value?.resize()
-      })
-  }
+function closeTimeSeriesDisplay(): void {
+  router
+    .push({
+      name: 'SchematicStatusDisplay',
+      params: { groupId: props.groupId, panelId: props.panelId },
+    })
+    .then(() => {
+      ssdComponent.value?.resize()
+    })
 }
 </script>
 

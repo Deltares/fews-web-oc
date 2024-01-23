@@ -4,14 +4,23 @@
       <SpatialDisplayComponent
         :layer-name="props.layerName"
         :location-id="props.locationId"
+        :latitude="props.latitude"
+        :longitude="props.longitude"
         :filter-ids="props.filterIds"
         @changeLocationId="onLocationChange"
+        v-model:times="times"
+        v-model:selected-layer="selectedLayer"
+        v-model:elevation="elevation"
+        @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
     </div>
     <div v-if="props.locationId" class="child-container">
       <router-view
         @close="closeTimeSeriesDisplay"
         :filterIds="props.filterIds"
+        :times="times"
+        :selectedLayer="selectedLayer"
+        :elevation="elevation"
       ></router-view>
     </div>
   </div>
@@ -24,11 +33,15 @@ import { useDisplay } from 'vuetify'
 import { useRoute, useRouter } from 'vue-router'
 import { findParentRoute } from '@/router'
 import { onMounted } from 'vue'
+import { Layer } from '@deltares/fews-wms-requests'
+import { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
 
 interface Props {
   layerName?: string
   locationId?: string
   filterIds?: string[]
+  latitude?: number
+  longitude?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -41,6 +54,9 @@ const router = useRouter()
 const { mobile } = useDisplay()
 
 const currentLocationId = ref<string>('')
+const times = ref<Date[]>()
+const selectedLayer = ref<Layer>()
+const elevation = ref<number>()
 
 onMounted(() => {
   currentLocationId.value === props.locationId
@@ -59,6 +75,7 @@ function openLocationTimeSeriesDisplay(locationId: string) {
   const routeName = route.name
     ?.toString()
     .replace('SpatialDisplay', 'SpatialTimeSeriesDisplay')
+    .replace('WithCoordinates', '')
   currentLocationId.value = locationId
   router.push({
     name: routeName,
@@ -66,6 +83,36 @@ function openLocationTimeSeriesDisplay(locationId: string) {
       nodeId: route.params.nodeId,
       layerName: props.layerName,
       locationId,
+    },
+    query: route.query,
+  })
+}
+
+function onCoordinateClick(
+  event: MapLayerMouseEvent | MapLayerTouchEvent,
+): void {
+  openCoordinatesTimeSeriesDisplay(
+    +event.lngLat.lat.toFixed(3),
+    +event.lngLat.lng.toFixed(3),
+  )
+}
+
+function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
+  const routeName = route.name
+    ?.toString()
+    .replace('SpatialDisplay', 'SpatialTimeSeriesDisplay')
+    .replace('WithCoordinates', '')
+    .replace(
+      'SpatialTimeSeriesDisplay',
+      'SpatialTimeSeriesDisplayWithCoordinates',
+    )
+  router.push({
+    name: routeName,
+    params: {
+      nodeId: route.params.nodeId,
+      layerName: props.layerName,
+      latitude,
+      longitude,
     },
     query: route.query,
   })

@@ -2,6 +2,7 @@ import {
   PiWebserviceProvider,
   type filterActionsFilter,
   type ActionsResponse,
+  timeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
 import { ref, toValue, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
@@ -18,6 +19,18 @@ export interface UseDisplayConfigReturn {
 export interface UseDisplayConfigOptions {
   convertDatum?: boolean
   useDisplayUnits?: boolean
+}
+
+type Filter = timeSeriesGridActionsFilter | filterActionsFilter
+// guard fuctions, needed because is not possible to use instanceof/ typeof on interfaces
+function isFilterActionsFilter(filter: Filter): filter is filterActionsFilter {
+  return (filter as filterActionsFilter).filterId !== undefined
+}
+
+function isTimeSeriesGridActionsFilter(
+  filter: Filter,
+): filter is timeSeriesGridActionsFilter {
+  return (filter as timeSeriesGridActionsFilter).x !== undefined
 }
 
 /**
@@ -94,15 +107,12 @@ export function useDisplayConfig(
  * Create the displays and the display configs for a time series display using filter actions.
  *
  * @param baseUrl The URL of the FEWS web services.
- * @param filterIds The IDs of the filters.
- * @param locationIds The IDs of the locations.
+ * @params filter The filter for the actions request.
  * @returns An object with `displays` and `displayConfig` properties.
  */
 export function useDisplayConfigFilter(
   baseUrl: string,
-  filterIds: MaybeRefOrGetter<string[] | undefined>,
-  locationIds: MaybeRefOrGetter<string>,
-  options?: MaybeRefOrGetter<UseDisplayConfigOptions>,
+  filter: MaybeRefOrGetter<Filter>,
 ): UseDisplayConfigReturn {
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -112,18 +122,19 @@ export function useDisplayConfigFilter(
   const displays = ref<DisplayConfig[]>()
 
   watchEffect(async () => {
-    let filter = {} as filterActionsFilter
-    const _filterIds = toValue(filterIds)
-    const _options = toValue(options)
-    if (_filterIds !== undefined) {
-      filter.filterId = _filterIds[0]
-      filter.locationIds = toValue(locationIds)
-      filter = { ...filter, ..._options }
-      const response = await piProvider.getFilterActions(filter)
-      const _displays = actionsResponseToDisplayConfig(response)
-      displays.value = _displays
-      displayConfig.value = _displays[0]
+    const _filter = toValue(filter)
+    let response: ActionsResponse
+    if (isFilterActionsFilter(_filter)) {
+      if (!_filter.filterId) return
+      response = await piProvider.getFilterActions(_filter)
+    } else if (isTimeSeriesGridActionsFilter(_filter)) {
+      response = await piProvider.getTimeSeriesGridActions(_filter)
+    } else {
+      return
     }
+    const _displays = actionsResponseToDisplayConfig(response)
+    displays.value = _displays
+    displayConfig.value = _displays[0]
   })
 
   const shell = {

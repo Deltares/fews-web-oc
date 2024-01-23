@@ -48,19 +48,29 @@ import {
   useDisplayConfigFilter,
 } from '@/services/useDisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import {
+  filterActionsFilter,
+  timeSeriesGridActionsFilter,
+} from '@deltares/fews-pi-requests'
+import { toMercator } from '@turf/projection'
+import { Layer } from '@deltares/fews-wms-requests'
 
 interface Props {
   layerName?: string
   locationId?: string
   filterIds?: string[]
+  latitude?: number
+  longitude?: number
+  selectedLayer?: Layer
+  times?: Date[]
+  elevation?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
-  locationId: '',
 })
 
-const emit = defineEmits<{ (e: 'close', locationId: string): void }>()
+const emit = defineEmits(['close'])
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -73,13 +83,46 @@ const options = computed<UseDisplayConfigOptions>(() => {
   }
 })
 
-const { displayConfig } = useDisplayConfigFilter(
-  baseUrl,
-  () => props.filterIds,
-  () => props.locationId,
-  options,
+const filter = computed<filterActionsFilter | timeSeriesGridActionsFilter>(
+  () => {
+    if (props.locationId) {
+      const _filter: filterActionsFilter = {
+        locationIds: props.locationId,
+        filterId: props.filterIds ? props.filterIds[0] : undefined,
+        ...options,
+      }
+      return _filter
+    }
+
+    if (
+      props.latitude &&
+      props.longitude &&
+      props.times &&
+      props.selectedLayer?.boundingBox
+    ) {
+      const [x, y] = toMercator([props.longitude, props.latitude])
+      const { minx, miny, maxx, maxy } = props.selectedLayer.boundingBox
+      const bbox = [minx, miny, maxx, maxy].map(Number)
+
+      const _filter: timeSeriesGridActionsFilter = {
+        layers: props.layerName,
+        x,
+        y,
+        startTime: props.times[0].toISOString(),
+        endTime: props.times[props.times.length - 1].toISOString(),
+        bbox,
+        documentFormat: 'PI_JSON',
+        elevation: props.elevation,
+        ...options,
+      }
+      return _filter
+    }
+
+    return {}
+  },
 )
 
+const { displayConfig } = useDisplayConfigFilter(baseUrl, filter)
 watch(
   () => displayConfig,
   () => {
@@ -113,6 +156,6 @@ const displayTypeItems: DisplayTypeItem[] = [
 ]
 
 function onClose(): void {
-  emit('close', props.locationId)
+  emit('close')
 }
 </script>
