@@ -208,7 +208,7 @@ watch(
     if (doFollowNow.value) {
       setDateToNow()
       if (
-        props.selectedDate?.getTime() !== props.dates[dateIndex.value].getTime()
+        props.selectedDate?.getTime() !== props.dates[dateIndex.value]?.getTime()
       ) {
         emit('update:selectedDate', props.dates[dateIndex.value])
       }

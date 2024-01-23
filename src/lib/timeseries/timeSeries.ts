@@ -8,6 +8,7 @@ import {
   SeriesDerived,
 } from './timeSeriesResource.js'
 import MD5 from 'crypto-js/md5'
+import type { Domains } from '@deltares/fews-pi-requests'
 
 const timeSeriesResourceType = (resource: SeriesResource) => {
   switch (resource.type) {
@@ -42,6 +43,8 @@ export class Series {
   start?: Date
   end?: Date
   lastUpdated?: Date
+  domains?: Domains[];
+  missingValue?: string;
 
   constructor(
     resource: SeriesResource | SeriesRequest | SeriesUrlRequest | SeriesDerived,
