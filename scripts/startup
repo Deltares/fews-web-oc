@@ -8,7 +8,8 @@ fi
 PUBLIC_ROOT="/usr/share/nginx/html"
 
 # Changes for BASE URL
-sed -i "s@__BASE_URL__@${BASE_URL}@g" ${PUBLIC_ROOT}/js/app.*.js
+sed -i "s@__BASE_URL__@${BASE_URL}@g" ${PUBLIC_ROOT}/assets/index-*.js
+sed -i "s@__BASE_URL__@${BASE_URL}@g" ${PUBLIC_ROOT}/assets/index-*.css
 sed -i "s@__BASE_URL__@${BASE_URL}@g" ${PUBLIC_ROOT}/index.html
 
 exec nginx -g 'daemon off;'
