@@ -223,6 +223,11 @@ const refreshChart = () => {
       y: [props.config.yAxis[0], props.config.yAxis[1]],
     })
   }
+  if (props.config.xAxis) {
+    axis.setOptions({
+      x: [props.config.xAxis[0], props.config.xAxis[1]],
+    })
+  }
 
   axis.redraw({
     x: {

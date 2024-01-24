@@ -1,6 +1,7 @@
 import type { ChartConfig } from './types/ChartConfig.js'
 import type { ChartSeries } from './types/ChartSeries.js'
 import type {
+  TimeSeriesDisplayPlotItemXAxis,
   TimeSeriesDisplaySubplot,
   TimeSeriesDisplaySubplotItem,
 } from '@deltares/fews-pi-requests'
@@ -21,7 +22,7 @@ export function timeSeriesDisplayToChartConfig(
 ): ChartConfig {
   const config: ChartConfig = {
     title: title,
-    xAxis: [],
+    xAxis: subplot.xAxis ? xAxisFromPlotItemXAxis(subplot.xAxis) : [],
     yAxis: yAxisFromSubplot(subplot),
     series: [],
   }
@@ -89,6 +90,28 @@ function getChartSeries(
     },
     style: cssStyleFromFewsLine(item),
   }
+}
+
+function xAxisFromPlotItemXAxis(
+  xAxis: TimeSeriesDisplayPlotItemXAxis,
+): AxisOptions[] {
+  const axes = []
+  const includeZero =
+    xAxis.axisMinValue === 0 && xAxis.axisMaxValue === undefined
+  const axis: AxisOptions = {
+    type: AxisType.value,
+    label: xAxis.axisLabel,
+    includeZero,
+  }
+  if (xAxis.axisMinValue !== undefined && xAxis.axisMaxValue !== undefined) {
+    const defaultDomain: [number, number] = [
+      xAxis.axisMinValue,
+      xAxis.axisMaxValue,
+    ]
+    axis.defaultDomain = defaultDomain
+  }
+  axes.push(axis)
+  return axes
 }
 
 function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
