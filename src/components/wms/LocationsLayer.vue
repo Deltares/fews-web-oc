@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { Ref, watch, watchEffect } from 'vue'
+import { Ref, watchEffect } from 'vue'
 import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
 import { FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
