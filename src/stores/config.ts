@@ -3,14 +3,10 @@ import { getFewsConfig } from '../lib/fews-config/index.js'
 import { WebOcGeneralConfig } from '@deltares/fews-pi-requests'
 import { ComponentTypeEnum, WebOcComponent } from '../lib/fews-config/types.js'
 
-interface WebOcConfigGeneral extends WebOcGeneralConfig {
-  defaultComponent?: string
-  customStyleSheet?: string
-}
 interface ConfigState {
   version: string
   components: { [key: string]: WebOcComponent }
-  general: WebOcConfigGeneral
+  general: WebOcGeneralConfig
 }
 
 function getMenuIcon(componentConfig: WebOcComponent): string {
