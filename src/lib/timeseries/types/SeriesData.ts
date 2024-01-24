@@ -5,3 +5,7 @@ export interface SeriesData
   x: Date | number | null
   y: number | null
 }
+
+export interface TimeSeriesData extends SeriesData {
+  x: Date
+}
