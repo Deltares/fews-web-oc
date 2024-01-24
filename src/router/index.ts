@@ -117,6 +117,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         props: true,
         meta: { sidebar: true },
       },
+      {
+        path: '/map/:layerName?/coordinates/:latitude/:longitude',
+        name: 'SpatialTimeSeriesDisplayWithCoordinates',
+        component: SpatialTimeSeriesDisplay,
+        props: true,
+        meta: { sidebar: true },
+      },
     ],
   },
   {
@@ -150,6 +157,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
           {
             path: '/topology/node/:nodeId*/map/:layerName?/location/:locationId',
             name: 'TopologySpatialTimeSeriesDisplay',
+            component: SpatialTimeSeriesDisplay,
+            props: true,
+            meta: { sidebar: true },
+          },
+          {
+            path: '/topology/node/:nodeId*/map/:layerName?/coordinates/:latitude/:longitude',
+            name: 'TopologySpatialTimeSeriesDisplayWithCoordinates',
             component: SpatialTimeSeriesDisplay,
             props: true,
             meta: { sidebar: true },

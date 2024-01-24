@@ -31,7 +31,11 @@
     >
     </ColumnMenu>
   </Teleport>
-  <SpatialDisplay :layer-name="props.layerName" />
+  <SpatialDisplay
+    :layer-name="props.layerName"
+    :latitude="props.latitude"
+    :longitude="props.longitude"
+  />
 </template>
 
 <script setup lang="ts">
@@ -47,6 +51,8 @@ import { useDisplay } from 'vuetify'
 
 interface Props {
   layerName?: string
+  latitude?: string
+  longitude?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {

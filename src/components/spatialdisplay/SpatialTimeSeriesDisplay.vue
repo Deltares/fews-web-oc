@@ -38,48 +38,29 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import { DisplayType } from '@/lib/display/DisplayConfig'
+import { useDisplayConfigFilter } from '@/services/useDisplayConfig'
 import {
-  UseDisplayConfigOptions,
-  useDisplayConfigFilter,
-} from '@/services/useDisplayConfig'
-import { useUserSettingsStore } from '@/stores/userSettings'
+  filterActionsFilter,
+  timeSeriesGridActionsFilter,
+} from '@deltares/fews-pi-requests'
+import { computed } from 'vue'
 
 interface Props {
-  layerName?: string
-  locationId?: string
-  filterIds?: string[]
+  filter: filterActionsFilter | timeSeriesGridActionsFilter
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  layerName: '',
-  locationId: '',
-})
-
-const emit = defineEmits<{ (e: 'close', locationId: string): void }>()
+const props = defineProps<Props>()
+const emit = defineEmits(['close'])
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const settings = useUserSettingsStore()
-
-const options = computed<UseDisplayConfigOptions>(() => {
-  return {
-    useDisplayUnits: settings.useDisplayUnits,
-    convertDatum: settings.convertDatum,
-  }
-})
-
-const { displayConfig } = useDisplayConfigFilter(
-  baseUrl,
-  () => props.filterIds,
-  () => props.locationId,
-  options,
-)
-
+const filter = computed(() => props.filter)
+const { displayConfig } = useDisplayConfigFilter(baseUrl, filter)
 watch(
   () => displayConfig,
   () => {
@@ -113,6 +94,6 @@ const displayTypeItems: DisplayTypeItem[] = [
 ]
 
 function onClose(): void {
-  emit('close', props.locationId)
+  emit('close')
 }
 </script>

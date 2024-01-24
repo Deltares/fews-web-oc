@@ -31,6 +31,8 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {})
 
+const emit = defineEmits(['doubleclick'])
+
 const { map } = useMap() as { map: Ref<Map> }
 
 let isInitialized = false
@@ -70,6 +72,7 @@ function addHooksToMapObject() {
       map.value.setPaintProperty(e.sourceId, 'raster-opacity', 1)
     }
   })
+  map.value.on('dblclick', (e) => emit('doubleclick', e))
 }
 
 function getImageSourceOptions(): ImageSourceOptions {

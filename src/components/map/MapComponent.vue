@@ -33,6 +33,7 @@ onBeforeMount(() => {
 function setMapInstance(mapInstance: Map) {
   mapInstance.dragRotate.disable()
   mapInstance.touchZoomRotate.disableRotation()
+  mapInstance.doubleClickZoom.disable()
   map.value = mapInstance
 }
 
