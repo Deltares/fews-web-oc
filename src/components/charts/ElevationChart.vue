@@ -138,7 +138,12 @@ onMounted(() => {
   const chartHeight = 1200
 
   if (chartContainer.value) {
-    axis = new CartesianAxes(chartContainer.value, chartWidth, chartHeight, axisOptions)
+    axis = new CartesianAxes(
+      chartContainer.value,
+      chartWidth,
+      chartHeight,
+      axisOptions,
+    )
     const mouseOver = new MouseOver()
     const zoom = new ZoomHandler(WheelMode.NONE)
 

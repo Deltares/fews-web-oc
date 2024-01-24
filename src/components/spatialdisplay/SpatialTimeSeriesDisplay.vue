@@ -5,11 +5,7 @@
         <template v-slot:toolbar>
           <span class="ml-5">{{ displayConfig?.title }}</span>
           <v-spacer />
-          <v-btn-toggle
-            v-model="displayType"
-            mandatory
-            density="compact"
-          >
+          <v-btn-toggle v-model="displayType" mandatory density="compact">
             <v-btn
               v-for="item in displayTypeItems"
               :key="item.value"
