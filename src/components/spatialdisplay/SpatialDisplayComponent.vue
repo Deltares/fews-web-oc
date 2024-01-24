@@ -91,7 +91,7 @@ const emit = defineEmits([
   'change-location-id',
   'coordinate-click',
   'update:elevation',
-  'update:current-time'
+  'update:current-time',
 ])
 
 onBeforeMount(() => {

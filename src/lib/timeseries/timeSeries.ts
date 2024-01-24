@@ -43,8 +43,8 @@ export class Series {
   start?: Date
   end?: Date
   lastUpdated?: Date
-  domains?: Domains[];
-  missingValue?: string;
+  domains?: Domains[]
+  missingValue?: string
 
   constructor(
     resource: SeriesResource | SeriesRequest | SeriesUrlRequest | SeriesDerived,
