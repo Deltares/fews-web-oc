@@ -1,7 +1,7 @@
 import type { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { uniqWith } from 'lodash'
-import { SeriesData } from '../timeseries/types/SeriesData'
+import { SeriesData, TimeSeriesData } from '../timeseries/types/SeriesData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import type {
   TimeSeriesEvent,
@@ -57,7 +57,7 @@ export function createTableData(
       const series = seriesRecord[s.dataResources[0]]
       let eventResult: Partial<TableSeriesData> = {}
       if (series && series.data) {
-        const event = series.data[pointers[j]]
+        const event = series.data[pointers[j]] as TimeSeriesData
         if (event && date.getTime() === event.x.getTime()) {
           eventResult = {
             tooltip: event.flag !== undefined || event.comment !== undefined,
