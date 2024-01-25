@@ -6,40 +6,73 @@
       width="320"
       class="view-sidebar"
     >
-      <v-toolbar density="compact" fixed>
-        <v-btn variant="text" :to="{ name: 'Default' }">
-          <img height="36" :src="logoSrc" />
-        </v-btn>
-        <v-spacer />
-        <login-component v-if="configManager.authenticationIsEnabled" />
-      </v-toolbar>
-      <v-menu origin="left" min-width="320">
-        <template #activator="{ isActive, props }">
-          <v-list-item aria-label="Menu button" v-bind="props">
-            <v-list-item-title>{{ currentItem }}</v-list-item-title>
-            <template #append>
-              <v-icon
-                :icon="isActive ? 'mdi-chevron-right' : 'mdi-chevron-right'"
-              ></v-icon>
-            </template>
-          </v-list-item>
-        </template>
-        <v-list density="compact">
-          <v-list-subheader>Switch to</v-list-subheader>
-          <v-list-item
-            v-for="(item, i) in configStore.activeComponents"
-            :key="i"
-            :value="item"
-            :to="item.to"
+      <template v-slot:prepend>
+        <v-toolbar density="compact" fixed>
+          <v-btn variant="text" :to="{ name: 'Default' }">
+            <img height="36" :src="logoSrc" />
+          </v-btn>
+          <v-spacer />
+          <login-component v-if="configManager.authenticationIsEnabled" />
+        </v-toolbar>
+        <v-menu origin="left" min-width="320">
+          <template #activator="{ isActive, props }">
+            <v-list-item aria-label="Menu button" v-bind="props">
+              <v-list-item-title>{{ currentItem }}</v-list-item-title>
+              <template #append>
+                <v-icon
+                  :icon="isActive ? 'mdi-chevron-right' : 'mdi-chevron-right'"
+                ></v-icon>
+              </template>
+            </v-list-item>
+          </template>
+          <v-list density="compact">
+            <v-list-subheader>Switch to</v-list-subheader>
+            <v-list-item
+              v-for="(item, i) in configStore.activeComponents"
+              :key="i"
+              :value="item"
+              :to="item.to"
+            >
+              <template v-slot:prepend>
+                <v-icon :icon="item.icon"></v-icon>
+              </template>
+              <v-list-item-title v-text="item.title"></v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </template>
+      <div
+        id="web-oc-sidebar-target"
+        class="d-flex"
+        style="flex-direction: column; flex: 1 1 auto"
+      ></div>
+      <template v-slot:append>
+        <v-divider></v-divider>
+        <div class="d-flex align-center text-caption text-medium-emphasis pa-2">
+          <v-btn
+            variant="plain"
+            prepend-icon="mdi-help-circle-outline"
+            class="text-capitalize"
           >
-            <template v-slot:prepend>
-              <v-icon :icon="item.icon"></v-icon>
-            </template>
-            <v-list-item-title v-text="item.title"></v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-      <div id="web-oc-sidebar-target"></div>
+            Info
+            <v-menu
+              location="top"
+              activator="parent"
+              :transition="false"
+              :close-on-content-click="false"
+              width="320"
+            >
+              <v-list density="compact">
+                <v-list-item :to="{ name: 'About' }">About</v-list-item>
+              </v-list>
+            </v-menu>
+          </v-btn>
+          <v-spacer />
+          <v-btn variant="plain" class="text-lowercase" size="small"
+            >v{{ version }}</v-btn
+          >
+        </div>
+      </template>
     </v-navigation-drawer>
     <v-app-bar :color="appBarColor" :style="appBarStyle" density="compact">
       <template #prepend>
@@ -82,6 +115,7 @@ import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { StyleValue, nextTick } from 'vue'
+import packageConfig from '../../package.json'
 
 const configStore = useConfigStore()
 const alertsStore = useAlertsStore()
@@ -92,6 +126,7 @@ const currentItem = ref('')
 const { isRtl } = useRtl()
 const route = useRoute()
 
+const version = ref(packageConfig.version)
 const logoSrc = ref('')
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
