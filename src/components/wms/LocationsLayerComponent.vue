@@ -66,14 +66,10 @@ const locations = ref<Location[]>([])
 
 watchEffect(async () => {
   if (!props.filterIds) return
-  if (showLocationsLayer.value) {
-    locationsGeoJson.value = await fetchLocationsAsGeoJson(
-      baseUrl,
-      props.filterIds,
-    )
-  } else {
-    locationsGeoJson.value = emptyFeatureCollection
-  }
+  locationsGeoJson.value = await fetchLocationsAsGeoJson(
+    baseUrl,
+    props.filterIds,
+  )
 })
 
 watch(locationsGeoJson, () => {

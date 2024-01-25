@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { Ref, watch, watchEffect } from 'vue'
+import { Ref, watchEffect } from 'vue'
 import { MapboxLayer, useMap } from '@studiometa/vue-mapbox-gl'
 import { FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
@@ -77,15 +77,12 @@ watchEffect(() => {
   highlightSelectedLocationOnMap()
 })
 
-watch(
-  () => props.locationsGeoJson,
-  () => {
-    const source = map.value.getSource(locationsLayerSourceId) as GeoJSONSource
-    if (source) {
-      source.setData(props.locationsGeoJson)
-    }
-  },
-)
+watchEffect(() => {
+  const source = map.value.getSource(locationsLayerSourceId) as GeoJSONSource
+  if (source) {
+    source.setData(props.locationsGeoJson)
+  }
+})
 
 function highlightSelectedLocationOnMap() {
   if (!map.value.getSource(locationsLayerSourceId)) return
