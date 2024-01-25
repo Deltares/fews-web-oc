@@ -51,7 +51,6 @@ onMounted(() => {
   updateColourBar()
 })
 
-
 watch(props, updateColourBar)
 
 function updateColourBar() {

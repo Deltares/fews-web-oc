@@ -110,7 +110,7 @@ const currentTime = ref<Date>(new Date())
 const layerOptions = ref<MapboxLayerOptions>()
 let debouncedSetLayerOptions!: () => void
 
-const colorScaleRange = ref<{min: number, max: number}>()
+const colorScaleRange = ref<{ min: number; max: number }>()
 const colorScaleRangeString = computed(() => {
   if (!colorScaleRange.value) return
   if (colorScaleRange.value.min === undefined) return
@@ -124,14 +124,14 @@ const legendGraphic = useWmsLegend(
   baseUrl,
   legendLayerName,
   () => settings.useDisplayUnits,
-  colorScaleRangeString 
+  colorScaleRangeString,
 )
 
 const legend = computed(() => {
   return legendGraphic.value?.legend
 })
 
-watchEffect(() => { 
+watchEffect(() => {
   if (!legend.value) return
   colorScaleRange.value = {
     min: legend.value[0].lowerValue,

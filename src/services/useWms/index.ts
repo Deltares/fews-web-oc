@@ -93,7 +93,7 @@ export function useWmsLegend(
   const legendGraphic = ref<GetLegendGraphicResponse>()
 
   async function loadLegend(): Promise<void> {
-    controller.abort("getLegend aborted")
+    controller.abort('getLegend aborted')
     controller = new AbortController()
     const wmsProvider = new WMSProvider(wmsUrl, {
       transformRequestFn: createTransformRequestFn(controller),
