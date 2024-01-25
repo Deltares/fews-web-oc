@@ -71,7 +71,7 @@
 
 <script setup lang="ts">
 import { ref, watch, watchEffect } from 'vue'
-import { useRtl } from 'vuetify'
+import { useRtl, useTheme } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
 import { Alert, useAlertsStore } from '../stores/alerts.ts'
 import { useRoute } from 'vue-router'
@@ -81,10 +81,11 @@ import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
 
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
-import { StyleValue } from 'vue'
+import { StyleValue, nextTick } from 'vue'
 
 const configStore = useConfigStore()
 const alertsStore = useAlertsStore()
+const theme = useTheme()
 
 const drawer = ref(true)
 const currentItem = ref('')
@@ -95,12 +96,26 @@ const logoSrc = ref('')
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
 
+function updateAppBarColor() {
+  appBarColor.value = getComputedStyle(document.body).getPropertyValue(
+    '--weboc-app-bar-bg-color',
+  )
+}
+
+watch(
+  () => theme.global.current.value,
+  () => {
+    nextTick(updateAppBarColor)
+  },
+)
+
 watch(
   () => configStore.general,
   async () => {
     const css = document.getElementById('custom-style-sheet') as HTMLLinkElement
-    if (css) {
-      css.href = configStore.customStyleSheet
+    console.log(css)
+    if (css !== null) {
+      updateAppBarColor()
     } else {
       const link = document.createElement('link')
       link.id = 'custom-style-sheet'
@@ -111,9 +126,7 @@ watch(
           backgroundImage: 'var(--weboc-app-bar-bg-image)',
           backgroundSize: 'cover',
         }
-        appBarColor.value = getComputedStyle(document.body).getPropertyValue(
-          '--weboc-app-bar-bg-color',
-        )
+        updateAppBarColor()
       }
       document.head.appendChild(link)
     }
