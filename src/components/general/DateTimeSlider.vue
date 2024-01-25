@@ -212,9 +212,11 @@ const playButtonIcon = computed(() =>
   isPlaying.value ? 'mdi-pause' : 'mdi-play',
 )
 const nowButtonColor = computed(() =>
-  doFollowNow.value ? 'orange' : undefined,
+  doFollowNow.value ? 'primary' : undefined,
 )
-const playButtonColor = computed(() => (isPlaying.value ? 'orange' : undefined))
+const playButtonColor = computed(() =>
+  isPlaying.value ? 'primary' : undefined,
+)
 
 const dateString = computed(() =>
   props.dates[dateIndex.value]
