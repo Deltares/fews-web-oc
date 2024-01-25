@@ -41,6 +41,7 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
   {
     path: '/about',
     name: 'About',
+    meta: { title: 'About' },
     component: AboutView,
   },
   {
@@ -70,6 +71,7 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
   {
     path: '/settings',
     name: 'UserSettingsView',
+    meta: { title: 'User Settings' },
     component: UserSettingsView,
   },
 ]
