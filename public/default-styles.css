@@ -4,7 +4,8 @@ body {
 
 svg.wb-charts,
 .axis,
-.labels {
+.labels,
+.mouse-over {
   font-family: var(--font-family);
 }
 
@@ -12,25 +13,17 @@ svg.wb-charts,
   color: var(--contrast-color);
 }
 
-.axis {
-  font-size: 1em;
-}
-
-.front {
-  font-size: 1em;
-}
-
-.mouse-over {
-  font-size: 1em;
-  font-family: 'RO-Sans', sans-serif !important;
+.axis,
+.front,
+.mouse-over,
+.legend,
+.label,
+.tooltip {
+  font-size: 0.9rem;
 }
 
 .canvas {
   fill: var(--canvas-fill);
-}
-
-.legend {
-  font-size: 1em;
 }
 
 .axis path {
@@ -228,7 +221,6 @@ svg.wb-charts,
   left: 0px;
   pointer-events: none;
   white-space: nowrap;
-  font-size: 1em;
 }
 
 .tooltip .tooltiptext {

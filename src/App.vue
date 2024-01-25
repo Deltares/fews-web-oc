@@ -97,11 +97,6 @@ userSettingsStore.$onAction(({ name, args }) => {
 </script>
 
 <style>
-.wb-charts,
-.tooltip {
-  font-size: 0.75rem;
-}
-
 .v-table--fixed-header > .v-table__wrapper > table > thead > tr > th {
   border-bottom: 0 !important;
   position: sticky;
