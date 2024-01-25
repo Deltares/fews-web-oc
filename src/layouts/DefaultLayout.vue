@@ -169,11 +169,15 @@ watch(
 
 watchEffect(async () => {
   const parentRoute = route.matched[0]
-  const parentRouteName =
-    parentRoute !== undefined ? parentRoute.meta?.title?.toString() ?? '' : ''
-  const activeComponent = configStore.getComponentByType(parentRouteName)
-  const routeName = activeComponent?.title ?? parentRouteName
-  currentItem.value = routeName
+  if (parentRoute !== undefined) {
+    const parentRouteName = parentRoute.name?.toString() ?? ''
+    const activeComponent = configStore.getComponentByType(parentRouteName)
+    const routeName =
+      activeComponent?.title || (parentRoute.meta?.title as string)
+    currentItem.value = routeName
+  } else {
+    currentItem.value = ''
+  }
 })
 
 watch(() => configStore.general, setLogo)
