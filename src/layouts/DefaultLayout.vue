@@ -16,7 +16,13 @@
         </v-toolbar>
         <v-menu origin="left" min-width="320">
           <template #activator="{ isActive, props }">
-            <v-list-item aria-label="Menu button" v-bind="props">
+            <v-list-item
+              aria-label="Menu button"
+              v-bind="props"
+              class="ma-1"
+              rounded
+              variant="tonal"
+            >
               <v-list-item-title>{{ currentItem }}</v-list-item-title>
               <template #append>
                 <v-icon
@@ -50,7 +56,7 @@
         <v-divider></v-divider>
         <div class="d-flex align-center text-caption text-medium-emphasis pa-2">
           <v-btn
-            variant="plain"
+            variant="tonal"
             prepend-icon="mdi-help-circle-outline"
             class="text-capitalize"
           >
