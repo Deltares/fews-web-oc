@@ -6,17 +6,12 @@
     "value": "display",
     "items": [
       {
-        "value": "stored",
+        "value": "system",
         "icon": "mdi-database"
       },
       {
         "value": "display",
         "icon": "mdi-monitor"
-      },
-      {
-        "value": "custom",
-        "icon": "mdi-monitor-edit",
-        "disabled": true
       }
     ],
     "group": "Units"

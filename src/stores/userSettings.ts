@@ -103,7 +103,7 @@ export const useUserSettingsStore = defineStore({
       }
       this.useDisplayUnits = payload === 'display'
       if (payload !== 'custom') {
-        const i = payload === 'stored' ? 0 : 1
+        const i = payload === 'system' ? 0 : 1
         for (const s of unitSettings) {
           const newValue = s.items ? s.items[i].value : ''
           s.value = newValue
