@@ -148,7 +148,6 @@ watch(
   () => configStore.general,
   async () => {
     const css = document.getElementById('custom-style-sheet') as HTMLLinkElement
-    console.log(css)
     if (css !== null) {
       updateAppBarColor()
     } else {
@@ -171,7 +170,7 @@ watch(
 watchEffect(async () => {
   const parentRoute = route.matched[0]
   const parentRouteName =
-    parentRoute !== undefined ? parentRoute.name?.toString() ?? '' : ''
+    parentRoute !== undefined ? parentRoute.meta?.title?.toString() ?? '' : ''
   const activeComponent = configStore.getComponentByType(parentRouteName)
   const routeName = activeComponent?.title ?? parentRouteName
   currentItem.value = routeName
