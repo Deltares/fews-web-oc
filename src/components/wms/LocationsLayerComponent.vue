@@ -42,7 +42,7 @@ import {
   fetchLocationsAsGeoJson,
 } from '@/lib/topology'
 import { type Location } from '@deltares/fews-pi-requests'
-import { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
+import { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 
 interface Props {
   filterIds: string[]
@@ -71,7 +71,7 @@ const showLocationsLayer = ref<boolean>(true)
 const locations = ref<Location[]>([])
 
 watchEffect(async () => {
-  if (!props.filterIds) return
+  if (props.filterIds.length === 0) return
   locationsGeoJson.value = await fetchLocationsAsGeoJson(
     baseUrl,
     props.filterIds,
