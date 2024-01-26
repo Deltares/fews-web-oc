@@ -1,16 +1,26 @@
 <template>
-  <mgl-geo-json-source source-id="geo" :data="props.locationsGeoJson">
-    <mgl-circle-layer :layer-id="locationsLayerSourceId" :paint="paintSpecification" />
+  <mgl-geo-json-source
+    :source-id="locationsSourceId"
+    :data="props.locationsGeoJson"
+  >
+    <mgl-circle-layer
+      :layer-id="locationsLayerId"
+      :paint="paintSpecification"
+    />
   </mgl-geo-json-source>
 </template>
 
 <script setup lang="ts">
-import { MglCircleLayer, useMap } from 'vue-maplibre-gl'
-import { MglGeoJsonSource } from 'vue-maplibre-gl'
+import { MglCircleLayer, MglGeoJsonSource, useMap } from 'vue-maplibre-gl'
 import { FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
-import { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl';
-import { watchEffect } from 'vue';
+import {
+  MapLayerMouseEvent,
+  MapLayerTouchEvent,
+  MapSourceDataEvent,
+} from 'maplibre-gl'
+import { watch, onBeforeUnmount } from 'vue'
+import { onBeforeMount } from 'vue'
 
 interface Props {
   locationsGeoJson: FeatureCollection<Geometry, Location>
@@ -37,58 +47,83 @@ const paintSpecification = {
 
 const { map } = useMap()
 
-const locationsLayerSourceId = 'location-layer'
+const locationsLayerId = 'location-layer'
+const locationsSourceId = 'location-source'
 
-if (map !== undefined) {
-  map.on('click', locationsLayerSourceId, (e) => {
-    const features = map.queryRenderedFeatures(e.point, {
-      layers: [locationsLayerSourceId],
+function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
+  if (map) {
+    const features = map.queryRenderedFeatures(event.point, {
+      layers: [locationsLayerId],
     })
     if (!features.length) return
-    onLocationClick(e)
-  })
-
-  map.on('mouseenter', locationsLayerSourceId, () => {
-    map.getCanvas().style.cursor = 'pointer'
-  })
-
-  map.on('mouseleave', 'location-layer', () => {
-    map.getCanvas().style.cursor = ''
-  })
+    onLocationClick(event)
+  }
 }
 
+function setCursorPointer() {
+  if (map) map.getCanvas().style.cursor = 'pointer'
+}
 
-watchEffect(() => {
-  highlightSelectedLocationOnMap()
+function unsetCursorPointer() {
+  if (map) map.getCanvas().style.cursor = ''
+}
+
+function sourceDateLoaded(e: MapSourceDataEvent) {
+  if (e.sourceId === locationsSourceId && e.sourceDataType === 'metadata') {
+    highlightSelectedLocationOnMap()
+  }
+}
+
+onBeforeMount(() => {
+  if (map) {
+    map.on('click', locationsLayerId, clickHandler)
+    map.on('mouseenter', locationsLayerId, setCursorPointer)
+    map.on('mouseleave', locationsLayerId, unsetCursorPointer)
+    map.on('sourcedata', sourceDateLoaded)
+  }
 })
 
-function highlightSelectedLocationOnMap() {
-  if (map === undefined || !map.getSource(locationsLayerSourceId)) return
+onBeforeUnmount(() => {
+  if (map) {
+    map.off('click', locationsLayerId, clickHandler)
+    map.off('mouseenter', locationsLayerId, setCursorPointer)
+    map.off('mouseleave', locationsLayerId, unsetCursorPointer)
+    map.off('sourcedata', sourceDateLoaded)
+  }
+})
 
-  // Set color to default if no layer is available
+watch(
+  () => props.selectedLocationId,
+  () => {
+    highlightSelectedLocationOnMap()
+  },
+)
+
+function highlightSelectedLocationOnMap() {
+  if (!map?.getSource(locationsSourceId)) return
   const locationId = props.selectedLocationId ?? 'noLayerSelected'
-  map.setPaintProperty(locationsLayerSourceId, 'circle-color', [
+  map.setPaintProperty(locationsLayerId, 'circle-color', [
     'match',
     ['get', 'locationId'],
     locationId,
     '#0c1e38', // color for selected location
     '#dfdfdf', // default color
   ])
-  map.setPaintProperty(locationsLayerSourceId, 'circle-stroke-color', [
+  map.setPaintProperty(locationsLayerId, 'circle-stroke-color', [
     'match',
     ['get', 'locationId'],
     locationId,
     'white', // stroke color for selected location
     'black', // default stroke color
   ])
-  map.setPaintProperty(locationsLayerSourceId, 'circle-radius', [
+  map.setPaintProperty(locationsLayerId, 'circle-radius', [
     'match',
     ['get', 'locationId'],
     locationId,
     7, // radius for selected location
     5, // default radius
   ]),
-    map.setLayoutProperty(locationsLayerSourceId, 'circle-sort-key', [
+    map.setLayoutProperty(locationsLayerId, 'circle-sort-key', [
       'match',
       ['get', 'locationId'],
       locationId,
