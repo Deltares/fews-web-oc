@@ -1,44 +1,37 @@
 <template>
-  <mapbox-map
-    style="width: 100%; height: 100%"
-    :access-token="accessToken"
-    map-style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+  <mgl-map
+    ref="map"
     :pitch="0"
     :bearing="0"
+    :center="[0, 0]"
     :min-zoom="2"
     :interactive="true"
     :drag-pan="true"
     :scroll-zoom="true"
-    :transformRequest="transformRequest"
-    :useWebGL2="true"
-    @mb-created="setMapInstance"
+    :transform-request="transformRequest"
   >
     <slot></slot>
-  </mapbox-map>
+  </mgl-map>
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount, ref } from 'vue'
-import { MapboxMap } from '@studiometa/vue-mapbox-gl'
-import { configManager } from '../../services/application-config'
-import type { Map, ResourceType } from 'mapbox-gl'
+import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
+import { MglMap, useMap, MglDefaults } from 'vue-maplibre-gl'
+import { type ResourceType, type RequestParameters } from 'maplibre-gl'
 
-const accessToken = ref('')
-const map = ref<Map | undefined>()
+import 'maplibre-gl/dist/maplibre-gl.css'
+import 'vue-maplibre-gl/dist/vue-maplibre-gl.css'
 
-onBeforeMount(() => {
-  accessToken.value = configManager.get('VITE_MAPBOX_TOKEN')
-})
+MglDefaults.style =
+  'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
-function setMapInstance(mapInstance: Map) {
-  mapInstance.dragRotate.disable()
-  mapInstance.touchZoomRotate.disableRotation()
-  mapInstance.doubleClickZoom.disable()
-  map.value = mapInstance
-}
+const map = useMap()
 
-function transformRequest(url: string, resourceType: ResourceType) {
+function transformRequest(
+  url: string,
+  resourceType?: ResourceType,
+): RequestParameters {
   if (!configManager.authenticationIsEnabled)
     return {
       url,
