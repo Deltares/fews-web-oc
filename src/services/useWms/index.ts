@@ -9,7 +9,7 @@ import { MaybeRefOrGetter, ref, Ref, toValue, watchEffect } from 'vue'
 import { toWgs84 } from '@turf/projection'
 // @ts-ignore
 import { point } from '@turf/helpers'
-import { LngLatBounds } from 'mapbox-gl'
+import { LngLatBounds } from 'maplibre-gl'
 import { GetLegendGraphicResponse } from '@deltares/fews-wms-requests/src/response/getLegendGraphicResponse.ts'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
