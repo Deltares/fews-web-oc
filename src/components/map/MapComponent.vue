@@ -15,18 +15,16 @@
 </template>
 
 <script setup lang="ts">
+
 import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
-import { MglMap, useMap, MglDefaults } from 'vue-maplibre-gl'
-import { type ResourceType, type RequestParameters } from 'maplibre-gl'
 
-import 'maplibre-gl/dist/maplibre-gl.css'
+import { MglMap, MglDefaults } from 'vue-maplibre-gl'
+import { type ResourceType, type RequestParameters } from 'maplibre-gl'
 import 'vue-maplibre-gl/dist/vue-maplibre-gl.css'
 
 MglDefaults.style =
   'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
-
-const map = useMap()
 
 function transformRequest(
   url: string,
