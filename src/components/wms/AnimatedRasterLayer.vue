@@ -3,21 +3,14 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, Ref, watch } from 'vue'
+import { nextTick, onMounted, watch } from 'vue'
 import { toMercator } from '@turf/projection'
-import {
-  ImageSource,
-  type ImageSourceOptions,
-  type ImageSourceRaw,
-  LngLatBounds,
-  Map,
-  type RasterLayer,
-} from 'mapbox-gl'
+import { ImageSource, LngLatBounds, type MapSourceDataEvent } from 'maplibre-gl'
 import { configManager } from '@/services/application-config'
-import { useMap } from '@studiometa/vue-mapbox-gl'
+import { useMap } from 'vue-maplibre-gl'
 import { point } from '@turf/helpers'
 
-export interface MapboxLayerOptions {
+export interface AnimatedRasterLayerOptions {
   name: string
   time: Date
   bbox?: LngLatBounds
@@ -26,24 +19,21 @@ export interface MapboxLayerOptions {
 }
 
 interface Props {
-  layer?: MapboxLayerOptions
+  layer?: AnimatedRasterLayerOptions
 }
 
 const props = withDefaults(defineProps<Props>(), {})
 
 const emit = defineEmits(['doubleclick'])
 
-const { map } = useMap() as { map: Ref<Map> }
+const { map } = useMap()
 
 let isInitialized = false
 let currentLayer: string = ''
 
 onMounted(() => {
-  if (map.value.isStyleLoaded()) {
-    addHooksToMapObject()
-    isInitialized = true
-    onLayerChange()
-  }
+  addHooksToMapObject()
+  onLayerChange()
 })
 
 function getCoordsFromBounds(bounds: LngLatBounds) {
@@ -56,31 +46,38 @@ function getCoordsFromBounds(bounds: LngLatBounds) {
 }
 
 function addHooksToMapObject() {
-  map.value.once('load', () => {
-    isInitialized = true
-    onLayerChange()
-  })
-  map.value.on('moveend', () => {
-    updateSource()
-  })
-  map.value.on('data', async (e) => {
-    if (
-      e.sourceId === currentLayer &&
-      e.tile !== undefined &&
-      e.isSourceLoaded
-    ) {
-      map.value.setPaintProperty(e.sourceId, 'raster-opacity', 1)
-    }
-  })
-  map.value.on('dblclick', (e) => emit('doubleclick', e))
+  if (map) {
+    map.once('load', () => {
+      isInitialized = true
+      onLayerChange()
+    })
+    map.on('moveend', () => {
+      updateSource()
+    })
+    map.on('sourcedata', async (e: MapSourceDataEvent) => {
+      if (
+        e.sourceId === currentLayer &&
+        e.tile !== undefined &&
+        e.isSourceLoaded
+      ) {
+        map.setPaintProperty(e.sourceId, 'raster-opacity', 1)
+      }
+    })
+    map.on('dblclick', (e) => emit('doubleclick', e))
+  }
 }
 
-function getImageSourceOptions(): ImageSourceOptions {
-  if (props.layer === undefined || props.layer.time === undefined) return {}
+function getImageSourceOptions(): any {
+  if (
+    props.layer === undefined ||
+    props.layer.time === undefined ||
+    map === undefined
+  )
+    return {}
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const time = props.layer.time.toISOString()
-  const bounds = map.value.getBounds()
-  const canvas = map.value.getCanvas()
+  const bounds = map.getBounds()
+  const canvas = map.getCanvas()
 
   const getMapUrl = new URL(`${baseUrl}/wms`)
   getMapUrl.searchParams.append('service', 'WMS')
@@ -110,31 +107,32 @@ function getImageSourceOptions(): ImageSourceOptions {
 }
 
 function createSource() {
-  const mapObject = map.value
-
-  const rasterSource: ImageSourceRaw = {
-    type: 'image',
-    ...getImageSourceOptions(),
-  }
-  mapObject.addSource(currentLayer, rasterSource)
-  const rasterLayer: RasterLayer = {
-    id: currentLayer,
-    type: 'raster',
-    source: currentLayer,
-    paint: {
-      'raster-opacity': 0,
-      'raster-opacity-transition': {
-        duration: 0,
-        delay: 0,
+  if (map) {
+    const rasterSource: any = {
+      type: 'image',
+      ...getImageSourceOptions(),
+    }
+    map.addSource(currentLayer, rasterSource)
+    const rasterLayer: any = {
+      id: currentLayer,
+      type: 'raster',
+      source: currentLayer,
+      paint: {
+        'raster-opacity': 0,
+        'raster-opacity-transition': {
+          duration: 0,
+          delay: 0,
+        },
+        'raster-fade-duration': 0,
       },
-      'raster-fade-duration': 0,
-    },
+    }
+    map.addLayer(rasterLayer, 'boundary_country_outline')
   }
-  mapObject.addLayer(rasterLayer, 'boundary_country_outline')
 }
 
 function updateSource() {
-  const source = map.value.getSource(currentLayer) as ImageSource
+  if (map === undefined) return
+  const source = map.getSource(currentLayer) as ImageSource
   if (source !== undefined) source.updateImage(getImageSourceOptions())
 }
 
@@ -146,14 +144,14 @@ function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
 
 function setDefaultZoom() {
   if (props.layer === undefined || props.layer.bbox === undefined) return
-  if (map.value) {
-    const currentBounds = map.value.getBounds()
+  if (map) {
+    const currentBounds = map.getBounds()
     const bounds = props.layer.bbox
     if (isBoundsWithinBounds(currentBounds, bounds)) {
       return
     } else {
       nextTick(() => {
-        map.value.fitBounds(bounds)
+        map.fitBounds(bounds)
       })
     }
   }
@@ -178,10 +176,10 @@ function isBoundsWithinBounds(
 }
 
 function removeLayer() {
-  if (map.value !== undefined) {
-    if (map.value.getSource(currentLayer) !== undefined) {
-      map.value.removeLayer(currentLayer)
-      map.value.removeSource(currentLayer)
+  if (map !== undefined) {
+    if (map.getSource(currentLayer) !== undefined) {
+      map.removeLayer(currentLayer)
+      map.removeSource(currentLayer)
     }
   }
 }
@@ -209,7 +207,7 @@ function onLayerChange(): void {
     setDefaultZoom()
   }
 
-  const source = map.value.getSource(currentLayer)
+  const source = map?.getSource(currentLayer)
   if (source === undefined) {
     createSource()
   } else {

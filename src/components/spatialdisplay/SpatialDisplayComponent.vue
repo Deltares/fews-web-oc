@@ -1,10 +1,10 @@
 <template>
   <MapComponent>
-    <animated-mapbox-layer
+    <animated-raster-layer
       :layer="layerOptions"
       @doubleclick="onCoordinateClick"
     >
-    </animated-mapbox-layer>
+    </animated-raster-layer>
     <div class="colourbar-container" v-if="legend">
       <ColourBar
         :colourMap="legend"
@@ -28,10 +28,10 @@
       :locationId="props.locationId"
       @changeLocationId="onLocationChange"
     />
-    <SelectedCoordinateLayer
+    <!-- <SelectedCoordinateLayer
       :longitude="props.longitude"
       :latitude="props.latitude"
-    />
+    /> -->
   </MapComponent>
   <DateTimeSlider
     v-if="times && times.length > 0"
@@ -51,17 +51,17 @@ import {
   useWmsLegend,
 } from '@/services/useWms'
 import ColourBar from '@/components/wms/ColourBar.vue'
-import AnimatedMapboxLayer, {
-  MapboxLayerOptions,
-} from '@/components/wms/AnimatedMapboxLayer.vue'
+import AnimatedRasterLayer, {
+  AnimatedRasterLayerOptions,
+} from '@/components/wms/AnimatedRasterLayer.vue'
 import LocationsLayerComponent from '@/components/wms/LocationsLayerComponent.vue'
-import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
+// import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
+import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import { configManager } from '@/services/application-config'
 import type { Layer } from '@deltares/fews-wms-requests'
 
@@ -111,7 +111,7 @@ const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
 const currentTime = ref<Date>(new Date())
-const layerOptions = ref<MapboxLayerOptions>()
+const layerOptions = ref<AnimatedRasterLayerOptions>()
 let debouncedSetLayerOptions!: () => void
 
 const colorScaleRange = ref<{ min: number; max: number }>()
