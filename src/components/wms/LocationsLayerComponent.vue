@@ -5,7 +5,12 @@
     :selectedLocationId="props.locationId"
     @click="onLocationClick"
   />
-  <v-chip class="locations-layer__chip" pill label size="small">
+  <v-chip
+    class="locations-layer__chip"
+    :class="{ 'pr-0': showLocationsLayer }"
+    pill
+    label
+  >
     <v-btn
       @click="showLocationsLayer = !showLocationsLayer"
       density="compact"
@@ -93,7 +98,7 @@ function onLocationChange(locationId: string | null): void {
   position: absolute;
   font-size: 0.825em;
   z-index: 1000;
-  top: 10px;
+  top: 8px;
   left: 10px;
   backdrop-filter: blur(5px);
   background-color: rgba(var(--v-theme-surface), 0.8);

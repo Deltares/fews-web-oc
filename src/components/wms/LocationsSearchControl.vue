@@ -1,5 +1,6 @@
 <template>
   <v-autocomplete
+    class="locations-search"
     v-model="selectedLocation"
     label="Search Locations"
     single-line
@@ -51,3 +52,9 @@ function onSelectLocation(newValue: Location | null) {
   emit('changeLocationId', newValue.locationId)
 }
 </script>
+
+<style>
+.locations-search > .v-field__overlay {
+  display: none;
+}
+</style>
