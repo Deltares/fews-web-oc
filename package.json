@@ -16,11 +16,11 @@
     "sonar": "sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$SONAR_KEY -Dsonar.projectName='Delft-FEWS Web OC'"
   },
   "dependencies": {
-    "@deltares/fews-pi-requests": "^1.0.0-rc.1",
-    "@deltares/fews-ssd-requests": "^1.0.0-rc.2",
-    "@deltares/fews-ssd-webcomponent": "^1.0.0-rc.1",
-    "@deltares/fews-web-oc-charts": "^3.0.0-alpha.19",
-    "@deltares/fews-wms-requests": "^0.1.11-alpha.4",
+    "@deltares/fews-pi-requests": "^1.0.2",
+    "@deltares/fews-ssd-requests": "^1.0.0",
+    "@deltares/fews-ssd-webcomponent": "^1.0.0",
+    "@deltares/fews-web-oc-charts": "^3.0.0",
+    "@deltares/fews-wms-requests": "^1.0.0",
     "@studiometa/vue-mapbox-gl": "^2.2.0",
     "@turf/helpers": "^7.0.0-alpha.2",
     "@turf/projection": "^7.0.0-alpha.2",
@@ -60,8 +60,8 @@
     "prettier": "3.0.3",
     "sonarqube-scanner": "^3.1.0",
     "typescript": "^5.2.2",
-    "vite-plugin-vuetify": "^2.0.1",
     "vite": "^5.0.12",
+    "vite-plugin-vuetify": "^2.0.1",
     "vitest": "^1.2.0",
     "vue-tsc": "^1.8.22"
   },
