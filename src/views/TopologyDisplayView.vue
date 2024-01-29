@@ -282,7 +282,10 @@ function displayTabsForNode(leafNode: TopologyNode, parentNodeId?: string) {
   const timeseriesTabId = `${activeNodeId}-timeseries`
   const spatialTabId = `${activeNodeId}-spatial`
   const _displayTabs: DisplayTab[] = []
-  if (leafNode.gridDisplaySelection !== undefined) {
+  if (
+    leafNode.gridDisplaySelection !== undefined ||
+    leafNode.filterIds !== undefined
+  ) {
     _displayTabs.push({
       type: 'map',
       id: spatialTabId,
@@ -415,6 +418,7 @@ function reroute(to: RouteLocationNormalized) {
           return tabs[tabIndex].to
         }
       }
+      console.log(tabs)
       activeTab.value = 0
       activeTabType.value = tabs[0].type
       return tabs[0].to
