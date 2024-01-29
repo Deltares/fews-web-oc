@@ -5,7 +5,7 @@
       @doubleclick="onCoordinateClick"
     >
     </animated-mapbox-layer>
-    <div class="colourbar-container">
+    <div class="colourbar-container" v-if="legend">
       <ColourBar :colourMap="legend" :title="legendTitle" />
     </div>
     <ElevationSlider
@@ -28,7 +28,7 @@
     />
   </MapComponent>
   <DateTimeSlider
-    v-if="times"
+    v-if="times && times.length > 0"
     v-model:selectedDate="currentTime"
     :dates="times"
     @update:doFollowNow="setCurrentTime"
@@ -188,6 +188,8 @@ function setLayerOptions(): void {
         : undefined,
     }
     layerOptions.value.elevation = currentElevation.value
+  } else {
+    layerOptions.value = undefined
   }
 }
 

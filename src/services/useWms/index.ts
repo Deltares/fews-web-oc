@@ -30,21 +30,24 @@ export function useWmsLayerCapabilities(
 
   async function loadLayer(): Promise<void> {
     const _layers = toValue(layerName)
-    if (_layers === '') return
-    try {
-      const capabilities = await wmsProvider.getCapabilities({
-        layers: _layers,
-        importFromExternalDataSource: false,
-        onlyHeaders: false,
-        forecastCount: 1,
-      })
-      if (capabilities.layers.length > 0) {
-        layerCapabilities.value =
-          capabilities.layers.find((l) => l.name === _layers) ??
-          capabilities.layers[0]
+    if (_layers === '') {
+      layerCapabilities.value = undefined
+    } else {
+      try {
+        const capabilities = await wmsProvider.getCapabilities({
+          layers: _layers,
+          importFromExternalDataSource: false,
+          onlyHeaders: false,
+          forecastCount: 1,
+        })
+        if (capabilities.layers.length > 0) {
+          layerCapabilities.value =
+            capabilities.layers.find((l) => l.name === _layers) ??
+            capabilities.layers[0]
+        }
+      } catch (error) {
+        console.error(error)
       }
-    } catch (error) {
-      console.error(error)
     }
   }
 

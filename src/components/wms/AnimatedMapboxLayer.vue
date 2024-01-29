@@ -188,8 +188,7 @@ watch(
 
 function onLayerChange(): void {
   if (!isInitialized) return
-  if (props.layer === undefined) return
-  if (props.layer === null) {
+  if (props.layer === undefined || props.layer === null) {
     removeLayer()
     return
   }
