@@ -93,16 +93,19 @@ export function useWmsLegend(
   async function loadLegend(): Promise<void> {
     const _layers = toValue(layerName)
     const _useDisplayUnits = toValue(useDisplayUnits)
-    if (_layers === '') return
-    try {
-      legendGraphic.value = await wmsProvider.getLegendGraphic({
-        layers: _layers,
-        // Enable when fews-wms-requests is updated
-        //@ts-ignore
-        useDisplayUnits: _useDisplayUnits,
-      })
-    } catch (error) {
-      console.error(error)
+    if (_layers === '') {
+      legendGraphic.value = undefined
+    } else {
+      try {
+        legendGraphic.value = await wmsProvider.getLegendGraphic({
+          layers: _layers,
+          // Enable when fews-wms-requests is updated
+          //@ts-ignore
+          useDisplayUnits: _useDisplayUnits,
+        })
+      } catch (error) {
+        console.error(error)
+      }
     }
   }
 

@@ -418,7 +418,6 @@ function reroute(to: RouteLocationNormalized) {
           return tabs[tabIndex].to
         }
       }
-      console.log(tabs)
       activeTab.value = 0
       activeTabType.value = tabs[0].type
       return tabs[0].to
