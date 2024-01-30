@@ -209,11 +209,15 @@ const refreshChart = () => {
 
   axis.redraw({
     x: {
-      nice: false ? props.config?.xAxis?.some(c => c.defaultDomain) : undefined,
+      nice: false
+        ? props.config?.xAxis?.some((c) => c.defaultDomain)
+        : undefined,
       autoScale: true,
     },
     y: {
-      nice: false ? props.config?.yAxis?.some(c => c.defaultDomain) : undefined,
+      nice: false
+        ? props.config?.yAxis?.some((c) => c.defaultDomain)
+        : undefined,
       autoScale: true,
     },
   })
