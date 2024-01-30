@@ -44,7 +44,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import {
-  AlertLines,
   CartesianAxesOptions,
   ChartLine,
   ChartMarker,
@@ -60,7 +59,6 @@ import {
 } from '@deltares/fews-web-oc-charts'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
-import type { ThresholdLine } from '../../lib/charts/types/ThresholdLine.js'
 import { Series } from '../../lib/timeseries/timeSeries.js'
 import uniq from 'lodash-es/uniq'
 import { VChipGroup } from 'vuetify/components'
@@ -91,8 +89,6 @@ const props = withDefaults(defineProps<Props>(), {
   },
 })
 
-let thresholdLines!: ThresholdLine[]
-let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
 const legendTags = ref<Tag[]>([])
 const chartContainer = ref<HTMLElement>()
@@ -147,9 +143,6 @@ onMounted(() => {
     const mouseOver = new MouseOver()
     const zoom = new ZoomHandler(WheelMode.NONE)
 
-    thresholdLinesVisitor = new AlertLines(thresholdLines)
-
-    axis.accept(thresholdLinesVisitor)
     axis.accept(zoom)
     axis.accept(mouseOver)
     resize()
