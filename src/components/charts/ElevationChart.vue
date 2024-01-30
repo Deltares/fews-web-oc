@@ -46,7 +46,6 @@ import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import {
   CartesianAxesOptions,
   ChartLine,
-  ChartMarker,
   WheelMode,
   toggleChartVisibility,
 } from '@deltares/fews-web-oc-charts'
@@ -149,29 +148,16 @@ const addToChart = (chartSeries: ChartSeries) => {
   const id = chartSeries.id
   const seriesData = props.series[chartSeries.dataResources[0]]
   const data = seriesData?.data !== undefined ? seriesData.data : []
-  let line
-  if (chartSeries.type === 'line') {
-    line = new ChartLine(data, {
-      tooltip: {
-        toolTipFormatter: () => {
-          const tooltip = document.createElement('div')
-          tooltip.innerText = `${chartSeries.name} ${chartSeries.unit}`
-          return tooltip
-        },
+  const line = new ChartLine(data, {
+    tooltip: {
+      toolTipFormatter: () => {
+        const tooltip = document.createElement('div')
+        tooltip.innerText = `${chartSeries.name} ${chartSeries.unit}`
+        return tooltip
       },
-    })
-  } else {
-    line = new ChartMarker(data, {
-      symbol: chartSeries.marker,
-      tooltip: {
-        toolTipFormatter: () => {
-          const tooltip = document.createElement('div')
-          tooltip.innerText = `${chartSeries.name} ${chartSeries.unit}`
-          return tooltip
-        },
-      },
-    })
-  }
+    },
+  })
+
   line.addTo(
     axis,
     {

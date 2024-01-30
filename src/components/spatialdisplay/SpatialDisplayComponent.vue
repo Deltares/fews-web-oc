@@ -75,6 +75,7 @@ interface Props {
   filterIds?: string[]
   latitude?: string
   longitude?: string
+  currentTime?: Date
 }
 
 const props = withDefaults(defineProps<Props>(), {
