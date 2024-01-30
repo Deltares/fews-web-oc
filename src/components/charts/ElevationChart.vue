@@ -116,12 +116,6 @@ onMounted(() => {
         unit: ' ',
         nice: true,
       },
-      {
-        position: AxisPosition.Right,
-        label: ' ',
-        unit: ' ',
-        nice: true,
-      },
     ],
     margin: {
       top: 110,
