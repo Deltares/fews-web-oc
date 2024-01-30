@@ -21,7 +21,7 @@
               variant="text"
               class="text-capitalize"
             >
-              <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
+              <v-icon>{{ item.icon }}</v-icon>
             </v-btn>
           </v-btn-toggle>
         </template>
@@ -90,7 +90,6 @@ interface DisplayTypeItem {
   icon: string
   label: string
   value: DisplayType
-  iconStyle?: string
 }
 
 const displayType = ref(DisplayType.TimeSeriesChart)
@@ -110,10 +109,9 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
 
   if ((elevationChartDisplayconfig.value?.subplots?.length ?? 0) > 0) {
     displayItems.push({
-      icon: 'mdi-chart-line',
+      icon: 'mdi-elevation-rise',
       label: 'Vertical profile',
       value: DisplayType.ElevationChart,
-      iconStyle: 'transform: rotate(90deg)',
     })
   }
 
