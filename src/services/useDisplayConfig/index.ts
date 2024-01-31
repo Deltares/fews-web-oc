@@ -10,6 +10,7 @@ import { DisplayConfig } from '../../lib/display/DisplayConfig.js'
 import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig.js'
 import { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.js'
+import { MD5 } from 'crypto-js'
 
 export interface UseDisplayConfigReturn {
   displayConfig: Ref<DisplayConfig | undefined>
@@ -129,6 +130,22 @@ export function useDisplayConfigFilter(
       response = await piProvider.getFilterActions(_filter)
     } else if (isTimeSeriesGridActionsFilter(_filter)) {
       response = await piProvider.getTimeSeriesGridActions(_filter)
+      response.results.forEach((result) => {
+        result.requests.forEach((request) => {
+          request.key = MD5(request.request).toString()
+        })
+        if (result.config?.timeSeriesDisplay.subplots) {
+          let i = 0
+          result.config.timeSeriesDisplay.subplots.forEach((subPlot) => {
+            subPlot.items.forEach((item) => {
+              if (item.request === undefined) {
+                item.request = `${result.requests[0].key}[${i}]`
+              }
+            })
+            i++
+          })
+        }
+      })
     } else {
       return
     }
