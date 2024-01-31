@@ -44,10 +44,15 @@
         <v-list class="bg-grey-lighten-3">
           <v-list-item
             v-for="item in nodeButtons"
+            :href="item.href"
+            :target="item.href ? '_blank' : undefined"
             :to="item.to"
             @click="activeParentId = item.name"
           >
             {{ item.name }}
+            <template v-slot:append>
+              <v-icon size="xsmall">{{ item.icon }}</v-icon>
+            </template>
           </v-list-item>
         </v-list>
       </v-menu>
@@ -249,12 +254,17 @@ function nodeButtonItems(node: TopologyNode) {
         id: n.id,
         name: n.name,
         icon: getIcon(n),
-        to: {
+      }
+      const href = getUrl(n)
+      if (href) {
+        result.href = href
+      } else {
+        result.to = {
           name: 'TopologyDisplay',
           params: {
             nodeId: [node.id, n.id],
           },
-        },
+        }
       }
       return result
     })
