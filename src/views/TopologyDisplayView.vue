@@ -42,18 +42,25 @@
         </template>
 
         <v-list class="bg-grey-lighten-3">
-          <v-list-item
-            v-for="item in nodeButtons"
-            :href="item.href"
-            :target="item.href ? '_blank' : undefined"
-            :to="item.to"
-            @click="activeParentId = item.name"
-          >
-            {{ item.name }}
-            <template v-slot:append>
-              <v-icon size="xsmall">{{ item.icon }}</v-icon>
-            </template>
-          </v-list-item>
+          <template v-for="item in nodeButtons">
+            <v-list-item
+              v-if="item.href"
+              :href="item.href"
+              :target="item.href ? '_blank' : undefined"
+            >
+              {{ item.name }}
+              <template v-slot:append>
+                <v-icon size="xsmall">{{ item.icon }}</v-icon>
+              </template>
+            </v-list-item>
+            <v-list-item
+              v-else
+              :to="item.to"
+              @click="activeParentId = item.name"
+            >
+              {{ item.name }}
+            </v-list-item>
+          </template>
         </v-list>
       </v-menu>
       <v-btn-toggle
