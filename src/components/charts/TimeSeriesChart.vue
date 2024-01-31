@@ -249,7 +249,7 @@ const refreshChart = () => {
   }
   if (props.config.yAxis) {
     axis.setOptions({
-      y: [props.config.yAxis[0], props.config.yAxis[1]],
+      y: props.config.yAxis,
     })
   }
 
