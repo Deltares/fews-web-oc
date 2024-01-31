@@ -212,18 +212,41 @@ const setThresholdLines = () => {
   const disabled = tag?.disabled ?? false
   if (disabled) {
     thresholdLines = []
+    let defaultDomain: [number, number] = [NaN, NaN]
+    if (
+      props.config.yAxis &&
+      props.config.yAxis.length > 0 &&
+      props.config.yAxis[0].defaultDomain
+    ) {
+      defaultDomain = props.config.yAxis[0].defaultDomain as any
+    }
+    axis.setOptions({
+      y: [{ defaultDomain, nice: true }],
+    })
   } else {
     thresholdLines = thresholdLinesData
+    let defaultDomain: [number, number] = extent<number>(
+      thresholdLinesData.map((l) => {
+        return l.value ?? NaN
+      }),
+    ) as any
+    if (
+      props.config.yAxis &&
+      props.config.yAxis.length > 0 &&
+      props.config.yAxis[0].defaultDomain &&
+      typeof props.config.yAxis[0].defaultDomain[0] === 'number' &&
+      typeof props.config.yAxis[0].defaultDomain[1] === 'number'
+    ) {
+      defaultDomain = extent<number>([
+        ...defaultDomain,
+        ...props.config.yAxis[0].defaultDomain,
+      ] as any) as any
+    }
+    axis.setOptions({
+      y: [{ defaultDomain, nice: true }],
+    })
   }
 
-  let defaultDomain = extent(thresholdLinesData.map((l) => l.value))
-  if (thresholdLines.length === 0 || defaultDomain[0] === undefined) {
-    defaultDomain = [NaN, NaN]
-  }
-
-  axis.setOptions({
-    y: [{ defaultDomain: defaultDomain, nice: true }],
-  })
   thresholdLinesVisitor.options = thresholdLines
 }
 
