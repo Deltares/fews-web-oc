@@ -141,8 +141,8 @@ export function useDisplayConfigFilter(
               if (item.request === undefined) {
                 item.request = `${result.requests[0].key}[${i}]`
               }
+              i++
             })
-            i++
           })
         }
       })
