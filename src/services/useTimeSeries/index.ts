@@ -114,14 +114,14 @@ export function useTimeSeries(
       }
 
       const relativeUrl = request.request.split('?')[0] + url.search
+      const isGridTimeSEries = request.request.includes('/timeseries/grid?')
       piProvider.getTimeSeriesWithRelativeUrl(relativeUrl).then((piSeries) => {
         if (piSeries.timeSeries !== undefined)
           for (const index in piSeries.timeSeries) {
             const timeSeries = piSeries.timeSeries[index]
-            const resourceId =
-              piSeries.timeSeries.length > 1
-                ? `${request.key}[${index}]`
-                : request.key ?? ''
+            const resourceId = isGridTimeSEries
+              ? `${request.key}[${index}]`
+              : request.key ?? ''
             updatedSeriesIds.push(resourceId)
             if (timeSeries.events === undefined) continue
             const resource = new SeriesUrlRequest('fews-pi', 'dummyUrl')
