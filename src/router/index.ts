@@ -205,6 +205,12 @@ async function addDynamicRoutes() {
     const route = dynamicRoutes.find((route) => route.name === component.type)
     if (route !== undefined) {
       router.addRoute(route)
+    } else {
+      router.addRoute({
+        name: component.type,
+        path: `/empty/${component.type}`,
+        component: Empty,
+      })
     }
   })
   if (store.defaultComponent !== undefined) {
