@@ -112,11 +112,17 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
         yAxis.axisMinValue !== undefined &&
         yAxis.axisMaxValue !== undefined
       ) {
-        const defaultDomain: [number, number] = [
+        const domain: [number, number] = [
           yAxis.axisMinValue,
           yAxis.axisMaxValue,
         ]
-        axis.defaultDomain = defaultDomain
+        if (yAxis.axisMinValue === 0 && yAxis.axisMaxValue === 360) {
+          axis.type = AxisType.degrees
+          axis.domain = domain
+          axis.nice = false
+        } else {
+          axis.defaultDomain = domain
+        }
       }
       axes.push(axis)
     }

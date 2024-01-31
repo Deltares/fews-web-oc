@@ -66,7 +66,7 @@ import { Series } from '../../lib/timeseries/timeSeries.js'
 import uniq from 'lodash-es/uniq'
 import { extent } from 'd3'
 import { VChipGroup } from 'vuetify/components'
-import { difference } from 'lodash-es'
+import { difference, merge } from 'lodash-es'
 
 const LEGEND_HEIGHT = 76
 
@@ -135,7 +135,12 @@ onMounted(() => {
   }
 
   if (chartContainer.value) {
-    axis = new CartesianAxes(chartContainer.value, null, null, axisOptions)
+    axis = new CartesianAxes(
+      chartContainer.value,
+      null,
+      null,
+      merge(axisOptions, { x: props.config?.xAxis, y: props.config?.yAxis }),
+    )
     const mouseOver = new MouseOver()
     const zoom = new ZoomHandler(WheelMode.NONE)
     const currentTime = new CurrentTime({
