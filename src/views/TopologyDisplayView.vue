@@ -166,7 +166,7 @@ const activeParentNode = ref(0)
 const nodeButtons = ref<any[]>([])
 const activeParentId = ref('')
 
-const externalLink = ref<string>('')
+const externalLink = ref<string|undefined>('')
 
 const route = useRoute()
 const router = useRouter()
@@ -367,9 +367,7 @@ watchEffect(() => {
   const _displayTabs = displayTabsForNode(node, parentNodeIdNodeId)
   displayTabs.value = _displayTabs
 
-  if (node.url !== undefined) {
-    externalLink.value = node.url
-  }
+  externalLink.value = node.url
 })
 
 onBeforeRouteUpdate(reroute)
