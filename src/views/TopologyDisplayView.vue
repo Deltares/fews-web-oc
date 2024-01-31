@@ -367,6 +367,9 @@ watchEffect(() => {
     const menuNodeId = props.nodeId[0]
     const menuNode = topologyMap.value.get(menuNodeId) as any
     nodeButtons.value = nodeButtonItems(menuNode)
+    if (!activeParentId.value && nodeButtons.value.length > 0) {
+      activeParentId.value = nodeButtons.value[0].name
+    }
   }
 
   // Create the displayTabs for the active node.
