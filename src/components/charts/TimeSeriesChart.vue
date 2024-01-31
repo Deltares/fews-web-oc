@@ -202,7 +202,8 @@ const addToChart = (chartSeries: ChartSeries) => {
 
 const setThresholdLines = () => {
   const thresholdLinesData = props.config.thresholds
-  if (thresholdLinesData === undefined) return
+  if (thresholdLinesData === undefined || thresholdLinesData.length === 0)
+    return
 
   const tag = legendTags.value.find((tag) => {
     return tag.id === 'Thresholds'
