@@ -118,7 +118,10 @@ export function useTimeSeries(
         if (piSeries.timeSeries !== undefined)
           for (const index in piSeries.timeSeries) {
             const timeSeries = piSeries.timeSeries[index]
-            const resourceId = `${request.key}[${index}]`
+            const resourceId =
+              piSeries.timeSeries.length > 1
+                ? `${request.key}[${index}]`
+                : request.key ?? ''
             updatedSeriesIds.push(resourceId)
             if (timeSeries.events === undefined) continue
             const resource = new SeriesUrlRequest('fews-pi', 'dummyUrl')
