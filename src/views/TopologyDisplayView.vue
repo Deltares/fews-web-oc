@@ -173,7 +173,7 @@ const activeParentNode = ref(0)
 const nodeButtons = ref<any[]>([])
 const activeParentId = ref('')
 
-const externalLink = ref<string|undefined>('')
+const externalLink = ref<string | undefined>('')
 
 const route = useRoute()
 const router = useRouter()
