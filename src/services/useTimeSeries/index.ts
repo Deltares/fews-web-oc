@@ -72,7 +72,7 @@ export function useTimeSeries(
     const _options = toValue(options)
 
     const currentSeriesIds = Object.keys(series.value)
-    const updatedDeriesIds = []
+    const updatedSeriesIds: string[] = []
     for (const r in _requests) {
       const request = _requests[r]
       const url = absoluteUrl(`${baseUrl}/${request.request}`)
@@ -113,12 +113,13 @@ export function useTimeSeries(
         url.searchParams.set('thinning', `${timeStepPerPixel}`)
       }
 
-      const resourceId = `${request.key}`
-      updatedDeriesIds.push(resourceId)
       const relativeUrl = request.request.split('?')[0] + url.search
       piProvider.getTimeSeriesWithRelativeUrl(relativeUrl).then((piSeries) => {
         if (piSeries.timeSeries !== undefined)
-          for (const timeSeries of piSeries.timeSeries) {
+          for (const index in piSeries.timeSeries) {
+            const timeSeries = piSeries.timeSeries[index]
+            const resourceId = `${request.key}[${index}]`
+            updatedSeriesIds.push(resourceId)
             if (timeSeries.events === undefined) continue
             const resource = new SeriesUrlRequest('fews-pi', 'dummyUrl')
             const _series = new Series(resource)
@@ -156,7 +157,7 @@ export function useTimeSeries(
           }
       })
     }
-    const oldSeriesIds = difference(currentSeriesIds, updatedDeriesIds)
+    const oldSeriesIds = difference(currentSeriesIds, updatedSeriesIds)
     if (oldSeriesIds.length > MAX_SERIES) {
       for (const seriesId of oldSeriesIds) {
         delete series.value[seriesId]
