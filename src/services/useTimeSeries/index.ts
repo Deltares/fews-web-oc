@@ -69,7 +69,7 @@ export function useTimeSeries(
   const MAX_SERIES = 20
 
   watch([lastUpdated, selectedTime, requests, options], () => {
-    controller.abort("Timeseries request triggered again before finishing.")
+    controller.abort('Timeseries request triggered again before finishing.')
     controller = new AbortController()
     const piProvider = new PiWebserviceProvider(baseUrl, {
       transformRequestFn: createTransformRequestFn(controller),
@@ -130,7 +130,11 @@ export function useTimeSeries(
               ? `${request.key}[${index}]`
               : request.key ?? ''
             updatedSeriesIds.push(resourceId)
-            if (timeSeries.events === undefined && timeSeries.domains === undefined) continue
+            if (
+              timeSeries.events === undefined &&
+              timeSeries.domains === undefined
+            )
+              continue
             const resource = new SeriesUrlRequest('fews-pi', 'dummyUrl')
             const _series = new Series(resource)
             const header = timeSeries.header
@@ -155,7 +159,10 @@ export function useTimeSeries(
                 _series.data = timeSeries.events.map((event) => {
                   return {
                     x: new Date(parsePiDateTime(event, timeZone)),
-                    y: event.value === _series.missingValue ? null : +event.value,
+                    y:
+                      event.value === _series.missingValue
+                        ? null
+                        : +event.value,
                     flag: event.flag,
                     flagSource: event.flagSource,
                     comment: event.comment,
@@ -181,7 +188,7 @@ export function useTimeSeries(
   })
 
   onUnmounted(() => {
-    controller.abort("useTimeSeries unmounted.")
+    controller.abort('useTimeSeries unmounted.')
   })
 
   const shell = {
