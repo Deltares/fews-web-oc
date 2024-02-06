@@ -61,6 +61,7 @@ import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
 import { Series } from '../../lib/timeseries/timeSeries.js'
 import uniq from 'lodash-es/uniq'
 import { VChipGroup } from 'vuetify/components'
+import { difference } from 'lodash-es'
 
 const LEGEND_HEIGHT = 76
 
@@ -304,7 +305,21 @@ const beforeDestroy = () => {
   window.removeEventListener('resize', resize)
 }
 
-watch(props.series, onValueChange, { deep: true })
+watch(
+  () =>
+    Object.keys(props.series).map(
+      (k) => `${k}-${props.series[k].lastUpdated?.getTime()}`,
+    ),
+  (newValue, oldValue) => {
+    const newSeriesIds = difference(newValue, oldValue)
+    const requiredSeriesIds = props.config?.series.filter((s) =>
+      newSeriesIds.map((id) => id.split('-')[0]).includes(s.id),
+    )
+    if (requiredSeriesIds.length > 0) {
+      onValueChange()
+    }
+  },
+)
 watch(props.config, onValueChange)
 
 onBeforeUnmount(() => {
