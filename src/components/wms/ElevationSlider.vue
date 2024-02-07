@@ -63,6 +63,7 @@ interface Props {
   minValue: number
   maxValue: number
   unit: string
+  ticks?: number[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -160,6 +161,11 @@ const onValueChange = () => {
 watch(() => props.modelValue, onValueChange)
 
 watchEffect(() => {
+  if (props.ticks) {
+    marks.value = props.ticks
+    return
+  }
+
   const scale = scaleLinear(
     [props.minValue, props.maxValue],
     [props.minValue, props.maxValue],
