@@ -104,6 +104,12 @@
           {{ alert.message }}
         </v-alert>
       </div>
+      <SplashScreen
+        v-if="splashSrc && version"
+        :img-url="splashSrc"
+        :version="version"
+        :terms-url="termsSrc"
+      />
     </v-main>
   </v-layout>
 </template>
@@ -117,6 +123,7 @@ import { useRoute } from 'vue-router'
 import LoginComponent from '../views/auth/LoginComponent.vue'
 import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
+import SplashScreen from '@/components/general/SplashScreen.vue'
 
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
@@ -134,6 +141,8 @@ const route = useRoute()
 
 const version = ref(packageConfig.version)
 const logoSrc = ref('')
+const splashSrc = ref<string>()
+const termsSrc = ref<string>()
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
 
@@ -186,38 +195,51 @@ watchEffect(async () => {
   }
 })
 
-watch(() => configStore.general, setLogo)
+watch(
+  () => configStore.general,
+  async () => {
+    const imagesBaseUrl = `${import.meta.env.BASE_URL}images/`
+    const defaultLogo = `${imagesBaseUrl}logo.png`
+    const logoUrl = await getLocalOrRemoteFile(
+      imagesBaseUrl,
+      configStore.general.icons?.logo,
+    )
+    logoSrc.value = logoUrl ?? defaultLogo
 
-async function setLogo() {
-  const defaultLogo = `${import.meta.env.BASE_URL}images/logo.png`
-  const logoRelPath = configStore.general.icons?.logo
+    splashSrc.value = await getLocalOrRemoteFile(
+      imagesBaseUrl,
+      configStore.general.splashScreen,
+    )
+    // Change to getting relative path from configStore once FEWS has this setting
+    termsSrc.value = await getLocalOrRemoteFile(
+      import.meta.env.BASE_URL,
+      'metoc_viewer_disclaimer.htm',
+    )
+  },
+)
 
-  if (logoRelPath) {
-    const remoteUrl = getResourcesStaticUrl(logoRelPath)
-    const localUrl = `${import.meta.env.BASE_URL}images/${logoRelPath}`
+async function getLocalOrRemoteFile(localBase: string, relativePath?: string) {
+  if (!relativePath) return
+  const remoteUrl = getResourcesStaticUrl(relativePath)
+  const localUrl = `${localBase}${relativePath}`
 
-    try {
-      const remoteResponse = await fetch(remoteUrl, { method: 'HEAD' })
-      if (remoteResponse.ok) {
-        logoSrc.value = remoteUrl
-        return
-      }
-    } catch (error) {
-      // Handle fetch error
+  try {
+    const remoteResponse = await fetch(remoteUrl, { method: 'HEAD' })
+    if (remoteResponse.ok) {
+      return remoteUrl
     }
-
-    try {
-      const localResponse = await fetch(localUrl, { method: 'HEAD' })
-      if (localResponse.ok) {
-        logoSrc.value = localUrl
-        return
-      }
-    } catch (error) {
-      // Handle fetch error
-    }
+  } catch (error) {
+    // Handle fetch error
   }
 
-  logoSrc.value = defaultLogo
+  try {
+    const localResponse = await fetch(localUrl, { method: 'HEAD' })
+    if (localResponse.ok) {
+      return localUrl
+    }
+  } catch (error) {
+    // Handle fetch error
+  }
 }
 
 function onCloseAlert(alert: Alert) {
