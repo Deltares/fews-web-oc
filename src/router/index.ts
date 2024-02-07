@@ -179,7 +179,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     path: '/resources/:path?',
     name: 'HtmlDisplay',
     component: HtmlDisplay,
-    props: true
+    props: true,
   },
   {
     path: '/archivedisplay',

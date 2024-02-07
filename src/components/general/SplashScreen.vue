@@ -12,7 +12,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
 
 interface Props {
   imgUrl: string
@@ -28,8 +28,8 @@ function routeToTerms() {
   router.push({
     name: 'HtmlDisplay',
     params: {
-      path: 'terms-of-use'
-    }
+      path: 'terms-of-use',
+    },
   })
 }
 </script>
