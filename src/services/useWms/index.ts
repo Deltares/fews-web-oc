@@ -86,6 +86,7 @@ export function useWmsLegend(
   baseUrl: string,
   layerName: MaybeRefOrGetter<string>,
   useDisplayUnits: MaybeRefOrGetter<boolean>,
+  colorScaleRange?: MaybeRefOrGetter<string | undefined>,
 ): Ref<GetLegendGraphicResponse | undefined> {
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
@@ -96,12 +97,14 @@ export function useWmsLegend(
   async function loadLegend(): Promise<void> {
     const _layers = toValue(layerName)
     const _useDisplayUnits = toValue(useDisplayUnits)
+    const _colorScaleRange = toValue(colorScaleRange)
     if (_layers === '') {
       legendGraphic.value = undefined
     } else {
       try {
         legendGraphic.value = await wmsProvider.getLegendGraphic({
           layers: _layers,
+          colorscalerange: _colorScaleRange,
           // Enable when fews-wms-requests is updated
           //@ts-ignore
           useDisplayUnits: _useDisplayUnits,

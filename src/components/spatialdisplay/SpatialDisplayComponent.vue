@@ -6,7 +6,11 @@
     >
     </animated-mapbox-layer>
     <div class="colourbar-container" v-if="legend">
-      <ColourBar :colourMap="legend" :title="legendTitle" />
+      <ColourBar
+        :colourMap="legend"
+        :title="legendTitle"
+        v-model:colorScaleRange="colorScaleRange"
+      />
     </div>
     <ElevationSlider
       v-if="layerHasElevation"
@@ -105,12 +109,14 @@ const currentTime = ref<Date>(new Date())
 const layerOptions = ref<MapboxLayerOptions>()
 let debouncedSetLayerOptions!: () => void
 
+const colorScaleRange = ref<string | undefined>(undefined)
 const settings = useUserSettingsStore()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const legendGraphic = useWmsLegend(
   baseUrl,
   () => props.layerName,
   () => settings.useDisplayUnits,
+  colorScaleRange,
 )
 
 const legend = computed(() => {
@@ -140,6 +146,10 @@ watch(
 watch(currentElevation, () => {
   setLayerOptions()
   emit('update:elevation', currentElevation.value)
+})
+
+watch(colorScaleRange, () => {
+  setLayerOptions()
 })
 
 const legendTitle = computed(() => {
@@ -188,6 +198,7 @@ function setLayerOptions(): void {
         : undefined,
     }
     layerOptions.value.elevation = currentElevation.value
+    layerOptions.value.colorScaleRange = colorScaleRange.value
   } else {
     layerOptions.value = undefined
   }

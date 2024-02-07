@@ -95,6 +95,13 @@ function getImageSourceOptions(): ImageSourceOptions {
   if (props.layer.elevation) {
     getMapUrl.searchParams.append('elevation', `${props.layer.elevation}`)
   }
+  if (props.layer.colorScaleRange) {
+    getMapUrl.searchParams.append(
+      'colorScaleRange',
+      `${props.layer.colorScaleRange}`,
+    )
+    getMapUrl.searchParams.append('useDisplayUnits', 'true')
+  }
   const imageSourceOptions = {
     url: getMapUrl.toString(),
     coordinates: getCoordsFromBounds(bounds),

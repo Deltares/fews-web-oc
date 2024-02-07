@@ -1,6 +1,16 @@
 <template>
   <div id="legend" :class="isVisible ? 'invisible' : ''">
     <svg id="colourbar" class="colourbar"></svg>
+    <LegendInput
+      v-model:value="range.min"
+      :maxValue="range.max"
+      v-model:isEditing="isEditingMin"
+    />
+    <LegendInput
+      v-model:value="range.max"
+      :minValue="range.min"
+      v-model:isEditing="isEditingMax"
+    />
   </div>
 </template>
 
@@ -8,20 +18,35 @@
 import { onMounted, ref, watch } from 'vue'
 import * as d3 from 'd3'
 import * as webOcCharts from '@deltares/fews-web-oc-charts'
+import LegendInput from '@/components/wms/LegendInput.vue'
+
+type Range = {
+  min: number
+  max: number
+}
 
 interface Props {
   colourMap?: webOcCharts.ColourMap
   title?: string
+  colorScaleRange?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {})
 
-const isVisible = ref<boolean>(true)
-let group: d3.Selection<SVGGElement, unknown, HTMLElement, any>
+const emit = defineEmits(['update:colorScaleRange'])
 
-watch([() => props.colourMap, () => props.title], () => {
-  updateColourBar()
+const isVisible = ref<boolean>(true)
+const range = ref<Range>({
+  min: props.colorScaleRange
+    ? parseFloat(props.colorScaleRange.split(',')[0])
+    : 0,
+  max: props.colorScaleRange
+    ? parseFloat(props.colorScaleRange.split(',')[1])
+    : 1,
 })
+const isEditingMin = ref<boolean>(false)
+const isEditingMax = ref<boolean>(false)
+let group: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
 onMounted(() => {
   const svg = d3.select('#colourbar')
@@ -31,6 +56,18 @@ onMounted(() => {
     .style('pointer-events', 'visiblePainted')
   updateColourBar()
 })
+
+watch([props], () => {
+  updateColourBar()
+})
+
+watch(
+  range,
+  () => {
+    emit('update:colorScaleRange', `${range.value.min},${range.value.max}`)
+  },
+  { deep: true },
+)
 
 function updateColourBar() {
   if (!props.colourMap) return
@@ -48,6 +85,14 @@ function updateColourBar() {
   }
   new webOcCharts.ColourBar(group as any, props.colourMap, 250, 10, options)
   isVisible.value = true
+
+  const firstChild = d3.select('#colourbar > g > g.axis').selectChild()
+  const lastChild = d3
+    .select('#colourbar > g > g.axis')
+    .selectChild(':last-child')
+
+  firstChild.on('click', () => (isEditingMin.value = true))
+  lastChild.on('click', () => (isEditingMax.value = true))
 }
 </script>
 
