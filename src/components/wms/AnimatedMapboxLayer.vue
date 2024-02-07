@@ -37,6 +37,7 @@ const { map } = useMap() as { map: Ref<Map> }
 
 let isInitialized = false
 let currentLayer: string = ''
+let cachedRequests: Record<string, ImageSourceOptions> = {}
 
 onMounted(() => {
   if (map.value.isStyleLoaded()) {
@@ -75,10 +76,10 @@ function addHooksToMapObject() {
   map.value.on('dblclick', (e) => emit('doubleclick', e))
 }
 
-function getImageSourceOptions(): ImageSourceOptions {
-  if (props.layer === undefined || props.layer.time === undefined) return {}
+function getImageSourceOptions(layer: MapboxLayerOptions | undefined): ImageSourceOptions {
+  if (layer === undefined || layer.time === undefined) return {}
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const time = props.layer.time.toISOString()
+  const time = layer.time.toISOString()
   const bounds = map.value.getBounds()
   const canvas = map.value.getCanvas()
 
@@ -86,14 +87,14 @@ function getImageSourceOptions(): ImageSourceOptions {
   getMapUrl.searchParams.append('service', 'WMS')
   getMapUrl.searchParams.append('request', 'GetMap')
   getMapUrl.searchParams.append('version', '1.3')
-  getMapUrl.searchParams.append('layers', props.layer.name)
+  getMapUrl.searchParams.append('layers', layer.name)
   getMapUrl.searchParams.append('crs', 'EPSG:3857')
   getMapUrl.searchParams.append('bbox', `${getMercatorBboxFromBounds(bounds)}`)
   getMapUrl.searchParams.append('height', `${canvas.height}`)
   getMapUrl.searchParams.append('width', `${canvas.width}`)
   getMapUrl.searchParams.append('time', `${time}`)
-  if (props.layer.elevation) {
-    getMapUrl.searchParams.append('elevation', `${props.layer.elevation}`)
+  if (layer.elevation) {
+    getMapUrl.searchParams.append('elevation', `${layer.elevation}`)
   }
   const imageSourceOptions = {
     url: getMapUrl.toString(),
@@ -107,7 +108,7 @@ function createSource() {
 
   const rasterSource: ImageSourceRaw = {
     type: 'image',
-    ...getImageSourceOptions(),
+    ...getImageSourceOptions(props.layer),
   }
   mapObject.addSource(currentLayer, rasterSource)
   const rasterLayer: RasterLayer = {
@@ -128,7 +129,43 @@ function createSource() {
 
 function updateSource() {
   const source = map.value.getSource(currentLayer) as ImageSource
-  if (source !== undefined) source.updateImage(getImageSourceOptions())
+  if (props.layer === undefined || props.layer.time === undefined) return
+  const cachedRequest = cachedRequests[getCacheKey(props.layer)]
+  if (cachedRequest) {
+    source.updateImage(cachedRequest)
+    return
+  }
+  source.updateImage(getImageSourceOptions(props.layer))
+}
+
+function getCacheKey(layer: MapboxLayerOptions) {
+  return layer.name + map.value.getBounds() + layer.time.toString()
+}
+
+function populateCache(times: Date[]) {
+  if (props.layer === undefined || props.layer.time === undefined) return
+
+  const milliSecondsInAnHour = 3.6e6
+  const cacheSize = 10
+  const oldTime = props.layer.time.valueOf()
+  console.log('oldTime', oldTime, props.layer.time)
+  const layer = { name: props.layer.name, time: new Date(props.layer.time), elevation: props.layer.elevation }
+  for (let i = 1; i <= cacheSize; i++) {
+    layer.time.setTime(oldTime + (i * milliSecondsInAnHour))
+    const cacheKey = getCacheKey(layer)
+    if (cachedRequests[cacheKey]) continue
+
+    const imageSourceOptions = getImageSourceOptions(layer)
+    console.log('imageSourceOptions', imageSourceOptions)
+    // Cache by creating local blob
+    if (imageSourceOptions.url === undefined) return
+    fetch(imageSourceOptions.url)
+      .then(response => response.blob())
+      .then(blob => {
+        const blobUrl = URL.createObjectURL(blob)
+        cachedRequests[cacheKey] = { url: blobUrl, coordinates: imageSourceOptions.coordinates }
+      })
+  }
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
@@ -201,6 +238,8 @@ function onLayerChange(): void {
     currentLayer = props.layer.name
     setDefaultZoom()
   }
+
+  populateCache([])
 
   const source = map.value.getSource(currentLayer)
   if (source === undefined) {
