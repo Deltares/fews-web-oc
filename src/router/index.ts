@@ -30,6 +30,7 @@ const TopologyDisplayView = () => import('../views/TopologyDisplayView.vue')
 const TimeSeriesDisplay = () =>
   import('../components/timeseries/TimeSeriesDisplay.vue')
 const UserSettingsView = () => import('../views/UserSettingsView.vue')
+const HtmlDisplay = () => import('../views/HtmlDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
@@ -175,6 +176,12 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     ],
   },
   {
+    path: '/resources/:path?',
+    name: 'HtmlDisplay',
+    component: HtmlDisplay,
+    props: true
+  },
+  {
     path: '/archivedisplay',
     name: 'ArchiveDisplay',
     component: Empty,
@@ -241,6 +248,13 @@ function defaultRouteParams(to: RouteLocationNormalized) {
         }
       }
     }
+
+    const path = component.path
+    if (path && !params.path) {
+      params.path = path
+      requiresRedirect = true
+    }
+
     if (requiresRedirect) {
       to.params = params
       return to
