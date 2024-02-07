@@ -120,4 +120,12 @@ function updateColourBar() {
   user-select: none;
   font-size: 1em;
 }
+
+:deep(#min-legend) {
+  cursor: pointer;
+}
+
+:deep(#max-legend) {
+  cursor: pointer;
+}
 </style>
