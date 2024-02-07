@@ -108,7 +108,6 @@
         v-if="splashSrc && version"
         :img-url="splashSrc"
         :version="version"
-        :terms-url="termsSrc"
       />
     </v-main>
   </v-layout>
@@ -142,7 +141,6 @@ const route = useRoute()
 const version = ref(packageConfig.version)
 const logoSrc = ref('')
 const splashSrc = ref<string>()
-const termsSrc = ref<string>()
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
 
@@ -210,11 +208,6 @@ watch(
       imagesBaseUrl,
       configStore.general.splashScreen,
     )
-    // Change to getting relative path from configStore once FEWS has this setting
-    termsSrc.value = await getLocalOrRemoteFile(
-      import.meta.env.BASE_URL,
-      'metoc_viewer_disclaimer.htm',
-    )
   },
 )
 
@@ -223,9 +216,14 @@ async function getLocalOrRemoteFile(localBase: string, relativePath?: string) {
   const remoteUrl = getResourcesStaticUrl(relativePath)
   const localUrl = `${localBase}${relativePath}`
 
+  const isHtmlResponse = (response: Response) => {
+    const contentType = response.headers.get('Content-Type')
+    return contentType?.includes('text/html') ?? false
+  }
+
   try {
     const remoteResponse = await fetch(remoteUrl, { method: 'HEAD' })
-    if (remoteResponse.ok) {
+    if (remoteResponse.ok && !isHtmlResponse(remoteResponse)) {
       return remoteUrl
     }
   } catch (error) {
@@ -234,7 +232,7 @@ async function getLocalOrRemoteFile(localBase: string, relativePath?: string) {
 
   try {
     const localResponse = await fetch(localUrl, { method: 'HEAD' })
-    if (localResponse.ok) {
+    if (localResponse.ok && !isHtmlResponse(localResponse)) {
       return localUrl
     }
   } catch (error) {
