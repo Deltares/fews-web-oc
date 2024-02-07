@@ -48,6 +48,27 @@
       </div>
       <v-spacer />
       <div class="play-controls">
+        <v-menu offset="25" transition="fade-transition">
+          <template v-slot:activator="{ props }">
+            <v-btn v-bind="props" density="compact" variant="text" icon>
+              <v-icon>mdi-play-speed</v-icon>
+              <v-tooltip location="top" activator="parent">
+                <span>Playback speed</span>
+              </v-tooltip>
+            </v-btn>
+          </template>
+
+          <v-list class="pa-1">
+            <v-list-item
+              v-for="speed in availableSpeeds"
+              :active="speed === currentSpeed"
+              rounded
+              density="compact"
+              @click="setSpeed(speed)"
+              :title="formatSpeed(speed)"
+            />
+          </v-list>
+        </v-menu>
         <v-btn
           density="compact"
           variant="text"
@@ -108,8 +129,11 @@ const playIncrement = 1
 const stepIncrement = 1
 const dateIndex = ref(0)
 
-const isPlaying = ref(false)
-let playIntervalTimer: ReturnType<typeof setInterval> | null = null
+const defaultSpeed = 1
+const currentSpeed = ref(defaultSpeed)
+const availableSpeeds = [0.5, 1, 2, 4]
+
+const playTimeoutTimer = ref<ReturnType<typeof setTimeout>>()
 
 const doFollowNow = ref(props.doFollowNow)
 let followNowIntervalTimer: ReturnType<typeof setInterval> | null = null
@@ -209,13 +233,13 @@ const nowButtonIcon = computed(() =>
   props.isLoading ? 'mdi-loading mdi-spin' : 'mdi-clock',
 )
 const playButtonIcon = computed(() =>
-  isPlaying.value ? 'mdi-pause' : 'mdi-play',
+  playTimeoutTimer.value ? 'mdi-pause' : 'mdi-play',
 )
 const nowButtonColor = computed(() =>
   doFollowNow.value ? 'primary' : undefined,
 )
 const playButtonColor = computed(() =>
-  isPlaying.value ? 'primary' : undefined,
+  playTimeoutTimer.value ? 'primary' : undefined,
 )
 
 const dateString = computed(() =>
@@ -252,25 +276,22 @@ function setDateToNow(): void {
 }
 
 function togglePlay(): void {
-  isPlaying.value = !isPlaying.value
-  if (isPlaying.value) {
-    startPlay()
-  } else {
+  if (playTimeoutTimer.value) {
     stopPlay()
+  } else {
+    startPlay()
   }
 }
 
 function startPlay(): void {
-  isPlaying.value = true
   stopFollowNow()
-  playIntervalTimer = setInterval(play, props.playInterval)
+  play()
 }
 
 function stopPlay(): void {
-  isPlaying.value = false
-  if (playIntervalTimer) {
-    clearInterval(playIntervalTimer)
-    playIntervalTimer = null
+  if (playTimeoutTimer.value) {
+    clearTimeout(playTimeoutTimer.value)
+    playTimeoutTimer.value = undefined
   }
 }
 
@@ -279,6 +300,10 @@ function play(): void {
     dateIndex.value = 0
   }
   increment(playIncrement)
+  playTimeoutTimer.value = setTimeout(
+    play,
+    props.playInterval * (1 / currentSpeed.value),
+  )
 }
 
 function stepBackward(): void {
@@ -297,6 +322,14 @@ function decrement(step: number): void {
 
 function increment(step: number): void {
   dateIndex.value = Math.min(dateIndex.value + step, maxIndex.value)
+}
+
+function setSpeed(speed: number) {
+  currentSpeed.value = speed
+}
+
+function formatSpeed(speed: number) {
+  return speed === defaultSpeed ? 'Normal' : `${speed}x`
 }
 </script>
 

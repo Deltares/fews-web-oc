@@ -88,7 +88,7 @@ const emit = defineEmits([
 ])
 
 onBeforeMount(() => {
-  debouncedSetLayerOptions = debounce(setLayerOptions, 500, {
+  debouncedSetLayerOptions = debounce(setLayerOptions, 240, {
     leading: true,
     trailing: true,
   })
