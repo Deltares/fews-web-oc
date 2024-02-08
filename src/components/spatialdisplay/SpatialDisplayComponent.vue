@@ -89,10 +89,10 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits([
-  'change-location-id',
-  'coordinate-click',
+  'changeLocationId',
+  'coordinateClick',
   'update:elevation',
-  'update:current-time',
+  'update:currentTime',
 ])
 
 onBeforeMount(() => {
@@ -213,7 +213,7 @@ function updateTime(date: Date): void {
 }
 
 watch(currentTime, () => {
-  emit('update:current-time', currentTime.value)
+  emit('update:currentTime', currentTime.value)
 })
 
 function setLayerOptions(): void {
@@ -233,13 +233,13 @@ function setLayerOptions(): void {
 }
 
 function onLocationChange(locationId: string | null): void {
-  emit('change-location-id', locationId)
+  emit('changeLocationId', locationId)
 }
 
 function onCoordinateClick(
   event: MapLayerMouseEvent | MapLayerTouchEvent,
 ): void {
-  emit('coordinate-click', event)
+  emit('coordinateClick', event)
 }
 </script>
 
