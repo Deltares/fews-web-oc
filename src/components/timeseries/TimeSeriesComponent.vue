@@ -32,7 +32,7 @@
     </v-window-item>
     <v-window-item
       :value="DisplayType.ElevationChart"
-      class="time-series-component__container scroll"
+      class="elevation-chart-component__container scroll"
     >
       <KeepAlive>
         <ElevationChart
@@ -40,6 +40,7 @@
           :config="subplot"
           :series="elevationChartSeries"
           :key="`${subplot.title}-${i}`"
+          class="elevation-chart-component"
         >
         </ElevationChart>
       </KeepAlive>
@@ -173,6 +174,17 @@ watch(
   flex: 1 1 100%;
   width: 100%;
   flex-direction: column;
+}
+
+.elevation-chart-component__container {
+  display: flex;
+  flex: 1 1 100%;
+  flex-direction: row;
+  overflow-x: auto;
+}
+
+.elevation-chart-component {
+  min-width: 50%;
 }
 
 .scroll {
