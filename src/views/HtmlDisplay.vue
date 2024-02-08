@@ -1,11 +1,9 @@
 <template>
-  <v-card>
-    <v-card-title>{{ title }}</v-card-title>
-    <v-card-text v-html="htmlText"></v-card-text>
-  </v-card>
+  <div class="scroll pa-4" v-html="htmlText"></div>
 </template>
 
 <script setup lang="ts">
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { useConfigStore } from '@/stores/config'
 import { computedAsync } from '@vueuse/core'
 import { computed } from 'vue'
@@ -21,13 +19,14 @@ const matchingComponent = computed(() => {
   )
 })
 
-const title = computed(() => matchingComponent.value?.title)
 const url = computed(() => matchingComponent.value?.url)
 const htmlText = computedAsync(async () => {
   if (!url.value) return
 
+  const staticUrl = getResourcesStaticUrl(url.value)
+
   try {
-    const response = await fetch(url.value)
+    const response = await fetch(staticUrl)
     const text = await response.text()
     return text
   } catch (error) {
@@ -35,3 +34,10 @@ const htmlText = computedAsync(async () => {
   }
 })
 </script>
+
+<style scoped>
+.scroll {
+  height: 100%;
+  overflow-y: auto;
+}
+</style>
