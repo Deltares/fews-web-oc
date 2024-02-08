@@ -14,7 +14,11 @@
           <v-spacer />
           <login-component v-if="configManager.authenticationIsEnabled" />
         </v-toolbar>
-        <v-menu origin="left" min-width="320">
+        <v-menu
+          origin="left"
+          min-width="320"
+          v-if="configStore.activeComponents.length > 1"
+        >
           <template #activator="{ isActive, props }">
             <v-list-item
               aria-label="Menu button"
