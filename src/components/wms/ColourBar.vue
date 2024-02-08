@@ -88,7 +88,6 @@ function updateColourBar() {
 }
 
 .colourbar {
-  fill: none;
   width: 300px;
   height: 85px;
   -webkit-font-smoothing: antialiased;
