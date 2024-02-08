@@ -24,15 +24,15 @@ const props = withDefaults(defineProps<Props>(), {
   nodeId: '',
 })
 
-const active = ref<string[]>([])
+const active = ref<string | undefined>(undefined)
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
 
 watch(
   () => props.nodeId,
   () => {
-    if (active.value[0] !== props.nodeId) {
-      active.value = [props.nodeId]
+    if (active.value !== props.nodeId) {
+      active.value = props.nodeId
     }
   },
   { immediate: true },

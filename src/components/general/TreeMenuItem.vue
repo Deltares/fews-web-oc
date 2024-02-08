@@ -7,7 +7,10 @@
             <v-list-item-title>{{ item.name }}</v-list-item-title>
           </v-list-item>
         </template>
-        <TreeMenuItem :items="item.children"></TreeMenuItem>
+        <TreeMenuItem
+          :items="item.children"
+          :active="props.active"
+        ></TreeMenuItem>
       </v-list-group>
     </template>
     <v-list-item v-else-if="item.href" :href="item.href" target="_blank">
@@ -27,13 +30,13 @@ import type { ColumnItem } from './ColumnItem.js'
 
 interface Props {
   items?: ColumnItem[]
-  active?: string[]
+  active?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   items: () => {
     return []
   },
-  active: () => [],
+  active: '',
 })
 </script>

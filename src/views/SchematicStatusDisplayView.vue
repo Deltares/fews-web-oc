@@ -102,7 +102,7 @@ const props = withDefaults(defineProps<Props>(), {
 const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
 const ssdContainer = ref<HTMLElement | null>(null)
 
-const active = ref<string[]>([])
+const active = ref<string | undefined>(undefined)
 const open = ref<string[]>([])
 
 const selectedDate = ref<Date>(new Date())
@@ -207,7 +207,7 @@ function onGroupIdChange(): void {
 }
 
 function onPanelIdChange(): void {
-  active.value = [props.panelId]
+  active.value = props.panelId
 }
 
 const hideSSD = computed(() => {

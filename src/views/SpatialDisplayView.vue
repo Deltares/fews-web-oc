@@ -62,7 +62,7 @@ const props = withDefaults(defineProps<Props>(), {
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const capabilities = useWmsCapilities(baseUrl)
 
-const active = ref<string[]>(['root'])
+const active = ref<string>('root')
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>()
 const menuType = ref('treemenu')

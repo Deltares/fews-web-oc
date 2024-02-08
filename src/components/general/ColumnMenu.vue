@@ -56,7 +56,7 @@ import type { ColumnItem } from './ColumnItem'
 interface Props {
   items?: ColumnItem[]
   open?: string[]
-  active?: string[]
+  active?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -64,7 +64,7 @@ const props = withDefaults(defineProps<Props>(), {
     return []
   },
   open: () => [],
-  active: () => [],
+  active: '',
 })
 
 const stack = ref<ColumnItem[]>([])
@@ -95,7 +95,7 @@ watch(
 )
 
 function getClass(child: ColumnItem): string {
-  return child.id === props.active[0] ? 'primary--text v-list-item--active' : ''
+  return child.id === props.active ? 'primary--text v-list-item--active' : ''
 }
 
 function onTitleClick(): void {
@@ -104,7 +104,7 @@ function onTitleClick(): void {
     s.pop()
     path.pop()
   }
-  emit('update:active', [])
+  emit('update:active', undefined)
   emit('update:open', [...path, ...props.open])
 }
 
@@ -116,7 +116,7 @@ function onItemClick(event: Event, item: ColumnItem): void {
     path.push(item.id)
     emit('update:open', [...path, ...props.open])
   } else {
-    emit('update:active', [item.id])
+    emit('update:active', item.id)
   }
   emit('click', event, item)
 }
@@ -128,7 +128,7 @@ function updateStack(): void {
     children: [...props.items],
   }
   const s = [root]
-  recursiveFind(s, props.active[0])
+  recursiveFind(s, props.active)
   stack.value = s
   path = s.map((item) => item.id)
   emit('update:open', [...path, ...props.open])
