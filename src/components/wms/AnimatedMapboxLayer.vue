@@ -11,6 +11,9 @@ import {
   type ImageSourceRaw,
   LngLatBounds,
   type RasterLayer,
+  type MapSourceDataEvent,
+  type MapLayerMouseEvent,
+  type MapLayerTouchEvent,
 } from 'mapbox-gl'
 import { configManager } from '@/services/application-config'
 import { useMap } from '@studiometa/vue-mapbox-gl'
@@ -43,6 +46,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   removeLayer()
+  removeHooksFromMapObject()
 })
 
 function getCoordsFromBounds(bounds: LngLatBounds) {
@@ -54,23 +58,37 @@ function getCoordsFromBounds(bounds: LngLatBounds) {
   ]
 }
 
+function onMapMove(): void {
+  updateSource()
+}
+
+function onDataChange(event: MapSourceDataEvent): void {
+  if (
+    event.sourceId === currentLayer &&
+    event.tile !== undefined &&
+    event.isSourceLoaded
+  ) {
+    map.value.setPaintProperty(event.sourceId, 'raster-opacity', 1)
+  }
+}
+
+function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
+  emit('doubleclick', event)
+}
+
 function addHooksToMapObject() {
   map.value.once('load', () => {
     onLayerChange()
   })
-  map.value.on('moveend', () => {
-    updateSource()
-  })
-  map.value.on('data', async (e) => {
-    if (
-      e.sourceId === currentLayer &&
-      e.tile !== undefined &&
-      e.isSourceLoaded
-    ) {
-      map.value.setPaintProperty(e.sourceId, 'raster-opacity', 1)
-    }
-  })
-  map.value.on('dblclick', (e) => emit('doubleclick', e))
+  map.value.on('moveend', onMapMove)
+  map.value.on('data', onDataChange)
+  map.value.on('dblclick', onDoubleClick)
+}
+
+function removeHooksFromMapObject(): void {
+  map.value.off('moveend', onMapMove)
+  map.value.off('data', onDataChange)
+  map.value.off('dblclick', onDoubleClick)
 }
 
 function getImageSourceOptions(): ImageSourceOptions {
