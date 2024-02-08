@@ -115,11 +115,7 @@
           {{ alert.message }}
         </v-alert>
       </div>
-      <SplashScreen
-        v-if="splashSrc && version"
-        :img-url="splashSrc"
-        :version="version"
-      />
+      <SplashScreen v-if="splashSrc" :img-url="splashSrc" :version="version" />
     </v-main>
   </v-layout>
 </template>
