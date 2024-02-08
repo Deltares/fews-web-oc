@@ -1,5 +1,6 @@
 <template>
-  <div class="html-content pa-4" v-html="htmlText"></div>
+  <div v-if="htmlText" class="html-content pa-4" v-html="htmlText"></div>
+  <v-alert v-else class="ma-10">Resource not found</v-alert>
 </template>
 
 <script setup lang="ts">
@@ -28,7 +29,9 @@ const htmlText = computedAsync(async () => {
   try {
     const response = await fetch(staticUrl)
     const text = await response.text()
-    return text
+    if (response.ok) {
+      return text
+    }
   } catch (error) {
     // Handle fetch error
   }
