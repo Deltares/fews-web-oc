@@ -169,7 +169,7 @@ export function useTimeSeries(
                 })
               } else if (timeSeries.domains && _selectedTime) {
                 _series.domains = timeSeries.domains
-                fillSeriesForElevation(_series, _selectedTime)
+                fillSeriesForElevation(_series, _selectedTime, timeZone)
               }
               _series.lastUpdated = new Date()
             }
@@ -231,7 +231,7 @@ export async function postTimeSeriesEdit(
   }
 }
 
-function fillSeriesForElevation(timeSeries: Series, date: Date): void {
+function fillSeriesForElevation(timeSeries: Series, currentDate: Date, timeZone: string): void {
   if (timeSeries.domains === undefined) {
     throw new Error('No domains found')
   }
@@ -253,9 +253,12 @@ function fillSeriesForElevation(timeSeries: Series, date: Date): void {
     // find the event in the events that matches the date
     const event = events.find((event) => {
       const time = event.events![0].time
-      const day = event.events![0].date
-      const eventDate = new Date(`${day}T${time}.000Z`)
-      return eventDate.getTime() === date.getTime()
+      const date = event.events![0].date
+      if (time === undefined || date === undefined) {
+        return false
+      }
+      const eventDate = new Date(parsePiDateTime({ date, time }, timeZone))
+      return eventDate.getTime() === currentDate.getTime()
     })
 
     timeSeries.data = domainValues
