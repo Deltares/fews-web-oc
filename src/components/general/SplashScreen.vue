@@ -4,9 +4,13 @@
       <v-img :src="imgUrl" />
       <div class="info-overlay">
         <div v-if="version">Delft-FEWS WebOC Version {{ version }}</div>
-        <a @click.prevent="routeToTerms" variant="text" class="terms-button">{{
-          termsComponent?.title
-        }}</a>
+        <a
+          v-if="termsComponent"
+          @click.prevent="routeToTerms"
+          variant="text"
+          class="terms-button"
+          >{{ termsComponent.title }}</a
+        >
       </div>
     </v-card>
   </v-dialog>
