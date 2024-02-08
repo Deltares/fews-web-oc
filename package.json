@@ -19,7 +19,7 @@
     "@deltares/fews-pi-requests": "^1.0.2",
     "@deltares/fews-ssd-requests": "^1.0.0",
     "@deltares/fews-ssd-webcomponent": "^1.0.0",
-    "@deltares/fews-web-oc-charts": "^3.0.0",
+    "@deltares/fews-web-oc-charts": "^3.0.1",
     "@deltares/fews-wms-requests": "^1.0.0",
     "@studiometa/vue-mapbox-gl": "^2.2.0",
     "@turf/helpers": "^7.0.0-alpha.2",
