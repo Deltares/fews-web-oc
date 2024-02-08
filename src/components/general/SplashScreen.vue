@@ -2,9 +2,9 @@
   <v-dialog v-model="showDialog" max-width="900">
     <v-card @click="showDialog = false" style="cursor: default">
       <v-img :src="imgUrl" />
-      <div class="overlay">
+      <div class="info-overlay">
         <div>Viewer Version {{ version }}</div>
-        <v-btn @click.prevent="routeToTerms" variant="text">Terms of Use</v-btn>
+        <a @click.prevent="routeToTerms" variant="text" class="terms-button">Terms of Use</a>
       </div>
     </v-card>
   </v-dialog>
@@ -35,11 +35,16 @@ function routeToTerms() {
 </script>
 
 <style scoped>
-.overlay {
+.info-overlay {
   position: absolute;
   bottom: 12px;
   right: 20px;
+  color: white;
   text-align: right;
-  color: black;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.terms-button {
+  cursor: pointer;
 }
 </style>
