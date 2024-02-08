@@ -69,6 +69,17 @@
               width="320"
             >
               <v-list density="compact">
+                <v-list-item
+                  v-for="item in (configStore.general as any).helpMenu.url"
+                  :href="item.url"
+                  >{{ item.name }}</v-list-item
+                >
+                <v-list-item
+                  v-for="item in (configStore.general as any).helpMenu.path"
+                  :to="{ name: 'HtmlDisplay', params: { path: item.path } }"
+                  href="#"
+                  >{{ item.name }}</v-list-item
+                >
                 <v-list-item :to="{ name: 'About' }">About</v-list-item>
               </v-list>
             </v-menu>
