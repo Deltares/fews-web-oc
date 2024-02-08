@@ -4,7 +4,9 @@
       <v-img :src="imgUrl" />
       <div class="info-overlay">
         <div>Viewer Version {{ version }}</div>
-        <a @click.prevent="routeToTerms" variant="text" class="terms-button">Terms of Use</a>
+        <a @click.prevent="routeToTerms" variant="text" class="terms-button"
+          >Terms of Use</a
+        >
       </div>
     </v-card>
   </v-dialog>
