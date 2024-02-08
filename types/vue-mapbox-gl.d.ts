@@ -1,4 +1,5 @@
 declare module '@studiometa/vue-mapbox-gl' {
+  import { Map } from 'mapbox-gl'
   import { AllGeoJSON, Position } from '@turf/helpers'
   export const MapboxMap: any
   export const MapboxMarker: any

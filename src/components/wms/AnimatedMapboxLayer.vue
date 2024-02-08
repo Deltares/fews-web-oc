@@ -3,14 +3,13 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, Ref, watch } from 'vue'
+import { nextTick, onMounted, watch } from 'vue'
 import { toMercator } from '@turf/projection'
 import {
   ImageSource,
   type ImageSourceOptions,
   type ImageSourceRaw,
   LngLatBounds,
-  Map,
   type RasterLayer,
 } from 'mapbox-gl'
 import { configManager } from '@/services/application-config'
@@ -33,7 +32,7 @@ const props = withDefaults(defineProps<Props>(), {})
 
 const emit = defineEmits(['doubleclick'])
 
-const { map } = useMap() as { map: Ref<Map> }
+const { map } = useMap()
 
 let isInitialized = false
 let currentLayer: string = ''
