@@ -28,6 +28,11 @@
       :locationId="props.locationId"
       @changeLocationId="onLocationChange"
     />
+    <LayerKindControl
+      v-model="layerKind"
+      v-if="canUseStreamlines"
+      class="layer-type-control"
+    />
     <SelectedCoordinateLayer
       :longitude="props.longitude"
       :latitude="props.latitude"
@@ -45,6 +50,8 @@
 
 <script setup lang="ts">
 import MapComponent from '@/components/map/MapComponent.vue'
+import LayerKindControl from '@/components/spatialdisplay/LayerKindControl.vue'
+
 import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
@@ -64,6 +71,7 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
 import { configManager } from '@/services/application-config'
 import type { Layer } from '@deltares/fews-wms-requests'
+import { LayerKind } from '@/lib/streamlines'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -129,9 +137,15 @@ const legendGraphic = useWmsLegend(
   colorScaleRangeString,
 )
 
+const layerKind = ref(LayerKind.Static)
+
 const legend = computed(() => {
   return legendGraphic.value?.legend
 })
+
+const canUseStreamlines = computed(
+  () => props.layerCapabilities?.animatedVectors !== undefined,
+)
 
 watchEffect(() => {
   if (!legend.value) return
@@ -261,5 +275,12 @@ function onCoordinateClick(
   backdrop-filter: blur(5px);
   background-color: rgba(var(--v-theme-surface), 0.8);
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.layer-type-control {
+  position: absolute;
+  top: 10px;
+  right: 5px;
+  z-index: 1000;
 }
 </style>

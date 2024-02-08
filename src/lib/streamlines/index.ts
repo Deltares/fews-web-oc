@@ -10,3 +10,4 @@ export {
   fetchWMSVelocityField,
 } from './utils/wms'
 export { type BoundingBoxScaling } from './render/final'
+export { LayerKind } from './types'
