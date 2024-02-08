@@ -53,7 +53,7 @@ import {
   AxisPosition,
   AxisType,
   CartesianAxes,
-  MouseOver,
+  VerticalMouseOver,
   ZoomHandler,
 } from '@deltares/fews-web-oc-charts'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
@@ -134,7 +134,7 @@ onMounted(() => {
       chartHeight,
       axisOptions,
     )
-    const mouseOver = new MouseOver()
+    const mouseOver = new VerticalMouseOver()
     const zoom = new ZoomHandler(WheelMode.NONE)
 
     axis.accept(zoom)
