@@ -1,11 +1,12 @@
 <template>
   <LocationsLayer
-    v-if="showLocationsLayer"
+    v-if="showLocationsLayer && hasLocations"
     :locationsGeoJson="locationsGeoJson"
     :selectedLocationId="props.locationId"
     @click="onLocationClick"
   />
   <v-chip
+    v-if="hasLocations"
     class="locations-layer__chip"
     :class="{ 'pr-0': showLocationsLayer }"
     pill
@@ -31,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, watchEffect } from 'vue'
+import { ref, watch, watchEffect, computed } from 'vue'
 import LocationsSearchControl from './LocationsSearchControl.vue'
 import LocationsLayer from './LocationsLayer.vue'
 import { configManager } from '@/services/application-config'
@@ -79,6 +80,10 @@ watchEffect(async () => {
 
 watch(locationsGeoJson, () => {
   locations.value = convertGeoJsonToFewsPiLocation(locationsGeoJson.value)
+})
+
+const hasLocations = computed(() => {
+  return locations.value.length > 0
 })
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
