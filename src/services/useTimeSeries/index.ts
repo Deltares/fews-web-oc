@@ -231,7 +231,11 @@ export async function postTimeSeriesEdit(
   }
 }
 
-function fillSeriesForElevation(timeSeries: Series, currentDate: Date, timeZone: string): void {
+function fillSeriesForElevation(
+  timeSeries: Series,
+  currentDate: Date,
+  timeZone: string,
+): void {
   if (timeSeries.domains === undefined) {
     throw new Error('No domains found')
   }
