@@ -27,9 +27,9 @@ export async function fetchLocationsAsGeoJson(
   )
   // Merge them into a single GeoJSON.
   const geojson = allGeoJson.reduce((prev, cur) => {
-    prev.features.concat(cur.features)
+    prev.features = prev.features.concat(cur.features)
     return prev
-  })
+  }, { type: 'FeatureCollection', features: [] })
   return geojson
 }
 
