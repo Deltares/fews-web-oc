@@ -19,6 +19,7 @@
       :key="layerOptions?.name"
       :min-value="minElevation"
       :max-value="maxElevation"
+      :ticks="elevationTicks"
       :unit="elevationUnit"
     ></ElevationSlider>
     <LocationsLayerComponent
@@ -104,6 +105,7 @@ const dateController = new DateController([])
 const currentElevation = ref<number>(0)
 const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
+const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
 const currentTime = ref<Date>(new Date())
@@ -157,6 +159,7 @@ watch(
       maxElevation.value = max
       elevationUnit.value =
         (layer.elevation as ElevationWithUnitSymbol).unitSymbol ?? ''
+      elevationTicks.value = layer.elevation.irregularTicks
     }
   },
   { immediate: true, deep: true },
