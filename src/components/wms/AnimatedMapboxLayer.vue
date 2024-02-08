@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { toMercator } from '@turf/projection'
 import {
   ImageSource,
@@ -34,15 +34,15 @@ const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
 
-let isInitialized = false
 let currentLayer: string = ''
 
 onMounted(() => {
-  if (map.value.isStyleLoaded()) {
-    addHooksToMapObject()
-    isInitialized = true
-    onLayerChange()
-  }
+  addHooksToMapObject()
+  onLayerChange()
+})
+
+onUnmounted(() => {
+  removeLayer()
 })
 
 function getCoordsFromBounds(bounds: LngLatBounds) {
@@ -56,7 +56,6 @@ function getCoordsFromBounds(bounds: LngLatBounds) {
 
 function addHooksToMapObject() {
   map.value.once('load', () => {
-    isInitialized = true
     onLayerChange()
   })
   map.value.on('moveend', () => {
@@ -193,7 +192,6 @@ watch(
 )
 
 function onLayerChange(): void {
-  if (!isInitialized) return
   if (props.layer === undefined || props.layer === null) {
     removeLayer()
     return
