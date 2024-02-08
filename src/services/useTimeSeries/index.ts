@@ -26,8 +26,6 @@ export interface UseTimeSeriesOptions {
   startTime?: Date | null
   endTime?: Date | null
   thinning?: boolean
-  convertDatum?: boolean
-  useDisplayUnits?: boolean
   showVerticalProfile?: boolean
 }
 
