@@ -109,6 +109,7 @@ function updateColourBar() {
 }
 
 :deep(g) {
+  pointer-events: none;
   font-family: var(--primary-font);
 }
 
@@ -122,9 +123,11 @@ function updateColourBar() {
 
 :deep(#min-legend) {
   cursor: pointer;
+  pointer-events: all;
 }
 
 :deep(#max-legend) {
   cursor: pointer;
+  pointer-events: all;
 }
 </style>
