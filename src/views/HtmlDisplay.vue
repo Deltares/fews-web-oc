@@ -1,5 +1,5 @@
 <template>
-  <div class="scroll pa-4" v-html="htmlText"></div>
+  <div class="html-content pa-4" v-html="htmlText"></div>
 </template>
 
 <script setup lang="ts">
@@ -36,8 +36,12 @@ const htmlText = computedAsync(async () => {
 </script>
 
 <style scoped>
-.scroll {
+.html-content {
   height: 100%;
   overflow-y: auto;
+}
+
+.html-content >>> ul {
+  padding: revert;
 }
 </style>
