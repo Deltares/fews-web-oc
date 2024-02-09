@@ -147,6 +147,8 @@ export function useDisplayConfigFilter(
         }
       })
     } else {
+      displayConfig.value = undefined
+      displays.value = undefined
       return
     }
     const _displays = actionsResponseToDisplayConfig(response)

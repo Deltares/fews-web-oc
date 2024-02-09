@@ -80,10 +80,9 @@ watch(
   { deep: true },
 )
 
-const elevationChartFilter = computed(() => props.elevationChartFilter ?? {})
 const { displayConfig: elevationChartDisplayconfig } = useDisplayConfigFilter(
   baseUrl,
-  elevationChartFilter,
+  () => props.elevationChartFilter ?? {},
 )
 
 interface DisplayTypeItem {
