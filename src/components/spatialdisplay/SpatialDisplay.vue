@@ -120,10 +120,12 @@ const filter = computed(() => {
 const elevationChartFilter = computed(() => {
   if (!layerCapabilities.value?.elevation) return
   const actionsFilter = getTimeSeriesGridActionsFilter()
-  return {
-    ...actionsFilter,
-    elevation: undefined,
-    showVerticalProfile: true,
+  if (actionsFilter) {
+    return {
+      ...actionsFilter,
+      elevation: undefined,
+      showVerticalProfile: true,
+    }
   }
 })
 
