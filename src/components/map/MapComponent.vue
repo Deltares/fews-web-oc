@@ -10,6 +10,7 @@
     :drag-pan="true"
     :scroll-zoom="true"
     :transformRequest="transformRequest"
+    :useWebGL2="true"
     @mb-created="setMapInstance"
   >
     <slot></slot>

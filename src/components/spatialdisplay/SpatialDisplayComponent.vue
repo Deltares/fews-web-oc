@@ -1,10 +1,16 @@
 <template>
   <MapComponent>
-    <animated-mapbox-layer
+    <AnimatedMapboxLayer
+      v-if="layerKind === LayerKind.Static"
       :layer="layerOptions"
       @doubleclick="onCoordinateClick"
-    >
-    </animated-mapbox-layer>
+    />
+    <AnimatedStreamlineMapboxLayer
+      v-if="layerKind === LayerKind.Streamline"
+      :layerOptions="layerOptions"
+      :streamlineOptions="layerCapabilities?.animatedVectors"
+      @doubleclick="onCoordinateClick"
+    />
     <div class="colourbar-container" v-if="legend">
       <ColourBar
         :colourMap="legend"
@@ -21,7 +27,7 @@
       :max-value="maxElevation"
       :ticks="elevationTicks"
       :unit="elevationUnit"
-    ></ElevationSlider>
+    />
     <LocationsLayerComponent
       v-if="filterIds"
       :filterIds="filterIds"
@@ -51,6 +57,7 @@
 <script setup lang="ts">
 import MapComponent from '@/components/map/MapComponent.vue'
 import LayerKindControl from '@/components/spatialdisplay/LayerKindControl.vue'
+import AnimatedStreamlineMapboxLayer from '@/components/wms/AnimatedStreamlineMapboxLayer.vue'
 
 import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
 import {
@@ -146,6 +153,10 @@ const legend = computed(() => {
 const canUseStreamlines = computed(
   () => props.layerCapabilities?.animatedVectors !== undefined,
 )
+watch(canUseStreamlines, (canUse) => {
+  // Fall back to static layer if streamlines are not available.
+  if (!canUse) layerKind.value = LayerKind.Static
+})
 
 watchEffect(() => {
   if (!legend.value) return
