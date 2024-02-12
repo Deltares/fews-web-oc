@@ -8,7 +8,7 @@ export function useMenuItemsStack(
   const stack = ref<ColumnItem[]>([])
 
   watch(menuItems, updateStack, { immediate: true })
-  watch(activeItem, updateStack)
+  watch(() => activeItem, updateStack)
   function updateStack() {
     const _menuItems = toValue(menuItems)
     const _activeItem = toValue(activeItem)
