@@ -15,7 +15,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 
