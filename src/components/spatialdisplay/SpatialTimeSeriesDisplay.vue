@@ -91,6 +91,11 @@ interface DisplayTypeItem {
   value: DisplayType
 }
 
+watch(elevationChartDisplayconfig, () => {
+  if (displayType.value === DisplayType.ElevationChart) {
+    displayType.value = DisplayType.TimeSeriesChart
+  }
+})
 const displayType = ref(DisplayType.TimeSeriesChart)
 const displayTypeItems = computed<DisplayTypeItem[]>(() => {
   const displayItems: DisplayTypeItem[] = [
