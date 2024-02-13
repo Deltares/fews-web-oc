@@ -57,7 +57,7 @@ export function useTimeSeries(
   requests: MaybeRefOrGetter<ActionRequest[]>,
   lastUpdated: MaybeRefOrGetter<Date | undefined>,
   options: MaybeRefOrGetter<UseTimeSeriesOptions>,
-  selectedTime?: MaybeRefOrGetter<Date>,
+  selectedTime?: MaybeRefOrGetter<Date | undefined>,
 ): UseTimeSeriesReturn {
   let controller = new AbortController()
   const isReady = ref(false)
