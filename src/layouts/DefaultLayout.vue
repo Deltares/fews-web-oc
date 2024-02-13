@@ -72,6 +72,8 @@
                 <v-list-item
                   v-for="item in (configStore.general as any).helpMenu.url"
                   :href="item.url"
+                  target="_blank"
+                  append-icon="mdi-open-in-new"
                   >{{ item.name }}</v-list-item
                 >
                 <v-list-item
