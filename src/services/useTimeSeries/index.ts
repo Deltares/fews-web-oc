@@ -56,8 +56,8 @@ export function useTimeSeries(
   baseUrl: string,
   requests: MaybeRefOrGetter<ActionRequest[]>,
   lastUpdated: MaybeRefOrGetter<Date | undefined>,
-  options?: MaybeRefOrGetter<UseTimeSeriesOptions>,
-  selectedTime?: MaybeRefOrGetter<Date | undefined>,
+  options: MaybeRefOrGetter<UseTimeSeriesOptions>,
+  selectedTime?: MaybeRefOrGetter<Date>,
 ): UseTimeSeriesReturn {
   let controller = new AbortController()
   const isReady = ref(false)
@@ -66,7 +66,7 @@ export function useTimeSeries(
   const error = shallowRef<any | undefined>(undefined)
   const MAX_SERIES = 20
 
-  watch([lastUpdated, selectedTime, requests, options], () => {
+  watch([lastUpdated, selectedTime ?? ref(), requests, options], () => {
     controller.abort('Timeseries request triggered again before finishing.')
     controller = new AbortController()
     const piProvider = new PiWebserviceProvider(baseUrl, {
