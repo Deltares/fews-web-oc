@@ -7,16 +7,29 @@
             <v-list-item-title>{{ item.name }}</v-list-item-title>
           </v-list-item>
         </template>
-        <TreeMenuItem :items="item.children"></TreeMenuItem>
+        <TreeMenuItem
+          :items="item.children"
+          :active="props.active"
+        ></TreeMenuItem>
       </v-list-group>
     </template>
-    <v-list-item v-else-if="item.href" :href="item.href" target="_blank">
+    <v-list-item
+      v-else-if="item.href"
+      :href="item.href"
+      target="_blank"
+      :active="props.active === item.id"
+    >
       <v-list-item-title>{{ item.name }}</v-list-item-title>
       <template v-slot:append>
         <v-icon size="xsmall">{{ item.icon }}</v-icon>
       </template>
     </v-list-item>
-    <v-list-item v-else :to="item.to" style="margin-right: 10px">
+    <v-list-item
+      v-else
+      :to="item.to"
+      :active="props.active === item.id"
+      style="margin-right: 10px"
+    >
       <v-list-item-title>{{ item.name }}</v-list-item-title>
     </v-list-item>
   </template>
@@ -27,13 +40,13 @@ import type { ColumnItem } from './ColumnItem.js'
 
 interface Props {
   items?: ColumnItem[]
-  active?: string[]
+  active?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   items: () => {
     return []
   },
-  active: () => [],
+  active: '',
 })
 </script>

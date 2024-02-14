@@ -50,13 +50,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { computed, watch } from 'vue'
 import type { ColumnItem } from './ColumnItem'
+import { useMenuItemsStack } from '@/services/useMenuItemsStack'
 
 interface Props {
   items?: ColumnItem[]
   open?: string[]
-  active?: string[]
+  active?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -64,17 +65,15 @@ const props = withDefaults(defineProps<Props>(), {
     return []
   },
   open: () => [],
-  active: () => [],
+  active: '',
 })
-
-const stack = ref<ColumnItem[]>([])
-let path: string[] = []
 
 const emit = defineEmits(['click', 'update:active', 'update:open'])
 
-onMounted((): void => {
-  updateStack()
-})
+const stack = useMenuItemsStack(
+  () => props.items,
+  () => props.active,
+)
 
 const currentTitle = computed((): string => {
   const s = stack.value
@@ -87,25 +86,25 @@ const currentLevel = computed((): number => {
   return s.length - 1
 })
 
-watch(
-  () => props.items,
-  () => {
-    updateStack()
-  },
-)
-
 function getClass(child: ColumnItem): string {
-  return child.id === props.active[0] ? 'primary--text v-list-item--active' : ''
+  return child.id === props.active ? 'primary--text v-list-item--active' : ''
 }
+
+watch(
+  stack,
+  () => {
+    const path = stack.value.map((item: ColumnItem) => item.id)
+    emit('update:open', [...path])
+  },
+  { immediate: true },
+)
 
 function onTitleClick(): void {
   const s = stack.value
   if (s.length > 1) {
     s.pop()
-    path.pop()
   }
-  emit('update:active', [])
-  emit('update:open', [...path, ...props.open])
+  emit('update:active', undefined)
 }
 
 function onItemClick(event: Event, item: ColumnItem): void {
@@ -113,40 +112,9 @@ function onItemClick(event: Event, item: ColumnItem): void {
   if (item.children?.length) {
     event.preventDefault()
     s.push(item)
-    path.push(item.id)
-    emit('update:open', [...path, ...props.open])
   } else {
-    emit('update:active', [item.id])
+    emit('update:active', item.id)
   }
   emit('click', event, item)
-}
-
-function updateStack(): void {
-  const root: ColumnItem = {
-    id: 'rootNode',
-    name: '',
-    children: [...props.items],
-  }
-  const s = [root]
-  recursiveFind(s, props.active[0])
-  stack.value = s
-  path = s.map((item) => item.id)
-  emit('update:open', [...path, ...props.open])
-}
-
-function recursiveFind(stack: ColumnItem[], id: string): boolean {
-  const item = stack[stack.length - 1]
-  if (item.id === id) return true
-  if (item.children?.length) {
-    for (const child of item.children) {
-      stack.push(child)
-      if (recursiveFind(stack, id)) {
-        if (child.children === undefined) stack.pop()
-        return true
-      }
-      stack.pop()
-    }
-  }
-  return false
 }
 </script>

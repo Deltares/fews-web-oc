@@ -11,14 +11,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { ColumnItem } from './ColumnItem'
 import TreeMenuItem from './TreeMenuItem.vue'
+import { useMenuItemsStack } from '@/services/useMenuItemsStack'
 
 interface Props {
   items?: ColumnItem[]
   open?: string[]
-  active?: string[]
+  active?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -28,17 +29,26 @@ const props = withDefaults(defineProps<Props>(), {
   open: () => {
     return []
   },
-  active: () => [],
+  active: '',
 })
 
 const emit = defineEmits(['update:open'])
 
-const opened = computed({
-  get() {
-    return props.open
-  },
-  set(value) {
-    emit('update:open', value)
-  },
+const opened = computed((): string[] => {
+  return props.open
 })
+
+const stack = useMenuItemsStack(
+  () => props.items,
+  () => props.active,
+)
+
+watch(
+  stack,
+  () => {
+    const path = stack.value.map((item: ColumnItem) => item.id)
+    emit('update:open', [...path, ...props.open])
+  },
+  { immediate: true },
+)
 </script>

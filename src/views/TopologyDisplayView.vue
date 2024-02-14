@@ -20,14 +20,14 @@
       v-if="menuType === 'treemenu' && !mobile"
       v-model:active="active"
       :items="items"
-      :open="open"
+      v-model:open="open"
     >
     </TreeMenu>
     <ColumnMenu
       v-else-if="menuType === 'columnmenu' || mobile"
       v-model:active="active"
       :items="items"
-      :open="open"
+      v-model:open="open"
     >
     </ColumnMenu>
   </Teleport>
@@ -158,7 +158,7 @@ const props = defineProps<Props>()
 const configStore = useConfigStore()
 const { mobile } = useDisplay()
 
-const active = ref<string[]>([])
+const active = ref<string | undefined>(undefined)
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
 const menuType = ref('treemenu')
@@ -182,13 +182,13 @@ watch(
   () => props.nodeId,
   () => {
     if (props.nodeId) {
-      if (
-        typeof props.nodeId === 'string' &&
-        active.value[0] !== props.nodeId
+      if (typeof props.nodeId === 'string' && active.value !== props.nodeId) {
+        active.value = props.nodeId
+      } else if (
+        Array.isArray(props.nodeId) &&
+        active.value !== props.nodeId[0]
       ) {
-        active.value = [props.nodeId]
-      } else if (active.value[0] !== props.nodeId[0]) {
-        active.value = [props.nodeId[0]]
+        active.value = props.nodeId[0]
       }
     }
   },
