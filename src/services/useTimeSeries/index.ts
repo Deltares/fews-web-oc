@@ -252,7 +252,7 @@ function fillSeriesForElevation(
         return +value[0]
       },
     )
-    const events = timeSeries.domains.slice(1)
+    const events = timeSeries.domains.slice(0)
 
     // find the event in the events that matches the date
     const event = events.find((event) => {
