@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
           `worker-src blob:`,
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL}`,
           `child-src blob:`,
-          `connect-src 'self' https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.mapbox.com ${env.VITE_FEWS_WEBSERVICES_URL}`,
+          `connect-src 'self' https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.mapbox.com https://login.microsoftonline.com ${env.VITE_FEWS_WEBSERVICES_URL}`,
         ].join('; '),
       },
     },
