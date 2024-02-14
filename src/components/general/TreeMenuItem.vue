@@ -13,13 +13,23 @@
         ></TreeMenuItem>
       </v-list-group>
     </template>
-    <v-list-item v-else-if="item.href" :href="item.href" target="_blank">
+    <v-list-item
+      v-else-if="item.href"
+      :href="item.href"
+      target="_blank"
+      :active="props.active === item.id"
+    >
       <v-list-item-title>{{ item.name }}</v-list-item-title>
       <template v-slot:append>
         <v-icon size="xsmall">{{ item.icon }}</v-icon>
       </template>
     </v-list-item>
-    <v-list-item v-else :to="item.to" style="margin-right: 10px">
+    <v-list-item
+      v-else
+      :to="item.to"
+      :active="props.active === item.id"
+      style="margin-right: 10px"
+    >
       <v-list-item-title>{{ item.name }}</v-list-item-title>
     </v-list-item>
   </template>
