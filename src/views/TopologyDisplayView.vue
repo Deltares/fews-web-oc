@@ -183,13 +183,11 @@ watch(
   () => {
     if (props.nodeId) {
       if (typeof props.nodeId === 'string' && active.value !== props.nodeId) {
-        console.log('props.nodeid 0', props.nodeId)
         active.value = props.nodeId
       } else if (
         Array.isArray(props.nodeId) &&
         active.value !== props.nodeId[0]
       ) {
-        console.log('props.nodeid 1', props.nodeId[0])
         active.value = props.nodeId[0]
       }
     }
