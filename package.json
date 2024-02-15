@@ -22,6 +22,8 @@
     "@deltares/fews-web-oc-charts": "^3.0.1",
     "@deltares/fews-wms-requests": "^1.0.0",
     "@studiometa/vue-mapbox-gl": "^2.2.0",
+    "@turf/bbox": "^6.5.0",
+    "@turf/circle": "^6.5.0",
     "@turf/helpers": "^7.0.0-alpha.2",
     "@turf/projection": "^7.0.0-alpha.2",
     "@vueuse/core": "^10.5.0",
