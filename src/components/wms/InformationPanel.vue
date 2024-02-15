@@ -24,7 +24,7 @@
       </v-list-item>
       <v-list-group>
         <template v-slot:activator="{ props }">
-          <v-list-item v-bind="props" title="Color scales"></v-list-item>
+          <v-list-item v-bind="props" title="Color scales" :prepend-icon="colorScalesIcon"></v-list-item>
         </template>
         <v-list-item
           v-for="(style, index) in props.styles"
@@ -71,6 +71,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits(['style-click'])
 const layersIcon = "mdi-layers"
 const timeIcon = "mdi-clock-time-four-outline"
+const colorScalesIcon = "mdi-palette"
 
 const analysisTime = computed(() => {
   if (!props.forecastTime) return 'Analysis time not available'
