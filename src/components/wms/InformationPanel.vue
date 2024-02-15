@@ -27,6 +27,9 @@
         >
         </v-list-item>
       </v-list-group>
+      <v-list-item v-if="props.completelyMissing">
+        Wms layer is completely missing
+      </v-list-item>
     </v-list>
   </v-menu>
 </div>
@@ -42,6 +45,7 @@ interface Props {
   currentTime: Date | null
   forecastTime: Date | null
   styles: Style[] | null
+  completelyMissing: boolean | null
 }
 
 const props = withDefaults(defineProps<Props>(), {

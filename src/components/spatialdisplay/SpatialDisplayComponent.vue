@@ -44,6 +44,7 @@
       :currentTime="currentTime"
       :forecastTime="forecastTime ?? null"
       :styles="props.layerCapabilities?.styles ?? null"
+      :completelyMissing="props.layerCapabilities?.completelyMissing ?? null"
     />
     <SelectedCoordinateLayer
       :longitude="props.longitude"
