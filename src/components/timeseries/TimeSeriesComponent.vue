@@ -185,10 +185,6 @@ watch(
   overflow-x: auto;
 }
 
-.elevation-chart-component {
-  min-width: 50%;
-}
-
 .scroll {
   overflow-y: auto;
 }
