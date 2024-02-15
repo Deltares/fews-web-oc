@@ -1,6 +1,6 @@
 <template>
   <div class="info-panel">
-  <v-menu>
+  <v-menu :close-on-content-click="false">
   <template v-slot:activator="{ props }">
       <v-icon class="info-icon">mdi-information</v-icon>
       <v-btn v-bind="props">
@@ -22,7 +22,6 @@
         <v-list-item
           v-for="(style, index) in props.styles"
           :key="index"
-          :value="style.name"
           :title="style.title"
           :subtitle="style.name"
         >
