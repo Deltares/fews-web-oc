@@ -39,7 +39,7 @@
           :config="subplot"
           :series="elevationChartSeries"
           :key="`${subplot.title}-${i}`"
-          :style="`min-width: ${mobile ? 100 : 50}%`"
+          :style="`min-width: ${xs ? 100 : 50}%`"
         >
         </ElevationChart>
       </KeepAlive>
@@ -100,7 +100,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const store = useSystemTimeStore()
 const lastUpdated = ref<Date>(new Date())
-const { mobile } = useDisplay()
+const { xs } = useDisplay()
 
 const options = computed<UseTimeSeriesOptions>(() => {
   return {
