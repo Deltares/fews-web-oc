@@ -40,7 +40,7 @@
           :config="subplot"
           :series="elevationChartSeries"
           :key="`${subplot.title}-${i}`"
-          class="elevation-chart-component"
+          :style="`min-width: ${mobile ? 100 : 50}%`"
         >
         </ElevationChart>
       </KeepAlive>
@@ -66,6 +66,7 @@ import type { UseTimeSeriesOptions } from '../../services/useTimeSeries/index.ts
 import { configManager } from '../../services/application-config'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
+import { useDisplay } from 'vuetify'
 
 interface Props {
   config?: DisplayConfig
@@ -100,6 +101,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const store = useSystemTimeStore()
 const lastUpdated = ref<Date>(new Date())
+const { mobile } = useDisplay()
 
 const options = computed<UseTimeSeriesOptions>(() => {
   return {
