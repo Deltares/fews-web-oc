@@ -69,6 +69,19 @@
               width="320"
             >
               <v-list density="compact">
+                <v-list-item
+                  v-for="item in (configStore.general as any).helpMenu.url"
+                  :href="item.url"
+                  target="_blank"
+                  append-icon="mdi-open-in-new"
+                  >{{ item.name }}</v-list-item
+                >
+                <v-list-item
+                  v-for="item in (configStore.general as any).helpMenu.path"
+                  :to="{ name: 'HtmlDisplay', params: { path: item.path } }"
+                  href="#"
+                  >{{ item.name }}</v-list-item
+                >
                 <v-list-item :to="{ name: 'About' }">About</v-list-item>
               </v-list>
             </v-menu>
@@ -104,6 +117,7 @@
           {{ alert.message }}
         </v-alert>
       </div>
+      <SplashScreen v-if="splashSrc" :img-url="splashSrc" :version="version" />
     </v-main>
   </v-layout>
 </template>
@@ -117,6 +131,7 @@ import { useRoute } from 'vue-router'
 import LoginComponent from '../views/auth/LoginComponent.vue'
 import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
+import SplashScreen from '@/components/general/SplashScreen.vue'
 
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
@@ -134,6 +149,7 @@ const route = useRoute()
 
 const version = ref(packageConfig.version)
 const logoSrc = ref('')
+const splashSrc = ref<string>()
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
 
@@ -186,38 +202,51 @@ watchEffect(async () => {
   }
 })
 
-watch(() => configStore.general, setLogo)
+watch(
+  () => configStore.general,
+  async () => {
+    const imagesBaseUrl = `${import.meta.env.BASE_URL}images/`
+    const defaultLogo = `${imagesBaseUrl}logo.png`
+    const logoUrl = await getLocalOrRemoteFile(
+      imagesBaseUrl,
+      configStore.general.icons?.logo,
+    )
+    logoSrc.value = logoUrl ?? defaultLogo
 
-async function setLogo() {
-  const defaultLogo = `${import.meta.env.BASE_URL}images/logo.png`
-  const logoRelPath = configStore.general.icons?.logo
+    splashSrc.value = await getLocalOrRemoteFile(
+      imagesBaseUrl,
+      configStore.general.splashScreen,
+    )
+  },
+)
 
-  if (logoRelPath) {
-    const remoteUrl = getResourcesStaticUrl(logoRelPath)
-    const localUrl = `${import.meta.env.BASE_URL}images/${logoRelPath}`
+async function getLocalOrRemoteFile(localBase: string, relativePath?: string) {
+  if (!relativePath) return
+  const remoteUrl = getResourcesStaticUrl(relativePath)
+  const localUrl = `${localBase}${relativePath}`
 
-    try {
-      const remoteResponse = await fetch(remoteUrl, { method: 'HEAD' })
-      if (remoteResponse.ok) {
-        logoSrc.value = remoteUrl
-        return
-      }
-    } catch (error) {
-      // Handle fetch error
-    }
-
-    try {
-      const localResponse = await fetch(localUrl, { method: 'HEAD' })
-      if (localResponse.ok) {
-        logoSrc.value = localUrl
-        return
-      }
-    } catch (error) {
-      // Handle fetch error
-    }
+  const isHtmlResponse = (response: Response) => {
+    const contentType = response.headers.get('Content-Type')
+    return contentType?.includes('text/html') ?? false
   }
 
-  logoSrc.value = defaultLogo
+  try {
+    const remoteResponse = await fetch(remoteUrl, { method: 'HEAD' })
+    if (remoteResponse.ok && !isHtmlResponse(remoteResponse)) {
+      return remoteUrl
+    }
+  } catch (error) {
+    // Handle fetch error
+  }
+
+  try {
+    const localResponse = await fetch(localUrl, { method: 'HEAD' })
+    if (localResponse.ok && !isHtmlResponse(localResponse)) {
+      return localUrl
+    }
+  } catch (error) {
+    // Handle fetch error
+  }
 }
 
 function onCloseAlert(alert: Alert) {
