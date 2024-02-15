@@ -147,7 +147,7 @@ onMounted(() => {
 })
 
 const hideMap = computed(() => {
-  return mobile.value && props.locationId
+  return mobile.value && (props.locationId || props.latitude || props.longitude)
 })
 
 function onLocationChange(locationId: string | null): void {
