@@ -41,6 +41,8 @@ import {
   timeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
 import { toMercator } from '@turf/projection'
+import circle from '@turf/circle'
+import bbox from '@turf/bbox'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 
@@ -85,11 +87,14 @@ function getTimeSeriesGridActionsFilter():
   if (!layerCapabilities.value?.firstValueTime) return
   if (!layerCapabilities.value?.lastValueTime) return
 
-  const [x, y] = toMercator([+props.longitude, +props.latitude])
-
-  const { minx, miny, maxx, maxy } = layerCapabilities.value.boundingBox
-  const bbox = [minx, miny, maxx, maxy].map(Number)
-
+  const coordinates = [+props.longitude, +props.latitude]
+  const [x, y] = toMercator(coordinates)
+  const clickRadius = circle(coordinates, 10, { steps: 4, units: 'kilometers' })
+  const bboxArray = bbox(clickRadius)
+  const mercatorBbox = [
+    ...toMercator(bboxArray.slice(0, 2)),
+    ...toMercator(bboxArray.slice(-2)),
+  ]
   const startTime = layerCapabilities.value.firstValueTime
   const endTime = layerCapabilities.value.lastValueTime
 
@@ -99,7 +104,7 @@ function getTimeSeriesGridActionsFilter():
     y,
     startTime,
     endTime,
-    bbox,
+    bbox: mercatorBbox,
     documentFormat: 'PI_JSON',
     elevation: elevation.value ?? layerCapabilities.value.elevation?.upperValue,
     useDisplayUnits: settings.useDisplayUnits,
