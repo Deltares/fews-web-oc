@@ -18,8 +18,9 @@
 
 <script lang="ts" setup>
 import { useConfigStore } from '@/stores/config'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useStorage } from '@vueuse/core'
 
 interface Props {
   imgUrl: string
@@ -29,7 +30,7 @@ defineProps<Props>()
 
 const router = useRouter()
 
-const showDialog = ref(true)
+const showDialog = useStorage('fews-weboc-oc:splash-screen', true)
 
 const termsPath = 'terms-of-use'
 const configStore = useConfigStore()
