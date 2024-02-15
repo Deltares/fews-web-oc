@@ -46,7 +46,7 @@ const htmlText = computedAsync(async () => {
   overflow-y: auto;
 }
 
-.html-content >>> ul {
+.html-content :deep(ul) {
   padding: revert;
 }
 </style>
