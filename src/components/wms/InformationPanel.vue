@@ -1,6 +1,8 @@
 <template>
   <div class="info-panel">
-  <v-menu :close-on-content-click="false">
+  <v-menu
+  transition="slide-y-transition" 
+  :close-on-content-click="false">
   <template v-slot:activator="{ props }">
       <v-icon class="info-icon">mdi-information</v-icon>
       <v-btn v-bind="props">
@@ -15,6 +17,11 @@
       :prepend-icon="layersIcon"
       >
       </v-list-item>
+      <v-list-item
+      :title="'Time range'"
+      :subtitle="formattedTimeRange"
+      :prepend-icon="timeIcon">
+      </v-list-item>
       <v-list-group>
         <template v-slot:activator="{ props }">
           <v-list-item v-bind="props" title="Color scales"></v-list-item>
@@ -24,6 +31,7 @@
           :key="index"
           :title="style.title"
           :subtitle="style.name"
+          @click="onStyleClick(style)"
         >
         </v-list-item>
       </v-list-group>
@@ -46,18 +54,34 @@ interface Props {
   forecastTime: Date | null
   styles: Style[] | null
   completelyMissing: boolean | null
+  firstValueTime: Date | null
+  lastValueTime: Date | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   layerTitle: '',
-  time: null,
+  currentTime: null,
+  forecastTime: null,
+  styles: null,
+  completelyMissing: null,
+  firstValueTime: null,
+  lastValueTime: null
 })
+
+const emit = defineEmits(['style-click'])
+const layersIcon = "mdi-layers"
+const timeIcon = "mdi-clock-time-four-outline"
 
 const analysisTime = computed(() => {
   if (!props.forecastTime) return 'Analysis time not available'
   return "Analysis time: " + DateTime.fromJSDate(props.forecastTime).toFormat('dd/MM/yyyy, HH:mm:ss');
 })
-const layersIcon = "mdi-layers"
+
+const formattedTimeRange = computed(() => {
+  if (!props.firstValueTime || !props.lastValueTime) return ''
+  const format = 'dd/MM/yyyy, HH:mm:ss'
+  return `${DateTime.fromJSDate(props.firstValueTime).toFormat(format)} -> ${DateTime.fromJSDate(props.lastValueTime).toFormat(format)}`
+})
 const formattedCurrentTime = computed(() => {
   if (!props.currentTime) return ''
   const format = 'HH:mm ZZZZ'
@@ -65,6 +89,11 @@ const formattedCurrentTime = computed(() => {
   const dateTime = DateTime.fromJSDate(props.currentTime).setZone(timeZone).setLocale('nl-NL');
   return dateTime.toFormat(format)
 })
+
+const onStyleClick = (style: Style) => {
+  emit('style-click', style)
+}
+
 </script>
 
 

@@ -45,6 +45,8 @@
       :forecastTime="forecastTime ?? null"
       :styles="props.layerCapabilities?.styles ?? null"
       :completelyMissing="props.layerCapabilities?.completelyMissing ?? null"
+      :firstValueTime="new Date(props.layerCapabilities?.firstValueTime ?? '') ?? null"
+      :lastValueTime="new Date(props.layerCapabilities?.lastValueTime ?? '') ?? null"
     />
     <SelectedCoordinateLayer
       :longitude="props.longitude"
