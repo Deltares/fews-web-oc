@@ -15,6 +15,19 @@
       :prepend-icon="layersIcon"
       >
       </v-list-item>
+      <v-list-group>
+        <template v-slot:activator="{ props }">
+          <v-list-item v-bind="props" title="Color scales"></v-list-item>
+        </template>
+        <v-list-item
+          v-for="(style, index) in props.styles"
+          :key="index"
+          :value="style.name"
+          :title="style.title"
+          :subtitle="style.name"
+        >
+        </v-list-item>
+      </v-list-group>
     </v-list>
   </v-menu>
 </div>
@@ -23,11 +36,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { DateTime } from 'luxon';
+import { Style } from '@deltares/fews-wms-requests';
 
 interface Props {
   layerTitle: string
   currentTime: Date | null
   forecastTime: Date | null
+  styles: Style[] | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -36,8 +51,8 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const analysisTime = computed(() => {
-  if (!props.forecastTime) return 'Analysetijd not available'
-  return "Analysetijd: " + DateTime.fromJSDate(props.forecastTime).toFormat('dd/MM/yyyy, HH:mm:ss');
+  if (!props.forecastTime) return 'Analysis time not available'
+  return "Analysis time: " + DateTime.fromJSDate(props.forecastTime).toFormat('dd/MM/yyyy, HH:mm:ss');
 })
 const layersIcon = "mdi-layers"
 const formattedCurrentTime = computed(() => {
@@ -57,10 +72,10 @@ const formattedCurrentTime = computed(() => {
   z-index: 1000;
   top: 8px;
   right: 10px;
+  border-radius: 5px;
   backdrop-filter: blur(5px);
   background-color: rgba(var(--v-theme-surface), 0.8);
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-  border-radius: 5px;
 }
 
 .info-icon {

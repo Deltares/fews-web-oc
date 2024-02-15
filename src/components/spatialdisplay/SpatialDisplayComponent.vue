@@ -42,7 +42,8 @@
     <InformationPanel
       :layerTitle="props.layerCapabilities?.title"
       :currentTime="currentTime"
-      :forecastTime="forecastTime"
+      :forecastTime="forecastTime ?? null"
+      :styles="props.layerCapabilities?.styles ?? null"
     />
     <SelectedCoordinateLayer
       :longitude="props.longitude"
