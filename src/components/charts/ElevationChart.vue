@@ -141,7 +141,10 @@ onMounted(() => {
     axis.accept(zoom)
     axis.accept(mouseOver)
     resize()
-    if (props.config !== undefined) refreshChart()
+    if (props.config !== undefined) {
+      refreshChart()
+      setTags()
+    }
     window.addEventListener('resize', resize)
   }
 })
