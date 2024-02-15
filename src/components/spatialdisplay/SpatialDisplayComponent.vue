@@ -39,6 +39,11 @@
       v-if="canUseStreamlines"
       class="layer-type-control"
     />
+    <InformationPanel
+      :layerTitle="props.layerCapabilities?.title"
+      :currentTime="currentTime"
+      :forecastTime="forecastTime"
+    />
     <SelectedCoordinateLayer
       :longitude="props.longitude"
       :latitude="props.latitude"
@@ -69,6 +74,7 @@ import AnimatedMapboxLayer, {
   MapboxLayerOptions,
 } from '@/components/wms/AnimatedMapboxLayer.vue'
 import LocationsLayerComponent from '@/components/wms/LocationsLayerComponent.vue'
+import InformationPanel from '../wms/InformationPanel.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
@@ -126,6 +132,7 @@ const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
 const currentTime = ref<Date>(new Date())
+const forecastTime = ref<Date>(new Date())
 const layerOptions = ref<MapboxLayerOptions>()
 let debouncedSetLayerOptions!: () => void
 
