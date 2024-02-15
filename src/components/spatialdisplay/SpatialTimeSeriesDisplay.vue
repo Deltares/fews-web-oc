@@ -91,11 +91,6 @@ interface DisplayTypeItem {
   value: DisplayType
 }
 
-watch(elevationChartDisplayconfig, () => {
-  if (displayType.value === DisplayType.ElevationChart) {
-    displayType.value = DisplayType.TimeSeriesChart
-  }
-})
 const displayType = ref(DisplayType.TimeSeriesChart)
 const displayTypeItems = computed<DisplayTypeItem[]>(() => {
   const displayItems: DisplayTypeItem[] = [
@@ -120,6 +115,13 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
   }
 
   return displayItems
+})
+
+watch(displayTypeItems, () => {
+  const activeItems = displayTypeItems.value.map((dt) => dt.value)
+  if (!activeItems.includes(displayType.value)) {
+    displayType.value = activeItems[0]
+  }
 })
 
 function onClose(): void {
