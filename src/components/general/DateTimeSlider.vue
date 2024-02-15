@@ -299,8 +299,9 @@ function stopPlay(): void {
 function play(): void {
   if (dateIndex.value === maxIndex.value) {
     dateIndex.value = 0
+  } else {
+    increment(playIncrement)
   }
-  increment(playIncrement)
   playTimeoutTimer.value = setTimeout(
     play,
     props.playInterval * (1 / currentSpeed.value),
