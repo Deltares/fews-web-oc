@@ -98,8 +98,15 @@ function xAxisFromPlotItemXAxis(
   const axes = []
   const includeZero =
     xAxis.axisMinValue === 0 && xAxis.axisMaxValue === undefined
+
+  // TODO: xAxis.axisType should instead be set in xAxis: TimeSeriesDisplaySubplotItemAxis
+  const isDegrees =
+    xAxis.axisLabel?.includes('degrees') &&
+    xAxis.axisMinValue === 0 &&
+    xAxis.axisMaxValue === 360
+
   const axis: AxisOptions = {
-    type: AxisType.value,
+    type: isDegrees ? AxisType.degrees : AxisType.value,
     label: xAxis.axisLabel,
     includeZero,
   }
