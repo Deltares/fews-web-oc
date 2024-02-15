@@ -73,6 +73,7 @@ const LEGEND_HEIGHT = 76
 interface Props {
   config?: ChartConfig
   series?: Record<string, Series>
+  currentTime?: Date
 }
 
 interface Tag {
@@ -92,6 +93,9 @@ const props = withDefaults(defineProps<Props>(), {
   series: () => {
     return {}
   },
+  currentTime: () => {
+    return new Date()
+  },
 })
 
 let thresholdLines!: ThresholdLine[]
@@ -102,6 +106,7 @@ const chartContainer = ref<HTMLElement>()
 const chipGroup = ref<VChipGroup>()
 const expanded = ref(false)
 const requiresExpand = ref(false)
+const axisTime = ref<CurrentTime>()
 
 onMounted(() => {
   const axisOptions: CartesianAxesOptions = {
@@ -143,23 +148,34 @@ onMounted(() => {
     )
     const mouseOver = new MouseOver()
     const zoom = new ZoomHandler(WheelMode.NONE)
-    const currentTime = new CurrentTime({
+    axisTime.value = new CurrentTime({
       x: {
         axisIndex: 0,
       },
     })
+    axisTime.value.setDateTime(props.currentTime)
 
     thresholdLinesVisitor = new AlertLines(thresholdLines)
 
     axis.accept(thresholdLinesVisitor)
     axis.accept(zoom)
     axis.accept(mouseOver)
-    axis.accept(currentTime)
+    axis.accept(axisTime.value)
     resize()
     if (props.config !== undefined) refreshChart()
     window.addEventListener('resize', resize)
   }
 })
+
+watch(
+  () => props.currentTime,
+  (newValue) => {
+    if (axisTime.value) {
+      axisTime.value.setDateTime(newValue)
+      onValueChange()
+    }
+  },
+)
 
 const addToChart = (chartSeries: ChartSeries) => {
   const id = chartSeries.id

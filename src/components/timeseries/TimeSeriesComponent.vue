@@ -10,6 +10,7 @@
           :config="subplot"
           :series="series"
           :key="`${subplot.title}-${i}`"
+          :currentTime="props.currentTime"
         >
         </TimeSeriesChart>
       </KeepAlive>
