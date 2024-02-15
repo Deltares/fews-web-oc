@@ -128,6 +128,8 @@ onMounted(() => {
   const chartWidth = 800
   const chartHeight = 1200
 
+  setChartConfigValues(axisOptions)
+
   if (chartContainer.value) {
     axis = new CartesianAxes(
       chartContainer.value,
@@ -148,6 +150,16 @@ onMounted(() => {
     window.addEventListener('resize', resize)
   }
 })
+
+const setChartConfigValues = (axisOptions: CartesianAxesOptions) => {
+  props.config.yAxis?.forEach((axis, i) => {
+    axisOptions.y[i].type = axis.type
+  })
+
+  props.config.xAxis?.forEach((axis, i) => {
+    axisOptions.x[i].type = axis.type
+  })
+}
 
 const addToChart = (chartSeries: ChartSeries) => {
   const id = chartSeries.id
