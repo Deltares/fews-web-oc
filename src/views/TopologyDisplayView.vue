@@ -214,7 +214,7 @@ getTopologyNodes().then((response) => {
 
 function topologyNodeIsVisible(node: TopologyNode): boolean {
   if (node.url !== undefined) return true
-  if(node.plotId != undefined) return true
+  if (node.plotId != undefined) return true
   if (node.filterIds !== undefined && node.filterIds.length > 0) return true
   if (node.gridDisplaySelection !== undefined) return true
   if (node.displayId !== undefined) return true
