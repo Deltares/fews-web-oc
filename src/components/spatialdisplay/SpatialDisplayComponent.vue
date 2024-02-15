@@ -132,7 +132,7 @@ const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
 const currentTime = ref<Date>(new Date())
-const forecastTime = ref<Date>(new Date())
+const forecastTime = ref<Date>()
 const layerOptions = ref<MapboxLayerOptions>()
 let debouncedSetLayerOptions!: () => void
 
@@ -182,6 +182,7 @@ const layerHasElevation = computed(() => {
 watch(
   () => props.layerCapabilities,
   (layer) => {
+    forecastTime.value = new Date(layer?.keywordList[0].forecastTime) ?? null
     legendLayerName.value = props.layerName
     colorScaleRange.value = undefined
     if (layer?.elevation) {

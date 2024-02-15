@@ -12,6 +12,7 @@
       <v-list-item 
       :title="props.layerTitle"
       :subtitle="analysisTime"
+      :prepend-icon="layersIcon"
       >
       </v-list-item>
     </v-list>
@@ -34,12 +35,11 @@ const props = withDefaults(defineProps<Props>(), {
   time: null,
 })
 
-// add derived prop time string
 const analysisTime = computed(() => {
-  if (!props.forecastTime) return ''
-  return "Analysetijd: " + props.forecastTime.toLocaleString()
+  if (!props.forecastTime) return 'Analysetijd not available'
+  return "Analysetijd: " + DateTime.fromJSDate(props.forecastTime).toFormat('dd/MM/yyyy, HH:mm:ss');
 })
-
+const layersIcon = "mdi-layers"
 const formattedCurrentTime = computed(() => {
   if (!props.currentTime) return ''
   const format = 'HH:mm ZZZZ'
