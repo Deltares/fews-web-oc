@@ -186,7 +186,9 @@ const layerHasElevation = computed(() => {
 watch(
   () => props.layerCapabilities,
   (layer) => {
-    forecastTime.value = new Date(layer?.keywordList[0].forecastTime) ?? null
+    if (layer?.keywordList !== undefined) {
+      forecastTime.value = new Date(layer?.keywordList[0].forecastTime as string) ?? null
+    }
     legendLayerName.value = props.layerName
     colorScaleRange.value = undefined
     if (layer?.elevation) {
