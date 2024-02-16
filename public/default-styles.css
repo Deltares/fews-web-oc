@@ -292,3 +292,7 @@ svg.wb-charts,
   font-size: 1.2em;
   font-family: 'RO-Sans', sans-serif !important;
 }
+
+.colourbar text {
+  fill: var(--contrast-color);
+}
