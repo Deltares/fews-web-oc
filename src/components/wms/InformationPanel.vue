@@ -1,52 +1,55 @@
 <template>
   <div class="info-panel">
-  <v-menu
-  transition="slide-y-transition" 
-  :close-on-content-click="false">
-  <template v-slot:activator="{ props }">
-      <v-icon class="info-icon">mdi-information</v-icon>
-      <v-btn v-bind="props">
-        <span class="layer-title">{{ layerTitle }}</span> 
-        <span class="current-time">{{ formattedCurrentTime }}</span>
-      </v-btn>
-  </template>
-    <v-list>
-      <v-list-item 
-      :title="props.layerTitle"
-      :subtitle="analysisTime"
-      :prepend-icon="layersIcon"
-      >
-      </v-list-item>
-      <v-list-item
-      :title="'Time range'"
-      :subtitle="formattedTimeRange"
-      :prepend-icon="timeIcon">
-      </v-list-item>
-      <v-list-group>
-        <template v-slot:activator="{ props }">
-          <v-list-item v-bind="props" title="Color scales" :prepend-icon="colorScalesIcon"></v-list-item>
-        </template>
+    <v-menu transition="slide-y-transition" :close-on-content-click="false">
+      <template v-slot:activator="{ props }">
+        <v-icon class="info-icon">mdi-information</v-icon>
+        <v-btn v-bind="props">
+          <span class="layer-title">{{ layerTitle }}</span>
+          <span class="current-time">{{ formattedCurrentTime }}</span>
+        </v-btn>
+      </template>
+      <v-list>
         <v-list-item
-          v-for="(style, index) in props.styles"
-          :key="index"
-          :title="style.title"
-          :subtitle="style.name"
-          @click="onStyleClick(style)"
+          :title="props.layerTitle"
+          :subtitle="analysisTime"
+          :prepend-icon="layersIcon"
         >
         </v-list-item>
-      </v-list-group>
-      <v-list-item v-if="props.completelyMissing">
-        Wms layer is completely missing
-      </v-list-item>
-    </v-list>
-  </v-menu>
-</div>
+        <v-list-item
+          :title="'Time range'"
+          :subtitle="formattedTimeRange"
+          :prepend-icon="timeIcon"
+        >
+        </v-list-item>
+        <v-list-group>
+          <template v-slot:activator="{ props }">
+            <v-list-item
+              v-bind="props"
+              title="Color scales"
+              :prepend-icon="colorScalesIcon"
+            ></v-list-item>
+          </template>
+          <v-list-item
+            v-for="(style, index) in props.styles"
+            :key="index"
+            :title="style.title"
+            :subtitle="style.name"
+            @click="onStyleClick(style)"
+          >
+          </v-list-item>
+        </v-list-group>
+        <v-list-item v-if="props.completelyMissing">
+          Wms layer is completely missing
+        </v-list-item>
+      </v-list>
+    </v-menu>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { DateTime } from 'luxon';
-import { Style } from '@deltares/fews-wms-requests';
+import { DateTime } from 'luxon'
+import { Style } from '@deltares/fews-wms-requests'
 
 interface Props {
   layerTitle: string
@@ -65,38 +68,43 @@ const props = withDefaults(defineProps<Props>(), {
   styles: null,
   completelyMissing: null,
   firstValueTime: null,
-  lastValueTime: null
+  lastValueTime: null,
 })
 
 const emit = defineEmits(['style-click'])
-const layersIcon = "mdi-layers"
-const timeIcon = "mdi-clock-time-four-outline"
-const colorScalesIcon = "mdi-palette"
+const layersIcon = 'mdi-layers'
+const timeIcon = 'mdi-clock-time-four-outline'
+const colorScalesIcon = 'mdi-palette'
 
 const analysisTime = computed(() => {
   if (!props.forecastTime) return 'Analysis time not available'
-  return "Analysis time: " + DateTime.fromJSDate(props.forecastTime).toFormat('dd/MM/yyyy, HH:mm:ss');
+  return (
+    'Analysis time: ' +
+    DateTime.fromJSDate(props.forecastTime).toFormat('dd/MM/yyyy, HH:mm:ss')
+  )
 })
 
 const formattedTimeRange = computed(() => {
   if (!props.firstValueTime || !props.lastValueTime) return ''
   const format = 'dd/MM/yyyy, HH:mm:ss'
-  return `${DateTime.fromJSDate(props.firstValueTime).toFormat(format)} -> ${DateTime.fromJSDate(props.lastValueTime).toFormat(format)}`
+  return `${DateTime.fromJSDate(props.firstValueTime).toFormat(
+    format,
+  )} -> ${DateTime.fromJSDate(props.lastValueTime).toFormat(format)}`
 })
 const formattedCurrentTime = computed(() => {
   if (!props.currentTime) return ''
   const format = 'HH:mm ZZZZ'
   const timeZone = 'Europe/Amsterdam'
-  const dateTime = DateTime.fromJSDate(props.currentTime).setZone(timeZone).setLocale('nl-NL');
+  const dateTime = DateTime.fromJSDate(props.currentTime)
+    .setZone(timeZone)
+    .setLocale('nl-NL')
   return dateTime.toFormat(format)
 })
 
 const onStyleClick = (style: Style) => {
   emit('style-click', style)
 }
-
 </script>
-
 
 <style scoped>
 .info-panel {
@@ -112,7 +120,7 @@ const onStyleClick = (style: Style) => {
 }
 
 .info-icon {
-  margin-right: 8px; 
+  margin-right: 8px;
   margin-left: 8px;
 }
 .layer-title {

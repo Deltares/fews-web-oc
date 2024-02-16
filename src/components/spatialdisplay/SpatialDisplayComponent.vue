@@ -45,8 +45,12 @@
       :forecastTime="forecastTime ?? null"
       :styles="props.layerCapabilities?.styles ?? null"
       :completelyMissing="props.layerCapabilities?.completelyMissing ?? null"
-      :firstValueTime="new Date(props.layerCapabilities?.firstValueTime ?? '') ?? null"
-      :lastValueTime="new Date(props.layerCapabilities?.lastValueTime ?? '') ?? null"
+      :firstValueTime="
+        new Date(props.layerCapabilities?.firstValueTime ?? '') ?? null
+      "
+      :lastValueTime="
+        new Date(props.layerCapabilities?.lastValueTime ?? '') ?? null
+      "
     />
     <SelectedCoordinateLayer
       :longitude="props.longitude"
@@ -187,7 +191,8 @@ watch(
   () => props.layerCapabilities,
   (layer) => {
     if (layer?.keywordList !== undefined) {
-      forecastTime.value = new Date(layer?.keywordList[0].forecastTime as string) ?? null
+      forecastTime.value =
+        new Date(layer?.keywordList[0].forecastTime as string) ?? null
     }
     legendLayerName.value = props.layerName
     colorScaleRange.value = undefined
