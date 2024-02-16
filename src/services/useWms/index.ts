@@ -12,6 +12,7 @@ import { point } from '@turf/helpers'
 import { LngLatBounds } from 'mapbox-gl'
 import { GetLegendGraphicResponse } from '@deltares/fews-wms-requests/src/response/getLegendGraphicResponse.ts'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { Style } from '@deltares/fews-wms-requests'
 
 export interface UseWmsReturn {
   layerCapabilities: Ref<Layer | undefined>
@@ -87,6 +88,7 @@ export function useWmsLegend(
   layerName: MaybeRefOrGetter<string>,
   useDisplayUnits: MaybeRefOrGetter<boolean>,
   colorScaleRange?: MaybeRefOrGetter<string | undefined>,
+  style?: MaybeRefOrGetter<Style | null>,
 ): Ref<GetLegendGraphicResponse | undefined> {
   let controller = new AbortController()
   const wmsUrl = `${baseUrl}/wms`
@@ -101,6 +103,7 @@ export function useWmsLegend(
     const _layers = toValue(layerName)
     const _useDisplayUnits = toValue(useDisplayUnits)
     const _colorScaleRange = toValue(colorScaleRange)
+    const _style = toValue(style)
     if (_layers === '') {
       legendGraphic.value = undefined
     } else {
@@ -111,6 +114,7 @@ export function useWmsLegend(
           // Enable when fews-wms-requests is updated
           //@ts-ignore
           useDisplayUnits: _useDisplayUnits,
+          style: _style?.name,
         })
       } catch (error) {
         console.error(error)

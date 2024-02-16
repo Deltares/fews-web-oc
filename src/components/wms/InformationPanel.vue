@@ -35,6 +35,7 @@
             :title="style.title"
             :subtitle="style.name"
             @click="onStyleClick(style)"
+            :class="{ selected: isSelected(style) }"
           >
           </v-list-item>
         </v-list-group>
@@ -50,6 +51,7 @@
 import { computed } from 'vue'
 import { DateTime } from 'luxon'
 import { Style } from '@deltares/fews-wms-requests'
+import { ref } from 'vue'
 
 interface Props {
   layerTitle: string
@@ -75,6 +77,7 @@ const emit = defineEmits(['style-click'])
 const layersIcon = 'mdi-layers'
 const timeIcon = 'mdi-clock-time-four-outline'
 const colorScalesIcon = 'mdi-palette'
+const selectedStyle = ref<Style | null>(null)
 
 const analysisTime = computed(() => {
   if (!props.forecastTime) return 'Analysis time not available'
@@ -102,7 +105,14 @@ const formattedCurrentTime = computed(() => {
 })
 
 const onStyleClick = (style: Style) => {
+  selectedStyle.value = style
   emit('style-click', style)
+}
+
+const isSelected = (style: Style) => {
+  return (
+    selectedStyle.value !== null && selectedStyle.value.title === style.title
+  )
 }
 </script>
 
@@ -133,5 +143,8 @@ const onStyleClick = (style: Style) => {
   border-radius: 10px;
   background-color: rgba(0, 0, 0, 0.7);
   color: white;
+}
+.selected {
+  background-color: lightblue;
 }
 </style>

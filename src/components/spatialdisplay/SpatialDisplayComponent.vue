@@ -43,7 +43,7 @@
       :layerTitle="props.layerCapabilities?.title"
       :currentTime="currentTime"
       :forecastTime="forecastTime ?? null"
-      :styles="props.layerCapabilities?.styles ?? null"
+      :styles="styles"
       :completelyMissing="props.layerCapabilities?.completelyMissing ?? null"
       :firstValueTime="
         new Date(props.layerCapabilities?.firstValueTime ?? '') ?? null
@@ -51,6 +51,7 @@
       :lastValueTime="
         new Date(props.layerCapabilities?.lastValueTime ?? '') ?? null
       "
+      @styleClick="handleStyleClick"
     />
     <SelectedCoordinateLayer
       :longitude="props.longitude"
@@ -93,6 +94,7 @@ import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
 import { configManager } from '@/services/application-config'
 import type { Layer } from '@deltares/fews-wms-requests'
 import { LayerKind } from '@/lib/streamlines'
+import { Style } from '@deltares/fews-wms-requests'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -143,6 +145,7 @@ const currentTime = ref<Date>(new Date())
 const forecastTime = ref<Date>()
 const layerOptions = ref<MapboxLayerOptions>()
 let debouncedSetLayerOptions!: () => void
+const selectedStyle = ref<Style>()
 
 const colorScaleRange = ref<{ min: number; max: number }>()
 const colorScaleRangeString = computed(() => {
@@ -153,18 +156,40 @@ const colorScaleRangeString = computed(() => {
 })
 const legendLayerName = ref(props.layerName)
 const settings = useUserSettingsStore()
+
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const legendGraphic = useWmsLegend(
-  baseUrl,
-  legendLayerName,
-  () => settings.useDisplayUnits,
-  colorScaleRangeString,
-)
+const handleStyleClick = (style: Style) => {
+  selectedStyle.value = style
+}
+
+const usedStyle = computed(() => {
+  if (selectedStyle.value !== undefined) {
+    return selectedStyle.value
+  } else if (props.layerCapabilities?.styles !== undefined) {
+    return props.layerCapabilities.styles[0]
+  } else {
+    return null
+  }
+})
+
+const legendGraphic = computed(() => {
+  return useWmsLegend(
+    baseUrl,
+    legendLayerName,
+    () => settings.useDisplayUnits,
+    colorScaleRangeString,
+    usedStyle,
+  )
+})
 
 const layerKind = ref(LayerKind.Static)
 
 const legend = computed(() => {
-  return legendGraphic.value?.legend
+  return legendGraphic.value?.value?.legend
+})
+
+const styles = computed(() => {
+  return props.layerCapabilities?.styles ?? null
 })
 
 const canUseStreamlines = computed(
@@ -222,8 +247,8 @@ watch(colorScaleRange, () => {
 
 const legendTitle = computed(() => {
   if (!props.layerCapabilities) return ''
-  const unitString = legendGraphic.value?.unit
-    ? ` [${legendGraphic.value?.unit}]`
+  const unitString = legendGraphic.value?.value?.unit
+    ? ` [${legendGraphic.value?.value.unit}]`
     : ''
   return `${props.layerCapabilities.title}${unitString}`
 })
