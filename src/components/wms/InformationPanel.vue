@@ -92,7 +92,7 @@ const formattedTimeRange = computed(() => {
   const format = 'dd/MM/yyyy, HH:mm:ss'
   return `${DateTime.fromJSDate(props.firstValueTime).toFormat(
     format,
-  )} -> ${DateTime.fromJSDate(props.lastValueTime).toFormat(format)}`
+  )} → ${DateTime.fromJSDate(props.lastValueTime).toFormat(format)}`
 })
 const formattedCurrentTime = computed(() => {
   if (!props.currentTime) return ''
