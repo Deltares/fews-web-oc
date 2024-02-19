@@ -296,6 +296,7 @@ function setLayerOptions(): void {
     }
     layerOptions.value.elevation = currentElevation.value
     layerOptions.value.colorScaleRange = colorScaleRangeString.value
+    layerOptions.value.style = usedStyle.value?.name
   } else {
     layerOptions.value = undefined
   }

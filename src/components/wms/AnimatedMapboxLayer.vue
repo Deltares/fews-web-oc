@@ -25,6 +25,7 @@ export interface MapboxLayerOptions {
   bbox?: LngLatBounds
   elevation?: number | null
   colorScaleRange?: string
+  style?: string
 }
 
 interface Props {
@@ -108,6 +109,9 @@ function getImageSourceOptions(): ImageSourceOptions {
   getMapUrl.searchParams.append('height', `${canvas.height}`)
   getMapUrl.searchParams.append('width', `${canvas.width}`)
   getMapUrl.searchParams.append('time', `${time}`)
+  if (props.layer.style) {
+    getMapUrl.searchParams.append('styles', props.layer.style)
+  }
   if (props.layer.elevation) {
     getMapUrl.searchParams.append('elevation', `${props.layer.elevation}`)
   }
