@@ -38,6 +38,39 @@
             :class="{ selected: isSelected(style) }"
           >
           </v-list-item>
+          <v-list-item v-if="mutableColorScaleRange" :prepend-icon="rangeIcon">
+            <v-row align="center">
+              <v-col cols="6">
+                <v-text-field
+                  v-model.number="mutableColorScaleRange.min"
+                  label="Min"
+                  outlined
+                  clearable
+                  :rules="[
+                    rules.required,
+                    rules.biggerThanZero,
+                    rules.smallerThanMax,
+                  ]"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                <v-text-field
+                  v-model.number="mutableColorScaleRange.max"
+                  label="Max"
+                  outlined
+                  clearable
+                  :rules="[rules.required, rules.biggerThanMin]"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            <v-btn
+              color="primary"
+              variant="text"
+              @click="changecolorScaleRange"
+            >
+              Submit
+            </v-btn>
+          </v-list-item>
         </v-list-group>
         <v-list-item v-if="props.completelyMissing">
           Wms layer is completely missing
@@ -61,6 +94,7 @@ interface Props {
   completelyMissing: boolean | null
   firstValueTime: Date | null
   lastValueTime: Date | null
+  colorScaleRange: { min: number; max: number } | null | undefined
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -71,13 +105,29 @@ const props = withDefaults(defineProps<Props>(), {
   completelyMissing: null,
   firstValueTime: null,
   lastValueTime: null,
+  colorScaleRange: null,
 })
 
-const emit = defineEmits(['style-click'])
+const emit = defineEmits(['style-click', 'color-scale-range-change'])
 const layersIcon = 'mdi-layers'
 const timeIcon = 'mdi-clock-time-four-outline'
+const rangeIcon = 'mdi-layers-edit'
 const colorScalesIcon = 'mdi-palette'
 const selectedStyle = ref<Style | null>(null)
+const mutableColorScaleRange = ref(props.colorScaleRange)
+
+const rules = {
+  required: (v: number) =>
+    (v !== null && v !== undefined) || 'Field is required',
+  biggerThanZero: (v: number) =>
+    v >= 0 || 'Value must be bigger or equal than 0',
+  smallerThanMax: (v: number) =>
+    (mutableColorScaleRange.value && v < mutableColorScaleRange.value.max) ||
+    'Value must be smaller than max',
+  biggerThanMin: (v: number) =>
+    (mutableColorScaleRange.value && v > mutableColorScaleRange.value.min) ||
+    'Value must be bigger than min',
+}
 
 const analysisTime = computed(() => {
   if (!props.forecastTime) return 'Analysis time not available'
@@ -107,6 +157,10 @@ const formattedCurrentTime = computed(() => {
 const onStyleClick = (style: Style) => {
   selectedStyle.value = style
   emit('style-click', style)
+}
+
+const changecolorScaleRange = () => {
+  emit('color-scale-range-change', mutableColorScaleRange.value)
 }
 
 const isSelected = (style: Style) => {

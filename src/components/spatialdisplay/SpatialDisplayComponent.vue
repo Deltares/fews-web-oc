@@ -51,7 +51,9 @@
       :lastValueTime="
         new Date(props.layerCapabilities?.lastValueTime ?? '') ?? null
       "
+      :colorScaleRange="colorScaleRange"
       @styleClick="handleStyleClick"
+      @color-scale-range-change="updateColorScaleRange"
     />
     <SelectedCoordinateLayer
       :longitude="props.longitude"
@@ -160,6 +162,10 @@ const settings = useUserSettingsStore()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const handleStyleClick = (style: Style) => {
   selectedStyle.value = style
+}
+
+const updateColorScaleRange = (range: { min: number; max: number }) => {
+  colorScaleRange.value = range
 }
 
 const usedStyle = computed(() => {
