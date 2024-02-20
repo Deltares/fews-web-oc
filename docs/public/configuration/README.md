@@ -7,14 +7,83 @@ All configuration related to what content is being displayed in Web OC, is manag
 
 Key files in the FEWS Configuration to get started with Web OC are:
 
-- WebOperatorClient.xml (SystemConfigFiles). Configure available Web OC components as well as general items like title and logo: https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client
-- WebServices.xml (PiServiceConfigFiles). Web OC highly depends on what data is made available through FewsWebServices, Use this configuration file to configure a filterId, permissions etc.: https://publicwiki.deltares.nl/pages/viewpage.action?pageId=220266993
+- `WebOperatorClient.xml` (SystemConfigFiles). Configure available Web OC components as well as general items like title and logo: https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client
+- `WebServices.xml` (PiServiceConfigFiles). Web OC highly depends on what data is made available through FewsWebServices, Use this configuration file to configure a filterId, permissions etc.: https://publicwiki.deltares.nl/pages/viewpage.action?pageId=220266993
 
 Although Web OC will run without any further adjustments to the Delft-FEWS configuration, its strongly recommended to spend some time on your Topology configuration in relation to Web OC (see below).
 
-### System time
+> **_NOTE:_** Please note that Web OC will always use the system time of the Web OC users device as Web OC system time. This time setting can not be modified by Web OC configuration.
 
-Please note that Web OC will always use the system time of the Web OC users device as Web OC system time. This time setting can not be modified by Web OC configuration.
+## General Web OC configuration
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<webOperatorClient xmlns="http://www.wldelft.nl/fews"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.wldelft.nl/fews https://fewsdocs.deltares.nl/schemas/version1.0/webOperatorClient.xsd">
+    <general>
+        <title>Delft FEWS Web Operator Client</title>
+        <icons>
+            <logo>deltares_logo.png</logo>
+            <favicon>deltares_favicon.svg</favicon>
+        </icons>
+        <defaultComponent>topologyDisplay</defaultComponent>
+        <customStyleSheet>weboc-default-style.css</customStyleSheet>
+        <splashScreen>image.png</splashScreen>
+        <helpMenu>
+            <url name="Help entry links to external url">https://example.com</url>
+            <path name="Help entry links to path in Web OC">terms-of-use</path>
+        </helpMenu>
+    </general>
+    <components>
+        <topologyDisplay>
+            <title>Topology Disiplay</title>
+            <defaultPath>
+                <nodeId>topololgy_node_id</nodeId>
+            </defaultPath>
+            <showLeafNodesAsButtons>true</showLeafNodesAsButtons>
+        </topologyDisplay>
+        <htmlDisplay>
+            <title>Terms of Use page</title>
+            <path>terms-of-use</path>
+            <viewPermission>public</viewPermission>
+            <url>terms-of-use.html</url>
+        </htmlDisplay>
+    </components>
+</webOperatorClient>
+```
+
+^ **NOTE**: The FEWS PI webservices (2023.02) can be used to serve [static web resources](https://fewsdocs.deltares.nl/webservices/rest-api/v1/#get-/resources/static/-path-/-id-).
+Relative urls in `WebOperatorClient.xml` are first resolved against the base url of the Web OC instance (e.g. `deltares_logo.png`), and then against the resources endpoint of the FewsWebServices instance.
+
+### Styling
+
+With the customStyleSheet option in the `WebOperatorClient.xml` , it is possible to load a custom stylesheet for Web OC. This stylesheet will be loaded after the default stylesheet and can be used to override default styles. The custom stylesheet should be placed in the same directory as the index.html file.
+
+```css
+@import '../fonts/exo-2/fonts.css';
+@import './default-styles.css';
+@import './vuetifiy-overrule.css';
+
+:root {
+  --font-family: 'Exo 2', sans-serif;
+  --theme-color: white;
+  --contrast-color: black;
+  --canvas-fill: rgb(223, 223, 223);
+  --weboc-app-bar-bg-color: #080c80;
+}
+
+.dark {
+  --contrast-color: rgb(255, 255, 255);
+  --theme-color: black;
+  --canvas-fill: rgb(54, 54, 54);
+}
+```
+
+**Fonts**
+
+**Icons**
+
 
 ## Web OC navigation using Topology
 
