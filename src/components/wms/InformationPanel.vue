@@ -234,19 +234,4 @@ const switchLayerType = () => {
   background-color: rgba(var(--v-theme-surface), 0.8);
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
-
-.info-icon {
-  margin-right: 8px;
-  margin-left: 8px;
-}
-.layer-title {
-  font-weight: bold;
-}
-.current-time {
-  margin-left: 10px;
-  padding: 0 10px;
-  border-radius: 10px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-}
 </style>
