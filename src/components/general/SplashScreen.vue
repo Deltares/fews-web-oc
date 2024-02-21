@@ -30,7 +30,12 @@ defineProps<Props>()
 
 const router = useRouter()
 
-const showDialog = useStorage('fews-weboc-oc:splash-screen', true)
+const showDialog = useStorage(
+  'weboc-splash-screen-v1.0.0',
+  true,
+  sessionStorage,
+  { mergeDefaults: true },
+)
 
 const termsPath = 'terms-of-use'
 const configStore = useConfigStore()
