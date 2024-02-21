@@ -41,13 +41,18 @@
             ></v-list-item>
           </template>
           <v-list-item
-            v-for="(style, index) in props.styles"
+            v-for="(element, index) in props.colourScales"
             :key="index"
-            :title="style.title"
-            :subtitle="style.name"
-            @click="onStyleClick(style)"
-            :active="isSelected(style)"
+            :title="element.style.title"
+            :subtitle="element.style.name"
+            v-model="colorScaleIndex"
+            :active="isSelected(element.style)"
           >
+            <ColourBar
+              v-if="mutableColorScaleRange"
+              :range="mutableColorScaleRange"
+              :colourMap="element.colourMap"
+            />
           </v-list-item>
         </v-list-group>
         <v-list-group>
@@ -127,12 +132,14 @@ import { DateTime } from 'luxon'
 import { Style } from '@deltares/fews-wms-requests'
 import { ref } from 'vue'
 import { LayerKind } from '@/lib/streamlines'
+import ColourBar from '@/components/wms/ColourBar.vue'
+import { StyleColourMap } from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 
 interface Props {
   layerTitle: string
   currentTime?: Date
   forecastTime?: Date
-  styles?: Style[]
+  colourScales?: StyleColourMap[]
   completelyMissing?: boolean
   firstValueTime?: Date
   lastValueTime?: Date
@@ -153,6 +160,7 @@ const selectedStyle = ref<Style>()
 const mutableColorScaleRange = ref(props.colorScaleRange)
 const layerKind = defineModel('layerKind')
 const showLayer = defineModel('showLayer')
+const colorScaleIndex = defineModel('colorScaleIndex')
 const itemsLayerKind = [
   { id: LayerKind.Static, name: 'Static', icon: 'mdi-pause' },
   { id: LayerKind.Streamline, name: 'Animated', icon: 'mdi-animation-play' },
@@ -198,11 +206,6 @@ const formattedCurrentTime = computed(() => {
   const dateTime = DateTime.fromJSDate(props.currentTime)
   return dateTime.toFormat(format)
 })
-
-const onStyleClick = (style: Style) => {
-  selectedStyle.value = style
-  emit('style-click', style)
-}
 
 const changecolorScaleRange = () => {
   emit('color-scale-range-change', mutableColorScaleRange.value)
