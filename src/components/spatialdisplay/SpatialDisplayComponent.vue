@@ -40,9 +40,7 @@
         :currentTime="currentTime"
         :forecastTime="forecastTime"
         :styles="styles"
-        :completelyMissing="
-          props.layerCapabilities?.completelyMissing ? true : false
-        "
+        :completelyMissing="props.layerCapabilities?.completelyMissing ?? false"
         :firstValueTime="
           new Date(props.layerCapabilities?.firstValueTime ?? '')
         "

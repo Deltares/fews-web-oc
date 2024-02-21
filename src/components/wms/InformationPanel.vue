@@ -194,10 +194,7 @@ const formattedTimeRange = computed(() => {
 const formattedCurrentTime = computed(() => {
   if (!props.currentTime) return ''
   const format = 'HH:mm ZZZZ'
-  const timeZone = 'Europe/Amsterdam'
   const dateTime = DateTime.fromJSDate(props.currentTime)
-    .setZone(timeZone)
-    .setLocale('nl-NL')
   return dateTime.toFormat(format)
 })
 
