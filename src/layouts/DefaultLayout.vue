@@ -87,8 +87,12 @@
             </v-menu>
           </v-btn>
           <v-spacer />
-          <v-btn variant="plain" class="text-lowercase" size="small"
-            >v{{ version }}</v-btn
+          <v-btn
+            variant="plain"
+            class="text-lowercase"
+            size="small"
+            @click="onVersionClick"
+            >{{ versionString }}</v-btn
           >
         </div>
       </template>
@@ -148,6 +152,7 @@ const { isRtl } = useRtl()
 const route = useRoute()
 
 const version = ref(packageConfig.version)
+const versionString = ref('v' + version.value)
 const logoSrc = ref('')
 const splashSrc = ref<string>()
 const appBarStyle = ref<StyleValue>()
@@ -219,6 +224,14 @@ watch(
     )
   },
 )
+
+function onVersionClick() {
+  if (versionString.value.startsWith('v')) {
+    versionString.value = '#' + __COMMIT_HASH__
+  } else {
+    versionString.value = 'v' + packageConfig.version
+  }
+}
 
 async function getLocalOrRemoteFile(localBase: string, relativePath?: string) {
   if (!relativePath) return
