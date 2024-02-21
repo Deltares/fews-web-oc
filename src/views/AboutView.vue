@@ -25,8 +25,8 @@
     </v-list>
     <v-card-text>
       <v-row>
-        <v-col cols="4"> WebOC </v-col>
-        <v-col cols="8">
+        <v-col cols="4">WebOC </v-col>
+        <v-col>
           <v-chip size="small" prepend-icon="mdi-tag-outline">{{
             version
           }}</v-chip>
@@ -42,7 +42,7 @@
       </v-row>
       <v-row>
         <v-col cols="4"> Web Service </v-col>
-        <v-col cols="8">
+        <v-col>
           <v-chip size="small" prepend-icon="mdi-tag-outline">{{
             webServiceVersion.implementation
           }}</v-chip>
@@ -103,7 +103,8 @@ onMounted(async () => {
 .home-card {
   margin: auto;
   margin-top: 5%;
-  width: fit-content !important;
+  width: fit-content;
+  max-width: 100%;
   height: fit-content !important;
 }
 </style>
