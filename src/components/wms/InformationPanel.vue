@@ -1,83 +1,89 @@
 <template>
-  <div class="info-panel">
-    <v-menu transition="slide-y-transition" :close-on-content-click="false">
-      <template v-slot:activator="{ props }">
-        <v-icon class="info-icon">mdi-information</v-icon>
-        <v-btn v-bind="props">
-          <span class="layer-title">{{ layerTitle }}</span>
-          <span class="current-time">{{ formattedCurrentTime }}</span>
-        </v-btn>
-      </template>
-      <v-list>
-        <v-list-item
-          :title="props.layerTitle"
-          :subtitle="analysisTime"
-          :prepend-icon="layersIcon"
-        >
-        </v-list-item>
-        <v-list-item
-          :title="'Time range'"
-          :subtitle="formattedTimeRange"
-          :prepend-icon="timeIcon"
-        >
-        </v-list-item>
-        <v-list-group>
-          <template v-slot:activator="{ props }">
-            <v-list-item
-              v-bind="props"
-              title="Color scales"
-              :prepend-icon="colorScalesIcon"
-            ></v-list-item>
-          </template>
+  <v-menu transition="slide-y-transition" :close-on-content-click="false">
+    <template v-slot:activator="{ props }">
+      <v-chip v-bind="props" pill label class="info-panel">
+        <v-icon>mdi-information</v-icon>
+        <span class="mx-2">{{ layerTitle }}</span>
+        <v-chip density="comfortable">{{ formattedCurrentTime }}</v-chip>
+      </v-chip>
+    </template>
+    <v-list>
+      <v-list-item
+        :title="props.layerTitle"
+        :subtitle="analysisTime"
+        :prepend-icon="layersIcon"
+      >
+      </v-list-item>
+      <v-list-item
+        :title="'Time range'"
+        :subtitle="formattedTimeRange"
+        :prepend-icon="timeIcon"
+      >
+      </v-list-item>
+      <v-list-group>
+        <template v-slot:activator="{ props }">
           <v-list-item
-            v-for="(style, index) in props.styles"
-            :key="index"
-            :title="style.title"
-            :subtitle="style.name"
-            @click="onStyleClick(style)"
-            :class="{ selected: isSelected(style) }"
-          >
-          </v-list-item>
-          <v-list-item v-if="mutableColorScaleRange" :prepend-icon="rangeIcon">
-            <v-row align="center">
-              <v-col cols="6">
-                <v-text-field
-                  v-model.number="mutableColorScaleRange.min"
-                  label="Min"
-                  outlined
-                  clearable
-                  :rules="[
-                    rules.required,
-                    rules.biggerThanZero,
-                    rules.smallerThanMax,
-                  ]"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="6">
-                <v-text-field
-                  v-model.number="mutableColorScaleRange.max"
-                  label="Max"
-                  outlined
-                  clearable
-                  :rules="[rules.required, rules.biggerThanMin]"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-            <v-btn
-              color="primary"
-              variant="text"
-              @click="changecolorScaleRange"
-            >
-              Submit
-            </v-btn>
-          </v-list-item>
-        </v-list-group>
-        <v-list-item v-if="props.completelyMissing">
-          Wms layer is completely missing
+            v-bind="props"
+            title="Color scales"
+            :prepend-icon="colorScalesIcon"
+          ></v-list-item>
+        </template>
+        <v-list-item
+          v-for="(style, index) in props.styles"
+          :key="index"
+          :title="style.title"
+          :subtitle="style.name"
+          @click="onStyleClick(style)"
+          :active="isSelected(style)"
+        >
         </v-list-item>
-      </v-list>
-    </v-menu>
-  </div>
+      </v-list-group>
+      <v-list-group>
+        <template v-slot:activator="{ props }">
+          <v-list-item
+            v-bind="props"
+            title="Color range"
+            :prepend-icon="rangeIcon"
+          ></v-list-item>
+        </template>
+        <v-list-item v-if="mutableColorScaleRange">
+          <v-row align="center">
+            <v-col cols="6">
+              <v-text-field
+                v-model.number="mutableColorScaleRange.min"
+                label="Min"
+                outlined
+                variant="underlined"
+                hide-details
+                @keydown.enter.stop="changecolorScaleRange"
+                @blur="changecolorScaleRange"
+                :rules="[
+                  rules.required,
+                  rules.biggerThanZero,
+                  rules.smallerThanMax,
+                ]"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6">
+              <v-text-field
+                v-model.number="mutableColorScaleRange.max"
+                label="Max"
+                outlined
+                variant="underlined"
+                hide-details
+                @keydown.enter.stop="changecolorScaleRange"
+                @blur="changecolorScaleRange"
+                :rules="[rules.required, rules.biggerThanMin]"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-list-item>
+      </v-list-group>
+      <v-list-item v-if="props.completelyMissing">
+        Wms layer is completely missing
+      </v-list-item>
+    </v-list>
+  </v-menu>
 </template>
 
 <script setup lang="ts">
@@ -88,24 +94,17 @@ import { ref } from 'vue'
 
 interface Props {
   layerTitle: string
-  currentTime: Date | null
-  forecastTime: Date | null
-  styles: Style[] | null
-  completelyMissing: boolean | null
-  firstValueTime: Date | null
-  lastValueTime: Date | null
-  colorScaleRange: { min: number; max: number } | null | undefined
+  currentTime?: Date
+  forecastTime?: Date
+  styles?: Style[]
+  completelyMissing?: boolean
+  firstValueTime?: Date
+  lastValueTime?: Date
+  colorScaleRange?: { min: number; max: number }
 }
 
 const props = withDefaults(defineProps<Props>(), {
   layerTitle: '',
-  currentTime: null,
-  forecastTime: null,
-  styles: null,
-  completelyMissing: null,
-  firstValueTime: null,
-  lastValueTime: null,
-  colorScaleRange: null,
 })
 
 const emit = defineEmits(['style-click', 'color-scale-range-change'])
@@ -113,7 +112,7 @@ const layersIcon = 'mdi-layers'
 const timeIcon = 'mdi-clock-time-four-outline'
 const rangeIcon = 'mdi-layers-edit'
 const colorScalesIcon = 'mdi-palette'
-const selectedStyle = ref<Style | null>(null)
+const selectedStyle = ref<Style>()
 const mutableColorScaleRange = ref(props.colorScaleRange)
 
 const rules = {
@@ -165,7 +164,8 @@ const changecolorScaleRange = () => {
 
 const isSelected = (style: Style) => {
   return (
-    selectedStyle.value !== null && selectedStyle.value.title === style.title
+    selectedStyle.value !== undefined &&
+    selectedStyle.value.title === style.title
   )
 }
 </script>
@@ -197,8 +197,5 @@ const isSelected = (style: Style) => {
   border-radius: 10px;
   background-color: rgba(0, 0, 0, 0.7);
   color: white;
-}
-.selected {
-  background-color: lightblue;
 }
 </style>

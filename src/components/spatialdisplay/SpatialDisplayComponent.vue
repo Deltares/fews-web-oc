@@ -42,15 +42,13 @@
     <InformationPanel
       :layerTitle="props.layerCapabilities?.title"
       :currentTime="currentTime"
-      :forecastTime="forecastTime ?? null"
+      :forecastTime="forecastTime"
       :styles="styles"
-      :completelyMissing="props.layerCapabilities?.completelyMissing ?? null"
-      :firstValueTime="
-        new Date(props.layerCapabilities?.firstValueTime ?? '') ?? null
+      :completelyMissing="
+        props.layerCapabilities?.completelyMissing ? true : false
       "
-      :lastValueTime="
-        new Date(props.layerCapabilities?.lastValueTime ?? '') ?? null
-      "
+      :firstValueTime="new Date(props.layerCapabilities?.firstValueTime ?? '')"
+      :lastValueTime="new Date(props.layerCapabilities?.lastValueTime ?? '')"
       :colorScaleRange="colorScaleRange"
       @styleClick="handleStyleClick"
       @color-scale-range-change="updateColorScaleRange"
@@ -178,24 +176,22 @@ const usedStyle = computed(() => {
   }
 })
 
-const legendGraphic = computed(() => {
-  return useWmsLegend(
-    baseUrl,
-    legendLayerName,
-    () => settings.useDisplayUnits,
-    colorScaleRangeString,
-    usedStyle,
-  )
-})
+const legendGraphic = useWmsLegend(
+  baseUrl,
+  legendLayerName,
+  () => settings.useDisplayUnits,
+  colorScaleRangeString,
+  usedStyle,
+)
 
 const layerKind = ref(LayerKind.Static)
 
 const legend = computed(() => {
-  return legendGraphic.value?.value?.legend
+  return legendGraphic.value?.legend
 })
 
 const styles = computed(() => {
-  return props.layerCapabilities?.styles ?? null
+  return props.layerCapabilities?.styles
 })
 
 const canUseStreamlines = computed(
@@ -253,8 +249,8 @@ watch(colorScaleRange, () => {
 
 const legendTitle = computed(() => {
   if (!props.layerCapabilities) return ''
-  const unitString = legendGraphic.value?.value?.unit
-    ? ` [${legendGraphic.value?.value.unit}]`
+  const unitString = legendGraphic.value?.unit
+    ? ` [${legendGraphic.value?.unit}]`
     : ''
   return `${props.layerCapabilities.title}${unitString}`
 })
