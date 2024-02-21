@@ -1,119 +1,123 @@
 <template>
-  <v-menu transition="slide-y-transition" :close-on-content-click="false">
-    <template v-slot:activator="{ props }">
-      <v-chip v-bind="props" pill label class="info-panel">
-        <v-btn
-          @click="showLayer = !showLayer"
-          density="compact"
-          variant="plain"
-          icon
-        >
-          <v-icon>{{ showLayer ? 'mdi-layers' : 'mdi-layers-off' }}</v-icon>
-        </v-btn>
-        <span class="mx-2" v-if="showLayer">{{ layerTitle }}</span>
-        <v-chip density="comfortable" v-if="showLayer">{{
-          formattedCurrentTime
-        }}</v-chip>
-        <v-btn
-          v-if="showLayer"
-          @click="switchLayerType"
-          icon
-          density="compact"
-          variant="plain"
-        >
-          <v-icon>{{ animatedVectorsIcon }}</v-icon>
-        </v-btn>
-      </v-chip>
-    </template>
-    <v-list v-if="showLayer">
-      <v-list-item
-        :title="props.layerTitle"
-        :subtitle="analysisTime"
-        :prepend-icon="layersIcon"
-      >
-      </v-list-item>
-      <v-list-item
-        :title="'Time range'"
-        :subtitle="formattedTimeRange"
-        :prepend-icon="timeIcon"
-      >
-      </v-list-item>
-      <v-list-group>
-        <template v-slot:activator="{ props }">
-          <v-list-item
-            v-bind="props"
-            title="Color scales"
-            :prepend-icon="colorScalesIcon"
-          ></v-list-item>
-        </template>
+  <v-chip v-bind="props" pill label class="info-panel">
+    <v-btn
+      @click="showLayer = !showLayer"
+      density="compact"
+      variant="plain"
+      icon
+    >
+      <v-icon>{{ showLayer ? 'mdi-layers' : 'mdi-layers-off' }}</v-icon>
+    </v-btn>
+    <v-menu
+      transition="slide-y-transition"
+      :close-on-content-click="false"
+      v-if="showLayer"
+    >
+      <template v-slot:activator="{ props }">
+        <v-chip v-bind="props" pill label>
+          <span class="mx-2">{{ layerTitle }}</span>
+          <v-chip density="comfortable">{{ formattedCurrentTime }}</v-chip>
+        </v-chip>
+      </template>
+      <v-list>
         <v-list-item
-          v-for="(style, index) in props.styles"
-          :key="index"
-          :title="style.title"
-          :subtitle="style.name"
-          @click="onStyleClick(style)"
-          :active="isSelected(style)"
+          :title="props.layerTitle"
+          :subtitle="analysisTime"
+          :prepend-icon="layersIcon"
         >
         </v-list-item>
-      </v-list-group>
-      <v-list-group>
-        <template v-slot:activator="{ props }">
-          <v-list-item
-            v-bind="props"
-            title="Color range"
-            :prepend-icon="rangeIcon"
-          ></v-list-item>
-        </template>
-        <v-list-item v-if="mutableColorScaleRange">
-          <v-row align="center">
-            <v-col cols="6">
-              <v-text-field
-                v-model.number="mutableColorScaleRange.min"
-                label="Min"
-                outlined
-                variant="underlined"
-                hide-details
-                @keydown.enter.stop="changecolorScaleRange"
-                @blur="changecolorScaleRange"
-                :rules="[
-                  rules.required,
-                  rules.biggerThanZero,
-                  rules.smallerThanMax,
-                ]"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="6">
-              <v-text-field
-                v-model.number="mutableColorScaleRange.max"
-                label="Max"
-                outlined
-                variant="underlined"
-                hide-details
-                @keydown.enter.stop="changecolorScaleRange"
-                @blur="changecolorScaleRange"
-                :rules="[rules.required, rules.biggerThanMin]"
-              ></v-text-field>
-            </v-col>
-          </v-row>
+        <v-list-item
+          :title="'Time range'"
+          :subtitle="formattedTimeRange"
+          :prepend-icon="timeIcon"
+        >
         </v-list-item>
-      </v-list-group>
-      <v-list-item :prepend-icon="animatedVectorsIcon">
-        <v-btn-toggle mandatory divided v-model="layerKind">
-          <v-btn
-            v-for="item in itemsLayerKind"
-            :key="item.id"
-            :value="item.id"
-            small
+        <v-list-group>
+          <template v-slot:activator="{ props }">
+            <v-list-item
+              v-bind="props"
+              title="Color scales"
+              :prepend-icon="colorScalesIcon"
+            ></v-list-item>
+          </template>
+          <v-list-item
+            v-for="(style, index) in props.styles"
+            :key="index"
+            :title="style.title"
+            :subtitle="style.name"
+            @click="onStyleClick(style)"
+            :active="isSelected(style)"
           >
-            {{ item.name }}
-          </v-btn>
-        </v-btn-toggle>
-      </v-list-item>
-      <v-list-item v-if="props.completelyMissing">
-        Wms layer is completely missing
-      </v-list-item>
-    </v-list>
-  </v-menu>
+          </v-list-item>
+        </v-list-group>
+        <v-list-group>
+          <template v-slot:activator="{ props }">
+            <v-list-item
+              v-bind="props"
+              title="Color range"
+              :prepend-icon="rangeIcon"
+            ></v-list-item>
+          </template>
+          <v-list-item v-if="mutableColorScaleRange">
+            <v-row align="center">
+              <v-col cols="6">
+                <v-text-field
+                  v-model.number="mutableColorScaleRange.min"
+                  label="Min"
+                  outlined
+                  variant="underlined"
+                  hide-details
+                  @keydown.enter.stop="changecolorScaleRange"
+                  @blur="changecolorScaleRange"
+                  :rules="[
+                    rules.required,
+                    rules.biggerThanZero,
+                    rules.smallerThanMax,
+                  ]"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                <v-text-field
+                  v-model.number="mutableColorScaleRange.max"
+                  label="Max"
+                  outlined
+                  variant="underlined"
+                  hide-details
+                  @keydown.enter.stop="changecolorScaleRange"
+                  @blur="changecolorScaleRange"
+                  :rules="[rules.required, rules.biggerThanMin]"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </v-list-item>
+        </v-list-group>
+        <v-list-item :prepend-icon="animatedVectorsIcon">
+          <v-btn-toggle mandatory divided v-model="layerKind">
+            <v-btn
+              v-for="item in itemsLayerKind"
+              :key="item.id"
+              :value="item.id"
+              small
+            >
+              {{ item.name }}
+            </v-btn>
+          </v-btn-toggle>
+        </v-list-item>
+        <v-list-item v-if="props.completelyMissing">
+          Wms layer is completely missing
+        </v-list-item>
+      </v-list>
+    </v-menu>
+    <v-btn
+      v-if="showLayer"
+      @click="switchLayerType"
+      icon
+      density="compact"
+      variant="plain"
+    >
+      <v-icon>{{ animatedVectorsIcon }}</v-icon>
+    </v-btn>
+  </v-chip>
 </template>
 
 <script setup lang="ts">
