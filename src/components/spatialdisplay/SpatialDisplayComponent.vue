@@ -28,31 +28,32 @@
       :ticks="elevationTicks"
       :unit="elevationUnit"
     />
-    <LocationsLayerComponent
-      v-if="filterIds"
-      :filterIds="filterIds"
-      :locationId="props.locationId"
-      @changeLocationId="onLocationChange"
-    />
-    <LayerKindControl
-      v-model="layerKind"
-      v-if="canUseStreamlines"
-      class="layer-type-control"
-    />
-    <InformationPanel
-      :layerTitle="props.layerCapabilities?.title"
-      :currentTime="currentTime"
-      :forecastTime="forecastTime"
-      :styles="styles"
-      :completelyMissing="
-        props.layerCapabilities?.completelyMissing ? true : false
-      "
-      :firstValueTime="new Date(props.layerCapabilities?.firstValueTime ?? '')"
-      :lastValueTime="new Date(props.layerCapabilities?.lastValueTime ?? '')"
-      :colorScaleRange="colorScaleRange"
-      @styleClick="handleStyleClick"
-      @color-scale-range-change="updateColorScaleRange"
-    />
+    <v-chip-group class="control-container">
+      <LocationsLayerComponent
+        v-if="filterIds"
+        :filterIds="filterIds"
+        :locationId="props.locationId"
+        @changeLocationId="onLocationChange"
+      />
+      <InformationPanel
+        :layerTitle="props.layerCapabilities?.title"
+        :currentTime="currentTime"
+        :forecastTime="forecastTime"
+        :styles="styles"
+        :completelyMissing="
+          props.layerCapabilities?.completelyMissing ? true : false
+        "
+        :firstValueTime="
+          new Date(props.layerCapabilities?.firstValueTime ?? '')
+        "
+        :lastValueTime="new Date(props.layerCapabilities?.lastValueTime ?? '')"
+        :colorScaleRange="colorScaleRange"
+        :canUseStreamlines="canUseStreamlines"
+        @styleClick="handleStyleClick"
+        @color-scale-range-change="updateColorScaleRange"
+        v-model="layerKind"
+      />
+    </v-chip-group>
     <SelectedCoordinateLayer
       :longitude="props.longitude"
       :latitude="props.latitude"
@@ -70,7 +71,6 @@
 
 <script setup lang="ts">
 import MapComponent from '@/components/map/MapComponent.vue'
-import LayerKindControl from '@/components/spatialdisplay/LayerKindControl.vue'
 import AnimatedStreamlineMapboxLayer from '@/components/wms/AnimatedStreamlineMapboxLayer.vue'
 
 import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
@@ -341,10 +341,9 @@ function onCoordinateClick(
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
-.layer-type-control {
+.control-container {
   position: absolute;
-  top: 10px;
-  right: 5px;
-  z-index: 1000;
+  top: 8px;
+  left: 10px;
 }
 </style>

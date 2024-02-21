@@ -79,6 +79,18 @@
           </v-row>
         </v-list-item>
       </v-list-group>
+      <v-list-item :prepend-icon="animatedVectorsIcon">
+        <v-btn-toggle mandatory divided v-model="layerKind">
+          <v-btn
+            v-for="item in itemsLayerKind"
+            :key="item.id"
+            :value="item.id"
+            small
+          >
+            {{ item.name }}
+          </v-btn>
+        </v-btn-toggle>
+      </v-list-item>
       <v-list-item v-if="props.completelyMissing">
         Wms layer is completely missing
       </v-list-item>
@@ -91,6 +103,7 @@ import { computed } from 'vue'
 import { DateTime } from 'luxon'
 import { Style } from '@deltares/fews-wms-requests'
 import { ref } from 'vue'
+import { LayerKind } from '@/lib/streamlines'
 
 interface Props {
   layerTitle: string
@@ -101,6 +114,7 @@ interface Props {
   firstValueTime?: Date
   lastValueTime?: Date
   colorScaleRange?: { min: number; max: number }
+  canUseStreamlines?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -114,6 +128,11 @@ const rangeIcon = 'mdi-layers-edit'
 const colorScalesIcon = 'mdi-palette'
 const selectedStyle = ref<Style>()
 const mutableColorScaleRange = ref(props.colorScaleRange)
+const layerKind = defineModel({ type: String })
+const itemsLayerKind = [
+  { id: LayerKind.Static, name: 'Static' },
+  { id: LayerKind.Streamline, name: 'Animated' },
+]
 
 const rules = {
   required: (v: number) =>
@@ -127,6 +146,12 @@ const rules = {
     (mutableColorScaleRange.value && v > mutableColorScaleRange.value.min) ||
     'Value must be bigger than min',
 }
+
+const animatedVectorsIcon = computed(() => {
+  return layerKind.value === LayerKind.Streamline
+    ? 'mdi-animation-play'
+    : 'mdi-stop-circle-outline'
+})
 
 const analysisTime = computed(() => {
   if (!props.forecastTime) return 'Analysis time not available'
@@ -172,11 +197,8 @@ const isSelected = (style: Style) => {
 
 <style scoped>
 .info-panel {
-  position: absolute;
   font-size: 0.825em;
   z-index: 1000;
-  top: 8px;
-  right: 10px;
   border-radius: 5px;
   backdrop-filter: blur(5px);
   background-color: rgba(var(--v-theme-surface), 0.8);
