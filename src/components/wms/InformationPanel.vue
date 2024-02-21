@@ -91,7 +91,7 @@
             </v-row>
           </v-list-item>
         </v-list-group>
-        <v-list-item :prepend-icon="animatedVectorsIcon">
+        <v-list-item id="toggle">
           <v-btn-toggle mandatory divided v-model="layerKind">
             <v-btn
               v-for="item in itemsLayerKind"
@@ -100,6 +100,7 @@
               small
             >
               {{ item.name }}
+              <v-icon>{{ item.icon }}</v-icon>
             </v-btn>
           </v-btn-toggle>
         </v-list-item>
@@ -153,8 +154,8 @@ const mutableColorScaleRange = ref(props.colorScaleRange)
 const layerKind = defineModel('layerKind')
 const showLayer = defineModel('showLayer')
 const itemsLayerKind = [
-  { id: LayerKind.Static, name: 'Static' },
-  { id: LayerKind.Streamline, name: 'Animated' },
+  { id: LayerKind.Static, name: 'Static', icon: 'mdi-pause' },
+  { id: LayerKind.Streamline, name: 'Animated', icon: 'mdi-animation-play' },
 ]
 
 const rules = {
@@ -172,7 +173,7 @@ const rules = {
 
 const animatedVectorsIcon = computed(() => {
   return layerKind.value === LayerKind.Streamline
-    ? 'mdi-stop-circle-outline'
+    ? 'mdi-pause'
     : 'mdi-animation-play'
 })
 
@@ -230,5 +231,9 @@ const switchLayerType = () => {
   backdrop-filter: blur(5px);
   background-color: rgba(var(--v-theme-surface), 0.8);
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+#toggle {
+  display: flex;
+  justify-content: center;
 }
 </style>
