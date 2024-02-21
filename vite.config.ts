@@ -1,12 +1,17 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
+import { execSync } from 'child_process'
+
+const commitHash = execSync('git rev-parse --short HEAD').toString()
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-
   return {
+    define: {
+      __COMMIT_HASH__: JSON.stringify(commitHash),
+    },
     server: {
       headers: {
         'content-security-policy': [
