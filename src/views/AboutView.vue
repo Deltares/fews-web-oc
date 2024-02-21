@@ -26,17 +26,35 @@
     <v-card-text>
       <v-row>
         <v-col cols="4"> WebOC </v-col>
-        <v-col cols="6"> v{{ version }} </v-col>
+        <v-col cols="8">
+          <v-chip size="small" prepend-icon="mdi-tag-outline">{{
+            version
+          }}</v-chip>
+          <template v-if="commitHash !== ''">
+            <v-chip size="small" prepend-icon="mdi-source-commit">{{
+              commitHash
+            }}</v-chip>
+            <v-chip size="small" prepend-icon="mdi-package-variant-closed">{{
+              buildDate
+            }}</v-chip>
+          </template>
+        </v-col>
       </v-row>
       <v-row>
         <v-col cols="4"> Web Service </v-col>
-        <v-col cols="6">
-          {{ webServiceVersion.implementation }} #{{
-            webServiceVersion.buildNumber
-          }}
-          {{
-            webServiceVersion.buildType === 'development' ? 'development' : ''
-          }}
+        <v-col cols="8">
+          <v-chip size="small" prepend-icon="mdi-tag-outline">{{
+            webServiceVersion.implementation
+          }}</v-chip>
+          <v-chip size="small" prepend-icon="mdi-package-variant-closed"
+            >#{{ webServiceVersion.buildNumber }}</v-chip
+          >
+          <v-chip
+            v-if="webServiceVersion.buildType === 'development'"
+            size="small"
+            prepend-icon="mdi-source-branch"
+            >development'</v-chip
+          >
         </v-col>
       </v-row>
       <v-row>
@@ -58,7 +76,11 @@ import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 const webServiceUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+
 const version = ref(packageConfig.version)
+const commitHash = __GIT_TAG__ ? '' : __GIT_HASH__
+const buildDate = new Date(__BUILD_DATE__).toISOString()
+
 const webServiceVersion = ref<Version>({
   implementation: '',
   buildType: '',

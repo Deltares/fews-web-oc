@@ -4,13 +4,17 @@ import path from 'path'
 import { execSync } from 'child_process'
 
 const commitHash = execSync('git rev-parse --short HEAD').toString()
+const commitTag = execSync('git tag --points-at HEAD').toString()
+const buildDate = new Date().toISOString()
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   return {
     define: {
-      __COMMIT_HASH__: JSON.stringify(commitHash),
+      __GIT_HASH__: JSON.stringify(commitHash),
+      __GIT_TAG__: JSON.stringify(commitTag),
+      __BUILD_DATE__: JSON.stringify(buildDate),
     },
     server: {
       headers: {
