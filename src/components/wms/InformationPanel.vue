@@ -14,6 +14,15 @@
         <v-chip density="comfortable" v-if="showLayer">{{
           formattedCurrentTime
         }}</v-chip>
+        <v-btn
+          v-if="showLayer"
+          @click="switchLayerType"
+          icon
+          density="compact"
+          variant="plain"
+        >
+          <v-icon>{{ animatedVectorsIcon }}</v-icon>
+        </v-btn>
       </v-chip>
     </template>
     <v-list v-if="showLayer">
@@ -159,8 +168,8 @@ const rules = {
 
 const animatedVectorsIcon = computed(() => {
   return layerKind.value === LayerKind.Streamline
-    ? 'mdi-animation-play'
-    : 'mdi-stop-circle-outline'
+    ? 'mdi-stop-circle-outline'
+    : 'mdi-animation-play'
 })
 
 const analysisTime = computed(() => {
@@ -202,6 +211,13 @@ const isSelected = (style: Style) => {
     selectedStyle.value !== undefined &&
     selectedStyle.value.title === style.title
   )
+}
+
+const switchLayerType = () => {
+  layerKind.value =
+    layerKind.value === LayerKind.Static
+      ? LayerKind.Streamline
+      : LayerKind.Static
 }
 </script>
 
