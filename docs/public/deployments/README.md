@@ -45,9 +45,9 @@ The Delft-FEWS Web OC can be deployed in a Delft-FEWS Standalone as follows"
 
 In the "Modules" folder of the Delft-FEWS Region Home folder, create a directory named: "weboc".
 Unzip the Delft-FEWS Web OC distribution into that folder.
-Create a subfolder "WEB-INF" in the weboc folder.
+Create a subfolder "WEB-INF" in the weboc folder (step not required when a full Web OC distribution has been provided by Deltares).
 
-Create the file "[web.xml](delftfews-sa/Modules/weboc/WEB-INF/web.xml)" in the WEB-INF folder.
+Create the file "[web.xml](delftfews-sa/Modules/weboc/WEB-INF/web.xml)" in the WEB-INF folder (step not required when a full Web OC distribution has been provided by Deltares).
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -67,7 +67,7 @@ version="3.0">
 
 Customize the app-config.json file where appropriate.
 
-After starting tomcat using F12 in the Standalone the Delft-FEWS Web OC is available at: http://localhost:8080
+After starting tomcat using F12+M (embedded servers, start embedded tomcat web services) in the Standalone the Delft-FEWS Web OC is available at: http://localhost:8080. Log message in Delft-FEWS SA: INFO - StartFewsWebServices.FewsWebServicesEmbeddedTomcatServer.run - The Web OC will be available at: http://localhost:8080.
 
 ## Nginx
 
