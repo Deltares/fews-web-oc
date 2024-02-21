@@ -2,12 +2,21 @@
   <v-menu transition="slide-y-transition" :close-on-content-click="false">
     <template v-slot:activator="{ props }">
       <v-chip v-bind="props" pill label class="info-panel">
-        <v-icon>mdi-information</v-icon>
-        <span class="mx-2">{{ layerTitle }}</span>
-        <v-chip density="comfortable">{{ formattedCurrentTime }}</v-chip>
+        <v-btn
+          @click="showLayer = !showLayer"
+          density="compact"
+          variant="plain"
+          icon
+        >
+          <v-icon>{{ showLayer ? 'mdi-layers' : 'mdi-layers-off' }}</v-icon>
+        </v-btn>
+        <span class="mx-2" v-if="showLayer">{{ layerTitle }}</span>
+        <v-chip density="comfortable" v-if="showLayer">{{
+          formattedCurrentTime
+        }}</v-chip>
       </v-chip>
     </template>
-    <v-list>
+    <v-list v-if="showLayer">
       <v-list-item
         :title="props.layerTitle"
         :subtitle="analysisTime"
@@ -128,7 +137,8 @@ const rangeIcon = 'mdi-layers-edit'
 const colorScalesIcon = 'mdi-palette'
 const selectedStyle = ref<Style>()
 const mutableColorScaleRange = ref(props.colorScaleRange)
-const layerKind = defineModel({ type: String })
+const layerKind = defineModel('layerKind')
+const showLayer = defineModel('showLayer')
 const itemsLayerKind = [
   { id: LayerKind.Static, name: 'Static' },
   { id: LayerKind.Streamline, name: 'Animated' },
@@ -212,7 +222,6 @@ const isSelected = (style: Style) => {
 .layer-title {
   font-weight: bold;
 }
-
 .current-time {
   margin-left: 10px;
   padding: 0 10px;

@@ -1,12 +1,12 @@
 <template>
   <MapComponent>
     <AnimatedMapboxLayer
-      v-if="layerKind === LayerKind.Static"
+      v-if="layerKind === LayerKind.Static && showLayer"
       :layer="layerOptions"
       @doubleclick="onCoordinateClick"
     />
     <AnimatedStreamlineMapboxLayer
-      v-if="layerKind === LayerKind.Streamline"
+      v-if="layerKind === LayerKind.Streamline && showLayer"
       :layerOptions="layerOptions"
       :streamlineOptions="layerCapabilities?.animatedVectors"
       @doubleclick="onCoordinateClick"
@@ -51,7 +51,8 @@
         :canUseStreamlines="canUseStreamlines"
         @styleClick="handleStyleClick"
         @color-scale-range-change="updateColorScaleRange"
-        v-model="layerKind"
+        v-model:layer-kind="layerKind"
+        v-model:show-layer="showLayer"
       />
     </v-chip-group>
     <SelectedCoordinateLayer
@@ -165,6 +166,7 @@ const handleStyleClick = (style: Style) => {
 const updateColorScaleRange = (range: { min: number; max: number }) => {
   colorScaleRange.value = range
 }
+const showLayer = ref<boolean>(true)
 
 const usedStyle = computed(() => {
   if (selectedStyle.value !== undefined) {
