@@ -48,11 +48,7 @@
             v-model="colorScaleIndex"
             :active="isSelected(element.style)"
           >
-            <ColourBar
-              v-if="mutableColorScaleRange"
-              :range="mutableColorScaleRange"
-              :colourMap="element.colourMap"
-            />
+            <ColourStrip :colourMap="element.colourMap" />
           </v-list-item>
         </v-list-group>
         <v-list-group>
@@ -132,7 +128,7 @@ import { DateTime } from 'luxon'
 import { Style } from '@deltares/fews-wms-requests'
 import { ref } from 'vue'
 import { LayerKind } from '@/lib/streamlines'
-import ColourBar from '@/components/wms/ColourBar.vue'
+import ColourStrip from '@/components/wms/ColourStrip.vue'
 import { StyleColourMap } from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 
 interface Props {
