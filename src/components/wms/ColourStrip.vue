@@ -36,7 +36,7 @@ function updateColourStrip() {
   new webOcCharts.ColourBar(
     group.value as any,
     props.colourMap,
-    300,
+    230,
     10,
     options,
   )
@@ -45,6 +45,7 @@ function updateColourStrip() {
 
 <style scoped>
 .colourstrip {
+  width: 230px;
   height: 10px;
 }
 
