@@ -72,14 +72,7 @@
 import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineMapboxLayer from '@/components/wms/AnimatedStreamlineMapboxLayer.vue'
 
-import {
-  ref,
-  computed,
-  onMounted,
-  onBeforeMount,
-  watch,
-  watchEffect,
-} from 'vue'
+import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
   useWmsLegend,
@@ -178,37 +171,46 @@ const updateColorScaleRange = (range: { min: number; max: number }) => {
 const showLayer = ref<boolean>(true)
 const layerKind = ref(LayerKind.Static)
 
-const legend = computed(() => {
-  return colourScales.value?.[colorScaleIndex.value].colourMap
-})
+const colourScales = ref<StyleColourMap[]>()
+const legend = ref<ColourMap>()
+const usedStyle = ref<Style>()
+const legendTitle = ref<string>()
 
-const usedStyle = computed(() => {
-  return colourScales.value?.[colorScaleIndex.value].style
-})
+watch(
+  () => props.layerCapabilities?.styles,
+  () => {
+    const styles = props.layerCapabilities?.styles
+    if (styles === undefined) return
 
-const legendTitle = computed(() => {
-  return colourScales.value?.[colorScaleIndex.value].title
-})
+    colourScales.value = styles.map((style) => {
+      const legendGraphic = useWmsLegend(
+        baseUrl,
+        legendLayerName,
+        () => settings.useDisplayUnits,
+        colorScaleRangeString,
+        style,
+      )
 
-const colourScales = computed(() => {
-  const scales: StyleColourMap[] = []
-  if (props.layerCapabilities?.styles === undefined) return
-  props.layerCapabilities?.styles.forEach((style) => {
-    const legendGraphic = useWmsLegend(
-      baseUrl,
-      legendLayerName,
-      () => settings.useDisplayUnits,
-      colorScaleRangeString,
-      style,
-    )
-    scales.push({
-      style: style,
-      colourMap: legendGraphic.value?.legend,
-      title: getLegendTitle(legendGraphic),
+      const colourScale = {
+        style: style,
+        colourMap: legendGraphic.value?.legend,
+        title: getLegendTitle(legendGraphic),
+      }
+
+      watch(legendGraphic, () => {
+        colourScale.colourMap = legendGraphic.value?.legend
+        colourScale.title = getLegendTitle(legendGraphic)
+
+        legend.value = colourScales.value?.[colorScaleIndex.value].colourMap
+        usedStyle.value = colourScales.value?.[colorScaleIndex.value].style
+        legendTitle.value = colourScales.value?.[colorScaleIndex.value].title
+      })
+
+      return colourScale
     })
-  })
-  return scales
-})
+  },
+  { immediate: true },
+)
 
 const canUseStreamlines = computed(
   () => props.layerCapabilities?.animatedVectors !== undefined,
@@ -312,7 +314,9 @@ function setLayerOptions(): void {
   }
 }
 
-function getLegendTitle(legendGraphic: any): string {
+function getLegendTitle(
+  legendGraphic: ReturnType<typeof useWmsLegend>,
+): string {
   if (!props.layerCapabilities) return ''
   const unitString = legendGraphic.value?.unit
     ? ` [${legendGraphic.value?.unit}]`
