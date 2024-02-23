@@ -1,12 +1,12 @@
 <template>
   <MapComponent>
     <AnimatedMapboxLayer
-      v-if="layerKind === LayerKind.Static"
+      v-if="layerKind === LayerKind.Static && showLayer"
       :layer="layerOptions"
       @doubleclick="onCoordinateClick"
     />
     <AnimatedStreamlineMapboxLayer
-      v-if="layerKind === LayerKind.Streamline"
+      v-if="layerKind === LayerKind.Streamline && showLayer"
       :layerOptions="layerOptions"
       :streamlineOptions="layerCapabilities?.animatedVectors"
       @doubleclick="onCoordinateClick"
@@ -28,17 +28,31 @@
       :ticks="elevationTicks"
       :unit="elevationUnit"
     />
-    <LocationsLayerComponent
-      v-if="filterIds"
-      :filterIds="filterIds"
-      :locationId="props.locationId"
-      @changeLocationId="onLocationChange"
-    />
-    <LayerKindControl
-      v-model="layerKind"
-      v-if="canUseStreamlines"
-      class="layer-type-control"
-    />
+    <v-chip-group class="control-container">
+      <LocationsLayerComponent
+        v-if="filterIds"
+        :filterIds="filterIds"
+        :locationId="props.locationId"
+        @changeLocationId="onLocationChange"
+      />
+      <InformationPanel
+        :layerTitle="props.layerCapabilities?.title"
+        :currentTime="currentTime"
+        :forecastTime="forecastTime"
+        :colourScales="colourScales"
+        :completelyMissing="props.layerCapabilities?.completelyMissing ?? false"
+        :firstValueTime="
+          new Date(props.layerCapabilities?.firstValueTime ?? '')
+        "
+        :lastValueTime="new Date(props.layerCapabilities?.lastValueTime ?? '')"
+        :colorScaleRange="colorScaleRange"
+        :canUseStreamlines="canUseStreamlines"
+        @color-scale-range-change="updateColorScaleRange"
+        v-model:color-scale-index="colorScaleIndex"
+        v-model:layer-kind="layerKind"
+        v-model:show-layer="showLayer"
+      />
+    </v-chip-group>
     <SelectedCoordinateLayer
       :longitude="props.longitude"
       :latitude="props.latitude"
@@ -56,7 +70,6 @@
 
 <script setup lang="ts">
 import MapComponent from '@/components/map/MapComponent.vue'
-import LayerKindControl from '@/components/spatialdisplay/LayerKindControl.vue'
 import AnimatedStreamlineMapboxLayer from '@/components/wms/AnimatedStreamlineMapboxLayer.vue'
 
 import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
@@ -69,6 +82,7 @@ import AnimatedMapboxLayer, {
   MapboxLayerOptions,
 } from '@/components/wms/AnimatedMapboxLayer.vue'
 import LocationsLayerComponent from '@/components/wms/LocationsLayerComponent.vue'
+import InformationPanel from '../wms/InformationPanel.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
@@ -79,12 +93,20 @@ import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
 import { configManager } from '@/services/application-config'
 import type { Layer } from '@deltares/fews-wms-requests'
 import { LayerKind } from '@/lib/streamlines'
+import { Style } from '@deltares/fews-wms-requests'
+import { ColourMap } from '@deltares/fews-web-oc-charts'
 
 interface ElevationWithUnitSymbol {
   units?: string
   lowerValue?: number
   upperValue?: number
   unitSymbol: string
+}
+
+export interface StyleColourMap {
+  style: Style
+  colourMap: ColourMap | undefined
+  title: string
 }
 
 interface Props {
@@ -126,8 +148,10 @@ const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
 const currentTime = ref<Date>(new Date())
+const forecastTime = ref<Date>()
 const layerOptions = ref<MapboxLayerOptions>()
 let debouncedSetLayerOptions!: () => void
+const colorScaleIndex = ref<number>(0)
 
 const colorScaleRange = ref<{ min: number; max: number }>()
 const colorScaleRangeString = computed(() => {
@@ -138,19 +162,55 @@ const colorScaleRangeString = computed(() => {
 })
 const legendLayerName = ref(props.layerName)
 const settings = useUserSettingsStore()
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const legendGraphic = useWmsLegend(
-  baseUrl,
-  legendLayerName,
-  () => settings.useDisplayUnits,
-  colorScaleRangeString,
-)
 
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+
+const updateColorScaleRange = (range: { min: number; max: number }) => {
+  colorScaleRange.value = range
+}
+const showLayer = ref<boolean>(true)
 const layerKind = ref(LayerKind.Static)
 
-const legend = computed(() => {
-  return legendGraphic.value?.legend
-})
+const colourScales = ref<StyleColourMap[]>()
+const legend = ref<ColourMap>()
+const usedStyle = ref<Style>()
+const legendTitle = ref<string>()
+
+watch(
+  () => props.layerCapabilities?.styles,
+  () => {
+    const styles = props.layerCapabilities?.styles
+    if (styles === undefined) return
+
+    colourScales.value = styles.map((style) => {
+      const legendGraphic = useWmsLegend(
+        baseUrl,
+        legendLayerName,
+        () => settings.useDisplayUnits,
+        colorScaleRangeString,
+        style,
+      )
+
+      const colourScale = {
+        style: style,
+        colourMap: legendGraphic.value?.legend,
+        title: getLegendTitle(legendGraphic),
+      }
+
+      watch(legendGraphic, () => {
+        colourScale.colourMap = legendGraphic.value?.legend
+        colourScale.title = getLegendTitle(legendGraphic)
+
+        legend.value = colourScales.value?.[colorScaleIndex.value].colourMap
+        usedStyle.value = colourScales.value?.[colorScaleIndex.value].style
+        legendTitle.value = colourScales.value?.[colorScaleIndex.value].title
+      })
+
+      return colourScale
+    })
+  },
+  { immediate: true },
+)
 
 const canUseStreamlines = computed(
   () => props.layerCapabilities?.animatedVectors !== undefined,
@@ -175,6 +235,10 @@ const layerHasElevation = computed(() => {
 watch(
   () => props.layerCapabilities,
   (layer) => {
+    if (layer?.keywordList !== undefined) {
+      forecastTime.value =
+        new Date(layer?.keywordList[0].forecastTime as string) ?? null
+    }
     legendLayerName.value = props.layerName
     colorScaleRange.value = undefined
     if (layer?.elevation) {
@@ -199,14 +263,6 @@ watch(currentElevation, () => {
 
 watch(colorScaleRange, () => {
   setLayerOptions()
-})
-
-const legendTitle = computed(() => {
-  if (!props.layerCapabilities) return ''
-  const unitString = legendGraphic.value?.unit
-    ? ` [${legendGraphic.value?.unit}]`
-    : ''
-  return `${props.layerCapabilities.title}${unitString}`
 })
 
 watch(
@@ -252,9 +308,20 @@ function setLayerOptions(): void {
     }
     layerOptions.value.elevation = currentElevation.value
     layerOptions.value.colorScaleRange = colorScaleRangeString.value
+    layerOptions.value.style = usedStyle.value?.name
   } else {
     layerOptions.value = undefined
   }
+}
+
+function getLegendTitle(
+  legendGraphic: ReturnType<typeof useWmsLegend>,
+): string {
+  if (!props.layerCapabilities) return ''
+  const unitString = legendGraphic.value?.unit
+    ? ` [${legendGraphic.value?.unit}]`
+    : ''
+  return `${props.layerCapabilities.title}${unitString}`
 }
 
 function onLocationChange(locationId: string | null): void {
@@ -294,10 +361,9 @@ function onCoordinateClick(
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
-.layer-type-control {
+.control-container {
   position: absolute;
-  top: 10px;
-  right: 5px;
-  z-index: 1000;
+  top: 8px;
+  left: 10px;
 }
 </style>
