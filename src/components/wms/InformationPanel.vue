@@ -14,12 +14,15 @@
       v-if="showLayer"
     >
       <template v-slot:activator="{ props }">
-        <v-chip v-bind="props" pill label>
-          <span class="mx-2">{{ layerTitle }}</span>
+        <v-btn variant="plain" v-bind="props" class="pe-0">
+          <span class="me-2">{{ layerTitle }}</span>
           <v-chip density="comfortable">{{ formattedCurrentTime }}</v-chip>
-        </v-chip>
+        </v-btn>
       </template>
       <v-list>
+        <v-list-item v-if="props.completelyMissing">
+          <v-alert type="warning">Wms layer is completely missing</v-alert>
+        </v-list-item>
         <v-list-item
           :title="props.layerTitle"
           :subtitle="analysisTime"
@@ -41,13 +44,14 @@
             ></v-list-item>
           </template>
           <v-list-item
-            v-for="(style, index) in props.styles"
+            v-for="(element, index) in props.colourScales"
             :key="index"
-            :title="style.title"
-            :subtitle="style.name"
-            @click="onStyleClick(style)"
-            :active="isSelected(style)"
+            :title="element.style.title"
+            :subtitle="element.style.name"
+            @click="colorScaleIndex = index"
+            :active="colorScaleIndex === index"
           >
+            <ColourStrip :colourMap="element.colourMap" />
           </v-list-item>
         </v-list-group>
         <v-list-group>
@@ -91,7 +95,7 @@
             </v-row>
           </v-list-item>
         </v-list-group>
-        <v-list-item id="toggle">
+        <v-list-item id="toggle" v-if="canUseStreamlines">
           <v-btn-toggle mandatory divided v-model="layerKind">
             <v-btn
               v-for="item in itemsLayerKind"
@@ -104,13 +108,10 @@
             </v-btn>
           </v-btn-toggle>
         </v-list-item>
-        <v-list-item v-if="props.completelyMissing">
-          Wms layer is completely missing
-        </v-list-item>
       </v-list>
     </v-menu>
     <v-btn
-      v-if="showLayer"
+      v-if="showLayer && canUseStreamlines"
       @click="switchLayerType"
       icon
       density="compact"
@@ -124,15 +125,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { DateTime } from 'luxon'
-import { Style } from '@deltares/fews-wms-requests'
 import { ref } from 'vue'
 import { LayerKind } from '@/lib/streamlines'
+import ColourStrip from '@/components/wms/ColourStrip.vue'
+import { StyleColourMap } from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
+import { watch } from 'vue'
 
 interface Props {
   layerTitle: string
   currentTime?: Date
   forecastTime?: Date
-  styles?: Style[]
+  colourScales?: StyleColourMap[]
   completelyMissing?: boolean
   firstValueTime?: Date
   lastValueTime?: Date
@@ -149,10 +152,10 @@ const layersIcon = 'mdi-layers'
 const timeIcon = 'mdi-clock-time-four-outline'
 const rangeIcon = 'mdi-layers-edit'
 const colorScalesIcon = 'mdi-palette'
-const selectedStyle = ref<Style>()
 const mutableColorScaleRange = ref(props.colorScaleRange)
 const layerKind = defineModel('layerKind')
 const showLayer = defineModel('showLayer')
+const colorScaleIndex = defineModel('colorScaleIndex')
 const itemsLayerKind = [
   { id: LayerKind.Static, name: 'Static', icon: 'mdi-pause' },
   { id: LayerKind.Streamline, name: 'Animated', icon: 'mdi-animation-play' },
@@ -160,7 +163,7 @@ const itemsLayerKind = [
 
 const rules = {
   required: (v: number) =>
-    (v !== null && v !== undefined) || 'Field is required',
+    (v !== null && v !== undefined && String(v) !== '') || 'Field is required',
   biggerThanZero: (v: number) =>
     v >= 0 || 'Value must be bigger or equal than 0',
   smallerThanMax: (v: number) =>
@@ -170,6 +173,11 @@ const rules = {
     (mutableColorScaleRange.value && v > mutableColorScaleRange.value.min) ||
     'Value must be bigger than min',
 }
+
+watch(
+  () => props.colorScaleRange,
+  () => (mutableColorScaleRange.value = props.colorScaleRange),
+)
 
 const animatedVectorsIcon = computed(() => {
   return layerKind.value === LayerKind.Streamline
@@ -199,20 +207,8 @@ const formattedCurrentTime = computed(() => {
   return dateTime.toFormat(format)
 })
 
-const onStyleClick = (style: Style) => {
-  selectedStyle.value = style
-  emit('style-click', style)
-}
-
 const changecolorScaleRange = () => {
   emit('color-scale-range-change', mutableColorScaleRange.value)
-}
-
-const isSelected = (style: Style) => {
-  return (
-    selectedStyle.value !== undefined &&
-    selectedStyle.value.title === style.title
-  )
 }
 
 const switchLayerType = () => {
