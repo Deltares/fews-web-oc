@@ -129,7 +129,9 @@ function mergeOptions(
   return {
     baseUrl: baseUrlWms,
     layer: layerOptions.name,
-    streamlineStyle: StreamlineStyle.ColoredParticles,
+    streamlineStyle: streamlineOptions?.coloredParticles
+      ? StreamlineStyle.MagnitudeColoredParticles
+      : StreamlineStyle.ColoredParticles,
     numParticles: streamlineOptions?.numberOfParticles ?? 1000,
     particleSize: streamlineOptions?.particleSize ?? 3,
     speedFactor: streamlineOptions?.speedFactor ?? 0.2,
