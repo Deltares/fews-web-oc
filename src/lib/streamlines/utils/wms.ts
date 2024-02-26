@@ -107,6 +107,7 @@ export async function fetchWMSVelocityField(
   width: number,
   height: number,
   style?: string,
+  useDisplayUnits?: boolean,
   elevation?: number,
   signal?: AbortSignal,
 ): Promise<VelocityImage> {
@@ -123,6 +124,12 @@ export async function fetchWMSVelocityField(
   url.searchParams.append('convertVectortoRG', 'true')
   if (style) {
     url.searchParams.append('styles', style)
+  }
+  if (useDisplayUnits !== undefined) {
+    url.searchParams.append(
+      'useDisplayUnits',
+      useDisplayUnits ? 'true' : 'false',
+    )
   }
   if (elevation) {
     url.searchParams.append('elevation', `${elevation}`)

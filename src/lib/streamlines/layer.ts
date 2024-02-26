@@ -20,6 +20,7 @@ export interface WMSStreamlineLayerOptions {
   baseUrl: string
   layer: string
   style?: string
+  useDisplayUnits?: boolean
   streamlineStyle: StreamlineStyle
   numParticles: number
   particleSize: number
@@ -402,6 +403,7 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
         widthWMS,
         heightWMS,
         this.options.style,
+        this.options.useDisplayUnits,
         this.elevation ?? undefined,
         this.signal,
       )

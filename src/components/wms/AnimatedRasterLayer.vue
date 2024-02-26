@@ -19,6 +19,7 @@ import { point } from '@turf/helpers'
 export interface AnimatedRasterLayerOptions {
   name: string
   time: Date
+  useDisplayUnits?: boolean
   bbox?: LngLatBounds
   elevation?: number | null
   colorScaleRange?: string
@@ -128,7 +129,10 @@ function getImageSourceOptions(): any {
       'colorScaleRange',
       `${props.layer.colorScaleRange}`,
     )
-    getMapUrl.searchParams.append('useDisplayUnits', 'true')
+    getMapUrl.searchParams.append(
+      'useDisplayUnits',
+      props.layer.useDisplayUnits ? 'true' : 'false',
+    )
   }
   const imageSourceOptions = {
     url: getMapUrl.toString(),

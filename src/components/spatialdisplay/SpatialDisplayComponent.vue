@@ -322,6 +322,7 @@ function setLayerOptions(): void {
         ? rangeToString(colourScalesStore.currentScale?.range)
         : undefined,
       style: colourScalesStore.currentScale?.style.name,
+      useDisplayUnits: settings.useDisplayUnits,
     }
   } else {
     layerOptions.value = undefined
