@@ -20,7 +20,7 @@ The following software frameworks are used to develop Web OC
 | Language     | Typescript and Javascript |
 | Framework    | Vue.js (Vue 3)            |
 | UI Framework | Vuetify3 + Vite           |
-| Maps         | Mapbox                    |
+| Maps         | Maplibre                  |
 | Charts       | d3js + custom, eCharts    |
 
 _Please note that we are currently in the proces of migrating Web OC from the Vue 2 to Vue 3 framework_.
