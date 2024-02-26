@@ -1,8 +1,15 @@
 <template>
   <v-menu left bottom :close-on-content-click="false" class="menu">
-    <template v-slot:activator="{ props }">
-      <v-btn v-bind="props" icon>
-        <v-icon>mdi-clock-start</v-icon>
+    <template v-slot:activator="{ props, isActive }">
+      <v-btn v-bind="props" variant="tonal" rounded>
+        {{
+          Intl.DateTimeFormat('nl', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'short',
+          }).format(store.systemTime)
+        }}
+        <v-icon>{{ isActive ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
       </v-btn>
     </template>
 

@@ -100,11 +100,8 @@ function onLocationChange(locationId: string | null): void {
 
 <style scoped>
 .locations-layer__chip {
-  position: absolute;
   font-size: 0.825em;
   z-index: 1000;
-  top: 8px;
-  left: 10px;
   backdrop-filter: blur(5px);
   background-color: rgba(var(--v-theme-surface), 0.8);
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);

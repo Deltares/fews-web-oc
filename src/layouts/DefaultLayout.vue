@@ -87,8 +87,13 @@
             </v-menu>
           </v-btn>
           <v-spacer />
-          <v-btn variant="plain" class="text-lowercase" size="small"
-            >v{{ version }}</v-btn
+          <v-btn
+            variant="plain"
+            class="text-lowercase"
+            size="small"
+            @click="showHash = !showHash"
+            :prepend-icon="showHash ? 'mdi-source-commit' : 'mdi-tag-outline'"
+            >{{ versionString }}</v-btn
           >
         </div>
       </template>
@@ -123,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, watchEffect } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 import { useRtl, useTheme } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
 import { Alert, useAlertsStore } from '../stores/alerts.ts'
@@ -148,6 +153,7 @@ const { isRtl } = useRtl()
 const route = useRoute()
 
 const version = ref(packageConfig.version)
+const showHash = ref(false)
 const logoSrc = ref('')
 const splashSrc = ref<string>()
 const appBarStyle = ref<StyleValue>()
@@ -219,6 +225,13 @@ watch(
     )
   },
 )
+
+const versionString = computed(() => {
+  if (showHash.value && !__GIT_TAG__) {
+    return __GIT_HASH__
+  }
+  return packageConfig.version
+})
 
 async function getLocalOrRemoteFile(localBase: string, relativePath?: string) {
   if (!relativePath) return

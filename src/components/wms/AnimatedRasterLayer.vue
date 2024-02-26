@@ -3,9 +3,15 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { toMercator } from '@turf/projection'
-import { ImageSource, LngLatBounds, type MapSourceDataEvent } from 'maplibre-gl'
+import {
+  ImageSource,
+  LngLatBounds,
+  MapLayerMouseEvent,
+  MapLayerTouchEvent,
+  type MapSourceDataEvent,
+} from 'maplibre-gl'
 import { configManager } from '@/services/application-config'
 import { useMap } from 'vue-maplibre-gl'
 import { point } from '@turf/helpers'
@@ -16,6 +22,7 @@ export interface AnimatedRasterLayerOptions {
   bbox?: LngLatBounds
   elevation?: number | null
   colorScaleRange?: string
+  style?: string
 }
 
 interface Props {
@@ -28,12 +35,16 @@ const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
 
-let isInitialized = false
 let currentLayer: string = ''
 
 onMounted(() => {
   addHooksToMapObject()
   onLayerChange()
+})
+
+onUnmounted(() => {
+  removeLayer()
+  removeHooksFromMapObject()
 })
 
 function getCoordsFromBounds(bounds: LngLatBounds) {
@@ -45,30 +56,41 @@ function getCoordsFromBounds(bounds: LngLatBounds) {
   ]
 }
 
-function addHooksToMapObject() {
-  if (map) {
-    map.once('load', () => {
-      isInitialized = true
-      onLayerChange()
+function onMapMove(): void {
+  updateSource()
+}
 
-      map.dragRotate.disable()
-      map.touchZoomRotate.disableRotation()
-      map.doubleClickZoom.disable()
-    })
-    map.on('moveend', () => {
-      updateSource()
-    })
-    map.on('sourcedata', async (e: MapSourceDataEvent) => {
-      if (
-        e.sourceId === currentLayer &&
-        e.tile !== undefined &&
-        e.isSourceLoaded
-      ) {
-        map.setPaintProperty(e.sourceId, 'raster-opacity', 1)
-      }
-    })
-    map.on('dblclick', (e) => emit('doubleclick', e))
+function onDataChange(event: MapSourceDataEvent): void {
+  if (
+    event.sourceId === currentLayer &&
+    event.tile !== undefined &&
+    event.isSourceLoaded
+  ) {
+    map?.setPaintProperty(event.sourceId, 'raster-opacity', 1)
   }
+}
+
+function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
+  emit('doubleclick', event)
+}
+
+function addHooksToMapObject() {
+  map?.once('load', () => {
+    onLayerChange()
+
+    map.dragRotate.disable()
+    map.touchZoomRotate.disableRotation()
+    map.doubleClickZoom.disable()
+  })
+  map?.on('moveend', onMapMove)
+  map?.on('sourcedata', onDataChange)
+  map?.on('dblclick', onDoubleClick)
+}
+
+function removeHooksFromMapObject(): void {
+  map?.off('moveend', onMapMove)
+  map?.off('sourcedata', onDataChange)
+  map?.off('dblclick', onDoubleClick)
 }
 
 function getImageSourceOptions(): any {
@@ -93,6 +115,9 @@ function getImageSourceOptions(): any {
   getMapUrl.searchParams.append('height', `${canvas.height}`)
   getMapUrl.searchParams.append('width', `${canvas.width}`)
   getMapUrl.searchParams.append('time', `${time}`)
+  if (props.layer.style) {
+    getMapUrl.searchParams.append('styles', props.layer.style)
+  }
   if (props.layer.elevation) {
     getMapUrl.searchParams.append('elevation', `${props.layer.elevation}`)
   }
@@ -196,7 +221,6 @@ watch(
 )
 
 function onLayerChange(): void {
-  if (!isInitialized) return
   if (props.layer === undefined || props.layer === null) {
     removeLayer()
     return
