@@ -50,6 +50,10 @@ function addHooksToMapObject() {
     map.once('load', () => {
       isInitialized = true
       onLayerChange()
+
+      map.dragRotate.disable()
+      map.touchZoomRotate.disableRotation()
+      map.doubleClickZoom.disable()
     })
     map.on('moveend', () => {
       updateSource()
