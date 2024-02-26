@@ -5,7 +5,7 @@ import {
   LngLatBounds,
   Map,
   MercatorCoordinate,
-} from 'mapbox-gl'
+} from 'maplibre-gl'
 import {
   BoundingBoxScaling,
   StreamlineStyle,
