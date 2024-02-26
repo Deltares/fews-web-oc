@@ -19,13 +19,12 @@ import {
 export interface WMSStreamlineLayerOptions {
   baseUrl: string
   layer: string
+  style?: string
   streamlineStyle: StreamlineStyle
   numParticles: number
   particleSize: number
   speedFactor: number
   fadeAmountPerSecond: number
-  style?: string
-  colorScaleRange?: string
   downsampleFactorWMS?: number
   particleColor?: string
 }
