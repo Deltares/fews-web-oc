@@ -39,7 +39,9 @@ let currentLayer: string = ''
 
 onMounted(() => {
   addHooksToMapObject()
-  onLayerChange()
+  if (map?.isStyleLoaded()) {
+    onLayerChange()
+  }
 })
 
 onUnmounted(() => {
