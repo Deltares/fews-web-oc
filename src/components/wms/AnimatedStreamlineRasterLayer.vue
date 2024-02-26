@@ -129,6 +129,7 @@ function mergeOptions(
   return {
     baseUrl: baseUrlWms,
     layer: layerOptions.name,
+    useDisplayUnits: layerOptions.useDisplayUnits,
     streamlineStyle: streamlineOptions?.coloredParticles
       ? StreamlineStyle.MagnitudeColoredParticles
       : StreamlineStyle.ColoredParticles,
