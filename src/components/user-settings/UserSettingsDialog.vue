@@ -1,5 +1,9 @@
 <template>
-  <v-dialog v-model="dialog" :fullscreen="mobile" max-width="600">
+  <v-dialog
+    v-model="dialog"
+    :fullscreen="mobile"
+    :max-width="mobile ? undefined : '600'"
+  >
     <template #activator="{ props }">
       <slot name="activator" :props="props"></slot>
     </template>
