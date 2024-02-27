@@ -5,10 +5,9 @@
 </template>
 
 <script setup lang="ts">
-import { MglGeoJsonSource, MglCircleLayer, useMap } from 'vue-maplibre-gl'
+import { MglGeoJsonSource, MglCircleLayer } from 'vue-maplibre-gl'
 import { FeatureCollection, Geometry, GeoJsonProperties } from 'geojson'
-import { GeoJSONSource } from 'maplibre-gl'
-import { watch, computed } from 'vue'
+import { computed } from 'vue'
 
 interface Props {
   latitude?: string
@@ -17,16 +16,13 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { map } = useMap()
-
 const emptyFeatureCollection: FeatureCollection<Geometry, GeoJsonProperties> = {
   type: 'FeatureCollection',
   features: [],
 }
-const layerSourceId = 'selected-coordinate-layer'
 
-const layerId = 'current-location-layer'
-const sourceId = 'current-location-source'
+const layerId = 'selected-coordinate-layer'
+const sourceId = 'selected-coordinate-source'
 
 const sourceData = computed<
   | GeoJSON.Feature<GeoJSON.Geometry>
@@ -44,13 +40,6 @@ const sourceData = computed<
   }
 
   return emptyFeatureCollection
-})
-
-watch(sourceData, () => {
-  if (map) {
-    const source = map.getSource(layerSourceId) as GeoJSONSource
-    if (source) source.setData(sourceData.value)
-  }
 })
 
 const paintSpecification = {
