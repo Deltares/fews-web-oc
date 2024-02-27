@@ -29,6 +29,10 @@
       :ticks="elevationTicks"
       :unit="elevationUnit"
     />
+    <SelectedCoordinateLayer
+      :longitude="props.longitude"
+      :latitude="props.latitude"
+    />
     <v-chip-group class="control-container">
       <LocationsLayerComponent
         v-if="filterIds"
@@ -83,6 +87,7 @@ import AnimatedRasterLayer, {
   AnimatedRasterLayerOptions,
 } from '@/components/wms/AnimatedRasterLayer.vue'
 import LocationsLayerComponent from '@/components/wms/LocationsLayerComponent.vue'
+import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import InformationPanel from '../wms/InformationPanel.vue'
 // import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
