@@ -1,10 +1,10 @@
 <template>
-  <v-dialog v-model="dialog" :fullscreen="mobile" max-width="1200">
+  <v-dialog v-model="dialog" :fullscreen="mobile" max-width="600">
     <template #activator="{ props }">
       <slot name="activator" :props="props"></slot>
     </template>
     <v-card>
-      <v-toolbar title="Settings">
+      <v-toolbar title="Settings" density="compact">
         <v-btn icon="mdi-close" @click="dialog = false" />
       </v-toolbar>
       <v-card-text>
