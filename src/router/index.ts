@@ -29,7 +29,6 @@ const TimeSeriesDisplayView = () => import('../views/TimeSeriesDisplayView.vue')
 const TopologyDisplayView = () => import('../views/TopologyDisplayView.vue')
 const TimeSeriesDisplay = () =>
   import('../components/timeseries/TimeSeriesDisplay.vue')
-const UserSettingsView = () => import('../views/UserSettingsView.vue')
 const HtmlDisplay = () => import('../views/HtmlDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
 
@@ -68,12 +67,6 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
     name: 'AuthLogout',
     meta: { layout: 'EmptyLayout' },
     component: Logout,
-  },
-  {
-    path: '/settings',
-    name: 'UserSettingsView',
-    meta: { title: 'User Settings' },
-    component: UserSettingsView,
   },
 ]
 
