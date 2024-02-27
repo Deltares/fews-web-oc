@@ -1,29 +1,28 @@
 <template>
-  <div>
-    <v-data-table
-      :headers="headers"
-      :items="importStatus"
-      :footer-props="{
-        itemsPerPageOptions: [100, 200, 300],
-      }"
-      class="elevation-1"
-    >
-      <template v-slot:[`item.lastImportTime`]="{ item }">
-        <v-chip
-          size="small"
-          :color="item.lastImportTimeBackgroundColor"
-          light
-          small
-          >{{ item.lastImportTime }}
-        </v-chip>
-      </template>
-      <template v-slot:[`item.fileFailed`]="{ item }">
-        <v-chip size="small" :color="getColor(item.fileFailed)" light small>
-          {{ item.fileFailed }}
-        </v-chip>
-      </template>
-    </v-data-table>
-  </div>
+  <v-data-table
+    :headers="headers"
+    :items="importStatus"
+    :footer-props="{
+      itemsPerPageOptions: [100, 200, 300],
+    }"
+    sticky
+    class="elevation-1"
+  >
+    <template v-slot:[`item.lastImportTime`]="{ item }">
+      <v-chip
+        size="small"
+        :color="item.lastImportTimeBackgroundColor"
+        light
+        small
+        >{{ item.lastImportTime }}
+      </v-chip>
+    </template>
+    <template v-slot:[`item.fileFailed`]="{ item }">
+      <v-chip size="small" :color="getColor(item.fileFailed)" light small>
+        {{ item.fileFailed }}
+      </v-chip>
+    </template>
+  </v-data-table>
 </template>
 
 <script setup lang="ts">
@@ -78,5 +77,3 @@ async function loadImportStatus() {
   }
 }
 </script>
-
-<style scoped></style>
