@@ -6,7 +6,7 @@
       @doubleclick="onCoordinateClick"
       >
     </animated-raster-layer>
-    <AnimatedStreamlineMapboxLayer
+    <AnimatedStreamlineRasterLayer
       v-if="layerKind === LayerKind.Streamline && showLayer"
       :layerOptions="layerOptions"
       :streamlineOptions="layerCapabilities?.animatedVectors"
@@ -71,7 +71,7 @@
 
 <script setup lang="ts">
 import MapComponent from '@/components/map/MapComponent.vue'
-import AnimatedStreamlineMapboxLayer from '@/components/wms/AnimatedStreamlineMapboxLayer.vue'
+import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
 import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
 import {
