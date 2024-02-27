@@ -1,5 +1,5 @@
 <template>
-  <v-chip v-bind="props" pill label class="info-panel">
+  <v-chip v-bind="props" pill label class="info-panel" id="info-panel">
     <v-btn
       @click="showLayer = !showLayer"
       density="compact"
@@ -14,99 +14,80 @@
       v-if="showLayer"
     >
       <template v-slot:activator="{ props }">
-        <v-btn variant="plain" v-bind="props" class="pe-0">
-          <span class="me-2">{{ layerTitle }}</span>
-          <v-chip density="comfortable">{{ formattedCurrentTime }}</v-chip>
+        <v-btn variant="plain" v-bind="props" class="pe-0 text-capitalize">
+          <span
+            class="me-2"
+            :class="{ 'text-decoration-line-through': props.completelyMissing }"
+            >{{ layerTitle }}</span
+          >
         </v-btn>
       </template>
       <v-list>
-        <v-list-item v-if="props.completelyMissing">
-          <v-alert type="warning">Wms layer is completely missing</v-alert>
-        </v-list-item>
         <v-list-item
           :title="props.layerTitle"
           :subtitle="analysisTime"
-          :prepend-icon="layersIcon"
+          prepend-icon="mdi-layers"
         >
         </v-list-item>
+        <v-divider></v-divider>
         <v-list-item
           :title="'Time range'"
           :subtitle="formattedTimeRange"
-          :prepend-icon="timeIcon"
+          prepend-icon="mdi-clock-time-four-outline"
         >
         </v-list-item>
-        <v-list-group>
-          <template v-slot:activator="{ props }">
-            <v-list-item
-              v-bind="props"
-              title="Color scales"
-              :prepend-icon="colorScalesIcon"
-            ></v-list-item>
-          </template>
+        <v-list-item prepend-icon="mdi-palette" v-if="props.colourScales">
           <v-list-item
-            v-for="(element, index) in props.colourScales"
+            v-for="(item, index) of props.colourScales"
             :key="index"
-            :title="element.style.title"
-            :subtitle="element.style.name"
             @click="colorScaleIndex = index"
-            :active="colorScaleIndex === index"
           >
-            <ColourStrip :colourMap="element.colourMap" />
+            <v-list-item-title>
+              {{ item.style.title }}
+            </v-list-item-title>
+            <ColourStrip :colourMap="item.colourMap" />
+            <template v-slot:append v-if="index === colorScaleIndex">
+              <v-icon>mdi-check</v-icon>
+            </template>
           </v-list-item>
-        </v-list-group>
-        <v-list-group>
-          <template v-slot:activator="{ props }">
-            <v-list-item
-              v-bind="props"
-              title="Color range"
-              :prepend-icon="rangeIcon"
-            ></v-list-item>
+        </v-list-item>
+        <v-list-item prepend-icon="">
+          <v-row v-if="mutableColorScaleRange">
+            <v-col cols="6">
+              <v-text-field
+                v-model.number="mutableColorScaleRange.min"
+                label="Min"
+                variant="plain"
+                hide-details
+                density="comfortable"
+                @keydown.enter.stop="changecolorScaleRange"
+                @blur="changecolorScaleRange"
+                :rules="[rules.required, rules.smallerThanMax]"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6">
+              <v-text-field
+                v-model.number="mutableColorScaleRange.max"
+                label="Max"
+                variant="plain"
+                hide-details
+                density="comfortable"
+                @keydown.enter.stop="changecolorScaleRange"
+                @blur="changecolorScaleRange"
+                :rules="[rules.required, rules.biggerThanMin]"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-list-item>
+        <v-list-item v-if="canUseStreamlines" prepend-icon="mdi-animation-play">
+          <v-list-item-title>Animate</v-list-item-title>
+          <template v-slot:append>
+            <v-switch
+              density="compact"
+              v-model="animate"
+              hide-details
+            ></v-switch>
           </template>
-          <v-list-item v-if="mutableColorScaleRange">
-            <v-row align="center">
-              <v-col cols="6">
-                <v-text-field
-                  v-model.number="mutableColorScaleRange.min"
-                  label="Min"
-                  outlined
-                  variant="underlined"
-                  hide-details
-                  @keydown.enter.stop="changecolorScaleRange"
-                  @blur="changecolorScaleRange"
-                  :rules="[
-                    rules.required,
-                    rules.biggerThanZero,
-                    rules.smallerThanMax,
-                  ]"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="6">
-                <v-text-field
-                  v-model.number="mutableColorScaleRange.max"
-                  label="Max"
-                  outlined
-                  variant="underlined"
-                  hide-details
-                  @keydown.enter.stop="changecolorScaleRange"
-                  @blur="changecolorScaleRange"
-                  :rules="[rules.required, rules.biggerThanMin]"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </v-list-item>
-        </v-list-group>
-        <v-list-item id="toggle" v-if="canUseStreamlines">
-          <v-btn-toggle mandatory divided v-model="layerKind">
-            <v-btn
-              v-for="item in itemsLayerKind"
-              :key="item.id"
-              :value="item.id"
-              small
-            >
-              {{ item.name }}
-              <v-icon>{{ item.icon }}</v-icon>
-            </v-btn>
-          </v-btn-toggle>
         </v-list-item>
       </v-list>
     </v-menu>
@@ -116,8 +97,9 @@
       icon
       density="compact"
       variant="plain"
+      :color="animate ? 'primary' : undefined"
     >
-      <v-icon>{{ animatedVectorsIcon }}</v-icon>
+      <v-icon>mdi-animation-play</v-icon>
     </v-btn>
   </v-chip>
 </template>
@@ -145,21 +127,20 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   layerTitle: '',
+  completelyMissing: false,
 })
 
-const emit = defineEmits(['style-click', 'color-scale-range-change'])
-const layersIcon = 'mdi-layers'
-const timeIcon = 'mdi-clock-time-four-outline'
-const rangeIcon = 'mdi-layers-edit'
-const colorScalesIcon = 'mdi-palette'
+const emit = defineEmits([
+  'style-click',
+  'color-scale-range-change',
+  'update:layerKind',
+])
+
 const mutableColorScaleRange = ref(props.colorScaleRange)
-const layerKind = defineModel('layerKind')
-const showLayer = defineModel('showLayer')
-const colorScaleIndex = defineModel('colorScaleIndex')
-const itemsLayerKind = [
-  { id: LayerKind.Static, name: 'Static', icon: 'mdi-pause' },
-  { id: LayerKind.Streamline, name: 'Animated', icon: 'mdi-animation-play' },
-]
+
+const showLayer = defineModel<boolean>('showLayer')
+const animate = defineModel<boolean>('animate', { default: false })
+const colorScaleIndex = defineModel<number>('colorScaleIndex')
 
 const rules = {
   required: (v: number) =>
@@ -179,12 +160,6 @@ watch(
   () => (mutableColorScaleRange.value = props.colorScaleRange),
 )
 
-const animatedVectorsIcon = computed(() => {
-  return layerKind.value === LayerKind.Streamline
-    ? 'mdi-pause'
-    : 'mdi-animation-play'
-})
-
 const analysisTime = computed(() => {
   if (!props.forecastTime || isNaN(props.forecastTime.getTime()))
     return 'Analysis time not available'
@@ -201,23 +176,22 @@ const formattedTimeRange = computed(() => {
     format,
   )} → ${DateTime.fromJSDate(props.lastValueTime).toFormat(format)}`
 })
-const formattedCurrentTime = computed(() => {
-  if (!props.currentTime) return ''
-  const format = 'HH:mm ZZZZ'
-  const dateTime = DateTime.fromJSDate(props.currentTime)
-  return dateTime.toFormat(format)
-})
 
 const changecolorScaleRange = () => {
   emit('color-scale-range-change', mutableColorScaleRange.value)
 }
 
 const switchLayerType = () => {
-  layerKind.value =
-    layerKind.value === LayerKind.Static
-      ? LayerKind.Streamline
-      : LayerKind.Static
+  animate.value = !animate.value
 }
+
+watch(
+  () => animate.value,
+  () => {
+    const value = animate.value ? LayerKind.Streamline : LayerKind.Static
+    emit('update:layerKind', value)
+  },
+)
 </script>
 
 <style scoped>
