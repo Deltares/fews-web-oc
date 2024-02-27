@@ -50,16 +50,21 @@
       </v-list-item>
 
       <v-divider />
-      <v-list-item :to="{ name: 'UserSettingsView' }"
-        >All Settings ...</v-list-item
-      >
+      <UserSettingsDialog>
+        <template #activator="{ props }">
+          <v-list-item v-bind="props">All Settings ...</v-list-item>
+        </template>
+      </UserSettingsDialog>
     </v-list>
   </v-menu>
 </template>
 
 <script setup lang="ts">
-import type { UserSettingsItem } from '../../stores/userSettings'
-import { useUserSettingsStore } from '../../stores/userSettings'
+import {
+  type UserSettingsItem,
+  useUserSettingsStore,
+} from '@/stores/userSettings'
+import UserSettingsDialog from './UserSettingsDialog.vue'
 
 const store = useUserSettingsStore()
 

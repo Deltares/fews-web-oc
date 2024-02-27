@@ -1,6 +1,5 @@
 <template>
   <v-container class="settings-container">
-    <h1>Settings</h1>
     <div v-for="group in groups" :key="group">
       <h2>{{ group }}</h2>
       <v-card density="compact">
@@ -59,8 +58,9 @@
                 icon="mdi-information"
                 variant="text"
                 class="flex-0-0 align-self-center"
+                @click="onFavoriteChange(setting)"
               >
-                <v-icon @click="onFavoriteChange(setting)">{{
+                <v-icon>{{
                   setting.favorite ? 'mdi-star' : 'mdi-star-outline'
                 }}</v-icon>
                 <v-tooltip activator="parent" location="top">
@@ -76,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { UserSettingsItem, useUserSettingsStore } from '../stores/userSettings'
+import { UserSettingsItem, useUserSettingsStore } from '@/stores/userSettings'
 import { computed } from 'vue'
 
 const store = useUserSettingsStore()
