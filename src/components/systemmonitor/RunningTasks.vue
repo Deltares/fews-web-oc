@@ -6,6 +6,7 @@
     :footer-props="{
       itemsPerPageOptions: [50, 100, 150],
     }"
+    sticky
     class="elevation-1"
   >
     <template v-slot:item.status="{ item }">
