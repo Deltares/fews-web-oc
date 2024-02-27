@@ -201,9 +201,7 @@ watch(
         colourScale.colourMap = legendGraphic.value?.legend
         colourScale.title = getLegendTitle(legendGraphic)
 
-        legend.value = colourScales.value?.[colorScaleIndex.value].colourMap
-        usedStyle.value = colourScales.value?.[colorScaleIndex.value].style
-        legendTitle.value = colourScales.value?.[colorScaleIndex.value].title
+        updateColourScale()
       })
 
       return colourScale
@@ -211,6 +209,13 @@ watch(
   },
   { immediate: true },
 )
+
+const updateColourScale = () => {
+  legend.value = colourScales.value?.[colorScaleIndex.value].colourMap
+  usedStyle.value = colourScales.value?.[colorScaleIndex.value].style
+  legendTitle.value = colourScales.value?.[colorScaleIndex.value].title
+}
+watch(colorScaleIndex, updateColourScale)
 
 const canUseStreamlines = computed(
   () => props.layerCapabilities?.animatedVectors !== undefined,
