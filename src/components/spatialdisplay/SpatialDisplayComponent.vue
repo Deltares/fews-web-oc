@@ -29,10 +29,7 @@
       :ticks="elevationTicks"
       :unit="elevationUnit"
     />
-    <SelectedCoordinateLayer
-      :longitude="props.longitude"
-      :latitude="props.latitude"
-    />
+    <SelectedCoordinateLayer :geoJson="selectedCoordinateGeoJson" />
     <v-chip-group class="control-container">
       <LocationsLayerComponent
         v-if="filterIds"
@@ -217,6 +214,21 @@ watch(
   },
   { immediate: true },
 )
+
+const selectedCoordinateGeoJson = computed<
+  GeoJSON.Feature<GeoJSON.Geometry> | undefined
+>(() => {
+  if (props.latitude === undefined || props.longitude === undefined) return
+
+  return {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [+props.longitude, +props.latitude],
+    },
+    properties: {},
+  }
+})
 
 const canUseStreamlines = computed(
   () => props.layerCapabilities?.animatedVectors !== undefined,
