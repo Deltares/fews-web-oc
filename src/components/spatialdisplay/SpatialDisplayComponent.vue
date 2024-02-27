@@ -98,6 +98,7 @@ import type { Layer } from '@deltares/fews-wms-requests'
 import { LayerKind } from '@/lib/streamlines'
 import { Style } from '@deltares/fews-wms-requests'
 import { ColourMap } from '@deltares/fews-web-oc-charts'
+import { pointToGeoJson } from '@/lib/topology/coordinates'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -215,19 +216,10 @@ watch(
   { immediate: true },
 )
 
-const selectedCoordinateGeoJson = computed<
-  GeoJSON.Feature<GeoJSON.Geometry> | undefined
->(() => {
+const selectedCoordinateGeoJson = computed(() => {
   if (props.latitude === undefined || props.longitude === undefined) return
 
-  return {
-    type: 'Feature',
-    geometry: {
-      type: 'Point',
-      coordinates: [+props.longitude, +props.latitude],
-    },
-    properties: {},
-  }
+  return pointToGeoJson(+props.latitude, +props.longitude)
 })
 
 const canUseStreamlines = computed(
