@@ -4,6 +4,7 @@ import {
   PiWebserviceProvider,
 } from '@deltares/fews-pi-requests'
 import { FeatureCollection, Geometry } from 'geojson'
+import { createTransformRequestFn } from '../requests/transformRequest'
 
 /**
  * Fetch locations for a list of filterIds as GeoJSON.
@@ -19,7 +20,9 @@ export async function fetchLocationsAsGeoJson(
   filterIds: string[],
 ): Promise<FeatureCollection<Geometry, Location>> {
   // Fetch GeoJSON for all filterIds.
-  const provider = new PiWebserviceProvider(baseUrl)
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
   const allGeoJson = await Promise.all(
     filterIds.map((filterId) =>
       fetchLocationsAsGeoJsonForSingleFilterId(provider, filterId),
