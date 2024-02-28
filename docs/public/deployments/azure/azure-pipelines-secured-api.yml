@@ -28,7 +28,6 @@ steps:
         cat > public/app-config.json <<EOL
         {
         "VITE_FEWS_WEBSERVICES_URL": "$(VITE_FEWS_WEBSERVICES_URL)",
-        "VITE_MAPBOX_TOKEN": "$(VITE_MAPBOX_TOKEN)",
         "VITE_REQUEST_HEADER_AUTHORIZATION": "Bearer",
         "VITE_AUTH_AUTHORITY": "$(VITE_AUTH_AUTHORITY)",
         "VITE_AUTH_ID": "$(VITE_AUTH_ID)",
