@@ -70,14 +70,16 @@
             >
               <v-list density="compact">
                 <v-list-item
-                  v-for="item in (configStore.general as any).helpMenu.url"
+                  v-if="helpMenu"
+                  v-for="item in helpMenu.url"
                   :href="item.url"
                   target="_blank"
                   append-icon="mdi-open-in-new"
                   >{{ item.name }}</v-list-item
                 >
                 <v-list-item
-                  v-for="item in (configStore.general as any).helpMenu.path"
+                  v-if="helpMenu"
+                  v-for="item in helpMenu.path"
                   :to="{ name: 'HtmlDisplay', params: { path: item.path } }"
                   href="#"
                   >{{ item.name }}</v-list-item
@@ -231,6 +233,12 @@ const versionString = computed(() => {
     return __GIT_HASH__
   }
   return packageConfig.version
+})
+
+const helpMenu = computed(() => {
+  if ('helpMenu' in (configStore.general as any)) {
+    return (configStore.general as any).helpMenu
+  } // todo: add type when fews-pi-requests is updated
 })
 
 async function getLocalOrRemoteFile(localBase: string, relativePath?: string) {
