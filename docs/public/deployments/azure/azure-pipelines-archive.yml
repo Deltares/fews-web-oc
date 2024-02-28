@@ -27,8 +27,7 @@ steps:
         rm public/app-config.json      
         cat > public/app-config.json <<EOL
         {
-        "VITE_FEWS_WEBSERVICES_URL": "$(VITE_FEWS_WEBSERVICES_URL)",
-        "VITE_MAPBOX_TOKEN": "$(VITE_MAPBOX_TOKEN)"
+        "VITE_FEWS_WEBSERVICES_URL": "$(VITE_FEWS_WEBSERVICES_URL)"
         }
   - script: |
       npm install
