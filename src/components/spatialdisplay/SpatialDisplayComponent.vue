@@ -11,12 +11,11 @@
       :streamlineOptions="layerCapabilities?.animatedVectors"
       @doubleclick="onCoordinateClick"
     />
-    <div class="colourbar-container" v-if="legend">
+    <div class="colourbar-container" v-if="currentColourScale">
       <ColourBar
-        :colourMap="legend"
-        :title="legendTitle"
-        v-model:range="colorScaleRange"
-        v-if="colorScaleRange"
+        :colourMap="currentColourScale.colourMap"
+        :title="currentColourScale.title"
+        v-model:range="currentColourScale.range"
       />
     </div>
     <ElevationSlider
@@ -39,16 +38,16 @@
         :layerTitle="props.layerCapabilities?.title"
         :currentTime="currentTime"
         :forecastTime="forecastTime"
-        :colourScales="colourScales"
+        :colourScales="currentColourScales"
         :completelyMissing="props.layerCapabilities?.completelyMissing ?? false"
         :firstValueTime="
           new Date(props.layerCapabilities?.firstValueTime ?? '')
         "
         :lastValueTime="new Date(props.layerCapabilities?.lastValueTime ?? '')"
-        :colorScaleRange="colorScaleRange"
+        :colorScaleRange="currentColourScale?.range"
         :canUseStreamlines="canUseStreamlines"
         @color-scale-range-change="updateColorScaleRange"
-        v-model:color-scale-index="colorScaleIndex"
+        v-model:color-scale-index="colourScaleIdIndex"
         v-model:layer-kind="layerKind"
         v-model:show-layer="showLayer"
       />
@@ -75,6 +74,7 @@ import AnimatedStreamlineMapboxLayer from '@/components/wms/AnimatedStreamlineMa
 import { ref, computed, onBeforeMount, watch } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
+  fetchWmsLegend,
   useWmsLegend,
 } from '@/services/useWms'
 import ColourBar from '@/components/wms/ColourBar.vue'
@@ -91,10 +91,14 @@ import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
 import { configManager } from '@/services/application-config'
-import type { Layer } from '@deltares/fews-wms-requests'
+import type {
+  GetLegendGraphicResponse,
+  Layer,
+} from '@deltares/fews-wms-requests'
 import { LayerKind } from '@/lib/streamlines'
 import { Style } from '@deltares/fews-wms-requests'
 import { ColourMap } from '@deltares/fews-web-oc-charts'
+import { reactive } from 'vue'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -112,7 +116,7 @@ export interface StyleColourMap {
   style: Style
   colourMap: ColourMap | undefined
   title: string
-  initialRange?: Range
+  range?: Range
 }
 
 interface Props {
@@ -157,18 +161,6 @@ const currentTime = ref<Date>(new Date())
 const forecastTime = ref<Date>()
 const layerOptions = ref<MapboxLayerOptions>()
 let debouncedSetLayerOptions!: () => void
-const colorScaleIndex = ref<number>(0)
-
-const colorScaleRange = ref<Range>()
-const colorScaleRangeString = computed(() => {
-  if (!colorScaleRange.value) return
-  if (colorScaleRange.value.min === undefined) return
-  if (colorScaleRange.value.max === undefined) return
-  return `${colorScaleRange.value.min},${colorScaleRange.value.max}`
-})
-const updateColorScaleRange = (range: Range) => {
-  colorScaleRange.value = range
-}
 
 const legendLayerName = ref(props.layerName)
 const settings = useUserSettingsStore()
@@ -178,10 +170,30 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const showLayer = ref<boolean>(true)
 const layerKind = ref(LayerKind.Static)
 
-const colourScales = ref<StyleColourMap[]>()
-const legend = ref<ColourMap>()
-const usedStyle = ref<Style>()
-const legendTitle = ref<string>()
+export interface ColourScale {
+  title: string
+  style: Style
+  range: Range
+  colourMap: ColourMap
+}
+
+const currentColourScaleIds = ref<string[]>([])
+const colourScaleIdIndex = ref<number>(0)
+const currentColourScaleId = computed(() => {
+  return currentColourScaleIds.value[colourScaleIdIndex.value]
+})
+const colourScales: Record<string, ColourScale> = reactive({})
+const currentColourScale = computed(() => {
+  if (!currentColourScaleId.value) return
+  return colourScales[currentColourScaleId.value]
+})
+function updateColorScaleRange(range: Range) {
+  if (!currentColourScale.value) return
+  currentColourScale.value.range = range
+}
+const currentColourScales = computed(() =>
+  currentColourScaleIds.value.map((id) => colourScales[id]),
+)
 
 watch(
   () => props.layerCapabilities?.styles,
@@ -190,69 +202,61 @@ watch(
     if (styles === undefined) return
 
     legendLayerName.value = props.layerName
+    currentColourScaleIds.value = styles.map(styleToId)
+    colourScaleIdIndex.value = 0
 
-    colourScales.value = styles.map((style, i) => {
-      const legendGraphic = useWmsLegend(
-        baseUrl,
-        legendLayerName,
-        () => settings.useDisplayUnits,
-        () => {
-          if (colorScaleIndex.value === i) {
-            return colorScaleRangeString.value
-          }
-        },
-        style,
-      )
+    styles.forEach(async (style) => {
+      const styleId = styleToId(style)
 
-      const colourScale: StyleColourMap = {
-        style: style,
-        colourMap: legendGraphic.value?.legend,
-        title: getLegendTitle(legendGraphic),
+      if (!(styleId in colourScales)) {
+        const initialLegendGraphic = await fetchWmsLegend(
+          baseUrl,
+          legendLayerName.value,
+          settings.useDisplayUnits,
+          undefined,
+          style,
+        )
+
+        const legend = initialLegendGraphic.legend
+        const newColourScale = reactive({
+          title: getLegendTitle(initialLegendGraphic),
+          style: style,
+          colourMap: legend,
+          range: legendToRange(legend),
+        })
+        colourScales[styleId] = newColourScale
+
+        const newLegendGraphic = useWmsLegend(
+          baseUrl,
+          legendLayerName,
+          () => settings.useDisplayUnits,
+          () => rangeToString(newColourScale.range),
+          style,
+        )
+
+        watch(newLegendGraphic, () => {
+          if (newLegendGraphic.value?.legend === undefined) return
+          colourScales[styleId].colourMap = newLegendGraphic.value.legend
+        })
       }
-
-      watch(legendGraphic, (newLegend, oldLegend) => {
-        colourScale.colourMap = newLegend?.legend
-        colourScale.title = getLegendTitle(legendGraphic)
-        const isInitialGetLegend = oldLegend === undefined
-        if (isInitialGetLegend && newLegend?.legend) {
-          colourScale.initialRange = legendToRange(newLegend.legend)
-        }
-
-        refreshCurrentColourScale()
-
-        if (legend.value !== undefined) {
-          colorScaleRange.value = legendToRange(legend.value)
-        }
-      })
-
-      watch(colorScaleIndex, () => {
-        refreshCurrentColourScale()
-
-        if (colorScaleIndex.value === i) {
-          colorScaleRange.value = colourScale.initialRange
-        }
-      })
-
-      return colourScale
     })
-
-    colorScaleIndex.value = 0
   },
   { immediate: true },
 )
+
+function styleToId(style: Style) {
+  return style.name ?? style.title
+}
+
+function rangeToString(range: Range): string {
+  return `${range.min},${range.max}`
+}
 
 function legendToRange(legend: ColourMap): Range {
   return {
     min: legend[0].lowerValue,
     max: legend[legend.length - 1].lowerValue,
   }
-}
-
-function refreshCurrentColourScale() {
-  const currentColourScale = colourScales.value?.[colorScaleIndex.value]
-  legend.value = currentColourScale?.colourMap
-  usedStyle.value = currentColourScale?.style
-  legendTitle.value = currentColourScale?.title
 }
 
 const canUseStreamlines = computed(
@@ -275,7 +279,6 @@ watch(
         new Date(layer?.keywordList[0].forecastTime as string) ?? null
     }
     legendLayerName.value = props.layerName
-    colorScaleRange.value = undefined
     if (layer?.elevation) {
       const max = layer.elevation.upperValue ?? 0
       const min = layer.elevation.lowerValue ?? 0
@@ -296,9 +299,13 @@ watch(currentElevation, () => {
   emit('update:elevation', currentElevation.value)
 })
 
-watch(colorScaleRange, () => {
-  setLayerOptions()
-})
+watch(
+  () => currentColourScale.value?.range,
+  () => {
+    setLayerOptions()
+  },
+  { deep: true },
+)
 
 watch(
   () => props.times,
@@ -342,20 +349,18 @@ function setLayerOptions(): void {
         : undefined,
     }
     layerOptions.value.elevation = currentElevation.value
-    layerOptions.value.colorScaleRange = colorScaleRangeString.value
-    layerOptions.value.style = usedStyle.value?.name
+    layerOptions.value.colorScaleRange = currentColourScale.value
+      ? rangeToString(currentColourScale.value.range)
+      : undefined
+    layerOptions.value.style = currentColourScale.value?.style.name
   } else {
     layerOptions.value = undefined
   }
 }
 
-function getLegendTitle(
-  legendGraphic: ReturnType<typeof useWmsLegend>,
-): string {
+function getLegendTitle(legendGraphic: GetLegendGraphicResponse): string {
   if (!props.layerCapabilities) return ''
-  const unitString = legendGraphic.value?.unit
-    ? ` [${legendGraphic.value?.unit}]`
-    : ''
+  const unitString = legendGraphic.unit ? ` [${legendGraphic.unit}]` : ''
   return `${props.layerCapabilities.title}${unitString}`
 }
 

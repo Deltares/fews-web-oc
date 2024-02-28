@@ -88,49 +88,60 @@ export function useWmsLegend(
   layerName: MaybeRefOrGetter<string>,
   useDisplayUnits: MaybeRefOrGetter<boolean>,
   colorScaleRange?: MaybeRefOrGetter<string | undefined>,
-  style?: MaybeRefOrGetter<Style | null>,
+  style?: MaybeRefOrGetter<Style>,
 ): Ref<GetLegendGraphicResponse | undefined> {
-  let controller = new AbortController()
-  const wmsUrl = `${baseUrl}/wms`
   const legendGraphic = ref<GetLegendGraphicResponse>()
-  const initialLayerName = toValue(layerName)
 
   async function loadLegend(): Promise<void> {
-    controller.abort('getLegend aborted')
-    controller = new AbortController()
-    const wmsProvider = new WMSProvider(wmsUrl, {
-      transformRequestFn: createTransformRequestFn(controller),
-    })
     const _layers = toValue(layerName)
     const _useDisplayUnits = toValue(useDisplayUnits)
     const _colorScaleRange = toValue(colorScaleRange)
     const _style = toValue(style)
+
     if (_layers === '') {
       legendGraphic.value = undefined
-    } else {
-      try {
-        legendGraphic.value = await wmsProvider.getLegendGraphic({
-          layers: _layers,
-          colorscalerange: _colorScaleRange,
-          // Enable when fews-wms-requests is updated
-          //@ts-ignore
-          useDisplayUnits: _useDisplayUnits,
-          style: _style?.name,
-        })
-      } catch (error) {
-        console.error(error)
-      }
+      return
     }
+
+    legendGraphic.value = await fetchWmsLegend(
+      baseUrl,
+      _layers,
+      _useDisplayUnits,
+      _colorScaleRange,
+      _style,
+    )
   }
 
-  const unwatch = watchEffect(() => {
-    if (initialLayerName !== toValue(layerName)) {
-      unwatch()
-    } else {
-      loadLegend()
-    }
+  watchEffect(() => {
+    loadLegend()
   })
   return legendGraphic
+}
+
+export function fetchWmsLegend(
+  baseUrl: string,
+  layerName: string,
+  useDisplayUnits: boolean,
+  colorScaleRange?: string,
+  style?: Style,
+): Promise<GetLegendGraphicResponse | undefined> {
+  const wmsUrl = `${baseUrl}/wms`
+  const wmsProvider = new WMSProvider(wmsUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
+  try {
+    return wmsProvider.getLegendGraphic({
+      layers: layerName,
+      colorscalerange: colorScaleRange,
+      useDisplayUnits: useDisplayUnits,
+      style: style?.name,
+    })
+  } catch (error) {
+    console.error(error)
+  }
+
+  return Promise.resolve(undefined)
 }
 
 export function useWmsCapilities(

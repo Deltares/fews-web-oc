@@ -46,9 +46,9 @@
               {{ item.style.title }}
             </v-list-item-title>
             <div class="d-flex align-center ga-1">
-              <span class="mb-1">{{ item.initialRange?.min ?? '' }}</span>
+              <span class="mb-1">{{ item.range?.min ?? '' }}</span>
               <ColourStrip :colourMap="item.colourMap" />
-              <span class="mb-1">{{ item.initialRange?.max ?? '' }}</span>
+              <span class="mb-1">{{ item.range?.max ?? '' }}</span>
             </div>
             <template v-slot:append v-if="index === colorScaleIndex">
               <v-icon>mdi-check</v-icon>
@@ -114,14 +114,14 @@ import { DateTime } from 'luxon'
 import { ref } from 'vue'
 import { LayerKind } from '@/lib/streamlines'
 import ColourStrip from '@/components/wms/ColourStrip.vue'
-import { StyleColourMap } from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { watch } from 'vue'
+import { ColourScale } from '../spatialdisplay/SpatialDisplayComponent.vue'
 
 interface Props {
   layerTitle: string
   currentTime?: Date
   forecastTime?: Date
-  colourScales?: StyleColourMap[]
+  colourScales?: ColourScale[]
   completelyMissing?: boolean
   firstValueTime?: Date
   lastValueTime?: Date
@@ -144,6 +144,20 @@ const mutableColorScaleRange = ref(
   props.colorScaleRange ? { ...props.colorScaleRange } : undefined,
 )
 
+watch(
+  () => props.colorScaleRange,
+  () => {
+    mutableColorScaleRange.value = props.colorScaleRange
+      ? { ...props.colorScaleRange }
+      : undefined
+  },
+  { deep: true },
+)
+
+const changecolorScaleRange = () => {
+  emit('color-scale-range-change', mutableColorScaleRange.value)
+}
+
 const showLayer = defineModel<boolean>('showLayer')
 const animate = defineModel<boolean>('animate', { default: false })
 const colorScaleIndex = defineModel<number>('colorScaleIndex')
@@ -161,15 +175,6 @@ const rules = {
     'Value must be bigger than min',
 }
 
-watch(
-  () => props.colorScaleRange,
-  () => {
-    mutableColorScaleRange.value = props.colorScaleRange
-      ? { ...props.colorScaleRange }
-      : undefined
-  },
-)
-
 const analysisTime = computed(() => {
   if (!props.forecastTime || isNaN(props.forecastTime.getTime()))
     return 'Analysis time not available'
@@ -186,10 +191,6 @@ const formattedTimeRange = computed(() => {
     format,
   )} → ${DateTime.fromJSDate(props.lastValueTime).toFormat(format)}`
 })
-
-const changecolorScaleRange = () => {
-  emit('color-scale-range-change', mutableColorScaleRange.value)
-}
 
 const switchLayerType = () => {
   animate.value = !animate.value
