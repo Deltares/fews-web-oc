@@ -45,7 +45,11 @@
             <v-list-item-title>
               {{ item.style.title }}
             </v-list-item-title>
-            <ColourStrip :colourMap="item.colourMap" />
+            <div class="d-flex align-center ga-1">
+              <span class="mb-1">{{ item.initialRange?.min ?? '' }}</span>
+              <ColourStrip :colourMap="item.colourMap" />
+              <span class="mb-1">{{ item.initialRange?.max ?? '' }}</span>
+            </div>
             <template v-slot:append v-if="index === colorScaleIndex">
               <v-icon>mdi-check</v-icon>
             </template>
@@ -136,7 +140,9 @@ const emit = defineEmits([
   'update:layerKind',
 ])
 
-const mutableColorScaleRange = ref(props.colorScaleRange)
+const mutableColorScaleRange = ref(
+  props.colorScaleRange ? { ...props.colorScaleRange } : undefined,
+)
 
 const showLayer = defineModel<boolean>('showLayer')
 const animate = defineModel<boolean>('animate', { default: false })
@@ -157,7 +163,11 @@ const rules = {
 
 watch(
   () => props.colorScaleRange,
-  () => (mutableColorScaleRange.value = props.colorScaleRange),
+  () => {
+    mutableColorScaleRange.value = props.colorScaleRange
+      ? { ...props.colorScaleRange }
+      : undefined
+  },
 )
 
 const analysisTime = computed(() => {

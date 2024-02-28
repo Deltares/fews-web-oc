@@ -1,6 +1,10 @@
 <template>
   <svg class="colourstrip">
-    <g ref="groupRef" style="pointer-events: 'visiblePainted'"></g>
+    <g
+      ref="groupRef"
+      style="pointer-events: 'visiblePainted'"
+      transform="translate(-1, 0)"
+    ></g>
   </svg>
 </template>
 
@@ -36,7 +40,7 @@ function updateColourStrip() {
   new webOcCharts.ColourBar(
     group.value as any,
     props.colourMap,
-    230,
+    200,
     10,
     options,
   )
@@ -45,7 +49,7 @@ function updateColourStrip() {
 
 <style scoped>
 .colourstrip {
-  width: 230px;
+  width: 200px;
   height: 10px;
 }
 
