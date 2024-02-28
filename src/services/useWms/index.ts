@@ -93,6 +93,7 @@ export function useWmsLegend(
   let controller = new AbortController()
   const wmsUrl = `${baseUrl}/wms`
   const legendGraphic = ref<GetLegendGraphicResponse>()
+  const initialLayerName = toValue(layerName)
 
   async function loadLegend(): Promise<void> {
     controller.abort('getLegend aborted')
@@ -122,8 +123,12 @@ export function useWmsLegend(
     }
   }
 
-  watchEffect(() => {
-    loadLegend()
+  const unwatch = watchEffect(() => {
+    if (initialLayerName !== toValue(layerName)) {
+      unwatch()
+    } else {
+      loadLegend()
+    }
   })
   return legendGraphic
 }

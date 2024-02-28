@@ -72,7 +72,7 @@
 import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineMapboxLayer from '@/components/wms/AnimatedStreamlineMapboxLayer.vue'
 
-import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
+import { ref, computed, onBeforeMount, watch } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
   useWmsLegend,
@@ -103,10 +103,16 @@ interface ElevationWithUnitSymbol {
   unitSymbol: string
 }
 
+interface Range {
+  min: number
+  max: number
+}
+
 export interface StyleColourMap {
   style: Style
   colourMap: ColourMap | undefined
   title: string
+  initialRange?: Range
 }
 
 interface Props {
@@ -153,21 +159,22 @@ const layerOptions = ref<MapboxLayerOptions>()
 let debouncedSetLayerOptions!: () => void
 const colorScaleIndex = ref<number>(0)
 
-const colorScaleRange = ref<{ min: number; max: number }>()
+const colorScaleRange = ref<Range>()
 const colorScaleRangeString = computed(() => {
   if (!colorScaleRange.value) return
   if (colorScaleRange.value.min === undefined) return
   if (colorScaleRange.value.max === undefined) return
   return `${colorScaleRange.value.min},${colorScaleRange.value.max}`
 })
+const updateColorScaleRange = (range: Range) => {
+  colorScaleRange.value = range
+}
+
 const legendLayerName = ref(props.layerName)
 const settings = useUserSettingsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const updateColorScaleRange = (range: { min: number; max: number }) => {
-  colorScaleRange.value = range
-}
 const showLayer = ref<boolean>(true)
 const layerKind = ref(LayerKind.Static)
 
@@ -182,40 +189,71 @@ watch(
     const styles = props.layerCapabilities?.styles
     if (styles === undefined) return
 
-    colourScales.value = styles.map((style) => {
+    legendLayerName.value = props.layerName
+
+    colourScales.value = styles.map((style, i) => {
       const legendGraphic = useWmsLegend(
         baseUrl,
         legendLayerName,
         () => settings.useDisplayUnits,
-        colorScaleRangeString,
+        () => {
+          if (colorScaleIndex.value === i) {
+            return colorScaleRangeString.value
+          }
+        },
         style,
       )
 
-      const colourScale = {
+      const colourScale: StyleColourMap = {
         style: style,
         colourMap: legendGraphic.value?.legend,
         title: getLegendTitle(legendGraphic),
       }
 
-      watch(legendGraphic, () => {
-        colourScale.colourMap = legendGraphic.value?.legend
+      watch(legendGraphic, (newLegend, oldLegend) => {
+        colourScale.colourMap = newLegend?.legend
         colourScale.title = getLegendTitle(legendGraphic)
+        const isInitialGetLegend = oldLegend === undefined
+        if (isInitialGetLegend && newLegend?.legend) {
+          colourScale.initialRange = legendToRange(newLegend.legend)
+        }
 
-        updateColourScale()
+        refreshCurrentColourScale()
+
+        if (legend.value !== undefined) {
+          colorScaleRange.value = legendToRange(legend.value)
+        }
+      })
+
+      watch(colorScaleIndex, () => {
+        refreshCurrentColourScale()
+
+        if (colorScaleIndex.value === i) {
+          colorScaleRange.value = colourScale.initialRange
+        }
       })
 
       return colourScale
     })
+
+    colorScaleIndex.value = 0
   },
   { immediate: true },
 )
 
-const updateColourScale = () => {
-  legend.value = colourScales.value?.[colorScaleIndex.value].colourMap
-  usedStyle.value = colourScales.value?.[colorScaleIndex.value].style
-  legendTitle.value = colourScales.value?.[colorScaleIndex.value].title
+function legendToRange(legend: ColourMap): Range {
+  return {
+    min: legend[0].lowerValue,
+    max: legend[legend.length - 1].lowerValue,
+  }
 }
-watch(colorScaleIndex, updateColourScale)
+
+function refreshCurrentColourScale() {
+  const currentColourScale = colourScales.value?.[colorScaleIndex.value]
+  legend.value = currentColourScale?.colourMap
+  usedStyle.value = currentColourScale?.style
+  legendTitle.value = currentColourScale?.title
+}
 
 const canUseStreamlines = computed(
   () => props.layerCapabilities?.animatedVectors !== undefined,
@@ -223,14 +261,6 @@ const canUseStreamlines = computed(
 watch(canUseStreamlines, (canUse) => {
   // Fall back to static layer if streamlines are not available.
   if (!canUse) layerKind.value = LayerKind.Static
-})
-
-watchEffect(() => {
-  if (!legend.value) return
-  colorScaleRange.value = {
-    min: legend.value[0].lowerValue,
-    max: legend.value[legend.value.length - 1].lowerValue,
-  }
 })
 
 const layerHasElevation = computed(() => {
