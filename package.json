@@ -39,6 +39,7 @@
     "typescript-json-serializer": "^6.0.1",
     "vue": "^3.3.7",
     "vue-maplibre-gl": "^3.0.3",
+    "vue-i18n": "^9.9.1",
     "vue-router": "^4.2.5",
     "vue-slider-component": "^4.1.0-beta.7",
     "vuetify": "^3.4.10"
