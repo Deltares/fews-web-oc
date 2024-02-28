@@ -4,7 +4,7 @@
       v-if="layerKind === LayerKind.Static && showLayer"
       :layer="layerOptions"
       @doubleclick="onCoordinateClick"
-      >
+    >
     </animated-raster-layer>
     <AnimatedStreamlineRasterLayer
       v-if="layerKind === LayerKind.Streamline && showLayer"
