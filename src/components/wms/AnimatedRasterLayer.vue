@@ -214,7 +214,7 @@ function removeLayer() {
 watch(
   () => props.layer,
   () => {
-    onLayerChange()
+    if (map?.isStyleLoaded()) onLayerChange()
   },
 )
 
