@@ -5,7 +5,7 @@ import {
   LngLatBounds,
   Map,
   MercatorCoordinate,
-} from 'mapbox-gl'
+} from 'maplibre-gl'
 import {
   BoundingBoxScaling,
   StreamlineStyle,
@@ -35,7 +35,7 @@ function mapBoundsToEpsg3857BoundingBox(
 ): [number, number, number, number] {
   // Converts weird normalised EPSG:3857 to actual EPSG:3857.
   const toMercator = (coords: LngLat) => {
-    // TODO: get magic number from MapBox somehow; mercator
+    // TODO: get magic number from Maplibre somehow; mercator
     const mercatorWidth = 2 * 20037508.34
     const mercNorm = MercatorCoordinate.fromLngLat(coords)
     const x = (mercNorm.x - 0.5) * mercatorWidth
@@ -204,7 +204,7 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
     // Render the streamline visualisation.
     this.visualiser?.renderFrame(dt)
 
-    // Request a new frame from MapBox, apparently (surprising API...).
+    // Request a new frame from Maplibre, apparently (surprising API...).
     this.map.triggerRepaint()
   }
 
@@ -423,7 +423,7 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
     this.visualiser?.start()
     this.boundingBoxWMS = boundingBox
 
-    // Request a repaint from MapBox so we (re)start the animation.
+    // Request a repaint from Maplibre so we (re)start the animation.
     this.map.triggerRepaint()
   }
 

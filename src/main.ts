@@ -7,7 +7,7 @@ import vuetify from './plugins/vuetify.js'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
-import 'mapbox-gl/dist/mapbox-gl.css'
+import 'maplibre-gl/dist/maplibre-gl.css'
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)

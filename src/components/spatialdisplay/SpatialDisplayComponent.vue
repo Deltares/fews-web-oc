@@ -1,11 +1,11 @@
 <template>
   <MapComponent>
-    <AnimatedMapboxLayer
+    <AnimatedRasterLayer
       v-if="layerKind === LayerKind.Static && showLayer"
       :layer="layerOptions"
       @doubleclick="onCoordinateClick"
     />
-    <AnimatedStreamlineMapboxLayer
+    <AnimatedStreamlineRasterLayer
       v-if="layerKind === LayerKind.Streamline && showLayer"
       :layerOptions="layerOptions"
       :streamlineOptions="layerCapabilities?.animatedVectors"
@@ -28,6 +28,7 @@
       :ticks="elevationTicks"
       :unit="elevationUnit"
     />
+    <SelectedCoordinateLayer :geoJson="selectedCoordinateGeoJson" />
     <v-chip-group class="control-container">
       <LocationsLayerComponent
         v-if="filterIds"
@@ -53,10 +54,6 @@
         v-model:show-layer="showLayer"
       />
     </v-chip-group>
-    <SelectedCoordinateLayer
-      :longitude="props.longitude"
-      :latitude="props.latitude"
-    />
   </MapComponent>
   <DateTimeSlider
     v-if="times && times.length > 0"
@@ -70,7 +67,7 @@
 
 <script setup lang="ts">
 import MapComponent from '@/components/map/MapComponent.vue'
-import AnimatedStreamlineMapboxLayer from '@/components/wms/AnimatedStreamlineMapboxLayer.vue'
+import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
 import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
 import {
@@ -78,23 +75,24 @@ import {
   useWmsLegend,
 } from '@/services/useWms'
 import ColourBar from '@/components/wms/ColourBar.vue'
-import AnimatedMapboxLayer, {
-  MapboxLayerOptions,
-} from '@/components/wms/AnimatedMapboxLayer.vue'
+import AnimatedRasterLayer, {
+  AnimatedRasterLayerOptions,
+} from '@/components/wms/AnimatedRasterLayer.vue'
 import LocationsLayerComponent from '@/components/wms/LocationsLayerComponent.vue'
-import InformationPanel from '../wms/InformationPanel.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
+import InformationPanel from '../wms/InformationPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
+import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import { configManager } from '@/services/application-config'
 import type { Layer } from '@deltares/fews-wms-requests'
 import { LayerKind } from '@/lib/streamlines'
 import { Style } from '@deltares/fews-wms-requests'
 import { ColourMap } from '@deltares/fews-web-oc-charts'
+import { pointToGeoJson } from '@/lib/topology/coordinates'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -148,8 +146,8 @@ const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
 const currentTime = ref<Date>(new Date())
+const layerOptions = ref<AnimatedRasterLayerOptions>()
 const forecastTime = ref<Date>()
-const layerOptions = ref<MapboxLayerOptions>()
 let debouncedSetLayerOptions!: () => void
 const colorScaleIndex = ref<number>(0)
 
@@ -211,6 +209,12 @@ watch(
   },
   { immediate: true },
 )
+
+const selectedCoordinateGeoJson = computed(() => {
+  if (props.latitude === undefined || props.longitude === undefined) return
+
+  return pointToGeoJson(+props.latitude, +props.longitude)
+})
 
 const canUseStreamlines = computed(
   () => props.layerCapabilities?.animatedVectors !== undefined,

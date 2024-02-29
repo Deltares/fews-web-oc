@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { type Layer } from '@deltares/fews-wms-requests'
-import { useMap } from '@studiometa/vue-mapbox-gl'
+import { useMap } from 'vue-maplibre-gl'
 import { onMounted, onUnmounted, watch } from 'vue'
 
 import {
@@ -13,13 +13,13 @@ import {
   type WMSStreamlineLayerOptions,
 } from '@/lib/streamlines'
 import { configManager } from '@/services/application-config'
-import { type MapboxLayerOptions } from './AnimatedMapboxLayer.vue'
-import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'mapbox-gl'
+import { type AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
+import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 
 type StreamlineLayerOptionsFews = Layer['animatedVectors']
 
 interface Props {
-  layerOptions?: MapboxLayerOptions
+  layerOptions?: AnimatedRasterLayerOptions
   streamlineOptions?: StreamlineLayerOptionsFews
 }
 const props = defineProps<Props>()
@@ -107,13 +107,13 @@ function addLayer(): void {
     )
   })
 
-  map.value.addLayer(layer, 'boundary_country_outline')
-  map.value.on('dblclick', onDoubleClick)
+  map?.addLayer(layer, 'boundary_country_outline')
+  map?.on('dblclick', onDoubleClick)
 }
 
 function removeLayer(): void {
-  map.value.removeLayer(layerId)
-  map.value.off('dblclick', onDoubleClick)
+  map?.removeLayer(layerId)
+  map?.off('dblclick', onDoubleClick)
 }
 
 function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent) {
@@ -121,7 +121,7 @@ function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent) {
 }
 
 function mergeOptions(
-  layerOptions: MapboxLayerOptions,
+  layerOptions: AnimatedRasterLayerOptions,
   streamlineOptions: StreamlineLayerOptionsFews,
 ): WMSStreamlineLayerOptions {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
