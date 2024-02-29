@@ -48,6 +48,8 @@ import {
   CartesianAxesOptions,
   ChartLine,
   ChartMarker,
+  WheelMode,
+  ZoomHandler,
   toggleChartVisibility,
 } from '@deltares/fews-web-oc-charts'
 import {
@@ -145,7 +147,7 @@ onMounted(() => {
       merge(axisOptions, { x: props.config?.xAxis, y: props.config?.yAxis }),
     )
     const mouseOver = new MouseOver()
-    // const zoom = new ZoomHandler(WheelMode.NONE)
+    const zoom = new ZoomHandler(WheelMode.NONE)
     axisTime.value = new CurrentTime({
       x: {
         axisIndex: 0,
@@ -156,7 +158,7 @@ onMounted(() => {
     thresholdLinesVisitor = new AlertLines(thresholdLines)
 
     axis.accept(thresholdLinesVisitor)
-    // axis.accept(zoom)
+    axis.accept(zoom)
     axis.accept(mouseOver)
     axis.accept(axisTime.value)
     resize()
