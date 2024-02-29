@@ -10,21 +10,49 @@ export interface Range {
 export interface ColourScale {
   title: string
   style: Style
-  colourMap: ColourMap
-  initialRange?: Range
   range: Range
+  initialRange: Range
+  colourMap: ColourMap
 }
 
 interface ColourScalesState {
-  colourScales: ColourScale[]
+  scales: Record<string, ColourScale>
+  currentIds: string[]
+  currentIndex: number
 }
 
 const useColourScalesStore = defineStore('colourScales', {
   state: (): ColourScalesState => ({
-    colourScales: [],
+    scales: {},
+    currentIds: [],
+    currentIndex: 0,
   }),
   getters: {
-    getCurrentColourScale: (state) => state.colourScales[0],
+    currentScaleId: (state) => state.currentIds[state.currentIndex],
+    currentScale(): ColourScale | undefined {
+      if (!this.currentScaleId) return
+      return this.scales[this.currentScaleId]
+    },
+    currentScales(): ColourScale[] {
+      return this.currentIds.map((id) => this.scales[id])
+    },
+    currentScaleIsInitialRange(): boolean {
+      if (!this.currentScale) return false
+      return (
+        this.currentScale.range.min === this.currentScale.initialRange.min &&
+        this.currentScale.range.max === this.currentScale.initialRange.max
+      )
+    },
+  },
+  actions: {
+    setCurrentScaleRange(newRange: Range) {
+      if (!this.currentScale) return
+      this.currentScale.range = newRange
+    },
+    resetCurrentScaleRange() {
+      if (!this.currentScale) return
+      this.currentScale.range = this.currentScale.initialRange
+    },
   },
 })
 
