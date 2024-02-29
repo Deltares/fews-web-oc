@@ -44,6 +44,7 @@
             v-for="(item, index) of colourScalesStore.currentScales"
             :key="index"
             @click="colourScalesStore.currentIndex = index"
+            class="px-0"
           >
             <v-list-item-title>
               {{ item.style.title }}
