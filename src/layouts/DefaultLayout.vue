@@ -17,7 +17,7 @@
         <v-menu
           origin="left"
           min-width="320"
-          v-if="configStore.activeComponents.length > 1"
+          v-if="navigationMenuComponents.length > 1"
         >
           <template #activator="{ isActive, props }">
             <v-list-item
@@ -38,7 +38,7 @@
           <v-list density="compact">
             <v-list-subheader>Switch to</v-list-subheader>
             <v-list-item
-              v-for="(item, i) in navigationMenu"
+              v-for="(item, i) in navigationMenuComponents"
               :key="i"
               :value="item"
               :to="item.to"
@@ -245,9 +245,8 @@ const helpMenu = computed(() => {
   } // todo: add type when fews-pi-requests is updated
 })
 
-const navigationMenu = computed(() => {
+const navigationMenuComponents = computed(() => {
   const components = configStore.activeComponents
-  // filter out the components that have showInNavigation set to false
   return components.filter((component) => component.showInNavigationMenu)
 })
 
