@@ -124,7 +124,7 @@ export function fetchWmsLegend(
   useDisplayUnits: boolean,
   colorScaleRange?: string,
   style?: Style,
-): Promise<GetLegendGraphicResponse | undefined> {
+): Promise<GetLegendGraphicResponse> {
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -139,9 +139,8 @@ export function fetchWmsLegend(
     })
   } catch (error) {
     console.error(error)
+    return Promise.reject(error)
   }
-
-  return Promise.resolve(undefined)
 }
 
 export function useWmsCapilities(
