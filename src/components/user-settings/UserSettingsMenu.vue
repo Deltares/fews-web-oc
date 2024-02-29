@@ -15,7 +15,9 @@
         <v-list-item-action v-if="setting.type === 'oneOfMultiple'">
           <v-btn-toggle
             density="compact"
+            class="my-2"
             v-model="setting.value"
+            mandatory
             @update:model-value="onValueChange(setting)"
           >
             <v-btn
@@ -38,6 +40,7 @@
             density="compact"
             v-model="setting.value"
             color="primary"
+            class="ml-3"
             :disabled="setting.disabled"
             @update:modelValue="onValueChange(setting)"
             hide-details
@@ -47,16 +50,21 @@
       </v-list-item>
 
       <v-divider />
-      <v-list-item :to="{ name: 'UserSettingsView' }"
-        >All Settings ...</v-list-item
-      >
+      <UserSettingsDialog>
+        <template #activator="{ props }">
+          <v-list-item v-bind="props">All Settings ...</v-list-item>
+        </template>
+      </UserSettingsDialog>
     </v-list>
   </v-menu>
 </template>
 
 <script setup lang="ts">
-import type { UserSettingsItem } from '../../stores/userSettings'
-import { useUserSettingsStore } from '../../stores/userSettings'
+import {
+  type UserSettingsItem,
+  useUserSettingsStore,
+} from '@/stores/userSettings'
+import UserSettingsDialog from './UserSettingsDialog.vue'
 
 const store = useUserSettingsStore()
 

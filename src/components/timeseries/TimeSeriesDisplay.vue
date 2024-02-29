@@ -17,7 +17,15 @@
           </v-list-item>
         </v-list>
       </v-menu>
-      <v-btn-toggle class="mr-5" v-model="displayType" mandatory>
+      <v-spacer />
+      <v-btn-toggle
+        v-model="displayType"
+        mandatory
+        variant="tonal"
+        divided
+        density="compact"
+        class="ma-2"
+      >
         <v-btn
           v-for="item in displayTypeItems"
           :key="item.value"
@@ -40,28 +48,48 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { configManager } from '@/services/application-config'
-import { useDisplayConfig } from '@/services/useDisplayConfig/index.ts'
+import {
+  useDisplayConfig,
+  type UseDisplayConfigOptions,
+} from '@/services/useDisplayConfig/index.ts'
 import { computed } from 'vue'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import { DisplayType } from '@/lib/display/DisplayConfig'
+import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
-  nodeId?: string
+  nodeId?: string | string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   nodeId: '',
 })
 
+const settings = useUserSettingsStore()
+
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const selectedPlot = ref(0)
 
+const options = computed<UseDisplayConfigOptions>(() => {
+  return {
+    useDisplayUnits: settings.useDisplayUnits,
+    convertDatum: settings.convertDatum,
+  }
+})
+
 const { displays, displayConfig } = useDisplayConfig(
   baseUrl,
-  () => props.nodeId,
+  () => {
+    if (typeof props.nodeId === 'string') {
+      return props.nodeId
+    } else {
+      return props.nodeId[props.nodeId.length - 1]
+    }
+  },
   selectedPlot,
+  options,
 )
 
 const plotIds = computed(() => {

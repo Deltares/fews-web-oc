@@ -7,27 +7,41 @@ import {
   loadTimeSeriesFlagSources,
   loadTimeSeriesFlags,
 } from '@/lib/fews-properties/fewsProperties.js'
-
+import { uniq } from 'lodash'
 interface FewsPropertiesState {
   flags?: TimeSeriesFlag[]
   flagSources?: TimeSeriesFlagSource[]
+  flagQualities?: TimeSeriesFlag['quality'][]
 }
 
 const useFewsPropertiesStore = defineStore('fewsProperties', {
   state: (): FewsPropertiesState => ({
     flags: [],
     flagSources: [],
+    flagQualities: [],
   }),
 
   actions: {
     async loadFlags() {
+      if (this.flags !== undefined && this.flags.length > 0) return
       const flags = await loadTimeSeriesFlags()
       this.flags = flags
     },
 
     async loadFlagSources() {
+      if (this.flagSources !== undefined && this.flagSources.length > 0) return
       const flagSources = await loadTimeSeriesFlagSources()
       this.flagSources = flagSources
+    },
+
+    setFlagQualities() {
+      const qualities: TimeSeriesFlag['quality'][] = [null]
+      if (this.flags !== undefined) {
+        for (const flag of this.flags) {
+          qualities.push(flag.quality)
+        }
+      }
+      this.flagQualities = uniq(qualities)
     },
   },
 

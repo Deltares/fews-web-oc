@@ -1,6 +1,18 @@
 <template>
   <div id="legend" :class="isVisible ? 'invisible' : ''">
     <svg id="colourbar" class="colourbar"></svg>
+    <LegendInput
+      parentId="min-legend"
+      v-model:value="range.min"
+      :maxValue="range.max"
+      v-model:isEditing="isEditingMin"
+    />
+    <LegendInput
+      parentId="max-legend"
+      v-model:value="range.max"
+      :minValue="range.min"
+      v-model:isEditing="isEditingMax"
+    />
   </div>
 </template>
 
@@ -8,20 +20,27 @@
 import { onMounted, ref, watch } from 'vue'
 import * as d3 from 'd3'
 import * as webOcCharts from '@deltares/fews-web-oc-charts'
+import LegendInput from '@/components/wms/LegendInput.vue'
+
+type Range = {
+  min: number
+  max: number
+}
 
 interface Props {
   colourMap?: webOcCharts.ColourMap
   title?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {})
+const props = defineProps<Props>()
+
+const range = defineModel<Range>('range', { required: true })
 
 const isVisible = ref<boolean>(true)
-let group: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
-watch([() => props.colourMap, () => props.title], () => {
-  updateColourBar()
-})
+const isEditingMin = ref<boolean>(false)
+const isEditingMax = ref<boolean>(false)
+let group: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
 onMounted(() => {
   const svg = d3.select('#colourbar')
@@ -31,6 +50,8 @@ onMounted(() => {
     .style('pointer-events', 'visiblePainted')
   updateColourBar()
 })
+
+watch(props, updateColourBar)
 
 function updateColourBar() {
   if (!props.colourMap) return
@@ -48,6 +69,16 @@ function updateColourBar() {
   }
   new webOcCharts.ColourBar(group as any, props.colourMap, 250, 10, options)
   isVisible.value = true
+
+  const firstChild = d3.select('#colourbar > g > g.axis').selectChild()
+  const lastChild = d3
+    .select('#colourbar > g > g.axis')
+    .selectChild(':last-child')
+
+  firstChild.on('click', () => (isEditingMin.value = true))
+  lastChild.on('click', () => (isEditingMax.value = true))
+  firstChild.attr('id', 'min-legend')
+  lastChild.attr('id', 'max-legend')
 }
 </script>
 
@@ -57,7 +88,6 @@ function updateColourBar() {
 }
 
 .colourbar {
-  fill: none;
   width: 300px;
   height: 85px;
   -webkit-font-smoothing: antialiased;
@@ -79,6 +109,7 @@ function updateColourBar() {
 }
 
 :deep(g) {
+  pointer-events: none;
   font-family: var(--primary-font);
 }
 
@@ -88,5 +119,15 @@ function updateColourBar() {
   -ms-user-select: none;
   user-select: none;
   font-size: 1em;
+}
+
+:deep(#min-legend) {
+  cursor: pointer;
+  pointer-events: all;
+}
+
+:deep(#max-legend) {
+  cursor: pointer;
+  pointer-events: all;
 }
 </style>

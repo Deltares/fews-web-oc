@@ -2,6 +2,7 @@ import {
   createRouter,
   createWebHistory,
   RouteLocationNormalized,
+  RouteRecordNormalized,
   RouteRecordRaw,
 } from 'vue-router'
 import AboutView from '../views/AboutView.vue'
@@ -22,23 +23,25 @@ const SSDTimeSeriesDisplay = () =>
 const SpatialDisplayView = () => import('../views/SpatialDisplayView.vue')
 const SpatialDisplay = () =>
   import('../components/spatialdisplay/SpatialDisplay.vue')
+const SpatialTimeSeriesDisplay = () =>
+  import('../components/spatialdisplay/SpatialTimeSeriesDisplay.vue')
 const TimeSeriesDisplayView = () => import('../views/TimeSeriesDisplayView.vue')
 const TopologyDisplayView = () => import('../views/TopologyDisplayView.vue')
 const TimeSeriesDisplay = () =>
   import('../components/timeseries/TimeSeriesDisplay.vue')
-const UserSettingsView = () => import('../views/UserSettingsView.vue')
+const HtmlDisplay = () => import('../views/HtmlDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
   {
     path: '/',
-    redirect: { name: 'About' },
     name: 'Default',
+    component: AboutView,
   },
   {
     path: '/about',
     name: 'About',
-    meta: { authorize: [] },
+    meta: { title: 'About' },
     component: AboutView,
   },
   {
@@ -49,23 +52,21 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
   },
   {
     path: '/auth/callback',
+    name: 'AuthCallback',
     meta: { layout: 'EmptyLayout' },
     component: Callback,
   },
   {
     path: '/auth/silent',
+    name: 'AuthSilent',
     meta: { layout: 'EmptyLayout' },
     component: Silent,
   },
   {
     path: '/auth/logout',
+    name: 'AuthLogout',
     meta: { layout: 'EmptyLayout' },
     component: Logout,
-  },
-  {
-    path: '/settings',
-    name: 'UserSettingsView',
-    component: UserSettingsView,
   },
 ]
 
@@ -82,14 +83,14 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     name: 'SchematicStatusDisplay',
     component: SchematicStatusDisplayView,
     props: true,
-    meta: { authorize: [], sidebar: true },
+    meta: { sidebar: true },
     children: [
       {
-        path: '/ssd/:groupId/:panelId/:objectId',
+        path: '/ssd/:groupId?/:panelId?/object/:objectId',
         name: 'SSDTimeSeriesDisplay',
         component: SSDTimeSeriesDisplay,
         props: true,
-        meta: { authorize: [], sidebar: true },
+        meta: { sidebar: true },
       },
     ],
   },
@@ -97,50 +98,86 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     path: '/systemmonitor',
     name: 'SystemMonitor',
     component: SystemMonitorDisplayView,
-    meta: { authorize: [] },
   },
   {
     path: '/map/:layerName?',
     name: 'SpatialDisplay',
     component: SpatialDisplayView,
     props: true,
-    meta: { authorize: [], sidebar: true },
+    meta: { sidebar: true },
+    children: [
+      {
+        path: '/map/:layerName?/location/:locationId',
+        name: 'SpatialTimeSeriesDisplay',
+        component: SpatialTimeSeriesDisplay,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
+        path: '/map/:layerName?/coordinates/:latitude/:longitude',
+        name: 'SpatialTimeSeriesDisplayWithCoordinates',
+        component: SpatialTimeSeriesDisplay,
+        props: true,
+        meta: { sidebar: true },
+      },
+    ],
   },
   {
     path: '/series/node/:nodeId?',
     name: 'TimeSeriesDisplay',
     component: TimeSeriesDisplayView,
     props: true,
-    meta: { authorize: [], sidebar: true },
+    meta: { sidebar: true },
   },
   {
-    path: '/topology/node/:nodeId?',
+    path: '/topology/node/:nodeId*',
     name: 'TopologyDisplay',
     component: TopologyDisplayView,
     props: true,
-    meta: { authorize: [], sidebar: true },
+    meta: { sidebar: true },
     children: [
       {
-        path: '/topology/node/:nodeId?/series/',
+        path: '/topology/node/:nodeId*/series/',
         name: 'TopologyTimeSeries',
         component: TimeSeriesDisplay,
         props: true,
-        meta: { authorize: [], sidebar: true },
+        meta: { sidebar: true },
       },
       {
-        path: '/topology/node/:nodeId?/map/:layerName?',
+        path: '/topology/node/:nodeId*/map/:layerName?',
         name: 'TopologySpatialDisplay',
         component: SpatialDisplay,
         props: true,
-        meta: { authorize: [], sidebar: true },
+        meta: { sidebar: true },
+        children: [
+          {
+            path: '/topology/node/:nodeId*/map/:layerName?/location/:locationId',
+            name: 'TopologySpatialTimeSeriesDisplay',
+            component: SpatialTimeSeriesDisplay,
+            props: true,
+            meta: { sidebar: true },
+          },
+          {
+            path: '/topology/node/:nodeId*/map/:layerName?/coordinates/:latitude/:longitude',
+            name: 'TopologySpatialTimeSeriesDisplayWithCoordinates',
+            component: SpatialTimeSeriesDisplay,
+            props: true,
+            meta: { sidebar: true },
+          },
+        ],
       },
     ],
+  },
+  {
+    path: '/resources/:path?',
+    name: 'HtmlDisplay',
+    component: HtmlDisplay,
+    props: true,
   },
   {
     path: '/archivedisplay',
     name: 'ArchiveDisplay',
     component: Empty,
-    meta: { authorize: [] },
   },
 ]
 
@@ -151,23 +188,13 @@ const router = createRouter({
 
 let routesAreInitialized = false
 
-async function handleAuthorization(
-  to: RouteLocationNormalized,
-  _from: RouteLocationNormalized,
-  authorize: string[],
-) {
+async function handleAuthorization(to: RouteLocationNormalized) {
   const currentUser = await authenticationManager.userManager.getUser()
   if (currentUser === null) {
-    return { name: 'Login', query: { redirect: to.path } }
-  }
-
-  const role =
-    currentUser.profile.roles !== undefined
-      ? (currentUser.profile as any).roles[0]
-      : 'guest'
-
-  if (authorize.length && !authorize.includes(role)) {
-    return { name: 'About' }
+    return {
+      name: 'Login',
+      query: { redirect: to.redirectedFrom?.path ?? to.path },
+    }
   }
 }
 
@@ -178,36 +205,98 @@ async function addDynamicRoutes() {
     const route = dynamicRoutes.find((route) => route.name === component.type)
     if (route !== undefined) {
       router.addRoute(route)
+    } else {
+      router.addRoute({
+        name: component.type,
+        path: `/empty/${component.type}`,
+        component: Empty,
+      })
     }
   })
+  if (store.defaultComponent !== undefined) {
+    if (router.hasRoute(store.defaultComponent.type)) {
+      router.removeRoute('Default')
+      router.addRoute({
+        path: '/',
+        redirect: { name: store.defaultComponent.type },
+        name: 'Default',
+      })
+    }
+  }
 }
 
-router.beforeEach(async (to, _from) => {
-  const authorize = to.meta?.authorize as string[]
-  if (authorize && configManager.authenticationIsEnabled) {
-    const authPath = await handleAuthorization(to, _from, authorize)
-    if (authPath) return authPath
-  }
+function defaultRouteParams(to: RouteLocationNormalized) {
+  const store = useConfigStore()
+  const route = to.name === undefined ? router.resolve(to) : to
+  const component = store.getComponentByType(route.name as string)
+  if (component !== undefined) {
+    const defaultPath = component.defaultPath
+    const params = to.params
+    let requiresRedirect = false
+    for (const key in defaultPath) {
+      if (defaultPath[key] !== undefined) {
+        if (!params[key]) {
+          params[key] = defaultPath[key]
+          requiresRedirect = true
+        }
+      }
+    }
 
-  if (to.path === '/auth/callback') {
+    const path = component.path
+    if (path && !params.path) {
+      params.path = path
+      requiresRedirect = true
+    }
+
+    if (requiresRedirect) {
+      to.params = params
+      return to
+    }
+  }
+  return
+}
+
+router.beforeEach(async (to, from) => {
+  let redirect: string | undefined = undefined
+  if (to.name === 'Login' || to.name === 'AuthLogout') return
+  if (to.name === 'AuthCallback') {
     try {
       const user =
         await authenticationManager.userManager.signinRedirectCallback()
-      const path: string =
-        user.state === null ? '/about' : (user.state as string)
-      return { path }
+      if (user.state) redirect = user.state.toString()
     } catch (error) {
       console.error(error)
     }
   }
 
+  if (configManager.authenticationIsEnabled) {
+    const redirectToLogin = await handleAuthorization(to)
+    if (redirectToLogin) return redirectToLogin
+  }
+
   if (!routesAreInitialized) {
     await addDynamicRoutes()
     routesAreInitialized = true
-    router.replace(to)
+    if (redirect) {
+      return redirect
+    }
+    return to
   }
-
-  return
+  return defaultRouteParams(to)
 })
+
+export function findParentRoute(
+  route: RouteLocationNormalized,
+): RouteRecordNormalized | null {
+  let found: RouteRecordNormalized | null = null
+  router.getRoutes().forEach((r) => {
+    r.children.forEach((child) => {
+      if (child.name === route.name) {
+        found = r
+      }
+    })
+  })
+  return found
+}
 
 export default router

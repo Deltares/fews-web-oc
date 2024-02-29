@@ -1,443 +1,270 @@
 <template>
-  <div
-    class="spatial-display d-flex flex-column flex-grow-1 flex-shrink-1 h-100"
-  >
-    <MapComponent>
-      <animated-mapbox-layer :layer="layerOptions"></animated-mapbox-layer>
-      <DrawPolygonControl
-        v-if="selectBbox"
-        v-model="features"
-        ref="drawControl"
-        default-mode="draw_rectangle"
-        :displayControlsDefault="false"
-      />
-      <div v-if="workflowId" class="workflows__container d-flex flex-row">
-        <v-chip pill class="workflows__chip pl-0 pr-0 justify-center" width="400">
-          <v-btn
-            icon="mdi-cog-play"
-            size="x-small"
-            @click="workflowDialog = !workflowDialog"
-          ></v-btn>
-          <template v-if="selectBbox">
-            <span class="ml-5 mr-5" width="400px">
-              {{ bboxString }}
-            </span>
-            <v-btn size="small" rounded="xl" @click="hideMapTool">Apply</v-btn>
-          </template>
-        </v-chip>
-        <v-chip
-          class="workflows--running"
-          v-if="activeWorkflowIds.length"
-          color="success"
-          variant="flat"
-          size="x-small"
-          >{{ activeWorkflowIds.length }}</v-chip
-        >
-      </div>
-      <div class="colourbar-container">
-        <ColourBar :colourMap="legend" :title="legendTitle" />
-      </div>
-      <ElevationSlider
-        v-if="layerHasEleveation"
-        v-model="currentElevation"
-        :key="layerOptions?.name"
-        :min-value="minElevation"
-        :max-value="maxElevation"
-        :unit="elevationUnit"
-      ></ElevationSlider>
-    </MapComponent>
-    <DateTimeSlider
-      v-model:selectedDate="currentTime"
-      :dates="times ?? []"
-      @update:doFollowNow="setCurrentTime"
-      @update:selectedDate="updateTime"
-      class="spatial-display__slider"
-    />
-    <v-dialog v-show="!selectBbox" width="500" v-model="workflowDialog">
-      <v-card>
-        <v-card-title>Workflow</v-card-title>
-        <v-container>
-          <v-row>
-            <v-select
-              v-model="currentWorkflowId"
-              :items="[workflowId]"
-              density="compact"
-              variant="solo"
-              label="workflow"
-            ></v-select>
-          </v-row>
-          <v-form v-model="formIsValid">
-            <v-row>
-              <v-col>
-                <v-text-field
-                  readonly
-                  variant="plain"
-                  density="compact"
-                  v-model="bboxString"
-                  label="Bounding box"
-                >
-                  <template v-slot:append>
-                    <v-icon @click="showMapTool">mdi-selection-drag</v-icon>
-                  </template>
-                </v-text-field>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <v-text-field
-                  v-model.number="boundingBox[1]"
-                  density="compact"
-                  variant="plain"
-                  type="number"
-                  suffix="°N"
-                  label="Lattitude min"
-                  min="0"
-                  :step="lattitudeStepSize"
-                  hide-details
-                  required
-                />
-              </v-col>
-              <v-col>
-                <v-text-field
-                  v-model.number="boundingBox[3]"
-                  density="compact"
-                  variant="plain"
-                  type="number"
-                  suffix="°N"
-                  label="max"
-                  min="0"
-                  :step="lattitudeStepSize"
-                  hide-details
-                  required
-                />
-              </v-col>
-              <v-col>
-                <v-text-field
-                  v-model.number="lattitudeStepSize"
-                  density="compact"
-                  variant="plain"
-                  type="number"
-                  suffix="°N"
-                  label="Δ"
-                  min="0"
-                  step="0.1"
-                  hide-details
-                  required
-                />
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <v-text-field
-                  v-model.number="boundingBox[0]"
-                  density="compact"
-                  variant="plain"
-                  type="number"
-                  suffix="°E"
-                  label="Longitude min"
-                  min="0"
-                  :step="longitudeStepSize"
-                  hide-details
-                  required
-                />
-              </v-col>
-              <v-col>
-                <v-text-field
-                  v-model.number="boundingBox[2]"
-                  density="compact"
-                  variant="plain"
-                  type="number"
-                  suffix="°E"
-                  label="max"
-                  min="0"
-                  :step="longitudeStepSize"
-                  hide-details
-                  required
-                />
-              </v-col>
-              <v-col>
-                <v-text-field
-                  v-model.number="longitudeStepSize"
-                  density="compact"
-                  variant="plain"
-                  type="number"
-                  suffix="°E"
-                  label="Δ"
-                  min="0"
-                  step="0.1"
-                  hide-details
-                  required
-                />
-              </v-col>
-            </v-row>
-          </v-form>
-          <div class="d-flex flex-column">
-            <v-btn
-              color="success"
-              class="mt-4"
-              block
-              :disabled="!formIsValid"
-              @click="startWorkflow"
-            >
-              Start
-            </v-btn>
-          </div>
-        </v-container>
-      </v-card>
-    </v-dialog>
+  <div class="container">
+    <div class="child-container" :class="{ 'd-none': hideMap }">
+      <SpatialDisplayComponent
+        :layer-name="props.layerName"
+        :location-id="props.locationId"
+        :latitude="props.latitude"
+        :longitude="props.longitude"
+        :filter-ids="props.filterIds"
+        @changeLocationId="onLocationChange"
+        :layer-capabilities="layerCapabilities"
+        :times="times"
+        v-model:elevation="elevation"
+        v-model:current-time="currentTime"
+        @coordinate-click="onCoordinateClick"
+      ></SpatialDisplayComponent>
+    </div>
+    <div v-if="filter" class="child-container">
+      <router-view
+        @close="closeTimeSeriesDisplay"
+        :filter="filter"
+        :elevation-chart-filter="elevationChartFilter"
+        :current-time="currentTime"
+      ></router-view>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import MapComponent from '@/components/map/MapComponent.vue'
-import { ref, computed, onBeforeMount, watch } from 'vue'
-import type { BBox, Feature } from 'geojson'
-
-import {
-  convertBoundingBoxToLngLatBounds,
-  useWmsLayer,
-} from '@/services/useWms'
+import { computed, ref, watch } from 'vue'
+import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
+import { useDisplay } from 'vuetify'
+import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import { configManager } from '@/services/application-config'
-import ColourBar from '@/components/wms/ColourBar.vue'
-import AnimatedMapboxLayer, {
-  MapboxLayerOptions,
-} from '@/components/wms/AnimatedMapboxLayer.vue'
-import ElevationSlider from '@/components/wms/ElevationSlider.vue'
-import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
-import { DateController } from '@/lib/TimeControl/DateController.ts'
-import debounce from 'lodash-es/debounce'
-import { useUserSettingsStore } from '@/stores/userSettings'
-import DrawPolygonControl from '../map/DrawPolygonControl.vue'
+import { useRoute, useRouter } from 'vue-router'
+import { findParentRoute } from '@/router'
+import { onMounted } from 'vue'
+import { useWmsLayerCapabilities } from '@/services/useWms'
+import {
+  filterActionsFilter,
+  timeSeriesGridActionsFilter,
+} from '@deltares/fews-pi-requests'
+import { toMercator } from '@turf/projection'
+import circle from '@turf/circle'
 import bbox from '@turf/bbox'
-import bboxPolygon from '@turf/bbox-polygon'
-
-interface ElevationWithUnitSymbol {
-  units?: string
-  lowerValue?: number
-  upperValue?: number
-  unitSymbol: string
-}
+import { useUserSettingsStore } from '@/stores/userSettings'
+import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 
 interface Props {
   layerName?: string
-  workflowId?: string
+  locationId?: string
+  filterIds?: string[]
+  latitude?: string
+  longitude?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
-  workflowId: '',
 })
 
-onBeforeMount(() => {
-  debouncedSetLayerOptions = debounce(setLayerOptions, 500, {
-    leading: true,
-    trailing: true,
-  })
-})
+const route = useRoute()
+const router = useRouter()
+const { mobile } = useDisplay()
 
 const settings = useUserSettingsStore()
-
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const dateController = new DateController([])
-
-const { selectedLayer, legendGraphic, times } = useWmsLayer(
+const { layerCapabilities, times } = useWmsLayerCapabilities(
   baseUrl,
   () => props.layerName,
-  () => settings.useDisplayUnits,
 )
 
-const currentElevation = ref<number>(0)
-const minElevation = ref<number>(-Infinity)
-const maxElevation = ref<number>(Infinity)
-const elevationUnit = ref('')
-
-const currentTime = ref<Date>(new Date())
-const layerOptions = ref<MapboxLayerOptions>()
-
-const currentWorkflowId = ref('')
-const workflowDialog = ref(false)
-const formIsValid = ref(false)
-const selectBbox = ref(false)
-const activeWorkflowIds = ref<string[]>([])
-
-const bboxString = computed(() => {
-  return `${boundingBox.value[0]}°E ${boundingBox.value[1]}°N , ${boundingBox.value[2]}°E ${boundingBox.value[3]}°N`
-})
-const drawControl = ref<typeof DrawPolygonControl>()
-const features = ref<Feature[]>([])
-
-const longitudeStepSize = ref(0.1)
-const lattitudeStepSize = ref(0.1)
-
-let debouncedSetLayerOptions!: () => void
-
-const legend = computed(() => {
-  return legendGraphic.value?.legend
-})
-const layerHasEleveation = computed(() => {
-  return selectedLayer.value?.elevation !== undefined
-})
-
-function showMapTool() {
-  selectBbox.value = true
-  workflowDialog.value = false
+function getFilterActionsFilter(): filterActionsFilter &
+  UseDisplayConfigOptions {
+  return {
+    locationIds: props.locationId,
+    filterId: props.filterIds ? props.filterIds[0] : undefined,
+    useDisplayUnits: settings.useDisplayUnits,
+    convertDatum: settings.convertDatum,
+  }
 }
 
-function hideMapTool() {
-  selectBbox.value = false
-  workflowDialog.value = true
+function getTimeSeriesGridActionsFilter():
+  | (timeSeriesGridActionsFilter & UseDisplayConfigOptions)
+  | undefined {
+  if (!props.longitude || !props.latitude) return
+  if (!layerCapabilities.value?.boundingBox) return
+  if (!layerCapabilities.value?.firstValueTime) return
+  if (!layerCapabilities.value?.lastValueTime) return
+
+  const coordinates = [+props.longitude, +props.latitude]
+  const [x, y] = toMercator(coordinates)
+  const clickRadius = circle(coordinates, 10, { steps: 4, units: 'kilometers' })
+  const bboxArray = bbox(clickRadius)
+  const mercatorBbox = [
+    ...toMercator(bboxArray.slice(0, 2)),
+    ...toMercator(bboxArray.slice(-2)),
+  ]
+  const startTime = layerCapabilities.value.firstValueTime
+  const endTime = layerCapabilities.value.lastValueTime
+
+  return {
+    layers: props.layerName,
+    x,
+    y,
+    startTime,
+    endTime,
+    bbox: mercatorBbox,
+    documentFormat: 'PI_JSON',
+    elevation: elevation.value ?? layerCapabilities.value.elevation?.upperValue,
+    useDisplayUnits: settings.useDisplayUnits,
+    // Should be available according to the docs, but errors
+    // convertDatum: settings.convertDatum,
+  }
+}
+
+const filter = computed(() => {
+  if (props.locationId) {
+    return getFilterActionsFilter()
+  }
+  if (props.longitude && props.latitude) {
+    return getTimeSeriesGridActionsFilter()
+  }
+})
+
+const elevationChartFilter = computed(() => {
+  if (!layerCapabilities.value?.elevation) return
+  const actionsFilter = getTimeSeriesGridActionsFilter()
+  if (actionsFilter) {
+    return {
+      ...actionsFilter,
+      elevation: undefined,
+      showVerticalProfile: true,
+    }
+  }
+})
+
+const currentLocationId = ref<string>()
+const currentLatitude = ref<string>()
+const currentLongitude = ref<string>()
+const elevation = ref<number | undefined>()
+const currentTime = ref<Date>()
+
+onMounted(() => {
+  currentLocationId.value = props.locationId
+  currentLatitude.value = props.latitude
+  currentLongitude.value = props.longitude
+})
+
+const hideMap = computed(() => {
+  return mobile.value && (props.locationId || props.latitude || props.longitude)
+})
+
+function onLocationChange(locationId: string | null): void {
+  if (!locationId) return
+  openLocationTimeSeriesDisplay(locationId)
+}
+
+function openLocationTimeSeriesDisplay(locationId: string) {
+  const routeName = route.name
+    ?.toString()
+    .replace('SpatialDisplay', 'SpatialTimeSeriesDisplay')
+    .replace('WithCoordinates', '')
+  currentLocationId.value = locationId
+  currentLatitude.value = undefined
+  currentLongitude.value = undefined
+  router.push({
+    name: routeName,
+    params: {
+      nodeId: route.params.nodeId,
+      layerName: props.layerName,
+      locationId,
+    },
+    query: route.query,
+  })
+}
+
+function onCoordinateClick(
+  event: MapLayerMouseEvent | MapLayerTouchEvent,
+): void {
+  openCoordinatesTimeSeriesDisplay(
+    +event.lngLat.lat.toFixed(3),
+    +event.lngLat.lng.toFixed(3),
+  )
+}
+
+function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
+  const routeName = route.name
+    ?.toString()
+    .replace('SpatialDisplay', 'SpatialTimeSeriesDisplay')
+    .replace('WithCoordinates', '')
+    .replace(
+      'SpatialTimeSeriesDisplay',
+      'SpatialTimeSeriesDisplayWithCoordinates',
+    )
+  if (!routeName || !router.hasRoute(routeName)) return
+
+  currentLatitude.value = latitude.toFixed(3)
+  currentLongitude.value = longitude.toFixed(3)
+  currentLocationId.value = undefined
+  router.push({
+    name: routeName,
+    params: {
+      nodeId: route.params.nodeId,
+      layerName: props.layerName,
+      latitude,
+      longitude,
+    },
+    query: route.query,
+  })
+}
+
+function closeTimeSeriesDisplay(): void {
+  const parentRoute = findParentRoute(route)
+  if (parentRoute !== null) {
+    currentLocationId.value = undefined
+    currentLatitude.value = undefined
+    currentLongitude.value = undefined
+    router.push({
+      name: parentRoute.name,
+      params: {
+        nodeId: route.params.nodeId,
+        layerName: props.layerName,
+      },
+      query: route.query,
+    })
+  }
 }
 
 watch(
-  selectedLayer,
-  (layer) => {
-    if (layer?.elevation) {
-      const max = layer.elevation.upperValue ?? 0
-      const min = layer.elevation.lowerValue ?? 0
-      if (currentElevation.value > max) currentElevation.value = max
-      if (currentElevation.value < min) currentElevation.value = min
-      minElevation.value = min
-      maxElevation.value = max
-      elevationUnit.value =
-        (layer.elevation as ElevationWithUnitSymbol).unitSymbol ?? ''
+  () => props.layerName,
+  () => {
+    if (currentLocationId.value && !props.locationId) {
+      openLocationTimeSeriesDisplay(currentLocationId.value)
     }
-  },
-  { immediate: true },
-)
-
-watch(currentElevation, () => {
-  setLayerOptions()
-})
-
-const legendTitle = computed(() => {
-  if (!selectedLayer.value) return ''
-  const unitString = legendGraphic.value?.unit
-    ? ` [${legendGraphic.value?.unit}]`
-    : ''
-  return `${selectedLayer.value?.title}${unitString}`
-})
-
-watch(times, () => {
-  const timesValue = times.value
-  if (timesValue) {
-    times.value = timesValue
-    dateController.dates = timesValue
-    dateController.selectDate(currentTime.value)
-    currentTime.value = dateController.currentTime
-  }
-  setLayerOptions()
-})
-
-function setCurrentTime(enabled: boolean): void {
-  if (enabled) {
-    dateController.selectDate(new Date())
-    currentTime.value = dateController.currentTime
-    setLayerOptions()
-  }
-}
-
-function setLayerOptions(): void {
-  if (props.layerName) {
-    layerOptions.value = {
-      name: props.layerName,
-      time: currentTime.value,
-      bbox: selectedLayer.value?.boundingBox
-        ? convertBoundingBoxToLngLatBounds(selectedLayer.value.boundingBox)
-        : undefined,
-    }
-    layerOptions.value.elevation = currentElevation.value
-  }
-}
-
-function updateTime(date: Date): void {
-  if (dateController.currentTime.getTime() === date.getTime()) return
-  dateController.selectDate(date)
-  currentTime.value = dateController.currentTime
-  debouncedSetLayerOptions()
-}
-
-function startWorkflow() {
-  console.log(
-    `POST ${baseUrl}/regridder/${
-      props.layerName
-    }/${currentTime.value.toISOString()}/${bboxString.value}`,
-  )
-  activeWorkflowIds.value.push(currentWorkflowId.value)
-  workflowDialog.value = false
-}
-
-const boundingBox = computed({
-  set: (value: BBox): void => {
-    features.value[0] = bboxPolygon<{}>(value)
-  },
-  get: (): BBox => {
     if (
-      features.value.length > 0 &&
-      features.value[0].geometry.type === 'Polygon'
+      currentLatitude.value &&
+      currentLongitude.value &&
+      !props.latitude &&
+      !props.longitude
     ) {
-      const result = bbox(features.value[0])
-      result[0] = roundToStep(result[0], longitudeStepSize.value)
-      result[2] = roundToStep(result[2], longitudeStepSize.value)
-      result[1] = roundToStep(result[1], lattitudeStepSize.value)
-      result[3] = roundToStep(result[3], lattitudeStepSize.value)
-
-      return result
-    } else return [0, 0, 0, 0]
+      openCoordinatesTimeSeriesDisplay(
+        +currentLatitude.value,
+        +currentLongitude.value,
+      )
+    }
   },
-})
-
-function roundToStep(value: number, step: number): number {
-  return parseFloat((Math.round(value / step) * step).toFixed(4))
-}
+)
 </script>
 
 <style scoped>
-.workflows__container {
-  position: absolute;
-  font-size: 0.825em;
-  z-index: 1000;
-  left: 10px;
-  top: 10px;
+.container {
+  display: flex;
+  width: 100%;
+  height: 100%;
 }
 
-.workflows__chip {
-  background-color: rgba(var(--v-theme-surface), 0.8);
-}
-
-.workflows--running {
-  position: absolute;
-  left: 18px;
-  top: -8px;
-}
-.colourbar-container {
-  position: absolute;
-  pointer-events: none;
-  font-size: 0.825em;
-  z-index: 1000;
-  background-color: none;
-  bottom: 80px;
-}
-
-.spatial-display {
+.child-container {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  max-width: 100%;
+  flex: 1 1 0px;
 }
 
-.spatial-display__slider {
-  position: absolute;
-  bottom: 5px;
-  left: 5px;
-  right: 5px;
-  z-index: 5;
-  border-radius: 5px;
-  backdrop-filter: blur(5px);
-  background-color: rgba(var(--v-theme-surface), 0.8);
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-}
-
-.map-tool__input {
-  width: 50px;
-  height: 30px;
-  margin: 0;
-  padding: 0;
+.child-container.mobile {
+  height: 100%;
+  width: 100%;
 }
 </style>

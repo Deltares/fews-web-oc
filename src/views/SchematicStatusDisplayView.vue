@@ -1,7 +1,30 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
+    <v-toolbar v-if="!mobile" density="compact">
+      <v-btn-toggle
+        v-model="menuType"
+        variant="tonal"
+        divided
+        density="compact"
+        class="ma-2"
+      >
+        <v-btn variant="text" value="treemenu">
+          <v-icon>mdi-file-tree</v-icon>
+        </v-btn>
+        <v-btn variant="text" value="columnmenu">
+          <v-icon>mdi-view-week</v-icon>
+        </v-btn>
+      </v-btn-toggle>
+    </v-toolbar>
+    <TreeMenu
+      v-if="menuType === 'treemenu' && !mobile"
+      v-model:active="active"
+      :items="items"
+      :open="open"
+    >
+    </TreeMenu>
     <ColumnMenu
-      rootName="Overzichtsschermen"
+      v-else-if="menuType === 'columnmenu' || mobile"
       v-model:active="active"
       :items="items"
       v-model:open="open"
@@ -11,7 +34,7 @@
   <div class="container">
     <div
       class="child-container"
-      :class="{ hidden: hideSSD }"
+      :class="{ 'd-none': hideSSD }"
       ref="ssdContainer"
     >
       <SsdComponent :src="src" @action="onAction" ref="ssdComponent" />
@@ -20,7 +43,7 @@
         :dates="dates"
       />
     </div>
-    <div class="child-container" :class="{ mobile, hidden: objectId === '' }">
+    <div class="child-container" :class="{ mobile, 'd-none': objectId === '' }">
       <router-view @close="closeTimeSeriesDisplay"></router-view>
     </div>
   </div>
@@ -45,6 +68,7 @@ import type { ColumnItem } from '../components/general/ColumnItem'
 import { useSsd } from '../services/useSsd/index.ts'
 
 import ColumnMenu from '../components/general/ColumnMenu.vue'
+import TreeMenu from '@/components/general/TreeMenu.vue'
 import DateTimeSlider from '../components/general/DateTimeSlider.vue'
 import SsdComponent from '../components/ssd/SsdComponent.vue'
 import { useDisplay } from 'vuetify'
@@ -78,13 +102,14 @@ const props = withDefaults(defineProps<Props>(), {
 const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
 const ssdContainer = ref<HTMLElement | null>(null)
 
-const active = ref<string[]>([])
+const active = ref<string | undefined>(undefined)
 const open = ref<string[]>([])
 
 const selectedDate = ref<Date>(new Date())
 const selectedDateSlider = ref<Date>(selectedDate.value)
 
 const { mobile } = useDisplay()
+const menuType = ref('treemenu')
 
 onMounted(() => {
   onGroupIdChange()
@@ -92,6 +117,7 @@ onMounted(() => {
 })
 
 const selectedDateString = computed(() => {
+  if (selectedDate.value === undefined) return ''
   const dateString = selectedDate.value.toISOString()
   return dateString.substring(0, 19) + 'Z'
 })
@@ -118,7 +144,7 @@ const items = computed(() => {
       result.push({ id: displayGroup.name, name, children })
     }
   }
-  return [{ id: 'root', name: 'Groups', children: result }]
+  return result
 })
 
 // Debounce the selected date from the slider input, so we do not send hundreds of requests when
@@ -181,7 +207,7 @@ function onGroupIdChange(): void {
 }
 
 function onPanelIdChange(): void {
-  active.value = [props.panelId]
+  active.value = props.panelId
 }
 
 const hideSSD = computed(() => {
@@ -260,17 +286,15 @@ function openTimeSeriesDisplay(panelId: string, objectId: string) {
     })
 }
 
-function closeTimeSeriesDisplay(objectId: string): void {
-  if (objectId) {
-    router
-      .push({
-        name: 'SchematicStatusDisplay',
-        params: { groupId: props.groupId, panelId: props.panelId },
-      })
-      .then(() => {
-        ssdComponent.value?.resize()
-      })
-  }
+function closeTimeSeriesDisplay(): void {
+  router
+    .push({
+      name: 'SchematicStatusDisplay',
+      params: { groupId: props.groupId, panelId: props.panelId },
+    })
+    .then(() => {
+      ssdComponent.value?.resize()
+    })
 }
 </script>
 
@@ -291,12 +315,7 @@ function closeTimeSeriesDisplay(objectId: string): void {
 }
 
 .child-container.mobile {
-  display: flex;
   height: 100%;
   width: 100%;
-}
-
-.child-container.hidden {
-  display: none !important;
 }
 </style>

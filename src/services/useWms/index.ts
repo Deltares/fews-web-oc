@@ -9,62 +9,63 @@ import { MaybeRefOrGetter, ref, Ref, toValue, watchEffect } from 'vue'
 import { toWgs84 } from '@turf/projection'
 // @ts-ignore
 import { point } from '@turf/helpers'
-import { LngLatBounds } from 'mapbox-gl'
+import { LngLatBounds } from 'maplibre-gl'
 import { GetLegendGraphicResponse } from '@deltares/fews-wms-requests/src/response/getLegendGraphicResponse.ts'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { Style } from '@deltares/fews-wms-requests'
+
 export interface UseWmsReturn {
-  selectedLayer: Ref<Layer | undefined>
-  legendGraphic: Ref<GetLegendGraphicResponse | undefined>
+  layerCapabilities: Ref<Layer | undefined>
   times: Ref<Date[] | undefined>
 }
-
-export function useWmsLayer(
+export function useWmsLayerCapabilities(
   baseUrl: string,
   layerName: MaybeRefOrGetter<string>,
-  useDisplayUnits: MaybeRefOrGetter<boolean>,
 ): UseWmsReturn {
-  const legendGraphic = ref<GetLegendGraphicResponse>()
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
   const times = ref<Date[]>()
-  const selectedLayer = ref<Layer>()
+  const layerCapabilities = ref<Layer>()
 
   async function loadLayer(): Promise<void> {
     const _layers = toValue(layerName)
-    if (_layers === '') return
-    try {
-      const capabilities = await wmsProvider.getCapabilities({
-        layers: _layers,
-        importFromExternalDataSource: false,
-        onlyHeaders: false,
-        forecastCount: 1,
-      })
-      if (capabilities.layers.length > 0) {
-        selectedLayer.value =
-          capabilities.layers.find((l) => l.name === _layers) ??
-          capabilities.layers[0]
+    if (_layers === '') {
+      layerCapabilities.value = undefined
+    } else {
+      try {
+        const capabilities = await wmsProvider.getCapabilities({
+          layers: _layers,
+          importFromExternalDataSource: false,
+          onlyHeaders: false,
+          forecastCount: 1,
+        })
+        if (capabilities.layers.length > 0) {
+          layerCapabilities.value =
+            capabilities.layers.find((l) => l.name === _layers) ??
+            capabilities.layers[0]
+        }
+      } catch (error) {
+        console.error(error)
       }
-    } catch (error) {
-      console.error(error)
     }
   }
 
   function loadTimes(): void {
     let valueDates: Date[] = []
-    if (selectedLayer.value) {
-      if (selectedLayer.value.times) {
-        const dates = selectedLayer.value.times.map((time) => {
+    if (layerCapabilities.value) {
+      if (layerCapabilities.value.times) {
+        const dates = layerCapabilities.value.times.map((time) => {
           return new Date(time)
         })
         let firstValueDate = dates[0]
         let lastValueDate = dates[dates.length - 1]
-        if (selectedLayer.value.firstValueTime) {
-          firstValueDate = new Date(selectedLayer.value.firstValueTime)
+        if (layerCapabilities.value.firstValueTime) {
+          firstValueDate = new Date(layerCapabilities.value.firstValueTime)
         }
-        if (selectedLayer.value.lastValueTime) {
-          lastValueDate = new Date(selectedLayer.value.lastValueTime)
+        if (layerCapabilities.value.lastValueTime) {
+          lastValueDate = new Date(layerCapabilities.value.lastValueTime)
         }
         valueDates = dates.filter(
           (d) => d >= firstValueDate && d <= lastValueDate,
@@ -74,29 +75,57 @@ export function useWmsLayer(
     times.value = valueDates
   }
 
+  watchEffect(() => {
+    loadLayer().then(() => {
+      loadTimes()
+    })
+  })
+  return { layerCapabilities, times }
+}
+
+export function useWmsLegend(
+  baseUrl: string,
+  layerName: MaybeRefOrGetter<string>,
+  useDisplayUnits: MaybeRefOrGetter<boolean>,
+  colorScaleRange?: MaybeRefOrGetter<string | undefined>,
+  style?: MaybeRefOrGetter<Style | null>,
+): Ref<GetLegendGraphicResponse | undefined> {
+  let controller = new AbortController()
+  const wmsUrl = `${baseUrl}/wms`
+  const legendGraphic = ref<GetLegendGraphicResponse>()
+
   async function loadLegend(): Promise<void> {
+    controller.abort('getLegend aborted')
+    controller = new AbortController()
+    const wmsProvider = new WMSProvider(wmsUrl, {
+      transformRequestFn: createTransformRequestFn(controller),
+    })
     const _layers = toValue(layerName)
     const _useDisplayUnits = toValue(useDisplayUnits)
-    if (_layers === '') return
-    try {
-      legendGraphic.value = await wmsProvider.getLegendGraphic({
-        layers: _layers,
-        // Enable when fews-wms-requests is updated
-        //@ts-ignore
-        useDisplayUnits: _useDisplayUnits,
-      })
-    } catch (error) {
-      console.error(error)
+    const _colorScaleRange = toValue(colorScaleRange)
+    const _style = toValue(style)
+    if (_layers === '') {
+      legendGraphic.value = undefined
+    } else {
+      try {
+        legendGraphic.value = await wmsProvider.getLegendGraphic({
+          layers: _layers,
+          colorscalerange: _colorScaleRange,
+          // Enable when fews-wms-requests is updated
+          //@ts-ignore
+          useDisplayUnits: _useDisplayUnits,
+          style: _style?.name,
+        })
+      } catch (error) {
+        console.error(error)
+      }
     }
   }
 
   watchEffect(() => {
     loadLegend()
-    loadLayer().then(() => {
-      loadTimes()
-    })
   })
-  return { selectedLayer, legendGraphic, times }
+  return legendGraphic
 }
 
 export function useWmsCapilities(

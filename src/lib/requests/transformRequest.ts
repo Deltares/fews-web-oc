@@ -7,3 +7,14 @@ export function createTransformRequestFn(controller?: AbortController) {
     )
   }
 }
+
+export function mergeHeaders(headers1: Headers, headers2: Headers): Headers {
+  const mergedHeaders = new Headers()
+  headers1.forEach((value, key) => {
+    mergedHeaders.set(key, value)
+  })
+  headers2.forEach((value, key) => {
+    mergedHeaders.set(key, value)
+  })
+  return mergedHeaders
+}

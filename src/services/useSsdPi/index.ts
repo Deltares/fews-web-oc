@@ -24,11 +24,16 @@ export interface UseSsdPiReturn {
   error: Ref<any>
 }
 
+export interface UseSsdPiOptions {
+  convertDatum?: boolean
+  useDisplayUnits?: boolean
+}
+
 export function useSsdPi(
   baseUrl: string,
   panelId: MaybeRefOrGetter<string>,
   objectId: MaybeRefOrGetter<string>,
-  plotId?: MaybeRefOrGetter<number>,
+  options?: MaybeRefOrGetter<UseSsdPiOptions>,
 ): UseSsdPiReturn {
   const ssdProvider = new SsdWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -42,13 +47,14 @@ export function useSsdPi(
 
   watchEffect(async () => {
     const _displays: DisplayConfig[] = []
-    const filter: ActionRequest = {
+    const _options = toValue(options)
+    let filter: ActionRequest = {
       panelId: toValue(panelId),
       objectId: toValue(objectId),
       clickType: ClickType.LEFTSINGLECLICK,
       config: true,
     }
-    const _plotId = toValue(plotId) ?? 0
+    filter = { ...filter, ..._options }
     const action = await ssdProvider.getAction(filter)
     for (const result of action.results) {
       if (result.config === undefined) continue
@@ -71,7 +77,7 @@ export function useSsdPi(
       _displays.push(display)
     }
     displays.value = _displays
-    displayConfig.value = _displays[_plotId]
+    displayConfig.value = _displays[0]
   })
 
   return {

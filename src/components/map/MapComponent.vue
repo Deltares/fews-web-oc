@@ -1,34 +1,34 @@
 <template>
-  <mapbox-map
-    style="width: 100%; height: 100%"
-    :access-token="accessToken"
-    map-style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+  <mgl-map
+    ref="map"
     :pitch="0"
     :bearing="0"
+    :center="[0, 0]"
     :min-zoom="2"
     :interactive="true"
     :drag-pan="true"
     :scroll-zoom="true"
-    :transformRequest="transformRequest"
+    :transform-request="transformRequest"
   >
     <slot></slot>
-  </mapbox-map>
+  </mgl-map>
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount, ref } from 'vue'
-import { MapboxMap } from '@studiometa/vue-mapbox-gl'
-import { configManager } from '../../services/application-config'
-import type { ResourceType } from 'mapbox-gl'
+import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 
-const accessToken = ref('')
+import { MglMap, MglDefaults } from 'vue-maplibre-gl'
+import { type ResourceType, type RequestParameters } from 'maplibre-gl'
+import 'vue-maplibre-gl/dist/vue-maplibre-gl.css'
 
-onBeforeMount(() => {
-  accessToken.value = configManager.get('VITE_MAPBOX_TOKEN')
-})
+MglDefaults.style =
+  'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
-function transformRequest(url: string, resourceType: ResourceType) {
+function transformRequest(
+  url: string,
+  resourceType?: ResourceType,
+): RequestParameters {
   if (!configManager.authenticationIsEnabled)
     return {
       url,

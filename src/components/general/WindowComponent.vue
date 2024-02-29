@@ -1,11 +1,9 @@
 <template>
   <div class="d-flex flex-column h-100 w-100" :class="{ fullscreen }">
     <v-toolbar density="compact" variant="flat" class="toolbar">
-      <v-spacer />
       <slot name="toolbar">
         {{ props.title }}
       </slot>
-      <v-spacer />
       <v-btn size="small" variant="text" @click="fullscreen = !fullscreen">
         <v-icon>{{ fullscreenIcon }}</v-icon>
       </v-btn>

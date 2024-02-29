@@ -3,8 +3,7 @@
     <div style="flex: 1 1 100%; height: 100%">
       <WindowComponent>
         <template v-slot:toolbar>
-          <v-spacer />
-          {{ displayConfig?.title }}
+          <span class="mx-5">{{ displayConfig?.title }}</span>
           <v-spacer />
           <v-btn-toggle class="mr-5" v-model="displayType" mandatory>
             <v-btn
@@ -34,12 +33,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import { useSsdPi } from '@/services/useSsdPi/index.ts'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import { DisplayType } from '@/lib/display/DisplayConfig'
+import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
+import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
   panelId?: string
@@ -55,10 +56,32 @@ const emit = defineEmits<{ (e: 'close', objectId: string): void }>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
+const settings = useUserSettingsStore()
+
+const options = computed<UseDisplayConfigOptions>(() => {
+  return {
+    useDisplayUnits: settings.useDisplayUnits,
+    convertDatum: settings.convertDatum,
+  }
+})
+
 const { displayConfig } = useSsdPi(
   baseUrl,
   () => props.panelId,
   () => props.objectId,
+  options,
+)
+
+watch(
+  () => displayConfig,
+  () => {
+    if (!displayConfig.value) return
+
+    if (displayConfig.value.subplots.length < 1) {
+      onClose()
+    }
+  },
+  { deep: true },
 )
 
 interface DisplayTypeItem {

@@ -1,3 +1,14 @@
+<template>
+  <Suspense>
+    <template #default>
+      <component style="height: 100%" :is="layoutComponent"></component>
+    </template>
+    <template #fallback>
+      <span>Loading...</span>
+    </template>
+  </Suspense>
+</template>
+
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import DefaultLayout from './layouts/DefaultLayout.vue'
@@ -9,6 +20,7 @@ import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { useUserSettingsStore } from './stores/userSettings'
 import { useTheme } from 'vuetify'
 import { usePreferredDark } from '@vueuse/core'
+import { useDark, useToggle } from '@vueuse/core'
 
 import '@/assets/fews-flags.css'
 
@@ -16,10 +28,12 @@ const route = useRoute()
 const configStore = useConfigStore()
 const userSettingsStore = useUserSettingsStore()
 const theme = useTheme()
-const usePrefersDark = usePreferredDark()
+const prefersDark = usePreferredDark()
+const isDark = useDark()
+const toggleDark = useToggle(isDark)
 
 onMounted(() => {
-  changeTheme('auto')
+  updateTheme()
 })
 
 const layoutComponent = computed(() => {
@@ -49,22 +63,23 @@ watch(
   },
 )
 
-function changeTheme(theme: string) {
-  if (theme === 'auto') {
-    setTheme(usePrefersDark.value)
-  } else {
-    setTheme(theme === 'dark')
+watch(prefersDark, () => updateTheme())
+
+function updateTheme(theme?: string) {
+  const themeSetting = theme ? theme : userSettingsStore.get('ui.theme')?.value
+  if (typeof themeSetting === 'string') {
+    if (themeSetting === 'auto') {
+      setTheme(prefersDark.value)
+    } else {
+      setTheme(themeSetting === 'dark')
+    }
   }
 }
 
-function setTheme(isDark: boolean): void {
-  theme.global.name.value = isDark ? 'dark' : 'light'
-  // Update wb-charts stylesheet such that charts also change to the selected theme.
-  const css = document.getElementById('theme_css') as HTMLLinkElement
-  if (css) {
-    css.href = isDark
-      ? `${import.meta.env.BASE_URL}wb-charts-dark.css`
-      : `${import.meta.env.BASE_URL}wb-charts-light.css`
+function setTheme(setDark: boolean): void {
+  theme.global.name.value = setDark ? 'dark' : 'light'
+  if (setDark !== isDark.value) {
+    toggleDark()
   }
 }
 
@@ -73,7 +88,7 @@ userSettingsStore.$onAction(({ name, args }) => {
     const item = args[0]
     switch (item.id) {
       case 'ui.theme':
-        changeTheme(item.value as string)
+        updateTheme(item.value as string)
         break
       default:
     }
@@ -81,23 +96,7 @@ userSettingsStore.$onAction(({ name, args }) => {
 })
 </script>
 
-<template>
-  <Suspense>
-    <template #default>
-      <component style="height: 100%" :is="layoutComponent"></component>
-    </template>
-    <template #fallback>
-      <span>Loading...</span>
-    </template>
-  </Suspense>
-</template>
-
 <style>
-.wb-charts,
-.tooltip {
-  font-size: 0.75rem;
-}
-
 .v-table--fixed-header > .v-table__wrapper > table > thead > tr > th {
   border-bottom: 0 !important;
   position: sticky;

@@ -6,6 +6,7 @@
     :footer-props="{
       itemsPerPageOptions: [50, 100, 150],
     }"
+    sticky
     class="elevation-1"
   >
     <template v-slot:item.status="{ item }">
@@ -26,13 +27,9 @@ import {
 } from '@deltares/fews-pi-requests'
 import { configManager } from '../../services/application-config'
 import { onMounted, onUnmounted, ref } from 'vue'
-import { VDataTable } from 'vuetify/labs/VDataTable'
+import { type VDataTable } from 'vuetify/components'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
-  ? UnwrapReadonlyArrayType<I>
-  : A
-type DT = InstanceType<typeof VDataTable>
-type ReadonlyDataTableHeader = UnwrapReadonlyArrayType<DT['headers']>
+type ReadonlyDataTableHeader = (typeof VDataTable)['headers']
 
 const props = defineProps(['timeOut'])
 

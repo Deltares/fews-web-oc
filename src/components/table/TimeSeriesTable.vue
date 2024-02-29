@@ -7,28 +7,71 @@
       class="data-table"
       :headers="tableHeaders as any"
       :items="tableData"
-      :items-per-page="-1"
+      items-per-page="100"
       density="compact"
       no-filter
       fixed-header
       height="100%"
-      :footer-props="{ disablePagination: true, disableItemsPerPage: true }"
     >
       <template v-slot:headers="{ columns }">
         <tr>
           <template v-for="column in columns" :key="column.key">
             <th
               :style="{ minWidth: column.minWidth }"
-              :class="(column as TableHeaders).class"
+              :class="[
+                (column as unknown as TableHeaders).class,
+                {
+                  'table-header--editing': isEditingTimeSeries(
+                    column.key as string,
+                  ),
+                },
+              ]"
             >
               <div class="table-header-indicator">
-                <span class="table-header-indicator-text">{{
-                  column.title
-                }}</span>
+                <div class="table-header-indicator-text">
+                  <span>{{ column.title }}</span>
+                  <template
+                    v-if="
+                      (column as unknown as TableHeaders).editable &&
+                      !readOnlyMode
+                    "
+                  >
+                    <div
+                      v-if="isEditingTimeSeries(column.key as string)"
+                      class="table-header__actions"
+                    >
+                      <v-btn
+                        prepend-icon="mdi-content-save-outline"
+                        @click="save(column.key as string)"
+                        :disabled="newTableData.length === 0"
+                        color="primary"
+                        variant="flat"
+                        size="small"
+                        class="mr-5 my-2"
+                        >Save</v-btn
+                      >
+                      <v-btn
+                        size="small"
+                        variant="flat"
+                        class="my-2"
+                        @click="stopEditTimeSeries(column.key || '')"
+                        >Cancel</v-btn
+                      >
+                    </div>
+                    <v-btn
+                      v-else
+                      size="x-small"
+                      variant="text"
+                      icon="mdi-pencil"
+                      @click="toggleEditTimeSeries(column.key as string)"
+                    ></v-btn>
+                  </template>
+                </div>
                 <div
                   class="table-header-indicator-color"
                   :style="{
-                    'background-color': (column as TableHeaders).color,
+                    'background-color': (column as unknown as TableHeaders)
+                      .color,
                   }"
                 ></div>
               </div>
@@ -37,27 +80,31 @@
         </tr>
       </template>
       <template v-slot:item.date="{ item }">
-        <span class="sticky-column">{{ item.date }}</span>
+        <span class="sticky-column">{{
+          dateFormatter.format(item.date as Date)
+        }}</span>
       </template>
       <template v-for="id in seriesIds" v-slot:[`item.${id}`]="{ item }">
-        <span
-          v-if="item[id]"
-          class="table-cell-with-flag"
+        <!-- Table cell when editing data -->
+        <TableCellEdit
+          v-if="
+            isEditing &&
+            editedSeriesIds.length > 0 &&
+            editedSeriesIds.includes(id)
+          "
+          :id="id"
+          :item="item"
+          @update:item="(event) => onUpdateItem(event)"
+        ></TableCellEdit>
+        <!-- Table cell when not editing data. Shows additional info about flags. -->
+        <TableCell
+          v-else
+          :id="id"
+          :item="item"
           @mouseenter="(event) => showTooltip(event, item[id])"
           @mouseleave="(event) => hideTooltip(event)"
-        >
-          <div
-            class="circle"
-            :class="`flag-background-color--${item[id].flag}`"
-          ></div>
-          <span class="value">{{ item[id].value }}</span>
-          <span
-            v-if="item[id].comment"
-            class="comment-icon mdi mdi-comment-outline"
-          ></span>
-        </span>
+        ></TableCell>
       </template>
-      <template #bottom></template>
       <!-- hide footer -->
     </v-data-table>
   </div>
@@ -72,9 +119,17 @@ import { Series } from '@/lib/timeseries/timeSeries'
 import { getUniqueSeriesIds } from '@/lib/charts/getUniqueSeriesIds'
 import type { TableHeaders } from '@/lib/table/types/TableHeaders'
 import { createTableHeaders } from '@/lib/table/createTableHeaders'
-import { createTableData } from '@/lib/table/createTableData'
+import {
+  type TableSeriesData,
+  dateFormatter,
+  createTableData,
+  tableDataToTimeSeries,
+} from '@/lib/table/tableData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
+import { useConfigStore } from '@/stores/config'
 import { onBeforeMount } from 'vue'
+import TableCellEdit from '@/components/table/TableCellEdit.vue'
+import TableCell from '@/components/table/TableCell.vue'
 
 interface Props {
   config: ChartConfig
@@ -93,16 +148,22 @@ const props = withDefaults(defineProps<Props>(), {
   },
 })
 
+const emit = defineEmits(['change'])
+
 const store = useFewsPropertiesStore()
-store.loadFlags()
-store.loadFlagSources()
+const configStore = useConfigStore()
+const readOnlyMode = ref<boolean>(configStore.general.readonlyMode ?? false)
 
 const seriesIds = ref<string[]>([])
 const tooltip = ref<boolean>(false)
 const tooltipItem = ref<any>({})
 const activator = ref<string>('')
-const tableData = ref<Record<string, unknown>[]>([])
+const tableData = ref<Record<string, Partial<TableSeriesData> | Date>[]>([])
+const newTableData = ref<Record<string, Partial<TableSeriesData> | Date>[]>([])
 const tableHeaders = ref<TableHeaders[]>([])
+
+const isEditing = ref<boolean>(false)
+const editedSeriesIds = ref<string[]>([])
 
 onBeforeMount(() => {
   if (props.config !== undefined) {
@@ -113,13 +174,17 @@ onBeforeMount(() => {
     )
   }
 
-  if (props.config !== undefined) {
-    tableData.value = createTableData(
-      props.config.series,
-      props.series,
-      seriesIds.value,
-    )
-  }
+  store.loadFlags().then(() => {
+    store.setFlagQualities()
+    if (props.config !== undefined) {
+      tableData.value = createTableData(
+        props.config.series,
+        props.series,
+        seriesIds.value,
+      )
+    }
+  })
+  store.loadFlagSources()
 })
 
 watch(props.config, () => {
@@ -162,6 +227,65 @@ const hideTooltip = (event: any) => {
   element.id = null
   activator.value = ''
   tooltip.value = false
+}
+
+function stopEdit() {
+  isEditing.value = false
+  editedSeriesIds.value = []
+  newTableData.value = []
+}
+
+function save(seriesId: string) {
+  const newTimeSeriesData = tableDataToTimeSeries(newTableData.value, [
+    seriesId,
+  ])
+  emit('change', newTimeSeriesData)
+  stopEditTimeSeries(seriesId)
+}
+
+function toggleEditTimeSeries(seriesId: string) {
+  if (isEditingTimeSeries(seriesId)) {
+    stopEditTimeSeries(seriesId)
+  } else {
+    editTimeSeries(seriesId)
+  }
+}
+
+function editTimeSeries(seriesId: string) {
+  isEditing.value = true
+  if (seriesId !== null) editedSeriesIds.value.push(seriesId)
+}
+
+function stopEditTimeSeries(seriesId: string) {
+  const index = editedSeriesIds.value.indexOf(seriesId)
+  if (index > -1) {
+    editedSeriesIds.value.splice(index, 1)
+    if (editedSeriesIds.value.length === 0) stopEdit()
+    else {
+      for (let i = newTableData.value.length - 1; i >= 0; i--) {
+        if (newTableData.value[i][seriesId] !== undefined) {
+          delete newTableData.value[i][seriesId]
+          if (Object.keys(newTableData.value[i]).length === 1) {
+            newTableData.value.splice(i, 1)
+          }
+        }
+      }
+    }
+  }
+}
+
+function isEditingTimeSeries(seriesId: string) {
+  if (seriesId === null) return false
+  return editedSeriesIds.value.includes(seriesId)
+}
+
+function onUpdateItem(event: Record<string, Partial<TableSeriesData> | Date>) {
+  const index = newTableData.value.findIndex((item) => item.date === event.date)
+  if (index > -1) {
+    newTableData.value[index] = { ...newTableData.value[index], ...event }
+  } else {
+    newTableData.value.push(event)
+  }
 }
 </script>
 
@@ -233,30 +357,10 @@ th.sticky-column {
   margin-bottom: 5px;
 }
 
-.circle {
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  margin: auto 2px;
-}
-
-.table-cell-with-flag {
-  z-index: -1;
-  width: 100%;
-  display: inline-block;
-  min-width: 80px;
-}
-
-.comment-icon {
-  margin: 2px;
-  color: #9e9e9e;
-}
-
-.value {
-  display: inline-block;
-  line-height: 100%;
-  min-width: 10px;
+.table-header__actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
 }
 </style>
 
@@ -266,5 +370,25 @@ td:has(span.sticky-column) {
   left: 0;
   background-color: rgb(var(--v-theme-surface));
   border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.v-theme--light td:has(div.table-cell-editable) {
+  background: repeating-linear-gradient(
+    45deg,
+    rgb(var(--v-theme-surface)) 0px,
+    rgb(var(--v-theme-surface)) 12.73px,
+    rgb(240, 240, 240) 12.73px,
+    rgb(240, 240, 240) 25.46px
+  );
+}
+
+.v-theme--dark td:has(div.table-cell-editable) {
+  background: repeating-linear-gradient(
+    45deg,
+    rgb(var(--v-theme-surface)) 0px,
+    rgb(var(--v-theme-surface)) 12.73px,
+    rgba(15, 15, 15) 12.73px,
+    rgba(15, 15, 15) 25.46px
+  );
 }
 </style>

@@ -67,6 +67,9 @@ export const useUserSettingsStore = defineStore({
     listFavorite: (state) => {
       return state.items.filter((item) => item.favorite)
     },
+    get: (state) => (id: string) => {
+      return state.items.find((item) => item.id === id)
+    },
   },
   actions: {
     add(item: UserSettingsItem) {
@@ -100,7 +103,7 @@ export const useUserSettingsStore = defineStore({
       }
       this.useDisplayUnits = payload === 'display'
       if (payload !== 'custom') {
-        const i = payload === 'stored' ? 0 : 1
+        const i = payload === 'system' ? 0 : 1
         for (const s of unitSettings) {
           const newValue = s.items ? s.items[i].value : ''
           s.value = newValue
@@ -109,5 +112,42 @@ export const useUserSettingsStore = defineStore({
       }
     },
   },
-  persist: true,
+  persist: [
+    {
+      key: 'weboc-user-settings-v1.0.0',
+      storage: window.localStorage,
+      paths: ['items'],
+      serializer: {
+        serialize: (context) => {
+          return JSON.stringify(context)
+        },
+        deserialize: (context) => {
+          const parsedState = JSON.parse(context)
+          const newState = [...defaultUserSettings]
+          for (const prop of newState) {
+            const storedProp = parsedState.items.find(
+              (item: UserSettingsItem) => item.id === prop.id,
+            )
+            if (storedProp) {
+              if (
+                prop.type === 'oneOfMultiple' &&
+                !prop.items
+                  ?.map((i: UserSettingsWithIcon) => i.value)
+                  .includes(storedProp.value)
+              ) {
+                const index = storedProp.items?.findIndex(
+                  (i: UserSettingsWithIcon) => i.value === storedProp.value,
+                )
+                prop.value = prop.items ? prop.items[index ?? 0].value : ''
+              } else {
+                prop.value = storedProp.value
+              }
+              prop.favorite = storedProp.favorite
+            }
+          }
+          return newState
+        },
+      },
+    },
+  ],
 })

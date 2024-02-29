@@ -1,6 +1,7 @@
 import type { ChartConfig } from './types/ChartConfig.js'
 import type { ChartSeries } from './types/ChartSeries.js'
 import type {
+  TimeSeriesDisplayPlotItemXAxis,
   TimeSeriesDisplaySubplot,
   TimeSeriesDisplaySubplotItem,
 } from '@deltares/fews-pi-requests'
@@ -21,11 +22,12 @@ export function timeSeriesDisplayToChartConfig(
 ): ChartConfig {
   const config: ChartConfig = {
     title: title,
-    xAxis: [],
+    xAxis: subplot.xAxis ? xAxisFromPlotItemXAxis(subplot.xAxis) : [],
     yAxis: yAxisFromSubplot(subplot),
     series: [],
   }
   const chartSeriesArray: ChartSeries[] = []
+  config.thresholds = []
   for (const item of subplot.items) {
     if (item.lineStyle !== undefined && item.lineStyle !== 'none') {
       const chartSeries: ChartSeries = getChartSeries(item, 'line', config)
@@ -38,7 +40,6 @@ export function timeSeriesDisplayToChartConfig(
       chartSeriesArray.push(chartSeries)
     }
     if (item.thresholds !== undefined) {
-      config.thresholds = []
       for (const threshold of item.thresholds) {
         if (threshold.value === undefined) continue
         config.thresholds.push({
@@ -91,6 +92,35 @@ function getChartSeries(
   }
 }
 
+function xAxisFromPlotItemXAxis(
+  xAxis: TimeSeriesDisplayPlotItemXAxis,
+): AxisOptions[] {
+  const axes = []
+  const includeZero =
+    xAxis.axisMinValue === 0 && xAxis.axisMaxValue === undefined
+
+  // TODO: xAxis.axisType should instead be set in xAxis: TimeSeriesDisplaySubplotItemAxis
+  const isDegrees =
+    xAxis.axisLabel?.includes('degrees') &&
+    xAxis.axisMinValue === 0 &&
+    xAxis.axisMaxValue === 360
+
+  const axis: AxisOptions = {
+    type: isDegrees ? AxisType.degrees : AxisType.value,
+    label: xAxis.axisLabel,
+    includeZero,
+  }
+  if (xAxis.axisMinValue !== undefined && xAxis.axisMaxValue !== undefined) {
+    const defaultDomain: [number, number] = [
+      xAxis.axisMinValue,
+      xAxis.axisMaxValue,
+    ]
+    axis.defaultDomain = defaultDomain
+  }
+  axes.push(axis)
+  return axes
+}
+
 function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
   const axes = []
   const positions = [AxisPosition.Left, AxisPosition.Right]
@@ -112,11 +142,17 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
         yAxis.axisMinValue !== undefined &&
         yAxis.axisMaxValue !== undefined
       ) {
-        const defaultDomain: [number, number] = [
+        const domain: [number, number] = [
           yAxis.axisMinValue,
           yAxis.axisMaxValue,
         ]
-        axis.defaultDomain = defaultDomain
+        if (yAxis.axisMinValue === 0 && yAxis.axisMaxValue === 360) {
+          axis.type = AxisType.degrees
+          axis.domain = domain
+          axis.nice = false
+        } else {
+          axis.defaultDomain = domain
+        }
       }
       axes.push(axis)
     }

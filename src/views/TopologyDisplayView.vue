@@ -1,7 +1,30 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
+    <v-toolbar v-if="!mobile" density="compact">
+      <v-btn-toggle
+        v-model="menuType"
+        variant="tonal"
+        divided
+        density="compact"
+        class="ma-2"
+      >
+        <v-btn variant="text" value="treemenu">
+          <v-icon>mdi-file-tree</v-icon>
+        </v-btn>
+        <v-btn variant="text" value="columnmenu">
+          <v-icon>mdi-view-week</v-icon>
+        </v-btn>
+      </v-btn-toggle>
+    </v-toolbar>
+    <TreeMenu
+      v-if="menuType === 'treemenu' && !mobile"
+      v-model:active="active"
+      :items="items"
+      v-model:open="open"
+    >
+    </TreeMenu>
     <ColumnMenu
-      rootName="Topology"
+      v-else-if="menuType === 'columnmenu' || mobile"
       v-model:active="active"
       :items="items"
       v-model:open="open"
@@ -9,93 +32,189 @@
     </ColumnMenu>
   </Teleport>
   <Teleport to="#app-bar-content">
-    <v-tabs v-model="activeTab" class="d-flex flex-shrink-0">
-      <v-tab
+    <template v-if="showLeafsAsButton">
+      <v-menu v-if="nodeButtons.length > 4">
+        <template v-slot:activator="{ props }">
+          <v-btn variant="tonal" class="ma-2" v-bind="props">
+            {{ activeParentId }}
+            <v-icon end> mdi-menu-down </v-icon>
+          </v-btn>
+        </template>
+
+        <v-list class="bg-grey-lighten-3">
+          <template v-for="item in nodeButtons">
+            <v-list-item
+              v-if="item.href"
+              :href="item.href"
+              :target="item.href ? '_blank' : undefined"
+            >
+              {{ item.name }}
+              <template v-slot:append>
+                <v-icon size="xsmall">{{ item.icon }}</v-icon>
+              </template>
+            </v-list-item>
+            <v-list-item
+              v-else
+              :to="item.to"
+              @click="activeParentId = item.name"
+            >
+              {{ item.name }}
+            </v-list-item>
+          </template>
+        </v-list>
+      </v-menu>
+      <v-btn-toggle
+        v-else
+        v-model="activeParentNode"
+        variant="tonal"
+        divided
+        density="compact"
+        mandatory
+        class="ma-2"
+        ><v-btn
+          v-for="item in nodeButtons"
+          :to="item.to"
+          @click="activeParentId = item.name"
+          >{{ item.name }}</v-btn
+        >
+      </v-btn-toggle>
+    </template>
+    <v-btn-toggle
+      v-if="displayTabs.length > 1"
+      v-model="activeTab"
+      variant="tonal"
+      divided
+      density="compact"
+      class="ma-2"
+    >
+      <v-btn
         v-for="tab in displayTabs"
         :key="tab.id"
         :href="tab.href"
         :target="tab.target"
         :to="tab.to"
+        class="text-capitalize"
       >
+        <v-icon>{{ tab.icon }}</v-icon>
         {{ tab.title }}
-        <v-icon v-if="tab.href">mdi-share</v-icon>
-      </v-tab>
-    </v-tabs>
+      </v-btn>
+    </v-btn-toggle>
     <v-btn
       v-if="externalLink"
       :href="externalLink"
       target="_blank"
       variant="text"
-      class="flex-0-0 align-self-center"
-      >Link<v-icon>mdi-share</v-icon></v-btn
+      class="flex-0-0 align-self-center text-capitalize"
+      ><v-icon>mdi-open-in-new</v-icon>Link</v-btn
     >
   </Teleport>
-  <router-view :workflowId="currentNode?.workflowId"></router-view>
+  <router-view v-slot="{ Component }">
+    <keep-alive include="SpatialDisplay">
+      <component :is="Component" :filter-ids="filterIds" />
+    </keep-alive>
+  </router-view>
 </template>
 
 <script setup lang="ts">
 import type { ColumnItem } from '@/components/general/ColumnItem'
 import ColumnMenu from '@/components/general/ColumnMenu.vue'
+import TreeMenu from '@/components/general/TreeMenu.vue'
 import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
-import router from '@/router'
+import { useConfigStore } from '@/stores/config'
+
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { watchEffect } from 'vue'
+import { computed } from 'vue'
 import { ref, watch } from 'vue'
-import type { RouteLocationRaw } from 'vue-router'
-
-const WEB_BROWSER_DISPLAY: string = 'web browser display'
+import {
+  type RouteLocationNamedRaw,
+  onBeforeRouteUpdate,
+  RouteLocationNormalized,
+  useRoute,
+  useRouter,
+} from 'vue-router'
+import { useDisplay } from 'vuetify'
 
 interface Props {
-  nodeId?: string
+  nodeId?: string | string[]
   layerName?: string
+  locationId?: string
+  latitude?: string
+  longitude?: string
 }
 
 interface DisplayTab {
+  type: string
   id: string
   title: string
   href?: string
   target?: string
-  to?: RouteLocationRaw
+  to: RouteLocationNamedRaw
+  icon: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  nodeId: '',
-})
+const props = defineProps<Props>()
 
-const active = ref<string[]>([])
+const configStore = useConfigStore()
+const { mobile } = useDisplay()
+
+const active = ref<string | undefined>(undefined)
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
+const menuType = ref('treemenu')
+
+const filterIds = ref<string[]>([])
 
 const activeTab = ref(0)
+const activeTabType = ref('')
 const displayTabs = ref<DisplayTab[]>([])
-const externalLink = ref<string>('')
+
+const activeParentNode = ref(0)
+const nodeButtons = ref<any[]>([])
+const activeParentId = ref('')
+
+const externalLink = ref<string | undefined>('')
+
+const route = useRoute()
+const router = useRouter()
+
+watch(
+  () => props.nodeId,
+  () => {
+    if (props.nodeId) {
+      if (typeof props.nodeId === 'string' && active.value !== props.nodeId) {
+        active.value = props.nodeId
+      } else if (
+        Array.isArray(props.nodeId) &&
+        active.value !== props.nodeId[0]
+      ) {
+        active.value = props.nodeId[0]
+      }
+    }
+  },
+  { immediate: true },
+)
+
+const showLeafsAsButton = computed(() => {
+  const component = configStore.getComponentByType('TopologyDisplay')
+  return component?.showLeafNodesAsButtons ?? false
+})
 
 const nodes = ref<TopologyNode[]>()
-const currentNode = ref<TopologyNode>()
 const topologyMap = ref(new Map<string, TopologyNode>())
 
 getTopologyNodes().then((response) => {
   nodes.value = response
   topologyMap.value = createTopologyMap(nodes.value)
-  currentNode.value = topologyMap.value.get(props.nodeId)
+  const to = reroute(route)
+  if (to) {
+    router.push(to)
+  }
 })
-
-watch(
-  () => props.nodeId,
-  () => {
-    if (active.value[0] !== props.nodeId) {
-      active.value = [props.nodeId]
-    }
-    if (currentNode.value?.id === props.nodeId) {
-      return
-    }
-    currentNode.value = topologyMap.value.get(props.nodeId)
-  },
-  { immediate: true },
-)
 
 function topologyNodeIsVisible(node: TopologyNode): boolean {
   if (node.url !== undefined) return true
+  if (node.plotId != undefined && node.locationIds != undefined) return true
   if (node.filterIds !== undefined && node.filterIds.length > 0) return true
   if (node.gridDisplaySelection !== undefined) return true
   if (node.displayId !== undefined) return true
@@ -105,7 +224,7 @@ function topologyNodeIsVisible(node: TopologyNode): boolean {
   return node.topologyNodes.some(topologyNodeIsVisible)
 }
 
-function recursiveUpdateNode(nodes: TopologyNode[]) {
+function recursiveUpdateNode(nodes: TopologyNode[], skipLeaves = false) {
   return nodes
     .filter((node) => topologyNodeIsVisible(node))
     .map((node) => {
@@ -114,16 +233,54 @@ function recursiveUpdateNode(nodes: TopologyNode[]) {
         name: node.name,
         icon: getIcon(node),
         href: getUrl(node),
+        to: {
+          name: 'TopologyDisplay',
+          params: {
+            nodeId: node.id,
+          },
+        },
       }
       if (node.topologyNodes) {
-        result.children = recursiveUpdateNode(node.topologyNodes)
+        const items = recursiveUpdateNode(node.topologyNodes, skipLeaves)
+        if (skipLeaves) {
+          const itemsWithChildren = items.filter((i) => i.children)
+          result.children = itemsWithChildren
+        } else {
+          result.children = items
+        }
+      }
+      return result
+    })
+}
+
+function nodeButtonItems(node: TopologyNode) {
+  if (node.topologyNodes === undefined) return []
+  return node.topologyNodes
+    .filter((n) => topologyNodeIsVisible(n))
+    .map((n) => {
+      const result: ColumnItem = {
+        id: n.id,
+        name: n.name,
+        icon: getIcon(n),
+      }
+      const href = getUrl(n)
+      if (href) {
+        result.href = href
+      } else {
+        result.to = {
+          name: 'TopologyDisplay',
+          params: {
+            nodeId: [node.id, n.id],
+          },
+        }
       }
       return result
     })
 }
 
 function getIcon(node: TopologyNode): string | undefined {
-  if (node.url && !node.topologyNodes && !node.displayGroups) return 'mdi-share'
+  if (node.url && !node.topologyNodes && !node.displayGroups)
+    return 'mdi-open-in-new'
   return undefined
 }
 
@@ -134,8 +291,52 @@ function getUrl(node: TopologyNode): string | undefined {
 
 function updateItems(): void {
   if (nodes.value) {
-    items.value = recursiveUpdateNode(nodes.value)
+    items.value = recursiveUpdateNode(nodes.value, showLeafsAsButton.value)
   }
+}
+
+function displayTabsForNode(leafNode: TopologyNode, parentNodeId?: string) {
+  const activeNodeId = leafNode.id
+  const timeseriesTabId = `${activeNodeId}-timeseries`
+  const spatialTabId = `${activeNodeId}-spatial`
+  const _displayTabs: DisplayTab[] = []
+  if (
+    leafNode.gridDisplaySelection !== undefined ||
+    leafNode.filterIds !== undefined
+  ) {
+    _displayTabs.push({
+      type: 'map',
+      id: spatialTabId,
+      title: 'Map',
+      to: {
+        name: 'TopologySpatialDisplay',
+        params: {
+          nodeId: parentNodeId ? [parentNodeId, leafNode.id] : leafNode.id,
+          layerName: leafNode.gridDisplaySelection?.plotId,
+        },
+      },
+      icon: 'mdi-map',
+    })
+  }
+  if (
+    leafNode.displayGroups !== undefined ||
+    leafNode.displayId !== undefined ||
+    (leafNode.plotId != undefined && leafNode.locationIds != undefined)
+  ) {
+    _displayTabs.push({
+      type: 'charts',
+      id: timeseriesTabId,
+      title: 'Charts',
+      to: {
+        name: 'TopologyTimeSeries',
+        params: {
+          nodeId: parentNodeId ? [parentNodeId, leafNode.id] : leafNode.id,
+        },
+      },
+      icon: 'mdi-chart-multiple',
+    })
+  }
+  return _displayTabs
 }
 
 watch(nodes, updateItems)
@@ -144,60 +345,109 @@ watch(nodes, updateItems)
 // Redirect to the corresponding display of the updated active tab.
 watchEffect(() => {
   // Check if the current displayTab already matches the active node.
-  const activeNodeId = active.value[0]
-  const timeseriesTabId = `${activeNodeId}-timeseries`
-  const spatialTabId = `${activeNodeId}-spatial`
-  const urlTabId = `${activeNodeId}-${WEB_BROWSER_DISPLAY}`
-  if (
-    displayTabs.value[activeTab.value] &&
-    (displayTabs.value[activeTab.value].id === timeseriesTabId ||
-      displayTabs.value[activeTab.value].id === spatialTabId ||
-      displayTabs.value[activeTab.value].id === urlTabId)
-  )
-    return
+  if (!props.nodeId) return
+  const activeNodeId = Array.isArray(props.nodeId)
+    ? props.nodeId.length > 1
+      ? props.nodeId[props.nodeId.length - 1]
+      : props.nodeId[0]
+    : props.nodeId
+
+  const parentNodeIdNodeId = Array.isArray(props.nodeId)
+    ? props.nodeId[0]
+    : undefined
 
   // Check if the active node is a leaf.
-  const node = topologyMap.value.get(active.value[0])
-  if (node === undefined || node.topologyNodes) return
+  const node = topologyMap.value.get(activeNodeId)
+  if (node === undefined) {
+    filterIds.value = []
+    return
+  }
+  if (node.filterIds) {
+    filterIds.value = node.filterIds
+  }
+  if (showLeafsAsButton.value && Array.isArray(props.nodeId)) {
+    const menuNodeId = props.nodeId[0]
+    const menuNode = topologyMap.value.get(menuNodeId) as any
+    nodeButtons.value = nodeButtonItems(menuNode)
+    if (!activeParentId.value && nodeButtons.value.length > 0) {
+      activeParentId.value = nodeButtons.value[0].name
+    }
+  }
 
   // Create the displayTabs for the active node.
-  const _displayTabs: DisplayTab[] = []
-  if (node.displayGroups !== undefined || node.displayId !== undefined) {
-    _displayTabs.push({
-      id: timeseriesTabId,
-      title: 'Time Series',
-      to: {
-        name: 'TopologyTimeSeries',
-        params: {
-          nodeId: node.id,
-        },
-      },
-    })
-  }
-  if (node.gridDisplaySelection !== undefined) {
-    _displayTabs.push({
-      id: spatialTabId,
-      title: 'Spatial Display',
-      to: {
-        name: 'TopologySpatialDisplay',
-        params: {
-          nodeId: node.id,
-          layerName: node.gridDisplaySelection?.plotId,
-        },
-      },
-    })
-  }
-  if (node.url !== undefined) {
-    externalLink.value = node.url
-  }
+  if (node === undefined) return
+  const _displayTabs = displayTabsForNode(node, parentNodeIdNodeId)
   displayTabs.value = _displayTabs
 
-  // Redirect to the first displayTab.
-  activeTab.value = 0
-  if (_displayTabs.length > 0 && _displayTabs[0].to !== undefined) {
-    router.push(_displayTabs[0].to)
-  } else {
-    router.push({ name: 'TopologyDisplay', params: { nodeId: node.id } })
-  }
+  externalLink.value = node.url
 })
+
+onBeforeRouteUpdate(reroute)
+
+function reroute(to: RouteLocationNormalized) {
+  if (!to.params.nodeId) {
+    if (topologyMap.value.size === 0) return
+    const parentNodeId = topologyMap.value.entries().next().value[0]
+    to.params.nodeId = parentNodeId
+    return to
+  }
+  if (
+    (showLeafsAsButton.value && typeof to.params.nodeId === 'string') ||
+    (Array.isArray(to.params.nodeId) && to.params.nodeId.length === 1)
+  ) {
+    const parentNodeId = Array.isArray(to.params.nodeId)
+      ? to.params.nodeId[0]
+      : to.params.nodeId
+    const menuNode = topologyMap.value.get(parentNodeId) as any
+    if (to.name === 'TopologyDisplay') {
+      const sources = nodeButtonItems(menuNode)
+      if (activeParentId.value) {
+        const sourceIndex = sources.findIndex((source) => {
+          return source.name === activeParentId.value
+        })
+        if (sourceIndex > -1) {
+          activeParentNode.value = sourceIndex
+          activeParentId.value = sources[sourceIndex].name
+          return sources[sourceIndex].to
+        }
+      }
+      activeParentNode.value = 0
+      activeParentId.value = sources[0].name
+      return sources[0].to
+    }
+  } else {
+    const leafNodeId = Array.isArray(to.params.nodeId)
+      ? to.params.nodeId.length > 1
+        ? to.params.nodeId[to.params.nodeId.length - 1]
+        : to.params.nodeId[0]
+      : to.params.nodeId
+    const parentNodeId =
+      Array.isArray(to.params.nodeId) && to.params.nodeId.length > 1
+        ? to.params.nodeId[0]
+        : undefined
+    const menuNode = topologyMap.value.get(leafNodeId)
+    if (to.name === 'TopologyDisplay') {
+      const tabs = displayTabsForNode(menuNode as any, parentNodeId)
+      if (activeTabType.value) {
+        const tabIndex = tabs.findIndex((t) => {
+          return t.type === activeTabType.value
+        })
+        if (tabIndex > -1) {
+          activeTab.value = tabIndex
+          activeTabType.value = tabs[tabIndex].type
+          return tabs[tabIndex].to
+        }
+      }
+      activeTab.value = 0
+      activeTabType.value = tabs[0].type
+      return tabs[0].to
+    }
+  }
+}
 </script>
+
+<style scoped>
+.v-btn-group {
+  color: inherit;
+}
+</style>

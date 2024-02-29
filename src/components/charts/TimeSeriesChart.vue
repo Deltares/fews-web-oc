@@ -1,7 +1,18 @@
 <template>
   <div class="chart-with-chips">
-    <div class="chart-controls">
-      <v-chip-group column>
+    <div ref="chartContainer" class="chart-container"></div>
+    <v-sheet
+      class="chart-controls"
+      rounded
+      :max-height="expanded ? undefined : LEGEND_HEIGHT"
+      :min-height="LEGEND_HEIGHT"
+      :elevation="expanded ? 6 : 0"
+    >
+      <v-chip-group
+        ref="chipGroup"
+        column
+        :class="['chart-legend', { 'chart-legend--large': requiresExpand }]"
+      >
         <v-chip
           size="small"
           :variant="tag.disabled ? 'text' : 'tonal'"
@@ -19,8 +30,14 @@
           {{ tag.name }}
         </v-chip>
       </v-chip-group>
-    </div>
-    <div ref="chartContainer" class="chart-container"></div>
+      <v-btn
+        v-show="requiresExpand"
+        :icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+        size="small"
+        variant="plain"
+        @click="toggleExpand"
+      ></v-btn>
+    </v-sheet>
   </div>
 </template>
 
@@ -32,6 +49,7 @@ import {
   ChartLine,
   ChartMarker,
   WheelMode,
+  ZoomHandler,
   toggleChartVisibility,
 } from '@deltares/fews-web-oc-charts'
 import {
@@ -40,7 +58,6 @@ import {
   CartesianAxes,
   CurrentTime,
   MouseOver,
-  ZoomHandler,
 } from '@deltares/fews-web-oc-charts'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
@@ -48,10 +65,15 @@ import type { ThresholdLine } from '../../lib/charts/types/ThresholdLine.js'
 import { Series } from '../../lib/timeseries/timeSeries.js'
 import uniq from 'lodash-es/uniq'
 import { extent } from 'd3'
+import { VChipGroup } from 'vuetify/components'
+import { difference, merge } from 'lodash-es'
+
+const LEGEND_HEIGHT = 76
 
 interface Props {
   config?: ChartConfig
   series?: Record<string, Series>
+  currentTime?: Date
 }
 
 interface Tag {
@@ -71,6 +93,9 @@ const props = withDefaults(defineProps<Props>(), {
   series: () => {
     return {}
   },
+  currentTime: () => {
+    return new Date()
+  },
 })
 
 let thresholdLines!: ThresholdLine[]
@@ -78,6 +103,10 @@ let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
 const legendTags = ref<Tag[]>([])
 const chartContainer = ref<HTMLElement>()
+const chipGroup = ref<VChipGroup>()
+const expanded = ref(false)
+const requiresExpand = ref(false)
+const axisTime = ref<CurrentTime>()
 
 onMounted(() => {
   const axisOptions: CartesianAxesOptions = {
@@ -104,32 +133,49 @@ onMounted(() => {
       },
     ],
     margin: {
+      top: 110,
       left: 50,
       right: 50,
     },
   }
 
   if (chartContainer.value) {
-    axis = new CartesianAxes(chartContainer.value, null, null, axisOptions)
+    axis = new CartesianAxes(
+      chartContainer.value,
+      null,
+      null,
+      merge(axisOptions, { x: props.config?.xAxis, y: props.config?.yAxis }),
+    )
     const mouseOver = new MouseOver()
     const zoom = new ZoomHandler(WheelMode.NONE)
-    const currentTime = new CurrentTime({
+    axisTime.value = new CurrentTime({
       x: {
         axisIndex: 0,
       },
     })
+    axisTime.value.setDateTime(props.currentTime)
 
     thresholdLinesVisitor = new AlertLines(thresholdLines)
 
     axis.accept(thresholdLinesVisitor)
     axis.accept(zoom)
     axis.accept(mouseOver)
-    axis.accept(currentTime)
+    axis.accept(axisTime.value)
     resize()
     if (props.config !== undefined) refreshChart()
     window.addEventListener('resize', resize)
   }
 })
+
+watch(
+  () => props.currentTime,
+  (newValue) => {
+    if (axisTime.value) {
+      axisTime.value.setDateTime(newValue)
+      onValueChange()
+    }
+  },
+)
 
 const addToChart = (chartSeries: ChartSeries) => {
   const id = chartSeries.id
@@ -177,7 +223,8 @@ const addToChart = (chartSeries: ChartSeries) => {
 
 const setThresholdLines = () => {
   const thresholdLinesData = props.config.thresholds
-  if (thresholdLinesData === undefined) return
+  if (thresholdLinesData === undefined || thresholdLinesData.length === 0)
+    return
 
   const tag = legendTags.value.find((tag) => {
     return tag.id === 'Thresholds'
@@ -186,18 +233,41 @@ const setThresholdLines = () => {
   const disabled = tag?.disabled ?? false
   if (disabled) {
     thresholdLines = []
+    let defaultDomain: [number, number] = [NaN, NaN]
+    if (
+      props.config.yAxis &&
+      props.config.yAxis.length > 0 &&
+      props.config.yAxis[0].defaultDomain
+    ) {
+      defaultDomain = props.config.yAxis[0].defaultDomain as any
+    }
+    axis.setOptions({
+      y: [{ defaultDomain, nice: true }],
+    })
   } else {
     thresholdLines = thresholdLinesData
+    let defaultDomain: [number, number] = extent<number>(
+      thresholdLinesData.map((l) => {
+        return l.value ?? NaN
+      }),
+    ) as any
+    if (
+      props.config.yAxis &&
+      props.config.yAxis.length > 0 &&
+      props.config.yAxis[0].defaultDomain &&
+      typeof props.config.yAxis[0].defaultDomain[0] === 'number' &&
+      typeof props.config.yAxis[0].defaultDomain[1] === 'number'
+    ) {
+      defaultDomain = extent<number>([
+        ...defaultDomain,
+        ...props.config.yAxis[0].defaultDomain,
+      ] as any) as any
+    }
+    axis.setOptions({
+      y: [{ defaultDomain, nice: true }],
+    })
   }
 
-  let defaultDomain = extent(thresholdLinesData.map((l) => l.value))
-  if (thresholdLines.length === 0 || defaultDomain[0] === undefined) {
-    defaultDomain = [NaN, NaN]
-  }
-
-  axis.setOptions({
-    y: [{ defaultDomain: defaultDomain, nice: true }],
-  })
   thresholdLinesVisitor.options = thresholdLines
 }
 
@@ -224,7 +294,7 @@ const refreshChart = () => {
   }
   if (props.config.yAxis) {
     axis.setOptions({
-      y: [props.config.yAxis[0], props.config.yAxis[1]],
+      y: props.config.yAxis,
     })
   }
 
@@ -268,7 +338,7 @@ const setTags = () => {
     })
   }
   const thresholdsData = props.config?.thresholds
-  if (thresholdsData !== undefined) {
+  if (thresholdsData !== undefined && thresholdsData.length > 0) {
     const { svgGroup, legendSvg } = createChip()
     legendSvg.appendChild(svgGroup)
     const thresholdLegend = {
@@ -276,7 +346,7 @@ const setTags = () => {
       name: 'Thresholds',
       disabled: false,
       legendSvg:
-        '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M13 14h-2V9h2m0 9h-2v-2h2M1 21h22L12 2L1 21Z"/></svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M13 14h-2V9h2m0 9h-2v-2h2M1 21h22L12 2L1 21Z"/></svg>',
     }
     legendTags.value.push(thresholdLegend)
   }
@@ -311,20 +381,49 @@ const toggleLine = (id: string) => {
 const resize = () => {
   nextTick(() => {
     axis.resize()
+    setLegendSize()
   })
+}
+
+function setLegendSize() {
+  const contentHeight = chipGroup.value?.$el.scrollHeight
+  if (contentHeight && contentHeight > LEGEND_HEIGHT) {
+    requiresExpand.value = true
+  } else {
+    requiresExpand.value = false
+  }
+}
+
+function toggleExpand() {
+  expanded.value = !expanded.value
 }
 
 const onValueChange = () => {
   clearChart()
   refreshChart()
   setTags()
+  setLegendSize()
 }
 
 const beforeDestroy = () => {
   window.removeEventListener('resize', resize)
 }
 
-watch(props.series, onValueChange, { deep: true })
+watch(
+  () =>
+    Object.keys(props.series).map(
+      (k) => `${k}-${props.series[k].lastUpdated?.getTime()}`,
+    ),
+  (newValue, oldValue) => {
+    const newSeriesIds = difference(newValue, oldValue)
+    const requiredSeriesIds = props.config?.series.filter((s) =>
+      newSeriesIds.map((id) => id.split('-')[0]).includes(s.id),
+    )
+    if (requiredSeriesIds.length > 0) {
+      onValueChange()
+    }
+  },
+)
 watch(props.config, onValueChange)
 
 onBeforeUnmount(() => {
@@ -344,9 +443,12 @@ onBeforeUnmount(() => {
 }
 
 .chart-controls {
+  position: absolute;
   display: flex;
   flex: 0;
-  margin: 0 50px;
+  margin: 5px 10px;
+  padding: 0px 0px 0px 40px;
+  overflow: hidden;
 }
 
 .chart-container.hidden > svg {
@@ -357,8 +459,18 @@ onBeforeUnmount(() => {
   max-height: none;
 }
 
+.chart-legend {
+  overflow-y: hidden;
+  align-self: end;
+}
+
+.chart-legend.chart-legend--large {
+  align-self: start;
+}
+
 .chart-with-chips {
   display: flex;
+  position: relative;
   flex-direction: column;
   flex: 1 1 80%;
   height: 100%;

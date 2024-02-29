@@ -10,6 +10,10 @@ export interface WebOcComponent {
   type: ComponentType
   title?: string
   icon?: string
+  defaultPath?: any
+  showLeafNodesAsButtons?: boolean
+  path?: string
+  url?: string
 }
 
 export const ComponentTypeEnum = {

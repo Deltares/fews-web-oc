@@ -1,8 +1,15 @@
 <template>
   <v-menu left bottom :close-on-content-click="false" class="menu">
-    <template v-slot:activator="{ props }">
-      <v-btn v-bind="props" icon>
-        <v-icon>mdi-clock-start</v-icon>
+    <template v-slot:activator="{ props, isActive }">
+      <v-btn v-bind="props" variant="tonal" rounded>
+        {{
+          Intl.DateTimeFormat('nl', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'short',
+          }).format(store.systemTime)
+        }}
+        <v-icon>{{ isActive ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
       </v-btn>
     </template>
 
@@ -27,7 +34,12 @@
                     <template v-slot:activator="{ props }">
                       <v-icon v-bind="props">mdi-calendar-start</v-icon>
                     </template>
-                    <v-date-picker v-model="startDates" no-title hide-actions>
+                    <v-date-picker
+                      v-model="startDates"
+                      multiple
+                      no-title
+                      hide-actions
+                    >
                       <template #header></template>
                     </v-date-picker>
                   </v-menu>
@@ -48,7 +60,12 @@
                     <template v-slot:activator="{ props }">
                       <v-icon v-bind="props">mdi-calendar-end</v-icon>
                     </template>
-                    <v-date-picker v-model="endDates" no-title hide-actions>
+                    <v-date-picker
+                      v-model="endDates"
+                      multiple
+                      no-title
+                      hide-actions
+                    >
                       <template #header></template>
                     </v-date-picker>
                   </v-menu>
@@ -101,7 +118,7 @@ const rules = {
   },
 }
 
-const intervalItems = ['-PT12H', '-P1D', '-P1W', '-P2W', '-P1M']
+const intervalItems = ['-PT12H', '-P1D', '-P1W', '-P2W', '-P1M', '-P1D/P11D']
 
 const dates = ref<[Date, Date]>([new Date(), new Date()])
 

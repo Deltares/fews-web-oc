@@ -1,0 +1,47 @@
+@font-face {
+  font-family: 'RO-Sans';
+  src: url('./ROsanswebtextregular.woff') format('woff');
+  font-style: normal;
+  font-weight: normal;
+  font-display: auto;
+}
+
+@font-face {
+  font-family: 'RO-Sans';
+  src: url('./ROsanswebtextitalic.woff') format('woff');
+  font-style: italic;
+  font-weight: normal;
+  font-display: auto;
+}
+
+@font-face {
+  font-family: 'RO-Sans';
+  src: url('./ROsanswebtextbold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+  font-display: auto;
+}
+
+@font-face {
+  font-family: 'RO-Serif';
+  src: url('./ROserifwebregular.woff') format('woff');
+  font-style: normal;
+  font-weight: normal;
+  font-display: auto;
+}
+
+@font-face {
+  font-family: 'RO-Serif';
+  src: url('./ROserifwebitalic.woff') format('woff');
+  font-style: italic;
+  font-weight: normal;
+  font-display: auto;
+}
+
+@font-face {
+  font-family: 'RO-Serif';
+  src: url('./ROserifwebbold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+  font-display: auto;
+}
