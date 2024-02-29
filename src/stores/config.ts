@@ -63,6 +63,7 @@ const useConfigStore = defineStore('config', {
           to: { name: component.type },
           title: component.title ?? '',
           icon: getMenuIcon(component),
+          showInNavigationMenu: component.showInNavigationMenu ?? true,
         }
       })
     },
