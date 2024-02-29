@@ -58,7 +58,10 @@
             </template>
           </v-list-item>
         </v-list-item>
-        <v-list-item prepend-icon="">
+        <v-list-item>
+          <template v-slot:prepend>
+            <div class="mx-7"></div>
+          </template>
           <v-row v-if="mutableColorScaleRange">
             <v-col cols="5">
               <v-text-field
