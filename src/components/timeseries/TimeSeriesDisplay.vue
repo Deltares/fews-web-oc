@@ -71,8 +71,9 @@ import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import { DisplayType } from '@/lib/display/DisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import {ActionRequest, PiWebserviceProvider} from "@deltares/fews-pi-requests";
+import {ActionRequest, DocumentFormat, PiWebserviceProvider} from "@deltares/fews-pi-requests";
 import {createTransformRequestFn} from "@/lib/requests/transformRequest.ts";
+import {TimeSeriesTopologyActionsFilter} from "@deltares/fews-pi-requests/lib/types/requestParameters";
 
 interface Props {
   nodeId?: string | string[]
@@ -100,6 +101,15 @@ const downloadFile = (downloadFormat: string) => {
   const webServiceProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
+  const displayConfigValue = displayConfig.value;
+  const filter: TimeSeriesTopologyActionsFilter = {
+    documentFormat: DocumentFormat.PI_JSON,
+    nodeId: displayConfigValue?.nodeId,
+    timeSeriesDisplayIndex: displayConfigValue?.index ?? 0,
+    downloadAsFile: true
+  }
+
+  webServiceProvider.getTimeSeriesTopologyActions(filter);
 }
 
 
