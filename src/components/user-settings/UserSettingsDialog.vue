@@ -1,6 +1,7 @@
 <template>
   <v-dialog
     v-model="dialog"
+    persistent
     :fullscreen="mobile"
     :max-width="mobile ? undefined : '600'"
   >
