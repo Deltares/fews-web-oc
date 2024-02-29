@@ -36,11 +36,14 @@
           prepend-icon="mdi-clock-time-four-outline"
         >
         </v-list-item>
-        <v-list-item prepend-icon="mdi-palette" v-if="props.colourScales">
+        <v-list-item
+          prepend-icon="mdi-palette"
+          v-if="colourScalesStore.currentScales"
+        >
           <v-list-item
-            v-for="(item, index) of props.colourScales"
+            v-for="(item, index) of colourScalesStore.currentScales"
             :key="index"
-            @click="colorScaleIndex = index"
+            @click="colourScalesStore.currentIndex = index"
           >
             <v-list-item-title>
               {{ item.style.title }}
@@ -50,14 +53,14 @@
               <ColourStrip :colourMap="item.colourMap" />
               <span class="mb-1">{{ item.range?.max ?? '' }}</span>
             </div>
-            <template v-slot:append v-if="index === colorScaleIndex">
+            <template #append v-if="index === colourScalesStore.currentIndex">
               <v-icon>mdi-check</v-icon>
             </template>
           </v-list-item>
         </v-list-item>
         <v-list-item prepend-icon="">
           <v-row v-if="mutableColorScaleRange">
-            <v-col cols="6">
+            <v-col cols="5">
               <v-text-field
                 v-model.number="mutableColorScaleRange.min"
                 label="Min"
@@ -69,7 +72,7 @@
                 :rules="[rules.required, rules.smallerThanMax]"
               ></v-text-field>
             </v-col>
-            <v-col cols="6">
+            <v-col cols="5">
               <v-text-field
                 v-model.number="mutableColorScaleRange.max"
                 label="Max"
@@ -80,6 +83,15 @@
                 @blur="changecolorScaleRange"
                 :rules="[rules.required, rules.biggerThanMin]"
               ></v-text-field>
+            </v-col>
+            <v-col cols="2" class="d-flex align-center justify-center">
+              <v-btn
+                v-if="!colourScalesStore.currentScaleIsInitialRange"
+                icon="mdi-restore"
+                variant="flat"
+                density="compact"
+                @click="colourScalesStore.resetCurrentScaleRange"
+              />
             </v-col>
           </v-row>
         </v-list-item>
@@ -115,52 +127,50 @@ import { ref } from 'vue'
 import { LayerKind } from '@/lib/streamlines'
 import ColourStrip from '@/components/wms/ColourStrip.vue'
 import { watch } from 'vue'
-import { ColourScale } from '../spatialdisplay/SpatialDisplayComponent.vue'
+import { useColourScalesStore } from '@/stores/colourScales'
 
 interface Props {
   layerTitle: string
   currentTime?: Date
   forecastTime?: Date
-  colourScales?: ColourScale[]
   completelyMissing?: boolean
   firstValueTime?: Date
   lastValueTime?: Date
-  colorScaleRange?: { min: number; max: number }
   canUseStreamlines?: boolean
 }
+
+const colourScalesStore = useColourScalesStore()
 
 const props = withDefaults(defineProps<Props>(), {
   layerTitle: '',
   completelyMissing: false,
 })
 
-const emit = defineEmits([
-  'style-click',
-  'color-scale-range-change',
-  'update:layerKind',
-])
+const emit = defineEmits(['style-click', 'update:layerKind'])
 
 const mutableColorScaleRange = ref(
-  props.colorScaleRange ? { ...props.colorScaleRange } : undefined,
+  colourScalesStore.currentScale?.range
+    ? { ...colourScalesStore.currentScale?.range }
+    : undefined,
 )
 
 watch(
-  () => props.colorScaleRange,
+  () => colourScalesStore.currentScale?.range,
   () => {
-    mutableColorScaleRange.value = props.colorScaleRange
-      ? { ...props.colorScaleRange }
+    mutableColorScaleRange.value = colourScalesStore.currentScale?.range
+      ? { ...colourScalesStore.currentScale?.range }
       : undefined
   },
   { deep: true },
 )
 
 const changecolorScaleRange = () => {
-  emit('color-scale-range-change', mutableColorScaleRange.value)
+  if (mutableColorScaleRange.value === undefined) return
+  colourScalesStore.setCurrentScaleRange(mutableColorScaleRange.value)
 }
 
 const showLayer = defineModel<boolean>('showLayer')
 const animate = defineModel<boolean>('animate', { default: false })
-const colorScaleIndex = defineModel<number>('colorScaleIndex')
 
 const rules = {
   required: (v: number) =>
