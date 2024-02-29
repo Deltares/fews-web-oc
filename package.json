@@ -19,7 +19,7 @@
     "@deltares/fews-pi-requests": "^1.0.3",
     "@deltares/fews-ssd-requests": "^1.0.0",
     "@deltares/fews-ssd-webcomponent": "^1.0.0",
-    "@deltares/fews-web-oc-charts": "^3.0.1",
+    "@deltares/fews-web-oc-charts": "^3.0.2",
     "@deltares/fews-wms-requests": "^1.0.0",
     "@turf/bbox": "^7.0.0-alpha.113",
     "@turf/circle": "^7.0.0-alpha.113",
