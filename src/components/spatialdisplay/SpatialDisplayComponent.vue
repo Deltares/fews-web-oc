@@ -53,6 +53,11 @@
         v-model:layer-kind="layerKind"
         v-model:show-layer="showLayer"
       />
+      <WorkflowsControl
+        :workflowId="'test'"
+        :currentTime="currentTime"
+        :layerName="layerName"
+      />
     </v-chip-group>
   </MapComponent>
   <DateTimeSlider
@@ -75,6 +80,7 @@ import {
   useWmsLegend,
 } from '@/services/useWms'
 import ColourBar from '@/components/wms/ColourBar.vue'
+import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
 import AnimatedRasterLayer, {
   AnimatedRasterLayerOptions,
 } from '@/components/wms/AnimatedRasterLayer.vue'
