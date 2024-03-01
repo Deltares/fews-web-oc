@@ -174,7 +174,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import type { BBox, Feature } from 'geojson'
 import DrawPolygonControl from '@/components/map/DrawPolygonControl.vue'
@@ -236,24 +236,25 @@ function startWorkflow() {
   workflowDialog.value = false
 }
 
-const boundingBox = computed({
-  set: (value: BBox): void => {
-    features.value[0] = bboxPolygon<{}>(value)
-  },
-  get: (): BBox => {
-    if (
-      features.value.length > 0 &&
-      features.value[0].geometry.type === 'Polygon'
-    ) {
-      const result = bbox(features.value[0])
-      result[0] = roundToStep(result[0], longitudeStepSize.value)
-      result[2] = roundToStep(result[2], longitudeStepSize.value)
-      result[1] = roundToStep(result[1], lattitudeStepSize.value)
-      result[3] = roundToStep(result[3], lattitudeStepSize.value)
+const boundingBox = ref<BBox>([0, 0, 0, 0])
+watch(boundingBox, () => {
+  features.value = [bboxPolygon(boundingBox.value)]
+})
+watch(features, () => {
+  if (
+    features.value.length > 0 &&
+    features.value[0].geometry.type === 'Polygon'
+  ) {
+    const result = bbox(features.value[0])
+    result[0] = roundToStep(result[0], longitudeStepSize.value)
+    result[2] = roundToStep(result[2], longitudeStepSize.value)
+    result[1] = roundToStep(result[1], lattitudeStepSize.value)
+    result[3] = roundToStep(result[3], lattitudeStepSize.value)
 
-      return result
-    } else return [0, 0, 0, 0]
-  },
+    boundingBox.value = result
+  } else {
+    boundingBox.value = [0, 0, 0, 0]
+  }
 })
 
 function roundToStep(value: number, step: number): number {
