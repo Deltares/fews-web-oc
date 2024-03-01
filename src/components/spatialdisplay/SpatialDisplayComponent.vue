@@ -29,7 +29,7 @@
       :unit="elevationUnit"
     />
     <SelectedCoordinateLayer :geoJson="selectedCoordinateGeoJson" />
-    <v-chip-group class="control-container">
+    <div class="control-container">
       <LocationsLayerComponent
         v-if="filterIds"
         :filterIds="filterIds"
@@ -58,7 +58,7 @@
         :currentTime="currentTime"
         :layerName="layerName"
       />
-    </v-chip-group>
+    </div>
   </MapComponent>
   <DateTimeSlider
     v-if="times && times.length > 0"
@@ -373,7 +373,12 @@ function onCoordinateClick(
 
 .control-container {
   position: absolute;
-  top: 8px;
-  left: 10px;
+  margin-top: 8px;
+  margin-left: 10px;
+  display: flex;
+  gap: 10px;
+  max-width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 </style>
