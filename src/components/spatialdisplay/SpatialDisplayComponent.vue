@@ -54,8 +54,8 @@
         v-model:show-layer="showLayer"
       />
       <WorkflowsControl
-        v-if="workflowId"
-        :workflowId="workflowId"
+        v-if="secondaryWorkflows"
+        :secondaryWorkflows="secondaryWorkflows"
         :currentTime="currentTime"
         :layerName="layerName"
       />
@@ -100,6 +100,7 @@ import { LayerKind } from '@/lib/streamlines'
 import { Style } from '@deltares/fews-wms-requests'
 import { ColourMap } from '@deltares/fews-web-oc-charts'
 import { pointToGeoJson } from '@/lib/topology/coordinates'
+import { SecondaryWorkflowGroupItem } from '@deltares/fews-pi-requests'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -124,7 +125,7 @@ interface Props {
   latitude?: string
   longitude?: string
   currentTime?: Date
-  workflowId?: string
+  secondaryWorkflows?: SecondaryWorkflowGroupItem[]
 }
 
 const props = withDefaults(defineProps<Props>(), {

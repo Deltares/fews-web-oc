@@ -43,11 +43,13 @@
       <v-container>
         <v-row>
           <v-select
-            v-model="currentWorkflowId"
-            :items="[workflowId]"
+            v-model="currentWorkflow"
+            :items="secondaryWorkflows"
+            item-title="secondaryWorkflowId"
             density="compact"
             variant="solo"
             label="workflow"
+            mandatory
           ></v-select>
         </v-row>
         <v-form v-model="formIsValid">
@@ -178,10 +180,11 @@ import type { BBox, Feature } from 'geojson'
 import DrawPolygonControl from '@/components/map/DrawPolygonControl.vue'
 import bbox from '@turf/bbox'
 import bboxPolygon from '@turf/bbox-polygon'
+import { SecondaryWorkflowGroupItem } from '@deltares/fews-pi-requests'
 
 interface Props {
   layerName?: string
-  workflowId?: string
+  secondaryWorkflows: SecondaryWorkflowGroupItem[]
   currentTime?: Date
 }
 
@@ -189,7 +192,9 @@ const props = withDefaults(defineProps<Props>(), {
   layerName: '',
 })
 
-const currentWorkflowId = ref()
+const currentWorkflow = ref<SecondaryWorkflowGroupItem>(
+  props.secondaryWorkflows[0],
+)
 const workflowDialog = ref(false)
 const formIsValid = ref(false)
 const selectBbox = ref(false)
@@ -217,11 +222,17 @@ function hideMapTool() {
 
 function startWorkflow() {
   console.log(
-    `POST ${baseUrl}/regridder/${
+    `POST ${baseUrl}regridder/${
       props.layerName
     }/${props.currentTime?.toISOString()}/${bboxString.value}`,
   )
-  activeWorkflowIds.value.push(currentWorkflowId.value)
+
+  activeWorkflowIds.value.push(currentWorkflow.value.secondaryWorkflowId)
+  setTimeout(() => {
+    activeWorkflowIds.value = activeWorkflowIds.value.filter(
+      (id) => id !== currentWorkflow.value.secondaryWorkflowId,
+    )
+  }, 5000)
   workflowDialog.value = false
 }
 
