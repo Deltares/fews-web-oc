@@ -168,11 +168,12 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { configManager } from '@/services/application-config'
-import type { BBox, Feature } from 'geojson'
+import type { BBox } from 'geojson'
 import DrawPolygonControl from '@/components/map/DrawPolygonControl.vue'
 import bbox from '@turf/bbox'
 import bboxPolygon from '@turf/bbox-polygon'
 import { SecondaryWorkflowGroupItem } from '@deltares/fews-pi-requests'
+import { GeoJSONStoreFeatures } from 'terra-draw'
 
 interface Props {
   layerName?: string
@@ -195,7 +196,7 @@ const activeWorkflowIds = ref<string[]>([])
 const bboxString = computed(() => {
   return `${boundingBox.value[0]}°E ${boundingBox.value[1]}°N , ${boundingBox.value[2]}°E ${boundingBox.value[3]}°N`
 })
-const features = ref<Feature[]>([])
+const features = ref<GeoJSONStoreFeatures[]>([])
 
 const longitudeStepSize = ref(0.1)
 const lattitudeStepSize = ref(0.1)
@@ -229,9 +230,22 @@ function startWorkflow() {
 }
 
 const boundingBox = ref<BBox>([0, 0, 0, 0])
-watch(boundingBox, () => {
-  features.value = [bboxPolygon(boundingBox.value)]
-})
+
+watch(
+  boundingBox,
+  () => {
+    const feature = bboxPolygon(boundingBox.value)
+    delete feature.bbox
+
+    if (features.value.length > 0) {
+      features.value[0].geometry = feature.geometry
+    } else {
+      features.value.push(feature as GeoJSONStoreFeatures)
+    }
+  },
+  { deep: true },
+)
+
 watch(features, () => {
   if (
     features.value.length > 0 &&

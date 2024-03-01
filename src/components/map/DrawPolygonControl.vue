@@ -9,10 +9,10 @@ import {
   TerraDrawRectangleMode,
 } from 'terra-draw'
 import { useMap } from 'vue-maplibre-gl'
-import { Feature } from 'geojson'
+import { FeatureId } from 'node_modules/terra-draw/dist/store/store';
 
 interface Props {
-  modelValue?: Feature[]
+  modelValue?: GeoJSONStoreFeatures[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -31,11 +31,28 @@ const draw = new TerraDraw({
   modes: [rectangleMode],
 })
 
-rectangleMode.onFinish = () => {
+draw.on('finish', (featureId) => {
   const features = draw.getSnapshot()
-  emit('update:modelValue', features)
+  const newFeature = features.find((feature) => feature.id === featureId)
+  emit('update:modelValue', [newFeature])
+})
 
-  draw.setMode('static')
+draw.on('change', (featureIds, type) => {
+  if (type == 'create') {
+    if (!featureIds.length) return
+    const newFeature = featureIds[0]
+
+    removeAllFeaturesExcept(newFeature)
+  }
+})
+
+function removeAllFeaturesExcept(featureId: FeatureId) {
+  const features = draw.getSnapshot()
+  const toRemove = features
+    .filter((feature) => feature.id !== featureId)
+    .map((feature) => feature.id)
+
+  draw.removeFeatures(toRemove as FeatureId[])
 }
 
 onBeforeMount(() => {
@@ -44,14 +61,13 @@ onBeforeMount(() => {
 })
 
 onBeforeUnmount(() => {
-  draw.clear()
   draw.stop()
 })
 
-watch(props.modelValue, () => {
+watch(() => props.modelValue, () => {
   if (props.modelValue.length > 0) {
     draw.clear()
-    draw.addFeatures(props.modelValue as GeoJSONStoreFeatures[])
+    draw.addFeatures(props.modelValue)
   }
-})
+}, { deep: true })
 </script>
