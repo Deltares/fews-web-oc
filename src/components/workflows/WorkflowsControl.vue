@@ -1,23 +1,35 @@
 <template>
   <DrawPolygonControl v-if="selectBbox" v-model="features" />
 
-  <v-chip pill class="workflows__chip px-0 justify-center" width="400">
-    <v-badge
-      :model-value="activeWorkflowIds.length > 0"
-      :content="activeWorkflowIds.length"
-      color="success"
-    >
-      <v-btn
-        icon="mdi-cog-play"
-        size="x-small"
-        @click="workflowDialog = !workflowDialog"
-      />
-    </v-badge>
+  <v-chip pill label class="chip px-0 justify-center overflow-visible">
+    <v-chip class="chip overflow-visible mx-0" pill label>
+      <v-badge
+        :model-value="activeWorkflowIds.length > 0"
+        :content="activeWorkflowIds.length"
+        color="success"
+      >
+        <v-btn
+          icon="mdi-cog-play"
+          @click="workflowDialog = !workflowDialog"
+          density="compact"
+          variant="plain"
+        />
+      </v-badge>
+    </v-chip>
     <template v-if="selectBbox">
       <span class="mx-5" width="400px">
         {{ bboxString }}
       </span>
-      <v-btn size="small" rounded="xl" @click="hideMapTool">Apply</v-btn>
+      <v-chip class="chip mx-0" pill label>
+        <v-btn
+          @click="hideMapTool"
+          density="compact"
+          variant="plain"
+          class="px-0"
+        >
+          Apply
+        </v-btn>
+      </v-chip>
     </template>
   </v-chip>
 
@@ -236,8 +248,11 @@ function roundToStep(value: number, step: number): number {
 </script>
 
 <style scoped>
-.workflows__chip {
+.overflow-visible {
   overflow: visible;
+}
+
+.chip {
   font-size: 0.825em;
   z-index: 1000;
   backdrop-filter: blur(5px);
