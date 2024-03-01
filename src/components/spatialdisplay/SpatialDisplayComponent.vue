@@ -54,7 +54,8 @@
         v-model:show-layer="showLayer"
       />
       <WorkflowsControl
-        :workflowId="'test'"
+        v-if="workflowId"
+        :workflowId="workflowId"
         :currentTime="currentTime"
         :layerName="layerName"
       />
@@ -123,6 +124,7 @@ interface Props {
   latitude?: string
   longitude?: string
   currentTime?: Date
+  workflowId?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {

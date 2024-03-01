@@ -13,6 +13,7 @@
         v-model:elevation="elevation"
         v-model:current-time="currentTime"
         @coordinate-click="onCoordinateClick"
+        :workflowId="workflowId"
       ></SpatialDisplayComponent>
     </div>
     <div v-if="filter" class="child-container">
@@ -52,6 +53,7 @@ interface Props {
   filterIds?: string[]
   latitude?: string
   longitude?: string
+  workflowId?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {

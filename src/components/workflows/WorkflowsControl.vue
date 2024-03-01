@@ -1,7 +1,11 @@
 <template>
   <DrawPolygonControl v-if="selectBbox" v-model="features" />
 
-  <v-chip pill label class="chip px-0 justify-center overflow-visible">
+  <v-chip
+    pill
+    label
+    class="outer-chip chip px-0 justify-center overflow-visible"
+  >
     <v-chip class="chip overflow-visible mx-0" pill label>
       <v-badge
         :model-value="activeWorkflowIds.length > 0"
@@ -183,10 +187,9 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
-  workflowId: '',
 })
 
-const currentWorkflowId = ref('')
+const currentWorkflowId = ref()
 const workflowDialog = ref(false)
 const formIsValid = ref(false)
 const selectBbox = ref(false)
@@ -257,5 +260,9 @@ function roundToStep(value: number, step: number): number {
   z-index: 1000;
   backdrop-filter: blur(5px);
   background-color: rgba(var(--v-theme-surface), 0.8);
+}
+
+.outer-chip {
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 </style>

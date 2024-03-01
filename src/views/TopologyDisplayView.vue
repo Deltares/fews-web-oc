@@ -110,7 +110,11 @@
   </Teleport>
   <router-view v-slot="{ Component }">
     <keep-alive include="SpatialDisplay">
-      <component :is="Component" :filter-ids="filterIds" />
+      <component
+        :is="Component"
+        :workflowId="activeNode?.workflowId"
+        :filter-ids="filterIds"
+      />
     </keep-alive>
   </router-view>
 </template>
@@ -159,6 +163,14 @@ const configStore = useConfigStore()
 const { mobile } = useDisplay()
 
 const active = ref<string | undefined>(undefined)
+const activeNode = computed(() => {
+  if (!active.value) return
+
+  const node = topologyMap.value.get(active.value)
+  return node?.topologyNodes
+    ? node?.topologyNodes[activeParentNode.value]
+    : node
+})
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
 const menuType = ref('treemenu')
