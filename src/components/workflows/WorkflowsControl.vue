@@ -1,34 +1,26 @@
 <template>
-  <DrawPolygonControl
-    v-if="selectBbox"
-    v-model="features"
-    ref="drawControl"
-    defaultMode="draw_polygon"
-    :displayControlsDefault="false"
-  />
-  <div v-if="workflowId" class="workflows__container d-flex flex-row">
-    <v-chip pill class="workflows__chip pl-0 pr-0 justify-center" width="400">
+  <DrawPolygonControl v-if="selectBbox" v-model="features" />
+
+  <v-chip pill class="workflows__chip px-0 justify-center" width="400">
+    <v-badge
+      :model-value="activeWorkflowIds.length > 0"
+      :content="activeWorkflowIds.length"
+      color="success"
+    >
       <v-btn
         icon="mdi-cog-play"
         size="x-small"
         @click="workflowDialog = !workflowDialog"
-      ></v-btn>
-      <template v-if="selectBbox">
-        <span class="ml-5 mr-5" width="400px">
-          {{ bboxString }}
-        </span>
-        <v-btn size="small" rounded="xl" @click="hideMapTool">Apply</v-btn>
-      </template>
-    </v-chip>
-    <v-chip
-      class="workflows--running"
-      v-if="activeWorkflowIds.length"
-      color="success"
-      variant="flat"
-      size="x-small"
-      >{{ activeWorkflowIds.length }}</v-chip
-    >
-  </div>
+      />
+    </v-badge>
+    <template v-if="selectBbox">
+      <span class="mx-5" width="400px">
+        {{ bboxString }}
+      </span>
+      <v-btn size="small" rounded="xl" @click="hideMapTool">Apply</v-btn>
+    </template>
+  </v-chip>
+
   <v-dialog v-show="!selectBbox" width="500" v-model="workflowDialog">
     <v-card>
       <v-card-title>Workflow</v-card-title>
@@ -191,7 +183,6 @@ const activeWorkflowIds = ref<string[]>([])
 const bboxString = computed(() => {
   return `${boundingBox.value[0]}°E ${boundingBox.value[1]}°N , ${boundingBox.value[2]}°E ${boundingBox.value[3]}°N`
 })
-const drawControl = ref<typeof DrawPolygonControl>()
 const features = ref<Feature[]>([])
 
 const longitudeStepSize = ref(0.1)
@@ -245,28 +236,11 @@ function roundToStep(value: number, step: number): number {
 </script>
 
 <style scoped>
-.workflows__container {
-  position: absolute;
+.workflows__chip {
+  overflow: visible;
   font-size: 0.825em;
   z-index: 1000;
-  left: 10px;
-  top: 10px;
-}
-
-.workflows__chip {
+  backdrop-filter: blur(5px);
   background-color: rgba(var(--v-theme-surface), 0.8);
-}
-
-.workflows--running {
-  position: absolute;
-  left: 18px;
-  top: -8px;
-}
-
-.map-tool__input {
-  width: 50px;
-  height: 30px;
-  margin: 0;
-  padding: 0;
 }
 </style>
