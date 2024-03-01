@@ -43,10 +43,13 @@
         <v-dialog v-model="fileDownloadDialog" max-width="400">
           <v-card>
             <v-card-title class="headline">Download timeseries</v-card-title>
-            <v-card-text>
+            <v-card-text v-if="fileDownloadAvailable">
               <v-btn @click="() => downloadFile('PI_CSV')">CSV</v-btn>
               <v-btn @click="() => downloadFile('PI_JSON')">JSON</v-btn>
               <v-btn @click="() => downloadFile('PI_XML')">XML</v-btn>
+            </v-card-text>
+            <v-card-text v-else>
+              Downloading timeseries not supported with the current web service version
             </v-card-text>
             <v-card-actions class="justify-end">
               <v-btn @click="fileDownloadDialog = false">Cancel</v-btn>
@@ -71,9 +74,8 @@ import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import { DisplayType } from '@/lib/display/DisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import {ActionRequest, DocumentFormat, PiWebserviceProvider} from "@deltares/fews-pi-requests";
+import {TimeSeriesTopologyActionsFilter, DocumentFormat, PiWebserviceProvider} from "@deltares/fews-pi-requests";
 import {createTransformRequestFn} from "@/lib/requests/transformRequest.ts";
-import {TimeSeriesTopologyActionsFilter} from "@deltares/fews-pi-requests/lib/types/requestParameters";
 
 interface Props {
   nodeId?: string | string[]
@@ -89,8 +91,14 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const selectedPlot = ref(0)
 
-const fileDownloadDialog = ref(false);
+const fileDownloadAvailable = ref(true)
+
+const fileDownloadDialog = ref(false)
 const openFileDownloadDialog = () => {
+  const displayConfigValue = displayConfig.value;
+  if (!displayConfigValue?.index) {
+    fileDownloadAvailable.value = false
+  }
   fileDownloadDialog.value = true;
 };
 
@@ -102,13 +110,13 @@ const downloadFile = (downloadFormat: string) => {
     transformRequestFn: createTransformRequestFn(),
   })
   const displayConfigValue = displayConfig.value;
+  const timeSeriesDisplayIndex: number = displayConfigValue?.index ?? -1
   const filter: TimeSeriesTopologyActionsFilter = {
     documentFormat: DocumentFormat.PI_JSON,
-    nodeId: displayConfigValue?.nodeId,
-    timeSeriesDisplayIndex: displayConfigValue?.index ?? 0,
+    nodeId: displayConfigValue?.nodeId ?? "",
+    timeSeriesDisplayIndex: displayConfigValue?.index ?? timeSeriesDisplayIndex,
     downloadAsFile: true
   }
-
   webServiceProvider.getTimeSeriesTopologyActions(filter);
 }
 

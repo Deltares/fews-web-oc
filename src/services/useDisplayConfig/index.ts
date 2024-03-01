@@ -47,7 +47,7 @@ function actionsResponseToDisplayConfig(
   for (const result of actionsResponse.results) {
     if (result.config === undefined) continue
     const title = result.config.timeSeriesDisplay.title ?? ''
-    const timeSeriesDisplayIndex: number = result.config.timeSeriesDisplay.index ?? 0
+    const timeSeriesDisplayIndex: number | undefined = result.config.timeSeriesDisplay.index ?? undefined
     let subplots: ChartConfig[] = []
     if (result.config.timeSeriesDisplay.subplots) {
       subplots = result.config.timeSeriesDisplay.subplots?.map((subPlot) => {

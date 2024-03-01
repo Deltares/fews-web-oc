@@ -9,7 +9,7 @@ export enum DisplayType {
 export interface DisplayConfig {
   id: string
   nodeId: string | undefined
-  index: number
+  index: number | undefined
   title: string
   class: string
   requests: any[]
