@@ -1,39 +1,31 @@
 <template>
   <DrawPolygonControl v-if="selectBbox" v-model="features" />
 
-  <v-chip
-    pill
-    label
-    class="outer-chip chip px-0 justify-center overflow-visible"
-  >
-    <v-chip class="chip overflow-visible mx-0" pill label>
-      <v-badge
-        :model-value="activeWorkflowIds.length > 0"
-        :content="activeWorkflowIds.length"
-        color="success"
-      >
-        <v-btn
-          icon="mdi-cog-play"
-          @click="workflowDialog = !workflowDialog"
-          density="compact"
-          variant="plain"
-        />
-      </v-badge>
-    </v-chip>
+  <v-chip pill label class="outer-chip chip justify-center overflow-visible">
+    <v-badge
+      :model-value="activeWorkflowIds.length > 0"
+      :content="activeWorkflowIds.length"
+      color="success"
+    >
+      <v-btn
+        icon="mdi-cog-play"
+        @click="workflowDialog = !workflowDialog"
+        density="compact"
+        variant="plain"
+      />
+    </v-badge>
     <template v-if="selectBbox">
-      <span class="mx-5" width="400px">
+      <span class="mx-4 text-medium-emphasis" width="400px">
         {{ bboxString }}
       </span>
-      <v-chip class="chip mx-0" pill label>
-        <v-btn
-          @click="hideMapTool"
-          density="compact"
-          variant="plain"
-          class="px-0"
-        >
-          Apply
-        </v-btn>
-      </v-chip>
+      <v-btn
+        @click="hideMapTool"
+        density="compact"
+        variant="tonal"
+        class="px-0 text-medium-emphasis"
+      >
+        Apply
+      </v-btn>
     </template>
   </v-chip>
 
