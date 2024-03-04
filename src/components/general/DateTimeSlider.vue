@@ -110,6 +110,7 @@ import { findDateIndex } from '@/lib/utils/findDateIndex'
 
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/antd.css'
+import { useI18n } from 'vue-i18n'
 
 interface Properties {
   selectedDate?: Date
@@ -145,6 +146,7 @@ const doFollowNow = ref(props.doFollowNow)
 let followNowIntervalTimer: ReturnType<typeof setInterval> | null = null
 
 const hideLabel = ref(true)
+const { d } = useI18n()
 
 onMounted(() => {
   if (props.doFollowNow) {
@@ -258,7 +260,8 @@ const playButtonColor = computed(() =>
 
 const dateString = computed(() =>
   props.dates[dateIndex.value]
-    ? props.dates[dateIndex.value].toLocaleString()
+    ? // ? props.dates[dateIndex.value].toLocaleString()
+      d(props.dates[dateIndex.value], 'datetimeslider')
     : '',
 )
 

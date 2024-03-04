@@ -1,5 +1,11 @@
 {
   "settings": {
     "all": "Alle instellingen ..."
+  },
+  "time": {
+    "browserTime": "Browser tijd:",
+    "default": "Standaard",
+    "custom": "Aangepast",
+    "presets": "Voorinstellingen voor perioden"
   }
 }
