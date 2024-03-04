@@ -39,27 +39,14 @@
           <v-icon>{{ item.icon }}</v-icon>
         </v-btn>
       </v-btn-toggle>
-        <v-btn @click="openFileDownloadDialog" size="small" class="text-capitalize" variant="text" v-bind="props"><v-icon>mdi-download</v-icon></v-btn>
-        <v-dialog v-model="fileDownloadDialog" max-width="400">
-          <v-card>
-            <v-card-title class="headline">Download timeseries</v-card-title>
-            <v-card-text v-if="fileDownloadAvailable">
-              <v-btn @click="() => downloadFile('PI_CSV')">CSV</v-btn>
-              <v-btn @click="() => downloadFile('PI_JSON')">JSON</v-btn>
-              <v-btn @click="() => downloadFile('PI_XML')">XML</v-btn>
-            </v-card-text>
-            <v-card-text v-else>
-              Downloading timeseries not supported with the current web service version
-            </v-card-text>
-            <v-card-actions class="justify-end">
-              <v-btn @click="fileDownloadDialog = false">Cancel</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+      <v-btn @click="openFileDownloadDialog" size="small" class="text-capitalize" variant="text" v-bind="props"><v-icon>mdi-download</v-icon></v-btn>
     </template>
     <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
     </TimeSeriesComponent>
+    <TimeSeriesFileDownloadComponent v-model="showFileDownloadDialog" :config="displayConfig">
+    </TimeSeriesFileDownloadComponent>
   </WindowComponent>
+
 </template>
 
 <script setup lang="ts">
@@ -74,8 +61,12 @@ import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import { DisplayType } from '@/lib/display/DisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import {TimeSeriesTopologyActionsFilter, DocumentFormat, PiWebserviceProvider} from "@deltares/fews-pi-requests";
-import {createTransformRequestFn} from "@/lib/requests/transformRequest.ts";
+import TimeSeriesFileDownloadComponent from "@/components/download/TimeSeriesFileDownloadComponent.vue";
+
+const showFileDownloadDialog = ref(false)
+const openFileDownloadDialog = () => {
+  showFileDownloadDialog.value = true
+}
 
 interface Props {
   nodeId?: string | string[]
@@ -90,36 +81,6 @@ const settings = useUserSettingsStore()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const selectedPlot = ref(0)
-
-const fileDownloadAvailable = ref(true)
-
-const fileDownloadDialog = ref(false)
-const openFileDownloadDialog = () => {
-  const displayConfigValue = displayConfig.value;
-  if (!displayConfigValue?.index) {
-    fileDownloadAvailable.value = false
-  }
-  fileDownloadDialog.value = true;
-};
-
-const downloadFile = (downloadFormat: string) => {
-  console.log("Downloading file. Make sure to pass bearer token. " + downloadFormat);
-  console.log(displayConfig)
-  // Make sure transform request is used to pass bearer token.
-  const webServiceProvider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-  const displayConfigValue = displayConfig.value;
-  const timeSeriesDisplayIndex: number = displayConfigValue?.index ?? -1
-  const filter: TimeSeriesTopologyActionsFilter = {
-    documentFormat: DocumentFormat.PI_JSON,
-    nodeId: displayConfigValue?.nodeId ?? "",
-    timeSeriesDisplayIndex: displayConfigValue?.index ?? timeSeriesDisplayIndex,
-    downloadAsFile: true
-  }
-  webServiceProvider.getTimeSeriesTopologyActions(filter);
-}
-
 
 const options = computed<UseDisplayConfigOptions>(() => {
   return {
