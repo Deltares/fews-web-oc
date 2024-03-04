@@ -80,6 +80,8 @@ const props = withDefaults(defineProps<Props>(), {
     return {
       title: '',
       id: '',
+      nodeId: '',
+      index: 0,
       displayType: DisplayType.TimeSeriesChart,
       class: '',
       requests: [],
@@ -90,6 +92,8 @@ const props = withDefaults(defineProps<Props>(), {
     return {
       title: '',
       id: '',
+      nodeId: '',
+      index: 0,
       displayType: DisplayType.ElevationChart,
       class: '',
       requests: [],
