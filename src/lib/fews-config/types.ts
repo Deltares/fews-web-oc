@@ -14,6 +14,7 @@ export interface WebOcComponent {
   showLeafNodesAsButtons?: boolean
   path?: string
   url?: string
+  showInNavigationMenu?: boolean
 }
 
 export const ComponentTypeEnum = {

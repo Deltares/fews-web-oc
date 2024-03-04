@@ -17,7 +17,7 @@
         <v-menu
           origin="left"
           min-width="320"
-          v-if="configStore.activeComponents.length > 1"
+          v-if="navigationMenuComponents.length > 1"
         >
           <template #activator="{ isActive, props }">
             <v-list-item
@@ -38,7 +38,7 @@
           <v-list density="compact">
             <v-list-subheader>Switch to</v-list-subheader>
             <v-list-item
-              v-for="(item, i) in configStore.activeComponents"
+              v-for="(item, i) in navigationMenuComponents"
               :key="i"
               :value="item"
               :to="item.to"
@@ -243,6 +243,11 @@ const helpMenu = computed(() => {
   if ('helpMenu' in (configStore.general as any)) {
     return (configStore.general as any).helpMenu
   } // todo: add type when fews-pi-requests is updated
+})
+
+const navigationMenuComponents = computed(() => {
+  const components = configStore.activeComponents
+  return components.filter((component) => component.showInNavigationMenu)
 })
 
 async function getLocalOrRemoteFile(localBase: string, relativePath?: string) {
