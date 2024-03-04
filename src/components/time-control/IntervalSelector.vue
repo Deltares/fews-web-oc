@@ -1,7 +1,10 @@
 <template>
   <v-list class="interval-list" density="compact">
-    <v-list-item :active="0 === selectedIndex" @click="onSelectInterval(0)">
-      Default
+    <v-list-item
+      :active="0 === selectedIndex"
+      @click="onSelectInterval(0)"
+      v-t="'time.default'"
+    >
       <template v-slot:append="{ isActive }">
         <v-icon v-show="isActive" small> mdi-check </v-icon>
       </template>
@@ -10,14 +13,14 @@
       :active="1 === selectedIndex"
       @click="onSelectInterval(1)"
       disabled
+      v-t="'time.custom'"
     >
-      Custom
       <template v-slot:append="{ isActive }">
         <v-icon v-show="isActive" small> mdi-check </v-icon>
       </template>
     </v-list-item>
     <v-divider></v-divider>
-    <v-list-subheader>Period presets</v-list-subheader>
+    <v-list-subheader v-t="'time.presets'"></v-list-subheader>
     <v-list-item
       v-for="(item, index) in props.items"
       :key="index"
@@ -35,6 +38,7 @@
 <script setup lang="ts">
 import { DateTime, Duration } from 'luxon'
 import { onBeforeMount, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   modelValue: string
@@ -52,6 +56,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['update:modelValue'])
 const selectedIndex = ref(0)
+const { locale } = useI18n()
 
 onBeforeMount(() => {
   updateIndex(props.modelValue)
@@ -66,12 +71,16 @@ const intervalToLocaleString = (interval: string) => {
     const endDateTime = DateTime.fromJSDate(props.now).plus(
       Duration.fromISO(parts[1]),
     )
-    return startDateTime.toRelative() + ' / ' + endDateTime.toRelative()
+    return (
+      startDateTime.setLocale(locale.value).toRelative() +
+      ' / ' +
+      endDateTime.setLocale(locale.value).toRelative()
+    )
   } else {
     const startDateTime = DateTime.fromJSDate(props.now).plus(
       Duration.fromISO(parts[0]),
     )
-    return startDateTime.toRelative()
+    return startDateTime.setLocale(locale.value).toRelative()
   }
 }
 
