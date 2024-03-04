@@ -39,7 +39,7 @@
           <v-icon>{{ item.icon }}</v-icon>
         </v-btn>
       </v-btn-toggle>
-      <v-btn @click="openFileDownloadDialog" size="small" class="text-capitalize" variant="text" v-bind="props"><v-icon>mdi-download</v-icon></v-btn>
+      <v-btn v-if="displayConfig?.index" @click="openFileDownloadDialog" size="small" class="text-capitalize" variant="text" v-bind="props"><v-icon>mdi-download</v-icon></v-btn>
     </template>
     <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
     </TimeSeriesComponent>

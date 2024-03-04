@@ -2,7 +2,7 @@
     <v-dialog v-model="model" max-width="400">
     <v-card>
       <v-card-title class="headline">Download timeseries</v-card-title>
-      <v-card-text v-if="props.config.index">>
+      <v-card-text v-if="props.config.index">
         <v-btn @click="() => downloadFile('PI_CSV')">CSV</v-btn>
         <v-btn @click="() => downloadFile('PI_JSON')">JSON</v-btn>
         <v-btn @click="() => downloadFile('PI_XML')">XML</v-btn>
