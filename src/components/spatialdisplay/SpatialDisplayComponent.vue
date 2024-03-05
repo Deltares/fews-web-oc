@@ -11,12 +11,11 @@
       :streamlineOptions="layerCapabilities?.animatedVectors"
       @doubleclick="onCoordinateClick"
     />
-    <div class="colourbar-container" v-if="legend">
+    <div class="colourbar-container" v-if="colourScalesStore.currentScale">
       <ColourBar
-        :colourMap="legend"
-        :title="legendTitle"
-        v-model:range="colorScaleRange"
-        v-if="colorScaleRange"
+        :colourMap="colourScalesStore.currentScale.colourMap"
+        :title="colourScalesStore.currentScale.title"
+        v-model:range="colourScalesStore.currentScale.range"
       />
     </div>
     <ElevationSlider
@@ -40,16 +39,12 @@
         :layerTitle="props.layerCapabilities?.title"
         :currentTime="currentTime"
         :forecastTime="forecastTime"
-        :colourScales="colourScales"
         :completelyMissing="props.layerCapabilities?.completelyMissing ?? false"
         :firstValueTime="
           new Date(props.layerCapabilities?.firstValueTime ?? '')
         "
         :lastValueTime="new Date(props.layerCapabilities?.lastValueTime ?? '')"
-        :colorScaleRange="colorScaleRange"
         :canUseStreamlines="canUseStreamlines"
-        @color-scale-range-change="updateColorScaleRange"
-        v-model:color-scale-index="colorScaleIndex"
         v-model:layer-kind="layerKind"
         v-model:show-layer="showLayer"
       />
@@ -75,9 +70,10 @@
 import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
-import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
+import { ref, computed, onBeforeMount, reactive, watch } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
+  fetchWmsLegend,
   useWmsLegend,
 } from '@/services/useWms'
 import ColourBar from '@/components/wms/ColourBar.vue'
@@ -95,24 +91,22 @@ import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import { configManager } from '@/services/application-config'
-import type { Layer } from '@deltares/fews-wms-requests'
+import type {
+  GetLegendGraphicResponse,
+  Layer,
+} from '@deltares/fews-wms-requests'
 import { LayerKind } from '@/lib/streamlines'
 import { Style } from '@deltares/fews-wms-requests'
 import { ColourMap } from '@deltares/fews-web-oc-charts'
 import { pointToGeoJson } from '@/lib/topology/coordinates'
 import { SecondaryWorkflowGroupItem } from '@deltares/fews-pi-requests'
+import { Range, useColourScalesStore } from '@/stores/colourScales'
 
 interface ElevationWithUnitSymbol {
   units?: string
   lowerValue?: number
   upperValue?: number
   unitSymbol: string
-}
-
-export interface StyleColourMap {
-  style: Style
-  colourMap: ColourMap | undefined
-  title: string
 }
 
 interface Props {
@@ -158,62 +152,67 @@ const currentTime = ref<Date>(new Date())
 const layerOptions = ref<AnimatedRasterLayerOptions>()
 const forecastTime = ref<Date>()
 let debouncedSetLayerOptions!: () => void
-const colorScaleIndex = ref<number>(0)
 
-const colorScaleRange = ref<{ min: number; max: number }>()
-const colorScaleRangeString = computed(() => {
-  if (!colorScaleRange.value) return
-  if (colorScaleRange.value.min === undefined) return
-  if (colorScaleRange.value.max === undefined) return
-  return `${colorScaleRange.value.min},${colorScaleRange.value.max}`
-})
 const legendLayerName = ref(props.layerName)
 const settings = useUserSettingsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const updateColorScaleRange = (range: { min: number; max: number }) => {
-  colorScaleRange.value = range
-}
 const showLayer = ref<boolean>(true)
 const layerKind = ref(LayerKind.Static)
 
-const colourScales = ref<StyleColourMap[]>()
-const legend = ref<ColourMap>()
-const usedStyle = ref<Style>()
-const legendTitle = ref<string>()
+const colourScalesStore = useColourScalesStore()
 
 watch(
   () => props.layerCapabilities?.styles,
   () => {
     const styles = props.layerCapabilities?.styles
-    if (styles === undefined) return
+    if (styles === undefined) {
+      colourScalesStore.currentIds = []
+      colourScalesStore.currentIndex = 0
+      return
+    }
 
-    colourScales.value = styles.map((style) => {
-      const legendGraphic = useWmsLegend(
-        baseUrl,
-        legendLayerName,
-        () => settings.useDisplayUnits,
-        colorScaleRangeString,
-        style,
-      )
+    legendLayerName.value = props.layerName
+    colourScalesStore.currentIds = styles.map(styleToId)
+    colourScalesStore.currentIndex = 0
 
-      const colourScale = {
-        style: style,
-        colourMap: legendGraphic.value?.legend,
-        title: getLegendTitle(legendGraphic),
+    styles.forEach(async (style) => {
+      const styleId = styleToId(style)
+
+      if (!(styleId in colourScalesStore.scales)) {
+        const initialLegendGraphic = await fetchWmsLegend(
+          baseUrl,
+          legendLayerName.value,
+          settings.useDisplayUnits,
+          undefined,
+          style,
+        )
+
+        const legend = initialLegendGraphic.legend
+        const newColourScale = reactive({
+          title: getLegendTitle(initialLegendGraphic),
+          style: style,
+          colourMap: legend,
+          range: legendToRange(legend),
+          initialRange: legendToRange(legend),
+        })
+        colourScalesStore.scales[styleId] = newColourScale
+
+        const newLegendGraphic = useWmsLegend(
+          baseUrl,
+          legendLayerName,
+          () => settings.useDisplayUnits,
+          () => rangeToString(newColourScale.range),
+          style,
+        )
+
+        watch(newLegendGraphic, () => {
+          if (newLegendGraphic.value?.legend === undefined) return
+          colourScalesStore.scales[styleId].colourMap =
+            newLegendGraphic.value.legend
+        })
       }
-
-      watch(legendGraphic, () => {
-        colourScale.colourMap = legendGraphic.value?.legend
-        colourScale.title = getLegendTitle(legendGraphic)
-
-        legend.value = colourScales.value?.[colorScaleIndex.value].colourMap
-        usedStyle.value = colourScales.value?.[colorScaleIndex.value].style
-        legendTitle.value = colourScales.value?.[colorScaleIndex.value].title
-      })
-
-      return colourScale
     })
   },
   { immediate: true },
@@ -224,6 +223,20 @@ const selectedCoordinateGeoJson = computed(() => {
 
   return pointToGeoJson(+props.latitude, +props.longitude)
 })
+function styleToId(style: Style) {
+  return style.name ?? style.title
+}
+
+function rangeToString(range: Range): string {
+  return `${range.min},${range.max}`
+}
+
+function legendToRange(legend: ColourMap): Range {
+  return {
+    min: legend[0].lowerValue,
+    max: legend[legend.length - 1].lowerValue,
+  }
+}
 
 const canUseStreamlines = computed(
   () => props.layerCapabilities?.animatedVectors !== undefined,
@@ -231,14 +244,6 @@ const canUseStreamlines = computed(
 watch(canUseStreamlines, (canUse) => {
   // Fall back to static layer if streamlines are not available.
   if (!canUse) layerKind.value = LayerKind.Static
-})
-
-watchEffect(() => {
-  if (!legend.value) return
-  colorScaleRange.value = {
-    min: legend.value[0].lowerValue,
-    max: legend.value[legend.value.length - 1].lowerValue,
-  }
 })
 
 const layerHasElevation = computed(() => {
@@ -253,7 +258,6 @@ watch(
         new Date(layer?.keywordList[0].forecastTime as string) ?? null
     }
     legendLayerName.value = props.layerName
-    colorScaleRange.value = undefined
     if (layer?.elevation) {
       const max = layer.elevation.upperValue ?? 0
       const min = layer.elevation.lowerValue ?? 0
@@ -274,9 +278,13 @@ watch(currentElevation, () => {
   emit('update:elevation', currentElevation.value)
 })
 
-watch(colorScaleRange, () => {
-  setLayerOptions()
-})
+watch(
+  () => colourScalesStore.currentScale?.range,
+  () => {
+    setLayerOptions()
+  },
+  { deep: true },
+)
 
 watch(
   () => props.times,
@@ -318,22 +326,20 @@ function setLayerOptions(): void {
       bbox: props.layerCapabilities?.boundingBox
         ? convertBoundingBoxToLngLatBounds(props.layerCapabilities.boundingBox)
         : undefined,
+      elevation: currentElevation.value,
+      colorScaleRange: colourScalesStore.currentScale?.range
+        ? rangeToString(colourScalesStore.currentScale?.range)
+        : undefined,
+      style: colourScalesStore.currentScale?.style.name,
     }
-    layerOptions.value.elevation = currentElevation.value
-    layerOptions.value.colorScaleRange = colorScaleRangeString.value
-    layerOptions.value.style = usedStyle.value?.name
   } else {
     layerOptions.value = undefined
   }
 }
 
-function getLegendTitle(
-  legendGraphic: ReturnType<typeof useWmsLegend>,
-): string {
+function getLegendTitle(legendGraphic: GetLegendGraphicResponse): string {
   if (!props.layerCapabilities) return ''
-  const unitString = legendGraphic.value?.unit
-    ? ` [${legendGraphic.value?.unit}]`
-    : ''
+  const unitString = legendGraphic.unit ? ` [${legendGraphic.unit}]` : ''
   return `${props.layerCapabilities.title}${unitString}`
 }
 

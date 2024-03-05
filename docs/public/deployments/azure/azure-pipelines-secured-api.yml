@@ -32,7 +32,7 @@ steps:
         "VITE_AUTH_AUTHORITY": "$(VITE_AUTH_AUTHORITY)",
         "VITE_AUTH_ID": "$(VITE_AUTH_ID)",
         "VITE_AUTH_METADATA_URL": "https://login.microsoftonline.com/$(AZURE_TENANT_ID)/v2.0/.well-known/openid-configuration",
-        "VITE_AUTH_SCOPE": "openid profile email Offline_Access api://$(AZURE_APP_CLIENT_ID)/Delft-FEWSWebServices"            
+        "VITE_AUTH_SCOPE": "$(VITE_AUTH_SCOPE)"            
         }
   - script: |
       npm install
