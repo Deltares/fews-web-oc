@@ -72,6 +72,25 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
   },
 ]
 
+export const embedRoutes: Readonly<RouteRecordRaw[]> = [
+  {
+    path: '/embed/ssd/:groupId?/:panelId?',
+    name: 'Embed/SchematicStatusDisplay',
+    component: SchematicStatusDisplayView,
+    props: true,
+    meta: { sidebar: true, layout: 'EmbedLayout' },
+    children: [
+      {
+        path: '/embed/ssd/:groupId?/:panelId?/object/:objectId',
+        name: 'Embed/SSDTimeSeriesDisplay',
+        component: SSDTimeSeriesDisplay,
+        props: true,
+        meta: { sidebar: true, layout: 'EmbedLayout' },
+      },
+    ],
+  },
+]
+
 export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/dataviewer/:filterId?/:categoryId?',
@@ -220,6 +239,10 @@ async function addDynamicRoutes() {
         path: `/empty/${component.type}`,
         component: Empty,
       })
+    }
+    const embedRoute = embedRoutes.find((route) => route.name === `Embed/${component.type}`)
+    if (embedRoute !== undefined) {
+      router.addRoute(embedRoute)
     }
   })
   if (store.defaultComponent !== undefined) {
