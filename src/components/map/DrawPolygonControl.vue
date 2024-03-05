@@ -24,7 +24,14 @@ const { map } = useMap()
 if (!map) throw new Error('Map is not available to draw polygon')
 
 const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({ map })
-const rectangleMode = new TerraDrawRectangleMode()
+const rectangleMode = new TerraDrawRectangleMode({
+  styles: {
+    fillColor: '#c2bebe',
+    outlineColor: '#626262',
+    outlineWidth: 2,
+    fillOpacity: 0.4,
+  },
+})
 
 const draw = new TerraDraw({
   adapter: mapLibreAdapter,

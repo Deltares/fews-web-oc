@@ -40,6 +40,7 @@
             item-title="secondaryWorkflowId"
             density="compact"
             variant="solo"
+            flat
             label="workflow"
             mandatory
           ></v-select>
