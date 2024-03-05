@@ -1,0 +1,11 @@
+{
+  "settings": {
+    "all": "All settings ..."
+  },
+  "time": {
+    "browserTime": "Browser time:",
+    "default": "Default",
+    "custom": "Custom",
+    "presets": "Period presets"
+  }
+}

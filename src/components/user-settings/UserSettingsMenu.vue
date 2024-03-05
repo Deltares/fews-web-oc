@@ -52,7 +52,7 @@
       <v-divider />
       <UserSettingsDialog>
         <template #activator="{ props }">
-          <v-list-item v-bind="props">All Settings ...</v-list-item>
+          <v-list-item v-bind="props" v-t="'settings.all'"> </v-list-item>
         </template>
       </UserSettingsDialog>
     </v-list>

@@ -8,6 +8,7 @@ import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { i18n } from './plugins/i18n'
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
@@ -19,6 +20,7 @@ app.config.compilerOptions.isCustomElement = (tag) =>
   tag === 'schematic-status-display'
 
 app.use(pinia)
+app.use(i18n)
 app.use(vuetify)
 
 fetch(`${import.meta.env.BASE_URL}app-config.json`)
