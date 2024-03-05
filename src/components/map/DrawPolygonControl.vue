@@ -9,7 +9,7 @@ import {
   TerraDrawRectangleMode,
 } from 'terra-draw'
 import { useMap } from 'vue-maplibre-gl'
-import { FeatureId } from 'node_modules/terra-draw/dist/store/store';
+import type { FeatureId } from 'node_modules/terra-draw/dist/store/store'
 
 interface Props {
   modelValue?: GeoJSONStoreFeatures[]
@@ -64,10 +64,14 @@ onBeforeUnmount(() => {
   draw.stop()
 })
 
-watch(() => props.modelValue, () => {
-  if (props.modelValue.length > 0) {
-    draw.clear()
-    draw.addFeatures(props.modelValue)
-  }
-}, { deep: true })
+watch(
+  () => props.modelValue,
+  () => {
+    if (props.modelValue.length > 0) {
+      draw.clear()
+      draw.addFeatures(props.modelValue)
+    }
+  },
+  { deep: true },
+)
 </script>

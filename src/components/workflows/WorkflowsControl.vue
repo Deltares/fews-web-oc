@@ -172,8 +172,12 @@ import type { BBox } from 'geojson'
 import DrawPolygonControl from '@/components/map/DrawPolygonControl.vue'
 import bbox from '@turf/bbox'
 import bboxPolygon from '@turf/bbox-polygon'
-import { SecondaryWorkflowGroupItem } from '@deltares/fews-pi-requests'
+import {
+  ProcessDataFilter,
+  SecondaryWorkflowGroupItem,
+} from '@deltares/fews-pi-requests'
 import { GeoJSONStoreFeatures } from 'terra-draw'
+import { downloadNetCDF } from '@/services/useWorkflows'
 
 interface Props {
   layerName?: string
@@ -193,6 +197,7 @@ const formIsValid = ref(false)
 const selectBbox = ref(false)
 const activeWorkflowIds = ref<string[]>([])
 
+const boundingBox = ref<BBox>([0, 0, 0, 0])
 const bboxString = computed(() => {
   return `${boundingBox.value[0]}°E ${boundingBox.value[1]}°N , ${boundingBox.value[2]}°E ${boundingBox.value[3]}°N`
 })
@@ -213,23 +218,57 @@ function hideMapTool() {
   workflowDialog.value = true
 }
 
+function workflowInputsAreValid() {
+  // Invalid when along x or y, min > max
+  if (
+    boundingBox.value[0] > boundingBox.value[2] ||
+    boundingBox.value[1] > boundingBox.value[3]
+  ) {
+    return false
+  }
+
+  const inputValues = [
+    lattitudeStepSize.value,
+    longitudeStepSize.value,
+    ...boundingBox.value,
+  ]
+
+  return inputValues.every((v) => !isNaN(v))
+}
+
 function startWorkflow() {
-  console.log(
-    `POST ${baseUrl}regridder/${
-      props.layerName
-    }/${props.currentTime?.toISOString()}/${bboxString.value}`,
+  if (!workflowInputsAreValid()) {
+    console.error('Invalid input')
+    return
+  }
+
+  const filter: ProcessDataFilter = {
+    workflowId: currentWorkflow.value.secondaryWorkflowId,
+    xMin: boundingBox.value[0],
+    yMin: boundingBox.value[1],
+    xMax: boundingBox.value[2],
+    yMax: boundingBox.value[3],
+    xCellSize: longitudeStepSize.value,
+    yCellSize: lattitudeStepSize.value,
+    startTime: props.currentTime!.toISOString(),
+    endTime: props.currentTime!.toISOString(),
+  }
+
+  const downloadPromise = downloadNetCDF(baseUrl, filter).catch(
+    ({ status, statusText }) => {
+      console.error(`${status} Error downloading netCDF ${statusText}`)
+    },
   )
 
   activeWorkflowIds.value.push(currentWorkflow.value.secondaryWorkflowId)
-  setTimeout(() => {
+  downloadPromise.then(() => {
     activeWorkflowIds.value = activeWorkflowIds.value.filter(
       (id) => id !== currentWorkflow.value.secondaryWorkflowId,
     )
-  }, 5000)
+  })
+
   workflowDialog.value = false
 }
-
-const boundingBox = ref<BBox>([0, 0, 0, 0])
 
 watch(
   boundingBox,
