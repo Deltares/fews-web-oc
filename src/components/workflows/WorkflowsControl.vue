@@ -163,6 +163,16 @@
       </v-container>
     </v-card>
   </v-dialog>
+
+  <!-- Error Dialog -->
+  <v-dialog v-model="errorDialog" max-width="500">
+    <v-card prepend-icon="mdi-alert" title="Error" :text="errorMessage">
+      <v-card-actions>
+        <v-spacer />
+        <v-btn color="error" @click="errorDialog = false">Close</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -180,14 +190,12 @@ import { GeoJSONStoreFeatures } from 'terra-draw'
 import { downloadNetCDF } from '@/services/useWorkflows'
 
 interface Props {
-  layerName?: string
   secondaryWorkflows: SecondaryWorkflowGroupItem[]
-  currentTime?: Date
+  startTime?: string
+  endTime?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  layerName: '',
-})
+const props = defineProps<Props>()
 
 const currentWorkflow = ref<SecondaryWorkflowGroupItem>(
   props.secondaryWorkflows[0],
@@ -196,6 +204,8 @@ const workflowDialog = ref(false)
 const formIsValid = ref(false)
 const selectBbox = ref(false)
 const activeWorkflowIds = ref<string[]>([])
+const errorDialog = ref(false)
+const errorMessage = ref<string>()
 
 const boundingBox = ref<BBox>([0, 0, 0, 0])
 const bboxString = computed(() => {
@@ -238,7 +248,9 @@ function workflowInputsAreValid() {
 
 function startWorkflow() {
   if (!workflowInputsAreValid()) {
-    console.error('Invalid input')
+    errorMessage.value =
+      'Invalid input. Please enter valid values for dx, dy and bounding box extremes.'
+    errorDialog.value = true
     return
   }
 
@@ -250,17 +262,19 @@ function startWorkflow() {
     yMax: boundingBox.value[3],
     xCellSize: longitudeStepSize.value,
     yCellSize: lattitudeStepSize.value,
-    startTime: props.currentTime!.toISOString(),
-    endTime: props.currentTime!.toISOString(),
+    startTime: props.startTime ?? '',
+    endTime: props.endTime ?? '',
   }
 
   const downloadPromise = downloadNetCDF(baseUrl, filter).catch(
-    ({ status, statusText }) => {
-      console.error(`${status} Error downloading netCDF ${statusText}`)
+    ({ statusText }) => {
+      errorMessage.value = statusText
+      errorDialog.value = true
     },
   )
 
   activeWorkflowIds.value.push(currentWorkflow.value.secondaryWorkflowId)
+  // Remove workflow once download is complete
   downloadPromise.then(() => {
     activeWorkflowIds.value = activeWorkflowIds.value.filter(
       (id) => id !== currentWorkflow.value.secondaryWorkflowId,

@@ -179,16 +179,13 @@ const secondaryWorkflows = computed<SecondaryWorkflowGroupItem[] | undefined>(
     if (!activeNode.value) return
     const node = activeNode.value
 
-    if (node.secondaryWorkflows) return node.secondaryWorkflows
-
-    if (node.workflowId) {
-      return [
-        {
-          secondaryWorkflowId: node.workflowId,
-          description: node.workflowId,
-        },
-      ]
-    }
+    // if (node.secondaryWorkflows) return node.secondaryWorkflows
+    return [
+      {
+        secondaryWorkflowId: `Regrid_${node.id}`,
+        description: 'Hardcoded default regrid download workflow',
+      },
+    ]
   },
 )
 const open = ref<string[]>([])

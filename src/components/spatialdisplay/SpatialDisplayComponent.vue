@@ -56,8 +56,8 @@
       <WorkflowsControl
         v-if="secondaryWorkflows"
         :secondaryWorkflows="secondaryWorkflows"
-        :currentTime="currentTime"
-        :layerName="layerName"
+        :startTime="props.layerCapabilities?.firstValueTime"
+        :endTime="props.layerCapabilities?.lastValueTime"
       />
     </div>
   </MapComponent>

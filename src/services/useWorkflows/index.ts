@@ -22,8 +22,13 @@ async function downloadUrl(url: string): Promise<void> {
       if (req.status < 200 || req.status >= 300) {
         reject({
           status: req.status,
-          statusText: req.statusText,
+          statusText: req.statusText || 'Error downloading file',
         })
+        req.response
+          .text()
+          .then((text: string) =>
+            console.error(`NetCDF download error: ${text}`),
+          )
         return
       }
 
