@@ -22,6 +22,8 @@ import {configManager} from "@/services/application-config";
 interface Props {
   nodeId: string | undefined,
   timeSeriesDisplayIndex: number
+  useDisplayUnits: boolean | undefined
+  convertDatum: boolean | undefined
 }
 
 const model = defineModel()
@@ -48,6 +50,8 @@ const downloadFile = (downloadFormat: string) => {
     documentFormat: downloadFormat,
     nodeId: props.nodeId,
     timeSeriesDisplayIndex: props.timeSeriesDisplayIndex,
+    convertDatum: props.convertDatum,
+    useDisplayUnits: props.useDisplayUnits,
     downloadAsFile: true
   }
 
