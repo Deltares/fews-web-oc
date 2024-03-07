@@ -13,7 +13,8 @@
     "lint": "npm run prettier",
     "prettier": "prettier . --check",
     "format": "prettier .  --write",
-    "sonar": "sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$SONAR_KEY -Dsonar.projectName='Delft-FEWS Web OC'"
+    "sonar": "sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$SONAR_KEY -Dsonar.projectName='Delft-FEWS Web OC'",
+    "test-ct": "playwright test -c playwright-ct.config.ts"
   },
   "dependencies": {
     "@deltares/fews-pi-requests": "^1.0.9",
@@ -45,6 +46,8 @@
   },
   "devDependencies": {
     "@mdi/font": "^7.4.47",
+    "@playwright/experimental-ct-vue": "^1.42.1",
+    "@playwright/test": "^1.42.1",
     "@types/crypto-js": "^4.2.2",
     "@types/d3": "^7.4.3",
     "@types/lodash-es": "^4.17.12",
