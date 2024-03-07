@@ -13,7 +13,11 @@
     </v-list-item>
   </v-toolbar>
   <v-window v-model="currentLevel" data-testid="column-menu--window">
-    <v-window-item v-for="(item, i) in stack" v-bind:key="i" data-testid="column-menu--window-item">
+    <v-window-item
+      v-for="(item, i) in stack"
+      v-bind:key="i"
+      data-testid="column-menu--window-item"
+    >
       <template v-for="child in item.children" v-bind:key="child.id">
         <v-list-item
           v-if="child.href"
@@ -66,14 +70,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['click'])
 
-const open = defineModel<string[]>('open', { default: () => [] }) 
-const active = defineModel<string>('active', { default: () => [] }) 
+const open = defineModel<string[]>('open', { default: () => [] })
+const active = defineModel<string>('active', { default: () => [] })
 
-
-const stack = useMenuItemsStack(
-  () => props.items,
-  active,
-)
+const stack = useMenuItemsStack(() => props.items, active)
 
 const currentTitle = computed((): string => {
   const s = stack.value

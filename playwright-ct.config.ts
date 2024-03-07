@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/experimental-ct-vue';
+import { defineConfig, devices } from '@playwright/experimental-ct-vue'
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -44,4 +44,4 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
   ],
-});
+})
