@@ -43,10 +43,9 @@
     </template>
     <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
     </TimeSeriesComponent>
-    <TimeSeriesFileDownloadComponent v-model="showFileDownloadDialog" :nodeId="selectedNodeId" :useDisplayUnits="options.useDisplayUnits" :convertDatum="options.convertDatum" :timeSeriesDisplayIndex="displayConfig?.index ?? -1">
+    <TimeSeriesFileDownloadComponent v-model="showFileDownloadDialog" :config="displayConfig" :options="options">
     </TimeSeriesFileDownloadComponent>
   </WindowComponent>
-
 </template>
 
 <script setup lang="ts">
@@ -65,7 +64,6 @@ import TimeSeriesFileDownloadComponent from "@/components/download/TimeSeriesFil
 
 const showFileDownloadDialog = ref(false)
 const openFileDownloadDialog = () => {
-  selectedNodeId.value = displayConfig.value?.nodeId || ''
   showFileDownloadDialog.value = true
 }
 
@@ -82,9 +80,6 @@ const settings = useUserSettingsStore()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const selectedPlot = ref(0)
-const selectedNodeId = ref('')
-
-
 
 const options = computed<UseDisplayConfigOptions>(() => {
   return {
