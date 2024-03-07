@@ -2,7 +2,7 @@
     <v-dialog v-model="model" max-width="400">
     <v-card>
       <v-card-title class="headline">Download timeseries</v-card-title>
-      <v-card-text v-if="props.timeSeriesDisplayIndex != -1">
+      <v-card-text v-if="(props?.config?.index ?? -1) != -1">
         <v-btn @click="() => downloadFile('PI_CSV')">CSV</v-btn>
         <v-btn @click="() => downloadFile('PI_JSON')">JSON</v-btn>
         <v-btn @click="() => downloadFile('PI_XML')">XML</v-btn>
@@ -18,20 +18,17 @@
 import {PiWebserviceProvider, TimeSeriesTopologyActionsFilter} from "@deltares/fews-pi-requests";
 import {createTransformRequestFn} from "@/lib/requests/transformRequest.ts";
 import {configManager} from "@/services/application-config";
+import {DisplayConfig} from "@/lib/display/DisplayConfig.ts";
+import type {UseDisplayConfigOptions} from "@/services/useDisplayConfig";
 
 interface Props {
-  nodeId: string | undefined,
-  timeSeriesDisplayIndex: number
-  useDisplayUnits: boolean | undefined
-  convertDatum: boolean | undefined
+  config: DisplayConfig | undefined
+  options: UseDisplayConfigOptions
 }
 
-const model = defineModel()
+const props = defineProps<Props>()
 
-const props = withDefaults(defineProps<Props>(), {
-  nodeId: '',
-  timeSeriesDisplayIndex: 0
-  });
+const model = defineModel()
 
 const cancelDialog = () => {
    model.value = false
@@ -48,10 +45,10 @@ const downloadFile = (downloadFormat: string) => {
   })
   const filter: TimeSeriesTopologyActionsFilter = {
     documentFormat: downloadFormat,
-    nodeId: props.nodeId,
-    timeSeriesDisplayIndex: props.timeSeriesDisplayIndex,
-    convertDatum: props.convertDatum,
-    useDisplayUnits: props.useDisplayUnits,
+    nodeId: props.config?.nodeId ?? '',
+    timeSeriesDisplayIndex: props.config?.index ?? 0,
+    convertDatum: props.options.convertDatum,
+    useDisplayUnits: props.options.useDisplayUnits,
     downloadAsFile: true
   }
 
