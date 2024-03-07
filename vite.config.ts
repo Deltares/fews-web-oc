@@ -48,5 +48,8 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: {
       exclude: ['@deltares/fews-ssd-webcomponent'],
     },
+    test: {
+      include: ['**/*.test.?(c|m)[jt]s?(x)'],
+    },
   }
 })
