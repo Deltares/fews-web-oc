@@ -43,7 +43,7 @@
     </template>
     <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
     </TimeSeriesComponent>
-    <TimeSeriesFileDownloadComponent v-model="showFileDownloadDialog" :nodeId="selectedNodeId" :timeSeriesDisplayIndex="displayConfig?.index ?? -1">
+    <TimeSeriesFileDownloadComponent v-model="showFileDownloadDialog" :nodeId="selectedNodeId" :useDisplayUnits="options.useDisplayUnits" :convertDatum="options.convertDatum" :timeSeriesDisplayIndex="displayConfig?.index ?? -1">
     </TimeSeriesFileDownloadComponent>
   </WindowComponent>
 
@@ -83,6 +83,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const selectedPlot = ref(0)
 const selectedNodeId = ref('')
+
 
 
 const options = computed<UseDisplayConfigOptions>(() => {
