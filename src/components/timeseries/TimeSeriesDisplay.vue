@@ -39,11 +39,11 @@
           <v-icon>{{ item.icon }}</v-icon>
         </v-btn>
       </v-btn-toggle>
-      <v-btn  @click="openFileDownloadDialog" size="small" class="text-capitalize" variant="text" v-bind="props"><v-icon>mdi-download</v-icon></v-btn>
+      <v-btn v-if="(displayConfig?.index ?? -1) != -1" @click="openFileDownloadDialog" size="small" class="text-capitalize" variant="text" v-bind="props"><v-icon>mdi-download</v-icon></v-btn>
     </template>
     <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
     </TimeSeriesComponent>
-    <TimeSeriesFileDownloadComponent v-model="showFileDownloadDialog" :config="displayConfig">
+    <TimeSeriesFileDownloadComponent v-model="showFileDownloadDialog" :nodeId="selectedNodeId" :timeSeriesDisplayIndex="displayConfig?.index ?? -1">
     </TimeSeriesFileDownloadComponent>
   </WindowComponent>
 
@@ -65,6 +65,7 @@ import TimeSeriesFileDownloadComponent from "@/components/download/TimeSeriesFil
 
 const showFileDownloadDialog = ref(false)
 const openFileDownloadDialog = () => {
+  selectedNodeId.value = displayConfig.value?.nodeId || ''
   showFileDownloadDialog.value = true
 }
 
@@ -81,6 +82,8 @@ const settings = useUserSettingsStore()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const selectedPlot = ref(0)
+const selectedNodeId = ref('')
+
 
 const options = computed<UseDisplayConfigOptions>(() => {
   return {
