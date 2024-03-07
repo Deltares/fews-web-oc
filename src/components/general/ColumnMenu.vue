@@ -1,78 +1,78 @@
 <template>
-  <div>
-    <v-toolbar density="compact">
-      <v-list-item @click="onTitleClick" v-if="currentLevel">
-        <template v-slot:prepend icon>
-          <v-icon>mdi-arrow-left</v-icon>
-        </template>
+  <v-toolbar density="compact" data-testid="column-menu--toolbar">
+    <v-list-item @click="onTitleClick" v-if="currentLevel">
+      <template v-slot:prepend icon>
+        <v-icon>mdi-arrow-left</v-icon>
+      </template>
 
-        <slot name="menu-title" :text="currentTitle" :depth="currentLevel">
-          <v-list-item-title>
-            {{ currentTitle }}
-          </v-list-item-title>
-        </slot>
-      </v-list-item>
-    </v-toolbar>
-    <v-window v-model="currentLevel">
-      <v-window-item v-for="(item, i) in stack" v-bind:key="i">
-        <template v-for="child in item.children" v-bind:key="child.id">
-          <v-list-item
-            v-if="child.href"
-            :href="child.href"
-            target="_blank"
-            :class="getClass(child)"
-          >
-            <v-list-item-title>{{ child.name }}</v-list-item-title>
-            <template v-slot:append>
-              <v-icon size="xsmall">{{ child.icon }}</v-icon>
-            </template>
-          </v-list-item>
-          <v-list-item
-            v-else
-            @click="
-              (event) => {
-                onItemClick(event, child)
-              }
-            "
-            :to="child.to"
-            :class="getClass(child)"
-          >
-            <v-list-item-title>{{ child.name }}</v-list-item-title>
-            <template v-slot:append>
-              <v-icon v-if="child.children?.length">mdi-chevron-right</v-icon>
-              <v-icon v-else-if="child.icon" small>{{ child.icon }}</v-icon>
-            </template>
-          </v-list-item>
-        </template>
-      </v-window-item>
-    </v-window>
-  </div>
+      <slot name="menu-title" :text="currentTitle" :depth="currentLevel">
+        <v-list-item-title>
+          {{ currentTitle }}
+        </v-list-item-title>
+      </slot>
+    </v-list-item>
+  </v-toolbar>
+  <v-window v-model="currentLevel" data-testid="column-menu--window">
+    <v-window-item v-for="(item, i) in stack" v-bind:key="i" data-testid="column-menu--window-item">
+      <template v-for="child in item.children" v-bind:key="child.id">
+        <v-list-item
+          v-if="child.href"
+          :href="child.href"
+          target="_blank"
+          :class="getClass(child)"
+          data-testid="column-menu--item"
+        >
+          <v-list-item-title>{{ child.name }}</v-list-item-title>
+          <template v-slot:append>
+            <v-icon size="xsmall">{{ child.icon }}</v-icon>
+          </template>
+        </v-list-item>
+        <v-list-item
+          v-else
+          @click="
+            (event) => {
+              onItemClick(event, child)
+            }
+          "
+          :to="child.to"
+          :class="getClass(child)"
+          data-testid="column-menu--item"
+        >
+          <v-list-item-title>{{ child.name }}</v-list-item-title>
+          <template v-slot:append>
+            <v-icon v-if="child.children?.length">mdi-chevron-right</v-icon>
+            <v-icon v-else-if="child.icon" small>{{ child.icon }}</v-icon>
+          </template>
+        </v-list-item>
+      </template>
+    </v-window-item>
+  </v-window>
 </template>
 
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import type { ColumnItem } from './ColumnItem'
-import { useMenuItemsStack } from '@/services/useMenuItemsStack'
+import { useMenuItemsStack } from '../../services/useMenuItemsStack'
 
 interface Props {
   items?: ColumnItem[]
-  open?: string[]
-  active?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   items: () => {
     return []
   },
-  open: () => [],
-  active: '',
 })
 
-const emit = defineEmits(['click', 'update:active', 'update:open'])
+const emit = defineEmits(['click'])
+
+const open = defineModel<string[]>('open', { default: () => [] }) 
+const active = defineModel<string>('active', { default: () => [] }) 
+
 
 const stack = useMenuItemsStack(
   () => props.items,
-  () => props.active,
+  active,
 )
 
 const currentTitle = computed((): string => {
@@ -87,24 +87,19 @@ const currentLevel = computed((): number => {
 })
 
 function getClass(child: ColumnItem): string {
-  return child.id === props.active ? 'primary--text v-list-item--active' : ''
+  return child.id === active.value ? 'primary--text v-list-item--active' : ''
 }
 
-watch(
-  stack,
-  () => {
-    const path = stack.value.map((item: ColumnItem) => item.id)
-    emit('update:open', [...path])
-  },
-  { immediate: true },
-)
+watch(stack, () => {
+  open.value = stack.value.map((item: ColumnItem) => item.id)
+})
 
 function onTitleClick(): void {
   const s = stack.value
   if (s.length > 1) {
     s.pop()
   }
-  emit('update:active', undefined)
+  active.value = ''
 }
 
 function onItemClick(event: Event, item: ColumnItem): void {
@@ -113,7 +108,7 @@ function onItemClick(event: Event, item: ColumnItem): void {
     event.preventDefault()
     s.push(item)
   } else {
-    emit('update:active', item.id)
+    active.value = item.id
   }
   emit('click', event, item)
 }
