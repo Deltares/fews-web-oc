@@ -2,7 +2,7 @@
     <v-dialog v-model="model" max-width="400">
     <v-card>
       <v-card-title class="headline">Download timeseries</v-card-title>
-      <v-card-text>
+      <v-card-text v-if="props.timeSeriesDisplayIndex != -1">
         <v-btn @click="() => downloadFile('PI_CSV')">CSV</v-btn>
         <v-btn @click="() => downloadFile('PI_JSON')">JSON</v-btn>
         <v-btn @click="() => downloadFile('PI_XML')">XML</v-btn>
@@ -18,33 +18,24 @@
 import {PiWebserviceProvider, TimeSeriesTopologyActionsFilter} from "@deltares/fews-pi-requests";
 import {createTransformRequestFn} from "@/lib/requests/transformRequest.ts";
 import {configManager} from "@/services/application-config";
-import {type DisplayConfig, DisplayType} from "@/lib/display/DisplayConfig.ts";
 
 interface Props {
-  config?: DisplayConfig
+  nodeId: string | undefined,
+  timeSeriesDisplayIndex: number
 }
 
 const model = defineModel()
 
 const props = withDefaults(defineProps<Props>(), {
-  config: () => {
-    return {
-      title: '',
-      id: '',
-      nodeId: '',
-      index: 0,
-      displayType: DisplayType.TimeSeriesChart,
-      class: '',
-      requests: [],
-      subplots: [],
-    }
-  }});
+  nodeId: '',
+  timeSeriesDisplayIndex: 0
+  });
 
 const cancelDialog = () => {
    model.value = false
 }
 
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const downloadFile = (downloadFormat: string) => {
 
 
@@ -55,8 +46,8 @@ const downloadFile = (downloadFormat: string) => {
   })
   const filter: TimeSeriesTopologyActionsFilter = {
     documentFormat: downloadFormat,
-    nodeId: props.config.nodeId || "",
-    timeSeriesDisplayIndex: props.config?.index || 0,
+    nodeId: props.nodeId,
+    timeSeriesDisplayIndex: props.timeSeriesDisplayIndex,
     downloadAsFile: true
   }
 
