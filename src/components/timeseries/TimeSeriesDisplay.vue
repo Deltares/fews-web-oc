@@ -39,11 +39,23 @@
           <v-icon>{{ item.icon }}</v-icon>
         </v-btn>
       </v-btn-toggle>
-      <v-btn v-if="(displayConfig?.index ?? -1) != -1" @click="openFileDownloadDialog" size="small" class="text-capitalize" variant="text" v-bind="props"><v-icon>mdi-download</v-icon></v-btn>
+      <v-btn
+        v-if="(displayConfig?.index ?? -1) != -1"
+        @click="openFileDownloadDialog"
+        size="small"
+        class="text-capitalize"
+        variant="text"
+        v-bind="props"
+        ><v-icon>mdi-download</v-icon></v-btn
+      >
     </template>
     <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
     </TimeSeriesComponent>
-    <TimeSeriesFileDownloadComponent v-model="showFileDownloadDialog" :config="displayConfig" :options="options">
+    <TimeSeriesFileDownloadComponent
+      v-model="showFileDownloadDialog"
+      :config="displayConfig"
+      :options="options"
+    >
     </TimeSeriesFileDownloadComponent>
   </WindowComponent>
 </template>
@@ -60,7 +72,7 @@ import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import { DisplayType } from '@/lib/display/DisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import TimeSeriesFileDownloadComponent from "@/components/download/TimeSeriesFileDownloadComponent.vue";
+import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 
 const showFileDownloadDialog = ref(false)
 const openFileDownloadDialog = () => {
@@ -129,6 +141,6 @@ const displayTypeItems: DisplayTypeItem[] = [
     icon: 'mdi-table',
     label: 'Table',
     value: DisplayType.TimeSeriesTable,
-  }
+  },
 ]
 </script>
