@@ -41,13 +41,14 @@ function isTimeSeriesGridActionsFilter(
  */
 function actionsResponseToDisplayConfig(
   actionsResponse: ActionsResponse,
-  nodeId: string | undefined
+  nodeId: string | undefined,
 ): DisplayConfig[] {
   const displays: DisplayConfig[] = []
   for (const result of actionsResponse.results) {
     if (result.config === undefined) continue
     const title = result.config.timeSeriesDisplay.title ?? ''
-    const timeSeriesDisplayIndex: number | undefined = result.config.timeSeriesDisplay.index ?? undefined
+    const timeSeriesDisplayIndex: number | undefined =
+      result.config.timeSeriesDisplay.index ?? undefined
     let subplots: ChartConfig[] = []
     if (result.config.timeSeriesDisplay.subplots) {
       subplots = result.config.timeSeriesDisplay.subplots?.map((subPlot) => {

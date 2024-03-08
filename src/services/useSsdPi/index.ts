@@ -69,6 +69,8 @@ export function useSsdPi(
       }
       const display: DisplayConfig = {
         id: title,
+        nodeId: undefined,
+        index: undefined,
         title,
         class: 'singles',
         requests: result.requests,
