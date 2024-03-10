@@ -41,12 +41,40 @@ const cancelDialog = () => {
   model.value = false
 }
 
+function isTimeSeriesGridActionsFilter(
+  filter: filterActionsFilter | timeSeriesGridActionsFilter | undefined,
+): filter is timeSeriesGridActionsFilter {
+  return (filter as timeSeriesGridActionsFilter).x !== undefined
+}
+
+function isFilterActionsFilter(
+  filter: filterActionsFilter | timeSeriesGridActionsFilter | undefined,
+): filter is filterActionsFilter {
+  return (filter as filterActionsFilter).filterId !== undefined
+}
+
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const downloadFile = (downloadFormat: string) => {
   if (props.filter) {
-    // not supported yet.
-    console.log(props.filter)
-    return
+    if (isFilterActionsFilter(props.filter)) {
+      const queryParameters = filterToParams(props.filter)
+      const url = new URL(
+        `${baseUrl}rest/fewspiservice/v1/timeseries/filters/actions${queryParameters}&downloadAsFile=true&documentFormat=${downloadFormat}`,
+      )
+      return downloadFileAttachment(
+        url.href,
+        downloadFormat,
+        authenticationManager.getAccessToken(),
+      )
+    }
+    if (isTimeSeriesGridActionsFilter(props.filter)) {
+      console.log('Not implemented')
+      return
+      // not implemented yet.
+      // const queryParameters = filterToParams(props.filter)
+      // const url = new URL(`${baseUrl}rest/fewspiservice/v1/timeseries/grid/actions${queryParameters}&downloadAsFile=true&documentFormat=${downloadFormat}`,)
+      // return downloadFileAttachment(url.href, downloadFormat, authenticationManager.getAccessToken(),)
+    }
   }
   const timeSeriesFilter: TimeSeriesTopologyActionsFilter = {
     documentFormat: downloadFormat,
