@@ -24,6 +24,16 @@
               <v-icon>{{ item.icon }}</v-icon>
             </v-btn>
           </v-btn-toggle>
+          <v-btn
+            v-if="(displayConfig?.index ?? -1) != -1"
+            @click="openFileDownloadDialog"
+            size="small"
+            class="text-capitalize"
+            variant="text"
+            v-bind="props"
+          >
+            <v-icon>mdi-download</v-icon>
+          </v-btn>
         </template>
         <template v-slot:toolbar-append>
           <v-btn size="small" variant="text" @click="onClose">
@@ -37,6 +47,13 @@
           :displayType="displayType"
         >
         </TimeSeriesComponent>
+        <TimeSeriesFileDownloadComponent
+          v-model="showFileDownloadDialog"
+          :config="displayConfig"
+          :options="options"
+          :filter="filter"
+        >
+        </TimeSeriesFileDownloadComponent>
       </WindowComponent>
     </div>
   </div>
@@ -48,18 +65,36 @@ import { configManager } from '@/services/application-config'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import { DisplayType } from '@/lib/display/DisplayConfig'
-import { useDisplayConfigFilter } from '@/services/useDisplayConfig'
+import {
+  useDisplayConfigFilter,
+  type UseDisplayConfigOptions,
+} from '@/services/useDisplayConfig'
 import {
   filterActionsFilter,
   timeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
+import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
+import { useUserSettingsStore } from '@/stores/userSettings.ts'
 
 interface Props {
   filter: filterActionsFilter | timeSeriesGridActionsFilter
   elevationChartFilter?: timeSeriesGridActionsFilter
   currentTime?: Date
 }
+
+const showFileDownloadDialog = ref(false)
+const openFileDownloadDialog = () => {
+  showFileDownloadDialog.value = true
+}
+const settings = useUserSettingsStore()
+
+const options = computed<UseDisplayConfigOptions>(() => {
+  return {
+    useDisplayUnits: settings.useDisplayUnits,
+    convertDatum: settings.convertDatum,
+  }
+})
 
 const props = defineProps<Props>()
 const emit = defineEmits(['close'])
