@@ -28,15 +28,16 @@ For the general configuration of Topology.xml, please refer to https://publicwik
 
 Topology nodes in the Web OC component TopologyDisplay can be linked using Topology.xml as described below.
 
-| **Link topology node to** | **Config item** | **Back-end support** | **Web OC Support** |
-| ------------------------- | --------------- | -------------------- | ------------------ |
-| Spatial Display           | PlotId          | Yes                  | Yes                |
-| Filters                   | FilterId        | Yes                  | Yes                |
-| Web Browser               | url             | Yes                  | Yes                |
-| DisplayGroup              | DisplayGroupId  | Yes                  | Yes                |
-| Run Task                  | WorkFlowId      | Yes                  | Not yet            |
-| SchematicStatusDisplay    | PanelId         | 2024.01              | Not yet            |
-| System Monitor            | TabId           | 2024.01              | Not yet            |
+| **Link topology node to** | **Config item**                  | **Back-end support** | **Web OC Support** |
+| ------------------------- | ---------------                  | -------------------- | ------------------ |
+| Spatial Display           | PlotId                           | Yes                  | Yes                |
+| Filters                   | FilterId                         | Yes                  | Yes                |
+| Web Browser               | url                              | Yes                  | Yes                |
+| DisplayGroup              | DisplayGroupId, plotId, nodeId   | Yes                  | Yes                |
+| Run Task                  | (secondary) WorkFlowId           | Yes                  | Planned for 2024   |
+| Data download             | dataDownloadDisplayId            | 2024.01              | Planned for 2024   |
+| SchematicStatusDisplay    | PanelId                          | Not yet              | Not yet            |
+| System Monitor            | TabId                            | Not yet              | Not yet            |
 
 **Spatial Display**
 
