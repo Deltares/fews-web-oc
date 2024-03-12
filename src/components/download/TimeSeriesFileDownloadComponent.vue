@@ -3,11 +3,38 @@
     <v-card>
       <v-card-title class="headline">Download timeseries</v-card-title>
       <v-card-text>
-        <v-btn @click="() => downloadFile('PI_CSV')">CSV</v-btn>
-        <v-btn @click="() => downloadFile('PI_JSON')">JSON</v-btn>
-        <v-btn @click="() => downloadFile('PI_XML')">XML</v-btn>
+        <v-text-field
+          v-model="fileName"
+          label="File Name"
+          variant="underlined"
+          density="compact"
+        >
+          <template v-slot:append>
+            <v-menu>
+              <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" size="small" variant="tonal">
+                  {{ fileType }}
+                  <v-icon>mdi-chevron-down</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item
+                  v-for="(_item, key) in fileTypes"
+                  :key="key"
+                  density="compact"
+                  @click="fileType = key"
+                >
+                  <v-list-item-title>{{ key }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </template>
+        </v-text-field>
       </v-card-text>
       <v-card-actions class="justify-end">
+        <v-btn color="primary" @click="() => downloadFile(fileTypes[fileType])"
+          >Download</v-btn
+        >
         <v-btn @click="() => cancelDialog()">Cancel</v-btn>
       </v-card-actions>
     </v-card>
@@ -16,6 +43,7 @@
 
 <script lang="ts" setup>
 import {
+  DocumentFormat,
   filterActionsFilter,
   timeSeriesGridActionsFilter,
   TimeSeriesTopologyActionsFilter,
@@ -26,6 +54,7 @@ import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
 import { filterToParams } from '@deltares/fews-wms-requests'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
+import { ref } from 'vue'
 
 interface Props {
   config: DisplayConfig | undefined
@@ -33,9 +62,18 @@ interface Props {
   filter?: filterActionsFilter | timeSeriesGridActionsFilter | undefined
 }
 
+const fileTypes = {
+  csv: DocumentFormat.PI_CSV,
+  json: DocumentFormat.PI_JSON,
+  xml: DocumentFormat.PI_XML,
+} as const
+
 const props = defineProps<Props>()
 
 const model = defineModel<boolean>()
+
+const fileType = ref<keyof typeof fileTypes>('csv')
+const fileName = ref('timeseries')
 
 const cancelDialog = () => {
   model.value = false
@@ -63,6 +101,7 @@ const downloadFile = (downloadFormat: string) => {
       )
       return downloadFileAttachment(
         url.href,
+        fileName.value,
         downloadFormat,
         authenticationManager.getAccessToken(),
       )
@@ -90,6 +129,7 @@ const downloadFile = (downloadFormat: string) => {
   )
   return downloadFileAttachment(
     url.href,
+    fileName.value,
     downloadFormat,
     authenticationManager.getAccessToken(),
   )
