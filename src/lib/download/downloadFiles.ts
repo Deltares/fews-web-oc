@@ -35,20 +35,21 @@ async function downloadFileWithFetch(
 
 export async function downloadFileAttachment(
   url: string,
+  fileName: string,
   documentFormat: string,
   accessToken: string,
 ) {
   try {
     const headers = new Headers()
     let extension: string = 'csv'
-    if (documentFormat === DocumentFormat.PI_JSON.toString())
-      extension = '.json'
-    if (documentFormat === DocumentFormat.PI_XML.toString()) extension = '.xml'
-    if (documentFormat === DocumentFormat.PI_CSV.toString()) extension = '.csv'
-    const fileName = 'timeseries' + extension
+    if (documentFormat === DocumentFormat.PI_JSON) extension = '.json'
+    if (documentFormat === DocumentFormat.PI_XML) extension = '.xml'
+    if (documentFormat === DocumentFormat.PI_CSV) extension = '.csv'
+    const downloadFileName = fileName + extension
     if (accessToken)
-      await downloadFileWithFetch(headers, url, fileName, accessToken)
-    if (!accessToken || accessToken == '') downloadWithLink(url, fileName)
+      await downloadFileWithFetch(headers, url, downloadFileName, accessToken)
+    if (!accessToken || accessToken == '')
+      downloadWithLink(url, downloadFileName)
   } catch (error) {
     console.error('Error downloading file:', error)
   }
