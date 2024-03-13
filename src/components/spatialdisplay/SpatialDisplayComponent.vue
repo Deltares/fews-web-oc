@@ -1,12 +1,12 @@
 <template>
   <MapComponent>
     <AnimatedRasterLayer
-      v-if="layerKind === LayerKind.Static && showLayer"
+      v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
       :layer="layerOptions"
       @doubleclick="onCoordinateClick"
     />
     <AnimatedStreamlineRasterLayer
-      v-if="layerKind === LayerKind.Streamline && showLayer"
+      v-if="layerKind === LayerKind.Streamline && showLayer && layerOptions"
       :layerOptions="layerOptions"
       :streamlineOptions="layerCapabilities?.animatedVectors"
       @doubleclick="onCoordinateClick"
@@ -36,6 +36,7 @@
         @changeLocationId="onLocationChange"
       />
       <InformationPanel
+        v-if="layerOptions"
         :layerTitle="props.layerCapabilities?.title"
         :currentTime="currentTime"
         :forecastTime="forecastTime"
