@@ -393,12 +393,29 @@ function reroute(to: RouteLocationNormalized) {
   }
   if (
     (showLeafsAsButton.value && typeof to.params.nodeId === 'string') ||
-    (Array.isArray(to.params.nodeId) && to.params.nodeId.length === 1)
+    (showLeafsAsButton.value &&
+      Array.isArray(to.params.nodeId) &&
+      to.params.nodeId.length === 1)
   ) {
     const parentNodeId = Array.isArray(to.params.nodeId)
       ? to.params.nodeId[0]
       : to.params.nodeId
     const menuNode = topologyMap.value.get(parentNodeId) as any
+    if (menuNode === undefined) return
+    if (menuNode.topologyNodes === undefined) {
+      const leafNodeId = parentNodeId
+      const parentNode = [...topologyMap.value?.values()].find((p) => {
+        return p.topologyNodes?.map((c) => c.id).includes(leafNodeId)
+      })
+      if (parentNode?.id === undefined) return
+      const to = {
+        name: 'TopologyDisplay',
+        params: {
+          nodeId: [parentNode?.id, leafNodeId],
+        },
+      }
+      return to
+    }
     if (to.name === 'TopologyDisplay') {
       const sources = nodeButtonItems(menuNode)
       if (activeParentId.value) {
