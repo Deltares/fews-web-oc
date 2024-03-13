@@ -211,7 +211,7 @@ function isBoundsWithinBounds(
 }
 
 function removeLayer() {
-  if (map !== undefined && map.isStyleLoaded()) {
+  if (map !== undefined && map.style !== undefined) {
     if (map.getSource(currentLayer) !== undefined) {
       map.removeLayer(currentLayer)
       map.removeSource(currentLayer)
