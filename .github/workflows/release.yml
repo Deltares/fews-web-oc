@@ -23,7 +23,7 @@ jobs:
           node-version: 20
       - run: npm ci
       - run: npm run build -- --base=${{ matrix.base }}
-      - run: zip -r ${{ matrix.asset_name }} ${{ matrix.asset_name }}
+      - run: zip -r ${{ matrix.asset_name }} dist
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
