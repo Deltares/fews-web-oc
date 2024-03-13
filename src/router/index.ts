@@ -236,7 +236,11 @@ function defaultRouteParams(to: RouteLocationNormalized) {
     for (const key in defaultPath) {
       if (defaultPath[key] !== undefined) {
         if (!params[key]) {
-          params[key] = defaultPath[key]
+          if (component.type === 'TopologyDisplay' && key === 'nodeId') {
+            params[key] = defaultPath[key].split('/')
+          } else {
+            params[key] = defaultPath[key]
+          }
           requiresRedirect = true
         }
       }
