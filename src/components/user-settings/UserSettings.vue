@@ -40,7 +40,6 @@
         :disabled="setting.disabled"
         hide-details
         @update:modelValue="onValueChange(setting)"
-        class="d-flex justify-end"
       >
       </v-switch>
       <template v-slot:append>
