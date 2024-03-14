@@ -27,6 +27,7 @@ const SpatialTimeSeriesDisplay = () =>
   import('../components/spatialdisplay/SpatialTimeSeriesDisplay.vue')
 const TimeSeriesDisplayView = () => import('../views/TimeSeriesDisplayView.vue')
 const TopologyDisplayView = () => import('../views/TopologyDisplayView.vue')
+const DataDownloadDisplayView = () => import('../components/download/DataDownloadDisplayComponent.vue')
 const TimeSeriesDisplay = () =>
   import('../components/timeseries/TimeSeriesDisplay.vue')
 const HtmlDisplay = () => import('../views/HtmlDisplay.vue')
@@ -136,6 +137,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     props: true,
     meta: { sidebar: true },
     children: [
+      {
+        path: '/topology/node/:nodeId*/download/',
+        name: 'TopologyDataDownload',
+        component: DataDownloadDisplayView,
+        props: true,
+        meta: { sidebar: true },
+      },
       {
         path: '/topology/node/:nodeId*/series/',
         name: 'TopologyTimeSeries',
