@@ -58,6 +58,7 @@
     @update:doFollowNow="setCurrentTime"
     @update:selectedDate="updateTime"
     class="spatial-display__slider"
+    :hide-speed-controls="mobile"
   />
 </template>
 
@@ -94,6 +95,7 @@ import { Style } from '@deltares/fews-wms-requests'
 import { ColourMap } from '@deltares/fews-web-oc-charts'
 import { pointToGeoJson } from '@/lib/topology/coordinates'
 import { Range, useColourScalesStore } from '@/stores/colourScales'
+import { useDisplay } from 'vuetify'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -124,6 +126,8 @@ const emit = defineEmits([
   'update:elevation',
   'update:currentTime',
 ])
+
+const { mobile } = useDisplay()
 
 onBeforeMount(() => {
   debouncedSetLayerOptions = debounce(setLayerOptions, 240, {
