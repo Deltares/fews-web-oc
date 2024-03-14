@@ -25,9 +25,9 @@ export function useFilterLocations(
   baseUrl: string,
   filterIds: MaybeRefOrGetter<string[]>,
 ): UseFilterLocationsReturn {
-  const geojson = shallowRef<GeoJSON.FeatureCollection<GeoJSON.Geometry, Location>>(
-    emptyFeatureCollection,
-  )
+  const geojson = shallowRef<
+    GeoJSON.FeatureCollection<GeoJSON.Geometry, Location>
+  >(emptyFeatureCollection)
 
   const locations = shallowRef<Location[]>([])
 
