@@ -190,7 +190,7 @@ const colourScalesStore = useColourScalesStore()
 
 const showLocationsLayer = ref<boolean>(true)
 
-const { locations, geojson } = useFilterLocations(baseUrl, props.filterIds)
+const { locations, geojson } = useFilterLocations(baseUrl, () => props.filterIds)
 
 watch(
   () => props.layerCapabilities?.styles,
