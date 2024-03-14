@@ -18,23 +18,16 @@
         v-model:range="colourScalesStore.currentScale.range"
       />
     </div>
-    <ElevationSlider
-      v-if="layerHasElevation"
-      v-model="currentElevation"
-      :key="layerOptions?.name"
-      :min-value="minElevation"
-      :max-value="maxElevation"
-      :ticks="elevationTicks"
-      :unit="elevationUnit"
-    />
     <SelectedCoordinateLayer :geoJson="selectedCoordinateGeoJson" />
-    <v-chip-group class="control-container">
-      <LocationsLayerComponent
-        v-if="filterIds"
-        :filterIds="filterIds"
-        :locationId="props.locationId"
-        @changeLocationId="onLocationChange"
-      />
+    <LocationsLayer
+      v-if="showLocationsLayer && hasLocations"
+      :locationsGeoJson="locationsGeoJson"
+      :selectedLocationId="props.locationId"
+      @click="onLocationClick"
+    />
+  </MapComponent>
+  <div class="mapcomponent__controls-container">
+    <v-chip-group class="px-2">
       <InformationPanel
         v-if="layerOptions"
         :layerTitle="props.layerCapabilities?.title"
@@ -48,9 +41,42 @@
         :canUseStreamlines="canUseStreamlines"
         v-model:layer-kind="layerKind"
         v-model:show-layer="showLayer"
-      />
+      ></InformationPanel>
+      <v-chip
+        v-if="hasLocations"
+        class="locations-layer__chip"
+        :class="{ 'pr-0': showLocationsLayer }"
+        pill
+        label
+      >
+        <v-btn
+          @click="showLocationsLayer = !showLocationsLayer"
+          density="compact"
+          variant="plain"
+          icon
+        >
+          <v-icon>{{
+            showLocationsLayer ? 'mdi-map-marker' : 'mdi-map-marker-off'
+          }}</v-icon>
+        </v-btn>
+        <LocationsSearchControl
+          v-if="showLocationsLayer"
+          :locations="locations"
+          :selectedLocationId="props.locationId"
+          @changeLocationId="onLocationChange"
+        />
+      </v-chip>
     </v-chip-group>
-  </MapComponent>
+  </div>
+  <ElevationSlider
+    v-if="layerHasElevation"
+    v-model="currentElevation"
+    :key="layerOptions?.name"
+    :min-value="minElevation"
+    :max-value="maxElevation"
+    :ticks="elevationTicks"
+    :unit="elevationUnit"
+  />
   <DateTimeSlider
     v-if="times && times.length > 0"
     v-model:selectedDate="currentTime"
@@ -66,7 +92,15 @@
 import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
-import { ref, computed, onBeforeMount, reactive, watch } from 'vue'
+import {
+  ref,
+  computed,
+  onBeforeMount,
+  reactive,
+  watch,
+  watchEffect,
+  onMounted,
+} from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
   fetchWmsLegend,
@@ -76,7 +110,8 @@ import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedRasterLayer, {
   AnimatedRasterLayerOptions,
 } from '@/components/wms/AnimatedRasterLayer.vue'
-import LocationsLayerComponent from '@/components/wms/LocationsLayerComponent.vue'
+import LocationsSearchControl from '@/components/wms/LocationsSearchControl.vue'
+import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import InformationPanel from '../wms/InformationPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
@@ -93,8 +128,14 @@ import type {
 import { LayerKind } from '@/lib/streamlines'
 import { Style } from '@deltares/fews-wms-requests'
 import { ColourMap } from '@deltares/fews-web-oc-charts'
+import { type Location } from '@deltares/fews-pi-requests'
 import { pointToGeoJson } from '@/lib/topology/coordinates'
 import { Range, useColourScalesStore } from '@/stores/colourScales'
+import { FeatureCollection, Geometry } from 'geojson'
+import {
+  convertGeoJsonToFewsPiLocation,
+  fetchLocationsAsGeoJson,
+} from '@/lib/topology'
 import { useDisplay } from 'vuetify'
 
 interface ElevationWithUnitSymbol {
@@ -110,7 +151,7 @@ interface Props {
   layerCapabilities?: Layer
   elevation?: number
   locationId?: string
-  filterIds?: string[]
+  filterIds: string[]
   latitude?: string
   longitude?: string
   currentTime?: Date
@@ -118,6 +159,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
+  filterIds: () => [],
 })
 
 const emit = defineEmits([
@@ -158,6 +200,22 @@ const showLayer = ref<boolean>(true)
 const layerKind = ref(LayerKind.Static)
 
 const colourScalesStore = useColourScalesStore()
+
+const emptyFeatureCollection: FeatureCollection<Geometry, Location> = {
+  type: 'FeatureCollection',
+  features: [],
+}
+
+const locationsGeoJson = ref<
+  GeoJSON.FeatureCollection<GeoJSON.Geometry, Location>
+>(emptyFeatureCollection)
+
+const showLocationsLayer = ref<boolean>(true)
+const locations = ref<Location[]>([])
+
+onMounted(() => {
+  console.log('mobile', mobile)
+})
 
 watch(
   () => props.layerCapabilities?.styles,
@@ -219,6 +277,34 @@ const selectedCoordinateGeoJson = computed(() => {
 
   return pointToGeoJson(+props.latitude, +props.longitude)
 })
+
+watchEffect(async () => {
+  if (props.filterIds.length === 0) return
+  locationsGeoJson.value = await fetchLocationsAsGeoJson(
+    baseUrl,
+    props.filterIds,
+  )
+})
+
+watch(locationsGeoJson, () => {
+  locations.value = convertGeoJsonToFewsPiLocation(locationsGeoJson.value)
+})
+
+const hasLocations = computed(() => {
+  return locations.value.length > 0
+})
+
+function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
+  if (!event.features) return
+  const locationId: string | undefined =
+    event.features[0].properties?.locationId
+  if (locationId) onLocationChange(locationId)
+}
+
+function onLocationChange(locationId: string | null): void {
+  emit('changeLocationId', locationId)
+}
+
 function styleToId(style: Style) {
   return style.name ?? style.title
 }
@@ -237,6 +323,7 @@ function legendToRange(legend: ColourMap): Range {
 const canUseStreamlines = computed(
   () => props.layerCapabilities?.animatedVectors !== undefined,
 )
+
 watch(canUseStreamlines, (canUse) => {
   // Fall back to static layer if streamlines are not available.
   if (!canUse) layerKind.value = LayerKind.Static
@@ -340,10 +427,6 @@ function getLegendTitle(legendGraphic: GetLegendGraphicResponse): string {
   return `${props.layerCapabilities.title}${unitString}`
 }
 
-function onLocationChange(locationId: string | null): void {
-  emit('changeLocationId', locationId)
-}
-
 function onCoordinateClick(
   event: MapLayerMouseEvent | MapLayerTouchEvent,
 ): void {
@@ -377,9 +460,16 @@ function onCoordinateClick(
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
-.control-container {
+.mapcomponent__controls-container {
   position: absolute;
-  top: 8px;
-  left: 10px;
+  max-width: 100%;
+}
+
+.locations-layer__chip {
+  font-size: 0.825em;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+  background-color: rgba(var(--v-theme-surface), 0.8);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 </style>
