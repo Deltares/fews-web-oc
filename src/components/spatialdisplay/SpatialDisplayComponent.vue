@@ -21,7 +21,7 @@
     <SelectedCoordinateLayer :geoJson="selectedCoordinateGeoJson" />
     <LocationsLayer
       v-if="showLocationsLayer && hasLocations"
-      :locationsGeoJson="locationsGeoJson"
+      :locationsGeoJson="geojson"
       :selectedLocationId="props.locationId"
       @click="onLocationClick"
     />
@@ -92,15 +92,7 @@
 import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
-import {
-  ref,
-  computed,
-  onBeforeMount,
-  reactive,
-  watch,
-  watchEffect,
-  onMounted,
-} from 'vue'
+import { ref, computed, onBeforeMount, reactive, watch } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
   fetchWmsLegend,
@@ -128,15 +120,10 @@ import type {
 import { LayerKind } from '@/lib/streamlines'
 import { Style } from '@deltares/fews-wms-requests'
 import { ColourMap } from '@deltares/fews-web-oc-charts'
-import { type Location } from '@deltares/fews-pi-requests'
 import { pointToGeoJson } from '@/lib/topology/coordinates'
 import { Range, useColourScalesStore } from '@/stores/colourScales'
-import { FeatureCollection, Geometry } from 'geojson'
-import {
-  convertGeoJsonToFewsPiLocation,
-  fetchLocationsAsGeoJson,
-} from '@/lib/topology'
 import { useDisplay } from 'vuetify'
+import { useFilterLocations } from '@/services/useFilterLocations'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -201,21 +188,9 @@ const layerKind = ref(LayerKind.Static)
 
 const colourScalesStore = useColourScalesStore()
 
-const emptyFeatureCollection: FeatureCollection<Geometry, Location> = {
-  type: 'FeatureCollection',
-  features: [],
-}
-
-const locationsGeoJson = ref<
-  GeoJSON.FeatureCollection<GeoJSON.Geometry, Location>
->(emptyFeatureCollection)
-
 const showLocationsLayer = ref<boolean>(true)
-const locations = ref<Location[]>([])
 
-onMounted(() => {
-  console.log('mobile', mobile)
-})
+const { locations, geojson } = useFilterLocations(baseUrl, props.filterIds)
 
 watch(
   () => props.layerCapabilities?.styles,
@@ -278,20 +253,8 @@ const selectedCoordinateGeoJson = computed(() => {
   return pointToGeoJson(+props.latitude, +props.longitude)
 })
 
-watchEffect(async () => {
-  if (props.filterIds.length === 0) return
-  locationsGeoJson.value = await fetchLocationsAsGeoJson(
-    baseUrl,
-    props.filterIds,
-  )
-})
-
-watch(locationsGeoJson, () => {
-  locations.value = convertGeoJsonToFewsPiLocation(locationsGeoJson.value)
-})
-
 const hasLocations = computed(() => {
-  return locations.value.length > 0
+  return locations.value?.length
 })
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
