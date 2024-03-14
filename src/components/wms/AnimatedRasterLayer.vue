@@ -15,6 +15,8 @@ import {
 import { configManager } from '@/services/application-config'
 import { useMap } from 'vue-maplibre-gl'
 import { point } from '@turf/helpers'
+import { booleanIntersects } from '@turf/boolean-intersects'
+import { bboxPolygon } from '@turf/bbox-polygon'
 
 export interface AnimatedRasterLayerOptions {
   name: string
@@ -33,6 +35,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {})
 
 const emit = defineEmits(['doubleclick'])
+
+let initialZoom = true
 
 const { map } = useMap()
 
@@ -182,32 +186,31 @@ function setDefaultZoom() {
   if (map) {
     const currentBounds = map.getBounds()
     const bounds = props.layer.bbox
-    if (isBoundsWithinBounds(currentBounds, bounds)) {
+    if (initialZoom) {
+      initialZoom = false
+      nextTick(() => {
+        map.fitBounds(bounds)
+      })
       return
-    } else {
+    }
+
+    if (
+      !booleanIntersects(
+        bboxPolygon([
+          ...currentBounds.getSouthWest().toArray(),
+          ...currentBounds.getNorthEast().toArray(),
+        ]),
+        bboxPolygon([
+          ...bounds.getSouthWest().toArray(),
+          ...bounds.getNorthEast().toArray(),
+        ]),
+      )
+    ) {
       nextTick(() => {
         map.fitBounds(bounds)
       })
     }
   }
-}
-
-function isBoundsWithinBounds(
-  innerBounds: LngLatBounds,
-  outerBounds: LngLatBounds,
-) {
-  const innerNorthEast = innerBounds.getNorthEast()
-  const innerSouthWest = innerBounds.getSouthWest()
-  const outerNorthEast = outerBounds.getNorthEast()
-  const outerSouthWest = outerBounds.getSouthWest()
-
-  const isLngWithin =
-    innerSouthWest.lng >= outerSouthWest.lng &&
-    innerNorthEast.lng <= outerNorthEast.lng
-  const isLatWithin =
-    innerSouthWest.lat >= outerSouthWest.lat &&
-    innerNorthEast.lat <= outerNorthEast.lat
-  return isLngWithin && isLatWithin
 }
 
 function removeLayer() {
