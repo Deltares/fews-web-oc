@@ -9,6 +9,7 @@
     :drag-pan="true"
     :scroll-zoom="true"
     :transform-request="transformRequest"
+    :mapStyle="baseLayerStyle"
   >
     <slot></slot>
   </mgl-map>
@@ -21,9 +22,12 @@ import { authenticationManager } from '@/services/authentication/AuthenticationM
 import { MglMap, MglDefaults } from 'vue-maplibre-gl'
 import { type ResourceType, type RequestParameters } from 'maplibre-gl'
 import 'vue-maplibre-gl/dist/vue-maplibre-gl.css'
+import { useBaseLayers } from '@/services/useBaseLayers'
 
-MglDefaults.style =
+MglDefaults.style = 
   'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+
+const { baseLayerStyle } = useBaseLayers()
 
 function transformRequest(
   url: string,
