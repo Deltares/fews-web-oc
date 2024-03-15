@@ -23,7 +23,7 @@
       </v-row>
       <v-row align="start" class="ma-1">
         <v-col>
-          <v-combobox
+          <v-autocomplete
             density="compact"
             :item-title="(item) => getParameterName(item)"
             return-object
@@ -31,13 +31,14 @@
             multiple
             label="Parameters"
             :items="parameters"
-          />
-          <template v-slot:selection="{ item, index }">
-            <span v-if="index < 4">{{ item.title }}</span>
-            <span v-if="index == 4"
-              >... ({{ selectedParameters.length }} selected)</span
-            >
-          </template>
+          >
+            <template v-slot:selection="{ item, index }">
+              <span v-if="index < 4">{{ item.title }}</span>
+              <span v-if="index == 4"
+                >... ({{ selectedParameters.length }} selected)</span
+              >
+            </template>
+          </v-autocomplete>
         </v-col>
       </v-row>
       <v-row align="start" class="ma-1">
@@ -132,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, UnwrapRef, watch } from 'vue'
+import { ref, UnwrapRef, watch } from 'vue'
 import {
   DocumentFormat,
   PiWebserviceProvider,
@@ -143,16 +144,13 @@ import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.ts'
 import {
   LocationsFilter,
-  TimeSeriesFilter,
-} from '@deltares/fews-pi-requests/lib/types/requestParameters'
-import { ParametersFilter } from '@deltares/fews-pi-requests/lib/types/requestParameters/parametersFilter'
-import { Location } from '@deltares/fews-pi-requests/lib/types/response/locations/locationsResponse'
-import { TimeSeriesParameter } from '@deltares/fews-pi-requests/lib/types/response/timeseriesparameters/timeSeriesParametersResponse'
+  TimeSeriesParameter,
+  Location,
+  ParametersFilter,
+} from '@deltares/fews-pi-requests'
 import { DateTimeMaybeValid } from 'luxon/src/datetime'
-import { IfValid } from 'luxon/src/_util'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
-import { ColumnItem } from '@/components/general/ColumnItem.ts'
 interface Props {
   nodeId?: string | string[]
   topologyNode: TopologyNode
@@ -167,7 +165,7 @@ const piProvider = new PiWebserviceProvider(baseUrl, {
 
 const filterId = props.topologyNode.filterIds
   ? props.topologyNode.filterIds[0]
-  : null
+  : undefined
 const locations = ref<Location[]>([])
 const selectedLocations = ref<Location[]>([])
 
@@ -179,13 +177,13 @@ parameters.value = await getParameters()
 const attributeValues = getAttributeValues(locations.value)
 let selectedFormat = ref<string>('PI_XML')
 
-let errors = ref<String[]>([])
+let errors = ref<string[]>([])
 
 const DATE_FMT = 'yyyy-MM-dd HH:mm'
-const startDateString = ref<String>(
+const startDateString = ref<string>(
   DateTime.fromJSDate(getStartDateValue()).toFormat(DATE_FMT),
 )
-const endDateString = ref<String>(
+const endDateString = ref<string>(
   DateTime.fromJSDate(getEndDateValue()).toFormat(DATE_FMT),
 )
 
@@ -235,7 +233,7 @@ function copyCurrentHoursAndMinutesToNewDateValue(
   }
 }
 
-const selectedAttributes = ref<String[][]>([])
+const selectedAttributes = ref<string[][]>([])
 const attributes = props.topologyNode.dataDownloadDisplay?.attributes
 
 function getStartDateValue() {
@@ -260,9 +258,10 @@ function getEndDateValue() {
 watch(
   () => selectedAttributes.value,
   async (currentValue) => {
-    const attributeIds = props.topologyNode.dataDownloadDisplay?.attributes.map(
-      (item) => item.id,
-    )
+    const attributeIds =
+      props.topologyNode.dataDownloadDisplay?.attributes.map(
+        (item) => item.id,
+      ) ?? []
     selectedLocations.value = getSelectedLocations(
       locations.value,
       attributeIds,
@@ -333,8 +332,9 @@ async function downloadData() {
   )
 }
 
-function getAttributes(attributeId: String): String[] {
-  return attributeValues.get(attributeId)
+function getAttributes(attributeId: string): string[] {
+  let attributes = attributeValues.get(attributeId)
+  return attributes ?? []
 }
 
 function getLocationName(location: Location): string {
@@ -368,11 +368,9 @@ async function getLocations(): Promise<Location[]> {
 
 function getAttributeValues(locations: Location[]): Map<string, []> {
   const attributeValuesMap = new Map()
-  const configuredAttributeIds = [
-    ...props.topologyNode.dataDownloadDisplay?.attributes.map(
-      (item) => item.id,
-    ),
-  ]
+  const configuredAttributeIds =
+    props.topologyNode.dataDownloadDisplay?.attributes.map((item) => item.id)
+  if (configuredAttributeIds === undefined) return attributeValuesMap
   for (const newLocation of locations) {
     let attributes = newLocation.attributes
     if (attributes == undefined) continue
@@ -411,7 +409,7 @@ function getSelectedLocations(
   selectedAttributes: String[][],
 ): Location[] {
   const newLocationSelection = []
-  for (const location: Location of allLocations) {
+  for (const location of allLocations) {
     if (isSelected(location, selectedAttributes, attributes)) {
       newLocationSelection.push(location)
     }
@@ -430,7 +428,7 @@ function isSelected(
     const foundAttribute = location.attributes?.find(
       (attribute) => attribute.id === attributes[i],
     )
-    if (foundAttribute == undefined || foundAttribute.value == undefined)
+    if (foundAttribute === undefined || foundAttribute.value === undefined)
       continue
     if (selectedValues[i].includes(foundAttribute.value)) return true
   }
