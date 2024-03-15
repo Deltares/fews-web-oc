@@ -3,27 +3,27 @@
         <v-card title="Make a selection to download data">
             <v-row align="start" class="ma-1">
                 <v-col>
-                    <v-select
+                    <v-autocomplete
                             :item-title="(item) => getLocationName(item)"
-                            :item-value="(item) =>`${item.locationId}`"
                             v-model="selectedLocations"
                             multiple
+                            return-object
                             density="compact"
                             label="locations"
                             :items="locations">
                         <template v-slot:selection="{ item, index }">
-                            <span v-if="index < 4">{{ item.title }}</span>
-                            <span v-if="index == 4">... ({{selectedLocations.length}} selected)</span>
+                            <span v-if="index < 3">{{ item.title }}</span>
+                            <span v-if="index == 3">... ({{selectedLocations.length}} selected)</span>
                         </template>
-                    </v-select>
+                    </v-autocomplete>
                 </v-col>
             </v-row>
             <v-row align="start" class="ma-1">
                 <v-col>
-                    <v-select
+                    <v-combobox
                             density="compact"
                             :item-title="(item) => getParameterName(item)"
-                            :item-value="(item) =>`${item.id}`"
+                            return-object
                             v-model="selectedParameters"
                             multiple
                             label="Parameters"
@@ -36,7 +36,7 @@
             </v-row>
             <v-row align="start" class="ma-1">
                 <v-col v-for="(item, index) in attributes">
-                    <v-select
+                    <v-combobox
                             density="compact"
                             :label="item.name"
                             v-model="selectedAttributes[index]"
@@ -140,6 +140,7 @@ import {DateTimeMaybeValid} from "luxon/src/datetime";
 import {IfValid} from "luxon/src/_util";
 import {downloadFileAttachment} from "@/lib/download/downloadFiles.ts";
 import {authenticationManager} from "@/services/authentication/AuthenticationManager.ts";
+import {ColumnItem} from "@/components/general/ColumnItem.ts";
 interface Props {
     nodeId?: string | string[]
     topologyNode: TopologyNode
@@ -155,10 +156,11 @@ const piProvider = new PiWebserviceProvider(baseUrl, {
 
 const filterId = props.topologyNode.filterIds ? props.topologyNode.filterIds[0] : null;
 const locations = ref<Location[]>([])
-const selectedLocations = ref<String[]>([])
+const selectedLocations = ref<Location[]>([])
 
 const parameters = ref<TimeSeriesParameter[]>([])
-const selectedParameters = ref<String[]>([])
+const selectedParameters = ref<TimeSeriesParameter[]>([])
+
 
 locations.value = await getLocations()
 parameters.value = await getParameters()
@@ -270,14 +272,14 @@ async function downloadData() {
     let locationQuery = "";
     selectedLocations.value.forEach(selectedLocation => {
         if (locationQuery.length > 0) locationQuery = locationQuery + "&"
-        locationQuery = locationQuery + "locationIds=" + selectedLocation
+        locationQuery = locationQuery + "locationIds=" + selectedLocation.locationId
     })
     locationQuery = encodeURI(locationQuery)
 
     let parameterQuery = "";
     selectedParameters.value.forEach(selectedParameter => {
         if (parameterQuery.length > 0) parameterQuery = parameterQuery + "&"
-        parameterQuery = parameterQuery + "parameterIds=" + selectedParameter
+        parameterQuery = parameterQuery + "parameterIds=" + selectedParameter.id
     })
     parameterQuery = encodeURI(parameterQuery)
 
