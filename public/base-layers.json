@@ -1,0 +1,18 @@
+{
+    "baseLayers": [
+        {
+            "id": "positron",
+            "name": "Positron",
+            "type": "vector",
+            "style": "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+            "attribution": "Map data &copy; OpenStreetMap contributors"
+        },        
+        {
+            "id": "dark-matter",
+            "name": "Dark Matter",
+            "type": "vector",
+            "style": "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+            "attribution": "Map data &copy; OpenStreetMap contributors"
+        }
+    ]
+}
