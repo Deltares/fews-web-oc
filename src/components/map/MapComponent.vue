@@ -24,7 +24,7 @@ import { type ResourceType, type RequestParameters } from 'maplibre-gl'
 import 'vue-maplibre-gl/dist/vue-maplibre-gl.css'
 import { useBaseLayers } from '@/services/useBaseLayers'
 
-MglDefaults.style = 
+MglDefaults.style =
   'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
 const { baseLayerStyle } = useBaseLayers()
