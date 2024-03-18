@@ -133,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, UnwrapRef, watch } from 'vue'
+import { ref, watch } from 'vue'
 import {
   DocumentFormat,
   PiWebserviceProvider,
@@ -222,7 +222,7 @@ watch(endDate, (newValue) => {
 })
 function copyCurrentHoursAndMinutesToNewDateValue(
   currentDisplayTime: DateTimeMaybeValid,
-  newValue: UnwrapRef<Date>,
+  newValue: Date,
 ) {
   if (currentDisplayTime.isValid) {
     let currentJSDate = currentDisplayTime.toJSDate()
