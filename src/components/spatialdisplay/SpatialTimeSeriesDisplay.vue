@@ -76,7 +76,6 @@ import {
 import { computed } from 'vue'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
-
 interface Props {
   filter: filterActionsFilter | timeSeriesGridActionsFilter
   elevationChartFilter?: timeSeriesGridActionsFilter
