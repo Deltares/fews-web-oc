@@ -133,13 +133,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, UnwrapRef, watch } from 'vue'
+import { ref, watch } from 'vue'
 import {
   DocumentFormat,
   PiWebserviceProvider,
   TopologyNode,
 } from '@deltares/fews-pi-requests'
-import { DateTime } from 'luxon'
+import { DateTime, type DateTimeMaybeValid } from 'luxon'
 import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.ts'
 import {
@@ -148,7 +148,6 @@ import {
   Location,
   ParametersFilter,
 } from '@deltares/fews-pi-requests'
-import { DateTimeMaybeValid } from 'luxon/src/datetime'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
 interface Props {
@@ -178,6 +177,10 @@ const attributeValues = getAttributeValues(locations.value)
 let selectedFormat = ref<string>('PI_XML')
 
 let errors = ref<string[]>([])
+const startDate = ref<Date>(getStartDateValue())
+const endDate = ref<Date>(getEndDateValue())
+const selectedAttributes = ref<string[][]>([])
+const attributes = props.topologyNode.dataDownloadDisplay?.attributes
 
 const DATE_FMT = 'yyyy-MM-dd HH:mm'
 const startDateString = ref<string>(
@@ -194,6 +197,7 @@ watch(startDateString, (newValue) => {
   }
   startDate.value = newDateTime.toJSDate()
 })
+
 watch(endDateString, (newValue) => {
   let newDateTime: DateTimeMaybeValid = DateTime.fromFormat(newValue, DATE_FMT)
   if (!newDateTime.isValid) {
@@ -201,8 +205,6 @@ watch(endDateString, (newValue) => {
   }
   endDate.value = newDateTime.toJSDate()
 })
-const startDate = ref<Date>(getStartDateValue())
-const endDate = ref<Date>(getEndDateValue())
 
 watch(startDate, (newValue) => {
   let currentDisplayTime: DateTimeMaybeValid = DateTime.fromFormat(
@@ -212,6 +214,7 @@ watch(startDate, (newValue) => {
   copyCurrentHoursAndMinutesToNewDateValue(currentDisplayTime, newValue)
   startDateString.value = DateTime.fromJSDate(newValue).toFormat(DATE_FMT)
 })
+
 watch(endDate, (newValue) => {
   let currentDisplayTime: DateTimeMaybeValid = DateTime.fromFormat(
     endDateString.value,
@@ -220,9 +223,10 @@ watch(endDate, (newValue) => {
   copyCurrentHoursAndMinutesToNewDateValue(currentDisplayTime, newValue)
   endDateString.value = DateTime.fromJSDate(newValue).toFormat(DATE_FMT)
 })
+
 function copyCurrentHoursAndMinutesToNewDateValue(
   currentDisplayTime: DateTimeMaybeValid,
-  newValue: UnwrapRef<Date>,
+  newValue: Date,
 ) {
   if (currentDisplayTime.isValid) {
     let currentJSDate = currentDisplayTime.toJSDate()
@@ -232,9 +236,6 @@ function copyCurrentHoursAndMinutesToNewDateValue(
     newValue.setMinutes(currentMinutes)
   }
 }
-
-const selectedAttributes = ref<string[][]>([])
-const attributes = props.topologyNode.dataDownloadDisplay?.attributes
 
 function getStartDateValue() {
   let startDateValue = new Date()
@@ -435,4 +436,3 @@ function isSelected(
   return false
 }
 </script>
-<style scoped></style>
