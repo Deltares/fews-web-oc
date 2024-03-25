@@ -1,10 +1,10 @@
 name: Deploy the Web OC test applications.
 
 on:
-#  push:
-#    branches: ['main']
-#    paths:
-#      - src/**
+  #  push:
+  #    branches: ['main']
+  #    paths:
+  #      - src/**
   # for testing allow running on pull requests.
   pull_request:
 
@@ -35,7 +35,7 @@ jobs:
       - name: Build And Deploy Azure Static Web Apps IWP Public App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
         with:
-          action: "upload"
+          action: 'upload'
           app_location: '/dist'
           api_location: ''
           skip_app_build: true
