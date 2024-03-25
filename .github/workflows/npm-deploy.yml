@@ -27,7 +27,7 @@ jobs:
       - name: Overwrite the app-config.json file
         run: |
           rm public/app-config.json
-          echo "${{ secrets.IWP_PUBLIC_APP_CONFIG_JSON }}" > public/app-config.json <<EOL
+          printf '%s' "${{ secrets.IWP_PUBLIC_APP_CONFIG_JSON }}" > public/app-config.json
 
       - name: Build distribution
         run: npm run build
