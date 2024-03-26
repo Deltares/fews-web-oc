@@ -26,15 +26,34 @@ jobs:
       - name: Run unit tests
         run: npm run test
 
-      - name: Overwrite the app-config.json file
+      - name: Overwrite the app-config.json file for IWP Public App
         run: |
           rm public/app-config.json
-          echo "${{ vars.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}"
           echo "${{ vars.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
           cat public/app-config.json
         shell: bash
 
       - name: Build distribution
+        run: npm run build
+
+      - name: Build and Deploy Azure Static Web Apps IWP Public App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          verbose: 'true'
+          azure_static_web_apps_api_token: ${{ secrets.IWP_PUBLIC_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Overwrite the app-config.json file for IWP Secured App
+        run: |
+          rm public/app-config.json
+          echo "${{ vars.IWP_SECURED_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+          cat public/app-config.json
+        shell: bash
+
+      - name: Build distribution IWP Secured App Distribution
         run: npm run build
 
       - name: Build And Deploy Azure Static Web Apps IWP Public App
@@ -45,4 +64,4 @@ jobs:
           api_location: ''
           skip_app_build: true
           verbose: 'true'
-          azure_static_web_apps_api_token: ${{ secrets.IWP_PUBLIC_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+          azure_static_web_apps_api_token: ${{ secrets.IWP_SECURED_APP_AZURE_STATIC_WEB_APP_TOKEN }}
