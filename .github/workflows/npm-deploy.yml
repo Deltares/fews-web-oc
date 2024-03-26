@@ -22,10 +22,23 @@ jobs:
       - name: Run unit tests
         run: npm run test
 
+      - name: Create app redirect file.
+        run: |
+          cat > staticwebapp.config.json <<EOL
+          {
+            "navigationFallback": {
+              "rewrite": "index.html"
+            }
+          }
+          EOL
+        shell: bash
+
+
       - name: Overwrite the app-config.json file for IWP Public App
         run: |
           rm public/app-config.json
           echo "${{ vars.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+          cp staticwebapp.config.json dist
         shell: bash
       - name: Build distribution
         run: npm run build
@@ -60,6 +73,7 @@ jobs:
         run: |
           rm public/app-config.json
           echo "${{ vars.BOM_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+          cp staticwebapp.config.json dist
         shell: bash
       - name: Build distribution BOM App Distribution
         run: npm run build
@@ -77,6 +91,7 @@ jobs:
         run: |
           rm public/app-config.json
           echo "${{ vars.SAVA_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+          cp staticwebapp.config.json dist
         shell: bash
       - name: Build distribution SAVA App Distribution
         run: npm run build
@@ -94,6 +109,7 @@ jobs:
         run: |
           rm public/app-config.json
           echo "${{ vars.GLOSSIS_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+          cp staticwebapp.config.json dist
         shell: bash
       - name: Build distribution GLOSSIS App Distribution
         run: npm run build
@@ -111,6 +127,7 @@ jobs:
         run: |
           rm public/app-config.json
           echo "${{ vars.NOORDZEE_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+          cp staticwebapp.config.json dist
         shell: bash
       - name: Build distribution Noordzee App Distribution
         run: npm run build
@@ -128,6 +145,7 @@ jobs:
         run: |
           rm public/app-config.json
           echo "${{ vars.DURBAN_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+          cp staticwebapp.config.json dist
         shell: bash
       - name: Build distribution Durban App Distribution
         run: npm run build
