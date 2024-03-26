@@ -28,7 +28,7 @@ jobs:
         run: |
           rm public/app-config.json
           echo "${IWP_PUBLIC_APP_CONFIG_JSON_BASE64}" | base64 --decode > public/app-config.json
-
+          cat public/app-config.json
       - name: Build distribution
         run: npm run build
 
