@@ -14,6 +14,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -27,8 +29,11 @@ jobs:
       - name: Overwrite the app-config.json file
         run: |
           rm public/app-config.json
-          echo "${IWP_PUBLIC_APP_CONFIG_JSON_BASE64}" | base64 --decode > public/app-config.json
+          echo "${{ github.event.repository.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}"
+          echo "${{ github.event.repository.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
           cat public/app-config.json
+        shell: bash
+
       - name: Build distribution
         run: npm run build
 
