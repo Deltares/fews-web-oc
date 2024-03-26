@@ -31,8 +31,8 @@ jobs:
           IWP_PUBLIC_APP_CONFIG_JSON_BASE64: ${{ github.event.repository.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}
         run: |
           rm public/app-config.json
-          echo "${{ IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}"
-          echo "${{ IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+          echo "$IWP_PUBLIC_APP_CONFIG_JSON_BASE64"
+          echo "$IWP_PUBLIC_APP_CONFIG_JSON_BASE64" | base64 --decode > public/app-config.json
           cat public/app-config.json
         shell: bash
 
