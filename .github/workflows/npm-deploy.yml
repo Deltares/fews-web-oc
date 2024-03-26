@@ -29,8 +29,8 @@ jobs:
       - name: Overwrite the app-config.json file
         run: |
           rm public/app-config.json
-          echo "${{ var.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}"
-          echo "${{ var.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+          echo "${{ vars.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}"
+          echo "${{ vars.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
           cat public/app-config.json
         shell: bash
 
