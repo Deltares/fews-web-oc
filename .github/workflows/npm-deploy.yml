@@ -1,12 +1,10 @@
 name: Deploy the Web OC test applications.
 
 on:
-  #  push:
-  #    branches: ['main']
-  #    paths:
-  #      - src/**
-  # for testing allow running on pull requests.
-  pull_request:
+  push:
+    branches: ['main']
+    paths:
+      - src/**
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -28,7 +26,6 @@ jobs:
         run: |
           rm public/app-config.json
           echo "${{ vars.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
-          cat public/app-config.json
         shell: bash
       - name: Build distribution
         run: npm run build
@@ -46,7 +43,6 @@ jobs:
         run: |
           rm public/app-config.json
           echo "${{ vars.IWP_SECURED_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
-          cat public/app-config.json
         shell: bash
       - name: Build distribution IWP Secured App Distribution
         run: npm run build
@@ -64,7 +60,6 @@ jobs:
         run: |
           rm public/app-config.json
           echo "${{ vars.BOM_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
-          cat public/app-config.json
         shell: bash
       - name: Build distribution BOM App Distribution
         run: npm run build
@@ -82,7 +77,6 @@ jobs:
         run: |
           rm public/app-config.json
           echo "${{ vars.SAVA_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
-          cat public/app-config.json
         shell: bash
       - name: Build distribution SAVA App Distribution
         run: npm run build
@@ -100,7 +94,6 @@ jobs:
         run: |
           rm public/app-config.json
           echo "${{ vars.GLOSSIS_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
-          cat public/app-config.json
         shell: bash
       - name: Build distribution GLOSSIS App Distribution
         run: npm run build
@@ -118,7 +111,6 @@ jobs:
         run: |
           rm public/app-config.json
           echo "${{ vars.NOORDZEE_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
-          cat public/app-config.json
         shell: bash
       - name: Build distribution Noordzee App Distribution
         run: npm run build
@@ -136,7 +128,6 @@ jobs:
         run: |
           rm public/app-config.json
           echo "${{ vars.DURBAN_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
-          cat public/app-config.json
         shell: bash
       - name: Build distribution Durban App Distribution
         run: npm run build
