@@ -55,12 +55,11 @@ import { authenticationManager } from '@/services/authentication/AuthenticationM
 import { filterToParams } from '@deltares/fews-wms-requests'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
 import { ref } from 'vue'
-import {useSystemTimeStore} from "@/stores/systemTime.ts";
+import { useSystemTimeStore } from '@/stores/systemTime.ts'
 import { computed } from 'vue'
-import {UseTimeSeriesOptions} from "@/services/useTimeSeries";
-import {toValue} from "vue";
-import {DateTime} from "luxon";
-
+import { UseTimeSeriesOptions } from '@/services/useTimeSeries'
+import { toValue } from 'vue'
+import { DateTime } from 'luxon'
 
 const store = useSystemTimeStore()
 const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
@@ -108,27 +107,32 @@ function isFilterActionsFilter(
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const downloadFile = (downloadFormat: string) => {
   const _options = toValue(viewPeriodFromStore)
-  let viewPeriod: string = "";
+  let viewPeriod: string = ''
   if (_options?.startTime || _options?.endTime) {
     // if either startTime or endTime is set, use it.
     if (_options?.startTime) {
-      const startTime = DateTime.fromJSDate(_options.startTime,{
+      const startTime = DateTime.fromJSDate(_options.startTime, {
         zone: 'UTC',
-      }).set({ millisecond: 0 }).toISO({ suppressMilliseconds: true })
+      })
+        .set({ millisecond: 0 })
+        .toISO({ suppressMilliseconds: true })
       viewPeriod = `&startTime=${startTime}`
     }
     if (_options?.endTime) {
       const endTime = DateTime.fromJSDate(_options.endTime, {
         zone: 'UTC',
-      }).set({millisecond: 0}).toISO({suppressMilliseconds: true})
+      })
+        .set({ millisecond: 0 })
+        .toISO({ suppressMilliseconds: true })
       viewPeriod = `${viewPeriod}&endTime=${endTime}`
     }
   }
   if (props.filter) {
     if (isFilterActionsFilter(props.filter)) {
       const queryParameters = filterToParams(props.filter)
+      const encodedFileName = encodeURIComponent(fileName.value)
       const url = new URL(
-        `${baseUrl}rest/fewspiservice/v1/timeseries/filters/actions${queryParameters}&downloadAsFile=true&documentFormat=${downloadFormat}${viewPeriod}`,
+        `${baseUrl}rest/fewspiservice/v1/timeseries/filters/actions${queryParameters}&downloadAsFile=${encodedFileName}&documentFormat=${downloadFormat}${viewPeriod}`,
       )
       return downloadFileAttachment(
         url.href,
@@ -140,10 +144,6 @@ const downloadFile = (downloadFormat: string) => {
     if (isTimeSeriesGridActionsFilter(props.filter)) {
       console.log('Not implemented')
       return
-      // not implemented yet.
-      // const queryParameters = filterToParams(props.filter)
-      // const url = new URL(`${baseUrl}rest/fewspiservice/v1/timeseries/grid/actions${queryParameters}&downloadAsFile=true&documentFormat=${downloadFormat}${viewPeriod}`,)
-      // return downloadFileAttachment(url.href, downloadFormat, authenticationManager.getAccessToken(),)
     }
   }
   const timeSeriesFilter: TimeSeriesTopologyActionsFilter = {
