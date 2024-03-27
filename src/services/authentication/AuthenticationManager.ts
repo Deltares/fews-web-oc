@@ -18,7 +18,11 @@ export class AuthenticationManager {
   }
 
   public getAccessToken(): string {
-    if (configManager.get('VITE_REQUEST_HEADER_AUTHORIZATION') !== RequestHeaderAuthorization.BEARER) return ''
+    if (
+      configManager.get('VITE_REQUEST_HEADER_AUTHORIZATION') !==
+      RequestHeaderAuthorization.BEARER
+    )
+      return ''
     if (this.user !== null) {
       return this.user.access_token
     }
