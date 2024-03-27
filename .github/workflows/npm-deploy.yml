@@ -1,12 +1,10 @@
 name: Deploy Web OC test applications.
 
 on:
-  #  push:
-  #    branches: ['main']
-  #    paths:
-  #      - src/**
-  # for testing allow running on pull requests.
-  pull_request:
+  push:
+    branches: ['main']
+    paths:
+      - src/**
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
