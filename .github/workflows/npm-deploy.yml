@@ -26,16 +26,20 @@ jobs:
 
       - name: Build distribution
         run: npm run build
-      - name: Overwrite the app-config.json file for IWP Public App
+      - name: Generate the staticwebapp.config.json file
         run: |
-          rm public/app-config.json
-          echo "${{ vars.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
           cat > dist/staticwebapp.config.json <<EOL
           {
             "navigationFallback": {
               "rewrite": "index.html"
             }
           }
+          EOL
+        shell: bash
+      - name: Overwrite the app-config.json file for IWP Public App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
           EOL
         shell: bash
       - name: Deploy Azure Static Web Apps IWP Public App
@@ -47,11 +51,10 @@ jobs:
           skip_app_build: true
           verbose: 'true'
           azure_static_web_apps_api_token: ${{ secrets.IWP_PUBLIC_APP_AZURE_STATIC_WEB_APP_TOKEN }}
-
 #      - name: Overwrite the app-config.json file for IWP Secured App
 #        run: |
-#          rm public/app-config.json
-#          echo "${{ vars.IWP_SECURED_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+#          rm dist/app-config.json
+#          echo "${{ vars.IWP_SECURED_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
 #        shell: bash
 #      - name: Deploy Azure Static Web Apps IWP Public App
 #        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -65,8 +68,8 @@ jobs:
 #
 #      - name: Overwrite the app-config.json file for BOM App
 #        run: |
-#          rm public/app-config.json
-#          echo "${{ vars.BOM_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+#          rm dist/app-config.json
+#          echo "${{ vars.BOM_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
 #        shell: bash
 #      - name: Deploy Azure Static Web Apps BOM App
 #        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -80,8 +83,8 @@ jobs:
 #
 #      - name: Overwrite the app-config.json file for SAVA App
 #        run: |
-#          rm public/app-config.json
-#          echo "${{ vars.SAVA_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+#          rm dist/app-config.json
+#          echo "${{ vars.SAVA_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
 #        shell: bash
 #      - name: Deploy Azure Static Web Apps SAVA App
 #        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -95,8 +98,8 @@ jobs:
 #
 #      - name: Overwrite the app-config.json file for GLOSSIS App
 #        run: |
-#          rm public/app-config.json
-#          echo "${{ vars.GLOSSIS_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+#          rm dist/app-config.json
+#          echo "${{ vars.GLOSSIS_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
 #        shell: bash
 #      - name: Deploy Azure Static Web Apps GLOSSIS App
 #        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -110,8 +113,8 @@ jobs:
 #
 #      - name: Overwrite the app-config.json file for Noordzee Secured App
 #        run: |
-#          rm public/app-config.json
-#          echo "${{ vars.NOORDZEE_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+#          rm dist/app-config.json
+#          echo "${{ vars.NOORDZEE_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
 #        shell: bash
 #      - name: Deploy Azure Static Web Apps Noordzee App
 #        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -125,8 +128,8 @@ jobs:
 #
 #      - name: Overwrite the app-config.json file for Durban App
 #        run: |
-#          rm public/app-config.json
-#          echo "${{ vars.DURBAN_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > public/app-config.json
+#          rm dist/app-config.json
+#          echo "${{ vars.DURBAN_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
 #        shell: bash
 #      - name: Deploy Azure Static Web Apps Durban App
 #        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
