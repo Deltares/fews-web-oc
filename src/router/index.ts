@@ -231,7 +231,9 @@ async function addDynamicRoutes() {
         component: Empty,
       })
     }
-    const embedRoute = embedRoutes.find((route) => route.name === `Embed/${component.type}`)
+    const embedRoute = embedRoutes.find(
+      (route) => route.name === `Embed/${component.type}`,
+    )
     if (embedRoute !== undefined) {
       router.addRoute(embedRoute)
     }
