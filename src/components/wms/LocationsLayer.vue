@@ -38,10 +38,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['click'])
 
-const defaultIconSize = 0.35
-
 const layoutSpecification = {
-  'icon-size': defaultIconSize,
   'icon-allow-overlap': true,
   'symbol-sort-key': 1,
 }
@@ -54,15 +51,15 @@ const { map } = useMap()
 
 if (map) {
   map.on('load', async () => {
+    map.loadImage('/images/map-marker.png', function (error, image) {
+      if (error) throw error
+      if (!map.hasImage('map-marker') && image !== undefined && image !== null)
+        map.addImage('map-marker', image, { sdf: true })
+    })
     map.loadImage('/images/favicon.ico', function (error, image) {
       if (error) throw error
       if (!map.hasImage('favicon') && image !== undefined && image !== null)
         map.addImage('favicon', image)
-    })
-    map.loadImage('/images/logo.png', function (error, image) {
-      if (error) throw error
-      if (!map.hasImage('logo') && image !== undefined && image !== null)
-        map.addImage('logo', image)
     })
   })
 }
@@ -126,15 +123,22 @@ function highlightSelectedLocationOnMap() {
     'match',
     ['get', 'locationId'],
     locationId,
-    'logo', // icon for selected location
+    'map-marker', // icon for selected location
     'favicon', // default icon
+  ])
+  map.setLayoutProperty(locationsLayerId, 'icon-anchor', [
+    'match',
+    ['get', 'locationId'],
+    locationId,
+    'bottom', // The bottom of the map-marker, used for the selected location, should point to the location
+    'center', // Default anchor for icons
   ])
   map.setLayoutProperty(locationsLayerId, 'icon-size', [
     'match',
     ['get', 'locationId'],
     locationId,
-    defaultIconSize * 1.1, // size for selected location
-    defaultIconSize, // default size
+    0.1, // size of the map-marker, which is used for the selected location
+    0.35, // default size
   ])
   map.setLayoutProperty(locationsLayerId, 'symbol-sort-key', [
     'match',
