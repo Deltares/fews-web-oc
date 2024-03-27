@@ -49,8 +49,11 @@ const paintSpecification = {
 
 const { map } = useMap()
 
-if (map) {
-  map.on('load', async () => {
+const locationsLayerId = 'location-layer'
+const locationsSourceId = 'location-source'
+
+function addLocationIcons() {
+  if (map) {
     map.loadImage('/images/map-marker.png', function (error, image) {
       if (error) throw error
       if (!map.hasImage('map-marker') && image !== undefined && image !== null)
@@ -61,11 +64,8 @@ if (map) {
       if (!map.hasImage('favicon') && image !== undefined && image !== null)
         map.addImage('favicon', image)
     })
-  })
+  }
 }
-
-const locationsLayerId = 'location-layer'
-const locationsSourceId = 'location-source'
 
 function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   if (map) {
@@ -98,6 +98,7 @@ onBeforeMount(() => {
     map.on('mouseleave', locationsLayerId, unsetCursorPointer)
     map.on('sourcedata', sourceDateLoaded)
   }
+  addLocationIcons()
 })
 
 onBeforeUnmount(() => {
