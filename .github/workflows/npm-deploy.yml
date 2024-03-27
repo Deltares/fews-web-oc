@@ -26,6 +26,7 @@ jobs:
 
       - name: Build distribution
         run: npm run build
+
       - name: Generate the staticwebapp.config.json file
         run: |
           cat > dist/staticwebapp.config.json <<EOL
@@ -34,6 +35,7 @@ jobs:
               "rewrite": "index.html"
             }
           }
+          touch dist/app-config.json
           EOL
         shell: bash
       - name: Overwrite the app-config.json file for IWP Public App
