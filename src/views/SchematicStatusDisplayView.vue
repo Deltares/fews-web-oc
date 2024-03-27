@@ -268,17 +268,34 @@ function switchPanel(request: SsdActionRequest): void {
 
   if (!groupId) return
 
+  const currentRoute = router.currentRoute.value
+  const parentRoute = router
+    .getRoutes()
+    .find(
+      (route) =>
+        route.children &&
+        route.children.some((child) => child.name === currentRoute.name),
+    )
+  const targetRouteName = parentRoute?.name ?? currentRoute.name
+  if (!targetRouteName) return
   router.push({
-    name: 'SchematicStatusDisplay',
+    name: targetRouteName,
     params: { groupId, panelId },
     query: route.query,
   })
 }
 
 function openTimeSeriesDisplay(panelId: string, objectId: string) {
+  const currentRoute = router.currentRoute.value
+  const routeConfig = router
+    .getRoutes()
+    .find((route) => route.name === currentRoute.name)
+  const childRoute = routeConfig?.children?.find((route) =>
+    route.name?.toString().endsWith('SSDTimeSeriesDisplay'),
+  )
   router
     .push({
-      name: 'SSDTimeSeriesDisplay',
+      name: childRoute?.name,
       params: { objectId: objectId, panelId: panelId, groupId: props.groupId },
     })
     .then(() => {
@@ -287,9 +304,18 @@ function openTimeSeriesDisplay(panelId: string, objectId: string) {
 }
 
 function closeTimeSeriesDisplay(): void {
+  const currentRoute = router.currentRoute.value
+  const parentRoute = router
+    .getRoutes()
+    .find(
+      (route) =>
+        route.children &&
+        route.children.some((child) => child.name === currentRoute.name),
+    )
+  if (!parentRoute) return
   router
     .push({
-      name: 'SchematicStatusDisplay',
+      name: parentRoute.name,
       params: { groupId: props.groupId, panelId: props.panelId },
     })
     .then(() => {

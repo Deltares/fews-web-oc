@@ -38,6 +38,7 @@ onMounted(() => {
 
 const layoutComponent = computed(() => {
   switch (route.meta.layout) {
+    case 'EmbedLayout':
     case 'EmptyLayout':
       return EmptyLayout
     default:
