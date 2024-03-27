@@ -290,8 +290,8 @@ function openTimeSeriesDisplay(panelId: string, objectId: string) {
   const routeConfig = router
     .getRoutes()
     .find((route) => route.name === currentRoute.name)
-  const childRoute = routeConfig?.children?.find(
-    (route) => route.name?.toString().endsWith('SSDTimeSeriesDisplay'),
+  const childRoute = routeConfig?.children?.find((route) =>
+    route.name?.toString().endsWith('SSDTimeSeriesDisplay'),
   )
   router
     .push({
