@@ -1,5 +1,9 @@
 name: Deploy Web OC test applications.
-
+#
+# To add a new deployment target, you need to:
+# 1. Add a new repository secret with the name of the deployment target and the value of the Azure Static Web Apps API token.
+# 2. Add a new repository varaibel with the name of the deployment target and the value of the app-config.json file in base64 format.
+#
 on:
   push:
     branches: ['main']
@@ -50,92 +54,87 @@ jobs:
           skip_app_build: true
 
           azure_static_web_apps_api_token: ${{ secrets.IWP_PUBLIC_APP_AZURE_STATIC_WEB_APP_TOKEN }}
-#      - name: Overwrite the app-config.json file for IWP Secured App
-#        run: |
-#          rm dist/app-config.json
-#          echo "${{ vars.IWP_SECURED_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
-#        shell: bash
-#      - name: Deploy Azure Static Web Apps IWP Public App
-#        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
-#        with:
-#          action: 'upload'
-#          app_location: '/dist'
-#          api_location: ''
-#          skip_app_build: true
-#          verbose: 'true'
-#          azure_static_web_apps_api_token: ${{ secrets.IWP_SECURED_APP_AZURE_STATIC_WEB_APP_TOKEN }}
-#
-#      - name: Overwrite the app-config.json file for BOM App
-#        run: |
-#          rm dist/app-config.json
-#          echo "${{ vars.BOM_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
-#        shell: bash
-#      - name: Deploy Azure Static Web Apps BOM App
-#        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
-#        with:
-#          action: 'upload'
-#          app_location: '/dist'
-#          api_location: ''
-#          skip_app_build: true
-#          verbose: 'true'
-#          azure_static_web_apps_api_token: ${{ secrets.BOM_APP_AZURE_STATIC_WEB_APP_TOKEN }}
-#
-#      - name: Overwrite the app-config.json file for SAVA App
-#        run: |
-#          rm dist/app-config.json
-#          echo "${{ vars.SAVA_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
-#        shell: bash
-#      - name: Deploy Azure Static Web Apps SAVA App
-#        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
-#        with:
-#          action: 'upload'
-#          app_location: '/dist'
-#          api_location: ''
-#          skip_app_build: true
-#          verbose: 'true'
-#          azure_static_web_apps_api_token: ${{ secrets.SAVA_APP_AZURE_STATIC_WEB_APP_TOKEN }}
-#
-#      - name: Overwrite the app-config.json file for GLOSSIS App
-#        run: |
-#          rm dist/app-config.json
-#          echo "${{ vars.GLOSSIS_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
-#        shell: bash
-#      - name: Deploy Azure Static Web Apps GLOSSIS App
-#        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
-#        with:
-#          action: 'upload'
-#          app_location: '/dist'
-#          api_location: ''
-#          skip_app_build: true
-#          verbose: 'true'
-#          azure_static_web_apps_api_token: ${{ secrets.GLOSSIS_APP_AZURE_STATIC_WEB_APP_TOKEN }}
-#
-#      - name: Overwrite the app-config.json file for Noordzee Secured App
-#        run: |
-#          rm dist/app-config.json
-#          echo "${{ vars.NOORDZEE_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
-#        shell: bash
-#      - name: Deploy Azure Static Web Apps Noordzee App
-#        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
-#        with:
-#          action: 'upload'
-#          app_location: '/dist'
-#          api_location: ''
-#          skip_app_build: true
-#          verbose: 'true'
-#          azure_static_web_apps_api_token: ${{ secrets.NOORDZEE_APP_AZURE_STATIC_WEB_APP_TOKEN }}
-#
-#      - name: Overwrite the app-config.json file for Durban App
-#        run: |
-#          rm dist/app-config.json
-#          echo "${{ vars.DURBAN_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
-#        shell: bash
-#      - name: Deploy Azure Static Web Apps Durban App
-#        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
-#        with:
-#          action: 'upload'
-#          app_location: '/dist'
-#          api_location: ''
-#          skip_app_build: true
-#          verbose: 'true'
-#          azure_static_web_apps_api_token: ${{ secrets.DURBAN_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+      - name: Overwrite the app-config.json file for IWP Secured App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.IWP_SECURED_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps IWP Public App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          verbose: 'true'
+          azure_static_web_apps_api_token: ${{ secrets.IWP_SECURED_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Overwrite the app-config.json file for BOM App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.BOM_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps BOM App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.BOM_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Overwrite the app-config.json file for SAVA App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.SAVA_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps SAVA App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.SAVA_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Overwrite the app-config.json file for GLOSSIS App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.GLOSSIS_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps GLOSSIS App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.GLOSSIS_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Overwrite the app-config.json file for Noordzee Secured App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.NOORDZEE_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps Noordzee App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.NOORDZEE_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Overwrite the app-config.json file for Durban App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.DURBAN_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps Durban App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.DURBAN_APP_AZURE_STATIC_WEB_APP_TOKEN }}
