@@ -407,13 +407,8 @@ watchEffect(() => {
 
   // Check if the active node is a leaf.
   const node = topologyMap.value.get(activeNodeId)
-  if (node === undefined) {
-    filterIds.value = []
-    return
-  }
-  if (node.filterIds) {
-    filterIds.value = node.filterIds
-  }
+  filterIds.value = node?.filterIds ?? []
+  if (filterIds.value.length === 0) return
   topologyNode.value = node
 
   if (showLeafsAsButton.value && Array.isArray(props.nodeId)) {
