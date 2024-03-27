@@ -1,4 +1,4 @@
-name: Deploy the Web OC test applications.
+name: Deploy Web OC test applications.
 
 on:
   #  push:
@@ -35,8 +35,8 @@ jobs:
               "rewrite": "index.html"
             }
           }
-          touch dist/app-config.json
           EOL
+          touch dist/app-config.json
         shell: bash
       - name: Overwrite the app-config.json file for IWP Public App
         run: |
@@ -51,7 +51,7 @@ jobs:
           app_location: '/dist'
           api_location: ''
           skip_app_build: true
-          verbose: 'true'
+
           azure_static_web_apps_api_token: ${{ secrets.IWP_PUBLIC_APP_AZURE_STATIC_WEB_APP_TOKEN }}
 #      - name: Overwrite the app-config.json file for IWP Secured App
 #        run: |
