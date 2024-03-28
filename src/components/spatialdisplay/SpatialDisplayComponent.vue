@@ -28,7 +28,7 @@
       :unit="elevationUnit"
     />
     <SelectedCoordinateLayer :geoJson="selectedCoordinateGeoJson" />
-    <v-chip-group class="control-container">
+    <div class="control-container">
       <LocationsLayerComponent
         v-if="filterIds"
         :filterIds="filterIds"
@@ -49,7 +49,13 @@
         v-model:layer-kind="layerKind"
         v-model:show-layer="showLayer"
       />
-    </v-chip-group>
+      <WorkflowsControl
+        v-if="secondaryWorkflows"
+        :secondaryWorkflows="secondaryWorkflows"
+        :startTime="props.layerCapabilities?.firstValueTime ?? ''"
+        :endTime="props.layerCapabilities?.lastValueTime ?? ''"
+      />
+    </div>
   </MapComponent>
   <DateTimeSlider
     v-if="times && times.length > 0"
@@ -72,6 +78,7 @@ import {
   useWmsLegend,
 } from '@/services/useWms'
 import ColourBar from '@/components/wms/ColourBar.vue'
+import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
 import AnimatedRasterLayer, {
   AnimatedRasterLayerOptions,
 } from '@/components/wms/AnimatedRasterLayer.vue'
@@ -93,6 +100,7 @@ import { LayerKind } from '@/lib/streamlines'
 import { Style } from '@deltares/fews-wms-requests'
 import { ColourMap } from '@deltares/fews-web-oc-charts'
 import { pointToGeoJson } from '@/lib/topology/coordinates'
+import { SecondaryWorkflowGroupItem } from '@deltares/fews-pi-requests'
 import { Range, useColourScalesStore } from '@/stores/colourScales'
 
 interface ElevationWithUnitSymbol {
@@ -112,6 +120,7 @@ interface Props {
   latitude?: string
   longitude?: string
   currentTime?: Date
+  secondaryWorkflows?: SecondaryWorkflowGroupItem[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -375,7 +384,12 @@ function onCoordinateClick(
 
 .control-container {
   position: absolute;
-  top: 8px;
-  left: 10px;
+  margin-top: 8px;
+  margin-left: 10px;
+  display: flex;
+  gap: 10px;
+  max-width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 </style>

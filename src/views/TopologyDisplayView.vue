@@ -112,6 +112,7 @@
     <keep-alive include="SpatialDisplay">
       <component
         :is="Component"
+        :secondaryWorkflows="secondaryWorkflows"
         :filter-ids="filterIds"
         :topologyNode="topologyNode"
       />
@@ -126,7 +127,10 @@ import TreeMenu from '@/components/general/TreeMenu.vue'
 import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
 import { useConfigStore } from '@/stores/config'
 
-import type { TopologyNode } from '@deltares/fews-pi-requests'
+import type {
+  SecondaryWorkflowGroupItem,
+  TopologyNode,
+} from '@deltares/fews-pi-requests'
 import { watchEffect } from 'vue'
 import { computed } from 'vue'
 import { ref, watch } from 'vue'
@@ -163,6 +167,22 @@ const configStore = useConfigStore()
 const { mobile } = useDisplay()
 
 const active = ref<string | undefined>(undefined)
+const activeNode = computed(() => {
+  if (!active.value) return
+
+  const node = topologyMap.value.get(active.value)
+  return node?.topologyNodes
+    ? node?.topologyNodes[activeParentNode.value]
+    : node
+})
+const secondaryWorkflows = computed<SecondaryWorkflowGroupItem[] | undefined>(
+  () => {
+    if (!activeNode.value) return
+    const node = activeNode.value
+
+    return node.secondaryWorkflows
+  },
+)
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
 const menuType = ref('treemenu')

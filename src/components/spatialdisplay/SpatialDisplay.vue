@@ -13,6 +13,7 @@
         v-model:elevation="elevation"
         v-model:current-time="currentTime"
         @coordinate-click="onCoordinateClick"
+        :secondaryWorkflows="secondaryWorkflows"
       ></SpatialDisplayComponent>
     </div>
     <div v-if="filter" class="child-container">
@@ -37,6 +38,7 @@ import { findParentRoute } from '@/router'
 import { onMounted } from 'vue'
 import { useWmsLayerCapabilities } from '@/services/useWms'
 import {
+  SecondaryWorkflowGroupItem,
   filterActionsFilter,
   timeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
@@ -52,6 +54,7 @@ interface Props {
   filterIds?: string[]
   latitude?: string
   longitude?: string
+  secondaryWorkflows?: SecondaryWorkflowGroupItem[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
