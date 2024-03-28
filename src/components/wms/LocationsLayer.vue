@@ -22,6 +22,8 @@ import {
 } from 'maplibre-gl'
 import { watch, onBeforeUnmount } from 'vue'
 import { onBeforeMount } from 'vue'
+import { uniqBy } from 'lodash'
+import { getResourcesIconsUrl } from '@/lib/fews-config'
 
 interface Props {
   locationsGeoJson: FeatureCollection<Geometry, Location>
@@ -52,18 +54,33 @@ const { map } = useMap()
 const locationsLayerId = 'location-layer'
 const locationsSourceId = 'location-source'
 
+watch(
+  () => props.locationsGeoJson,
+  () => {
+    addLocationIcons()
+  },
+)
+
 function addLocationIcons() {
+  const locationIcons = uniqBy(
+    props.locationsGeoJson.features,
+    'properties.iconName',
+  ).map((feature) => feature.properties.iconName ?? '')
   if (map) {
+    // Default icon for selected location
     map.loadImage('/images/map-marker.png', function (error, image) {
       if (error) throw error
       if (!map.hasImage('map-marker') && image !== undefined && image !== null)
-        map.addImage('map-marker', image, { sdf: true })
+        map.addImage('map-marker', image)
     })
-    map.loadImage('/images/favicon.ico', function (error, image) {
-      if (error) throw error
-      if (!map.hasImage('favicon') && image !== undefined && image !== null)
-        map.addImage('favicon', image)
-    })
+    // Specific icons for locations
+    for (const iconName of locationIcons) {
+      map.loadImage(getResourcesIconsUrl(iconName), function (error, image) {
+        if (error) throw error
+        if (!map.hasImage(iconName) && image !== undefined && image !== null)
+          map.addImage(iconName, image)
+      })
+    }
   }
 }
 
@@ -125,7 +142,7 @@ function highlightSelectedLocationOnMap() {
     ['get', 'locationId'],
     locationId,
     'map-marker', // icon for selected location
-    'favicon', // default icon
+    ['get', 'iconName'], // default icon
   ])
   map.setLayoutProperty(locationsLayerId, 'icon-anchor', [
     'match',
@@ -139,7 +156,7 @@ function highlightSelectedLocationOnMap() {
     ['get', 'locationId'],
     locationId,
     0.1, // size of the map-marker, which is used for the selected location
-    0.35, // default size
+    1, // default size
   ])
   map.setLayoutProperty(locationsLayerId, 'symbol-sort-key', [
     'match',
