@@ -37,127 +37,40 @@
           <v-select
             v-model="currentWorkflow"
             :items="secondaryWorkflows"
-            item-title="secondaryWorkflowId"
+            item-title="description"
             density="compact"
             variant="solo"
             flat
-            label="workflow"
+            label="Workflow"
+            return-object
             mandatory
           ></v-select>
         </v-row>
-        <v-form v-model="formIsValid">
-          <v-row>
-            <v-col>
-              <v-text-field
-                readonly
-                variant="plain"
-                density="compact"
-                v-model="bboxString"
-                label="Bounding box"
-              >
-                <template v-slot:append>
-                  <v-icon @click="showMapTool">mdi-selection-drag</v-icon>
-                </template>
-              </v-text-field>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <v-text-field
-                v-model.number="boundingBox[1]"
-                density="compact"
-                variant="plain"
-                type="number"
-                suffix="°N"
-                label="Lattitude min"
-                min="0"
-                :step="lattitudeStepSize"
-                hide-details
-                required
-              />
-            </v-col>
-            <v-col>
-              <v-text-field
-                v-model.number="boundingBox[3]"
-                density="compact"
-                variant="plain"
-                type="number"
-                suffix="°N"
-                label="max"
-                min="0"
-                :step="lattitudeStepSize"
-                hide-details
-                required
-              />
-            </v-col>
-            <v-col>
-              <v-text-field
-                v-model.number="lattitudeStepSize"
-                density="compact"
-                variant="plain"
-                type="number"
-                suffix="°N"
-                label="Δ"
-                min="0"
-                step="0.1"
-                hide-details
-                required
-              />
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <v-text-field
-                v-model.number="boundingBox[0]"
-                density="compact"
-                variant="plain"
-                type="number"
-                suffix="°E"
-                label="Longitude min"
-                min="0"
-                :step="longitudeStepSize"
-                hide-details
-                required
-              />
-            </v-col>
-            <v-col>
-              <v-text-field
-                v-model.number="boundingBox[2]"
-                density="compact"
-                variant="plain"
-                type="number"
-                suffix="°E"
-                label="max"
-                min="0"
-                :step="longitudeStepSize"
-                hide-details
-                required
-              />
-            </v-col>
-            <v-col>
-              <v-text-field
-                v-model.number="longitudeStepSize"
-                density="compact"
-                variant="plain"
-                type="number"
-                suffix="°E"
-                label="Δ"
-                min="0"
-                step="0.1"
-                hide-details
-                required
-              />
-            </v-col>
-          </v-row>
-        </v-form>
-        <div class="d-flex flex-column">
-          <v-btn
-            color="success"
-            class="mt-4"
-            block
-            :disabled="!formIsValid"
-            @click="startWorkflow"
+        <v-row v-if="hasBoundingBox">
+          <v-text-field
+            v-model="bboxString"
+            readonly
+            variant="plain"
+            density="compact"
+            label="Bounding box"
+            class="mx-4"
           >
+            <template v-slot:append>
+              <v-icon @click="showMapTool">mdi-selection-drag</v-icon>
+            </template>
+          </v-text-field>
+        </v-row>
+        <json-forms
+          :schema="formSchema"
+          :uischema="formUISchema"
+          :data="data"
+          :renderers="vuetifyRenderers"
+          :ajv="undefined"
+          validation-mode="NoValidation"
+          @change="onFormChange"
+        />
+        <div class="d-flex flex-column">
+          <v-btn color="success" class="mt-4" block @click="startWorkflow">
             Start
           </v-btn>
         </div>
@@ -178,17 +91,21 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { JsonForms } from '@jsonforms/vue'
+import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
 import { configManager } from '@/services/application-config'
-import type { BBox } from 'geojson'
 import DrawPolygonControl from '@/components/map/DrawPolygonControl.vue'
 import bbox from '@turf/bbox'
 import bboxPolygon from '@turf/bbox-polygon'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 import {
   ProcessDataFilter,
   SecondaryWorkflowGroupItem,
+  SecondaryWorkflowProperties,
 } from '@deltares/fews-pi-requests'
 import { GeoJSONStoreFeatures } from 'terra-draw'
 import { downloadNetCDF } from '@/services/useWorkflows'
+import { asyncComputed } from '@vueuse/core'
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[]
@@ -202,22 +119,111 @@ const currentWorkflow = ref<SecondaryWorkflowGroupItem>(
   props.secondaryWorkflows[0],
 )
 const workflowDialog = ref(false)
-const formIsValid = ref(false)
 const selectBbox = ref(false)
 const activeWorkflowIds = ref<string[]>([])
 const errorDialog = ref(false)
 const errorMessage = ref<string>()
+const data = ref()
 
-const boundingBox = ref<BBox>([0, 0, 0, 0])
+type FormValue = string | number | boolean | Date
+
+watch(
+  currentWorkflow,
+  () => {
+    const newData: Record<string, FormValue> = {}
+
+    currentWorkflow.value.properties?.forEach((property) => {
+      if (property.value === undefined) return
+      newData[property.key] = toValue(property.type, property.value)
+    })
+
+    data.value = newData
+  },
+  { immediate: true },
+)
+
+function toValue(
+  type: SecondaryWorkflowProperties['type'],
+  value: string,
+): FormValue {
+  switch (type) {
+    case 'string':
+      return value
+    case 'float':
+      return parseFloat(value)
+    case 'bool':
+      return value === 'true'
+    case 'double':
+      return parseFloat(value)
+    case 'int':
+      return parseInt(value)
+    case 'dateTime':
+      return new Date(value)
+  }
+}
+
+const hasBoundingBox = computed(
+  () =>
+    data.value.xMin !== undefined &&
+    data.value.yMin !== undefined &&
+    data.value.xMax !== undefined &&
+    data.value.yMax !== undefined &&
+    data.value.xCellSize !== undefined &&
+    data.value.yCellSize !== undefined,
+)
+
+const boundingBox = computed<[number, number, number, number]>({
+  get() {
+    return [
+      data.value.xMin ?? 0,
+      data.value.yMin ?? 0,
+      data.value.xMax ?? 0,
+      data.value.yMax ?? 0,
+    ]
+  },
+  set(newValue) {
+    data.value.xMin = newValue[0]
+    data.value.yMin = newValue[1]
+    data.value.xMax = newValue[2]
+    data.value.yMax = newValue[3]
+  },
+})
+
+const longitudeStepSize = computed(() => data.value.xCellSize ?? 0.1)
+const lattitudeStepSize = computed(() => data.value.yCellSize ?? 0.1)
+
 const bboxString = computed(() => {
   return `${boundingBox.value[0]}°E ${boundingBox.value[1]}°N , ${boundingBox.value[2]}°E ${boundingBox.value[3]}°N`
 })
 const features = ref<GeoJSONStoreFeatures[]>([])
 
-const longitudeStepSize = ref(0.1)
-const lattitudeStepSize = ref(0.1)
-
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+
+const formSchema = asyncComputed(
+  async () =>
+    await getJson(`${currentWorkflow.value.secondaryWorkflowId}.schema.json`),
+)
+const formUISchema = asyncComputed(
+  async () =>
+    await getJson(
+      `${currentWorkflow.value.secondaryWorkflowId}.ui-schema.json`,
+    ),
+)
+
+async function getJson(file: string) {
+  const url = getResourcesStaticUrl(file)
+  const data = await fetch(url)
+  return data.json()
+}
+
+function onFormChange(event: any) {
+  if (event.error) {
+    showErrorMessage(event.error)
+    return
+  }
+
+  data.value = event.data
+}
 
 function showMapTool() {
   selectBbox.value = true
@@ -229,7 +235,7 @@ function hideMapTool() {
   workflowDialog.value = true
 }
 
-function workflowInputsAreValid() {
+function bboxIsValid() {
   // Invalid when along x or y, min > max
   if (
     boundingBox.value[0] > boundingBox.value[2] ||
@@ -238,45 +244,20 @@ function workflowInputsAreValid() {
     return false
   }
 
-  const inputValues = [
-    lattitudeStepSize.value,
-    longitudeStepSize.value,
-    ...boundingBox.value,
-  ]
+  return boundingBox.value.every((v) => !isNaN(v))
+}
 
-  return inputValues.every((v) => !isNaN(v))
+function showErrorMessage(message: string) {
+  errorMessage.value = message
+  errorDialog.value = true
 }
 
 function startWorkflow() {
-  if (!workflowInputsAreValid()) {
-    errorMessage.value =
-      'Invalid input. Please enter valid values for dx, dy and bounding box extremes.'
-    errorDialog.value = true
-    return
-  }
-
-  const filter: ProcessDataFilter = {
-    workflowId: currentWorkflow.value.secondaryWorkflowId,
-    xMin: boundingBox.value[0],
-    yMin: boundingBox.value[1],
-    xMax: boundingBox.value[2],
-    yMax: boundingBox.value[3],
-    xCellSize: longitudeStepSize.value,
-    yCellSize: lattitudeStepSize.value,
-    startTime: props.startTime ?? '',
-    endTime: props.endTime ?? '',
-  }
-
-  const downloadPromise = downloadNetCDF(baseUrl, filter).catch(
-    ({ statusText }) => {
-      errorMessage.value = statusText
-      errorDialog.value = true
-    },
-  )
+  const promise = data.value['GET_PROCESS_DATA'] ? processData() : runTask()
 
   activeWorkflowIds.value.push(currentWorkflow.value.secondaryWorkflowId)
-  // Remove workflow once download is complete
-  downloadPromise.then(() => {
+  // Remove workflow once promise has resolved
+  promise.then(() => {
     activeWorkflowIds.value = activeWorkflowIds.value.filter(
       (id) => id !== currentWorkflow.value.secondaryWorkflowId,
     )
@@ -285,33 +266,99 @@ function startWorkflow() {
   workflowDialog.value = false
 }
 
-watch(
-  boundingBox,
-  () => {
-    const feature = bboxPolygon(boundingBox.value)
-    delete feature.bbox
+async function runTask() {
+  const url = new URL(`${baseUrl}rest/fewspiservice/v1/runtask`)
+  const params = url.searchParams
 
-    if (features.value.length > 0) {
-      features.value[0].geometry = feature.geometry
-    } else {
-      features.value.push(feature as GeoJSONStoreFeatures)
+  params.append('workflowId', currentWorkflow.value.secondaryWorkflowId)
+  params.append('startTime', props.startTime ?? '')
+  params.append('endTime', props.endTime ?? '')
+  // TODO: set correct user id
+  params.append('userId', '1598')
+  params.append('description', 'Test run')
+
+  Object.keys(data.value).forEach((key) => {
+    params.append(`property(${key})`, data.value[key])
+  })
+
+  await fetch(url).then((response) => {
+    if (!response.ok) {
+      showErrorMessage('Could not start task')
+      response.text().then(console.error)
     }
-  },
-  { deep: true },
-)
+  })
+}
+
+async function processData() {
+  if (!bboxIsValid()) {
+    showErrorMessage('Bounding box is invalid')
+    return
+  }
+
+  const filter: ProcessDataFilter = {
+    workflowId: currentWorkflow.value.secondaryWorkflowId,
+    xMin: data.value.xMin,
+    yMin: data.value.yMin,
+    xMax: data.value.xMax,
+    yMax: data.value.yMax,
+    xCellSize: data.value.xCellSize,
+    yCellSize: data.value.yCellSize,
+    startTime: props.startTime ?? '',
+    endTime: props.endTime ?? '',
+  }
+
+  await downloadNetCDF(baseUrl, filter).catch(({ statusText }) => {
+    showErrorMessage(statusText)
+  })
+}
+
+watch(boundingBox, updateFeature, { deep: true })
+function updateFeature() {
+  if (!bboxIsValid()) return
+
+  const feature = bboxPolygon(boundingBox.value)
+  delete feature.bbox
+
+  if (features.value.length > 0) {
+    features.value[0].geometry = feature.geometry
+  } else {
+    features.value.push(feature as GeoJSONStoreFeatures)
+  }
+}
 
 watch(features, () => {
-  if (
-    features.value.length > 0 &&
-    features.value[0].geometry.type === 'Polygon'
-  ) {
-    const result = bbox(features.value[0])
-    result[0] = roundToStep(result[0], longitudeStepSize.value)
-    result[2] = roundToStep(result[2], longitudeStepSize.value)
-    result[1] = roundToStep(result[1], lattitudeStepSize.value)
-    result[3] = roundToStep(result[3], lattitudeStepSize.value)
+  const type = features.value?.[0]?.geometry.type
 
-    boundingBox.value = result
+  if (type === 'Polygon') {
+    const newBbox = bbox(features.value[0])
+
+    const roundedBbox: [number, number, number, number] = [
+      roundToStep(newBbox[0], longitudeStepSize.value),
+      roundToStep(newBbox[1], lattitudeStepSize.value),
+      roundToStep(newBbox[2], longitudeStepSize.value),
+      roundToStep(newBbox[3], lattitudeStepSize.value),
+    ]
+
+    // Prevent the bbox from becoming a point or line in the x direction
+    if (Math.abs(roundedBbox[0] - roundedBbox[2]) < longitudeStepSize.value) {
+      roundedBbox[2] = roundToStep(
+        roundedBbox[0] + longitudeStepSize.value,
+        longitudeStepSize.value,
+      )
+    }
+
+    // Prevent the bbox from becoming a point or line in the y direction
+    if (Math.abs(roundedBbox[1] - roundedBbox[3]) < lattitudeStepSize.value) {
+      roundedBbox[3] = roundToStep(
+        roundedBbox[1] + lattitudeStepSize.value,
+        lattitudeStepSize.value,
+      )
+    }
+
+    boundingBox.value = roundedBbox
+    // Due to rounding the above set can be equal to the previous value
+    //  however we still want to update the feature
+    updateFeature()
   } else {
     boundingBox.value = [0, 0, 0, 0]
   }

@@ -68,6 +68,7 @@ onBeforeMount(() => {
 })
 
 onBeforeUnmount(() => {
+  draw.setMode('static')
   draw.stop()
 })
 
