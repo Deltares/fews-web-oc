@@ -28,7 +28,7 @@ jobs:
       - name: Build distribution
         run: npm run build
 
-      - name: Generate the staticwebapp.config.json file
+      - name: Create the staticwebapp.config.json file
         run: |
           cat > dist/staticwebapp.config.json <<EOL
           {
@@ -96,7 +96,7 @@ jobs:
           skip_app_build: true
           azure_static_web_apps_api_token: ${{ secrets.SAVA_APP_AZURE_STATIC_WEB_APP_TOKEN }}
 
-      - name: Overwrite the app-config.json file for GLOSSIS App
+      - name: Create app-config.json file for GLOSSIS App
         run: |
           rm dist/app-config.json
           echo "${{ vars.GLOSSIS_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
@@ -110,7 +110,7 @@ jobs:
           skip_app_build: true
           azure_static_web_apps_api_token: ${{ secrets.GLOSSIS_APP_AZURE_STATIC_WEB_APP_TOKEN }}
 
-      - name: Overwrite the app-config.json file for Noordzee Secured App
+      - name: Create app-config.json file for Noordzee Secured App
         run: |
           rm dist/app-config.json
           echo "${{ vars.NOORDZEE_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
@@ -124,7 +124,7 @@ jobs:
           skip_app_build: true
           azure_static_web_apps_api_token: ${{ secrets.NOORDZEE_APP_AZURE_STATIC_WEB_APP_TOKEN }}
 
-      - name: Overwrite the app-config.json file for Durban App
+      - name: Create the app-config.json file for Durban App
         run: |
           rm dist/app-config.json
           echo "${{ vars.DURBAN_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
@@ -137,3 +137,59 @@ jobs:
           api_location: ''
           skip_app_build: true
           azure_static_web_apps_api_token: ${{ secrets.DURBAN_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Create the app-config.json file for Navy App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.NAVY_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps Navy App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.NAVY_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Create the app-config.json file for Volvo Ocean Race App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.VOLVO_OCEAN_RACE_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps Volvo Ocean Race App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.VOLVO_OCEAN_RACE_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Create the app-config.json file for Trend Hyd App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.TREND_HYD_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps Trend Hyd
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.TREND_HYD_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Create the app-config.json file for IWP SWM App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.IWP_SWM_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps IWP SWM
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.IWP_SWM_APP_AZURE_STATIC_WEB_APP_TOKEN }}
