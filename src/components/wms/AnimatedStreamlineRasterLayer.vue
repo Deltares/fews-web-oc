@@ -112,8 +112,10 @@ function addLayer(): void {
 }
 
 function removeLayer(): void {
-  map?.removeLayer(layerId)
-  map?.off('dblclick', onDoubleClick)
+  if (map !== undefined && map.style !== undefined) {
+    map.removeLayer(layerId)
+    map.off('dblclick', onDoubleClick)
+  }
 }
 
 function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent) {
@@ -129,6 +131,7 @@ function mergeOptions(
   return {
     baseUrl: baseUrlWms,
     layer: layerOptions.name,
+    useDisplayUnits: layerOptions.useDisplayUnits,
     streamlineStyle: streamlineOptions?.coloredParticles
       ? StreamlineStyle.MagnitudeColoredParticles
       : StreamlineStyle.ColoredParticles,

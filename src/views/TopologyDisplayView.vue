@@ -114,6 +114,7 @@
         :is="Component"
         :secondaryWorkflows="secondaryWorkflows"
         :filter-ids="filterIds"
+        :topologyNode="topologyNode"
       />
     </keep-alive>
   </router-view>
@@ -193,6 +194,7 @@ const items = ref<ColumnItem[]>([])
 const menuType = ref('treemenu')
 
 const filterIds = ref<string[]>([])
+const topologyNode = ref<TopologyNode | undefined>(undefined)
 
 const activeTab = ref(0)
 const activeTabType = ref('')
@@ -243,6 +245,12 @@ getTopologyNodes().then((response) => {
 
 function topologyNodeIsVisible(node: TopologyNode): boolean {
   if (node.url !== undefined) return true
+  if (
+    node.filterIds !== undefined &&
+    node.filterIds.length == 1 &&
+    node.dataDownloadDisplay !== undefined
+  )
+    return true
   if (node.plotId != undefined && node.locationIds != undefined) return true
   if (node.filterIds !== undefined && node.filterIds.length > 0) return true
   if (node.gridDisplaySelection !== undefined) return true
@@ -365,6 +373,24 @@ function displayTabsForNode(leafNode: TopologyNode, parentNodeId?: string) {
       icon: 'mdi-chart-multiple',
     })
   }
+  if (
+    leafNode.filterIds !== undefined &&
+    leafNode.filterIds.length == 1 &&
+    leafNode.dataDownloadDisplay !== undefined
+  ) {
+    _displayTabs.push({
+      type: 'charts',
+      id: timeseriesTabId,
+      title: 'Download',
+      to: {
+        name: 'TopologyDataDownload',
+        params: {
+          nodeId: parentNodeId ? [parentNodeId, leafNode.id] : leafNode.id,
+        },
+      },
+      icon: 'mdi-download',
+    })
+  }
   return _displayTabs
 }
 
@@ -394,6 +420,8 @@ watchEffect(() => {
   if (node.filterIds) {
     filterIds.value = node.filterIds
   }
+  topologyNode.value = node
+
   if (showLeafsAsButton.value && Array.isArray(props.nodeId)) {
     const menuNodeId = props.nodeId[0]
     const menuNode = topologyMap.value.get(menuNodeId) as any
@@ -422,12 +450,29 @@ function reroute(to: RouteLocationNormalized) {
   }
   if (
     (showLeafsAsButton.value && typeof to.params.nodeId === 'string') ||
-    (Array.isArray(to.params.nodeId) && to.params.nodeId.length === 1)
+    (showLeafsAsButton.value &&
+      Array.isArray(to.params.nodeId) &&
+      to.params.nodeId.length === 1)
   ) {
     const parentNodeId = Array.isArray(to.params.nodeId)
       ? to.params.nodeId[0]
       : to.params.nodeId
     const menuNode = topologyMap.value.get(parentNodeId) as any
+    if (menuNode === undefined) return
+    if (menuNode.topologyNodes === undefined) {
+      const leafNodeId = parentNodeId
+      const parentNode = [...topologyMap.value?.values()].find((p) => {
+        return p.topologyNodes?.map((c) => c.id).includes(leafNodeId)
+      })
+      if (parentNode?.id === undefined) return
+      const to = {
+        name: 'TopologyDisplay',
+        params: {
+          nodeId: [parentNode?.id, leafNodeId],
+        },
+      }
+      return to
+    }
     if (to.name === 'TopologyDisplay') {
       const sources = nodeButtonItems(menuNode)
       if (activeParentId.value) {

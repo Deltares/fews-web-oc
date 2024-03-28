@@ -27,6 +27,8 @@ const SpatialTimeSeriesDisplay = () =>
   import('../components/spatialdisplay/SpatialTimeSeriesDisplay.vue')
 const TimeSeriesDisplayView = () => import('../views/TimeSeriesDisplayView.vue')
 const TopologyDisplayView = () => import('../views/TopologyDisplayView.vue')
+const DataDownloadDisplayView = () =>
+  import('../components/download/DataDownloadDisplayComponent.vue')
 const TimeSeriesDisplay = () =>
   import('../components/timeseries/TimeSeriesDisplay.vue')
 const HtmlDisplay = () => import('../views/HtmlDisplay.vue')
@@ -67,6 +69,25 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
     name: 'AuthLogout',
     meta: { layout: 'EmptyLayout' },
     component: Logout,
+  },
+]
+
+export const embedRoutes: Readonly<RouteRecordRaw[]> = [
+  {
+    path: '/embed/ssd/:groupId?/:panelId?',
+    name: 'Embed/SchematicStatusDisplay',
+    component: SchematicStatusDisplayView,
+    props: true,
+    meta: { sidebar: true, layout: 'EmbedLayout' },
+    children: [
+      {
+        path: '/embed/ssd/:groupId?/:panelId?/object/:objectId',
+        name: 'Embed/SSDTimeSeriesDisplay',
+        component: SSDTimeSeriesDisplay,
+        props: true,
+        meta: { sidebar: true, layout: 'EmbedLayout' },
+      },
+    ],
   },
 ]
 
@@ -136,6 +157,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     props: true,
     meta: { sidebar: true },
     children: [
+      {
+        path: '/topology/node/:nodeId*/download/',
+        name: 'TopologyDataDownload',
+        component: DataDownloadDisplayView,
+        props: true,
+        meta: { sidebar: true },
+      },
       {
         path: '/topology/node/:nodeId*/series/',
         name: 'TopologyTimeSeries',
@@ -212,6 +240,12 @@ async function addDynamicRoutes() {
         component: Empty,
       })
     }
+    const embedRoute = embedRoutes.find(
+      (route) => route.name === `Embed/${component.type}`,
+    )
+    if (embedRoute !== undefined) {
+      router.addRoute(embedRoute)
+    }
   })
   if (store.defaultComponent !== undefined) {
     if (router.hasRoute(store.defaultComponent.type)) {
@@ -236,7 +270,11 @@ function defaultRouteParams(to: RouteLocationNormalized) {
     for (const key in defaultPath) {
       if (defaultPath[key] !== undefined) {
         if (!params[key]) {
-          params[key] = defaultPath[key]
+          if (component.type === 'TopologyDisplay' && key === 'nodeId') {
+            params[key] = defaultPath[key].split('/')
+          } else {
+            params[key] = defaultPath[key]
+          }
           requiresRedirect = true
         }
       }

@@ -1,0 +1,195 @@
+name: Deploy Web OC test applications.
+#
+# To add a new deployment target, you need to:
+# 1. Add a new repository secret with the name of the deployment target and the value of the Azure Static Web Apps API token.
+# 2. Add a new repository varaibel with the name of the deployment target and the value of the app-config.json file in base64 format.
+#
+on:
+  push:
+    branches:
+      - main
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 18
+      - run: npm ci
+      - name: Run unit tests
+        run: npm run test
+
+      - name: Build distribution
+        run: npm run build
+
+      - name: Create the staticwebapp.config.json file
+        run: |
+          cat > dist/staticwebapp.config.json <<EOL
+          {
+            "navigationFallback": {
+              "rewrite": "index.html"
+            }
+          }
+          EOL
+          touch dist/app-config.json
+        shell: bash
+      - name: Overwrite the app-config.json file for IWP Public App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps IWP Public App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+
+          azure_static_web_apps_api_token: ${{ secrets.IWP_PUBLIC_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+      - name: Overwrite the app-config.json file for IWP Secured App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.IWP_SECURED_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps IWP Public App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          verbose: 'true'
+          azure_static_web_apps_api_token: ${{ secrets.IWP_SECURED_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Overwrite the app-config.json file for BOM App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.BOM_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps BOM App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.BOM_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Overwrite the app-config.json file for SAVA App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.SAVA_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps SAVA App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.SAVA_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Create app-config.json file for GLOSSIS App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.GLOSSIS_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps GLOSSIS App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.GLOSSIS_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Create app-config.json file for Noordzee Secured App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.NOORDZEE_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps Noordzee App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.NOORDZEE_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Create the app-config.json file for Durban App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.DURBAN_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps Durban App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.DURBAN_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Create the app-config.json file for Navy App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.NAVY_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps Navy App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.NAVY_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Create the app-config.json file for Volvo Ocean Race App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.VOLVO_OCEAN_RACE_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps Volvo Ocean Race App
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.VOLVO_OCEAN_RACE_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Create the app-config.json file for Trend Hyd App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.TREND_HYD_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps Trend Hyd
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.TREND_HYD_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+      - name: Create the app-config.json file for IWP SWM App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.IWP_SWM_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps IWP SWM
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.IWP_SWM_APP_AZURE_STATIC_WEB_APP_TOKEN }}

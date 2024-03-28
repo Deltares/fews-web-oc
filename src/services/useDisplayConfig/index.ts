@@ -41,11 +41,14 @@ function isTimeSeriesGridActionsFilter(
  */
 function actionsResponseToDisplayConfig(
   actionsResponse: ActionsResponse,
+  nodeId: string | undefined,
 ): DisplayConfig[] {
   const displays: DisplayConfig[] = []
   for (const result of actionsResponse.results) {
     if (result.config === undefined) continue
     const title = result.config.timeSeriesDisplay.title ?? ''
+    const timeSeriesDisplayIndex: number | undefined =
+      result.config.timeSeriesDisplay.index ?? undefined
     let subplots: ChartConfig[] = []
     if (result.config.timeSeriesDisplay.subplots) {
       subplots = result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
@@ -55,7 +58,9 @@ function actionsResponseToDisplayConfig(
     const display: DisplayConfig = {
       id: title,
       title,
+      nodeId: nodeId,
       class: 'singles',
+      index: timeSeriesDisplayIndex,
       requests: result.requests,
       subplots,
     }
@@ -91,7 +96,7 @@ export function useDisplayConfig(
     const _options = toValue(options)
     filter = { ...filter, ..._options }
     const response = await piProvider.getTopologyActions(filter)
-    const _displays = actionsResponseToDisplayConfig(response)
+    const _displays = actionsResponseToDisplayConfig(response, toValue(nodeId))
     displays.value = _displays
     displayConfig.value = _displays[_plotId]
   })
@@ -125,6 +130,7 @@ export function useDisplayConfigFilter(
   watchEffect(async () => {
     const _filter = toValue(filter)
     let response: ActionsResponse
+    let nodeId = undefined
     if (isFilterActionsFilter(_filter)) {
       if (!_filter.filterId) return
       response = await piProvider.getFilterActions(_filter)
@@ -151,7 +157,7 @@ export function useDisplayConfigFilter(
       displays.value = undefined
       return
     }
-    const _displays = actionsResponseToDisplayConfig(response)
+    const _displays = actionsResponseToDisplayConfig(response, nodeId)
     displays.value = _displays
     displayConfig.value = _displays[0]
   })

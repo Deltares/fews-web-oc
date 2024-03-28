@@ -1,0 +1,36 @@
+name: Upload assets on new release
+
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - base: /
+            asset_name: dist
+          - base: /weboc/
+            asset_name: dist-weboc
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup node v20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run build -- --base=${{ matrix.base }}
+      - run: zip -r ${{ matrix.asset_name }} dist
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./${{ matrix.asset_name }}.zip
+          asset_name: ${{ matrix.asset_name }}.zip
+          asset_content_type: application/zip
