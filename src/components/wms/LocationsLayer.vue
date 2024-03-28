@@ -3,15 +3,25 @@
     :source-id="locationsSourceId"
     :data="props.locationsGeoJson"
   >
+    <mgl-symbol-layer
+      :layer-id="locationsSymbolLayerId"
+      :layout="layoutSymbolSpecification"
+      :paint="paintSymbolSpecification"
+    />
     <mgl-circle-layer
-      :layer-id="locationsLayerId"
-      :paint="paintSpecification"
+      :layer-id="locationsCircleLayerId"
+      :paint="paintCircleSpecification"
     />
   </mgl-geo-json-source>
 </template>
 
 <script setup lang="ts">
-import { MglCircleLayer, MglGeoJsonSource, useMap } from 'vue-maplibre-gl'
+import {
+  MglCircleLayer,
+  MglSymbolLayer,
+  MglGeoJsonSource,
+  useMap,
+} from 'vue-maplibre-gl'
 import { FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
 import {
@@ -21,6 +31,8 @@ import {
 } from 'maplibre-gl'
 import { watch, onBeforeUnmount } from 'vue'
 import { onBeforeMount } from 'vue'
+import { uniqBy } from 'lodash'
+import { getResourcesIconsUrl } from '@/lib/fews-config'
 
 interface Props {
   locationsGeoJson: FeatureCollection<Geometry, Location>
@@ -37,23 +49,69 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['click'])
 
-const paintSpecification = {
+const layoutSymbolSpecification = {
+  'icon-allow-overlap': true,
+  'symbol-sort-key': 1,
+}
+
+const defaultOpacity = 0.75
+
+const paintSymbolSpecification = {
+  'icon-opacity': defaultOpacity,
+}
+
+const paintCircleSpecification = {
   'circle-radius': 5,
   'circle-color': '#dfdfdf',
-  'circle-opacity': 0.75,
+  'circle-opacity': defaultOpacity,
   'circle-stroke-color': 'black',
   'circle-stroke-width': 1.5,
 }
 
 const { map } = useMap()
 
-const locationsLayerId = 'location-layer'
+const locationsCircleLayerId = 'location-circle-layer'
+const locationsSymbolLayerId = 'location-symbol-layer'
 const locationsSourceId = 'location-source'
+
+watch(
+  () => props.locationsGeoJson,
+  () => {
+    addLocationIcons()
+  },
+)
+
+function addLocationIcons() {
+  const locationIcons = uniqBy(
+    props.locationsGeoJson.features,
+    'properties.iconName',
+  ).map((feature) => feature.properties.iconName ?? '')
+  if (map) {
+    // Default icon for selected location
+    if (!map.hasImage('map-marker')) {
+      map.loadImage('/images/map-marker.png', function (error, image) {
+        if (error) throw error
+        if (image !== undefined && image !== null)
+          map.addImage('map-marker', image)
+      })
+    }
+    // Specific icons for locations
+    for (const iconName of locationIcons) {
+      if (iconName !== '' && !map.hasImage(iconName)) {
+        map.loadImage(getResourcesIconsUrl(iconName), function (error, image) {
+          if (error) throw error
+          if (image !== undefined && image !== null)
+            map.addImage(iconName, image)
+        })
+      }
+    }
+  }
+}
 
 function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   if (map) {
     const features = map.queryRenderedFeatures(event.point, {
-      layers: [locationsLayerId],
+      layers: [locationsSymbolLayerId, locationsCircleLayerId],
     })
     if (!features.length) return
     onLocationClick(event)
@@ -76,18 +134,23 @@ function sourceDateLoaded(e: MapSourceDataEvent) {
 
 onBeforeMount(() => {
   if (map) {
-    map.on('click', locationsLayerId, clickHandler)
-    map.on('mouseenter', locationsLayerId, setCursorPointer)
-    map.on('mouseleave', locationsLayerId, unsetCursorPointer)
+    for (const layerId of [locationsCircleLayerId, locationsSymbolLayerId]) {
+      map.on('click', layerId, clickHandler)
+      map.on('mouseenter', layerId, setCursorPointer)
+      map.on('mouseleave', layerId, unsetCursorPointer)
+    }
     map.on('sourcedata', sourceDateLoaded)
   }
+  addLocationIcons()
 })
 
 onBeforeUnmount(() => {
   if (map) {
-    map.off('click', locationsLayerId, clickHandler)
-    map.off('mouseenter', locationsLayerId, setCursorPointer)
-    map.off('mouseleave', locationsLayerId, unsetCursorPointer)
+    for (const layerId of [locationsCircleLayerId, locationsSymbolLayerId]) {
+      map.off('click', layerId, clickHandler)
+      map.off('mouseenter', layerId, setCursorPointer)
+      map.off('mouseleave', layerId, unsetCursorPointer)
+    }
     map.off('sourcedata', sourceDateLoaded)
   }
 })
@@ -102,34 +165,48 @@ watch(
 function highlightSelectedLocationOnMap() {
   if (!map?.getSource(locationsSourceId)) return
   const locationId = props.selectedLocationId ?? 'noLayerSelected'
-  map.setPaintProperty(locationsLayerId, 'circle-color', [
-    'match',
-    ['get', 'locationId'],
-    locationId,
-    '#0c1e38', // color for selected location
-    '#dfdfdf', // default color
+
+  // Move the selected location from the symbol layer to the circle layer, or vice versa
+  map.setFilter(locationsSymbolLayerId, [
+    'any',
+    ['has', 'iconName'],
+    ['==', 'locationId', locationId],
   ])
-  map.setPaintProperty(locationsLayerId, 'circle-stroke-color', [
-    'match',
-    ['get', 'locationId'],
-    locationId,
-    'white', // stroke color for selected location
-    'black', // default stroke color
+  map.setFilter(locationsCircleLayerId, [
+    'all',
+    ['!has', 'iconName'],
+    ['!=', 'locationId', locationId],
   ])
-  map.setPaintProperty(locationsLayerId, 'circle-radius', [
+
+  // Set the icon for the selected location
+  map.setLayoutProperty(locationsSymbolLayerId, 'icon-image', [
     'match',
     ['get', 'locationId'],
     locationId,
-    7, // radius for selected location
-    5, // default radius
-  ]),
-    map.setLayoutProperty(locationsLayerId, 'circle-sort-key', [
-      'match',
-      ['get', 'locationId'],
-      locationId,
-      2,
-      1,
-    ])
+    'map-marker', // icon for selected location
+    ['get', 'iconName'], // default icon
+  ])
+  map.setLayoutProperty(locationsSymbolLayerId, 'icon-anchor', [
+    'match',
+    ['get', 'locationId'],
+    locationId,
+    'bottom', // The bottom of the map-marker, used for the selected location, should point to the location
+    'center', // Default anchor for icons
+  ])
+  map.setLayoutProperty(locationsSymbolLayerId, 'icon-size', [
+    'match',
+    ['get', 'locationId'],
+    locationId,
+    0.1, // size of the map-marker, which is used for the selected location
+    1, // default size
+  ])
+  map.setLayoutProperty(locationsSymbolLayerId, 'symbol-sort-key', [
+    'match',
+    ['get', 'locationId'],
+    locationId,
+    2, // sort key for selected location
+    1, // default sort key
+  ])
 }
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {

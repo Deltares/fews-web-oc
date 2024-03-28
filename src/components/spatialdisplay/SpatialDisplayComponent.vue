@@ -30,8 +30,8 @@
     <SelectedCoordinateLayer :geoJson="selectedCoordinateGeoJson" />
     <v-chip-group class="control-container">
       <LocationsLayerComponent
-        v-if="filterIds"
-        :filterIds="filterIds"
+        v-if="props.filterIds"
+        :filter-ids="props.filterIds"
         :locationId="props.locationId"
         @changeLocationId="onLocationChange"
       />
