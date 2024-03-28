@@ -88,18 +88,22 @@ function addLocationIcons() {
   ).map((feature) => feature.properties.iconName ?? '')
   if (map) {
     // Default icon for selected location
-    map.loadImage('/images/map-marker.png', function (error, image) {
-      if (error) throw error
-      if (!map.hasImage('map-marker') && image !== undefined && image !== null)
-        map.addImage('map-marker', image)
-    })
+    if (!map.hasImage('map-marker')) {
+      map.loadImage('/images/map-marker.png', function (error, image) {
+        if (error) throw error
+        if (image !== undefined && image !== null)
+          map.addImage('map-marker', image)
+      })
+    }
     // Specific icons for locations
     for (const iconName of locationIcons) {
-      map.loadImage(getResourcesIconsUrl(iconName), function (error, image) {
-        if (error) throw error
-        if (!map.hasImage(iconName) && image !== undefined && image !== null)
-          map.addImage(iconName, image)
-      })
+      if (iconName !== '' && !map.hasImage(iconName)) {
+        map.loadImage(getResourcesIconsUrl(iconName), function (error, image) {
+          if (error) throw error
+          if (image !== undefined && image !== null)
+            map.addImage(iconName, image)
+        })
+      }
     }
   }
 }
