@@ -22,6 +22,7 @@
     "@deltares/fews-web-oc-charts": "^3.0.2",
     "@deltares/fews-wms-requests": "^1.0.0",
     "@turf/bbox": "^7.0.0-alpha.114",
+    "@turf/boolean-intersects": "^7.0.0-alpha.114",
     "@turf/circle": "^7.0.0-alpha.114",
     "@turf/helpers": "^7.0.0-alpha.114",
     "@turf/projection": "^7.0.0-alpha.114",

@@ -48,7 +48,11 @@
       </div>
       <v-spacer />
       <div class="play-controls">
-        <v-menu offset="25" transition="fade-transition">
+        <v-menu
+          offset="25"
+          transition="fade-transition"
+          v-if="!hideSpeedControls"
+        >
           <template v-slot:activator="{ props }">
             <v-btn v-bind="props" density="compact" variant="text" icon>
               <v-icon>mdi-play-speed</v-icon>
@@ -114,6 +118,7 @@ interface Properties {
   doFollowNow?: boolean
   playInterval?: number
   followNowInterval?: number
+  hideSpeedControls?: boolean
 }
 
 const props = withDefaults(defineProps<Properties>(), {
@@ -121,6 +126,7 @@ const props = withDefaults(defineProps<Properties>(), {
   doFollowNow: true,
   playInterval: 1000,
   followNowInterval: 60000,
+  hideSpeedControls: false,
 })
 const emit = defineEmits(['update:selectedDate', 'update:doFollowNow'])
 
@@ -145,6 +151,13 @@ onMounted(() => {
     startFollowNow()
   }
 })
+
+watch(
+  () => props.hideSpeedControls,
+  () => {
+    console.log('mobile', props.hideSpeedControls)
+  },
+)
 
 const marks = computed(() => {
   const dayMarks: Record<string, any> = {}
@@ -348,7 +361,7 @@ function formatSpeed(speed: number) {
 
 .datetime-slider__datefield {
   margin: auto;
-  width: 24ch;
+  width: 20ch;
   flex: 2 0 20%;
 }
 
