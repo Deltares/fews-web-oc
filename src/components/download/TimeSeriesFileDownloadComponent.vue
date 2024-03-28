@@ -54,11 +54,9 @@ import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
 import { filterToParams } from '@deltares/fews-wms-requests'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
-import { ref } from 'vue'
+import { ref, computed, toValue } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime.ts'
-import { computed } from 'vue'
 import { UseTimeSeriesOptions } from '@/services/useTimeSeries'
-import { toValue } from 'vue'
 import { DateTime } from 'luxon'
 
 const store = useSystemTimeStore()
