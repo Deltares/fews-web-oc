@@ -2,11 +2,52 @@
   <v-container>
     <v-card title="Make a selection to download data">
       <v-row align="start" class="ma-1">
+        <v-col v-for="(item, index) in attributes">
+          <v-autocomplete
+            density="compact"
+            :label="item.name"
+            v-model="selectedAttributes[index]"
+            multiple
+            single-line
+            hide-details
+            rounded="0"
+            @update:modelValue="updateLocations"
+            :items="selectableAttributes[index]"
+          />
+        </v-col>
+      </v-row>
+      <v-row align="start" class="ma-1">
+        <v-col>
+          <v-autocomplete
+            density="compact"
+            :item-title="(item) => getParameterName(item)"
+            return-object
+            v-model="selectedParameters"
+            multiple
+            single-line
+            hide-details
+            rounded="0"
+            label="Parameters"
+            :items="parameters"
+          >
+            <template v-slot:selection="{ item, index }">
+              <span v-if="index < 4">{{ item.title }}</span>
+              <span v-if="index == 4"
+                >... ({{ selectedParameters.length }} selected)</span
+              >
+            </template>
+          </v-autocomplete>
+        </v-col>
+      </v-row>
+      <v-row align="start" class="ma-1">
         <v-col>
           <v-autocomplete
             :item-title="(item) => getLocationName(item)"
             v-model="selectedLocations"
             multiple
+            single-line
+            hide-details
+            rounded="0"
             return-object
             density="compact"
             label="locations"
@@ -23,41 +64,11 @@
       </v-row>
       <v-row align="start" class="ma-1">
         <v-col>
-          <v-autocomplete
-            density="compact"
-            :item-title="(item) => getParameterName(item)"
-            return-object
-            v-model="selectedParameters"
-            multiple
-            label="Parameters"
-            :items="parameters"
-          >
-            <template v-slot:selection="{ item, index }">
-              <span v-if="index < 4">{{ item.title }}</span>
-              <span v-if="index == 4"
-                >... ({{ selectedParameters.length }} selected)</span
-              >
-            </template>
-          </v-autocomplete>
-        </v-col>
-      </v-row>
-      <v-row align="start" class="ma-1">
-        <v-col v-for="(item, index) in attributes">
-          <v-combobox
-            density="compact"
-            :label="item.name"
-            v-model="selectedAttributes[index]"
-            multiple
-            :items="getAttributes(item.id)"
-          />
-        </v-col>
-      </v-row>
-      <v-row align="start" class="ma-1">
-        <v-col>
           <v-text-field
             v-model="startDateString"
             label="Start"
             density="compact"
+            :rules="[rules.required, rules.date]"
             variant="solo-filled"
             flat
           >
@@ -78,6 +89,7 @@
             v-model="endDateString"
             label="End"
             density="compact"
+            :rules="[rules.required, rules.date]"
             variant="solo-filled"
             flat
           >
@@ -116,17 +128,17 @@
               color="primary"
               @click="downloadData"
               block
-              >Download</v-btn
-            >
+              >Download
+            </v-btn>
           </v-col>
         </v-row>
       </v-card-actions>
     </v-card>
     <v-row>
       <v-col>
-        <v-text-field v-for="error in errors" style="color: red" readonly>{{
-          error
-        }}</v-text-field>
+        <v-text-field v-for="error in errors" style="color: red" readonly
+          >{{ error }}
+        </v-text-field>
       </v-col>
     </v-row>
   </v-container>
@@ -136,20 +148,19 @@
 import { ref, watch } from 'vue'
 import {
   DocumentFormat,
+  Location,
+  LocationsFilter,
+  ParametersFilter,
   PiWebserviceProvider,
+  TimeSeriesParameter,
   TopologyNode,
 } from '@deltares/fews-pi-requests'
 import { DateTime, type DateTimeMaybeValid } from 'luxon'
 import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.ts'
-import {
-  LocationsFilter,
-  TimeSeriesParameter,
-  Location,
-  ParametersFilter,
-} from '@deltares/fews-pi-requests'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
+
 interface Props {
   nodeId?: string | string[]
   topologyNode: TopologyNode
@@ -165,22 +176,34 @@ const piProvider = new PiWebserviceProvider(baseUrl, {
 const filterId = props.topologyNode.filterIds
   ? props.topologyNode.filterIds[0]
   : undefined
+const allLocations = ref<Location[]>([])
 const locations = ref<Location[]>([])
 const selectedLocations = ref<Location[]>([])
 
 const parameters = ref<TimeSeriesParameter[]>([])
 const selectedParameters = ref<TimeSeriesParameter[]>([])
 
-locations.value = await getLocations()
+allLocations.value = await getLocations()
+selectedLocations.value = allLocations.value
 parameters.value = await getParameters()
-const attributeValues = getAttributeValues(locations.value)
+const selectableAttributes = ref<string[][]>([])
+selectableAttributes.value = getAttributeValues(allLocations.value)
+
 let selectedFormat = ref<string>('PI_XML')
 
 let errors = ref<string[]>([])
 const startDate = ref<Date>(getStartDateValue())
 const endDate = ref<Date>(getEndDateValue())
 const selectedAttributes = ref<string[][]>([])
+const rules = {
+  required: (value: string) => (value !== undefined && !!value) || 'Required',
+  date: (value: string) => {
+    const date = DateTime.fromFormat(value || '', DATE_FMT)
+    return !isNaN(date.valueOf()) || 'Invalid date'
+  },
+}
 const attributes = props.topologyNode.dataDownloadDisplay?.attributes
+attributes?.forEach((item) => selectedAttributes.value.push([]))
 
 const DATE_FMT = 'yyyy-MM-dd HH:mm'
 const startDateString = ref<string>(
@@ -224,6 +247,35 @@ watch(endDate, (newValue) => {
   endDateString.value = DateTime.fromJSDate(newValue).toFormat(DATE_FMT)
 })
 
+function updateLocations() {
+  const attributeIds =
+    props.topologyNode.dataDownloadDisplay?.attributes.map((item) => item.id) ??
+    []
+  locations.value = getNewLocationList(
+    allLocations.value,
+    attributeIds,
+    selectedAttributes.value,
+  )
+  selectedLocations.value = locations.value
+  for (let index = 0; index < selectableAttributes.value.length; index++) {
+    const selectedAttributesForOtherAttributes = selectedAttributes.value.map(
+      (item, itemIndex) => (index == itemIndex ? [] : item),
+    )
+    const locationsFor = getNewLocationList(
+      allLocations.value,
+      attributeIds,
+      selectedAttributesForOtherAttributes,
+    )
+    const newAttributeValues = getAttributeValues(locationsFor)
+    selectableAttributes.value[index] = newAttributeValues[index]
+  }
+  for (let index = 0; index < selectableAttributes.value.length; index++) {
+    selectedAttributes.value[index] = selectedAttributes.value[index].filter(
+      (item) => selectableAttributes.value[index].includes(item),
+    )
+  }
+}
+
 function copyCurrentHoursAndMinutesToNewDateValue(
   currentDisplayTime: DateTimeMaybeValid,
   newValue: Date,
@@ -256,25 +308,31 @@ function getEndDateValue() {
   return endDateValue
 }
 
-watch(
-  () => selectedAttributes.value,
-  async (currentValue) => {
-    const attributeIds =
-      props.topologyNode.dataDownloadDisplay?.attributes.map(
-        (item) => item.id,
-      ) ?? []
-    selectedLocations.value = getSelectedLocations(
-      locations.value,
-      attributeIds,
-      selectedAttributes.value,
-    )
-  },
-  { deep: true },
-)
-
 async function downloadData() {
   errors.value = []
   let newErrors = []
+  let startTimeRequest: DateTimeMaybeValid = DateTime.fromFormat(
+    startDateString.value,
+    DATE_FMT,
+  )
+  const startTime = DateTime.fromJSDate(startTimeRequest.toJSDate(), {
+    zone: 'UTC',
+  })
+  if (!startTime.isValid) {
+    newErrors.push('Start date is not valid')
+  }
+
+  let endTimeRequest: DateTimeMaybeValid = DateTime.fromFormat(
+    endDateString.value,
+    DATE_FMT,
+  )
+  const endTime = DateTime.fromJSDate(endTimeRequest.toJSDate(), {
+    zone: 'UTC',
+  })
+  if (!endTime.isValid) {
+    newErrors.push('End date is not valid')
+  }
+
   if (
     selectedLocations.value === undefined ||
     selectedLocations.value.length == 0
@@ -285,57 +343,47 @@ async function downloadData() {
     selectedParameters.value.length == 0
   )
     newErrors.push('Select one or more parameters')
+  if (endDate.value < startDate.value) {
+    newErrors.push('The end date should be greater than the start date')
+  }
   errors.value = newErrors
   if (newErrors.length !== 0) return
-
-  let startDateValue = startDate.value
-  const startTime = DateTime.fromJSDate(startDateValue, {
-    zone: 'UTC',
-  })
 
   let queryStartDateString =
     startTime.toISO({ suppressMilliseconds: true }) ?? ''
   queryStartDateString = 'startTime=' + encodeURI(queryStartDateString)
 
-  let endDateValue = endDate.value
-  const endTime = DateTime.fromJSDate(endDateValue, {
-    zone: 'UTC',
-  })
-
   let queryEndDateString = endTime.toISO({ suppressMilliseconds: true }) ?? ''
   queryEndDateString = 'endTime=' + encodeURI(queryEndDateString)
 
-  let locationQuery = ''
+  let locationQuery = 'locationIds='
   selectedLocations.value.forEach((selectedLocation) => {
-    if (locationQuery.length > 0) locationQuery = locationQuery + '&'
-    locationQuery = locationQuery + 'locationIds=' + selectedLocation.locationId
+    locationQuery = locationQuery + selectedLocation.locationId + ','
   })
   locationQuery = encodeURI(locationQuery)
 
-  let parameterQuery = ''
+  let parameterQuery = 'parameterIds='
   selectedParameters.value.forEach((selectedParameter) => {
-    if (parameterQuery.length > 0) parameterQuery = parameterQuery + '&'
-    parameterQuery = parameterQuery + 'parameterIds=' + selectedParameter.id
+    parameterQuery = parameterQuery + selectedParameter.id + ','
   })
   parameterQuery = encodeURI(parameterQuery)
 
   const downloadFormat = selectedFormat.value
 
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const url = new URL(
-    `${baseUrl}rest/fewspiservice/v1/timeseries?filterId=${filterId}&${locationQuery}&${parameterQuery}&${queryStartDateString}&${queryEndDateString}&downloadAsFile=true&documentFormat=${downloadFormat}`,
-  )
+  let downloadUrl = `${baseUrl}rest/fewspiservice/v1/timeseries?filterId=${filterId}&${locationQuery}&${parameterQuery}&${queryStartDateString}&${queryEndDateString}&downloadAsFile=true&documentFormat=${downloadFormat}`
+  if (downloadUrl.length > 8000) {
+    errors.value.push('Too many locations or parameters selected')
+    return
+  }
+
+  const url = new URL(downloadUrl)
   await downloadFileAttachment(
     url.href,
     'timeSeries',
     downloadFormat,
     authenticationManager.getAccessToken(),
   )
-}
-
-function getAttributes(attributeId: string): string[] {
-  let attributes = attributeValues.get(attributeId)
-  return attributes ?? []
 }
 
 function getLocationName(location: Location): string {
@@ -364,25 +412,30 @@ async function getLocations(): Promise<Location[]> {
     documentFormat: DocumentFormat.PI_JSON,
   }
   const locationsResponse = await piProvider.getLocations(filter)
-  return locationsResponse.locations
+  const allLocations = locationsResponse.locations
+  const allParentLocations = allLocations.map(
+    (location) => location.parentLocationId,
+  )
+  return locationsResponse.locations.filter(
+    (location) => !allParentLocations.includes(location.locationId),
+  )
 }
 
-function getAttributeValues(locations: Location[]): Map<string, []> {
-  const attributeValuesMap = new Map()
+function getAttributeValues(locations: Location[]): string[][] {
+  const attributeValuesMap: string[][] = []
   const configuredAttributeIds =
     props.topologyNode.dataDownloadDisplay?.attributes.map((item) => item.id)
-  if (configuredAttributeIds === undefined) return attributeValuesMap
+  configuredAttributeIds?.forEach((item) => attributeValuesMap.push([]))
   for (const newLocation of locations) {
     let attributes = newLocation.attributes
     if (attributes == undefined) continue
-    for (const attribute of attributes) {
+    for (let i = 0; i < attributes.length; i++) {
+      const attribute = attributes[i]
       if (attribute.id === undefined) continue
       if (attribute.value === undefined) continue
-      if (configuredAttributeIds.includes(attribute.id)) {
-        if (!attributeValuesMap.has(attribute.id)) {
-          attributeValuesMap.set(attribute.id, [])
-        }
-        const arrayForAttribute = attributeValuesMap.get(attribute.id)
+      if (configuredAttributeIds?.includes(attribute.id)) {
+        const arrayForAttribute =
+          attributeValuesMap[configuredAttributeIds.indexOf(attribute.id)]
         if (!arrayForAttribute.includes(attribute.value)) {
           arrayForAttribute.push(attribute.value)
         }
@@ -404,35 +457,44 @@ async function getParameters() {
   return parametersResponse.timeSeriesParameters
 }
 
-function getSelectedLocations(
+function getNewLocationList(
   allLocations: Location[],
-  attributes: String[],
-  selectedAttributes: String[][],
+  attributes: string[],
+  selectedAttributes: string[][],
 ): Location[] {
-  const newLocationSelection = []
+  const newLocationList = []
   for (const location of allLocations) {
     if (isSelected(location, selectedAttributes, attributes)) {
-      newLocationSelection.push(location)
+      newLocationList.push(location)
     }
   }
-  return newLocationSelection
+  return newLocationList
 }
 
 function isSelected(
   location: Location,
-  selectedValues: String[][],
-  attributes: String[],
-) {
+  selectedValues: string[][],
+  attributes: string[],
+): boolean {
   for (let i = 0; i < attributes.length; i++) {
-    if (selectedValues[i] === undefined || location.attributes == undefined)
+    const selectedValue: string[] = selectedValues[i]
+    if (
+      selectedValue === undefined ||
+      selectedValue.length === 0 ||
+      location.attributes == undefined
+    )
       continue
     const foundAttribute = location.attributes?.find(
       (attribute) => attribute.id === attributes[i],
     )
     if (foundAttribute === undefined || foundAttribute.value === undefined)
-      continue
-    if (selectedValues[i].includes(foundAttribute.value)) return true
+      return false
+    const attributeValue = foundAttribute.value
+    if (
+      selectedValue.filter((item) => attributeValue.includes(item)).length == 0
+    )
+      return false
   }
-  return false
+  return true
 }
 </script>
