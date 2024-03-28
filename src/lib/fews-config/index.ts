@@ -36,3 +36,11 @@ export function getResourcesStaticUrl(resource: string) {
   })
   return webServiceProvider.resourcesStaticUrl(resource).toString()
 }
+
+export function getResourcesIconsUrl(resource: string) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const webServiceProvider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  return webServiceProvider.resourcesIconsUrl(resource).toString()
+}
