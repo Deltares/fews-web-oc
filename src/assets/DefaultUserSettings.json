@@ -51,6 +51,10 @@
     "value": "carto-db-automatic",
     "items": [
       {
+        "value": "carto-db-automatic",
+        "icon": "mdi-theme-light-dark"
+      },
+      {
         "value": "carto-db-light",
         "icon": "mdi-weather-sunny"
       },

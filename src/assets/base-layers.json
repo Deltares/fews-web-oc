@@ -7,7 +7,7 @@
       "name": "CartoDB (automatic)",
       "img": "cartodb-light-dark.png",
       "automatic": {
-        "dark": "carto-db-dark",
+        "dark": "carto-dark-matter",
         "light": "carto-db-light"
       }
     },
