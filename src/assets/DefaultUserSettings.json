@@ -43,5 +43,22 @@
       }
     ],
     "group": "UI"
+  },
+  {
+    "id": "ui.map.theme",
+    "type": "oneOfMultiple",
+    "label": "Basemap",
+    "value": "carto-db-automatic",
+    "items": [
+      {
+        "value": "carto-db-light",
+        "icon": "mdi-weather-sunny"
+      },
+      {
+        "value": "carto-dark-matter",
+        "icon": "mdi-weather-night"
+      }
+    ],
+    "group": "UI"
   }
 ]
