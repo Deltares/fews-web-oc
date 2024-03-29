@@ -1,9 +1,6 @@
 <template>
   <mgl-map
     ref="map"
-    :pitch="0"
-    :bearing="0"
-    :center="[0, 0]"
     :min-zoom="2"
     :interactive="true"
     :drag-pan="true"
