@@ -2,7 +2,7 @@ import type { MaybeRefOrGetter, ShallowRef } from 'vue'
 import { shallowRef, toValue, watchEffect } from 'vue'
 import Basemaps from '@/assets/base-layers.json'
 import { MglDefaults } from 'vue-maplibre-gl'
-import { usePreferredDark } from '@vueuse/core'
+import { useDark } from '@vueuse/core'
 
 export interface UseBaseLayersReturn {
   baseLayerStyle: ShallowRef<string | object>
@@ -15,7 +15,7 @@ export function useBaseLayers(
   const baseLayerStyle = shallowRef<string | object>(MglDefaults.style)
   const baseLayers = shallowRef<(string | object)[]>(Basemaps.baseLayers)
 
-  const prefersDark = usePreferredDark()
+  const isDark = useDark()
 
   watchEffect(() => {
     const _layerId = toValue(layerId)
@@ -23,7 +23,7 @@ export function useBaseLayers(
       (layer: any) => layer.id === _layerId,
     )
     if (layerDefinition?.automatic) {
-      if (prefersDark.value === true) {
+      if (isDark.value === true) {
         const themedLayer = Basemaps.baseLayers.find(
           (layer: any) => layer.id === layerDefinition.automatic.dark,
         )
