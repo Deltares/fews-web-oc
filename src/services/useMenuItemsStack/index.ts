@@ -1,5 +1,5 @@
 import { ColumnItem } from '@/components/general/ColumnItem'
-import { ref, Ref, MaybeRefOrGetter, toValue, watch, watchEffect } from 'vue'
+import { ref, Ref, MaybeRefOrGetter, toValue, watchEffect } from 'vue'
 
 export function useMenuItemsStack(
   menuItems: MaybeRefOrGetter<ColumnItem[]>,
