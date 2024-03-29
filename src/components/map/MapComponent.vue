@@ -23,11 +23,16 @@ import { MglMap, MglDefaults } from 'vue-maplibre-gl'
 import { type ResourceType, type RequestParameters } from 'maplibre-gl'
 import 'vue-maplibre-gl/dist/vue-maplibre-gl.css'
 import { useBaseLayers } from '@/services/useBaseLayers'
+import { useUserSettingsStore } from '@/stores/userSettings'
+
+const settings = useUserSettingsStore()
 
 MglDefaults.style =
   'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
-const { baseLayerStyle } = useBaseLayers()
+const { baseLayerStyle } = useBaseLayers(
+  () => settings.get('ui.map.theme')?.value as string | undefined,
+)
 
 function transformRequest(
   url: string,
