@@ -35,6 +35,7 @@ test('should react to active changes', async () => {
   expect(stack.value.length).toBe(2)
 
   active.value = '1'
+  await flushPromises()
   expect(stack.value.length).toBe(2)
 
   active.value = '1.1'
