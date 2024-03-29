@@ -1,6 +1,8 @@
 import { DocumentFormat } from '@deltares/fews-pi-requests'
 
 function downloadWithLink(url: string, fileName: string) {
+  const encodedFileName = encodeURIComponent(fileName)
+  url = `${url}&downloadAsFile=${encodedFileName}`
   const link = document.createElement('a')
   link.href = url
   link.setAttribute('download', fileName)
@@ -41,15 +43,15 @@ export async function downloadFileAttachment(
 ) {
   try {
     const headers = new Headers()
-    let extension: string = 'csv'
-    if (documentFormat === DocumentFormat.PI_JSON) extension = '.json'
-    if (documentFormat === DocumentFormat.PI_XML) extension = '.xml'
-    if (documentFormat === DocumentFormat.PI_CSV) extension = '.csv'
-    const downloadFileName = fileName + extension
-    if (accessToken)
+    if (accessToken) {
+      let extension: string = 'csv'
+      if (documentFormat === DocumentFormat.PI_JSON) extension = '.json'
+      if (documentFormat === DocumentFormat.PI_XML) extension = '.xml'
+      if (documentFormat === DocumentFormat.PI_CSV) extension = '.csv'
+      const downloadFileName = fileName + extension
       await downloadFileWithFetch(headers, url, downloadFileName, accessToken)
-    if (!accessToken || accessToken == '')
-      downloadWithLink(url, downloadFileName)
+    }
+    if (!accessToken || accessToken == '') downloadWithLink(url, fileName)
   } catch (error) {
     console.error('Error downloading file:', error)
   }
