@@ -447,8 +447,7 @@ function getAttributeValues(locations: Location[]): string[][] {
 }
 
 async function getParameters() {
-  if (props.topologyNode == undefined) return []
-  if (props.topologyNode.filterIds == undefined) return []
+  if (props.topologyNode?.filterIds === undefined) return []
   const filter: ParametersFilter = {
     filterId: props.topologyNode.filterIds[0],
     documentFormat: DocumentFormat.PI_JSON,
@@ -481,7 +480,7 @@ function isSelected(
     if (
       selectedValue === undefined ||
       selectedValue.length === 0 ||
-      location.attributes == undefined
+      location.attributes === undefined
     )
       continue
     const foundAttribute = location.attributes?.find(
@@ -491,7 +490,7 @@ function isSelected(
       return false
     const attributeValue = foundAttribute.value
     if (
-      selectedValue.filter((item) => attributeValue.includes(item)).length == 0
+      selectedValue.filter((item) => attributeValue.includes(item)).length === 0
     )
       return false
   }
