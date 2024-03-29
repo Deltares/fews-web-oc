@@ -128,9 +128,8 @@ const downloadFile = (downloadFormat: string) => {
   if (props.filter) {
     if (isFilterActionsFilter(props.filter)) {
       const queryParameters = filterToParams(props.filter)
-      const encodedFileName = encodeURIComponent(fileName.value)
       const url = new URL(
-        `${baseUrl}rest/fewspiservice/v1/timeseries/filters/actions${queryParameters}&downloadAsFile=${encodedFileName}&documentFormat=${downloadFormat}${viewPeriod}`,
+        `${baseUrl}rest/fewspiservice/v1/timeseries/filters/actions${queryParameters}&documentFormat=${downloadFormat}${viewPeriod}`,
       )
       return downloadFileAttachment(
         url.href,
@@ -150,7 +149,6 @@ const downloadFile = (downloadFormat: string) => {
     timeSeriesDisplayIndex: props.config?.index ?? 0,
     convertDatum: props.options.convertDatum,
     useDisplayUnits: props.options.useDisplayUnits,
-    downloadAsFile: true,
   }
   const queryParameters = filterToParams(timeSeriesFilter)
   const url = new URL(
