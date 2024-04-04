@@ -50,6 +50,19 @@
             </v-list-item>
           </v-list>
         </v-menu>
+        <v-list density="compact" v-if="navigationMenuComponents.length === 1">
+          <v-list-item
+            :value="navigationMenuComponents[0]"
+            :to="navigationMenuComponents[0].to"
+          >
+            <template v-slot:prepend>
+              <v-icon :icon="navigationMenuComponents[0].icon"></v-icon>
+            </template>
+            <v-list-item-title
+              v-text="navigationMenuComponents[0].title"
+            ></v-list-item-title>
+          </v-list-item>
+        </v-list>
       </template>
       <div
         id="web-oc-sidebar-target"
@@ -247,7 +260,7 @@ const helpMenu = computed(() => {
 
 const navigationMenuComponents = computed(() => {
   const components = configStore.activeComponents
-  return components.filter((component) => component.showInNavigationMenu)
+  return components
 })
 
 async function getLocalOrRemoteFile(localBase: string, relativePath?: string) {
