@@ -69,7 +69,7 @@
               location="top"
               activator="parent"
               :transition="false"
-              :close-on-content-click="false"
+              :close-on-content-click="true"
               width="320"
             >
               <v-list density="compact">
