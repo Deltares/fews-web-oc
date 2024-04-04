@@ -38,10 +38,6 @@
           <v-list density="compact">
             <v-list-subheader>Switch to</v-list-subheader>
             <v-list-item
-              aria-label="Menu button"
-              class="ma-1"
-              rounded
-              variant="tonal"
               v-for="(item, i) in navigationMenuComponents"
               :key="i"
               :value="item"
@@ -54,9 +50,12 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-list density="compact" v-if="navigationMenuComponents.length === 1">
+        <v-list density="compact" v-if="shouldRenderInfoMenu">
           <v-list-item
-            v-if="$router.hasRoute(navigationMenuComponents[0].to.name)"
+            aria-label="Menu button"
+            class="ma-1"
+            rounded
+            variant="tonal"
             :value="navigationMenuComponents[0]"
             :to="navigationMenuComponents[0].to"
           >
@@ -266,6 +265,15 @@ const helpMenu = computed(() => {
 const navigationMenuComponents = computed(() => {
   const components = configStore.activeComponents
   return components
+})
+
+const shouldRenderInfoMenu = computed(() => {
+  if (navigationMenuComponents.value.length > 1) return false
+  if (helpMenu.value === undefined) return false
+  const paths = helpMenu.value.path.map((item: any) => item.path)
+  paths.push('about')
+  const path = route.path.substring(route.path.lastIndexOf('/') + 1)
+  return paths.includes(path)
 })
 
 async function getLocalOrRemoteFile(localBase: string, relativePath?: string) {
