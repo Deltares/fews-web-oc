@@ -38,6 +38,10 @@
           <v-list density="compact">
             <v-list-subheader>Switch to</v-list-subheader>
             <v-list-item
+              aria-label="Menu button"
+              class="ma-1"
+              rounded
+              variant="tonal"
               v-for="(item, i) in navigationMenuComponents"
               :key="i"
               :value="item"
@@ -52,6 +56,7 @@
         </v-menu>
         <v-list density="compact" v-if="navigationMenuComponents.length === 1">
           <v-list-item
+            v-if="$router.hasRoute(navigationMenuComponents[0].to.name)"
             :value="navigationMenuComponents[0]"
             :to="navigationMenuComponents[0].to"
           >
