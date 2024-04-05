@@ -3,14 +3,14 @@
     <v-card-title class="justify-center">
       {{ configStore.general.title ?? 'Delft-FEWS Web OC' }}
     </v-card-title>
-    <v-card-text v-if="configStore.activeComponents.length > 0">
+    <v-card-text v-if="configStore.activeComponents.length > 1">
       Select one of the following options to get started.
     </v-card-text>
-    <v-card-text v-else>
+    <v-card-text v-else-if="configStore.activeComponents.length === 0">
       Unfortunately, you do not have access
       <v-icon>mdi-emoticon-sad-outline</v-icon>
     </v-card-text>
-    <v-list density="compact">
+    <v-list density="compact" v-if="configStore.activeComponents.length > 1">
       <v-list-item
         v-for="(item, i) in configStore.activeComponents"
         :key="i"

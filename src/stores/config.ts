@@ -57,15 +57,17 @@ const useConfigStore = defineStore('config', {
   },
   getters: {
     activeComponents: (state) => {
-      return Object.values(state.components).map((component: any) => {
-        return {
-          id: component.id,
-          to: { name: component.type },
-          title: component.title ?? '',
-          icon: getMenuIcon(component),
-          showInNavigationMenu: component.showInNavigationMenu ?? true,
-        }
-      })
+      return Object.values(state.components)
+        .map((component: any) => {
+          return {
+            id: component.id,
+            to: { name: component.type },
+            title: component.title ?? '',
+            icon: getMenuIcon(component),
+            showInNavigationMenu: component.showInNavigationMenu ?? true,
+          }
+        })
+        .filter((component) => component.showInNavigationMenu)
     },
 
     getComponentByType: (
