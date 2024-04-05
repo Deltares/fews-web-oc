@@ -17,7 +17,7 @@
         <v-menu
           origin="left"
           min-width="320"
-          v-if="navigationMenuComponents.length > 1"
+          v-if="configStore.activeComponents.length > 1"
         >
           <template #activator="{ isActive, props }">
             <v-list-item
@@ -38,7 +38,7 @@
           <v-list density="compact">
             <v-list-subheader>Switch to</v-list-subheader>
             <v-list-item
-              v-for="(item, i) in navigationMenuComponents"
+              v-for="(item, i) in configStore.activeComponents"
               :key="i"
               :value="item"
               :to="item.to"
@@ -56,14 +56,14 @@
             class="ma-1"
             rounded
             variant="tonal"
-            :value="navigationMenuComponents[0]"
-            :to="navigationMenuComponents[0].to"
+            :value="configStore.activeComponents[0]"
+            :to="configStore.activeComponents[0].to"
           >
             <template v-slot:prepend>
-              <v-icon :icon="navigationMenuComponents[0].icon"></v-icon>
+              <v-icon :icon="configStore.activeComponents[0].icon"></v-icon>
             </template>
             <v-list-item-title
-              v-text="navigationMenuComponents[0].title"
+              v-text="configStore.activeComponents[0].title"
             ></v-list-item-title>
           </v-list-item>
         </v-list>
@@ -262,13 +262,8 @@ const helpMenu = computed(() => {
   } // todo: add type when fews-pi-requests is updated
 })
 
-const navigationMenuComponents = computed(() => {
-  const components = configStore.activeComponents
-  return components
-})
-
 const shouldRenderInfoMenu = computed(() => {
-  if (navigationMenuComponents.value.length > 1) return false
+  if (configStore.activeComponents.length > 1) return false
   if (helpMenu.value === undefined) return false
   const paths = helpMenu.value.path.map((item: any) => item.path)
   paths.push('about')
