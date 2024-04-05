@@ -290,13 +290,13 @@ function nodeButtonItems(node: TopologyNode) {
 }
 
 function getIcon(node: TopologyNode): string | undefined {
-  if (node.url && !node.topologyNodes && !node.displayGroups)
+  if (node.url && node.topologyNodes && !node.displayGroups)
     return 'mdi-open-in-new'
   return undefined
 }
 
 function getUrl(node: TopologyNode): string | undefined {
-  if (node.url && !node.topologyNodes && !node.displayGroups) return node.url
+  if (node.url && node.topologyNodes && !node.displayGroups) return node.url
   return undefined
 }
 
