@@ -33,33 +33,35 @@
     <v-card>
       <v-card-title>Workflow</v-card-title>
       <v-container>
-        <v-row>
-          <v-select
-            v-model="currentWorkflow"
-            :items="secondaryWorkflows"
-            item-title="description"
-            density="compact"
-            variant="solo"
-            flat
-            label="Workflow"
-            return-object
-            mandatory
-          ></v-select>
-        </v-row>
-        <v-row v-if="hasBoundingBox">
-          <v-text-field
-            v-model="bboxString"
-            readonly
-            variant="plain"
-            density="compact"
-            label="Bounding box"
-            class="mx-4"
-          >
-            <template v-slot:append>
-              <v-icon @click="showMapTool">mdi-selection-drag</v-icon>
-            </template>
-          </v-text-field>
-        </v-row>
+        <v-col>
+          <v-row>
+            <v-select
+              v-model="currentWorkflow"
+              :items="secondaryWorkflows"
+              item-title="description"
+              density="compact"
+              variant="solo-filled"
+              flat
+              label="Workflow"
+              return-object
+              mandatory
+            ></v-select>
+          </v-row>
+          <v-row v-if="hasBoundingBox">
+            <v-text-field
+              v-model="bboxString"
+              readonly
+              variant="plain"
+              density="compact"
+              label="Bounding box"
+              class="mx-4"
+            >
+              <template v-slot:append>
+                <v-icon @click="showMapTool">mdi-selection-drag</v-icon>
+              </template>
+            </v-text-field>
+          </v-row>
+        </v-col>
         <json-forms
           :schema="formSchema"
           :uischema="formUISchema"
@@ -67,6 +69,7 @@
           :renderers="vuetifyRenderers"
           :ajv="undefined"
           validation-mode="NoValidation"
+          :config="JsonFormsConfig"
           @change="onFormChange"
         />
         <div class="d-flex flex-column">
@@ -106,6 +109,8 @@ import {
 import { GeoJSONStoreFeatures } from 'terra-draw'
 import { downloadNetCDF } from '@/services/useWorkflows'
 import { asyncComputed } from '@vueuse/core'
+import JsonFormsConfig from  '@/assets/JsonFormsConfig.json'
+
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[]
