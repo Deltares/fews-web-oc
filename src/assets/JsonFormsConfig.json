@@ -1,0 +1,11 @@
+{
+  "vuetify": {
+    "v-text-field": {
+      "density": "compact",
+      "variant": "outlined"
+    },
+    "v-container": {
+      "class": "pa-0"
+    }
+  }
+}
