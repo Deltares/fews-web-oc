@@ -41,6 +41,7 @@
       <DateTimeSlider
         v-model:selectedDate="selectedDateSlider"
         :dates="dates"
+        :hide-speed-controls="mobile"
       />
     </div>
     <div class="child-container" :class="{ mobile, 'd-none': objectId === '' }">

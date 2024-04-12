@@ -1,5 +1,5 @@
 import { ColumnItem } from '@/components/general/ColumnItem'
-import { ref, Ref, MaybeRefOrGetter, toValue, watch } from 'vue'
+import { ref, Ref, MaybeRefOrGetter, toValue, watchEffect } from 'vue'
 
 export function useMenuItemsStack(
   menuItems: MaybeRefOrGetter<ColumnItem[]>,
@@ -7,9 +7,7 @@ export function useMenuItemsStack(
 ): Ref<ColumnItem[]> {
   const stack = ref<ColumnItem[]>([])
 
-  watch(menuItems, updateStack, { immediate: true })
-  watch(() => activeItem, updateStack)
-  function updateStack() {
+  watchEffect(() => {
     const _menuItems = toValue(menuItems)
     const _activeItem = toValue(activeItem)
 
@@ -24,7 +22,8 @@ export function useMenuItemsStack(
       recursiveFind(s, _activeItem)
       stack.value = s
     }
-  }
+  })
+
   return stack
 }
 
@@ -35,7 +34,6 @@ function recursiveFind(stack: ColumnItem[], id: string): boolean {
     for (const child of item.children) {
       stack.push(child)
       if (recursiveFind(stack, id)) {
-        if (child.children === undefined) stack.pop()
         return true
       }
       stack.pop()

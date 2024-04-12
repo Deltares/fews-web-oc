@@ -1,14 +1,12 @@
 <template>
   <mgl-map
     ref="map"
-    :pitch="0"
-    :bearing="0"
-    :center="[0, 0]"
     :min-zoom="2"
     :interactive="true"
     :drag-pan="true"
     :scroll-zoom="true"
     :transform-request="transformRequest"
+    :mapStyle="baseLayerStyle"
   >
     <slot></slot>
   </mgl-map>
@@ -21,9 +19,17 @@ import { authenticationManager } from '@/services/authentication/AuthenticationM
 import { MglMap, MglDefaults } from 'vue-maplibre-gl'
 import { type ResourceType, type RequestParameters } from 'maplibre-gl'
 import 'vue-maplibre-gl/dist/vue-maplibre-gl.css'
+import { useBaseLayers } from '@/services/useBaseLayers'
+import { useUserSettingsStore } from '@/stores/userSettings'
+
+const settings = useUserSettingsStore()
 
 MglDefaults.style =
   'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+
+const { baseLayerStyle } = useBaseLayers(
+  () => settings.get('ui.map.theme')?.value as string | undefined,
+)
 
 function transformRequest(
   url: string,

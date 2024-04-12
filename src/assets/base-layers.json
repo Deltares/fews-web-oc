@@ -1,0 +1,57 @@
+{
+  "default": "carto-dark-matter",
+  "maxZoom": 18,
+  "baseLayers": [
+    {
+      "id": "carto-db-automatic",
+      "name": "CartoDB (automatic)",
+      "img": "cartodb-light-dark.png",
+      "automatic": {
+        "dark": "carto-dark-matter",
+        "light": "carto-db-light"
+      }
+    },
+    {
+      "id": "carto-db-light",
+      "name": "CartoDB (licht)",
+      "img": "cartodb-light.png",
+      "type": "vector",
+      "style": "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+      "attribution": "&copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> &copy; <a href='http://cartodb.com/attributions'>CartoDB</a>"
+    },
+    {
+      "id": "carto-dark-matter",
+      "name": "CartoDB (dark)",
+      "img": "cartodb-dark.png",
+      "type": "vector",
+      "style": "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+      "attribution": "&copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> &copy; <a href='http://cartodb.com/attributions'>CartoDB</a>"
+    },
+    {
+      "id": "brt-water",
+      "name": "BRT Water",
+      "type": "raster",
+      "img": "brt-waterkaart-thumbnail.png",
+      "layers": [
+        {
+          "urlTemplate": "https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/water/EPSG:3857/{z}/{x}/{y}.png",
+          "attribution": ""
+        }
+      ],
+      "minZoom": 6,
+      "maxZoom": 19
+    },
+    {
+      "id": "esri-imagery",
+      "type": "raster",
+      "name": "ESRI WorldImagery",
+      "img": "esri-worldimagery-thumbnail.jpeg",
+      "layers": [
+        {
+          "urlTemplate": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          "attribution": "Tiles &copy; Esri, DigitalGlobe, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AEX, Getmapping, Aerogrid, IGN, IGP, swisstopo, and the GIS User Community"
+        }
+      ]
+    }
+  ]
+}
