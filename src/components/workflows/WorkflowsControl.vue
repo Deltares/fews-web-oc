@@ -109,8 +109,7 @@ import {
 import { GeoJSONStoreFeatures } from 'terra-draw'
 import { downloadNetCDF } from '@/services/useWorkflows'
 import { asyncComputed } from '@vueuse/core'
-import JsonFormsConfig from  '@/assets/JsonFormsConfig.json'
-
+import JsonFormsConfig from '@/assets/JsonFormsConfig.json'
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[]
