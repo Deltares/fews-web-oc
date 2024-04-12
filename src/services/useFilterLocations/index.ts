@@ -37,7 +37,10 @@ export function useFilterLocations(
 
   watchEffect(async () => {
     const _filterdIds = toValue(filterIds)
-    if (_filterdIds.length === 0) return
+    if (_filterdIds.length === 0) {
+      geojson.value = emptyFeatureCollection
+      return
+    }
     await loadLocations(_filterdIds)
   })
 
