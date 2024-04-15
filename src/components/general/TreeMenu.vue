@@ -37,7 +37,7 @@ watch(
   stack,
   () => {
     const path = stack.value.map((item: ColumnItem) => item.id)
-    open.value = [...path, ...open.value]
+    open.value = [...new Set([...path, ...open.value])]
   },
   { immediate: true },
 )
