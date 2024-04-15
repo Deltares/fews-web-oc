@@ -1,6 +1,6 @@
 <template>
   <v-list
-    :opened="opened"
+    v-model:opened="open"
     open-strategy="multiple"
     density="compact"
     class="weboc-treemenu"
@@ -11,32 +11,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { watch } from 'vue'
 import { ColumnItem } from './ColumnItem'
 import TreeMenuItem from './TreeMenuItem.vue'
 import { useMenuItemsStack } from '@/services/useMenuItemsStack'
 
 interface Props {
   items?: ColumnItem[]
-  open?: string[]
   active?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  items: () => {
-    return []
-  },
-  open: () => {
-    return []
-  },
+  items: () => [],
   active: '',
 })
 
-const emit = defineEmits(['update:open'])
-
-const opened = computed((): string[] => {
-  return props.open
-})
+const open = defineModel<string[]>('open', { default: () => [] })
 
 const stack = useMenuItemsStack(
   () => props.items,
@@ -47,7 +37,7 @@ watch(
   stack,
   () => {
     const path = stack.value.map((item: ColumnItem) => item.id)
-    emit('update:open', [...path, ...props.open])
+    open.value = [...path, ...open.value]
   },
   { immediate: true },
 )
