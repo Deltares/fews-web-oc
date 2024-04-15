@@ -49,7 +49,7 @@ function mapBoundsToEpsg3857BoundingBox(
 }
 
 export class WMSStreamlineLayer implements CustomLayerInterface {
-  public static readonly MAX_PARTICLE_DISPLACEMENT = 2
+  private static readonly MAX_PARTICLE_DISPLACEMENT = 2
   private static readonly PARTICLE_TEXTURE_SIZE = 8
 
   public readonly renderingMode = '2d'
