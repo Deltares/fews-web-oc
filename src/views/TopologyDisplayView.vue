@@ -73,6 +73,7 @@
         class="ma-2"
         ><v-btn
           v-for="item in nodeButtons"
+          :key="item.id"
           :to="item.to"
           @click="activeParentId = item.name"
           >{{ item.name }}</v-btn
