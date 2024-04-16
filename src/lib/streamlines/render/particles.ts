@@ -97,6 +97,7 @@ export class ParticleRenderer {
     // top of it, ignoring alpha for this blending as it has already been taken
     // care of in the texture render.
     gl.enable(gl.BLEND)
+    gl.blendEquationSeparate(gl.FUNC_ADD, gl.MAX)
     gl.blendFunc(gl.ONE, gl.ONE)
 
     gl.bindVertexArray(this.vertexArray)
