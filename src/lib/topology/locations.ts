@@ -67,6 +67,7 @@ async function fetchLocationsAsGeoJsonForSingleFilterId(
   const filter = {
     documentFormat: DocumentFormat.GEO_JSON,
     filterId: filterId,
+    showParentLocations: false,
     includeIconNames: true,
   }
   // TODO: Remove cast to any when fews-pi-requests supports GeoJSON response in LocationResponse
