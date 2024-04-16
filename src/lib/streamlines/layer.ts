@@ -78,6 +78,8 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
   private abortController: AbortController
 
   private onLayerAdd: (() => void) | null
+  private onStartLoading: (() => void) | null
+  private onEndLoading: (() => void) | null
   // Pause rendering during map resizes; rendering will be continued by the
   // newly fetched velocity field.
   private onResizeStart = () => this.visualiser?.stop()
@@ -108,6 +110,8 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
     this.abortController = new AbortController()
 
     this.onLayerAdd = null
+    this.onStartLoading = null
+    this.onEndLoading = null
   }
 
   get id(): string {
@@ -211,6 +215,14 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
 
   once(_: 'add', callback: () => void): void {
     this.onLayerAdd = callback
+  }
+
+  on(event: 'start-loading' | 'end-loading', callback: () => void): void {
+    if (event === 'start-loading') {
+      this.onStartLoading = callback
+    } else if (event === 'end-loading') {
+      this.onEndLoading = callback
+    }
   }
 
   async waitForInitialisation(signal?: AbortSignal): Promise<boolean> {
@@ -374,6 +386,8 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
   private async updateVelocityField(doResetParticles: boolean): Promise<void> {
     if (!this.map) throw new Error('Not added to a map')
 
+    if (this.onStartLoading) this.onStartLoading()
+
     // Update the canvas size and dimensions for the visualiser. This is no-op
     // if the size has not changed.
     const [width, height] = this.size
@@ -427,6 +441,8 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
 
     // Request a repaint from Maplibre so we (re)start the animation.
     this.map.triggerRepaint()
+
+    if (this.onEndLoading) this.onEndLoading()
   }
 
   private findTimeIndex(time: Date): number {
