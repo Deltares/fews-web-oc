@@ -51,8 +51,6 @@ export class TextureRenderer {
     const gl = this.program.gl
     this.program.use()
 
-    gl.disable(gl.BLEND)
-
     gl.bindVertexArray(this.vertexArray)
     bindTexture(this.program, 'u_texture', 0, inputTexture)
     gl.uniform1f(this.program.getUniformLocation('u_fade_amount'), fadeAmount)
@@ -87,6 +85,9 @@ export class TextureRenderer {
       outputTexture,
       0,
     )
+    gl.clearColor(0.0, 0.0, 0.0, 0.0)
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    gl.disable(gl.BLEND)
   }
 
   private disableRenderToTexture(): void {
