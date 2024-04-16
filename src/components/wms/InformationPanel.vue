@@ -119,7 +119,8 @@
       variant="plain"
       :color="animate ? 'primary' : undefined"
     >
-      <v-icon>mdi-animation-play</v-icon>
+      <v-progress-circular v-if="isLoading" size="20" indeterminate />
+      <v-icon v-else>mdi-animation-play</v-icon>
     </v-btn>
   </v-chip>
 </template>
@@ -135,6 +136,7 @@ import { useColourScalesStore } from '@/stores/colourScales'
 
 interface Props {
   layerTitle: string
+  isLoading: boolean
   currentTime?: Date
   forecastTime?: Date
   completelyMissing?: boolean
