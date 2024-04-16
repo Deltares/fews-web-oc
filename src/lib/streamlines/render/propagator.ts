@@ -1,3 +1,4 @@
+import { SpeedCurve } from '../utils/speedcurve'
 import {
   ShaderProgram,
   bindAttribute,
@@ -7,13 +8,13 @@ import { VelocityImage } from '../utils/wms'
 
 export class ParticlePropagator {
   public numEliminatePerSecond: number
-  public speedFactor: number
 
   private program: ShaderProgram
   private width: number
   private height: number
   private numParticles: number
   private numParticlesAllocate: number
+  private speedCurve: SpeedCurve
   private inputBuffer: WebGLBuffer | null
   private outputBuffer: WebGLBuffer | null
   private transformFeedback: WebGLTransformFeedback | null
@@ -27,7 +28,7 @@ export class ParticlePropagator {
     numParticles: number,
     numParticlesAllocate: number,
     numEliminatePerSecond: number,
-    speedFactor: number,
+    speedCurve: SpeedCurve,
   ) {
     this.program = program
     this.width = width
@@ -39,7 +40,7 @@ export class ParticlePropagator {
 
     this.velocityImage = null
     this.velocityTexture = null
-    this.speedFactor = speedFactor
+    this.speedCurve = speedCurve
 
     this.inputBuffer = null
     this.outputBuffer = null
@@ -93,6 +94,10 @@ export class ParticlePropagator {
     this.inputBuffer = this.initialiseInputBuffer()
     this.outputBuffer = this.initialiseOutputBuffer()
     this.swapBuffers()
+  }
+
+  setSpeedCurve(speedCurve: SpeedCurve): void {
+    this.speedCurve = speedCurve
   }
 
   update(dt: number): void {
@@ -214,7 +219,11 @@ export class ParticlePropagator {
     )
     gl.uniform1f(
       this.program.getUniformLocation('u_speed_factor'),
-      this.speedFactor,
+      this.speedCurve.factor,
+    )
+    gl.uniform1f(
+      this.program.getUniformLocation('u_speed_exponent'),
+      this.speedCurve.exponent,
     )
 
     // Select a range of particle indices to eliminate and replace by newly

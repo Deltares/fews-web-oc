@@ -139,6 +139,7 @@ function mergeOptions(
     particleSize: streamlineOptions?.particleSize ?? 3,
     speedFactor: streamlineOptions?.speedFactor ?? 0.2,
     fadeAmountPerSecond: streamlineOptions?.fadeAmount ?? 0.1,
+    speedExponent: 1,
     particleColor: streamlineOptions?.particleColor
       ? `#${streamlineOptions?.particleColor}`
       : undefined,

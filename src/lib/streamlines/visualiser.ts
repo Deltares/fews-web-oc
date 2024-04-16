@@ -9,6 +9,7 @@ import textureFragmentShaderSource from './shaders/texture.frag.glsl?raw'
 import finalFragmentShaderSource from './shaders/final.frag.glsl?raw'
 
 import { ShaderProgram } from './utils/shaderprogram'
+import { SpeedCurve } from './utils/speedcurve'
 import { createTexture } from './utils/textures'
 import {
   StreamlineStyle,
@@ -28,6 +29,7 @@ export interface StreamlineVisualiserOptions {
   speedFactor: number
   fadeAmountPerSecond: number
   maxDisplacement: number
+  speedExponent?: number
   particleColor?: string
 }
 
@@ -131,6 +133,12 @@ export class StreamlineVisualiser {
     // Create a texture to use as the particle sprite.
     const particleTexture = this.createParticleTexture()
 
+    // Compute speed curve based on the colormap and options.
+    const speedCurve = StreamlineVisualiser.computeSpeedCurve(
+      colormap,
+      this.options,
+    )
+
     // Create and the renderers for the different stages of the visualisation.
     this.textureRenderer = new TextureRenderer(programRenderTexture)
     this.particlePropagator = new ParticlePropagator(
@@ -140,7 +148,7 @@ export class StreamlineVisualiser {
       this.numParticles,
       this.numParticlesAllocate,
       this.options.numEliminatePerSecond,
-      this.options.speedFactor,
+      speedCurve,
     )
     this.particleRenderer = new ParticleRenderer(
       programRenderParticles,
@@ -236,11 +244,15 @@ export class StreamlineVisualiser {
   }
 
   setColorMap(colorMap: Colormap): void {
-    if (!this.finalRenderer) {
+    if (!this.finalRenderer || !this.particlePropagator) {
       throw new Error('Cannot set colormap for uninitialised visualiser.')
     }
     this.colorMap = colorMap
     this.finalRenderer.setColorMap(this.colorMap)
+
+    // Update the speed curve from the new colormap.
+    const curve = StreamlineVisualiser.computeSpeedCurve(colorMap, this.options)
+    this.particlePropagator.setSpeedCurve(curve)
   }
 
   setVelocityImage(
@@ -253,6 +265,7 @@ export class StreamlineVisualiser {
 
   updateOptions(options: Partial<StreamlineVisualiserOptions>) {
     if (
+      !this.colorMap ||
       !this.particlePropagator ||
       !this.particleRenderer ||
       !this.finalRenderer
@@ -270,7 +283,12 @@ export class StreamlineVisualiser {
     this.particlePropagator.numEliminatePerSecond =
       this.options.numEliminatePerSecond
 
-    this.particlePropagator.speedFactor = this.options.speedFactor
+    const curve = StreamlineVisualiser.computeSpeedCurve(
+      this.colorMap,
+      this.options,
+    )
+    this.particlePropagator.setSpeedCurve(curve)
+
     this.particleRenderer.particleSize = this.options.particleSize
 
     this.finalRenderer.style = this.options.style
@@ -423,5 +441,16 @@ export class StreamlineVisualiser {
     this.particlePropagator.setVelocityImage(velocityImage)
     this.finalRenderer.setVelocityImage(velocityImage)
     this.dtMin = this.computeMinimumTimeStep()
+  }
+
+  private static computeSpeedCurve(
+    colormap: Colormap,
+    options: StreamlineVisualiserOptions,
+  ): SpeedCurve {
+    return SpeedCurve.fromExponentFactorAndSpeed(
+      options.speedExponent ?? 1.0,
+      options.speedFactor,
+      colormap.end,
+    )
   }
 }
