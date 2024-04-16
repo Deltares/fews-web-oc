@@ -23,6 +23,7 @@ interface Props {
   streamlineOptions?: StreamlineLayerOptionsFews
 }
 const props = defineProps<Props>()
+const isLoading = defineModel('isLoading', { type: Boolean, default: false })
 const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
@@ -96,6 +97,9 @@ function addLayer(): void {
 
   // Create and initialise new streamline layer.
   layer = new WMSStreamlineLayer(layerId, options)
+  layer.on('start-loading', () => (isLoading.value = true))
+  layer.on('end-loading', () => (isLoading.value = false))
+
   // Make sure we are at the appropriate time, elevation and color scale range
   // after the visualiser has been added to the map.
   layer.once('add', async () => {

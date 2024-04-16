@@ -33,6 +33,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {})
+const isLoading = defineModel('isLoading', { type: Boolean, default: false })
 
 const emit = defineEmits(['doubleclick'])
 
@@ -81,6 +82,14 @@ function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   emit('doubleclick', event)
 }
 
+function onStartLoading(): void {
+  isLoading.value = true
+}
+
+function onEndLoading(): void {
+  isLoading.value = false
+}
+
 function addHooksToMapObject() {
   map?.once('load', () => {
     onLayerChange()
@@ -92,12 +101,16 @@ function addHooksToMapObject() {
   map?.on('moveend', onMapMove)
   map?.on('sourcedata', onDataChange)
   map?.on('dblclick', onDoubleClick)
+  map?.on('dataloading', onStartLoading)
+  map?.on('sourcedata', onEndLoading)
 }
 
 function removeHooksFromMapObject(): void {
   map?.off('moveend', onMapMove)
   map?.off('sourcedata', onDataChange)
   map?.off('dblclick', onDoubleClick)
+  map?.off('dataloading', onStartLoading)
+  map?.off('sourcedata', onEndLoading)
 }
 
 function getImageSourceOptions(): any {

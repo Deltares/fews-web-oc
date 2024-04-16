@@ -2,11 +2,13 @@
   <MapComponent>
     <AnimatedRasterLayer
       v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
+      v-model:isLoading="isLoading"
       :layer="layerOptions"
       @doubleclick="onCoordinateClick"
     />
     <AnimatedStreamlineRasterLayer
       v-if="layerKind === LayerKind.Streamline && showLayer && layerOptions"
+      v-model:isLoading="isLoading"
       :layerOptions="layerOptions"
       :streamlineOptions="layerCapabilities?.animatedVectors"
       @doubleclick="onCoordinateClick"
@@ -31,6 +33,7 @@
       <InformationPanel
         v-if="layerOptions"
         :layerTitle="props.layerCapabilities?.title"
+        :isLoading="isLoading"
         :currentTime="currentTime"
         :forecastTime="forecastTime"
         :completelyMissing="props.layerCapabilities?.completelyMissing ?? false"
@@ -41,7 +44,7 @@
         :canUseStreamlines="canUseStreamlines"
         v-model:layer-kind="layerKind"
         v-model:show-layer="showLayer"
-      ></InformationPanel>
+      />
       <v-chip
         v-if="hasLocations"
         class="locations-layer__chip"
@@ -185,6 +188,7 @@ const elevationUnit = ref('')
 const currentTime = ref<Date>(new Date())
 const layerOptions = ref<AnimatedRasterLayerOptions>()
 const forecastTime = ref<Date>()
+const isLoading = ref(false)
 let debouncedSetLayerOptions!: () => void
 
 const legendLayerName = ref(props.layerName)
