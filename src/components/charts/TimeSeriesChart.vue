@@ -46,6 +46,7 @@ import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import {
   AlertLines,
   CartesianAxesOptions,
+  ChartArea,
   ChartLine,
   ChartMarker,
   WheelMode,
@@ -184,6 +185,16 @@ const addToChart = (chartSeries: ChartSeries) => {
   let line
   if (chartSeries.type === 'line') {
     line = new ChartLine(data, {
+      tooltip: {
+        toolTipFormatter: () => {
+          const tooltip = document.createElement('div')
+          tooltip.innerText = `${chartSeries.name} ${chartSeries.unit}`
+          return tooltip
+        },
+      },
+    })
+  } else if (chartSeries.type === 'area') {
+    line = new ChartArea(data, {
       tooltip: {
         toolTipFormatter: () => {
           const tooltip = document.createElement('div')

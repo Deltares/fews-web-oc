@@ -41,6 +41,35 @@ export function cssStyleFromFewsLine(item: {
   return style
 }
 
+export function cssStyleFromFewsArea(item: {
+  lineStyle?: string
+  color?: string
+}): SvgPropertiesHyphen {
+  let style: SvgPropertiesHyphen = {}
+
+  style['fill'] = 'none'
+  const re =
+    /(?<lineStyle>none|solid|dashed|dashdot|dotted)(;(?<lineWidth>thick))?/
+  if (item.lineStyle !== undefined) {
+    const matches = item.lineStyle.match(re)
+    if (matches?.groups?.lineWidth !== undefined) {
+      style = {
+        ...style,
+        ...cssStyleFromFewsLineStyle(matches.groups.lineStyle),
+      }
+    }
+    if (matches?.groups?.lineWidth !== undefined) {
+      style = {
+        ...style,
+        ...cssStyleFromFewsLineWidth(matches.groups.lineWidth),
+      }
+    }
+  }
+  style.fill = item.color === '#000000' ? 'currentColor' : item.color
+  return style
+}
+
+
 function cssStyleFromFewsLineStyle(lineStyle: string): SvgPropertiesHyphen {
   const style: SvgPropertiesHyphen = {}
   switch (lineStyle) {

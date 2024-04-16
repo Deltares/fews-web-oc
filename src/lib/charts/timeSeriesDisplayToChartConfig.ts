@@ -6,6 +6,7 @@ import type {
   TimeSeriesDisplaySubplotItem,
 } from '@deltares/fews-pi-requests'
 import {
+  cssStyleFromFewsArea,
   cssStyleFromFewsLine,
   cssStyleFromFewsMarker,
   chartMarkerFromFews,
@@ -30,7 +31,7 @@ export function timeSeriesDisplayToChartConfig(
   config.thresholds = []
   for (const item of subplot.items) {
     if (item.lineStyle !== undefined && item.lineStyle !== 'none') {
-      const chartSeries: ChartSeries = getChartSeries(item, 'line', config)
+      const chartSeries: ChartSeries = getChartSeries(item, item.lineStyle, config)
       chartSeriesArray.push(chartSeries)
     }
     if (item.markerStyle !== undefined && item.markerStyle !== 'none') {
@@ -88,7 +89,7 @@ function getChartSeries(
           }) ?? 0,
       },
     },
-    style: cssStyleFromFewsLine(item),
+    style: seriesType === 'area' ? cssStyleFromFewsArea(item)  : cssStyleFromFewsLine(item),
   }
 }
 
