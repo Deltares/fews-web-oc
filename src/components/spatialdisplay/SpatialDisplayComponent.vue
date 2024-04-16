@@ -200,6 +200,7 @@ const isLoading = ref(false)
 let debouncedSetLayerOptions!: () => void
 
 const legendLayerName = ref(props.layerName)
+const legendLayerStyles = ref<Style[]>([])
 const settings = useUserSettingsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -217,9 +218,9 @@ const { locations, geojson } = useFilterLocations(
 )
 
 watch(
-  () => props.layerCapabilities?.styles,
+  legendLayerStyles,
   () => {
-    const styles = props.layerCapabilities?.styles
+    const styles = legendLayerStyles.value
     if (styles === undefined) {
       colourScalesStore.currentIds = []
       colourScalesStore.currentIndex = 0
@@ -330,6 +331,11 @@ watch(
         new Date(layer?.keywordList[0].forecastTime as string) ?? null
     }
     legendLayerName.value = props.layerName
+    legendLayerStyles.value = props.layerCapabilities?.styles ?? [
+      {
+        title: props.layerName,
+      },
+    ]
     if (layer?.elevation) {
       const max = layer.elevation.upperValue ?? 0
       const min = layer.elevation.lowerValue ?? 0
