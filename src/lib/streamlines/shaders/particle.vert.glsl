@@ -5,6 +5,7 @@ uniform sampler2D u_velocity_texture;
 
 uniform ivec2 u_canvas_size;
 uniform float u_speed_factor;
+uniform float u_speed_exponent;
 
 uniform vec2 u_scale_in;
 uniform vec2 u_offset_in;
@@ -46,10 +47,20 @@ vec2 get_clip_space_velocity(vec2 pos) {
     // Compute velocity in physical coordinates.
     vec2 velocity = velocity_raw * u_scale_in + u_offset_in;
 
-    // Convert velocity to clip coordinates, then scale the velocity so the
-    // particles move at an appropriate speed.
-    velocity.x *= float(u_canvas_size.y) / float(u_canvas_size.x) * u_speed_factor;
-    velocity.y *= -u_speed_factor;
+    // Apply speed exponent to "compress" the speed---for exponents smaller
+    // than 1, higher speeds will be closer together.
+    float speed_compressed = pow(length(velocity), u_speed_exponent);
+
+    // Scale the speed by the speed factor so it is appropriately scaled for
+    // particles moving in clip space.
+    speed_compressed *= u_speed_factor;
+
+    // Finally, compute the velocity based on the compressed speed.
+    velocity = normalize(velocity) * speed_compressed;
+
+    // Correct the velocity for the aspect ratio of the canvas.
+    velocity.x *= float(u_canvas_size.y) / float(u_canvas_size.x);
+    velocity.y *= -1.0;
 
     return velocity;
 }
