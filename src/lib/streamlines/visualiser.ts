@@ -128,7 +128,7 @@ export class StreamlineVisualiser {
       finalFragmentShaderSource,
     )
 
-    // Create a texture to use as the particle sprite: a filled black circle.
+    // Create a texture to use as the particle sprite.
     const particleTexture = this.createParticleTexture()
 
     // Create and the renderers for the different stages of the visualisation.
