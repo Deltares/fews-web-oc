@@ -64,5 +64,26 @@
       }
     ],
     "group": "UI"
+  },
+  {
+    "id": "ui.hierarchical-menu-style",
+    "type": "oneOfMultiple",
+    "label": "Menu style",
+    "value": "auto",
+    "items": [
+      {
+        "value": "auto",
+        "icon": "mdi-responsive"
+      },
+      {
+        "value": "tree",
+        "icon": "mdi-file-tree"
+      },
+      {
+        "value": "column",
+        "icon": "mdi-view-week"
+      }
+    ],
+    "group": "UI"
   }
 ]

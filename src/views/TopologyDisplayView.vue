@@ -1,25 +1,9 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
-    <v-toolbar v-if="!mobile" density="compact">
-      <v-btn-toggle
-        v-model="menuType"
-        variant="tonal"
-        divided
-        density="compact"
-        class="ma-2"
-      >
-        <v-btn variant="text" value="tree">
-          <v-icon>mdi-file-tree</v-icon>
-        </v-btn>
-        <v-btn variant="text" value="column">
-          <v-icon>mdi-view-week</v-icon>
-        </v-btn>
-      </v-btn-toggle>
-    </v-toolbar>
     <HierarchicalMenu
       v-model:active="active"
       v-model:open="open"
-      :type="mobile ? 'column' : menuType"
+      :type="menuType"
       :items="items"
     />
   </Teleport>
@@ -118,6 +102,7 @@ import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
 import type { ColumnItem } from '@/components/general/ColumnItem'
 import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
 import { useConfigStore } from '@/stores/config'
+import { useUserSettingsStore } from '@/stores/userSettings'
 
 import type {
   SecondaryWorkflowGroupItem,
@@ -133,7 +118,6 @@ import {
   useRoute,
   useRouter,
 } from 'vue-router'
-import { useDisplay } from 'vuetify'
 
 interface Props {
   nodeId?: string | string[]
@@ -156,7 +140,12 @@ interface DisplayTab {
 const props = defineProps<Props>()
 
 const configStore = useConfigStore()
-const { mobile } = useDisplay()
+const settings = useUserSettingsStore()
+
+const menuType = computed(() => {
+  const configured = settings.get('ui.hierarchical-menu-style')?.value as string
+  return configured ?? 'auto'
+})
 
 const active = ref<string | undefined>(undefined)
 const activeNode = computed(() => {
@@ -177,7 +166,6 @@ const secondaryWorkflows = computed<SecondaryWorkflowGroupItem[] | undefined>(
 )
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
-const menuType = ref('tree')
 
 const filterIds = ref<string[]>([])
 const topologyNode = ref<TopologyNode | undefined>(undefined)

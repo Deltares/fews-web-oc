@@ -1,25 +1,9 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
-    <v-toolbar v-if="!mobile" density="compact">
-      <v-btn-toggle
-        v-model="menuType"
-        variant="tonal"
-        divided
-        density="compact"
-        class="ma-2"
-      >
-        <v-btn variant="text" value="tree">
-          <v-icon>mdi-file-tree</v-icon>
-        </v-btn>
-        <v-btn variant="text" value="column">
-          <v-icon>mdi-view-week</v-icon>
-        </v-btn>
-      </v-btn-toggle>
-    </v-toolbar>
     <HierarchicalMenu
       v-model:active="active"
       v-model:open="open"
-      :type="mobile ? 'column' : menuType"
+      :type="menuType"
       :items="items"
     />
   </Teleport>
@@ -53,7 +37,8 @@ import debounce from 'lodash-es/debounce'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { useAlertsStore } from '../stores/alerts.ts'
+import { useAlertsStore } from '@/stores/alerts.ts'
+import { useUserSettingsStore } from '@/stores/userSettings.ts'
 
 import { configManager } from '../services/application-config/index.ts'
 import type { ColumnItem } from '../components/general/ColumnItem'
@@ -82,6 +67,7 @@ const sliderDebounceInterval = 500
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const alertsStore = useAlertsStore()
+const settings = useUserSettingsStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -101,11 +87,15 @@ const selectedDate = ref<Date>(new Date())
 const selectedDateSlider = ref<Date>(selectedDate.value)
 
 const { mobile } = useDisplay()
-const menuType = ref('tree')
 
 onMounted(() => {
   onGroupIdChange()
   onPanelIdChange()
+})
+
+const menuType = computed(() => {
+  const configured = settings.get('ui.hierarchical-menu-style')?.value as string
+  return configured ?? 'auto'
 })
 
 const selectedDateString = computed(() => {
