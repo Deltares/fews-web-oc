@@ -24,8 +24,8 @@ import { ref, watch, watchEffect } from 'vue'
 import { type Location } from '@deltares/fews-pi-requests'
 
 interface Props {
-  locations: Location[]
-  selectedLocationId: string | null
+  locations?: Location[]
+  selectedLocationId?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
