@@ -285,7 +285,9 @@ async function runTask() {
     params.append(`property(${key})`, data.value[key])
   })
 
-  await fetch(url).then((response) => {
+  await fetch(url, {
+    method: 'POST',
+  }).then((response) => {
     if (!response.ok) {
       showErrorMessage('Could not start task')
       response.text().then(console.error)
