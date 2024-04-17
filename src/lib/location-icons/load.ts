@@ -14,10 +14,11 @@ function getUniqueIconNames(
 }
 
 function addDefaultSelectedLocationIconToMap(map: Map): void {
-  if (map.hasImage('map-marker')) return
+  const iconId = 'selected-location'
+  if (map.hasImage(iconId)) return
   map.loadImage('/images/map-marker.png', function (error, image) {
     if (error) throw error
-    if (image) map.addImage('map-marker', image)
+    if (image) map.addImage(iconId, image)
   })
 }
 
