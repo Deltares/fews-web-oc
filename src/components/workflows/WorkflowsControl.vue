@@ -287,6 +287,10 @@ async function runTask() {
 
   await fetch(url, {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: '',
   }).then((response) => {
     if (!response.ok) {
       showErrorMessage('Could not start task')
