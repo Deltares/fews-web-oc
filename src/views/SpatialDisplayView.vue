@@ -1,25 +1,9 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
-    <v-toolbar v-if="!mobile" density="compact">
-      <v-btn-toggle
-        v-model="menuType"
-        variant="tonal"
-        divided
-        density="compact"
-        class="ma-2"
-      >
-        <v-btn variant="text" value="tree">
-          <v-icon>mdi-file-tree</v-icon>
-        </v-btn>
-        <v-btn variant="text" value="column">
-          <v-icon>mdi-view-week</v-icon>
-        </v-btn>
-      </v-btn-toggle>
-    </v-toolbar>
     <HierarchicalMenu
       v-model:active="active"
       v-model:open="open"
-      :type="mobile ? 'column' : menuType"
+      :type="menuType"
       :items="items"
     />
   </Teleport>
@@ -32,13 +16,13 @@
 
 <script setup lang="ts">
 import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { ColumnItem } from '../components/general/ColumnItem'
 import { useWmsCapilities } from '@/services/useWms'
 import { configManager } from '@/services/application-config'
 import { Layer, LayerGroup } from '@deltares/fews-wms-requests'
 import SpatialDisplay from '@/components/spatialdisplay/SpatialDisplay.vue'
-import { useDisplay } from 'vuetify'
+import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
   layerName?: string
@@ -53,12 +37,16 @@ const props = withDefaults(defineProps<Props>(), {
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const capabilities = useWmsCapilities(baseUrl)
 
+const settings = useUserSettingsStore()
+
 const active = ref<string>('root')
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
-const menuType = ref('tree')
 
-const { mobile } = useDisplay()
+const menuType = computed(() => {
+  const configured = settings.get('ui.hierarchical-menu-style')?.value as string
+  return configured ?? 'auto'
+})
 
 watch(capabilities, () => {
   if (capabilities.value === undefined) return []
