@@ -416,13 +416,7 @@ async function getLocations(): Promise<Location[]> {
     documentFormat: DocumentFormat.PI_JSON,
   }
   const locationsResponse = await piProvider.getLocations(filter)
-  const allLocations = locationsResponse.locations
-  const allParentLocations = allLocations.map(
-    (location) => location.parentLocationId,
-  )
-  return locationsResponse.locations.filter(
-    (location) => !allParentLocations.includes(location.locationId),
-  )
+  return locationsResponse.locations
 }
 
 function getAttributeValues(locations: Location[]): string[][] {
@@ -430,7 +424,7 @@ function getAttributeValues(locations: Location[]): string[][] {
   const configuredAttributeIds =
     props.topologyNode.dataDownloadDisplay?.attributes.map((item) => item.id)
   configuredAttributeIds?.forEach((item) => attributeValuesMap.push([]))
-  if (configuredAttributeIds == undefined) return attributeValuesMap
+  if (configuredAttributeIds === undefined) return attributeValuesMap
   for (const newLocation of locations) {
     let attributes = newLocation.attributes
     if (attributes == undefined) continue
