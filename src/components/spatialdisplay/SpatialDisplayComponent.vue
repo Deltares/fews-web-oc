@@ -71,6 +71,7 @@
         </v-btn>
         <LocationsSearchControl
           v-if="showLocationsLayer"
+          width="250"
           :locations="locations"
           :selectedLocationId="props.locationId"
           @changeLocationId="onLocationChange"
