@@ -31,8 +31,7 @@ import {
 } from 'maplibre-gl'
 import { watch, onBeforeUnmount } from 'vue'
 import { onBeforeMount } from 'vue'
-import { uniqBy } from 'lodash'
-import { getResourcesIconsUrl } from '@/lib/fews-config'
+import { addLocationIconsToMap } from '@/lib/location-icons'
 
 interface Props {
   locationsGeoJson: FeatureCollection<Geometry, Location>
@@ -82,30 +81,7 @@ watch(
 )
 
 function addLocationIcons() {
-  const locationIcons = uniqBy(
-    props.locationsGeoJson.features,
-    'properties.iconName',
-  ).map((feature) => feature.properties.iconName ?? '')
-  if (map) {
-    // Default icon for selected location
-    if (!map.hasImage('map-marker')) {
-      map.loadImage('/images/map-marker.png', function (error, image) {
-        if (error) throw error
-        if (image !== undefined && image !== null)
-          map.addImage('map-marker', image)
-      })
-    }
-    // Specific icons for locations
-    for (const iconName of locationIcons) {
-      if (iconName !== '' && !map.hasImage(iconName)) {
-        map.loadImage(getResourcesIconsUrl(iconName), function (error, image) {
-          if (error) throw error
-          if (image !== undefined && image !== null)
-            map.addImage(iconName, image)
-        })
-      }
-    }
-  }
+  if (map) addLocationIconsToMap(map, props.locationsGeoJson)
 }
 
 function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
