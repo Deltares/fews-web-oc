@@ -15,6 +15,11 @@ export interface TableSeriesData extends Omit<SeriesData, 'x'> {
   flagQuality?: TimeSeriesFlag['quality']
 }
 
+export interface TableData {
+  date: Date
+  [key: string]: Partial<TableSeriesData> | Date
+}
+
 export const dateFormatter = new Intl.DateTimeFormat(undefined, {
   year: 'numeric',
   month: 'numeric',
@@ -31,13 +36,13 @@ export const dateFormatter = new Intl.DateTimeFormat(undefined, {
  * @param {ChartSeries[] | undefined} chartSeriesArray - The array with the chart configuration per series.
  * @param {Record<string, Series>} seriesRecord - The record of the time series.
  * @param {string[]} seriesIds - An array of series IDs.
- * @returns {Record<string, Partial<TableSeriesData> | string>[]} - An array of records containing table data.
+ * @returns {TableData[]} - An array of records containing table data.
  */
 export function createTableData(
   chartSeriesArray: ChartSeries[] | undefined,
   seriesRecord: Record<string, Series>,
   seriesIds: string[],
-): Record<string, Partial<TableSeriesData> | Date>[] {
+): TableData[] {
   if (chartSeriesArray === undefined) return []
   const dateTimes = createDateTimes(chartSeriesArray, seriesRecord)
 
@@ -50,8 +55,7 @@ export function createTableData(
   const pointers = Array(seriesIds.length).fill(0)
 
   const data = dateTimes.map((date: Date) => {
-    const result: Record<string, Partial<TableSeriesData> | Date> = {}
-    result.date = date
+    const result: TableData = { date }
     for (const j in chartSeries) {
       const s = chartSeries[j]
       const series = seriesRecord[s.dataResources[0]]
@@ -98,16 +102,16 @@ function dateToPiDateTime(dateTime: Date): {
 /**
  *
  * Creates time series data from table data.
- * @param {Record<string, Partial<TableSeriesData> | Date>[]} tableData - An array of records containing table data.
+ * @param {TableData[]} tableData - An array of records containing table data.
  * @returns {Record<string, TimeSeriesEvent[]>} - An array of records containing time series data. The keys are the series IDs.
  */
 export function tableDataToTimeSeries(
-  tableData: Record<string, Partial<TableSeriesData> | Date>[],
+  tableData: TableData[],
   seriesIds: string[],
 ): Record<string, TimeSeriesEvent[]> {
   const newTimeSeriesData: Record<string, TimeSeriesEvent[]> = {}
   tableData.forEach((tableItem) => {
-    const date = tableItem.date as Date
+    const date = tableItem.date
     const { date: piDate, time: piTime } = dateToPiDateTime(date)
     Object.keys(tableItem).forEach((key) => {
       if (seriesIds.includes(key)) {
