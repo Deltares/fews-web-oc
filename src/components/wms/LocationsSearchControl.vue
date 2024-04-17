@@ -14,7 +14,12 @@
     density="compact"
   >
     <template v-slot:item="{ props }">
-      <v-list-item v-bind="props" :width="width" density="compact" />
+      <v-list-item
+        v-bind="props"
+        :width="width"
+        :max-width="maxWidth"
+        density="compact"
+      />
     </template>
   </v-autocomplete>
 </template>
@@ -26,6 +31,7 @@ import { type Location } from '@deltares/fews-pi-requests'
 interface Props {
   locations?: Location[]
   selectedLocationId?: string | null
+  maxWidth?: string | number
   width?: string | number
 }
 
@@ -38,18 +44,23 @@ const emit = defineEmits(['changeLocationId'])
 
 const selectedLocation = ref<Location | null>(null)
 
-const autocompleteStyle = computed(() => {
-  if (!props.width) return undefined
+function convertWidthToCss(inputWidth: number | string | undefined) {
+  if (inputWidth === undefined) return undefined
 
-  let width: number | string = props.width
+  let width = inputWidth
   if (typeof width === 'string') {
     // Try to parse width as a number, if it fails, assume it's a CSS string.
-    const numericWidth = parseFloat(width)
+    const numericWidth = Number(width)
     if (!isNaN(numericWidth)) width = numericWidth
   }
 
-  const cssWidth = typeof width === 'number' ? `${width}px` : width
-  return `width: ${cssWidth}`
+  return typeof width === 'number' ? `${width}px` : width
+}
+const autocompleteStyle = computed(() => {
+  return {
+    width: convertWidthToCss(props.width),
+    'max-width': convertWidthToCss(props.maxWidth),
+  }
 })
 
 watchEffect(() => {
