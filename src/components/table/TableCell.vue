@@ -15,18 +15,18 @@
 </template>
 
 <script setup lang="ts">
-import type { TableSeriesData } from '@/lib/table/tableData'
+import type { TableData, TableSeriesData } from '@/lib/table/tableData'
 import { computed } from 'vue'
 
 interface Props {
   id: string
-  item: Record<string, Date | Partial<TableSeriesData>>
+  item: TableData
 }
 
 const props = defineProps<Props>()
 
 function isTableSeriesData(
-  item: Date | Partial<TableSeriesData>,
+  item: TableData[keyof TableData],
 ): item is Partial<TableSeriesData> {
   return (item as Partial<TableSeriesData>).y !== undefined
 }

@@ -5,14 +5,17 @@
     </v-tooltip>
     <v-data-table
       class="data-table"
-      :headers="tableHeaders as any"
+      :headers="tableHeaders"
       :items="tableData"
+      :expanded="expanded"
       :items-per-page-options="itemsPerPageOptions"
       items-per-page="200"
+      item-value="date"
       density="compact"
       no-filter
       fixed-header
       height="100%"
+      @click:row="handleRowClick"
     >
       <template v-slot:headers="{ columns }">
         <tr>
@@ -80,10 +83,22 @@
           </template>
         </tr>
       </template>
-      <template v-slot:item.date="{ item }">
-        <span class="sticky-column">{{
-          dateFormatter.format(item.date as Date)
-        }}</span>
+      <template v-slot:item.date="{ item, internalItem, isExpanded }">
+        <v-text-field
+          v-if="isEditing && item.isNewRow"
+          :modelValue="toISOString(item.date)"
+          @blur="item.date = new Date($event.target.value)"
+          hide-detail
+          class="table-cell-editable"
+          density="compact"
+          variant="plain"
+          type="datetime-local"
+        />
+        <div v-else :class="{ highlighted: isExpanded(internalItem) }">
+          <span class="sticky-column">
+            {{ dateFormatter.format(item.date) }}
+          </span>
+        </div>
       </template>
       <template v-for="id in seriesIds" v-slot:[`item.${id}`]="{ item }">
         <!-- Table cell when editing data -->
@@ -106,13 +121,36 @@
           @mouseleave="(event) => hideTooltip(event)"
         ></TableCell>
       </template>
-      <!-- hide footer -->
+      <template #expanded-row="{ columns, item }">
+        <tr>
+          <td :colspan="columns.length" class="no-highlight">
+            <div class="d-flex ga-2 ms-1 ma-2">
+              <v-btn
+                icon="mdi-table-row-plus-before"
+                @click="addRowToTimeSeries(item, 'before')"
+                color="primary"
+                variant="plain"
+                size="small"
+                density="compact"
+              />
+              <v-btn
+                icon="mdi-table-row-plus-after"
+                @click="addRowToTimeSeries(item, 'after')"
+                color="primary"
+                variant="plain"
+                size="small"
+                density="compact"
+              />
+            </div>
+          </td>
+        </tr>
+      </template>
     </v-data-table>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import TableTooltip from './TableTooltip.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -121,10 +159,10 @@ import { getUniqueSeriesIds } from '@/lib/charts/getUniqueSeriesIds'
 import type { TableHeaders } from '@/lib/table/types/TableHeaders'
 import { createTableHeaders } from '@/lib/table/createTableHeaders'
 import {
-  type TableSeriesData,
   dateFormatter,
   createTableData,
   tableDataToTimeSeries,
+  TableData,
 } from '@/lib/table/tableData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import { useConfigStore } from '@/stores/config'
@@ -167,8 +205,9 @@ const seriesIds = ref<string[]>([])
 const tooltip = ref<boolean>(false)
 const tooltipItem = ref<any>({})
 const activator = ref<string>('')
-const tableData = ref<Record<string, Partial<TableSeriesData> | Date>[]>([])
-const newTableData = ref<Record<string, Partial<TableSeriesData> | Date>[]>([])
+const expanded = ref<string[]>([])
+const tableData = ref<TableData[]>([])
+const newTableData = ref<TableData[]>([])
 const tableHeaders = ref<TableHeaders[]>([])
 
 const isEditing = ref<boolean>(false)
@@ -269,7 +308,68 @@ function editTimeSeries(seriesId: string) {
   if (seriesId !== null) editedSeriesIds.value.push(seriesId)
 }
 
+function toISOString(date: Date) {
+  return `${date.toLocaleDateString().split('/').reverse().join('-')}T${date.toLocaleTimeString()}`
+}
+
+function getMidpointOfDates(d1: Date, d2: Date) {
+  const result = d1.getTime() > d2.getTime() ?
+    new Date(d1.getTime() - (d1.getTime() - d2.getTime()) / 2) :
+    new Date(d1.getTime() + (d2.getTime() - d1.getTime()) / 2)
+  result.setSeconds(0, 0)
+  return result
+}
+
+function addMinuteToDate(d: Date) {
+  d.setMinutes(d.getMinutes() + 1)
+  return d
+}
+
+function indexIsInRange(index: number) {
+  return index >= 0 && index < tableData.value.length
+}
+
+function addRowToTimeSeries(row: TableData, position: 'before' | 'after') {
+  const index = tableData.value.findIndex((item) => item.date === row.date)
+  const siblingIndex = position === 'before' ? index - 1 : index + 1
+
+  const newDate = indexIsInRange(siblingIndex)
+    ? getMidpointOfDates(row.date, tableData.value[siblingIndex].date)
+    : addMinuteToDate(row.date)
+
+  const newRow: TableData = {
+    date: newDate,
+    isNewRow: {},
+  }
+  editedSeriesIds.value.forEach((id) => {
+    newRow[id] = row[id]
+  })
+
+  clearExpanded()
+
+  isEditing.value = false
+  tableData.value.splice(index + (position === 'before' ? 0 : 1), 0, newRow)
+  nextTick(() => isEditing.value = true)
+
+  newTableData.value.push(newRow)
+}
+
+function handleRowClick(e: any, row: any) {
+  if (['INPUT', 'SELECT'].includes(e.target.tagName) || !isEditing.value) return
+
+  if (expanded.value.includes(row.item.date)) {
+    clearExpanded()
+  } else {
+    expanded.value = [row.item.date]
+  }
+}
+
+function clearExpanded() {
+  expanded.value = []
+}
+
 function stopEditTimeSeries(seriesId: string) {
+  clearExpanded()
   const index = editedSeriesIds.value.indexOf(seriesId)
   if (index > -1) {
     editedSeriesIds.value.splice(index, 1)
@@ -285,6 +385,9 @@ function stopEditTimeSeries(seriesId: string) {
       }
     }
   }
+
+  // Filter out new rows that were not saved
+  tableData.value = tableData.value.filter((item) => !item.isNewRow)
 }
 
 function isEditingTimeSeries(seriesId: string) {
@@ -292,7 +395,7 @@ function isEditingTimeSeries(seriesId: string) {
   return editedSeriesIds.value.includes(seriesId)
 }
 
-function onUpdateItem(event: Record<string, Partial<TableSeriesData> | Date>) {
+function onUpdateItem(event: TableData) {
   const index = newTableData.value.findIndex((item) => item.date === event.date)
   if (index > -1) {
     newTableData.value[index] = { ...newTableData.value[index], ...event }
@@ -375,13 +478,21 @@ th.sticky-column {
   flex-direction: row;
   justify-content: flex-end;
 }
+
+:deep(tr:hover > td),
+:deep(tr:has(.highlighted)) {
+  background-color: rgba(var(--v-border-color), 0.04);
+}
+
+:deep(.no-highlight) {
+  background-color: transparent !important;
+}
 </style>
 
 <style>
 td:has(span.sticky-column) {
   position: sticky;
   left: 0;
-  background-color: rgb(var(--v-theme-surface));
   border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
