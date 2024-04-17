@@ -10,22 +10,23 @@
     item-title="locationName"
     item-value="locationId"
     return-object
-    style="width: 250px"
+    :style="autocompleteStyle"
     density="compact"
   >
     <template v-slot:item="{ props }">
-      <v-list-item v-bind="props" width="250px" density="compact" />
+      <v-list-item v-bind="props" :width="width" density="compact" />
     </template>
   </v-autocomplete>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, watchEffect } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 import { type Location } from '@deltares/fews-pi-requests'
 
 interface Props {
   locations?: Location[]
   selectedLocationId?: string | null
+  width?: string | number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -36,6 +37,20 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits(['changeLocationId'])
 
 const selectedLocation = ref<Location | null>(null)
+
+const autocompleteStyle = computed(() => {
+  if (!props.width) return undefined
+
+  let width: number | string = props.width
+  if (typeof width === 'string') {
+    // Try to parse width as a number, if it fails, assume it's a CSS string.
+    const numericWidth = parseFloat(width)
+    if (!isNaN(numericWidth)) width = numericWidth
+  }
+
+  const cssWidth = typeof width === 'number' ? `${width}px` : width
+  return `width: ${cssWidth}`
+})
 
 watchEffect(() => {
   selectedLocation.value =
