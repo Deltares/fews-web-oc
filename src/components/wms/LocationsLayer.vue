@@ -159,7 +159,7 @@ function highlightSelectedLocationOnMap() {
     'match',
     ['get', 'locationId'],
     locationId,
-    'map-marker', // icon for selected location
+    'selected-location', // icon for selected location
     ['get', 'iconName'], // default icon
   ])
   map.setLayoutProperty(locationsSymbolLayerId, 'icon-anchor', [
