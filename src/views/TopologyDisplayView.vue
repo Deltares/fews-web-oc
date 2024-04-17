@@ -8,28 +8,20 @@
         density="compact"
         class="ma-2"
       >
-        <v-btn variant="text" value="treemenu">
+        <v-btn variant="text" value="tree">
           <v-icon>mdi-file-tree</v-icon>
         </v-btn>
-        <v-btn variant="text" value="columnmenu">
+        <v-btn variant="text" value="column">
           <v-icon>mdi-view-week</v-icon>
         </v-btn>
       </v-btn-toggle>
     </v-toolbar>
-    <TreeMenu
-      v-if="menuType === 'treemenu' && !mobile"
+    <HierarchicalMenu
       v-model:active="active"
-      :items="items"
       v-model:open="open"
-    >
-    </TreeMenu>
-    <ColumnMenu
-      v-else-if="menuType === 'columnmenu' || mobile"
-      v-model:active="active"
+      :type="mobile ? 'column' : menuType"
       :items="items"
-      v-model:open="open"
-    >
-    </ColumnMenu>
+    />
   </Teleport>
   <Teleport to="#app-bar-content">
     <template v-if="showLeafsAsButton">
@@ -122,9 +114,8 @@
 </template>
 
 <script setup lang="ts">
+import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
 import type { ColumnItem } from '@/components/general/ColumnItem'
-import ColumnMenu from '@/components/general/ColumnMenu.vue'
-import TreeMenu from '@/components/general/TreeMenu.vue'
 import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
 import { useConfigStore } from '@/stores/config'
 
@@ -186,7 +177,7 @@ const secondaryWorkflows = computed<SecondaryWorkflowGroupItem[] | undefined>(
 )
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
-const menuType = ref('treemenu')
+const menuType = ref('tree')
 
 const filterIds = ref<string[]>([])
 const topologyNode = ref<TopologyNode | undefined>(undefined)

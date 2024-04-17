@@ -8,28 +8,20 @@
         density="compact"
         class="ma-2"
       >
-        <v-btn variant="text" value="treemenu">
+        <v-btn variant="text" value="tree">
           <v-icon>mdi-file-tree</v-icon>
         </v-btn>
-        <v-btn variant="text" value="columnmenu">
+        <v-btn variant="text" value="column">
           <v-icon>mdi-view-week</v-icon>
         </v-btn>
       </v-btn-toggle>
     </v-toolbar>
-    <TreeMenu
-      v-if="menuType === 'treemenu' && !mobile"
+    <HierarchicalMenu
       v-model:active="active"
+      v-model:open="open"
+      :type="mobile ? 'column' : menuType"
       :items="items"
-      :open="open"
-    >
-    </TreeMenu>
-    <ColumnMenu
-      v-else-if="menuType === 'columnmenu' || mobile"
-      v-model:active="active"
-      :items="items"
-      :open="open"
-    >
-    </ColumnMenu>
+    />
   </Teleport>
   <SpatialDisplay
     :layer-name="props.layerName"
@@ -39,8 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import ColumnMenu from '../components/general/ColumnMenu.vue'
-import TreeMenu from '@/components/general/TreeMenu.vue'
+import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
 import { ref, watch } from 'vue'
 import { ColumnItem } from '../components/general/ColumnItem'
 import { useWmsCapilities } from '@/services/useWms'
@@ -64,8 +55,8 @@ const capabilities = useWmsCapilities(baseUrl)
 
 const active = ref<string>('root')
 const open = ref<string[]>([])
-const items = ref<ColumnItem[]>()
-const menuType = ref('treemenu')
+const items = ref<ColumnItem[]>([])
+const menuType = ref('tree')
 
 const { mobile } = useDisplay()
 
