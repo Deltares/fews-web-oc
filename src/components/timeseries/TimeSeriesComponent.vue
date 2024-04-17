@@ -19,16 +19,14 @@
       :value="DisplayType.TimeSeriesTable"
       class="time-series-component__container max-height"
     >
-      <KeepAlive>
-        <TimeSeriesTable
-          :config="tableConfig"
-          :series="series"
-          :key="tableConfig.title"
-          class="single"
-          @change="(event) => onDataChange(event)"
-        >
-        </TimeSeriesTable>
-      </KeepAlive>
+      <TimeSeriesTable
+        :config="tableConfig"
+        :series="series"
+        :key="tableConfig.title"
+        class="single"
+        @change="(event) => onDataChange(event)"
+      >
+      </TimeSeriesTable>
     </v-window-item>
     <v-window-item
       :value="DisplayType.ElevationChart"
