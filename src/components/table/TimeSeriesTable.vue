@@ -19,7 +19,7 @@
     >
       <template v-slot:headers="{ columns }">
         <tr>
-          <template v-for="column in columns" :key="column.key">
+          <template v-for="(column, index) in columns" :key="column.key">
             <th
               :style="{ minWidth: column.minWidth }"
               :class="[
@@ -34,6 +34,25 @@
               <div class="table-header-indicator">
                 <div class="table-header-indicator-text">
                   <span>{{ column.title }}</span>
+                  <div
+                    v-if="index === 0 && selected !== undefined"
+                    class="table-header__actions"
+                  >
+                    <v-btn
+                      icon="mdi-table-row-plus-before"
+                      @click="addRowToTimeSeries(selected, 'before')"
+                      color="primary"
+                      variant="text"
+                      density="compact"
+                    />
+                    <v-btn
+                      icon="mdi-table-row-plus-after"
+                      @click="addRowToTimeSeries(selected, 'after')"
+                      color="primary"
+                      variant="text"
+                      density="compact"
+                    />
+                  </div>
                   <template
                     v-if="
                       (column as unknown as TableHeaders).editable &&
@@ -83,65 +102,48 @@
           </template>
         </tr>
       </template>
-      <template v-slot:item.date="{ item, internalItem, isExpanded }">
-        <v-text-field
-          v-if="isEditing && item.isNewRow"
-          :modelValue="toISOString(item.date)"
-          @blur="item.date = new Date($event.target.value)"
-          hide-detail
-          class="table-cell-editable"
-          density="compact"
-          variant="plain"
-          type="datetime-local"
-        />
-        <div v-else :class="{ highlighted: isExpanded(internalItem) }">
-          <span class="sticky-column">
-            {{ dateFormatter.format(item.date) }}
-          </span>
-        </div>
-      </template>
-      <template v-for="id in seriesIds" v-slot:[`item.${id}`]="{ item }">
-        <!-- Table cell when editing data -->
-        <TableCellEdit
-          v-if="
-            isEditing &&
-            editedSeriesIds.length > 0 &&
-            editedSeriesIds.includes(id)
-          "
-          :id="id"
-          :item="item"
-          @update:item="(event) => onUpdateItem(event)"
-        ></TableCellEdit>
-        <!-- Table cell when not editing data. Shows additional info about flags. -->
-        <TableCell
-          v-else
-          :id="id"
-          :item="item"
-          @mouseenter="(event) => showTooltip(event, item[id])"
-          @mouseleave="(event) => hideTooltip(event)"
-        ></TableCell>
-      </template>
-      <template #expanded-row="{ columns, item }">
-        <tr>
-          <td :colspan="columns.length" class="no-highlight">
-            <div class="d-flex ga-2 ms-1 ma-2">
-              <v-btn
-                icon="mdi-table-row-plus-before"
-                @click="addRowToTimeSeries(item, 'before')"
-                color="primary"
-                variant="plain"
-                size="small"
-                density="compact"
-              />
-              <v-btn
-                icon="mdi-table-row-plus-after"
-                @click="addRowToTimeSeries(item, 'after')"
-                color="primary"
-                variant="plain"
-                size="small"
-                density="compact"
-              />
+      <template #item="{ item }">
+        <tr
+          :class="{ highlighted: selected?.date === item.date }"
+          @click="(e) => handleRowClick(e, item)"
+        >
+          <td>
+            <v-text-field
+              v-if="isEditing && item.isNewRow"
+              :modelValue="toISOString(item.date)"
+              @blur="item.date = new Date($event.target.value)"
+              hide-detail
+              class="table-cell-editable"
+              density="compact"
+              variant="plain"
+              type="datetime-local"
+            />
+            <div v-else>
+              <span class="sticky-column">
+                {{ dateFormatter.format(item.date) }}
+              </span>
             </div>
+          </td>
+          <td v-for="id in seriesIds">
+            <!-- Table cell when editing data -->
+            <TableCellEdit
+              v-if="
+                isEditing &&
+                editedSeriesIds.length > 0 &&
+                editedSeriesIds.includes(id)
+              "
+              :id="id"
+              :item="item"
+              @update:item="(event) => onUpdateItem(event)"
+            />
+            <!-- Table cell when not editing data. Shows additional info about flags. -->
+            <TableCell
+              v-else
+              :id="id"
+              :item="item"
+              @mouseenter="(event) => showTooltip(event, item[id])"
+              @mouseleave="(event) => hideTooltip(event)"
+            />
           </td>
         </tr>
       </template>
@@ -205,7 +207,7 @@ const seriesIds = ref<string[]>([])
 const tooltip = ref<boolean>(false)
 const tooltipItem = ref<any>({})
 const activator = ref<string>('')
-const expanded = ref<string[]>([])
+const selected = ref<TableData>()
 const tableData = ref<TableData[]>([])
 const newTableData = ref<TableData[]>([])
 const tableHeaders = ref<TableHeaders[]>([])
@@ -313,9 +315,10 @@ function toISOString(date: Date) {
 }
 
 function getMidpointOfDates(d1: Date, d2: Date) {
-  const result = d1.getTime() > d2.getTime() ?
-    new Date(d1.getTime() - (d1.getTime() - d2.getTime()) / 2) :
-    new Date(d1.getTime() + (d2.getTime() - d1.getTime()) / 2)
+  const result =
+    d1.getTime() > d2.getTime()
+      ? new Date(d1.getTime() - (d1.getTime() - d2.getTime()) / 2)
+      : new Date(d1.getTime() + (d2.getTime() - d1.getTime()) / 2)
   result.setSeconds(0, 0)
   return result
 }
@@ -345,31 +348,29 @@ function addRowToTimeSeries(row: TableData, position: 'before' | 'after') {
     newRow[id] = row[id]
   })
 
-  clearExpanded()
-
   isEditing.value = false
   tableData.value.splice(index + (position === 'before' ? 0 : 1), 0, newRow)
-  nextTick(() => isEditing.value = true)
+  nextTick(() => (isEditing.value = true))
 
   newTableData.value.push(newRow)
 }
 
-function handleRowClick(e: any, row: any) {
+function handleRowClick(e: any, item: any) {
   if (['INPUT', 'SELECT'].includes(e.target.tagName) || !isEditing.value) return
 
-  if (expanded.value.includes(row.item.date)) {
-    clearExpanded()
+  if (selected.value?.date === item.date) {
+    clearSelected()
   } else {
-    expanded.value = [row.item.date]
+    selected.value = item
   }
 }
 
-function clearExpanded() {
-  expanded.value = []
+function clearSelected() {
+  selected.value = undefined
 }
 
 function stopEditTimeSeries(seriesId: string) {
-  clearExpanded()
+  clearSelected()
   const index = editedSeriesIds.value.indexOf(seriesId)
   if (index > -1) {
     editedSeriesIds.value.splice(index, 1)
@@ -479,13 +480,21 @@ th.sticky-column {
   justify-content: flex-end;
 }
 
-:deep(tr:hover > td),
-:deep(tr:has(.highlighted)) {
-  background-color: rgba(var(--v-border-color), 0.04);
+:deep(tr) {
+  background-color: rgb(var(--v-theme-surface));
 }
 
-:deep(.no-highlight) {
-  background-color: transparent !important;
+:deep(tr.highlighted > td:first-child) {
+  border-left: 2px solid rgb(var(--v-theme-primary)) !important;
+}
+
+:deep(tr.highlighted > td:last-child) {
+  border-right: 2px solid rgb(var(--v-theme-primary)) !important;
+}
+
+:deep(tr.highlighted > td),
+:deep(tr:has(+ .highlighted) > td) {
+  border-bottom: 2px solid rgb(var(--v-theme-primary)) !important;
 }
 </style>
 
@@ -493,6 +502,7 @@ th.sticky-column {
 td:has(span.sticky-column) {
   position: sticky;
   left: 0;
+  background-color: rgb(var(--v-theme-surface));
   border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
