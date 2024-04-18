@@ -115,7 +115,7 @@
               v-if="isEditing && item.isNewRow"
               :modelValue="toISOString(item.date)"
               @blur="item.date = new Date($event.target.value)"
-              hide-detail
+              hide-details
               class="table-cell-editable"
               density="compact"
               variant="plain"
@@ -437,6 +437,13 @@ function onUpdateItem(event: TableData) {
   height: 100%;
 }
 
+:deep(input[type='datetime-local']) {
+  padding-top: 0;
+  margin-left: -3px;
+  font-size: 14px;
+  letter-spacing: initial;
+}
+
 .data-table {
   display: flex;
   position: relative;
@@ -535,7 +542,10 @@ tr {
 }
 
 tr.highlighted > td:first-child {
-  border-left: 2px solid rgb(var(--v-theme-primary)) !important;
+  border-left: 2px solid rgba(var(--v-theme-primary)) !important;
+}
+tr.highlighted > td:first-child > div {
+  margin-left: -2px;
 }
 
 tr.highlighted > td:last-child {
