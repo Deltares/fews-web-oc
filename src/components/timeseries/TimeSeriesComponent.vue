@@ -25,6 +25,7 @@
         :key="tableConfig.title"
         class="single"
         @change="(event) => onDataChange(event)"
+        @update:isEditing="isEditing = $event"
       >
       </TimeSeriesTable>
     </v-window-item>
@@ -47,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
 import ElevationChart from '../charts/ElevationChart.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
@@ -65,6 +66,7 @@ import { configManager } from '../../services/application-config'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 import { useDisplay } from 'vuetify'
+import { onBeforeRouteLeave } from 'vue-router'
 
 interface Props {
   config?: DisplayConfig
@@ -103,6 +105,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const store = useSystemTimeStore()
 const lastUpdated = ref<Date>(new Date())
+const isEditing = ref(false)
 const { xs } = useDisplay()
 
 const options = computed<UseTimeSeriesOptions>(() => {
@@ -170,6 +173,31 @@ watch(
     tab.value = props.displayType
   },
 )
+
+watch(isEditing, () => {
+  // Can't set a custom message in modern browsers
+  window.onbeforeunload = isEditing.value ? () => true : null
+})
+
+onUnmounted(() => {
+  window.onbeforeunload = null
+})
+
+onBeforeRouteLeave(() => {
+  if (isEditing.value) {
+    // For multiple simultaneous leaves set to false since confirm dialog is async
+    isEditing.value = false
+
+    const answer = window.confirm(
+      'You have unsaved changes. Are you sure you want to leave?',
+    )
+
+    if (!answer) {
+      isEditing.value = true
+      return false
+    }
+  }
+})
 </script>
 
 <style scoped>
