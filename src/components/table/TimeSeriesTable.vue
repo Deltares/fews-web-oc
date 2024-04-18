@@ -107,7 +107,7 @@
           :class="{ highlighted: selected?.date === item.date }"
           @click="(e) => handleRowClick(e, item)"
         >
-          <td>
+          <td class="sticky-column">
             <v-text-field
               v-if="isEditing && item.isNewRow"
               :modelValue="toISOString(item.date)"
@@ -119,9 +119,7 @@
               type="datetime-local"
             />
             <div v-else>
-              <span class="sticky-column">
-                {{ dateFormatter.format(item.date) }}
-              </span>
+              {{ dateFormatter.format(item.date) }}
             </div>
           </td>
           <td v-for="id in seriesIds">
@@ -448,6 +446,13 @@ th.sticky-column {
   left: 0;
 }
 
+td.sticky-column {
+  position: sticky;
+  left: 0;
+  background-color: rgb(var(--v-theme-surface));
+  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
 .v-table--fixed-header
   > .v-table__wrapper
   > table
@@ -455,6 +460,26 @@ th.sticky-column {
   > tr
   > th.sticky-column {
   z-index: 3;
+}
+
+.v-theme--light td:has(div.table-cell-editable) {
+  background: repeating-linear-gradient(
+    45deg,
+    rgb(var(--v-theme-surface)) 0px,
+    rgb(var(--v-theme-surface)) 12.73px,
+    rgb(240, 240, 240) 12.73px,
+    rgb(240, 240, 240) 25.46px
+  );
+}
+
+.v-theme--dark td:has(div.table-cell-editable) {
+  background: repeating-linear-gradient(
+    45deg,
+    rgb(var(--v-theme-surface)) 0px,
+    rgb(var(--v-theme-surface)) 12.73px,
+    rgba(15, 15, 15) 12.73px,
+    rgba(15, 15, 15) 25.46px
+  );
 }
 
 .table-header {
@@ -500,34 +525,5 @@ th.sticky-column {
 :deep(tr.highlighted > td),
 :deep(tr:has(+ .highlighted) > td) {
   border-bottom: 2px solid rgb(var(--v-theme-primary)) !important;
-}
-</style>
-
-<style>
-td:has(span.sticky-column) {
-  position: sticky;
-  left: 0;
-  background-color: rgb(var(--v-theme-surface));
-  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
-}
-
-.v-theme--light td:has(div.table-cell-editable) {
-  background: repeating-linear-gradient(
-    45deg,
-    rgb(var(--v-theme-surface)) 0px,
-    rgb(var(--v-theme-surface)) 12.73px,
-    rgb(240, 240, 240) 12.73px,
-    rgb(240, 240, 240) 25.46px
-  );
-}
-
-.v-theme--dark td:has(div.table-cell-editable) {
-  background: repeating-linear-gradient(
-    45deg,
-    rgb(var(--v-theme-surface)) 0px,
-    rgb(var(--v-theme-surface)) 12.73px,
-    rgba(15, 15, 15) 12.73px,
-    rgba(15, 15, 15) 25.46px
-  );
 }
 </style>
