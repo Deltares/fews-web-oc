@@ -522,6 +522,10 @@ tr.highlighted > td:last-child {
   border-right: 2px solid rgb(var(--v-theme-primary)) !important;
 }
 
+tr.highlighted:first-child > td {
+  border-top: 2px solid rgb(var(--v-theme-primary)) !important;
+}
+
 tr.highlighted > td,
 tr:has(+ .highlighted) > td {
   border-bottom: 2px solid rgb(var(--v-theme-primary)) !important;
