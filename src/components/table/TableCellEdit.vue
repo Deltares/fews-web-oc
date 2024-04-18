@@ -1,6 +1,5 @@
 <template>
   <div class="table-cell-editable">
-    <input type="checkbox" @change="(event) => selectItem(event)" />
     <input
       :ref="`${props.item.date}-${props.id}-value`"
       v-model.number="currentItem.y"
