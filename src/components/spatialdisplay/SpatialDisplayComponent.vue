@@ -337,7 +337,7 @@ watch(currentElevation, () => {
 })
 
 watch(
-  () => colourScalesStore.currentScale?.range,
+  [() => colourScalesStore.currentScale?.range, () => settings.useDisplayUnits],
   () => {
     setLayerOptions()
   },
