@@ -45,9 +45,9 @@ watch(
 
 // Allow only one simultaneous request to wait for layer initialisation; abort
 // all requests but the last.
-function addUpdateWatcher(
-  watchExpression: () => unknown,
-  callback: (newValue: unknown) => void,
+function addUpdateWatcher<T>(
+  watchExpression: () => T,
+  callback: (newValue: T) => void,
 ): void {
   let abortController = new AbortController()
   watch(watchExpression, async (newValue) => {
@@ -71,14 +71,14 @@ addUpdateWatcher(
   () => props.layerOptions?.time,
   async (time) => {
     if (!layer || !time) return
-    await layer.setTime(time as Date)
+    await layer.setTime(time)
   },
 )
 addUpdateWatcher(
   () => props.layerOptions?.elevation,
   async (elevation) => {
     if (!layer) return
-    layer.setElevation((elevation as number | undefined) ?? null)
+    layer.setElevation(elevation ?? null)
   },
 )
 addUpdateWatcher(
@@ -86,8 +86,15 @@ addUpdateWatcher(
   (colorScaleRange) => {
     if (!layer) return
     layer.setColorScaleRange(
-      getColorScaleRangeFromString(colorScaleRange as string) ?? null,
+      getColorScaleRangeFromString(colorScaleRange) ?? null,
     )
+  },
+)
+addUpdateWatcher(
+  () => props.layerOptions?.useDisplayUnits,
+  async (useDisplayUnits) => {
+    if (!layer) return
+    layer.setDisplayUnits(useDisplayUnits)
   },
 )
 

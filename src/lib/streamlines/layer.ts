@@ -364,6 +364,15 @@ export class WMSStreamlineLayer implements CustomLayerInterface {
     this.visualiser?.updateOptions(options)
   }
 
+  async setDisplayUnits(useDisplayUnits: boolean | undefined): Promise<void> {
+    // No change, do not update.
+    if (useDisplayUnits === this.options.useDisplayUnits) return
+
+    this.options.useDisplayUnits = useDisplayUnits
+
+    await this.updateVelocityField(false)
+  }
+
   private createVisualiser(
     gl: WebGL2RenderingContext,
     options: WMSStreamlineLayerOptions,
