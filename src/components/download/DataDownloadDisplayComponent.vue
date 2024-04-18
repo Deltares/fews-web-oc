@@ -408,17 +408,15 @@ function getParameterName(parameter: TimeSeriesParameter): string {
 async function getLocations(): Promise<Location[]> {
   const filter: LocationsFilter = {
     showAttributes: true,
+    showParentLocations: false,
+    attributeIds: props.topologyNode.dataDownloadDisplay?.attributes.map(
+      (item) => item.id,
+    ),
     filterId: filterId,
     documentFormat: DocumentFormat.PI_JSON,
   }
   const locationsResponse = await piProvider.getLocations(filter)
-  const allLocations = locationsResponse.locations
-  const allParentLocations = allLocations.map(
-    (location) => location.parentLocationId,
-  )
-  return locationsResponse.locations.filter(
-    (location) => !allParentLocations.includes(location.locationId),
-  )
+  return locationsResponse.locations
 }
 
 function getAttributeValues(locations: Location[]): string[][] {
@@ -426,6 +424,7 @@ function getAttributeValues(locations: Location[]): string[][] {
   const configuredAttributeIds =
     props.topologyNode.dataDownloadDisplay?.attributes.map((item) => item.id)
   configuredAttributeIds?.forEach((item) => attributeValuesMap.push([]))
+  if (configuredAttributeIds === undefined) return attributeValuesMap
   for (const newLocation of locations) {
     let attributes = newLocation.attributes
     if (attributes == undefined) continue
@@ -433,12 +432,10 @@ function getAttributeValues(locations: Location[]): string[][] {
       const attribute = attributes[i]
       if (attribute.id === undefined) continue
       if (attribute.value === undefined) continue
-      if (configuredAttributeIds?.includes(attribute.id)) {
-        const arrayForAttribute =
-          attributeValuesMap[configuredAttributeIds.indexOf(attribute.id)]
-        if (!arrayForAttribute.includes(attribute.value)) {
-          arrayForAttribute.push(attribute.value)
-        }
+      const arrayForAttribute =
+        attributeValuesMap[configuredAttributeIds.indexOf(attribute.id)]
+      if (!arrayForAttribute.includes(attribute.value)) {
+        arrayForAttribute.push(attribute.value)
       }
     }
   }
