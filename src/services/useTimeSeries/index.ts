@@ -146,6 +146,7 @@ export function useTimeSeries(
               _series.header.name = `${header.stationName} - ${header.parameterId} (${header.moduleInstanceId})`
 
               _series.header.unit = header.units
+              _series.header.timeStep = header.timeStep
               _series.header.parameter = header.parameterId
               _series.header.location = header.stationName
               _series.header.source = header.moduleInstanceId
