@@ -369,8 +369,13 @@ function clearSelected() {
   selected.value = undefined
 }
 
+watch(editedSeriesIds, () => {
+  if (editedSeriesIds.value.length === 0) {
+    clearSelected()
+  }
+})
+
 function stopEditTimeSeries(seriesId: string) {
-  clearSelected()
   const index = editedSeriesIds.value.indexOf(seriesId)
   if (index > -1) {
     editedSeriesIds.value.splice(index, 1)
