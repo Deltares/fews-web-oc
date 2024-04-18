@@ -37,7 +37,7 @@
                     v-if="
                       index === 0 &&
                       selected !== undefined &&
-                      equidistantSeries.length < config.series.length
+                      nonEquidistantSeries.length > 0
                     "
                     class="table-header__actions"
                   >
@@ -216,12 +216,12 @@ const tableHeaders = ref<TableHeaders[]>([])
 const isEditing = ref<boolean>(false)
 const editedSeriesIds = ref<string[]>([])
 
-const equidistantSeries = computed(() => {
+const nonEquidistantSeries = computed(() => {
   return Object.entries(props.series)
     .filter(([_, series]) =>
       series.header.timeStep !== undefined && 'unit' in series.header.timeStep
-        ? series.header.timeStep?.unit !== 'nonEquidistant'
-        : true,
+        ? series.header.timeStep?.unit === 'nonEquidistant'
+        : false,
     )
     .map(([id]) => id)
 })
@@ -361,9 +361,9 @@ function addRowToTimeSeries(row: TableData, position: 'before' | 'after') {
     isNewRow: {},
   }
   editedSeriesIds.value.forEach((id) => {
-    if (equidistantSeries.value.includes(id)) return
-
-    newRow[id] = row[id]
+    if (nonEquidistantSeries.value.includes(id)) {
+      newRow[id] = row[id]
+    }
   })
 
   isEditing.value = false
