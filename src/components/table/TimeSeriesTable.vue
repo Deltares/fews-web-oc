@@ -510,20 +510,20 @@ td.sticky-column {
   justify-content: flex-end;
 }
 
-:deep(tr) {
+tr {
   background-color: rgb(var(--v-theme-surface));
 }
 
-:deep(tr.highlighted > td:first-child) {
+tr.highlighted > td:first-child {
   border-left: 2px solid rgb(var(--v-theme-primary)) !important;
 }
 
-:deep(tr.highlighted > td:last-child) {
+tr.highlighted > td:last-child {
   border-right: 2px solid rgb(var(--v-theme-primary)) !important;
 }
 
-:deep(tr.highlighted > td),
-:deep(tr:has(+ .highlighted) > td) {
+tr.highlighted > td,
+tr:has(+ .highlighted) > td {
   border-bottom: 2px solid rgb(var(--v-theme-primary)) !important;
 }
 </style>
