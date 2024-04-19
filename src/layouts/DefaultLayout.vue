@@ -309,7 +309,7 @@ function onCloseAlert(alert: Alert) {
 html,
 body {
   margin: 0px;
-  overflow: hidden !important;
+  overflow-y: auto !important;
   height: 100%;
 }
 
