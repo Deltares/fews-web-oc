@@ -127,12 +127,12 @@
         </v-text-field>
       </v-col>
     </v-row>
-      <TimeSeriesFileDownloadComponent
-              v-model="showFileDownloadDialog"
-              :options="options"
-              :downloadUrl="downloadUrl"
-      >
-      </TimeSeriesFileDownloadComponent>
+    <TimeSeriesFileDownloadComponent
+      v-model="showFileDownloadDialog"
+      :options="options"
+      :downloadUrl="downloadUrl"
+    >
+    </TimeSeriesFileDownloadComponent>
   </v-container>
 </template>
 
@@ -152,9 +152,9 @@ import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.ts'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
-import TimeSeriesFileDownloadComponent from "@/components/download/TimeSeriesFileDownloadComponent.vue";
-import {UseDisplayConfigOptions} from "@/services/useDisplayConfig";
-import {useUserSettingsStore} from "@/stores/userSettings.ts";
+import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
+import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
+import { useUserSettingsStore } from '@/stores/userSettings.ts'
 
 interface Props {
   nodeId?: string | string[]
@@ -166,10 +166,10 @@ const showFileDownloadDialog = ref(false)
 const downloadUrl = ref<string>()
 const settings = useUserSettingsStore()
 const options = computed<UseDisplayConfigOptions>(() => {
-    return {
-        useDisplayUnits: settings.useDisplayUnits,
-        convertDatum: settings.convertDatum,
-    }
+  return {
+    useDisplayUnits: settings.useDisplayUnits,
+    convertDatum: settings.convertDatum,
+  }
 })
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const piProvider = new PiWebserviceProvider(baseUrl, {
@@ -381,7 +381,6 @@ function downloadData() {
   }
   downloadUrl.value = newDownloadUrl
   showFileDownloadDialog.value = true
-
 }
 
 function getLocationName(location: Location): string {
