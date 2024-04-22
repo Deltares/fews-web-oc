@@ -1,4 +1,4 @@
-import { TimeStep } from "@deltares/fews-pi-requests"
+import { TimeStep } from '@deltares/fews-pi-requests'
 
 export interface SeriesHeader {
   name?: string
