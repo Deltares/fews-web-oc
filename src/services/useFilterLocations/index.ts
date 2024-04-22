@@ -39,6 +39,7 @@ export function useFilterLocations(
     const _filterdIds = toValue(filterIds)
     if (_filterdIds.length === 0) {
       geojson.value = emptyFeatureCollection
+      locations.value = convertGeoJsonToFewsPiLocation(geojson.value)
       return
     }
     await loadLocations(_filterdIds)
