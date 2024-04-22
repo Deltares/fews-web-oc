@@ -7,6 +7,11 @@
     :scroll-zoom="true"
     :transform-request="transformRequest"
     :mapStyle="baseLayerStyle"
+    :doubleClickZoom="false"
+    :pitchWithRotate="false"
+    :dragRotate="false"
+    :touchZoomRotate="false"
+    :touchPitch="false"
   >
     <slot></slot>
   </mgl-map>

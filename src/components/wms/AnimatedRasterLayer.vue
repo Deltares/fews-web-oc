@@ -82,19 +82,14 @@ function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 }
 
 function addHooksToMapObject() {
-  map?.once('load', () => {
-    onLayerChange()
-
-    map.dragRotate.disable()
-    map.touchZoomRotate.disableRotation()
-    map.doubleClickZoom.disable()
-  })
+  map?.on('load', onLayerChange)
   map?.on('moveend', onMapMove)
   map?.on('sourcedata', onDataChange)
   map?.on('dblclick', onDoubleClick)
 }
 
 function removeHooksFromMapObject(): void {
+  map?.off('load', onLayerChange)
   map?.off('moveend', onMapMove)
   map?.off('sourcedata', onDataChange)
   map?.off('dblclick', onDoubleClick)
