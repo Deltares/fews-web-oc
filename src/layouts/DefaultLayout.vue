@@ -32,7 +32,7 @@
           min-width="320"
           v-else-if="configStore.activeComponents.length > 1"
         >
-          <template #activator="{ isActive, props }">
+          <template #activator="{ props }">
             <v-list-item
               aria-label="Menu button"
               v-bind="props"
@@ -42,9 +42,7 @@
             >
               <v-list-item-title>{{ currentItem }}</v-list-item-title>
               <template #append>
-                <v-icon
-                  :icon="isActive ? 'mdi-chevron-right' : 'mdi-chevron-right'"
-                ></v-icon>
+                <v-icon>mdi-chevron-right</v-icon>
               </template>
             </v-list-item>
           </template>
