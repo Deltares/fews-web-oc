@@ -220,7 +220,7 @@ const nonEquidistantSeries = computed(() => {
   return Object.entries(props.series)
     .filter(([_, series]) =>
       series.header.timeStep !== undefined && 'unit' in series.header.timeStep
-        ? series.header.timeStep?.unit === 'nonEquidistant'
+        ? series.header.timeStep?.unit.toLowerCase() === 'nonequidistant'
         : false,
     )
     .map(([id]) => id)
