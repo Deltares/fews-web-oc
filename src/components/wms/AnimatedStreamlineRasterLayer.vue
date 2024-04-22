@@ -23,7 +23,7 @@ interface Props {
   streamlineOptions?: StreamlineLayerOptionsFews
 }
 const props = defineProps<Props>()
-const isLoading = defineModel('isLoading', { type: Boolean, default: false })
+const isLoading = defineModel<boolean>('isLoading', { default: false })
 const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
