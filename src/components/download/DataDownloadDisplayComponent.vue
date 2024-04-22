@@ -106,20 +106,6 @@
           </v-text-field>
         </v-col>
       </v-row>
-      <v-row class="ma-1">
-        <v-col cols="6">
-          <v-btn-toggle
-            color="primary"
-            v-model="selectedFormat"
-            rounded="0"
-            group
-          >
-            <v-btn value="PI_XML"> XML</v-btn>
-            <v-btn value="PI_JSON"> JSON</v-btn>
-            <v-btn value="PI_CSV"> CSV</v-btn>
-          </v-btn-toggle>
-        </v-col>
-      </v-row>
       <v-card-actions>
         <v-row class="ma-1">
           <v-col>
@@ -141,11 +127,17 @@
         </v-text-field>
       </v-col>
     </v-row>
+      <TimeSeriesFileDownloadComponent
+              v-model="showFileDownloadDialog"
+              :options="options"
+              :downloadUrl="downloadUrl"
+      >
+      </TimeSeriesFileDownloadComponent>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import {
   DocumentFormat,
   Location,
@@ -160,6 +152,9 @@ import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.ts'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
+import TimeSeriesFileDownloadComponent from "@/components/download/TimeSeriesFileDownloadComponent.vue";
+import {UseDisplayConfigOptions} from "@/services/useDisplayConfig";
+import {useUserSettingsStore} from "@/stores/userSettings.ts";
 
 interface Props {
   nodeId?: string | string[]
@@ -167,7 +162,15 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-
+const showFileDownloadDialog = ref(false)
+const downloadUrl = ref<string>()
+const settings = useUserSettingsStore()
+const options = computed<UseDisplayConfigOptions>(() => {
+    return {
+        useDisplayUnits: settings.useDisplayUnits,
+        convertDatum: settings.convertDatum,
+    }
+})
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const piProvider = new PiWebserviceProvider(baseUrl, {
   transformRequestFn: createTransformRequestFn(),
@@ -184,12 +187,14 @@ const parameters = ref<TimeSeriesParameter[]>([])
 const selectedParameters = ref<TimeSeriesParameter[]>([])
 
 allLocations.value = await getLocations()
+locations.value = allLocations.value
 selectedLocations.value = allLocations.value
+
 parameters.value = await getParameters()
+selectedParameters.value = parameters.value
+
 const selectableAttributes = ref<string[][]>([])
 selectableAttributes.value = getAttributeValues(allLocations.value)
-
-let selectedFormat = ref<string>('PI_XML')
 
 let errors = ref<string[]>([])
 const startDate = ref<Date>(getStartDateValue())
@@ -308,7 +313,7 @@ function getEndDateValue() {
   return endDateValue
 }
 
-async function downloadData() {
+function downloadData() {
   errors.value = []
   let newErrors = []
   let startTimeRequest: DateTimeMaybeValid = DateTime.fromFormat(
@@ -368,22 +373,15 @@ async function downloadData() {
   })
   parameterQuery = encodeURI(parameterQuery)
 
-  const downloadFormat = selectedFormat.value
-
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  let downloadUrl = `${baseUrl}rest/fewspiservice/v1/timeseries?filterId=${filterId}&${locationQuery}&${parameterQuery}&${queryStartDateString}&${queryEndDateString}&downloadAsFile=true&documentFormat=${downloadFormat}`
-  if (downloadUrl.length > 8000) {
+  let newDownloadUrl = `${baseUrl}rest/fewspiservice/v1/timeseries?filterId=${filterId}&${locationQuery}&${parameterQuery}&${queryStartDateString}&${queryEndDateString}&downloadAsFile=true`
+  if (newDownloadUrl.length > 8000) {
     errors.value.push('Too many locations or parameters selected')
     return
   }
+  downloadUrl.value = newDownloadUrl
+  showFileDownloadDialog.value = true
 
-  const url = new URL(downloadUrl)
-  await downloadFileAttachment(
-    url.href,
-    'timeSeries',
-    downloadFormat,
-    authenticationManager.getAccessToken(),
-  )
 }
 
 function getLocationName(location: Location): string {

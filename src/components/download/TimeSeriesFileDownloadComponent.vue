@@ -70,7 +70,8 @@ const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
 interface Props {
   config: DisplayConfig | undefined
   options: UseDisplayConfigOptions
-  filter?: filterActionsFilter | timeSeriesGridActionsFilter | undefined
+    filter?: filterActionsFilter | timeSeriesGridActionsFilter | undefined
+    downloadUrl: string | undefined
 }
 
 const fileTypes = {
@@ -104,6 +105,17 @@ function isFilterActionsFilter(
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const downloadFile = (downloadFormat: string) => {
+    if (props.downloadUrl) {
+        const downloadUrl = new URL(
+            `${props.downloadUrl}&documentFormat=${downloadFormat}`,
+        )
+        return downloadFileAttachment(
+            downloadUrl.href,
+            fileName.value,
+            downloadFormat,
+            authenticationManager.getAccessToken(),
+        )
+    }
   const _options = toValue(viewPeriodFromStore)
   let viewPeriod: string = ''
   if (_options?.startTime || _options?.endTime) {
