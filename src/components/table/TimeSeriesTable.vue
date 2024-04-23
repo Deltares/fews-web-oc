@@ -128,11 +128,7 @@
           <td v-for="id in seriesIds">
             <!-- Table cell when editing data -->
             <TableCellEdit
-              v-if="
-                isEditing &&
-                editedSeriesIds.length > 0 &&
-                editedSeriesIds.includes(id)
-              "
+              v-if="isEditing && canEditItem(item, id)"
               :id="id"
               :item="item"
               @update:item="(event) => onUpdateItem(event)"
@@ -324,6 +320,13 @@ function toggleEditTimeSeries(seriesId: string) {
 function editTimeSeries(seriesId: string) {
   isEditing.value = true
   if (seriesId !== null) editedSeriesIds.value.push(seriesId)
+}
+
+function canEditItem(item: TableData, seriesId: string) {
+  if (!editedSeriesIds.value.includes(seriesId)) return false
+  if (nonEquidistantSeries.value.includes(seriesId)) return true
+
+  return props.series[seriesId].data?.some((series) => series.x === item.date)
 }
 
 function indexIsInRange(array: unknown[], index: number) {
