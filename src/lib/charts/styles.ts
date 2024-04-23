@@ -13,9 +13,35 @@ const SymbolType = {
 
 type SymbolType = (typeof SymbolType)[keyof typeof SymbolType]
 
+/**
+ * Converts a hexadecimal color code to its RGB representation.
+ * @param hex - The hexadecimal color code to convert.
+ * @param alpha - Optional alpha value for the RGBA representation.
+ * @returns The RGB or RGBA representation of the color code.
+ */
+function hexToRGB(hex: string, alpha?: string | number) {
+  var r = parseInt(hex.slice(1, 3), 16),
+    g = parseInt(hex.slice(3, 5), 16),
+    b = parseInt(hex.slice(5, 7), 16)
+
+  if (alpha) {
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`
+  } else {
+    return `rgb(${r}, ${g}, ${b})`
+  }
+}
+
+
+/**
+ * Converts the FEWS line properties to SVG style properties.
+ * @param item - The FEWS line style properties.
+ * @returns The SVG style properties.
+ */
 export function cssStyleFromFewsLine(item: {
   lineStyle?: string
-  color?: string
+  lineWidth?: number
+  color: string
+  opaquenessPercentage?: number
 }): SvgPropertiesHyphen {
   let style: SvgPropertiesHyphen = {}
 
@@ -30,20 +56,36 @@ export function cssStyleFromFewsLine(item: {
         ...cssStyleFromFewsLineStyle(matches.groups.lineStyle),
       }
     }
-    if (matches?.groups?.lineWidth !== undefined) {
+    if (item.lineWidth) {
+      style = {
+        ...style,
+        ...{ 'stroke-width': `${item.lineWidth}` },
+      }
+    } else if (matches?.groups?.lineWidth !== undefined) {
       style = {
         ...style,
         ...cssStyleFromFewsLineWidth(matches.groups.lineWidth),
       }
     }
   }
-  style.stroke = item.color === '#000000' ? 'currentColor' : item.color
+  const alpha = item.opaquenessPercentage ? item.opaquenessPercentage / 100 : 1
+  style.stroke =
+    item.color === '#000000'
+      ? 'currentColor'
+      : hexToRGB(item.color, alpha)
   return style
 }
 
+
+/**
+ * Converts FEWS area properties to SVG CSS styles.
+ * @param item - The FEWS area properties.
+ * @returns The SVG CSS styles.
+ */
 export function cssStyleFromFewsArea(item: {
   lineStyle?: string
-  color?: string
+  color: string
+  opaquenessPercentage?: number
 }): SvgPropertiesHyphen {
   let style: SvgPropertiesHyphen = {}
 
@@ -65,11 +107,20 @@ export function cssStyleFromFewsArea(item: {
       }
     }
   }
-  style.fill = item.color === '#000000' ? 'currentColor' : item.color
+  const alpha = item.opaquenessPercentage ? item.opaquenessPercentage / 100 : 1
+  style.fill =
+    item.color === '#000000'
+      ? 'currentColor'
+      : hexToRGB(item.color, alpha)
   return style
 }
 
 
+/**
+ * Converts a FEWS line style to CSS style properties for an SVG element.
+ * @param lineStyle - The FEWS line style to convert.
+ * @returns The CSS style properties for the SVG element.
+ */
 function cssStyleFromFewsLineStyle(lineStyle: string): SvgPropertiesHyphen {
   const style: SvgPropertiesHyphen = {}
   switch (lineStyle) {
@@ -91,6 +142,11 @@ function cssStyleFromFewsLineStyle(lineStyle: string): SvgPropertiesHyphen {
   return style
 }
 
+/**
+ * Converts a FEWS line width value to an SVG style object.
+ * @param lineWidth - The line width value from FEWS.
+ * @returns The SVG style object with the converted line width.
+ */
 function cssStyleFromFewsLineWidth(lineWidth: string): SvgPropertiesHyphen {
   const style: SvgPropertiesHyphen = {}
   switch (lineWidth) {
@@ -104,6 +160,11 @@ function cssStyleFromFewsLineWidth(lineWidth: string): SvgPropertiesHyphen {
   return style
 }
 
+/**
+ * Converts a FEWS marker object to CSS styles for an SVG element.
+ * @param item - The FEWS marker object.
+ * @returns The CSS styles for the SVG element.
+ */
 export function cssStyleFromFewsMarker(item: {
   markerStyle?: string
   color?: string
@@ -116,6 +177,12 @@ export function cssStyleFromFewsMarker(item: {
   return style
 }
 
+/**
+ * Converts a FEWS style string to a chart marker symbol.
+ * @param style - The FEWS style string.
+ * @param pointSize - The size of the marker symbol.
+ * @returns The symbol options for the chart marker.
+ */
 export function chartMarkerFromFews(
   style: string,
   pointSize: number = 3,
