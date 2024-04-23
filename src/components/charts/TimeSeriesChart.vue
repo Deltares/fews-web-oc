@@ -68,6 +68,7 @@ import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
 import type { ThresholdLine } from '../../lib/charts/types/ThresholdLine.js'
 import { Series } from '../../lib/timeseries/timeSeries.js'
+import { dataFromResources } from '../../lib/charts/dataFromResources'
 import uniq from 'lodash-es/uniq'
 import { extent } from 'd3'
 import { VChipGroup } from 'vuetify/components'
@@ -184,31 +185,8 @@ watch(
 
 const addToChart = (chartSeries: ChartSeries) => {
   const id = chartSeries.id
-  let data: any[] = []
-  if (chartSeries.dataResources.length > 1) {
-    let allFound = true
-    for (const resourceId of chartSeries.dataResources) {
-      if (props.series[resourceId] === undefined) {
-        allFound = false
-        break
-      }
-    }
-    if (allFound) {
-      const seriesData = props.series[chartSeries.dataResources[0]]
-      for (const t of seriesData.data!) {
-        data.push({ x: t.x, y: [t.y]})
-      }
-      for (let i=1; i < chartSeries.dataResources.length; i++) {
-        const resourceId = chartSeries.dataResources[i]
-        for (let t in data) {
-          data[t].y.push( props.series[resourceId].data![t].y )
-        }
-      }
-    }
-  } else {
-    const seriesData = props.series[chartSeries.dataResources[0]]
-    if (seriesData?.data !== undefined) data = seriesData.data
-  }
+
+  const data = dataFromResources(chartSeries.dataResources, props.series)
 
   const tooltip: TooltipOptions = {
     toolTipFormatter: (d) => {
