@@ -166,12 +166,12 @@ watch(data, () => {
   }
 
   if (isBoundingBoxInForm.value) {
-    boundingBox.value = [
-      data.value.xMin,
-      data.value.yMin,
-      data.value.xMax,
-      data.value.yMax,
-    ]
+    boundingBox.value = {
+      lonMin: data.value.xMin,
+      latMin: data.value.yMin,
+      lonMax: data.value.xMax,
+      latMax: data.value.yMax,
+    }
   } else {
     boundingBox.value = null
   }
@@ -185,10 +185,10 @@ watch(boundingBox, () => {
     data.value.xMax = undefined
     data.value.yMax = undefined
   } else {
-    data.value.xMin = boundingBox.value[0]
-    data.value.yMin = boundingBox.value[1]
-    data.value.xMax = boundingBox.value[2]
-    data.value.yMax = boundingBox.value[3]
+    data.value.xMin = boundingBox.value.lonMin
+    data.value.yMin = boundingBox.value.latMin
+    data.value.xMax = boundingBox.value.lonMax
+    data.value.yMax = boundingBox.value.latMax
   }
 })
 

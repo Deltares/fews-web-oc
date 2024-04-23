@@ -4,19 +4,34 @@ import { BBox } from 'geojson'
 import { GeoJSONStoreFeatures } from 'terra-draw'
 import { computed, ref } from 'vue'
 
-function isValidBoundingBox(boundingBox: BBox): boolean {
+export interface BoundingBox {
+  lonMin: number
+  lonMax: number
+  latMin: number
+  latMax: number
+}
+
+function isValidBoundingBox(boundingBox: BoundingBox): boolean {
   // Invalid when along x or y, min > max
-  if (boundingBox[0] > boundingBox[2] || boundingBox[1] > boundingBox[3]) {
+  if (
+    boundingBox.lonMin > boundingBox.lonMax ||
+    boundingBox.latMin > boundingBox.latMax
+  ) {
     return false
   }
-  return boundingBox.every((v) => !isNaN(v))
+  return (
+    !isNaN(boundingBox.lonMin) &&
+    !isNaN(boundingBox.lonMax) &&
+    !isNaN(boundingBox.latMin) &&
+    !isNaN(boundingBox.latMax)
+  )
 }
 
 function getRoundedBoundingBoxFromGeoJson(
   features: GeoJSONStoreFeatures,
   longitudeStepSize: number,
   latitudeStepSize: number,
-): BBox | null {
+): BoundingBox | null {
   const type = features.geometry.type
   if (type !== 'Polygon') return null
 
@@ -24,30 +39,33 @@ function getRoundedBoundingBoxFromGeoJson(
     return parseFloat((Math.round(value / step) * step).toFixed(4))
   }
 
+  // Compute a GeoJSON bounding box from the drawn feature.
   const boundingBox = bbox(features)
-  const roundedBoundingBox: BBox = [
-    roundToStep(boundingBox[0], longitudeStepSize),
-    roundToStep(boundingBox[1], latitudeStepSize),
-    roundToStep(boundingBox[2], longitudeStepSize),
-    roundToStep(boundingBox[3], latitudeStepSize),
-  ]
+  const roundedBoundingBox: BoundingBox = {
+    lonMin: roundToStep(boundingBox[0], longitudeStepSize),
+    lonMax: roundToStep(boundingBox[2], longitudeStepSize),
+    latMin: roundToStep(boundingBox[1], latitudeStepSize),
+    latMax: roundToStep(boundingBox[3], latitudeStepSize),
+  }
 
   // Prevent the bbox from becoming a point or line in the x direction
   if (
-    Math.abs(roundedBoundingBox[0] - roundedBoundingBox[2]) < longitudeStepSize
+    roundedBoundingBox.lonMax - roundedBoundingBox.lonMin <
+    longitudeStepSize
   ) {
-    roundedBoundingBox[2] = roundToStep(
-      roundedBoundingBox[0] + longitudeStepSize,
+    roundedBoundingBox.lonMax = roundToStep(
+      roundedBoundingBox.lonMin + longitudeStepSize,
       longitudeStepSize,
     )
   }
 
   // Prevent the bbox from becoming a point or line in the y direction
   if (
-    Math.abs(roundedBoundingBox[1] - roundedBoundingBox[3]) < latitudeStepSize
+    roundedBoundingBox.latMax - roundedBoundingBox.latMin <
+    latitudeStepSize
   ) {
-    roundedBoundingBox[3] = roundToStep(
-      roundedBoundingBox[1] + latitudeStepSize,
+    roundedBoundingBox.latMax = roundToStep(
+      roundedBoundingBox.latMin + latitudeStepSize,
       latitudeStepSize,
     )
   }
@@ -56,10 +74,18 @@ function getRoundedBoundingBoxFromGeoJson(
 
 function getGeoJsonFromBoundingBox(
   previousFeature: GeoJSONStoreFeatures | null,
-  boundingBox: BBox,
+  boundingBox: BoundingBox,
 ): GeoJSONStoreFeatures | null {
   if (!isValidBoundingBox(boundingBox)) return null
-  const newFeature = bboxPolygon(boundingBox) as GeoJSONStoreFeatures
+
+  // Convert to GeoJSON bbox.
+  const bbox: BBox = [
+    boundingBox.lonMin,
+    boundingBox.latMin,
+    boundingBox.lonMax,
+    boundingBox.latMax,
+  ]
+  const newFeature = bboxPolygon(bbox) as GeoJSONStoreFeatures
   delete newFeature.bbox
 
   if (previousFeature) {
@@ -70,15 +96,15 @@ function getGeoJsonFromBoundingBox(
   }
 }
 
-function boundingBoxToString(boundingBox: BBox): string {
-  return `${boundingBox[0]}°E ${boundingBox[1]}°N , ${boundingBox[2]}°E ${boundingBox[3]}°N`
+function boundingBoxToString(boundingBox: BoundingBox): string {
+  return `${boundingBox.lonMin}°E ${boundingBox.latMin}°N, ${boundingBox.lonMax}°E ${boundingBox.latMax}°N`
 }
 
 export function useBoundingBox(
   initialLongitudeStepSize: number,
   initialLatitudeStepSize: number,
 ) {
-  const boundingBox = ref<BBox | null>(null)
+  const boundingBox = ref<BoundingBox | null>(null)
   const longitudeStepSize = ref(initialLongitudeStepSize)
   const latitudeStepSize = ref(initialLatitudeStepSize)
 
