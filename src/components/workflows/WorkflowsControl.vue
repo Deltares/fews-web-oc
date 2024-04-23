@@ -16,7 +16,7 @@
     </v-badge>
     <template v-if="selectBbox">
       <span class="mx-4 text-medium-emphasis" width="400px">
-        {{ bboxString }}
+        {{ boundingBoxString }}
       </span>
       <v-btn
         @click="hideMapTool"
@@ -47,9 +47,9 @@
               mandatory
             ></v-select>
           </v-row>
-          <v-row v-if="hasBoundingBox">
+          <v-row v-if="isBoundingBoxInForm">
             <v-text-field
-              v-model="bboxString"
+              v-model="boundingBoxString"
               readonly
               variant="plain"
               density="compact"
@@ -98,8 +98,6 @@ import { JsonForms } from '@jsonforms/vue'
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
 import { configManager } from '@/services/application-config'
 import DrawPolygonControl from '@/components/map/DrawPolygonControl.vue'
-import bbox from '@turf/bbox'
-import bboxPolygon from '@turf/bbox-polygon'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import {
   PiWebserviceProvider,
@@ -108,11 +106,11 @@ import {
   SecondaryWorkflowGroupItem,
   SecondaryWorkflowProperties,
 } from '@deltares/fews-pi-requests'
-import { GeoJSONStoreFeatures } from 'terra-draw'
 import { asyncComputed } from '@vueuse/core'
 import JsonFormsConfig from '@/assets/JsonFormsConfig.json'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { downloadFileWithXhr } from '@/lib/download'
+import { useBoundingBox } from '@/services/useBoundingBox'
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[]
@@ -135,6 +133,63 @@ const data = ref()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const webServiceProvider = new PiWebserviceProvider(baseUrl, {
   transformRequestFn: createTransformRequestFn(),
+})
+
+const {
+  boundingBox,
+  features,
+  longitudeStepSize,
+  latitudeStepSize,
+  boundingBoxIsValid,
+  boundingBoxString,
+} = useBoundingBox(1, 1)
+
+// Check whether the bounding box is defined in the form.
+const isBoundingBoxInForm = computed(
+  () =>
+    data.value.xMin !== undefined &&
+    data.value.yMin !== undefined &&
+    data.value.xMax !== undefined &&
+    data.value.yMax !== undefined,
+)
+
+watch(data, () => {
+  // Update the lat/lon step sizes when the appropriate fields are changed in
+  // the form.
+  const xCellSize = data.value.xCellSize
+  const yCellSize = data.value.yCellSize
+  if (typeof xCellSize === 'number') {
+    longitudeStepSize.value = data.value.xCellSize
+  }
+  if (typeof yCellSize === 'number') {
+    latitudeStepSize.value = data.value.yCellSize
+  }
+
+  if (isBoundingBoxInForm.value) {
+    boundingBox.value = [
+      data.value.xMin,
+      data.value.yMin,
+      data.value.xMax,
+      data.value.yMax,
+    ]
+  } else {
+    boundingBox.value = null
+  }
+})
+
+// Update the form when the bounding box is changed (e.g. through clicking).
+watch(boundingBox, () => {
+  if (boundingBox.value === null) {
+    data.value.xMin = undefined
+    data.value.yMin = undefined
+    data.value.xMax = undefined
+    data.value.yMax = undefined
+  } else {
+    data.value.xMin = boundingBox.value[0]
+    data.value.yMin = boundingBox.value[1]
+    data.value.xMax = boundingBox.value[2]
+    data.value.yMax = boundingBox.value[3]
+  }
 })
 
 type FormValue = string | number | boolean | Date
@@ -174,41 +229,6 @@ function toValue(
   }
 }
 
-const hasBoundingBox = computed(
-  () =>
-    data.value.xMin !== undefined &&
-    data.value.yMin !== undefined &&
-    data.value.xMax !== undefined &&
-    data.value.yMax !== undefined &&
-    data.value.xCellSize !== undefined &&
-    data.value.yCellSize !== undefined,
-)
-
-const boundingBox = computed<[number, number, number, number]>({
-  get() {
-    return [
-      data.value.xMin ?? 0,
-      data.value.yMin ?? 0,
-      data.value.xMax ?? 0,
-      data.value.yMax ?? 0,
-    ]
-  },
-  set(newValue) {
-    data.value.xMin = newValue[0]
-    data.value.yMin = newValue[1]
-    data.value.xMax = newValue[2]
-    data.value.yMax = newValue[3]
-  },
-})
-
-const longitudeStepSize = computed(() => data.value.xCellSize ?? 0.1)
-const lattitudeStepSize = computed(() => data.value.yCellSize ?? 0.1)
-
-const bboxString = computed(() => {
-  return `${boundingBox.value[0]}°E ${boundingBox.value[1]}°N , ${boundingBox.value[2]}°E ${boundingBox.value[3]}°N`
-})
-const features = ref<GeoJSONStoreFeatures[]>([])
-
 const formSchema = asyncComputed(
   async () =>
     await getJson(`${currentWorkflow.value.secondaryWorkflowId}.schema.json`),
@@ -243,18 +263,6 @@ function showMapTool() {
 function hideMapTool() {
   selectBbox.value = false
   workflowDialog.value = true
-}
-
-function bboxIsValid() {
-  // Invalid when along x or y, min > max
-  if (
-    boundingBox.value[0] > boundingBox.value[2] ||
-    boundingBox.value[1] > boundingBox.value[3]
-  ) {
-    return false
-  }
-
-  return boundingBox.value.every((v) => !isNaN(v))
 }
 
 function showErrorMessage(message: string) {
@@ -300,7 +308,7 @@ async function runTask() {
 }
 
 async function processData() {
-  if (!bboxIsValid()) {
+  if (!boundingBoxIsValid.value) {
     showErrorMessage('Bounding box is invalid')
     return
   }
@@ -321,62 +329,6 @@ async function processData() {
   await downloadFileWithXhr(url.toString()).catch(({ statusText }) => {
     showErrorMessage(statusText)
   })
-}
-
-watch(boundingBox, updateFeature, { deep: true })
-function updateFeature() {
-  if (!bboxIsValid()) return
-
-  const feature = bboxPolygon(boundingBox.value)
-  delete feature.bbox
-
-  if (features.value.length > 0) {
-    features.value[0].geometry = feature.geometry
-  } else {
-    features.value.push(feature as GeoJSONStoreFeatures)
-  }
-}
-
-watch(features, () => {
-  const type = features.value?.[0]?.geometry.type
-
-  if (type === 'Polygon') {
-    const newBbox = bbox(features.value[0])
-
-    const roundedBbox: [number, number, number, number] = [
-      roundToStep(newBbox[0], longitudeStepSize.value),
-      roundToStep(newBbox[1], lattitudeStepSize.value),
-      roundToStep(newBbox[2], longitudeStepSize.value),
-      roundToStep(newBbox[3], lattitudeStepSize.value),
-    ]
-
-    // Prevent the bbox from becoming a point or line in the x direction
-    if (Math.abs(roundedBbox[0] - roundedBbox[2]) < longitudeStepSize.value) {
-      roundedBbox[2] = roundToStep(
-        roundedBbox[0] + longitudeStepSize.value,
-        longitudeStepSize.value,
-      )
-    }
-
-    // Prevent the bbox from becoming a point or line in the y direction
-    if (Math.abs(roundedBbox[1] - roundedBbox[3]) < lattitudeStepSize.value) {
-      roundedBbox[3] = roundToStep(
-        roundedBbox[1] + lattitudeStepSize.value,
-        lattitudeStepSize.value,
-      )
-    }
-
-    boundingBox.value = roundedBbox
-    // Due to rounding the above set can be equal to the previous value
-    //  however we still want to update the feature
-    updateFeature()
-  } else {
-    boundingBox.value = [0, 0, 0, 0]
-  }
-})
-
-function roundToStep(value: number, step: number): number {
-  return parseFloat((Math.round(value / step) * step).toFixed(4))
 }
 </script>
 
