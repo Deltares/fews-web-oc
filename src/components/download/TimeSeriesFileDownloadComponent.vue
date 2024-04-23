@@ -45,6 +45,7 @@
 import {
   DocumentFormat,
   filterActionsFilter,
+  TimeSeriesFilter,
   timeSeriesGridActionsFilter,
   TimeSeriesTopologyActionsFilter,
 } from '@deltares/fews-pi-requests'
@@ -68,10 +69,15 @@ const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
 })
 
 interface Props {
-  config: DisplayConfig | undefined
+  config?: DisplayConfig | undefined
   options: UseDisplayConfigOptions
-  filter?: filterActionsFilter | timeSeriesGridActionsFilter | undefined
-  downloadUrl: string | undefined
+  filter?:
+    | filterActionsFilter
+    | timeSeriesGridActionsFilter
+    | TimeSeriesFilter
+    | undefined
+  startTime?: Date | undefined
+  endTime?: Date | undefined
 }
 
 const fileTypes = {
@@ -97,6 +103,16 @@ function isTimeSeriesGridActionsFilter(
   return (filter as timeSeriesGridActionsFilter).x !== undefined
 }
 
+function isTimeSeriesFilter(
+  filter:
+    | filterActionsFilter
+    | timeSeriesGridActionsFilter
+    | TimeSeriesFilter
+    | undefined,
+): filter is TimeSeriesFilter {
+  return (filter as TimeSeriesFilter).filterId !== undefined
+}
+
 function isFilterActionsFilter(
   filter: filterActionsFilter | timeSeriesGridActionsFilter | undefined,
 ): filter is filterActionsFilter {
@@ -104,37 +120,52 @@ function isFilterActionsFilter(
 }
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const downloadFile = (downloadFormat: string) => {
-  if (props.downloadUrl) {
-    const downloadUrl = new URL(
-      `${props.downloadUrl}&documentFormat=${downloadFormat}`,
-    )
-    return downloadFileAttachment(
-      downloadUrl.href,
-      fileName.value,
-      downloadFormat,
-      authenticationManager.getAccessToken(),
-    )
-  }
+
+function determineViewPeriod(): string {
   const _options = toValue(viewPeriodFromStore)
   let viewPeriod: string = ''
-  if (_options?.startTime || _options?.endTime) {
+  const startDate: Date | null | undefined = props.startTime
+    ? props.startTime
+    : _options?.startTime
+  const endDate: Date | null | undefined = props.endTime
+    ? props.endTime
+    : _options?.endTime
+  if (startDate || endDate) {
     // if either startTime or endTime is set, use it.
-    if (_options?.startTime) {
-      const startTime = DateTime.fromJSDate(_options.startTime, {
+    if (startDate) {
+      const startTime = DateTime.fromJSDate(startDate, {
         zone: 'UTC',
       })
         .set({ millisecond: 0 })
         .toISO({ suppressMilliseconds: true })
       viewPeriod = `&startTime=${startTime}`
     }
-    if (_options?.endTime) {
-      const endTime = DateTime.fromJSDate(_options.endTime, {
+    if (endDate) {
+      const endTime = DateTime.fromJSDate(endDate, {
         zone: 'UTC',
       })
         .set({ millisecond: 0 })
         .toISO({ suppressMilliseconds: true })
       viewPeriod = `${viewPeriod}&endTime=${endTime}`
+    }
+  }
+  return viewPeriod
+}
+
+const downloadFile = (downloadFormat: string) => {
+  let viewPeriod = determineViewPeriod()
+  if (props.filter) {
+    if (isTimeSeriesFilter(props.filter)) {
+      const queryParameters = filterToParams(props.filter)
+      const url = new URL(
+        `${baseUrl}rest/fewspiservice/v1/timeseries/filters/actions${queryParameters}&documentFormat=${downloadFormat}${viewPeriod}`,
+      )
+      return downloadFileAttachment(
+        url.href,
+        fileName.value,
+        downloadFormat,
+        authenticationManager.getAccessToken(),
+      )
     }
   }
   if (props.filter) {
