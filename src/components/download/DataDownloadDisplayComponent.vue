@@ -106,20 +106,6 @@
           </v-text-field>
         </v-col>
       </v-row>
-      <v-row class="ma-1">
-        <v-col cols="6">
-          <v-btn-toggle
-            color="primary"
-            v-model="selectedFormat"
-            rounded="0"
-            group
-          >
-            <v-btn value="PI_XML"> XML</v-btn>
-            <v-btn value="PI_JSON"> JSON</v-btn>
-            <v-btn value="PI_CSV"> CSV</v-btn>
-          </v-btn-toggle>
-        </v-col>
-      </v-row>
       <v-card-actions>
         <v-row class="ma-1">
           <v-col>
@@ -141,25 +127,36 @@
         </v-text-field>
       </v-col>
     </v-row>
+    <TimeSeriesFileDownloadComponent
+      v-model="showFileDownloadDialog"
+      :options="options"
+      :startTime="downloadStartTime"
+      :endTime="downloadEndTime"
+      :filter="timeSeriesFilter"
+    >
+    </TimeSeriesFileDownloadComponent>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import {
   DocumentFormat,
   Location,
   LocationsFilter,
   ParametersFilter,
   PiWebserviceProvider,
+  TimeSeriesFilter,
   TimeSeriesParameter,
   TopologyNode,
 } from '@deltares/fews-pi-requests'
 import { DateTime, type DateTimeMaybeValid } from 'luxon'
 import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.ts'
-import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
+import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
+import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
+import { useUserSettingsStore } from '@/stores/userSettings.ts'
+import { filterToParams } from '@deltares/fews-wms-requests'
 
 interface Props {
   nodeId?: string | string[]
@@ -167,6 +164,17 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const showFileDownloadDialog = ref(false)
+const settings = useUserSettingsStore()
+const options = computed<UseDisplayConfigOptions>(() => {
+  return {
+    useDisplayUnits: settings.useDisplayUnits,
+    convertDatum: settings.convertDatum,
+  }
+})
+const downloadStartTime = ref<Date>()
+const downloadEndTime = ref<Date>()
+const timeSeriesFilter = ref<TimeSeriesFilter>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const piProvider = new PiWebserviceProvider(baseUrl, {
@@ -184,12 +192,14 @@ const parameters = ref<TimeSeriesParameter[]>([])
 const selectedParameters = ref<TimeSeriesParameter[]>([])
 
 allLocations.value = await getLocations()
+locations.value = allLocations.value
 selectedLocations.value = allLocations.value
+
 parameters.value = await getParameters()
+selectedParameters.value = parameters.value
+
 const selectableAttributes = ref<string[][]>([])
 selectableAttributes.value = getAttributeValues(allLocations.value)
-
-let selectedFormat = ref<string>('PI_XML')
 
 let errors = ref<string[]>([])
 const startDate = ref<Date>(getStartDateValue())
@@ -308,27 +318,16 @@ function getEndDateValue() {
   return endDateValue
 }
 
-async function downloadData() {
-  errors.value = []
+function validateUserInput(
+  starTime: DateTimeMaybeValid,
+  endTime: DateTimeMaybeValid,
+): string[] {
   let newErrors = []
-  let startTimeRequest: DateTimeMaybeValid = DateTime.fromFormat(
-    startDateString.value,
-    DATE_FMT,
-  )
-  const startTime = DateTime.fromJSDate(startTimeRequest.toJSDate(), {
-    zone: 'UTC',
-  })
-  if (!startTime.isValid) {
+
+  if (!starTime.isValid) {
     newErrors.push('Start date is not valid')
   }
 
-  let endTimeRequest: DateTimeMaybeValid = DateTime.fromFormat(
-    endDateString.value,
-    DATE_FMT,
-  )
-  const endTime = DateTime.fromJSDate(endTimeRequest.toJSDate(), {
-    zone: 'UTC',
-  })
   if (!endTime.isValid) {
     newErrors.push('End date is not valid')
   }
@@ -346,44 +345,36 @@ async function downloadData() {
   if (endDate.value < startDate.value) {
     newErrors.push('The end date should be greater than the start date')
   }
-  errors.value = newErrors
-  if (newErrors.length !== 0) return
+  return newErrors
+}
 
-  let queryStartDateString =
-    startTime.toISO({ suppressMilliseconds: true }) ?? ''
-  queryStartDateString = 'startTime=' + encodeURI(queryStartDateString)
+function downloadData() {
+  let startTimeRequest: DateTimeMaybeValid = DateTime.fromFormat(
+    startDateString.value,
+    DATE_FMT,
+  )
+  let endTimeRequest: DateTimeMaybeValid = DateTime.fromFormat(
+    endDateString.value,
+    DATE_FMT,
+  )
+  errors.value = validateUserInput(startTimeRequest, endTimeRequest)
+  if (errors.value.length !== 0) return
 
-  let queryEndDateString = endTime.toISO({ suppressMilliseconds: true }) ?? ''
-  queryEndDateString = 'endTime=' + encodeURI(queryEndDateString)
-
-  let locationQuery = 'locationIds='
-  selectedLocations.value.forEach((selectedLocation) => {
-    locationQuery = locationQuery + selectedLocation.locationId + ','
-  })
-  locationQuery = encodeURI(locationQuery)
-
-  let parameterQuery = 'parameterIds='
-  selectedParameters.value.forEach((selectedParameter) => {
-    parameterQuery = parameterQuery + selectedParameter.id + ','
-  })
-  parameterQuery = encodeURI(parameterQuery)
-
-  const downloadFormat = selectedFormat.value
-
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  let downloadUrl = `${baseUrl}rest/fewspiservice/v1/timeseries?filterId=${filterId}&${locationQuery}&${parameterQuery}&${queryStartDateString}&${queryEndDateString}&downloadAsFile=true&documentFormat=${downloadFormat}`
-  if (downloadUrl.length > 8000) {
-    errors.value.push('Too many locations or parameters selected')
+  timeSeriesFilter.value = {
+    filterId: filterId,
+    locationIds: selectedLocations.value.map((location) => location.locationId),
+    parameterIds: selectedParameters.value.map((parameter) => parameter.id),
+  }
+  const queryParameters = filterToParams(timeSeriesFilter.value)
+  if (queryParameters.length > 7500) {
+    errors.value.push('Too many parameters or locations selected')
     return
   }
 
-  const url = new URL(downloadUrl)
-  await downloadFileAttachment(
-    url.href,
-    'timeSeries',
-    downloadFormat,
-    authenticationManager.getAccessToken(),
-  )
+  downloadStartTime.value = startTimeRequest.toJSDate()
+  downloadEndTime.value = endTimeRequest.toJSDate()
+
+  showFileDownloadDialog.value = true
 }
 
 function getLocationName(location: Location): string {
@@ -446,7 +437,7 @@ function getAttributeValues(locations: Location[]): string[][] {
 async function getParameters() {
   if (props.topologyNode?.filterIds === undefined) return []
   const filter: ParametersFilter = {
-    filterId: props.topologyNode.filterIds[0],
+    filterId: filterId,
     documentFormat: DocumentFormat.PI_JSON,
   }
   const parametersResponse = await piProvider.getParameters(filter)
