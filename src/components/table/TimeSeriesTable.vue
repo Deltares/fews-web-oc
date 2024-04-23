@@ -165,13 +165,18 @@ import {
   dateFormatter,
   createTableData,
   tableDataToTimeSeries,
-  TableData,
+  type TableData,
 } from '@/lib/table/tableData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import { useConfigStore } from '@/stores/config'
 import { onBeforeMount } from 'vue'
 import TableCellEdit from '@/components/table/TableCellEdit.vue'
 import TableCell from '@/components/table/TableCell.vue'
+import {
+  getDateWithMinutesOffset,
+  getMidpointOfDates,
+  toISOString,
+} from '@/lib/date'
 
 interface Props {
   config: ChartConfig
@@ -321,40 +326,17 @@ function editTimeSeries(seriesId: string) {
   if (seriesId !== null) editedSeriesIds.value.push(seriesId)
 }
 
-function toISOString(date: Date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hour = String(date.getHours()).padStart(2, '0')
-  const minute = String(date.getMinutes()).padStart(2, '0')
-  return `${year}-${month}-${day}T${hour}:${minute}`
-}
-
-function getMidpointOfDates(d1: Date, d2: Date) {
-  const result =
-    d1.getTime() > d2.getTime()
-      ? new Date(d1.getTime() - (d1.getTime() - d2.getTime()) / 2)
-      : new Date(d1.getTime() + (d2.getTime() - d1.getTime()) / 2)
-  result.setSeconds(0, 0)
-  return result
-}
-
-function addMinuteToDate(d: Date) {
-  d.setMinutes(d.getMinutes() + 1)
-  return d
-}
-
-function indexIsInRange(index: number) {
-  return index >= 0 && index < tableData.value.length
+function indexIsInRange(array: unknown[], index: number) {
+  return index >= 0 && index < array.length
 }
 
 function addRowToTimeSeries(row: TableData, position: 'before' | 'after') {
   const index = tableData.value.findIndex((item) => item.date === row.date)
   const siblingIndex = position === 'before' ? index - 1 : index + 1
 
-  const newDate = indexIsInRange(siblingIndex)
+  const newDate = indexIsInRange(tableData.value, siblingIndex)
     ? getMidpointOfDates(row.date, tableData.value[siblingIndex].date)
-    : addMinuteToDate(row.date)
+    : getDateWithMinutesOffset(row.date, position === 'before' ? -1 : 1)
 
   const newRow: TableData = {
     date: newDate,
@@ -366,6 +348,7 @@ function addRowToTimeSeries(row: TableData, position: 'before' | 'after') {
     }
   })
 
+  // Adding a new row with isEditing on will position it incorrectly
   isEditing.value = false
   tableData.value.splice(index + (position === 'before' ? 0 : 1), 0, newRow)
   nextTick(() => (isEditing.value = true))
