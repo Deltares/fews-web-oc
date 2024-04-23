@@ -11,17 +11,10 @@ import {
 import { useMap } from 'vue-maplibre-gl'
 import type { FeatureId } from 'node_modules/terra-draw/dist/store/store'
 
-interface Props {
-  modelValue?: GeoJSONStoreFeatures[]
-}
+const modelValue = defineModel<GeoJSONStoreFeatures[]>({ default: () => [] })
 
-const props = withDefaults(defineProps<Props>(), {
-  modelValue: () => [],
-})
-
-const emit = defineEmits(['update:modelValue'])
 const { map } = useMap()
-if (!map) throw new Error('Map is not available to draw polygon')
+if (!map) throw new Error('Map is not available to draw rectangle on.')
 
 const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({ map })
 const rectangleMode = new TerraDrawRectangleMode({
@@ -41,7 +34,7 @@ const draw = new TerraDraw({
 draw.on('finish', (featureId) => {
   const features = draw.getSnapshot()
   const newFeature = features.find((feature) => feature.id === featureId)
-  emit('update:modelValue', [newFeature])
+  modelValue.value = newFeature ? [newFeature] : []
 })
 
 draw.on('change', (featureIds, type) => {
@@ -73,11 +66,11 @@ onBeforeUnmount(() => {
 })
 
 watch(
-  () => props.modelValue,
+  modelValue,
   () => {
-    if (props.modelValue.length > 0) {
+    if (modelValue.value.length > 0) {
       draw.clear()
-      draw.addFeatures(props.modelValue)
+      draw.addFeatures(modelValue.value)
     }
   },
   { deep: true },
