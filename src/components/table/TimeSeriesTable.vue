@@ -36,25 +36,35 @@
                   <div
                     v-if="
                       index === 0 &&
-                      selected !== undefined &&
+                      isEditing &&
                       nonEquidistantSeries.length > 0
                     "
                     class="table-header__actions"
                   >
-                    <v-btn
-                      icon="mdi-table-row-plus-before"
-                      @click="addRowToTimeSeries(selected, 'before')"
-                      color="primary"
-                      variant="text"
-                      density="compact"
-                    />
-                    <v-btn
-                      icon="mdi-table-row-plus-after"
-                      @click="addRowToTimeSeries(selected, 'after')"
-                      color="primary"
-                      variant="text"
-                      density="compact"
-                    />
+                    <div>
+                      <v-btn
+                        icon="mdi-table-row-plus-before"
+                        @click="addRowToTimeSeries(selected, 'before')"
+                        color="primary"
+                        variant="text"
+                        density="compact"
+                        :disabled="selected === undefined"
+                      />
+                      <v-btn
+                        icon="mdi-table-row-plus-after"
+                        @click="addRowToTimeSeries(selected, 'after')"
+                        color="primary"
+                        variant="text"
+                        density="compact"
+                        :disabled="selected === undefined"
+                      />
+                      <v-tooltip
+                        v-if="selected === undefined"
+                        activator="parent"
+                        text="First select a row"
+                        location="bottom"
+                      />
+                    </div>
                   </div>
                   <template
                     v-if="
@@ -162,6 +172,7 @@ import {
   createTableData,
   tableDataToTimeSeries,
   type TableData,
+  TableSeriesData,
 } from '@/lib/table/tableData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import { useConfigStore } from '@/stores/config'
@@ -302,9 +313,11 @@ function stopEdit() {
 }
 
 function save(seriesId: string) {
-  const newTimeSeriesData = tableDataToTimeSeries(newTableData.value, [
-    seriesId,
-  ])
+  const serie = props.series[seriesId] as Partial<TableSeriesData>
+  const newModifiedData = newTableData.value.filter(
+    (item) => !(item.isNewRow && !serie.y),
+  )
+  const newTimeSeriesData = tableDataToTimeSeries(newModifiedData, [seriesId])
   emit('change', newTimeSeriesData)
   stopEditTimeSeries(seriesId)
 }
@@ -333,7 +346,12 @@ function indexIsInRange(array: unknown[], index: number) {
   return index >= 0 && index < array.length
 }
 
-function addRowToTimeSeries(row: TableData, position: 'before' | 'after') {
+function addRowToTimeSeries(
+  row: TableData | undefined,
+  position: 'before' | 'after',
+) {
+  if (!row) return
+
   const index = tableData.value.findIndex((item) => item.date === row.date)
   const siblingIndex = position === 'before' ? index - 1 : index + 1
 
@@ -347,7 +365,13 @@ function addRowToTimeSeries(row: TableData, position: 'before' | 'after') {
   }
   editedSeriesIds.value.forEach((id) => {
     if (nonEquidistantSeries.value.includes(id)) {
-      newRow[id] = row[id]
+      newRow[id] = {
+        x: newDate,
+        y: null,
+        flagOrigin: 'CORRECTED',
+        flagQuality: 'UNRELIABLE',
+        flag: '0',
+      }
     }
   })
 
@@ -396,8 +420,11 @@ function stopEditTimeSeries(seriesId: string) {
     }
   }
 
-  // Filter out new rows that were not saved
-  tableData.value = tableData.value.filter((item) => !item.isNewRow)
+  if (!isEditing.value) {
+    // Filter out new rows that were not saved
+    tableData.value = tableData.value.filter((item) => !item.isNewRow)
+    if (selected.value?.isNewRow) clearSelected()
+  }
 }
 
 function isEditingTimeSeries(seriesId: string) {

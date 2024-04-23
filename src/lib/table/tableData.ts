@@ -9,7 +9,7 @@ import type {
 } from '@deltares/fews-pi-requests'
 
 const store = useFewsPropertiesStore()
-export interface TableSeriesData extends Omit<SeriesData, 'x'> {
+export interface TableSeriesData extends SeriesData {
   tooltip: boolean
   flagOrigin?: TimeSeriesFlag['source']
   flagQuality?: TimeSeriesFlag['quality']
