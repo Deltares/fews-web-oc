@@ -1,5 +1,5 @@
-import { Series } from "../timeseries/timeSeries"
-import { SeriesArrayData } from "../timeseries/types/SeriesData"
+import { Series } from '../timeseries/timeSeries'
+import { SeriesArrayData } from '../timeseries/types/SeriesData'
 
 /**
  * Retrieves a single array from the specified data resources. When multiple data resources are specified, the data is combined into a single array.
@@ -7,7 +7,10 @@ import { SeriesArrayData } from "../timeseries/types/SeriesData"
  * @param series - An object containing series data, where the keys are the resource IDs and the values are the series data.
  * @returns An array of SeriesData or SeriesArrayData objects.
  */
-export function dataFromResources(dataResources: string[], series: Record<string, Series>) {
+export function dataFromResources(
+  dataResources: string[],
+  series: Record<string, Series>,
+) {
   if (dataResources.length > 1) {
     let data: SeriesArrayData[] = []
     let allFound = true

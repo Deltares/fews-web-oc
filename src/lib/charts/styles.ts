@@ -31,7 +31,6 @@ function hexToRGB(hex: string, alpha?: string | number) {
   }
 }
 
-
 /**
  * Converts the FEWS line properties to SVG style properties.
  * @param item - The FEWS line style properties.
@@ -70,12 +69,9 @@ export function cssStyleFromFewsLine(item: {
   }
   const alpha = item.opaquenessPercentage ? item.opaquenessPercentage / 100 : 1
   style.stroke =
-    item.color === '#000000'
-      ? 'currentColor'
-      : hexToRGB(item.color, alpha)
+    item.color === '#000000' ? 'currentColor' : hexToRGB(item.color, alpha)
   return style
 }
-
 
 /**
  * Converts FEWS area properties to SVG CSS styles.
@@ -109,12 +105,9 @@ export function cssStyleFromFewsArea(item: {
   }
   const alpha = item.opaquenessPercentage ? item.opaquenessPercentage / 100 : 1
   style.fill =
-    item.color === '#000000'
-      ? 'currentColor'
-      : hexToRGB(item.color, alpha)
+    item.color === '#000000' ? 'currentColor' : hexToRGB(item.color, alpha)
   return style
 }
-
 
 /**
  * Converts a FEWS line style to CSS style properties for an SVG element.

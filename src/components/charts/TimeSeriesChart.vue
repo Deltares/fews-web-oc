@@ -195,7 +195,7 @@ const addToChart = (chartSeries: ChartSeries) => {
       tooltipElement.innerText = `${yValueLabel} ${chartSeries.unit}`
       return tooltipElement
     },
-    anchor: TooltipAnchor.Top
+    anchor: TooltipAnchor.Top,
   }
 
   let chart
@@ -221,7 +221,7 @@ const addToChart = (chartSeries: ChartSeries) => {
         tooltip,
       })
   }
-  if ( chart === undefined) return
+  if (chart === undefined) return
   chart.addTo(
     axis,
     {
