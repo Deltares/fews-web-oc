@@ -42,6 +42,7 @@ Topology nodes in the Web OC component TopologyDisplay can be linked using Topol
 **Spatial Display**
 
 Web OC will show a map, displaying the configured plotId linked to the selected topology node. Use the `<gridDisplaySelection>` item in Toplogy.xml to configure a plotId. A time slider will show up for navigation in time. The period covered by the time slider is based on the configured relative view period of the time series in the GridDisplay.xml with reference to the system time of Web OC (system time of users device).
+The classbreaks (legend) on the Spatial Display is only shown in the Web-OC when the Spatial Display plotId uses classbreaks from the TimeSeriesDisplayConfig.xml. Examples are provided on the Delft-FEWS WIKI (https://publicwiki.deltares.nl/display/FEWSDOC/02+Time+Series+Display+Configuration and https://publicwiki.deltares.nl/display/FEWSDOC/01+Grid+Display#id-01GridDisplay-_Toc154574473_Toc95297306classBreaks. 
 
 **Filters**
 
