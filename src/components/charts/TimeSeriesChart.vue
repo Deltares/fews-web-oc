@@ -47,8 +47,12 @@ import {
   AlertLines,
   CartesianAxesOptions,
   ChartArea,
+  ChartBar,
   ChartLine,
   ChartMarker,
+  ChartRule,
+  TooltipAnchor,
+  TooltipOptions,
   WheelMode,
   ZoomHandler,
   toggleChartVisibility,
@@ -180,42 +184,67 @@ watch(
 
 const addToChart = (chartSeries: ChartSeries) => {
   const id = chartSeries.id
-  const seriesData = props.series[chartSeries.dataResources[0]]
-  const data = seriesData?.data !== undefined ? seriesData.data : []
-  let line
-  if (chartSeries.type === 'line') {
-    line = new ChartLine(data, {
-      tooltip: {
-        toolTipFormatter: () => {
-          const tooltip = document.createElement('div')
-          tooltip.innerText = `${chartSeries.name} ${chartSeries.unit}`
-          return tooltip
-        },
-      },
-    })
-  } else if (chartSeries.type === 'area') {
-    line = new ChartArea(data, {
-      tooltip: {
-        toolTipFormatter: () => {
-          const tooltip = document.createElement('div')
-          tooltip.innerText = `${chartSeries.name} ${chartSeries.unit}`
-          return tooltip
-        },
-      },
-    })
+  let data: any[] = []
+  if (chartSeries.dataResources.length > 1) {
+    let allFound = true
+    for (const resourceId of chartSeries.dataResources) {
+      if (props.series[resourceId] === undefined) {
+        allFound = false
+        break
+      }
+    }
+    if (allFound) {
+      const seriesData = props.series[chartSeries.dataResources[0]]
+      for (const t of seriesData.data!) {
+        data.push({ x: t.x, y: [t.y]})
+      }
+      for (let i=1; i < chartSeries.dataResources.length; i++) {
+        const resourceId = chartSeries.dataResources[i]
+        for (let t in data) {
+          data[t].y.push( props.series[resourceId].data![t].y )
+        }
+      }
+    }
   } else {
-    line = new ChartMarker(data, {
-      symbol: chartSeries.marker,
-      tooltip: {
-        toolTipFormatter: () => {
-          const tooltip = document.createElement('div')
-          tooltip.innerText = `${chartSeries.name} ${chartSeries.unit}`
-          return tooltip
-        },
-      },
-    })
+    const seriesData = props.series[chartSeries.dataResources[0]]
+    if (seriesData?.data !== undefined) data = seriesData.data
   }
-  line.addTo(
+
+  const tooltip: TooltipOptions = {
+    toolTipFormatter: (d) => {
+      const tooltipElement = document.createElement('div')
+      const yValueLabel = Array.isArray(d.y) ? d.y.join('-') : d.y
+      tooltipElement.innerText = `${yValueLabel} ${chartSeries.unit}`
+      return tooltipElement
+    },
+    anchor: TooltipAnchor.Top
+  }
+
+  let chart
+  switch (chartSeries.type) {
+    case 'dummy':
+      console.log('type', chartSeries.type)
+      break
+    case 'line':
+      chart = new ChartLine(data, {})
+      break
+    case 'area':
+      chart = new ChartArea(data, {})
+      break
+    case 'rule':
+      chart = new ChartRule(data, { tooltip })
+      break
+    case 'bar':
+      chart = new ChartBar(data, { tooltip })
+      break
+    default:
+      chart = new ChartMarker(data, {
+        symbol: chartSeries.marker,
+        tooltip,
+      })
+  }
+  if ( chart === undefined) return
+  chart.addTo(
     axis,
     {
       x: {
