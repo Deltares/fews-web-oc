@@ -29,20 +29,62 @@ export function timeSeriesDisplayToChartConfig(
   }
   const chartSeriesArray: ChartSeries[] = []
   config.thresholds = []
+
+  const legendLabels: string[] = []
+  const thresholdIds: string[] = []
   for (const item of subplot.items) {
-    if (item.lineStyle !== undefined && item.lineStyle !== 'none') {
-      const chartSeries: ChartSeries = getChartSeries(item, item.lineStyle, config)
+    if (item.legend && legendLabels.includes(item.legend)) {
+      // Create second item as dummy for item.type 'area'
+      const chartSeries: ChartSeries = getChartSeries([item], 'dummy', config)
+      chartSeriesArray.push(chartSeries)
+      continue
+    }
+    if (item.legend) legendLabels.push(item.legend)
+    if (item.type === 'area') {
+      // Area has two data resources
+      const secondItemIndex = subplot.items.findLastIndex(
+        (i) => i.legend === item.legend,
+      )
+      if (secondItemIndex > -1) {
+        const secondItem = subplot.items[secondItemIndex]
+        const chartType = item.lineStyle === undefined ? 'area' : 'rule'
+        const chartSeries: ChartSeries = getChartSeries(
+          [item, secondItem],
+          chartType,
+          config,
+        )
+        chartSeriesArray.push(chartSeries)
+      }
+    }
+
+    if (
+      item.type === 'line' &&
+      item.lineStyle !== undefined &&
+      item.lineStyle !== 'none'
+    ) {
+      const chartSeries: ChartSeries = getChartSeries(
+        [item],
+        item.lineStyle === 'area' || item.lineStyle === 'bar'
+          ? item.lineStyle
+          : 'line',
+        config,
+      )
       chartSeriesArray.push(chartSeries)
     }
+
     if (item.markerStyle !== undefined && item.markerStyle !== 'none') {
-      const chartSeries: ChartSeries = getChartSeries(item, 'marker', config)
+      const chartSeries: ChartSeries = getChartSeries([item], 'marker', config)
       chartSeries.marker = chartMarkerFromFews(item.markerStyle)
       chartSeries.style = cssStyleFromFewsMarker(item)
       chartSeriesArray.push(chartSeries)
     }
+
     if (item.thresholds !== undefined) {
       for (const threshold of item.thresholds) {
         if (threshold.value === undefined) continue
+        const thresholdId = `${threshold.label}-${threshold.value}`
+        if (thresholdIds.includes(thresholdId)) continue
+        thresholdIds.push(thresholdId)
         config.thresholds.push({
           id: 'Thresholds',
           x1: new Date(0),
@@ -63,19 +105,19 @@ export function timeSeriesDisplayToChartConfig(
 }
 
 function getChartSeries(
-  item: TimeSeriesDisplaySubplotItem,
+  items: TimeSeriesDisplaySubplotItem[],
   seriesType: string,
   config: ChartConfig,
 ) {
   return {
-    id: `${item.request}`,
-    dataResources: [`${item.request}`],
-    name: item.legend || '',
+    id: `${items[0].request}`,
+    dataResources: items.map((item) => `${item.request}`),
+    name: items[0].legend || '',
     unit: '',
     type: seriesType,
-    visibleInLegend: item.visibleInLegend,
-    visibleInPlot: item.visibleInPlot,
-    visibleInTable: item.visibleInTable,
+    visibleInLegend: items[0].visibleInLegend,
+    visibleInPlot: items[0].visibleInPlot,
+    visibleInTable: items[0].visibleInTable,
     options: {
       x: {
         key: 'x',
@@ -85,11 +127,14 @@ function getChartSeries(
         key: 'y',
         axisIndex:
           config.yAxis?.findIndex((yAxis) => {
-            return yAxis.position === item.yAxis?.axisPosition
+            return yAxis.position === items[0].yAxis?.axisPosition
           }) ?? 0,
       },
     },
-    style: seriesType === 'area' ? cssStyleFromFewsArea(item)  : cssStyleFromFewsLine(item),
+    style:
+      seriesType === 'area' || seriesType === 'bar'
+        ? cssStyleFromFewsArea(items[0])
+        : cssStyleFromFewsLine(items[0]),
   }
 }
 
