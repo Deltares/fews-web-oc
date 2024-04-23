@@ -1,5 +1,5 @@
 <template>
-  <DrawPolygonControl v-if="selectBbox" v-model="features" />
+  <DrawBoundingBoxControl v-if="selectBbox" v-model="boundingBox" />
 
   <v-chip pill label class="outer-chip chip justify-center overflow-visible">
     <v-badge
@@ -97,7 +97,7 @@ import { ref, computed, watch } from 'vue'
 import { JsonForms } from '@jsonforms/vue'
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
 import { configManager } from '@/services/application-config'
-import DrawPolygonControl from '@/components/map/DrawPolygonControl.vue'
+import DrawBoundingBoxControl from '@/components/map/DrawBoundingBoxControl.vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import {
   PiWebserviceProvider,
@@ -137,7 +137,6 @@ const webServiceProvider = new PiWebserviceProvider(baseUrl, {
 
 const {
   boundingBox,
-  features,
   longitudeStepSize,
   latitudeStepSize,
   boundingBoxIsValid,
