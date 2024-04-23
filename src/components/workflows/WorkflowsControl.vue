@@ -104,6 +104,7 @@ import { getResourcesStaticUrl } from '@/lib/fews-config'
 import {
   PiWebserviceProvider,
   ProcessDataFilter,
+  RunTaskFilter,
   SecondaryWorkflowGroupItem,
   SecondaryWorkflowProperties,
 } from '@deltares/fews-pi-requests'
@@ -276,32 +277,26 @@ function startWorkflow() {
 }
 
 async function runTask() {
-  const url = new URL(`${baseUrl}rest/fewspiservice/v1/runtask`)
-  const params = url.searchParams
+  // TODO: properly set userId and description
+  const userId = '1598'
+  const description = 'Test run'
 
-  params.append('workflowId', currentWorkflow.value.secondaryWorkflowId)
-  params.append('startTime', props.startTime ?? '')
-  params.append('endTime', props.endTime ?? '')
-  // TODO: set correct user id
-  params.append('userId', '1598')
-  params.append('description', 'Test run')
+  const filter: RunTaskFilter = {
+    workflowId: currentWorkflow.value.secondaryWorkflowId,
+    startTime: props.startTime ?? '',
+    endTime: props.endTime ?? '',
+    userId,
+    description,
+    properties: data.value,
+  }
+  const body = ''
 
-  Object.keys(data.value).forEach((key) => {
-    params.append(`property(${key})`, data.value[key])
-  })
-
-  await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: '',
-  }).then((response) => {
-    if (!response.ok) {
-      showErrorMessage('Could not start task')
-      response.text().then(console.error)
-    }
-  })
+  try {
+    await webServiceProvider.postRunTask(filter, body)
+  } catch (error) {
+    showErrorMessage('Could not start task')
+    console.error(error)
+  }
 }
 
 async function processData() {
