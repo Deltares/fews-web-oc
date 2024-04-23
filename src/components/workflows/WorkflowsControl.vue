@@ -1,6 +1,4 @@
 <template>
-  <DrawBoundingBoxControl v-if="selectBbox" v-model="boundingBox" />
-
   <v-chip pill label class="outer-chip chip justify-center overflow-visible">
     <v-badge
       :model-value="activeWorkflowIds.length > 0"
@@ -14,19 +12,12 @@
         variant="plain"
       />
     </v-badge>
-    <template v-if="selectBbox">
-      <span class="mx-4 text-medium-emphasis" width="400px">
-        {{ boundingBoxString }}
-      </span>
-      <v-btn
-        @click="hideMapTool"
-        density="compact"
-        variant="tonal"
-        class="px-0 text-medium-emphasis"
-      >
-        Apply
-      </v-btn>
-    </template>
+    <BoundingBoxControl
+      v-model:active="selectBbox"
+      v-model:boundingBox="boundingBox"
+      @finish="hideMapTool"
+      v-if="selectBbox"
+    />
   </v-chip>
 
   <v-dialog v-show="!selectBbox" width="500" v-model="workflowDialog">
@@ -97,7 +88,6 @@ import { ref, computed, watch } from 'vue'
 import { JsonForms } from '@jsonforms/vue'
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
 import { configManager } from '@/services/application-config'
-import DrawBoundingBoxControl from '@/components/map/DrawBoundingBoxControl.vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import {
   PiWebserviceProvider,
@@ -111,6 +101,8 @@ import JsonFormsConfig from '@/assets/JsonFormsConfig.json'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { downloadFileWithXhr } from '@/lib/download'
 import { useBoundingBox } from '@/services/useBoundingBox'
+
+import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[]

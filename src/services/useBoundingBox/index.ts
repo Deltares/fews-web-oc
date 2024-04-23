@@ -64,7 +64,7 @@ function roundBoundingBox(
   return roundedBoundingBox
 }
 
-function boundingBoxToString(boundingBox: BoundingBox): string {
+export function boundingBoxToString(boundingBox: BoundingBox): string {
   return `${boundingBox.lonMin}°E ${boundingBox.latMin}°N, ${boundingBox.lonMax}°E ${boundingBox.latMax}°N`
 }
 
