@@ -102,14 +102,16 @@ import bbox from '@turf/bbox'
 import bboxPolygon from '@turf/bbox-polygon'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import {
+  PiWebserviceProvider,
   ProcessDataFilter,
   SecondaryWorkflowGroupItem,
   SecondaryWorkflowProperties,
 } from '@deltares/fews-pi-requests'
 import { GeoJSONStoreFeatures } from 'terra-draw'
-import { downloadNetCDF } from '@/services/useWorkflows'
 import { asyncComputed } from '@vueuse/core'
 import JsonFormsConfig from '@/assets/JsonFormsConfig.json'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { downloadFileWithXhr } from '@/lib/download'
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[]
@@ -128,6 +130,11 @@ const activeWorkflowIds = ref<string[]>([])
 const errorDialog = ref(false)
 const errorMessage = ref<string>()
 const data = ref()
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const webServiceProvider = new PiWebserviceProvider(baseUrl, {
+  transformRequestFn: createTransformRequestFn(),
+})
 
 type FormValue = string | number | boolean | Date
 
@@ -200,8 +207,6 @@ const bboxString = computed(() => {
   return `${boundingBox.value[0]}°E ${boundingBox.value[1]}°N , ${boundingBox.value[2]}°E ${boundingBox.value[3]}°N`
 })
 const features = ref<GeoJSONStoreFeatures[]>([])
-
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const formSchema = asyncComputed(
   async () =>
@@ -317,7 +322,8 @@ async function processData() {
     endTime: props.endTime ?? '',
   }
 
-  await downloadNetCDF(baseUrl, filter).catch(({ statusText }) => {
+  const url = webServiceProvider.processDataUrl(filter)
+  await downloadFileWithXhr(url.toString()).catch(({ statusText }) => {
     showErrorMessage(statusText)
   })
 }
