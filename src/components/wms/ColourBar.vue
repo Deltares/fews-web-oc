@@ -49,7 +49,7 @@ onMounted(() => {
   const svg = d3.select('#colourbar')
   group = svg
     .append('g')
-    .attr('transform', 'translate(10, 50)')
+    .attr('transform', 'translate(5, 55)')
     .style('pointer-events', 'visiblePainted')
   updateColourBar()
 })
@@ -132,5 +132,9 @@ function updateColourBar() {
 :deep(#max-legend) {
   cursor: pointer;
   pointer-events: all;
+}
+
+:deep(.title) {
+  font-size: 0.825em;
 }
 </style>
