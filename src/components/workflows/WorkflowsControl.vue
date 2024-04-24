@@ -21,7 +21,7 @@
           <v-row>
             <v-select
               v-model="currentWorkflow"
-              :items="secondaryWorkflows"
+              :items="secondaryWorkflows ?? []"
               item-title="description"
               density="compact"
               variant="solo-filled"
@@ -97,18 +97,15 @@ import {
 } from '@/stores/workflows'
 
 interface Props {
-  secondaryWorkflows?: SecondaryWorkflowGroupItem[]
+  secondaryWorkflows: SecondaryWorkflowGroupItem[] | null
   disabled?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  secondaryWorkflows: () => [],
   disabled: false,
 })
 
-const currentWorkflow = ref<SecondaryWorkflowGroupItem>(
-  props.secondaryWorkflows[0],
-)
+const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
 const workflowDialog = ref(false)
 const selectBbox = ref(false)
 const errorDialog = ref(false)
@@ -160,6 +157,18 @@ const isBoundingBoxInForm = computed(
     data.value.yMin !== undefined &&
     data.value.xMax !== undefined &&
     data.value.yMax !== undefined,
+)
+
+// If we get a new list of workflows, select the first one.
+watch(
+  () => props.secondaryWorkflows,
+  () => {
+    if (!props.secondaryWorkflows || props.secondaryWorkflows.length === 0) {
+      currentWorkflow.value = null
+    } else {
+      currentWorkflow.value = props.secondaryWorkflows[0]
+    }
+  },
 )
 
 watch(data, () => {
@@ -238,16 +247,14 @@ function toValue(
   }
 }
 
-const formSchema = asyncComputed(
-  async () =>
-    await getJson(`${currentWorkflow.value.secondaryWorkflowId}.schema.json`),
-)
-const formUISchema = asyncComputed(
-  async () =>
-    await getJson(
-      `${currentWorkflow.value.secondaryWorkflowId}.ui-schema.json`,
-    ),
-)
+const formSchema = asyncComputed(async () => {
+  if (!currentWorkflow.value) return undefined
+  return getJson(`${currentWorkflow.value.secondaryWorkflowId}.schema.json`)
+})
+const formUISchema = asyncComputed(async () => {
+  if (!currentWorkflow.value) return undefined
+  return getJson(`${currentWorkflow.value.secondaryWorkflowId}.ui-schema.json`)
+})
 
 async function getJson(file: string) {
   const url = getResourcesStaticUrl(file)
