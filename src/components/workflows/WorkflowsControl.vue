@@ -1,18 +1,17 @@
 <template>
-  <v-chip pill label class="outer-chip chip justify-center overflow-visible">
-    <v-badge
-      :model-value="workflowsStore.hasActiveWorkflows"
-      :content="workflowsStore.numberOfActiveWorkflows"
-      color="success"
-    >
-      <v-btn
-        icon="mdi-cog-play"
-        @click="workflowDialog = !workflowDialog"
-        density="compact"
-        variant="plain"
-      />
-    </v-badge>
-  </v-chip>
+  <v-badge
+    :model-value="workflowsStore.hasActiveWorkflows"
+    :content="workflowsStore.numberOfActiveWorkflows"
+    color="success"
+  >
+    <v-btn
+      icon="mdi-cog-play"
+      @click="workflowDialog = !workflowDialog"
+      density="compact"
+      variant="plain"
+      :disabled="props.disabled"
+    />
+  </v-badge>
 
   <v-dialog v-show="!selectBbox" width="500" v-model="workflowDialog">
     <v-card>
@@ -98,12 +97,14 @@ import {
 } from '@/stores/workflows'
 
 interface Props {
-  secondaryWorkflows: SecondaryWorkflowGroupItem[]
-  startTime?: string
-  endTime?: string
+  secondaryWorkflows?: SecondaryWorkflowGroupItem[]
+  disabled?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  secondaryWorkflows: () => [],
+  disabled: false,
+})
 
 const currentWorkflow = ref<SecondaryWorkflowGroupItem>(
   props.secondaryWorkflows[0],
@@ -126,18 +127,9 @@ const workflowsStore = useWorkflowsStore()
 // Update workflowId, startTime and endTime depending on properties.
 watch(
   currentWorkflow,
-  () => (workflowsStore.workflowId = currentWorkflow.value.secondaryWorkflowId),
-  { immediate: true },
-)
-watch(
-  () => props.startTime,
-  () => (workflowsStore.startTime = props.startTime ?? ''),
-  { immediate: true },
-)
-watch(
-  () => props.endTime,
-  () => (workflowsStore.endTime = props.endTime ?? ''),
-  { immediate: true },
+  () =>
+    (workflowsStore.workflowId =
+      currentWorkflow.value?.secondaryWorkflowId ?? null),
 )
 
 let isRounding = false
@@ -216,7 +208,7 @@ watch(
   () => {
     const newData: Record<string, FormValue> = {}
 
-    currentWorkflow.value.properties?.forEach((property) => {
+    currentWorkflow.value?.properties?.forEach((property) => {
       if (property.value === undefined) return
       newData[property.key] = toValue(property.type, property.value)
     })

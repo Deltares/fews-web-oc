@@ -7,6 +7,12 @@
       :items="items"
     />
   </Teleport>
+  <Teleport to="#web-oc-toolbar-target">
+    <WorkflowsControl
+      :disabled="secondaryWorkflows === undefined"
+      :secondaryWorkflows="secondaryWorkflows"
+    />
+  </Teleport>
   <Teleport to="#app-bar-content">
     <template v-if="showLeafsAsButton">
       <v-menu v-if="nodeButtons.length > 4">
@@ -89,7 +95,6 @@
     <keep-alive include="SpatialDisplay">
       <component
         :is="Component"
-        :secondaryWorkflows="secondaryWorkflows"
         :filter-ids="filterIds"
         :topologyNode="topologyNode"
       />
@@ -99,6 +104,8 @@
 
 <script setup lang="ts">
 import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
+import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
+
 import type { ColumnItem } from '@/components/general/ColumnItem'
 import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
 import { useConfigStore } from '@/stores/config'

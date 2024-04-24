@@ -78,12 +78,6 @@
           @changeLocationId="onLocationChange"
         />
       </v-chip>
-      <WorkflowsControl
-        v-if="secondaryWorkflows"
-        :secondaryWorkflows="secondaryWorkflows"
-        :startTime="props.layerCapabilities?.firstValueTime ?? ''"
-        :endTime="props.layerCapabilities?.lastValueTime ?? ''"
-      />
       <BoundingBoxControl
         v-model:active="workflowsStore.isDrawingBoundingBox"
         v-model:boundingBox="workflowsStore.boundingBox"
@@ -116,14 +110,13 @@
 import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
-import { ref, computed, onBeforeMount, reactive, watch } from 'vue'
+import { ref, computed, onBeforeMount, reactive, watch, watchEffect } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
   fetchWmsLegend,
   useWmsLegend,
 } from '@/services/useWms'
 import ColourBar from '@/components/wms/ColourBar.vue'
-import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
 import AnimatedRasterLayer, {
   AnimatedRasterLayerOptions,
 } from '@/components/wms/AnimatedRasterLayer.vue'
@@ -142,7 +135,6 @@ import { configManager } from '@/services/application-config'
 import type { Layer, Style } from '@deltares/fews-wms-requests'
 import { LayerKind } from '@/lib/streamlines'
 import { pointToGeoJson } from '@/lib/topology/coordinates'
-import { SecondaryWorkflowGroupItem } from '@deltares/fews-pi-requests'
 import { useColourScalesStore } from '@/stores/colourScales'
 import { useDisplay } from 'vuetify'
 import { useFilterLocations } from '@/services/useFilterLocations'
@@ -172,7 +164,6 @@ interface Props {
   latitude?: string
   longitude?: string
   currentTime?: Date
-  secondaryWorkflows?: SecondaryWorkflowGroupItem[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -228,6 +219,12 @@ const { locations, geojson } = useFilterLocations(
   baseUrl,
   () => props.filterIds,
 )
+
+// Set the start and end time for the workflow based on the WMS layer capabilities.
+watchEffect(() => {
+  workflowsStore.startTime = props.layerCapabilities?.firstValueTime ?? ''
+  workflowsStore.endTime = props.layerCapabilities?.lastValueTime ?? ''
+})
 
 watch(
   legendLayerStyles,
