@@ -1,8 +1,8 @@
 <template>
   <v-chip pill label class="outer-chip chip justify-center overflow-visible">
     <v-badge
-      :model-value="activeWorkflowIds.length > 0"
-      :content="activeWorkflowIds.length"
+      :model-value="workflowsStore.hasActiveWorkflows"
+      :content="workflowsStore.numberOfActiveWorkflows"
       color="success"
     >
       <v-btn
@@ -87,22 +87,22 @@
 import { ref, computed, watch } from 'vue'
 import { JsonForms } from '@jsonforms/vue'
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
-import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import {
-  PiWebserviceProvider,
-  ProcessDataFilter,
-  RunTaskFilter,
   SecondaryWorkflowGroupItem,
   SecondaryWorkflowProperties,
 } from '@deltares/fews-pi-requests'
 import { asyncComputed } from '@vueuse/core'
 import JsonFormsConfig from '@/assets/JsonFormsConfig.json'
-import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import { downloadFileWithXhr } from '@/lib/download'
 import { useBoundingBox } from '@/services/useBoundingBox'
 
 import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
+import {
+  PartialProcessDataFilter,
+  PartialRunTaskFilter,
+  WorkflowType,
+  useWorkflowsStore,
+} from '@/stores/workflows'
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[]
@@ -117,15 +117,27 @@ const currentWorkflow = ref<SecondaryWorkflowGroupItem>(
 )
 const workflowDialog = ref(false)
 const selectBbox = ref(false)
-const activeWorkflowIds = ref<string[]>([])
 const errorDialog = ref(false)
 const errorMessage = ref<string>()
 const data = ref()
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const webServiceProvider = new PiWebserviceProvider(baseUrl, {
-  transformRequestFn: createTransformRequestFn(),
-})
+const workflowsStore = useWorkflowsStore()
+// Update workflowId, startTime and endTime depending on properties.
+watch(
+  currentWorkflow,
+  () => (workflowsStore.workflowId = currentWorkflow.value.secondaryWorkflowId),
+  { immediate: true },
+)
+watch(
+  () => props.startTime,
+  () => (workflowsStore.startTime = props.startTime ?? ''),
+  { immediate: true },
+)
+watch(
+  () => props.endTime,
+  () => (workflowsStore.endTime = props.endTime ?? ''),
+  { immediate: true },
+)
 
 const {
   boundingBox,
@@ -261,65 +273,48 @@ function showErrorMessage(message: string) {
   errorDialog.value = true
 }
 
-function startWorkflow() {
-  const promise = data.value['GET_PROCESS_DATA'] ? processData() : runTask()
+async function startWorkflow() {
+  const workflowType = data.value['GET_PROCESS_DATA']
+    ? WorkflowType.ProcessData
+    : WorkflowType.RunTask
 
-  activeWorkflowIds.value.push(currentWorkflow.value.secondaryWorkflowId)
-  // Remove workflow once promise has resolved
-  promise.then(() => {
-    activeWorkflowIds.value = activeWorkflowIds.value.filter(
-      (id) => id !== currentWorkflow.value.secondaryWorkflowId,
-    )
-  })
+  try {
+    const filter =
+      workflowType === WorkflowType.ProcessData
+        ? getProcessDataFilter()
+        : getRunTaskFilter()
+
+    await workflowsStore.startWorkflow(workflowType, filter)
+  } catch (error) {
+    showErrorMessage((error as Error).message)
+  }
 
   workflowDialog.value = false
 }
 
-async function runTask() {
+function getRunTaskFilter(): PartialRunTaskFilter {
   // TODO: properly set userId and description
   const userId = '1598'
   const description = 'Test run'
-
-  const filter: RunTaskFilter = {
-    workflowId: currentWorkflow.value.secondaryWorkflowId,
-    startTime: props.startTime ?? '',
-    endTime: props.endTime ?? '',
+  return {
     userId,
     description,
     properties: data.value,
   }
-  const body = ''
-
-  try {
-    await webServiceProvider.postRunTask(filter, body)
-  } catch (error) {
-    showErrorMessage('Could not start task')
-    console.error(error)
-  }
 }
 
-async function processData() {
+function getProcessDataFilter(): PartialProcessDataFilter {
   if (!boundingBoxIsValid.value) {
-    showErrorMessage('Bounding box is invalid')
-    return
+    throw new Error('Bounding box is invalid')
   }
-
-  const filter: ProcessDataFilter = {
-    workflowId: currentWorkflow.value.secondaryWorkflowId,
+  return {
     xMin: data.value.xMin,
     yMin: data.value.yMin,
     xMax: data.value.xMax,
     yMax: data.value.yMax,
     xCellSize: data.value.xCellSize,
     yCellSize: data.value.yCellSize,
-    startTime: props.startTime ?? '',
-    endTime: props.endTime ?? '',
   }
-
-  const url = webServiceProvider.processDataUrl(filter)
-  await downloadFileWithXhr(url.toString()).catch(({ statusText }) => {
-    showErrorMessage(statusText)
-  })
 }
 </script>
 
