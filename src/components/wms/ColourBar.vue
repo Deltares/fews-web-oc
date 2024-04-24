@@ -30,9 +30,12 @@ type Range = {
 interface Props {
   colourMap?: webOcCharts.ColourMap
   title?: string
+  useGradients?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  useGradients: true,
+})
 
 const range = defineModel<Range>('range', { required: true })
 
@@ -63,7 +66,7 @@ function updateColourBar() {
   // Create new colour bar and make it visible.
   const options: webOcCharts.ColourBarOptions = {
     type: 'nonlinear',
-    useGradients: true,
+    useGradients: props.useGradients,
     position: webOcCharts.AxisPosition.Bottom,
     title: props.title,
   }

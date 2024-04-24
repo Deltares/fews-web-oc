@@ -51,7 +51,10 @@
             </v-list-item-title>
             <div class="d-flex align-center ga-1">
               <span class="mb-1">{{ item.range?.min ?? '' }}</span>
-              <ColourStrip :colourMap="item.colourMap" />
+              <ColourStrip
+                :colourMap="item.colourMap"
+                :useGradients="item.useGradients"
+              />
               <span class="mb-1">{{ item.range?.max ?? '' }}</span>
             </div>
             <template #append v-if="index === colourScalesStore.currentIndex">
