@@ -61,11 +61,11 @@
             </v-list-item>
           </v-list>
         </v-menu>
+        <div
+          class="d-flex pa-2 bg-surface-light"
+          id="web-oc-toolbar-target"
+        ></div>
       </template>
-      <div
-        class="d-flex pa-2 bg-surface-light"
-        id="web-oc-toolbar-target"
-      ></div>
       <div
         id="web-oc-sidebar-target"
         class="d-flex"
