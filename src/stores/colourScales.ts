@@ -13,6 +13,7 @@ export interface ColourScale {
   range: Range
   initialRange: Range
   colourMap: ColourMap
+  useGradients: boolean
 }
 
 interface ColourScalesState {

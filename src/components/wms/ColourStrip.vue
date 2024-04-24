@@ -15,9 +15,12 @@ import * as webOcCharts from '@deltares/fews-web-oc-charts'
 
 interface Props {
   colourMap?: webOcCharts.ColourMap
+  useGradients?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  useGradients: true,
+})
 
 const groupRef = ref(null)
 const group = computed(() => d3.select(groupRef.value))
@@ -33,7 +36,7 @@ function updateColourStrip() {
 
   const options: webOcCharts.ColourBarOptions = {
     type: 'nonlinear',
-    useGradients: true,
+    useGradients: props.useGradients,
     position: webOcCharts.AxisPosition.Bottom,
     ticks: 0,
   }

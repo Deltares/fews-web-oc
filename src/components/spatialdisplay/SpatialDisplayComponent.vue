@@ -17,6 +17,7 @@
       <ColourBar
         :colourMap="colourScalesStore.currentScale.colourMap"
         :title="colourScalesStore.currentScale.title"
+        :useGradients="colourScalesStore.currentScale.useGradients"
         v-model:range="colourScalesStore.currentScale.range"
       />
     </div>
@@ -241,6 +242,8 @@ watch(
           colourMap: legend,
           range: legendToRange(legend),
           initialRange: legendToRange(legend),
+          // @ts-expect-error: remove once fews-wms-requests is updated
+          useGradients: !legend.some((entry) => entry.colorSmoothing === false),
         })
         colourScalesStore.scales[styleId] = newColourScale
 
