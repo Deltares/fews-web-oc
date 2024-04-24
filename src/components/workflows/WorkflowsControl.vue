@@ -288,7 +288,15 @@ function showMapTool() {
   // Show the dialog again when the bounding box has been drawn.
   watch(
     () => workflowsStore.isDrawingBoundingBox,
-    () => (workflowDialog.value = true),
+    () => {
+      // Only show the dialog if the bounding box is not null, which means the user finished
+      // drawing. If it is null, it has been forcibly closed by the application (e.g. because we
+      // navigated to a different node), so we should abandon the workflow (and hence the dialog)
+      // altogether.
+      if (workflowsStore.boundingBox !== null) {
+        workflowDialog.value = true
+      }
+    },
     { once: true },
   )
 }

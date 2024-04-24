@@ -110,6 +110,7 @@ import type { ColumnItem } from '@/components/general/ColumnItem'
 import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
 import { useConfigStore } from '@/stores/config'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { useWorkflowsStore } from '@/stores/workflows'
 
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { watchEffect } from 'vue'
@@ -145,6 +146,7 @@ const props = defineProps<Props>()
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
+const workflowsStore = useWorkflowsStore()
 
 const menuType = computed(() => {
   const configured = settings.get('ui.hierarchical-menu-style')?.value as string
@@ -152,6 +154,11 @@ const menuType = computed(() => {
 })
 
 const active = ref<string | undefined>(undefined)
+watch(active, () => {
+  // Clear the bounding box and stop drawing when we switch nodes while selecting a bounding box.
+  workflowsStore.boundingBox = null
+  workflowsStore.isDrawingBoundingBox = false
+})
 const activeNode = computed(() => {
   if (!active.value) return
 
