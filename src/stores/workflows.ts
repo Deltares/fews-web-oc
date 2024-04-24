@@ -14,7 +14,7 @@ interface WorkflowsState {
   workflowId: string | null
   startTime: string | null
   endTime: string | null
-  activeWorkflowIds: string[]
+  numActiveWorkflows: number
   boundingBox: BoundingBox | null
   isDrawingBoundingBox: boolean
 }
@@ -38,20 +38,12 @@ const useWorkflowsStore = defineStore('workflows', {
     workflowId: null,
     startTime: null,
     endTime: null,
-    activeWorkflowIds: [],
+    numActiveWorkflows: 0,
     boundingBox: null,
     isDrawingBoundingBox: false,
   }),
 
   actions: {
-    addActiveWorkflowId(id: string) {
-      this.activeWorkflowIds.push(id)
-    },
-    removeActiveWorkflowId(id: string) {
-      this.activeWorkflowIds = this.activeWorkflowIds.filter(
-        (cur) => cur !== id,
-      )
-    },
     async startWorkflow(
       type: WorkflowType,
       filter: PartialRunTaskFilter | PartialProcessDataFilter,
@@ -64,7 +56,7 @@ const useWorkflowsStore = defineStore('workflows', {
         throw Error('Start time or end time has not been set.')
       }
 
-      this.addActiveWorkflowId(this.workflowId)
+      this.numActiveWorkflows++
 
       // Add workflowId, startTime, and endTime from the store to the incomplete
       // filter.
@@ -87,17 +79,14 @@ const useWorkflowsStore = defineStore('workflows', {
           await downloadFileWithXhr(url.toString())
         }
       } finally {
-        this.removeActiveWorkflowId(this.workflowId)
+        this.numActiveWorkflows--
       }
     },
   },
 
   getters: {
     hasActiveWorkflows: (state) => {
-      return state.activeWorkflowIds.length > 0
-    },
-    numberOfActiveWorkflows: (state) => {
-      return state.activeWorkflowIds.length
+      return state.numActiveWorkflows > 0
     },
   },
 })

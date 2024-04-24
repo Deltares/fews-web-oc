@@ -1,7 +1,7 @@
 <template>
   <v-badge
     :model-value="workflowsStore.hasActiveWorkflows"
-    :content="workflowsStore.numberOfActiveWorkflows"
+    :content="workflowsStore.numActiveWorkflows"
     color="success"
   >
     <v-btn
