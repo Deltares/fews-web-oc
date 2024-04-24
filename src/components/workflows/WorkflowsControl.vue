@@ -21,13 +21,11 @@
           <v-row>
             <v-select
               v-model="currentWorkflow"
-              :items="secondaryWorkflows ?? []"
-              item-title="description"
+              :items="workflowSelectItems"
               density="compact"
               variant="solo-filled"
               flat
               label="Workflow"
-              return-object
               mandatory
             ></v-select>
           </v-row>
@@ -158,6 +156,19 @@ const isBoundingBoxInForm = computed(
     data.value.xMax !== undefined &&
     data.value.yMax !== undefined,
 )
+
+const workflowSelectItems = computed(() => {
+  return props.secondaryWorkflows?.map((workflow) => {
+    const title =
+      workflow.description !== ''
+        ? workflow.description
+        : workflow.secondaryWorkflowId
+    return {
+      title,
+      value: workflow,
+    }
+  })
+})
 
 // If we get a new list of workflows, select the first one.
 watch(
