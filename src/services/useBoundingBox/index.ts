@@ -28,40 +28,28 @@ function roundBoundingBox(
   longitudeStepSize: number,
   latitudeStepSize: number,
 ): BoundingBox | null {
-  const roundToStep = (value: number, step: number): number => {
-    return parseFloat((Math.round(value / step) * step).toFixed(4))
+  const roundToStep = (
+    value: number,
+    step: number,
+    rounding: 'lower' | 'upper',
+  ): number => {
+    // For positive values, we floor the lower bound and ceil the upper bound.
+    // For negative values, we ceil the absolute value of the lower bound, and
+    // floor the absolute value of the upper bound.
+    const doFloor = value < 0 ? rounding === 'upper' : rounding === 'lower'
+    const absValue = Math.abs(value)
+    const numSteps = doFloor
+      ? Math.floor(absValue / step)
+      : Math.ceil(absValue / step)
+    return Math.sign(value) * numSteps * step
   }
-
   // Round the bounding box to the specified step size.
-  const roundedBoundingBox: BoundingBox = {
-    lonMin: roundToStep(boundingBox.lonMin, longitudeStepSize),
-    lonMax: roundToStep(boundingBox.lonMax, longitudeStepSize),
-    latMin: roundToStep(boundingBox.latMin, latitudeStepSize),
-    latMax: roundToStep(boundingBox.latMin, latitudeStepSize),
+  return {
+    lonMin: roundToStep(boundingBox.lonMin, longitudeStepSize, 'lower'),
+    lonMax: roundToStep(boundingBox.lonMax, longitudeStepSize, 'upper'),
+    latMin: roundToStep(boundingBox.latMin, latitudeStepSize, 'lower'),
+    latMax: roundToStep(boundingBox.latMax, latitudeStepSize, 'upper'),
   }
-
-  // Prevent the bbox from becoming a point or line in the x direction
-  if (
-    roundedBoundingBox.lonMax - roundedBoundingBox.lonMin <
-    longitudeStepSize
-  ) {
-    roundedBoundingBox.lonMax = roundToStep(
-      roundedBoundingBox.lonMin + longitudeStepSize,
-      longitudeStepSize,
-    )
-  }
-
-  // Prevent the bbox from becoming a point or line in the y direction
-  if (
-    roundedBoundingBox.latMax - roundedBoundingBox.latMin <
-    latitudeStepSize
-  ) {
-    roundedBoundingBox.latMax = roundToStep(
-      roundedBoundingBox.latMin + latitudeStepSize,
-      latitudeStepSize,
-    )
-  }
-  return roundedBoundingBox
 }
 
 export function boundingBoxToString(boundingBox: BoundingBox): string {
