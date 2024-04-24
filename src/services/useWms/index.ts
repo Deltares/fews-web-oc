@@ -13,6 +13,7 @@ import { LngLatBounds } from 'maplibre-gl'
 import { GetLegendGraphicResponse } from '@deltares/fews-wms-requests/src/response/getLegendGraphicResponse.ts'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { Style } from '@deltares/fews-wms-requests'
+import { styleToId } from '@/lib/legend'
 
 export interface UseWmsReturn {
   layerCapabilities: Ref<Layer | undefined>
@@ -89,6 +90,7 @@ export function useWmsLegend(
   useDisplayUnits: MaybeRefOrGetter<boolean>,
   colorScaleRange?: MaybeRefOrGetter<string | undefined>,
   style?: MaybeRefOrGetter<Style>,
+  activeStyles?: MaybeRefOrGetter<Style[]>,
 ): Ref<GetLegendGraphicResponse | undefined> {
   const legendGraphic = ref<GetLegendGraphicResponse>()
 
@@ -97,9 +99,18 @@ export function useWmsLegend(
     const _useDisplayUnits = toValue(useDisplayUnits)
     const _colorScaleRange = toValue(colorScaleRange)
     const _style = toValue(style)
+    const _activeStyles = toValue(activeStyles)
 
     if (_layers === '') {
       legendGraphic.value = undefined
+      return
+    }
+
+    if (
+      _activeStyles &&
+      _style &&
+      !_activeStyles.some((s) => styleToId(s) === styleToId(_style))
+    ) {
       return
     }
 

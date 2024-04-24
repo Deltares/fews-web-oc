@@ -132,19 +132,20 @@ import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import { configManager } from '@/services/application-config'
-import type {
-  GetLegendGraphicResponse,
-  Layer,
-} from '@deltares/fews-wms-requests'
+import type { Layer } from '@deltares/fews-wms-requests'
 import { LayerKind } from '@/lib/streamlines'
-import { Style } from '@deltares/fews-wms-requests'
-import { ColourMap } from '@deltares/fews-web-oc-charts'
 import { pointToGeoJson } from '@/lib/topology/coordinates'
 import { SecondaryWorkflowGroupItem } from '@deltares/fews-pi-requests'
-import { Range, useColourScalesStore } from '@/stores/colourScales'
+import { useColourScalesStore } from '@/stores/colourScales'
 import { useDisplay } from 'vuetify'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import ColourLegend from '@/components/wms/ColourLegend.vue'
+import {
+  getLegendTitle,
+  legendToRange,
+  rangeToString,
+  styleToId,
+} from '@/lib/legend'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -247,7 +248,10 @@ watch(
 
         const legend = initialLegendGraphic.legend
         const newColourScale = reactive({
-          title: getLegendTitle(initialLegendGraphic),
+          title: getLegendTitle(
+            props.layerCapabilities?.title ?? '',
+            initialLegendGraphic,
+          ),
           style: style,
           colourMap: legend,
           range: legendToRange(legend),
@@ -263,10 +267,15 @@ watch(
           () => settings.useDisplayUnits,
           () => rangeToString(newColourScale.range),
           style,
+          () => props.layerCapabilities?.styles ?? [],
         )
 
         watch(newLegendGraphic, () => {
           if (newLegendGraphic.value?.legend === undefined) return
+          colourScalesStore.scales[styleId].title = getLegendTitle(
+            props.layerCapabilities?.title ?? '',
+            newLegendGraphic.value,
+          )
           colourScalesStore.scales[styleId].colourMap =
             newLegendGraphic.value.legend
         })
@@ -295,21 +304,6 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 
 function onLocationChange(locationId: string | null): void {
   emit('changeLocationId', locationId)
-}
-
-function styleToId(style: Style) {
-  return style.name ?? style.title
-}
-
-function rangeToString(range: Range): string {
-  return `${range.min},${range.max}`
-}
-
-function legendToRange(legend: ColourMap): Range {
-  return {
-    min: legend[0].lowerValue,
-    max: legend[legend.length - 1].lowerValue,
-  }
 }
 
 const canUseStreamlines = computed(
@@ -416,12 +410,6 @@ function setLayerOptions(): void {
   } else {
     layerOptions.value = undefined
   }
-}
-
-function getLegendTitle(legendGraphic: GetLegendGraphicResponse): string {
-  if (!props.layerCapabilities) return ''
-  const unitString = legendGraphic.unit ? ` [${legendGraphic.unit}]` : ''
-  return `${props.layerCapabilities.title}${unitString}`
 }
 
 function onCoordinateClick(
