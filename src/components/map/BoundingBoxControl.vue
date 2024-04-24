@@ -31,7 +31,7 @@ const isActive = defineModel<boolean>('active', { default: false })
 const emit = defineEmits(['finish'])
 
 const boundingBoxString = computed(() =>
-  boundingBox.value ? boundingBoxToString(boundingBox.value) : '',
+  boundingBox.value ? boundingBoxToString(boundingBox.value) : '—',
 )
 
 function onFinish(): void {
