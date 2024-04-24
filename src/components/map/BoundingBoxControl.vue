@@ -6,6 +6,7 @@
       {{ boundingBoxString }}
     </span>
     <v-btn
+      :disabled="boundingBox === null"
       @click="onFinish"
       density="compact"
       variant="tonal"
