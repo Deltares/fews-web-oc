@@ -20,20 +20,20 @@
         <v-col>
           <v-autocomplete
             density="compact"
-            :item-title="(item) => getParameterName(item)"
+            :item-title="(item) => getParameterQualifierName(item)"
             return-object
-            v-model="selectedParameters"
+            v-model="selectedParameterQualifiers"
             multiple
             single-line
             hide-details
             rounded="0"
             label="Parameters"
-            :items="parameters"
+            :items="parameterQualifiers"
           >
             <template v-slot:selection="{ item, index }">
               <span v-if="index < 4">{{ item.title }}</span>
               <span v-if="index == 4"
-                >... ({{ selectedParameters.length }} selected)</span
+                >... ({{ selectedParameterQualifiers.length }} selected)</span
               >
             </template>
           </v-autocomplete>
@@ -156,7 +156,11 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest.ts'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
-import { filterToParams } from '@deltares/fews-wms-requests'
+import { TimeSeriesResult } from '@deltares/fews-pi-requests'
+import { ParameterQualifiersHeader } from '@/lib/download/types'
+import { isEqual } from 'lodash-es'
+import { filterToParams } from '@/lib/download/downloadFiles.ts'
+import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
 
 interface Props {
   nodeId?: string | string[]
@@ -174,7 +178,7 @@ const options = computed<UseDisplayConfigOptions>(() => {
 })
 const downloadStartTime = ref<Date>()
 const downloadEndTime = ref<Date>()
-const timeSeriesFilter = ref<TimeSeriesFilter>()
+const timeSeriesFilter = ref<DataDownloadFilter>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const piProvider = new PiWebserviceProvider(baseUrl, {
@@ -185,18 +189,35 @@ const filterId = props.topologyNode.filterIds
   ? props.topologyNode.filterIds[0]
   : undefined
 const allLocations = ref<Location[]>([])
+const allParameters = ref<TimeSeriesParameter[]>([])
 const locations = ref<Location[]>([])
 const selectedLocations = ref<Location[]>([])
 
-const parameters = ref<TimeSeriesParameter[]>([])
-const selectedParameters = ref<TimeSeriesParameter[]>([])
+const parameterQualifiers = ref<ParameterQualifiersHeader[]>([])
+const selectedParameterQualifiers = ref<ParameterQualifiersHeader[]>([])
 
 allLocations.value = await getLocations()
 locations.value = allLocations.value
 selectedLocations.value = allLocations.value
 
-parameters.value = await getParameters()
-selectedParameters.value = parameters.value
+const timeSeriesResults = await getTimeSeriesHeaders()
+allParameters.value = await getParameters()
+const parameterQualifiersHeaders: ParameterQualifiersHeader[] = []
+timeSeriesResults?.forEach((timeSeriesResult) => {
+  const parameterQualifiersHeader: ParameterQualifiersHeader = {
+    parameterId: timeSeriesResult.header?.parameterId,
+    qualifiers: timeSeriesResult.header?.qualifierId,
+  }
+  const existing = parameterQualifiersHeaders.find(
+    (item) =>
+      item.parameterId === timeSeriesResult.header?.parameterId &&
+      isEqual(item.qualifiers, timeSeriesResult.header?.qualifierId),
+  )
+  if (existing) return
+  parameterQualifiersHeaders.push(parameterQualifiersHeader)
+})
+parameterQualifiers.value = parameterQualifiersHeaders
+selectedParameterQualifiers.value = parameterQualifiersHeaders
 
 const selectableAttributes = ref<string[][]>([])
 selectableAttributes.value = getAttributeValues(allLocations.value)
@@ -338,10 +359,10 @@ function validateUserInput(
   )
     newErrors.push('Select one or more locations')
   if (
-    selectedParameters.value === undefined ||
-    selectedParameters.value.length == 0
+    selectedParameterQualifiers.value === undefined ||
+    selectedParameterQualifiers.value.length == 0
   )
-    newErrors.push('Select one or more parameters')
+    newErrors.push('Select one or more parameters/qualifiers')
   if (endDate.value < startDate.value) {
     newErrors.push('The end date should be greater than the start date')
   }
@@ -360,10 +381,21 @@ function downloadData() {
   errors.value = validateUserInput(startTimeRequest, endTimeRequest)
   if (errors.value.length !== 0) return
 
+  const parameterIds = selectedParameterQualifiers.value.map(
+    (parameterQualifier) => parameterQualifier.parameterId,
+  )
+  const qualifiersIds = selectedParameterQualifiers.value
+    .filter((parameterQualifier) => parameterQualifier.qualifiers !== undefined)
+    .map((parameterQualifier) => parameterQualifier.qualifiers)
+    .flatMap((item) => item)
+
   timeSeriesFilter.value = {
     filterId: filterId,
-    locationIds: selectedLocations.value.map((location) => location.locationId),
-    parameterIds: selectedParameters.value.map((parameter) => parameter.id),
+    locationIds: selectedLocations.value
+      .map((location) => location.locationId)
+      .join(','),
+    parameterIds: [...new Set(parameterIds)].join(','),
+    qualifierIds: [...new Set(qualifiersIds)].join(','),
   }
   const queryParameters = filterToParams(timeSeriesFilter.value)
   if (queryParameters.length > 7500) {
@@ -387,13 +419,44 @@ function getLocationName(location: Location): string {
   return location.locationId
 }
 
-function getParameterName(parameter: TimeSeriesParameter): string {
-  const showParameterName =
-    props.topologyNode.dataDownloadDisplay?.showParameterName
+function getParameterName(
+  parameters: TimeSeriesParameter[],
+  parameterQualifiersHeader: ParameterQualifiersHeader,
+  showParameterName: string | undefined,
+) {
+  const parameter = parameters.find(
+    (item) => item.id === parameterQualifiersHeader.parameterId,
+  )
+  if (parameter === undefined) return ''
   if (showParameterName === 'name') return parameter.name ?? parameter.id
   if (showParameterName === 'short name')
     return parameter.shortName ?? parameter.id
   return parameter.id
+}
+
+function getParameterQualifierName(
+  parameterQualifiersHeader: ParameterQualifiersHeader,
+): string {
+  const showParameterName =
+    props.topologyNode.dataDownloadDisplay?.showParameterName
+  const parameterName = getParameterName(
+    allParameters.value,
+    parameterQualifiersHeader,
+    showParameterName,
+  )
+  if (parameterQualifiersHeader.qualifiers === undefined) return parameterName
+  const qualifiers = ' (' + parameterQualifiersHeader.qualifiers.join(',') + ')'
+  return parameterName + qualifiers
+}
+
+async function getTimeSeriesHeaders(): Promise<TimeSeriesResult[] | undefined> {
+  const filter: TimeSeriesFilter = {
+    onlyHeaders: true,
+    filterId: filterId,
+    documentFormat: DocumentFormat.PI_JSON,
+  }
+  const timeSeriesResponse = await piProvider.getTimeSeries(filter)
+  return timeSeriesResponse.timeSeries
 }
 
 async function getLocations(): Promise<Location[]> {
@@ -434,7 +497,7 @@ function getAttributeValues(locations: Location[]): string[][] {
   return attributeValuesMap
 }
 
-async function getParameters() {
+async function getParameters(): Promise<TimeSeriesParameter[]> {
   if (props.topologyNode?.filterIds === undefined) return []
   const filter: ParametersFilter = {
     filterId: filterId,
