@@ -9,7 +9,7 @@
   </Teleport>
   <Teleport to="#web-oc-toolbar-target">
     <WorkflowsControl
-      :disabled="secondaryWorkflows === undefined"
+      :disabled="secondaryWorkflows === null"
       :secondaryWorkflows="secondaryWorkflows"
     />
   </Teleport>
@@ -111,10 +111,7 @@ import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
 import { useConfigStore } from '@/stores/config'
 import { useUserSettingsStore } from '@/stores/userSettings'
 
-import type {
-  SecondaryWorkflowGroupItem,
-  TopologyNode,
-} from '@deltares/fews-pi-requests'
+import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { watchEffect } from 'vue'
 import { computed } from 'vue'
 import { ref, watch } from 'vue'
@@ -163,14 +160,10 @@ const activeNode = computed(() => {
     ? node?.topologyNodes[activeParentNode.value]
     : node
 })
-const secondaryWorkflows = computed<SecondaryWorkflowGroupItem[] | undefined>(
-  () => {
-    if (!activeNode.value) return
-    const node = activeNode.value
-
-    return node.secondaryWorkflows
-  },
-)
+const secondaryWorkflows = computed(() => {
+  if (!activeNode.value?.secondaryWorkflows) return null
+  return activeNode.value.secondaryWorkflows
+})
 const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
 
