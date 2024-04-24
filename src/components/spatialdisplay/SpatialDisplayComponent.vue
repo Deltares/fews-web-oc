@@ -14,7 +14,13 @@
       @doubleclick="onCoordinateClick"
     />
     <div class="colourbar-container" v-if="colourScalesStore.currentScale">
+      <ColourLegend
+        v-if="!colourScalesStore.currentScale.useGradients"
+        :colourMap="colourScalesStore.currentScale.colourMap"
+        :title="colourScalesStore.currentScale.title"
+      />
       <ColourBar
+        v-else
         :colourMap="colourScalesStore.currentScale.colourMap"
         :title="colourScalesStore.currentScale.title"
         :useGradients="colourScalesStore.currentScale.useGradients"
@@ -136,6 +142,7 @@ import { SecondaryWorkflowGroupItem } from '@deltares/fews-pi-requests'
 import { Range, useColourScalesStore } from '@/stores/colourScales'
 import { useDisplay } from 'vuetify'
 import { useFilterLocations } from '@/services/useFilterLocations'
+import ColourLegend from '@/components/wms/ColourLegend.vue'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -419,11 +426,9 @@ function onCoordinateClick(
 <style scoped>
 .colourbar-container {
   position: absolute;
-  pointer-events: none;
-  font-size: 0.825em;
   z-index: 1000;
-  background-color: none;
-  bottom: 60px;
+  bottom: 65px;
+  left: 5px;
 }
 
 .spatial-display {

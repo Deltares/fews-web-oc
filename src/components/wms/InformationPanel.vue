@@ -50,19 +50,26 @@
               {{ item.style.title }}
             </v-list-item-title>
             <div class="d-flex align-center ga-1">
-              <span class="mb-1">{{ item.range?.min ?? '' }}</span>
-              <ColourStrip
-                :colourMap="item.colourMap"
-                :useGradients="item.useGradients"
-              />
-              <span class="mb-1">{{ item.range?.max ?? '' }}</span>
+              <template v-if="item.useGradients !== false">
+                <span class="mb-1">{{ item.range?.min ?? '' }}</span>
+                <ColourStrip
+                  :colourMap="item.colourMap"
+                  :useGradients="item.useGradients"
+                />
+                <span class="mb-1">{{ item.range?.max ?? '' }}</span>
+              </template>
+              <template v-else>
+                <ColourLegendTable :colourMap="item.colourMap" />
+              </template>
             </div>
             <template #append v-if="index === colourScalesStore.currentIndex">
               <v-icon>mdi-check</v-icon>
             </template>
           </v-list-item>
         </v-list-item>
-        <v-list-item>
+        <v-list-item
+          v-if="colourScalesStore.currentScale?.useGradients !== false"
+        >
           <template v-slot:prepend>
             <div class="mx-7"></div>
           </template>
@@ -136,6 +143,7 @@ import { LayerKind } from '@/lib/streamlines'
 import ColourStrip from '@/components/wms/ColourStrip.vue'
 import { watch } from 'vue'
 import { useColourScalesStore } from '@/stores/colourScales'
+import ColourLegendTable from './ColourLegendTable.vue'
 
 interface Props {
   layerTitle: string

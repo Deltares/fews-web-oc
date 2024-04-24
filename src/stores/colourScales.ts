@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
-import { Style } from '@deltares/fews-wms-requests'
-import { ColourMap } from '@deltares/fews-web-oc-charts'
+import type { ColourMap, Style } from '@deltares/fews-wms-requests'
 
 export interface Range {
   min: number
