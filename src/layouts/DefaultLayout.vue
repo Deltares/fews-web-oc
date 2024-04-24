@@ -63,6 +63,10 @@
         </v-menu>
       </template>
       <div
+        class="d-flex pa-2 bg-surface-light"
+        id="web-oc-toolbar-target"
+      ></div>
+      <div
         id="web-oc-sidebar-target"
         class="d-flex"
         style="flex-direction: column; flex: 1 1 auto"
@@ -325,5 +329,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+#web-oc-toolbar-target:empty {
+  display: none !important;
 }
 </style>
