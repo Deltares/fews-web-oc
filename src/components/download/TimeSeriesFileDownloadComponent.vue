@@ -55,10 +55,11 @@ import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
 import { filterToParams } from '@deltares/fews-wms-requests'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
-import { ref, computed, toValue } from 'vue'
+import { computed, onUpdated, ref, toValue } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime.ts'
 import { UseTimeSeriesOptions } from '@/services/useTimeSeries'
 import { DateTime } from 'luxon'
+import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
 
 const store = useSystemTimeStore()
 const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
@@ -74,7 +75,7 @@ interface Props {
   filter?:
     | filterActionsFilter
     | timeSeriesGridActionsFilter
-    | TimeSeriesFilter
+    | DataDownloadFilter
     | undefined
   startTime?: Date | undefined
   endTime?: Date | undefined
@@ -91,11 +92,19 @@ const props = defineProps<Props>()
 const model = defineModel<boolean>()
 
 const fileType = ref<keyof typeof fileTypes>('csv')
-const fileName = ref('timeseries')
 
 const cancelDialog = () => {
   model.value = false
 }
+const fileName = ref('timeseries')
+onUpdated(() => {
+  if (!model.value) return
+  let dateValue = new Date()
+  const FILE_FORMAT_DATE_FMT = 'yyyyMMddHHmmss'
+  const defaultDateTimeString =
+    DateTime.fromJSDate(dateValue).toFormat(FILE_FORMAT_DATE_FMT)
+  fileName.value = `timeseries_${defaultDateTimeString}`
+})
 
 function isTimeSeriesGridActionsFilter(
   filter: filterActionsFilter | timeSeriesGridActionsFilter | undefined,
@@ -103,14 +112,14 @@ function isTimeSeriesGridActionsFilter(
   return (filter as timeSeriesGridActionsFilter).x !== undefined
 }
 
-function isTimeSeriesFilter(
+function isDataDownloadFilter(
   filter:
     | filterActionsFilter
     | timeSeriesGridActionsFilter
     | TimeSeriesFilter
     | undefined,
-): filter is TimeSeriesFilter {
-  return (filter as TimeSeriesFilter).filterId !== undefined
+): filter is DataDownloadFilter {
+  return (filter as DataDownloadFilter).filterId !== undefined
 }
 
 function isFilterActionsFilter(
@@ -155,10 +164,10 @@ function determineViewPeriod(): string {
 const downloadFile = (downloadFormat: string) => {
   let viewPeriod = determineViewPeriod()
   if (props.filter) {
-    if (isTimeSeriesFilter(props.filter)) {
+    if (isDataDownloadFilter(props.filter)) {
       const queryParameters = filterToParams(props.filter)
       const url = new URL(
-        `${baseUrl}rest/fewspiservice/v1/timeseries/filters/actions${queryParameters}&documentFormat=${downloadFormat}${viewPeriod}`,
+        `${baseUrl}rest/fewspiservice/v1/timeseries${queryParameters}&documentFormat=${downloadFormat}${viewPeriod}`,
       )
       return downloadFileAttachment(
         url.href,

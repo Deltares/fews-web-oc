@@ -35,6 +35,16 @@ async function downloadFileWithFetch(
   }
 }
 
+export function filterToParams(filter: Record<string, any>): string {
+  const filterArgs = Object.entries(filter).flatMap(([key, value]) => {
+    if (value === undefined) return []
+
+    const encodedValue = encodeURIComponent(value)
+    return [`${key}=${encodedValue}`]
+  })
+
+  return filterArgs.length ? '?' + filterArgs.join('&') : ''
+}
 export async function downloadFileAttachment(
   url: string,
   fileName: string,
