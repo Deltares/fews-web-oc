@@ -75,15 +75,12 @@ export async function downloadFileWithXhr(url: string): Promise<void> {
 
     req.onload = () => {
       if (req.status < 200 || req.status >= 300) {
-        reject({
-          status: req.status,
-          statusText: req.statusText || 'Error downloading file',
-        })
-        req.response
-          .text()
-          .then((text: string) =>
-            console.error(`NetCDF download error: ${text}`),
+        req.response.text().then((message: string) => {
+          console.error(
+            `Received error ${req.status} when downloading file from ${url}: ${message}`,
           )
+          reject(new Error('Error downloading file.'))
+        })
         return
       }
 
