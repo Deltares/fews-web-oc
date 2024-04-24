@@ -187,10 +187,10 @@ watch(data, () => {
   // the form.
   const xCellSize = data.value.xCellSize
   const yCellSize = data.value.yCellSize
-  if (typeof xCellSize === 'number') {
+  if (typeof xCellSize === 'number' && xCellSize > 0) {
     longitudeStepSize.value = data.value.xCellSize
   }
-  if (typeof yCellSize === 'number') {
+  if (typeof yCellSize === 'number' && yCellSize > 0) {
     latitudeStepSize.value = data.value.yCellSize
   }
 
