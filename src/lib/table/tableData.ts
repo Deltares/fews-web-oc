@@ -72,11 +72,15 @@ export function createTableData(
             ...event,
           }
           if (event.flag !== undefined && store.flags !== undefined) {
-            const flag = store.flags[event.flag]
+            const flag = store.flags.find((f) => f.flag === event.flag)
             if (flag !== undefined) {
               eventResult.flagOrigin = flag.source
               eventResult.flagQuality = flag.quality
-              eventResult.flagEdit = qualityToFlagEdit(flag.quality)
+              eventResult.flagEdit = qualityToFlagEdit(
+                event.flag,
+                event.flagSource,
+                flag?.quality,
+              )
             }
           }
           pointers[j]++
@@ -95,8 +99,19 @@ export function createTableData(
  * @returns {TimeSeriesEvent['flagEdit']} - The flag edit string.
  */
 function qualityToFlagEdit(
-  quality: TimeSeriesFlag['quality'],
+  flag: TimeSeriesData['flag'],
+  source: TimeSeriesData['flagSource'],
+  quality?: TimeSeriesFlag['quality'],
 ): TimeSeriesEvent['flagEdit'] {
+  if (flag === '6' && source === 'SFP') {
+    return 'Persistent Unreliable'
+  }
+
+  // @ts-expect-error: remove once pi-requests is updated
+  if (flag === '14') {
+    return 'Accumulation Reset'
+  }
+
   switch (quality) {
     case 'RELIABLE':
       return 'Reliable'
@@ -104,8 +119,6 @@ function qualityToFlagEdit(
       return 'Doubtful'
     case 'UNRELIABLE':
       return 'Unreliable'
-    default:
-      return undefined
   }
 }
 
