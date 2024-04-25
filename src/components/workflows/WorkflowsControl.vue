@@ -148,13 +148,15 @@ watch(
 )
 
 // Check whether the bounding box is defined in the form.
-const isBoundingBoxInForm = computed(
-  () =>
-    (formSchema.value?.properties?.xMin &&
-      formSchema.value?.properties?.yMin &&
-      formSchema.value?.properties?.xMax &&
-      formSchema.value?.properties?.yMax),
-)
+const isBoundingBoxInForm = computed(() => {
+  const properties = Object.keys(data.value)
+  return (
+    properties.includes('xMin') &&
+    properties.includes('yMin') &&
+    properties.includes('xMax') &&
+    properties.includes('yMax')
+  )
+})
 
 const workflowSelectItems = computed(() => {
   return props.secondaryWorkflows?.map((workflow) => {
@@ -207,6 +209,8 @@ watch(data, () => {
 
 // Update the form when the bounding box is changed (e.g. through clicking).
 watch(boundingBox, () => {
+  if (!isBoundingBoxInForm.value) return
+
   if (boundingBox.value === null) {
     data.value.xMin = undefined
     data.value.yMin = undefined
