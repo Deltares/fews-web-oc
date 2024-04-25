@@ -18,7 +18,7 @@ services:
   # The web-zap.conf contains the exclusions that are marked as false positives.
   zap:
     container_name: zap
-    image: owasp/zap2docker-stable
+    image: ghcr.io/zaproxy/zaproxy
     command: 'zap-full-scan.py -t http://nginx-weboc -j -g gen.conf -j -c /weboc-zap.conf  -r report.html -x report.xml -J report.json'
     volumes:
       - ./weboc-zap.conf:/weboc-zap.conf:ro
