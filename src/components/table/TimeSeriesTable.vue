@@ -7,7 +7,8 @@
       class="data-table"
       :headers="tableHeaders as any"
       :items="tableData"
-      items-per-page="100"
+      :items-per-page-options="itemsPerPageOptions"
+      items-per-page="200"
       density="compact"
       no-filter
       fixed-header
@@ -147,6 +148,14 @@ const props = withDefaults(defineProps<Props>(), {
     return {}
   },
 })
+
+const itemsPerPageOptions = [
+  { value: 50, title: '50' },
+  { value: 100, title: '100' },
+  { value: 200, title: '200' },
+  { value: 500, title: '500' },
+  { value: -1, title: '$vuetify.dataFooter.itemsPerPageAll' },
+]
 
 const emit = defineEmits(['change'])
 
