@@ -369,8 +369,8 @@ function addRowToTimeSeries(
         x: newDate,
         y: null,
         flagOrigin: 'CORRECTED',
-        flagQuality: 'UNRELIABLE',
-        flag: '0',
+        flagQuality: 'RELIABLE',
+        flag: '9',
       }
     }
   })
