@@ -1,6 +1,6 @@
 import type { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import { Series } from '@/lib/timeseries/timeSeries'
-import { uniqWith } from 'lodash'
+import { uniqWith } from 'lodash-es'
 import { SeriesData, TimeSeriesData } from '../timeseries/types/SeriesData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import type {
