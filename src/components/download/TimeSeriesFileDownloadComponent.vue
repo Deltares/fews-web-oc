@@ -32,7 +32,10 @@
         </v-text-field>
       </v-card-text>
       <v-card-actions class="justify-end">
-        <v-btn color="primary" @click="() => downloadFile(fileTypes[fileType])"
+        <v-btn
+          variant="flat"
+          color="primary"
+          @click="() => downloadFile(fileTypes[fileType])"
           >Download</v-btn
         >
         <v-btn @click="() => cancelDialog()">Cancel</v-btn>

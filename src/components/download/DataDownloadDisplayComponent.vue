@@ -110,10 +110,10 @@
         <v-row class="ma-1">
           <v-col>
             <v-btn
+              variant="flat"
               prepend-icon="mdi-download"
               color="primary"
               @click="downloadData"
-              block
               >Download
             </v-btn>
           </v-col>

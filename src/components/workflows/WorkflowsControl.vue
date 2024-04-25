@@ -54,12 +54,14 @@
           :config="JsonFormsConfig"
           @change="onFormChange"
         />
-        <div class="d-flex flex-column">
-          <v-btn color="success" class="mt-4" block @click="startWorkflow">
-            Start
-          </v-btn>
-        </div>
       </v-container>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn variant="flat" color="primary" @click="startWorkflow">
+          Run
+        </v-btn>
+        <v-btn @click="() => (workflowDialog = false)">Cancel</v-btn>
+      </v-card-actions>
     </v-card>
   </v-dialog>
 
@@ -341,7 +343,9 @@ async function startWorkflow() {
         : getRunTaskFilter()
 
     await workflowsStore.startWorkflow(workflowType, filter)
-    showSuccessMessage('Workflow submitted successfully. Monitor task progress using System Monitor.')
+    showSuccessMessage(
+      'Workflow submitted successfully. Monitor task progress using System Monitor.',
+    )
   } catch (error) {
     showErrorMessage((error as Error).message)
   }
