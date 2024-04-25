@@ -13,7 +13,7 @@
     />
   </v-badge>
 
-  <v-dialog v-show="!selectBbox" width="500" v-model="workflowDialog">
+  <v-dialog width="500" v-model="workflowDialog">
     <v-card>
       <v-card-title>Workflow</v-card-title>
       <v-container>
@@ -48,7 +48,7 @@
           :schema="formSchema"
           :uischema="formUISchema"
           :data="data"
-          :renderers="vuetifyRenderers"
+          :renderers="Object.freeze(vuetifyRenderers)"
           :ajv="undefined"
           validation-mode="NoValidation"
           :config="JsonFormsConfig"
@@ -105,7 +105,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
 const workflowDialog = ref(false)
-const selectBbox = ref(false)
 const errorDialog = ref(false)
 const errorMessage = ref<string>()
 const data = ref()
