@@ -86,17 +86,28 @@ watch(
   () => {
     draw.clear()
     if (modelValue.value !== null) {
+      // Round to 9 decimal places as this is the default max precision in terra draw
+      // https://github.com/JamesLMilner/terra-draw/blob/main/src/adapters/common/base.adapter.ts#L46
+      const round = (value: number) => {
+        return Math.round(value * 1000000000) / 1000000000
+      }
+
+      const lonMin = round(modelValue.value.lonMin)
+      const lonMax = round(modelValue.value.lonMax)
+      const latMin = round(modelValue.value.latMin)
+      const latMax = round(modelValue.value.latMax)
+
       const feature: GeoJSONStoreFeatures = {
         type: 'Feature',
         geometry: {
           type: 'Polygon',
           coordinates: [
             [
-              [modelValue.value.lonMin, modelValue.value.latMin],
-              [modelValue.value.lonMax, modelValue.value.latMin],
-              [modelValue.value.lonMax, modelValue.value.latMax],
-              [modelValue.value.lonMin, modelValue.value.latMax],
-              [modelValue.value.lonMin, modelValue.value.latMin],
+              [lonMin, latMin],
+              [lonMax, latMin],
+              [lonMax, latMax],
+              [lonMin, latMax],
+              [lonMin, latMin]
             ],
           ],
         },
