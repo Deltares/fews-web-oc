@@ -161,7 +161,7 @@ import { ParameterQualifiersHeader } from '@/lib/download/types'
 import { isEqual } from 'lodash-es'
 import { filterToParams } from '@/lib/download/downloadFiles.ts'
 import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
-import {uniqWith} from "lodash";
+import { uniqWith } from 'lodash'
 
 interface Props {
   nodeId?: string | string[]
@@ -198,25 +198,25 @@ const parameterQualifiers = ref<ParameterQualifiersHeader[]>([])
 const selectedParameterQualifiers = ref<ParameterQualifiersHeader[]>([])
 const selectableAttributes = ref<string[][]>([])
 
-getLocations().then(locationsResponse => {
-    allLocations.value = locationsResponse
-    locations.value = locationsResponse
-    selectedLocations.value = allLocations.value
-    selectableAttributes.value = getAttributeValues(allLocations.value)
+getLocations().then((locationsResponse) => {
+  allLocations.value = locationsResponse
+  locations.value = locationsResponse
+  selectedLocations.value = allLocations.value
+  selectableAttributes.value = getAttributeValues(allLocations.value)
 })
 
 allParameters.value = await getParameters()
-getTimeSeriesHeaders().then(headersResponse=>{
-    const parameterQualifiersHeaders: ParameterQualifiersHeader[] = []
-    headersResponse?.forEach((timeSeriesResult) => {
-        const parameterQualifiersHeader: ParameterQualifiersHeader = {
-            parameterId: timeSeriesResult.header?.parameterId,
-            qualifiers: timeSeriesResult.header?.qualifierId,
-        }
-        parameterQualifiersHeaders.push(parameterQualifiersHeader)
-    })
-    parameterQualifiers.value = uniqWith(parameterQualifiersHeaders,isEqual)
-    selectedParameterQualifiers.value = parameterQualifiers.value
+getTimeSeriesHeaders().then((headersResponse) => {
+  const parameterQualifiersHeaders: ParameterQualifiersHeader[] = []
+  headersResponse?.forEach((timeSeriesResult) => {
+    const parameterQualifiersHeader: ParameterQualifiersHeader = {
+      parameterId: timeSeriesResult.header?.parameterId,
+      qualifiers: timeSeriesResult.header?.qualifierId,
+    }
+    parameterQualifiersHeaders.push(parameterQualifiersHeader)
+  })
+  parameterQualifiers.value = uniqWith(parameterQualifiersHeaders, isEqual)
+  selectedParameterQualifiers.value = parameterQualifiers.value
 })
 
 let errors = ref<string[]>([])
