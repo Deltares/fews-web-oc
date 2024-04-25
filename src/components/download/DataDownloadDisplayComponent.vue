@@ -158,10 +158,9 @@ import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { TimeSeriesResult } from '@deltares/fews-pi-requests'
 import { ParameterQualifiersHeader } from '@/lib/download/types'
-import { isEqual } from 'lodash-es'
+import { isEqual, uniqWith } from 'lodash-es'
 import { filterToParams } from '@/lib/download/downloadFiles.ts'
 import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
-import { uniqWith } from 'lodash'
 
 interface Props {
   nodeId?: string | string[]
