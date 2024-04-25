@@ -45,10 +45,15 @@ const tableSeriesDatum = computed(() => {
 <style scoped>
 .circle {
   display: inline-block;
-  width: 5px;
-  height: 5px;
+  width: 10px;
+  height: 10px;
+  border: 1px solid;
   border-radius: 50%;
   margin: auto 2px;
+}
+
+.circle.flag-background-color--0 {
+  border: none;
 }
 
 .table-cell-with-flag {
