@@ -1,5 +1,6 @@
 <template>
   <v-chip pill label class="outer-chip chip justify-center overflow-visible">
+    <v-icon class="pr-2">mdi-selection-drag</v-icon>
     <DrawBoundingBoxControl v-if="isActive" v-model="boundingBox" />
 
     <span class="mr-4 text-medium-emphasis" width="400px">
