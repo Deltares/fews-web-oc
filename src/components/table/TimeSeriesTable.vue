@@ -7,7 +7,7 @@
       class="data-table"
       :headers="(tableHeaders as any)"
       :items="tableData"
-      :expanded="selected"
+      :expanded="editedSeriesIds"
       :items-per-page-options="itemsPerPageOptions"
       items-per-page="200"
       item-value="date"
