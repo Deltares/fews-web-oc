@@ -7,7 +7,7 @@
       class="data-table"
       :headers="tableHeaders"
       :items="tableData"
-      :expanded="expanded"
+      :expanded="selected"
       :items-per-page-options="itemsPerPageOptions"
       items-per-page="200"
       item-value="date"
