@@ -26,6 +26,10 @@
   background-color: #ffffff;
 }
 
+.flag-background-color--14 {
+  background-color: #00ff00;
+}
+
 .flag-color--0 {
   color: none;
 }
@@ -51,4 +55,7 @@
 .flag-color--9,
 .flag-color--13 {
   color: #ffffff;
+}
+.flag-color--14 {
+  color: #00ff00;
 }
