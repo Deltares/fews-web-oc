@@ -107,7 +107,7 @@ watch(
               [lonMax, latMin],
               [lonMax, latMax],
               [lonMin, latMax],
-              [lonMin, latMin]
+              [lonMin, latMin],
             ],
           ],
         },
