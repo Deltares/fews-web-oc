@@ -5,7 +5,7 @@
     </v-tooltip>
     <v-data-table
       class="data-table"
-      :headers="(tableHeaders as any)"
+      :headers="tableHeaders as any"
       :items="tableData"
       :expanded="editedSeriesIds"
       :items-per-page-options="itemsPerPageOptions"
