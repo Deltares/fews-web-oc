@@ -84,6 +84,12 @@
         :startTime="props.layerCapabilities?.firstValueTime ?? ''"
         :endTime="props.layerCapabilities?.lastValueTime ?? ''"
       />
+      <BoundingBoxControl
+        v-model:active="workflowsStore.isDrawingBoundingBox"
+        v-model:boundingBox="workflowsStore.boundingBox"
+        @finish="workflowsStore.isDrawingBoundingBox = false"
+        v-if="workflowsStore.isDrawingBoundingBox"
+      />
     </v-chip-group>
   </div>
   <ElevationSlider
@@ -127,6 +133,7 @@ import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vu
 import InformationPanel from '../wms/InformationPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
+import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
@@ -146,6 +153,7 @@ import {
   rangeToString,
   styleToId,
 } from '@/lib/legend'
+import { useWorkflowsStore } from '@/stores/workflows'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -212,6 +220,7 @@ const showLayer = ref<boolean>(true)
 const layerKind = ref(LayerKind.Static)
 
 const colourScalesStore = useColourScalesStore()
+const workflowsStore = useWorkflowsStore()
 
 const showLocationsLayer = ref<boolean>(true)
 

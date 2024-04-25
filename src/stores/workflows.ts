@@ -8,12 +8,15 @@ import { defineStore } from 'pinia'
 import { downloadFileWithXhr } from '@/lib/download'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { configManager } from '@/services/application-config'
+import { BoundingBox } from '@/services/useBoundingBox'
 
 interface WorkflowsState {
   workflowId: string | null
   startTime: string | null
   endTime: string | null
   activeWorkflowIds: string[]
+  boundingBox: BoundingBox | null
+  isDrawingBoundingBox: boolean
 }
 
 export enum WorkflowType {
@@ -36,6 +39,8 @@ const useWorkflowsStore = defineStore('workflows', {
     startTime: null,
     endTime: null,
     activeWorkflowIds: [],
+    boundingBox: null,
+    isDrawingBoundingBox: false,
   }),
 
   actions: {
