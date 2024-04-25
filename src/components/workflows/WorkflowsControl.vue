@@ -12,12 +12,6 @@
         variant="plain"
       />
     </v-badge>
-    <BoundingBoxControl
-      v-model:active="selectBbox"
-      v-model:boundingBox="boundingBox"
-      @finish="hideMapTool"
-      v-if="selectBbox"
-    />
   </v-chip>
 
   <v-dialog v-show="!selectBbox" width="500" v-model="workflowDialog">
@@ -84,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { JsonForms } from '@jsonforms/vue'
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
@@ -96,7 +90,6 @@ import { asyncComputed } from '@vueuse/core'
 import JsonFormsConfig from '@/assets/JsonFormsConfig.json'
 import { useBoundingBox } from '@/services/useBoundingBox'
 
-import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
 import {
   PartialProcessDataFilter,
   PartialRunTaskFilter,
@@ -121,6 +114,14 @@ const errorDialog = ref(false)
 const errorMessage = ref<string>()
 const data = ref()
 
+const {
+  boundingBox,
+  longitudeStepSize,
+  latitudeStepSize,
+  boundingBoxIsValid,
+  boundingBoxString,
+} = useBoundingBox(1, 1)
+
 const workflowsStore = useWorkflowsStore()
 // Update workflowId, startTime and endTime depending on properties.
 watch(
@@ -139,13 +140,26 @@ watch(
   { immediate: true },
 )
 
-const {
-  boundingBox,
-  longitudeStepSize,
-  latitudeStepSize,
-  boundingBoxIsValid,
-  boundingBoxString,
-} = useBoundingBox(1, 1)
+let isRounding = false
+watch(
+  () => workflowsStore.boundingBox,
+  () => {
+    // Make sure that we do not introduce an infinite watch loop. We only want
+    // to set the bounding box in the store once when the bounding box is
+    // changed from the outside (e.g. when drawing), to make sure it is rounded
+    // properly.
+    if (isRounding) return
+    isRounding = true
+
+    boundingBox.value = workflowsStore.boundingBox
+    // Assigning the bounding box will round its values appropriately, so we
+    // assign the rounded bounding box back.
+    workflowsStore.boundingBox = boundingBox.value
+
+    // We are done rounding at the next tick, when all watchers have finished.
+    nextTick(() => (isRounding = false))
+  },
+)
 
 // Check whether the bounding box is defined in the form.
 const isBoundingBoxInForm = computed(
@@ -259,13 +273,14 @@ function onFormChange(event: any) {
 }
 
 function showMapTool() {
-  selectBbox.value = true
+  workflowsStore.isDrawingBoundingBox = true
   workflowDialog.value = false
-}
-
-function hideMapTool() {
-  selectBbox.value = false
-  workflowDialog.value = true
+  // Show the dialog again when the bounding box has been drawn.
+  watch(
+    () => workflowsStore.isDrawingBoundingBox,
+    () => (workflowDialog.value = true),
+    { once: true },
+  )
 }
 
 function showErrorMessage(message: string) {
