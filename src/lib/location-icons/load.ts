@@ -16,10 +16,13 @@ function getUniqueIconNames(
 function addDefaultSelectedLocationIconToMap(map: Map): void {
   const iconId = 'selected-location'
   if (map.hasImage(iconId)) return
-    map.loadImage(`${import.meta.env.BASE_URL}images/map-marker.png`, function (error, image) {
-    if (error) throw error
-    if (image) map.addImage(iconId, image)
-  })
+  map.loadImage(
+    `${import.meta.env.BASE_URL}images/map-marker.png`,
+    function (error, image) {
+      if (error) throw error
+      if (image) map.addImage(iconId, image)
+    },
+  )
 }
 
 async function convertSvgToBitmap(
