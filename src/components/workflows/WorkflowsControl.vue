@@ -150,10 +150,10 @@ watch(
 // Check whether the bounding box is defined in the form.
 const isBoundingBoxInForm = computed(
   () =>
-    data.value.xMin !== undefined &&
-    data.value.yMin !== undefined &&
-    data.value.xMax !== undefined &&
-    data.value.yMax !== undefined,
+    (formSchema.value?.properties?.xMin &&
+      formSchema.value?.properties?.yMin &&
+      formSchema.value?.properties?.xMax &&
+      formSchema.value?.properties?.yMax),
 )
 
 const workflowSelectItems = computed(() => {
