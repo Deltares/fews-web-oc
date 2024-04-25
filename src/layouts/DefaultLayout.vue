@@ -16,16 +16,16 @@
         </v-toolbar>
         <v-list density="compact" v-if="shouldRenderInfoMenu">
           <v-list-item
-              v-for="(item, i) in configStore.activeComponents"
-              :key="i"
-              :value="item"
-              :to="item.to"
-            >
-              <template v-slot:prepend>
-                <v-icon :icon="item.icon"></v-icon>
-              </template>
-              <v-list-item-title v-text="item.title"></v-list-item-title>
-            </v-list-item>
+            v-for="(item, i) in configStore.activeComponents"
+            :key="i"
+            :value="item"
+            :to="item.to"
+          >
+            <template v-slot:prepend>
+              <v-icon :icon="item.icon"></v-icon>
+            </template>
+            <v-list-item-title v-text="item.title"></v-list-item-title>
+          </v-list-item>
         </v-list>
         <v-menu
           origin="left"
