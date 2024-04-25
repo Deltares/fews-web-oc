@@ -63,6 +63,16 @@
     </v-card>
   </v-dialog>
 
+  <!-- Success Dialog -->
+  <v-dialog v-model="successDialog" max-width="500">
+    <v-card prepend-icon="mdi-check" title="Success" :text="successMessage">
+      <v-card-actions>
+        <v-spacer />
+        <v-btn color="success" @click="successDialog = false">Close</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
   <!-- Error Dialog -->
   <v-dialog v-model="errorDialog" max-width="500">
     <v-card prepend-icon="mdi-alert" title="Error" :text="errorMessage">
@@ -107,6 +117,8 @@ const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
 const workflowDialog = ref(false)
 const errorDialog = ref(false)
 const errorMessage = ref<string>()
+const successDialog = ref(false)
+const successMessage = ref<string>()
 const data = ref()
 
 const {
@@ -312,6 +324,11 @@ function showErrorMessage(message: string) {
   errorDialog.value = true
 }
 
+function showSuccessMessage(message: string) {
+  successMessage.value = message
+  successDialog.value = true
+}
+
 async function startWorkflow() {
   const workflowType = data.value['GET_PROCESS_DATA']
     ? WorkflowType.ProcessData
@@ -324,6 +341,7 @@ async function startWorkflow() {
         : getRunTaskFilter()
 
     await workflowsStore.startWorkflow(workflowType, filter)
+    showSuccessMessage('Workflow submitted successfully. Monitor task progress using System Monitor.')
   } catch (error) {
     showErrorMessage((error as Error).message)
   }
