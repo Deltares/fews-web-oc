@@ -161,6 +161,7 @@ import { ParameterQualifiersHeader } from '@/lib/download/types'
 import { isEqual } from 'lodash-es'
 import { filterToParams } from '@/lib/download/downloadFiles.ts'
 import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
+import {uniqWith} from "lodash";
 
 interface Props {
   nodeId?: string | string[]
@@ -188,39 +189,35 @@ const piProvider = new PiWebserviceProvider(baseUrl, {
 const filterId = props.topologyNode.filterIds
   ? props.topologyNode.filterIds[0]
   : undefined
+const attributes = props.topologyNode.dataDownloadDisplay?.attributes
 const allLocations = ref<Location[]>([])
 const allParameters = ref<TimeSeriesParameter[]>([])
 const locations = ref<Location[]>([])
 const selectedLocations = ref<Location[]>([])
-
 const parameterQualifiers = ref<ParameterQualifiersHeader[]>([])
 const selectedParameterQualifiers = ref<ParameterQualifiersHeader[]>([])
-
-allLocations.value = await getLocations()
-locations.value = allLocations.value
-selectedLocations.value = allLocations.value
-
-const timeSeriesResults = await getTimeSeriesHeaders()
-allParameters.value = await getParameters()
-const parameterQualifiersHeaders: ParameterQualifiersHeader[] = []
-timeSeriesResults?.forEach((timeSeriesResult) => {
-  const parameterQualifiersHeader: ParameterQualifiersHeader = {
-    parameterId: timeSeriesResult.header?.parameterId,
-    qualifiers: timeSeriesResult.header?.qualifierId,
-  }
-  const existing = parameterQualifiersHeaders.find(
-    (item) =>
-      item.parameterId === timeSeriesResult.header?.parameterId &&
-      isEqual(item.qualifiers, timeSeriesResult.header?.qualifierId),
-  )
-  if (existing) return
-  parameterQualifiersHeaders.push(parameterQualifiersHeader)
-})
-parameterQualifiers.value = parameterQualifiersHeaders
-selectedParameterQualifiers.value = parameterQualifiersHeaders
-
 const selectableAttributes = ref<string[][]>([])
-selectableAttributes.value = getAttributeValues(allLocations.value)
+
+getLocations().then(locationsResponse => {
+    allLocations.value = locationsResponse
+    locations.value = locationsResponse
+    selectedLocations.value = allLocations.value
+    selectableAttributes.value = getAttributeValues(allLocations.value)
+})
+
+allParameters.value = await getParameters()
+getTimeSeriesHeaders().then(headersResponse=>{
+    const parameterQualifiersHeaders: ParameterQualifiersHeader[] = []
+    headersResponse?.forEach((timeSeriesResult) => {
+        const parameterQualifiersHeader: ParameterQualifiersHeader = {
+            parameterId: timeSeriesResult.header?.parameterId,
+            qualifiers: timeSeriesResult.header?.qualifierId,
+        }
+        parameterQualifiersHeaders.push(parameterQualifiersHeader)
+    })
+    parameterQualifiers.value = uniqWith(parameterQualifiersHeaders,isEqual)
+    selectedParameterQualifiers.value = parameterQualifiers.value
+})
 
 let errors = ref<string[]>([])
 const startDate = ref<Date>(getStartDateValue())
@@ -233,7 +230,6 @@ const rules = {
     return !isNaN(date.valueOf()) || 'Invalid date'
   },
 }
-const attributes = props.topologyNode.dataDownloadDisplay?.attributes
 attributes?.forEach((item) => selectedAttributes.value.push([]))
 
 const DATE_FMT = 'yyyy-MM-dd HH:mm'
@@ -394,8 +390,8 @@ function downloadData() {
     locationIds: selectedLocations.value
       .map((location) => location.locationId)
       .join(','),
-    parameterIds: [...new Set(parameterIds)].join(','),
-    qualifierIds: [...new Set(qualifiersIds)].join(','),
+    parameterIds: uniqWith(parameterIds).join(','),
+    qualifierIds: uniqWith(qualifiersIds).join(','),
   }
   const queryParameters = filterToParams(timeSeriesFilter.value)
   if (queryParameters.length > 7500) {
@@ -422,7 +418,7 @@ function getLocationName(location: Location): string {
 function getParameterName(
   parameters: TimeSeriesParameter[],
   parameterQualifiersHeader: ParameterQualifiersHeader,
-  showParameterName: string | undefined,
+  showParameterName?: 'name' | 'short name' | 'id',
 ) {
   const parameter = parameters.find(
     (item) => item.id === parameterQualifiersHeader.parameterId,
