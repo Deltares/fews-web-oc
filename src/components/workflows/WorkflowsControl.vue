@@ -218,6 +218,9 @@ watch(boundingBox, () => {
     data.value.xMax = boundingBox.value.lonMax
     data.value.yMax = boundingBox.value.latMax
   }
+  if (boundingBoxIsValid.value) {
+    workflowsStore.boundingBox = boundingBox.value
+  }
 })
 
 type FormValue = string | number | boolean | Date
