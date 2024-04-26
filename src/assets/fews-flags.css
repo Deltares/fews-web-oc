@@ -1,61 +1,10 @@
-.flag-background-color--0 {
-  background-color: none;
-}
-.flag-background-color--1,
-.flag-background-color--4,
-.flag-background-color--10,
-.flag-background-color--11,
-.flag-background-color--12 {
-  background-color: #ff0000;
-}
-
-.flag-background-color--2,
-.flag-background-color--5,
-.flag-background-color--7 {
-  background-color: #ff8000;
-}
-.flag-background-color--6 {
-  background-color: #ffff00;
-}
-.flag-background-color--3,
-.flag-background-color--8 {
-  background-color: #ffc800;
-}
-.flag-background-color--9,
-.flag-background-color--13 {
-  background-color: #ffffff;
-}
-
-.flag-background-color--14 {
-  background-color: Beige;
-}
-
-.flag-color--0 {
-  color: none;
-}
-.flag-color--1,
-.flag-color--4,
-.flag-color--10,
-.flag-color--11,
-.flag-color--12 {
-  color: #ff0000;
-}
-.flag-color--2,
-.flag-color--5,
-.flag-color--7 {
-  color: #ff8000;
-}
-.flag-color--6 {
-  color: #ffff00;
-}
-.flag-color--3,
-.flag-color--8 {
-  color: #ffc800;
-}
-.flag-color--9,
-.flag-color--13 {
-  color: #ffffff;
-}
-.flag-color--14 {
-  color: Beige;
+:root {
+  --flag-reliable-color: none;
+  --flag-unreliable-color: #ffff00;
+  --flag-doubtful-color: #ffc800;
+  /* Unused? */
+  --flag-modified-color: #ff0000;
+  --flag-accumulation-reset-color: Beige;
+  --flag-missing-color: #ffffff;
+  --flag-persistent-unreliable-color: #e18b6b;
 }

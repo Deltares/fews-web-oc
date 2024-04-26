@@ -14,6 +14,7 @@ export interface TableSeriesData extends SeriesData {
   flagOrigin?: TimeSeriesFlag['source']
   flagQuality?: TimeSeriesFlag['quality']
   flagEdit?: TimeSeriesEvent['flagEdit']
+  flagColor?: string
 }
 
 export interface TableData {
@@ -81,6 +82,10 @@ export function createTableData(
                 event.flagSource,
                 flag?.quality,
               )
+              eventResult.flagColor = getFlagColor(
+                eventResult.flagEdit,
+                flag.quality,
+              )
             }
           }
           pointers[j]++
@@ -122,6 +127,23 @@ function getFlagEdit(
     case 'UNRELIABLE':
       return 'Unreliable'
   }
+}
+
+/**
+ * Returns the flag color based on the flag edit and flag quality.
+ * @param {TimeSeriesEvent['flagEdit']} flagEdit - The flag edit of the time series event.
+ * @param {TimeSeriesFlag['quality']} flagQuality - The quality of the flag.
+ * @returns {string} - The flag color based on the flag edit and flag quality.
+ */
+function getFlagColor(
+  flagEdit: TimeSeriesEvent['flagEdit'],
+  flagQuality: TimeSeriesFlag['quality'],
+): string {
+  const edit = flagEdit?.toLowerCase().replace(' ', '-')
+  const quality = flagQuality?.toLowerCase()
+
+  const type = edit ?? quality ?? 'missing'
+  return `var(--flag-${type}-color)`
 }
 
 /**

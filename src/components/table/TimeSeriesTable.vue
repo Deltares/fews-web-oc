@@ -294,6 +294,7 @@ const showTooltip = (event: any, item: any) => {
     flag: item.flag,
     flagName: store.getFlagName(item.flag),
     flagSource: store.getFlagSourceName(item.flagSource),
+    flagColor: item.flagColor,
     user: item.user,
     comment: item.comment,
   }
