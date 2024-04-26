@@ -314,9 +314,9 @@ function stopEdit() {
 }
 
 function save(seriesId: string) {
-  const serie = props.series[seriesId] as Partial<TableSeriesData>
   const newModifiedData = newTableData.value.filter(
-    (item) => !(item.isNewRow && !serie.y),
+    (item) =>
+      !(item.isNewRow && !(item[seriesId] as Partial<TableSeriesData>).y),
   )
   const newTimeSeriesData = tableDataToTimeSeries(newModifiedData, [seriesId])
   emit('change', newTimeSeriesData)
