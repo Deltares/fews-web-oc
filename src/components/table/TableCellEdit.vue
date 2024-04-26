@@ -14,7 +14,11 @@
       v-model="currentItem.flagEdit"
       @change="editItem"
     >
-      <option v-for="flagEdit in possibleFlagEdits" :key="flagEdit" :value="flagEdit">
+      <option
+        v-for="flagEdit in possibleFlagEdits"
+        :key="flagEdit"
+        :value="flagEdit"
+      >
         {{ flagEdit }}
       </option>
     </select>
