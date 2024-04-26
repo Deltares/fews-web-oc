@@ -1,10 +1,12 @@
 <template>
   <div class="table-cell-editable">
+    <!-- Edge does not respect lang="en-US" as such to not have ',' as decimal separator we need type="text" -->
     <input
       :ref="`${props.item.date}-${props.id}-value`"
       v-model.number="currentItem.y"
       class="table-cell-edit"
-      type="number"
+      type="text"
+      inputmode="numeric"
       placeholder="value"
       @change="(event) => editValue(event, currentItem.y)"
     />
