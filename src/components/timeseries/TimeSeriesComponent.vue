@@ -66,7 +66,7 @@ import { configManager } from '../../services/application-config'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 import { useDisplay } from 'vuetify'
-import { onBeforeRouteLeave } from 'vue-router'
+import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
 
 interface Props {
   config?: DisplayConfig
@@ -183,7 +183,9 @@ onUnmounted(() => {
   window.onbeforeunload = null
 })
 
-onBeforeRouteLeave(() => {
+onBeforeRouteLeave(confirmUnsavedChanges)
+onBeforeRouteUpdate(confirmUnsavedChanges)
+function confirmUnsavedChanges() {
   if (isEditing.value) {
     // For multiple simultaneous leaves set to false since confirm dialog is async
     isEditing.value = false
@@ -197,7 +199,7 @@ onBeforeRouteLeave(() => {
       return false
     }
   }
-})
+}
 </script>
 
 <style scoped>
