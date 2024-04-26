@@ -1,6 +1,6 @@
 <template>
   <div v-show="props.flag">
-    <v-icon :class="`flag-color--${props.flag}`">mdi-flag-variant</v-icon>
+    <v-icon :style="{ color: props.flagColor }">mdi-flag-variant</v-icon>
     {{ props.flagName }}
   </div>
   <div v-show="props.flagSource">
@@ -18,6 +18,7 @@ interface Props {
   flag?: string
   flagName?: string
   flagSource?: string
+  flagColor?: string
   user?: string
   comment?: string
 }

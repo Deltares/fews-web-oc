@@ -1,9 +1,6 @@
 <template v-else>
   <span v-if="tableSeriesDatum" class="table-cell-with-flag">
-    <div
-      class="circle"
-      :class="`flag-background-color--${tableSeriesDatum.flag}`"
-    ></div>
+    <div class="circle" :style="itemToStyle(tableSeriesDatum)"></div>
     <span class="value">
       {{ tableSeriesDatum.y }}
     </span>
@@ -17,6 +14,7 @@
 <script setup lang="ts">
 import type { TableData, TableSeriesData } from '@/lib/table/tableData'
 import { computed } from 'vue'
+import { resolveCSSVariable } from '@/lib/utils/resolveCSSVariable'
 
 interface Props {
   id: string
@@ -40,6 +38,16 @@ const tableSeriesDatum = computed(() => {
   }
   return undefined
 })
+
+function itemToStyle(item: Partial<TableSeriesData>) {
+  return {
+    backgroundColor: item.flagColor,
+    border:
+      item.flagColor && resolveCSSVariable(item.flagColor) === 'none'
+        ? 'none'
+        : undefined,
+  }
+}
 </script>
 
 <style scoped>
@@ -50,10 +58,6 @@ const tableSeriesDatum = computed(() => {
   border: 1px solid;
   border-radius: 50%;
   margin: auto 2px;
-}
-
-.circle.flag-background-color--0 {
-  border: none;
 }
 
 .table-cell-with-flag {
