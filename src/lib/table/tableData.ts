@@ -76,7 +76,7 @@ export function createTableData(
             if (flag !== undefined) {
               eventResult.flagOrigin = flag.source
               eventResult.flagQuality = flag.quality
-              eventResult.flagEdit = qualityToFlagEdit(
+              eventResult.flagEdit = getFlagEdit(
                 event.flag,
                 event.flagSource,
                 flag?.quality,
@@ -94,11 +94,13 @@ export function createTableData(
 }
 
 /**
- * Converts a quality string to a flag edit string.
- * @param {TimeSeriesFlag['quality']} quality - The quality string to be converted.
- * @returns {TimeSeriesEvent['flagEdit']} - The flag edit string.
+ * Returns the flag edit based on the flag, flag source and quality.
+ * @param {TimeSeriesData['flag']} flag - The flag of the time series event.
+ * @param {TimeSeriesData['flagSource']} source - The flag source of the time series event.
+ * @param {TimeSeriesFlag['quality']} quality - The quality of the flag.
+ * @returns {TimeSeriesEvent['flagEdit']} - The flag edit based on the flag, flag source and quality.
  */
-function qualityToFlagEdit(
+function getFlagEdit(
   flag: TimeSeriesData['flag'],
   source: TimeSeriesData['flagSource'],
   quality?: TimeSeriesFlag['quality'],
