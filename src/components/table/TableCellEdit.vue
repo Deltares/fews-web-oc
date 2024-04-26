@@ -6,7 +6,7 @@
       v-model.number="currentItem.y"
       class="table-cell-edit"
       type="text"
-      inputmode="numeric"
+      inputmode="decimal"
       placeholder="value"
       @change="(event) => editValue(event, currentItem.y)"
     />
