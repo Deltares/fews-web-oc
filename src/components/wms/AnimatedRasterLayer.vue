@@ -15,8 +15,6 @@ import {
 import { configManager } from '@/services/application-config'
 import { useMap } from 'vue-maplibre-gl'
 import { point } from '@turf/helpers'
-import { booleanIntersects } from '@turf/boolean-intersects'
-import { bboxPolygon } from '@turf/bbox-polygon'
 
 export interface AnimatedRasterLayerOptions {
   name: string
@@ -37,17 +35,13 @@ const isLoading = defineModel<boolean>('isLoading', { default: false })
 
 const emit = defineEmits(['doubleclick'])
 
-let initialZoom = true
-
 const { map } = useMap()
 
 let currentLayer: string = ''
 
 onMounted(() => {
   addHooksToMapObject()
-  if (map?.isStyleLoaded()) {
-    onLayerChange()
-  }
+  onLayerChange()
 })
 
 onUnmounted(() => {
@@ -154,27 +148,29 @@ function getImageSourceOptions(): any {
 }
 
 function createSource() {
-  if (map) {
-    const rasterSource: any = {
-      type: 'image',
-      ...getImageSourceOptions(),
-    }
-    map.addSource(currentLayer, rasterSource)
-    const rasterLayer: any = {
-      id: currentLayer,
-      type: 'raster',
-      source: currentLayer,
-      paint: {
-        'raster-opacity': 0,
-        'raster-opacity-transition': {
-          duration: 0,
-          delay: 0,
-        },
-        'raster-fade-duration': 0,
-      },
-    }
-    map.addLayer(rasterLayer, 'boundary_country_outline')
+  if (!map?.isStyleLoaded()) return
+
+  const rasterSource: any = {
+    type: 'image',
+    ...getImageSourceOptions(),
   }
+  map.addSource(currentLayer, rasterSource)
+  const rasterLayer: any = {
+    id: currentLayer,
+    type: 'raster',
+    source: currentLayer,
+    paint: {
+      'raster-opacity': 0,
+      'raster-opacity-transition': {
+        duration: 0,
+        delay: 0,
+      },
+      'raster-fade-duration': 0,
+    },
+  }
+  map.addLayer(rasterLayer, 'boundary_country_outline')
+
+  setDefaultZoom()
 }
 
 function updateSource() {
@@ -191,34 +187,10 @@ function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
 
 function setDefaultZoom() {
   if (props.layer === undefined || props.layer.bbox === undefined) return
-  if (map) {
-    const currentBounds = map.getBounds()
-    const bounds = props.layer.bbox
-    if (initialZoom) {
-      initialZoom = false
-      nextTick(() => {
-        map.fitBounds(bounds)
-      })
-      return
-    }
-
-    if (
-      !booleanIntersects(
-        bboxPolygon([
-          ...currentBounds.getSouthWest().toArray(),
-          ...currentBounds.getNorthEast().toArray(),
-        ]),
-        bboxPolygon([
-          ...bounds.getSouthWest().toArray(),
-          ...bounds.getNorthEast().toArray(),
-        ]),
-      )
-    ) {
-      nextTick(() => {
-        map.fitBounds(bounds)
-      })
-    }
-  }
+  const bounds = props.layer.bbox
+  nextTick(() => {
+    map?.fitBounds(bounds)
+  })
 }
 
 function removeLayer() {
@@ -230,13 +202,7 @@ function removeLayer() {
   }
 }
 
-watch(
-  () => props.layer,
-  () => {
-    if (map?.isStyleLoaded()) onLayerChange()
-  },
-)
-
+watch(() => props.layer, onLayerChange)
 function onLayerChange(): void {
   if (props.layer === undefined || props.layer === null) {
     removeLayer()
@@ -249,7 +215,6 @@ function onLayerChange(): void {
   if (props.layer.name !== currentLayer) {
     removeLayer()
     currentLayer = props.layer.name
-    setDefaultZoom()
   }
 
   const source = map?.getSource(currentLayer)
