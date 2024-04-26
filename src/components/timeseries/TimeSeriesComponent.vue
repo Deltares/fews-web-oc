@@ -112,6 +112,7 @@ const options = computed<UseTimeSeriesOptions>(() => {
   return {
     startTime: store.startTime,
     endTime: store.endTime,
+    thinning: false,
   }
 })
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')

@@ -101,21 +101,23 @@ export function useTimeSeries(
         )
       }
       // Set thinning
-      const startTimeString = queryParams.get('startTime')
-      const endTimeString = queryParams.get('endTime')
-      if (startTimeString !== null && endTimeString !== null) {
-        const startTime = DateTime.fromISO(startTimeString, {
-          zone: 'UTC',
-        })
-        const endTime = DateTime.fromISO(endTimeString, {
-          zone: 'UTC',
-        })
-        const timeStepPerPixel = Math.round(
-          Interval.fromDateTimes(startTime, endTime).length() /
-            window.outerWidth /
-            2,
-        )
-        url.searchParams.set('thinning', `${timeStepPerPixel}`)
+      if (_options?.thinning) {
+        const startTimeString = queryParams.get('startTime')
+        const endTimeString = queryParams.get('endTime')
+        if (startTimeString !== null && endTimeString !== null) {
+          const startTime = DateTime.fromISO(startTimeString, {
+            zone: 'UTC',
+          })
+          const endTime = DateTime.fromISO(endTimeString, {
+            zone: 'UTC',
+          })
+          const timeStepPerPixel = Math.round(
+            Interval.fromDateTimes(startTime, endTime).length() /
+              window.outerWidth /
+              2,
+          )
+          url.searchParams.set('thinning', `${timeStepPerPixel}`)
+        }
       }
 
       const relativeUrl = request.request.split('?')[0] + url.search
