@@ -203,7 +203,7 @@ const isLoading = ref(false)
 let debouncedSetLayerOptions!: () => void
 
 const legendLayerName = ref(props.layerName)
-const legendLayerStyles = ref<Style[]>([])
+const legendLayerStyles = ref<Style[]>()
 const settings = useUserSettingsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -327,11 +327,15 @@ watch(
         new Date(layer?.keywordList[0].forecastTime as string) ?? null
     }
     legendLayerName.value = props.layerName
-    legendLayerStyles.value = props.layerCapabilities?.styles ?? [
-      {
-        title: props.layerName,
-      },
-    ]
+    legendLayerStyles.value = props.layerCapabilities?.styles
+    if (legendLayerStyles.value === undefined && props.layerName) {
+      legendLayerStyles.value = [
+        {
+          title: props.layerName,
+        },
+      ]
+    }
+
     if (layer?.elevation) {
       const max = layer.elevation.upperValue ?? 0
       const min = layer.elevation.lowerValue ?? 0
