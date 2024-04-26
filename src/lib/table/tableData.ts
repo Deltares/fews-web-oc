@@ -13,6 +13,7 @@ export interface TableSeriesData extends SeriesData {
   tooltip: boolean
   flagOrigin?: TimeSeriesFlag['source']
   flagQuality?: TimeSeriesFlag['quality']
+  flagEdit?: TimeSeriesEvent['flagEdit']
 }
 
 export interface TableData {
@@ -75,6 +76,7 @@ export function createTableData(
             if (flag !== undefined) {
               eventResult.flagOrigin = flag.source
               eventResult.flagQuality = flag.quality
+              eventResult.flagEdit = qualityToFlagEdit(flag.quality)
             }
           }
           pointers[j]++
@@ -85,6 +87,26 @@ export function createTableData(
     return result
   })
   return data
+}
+
+/**
+ * Converts a quality string to a flag edit string.
+ * @param {TimeSeriesFlag['quality']} quality - The quality string to be converted.
+ * @returns {TimeSeriesEvent['flagEdit']} - The flag edit string.
+ */
+function qualityToFlagEdit(
+  quality: TimeSeriesFlag['quality'],
+): TimeSeriesEvent['flagEdit'] {
+  switch (quality) {
+    case 'RELIABLE':
+      return 'Reliable'
+    case 'DOUBTFUL':
+      return 'Doubtful'
+    case 'UNRELIABLE':
+      return 'Unreliable'
+    default:
+      return undefined
+  }
 }
 
 /**
@@ -124,7 +146,7 @@ export function tableDataToTimeSeries(
           time: piTime,
           value: tableDatum.y?.toString() ?? '',
           flag: tableDatum.flag,
-          flagSource: tableDatum.flagSource,
+          flagEdit: tableDatum.flagEdit,
           comment: tableDatum.comment,
         }
         if (newTimeSeriesData[key] === undefined) {

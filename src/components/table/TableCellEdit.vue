@@ -6,20 +6,16 @@
       class="table-cell-edit"
       type="number"
       placeholder="value"
-      @change="(event) => editValue(event, currentItem.y)"
+      @change="editItem"
     />
     <select
       :ref="`${props.item.date}-${props.id}-flagquality`"
       class="table-cell-edit"
-      v-model="currentItem.flagQuality"
-      @change="(event) => editFlagQuality(event)"
+      v-model="currentItem.flagEdit"
+      @change="editItem"
     >
-      <option
-        v-for="flagQuality in store.flagQualities"
-        :key="flagQuality as string"
-        :value="flagQuality"
-      >
-        {{ flagQuality }}
+      <option v-for="flagEdit in possibleFlagEdits" :key="flagEdit" :value="flagEdit">
+        {{ flagEdit }}
       </option>
     </select>
     <input
@@ -35,9 +31,20 @@
 
 <script setup lang="ts">
 import type { TableData, TableSeriesData } from '@/lib/table/tableData'
-import { useFewsPropertiesStore } from '@/stores/fewsProperties'
-import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 import { ref } from 'vue'
+
+// Required for TS to enforce the exact values of the flagEdit field
+const tempPossibleFlagEdits: Record<
+  NonNullable<TableSeriesData['flagEdit']>,
+  undefined
+> = {
+  Reliable: undefined,
+  Doubtful: undefined,
+  Unreliable: undefined,
+  'Accumulation Reset': undefined,
+  'Persistent Unreliable': undefined,
+}
+const possibleFlagEdits = Object.keys(tempPossibleFlagEdits)
 
 interface Props {
   id: string
@@ -52,41 +59,12 @@ const currentItem = ref<Partial<TableSeriesData>>({
   ...(props.item[props.id] as Partial<TableSeriesData>),
 })
 
-const store = useFewsPropertiesStore()
-
 function editItem() {
-  const flag = store.flags?.find(
-    (flag) =>
-      flag.source === currentItem.value.flagOrigin &&
-      flag.quality === currentItem.value.flagQuality,
-  )
-  if (flag) {
-    currentItem.value.flag = flag.flag as TimeSeriesEvent['flag']
-  }
   const updatedItem = {
     date: props.item.date,
     [props.id]: currentItem.value,
   }
   emit('update:item', updatedItem)
-}
-
-function editValue(event: Event, value: number | null | undefined) {
-  const oldItem = props.item[props.id] as Partial<TableSeriesData>
-  if (oldItem.y === null || oldItem.y === undefined) {
-    // User adds new value
-    currentItem.value.flagOrigin = 'COMPLETED'
-    currentItem.value.flagQuality = 'RELIABLE'
-  } else {
-    // User changes existing value
-    currentItem.value.flagOrigin = 'CORRECTED'
-  }
-  currentItem.value.flagSource = 'MAN'
-  editItem()
-}
-
-function editFlagQuality(event: Event) {
-  currentItem.value.flagSource = 'MAN'
-  editItem()
 }
 </script>
 
@@ -121,7 +99,7 @@ select.table-cell-edit {
   display: flex;
   line-height: 100%;
   padding: 4px;
-  min-width: 12ch;
+  min-width: 16ch;
   color: currentColor;
 }
 
