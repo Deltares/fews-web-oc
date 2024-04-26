@@ -384,7 +384,8 @@ function addRowToTimeSeries(
 }
 
 function handleRowClick(e: any, item: any) {
-  if (['INPUT', 'SELECT'].includes(e.target.tagName) || !isEditing.value) return
+  const formElements = ['INPUT', 'SELECT', 'OPTION']
+  if (formElements.includes(e.target.tagName) || !isEditing.value) return
 
   if (selected.value?.date === item.date) {
     clearSelected()
