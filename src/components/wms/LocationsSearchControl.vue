@@ -4,36 +4,55 @@
     :disabled="isExpanded || !selectedLocationId"
   >
     <template #activator="{ props: autocompleteProps }">
-      <v-autocomplete
-        v-bind="autocompleteProps"
-        class="locations-search"
-        v-model="selectedLocation"
-        label="Search Locations"
-        single-line
-        hide-details
-        rounded="0"
-        :items="props.locations"
-        item-title="locationName"
-        item-value="locationId"
-        return-object
-        :style="autocompleteStyle"
-        density="compact"
-        @update:focused="(isFocused) => (isExpanded = isFocused)"
+      <v-chip
+        v-if="hasLocations"
+        class="locations-layer__chip"
+        :class="{ 'pr-0': showLocations }"
+        pill
+        label
       >
-        <template #item="{ item, props }">
-          <v-tooltip :open-delay="tooltipOpenDelay">
-            <template #activator="{ props: itemProps }">
-              <v-list-item
-                v-bind="{ ...itemProps, ...props }"
-                :width="width"
-                :max-width="maxWidth"
-                density="compact"
-              />
-            </template>
-            <span>{{ getTooltipTextFromId(item.value) }}</span>
-          </v-tooltip>
-        </template>
-      </v-autocomplete>
+        <v-btn
+          @click="showLocations = !showLocations"
+          density="compact"
+          variant="plain"
+          icon
+        >
+          <v-icon>{{
+            showLocations ? 'mdi-map-marker' : 'mdi-map-marker-off'
+          }}</v-icon>
+        </v-btn>
+        <v-autocomplete
+          v-if="showLocations"
+          v-bind="autocompleteProps"
+          class="locations-search"
+          v-model="selectedLocation"
+          label="Search Locations"
+          single-line
+          hide-details
+          rounded="0"
+          :items="props.locations"
+          item-title="locationName"
+          item-value="locationId"
+          return-object
+          :style="autocompleteStyle"
+          density="compact"
+          @update:focused="(isFocused) => (isExpanded = isFocused)"
+        >
+          <template #item="{ item, props }">
+            <v-tooltip :open-delay="tooltipOpenDelay">
+              <template #activator="{ props: itemProps }">
+                <v-list-item
+                  v-bind="{ ...itemProps, ...props }"
+                  :width="width"
+                  :max-width="maxWidth"
+                  density="compact"
+                />
+              </template>
+              <span>{{ getTooltipTextFromId(item.value) }}</span>
+            </v-tooltip>
+          </template>
+        </v-autocomplete>
+      </v-chip>
     </template>
     <span>{{ getTooltipText(selectedLocation) }}</span>
   </v-tooltip>
@@ -57,10 +76,16 @@ const props = withDefaults(defineProps<Props>(), {
   tooltipOpenDelay: 500,
 })
 
+const showLocations = defineModel<boolean>('showLocations', { default: true})
+
 const emit = defineEmits(['changeLocationId'])
 
 const isExpanded = ref(false)
 const selectedLocation = ref<Location | null>(null)
+
+const hasLocations = computed(() => {
+  return props.locations?.length
+})
 
 function convertWidthToCss(inputWidth: number | string | undefined) {
   if (inputWidth === undefined) return undefined
@@ -143,5 +168,13 @@ function onSelectLocation(newValue: Location | null) {
 /* Hide horizontal scrollbar in autocomplete dropdown menu on FireFox. */
 .v-autocomplete__content > .v-list {
   overflow-x: hidden !important;
+}
+
+.locations-layer__chip {
+  font-size: 0.825em;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+  background-color: rgba(var(--v-theme-surface), 0.8);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 </style>
