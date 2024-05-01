@@ -52,32 +52,14 @@
         v-model:layer-kind="layerKind"
         v-model:show-layer="showLayer"
       />
-      <v-chip
-        v-if="hasLocations"
-        class="locations-layer__chip"
-        :class="{ 'pr-0': showLocationsLayer }"
-        pill
-        label
-      >
-        <v-btn
-          @click="showLocationsLayer = !showLocationsLayer"
-          density="compact"
-          variant="plain"
-          icon
-        >
-          <v-icon>{{
-            showLocationsLayer ? 'mdi-map-marker' : 'mdi-map-marker-off'
-          }}</v-icon>
-        </v-btn>
-        <LocationsSearchControl
-          v-if="showLocationsLayer"
-          width="50vw"
-          max-width="250"
-          :locations="locations"
-          :selectedLocationId="props.locationId"
-          @changeLocationId="onLocationChange"
-        />
-      </v-chip>
+      <LocationsSearchControl
+        v-model:showLocation="showLocationsLayer"
+        width="50vw"
+        max-width="250"
+        :locations="locations"
+        :selectedLocationId="props.locationId"
+        @changeLocationId="onLocationChange"
+      />
       <BoundingBoxControl
         v-model:active="workflowsStore.isDrawingBoundingBox"
         v-model:boundingBox="workflowsStore.boundingBox"
@@ -456,13 +438,5 @@ function onCoordinateClick(
 .mapcomponent__controls-container {
   position: absolute;
   max-width: 100%;
-}
-
-.locations-layer__chip {
-  font-size: 0.825em;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
-  background-color: rgba(var(--v-theme-surface), 0.8);
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 </style>
