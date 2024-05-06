@@ -135,10 +135,7 @@ function isFilterActionsFilter(
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 function parsePiDateTime(dateTime: ActionsPeriodDate | undefined) {
-  if (!dateTime) {
-    return undefined
-  }
-  return `${dateTime.date}T${dateTime.time}Z`
+  return dateTime ? `${dateTime.date}T${dateTime.time}Z` : dateTime
 }
 
 // use startTime and endTime if set, otherwise use the options from the store, otherwise use the period form the config
