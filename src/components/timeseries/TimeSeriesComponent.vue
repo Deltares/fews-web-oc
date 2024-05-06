@@ -86,6 +86,7 @@ const props = withDefaults(defineProps<Props>(), {
       class: '',
       requests: [],
       subplots: [],
+      period: undefined,
     }
   },
   elevationChartConfig: () => {
@@ -98,6 +99,7 @@ const props = withDefaults(defineProps<Props>(), {
       class: '',
       requests: [],
       subplots: [],
+      period: undefined,
     }
   },
   displayType: DisplayType.TimeSeriesChart,

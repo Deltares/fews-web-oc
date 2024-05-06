@@ -62,6 +62,7 @@ function actionsResponseToDisplayConfig(
       class: 'singles',
       index: timeSeriesDisplayIndex,
       requests: result.requests,
+      period: result.config.timeSeriesDisplay.period,
       subplots,
     }
     displays.push(display)
