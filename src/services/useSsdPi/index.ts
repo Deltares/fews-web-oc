@@ -74,6 +74,7 @@ export function useSsdPi(
         title,
         class: 'singles',
         requests: result.requests,
+        period: undefined,
         subplots,
       }
       _displays.push(display)

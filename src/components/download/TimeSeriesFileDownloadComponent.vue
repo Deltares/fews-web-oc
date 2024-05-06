@@ -46,6 +46,7 @@
 
 <script lang="ts" setup>
 import {
+  ActionsPeriodDate,
   DocumentFormat,
   filterActionsFilter,
   TimeSeriesFilter,
@@ -133,15 +134,33 @@ function isFilterActionsFilter(
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
+function parsePiDateTime(dateTime: ActionsPeriodDate | undefined) {
+  if (!dateTime) {
+    return undefined
+  }
+  return `${dateTime.date}T${dateTime.time}Z`
+}
+
+// use startTime and endTime if set, otherwise use the options from the store, otherwise use the period form the config
 function determineViewPeriod(): string {
   const _options = toValue(viewPeriodFromStore)
   let viewPeriod: string = ''
-  const startDate: Date | null | undefined = props.startTime
+  let startDate: Date | null | undefined = props.startTime
     ? props.startTime
     : _options?.startTime
-  const endDate: Date | null | undefined = props.endTime
+  let endDate: Date | null | undefined = props.endTime
     ? props.endTime
     : _options?.endTime
+
+  if (!startDate) {
+    const parsedStartDate = parsePiDateTime(props.config?.period?.startDate)
+    if (parsedStartDate) startDate = new Date(parsedStartDate)
+  }
+  if (!endDate) {
+    const parsedEndDate = parsePiDateTime(props.config?.period?.endDate)
+    if (parsedEndDate) endDate = new Date(parsedEndDate)
+  }
+
   if (startDate || endDate) {
     // if either startTime or endTime is set, use it.
     if (startDate) {
@@ -198,6 +217,7 @@ const downloadFile = (downloadFormat: string) => {
       return
     }
   }
+
   const timeSeriesFilter: TimeSeriesTopologyActionsFilter = {
     documentFormat: downloadFormat,
     nodeId: props.config?.nodeId ?? '',
