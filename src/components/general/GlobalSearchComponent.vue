@@ -32,7 +32,7 @@
       <v-card-text class="pa-0">
         <v-data-iterator
           :items="state.items"
-          :items-per-page="-1"
+          :items-per-page="200"
           :search="search"
         >
           <template v-slot:header> </template>
@@ -45,6 +45,11 @@
                 >{{ item.raw.name }}</v-list-item
               >
             </v-list>
+          </template>
+          <template v-slot:footer="{ items }">
+            <v-list-item color="primary" v-if="items.length === 200">
+              + {{ state.items.length - 200 }} more locations</v-list-item
+            >
           </template>
         </v-data-iterator>
       </v-card-text>
@@ -64,7 +69,10 @@ const search = ref('')
 const router = useRouter()
 
 function itemClick(item: any) {
-  router.replace({ name: 'TopologySpatialTimeSeriesDisplay', params: { locationId: item.id } })
+  router.replace({
+    name: 'TopologySpatialTimeSeriesDisplay',
+    params: { locationId: item.id },
+  })
   state.active = false
 }
 </script>
