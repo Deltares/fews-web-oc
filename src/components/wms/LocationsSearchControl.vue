@@ -23,9 +23,7 @@
       class="locations-search text-capitalize"
       hide-details
       @click="showLocationsSearch"
-      >{{
-        selectedLocationId ? selectedLocationId : 'Search locations'
-      }}</v-btn
+      >{{ selectedLocationId ? selectedLocationId : 'Search locations' }}</v-btn
     >
   </v-chip>
 </template>
@@ -70,11 +68,17 @@ function getLocationFromId(locationId: string | null) {
 }
 
 function showLocationsSearch() {
-  state.items = props.locations.map((l) => {
-    return { id: l.locationId, name: l.locationName ?? '' }
-  })
   state.active = true
 }
+
+watch(
+  () => props.locations,
+  () => {
+    state.items = props.locations.map((l) => {
+      return { id: l.locationId, name: l.locationName ?? '' }
+    })
+  },
+)
 
 watch(
   () => props.selectedLocationId,
