@@ -44,7 +44,10 @@ export function createTableData(
   seriesIds: string[],
 ): TableData[] {
   if (chartSeriesArray === undefined) return []
-  const dateTimes = createDateTimes(chartSeriesArray, seriesRecord)
+  const dateTimes = createDateTimes(
+    chartSeriesArray.map((s) => s.dataResources[0]),
+    seriesRecord,
+  )
 
   const chartSeries = uniqWith(
     chartSeriesArray.filter((s) => seriesIds.includes(s.id)),
@@ -142,21 +145,21 @@ export function tableDataToTimeSeries(
  * @param {Record<string, Series>} seriesRecord - The record of the time series.
  * @returns {Date[]} An array of unique dates from the data in the chart series.
  */
-function createDateTimes(
-  chartSeriesArray: ChartSeries[] | undefined,
+export function createDateTimes(
+  dataResources: string[],
   seriesRecord: Record<string, Series>,
 ): Date[] {
-  if (chartSeriesArray === undefined) {
+  if (dataResources === undefined) {
     return []
   }
   const dates: Date[] = []
-  for (const chartSeries of chartSeriesArray) {
-    const series = seriesRecord[chartSeries.dataResources[0]]
+  for (const dataResource of dataResources) {
+    const series = seriesRecord[dataResource]
     if (series !== undefined && series.data !== undefined) {
       dates.push(...series.data.map((d: any) => d.x))
     }
   }
-  return sortUniqueDates(dates)
+  return sortedUniqueDates(dates)
 }
 
 /**
@@ -165,7 +168,7 @@ function createDateTimes(
  * @param {Date[]} dates - The array of dates to be sorted and made unique.
  * @returns {Date[]} A new array of dates sorted in ascending order without any duplicates.
  */
-function sortUniqueDates(dates: Date[]): Date[] {
+export function sortedUniqueDates(dates: Date[]): Date[] {
   if (dates.length === 0) return dates
   dates.sort((a, b) => {
     return a.getTime() - b.getTime()

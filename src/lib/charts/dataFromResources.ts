@@ -1,5 +1,6 @@
+import { createDateTimes } from '../table/tableData'
 import { Series } from '../timeseries/timeSeries'
-import { SeriesArrayData } from '../timeseries/types/SeriesData'
+import { SeriesArrayData, TimeSeriesData } from '../timeseries/types/SeriesData'
 
 /**
  * Retrieves a single array from the specified data resources. When multiple data resources are specified, the data is combined into a single array.
@@ -8,36 +9,45 @@ import { SeriesArrayData } from '../timeseries/types/SeriesData'
  * @returns An array of SeriesData or SeriesArrayData objects.
  */
 export function dataFromResources(
-  dataResources: string[],
+  dataResourceIds: string[],
   series: Record<string, Series>,
 ) {
-  if (dataResources.length > 1) {
+  if (dataResourceIds.length > 1) {
     let data: SeriesArrayData[] = []
     let allFound = true
-    for (const resourceId of dataResources) {
+    for (const resourceId of dataResourceIds) {
       if (series[resourceId] === undefined) {
         allFound = false
         break
       }
     }
     if (allFound) {
-      const seriesData = series[dataResources[0]]
-      for (const t of seriesData.data!) {
-        data.push({ x: t.x, y: [t.y], flag: t.flag })
-      }
-      for (let i = 1; i < dataResources.length; i++) {
-        const resourceId = dataResources[i]
-        for (let t in data) {
-          const dataItem = series[resourceId].data
-          if (dataItem) {
-            data[t].y.push(dataItem[t].y)
+      const dateTimes = createDateTimes(dataResourceIds, series)
+      const pointers = Array(dataResourceIds.length).fill(0)
+      data = dateTimes.map((date: Date) => {
+        const result: any = { x: date }
+        const values = Array(dataResourceIds.length).fill(null)
+        const flags = Array(dataResourceIds.length).fill(undefined)
+        for (const j in dataResourceIds) {
+          const resourceId = dataResourceIds[j]
+          const s = series[resourceId]
+          if (s && s.data) {
+            const event = s.data[pointers[j]] as TimeSeriesData
+            if (event && date.getTime() === event.x.getTime()) {
+              values[j] = event.y
+              flags[j] = event.flag
+              pointers[j]++
+            }
           }
         }
-      }
+        result.y = values
+        result.flag = flags
+        return result
+      })
     }
     return data
   } else {
-    const seriesData = series[dataResources[0]]
+    const seriesData = series[dataResourceIds[0]]
     if (seriesData?.data !== undefined) return seriesData.data
     else return []
   }
