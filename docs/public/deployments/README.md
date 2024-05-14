@@ -100,6 +100,26 @@ unzip the weboc.zip file into the Nginx html folder:
 
 the WebOC will be available in the root at port 80: http://mynginxserver/
 
+## Apache HTTPD
+
+The Delft-FEWS Web OC can be deployed in Apache HTTPD as follows:
+
+```xml
+
+<VirtualHost *:80>
+        ServerName localhost
+        DocumentRoot "/var/www/weboc"
+
+<Directory /var/www/weboc/>
+        RewriteEngine on
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteRule ^ index.html [L]
+        </Directory>
+        </VirtualHost>
+
+```
+
 ## Access to FewsWebServices
 
 Please note that every user of Web OC requires direct access to the FewsWebServices endpoints by default. If needed, FewsWebServices requests can be re-directed. Please find an apache example below.
@@ -112,3 +132,5 @@ Please note that every user of Web OC requires direct access to the FewsWebServi
 </Location>
 
 ```
+
+
