@@ -201,7 +201,6 @@ const addToChart = (chartSeries: ChartSeries) => {
   let chart
   switch (chartSeries.type) {
     case 'dummy':
-      console.log('type', chartSeries.type)
       break
     case 'line':
       chart = new ChartLine(data, {})
