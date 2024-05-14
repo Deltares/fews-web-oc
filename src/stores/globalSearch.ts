@@ -6,12 +6,10 @@ interface GlobalSearchState {
   items: GlobalSearchItem[]
 }
 
-
 interface GlobalSearchItem {
-    id: string
-    name: string
+  id: string
+  name: string
 }
-  
 
 const useGlobalSearchState = defineStore('globalSearchState', {
   state: (): GlobalSearchState => ({
