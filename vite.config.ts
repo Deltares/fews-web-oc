@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 import { execSync } from 'child_process'
+import vuetify from 'vite-plugin-vuetify'
 
 const commitHash = execSync('git rev-parse --short HEAD').toString()
 const commitTag = execSync('git tag --points-at HEAD').toString()
@@ -43,6 +44,9 @@ export default defineConfig(({ mode }) => {
             // ...
           },
         },
+      }),
+      vuetify({
+        autoImport: true,
       }),
     ],
     optimizeDeps: {
