@@ -1,1 +1,6 @@
-@use 'vuetify'
+$body-font-family: 'RO Sans', sans-serif;
+
+@use 'vuetify' with (
+  $body-font-family: $body-font-family,
+  $heading-font-family: $body-font-family
+);
