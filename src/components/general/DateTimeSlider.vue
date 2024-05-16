@@ -349,6 +349,10 @@ function formatSpeed(speed: number) {
 </script>
 
 <style scoped>
+.datetime-slider {
+  background: rgb(var(--v-theme-surface));
+}
+
 .slider-container {
   padding: 0px 10px;
 }
