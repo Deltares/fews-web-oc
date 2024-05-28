@@ -37,35 +37,41 @@
   </MapComponent>
   <div class="mapcomponent__controls-container">
     <v-chip-group class="px-2">
-      <InformationPanel
-        v-if="layerOptions"
-        :layerTitle="props.layerCapabilities?.title"
-        :isLoading="isLoading"
-        :currentTime="currentTime"
-        :forecastTime="forecastTime"
-        :completelyMissing="props.layerCapabilities?.completelyMissing ?? false"
-        :firstValueTime="
-          new Date(props.layerCapabilities?.firstValueTime ?? '')
-        "
-        :lastValueTime="new Date(props.layerCapabilities?.lastValueTime ?? '')"
-        :canUseStreamlines="canUseStreamlines"
-        v-model:layer-kind="layerKind"
-        v-model:show-layer="showLayer"
-      />
-      <LocationsSearchControl
-        v-model:showLocation="showLocationsLayer"
-        width="50vw"
-        max-width="250"
-        :locations="locations"
-        :selectedLocationId="props.locationId"
-        @changeLocationId="onLocationChange"
-      />
       <BoundingBoxControl
         v-model:active="workflowsStore.isDrawingBoundingBox"
         v-model:boundingBox="workflowsStore.boundingBox"
         @finish="workflowsStore.isDrawingBoundingBox = false"
         v-if="workflowsStore.isDrawingBoundingBox"
       />
+      <template v-else>
+        <InformationPanel
+          v-if="layerOptions"
+          :layerTitle="props.layerCapabilities?.title"
+          :isLoading="isLoading"
+          :currentTime="currentTime"
+          :forecastTime="forecastTime"
+          :completelyMissing="
+            props.layerCapabilities?.completelyMissing ?? false
+          "
+          :firstValueTime="
+            new Date(props.layerCapabilities?.firstValueTime ?? '')
+          "
+          :lastValueTime="
+            new Date(props.layerCapabilities?.lastValueTime ?? '')
+          "
+          :canUseStreamlines="canUseStreamlines"
+          v-model:layer-kind="layerKind"
+          v-model:show-layer="showLayer"
+        />
+        <LocationsSearchControl
+          v-model:showLocation="showLocationsLayer"
+          width="50vw"
+          max-width="250"
+          :locations="locations"
+          :selectedLocationId="props.locationId"
+          @changeLocationId="onLocationChange"
+        />
+      </template>
     </v-chip-group>
   </div>
   <ElevationSlider
