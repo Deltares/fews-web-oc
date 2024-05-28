@@ -61,7 +61,8 @@ const layoutSymbolSpecification = {
   'symbol-sort-key': 1,
 }
 
-const layoutTextSpecification = {
+// Set to any to avoid TypeScript error
+const layoutTextSpecification: any = {
   'text-field': ['get', 'locationName'],
   'text-size': 12,
   'text-overlap': 'never',
