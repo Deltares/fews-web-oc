@@ -1,5 +1,9 @@
 <template>
-  <div id="legend" :class="isVisible ? 'invisible' : ''">
+  <div
+    id="legend"
+    :class="isVisible ? 'invisible' : ''"
+    class="legend_container"
+  >
     <svg id="colourbar" class="colourbar"></svg>
     <LegendInput
       parentId="min-legend"
@@ -49,7 +53,7 @@ onMounted(() => {
   const svg = d3.select('#colourbar')
   group = svg
     .append('g')
-    .attr('transform', 'translate(5, 55)')
+    .attr('transform', 'translate(25, 25)')
     .style('pointer-events', 'visiblePainted')
   updateColourBar()
 })
@@ -92,17 +96,15 @@ function updateColourBar() {
 
 .colourbar {
   width: 300px;
-  height: 85px;
+  height: 60px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   text-shadow:
-    rgb(var(--v-theme-background)) 0px 0px 1px,
-    rgb(var(--v-theme-background)) 0px 0px 1px,
-    rgb(var(--v-theme-background)) 0px 0px 1px,
-    rgb(var(--v-theme-background)) 0px 0px 1px,
-    rgb(var(--v-theme-background)) 0px 0px 1px,
-    rgb(var(--v-theme-background)) 0px 0px 1px;
+    rgb(var(--v-theme-background)) 1px 1px 1px,
+    rgb(var(--v-theme-background)) -1px 1px 1px,
+    rgb(var(--v-theme-background)) 1px -1px 1px,
+    rgb(var(--v-theme-background)) -1px -1px 1px;
 }
 
 .colourbar :deep(.axis .tick line) {
