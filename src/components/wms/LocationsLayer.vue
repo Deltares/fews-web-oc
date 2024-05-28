@@ -12,6 +12,11 @@
       :layer-id="locationsCircleLayerId"
       :paint="paintCircleSpecification"
     />
+    <mgl-symbol-layer
+      :layer-id="locationsTextLayerId"
+      :layout="layoutTextSpecification"
+      :paint="paintTextSpecification"
+    />
   </mgl-geo-json-source>
 </template>
 
@@ -29,9 +34,10 @@ import {
   MapLayerTouchEvent,
   MapSourceDataEvent,
 } from 'maplibre-gl'
-import { watch, onBeforeUnmount } from 'vue'
+import { watch, onBeforeUnmount, computed } from 'vue'
 import { onBeforeMount } from 'vue'
 import { addLocationIconsToMap } from '@/lib/location-icons'
+import { useDark } from '@vueuse/core'
 
 interface Props {
   locationsGeoJson: FeatureCollection<Geometry, Location>
@@ -48,10 +54,28 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['click'])
 
+const isDark = useDark()
+
 const layoutSymbolSpecification = {
   'icon-allow-overlap': true,
   'symbol-sort-key': 1,
 }
+
+const layoutTextSpecification = {
+  'text-field': ['get', 'locationName'],
+  'text-size': 12,
+  'text-overlap': 'never',
+  'text-padding': 10,
+  'text-justify': 'auto',
+  'text-variable-anchor': ['right', 'left'],
+  'text-max-width': 15,
+}
+
+const paintTextSpecification = computed(() => {
+  return {
+    'text-color': isDark.value ? 'rgb(255,255,255)' : 'rgb(0,0,0)',
+  }
+})
 
 const defaultOpacity = 0.75
 
@@ -71,6 +95,7 @@ const { map } = useMap()
 
 const locationsCircleLayerId = 'location-circle-layer'
 const locationsSymbolLayerId = 'location-symbol-layer'
+const locationsTextLayerId = 'location-text-layer'
 const locationsSourceId = 'location-source'
 
 watch(
