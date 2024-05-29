@@ -64,7 +64,7 @@
           v-model:show-layer="showLayer"
         />
         <LocationsSearchControl
-          v-model:showLocation="showLocationsLayer"
+          v-model:showLocations="showLocationsLayer"
           width="50vw"
           max-width="250"
           :locations="locations"
