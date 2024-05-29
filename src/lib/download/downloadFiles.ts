@@ -84,7 +84,13 @@ export async function downloadFileWithXhr(url: string): Promise<void> {
         return
       }
 
-      const fileName = url.substring(url.lastIndexOf('/'))
+      const headerFileName = req
+        .getResponseHeader('Content-Disposition')
+        ?.split('filename=')[1]
+        .split(';')[0]
+
+      const fileName = headerFileName ?? url.substring(url.lastIndexOf('/'))
+
       const blobUrl = window.URL.createObjectURL(req.response)
 
       const a = document.createElement('a')
