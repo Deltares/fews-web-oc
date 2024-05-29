@@ -7,6 +7,8 @@ interface ConfigState {
   version: string
   components: { [key: string]: WebOcComponent }
   general: WebOcGeneralConfig
+  isInitialized: boolean
+  errors: string
 }
 
 function getMenuIcon(componentConfig: WebOcComponent): string {
@@ -34,6 +36,8 @@ const useConfigStore = defineStore('config', {
     version: '0.1.0',
     components: {},
     general: {},
+    isInitialized: false,
+    errors: '',
   }),
 
   actions: {
@@ -57,6 +61,8 @@ const useConfigStore = defineStore('config', {
   },
   getters: {
     activeComponents: (state) => {
+      console.log('state', state.isInitialized)
+      if (state.isInitialized === false) return []
       return Object.values(state.components)
         .filter((component) => component.showInNavigationMenu ?? true)
         .map((component: any) => {

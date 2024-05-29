@@ -1,6 +1,7 @@
 import {
   createRouter,
   createWebHistory,
+  RouteLocationNamedRaw,
   RouteLocationNormalized,
   RouteRecordNormalized,
   RouteRecordRaw,
@@ -230,6 +231,7 @@ async function addDynamicRoutes() {
   const store = useConfigStore()
   await store.setFewsConfig()
   Object.values(store.components).forEach((component: any) => {
+    console.log('adding route', component.type)
     const route = dynamicRoutes.find((route) => route.name === component.type)
     if (route !== undefined) {
       router.addRoute(route)
@@ -248,6 +250,7 @@ async function addDynamicRoutes() {
     }
   })
   if (store.defaultComponent !== undefined) {
+    console.log('setting default route', store.defaultComponent.type)
     if (router.hasRoute(store.defaultComponent.type)) {
       router.removeRoute('Default')
       router.addRoute({
@@ -257,15 +260,22 @@ async function addDynamicRoutes() {
       })
     }
   }
+  store.isInitialized = true
 }
 
-function defaultRouteParams(to: RouteLocationNormalized) {
+function defaultRouteParams(
+  to: RouteLocationNormalized | RouteLocationNamedRaw,
+) {
   const store = useConfigStore()
-  const route = to.name === undefined ? router.resolve(to) : to
+  console.log('to', to)
+  const route = router.resolve(to)
+  console.log('route', route.name)
   const component = store.getComponentByType(route.name as string)
+  console.log('defaultPath', store)
   if (component !== undefined) {
     const defaultPath = component.defaultPath
-    const params = to.params
+    console.log('defaultPath', defaultPath)
+    const params = route.params
     let requiresRedirect = false
     for (const key in defaultPath) {
       if (defaultPath[key] !== undefined) {
@@ -287,8 +297,8 @@ function defaultRouteParams(to: RouteLocationNormalized) {
     }
 
     if (requiresRedirect) {
-      to.params = params
-      return to
+      route.params = params
+      return route
     }
   }
   return
@@ -307,19 +317,37 @@ router.beforeEach(async (to, from) => {
     }
   }
 
+  console.log('beforeEach 1')
   if (configManager.authenticationIsEnabled) {
     const redirectToLogin = await handleAuthorization(to)
     if (redirectToLogin) return redirectToLogin
   }
 
+  console.log('beforeEach 2')
   if (!routesAreInitialized) {
-    await addDynamicRoutes()
-    routesAreInitialized = true
-    if (redirect) {
-      return redirect
-    }
-    return to
+    addDynamicRoutes().then(() => {
+      console.log('beforeEach 2.1', redirect)
+      routesAreInitialized = true
+      if (redirect) {
+        console.log('redirecting to', redirect)
+        router.push(redirect)
+      } else {
+        console.log('redirecting to default route')
+        const store = useConfigStore()
+        const defaultComponent = store.general.defaultComponent
+        if (defaultComponent) {
+          const name =
+            defaultComponent.charAt(0).toUpperCase() + defaultComponent.slice(1)
+          const newPath = defaultRouteParams({ name })
+          console.log('newPath', newPath)
+          router.push(newPath)
+        }
+      }
+    })
+    console.log('return')
+    return
   }
+  console.log('beforeEach 3')
   return defaultRouteParams(to)
 })
 
