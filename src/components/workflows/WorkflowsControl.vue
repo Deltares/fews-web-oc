@@ -375,14 +375,21 @@ async function startWorkflow() {
       : getRunTaskFilter()
 
   let error = false
-  workflowsStore.startWorkflow(workflowType, filter).catch((e) => {
-    error = true
-    if (typeof e === 'string') {
-      showErrorMessage(e)
-    } else if (e instanceof Error) {
-      showErrorMessage(e.message)
-    }
-  })
+  workflowsStore
+    .startWorkflow(workflowType, filter)
+    .catch((e) => {
+      error = true
+      if (typeof e === 'string') {
+        showErrorMessage(e)
+      } else if (e instanceof Error) {
+        showErrorMessage(e.message)
+      }
+    })
+    .then(() => {
+      if (workflowType === WorkflowType.ProcessData) {
+        showSuccessMessage('Download completed')
+      }
+    })
 
   setTimeout(() => {
     if (!error) {
