@@ -19,22 +19,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-
-import { BoundingBox, boundingBoxToString } from '@/services/useBoundingBox'
+import { useBoundingBox } from '@/services/useBoundingBox'
 
 import DrawBoundingBoxControl from '@/components/map/DrawBoundingBoxControl.vue'
 
-const boundingBox = defineModel<BoundingBox | null>('boundingBox', {
-  default: null,
-})
+const { boundingBox, boundingBoxString } = useBoundingBox(1, 1)
+
 const isActive = defineModel<boolean>('active', { default: false })
 
 const emit = defineEmits(['finish'])
-
-const boundingBoxString = computed(() =>
-  boundingBox.value ? boundingBoxToString(boundingBox.value) : '—',
-)
 
 function onFinish(): void {
   isActive.value = false

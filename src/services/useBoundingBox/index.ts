@@ -58,15 +58,14 @@ export function boundingBoxToString(
   longitudeStepSize: number,
   latitudeStepSize: number,
 ): string {
-  const asPrecision = (
-    value: number,
-    step: number,
-  ): string => {
-  const nIntegers = Math.floor(Math.log10(Math.abs(value)))
-  const stepStrs = step !== undefined ? step.toString().split(".") : "1"
-  const nDecimalPlaces = stepStrs.length > 1 ? stepStrs[1].length : 2
-  const nPrecision = Math.round(Math.min(Math.max(nIntegers + nDecimalPlaces, 2), 99))
-  return value.toPrecision(nPrecision)
+  const asPrecision = (value: number, step: number): string => {
+    const nIntegers = Math.floor(Math.log10(Math.abs(value)))
+    const stepStrs = step !== undefined ? step.toString().split('.') : '1'
+    const nDecimalPlaces = stepStrs.length > 1 ? stepStrs[1].length : 2
+    const nPrecision = Math.round(
+      Math.min(Math.max(nIntegers + nDecimalPlaces, 2), 99),
+    )
+    return value.toPrecision(nPrecision)
   }
   const lonMinStr = asPrecision(boundingBox.lonMin, longitudeStepSize)
   const lonMaxStr = asPrecision(boundingBox.lonMax, longitudeStepSize)
@@ -107,7 +106,11 @@ export function useBoundingBox(
   })
   const boundingBoxString = computed(() => {
     return _boundingBox.value !== null
-      ? boundingBoxToString(_boundingBox.value, longitudeStepSize.value, latitudeStepSize.value)
+      ? boundingBoxToString(
+          _boundingBox.value,
+          longitudeStepSize.value,
+          latitudeStepSize.value,
+        )
       : ''
   })
 
