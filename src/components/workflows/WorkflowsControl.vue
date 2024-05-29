@@ -58,7 +58,7 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn variant="flat" color="primary" @click="startWorkflow">
-          Run
+          Submit
         </v-btn>
         <v-btn @click="() => (workflowDialog = false)">Cancel</v-btn>
       </v-card-actions>
