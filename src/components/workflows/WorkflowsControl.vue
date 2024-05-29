@@ -105,6 +105,7 @@ import {
   WorkflowType,
   useWorkflowsStore,
 } from '@/stores/workflows'
+import { generateDefaultUISchema, generateJsonSchema } from './workflowUtils'
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[] | null
@@ -280,17 +281,49 @@ function toValue(
 
 const formSchema = asyncComputed(async () => {
   if (!currentWorkflow.value) return undefined
-  return getJson(`${currentWorkflow.value.secondaryWorkflowId}.schema.json`)
-})
-const formUISchema = asyncComputed(async () => {
-  if (!currentWorkflow.value) return undefined
-  return getJson(`${currentWorkflow.value.secondaryWorkflowId}.ui-schema.json`)
+  return getSchema(`${currentWorkflow.value.secondaryWorkflowId}.schema.json`)
 })
 
-async function getJson(file: string) {
+const formUISchema = asyncComputed(async () => {
+  if (!currentWorkflow.value) return undefined
+  return getUISchema(
+    `${currentWorkflow.value.secondaryWorkflowId}.ui-schema.json`,
+  )
+})
+
+async function getUISchema(file: string) {
+  try {
+    const schema = await getFile(file)
+    return schema.json()
+  } catch (error) {
+    const workflowProperties = currentWorkflow.value?.properties
+    if (workflowProperties !== undefined)
+      return generateDefaultUISchema(workflowProperties)
+  }
+}
+
+async function getSchema(file: string) {
+  try {
+    const schema = await getFile(file)
+    return schema.json()
+  } catch (error) {
+    const workflowProperties = currentWorkflow.value?.properties
+    if (workflowProperties !== undefined)
+      return generateJsonSchema(workflowProperties)
+  }
+}
+
+async function getFile(file: string) {
   const url = getResourcesStaticUrl(file)
-  const data = await fetch(url)
-  return data.json()
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${url}`)
+    }
+    return response
+  } catch (error) {
+    throw new Error(`Failed to fetch ${url}`)
+  }
 }
 
 function onFormChange(event: any) {
