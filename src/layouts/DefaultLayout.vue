@@ -146,6 +146,14 @@
       <SplashScreen v-if="splashSrc" :img-url="splashSrc" :version="version" />
       <GlobalSearchComponent />
     </v-main>
+    <v-snackbar
+      v-model="showBackendError"
+      timeout="-1"
+      variant="text"
+      location="top"
+    >
+      <v-alert type="error">Backend is unavailable</v-alert>
+    </v-snackbar>
   </v-layout>
 </template>
 
@@ -162,9 +170,10 @@ import SplashScreen from '@/components/general/SplashScreen.vue'
 import GlobalSearchComponent from '@/components/general/GlobalSearchComponent.vue'
 
 import { configManager } from '@/services/application-config'
-import { getResourcesStaticUrl } from '@/lib/fews-config'
+import { getResourcesStaticUrl, isBackendAvailable } from '@/lib/fews-config'
 import { StyleValue, nextTick } from 'vue'
 import packageConfig from '../../package.json'
+import { asyncComputed } from '@vueuse/core'
 
 const configStore = useConfigStore()
 const alertsStore = useAlertsStore()
@@ -181,6 +190,11 @@ const logoSrc = ref('')
 const splashSrc = ref<string>()
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
+const HEALTH_CHECK_TIMEOUT = 5000
+const showBackendError = asyncComputed(
+  async () => !(await isBackendAvailable(HEALTH_CHECK_TIMEOUT)),
+  false,
+)
 
 function updateAppBarColor() {
   appBarColor.value = getComputedStyle(document.body).getPropertyValue(
