@@ -23,7 +23,9 @@
       class="locations-search text-capitalize"
       hide-details
       @click="showLocationsSearch"
-      >{{ selectedLocationId ? selectedLocation?.locationName : 'Search locations' }}</v-btn
+      >{{
+        selectedLocationId ? selectedLocation?.locationName : 'Search locations'
+      }}</v-btn
     >
   </v-chip>
 </template>
