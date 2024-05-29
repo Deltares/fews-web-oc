@@ -30,7 +30,6 @@
 import { computed, ref, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
-import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import { configManager } from '@/services/application-config'
 import { useRoute, useRouter } from 'vue-router'
 import { findParentRoute } from '@/router'
@@ -174,13 +173,8 @@ function openLocationTimeSeriesDisplay(locationId: string) {
   })
 }
 
-function onCoordinateClick(
-  event: MapLayerMouseEvent | MapLayerTouchEvent,
-): void {
-  openCoordinatesTimeSeriesDisplay(
-    +event.lngLat.lat.toFixed(3),
-    +event.lngLat.lng.toFixed(3),
-  )
+function onCoordinateClick(latitude: number, longitude: number): void {
+  openCoordinatesTimeSeriesDisplay(latitude, longitude)
 }
 
 function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {

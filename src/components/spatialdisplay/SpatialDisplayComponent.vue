@@ -27,7 +27,10 @@
         v-model:range="colourScalesStore.currentScale.range"
       />
     </div>
-    <SelectedCoordinateLayer :geoJson="selectedCoordinateGeoJson" />
+    <SelectedCoordinateLayer
+      :coordinate="selectedCoordinate"
+      @coordinate-moved="onCoordinateMoved"
+    />
     <LocationsLayer
       v-if="showLocationsLayer && hasLocations"
       :locationsGeoJson="geojson"
@@ -118,11 +121,14 @@ import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
 import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
+import {
+  LngLat,
+  type MapLayerMouseEvent,
+  type MapLayerTouchEvent,
+} from 'maplibre-gl'
 import { configManager } from '@/services/application-config'
 import type { Layer, Style } from '@deltares/fews-wms-requests'
 import { LayerKind } from '@/lib/streamlines'
-import { pointToGeoJson } from '@/lib/topology/coordinates'
 import { useColourScalesStore } from '@/stores/colourScales'
 import { useDisplay } from 'vuetify'
 import { useFilterLocations } from '@/services/useFilterLocations'
@@ -279,10 +285,10 @@ watch(
   { immediate: true },
 )
 
-const selectedCoordinateGeoJson = computed(() => {
+const selectedCoordinate = computed(() => {
   if (props.latitude === undefined || props.longitude === undefined) return
 
-  return pointToGeoJson(+props.latitude, +props.longitude)
+  return new LngLat(+props.longitude, +props.latitude)
 })
 
 const hasLocations = computed(() => {
@@ -413,7 +419,15 @@ function setLayerOptions(): void {
 function onCoordinateClick(
   event: MapLayerMouseEvent | MapLayerTouchEvent,
 ): void {
-  emit('coordinateClick', event)
+  emit(
+    'coordinateClick',
+    +event.lngLat.lat.toFixed(3),
+    +event.lngLat.lng.toFixed(3),
+  )
+}
+
+function onCoordinateMoved(lat: number, lng: number): void {
+  emit('coordinateClick', +lat.toFixed(3), +lng.toFixed(3))
 }
 </script>
 
