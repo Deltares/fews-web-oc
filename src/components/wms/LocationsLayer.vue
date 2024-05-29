@@ -12,11 +12,6 @@
       :layer-id="locationsCircleLayerId"
       :paint="paintCircleSpecification"
     />
-    <mgl-symbol-layer
-      :layer-id="locationsTextLayerId"
-      :layout="layoutTextSpecification"
-      :paint="paintTextSpecification"
-    />
   </mgl-geo-json-source>
 </template>
 
@@ -56,33 +51,28 @@ const emit = defineEmits(['click'])
 
 const isDark = useDark()
 
-const layoutSymbolSpecification = {
+// Use any to avoid type errors
+const layoutSymbolSpecification: any = {
   'icon-allow-overlap': true,
   'symbol-sort-key': 1,
-}
-
-// Set to any to avoid TypeScript error
-const layoutTextSpecification: any = {
   'text-field': ['get', 'locationName'],
   'text-size': 12,
   'text-overlap': 'never',
   'text-padding': 10,
   'text-justify': 'auto',
-  'text-variable-anchor': ['right', 'left'],
+  'text-variable-anchor': ['left', 'right'],
+  'text-optional': true,
   'text-max-width': 15,
 }
 
-const paintTextSpecification = computed(() => {
+const defaultOpacity = 0.75
+
+const paintSymbolSpecification = computed(() => {
   return {
+    'icon-opacity': defaultOpacity,
     'text-color': isDark.value ? 'rgb(255,255,255)' : 'rgb(0,0,0)',
   }
 })
-
-const defaultOpacity = 0.75
-
-const paintSymbolSpecification = {
-  'icon-opacity': defaultOpacity,
-}
 
 const paintCircleSpecification = {
   'circle-radius': 5,
@@ -96,7 +86,6 @@ const { map } = useMap()
 
 const locationsCircleLayerId = 'location-circle-layer'
 const locationsSymbolLayerId = 'location-symbol-layer'
-const locationsTextLayerId = 'location-text-layer'
 const locationsSourceId = 'location-source'
 
 watch(
