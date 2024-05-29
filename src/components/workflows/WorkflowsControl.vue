@@ -336,21 +336,30 @@ async function startWorkflow() {
     ? WorkflowType.ProcessData
     : WorkflowType.RunTask
 
-  try {
-    const filter =
-      workflowType === WorkflowType.ProcessData
-        ? getProcessDataFilter()
-        : getRunTaskFilter()
+  const filter =
+    workflowType === WorkflowType.ProcessData
+      ? getProcessDataFilter()
+      : getRunTaskFilter()
 
-    await workflowsStore.startWorkflow(workflowType, filter)
-    showSuccessMessage(
-      'Workflow submitted successfully. Monitor task progress using System Monitor.',
-    )
-  } catch (error) {
-    showErrorMessage((error as Error).message)
-  }
+  let error = false
+  workflowsStore.startWorkflow(workflowType, filter).catch((e) => {
+    error = true
+    if (typeof e === 'string') {
+      showErrorMessage(e)
+    } else if (e instanceof Error) {
+      showErrorMessage(e.message)
+    }
+  })
 
-  workflowDialog.value = false
+  setTimeout(() => {
+    if (!error) {
+      showSuccessMessage(
+        'Workflow submitted successfully. Monitor task progress using System Monitor.',
+      )
+
+      workflowDialog.value = false
+    }
+  }, 1000)
 }
 
 function getRunTaskFilter(): PartialRunTaskFilter {
