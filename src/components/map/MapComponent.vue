@@ -56,12 +56,3 @@ function transformRequest(
   }
 }
 </script>
-
-<style scoped>
-:deep(.maplibregl-ctrl-scale) {
-  font-family: var(--font-family);
-  background-color: rgba(var(--v-theme-surface), 0.8);
-  border-color: rgba(var(--v-border-color), 0.5);
-  color: rgba(var(--v-theme-on-surface), 0.75);
-}
-</style>
