@@ -101,10 +101,12 @@ function updateColourBar() {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   text-shadow:
-    rgb(var(--v-theme-background)) 1px 1px 1px,
-    rgb(var(--v-theme-background)) -1px 1px 1px,
-    rgb(var(--v-theme-background)) 1px -1px 1px,
-    rgb(var(--v-theme-background)) -1px -1px 1px;
+    rgb(var(--v-theme-background)) 0px 0px 1px,
+    rgb(var(--v-theme-background)) 0px 0px 2px,
+    rgb(var(--v-theme-background)) 0px 0px 3px,
+    rgb(var(--v-theme-background)) 0px 0px 4px,
+    rgb(var(--v-theme-background)) 0px 0px 5px,
+    rgb(var(--v-theme-background)) 0px 0px 6px;
 }
 
 .colourbar :deep(.axis .tick line) {
