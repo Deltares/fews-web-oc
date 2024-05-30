@@ -315,6 +315,10 @@ watch(canUseStreamlines, (canUse) => {
   if (!canUse) layerKind.value = LayerKind.Static
 })
 
+const offsetBottomControls = computed(() => {
+  return props.times?.length ? '40px' : '0px'
+})
+
 const layerHasElevation = computed(() => {
   return props.layerCapabilities?.elevation !== undefined
 })
@@ -458,5 +462,9 @@ function onCoordinateMoved(lat: number, lng: number): void {
 .mapcomponent__controls-container {
   position: absolute;
   max-width: 100%;
+}
+
+:deep(.maplibregl-ctrl-bottom-right), :deep(.maplibregl-ctrl-bottom-left)  {
+  bottom: v-bind('offsetBottomControls');
 }
 </style>
