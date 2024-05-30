@@ -13,7 +13,7 @@
     :touchZoomRotate="false"
     :touchPitch="false"
   >
-    <mgl-scale-control position="top-right" />
+    <mgl-scale-control position="bottom-right"/>
     <slot></slot>
   </mgl-map>
 </template>
