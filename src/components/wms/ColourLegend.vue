@@ -1,5 +1,5 @@
 <template>
-  <div class="vertical-legend">
+  <div class="map__colour-legend">
     <p>{{ title }}</p>
     <ColourLegendTable :colourMap="colourMap" />
   </div>
@@ -18,16 +18,12 @@ defineProps<Props>()
 </script>
 
 <style scoped>
-.vertical-legend {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+.map__colour-legend {
+  color: white;
   text-rendering: optimizeLegibility;
   text-shadow:
-    rgb(var(--v-theme-background)) 0px 0px 1px,
-    rgb(var(--v-theme-background)) 0px 0px 2px,
-    rgb(var(--v-theme-background)) 0px 0px 3px,
-    rgb(var(--v-theme-background)) 0px 0px 4px,
-    rgb(var(--v-theme-background)) 0px 0px 5px,
-    rgb(var(--v-theme-background)) 0px 0px 6px;
+    black 0px 0px 2px,
+    black 0px 0px 4px,
+    black 0px 0px 6px;
 }
 </style>
