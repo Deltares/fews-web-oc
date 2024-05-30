@@ -1,4 +1,5 @@
 import { DocumentFormat } from '@deltares/fews-pi-requests'
+import { toISOString } from '../date'
 
 function downloadWithLink(url: string, fileName: string) {
   const encodedFileName = encodeURIComponent(fileName)
@@ -67,7 +68,10 @@ export async function downloadFileAttachment(
   }
 }
 
-export async function downloadFileWithXhr(url: string): Promise<void> {
+export async function downloadFileWithXhr(
+  url: string,
+  extension?: string,
+): Promise<void> {
   return new Promise((resolve, reject) => {
     const req = new XMLHttpRequest()
     req.responseType = 'blob'
@@ -89,8 +93,13 @@ export async function downloadFileWithXhr(url: string): Promise<void> {
         ?.split('filename=')[1]
         .split(';')[0]
 
-      const fileName = headerFileName ?? url.substring(url.lastIndexOf('/'))
+      // For when backend does not set 'Access-Control-Expose-Headers: Content-Disposition'
+      const now = toISOString(new Date())
+        .replaceAll('-', '')
+        .replaceAll(':', '')
+      const fallBackFileName = `${now}_DATA${extension ?? ''}`
 
+      const fileName = headerFileName ?? fallBackFileName
       const blobUrl = window.URL.createObjectURL(req.response)
 
       const a = document.createElement('a')
