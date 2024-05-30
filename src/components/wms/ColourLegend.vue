@@ -24,10 +24,10 @@ defineProps<Props>()
   text-rendering: optimizeLegibility;
   text-shadow:
     rgb(var(--v-theme-background)) 0px 0px 1px,
-    rgb(var(--v-theme-background)) 0px 0px 1px,
-    rgb(var(--v-theme-background)) 0px 0px 1px,
-    rgb(var(--v-theme-background)) 0px 0px 1px,
-    rgb(var(--v-theme-background)) 0px 0px 1px,
-    rgb(var(--v-theme-background)) 0px 0px 1px;
+    rgb(var(--v-theme-background)) 0px 0px 2px,
+    rgb(var(--v-theme-background)) 0px 0px 3px,
+    rgb(var(--v-theme-background)) 0px 0px 4px,
+    rgb(var(--v-theme-background)) 0px 0px 5px,
+    rgb(var(--v-theme-background)) 0px 0px 6px;
 }
 </style>
