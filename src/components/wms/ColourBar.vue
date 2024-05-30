@@ -4,7 +4,7 @@
     :class="isVisible ? 'invisible' : ''"
     class="legend_container"
   >
-    <svg id="colourbar" class="colourbar"></svg>
+    <svg ref="colourbarElement" class="map__colour-bar"></svg>
     <LegendInput
       parentId="min-legend"
       v-model:value="range.min"
@@ -43,19 +43,23 @@ const props = withDefaults(defineProps<Props>(), {
 
 const range = defineModel<Range>('range', { required: true })
 
+const colourbarElement = ref<SVGElement>()
+
 const isVisible = ref<boolean>(true)
 
 const isEditingMin = ref<boolean>(false)
 const isEditingMax = ref<boolean>(false)
-let group: d3.Selection<SVGGElement, unknown, HTMLElement, any>
+let group: d3.Selection<SVGGElement, unknown, null, unknown>
 
 onMounted(() => {
-  const svg = d3.select('#colourbar')
-  group = svg
-    .append('g')
-    .attr('transform', 'translate(25, 25)')
-    .style('pointer-events', 'visiblePainted')
-  updateColourBar()
+  if (colourbarElement.value !== undefined) {
+    const svg = d3.select(colourbarElement.value)
+    group = svg
+      .append('g')
+      .attr('transform', 'translate(25, 25)')
+      .style('pointer-events', 'visiblePainted')
+    updateColourBar()
+  }
 })
 
 watch(props, updateColourBar)
@@ -94,25 +98,30 @@ function updateColourBar() {
   display: none;
 }
 
-.colourbar {
+.map__colour-bar {
   width: 300px;
   height: 60px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  text-shadow:
-    rgb(var(--v-theme-background)) 0px 0px 1px,
-    rgb(var(--v-theme-background)) 0px 0px 2px,
-    rgb(var(--v-theme-background)) 0px 0px 3px,
-    rgb(var(--v-theme-background)) 0px 0px 4px,
-    rgb(var(--v-theme-background)) 0px 0px 5px,
-    rgb(var(--v-theme-background)) 0px 0px 6px;
 }
 
-.colourbar :deep(.axis .tick line) {
-  filter: drop-shadow(0px 0px 1px rgb(var(--v-theme-background)))
-    drop-shadow(0px 0px 1px rgb(var(--v-theme-background)))
-    drop-shadow(0px 0px 1px rgb(var(--v-theme-background)));
+.map__colour-bar :deep(text) {
+  fill: white;
+  text-rendering: optimizeLegibility;
+  text-shadow:
+    black 0px 0px 2px,
+    black 0px 0px 4px,
+    black 0px 0px 6px;
+}
+
+.map__colour-bar :deep(.axis .tick line) {
+  stroke: white;
+  filter: drop-shadow(0px 0px 2px black) drop-shadow(0px 0px 4px black)
+    drop-shadow(0px 0px 6px black);
+}
+
+.map__colour-bar :deep(.grid) {
+  stroke: white;
 }
 
 :deep(g) {
