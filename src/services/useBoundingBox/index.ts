@@ -61,7 +61,7 @@ export function boundingBoxToString(
   const asPrecision = (value: number, step: number): string => {
     const stepStrs = step.toString().split('.')
     const nDecimalPlaces = stepStrs.length > 1 ? stepStrs[1].length : 2
-    return value.toFixed(Math.min(Math.max(nDecimalPlaces, 100), 1))
+    return value.toFixed(Math.min(Math.max(nDecimalPlaces, 1), 100))
   }
   const lonMinStr = asPrecision(boundingBox.lonMin, longitudeStepSize)
   const lonMaxStr = asPrecision(boundingBox.lonMax, longitudeStepSize)
