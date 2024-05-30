@@ -55,17 +55,13 @@ function roundBoundingBox(
 
 export function boundingBoxToString(
   boundingBox: BoundingBox,
-  longitudeStepSize: number,
-  latitudeStepSize: number,
+  longitudeStepSize: number = 0.1,
+  latitudeStepSize: number = 0.1,
 ): string {
   const asPrecision = (value: number, step: number): string => {
-    const nIntegers = Math.floor(Math.log10(Math.abs(value)))
-    const stepStrs = step !== undefined ? step.toString().split('.') : '1'
+    const stepStrs = step.toString().split('.')
     const nDecimalPlaces = stepStrs.length > 1 ? stepStrs[1].length : 2
-    const nPrecision = Math.round(
-      Math.min(Math.max(nIntegers + nDecimalPlaces, 2), 99),
-    )
-    return value.toPrecision(nPrecision)
+    return value.toFixed(Math.min(Math.max(nDecimalPlaces, 100), 1))
   }
   const lonMinStr = asPrecision(boundingBox.lonMin, longitudeStepSize)
   const lonMaxStr = asPrecision(boundingBox.lonMax, longitudeStepSize)
