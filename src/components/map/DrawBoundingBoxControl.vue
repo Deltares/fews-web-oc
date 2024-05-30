@@ -4,7 +4,7 @@
 import { onBeforeUnmount, watch, onBeforeMount } from 'vue'
 import {
   TerraDraw,
-  TerraDrawMapLibreGLAdapter,
+  TerraDrawMapboxGLAdapter,
   TerraDrawRectangleMode,
 } from 'terra-draw'
 import { useMap } from 'vue-maplibre-gl'
@@ -20,7 +20,13 @@ const modelValue = defineModel<BoundingBox | null>({ default: null })
 const { map } = useMap()
 if (!map) throw new Error('Map is not available to draw rectangle on.')
 
-const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({ map })
+// Disable setting of double click zoom and dragRotate in adapter
+class TerraDrawMGLAdapter extends TerraDrawMapboxGLAdapter {
+  setDoubleClickToZoom() {}
+  setDraggability() {}
+}
+
+const mapLibreAdapter = new TerraDrawMGLAdapter({ map })
 const rectangleMode = new TerraDrawRectangleMode({
   styles: {
     fillColor: '#c2bebe',
