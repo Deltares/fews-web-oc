@@ -76,7 +76,7 @@ const useWorkflowsStore = defineStore('workflows', {
           const url = webServiceProvider.processDataUrl(
             completeFilter as ProcessDataFilter,
           )
-          await downloadFileWithXhr(url.toString())
+          await downloadFileWithXhr(url.toString(), '.grb')
         }
       } finally {
         this.numActiveWorkflows--
