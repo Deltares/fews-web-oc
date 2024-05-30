@@ -450,7 +450,8 @@ function onCoordinateClick(
   max-width: 100%;
 }
 
-:deep(.maplibregl-ctrl-bottom-right), :deep(.maplibregl-ctrl-bottom-left)  {
+:deep(.maplibregl-ctrl-bottom-right),
+:deep(.maplibregl-ctrl-bottom-left) {
   bottom: v-bind('offsetBottomControls');
 }
 </style>
