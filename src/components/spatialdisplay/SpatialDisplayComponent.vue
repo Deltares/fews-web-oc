@@ -310,7 +310,7 @@ watch(canUseStreamlines, (canUse) => {
 })
 
 const offsetBottomControls = computed(() => {
-  return props.times?.length ? '40px' : '0px'
+  return props.times?.length ? '36px' : '0px'
 })
 
 const layerHasElevation = computed(() => {
