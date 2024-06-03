@@ -1,7 +1,10 @@
 import { defineStore } from 'pinia'
 
+export type AlertType = 'success' | 'error' | 'warning' | 'info'
+
 export interface Alert {
   id: string
+  type: AlertType
   message: string
   active: boolean
 }
@@ -16,9 +19,10 @@ const useAlertsStore = defineStore('alerts', {
   }),
 
   actions: {
-    addAlert(id: string, message: string) {
+    addAlert(id: string, type: AlertType, message: string) {
       this.alerts.push({
         id,
+        type,
         message,
         active: true,
       })
