@@ -209,6 +209,7 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
   if (results.length === 0) {
     alertsStore.addAlert(
       `undefined-action-${now.toISOString()}`,
+      'error',
       'No left click actions defined for this object',
     )
     return
@@ -227,6 +228,7 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
     default:
       alertsStore.addAlert(
         `action-${results[0].type}-${now.toISOString()}`,
+        'error',
         `Action '${results[0].type}' not supported yet.`,
       )
   }

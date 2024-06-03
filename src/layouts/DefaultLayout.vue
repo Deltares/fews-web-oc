@@ -132,11 +132,10 @@
       <Suspense>
         <router-view></router-view>
       </Suspense>
-      <div class="alert-container" v-if="alertsStore.hasActiveAlerts">
+      <div class="alerts__container" v-if="alertsStore.hasActiveAlerts">
         <v-alert
           v-for="alert in alertsStore.activeAlerts"
-          color="error"
-          icon="mdi-alert"
+          :type="alert.type"
           closable
           @click:close="onCloseAlert(alert)"
         >
@@ -335,5 +334,18 @@ body {
 
 #web-oc-toolbar-target:empty {
   display: none !important;
+}
+
+.alerts__container {
+  position: absolute;
+  width: 500px;
+  max-width: 100%;
+  bottom: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
 }
 </style>
