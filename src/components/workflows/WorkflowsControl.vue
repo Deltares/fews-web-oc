@@ -12,11 +12,16 @@
       :disabled="props.disabled"
     />
   </v-badge>
-
-  <v-dialog width="500" v-model="workflowDialog">
+  <v-dialog
+    width="500"
+    v-model="workflowDialog"
+    persistent
+    :fullscreen="mobile"
+    :max-width="mobile ? undefined : '600'"
+  >
     <v-card>
       <v-card-title>Workflow</v-card-title>
-      <v-container>
+      <v-container class="pb-0">
         <v-col>
           <v-row>
             <v-select
@@ -44,6 +49,8 @@
             </v-text-field>
           </v-row>
         </v-col>
+      </v-container>
+      <v-container class="d-flex workflow-dialog__form" style="">
         <json-forms
           :schema="formSchema"
           :uischema="formUISchema"
@@ -55,35 +62,50 @@
           @change="onFormChange"
         />
       </v-container>
+      <v-container class="pt-0">
+        <v-sheet height="72px">
+          <v-alert
+            v-if="alertMessage !== null"
+            :type="alertMessage.type"
+            density="compact"
+            closable
+            @click:close="closeAlert"
+          >
+            {{ alertMessage.message }}
+          </v-alert>
+          <div v-else class="pa-1">
+            {{
+              currentWorkflow
+                ? isBoundingBoxInForm
+                  ? 'Make changes to the properties, the bounding box can be selected on the map. Click submit to start the workflow'
+                  : 'Make changes to the properties and click submit to start the workflow.'
+                : 'Please select a workflow'
+            }}
+          </div>
+        </v-sheet>
+      </v-container>
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn variant="flat" color="primary" @click="startWorkflow">
           Submit
         </v-btn>
-        <v-btn @click="() => (workflowDialog = false)">Cancel</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-
-  <!-- Success Dialog -->
-  <v-dialog v-model="successDialog" max-width="500">
-    <v-card prepend-icon="mdi-check" title="Success" :text="successMessage">
-      <v-card-actions>
-        <v-spacer />
-        <v-btn color="success" @click="successDialog = false">Close</v-btn>
+        <v-btn @click="closeDialog">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 
   <!-- Error Dialog -->
-  <v-dialog v-model="errorDialog" max-width="500">
-    <v-card prepend-icon="mdi-alert" title="Error" :text="errorMessage">
-      <v-card-actions>
-        <v-spacer />
-        <v-btn color="error" @click="errorDialog = false">Close</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+  <v-alert
+    v-if="alertMessage !== null && !workflowDialog"
+    :type="alertMessage.type"
+    density="compact"
+    position="absolute"
+    location="top right"
+    closable
+    @click:close="closeAlert"
+  >
+    {{ alertMessage.message }}
+  </v-alert>
 </template>
 
 <script setup lang="ts">
@@ -106,6 +128,7 @@ import {
   useWorkflowsStore,
 } from '@/stores/workflows'
 import { generateDefaultUISchema, generateJsonSchema } from './workflowUtils'
+import { useDisplay } from 'vuetify'
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[] | null
@@ -116,12 +139,14 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
 })
 
+const { mobile } = useDisplay()
+
 const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
 const workflowDialog = ref(false)
-const errorDialog = ref(false)
-const errorMessage = ref<string>()
-const successDialog = ref(false)
-const successMessage = ref<string>()
+const alertMessage = ref<{
+  type: 'error' | 'success' | 'warning' | 'info' | undefined
+  message: string
+} | null>(null)
 const data = ref()
 
 const {
@@ -161,6 +186,16 @@ watch(
     nextTick(() => (isRounding = false))
   },
 )
+
+function closeDialog() {
+  alertMessage.value = null
+  workflowDialog.value = false
+}
+
+function closeAlert() {
+  alertMessage.value = null
+  console.log('close alert', alertMessage.value)
+}
 
 // Check whether the bounding box is defined in the form.
 const isBoundingBoxInForm = computed(() => {
@@ -355,13 +390,11 @@ function showMapTool() {
 }
 
 function showErrorMessage(message: string) {
-  errorMessage.value = message
-  errorDialog.value = true
+  alertMessage.value = { type: 'error', message }
 }
 
 function showSuccessMessage(message: string) {
-  successMessage.value = message
-  successDialog.value = true
+  alertMessage.value = { type: 'success', message }
 }
 
 async function startWorkflow() {
@@ -379,9 +412,7 @@ async function startWorkflow() {
     if (workflowType === WorkflowType.ProcessData) {
       setTimeout(() => {
         if (error) return
-
         showSubmittedSuccesfully()
-        workflowDialog.value = false
       }, 1000)
     }
 
@@ -400,8 +431,6 @@ async function startWorkflow() {
       showErrorMessage(e.message)
     }
   }
-
-  workflowDialog.value = false
 }
 
 function showSubmittedSuccesfully() {
@@ -450,5 +479,11 @@ function getProcessDataFilter(): PartialProcessDataFilter {
 
 .outer-chip {
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.workflow-dialog__form {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  position: relative;
 }
 </style>
