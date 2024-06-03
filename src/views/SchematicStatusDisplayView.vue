@@ -207,11 +207,12 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
   const { panelId, objectId, results } = event.detail
   const now = new Date()
   if (results.length === 0) {
-    alertsStore.addAlert(
-      `undefined-action-${now.toISOString()}`,
-      'error',
-      'No left click actions defined for this object',
-    )
+    alertsStore.addAlert({
+      id: `undefined-action-${now.toISOString()}`,
+      type: 'error',
+      message: 'No left click actions defined for this object',
+      active: true,
+    })
     return
   }
 
@@ -226,11 +227,12 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
       openTimeSeriesDisplay(panelId, objectId)
       break
     default:
-      alertsStore.addAlert(
-        `action-${results[0].type}-${now.toISOString()}`,
-        'error',
-        `Action '${results[0].type}' not supported yet.`,
-      )
+      alertsStore.addAlert({
+        id: `action-${results[0].type}-${now.toISOString()}`,
+        type: 'error',
+        message: `Action '${results[0].type}' not supported yet.`,
+        active: true,
+      })
   }
 }
 

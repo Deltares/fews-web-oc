@@ -77,9 +77,9 @@
             {{
               currentWorkflow
                 ? isBoundingBoxInForm
-                  ? 'Make changes to the properties, the bounding box can be selected on the map. Click submit to start the workflow'
+                  ? 'Make changes to the properties, the bounding box can be selected on the map. Click submit to start the workflow.'
                   : 'Make changes to the properties and click submit to start the workflow.'
-                : 'Please select a workflow'
+                : 'Please select a workflow.'
             }}
           </div>
         </v-sheet>
@@ -93,23 +93,10 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-
-  <!-- Error Dialog -->
-  <v-alert
-    v-if="alertMessage !== null && !workflowDialog"
-    :type="alertMessage.type"
-    density="compact"
-    position="absolute"
-    location="top right"
-    closable
-    @click:close="closeAlert"
-  >
-    {{ alertMessage.message }}
-  </v-alert>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { JsonForms } from '@jsonforms/vue'
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
@@ -127,6 +114,8 @@ import {
   WorkflowType,
   useWorkflowsStore,
 } from '@/stores/workflows'
+import { AlertType, useAlertsStore } from '@/stores/alerts.ts'
+
 import { generateDefaultUISchema, generateJsonSchema } from './workflowUtils'
 import { useDisplay } from 'vuetify'
 
@@ -144,10 +133,11 @@ const { mobile } = useDisplay()
 const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
 const workflowDialog = ref(false)
 const alertMessage = ref<{
-  type: 'error' | 'success' | 'warning' | 'info' | undefined
+  type: AlertType | undefined
   message: string
 } | null>(null)
 const data = ref()
+const userId = ref('')
 
 const {
   boundingBox,
@@ -158,6 +148,12 @@ const {
 } = useBoundingBox(1, 1)
 
 const workflowsStore = useWorkflowsStore()
+const alertStore = useAlertsStore()
+
+onMounted(() => {
+  userId.value = crypto.randomUUID()
+})
+
 // Update workflowId, startTime and endTime depending on properties.
 watch(
   currentWorkflow,
@@ -390,11 +386,21 @@ function showMapTool() {
 }
 
 function showErrorMessage(message: string) {
-  alertMessage.value = { type: 'error', message }
+  alertStore.addAlert({
+    id: `workflow-${userId.value}`,
+    type: 'error',
+    message,
+    active: true,
+  })
 }
 
 function showSuccessMessage(message: string) {
-  alertMessage.value = { type: 'success', message }
+  alertStore.addAlert({
+    id: `workflow-${userId.value}`,
+    type: 'success',
+    message,
+    active: true,
+  })
 }
 
 async function startWorkflow() {
@@ -430,6 +436,8 @@ async function startWorkflow() {
     } else if (e instanceof Error) {
       showErrorMessage(e.message)
     }
+  } finally {
+    userId.value = crypto.randomUUID()
   }
 }
 
@@ -440,11 +448,9 @@ function showSubmittedSuccesfully() {
 }
 
 function getRunTaskFilter(): PartialRunTaskFilter {
-  // TODO: properly set userId and description
-  const userId = '1598'
   const description = 'Test run'
   return {
-    userId,
+    userId: userId.value,
     description,
     properties: data.value,
   }

@@ -19,13 +19,14 @@ const useAlertsStore = defineStore('alerts', {
   }),
 
   actions: {
-    addAlert(id: string, type: AlertType, message: string) {
-      this.alerts.push({
-        id,
-        type,
-        message,
-        active: true,
-      })
+    addAlert(alert: Alert) {
+      this.alerts.push(alert)
+    },
+    deactiveAlert(id: string) {
+      const alert = this.alerts.find((alert) => alert.id === id)
+      if (alert) {
+        alert.active = false
+      }
     },
   },
 
