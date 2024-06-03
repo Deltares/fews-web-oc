@@ -10,7 +10,7 @@
       :disabled="boundingBox === null"
       @click="onFinish"
       density="compact"
-      variant="tonal"
+      color="primary"
       class="px-0 text-medium-emphasis"
     >
       Apply
