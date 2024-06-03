@@ -137,6 +137,7 @@
           v-for="alert in alertsStore.activeAlerts"
           :type="alert.type"
           closable
+          density="compact"
           @click:close="onCloseAlert(alert)"
         >
           {{ alert.message }}
@@ -297,7 +298,7 @@ async function getLocalOrRemoteFile(localBase: string, relativePath?: string) {
 }
 
 function onCloseAlert(alert: Alert) {
-  alert.active = false
+  alertsStore.deactiveAlert(alert.id)
 }
 </script>
 
