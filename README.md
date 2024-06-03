@@ -1,18 +1,28 @@
-# Vue 3 + TypeScript + Vite
+# Delft Fews Web Operator Client
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## Project setup
 
-## Recommended IDE Setup
+## Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+### Application Configuration
 
-## Type Support For `.vue` Imports in TS
+The application configuration is stored in the `.env` or the `public/app-config.json` file. All settings are provided as a key-value pair.
+Settings in the `.env` file are parsed on build time, while settings in the `app-config.json` are handled on run-time.
+The following settings can be provided:
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+| Key                                     | Description                                                                                                           |
+|-----------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| `VUE_APP_FEWS_WEBSERVICES_URL`          | Url of the FewsWebServices, e.g. "https://rwsos-dataservices-ont.avi.deltares.nl/iwp/FewsWebServices"                 |
+| `VUE_APP_REQUEST_HEADER_AUTHORIZATION`  | 'Bearer': pass OIDC `id_token` as bearer for request to the FewsWebServices                                           |
+|                                         | 'Off': no Authorization request header                                                                                |
+| `VUE_APP_AUTH_AUTHORITY`                | Url of the OIDC authority, e.g. "https://login.microsoftonline.com/MYTENANTID/".                                      |
+|                                         | If not configured the web oc can be accessed without authentication.                                                  |
+| `VUE_APP_AUTH_METADATA_URL`             | Url of the OIDC meta data, e.g. "https://login.microsoftonline.com/MYTENANTID/v2.0/.well-known/openid-configuration". |
+| `VUE_APP_AUTH_SCOPE`                    | Scope, e.g. "openid profile email Offline_Access api://myclientid/Delft-FEWSWebServices".                             |
+| `VUE_APP_REQUEST_HEADER_AUTHORIZATION`  | Url of the OIDC meta data, e.g. "https://login.microsoftonline.com/MYTENANTID/v2.0/.well-known/openid-configuration". |
+| `VUE_APP_MAPBOX_TOKEN`                  | Mapbox token. Can be retrieved from: https://account.mapbox.com/access-tokens.                                       |
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+For general documentation about the Web OC, please see: 
 
-1. Disable the built-in TypeScript Extension
-   1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-   2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+[Documentation](docs/)
