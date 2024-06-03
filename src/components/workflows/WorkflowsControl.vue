@@ -62,28 +62,6 @@
           @change="onFormChange"
         />
       </v-container>
-      <v-container class="pt-0">
-        <v-sheet height="72px">
-          <v-alert
-            v-if="alertMessage !== null"
-            :type="alertMessage.type"
-            density="compact"
-            closable
-            @click:close="closeAlert"
-          >
-            {{ alertMessage.message }}
-          </v-alert>
-          <div v-else class="pa-1">
-            {{
-              currentWorkflow
-                ? isBoundingBoxInForm
-                  ? 'Make changes to the properties, the bounding box can be selected on the map. Click submit to start the workflow.'
-                  : 'Make changes to the properties and click submit to start the workflow.'
-                : 'Please select a workflow.'
-            }}
-          </div>
-        </v-sheet>
-      </v-container>
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn variant="flat" color="primary" @click="startWorkflow">
@@ -132,10 +110,7 @@ const { mobile } = useDisplay()
 
 const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
 const workflowDialog = ref(false)
-const alertMessage = ref<{
-  type: AlertType | undefined
-  message: string
-} | null>(null)
+
 const data = ref()
 const userId = ref('')
 
@@ -184,13 +159,7 @@ watch(
 )
 
 function closeDialog() {
-  alertMessage.value = null
   workflowDialog.value = false
-}
-
-function closeAlert() {
-  alertMessage.value = null
-  console.log('close alert', alertMessage.value)
 }
 
 // Check whether the bounding box is defined in the form.
