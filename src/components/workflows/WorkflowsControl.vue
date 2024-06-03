@@ -92,7 +92,7 @@ import {
   WorkflowType,
   useWorkflowsStore,
 } from '@/stores/workflows'
-import { AlertType, useAlertsStore } from '@/stores/alerts.ts'
+import { useAlertsStore } from '@/stores/alerts.ts'
 
 import { generateDefaultUISchema, generateJsonSchema } from './workflowUtils'
 import { useDisplay } from 'vuetify'
