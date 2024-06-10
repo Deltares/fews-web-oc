@@ -143,7 +143,12 @@
           {{ alert.message }}
         </v-alert>
       </div>
-      <SplashScreen v-if="splashSrc" :img-url="splashSrc" :version="version" />
+      <TermsOfUseDialog v-if="shouldAgreeToTerms" />
+      <SplashScreen
+        v-else-if="splashSrc"
+        :img-url="splashSrc"
+        :version="version"
+      />
       <GlobalSearchComponent />
     </v-main>
   </v-layout>
@@ -159,6 +164,7 @@ import LoginComponent from '../views/auth/LoginComponent.vue'
 import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
 import SplashScreen from '@/components/general/SplashScreen.vue'
+import TermsOfUseDialog from '@/components/general/TermsOfUseDialog.vue'
 import GlobalSearchComponent from '@/components/general/GlobalSearchComponent.vue'
 
 import { configManager } from '@/services/application-config'
@@ -260,6 +266,13 @@ const helpMenu = computed(() => {
   if ('helpMenu' in (configStore.general as any)) {
     return (configStore.general as any).helpMenu
   } // todo: add type when fews-pi-requests is updated
+})
+
+const shouldAgreeToTerms = computed(() => {
+  // TODO: Add type when fews-pi-requests is updated
+  if ('agreeToTermsAndConditions' in (configStore.general as any)) {
+    return (configStore.general as any).agreeToTermsAndConditions !== 'false'
+  }
 })
 
 const shouldRenderInfoMenu = computed(() => {

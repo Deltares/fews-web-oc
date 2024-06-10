@@ -5,26 +5,18 @@
 
 <script setup lang="ts">
 import { getResourcesStaticUrl } from '@/lib/fews-config'
-import { useConfigStore } from '@/stores/config'
 import { computedAsync } from '@vueuse/core'
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
 
-const route = useRoute()
+interface Props {
+  url: string | undefined
+}
 
-const configStore = useConfigStore()
-const matchingComponent = computed(() => {
-  const components = Object.values(configStore.components)
-  return components.find(
-    (c) => c.id === 'htmlDisplay' && c.path === route.params.path,
-  )
-})
+const props = defineProps<Props>()
 
-const url = computed(() => matchingComponent.value?.url)
 const htmlText = computedAsync(async () => {
-  if (!url.value) return
+  if (!props.url) return
 
-  const staticUrl = getResourcesStaticUrl(url.value)
+  const staticUrl = getResourcesStaticUrl(props.url)
 
   try {
     const response = await fetch(staticUrl)

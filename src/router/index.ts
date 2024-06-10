@@ -31,7 +31,7 @@ const DataDownloadDisplayView = () =>
   import('../components/download/DataDownloadDisplayComponent.vue')
 const TimeSeriesDisplay = () =>
   import('../components/timeseries/TimeSeriesDisplay.vue')
-const HtmlDisplay = () => import('../views/HtmlDisplay.vue')
+const HtmlDisplay = () => import('../views/HtmlDisplayView.vue')
 const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
