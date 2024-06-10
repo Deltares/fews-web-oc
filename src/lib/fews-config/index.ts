@@ -44,3 +44,29 @@ export function getResourcesIconsUrl(resource: string) {
   })
   return webServiceProvider.resourcesIconsUrl(resource).toString()
 }
+
+export async function isBackendAvailable(timeout?: number) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+
+  const controller = new AbortController()
+  const DEFAULT_TIMEOUT = 5000
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    timeout ?? DEFAULT_TIMEOUT,
+  )
+
+  const webServiceProvider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(controller),
+  })
+
+  try {
+    await webServiceProvider.getVersion()
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      return false
+    }
+  }
+
+  clearTimeout(timeoutId)
+  return true
+}
