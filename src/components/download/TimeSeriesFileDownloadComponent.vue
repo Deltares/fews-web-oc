@@ -213,13 +213,13 @@ const downloadFile = (downloadFormat: string) => {
       props.filter.documentFormat = downloadFormat
       const queryParameters = filterToParams(props.filter)
       const url = new URL(
-          `${baseUrl}rest/fewspiservice/v1/timeseries/grid${queryParameters}&${viewPeriod}`,
+        `${baseUrl}rest/fewspiservice/v1/timeseries/grid${queryParameters}&${viewPeriod}`,
       )
       return downloadFileAttachment(
-          url.href,
-          fileName.value,
-          downloadFormat,
-          authenticationManager.getAccessToken(),
+        url.href,
+        fileName.value,
+        downloadFormat,
+        authenticationManager.getAccessToken(),
       )
     }
   }
