@@ -270,8 +270,9 @@ const helpMenu = computed(() => {
 
 const shouldAgreeToTerms = computed(() => {
   // TODO: Add type when fews-pi-requests is updated
-  if ('agreeToTermsAndConditions' in (configStore.general as any)) {
-    return (configStore.general as any).agreeToTermsAndConditions !== 'false'
+  const general = configStore.general as any
+  if ('agreeToTermsAndConditions' in general) {
+    return general.agreeToTermsAndConditions.enabled ?? false
   }
 })
 
