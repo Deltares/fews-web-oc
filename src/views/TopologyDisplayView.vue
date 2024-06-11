@@ -7,7 +7,7 @@
       :items="items"
     />
   </Teleport>
-  <Teleport  to="#web-oc-toolbar-target" v-if="showWorkflowsControl">
+  <Teleport to="#web-oc-toolbar-target" v-if="showWorkflowsControl">
     <WorkflowsControl
       :disabled="secondaryWorkflows === null"
       :secondaryWorkflows="secondaryWorkflows"
@@ -215,7 +215,8 @@ const showLeafsAsButton = computed(() => {
 })
 
 const showWorkflowsControl = computed(() => {
-  const component: WebOcTopologyDisplayConfig | undefined = configStore.getComponentByType('TopologyDisplay')
+  const component: WebOcTopologyDisplayConfig | undefined =
+    configStore.getComponentByType('TopologyDisplay')
   return component?.enableTaskRuns ?? false
 })
 
