@@ -36,3 +36,20 @@ export function getDateWithMinutesOffset(date: Date, minutesOffset: number) {
   result.setMinutes(result.getMinutes() + minutesOffset)
   return result
 }
+
+/**
+ * Converts a FEWS PI date/time object to a Date object.
+ *
+ * @param fewsDatetime - The FEWS date/time object to convert.
+ * @param timeZoneOffsetString - Timezone offset string to apply to the date.
+ *   E.g., '+02:00' or 'Z'.
+ * @returns The date/time as a Date object.
+ */
+export function convertFewsPiDateTimeToJsDate(
+  fewsDatetime: { date: string; time: string },
+  timeZoneOffsetString: string,
+): Date {
+  return new Date(
+    `${fewsDatetime.date}T${fewsDatetime.time}${timeZoneOffsetString}`,
+  )
+}

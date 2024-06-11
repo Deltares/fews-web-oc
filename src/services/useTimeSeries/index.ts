@@ -14,6 +14,7 @@ import { SeriesUrlRequest } from '../../lib/timeseries/timeSeriesResource'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { difference } from 'lodash-es'
 import { SeriesData } from '@/lib/timeseries/types/SeriesData'
+import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 
 export interface UseTimeSeriesReturn {
   error: Ref<any>
@@ -36,13 +37,6 @@ function timeZoneOffsetString(offset: number): string {
   return `+${hours.toString().padStart(2, '0')}:${minutes
     .toString()
     .padStart(2, '0')}`
-}
-
-function parsePiDateTime(
-  event: { date: string; time: string },
-  timeZone: string,
-) {
-  return `${event.date}T${event.time}${timeZone}`
 }
 
 /**
@@ -152,14 +146,18 @@ export function useTimeSeries(
               _series.header.parameter = header.parameterId
               _series.header.location = header.stationName
               _series.header.source = header.moduleInstanceId
-              _series.start = new Date(
-                parsePiDateTime(header.startDate, timeZone),
+              _series.start = convertFewsPiDateTimeToJsDate(
+                header.startDate,
+                timeZone,
               )
-              _series.end = new Date(parsePiDateTime(header.endDate, timeZone))
+              _series.end = convertFewsPiDateTimeToJsDate(
+                header.endDate,
+                timeZone,
+              )
               if (timeSeries.events) {
                 _series.data = timeSeries.events.map((event) => {
                   return {
-                    x: new Date(parsePiDateTime(event, timeZone)),
+                    x: convertFewsPiDateTimeToJsDate(event, timeZone),
                     y:
                       event.value === _series.missingValue
                         ? null
@@ -264,7 +262,7 @@ function fillSeriesForElevation(
       if (time === undefined || date === undefined) {
         return false
       }
-      const eventDate = new Date(parsePiDateTime({ date, time }, timeZone))
+      const eventDate = convertFewsPiDateTimeToJsDate({ date, time }, timeZone)
       return eventDate.getTime() === currentDate.getTime()
     })
 
