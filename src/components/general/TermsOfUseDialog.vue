@@ -46,10 +46,9 @@ const showTermsDialog = useStorage(
 const termsPath = 'terms-of-use'
 const configStore = useConfigStore()
 const url = computed(() => {
-  const components = Object.values(configStore.components)
-  const matchingComponent = components.find(
-    (c) => c.id === 'htmlDisplay' && c.path === termsPath,
-  )
+  const matchingComponent = configStore
+    .getComponentsByType('htmlDisplay')
+    ?.find((c) => c.path === termsPath)
   return matchingComponent?.url
 })
 

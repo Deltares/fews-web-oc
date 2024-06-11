@@ -12,10 +12,9 @@ const route = useRoute()
 
 const configStore = useConfigStore()
 const url = computed(() => {
-  const components = Object.values(configStore.components)
-  const matchingComponent = components.find(
-    (c) => c.id === 'htmlDisplay' && c.path === route.params.path,
-  )
+  const matchingComponent = configStore
+    .getComponentsByType('htmlDisplay')
+    ?.find((c) => c.path === route.params.path)
   return matchingComponent?.url
 })
 </script>
