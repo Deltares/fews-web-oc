@@ -39,10 +39,11 @@ const showDialog = useStorage(
 
 const termsPath = 'terms-of-use'
 const configStore = useConfigStore()
-const termsComponent = computed(() => {
-  const components = Object.values(configStore.components)
-  return components.find((c) => c.id === 'htmlDisplay' && c.path === termsPath)
-})
+const termsComponent = computed(() =>
+  configStore
+    .getComponentsByType('htmlDisplay')
+    ?.find((c) => c.path === termsPath),
+)
 
 function routeToTerms() {
   router.push({

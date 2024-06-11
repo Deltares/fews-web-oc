@@ -80,6 +80,16 @@ const useConfigStore = defineStore('config', {
       }
     },
 
+    getComponentsByType: (
+      state,
+    ): ((componentType: string) => WebOcComponent[] | undefined) => {
+      return (componentType: string) => {
+        return Object.values(state.components).filter(
+          (component) => component.type === componentType,
+        )
+      }
+    },
+
     defaultComponent: (state) => {
       if (state.general.defaultComponent) {
         return state.components[state.general.defaultComponent]
