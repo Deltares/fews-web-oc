@@ -8,7 +8,6 @@ import { ref, toValue, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { DisplayConfig } from '../../lib/display/DisplayConfig.js'
 import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig.js'
-import { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.js'
 import { MD5 } from 'crypto-js'
 
@@ -47,14 +46,12 @@ function actionsResponseToDisplayConfig(
   for (const result of actionsResponse.results) {
     if (result.config === undefined) continue
     const title = result.config.timeSeriesDisplay.title ?? ''
-    const timeSeriesDisplayIndex: number | undefined =
-      result.config.timeSeriesDisplay.index ?? undefined
-    let subplots: ChartConfig[] = []
-    if (result.config.timeSeriesDisplay.subplots) {
-      subplots = result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
-        return timeSeriesDisplayToChartConfig(subPlot, title)
-      })
-    }
+    const timeSeriesDisplayIndex = result.config.timeSeriesDisplay.index
+    const period = result.config.timeSeriesDisplay.period
+    const subplots =
+      result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
+        return timeSeriesDisplayToChartConfig(subPlot, title, period)
+      }) ?? []
     const display: DisplayConfig = {
       id: title,
       title,

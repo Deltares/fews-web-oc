@@ -1,6 +1,7 @@
 import type { ChartConfig } from './types/ChartConfig.js'
 import type { ChartSeries } from './types/ChartSeries.js'
 import type {
+  ActionPeriod,
   TimeSeriesDisplayPlotItemXAxis,
   TimeSeriesDisplaySubplot,
   TimeSeriesDisplaySubplotItem,
@@ -16,14 +17,34 @@ import {
   AxisPosition,
   AxisType,
 } from '@deltares/fews-web-oc-charts'
+import { convertFewsPiDateTimeToJsDate } from '@/lib/date/index.js'
 
 export function timeSeriesDisplayToChartConfig(
   subplot: TimeSeriesDisplaySubplot,
   title: string,
+  period?: ActionPeriod,
 ): ChartConfig {
+  const xAxis = subplot.xAxis ? xAxisFromPlotItemXAxis(subplot.xAxis) : []
+  if (period) {
+    // The period is always specified in UTC.
+    const timeZoneOffsetString = 'Z'
+    const domain: [Date, Date] = [
+      convertFewsPiDateTimeToJsDate(period.startDate, timeZoneOffsetString),
+      convertFewsPiDateTimeToJsDate(period.endDate, timeZoneOffsetString),
+    ]
+    // Set the domain of the x-axis to be equal to the period, even if there are
+    // no data points in parts of the period.
+    if (xAxis.length === 0) {
+      xAxis.push({ domain })
+    } else {
+      // Time series charts always have just a single x-axis.
+      xAxis[0].domain = domain
+    }
+  }
+
   const config: ChartConfig = {
     title: title,
-    xAxis: subplot.xAxis ? xAxisFromPlotItemXAxis(subplot.xAxis) : [],
+    xAxis,
     yAxis: yAxisFromSubplot(subplot),
     series: [],
   }
