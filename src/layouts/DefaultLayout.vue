@@ -268,13 +268,9 @@ const helpMenu = computed(() => {
   } // todo: add type when fews-pi-requests is updated
 })
 
-const shouldAgreeToTerms = computed(() => {
-  // TODO: Add type when fews-pi-requests is updated
-  const general = configStore.general as any
-  if ('agreeToTermsAndConditions' in general) {
-    return general.agreeToTermsAndConditions.enabled ?? false
-  }
-})
+const shouldAgreeToTerms = computed(
+  () => configStore.general.agreeToTermsAndConditions?.enabled ?? false,
+)
 
 const shouldRenderInfoMenu = computed(() => {
   const currentRoute = route.matched[0]
