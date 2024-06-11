@@ -7,7 +7,7 @@
       :items="items"
     />
   </Teleport>
-  <Teleport to="#web-oc-toolbar-target">
+  <Teleport to="#web-oc-toolbar-target" v-if="showWorkflowsControl">
     <WorkflowsControl
       :disabled="secondaryWorkflows === null"
       :secondaryWorkflows="secondaryWorkflows"
@@ -113,6 +113,8 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { useWorkflowsStore } from '@/stores/workflows'
 
 import type { TopologyNode } from '@deltares/fews-pi-requests'
+import type { WebOcTopologyDisplayConfig } from '@deltares/fews-pi-requests'
+
 import { watchEffect } from 'vue'
 import { computed } from 'vue'
 import { ref, watch } from 'vue'
@@ -210,6 +212,12 @@ watch(
 const showLeafsAsButton = computed(() => {
   const component = configStore.getComponentByType('TopologyDisplay')
   return component?.showLeafNodesAsButtons ?? false
+})
+
+const showWorkflowsControl = computed(() => {
+  const component: WebOcTopologyDisplayConfig | undefined =
+    configStore.getComponentByType('TopologyDisplay')
+  return component?.enableTaskRuns ?? false
 })
 
 const nodes = ref<TopologyNode[]>()
