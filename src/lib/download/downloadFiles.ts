@@ -97,7 +97,7 @@ export async function downloadFileWithXhr(
       const now = toISOString(new Date())
         .replaceAll('-', '')
         .replaceAll(':', '')
-      const fallBackFileName = `${now}_${fileName ?? 'DATA'}`
+      const fallBackFileName = `${now}${fileName ?? '_DATA'}`
 
       const downloadFileName = headerFileName ?? fallBackFileName
       const blobUrl = window.URL.createObjectURL(req.response)
