@@ -39,7 +39,7 @@ const isInAgreement = ref(false)
 const showTermsDialog = useStorage(
   'weboc-agree-to-terms-v1.0.0',
   true,
-  sessionStorage,
+  window.localStorage,
   { mergeDefaults: true },
 )
 
