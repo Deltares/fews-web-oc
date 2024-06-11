@@ -44,3 +44,35 @@ export function getResourcesIconsUrl(resource: string) {
   })
   return webServiceProvider.resourcesIconsUrl(resource).toString()
 }
+
+export async function getLocalOrRemoteFileUrl(
+  localBase: string,
+  relativePath?: string,
+) {
+  if (!relativePath) return
+  const remoteUrl = getResourcesStaticUrl(relativePath)
+  const localUrl = `${localBase}${relativePath}`
+
+  const isHtmlResponse = (response: Response) => {
+    const contentType = response.headers.get('Content-Type')
+    return contentType?.includes('text/html') ?? false
+  }
+
+  try {
+    const remoteResponse = await fetch(remoteUrl, { method: 'HEAD' })
+    if (remoteResponse.ok && !isHtmlResponse(remoteResponse)) {
+      return remoteUrl
+    }
+  } catch (error) {
+    // Handle fetch error
+  }
+
+  try {
+    const localResponse = await fetch(localUrl, { method: 'HEAD' })
+    if (localResponse.ok && !isHtmlResponse(localResponse)) {
+      return localUrl
+    }
+  } catch (error) {
+    // Handle fetch error
+  }
+}
