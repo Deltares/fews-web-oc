@@ -47,9 +47,10 @@ function actionsResponseToDisplayConfig(
     if (result.config === undefined) continue
     const title = result.config.timeSeriesDisplay.title ?? ''
     const timeSeriesDisplayIndex = result.config.timeSeriesDisplay.index
+    const period = result.config.timeSeriesDisplay.period
     const subplots =
       result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
-        return timeSeriesDisplayToChartConfig(subPlot, title)
+        return timeSeriesDisplayToChartConfig(subPlot, title, period)
       }) ?? []
     const display: DisplayConfig = {
       id: title,
@@ -155,7 +156,6 @@ export function useDisplayConfigFilter(
       return
     }
     const _displays = actionsResponseToDisplayConfig(response, nodeId)
-    console.log(_displays)
     displays.value = _displays
     displayConfig.value = _displays[0]
   })
