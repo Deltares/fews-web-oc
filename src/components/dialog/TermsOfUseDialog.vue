@@ -32,16 +32,10 @@
 <script lang="ts" setup>
 import { useConfigStore } from '@/stores/config'
 import { computed, ref } from 'vue'
-import { useStorage } from '@vueuse/core'
 import HtmlDisplay from '@/components/general/HtmlDisplay.vue'
 
+const showTermsDialog = defineModel({ default: false })
 const isInAgreement = ref(false)
-const showTermsDialog = useStorage(
-  'weboc-agree-to-terms-v1.0.0',
-  true,
-  window.localStorage,
-  { mergeDefaults: true },
-)
 
 const termsPath = 'terms-of-use'
 const configStore = useConfigStore()

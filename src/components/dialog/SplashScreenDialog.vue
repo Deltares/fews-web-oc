@@ -20,7 +20,6 @@
 import { useConfigStore } from '@/stores/config'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStorage } from '@vueuse/core'
 
 interface Props {
   imgUrl: string
@@ -28,14 +27,9 @@ interface Props {
 }
 defineProps<Props>()
 
-const router = useRouter()
+const showDialog = defineModel({ default: false })
 
-const showDialog = useStorage(
-  'weboc-splash-screen-v1.0.0',
-  true,
-  sessionStorage,
-  { mergeDefaults: true },
-)
+const router = useRouter()
 
 const termsPath = 'terms-of-use'
 const configStore = useConfigStore()

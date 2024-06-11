@@ -143,12 +143,7 @@
           {{ alert.message }}
         </v-alert>
       </div>
-      <TermsOfUseDialog v-if="shouldAgreeToTerms" />
-      <SplashScreen
-        v-else-if="splashSrc"
-        :img-url="splashSrc"
-        :version="version"
-      />
+      <StartupDialog />
       <GlobalSearchComponent />
     </v-main>
   </v-layout>
@@ -163,14 +158,13 @@ import { useRoute } from 'vue-router'
 import LoginComponent from '../views/auth/LoginComponent.vue'
 import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
-import SplashScreen from '@/components/general/SplashScreen.vue'
-import TermsOfUseDialog from '@/components/general/TermsOfUseDialog.vue'
+import StartupDialog from '@/components/dialog/StartupDialog.vue'
 import GlobalSearchComponent from '@/components/general/GlobalSearchComponent.vue'
 
 import { configManager } from '@/services/application-config'
-import { getResourcesStaticUrl } from '@/lib/fews-config'
+import { getLocalOrRemoteFileUrl } from '@/lib/fews-config'
 import { StyleValue, nextTick } from 'vue'
-import packageConfig from '../../package.json'
+import packageConfig from '@/../package.json'
 
 const configStore = useConfigStore()
 const alertsStore = useAlertsStore()
@@ -181,10 +175,8 @@ const currentItem = ref('')
 const { isRtl } = useRtl()
 const route = useRoute()
 
-const version = ref(packageConfig.version)
 const showHash = ref(false)
 const logoSrc = ref('')
-const splashSrc = ref<string>()
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
 
@@ -242,16 +234,11 @@ watch(
   async () => {
     const imagesBaseUrl = `${import.meta.env.BASE_URL}images/`
     const defaultLogo = `${imagesBaseUrl}logo.png`
-    const logoUrl = await getLocalOrRemoteFile(
+    const logoUrl = await getLocalOrRemoteFileUrl(
       imagesBaseUrl,
       configStore.general.icons?.logo,
     )
     logoSrc.value = logoUrl ?? defaultLogo
-
-    splashSrc.value = await getLocalOrRemoteFile(
-      imagesBaseUrl,
-      configStore.general.splashScreen,
-    )
   },
 )
 
@@ -268,44 +255,11 @@ const helpMenu = computed(() => {
   } // todo: add type when fews-pi-requests is updated
 })
 
-const shouldAgreeToTerms = computed(
-  () => configStore.general.agreeToTermsAndConditions?.enabled ?? false,
-)
-
 const shouldRenderInfoMenu = computed(() => {
   const currentRoute = route.matched[0]
   if (currentRoute === undefined) return false
   return !currentRoute.meta?.sidebar
 })
-
-async function getLocalOrRemoteFile(localBase: string, relativePath?: string) {
-  if (!relativePath) return
-  const remoteUrl = getResourcesStaticUrl(relativePath)
-  const localUrl = `${localBase}${relativePath}`
-
-  const isHtmlResponse = (response: Response) => {
-    const contentType = response.headers.get('Content-Type')
-    return contentType?.includes('text/html') ?? false
-  }
-
-  try {
-    const remoteResponse = await fetch(remoteUrl, { method: 'HEAD' })
-    if (remoteResponse.ok && !isHtmlResponse(remoteResponse)) {
-      return remoteUrl
-    }
-  } catch (error) {
-    // Handle fetch error
-  }
-
-  try {
-    const localResponse = await fetch(localUrl, { method: 'HEAD' })
-    if (localResponse.ok && !isHtmlResponse(localResponse)) {
-      return localUrl
-    }
-  } catch (error) {
-    // Handle fetch error
-  }
-}
 
 function onCloseAlert(alert: Alert) {
   alertsStore.deactiveAlert(alert.id)
