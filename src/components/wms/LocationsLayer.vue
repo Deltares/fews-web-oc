@@ -42,9 +42,8 @@ import { useDark } from '@vueuse/core'
 import { useUserSettingsStore } from '@/stores/userSettings'
 
 const settings = useUserSettingsStore()
-const showNames = computed(() => {
-  return settings.get('ui.map.showLocationNames')?.value
-})
+const isDark = useDark()
+const { map } = useMap()
 
 interface Props {
   locationsGeoJson: FeatureCollection<Geometry, Location>
@@ -60,8 +59,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits(['click'])
-
-const isDark = useDark()
 
 const layoutSymbolSpecification = {
   'icon-allow-overlap': true,
@@ -99,8 +96,6 @@ const paintCircleSpecification = {
   'circle-stroke-width': 1.5,
 }
 
-const { map } = useMap()
-
 const locationsCircleLayerId = 'location-circle-layer'
 const locationsSymbolLayerId = 'location-symbol-layer'
 const locationsTextLayerId = 'location-text-layer'
@@ -112,6 +107,40 @@ watch(
     addLocationIcons()
   },
 )
+
+watch(
+  () => props.selectedLocationId,
+  () => {
+    highlightSelectedLocationOnMap()
+  },
+)
+
+onBeforeMount(() => {
+  if (map) {
+    for (const layerId of [locationsCircleLayerId, locationsSymbolLayerId]) {
+      map.on('click', layerId, clickHandler)
+      map.on('mouseenter', layerId, setCursorPointer)
+      map.on('mouseleave', layerId, unsetCursorPointer)
+    }
+    map.on('sourcedata', sourceDateLoaded)
+  }
+  addLocationIcons()
+})
+
+onBeforeUnmount(() => {
+  if (map) {
+    for (const layerId of [locationsCircleLayerId, locationsSymbolLayerId]) {
+      map.off('click', layerId, clickHandler)
+      map.off('mouseenter', layerId, setCursorPointer)
+      map.off('mouseleave', layerId, unsetCursorPointer)
+    }
+    map.off('sourcedata', sourceDateLoaded)
+  }
+})
+
+const showNames = computed(() => {
+  return settings.get('ui.map.showLocationNames')?.value
+})
 
 function addLocationIcons() {
   if (map) addLocationIconsToMap(map, props.locationsGeoJson)
@@ -140,36 +169,6 @@ function sourceDateLoaded(e: MapSourceDataEvent) {
     highlightSelectedLocationOnMap()
   }
 }
-
-onBeforeMount(() => {
-  if (map) {
-    for (const layerId of [locationsCircleLayerId, locationsSymbolLayerId]) {
-      map.on('click', layerId, clickHandler)
-      map.on('mouseenter', layerId, setCursorPointer)
-      map.on('mouseleave', layerId, unsetCursorPointer)
-    }
-    map.on('sourcedata', sourceDateLoaded)
-  }
-  addLocationIcons()
-})
-
-onBeforeUnmount(() => {
-  if (map) {
-    for (const layerId of [locationsCircleLayerId, locationsSymbolLayerId]) {
-      map.off('click', layerId, clickHandler)
-      map.off('mouseenter', layerId, setCursorPointer)
-      map.off('mouseleave', layerId, unsetCursorPointer)
-    }
-    map.off('sourcedata', sourceDateLoaded)
-  }
-})
-
-watch(
-  () => props.selectedLocationId,
-  () => {
-    highlightSelectedLocationOnMap()
-  },
-)
 
 function highlightSelectedLocationOnMap() {
   if (!map?.getSource(locationsSourceId)) return
