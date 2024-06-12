@@ -210,8 +210,17 @@ const downloadFile = (downloadFormat: string) => {
       )
     }
     if (isTimeSeriesGridActionsFilter(props.filter)) {
-      console.log('Not implemented')
-      return
+      props.filter.documentFormat = downloadFormat
+      const queryParameters = filterToParams(props.filter)
+      const url = new URL(
+        `${baseUrl}rest/fewspiservice/v1/timeseries/grid${queryParameters}&${viewPeriod}`,
+      )
+      return downloadFileAttachment(
+        url.href,
+        fileName.value,
+        downloadFormat,
+        authenticationManager.getAccessToken(),
+      )
     }
   }
 
