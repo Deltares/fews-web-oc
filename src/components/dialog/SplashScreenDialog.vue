@@ -35,7 +35,7 @@ const termsPath = 'terms-of-use'
 const configStore = useConfigStore()
 const termsComponent = computed(() =>
   configStore
-    .getComponentsByType('htmlDisplay')
+    .getComponentsByType('HtmlDisplay')
     ?.find((c) => c.path === termsPath),
 )
 
