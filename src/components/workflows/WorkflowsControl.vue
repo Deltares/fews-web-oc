@@ -356,8 +356,17 @@ function showMapTool() {
 
 function showErrorMessage(message: string) {
   alertStore.addAlert({
-    id: `workflow-${userId.value}`,
+    id: `workflow-error-${userId.value}`,
     type: 'error',
+    message,
+    active: true,
+  })
+}
+
+function showStartMessage(message: string) {
+  alertStore.addAlert({
+    id: `workflow-start-${userId.value}`,
+    type: 'success',
     message,
     active: true,
   })
@@ -365,7 +374,7 @@ function showErrorMessage(message: string) {
 
 function showSuccessMessage(message: string) {
   alertStore.addAlert({
-    id: `workflow-${userId.value}`,
+    id: `workflow-success-${userId.value}`,
     type: 'success',
     message,
     active: true,
@@ -387,16 +396,21 @@ async function startWorkflow() {
     if (workflowType === WorkflowType.ProcessData) {
       setTimeout(() => {
         if (error) return
-        showSubmittedSuccesfully()
-      }, 1000)
+        showStartMessage(
+          'Task submitted successfully. Your file will be available for download shortly.',
+        )
+      }, 500)
     }
 
+    closeDialog()
     await workflowsStore.startWorkflow(workflowType, filter)
 
     if (workflowType === WorkflowType.ProcessData) {
-      showSuccessMessage('Download completed')
+      showSuccessMessage('File download completed')
     } else {
-      showSubmittedSuccesfully()
+      showStartMessage(
+        'Workflow submitted successfully. You can monitor the task progress using the System Monitor.',
+      )
     }
   } catch (e) {
     error = true
@@ -408,12 +422,6 @@ async function startWorkflow() {
   } finally {
     userId.value = crypto.randomUUID()
   }
-}
-
-function showSubmittedSuccesfully() {
-  showSuccessMessage(
-    'Workflow submitted successfully. Monitor task progress using System Monitor.',
-  )
 }
 
 function getRunTaskFilter(): PartialRunTaskFilter {
