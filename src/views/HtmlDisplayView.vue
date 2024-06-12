@@ -13,8 +13,9 @@ const route = useRoute()
 const configStore = useConfigStore()
 const url = computed(() => {
   const matchingComponent = configStore
-    .getComponentsByType('htmlDisplay')
+    .getComponentsByType('HtmlDisplay')
     ?.find((c) => c.path === route.params.path)
+  console.log(matchingComponent)
   return matchingComponent?.url
 })
 </script>
