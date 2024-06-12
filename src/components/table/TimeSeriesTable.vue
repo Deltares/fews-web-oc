@@ -203,10 +203,10 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const itemsPerPageOptions = [
-  { value: 50, title: '50' },
-  { value: 100, title: '100' },
   { value: 200, title: '200' },
   { value: 500, title: '500' },
+  { value: 1000, title: '1000' },
+  { value: 2000, title: '2000' },
   { value: -1, title: '$vuetify.dataFooter.itemsPerPageAll' },
 ]
 
@@ -493,6 +493,11 @@ td.sticky-column {
   left: 0;
   background-color: rgb(var(--v-theme-surface));
   border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+:deep(.v-select .v-select__selection-text) {
+  overflow: unset;
+  text-overflow: unset;
 }
 
 .v-table--fixed-header
