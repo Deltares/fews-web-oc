@@ -24,7 +24,7 @@
       :active="index === selectedIndex - 2"
       @click="onSelectInterval(index + 2)"
     >
-      {{ intervalToLocaleString(item) }}
+      {{ item.label }}
       <template v-slot:append="{ isActive }">
         <v-icon v-show="isActive" small> mdi-check </v-icon>
       </template>
@@ -33,12 +33,13 @@
 </template>
 
 <script setup lang="ts">
-import { DateTime, Duration } from 'luxon'
+import type { IntervalItem, Interval } from '@/lib/TimeControl/interval'
+import { isEqual } from 'lodash-es'
 import { onBeforeMount, ref, watch } from 'vue'
 
 interface Props {
-  modelValue: string
-  items: string[]
+  modelValue: Interval | undefined
+  items: IntervalItem[]
   now: Date
 }
 
@@ -57,24 +58,6 @@ onBeforeMount(() => {
   updateIndex(props.modelValue)
 })
 
-const intervalToLocaleString = (interval: string) => {
-  const parts = interval.split('/')
-  if (parts.length === 2) {
-    const startDateTime = DateTime.fromJSDate(props.now).plus(
-      Duration.fromISO(parts[0]),
-    )
-    const endDateTime = DateTime.fromJSDate(props.now).plus(
-      Duration.fromISO(parts[1]),
-    )
-    return startDateTime.toRelative() + ' / ' + endDateTime.toRelative()
-  } else {
-    const startDateTime = DateTime.fromJSDate(props.now).plus(
-      Duration.fromISO(parts[0]),
-    )
-    return startDateTime.toRelative()
-  }
-}
-
 const onSelectInterval = (index: number) => {
   let selectedInterval = undefined
   if (index === 0) {
@@ -87,14 +70,14 @@ const onSelectInterval = (index: number) => {
   emit('update:modelValue', selectedInterval)
 }
 
-function updateIndex(newValue: string | undefined) {
+function updateIndex(newValue: Interval | undefined) {
   if (newValue === 'default') {
     selectedIndex.value = 0
-  } else if (newValue === undefined) {
+  } else if (newValue === 'custom' || newValue === undefined) {
     selectedIndex.value = 1
   } else {
     selectedIndex.value =
-      props.items.findIndex((entry) => entry === newValue) + 2
+      props.items.findIndex((entry) => isEqual(entry, newValue)) + 2
   }
 }
 

@@ -1,12 +1,19 @@
-import { DateTime, Duration } from 'luxon'
+import type { Interval } from '@/lib/TimeControl/interval'
+import { DateTime, Duration, type DurationLikeObject } from 'luxon'
 import { defineStore } from 'pinia'
 
 export interface SystemTimeStore {
   systemTime: Date
   intervalTimer: undefined | number | ReturnType<typeof setInterval>
-  startTime: Date | null
-  endTime: Date | null
-  selectedInterval: string
+  startTime: Date | undefined
+  endTime: Date | undefined
+  selectedInterval: Interval | undefined
+}
+
+function datePlusDuration(date: Date, duration: DurationLikeObject) {
+  return DateTime.fromJSDate(date)
+    .plus(Duration.fromObject(duration))
+    .toJSDate()
 }
 
 export const useSystemTimeStore = () => {
@@ -15,8 +22,8 @@ export const useSystemTimeStore = () => {
     state: (): SystemTimeStore => ({
       systemTime: new Date(),
       intervalTimer: undefined,
-      startTime: null,
-      endTime: null,
+      startTime: undefined,
+      endTime: undefined,
       selectedInterval: 'default',
     }),
     actions: {
@@ -35,26 +42,19 @@ export const useSystemTimeStore = () => {
 
         if (this.selectedInterval === 'default') {
           // Use the FEWS default time interval.
-          this.startTime = null
-          this.endTime = null
+          this.startTime = undefined
+          this.endTime = undefined
         } else if (this.selectedInterval === 'custom') {
           // Use the custom time interval.
         } else {
           const now = this.systemTime
-          const interval = this.selectedInterval.split('/')
-          if (interval.length === 2) {
-            this.endTime = DateTime.fromJSDate(now)
-              .plus(Duration.fromISO(interval[1]))
-              .toJSDate()
-            this.startTime = DateTime.fromJSDate(now)
-              .plus(Duration.fromISO(interval[0]))
-              .toJSDate()
-          } else if (interval.length === 1) {
-            this.endTime = null
-            this.startTime = DateTime.fromJSDate(now)
-              .plus(Duration.fromISO(interval[0]))
-              .toJSDate()
-          }
+          const interval = this.selectedInterval
+          this.startTime = interval.start
+            ? datePlusDuration(now, interval.start)
+            : undefined
+          this.endTime = interval.end
+            ? datePlusDuration(now, interval.end)
+            : undefined
         }
       },
     },

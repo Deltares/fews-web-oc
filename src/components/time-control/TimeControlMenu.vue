@@ -106,8 +106,11 @@ import IntervalSelector from './IntervalSelector.vue'
 import { ref, computed } from 'vue'
 import { useSystemTimeStore } from '../../stores/systemTime'
 import { DateTime } from 'luxon'
+import { useConfigStore } from '@/stores/config'
+import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
 
 const store = useSystemTimeStore()
+const configStore = useConfigStore()
 const datesAreValid = ref(true)
 const DATE_FMT = 'yyyy-MM-dd'
 const rules = {
@@ -118,7 +121,10 @@ const rules = {
   },
 }
 
-const intervalItems = ['-PT12H', '-P1D', '-P1W', '-P2W', '-P1M', '-P1D/P11D']
+const intervalItems = computed(() => {
+  const presets = configStore.general.timeSettings?.viewPeriodPresets
+  return presets?.map(periodPresetToIntervalItem) ?? []
+})
 
 const dates = ref<[Date, Date]>([new Date(), new Date()])
 
