@@ -3,7 +3,11 @@
  */
 
 import { expect, test, describe } from 'vitest'
-import { floatPrecision, roundToStep, roundToDecimalPlaces } from './math'
+import {
+  floatPrecision,
+  roundToStepPrecision,
+  roundToDecimalPlaces,
+} from './math'
 
 describe('floatPrecision', () => {
   test('with 4 decimal places', () => {
@@ -23,37 +27,37 @@ describe('floatPrecision', () => {
   })
 })
 
-describe('roundToStep', () => {
+describe('roundToStepPrecision', () => {
   test('round to 0.1 with whole number', () => {
-    expect(roundToStep(54, 0.1)).toEqual(54)
+    expect(roundToStepPrecision(54, 0.1)).toEqual(54)
   })
 
   test('round to 0.01 with single decimal number', () => {
-    expect(roundToStep(54.1, 0.01)).toEqual(54.1)
+    expect(roundToStepPrecision(54.1, 0.01)).toEqual(54.1)
   })
 
   test('round to 0.1', () => {
-    expect(roundToStep(54.6545, 0.1)).toEqual(54.7)
+    expect(roundToStepPrecision(54.6545, 0.1)).toEqual(54.7)
   })
 
   test('round to 0.01', () => {
-    expect(roundToStep(54.6545, 0.01)).toEqual(54.65)
+    expect(roundToStepPrecision(54.6545, 0.01)).toEqual(54.65)
   })
 
   test('round to 1', () => {
-    expect(roundToStep(54.6545, 1)).toEqual(55)
+    expect(roundToStepPrecision(54.6545, 1)).toEqual(55)
   })
 
   test('round to 10', () => {
-    expect(roundToStep(54.6545, 10)).toEqual(55)
+    expect(roundToStepPrecision(54.6545, 10)).toEqual(55)
   })
 
   test('round to 100', () => {
-    expect(roundToStep(54.6545, 100)).toEqual(55)
+    expect(roundToStepPrecision(54.6545, 100)).toEqual(55)
   })
 
   test('round with negative number', () => {
-    expect(roundToStep(-54.6545, 0.1)).toEqual(-54.7)
+    expect(roundToStepPrecision(-54.6545, 0.1)).toEqual(-54.7)
   })
 })
 

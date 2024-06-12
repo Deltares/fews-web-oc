@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue'
-import { roundToStep } from '@/lib/utils/math'
+import { roundToStepPrecision } from '@/lib/utils/math'
 
 export interface BoundingBox {
   lonMin: number
@@ -29,7 +29,7 @@ function roundBoundingBox(
   longitudeStepSize: number,
   latitudeStepSize: number,
 ): BoundingBox | null {
-  const round = (
+  const roundToStep = (
     value: number,
     step: number,
     rounding: 'lower' | 'upper',
@@ -44,14 +44,14 @@ function roundBoundingBox(
       : Math.ceil(absValue / step)
 
     const result = Math.sign(value) * numSteps * step
-    return roundToStep(result, step)
+    return roundToStepPrecision(result, step)
   }
   // Round the bounding box to the specified step size.
   return {
-    lonMin: round(boundingBox.lonMin, longitudeStepSize, 'lower'),
-    lonMax: round(boundingBox.lonMax, longitudeStepSize, 'upper'),
-    latMin: round(boundingBox.latMin, latitudeStepSize, 'lower'),
-    latMax: round(boundingBox.latMax, latitudeStepSize, 'upper'),
+    lonMin: roundToStep(boundingBox.lonMin, longitudeStepSize, 'lower'),
+    lonMax: roundToStep(boundingBox.lonMax, longitudeStepSize, 'upper'),
+    latMin: roundToStep(boundingBox.latMin, latitudeStepSize, 'lower'),
+    latMax: roundToStep(boundingBox.latMax, latitudeStepSize, 'upper'),
   }
 }
 

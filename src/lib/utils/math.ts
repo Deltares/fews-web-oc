@@ -17,14 +17,14 @@ export function floatPrecision(a: number): number {
 }
 
 /**
- * Round a number to the nearest step
+ * Round a number to the nearest step precision
  * @param {number} value - The number to round.
  * @param {number} step - The step to round to.
  * @returns {number} The rounded number.
  * @example
- * roundToStep(54.6545, 0.1) // 54.7
+ * roundToStepPrecision(54.6545, 0.1) // 54.7
  */
-export function roundToStep(value: number, step: number): number {
+export function roundToStepPrecision(value: number, step: number): number {
   const precision = floatPrecision(step)
   return roundToDecimalPlaces(value, precision)
 }
