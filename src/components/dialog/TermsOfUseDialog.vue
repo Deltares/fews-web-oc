@@ -6,7 +6,7 @@
       <v-card-actions class="pt-0">
         <v-checkbox
           v-model="isInAgreement"
-          label="I agree to the terms and conditions"
+          label="I have read and agree to the Terms and Conditions"
           hide-details
           density="comfortable"
         />
@@ -18,7 +18,7 @@
           class="text-capitalize"
           :disabled="!isInAgreement"
         >
-          I Agree
+          Accept
         </v-btn>
       </v-card-actions>
     </v-card>
