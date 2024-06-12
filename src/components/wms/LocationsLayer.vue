@@ -13,6 +13,7 @@
       :paint="paintCircleSpecification"
     />
     <mgl-symbol-layer
+      v-if="showNames"
       :layer-id="locationsTextLayerId"
       :layout="layoutTextSpecification"
       :paint="paintTextSpecification"
@@ -38,6 +39,12 @@ import { watch, onBeforeUnmount, computed } from 'vue'
 import { onBeforeMount } from 'vue'
 import { addLocationIconsToMap } from '@/lib/location-icons'
 import { useDark } from '@vueuse/core'
+import { useUserSettingsStore } from '@/stores/userSettings'
+
+const settings = useUserSettingsStore()
+const showNames = computed(() => {
+  return settings.get('ui.map.showLocationNames')?.value
+})
 
 interface Props {
   locationsGeoJson: FeatureCollection<Geometry, Location>
