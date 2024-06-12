@@ -52,7 +52,7 @@ const parameterGroupKey = 'units.parameterGroup.'
 export const useUserSettingsStore = defineStore({
   id: 'userSettings',
   state: (): UserSettingsState => ({
-    groups: ['Units', 'Datum', 'UI'],
+    groups: ['Units', 'Datum', 'UI', 'Map'],
     items: defaultUserSettings,
     convertDatum: false,
     useDisplayUnits: true,
