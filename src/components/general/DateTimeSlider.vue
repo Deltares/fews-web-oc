@@ -155,13 +155,6 @@ onMounted(() => {
   }
 })
 
-watch(
-  () => props.hideSpeedControls,
-  () => {
-    console.log('mobile', props.hideSpeedControls)
-  },
-)
-
 const marks = computed(() => {
   const dayMarks: Record<string, any> = {}
   const dateScale = scaleTime().domain(props.dates)
