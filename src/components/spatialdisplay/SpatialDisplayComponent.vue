@@ -94,10 +94,20 @@
     @update:selectedDate="updateTime"
     class="spatial-display__slider"
     :hide-speed-controls="mobile"
-  />
+  >
+    <template #under-slider>
+      <DateTimeSliderValues
+        :values="maxValuesTimeSeries ?? []"
+        :colour-scale="colourScalesStore.currentScale ?? null"
+        height="5px"
+        class="mb-1"
+      />
+    </template>
+  </DateTimeSlider>
 </template>
 
 <script setup lang="ts">
+import DateTimeSliderValues from '@/components/general/DateTimeSliderValues.vue'
 import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
@@ -140,6 +150,7 @@ import {
   styleToId,
 } from '@/lib/legend'
 import { useWorkflowsStore } from '@/stores/workflows'
+import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -158,6 +169,7 @@ interface Props {
   latitude?: string
   longitude?: string
   currentTime?: Date
+  maxValuesTimeSeries?: TimeSeriesData[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
