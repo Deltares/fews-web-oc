@@ -4,26 +4,22 @@
       <v-card-title class="text-h5">Terms of Use</v-card-title>
       <HtmlDisplay :url="url" />
       <v-card-actions class="pt-0">
-        <div class="d-flex flex-column w-100 mx-2">
-          <v-checkbox
-            v-model="isInAgreement"
-            label="I agree to the terms and conditions"
-            hide-details
-            density="comfortable"
-          />
-          <div class="d-flex mb-2">
-            <v-spacer />
-            <v-btn
-              @click="onAgreeClick"
-              variant="flat"
-              color="primary"
-              class="text-capitalize"
-              :disabled="!isInAgreement"
-            >
-              I Agree
-            </v-btn>
-          </div>
-        </div>
+        <v-checkbox
+          v-model="isInAgreement"
+          label="I agree to the terms and conditions"
+          hide-details
+          density="comfortable"
+        />
+        <v-spacer />
+        <v-btn
+          @click="onAgreeClick"
+          variant="flat"
+          color="primary"
+          class="text-capitalize"
+          :disabled="!isInAgreement"
+        >
+          I Agree
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
