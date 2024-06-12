@@ -24,13 +24,6 @@
     "group": "Datum"
   },
   {
-    "id": "ui.map.showLocationNames",
-    "type": "boolean",
-    "label": "Show location names",
-    "value": true,
-    "group": "UI"
-  },
-  {
     "id": "ui.theme",
     "type": "oneOfMultiple",
     "label": "Theme",
@@ -46,27 +39,6 @@
       },
       {
         "value": "dark",
-        "icon": "mdi-weather-night"
-      }
-    ],
-    "group": "UI"
-  },
-  {
-    "id": "ui.map.theme",
-    "type": "oneOfMultiple",
-    "label": "Basemap",
-    "value": "carto-db-automatic",
-    "items": [
-      {
-        "value": "carto-db-automatic",
-        "icon": "mdi-theme-light-dark"
-      },
-      {
-        "value": "carto-db-light",
-        "icon": "mdi-weather-sunny"
-      },
-      {
-        "value": "carto-dark-matter",
         "icon": "mdi-weather-night"
       }
     ],
@@ -92,5 +64,33 @@
       }
     ],
     "group": "UI"
+  },
+  {
+    "id": "ui.map.theme",
+    "type": "oneOfMultiple",
+    "label": "Basemap",
+    "value": "carto-db-automatic",
+    "items": [
+      {
+        "value": "carto-db-automatic",
+        "icon": "mdi-theme-light-dark"
+      },
+      {
+        "value": "carto-db-light",
+        "icon": "mdi-weather-sunny"
+      },
+      {
+        "value": "carto-dark-matter",
+        "icon": "mdi-weather-night"
+      }
+    ],
+    "group": "Map"
+  },
+  {
+    "id": "ui.map.showLocationNames",
+    "type": "boolean",
+    "label": "Show location names",
+    "value": true,
+    "group": "Map"
   }
 ]
