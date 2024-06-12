@@ -309,6 +309,11 @@ const refreshChart = () => {
   for (const id of removeIds) {
     axis.removeChart(id)
   }
+  if (props.config.xAxis) {
+    axis.setOptions({
+      x: props.config.xAxis,
+    })
+  }
   if (props.config.yAxis) {
     axis.setOptions({
       y: props.config.yAxis,
