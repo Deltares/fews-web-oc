@@ -47,6 +47,20 @@
       </KeepAlive>
     </v-window-item>
   </v-window>
+  <v-dialog v-model="confirmationDialog" persistent max-width="500">
+    <v-card prepend-icon="mdi-content-save" title="Unsaved Changes">
+      <v-card-text>
+        You have unsaved changes. Are you sure you want to leave?
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn varint="flat" @click="onConfirmationCancel"> Cancel </v-btn>
+        <v-btn color="error" variant="flat" @click="onConfirmationLeave">
+          Leave
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -69,6 +83,7 @@ import { useSystemTimeStore } from '@/stores/systemTime'
 import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 import { useDisplay } from 'vuetify'
 import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
+import { until } from '@vueuse/core'
 
 interface Props {
   config?: DisplayConfig
@@ -110,6 +125,7 @@ const props = withDefaults(defineProps<Props>(), {
 const store = useSystemTimeStore()
 const lastUpdated = ref<Date>(new Date())
 const isEditing = ref(false)
+const confirmationDialog = ref(false)
 const { xs } = useDisplay()
 
 const options = computed<UseTimeSeriesOptions>(() => {
@@ -202,20 +218,28 @@ onUnmounted(() => {
 
 onBeforeRouteLeave(confirmUnsavedChanges)
 onBeforeRouteUpdate(confirmUnsavedChanges)
-function confirmUnsavedChanges() {
+async function confirmUnsavedChanges() {
   if (isEditing.value) {
     // For multiple simultaneous leaves set to false since confirm dialog is async
     isEditing.value = false
 
-    const answer = window.confirm(
-      'You have unsaved changes. Are you sure you want to leave?',
-    )
+    confirmationDialog.value = true
+    await until(confirmationDialog).toBe(false)
 
-    if (!answer) {
-      isEditing.value = true
+    if (isEditing.value) {
       return false
     }
   }
+}
+
+function onConfirmationCancel() {
+  confirmationDialog.value = false
+  isEditing.value = true
+}
+
+function onConfirmationLeave() {
+  confirmationDialog.value = false
+  isEditing.value = false
 }
 </script>
 
