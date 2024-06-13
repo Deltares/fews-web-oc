@@ -62,6 +62,7 @@ import { Series } from '../../lib/timeseries/timeSeries.js'
 import uniq from 'lodash-es/uniq'
 import { VChipGroup } from 'vuetify/components'
 import { difference } from 'lodash-es'
+import { dataFromResources } from '@/lib/charts/dataFromResources.js'
 
 const LEGEND_HEIGHT = 76
 
@@ -163,8 +164,7 @@ const setChartConfigValues = (axisOptions: CartesianAxesOptions) => {
 
 const addToChart = (chartSeries: ChartSeries) => {
   const id = chartSeries.id
-  const seriesData = props.series[chartSeries.dataResources[0]]
-  const data = seriesData?.data !== undefined ? seriesData.data : []
+  const data = dataFromResources([chartSeries.dataResources[0]], props.series)
   const line = new ChartLine(data, {
     tooltip: {
       toolTipFormatter: () => {
