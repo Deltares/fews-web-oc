@@ -20,58 +20,24 @@
             v-model="datesAreValid"
             :disabled="store.selectedInterval !== 'custom'"
           >
-            <v-card-actions>
-              <v-text-field
-                v-model="startDateString"
+            <div class="pa-4">
+              <v-date-input
+                v-model="customStartDate"
+                :disabled="store.selectedInterval !== 'custom'"
                 label="Start"
                 density="compact"
                 variant="solo-filled"
                 flat
-                :rules="[rules.required, rules.date]"
-              >
-                <template v-slot:prepend>
-                  <v-menu offset-y :close-on-content-click="false">
-                    <template v-slot:activator="{ props }">
-                      <v-icon v-bind="props">mdi-calendar-start</v-icon>
-                    </template>
-                    <v-date-picker
-                      v-model="startDates"
-                      multiple
-                      no-title
-                      hide-actions
-                    >
-                      <template #header></template>
-                    </v-date-picker>
-                  </v-menu>
-                </template>
-              </v-text-field>
-            </v-card-actions>
-            <v-card-actions>
-              <v-text-field
-                v-model="endDateString"
+              />
+              <v-date-input
+                v-model="customEndDate"
+                :disabled="store.selectedInterval !== 'custom'"
                 label="End"
                 density="compact"
                 variant="solo-filled"
                 flat
-                :rules="[rules.required, rules.date]"
-              >
-                <template v-slot:prepend>
-                  <v-menu offset-y :close-on-content-click="false">
-                    <template v-slot:activator="{ props }">
-                      <v-icon v-bind="props">mdi-calendar-end</v-icon>
-                    </template>
-                    <v-date-picker
-                      v-model="endDates"
-                      multiple
-                      no-title
-                      hide-actions
-                    >
-                      <template #header></template>
-                    </v-date-picker>
-                  </v-menu>
-                </template>
-              </v-text-field>
-            </v-card-actions>
+              />
+            </div>
           </v-form>
         </v-col>
         <v-col>
@@ -102,66 +68,30 @@
 
 <script setup lang="ts">
 import IntervalSelector from './IntervalSelector.vue'
+import { VDateInput } from 'vuetify/labs/components'
 
-import { ref, computed } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 import { useSystemTimeStore } from '../../stores/systemTime'
-import { DateTime } from 'luxon'
 import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
 
 const store = useSystemTimeStore()
 const configStore = useConfigStore()
 const datesAreValid = ref(true)
-const DATE_FMT = 'yyyy-MM-dd'
-const rules = {
-  required: (value: string) => (value !== undefined && !!value) || 'Required',
-  date: (value: string) => {
-    const date = DateTime.fromFormat(value || '', DATE_FMT)
-    return !isNaN(date.valueOf()) || 'Invalid date'
-  },
-}
 
 const intervalItems = computed(() => {
   const presets = configStore.general.timeSettings?.viewPeriodPresets
   return presets?.map(periodPresetToIntervalItem) ?? []
 })
 
-const dates = ref<[Date, Date]>([new Date(), new Date()])
+const customStartDate = ref<Date>()
+const customEndDate = ref<Date>()
 
-const startDates = computed({
-  get() {
-    return [dates.value[0]]
-  },
-  set(newValue: Date[]) {
-    dates.value[0] = newValue[0]
-  },
-})
-
-const endDates = computed({
-  get() {
-    return [dates.value[1]]
-  },
-  set(newValue: Date[]) {
-    dates.value[1] = newValue[0]
-  },
-})
-
-const startDateString = computed({
-  get() {
-    return DateTime.fromJSDate(dates.value[0]).toFormat(DATE_FMT)
-  },
-  set(newValue: string) {
-    dates.value[0] = DateTime.fromFormat(newValue, DATE_FMT).toJSDate()
-  },
-})
-
-const endDateString = computed({
-  get() {
-    return DateTime.fromJSDate(dates.value[1]).toFormat(DATE_FMT)
-  },
-  set(newValue: string) {
-    dates.value[1] = DateTime.fromFormat(newValue, DATE_FMT).toJSDate()
-  },
+watchEffect(() => {
+  if (store.selectedInterval === 'custom') {
+    store.startTime = customStartDate.value
+    store.endTime = customEndDate.value
+  }
 })
 
 function onIntervalChange() {
