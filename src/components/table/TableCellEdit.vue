@@ -45,8 +45,8 @@ const tempPossibleFlagEdits: Record<
   Reliable: undefined,
   Doubtful: undefined,
   Unreliable: undefined,
-  'Accumulation Reset': undefined,
   'Persistent Unreliable': undefined,
+  'Accumulation Reset': undefined,
 }
 const possibleFlagEdits = Object.keys(tempPossibleFlagEdits)
 
