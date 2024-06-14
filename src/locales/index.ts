@@ -1,7 +1,7 @@
 import { en, nl } from 'vuetify/locale'
 import enCustom from './en.json'
 import nlCustom from './nl.json'
-import type { DateTimeFormat } from '@intlify/core-base'
+import type { DateTimeFormatOptions } from '@intlify/core-base'
 
 export const messages = {
   en: {
@@ -18,36 +18,67 @@ export const messages = {
   },
 }
 
-export const datetimeFormats: Record<keyof typeof messages, DateTimeFormat> = {
+export type DateTimeFormatWithOverride = {
+  [key: string]: DateTimeFormatOptions & { overrideTimeZone?: boolean }
+}
+
+export const datetimeFormats: Record<
+  keyof typeof messages,
+  DateTimeFormatWithOverride
+> = {
   en: {
-    time: {
-      hour: 'numeric',
-      minute: 'numeric',
-      timeZoneName: 'short',
-    },
     datetimeslider: {
       year: 'numeric',
       month: 'numeric',
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric',
-      second: 'numeric',
       hour12: true,
+      timeZone: 'UTC',
+      overrideTimeZone: true,
+    },
+    table: {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      timeZone: 'UTC',
+      overrideTimeZone: true,
+    },
+    time: {
+      hour: 'numeric',
+      minute: 'numeric',
+      timeZoneName: 'short',
+      timeZone: 'UTC',
+      overrideTimeZone: true,
     },
   },
   nl: {
-    time: {
-      hour: 'numeric',
-      minute: 'numeric',
-      timeZoneName: 'short',
-    },
     datetimeslider: {
       year: 'numeric',
       month: 'numeric',
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric',
-      second: 'numeric',
+      timeZone: 'Europe/Amsterdam',
+      overrideTimeZone: true,
+    },
+    table: {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      timeZone: 'Europe/Amsterdam',
+      overrideTimeZone: true,
+    },
+    time: {
+      hour: 'numeric',
+      minute: 'numeric',
+      timeZoneName: 'short',
+      timeZone: 'Europe/Amsterdam',
+      overrideTimeZone: true,
     },
   },
 } as const

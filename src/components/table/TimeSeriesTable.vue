@@ -132,7 +132,7 @@
               type="datetime-local"
             />
             <div v-else>
-              {{ dateFormatter.format(item.date) }}
+              {{ d(item.date, 'table') }}
             </div>
           </td>
           <td v-for="id in seriesIds">
@@ -160,6 +160,8 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
 import { watchDebounced } from '@vueuse/core'
 import TableTooltip from './TableTooltip.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -168,7 +170,6 @@ import { getUniqueSeriesIds } from '@/lib/charts/getUniqueSeriesIds'
 import type { TableHeaders } from '@/lib/table/types/TableHeaders'
 import { createTableHeaders } from '@/lib/table/createTableHeaders'
 import {
-  dateFormatter,
   createTableData,
   tableDataToTimeSeries,
   type TableData,
@@ -184,6 +185,8 @@ import {
   getMidpointOfDates,
   toISOString,
 } from '@/lib/date'
+
+const { d } = useI18n()
 
 interface Props {
   config: ChartConfig

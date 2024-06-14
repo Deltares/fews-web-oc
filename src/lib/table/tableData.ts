@@ -22,16 +22,6 @@ export interface TableData {
   [key: string]: Partial<TableSeriesData> | Date
 }
 
-export const dateFormatter = new Intl.DateTimeFormat(undefined, {
-  year: 'numeric',
-  month: 'numeric',
-  day: 'numeric',
-  hour: 'numeric',
-  minute: 'numeric',
-  second: 'numeric',
-  hour12: false,
-})
-
 /**
  *
  * Creates table data based of the given series IDs, based on the chart series and the time series.
