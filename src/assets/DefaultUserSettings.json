@@ -66,6 +66,42 @@
     "group": "UI"
   },
   {
+    "id": "ui.locale",
+    "type": "oneOfMultiple",
+    "label": "Locale",
+    "value": "en",
+    "items": [
+      {
+        "value": "en"
+      },
+      {
+        "value": "nl"
+      }
+    ],
+    "group": "UI"
+  },
+  {
+    "id": "ui.timeZone",
+    "type": "oneOfMultiple",
+    "label": "Time Zone",
+    "value": "user",
+    "items": [
+      {
+        "value": "user"
+      },
+      {
+        "value": "UTC"
+      },
+      {
+        "value": "Etc/GMT-1"
+      },
+      {
+        "value": "Europe/Amsterdam"
+      }
+    ],
+    "group": "UI"
+  },
+  {
     "id": "ui.map.theme",
     "type": "oneOfMultiple",
     "label": "Basemap",

@@ -2,13 +2,7 @@
   <v-menu left bottom :close-on-content-click="false" class="menu">
     <template v-slot:activator="{ props, isActive }">
       <v-btn v-bind="props" variant="tonal" rounded>
-        {{
-          Intl.DateTimeFormat('nl', {
-            hour: '2-digit',
-            minute: '2-digit',
-            timeZoneName: 'short',
-          }).format(store.systemTime)
-        }}
+        {{ $d(store.systemTime, 'time') }}
         <v-icon>{{ isActive ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
       </v-btn>
     </template>
@@ -85,15 +79,9 @@
         </v-col>
       </v-row>
       <v-card-actions>
-        <span>Browser time:</span>
+        <span v-t="'time.browserTime'"></span>
         <v-chip small>
-          {{
-            Intl.DateTimeFormat('nl', {
-              hour: '2-digit',
-              minute: '2-digit',
-              timeZoneName: 'short',
-            }).format(store.systemTime)
-          }}
+          {{ $d(store.systemTime, 'time') }}
         </v-chip>
       </v-card-actions>
     </v-card>
@@ -106,7 +94,9 @@ import IntervalSelector from './IntervalSelector.vue'
 import { ref, computed } from 'vue'
 import { useSystemTimeStore } from '../../stores/systemTime'
 import { DateTime } from 'luxon'
+import { useI18n } from 'vue-i18n'
 
+const { locale } = useI18n()
 const store = useSystemTimeStore()
 const datesAreValid = ref(true)
 const DATE_FMT = 'yyyy-MM-dd'
@@ -142,7 +132,9 @@ const endDates = computed({
 
 const startDateString = computed({
   get() {
-    return DateTime.fromJSDate(dates.value[0]).toFormat(DATE_FMT)
+    return DateTime.fromJSDate(dates.value[0])
+      .setLocale(locale.value)
+      .toFormat(DATE_FMT)
   },
   set(newValue: string) {
     dates.value[0] = DateTime.fromFormat(newValue, DATE_FMT).toJSDate()
@@ -151,7 +143,9 @@ const startDateString = computed({
 
 const endDateString = computed({
   get() {
-    return DateTime.fromJSDate(dates.value[1]).toFormat(DATE_FMT)
+    return DateTime.fromJSDate(dates.value[1])
+      .setLocale(locale.value)
+      .toFormat(DATE_FMT)
   },
   set(newValue: string) {
     dates.value[1] = DateTime.fromFormat(newValue, DATE_FMT).toJSDate()

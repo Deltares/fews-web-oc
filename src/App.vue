@@ -11,6 +11,8 @@
 
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import EmptyLayout from './layouts/EmptyLayout.vue'
 
@@ -23,6 +25,9 @@ import { usePreferredDark } from '@vueuse/core'
 import { useDark, useToggle } from '@vueuse/core'
 
 import '@/assets/fews-flags.css'
+import { DateTimeFormatWithOverride } from './locales'
+
+const { locale, getDateTimeFormat, setDateTimeFormat } = useI18n()
 
 const route = useRoute()
 const configStore = useConfigStore()
@@ -34,6 +39,7 @@ const toggleDark = useToggle(isDark)
 
 onMounted(() => {
   updateTheme()
+  updateDateTimeFormat()
 })
 
 const layoutComponent = computed(() => {
@@ -77,6 +83,28 @@ function updateTheme(theme?: string) {
   }
 }
 
+function updateDateTimeFormat() {
+  const currentLocale =
+    (userSettingsStore.get('ui.locale')?.value as string) ?? 'en'
+  const timeZoneSetting =
+    (userSettingsStore.get('ui.timeZone')?.value as string) ?? 'user'
+  // Reset locale to force rerender after dateTimeFormat
+  locale.value = ''
+  let timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  if (timeZoneSetting !== 'user') {
+    timeZone = timeZoneSetting
+  }
+  const dateTimeFormat = getDateTimeFormat(
+    currentLocale,
+  ) as DateTimeFormatWithOverride
+  for (const key in dateTimeFormat) {
+    if (dateTimeFormat[key].overrideTimeZone === false) continue
+    dateTimeFormat[key].timeZone = timeZone
+  }
+  setDateTimeFormat(currentLocale, dateTimeFormat)
+  locale.value = currentLocale
+}
+
 function setTheme(setDark: boolean): void {
   theme.global.name.value = setDark ? 'dark' : 'light'
   if (setDark !== isDark.value) {
@@ -90,6 +118,10 @@ userSettingsStore.$onAction(({ name, args }) => {
     switch (item.id) {
       case 'ui.theme':
         updateTheme(item.value as string)
+        break
+      case 'ui.locale':
+      case 'ui.timeZone':
+        updateDateTimeFormat()
         break
       default:
     }
