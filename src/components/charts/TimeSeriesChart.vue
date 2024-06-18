@@ -68,7 +68,10 @@ import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
 import type { ThresholdLine } from '../../lib/charts/types/ThresholdLine.js'
 import { Series } from '../../lib/timeseries/timeSeries.js'
-import { dataFromResources } from '../../lib/charts/dataFromResources'
+import {
+  dataFromResources,
+  filterUnreliableData,
+} from '@/lib/charts/dataFromResources'
 import uniq from 'lodash-es/uniq'
 import { extent } from 'd3'
 import { VChipGroup } from 'vuetify/components'
@@ -186,7 +189,8 @@ watch(
 const addToChart = (chartSeries: ChartSeries) => {
   const id = chartSeries.id
 
-  const data = dataFromResources(chartSeries.dataResources, props.series)
+  const rawData = dataFromResources(chartSeries.dataResources, props.series)
+  const data = filterUnreliableData(rawData)
 
   const tooltip: TooltipOptions = {
     toolTipFormatter: (d) => {

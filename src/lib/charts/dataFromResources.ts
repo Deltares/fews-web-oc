@@ -6,7 +6,13 @@ import type {
   TimeSeriesData,
 } from '../timeseries/types/SeriesData'
 
+/**
+ * Determines if the specified data is reliable.
+ * @param data - A SeriesData or SeriesArrayData object.
+ * @returns True if the data is reliable, false otherwise.
+ */
 export function isReliableData(data: SeriesArrayData | SeriesData) {
+  // Hardcoded unreliable flags since backend does not provide this information
   const unreliableFlags = ['6', '7', '8']
   return !unreliableFlags.includes(data.flag)
 }
@@ -57,5 +63,14 @@ export function dataFromResources(
   } else {
     data = series[dataResourceIds[0]]?.data ?? []
   }
-  return data.filter(isReliableData) ?? []
+  return data
+}
+
+/**
+ * Filters out unreliable data from a list of SeriesData or SeriesArrayData objects.
+ * @param data - An array of SeriesData or SeriesArrayData objects.
+ * @returns An array of SeriesData or SeriesArrayData objects with unreliable data removed.
+ */
+export function filterUnreliableData(data: (SeriesArrayData | SeriesData)[]) {
+  return data.filter(isReliableData)
 }
