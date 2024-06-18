@@ -33,6 +33,9 @@
           >
         </template>
       </vue-slider>
+      <div class="w-100">
+        <slot name="under-slider"></slot>
+      </div>
     </div>
     <div class="datetime-slider__actions">
       <slot name="prepend"></slot>
@@ -151,13 +154,6 @@ onMounted(() => {
     startFollowNow()
   }
 })
-
-watch(
-  () => props.hideSpeedControls,
-  () => {
-    console.log('mobile', props.hideSpeedControls)
-  },
-)
 
 const marks = computed(() => {
   const dayMarks: Record<string, any> = {}

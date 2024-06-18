@@ -1,4 +1,8 @@
 import {
+  PiWebserviceProvider,
+  type TimeSeriesGridMaxValuesFilter,
+} from '@deltares/fews-pi-requests'
+import {
   BoundingBox,
   GetCapabilitiesResponse,
   Layer,
@@ -14,6 +18,8 @@ import { GetLegendGraphicResponse } from '@deltares/fews-wms-requests/src/respon
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { Style } from '@deltares/fews-wms-requests'
 import { styleToId } from '@/lib/legend'
+import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
+import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 
 export interface UseWmsReturn {
   layerCapabilities: Ref<Layer | undefined>
@@ -127,6 +133,58 @@ export function useWmsLegend(
     loadLegend()
   })
   return legendGraphic
+}
+
+export function useWmsMaxValuesTimeSeries(
+  baseUrl: string,
+  layerName: MaybeRefOrGetter<string>,
+  start: MaybeRefOrGetter<Date | null>,
+  end: MaybeRefOrGetter<Date | null>,
+): Ref<TimeSeriesData[]> {
+  const piProvider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
+  const timeSeries = ref<TimeSeriesData[]>([])
+  watchEffect(async () => {
+    const _layerName = toValue(layerName)
+    const _start = toValue(start)
+    const _end = toValue(end)
+    if (_layerName !== '' && _start && _end) {
+      const filter: TimeSeriesGridMaxValuesFilter = {
+        startTime: _start.toISOString(),
+        endTime: _end.toISOString(),
+        layers: toValue(layerName),
+      }
+      const response = await piProvider.getTimeSeriesGridMaxValues(filter)
+      if (response && response.timeSeries && response.timeSeries.length > 0) {
+        // We will always have only one series of maximum values for a layer.
+        const series = response.timeSeries[0]
+        if (series.events) {
+          const missingValue = series.header?.missVal ?? ''
+          // If we successfully fetched, update the time series to the fetched
+          // values.
+          timeSeries.value = series.events.map((event) => {
+            const date = convertFewsPiDateTimeToJsDate(
+              { date: event.date, time: event.time },
+              'Z',
+            )
+            const value = event.value === missingValue ? null : +event.value
+            return {
+              x: date,
+              y: value,
+              flag: event.flag,
+            }
+          })
+          return
+        }
+      }
+    }
+    // In all other cases, reset the time series.
+    timeSeries.value = []
+  })
+
+  return timeSeries
 }
 
 export function fetchWmsLegend(

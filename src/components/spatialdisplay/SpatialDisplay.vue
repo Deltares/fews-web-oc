@@ -10,6 +10,7 @@
         @changeLocationId="onLocationChange"
         :layer-capabilities="layerCapabilities"
         :times="times"
+        :max-values-time-series="maxValuesTimeSeries"
         v-model:elevation="elevation"
         v-model:current-time="currentTime"
         @coordinate-click="onCoordinateClick"
@@ -34,7 +35,10 @@ import { configManager } from '@/services/application-config'
 import { useRoute, useRouter } from 'vue-router'
 import { findParentRoute } from '@/router'
 import { onMounted } from 'vue'
-import { useWmsLayerCapabilities } from '@/services/useWms'
+import {
+  useWmsLayerCapabilities,
+  useWmsMaxValuesTimeSeries,
+} from '@/services/useWms'
 import {
   filterActionsFilter,
   timeSeriesGridActionsFilter,
@@ -66,6 +70,21 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { layerCapabilities, times } = useWmsLayerCapabilities(
   baseUrl,
   () => props.layerName,
+)
+
+const start = computed(() => {
+  if (!times.value || times.value.length === 0) return null
+  return times.value[0]
+})
+const end = computed(() => {
+  if (!times.value || times.value.length === 0) return null
+  return times.value[times.value.length - 1]
+})
+const maxValuesTimeSeries = useWmsMaxValuesTimeSeries(
+  baseUrl,
+  () => props.layerName,
+  start,
+  end,
 )
 
 function getFilterActionsFilter(): filterActionsFilter &
