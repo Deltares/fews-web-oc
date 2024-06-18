@@ -20,9 +20,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-
 import { BoundingBox, boundingBoxToString } from '@/services/useBoundingBox'
-
 import DrawBoundingBoxControl from '@/components/map/DrawBoundingBoxControl.vue'
 
 const boundingBox = defineModel<BoundingBox | null>('boundingBox', {

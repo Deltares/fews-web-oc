@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue'
+import { roundToStepPrecision } from '@/lib/utils/math'
 
 export interface BoundingBox {
   lonMin: number
@@ -41,7 +42,9 @@ function roundBoundingBox(
     const numSteps = doFloor
       ? Math.floor(absValue / step)
       : Math.ceil(absValue / step)
-    return Math.sign(value) * numSteps * step
+
+    const result = Math.sign(value) * numSteps * step
+    return roundToStepPrecision(result, step)
   }
   // Round the bounding box to the specified step size.
   return {

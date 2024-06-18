@@ -45,18 +45,7 @@ import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/antd.css'
 import { watchEffect } from 'vue'
 import { scaleLinear } from 'd3-scale'
-
-// Get decimal places of float (e.g. floatPrecision(54.6545) == 4)
-function floatPrecision(a: number) {
-  if (!isFinite(a)) return 0
-  var e = 1,
-    p = 0
-  while (Math.round(a * e) / e !== a) {
-    e *= 10
-    p++
-  }
-  return p
-}
+import { floatPrecision } from '@/lib/utils/math'
 
 interface Props {
   modelValue: number
