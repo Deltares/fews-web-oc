@@ -264,11 +264,17 @@ watch(isEditing, (value) => {
   emit('update:isEditing', value)
 })
 
-watch(props.config, () => {
-  if (props.config === undefined) return
-  seriesIds.value = getUniqueSeriesIds(props.config.series)
-  tableHeaders.value = createTableHeaders(props.config.series, seriesIds.value)
-})
+watch(
+  () => props.config,
+  () => {
+    if (props.config === undefined) return
+    seriesIds.value = getUniqueSeriesIds(props.config.series)
+    tableHeaders.value = createTableHeaders(
+      props.config.series,
+      seriesIds.value,
+    )
+  },
+)
 
 watchDebounced(
   props.series,
