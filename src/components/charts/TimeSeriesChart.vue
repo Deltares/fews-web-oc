@@ -70,7 +70,7 @@ import type { ThresholdLine } from '../../lib/charts/types/ThresholdLine.js'
 import { Series } from '../../lib/timeseries/timeSeries.js'
 import {
   dataFromResources,
-  filterUnreliableData,
+  removeUnreliableData,
 } from '@/lib/charts/dataFromResources'
 import uniq from 'lodash-es/uniq'
 import { extent } from 'd3'
@@ -190,7 +190,7 @@ const addToChart = (chartSeries: ChartSeries) => {
   const id = chartSeries.id
 
   const rawData = dataFromResources(chartSeries.dataResources, props.series)
-  const data = filterUnreliableData(rawData)
+  const data = removeUnreliableData(rawData)
 
   const tooltip: TooltipOptions = {
     toolTipFormatter: (d) => {

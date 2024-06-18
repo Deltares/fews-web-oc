@@ -71,6 +71,6 @@ export function dataFromResources(
  * @param data - An array of SeriesData or SeriesArrayData objects.
  * @returns An array of SeriesData or SeriesArrayData objects with unreliable data removed.
  */
-export function filterUnreliableData(data: (SeriesArrayData | SeriesData)[]) {
+export function removeUnreliableData(data: (SeriesArrayData | SeriesData)[]) {
   return data.filter(isReliableData)
 }

@@ -64,7 +64,7 @@ import { VChipGroup } from 'vuetify/components'
 import { difference } from 'lodash-es'
 import {
   dataFromResources,
-  filterUnreliableData,
+  removeUnreliableData,
 } from '@/lib/charts/dataFromResources'
 
 const LEGEND_HEIGHT = 76
@@ -169,7 +169,7 @@ const addToChart = (chartSeries: ChartSeries) => {
   const id = chartSeries.id
 
   const rawData = dataFromResources(chartSeries.dataResources, props.series)
-  const data = filterUnreliableData(rawData)
+  const data = removeUnreliableData(rawData)
 
   const line = new ChartLine(data, {
     tooltip: {
