@@ -7,7 +7,7 @@ export interface SystemTimeStore {
   intervalTimer: undefined | number | ReturnType<typeof setInterval>
   startTime: Date | undefined
   endTime: Date | undefined
-  selectedInterval: Interval | undefined
+  selectedInterval: Interval
 }
 
 function datePlusDuration(date: Date, duration: DurationLikeObject) {
@@ -38,8 +38,6 @@ export const useSystemTimeStore = () => {
         this.intervalTimer = undefined
       },
       changeInterval() {
-        if (!this.selectedInterval) return
-
         if (this.selectedInterval === 'default') {
           // Use the FEWS default time interval.
           this.startTime = undefined

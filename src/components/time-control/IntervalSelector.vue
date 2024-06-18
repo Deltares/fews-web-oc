@@ -34,39 +34,35 @@ import { isEqual } from 'lodash-es'
 import { onBeforeMount, ref, watch } from 'vue'
 
 interface Props {
-  modelValue: Interval | undefined
   items: IntervalItem[]
   now: Date
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: 'default',
   items: () => {
     return []
   },
   now: () => new Date(),
 })
 
-const emit = defineEmits(['update:modelValue'])
+const interval = defineModel<Interval>({ required: true })
 const selectedIndex = ref(0)
 
 onBeforeMount(() => {
-  updateIndex(props.modelValue)
+  updateIndex(interval.value)
 })
 
 const onSelectInterval = (index: number) => {
-  let selectedInterval = undefined
   if (index === 0) {
-    selectedInterval = 'default'
+    interval.value = 'default'
   } else if (index === 1) {
-    selectedInterval = 'custom'
+    interval.value = 'custom'
   } else {
-    selectedInterval = props.items[index - 2]
+    interval.value = props.items[index - 2]
   }
-  emit('update:modelValue', selectedInterval)
 }
 
-function updateIndex(newValue: Interval | undefined) {
+function updateIndex(newValue: Interval) {
   if (newValue === 'default') {
     selectedIndex.value = 0
   } else if (newValue === 'custom' || newValue === undefined) {
@@ -77,10 +73,7 @@ function updateIndex(newValue: Interval | undefined) {
   }
 }
 
-watch(
-  () => props.modelValue,
-  (newValue) => updateIndex(newValue),
-)
+watch(interval, (newValue) => updateIndex(newValue))
 </script>
 
 <style scoped>
