@@ -1,5 +1,6 @@
 <template>
   <div class="chart-with-chips">
+    <LoadingOverlay v-if="isLoading" :margin="margin" />
     <div ref="chartContainer" class="chart-container"></div>
     <v-sheet
       class="chart-controls"
@@ -56,6 +57,7 @@ import {
   VerticalMouseOver,
   ZoomHandler,
 } from '@deltares/fews-web-oc-charts'
+import LoadingOverlay from '@/components/charts/LoadingOverlay.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
 import { Series } from '../../lib/timeseries/timeSeries.js'
@@ -68,6 +70,7 @@ const LEGEND_HEIGHT = 76
 interface Props {
   config?: ChartConfig
   series?: Record<string, Series>
+  isLoading?: boolean
 }
 
 interface Tag {
@@ -96,6 +99,13 @@ const chipGroup = ref<VChipGroup>()
 const expanded = ref(false)
 const requiresExpand = ref(false)
 
+const margin = {
+  top: 110,
+  left: 70,
+  right: 30,
+  bottom: 50,
+}
+
 onMounted(() => {
   const axisOptions: CartesianAxesOptions = {
     x: [
@@ -117,12 +127,7 @@ onMounted(() => {
         nice: true,
       },
     ],
-    margin: {
-      top: 110,
-      left: 70,
-      right: 30,
-      bottom: 50,
-    },
+    margin,
   }
 
   const chartWidth = 800
