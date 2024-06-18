@@ -33,6 +33,11 @@ type OmitForWorkflow<T> = Omit<T, 'workflowId' | 'startTime' | 'endTime'>
 export type PartialRunTaskFilter = OmitForWorkflow<RunTaskFilter>
 export type PartialProcessDataFilter = OmitForWorkflow<ProcessDataFilter>
 
+export interface StartWorkflowOptions {
+  body?: string
+  fileName?: string
+}
+
 const useWorkflowsStore = defineStore('workflows', {
   state: (): WorkflowsState => ({
     workflowId: null,
@@ -47,8 +52,7 @@ const useWorkflowsStore = defineStore('workflows', {
     async startWorkflow(
       type: WorkflowType,
       filter: PartialRunTaskFilter | PartialProcessDataFilter,
-      body?: string,
-      fileName?: string,
+      options?: StartWorkflowOptions,
     ) {
       if (this.workflowId === null) {
         throw Error('Workflow ID has not been set.')
@@ -71,13 +75,13 @@ const useWorkflowsStore = defineStore('workflows', {
         if (type === WorkflowType.RunTask) {
           await webServiceProvider.postRunTask(
             completeFilter as RunTaskFilter,
-            body ?? '',
+            options?.body ?? '',
           )
         } else if (type === WorkflowType.ProcessData) {
           const url = webServiceProvider.processDataUrl(
             completeFilter as ProcessDataFilter,
           )
-          await downloadFileWithXhr(url.toString(), fileName)
+          await downloadFileWithXhr(url.toString(), options?.fileName)
         }
       } finally {
         this.numActiveWorkflows--

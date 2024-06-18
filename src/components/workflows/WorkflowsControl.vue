@@ -405,12 +405,7 @@ async function startWorkflow() {
     }
 
     closeDialog()
-    await workflowsStore.startWorkflow(
-      workflowType,
-      filter,
-      undefined,
-      fileName,
-    )
+    await workflowsStore.startWorkflow(workflowType, filter, { fileName })
 
     if (workflowType === WorkflowType.ProcessData) {
       showSuccessMessage('File download completed')
