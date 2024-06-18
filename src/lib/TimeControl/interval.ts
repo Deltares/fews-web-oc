@@ -1,4 +1,4 @@
-import { TimeSettingsViewPeriodPreset } from '@deltares/fews-pi-requests'
+import type { TimeSettingsViewPeriodPreset } from '@deltares/fews-pi-requests'
 import type { DurationLikeObject } from 'luxon'
 
 export type Interval = IntervalItem | 'default' | 'custom'
@@ -11,7 +11,7 @@ export interface IntervalItem {
 
 export function periodPresetToIntervalItem(
   preset: TimeSettingsViewPeriodPreset,
-) {
+): IntervalItem {
   const start = {
     [preset.unit]: Number(preset.start),
   }
