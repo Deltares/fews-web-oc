@@ -345,10 +345,9 @@ const layerHasElevation = computed(() => {
 watch(
   () => props.layerCapabilities,
   (layer) => {
-    if (layer?.keywordList !== undefined) {
-      forecastTime.value =
-        new Date(layer?.keywordList[0].forecastTime as string) ?? null
-    }
+    const _forecastTime = layer?.keywordList?.[0].forecastTime
+    forecastTime.value = _forecastTime ? new Date(_forecastTime) : undefined
+
     legendLayerName.value = props.layerName
     legendLayerStyles.value = props.layerCapabilities?.styles
     if (legendLayerStyles.value === undefined && props.layerName) {
