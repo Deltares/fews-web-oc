@@ -4,7 +4,7 @@ import type {
   SeriesArrayData,
   SeriesData,
   TimeSeriesData,
-} from '../timeseries/types/SeriesData'
+} from '@/lib/timeseries/types/SeriesData'
 
 /**
  * Determines if the specified data is reliable.
