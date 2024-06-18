@@ -1,6 +1,5 @@
 import type { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import { Series } from '@/lib/timeseries/timeSeries'
-import { uniqWith } from 'lodash-es'
 import { SeriesData, TimeSeriesData } from '../timeseries/types/SeriesData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import type {
@@ -8,7 +7,8 @@ import type {
   TimeSeriesFlag,
 } from '@deltares/fews-pi-requests'
 
-const store = useFewsPropertiesStore()
+const fewsPropertiesStore = useFewsPropertiesStore()
+
 export interface TableSeriesData extends SeriesData {
   tooltip: boolean
   flagOrigin?: TimeSeriesFlag['source']
@@ -35,67 +35,89 @@ export const dateFormatter = new Intl.DateTimeFormat(undefined, {
 /**
  *
  * Creates table data based of the given series IDs, based on the chart series and the time series.
- * @param {ChartSeries[] | undefined} chartSeriesArray - The array with the chart configuration per series.
- * @param {Record<string, Series>} seriesRecord - The record of the time series.
- * @param {string[]} seriesIds - An array of series IDs.
+ * @param {ChartSeries[] | undefined} chartSeries - The array with the chart configuration per series.
+ * @param {Record<string, Series>} seriesById - An object with time series with data resource IDs as keys.
+ * @param {string[]} seriesIds - An array of unique series IDs.
  * @returns {TableData[]} - An array of records containing table data.
  */
 export function createTableData(
-  chartSeriesArray: ChartSeries[] | undefined,
-  seriesRecord: Record<string, Series>,
+  chartSeries: ChartSeries[],
+  seriesById: Record<string, Series>,
   seriesIds: string[],
 ): TableData[] {
-  if (chartSeriesArray === undefined) return []
-  const dateTimes = createDateTimes(
-    chartSeriesArray.map((s) => s.dataResources[0]),
-    seriesRecord,
+  // There may be duplicate IDs in the chartSeries array (e.g. for series with
+  // lines and markers for the same data), but the seriesIds array should only
+  // contain unique IDs. Hence, we do a map with a lookup over these IDs rather
+  // than a filter.
+  const usedChartSeries = seriesIds.map((id) =>
+    chartSeries.find((series) => series.id === id),
   )
 
-  const chartSeries = uniqWith(
-    chartSeriesArray.filter((s) => seriesIds.includes(s.id)),
-    (a, b) => {
-      return a.id === b.id
-    },
-  )
-  const pointers = Array(seriesIds.length).fill(0)
+  // For each chart series, add its data to a map with the date's timestamp as
+  // key. This allows us to easily merge the data from different series into a
+  // single record.
+  const data = new Map<number, TableData>()
+  usedChartSeries.forEach((chartSeries) => {
+    if (!chartSeries) return
 
-  const data = dateTimes.map((date: Date) => {
-    const result: TableData = { date }
-    for (const j in chartSeries) {
-      const s = chartSeries[j]
-      const series = seriesRecord[s.dataResources[0]]
-      let eventResult: Partial<TableSeriesData> = {}
-      if (series && series.data) {
-        const event = series.data[pointers[j]] as TimeSeriesData
-        if (event && date.getTime() === event.x.getTime()) {
-          eventResult = {
-            tooltip: event.flag !== undefined || event.comment !== undefined,
-            ...event,
-          }
-          if (event.flag !== undefined && store.flags !== undefined) {
-            const flag = store.flags.find((f) => f.flag === event.flag)
-            if (flag !== undefined) {
-              eventResult.flagOrigin = flag.source
-              eventResult.flagQuality = flag.quality
-              eventResult.flagEdit = getFlagEdit(
-                event.flag,
-                event.flagSource,
-                flag?.quality,
-              )
-              eventResult.flagColor = getFlagColor(
-                eventResult.flagEdit,
-                flag.quality,
-              )
-            }
-          }
-          pointers[j]++
-        }
-        result[s.id] = eventResult
+    const dataResourceId = chartSeries.dataResources[0]
+    const seriesData = seriesById[dataResourceId]?.data
+    if (!seriesData) return
+
+    // For each event in this series, add the event (and some additional data)
+    // to the appropriate date in the map.
+    seriesData.forEach((event) => {
+      // We assume that the x value is a date.
+      const date = event.x as Date
+
+      const hasFlag = event.flag !== undefined
+      const hasComment = event.comment !== undefined
+      const showTooltip = hasFlag || hasComment
+
+      const columnEvent: TableSeriesData = {
+        ...event,
+        tooltip: showTooltip,
       }
-    }
-    return result
+      // If the event has a flag, find the flag in the store and add the flag
+      // origin, quality, edit and color.
+      if (hasFlag) {
+        const flag = fewsPropertiesStore.flags?.find(
+          (f) => f.flag === event.flag,
+        )
+        if (flag) {
+          columnEvent.flagOrigin = flag.source
+          columnEvent.flagQuality = flag.quality
+          columnEvent.flagEdit = getFlagEdit(
+            event.flag,
+            event.flagSource,
+            flag.quality,
+          )
+          columnEvent.flagColor = getFlagColor(
+            columnEvent.flagEdit,
+            flag.quality,
+          )
+        }
+      }
+
+      // Check whether we already have an entry for this date, if we do, append
+      // the new data to the existing entry, otherwise create a new entry.
+      const timestamp = date.getTime()
+      const current = data.get(timestamp)
+      if (current) {
+        current[chartSeries.id] = columnEvent
+      } else {
+        data.set(timestamp, {
+          date,
+          [chartSeries.id]: columnEvent,
+        })
+      }
+    })
   })
-  return data
+
+  // Finally, create an array from the map and sort by date.
+  return Array.from(data.values()).sort(
+    (a, b) => a.date.getTime() - b.date.getTime(),
+  )
 }
 
 /**
@@ -195,48 +217,4 @@ export function tableDataToTimeSeries(
     })
   })
   return newTimeSeriesData
-}
-
-/**
- *
- * Creates an array of unique dates from the data in the chart series.
- * @param {ChartSeries[]} chartSeriesArray - The array with the chart configuration per series.
- * @param {Record<string, Series>} seriesRecord - The record of the time series.
- * @returns {Date[]} An array of unique dates from the data in the chart series.
- */
-export function createDateTimes(
-  dataResources: string[],
-  seriesRecord: Record<string, Series>,
-): Date[] {
-  if (dataResources === undefined) {
-    return []
-  }
-  const dates: Date[] = []
-  for (const dataResource of dataResources) {
-    const series = seriesRecord[dataResource]
-    if (series !== undefined && series.data !== undefined) {
-      dates.push(...series.data.map((d: any) => d.x))
-    }
-  }
-  return sortedUniqueDates(dates)
-}
-
-/**
- *
- * Sorts an array of dates in ascending order and removes any duplicate dates.
- * @param {Date[]} dates - The array of dates to be sorted and made unique.
- * @returns {Date[]} A new array of dates sorted in ascending order without any duplicates.
- */
-export function sortedUniqueDates(dates: Date[]): Date[] {
-  if (dates.length === 0) return dates
-  dates.sort((a, b) => {
-    return a.getTime() - b.getTime()
-  })
-  const results = [dates[0]]
-  for (let i = 1; i < dates.length; i++) {
-    if (dates[i - 1].getTime() !== dates[i].getTime()) {
-      results.push(dates[i])
-    }
-  }
-  return results
 }
