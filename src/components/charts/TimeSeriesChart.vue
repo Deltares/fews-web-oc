@@ -1,5 +1,6 @@
 <template>
   <div class="chart-with-chips">
+    <LoadingOverlay v-if="isLoading" class="chart-overlay" />
     <div ref="chartContainer" class="chart-container"></div>
     <v-sheet
       class="chart-controls"
@@ -64,6 +65,7 @@ import {
   CurrentTime,
   MouseOver,
 } from '@deltares/fews-web-oc-charts'
+import LoadingOverlay from '@/components/charts/LoadingOverlay.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
 import type { ThresholdLine } from '../../lib/charts/types/ThresholdLine.js'
@@ -80,6 +82,7 @@ interface Props {
   config?: ChartConfig
   series?: Record<string, Series>
   currentTime?: Date
+  isLoading?: boolean
 }
 
 interface Tag {

@@ -11,6 +11,7 @@
           :series="series"
           :key="`${subplot.title}-${i}`"
           :currentTime="props.currentTime"
+          :isLoading="isLoading(subplot, loadingRequests)"
         >
         </TimeSeriesChart>
       </KeepAlive>
@@ -118,7 +119,7 @@ const options = computed<UseTimeSeriesOptions>(() => {
   }
 })
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { series } = useTimeSeries(
+const { series, loadingRequests } = useTimeSeries(
   baseUrl,
   () => props.config.requests,
   lastUpdated,
@@ -131,6 +132,15 @@ const { series: elevationChartSeries } = useTimeSeries(
   options,
   () => props.currentTime,
 )
+
+function isLoading(subplot: ChartConfig, loadingRequests: string[]) {
+  return subplot.series
+    .map((s) => s.id)
+    .some((id) => {
+      const idWithoutIndex = id.replace(/\[\d+\]$/, '')
+      return loadingRequests.includes(idWithoutIndex)
+    })
+}
 
 async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
   await postTimeSeriesEdit(baseUrl, props.config.requests, newData)

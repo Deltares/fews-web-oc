@@ -5,7 +5,7 @@ import {
   type TimeSeriesEvent,
   DomainAxisEventValuesStringArray,
 } from '@deltares/fews-pi-requests'
-import { onUnmounted, ref, shallowRef, toValue, watch } from 'vue'
+import { computed, onUnmounted, ref, shallowRef, toValue, watch } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl'
 import { DateTime, Interval } from 'luxon'
@@ -21,6 +21,7 @@ export interface UseTimeSeriesReturn {
   series: Ref<Record<string, Series>>
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
+  loadingRequests: Ref<string[]>
 }
 
 export interface UseTimeSeriesOptions {
@@ -55,10 +56,11 @@ export function useTimeSeries(
 ): UseTimeSeriesReturn {
   let controller = new AbortController()
   const isReady = ref(false)
-  const isLoading = ref(false)
   const series = ref<Record<string, Series>>({})
   const error = shallowRef<any | undefined>(undefined)
   const MAX_SERIES = 20
+  const loadingRequests = ref<string[]>([])
+  const isLoading = computed(() => loadingRequests.value.length > 0)
 
   watch([lastUpdated, selectedTime ?? ref(), requests, options], () => {
     controller.abort('Timeseries request triggered again before finishing.')
@@ -72,6 +74,8 @@ export function useTimeSeries(
 
     const currentSeriesIds = Object.keys(series.value)
     const updatedSeriesIds: string[] = []
+    loadingRequests.value = _requests.flatMap((r) => (r.key ? [r.key] : []))
+
     for (const r in _requests) {
       const request = _requests[r]
       const url = absoluteUrl(`${baseUrl}/${request.request}`)
@@ -117,6 +121,11 @@ export function useTimeSeries(
       const relativeUrl = request.request.split('?')[0] + url.search
       const isGridTimeSEries = request.request.includes('/timeseries/grid?')
       piProvider.getTimeSeriesWithRelativeUrl(relativeUrl).then((piSeries) => {
+        if (request.key)
+          loadingRequests.value.splice(
+            loadingRequests.value.indexOf(request.key),
+            1,
+          )
         if (piSeries.timeSeries !== undefined)
           for (const index in piSeries.timeSeries) {
             const timeSeries = piSeries.timeSeries[index]
@@ -189,6 +198,7 @@ export function useTimeSeries(
     series,
     isReady,
     isLoading,
+    loadingRequests,
     error,
   }
 
