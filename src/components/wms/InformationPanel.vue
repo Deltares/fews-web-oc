@@ -203,8 +203,12 @@ const rules = {
 }
 
 const analysisTime = computed(() => {
-  if (!props.forecastTime || isNaN(props.forecastTime.getTime()))
+  if (!props.forecastTime) return undefined
+
+  if (isNaN(props.forecastTime.getTime())) {
     return 'Analysis time not available'
+  }
+
   return (
     'Analysis time: ' +
     DateTime.fromJSDate(props.forecastTime).toFormat('dd/MM/yyyy, HH:mm:ss')
