@@ -10,7 +10,7 @@ import { DisplayConfig } from '../../lib/display/DisplayConfig.js'
 import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig.js'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.js'
 import { MD5 } from 'crypto-js'
-import { convertFewsPiDateTimeToJsDate } from '@/lib/date/index.js'
+import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 
 export interface UseDisplayConfigReturn {
   displayConfig: Ref<DisplayConfig | undefined>
@@ -118,6 +118,7 @@ export function useDisplayConfig(
     response.value = await piProvider.getTopologyActions(filter)
   })
 
+  // Use a second watchEffect to not trigger a fetch on these reactive variables
   watchEffect(() => {
     if (!response.value) return
 
@@ -194,6 +195,7 @@ export function useDisplayConfigFilter(
     }
   })
 
+  // Use a second watchEffect to not trigger a fetch on these reactive variables
   watchEffect(() => {
     if (!response.value) return
 
