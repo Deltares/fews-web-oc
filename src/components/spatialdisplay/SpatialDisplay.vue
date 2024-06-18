@@ -88,18 +88,11 @@ const maxValuesTimeSeries = useWmsMaxValuesTimeSeries(
   end,
 )
 
-const onlyCoverageLayersAvailable = computed(() => {
-  if (
-    layerCapabilities.value?.keywordList !== undefined &&
-    layerCapabilities.value?.keywordList.length > 0
-  ) {
-    layerCapabilities.value.keywordList.forEach((keyword) => {
-      if (keyword.type != 'COVERAGE') return false
-    })
-    return true
-  }
-  return false
-})
+const onlyCoverageLayersAvailable = computed(() =>
+  layerCapabilities.value?.keywordList?.every(
+    (keyword) => keyword.type === 'COVERAGE',
+  ),
+)
 
 function getFilterActionsFilter(): filterActionsFilter &
   UseDisplayConfigOptions {
