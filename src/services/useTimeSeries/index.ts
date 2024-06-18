@@ -124,11 +124,6 @@ export function useTimeSeries(
               ? `${request.key}[${index}]`
               : request.key ?? ''
             updatedSeriesIds.push(resourceId)
-            if (
-              timeSeries.events === undefined &&
-              timeSeries.domains === undefined
-            )
-              continue
             const resource = new SeriesUrlRequest('fews-pi', 'dummyUrl')
             const _series = new Series(resource)
             const header = timeSeries.header

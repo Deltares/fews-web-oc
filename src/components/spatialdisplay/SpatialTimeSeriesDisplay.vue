@@ -76,6 +76,7 @@ import {
 import { computed } from 'vue'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
+import { useSystemTimeStore } from '@/stores/systemTime'
 interface Props {
   filter: filterActionsFilter | timeSeriesGridActionsFilter
   elevationChartFilter?: timeSeriesGridActionsFilter
@@ -87,6 +88,7 @@ const openFileDownloadDialog = () => {
   showFileDownloadDialog.value = true
 }
 const settings = useUserSettingsStore()
+const systemTimeStore = useSystemTimeStore()
 
 const options = computed<UseDisplayConfigOptions>(() => {
   return {
@@ -101,7 +103,12 @@ const emit = defineEmits(['close'])
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const filter = computed(() => props.filter)
-const { displayConfig } = useDisplayConfigFilter(baseUrl, filter)
+const { displayConfig } = useDisplayConfigFilter(
+  baseUrl,
+  filter,
+  () => systemTimeStore.startTime,
+  () => systemTimeStore.endTime,
+)
 watch(
   () => displayConfig,
   () => {
@@ -117,6 +124,8 @@ watch(
 const { displayConfig: elevationChartDisplayconfig } = useDisplayConfigFilter(
   baseUrl,
   () => props.elevationChartFilter ?? {},
+  () => systemTimeStore.startTime,
+  () => systemTimeStore.endTime,
 )
 
 interface DisplayTypeItem {

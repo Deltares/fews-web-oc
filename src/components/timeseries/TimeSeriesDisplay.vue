@@ -73,6 +73,7 @@ import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue
 import { DisplayType } from '@/lib/display/DisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
+import { useSystemTimeStore } from '@/stores/systemTime'
 
 const showFileDownloadDialog = ref(false)
 const openFileDownloadDialog = () => {
@@ -88,6 +89,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const settings = useUserSettingsStore()
+const systemTimeStore = useSystemTimeStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -110,6 +112,8 @@ const { displays, displayConfig } = useDisplayConfig(
     }
   },
   selectedPlot,
+  () => systemTimeStore.startTime,
+  () => systemTimeStore.endTime,
   options,
 )
 

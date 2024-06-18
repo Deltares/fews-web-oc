@@ -6,11 +6,7 @@
         <v-icon v-show="isActive" small> mdi-check </v-icon>
       </template>
     </v-list-item>
-    <v-list-item
-      :active="1 === selectedIndex"
-      @click="onSelectInterval(1)"
-      disabled
-    >
+    <v-list-item :active="1 === selectedIndex" @click="onSelectInterval(1)">
       Custom
       <template v-slot:append="{ isActive }">
         <v-icon v-show="isActive" small> mdi-check </v-icon>
@@ -24,7 +20,7 @@
       :active="index === selectedIndex - 2"
       @click="onSelectInterval(index + 2)"
     >
-      {{ intervalToLocaleString(item) }}
+      {{ item.label }}
       <template v-slot:append="{ isActive }">
         <v-icon v-show="isActive" small> mdi-check </v-icon>
       </template>
@@ -33,75 +29,51 @@
 </template>
 
 <script setup lang="ts">
-import { DateTime, Duration } from 'luxon'
+import type { IntervalItem, Interval } from '@/lib/TimeControl/interval'
+import { isEqual } from 'lodash-es'
 import { onBeforeMount, ref, watch } from 'vue'
 
 interface Props {
-  modelValue: string
-  items: string[]
+  items: IntervalItem[]
   now: Date
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: 'default',
   items: () => {
     return []
   },
   now: () => new Date(),
 })
 
-const emit = defineEmits(['update:modelValue'])
+const interval = defineModel<Interval>({ required: true })
 const selectedIndex = ref(0)
 
 onBeforeMount(() => {
-  updateIndex(props.modelValue)
+  updateIndex(interval.value)
 })
 
-const intervalToLocaleString = (interval: string) => {
-  const parts = interval.split('/')
-  if (parts.length === 2) {
-    const startDateTime = DateTime.fromJSDate(props.now).plus(
-      Duration.fromISO(parts[0]),
-    )
-    const endDateTime = DateTime.fromJSDate(props.now).plus(
-      Duration.fromISO(parts[1]),
-    )
-    return startDateTime.toRelative() + ' / ' + endDateTime.toRelative()
-  } else {
-    const startDateTime = DateTime.fromJSDate(props.now).plus(
-      Duration.fromISO(parts[0]),
-    )
-    return startDateTime.toRelative()
-  }
-}
-
 const onSelectInterval = (index: number) => {
-  let selectedInterval = undefined
   if (index === 0) {
-    selectedInterval = 'default'
+    interval.value = 'default'
   } else if (index === 1) {
-    selectedInterval = 'custom'
+    interval.value = 'custom'
   } else {
-    selectedInterval = props.items[index - 2]
+    interval.value = props.items[index - 2]
   }
-  emit('update:modelValue', selectedInterval)
 }
 
-function updateIndex(newValue: string | undefined) {
+function updateIndex(newValue: Interval) {
   if (newValue === 'default') {
     selectedIndex.value = 0
-  } else if (newValue === undefined) {
+  } else if (newValue === 'custom' || newValue === undefined) {
     selectedIndex.value = 1
   } else {
     selectedIndex.value =
-      props.items.findIndex((entry) => entry === newValue) + 2
+      props.items.findIndex((entry) => isEqual(entry, newValue)) + 2
   }
 }
 
-watch(
-  () => props.modelValue,
-  (newValue) => updateIndex(newValue),
-)
+watch(interval, (newValue) => updateIndex(newValue))
 </script>
 
 <style scoped>

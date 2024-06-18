@@ -10,6 +10,7 @@ import { DisplayConfig } from '../../lib/display/DisplayConfig.js'
 import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig.js'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.js'
 import { MD5 } from 'crypto-js'
+import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 
 export interface UseDisplayConfigReturn {
   displayConfig: Ref<DisplayConfig | undefined>
@@ -41,6 +42,8 @@ function isTimeSeriesGridActionsFilter(
 function actionsResponseToDisplayConfig(
   actionsResponse: ActionsResponse,
   nodeId: string | undefined,
+  startTime?: Date,
+  endTime?: Date,
 ): DisplayConfig[] {
   const displays: DisplayConfig[] = []
   for (const result of actionsResponse.results) {
@@ -48,9 +51,25 @@ function actionsResponseToDisplayConfig(
     const title = result.config.timeSeriesDisplay.title ?? ''
     const timeSeriesDisplayIndex = result.config.timeSeriesDisplay.index
     const period = result.config.timeSeriesDisplay.period
+
+    // The period is always specified in UTC.
+    const timeZoneOffsetString = 'Z'
+    let configPeriod: [Date, Date]
+    if (period) {
+      const periodStart = convertFewsPiDateTimeToJsDate(
+        period.startDate,
+        timeZoneOffsetString,
+      )
+      const periodEnd = convertFewsPiDateTimeToJsDate(
+        period.endDate,
+        timeZoneOffsetString,
+      )
+      configPeriod = [startTime ?? periodStart, endTime ?? periodEnd]
+    }
+
     const subplots =
       result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
-        return timeSeriesDisplayToChartConfig(subPlot, title, period)
+        return timeSeriesDisplayToChartConfig(subPlot, title, configPeriod)
       }) ?? []
     const display: DisplayConfig = {
       id: title,
@@ -78,6 +97,8 @@ export function useDisplayConfig(
   baseUrl: string,
   nodeId: MaybeRefOrGetter<string>,
   plotId: MaybeRefOrGetter<number>,
+  startTime?: MaybeRefOrGetter<Date | undefined>,
+  endTime?: MaybeRefOrGetter<Date | undefined>,
   options?: MaybeRefOrGetter<UseDisplayConfigOptions>,
 ): UseDisplayConfigReturn {
   const piProvider = new PiWebserviceProvider(baseUrl, {
@@ -87,14 +108,30 @@ export function useDisplayConfig(
   const displayConfig = ref<DisplayConfig>()
   const displays = ref<DisplayConfig[]>()
 
+  const response = ref<ActionsResponse>()
+
   watchEffect(async () => {
     let filter: any = {}
     filter.nodeId = toValue(nodeId)
-    const _plotId = toValue(plotId)
     const _options = toValue(options)
     filter = { ...filter, ..._options }
-    const response = await piProvider.getTopologyActions(filter)
-    const _displays = actionsResponseToDisplayConfig(response, toValue(nodeId))
+    response.value = await piProvider.getTopologyActions(filter)
+  })
+
+  // Use a second watchEffect to not trigger a fetch on these reactive variables
+  watchEffect(() => {
+    if (!response.value) return
+
+    const _startTime = toValue(startTime)
+    const _endTime = toValue(endTime)
+    const _plotId = toValue(plotId)
+
+    const _displays = actionsResponseToDisplayConfig(
+      response.value,
+      toValue(nodeId),
+      _startTime,
+      _endTime,
+    )
     displays.value = _displays
     displayConfig.value = _displays[_plotId]
   })
@@ -117,6 +154,8 @@ export function useDisplayConfig(
 export function useDisplayConfigFilter(
   baseUrl: string,
   filter: MaybeRefOrGetter<Filter>,
+  startTime: MaybeRefOrGetter<Date | undefined>,
+  endTime: MaybeRefOrGetter<Date | undefined>,
 ): UseDisplayConfigReturn {
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -124,17 +163,16 @@ export function useDisplayConfigFilter(
 
   const displayConfig = ref<DisplayConfig>()
   const displays = ref<DisplayConfig[]>()
+  const response = ref<ActionsResponse>()
 
   watchEffect(async () => {
     const _filter = toValue(filter)
-    let response: ActionsResponse
-    let nodeId = undefined
     if (isFilterActionsFilter(_filter)) {
       if (!_filter.filterId) return
-      response = await piProvider.getFilterActions(_filter)
+      response.value = await piProvider.getFilterActions(_filter)
     } else if (isTimeSeriesGridActionsFilter(_filter)) {
-      response = await piProvider.getTimeSeriesGridActions(_filter)
-      response.results.forEach((result) => {
+      response.value = await piProvider.getTimeSeriesGridActions(_filter)
+      response.value.results.forEach((result) => {
         result.requests.forEach((request) => {
           request.key = MD5(request.request).toString()
         })
@@ -155,7 +193,22 @@ export function useDisplayConfigFilter(
       displays.value = undefined
       return
     }
-    const _displays = actionsResponseToDisplayConfig(response, nodeId)
+  })
+
+  // Use a second watchEffect to not trigger a fetch on these reactive variables
+  watchEffect(() => {
+    if (!response.value) return
+
+    const _startTime = toValue(startTime)
+    const _endTime = toValue(endTime)
+    let nodeId = undefined
+
+    const _displays = actionsResponseToDisplayConfig(
+      response.value,
+      nodeId,
+      _startTime,
+      _endTime,
+    )
     displays.value = _displays
     displayConfig.value = _displays[0]
   })
