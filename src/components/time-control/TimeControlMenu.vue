@@ -16,23 +16,31 @@
     <v-card width="500px">
       <v-row no-gutters>
         <v-col>
-          <v-form :disabled="isCustomInterval">
+          <v-form ref="form" :disabled="!isCustomInterval">
             <div class="pa-4">
               <v-date-input
                 v-model="customStartDate"
-                :disabled="isCustomInterval"
+                :disabled="!isCustomInterval"
                 label="Start"
                 density="compact"
                 variant="solo-filled"
                 flat
+                :rules="[
+                  () =>
+                    dateOrderIsCorrect || 'Start date must be before end date',
+                ]"
               />
               <v-date-input
                 v-model="customEndDate"
-                :disabled="isCustomInterval"
+                :disabled="!isCustomInterval"
                 label="End"
                 density="compact"
                 variant="solo-filled"
                 flat
+                :rules="[
+                  () =>
+                    dateOrderIsCorrect || 'End date must be after start date',
+                ]"
               />
             </div>
           </v-form>
@@ -66,14 +74,24 @@
 <script setup lang="ts">
 import IntervalSelector from './IntervalSelector.vue'
 import { VDateInput } from 'vuetify/labs/components'
+import type { VForm } from 'vuetify/components'
 
-import { ref, computed, watchEffect } from 'vue'
+import { ref, computed, watchEffect, watch } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
 
 const store = useSystemTimeStore()
 const configStore = useConfigStore()
+
+const form = ref<VForm>()
+
+const dateOrderIsCorrect = computed(
+  () =>
+    !customStartDate.value ||
+    !customEndDate.value ||
+    customStartDate.value < customEndDate.value,
+)
 
 const intervalItems = computed(() => {
   const presets = configStore.general.timeSettings?.viewPeriodPresets
@@ -86,11 +104,13 @@ const customEndDate = ref<Date>()
 const isCustomInterval = computed(() => store.selectedInterval === 'custom')
 
 watchEffect(() => {
-  if (isCustomInterval.value) {
+  if (isCustomInterval.value && dateOrderIsCorrect.value) {
     store.startTime = customStartDate.value
     store.endTime = customEndDate.value
   }
 })
+
+watch([customStartDate, customEndDate], () => form.value?.validate())
 
 function onIntervalChange() {
   store.changeInterval()
