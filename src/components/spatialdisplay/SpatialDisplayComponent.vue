@@ -273,11 +273,18 @@ watch(
         })
         colourScalesStore.scales[styleId] = newColourScale
 
+        const range = computed(() => {
+          const newRange = rangeToString(newColourScale.range)
+          const initialRange = rangeToString(newColourScale.initialRange)
+
+          return newRange !== initialRange ? newRange : undefined
+        })
+
         const newLegendGraphic = useWmsLegend(
           baseUrl,
           legendLayerName,
           () => settings.useDisplayUnits,
-          () => rangeToString(newColourScale.range),
+          range,
           style,
           () => props.layerCapabilities?.styles ?? [],
         )
