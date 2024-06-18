@@ -41,6 +41,7 @@
           :series="elevationChartSeries"
           :key="`${subplot.title}-${i}`"
           :style="`min-width: ${xs ? 100 : 50}%`"
+          :isLoading="isLoading(subplot, elevationLoadingRequests)"
         >
         </ElevationChart>
       </KeepAlive>
@@ -125,7 +126,10 @@ const { series, loadingRequests } = useTimeSeries(
   lastUpdated,
   options,
 )
-const { series: elevationChartSeries } = useTimeSeries(
+const {
+  series: elevationChartSeries,
+  loadingRequests: elevationLoadingRequests,
+} = useTimeSeries(
   baseUrl,
   () => props.elevationChartConfig.requests,
   lastUpdated,

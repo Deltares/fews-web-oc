@@ -1,6 +1,6 @@
 <template>
   <div class="chart-with-chips">
-    <LoadingOverlay v-if="isLoading" class="chart-overlay" />
+    <LoadingOverlay v-if="isLoading" class="chart-overlay" :margin="margin" />
     <div ref="chartContainer" class="chart-container"></div>
     <v-sheet
       class="chart-controls"
@@ -120,6 +120,12 @@ const expanded = ref(false)
 const requiresExpand = ref(false)
 const axisTime = ref<CurrentTime>()
 
+const margin = {
+  top: 110,
+  right: 50,
+  left: 50,
+}
+
 onMounted(() => {
   const axisOptions: CartesianAxesOptions = {
     x: [
@@ -144,11 +150,7 @@ onMounted(() => {
         nice: true,
       },
     ],
-    margin: {
-      top: 110,
-      left: 50,
-      right: 50,
-    },
+    margin,
   }
 
   if (chartContainer.value) {
