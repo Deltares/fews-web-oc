@@ -16,14 +16,11 @@
     <v-card width="500px">
       <v-row no-gutters>
         <v-col>
-          <v-form
-            v-model="datesAreValid"
-            :disabled="store.selectedInterval !== 'custom'"
-          >
+          <v-form :disabled="isCustomInterval">
             <div class="pa-4">
               <v-date-input
                 v-model="customStartDate"
-                :disabled="store.selectedInterval !== 'custom'"
+                :disabled="isCustomInterval"
                 label="Start"
                 density="compact"
                 variant="solo-filled"
@@ -31,7 +28,7 @@
               />
               <v-date-input
                 v-model="customEndDate"
-                :disabled="store.selectedInterval !== 'custom'"
+                :disabled="isCustomInterval"
                 label="End"
                 density="compact"
                 variant="solo-filled"
@@ -71,13 +68,12 @@ import IntervalSelector from './IntervalSelector.vue'
 import { VDateInput } from 'vuetify/labs/components'
 
 import { ref, computed, watchEffect } from 'vue'
-import { useSystemTimeStore } from '../../stores/systemTime'
+import { useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
 
 const store = useSystemTimeStore()
 const configStore = useConfigStore()
-const datesAreValid = ref(true)
 
 const intervalItems = computed(() => {
   const presets = configStore.general.timeSettings?.viewPeriodPresets
@@ -87,8 +83,10 @@ const intervalItems = computed(() => {
 const customStartDate = ref<Date>()
 const customEndDate = ref<Date>()
 
+const isCustomInterval = computed(() => store.selectedInterval === 'custom')
+
 watchEffect(() => {
-  if (store.selectedInterval === 'custom') {
+  if (isCustomInterval.value) {
     store.startTime = customStartDate.value
     store.endTime = customEndDate.value
   }
