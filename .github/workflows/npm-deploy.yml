@@ -39,6 +39,22 @@ jobs:
           EOL
           touch dist/app-config.json
         shell: bash
+
+      - name: Create the app-config.json file for the Rivieren App
+        run: |
+          rm dist/app-config.json
+          echo "${{ vars.RIVIEREN_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+        shell: bash
+      - name: Deploy Azure Static Web Apps Rivieren
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        with:
+          action: 'upload'
+          app_location: '/dist'
+          api_location: ''
+          skip_app_build: true
+          azure_static_web_apps_api_token: ${{ secrets.RIVIEREN_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
+
       - name: Overwrite the app-config.json file for IWP Public App
         run: |
           rm dist/app-config.json
@@ -193,3 +209,4 @@ jobs:
           api_location: ''
           skip_app_build: true
           azure_static_web_apps_api_token: ${{ secrets.IWP_SWM_APP_AZURE_STATIC_WEB_APP_TOKEN }}
+
