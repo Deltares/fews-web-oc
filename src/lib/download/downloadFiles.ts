@@ -70,7 +70,7 @@ export async function downloadFileAttachment(
 
 export async function downloadFileWithXhr(
   url: string,
-  extension?: string,
+  fileName?: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const req = new XMLHttpRequest()
@@ -97,14 +97,14 @@ export async function downloadFileWithXhr(
       const now = toISOString(new Date())
         .replaceAll('-', '')
         .replaceAll(':', '')
-      const fallBackFileName = `${now}_DATA${extension ?? ''}`
+      const fallBackFileName = `${now}_${fileName ?? 'DATA'}`
 
-      const fileName = headerFileName ?? fallBackFileName
+      const downloadFileName = headerFileName ?? fallBackFileName
       const blobUrl = window.URL.createObjectURL(req.response)
 
       const a = document.createElement('a')
       a.href = blobUrl
-      a.setAttribute('download', fileName)
+      a.setAttribute('download', downloadFileName)
 
       document.body.appendChild(a)
       a.click()

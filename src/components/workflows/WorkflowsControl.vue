@@ -386,6 +386,8 @@ async function startWorkflow() {
     ? WorkflowType.ProcessData
     : WorkflowType.RunTask
 
+  const fileName = data.value['FILE_NAME']
+
   const filter =
     workflowType === WorkflowType.ProcessData
       ? getProcessDataFilter()
@@ -403,7 +405,12 @@ async function startWorkflow() {
     }
 
     closeDialog()
-    await workflowsStore.startWorkflow(workflowType, filter)
+    await workflowsStore.startWorkflow(
+      workflowType,
+      filter,
+      undefined,
+      fileName,
+    )
 
     if (workflowType === WorkflowType.ProcessData) {
       showSuccessMessage('File download completed')

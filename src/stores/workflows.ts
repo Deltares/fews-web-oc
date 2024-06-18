@@ -48,6 +48,7 @@ const useWorkflowsStore = defineStore('workflows', {
       type: WorkflowType,
       filter: PartialRunTaskFilter | PartialProcessDataFilter,
       body?: string,
+      fileName?: string,
     ) {
       if (this.workflowId === null) {
         throw Error('Workflow ID has not been set.')
@@ -76,7 +77,7 @@ const useWorkflowsStore = defineStore('workflows', {
           const url = webServiceProvider.processDataUrl(
             completeFilter as ProcessDataFilter,
           )
-          await downloadFileWithXhr(url.toString(), '.grb')
+          await downloadFileWithXhr(url.toString(), fileName)
         }
       } finally {
         this.numActiveWorkflows--
