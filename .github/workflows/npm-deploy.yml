@@ -54,7 +54,6 @@ jobs:
           skip_app_build: true
           azure_static_web_apps_api_token: ${{ secrets.RIVIEREN_APP_AZURE_STATIC_WEB_APP_TOKEN }}
 
-
       - name: Overwrite the app-config.json file for IWP Public App
         run: |
           rm dist/app-config.json
@@ -209,4 +208,3 @@ jobs:
           api_location: ''
           skip_app_build: true
           azure_static_web_apps_api_token: ${{ secrets.IWP_SWM_APP_AZURE_STATIC_WEB_APP_TOKEN }}
-
