@@ -1,4 +1,3 @@
-import { createDateTimes } from '../table/tableData'
 import type { Series } from '../timeseries/timeSeries'
 import type {
   SeriesArrayData,
@@ -15,6 +14,50 @@ export function isReliableData(data: SeriesArrayData | SeriesData) {
   // Hardcoded unreliable flags since backend does not provide this information
   const unreliableFlags = ['6', '7', '8']
   return !unreliableFlags.includes(data.flag)
+}
+
+/**
+ *
+ * Creates an array of unique dates from the data in the chart series.
+ * @param {ChartSeries[]} chartSeriesArray - The array with the chart configuration per series.
+ * @param {Record<string, Series>} seriesRecord - The record of the time series.
+ * @returns {Date[]} An array of unique dates from the data in the chart series.
+ */
+function createDateTimes(
+  dataResources: string[],
+  seriesRecord: Record<string, Series>,
+): Date[] {
+  if (dataResources === undefined) {
+    return []
+  }
+  const dates: Date[] = []
+  for (const dataResource of dataResources) {
+    const series = seriesRecord[dataResource]
+    if (series !== undefined && series.data !== undefined) {
+      dates.push(...series.data.map((d: any) => d.x))
+    }
+  }
+  return sortedUniqueDates(dates)
+}
+
+/**
+ *
+ * Sorts an array of dates in ascending order and removes any duplicate dates.
+ * @param {Date[]} dates - The array of dates to be sorted and made unique.
+ * @returns {Date[]} A new array of dates sorted in ascending order without any duplicates.
+ */
+function sortedUniqueDates(dates: Date[]): Date[] {
+  if (dates.length === 0) return dates
+  dates.sort((a, b) => {
+    return a.getTime() - b.getTime()
+  })
+  const results = [dates[0]]
+  for (let i = 1; i < dates.length; i++) {
+    if (dates[i - 1].getTime() !== dates[i].getTime()) {
+      results.push(dates[i])
+    }
+  }
+  return results
 }
 
 /**
