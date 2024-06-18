@@ -62,7 +62,7 @@ import { Series } from '../../lib/timeseries/timeSeries.js'
 import uniq from 'lodash-es/uniq'
 import { VChipGroup } from 'vuetify/components'
 import { difference } from 'lodash-es'
-import { dataFromResources } from '@/lib/charts/dataFromResources.js'
+import { dataFromResources } from '@/lib/charts/dataFromResources'
 
 const LEGEND_HEIGHT = 76
 
