@@ -99,8 +99,9 @@
       <DateTimeSliderValues
         :values="maxValuesTimeSeries ?? []"
         :colour-scale="colourScalesStore.currentScale ?? null"
-        height="5px"
+        height="6px"
         class="mb-1"
+        style="margin-top: -7px"
       />
     </template>
   </DateTimeSlider>
