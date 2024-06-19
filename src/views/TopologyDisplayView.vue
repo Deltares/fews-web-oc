@@ -41,6 +41,13 @@
               @click="activeParentId = item.name"
             >
               {{ item.name }}
+              <template v-slot:append>
+                <v-icon v-if="item.icon" size="xsmall">{{ item.icon }}</v-icon>
+                <ThresholdInformation
+                  :icon="item.thresholdIcon"
+                  :count="item.thresholdCount"
+                />
+              </template>
             </v-list-item>
           </template>
         </v-list>
@@ -53,13 +60,23 @@
         density="compact"
         mandatory
         class="ma-2"
-        ><v-btn
+      >
+        <v-btn
           v-for="item in nodeButtons"
           :key="item.id"
           :to="item.to"
           @click="activeParentId = item.name"
-          >{{ item.name }}</v-btn
         >
+          {{ item.name }}
+          <template v-slot:append>
+            <v-icon v-if="item.icon" size="xsmall">{{ item.icon }}</v-icon>
+            <ThresholdInformation
+              :icon="item.thresholdIcon"
+              :count="item.thresholdCount"
+              color="yellow-darken-1"
+            />
+          </template>
+        </v-btn>
       </v-btn-toggle>
     </template>
     <v-btn-toggle
@@ -106,6 +123,7 @@
 <script setup lang="ts">
 import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
 import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
+import ThresholdInformation from '@/components/general/ThresholdInformation.vue'
 
 import type { ColumnItem } from '@/components/general/ColumnItem'
 import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
@@ -124,6 +142,8 @@ import {
   useRoute,
   useRouter,
 } from 'vue-router'
+import { useTopologyThresholds } from '@/services/useTopologyThresholds'
+import { configManager } from '@/services/application-config'
 
 interface Props {
   nodeId?: string | string[]
@@ -190,6 +210,9 @@ const externalLink = ref<string | undefined>('')
 const route = useRoute()
 const router = useRouter()
 
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { thresholds } = useTopologyThresholds(baseUrl)
+
 watch(
   () => props.nodeId,
   () => {
@@ -207,15 +230,22 @@ watch(
   { immediate: true },
 )
 
+const topologyComponentConfig = computed(() => {
+  return configStore.getComponentByType('TopologyDisplay') as
+    | WebOcTopologyDisplayConfig
+    | undefined
+})
+
 const showLeafsAsButton = computed(() => {
-  const component = configStore.getComponentByType('TopologyDisplay')
-  return component?.showLeafNodesAsButtons ?? false
+  return topologyComponentConfig.value?.showLeafNodesAsButtons ?? false
 })
 
 const showWorkflowsControl = computed(() => {
-  const component: WebOcTopologyDisplayConfig | undefined =
-    configStore.getComponentByType('TopologyDisplay')
-  return component?.enableTaskRuns ?? false
+  return topologyComponentConfig.value?.enableTaskRuns ?? false
+})
+
+const showActiveThresholdCrossingsForFilters = computed(() => {
+  return topologyComponentConfig.value?.showActiveThresholdCrossingsForFilters
 })
 
 const nodes = ref<TopologyNode[]>()
@@ -263,6 +293,8 @@ function recursiveUpdateNode(nodes: TopologyNode[], skipLeaves = false) {
             nodeId: node.id,
           },
         },
+        thresholdIcon: getThresholdIcon(node),
+        thresholdCount: getThresholdCount(node),
       }
       if (node.topologyNodes) {
         const items = recursiveUpdateNode(node.topologyNodes, skipLeaves)
@@ -286,6 +318,8 @@ function nodeButtonItems(node: TopologyNode) {
         id: n.id,
         name: n.name,
         icon: getIcon(n),
+        thresholdIcon: getThresholdIcon(n),
+        thresholdCount: getThresholdCount(n),
       }
       const href = getUrl(n)
       if (href) {
@@ -311,6 +345,18 @@ function getIcon(node: TopologyNode): string | undefined {
 function getUrl(node: TopologyNode): string | undefined {
   if (node.url && node.topologyNodes && !node.displayGroups) return node.url
   return undefined
+}
+
+function getThresholdIcon(node: TopologyNode): string | undefined {
+  if (!showActiveThresholdCrossingsForFilters.value) return undefined
+
+  return thresholds.value?.find((t) => t.id === node.id)?.topologyLocationIcon
+}
+
+function getThresholdCount(node: TopologyNode): number | undefined {
+  if (!showActiveThresholdCrossingsForFilters.value) return undefined
+
+  return thresholds.value?.find((t) => t.id === node.id)?.filterLocationsCount
 }
 
 function updateItems(): void {
@@ -382,6 +428,7 @@ function displayTabsForNode(leafNode: TopologyNode, parentNodeId?: string) {
 }
 
 watch(nodes, updateItems)
+watch(thresholds, updateItems)
 
 // Update the displayTabs if the active node changes (or if the topologyMap changes).
 // Redirect to the corresponding display of the updated active tab.
