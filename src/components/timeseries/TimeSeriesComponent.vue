@@ -11,7 +11,7 @@
           :series="series"
           :key="`${subplot.title}-${i}`"
           :currentTime="props.currentTime"
-          :isLoading="isLoading(subplot, loadingRequests)"
+          :isLoading="isLoading(subplot, loadingSeriesIds)"
         >
         </TimeSeriesChart>
       </KeepAlive>
@@ -41,7 +41,7 @@
           :series="elevationChartSeries"
           :key="`${subplot.title}-${i}`"
           :style="`min-width: ${xs ? 100 : 50}%`"
-          :isLoading="isLoading(subplot, elevationLoadingRequests)"
+          :isLoading="isLoading(subplot, elevationLoadingSeriesIds)"
         >
         </ElevationChart>
       </KeepAlive>
@@ -120,7 +120,7 @@ const options = computed<UseTimeSeriesOptions>(() => {
   }
 })
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { series, loadingRequests } = useTimeSeries(
+const { series, loadingSeriesIds } = useTimeSeries(
   baseUrl,
   () => props.config.requests,
   lastUpdated,
@@ -128,7 +128,7 @@ const { series, loadingRequests } = useTimeSeries(
 )
 const {
   series: elevationChartSeries,
-  loadingRequests: elevationLoadingRequests,
+  loadingSeriesIds: elevationLoadingSeriesIds,
 } = useTimeSeries(
   baseUrl,
   () => props.elevationChartConfig.requests,
@@ -137,12 +137,12 @@ const {
   () => props.currentTime,
 )
 
-function isLoading(subplot: ChartConfig, loadingRequests: string[]) {
+function isLoading(subplot: ChartConfig, loadingSeriesIds: string[]) {
   return subplot.series
     .map((s) => s.id)
     .some((id) => {
       const idWithoutIndex = id.replace(/\[\d+\]$/, '')
-      return loadingRequests.includes(idWithoutIndex)
+      return loadingSeriesIds.includes(idWithoutIndex)
     })
 }
 
