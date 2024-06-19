@@ -3,19 +3,19 @@
 changelog:
   exclude:
     labels:
-      - 'rel:Ignore'
+      - 'rel: ignore'
   categories:
     - title: New Features 🎉
       labels:
-        - 'rel:New feature'
+        - 'rel: new feature'
 
     - title: Improvements 🚀
       labels:
-        - 'rel:Improvement'
+        - 'rel: improvement'
 
     - title: Fixes 🐛
       labels:
-        - 'rel:Fix'
+        - 'rel: fix'
 
     - title: Other Changes
       labels:
