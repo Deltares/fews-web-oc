@@ -14,11 +14,12 @@ If there are any visual changes, please attach screenshots here.
 Add link to public Github pages (only documentation about configuration)
 
 ### Checklist
+- [ ] Make the title short and concise
 - [ ] Select the correct label to include it in the release notes:
-    - `rel:New Feature`
-    - `rel:Improvement`
-    - `rel:Fixes`
-    - `rel:Ignore`
-    Select to `rel:Ignore` if this pull request fixes a New Feature or Improvement in the coming release. Update related Pull Request.
+    - `rel: new feature`
+    - `rel: improvement`
+    - `rel: fixes`
+    - `rel: ignore`
+    Select to `rel: ignore` if this pull request fixes a New Feature or Improvement in the coming release. Update related Pull Request.
 - [ ] Update documentation.
 - [ ] Update tests.
