@@ -5,15 +5,15 @@ changelog:
     labels:
       - 'rel: ignore'
   categories:
-    - title: New Features 🎉
+    - title: New Features
       labels:
         - 'rel: new feature'
 
-    - title: Improvements 🚀
+    - title: Improvements
       labels:
         - 'rel: improvement'
 
-    - title: Fixes 🐛
+    - title: Fixes
       labels:
         - 'rel: fix'
 
