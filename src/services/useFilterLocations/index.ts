@@ -49,7 +49,15 @@ export function useFilterLocations(
     isLoading.value = true
     isReady.value = false
     try {
-      geojson.value = await fetchLocationsAsGeoJson(baseUrl, ids)
+      const response = await fetchLocationsAsGeoJson(baseUrl, ids)
+
+      response.features.forEach((feature) => {
+        const properties = feature.properties
+        properties.iconName =
+          properties.thresholdIconName ?? properties.iconName
+      })
+
+      geojson.value = response
       locations.value = convertGeoJsonToFewsPiLocation(geojson.value)
     } catch (error) {
       error = 'error-loading'
