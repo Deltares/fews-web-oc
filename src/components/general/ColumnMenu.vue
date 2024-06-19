@@ -28,7 +28,11 @@
         >
           <v-list-item-title>{{ child.name }}</v-list-item-title>
           <template v-slot:append>
-            <v-icon size="xsmall">{{ child.icon }}</v-icon>
+            <v-icon v-if="child.icon" size="xsmall">{{ child.icon }}</v-icon>
+            <ThresholdInformation
+              :icon="child.thresholdIcon"
+              :count="child.thresholdCount"
+            />
           </template>
         </v-list-item>
         <v-list-item
@@ -44,6 +48,10 @@
         >
           <v-list-item-title>{{ child.name }}</v-list-item-title>
           <template v-slot:append>
+            <ThresholdInformation
+              :icon="child.thresholdIcon"
+              :count="child.thresholdCount"
+            />
             <v-icon v-if="child.children?.length">mdi-chevron-right</v-icon>
             <v-icon v-else-if="child.icon" small>{{ child.icon }}</v-icon>
           </template>
@@ -55,6 +63,7 @@
 
 <script setup lang="ts">
 import { computed, watch } from 'vue'
+import ThresholdInformation from '@/components/general/ThresholdInformation.vue'
 import type { ColumnItem } from './ColumnItem'
 import { useMenuItemsStack } from '../../services/useMenuItemsStack'
 

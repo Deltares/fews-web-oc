@@ -5,6 +5,18 @@
         <template v-slot:activator="{ props }">
           <v-list-item v-bind="props">
             <v-list-item-title>{{ item.name }}</v-list-item-title>
+            <template v-slot:append="{ isActive }">
+              <v-icon v-if="item.icon">
+                {{ item.icon }}
+              </v-icon>
+              <ThresholdInformation
+                :icon="item.thresholdIcon"
+                :count="item.thresholdCount"
+              />
+              <v-icon>
+                {{ isActive ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+              </v-icon>
+            </template>
           </v-list-item>
         </template>
         <TreeMenuItem
@@ -14,29 +26,27 @@
       </v-list-group>
     </template>
     <v-list-item
-      v-else-if="item.href"
+      v-else
+      :to="item.to"
       :href="item.href"
-      target="_blank"
+      :target="item.href ? '_blank' : undefined"
       :active="props.active === item.id"
     >
       <v-list-item-title>{{ item.name }}</v-list-item-title>
       <template v-slot:append>
-        <v-icon size="xsmall">{{ item.icon }}</v-icon>
+        <v-icon v-if="item.icon" size="xsmall">{{ item.icon }}</v-icon>
+        <ThresholdInformation
+          :icon="item.thresholdIcon"
+          :count="item.thresholdCount"
+        />
       </template>
-    </v-list-item>
-    <v-list-item
-      v-else
-      :to="item.to"
-      :active="props.active === item.id"
-      style="margin-right: 10px"
-    >
-      <v-list-item-title>{{ item.name }}</v-list-item-title>
     </v-list-item>
   </template>
 </template>
 
 <script setup lang="ts">
 import type { ColumnItem } from './ColumnItem.js'
+import ThresholdInformation from '@/components/general/ThresholdInformation.vue'
 
 interface Props {
   items?: ColumnItem[]
