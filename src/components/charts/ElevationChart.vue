@@ -1,6 +1,6 @@
 <template>
   <div class="chart-with-chips">
-    <LoadingOverlay v-if="isLoading" :margin="margin" />
+    <LoadingOverlay v-if="isLoading" :offsets="margin" />
     <div ref="chartContainer" class="chart-container"></div>
     <v-sheet
       class="chart-controls"

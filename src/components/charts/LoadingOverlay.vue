@@ -8,7 +8,7 @@
 import { computed } from 'vue'
 
 interface Props {
-  margin?: {
+  offsets?: {
     top?: number
     right?: number
     bottom?: number
@@ -19,10 +19,12 @@ interface Props {
 const props = defineProps<Props>()
 
 const style = computed(() => ({
-  paddingTop: props.margin?.top ? `${props.margin.top}px` : undefined,
-  paddingRight: props.margin?.right ? `${props.margin.right}px` : undefined,
-  paddingBottom: props.margin?.bottom ? `${props.margin.bottom}px` : undefined,
-  paddingLeft: props.margin?.left ? `${props.margin.left}px` : undefined,
+  paddingTop: props.offsets?.top ? `${props.offsets.top}px` : undefined,
+  paddingRight: props.offsets?.right ? `${props.offsets.right}px` : undefined,
+  paddingBottom: props.offsets?.bottom
+    ? `${props.offsets.bottom}px`
+    : undefined,
+  paddingLeft: props.offsets?.left ? `${props.offsets.left}px` : undefined,
 }))
 </script>
 
