@@ -21,7 +21,7 @@
     "@deltares/fews-ssd-requests": "^1.0.1",
     "@deltares/fews-ssd-webcomponent": "^1.0.1",
     "@deltares/fews-web-oc-charts": "^3.0.3-beta.3",
-    "@deltares/fews-wms-requests": "^1.0.0",
+    "@deltares/fews-wms-requests": "^1.0.1",
     "@jsonforms/core": "^3.1.0",
     "@jsonforms/vue": "^3.1.0",
     "@jsonforms/vue-vuetify": "^3.1.0-preview.0",
