@@ -80,11 +80,18 @@ const end = computed(() => {
   if (!times.value || times.value.length === 0) return null
   return times.value[times.value.length - 1]
 })
+
 const maxValuesTimeSeries = useWmsMaxValuesTimeSeries(
   baseUrl,
   () => props.layerName,
   start,
   end,
+)
+
+const onlyCoverageLayersAvailable = computed(() =>
+  layerCapabilities.value?.keywordList?.every(
+    (keyword) => keyword.type === 'COVERAGE',
+  ),
 )
 
 function getFilterActionsFilter(): filterActionsFilter &
@@ -197,6 +204,7 @@ function onCoordinateClick(latitude: number, longitude: number): void {
 }
 
 function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
+  if (!onlyCoverageLayersAvailable.value) return
   const routeName = route.name
     ?.toString()
     .replace('SpatialDisplay', 'SpatialTimeSeriesDisplay')
