@@ -32,6 +32,7 @@ onMounted(() => {
     .create('svg')
     .attr('viewBox', `0 0 ${viewboxWidth} ${viewboxHeight}`)
     .attr('preserveAspectRatio', 'none')
+    .attr('shape-rendering', 'crispEdges')
     .style('width', '100%')
     .style('height', '100%')
   container.value.replaceChildren(svg.node()!)
