@@ -15,6 +15,7 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { difference } from 'lodash-es'
 import { SeriesData } from '@/lib/timeseries/types/SeriesData'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
+import { debouncedRef } from '@vueuse/core'
 
 export interface UseTimeSeriesReturn {
   error: Ref<any>
@@ -60,7 +61,8 @@ export function useTimeSeries(
   const error = shallowRef<any | undefined>(undefined)
   const MAX_SERIES = 20
   const loadingSeriesIds = ref<string[]>([])
-  const isLoading = computed(() => loadingSeriesIds.value.length > 0)
+  const debouncedLoadingSeriesIds = debouncedRef(loadingSeriesIds, 100)
+  const isLoading = computed(() => debouncedLoadingSeriesIds.value.length > 0)
 
   watch([lastUpdated, selectedTime ?? ref(), requests, options], () => {
     controller.abort('Timeseries request triggered again before finishing.')
@@ -198,7 +200,7 @@ export function useTimeSeries(
     series,
     isReady,
     isLoading,
-    loadingSeriesIds,
+    loadingSeriesIds: debouncedLoadingSeriesIds,
     error,
   }
 
