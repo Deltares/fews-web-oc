@@ -1,7 +1,7 @@
 <template>
   <div class="chart-with-chips">
-    <LoadingOverlay v-if="isLoading" :offsets="margin" />
-    <div ref="chartContainer" class="chart-container"></div>
+    <LoadingOverlay v-if="isLoading" :offsets="margin" height="80%" />
+    <div ref="chartContainer" class="chart-container" v-show="!isLoading"></div>
     <v-sheet
       class="chart-controls"
       rounded
