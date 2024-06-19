@@ -190,17 +190,7 @@ interface Props {
   series: Record<string, Series>
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  config: () => {
-    return {
-      title: '',
-      series: [],
-    }
-  },
-  series: () => {
-    return {}
-  },
-})
+const props = defineProps<Props>()
 
 const itemsPerPageOptions = [
   { value: 200, title: '200' },
@@ -277,7 +267,12 @@ watch(
 )
 
 watchDebounced(
-  props.series,
+  // We cannot use a getter on props.series directly here, since it is not
+  // reassigned, but instead its contents are modified. We also do not want to
+  // use a deep watcher, because it would watch the entire contents of the
+  // series for changes, which is rather inefficient. Instead, we watch an array
+  // of last updated dates.
+  () => Object.values(props.series).map((series) => series.lastUpdated),
   () => {
     if (props.series === undefined) return
     tableData.value = createTableData(
