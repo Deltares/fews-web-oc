@@ -33,9 +33,7 @@
           >
         </template>
       </vue-slider>
-      <div class="w-100">
-        <slot name="under-slider"></slot>
-      </div>
+      <slot name="below-track"></slot>
     </div>
     <div class="datetime-slider__actions">
       <slot name="prepend"></slot>
