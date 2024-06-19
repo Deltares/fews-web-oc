@@ -95,7 +95,7 @@
     class="spatial-display__slider"
     :hide-speed-controls="mobile"
   >
-    <template #under-slider>
+    <template #below-track>
       <DateTimeSliderValues
         :values="maxValuesTimeSeries ?? []"
         :colour-scale="colourScalesStore.currentScale ?? null"
