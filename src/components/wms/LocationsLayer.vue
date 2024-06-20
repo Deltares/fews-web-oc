@@ -1,8 +1,5 @@
 <template>
-  <mgl-geo-json-source
-    :source-id="locationsSourceId"
-    :data="props.locationsGeoJson"
-  >
+  <mgl-geo-json-source :source-id="locationsSourceId" :data="geojson">
     <mgl-symbol-layer
       :layer-id="locationsSymbolLayerId"
       :layout="layoutSymbolSpecification"
@@ -58,15 +55,29 @@ const props = withDefaults(defineProps<Props>(), {
   selectedLocationId: null,
 })
 
+const geojson = computed<FeatureCollection<Geometry, Location>>(() => ({
+  type: 'FeatureCollection',
+  features: props.locationsGeoJson.features.map((feature) => ({
+    ...feature,
+    properties: {
+      ...feature.properties,
+      iconName:
+        feature.properties.thresholdIconName ?? feature.properties.iconName,
+      sortKey: feature.properties.thresholdIconName ? 1 : 0,
+    },
+  })),
+}))
+
 const emit = defineEmits(['click'])
 
-const layoutSymbolSpecification = {
+const layoutSymbolSpecification: InstanceType<
+  (typeof MglSymbolLayer)['layout']
+> = {
   'icon-allow-overlap': true,
-  'symbol-sort-key': 1,
+  'symbol-sort-key': ['get', 'sortKey'],
 }
 
-// Set to any to avoid TypeScript error
-const layoutTextSpecification: any = {
+const layoutTextSpecification: InstanceType<typeof MglSymbolLayer>['layout'] = {
   'text-field': ['get', 'locationName'],
   'text-size': 12,
   'text-overlap': 'never',
@@ -74,6 +85,9 @@ const layoutTextSpecification: any = {
   'text-justify': 'auto',
   'text-variable-anchor': ['right', 'left'],
   'text-max-width': 15,
+  // When overlap is false sort order has to be inverted for some reason:
+  // https://maplibre.org/maplibre-style-spec/layers/#symbol-sort-key
+  'symbol-sort-key': ['+', 999, ['-', ['get', 'sortKey']]],
 }
 
 const paintTextSpecification = computed(() => {
@@ -101,12 +115,9 @@ const locationsSymbolLayerId = 'location-symbol-layer'
 const locationsTextLayerId = 'location-text-layer'
 const locationsSourceId = 'location-source'
 
-watch(
-  () => props.locationsGeoJson,
-  () => {
-    addLocationIcons()
-  },
-)
+watch(geojson, () => {
+  addLocationIcons()
+})
 
 watch(
   () => props.selectedLocationId,
@@ -143,7 +154,7 @@ const showNames = computed(() => {
 })
 
 function addLocationIcons() {
-  if (map) addLocationIconsToMap(map, props.locationsGeoJson)
+  if (map) addLocationIconsToMap(map, geojson.value)
 }
 
 function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
@@ -152,6 +163,8 @@ function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
       layers: [locationsSymbolLayerId, locationsCircleLayerId],
     })
     if (!features.length) return
+    // Prioratise clicks on the top-most feature
+    event.features?.sort((a, b) => b.properties.sortKey - a.properties.sortKey)
     onLocationClick(event)
   }
 }
@@ -213,7 +226,7 @@ function highlightSelectedLocationOnMap() {
     ['get', 'locationId'],
     locationId,
     2, // sort key for selected location
-    1, // default sort key
+    ['get', 'sortKey'], // default sort key
   ])
 }
 

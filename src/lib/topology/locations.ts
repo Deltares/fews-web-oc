@@ -1,6 +1,7 @@
 import {
   DocumentFormat,
   Location,
+  LocationsFilter,
   PiWebserviceProvider,
 } from '@deltares/fews-pi-requests'
 import { FeatureCollection, Geometry } from 'geojson'
@@ -69,6 +70,7 @@ async function fetchLocationsAsGeoJsonForSingleFilterId(
     filterId: filterId,
     showParentLocations: false,
     includeIconNames: true,
+    showThresholds: true,
   }
   // TODO: Remove cast to any when fews-pi-requests supports GeoJSON response in LocationResponse
   //       type.
