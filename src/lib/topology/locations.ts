@@ -1,7 +1,6 @@
 import {
   DocumentFormat,
   Location,
-  LocationsFilter,
   PiWebserviceProvider,
 } from '@deltares/fews-pi-requests'
 import { FeatureCollection, Geometry } from 'geojson'

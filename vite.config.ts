@@ -2,10 +2,14 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 import { execSync } from 'child_process'
+import { fileURLToPath } from 'url'
 
 const commitHash = execSync('git rev-parse --short HEAD').toString()
 const commitTag = execSync('git tag --points-at HEAD').toString()
 const buildDate = new Date().toISOString()
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
