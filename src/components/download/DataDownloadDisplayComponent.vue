@@ -107,14 +107,22 @@
         </v-col>
       </v-row>
       <v-card-actions>
-        <v-row class="ma-1">
+        <v-row class="mx-1 mb-1">
           <v-col>
+            <v-checkbox
+              v-model="onlyDownloadMetaData"
+              label="Only download meta-data"
+              hide-details
+              density="compact"
+              class="mb-2"
+            />
             <v-btn
               variant="flat"
               prepend-icon="mdi-download"
               color="primary"
               @click="downloadData"
-              >Download
+            >
+              Download
             </v-btn>
           </v-col>
         </v-row>
@@ -196,6 +204,7 @@ const selectedLocations = ref<Location[]>([])
 const parameterQualifiers = ref<ParameterQualifiersHeader[]>([])
 const selectedParameterQualifiers = ref<ParameterQualifiersHeader[]>([])
 const selectableAttributes = ref<string[][]>([])
+const onlyDownloadMetaData = ref(false)
 
 getLocations().then((locationsResponse) => {
   allLocations.value = locationsResponse
@@ -391,6 +400,7 @@ function downloadData() {
       .join(','),
     parameterIds: uniqWith(parameterIds).join(','),
     qualifierIds: uniqWith(qualifiersIds).join(','),
+    onlyHeaders: onlyDownloadMetaData.value,
   }
   const queryParameters = filterToParams(timeSeriesFilter.value)
   if (queryParameters.length > 7500) {
