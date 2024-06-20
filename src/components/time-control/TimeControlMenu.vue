@@ -16,11 +16,10 @@
     <v-card width="500px">
       <v-row no-gutters>
         <v-col>
-          <v-form ref="form" :disabled="!isCustomInterval">
+          <v-form ref="form">
             <div class="pa-4">
               <v-date-input
                 v-model="customStartDate"
-                :disabled="!isCustomInterval"
                 label="Start"
                 density="compact"
                 variant="solo-filled"
@@ -32,7 +31,6 @@
               />
               <v-date-input
                 v-model="customEndDate"
-                :disabled="!isCustomInterval"
                 label="End"
                 density="compact"
                 variant="solo-filled"
@@ -110,7 +108,10 @@ watchEffect(() => {
   }
 })
 
-watch([customStartDate, customEndDate], () => form.value?.validate())
+watch([customStartDate, customEndDate], () => {
+  store.selectedInterval = 'custom'
+  form.value?.validate()
+})
 
 function onIntervalChange() {
   store.changeInterval()
