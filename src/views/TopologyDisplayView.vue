@@ -73,6 +73,7 @@
       <v-btn
         v-for="tab in displayTabs"
         :key="tab.id"
+        :value="tab.type"
         :href="tab.href"
         :target="tab.target"
         :to="tab.to"
@@ -115,9 +116,7 @@ import { useWorkflowsStore } from '@/stores/workflows'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import type { WebOcTopologyDisplayConfig } from '@deltares/fews-pi-requests'
 
-import { watchEffect } from 'vue'
-import { computed } from 'vue'
-import { ref, watch } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 import {
   type RouteLocationNamedRaw,
   onBeforeRouteUpdate,
@@ -179,8 +178,7 @@ const items = ref<ColumnItem[]>([])
 const filterIds = ref<string[]>([])
 const topologyNode = ref<TopologyNode | undefined>(undefined)
 
-const activeTab = ref(0)
-const activeTabType = ref('')
+const activeTab = ref('')
 const displayTabs = ref<DisplayTab[]>([])
 
 const activeParentNode = ref(0)
@@ -436,10 +434,9 @@ function reroute(to: RouteLocationNormalized) {
     return to
   }
   if (
-    (showLeafsAsButton.value && typeof to.params.nodeId === 'string') ||
-    (showLeafsAsButton.value &&
-      Array.isArray(to.params.nodeId) &&
-      to.params.nodeId.length === 1)
+    showLeafsAsButton.value &&
+    (typeof to.params.nodeId === 'string' ||
+      (Array.isArray(to.params.nodeId) && to.params.nodeId.length === 1))
   ) {
     const parentNodeId = Array.isArray(to.params.nodeId)
       ? to.params.nodeId[0]
@@ -477,31 +474,29 @@ function reroute(to: RouteLocationNormalized) {
       return sources[0].to
     }
   } else {
-    const leafNodeId = Array.isArray(to.params.nodeId)
-      ? to.params.nodeId.length > 1
-        ? to.params.nodeId[to.params.nodeId.length - 1]
-        : to.params.nodeId[0]
-      : to.params.nodeId
-    const parentNodeId =
-      Array.isArray(to.params.nodeId) && to.params.nodeId.length > 1
-        ? to.params.nodeId[0]
-        : undefined
-    const menuNode = topologyMap.value.get(leafNodeId)
     if (to.name === 'TopologyDisplay') {
+      const leafNodeId = Array.isArray(to.params.nodeId)
+        ? to.params.nodeId.length > 1
+          ? to.params.nodeId[to.params.nodeId.length - 1]
+          : to.params.nodeId[0]
+        : to.params.nodeId
+      const parentNodeId =
+        Array.isArray(to.params.nodeId) && to.params.nodeId.length > 1
+          ? to.params.nodeId[0]
+          : undefined
+      const menuNode = topologyMap.value.get(leafNodeId)
       const tabs = displayTabsForNode(menuNode as any, parentNodeId)
-      if (activeTabType.value) {
-        const tabIndex = tabs.findIndex((t) => {
-          return t.type === activeTabType.value
+      let tabIndex = -1
+      if (activeTab.value) {
+        tabIndex = tabs.findIndex((t) => {
+          return t.type === activeTab.value
         })
-        if (tabIndex > -1) {
-          activeTab.value = tabIndex
-          activeTabType.value = tabs[tabIndex].type
-          return tabs[tabIndex].to
-        }
       }
-      activeTab.value = 0
-      activeTabType.value = tabs[0].type
-      return tabs[0].to
+      if (tabIndex < 0) {
+        tabIndex = 0
+        activeTab.value = tabs[tabIndex].type
+      }
+      return tabs[tabIndex].to
     }
   }
 }
