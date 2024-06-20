@@ -12,19 +12,21 @@
         <v-icon v-show="isActive" small> mdi-check </v-icon>
       </template>
     </v-list-item>
-    <v-divider></v-divider>
-    <v-list-subheader>Period presets</v-list-subheader>
-    <v-list-item
-      v-for="(item, index) in props.items"
-      :key="index"
-      :active="index === selectedIndex - 2"
-      @click="onSelectInterval(index + 2)"
-    >
-      {{ item.label }}
-      <template v-slot:append="{ isActive }">
-        <v-icon v-show="isActive" small> mdi-check </v-icon>
-      </template>
-    </v-list-item>
+    <template v-if="props.items.length">
+      <v-divider></v-divider>
+      <v-list-subheader>Period presets</v-list-subheader>
+      <v-list-item
+        v-for="(item, index) in props.items"
+        :key="index"
+        :active="index === selectedIndex - 2"
+        @click="onSelectInterval(index + 2)"
+      >
+        {{ item.label }}
+        <template v-slot:append="{ isActive }">
+          <v-icon v-show="isActive" small> mdi-check </v-icon>
+        </template>
+      </v-list-item>
+    </template>
   </v-list>
 </template>
 
