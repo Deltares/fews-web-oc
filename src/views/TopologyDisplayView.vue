@@ -245,7 +245,10 @@ const showWorkflowsControl = computed(() => {
 })
 
 const showActiveThresholdCrossingsForFilters = computed(() => {
-  return topologyComponentConfig.value?.showActiveThresholdCrossingsForFilters
+  return (
+    topologyComponentConfig.value?.showActiveThresholdCrossingsForFilters ??
+    false
+  )
 })
 
 const nodes = ref<TopologyNode[]>()
