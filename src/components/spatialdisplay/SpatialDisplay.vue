@@ -88,10 +88,10 @@ const maxValuesTimeSeries = useWmsMaxValuesTimeSeries(
   end,
 )
 
-const onlyCoverageLayersAvailable = computed(() =>
-  layerCapabilities.value?.keywordList?.every(
-    (keyword) => keyword.type === 'COVERAGE',
-  ),
+const onlyCoverageLayersAvailable = computed(
+  () =>
+    layerCapabilities.value?.onlyGrids === undefined ||
+    layerCapabilities.value.onlyGrids,
 )
 
 function getFilterActionsFilter(): filterActionsFilter &
