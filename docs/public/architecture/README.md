@@ -71,7 +71,20 @@ In the case of Deltares customer-specific orders for one or more of the software
 
 ## Release management
 
-Information to be added.
+The following applies to the release management of Delft-FEWS Web OC in relation to the regular Delft-FEWS software suite.
+
+The regular Delft-FEWS software has a bi-annual release cycle. See: [Delft-FEWS Hardware and Software Requirements](https://publicwiki.deltares.nl/display/FEWSDOC/Delft-FEWS+Hardware+and+software+requirements). Support can be provided for the five most recent software versions.
+
+In contrast to this bi-annual release cycle, Web OC is developed incrementally. Each approved code change results in a new version of the Web OC software. From that moment, this (and only this) version will be the basis for further development and bug fixing. Support, when reporting a Web OC bug, can be provided by resolving the bug in the current version of the software. In practice, this means that adopting a new Web OC software version often includes bug fixes as well as newly developed functionalities.
+
+The first Delft-FEWS back-end release compatible with Web OC, is the 2023.02 release. As of June 2024, the development of Web OC assumes that the current version of Web OC remains compatible with the three most recent Delft-FEWS back-end releases. This means that at the time of the 2025.01 release, Web OC will no longer be supported for the 2023.02 back-end release. The validity of this assumption will be assessed in the years to come.
+
+On the Web OC release page ([Web OC Releases](https://github.com/Deltares/fews-web-oc/releases)), it is indicated which version of Web OC software was current at the time of the bi-annual Delft-FEWS back-end release.
+
+### New Feature request en Bug reports
+The following diagram indicates how new Web OC feature requests and bugs are handled. It does not provide information on planning and financing. For questions regarding these matters, you can contact FEWS-PM at fews-pm@deltares.nl. 
+![workflow_new_feature](https://github.com/Deltares/fews-web-oc/assets/95357244/66cc1a01-baf8-4bb0-b626-071c23ecf905)
+![workflow_bug_report](https://github.com/Deltares/fews-web-oc/assets/95357244/99f1bd3c-70f8-4cd5-9a30-2a51116e7c8c)
 
 ## Support
 
