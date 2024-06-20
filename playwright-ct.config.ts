@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/experimental-ct-vue'
+import getViteConfig from './vite.config'
+const viteConfig = getViteConfig({
+  command: 'build',
+  mode: 'test',
+})
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -27,8 +32,12 @@ export default defineConfig({
 
     /* Port to use for Playwright component endpoint. */
     ctPort: 3100,
+    ctViteConfig: {
+      resolve: {
+        alias: viteConfig.resolve?.alias,
+      },
+    },
   },
-
   /* Configure projects for major browsers */
   projects: [
     {
