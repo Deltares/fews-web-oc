@@ -3,4 +3,5 @@ export interface DataDownloadFilter {
   parameterIds: string | undefined
   locationIds: string | undefined
   qualifierIds: string | undefined
+  onlyHeaders: boolean | undefined
 }

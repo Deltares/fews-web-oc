@@ -22,6 +22,7 @@
                   v-for="(_item, key) in fileTypes"
                   :key="key"
                   density="compact"
+                  :disabled="isOnlyHeadersDownload && key === 'csv'"
                   @click="fileType = key"
                 >
                   <v-list-item-title>{{ key }}</v-list-item-title>
@@ -59,7 +60,7 @@ import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
 import { filterToParams } from '@deltares/fews-wms-requests'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
-import { computed, onUpdated, ref, toValue } from 'vue'
+import { computed, onUpdated, ref, toValue, watchEffect } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime.ts'
 import { UseTimeSeriesOptions } from '@/services/useTimeSeries'
 import { DateTime } from 'luxon'
@@ -110,10 +111,19 @@ onUpdated(() => {
   fileName.value = `timeseries_${defaultDateTimeString}`
 })
 
+const isOnlyHeadersDownload = computed(() => {
+  return isDataDownloadFilter(props.filter) ? props.filter.onlyHeaders : false
+})
+watchEffect(() => {
+  if (isOnlyHeadersDownload.value && fileType.value === 'csv') {
+    fileType.value = 'json'
+  }
+})
+
 function isTimeSeriesGridActionsFilter(
   filter: filterActionsFilter | timeSeriesGridActionsFilter | undefined,
 ): filter is timeSeriesGridActionsFilter {
-  return (filter as timeSeriesGridActionsFilter).x !== undefined
+  return (filter as timeSeriesGridActionsFilter)?.x !== undefined
 }
 
 function isDataDownloadFilter(
@@ -123,13 +133,13 @@ function isDataDownloadFilter(
     | TimeSeriesFilter
     | undefined,
 ): filter is DataDownloadFilter {
-  return (filter as DataDownloadFilter).filterId !== undefined
+  return (filter as DataDownloadFilter)?.filterId !== undefined
 }
 
 function isFilterActionsFilter(
   filter: filterActionsFilter | timeSeriesGridActionsFilter | undefined,
 ): filter is filterActionsFilter {
-  return (filter as filterActionsFilter).filterId !== undefined
+  return (filter as filterActionsFilter)?.filterId !== undefined
 }
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
