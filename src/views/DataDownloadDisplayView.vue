@@ -1,5 +1,10 @@
 <template>
-  <DataDownloadDisplayComponent v-if="topologyNode" :nodeId :topologyNode />
+  <DataDownloadDisplayComponent
+    v-if="topologyNode"
+    :key="topologyNode.id"
+    :nodeId="nodeId"
+    :topologyNode="topologyNode"
+  />
 </template>
 
 <script setup lang="ts">
