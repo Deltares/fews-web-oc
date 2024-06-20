@@ -28,7 +28,7 @@ const SpatialTimeSeriesDisplay = () =>
 const TimeSeriesDisplayView = () => import('../views/TimeSeriesDisplayView.vue')
 const TopologyDisplayView = () => import('../views/TopologyDisplayView.vue')
 const DataDownloadDisplayView = () =>
-  import('../components/download/DataDownloadDisplayComponent.vue')
+  import('../views/DataDownloadDisplayView.vue')
 const TimeSeriesDisplay = () =>
   import('../components/timeseries/TimeSeriesDisplay.vue')
 const HtmlDisplay = () => import('../views/HtmlDisplayView.vue')
