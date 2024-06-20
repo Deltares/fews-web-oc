@@ -350,8 +350,6 @@ function getUrl(node: TopologyNode): string | undefined {
 }
 
 function getThresholdIcon(node: TopologyNode): string | undefined {
-  if (!showActiveThresholdCrossingsForFilters.value) return undefined
-
   return thresholds.value?.find((t) => t.id === node.id)?.topologyLocationIcon
 }
 
