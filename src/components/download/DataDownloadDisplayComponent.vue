@@ -1,40 +1,45 @@
 <template>
   <v-container>
-    <v-card title="Make a selection to download data">
+    <v-card title="Make a selection to download data" flat>
       <v-row align="start" class="ma-1">
         <v-col v-for="(item, index) in attributes">
           <v-autocomplete
-            density="compact"
-            :label="item.name"
             v-model="selectedAttributes[index]"
-            multiple
-            single-line
-            hide-details
-            rounded="0"
-            @update:modelValue="updateLocations"
             :items="selectableAttributes[index]"
+            :label="item.name"
+            multiple
+            density="compact"
+            variant="outlined"
+            clearable
+            chips
+            closable-chips
+            prepend-icon="mdi-filter"
+            @update:modelValue="updateLocations"
           />
         </v-col>
       </v-row>
       <v-row align="start" class="ma-1">
         <v-col>
           <v-autocomplete
-            density="compact"
-            :item-title="(item) => getParameterQualifierName(item)"
-            return-object
             v-model="selectedParameterQualifiers"
-            multiple
-            single-line
-            hide-details
-            rounded="0"
-            label="Parameters"
             :items="parameterQualifiers"
+            :item-title="(item) => getParameterQualifierName(item)"
+            label="Parameters"
+            multiple
+            return-object
+            density="compact"
+            variant="outlined"
+            clearable
+            prepend-icon="mdi-scale"
           >
             <template v-slot:selection="{ item, index }">
               <span v-if="index < 4">{{ item.title }}</span>
-              <span v-if="index == 4"
+              <span v-else-if="index === 4"
                 >... ({{ selectedParameterQualifiers.length }} selected)</span
               >
+            </template>
+            <template v-slot:append-inner>
+              <v-chip>{{ parameterQualifiers.length }}</v-chip>
             </template>
           </v-autocomplete>
         </v-col>
@@ -42,22 +47,25 @@
       <v-row align="start" class="ma-1">
         <v-col>
           <v-autocomplete
-            :item-title="(item) => getLocationName(item)"
             v-model="selectedLocations"
+            :items="locations"
+            :item-title="(item) => getLocationName(item)"
+            label="Locations"
             multiple
-            single-line
-            hide-details
-            rounded="0"
             return-object
             density="compact"
-            label="locations"
-            :items="locations"
+            variant="outlined"
+            clearable
+            prepend-icon="mdi-map-marker-multiple"
           >
             <template v-slot:selection="{ item, index }">
               <span v-if="index < 3">{{ item.title }}</span>
-              <span v-if="index == 3"
+              <span v-else-if="index === 3"
                 >... ({{ selectedLocations.length }} selected)</span
               >
+            </template>
+            <template v-slot:append-inner>
+              <v-chip>{{ locations.length }}</v-chip>
             </template>
           </v-autocomplete>
         </v-col>
@@ -66,11 +74,10 @@
         <v-col>
           <v-text-field
             v-model="startDateString"
-            label="Start"
+            label="Start date"
             density="compact"
             :rules="[rules.required, rules.date]"
-            variant="solo-filled"
-            flat
+            variant="outlined"
           >
             <template v-slot:prepend>
               <v-menu offset-y :close-on-content-click="false">
@@ -87,16 +94,15 @@
         <v-col>
           <v-text-field
             v-model="endDateString"
-            label="End"
+            label="End date"
             density="compact"
             :rules="[rules.required, rules.date]"
-            variant="solo-filled"
-            flat
+            variant="outlined"
           >
             <template v-slot:prepend>
               <v-menu offset-y :close-on-content-click="false">
                 <template v-slot:activator="{ props }">
-                  <v-icon v-bind="props">mdi-calendar-start</v-icon>
+                  <v-icon v-bind="props">mdi-calendar-end</v-icon>
                 </template>
                 <v-date-picker v-model="endDate" no-title hide-actions>
                   <template #header></template>
@@ -107,34 +113,24 @@
         </v-col>
       </v-row>
       <v-card-actions>
-        <v-row class="mx-1 mb-1">
-          <v-col>
-            <v-checkbox
-              v-model="onlyDownloadMetaData"
-              label="Only download meta-data"
-              hide-details
-              density="compact"
-              class="mb-2"
-            />
-            <v-btn
-              variant="flat"
-              prepend-icon="mdi-download"
-              color="primary"
-              @click="downloadData"
-            >
-              Download
-            </v-btn>
-          </v-col>
-        </v-row>
+        <v-checkbox
+          v-model="onlyDownloadMetaData"
+          label="Only download meta-data"
+          hide-details
+          density="compact"
+          class="mb-2"
+        />
+        <v-spacer />
+        <v-btn
+          variant="flat"
+          prepend-icon="mdi-download"
+          color="primary"
+          @click="downloadData"
+        >
+          Download
+        </v-btn>
       </v-card-actions>
     </v-card>
-    <v-row>
-      <v-col>
-        <v-text-field v-for="error in errors" style="color: red" readonly
-          >{{ error }}
-        </v-text-field>
-      </v-col>
-    </v-row>
     <TimeSeriesFileDownloadComponent
       v-model="showFileDownloadDialog"
       :options="options"
