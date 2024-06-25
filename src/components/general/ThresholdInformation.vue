@@ -5,6 +5,7 @@
     size="small"
     class="ms-1 px-2 threshold-count"
     density="compact"
+    variant="flat"
     :color
   >
     {{ count }}
@@ -21,7 +22,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  color: 'orange-darken-4',
+  color: '#00BBF0',
 })
 </script>
 

@@ -73,7 +73,6 @@
             <ThresholdInformation
               :icon="item.thresholdIcon"
               :count="item.thresholdCount"
-              color="yellow-darken-1"
             />
           </template>
         </v-btn>
