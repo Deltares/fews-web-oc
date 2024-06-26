@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="showTermsDialog" persistent max-width="900">
     <v-card style="cursor: default">
-      <v-card-title class="text-h5">Terms of Use</v-card-title>
+      <v-card-title class="text-h5">Terms and Conditions</v-card-title>
       <HtmlDisplay :url="url" />
       <v-card-actions class="pt-0">
         <v-checkbox
@@ -33,7 +33,7 @@ import HtmlDisplay from '@/components/general/HtmlDisplay.vue'
 const showTermsDialog = defineModel({ default: false })
 const isInAgreement = ref(false)
 
-const termsPath = 'terms-of-use'
+const termsPath = 'terms-and-conditions'
 const configStore = useConfigStore()
 const url = computed(() => {
   const matchingComponent = configStore

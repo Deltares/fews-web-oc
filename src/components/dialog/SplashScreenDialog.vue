@@ -31,7 +31,7 @@ const showDialog = defineModel({ default: false })
 
 const router = useRouter()
 
-const termsPath = 'terms-of-use'
+const termsPath = 'terms-and-conditions'
 const configStore = useConfigStore()
 const termsComponent = computed(() =>
   configStore
