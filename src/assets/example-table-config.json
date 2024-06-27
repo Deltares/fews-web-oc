@@ -1,0 +1,85 @@
+{
+  "results": [
+    {
+      "type": "PI",
+      "requests": [
+        {
+          "key": "44fcec",
+          "request": "rest/fewspiservice/v1/timeseries?timeSeriesSetIndex=168&locationIds=uMhlanga_Main_Beach_wave&endForecastTime=2024-06-12T13%3A09%3A47Z&useDisplayUnits=true&matchAsQualifierSet=true&convertDatum=false&documentFormat=PI_JSON"
+        },
+        {
+          "key": "44fced",
+          "request": "rest/fewspiservice/v1/timeseries?timeSeriesSetIndex=401&locationIds=Amanzimtoti_Main_Beach_wave&endForecastTime=2024-07-01T07%3A10%3A50Z&useDisplayUnits=true&matchAsQualifierSet=true&convertDatum=false&documentFormat=PI_JSON"
+        }
+      ],
+      "config": {
+        "preferredDisplay": "table",
+        "timeSeriesDisplay": {},
+        "tableDisplay": {
+          "rows": [
+            {
+              "type": "value",
+              "label": "Wave height",
+              "request": "44fcec"
+            },
+            {
+              "type": "colored-value",
+              "label": "Wave height coloured",
+              "request": "44fcec",
+              "colorMap": [
+                {
+                  "lowerValue": 0.0,
+                  "color": "#070268"
+                },
+                {
+                  "lowerValue": 2.5,
+                  "color": "#00ff40"
+                },
+                {
+                  "lowerValue": 5.0,
+                  "color": "#800000"
+                }
+              ]
+            },
+            {
+              "type": "colored-value",
+              "label": "Wave direction",
+              "request": "44fced",
+              "colorMap": [
+                {
+                  "lowerValue": 0.0,
+                  "color": "#070268"
+                },
+                {
+                  "lowerValue": 180,
+                  "color": "#00ff40"
+                },
+                {
+                  "lowerValue": 360,
+                  "color": "#800000"
+                }
+              ],
+              "fontColor": "#fff"
+            },
+            {
+              "type": "direction",
+              "label": "Wave direction",
+              "directionType": "wave",
+              "request": "44fced"
+            },
+            {
+              "type": "graph",
+              "label": "Wave height graph",
+              "request": "44fcec",
+              "relativeHeight": 2,
+              "showValues": true,
+              "alignValues": "bottom",
+              "fill": "#f48fb1",
+              "stroke": "#fce4ec"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
