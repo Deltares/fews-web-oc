@@ -2,13 +2,13 @@
 
 ## Introduction
 
-In order to connect Web OC to a FewsWebServices instance, some basic configuration is required in app-config.json. Please refer to: https://github.com/Deltares/fews-web-oc/blob/main/README.md.
-All configuration related to what content is being displayed in Web OC, is managed by the Delft-FEWS configuration. For general documentation on this matter please refer to: https://publicwiki.deltares.nl/display/FEWSDOC/Configuring+Delft-FEWS+-+Configuration+Guide
+In order to connect Web OC to a FewsWebServices instance, some basic configuration is required in app-config.json. Please refer to: [Web OC application configuration](https://deltares.github.io/fews-web-oc/app_configuration/).
+All configuration related to what content is being displayed in Web OC, is managed by the Delft-FEWS configuration. For general documentation on this matter please refer to: [Delft-FEWS Configuration Guide](https://publicwiki.deltares.nl/display/FEWSDOC/Configuring+Delft-FEWS+-+Configuration+Guide)
 
 Key files in the FEWS Configuration to get started with Web OC are:
 
-- WebOperatorClient.xml (SystemConfigFiles). Configure available Web OC components as well as general items like title and logo: https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client
-- WebServices.xml (PiServiceConfigFiles). Web OC highly depends on what data is made available through FewsWebServices, Use this configuration file to configure a filterId, permissions etc.: https://publicwiki.deltares.nl/pages/viewpage.action?pageId=220266993
+- WebOperatorClient.xml (SystemConfigFiles). [Configure](https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client) available Web OC components as well as general items like title and logo.
+- WebServices.xml (PiServiceConfigFiles). Web OC highly depends on what data is made available through FewsWebServices, Use [this](https://publicwiki.deltares.nl/pages/viewpage.action?pageId=220266993) configuration file to configure a filterId, permissions etc.
 
 Although Web OC will run without any further adjustments to the Delft-FEWS configuration, its strongly recommended to spend some time on your Topology configuration in relation to Web OC (see below).
 
@@ -24,7 +24,7 @@ Please note that Web OC will always use the system time of the Web OC users devi
 
 When we want to limit ourselves to a single menu/folder structure configured in FEWS for navigation in Web OC, it is logical to base this on Topology.xml. In Web OC, the entire Topology structure is displayed, to which the Web OC user has access via FewsWebServices.
 
-For the general configuration of Topology.xml, please refer to https://publicwiki.deltares.nl/display/FEWSDOC/24+Topology.
+For the general configuration of Topology.xml, please refer to: [Topology Configuration](https://publicwiki.deltares.nl/display/FEWSDOC/24+Topology).
 
 Topology nodes in the Web OC component TopologyDisplay can be linked using Topology.xml as described below.
 
@@ -42,7 +42,7 @@ Topology nodes in the Web OC component TopologyDisplay can be linked using Topol
 **Spatial Display**
 
 Web OC will show a map, displaying the configured plotId linked to the selected topology node. Use the `<gridDisplaySelection>` item in Toplogy.xml to configure a plotId. A time slider will show up for navigation in time. The period covered by the time slider is based on the configured relative view period of the time series in the GridDisplay.xml with reference to the system time of Web OC (system time of users device).
-The classbreaks (legend) on the Spatial Display is only shown in the Web-OC when the Spatial Display plotId uses classbreaks from the TimeSeriesDisplayConfig.xml. Examples are provided on the Delft-FEWS WIKI (https://publicwiki.deltares.nl/display/FEWSDOC/02+Time+Series+Display+Configuration and https://publicwiki.deltares.nl/display/FEWSDOC/01+Grid+Display#id-01GridDisplay-_Toc154574473_Toc95297306classBreaks. 
+The classbreaks (legend) on the Spatial Display is only shown in the Web-OC when the Spatial Display plotId uses classbreaks from the TimeSeriesDisplayConfig.xml. Examples are provided on the Delft-FEWS WIKI pages: [Time series display configuration](https://publicwiki.deltares.nl/display/FEWSDOC/02+Time+Series+Display+Configuration) and [Grid display configuration](https://publicwiki.deltares.nl/display/FEWSDOC/01+Grid+Display#id-01GridDisplay-_Toc154574473_Toc95297306classBreaks). 
 
 **Filters**
 
@@ -63,7 +63,7 @@ The period shown in the graph corresponds to the configured relative view period
 
 ### Permissions
 
-By assigning viewPermissions in Topology.xml, it is possible to configure nodes for Web OC users that do not affect usage in the "thick" client. If authentication is not used for Web OC, permissions can still be utilized by configuring "defaultUser" in WebServices.xml (https://publicwiki.deltares.nl/pages/viewpage.action?pageId=220266993). The Web OC component that utilizes Topology.xml is TopologyDisplay.
+By assigning viewPermissions in Topology.xml, it is possible to configure nodes for Web OC users that do not affect usage in the "thick" client. If authentication is not used for Web OC, permissions can still be utilized by configuring "defaultUser" in [WebServices.xml](https://publicwiki.deltares.nl/pages/viewpage.action?pageId=220266993). The Web OC component that utilizes Topology.xml is TopologyDisplay.
 
 ## Other WEB OC functional components
 
@@ -73,8 +73,8 @@ Next to the Topology Display, three additional components can be configured in W
 
 **systemMonitor**: “Import status” and “Running Tasks” components of system monitor will be displayed in Web OC.
 
-**schematicStatusDisplay**: A tree view will list all SSD displayGroups including all displayPanels (configured permissions respected) available to FewsWebServices. Most click-actions on displayPanels are supported: https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+Schematic+Status+Display+%28SSD%29+Web+Service
+**schematicStatusDisplay**: A tree view will list all SSD displayGroups including all displayPanels (configured permissions respected) available to FewsWebServices. Most click-actions on displayPanels are supported, see [SSD Service documentation](https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+Schematic+Status+Display+%28SSD%29+Web+Service).
 
 ## Known issues
 
-- The FewsWebServices _thinning_ option is used (https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+PI+REST+Web+Service#FEWSPIRESTWebService-GETtimeseries) while retreiving data for Web OC timeseries graphs and tables. This function tries to keep the peaks and gaps and minimizes the number of time steps that have to be retrieved. Eventually, _thinning_ should not be used for timeseries tables. In future releases of Web OC _thinning_ will only be used for timeseries graphs.
+- The FewsWebServices _thinning_ [option](https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+PI+REST+Web+Service#FEWSPIRESTWebService-GETtimeseries) is used while retreiving data for Web OC timeseries graphs and tables. This function tries to keep the peaks and gaps and minimizes the number of time steps that have to be retrieved. Eventually, _thinning_ should not be used for timeseries tables. In future releases of Web OC _thinning_ will only be used for timeseries graphs.
