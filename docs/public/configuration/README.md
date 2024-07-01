@@ -34,7 +34,7 @@ Topology nodes in the Web OC component TopologyDisplay can be linked using Topol
 | Filters                   | FilterId                         | Yes                  | Yes                |
 | Web Browser               | url                              | Yes                  | Yes                |
 | DisplayGroup              | DisplayGroupId, plotId, nodeId   | Yes                  | Yes                |
-| Run Task                  | (secondary) WorkFlowId           | Yes                  | Planned for 2024   |
+| Run Task                  | secondaryWorkflowId              | Yes                  | Yes                |
 | Data download             | dataDownloadDisplayId            | 2024.01              | Planned for 2024   |
 | SchematicStatusDisplay    | PanelId                          | Not yet              | Not yet            |
 | System Monitor            | TabId                            | Not yet              | Not yet            |
@@ -60,6 +60,20 @@ Web OC will show a time series graph and a drop down menu for selection of displ
 2. Configure a `<displayGroupId>` element for a Topology node in Topology.xml
 
 The period shown in the graph corresponds to the configured relative view period in DisplayGroups.xml
+
+**Run Task**
+
+It is posible to submit a task to the FEWS back-end by configuring a `<secondaryWorkflowId>` in Topology.xml. It is required to explicitly allow running of tasks from Web OC by configuring `<enableTaskRuns>true</enableTaskRuns>` in WebOperatorClient.xml (default is false). When correclty configured, a run button will appear in Web OC above the topology tree. When selected, a pop-up menu will allow the user to choose from the secondary workflows configured (multiple workflows can be linked to a single node). A task description can be added before submitting the task. 
+
+_Workflow properties_
+
+In [Workflowdescriptors](https://publicwiki.deltares.nl/display/FEWSDOC/13+WorkflowDescriptors), workflow properties can be configured. If properties are configured to be editable `<editableProperty>` a form will be shown in Web OC where these properties can be modified from their default value by the user. 
+Pre-defined properties are xMin, xMax, yMin, yMax, xCellSize and yCellSize. When these properties are configured, Web OC will provide users with the option to draw a bounding box on the map. The task will be submitted using the [processdata endpoint](https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+PI+REST+Web+Service#FEWSPIRESTWebService-GETprocessdata(2017.02)) instead of [POST run task](https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+PI+REST+Web+Service#FEWSPIRESTWebService-POSTruntask(2017.02)). Purpose of the processdata endpoint is to download data based on xMin, xMax, yMin, yMax, xCellSize and yCellSize properties provided by the user.
+
+Limitations:
+- T0 will be set to time of submission (respecting cardinal time step)
+- Only secondary workflows supported
+- Features like: state selection, what-if scenarios etc. not supported
 
 ### Permissions
 
