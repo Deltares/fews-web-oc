@@ -49,6 +49,7 @@ Key assumptions regarding the development process are:
 |              | International User Days. Presentation status Web OC Developments.<br>Dec 2023 Software (0.0.1) available on [GitHub](https://github.com/Deltares/fews-web-oc). |
 | 2024         | **January Delft-FEWS Web OC Release 1.0.0** (compatible with 2023.02 back-end). |
 |              | March Release 1.1.0 |
+|              | **July Delft-FEWS Web OC Release 1.1.0** (compatible with 2023.02 & 2024.01 back-end). |
 |              | Web OC Development in line with the current Delft-FEWS business model. |
 
 ## Present status
