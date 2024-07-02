@@ -25,6 +25,8 @@ const SpatialDisplay = () =>
   import('../components/spatialdisplay/SpatialDisplay.vue')
 const SpatialTimeSeriesDisplay = () =>
   import('../components/spatialdisplay/SpatialTimeSeriesDisplay.vue')
+const SpatialTableDisplay = () =>
+  import('../components/spatialdisplay/SpatialTableDisplay.vue')
 const TimeSeriesDisplayView = () => import('../views/TimeSeriesDisplayView.vue')
 const TopologyDisplayView = () => import('../views/TopologyDisplayView.vue')
 const DataDownloadDisplayView = () =>
@@ -191,6 +193,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
             component: SpatialTimeSeriesDisplay,
             props: true,
             meta: { sidebar: true },
+          },
+          {
+            path: '/topology/node/:nodeId*/map/:layerName/table/:locationId',
+            name: 'SpatialTableDisplay',
+            component: SpatialTableDisplay,
+            props: true,
+            meta: { sidebar: true, useVerticalSplit: true },
           },
         ],
       },

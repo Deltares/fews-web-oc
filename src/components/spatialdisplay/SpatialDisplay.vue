@@ -1,6 +1,15 @@
 <template>
-  <div class="container">
-    <div class="child-container" :class="{ 'd-none': hideMap }">
+  <div
+    class="container"
+    :class="{ 'vertical-split': route.meta.useVerticalSplit }"
+  >
+    <div
+      class="child-container map-container"
+      :class="{
+        'd-none': hideMap,
+        'vertical-split': route.meta.useVerticalSplit,
+      }"
+    >
       <SpatialDisplayComponent
         :layer-name="props.layerName"
         :location-id="props.locationId"
@@ -16,7 +25,11 @@
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
     </div>
-    <div v-if="filter" class="child-container">
+    <div
+      v-if="filter"
+      class="child-container window-container"
+      :class="{ 'vertical-split': route.meta.useVerticalSplit }"
+    >
       <router-view
         @close="closeTimeSeriesDisplay"
         :filter="filter"
@@ -275,17 +288,31 @@ watch(
   height: 100%;
 }
 
+.container.vertical-split {
+  flex-direction: column;
+}
+
 .child-container {
   position: relative;
   display: flex;
   flex-direction: column;
-  width: 50%;
-  max-width: 100%;
   flex: 1 1 0px;
 }
 
 .child-container.mobile {
   height: 100%;
   width: 100%;
+}
+
+.child-container:not(.vertical-split) {
+  width: 50%;
+  max-width: 100%;
+}
+
+.map-container.vertical-split {
+  flex: 1 1 0;
+}
+.window-container.vertical-split {
+  flex: 0 1 0;
 }
 </style>
