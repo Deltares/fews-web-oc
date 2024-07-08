@@ -1,5 +1,5 @@
 <template>
-  <Teleport to="#web-oc-sidebar-target">
+  <Teleport to="#web-oc-sidebar-target" v-if="route.meta?.sidebar">
     <HierarchicalMenu
       v-model:active="active"
       v-model:open="open"

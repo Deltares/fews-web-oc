@@ -78,14 +78,14 @@ export const embedRoutes: Readonly<RouteRecordRaw[]> = [
     name: 'Embed/SchematicStatusDisplay',
     component: SchematicStatusDisplayView,
     props: true,
-    meta: { sidebar: true, layout: 'EmbedLayout' },
+    meta: { sidebar: false, layout: 'EmbedLayout' },
     children: [
       {
         path: '/embed/ssd/:groupId?/:panelId?/object/:objectId',
         name: 'Embed/SSDTimeSeriesDisplay',
         component: SSDTimeSeriesDisplay,
         props: true,
-        meta: { sidebar: true, layout: 'EmbedLayout' },
+        meta: { sidebar: false, layout: 'EmbedLayout' },
       },
     ],
   },
