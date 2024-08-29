@@ -3,16 +3,19 @@ import { shallowRef, toValue, watchEffect } from 'vue'
 import Basemaps from '@/assets/base-layers.json'
 import { MglDefaults } from '@indoorequal/vue-maplibre-gl'
 import { useDark } from '@vueuse/core'
+import { StyleSpecification } from 'maplibre-gl'
 
 export interface UseBaseLayersReturn {
-  baseLayerStyle: ShallowRef<string | object>
+  baseLayerStyle: ShallowRef<string | StyleSpecification>
   baseLayers: ShallowRef<(string | object)[]>
 }
 
 export function useBaseLayers(
   layerId: MaybeRefOrGetter<string | undefined>,
 ): UseBaseLayersReturn {
-  const baseLayerStyle = shallowRef<string | object>(MglDefaults.style)
+  const baseLayerStyle = shallowRef<string | StyleSpecification>(
+    MglDefaults.style ?? '',
+  )
   const baseLayers = shallowRef<(string | object)[]>(Basemaps.baseLayers)
 
   const isDark = useDark()
