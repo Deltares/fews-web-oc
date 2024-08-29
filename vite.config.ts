@@ -23,14 +23,13 @@ export default defineConfig(({ mode }) => {
     server: {
       headers: {
         'content-security-policy': [
-          `default-src 'self'`,
+          `default-src 'none'`,
           `script-src 'self'`,
-          `font-src 'self' https://*.basemaps.cartocdn.com`,
-          `style-src 'self' 'unsafe-inline'`,
-          `worker-src blob:`,
-          `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL}`,
-          `child-src blob:`,
-          `connect-src 'self' https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://login.microsoftonline.com ${env.VITE_FEWS_WEBSERVICES_URL}`,
+          `font-src 'self'`,
+          `style-src 'self' 'unsafe-inline'`, // vuetify
+          `worker-src blob:`, // maplibre-gl
+          `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices
+          `connect-src 'self' https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://login.microsoftonline.com ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices, Authentication, Basemaps
         ].join('; '),
       },
     },
