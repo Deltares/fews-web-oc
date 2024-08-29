@@ -12,7 +12,9 @@
     :dragRotate="false"
     :touchZoomRotate="false"
     :touchPitch="false"
+    :attributionControl="false"
   >
+    <mgl-attribution-control position="top-right" :compact="true" />
     <mgl-scale-control position="bottom-right" />
     <slot></slot>
   </mgl-map>
@@ -22,8 +24,9 @@
 import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import {
-  MglMap,
+  MglAttributionControl,
   MglDefaults,
+  MglMap,
   MglScaleControl,
 } from '@indoorequal/vue-maplibre-gl'
 import { type ResourceType, type RequestParameters } from 'maplibre-gl'
