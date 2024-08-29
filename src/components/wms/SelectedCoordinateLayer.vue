@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { LngLat, MapMouseEvent, MapTouchEvent, Popup } from 'maplibre-gl'
 import { computed, ref, watch } from 'vue'
-import { MglGeoJsonSource, MglCircleLayer, useMap } from 'vue-maplibre-gl'
+import { MglGeoJsonSource, MglCircleLayer, useMap } from '@indoorequal/vue-maplibre-gl'
 
 interface Props {
   coordinate?: LngLat
