@@ -70,14 +70,12 @@ const geojson = computed<FeatureCollection<Geometry, Location>>(() => ({
 
 const emit = defineEmits(['click'])
 
-const layoutSymbolSpecification: InstanceType<
-  (typeof MglSymbolLayer)['layout']
-> = {
+const layoutSymbolSpecification = {
   'icon-allow-overlap': true,
   'symbol-sort-key': ['get', 'sortKey'],
 }
 
-const layoutTextSpecification: InstanceType<typeof MglSymbolLayer>['layout'] = {
+const layoutTextSpecification = {
   'text-field': ['get', 'locationName'],
   'text-size': 12,
   'text-overlap': 'never',
