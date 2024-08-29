@@ -335,7 +335,7 @@ watch(canUseStreamlines, (canUse) => {
 })
 
 const offsetBottomControls = computed(() => {
-  return props.times?.length ? '36px' : '0px'
+  return props.times?.length ? '60px' : '0px'
 })
 
 const layerHasElevation = computed(() => {
@@ -480,10 +480,13 @@ function onCoordinateMoved(lat: number, lng: number): void {
 .mapcomponent__controls-container {
   position: absolute;
   max-width: 100%;
+  z-index: 3;
 }
+</style>
 
-:deep(.maplibregl-ctrl-bottom-right),
-:deep(.maplibregl-ctrl-bottom-left) {
-  bottom: v-bind('offsetBottomControls');
+<style>
+.maplibregl-ctrl-bottom-right,
+.maplibregl-ctrl-bottom-left {
+  bottom: v-bind('offsetBottomControls') !important;
 }
 </style>
