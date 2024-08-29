@@ -13,16 +13,17 @@ function getUniqueIconNames(
     .filter((iconName) => iconName !== undefined) as string[]
 }
 
-function addDefaultSelectedLocationIconToMap(map: Map): void {
+async function addDefaultSelectedLocationIconToMap(map: Map): Promise<void> {
   const iconId = 'selected-location'
   if (map.hasImage(iconId)) return
-  map.loadImage(
-    `${import.meta.env.BASE_URL}images/map-marker.png`,
-    function (error, image) {
-      if (error) throw error
-      if (image) map.addImage(iconId, image)
-    },
-  )
+  try {
+    const image = await map.loadImage(
+      `${import.meta.env.BASE_URL}images/map-marker.png`,
+    )
+    map.addImage(iconId, image.data)
+  } catch (error) {
+    console.error('Failed to load default location icon:', error)
+  }
 }
 
 async function convertSvgToBitmap(
@@ -48,10 +49,10 @@ async function convertSvgToBitmap(
   return bitmap
 }
 
-function addCustomLocationIconsToMap(
+async function addCustomLocationIconsToMap(
   map: Map,
   locations: FeatureCollection<Geometry, Location>,
-): void {
+): Promise<void> {
   const locationIcons = getUniqueIconNames(locations)
   for (const iconName of locationIcons) {
     if (map.hasImage(iconName)) continue
@@ -64,11 +65,12 @@ function addCustomLocationIconsToMap(
         map.addImage(iconName, image)
       })
     } else {
-      // Load bitmap image.
-      map.loadImage(url, function (error, image) {
-        if (error) throw error
-        if (image) map.addImage(iconName, image)
-      })
+      try {
+        const image = await map.loadImage(url)
+        map.addImage(iconName, image.data)
+      } catch (error) {
+        console.error(`Failed to load location icon ${iconName}:`, error)
+      }
     }
   }
 }
