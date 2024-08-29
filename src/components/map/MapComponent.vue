@@ -3,6 +3,7 @@
     ref="map"
     :min-zoom="2"
     :interactive="true"
+    :trackResize="true"
     :drag-pan="true"
     :scroll-zoom="true"
     :transform-request="transformRequest"
