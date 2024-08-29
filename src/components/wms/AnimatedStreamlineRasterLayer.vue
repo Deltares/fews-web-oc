@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { type Layer } from '@deltares/fews-wms-requests'
-import { useMap } from 'vue-maplibre-gl'
+import { useMap } from '@indoorequal/vue-maplibre-gl'
 import { onMounted, onUnmounted, watch } from 'vue'
 
 import {

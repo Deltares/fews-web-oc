@@ -24,7 +24,7 @@ import {
   MglSymbolLayer,
   MglGeoJsonSource,
   useMap,
-} from 'vue-maplibre-gl'
+} from '@indoorequal/vue-maplibre-gl'
 import { FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
 import {

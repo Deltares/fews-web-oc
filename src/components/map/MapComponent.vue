@@ -21,9 +21,12 @@
 <script setup lang="ts">
 import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
-import { MglMap, MglDefaults, MglScaleControl } from 'vue-maplibre-gl'
+import {
+  MglMap,
+  MglDefaults,
+  MglScaleControl,
+} from '@indoorequal/vue-maplibre-gl'
 import { type ResourceType, type RequestParameters } from 'maplibre-gl'
-import 'vue-maplibre-gl/dist/vue-maplibre-gl.css'
 import { useBaseLayers } from '@/services/useBaseLayers'
 import { useUserSettingsStore } from '@/stores/userSettings'
 

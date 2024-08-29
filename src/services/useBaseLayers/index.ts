@@ -1,7 +1,7 @@
 import type { MaybeRefOrGetter, ShallowRef } from 'vue'
 import { shallowRef, toValue, watchEffect } from 'vue'
 import Basemaps from '@/assets/base-layers.json'
-import { MglDefaults } from 'vue-maplibre-gl'
+import { MglDefaults } from '@indoorequal/vue-maplibre-gl'
 import { useDark } from '@vueuse/core'
 
 export interface UseBaseLayersReturn {
