@@ -2,7 +2,7 @@
 
 ## Introduction
 
-At Deltares, we notice an increasing number of requests for web-based user-interfaces connected to Delft-FEWS. Also, we see that there is a broader move ongoing towards online user-interfaces, with many comparable packages used internationally already providing such solutions. As such, the Delft-FEWS 2025 vision (https://oss.deltares.nl/web/delft-fews/vision-2025) also incorporates the development of a Web-based Operator Client (Web OC) (https://oss.deltares.nl/web/delft-fews/-/web-based-oc?redirect=%2Fweb%2Fdelft-fews%2Froadmaps).
+At Deltares, we notice an increasing number of requests for web-based user-interfaces connected to Delft-FEWS. Also, we see that there is a broader move ongoing towards online user-interfaces, with many comparable packages used internationally already providing such solutions. As such, the Delft-FEWS 2025 [vision](https://oss.deltares.nl/web/delft-fews/vision-2025) also incorporates the development of a Web-based Operator Client [Web OC](https://oss.deltares.nl/web/delft-fews/-/web-based-oc?redirect=%2Fweb%2Fdelft-fews%2Froadmaps).
 
 ## Development goals
 
@@ -24,15 +24,15 @@ Furthermore, key overall assumptions are:
 - The Web OC will connect to the Delft-FEWS web services to interact with other Delft-FEWS components.
 - The Web OC can be hosted anywhere, dependent on the client’s preference (on-premise, the cloud, …)
 - The Web OC will become an integral part of the overall Delft-FEWS product.
-- An open source, closed community license model will apply (see REFERENCE).
+- An [open source](https://deltares.github.io/fews-web-oc/architecture/#licensing-and-software-distribution), closed community license model will apply.
 
 ## Development process
 
 Key assumptions regarding the development process are:
 
 - The development of the Web OC will apply a growth model. Starting from initial requirements and an initial prioritization, relevant functionality will be gradually and iteratively included or enhanced (in line with the current Delft-FEWS business model).
-- An initial Minimum Viable Product (MVP) version of the Web OC will likely include functionality to: 1) visualize data (time series, map fields, SCADA displays, also including associated information such as thresholds), 2) dispatching jobs, 3) visualize monitoring information, 4). Aanpassen, link naar presentaties
-- Deltares will provide long-term support on the Web OC.
+- An initial Minimum Viable Product (MVP) version of the Web OC will likely include functionality to: 1) visualize data (time series, map fields, SCADA displays, also including associated information such as thresholds), 2) dispatching jobs, 3) visualize monitoring information.
+- Deltares will provide long-term [support](https://oss.deltares.nl/web/delft-fews/services) on the Web OC.
 
 ## Project timeline
 
@@ -46,11 +46,10 @@ Key assumptions regarding the development process are:
 |              | Continuation of development work.<br>User feedback session during CSB meeting and NL/INT User Days.                                                                                               |
 |              | International User Days. Demonstration / Plug & Play session Web OC / UI/UX Design session.                                                                                                       |
 | 2023         | Continuation of development work.                                                                                                                                                                 |
-|              | International User Days. Presentation status Web OC Developments.<br>Dec 2023 Software (0.0.1) available on [GitHub](https://github.com/Deltares/fews-web-oc). |
-| 2024         | **January Delft-FEWS Web OC Release 1.0.0** (compatible with 2023.02 back-end). |
-|              | March Release 1.1.0 |
-|              | **July Delft-FEWS Web OC Release 1.1.0** (compatible with 2023.02 & 2024.01 back-end). |
-|              | Web OC Development in line with the current Delft-FEWS business model. |
+|              | International User Days. Presentation status Web OC Developments.<br>Dec 2023 Software (0.0.1) available on [GitHub](https://github.com/Deltares/fews-web-oc).                                    |
+| 2024         | **January Delft-FEWS Web OC [Release 1.0.0](https://github.com/Deltares/fews-web-oc/releases/tag/v1.1.0-rc.0)** (compatible with 2023.02 back-end).                                               |
+|              | **July Delft-FEWS Web OC [Release 1.1.0](https://github.com/Deltares/fews-web-oc/releases/tag/v1.1.0)** (compatible with 2023.02 & 2024.01 back-end).                                             |
+|              | Web OC Development in line with the current Delft-FEWS business model.                                                                                                                            |
 
 ## Present status
 
@@ -69,7 +68,7 @@ Non-functional:
 - Performance
 - Relevant configuration will be part of the existing Delft-FEWS configuration concept.
 
-In line with the features listed above, the first release of Web OC (Dec 2023, refer to release management section), will include the following:
+In line with the features listed above, the first release of Web OC ([Dec 2023](https://github.com/Deltares/fews-web-oc/releases/tag/v1.0.0)), will include the following:
 
 | Initial requirements | Web OC release 1.0.0 (Dec 2023)\* |
 | -------------------- | --------------------------------- |
@@ -84,20 +83,18 @@ In line with the features listed above, the first release of Web OC (Dec 2023, r
 | Performance | During the development process of Web OC, the FewsWebServices back-end will be enhanced continuously to improve performance and add functionality. It is intended not to introduce any additional software to the Web OC stack to further improve the performance of Web OC.|
 | Relevant configuration will be part of the existing Delft-FEWS configuration concept. | All configuration related to what content is being displayed in Web OC, is managed by the Delft-FEWS configuration. [Web OC Configuration](https://deltares.github.io/fews-web-oc/configuration/) |
 
+See [release notes](https://github.com/Deltares/fews-web-oc/releases) section for updates since Dec 2023.
+
 \*Please note that Web OC will not support all functionality available in the Desktop OC regarding the features listed above. In addition, not all configurations might be supported. For questions on this matter, please contact Web OC Team via fews-pm@deltares.nl.
 
 ## Future plans
 
-Following the December 2023 release of Web OC, the software will be developed further in line with the current Delft-FEWS business model. Currently, the following features are planned for:
+Following the current release of Web OC, the software will be developed further in line with the current Delft-FEWS business model. Currently, the following features are planned for:
 
-- Support click actions on grid data: show time series of selected location.
-- Support click actions on grid data: show vertical profile time series of selected location (3D data).
-- Show vertical slider (elevation) for grid data when data layer consists of 3D data.
-- FewsWebServices endpoint for static resources (logos, fonts, css etc.)
-- FewsWebServices endpoint to better support time series table view.
 - Run workflow from Topology node.
 - Visualize scada display linked to Topology node.
-- Support time series data edits in table view.
+- Show reports stored in FEWS database.
+- Information/documentation panel linked to topology nodes.
 
 ## Architectural principles
 
@@ -128,7 +125,3 @@ Provided that you have a running Delft-FEWS system already, its suggested to fol
 - Discuss developments and strategy with Deltares (architecture / timeline / budgets etc.)
 - Deltares to coordinate developments and to identify overlap with other Web OC projects
 - Developments organized in Sprint sessions (1 to 2 weeks): back-end, front-end, UX/UI.
-
-## DSD Web OC presentations
-
-Public presentations on the Delft-FEWS Web OC can be found here:
