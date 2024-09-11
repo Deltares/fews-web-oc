@@ -137,7 +137,8 @@ Please note that every user of Web OC requires direct access to the FewsWebServi
 
 These headers are used to define the security policies for a web page, 
 specifying which resources can be loaded and executed by the browser.
-It is advised to add CSP headers in the server configuration. 
+It is advised to add CSP headers in the server configuration.
+
 The WebOC requires the following policies:
 
 | Header | Value |
@@ -150,7 +151,7 @@ The WebOC requires the following policies:
 | img-src | 'self' data: blob: `FEWS_WEBSERVICES_DOMAIN` |
 | connect-src | 'self' https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com `FEWS_WEBSERVICES_DOMAIN` |
 
-Replace `FEWS_WEBSERVICES_DOMAIN` with the domain of the FEWS web services are available. Leave empty when this is the same domain as where the WebOC is hosted.
+Replace `FEWS_WEBSERVICES_DOMAIN` with the domain of the FEWS web services are available. Leave empty when this is the same domain as where the Web OC is hosted.
 
 For more information, refer to the MDN documentation:
 [Content Security Policy (CSP) - MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
