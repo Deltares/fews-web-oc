@@ -149,9 +149,10 @@ The WebOC requires the following policies:
 | style-src | 'self' 'unsafe-inline'|
 | worker-src | blob:|
 | img-src | 'self' data: blob: `FEWS_WEBSERVICES_DOMAIN` |
-| connect-src | 'self' https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com `FEWS_WEBSERVICES_DOMAIN` |
+| connect-src | 'self' https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com `FEWS_WEBSERVICES_DOMAIN` `AUTHORITY_DOMAIN`|
 
 Replace `FEWS_WEBSERVICES_DOMAIN` with the domain of the FEWS web services are available. Leave empty when this is the same domain as where the Web OC is hosted.
+Replace `AUTHORITY_DOMAIN` with the domain of the configured OIDC authority provider (e.g. https://login.microsoftonline.com for Microsoft identity platform). Leave empty when no authority provider is used.
 
 For more information, refer to the MDN documentation:
 [Content Security Policy (CSP) - MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
