@@ -13,7 +13,7 @@
         :item-value="(item) => item.moduleInstanceId"
         hide-details
         label="Report"
-        class="px-4"
+        class="px-2"
       />
       <v-select
         v-model="selectedReportItem"
