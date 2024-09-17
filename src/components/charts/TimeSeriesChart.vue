@@ -86,6 +86,7 @@ interface Props {
   series?: Record<string, Series>
   currentTime?: Date
   isLoading?: boolean
+  zoomHandler?: ZoomHandler
 }
 
 interface Tag {
@@ -161,7 +162,7 @@ onMounted(() => {
       merge(axisOptions, { x: props.config?.xAxis, y: props.config?.yAxis }),
     )
     const mouseOver = new MouseOver()
-    const zoom = new ZoomHandler(WheelMode.NONE)
+    const zoom = props.zoomHandler ?? new ZoomHandler(WheelMode.NONE)
     axisTime.value = new CurrentTime({
       x: {
         axisIndex: 0,
