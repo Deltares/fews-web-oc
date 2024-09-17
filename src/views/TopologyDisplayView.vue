@@ -368,6 +368,7 @@ function updateItems(): void {
 function displayTabsForNode(leafNode: TopologyNode, parentNodeId?: string) {
   const activeNodeId = leafNode.id
   const timeseriesTabId = `${activeNodeId}-timeseries`
+  const reportsTabId = `${activeNodeId}-reports`
   const spatialTabId = `${activeNodeId}-spatial`
   const _displayTabs: DisplayTab[] = []
   if (
@@ -427,7 +428,7 @@ function displayTabsForNode(leafNode: TopologyNode, parentNodeId?: string) {
   if (leafNode.reportDisplay?.reports.length) {
     _displayTabs.push({
       type: 'reports',
-      id: timeseriesTabId,
+      id: reportsTabId,
       title: 'Reports',
       to: {
         name: 'TopologyReports',
