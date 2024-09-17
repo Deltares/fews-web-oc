@@ -26,7 +26,7 @@
         class="pe-2 flex-0-0"
       />
     </v-toolbar>
-    <iframe :src="url" class="html-content" />
+    <iframe :key="url" :src="url" class="html-content" />
   </div>
   <v-alert v-else class="ma-10">No reports available</v-alert>
 </template>
