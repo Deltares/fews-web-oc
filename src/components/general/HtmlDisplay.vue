@@ -1,10 +1,9 @@
 <template>
-  <div v-if="htmlText" class="html-content pa-4" v-html="htmlText"></div>
+  <div v-if="htmlText" class="html-content" v-html="htmlText"></div>
   <v-alert v-else class="ma-10">Resource not found</v-alert>
 </template>
 
 <script setup lang="ts">
-import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { computedAsync } from '@vueuse/core'
 
 interface Props {
@@ -16,10 +15,8 @@ const props = defineProps<Props>()
 const htmlText = computedAsync(async () => {
   if (!props.url) return
 
-  const staticUrl = getResourcesStaticUrl(props.url)
-
   try {
-    const response = await fetch(staticUrl)
+    const response = await fetch(props.url)
     const text = await response.text()
     if (response.ok) {
       // Remove style since this leaks into our global styles

@@ -2,7 +2,7 @@
   <v-dialog v-model="showTermsDialog" persistent max-width="900">
     <v-card style="cursor: default">
       <v-card-title class="text-h5">Terms and Conditions</v-card-title>
-      <HtmlDisplay :url="url" />
+      <HtmlDisplay class="pt-4 px-4" :url="url" />
       <v-card-actions class="pt-0">
         <v-checkbox
           v-model="isInAgreement"
@@ -29,6 +29,7 @@
 import { useConfigStore } from '@/stores/config'
 import { computed, ref } from 'vue'
 import HtmlDisplay from '@/components/general/HtmlDisplay.vue'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 
 const showTermsDialog = defineModel({ default: false })
 const isInAgreement = ref(false)
@@ -39,7 +40,9 @@ const url = computed(() => {
   const matchingComponent = configStore
     .getComponentsByType('HtmlDisplay')
     ?.find((c) => c.path === termsPath)
-  return matchingComponent?.url
+
+  const url = matchingComponent?.url
+  return url ? getResourcesStaticUrl(url) : url
 })
 
 function onAgreeClick() {

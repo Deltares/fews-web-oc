@@ -31,7 +31,8 @@ const DataDownloadDisplayView = () =>
   import('../views/DataDownloadDisplayView.vue')
 const TimeSeriesDisplay = () =>
   import('../components/timeseries/TimeSeriesDisplay.vue')
-const HtmlDisplay = () => import('../views/HtmlDisplayView.vue')
+const HtmlDisplayView = () => import('../views/HtmlDisplayView.vue')
+const ReportsDisplayView = () => import('../views/ReportsDisplayView.vue')
 const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
@@ -172,6 +173,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         meta: { sidebar: true },
       },
       {
+        path: '/topology/node/:nodeId*/reports/',
+        name: 'TopologyReports',
+        component: ReportsDisplayView,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
         path: '/topology/node/:nodeId*/map/:layerName?',
         name: 'TopologySpatialDisplay',
         component: SpatialDisplay,
@@ -199,7 +207,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/resources/:path?',
     name: 'HtmlDisplay',
-    component: HtmlDisplay,
+    component: HtmlDisplayView,
     props: true,
   },
   {

@@ -1,9 +1,10 @@
 <template>
-  <HtmlDisplay :url="url" />
+  <HtmlDisplay class="pt-4 px-4" :url="url" />
 </template>
 
 <script setup lang="ts">
 import HtmlDisplay from '@/components/general/HtmlDisplay.vue'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { useConfigStore } from '@/stores/config'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
@@ -15,7 +16,8 @@ const url = computed(() => {
   const matchingComponent = configStore
     .getComponentsByType('HtmlDisplay')
     ?.find((c) => c.path === route.params.path)
-  console.log(matchingComponent)
-  return matchingComponent?.url
+
+  const url = matchingComponent?.url
+  return url ? getResourcesStaticUrl(url) : url
 })
 </script>

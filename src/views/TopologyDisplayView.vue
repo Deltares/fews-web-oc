@@ -153,7 +153,7 @@ interface Props {
 }
 
 interface DisplayTab {
-  type: string
+  type: 'charts' | 'map' | 'reports'
   id: string
   title: string
   href?: string
@@ -422,6 +422,20 @@ function displayTabsForNode(leafNode: TopologyNode, parentNodeId?: string) {
         },
       },
       icon: 'mdi-download',
+    })
+  }
+  if (leafNode.reportDisplay?.reports.length) {
+    _displayTabs.push({
+      type: 'reports',
+      id: timeseriesTabId,
+      title: 'Reports',
+      to: {
+        name: 'TopologyReports',
+        params: {
+          nodeId: parentNodeId ? [parentNodeId, leafNode.id] : leafNode.id,
+        },
+      },
+      icon: 'mdi-file-document',
     })
   }
   return _displayTabs
