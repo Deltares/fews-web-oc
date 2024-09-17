@@ -12,6 +12,7 @@
           :key="`${subplot.title}-${i}`"
           :currentTime="props.currentTime"
           :isLoading="isLoading(subplot, loadingSeriesIds)"
+          :zoomHandler="zoomHandler"
         >
         </TimeSeriesChart>
       </KeepAlive>
@@ -84,6 +85,7 @@ import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 import { useDisplay } from 'vuetify'
 import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
 import { until } from '@vueuse/core'
+import { WheelMode, ZoomHandler } from '@deltares/fews-web-oc-charts'
 
 interface Props {
   config?: DisplayConfig
@@ -127,6 +129,7 @@ const lastUpdated = ref<Date>(new Date())
 const isEditing = ref(false)
 const confirmationDialog = ref(false)
 const { xs } = useDisplay()
+const zoomHandler = new ZoomHandler(WheelMode.NONE)
 
 const options = computed<UseTimeSeriesOptions>(() => {
   return {
