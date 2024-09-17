@@ -2,7 +2,6 @@ import {
   datesFromPeriod,
   SsdWebserviceProvider,
   type SsdGetCapabilitiesResponse,
-  type SsdDisplayGroup,
   type SsdDisplayPanel,
 } from '@deltares/fews-ssd-requests'
 import { ref, shallowRef, toValue, watchEffect } from 'vue'
