@@ -47,9 +47,8 @@ export function getResourcesIconsUrl(resource: string) {
 
 export async function getLocalOrRemoteFileUrl(
   localBase: string,
-  relativePath?: string,
+  relativePath: string,
 ) {
-  if (!relativePath) return
   const remoteUrl = getResourcesStaticUrl(relativePath)
   const localUrl = `${localBase}${relativePath}`
 
