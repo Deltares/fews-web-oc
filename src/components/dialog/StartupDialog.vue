@@ -1,7 +1,6 @@
 <template>
-  <TermsOfUseDialog v-if="shouldAgreeToTerms" v-model="showTermsDialog" />
-  <SplashScreenDialog
-    v-if="splashSrc && !showTermsDialog"
+  <TermsOfUseDialog v-if="shouldAgreeToTerms && showTermsDialog" v-model="showTermsDialog" />
+  <SplashScreenDialog v-else-if="splashSrc"
     v-model="showSplashDialog"
     :img-url="splashSrc"
     :version="packageConfig.version"
@@ -20,13 +19,14 @@ import { asyncComputed, useStorage } from '@vueuse/core'
 const configStore = useConfigStore()
 
 const imagesBaseUrl = `${import.meta.env.BASE_URL}images/`
-const splashSrc = asyncComputed(
-  async () =>
-    await getLocalOrRemoteFileUrl(
-      imagesBaseUrl,
-      configStore.general.splashScreen,
-    ),
-)
+
+const splashSrc = asyncComputed(async () => {
+  if (!configStore.general.splashScreen) return
+  return await getLocalOrRemoteFileUrl(
+    imagesBaseUrl,
+    configStore.general.splashScreen,
+  )
+})
 
 const shouldAgreeToTerms = computed(
   () => configStore.general.agreeToTermsAndConditions?.enabled ?? false,

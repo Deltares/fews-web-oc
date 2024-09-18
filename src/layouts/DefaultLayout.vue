@@ -234,6 +234,10 @@ watch(
   async () => {
     const imagesBaseUrl = `${import.meta.env.BASE_URL}images/`
     const defaultLogo = `${imagesBaseUrl}logo.png`
+    if (configStore.general.icons?.logo === undefined) {
+      logoSrc.value = defaultLogo
+      return
+    }
     const logoUrl = await getLocalOrRemoteFileUrl(
       imagesBaseUrl,
       configStore.general.icons?.logo,
