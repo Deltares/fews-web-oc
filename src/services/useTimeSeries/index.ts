@@ -133,7 +133,7 @@ export function useTimeSeries(
             const timeSeries = piSeries.timeSeries[index]
             const resourceId = isGridTimeSEries
               ? `${request.key}[${index}]`
-              : request.key ?? ''
+              : (request.key ?? '')
             updatedSeriesIds.push(resourceId)
             const resource = new SeriesUrlRequest('fews-pi', 'dummyUrl')
             const _series = new Series(resource)
