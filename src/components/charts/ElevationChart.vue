@@ -75,6 +75,7 @@ interface Props {
   config?: ChartConfig
   series?: Record<string, Series>
   isLoading?: boolean
+  zoomHandler?: ZoomHandler
 }
 
 interface Tag {
@@ -147,7 +148,7 @@ onMounted(() => {
       axisOptions,
     )
     const mouseOver = new VerticalMouseOver()
-    const zoom = new ZoomHandler(WheelMode.NONE)
+    const zoom = props.zoomHandler ?? new ZoomHandler(WheelMode.NONE)
 
     axis.accept(zoom)
     axis.accept(mouseOver)
