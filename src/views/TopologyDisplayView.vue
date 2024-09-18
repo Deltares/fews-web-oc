@@ -476,9 +476,12 @@ onBeforeRouteUpdate(reroute)
 function reroute(to: RouteLocationNormalized) {
   if (!to.params.nodeId) {
     if (topologyMap.value.size === 0) return
-    const parentNodeId = topologyMap.value.entries().next().value[0]
-    to.params.nodeId = parentNodeId
-    return to
+    const topologyEntry = topologyMap.value.entries().next()
+    if (topologyEntry.value) {
+      to.params.nodeId = topologyEntry.value[0]
+      return to
+    }
+    return
   }
   if (
     showLeafsAsButton.value &&
