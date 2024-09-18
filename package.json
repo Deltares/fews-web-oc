@@ -20,7 +20,7 @@
     "@deltares/fews-pi-requests": "^1.2.4",
     "@deltares/fews-ssd-requests": "^1.0.1",
     "@deltares/fews-ssd-webcomponent": "^1.0.1",
-    "@deltares/fews-web-oc-charts": "^3.0.3-beta.3",
+    "@deltares/fews-web-oc-charts": "^3.0.3-beta.6",
     "@deltares/fews-wms-requests": "^1.0.2",
     "@indoorequal/vue-maplibre-gl": "^7.5.0",
     "@jsonforms/core": "^3.4.0",
