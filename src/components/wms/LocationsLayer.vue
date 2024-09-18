@@ -44,7 +44,7 @@ const { map } = useMap()
 
 interface Props {
   locationsGeoJson: FeatureCollection<Geometry, Location>
-  selectedLocationId: string | null
+  selectedLocationId?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
