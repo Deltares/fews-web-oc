@@ -146,7 +146,7 @@ import { useColourScalesStore } from '@/stores/colourScales'
 import ColourLegendTable from './ColourLegendTable.vue'
 
 interface Props {
-  layerTitle: string
+  layerTitle?: string
   isLoading: boolean
   currentTime?: Date
   forecastTime?: Date

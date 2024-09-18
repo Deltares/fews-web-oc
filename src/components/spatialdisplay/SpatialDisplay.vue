@@ -59,6 +59,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
+  filterIds: () => [],
 })
 
 const route = useRoute()

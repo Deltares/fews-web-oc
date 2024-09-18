@@ -166,7 +166,7 @@ interface Props {
   layerCapabilities?: Layer
   elevation?: number
   locationId?: string
-  filterIds: string[]
+  filterIds?: string[]
   latitude?: string
   longitude?: string
   currentTime?: Date
