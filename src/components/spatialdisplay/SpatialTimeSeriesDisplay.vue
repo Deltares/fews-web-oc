@@ -21,7 +21,7 @@
               variant="text"
               class="text-capitalize"
             >
-              <v-icon>{{ item.icon }}</v-icon>
+              <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
             </v-btn>
           </v-btn-toggle>
           <v-btn
@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { StyleValue, ref, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
@@ -132,6 +132,7 @@ interface DisplayTypeItem {
   icon: string
   label: string
   value: DisplayType
+  iconStyle?: StyleValue
 }
 
 const displayType = ref(DisplayType.TimeSeriesChart)
@@ -154,6 +155,7 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
       icon: 'mdi-elevation-rise',
       label: 'Vertical profile',
       value: DisplayType.ElevationChart,
+      iconStyle: 'transform: rotate(-90deg);',
     })
   }
 
