@@ -22,7 +22,7 @@
         :item-title="(item) => reportItemToTitle(item)"
         :item-value="(item) => reportItemToId(item)"
         hide-details
-        label="Run"
+        label="Analysis time"
         class="pe-2 flex-0-0"
       />
     </v-toolbar>
