@@ -1,7 +1,6 @@
 <template>
   <mgl-map
     ref="map"
-    :min-zoom="2"
     :interactive="true"
     :trackResize="true"
     :drag-pan="true"
