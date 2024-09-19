@@ -15,8 +15,8 @@ export default defineConfig(({ mode }) => {
       __GIT_HASH__: JSON.stringify(commitHash),
       __GIT_TAG__: JSON.stringify(commitTag),
       __BUILD_DATE__: JSON.stringify(buildDate),
-      __INTLIFY_JIT_COMPILATION__: JSON.stringify(true), // needed to enable JIT compilation and avoid CSP issues
-      __INTLIFY_DROP_MESSAGE_COMPILER__: JSON.stringify(true), // needed to enable JIT compilation and avoid CSP issues
+      __INTLIFY_JIT_COMPILATION__: true, // needed to enable JIT compilation and avoid CSP issues
+      __INTLIFY_DROP_MESSAGE_COMPILER__: true, // needed to enable JIT compilation and avoid CSP issues
     },
     server: {
       headers: {

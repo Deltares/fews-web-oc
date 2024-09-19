@@ -87,16 +87,44 @@
     "value": "user",
     "items": [
       {
-        "value": "user"
+        "value": "user",
+        "label": "System"
       },
       {
-        "value": "UTC"
+        "value": "Etc/GMT+12",
+        "label": "IDLW"
       },
       {
-        "value": "Etc/GMT-1"
+        "value": "Pacific/Kiritimati",
+        "label": "LINT"
       },
       {
-        "value": "Europe/Amsterdam"
+        "value": "Australia/Perth",
+        "label": "AWST"
+      },
+      {
+        "value": "Australia/Eucla",
+        "label": "ACWST"
+      },
+      {
+        "value": "Australia/Adelaide",
+        "label": "ACST"
+      },
+      {
+        "value": "Australia/Sydney",
+        "label": "AEST"
+      },
+      {
+        "value": "Australia/Lord_Howe",
+        "label": "LHST"
+      },
+      {
+        "value": "Etc/GMT-1",
+        "label": "GMT+1"
+      },
+      {
+        "value": "Europe/Amsterdam",
+        "label": "CET/CEST"
       }
     ],
     "group": "UI"

@@ -26,6 +26,7 @@ import { useDark, useToggle } from '@vueuse/core'
 
 import '@/assets/fews-flags.css'
 import { DateTimeFormatWithOverride } from './locales'
+import { Settings } from 'luxon'
 
 const { locale, getDateTimeFormat, setDateTimeFormat } = useI18n()
 
@@ -88,12 +89,15 @@ function updateDateTimeFormat() {
     (userSettingsStore.get('ui.locale')?.value as string) ?? 'en'
   const timeZoneSetting =
     (userSettingsStore.get('ui.timeZone')?.value as string) ?? 'user'
-  // Reset locale to force rerender after dateTimeFormat
-  locale.value = ''
   let timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   if (timeZoneSetting !== 'user') {
+    Settings.defaultZone = timeZoneSetting
     timeZone = timeZoneSetting
+  } else {
+    Settings.defaultZone = 'system'
   }
+  // Reset locale to force rerender after dateTimeFormat
+  locale.value = ''
   const dateTimeFormat = getDateTimeFormat(
     currentLocale,
   ) as DateTimeFormatWithOverride

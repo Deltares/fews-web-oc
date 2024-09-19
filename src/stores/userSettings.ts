@@ -12,6 +12,7 @@ export type UserSettingsType =
 
 export interface UserSettingsWithIcon {
   value: string
+  label: string,
   disabled?: boolean
   icon?: string
 }

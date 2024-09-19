@@ -13,7 +13,21 @@
       >
         <v-list-item-subtitle>{{ setting.label }} </v-list-item-subtitle>
         <v-list-item-action v-if="setting.type === 'oneOfMultiple'">
+          <v-select
+            v-if="setting.items && setting.items.length > 3"
+            v-model="setting.value"
+            :items="setting.items"
+            @update:model-value="onValueChange(setting)"
+            item-title="label"
+            item-value="value"
+            :item-props="true"
+            density="compact"
+            variant="solo-filled"
+            flat
+          >
+          </v-select>
           <v-btn-toggle
+            v-else
             density="compact"
             class="my-2"
             v-model="setting.value"
@@ -30,7 +44,7 @@
               <v-icon v-if="item.icon">{{ item.icon }}</v-icon>
               <span v-else>{{ item.value }}</span>
               <v-tooltip activator="parent" location="top">{{
-                item.value
+                item.label
               }}</v-tooltip>
             </v-btn>
           </v-btn-toggle>

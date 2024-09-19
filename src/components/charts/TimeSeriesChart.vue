@@ -121,6 +121,8 @@ onMounted(() => {
         type: AxisType.time,
         position: AxisPosition.Bottom,
         showGrid: true,
+        timeZone: 'Australia/Eucla',
+        locale: 'en',
       },
     ],
     y: [

@@ -48,16 +48,32 @@
       </v-row>
     </v-card-text>
   </v-card>
+  <v-card>
+    <v-date-picker v-model="myDate" format="24hr" :key="timeZone">
+    </v-date-picker>
+    <v-card-text>{{ myDate }} {{ myDate.zone }}</v-card-text>
+  </v-card>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import packageConfig from '../../package.json'
 import { PiWebserviceProvider, Version } from '@deltares/fews-pi-requests'
 import { onMounted } from 'vue'
 import { useConfigStore } from '../stores/config.ts'
 import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { useUserSettingsStore } from '@/stores/userSettings.ts'
+import { useI18n } from 'vue-i18n'
+import { DateTime } from 'luxon'
+
+const { d } = useI18n()
+
+const userSettingsStore = useUserSettingsStore()
+
+const timeZone = computed(
+  () => (userSettingsStore.get('ui.timeZone')?.value as string) ?? 'UTC',
+)
 
 const webServiceUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -72,6 +88,8 @@ const webServiceVersion = ref<Version>({
   buildTime: '',
 })
 const configStore = useConfigStore()
+
+const myDate = ref(DateTime.now())
 
 onMounted(async () => {
   const webServiceProvider = new PiWebserviceProvider(webServiceUrl, {
