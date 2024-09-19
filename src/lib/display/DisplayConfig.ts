@@ -5,6 +5,7 @@ export enum DisplayType {
   TimeSeriesChart = 'TimeSeriesChart',
   TimeSeriesTable = 'TimeSeriesTable',
   ElevationChart = 'ElevationChart',
+  Information = 'Information',
 }
 
 export interface DisplayConfig {

@@ -48,6 +48,12 @@
         </ElevationChart>
       </KeepAlive>
     </v-window-item>
+    <v-window-item :value="DisplayType.Information" class="h-100">
+      <!-- <div class="px-4 h-100"> -->
+      <!--   <iframe :srcdoc="informationContent" class="h-100 w-100 border-none" /> -->
+      <!-- </div> -->
+      <div v-html="informationContent" class="pa-4 h-100 w-100" />
+    </v-window-item>
   </v-window>
   <v-dialog v-model="confirmationDialog" persistent max-width="500">
     <v-card prepend-icon="mdi-content-save" title="Unsaved Changes">
@@ -93,6 +99,7 @@ interface Props {
   elevationChartConfig?: DisplayConfig
   displayType: DisplayType
   currentTime?: Date
+  informationContent?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
