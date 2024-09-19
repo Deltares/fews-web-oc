@@ -1,4 +1,4 @@
-<template v-else>
+<template>
   <span v-if="tableSeriesDatum" class="table-cell-with-flag">
     <div class="circle" :style="itemToStyle(tableSeriesDatum)"></div>
     <span class="value">
