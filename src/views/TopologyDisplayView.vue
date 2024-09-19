@@ -13,7 +13,7 @@
       :secondaryWorkflows="secondaryWorkflows"
     />
   </Teleport>
-  <Teleport to="#app-bar-content">
+  <Teleport to="#app-bar-content-start">
     <template v-if="showLeafsAsButton">
       <v-menu v-if="nodeButtons.length > 4">
         <template v-slot:activator="{ props }">
@@ -108,15 +108,35 @@
       ><v-icon>mdi-open-in-new</v-icon>Link</v-btn
     >
   </Teleport>
-  <router-view v-slot="{ Component }">
-    <keep-alive include="SpatialDisplay">
-      <component
-        :is="Component"
-        :filter-ids="filterIds"
+  <Teleport to="#app-bar-content-end">
+    <v-btn
+      v-if="topologyNode?.documentFile"
+      variant="text"
+      icon="mdi-information"
+      @click="showInformationDisplay = !showInformationDisplay"
+    />
+  </Teleport>
+  <div class="d-flex w-100 h-100">
+    <router-view v-slot="{ Component }">
+      <keep-alive include="SpatialDisplay">
+        <component
+          :is="Component"
+          :filter-ids="filterIds"
+          :topologyNode="topologyNode"
+        />
+      </keep-alive>
+    </router-view>
+    <div
+      v-if="showInformationDisplay"
+      class="information-display"
+      :style="informationDisplayStyle"
+    >
+      <InformationDisplayView
         :topologyNode="topologyNode"
+        @close="showInformationDisplay = false"
       />
-    </keep-alive>
-  </router-view>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -133,7 +153,7 @@ import { useWorkflowsStore } from '@/stores/workflows'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import type { WebOcTopologyDisplayConfig } from '@deltares/fews-pi-requests'
 
-import { computed, ref, watch, watchEffect } from 'vue'
+import { computed, ref, StyleValue, watch, watchEffect } from 'vue'
 import {
   type RouteLocationNamedRaw,
   onBeforeRouteUpdate,
@@ -143,6 +163,8 @@ import {
 } from 'vue-router'
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
+import InformationDisplayView from '@/views/InformationDisplayView.vue'
+import { useDisplay } from 'vuetify'
 
 interface Props {
   nodeId?: string | string[]
@@ -205,6 +227,21 @@ const nodeButtons = ref<any[]>([])
 const activeParentId = ref('')
 
 const externalLink = ref<string | undefined>('')
+
+const { mobile } = useDisplay()
+const informationDisplayStyle = computed<StyleValue>(() => {
+  return {
+    width: mobile.value ? '100%' : '30%',
+    position: mobile.value ? 'fixed' : undefined,
+    'z-index': mobile.value ? 999999 : undefined,
+  }
+})
+const showInformationDisplay = ref(false)
+watchEffect(() => {
+  if (!topologyNode.value?.documentFile) {
+    showInformationDisplay.value = false
+  }
+})
 
 const route = useRoute()
 const router = useRouter()
@@ -570,5 +607,10 @@ function reroute(to: RouteLocationNormalized) {
 <style scoped>
 .v-btn-group {
   color: inherit;
+}
+
+.information-display {
+  height: 100%;
+  border-left: 1px solid #e0e0e0;
 }
 </style>

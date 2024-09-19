@@ -123,9 +123,10 @@
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       </template>
-      <div id="app-bar-content"></div>
+      <div id="app-bar-content-start" />
       <v-spacer />
-      <time-control-menu></time-control-menu>
+      <div id="app-bar-content-end" />
+      <time-control-menu />
       <user-settings-menu />
     </v-app-bar>
     <v-main id="main">
