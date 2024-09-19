@@ -20,6 +20,16 @@ export default defineConfig(({ mode }) => {
       __GIT_TAG__: JSON.stringify(commitTag),
       __BUILD_DATE__: JSON.stringify(buildDate),
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'maplibre-gl': ['maplibre-gl'],
+            'fews-web-oc-charts': ['@deltares/fews-web-oc-charts'],
+          },
+        },
+      },
+    },
     server: {
       headers: {
         'content-security-policy': [
