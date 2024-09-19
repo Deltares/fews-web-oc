@@ -1,6 +1,10 @@
 <template>
-  <TermsOfUseDialog v-if="shouldAgreeToTerms && showTermsDialog" v-model="showTermsDialog" />
-  <SplashScreenDialog v-else-if="splashSrc"
+  <TermsOfUseDialog
+    v-if="shouldAgreeToTerms && showTermsDialog"
+    v-model="showTermsDialog"
+  />
+  <SplashScreenDialog
+    v-else-if="splashSrc"
     v-model="showSplashDialog"
     :img-url="splashSrc"
     :version="packageConfig.version"
