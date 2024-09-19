@@ -146,6 +146,7 @@ import { configManager } from '@/services/application-config'
 
 interface Props {
   nodeId?: string | string[]
+  panelId?: string
   layerName?: string
   locationId?: string
   latitude?: string
