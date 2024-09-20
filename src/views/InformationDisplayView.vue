@@ -5,14 +5,13 @@
         <v-btn @click="onClose" size="small" variant="text" icon="mdi-close" />
       </template>
     </v-toolbar>
-    <v-sheet style="overflow-y: auto">
-      <HtmlDisplay :url />
+    <v-sheet class="flex-1-1">
+      <iframe :src="url" class="w-100 h-100 ma-0 pa-0 border-none" />
     </v-sheet>
   </div>
 </template>
 
 <script setup lang="ts">
-import HtmlDisplay from '@/components/general/HtmlDisplay.vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { TopologyNode } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
