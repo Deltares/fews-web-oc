@@ -20,7 +20,10 @@ function downloadImage(url: string, location: string) {
 
 async function getWebOcConfig(env: Record<string, string>) {
   try {
-    const provider = new PiWebserviceProvider(env.VITE_FEWS_WEBSERVICES_URL)
+    const webserivcesUrl = env.VITE_FEWS_WEBSERVICES_URL
+    if (!webserivcesUrl) return
+
+    const provider = new PiWebserviceProvider(webserivcesUrl)
     const response = await provider.getWebOcConfiguration()
     const config = response?.general
     if (!config) return
