@@ -15,7 +15,10 @@ const __dirname = path.dirname(__filename)
 // https://vitejs.dev/config/
 export default defineConfig(async ({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const VitePWAPlugin = await getVitePWAPlugin(env, command === 'build')
+  const isCI = !!process.env.CI
+
+  const useRemoteConfig = command === 'build' && !isCI
+  const VitePWAPlugin = await getVitePWAPlugin(env, useRemoteConfig)
 
   return {
     define: {
