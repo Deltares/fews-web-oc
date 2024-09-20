@@ -232,9 +232,10 @@ const externalLink = ref<string | undefined>('')
 const { mobile } = useDisplay()
 const informationDisplayStyle = computed<StyleValue>(() => {
   return {
-    width: mobile.value ? '100%' : '30%',
+    width: mobile.value ? '100%' : '40%',
     position: mobile.value ? 'fixed' : undefined,
     'z-index': mobile.value ? 999999 : undefined,
+    'border-left': mobile.value ? undefined : '1px solid #e0e0e0',
   }
 })
 const showInformationDisplay = ref(false)
@@ -628,6 +629,5 @@ function reroute(to: RouteLocationNormalized) {
 
 .information-display {
   height: 100%;
-  border-left: 1px solid #e0e0e0;
 }
 </style>
