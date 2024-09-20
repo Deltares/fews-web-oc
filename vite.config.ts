@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import path from 'path'
 import { execSync } from 'child_process'
 import { fileURLToPath } from 'url'
+import getVitePWAPlugin from './vite-pwa.config'
 
 const commitHash = execSync('git rev-parse --short HEAD').toString()
 const commitTag = execSync('git tag --points-at HEAD').toString()
@@ -12,8 +13,10 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '')
+  const VitePWAPlugin = await getVitePWAPlugin(env, command === 'build')
+
   return {
     define: {
       __GIT_HASH__: JSON.stringify(commitHash),
@@ -47,6 +50,7 @@ export default defineConfig(({ mode }) => {
           },
         },
       }),
+      VitePWAPlugin,
     ],
     optimizeDeps: {
       exclude: ['@deltares/fews-ssd-webcomponent'],
