@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import vuetify from 'vite-plugin-vuetify'
 import path from 'path'
 import { execSync } from 'child_process'
 import { fileURLToPath } from 'url'
@@ -49,6 +50,13 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './src'),
       },
     },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: 'modern-compiler',
+        },
+      },
+    },
     plugins: [
       vue({
         template: {
@@ -56,6 +64,11 @@ export default defineConfig(({ mode }) => {
             isCustomElement: (tag) => tag === 'schematic-status-display',
             // ...
           },
+        },
+      }),
+      vuetify({
+        styles: {
+          configFile: 'src/styles/settings.scss',
         },
       }),
     ],
