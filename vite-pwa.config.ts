@@ -56,7 +56,8 @@ export default async function getVitePWAPlugin(
     },
 
     pwaAssets: {
-      image: webOcConfig?.icons?.logo ?? './public/images/favicon.ico',
+      image: webOcConfig?.icons?.logo,
+      overrideManifestIcons: webOcConfig?.icons.logo !== undefined,
     },
 
     workbox: {
@@ -66,7 +67,7 @@ export default async function getVitePWAPlugin(
     },
 
     devOptions: {
-      enabled: false,
+      enabled: true,
       navigateFallback: 'index.html',
       suppressWarnings: true,
       type: 'module',

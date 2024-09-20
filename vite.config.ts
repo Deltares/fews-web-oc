@@ -27,6 +27,7 @@ export default defineConfig(async ({ mode, command }) => {
       headers: {
         'content-security-policy': [
           `default-src 'none'`,
+          `manifest-src 'self'`,
           `script-src 'self'`,
           `font-src 'self'`,
           `style-src 'self' 'unsafe-inline'`, // vuetify
