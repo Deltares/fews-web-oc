@@ -32,11 +32,7 @@ export default defineConfig({
 
     /* Port to use for Playwright component endpoint. */
     ctPort: 3100,
-    ctViteConfig: {
-      resolve: {
-        alias: viteConfig.resolve?.alias,
-      },
-    },
+    ctViteConfig: viteConfig,
   },
   /* Configure projects for major browsers */
   projects: [
