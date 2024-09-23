@@ -2,7 +2,7 @@
   <v-chip pill label class="outer-chip chip justify-center overflow-visible">
     <v-icon class="pr-2">mdi-map-marker</v-icon>
 
-    <span class="mr-4 text-medium-emphasis" width="400px">
+    <span class="mr-4 text-medium-emphasis text-mono">
       {{ coordinateString }}
     </span>
     <v-btn
