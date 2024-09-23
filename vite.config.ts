@@ -68,7 +68,8 @@ export default defineConfig(({ mode }) => {
       }),
       vuetify({
         styles: {
-          configFile: 'src/styles/settings.scss',
+          configFile:
+            path.resolve(__dirname, './src') + '/styles/settings.scss',
         },
       }),
     ],
