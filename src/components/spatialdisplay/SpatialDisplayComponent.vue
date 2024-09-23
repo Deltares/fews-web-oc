@@ -37,6 +37,10 @@
       :selectedLocationId="props.locationId"
       @click="onLocationClick"
     />
+    <CoordinateSelectorLayer
+      v-if="workflowsStore.isSelectingCoordinate"
+      v-model:coordinate="workflowsStore.coordinate"
+    />
   </MapComponent>
   <div class="mapcomponent__controls-container">
     <v-chip-group class="control-group">
@@ -46,6 +50,11 @@
         v-model:boundingBox="workflowsStore.boundingBox"
         @finish="workflowsStore.isDrawingBoundingBox = false"
         v-if="workflowsStore.isDrawingBoundingBox"
+      />
+      <CoordinateSelectorControl
+        v-if="workflowsStore.isSelectingCoordinate"
+        v-model:active="workflowsStore.isSelectingCoordinate"
+        :coordinate="workflowsStore.coordinate"
       />
       <template v-else>
         <InformationPanel
@@ -155,6 +164,8 @@ import { useWorkflowsStore } from '@/stores/workflows'
 import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
 import TooltipPanel from '@/components/wms/TooltipPanel.vue'
+import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
+import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
 
 interface ElevationWithUnitSymbol {
   units?: string

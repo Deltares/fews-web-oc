@@ -8,7 +8,8 @@ import { defineStore } from 'pinia'
 import { downloadFileWithXhr } from '@/lib/download'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { configManager } from '@/services/application-config'
-import { BoundingBox } from '@/services/useBoundingBox'
+import type { BoundingBox } from '@/services/useBoundingBox'
+import type { LngLat } from 'maplibre-gl'
 
 interface WorkflowsState {
   workflowId: string | null
@@ -17,6 +18,8 @@ interface WorkflowsState {
   numActiveWorkflows: number
   boundingBox: BoundingBox | null
   isDrawingBoundingBox: boolean
+  coordinate: LngLat | null
+  isSelectingCoordinate: boolean
 }
 
 export enum WorkflowType {
@@ -46,6 +49,8 @@ const useWorkflowsStore = defineStore('workflows', {
     numActiveWorkflows: 0,
     boundingBox: null,
     isDrawingBoundingBox: false,
+    isSelectingCoordinate: false,
+    coordinate: null,
   }),
 
   actions: {

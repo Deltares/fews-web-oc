@@ -42,11 +42,29 @@
               density="compact"
               label="Bounding box"
               class="mx-4"
-            >
-              <template v-slot:append>
-                <v-icon @click="showMapTool">mdi-selection-drag</v-icon>
-              </template>
-            </v-text-field>
+            />
+            <v-btn
+              icon="mdi-selection-drag"
+              variant="plain"
+              density="compact"
+              @click="showMapTool"
+            />
+          </v-row>
+          <v-row v-if="isCoordinateInForm">
+            <v-text-field
+              v-model="coordinateString"
+              readonly
+              variant="plain"
+              density="compact"
+              label="Coordinate"
+              class="mx-4"
+            />
+            <v-btn
+              icon="mdi-map-marker"
+              variant="plain"
+              density="compact"
+              @click="showCoordinateSelector"
+            />
           </v-row>
         </v-col>
       </v-container>
@@ -96,6 +114,8 @@ import { useAlertsStore } from '@/stores/alerts.ts'
 
 import { generateDefaultUISchema, generateJsonSchema } from './workflowUtils'
 import { useDisplay } from 'vuetify'
+import { LngLat } from 'maplibre-gl'
+import { coordinateToString } from '@/lib/workflows'
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[] | null
@@ -173,6 +193,11 @@ const isBoundingBoxInForm = computed(() => {
   )
 })
 
+const isCoordinateInForm = computed(() => {
+  const properties = Object.keys(data.value)
+  return properties.includes('latitude') && properties.includes('longitude')
+})
+
 const workflowSelectItems = computed(() => {
   return props.secondaryWorkflows?.map((workflow) => {
     const title =
@@ -220,6 +245,15 @@ watch(data, () => {
   } else {
     boundingBox.value = null
   }
+
+  if (isCoordinateInForm.value) {
+    workflowsStore.coordinate = new LngLat(
+      +data.value.longitude,
+      +data.value.latitude,
+    )
+  } else {
+    workflowsStore.coordinate = null
+  }
 })
 
 // Update the form when the bounding box is changed (e.g. through clicking).
@@ -241,6 +275,25 @@ watch(boundingBox, () => {
     workflowsStore.boundingBox = boundingBox.value
   }
 })
+
+watch(
+  () => workflowsStore.coordinate,
+  () => {
+    if (!isCoordinateInForm.value) return
+
+    if (workflowsStore.coordinate === null) {
+      data.value.latitude = undefined
+      data.value.longitude = undefined
+    } else {
+      data.value.latitude = +workflowsStore.coordinate.lat.toFixed(2)
+      data.value.longitude = +workflowsStore.coordinate.lng.toFixed(2)
+    }
+  },
+)
+
+const coordinateString = computed(() =>
+  coordinateToString(workflowsStore.coordinate),
+)
 
 type FormValue = string | number | boolean | Date
 
@@ -333,6 +386,21 @@ function onFormChange(event: any) {
   }
 
   data.value = event.data
+}
+
+function showCoordinateSelector() {
+  workflowsStore.isSelectingCoordinate = true
+  workflowDialog.value = false
+
+  watch(
+    () => workflowsStore.isSelectingCoordinate,
+    () => {
+      if (workflowsStore.coordinate !== null) {
+        workflowDialog.value = true
+      }
+    },
+    { once: true },
+  )
 }
 
 function showMapTool() {
