@@ -60,7 +60,7 @@
               class="mx-4"
             />
             <v-btn
-              icon="mdi-map-marker"
+              icon="mdi-map-marker-radius"
               variant="plain"
               density="compact"
               @click="showCoordinateSelector"
@@ -253,6 +253,7 @@ watch(data, () => {
     )
   } else {
     workflowsStore.coordinate = null
+    workflowsStore.isSelectingCoordinate = false
   }
 })
 
