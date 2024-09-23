@@ -1,8 +1,9 @@
 <template>
-  <div v-if="reports?.length" class="d-flex flex-column h-100 px-4 pt-4">
+  <div v-if="reports?.length" class="d-flex flex-column h-100">
     <v-toolbar
       class="py-1"
       :title="reports.length === 1 ? reports[0].moduleInstanceId : undefined"
+      density="compact"
     >
       <v-select
         v-if="reports.length > 1"
@@ -14,6 +15,8 @@
         hide-details
         label="Report"
         class="px-2"
+        variant="solo-filled"
+        density="compact"
       />
       <v-select
         v-model="selectedReportItem"
@@ -24,6 +27,8 @@
         hide-details
         label="Analysis time"
         class="pe-2 flex-0-0"
+        variant="solo-filled"
+        density="compact"
       />
     </v-toolbar>
     <iframe :key="url" :src="url" class="html-content" />
