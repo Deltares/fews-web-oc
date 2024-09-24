@@ -1,36 +1,57 @@
 <template>
   <mgl-geo-json-source :source-id="locationsSourceId" :data="geojson">
+    <mgl-fill-layer
+      :layer-id="locationsFillLayerId"
+      :paint="paintFillSpecification"
+      :filter="['==', '$type', 'Polygon']"
+    />
     <mgl-symbol-layer
       :layer-id="locationsSymbolLayerId"
       :layout="layoutSymbolSpecification"
       :paint="paintSymbolSpecification"
+      :filter="['all', ['has', 'iconName'], ['==', '$type', 'Point']]"
     />
     <mgl-circle-layer
       :layer-id="locationsCircleLayerId"
       :paint="paintCircleSpecification"
+      :filter="['all', ['!has', 'iconName'], ['==', '$type', 'Point']]"
     />
     <mgl-symbol-layer
       v-if="showNames"
       :layer-id="locationsTextLayerId"
       :layout="layoutTextSpecification"
       :paint="paintTextSpecification"
+      :filter="['==', '$type', 'Point']"
     />
   </mgl-geo-json-source>
+  <mgl-marker
+    v-if="selectedLocationCoordinates"
+    :coordinates="selectedLocationCoordinates"
+    :offset="[0, 4]"
+    anchor="bottom"
+  >
+    <template #marker>
+      <v-icon class="text-shadow" size="32px">mdi-map-marker</v-icon>
+    </template>
+  </mgl-marker>
 </template>
 
 <script setup lang="ts">
 import {
+  MglFillLayer,
   MglCircleLayer,
   MglSymbolLayer,
   MglGeoJsonSource,
+  MglMarker,
   useMap,
 } from '@indoorequal/vue-maplibre-gl'
 import { FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
 import {
-  MapLayerMouseEvent,
-  MapLayerTouchEvent,
-  MapSourceDataEvent,
+  LngLat,
+  type MapLayerMouseEvent,
+  type MapLayerTouchEvent,
+  type MapSourceDataEvent,
 } from 'maplibre-gl'
 import { watch, onBeforeUnmount, computed } from 'vue'
 import { onBeforeMount } from 'vue'
@@ -70,6 +91,17 @@ const geojson = computed<FeatureCollection<Geometry, Location>>(() => ({
 
 const emit = defineEmits(['click'])
 
+const selectedLocationCoordinates = computed(() => {
+  const selectedLocation = geojson.value.features.find(
+    (feature) => feature.properties.locationId === props.selectedLocationId,
+  )
+  const lat = selectedLocation?.properties.lat
+  const lng = selectedLocation?.properties.lon
+  if (!lat || !lng) return
+
+  return new LngLat(+lng, +lat)
+})
+
 const layoutSymbolSpecification = {
   'icon-allow-overlap': true,
   'symbol-sort-key': ['get', 'sortKey'],
@@ -108,10 +140,32 @@ const paintCircleSpecification = {
   'circle-stroke-width': 1.5,
 }
 
+function getDarkPaintFillSpecification(id: string | null) {
+  return {
+    'fill-color': 'darkgrey',
+    'fill-opacity': ['case', ['==', ['get', 'locationId'], id], 0.35, 0.2],
+    'fill-outline-color': 'white',
+  }
+}
+
+function getLightPaintFillSpecification(id: string | null) {
+  return {
+    'fill-color': '#dfdfdf',
+    'fill-opacity': ['case', ['==', ['get', 'locationId'], id], 0.8, 0.3],
+    'fill-outline-color': 'black',
+  }
+}
+const paintFillSpecification = computed(() =>
+  isDark.value
+    ? getDarkPaintFillSpecification(props.selectedLocationId)
+    : getLightPaintFillSpecification(props.selectedLocationId),
+)
+
 const locationsCircleLayerId = 'location-circle-layer'
 const locationsSymbolLayerId = 'location-symbol-layer'
 const locationsTextLayerId = 'location-text-layer'
 const locationsSourceId = 'location-source'
+const locationsFillLayerId = 'location-fill-layer'
 
 watch(geojson, () => {
   addLocationIcons()
@@ -126,7 +180,11 @@ watch(
 
 onBeforeMount(() => {
   if (map) {
-    for (const layerId of [locationsCircleLayerId, locationsSymbolLayerId]) {
+    for (const layerId of [
+      locationsCircleLayerId,
+      locationsSymbolLayerId,
+      locationsFillLayerId,
+    ]) {
       map.on('click', layerId, clickHandler)
       map.on('mouseenter', layerId, setCursorPointer)
       map.on('mouseleave', layerId, unsetCursorPointer)
@@ -138,7 +196,11 @@ onBeforeMount(() => {
 
 onBeforeUnmount(() => {
   if (map) {
-    for (const layerId of [locationsCircleLayerId, locationsSymbolLayerId]) {
+    for (const layerId of [
+      locationsCircleLayerId,
+      locationsSymbolLayerId,
+      locationsFillLayerId,
+    ]) {
       map.off('click', layerId, clickHandler)
       map.off('mouseenter', layerId, setCursorPointer)
       map.off('mouseleave', layerId, unsetCursorPointer)
@@ -157,8 +219,13 @@ function addLocationIcons() {
 
 function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   if (map) {
+    const layers = [
+      locationsSymbolLayerId,
+      locationsCircleLayerId,
+      locationsFillLayerId,
+    ].filter((layerId) => map.getLayer(layerId))
     const features = map.queryRenderedFeatures(event.point, {
-      layers: [locationsSymbolLayerId, locationsCircleLayerId],
+      layers,
     })
     if (!features.length) return
     // Prioratise clicks on the top-most feature
@@ -184,18 +251,6 @@ function sourceDateLoaded(e: MapSourceDataEvent) {
 function highlightSelectedLocationOnMap() {
   if (!map?.getSource(locationsSourceId)) return
   const locationId = props.selectedLocationId ?? 'noLayerSelected'
-
-  // Move the selected location from the symbol layer to the circle layer, or vice versa
-  map.setFilter(locationsSymbolLayerId, [
-    'any',
-    ['has', 'iconName'],
-    ['==', 'locationId', locationId],
-  ])
-  map.setFilter(locationsCircleLayerId, [
-    'all',
-    ['!has', 'iconName'],
-    ['!=', 'locationId', locationId],
-  ])
 
   // Set the icon for the selected location
   map.setLayoutProperty(locationsSymbolLayerId, 'icon-image', [
@@ -232,3 +287,9 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   emit('click', event)
 }
 </script>
+
+<style scoped>
+.text-shadow {
+  text-shadow: 0 0 5px var(--theme-color);
+}
+</style>
