@@ -2,12 +2,12 @@ import { LngLat } from 'maplibre-gl'
 
 export function coordinateToString(coordinate: LngLat | null) {
   return coordinate
-    ? `${coordinate.lng.toFixed(2)}°E ${coordinate.lat.toFixed(2)}°N`
+    ? `${coordinate.lat.toFixed(2)}°N ${coordinate.lng.toFixed(2)}°E`
     : '—'
 }
 
 export function coordinateToStringParts(coordinate: LngLat | null) {
   return coordinate
-    ? [`${coordinate.lng.toFixed(2)}°E`, `${coordinate.lat.toFixed(2)}°N`]
-    : ['—°E', '—°N']
+    ? [`${coordinate.lat.toFixed(2)}°N`, `${coordinate.lng.toFixed(2)}°E`]
+    : ['—°N', '—°E']
 }
