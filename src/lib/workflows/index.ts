@@ -5,3 +5,9 @@ export function coordinateToString(coordinate: LngLat | null) {
     ? `${coordinate.lng.toFixed(2)}°E ${coordinate.lat.toFixed(2)}°N`
     : '—'
 }
+
+export function coordinateToStringParts(coordinate: LngLat | null) {
+  return coordinate
+    ? [`${coordinate.lng.toFixed(2)}°E`, `${coordinate.lat.toFixed(2)}°N`]
+    : ['—°E', '—°N']
+}
