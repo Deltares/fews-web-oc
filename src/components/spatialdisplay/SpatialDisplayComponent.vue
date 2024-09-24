@@ -505,15 +505,15 @@ function onCoordinateMoved(lat: number, lng: number): void {
   max-width: 100%;
   z-index: 3;
 }
+
+.mapcomponent__controls-container :deep(.v-slide-group__content) {
+  padding: 0 8px;
+}
 </style>
 
 <style>
 .maplibregl-ctrl-bottom-right,
 .maplibregl-ctrl-bottom-left {
   bottom: v-bind('offsetBottomControls') !important;
-}
-
-.control-group :deep(.v-slide-group__content) {
-  padding: 0 8px;
 }
 </style>
