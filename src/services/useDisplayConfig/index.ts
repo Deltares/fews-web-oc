@@ -1,8 +1,6 @@
 import {
   PiWebserviceProvider,
-  type filterActionsFilter,
   type ActionsResponse,
-  type timeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
 import { ref, toValue, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
@@ -11,6 +9,11 @@ import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDispl
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.js'
 import { MD5 } from 'crypto-js'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
+import {
+  type Filter,
+  isFilterActionsFilter,
+  isTimeSeriesGridActionsFilter,
+} from '@/lib/filters'
 
 export interface UseDisplayConfigReturn {
   displayConfig: Ref<DisplayConfig | undefined>
@@ -20,18 +23,6 @@ export interface UseDisplayConfigReturn {
 export interface UseDisplayConfigOptions {
   convertDatum?: boolean
   useDisplayUnits?: boolean
-}
-
-type Filter = timeSeriesGridActionsFilter | filterActionsFilter
-// Guard functions, needed because it is not possible to use instanceof/typeof on interfaces
-function isFilterActionsFilter(filter: Filter): filter is filterActionsFilter {
-  return (filter as filterActionsFilter).filterId !== undefined
-}
-
-function isTimeSeriesGridActionsFilter(
-  filter: Filter,
-): filter is timeSeriesGridActionsFilter {
-  return (filter as timeSeriesGridActionsFilter).x !== undefined
 }
 
 /**

@@ -45,6 +45,7 @@
           :elevation-chart-config="elevationChartDisplayconfig"
           :current-time="props.currentTime"
           :displayType="displayType"
+          :information-content="tooltip"
         >
         </TimeSeriesComponent>
         <TimeSeriesFileDownloadComponent
@@ -77,6 +78,8 @@ import { computed } from 'vue'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { useSystemTimeStore } from '@/stores/systemTime'
+import { useLocationTooltip } from '@/services/useLocationTooltip'
+import { isFilterActionsFilter } from '@/lib/filters'
 interface Props {
   filter: filterActionsFilter | timeSeriesGridActionsFilter
   elevationChartFilter?: timeSeriesGridActionsFilter
@@ -128,6 +131,15 @@ const { displayConfig: elevationChartDisplayconfig } = useDisplayConfigFilter(
   () => systemTimeStore.endTime,
 )
 
+const { tooltip } = useLocationTooltip(baseUrl, () =>
+  isFilterActionsFilter(props.filter)
+    ? {
+        filterId: props.filter.filterId,
+        locationId: props.filter.locationIds,
+      }
+    : undefined,
+)
+
 interface DisplayTypeItem {
   icon: string
   label: string
@@ -156,6 +168,14 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
       label: 'Vertical profile',
       value: DisplayType.ElevationChart,
       iconStyle: 'transform: rotate(-90deg);',
+    })
+  }
+
+  if (tooltip.value) {
+    displayItems.push({
+      icon: 'mdi-information',
+      label: 'Information',
+      value: DisplayType.Information,
     })
   }
 
