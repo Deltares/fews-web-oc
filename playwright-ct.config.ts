@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/experimental-ct-vue'
 import getViteConfig from './vite.config'
-const viteConfig = getViteConfig({
+const viteConfig = await getViteConfig({
   command: 'build',
   mode: 'test',
 })
