@@ -128,7 +128,7 @@
     </router-view>
     <div
       v-if="showInformationDisplay"
-      class="information-display"
+      class="w-100 h-100"
       :style="informationDisplayStyle"
     >
       <InformationDisplayView
@@ -231,7 +231,7 @@ const externalLink = ref<string | undefined>('')
 const { mobile } = useDisplay()
 const informationDisplayStyle = computed<StyleValue>(() => {
   return {
-    width: mobile.value ? '100%' : '40%',
+    flex: mobile.value ? undefined : '0 0 33%',
     position: mobile.value ? 'fixed' : undefined,
     'z-index': mobile.value ? 999999 : undefined,
     'border-left': mobile.value ? undefined : '1px solid #e0e0e0',
@@ -608,9 +608,5 @@ function reroute(to: RouteLocationNormalized) {
 <style scoped>
 .v-btn-group {
   color: inherit;
-}
-
-.information-display {
-  height: 100%;
 }
 </style>
