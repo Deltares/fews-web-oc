@@ -1,7 +1,13 @@
 <template>
-  <mgl-marker v-if="coordinate" v-model:coordinates="coordinate" draggable>
+  <mgl-marker
+    v-if="coordinate"
+    v-model:coordinates="coordinate"
+    draggable
+    :offset="[0, 4]"
+    anchor="bottom"
+  >
     <template #marker>
-      <v-icon size="2rem" color="primary">mdi-map-marker</v-icon>
+      <v-icon size="32px" color="primary">mdi-map-marker</v-icon>
     </template>
   </mgl-marker>
 </template>
