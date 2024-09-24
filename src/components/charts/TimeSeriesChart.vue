@@ -47,6 +47,7 @@ import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import {
   AlertLines,
   CartesianAxesOptions,
+  Chart,
   ChartArea,
   ChartBar,
   ChartLine,
@@ -56,7 +57,6 @@ import {
   TooltipOptions,
   WheelMode,
   ZoomHandler,
-  toggleChartVisibility,
 } from '@deltares/fews-web-oc-charts'
 import {
   AxisPosition,
@@ -120,6 +120,7 @@ const chipGroup = ref<VChipGroup>()
 const expanded = ref(false)
 const requiresExpand = ref(false)
 const axisTime = ref<CurrentTime>()
+const disabledCharts = ref<Record<string, Chart>>({})
 
 const margin = {
   top: 110,
@@ -405,9 +406,36 @@ const toggleLine = (id: string) => {
   if (id === 'Thresholds') {
     setThresholdLines()
     axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
-  } else {
-    toggleChartVisibility(axis, id)
+    return
   }
+
+  if (disabledCharts.value.hasOwnProperty(id)) {
+    addChart(axis, disabledCharts.value[id])
+    delete disabledCharts.value[id]
+  } else {
+    const chart = removeChart(axis, id)
+    if (chart) disabledCharts.value[id] = chart
+  }
+
+  axis.redraw({ y: { autoScale: true } })
+}
+
+function addChart(axis: CartesianAxes, chart: Chart) {
+  axis.charts.push(chart)
+
+  const groupNode = chart.group.node()
+  if (groupNode) axis.chartGroup.node()?.appendChild(groupNode)
+}
+
+function removeChart(axis: CartesianAxes, id: string) {
+  const chartIndex = axis.charts.findIndex((c) => c.id === id)
+  if (chartIndex === -1) return
+
+  const chart = axis.charts[chartIndex]
+  axis.charts.splice(chartIndex, 1)
+  chart.group.remove()
+
+  return chart
 }
 
 const resize = () => {
