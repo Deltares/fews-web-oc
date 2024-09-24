@@ -18,6 +18,8 @@ const SystemMonitorDisplayView = () =>
   import('../views/SystemMonitorDisplayView.vue')
 const SchematicStatusDisplayView = () =>
   import('../views/SchematicStatusDisplayView.vue')
+const SchematicStatusDisplay = () =>
+  import('../components/ssd/SchematicStatusDisplay.vue')
 const SSDTimeSeriesDisplay = () =>
   import('../components/ssd/SsdTimeSeriesDisplay.vue')
 const SpatialDisplayView = () => import('../views/SpatialDisplayView.vue')
@@ -176,6 +178,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         path: '/topology/node/:nodeId*/reports/',
         name: 'TopologyReports',
         component: ReportsDisplayView,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
+        path: '/topology/node/:nodeId*/ssd/',
+        name: 'TopologySchematicStatusDisplay',
+        component: SchematicStatusDisplay,
         props: true,
         meta: { sidebar: true },
       },

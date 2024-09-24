@@ -153,7 +153,7 @@ interface Props {
 }
 
 interface DisplayTab {
-  type: 'charts' | 'map' | 'reports'
+  type: 'charts' | 'map' | 'reports' | 'schematic-status-display'
   id: string
   title: string
   href?: string
@@ -370,6 +370,7 @@ function displayTabsForNode(leafNode: TopologyNode, parentNodeId?: string) {
   const timeseriesTabId = `${activeNodeId}-timeseries`
   const reportsTabId = `${activeNodeId}-reports`
   const spatialTabId = `${activeNodeId}-spatial`
+  const ssdTabId = `${activeNodeId}-ssd`
   const _displayTabs: DisplayTab[] = []
   if (
     leafNode.gridDisplaySelection !== undefined ||
@@ -437,6 +438,21 @@ function displayTabsForNode(leafNode: TopologyNode, parentNodeId?: string) {
         },
       },
       icon: 'mdi-file-document',
+    })
+  }
+  // TODO: Use topology setting
+  if (true) {
+    _displayTabs.push({
+      type: 'schematic-status-display',
+      id: ssdTabId,
+      title: 'SSD',
+      to: {
+        name: 'TopologySchematicStatusDisplay',
+        params: {
+          nodeId: parentNodeId ? [parentNodeId, leafNode.id] : leafNode.id,
+        },
+      },
+      icon: 'mdi-view-dashboard',
     })
   }
   return _displayTabs
