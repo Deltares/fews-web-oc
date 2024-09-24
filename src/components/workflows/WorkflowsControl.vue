@@ -45,8 +45,8 @@
             />
             <v-btn
               icon="mdi-selection-drag"
-              variant="plain"
-              density="compact"
+              variant="tonal"
+              density="comfortable"
               @click="showMapTool"
             />
           </v-row>
@@ -61,8 +61,8 @@
             />
             <v-btn
               icon="mdi-map-marker-radius"
-              variant="plain"
-              density="compact"
+              variant="tonal"
+              density="comfortable"
               @click="showCoordinateSelector"
             />
           </v-row>
