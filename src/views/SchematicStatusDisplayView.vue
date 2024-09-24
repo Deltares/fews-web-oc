@@ -101,7 +101,6 @@ watch(() => props.panelId, onPanelIdChange)
 
 const { capabilities } = useSsd(
   baseUrl,
-  () => props.groupId,
   () => props.panelId,
   selectedDateString,
 )

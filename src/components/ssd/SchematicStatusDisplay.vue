@@ -92,7 +92,6 @@ watch(
 
 const { capabilities, src, dates } = useSsd(
   baseUrl,
-  () => props.groupId,
   () => props.panelId,
   selectedDateString,
 )
