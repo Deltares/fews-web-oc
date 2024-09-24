@@ -464,6 +464,11 @@ function setLayerOptions(): void {
 function onCoordinateClick(
   event: MapLayerMouseEvent | MapLayerTouchEvent,
 ): void {
+  if (workflowsStore.isSelectingCoordinate) {
+    workflowsStore.coordinate = event.lngLat
+    return
+  }
+
   emit(
     'coordinateClick',
     +event.lngLat.lat.toFixed(3),
