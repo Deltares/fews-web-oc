@@ -440,17 +440,16 @@ function displayTabsForNode(leafNode: TopologyNode, parentNodeId?: string) {
       icon: 'mdi-file-document',
     })
   }
-  // TODO: Use topology setting
-  if (true) {
+  if (leafNode.scadaPanelId !== undefined) {
     _displayTabs.push({
       type: 'schematic-status-display',
       id: ssdTabId,
-      title: 'SSD',
+      title: 'Schematic',
       to: {
         name: 'TopologySchematicStatusDisplay',
         params: {
           nodeId: parentNodeId ? [parentNodeId, leafNode.id] : leafNode.id,
-          panelId: 'coastal_flooding',
+          panelId: leafNode.scadaPanelId,
         },
       },
       icon: 'mdi-view-dashboard',
