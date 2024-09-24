@@ -450,6 +450,8 @@ function displayTabsForNode(leafNode: TopologyNode, parentNodeId?: string) {
         name: 'TopologySchematicStatusDisplay',
         params: {
           nodeId: parentNodeId ? [parentNodeId, leafNode.id] : leafNode.id,
+          groupId: 'SchematicSystemDisplay',
+          panelId: 'coastal_flooding',
         },
       },
       icon: 'mdi-view-dashboard',

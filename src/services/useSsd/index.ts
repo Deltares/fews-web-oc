@@ -15,34 +15,25 @@ export interface UseSsdReturn {
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
   src: Ref<string>
-  group: Ref<SsdDisplayGroup | undefined>
   panel: Ref<SsdDisplayPanel | undefined>
   dates: Ref<Date[]>
 }
 
 const REFRESH_INTERVAL = 1000 * 60 * 5 // 5 minutes
 
-function findGroup(
+function findPanel(
   capabilities: SsdGetCapabilitiesResponse,
   name: string,
-): SsdDisplayGroup | undefined {
-  return capabilities.displayGroups.find((g) => {
-    return g.name === name
-  })
-}
-
-function findPanel(
-  group: SsdDisplayGroup,
-  name: string,
 ): SsdDisplayPanel | undefined {
-  return group.displayPanels.find((g) => {
-    return g.name === name
-  })
+  return capabilities.displayGroups
+    .flatMap((g) => g.displayPanels)
+    .find((p) => {
+      return p.name === name
+    })
 }
 
 export function useSsd(
   baseUrl: string,
-  groupId: MaybeRefOrGetter<string>,
   panelId: MaybeRefOrGetter<string>,
   time: MaybeRefOrGetter<string>,
 ): UseSsdReturn {
@@ -55,7 +46,6 @@ export function useSsd(
   const capabilities = ref<SsdGetCapabilitiesResponse>()
   const error = shallowRef<unknown | undefined>(undefined)
   const src = ref('')
-  const group = ref<SsdDisplayGroup>()
   const panel = ref<SsdDisplayPanel>()
   const dates = ref<Date[]>([])
 
@@ -77,15 +67,13 @@ export function useSsd(
   setInterval(loadCapabilities, REFRESH_INTERVAL)
 
   watchEffect(() => {
-    const groupIdValue = toValue(groupId)
     const panelIdValue = toValue(panelId)
     const capabilitiesValue = capabilities.value
 
     if (!capabilitiesValue) return
 
-    // Find the group and panel by ID in the capabilities.
-    group.value = findGroup(capabilitiesValue, groupIdValue)
-    if (group.value) panel.value = findPanel(group.value, panelIdValue)
+    // Find the panel by ID in the capabilities.
+    panel.value = findPanel(capabilitiesValue, panelIdValue)
 
     if (!panel.value) return
 
@@ -113,7 +101,6 @@ export function useSsd(
     isLoading,
     error,
     src,
-    group,
     panel,
     dates,
   }

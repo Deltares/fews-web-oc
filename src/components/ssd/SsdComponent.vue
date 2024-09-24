@@ -187,7 +187,7 @@ function resize(): void {
 
 function setAspectRatio(): void {
   const sizes = getSvgContainerSizes()
-  if (sizes) {
+  if (sizes.length) {
     // check if sizes is empty
     aspectRatio = +sizes[2] / +sizes[3]
     return
