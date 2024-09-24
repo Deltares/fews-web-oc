@@ -76,11 +76,13 @@ function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   emit('doubleclick', event)
 }
 
-function onStartLoading(): void {
+function onStartLoading(e: MapSourceDataEvent): void {
+  if (e.sourceId !== currentLayer) return
   isLoading.value = true
 }
 
-function onEndLoading(): void {
+function onEndLoading(e: MapSourceDataEvent): void {
+  if (e.sourceId !== currentLayer) return
   isLoading.value = false
 }
 
