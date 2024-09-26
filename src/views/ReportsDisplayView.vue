@@ -2,7 +2,7 @@
   <div v-if="reports?.length" class="d-flex flex-column h-100">
     <v-toolbar
       class="py-1"
-      :title="reports.length === 1 ? reports[0].moduleInstanceId : undefined"
+      :title="reports.length === 1 ? reportToTitle(reports[0]) : undefined"
       density="compact"
     >
       <v-select
@@ -10,7 +10,7 @@
         v-model="selectedReport"
         :items="reports"
         return-object
-        :item-title="(item) => item.moduleInstanceId"
+        :item-title="(item) => reportToTitle(item)"
         :item-value="(item) => item.moduleInstanceId"
         hide-details
         label="Report"
@@ -103,6 +103,10 @@ function reportItemToId(item: ReportItem) {
 
 function reportItemToTitle(item: ReportItem) {
   return `${item.timeZero} - ${item.reportId}`
+}
+
+function reportToTitle(item: Report) {
+  return item.moduleInstanceName ?? item.moduleInstanceId
 }
 </script>
 
