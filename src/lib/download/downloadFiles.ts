@@ -1,15 +1,9 @@
 import { DocumentFormat } from '@deltares/fews-pi-requests'
-import { toISOString } from '../date'
 
 function downloadWithLink(url: string, fileName: string) {
   const encodedFileName = encodeURIComponent(fileName)
   url = `${url}&downloadAsFile=${encodedFileName}`
-  const link = document.createElement('a')
-  link.href = url
-  link.setAttribute('download', fileName)
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+  clickDownloadUrl(url, fileName)
 }
 
 async function downloadFileWithFetch(
@@ -25,12 +19,7 @@ async function downloadFileWithFetch(
   })
   if (response.ok) {
     const blob = await response.blob()
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.setAttribute('download', fileName)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    clickDownloadBlob(blob, fileName)
   } else {
     console.error('Error downloading file')
   }
@@ -70,7 +59,7 @@ export async function downloadFileAttachment(
 
 export async function downloadFileWithXhr(
   url: string,
-  fileNameSuffix?: string,
+  fileName: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const req = new XMLHttpRequest()
@@ -93,24 +82,8 @@ export async function downloadFileWithXhr(
         ?.split('filename=')[1]
         .split(';')[0]
 
-      // For when backend does not set 'Access-Control-Expose-Headers: Content-Disposition'
-      const now = toISOString(new Date())
-        .replaceAll('-', '')
-        .replaceAll(':', '')
-      const fallBackFileName = `${now}${fileNameSuffix ?? '_DATA'}`
-
-      const downloadFileName = headerFileName ?? fallBackFileName
-      const blobUrl = window.URL.createObjectURL(req.response)
-
-      const a = document.createElement('a')
-      a.href = blobUrl
-      a.setAttribute('download', downloadFileName)
-
-      document.body.appendChild(a)
-      a.click()
-
-      a.remove()
-      window.URL.revokeObjectURL(blobUrl)
+      const downloadFileName = headerFileName ?? fileName
+      clickDownloadBlob(req.response, downloadFileName)
 
       resolve()
     }
@@ -124,4 +97,20 @@ export async function downloadFileWithXhr(
 
     req.send()
   })
+}
+
+export function clickDownloadBlob(blob: Blob, fileName: string) {
+  const blobUrl = window.URL.createObjectURL(blob)
+  clickDownloadUrl(blobUrl, fileName)
+  window.URL.revokeObjectURL(blobUrl)
+}
+
+export function clickDownloadUrl(url: string, fileName: string) {
+  const a = document.createElement('a')
+  a.href = url
+  a.setAttribute('download', fileName)
+
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
 }

@@ -10,6 +10,7 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { configManager } from '@/services/application-config'
 import type { BoundingBox } from '@/services/useBoundingBox'
 import type { LngLat } from 'maplibre-gl'
+import { toISOString } from '@/lib/date'
 
 interface WorkflowsState {
   workflowId: string | null
@@ -86,7 +87,13 @@ const useWorkflowsStore = defineStore('workflows', {
           const url = webServiceProvider.processDataUrl(
             completeFilter as ProcessDataFilter,
           )
-          await downloadFileWithXhr(url.toString(), options?.fileName)
+
+          const now = toISOString(new Date())
+            .replaceAll('-', '')
+            .replaceAll(':', '')
+          const fileName = `${now}${options?.fileName ?? '_DATA'}`
+
+          await downloadFileWithXhr(url.toString(), fileName)
         }
       } finally {
         this.numActiveWorkflows--
