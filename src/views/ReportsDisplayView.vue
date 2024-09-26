@@ -32,6 +32,7 @@
         variant="solo-filled"
         density="compact"
       />
+      <v-btn @click="downloadFile" icon="mdi-download" />
     </v-toolbar>
     <iframe :key="url" :src="url" class="html-content" />
   </div>
@@ -49,6 +50,7 @@ import {
 import { computed, ref, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import { filterToParams } from '@deltares/fews-wms-requests'
+import { downloadFileWithXhr } from '@/lib/download'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -109,6 +111,14 @@ function reportItemToTitle(item: ReportItem) {
 
 function reportToTitle(item: Report) {
   return item.moduleInstanceName ?? item.moduleInstanceId
+}
+
+async function downloadFile() {
+  const report = selectedReportItem.value
+  if (!report || !url.value) return
+
+  const fileName = `${report.timeZero}-${report.moduleInstanceId}`
+  downloadFileWithXhr(url.value, fileName)
 }
 </script>
 
