@@ -1,12 +1,12 @@
 <template>
   <div v-if="reports?.length" class="d-flex flex-column h-100">
-    <v-toolbar
-      class="py-1"
-      :title="reports.length === 1 ? reportToTitle(reports[0]) : undefined"
-      density="compact"
-    >
+    <v-toolbar class="py-1" density="compact">
+      <template v-if="reports.length === 1">
+        <div class="ml-5">{{ reportToTitle(reports[0]) }}</div>
+        <v-spacer />
+      </template>
       <v-select
-        v-if="reports.length > 1"
+        v-else
         v-model="selectedReport"
         :items="reports"
         return-object
@@ -15,6 +15,7 @@
         hide-details
         label="Report"
         class="px-2"
+        menu-icon="mdi-chevron-down"
         variant="solo-filled"
         density="compact"
       />
@@ -27,6 +28,7 @@
         hide-details
         label="Analysis time"
         class="pe-2 flex-0-0"
+        menu-icon="mdi-chevron-down"
         variant="solo-filled"
         density="compact"
       />
