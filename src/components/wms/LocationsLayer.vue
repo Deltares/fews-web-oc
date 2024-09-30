@@ -45,7 +45,7 @@ import {
   MglMarker,
   useMap,
 } from '@indoorequal/vue-maplibre-gl'
-import { FeatureCollection, Geometry } from 'geojson'
+import type { FeatureCollection, Geometry, Point } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
 import {
   LngLat,
@@ -95,11 +95,20 @@ const selectedLocationCoordinates = computed(() => {
   const selectedLocation = geojson.value.features.find(
     (feature) => feature.properties.locationId === props.selectedLocationId,
   )
-  const lat = selectedLocation?.properties.lat
-  const lng = selectedLocation?.properties.lon
-  if (!lat || !lng) return
 
-  return new LngLat(+lng, +lat)
+  if (selectedLocation?.geometry.type == 'Point') {
+    const geometry = selectedLocation.geometry as Point
+    const lng = geometry.coordinates[0]
+    const lat = geometry.coordinates[1]
+
+    return new LngLat(lng, lat)
+  } else {
+    const lat = selectedLocation?.properties.lat
+    const lng = selectedLocation?.properties.lon
+    if (!lat || !lng) return undefined
+
+    return new LngLat(+lng, +lat)
+  }
 })
 
 const layoutSymbolSpecification = {
