@@ -49,11 +49,12 @@ import { FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
 import {
   LngLat,
+  type MapGeoJSONFeature,
   type MapLayerMouseEvent,
   type MapLayerTouchEvent,
   type MapSourceDataEvent,
 } from 'maplibre-gl'
-import { watch, onBeforeUnmount, computed } from 'vue'
+import { watch, onBeforeUnmount, computed, ref } from 'vue'
 import { onBeforeMount } from 'vue'
 import { addLocationIconsToMap } from '@/lib/location-icons'
 import { useDark } from '@vueuse/core'
@@ -140,26 +141,48 @@ const paintCircleSpecification = {
   'circle-stroke-width': 1.5,
 }
 
-function getDarkPaintFillSpecification(id: string | null) {
+function getDarkPaintFillSpecification(selectedId: string, hoverId: string) {
   return {
     'fill-color': 'darkgrey',
-    'fill-opacity': ['case', ['==', ['get', 'locationId'], id], 0.35, 0.2],
+    'fill-opacity': [
+      'match',
+      ['get', 'locationId'],
+      selectedId,
+      0.35,
+      hoverId,
+      0.3,
+      0.2,
+    ],
     'fill-outline-color': 'white',
   }
 }
 
-function getLightPaintFillSpecification(id: string | null) {
+function getLightPaintFillSpecification(selectedId: string, hoverId: string) {
   return {
     'fill-color': '#dfdfdf',
-    'fill-opacity': ['case', ['==', ['get', 'locationId'], id], 0.8, 0.3],
+    'fill-opacity': [
+      'match',
+      ['get', 'locationId'],
+      selectedId,
+      0.8,
+      hoverId,
+      0.6,
+      0.3,
+    ],
     'fill-outline-color': 'black',
   }
 }
-const paintFillSpecification = computed(() =>
-  isDark.value
-    ? getDarkPaintFillSpecification(props.selectedLocationId)
-    : getLightPaintFillSpecification(props.selectedLocationId),
-)
+
+const paintFillSpecification = computed(() => {
+  const selectedId = props.selectedLocationId ?? 'invalid-no-layer-selected'
+  const hoverId =
+    hoveredStateId.value === selectedId
+      ? 'invalid-already-selected'
+      : (hoveredStateId.value ?? 'invalid-no-hover')
+  return isDark.value
+    ? getDarkPaintFillSpecification(selectedId, hoverId)
+    : getLightPaintFillSpecification(selectedId, hoverId)
+})
 
 const locationsCircleLayerId = 'location-circle-layer'
 const locationsSymbolLayerId = 'location-symbol-layer'
@@ -190,6 +213,9 @@ onBeforeMount(() => {
       map.on('mouseleave', layerId, unsetCursorPointer)
     }
     map.on('sourcedata', sourceDateLoaded)
+
+    map.on('mousemove', locationsFillLayerId, onFillMouseMove)
+    map.on('mouseleave', locationsFillLayerId, onFillMouseLeave)
   }
   addLocationIcons()
 })
@@ -206,6 +232,9 @@ onBeforeUnmount(() => {
       map.off('mouseleave', layerId, unsetCursorPointer)
     }
     map.off('sourcedata', sourceDateLoaded)
+
+    map.off('mousemove', locationsFillLayerId, onFillMouseMove)
+    map.off('mouseleave', locationsFillLayerId, onFillMouseLeave)
   }
 })
 
@@ -240,6 +269,18 @@ function setCursorPointer() {
 
 function unsetCursorPointer() {
   if (map) map.getCanvas().style.cursor = ''
+}
+
+const hoveredStateId = ref<string>()
+
+function onFillMouseLeave() {
+  hoveredStateId.value = undefined
+}
+
+function onFillMouseMove(
+  e: MapLayerMouseEvent & { features?: MapGeoJSONFeature[] },
+) {
+  hoveredStateId.value = e.features?.[0].properties.locationId
 }
 
 function sourceDateLoaded(e: MapSourceDataEvent) {
