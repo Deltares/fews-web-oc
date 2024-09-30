@@ -52,7 +52,6 @@ import {
   type MapGeoJSONFeature,
   type MapLayerMouseEvent,
   type MapLayerTouchEvent,
-  type MapSourceDataEvent,
 } from 'maplibre-gl'
 import { watch, onBeforeUnmount, computed, ref } from 'vue'
 import { onBeforeMount } from 'vue'
@@ -105,6 +104,7 @@ const selectedLocationCoordinates = computed(() => {
 
 const layoutSymbolSpecification = {
   'icon-allow-overlap': true,
+  'icon-image': ['get', 'iconName'],
   'symbol-sort-key': ['get', 'sortKey'],
 }
 
@@ -194,13 +194,6 @@ watch(geojson, () => {
   addLocationIcons()
 })
 
-watch(
-  () => props.selectedLocationId,
-  () => {
-    highlightSelectedLocationOnMap()
-  },
-)
-
 onBeforeMount(() => {
   if (map) {
     for (const layerId of [
@@ -212,7 +205,6 @@ onBeforeMount(() => {
       map.on('mouseenter', layerId, setCursorPointer)
       map.on('mouseleave', layerId, unsetCursorPointer)
     }
-    map.on('sourcedata', sourceDateLoaded)
 
     map.on('mousemove', locationsFillLayerId, onFillMouseMove)
     map.on('mouseleave', locationsFillLayerId, onFillMouseLeave)
@@ -231,7 +223,6 @@ onBeforeUnmount(() => {
       map.off('mouseenter', layerId, setCursorPointer)
       map.off('mouseleave', layerId, unsetCursorPointer)
     }
-    map.off('sourcedata', sourceDateLoaded)
 
     map.off('mousemove', locationsFillLayerId, onFillMouseMove)
     map.off('mouseleave', locationsFillLayerId, onFillMouseLeave)
@@ -281,47 +272,6 @@ function onFillMouseMove(
   e: MapLayerMouseEvent & { features?: MapGeoJSONFeature[] },
 ) {
   hoveredStateId.value = e.features?.[0].properties.locationId
-}
-
-function sourceDateLoaded(e: MapSourceDataEvent) {
-  if (e.sourceId === locationsSourceId && e.sourceDataType === 'metadata') {
-    highlightSelectedLocationOnMap()
-  }
-}
-
-function highlightSelectedLocationOnMap() {
-  if (!map?.getSource(locationsSourceId)) return
-  const locationId = props.selectedLocationId ?? 'noLayerSelected'
-
-  // Set the icon for the selected location
-  map.setLayoutProperty(locationsSymbolLayerId, 'icon-image', [
-    'match',
-    ['get', 'locationId'],
-    locationId,
-    'selected-location', // icon for selected location
-    ['get', 'iconName'], // default icon
-  ])
-  map.setLayoutProperty(locationsSymbolLayerId, 'icon-anchor', [
-    'match',
-    ['get', 'locationId'],
-    locationId,
-    'bottom', // The bottom of the map-marker, used for the selected location, should point to the location
-    'center', // Default anchor for icons
-  ])
-  map.setLayoutProperty(locationsSymbolLayerId, 'icon-size', [
-    'match',
-    ['get', 'locationId'],
-    locationId,
-    0.1, // size of the map-marker, which is used for the selected location
-    1, // default size
-  ])
-  map.setLayoutProperty(locationsSymbolLayerId, 'symbol-sort-key', [
-    'match',
-    ['get', 'locationId'],
-    locationId,
-    2, // sort key for selected location
-    ['get', 'sortKey'], // default sort key
-  ])
 }
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
