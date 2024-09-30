@@ -44,7 +44,6 @@
   </MapComponent>
   <div class="mapcomponent__controls-container">
     <v-chip-group class="control-group">
-      <TooltipPanel v-if="tooltip" :content="tooltip" />
       <BoundingBoxControl
         v-model:active="workflowsStore.isDrawingBoundingBox"
         v-model:boundingBox="workflowsStore.boundingBox"
@@ -162,8 +161,6 @@ import {
 } from '@/lib/legend'
 import { useWorkflowsStore } from '@/stores/workflows'
 import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
-import { useLocationTooltip } from '@/services/useLocationTooltip'
-import TooltipPanel from '@/components/wms/TooltipPanel.vue'
 import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
 
@@ -431,15 +428,6 @@ function updateTime(date: Date): void {
 watch(currentTime, () => {
   emit('update:currentTime', currentTime.value)
 })
-
-const { tooltip } = useLocationTooltip(baseUrl, () =>
-  props.filterIds.length && props.locationId
-    ? {
-        filterId: props.filterIds[0],
-        locationId: props.locationId,
-      }
-    : undefined,
-)
 
 function setLayerOptions(): void {
   if (props.layerName) {
