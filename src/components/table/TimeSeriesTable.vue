@@ -20,19 +20,14 @@
         <tr>
           <template v-for="(column, index) in columns" :key="column.key">
             <th
-              v-if="column.key === 'date'"
-              class="table-date sticky-column mb-4"
-            >
-              <span>{{ column.title }}</span>
-            </th>
-            <th
-              v-else
-              class="table-header"
-              :class="{
-                'table-header--editing': isEditingTimeSeries(
-                  column.key as string,
-                ),
-              }"
+              :class="[
+                (column as unknown as TableHeaders).class,
+                {
+                  'table-header--editing': isEditingTimeSeries(
+                    column.key as string,
+                  ),
+                },
+              ]"
             >
               <div class="table-header-indicator">
                 <div class="table-header-indicator-text">
@@ -124,7 +119,7 @@
           :class="{ highlighted: selected?.date === item.date }"
           @click="(e) => handleRowClick(e, item)"
         >
-          <td class="table-date sticky-column">
+          <td class="sticky-column">
             <v-text-field
               v-if="isEditing && item.isNewRow"
               :modelValue="toISOString(item.date)"
@@ -487,28 +482,22 @@ function onUpdateItem(event: TableData) {
   width: 100%;
 }
 
-th.table-date {
-  vertical-align: top;
+.date-header {
   min-width: 24ch;
   width: 24ch;
-  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
-  align-items: center;
 }
 
 th.sticky-column {
   position: sticky;
-  left: 0;
-}
-
-td.table-date {
   border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
-  align-items: center;
+  left: 0;
 }
 
 td.sticky-column {
   position: sticky;
   left: 0;
   background-color: rgb(var(--v-theme-surface));
+  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
 :deep(.v-select .v-select__selection-text) {
