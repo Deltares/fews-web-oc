@@ -4,4 +4,6 @@ type ReadonlyDataTableHeader = (typeof VDataTable)['headers']
 
 export interface TableHeaders extends ReadonlyDataTableHeader {
   color?: string
+  class?: string
+  editable: boolean
 }
