@@ -54,7 +54,6 @@ jobs:
           skip_app_build: true
           azure_static_web_apps_api_token: ${{ secrets.RIVIEREN_APP_AZURE_STATIC_WEB_APP_TOKEN }}
 
-
       - name: Create the app-config.json file for the FEWS Map App
         run: |
           rm dist/app-config.json
