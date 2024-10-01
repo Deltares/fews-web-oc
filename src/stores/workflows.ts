@@ -42,6 +42,12 @@ export interface StartWorkflowOptions {
   fileName?: string
 }
 
+function isPartialProcessDataFilter(
+  config: PartialRunTaskFilter | PartialProcessDataFilter,
+): config is PartialProcessDataFilter {
+  return (config as PartialProcessDataFilter).xCellSize !== undefined
+}
+
 const useWorkflowsStore = defineStore('workflows', {
   state: (): WorkflowsState => ({
     workflowId: null,
@@ -63,40 +69,41 @@ const useWorkflowsStore = defineStore('workflows', {
       if (this.workflowId === null) {
         throw Error('Workflow ID has not been set.')
       }
-      if (this.startTime === null || this.endTime === null) {
-        throw Error('Start time or end time has not been set.')
-      }
-
-      this.numActiveWorkflows++
-
-      // Add workflowId, startTime, and endTime from the store to the incomplete
-      // filter.
-      const completeFilter: RunTaskFilter | ProcessDataFilter = {
-        ...filter,
-        workflowId: this.workflowId,
-        startTime: this.startTime,
-        endTime: this.endTime,
-      }
-      try {
-        if (type === WorkflowType.RunTask) {
+      if (type === 'ProcessData' && isPartialProcessDataFilter(filter)) {
+        if (this.startTime === null || this.endTime === null) {
+          throw Error('Start time or end time has not been set.')
+        }
+        const completeFilter = {
+          ...filter,
+          workflowId: this.workflowId,
+          startTime: this.startTime,
+          endTime: this.endTime,
+        }
+        const url = webServiceProvider.processDataUrl(completeFilter)
+        const now = toISOString(new Date())
+          .replaceAll('-', '')
+          .replaceAll(':', '')
+        const fileName = `${now}${options?.fileName ?? '_DATA'}`
+        try {
+          this.numActiveWorkflows++
+          await downloadFileWithXhr(url.toString(), fileName)
+        } finally {
+          this.numActiveWorkflows--
+        }
+      } else if (type === WorkflowType.RunTask) {
+        const completeFilter = {
+          ...filter,
+          workflowId: this.workflowId,
+        }
+        try {
+          this.numActiveWorkflows++
           await webServiceProvider.postRunTask(
-            completeFilter as RunTaskFilter,
+            completeFilter,
             options?.body ?? '',
           )
-        } else if (type === WorkflowType.ProcessData) {
-          const url = webServiceProvider.processDataUrl(
-            completeFilter as ProcessDataFilter,
-          )
-
-          const now = toISOString(new Date())
-            .replaceAll('-', '')
-            .replaceAll(':', '')
-          const fileName = `${now}${options?.fileName ?? '_DATA'}`
-
-          await downloadFileWithXhr(url.toString(), fileName)
+        } finally {
+          this.numActiveWorkflows--
         }
-      } finally {
-        this.numActiveWorkflows--
       }
     },
   },
