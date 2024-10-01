@@ -303,6 +303,7 @@ getTopologyNodes().then((response) => {
 
 function topologyNodeIsVisible(node: TopologyNode): boolean {
   if (node.url !== undefined) return true
+  if (node.scadaPanelId !== undefined) return true
   if (
     node.filterIds !== undefined &&
     node.filterIds.length == 1 &&
