@@ -20,6 +20,7 @@
         <tr>
           <template v-for="(column, index) in columns" :key="column.key">
             <th
+              :style="{ minWidth: column.minWidth }"
               :class="[
                 (column as unknown as TableHeaders).class,
                 {
@@ -480,11 +481,6 @@ function onUpdateItem(event: TableData) {
 
 .v-table__wrapper {
   width: 100%;
-}
-
-.date-header {
-  min-width: 24ch;
-  width: 24ch;
 }
 
 th.sticky-column {
