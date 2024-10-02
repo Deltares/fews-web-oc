@@ -18,27 +18,16 @@
     >
       <template v-slot:headers="{ columns }">
         <tr>
-          <template v-for="(column, index) in columns" :key="column.key">
+          <template v-for="column in columns" :key="column.key">
             <th
-              :style="{ minWidth: column.minWidth }"
-              :class="[
-                (column as unknown as TableHeaders).class,
-                {
-                  'table-header--editing': isEditingTimeSeries(
-                    column.key as string,
-                  ),
-                },
-              ]"
+              v-if="column.key === 'date'"
+              class="table-header date-column sticky-column"
             >
               <div class="table-header-indicator">
                 <div class="table-header-indicator-text">
                   <span>{{ column.title }}</span>
                   <div
-                    v-if="
-                      index === 0 &&
-                      isEditing &&
-                      nonEquidistantSeries.length > 0
-                    "
+                    v-if="isEditing && nonEquidistantSeries.length > 0"
                     class="table-header__actions"
                   >
                     <div>
@@ -66,6 +55,23 @@
                       />
                     </div>
                   </div>
+                </div>
+              </div>
+            </th>
+            <th
+              v-else
+              class="table-header"
+              :class="[
+                {
+                  'table-header--editing': isEditingTimeSeries(
+                    column.key as string,
+                  ),
+                },
+              ]"
+            >
+              <div class="table-header-indicator">
+                <div class="table-header-indicator-text">
+                  <span>{{ column.title }}</span>
                   <template
                     v-if="
                       (column as unknown as TableHeaders).editable &&
@@ -483,17 +489,21 @@ function onUpdateItem(event: TableData) {
   width: 100%;
 }
 
-th.sticky-column {
-  position: sticky;
+th.date-header,
+td.date-header {
+  width: 24ch;
+  min-width: 24ch;
   border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+th.sticky-column,
+td.sticky-column {
+  position: sticky;
   left: 0;
 }
 
 td.sticky-column {
-  position: sticky;
-  left: 0;
   background-color: rgb(var(--v-theme-surface));
-  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
 :deep(.v-select .v-select__selection-text) {
@@ -510,7 +520,7 @@ td.sticky-column {
   z-index: 3;
 }
 
-.v-theme--light td:has(div.table-cell-editable) {
+.v-theme--light td:has(.table-cell-editable) {
   background: repeating-linear-gradient(
     45deg,
     rgb(var(--v-theme-surface)) 0px,
@@ -520,7 +530,7 @@ td.sticky-column {
   );
 }
 
-.v-theme--dark td:has(div.table-cell-editable) {
+.v-theme--dark td:has(.table-cell-editable) {
   background: repeating-linear-gradient(
     45deg,
     rgb(var(--v-theme-surface)) 0px,
