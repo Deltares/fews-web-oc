@@ -49,7 +49,7 @@ export function cssStyleFromFewsLine(item: {
     /(?<lineStyle>none|solid|dashed|dashdot|dotted)(;(?<lineWidth>thick))?/
   if (item.lineStyle !== undefined) {
     const matches = item.lineStyle.match(re)
-    if (matches?.groups?.lineWidth !== undefined) {
+    if (matches?.groups?.lineStyle !== undefined) {
       style = {
         ...style,
         ...cssStyleFromFewsLineStyle(matches.groups.lineStyle),
