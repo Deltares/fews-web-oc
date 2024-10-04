@@ -535,7 +535,6 @@ watchEffect(() => {
   }
 
   // Create the displayTabs for the active node.
-  if (node === undefined) return
   const _displayTabs = displayTabsForNode(node, parentNodeIdNodeId)
   displayTabs.value = _displayTabs
 
