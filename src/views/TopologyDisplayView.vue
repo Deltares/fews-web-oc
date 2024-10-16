@@ -7,12 +7,12 @@
       :items="items"
     />
   </Teleport>
-  <Teleport to="#web-oc-toolbar-target" v-if="showWorkflowsControl">
+  <!-- <Teleport to="#web-oc-toolbar-target" v-if="showWorkflowsControl">
     <WorkflowsControl
       :disabled="secondaryWorkflows === null"
       :secondaryWorkflows="secondaryWorkflows"
     />
-  </Teleport>
+  </Teleport> -->
   <Teleport to="#app-bar-content-start">
     <template v-if="showLeafsAsButton">
       <v-menu v-if="nodeButtons.length > 4">
@@ -78,43 +78,53 @@
         </v-btn>
       </v-btn-toggle>
     </template>
-    <v-btn-toggle
-      v-if="displayTabs.length > 1"
-      v-model="activeTab"
-      variant="tonal"
-      divided
-      density="compact"
-      class="ma-2"
-    >
+  </Teleport>
+  <Teleport to="#app-bar-content-center">
+    <v-toolbar-items v-if="displayTabs.length > 1">
       <v-btn
+        variant="text"
         v-for="tab in displayTabs"
         :key="tab.id"
         :value="tab.type"
         :href="tab.href"
         :target="tab.target"
         :to="tab.to"
-        class="text-capitalize"
       >
         <v-icon>{{ tab.icon }}</v-icon>
-        {{ tab.title }}
       </v-btn>
-    </v-btn-toggle>
-    <v-btn
-      v-if="externalLink"
-      :href="externalLink"
-      target="_blank"
-      variant="text"
-      class="flex-0-0 align-self-center text-capitalize"
-      ><v-icon>mdi-open-in-new</v-icon>Link</v-btn
-    >
+    </v-toolbar-items>
   </Teleport>
+  <v-btn
+    v-if="externalLink"
+    :href="externalLink"
+    target="_blank"
+    variant="text"
+    class="flex-0-0 align-self-center text-capitalize"
+    ><v-icon>mdi-open-in-new</v-icon>Link</v-btn
+  >
   <Teleport to="#app-bar-content-end">
-    <v-btn
-      v-if="topologyNode?.documentFile"
-      variant="text"
-      icon="mdi-information"
-      @click="showInformationDisplay = !showInformationDisplay"
-    />
+    <v-menu bottom left>
+      <template v-slot:activator="{ props }">
+        <v-btn icon variant="plain" v-bind="props">
+          <v-icon>mdi-dots-horizontal-circle-outline</v-icon>
+        </v-btn>
+      </template>
+      <v-list>
+        <v-list-item prepend-icon="mdi-wrench" disabled>
+          <v-list-item-title>Run workflow</v-list-item-title>
+        </v-list-item>
+        <v-list-item prepend-icon="mdi-download" disabled>
+          <v-list-item-title>Download time series</v-list-item-title>
+        </v-list-item>
+        <v-list-item
+          @click="showInformationDisplay = !showInformationDisplay"
+          prepend-icon="mdi-information"
+          :disabled="!topologyNode?.documentFile"
+        >
+          <v-list-item-title>More Info</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
   </Teleport>
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
@@ -238,12 +248,13 @@ const informationDisplayStyle = computed<StyleValue>(() => {
     'border-left': mobile.value ? undefined : '1px solid #e0e0e0',
   }
 })
-const showInformationDisplay = ref(false)
-watchEffect(() => {
-  if (!topologyNode.value?.documentFile) {
-    showInformationDisplay.value = false
-  }
-})
+
+const showInformationDisplay = ref(true)
+// watchEffect(() => {
+//   if (!topologyNode.value?.documentFile) {
+//     showInformationDisplay.value = false
+//   }
+// })
 
 const route = useRoute()
 const router = useRouter()

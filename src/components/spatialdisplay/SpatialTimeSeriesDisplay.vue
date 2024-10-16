@@ -5,11 +5,11 @@
         <template v-slot:toolbar>
           <span class="ml-5">{{ displayConfig?.title }}</span>
           <v-spacer />
-          <v-btn-toggle
+          <v-toolbar-items
             class="flex-0-0"
             v-model="displayType"
             mandatory
-            density="compact"
+            size="small"
           >
             <v-btn
               v-for="item in displayTypeItems"
@@ -17,14 +17,18 @@
               :value="item.value"
               :aria-label="item.label"
               :text="item.label"
-              size="small"
+              :active="displayType === item.value"
               variant="text"
-              class="text-capitalize"
+              width="20px"
+              class="pa-0 text-capitalize"
+              @click="displayType = item.value"
+              :disabled="item.disabled"
             >
               <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
             </v-btn>
-          </v-btn-toggle>
-          <v-btn
+          </v-toolbar-items>
+
+          <!-- <v-btn
             v-if="(displayConfig?.index ?? -1) != -1"
             @click="openFileDownloadDialog"
             size="small"
@@ -33,10 +37,10 @@
             v-bind="props"
           >
             <v-icon>mdi-download</v-icon>
-          </v-btn>
+          </v-btn> -->
         </template>
         <template v-slot:toolbar-append>
-          <v-btn size="small" variant="text" @click="onClose">
+          <v-btn size="small" icon @click="onClose">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </template>
@@ -145,6 +149,7 @@ interface DisplayTypeItem {
   label: string
   value: DisplayType
   iconStyle?: StyleValue
+  disabled?: boolean
 }
 
 const displayType = ref(DisplayType.TimeSeriesChart)
@@ -156,27 +161,34 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
       value: DisplayType.TimeSeriesChart,
     },
     {
-      icon: 'mdi-table',
-      label: 'Table',
-      value: DisplayType.TimeSeriesTable,
-    },
-  ]
-
-  if ((elevationChartDisplayconfig.value?.subplots?.length ?? 0) > 0) {
-    displayItems.push({
       icon: 'mdi-elevation-rise',
       label: 'Vertical profile',
       value: DisplayType.ElevationChart,
       iconStyle: 'transform: rotate(-90deg);',
-    })
-  }
-
-  if (tooltip.value) {
-    displayItems.push({
-      icon: 'mdi-information',
+    },
+    {
+      icon: 'mdi-table',
+      label: 'Table',
+      value: DisplayType.TimeSeriesTable,
+    },
+    {
+      icon: 'mdi-archive-marker',
       label: 'Information',
       value: DisplayType.Information,
-    })
+    },
+  ]
+  // Mdi icon for metatdata at the current location
+  //    {
+  //     icon: 'mdi-information',
+  //    label: 'Metadata',
+  //
+
+  if (!((elevationChartDisplayconfig.value?.subplots?.length ?? 0) > 0)) {
+    displayItems[1].disabled = true
+  }
+
+  if (!tooltip.value) {
+    displayItems[3].disabled = true
   }
 
   return displayItems

@@ -18,28 +18,21 @@
         </v-list>
       </v-menu>
       <v-spacer />
-      <v-btn-toggle
-        v-model="displayType"
-        mandatory
-        variant="tonal"
-        divided
-        density="compact"
-        class="ma-2"
-      >
+      <v-toolbar-items>
         <v-btn
           v-for="item in displayTypeItems"
           :key="item.value"
           :value="item.value"
           :aria-label="item.label"
           :text="item.label"
-          size="small"
-          variant="text"
-          class="text-capitalize"
+          @click="displayType = item.value"
+          :active="displayType === item.value"
         >
           <v-icon>{{ item.icon }}</v-icon>
         </v-btn>
-      </v-btn-toggle>
-      <v-btn
+      </v-toolbar-items>
+      <v-btn icon></v-btn>
+      <!-- <v-btn
         v-if="(displayConfig?.index ?? -1) != -1"
         @click="openFileDownloadDialog"
         size="small"
@@ -47,7 +40,7 @@
         variant="text"
         v-bind="props"
         ><v-icon>mdi-download</v-icon></v-btn
-      >
+      > -->
     </template>
     <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
     </TimeSeriesComponent>

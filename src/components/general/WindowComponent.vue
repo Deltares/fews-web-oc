@@ -4,9 +4,6 @@
       <slot name="toolbar">
         {{ props.title }}
       </slot>
-      <v-btn size="small" variant="text" @click="fullscreen = !fullscreen">
-        <v-icon>{{ fullscreenIcon }}</v-icon>
-      </v-btn>
       <slot name="toolbar-append" v-bind:refs="$refs"></slot>
     </v-toolbar>
     <v-sheet fluid class="component-container">
