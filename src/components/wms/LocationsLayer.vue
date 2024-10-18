@@ -215,9 +215,9 @@ onBeforeMount(() => {
 onBeforeUnmount(() => {
   if (map) {
     for (const layerId of [
+      locationsFillLayerId,
       locationsCircleLayerId,
       locationsSymbolLayerId,
-      locationsFillLayerId,
     ]) {
       map.off('click', layerId, clickHandler)
       map.off('mouseenter', layerId, setCursorPointer)
