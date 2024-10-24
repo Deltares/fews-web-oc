@@ -117,12 +117,20 @@ export const useUserSettingsStore = defineStore({
       key: 'weboc-user-settings-v1.0.0',
       storage: window.localStorage,
       pick: ['items'],
+      afterHydrate: (context) => {
+        ['units.displayUnits', 'datum.verticalDatum'].forEach((id) => {
+          const item = context.store.items.find((item: UserSettingsItem) => item.id === id)
+          if (item) {
+            context.store.add(item)
+          }
+        })
+      },
       serializer: {
         serialize: (context) => {
           return JSON.stringify(context)
         },
-        deserialize: (context) => {
-          const parsedState = JSON.parse(context)
+        deserialize: (data) => {
+          const parsedState = JSON.parse(data)
           const newState = [...defaultUserSettings]
           for (const prop of newState) {
             const storedProp = parsedState.items.find(
