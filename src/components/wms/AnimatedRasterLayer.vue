@@ -115,13 +115,16 @@ function getImageSourceOptions(): any {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const time = props.layer.time.toISOString()
   let bounds = map.getBounds()
-  let { width, height}  = map.getCanvas()
+  let { width, height } = map.getCanvas()
 
   // Check if we have a multiple Earths on the map
   // Then reduce the bounds and image width to contain only one Earth
   if (bounds.getEast() - bounds.getWest() > 360) {
-    width = width  * 360 / ( bounds.getEast() - bounds.getWest())
-    bounds = new LngLatBounds(new LngLat(-180, bounds.getSouth()), new LngLat(180, bounds.getNorth()))
+    width = (width * 360) / (bounds.getEast() - bounds.getWest())
+    bounds = new LngLatBounds(
+      new LngLat(-180, bounds.getSouth()),
+      new LngLat(180, bounds.getNorth()),
+    )
   }
 
   const getMapUrl = new URL(`${baseUrl}/wms`)
