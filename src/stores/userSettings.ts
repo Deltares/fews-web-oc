@@ -116,7 +116,7 @@ export const useUserSettingsStore = defineStore({
     {
       key: 'weboc-user-settings-v1.0.0',
       storage: window.localStorage,
-      paths: ['items'],
+      pick: ['items'],
       serializer: {
         serialize: (context) => {
           return JSON.stringify(context)
