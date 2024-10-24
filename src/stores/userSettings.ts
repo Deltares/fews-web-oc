@@ -118,8 +118,11 @@ export const useUserSettingsStore = defineStore({
       storage: window.localStorage,
       pick: ['items'],
       afterHydrate: (context) => {
-        ['units.displayUnits', 'datum.verticalDatum'].forEach((id) => {
-          const item = context.store.items.find((item: UserSettingsItem) => item.id === id)
+        const specialActionItems = ['units.displayUnits', 'datum.verticalDatum']
+        specialActionItems.forEach((id) => {
+          const item = context.store.items.find(
+            (item: UserSettingsItem) => item.id === id,
+          )
           if (item) {
             context.store.add(item)
           }
