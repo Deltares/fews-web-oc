@@ -319,15 +319,15 @@ function recursiveUpdateNode(nodes: TopologyNode[], skipLeaves = false) {
         thresholdIcon: getThresholdIcon(node),
         thresholdCount: getThresholdCount(node),
       }
-      if (hasSupportedDisplay(node)) {
+      if (!hasSupportedDisplay(node) && node.url !== undefined) {
+        result.href = getUrl(node)
+      } else {
         result.to = {
           name: 'TopologyDisplay',
           params: {
             nodeId: node.id,
           },
         }
-      } else {
-        result.href = getUrl(node)
       }
       if (node.topologyNodes) {
         const items = recursiveUpdateNode(node.topologyNodes, skipLeaves)
