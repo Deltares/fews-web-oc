@@ -7,6 +7,7 @@ import { nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { toMercator } from '@turf/projection'
 import {
   ImageSource,
+  LngLat,
   LngLatBounds,
   MapLayerMouseEvent,
   MapLayerTouchEvent,
@@ -113,8 +114,15 @@ function getImageSourceOptions(): any {
     return {}
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const time = props.layer.time.toISOString()
-  const bounds = map.getBounds()
-  const canvas = map.getCanvas()
+  let bounds = map.getBounds()
+  let { width, height}  = map.getCanvas()
+
+  // Check if we have a multiple Earths on the map
+  // Then reduce the bounds and image width to contain only one Earth
+  if (bounds.getEast() - bounds.getWest() > 360) {
+    width = width  * 360 / ( bounds.getEast() - bounds.getWest())
+    bounds = new LngLatBounds(new LngLat(-180, bounds.getSouth()), new LngLat(180, bounds.getNorth()))
+  }
 
   const getMapUrl = new URL(`${baseUrl}/wms`)
   getMapUrl.searchParams.append('service', 'WMS')
@@ -123,8 +131,9 @@ function getImageSourceOptions(): any {
   getMapUrl.searchParams.append('layers', props.layer.name)
   getMapUrl.searchParams.append('crs', 'EPSG:3857')
   getMapUrl.searchParams.append('bbox', `${getMercatorBboxFromBounds(bounds)}`)
-  getMapUrl.searchParams.append('height', `${canvas.height}`)
-  getMapUrl.searchParams.append('width', `${canvas.width}`)
+  // Width and height are in pixels, this can cause the image can be distorted a bit relicative to the bbox coordinates
+  getMapUrl.searchParams.append('height', `${height.toFixed(0)}`)
+  getMapUrl.searchParams.append('width', `${width.toFixed(0)}`)
   getMapUrl.searchParams.append('time', `${time}`)
   if (props.layer.style) {
     getMapUrl.searchParams.append('styles', props.layer.style)
