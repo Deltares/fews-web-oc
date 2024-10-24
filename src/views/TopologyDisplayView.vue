@@ -303,19 +303,7 @@ getTopologyNodes().then((response) => {
 
 function topologyNodeIsVisible(node: TopologyNode): boolean {
   if (node.url !== undefined) return true
-  if (node.scadaPanelId !== undefined) return true
-  if (
-    node.filterIds !== undefined &&
-    node.filterIds.length == 1 &&
-    node.dataDownloadDisplay !== undefined
-  )
-    return true
-  if (node.plotId != undefined && node.locationIds != undefined) return true
-  if (node.filterIds !== undefined && node.filterIds.length > 0) return true
-  if (node.gridDisplaySelection !== undefined) return true
-  if (node.displayId !== undefined) return true
-  if (node.displayGroups !== undefined && node.displayGroups.length > 0)
-    return true
+  if (hasSupportedDisplay(node)) return true
   if (node.topologyNodes === undefined) return false
   return node.topologyNodes.some(topologyNodeIsVisible)
 }
@@ -328,15 +316,18 @@ function recursiveUpdateNode(nodes: TopologyNode[], skipLeaves = false) {
         id: node.id,
         name: node.name,
         icon: getIcon(node),
-        href: getUrl(node),
-        to: {
+        thresholdIcon: getThresholdIcon(node),
+        thresholdCount: getThresholdCount(node),
+      }
+      if (hasSupportedDisplay(node)) {
+        result.to = {
           name: 'TopologyDisplay',
           params: {
             nodeId: node.id,
           },
-        },
-        thresholdIcon: getThresholdIcon(node),
-        thresholdCount: getThresholdCount(node),
+        }
+      } else {
+        result.href = getUrl(node)
       }
       if (node.topologyNodes) {
         const items = recursiveUpdateNode(node.topologyNodes, skipLeaves)
@@ -378,6 +369,23 @@ function nodeButtonItems(node: TopologyNode) {
     })
 }
 
+function hasSupportedDisplay(node: TopologyNode): boolean {
+  if (node.scadaPanelId !== undefined) return true
+  if (
+    node.filterIds !== undefined &&
+    node.filterIds.length == 1 &&
+    node.dataDownloadDisplay !== undefined
+  )
+    return true
+  if (node.plotId != undefined && node.locationIds != undefined) return true
+  if (node.filterIds !== undefined && node.filterIds.length > 0) return true
+  if (node.gridDisplaySelection !== undefined) return true
+  if (node.displayId !== undefined) return true
+  if (node.displayGroups !== undefined && node.displayGroups.length > 0)
+    return true
+  return false
+}
+
 function getIcon(node: TopologyNode): string | undefined {
   if (node.url && node.topologyNodes && !node.displayGroups)
     return 'mdi-open-in-new'
@@ -385,7 +393,7 @@ function getIcon(node: TopologyNode): string | undefined {
 }
 
 function getUrl(node: TopologyNode): string | undefined {
-  if (node.url && node.topologyNodes && !node.displayGroups) return node.url
+  if (node.url) return node.url
   return undefined
 }
 
@@ -615,7 +623,7 @@ function reroute(to: RouteLocationNormalized) {
       }
       if (tabIndex < 0) {
         tabIndex = 0
-        activeTab.value = tabs[tabIndex].type
+        activeTab.value = tabs.length ? tabs[0].type : ''
       }
       return tabs[tabIndex].to
     }
