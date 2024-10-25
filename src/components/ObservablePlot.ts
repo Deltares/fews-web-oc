@@ -4,7 +4,7 @@ import { h, withDirectives } from 'vue'
 export default {
   props: ['options'],
   render() {
-    const { options } = this
+    const { options } = this as any
     console.log(options)
     return withDirectives(h('div'), [
       [
