@@ -27,7 +27,9 @@ function calculateSkewedTemperature(
   return temperature - skewFactor * logPressure
 }
 
-const dryAdiabatics = initialTemperatures.flatMap((T0) => {
+const data = []
+
+const dryAdiabat = initialTemperatures.flatMap((T0) => {
   // const H = 7000 // meters
   const Rd = 287.058
   const Cp = 1005.2
@@ -38,12 +40,16 @@ const dryAdiabatics = initialTemperatures.flatMap((T0) => {
     )
     return {
       label: T0,
-      x: temperature,
-      xS: calculateSkewedTemperature(temperature, P),
-      y: P,
+      dryAdiabat: calculateSkewedTemperature(temperature, P),
+      temperature,
+      pressure: P,
     }
   })
 })
+
+for (const d of dryAdiabat) {
+  data.push(d)
+}
 
 const skewtSounding = soundings.map((point) => {
   const { pressure, temperature, dewpoint } = point
@@ -62,12 +68,28 @@ const skewtSounding = soundings.map((point) => {
   }
 })
 
+for (const d of skewtSounding) {
+  data.push(d)
+}
+
 const isoTherms = initialTemperatures.flatMap((d) => {
   return [
-    { label: d, x: calculateSkewedTemperature(d, 1050), y: 1050 },
-    { label: d, x: calculateSkewedTemperature(d, 100), y: 100 },
+    {
+      label: `isotherm-${d}`,
+      isotherm: calculateSkewedTemperature(d, 1050),
+      pressure: 1050,
+    },
+    {
+      label: `isotherm-${d}`,
+      isotherm: calculateSkewedTemperature(d, 100),
+      pressure: 100,
+    },
   ]
 })
+
+for (const d of isoTherms) {
+  data.push(d)
+}
 
 const options = {
   marks: [
@@ -79,43 +101,43 @@ const options = {
       strokeDasharray: '4, 2',
     }),
     Plot.line(isoTherms, {
-      x: 'x',
-      y: 'y',
+      x: 'isotherm',
+      y: 'pressure',
       z: 'label',
       stroke: 'white',
       strokeWidth: 1,
       strokeDasharray: [4, 2],
     }),
 
-    Plot.line(dryAdiabatics, {
-      x: 'xS',
-      y: 'y',
+    Plot.line(data, {
+      x: 'dryAdiabat',
+      y: 'pressure',
       z: 'label',
       stroke: 'white',
       curve: 'monotone-y',
       strokeWidth: 0.5,
     }),
-    Plot.lineX(skewtSounding, {
+    Plot.lineX(data, {
       x: 'skewedTemperature',
       y: 'pressure',
       stroke: 'red',
     }),
-    Plot.lineX(skewtSounding, {
+    Plot.lineX(data, {
       x: 'skewedDewpoint',
       y: 'pressure',
       stroke: 'green',
     }),
     // Plot.ruleY(skewtSounding, Plot.pointerY({ y: "pressure", stroke: 'gray', strokeDasharray: [4,2]})),
     Plot.dot(
-      skewtSounding,
+      data,
       Plot.pointerY({ x: 'skewedTemperature', y: 'pressure', stroke: 'red' }),
     ),
     Plot.dot(
-      skewtSounding,
+      data,
       Plot.pointerY({ x: 'skewedDewpoint', y: 'pressure', stroke: 'green' }),
     ),
-    Plot.crosshairY(skewtSounding, { x: 'skewedTemperature', y: 'pressure' }),
-    Plot.crosshairY(skewtSounding, { x: 'skewedDewpoint', y: 'pressure' }),
+    Plot.crosshairY(data, { x: 'skewedTemperature', y: 'pressure' }),
+    Plot.crosshairY(data, { x: 'skewedDewpoint', y: 'pressure' }),
   ],
   height: 700,
   marginTop: 30,
