@@ -37,6 +37,8 @@ const HtmlDisplayView = () => import('../views/HtmlDisplayView.vue')
 const ReportsDisplayView = () => import('../views/ReportsDisplayView.vue')
 const Empty = () => import('../views/Empty.vue')
 
+const ObservabePlotView = () => import('../views/ObservablePlotView.vue')
+
 const routesBase: Readonly<RouteRecordRaw[]> = [
   {
     path: '/',
@@ -73,6 +75,12 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
     meta: { layout: 'EmptyLayout' },
     component: Logout,
   },
+  {
+    path: '/plot',
+    name: 'ObservabePlotView',
+    component: ObservabePlotView,
+  },
+
 ]
 
 export const embedRoutes: Readonly<RouteRecordRaw[]> = [

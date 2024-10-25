@@ -27,6 +27,7 @@ export default defineConfig(({ mode }) => {
           manualChunks: {
             'maplibre-gl': ['maplibre-gl'],
             'fews-web-oc-charts': ['@deltares/fews-web-oc-charts'],
+            'observable-plot': ['@observable/plot'],
           },
         },
       },
@@ -74,7 +75,7 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     optimizeDeps: {
-      exclude: ['@deltares/fews-ssd-webcomponent', 'vuetify'],
+      exclude: ['@deltares/fews-ssd-webcomponent', 'vuetify', '@observable/plot'],
     },
     test: {
       include: ['**/*.test.?(c|m)[jt]s?(x)'],
