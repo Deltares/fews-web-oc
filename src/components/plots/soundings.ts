@@ -5,20 +5,20 @@ const initialTemperatures = Array.from({ length: 29 }, (_, i) => -140 + i * 10)
 const pressures = [1050, 1000, 900, 800, 700, 500, 300, 200, 150, 120, 100]
 const P0 = 1050 // Reference pressure (hPa)
 
-function celsiusToKelvin(celsius) {
+function celsiusToKelvin(celsius: number) {
   return celsius + 273.15
 }
 
-function kelvinToCelsius(kelvin) {
+function kelvinToCelsius(kelvin: number) {
   return kelvin - 273.15
 }
 
-function calculateSkewedTemperature(temperature, pressure, skewFactor = 35) {
+function calculateSkewedTemperature(temperature: number, pressure: number, skewFactor = 35) {
   const logPressure = Math.log(pressure) - Math.log(P0)
   return temperature - skewFactor * logPressure
 }
 
-export const data = []
+const data = []
 
 const dryAdiabat = initialTemperatures.flatMap((T0) => {
   // const H = 7000 // meters
@@ -82,7 +82,7 @@ for (const d of isoTherms) {
   data.push(d)
 }
 
-export const options = {
+export default {
   marks: [
     Plot.frame({ stroke: 'currentColor', fill: 'rgb(223, 223, 223)' }),
     Plot.gridY({

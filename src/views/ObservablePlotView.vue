@@ -1,9 +1,18 @@
 <template>
-  <ObservablePlot :options="options"></ObservablePlot>
+  <ObservablePlot :options="options" :key="key"></ObservablePlot>
 </template>
 <script setup lang="ts">
-import * as Plot from '@observablehq/plot'
+import { onMounted, ref } from 'vue'
 import ObservablePlot from '@/components/ObservablePlot.js'
-import soundings from '@/assets/soundings.json'
-import { options } from '@/components/plots/soundings.js'
+
+const options = ref<any>('')
+const key = ref(0)
+
+onMounted(async () => {
+  const scriptName = 'soundings'
+  const { default: code } = await import(`@/components/plots/${scriptName}.ts`)
+  console.log(code)
+  key.value = 1
+  options.value = code
+})
 </script>
