@@ -249,7 +249,7 @@ const informationDisplayStyle = computed<StyleValue>(() => {
   }
 })
 
-const showInformationDisplay = ref(true)
+const showInformationDisplay = ref(false)
 // watchEffect(() => {
 //   if (!topologyNode.value?.documentFile) {
 //     showInformationDisplay.value = false
