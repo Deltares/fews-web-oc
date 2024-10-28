@@ -23,7 +23,7 @@
       width="320"
       class="view-sidebar"
       expand-on-hover
-      rail
+      :rail="useRail"
     >
       <template v-slot:prepend>
         <v-list density="compact" v-if="shouldRenderInfoMenu">
@@ -85,13 +85,8 @@
       ></div>
       <template v-slot:append>
         <v-divider></v-divider>
-        <div class="d-flex align-center text-caption text-medium-emphasis pa-2">
-          <v-btn
-            variant="tonal"
-            prepend-icon="mdi-help-circle-outline"
-            class="text-capitalize"
-          >
-            Info
+        <v-list-item>
+          <template #prepend>
             <v-menu
               location="top"
               activator="parent"
@@ -99,6 +94,20 @@
               :close-on-content-click="true"
               width="320"
             >
+              <template #activator="{ props }">
+                <!-- <v-btn v-bind="props" variant="plain"> -->
+                <!--   <v-icon size="x-large" class="pe-9 me-1">mdi-help-circle-outline</v-icon> -->
+                <!--   <span>Info</span> -->
+                <!-- </v-btn> -->
+                <!-- <v-icon v-bind="props">mdi-help-circle-outline</v-icon> -->
+                <v-btn
+                  v-bind="props"
+                  size="24"
+                  variant="plain"
+                  class="me-4"
+                  icon="mdi-help-circle-outline"
+                />
+              </template>
               <v-list density="compact">
                 <v-list-item
                   v-if="helpMenu"
@@ -118,17 +127,18 @@
                 <v-list-item :to="{ name: 'About' }">About</v-list-item>
               </v-list>
             </v-menu>
-          </v-btn>
-          <v-spacer />
-          <v-btn
-            variant="plain"
-            class="text-lowercase"
-            size="small"
-            @click="showHash = !showHash"
-            :prepend-icon="showHash ? 'mdi-source-commit' : 'mdi-tag-outline'"
-            >{{ versionString }}</v-btn
-          >
-        </div>
+          </template>
+          <template #append>
+            <v-btn
+              variant="plain"
+              class="text-lowercase"
+              size="small"
+              @click="showHash = !showHash"
+              :prepend-icon="showHash ? 'mdi-source-commit' : 'mdi-tag-outline'"
+              >{{ versionString }}</v-btn
+            >
+          </template>
+        </v-list-item>
       </template>
     </v-navigation-drawer>
     <v-main id="main">
@@ -154,7 +164,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, watchEffect } from 'vue'
-import { useRtl, useTheme } from 'vuetify'
+import { useDisplay, useRtl, useTheme } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
 import { Alert, useAlertsStore } from '../stores/alerts.ts'
 import { useRoute } from 'vue-router'
@@ -168,8 +178,11 @@ import { configManager } from '@/services/application-config'
 import { getLocalOrRemoteFileUrl } from '@/lib/fews-config'
 import { StyleValue, nextTick } from 'vue'
 import packageConfig from '@/../package.json'
+import { useUserSettingsStore } from '@/stores/userSettings.ts'
 
 const configStore = useConfigStore()
+const settings = useUserSettingsStore()
+const { mobile } = useDisplay()
 const alertsStore = useAlertsStore()
 const theme = useTheme()
 
@@ -271,6 +284,10 @@ const shouldRenderInfoMenu = computed(() => {
 function onCloseAlert(alert: Alert) {
   alertsStore.deactiveAlert(alert.id)
 }
+
+const useRail = computed(
+  () => settings.get('ui.sidebar-style')?.value === 'minimal' && !mobile.value,
+)
 </script>
 
 <style>

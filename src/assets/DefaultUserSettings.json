@@ -66,6 +66,23 @@
     "group": "UI"
   },
   {
+    "id": "ui.sidebar-style",
+    "type": "oneOfMultiple",
+    "label": "Sidebar style",
+    "value": "minimal",
+    "items": [
+      {
+        "value": "minimal",
+        "icon": "mdi-dots-vertical"
+      },
+      {
+        "value": "full labels",
+        "icon": "mdi-format-list-bulleted"
+      }
+    ],
+    "group": "UI"
+  },
+  {
     "id": "ui.map.theme",
     "type": "oneOfMultiple",
     "label": "Basemap",

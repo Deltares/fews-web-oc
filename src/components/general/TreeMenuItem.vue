@@ -81,22 +81,22 @@ const props = withDefaults(defineProps<Props>(), {
 })
 </script>
 
-<style>
+<style scoped>
 .tree-menu--list-item {
   margin-left: 2px;
   border-left: 2px solid rgb(var(--v-border-color));
 }
 
-.v-list-group {
+:deep(.v-list-group) {
   --prepend-width: 0;
 }
 
-.v-navigation-drawer--rail .v-list-group__items {
+:deep(.v-list-group__items) {
   --indent-padding: 0px;
   --prepend-width: 0px;
 }
 
-.v-navigation-drawer--rail .v-list-group > .v-list-group__items .v-list-group {
+:deep(.v-list-group > .v-list-group__items .v-list-group) {
   --prepend-width: 0px;
 }
 </style>
