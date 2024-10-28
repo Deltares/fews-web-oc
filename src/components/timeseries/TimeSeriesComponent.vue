@@ -18,20 +18,6 @@
       </KeepAlive>
     </v-window-item>
     <v-window-item
-      :value="DisplayType.TimeSeriesTable"
-      class="time-series-component__container max-height"
-    >
-      <TimeSeriesTable
-        :config="tableConfig"
-        :series="series"
-        :key="tableConfig.title"
-        class="single"
-        @change="(event) => onDataChange(event)"
-        @update:isEditing="isEditing = $event"
-      >
-      </TimeSeriesTable>
-    </v-window-item>
-    <v-window-item
       :value="DisplayType.ElevationChart"
       class="elevation-chart-component__container scroll"
     >
@@ -47,6 +33,20 @@
         >
         </ElevationChart>
       </KeepAlive>
+    </v-window-item>
+    <v-window-item
+      :value="DisplayType.TimeSeriesTable"
+      class="time-series-component__container max-height"
+    >
+      <TimeSeriesTable
+        :config="tableConfig"
+        :series="series"
+        :key="tableConfig.title"
+        class="single"
+        @change="(event) => onDataChange(event)"
+        @update:isEditing="isEditing = $event"
+      >
+      </TimeSeriesTable>
     </v-window-item>
     <v-window-item :value="DisplayType.Information" class="h-100">
       <!-- <div class="px-4 h-100"> -->

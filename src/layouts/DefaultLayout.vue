@@ -5,14 +5,18 @@
       :location="isRtl ? 'right' : 'left'"
       width="320"
       class="view-sidebar"
+      expand-on-hover
+      rail
     >
       <template v-slot:prepend>
         <v-toolbar density="compact" fixed>
-          <v-btn variant="text" :to="{ name: 'Default' }">
-            <img height="36" :src="logoSrc" />
-          </v-btn>
-          <v-spacer />
-          <login-component v-if="configManager.authenticationIsEnabled" />
+          <v-toolbar-items>
+            <v-btn :to="{ name: 'Default' }">
+              <img height="36" :src="logoSrc" />
+            </v-btn>
+            <v-spacer />
+            <login-component v-if="configManager.authenticationIsEnabled" />
+          </v-toolbar-items>
         </v-toolbar>
         <v-list density="compact" v-if="shouldRenderInfoMenu">
           <v-list-item
@@ -122,12 +126,14 @@
     <v-app-bar :color="appBarColor" :style="appBarStyle" density="compact">
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+        <div id="app-bar-content-start" />
       </template>
-      <div id="app-bar-content-start" />
-      <v-spacer />
-      <div id="app-bar-content-end" />
-      <time-control-menu />
-      <user-settings-menu />
+      <div class="h-100" id="app-bar-content-center"></div>
+      <template #append>
+        <div id="app-bar-content-end" />
+        <time-control-menu />
+        <user-settings-menu />
+      </template>
     </v-app-bar>
     <v-main id="main">
       <Suspense>
