@@ -1,5 +1,22 @@
 <template>
   <v-layout id="app">
+    <v-app-bar :color="appBarColor" :style="appBarStyle" density="compact">
+      <template #prepend>
+        <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+        <v-btn :to="{ name: 'Default' }">
+          <img height="36" :src="logoSrc" />
+        </v-btn>
+        <div id="app-bar-content-start" />
+      </template>
+      <div class="h-100" id="app-bar-content-center"></div>
+      <template #append>
+        <div id="app-bar-content-end" />
+        <time-control-menu />
+        <user-settings-menu />
+        <login-component v-if="configManager.authenticationIsEnabled" />
+      </template>
+    </v-app-bar>
+
     <v-navigation-drawer
       v-model="drawer"
       :location="isRtl ? 'right' : 'left'"
@@ -9,15 +26,6 @@
       rail
     >
       <template v-slot:prepend>
-        <v-toolbar density="compact" fixed>
-          <v-toolbar-items>
-            <v-btn :to="{ name: 'Default' }">
-              <img height="36" :src="logoSrc" />
-            </v-btn>
-            <v-spacer />
-            <login-component v-if="configManager.authenticationIsEnabled" />
-          </v-toolbar-items>
-        </v-toolbar>
         <v-list density="compact" v-if="shouldRenderInfoMenu">
           <v-list-item
             v-for="(item, i) in configStore.activeComponents"
@@ -123,18 +131,6 @@
         </div>
       </template>
     </v-navigation-drawer>
-    <v-app-bar :color="appBarColor" :style="appBarStyle" density="compact">
-      <template #prepend>
-        <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-        <div id="app-bar-content-start" />
-      </template>
-      <div class="h-100" id="app-bar-content-center"></div>
-      <template #append>
-        <div id="app-bar-content-end" />
-        <time-control-menu />
-        <user-settings-menu />
-      </template>
-    </v-app-bar>
     <v-main id="main">
       <Suspense>
         <router-view></router-view>
