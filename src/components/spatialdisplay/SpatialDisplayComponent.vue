@@ -43,8 +43,15 @@
     />
   </MapComponent>
   <div class="mapcomponent__controls-container">
-    <v-chip-group class="control-group">
-      <div id="map-controls-content-start" />
+    <v-chip-group class="control-group" selected-class="no-class">
+      <ControlChip v-if="nodesStore.nodeButtons.length > 0" class="px-0">
+        <LeafNodeButtons
+          v-model:activeParentId="nodesStore.activeParentId"
+          v-model:activeParentNode="nodesStore.activeParentNode"
+          v-model:nodeButtons="nodesStore.nodeButtons"
+          :variant="nodesStore.nodeButtons.length > 1 ? 'text' : 'plain'"
+        />
+      </ControlChip>
       <BoundingBoxControl
         v-model:active="workflowsStore.isDrawingBoundingBox"
         v-model:boundingBox="workflowsStore.boundingBox"
@@ -121,6 +128,8 @@
 import DateTimeSliderValues from '@/components/general/DateTimeSliderValues.vue'
 import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
+import LeafNodeButtons from '@/components/general/LeafNodeButtons.vue'
+import ControlChip from '@/components/wms/ControlChip.vue'
 
 import { ref, computed, onBeforeMount, reactive, watch, watchEffect } from 'vue'
 import {
@@ -164,6 +173,7 @@ import { useWorkflowsStore } from '@/stores/workflows'
 import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
+import { useNodesStore } from '@/stores/nodes'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -231,6 +241,7 @@ const layerKind = ref(LayerKind.Static)
 
 const colourScalesStore = useColourScalesStore()
 const workflowsStore = useWorkflowsStore()
+const nodesStore = useNodesStore()
 
 const showLocationsLayer = ref<boolean>(true)
 
