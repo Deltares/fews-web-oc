@@ -1,8 +1,5 @@
 <template>
-  <ControlChip
-    v-if="hasLocations"
-    :class="{ 'pr-0': showLocations }"
-  >
+  <ControlChip v-if="hasLocations" :class="{ 'pr-0': showLocations }">
     <v-btn
       @click="showLocations = !showLocations"
       density="compact"
