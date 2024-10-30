@@ -34,7 +34,6 @@ export const useNodesStore = defineStore('nodes', {
       this.activeParentNode = 0
       this.activeParentId = sources[0].name
       return sources[0].to
-    }
-  }
+    },
+  },
 })
-

@@ -24,7 +24,7 @@
 import { coordinateToStringParts } from '@/lib/workflows'
 import type { LngLat } from 'maplibre-gl'
 import { computed } from 'vue'
-import ControlChip from '../wms/ControlChip.vue';
+import ControlChip from '@/components/wms/ControlChip.vue'
 
 const coordinate = defineModel<LngLat | null>('coordinate', {
   default: null,

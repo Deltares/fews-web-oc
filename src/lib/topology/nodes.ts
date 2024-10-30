@@ -1,5 +1,8 @@
-import type { ColumnItem } from "@/components/general/ColumnItem"
-import type { TopologyNode, TopologyThresholdNode } from "@deltares/fews-pi-requests"
+import type { ColumnItem } from '@/components/general/ColumnItem'
+import type {
+  TopologyNode,
+  TopologyThresholdNode,
+} from '@deltares/fews-pi-requests'
 
 export function nodeButtonItems(
   node: TopologyNode,
@@ -10,7 +13,12 @@ export function nodeButtonItems(
   return node.topologyNodes
     .filter((childNode) => topologyNodeIsVisible(childNode))
     .map((childNode) =>
-      getColumnItemFromTopologyNode(childNode, thresholds, showActiveTresholds, node),
+      getColumnItemFromTopologyNode(
+        childNode,
+        thresholds,
+        showActiveTresholds,
+        node,
+      ),
     )
 }
 
@@ -45,7 +53,6 @@ export function recursiveUpdateNode(
       return result
     })
 }
-
 
 function getThresholdIcon(
   node: TopologyNode,
