@@ -1,20 +1,7 @@
 <template>
-  <v-badge
-    :model-value="workflowsStore.hasActiveWorkflows"
-    :content="workflowsStore.numActiveWorkflows"
-    color="success"
-  >
-    <v-btn
-      icon="mdi-cog-play"
-      @click="workflowDialog = !workflowDialog"
-      density="compact"
-      variant="plain"
-      :disabled="props.disabled"
-    />
-  </v-badge>
   <v-dialog
     width="500"
-    v-model="workflowDialog"
+    v-model="showDialog"
     persistent
     :fullscreen="mobile"
     :max-width="mobile ? undefined : '600'"
@@ -129,7 +116,7 @@ const props = withDefaults(defineProps<Props>(), {
 const { mobile } = useDisplay()
 
 const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
-const workflowDialog = ref(false)
+const showDialog = defineModel<boolean>('showDialog', { required: true })
 
 const data = ref()
 const userId = ref('')
@@ -179,7 +166,7 @@ watch(
 )
 
 function closeDialog() {
-  workflowDialog.value = false
+  showDialog.value = false
 }
 
 // Check whether the bounding box is defined in the form.
@@ -391,13 +378,13 @@ function onFormChange(event: any) {
 
 function showCoordinateSelector() {
   workflowsStore.isSelectingCoordinate = true
-  workflowDialog.value = false
+  showDialog.value = false
 
   watch(
     () => workflowsStore.isSelectingCoordinate,
     () => {
       if (workflowsStore.coordinate !== null) {
-        workflowDialog.value = true
+        showDialog.value = true
       }
     },
     { once: true },
@@ -406,7 +393,7 @@ function showCoordinateSelector() {
 
 function showMapTool() {
   workflowsStore.isDrawingBoundingBox = true
-  workflowDialog.value = false
+  showDialog.value = false
   // Show the dialog again when the bounding box has been drawn.
   watch(
     () => workflowsStore.isDrawingBoundingBox,
@@ -416,7 +403,7 @@ function showMapTool() {
       // navigated to a different node), so we should abandon the workflow (and hence the dialog)
       // altogether.
       if (workflowsStore.boundingBox !== null) {
-        workflowDialog.value = true
+        showDialog.value = true
       }
     },
     { once: true },
