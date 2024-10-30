@@ -18,7 +18,7 @@
         </v-list>
       </v-menu>
       <v-spacer />
-      <v-toolbar-items>
+      <v-toolbar-items class="me-10">
         <v-btn
           v-for="item in displayTypeItems"
           :key="item.value"
@@ -31,7 +31,6 @@
           <v-icon>{{ item.icon }}</v-icon>
         </v-btn>
       </v-toolbar-items>
-      <v-btn icon></v-btn>
       <!-- <v-btn
         v-if="(displayConfig?.index ?? -1) != -1"
         @click="openFileDownloadDialog"
