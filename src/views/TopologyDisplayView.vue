@@ -12,72 +12,6 @@
     v-model:showDialog="showWorkFlowDialog"
     :secondaryWorkflows="secondaryWorkflows"
   />
-  <Teleport to="#app-bar-content-start">
-    <template v-if="showLeafsAsButton">
-      <v-menu v-if="nodeButtons.length > 4">
-        <template v-slot:activator="{ props }">
-          <v-btn variant="tonal" class="ma-2" v-bind="props">
-            {{ activeParentId }}
-            <v-icon end> mdi-menu-down </v-icon>
-          </v-btn>
-        </template>
-
-        <v-list class="bg-grey-lighten-3">
-          <template v-for="item in nodeButtons">
-            <v-list-item
-              v-if="item.href"
-              :href="item.href"
-              :target="item.href ? '_blank' : undefined"
-            >
-              {{ item.name }}
-              <template v-slot:append>
-                <v-icon size="xsmall">{{ item.icon }}</v-icon>
-              </template>
-            </v-list-item>
-            <v-list-item
-              v-else
-              :to="item.to"
-              @click="activeParentId = item.name"
-            >
-              {{ item.name }}
-              <template v-slot:append>
-                <v-icon v-if="item.icon" size="xsmall">{{ item.icon }}</v-icon>
-                <ThresholdInformation
-                  :icon="item.thresholdIcon"
-                  :count="item.thresholdCount"
-                />
-              </template>
-            </v-list-item>
-          </template>
-        </v-list>
-      </v-menu>
-      <v-btn-toggle
-        v-else
-        v-model="activeParentNode"
-        variant="tonal"
-        divided
-        density="compact"
-        mandatory
-        class="ma-2"
-      >
-        <v-btn
-          v-for="item in nodeButtons"
-          :key="item.id"
-          :to="item.to"
-          @click="activeParentId = item.name"
-        >
-          {{ item.name }}
-          <template v-slot:append>
-            <v-icon v-if="item.icon" size="xsmall">{{ item.icon }}</v-icon>
-            <ThresholdInformation
-              :icon="item.thresholdIcon"
-              :count="item.thresholdCount"
-            />
-          </template>
-        </v-btn>
-      </v-btn-toggle>
-    </template>
-  </Teleport>
   <Teleport to="#app-bar-content-center">
     <v-toolbar-items v-if="displayTabs.length > 1">
       <v-btn
@@ -159,12 +93,34 @@
       />
     </div>
   </div>
+
+  <template v-if="showLeafsAsButton">
+    <Teleport v-if="hasMapDisplay" to="#map-controls-content-start">
+      <ControlChip class="px-0">
+        <LeafNodeButtons
+          v-model:activeParentId="activeParentId"
+          v-model:activeParentNode="activeParentNode"
+          v-model:nodeButtons="nodeButtons"
+          :variant="nodeButtons.length > 1 ? 'text' : 'plain'"
+        />
+      </ControlChip>
+    </Teleport>
+    <Teleport v-else to="#app-bar-content-start">
+      <LeafNodeButtons
+        v-model:activeParentId="activeParentId"
+        v-model:activeParentNode="activeParentNode"
+        v-model:nodeButtons="nodeButtons"
+        variant="tonal"
+      />
+    </Teleport>
+  </template>
 </template>
 
 <script setup lang="ts">
 import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
 import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
-import ThresholdInformation from '@/components/general/ThresholdInformation.vue'
+import LeafNodeButtons from '@/components/general/LeafNodeButtons.vue'
+import ControlChip from '@/components/wms/ControlChip.vue'
 
 import type { ColumnItem } from '@/components/general/ColumnItem'
 import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
@@ -307,6 +263,10 @@ const showActiveThresholdCrossingsForFilters = computed(() => {
     topologyComponentConfig.value?.showActiveThresholdCrossingsForFilters ??
     false
   )
+})
+
+const hasMapDisplay = computed(() => {
+  return displayTabs.value.some((tab) => tab.type === 'map')
 })
 
 const nodes = ref<TopologyNode[]>()

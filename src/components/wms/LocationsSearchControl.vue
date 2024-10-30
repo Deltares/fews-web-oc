@@ -1,10 +1,7 @@
 <template>
-  <v-chip
+  <ControlChip
     v-if="hasLocations"
-    class="locations-control__chip"
     :class="{ 'pr-0': showLocations }"
-    pill
-    label
   >
     <v-btn
       @click="showLocations = !showLocations"
@@ -27,13 +24,14 @@
         selectedLocationId ? selectedLocation?.locationName : 'Search locations'
       }}</v-btn
     >
-  </v-chip>
+  </ControlChip>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { type Location } from '@deltares/fews-pi-requests'
 import { useGlobalSearchState } from '@/stores/globalSearch'
+import ControlChip from '@/components/wms/ControlChip.vue'
 
 interface Props {
   locations?: Location[]
@@ -95,13 +93,3 @@ function onSelectLocation(newValue: Location | null) {
   emit('changeLocationId', newValue.locationId)
 }
 </script>
-
-<style>
-.locations-control__chip {
-  font-size: 0.825em;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
-  background-color: rgba(var(--v-theme-surface), 0.8);
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-}
-</style>

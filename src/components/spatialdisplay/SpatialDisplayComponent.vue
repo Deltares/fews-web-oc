@@ -44,6 +44,7 @@
   </MapComponent>
   <div class="mapcomponent__controls-container">
     <v-chip-group class="control-group">
+      <div id="map-controls-content-start" />
       <BoundingBoxControl
         v-model:active="workflowsStore.isDrawingBoundingBox"
         v-model:boundingBox="workflowsStore.boundingBox"
