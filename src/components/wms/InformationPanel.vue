@@ -1,5 +1,5 @@
 <template>
-  <v-chip v-bind="props" pill label class="info-panel" id="info-panel">
+  <ControlChip>
     <v-btn
       @click="showLayer = !showLayer"
       density="compact"
@@ -132,7 +132,7 @@
       <v-progress-circular v-if="isLoading" size="20" indeterminate />
       <v-icon v-else>mdi-animation-play</v-icon>
     </v-btn>
-  </v-chip>
+  </ControlChip>
 </template>
 
 <script setup lang="ts">
@@ -144,6 +144,7 @@ import ColourStrip from '@/components/wms/ColourStrip.vue'
 import { watch } from 'vue'
 import { useColourScalesStore } from '@/stores/colourScales'
 import ColourLegendTable from './ColourLegendTable.vue'
+import ControlChip from '@/components/wms/ControlChip.vue'
 
 interface Props {
   layerTitle?: string
@@ -237,14 +238,6 @@ watch(
 </script>
 
 <style scoped>
-.info-panel {
-  font-size: 0.825em;
-  z-index: 1000;
-  border-radius: 5px;
-  backdrop-filter: blur(5px);
-  background-color: rgba(var(--v-theme-surface), 0.8);
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-}
 #toggle {
   display: flex;
   justify-content: center;
