@@ -60,11 +60,12 @@ import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
 import { filterToParams } from '@deltares/fews-wms-requests'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
-import { computed, onUpdated, ref, toValue, watchEffect } from 'vue'
+import { computed, onMounted, onUpdated, ref, toValue, watchEffect } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime.ts'
 import { UseTimeSeriesOptions } from '@/services/useTimeSeries'
 import { DateTime } from 'luxon'
 import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
+import { useAlertsStore } from '@/stores/alerts'
 
 const store = useSystemTimeStore()
 const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
@@ -72,6 +73,12 @@ const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
     startTime: store.startTime,
     endTime: store.endTime,
   }
+})
+
+const alertStore = useAlertsStore()
+const userId = ref('')
+onMounted(() => {
+  userId.value = crypto.randomUUID()
 })
 
 interface Props {
@@ -198,7 +205,7 @@ const downloadFile = (downloadFormat: string) => {
       const url = new URL(
         `${baseUrl}rest/fewspiservice/v1/timeseries${queryParameters}&documentFormat=${downloadFormat}${viewPeriod}`,
       )
-      return downloadFileAttachment(
+      return downloadFileSafe(
         url.href,
         fileName.value,
         downloadFormat,
@@ -212,7 +219,7 @@ const downloadFile = (downloadFormat: string) => {
       const url = new URL(
         `${baseUrl}rest/fewspiservice/v1/timeseries/filters/actions${queryParameters}&documentFormat=${downloadFormat}${viewPeriod}`,
       )
-      return downloadFileAttachment(
+      return downloadFileSafe(
         url.href,
         fileName.value,
         downloadFormat,
@@ -225,7 +232,7 @@ const downloadFile = (downloadFormat: string) => {
       const url = new URL(
         `${baseUrl}rest/fewspiservice/v1/timeseries/grid${queryParameters}&${viewPeriod}`,
       )
-      return downloadFileAttachment(
+      return downloadFileSafe(
         url.href,
         fileName.value,
         downloadFormat,
@@ -245,11 +252,32 @@ const downloadFile = (downloadFormat: string) => {
   const url = new URL(
     `${baseUrl}rest/fewspiservice/v1/timeseries/topology/actions${queryParameters}${viewPeriod}`,
   )
-  return downloadFileAttachment(
+  return downloadFileSafe(
     url.href,
     fileName.value,
     downloadFormat,
     authenticationManager.getAccessToken(),
   )
+}
+
+async function downloadFileSafe(
+  url: string,
+  fileName: string,
+  documentFormat: string,
+  accessToken: string,
+) {
+  try {
+    await downloadFileAttachment(url, fileName, documentFormat, accessToken)
+  } catch (error) {
+    if (error instanceof Error) {
+      alertStore.addAlert({
+        id: `data-download-error-${userId.value}`,
+        type: 'error',
+        message: error.message,
+        active: true,
+      })
+      model.value = false
+    }
+  }
 }
 </script>
