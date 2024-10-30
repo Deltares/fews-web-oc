@@ -12,6 +12,25 @@
     v-model:showDialog="showWorkFlowDialog"
     :secondaryWorkflows="secondaryWorkflows"
   />
+  <Teleport to="#app-bar-content-start">
+    <LeafNodeButtons
+      v-if="!hasMapDisplay && nodesStore.nodeButtons.length > 0"
+      v-model:activeParentId="nodesStore.activeParentId"
+      v-model:activeParentNode="nodesStore.activeParentNode"
+      v-model:nodeButtons="nodesStore.nodeButtons"
+      variant="tonal"
+    />
+    <!-- TODO: Should this be a display tab maybe? -->
+    <v-btn
+      v-if="externalLink"
+      :href="externalLink"
+      target="_blank"
+      variant="text"
+      class="text-capitalize"
+    >
+      <v-icon>mdi-open-in-new</v-icon>Link
+    </v-btn>
+  </Teleport>
   <Teleport to="#app-bar-content-center">
     <v-toolbar-items v-if="displayTabs.length > 1">
       <v-btn
@@ -27,14 +46,6 @@
       </v-btn>
     </v-toolbar-items>
   </Teleport>
-  <v-btn
-    v-if="externalLink"
-    :href="externalLink"
-    target="_blank"
-    variant="text"
-    class="flex-0-0 align-self-center text-capitalize"
-    ><v-icon>mdi-open-in-new</v-icon>Link</v-btn
-  >
   <Teleport to="#app-bar-content-end">
     <v-menu bottom left>
       <template v-slot:activator="{ props }">
@@ -93,34 +104,12 @@
       />
     </div>
   </div>
-
-  <template v-if="showLeafsAsButton">
-    <Teleport v-if="hasMapDisplay" to="#map-controls-content-start">
-      <ControlChip class="px-0">
-        <LeafNodeButtons
-          v-model:activeParentId="activeParentId"
-          v-model:activeParentNode="activeParentNode"
-          v-model:nodeButtons="nodeButtons"
-          :variant="nodeButtons.length > 1 ? 'text' : 'plain'"
-        />
-      </ControlChip>
-    </Teleport>
-    <Teleport v-else to="#app-bar-content-start">
-      <LeafNodeButtons
-        v-model:activeParentId="activeParentId"
-        v-model:activeParentNode="activeParentNode"
-        v-model:nodeButtons="nodeButtons"
-        variant="tonal"
-      />
-    </Teleport>
-  </template>
 </template>
 
 <script setup lang="ts">
 import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
 import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
 import LeafNodeButtons from '@/components/general/LeafNodeButtons.vue'
-import ControlChip from '@/components/wms/ControlChip.vue'
 
 import type { ColumnItem } from '@/components/general/ColumnItem'
 import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
@@ -143,6 +132,8 @@ import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
 import InformationDisplayView from '@/views/InformationDisplayView.vue'
 import { useDisplay } from 'vuetify'
+import { useNodesStore } from '@/stores/nodes'
+import { nodeButtonItems, recursiveUpdateNode } from '@/lib/topology/nodes'
 
 interface Props {
   nodeId?: string | string[]
@@ -185,7 +176,7 @@ const activeNode = computed(() => {
 
   const node = topologyMap.value.get(active.value)
   return node?.topologyNodes
-    ? node?.topologyNodes[activeParentNode.value]
+    ? node?.topologyNodes[nodesStore.activeParentNode]
     : node
 })
 const showWorkFlowDialog = ref(false)
@@ -202,9 +193,7 @@ const topologyNode = ref<TopologyNode | undefined>(undefined)
 const activeTab = ref('')
 const displayTabs = ref<DisplayTab[]>([])
 
-const activeParentNode = ref(0)
-const nodeButtons = ref<any[]>([])
-const activeParentId = ref('')
+const nodesStore = useNodesStore()
 
 const externalLink = ref<string | undefined>('')
 
@@ -281,115 +270,14 @@ getTopologyNodes().then((response) => {
   }
 })
 
-function topologyNodeIsVisible(node: TopologyNode): boolean {
-  if (node.url !== undefined) return true
-  if (hasSupportedDisplay(node)) return true
-  if (node.topologyNodes === undefined) return false
-  return node.topologyNodes.some(topologyNodeIsVisible)
-}
-
-function recursiveUpdateNode(nodes: TopologyNode[], skipLeaves = false) {
-  return nodes
-    .filter((node) => topologyNodeIsVisible(node))
-    .map((node) => {
-      const result: ColumnItem = {
-        id: node.id,
-        name: node.name,
-        icon: getIcon(node),
-        thresholdIcon: getThresholdIcon(node),
-        thresholdCount: getThresholdCount(node),
-      }
-      if (!hasSupportedDisplay(node) && node.url !== undefined) {
-        result.href = getUrl(node)
-      } else {
-        result.to = {
-          name: 'TopologyDisplay',
-          params: {
-            nodeId: node.id,
-          },
-        }
-      }
-      if (node.topologyNodes) {
-        const items = recursiveUpdateNode(node.topologyNodes, skipLeaves)
-        if (skipLeaves) {
-          const itemsWithChildren = items.filter((i) => i.children)
-          result.children = itemsWithChildren
-        } else {
-          result.children = items
-        }
-      }
-      return result
-    })
-}
-
-function nodeButtonItems(node: TopologyNode) {
-  if (node.topologyNodes === undefined) return []
-  return node.topologyNodes
-    .filter((n) => topologyNodeIsVisible(n))
-    .map((n) => {
-      const result: ColumnItem = {
-        id: n.id,
-        name: n.name,
-        icon: getIcon(n),
-        thresholdIcon: getThresholdIcon(n),
-        thresholdCount: getThresholdCount(n),
-      }
-      const href = getUrl(n)
-      if (href) {
-        result.href = href
-      } else {
-        result.to = {
-          name: 'TopologyDisplay',
-          params: {
-            nodeId: [node.id, n.id],
-          },
-        }
-      }
-      return result
-    })
-}
-
-function hasSupportedDisplay(node: TopologyNode): boolean {
-  if (node.scadaPanelId !== undefined) return true
-  if (
-    node.filterIds !== undefined &&
-    node.filterIds.length == 1 &&
-    node.dataDownloadDisplay !== undefined
-  )
-    return true
-  if (node.plotId != undefined && node.locationIds != undefined) return true
-  if (node.filterIds !== undefined && node.filterIds.length > 0) return true
-  if (node.gridDisplaySelection !== undefined) return true
-  if (node.displayId !== undefined) return true
-  if (node.displayGroups !== undefined && node.displayGroups.length > 0)
-    return true
-  return false
-}
-
-function getIcon(node: TopologyNode): string | undefined {
-  if (node.url && node.topologyNodes && !node.displayGroups)
-    return 'mdi-open-in-new'
-  return undefined
-}
-
-function getUrl(node: TopologyNode): string | undefined {
-  if (node.url) return node.url
-  return undefined
-}
-
-function getThresholdIcon(node: TopologyNode): string | undefined {
-  return thresholds.value?.find((t) => t.id === node.id)?.topologyLocationIcon
-}
-
-function getThresholdCount(node: TopologyNode): number | undefined {
-  if (!showActiveThresholdCrossingsForFilters.value) return undefined
-
-  return thresholds.value?.find((t) => t.id === node.id)?.filterLocationsCount
-}
-
 function updateItems(): void {
   if (nodes.value) {
-    items.value = recursiveUpdateNode(nodes.value, showLeafsAsButton.value)
+    items.value = recursiveUpdateNode(
+      nodes.value,
+      thresholds.value,
+      showActiveThresholdCrossingsForFilters.value,
+      showLeafsAsButton.value,
+    )
   }
 }
 
@@ -516,10 +404,13 @@ watchEffect(() => {
   if (showLeafsAsButton.value && Array.isArray(props.nodeId)) {
     const menuNodeId = props.nodeId[0]
     const menuNode = topologyMap.value.get(menuNodeId) as any
-    nodeButtons.value = nodeButtonItems(menuNode)
-    if (!activeParentId.value && nodeButtons.value.length > 0) {
-      activeParentId.value = nodeButtons.value[0].name
-    }
+    nodesStore.setNodeButtons(
+      nodeButtonItems(
+        menuNode,
+        thresholds.value,
+        showActiveThresholdCrossingsForFilters.value,
+      ),
+    )
   }
 
   // Create the displayTabs for the active node.
@@ -550,7 +441,7 @@ function reroute(to: RouteLocationNormalized) {
     const parentNodeId = Array.isArray(to.params.nodeId)
       ? to.params.nodeId[0]
       : to.params.nodeId
-    const menuNode = topologyMap.value.get(parentNodeId) as any
+    const menuNode = topologyMap.value.get(parentNodeId) as TopologyNode
     if (menuNode === undefined) return
     if (menuNode.topologyNodes === undefined) {
       const leafNodeId = parentNodeId
@@ -567,20 +458,13 @@ function reroute(to: RouteLocationNormalized) {
       return to
     }
     if (to.name === 'TopologyDisplay') {
-      const sources = nodeButtonItems(menuNode)
-      if (activeParentId.value) {
-        const sourceIndex = sources.findIndex((source) => {
-          return source.name === activeParentId.value
-        })
-        if (sourceIndex > -1) {
-          activeParentNode.value = sourceIndex
-          activeParentId.value = sources[sourceIndex].name
-          return sources[sourceIndex].to
-        }
-      }
-      activeParentNode.value = 0
-      activeParentId.value = sources[0].name
-      return sources[0].to
+      return nodesStore.getRouteTarget(
+        nodeButtonItems(
+          menuNode,
+          thresholds.value,
+          showActiveThresholdCrossingsForFilters.value,
+        ),
+      )
     }
   } else {
     if (to.name === 'TopologyDisplay') {
