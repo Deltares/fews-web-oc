@@ -7,12 +7,11 @@
       :items="items"
     />
   </Teleport>
-  <!-- <Teleport to="#web-oc-toolbar-target" v-if="showWorkflowsControl">
-    <WorkflowsControl
-      :disabled="secondaryWorkflows === null"
-      :secondaryWorkflows="secondaryWorkflows"
-    />
-  </Teleport> -->
+  <WorkflowsControl
+    v-if="showWorkFlowDialog"
+    v-model:showDialog="showWorkFlowDialog"
+    :secondaryWorkflows="secondaryWorkflows"
+  />
   <Teleport to="#app-bar-content-start">
     <template v-if="showLeafsAsButton">
       <v-menu v-if="nodeButtons.length > 4">
@@ -110,19 +109,32 @@
         </v-btn>
       </template>
       <v-list>
-        <v-list-item prepend-icon="mdi-wrench" disabled>
-          <v-list-item-title>Run workflow</v-list-item-title>
-        </v-list-item>
-        <v-list-item prepend-icon="mdi-download" disabled>
-          <v-list-item-title>Download time series</v-list-item-title>
+        <v-list-item
+          title="Run workflow"
+          :disabled="secondaryWorkflows === null"
+          @click="showWorkFlowDialog = true"
+        >
+          <template #prepend>
+            <v-badge
+              :model-value="workflowsStore.hasActiveWorkflows"
+              :content="workflowsStore.numActiveWorkflows"
+              color="success"
+            >
+              <v-icon>mdi-wrench</v-icon>
+            </v-badge>
+          </template>
         </v-list-item>
         <v-list-item
-          @click="showInformationDisplay = !showInformationDisplay"
+          title="Download time series"
+          prepend-icon="mdi-download"
+          disabled
+        />
+        <v-list-item
+          title="More Info"
           prepend-icon="mdi-information"
           :disabled="!topologyNode?.documentFile"
-        >
-          <v-list-item-title>More Info</v-list-item-title>
-        </v-list-item>
+          @click="showInformationDisplay = true"
+        />
       </v-list>
     </v-menu>
   </Teleport>
@@ -220,6 +232,7 @@ const activeNode = computed(() => {
     ? node?.topologyNodes[activeParentNode.value]
     : node
 })
+const showWorkFlowDialog = ref(false)
 const secondaryWorkflows = computed(() => {
   if (!activeNode.value?.secondaryWorkflows) return null
   return activeNode.value.secondaryWorkflows
@@ -287,10 +300,6 @@ const topologyComponentConfig = computed(() => {
 
 const showLeafsAsButton = computed(() => {
   return topologyComponentConfig.value?.showLeafNodesAsButtons ?? false
-})
-
-const showWorkflowsControl = computed(() => {
-  return topologyComponentConfig.value?.enableTaskRuns ?? false
 })
 
 const showActiveThresholdCrossingsForFilters = computed(() => {
