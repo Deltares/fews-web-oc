@@ -31,23 +31,10 @@
           <v-icon>{{ item.icon }}</v-icon>
         </v-btn>
       </v-toolbar-items>
-      <!-- <v-btn
-        v-if="(displayConfig?.index ?? -1) != -1"
-        @click="openFileDownloadDialog"
-        size="small"
-        class="text-capitalize"
-        variant="text"
-        v-bind="props"
-        ><v-icon>mdi-download</v-icon></v-btn
-      > -->
     </template>
     <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
     </TimeSeriesComponent>
-    <TimeSeriesFileDownloadComponent
-      v-model="showFileDownloadDialog"
-      :config="displayConfig"
-      :options="options"
-    >
+    <TimeSeriesFileDownloadComponent :config="displayConfig" :options="options">
     </TimeSeriesFileDownloadComponent>
   </WindowComponent>
 </template>
@@ -66,11 +53,6 @@ import { DisplayType } from '@/lib/display/DisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { useSystemTimeStore } from '@/stores/systemTime'
-
-const showFileDownloadDialog = ref(false)
-// const openFileDownloadDialog = () => {
-//   showFileDownloadDialog.value = true
-// }
 
 interface Props {
   nodeId?: string | string[]

@@ -27,17 +27,6 @@
               <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
             </v-btn>
           </v-toolbar-items>
-
-          <!-- <v-btn
-            v-if="(displayConfig?.index ?? -1) != -1"
-            @click="openFileDownloadDialog"
-            size="small"
-            class="text-capitalize"
-            variant="text"
-            v-bind="props"
-          >
-            <v-icon>mdi-download</v-icon>
-          </v-btn> -->
         </template>
         <template v-slot:toolbar-append>
           <v-btn size="small" icon @click="onClose">
@@ -53,7 +42,6 @@
         >
         </TimeSeriesComponent>
         <TimeSeriesFileDownloadComponent
-          v-model="showFileDownloadDialog"
           :config="displayConfig"
           :options="options"
           :filter="filter"
@@ -84,16 +72,13 @@ import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
 import { isFilterActionsFilter } from '@/lib/filters'
+
 interface Props {
   filter: filterActionsFilter | timeSeriesGridActionsFilter
   elevationChartFilter?: timeSeriesGridActionsFilter
   currentTime?: Date
 }
 
-const showFileDownloadDialog = ref(false)
-// const openFileDownloadDialog = () => {
-//   showFileDownloadDialog.value = true
-// }
 const settings = useUserSettingsStore()
 const systemTimeStore = useSystemTimeStore()
 
