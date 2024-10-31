@@ -54,12 +54,31 @@ const useConfigStore = defineStore('config', {
         this.setGeneral(webOcConfiguration.general)
       }
     },
+
+    getComponentByType(componentType: string) {
+      const component = Object.values(this.components).find(
+        (component) => component.type === componentType,
+      )
+      if (component) component.icon = getMenuIcon(component)
+      return component
+    },
+
+    getComponentsByType(componentType: string) {
+      const components = Object.values(this.components)
+        .filter((component) => component.type === componentType)
+        .map((component) => {
+          component.icon = getMenuIcon(component)
+          return component
+        })
+
+      return components
+    },
   },
   getters: {
     activeComponents: (state) => {
       return Object.values(state.components)
         .filter((component) => component.showInNavigationMenu ?? true)
-        .map((component: any) => {
+        .map((component) => {
           return {
             id: component.id,
             to: { name: component.type },
@@ -68,26 +87,6 @@ const useConfigStore = defineStore('config', {
             showInNavigationMenu: component.showInNavigationMenu,
           }
         })
-    },
-
-    getComponentByType: (
-      state,
-    ): ((componentType: string) => WebOcComponent | undefined) => {
-      return (componentType: string) => {
-        return Object.values(state.components).find(
-          (component) => component.type === componentType,
-        )
-      }
-    },
-
-    getComponentsByType: (
-      state,
-    ): ((componentType: string) => WebOcComponent[] | undefined) => {
-      return (componentType: string) => {
-        return Object.values(state.components).filter(
-          (component) => component.type === componentType,
-        )
-      }
     },
 
     defaultComponent: (state) => {

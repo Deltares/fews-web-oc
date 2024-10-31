@@ -48,15 +48,15 @@
             <v-list-item
               aria-label="Menu button"
               v-bind="props"
-              class="ma-1"
+              :title="currentItemTitle"
+              class="ma-2 mb-1 px-2"
+              :prepend-icon="
+                activeComponent?.icon ?? toCharacterIcon(currentItemTitle)
+              "
+              append-icon="mdi-chevron-right"
               rounded
               variant="tonal"
-            >
-              <v-list-item-title>{{ currentItem }}</v-list-item-title>
-              <template #append>
-                <v-icon>mdi-chevron-right</v-icon>
-              </template>
-            </v-list-item>
+            />
           </template>
           <v-list density="compact">
             <v-list-subheader>Switch to</v-list-subheader>
@@ -163,7 +163,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, watchEffect } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useDisplay, useRtl, useTheme } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
 import { Alert, useAlertsStore } from '../stores/alerts.ts'
@@ -179,6 +179,7 @@ import { getLocalOrRemoteFileUrl } from '@/lib/fews-config'
 import { StyleValue, nextTick } from 'vue'
 import packageConfig from '@/../package.json'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
+import { toCharacterIcon } from '@/lib/icons/index.ts'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
@@ -187,7 +188,6 @@ const alertsStore = useAlertsStore()
 const theme = useTheme()
 
 const drawer = ref(true)
-const currentItem = ref('')
 const { isRtl } = useRtl()
 const route = useRoute()
 
@@ -232,18 +232,20 @@ watch(
   },
 )
 
-watchEffect(async () => {
-  const parentRoute = route.matched[0]
-  if (parentRoute !== undefined) {
-    const parentRouteName = parentRoute.name?.toString() ?? ''
-    const activeComponent = configStore.getComponentByType(parentRouteName)
-    const routeName =
-      activeComponent?.title || (parentRoute.meta?.title as string)
-    currentItem.value = routeName
-  } else {
-    currentItem.value = ''
-  }
+const parentRoute = computed(() => route.matched[0])
+
+const activeComponent = computed(() => {
+  if (parentRoute.value === undefined) return
+  const parentRouteName = parentRoute.value.name?.toString() ?? ''
+  return configStore.getComponentByType(parentRouteName)
 })
+
+const currentItemTitle = computed(
+  () =>
+    activeComponent.value?.title ??
+    (parentRoute.value?.meta?.title as string | undefined) ??
+    '',
+)
 
 watch(
   () => configStore.general,
