@@ -91,9 +91,9 @@ interface Props {
 }
 
 const showFileDownloadDialog = ref(false)
-const openFileDownloadDialog = () => {
-  showFileDownloadDialog.value = true
-}
+// const openFileDownloadDialog = () => {
+//   showFileDownloadDialog.value = true
+// }
 const settings = useUserSettingsStore()
 const systemTimeStore = useSystemTimeStore()
 

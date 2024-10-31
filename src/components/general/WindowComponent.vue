@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
 interface Props {
   title?: string
@@ -25,9 +25,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 const fullscreen = ref(false)
 
-const fullscreenIcon = computed(() => {
-  return fullscreen.value ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
-})
+// const fullscreenIcon = computed(() => {
+//   return fullscreen.value ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
+// })
 </script>
 
 <style scoped>
