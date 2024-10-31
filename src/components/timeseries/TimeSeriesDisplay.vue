@@ -68,9 +68,9 @@ import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFil
 import { useSystemTimeStore } from '@/stores/systemTime'
 
 const showFileDownloadDialog = ref(false)
-const openFileDownloadDialog = () => {
-  showFileDownloadDialog.value = true
-}
+// const openFileDownloadDialog = () => {
+//   showFileDownloadDialog.value = true
+// }
 
 interface Props {
   nodeId?: string | string[]
