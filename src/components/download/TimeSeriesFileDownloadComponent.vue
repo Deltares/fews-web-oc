@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="model" max-width="400">
+  <v-dialog v-model="downloadDialogStore.showDialog" max-width="400">
     <v-card>
       <v-card-title class="headline">Download timeseries</v-card-title>
       <v-card-text>
@@ -60,13 +60,23 @@ import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
 import { filterToParams } from '@deltares/fews-wms-requests'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
-import { computed, onUpdated, ref, toValue, watchEffect } from 'vue'
+import {
+  computed,
+  onUnmounted,
+  onUpdated,
+  ref,
+  toValue,
+  watch,
+  watchEffect,
+} from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime.ts'
 import { UseTimeSeriesOptions } from '@/services/useTimeSeries'
 import { DateTime } from 'luxon'
 import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
+import { useDownloadDialogStore } from '@/stores/downloadDialog'
 
 const store = useSystemTimeStore()
+const downloadDialogStore = useDownloadDialogStore()
 const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
   return {
     startTime: store.startTime,
@@ -94,21 +104,28 @@ const fileTypes = {
 
 const props = defineProps<Props>()
 
-const model = defineModel<boolean>()
-
 const fileType = ref<keyof typeof fileTypes>('csv')
 
 const cancelDialog = () => {
-  model.value = false
+  downloadDialogStore.showDialog = false
 }
 const fileName = ref('timeseries')
 onUpdated(() => {
-  if (!model.value) return
+  if (!downloadDialogStore.showDialog) return
   let dateValue = new Date()
   const FILE_FORMAT_DATE_FMT = 'yyyyMMddHHmmss'
   const defaultDateTimeString =
     DateTime.fromJSDate(dateValue).toFormat(FILE_FORMAT_DATE_FMT)
   fileName.value = `timeseries_${defaultDateTimeString}`
+})
+watch(
+  () => props.config,
+  () => {
+    downloadDialogStore.disabled = (props.config?.index ?? -1) == -1
+  },
+)
+onUnmounted(() => {
+  downloadDialogStore.disabled = true
 })
 
 const isOnlyHeadersDownload = computed(() => {
