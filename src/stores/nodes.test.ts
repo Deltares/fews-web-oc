@@ -6,12 +6,12 @@ const nodeButtons = [
   {
     id: '1',
     name: 'node1',
-    to: 'node1'
+    to: 'node1',
   },
   {
     id: '2',
     name: 'node2',
-    to: 'node2'
+    to: 'node2',
   },
 ]
 
@@ -55,4 +55,3 @@ describe('Nodes store', () => {
     expect(nodesStore.activeParentId).toBe(nodeButtons[1].name)
   })
 })
-

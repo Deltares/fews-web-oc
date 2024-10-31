@@ -10,7 +10,9 @@
                 :model-value="(item.thresholdCount ?? 0) > 0"
                 :content="item.thresholdCount"
               >
-                <v-icon :icon="item.icon ?? toCharacterIcon(item.name)"></v-icon>
+                <v-icon
+                  :icon="item.icon ?? toCharacterIcon(item.name)"
+                ></v-icon>
               </v-badge>
             </template>
             <v-list-item-title>{{ item.name }}</v-list-item-title>
@@ -56,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { toCharacterIcon } from '@/lib/icons/index.js';
+import { toCharacterIcon } from '@/lib/icons/index.js'
 import type { ColumnItem } from './ColumnItem.js'
 
 interface Props {
