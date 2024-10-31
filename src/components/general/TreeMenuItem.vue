@@ -10,12 +10,7 @@
                 :model-value="(item.thresholdCount ?? 0) > 0"
                 :content="item.thresholdCount"
               >
-                <v-icon
-                  :icon="
-                    item.icon ??
-                    `mdi-alpha-${item.name.substring(0, 1).toLowerCase()}-circle-outline`
-                  "
-                ></v-icon>
+                <v-icon :icon="item.icon ?? getDefaultIcon(item)"></v-icon>
               </v-badge>
             </template>
             <v-list-item-title>{{ item.name }}</v-list-item-title>
@@ -49,12 +44,7 @@
           :model-value="(item.thresholdCount ?? 0) > 0"
           :content="item.thresholdCount"
         >
-          <v-icon
-            >{{
-              item.icon ??
-              `mdi-alpha-${item.name.substring(0, 1).toLowerCase()}-circle-outline`
-            }}
-          </v-icon>
+          <v-icon :icon="item.icon ?? getDefaultIcon(item)"></v-icon>
         </v-badge>
       </template>
       <v-list-item-title>{{ item.name }}</v-list-item-title>
@@ -79,6 +69,11 @@ const props = withDefaults(defineProps<Props>(), {
   },
   active: '',
 })
+
+function getDefaultIcon(item: ColumnItem) {
+  const name = item.name.trim().toLowerCase()
+  return `mdi-alpha-${name.substring(0, 1)}-circle-outline`
+}
 </script>
 
 <style scoped>
