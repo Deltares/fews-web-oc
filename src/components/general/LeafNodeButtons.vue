@@ -1,9 +1,9 @@
 <template>
   <v-menu v-if="nodeButtons.length > 4">
     <template #activator="{ props }">
-      <v-btn :variant v-bind="props">
+      <v-btn :variant v-bind="props" class="text-none">
         {{ activeParentId }}
-        <v-icon end> mdi-menu-down </v-icon>
+        <v-icon end>mdi-menu-down</v-icon>
       </v-btn>
     </template>
 
@@ -35,7 +35,6 @@
   <v-btn-toggle
     v-else
     v-model="activeParentNode"
-    :variant
     divided
     density="compact"
     mandatory
@@ -45,6 +44,7 @@
       :key="item.id"
       :to="item.to"
       @click="activeParentId = item.name"
+      class="text-none"
     >
       {{ item.name }}
       <template v-slot:append>
