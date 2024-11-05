@@ -46,8 +46,5 @@ interface Props {
 defineProps<Props>()
 
 const activeParentId = defineModel<string>('activeParentId', { required: true })
-const activeParentNode = defineModel<number>('activeParentNode', {
-  required: true,
-})
 const nodeButtons = defineModel<ColumnItem[]>('nodeButtons', { required: true })
 </script>
