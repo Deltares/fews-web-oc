@@ -21,6 +21,7 @@ export interface DisplayTab {
     | 'system-monitor'
     | 'web-display'
     | 'dashboard'
+    | 'tasks'
   id: string
   title: string
   href?: string
@@ -95,6 +96,14 @@ const displayTabs: DisplayTab[] = [
     icon: 'mdi-view-dashboard',
     active: false,
   },
+  {
+    type: 'tasks',
+    id: crypto.randomUUID(),
+    title: 'Tasks',
+    to: { name: 'TopologyTasksDisplay'},
+    icon: 'mdi-cog',
+    active: false,
+  },
 ]
 
 export function displayTabsForNode(
@@ -141,6 +150,11 @@ export function displayTabsForNode(
         break
       case 'dashboard':
         tab.active = nodeHasDashboard(node)
+        tab.to.params = { ...params }
+        break
+      case 'tasks':
+        // HACK
+        tab.active = true
         tab.to.params = { ...params }
         break
     }
