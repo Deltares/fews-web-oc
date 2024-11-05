@@ -14,7 +14,7 @@
   />
   <Teleport to="#app-bar-content-start">
     <LeafNodeButtons
-      v-if="!hasMapDisplay && nodesStore.nodeButtons.length > 0"
+      v-if="nodesStore.nodeButtons.length > 0"
       v-model:activeParentId="nodesStore.activeParentId"
       v-model:activeParentNode="nodesStore.activeParentNode"
       v-model:nodeButtons="nodesStore.nodeButtons"
@@ -255,10 +255,6 @@ const showActiveThresholdCrossingsForFilters = computed(() => {
     topologyComponentConfig.value?.showActiveThresholdCrossingsForFilters ??
     false
   )
-})
-
-const hasMapDisplay = computed(() => {
-  return displayTabs.value.some((tab) => tab.type === 'map')
 })
 
 const nodes = ref<TopologyNode[]>()
