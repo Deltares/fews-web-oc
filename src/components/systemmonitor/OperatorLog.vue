@@ -36,11 +36,28 @@
     </template>
     <template v-slot:default="{ items }">
       <v-row>
-        <v-col v-for="(log, index) in items" :key="index" cols="8">
-          <v-card class="message mb-2" outlined>
+        <v-col
+          v-for="(log, index) in items"
+          :key="index"
+          :class="{
+            'ml-auto': isLogMessageByCurrentUser(log.raw),
+            'mr-auto': !isLogMessageByCurrentUser(log.raw),
+          }"
+          cols="8"
+        >
+          <v-card
+            :class="{
+              'current-user-message': isLogMessageByCurrentUser(log.raw),
+              'other-message': !isLogMessageByCurrentUser(log.raw),
+            }"
+            class="mb-2"
+            outlined
+          >
             <v-card-title>
               <div>
-                <strong>{{ log.raw.user }}</strong>
+                <strong>{{
+                  isLogMessageByCurrentUser(log.raw) ? 'You' : log.raw.user
+                }}</strong>
                 <br />
                 <small>{{ log.raw.timestamp }}</small>
               </div>
@@ -79,7 +96,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
+import type { User } from 'oidc-client-ts'
 
 const LogLevelEnum = {
   Info: 'Info',
@@ -100,9 +119,21 @@ const search = ref('')
 const selectedUser = ref<string | null>(null)
 const selectedLevel = ref<LogLevelType | null>(null)
 
-const logMessages: LogMessage[] = [
+const currentUser = ref<User | null>(null)
+onMounted((): void => {
+  authenticationManager.userManager
+    .getUser()
+    .then((response) => {
+      currentUser.value = response
+    })
+    .catch((err) => {
+      console.error({ err })
+    })
+})
+
+const logMessages = computed(() => [
   {
-    user: 'Anne Markensteijn',
+    user: currentUser.value?.profile?.name ?? 'Current User',
     timestamp: new Date('2024-11-01T10:15:00Z').toISOString(),
     level: LogLevelEnum.Info,
     message: 'Shift Ended. Just a regular day.',
@@ -126,22 +157,26 @@ const logMessages: LogMessage[] = [
     message: 'Shift Ended.',
   },
   {
-    user: 'Anne Markensteijn',
+    user: currentUser.value?.profile?.name ?? 'Current User',
     timestamp: new Date('2024-11-01T18:30:00Z').toISOString(),
     level: LogLevelEnum.Info,
     message: 'Shift Started.',
   },
   {
-    user: 'Anne Markensteijn',
+    user: currentUser.value?.profile?.name ?? 'Current User',
     timestamp: new Date('2024-11-01T23:31:00Z').toISOString(),
     level: LogLevelEnum.Error,
     message: 'Oh no.',
   },
-]
+])
 
 const users = computed(() => {
-  return [...new Set(logMessages.map((log) => log.user))]
+  return [...new Set(logMessages.value.map((log) => log.user))]
 })
+
+const isLogMessageByCurrentUser = (log: LogMessage) => {
+  return log.user === currentUser.value?.profile?.name
+}
 
 const logLevels = Object.values(LogLevelEnum)
 
@@ -159,10 +194,15 @@ const customKeyFilters: Record<
 </script>
 
 <style scoped>
-.message {
-  background-color: rgb(
-    var(--v-theme-surface)
-  ); /* Light grey for other messages */
+.current-user-message {
+  background-color: rgb(var(--v-theme-surface-variant));
+  color: rgb(var(--v-theme-on-surface-variant));
+  border-radius: 12px 12px 0 12px;
+  text-align: left;
+}
+
+.other-message {
+  background-color: rgb(var(--v-theme-surface));
   color: rgb(var(--v-theme-on-surface));
   border-radius: 12px 12px 12px 0;
   text-align: left;
