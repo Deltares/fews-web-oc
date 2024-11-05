@@ -2,7 +2,7 @@
   <v-list
     v-model:opened="open"
     open-strategy="multiple"
-    density="compact"
+    density="comfortable"
     class="weboc-treemenu"
     :lines="false"
   >
