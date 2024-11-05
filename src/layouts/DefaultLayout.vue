@@ -40,8 +40,8 @@
           </v-list-item>
         </v-list>
         <v-menu
-          origin="left"
-          min-width="320"
+          location="bottom"
+          width="320"
           v-else-if="configStore.activeComponents.length > 1"
         >
           <template #activator="{ props }">
