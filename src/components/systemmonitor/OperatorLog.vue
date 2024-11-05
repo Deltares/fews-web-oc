@@ -89,7 +89,7 @@ const logMessages: LogMessage[] = [
   {
     user: 'Jane Doe',
     timestamp: new Date('2024-11-01T10:15:00Z').toISOString(),
-    level: LogLevelEnum.Warning,
+    level: LogLevelEnum.Info,
     message: 'Shift Started.',
   },
   {
@@ -101,7 +101,7 @@ const logMessages: LogMessage[] = [
   {
     user: 'Jane Doe',
     timestamp: new Date('2024-11-01T18:30:00Z').toISOString(),
-    level: LogLevelEnum.Warning,
+    level: LogLevelEnum.Info,
     message: 'Shift Ended.',
   },
   {
