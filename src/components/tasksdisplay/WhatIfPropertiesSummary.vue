@@ -1,11 +1,15 @@
 <template>
-  <v-data-table
-    :items="propertiesArray"
-    :headers="tableHeaders"
-    items-per-page="-1"
-    hide-default-footer
-  >
-  </v-data-table>
+  <v-card>
+    <v-card-title>Configured properties</v-card-title>
+    <v-card-text>
+      <v-data-table
+        :items="propertiesArray"
+        :headers="tableHeaders"
+        items-per-page="-1"
+        hide-default-footer
+      />
+    </v-card-text>
+  </v-card>
 </template>
 <script setup lang="ts">
 import { computed } from 'vue'
