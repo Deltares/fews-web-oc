@@ -1,9 +1,10 @@
 <template>
   <v-data-iterator
     :items="logMessages"
-    :items-per-page="4"
+    :items-per-page="-1"
     :search="search"
     :custom-key-filter="customKeyFilters"
+    :sort-by="[{ key: 'timestamp', order: 'desc' }]"
   >
     <template v-slot:header>
       <v-toolbar class="px-2">
@@ -32,65 +33,45 @@
           hide-details
           style="max-width: 200px"
         ></v-select>
+        <span>Total: {{ logMessages.length }}</span>
       </v-toolbar>
     </template>
     <template v-slot:default="{ items }">
-      <v-row>
-        <v-col
-          v-for="(log, index) in items"
-          :key="index"
-          :class="{
-            'ml-auto': isLogMessageByCurrentUser(log.raw),
-            'mr-auto': !isLogMessageByCurrentUser(log.raw),
-          }"
-          cols="8"
-        >
-          <v-card
+      <div class="scroll-container">
+        <v-row style="margin: 0">
+          <v-col
+            v-for="(log, index) in items"
+            :key="index"
             :class="{
-              'current-user-message': isLogMessageByCurrentUser(log.raw),
-              'other-message': !isLogMessageByCurrentUser(log.raw),
+              'ml-auto': isLogMessageByCurrentUser(log.raw),
+              'mr-auto': !isLogMessageByCurrentUser(log.raw),
             }"
-            class="mb-2"
-            outlined
+            cols="8"
           >
-            <v-card-title>
-              <div>
-                <strong>{{
-                  isLogMessageByCurrentUser(log.raw) ? 'You' : log.raw.user
-                }}</strong>
-                <br />
-                <small>{{ log.raw.timestamp }}</small>
-              </div>
-            </v-card-title>
-            <v-card-text>
-              {{ log.raw.message }}
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-    </template>
-    <template v-slot:footer="{ page, pageCount, prevPage, nextPage }">
-      <v-footer class="justify-space-between text-body-2 mt-4">
-        Total: {{ logMessages.length }}
-        <div>Page {{ page }} of {{ pageCount }}</div>
-        <div class="d-inline-flex">
-          <v-btn
-            :disabled="page === 1"
-            class="me-2"
-            icon="mdi-arrow-left"
-            size="small"
-            variant="tonal"
-            @click="prevPage"
-          ></v-btn>
-          <v-btn
-            :disabled="page === pageCount"
-            icon="mdi-arrow-right"
-            size="small"
-            variant="tonal"
-            @click="nextPage"
-          ></v-btn>
-        </div>
-      </v-footer>
+            <v-card
+              :class="{
+                'current-user-message': isLogMessageByCurrentUser(log.raw),
+                'other-message': !isLogMessageByCurrentUser(log.raw),
+              }"
+              class="mb-2"
+              outlined
+            >
+              <v-card-title>
+                <div>
+                  <strong>{{
+                    isLogMessageByCurrentUser(log.raw) ? 'You' : log.raw.user
+                  }}</strong>
+                  <br />
+                  <small>{{ log.raw.timestamp.toISOString() }}</small>
+                </div>
+              </v-card-title>
+              <v-card-text>
+                {{ log.raw.message }}
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </div>
     </template>
   </v-data-iterator>
 </template>
@@ -112,7 +93,7 @@ interface LogMessage {
   user: string
   level: LogLevelType
   message: string
-  timestamp: string
+  timestamp: Date
 }
 
 const search = ref('')
@@ -134,39 +115,51 @@ onMounted((): void => {
 const logMessages = computed(() => [
   {
     user: currentUser.value?.profile?.name ?? 'Current User',
-    timestamp: new Date('2024-11-01T10:15:00Z').toISOString(),
+    timestamp: new Date('2024-11-01T10:15:00Z'),
     level: LogLevelEnum.Info,
     message: 'Shift Ended. Just a regular day.',
   },
   {
     user: 'Jane Doe',
-    timestamp: new Date('2024-11-01T10:15:00Z').toISOString(),
+    timestamp: new Date('2024-11-01T10:15:00Z'),
     level: LogLevelEnum.Info,
     message: 'Shift Started.',
   },
   {
     user: 'Jane Doe',
-    timestamp: new Date('2024-11-01T12:30:00Z').toISOString(),
+    timestamp: new Date('2024-11-01T12:30:00Z'),
     level: LogLevelEnum.Warning,
     message: 'This is definitely cause for a warning.',
   },
   {
     user: 'Jane Doe',
-    timestamp: new Date('2024-11-01T18:30:00Z').toISOString(),
+    timestamp: new Date('2024-11-01T18:30:00Z'),
     level: LogLevelEnum.Info,
     message: 'Shift Ended.',
   },
   {
     user: currentUser.value?.profile?.name ?? 'Current User',
-    timestamp: new Date('2024-11-01T18:30:00Z').toISOString(),
+    timestamp: new Date('2024-11-01T18:30:00Z'),
     level: LogLevelEnum.Info,
     message: 'Shift Started.',
   },
   {
     user: currentUser.value?.profile?.name ?? 'Current User',
-    timestamp: new Date('2024-11-01T23:31:00Z').toISOString(),
+    timestamp: new Date('2024-11-01T23:31:00Z'),
     level: LogLevelEnum.Error,
     message: 'Oh no.',
+  },
+  {
+    user: currentUser.value?.profile?.name ?? 'Current User',
+    timestamp: new Date('2024-11-01T23:58:00Z'),
+    level: LogLevelEnum.Info,
+    message: 'Problem has been fixed.',
+  },
+  {
+    user: currentUser.value?.profile?.name ?? 'Current User',
+    timestamp: new Date('2024-11-02T02:25:00Z'),
+    level: LogLevelEnum.Info,
+    message: 'Shift Ended.',
   },
 ])
 
@@ -211,5 +204,11 @@ const customKeyFilters: Record<
 .v-card-title {
   font-size: 0.9em;
   color: #6c757d; /* Muted text color for user and timestamp */
+}
+
+.scroll-container {
+  height: 83vh;
+  overflow-y: auto;
+  width: 100%;
 }
 </style>
