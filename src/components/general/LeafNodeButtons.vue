@@ -1,13 +1,13 @@
 <template>
-  <v-menu v-if="nodeButtons.length > 4">
+  <v-menu v-if="nodeButtons.length > 0">
     <template #activator="{ props }">
       <v-btn :variant v-bind="props" class="text-none">
+        <v-icon start>mdi-filter-variant</v-icon>
         {{ activeParentId }}
-        <v-icon end>mdi-menu-down</v-icon>
+        <v-icon v-if="nodeButtons.length > 1" end>mdi-menu-down</v-icon>
       </v-btn>
     </template>
-
-    <v-list class="bg-grey-lighten-3">
+    <v-list>
       <template v-for="item in nodeButtons">
         <v-list-item
           v-if="item.href"
@@ -32,30 +32,6 @@
       </template>
     </v-list>
   </v-menu>
-  <v-btn-toggle
-    v-else
-    v-model="activeParentNode"
-    divided
-    density="compact"
-    mandatory
-  >
-    <v-btn
-      v-for="item in nodeButtons"
-      :key="item.id"
-      :to="item.to"
-      @click="activeParentId = item.name"
-      class="text-none"
-    >
-      {{ item.name }}
-      <template v-slot:append>
-        <v-icon v-if="item.icon" size="xsmall">{{ item.icon }}</v-icon>
-        <ThresholdInformation
-          :icon="item.thresholdIcon"
-          :count="item.thresholdCount"
-        />
-      </template>
-    </v-btn>
-  </v-btn-toggle>
 </template>
 
 <script lang="ts" setup>
