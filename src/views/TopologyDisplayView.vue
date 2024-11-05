@@ -176,7 +176,7 @@ interface Props {
 }
 
 interface DisplayTab {
-  type: 'charts' | 'map' | 'reports' | 'schematic-status-display'
+  type: 'charts' | 'map' | 'reports' | 'schematic-status-display' | 'tasks'
   id: string
   title: string
   href?: string
@@ -544,7 +544,23 @@ watchEffect(() => {
 
   // Create the displayTabs for the active node.
   if (node === undefined) return
-  const _displayTabs = displayTabsForNode(node, parentNodeIdNodeId)
+  let _displayTabs = displayTabsForNode(node, parentNodeIdNodeId)
+
+  // <hack>
+  // Manually add "Tasks" display tab.
+  _displayTabs = [
+    ..._displayTabs,
+    {
+      type: 'tasks',
+      id: crypto.randomUUID(),
+      title: 'Tasks',
+      to: {
+        name: 'TopologyTasksDisplay',
+      },
+      icon: 'mdi-cog',
+    },
+  ]
+  // </hack>
   displayTabs.value = _displayTabs
 
   externalLink.value = node.url
