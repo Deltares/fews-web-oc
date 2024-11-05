@@ -5,7 +5,7 @@
  * @returns True if the character is a digit, false otherwise.
  */
 function isDigit(char: string) {
-  return /^[0-9]$/.test(char);
+  return /^[0-9]$/.test(char)
 }
 
 /**

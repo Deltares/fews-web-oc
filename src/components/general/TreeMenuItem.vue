@@ -3,8 +3,7 @@
     <template v-if="item.children?.length">
       <v-list-group :value="item.id">
         <template v-slot:activator="{ props }">
-          <v-list-item v-bind="props" style=""
-           >  
+          <v-list-item v-bind="props">
             <template v-slot:prepend>
               <v-badge
                 color="#00BBF0"
@@ -12,7 +11,9 @@
                 :content="item.thresholdCount"
               >
                 <v-icon
-                  :icon="item.icon ?? toCharacterIcon(item.name, '-circle-outline')"
+                  :icon="
+                    item.icon ?? toCharacterIcon(item.name, '-circle-outline')
+                  "
                 ></v-icon>
               </v-badge>
             </template>
