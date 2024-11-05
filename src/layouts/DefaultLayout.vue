@@ -342,7 +342,7 @@ body {
 }
 
 .v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
-.v-navigation-drawer__content {
-  overflow-y: hidden; 
+  .v-navigation-drawer__content {
+  overflow-y: hidden;
 }
 </style>
