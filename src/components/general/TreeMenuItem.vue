@@ -35,13 +35,22 @@
       </v-list-group>
     </template>
     <v-list-item
+      v-else-if="item.href"
+      :href="item.href"
+      target="_blank"
       class="tree-menu--list-item"
+    >
+      <v-list-item-title>{{ item.name }}</v-list-item-title>
+      <template v-slot:append>
+        <v-icon size="xsmall">mdi-open-in-new</v-icon>
+      </template>
+    </v-list-item>
+    <v-list-item
       v-else
       :to="item.to"
-      :href="item.href"
-      :target="item.href ? '_blank' : undefined"
-      :actnvive="props.active === item.id"
+      :active="props.active === item.id"
       density="compact"
+      class="tree-menu--list-item"
     >
       <template v-slot:prepend>
         <v-badge
