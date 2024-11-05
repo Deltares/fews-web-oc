@@ -1,5 +1,18 @@
 <template>
-  <v-data-iterator :items="logMessages" :items-per-page="5">
+  <v-data-iterator :items="logMessages" :items-per-page="4" :search="search">
+    <template v-slot:header>
+      <v-toolbar class="px-2">
+        <v-text-field
+          v-model="search"
+          placeholder="Search"
+          prepend-inner-icon="mdi-magnify"
+          style="max-width: 300px"
+          variant="solo"
+          clearable
+          hide-details
+        ></v-text-field>
+      </v-toolbar>
+    </template>
     <template v-slot:default="{ items }">
       <v-row>
         <v-col v-for="(log, index) in items" :key="index" cols="12">
@@ -48,6 +61,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+
 const LogLevelEnum = {
   Info: 'Info',
   Warning: 'Warning',
@@ -63,6 +78,7 @@ interface LogMessage {
   timestamp: string
 }
 
+const search = ref('')
 const logMessages: LogMessage[] = [
   {
     user: 'Anne Markensteijn',
