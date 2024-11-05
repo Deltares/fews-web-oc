@@ -40,7 +40,7 @@
           </v-list-item>
         </v-list>
         <v-menu
-          location="bottom"
+          origin="bottom"
           width="320"
           v-else-if="configStore.activeComponents.length > 1"
         >
