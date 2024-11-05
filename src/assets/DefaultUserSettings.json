@@ -69,7 +69,7 @@
     "id": "ui.sidebar-style",
     "type": "oneOfMultiple",
     "label": "Sidebar style",
-    "value": "minimal",
+    "value": "full labels",
     "items": [
       {
         "value": "minimal",
