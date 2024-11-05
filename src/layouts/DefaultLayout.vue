@@ -24,6 +24,7 @@
       class="view-sidebar"
       expand-on-hover
       :rail="useRail"
+      onmouseover=""
     >
       <template v-slot:prepend>
         <v-list density="compact" v-if="shouldRenderInfoMenu">
@@ -338,5 +339,10 @@ body {
   flex-direction: column;
   gap: 10px;
   padding: 10px;
+}
+
+.v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
+.v-navigation-drawer__content {
+  overflow-y: hidden; 
 }
 </style>
