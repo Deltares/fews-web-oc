@@ -1,5 +1,10 @@
 <template>
-  <v-data-iterator :items="logMessages" :items-per-page="4" :search="search">
+  <v-data-iterator
+    :items="logMessages"
+    :items-per-page="4"
+    :search="search"
+    :custom-key-filter="customKeyFilters"
+  >
     <template v-slot:header>
       <v-toolbar class="px-2">
         <v-text-field
@@ -11,6 +16,22 @@
           clearable
           hide-details
         ></v-text-field>
+        <v-select
+          v-model="selectedUser"
+          :items="users"
+          label="Filter by User"
+          clearable
+          hide-details
+          style="max-width: 200px"
+        ></v-select>
+        <v-select
+          v-model="selectedLevel"
+          :items="logLevels"
+          label="Filter by Level"
+          clearable
+          hide-details
+          style="max-width: 200px"
+        ></v-select>
       </v-toolbar>
     </template>
     <template v-slot:default="{ items }">
@@ -24,7 +45,6 @@
                 <small>{{ log.raw.timestamp }}</small>
               </div>
             </v-card-title>
-
             <v-card-text>
               {{ log.raw.message }}
             </v-card-text>
@@ -32,7 +52,6 @@
         </v-col>
       </v-row>
     </template>
-    <!-- Pagination -->
     <template v-slot:footer="{ page, pageCount, prevPage, nextPage }">
       <v-footer class="justify-space-between text-body-2 mt-4">
         Total: {{ logMessages.length }}
@@ -46,7 +65,6 @@
             variant="tonal"
             @click="prevPage"
           ></v-btn>
-
           <v-btn
             :disabled="page === pageCount"
             icon="mdi-arrow-right"
@@ -61,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const LogLevelEnum = {
   Info: 'Info',
@@ -79,6 +97,9 @@ interface LogMessage {
 }
 
 const search = ref('')
+const selectedUser = ref<string | null>(null)
+const selectedLevel = ref<LogLevelType | null>(null)
+
 const logMessages: LogMessage[] = [
   {
     user: 'Anne Markensteijn',
@@ -117,4 +138,22 @@ const logMessages: LogMessage[] = [
     message: 'Oh no.',
   },
 ]
+
+const users = computed(() => {
+  return [...new Set(logMessages.map((log) => log.user))]
+})
+
+const logLevels = Object.values(LogLevelEnum)
+
+const customKeyFilters: Record<
+  string,
+  (value: string, query: string, item?: any) => boolean
+> = {
+  user: (value: string, query: string, item?: any) => {
+    return selectedUser.value ? item.raw.user === selectedUser.value : true
+  },
+  level: (value: string, query: string, item?: any) => {
+    return selectedLevel.value ? item.raw.level === selectedLevel.value : true
+  },
+}
 </script>
