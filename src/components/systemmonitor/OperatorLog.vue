@@ -1,5 +1,5 @@
 <template>
-  <v-data-iterator :items="logMessages">
+  <v-data-iterator :items="logMessages" :items-per-page="5">
     <template v-slot:default="{ items }">
       <v-row>
         <v-col v-for="(log, index) in items" :key="index" cols="12">
@@ -18,6 +18,31 @@
           </v-card>
         </v-col>
       </v-row>
+    </template>
+    <!-- Pagination -->
+    <template v-slot:footer="{ page, pageCount, prevPage, nextPage }">
+      <v-footer class="justify-space-between text-body-2 mt-4">
+        Total: {{ logMessages.length }}
+        <div>Page {{ page }} of {{ pageCount }}</div>
+        <div class="d-inline-flex">
+          <v-btn
+            :disabled="page === 1"
+            class="me-2"
+            icon="mdi-arrow-left"
+            size="small"
+            variant="tonal"
+            @click="prevPage"
+          ></v-btn>
+
+          <v-btn
+            :disabled="page === pageCount"
+            icon="mdi-arrow-right"
+            size="small"
+            variant="tonal"
+            @click="nextPage"
+          ></v-btn>
+        </div>
+      </v-footer>
     </template>
   </v-data-iterator>
 </template>
@@ -47,9 +72,33 @@ const logMessages: LogMessage[] = [
   },
   {
     user: 'Jane Doe',
+    timestamp: new Date('2024-11-01T10:15:00Z').toISOString(),
+    level: LogLevelEnum.Warning,
+    message: 'Shift Started.',
+  },
+  {
+    user: 'Jane Doe',
     timestamp: new Date('2024-11-01T12:30:00Z').toISOString(),
     level: LogLevelEnum.Warning,
     message: 'This is definitely cause for a warning.',
+  },
+  {
+    user: 'Jane Doe',
+    timestamp: new Date('2024-11-01T18:30:00Z').toISOString(),
+    level: LogLevelEnum.Warning,
+    message: 'Shift Ended.',
+  },
+  {
+    user: 'Anne Markensteijn',
+    timestamp: new Date('2024-11-01T18:30:00Z').toISOString(),
+    level: LogLevelEnum.Info,
+    message: 'Shift Started.',
+  },
+  {
+    user: 'Anne Markensteijn',
+    timestamp: new Date('2024-11-01T23:31:00Z').toISOString(),
+    level: LogLevelEnum.Error,
+    message: 'Oh no.',
   },
 ]
 </script>
