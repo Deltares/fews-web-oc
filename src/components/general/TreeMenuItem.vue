@@ -11,7 +11,7 @@
                 :content="item.thresholdCount"
               >
                 <v-icon
-                  :icon="item.icon ?? toCharacterIcon(item.name)"
+                  :icon="item.icon ?? toCharacterIcon(item.name, '-circle-outline')"
                 ></v-icon>
               </v-badge>
             </template>
@@ -38,7 +38,7 @@
       :to="item.to"
       :href="item.href"
       :target="item.href ? '_blank' : undefined"
-      :active="props.active === item.id"
+      :actnvive="props.active === item.id"
     >
       <template v-slot:prepend>
         <v-badge
