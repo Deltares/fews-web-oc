@@ -36,8 +36,8 @@
     </template>
     <template v-slot:default="{ items }">
       <v-row>
-        <v-col v-for="(log, index) in items" :key="index" cols="12">
-          <v-card class="mb-4" outlined>
+        <v-col v-for="(log, index) in items" :key="index" cols="8">
+          <v-card class="message mb-2" outlined>
             <v-card-title>
               <div>
                 <strong>{{ log.raw.user }}</strong>
@@ -157,3 +157,19 @@ const customKeyFilters: Record<
   },
 }
 </script>
+
+<style scoped>
+.message {
+  background-color: rgb(
+    var(--v-theme-surface)
+  ); /* Light grey for other messages */
+  color: rgb(var(--v-theme-on-surface));
+  border-radius: 12px 12px 12px 0;
+  text-align: left;
+}
+
+.v-card-title {
+  font-size: 0.9em;
+  color: #6c757d; /* Muted text color for user and timestamp */
+}
+</style>
