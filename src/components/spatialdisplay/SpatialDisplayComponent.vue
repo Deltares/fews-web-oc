@@ -163,7 +163,6 @@ import { useWorkflowsStore } from '@/stores/workflows'
 import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
-import { useNodesStore } from '@/stores/nodes'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -231,7 +230,6 @@ const layerKind = ref(LayerKind.Static)
 
 const colourScalesStore = useColourScalesStore()
 const workflowsStore = useWorkflowsStore()
-const nodesStore = useNodesStore()
 
 const showLocationsLayer = ref<boolean>(true)
 
