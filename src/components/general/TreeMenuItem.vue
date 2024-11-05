@@ -3,7 +3,8 @@
     <template v-if="item.children?.length">
       <v-list-group :value="item.id">
         <template v-slot:activator="{ props }">
-          <v-list-item v-bind="props">
+          <v-list-item v-bind="props" style=""
+           >  
             <template v-slot:prepend>
               <v-badge
                 color="#00BBF0"
@@ -39,6 +40,7 @@
       :href="item.href"
       :target="item.href ? '_blank' : undefined"
       :actnvive="props.active === item.id"
+      density="compact"
     >
       <template v-slot:prepend>
         <v-badge
