@@ -22,6 +22,23 @@ export interface WhatIfProperties {
   [key: string]: number | undefined
 }
 
+export enum SubmitStatus {
+  Success = 'success',
+  Error = 'error',
+}
+
+export interface SubmitSuccess {
+  status: SubmitStatus.Success
+  taskId: string
+}
+
+export interface SubmitError {
+  status: SubmitStatus.Error
+  error: string
+}
+
+export type SubmitResult = SubmitSuccess | SubmitError
+
 export function useWhatIfScenarios(
   nodeId: MaybeRefOrGetter<string>,
   selectedWhatIfTemplateId: MaybeRefOrGetter<string | null>,
@@ -87,5 +104,15 @@ export function useWhatIfScenarios(
     }
   }
 
-  return { templates, selectedTemplate, formSchemas }
+  async function submit(properties: WhatIfProperties): Promise<SubmitResult> {
+    // TODO: submit workflow for what-if scenario with these properties.
+    const isSuccess = properties['simulation_period_seconds'] === 5
+    if (isSuccess) {
+      return { status: SubmitStatus.Success, taskId: 'task-id' }
+    } else {
+      return { status: SubmitStatus.Error, error: 'Invalid simulation period.' }
+    }
+  }
+
+  return { templates, selectedTemplate, formSchemas, submit }
 }
