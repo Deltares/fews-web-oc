@@ -94,9 +94,9 @@ export function useWmsLegend(
   baseUrl: string,
   layerName: MaybeRefOrGetter<string>,
   useDisplayUnits: MaybeRefOrGetter<boolean>,
-  colorScaleRange?: MaybeRefOrGetter<string | undefined>,
-  style?: MaybeRefOrGetter<Style>,
-  activeStyles?: MaybeRefOrGetter<Style[]>,
+  colorScaleRange: MaybeRefOrGetter<string | undefined>,
+  style: MaybeRefOrGetter<Style | undefined>,
+  activeStyles: MaybeRefOrGetter<Style[] | undefined>,
 ): Ref<GetLegendGraphicResponse | undefined> {
   const legendGraphic = ref<GetLegendGraphicResponse>()
 

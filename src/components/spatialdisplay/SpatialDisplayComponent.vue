@@ -297,7 +297,10 @@ watch(
           () => settings.useDisplayUnits,
           range,
           style,
-          () => props.layerCapabilities?.styles ?? [],
+          () =>
+            props.layerCapabilities
+              ? (props.layerCapabilities.styles ?? [style])
+              : undefined,
         )
 
         watch(newLegendGraphic, () => {
