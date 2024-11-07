@@ -32,7 +32,10 @@
           :items="item.children"
           :active="props.active"
         ></TreeMenuItem>
-        <v-divider v-if="item.children.some((c) => c.children?.length)" class="mx-2"></v-divider>
+        <v-divider
+          v-if="item.children.some((c) => c.children?.length)"
+          class="mx-2"
+        ></v-divider>
       </v-list-group>
     </template>
     <v-list-item

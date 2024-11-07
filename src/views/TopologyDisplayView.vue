@@ -1,10 +1,6 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
-    <HierarchicalMenu
-      v-model:active="active"
-      :type="menuType"
-      :items="items"
-    />
+    <HierarchicalMenu v-model:active="active" :type="menuType" :items="items" />
   </Teleport>
   <WorkflowsControl
     v-if="showWorkFlowDialog"
