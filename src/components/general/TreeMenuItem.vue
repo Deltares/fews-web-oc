@@ -1,7 +1,7 @@
 <template>
   <template v-for="item in props.items" :key="item.id">
     <template v-if="item.children?.length">
-      <v-list-group :value="item.id">
+      <v-list-group :value="item.id" class="tree-menu--list-group">
         <template v-slot:activator="{ props }">
           <v-list-item v-bind="props">
             <template v-slot:prepend>
@@ -32,6 +32,7 @@
           :items="item.children"
           :active="props.active"
         ></TreeMenuItem>
+        <v-divider v-if="item.children.some((c) => c.children?.length)" class="mx-2"></v-divider>
       </v-list-group>
     </template>
     <v-list-item
@@ -40,6 +41,9 @@
       target="_blank"
       class="tree-menu--list-item"
     >
+      <template v-slot:prepend>
+        <v-icon :icon="item.icon ?? toCharacterIcon(item.name)"></v-icon>
+      </template>
       <v-list-item-title>{{ item.name }}</v-list-item-title>
       <template v-slot:append>
         <v-icon size="xsmall">mdi-open-in-new</v-icon>
@@ -92,16 +96,40 @@ const props = withDefaults(defineProps<Props>(), {
   border-left: 2px solid rgb(var(--v-border-color));
 }
 
-:deep(.v-list-group) {
+/* To counter act being moved by the above border */
+.tree-menu--list-item > :deep(.v-list-item__prepend) {
+  margin-left: -4px;
+}
+
+.tree-menu--list-group :deep(.v-list-group__items .v-list-item) {
+  transition-duration: 0.2s;
+  transition-property: padding-inline-start;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+</style>
+
+<style>
+.v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
+  .tree-menu--list-group {
   --prepend-width: 0;
 }
 
-:deep(.v-list-group__items) {
+.v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
+  .tree-menu--list-group
+  .v-list-group__items {
   --indent-padding: 0px;
   --prepend-width: 0px;
 }
 
-:deep(.v-list-group > .v-list-group__items .v-list-group) {
+.tree-menu--list-group {
+  --prepend-width: 0px;
+}
+
+.v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
+  .tree-menu--list-group
+  > .tree-menu--list-group
+  .v-list-group__items
+  .v-list-group {
   --prepend-width: 0px;
 }
 </style>
