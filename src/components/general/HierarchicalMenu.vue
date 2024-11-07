@@ -2,8 +2,8 @@
   <TreeMenu
     v-if="finalType === 'tree'"
     v-model:active="active"
+    v-model:open="open"
     :items="items"
-    :open="open"
   />
   <ColumnMenu
     v-else-if="finalType === 'column'"
@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useDisplay } from 'vuetify'
 
 import ColumnMenu from '@/components/general/ColumnMenu.vue'
@@ -27,8 +27,8 @@ interface Props {
 }
 const props = defineProps<Props>()
 
-const open = defineModel<string[]>('open')
 const active = defineModel<string>('active')
+const open = ref<string[]>([])
 
 const { mobile } = useDisplay()
 
