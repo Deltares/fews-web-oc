@@ -109,6 +109,10 @@ const props = withDefaults(defineProps<Props>(), {
   transition-property: padding-inline-start;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+:deep(.v-list-item__spacer) {
+  width: 12px !important;
+}
 </style>
 
 <style>
