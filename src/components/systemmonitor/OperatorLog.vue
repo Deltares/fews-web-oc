@@ -58,13 +58,10 @@
               outlined
             >
               <v-card-title>
-                <div>
-                  <strong>{{
-                    isLogMessageByCurrentUser(log.raw) ? 'You' : log.raw.user
-                  }}</strong>
-                  <br />
-                  <small>{{ log.raw.timestamp.toISOString() }}</small>
-                </div>
+                <strong>{{
+                  isLogMessageByCurrentUser(log.raw) ? 'You' : log.raw.user
+                }}</strong>
+                @<small>{{ log.raw.timestamp.toISOString() }}</small>
               </v-card-title>
               <v-card-text>
                 {{ log.raw.message }}
