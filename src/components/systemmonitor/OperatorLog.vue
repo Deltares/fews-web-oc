@@ -54,15 +54,27 @@
                 'other-message': !isLogMessageByCurrentUser(log.raw),
               }"
               class="mb-2"
-              :color="LogToColor(log.raw)"
+              :color="logToColor(log.raw)"
               outlined
             >
-              <v-card-title>
-                <strong>{{
-                  isLogMessageByCurrentUser(log.raw) ? 'You' : log.raw.user
-                }}</strong>
-                @<small>{{ log.raw.timestamp.toISOString() }}</small>
-              </v-card-title>
+              <template v-slot:prepend>
+                <v-icon size="small" icon="mdi-account"></v-icon>
+              </template>
+              <template v-slot:title>
+                <div style="font-size: 0.8em">
+                  <strong>{{
+                    isLogMessageByCurrentUser(log.raw) ? 'You' : log.raw.user
+                  }}</strong>
+                  @<small>{{ log.raw.timestamp.toISOString() }}</small>
+                </div>
+              </template>
+              <template v-slot:append>
+                <v-icon
+                  v-if="logToIcon(log.raw)"
+                  size="small"
+                  :icon="logToIcon(log.raw)"
+                ></v-icon>
+              </template>
               <v-card-text>
                 {{ log.raw.message }}
               </v-card-text>
@@ -183,7 +195,7 @@ const customKeyFilters: Record<
   },
 }
 
-const LogToColor = (log: LogMessage) => {
+const logToColor = (log: LogMessage) => {
   switch (log.level) {
     case LogLevelEnum.Info:
       return isLogMessageByCurrentUser(log) ? 'surface-variant' : 'surface'
@@ -191,6 +203,18 @@ const LogToColor = (log: LogMessage) => {
       return 'warning'
     case LogLevelEnum.Error:
       return 'error'
+  }
+}
+
+const logToIcon = (log: LogMessage) => {
+  switch (log.level) {
+    case LogLevelEnum.Info:
+      return '$icon'
+    case LogLevelEnum.Warning:
+      return '$warning'
+    case LogLevelEnum.Error:
+      return '$error'
+      return
   }
 }
 </script>
@@ -204,10 +228,6 @@ const LogToColor = (log: LogMessage) => {
 .other-message {
   border-radius: 12px 12px 12px 0;
   text-align: left;
-}
-
-.v-card-title {
-  font-size: 0.9em;
 }
 
 .scroll-container {
