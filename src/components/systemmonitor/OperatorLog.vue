@@ -54,6 +54,7 @@
                 'other-message': !isLogMessageByCurrentUser(log.raw),
               }"
               class="mb-2"
+              :color="LogToColor(log.raw)"
               outlined
             >
               <v-card-title>
@@ -184,26 +185,32 @@ const customKeyFilters: Record<
     return selectedLevel.value ? item.raw.level === selectedLevel.value : true
   },
 }
+
+const LogToColor = (log: LogMessage) => {
+  switch (log.level) {
+    case LogLevelEnum.Info:
+      return isLogMessageByCurrentUser(log) ? 'surface-variant' : 'surface'
+    case LogLevelEnum.Warning:
+      return 'warning'
+    case LogLevelEnum.Error:
+      return 'error'
+  }
+}
 </script>
 
 <style scoped>
 .current-user-message {
-  background-color: rgb(var(--v-theme-surface-variant));
-  color: rgb(var(--v-theme-on-surface-variant));
   border-radius: 12px 12px 0 12px;
   text-align: left;
 }
 
 .other-message {
-  background-color: rgb(var(--v-theme-surface));
-  color: rgb(var(--v-theme-on-surface));
   border-radius: 12px 12px 12px 0;
   text-align: left;
 }
 
 .v-card-title {
   font-size: 0.9em;
-  color: #6c757d; /* Muted text color for user and timestamp */
 }
 
 .scroll-container {
