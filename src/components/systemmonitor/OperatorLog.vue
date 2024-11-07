@@ -2,6 +2,7 @@
   <v-data-iterator
     :items="logMessages"
     :items-per-page="-1"
+    item-value="timestamp"
     :search="search"
     :custom-key-filter="customKeyFilters"
     :sort-by="[{ key: 'timestamp', order: 'desc' }]"
@@ -36,7 +37,7 @@
         <span>Total: {{ logMessages.length }}</span>
       </v-toolbar>
     </template>
-    <template v-slot:default="{ items }">
+    <template v-slot:default="{ items, isExpanded, toggleExpand }">
       <div class="scroll-container">
         <v-row style="margin: 0">
           <v-col
@@ -76,7 +77,34 @@
                 ></v-icon>
               </template>
               <v-card-text>
-                {{ log.raw.message }}
+                <div v-if="!isExpanded(log)">
+                  <strong>{{ log.raw.messages[0].title }}</strong
+                  >{{
+                    log.raw.messages[0]?.value
+                      ? ': ' + log.raw.messages[0]?.value
+                      : ''
+                  }}
+                </div>
+                <div
+                  v-else
+                  v-for="(sublog, subindex) in log.raw.messages"
+                  :key="subindex"
+                >
+                  <strong>{{ sublog.title }}</strong
+                  >{{ sublog?.value ? ': ' + sublog.value : '' }}
+                </div>
+                <v-spacer>
+                  <v-btn
+                    v-show="log.raw.messages.length > 1"
+                    :icon="
+                      isExpanded(log) ? 'mdi-chevron-up' : 'mdi-chevron-down'
+                    "
+                    size="small"
+                    variant="plain"
+                    density="compact"
+                    @click="() => toggleExpand(log)"
+                  ></v-btn>
+                </v-spacer>
               </v-card-text>
             </v-card>
           </v-col>
@@ -102,8 +130,20 @@ type LogLevelType = (typeof LogLevelEnum)[keyof typeof LogLevelEnum]
 interface LogMessage {
   user: string
   level: LogLevelType
-  message: string
+  messages: LogSubMessage[]
   timestamp: Date
+}
+
+const SubmessageEnum = {
+  Text: 'text',
+  Choice: 'choice',
+} as const
+type SubmessageType = (typeof SubmessageEnum)[keyof typeof SubmessageEnum]
+
+interface LogSubMessage {
+  type: SubmessageType
+  title: string
+  value?: string
 }
 
 const search = ref('')
@@ -127,49 +167,125 @@ const logMessages = computed(() => [
     user: currentUser.value?.profile?.name ?? 'Current User',
     timestamp: new Date('2024-11-01T10:15:00Z'),
     level: LogLevelEnum.Info,
-    message: 'Shift Ended. Just a regular day.',
+    messages: [
+      {
+        type: SubmessageEnum.Text,
+        title: 'Shift Ended',
+        value: 'Just a regular day.',
+      },
+    ],
   },
   {
     user: 'Jane Doe',
     timestamp: new Date('2024-11-01T10:15:00Z'),
     level: LogLevelEnum.Info,
-    message: 'Shift Started.',
+    messages: [
+      {
+        type: SubmessageEnum.Text,
+        title: 'Shift Started',
+      },
+    ],
   },
   {
     user: 'Jane Doe',
     timestamp: new Date('2024-11-01T12:30:00Z'),
     level: LogLevelEnum.Warning,
-    message: 'This is definitely cause for a warning.',
+    messages: [
+      {
+        type: SubmessageEnum.Text,
+        title: 'Remark pumping',
+        value: 'This is definitely cause for a warning.',
+      },
+    ],
   },
   {
     user: 'Jane Doe',
     timestamp: new Date('2024-11-01T18:30:00Z'),
     level: LogLevelEnum.Info,
-    message: 'Shift Ended.',
+    messages: [
+      {
+        type: SubmessageEnum.Text,
+        title: 'Shift Started.',
+        value: 'Im looking forward to a great day.',
+      },
+      {
+        type: SubmessageEnum.Choice,
+        title: 'Send warning Report',
+        value: 'yes',
+      },
+    ],
   },
   {
     user: currentUser.value?.profile?.name ?? 'Current User',
     timestamp: new Date('2024-11-01T18:30:00Z'),
     level: LogLevelEnum.Info,
-    message: 'Shift Started.',
+    messages: [
+      {
+        type: SubmessageEnum.Text,
+        title: 'Shift Started',
+      },
+    ],
   },
   {
     user: currentUser.value?.profile?.name ?? 'Current User',
     timestamp: new Date('2024-11-01T23:31:00Z'),
     level: LogLevelEnum.Error,
-    message: 'Oh no.',
+    messages: [
+      {
+        type: SubmessageEnum.Text,
+        title: 'General Remarks',
+        value: 'Oh no.',
+      },
+      {
+        type: SubmessageEnum.Text,
+        title: 'Remark pumping',
+        value: 'There is something very wrong with this pump.',
+      },
+      {
+        type: SubmessageEnum.Choice,
+        title: 'SMS send',
+        value: 'yes',
+      },
+    ],
   },
   {
     user: currentUser.value?.profile?.name ?? 'Current User',
     timestamp: new Date('2024-11-01T23:58:00Z'),
     level: LogLevelEnum.Info,
-    message: 'Problem has been fixed.',
+    messages: [
+      {
+        type: SubmessageEnum.Text,
+        title: 'General Remarks',
+        value: 'Problem has been fixed.',
+      },
+      {
+        type: SubmessageEnum.Text,
+        title: 'Remark pumping',
+        value: 'The pump has been fixed and is working again.',
+      },
+      {
+        type: SubmessageEnum.Choice,
+        title: 'SMS send',
+        value: 'yes',
+      },
+    ],
   },
   {
     user: currentUser.value?.profile?.name ?? 'Current User',
     timestamp: new Date('2024-11-02T02:25:00Z'),
     level: LogLevelEnum.Info,
-    message: 'Shift Ended.',
+    messages: [
+      {
+        type: SubmessageEnum.Text,
+        title: 'Shift Ended',
+      },
+      {
+        type: SubmessageEnum.Text,
+        title: 'General Remarks',
+        value:
+          'This is a very long message, just to show what it will look like if a message is so long that it will span mutiple lines.',
+      },
+    ],
   },
 ])
 
