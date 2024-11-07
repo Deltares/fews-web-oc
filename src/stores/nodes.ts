@@ -23,16 +23,16 @@ export const useNodesStore = defineStore('nodes', {
     getRouteTarget(sources: ColumnItem[]) {
       if (this.activeParentId) {
         const sourceIndex = sources.findIndex((source) => {
-          return source.name === this.activeParentId
+          return source.id === this.activeParentId
         })
         if (sourceIndex > -1) {
           this.activeParentNode = sourceIndex
-          this.activeParentId = sources[sourceIndex].name
+          this.activeParentId = sources[sourceIndex].id
           return sources[sourceIndex].to
         }
       }
       this.activeParentNode = 0
-      this.activeParentId = sources[0].name
+      this.activeParentId = sources[0].id
       return sources[0].to
     },
   },
