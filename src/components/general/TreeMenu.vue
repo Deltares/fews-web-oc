@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
+import { computed, watch } from 'vue'
 import { ColumnItem } from './ColumnItem'
 import TreeMenuItem from './TreeMenuItem.vue'
 import { useMenuItemsStack } from '@/services/useMenuItemsStack'
@@ -33,11 +33,14 @@ const stack = useMenuItemsStack(
   () => props.active,
 )
 
+const stackPath = computed(() => stack.value.map((item: ColumnItem) => item.id))
+
 watch(
-  stack,
-  () => {
-    const path = stack.value.map((item: ColumnItem) => item.id)
-    open.value = [...new Set([...path, ...open.value])]
+  stackPath,
+  (newStack, oldStack) => {
+    if (newStack.join() === oldStack?.join()) return
+
+    open.value = [...new Set([...stackPath.value, ...open.value])]
   },
   { immediate: true },
 )

@@ -2,7 +2,6 @@
   <Teleport to="#web-oc-sidebar-target">
     <HierarchicalMenu
       v-model:active="active"
-      v-model:open="open"
       :type="menuType"
       :items="items"
     />
@@ -187,7 +186,6 @@ const secondaryWorkflows = computed(() => {
   if (!activeNode.value?.secondaryWorkflows) return null
   return activeNode.value.secondaryWorkflows
 })
-const open = ref<string[]>([])
 const items = ref<ColumnItem[]>([])
 
 const filterIds = ref<string[]>([])
