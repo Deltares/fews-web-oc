@@ -161,21 +161,21 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     meta: { sidebar: true },
     children: [
       {
-        path: '/topology/node/:nodeId*/download/',
+        path: '/topology/node/:nodeId*/download',
         name: 'TopologyDataDownload',
         component: DataDownloadDisplayView,
         props: true,
         meta: { sidebar: true },
       },
       {
-        path: '/topology/node/:nodeId*/series/',
+        path: '/topology/node/:nodeId*/series',
         name: 'TopologyTimeSeries',
         component: TimeSeriesDisplay,
         props: true,
         meta: { sidebar: true },
       },
       {
-        path: '/topology/node/:nodeId*/reports/',
+        path: '/topology/node/:nodeId*/reports',
         name: 'TopologyReports',
         component: ReportsDisplayView,
         props: true,
