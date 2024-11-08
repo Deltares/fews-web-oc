@@ -130,7 +130,10 @@ import { useDisplay } from 'vuetify'
 import { useNodesStore } from '@/stores/nodes'
 import { nodeButtonItems, recursiveUpdateNode } from '@/lib/topology/nodes'
 import { useDownloadDialogStore } from '@/stores/downloadDialog'
-import { displayTabsForNode, type DisplayTab } from '@/lib/topology/displayTabs.js' 
+import {
+  displayTabsForNode,
+  type DisplayTab,
+} from '@/lib/topology/displayTabs.js'
 
 interface Props {
   nodeId?: string | string[]
