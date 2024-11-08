@@ -482,26 +482,25 @@ async function getLocations(): Promise<Location[]> {
 }
 
 function getAttributeValues(locations: Location[]): string[][] {
-  const attributeValuesMap: string[][] = []
-  const configuredAttributeIds =
-    props.topologyNode.dataDownloadDisplay?.attributes.map((item) => item.id)
-  configuredAttributeIds?.forEach((item) => attributeValuesMap.push([]))
-  if (configuredAttributeIds === undefined) return attributeValuesMap
-  for (const newLocation of locations) {
-    let attributes = newLocation.attributes
-    if (attributes == undefined) continue
-    for (let i = 0; i < attributes.length; i++) {
-      const attribute = attributes[i]
-      if (attribute.id === undefined) continue
-      if (attribute.value === undefined) continue
-      const arrayForAttribute =
-        attributeValuesMap[configuredAttributeIds.indexOf(attribute.id)]
-      if (!arrayForAttribute.includes(attribute.value)) {
-        arrayForAttribute.push(attribute.value)
+  const attributes = props.topologyNode.dataDownloadDisplay?.attributes
+  if (!attributes) return []
+
+  const attributeValuesMap: string[][] = attributes.map(() => [])
+
+  locations.forEach((location) => {
+    location.attributes?.forEach((attribute) => {
+      const index = attributes.findIndex((attr) => attr.id === attribute.id)
+      if (
+        index !== -1 &&
+        attribute.value &&
+        !attributeValuesMap[index].includes(attribute.value)
+      ) {
+        attributeValuesMap[index].push(attribute.value)
       }
-    }
-  }
-  attributeValuesMap.forEach((value, key) => value.sort())
+    })
+  })
+
+  attributeValuesMap.forEach((values) => values.sort())
   return attributeValuesMap
 }
 
