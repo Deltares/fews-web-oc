@@ -181,6 +181,7 @@ const options = computed<UseDisplayConfigOptions>(() => {
     convertDatum: settings.convertDatum,
   }
 })
+
 const downloadStartTime = ref<Date>()
 const downloadEndTime = ref<Date>()
 const timeSeriesFilter = ref<DataDownloadFilter>()
@@ -194,10 +195,13 @@ const filterId = props.topologyNode.filterIds
   ? props.topologyNode.filterIds[0]
   : undefined
 const attributes = props.topologyNode.dataDownloadDisplay?.attributes
+
 const allLocations = ref<Location[]>([])
-const allParameters = ref<TimeSeriesParameter[]>([])
 const locations = ref<Location[]>([])
 const selectedLocations = ref<Location[]>([])
+
+const allParameters = ref<TimeSeriesParameter[]>([])
+
 const parameterQualifiers = ref<ParameterQualifiersHeader[]>([])
 const selectedParameterQualifiers = ref<ParameterQualifiersHeader[]>([])
 const selectableAttributes = ref<string[][]>([])
@@ -227,14 +231,27 @@ const rules = {
 }
 
 onMounted(async () => {
+  loadLocations()
+  loadParameters()
+  loadTimeSeriesHeaders()
+  if (attributes) {
+    selectedAttributes.value = attributes.map(() => [])
+  }
+})
+
+async function loadLocations() {
   const locationsResponse = await getLocations()
   allLocations.value = locationsResponse
   locations.value = locationsResponse
   selectedLocations.value = locationsResponse
   selectableAttributes.value = getAttributeValues(locationsResponse)
+}
 
+async function loadParameters() {
   allParameters.value = await getParameters()
+}
 
+async function loadTimeSeriesHeaders() {
   const headersResponse = await getTimeSeriesHeaders()
   headersResponse?.forEach((timeSeriesResult) => {
     const parameterQualifiersHeader: ParameterQualifiersHeader = {
@@ -245,10 +262,7 @@ onMounted(async () => {
   })
   parameterQualifiers.value = uniqWith(parameterQualifiersHeaders, isEqual)
   selectedParameterQualifiers.value = parameterQualifiers.value
-  if (attributes) {
-    selectedAttributes.value = attributes.map(() => [])
-  }
-})
+}
 
 watch(startDateString, (newValue) => {
   let newDateTime: DateTimeMaybeValid = DateTime.fromFormat(newValue, DATE_FMT)
