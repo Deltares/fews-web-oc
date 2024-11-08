@@ -143,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import {
   DocumentFormat,
   Location,
@@ -202,17 +202,40 @@ const parameterQualifiers = ref<ParameterQualifiersHeader[]>([])
 const selectedParameterQualifiers = ref<ParameterQualifiersHeader[]>([])
 const selectableAttributes = ref<string[][]>([])
 const onlyDownloadMetaData = ref(false)
+const errors = ref<string[]>([])
 
-getLocations().then((locationsResponse) => {
+const selectedAttributes = ref<string[][]>([])
+
+const startDate = ref<Date>(getStartDateValue())
+const endDate = ref<Date>(getEndDateValue())
+const DATE_FMT = 'yyyy-MM-dd HH:mm'
+const startDateString = ref<string>(
+  DateTime.fromJSDate(getStartDateValue()).toFormat(DATE_FMT),
+)
+const endDateString = ref<string>(
+  DateTime.fromJSDate(getEndDateValue()).toFormat(DATE_FMT),
+)
+
+const parameterQualifiersHeaders: ParameterQualifiersHeader[] = []
+
+const rules = {
+  required: (value: string) => (value !== undefined && !!value) || 'Required',
+  date: (value: string) => {
+    const date = DateTime.fromFormat(value || '', DATE_FMT)
+    return !isNaN(date.valueOf()) || 'Invalid date'
+  },
+}
+
+onMounted(async () => {
+  const locationsResponse = await getLocations()
   allLocations.value = locationsResponse
   locations.value = locationsResponse
-  selectedLocations.value = allLocations.value
-  selectableAttributes.value = getAttributeValues(allLocations.value)
-})
+  selectedLocations.value = locationsResponse
+  selectableAttributes.value = getAttributeValues(locationsResponse)
 
-allParameters.value = await getParameters()
-getTimeSeriesHeaders().then((headersResponse) => {
-  const parameterQualifiersHeaders: ParameterQualifiersHeader[] = []
+  allParameters.value = await getParameters()
+
+  const headersResponse = await getTimeSeriesHeaders()
   headersResponse?.forEach((timeSeriesResult) => {
     const parameterQualifiersHeader: ParameterQualifiersHeader = {
       parameterId: timeSeriesResult.header?.parameterId,
@@ -222,28 +245,10 @@ getTimeSeriesHeaders().then((headersResponse) => {
   })
   parameterQualifiers.value = uniqWith(parameterQualifiersHeaders, isEqual)
   selectedParameterQualifiers.value = parameterQualifiers.value
+  if (attributes) {
+    selectedAttributes.value = attributes.map(() => [])
+  }
 })
-
-let errors = ref<string[]>([])
-const startDate = ref<Date>(getStartDateValue())
-const endDate = ref<Date>(getEndDateValue())
-const selectedAttributes = ref<string[][]>([])
-const rules = {
-  required: (value: string) => (value !== undefined && !!value) || 'Required',
-  date: (value: string) => {
-    const date = DateTime.fromFormat(value || '', DATE_FMT)
-    return !isNaN(date.valueOf()) || 'Invalid date'
-  },
-}
-attributes?.forEach((item) => selectedAttributes.value.push([]))
-
-const DATE_FMT = 'yyyy-MM-dd HH:mm'
-const startDateString = ref<string>(
-  DateTime.fromJSDate(getStartDateValue()).toFormat(DATE_FMT),
-)
-const endDateString = ref<string>(
-  DateTime.fromJSDate(getEndDateValue()).toFormat(DATE_FMT),
-)
 
 watch(startDateString, (newValue) => {
   let newDateTime: DateTimeMaybeValid = DateTime.fromFormat(newValue, DATE_FMT)
