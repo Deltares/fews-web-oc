@@ -189,6 +189,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         meta: { sidebar: true },
       },
       {
+        path: '/topology/node/:nodeId*/systemmonitor',
+        name: 'TopologySystemMonitor',
+        component: SystemMonitorDisplayView,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
         path: '/topology/node/:nodeId*/map/:layerName?',
         name: 'TopologySpatialDisplay',
         component: SpatialDisplay,
