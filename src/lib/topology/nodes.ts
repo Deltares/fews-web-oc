@@ -115,21 +115,14 @@ function topologyNodeIsVisible(node: TopologyNode): boolean {
 }
 
 function hasSupportedDisplay(node: TopologyNode): boolean {
-  if (
+  return (
     nodeHasSchematicStatusDisplay(node) ||
     nodeHasMap(node) ||
     nodeHasCharts(node) ||
+    nodeHasDataDownload(node) ||
     nodeHasReports(node) ||
     nodeHasSystemMonitor(node)
   )
-    return true
-  if (
-    node.filterIds !== undefined &&
-    node.filterIds.length == 1 &&
-    node.dataDownloadDisplay !== undefined
-  )
-    return true
-  return false
 }
 
 export function nodeHasMap(node: TopologyNode) {
@@ -142,6 +135,10 @@ export function nodeHasCharts(node: TopologyNode) {
     node.displayId !== undefined ||
     (node.plotId != undefined && node.locationIds != undefined)
   )
+}
+
+export function nodeHasDataDownload(node: TopologyNode) {
+  return node.filterIds !== undefined && node.dataDownloadDisplay !== undefined
 }
 
 export function nodeHasReports(node: TopologyNode) {

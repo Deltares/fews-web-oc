@@ -1,9 +1,22 @@
 import { TopologyNode } from '@deltares/fews-pi-requests'
 import { RouteLocationNamedRaw } from 'vue-router'
-import { nodeHasCharts, nodeHasMap, nodeHasReports, nodeHasSchematicStatusDisplay, nodeHasSystemMonitor } from './nodes'
+import {
+  nodeHasCharts,
+  nodeHasDataDownload,
+  nodeHasMap,
+  nodeHasReports,
+  nodeHasSchematicStatusDisplay,
+  nodeHasSystemMonitor,
+} from './nodes'
 
 export interface DisplayTab {
-  type: 'charts' | 'map' | 'reports' | 'schematic-status-display' | 'system-monitor'
+  type:
+    | 'charts'
+    | 'map'
+    | 'reports'
+    | 'data-download'
+    | 'schematic-status-display'
+    | 'system-monitor'
   id: string
   title: string
   href?: string
@@ -15,6 +28,14 @@ export interface DisplayTab {
 
 const displayTabs: DisplayTab[] = [
   {
+    type: 'map',
+    id: 'spatial',
+    title: 'Map',
+    to: { name: 'TopologySpatialDisplay' },
+    icon: 'mdi-map',
+    active: false,
+  },
+  {
     type: 'charts',
     id: 'timeseries',
     title: 'Charts',
@@ -23,11 +44,11 @@ const displayTabs: DisplayTab[] = [
     active: false,
   },
   {
-    type: 'map',
-    id: 'spatial',
-    title: 'Map',
-    to: { name: 'TopologySpatialDisplay' },
-    icon: 'mdi-map',
+    type: 'data-download',
+    id: 'download',
+    title: 'Download',
+    to: { name: 'TopologyDataDownload' },
+    icon: 'mdi-download',
     active: false,
   },
   {
@@ -64,11 +85,17 @@ export function displayTabsForNode(node: TopologyNode, parentNodeId?: string) {
     switch (tab.type) {
       case 'map':
         tab.active = nodeHasMap(node)
-        tab.to.params = { ...params, LayerName: node.gridDisplaySelection?.plotId,
+        tab.to.params = {
+          ...params,
+          LayerName: node.gridDisplaySelection?.plotId,
         }
         break
       case 'charts':
         tab.active = nodeHasCharts(node)
+        tab.to.params = { ...params }
+        break
+      case 'data-download':
+        tab.active = nodeHasDataDownload(node)
         tab.to.params = { ...params }
         break
       case 'reports':
