@@ -115,18 +115,43 @@ function topologyNodeIsVisible(node: TopologyNode): boolean {
 }
 
 function hasSupportedDisplay(node: TopologyNode): boolean {
-  if (node.scadaPanelId !== undefined) return true
+  if (
+    nodeHasSchematicStatusDisplay(node) ||
+    nodeHasMap(node) ||
+    nodeHasCharts(node) ||
+    nodeHasReports(node) ||
+    nodeHasSystemMonitor(node)
+  )
+    return true
   if (
     node.filterIds !== undefined &&
     node.filterIds.length == 1 &&
     node.dataDownloadDisplay !== undefined
   )
     return true
-  if (node.plotId != undefined && node.locationIds != undefined) return true
-  if (node.filterIds !== undefined && node.filterIds.length > 0) return true
-  if (node.gridDisplaySelection !== undefined) return true
-  if (node.displayId !== undefined) return true
-  if (node.displayGroups !== undefined && node.displayGroups.length > 0)
-    return true
   return false
+}
+
+export function nodeHasMap(node: TopologyNode) {
+  return node.gridDisplaySelection !== undefined || node.filterIds !== undefined
+}
+
+export function nodeHasCharts(node: TopologyNode) {
+  return (
+    node.displayGroups !== undefined ||
+    node.displayId !== undefined ||
+    (node.plotId != undefined && node.locationIds != undefined)
+  )
+}
+
+export function nodeHasReports(node: TopologyNode) {
+  return node.reportDisplay?.reports !== undefined
+}
+
+export function nodeHasSchematicStatusDisplay(node: TopologyNode) {
+  return node.scadaPanelId !== undefined
+}
+
+export function nodeHasSystemMonitor(node: TopologyNode) {
+  return node.mainPanel !== undefined && node.mainPanel === 'system monitor'
 }

@@ -1,8 +1,9 @@
 import { TopologyNode } from '@deltares/fews-pi-requests'
 import { RouteLocationNamedRaw } from 'vue-router'
+import { nodeHasCharts, nodeHasMap, nodeHasReports, nodeHasSchematicStatusDisplay, nodeHasSystemMonitor } from './nodes'
 
 export interface DisplayTab {
-  type: 'charts' | 'map' | 'reports' | 'schematic-status-display'
+  type: 'charts' | 'map' | 'reports' | 'schematic-status-display' | 'system-monitor'
   id: string
   title: string
   href?: string
@@ -45,29 +46,15 @@ const displayTabs: DisplayTab[] = [
     icon: 'mdi-view-dashboard',
     active: false,
   },
+  {
+    type: 'system-monitor',
+    id: 'ssd',
+    title: 'System Monitor',
+    to: { name: 'TopologySystemMonitor' },
+    icon: 'mdi-view-dashboard',
+    active: false,
+  },
 ]
-
-
-
-function nodeHasMap(node: TopologyNode) {
-  return node.gridDisplaySelection !== undefined || node.filterIds !== undefined
-}
-
-function nodeHasCharts(node: TopologyNode) {
-  return (
-    node.displayGroups !== undefined ||
-    node.displayId !== undefined ||
-    (node.plotId != undefined && node.locationIds != undefined)
-  )
-}
-
-function nodeHasReports(node: TopologyNode) {
-  return node.reportDisplay?.reports !== undefined
-}
-
-function nodeHasSchematicStatusDisplay(node: TopologyNode) {
-  return node.scadaPanelId !== undefined
-}
 
 export function displayTabsForNode(node: TopologyNode, parentNodeId?: string) {
   for (const tab of displayTabs) {
@@ -91,6 +78,10 @@ export function displayTabsForNode(node: TopologyNode, parentNodeId?: string) {
       case 'schematic-status-display':
         tab.active = nodeHasSchematicStatusDisplay(node)
         tab.to.params = { ...params, panelId: node.scadaPanelId }
+        break
+      case 'system-monitor':
+        tab.active = nodeHasSystemMonitor(node)
+        tab.to.params = { ...params }
         break
     }
   }
