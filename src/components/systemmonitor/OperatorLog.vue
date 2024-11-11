@@ -363,12 +363,11 @@ const logToColor = (log: LogMessage) => {
 const logToIcon = (log: LogMessage) => {
   switch (log.level) {
     case LogLevelEnum.Info:
-      return '$icon'
+      return '$info'
     case LogLevelEnum.Warning:
       return '$warning'
     case LogLevelEnum.Error:
       return '$error'
-      return
   }
 }
 </script>
