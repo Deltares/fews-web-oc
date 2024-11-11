@@ -69,10 +69,11 @@ export function useWhatIfScenarios(
 
     const id = whatIfTemplateId.replace('-template', '')
     const title = whatIfTemplateId.replaceAll('-', ' ')
+    // TODO: non-Durban placeholder workflowIds...
     const workflowId =
       whatIfTemplateId === 'what-if-template-1'
-        ? workflows.workflows.value[0].workflowId
-        : workflows.workflows.value[1].workflowId
+        ? 'HydraulicPCSWMM_North_Umhlanga_Simplified_NOAA'
+        : 'HydraulicPCSWMM_South_Illovu_Simplified_NOAA'
     const propertiesSchemaUrl = 'placeholder'
     const uiSchemaUrl = 'placeholder'
     return {
