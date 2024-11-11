@@ -38,7 +38,12 @@
     </v-card>
     <v-card>
       <v-card-title>Run configuration</v-card-title>
-      <v-card-text>
+      <v-card-text class="d-flex flex-column gr-2">
+        <v-text-field
+          v-model="whatIfScenarioName"
+          label="What-if scenario name"
+          hide-details
+        />
         <v-text-field v-model="description" label="Description" hide-details />
       </v-card-text>
       <v-card-actions>
@@ -108,6 +113,7 @@ const workflow = computed<Workflow | null>(() =>
   workflowId.value === null ? null : workflows.byId(workflowId.value),
 )
 
+const whatIfScenarioName = ref<string>('')
 const description = ref<string>('')
 
 const doShowConfiguration = computed<boolean>(() => workflowId.value !== null)
@@ -120,9 +126,12 @@ const hasAllRequiredProperties = computed<boolean>(() => {
     (property) => property in selectedProperties.value,
   )
 })
-const canSubmit = computed<boolean>(
-  () => workflowId.value !== null && hasAllRequiredProperties.value,
-)
+const canSubmit = computed<boolean>(() => {
+  const hasSelectedWorkflow = workflowId.value !== null
+  const hasAllProperties = hasAllRequiredProperties.value
+  const hasScenarioName = whatIfScenarioName.value.trim() !== ''
+  return hasSelectedWorkflow && hasAllProperties && hasScenarioName
+})
 
 const isSubmitted = ref<boolean>(false)
 const hasSubmitError = ref<boolean>(false)
