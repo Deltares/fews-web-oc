@@ -1,37 +1,18 @@
 <template>
-  <div class="w-100 h-100 pa-4 d-flex flex-column gr-2">
-    <v-stepper v-model="currentStep" class="w-100" :items="steps">
-      <template #item.1>
-        <div class="d-flex flex-column gr-4 mx-2">
-          <v-select
-            v-model="selectedWhatIfTemplateId"
-            :items="whatIfScenarios.templates.value"
-            item-value="id"
-            item-title="title"
-            label="Select what-if scenario template"
-            hide-details
-          />
-          <v-card>
-            <v-card-text>
-              <v-text-field
-                v-model="description"
-                label="Description"
-                hide-details
-              />
-              <v-checkbox
-                v-model="doApproveImmediately"
-                label="Approve immediately"
-                hide-details
-              />
-            </v-card-text>
-          </v-card>
-          <div class="d-flex flex-column align-end">
-            <ExpectedWorkflowRuntime :workflow-id="workflowId" />
-            <AvailableWorkflowServers :workflow-id="workflowId" />
-          </div>
-        </div>
-      </template>
-      <template #item.2>
+  <div class="w-100 d-flex flex-column gr-4 pa-4">
+    <div>
+      <v-select
+        v-model="selectedWhatIfTemplateId"
+        :items="whatIfScenarios.templates.value"
+        item-value="id"
+        item-title="title"
+        label="Select what-if scenario template"
+        hide-details
+      />
+    </div>
+    <v-card v-if="doShowConfiguration">
+      <v-card-title>Scenario configuration</v-card-title>
+      <v-card-text>
         <json-forms
           class="pt-2"
           :schema="whatIfScenarios.formSchemas.value?.properties"
@@ -43,27 +24,29 @@
           :config="jsonFormsConfig"
           @change="onPropertiesChange"
         />
-      </template>
-      <template #item.3>
-        <WhatIfPropertiesSummary
-          :properties="selectedProperties"
-          :form-schemas="whatIfScenarios.formSchemas.value"
-        />
-      </template>
-      <template #actions="{ prev, next }">
-        <div class="d-flex px-6 pb-6">
-          <v-btn @click="prev" :disabled="isFirstStep">Previous</v-btn>
-          <v-spacer />
-          <v-btn
-            @click="onClickNextOrSubmit(next)"
-            :disabled="!canContinue || isSubmitted"
-            :color="nextButtonColor"
-          >
-            {{ nextButtonLabel }}
-          </v-btn>
+      </v-card-text>
+    </v-card>
+    <v-card>
+      <v-card-title>Run configuration</v-card-title>
+      <v-card-text>
+        <v-text-field v-model="description" label="Description" hide-details />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <div class="d-flex flex-row gc-4 mr-2">
+          <ExpectedWorkflowRuntime :workflow-id="workflowId" />
+          <AvailableWorkflowServers :workflow-id="workflowId" />
         </div>
-      </template>
-    </v-stepper>
+        <v-btn
+          variant="flat"
+          color="primary"
+          :disabled="!canSubmit"
+          @click="submit"
+        >
+          Submit
+        </v-btn>
+      </v-card-actions>
+    </v-card>
     <v-alert
       v-if="isSubmitted && !hasSubmitError"
       class="flex-0-0"
@@ -80,7 +63,7 @@
 import jsonFormsConfig from '@/assets/JsonFormsConfig.json'
 
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 
 import {
   SubmitStatus,
@@ -91,14 +74,11 @@ import {
 import { JsonForms } from '@jsonforms/vue'
 import ExpectedWorkflowRuntime from './ExpectedWorkflowRuntime.vue'
 import AvailableWorkflowServers from './AvailableWorkflowServers.vue'
-import WhatIfPropertiesSummary from './WhatIfPropertiesSummary.vue'
 
 interface Props {
   nodeId: string
 }
 const props = defineProps<Props>()
-
-const steps = ['Select task', 'Configure task', 'Submit task']
 
 const selectedWhatIfTemplateId = ref<string | null>(null)
 const whatIfScenarios = useWhatIfScenarios(
@@ -106,52 +86,13 @@ const whatIfScenarios = useWhatIfScenarios(
   selectedWhatIfTemplateId,
 )
 
-const currentStep = ref<number>(1)
-const isFirstStep = computed<boolean>(() => currentStep.value === 1)
-const isLastStep = computed<boolean>(() => currentStep.value === 3)
-const nextButtonLabel = computed<string>(() =>
-  isLastStep.value ? 'Submit' : 'Next',
-)
-const nextButtonColor = computed<string | undefined>(() =>
-  isLastStep.value ? 'primary' : undefined,
-)
-
 const workflowId = computed(
   () => whatIfScenarios.selectedTemplate.value?.workflowId ?? null,
 )
 
 const description = ref<string>('')
-const doApproveImmediately = ref<boolean>(false)
 
-const isSubmitted = ref<boolean>(false)
-const hasSubmitError = ref<boolean>(false)
-const submitErrorMessage = ref<string>('')
-watch(currentStep, () => {
-  // Reset submit status if we change steps after submission; this means we can
-  // submit another (or the same...) job.
-  isSubmitted.value = false
-  submitErrorMessage.value = ''
-})
-
-// FIXME: why does json-forms not support v-model? :-(
-const selectedProperties = ref<WhatIfProperties>({})
-function onPropertiesChange(event: { data?: WhatIfProperties }): void {
-  const updatedProperties = event.data
-  if (!updatedProperties) return
-  selectedProperties.value = updatedProperties
-}
-
-const canContinue = computed<boolean>(() => {
-  if (currentStep.value === 1) {
-    // We should have selected a what-if template.
-    return selectedWhatIfTemplateId.value !== null
-  } else if (currentStep.value === 2) {
-    // All required properties should have been filled in.
-    return hasAllRequiredProperties.value
-  } else {
-    return true
-  }
-})
+const doShowConfiguration = computed<boolean>(() => workflowId.value !== null)
 
 const hasAllRequiredProperties = computed<boolean>(() => {
   const propertiesSchema = whatIfScenarios.formSchemas.value?.properties
@@ -161,13 +102,19 @@ const hasAllRequiredProperties = computed<boolean>(() => {
     (property) => property in selectedProperties.value,
   )
 })
+const canSubmit = computed<boolean>(
+  () => workflowId.value !== null && hasAllRequiredProperties.value,
+)
 
-function onClickNextOrSubmit(next: () => void): void {
-  if (isLastStep.value) {
-    submit()
-  } else {
-    next()
-  }
+const isSubmitted = ref<boolean>(false)
+const hasSubmitError = ref<boolean>(false)
+const submitErrorMessage = ref<string>('')
+// FIXME: why does json-forms not support v-model? :-(
+const selectedProperties = ref<WhatIfProperties>({})
+function onPropertiesChange(event: { data?: WhatIfProperties }): void {
+  const updatedProperties = event.data
+  if (!updatedProperties) return
+  selectedProperties.value = updatedProperties
 }
 
 async function submit(): Promise<void> {
