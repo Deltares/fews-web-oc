@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-column h-100">
+  <div class="d-flex flex-column h-100 w-100">
     <v-tabs v-model="selectedTab" class="flex-0-0">
       <v-tab value="Running tasks">Running tasks</v-tab>
       <v-tab value="Import status">Import status</v-tab>
