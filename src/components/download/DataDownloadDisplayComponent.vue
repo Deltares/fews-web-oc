@@ -381,21 +381,27 @@ function downloadData() {
   errors.value = validateUserInput(startTimeRequest, endTimeRequest)
   if (errors.value.length !== 0) return
 
-  const parameterIds = selectedParameterQualifiers.value.map(
-    (parameterQualifier) => parameterQualifier.parameterId,
-  )
-  const qualifiersIds = selectedParameterQualifiers.value
-    .filter((parameterQualifier) => parameterQualifier.qualifiers !== undefined)
+  const selectedParameterIds = selectedParameterQualifiers.value
+    .map((parameterQualifier) => parameterQualifier.parameterId)
+    .filter((parameterId) => parameterId !== undefined)
+
+  const selectedQualifierIds = selectedParameterQualifiers.value
     .map((parameterQualifier) => parameterQualifier.qualifiers)
     .flatMap((item) => item)
+    .filter((qualifier) => qualifier !== undefined)
+
+  const selectedLocationIds = selectedLocations.value.map(
+    (location) => location.locationId,
+  )
+
+  const joinUniqueStrings = (stringArray: string[]) =>
+    stringArray.length > 0 ? uniqWith(stringArray).join(',') : undefined
 
   timeSeriesFilter.value = {
     filterId: filterId,
-    locationIds: selectedLocations.value
-      .map((location) => location.locationId)
-      .join(','),
-    parameterIds: uniqWith(parameterIds).join(','),
-    qualifierIds: uniqWith(qualifiersIds).join(','),
+    locationIds: joinUniqueStrings(selectedLocationIds),
+    parameterIds: joinUniqueStrings(selectedParameterIds),
+    qualifierIds: joinUniqueStrings(selectedQualifierIds),
     onlyHeaders: onlyDownloadMetaData.value,
   }
   const queryParameters = filterToParams(timeSeriesFilter.value)
