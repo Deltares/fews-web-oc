@@ -11,11 +11,11 @@
       />
       <v-container v-if="workflow !== null">
         <v-row dense>
-          <v-col cols="1">Workflow:</v-col>
+          <v-col cols="2">Workflow:</v-col>
           <v-col>{{ workflow.name }}</v-col>
         </v-row>
         <v-row v-if="workflow.description" dense>
-          <v-col cols="1">Description:</v-col>
+          <v-col cols="2">Description:</v-col>
           <v-col>{{ workflow.description }}</v-col>
         </v-row>
       </v-container>

@@ -1,16 +1,25 @@
 import { asyncComputed } from '@vueuse/core'
-import { computed, toValue, type MaybeRefOrGetter } from 'vue'
+import { toValue, type MaybeRefOrGetter } from 'vue'
+
+import { configManager } from '../application-config'
+import { fetchWorkflowExpectedRuntimeInSeconds } from '@/lib/workflows/runtimes'
 
 export function useWorkflowRuntime(
   workflowId: MaybeRefOrGetter<string | null>,
 ) {
-  const runtimeInSeconds = computed<number | null>(() => 5)
+  const baseUrl = new URL(configManager.get('VITE_FEWS_WEBSERVICES_URL'))
+
+  const runtimeInSeconds = asyncComputed<number | null>(async () => {
+    const _workflowId = toValue(workflowId)
+    if (_workflowId === null) return null
+    return fetchWorkflowExpectedRuntimeInSeconds(baseUrl, _workflowId)
+  }, null)
 
   const numAvailableServers = asyncComputed<number | null>(async () => {
     const _workflowId = toValue(workflowId)
     if (_workflowId === null) return null
     return fetchNumAvailableServers(_workflowId)
-  })
+  }, null)
 
   async function fetchNumAvailableServers(
     _workflowId: string,
