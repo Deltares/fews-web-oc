@@ -2,10 +2,10 @@
   <v-data-iterator
     :items="logMessages"
     :items-per-page="-1"
-    item-value="timestamp"
+    item-value="creationTime"
     :search="search"
     :custom-key-filter="customKeyFilters"
-    :sort-by="[{ key: 'timestamp', order: 'desc' }]"
+    :sort-by="[{ key: 'creationTime', order: 'desc' }]"
   >
     <template v-slot:header>
       <v-toolbar class="px-2">
@@ -26,6 +26,7 @@
           hide-details
           multiple
           style="max-width: 200px"
+          disabled
         ></v-select>
         <v-select
           v-model="selectedLevels"
@@ -48,7 +49,7 @@
         <span>Total: {{ logMessages.length }}</span>
       </v-toolbar>
     </template>
-    <template v-slot:default="{ items, isExpanded, toggleExpand }">
+    <template v-slot:default="{ items }">
       <div class="scroll-container">
         <v-row style="margin: 0">
           <v-col
@@ -70,16 +71,24 @@
               outlined
             >
               <template v-slot:prepend>
-                <v-icon size="small" icon="mdi-account"></v-icon>
+                <v-icon
+                  size="small"
+                  :icon="
+                    log.raw.logType === LogType.System
+                      ? 'mdi-robot'
+                      : 'mdi-account'
+                  "
+                ></v-icon>
               </template>
               <template v-slot:title>
                 <div style="font-size: 0.8em">
-                  <strong>{{
-                    isLogMessageByCurrentUser(log.raw) ? 'You' : log.raw.user
-                  }}</strong>
-                  @<small>{{ log.raw.timestamp.toISOString() }}</small>
+                  <strong>{{ logToUser(log.raw) }}</strong>
+                  @<small>{{ log.raw.creationTime.toISOString() }}</small>
                 </div>
               </template>
+              <v-card-text>
+                {{ log.raw.message }}
+              </v-card-text>
               <template v-slot:append>
                 <v-icon
                   v-if="logToIcon(log.raw)"
@@ -87,38 +96,6 @@
                   :icon="logToIcon(log.raw)"
                 ></v-icon>
               </template>
-              <v-card-text>
-                <div v-if="!isExpanded(log as any)">
-                  <strong>{{ log.raw.messages[0].title }}</strong
-                  >{{
-                    log.raw.messages[0]?.value
-                      ? ': ' + log.raw.messages[0]?.value
-                      : ''
-                  }}
-                </div>
-                <div
-                  v-else
-                  v-for="(sublog, subindex) in log.raw.messages"
-                  :key="subindex"
-                >
-                  <strong>{{ sublog.title }}</strong
-                  >{{ sublog?.value ? ': ' + sublog.value : '' }}
-                </div>
-                <v-spacer>
-                  <v-btn
-                    v-show="log.raw.messages.length > 1"
-                    :icon="
-                      isExpanded(log as any)
-                        ? 'mdi-chevron-up'
-                        : 'mdi-chevron-down'
-                    "
-                    size="small"
-                    variant="plain"
-                    density="compact"
-                    @click="() => toggleExpand(log as any)"
-                  ></v-btn>
-                </v-spacer>
-              </v-card-text>
             </v-card>
           </v-col>
         </v-row>
@@ -140,25 +117,31 @@ const LogLevelEnum = {
 
 type LogLevelType = (typeof LogLevelEnum)[keyof typeof LogLevelEnum]
 
-interface LogMessage {
-  user: string
+enum LogType {
+  System = 'System',
+  Manual = 'Manual',
+}
+
+interface GeneralLogMessage {
   level: LogLevelType
-  messages: LogSubMessage[]
-  timestamp: Date
+  message: string
+  creationTime: Date
   eventCode: string
+  logType: LogType
 }
 
-const SubmessageEnum = {
-  Text: 'text',
-  Choice: 'choice',
-} as const
-type SubmessageType = (typeof SubmessageEnum)[keyof typeof SubmessageEnum]
-
-interface LogSubMessage {
-  type: SubmessageType
-  title: string
-  value?: string
+interface ManualLogMessage extends GeneralLogMessage {
+  logType: LogType.Manual
+  user: string
+  segment?: string
 }
+
+interface SystemLogMessage extends GeneralLogMessage {
+  logType: LogType.System
+  workflow: string
+}
+
+type LogMessage = ManualLogMessage | SystemLogMessage
 
 const search = ref('')
 const selectedUsers = ref<string[]>([])
@@ -177,143 +160,77 @@ onMounted((): void => {
     })
 })
 
-const logMessages = computed(() => [
-  {
-    user: currentUser.value?.profile?.name ?? 'Current User',
-    timestamp: new Date('2024-11-01T10:15:00Z'),
-    level: LogLevelEnum.Info,
-    eventCode: 'Manual',
-    messages: [
-      {
-        type: SubmessageEnum.Text,
-        title: 'Shift Ended',
-        value: 'Just a regular day.',
-      },
-    ],
-  },
-  {
-    user: 'Jane Doe',
-    timestamp: new Date('2024-11-01T10:15:00Z'),
-    level: LogLevelEnum.Info,
-    eventCode: 'Manual',
-    messages: [
-      {
-        type: SubmessageEnum.Text,
-        title: 'Shift Started',
-      },
-    ],
-  },
-  {
-    user: 'Jane Doe',
-    timestamp: new Date('2024-11-01T12:30:00Z'),
-    level: LogLevelEnum.Warning,
-    eventCode: 'Manual',
-    messages: [
-      {
-        type: SubmessageEnum.Text,
-        title: 'Remark pumping',
-        value: 'This is definitely cause for a warning.',
-      },
-    ],
-  },
-  {
-    user: 'Jane Doe',
-    timestamp: new Date('2024-11-01T18:30:00Z'),
-    level: LogLevelEnum.Info,
-    eventCode: 'Manual',
-    messages: [
-      {
-        type: SubmessageEnum.Text,
-        title: 'Shift Started.',
-        value: 'Im looking forward to a great day.',
-      },
-      {
-        type: SubmessageEnum.Choice,
-        title: 'Send warning Report',
-        value: 'yes',
-      },
-    ],
-  },
-  {
-    user: currentUser.value?.profile?.name ?? 'Current User',
-    timestamp: new Date('2024-11-01T18:30:00Z'),
-    level: LogLevelEnum.Info,
-    eventCode: 'Manual',
-    messages: [
-      {
-        type: SubmessageEnum.Text,
-        title: 'Shift Started',
-      },
-    ],
-  },
-  {
-    user: currentUser.value?.profile?.name ?? 'Current User',
-    timestamp: new Date('2024-11-01T23:31:00Z'),
-    level: LogLevelEnum.Error,
-    eventCode: 'Manual',
-    messages: [
-      {
-        type: SubmessageEnum.Text,
-        title: 'General Remarks',
-        value: 'Oh no.',
-      },
-      {
-        type: SubmessageEnum.Text,
-        title: 'Remark pumping',
-        value: 'There is something very wrong with this pump.',
-      },
-      {
-        type: SubmessageEnum.Choice,
-        title: 'SMS send',
-        value: 'yes',
-      },
-    ],
-  },
-  {
-    user: currentUser.value?.profile?.name ?? 'Current User',
-    timestamp: new Date('2024-11-01T23:58:00Z'),
-    level: LogLevelEnum.Info,
-    eventCode: 'Manual',
-    messages: [
-      {
-        type: SubmessageEnum.Text,
-        title: 'General Remarks',
-        value: 'Problem has been fixed.',
-      },
-      {
-        type: SubmessageEnum.Text,
-        title: 'Remark pumping',
-        value: 'The pump has been fixed and is working again.',
-      },
-      {
-        type: SubmessageEnum.Choice,
-        title: 'SMS send',
-        value: 'yes',
-      },
-    ],
-  },
-  {
-    user: currentUser.value?.profile?.name ?? 'Current User',
-    timestamp: new Date('2024-11-02T02:25:00Z'),
-    level: LogLevelEnum.Info,
-    eventCode: 'Manual',
-    messages: [
-      {
-        type: SubmessageEnum.Text,
-        title: 'Shift Ended',
-      },
-      {
-        type: SubmessageEnum.Text,
-        title: 'General Remarks',
-        value:
-          'This is a very long message, just to show what it will look like if a message is so long that it will span mutiple lines.',
-      },
-    ],
-  },
-])
+const logMessages = computed(() => {
+  const messages: (SystemLogMessage | ManualLogMessage)[] = [
+    {
+      logType: LogType.System,
+      workflow: 'Run SWAN Full Model Train',
+      creationTime: new Date('2024-11-01T12:12:12Z'),
+      level: LogLevelEnum.Error,
+      eventCode: 'TaskRun.PartlyFailed',
+      message: 'Something went wrong...',
+    },
+    {
+      logType: LogType.Manual,
+      user: currentUser.value?.profile?.name ?? 'Current User',
+      creationTime: new Date('2024-11-01T10:15:00Z'),
+      level: LogLevelEnum.Info,
+      eventCode: 'default',
+      message: 'Shift Ended. Just a regular day.',
+    },
+    {
+      logType: LogType.Manual,
+      user: 'Jane Doe',
+      creationTime: new Date('2024-11-01T10:15:00Z'),
+      level: LogLevelEnum.Info,
+      eventCode: 'default',
+      message: 'Shift Started',
+    },
+    {
+      logType: LogType.Manual,
+      user: 'Jane Doe',
+      creationTime: new Date('2024-11-01T12:30:00Z'),
+      level: LogLevelEnum.Warning,
+      eventCode: 'default',
+      message: 'This is definitely cause for a warning.',
+    },
+    {
+      logType: LogType.Manual,
+      user: currentUser.value?.profile?.name ?? 'Current User',
+      creationTime: new Date('2024-11-01T18:30:00Z'),
+      level: LogLevelEnum.Info,
+      eventCode: 'default',
+      message: 'Shift Started',
+    },
+    {
+      logType: LogType.Manual,
+      user: currentUser.value?.profile?.name ?? 'Current User',
+      creationTime: new Date('2024-11-01T23:31:00Z'),
+      level: LogLevelEnum.Error,
+      eventCode: 'default',
+      message: 'Oh no.',
+    },
+    {
+      logType: LogType.Manual,
+      user: currentUser.value?.profile?.name ?? 'Current User',
+      creationTime: new Date('2024-11-02T02:25:00Z'),
+      level: LogLevelEnum.Info,
+      eventCode: 'default',
+      message:
+        'This is a very long message, just to show what it will look like if a message is so long that it will span mutiple lines.',
+    },
+  ]
+  return messages
+})
 
 const users = computed(() => {
-  return [...new Set(logMessages.value.map((log) => log.user))]
+  return [
+    ...new Set(
+      logMessages.value
+        .filter((log) => log.logType === LogType.Manual)
+        .map((log) => log.user),
+    ),
+  ]
 })
 
 const eventCodes = computed(() => {
@@ -321,7 +238,13 @@ const eventCodes = computed(() => {
 })
 
 const isLogMessageByCurrentUser = (log: LogMessage) => {
+  if (log.logType === LogType.System) return false
   return log.user === currentUser.value?.profile?.name
+}
+
+const logToUser = (log: LogMessage) => {
+  if (log.logType === LogType.System) return 'System'
+  return isLogMessageByCurrentUser(log) ? 'You' : log.user
 }
 
 const logLevels = Object.values(LogLevelEnum)
@@ -330,10 +253,10 @@ const customKeyFilters: Record<
   string,
   (value: string, query: string, item?: any) => boolean
 > = {
-  user: (value: string, query: string, item?: any) => {
-    if (selectedUsers.value.length === 0) return true
-    return selectedUsers.value.includes(item.raw.user)
-  },
+  // user: (value: string, query: string, item?: any) => {
+  //   if (selectedUsers.value.length === 0) return true
+  //   return selectedUsers.value.includes(item.raw.user)
+  // },
   level: (value: string, query: string, item?: any) => {
     if (selectedLevels.value.length === 0) return true
     return selectedLevels.value.includes(item.raw.level)
@@ -341,11 +264,6 @@ const customKeyFilters: Record<
   eventCode: (value: string, query: string, item?: any) => {
     if (selectedEventCodes.value.length === 0) return true
     return selectedEventCodes.value.includes(item.raw.eventCode)
-  },
-  messages: (value: string, query: string, item?: any) => {
-    return item.raw.messages.some((message: LogSubMessage) =>
-      message.title.toLowerCase().includes(query.toLowerCase()),
-    )
   },
 }
 
