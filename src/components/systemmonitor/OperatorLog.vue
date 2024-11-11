@@ -77,7 +77,7 @@
                 ></v-icon>
               </template>
               <v-card-text>
-                <div v-if="!isExpanded(log)">
+                <div v-if="!isExpanded(log as any)">
                   <strong>{{ log.raw.messages[0].title }}</strong
                   >{{
                     log.raw.messages[0]?.value
@@ -97,12 +97,14 @@
                   <v-btn
                     v-show="log.raw.messages.length > 1"
                     :icon="
-                      isExpanded(log) ? 'mdi-chevron-up' : 'mdi-chevron-down'
+                      isExpanded(log as any)
+                        ? 'mdi-chevron-up'
+                        : 'mdi-chevron-down'
                     "
                     size="small"
                     variant="plain"
                     density="compact"
-                    @click="() => toggleExpand(log)"
+                    @click="() => toggleExpand(log as any)"
                   ></v-btn>
                 </v-spacer>
               </v-card-text>
