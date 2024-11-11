@@ -19,27 +19,30 @@
           hide-details
         ></v-text-field>
         <v-select
-          v-model="selectedUser"
+          v-model="selectedUsers"
           :items="users"
           label="Filter by User"
           clearable
           hide-details
+          multiple
           style="max-width: 200px"
         ></v-select>
         <v-select
-          v-model="selectedLevel"
+          v-model="selectedLevels"
           :items="logLevels"
           label="Filter by Level"
           clearable
           hide-details
+          multiple
           style="max-width: 200px"
         ></v-select>
         <v-select
-          v-model="selectedEventCode"
+          v-model="selectedEventCodes"
           :items="eventCodes"
           label="Filter by Event Code"
           clearable
           hide-details
+          multiple
           style="max-width: 200px"
         ></v-select>
         <span>Total: {{ logMessages.length }}</span>
@@ -158,9 +161,9 @@ interface LogSubMessage {
 }
 
 const search = ref('')
-const selectedUser = ref<string | null>(null)
-const selectedLevel = ref<LogLevelType | null>(null)
-const selectedEventCode = ref<string | null>(null)
+const selectedUsers = ref<string[]>([])
+const selectedLevels = ref<LogLevelType[]>([])
+const selectedEventCodes = ref<string[]>([])
 
 const currentUser = ref<User | null>(null)
 onMounted((): void => {
@@ -328,15 +331,16 @@ const customKeyFilters: Record<
   (value: string, query: string, item?: any) => boolean
 > = {
   user: (value: string, query: string, item?: any) => {
-    return selectedUser.value ? item.raw.user === selectedUser.value : true
+    if (selectedUsers.value.length === 0) return true
+    return selectedUsers.value.includes(item.raw.user)
   },
   level: (value: string, query: string, item?: any) => {
-    return selectedLevel.value ? item.raw.level === selectedLevel.value : true
+    if (selectedLevels.value.length === 0) return true
+    return selectedLevels.value.includes(item.raw.level)
   },
   eventCode: (value: string, query: string, item?: any) => {
-    return selectedEventCode.value
-      ? item.raw.eventCode === selectedEventCode.value
-      : true
+    if (selectedEventCodes.value.length === 0) return true
+    return selectedEventCodes.value.includes(item.raw.eventCode)
   },
   messages: (value: string, query: string, item?: any) => {
     return item.raw.messages.some((message: LogSubMessage) =>
