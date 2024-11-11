@@ -311,6 +311,11 @@ const customKeyFilters: Record<
   level: (value: string, query: string, item?: any) => {
     return selectedLevel.value ? item.raw.level === selectedLevel.value : true
   },
+  messages: (value: string, query: string, item?: any) => {
+    return item.raw.messages.some((message: LogSubMessage) =>
+      message.title.toLowerCase().includes(query.toLowerCase()),
+    )
+  },
 }
 
 const logToColor = (log: LogMessage) => {
