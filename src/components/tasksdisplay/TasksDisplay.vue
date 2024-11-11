@@ -9,6 +9,16 @@
         label="Select what-if scenario template"
         hide-details
       />
+      <v-container v-if="workflow !== null">
+        <v-row dense>
+          <v-col cols="1">Workflow:</v-col>
+          <v-col>{{ workflow.name }}</v-col>
+        </v-row>
+        <v-row v-if="workflow.description" dense>
+          <v-col cols="1">Description:</v-col>
+          <v-col>{{ workflow.description }}</v-col>
+        </v-row>
+      </v-container>
     </div>
     <v-card v-if="doShowConfiguration">
       <v-card-title>Scenario configuration</v-card-title>
@@ -65,15 +75,20 @@ import jsonFormsConfig from '@/assets/JsonFormsConfig.json'
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
 import { computed, ref } from 'vue'
 
+import { Workflow } from '@/lib/workflows/types'
+
 import {
   SubmitStatus,
   useWhatIfScenarios,
   WhatIfProperties,
 } from '@/services/useWhatIfScenarios'
+import { useWorkflows } from '@/services/useWorkflows'
 
 import { JsonForms } from '@jsonforms/vue'
 import ExpectedWorkflowRuntime from './ExpectedWorkflowRuntime.vue'
 import AvailableWorkflowServers from './AvailableWorkflowServers.vue'
+
+const workflows = useWorkflows()
 
 interface Props {
   nodeId: string
@@ -88,6 +103,9 @@ const whatIfScenarios = useWhatIfScenarios(
 
 const workflowId = computed(
   () => whatIfScenarios.selectedTemplate.value?.workflowId ?? null,
+)
+const workflow = computed<Workflow | null>(() =>
+  workflowId.value === null ? null : workflows.byId(workflowId.value),
 )
 
 const description = ref<string>('')

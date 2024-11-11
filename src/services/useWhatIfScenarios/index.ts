@@ -4,6 +4,7 @@ import propertiesSchema from './properties-schema.json'
 import uiSchema from './ui-schema.json'
 import { computed, MaybeRefOrGetter, toValue } from 'vue'
 import { asyncComputed } from '@vueuse/core'
+import { useWorkflows } from '../useWorkflows'
 
 export interface WhatIfTemplate {
   id: string
@@ -43,6 +44,8 @@ export function useWhatIfScenarios(
   nodeId: MaybeRefOrGetter<string>,
   selectedWhatIfTemplateId: MaybeRefOrGetter<string | null>,
 ) {
+  const workflows = useWorkflows()
+
   const templates = asyncComputed<WhatIfTemplate[]>(
     async () => fetchWhatIfTemplates(toValue(nodeId)),
     [],
@@ -59,12 +62,6 @@ export function useWhatIfScenarios(
     return fetchFormSchemas(selectedTemplate.value)
   }, null)
 
-  async function fetchWhatIfTemplateIds(_nodeId: string): Promise<string[]> {
-    // TODO: fetch from FEWS end point or topology?
-    //       list of whatIfTemplateIds for a nodeId.
-    return ['what-if-template-1', 'what-if-template-2']
-  }
-
   async function fetchWhatIfTemplate(
     whatIfTemplateId: string,
   ): Promise<WhatIfTemplate> {
@@ -72,7 +69,10 @@ export function useWhatIfScenarios(
 
     const id = whatIfTemplateId.replace('-template', '')
     const title = whatIfTemplateId.replaceAll('-', ' ')
-    const workflowId = whatIfTemplateId.replace('what-if-template', 'workflow')
+    const workflowId =
+      whatIfTemplateId === 'what-if-template-1'
+        ? workflows.workflows.value[0].workflowId
+        : workflows.workflows.value[1].workflowId
     const propertiesSchemaUrl = 'placeholder'
     const uiSchemaUrl = 'placeholder'
     return {
@@ -87,7 +87,7 @@ export function useWhatIfScenarios(
   async function fetchWhatIfTemplates(
     nodeId: string,
   ): Promise<WhatIfTemplate[]> {
-    const whatIfTemplateIds = await fetchWhatIfTemplateIds(nodeId)
+    const whatIfTemplateIds = workflows.whatIfTemplateIds.value
     const whatIfTemplates = await Promise.all(
       whatIfTemplateIds.map(fetchWhatIfTemplate),
     )

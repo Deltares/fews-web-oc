@@ -21,5 +21,10 @@ export async function fetchWorkflows(baseUrl: URL): Promise<Workflow[]> {
     const description = element.querySelector('description')?.textContent ?? ''
     workflows.push({ workflowId, name, description })
   }
+
+  // TODO: the response should include a what-if templateId if appropriate.
+  workflows[0].whatIfTemplateId = 'what-if-template-1'
+  workflows[1].whatIfTemplateId = 'what-if-template-2'
+
   return workflows
 }
