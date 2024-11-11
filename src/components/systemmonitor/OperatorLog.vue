@@ -34,6 +34,14 @@
           hide-details
           style="max-width: 200px"
         ></v-select>
+        <v-select
+          v-model="selectedEventCode"
+          :items="eventCodes"
+          label="Filter by Event Code"
+          clearable
+          hide-details
+          style="max-width: 200px"
+        ></v-select>
         <span>Total: {{ logMessages.length }}</span>
       </v-toolbar>
     </template>
@@ -134,6 +142,7 @@ interface LogMessage {
   level: LogLevelType
   messages: LogSubMessage[]
   timestamp: Date
+  eventCode: string
 }
 
 const SubmessageEnum = {
@@ -151,6 +160,7 @@ interface LogSubMessage {
 const search = ref('')
 const selectedUser = ref<string | null>(null)
 const selectedLevel = ref<LogLevelType | null>(null)
+const selectedEventCode = ref<string | null>(null)
 
 const currentUser = ref<User | null>(null)
 onMounted((): void => {
@@ -169,6 +179,7 @@ const logMessages = computed(() => [
     user: currentUser.value?.profile?.name ?? 'Current User',
     timestamp: new Date('2024-11-01T10:15:00Z'),
     level: LogLevelEnum.Info,
+    eventCode: 'Manual',
     messages: [
       {
         type: SubmessageEnum.Text,
@@ -181,6 +192,7 @@ const logMessages = computed(() => [
     user: 'Jane Doe',
     timestamp: new Date('2024-11-01T10:15:00Z'),
     level: LogLevelEnum.Info,
+    eventCode: 'Manual',
     messages: [
       {
         type: SubmessageEnum.Text,
@@ -192,6 +204,7 @@ const logMessages = computed(() => [
     user: 'Jane Doe',
     timestamp: new Date('2024-11-01T12:30:00Z'),
     level: LogLevelEnum.Warning,
+    eventCode: 'Manual',
     messages: [
       {
         type: SubmessageEnum.Text,
@@ -204,6 +217,7 @@ const logMessages = computed(() => [
     user: 'Jane Doe',
     timestamp: new Date('2024-11-01T18:30:00Z'),
     level: LogLevelEnum.Info,
+    eventCode: 'Manual',
     messages: [
       {
         type: SubmessageEnum.Text,
@@ -221,6 +235,7 @@ const logMessages = computed(() => [
     user: currentUser.value?.profile?.name ?? 'Current User',
     timestamp: new Date('2024-11-01T18:30:00Z'),
     level: LogLevelEnum.Info,
+    eventCode: 'Manual',
     messages: [
       {
         type: SubmessageEnum.Text,
@@ -232,6 +247,7 @@ const logMessages = computed(() => [
     user: currentUser.value?.profile?.name ?? 'Current User',
     timestamp: new Date('2024-11-01T23:31:00Z'),
     level: LogLevelEnum.Error,
+    eventCode: 'Manual',
     messages: [
       {
         type: SubmessageEnum.Text,
@@ -254,6 +270,7 @@ const logMessages = computed(() => [
     user: currentUser.value?.profile?.name ?? 'Current User',
     timestamp: new Date('2024-11-01T23:58:00Z'),
     level: LogLevelEnum.Info,
+    eventCode: 'Manual',
     messages: [
       {
         type: SubmessageEnum.Text,
@@ -276,6 +293,7 @@ const logMessages = computed(() => [
     user: currentUser.value?.profile?.name ?? 'Current User',
     timestamp: new Date('2024-11-02T02:25:00Z'),
     level: LogLevelEnum.Info,
+    eventCode: 'Manual',
     messages: [
       {
         type: SubmessageEnum.Text,
@@ -295,6 +313,10 @@ const users = computed(() => {
   return [...new Set(logMessages.value.map((log) => log.user))]
 })
 
+const eventCodes = computed(() => {
+  return [...new Set(logMessages.value.map((log) => log.eventCode))]
+})
+
 const isLogMessageByCurrentUser = (log: LogMessage) => {
   return log.user === currentUser.value?.profile?.name
 }
@@ -310,6 +332,11 @@ const customKeyFilters: Record<
   },
   level: (value: string, query: string, item?: any) => {
     return selectedLevel.value ? item.raw.level === selectedLevel.value : true
+  },
+  eventCode: (value: string, query: string, item?: any) => {
+    return selectedEventCode.value
+      ? item.raw.eventCode === selectedEventCode.value
+      : true
   },
   messages: (value: string, query: string, item?: any) => {
     return item.raw.messages.some((message: LogSubMessage) =>
