@@ -18,6 +18,7 @@ const formattedRange = asyncComputed<string>(async () => {
   if (range === null) return placeholder
   const [lower, upper] = range
   // TODO: clever formatting based on the durations.
-  return `${lower / 60}–${upper / 60} minutes`
+  const formatNumber = (value: number) => value.toFixed(1)
+  return `${formatNumber(lower / 60)}–${formatNumber(upper / 60)} minutes`
 }, placeholder)
 </script>
