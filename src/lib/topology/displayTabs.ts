@@ -7,6 +7,7 @@ import {
   nodeHasReports,
   nodeHasSchematicStatusDisplay,
   nodeHasSystemMonitor,
+  nodeHasWebDisplay,
 } from './nodes'
 
 export interface DisplayTab {
@@ -17,6 +18,7 @@ export interface DisplayTab {
     | 'data-download'
     | 'schematic-status-display'
     | 'system-monitor'
+    | 'web-display'
   id: string
   title: string
   href?: string
@@ -49,6 +51,14 @@ const displayTabs: DisplayTab[] = [
     title: 'Download',
     to: { name: 'TopologyDataDownload' },
     icon: 'mdi-download',
+    active: false,
+  },
+  {
+    type: 'web-display',
+    id: 'web-display',
+    title: 'Web Display',
+    to: { name: 'TopologyWebDisplay' },
+    icon: 'mdi-web',
     active: false,
   },
   {
@@ -113,6 +123,10 @@ export function displayTabsForNode(
         break
       case 'system-monitor':
         tab.active = nodeHasSystemMonitor(node)
+        tab.to.params = { ...params }
+        break
+      case 'web-display':
+        tab.active = nodeHasWebDisplay(node)
         tab.to.params = { ...params }
         break
     }
