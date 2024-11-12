@@ -53,6 +53,34 @@
           multiple
           style="max-width: 200px"
         ></v-select>
+        <v-dialog v-model="newMessageDialog" max-width="80%">
+          <template v-slot:activator="{ props }">
+            <v-btn
+              class="mb-2"
+              color="primary"
+              dark
+              v-bind="props"
+              icon="mdi-plus"
+              variant="text"
+            >
+            </v-btn>
+          </template>
+          <v-sheet>
+            <v-form ref="form">
+              <v-select
+                v-model="newLogLevel"
+                :items="logLevels"
+                label="Log level"
+              >
+              </v-select>
+              <v-text-field
+                v-model="newLogMessage"
+                label="Message"
+              ></v-text-field>
+              <v-btn @click="saveNewMessage">Save</v-btn>
+            </v-form>
+          </v-sheet>
+        </v-dialog>
         <span>Total: {{ logMessages.length }}</span>
       </v-toolbar>
     </template>
@@ -122,7 +150,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
 import type { User } from 'oidc-client-ts'
 
@@ -162,6 +190,10 @@ type LogMessage = Pick<GeneralLogMessage, 'logType'> &
   Omit<ManualLogMessage, 'logType'> &
   Omit<SystemLogMessage, 'logType'>
 
+const newMessageDialog = ref(false)
+const newLogLevel = ref<LogLevelType>(LogLevelEnum.Info)
+const newLogMessage = ref('')
+
 const search = ref('')
 const selectedUsers = ref<string[]>([])
 const selectedLevels = ref<LogLevelType[]>([])
@@ -192,7 +224,7 @@ onMounted((): void => {
     })
 })
 
-const manualLogMessages = computed(() => {
+const originalManualLogMessages = computed(() => {
   const messages: ManualLogMessage[] = [
     {
       logType: LogType.Manual,
@@ -247,6 +279,12 @@ const manualLogMessages = computed(() => {
     },
   ]
   return messages
+})
+
+const manualLogMessages = ref<ManualLogMessage[]>([])
+
+watch(currentUser, () => {
+  manualLogMessages.value = originalManualLogMessages.value
 })
 
 const systemLogMessages = computed(() => {
@@ -351,6 +389,21 @@ const logToIcon = (log: LogMessage) => {
     case LogLevelEnum.Error:
       return '$error'
   }
+}
+
+const saveNewMessage = () => {
+  const newMessage: ManualLogMessage = {
+    logType: LogType.Manual,
+    user: currentUser.value?.profile?.name ?? '',
+    creationTime: new Date(),
+    level: newLogLevel.value,
+    eventCode: 'default',
+    message: newLogMessage.value,
+  }
+  manualLogMessages.value.push(newMessage)
+  newMessageDialog.value = false
+  newLogMessage.value = ''
+  newLogLevel.value = LogLevelEnum.Info
 }
 </script>
 
