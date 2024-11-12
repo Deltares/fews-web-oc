@@ -18,12 +18,42 @@
     >
       <template v-slot:headers="{ columns }">
         <tr>
-          <template v-for="(column, index) in columns" :key="column.key">
+          <template v-for="(column) in columns" :key="column.key">
             <th
               v-if="column.key === 'date'"
-              class="table-date sticky-column mb-4"
+              class="table-header table-date sticky-column"
             >
-              <span>{{ column.title }}</span>
+              <div class="table-header-indicator-text">
+                <span>{{ column.title }}</span>
+                <div
+                  v-if="isEditing && nonEquidistantSeries.length > 0"
+                  class="table-header__actions"
+                >
+                  <v-btn
+                    icon="mdi-table-row-plus-before"
+                    @click="addRowToTimeSeries(selected, 'before')"
+                    color="primary"
+                    variant="text"
+                    density="compact"
+                    :disabled="selected === undefined"
+                  />
+                  <v-btn
+                    icon="mdi-table-row-plus-after"
+                    @click="addRowToTimeSeries(selected, 'after')"
+                    color="primary"
+                    variant="text"
+                    density="compact"
+                    :disabled="selected === undefined"
+                  />
+                  <v-tooltip
+                    v-if="selected === undefined"
+                    activator="parent"
+                    text="First select a row"
+                    location="bottom"
+                  />
+                </div>
+              </div>
+              <div class="table-header-indicator-color"></div>
             </th>
             <th
               v-else
@@ -37,39 +67,6 @@
               <div class="table-header-indicator">
                 <div class="table-header-indicator-text">
                   <span>{{ column.title }}</span>
-                  <div
-                    v-if="
-                      index === 0 &&
-                      isEditing &&
-                      nonEquidistantSeries.length > 0
-                    "
-                    class="table-header__actions"
-                  >
-                    <div>
-                      <v-btn
-                        icon="mdi-table-row-plus-before"
-                        @click="addRowToTimeSeries(selected, 'before')"
-                        color="primary"
-                        variant="text"
-                        density="compact"
-                        :disabled="selected === undefined"
-                      />
-                      <v-btn
-                        icon="mdi-table-row-plus-after"
-                        @click="addRowToTimeSeries(selected, 'after')"
-                        color="primary"
-                        variant="text"
-                        density="compact"
-                        :disabled="selected === undefined"
-                      />
-                      <v-tooltip
-                        v-if="selected === undefined"
-                        activator="parent"
-                        text="First select a row"
-                        location="bottom"
-                      />
-                    </div>
-                  </div>
                   <template
                     v-if="
                       (column as unknown as TableHeaders).editable &&
@@ -488,7 +485,6 @@ function onUpdateItem(event: TableData) {
 }
 
 th.table-date {
-  vertical-align: top;
   min-width: 24ch;
   width: 24ch;
   border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
@@ -562,7 +558,7 @@ td.sticky-column {
 }
 
 .table-header-indicator-color {
-  flex: 0 0 10px;
+  height: 10px;
   width: 100%;
   margin-bottom: 5px;
 }
