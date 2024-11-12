@@ -36,6 +36,7 @@ const TimeSeriesDisplay = () =>
   import('../components/timeseries/TimeSeriesDisplay.vue')
 const HtmlDisplayView = () => import('../views/HtmlDisplayView.vue')
 const ReportsDisplayView = () => import('../views/ReportsDisplayView.vue')
+const WebDisplay = () => import('../components/webdisplay/WebDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
@@ -193,6 +194,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         path: 'systemmonitor',
         name: 'TopologySystemMonitor',
         component: SystemMonitorDisplayView,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
+        path: 'embed',
+        name: 'TopologyWebDisplay',
+        component: WebDisplay,
         props: true,
         meta: { sidebar: true },
       },
