@@ -26,7 +26,6 @@
           hide-details
           multiple
           style="max-width: 200px"
-          disabled
         ></v-select>
         <v-select
           v-model="selectedLevels"
@@ -141,7 +140,9 @@ interface SystemLogMessage extends GeneralLogMessage {
   workflow: string
 }
 
-type LogMessage = ManualLogMessage | SystemLogMessage
+type LogMessage = Pick<GeneralLogMessage, 'logType'> &
+  Omit<ManualLogMessage, 'logType'> &
+  Omit<SystemLogMessage, 'logType'>
 
 const search = ref('')
 const selectedUsers = ref<string[]>([])
@@ -160,16 +161,8 @@ onMounted((): void => {
     })
 })
 
-const logMessages = computed(() => {
-  const messages: (SystemLogMessage | ManualLogMessage)[] = [
-    {
-      logType: LogType.System,
-      workflow: 'Run SWAN Full Model Train',
-      creationTime: new Date('2024-11-01T12:12:12Z'),
-      level: LogLevelEnum.Error,
-      eventCode: 'TaskRun.PartlyFailed',
-      message: 'Something went wrong...',
-    },
+const manualLogMessages = computed(() => {
+  const messages: ManualLogMessage[] = [
     {
       logType: LogType.Manual,
       user: currentUser.value?.profile?.name ?? 'Current User',
@@ -223,6 +216,30 @@ const logMessages = computed(() => {
   return messages
 })
 
+const systemLogMessages = computed(() => {
+  const messages: SystemLogMessage[] = [
+    {
+      logType: LogType.System,
+      workflow: 'Run SWAN Full Model Train',
+      creationTime: new Date('2024-11-01T12:12:12Z'),
+      level: LogLevelEnum.Error,
+      eventCode: 'TaskRun.PartlyFailed',
+      message: 'Something went wrong...',
+    },
+  ]
+  return messages
+})
+
+const logMessages = computed(() => {
+  const messages: LogMessage[] = [
+    ...manualLogMessages.value,
+    ...systemLogMessages.value,
+  ].map((log) => {
+    return { user: logToUser(log), workflow: '', ...log }
+  })
+  return messages
+})
+
 const users = computed(() => {
   return [
     ...new Set(
@@ -237,12 +254,14 @@ const eventCodes = computed(() => {
   return [...new Set(logMessages.value.map((log) => log.eventCode))]
 })
 
-const isLogMessageByCurrentUser = (log: LogMessage) => {
+const isLogMessageByCurrentUser = (
+  log: ManualLogMessage | SystemLogMessage,
+) => {
   if (log.logType === LogType.System) return false
   return log.user === currentUser.value?.profile?.name
 }
 
-const logToUser = (log: LogMessage) => {
+const logToUser = (log: ManualLogMessage | SystemLogMessage) => {
   if (log.logType === LogType.System) return 'System'
   return isLogMessageByCurrentUser(log) ? 'You' : log.user
 }
@@ -253,10 +272,10 @@ const customKeyFilters: Record<
   string,
   (value: string, query: string, item?: any) => boolean
 > = {
-  // user: (value: string, query: string, item?: any) => {
-  //   if (selectedUsers.value.length === 0) return true
-  //   return selectedUsers.value.includes(item.raw.user)
-  // },
+  user: (value: string, query: string, item?: any) => {
+    if (selectedUsers.value.length === 0) return true
+    return selectedUsers.value.includes(item.raw.user)
+  },
   level: (value: string, query: string, item?: any) => {
     if (selectedLevels.value.length === 0) return true
     return selectedLevels.value.includes(item.raw.level)
