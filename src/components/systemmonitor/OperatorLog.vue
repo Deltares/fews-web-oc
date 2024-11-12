@@ -8,7 +8,7 @@
     :sort-by="[{ key: 'creationTime', order: 'desc' }]"
   >
     <template v-slot:header>
-      <v-toolbar class="px-2">
+      <v-toolbar class="px-2" density="compact">
         <v-text-field
           v-model="search"
           placeholder="Search"
