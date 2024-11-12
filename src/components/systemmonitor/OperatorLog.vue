@@ -270,12 +270,12 @@ const originalManualLogMessages = computed(() => {
     },
     {
       logType: LogType.Manual,
-      user: currentUser.value?.profile?.name ?? 'Current User',
+      user: 'Jane Doe',
       creationTime: new Date('2024-11-02T02:25:00Z'),
       level: LogLevelEnum.Info,
       eventCode: 'default',
       message:
-        'This is a very long message, just to show what it will look like if a message is so long that it will span mutiple lines.',
+        'This is a very long message, just to show what it will look like if a message is so long that it will span mutiple lines. A really, really, really, really long message. Because it has too span multiple lines. And not just one. That would not actually show what a long message would look like. And is has to span those multiple lines, even on large screens, which people might use in, for instance, conference rooms and such.',
     },
   ]
   return messages
