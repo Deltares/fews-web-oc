@@ -19,6 +19,14 @@
           hide-details
         ></v-text-field>
         <v-select
+          v-model="selectedLogType"
+          :items="selectableLogTypes"
+          label="Select log type"
+          clearable
+          hide-details
+          style="max-width: 200px"
+        ></v-select>
+        <v-select
           v-model="selectedUsers"
           :items="users"
           label="Filter by User"
@@ -148,6 +156,19 @@ const search = ref('')
 const selectedUsers = ref<string[]>([])
 const selectedLevels = ref<LogLevelType[]>([])
 const selectedEventCodes = ref<string[]>([])
+const selectedLogType = ref<LogType | null>(null)
+const selectableLogTypes = [
+  {
+    title: LogType.Manual,
+    value: LogType.Manual,
+    props: { prependIcon: 'mdi-account-multiple-outline' },
+  },
+  {
+    title: LogType.System,
+    value: LogType.System,
+    props: { prependIcon: 'mdi-robot-outline' },
+  },
+]
 
 const currentUser = ref<User | null>(null)
 onMounted((): void => {
@@ -221,6 +242,14 @@ const systemLogMessages = computed(() => {
     {
       logType: LogType.System,
       workflow: 'Run SWAN Full Model Train',
+      creationTime: new Date('2024-11-01T11:03:08Z'),
+      level: LogLevelEnum.Info,
+      eventCode: 'Workflow.ActivityStarted',
+      message: 'Started the SWAN Full Model Train',
+    },
+    {
+      logType: LogType.System,
+      workflow: 'Run SWAN Full Model Train',
       creationTime: new Date('2024-11-01T12:12:12Z'),
       level: LogLevelEnum.Error,
       eventCode: 'TaskRun.PartlyFailed',
@@ -272,6 +301,10 @@ const customKeyFilters: Record<
   string,
   (value: string, query: string, item?: any) => boolean
 > = {
+  logType: (value: string, query: string, item?: any) => {
+    if (!selectedLogType.value) return true
+    return selectedLogType.value === item.raw.logType
+  },
   user: (value: string, query: string, item?: any) => {
     if (selectedUsers.value.length === 0) return true
     return selectedUsers.value.includes(item.raw.user)
