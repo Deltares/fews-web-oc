@@ -18,7 +18,7 @@
     >
       <template v-slot:headers="{ columns }">
         <tr>
-          <template v-for="(column) in columns" :key="column.key">
+          <template v-for="column in columns" :key="column.key">
             <th
               v-if="column.key === 'date'"
               class="table-header table-date sticky-column"
