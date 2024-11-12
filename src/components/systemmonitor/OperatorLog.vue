@@ -91,6 +91,16 @@
                 <div style="font-size: 0.8em">
                   <strong>{{ logToUser(log.raw) }}</strong>
                   @<small>{{ log.raw.creationTime.toISOString() }}</small>
+                  <v-btn
+                    v-if="log.raw.topologyNodeId"
+                    :to="{
+                      name: 'TopologyDisplay',
+                      params: { nodeId: log.raw.topologyNodeId },
+                    }"
+                    size="small"
+                    icon="mdi-link-variant"
+                    variant="text"
+                  ></v-btn>
                 </div>
               </template>
               <v-card-text>
@@ -140,7 +150,7 @@ interface GeneralLogMessage {
 interface ManualLogMessage extends GeneralLogMessage {
   logType: LogType.Manual
   user: string
-  segment?: string
+  topologyNodeId?: string
 }
 
 interface SystemLogMessage extends GeneralLogMessage {
@@ -207,6 +217,7 @@ const manualLogMessages = computed(() => {
       level: LogLevelEnum.Warning,
       eventCode: 'default',
       message: 'This is definitely cause for a warning.',
+      topologyNodeId: 'operations.polder',
     },
     {
       logType: LogType.Manual,
@@ -223,6 +234,7 @@ const manualLogMessages = computed(() => {
       level: LogLevelEnum.Error,
       eventCode: 'default',
       message: 'Oh no.',
+      topologyNodeId: 'viewer.main.polder.structures',
     },
     {
       logType: LogType.Manual,
