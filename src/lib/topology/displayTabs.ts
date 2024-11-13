@@ -87,7 +87,7 @@ export function displayTabsForNode(node: TopologyNode, parentNodeId?: string) {
         tab.active = nodeHasMap(node)
         tab.to.params = {
           ...params,
-          LayerName: node.gridDisplaySelection?.plotId,
+          layerName: node.gridDisplaySelection?.plotId,
         }
         break
       case 'charts':
