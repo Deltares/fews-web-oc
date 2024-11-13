@@ -19,8 +19,8 @@
             </template>
             <v-list-item-title>{{ item.name }}</v-list-item-title>
             <template v-slot:append="{ isActive }">
-              <v-icon v-if="item.icon">
-                {{ item.icon }}
+              <v-icon v-if="item.appendIcon">
+                {{ item.appendIcon }}
               </v-icon>
               <v-icon>
                 {{ isActive ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
@@ -70,7 +70,9 @@
       </template>
       <v-list-item-title>{{ item.name }}</v-list-item-title>
       <template v-slot:append>
-        <v-icon v-if="item.icon" size="xsmall">{{ item.icon }}</v-icon>
+        <v-icon v-if="item.appendIcon" size="xsmall">{{
+          item.appendIcon
+        }}</v-icon>
       </template>
     </v-list-item>
   </template>

@@ -8,6 +8,7 @@ export interface ColumnItem {
   href?: string
   target?: string
   icon?: string
+  appendIcon?: string
   thresholdIcon?: string
   thresholdCount?: number
 }

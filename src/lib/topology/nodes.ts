@@ -69,6 +69,10 @@ function getThresholdCount(
 }
 
 function getIcon(node: TopologyNode) {
+  return node.mdiIcon
+}
+
+function getAppendIcon(node: TopologyNode) {
   if (node.url && node.topologyNodes && !node.displayGroups)
     return 'mdi-open-in-new'
   return undefined
@@ -89,6 +93,7 @@ function getColumnItemFromTopologyNode(
     id: node.id,
     name: node.name,
     icon: getIcon(node),
+    appendIcon: getAppendIcon(node),
     thresholdIcon: getThresholdIcon(node, thresholds),
     thresholdCount: showActiveTresholdsCount
       ? getThresholdCount(node, thresholds)
