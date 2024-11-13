@@ -46,7 +46,7 @@
             </v-autocomplete>
           </v-col>
         </v-row>
-        <v-row align="start" class="ma-1">
+        <v-row class="ma-1">
           <v-col>
             <v-autocomplete
               v-model="selectedLocations"
