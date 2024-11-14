@@ -124,6 +124,9 @@ const layoutTextSpecification = {
 const paintTextSpecification = computed(() => {
   return {
     'text-color': isDark.value ? 'rgb(255,255,255)' : 'rgb(0,0,0)',
+    'text-halo-color': isDark.value ? 'rgb(0,0,0)' : 'rgb(255,255,255)',
+    'text-halo-width': 1,
+    'text-halo-blur': 1,
   }
 })
 
