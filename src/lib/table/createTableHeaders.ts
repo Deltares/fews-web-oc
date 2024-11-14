@@ -19,7 +19,7 @@ export function createTableHeaders(
         key: chartSeries.id,
         title: formatHeader(chartSeries),
         color: chartSeries.style.stroke?.toString(),
-        editable: true,
+        editable: chartSeries.editable ?? false,
       })
     }
   })
