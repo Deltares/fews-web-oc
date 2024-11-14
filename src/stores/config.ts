@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { getFewsConfig } from '../lib/fews-config/index.js'
-import { WebOcGeneralConfig } from '@deltares/fews-pi-requests'
-import { ComponentTypeEnum, WebOcComponent } from '../lib/fews-config/types.js'
+import type { WebOcGeneralConfig } from '@deltares/fews-pi-requests'
+import { ComponentTypeEnum, type WebOcComponent } from '@/lib/fews-config/types'
 
 interface ConfigState {
   version: string
@@ -27,6 +27,16 @@ function getMenuIcon(componentConfig: WebOcComponent): string {
     default:
       return ''
   }
+}
+
+function getToForComponent(component: WebOcComponent) {
+  if (component.type === ComponentTypeEnum.TopologyDisplay) {
+    return {
+      name: component.type,
+      params: { topologyId: component.id },
+    }
+  }
+  return { name: component.type }
 }
 
 const useConfigStore = defineStore('config', {
@@ -81,7 +91,7 @@ const useConfigStore = defineStore('config', {
         .map((component) => {
           return {
             id: component.id,
-            to: { name: component.type },
+            to: getToForComponent(component),
             title: component.title ?? '',
             icon: getMenuIcon(component),
             showInNavigationMenu: component.showInNavigationMenu,

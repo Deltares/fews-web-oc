@@ -154,63 +154,63 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     meta: { sidebar: true },
   },
   {
-    path: '/topology/node/:nodeId*',
+    path: '/topology/:topologyId?/node/:nodeId*',
     name: 'TopologyDisplay',
     component: TopologyDisplayView,
     props: true,
     meta: { sidebar: true },
     children: [
       {
-        path: '/topology/node/:nodeId*/download',
+        path: 'download',
         name: 'TopologyDataDownload',
         component: DataDownloadDisplayView,
         props: true,
         meta: { sidebar: true },
       },
       {
-        path: '/topology/node/:nodeId*/series',
+        path: 'series',
         name: 'TopologyTimeSeries',
         component: TimeSeriesDisplay,
         props: true,
         meta: { sidebar: true },
       },
       {
-        path: '/topology/node/:nodeId*/reports',
+        path: 'reports',
         name: 'TopologyReports',
         component: ReportsDisplayView,
         props: true,
         meta: { sidebar: true },
       },
       {
-        path: '/topology/node/:nodeId*/ssd/:panelId?',
+        path: 'ssd/:panelId?',
         name: 'TopologySchematicStatusDisplay',
         component: SchematicStatusDisplay,
         props: true,
         meta: { sidebar: true },
       },
       {
-        path: '/topology/node/:nodeId*/systemmonitor',
+        path: 'systemmonitor',
         name: 'TopologySystemMonitor',
         component: SystemMonitorDisplayView,
         props: true,
         meta: { sidebar: true },
       },
       {
-        path: '/topology/node/:nodeId*/map/:layerName?',
+        path: 'map/:layerName?',
         name: 'TopologySpatialDisplay',
         component: SpatialDisplay,
         props: true,
         meta: { sidebar: true },
         children: [
           {
-            path: '/topology/node/:nodeId*/map/:layerName?/location/:locationId',
+            path: 'location/:locationId',
             name: 'TopologySpatialTimeSeriesDisplay',
             component: SpatialTimeSeriesDisplay,
             props: true,
             meta: { sidebar: true },
           },
           {
-            path: '/topology/node/:nodeId*/map/:layerName?/coordinates/:latitude/:longitude',
+            path: 'coordinates/:latitude/:longitude',
             name: 'TopologySpatialTimeSeriesDisplayWithCoordinates',
             component: SpatialTimeSeriesDisplay,
             props: true,
@@ -286,36 +286,37 @@ async function addDynamicRoutes() {
 function defaultRouteParams(to: RouteLocationNormalized) {
   const store = useConfigStore()
   const route = to.name === undefined ? router.resolve(to) : to
-  const component = store.getComponentByType(route.name as string)
-  if (component !== undefined) {
-    const defaultPath = component.defaultPath
-    const params = to.params
-    let requiresRedirect = false
-    for (const key in defaultPath) {
-      if (defaultPath[key] !== undefined) {
-        if (!params[key]) {
-          if (component.type === 'TopologyDisplay' && key === 'nodeId') {
-            params[key] = defaultPath[key].split('/')
-          } else {
-            params[key] = defaultPath[key]
-          }
-          requiresRedirect = true
+  const component = store.getComponentByType(route.name as string) as any
+  if (component === undefined) return
+
+  const defaultPath = component.defaultPath
+  const params = { ...to.params }
+
+  let requiresRedirect = false
+  for (const key in defaultPath) {
+    if (defaultPath[key] !== undefined) {
+      if (!params[key]) {
+        if (component.type === 'TopologyDisplay' && key === 'nodeId') {
+          params[key] = defaultPath[key].split('/')
+        } else {
+          params[key] = defaultPath[key]
         }
+        requiresRedirect = true
       }
     }
+  }
 
-    const path = component.path
-    if (path && !params.path) {
-      params.path = path
-      requiresRedirect = true
-    }
+  const path = component.path
+  if (path && !params.path) {
+    params.path = path
+    requiresRedirect = true
+  }
 
-    if (requiresRedirect) {
-      to.params = params
-      return to
+  if (requiresRedirect) {
+    return {
+      params,
     }
   }
-  return
 }
 
 router.beforeEach(async (to, from) => {
@@ -344,7 +345,10 @@ router.beforeEach(async (to, from) => {
     }
     return to
   }
-  return defaultRouteParams(to)
+  const reroutedTo = defaultRouteParams(to)
+  if (reroutedTo) {
+    return reroutedTo
+  }
 })
 
 export function findParentRoute(
