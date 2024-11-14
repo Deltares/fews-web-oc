@@ -77,10 +77,15 @@ const displayTabs: DisplayTab[] = [
   },
 ]
 
-export function displayTabsForNode(node: TopologyNode, parentNodeId?: string) {
+export function displayTabsForNode(
+  node: TopologyNode,
+  parentNodeId?: string,
+  topologyId?: string,
+) {
   for (const tab of displayTabs) {
     const params = {
       nodeId: parentNodeId ? [parentNodeId, node.id] : node.id,
+      topologyId,
     }
     switch (tab.type) {
       case 'map':
