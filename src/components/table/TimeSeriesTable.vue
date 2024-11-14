@@ -18,54 +18,55 @@
     >
       <template v-slot:headers="{ columns }">
         <tr>
-          <template v-for="(column, index) in columns" :key="column.key">
+          <template v-for="column in columns" :key="column.key">
             <th
-              :style="{ minWidth: column.minWidth }"
-              :class="[
-                (column as unknown as TableHeaders).class,
-                {
-                  'table-header--editing': isEditingTimeSeries(
-                    column.key as string,
-                  ),
-                },
-              ]"
+              v-if="column.key === 'date'"
+              class="table-header table-date sticky-column"
+            >
+              <div class="table-header-indicator-text">
+                <span>{{ column.title }}</span>
+                <div
+                  v-if="isEditing && nonEquidistantSeries.length > 0"
+                  class="table-header__actions"
+                >
+                  <v-btn
+                    icon="mdi-table-row-plus-before"
+                    @click="addRowToTimeSeries(selected, 'before')"
+                    color="primary"
+                    variant="text"
+                    density="compact"
+                    :disabled="selected === undefined"
+                  />
+                  <v-btn
+                    icon="mdi-table-row-plus-after"
+                    @click="addRowToTimeSeries(selected, 'after')"
+                    color="primary"
+                    variant="text"
+                    density="compact"
+                    :disabled="selected === undefined"
+                  />
+                  <v-tooltip
+                    v-if="selected === undefined"
+                    activator="parent"
+                    text="First select a row"
+                    location="bottom"
+                  />
+                </div>
+              </div>
+              <div class="table-header-indicator-color"></div>
+            </th>
+            <th
+              v-else
+              class="table-header"
+              :class="{
+                'table-header--editing': isEditingTimeSeries(
+                  column.key as string,
+                ),
+              }"
             >
               <div class="table-header-indicator">
                 <div class="table-header-indicator-text">
                   <span>{{ column.title }}</span>
-                  <div
-                    v-if="
-                      index === 0 &&
-                      isEditing &&
-                      nonEquidistantSeries.length > 0
-                    "
-                    class="table-header__actions"
-                  >
-                    <div>
-                      <v-btn
-                        icon="mdi-table-row-plus-before"
-                        @click="addRowToTimeSeries(selected, 'before')"
-                        color="primary"
-                        variant="text"
-                        density="compact"
-                        :disabled="selected === undefined"
-                      />
-                      <v-btn
-                        icon="mdi-table-row-plus-after"
-                        @click="addRowToTimeSeries(selected, 'after')"
-                        color="primary"
-                        variant="text"
-                        density="compact"
-                        :disabled="selected === undefined"
-                      />
-                      <v-tooltip
-                        v-if="selected === undefined"
-                        activator="parent"
-                        text="First select a row"
-                        location="bottom"
-                      />
-                    </div>
-                  </div>
                   <template
                     v-if="
                       (column as unknown as TableHeaders).editable &&
@@ -120,7 +121,7 @@
           :class="{ highlighted: selected?.date === item.date }"
           @click="(e) => handleRowClick(e, item)"
         >
-          <td class="sticky-column">
+          <td class="table-date sticky-column">
             <v-text-field
               v-if="isEditing && item.isNewRow"
               :modelValue="toISOString(item.date)"
@@ -483,17 +484,27 @@ function onUpdateItem(event: TableData) {
   width: 100%;
 }
 
+th.table-date {
+  min-width: 24ch;
+  width: 24ch;
+  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+  align-items: center;
+}
+
 th.sticky-column {
   position: sticky;
-  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
   left: 0;
+}
+
+td.table-date {
+  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+  align-items: center;
 }
 
 td.sticky-column {
   position: sticky;
   left: 0;
   background-color: rgb(var(--v-theme-surface));
-  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
 :deep(.v-select .v-select__selection-text) {
@@ -547,7 +558,7 @@ td.sticky-column {
 }
 
 .table-header-indicator-color {
-  flex: 0 0 10px;
+  height: 10px;
   width: 100%;
   margin-bottom: 5px;
 }

@@ -10,8 +10,6 @@ export function createTableHeaders(
   tableHeaders.push({
     key: 'date',
     title: 'Date',
-    minWidth: '24ch',
-    class: 'table-header sticky-column',
     editable: false,
   })
   seriesIds.forEach((seriesId) => {
@@ -21,7 +19,6 @@ export function createTableHeaders(
         key: chartSeries.id,
         title: formatHeader(chartSeries),
         color: chartSeries.style.stroke?.toString(),
-        class: 'table-header',
         editable: true,
       })
     }
