@@ -135,6 +135,7 @@ import {
 } from '@/lib/topology/displayTabs.js'
 
 interface Props {
+  topologyId?: string
   nodeId?: string | string[]
   panelId?: string
   layerName?: string
@@ -231,9 +232,16 @@ watch(
 )
 
 const topologyComponentConfig = computed(() => {
-  return configStore.getComponentByType('TopologyDisplay') as
-    | WebOcTopologyDisplayConfig
-    | undefined
+  const component = props.topologyId
+    ? configStore.getComponentById(props.topologyId)
+    : configStore.getComponentsByType('TopologyDisplay')
+  return component as WebOcTopologyDisplayConfig | undefined
+})
+
+const topologyDisplayNodes = computed<string[]>(() => {
+  // FIXME: Update when the types are updated
+  // @ts-expect-error
+  return topologyComponentConfig.value?.topologyDisplayNodes ?? []
 })
 
 const showLeafsAsButton = computed(() => {
@@ -249,6 +257,13 @@ const showActiveThresholdCrossingsForFilters = computed(() => {
 
 const nodes = ref<TopologyNode[]>()
 const topologyMap = ref(new Map<string, TopologyNode>())
+const subNodes = computed<TopologyNode[]>(
+  () =>
+    topologyDisplayNodes.value?.flatMap((nodeId) => {
+      const node = topologyMap.value.get(nodeId)
+      return node ? [node] : []
+    }) ?? nodes.value,
+)
 
 getTopologyNodes().then((response) => {
   nodes.value = response
@@ -260,9 +275,9 @@ getTopologyNodes().then((response) => {
 })
 
 function updateItems(): void {
-  if (nodes.value) {
+  if (subNodes.value) {
     items.value = recursiveUpdateNode(
-      nodes.value,
+      subNodes.value,
       thresholds.value,
       showActiveThresholdCrossingsForFilters.value,
       showLeafsAsButton.value,
@@ -270,7 +285,7 @@ function updateItems(): void {
   }
 }
 
-watch(nodes, updateItems)
+watch(subNodes, updateItems)
 watch(thresholds, updateItems)
 
 // Update the displayTabs if the active node changes (or if the topologyMap changes).

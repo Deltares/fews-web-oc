@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { getFewsConfig } from '../lib/fews-config/index.js'
 import type { WebOcGeneralConfig } from '@deltares/fews-pi-requests'
 import { ComponentTypeEnum, type WebOcComponent } from '@/lib/fews-config/types'
+import { RouteLocation } from 'vue-router'
 
 interface ConfigState {
   version: string
@@ -71,6 +72,27 @@ const useConfigStore = defineStore('config', {
       )
       if (component) component.icon = getMenuIcon(component)
       return component
+    },
+
+    getComponentById(componentId: string) {
+      const component = this.components[componentId]
+      if (component) component.icon = getMenuIcon(component)
+      return component
+    },
+
+    getComponentByRoute(route: RouteLocation) {
+      const rootRoute = route.matched[0]
+      if (rootRoute === undefined) return
+
+      const rootRouteName = rootRoute.name?.toString() ?? ''
+      if (
+        rootRouteName === 'TopologyDisplay' &&
+        route.params.topologyId !== undefined
+      ) {
+        return this.getComponentById(route.params.topologyId as string)
+      }
+
+      return this.getComponentByType(rootRouteName)
     },
 
     getComponentsByType(componentType: string) {

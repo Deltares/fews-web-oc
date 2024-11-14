@@ -233,18 +233,11 @@ watch(
   },
 )
 
-const parentRoute = computed(() => route.matched[0])
-
-const activeComponent = computed(() => {
-  if (parentRoute.value === undefined) return
-  const parentRouteName = parentRoute.value.name?.toString() ?? ''
-  return configStore.getComponentByType(parentRouteName)
-})
-
+const activeComponent = computed(() => configStore.getComponentByRoute(route))
 const currentItemTitle = computed(
   () =>
     activeComponent.value?.title ??
-    (parentRoute.value?.meta?.title as string | undefined) ??
+    (route.matched[0]?.meta?.title as string | undefined) ??
     '',
 )
 
