@@ -286,37 +286,36 @@ async function addDynamicRoutes() {
 function defaultRouteParams(to: RouteLocationNormalized) {
   const store = useConfigStore()
   const route = to.name === undefined ? router.resolve(to) : to
-  const component = store.getComponentByType(route.name as string) as any
-  if (component === undefined) return
-
-  const defaultPath = component.defaultPath
-  const params = { ...to.params }
-
-  let requiresRedirect = false
-  for (const key in defaultPath) {
-    if (defaultPath[key] !== undefined) {
-      if (!params[key]) {
-        if (component.type === 'TopologyDisplay' && key === 'nodeId') {
-          params[key] = defaultPath[key].split('/')
-        } else {
-          params[key] = defaultPath[key]
+  const component = store.getComponentByRoute(route)
+  if (component !== undefined) {
+    const defaultPath = component.defaultPath
+    const params = to.params
+    let requiresRedirect = false
+    for (const key in defaultPath) {
+      if (defaultPath[key] !== undefined) {
+        if (!params[key]) {
+          if (component.type === 'TopologyDisplay' && key === 'nodeId') {
+            params[key] = defaultPath[key].split('/')
+          } else {
+            params[key] = defaultPath[key]
+          }
+          requiresRedirect = true
         }
-        requiresRedirect = true
       }
     }
-  }
 
-  const path = component.path
-  if (path && !params.path) {
-    params.path = path
-    requiresRedirect = true
-  }
+    const path = component.path
+    if (path && !params.path) {
+      params.path = path
+      requiresRedirect = true
+    }
 
-  if (requiresRedirect) {
-    return {
-      params,
+    if (requiresRedirect) {
+      to.params = params
+      return to
     }
   }
+  return
 }
 
 router.beforeEach(async (to, from) => {
@@ -345,10 +344,7 @@ router.beforeEach(async (to, from) => {
     }
     return to
   }
-  const reroutedTo = defaultRouteParams(to)
-  if (reroutedTo) {
-    return reroutedTo
-  }
+  return defaultRouteParams(to)
 })
 
 export function findParentRoute(
