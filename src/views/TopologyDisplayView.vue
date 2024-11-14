@@ -387,7 +387,8 @@ function reroute(to: RouteLocationNormalized) {
           ? to.params.nodeId[0]
           : undefined
       const menuNode = topologyMap.value.get(leafNodeId) as TopologyNode
-      const tabs = displayTabsForNode(menuNode, parentNodeId)
+      const topologyId = to.params.topologyId as string
+      const tabs = displayTabsForNode(menuNode, parentNodeId, topologyId)
       const tab = tabs.find((t) => t.type === activeTab.value) ?? tabs[0]
       if (tab) {
         activeTab.value = tab.type
