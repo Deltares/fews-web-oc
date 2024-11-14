@@ -371,19 +371,13 @@ function reroute(to: RouteLocationNormalized) {
         Array.isArray(to.params.nodeId) && to.params.nodeId.length > 1
           ? to.params.nodeId[0]
           : undefined
-      const menuNode = topologyMap.value.get(leafNodeId)
-      const tabs = displayTabsForNode(menuNode as any, parentNodeId)
-      let tabIndex = -1
-      if (activeTab.value) {
-        tabIndex = tabs.findIndex((t) => {
-          return t.type === activeTab.value
-        })
+      const menuNode = topologyMap.value.get(leafNodeId) as TopologyNode
+      const tabs = displayTabsForNode(menuNode, parentNodeId)
+      const tab = tabs.find((t) => t.type === activeTab.value) ?? tabs[0]
+      if (tab) {
+        activeTab.value = tab.type
+        return tab.to
       }
-      if (tabIndex < 0) {
-        tabIndex = 0
-        activeTab.value = tabs.length ? tabs[0].type : ''
-      }
-      return tabs[tabIndex].to
     }
   }
 }
