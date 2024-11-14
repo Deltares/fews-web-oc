@@ -109,15 +109,20 @@ function updateColourBar() {
   fill: white;
   text-rendering: optimizeLegibility;
   text-shadow:
-    black 0px 0px 2px,
-    black 0px 0px 4px,
-    black 0px 0px 6px;
+    -1px 0 1px rgba(0, 0, 0, 0.6),
+    1px 0 1px rgba(0, 0, 0, 0.6),
+    0 1px 1px rgba(0, 0, 0, 0.6),
+    0 -1px 1px rgba(0, 0, 0, 0.6);
 }
 
 .map__colour-bar :deep(.axis .tick line) {
   stroke: white;
-  filter: drop-shadow(0px 0px 2px black) drop-shadow(0px 0px 4px black)
-    drop-shadow(0px 0px 6px black);
+  stroke-width: 1px;
+  filter: drop-shadow(-1px 0 0.5px rgba(0, 0, 0, 0.3))
+    drop-shadow(1px 0 0.5px rgba(0, 0, 0, 0.3))
+    drop-shadow(0 1px 0.5px rgba(0, 0, 0, 0.3))
+    drop-shadow(0 -1px 0.5px rgba(0, 0, 0, 0.3));
+  shape-rendering: crispEdges;
 }
 
 .map__colour-bar :deep(.grid) {
