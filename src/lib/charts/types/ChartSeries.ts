@@ -15,4 +15,5 @@ export interface ChartSeries {
   options: ChartSeriesOptions
   unit: string
   style: CSS.SvgPropertiesHyphen
+  editable?: boolean
 }

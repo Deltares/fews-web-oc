@@ -207,6 +207,13 @@ watch(
     const series = newSubplots
       .flatMap((subplot) => subplot.series)
       .filter((series) => series.visibleInTable)
+
+    series.forEach((s) => {
+      s.editable = props.config.requests.some(
+        (request) => request.key === s.id && request.editRequest,
+      )
+    })
+
     tableConfig.value = {
       title: props.config.title,
       series,
