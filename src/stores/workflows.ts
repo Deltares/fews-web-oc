@@ -13,6 +13,7 @@ import type { LngLat } from 'maplibre-gl'
 import { toISOString } from '@/lib/date'
 
 interface WorkflowsState {
+  showDialog: boolean
   workflowId: string | null
   startTime: string | null
   endTime: string | null
@@ -50,6 +51,7 @@ function isPartialProcessDataFilter(
 
 const useWorkflowsStore = defineStore('workflows', {
   state: (): WorkflowsState => ({
+    showDialog: false,
     workflowId: null,
     startTime: null,
     endTime: null,

@@ -3,8 +3,7 @@
     <HierarchicalMenu v-model:active="active" :type="menuType" :items="items" />
   </Teleport>
   <WorkflowsControl
-    v-if="showWorkFlowDialog"
-    v-model:showDialog="showWorkFlowDialog"
+    v-model:showDialog="workflowsStore.showDialog"
     :secondaryWorkflows="secondaryWorkflows"
   />
   <Teleport to="#app-bar-content-start">
@@ -52,7 +51,7 @@
         <v-list-item
           title="Run workflow"
           :disabled="secondaryWorkflows === null"
-          @click="showWorkFlowDialog = true"
+          @click="workflowsStore.showDialog = true"
         >
           <template #prepend>
             <v-badge
@@ -161,7 +160,10 @@ watch(active, () => {
   // Clear the bounding box and stop drawing when we switch nodes while selecting a bounding box.
   workflowsStore.boundingBox = null
   workflowsStore.isDrawingBoundingBox = false
+  workflowsStore.coordinate = null
+  workflowsStore.isSelectingCoordinate = false
 })
+
 const activeNode = computed(() => {
   if (!active.value) return
 
@@ -170,11 +172,12 @@ const activeNode = computed(() => {
     ? node?.topologyNodes[nodesStore.activeParentNode]
     : node
 })
-const showWorkFlowDialog = ref(false)
+
 const secondaryWorkflows = computed(() => {
   if (!activeNode.value?.secondaryWorkflows) return null
   return activeNode.value.secondaryWorkflows
 })
+
 const items = ref<ColumnItem[]>([])
 
 const filterIds = ref<string[]>([])
