@@ -22,8 +22,9 @@ defineProps<Props>()
   color: white;
   text-rendering: optimizeLegibility;
   text-shadow:
-    black 0px 0px 2px,
-    black 0px 0px 4px,
-    black 0px 0px 6px;
+    -1px 0 1px rgba(0, 0, 0, 0.6),
+    1px 0 1px rgba(0, 0, 0, 0.6),
+    0 1px 1px rgba(0, 0, 0, 0.6),
+    0 -1px 1px rgba(0, 0, 0, 0.6);
 }
 </style>
