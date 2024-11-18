@@ -234,14 +234,14 @@ watch(
 const topologyComponentConfig = computed(() => {
   const component = props.topologyId
     ? configStore.getComponentById(props.topologyId)
-    : configStore.getComponentsByType('TopologyDisplay')
+    : configStore.getComponentByType('TopologyDisplay')
   return component as WebOcTopologyDisplayConfig | undefined
 })
 
-const topologyDisplayNodes = computed<string[]>(() => {
+const topologyDisplayNodes = computed<string[] | undefined>(() => {
   // FIXME: Update when the types are updated
   // @ts-expect-error
-  return topologyComponentConfig.value?.topologyDisplayNodes ?? []
+  return topologyComponentConfig.value?.topologyDisplayNodes
 })
 
 const showLeafsAsButton = computed(() => {
@@ -257,7 +257,7 @@ const showActiveThresholdCrossingsForFilters = computed(() => {
 
 const nodes = ref<TopologyNode[]>()
 const topologyMap = ref(new Map<string, TopologyNode>())
-const subNodes = computed<TopologyNode[]>(
+const subNodes = computed<TopologyNode[] | undefined>(
   () =>
     topologyDisplayNodes.value?.flatMap((nodeId) => {
       const node = topologyMap.value.get(nodeId)
