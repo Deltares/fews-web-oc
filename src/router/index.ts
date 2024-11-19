@@ -13,6 +13,7 @@ import Silent from '../views/auth/Silent.vue'
 import { configManager } from '../services/application-config'
 import { authenticationManager } from '../services/authentication/AuthenticationManager'
 import { useConfigStore } from '../stores/config.ts'
+import { hasDefaultPath } from '@/lib/fews-config/types.ts'
 
 const SystemMonitorDisplayView = () =>
   import('../views/SystemMonitorDisplayView.vue')
@@ -288,26 +289,30 @@ function defaultRouteParams(to: RouteLocationNormalized) {
   const route = to.name === undefined ? router.resolve(to) : to
   const component = store.getComponentByRoute(route)
   if (component !== undefined) {
-    const defaultPath = component.defaultPath
     const params = to.params
     let requiresRedirect = false
-    for (const key in defaultPath) {
-      if (defaultPath[key] !== undefined) {
-        if (!params[key]) {
-          if (component.type === 'TopologyDisplay' && key === 'nodeId') {
-            params[key] = defaultPath[key].split('/')
-          } else {
-            params[key] = defaultPath[key]
+    if (hasDefaultPath(component) && component.defaultPath) {
+      const defaultPath = component.defaultPath
+      for (const [key, value] of Object.entries(defaultPath)) {
+        if (value !== undefined) {
+          if (!params[key]) {
+            if (component.type === 'TopologyDisplay' && key === 'nodeId') {
+              params[key] = value.split('/')
+            } else {
+              params[key] = value
+            }
+            requiresRedirect = true
           }
-          requiresRedirect = true
         }
       }
     }
 
-    const path = component.path
-    if (path && !params.path) {
-      params.path = path
-      requiresRedirect = true
+    if (component.type === 'HtmlDisplay' && component.path) {
+      const path = component.path
+      if (path && !params.path) {
+        params.path = path
+        requiresRedirect = true
+      }
     }
 
     if (requiresRedirect) {
