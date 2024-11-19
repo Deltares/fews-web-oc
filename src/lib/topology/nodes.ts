@@ -162,3 +162,7 @@ export function nodeHasSystemMonitor(node: TopologyNode) {
 export function nodeHasWebDisplay(node: TopologyNode) {
   return node.embedUrl !== undefined
 }
+
+export function nodeHasDashboard(node: TopologyNode) {
+  return node.id.startsWith('dashboard') && node.topologyNodes !== undefined
+}
