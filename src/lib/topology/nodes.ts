@@ -157,3 +157,7 @@ export function nodeHasSchematicStatusDisplay(node: TopologyNode) {
 export function nodeHasSystemMonitor(node: TopologyNode) {
   return node.mainPanel !== undefined && node.mainPanel === 'system monitor'
 }
+
+export function nodeHasDashboard(node: TopologyNode) {
+  return node.id.startsWith('dashboard') && node.topologyNodes !== undefined
+}

@@ -2,6 +2,7 @@ import { TopologyNode } from '@deltares/fews-pi-requests'
 import { RouteLocationNamedRaw } from 'vue-router'
 import {
   nodeHasCharts,
+  nodeHasDashboard,
   nodeHasDataDownload,
   nodeHasMap,
   nodeHasReports,
@@ -125,7 +126,7 @@ export function displayTabsForNode(
         tab.to.params = { ...params }
         break
       case 'dashboard':
-        tab.active = true
+        tab.active = nodeHasDashboard(node)
         tab.to.params = { ...params }
         break
     }
