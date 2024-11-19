@@ -1,17 +1,24 @@
 <template>
-  <div class="dashboard-container">
+  <div class="dashboard-container ga-3 pa-3">
     <template v-for="panel in panelItems">
-      <div
+      <v-card
         v-if="panel.component"
         :style="{ gridArea: panel.id }"
-        class="overflow-auto h-100 w-100"
+        class="d-flex flex-column"
+        density="compact"
+        flat
+        border
       >
+        <v-card-title class="border-b">
+          {{ panel.title }}
+        </v-card-title>
         <component
+          class="overflow-auto"
           :is="panel.component"
           v-bind="panel.props"
           :topologyNode="panel.node"
         />
-      </div>
+      </v-card>
       <v-alert
         v-else
         :title="`${panel.id} not implemented`"
@@ -44,6 +51,7 @@ const panelItems = computed(() => {
     const { component, props } = getComponentWithPropsForNode(panel)
     return {
       id: panel.id,
+      title: panel.name,
       node: panel,
       component,
       props,
