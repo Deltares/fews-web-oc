@@ -10,8 +10,14 @@ interface ConfigState {
   general: WebOcGeneralConfig
 }
 
+/**
+ * Retrieves the menu icon for a given component configuration.
+ * @param componentConfig - The configuration of the component.
+ * @returns The icon string for the component.
+ */
 function getMenuIcon(componentConfig: WebOcComponent): string {
-  if (componentConfig.icon !== undefined) return componentConfig.icon
+  const configuredIcon = componentConfig.icon ?? componentConfig.iconId
+  if (configuredIcon) return configuredIcon
   switch (componentConfig.type) {
     case 'SpatialDisplay':
       return 'mdi-map'
