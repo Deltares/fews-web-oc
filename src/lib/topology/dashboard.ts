@@ -90,7 +90,7 @@ export function getComponentWithPropsForNode(node: TopologyNode | undefined) {
       props: {
         panelId: node.scadaPanelId,
         groupId: node.id,
-        objectId: 'topology',
+        objectId: '',
       },
     }
     return result
