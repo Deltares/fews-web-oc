@@ -69,7 +69,7 @@ function getThresholdCount(
 }
 
 function getIcon(node: TopologyNode) {
-  return node.mdiIcon
+  return node.iconId
 }
 
 function getAppendIcon(node: TopologyNode) {
