@@ -33,6 +33,7 @@ interface HtmlDisplayConfig {
   id: string
   type: 'HtmlDisplay'
   icon: string
+  iconId: string
   title: string
   path: string
   url: string
