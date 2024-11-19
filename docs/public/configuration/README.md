@@ -28,18 +28,19 @@ For the general configuration of Topology.xml, please refer to: [Topology Config
 
 Topology nodes in the Web OC component TopologyDisplay can be linked using Topology.xml as described below.
 
-| **Link topology node to** | **Config item**                  | **Back-end support** | **Web OC Support** |
-| ------------------------- | ---------------                  | -------------------- | ------------------ |
-| Spatial Display           | PlotId                           | Yes                  | Yes                |
-| Filters                   | FilterId                         | Yes                  | Yes                |
-| Web Browser               | url                              | Yes                  | Yes                |
-| DisplayGroup              | DisplayGroupId, plotId, nodeId   | Yes                  | Yes                |
-| Run Task                  | secondaryWorkflowId              | Yes                  | Yes                |
-| Data download             | dataDownloadDisplayId            | Yes                  | Yes                |
-| Report                    | reportModuleInstanceId           | Yes                  | Yes                |
-| Document                  | documentFile                     | Yes                  | Yes                |
-| SchematicStatusDisplay    | PanelId                          | Not yet              | Not yet            |
-| System Monitor            | TabId                            | Not yet              | Not yet            |
+| **Link topology node to** | **Config item**                  | **Back-end support** | **Web OC Support** | **Topology.xml config element**                                     | 
+| ------------------------- | ---------------                  | -------------------- | ------------------ | ------------------------------------------------------------------- |
+| Spatial Display           | PlotId                           | Yes                  | Yes                | `<gridDisplaySelection>`                                            |
+| Filters                   | FilterId                         | Yes                  | Yes                | `<filterId>`                                                        | 
+| External url              | url                              | Yes                  | Yes                | `<url>`                                                             | 
+| Embedded Browser          | embedUrl                         | Yes                  | Yes                | `<embedUrl>`                                                        | 
+| DisplayGroup              | DisplayGroupId, plotId, nodeId   | Yes                  | Yes                | `<nodeId>` (DisplayGroups.xml) or `<displayGroupId>` (Topology.xml) | 
+| Run Task                  | secondaryWorkflowId              | Yes                  | Yes                | `<secondaryWorkflowId>`                                             | 
+| Data download             | dataDownloadDisplayId            | Yes                  | Yes                | `<dataDownloadDisplayId>`                                           | 
+| Report                    | reportModuleInstanceId           | Yes                  | Yes                | `<reportModuleInstanceId>`                                          | 
+| Document                  | documentFile                     | Yes                  | Yes                | `<documentFile>`                                                    | 
+| SchematicStatusDisplay    | PanelId                          | Yes                  | Yes                | `<scadaDisplayId>` and `<scadaPanelId>`                             | 
+| System Monitor            | TabId                            | Not yet              | Not yet            | -                                                                   | 
 
 **Spatial Display**
 
@@ -54,9 +55,13 @@ Web OC will show a map, displaying all locations configured in the filterId link
 
 When locations are shown on the Web OC map, icons are used as configured in Delft-FEWS. Also, icon overlays for threshold crossings are shown consistently with the Delft-FEWS Desktop OC. Check threshold configuration [documentation](https://publicwiki.deltares.nl/display/FEWSDOC/09+Thresholds). When `<showActiveThresholdCrossingsForFilters>true</showActiveThresholdCrossingsForFilters>` is configured in WebOperatorClient.xml, an indicator for the number of locations with threshold crossings per topology node will be shown in Web OC.
 
-**Web Browser**
+**External url**
 
-When a `<url>` element is configured in the selected topology node, Web OC will open a new browser window for the url configured.
+When a `<url>` element is configured in the selected topology node, Web OC will open a new browser window (outside Web OC) for the url configured. NB This is only supported for toplogy nodes with _only_ the `<url>` element configured. 
+
+**Embedded Browser**
+
+When a `<embedUrl>` element is configured in the selected topology node, Web OC will open a embedded browser window for the url configured. Please note that [Content Security Policy](https://deltares.github.io/fews-web-oc/deployments/#content-security-policy-csp-headers) have to be configured correctly to allow embedding.
 
 **DisplayGroup**
 
