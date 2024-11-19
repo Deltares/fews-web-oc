@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { getFewsConfig } from '../lib/fews-config/index.js'
 import type { WebOcGeneralConfig } from '@deltares/fews-pi-requests'
-import { ComponentTypeEnum, type WebOcComponent } from '@/lib/fews-config/types'
+import type { WebOcComponent } from '@/lib/fews-config/types'
 import { RouteLocation } from 'vue-router'
 
 interface ConfigState {
@@ -13,17 +13,13 @@ interface ConfigState {
 function getMenuIcon(componentConfig: WebOcComponent): string {
   if (componentConfig.icon !== undefined) return componentConfig.icon
   switch (componentConfig.type) {
-    case ComponentTypeEnum.DataViewer:
-      return 'mdi-archive-search'
-    case ComponentTypeEnum.SpatialDisplay:
+    case 'SpatialDisplay':
       return 'mdi-map'
-    case ComponentTypeEnum.SchematicStatusDisplay:
+    case 'SchematicStatusDisplay':
       return 'mdi-application-brackets-outline'
-    case ComponentTypeEnum.TimeSeriesDisplay:
-      return 'mdi-chart-sankey'
-    case ComponentTypeEnum.SystemMonitor:
+    case 'SystemMonitor':
       return 'mdi-clipboard-list'
-    case ComponentTypeEnum.TopologyDisplay:
+    case 'TopologyDisplay':
       return 'mdi-map-marker-multiple'
     default:
       return ''
@@ -31,7 +27,7 @@ function getMenuIcon(componentConfig: WebOcComponent): string {
 }
 
 function getToForComponent(component: WebOcComponent) {
-  if (component.type === ComponentTypeEnum.TopologyDisplay) {
+  if (component.type === 'TopologyDisplay') {
     return {
       name: component.type,
       params: { topologyId: component.id },
@@ -66,12 +62,14 @@ const useConfigStore = defineStore('config', {
       }
     },
 
-    getComponentByType(componentType: string) {
+    getComponentByType<T extends WebOcComponent['type']>(
+      componentType: T,
+    ): Extract<WebOcComponent, { type: T }> | undefined {
       const component = Object.values(this.components).find(
         (component) => component.type === componentType,
       )
       if (component) component.icon = getMenuIcon(component)
-      return component
+      return component as Extract<WebOcComponent, { type: T }> | undefined
     },
 
     getComponentById(componentId: string) {
@@ -84,7 +82,7 @@ const useConfigStore = defineStore('config', {
       const rootRoute = route.matched[0]
       if (rootRoute === undefined) return
 
-      const rootRouteName = rootRoute.name?.toString() ?? ''
+      const rootRouteName = rootRoute.name?.toString() as WebOcComponent['type']
       if (
         rootRouteName === 'TopologyDisplay' &&
         route.params.topologyId !== undefined
@@ -95,15 +93,14 @@ const useConfigStore = defineStore('config', {
       return this.getComponentByType(rootRouteName)
     },
 
-    getComponentsByType(componentType: string) {
-      const components = Object.values(this.components)
-        .filter((component) => component.type === componentType)
-        .map((component) => {
-          component.icon = getMenuIcon(component)
-          return component
-        })
+    getComponentsByType<T extends WebOcComponent['type']>(
+      componentType: T,
+    ): Extract<WebOcComponent, { type: T }>[] {
+      const components = Object.values(this.components).filter(
+        (component) => component.type === componentType,
+      )
 
-      return components
+      return components as Extract<WebOcComponent, { type: T }>[]
     },
   },
   getters: {
