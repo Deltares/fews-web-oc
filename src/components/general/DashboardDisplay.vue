@@ -1,17 +1,21 @@
 <template>
   <div class="dashboard-container">
     <template v-for="panel in panelItems">
-      <component
+      <div
         v-if="panel.component"
-        :is="panel.component"
-        v-bind="panel.props"
-        :topologyNode="panel.node"
-        :style="panel.style"
-      />
+        :style="{ gridArea: panel.id }"
+        class="overflow-auto h-100 w-100"
+      >
+        <component
+          :is="panel.component"
+          v-bind="panel.props"
+          :topologyNode="panel.node"
+        />
+      </div>
       <v-alert
         v-else
         :title="`${panel.id} not implemented`"
-        :style="panel.style"
+        :style="{ gridArea: panel.id }"
         class="ma-2"
       />
     </template>
@@ -21,7 +25,7 @@
 <script setup lang="ts">
 import { getComponentWithPropsForNode } from '@/lib/topology/dashboard'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
-import { type StyleValue, computed, watch } from 'vue'
+import { computed, watch } from 'vue'
 
 interface Dashboard {
   id: string
@@ -38,22 +42,14 @@ const props = defineProps<Props>()
 const panelItems = computed(() => {
   return props.dashboard.panels.map((panel) => {
     const { component, props } = getComponentWithPropsForNode(panel)
-    const style = getStyleForPanel(panel)
     return {
       id: panel.id,
       node: panel,
       component,
       props,
-      style,
     }
   })
 })
-
-function getStyleForPanel(panel: TopologyNode): StyleValue {
-  return {
-    gridArea: panel.id,
-  }
-}
 
 function loadCss(url: string) {
   if (!document.querySelector(`link[href="${url}"]`)) {
