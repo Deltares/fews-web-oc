@@ -40,40 +40,41 @@
             <v-list-item-title v-text="item.title"></v-list-item-title>
           </v-list-item>
         </v-list>
-        <v-menu
-          origin="bottom"
-          width="320"
+        <v-list
           v-else-if="configStore.activeComponents.length > 1"
+          density="compact"
         >
-          <template #activator="{ props }">
-            <v-list-item
-              aria-label="Menu button"
-              v-bind="props"
-              :title="currentItemTitle"
-              class="ma-2 mb-1 px-2"
-              :prepend-icon="
-                activeComponent?.icon ?? toCharacterIcon(currentItemTitle)
-              "
-              append-icon="mdi-chevron-right"
-              rounded
-              variant="tonal"
-            />
-          </template>
-          <v-list density="compact">
-            <v-list-subheader>Switch to</v-list-subheader>
-            <v-list-item
-              v-for="(item, i) in configStore.activeComponents"
-              :key="i"
-              :value="item"
-              :to="item.to"
-            >
-              <template v-slot:prepend>
-                <v-icon :icon="item.icon"></v-icon>
-              </template>
-              <v-list-item-title v-text="item.title"></v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
+          <v-list-subheader>Switch to</v-list-subheader>
+          <v-menu origin="bottom" width="320">
+            <template #activator="{ props }">
+              <v-list-item
+                aria-label="Menu button"
+                v-bind="props"
+                :title="currentItemTitle"
+                class="ma-2 mb-1 px-2"
+                :prepend-icon="
+                  activeComponent?.icon ?? toCharacterIcon(currentItemTitle)
+                "
+                append-icon="mdi-chevron-right"
+                rounded
+                variant="tonal"
+              />
+            </template>
+            <v-list density="compact">
+              <v-list-item
+                v-for="(item, i) in configStore.activeComponents"
+                :key="i"
+                :value="item"
+                :to="item.to"
+              >
+                <template v-slot:prepend>
+                  <v-icon :icon="item.icon"></v-icon>
+                </template>
+                <v-list-item-title v-text="item.title"></v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </v-list>
         <div
           class="d-flex pa-2 bg-surface-light"
           id="web-oc-toolbar-target"
