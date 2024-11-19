@@ -1,0 +1,26 @@
+.dashboard-container {
+  grid-template-areas:
+    'map_id1 ssd_id1'
+    'graph_id1 graph_id2'
+    'graph_id3 graph_id4';
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows:
+    2fr
+    1fr
+    1fr;
+}
+
+/* Mobile */
+/* @media only screen and (max-width: 768px) and (orientation: portrait) { */
+/*   .dashboard-container { */
+/*     grid-template-areas: */
+/*       'map' */
+/*       'reports' */
+/*       'charts'; */
+/*     grid-template-columns: 1fr; */
+/*     grid-template-rows: */
+/*       2fr */
+/*       1fr */
+/*       3fr; */
+/*   } */
+/* } */

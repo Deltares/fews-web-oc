@@ -1,30 +1,32 @@
 <template>
   <div class="dashboard-container">
-    <template v-for="(panel, i) in dashboard.panels">
-      <section
-        :style="{
-          backgroundColor: distinctColorFromIndex(i),
-          gridArea: panel.id,
-        }"
-      >
-        <h2 class="pa-5">{{ panel.id }}</h2>
-      </section>
+    <template v-for="panel in panelItems">
+      <component
+        v-if="panel.component"
+        :is="panel.component"
+        v-bind="panel.props"
+        :topologyNode="panel.node"
+        :style="panel.style"
+      />
+      <v-alert
+        v-else
+        :title="`${panel.id} not implemented`"
+        :style="panel.style"
+        class="ma-2"
+      />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
-
-interface Panel {
-  id: string
-}
+import { getComponentWithPropsForNode } from '@/lib/topology/dashboard'
+import type { TopologyNode } from '@deltares/fews-pi-requests'
+import { type StyleValue, computed, watch } from 'vue'
 
 interface Dashboard {
   id: string
-  title: string
   css: string
-  panels: Panel[]
+  panels: TopologyNode[]
 }
 
 interface Props {
@@ -33,8 +35,24 @@ interface Props {
 
 const props = defineProps<Props>()
 
-function distinctColorFromIndex(index: number) {
-  return `hsl(${(index * 137) % 360}, 50%, 50%)`
+const panelItems = computed(() => {
+  return props.dashboard.panels.map((panel) => {
+    const { component, props } = getComponentWithPropsForNode(panel)
+    const style = getStyleForPanel(panel)
+    return {
+      id: panel.id,
+      node: panel,
+      component,
+      props,
+      style,
+    }
+  })
+})
+
+function getStyleForPanel(panel: TopologyNode): StyleValue {
+  return {
+    gridArea: panel.id,
+  }
 }
 
 function loadCss(url: string) {
