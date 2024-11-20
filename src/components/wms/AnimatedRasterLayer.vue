@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, watch } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import { toMercator } from '@turf/projection'
 import {
   ImageSource,
@@ -183,8 +183,6 @@ function createSource() {
     },
   }
   map.addLayer(rasterLayer, 'boundary_country_outline')
-
-  setDefaultZoom()
 }
 
 function updateSource() {
@@ -197,14 +195,6 @@ function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
   const sw = toMercator(point(bounds.getSouthWest().toArray()))
   const ne = toMercator(point(bounds.getNorthEast().toArray()))
   return [...sw.geometry.coordinates, ...ne.geometry.coordinates]
-}
-
-function setDefaultZoom() {
-  if (props.layer === undefined || props.layer.bbox === undefined) return
-  const bounds = props.layer.bbox
-  nextTick(() => {
-    map?.fitBounds(bounds)
-  })
 }
 
 function removeLayer() {
