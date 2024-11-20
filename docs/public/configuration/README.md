@@ -28,19 +28,19 @@ For the general configuration of Topology.xml, please refer to: [Topology Config
 
 Topology nodes in the Web OC component TopologyDisplay can be linked using Topology.xml as described below.
 
-| **Link topology node to** | **Config item**                  | **Back-end support** | **Web OC Support** | **Topology.xml config element**                                     | 
-| ------------------------- | ---------------                  | -------------------- | ------------------ | ------------------------------------------------------------------- |
-| Spatial Display           | PlotId                           | Yes                  | Yes                | `<gridDisplaySelection>`                                            |
-| Filters                   | FilterId                         | Yes                  | Yes                | `<filterId>`                                                        | 
-| External url              | url                              | Yes                  | Yes                | `<url>`                                                             | 
-| Embedded Browser          | embedUrl                         | Yes                  | Yes                | `<embedUrl>`                                                        | 
-| DisplayGroup              | DisplayGroupId, plotId, nodeId   | Yes                  | Yes                | `<nodeId>` (DisplayGroups.xml) or `<displayGroupId>` (Topology.xml) | 
-| Run Task                  | secondaryWorkflowId              | Yes                  | Yes                | `<secondaryWorkflowId>`                                             | 
-| Data download             | dataDownloadDisplayId            | Yes                  | Yes                | `<dataDownloadDisplayId>`                                           | 
-| Report                    | reportModuleInstanceId           | Yes                  | Yes                | `<reportModuleInstanceId>`                                          | 
-| Document                  | documentFile                     | Yes                  | Yes                | `<documentFile>`                                                    | 
-| SchematicStatusDisplay    | PanelId                          | Yes                  | Yes                | `<scadaDisplayId>` and `<scadaPanelId>`                             | 
-| System Monitor            | TabId                            | Not yet              | Not yet            | -                                                                   | 
+| **Link topology node to** | **Back-end support** | **Web OC Support** | **Topology.xml config element**                                     | 
+| ------------------------- | -------------------- | ------------------ | ------------------------------------------------------------------- |
+| Spatial Display           | Yes                  | Yes                | `<gridDisplaySelection>`                                            |
+| Filters                   | Yes                  | Yes                | `<filterId>`                                                        | 
+| External url              | Yes                  | Yes                | `<url>`                                                             | 
+| Embedded Browser          | Yes                  | Yes                | `<embedUrl>`                                                        | 
+| DisplayGroup              | Yes                  | Yes                | `<nodeId>` (DisplayGroups.xml) or `<displayGroupId>` (Topology.xml) | 
+| Run Task                  | Yes                  | Yes                | `<secondaryWorkflowId>`                                             | 
+| Data download             | Yes                  | Yes                | `<dataDownloadDisplayId>`                                           | 
+| Report                    | Yes                  | Yes                | `<reportModuleInstanceId>`                                          | 
+| Document                  | Yes                  | Yes                | `<documentFile>`                                                    | 
+| SchematicStatusDisplay    | Yes                  | Yes                | `<scadaDisplayId>` and `<scadaPanelId>`                             | 
+| System Monitor            | Not yet              | Not yet            | -                                                                   | 
 
 **Spatial Display**
 
