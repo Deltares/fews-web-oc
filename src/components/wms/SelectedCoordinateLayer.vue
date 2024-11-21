@@ -19,6 +19,7 @@ import {
   MglCircleLayer,
   useMap,
 } from '@indoorequal/vue-maplibre-gl'
+import { getLayerId, getSourceId } from '@/lib/map'
 
 interface Props {
   coordinate?: LngLat
@@ -31,8 +32,8 @@ const { map } = useMap()
 if (!map) throw new Error('Map is not available to show selected coordinate')
 const canvas = map.getCanvasContainer()
 
-const layerId = 'selected-coordinate-layer'
-const sourceId = 'selected-coordinate-source'
+const layerId = getLayerId('selected-coordinate')
+const sourceId = getSourceId('selected-coordinate')
 
 const paintSpecification = {
   'circle-radius': 8,
