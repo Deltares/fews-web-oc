@@ -1,0 +1,28 @@
+.dashboard-container {
+  grid-template-areas:
+    'reports map         map'
+    'reports widget-rain widget-snow'
+    'reports widget-temp widget-wind';
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows:
+    1fr
+    1fr
+    1fr;
+}
+
+/* Mobile */
+@media only screen and (max-width: 768px) and (orientation: portrait) {
+  .dashboard-container {
+    grid-template-areas:
+      'reports reports'
+      'widget-rain widget-snow'
+      'widget-temp widget-wind'
+      'map map';
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows:
+      1fr
+      1fr
+      1fr
+      1fr;
+  }
+}

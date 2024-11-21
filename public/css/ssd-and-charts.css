@@ -1,0 +1,8 @@
+.dashboard-container {
+  grid-template-areas:
+    'ssd'
+    'charts';
+  grid-template-rows:
+    2fr
+    1fr;
+}
