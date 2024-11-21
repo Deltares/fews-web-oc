@@ -250,12 +250,9 @@ function setDimensions(): void {
   display: none;
 }
 
-.v-theme--light .weboc-ssd > svg {
+.weboc-ssd > svg {
   background-color: #fff;
-}
-
-.v-theme--dark .weboc-ssd > svg {
-  background-color: #fff;
+  border-radius: 4px;
 }
 
 .fit-content-button {
