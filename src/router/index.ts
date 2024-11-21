@@ -36,6 +36,7 @@ const TimeSeriesDisplay = () =>
   import('../components/timeseries/TimeSeriesDisplay.vue')
 const HtmlDisplayView = () => import('../views/HtmlDisplayView.vue')
 const ReportsDisplayView = () => import('../views/ReportsDisplayView.vue')
+const DashboardView = () => import('../views/DashboardView.vue')
 const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
@@ -179,6 +180,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         path: 'reports',
         name: 'TopologyReports',
         component: ReportsDisplayView,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
+        path: 'dashboard',
+        name: 'TopologyDashboard',
+        component: DashboardView,
         props: true,
         meta: { sidebar: true },
       },
