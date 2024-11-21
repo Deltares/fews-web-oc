@@ -126,7 +126,7 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
     nodeHasCharts(node) ||
     nodeHasDataDownload(node) ||
     nodeHasReports(node) ||
-    nodeHasSystemMonitor(node) || 
+    nodeHasSystemMonitor(node) ||
     nodeHasWebDisplay(node)
   )
 }
@@ -160,6 +160,7 @@ export function nodeHasSystemMonitor(node: TopologyNode) {
 }
 
 export function nodeHasWebDisplay(node: TopologyNode) {
-  return node.mainPanel !== undefined && node.mainPanel === 'web browser display'
+  return (
+    node.mainPanel !== undefined && node.mainPanel === 'web browser display'
+  )
 }
-
