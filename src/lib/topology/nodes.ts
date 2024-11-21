@@ -160,7 +160,5 @@ export function nodeHasSystemMonitor(node: TopologyNode) {
 }
 
 export function nodeHasWebDisplay(node: TopologyNode) {
-  return (
-    node.mainPanel !== undefined && node.mainPanel === 'web browser display'
-  )
+  return node.embedUrl !== undefined
 }
