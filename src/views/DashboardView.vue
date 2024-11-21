@@ -7,6 +7,7 @@
 import { computed } from 'vue'
 import DashboardDisplay from '@/components/general/DashboardDisplay.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -16,9 +17,10 @@ const props = defineProps<Props>()
 
 const dashboard = computed(() => {
   if (!props.topologyNode) return
+  const css = getResourcesStaticUrl(`${props.topologyNode.id}.css`)
   return {
     id: props.topologyNode.id,
-    css: `${props.topologyNode.id}.css`,
+    css,
     panels: props.topologyNode.topologyNodes ?? [],
   }
 })
