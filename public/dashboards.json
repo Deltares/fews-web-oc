@@ -1,0 +1,80 @@
+[
+  {
+    "id": "widgets-and-reports",
+    "title": "Widgets and reports",
+    "css": "widgets-and-reports.css",
+    "panels": [
+      {
+        "id": "widget-rain"
+      },
+      {
+        "id": "widget-snow"
+      },
+      {
+        "id": "widget-temp"
+      },
+      {
+        "id": "widget-wind"
+      },
+      {
+        "id": "reports",
+        "reportDisplay": {
+          "reports": [
+            {
+              "moduleInstanceId": "ReportHazardMapRainfallSAWS"
+            }
+          ]
+        }
+      },
+      {
+        "id": "map"
+      }
+    ]
+  },
+  {
+    "id": "map-and-reports",
+    "title": "Map and reports",
+    "css": "map-and-reports.css",
+    "panels": [
+      {
+        "id": "map",
+        "gridDisplaySelection": {
+          "plotId": "hazard_map_saws"
+        }
+      },
+      {
+        "id": "reports",
+        "reportDisplay": {
+          "reports": [
+            {
+              "moduleInstanceId": "ReportHazardMapRainfallSAWS"
+            }
+          ]
+        }
+      },
+      {
+        "id": "charts"
+      }
+    ]
+  },
+  {
+    "id": "ssd-and-charts",
+    "title": "SSD and charts",
+    "css": "ssd-and-charts.css",
+    "panels": [
+      {
+        "id": "ssd"
+      },
+      {
+        "id": "charts",
+        "chartDisplay": {
+          "charts": [
+            {
+              "moduleInstanceId": "ChartHazardMapRainfallSAWS"
+            }
+          ]
+        }
+      }
+    ]
+  }
+]
