@@ -19,6 +19,7 @@ export interface DisplayTab {
     | 'schematic-status-display'
     | 'system-monitor'
     | 'web-display'
+    | 'dashboard'
   id: string
   title: string
   href?: string
@@ -85,6 +86,14 @@ const displayTabs: DisplayTab[] = [
     icon: 'mdi-view-dashboard',
     active: false,
   },
+  {
+    type: 'dashboard',
+    id: 'dashboard',
+    title: 'Dashboard',
+    to: { name: 'TopologyDashboard' },
+    icon: 'mdi-view-dashboard',
+    active: false,
+  },
 ]
 
 export function displayTabsForNode(
@@ -125,8 +134,8 @@ export function displayTabsForNode(
         tab.active = nodeHasSystemMonitor(node)
         tab.to.params = { ...params }
         break
-      case 'web-display':
-        tab.active = nodeHasWebDisplay(node)
+      case 'dashboard':
+        tab.active = true
         tab.to.params = { ...params }
         break
     }
