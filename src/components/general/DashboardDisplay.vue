@@ -84,6 +84,11 @@ watch(
 <style scoped>
 .dashboard-container {
   display: grid;
+  background-color: color-mix(
+    in srgb,
+    rgb(var(--v-theme-on-surface-variant)) 90%,
+    rgb(var(--v-theme-on-surface))
+  );
   height: 100%;
   width: 100%;
 }
