@@ -76,8 +76,8 @@ function removeCss(url: string) {
 watch(
   () => props.dashboard.css,
   (newCss, oldCss) => {
-    if (oldCss) removeCss(`/css/${oldCss}`)
-    loadCss(`/css/${newCss}`)
+    if (oldCss) removeCss(oldCss)
+    loadCss(newCss)
   },
   { immediate: true },
 )
