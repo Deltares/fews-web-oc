@@ -5,7 +5,7 @@
       :class="{ 'd-none': hideSSD }"
       ref="ssdContainer"
     >
-      <SsdComponent :src="src" @action="onAction" ref="ssdComponent" />
+      <SsdComponent :src="src" :key="panelId" @action="onAction" ref="ssdComponent" />
       <DateTimeSlider
         v-model:selectedDate="selectedDateSlider"
         :dates="dates"

@@ -6,12 +6,10 @@
         :style="{ gridArea: panel.id }"
         class="d-flex flex-column"
         density="compact"
-        flat
-        border
       >
-        <v-card-title class="border-b">
-          {{ panel.title }}
-        </v-card-title>
+        <!-- <v-card-title class="border-b"> -->
+        <!--   {{ panel.title }} -->
+        <!-- </v-card-title> -->
         <component
           class="overflow-auto"
           :is="panel.component"
@@ -88,6 +86,11 @@ watch(
 <style scoped>
 .dashboard-container {
   display: grid;
+  background-color: color-mix(
+    in srgb,
+    rgb(var(--v-theme-on-surface-variant)) 90%,
+    rgb(var(--v-theme-on-surface))
+  );
   height: 100%;
   width: 100%;
 }
