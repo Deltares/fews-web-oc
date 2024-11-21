@@ -135,6 +135,10 @@ export function displayTabsForNode(
         tab.active = nodeHasSystemMonitor(node)
         tab.to.params = { ...params }
         break
+      case 'web-display':
+        tab.active = nodeHasWebDisplay(node)
+        tab.to.params = { ...params }
+        break
       case 'dashboard':
         tab.active = nodeHasDashboard(node)
         tab.to.params = { ...params }
