@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { toMercator } from '@turf/projection'
 import {
   ImageSource,
@@ -16,6 +16,7 @@ import {
 import { configManager } from '@/services/application-config'
 import { useMap } from '@indoorequal/vue-maplibre-gl'
 import { point } from '@turf/helpers'
+import { getLayerId, getSourceId } from '@/lib/map'
 
 export interface AnimatedRasterLayerOptions {
   name: string
@@ -38,7 +39,8 @@ const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
 
-let currentLayer: string = ''
+const currentLayer = ref('')
+const currentSource = ref('')
 
 onMounted(() => {
   addHooksToMapObject()
@@ -65,11 +67,11 @@ function onMapMove(): void {
 
 function onDataChange(event: MapSourceDataEvent): void {
   if (
-    event.sourceId === currentLayer &&
+    event.sourceId === currentSource.value &&
     event.tile !== undefined &&
     event.isSourceLoaded
   ) {
-    map?.setPaintProperty(event.sourceId, 'raster-opacity', 1)
+    map?.setPaintProperty(currentLayer.value, 'raster-opacity', 1)
   }
 }
 
@@ -78,12 +80,12 @@ function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 }
 
 function onStartLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId !== currentLayer) return
+  if (e.sourceId !== currentLayer.value) return
   isLoading.value = true
 }
 
 function onEndLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId !== currentLayer) return
+  if (e.sourceId !== currentLayer.value) return
   isLoading.value = false
 }
 
@@ -168,11 +170,11 @@ function createSource() {
     type: 'image',
     ...getImageSourceOptions(),
   }
-  map.addSource(currentLayer, rasterSource)
+  map.addSource(currentSource.value, rasterSource)
   const rasterLayer: any = {
-    id: currentLayer,
+    id: currentLayer.value,
     type: 'raster',
-    source: currentLayer,
+    source: currentSource.value,
     paint: {
       'raster-opacity': 0,
       'raster-opacity-transition': {
@@ -187,7 +189,7 @@ function createSource() {
 
 function updateSource() {
   if (map === undefined) return
-  const source = map.getSource(currentLayer) as ImageSource
+  const source = map.getSource(currentSource.value) as ImageSource
   if (source !== undefined) source.updateImage(getImageSourceOptions())
 }
 
@@ -199,9 +201,9 @@ function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
 
 function removeLayer() {
   if (map !== undefined && map.style !== undefined) {
-    if (map.getSource(currentLayer) !== undefined) {
-      map.removeLayer(currentLayer)
-      map.removeSource(currentLayer)
+    if (map.getSource(currentSource.value) !== undefined) {
+      map.removeLayer(currentLayer.value)
+      map.removeSource(currentSource.value)
     }
   }
 }
@@ -216,12 +218,16 @@ function onLayerChange(): void {
     return
   }
 
-  if (props.layer.name !== currentLayer) {
+  const layerId = getLayerId(props.layer.name)
+  const sourceId = getSourceId(props.layer.name)
+
+  if (layerId !== currentLayer.value) {
     removeLayer()
-    currentLayer = props.layer.name
+    currentLayer.value = layerId
+    currentSource.value = sourceId
   }
 
-  const source = map?.getSource(currentLayer)
+  const source = map?.getSource(currentSource.value)
   if (source === undefined) {
     createSource()
   } else {
