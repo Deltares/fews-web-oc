@@ -1,9 +1,9 @@
 <template>
-    <iframe v-if="src" class="w-100 h-100" :src="src"></iframe>
+  <iframe v-if="src" class="w-100 h-100" :src="src"></iframe>
 </template>
 
 <script setup lang="ts">
-import { TopologyNode } from '@deltares/fews-pi-requests';
+import { TopologyNode } from '@deltares/fews-pi-requests'
 import { computed, defineProps, onMounted } from 'vue'
 
 interface Props {
@@ -20,6 +20,4 @@ onMounted(() => {
 const src = computed(() => {
   return props.topologyNode?.embedUrl ?? ''
 })
-
-
 </script>
