@@ -12,6 +12,7 @@
         ref="ssdComponent"
       />
       <DateTimeSlider
+        v-if="showDateTimeSlider"
         v-model:selectedDate="selectedDateSlider"
         :dates="dates"
         :hide-speed-controls="mobile"
@@ -47,6 +48,7 @@ interface Props {
   groupId?: string
   panelId?: string
   objectId?: string
+  showDateTimeSlider?: boolean
 }
 
 interface SsdActionEventPayload {
@@ -66,6 +68,7 @@ const props = withDefaults(defineProps<Props>(), {
   groupId: '',
   panelId: '',
   objectId: '',
+  showDateTimeSlider: true,
 })
 
 const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
