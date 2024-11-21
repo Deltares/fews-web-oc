@@ -91,6 +91,7 @@ export function getComponentWithPropsForNode(node: TopologyNode | undefined) {
         panelId: node.scadaPanelId,
         groupId: node.id,
         objectId: '',
+        showDateTimeSlider: false,
       },
     }
     return result
