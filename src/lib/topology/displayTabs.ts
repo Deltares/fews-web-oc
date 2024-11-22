@@ -100,7 +100,7 @@ const displayTabs: DisplayTab[] = [
     type: 'tasks',
     id: crypto.randomUUID(),
     title: 'Tasks',
-    to: { name: 'TopologyTasksDisplay'},
+    to: { name: 'TopologyTasksDisplay' },
     icon: 'mdi-cog',
     active: false,
   },
