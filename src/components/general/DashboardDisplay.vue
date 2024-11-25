@@ -4,9 +4,8 @@
       <v-card
         v-if="panel.component"
         :style="{ gridArea: panel.id }"
-        class="dashboard-card"
+        class="d-flex flex-column"
         density="compact"
-        :flat="panel.id.includes('ssd')"
       >
         <component
           class="overflow-auto"
@@ -91,11 +90,5 @@ watch(
   );
   height: 100%;
   width: 100%;
-}
-
-.dashboard-card {
-  display: flex;
-  flex-direction: column;
-  background-color: transparent;
 }
 </style>
