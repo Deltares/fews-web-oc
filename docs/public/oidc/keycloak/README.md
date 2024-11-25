@@ -76,7 +76,39 @@ On the top left you can see you are logged in. Here it is also possible to logou
 ![weboc-profile](./weboc-profile.png)
 
 
-# Groups
+# Groups or Roles
+
+In Keycloak, groups or roles can be created to manage permissions. Both are supported by Delft-FEWS, but roles are recommended since they decouple groups from application roles.
+
+## Roles
+
+For integration with the WebServices UserGroups and Permissions, group memberships have to be passed in an access token to the Delft-FEWS WebServices.
+
+In keycloak roles can be configured in the Realm Roles section:
+
+- WS_VIEWER: For Web OC users that can only view data.
+- WS_EDITOR: For Web OC users that can edit data or perform other actions like running workflows.
+
+![keycloak-roles](./keycload-roles.png)
+
+Roles can now either be assigned to a user or a group. In this example, we will assign the roles to a user directly. In general, it is recommended to assign roles to groups and assign users to groups.
+
+![assign-roles-to-user](./assign-roles-to-user.png)
+
+The next step is to configure the client to pass the roles in the access token.
+
+In the weboc-client-id client, select Client Scopes and selected the weboc-client-id-dedicated client scope.
+Here a mapper can be configured.
+Chose: Configure a new mapper and select User Realm Role.
+
+![roles-mapper](./roles-mapper.png)
+
+Make sure to create a claim called roles and make sure it is added to the access token and id token.
+(If is also possible to add a group mapper. Only one of the two should be configured. If both are configured, the roles claim will be used and the groups claim will be ignored.)
+
+![access_token_roles](./access_token_roles.png)
+
+## Groups
 
 For integration with the WebServices UserGroups and Permissions, group memberships have to be passed in an access token to the Delft-FEWS WebServices.
 
@@ -92,10 +124,9 @@ In the weboc-client-id client, select Client Scopes and selected the weboc-clien
 ![dedicated-scope](./dedicated-scope.png)
 
 Here a mapper can be configured.
-Chose: Configure a new mapper and select Group Membership.
+Chose: Configure a new mapper and select Group Membership. N.B.: It is recommended to use Roles instead of Groups.
 
 ![group-membership-mapper](./group-membership-mapper.png)
-
 
 Create a claim called groups and make sure it is added to the access token and id token.
 Disable Full group path. It should be Off.
@@ -106,7 +137,6 @@ This will make sure that the groups are passed in the access token.
 The access token will contain the groups claim with all groups a user is member off.
 
 ![access_token](./access_token.png)
-
 
 # Web Services OIDC Configuration
 
