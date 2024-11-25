@@ -4,6 +4,7 @@ import Basemaps from '@/assets/base-layers.json'
 import { MglDefaults } from '@indoorequal/vue-maplibre-gl'
 import { useDark } from '@vueuse/core'
 import { StyleSpecification } from 'maplibre-gl'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 
 export interface UseBaseLayersReturn {
   baseLayerStyle: ShallowRef<string | StyleSpecification>
@@ -39,6 +40,14 @@ export function useBaseLayers(
       }
     } else if (layerDefinition?.style) {
       baseLayerStyle.value = layerDefinition?.style
+    }
+
+    if (
+      baseLayerStyle.value &&
+      typeof baseLayerStyle.value === 'string' &&
+      baseLayerStyle.value.startsWith('/')
+    ) {
+      baseLayerStyle.value = getResourcesStaticUrl(baseLayerStyle.value)
     }
   })
 

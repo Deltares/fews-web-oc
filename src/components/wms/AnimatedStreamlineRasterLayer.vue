@@ -15,6 +15,7 @@ import {
 import { configManager } from '@/services/application-config'
 import { type AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
+import { getLayerId, isCustomLayer } from '@/lib/map'
 
 type StreamlineLayerOptionsFews = Layer['animatedVectors']
 
@@ -118,7 +119,11 @@ function addLayer(): void {
     )
   })
 
-  map?.addLayer(layer, 'boundary_country_outline')
+  const beforeId = map
+    ?.getStyle()
+    .layers.map((l) => l.id)
+    .find(isCustomLayer)
+  map?.addLayer(layer, beforeId)
   map?.on('dblclick', onDoubleClick)
 }
 

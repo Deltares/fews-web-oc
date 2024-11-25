@@ -52,6 +52,12 @@
           "attribution": "Tiles &copy; Esri, DigitalGlobe, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AEX, Getmapping, Aerogrid, IGN, IGP, swisstopo, and the GIS User Community"
         }
       ]
+    },
+    {
+      "id": "esri-relief",
+      "name": "ESRI World Relief Map",
+      "type": "vector",
+      "style": "/baselayers/esri/style.json"
     }
   ]
 }

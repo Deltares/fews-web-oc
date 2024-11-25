@@ -99,6 +99,10 @@
       {
         "value": "carto-dark-matter",
         "icon": "mdi-weather-night"
+      },
+      {
+        "value": "esri-relief",
+        "icon": "mdi-terrain"
       }
     ],
     "group": "Map"
