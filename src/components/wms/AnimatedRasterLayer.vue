@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import { toMercator } from '@turf/projection'
 import {
   ImageSource,
@@ -39,8 +39,8 @@ const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
 
-const currentLayer = ref('')
-const currentSource = ref('')
+let currentLayer = ''
+let currentSource = ''
 
 onMounted(() => {
   addHooksToMapObject()
@@ -67,11 +67,11 @@ function onMapMove(): void {
 
 function onDataChange(event: MapSourceDataEvent): void {
   if (
-    event.sourceId === currentSource.value &&
+    event.sourceId === currentSource &&
     event.tile !== undefined &&
     event.isSourceLoaded
   ) {
-    map?.setPaintProperty(currentLayer.value, 'raster-opacity', 1)
+    map?.setPaintProperty(currentLayer, 'raster-opacity', 1)
   }
 }
 
@@ -80,12 +80,12 @@ function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 }
 
 function onStartLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId !== currentLayer.value) return
+  if (e.sourceId !== currentLayer) return
   isLoading.value = true
 }
 
 function onEndLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId !== currentLayer.value) return
+  if (e.sourceId !== currentLayer) return
   isLoading.value = false
 }
 
@@ -170,11 +170,11 @@ function createSource() {
     type: 'image',
     ...getImageSourceOptions(),
   }
-  map.addSource(currentSource.value, rasterSource)
+  map.addSource(currentSource, rasterSource)
   const rasterLayer: any = {
-    id: currentLayer.value,
+    id: currentLayer,
     type: 'raster',
-    source: currentSource.value,
+    source: currentSource,
     paint: {
       'raster-opacity': 0,
       'raster-opacity-transition': {
@@ -189,7 +189,7 @@ function createSource() {
 
 function updateSource() {
   if (map === undefined) return
-  const source = map.getSource(currentSource.value) as ImageSource
+  const source = map.getSource(currentSource) as ImageSource
   if (source !== undefined) source.updateImage(getImageSourceOptions())
 }
 
@@ -201,9 +201,9 @@ function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
 
 function removeLayer() {
   if (map !== undefined && map.style !== undefined) {
-    if (map.getSource(currentSource.value) !== undefined) {
-      map.removeLayer(currentLayer.value)
-      map.removeSource(currentSource.value)
+    if (map.getSource(currentSource) !== undefined) {
+      map.removeLayer(currentLayer)
+      map.removeSource(currentSource)
     }
   }
 }
@@ -221,13 +221,13 @@ function onLayerChange(): void {
   const layerId = getLayerId(props.layer.name)
   const sourceId = getSourceId(props.layer.name)
 
-  if (layerId !== currentLayer.value) {
+  if (layerId !== currentLayer) {
     removeLayer()
-    currentLayer.value = layerId
-    currentSource.value = sourceId
+    currentLayer = layerId
+    currentSource = sourceId
   }
 
-  const source = map?.getSource(currentSource.value)
+  const source = map?.getSource(currentSource)
   if (source === undefined) {
     createSource()
   } else {
