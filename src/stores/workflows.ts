@@ -69,11 +69,11 @@ const useWorkflowsStore = defineStore('workflows', {
       options?: StartWorkflowOptions,
     ) {
       if (this.workflowId === null) {
-        throw Error('Workflow ID has not been set.')
+        throw new Error('Workflow ID has not been set.')
       }
       if (type === 'ProcessData' && isPartialProcessDataFilter(filter)) {
         if (this.startTime === null || this.endTime === null) {
-          throw Error('Start time or end time has not been set.')
+          throw new Error('Start time or end time has not been set.')
         }
         const completeFilter = {
           ...filter,
