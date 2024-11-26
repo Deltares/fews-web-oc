@@ -55,7 +55,7 @@
           </v-row>
         </v-col>
       </v-container>
-      <v-container class="d-flex workflow-dialog__form" style="">
+      <v-container v-if="hasProperties" class="d-flex workflow-dialog__form">
         <json-forms
           :schema="formSchema"
           :uischema="formUISchema"
@@ -136,6 +136,10 @@ onMounted(() => {
   userId.value = crypto.randomUUID()
 })
 
+const hasProperties = computed<boolean>(() => {
+  const numProperties = currentWorkflow.value?.properties?.length ?? 0
+  return numProperties > 0
+})
 // Update workflowId, startTime and endTime depending on properties.
 watch(
   currentWorkflow,
