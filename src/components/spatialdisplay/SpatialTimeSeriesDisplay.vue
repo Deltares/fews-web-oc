@@ -157,7 +157,7 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
       value: DisplayType.TimeSeriesTable,
     },
     {
-      icon: 'mdi-archive-marker',
+      icon: 'mdi-information-outline',
       label: 'Information',
       value: DisplayType.Information,
     },
