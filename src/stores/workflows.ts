@@ -78,7 +78,7 @@ const useWorkflowsStore = defineStore('workflows', {
         if (this.startTime === null || this.endTime === null) {
           throw new Error('Start time or end time has not been set.')
         }
-        const completeFilter = {
+        const completeFilter: ProcessDataFilter = {
           ...filter,
           workflowId: this.workflowId,
           startTime: this.startTime,
@@ -96,7 +96,7 @@ const useWorkflowsStore = defineStore('workflows', {
           this.numActiveWorkflows--
         }
       } else if (type === WorkflowType.RunTask) {
-        const completeFilter = {
+        const completeFilter: RunTaskFilter = {
           ...filter,
           workflowId: this.workflowId,
         }
