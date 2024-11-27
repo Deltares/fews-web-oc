@@ -296,8 +296,9 @@ const canUseStreamlines = computed(
 )
 
 watch(canUseStreamlines, (canUse) => {
-  // Fall back to static layer if streamlines are not available.
-  if (!canUse) layerKind.value = LayerKind.Static
+  // If available, use animated streamlines by default, use static layer
+  // otherwise
+  layerKind.value = canUse ? LayerKind.Streamline : LayerKind.Static
 })
 
 const offsetBottomControls = computed(() => {
