@@ -503,7 +503,11 @@ async function startWorkflow() {
 }
 
 function getRunTaskFilter(): PartialRunTaskFilter {
+  // TODO: add an apprioriate description. Also, the userId is a random UUID
+  //       now? Why don't we use the ID of the user currently logged in if we
+  //       have it?
   const description = 'Test run'
+
   const timeZeroString = convertJSDateToFewsPiParameter(timeZero.value)
   return {
     userId: userId.value,
