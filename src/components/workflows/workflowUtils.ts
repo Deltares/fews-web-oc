@@ -1,4 +1,9 @@
 import { SecondaryWorkflowProperties } from '@deltares/fews-pi-requests'
+import {
+  ControlElement,
+  UISchemaElement,
+  VerticalLayout,
+} from '@jsonforms/core'
 
 /**
  * Generates a JSON schema based on an array of SecondaryWorkflowProperty objects.
@@ -41,15 +46,15 @@ export function generateJsonSchema(properties: SecondaryWorkflowProperties[]) {
  */
 export function generateDefaultUISchema(
   properties: SecondaryWorkflowProperties[],
-) {
-  const uiSchema: any = {
+): UISchemaElement {
+  const uiSchema: VerticalLayout = {
     type: 'VerticalLayout',
     elements: [],
   }
 
   properties.forEach((property) => {
     if (property.editable === false) return
-    const element: any = {
+    const element: ControlElement = {
       type: 'Control',
       scope: `#/properties/${property.key}`,
     }

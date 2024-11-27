@@ -103,6 +103,7 @@ import { generateDefaultUISchema, generateJsonSchema } from './workflowUtils'
 import { useDisplay } from 'vuetify'
 import { LngLat } from 'maplibre-gl'
 import { coordinateToString } from '@/lib/workflows'
+import { JsonSchema, UISchemaElement } from '@jsonforms/core'
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[] | null
@@ -333,25 +334,27 @@ const formUISchema = asyncComputed(async () => {
   )
 })
 
-async function getUISchema(file: string) {
+async function getUISchema(file: string): Promise<UISchemaElement | undefined> {
   try {
     const schema = await getFile(file)
     return schema.json()
   } catch (error) {
     const workflowProperties = currentWorkflow.value?.properties
-    if (workflowProperties !== undefined)
-      return generateDefaultUISchema(workflowProperties)
+    return workflowProperties
+      ? generateDefaultUISchema(workflowProperties)
+      : undefined
   }
 }
 
-async function getSchema(file: string) {
+async function getSchema(file: string): Promise<JsonSchema | undefined> {
   try {
     const schema = await getFile(file)
     return schema.json()
   } catch (error) {
     const workflowProperties = currentWorkflow.value?.properties
-    if (workflowProperties !== undefined)
-      return generateJsonSchema(workflowProperties)
+    return workflowProperties
+      ? generateJsonSchema(workflowProperties)
+      : undefined
   }
 }
 
