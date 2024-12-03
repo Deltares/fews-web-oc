@@ -3,8 +3,6 @@
     <div style="flex: 1 1 100%; height: 100%">
       <WindowComponent>
         <template v-slot:toolbar>
-          <span class="ml-5">{{ displayConfig?.title }}</span>
-          <v-spacer />
           <v-toolbar-items
             class="flex-0-0"
             v-model="displayType"
@@ -27,6 +25,8 @@
               <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
             </v-btn>
           </v-toolbar-items>
+          <span class="ml-5">{{ displayConfig?.title }}</span>
+          <v-spacer />
         </template>
         <template v-slot:toolbar-append>
           <v-btn size="small" icon>
