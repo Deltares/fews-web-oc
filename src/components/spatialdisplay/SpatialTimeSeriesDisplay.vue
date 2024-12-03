@@ -29,6 +29,14 @@
           </v-toolbar-items>
         </template>
         <template v-slot:toolbar-append>
+          <v-btn size="small" icon>
+            <v-icon>mdi-dots-horizontal</v-icon>
+            <v-menu activator="parent" density="compact">
+              <v-list>
+                <v-list-item prepend-icon="mdi-download" @click="downloadDialogStore.showDialog = true" :disabled="downloadDialogStore.disabled">Download time series ...</v-list-item>
+              </v-list>
+            </v-menu>
+          </v-btn>
           <v-btn size="small" icon @click="onClose">
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -72,6 +80,8 @@ import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
 import { isFilterActionsFilter } from '@/lib/filters'
+import { useDownloadDialogStore } from '@/stores/downloadDialog'
+import { toUSVString } from 'util'
 
 interface Props {
   filter: filterActionsFilter | timeSeriesGridActionsFilter
@@ -91,6 +101,8 @@ const options = computed<UseDisplayConfigOptions>(() => {
 
 const props = defineProps<Props>()
 const emit = defineEmits(['close'])
+
+const downloadDialogStore = useDownloadDialogStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
