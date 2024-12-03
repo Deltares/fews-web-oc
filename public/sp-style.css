@@ -13,7 +13,6 @@
 .dark {
   --contrast-color: rgb(255, 255, 255);
   --theme-color: black;
-  --canvas-fill: rgb(54, 54, 54); 
+  --canvas-fill: rgb(54, 54, 54);
   --weboc-app-bar-bg-color: none;
 }
-
