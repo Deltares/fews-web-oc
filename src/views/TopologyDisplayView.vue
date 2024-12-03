@@ -64,12 +64,6 @@
           </template>
         </v-list-item>
         <v-list-item
-          title="Download time series"
-          prepend-icon="mdi-download"
-          :disabled="downloadDialogStore.disabled"
-          @click="downloadDialogStore.showDialog = true"
-        />
-        <v-list-item
           title="More Info"
           prepend-icon="mdi-information"
           :disabled="!topologyNode?.documentFile"
@@ -128,7 +122,6 @@ import InformationDisplayView from '@/views/InformationDisplayView.vue'
 import { useDisplay } from 'vuetify'
 import { useNodesStore } from '@/stores/nodes'
 import { nodeButtonItems, recursiveUpdateNode } from '@/lib/topology/nodes'
-import { useDownloadDialogStore } from '@/stores/downloadDialog'
 import {
   displayTabsForNode,
   type DisplayTab,
@@ -149,7 +142,6 @@ const props = defineProps<Props>()
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
 const workflowsStore = useWorkflowsStore()
-const downloadDialogStore = useDownloadDialogStore()
 
 const menuType = computed(() => {
   const configured = settings.get('ui.hierarchical-menu-style')?.value as string
