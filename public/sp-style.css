@@ -7,12 +7,13 @@
   --theme-color: white;
   --contrast-color: black;
   --canvas-fill: rgb(223, 223, 223);
-  --weboc-app-bar-bg-color: rgb(249, 225, 30);
+  --weboc-app-bar-bg-color: rgb(240, 240, 244);
 }
 
 .dark {
   --contrast-color: rgb(255, 255, 255);
   --theme-color: black;
-  --canvas-fill: rgb(54, 54, 54);
+  --canvas-fill: rgb(54, 54, 54); 
   --weboc-app-bar-bg-color: none;
 }
+
