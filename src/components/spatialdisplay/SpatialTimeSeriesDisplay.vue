@@ -33,7 +33,12 @@
             <v-icon>mdi-dots-horizontal</v-icon>
             <v-menu activator="parent" density="compact">
               <v-list>
-                <v-list-item prepend-icon="mdi-download" @click="downloadDialogStore.showDialog = true" :disabled="downloadDialogStore.disabled">Download time series ...</v-list-item>
+                <v-list-item
+                  prepend-icon="mdi-download"
+                  @click="downloadDialogStore.showDialog = true"
+                  :disabled="downloadDialogStore.disabled"
+                  >Download time series ...</v-list-item
+                >
               </v-list>
             </v-menu>
           </v-btn>
@@ -81,7 +86,6 @@ import { useSystemTimeStore } from '@/stores/systemTime'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
 import { isFilterActionsFilter } from '@/lib/filters'
 import { useDownloadDialogStore } from '@/stores/downloadDialog'
-import { toUSVString } from 'util'
 
 interface Props {
   filter: filterActionsFilter | timeSeriesGridActionsFilter
