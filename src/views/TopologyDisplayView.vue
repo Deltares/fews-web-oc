@@ -14,16 +14,6 @@
       v-model:nodeButtons="nodesStore.nodeButtons"
       variant="tonal"
     />
-    <!-- TODO: Should this be a display tab maybe? -->
-    <v-btn
-      v-if="externalLink"
-      :href="externalLink"
-      target="_blank"
-      variant="text"
-      class="text-capitalize"
-    >
-      <v-icon>mdi-open-in-new</v-icon>Link
-    </v-btn>
   </Teleport>
   <Teleport to="#app-bar-content-center">
     <v-toolbar-items v-if="displayTabs.length > 1">
