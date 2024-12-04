@@ -17,15 +17,15 @@ See [Web OC Project](project/). This page includes background information on the
 
 ## Technical Architecture
 
-See [Technical Architecture](architecture/). This page includes information on the technical architecture of Web OC and in addtion covers the folowing:
+See [Technical Architecture](architecture/). This page includes information on the technical architecture of Web OC and in addition covers the following:
 
 - Licensing and Software distribution
 - Release management
-- Support and Maintanance
+- Support and Maintenance
 
 ## Web OC Delft-FEWS configuration
 
-See [Web OC Delft-FEWS configuration ](configuration/). This page includes information on the Delft-FEWS configration for Web OC and in addtion covers the folowing:
+See [Web OC Delft-FEWS configuration ](configuration/). This page includes information on the Delft-FEWS configuration for Web OC and in addition covers the following:
 
 - Web OC navigation using Topology
 - Other WEB OC functional components
