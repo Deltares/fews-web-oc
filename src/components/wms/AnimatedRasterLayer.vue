@@ -16,6 +16,7 @@ import {
 import { configManager } from '@/services/application-config'
 import { useMap } from '@indoorequal/vue-maplibre-gl'
 import { point } from '@turf/helpers'
+import { getLayerId, getSourceId, isCustomLayer } from '@/lib/map'
 
 export interface AnimatedRasterLayerOptions {
   name: string
@@ -182,7 +183,11 @@ function createSource() {
       'raster-fade-duration': 0,
     },
   }
-  map.addLayer(rasterLayer, 'boundary_country_outline')
+  const beforeId = map
+    ?.getStyle()
+    .layers.map((l) => l.id)
+    .find(isCustomLayer)
+  map.addLayer(rasterLayer, beforeId)
 
   setDefaultZoom()
 }
