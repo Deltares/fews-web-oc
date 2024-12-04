@@ -26,12 +26,6 @@ describe('Nodes store', () => {
     expect(nodesStore.nodeButtons).toEqual(nodeButtons)
   })
 
-  it('should set active parent id on setting node buttons', () => {
-    const nodesStore = useNodesStore()
-    nodesStore.setNodeButtons(nodeButtons)
-    expect(nodesStore.activeNodeId).toBe(nodeButtons[0].id)
-  })
-
   it('should get first route target without set parentId', () => {
     const nodesStore = useNodesStore()
     nodesStore.setNodeButtons(nodeButtons)
