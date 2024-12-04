@@ -31,7 +31,7 @@ version="3.0">
 
 Customize the app-config.json file.
 
-After starting tomcat the Delft-FEWS Web OC is available at: http://localhost:8080
+After starting tomcat, the Delft-FEWS Web OC is available at: http://localhost:8080
 
 ## Azure Static Web App using Azure DevOps
 
@@ -41,7 +41,7 @@ To make sure all requests are redirected to the index.html, the following [stati
 
 ## Delft-FEWS Standalone
 
-The Delft-FEWS Web OC can be deployed in a Delft-FEWS Standalone as follows"
+The Delft-FEWS Web OC can be deployed in a Delft-FEWS Standalone as follows.
 
 In the "Modules" folder of the Delft-FEWS Region Home folder, create a directory named: "weboc".
 Unzip the Delft-FEWS Web OC distribution into that folder.
@@ -70,7 +70,7 @@ Customize the app-config.json file where appropriate.
 After starting tomcat using F12+M (embedded servers, start embedded tomcat web services) in the Standalone the Delft-FEWS Web OC is available at: http://localhost:8080. Log message in Delft-FEWS SA: 
 `INFO - StartFewsWebServices.FewsWebServicesEmbeddedTomcatServer.run - The Web OC will be available at: http://localhost:8080`.
 
-In order to display Web OC, navigate to http://localhost:8080 in a browser (copy-paste http://localhost:8080 in browser window). Please use a incognito browser window to avoid looking at cached content.  
+In order to display Web OC, navigate to http://localhost:8080 in a browser (copy-paste http://localhost:8080 in browser window). Please use an incognito browser window to avoid looking at cached content.  
 
 ## Nginx
 
