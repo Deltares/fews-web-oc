@@ -53,3 +53,16 @@ export function convertFewsPiDateTimeToJsDate(
     `${fewsDatetime.date}T${fewsDatetime.time}${timeZoneOffsetString}`,
   )
 }
+
+/**
+ * Converts a date to a string suitable for use as a FEWS PI query parameter.
+ *
+ * FEWS PI accepts dates in the format 'YYYY-MM-DDTHH:MM:SSZ', almost an ISO8601
+ * string, but it does not accept milliseconds.
+ *
+ * @param date date to convert.
+ * @returns string suitable for use as a FEWS PI query parameter.
+ */
+export function convertJSDateToFewsPiParameter(date: Date): string {
+  return toISOString(date) + 'Z'
+}
