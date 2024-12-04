@@ -9,9 +9,8 @@
   <Teleport to="#app-bar-content-start">
     <LeafNodeButtons
       v-if="nodesStore.nodeButtons.length > 0"
-      v-model:activeParentId="nodesStore.activeParentId"
-      v-model:activeParentNode="nodesStore.activeParentNode"
-      v-model:nodeButtons="nodesStore.nodeButtons"
+      v-model:activeNodeId="nodesStore.activeNodeId"
+      :items="nodesStore.nodeButtons"
       variant="tonal"
     />
   </Teleport>
@@ -151,9 +150,13 @@ const activeNode = computed(() => {
   if (!active.value) return
 
   const node = topologyMap.value.get(active.value)
-  return node?.topologyNodes
-    ? node?.topologyNodes[nodesStore.activeParentNode]
-    : node
+  if (node?.topologyNodes) {
+    const leafNode = node.topologyNodes.find(
+      (n) => n.id === nodesStore.activeNodeId,
+    )
+    return leafNode
+  }
+  return node
 })
 
 const secondaryWorkflows = computed(() => {

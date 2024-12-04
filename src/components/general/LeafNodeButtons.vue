@@ -1,14 +1,14 @@
 <template>
-  <v-menu v-if="nodeButtons.length > 0">
+  <v-menu v-if="items.length > 0">
     <template #activator="{ props }">
       <v-btn :variant v-bind="props" class="text-none">
         <v-icon start>mdi-filter-variant</v-icon>
-        {{ activeParentName }}
-        <v-icon v-if="nodeButtons.length > 1" end>mdi-menu-down</v-icon>
+        {{ activeNode?.name || 'All' }}
+        <v-icon v-if="items.length > 1" end>mdi-menu-down</v-icon>
       </v-btn>
     </template>
     <v-list>
-      <template v-for="item in nodeButtons">
+      <template v-for="item in items">
         <v-list-item
           v-if="item.href"
           :href="item.href"
@@ -19,7 +19,7 @@
             <v-icon size="xsmall">{{ item.icon }}</v-icon>
           </template>
         </v-list-item>
-        <v-list-item v-else :to="item.to" @click="activeParentId = item.id">
+        <v-list-item v-else :to="item.to" @click="activeNodeId = item.id">
           {{ item.name }}
           <template #append>
             <v-icon v-if="item.icon" size="xsmall">{{ item.icon }}</v-icon>
@@ -42,17 +42,17 @@ import type { VBtn } from 'vuetify/components'
 
 interface Props {
   variant: VBtn['variant']
+  items: ColumnItem[]
 }
 
-defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  items: () => [],
+})
 
-const activeParentId = defineModel<string>('activeParentId', { required: true })
-const nodeButtons = defineModel<ColumnItem[]>('nodeButtons', { required: true })
+const activeNodeId = defineModel<string>('activeNodeId', { required: true })
 
-const activeParentName = computed(() => {
-  const activeParent = nodeButtons.value.find(
-    (item) => item.id === activeParentId.value,
-  )
-  return activeParent ? activeParent.name : ''
+const activeNode = computed(() => {
+  const node = props.items.find((item) => item.id === activeNodeId.value)
+  return node
 })
 </script>
