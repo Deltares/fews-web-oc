@@ -15,11 +15,14 @@ export const useNodesStore = defineStore('nodes', {
     getRouteTarget: (state) => {
       return (sources: ColumnItem[]) => {
         if (state.activeNodeId) {
+          const currentIndex = state.nodeButtons.findIndex((node) => {
+            return node.id === state.activeNodeId
+          })
+          const currentNodeName = state.nodeButtons[currentIndex]?.name
           const sourceIndex = sources.findIndex((source) => {
-            return source.id === state.activeNodeId
+            return source.name === currentNodeName
           })
           if (sourceIndex > -1) {
-            state.activeNodeId = sources[sourceIndex].id
             return sources[sourceIndex].to
           }
         }
@@ -30,9 +33,6 @@ export const useNodesStore = defineStore('nodes', {
   actions: {
     setNodeButtons(nodeButtons: ColumnItem[]) {
       this.nodeButtons = nodeButtons
-      if (!this.activeNodeId && this.nodeButtons.length > 0) {
-        this.activeNodeId = this.nodeButtons[0].id
-      }
     },
   },
 })
