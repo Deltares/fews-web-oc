@@ -14,7 +14,7 @@
       v-if="showLayer"
     >
       <template v-slot:activator="{ props }">
-        <v-btn variant="plain" v-bind="props" class="pe-0 text-capitalize">
+        <v-btn variant="plain" v-bind="props" class="pe-0 text-none">
           <span
             class="me-2"
             :class="{ 'text-decoration-line-through': props.completelyMissing }"
