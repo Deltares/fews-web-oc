@@ -20,7 +20,7 @@ jobs:
       - name: Setup node v20
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 22
       - run: npm ci
       - run: npm run build -- --base=${{ matrix.base }}
       - run: zip -r ${{ matrix.asset_name }} dist
