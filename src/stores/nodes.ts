@@ -2,38 +2,37 @@ import type { ColumnItem } from '@/components/general/ColumnItem'
 import { defineStore } from 'pinia'
 
 interface NodesState {
-  activeParentId: string
-  activeParentNode: number
+  activeNodeId: string
   nodeButtons: ColumnItem[]
 }
 
 export const useNodesStore = defineStore('nodes', {
   state: (): NodesState => ({
-    activeParentId: '',
-    activeParentNode: 0,
+    activeNodeId: '',
     nodeButtons: [],
   }),
+  getters: {
+    getRouteTarget: (state) => {
+      return (sources: ColumnItem[]) => {
+        if (state.activeNodeId) {
+          const sourceIndex = sources.findIndex((source) => {
+            return source.id === state.activeNodeId
+          })
+          if (sourceIndex > -1) {
+            state.activeNodeId = sources[sourceIndex].id
+            return sources[sourceIndex].to
+          }
+        }
+        return sources[0].to
+      }
+    },
+  },
   actions: {
     setNodeButtons(nodeButtons: ColumnItem[]) {
       this.nodeButtons = nodeButtons
-      if (!this.activeParentId && this.nodeButtons.length > 0) {
-        this.activeParentId = this.nodeButtons[0].id
+      if (!this.activeNodeId && this.nodeButtons.length > 0) {
+        this.activeNodeId = this.nodeButtons[0].id
       }
-    },
-    getRouteTarget(sources: ColumnItem[]) {
-      if (this.activeParentId) {
-        const sourceIndex = sources.findIndex((source) => {
-          return source.id === this.activeParentId
-        })
-        if (sourceIndex > -1) {
-          this.activeParentNode = sourceIndex
-          this.activeParentId = sources[sourceIndex].id
-          return sources[sourceIndex].to
-        }
-      }
-      this.activeParentNode = 0
-      this.activeParentId = sources[0].id
-      return sources[0].to
     },
   },
 })
