@@ -130,7 +130,7 @@ const paintTextSpecification = computed(() => {
   }
 })
 
-const defaultOpacity = 0.75
+const defaultOpacity = 1.0
 
 const paintSymbolSpecification = {
   'icon-opacity': defaultOpacity,
