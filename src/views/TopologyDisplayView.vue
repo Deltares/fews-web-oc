@@ -307,6 +307,7 @@ watchEffect(() => {
         showActiveThresholdCrossingsForFilters.value,
       ),
     )
+    nodesStore.activeNodeId = props.nodeId[1]
   }
 
   // Create the displayTabs for the active node.
