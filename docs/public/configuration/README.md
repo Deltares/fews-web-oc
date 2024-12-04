@@ -14,7 +14,7 @@ Although Web OC will run without any further adjustments to the Delft-FEWS confi
 
 ### System time
 
-Please note that Web OC will always use the system time of the Web OC user's device as Web OC system time. This time setting can not be modified by Web OC configuration.
+Please note that Web OC will always use the system time of the Web OC user's device as Web OC system time. This time setting cannot be modified by Web OC configuration.
 
 ## Web OC navigation using Topology
 
@@ -44,7 +44,7 @@ Topology nodes in the Web OC component TopologyDisplay can be linked using Topol
 
 **Spatial Display**
 
-Web OC will show a map, displaying the configured plotId linked to the selected topology node. Use the `<gridDisplaySelection>` item in Toplogy.xml to configure a plotId. A time slider will show up for navigation in time. The period covered by the time slider is based on the configured relative view period of the time series in the GridDisplay.xml with reference to the system time of Web OC (system time of users device).
+Web OC will show a map, displaying the configured plotId linked to the selected topology node. Use the `<gridDisplaySelection>` item in Toplogy.xml to configure a plotId. A time slider will show up for navigation in time. The period covered by the time slider is based on the configured relative view period of the time series in the GridDisplay.xml with reference to the system time of Web OC (system time of user's device).
 The classbreaks (legend) on the Spatial Display is only shown in the Web-OC when the Spatial Display plotId uses classbreaks from the TimeSeriesDisplayConfig.xml. Examples are provided on the Delft-FEWS WIKI pages: [Time Series Display Configuration](https://publicwiki.deltares.nl/display/FEWSDOC/02+Time+Series+Display+Configuration) and [Grid Display Configuration](https://publicwiki.deltares.nl/display/FEWSDOC/01+Grid+Display#id-01GridDisplay-_Toc154574473_Toc95297306classBreaks). It is possible to configure multiple classBreaks for a single gridPlot. Web OC will allow users to switch between them. 
 
 Optionally, gridded vector data can be shown as an animated layer in Web OC by configuring the `<animatedVectors>` settings in [Spatial Display](https://publicwiki.deltares.nl/display/FEWSDOC/01+Grid+Display).
@@ -57,11 +57,11 @@ When locations are shown on the Web OC map, icons are used as configured in Delf
 
 **External url**
 
-When a `<url>` element is configured in the selected topology node, Web OC will open a new browser window (outside Web OC) for the url configured. NB This is only supported for toplogy nodes with _only_ the `<url>` element configured. 
+When a `<url>` element is configured in the selected topology node, Web OC will open a new browser window (outside Web OC) for the url configured. NB This is only supported for topology nodes with _only_ the `<url>` element configured. 
 
 **Embedded Browser**
 
-When a `<embedUrl>` element is configured in the selected topology node, Web OC will open a embedded browser window for the url configured. Please note that [Content Security Policy](https://deltares.github.io/fews-web-oc/deployments/#content-security-policy-csp-headers) have to be configured correctly to allow embedding.
+When a `<embedUrl>` element is configured in the selected topology node, Web OC will open an embedded browser window for the url configured. Please note that [Content Security Policy](https://deltares.github.io/fews-web-oc/deployments/#content-security-policy-csp-headers) have to be configured correctly to allow embedding.
 
 **DisplayGroup**
 
@@ -116,7 +116,7 @@ Next to the Topology Display, three additional components can be configured in W
 
 **HTML display**: Component, only available in Web OC, to either show static HTML pages stored in the FEWS Configuration (WebResourceFiles) or external web pages. See [WebOperatorClient.xml configuration](https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client).
 
-**Help menu**: Drop-down menu available on the bottow left side of Web OC. See [WebOperatorClient.xml configuration](https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client).
+**Help menu**: Drop-down menu available on the bottom left side of Web OC. See [WebOperatorClient.xml configuration](https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client).
 
 ## Known issues
 
