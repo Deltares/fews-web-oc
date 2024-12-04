@@ -51,8 +51,8 @@
   },
   "devDependencies": {
     "@mdi/font": "^7.4.47",
-    "@playwright/experimental-ct-vue": "^1.42.1",
-    "@playwright/test": "^1.42.1",
+    "@playwright/experimental-ct-vue": "^1.49.0",
+    "@playwright/test": "^1.49.0",
     "@types/crypto-js": "^4.2.2",
     "@types/d3": "^7.4.3",
     "@types/lodash-es": "^4.17.12",
@@ -75,7 +75,7 @@
     "typescript": "^5.6.2",
     "vite": "^6.0.2",
     "vite-plugin-vuetify": "^2.0.4",
-    "vitest": "^2.1.1",
+    "vitest": "^2.1.8",
     "vue-tsc": "^2.1.10"
   },
   "volta": {
