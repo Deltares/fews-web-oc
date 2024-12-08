@@ -13,6 +13,7 @@
     :touchZoomRotate="false"
     :touchPitch="false"
     :attributionControl="false"
+    :bounds="bounds"
   >
     <mgl-attribution-control position="top-right" :compact="true" />
     <mgl-scale-control position="bottom-right" />
@@ -29,9 +30,15 @@ import {
   MglMap,
   MglScaleControl,
 } from '@indoorequal/vue-maplibre-gl'
-import { type ResourceType, type RequestParameters } from 'maplibre-gl'
+import type { ResourceType, RequestParameters, LngLatBounds } from 'maplibre-gl'
 import { useBaseLayers } from '@/services/useBaseLayers'
 import { useUserSettingsStore } from '@/stores/userSettings'
+
+interface Props {
+  bounds?: LngLatBounds
+}
+
+defineProps<Props>()
 
 const settings = useUserSettingsStore()
 

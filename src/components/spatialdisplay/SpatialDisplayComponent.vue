@@ -1,5 +1,5 @@
 <template>
-  <MapComponent>
+  <MapComponent :bounds="bounds">
     <AnimatedRasterLayer
       v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
       v-model:isLoading="isLoading"
@@ -144,6 +144,7 @@ import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
   LngLat,
+  type LngLatBounds,
   type MapLayerMouseEvent,
   type MapLayerTouchEvent,
 } from 'maplibre-gl'
@@ -452,6 +453,20 @@ function setLayerOptions(): void {
     layerOptions.value = undefined
   }
 }
+
+const bounds = ref<LngLatBounds>()
+watch(
+  () => layerOptions.value?.bbox,
+  (layerBounds) => {
+    if (!layerBounds) return
+
+    const boundsChanged = bounds.value?.toString() !== layerBounds.toString()
+    if (boundsChanged) {
+      bounds.value = layerBounds
+    }
+  },
+  { immediate: true },
+)
 
 function onCoordinateClick(
   event: MapLayerMouseEvent | MapLayerTouchEvent,
