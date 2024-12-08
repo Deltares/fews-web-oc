@@ -6,7 +6,7 @@
     :drag-pan="true"
     :scroll-zoom="true"
     :transform-request="transformRequest"
-    :mapStyle="baseLayerStyle"
+    :mapStyle="initialStyle"
     :doubleClickZoom="false"
     :pitchWithRotate="false"
     :dragRotate="false"
@@ -28,10 +28,13 @@ import {
   MglDefaults,
   MglMap,
   MglScaleControl,
+  useMap,
 } from '@indoorequal/vue-maplibre-gl'
 import { type ResourceType, type RequestParameters } from 'maplibre-gl'
 import { useBaseLayers } from '@/services/useBaseLayers'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { useTemplateRef, watch } from 'vue'
+import { transformStyle } from '@/lib/map'
 
 const settings = useUserSettingsStore()
 
@@ -41,6 +44,19 @@ MglDefaults.style =
 const { baseLayerStyle } = useBaseLayers(
   () => settings.get('ui.map.theme')?.value as string | undefined,
 )
+
+const initialStyle = baseLayerStyle.value
+
+const mapRef = useTemplateRef('map')
+
+watch(baseLayerStyle, (newBaseStyle) => {
+  if (!newBaseStyle) return
+
+  // NOTE: We have to get mapkey because useMap uses inject and we are not a child of MglMap
+  const mapKey = mapRef.value?.mapKey
+  const map = useMap(mapKey).map
+  map?.setStyle(newBaseStyle, { transformStyle })
+})
 
 function transformRequest(
   url: string,

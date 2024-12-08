@@ -15,6 +15,7 @@ import {
 import { configManager } from '@/services/application-config'
 import { type AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
+import { getLayerId } from '@/lib/map'
 
 type StreamlineLayerOptionsFews = Layer['animatedVectors']
 
@@ -28,7 +29,7 @@ const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
 
-const layerId = 'streamlines'
+const layerId = getLayerId('streamlines')
 let layer: WMSStreamlineLayer | null = null
 
 onMounted(addLayer)
