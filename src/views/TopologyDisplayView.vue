@@ -311,8 +311,8 @@ watchEffect(() => {
   }
 
   // Create the displayTabs for the active node.
-  if (node === undefined) return
   displayTabs.value = displayTabsForNode(node, parentNodeIdNodeId)
+
   externalLink.value = node.url
 })
 

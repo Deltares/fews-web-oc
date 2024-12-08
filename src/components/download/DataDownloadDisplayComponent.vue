@@ -1,117 +1,127 @@
 <template>
   <v-container>
     <v-card title="Make a selection to download data" flat>
-      <v-row align="start" class="ma-1">
-        <v-col v-for="(item, index) in attributes">
-          <v-autocomplete
-            v-model="selectedAttributes[index]"
-            :items="selectableAttributes[index]"
-            :label="item.name"
-            multiple
-            density="compact"
-            variant="outlined"
-            clearable
-            chips
-            closable-chips
-            prepend-icon="mdi-filter"
-            @update:modelValue="updateLocations"
-          />
-        </v-col>
-      </v-row>
-      <v-row align="start" class="ma-1">
-        <v-col>
-          <v-autocomplete
-            v-model="selectedParameterQualifiers"
-            :items="parameterQualifiers"
-            :item-title="(item) => getParameterQualifierName(item)"
-            label="Parameters"
-            multiple
-            return-object
-            density="compact"
-            variant="outlined"
-            clearable
-            prepend-icon="mdi-scale"
-          >
-            <template v-slot:selection="{ item, index }">
-              <span v-if="index < 4">{{ item.title }}</span>
-              <span v-else-if="index === 4"
-                >... ({{ selectedParameterQualifiers.length }} selected)</span
-              >
-            </template>
-            <template v-slot:append-inner>
-              <v-chip>{{ parameterQualifiers.length }}</v-chip>
-            </template>
-          </v-autocomplete>
-        </v-col>
-      </v-row>
-      <v-row align="start" class="ma-1">
-        <v-col>
-          <v-autocomplete
-            v-model="selectedLocations"
-            :items="locations"
-            :item-title="(item) => getLocationName(item)"
-            label="Locations"
-            multiple
-            return-object
-            density="compact"
-            variant="outlined"
-            clearable
-            prepend-icon="mdi-map-marker-multiple"
-          >
-            <template v-slot:selection="{ item, index }">
-              <span v-if="index < 3">{{ item.title }}</span>
-              <span v-else-if="index === 3"
-                >... ({{ selectedLocations.length }} selected)</span
-              >
-            </template>
-            <template v-slot:append-inner>
-              <v-chip>{{ locations.length }}</v-chip>
-            </template>
-          </v-autocomplete>
-        </v-col>
-      </v-row>
-      <v-row align="start" class="ma-1">
-        <v-col>
-          <v-text-field
-            v-model="startDateString"
-            label="Start date"
-            density="compact"
-            :rules="[rules.required, rules.date]"
-            variant="outlined"
-          >
-            <template v-slot:prepend>
-              <v-menu offset-y :close-on-content-click="false">
-                <template v-slot:activator="{ props }">
-                  <v-icon v-bind="props">mdi-calendar-start</v-icon>
-                </template>
-                <v-date-picker v-model="startDate" no-title hide-actions>
-                  <template #header></template>
-                </v-date-picker>
-              </v-menu>
-            </template>
-          </v-text-field>
-        </v-col>
-        <v-col>
-          <v-text-field
-            v-model="endDateString"
-            label="End date"
-            density="compact"
-            :rules="[rules.required, rules.date]"
-            variant="outlined"
-          >
-            <template v-slot:prepend>
-              <v-menu offset-y :close-on-content-click="false">
-                <template v-slot:activator="{ props }">
-                  <v-icon v-bind="props">mdi-calendar-end</v-icon>
-                </template>
-                <v-date-picker v-model="endDate" no-title hide-actions>
-                  <template #header></template>
-                </v-date-picker>
-              </v-menu>
-            </template>
-          </v-text-field>
-        </v-col>
-      </v-row>
+      <v-form v-model="selectionIsValid">
+        <v-row class="ma-1">
+          <v-col v-for="(item, index) in attributes">
+            <v-autocomplete
+              v-model="selectedAttributes[index]"
+              :items="selectableAttributes[index]"
+              :label="item.name"
+              multiple
+              density="compact"
+              variant="outlined"
+              clearable
+              chips
+              closable-chips
+              prepend-icon="mdi-filter"
+              @update:modelValue="updateLocations"
+            />
+          </v-col>
+        </v-row>
+        <v-row class="ma-1">
+          <v-col>
+            <v-autocomplete
+              v-model="selectedParameterQualifiers"
+              :items="parameterQualifiers"
+              :item-title="(item) => getParameterQualifierName(item)"
+              label="Parameters"
+              multiple
+              return-object
+              density="compact"
+              variant="outlined"
+              clearable
+              prepend-icon="mdi-scale"
+              :rules="[rules.noEmptySelection]"
+            >
+              <template v-slot:selection="{ item, index }">
+                <span v-if="index < 4">{{ item.title }}</span>
+                <span v-else-if="index === 4"
+                  >... ({{ selectedParameterQualifiers.length }} selected)</span
+                >
+              </template>
+              <template v-slot:append-inner>
+                <v-chip>{{ parameterQualifiers.length }}</v-chip>
+              </template>
+            </v-autocomplete>
+          </v-col>
+        </v-row>
+        <v-row class="ma-1">
+          <v-col>
+            <v-autocomplete
+              v-model="selectedLocations"
+              :items="locations"
+              :item-title="(item) => getLocationName(item)"
+              label="Locations"
+              multiple
+              return-object
+              density="compact"
+              variant="outlined"
+              clearable
+              prepend-icon="mdi-map-marker-multiple"
+              :rules="[rules.noEmptySelection]"
+            >
+              <template v-slot:selection="{ item, index }">
+                <span v-if="index < 3">{{ item.title }}</span>
+                <span v-else-if="index === 3"
+                  >... ({{ selectedLocations.length }} selected)</span
+                >
+              </template>
+              <template v-slot:append-inner>
+                <v-chip>{{ locations.length }}</v-chip>
+              </template>
+            </v-autocomplete>
+          </v-col>
+        </v-row>
+        <v-row class="ma-1">
+          <v-col>
+            <v-text-field
+              v-model="startDateString"
+              label="Start date"
+              density="compact"
+              :rules="[
+                rules.required,
+                rules.date,
+                rules.startDateBeforeEndDate,
+              ]"
+              variant="outlined"
+              :key="endDateString"
+            >
+              <template v-slot:prepend>
+                <v-menu offset-y :close-on-content-click="false">
+                  <template v-slot:activator="{ props }">
+                    <v-icon v-bind="props">mdi-calendar-start</v-icon>
+                  </template>
+                  <v-date-picker v-model="startDate" no-title hide-actions>
+                    <template #header></template>
+                  </v-date-picker>
+                </v-menu>
+              </template>
+            </v-text-field>
+          </v-col>
+          <v-col>
+            <v-text-field
+              v-model="endDateString"
+              label="End date"
+              density="compact"
+              :rules="[rules.required, rules.date, rules.endDateAfterStartDate]"
+              variant="outlined"
+              :key="startDateString"
+            >
+              <template v-slot:prepend>
+                <v-menu offset-y :close-on-content-click="false">
+                  <template v-slot:activator="{ props }">
+                    <v-icon v-bind="props">mdi-calendar-end</v-icon>
+                  </template>
+                  <v-date-picker v-model="endDate" no-title hide-actions>
+                    <template #header></template>
+                  </v-date-picker>
+                </v-menu>
+              </template>
+            </v-text-field>
+          </v-col>
+        </v-row>
+      </v-form>
       <v-card-actions>
         <v-checkbox
           v-model="onlyDownloadMetaData"
@@ -126,6 +136,7 @@
           prepend-icon="mdi-download"
           color="primary"
           @click="downloadData"
+          :disabled="!selectionIsValid"
         >
           Download
         </v-btn>
@@ -143,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import {
   DocumentFormat,
   Location,
@@ -175,12 +186,15 @@ interface Props {
 const props = defineProps<Props>()
 const downloadDialogStore = useDownloadDialogStore()
 const settings = useUserSettingsStore()
+
 const options = computed<UseDisplayConfigOptions>(() => {
   return {
     useDisplayUnits: settings.useDisplayUnits,
     convertDatum: settings.convertDatum,
   }
 })
+
+const selectionIsValid = ref(false)
 const downloadStartTime = ref<Date>()
 const downloadEndTime = ref<Date>()
 const timeSeriesFilter = ref<DataDownloadFilter>()
@@ -194,25 +208,79 @@ const filterId = props.topologyNode.filterIds
   ? props.topologyNode.filterIds[0]
   : undefined
 const attributes = props.topologyNode.dataDownloadDisplay?.attributes
+
 const allLocations = ref<Location[]>([])
-const allParameters = ref<TimeSeriesParameter[]>([])
 const locations = ref<Location[]>([])
 const selectedLocations = ref<Location[]>([])
+
+const allParameters = ref<TimeSeriesParameter[]>([])
+
 const parameterQualifiers = ref<ParameterQualifiersHeader[]>([])
 const selectedParameterQualifiers = ref<ParameterQualifiersHeader[]>([])
 const selectableAttributes = ref<string[][]>([])
 const onlyDownloadMetaData = ref(false)
+const errors = ref<string[]>([])
 
-getLocations().then((locationsResponse) => {
-  allLocations.value = locationsResponse
-  locations.value = locationsResponse
-  selectedLocations.value = allLocations.value
-  selectableAttributes.value = getAttributeValues(allLocations.value)
+const selectedAttributes = ref<string[][]>([])
+
+const DATE_FMT = 'yyyy-MM-dd HH:mm'
+
+const startDate = ref<Date>(getStartDateValue())
+const startDateString = ref<string>(
+  DateTime.fromJSDate(startDate.value).toFormat(DATE_FMT),
+)
+
+const endDate = ref<Date>(getEndDateValue())
+const endDateString = ref<string>(
+  DateTime.fromJSDate(endDate.value).toFormat(DATE_FMT),
+)
+
+const parameterQualifiersHeaders: ParameterQualifiersHeader[] = []
+
+const rules = {
+  noEmptySelection: (value: any[]) => {
+    return (
+      (value !== undefined && value.length > 0) || 'Select one or more items'
+    )
+  },
+  required: (value: string) => (value !== undefined && !!value) || 'Required',
+  date: (value: string) => {
+    const date = DateTime.fromFormat(value || '', DATE_FMT)
+    return !isNaN(date.valueOf()) || 'Invalid date'
+  },
+  startDateBeforeEndDate: (value: string) => {
+    const startDate = DateTime.fromFormat(value || '', DATE_FMT).toJSDate()
+    return startDate < endDate.value || 'Start date should be before end date'
+  },
+  endDateAfterStartDate: (value: string) => {
+    const endDate = DateTime.fromFormat(value || '', DATE_FMT).toJSDate()
+    return endDate > startDate.value || 'End date should be after start date'
+  },
+}
+
+onMounted(async () => {
+  loadLocations()
+  loadParameters()
+  loadTimeSeriesHeaders()
+  if (attributes) {
+    selectedAttributes.value = attributes.map(() => [])
+  }
 })
 
-allParameters.value = await getParameters()
-getTimeSeriesHeaders().then((headersResponse) => {
-  const parameterQualifiersHeaders: ParameterQualifiersHeader[] = []
+async function loadLocations() {
+  const locationsResponse = await getLocations()
+  allLocations.value = locationsResponse
+  locations.value = locationsResponse
+  selectedLocations.value = locationsResponse
+  selectableAttributes.value = getAttributeValues(locationsResponse)
+}
+
+async function loadParameters() {
+  allParameters.value = await getParameters()
+}
+
+async function loadTimeSeriesHeaders() {
+  const headersResponse = await getTimeSeriesHeaders()
   headersResponse?.forEach((timeSeriesResult) => {
     const parameterQualifiersHeader: ParameterQualifiersHeader = {
       parameterId: timeSeriesResult.header?.parameterId,
@@ -222,28 +290,7 @@ getTimeSeriesHeaders().then((headersResponse) => {
   })
   parameterQualifiers.value = uniqWith(parameterQualifiersHeaders, isEqual)
   selectedParameterQualifiers.value = parameterQualifiers.value
-})
-
-let errors = ref<string[]>([])
-const startDate = ref<Date>(getStartDateValue())
-const endDate = ref<Date>(getEndDateValue())
-const selectedAttributes = ref<string[][]>([])
-const rules = {
-  required: (value: string) => (value !== undefined && !!value) || 'Required',
-  date: (value: string) => {
-    const date = DateTime.fromFormat(value || '', DATE_FMT)
-    return !isNaN(date.valueOf()) || 'Invalid date'
-  },
 }
-attributes?.forEach((item) => selectedAttributes.value.push([]))
-
-const DATE_FMT = 'yyyy-MM-dd HH:mm'
-const startDateString = ref<string>(
-  DateTime.fromJSDate(getStartDateValue()).toFormat(DATE_FMT),
-)
-const endDateString = ref<string>(
-  DateTime.fromJSDate(getEndDateValue()).toFormat(DATE_FMT),
-)
 
 watch(startDateString, (newValue) => {
   let newDateTime: DateTimeMaybeValid = DateTime.fromFormat(newValue, DATE_FMT)
@@ -340,36 +387,6 @@ function getEndDateValue() {
   return endDateValue
 }
 
-function validateUserInput(
-  starTime: DateTimeMaybeValid,
-  endTime: DateTimeMaybeValid,
-): string[] {
-  let newErrors = []
-
-  if (!starTime.isValid) {
-    newErrors.push('Start date is not valid')
-  }
-
-  if (!endTime.isValid) {
-    newErrors.push('End date is not valid')
-  }
-
-  if (
-    selectedLocations.value === undefined ||
-    selectedLocations.value.length == 0
-  )
-    newErrors.push('Select one or more locations')
-  if (
-    selectedParameterQualifiers.value === undefined ||
-    selectedParameterQualifiers.value.length == 0
-  )
-    newErrors.push('Select one or more parameters/qualifiers')
-  if (endDate.value < startDate.value) {
-    newErrors.push('The end date should be greater than the start date')
-  }
-  return newErrors
-}
-
 function downloadData() {
   let startTimeRequest: DateTimeMaybeValid = DateTime.fromFormat(
     startDateString.value,
@@ -379,8 +396,6 @@ function downloadData() {
     endDateString.value,
     DATE_FMT,
   )
-  errors.value = validateUserInput(startTimeRequest, endTimeRequest)
-  if (errors.value.length !== 0) return
 
   const selectedParameterIds = selectedParameterQualifiers.value
     .map((parameterQualifier) => parameterQualifier.parameterId)
@@ -482,26 +497,25 @@ async function getLocations(): Promise<Location[]> {
 }
 
 function getAttributeValues(locations: Location[]): string[][] {
-  const attributeValuesMap: string[][] = []
-  const configuredAttributeIds =
-    props.topologyNode.dataDownloadDisplay?.attributes.map((item) => item.id)
-  configuredAttributeIds?.forEach((item) => attributeValuesMap.push([]))
-  if (configuredAttributeIds === undefined) return attributeValuesMap
-  for (const newLocation of locations) {
-    let attributes = newLocation.attributes
-    if (attributes == undefined) continue
-    for (let i = 0; i < attributes.length; i++) {
-      const attribute = attributes[i]
-      if (attribute.id === undefined) continue
-      if (attribute.value === undefined) continue
-      const arrayForAttribute =
-        attributeValuesMap[configuredAttributeIds.indexOf(attribute.id)]
-      if (!arrayForAttribute.includes(attribute.value)) {
-        arrayForAttribute.push(attribute.value)
+  const attributes = props.topologyNode.dataDownloadDisplay?.attributes
+  if (!attributes) return []
+
+  const attributeValuesMap: string[][] = attributes.map(() => [])
+
+  locations.forEach((location) => {
+    location.attributes?.forEach((attribute) => {
+      const index = attributes.findIndex((attr) => attr.id === attribute.id)
+      if (
+        index !== -1 &&
+        attribute.value &&
+        !attributeValuesMap[index].includes(attribute.value)
+      ) {
+        attributeValuesMap[index].push(attribute.value)
       }
-    }
-  }
-  attributeValuesMap.forEach((value, key) => value.sort())
+    })
+  })
+
+  attributeValuesMap.forEach((values) => values.sort())
   return attributeValuesMap
 }
 
