@@ -80,7 +80,7 @@ import { extent } from 'd3'
 import { VChipGroup } from 'vuetify/components'
 import { difference, merge } from 'lodash-es'
 
-const LEGEND_HEIGHT = 76
+const LEGEND_HEIGHT = 38
 
 interface Props {
   config?: ChartConfig
@@ -123,7 +123,7 @@ const requiresExpand = ref(false)
 const axisTime = ref<CurrentTime>()
 
 const margin = {
-  top: 110,
+  top: 65,
   right: 50,
   left: 65,
 }
