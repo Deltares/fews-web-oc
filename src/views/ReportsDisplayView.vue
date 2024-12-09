@@ -25,6 +25,9 @@
         return-object
         :item-title="(item) => reportItemToTitle(item)"
         :item-value="(item) => reportItemToId(item)"
+        :item-props="
+          (item) => ({ subtitle: item.isCurrent ? 'Current' : undefined })
+        "
         hide-details
         label="Analysis time"
         class="pe-2 flex-0-0"
