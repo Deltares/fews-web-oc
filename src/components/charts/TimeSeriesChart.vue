@@ -52,6 +52,7 @@ import {
   ChartLine,
   ChartMarker,
   ChartRule,
+  LabelOrientation,
   TooltipAnchor,
   TooltipOptions,
   WheelMode,
@@ -124,7 +125,7 @@ const axisTime = ref<CurrentTime>()
 const margin = {
   top: 110,
   right: 50,
-  left: 50,
+  left: 65,
 }
 
 onMounted(() => {
@@ -141,6 +142,8 @@ onMounted(() => {
         position: AxisPosition.Left,
         showGrid: true,
         label: ' ',
+        labelOrientation: LabelOrientation.Vertical,
+        labelOffset: 15,
         unit: ' ',
         nice: true,
       },
