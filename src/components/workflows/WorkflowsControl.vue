@@ -55,7 +55,7 @@
           </v-row>
         </v-col>
       </v-container>
-      <v-container class="d-flex workflow-dialog__form" style="">
+      <v-container v-if="hasProperties" class="d-flex workflow-dialog__form">
         <json-forms
           :schema="formSchema"
           :uischema="formUISchema"
@@ -65,6 +65,13 @@
           validation-mode="NoValidation"
           :config="JsonFormsConfig"
           @change="onFormChange"
+        />
+      </v-container>
+      <v-container v-if="!isProcessDataTask">
+        <DateTimeField
+          v-model="timeZero"
+          date-label="t0 date"
+          time-label="t0 time"
         />
       </v-container>
       <v-card-actions>
@@ -103,6 +110,9 @@ import { generateDefaultUISchema, generateJsonSchema } from './workflowUtils'
 import { useDisplay } from 'vuetify'
 import { LngLat } from 'maplibre-gl'
 import { coordinateToString } from '@/lib/workflows'
+import { convertJSDateToFewsPiParameter } from '@/lib/date'
+
+import DateTimeField from '@/components/general/DateTimeField.vue'
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[] | null
@@ -135,6 +145,16 @@ const alertStore = useAlertsStore()
 onMounted(() => {
   userId.value = crypto.randomUUID()
 })
+
+const hasProperties = computed<boolean>(() => {
+  const numProperties = currentWorkflow.value?.properties?.length ?? 0
+  return numProperties > 0
+})
+const isProcessDataTask = computed<boolean>(() => {
+  return data.value['GET_PROCESS_DATA']
+})
+
+const timeZero = ref(new Date())
 
 // Update workflowId, startTime and endTime depending on properties.
 watch(
@@ -438,7 +458,7 @@ function showSuccessMessage(message: string) {
 }
 
 async function startWorkflow() {
-  const workflowType = data.value['GET_PROCESS_DATA']
+  const workflowType = isProcessDataTask.value
     ? WorkflowType.ProcessData
     : WorkflowType.RunTask
 
@@ -483,10 +503,16 @@ async function startWorkflow() {
 }
 
 function getRunTaskFilter(): PartialRunTaskFilter {
+  // TODO: add an apprioriate description. Also, the userId is a random UUID
+  //       now? Why don't we use the ID of the user currently logged in if we
+  //       have it?
   const description = 'Test run'
+
+  const timeZeroString = convertJSDateToFewsPiParameter(timeZero.value)
   return {
     userId: userId.value,
     description,
+    timeZero: timeZeroString,
     properties: data.value,
   }
 }
