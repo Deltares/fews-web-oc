@@ -505,7 +505,7 @@ onBeforeUnmount(() => {
   position: relative;
   flex-direction: column;
   flex: 1 1 80%;
-  height: 100%;
+  max-height: 800px;
 }
 
 .v-chip--outlined {
