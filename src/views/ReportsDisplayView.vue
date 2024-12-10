@@ -1,6 +1,6 @@
 <template>
   <div v-if="reports?.length" class="d-flex flex-column h-100 w-100">
-    <v-toolbar class="py-1" density="compact">
+    <v-toolbar density="compact">
       <template v-if="reports.length === 1">
         <div class="ml-5">{{ reportToTitle(reports[0]) }}</div>
         <v-spacer />
@@ -25,6 +25,9 @@
         return-object
         :item-title="(item) => reportItemToTitle(item)"
         :item-value="(item) => reportItemToId(item)"
+        :item-props="
+          (item) => ({ subtitle: item.isCurrent ? 'Current' : undefined })
+        "
         hide-details
         label="Analysis time"
         class="pe-2 flex-0-0"
@@ -106,7 +109,7 @@ function reportItemToId(item: ReportItem) {
 }
 
 function reportItemToTitle(item: ReportItem) {
-  return `${item.timeZero} - ${item.reportId}`
+  return `${item.timeZero}`
 }
 
 function reportToTitle(item: Report) {
