@@ -1,44 +1,13 @@
 <template>
   <div class="chart-with-chips">
-    <LoadingOverlay v-if="isLoading" :offsets="margin" height="90%" />
+    <ChartLegend
+      :tags="legendTags"
+      :height="40"
+      :margin="margin"
+      @toggleLine="toggleLine"
+    />
+    <LoadingOverlay v-if="isLoading" :offsets="loadingMargin" />
     <div ref="chartContainer" class="chart-container" v-show="!isLoading"></div>
-    <v-sheet
-      class="chart-controls"
-      rounded
-      :max-height="expanded ? undefined : LEGEND_HEIGHT"
-      :min-height="LEGEND_HEIGHT"
-      :elevation="expanded ? 6 : 0"
-    >
-      <v-chip-group
-        ref="chipGroup"
-        column
-        :class="['chart-legend', { 'chart-legend--large': requiresExpand }]"
-      >
-        <v-chip
-          size="small"
-          :variant="tag.disabled ? 'text' : 'tonal'"
-          label
-          v-for="tag in legendTags"
-          :key="tag.id"
-          @click="toggleLine(tag.id)"
-        >
-          <div>
-            <div
-              style="margin-top: 6px; margin-right: 5px"
-              v-html="tag.legendSvg"
-            ></div>
-          </div>
-          {{ tag.name }}
-        </v-chip>
-      </v-chip-group>
-      <v-btn
-        v-show="requiresExpand"
-        :icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-        size="small"
-        variant="plain"
-        @click="toggleExpand"
-      ></v-btn>
-    </v-sheet>
   </div>
 </template>
 
@@ -58,18 +27,16 @@ import {
   ZoomHandler,
 } from '@deltares/fews-web-oc-charts'
 import LoadingOverlay from '@/components/charts/LoadingOverlay.vue'
+import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
 import { Series } from '../../lib/timeseries/timeSeries.js'
 import uniq from 'lodash-es/uniq'
-import { VChipGroup } from 'vuetify/components'
 import { difference } from 'lodash-es'
 import {
   dataFromResources,
   removeUnreliableData,
 } from '@/lib/charts/dataFromResources'
-
-const LEGEND_HEIGHT = 76
 
 interface Props {
   config?: ChartConfig
@@ -100,15 +67,17 @@ const props = withDefaults(defineProps<Props>(), {
 let axis!: CartesianAxes
 const legendTags = ref<Tag[]>([])
 const chartContainer = ref<HTMLElement>()
-const chipGroup = ref<VChipGroup>()
-const expanded = ref(false)
-const requiresExpand = ref(false)
 
 const margin = {
-  top: 110,
+  top: 30,
   left: 70,
   right: 30,
   bottom: 50,
+}
+
+const loadingMargin = {
+  ...margin,
+  top: margin.top + 40,
 }
 
 onMounted(() => {
@@ -119,6 +88,7 @@ onMounted(() => {
         position: AxisPosition.Bottom,
         showGrid: true,
         label: ' ',
+        labelOffset: 10,
         unit: ' ',
         nice: true,
       },
@@ -291,42 +261,20 @@ const setTags = () => {
   }
 }
 
-const toggleLine = (id: string) => {
-  const tag = legendTags.value.find((tag) => {
-    return tag.id === id
-  })
-  if (tag) {
-    tag.disabled = !tag.disabled
-  }
-
-  toggleChartVisibility(axis, id)
+const toggleLine = (tag: Tag) => {
+  toggleChartVisibility(axis, tag.id)
 }
 
 const resize = () => {
   nextTick(() => {
     axis.resize()
-    setLegendSize()
   })
-}
-
-function setLegendSize() {
-  const contentHeight = chipGroup.value?.$el.scrollHeight
-  if (contentHeight && contentHeight > LEGEND_HEIGHT) {
-    requiresExpand.value = true
-  } else {
-    requiresExpand.value = false
-  }
-}
-
-function toggleExpand() {
-  expanded.value = !expanded.value
 }
 
 const onValueChange = () => {
   clearChart()
   refreshChart()
   setTags()
-  setLegendSize()
 }
 
 const beforeDestroy = () => {
@@ -366,15 +314,6 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-.chart-controls {
-  position: absolute;
-  display: flex;
-  flex: 0;
-  margin: 5px 10px;
-  padding: 0px 0px 0px 40px;
-  overflow: hidden;
-}
-
 .chart-container.hidden > svg {
   display: none;
 }
@@ -383,24 +322,11 @@ onBeforeUnmount(() => {
   max-height: none;
 }
 
-.chart-legend {
-  overflow-y: hidden;
-  align-self: end;
-}
-
-.chart-legend.chart-legend--large {
-  align-self: start;
-}
-
 .chart-with-chips {
   display: flex;
   position: relative;
   flex-direction: column;
   flex: 1 1 80%;
   height: 100%;
-}
-
-.v-chip--outlined {
-  opacity: 0.5;
 }
 </style>
