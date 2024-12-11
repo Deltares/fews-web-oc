@@ -2,12 +2,13 @@
   <v-tabs
     v-model="tab"
     v-if="items.length > 1"
-    color="primary"
+    bg-color="primary"
     align-tabs="center"
-    class="flex-0-0"
+    class="flex-0-0 w-100"
+    density="compact"
   >
-    <v-tab v-for="item in items">
-      {{ item.component }}
+    <v-tab v-for="item in componentItems" :prepend-icon="item.icon">
+      {{ item.componentName }}
     </v-tab>
   </v-tabs>
 
@@ -27,8 +28,9 @@ import type { DashboardItem } from '@/lib/dashboard/types'
 import {
   getComponentForName,
   getComponentPropsForNode,
+  getIconForComponentName,
 } from '@/lib/topology/dashboard'
-import { useTopologyNodesStore } from '@/stores/topologyNodes';
+import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { computed, ref, watch } from 'vue'
 
 interface Props {
@@ -47,11 +49,13 @@ const componentItems = computed(() => {
     const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
     const component = getComponentForName(componentName)
     const componentProps = getComponentPropsForNode(componentName, topologyNode)
+    const icon = getIconForComponentName(componentName)
     return {
       component,
       componentProps,
       componentName,
       topologyNode,
+      icon,
     }
   })
 })
