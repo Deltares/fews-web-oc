@@ -36,14 +36,11 @@
           prepend-icon="mdi-clock-time-four-outline"
         >
         </v-list-item>
-        <v-list-item
-          prepend-icon="mdi-palette"
-          v-if="colourScalesStore.currentScales"
-        >
+        <v-list-item prepend-icon="mdi-palette" v-if="currentScales">
           <v-list-item
-            v-for="(item, index) of colourScalesStore.currentScales"
+            v-for="(item, index) of currentScales"
             :key="index"
-            @click="colourScalesStore.currentIndex = index"
+            @click="currentColourScaleIndex = index"
             class="px-0"
           >
             <v-list-item-title>
@@ -62,14 +59,12 @@
                 <ColourLegendTable :colourMap="item.colourMap" />
               </template>
             </div>
-            <template #append v-if="index === colourScalesStore.currentIndex">
+            <template #append v-if="index === currentColourScaleIndex">
               <v-icon>mdi-check</v-icon>
             </template>
           </v-list-item>
         </v-list-item>
-        <v-list-item
-          v-if="colourScalesStore.currentScale?.useGradients !== false"
-        >
+        <v-list-item v-if="currentScale?.useGradients !== false">
           <template v-slot:prepend>
             <div class="mx-7"></div>
           </template>
@@ -81,8 +76,8 @@
                 variant="plain"
                 hide-details
                 density="comfortable"
-                @keydown.enter.stop="changecolorScaleRange"
-                @blur="changecolorScaleRange"
+                @keydown.enter.stop="changeCurrentColourScaleRange"
+                @blur="changeCurrentColourScaleRange"
                 :rules="[rules.required, rules.smallerThanMax]"
               ></v-text-field>
             </v-col>
@@ -93,18 +88,18 @@
                 variant="plain"
                 hide-details
                 density="comfortable"
-                @keydown.enter.stop="changecolorScaleRange"
-                @blur="changecolorScaleRange"
+                @keydown.enter.stop="changeCurrentColourScaleRange"
+                @blur="changeCurrentColourScaleRange"
                 :rules="[rules.required, rules.biggerThanMin]"
               ></v-text-field>
             </v-col>
             <v-col cols="2" class="d-flex align-center justify-center">
               <v-btn
-                v-if="!colourScalesStore.currentScaleIsInitialRange"
+                v-if="!currentScaleIsInitialRange"
                 icon="mdi-restore"
                 variant="flat"
                 density="compact"
-                @click="colourScalesStore.resetCurrentScaleRange"
+                @click="resetCurrentScaleRange"
               />
             </v-col>
           </v-row>
@@ -142,9 +137,10 @@ import { ref } from 'vue'
 import { LayerKind } from '@/lib/streamlines'
 import ColourStrip from '@/components/wms/ColourStrip.vue'
 import { watch } from 'vue'
-import { useColourScalesStore } from '@/stores/colourScales'
+import { useColourScalesStore, type Range } from '@/stores/colourScales'
 import ColourLegendTable from './ColourLegendTable.vue'
 import ControlChip from '@/components/wms/ControlChip.vue'
+import { useColourScales } from '@/services/useColourScales'
 
 interface Props {
   layerTitle?: string
@@ -155,36 +151,64 @@ interface Props {
   firstValueTime?: Date
   lastValueTime?: Date
   canUseStreamlines?: boolean
+  currentColourScaleIds: string[]
 }
-
-const colourScalesStore = useColourScalesStore()
 
 const props = withDefaults(defineProps<Props>(), {
   layerTitle: '',
   completelyMissing: false,
 })
 
-const emit = defineEmits(['style-click', 'update:layerKind'])
+const emit = defineEmits([
+  'style-click',
+  'update:layerKind',
+  'update:current-colour-scale',
+])
 
-const mutableColorScaleRange = ref(
-  colourScalesStore.currentScale?.range
-    ? { ...colourScalesStore.currentScale?.range }
-    : undefined,
+const currentColourScaleIndex = ref(0)
+watch(
+  () => props.currentColourScaleIds,
+  () => {
+    currentColourScaleIndex.value = 0
+  },
+)
+
+const colourScalesStore = useColourScalesStore()
+const {
+  currentScale,
+  currentScales,
+  currentScaleIsInitialRange,
+  resetCurrentScaleRange,
+} = useColourScales(
+  currentColourScaleIndex,
+  () => props.currentColourScaleIds,
+  () => colourScalesStore.scales,
 )
 
 watch(
-  () => colourScalesStore.currentScale?.range,
+  currentScale,
   () => {
-    mutableColorScaleRange.value = colourScalesStore.currentScale?.range
-      ? { ...colourScalesStore.currentScale?.range }
-      : undefined
+    emit('update:current-colour-scale', currentScale.value)
   },
-  { deep: true },
+  { immediate: true },
 )
 
-const changecolorScaleRange = () => {
+const mutableColorScaleRange = ref<Range>()
+watch(
+  () => currentScale.value?.range,
+  () => {
+    mutableColorScaleRange.value = currentScale.value?.range
+      ? { ...currentScale.value?.range }
+      : undefined
+  },
+  { immediate: true, deep: true },
+)
+
+const changeCurrentColourScaleRange = () => {
   if (mutableColorScaleRange.value === undefined) return
-  colourScalesStore.setCurrentScaleRange(mutableColorScaleRange.value)
+  if (currentScale.value === undefined) return
+
+  currentScale.value.range = mutableColorScaleRange.value
 }
 
 const showLayer = defineModel<boolean>('showLayer')
