@@ -5,9 +5,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useComponentSettingsStore } from '@/stores/componentSettings'
 import DashboardDisplay from '@/components/general/DashboardDisplay.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
-import { getResourcesStaticUrl } from '@/lib/fews-config'
+import { useDashboardsStore } from '@/stores/dashboards'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -15,13 +16,14 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const componentSettingsStore = useComponentSettingsStore()
+componentSettingsStore.fetchState()
+
+const dashboardsStore = useDashboardsStore()
+dashboardsStore.fetchState()
+
 const dashboard = computed(() => {
   if (!props.topologyNode) return
-  const css = getResourcesStaticUrl(`${props.topologyNode.id}.css`)
-  return {
-    id: props.topologyNode.id,
-    css,
-    panels: props.topologyNode.topologyNodes ?? [],
-  }
+  return dashboardsStore.getDashboardById(props.topologyNode.id)
 })
 </script>
