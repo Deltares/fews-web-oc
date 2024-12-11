@@ -30,6 +30,15 @@ const componentNameToComponentMap = {
   'system-monitor': SystemMonitorDisplayView,
 } satisfies Record<string, Component>
 
+const componentNameToIconMap = {
+  map: 'mdi-map',
+  chart: 'mdi-chart-multiple',
+  'data-download': 'mdi-download',
+  reports: 'mdi-file-document',
+  'ssd': 'mdi-view-dashboard',
+  'system-monitor': 'mdi-monitor',
+} satisfies Record<string, string>
+
 type ComponentName = keyof typeof componentNameToComponentMap
 
 type PropsForComponentName<T extends ComponentName> = ComponentProps<
@@ -47,6 +56,13 @@ export function getComponentForName(
 ): Component | undefined {
   if (!componentNameIsSupported(componentName)) return
   return componentNameToComponentMap[componentName]
+}
+
+export function getIconForComponentName(
+  componentName: string,
+): string | undefined {
+  if (!componentNameIsSupported(componentName)) return
+  return componentNameToIconMap[componentName]
 }
 
 export function getComponentPropsForNode(
