@@ -33,7 +33,7 @@ import { computed, ref, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
-import { onBeforeRouteUpdate, type RouteLocationNormalized, useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { findParentRoute } from '@/router'
 import { onMounted } from 'vue'
 import {
@@ -255,11 +255,23 @@ function closeTimeSeriesDisplay(): void {
 }
 
 watch(
-  () => props.layerName,
+  () => locations.value,
   () => {
     if (currentLocationId.value && !props.locationId) {
-      openLocationTimeSeriesDisplay(currentLocationId.value)
+      if (
+        locations.value?.find((l) => l.locationId === currentLocationId.value)
+      ) {
+        openLocationTimeSeriesDisplay(currentLocationId.value)
+      } else {
+        currentLocationId.value = undefined
+      }
     }
+  },
+)
+
+watch(
+  () => props.layerName,
+  () => {
     if (
       currentLatitude.value &&
       currentLongitude.value &&
@@ -273,12 +285,6 @@ watch(
     }
   },
 )
-
-onBeforeRouteUpdate(reroute)
-
-function reroute(to: RouteLocationNormalized) {
-  console.log('Spatial Display', to)
-}
 </script>
 
 <style scoped>
