@@ -7,10 +7,7 @@
           class="d-flex flex-column"
           density="compact"
         >
-          <DashboardItems
-            :items="element.items"
-            :topologyMap="topologyMap"
-          />
+          <DashboardItems :items="element.items" />
         </v-card>
       </template>
     </template>
@@ -19,7 +16,6 @@
 
 <script setup lang="ts">
 import type { Dashboard } from '@/lib/dashboard/types'
-import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
 import { computed, watch } from 'vue'
 import DashboardItems from '@/components/general/DashboardItems.vue'
 
@@ -30,9 +26,6 @@ interface Props {
 const props = defineProps<Props>()
 
 const groups = computed(() => props.dashboard.groups)
-
-const topologyNodes = await getTopologyNodes()
-const topologyMap = createTopologyMap(topologyNodes)
 
 function loadCss(url: string) {
   if (!document.querySelector(`link[href="${url}"]`)) {
