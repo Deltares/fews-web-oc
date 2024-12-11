@@ -150,10 +150,10 @@ import {
 } from 'maplibre-gl'
 import { configManager } from '@/services/application-config'
 import type { Layer, Style } from '@deltares/fews-wms-requests'
+import type { Location } from '@deltares/fews-pi-requests'
 import { LayerKind } from '@/lib/streamlines'
 import { useColourScalesStore } from '@/stores/colourScales'
 import { useDisplay } from 'vuetify'
-import { useFilterLocations } from '@/services/useFilterLocations'
 import ColourLegend from '@/components/wms/ColourLegend.vue'
 import {
   getLegendTitle,
@@ -165,6 +165,7 @@ import { useWorkflowsStore } from '@/stores/workflows'
 import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
+import { FeatureCollection, Geometry } from 'geojson'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -178,8 +179,9 @@ interface Props {
   times?: Date[]
   layerCapabilities?: Layer
   elevation?: number
+  locations?: Location[]
+  geojson: FeatureCollection<Geometry, Location>,
   locationId?: string
-  filterIds?: string[]
   latitude?: string
   longitude?: string
   currentTime?: Date
@@ -234,11 +236,6 @@ const colourScalesStore = useColourScalesStore()
 const workflowsStore = useWorkflowsStore()
 
 const showLocationsLayer = ref<boolean>(true)
-
-const { locations, geojson } = useFilterLocations(
-  baseUrl,
-  () => props.filterIds,
-)
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
 watchEffect(() => {
@@ -327,7 +324,7 @@ const selectedCoordinate = computed(() => {
 })
 
 const hasLocations = computed(() => {
-  return locations.value?.length
+  return props.locations?.length
 })
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {

@@ -6,7 +6,8 @@
         :location-id="props.locationId"
         :latitude="props.latitude"
         :longitude="props.longitude"
-        :filter-ids="props.filterIds"
+        :locations="locations"
+        :geojson="geojson"
         @changeLocationId="onLocationChange"
         :layer-capabilities="layerCapabilities"
         :times="times"
@@ -32,7 +33,7 @@ import { computed, ref, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteUpdate, type RouteLocationNormalized, useRoute, useRouter } from 'vue-router'
 import { findParentRoute } from '@/router'
 import { onMounted } from 'vue'
 import {
@@ -48,6 +49,7 @@ import circle from '@turf/circle'
 import bbox from '@turf/bbox'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
+import { useFilterLocations } from '@/services/useFilterLocations'
 
 interface Props {
   layerName?: string
@@ -71,6 +73,10 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { layerCapabilities, times } = useWmsLayerCapabilities(
   baseUrl,
   () => props.layerName,
+)
+const { locations, geojson } = useFilterLocations(
+  baseUrl,
+  () => props.filterIds,
 )
 
 const start = computed(() => {
@@ -267,6 +273,12 @@ watch(
     }
   },
 )
+
+onBeforeRouteUpdate(reroute)
+
+function reroute(to: RouteLocationNormalized) {
+  console.log('Spatial Display', to)
+}
 </script>
 
 <style scoped>
