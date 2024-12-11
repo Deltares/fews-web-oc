@@ -1,39 +1,27 @@
 <template>
   <div class="dashboard-container ga-3 pa-3">
-    <template v-for="panel in panelItems">
-      <v-card
-        v-if="panel.component"
-        :style="{ gridArea: panel.id }"
-        class="d-flex flex-column"
-        density="compact"
-      >
-        <component
-          class="overflow-auto"
-          :is="panel.component"
-          v-bind="panel.props"
-          :topologyNode="panel.node"
-        />
-      </v-card>
-      <v-alert
-        v-else
-        :title="`${panel.id} not implemented`"
-        :style="{ gridArea: panel.id }"
-        class="ma-2"
-      />
+    <template v-for="group in groups">
+      <template v-for="element in group.elements">
+        <v-card
+          :style="{ gridArea: element.gridTemplateArea }"
+          class="d-flex flex-column"
+          density="compact"
+        >
+          <DashboardItems
+            :items="element.items"
+            :topologyMap="topologyMap"
+          />
+        </v-card>
+      </template>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { getComponentWithPropsForNode } from '@/lib/topology/dashboard'
-import type { TopologyNode } from '@deltares/fews-pi-requests'
+import type { Dashboard } from '@/lib/dashboard/types'
+import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
 import { computed, watch } from 'vue'
-
-interface Dashboard {
-  id: string
-  css: string
-  panels: TopologyNode[]
-}
+import DashboardItems from '@/components/general/DashboardItems.vue'
 
 interface Props {
   dashboard: Dashboard
@@ -41,18 +29,10 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const panelItems = computed(() => {
-  return props.dashboard.panels.map((panel) => {
-    const { component, props } = getComponentWithPropsForNode(panel)
-    return {
-      id: panel.id,
-      title: panel.name,
-      node: panel,
-      component,
-      props,
-    }
-  })
-})
+const groups = computed(() => props.dashboard.groups)
+
+const topologyNodes = await getTopologyNodes()
+const topologyMap = createTopologyMap(topologyNodes)
 
 function loadCss(url: string) {
   if (!document.querySelector(`link[href="${url}"]`)) {
@@ -71,7 +51,7 @@ function removeCss(url: string) {
 }
 
 watch(
-  () => props.dashboard.css,
+  () => props.dashboard.cssTemplate,
   (newCss, oldCss) => {
     if (oldCss) removeCss(oldCss)
     loadCss(newCss)
