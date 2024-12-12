@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import type {
   WebocComponentSettings,
   WebocComponentSettingsResponse,
-} from '@/lib/component-settings/types'
+} from '@/lib/topology/componentSettings'
 
 interface State {
   settings: WebocComponentSettings[]
