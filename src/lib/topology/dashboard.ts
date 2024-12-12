@@ -1,6 +1,7 @@
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { defineAsyncComponent, type Component } from 'vue'
 import { ComponentProps } from '@/lib/utils/types'
+import { ComponentType } from '@/lib/topology/component'
 
 const SpatialDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialDisplay.vue'),
@@ -21,89 +22,62 @@ const SystemMonitorDisplayView = defineAsyncComponent(
   () => import('@/views/SystemMonitorDisplayView.vue'),
 )
 
-const componentNameToComponentMap = {
+const Empty = defineAsyncComponent(() => import('@/views/Empty.vue'))
+
+export const componentTypeToComponentMap = {
   map: SpatialDisplay,
-  chart: TimeSeriesDisplay,
+  charts: TimeSeriesDisplay,
   'data-download': DataDownloadDisplayView,
   reports: ReportsDisplayView,
-  ssd: SchematicStatusDisplay,
+  'schematic-status-display': SchematicStatusDisplay,
   'system-monitor': SystemMonitorDisplayView,
-} satisfies Record<string, Component>
+  tasks: Empty,
+  'web-display': Empty,
+  dashboard: Empty,
+} satisfies Record<ComponentType, Component>
 
-export type ComponentName = keyof typeof componentNameToComponentMap
-
-type PropsForComponentName<T extends ComponentName> = ComponentProps<
-  (typeof componentNameToComponentMap)[T]
+export type PropsForComponentType<T extends ComponentType> = ComponentProps<
+  (typeof componentTypeToComponentMap)[T]
 >
 
-const componentNameToIconMap = {
-  map: 'mdi-map',
-  chart: 'mdi-chart-multiple',
-  'data-download': 'mdi-download',
-  reports: 'mdi-file-document',
-  ssd: 'mdi-view-dashboard',
-  'system-monitor': 'mdi-monitor',
-} satisfies Record<ComponentName, string>
-
-function componentNameIsSupported(
-  componentName: string,
-): componentName is ComponentName {
-  return componentName in componentNameToComponentMap
-}
-
-export function getComponentForName(
-  componentName: string,
-): Component | undefined {
-  if (!componentNameIsSupported(componentName)) return
-  return componentNameToComponentMap[componentName]
-}
-
-export function getIconForComponentName(
-  componentName: string,
-): string | undefined {
-  if (!componentNameIsSupported(componentName)) return
-  return componentNameToIconMap[componentName]
-}
-
 export function getComponentPropsForNode(
-  componentName: string,
+  componentType: ComponentType,
   node?: TopologyNode,
-): PropsForComponentName<ComponentName> | undefined {
+): PropsForComponentType<ComponentType> | undefined {
   if (!node) return
-  if (!componentNameIsSupported(componentName)) return
 
-  if (componentName === 'map') {
-    const result: PropsForComponentName<'map'> = {
+  if (componentType === 'map') {
+    const result: PropsForComponentType<'map'> = {
       layerName: node.gridDisplaySelection?.plotId,
       filterIds: node.filterIds,
     }
     return result
   }
 
-  if (componentName === 'chart') {
-    const result: PropsForComponentName<'chart'> = {
+  if (componentType === 'charts') {
+    const result: PropsForComponentType<'charts'> = {
       nodeId: node.id,
     }
     return result
   }
 
-  if (componentName === 'data-download') {
-    const result: PropsForComponentName<'data-download'> = {
+  if (componentType === 'data-download') {
+    const result: PropsForComponentType<'data-download'> = {
       nodeId: node.id,
       topologyNode: node,
     }
     return result
   }
 
-  if (componentName === 'reports') {
-    const result: PropsForComponentName<'reports'> = {
+  if (componentType === 'reports') {
+    const result: PropsForComponentType<'reports'> = {
       topologyNode: node,
     }
     return result
   }
 
-  if (componentName === 'ssd') {
-    const result: PropsForComponentName<'ssd'> = {
+  if (componentType === 'schematic-status-display') {
+    const result: PropsForComponentType<'schematic-status-display'> = {
       panelId: node.scadaPanelId,
       groupId: node.id,
       objectId: '',
@@ -112,8 +86,8 @@ export function getComponentPropsForNode(
     return result
   }
 
-  if (componentName === 'system-monitor') {
-    const result: PropsForComponentName<'system-monitor'> = {}
+  if (componentType === 'system-monitor') {
+    const result: PropsForComponentType<'system-monitor'> = {}
     return result
   }
 }
