@@ -20,7 +20,7 @@ export interface WebocComponentSettings {
 }
 
 export interface ChartSettings {
-  chartEnableda?: boolean
+  chartEnabled?: boolean
   tableEnabled?: boolean
   metaDataEnabled?: boolean
   downloadEnabled?: boolean
@@ -49,16 +49,11 @@ export interface OverlayLocation {
   paint: PaintMapping[OverlayLocation['type']]
 }
 
-export interface MapSettings {
+export interface MapSettings extends ChartSettings {
   graphPanelEnabled?: boolean
   locationSearchEnabled?: boolean
-  chartEnabled?: boolean
-  tableEnabled?: boolean
-  metaDataEnabled?: boolean
-  downloadEnabled?: boolean
   baseMaps?: BaseMaps
   overlays?: DeclarationReference[]
-  chartPanelEnabled?: boolean
 }
 
 export interface BaseMaps {
