@@ -15,20 +15,20 @@ export interface WebocComponentSettingsResponse {
 export interface WebocComponentSettings {
   id: string
   declarations?: Declarations
-  map: MapSettings
-  chart: ChartSettings
+  map?: MapSettings
+  chart?: ChartSettings
 }
 
 export interface ChartSettings {
-  chartEnabled: boolean
-  tableEnabled: boolean
-  metaDataEnabled: boolean
-  downloadEnabled: boolean
+  chartEnableda?: boolean
+  tableEnabled?: boolean
+  metaDataEnabled?: boolean
+  downloadEnabled?: boolean
 }
 
 export interface Declarations {
-  baseMaps: BaseMap[]
-  overlays: Overlays
+  baseMaps?: BaseMap[]
+  overlays?: Overlays
 }
 
 export interface BaseMap {
@@ -51,20 +51,20 @@ export interface OverlayLocation {
 
 export interface MapSettings {
   graphPanelEnabled?: boolean
-  locationSearchEnabled: boolean
+  locationSearchEnabled?: boolean
   chartEnabled?: boolean
   tableEnabled?: boolean
   metaDataEnabled?: boolean
   downloadEnabled?: boolean
-  baseMaps: BaseMaps
-  overlays: DeclarationReference[]
+  baseMaps?: BaseMaps
+  overlays?: DeclarationReference[]
   chartPanelEnabled?: boolean
 }
 
 export interface BaseMaps {
   defaultLightBaseMap: string
   defaultDarkBaseMap: string
-  additionalMaps: DeclarationReference[]
+  additionalMaps?: DeclarationReference[]
 }
 
 export interface DeclarationReference {
