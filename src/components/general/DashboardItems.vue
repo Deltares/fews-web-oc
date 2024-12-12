@@ -19,6 +19,7 @@
       :is="item.component"
       v-bind="item.componentProps"
       :topologyNode="item.topologyNode"
+      :settings="item.settings"
     />
   </template>
 </template>
@@ -30,6 +31,7 @@ import {
   getComponentPropsForNode,
   getIconForComponentName,
 } from '@/lib/topology/dashboard'
+import { useComponentSettingsStore } from '@/stores/componentSettings';
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { computed, ref, watch } from 'vue'
 
@@ -42,6 +44,7 @@ const props = defineProps<Props>()
 const tab = ref(0)
 
 const topologyNodesStore = useTopologyNodesStore()
+const componentSettingsStore = useComponentSettingsStore()
 
 const componentItems = computed(() => {
   return props.items.map((item) => {
@@ -50,12 +53,14 @@ const componentItems = computed(() => {
     const component = getComponentForName(componentName)
     const componentProps = getComponentPropsForNode(componentName, topologyNode)
     const icon = getIconForComponentName(componentName)
+    const settings = componentSettingsStore.getSettingsById(item.componentSettingsId)
     return {
       component,
       componentProps,
       componentName,
       topologyNode,
       icon,
+      settings
     }
   })
 })
