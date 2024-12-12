@@ -1,6 +1,19 @@
 <template>
   <WindowComponent>
     <template v-slot:toolbar>
+      <v-toolbar-items class="me-10">
+        <v-btn
+          v-for="item in displayTypeItems"
+          :key="item.value"
+          :value="item.value"
+          :aria-label="item.label"
+          :text="item.label"
+          @click="displayType = item.value"
+          :active="displayType === item.value"
+        >
+          <v-icon>{{ item.icon }}</v-icon>
+        </v-btn>
+      </v-toolbar-items>
       <v-menu offset-y z-index="10000">
         <template v-slot:activator="{ props }">
           <v-btn class="text-capitalize" variant="text" v-bind="props"
@@ -18,19 +31,19 @@
         </v-list>
       </v-menu>
       <v-spacer />
-      <v-toolbar-items class="me-10">
-        <v-btn
-          v-for="item in displayTypeItems"
-          :key="item.value"
-          :value="item.value"
-          :aria-label="item.label"
-          :text="item.label"
-          @click="displayType = item.value"
-          :active="displayType === item.value"
-        >
-          <v-icon>{{ item.icon }}</v-icon>
-        </v-btn>
-      </v-toolbar-items>
+      <v-btn size="small" icon>
+        <v-icon>mdi-dots-horizontal</v-icon>
+        <v-menu activator="parent" density="compact">
+          <v-list>
+            <v-list-item
+              prepend-icon="mdi-download"
+              @click="downloadDialogStore.showDialog = true"
+              :disabled="downloadDialogStore.disabled"
+              >Download time series ...</v-list-item
+            >
+          </v-list>
+        </v-menu>
+      </v-btn>
     </template>
     <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
     </TimeSeriesComponent>
@@ -53,6 +66,7 @@ import { DisplayType } from '@/lib/display/DisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { useSystemTimeStore } from '@/stores/systemTime'
+import { useDownloadDialogStore } from '@/stores/downloadDialog'
 
 interface Props {
   nodeId?: string | string[]
@@ -64,6 +78,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const settings = useUserSettingsStore()
 const systemTimeStore = useSystemTimeStore()
+const downloadDialogStore = useDownloadDialogStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
