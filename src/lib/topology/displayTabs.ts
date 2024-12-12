@@ -10,18 +10,16 @@ import {
   nodeHasSystemMonitor,
   nodeHasWebDisplay,
 } from './nodes'
+import {
+  ComponentType,
+  componentTypeToIconMap,
+  componentTypeToIdMap,
+  componentTypeToRouteNameMap,
+  componentTypeToTitleMap,
+} from './component'
 
 export interface DisplayTab {
-  type:
-    | 'charts'
-    | 'map'
-    | 'reports'
-    | 'data-download'
-    | 'schematic-status-display'
-    | 'system-monitor'
-    | 'web-display'
-    | 'dashboard'
-    | 'tasks'
+  type: ComponentType
   id: string
   title: string
   href?: string
@@ -31,80 +29,16 @@ export interface DisplayTab {
   active: boolean
 }
 
-const displayTabs: DisplayTab[] = [
-  {
-    type: 'map',
-    id: 'spatial',
-    title: 'Map',
-    to: { name: 'TopologySpatialDisplay' },
-    icon: 'mdi-map',
+const displayTabs: DisplayTab[] = Object.values(ComponentType).map((type) => {
+  return {
+    type,
+    id: componentTypeToIdMap[type],
+    title: componentTypeToTitleMap[type],
+    to: { name: componentTypeToRouteNameMap[type] },
+    icon: componentTypeToIconMap[type],
     active: false,
-  },
-  {
-    type: 'charts',
-    id: 'timeseries',
-    title: 'Charts',
-    to: { name: 'TopologyTimeSeries' },
-    icon: 'mdi-chart-multiple',
-    active: false,
-  },
-  {
-    type: 'data-download',
-    id: 'download',
-    title: 'Download',
-    to: { name: 'TopologyDataDownload' },
-    icon: 'mdi-download',
-    active: false,
-  },
-  {
-    type: 'web-display',
-    id: 'web-display',
-    title: 'Web Display',
-    to: { name: 'TopologyWebDisplay' },
-    icon: 'mdi-web',
-    active: false,
-  },
-  {
-    type: 'reports',
-    id: 'reports',
-    title: 'Reports',
-    to: { name: 'TopologyReports' },
-    icon: 'mdi-file-document',
-    active: false,
-  },
-  {
-    type: 'schematic-status-display',
-    id: 'ssd',
-    title: 'Schematic',
-    to: { name: 'TopologySchematicStatusDisplay' },
-    icon: 'mdi-view-dashboard',
-    active: false,
-  },
-  {
-    type: 'system-monitor',
-    id: 'ssd',
-    title: 'System Monitor',
-    to: { name: 'TopologySystemMonitor' },
-    icon: 'mdi-view-dashboard',
-    active: false,
-  },
-  {
-    type: 'dashboard',
-    id: 'dashboard',
-    title: 'Dashboard',
-    to: { name: 'TopologyDashboard' },
-    icon: 'mdi-view-dashboard',
-    active: false,
-  },
-  {
-    type: 'tasks',
-    id: crypto.randomUUID(),
-    title: 'Tasks',
-    to: { name: 'TopologyTasksDisplay' },
-    icon: 'mdi-cog',
-    active: false,
-  },
-]
+  }
+})
 
 export function displayTabsForNode(
   node: TopologyNode,
