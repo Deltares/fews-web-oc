@@ -1,7 +1,5 @@
-import type {
-  FillPaintProps,
-  LinePaintProps,
-} from 'maplibre-gl'
+import type { FillPaintProps, LinePaintProps } from 'maplibre-gl'
+import type { ComponentType } from './component'
 
 type PaintMapping = {
   fill: FillPaintProps
@@ -12,18 +10,44 @@ export interface WebocComponentSettingsResponse {
   webocComponentSettings: WebocComponentSettings[]
 }
 
-export interface WebocComponentSettings {
-  id: string
-  declarations?: Declarations
-  map?: MapSettings
-  chart?: ChartSettings
+interface ComponentSettingsMapping {
+  map: MapSettings
+  charts: ChartSettings
+  'data-download': undefined
+  reports: undefined
+  'schematic-status-display': undefined
+  'system-monitor': undefined
+  'web-display': undefined
+  dashboard: undefined
+  tasks: undefined
 }
 
-export interface ChartSettings {
+export type WebocComponentSettings = {
+  [key in ComponentType]?: ComponentSettingsMapping[key]
+}
+
+interface BaseSettings {
+  declarations?: Declarations
+}
+
+export interface ChartSettings extends BaseSettings {
   chartEnabled?: boolean
   tableEnabled?: boolean
   metaDataEnabled?: boolean
   downloadEnabled?: boolean
+}
+
+export interface MapSettings extends ChartSettings {
+  graphPanelEnabled?: boolean
+  locationSearchEnabled?: boolean
+  baseMaps?: BaseMaps
+  overlays?: DeclarationReference[]
+}
+
+export interface BaseMaps {
+  defaultLightBaseMap: string
+  defaultDarkBaseMap: string
+  additionalMaps?: DeclarationReference[]
 }
 
 export interface Declarations {
@@ -47,19 +71,6 @@ export interface OverlayLocation {
   locationSet: string
   type: keyof PaintMapping
   paint: PaintMapping[OverlayLocation['type']]
-}
-
-export interface MapSettings extends ChartSettings {
-  graphPanelEnabled?: boolean
-  locationSearchEnabled?: boolean
-  baseMaps?: BaseMaps
-  overlays?: DeclarationReference[]
-}
-
-export interface BaseMaps {
-  defaultLightBaseMap: string
-  defaultDarkBaseMap: string
-  additionalMaps?: DeclarationReference[]
 }
 
 export interface DeclarationReference {
