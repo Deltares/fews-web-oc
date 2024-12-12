@@ -1,3 +1,5 @@
+import { ComponentType } from "@/lib/topology/component"
+
 export interface DashboardsResponse {
   dashboards: Dashboard[]
 }
@@ -19,6 +21,6 @@ export interface DashboardElement {
 
 export interface DashboardItem {
   topologyNodeId: string
-  component: string
+  component: ComponentType
   componentSettingsId: string
 }
