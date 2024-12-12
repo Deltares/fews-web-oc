@@ -26,24 +26,24 @@ const componentNameToComponentMap = {
   chart: TimeSeriesDisplay,
   'data-download': DataDownloadDisplayView,
   reports: ReportsDisplayView,
-  'ssd': SchematicStatusDisplay,
+  ssd: SchematicStatusDisplay,
   'system-monitor': SystemMonitorDisplayView,
 } satisfies Record<string, Component>
+
+export type ComponentName = keyof typeof componentNameToComponentMap
+
+type PropsForComponentName<T extends ComponentName> = ComponentProps<
+  (typeof componentNameToComponentMap)[T]
+>
 
 const componentNameToIconMap = {
   map: 'mdi-map',
   chart: 'mdi-chart-multiple',
   'data-download': 'mdi-download',
   reports: 'mdi-file-document',
-  'ssd': 'mdi-view-dashboard',
+  ssd: 'mdi-view-dashboard',
   'system-monitor': 'mdi-monitor',
-} satisfies Record<string, string>
-
-type ComponentName = keyof typeof componentNameToComponentMap
-
-type PropsForComponentName<T extends ComponentName> = ComponentProps<
-  (typeof componentNameToComponentMap)[T]
->
+} satisfies Record<ComponentName, string>
 
 function componentNameIsSupported(
   componentName: string,
