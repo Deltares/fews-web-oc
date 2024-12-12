@@ -8,7 +8,7 @@
     density="compact"
   >
     <v-tab v-for="item in componentItems" :prepend-icon="item.icon">
-      {{ item.componentName }}
+      {{ item.title }}
     </v-tab>
   </v-tabs>
 
@@ -26,12 +26,12 @@
 
 <script setup lang="ts">
 import type { DashboardItem } from '@/lib/dashboard/types'
+import { componentTypeToIconMap, componentTypeToTitleMap } from '@/lib/topology/component'
 import {
-  getComponentForName,
+  componentTypeToComponentMap,
   getComponentPropsForNode,
-  getIconForComponentName,
 } from '@/lib/topology/dashboard'
-import { useComponentSettingsStore } from '@/stores/componentSettings';
+import { useComponentSettingsStore } from '@/stores/componentSettings'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { computed, ref, watch } from 'vue'
 
@@ -50,17 +50,21 @@ const componentItems = computed(() => {
   return props.items.map((item) => {
     const componentName = item.component
     const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
-    const component = getComponentForName(componentName)
+    const component = componentTypeToComponentMap[componentName]
     const componentProps = getComponentPropsForNode(componentName, topologyNode)
-    const icon = getIconForComponentName(componentName)
-    const settings = componentSettingsStore.getSettingsById(item.componentSettingsId)
+    const title = componentTypeToTitleMap[componentName]
+    const icon = componentTypeToIconMap[componentName]
+    const settings = componentSettingsStore.getSettingsById(
+      item.componentSettingsId,
+    )
     return {
+      title,
+      icon,
       component,
       componentProps,
       componentName,
       topologyNode,
-      icon,
-      settings
+      settings,
     }
   })
 })
