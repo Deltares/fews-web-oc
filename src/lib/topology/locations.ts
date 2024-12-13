@@ -84,9 +84,36 @@ async function fetchLocationsAsGeoJsonForSingleFilterId(
     includeIconNames: true,
     showThresholds: true,
   }
-  // TODO: Remove cast to any when fews-pi-requests supports GeoJSON response in LocationResponse
-  //       type.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const response = (await provider.getLocations(filter)) as any
-  return response as FeatureCollection<Geometry, Location>
+  const response = await provider.getLocations(filter)
+  if (!isFeatureCollection(response)) {
+    throw new Error('Expected GeoJSON FeatureCollection')
+  }
+  return response
+}
+
+function isFeatureCollection(
+  geojson: FeatureCollection<Geometry, Location> | unknown,
+): geojson is FeatureCollection<Geometry, Location> {
+  return (
+    (geojson as FeatureCollection<Geometry, Location>).type ===
+    'FeatureCollection'
+  )
+}
+
+export async function fetchLocationSetAsGeoJson(
+  baseUrl: string,
+  locationSetId: string,
+): Promise<FeatureCollection<Geometry, Location>> {
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const filter = {
+    documentFormat: DocumentFormat.GEO_JSON,
+    locationSetId: locationSetId,
+  }
+  const response = await provider.getLocations(filter)
+  if (!isFeatureCollection(response)) {
+    throw new Error('Expected GeoJSON FeatureCollection')
+  }
+  return response
 }
