@@ -41,6 +41,11 @@
       v-if="workflowsStore.isSelectingCoordinate"
       v-model:coordinate="workflowsStore.coordinate"
     />
+    <OverlayLayer
+      v-for="overlay in selectedOverlays"
+      :key="overlay.id"
+      :overlay="overlay"
+    />
   </MapComponent>
   <div class="mapcomponent__controls-container">
     <v-chip-group class="control-group" selected-class="no-class">
@@ -165,6 +170,7 @@ import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vu
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
 import { FeatureCollection, Geometry } from 'geojson'
 import type { MapSettings, OverlayLocation } from '@/lib/topology/componentSettings'
+import OverlayLayer from '@/components/wms/OverlayLayer.vue'
 
 interface ElevationWithUnitSymbol {
   units?: string

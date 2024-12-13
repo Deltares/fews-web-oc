@@ -61,7 +61,7 @@ watchEffect(() => {
   selectedIds.value = getVisibleOverlayIds(props.settings?.overlays ?? [])
 })
 
-const selectedOverlays = defineModel<OverlayLocation[]>()
+const selectedOverlays = defineModel<OverlayLocation[]>('selectedOverlays')
 watchEffect(() => {
   selectedOverlays.value = getOverlocationsByIds(selectedIds.value)
 })
