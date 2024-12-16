@@ -10,6 +10,7 @@
         v-model:selected="selectedIds"
         select-strategy="leaf"
         class="pb-0"
+        density="compact"
       >
         <v-list-item title="Select All" @click="toggleAll">
           <template #prepend>
@@ -17,6 +18,7 @@
               <v-checkbox-btn
                 :indeterminate="someSelected && !allSelected"
                 :model-value="allSelected"
+                density="compact"
               />
             </v-list-item-action>
           </template>
@@ -32,7 +34,7 @@
         >
           <template #prepend="{ isSelected }">
             <v-list-item-action start>
-              <v-checkbox-btn :model-value="isSelected" />
+              <v-checkbox-btn :model-value="isSelected" density="compact" />
             </v-list-item-action>
           </template>
         </v-list-item>
