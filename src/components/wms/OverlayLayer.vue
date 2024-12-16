@@ -23,6 +23,7 @@ import type { OverlayLocation } from '@/lib/topology/componentSettings'
 import { fetchLocationSetAsGeoJson } from '@/lib/topology'
 import { configManager } from '@/services/application-config'
 import { asyncComputed } from '@vueuse/core'
+import { getLayerId, getSourceId } from '@/lib/map'
 
 interface Props {
   overlay: OverlayLocation
@@ -30,8 +31,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const sourceId = `overlay-source-${props.overlay.id}`
-const layerId = `overlay-layer-${props.overlay.id}`
+const sourceId = getSourceId(`overlay-${props.overlay.id}`)
+const layerId = getLayerId(`overlay-${props.overlay.id}`)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const geojson = asyncComputed(
