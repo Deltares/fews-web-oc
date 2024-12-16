@@ -1,5 +1,5 @@
 export * from './locations'
-import { configManager } from '../../services/application-config/index.ts'
+import { configManager } from '@/services/application-config/index.ts'
 import {
   PiWebserviceProvider,
   type TopologyNode,
@@ -7,27 +7,43 @@ import {
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 /**
- * Recursively updates a topology map where each node is stored by its id.
+ * Creates hash maps for topology nodes.
+ *
+ * This function generates two hash maps:
+ * 1. idToNodeMap: Maps node IDs to their corresponding TopologyNode objects.
+ * 2. childIdToParentNodeMap: Maps child node IDs to their parent node.
  *
  * @param {TopologyNode[] | undefined} nodes - An array of TopologyNode objects or undefined.
- * @param {Map<string, TopologyNode>} topologyMap - A Map used to store the topology nodes.
+ * @returns {{ idToNodeMap: Map<string, TopologyNode>, childIdToParentNodeMap: Map<string, string> }} - An object containing the two hash maps.
  */
-export function createTopologyMap(nodes: TopologyNode[] | undefined) {
-  const topologyMap = new Map<string, TopologyNode>()
+export function createTopologyHashMaps(nodes: TopologyNode[] | undefined): {
+  idToNodeMap: Map<string, TopologyNode>
+  childIdToParentNodeMap: Map<string, TopologyNode>
+} {
+  const idToNodeMap = new Map<string, TopologyNode>()
+  const childIdToParentNodeMap = new Map<string, TopologyNode>()
 
-  function recursiveCreateTopologyMap(
-    nodes: TopologyNode[] | undefined,
-    topologyMap: Map<string, TopologyNode>,
-  ) {
-    if (nodes === undefined) return undefined
+  function recursivelyFillMaps(nodes: TopologyNode[]) {
     for (const node of nodes) {
-      topologyMap.set(node.id, node)
-      recursiveCreateTopologyMap(node.topologyNodes, topologyMap)
+      idToNodeMap.set(node.id, node)
+
+      if (node.topologyNodes) {
+        node.topologyNodes.forEach((childNode) => {
+          childIdToParentNodeMap.set(childNode.id, node)
+        })
+        recursivelyFillMaps(node.topologyNodes)
+      }
     }
   }
 
-  recursiveCreateTopologyMap(nodes, topologyMap)
-  return topologyMap
+  if (nodes) {
+    recursivelyFillMaps(nodes)
+  }
+
+  return {
+    idToNodeMap,
+    childIdToParentNodeMap,
+  }
 }
 
 /**

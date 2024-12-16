@@ -28,26 +28,23 @@ import {
   getComponentForName,
   getComponentPropsForNode,
 } from '@/lib/topology/dashboard'
-import type { TopologyNode } from '@deltares/fews-pi-requests'
+import { useTopologyNodesStore } from '@/stores/topologyNodes';
 import { computed, ref, watch } from 'vue'
 
 interface Props {
   items: DashboardItem[]
-  topologyMap: Map<string, TopologyNode>
 }
 
 const props = defineProps<Props>()
 
 const tab = ref(0)
 
-function getTopologyNodeById(id: string) {
-  return props.topologyMap.get(id)
-}
+const topologyNodesStore = useTopologyNodesStore()
 
 const componentItems = computed(() => {
   return props.items.map((item) => {
     const componentName = item.component
-    const topologyNode = getTopologyNodeById(item.topologyNodeId)
+    const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
     const component = getComponentForName(componentName)
     const componentProps = getComponentPropsForNode(componentName, topologyNode)
     return {

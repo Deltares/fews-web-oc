@@ -90,7 +90,6 @@ import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
 import LeafNodeButtons from '@/components/general/LeafNodeButtons.vue'
 
 import type { ColumnItem } from '@/components/general/ColumnItem'
-import { createTopologyMap, getTopologyNodes } from '@/lib/topology'
 import { useConfigStore } from '@/stores/config'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useWorkflowsStore } from '@/stores/workflows'
@@ -115,6 +114,7 @@ import {
   displayTabsForNode,
   type DisplayTab,
 } from '@/lib/topology/displayTabs.js'
+import { useTopologyNodesStore } from '@/stores/topologyNodes'
 
 interface Props {
   topologyId?: string
@@ -149,7 +149,7 @@ watch(active, () => {
 const activeNode = computed(() => {
   if (!active.value) return
 
-  const node = topologyMap.value.get(active.value)
+  const node = topologyNodesStore.getNodeById(active.value)
   if (node?.topologyNodes) {
     const leafNode = node.topologyNodes.find(
       (n) => n.id === nodesStore.activeNodeId,
@@ -240,23 +240,13 @@ const showActiveThresholdCrossingsForFilters = computed(() => {
   )
 })
 
-const nodes = ref<TopologyNode[]>()
-const topologyMap = ref(new Map<string, TopologyNode>())
-const subNodes = computed<TopologyNode[] | undefined>(
-  () =>
-    topologyDisplayNodes.value?.flatMap((nodeId) => {
-      const node = topologyMap.value.get(nodeId)
-      return node ? [node] : []
-    }) ?? nodes.value,
+const topologyNodesStore = useTopologyNodesStore()
+const subNodes = computed(() =>
+  topologyNodesStore.getSubNodesForIds(topologyDisplayNodes.value),
 )
-
-getTopologyNodes().then((response) => {
-  nodes.value = response
-  topologyMap.value = createTopologyMap(nodes.value)
+watch(topologyNodesStore.nodes, () => {
   const to = reroute(route)
-  if (to) {
-    router.push(to)
-  }
+  if (to) router.push(to)
 })
 
 function updateItems(): void {
@@ -289,7 +279,7 @@ watchEffect(() => {
     : undefined
 
   // Check if the active node is a leaf.
-  const node = topologyMap.value.get(activeNodeId)
+  const node = topologyNodesStore.getNodeById(activeNodeId)
   if (node === undefined) {
     filterIds.value = []
     return
@@ -299,7 +289,8 @@ watchEffect(() => {
 
   if (showLeafsAsButton.value && Array.isArray(props.nodeId)) {
     const menuNodeId = props.nodeId[0]
-    const menuNode = topologyMap.value.get(menuNodeId) as any
+    const menuNode = topologyNodesStore.getNodeById(menuNodeId)
+    if (!menuNode) return
     nodesStore.setNodeButtons(
       nodeButtonItems(
         menuNode,
@@ -320,10 +311,9 @@ onBeforeRouteUpdate(reroute)
 
 function reroute(to: RouteLocationNormalized) {
   if (!to.params.nodeId) {
-    if (topologyMap.value.size === 0) return
-    const topologyEntry = topologyMap.value.entries().next()
-    if (topologyEntry.value) {
-      to.params.nodeId = topologyEntry.value[0]
+    const firstSubNodeId = subNodes.value[0].id
+    if (firstSubNodeId) {
+      to.params.nodeId = firstSubNodeId
       return to
     }
     return
@@ -336,13 +326,11 @@ function reroute(to: RouteLocationNormalized) {
     const parentNodeId = Array.isArray(to.params.nodeId)
       ? to.params.nodeId[0]
       : to.params.nodeId
-    const menuNode = topologyMap.value.get(parentNodeId) as TopologyNode
+    const menuNode = topologyNodesStore.getNodeById(parentNodeId)
     if (menuNode === undefined) return
     if (menuNode.topologyNodes === undefined) {
       const leafNodeId = parentNodeId
-      const parentNode = [...topologyMap.value?.values()].find((p) => {
-        return p.topologyNodes?.map((c) => c.id).includes(leafNodeId)
-      })
+      const parentNode = topologyNodesStore.getParentNodeById(leafNodeId)
       if (parentNode?.id === undefined) return
       const to = {
         name: 'TopologyDisplay',
@@ -372,7 +360,9 @@ function reroute(to: RouteLocationNormalized) {
         Array.isArray(to.params.nodeId) && to.params.nodeId.length > 1
           ? to.params.nodeId[0]
           : undefined
-      const menuNode = topologyMap.value.get(leafNodeId) as TopologyNode
+      const menuNode = topologyNodesStore.getNodeById(leafNodeId)
+      if (!menuNode) return
+
       const topologyId = to.params.topologyId as string
       const tabs = displayTabsForNode(menuNode, parentNodeId, topologyId)
       const tab = tabs.find((t) => t.type === activeTab.value) ?? tabs[0]
