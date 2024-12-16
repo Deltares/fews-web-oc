@@ -55,6 +55,7 @@
         >
         </TimeSeriesComponent>
         <TimeSeriesFileDownloadComponent
+          v-if="showDataDownload"
           :config="displayConfig"
           :options="options"
           :filter="filter"
@@ -86,20 +87,22 @@ import { useSystemTimeStore } from '@/stores/systemTime'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
 import { isFilterActionsFilter } from '@/lib/filters'
 import { useDownloadDialogStore } from '@/stores/downloadDialog'
+import type { ChartSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   filter: filterActionsFilter | timeSeriesGridActionsFilter
   elevationChartFilter?: timeSeriesGridActionsFilter
   currentTime?: Date
+  settings?: ChartSettings
 }
 
-const settings = useUserSettingsStore()
+const userSettings = useUserSettingsStore()
 const systemTimeStore = useSystemTimeStore()
 
 const options = computed<UseDisplayConfigOptions>(() => {
   return {
-    useDisplayUnits: settings.useDisplayUnits,
-    convertDatum: settings.convertDatum,
+    useDisplayUnits: userSettings.useDisplayUnits,
+    convertDatum: userSettings.convertDatum,
   }
 })
 
@@ -153,46 +156,52 @@ interface DisplayTypeItem {
   disabled?: boolean
 }
 
+const showDataDownload = computed(() => {
+  return !(props.settings?.downloadEnabled === false)
+})
+
 const displayType = ref(DisplayType.TimeSeriesChart)
 const displayTypeItems = computed<DisplayTypeItem[]>(() => {
-  const displayItems: DisplayTypeItem[] = [
+  const noElevationCharts = !(
+    (elevationChartDisplayconfig.value?.subplots?.length ?? 0) > 0
+  )
+  const noTooltip = !tooltip.value
+
+  const chartDisabled = props.settings?.chartEnabled === false
+  const elevationChartDisabled = props.settings?.elevationChartEnabled === false
+  const tableDisabled = props.settings?.tableEnabled === false
+  const metaDataDisabled = props.settings?.metaDataEnabled === false
+  return [
     {
       icon: 'mdi-chart-line',
       label: 'Chart',
       value: DisplayType.TimeSeriesChart,
+      disabled: chartDisabled,
     },
     {
       icon: 'mdi-elevation-rise',
       label: 'Vertical profile',
       value: DisplayType.ElevationChart,
       iconStyle: 'transform: rotate(-90deg);',
+      disabled: elevationChartDisabled || noElevationCharts,
     },
     {
       icon: 'mdi-table',
       label: 'Table',
       value: DisplayType.TimeSeriesTable,
+      disabled: tableDisabled,
     },
     {
       icon: 'mdi-information-outline',
       label: 'Information',
       value: DisplayType.Information,
+      disabled: metaDataDisabled || noTooltip,
     },
+    // Mdi icon for metatdata at the current location
+    //    {
+    //     icon: 'mdi-information',
+    //    label: 'Metadata',
   ]
-  // Mdi icon for metatdata at the current location
-  //    {
-  //     icon: 'mdi-information',
-  //    label: 'Metadata',
-  //
-
-  if (!((elevationChartDisplayconfig.value?.subplots?.length ?? 0) > 0)) {
-    displayItems[1].disabled = true
-  }
-
-  if (!tooltip.value) {
-    displayItems[3].disabled = true
-  }
-
-  return displayItems
 })
 
 watch(displayTypeItems, () => {
