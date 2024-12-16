@@ -4,4 +4,3 @@ export interface Tag {
   disabled: boolean
   legendSvg: string
 }
-
