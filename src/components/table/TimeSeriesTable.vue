@@ -484,6 +484,10 @@ function onUpdateItem(event: TableData) {
   width: 100%;
 }
 
+th {
+  padding-top: 20px !important;
+}
+
 th.table-date {
   min-width: 24ch;
   width: 24ch;

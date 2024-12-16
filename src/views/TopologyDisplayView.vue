@@ -9,21 +9,10 @@
   <Teleport to="#app-bar-content-start">
     <LeafNodeButtons
       v-if="nodesStore.nodeButtons.length > 0"
-      v-model:activeParentId="nodesStore.activeParentId"
-      v-model:activeParentNode="nodesStore.activeParentNode"
-      v-model:nodeButtons="nodesStore.nodeButtons"
+      v-model:activeNodeId="nodesStore.activeNodeId"
+      :items="nodesStore.nodeButtons"
       variant="tonal"
     />
-    <!-- TODO: Should this be a display tab maybe? -->
-    <v-btn
-      v-if="externalLink"
-      :href="externalLink"
-      target="_blank"
-      variant="text"
-      class="text-capitalize"
-    >
-      <v-icon>mdi-open-in-new</v-icon>Link
-    </v-btn>
   </Teleport>
   <Teleport to="#app-bar-content-center">
     <v-toolbar-items v-if="displayTabs.length > 1">
@@ -63,12 +52,6 @@
             </v-badge>
           </template>
         </v-list-item>
-        <v-list-item
-          title="Download time series"
-          prepend-icon="mdi-download"
-          :disabled="downloadDialogStore.disabled"
-          @click="downloadDialogStore.showDialog = true"
-        />
         <v-list-item
           title="More Info"
           prepend-icon="mdi-information"
@@ -128,7 +111,6 @@ import InformationDisplayView from '@/views/InformationDisplayView.vue'
 import { useDisplay } from 'vuetify'
 import { useNodesStore } from '@/stores/nodes'
 import { nodeButtonItems, recursiveUpdateNode } from '@/lib/topology/nodes'
-import { useDownloadDialogStore } from '@/stores/downloadDialog'
 import {
   displayTabsForNode,
   type DisplayTab,
@@ -149,7 +131,6 @@ const props = defineProps<Props>()
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
 const workflowsStore = useWorkflowsStore()
-const downloadDialogStore = useDownloadDialogStore()
 
 const menuType = computed(() => {
   const configured = settings.get('ui.hierarchical-menu-style')?.value as string
@@ -169,9 +150,13 @@ const activeNode = computed(() => {
   if (!active.value) return
 
   const node = topologyMap.value.get(active.value)
-  return node?.topologyNodes
-    ? node?.topologyNodes[nodesStore.activeParentNode]
-    : node
+  if (node?.topologyNodes) {
+    const leafNode = node.topologyNodes.find(
+      (n) => n.id === nodesStore.activeNodeId,
+    )
+    return leafNode
+  }
+  return node
 })
 
 const secondaryWorkflows = computed(() => {
@@ -322,6 +307,7 @@ watchEffect(() => {
         showActiveThresholdCrossingsForFilters.value,
       ),
     )
+    nodesStore.activeNodeId = props.nodeId[1]
   }
 
   // Create the displayTabs for the active node.

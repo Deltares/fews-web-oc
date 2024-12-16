@@ -23,8 +23,6 @@ The following software frameworks are used to develop Web OC
 | Maps         | Maplibre                  |
 | Charts       | d3js + custom, eCharts    |
 
-_Please note that we are currently in the proces of migrating Web OC from the Vue 2 to Vue 3 framework_.
-
 ## Licensing and Software distribution
 
 Components 1 (Delft-FEWS database) and 2 (FewsWebServices API) in the diagram above are already part of the Delft-FEWS software suite. The license under which these components are made available and the manner in which they are provided will not change with introduction of the Web OC. Additionally, Deltares intends to offer new components 3 to 6 as in addition to the current Delft-FEWS software:
@@ -64,8 +62,8 @@ Components 5 (Vue components) and 6 (Web OC application) are made available unde
 
 - Web OC Application and components: https://github.com/Deltares/fews-web-oc
 - PI REST libraries: https://github.com/Deltares/fews-pi-requests
-- SSD libraries : https://github.com/Deltares/fews-ssd-requests
-- WMS libraries : https://github.com/Deltares/fews-wms-requests
+- SSD libraries: https://github.com/Deltares/fews-ssd-requests
+- WMS libraries: https://github.com/Deltares/fews-wms-requests
 
 In the case of Deltares customer-specific orders for one or more of the software components 1 to 6 (Figure 1: Delft-FEWS Web OC Architecture), the existing FEWS executable License Agreement will be used. In the specific customer contract, a product will be delivered based on specific requirements, and within this customer contract, we will extract the product (IP, liability, warranties) from the customer contract terms and apply the FEWS License Agreement terms, including the customer's indemnification for the use of the FEWS component(s).
 

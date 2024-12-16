@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, watch } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import { toMercator } from '@turf/projection'
 import {
   ImageSource,
@@ -16,6 +16,7 @@ import {
 import { configManager } from '@/services/application-config'
 import { useMap } from '@indoorequal/vue-maplibre-gl'
 import { point } from '@turf/helpers'
+import { getLayerId, getSourceId } from '@/lib/map'
 
 export interface AnimatedRasterLayerOptions {
   name: string
@@ -38,7 +39,8 @@ const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
 
-let currentLayer: string = ''
+let currentLayer = ''
+let currentSource = ''
 
 onMounted(() => {
   addHooksToMapObject()
@@ -65,11 +67,11 @@ function onMapMove(): void {
 
 function onDataChange(event: MapSourceDataEvent): void {
   if (
-    event.sourceId === currentLayer &&
+    event.sourceId === currentSource &&
     event.tile !== undefined &&
     event.isSourceLoaded
   ) {
-    map?.setPaintProperty(event.sourceId, 'raster-opacity', 1)
+    map?.setPaintProperty(currentLayer, 'raster-opacity', 1)
   }
 }
 
@@ -168,11 +170,11 @@ function createSource() {
     type: 'image',
     ...getImageSourceOptions(),
   }
-  map.addSource(currentLayer, rasterSource)
+  map.addSource(currentSource, rasterSource)
   const rasterLayer: any = {
     id: currentLayer,
     type: 'raster',
-    source: currentLayer,
+    source: currentSource,
     paint: {
       'raster-opacity': 0,
       'raster-opacity-transition': {
@@ -183,13 +185,11 @@ function createSource() {
     },
   }
   map.addLayer(rasterLayer, 'boundary_country_outline')
-
-  setDefaultZoom()
 }
 
 function updateSource() {
   if (map === undefined) return
-  const source = map.getSource(currentLayer) as ImageSource
+  const source = map.getSource(currentSource) as ImageSource
   if (source !== undefined) source.updateImage(getImageSourceOptions())
 }
 
@@ -199,19 +199,11 @@ function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
   return [...sw.geometry.coordinates, ...ne.geometry.coordinates]
 }
 
-function setDefaultZoom() {
-  if (props.layer === undefined || props.layer.bbox === undefined) return
-  const bounds = props.layer.bbox
-  nextTick(() => {
-    map?.fitBounds(bounds)
-  })
-}
-
 function removeLayer() {
   if (map !== undefined && map.style !== undefined) {
-    if (map.getSource(currentLayer) !== undefined) {
+    if (map.getSource(currentSource) !== undefined) {
       map.removeLayer(currentLayer)
-      map.removeSource(currentLayer)
+      map.removeSource(currentSource)
     }
   }
 }
@@ -226,12 +218,16 @@ function onLayerChange(): void {
     return
   }
 
-  if (props.layer.name !== currentLayer) {
+  const layerId = getLayerId(props.layer.name)
+  const sourceId = getSourceId(props.layer.name)
+
+  if (layerId !== currentLayer) {
     removeLayer()
-    currentLayer = props.layer.name
+    currentLayer = layerId
+    currentSource = sourceId
   }
 
-  const source = map?.getSource(currentLayer)
+  const source = map?.getSource(currentSource)
   if (source === undefined) {
     createSource()
   } else {

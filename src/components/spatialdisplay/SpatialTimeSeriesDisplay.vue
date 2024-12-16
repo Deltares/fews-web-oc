@@ -3,8 +3,6 @@
     <div style="flex: 1 1 100%; height: 100%">
       <WindowComponent>
         <template v-slot:toolbar>
-          <span class="ml-5">{{ displayConfig?.title }}</span>
-          <v-spacer />
           <v-toolbar-items
             class="flex-0-0"
             v-model="displayType"
@@ -27,8 +25,23 @@
               <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
             </v-btn>
           </v-toolbar-items>
+          <span class="ml-5">{{ displayConfig?.title }}</span>
+          <v-spacer />
         </template>
         <template v-slot:toolbar-append>
+          <v-btn size="small" icon>
+            <v-icon>mdi-dots-horizontal</v-icon>
+            <v-menu activator="parent" density="compact">
+              <v-list>
+                <v-list-item
+                  prepend-icon="mdi-download"
+                  @click="downloadDialogStore.showDialog = true"
+                  :disabled="downloadDialogStore.disabled"
+                  >Download time series ...</v-list-item
+                >
+              </v-list>
+            </v-menu>
+          </v-btn>
           <v-btn size="small" icon @click="onClose">
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -72,6 +85,7 @@ import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
 import { isFilterActionsFilter } from '@/lib/filters'
+import { useDownloadDialogStore } from '@/stores/downloadDialog'
 
 interface Props {
   filter: filterActionsFilter | timeSeriesGridActionsFilter
@@ -91,6 +105,8 @@ const options = computed<UseDisplayConfigOptions>(() => {
 
 const props = defineProps<Props>()
 const emit = defineEmits(['close'])
+
+const downloadDialogStore = useDownloadDialogStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -157,7 +173,7 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
       value: DisplayType.TimeSeriesTable,
     },
     {
-      icon: 'mdi-archive-marker',
+      icon: 'mdi-information-outline',
       label: 'Information',
       value: DisplayType.Information,
     },
