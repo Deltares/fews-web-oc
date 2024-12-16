@@ -11,18 +11,20 @@
         @changeLocationId="onLocationChange"
         :layer-capabilities="layerCapabilities"
         :times="times"
+        :settings="props.settings"
         :max-values-time-series="maxValuesTimeSeries"
         v-model:elevation="elevation"
         v-model:current-time="currentTime"
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
     </div>
-    <div v-if="filter" class="child-container">
+    <div v-if="showChartPanel" class="child-container">
       <router-view
         @close="closeTimeSeriesDisplay"
         :filter="filter"
         :elevation-chart-filter="elevationChartFilter"
         :current-time="currentTime"
+        :settings="props.settings"
       ></router-view>
     </div>
   </div>
@@ -48,8 +50,9 @@ import { toMercator } from '@turf/projection'
 import circle from '@turf/circle'
 import bbox from '@turf/bbox'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useFilterLocations } from '@/services/useFilterLocations'
+import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
+import type { MapSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   layerName?: string
@@ -57,6 +60,7 @@ interface Props {
   filterIds?: string[]
   latitude?: string
   longitude?: string
+  settings?: MapSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -68,7 +72,7 @@ const route = useRoute()
 const router = useRouter()
 const { mobile } = useDisplay()
 
-const settings = useUserSettingsStore()
+const userSettings = useUserSettingsStore()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { layerCapabilities, times } = useWmsLayerCapabilities(
   baseUrl,
@@ -106,8 +110,8 @@ function getFilterActionsFilter(): filterActionsFilter &
   return {
     locationIds: props.locationId,
     filterId: props.filterIds ? props.filterIds[0] : undefined,
-    useDisplayUnits: settings.useDisplayUnits,
-    convertDatum: settings.convertDatum,
+    useDisplayUnits: userSettings.useDisplayUnits,
+    convertDatum: userSettings.convertDatum,
   }
 }
 
@@ -139,7 +143,7 @@ function getTimeSeriesGridActionsFilter():
     bbox: mercatorBbox,
     documentFormat: 'PI_JSON',
     elevation: elevation.value ?? layerCapabilities.value.elevation?.upperValue,
-    useDisplayUnits: settings.useDisplayUnits,
+    useDisplayUnits: userSettings.useDisplayUnits,
     // Should be available according to the docs, but errors
     // convertDatum: settings.convertDatum,
   }
@@ -152,6 +156,10 @@ const filter = computed(() => {
   if (props.longitude && props.latitude) {
     return getTimeSeriesGridActionsFilter()
   }
+})
+
+const showChartPanel = computed(() => {
+  return filter.value !== undefined && !(props.settings?.chartPanelEnabled === false)
 })
 
 const elevationChartFilter = computed(() => {
