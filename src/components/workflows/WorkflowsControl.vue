@@ -8,55 +8,50 @@
   >
     <v-card>
       <v-card-title>Workflow</v-card-title>
-      <v-container class="pb-0">
-        <v-col>
-          <v-row>
-            <v-select
-              v-model="currentWorkflow"
-              :items="workflowSelectItems"
-              density="compact"
-              variant="solo-filled"
-              flat
-              label="Workflow"
-              mandatory
-            ></v-select>
-          </v-row>
-          <v-row v-if="isBoundingBoxInForm">
-            <v-text-field
-              v-model="boundingBoxString"
-              readonly
-              variant="plain"
-              density="compact"
-              label="Bounding box"
-              class="mx-4"
-            />
-            <v-btn
-              icon="mdi-selection-drag"
-              variant="tonal"
-              density="comfortable"
-              @click="showMapTool"
-            />
-          </v-row>
-          <v-row v-if="isCoordinateInForm">
-            <v-text-field
-              v-model="coordinateString"
-              readonly
-              variant="plain"
-              density="compact"
-              label="Coordinate"
-              class="mx-4"
-            />
-            <v-btn
-              icon="mdi-map-marker-radius"
-              variant="tonal"
-              density="comfortable"
-              @click="showCoordinateSelector"
-            />
-          </v-row>
-        </v-col>
-      </v-container>
-      <v-container v-if="hasProperties" class="d-flex workflow-dialog__form">
+      <v-card-text>
+        <v-select
+          v-model="currentWorkflow"
+          :items="workflowSelectItems"
+          density="compact"
+          variant="solo-filled"
+          flat
+          label="Workflow"
+          mandatory
+        />
+        <div v-if="isBoundingBoxInForm" class="d-flex">
+          <v-text-field
+            v-model="boundingBoxString"
+            readonly
+            variant="plain"
+            density="compact"
+            label="Bounding box"
+            class="mx-4"
+          />
+          <v-btn
+            icon="mdi-selection-drag"
+            variant="tonal"
+            density="comfortable"
+            @click="showMapTool"
+          />
+        </div>
+        <div v-if="isCoordinateInForm" class="d-flex">
+          <v-text-field
+            v-model="coordinateString"
+            readonly
+            variant="plain"
+            density="compact"
+            label="Coordinate"
+            class="mx-4"
+          />
+          <v-btn
+            icon="mdi-map-marker-radius"
+            variant="tonal"
+            density="comfortable"
+            @click="showCoordinateSelector"
+          />
+        </div>
         <json-forms
+          v-if="hasProperties"
           :schema="formSchema"
           :uischema="formUISchema"
           :data="data"
@@ -66,20 +61,22 @@
           :config="JsonFormsConfig"
           @change="onFormChange"
         />
-      </v-container>
-      <v-container v-if="!isProcessDataTask">
         <DateTimeField
+          v-if="!isProcessDataTask"
           v-model="timeZero"
           date-label="t0 date"
           time-label="t0 time"
         />
-      </v-container>
+      </v-card-text>
       <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn variant="flat" color="primary" @click="startWorkflow">
-          Submit
-        </v-btn>
-        <v-btn @click="closeDialog">Close</v-btn>
+        <v-spacer />
+        <v-btn
+          text="Submit"
+          variant="flat"
+          color="primary"
+          @click="startWorkflow"
+        />
+        <v-btn text="Close" @click="closeDialog" />
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -528,15 +525,3 @@ function getProcessDataFilter(): PartialProcessDataFilter {
   }
 }
 </script>
-
-<style scoped>
-.overflow-visible {
-  overflow: visible;
-}
-
-.workflow-dialog__form {
-  max-height: calc(100vh - 200px);
-  overflow-y: auto;
-  position: relative;
-}
-</style>
