@@ -1,5 +1,5 @@
 <template>
-  <ControlChip v-if="overlays.length">
+  <ControlChip v-if="componentSettingsStore.overlays.length">
     <v-icon size="large">mdi-layers-outline</v-icon>
     <v-menu
       transition="slide-y-transition"
@@ -7,7 +7,7 @@
       activator="parent"
     >
       <v-list
-        v-model:selected="selectedIds"
+        v-model:selected="componentSettingsStore.selectedOverlayIds"
         select-strategy="leaf"
         class="pb-0"
         density="compact"
@@ -27,7 +27,7 @@
         <v-divider class="mt-2" />
 
         <v-list-item
-          v-for="overlay in overlays"
+          v-for="overlay in componentSettingsStore.overlays"
           :key="overlay.id"
           :title="overlay.name"
           :value="overlay.id"
@@ -45,67 +45,30 @@
 
 <script setup lang="ts">
 import ControlChip from '@/components/wms/ControlChip.vue'
-import {
-  DeclarationReference,
-  OverlayLocation,
-  type MapSettings,
-} from '@/lib/topology/componentSettings'
-import { computed, ref, watchEffect } from 'vue'
+import { useComponentSettingsStore } from '@/stores/componentSettings'
+import { computed } from 'vue'
 
-interface Props {
-  settings?: MapSettings
-}
-
-const props = defineProps<Props>()
-
-const selectedIds = ref<string[]>([])
-watchEffect(() => {
-  selectedIds.value = getVisibleOverlayIds(props.settings?.overlays ?? [])
-})
-
-const selectedOverlays = defineModel<OverlayLocation[]>('selectedOverlays')
-watchEffect(() => {
-  selectedOverlays.value = getOverlocationsByIds(selectedIds.value)
-})
-
-const overlays = computed(() => {
-  const overlayIds = props.settings?.overlays?.map((overlay) => overlay.id)
-  return getOverlocationsByIds(overlayIds ?? [])
-})
+const componentSettingsStore = useComponentSettingsStore()
 
 const allSelected = computed(
-  () => selectedIds.value.length === overlays.value.length,
+  () =>
+    componentSettingsStore.overlays.length ===
+    componentSettingsStore.selectedOverlayIds.length,
 )
 
 const someSelected = computed(
   () =>
-    selectedIds.value.length > 0 &&
-    selectedIds.value.length < overlays.value.length,
+    componentSettingsStore.selectedOverlayIds.length > 0 &&
+    componentSettingsStore.selectedOverlayIds.length <
+      componentSettingsStore.overlays.length,
 )
 
 function toggleAll() {
   if (allSelected.value) {
-    selectedIds.value = []
+    componentSettingsStore.selectedOverlayIds = []
   } else {
-    selectedIds.value = overlays.value.map((overlay) => overlay.id)
+    componentSettingsStore.selectedOverlayIds =
+      componentSettingsStore.overlays.map((overlay) => overlay.id)
   }
-}
-
-function getOverlayById(id: string) {
-  return props.settings?.declarations?.overlays?.locations?.find(
-    (overlay) => overlay.id === id,
-  )
-}
-
-function getOverlocationsByIds(ids: string[]) {
-  return ids.map((id) => getOverlayById(id)).filter((overlay) => !!overlay)
-}
-
-function getVisibleOverlayIds(references: DeclarationReference[]) {
-  return (
-    references
-      ?.filter((overlay) => overlay.visible)
-      .map((overlay) => overlay.id) ?? []
-  )
 }
 </script>
