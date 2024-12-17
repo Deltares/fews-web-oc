@@ -77,12 +77,17 @@
           v-model:show-layer="showLayer"
         />
         <LocationsSearchControl
+          v-if="showLocationSearchControl"
           v-model:showLocations="showLocationsLayer"
           width="50vw"
           max-width="250"
           :locations="locations"
           :selectedLocationId="props.locationId"
           @changeLocationId="onLocationChange"
+        />
+        <OverlayControl
+          :settings="settings"
+          v-model:selectedOverlays="selectedOverlays"
         />
       </template>
     </v-chip-group>
@@ -135,7 +140,8 @@ import AnimatedRasterLayer, {
 import LocationsSearchControl from '@/components/wms/LocationsSearchControl.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
-import InformationPanel from '../wms/InformationPanel.vue'
+import InformationPanel from '@/components/wms/InformationPanel.vue'
+import OverlayControl from '@/components/wms/OverlayControl.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
@@ -165,6 +171,7 @@ import { useWorkflowsStore } from '@/stores/workflows'
 import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
+import type { MapSettings, OverlayLocation } from '@/lib/topology/componentSettings'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -184,6 +191,7 @@ interface Props {
   longitude?: string
   currentTime?: Date
   maxValuesTimeSeries?: TimeSeriesData[]
+  settings?: MapSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -223,7 +231,7 @@ let debouncedSetLayerOptions!: () => void
 
 const legendLayerName = ref(props.layerName)
 const legendLayerStyles = ref<Style[]>()
-const settings = useUserSettingsStore()
+const userSettings = useUserSettingsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -267,7 +275,7 @@ watch(
         const initialLegendGraphic = await fetchWmsLegend(
           baseUrl,
           legendLayerName.value,
-          settings.useDisplayUnits,
+          userSettings.useDisplayUnits,
           undefined,
           style,
         )
@@ -296,7 +304,7 @@ watch(
         const newLegendGraphic = useWmsLegend(
           baseUrl,
           legendLayerName,
-          () => settings.useDisplayUnits,
+          () => userSettings.useDisplayUnits,
           range,
           style,
           () =>
@@ -358,6 +366,12 @@ const layerHasElevation = computed(() => {
   return props.layerCapabilities?.elevation !== undefined
 })
 
+const showLocationSearchControl = computed(() => {
+  return !(props.settings?.locationSearchEnabled === false)
+})
+
+const selectedOverlays = ref<OverlayLocation[]>([])
+
 watch(
   () => props.layerCapabilities,
   (layer) => {
@@ -395,7 +409,7 @@ watch(currentElevation, () => {
 })
 
 watch(
-  [() => colourScalesStore.currentScale?.range, () => settings.useDisplayUnits],
+  [() => colourScalesStore.currentScale?.range, () => userSettings.useDisplayUnits],
   () => {
     setLayerOptions()
   },
@@ -447,7 +461,7 @@ function setLayerOptions(): void {
         ? rangeToString(colourScalesStore.currentScale?.range)
         : undefined,
       style: colourScalesStore.currentScale?.style.name,
-      useDisplayUnits: settings.useDisplayUnits,
+      useDisplayUnits: userSettings.useDisplayUnits,
     }
   } else {
     layerOptions.value = undefined
