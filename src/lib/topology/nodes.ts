@@ -165,5 +165,8 @@ export function nodeHasWebDisplay(node: TopologyNode) {
 }
 
 export function nodeHasDashboard(node: TopologyNode) {
-  return node.id.includes('dashboard') && node.topologyNodes !== undefined
+  return (
+    node.id.toLowerCase().includes('dashboard') &&
+    node.topologyNodes !== undefined
+  )
 }
