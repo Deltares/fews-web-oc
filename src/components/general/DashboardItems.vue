@@ -57,11 +57,7 @@ function getComponentSettingsForItem(item: DashboardItem) {
   const settings = componentSettingsStore.getSettingsById(
     item.componentSettingsId,
   )
-  const componentSettings = settings?.[item.component]
-  if (!componentSettings) return
-
-  componentSettings.declarations = settings?.declarations
-  return componentSettings
+  return settings?.[item.component]
 }
 
 const componentItems = computed(() => {
