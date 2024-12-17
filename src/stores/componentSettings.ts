@@ -37,10 +37,7 @@ export const useComponentSettingsStore = defineStore('componentSettings', {
     baseMaps: (state) => {
       const defaultBaseMaps: BaseMap[] = Object.values(DefaultBaseMaps)
       const baseMaps = state.declarations?.baseMaps ?? []
-      return [
-        ...defaultBaseMaps,
-        ...baseMaps,
-      ]
+      return [...defaultBaseMaps, ...baseMaps]
     },
     selectedBaseMap(): BaseMap {
       if (this.selectedBaseMapId === 'automatic') {
@@ -52,7 +49,10 @@ export const useComponentSettingsStore = defineStore('componentSettings', {
       }
       // FIXME: What to do if the selected base map is not found?
       //        Could happen when persisting the selected base map
-      return this.baseMaps.find((b) => b.id === this.selectedBaseMapId) ?? this.baseMaps[0]
+      return (
+        this.baseMaps.find((b) => b.id === this.selectedBaseMapId) ??
+        this.baseMaps[0]
+      )
     },
     selectedStyle(): string {
       const style = this.selectedBaseMap.style
@@ -60,7 +60,7 @@ export const useComponentSettingsStore = defineStore('componentSettings', {
         return getResourcesStaticUrl(style.slice(1))
       }
       return style
-    }
+    },
   },
   actions: {
     async fetchState() {
