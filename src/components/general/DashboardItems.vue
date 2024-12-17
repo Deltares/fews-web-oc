@@ -71,7 +71,7 @@ const componentItems = computed(() => {
     const component = componentTypeToComponentMap[componentName]
     const componentProps = getComponentPropsForNode(componentName, topologyNode)
     const title = topologyNode?.name ?? componentTypeToTitleMap[componentName]
-    const icon = componentTypeToIconMap[componentName]
+    const icon = topologyNode?.iconId ?? componentTypeToIconMap[componentName]
     const settings = getComponentSettingsForItem(item)
     return {
       title,
