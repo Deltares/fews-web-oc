@@ -214,7 +214,7 @@ export function useTimeSeries(
     controller.abort('useTimeSeries unmounted.')
   })
 
-  const shell = {
+  return {
     series,
     isReady,
     isLoading,
@@ -222,8 +222,6 @@ export function useTimeSeries(
     error,
     interval
   }
-
-  return shell
 }
 
 export async function postTimeSeriesEdit(
