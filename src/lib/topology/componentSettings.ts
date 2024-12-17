@@ -6,8 +6,9 @@ type PaintMapping = {
   line: LinePaintProps
 }
 
-export interface WebocComponentSettingsResponse {
-  webocComponentSettings: WebocComponentSettings[]
+export interface ComponentSettingsResponse {
+  componentSettings: ComponentSettings[]
+  declarations?: Declarations
 }
 
 interface ComponentSettingsMapping {
@@ -26,16 +27,11 @@ type SettingsPerComponent = {
   [key in ComponentType]?: ComponentSettingsMapping[key]
 }
 
-export interface WebocComponentSettings extends SettingsPerComponent {
+export interface ComponentSettings extends SettingsPerComponent {
   id: string
-  declarations?: Declarations
 }
 
-interface BaseSettings {
-  declarations?: Declarations
-}
-
-export interface ChartSettings extends BaseSettings {
+export interface ChartSettings {
   chartEnabled?: boolean
   elevationChartEnabled?: boolean
   tableEnabled?: boolean
@@ -46,14 +42,6 @@ export interface ChartSettings extends BaseSettings {
 export interface MapSettings extends ChartSettings {
   chartPanelEnabled?: boolean
   locationSearchEnabled?: boolean
-  baseMaps?: BaseMaps
-  overlays?: DeclarationReference[]
-}
-
-export interface BaseMaps {
-  defaultLightBaseMap: string
-  defaultDarkBaseMap: string
-  additionalMaps?: DeclarationReference[]
 }
 
 export interface Declarations {
@@ -64,7 +52,7 @@ export interface Declarations {
 export interface BaseMap {
   id: string
   name: string
-  // TODO: Add layer specification
+  style: string
 }
 
 export interface Overlays {
@@ -77,9 +65,4 @@ export interface OverlayLocation {
   locationSet: string
   type: keyof PaintMapping
   paint: PaintMapping[OverlayLocation['type']]
-}
-
-export interface DeclarationReference {
-  id: string
-  visible: boolean
 }
