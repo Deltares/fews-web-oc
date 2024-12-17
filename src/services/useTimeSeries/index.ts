@@ -29,7 +29,6 @@ export interface UseTimeSeriesReturn {
 
 const TIMESERIES_POLLING_INTERVAL = 1000 * 30
 
-
 export interface UseTimeSeriesOptions {
   startTime?: Date | null
   endTime?: Date | null
@@ -122,8 +121,8 @@ export function useTimeSeries(
           })
           const timeStepPerPixel = Math.round(
             Interval.fromDateTimes(startTime, endTime).length() /
-            window.outerWidth /
-            2,
+              window.outerWidth /
+              2,
           )
           url.searchParams.set('thinning', `${timeStepPerPixel}`)
         }
@@ -201,14 +200,10 @@ export function useTimeSeries(
     }
   }
 
-  const interval = useIntervalFn(
-    loadTimeSeries,
-    TIMESERIES_POLLING_INTERVAL,
-    {
-      immediate: true,
-      immediateCallback: true,
-    },
-  )
+  const interval = useIntervalFn(loadTimeSeries, TIMESERIES_POLLING_INTERVAL, {
+    immediate: true,
+    immediateCallback: true,
+  })
 
   onUnmounted(() => {
     controller.abort('useTimeSeries unmounted.')
@@ -220,7 +215,7 @@ export function useTimeSeries(
     isLoading,
     loadingSeriesIds: debouncedLoadingSeriesIds,
     error,
-    interval
+    interval,
   }
 }
 
