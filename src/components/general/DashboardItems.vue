@@ -7,7 +7,11 @@
     class="flex-0-0 w-100"
     density="compact"
   >
-    <v-tab v-for="item in componentItems" :prepend-icon="item.icon">
+    <v-tab
+      v-for="item in componentItems"
+      :prepend-icon="item.icon"
+      class="text-none"
+    >
       {{ item.title }}
     </v-tab>
   </v-tabs>
@@ -66,7 +70,7 @@ const componentItems = computed(() => {
     const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
     const component = componentTypeToComponentMap[componentName]
     const componentProps = getComponentPropsForNode(componentName, topologyNode)
-    const title = componentTypeToTitleMap[componentName]
+    const title = topologyNode?.name ?? componentTypeToTitleMap[componentName]
     const icon = componentTypeToIconMap[componentName]
     const settings = getComponentSettingsForItem(item)
     return {
