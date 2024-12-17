@@ -1,4 +1,4 @@
-import { ComponentType } from "@/lib/topology/component"
+import { ComponentType } from '@/lib/topology/component'
 
 export interface DashboardsResponse {
   dashboards: Dashboard[]

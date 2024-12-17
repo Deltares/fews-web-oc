@@ -153,7 +153,9 @@ const filter = computed(() => {
 })
 
 const showChartPanel = computed(() => {
-  return filter.value !== undefined && !(props.settings?.chartPanelEnabled === false)
+  return (
+    filter.value !== undefined && !(props.settings?.chartPanelEnabled === false)
+  )
 })
 
 const elevationChartFilter = computed(() => {
