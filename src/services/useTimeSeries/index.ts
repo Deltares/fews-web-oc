@@ -16,6 +16,7 @@ import { difference } from 'lodash-es'
 import { SeriesData } from '@/lib/timeseries/types/SeriesData'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 import { debouncedRef } from '@vueuse/core'
+import { type Pausable, useIntervalFn } from '@vueuse/core'
 
 export interface UseTimeSeriesReturn {
   error: Ref<any>
@@ -23,7 +24,11 @@ export interface UseTimeSeriesReturn {
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
   loadingSeriesIds: Ref<string[]>
+  interval: Pausable
 }
+
+const TIMESERIES_POLLING_INTERVAL = 1000 * 30
+
 
 export interface UseTimeSeriesOptions {
   startTime?: Date | null
@@ -196,6 +201,15 @@ export function useTimeSeries(
     }
   }
 
+  const interval = useIntervalFn(
+    loadTimeSeries,
+    TIMESERIES_POLLING_INTERVAL,
+    {
+      immediate: true,
+      immediateCallback: true,
+    },
+  )
+
   onUnmounted(() => {
     controller.abort('useTimeSeries unmounted.')
   })
@@ -206,6 +220,7 @@ export function useTimeSeries(
     isLoading,
     loadingSeriesIds: debouncedLoadingSeriesIds,
     error,
+    interval
   }
 
   return shell
