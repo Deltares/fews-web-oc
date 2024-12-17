@@ -42,7 +42,7 @@
       v-model:coordinate="workflowsStore.coordinate"
     />
     <OverlayLayer
-      v-for="overlay in selectedOverlays"
+      v-for="overlay in componentSettingsStore.selectedOverlays"
       :key="overlay.id"
       :overlay="overlay"
     />
@@ -92,7 +92,7 @@
           :selectedLocationId="props.locationId"
           @changeLocationId="onLocationChange"
         />
-        <OverlayControl
+        <OverlayControl />
           :settings="settings"
           v-model:selectedOverlays="selectedOverlays"
         />
@@ -169,8 +169,9 @@ import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
 import { FeatureCollection, Geometry } from 'geojson'
-import type { MapSettings, OverlayLocation } from '@/lib/topology/componentSettings'
+import type { MapSettings } from '@/lib/topology/componentSettings'
 import OverlayLayer from '@/components/wms/OverlayLayer.vue'
+import { useComponentSettingsStore } from '@/stores/componentSettings'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -239,6 +240,7 @@ const colourScalesStore = useColourScalesStore()
 const currentColourScale = ref<ColourScale>()
 const currentColourScaleIds = ref<string[]>([])
 
+const componentSettingsStore = useComponentSettingsStore()
 const workflowsStore = useWorkflowsStore()
 const userSettingsStore = useUserSettingsStore()
 
@@ -341,7 +343,6 @@ const showLocationSearchControl = computed(() => {
   return !(props.settings?.locationSearchEnabled === false)
 })
 
-const selectedOverlays = ref<OverlayLocation[]>([])
 
 watch(
   () => props.layerCapabilities,
