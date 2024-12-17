@@ -88,7 +88,7 @@ export function displayTabsForNode(
         break
       case 'tasks':
         // HACK
-        tab.active = true
+        tab.active = false
         tab.to.params = { ...params }
         break
     }
