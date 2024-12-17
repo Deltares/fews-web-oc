@@ -12,6 +12,7 @@ import {
   MapLayerMouseEvent,
   MapLayerTouchEvent,
   type MapSourceDataEvent,
+  MercatorCoordinate,
 } from 'maplibre-gl'
 import { configManager } from '@/services/application-config'
 import { useMap } from '@indoorequal/vue-maplibre-gl'
@@ -41,10 +42,13 @@ const { map } = useMap()
 
 let currentLayer = ''
 let currentSource = ''
+let canvas: HTMLCanvasElement
+let context: CanvasRenderingContext2D | null = null
 
 onMounted(() => {
   addHooksToMapObject()
   onLayerChange()
+  canvas = document.createElement('canvas')
 })
 
 onUnmounted(() => {
@@ -80,13 +84,46 @@ function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 }
 
 function onStartLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId !== currentLayer) return
+  if (e.sourceId !== currentSource) return
   isLoading.value = true
 }
 
-function onEndLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId !== currentLayer) return
-  isLoading.value = false
+function onEndLoading(event: MapSourceDataEvent): void {
+  if (event.sourceId !== currentSource) return
+  if (event.isSourceLoaded) {
+    isLoading.value = false
+    const image = (map?.getSource(currentSource) as ImageSource)?.image
+    context = canvas.getContext('2d', { willReadFrequently: true })
+    if (image && context) {
+      canvas.width = image.width
+      canvas.height = image.height
+      context.drawImage(image, 0, 0)
+    }
+  }
+}
+
+function onMouseMove(event: MapLayerMouseEvent) {
+  if (context && map) {
+    // Map mouse coordinates to image coordinates
+    const bounds = map.getBounds() // Get map bounds
+    const mapNorthWest = MercatorCoordinate.fromLngLat(bounds.getNorthWest())
+    const mapSouthEast = MercatorCoordinate.fromLngLat(bounds.getSouthEast())
+    const mouseMercator = MercatorCoordinate.fromLngLat(event.lngLat)
+    const latRatio =
+      (mouseMercator.y - mapSouthEast.y) / (mapNorthWest.y - mapSouthEast.y)
+    const lonRatio =
+      (mouseMercator.x - mapNorthWest.x) / (mapSouthEast.x - mapNorthWest.x)
+    const pixelX = Math.floor(lonRatio * canvas.width)
+    const pixelY = Math.floor((1 - latRatio) * canvas.height) // Y is flipped for canvas
+
+    // Read the pixel color
+    const imageData = context.getImageData(pixelX, pixelY, 1, 1).data
+    if (imageData.some((value) => value !== 0)) {
+      map.getCanvas().style.cursor = 'pointer'
+    } else {
+      map.getCanvas().style.cursor = ''
+    }
+  }
 }
 
 function addHooksToMapObject() {
@@ -96,6 +133,8 @@ function addHooksToMapObject() {
   map?.on('dblclick', onDoubleClick)
   map?.on('dataloading', onStartLoading)
   map?.on('sourcedata', onEndLoading)
+  map?.on('mouseover', onMouseMove)
+  map?.on('mousemove', onMouseMove)
 }
 
 function removeHooksFromMapObject(): void {
@@ -105,6 +144,8 @@ function removeHooksFromMapObject(): void {
   map?.off('dblclick', onDoubleClick)
   map?.off('dataloading', onStartLoading)
   map?.off('sourcedata', onEndLoading)
+  map?.off('mouseover', onMouseMove)
+  map?.off('mousemove', onMouseMove)
 }
 
 function getImageSourceOptions(): any {
