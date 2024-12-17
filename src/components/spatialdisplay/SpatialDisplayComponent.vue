@@ -93,9 +93,7 @@
           @changeLocationId="onLocationChange"
         />
         <OverlayControl />
-          :settings="settings"
-          v-model:selectedOverlays="selectedOverlays"
-        />
+        <BaseMapControl />
       </template>
     </v-chip-group>
   </div>
@@ -145,6 +143,7 @@ import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import InformationPanel from '@/components/wms/InformationPanel.vue'
 import OverlayControl from '@/components/wms/OverlayControl.vue'
+import BaseMapControl from '@/components/wms/BaseMapControl.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
@@ -342,7 +341,6 @@ const layerHasElevation = computed(() => {
 const showLocationSearchControl = computed(() => {
   return !(props.settings?.locationSearchEnabled === false)
 })
-
 
 watch(
   () => props.layerCapabilities,
