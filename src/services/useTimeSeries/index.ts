@@ -65,6 +65,10 @@ export function useTimeSeries(
   const isLoading = computed(() => debouncedLoadingSeriesIds.value.length > 0)
 
   watch([lastUpdated, selectedTime ?? ref(), requests, options], () => {
+    loadTimeSeries()
+  })
+
+  function loadTimeSeries() {
     controller.abort('Timeseries request triggered again before finishing.')
     controller = new AbortController()
     const piProvider = new PiWebserviceProvider(baseUrl, {
@@ -113,8 +117,8 @@ export function useTimeSeries(
           })
           const timeStepPerPixel = Math.round(
             Interval.fromDateTimes(startTime, endTime).length() /
-              window.outerWidth /
-              2,
+            window.outerWidth /
+            2,
           )
           url.searchParams.set('thinning', `${timeStepPerPixel}`)
         }
@@ -190,7 +194,7 @@ export function useTimeSeries(
         delete series.value[seriesId]
       }
     }
-  })
+  }
 
   onUnmounted(() => {
     controller.abort('useTimeSeries unmounted.')
