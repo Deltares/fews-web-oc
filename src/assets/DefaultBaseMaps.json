@@ -1,0 +1,17 @@
+{
+  "automatic": {
+    "id": "automatic",
+    "name": "Automatic",
+    "style": "automatic"
+  },
+  "light": {
+    "id": "carto-db-light",
+    "name": "CartoDB (light)",
+    "style": "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+  },
+  "dark": {
+    "id": "carto-dark-matter",
+    "name": "CartoDB (dark)",
+    "style": "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+  }
+}
