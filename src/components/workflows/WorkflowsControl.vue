@@ -106,7 +106,12 @@ import { useAlertsStore } from '@/stores/alerts.ts'
 import { generateDefaultUISchema, generateJsonSchema } from './workflowUtils'
 import { useDisplay } from 'vuetify'
 import { LngLat } from 'maplibre-gl'
-import { coordinateToString, WorkflowFormData } from '@/lib/workflows'
+import {
+  coordinateToString,
+  isBoundingBoxInFormData,
+  isCoordinateInFormData,
+  WorkflowFormData,
+} from '@/lib/workflows'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 
 import DateTimeField from '@/components/general/DateTimeField.vue'
@@ -187,20 +192,8 @@ function closeDialog() {
 }
 
 // Check whether the bounding box is defined in the form.
-const isBoundingBoxInForm = computed(() => {
-  const properties = Object.keys(data.value)
-  return (
-    properties.includes('xMin') &&
-    properties.includes('yMin') &&
-    properties.includes('xMax') &&
-    properties.includes('yMax')
-  )
-})
-
-const isCoordinateInForm = computed(() => {
-  const properties = Object.keys(data.value)
-  return properties.includes('latitude') && properties.includes('longitude')
-})
+const isBoundingBoxInForm = computed(() => isBoundingBoxInFormData(data.value))
+const isCoordinateInForm = computed(() => isCoordinateInFormData(data.value))
 
 const workflowSelectItems = computed(() => {
   return props.secondaryWorkflows?.map((workflow) => {
