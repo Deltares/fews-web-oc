@@ -19,7 +19,13 @@
           label="Workflow"
           mandatory
           :disabled="workflowSelectItems?.length === 1"
+          hide-details
         />
+        <!-- Always show description <div>, even if the description is null, to
+             make sure the margins around the controls are OK. -->
+        <div class="workflow-description ml-4 mb-4">
+          {{ workflowDescription }}
+        </div>
         <div v-if="isBoundingBoxInForm" class="d-flex">
           <v-text-field
             v-model="boundingBoxString"
@@ -136,8 +142,16 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { mobile } = useDisplay()
 
-const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
 const showDialog = defineModel<boolean>('showDialog', { required: true })
+
+const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
+const workflowDescription = computed<string | null>(() => {
+  if (currentWorkflow.value === null) return null
+  const workflow = availableWorkflowsStore.byId(
+    currentWorkflow.value.secondaryWorkflowId,
+  )
+  return workflow.description !== '' ? workflow.description : null
+})
 
 const data = ref<WorkflowFormData>({})
 const description = ref('')
@@ -488,6 +502,10 @@ function getProcessDataFilter(): PartialProcessDataFilter {
 :deep(.workflow-select .v-label),
 :deep(.workflow-select .v-field__append-inner) {
   opacity: 0.38;
+}
+
+.workflow-description {
+  font-size: 0.8em;
 }
 
 .form-container {
