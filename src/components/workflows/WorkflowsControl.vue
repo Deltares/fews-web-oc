@@ -218,6 +218,7 @@ watch(
       currentWorkflow.value = props.secondaryWorkflows[0]
     }
   },
+  { immediate: true },
 )
 
 watch(data, () => {
