@@ -36,7 +36,7 @@
                 <v-list-item
                   prepend-icon="mdi-download"
                   @click="downloadDialogStore.showDialog = true"
-                  :disabled="downloadDialogStore.disabled"
+                  :disabled="!showDataDownload"
                   >Download time series ...</v-list-item
                 >
               </v-list>
@@ -55,7 +55,6 @@
         >
         </TimeSeriesComponent>
         <TimeSeriesFileDownloadComponent
-          v-if="showDataDownload"
           :config="displayConfig"
           :options="options"
           :filter="filter"
@@ -157,7 +156,7 @@ interface DisplayTypeItem {
 }
 
 const showDataDownload = computed(() => {
-  return !(props.settings?.downloadEnabled === false)
+  return !(props.settings?.downloadEnabled === false) && !downloadDialogStore.disabled
 })
 
 const displayType = ref(DisplayType.TimeSeriesChart)
