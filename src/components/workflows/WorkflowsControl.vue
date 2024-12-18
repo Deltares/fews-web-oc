@@ -65,8 +65,8 @@
         <DateTimeField
           v-if="!isProcessDataTask"
           v-model="timeZero"
-          date-label="t0 date"
-          time-label="t0 time"
+          date-label="T0 date"
+          time-label="T0 time"
         />
         <v-text-field
           v-model="description"
