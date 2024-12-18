@@ -1,14 +1,7 @@
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { defineAsyncComponent, type Component } from 'vue'
-import {
-  nodeHasCharts,
-  nodeHasDataDownload,
-  nodeHasMap,
-  nodeHasReports,
-  nodeHasSchematicStatusDisplay,
-  nodeHasSystemMonitor,
-} from './nodes'
 import { ComponentProps } from '@/lib/utils/types'
+import { ComponentType } from '@/lib/topology/component'
 
 const SpatialDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialDisplay.vue'),
@@ -29,83 +22,72 @@ const SystemMonitorDisplayView = defineAsyncComponent(
   () => import('@/views/SystemMonitorDisplayView.vue'),
 )
 
-export interface ComponentWithProps<T extends Component> {
-  component: T
-  props: ComponentProps<T>
-}
+const Empty = defineAsyncComponent(() => import('@/views/Empty.vue'))
 
-export function getComponentWithPropsForNode(node: TopologyNode | undefined) {
-  if (!node) {
-    return {
-      component: undefined,
-      props: undefined,
-    }
-  }
+export const componentTypeToComponentMap = {
+  map: SpatialDisplay,
+  charts: TimeSeriesDisplay,
+  'data-download': DataDownloadDisplayView,
+  reports: ReportsDisplayView,
+  'schematic-status-display': SchematicStatusDisplay,
+  'system-monitor': SystemMonitorDisplayView,
+  tasks: Empty,
+  'web-display': Empty,
+  dashboard: Empty,
+} satisfies Record<ComponentType, Component>
 
-  if (nodeHasMap(node)) {
-    const result: ComponentWithProps<typeof SpatialDisplay> = {
-      component: SpatialDisplay,
-      props: {
-        layerName: node.gridDisplaySelection?.plotId,
-        filterIds: node.filterIds,
-      },
-    }
-    return result
-  }
+export type PropsForComponentType<T extends ComponentType> = ComponentProps<
+  (typeof componentTypeToComponentMap)[T]
+>
 
-  if (nodeHasCharts(node)) {
-    const result: ComponentWithProps<typeof TimeSeriesDisplay> = {
-      component: TimeSeriesDisplay,
-      props: {
-        nodeId: node.id,
-      },
+export function getComponentPropsForNode(
+  componentType: ComponentType,
+  node?: TopologyNode,
+): PropsForComponentType<ComponentType> | undefined {
+  if (!node) return
+
+  if (componentType === 'map') {
+    const result: PropsForComponentType<'map'> = {
+      layerName: node.gridDisplaySelection?.plotId,
+      filterIds: node.filterIds,
     }
     return result
   }
 
-  if (nodeHasDataDownload(node)) {
-    const result: ComponentWithProps<typeof DataDownloadDisplayView> = {
-      component: DataDownloadDisplayView,
-      props: {
-        nodeId: node.id,
-        topologyNode: node,
-      },
+  if (componentType === 'charts') {
+    const result: PropsForComponentType<'charts'> = {
+      nodeId: node.id,
     }
     return result
   }
 
-  if (nodeHasReports(node)) {
-    const result: ComponentWithProps<typeof ReportsDisplayView> = {
-      component: ReportsDisplayView,
-      props: {
-        topologyNode: node,
-      },
+  if (componentType === 'data-download') {
+    const result: PropsForComponentType<'data-download'> = {
+      nodeId: node.id,
+      topologyNode: node,
     }
     return result
   }
 
-  if (nodeHasSchematicStatusDisplay(node)) {
-    const result: ComponentWithProps<typeof SchematicStatusDisplay> = {
-      component: SchematicStatusDisplay,
-      props: {
-        panelId: node.scadaPanelId,
-        groupId: node.id,
-        objectId: '',
-        showDateTimeSlider: false,
-      },
-    }
-    return result
-  }
-  if (nodeHasSystemMonitor(node)) {
-    const result: ComponentWithProps<typeof SystemMonitorDisplayView> = {
-      component: SystemMonitorDisplayView,
-      props: {},
+  if (componentType === 'reports') {
+    const result: PropsForComponentType<'reports'> = {
+      topologyNode: node,
     }
     return result
   }
 
-  return {
-    component: undefined,
-    props: undefined,
+  if (componentType === 'schematic-status-display') {
+    const result: PropsForComponentType<'schematic-status-display'> = {
+      panelId: node.scadaPanelId,
+      groupId: node.id,
+      objectId: '',
+      showDateTimeSlider: false,
+    }
+    return result
+  }
+
+  if (componentType === 'system-monitor') {
+    const result: PropsForComponentType<'system-monitor'> = {}
+    return result
   }
 }

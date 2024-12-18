@@ -95,8 +95,8 @@ export function useWmsLegend(
   layerName: MaybeRefOrGetter<string>,
   useDisplayUnits: MaybeRefOrGetter<boolean>,
   colorScaleRange: MaybeRefOrGetter<string | undefined>,
-  style: MaybeRefOrGetter<Style | undefined>,
-  activeStyles: MaybeRefOrGetter<Style[] | undefined>,
+  style: MaybeRefOrGetter<Style>,
+  activeStyles: MaybeRefOrGetter<Style[]>,
 ): Ref<GetLegendGraphicResponse | undefined> {
   const legendGraphic = ref<GetLegendGraphicResponse>()
 
@@ -112,11 +112,7 @@ export function useWmsLegend(
       return
     }
 
-    if (
-      _activeStyles &&
-      _style &&
-      !_activeStyles.some((s) => styleToId(s) === styleToId(_style))
-    ) {
+    if (!_activeStyles.some((s) => styleToId(s) === styleToId(_style))) {
       return
     }
 

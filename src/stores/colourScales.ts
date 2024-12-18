@@ -1,5 +1,14 @@
 import { defineStore } from 'pinia'
 import type { ColourMap, Style } from '@deltares/fews-wms-requests'
+import { computed, MaybeRefOrGetter, reactive, ref, toValue, watch } from 'vue'
+import { configManager } from '@/services/application-config'
+import { fetchWmsLegend, useWmsLegend } from '@/services/useWms'
+import {
+  getLegendTitle,
+  legendToRange,
+  rangeToString,
+  styleToId,
+} from '@/lib/legend'
 
 export interface Range {
   min: number
@@ -15,45 +24,77 @@ export interface ColourScale {
   useGradients: boolean
 }
 
-interface ColourScalesState {
-  scales: Record<string, ColourScale>
-  currentIds: string[]
-  currentIndex: number
-}
+const useColourScalesStore = defineStore('colourScales', () => {
+  const scales = ref<Record<string, ColourScale>>({})
+  const processingScaleIds = ref<string[]>([])
 
-const useColourScalesStore = defineStore('colourScales', {
-  state: (): ColourScalesState => ({
-    scales: {},
-    currentIds: [],
-    currentIndex: 0,
-  }),
-  getters: {
-    currentScaleId: (state) => state.currentIds[state.currentIndex],
-    currentScale(): ColourScale | undefined {
-      if (!this.currentScaleId) return
-      return this.scales[this.currentScaleId]
-    },
-    currentScales(): ColourScale[] {
-      return this.currentIds.map((id) => this.scales[id])
-    },
-    currentScaleIsInitialRange(): boolean {
-      if (!this.currentScale) return false
-      return (
-        this.currentScale.range.min === this.currentScale.initialRange.min &&
-        this.currentScale.range.max === this.currentScale.initialRange.max
+  async function addScale(
+    style: Style,
+    layerName: MaybeRefOrGetter<string>,
+    title: MaybeRefOrGetter<string | undefined>,
+    useDisplayUnits: MaybeRefOrGetter<boolean>,
+    activeStyles: MaybeRefOrGetter<Style[]>,
+  ) {
+    const styleId = styleToId(style)
+    if (styleId in scales.value || processingScaleIds.value.includes(styleId)) {
+      return
+    }
+
+    processingScaleIds.value.push(styleId)
+
+    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+
+    const initialLegendGraphic = await fetchWmsLegend(
+      baseUrl,
+      toValue(layerName),
+      toValue(useDisplayUnits),
+      undefined,
+      style,
+    )
+
+    const legend = initialLegendGraphic.legend
+    const newColourScale = reactive({
+      title: getLegendTitle(toValue(title) ?? '', initialLegendGraphic),
+      style: style,
+      colourMap: legend,
+      range: legendToRange(legend),
+      initialRange: legendToRange(legend),
+      useGradients: !legend.some((entry) => entry.colorSmoothing === false),
+    })
+    processingScaleIds.value = processingScaleIds.value.filter(
+      (id) => id !== styleId,
+    )
+    scales.value[styleId] = newColourScale
+
+    const range = computed(() => {
+      const newRange = rangeToString(newColourScale.range)
+      const initialRange = rangeToString(newColourScale.initialRange)
+
+      return newRange !== initialRange ? newRange : undefined
+    })
+
+    const newLegendGraphic = useWmsLegend(
+      baseUrl,
+      layerName,
+      useDisplayUnits,
+      range,
+      style,
+      activeStyles,
+    )
+
+    watch(newLegendGraphic, () => {
+      if (newLegendGraphic.value?.legend === undefined) return
+      scales.value[styleId].title = getLegendTitle(
+        toValue(title) ?? '',
+        newLegendGraphic.value,
       )
-    },
-  },
-  actions: {
-    setCurrentScaleRange(newRange: Range) {
-      if (!this.currentScale) return
-      this.currentScale.range = newRange
-    },
-    resetCurrentScaleRange() {
-      if (!this.currentScale) return
-      this.currentScale.range = this.currentScale.initialRange
-    },
-  },
+      scales.value[styleId].colourMap = newLegendGraphic.value.legend
+    })
+  }
+  return {
+    scales,
+    addScale,
+  }
 })
 
 export { useColourScalesStore }
