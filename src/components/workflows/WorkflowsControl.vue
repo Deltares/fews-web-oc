@@ -435,7 +435,6 @@ function showErrorMessage(message: string) {
     id: `workflow-error-${userId.value}`,
     type: 'error',
     message,
-    active: true,
   })
 }
 
@@ -444,7 +443,6 @@ function showStartMessage(message: string) {
     id: `workflow-start-${userId.value}`,
     type: 'success',
     message,
-    active: true,
   })
 }
 
@@ -453,7 +451,6 @@ function showSuccessMessage(message: string) {
     id: `workflow-success-${userId.value}`,
     type: 'success',
     message,
-    active: true,
   })
 }
 

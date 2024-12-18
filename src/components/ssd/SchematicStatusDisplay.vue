@@ -115,7 +115,6 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
       id: `undefined-action-${now.toISOString()}`,
       type: 'error',
       message: 'No left click actions defined for this object',
-      active: true,
     })
     return
   }
@@ -135,7 +134,6 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
         id: `action-${results[0].type}-${now.toISOString()}`,
         type: 'error',
         message: `Action '${results[0].type}' not supported yet.`,
-        active: true,
       })
   }
 }
