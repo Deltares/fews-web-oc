@@ -106,7 +106,7 @@ import { useAlertsStore } from '@/stores/alerts.ts'
 import { generateDefaultUISchema, generateJsonSchema } from './workflowUtils'
 import { useDisplay } from 'vuetify'
 import { LngLat } from 'maplibre-gl'
-import { coordinateToString } from '@/lib/workflows'
+import { coordinateToString, WorkflowFormData } from '@/lib/workflows'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 
 import DateTimeField from '@/components/general/DateTimeField.vue'
@@ -125,7 +125,7 @@ const { mobile } = useDisplay()
 const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
 const showDialog = defineModel<boolean>('showDialog', { required: true })
 
-const data = ref()
+const data = ref<WorkflowFormData>({})
 const userId = ref('')
 
 const {
@@ -147,9 +147,9 @@ const hasProperties = computed<boolean>(() => {
   const numProperties = currentWorkflow.value?.properties?.length ?? 0
   return numProperties > 0
 })
-const isProcessDataTask = computed<boolean>(() => {
-  return data.value['GET_PROCESS_DATA']
-})
+const isProcessDataTask = computed<boolean>(
+  () => data.value['GET_PROCESS_DATA'] !== undefined,
+)
 
 const timeZero = ref(new Date())
 
@@ -233,18 +233,18 @@ watch(data, () => {
   const xCellSize = data.value.xCellSize
   const yCellSize = data.value.yCellSize
   if (typeof xCellSize === 'number' && xCellSize > 0) {
-    longitudeStepSize.value = data.value.xCellSize
+    longitudeStepSize.value = xCellSize
   }
   if (typeof yCellSize === 'number' && yCellSize > 0) {
-    latitudeStepSize.value = data.value.yCellSize
+    latitudeStepSize.value = yCellSize
   }
 
   if (isBoundingBoxInForm.value) {
     boundingBox.value = {
-      lonMin: data.value.xMin,
-      latMin: data.value.yMin,
-      lonMax: data.value.xMax,
-      latMax: data.value.yMax,
+      lonMin: data.value.xMin as number,
+      latMin: data.value.yMin as number,
+      lonMax: data.value.xMax as number,
+      latMax: data.value.yMax as number,
     }
   } else {
     boundingBox.value = null
@@ -252,8 +252,8 @@ watch(data, () => {
 
   if (isCoordinateInForm.value) {
     workflowsStore.coordinate = new LngLat(
-      +data.value.longitude,
-      +data.value.latitude,
+      +(data.value.longitude as number | string),
+      +(data.value.latitude as number | string),
     )
   } else {
     workflowsStore.coordinate = null
@@ -456,7 +456,7 @@ async function startWorkflow() {
     ? WorkflowType.ProcessData
     : WorkflowType.RunTask
 
-  const fileName = data.value['FILE_NAME']
+  const fileName = data.value['FILE_NAME'] as string
 
   const filter =
     workflowType === WorkflowType.ProcessData
@@ -507,7 +507,7 @@ function getRunTaskFilter(): PartialRunTaskFilter {
     userId: userId.value,
     description,
     timeZero: timeZeroString,
-    properties: data.value,
+    properties: data.value as Record<string, string | number>,
   }
 }
 
@@ -516,12 +516,12 @@ function getProcessDataFilter(): PartialProcessDataFilter {
     throw new Error('Bounding box is invalid')
   }
   return {
-    xMin: data.value.xMin,
-    yMin: data.value.yMin,
-    xMax: data.value.xMax,
-    yMax: data.value.yMax,
-    xCellSize: data.value.xCellSize,
-    yCellSize: data.value.yCellSize,
+    xMin: data.value.xMin as number,
+    yMin: data.value.yMin as number,
+    xMax: data.value.xMax as number,
+    yMax: data.value.yMax as number,
+    xCellSize: data.value.xCellSize as number,
+    yCellSize: data.value.yCellSize as number,
   }
 }
 </script>
