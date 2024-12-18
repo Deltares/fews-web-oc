@@ -93,7 +93,7 @@ import { useWorkflowsStore } from '@/stores/workflows'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import type { WebOcTopologyDisplayConfig } from '@deltares/fews-pi-requests'
 
-import { computed, ref, StyleValue, watch, watchEffect } from 'vue'
+import { computed, onUnmounted, ref, StyleValue, watch, watchEffect } from 'vue'
 import {
   onBeforeRouteUpdate,
   RouteLocationNormalized,
@@ -111,6 +111,7 @@ import {
   type DisplayTab,
 } from '@/lib/topology/displayTabs.js'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
+import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 
 interface Props {
   topologyId?: string
@@ -127,6 +128,7 @@ const props = defineProps<Props>()
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
 const workflowsStore = useWorkflowsStore()
+const availableWorkflowsStore = useAvailableWorkflowsStore()
 
 const menuType = computed(() => {
   const configured = settings.get('ui.hierarchical-menu-style')?.value as string
@@ -154,6 +156,26 @@ const activeNode = computed(() => {
   }
   return node
 })
+
+// Set preferred workflow IDs for the running tasks menu, if this node has
+// associated workflows.
+watch(
+  activeNode,
+  (node) => {
+    const primaryWorkflowId = node?.workflowId ? [node.workflowId] : []
+    const secondaryWorkflowIds =
+      node?.secondaryWorkflows?.map(
+        (workflow) => workflow.secondaryWorkflowId,
+      ) ?? []
+    // Note: this list of workflow IDs may be empty, in which case we have no
+    //       preferred workflow.
+    const workflowIds = [...primaryWorkflowId, ...secondaryWorkflowIds]
+    availableWorkflowsStore.setPreferredWorkflowIds(workflowIds)
+  },
+  { immediate: true },
+)
+// Clear the preferred workflow IDs when we unmount.
+onUnmounted(() => availableWorkflowsStore.clearPreferredWorkflowIds())
 
 const secondaryWorkflows = computed(() => {
   if (!activeNode.value?.secondaryWorkflows) return null

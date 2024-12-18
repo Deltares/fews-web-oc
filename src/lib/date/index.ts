@@ -66,3 +66,6 @@ export function convertFewsPiDateTimeToJsDate(
 export function convertJSDateToFewsPiParameter(date: Date): string {
   return toISOString(date) + 'Z'
 }
+export function convertTimestampToFewsPiParameter(timestamp: number): string {
+  return convertJSDateToFewsPiParameter(new Date(timestamp))
+}

@@ -1,0 +1,157 @@
+<template>
+  <v-btn icon="mdi-run" :active="isPanelOpen" @click="toggleTasksPanel" />
+  <Teleport to="#main-side-panel" defer>
+    <div v-if="isPanelOpen" class="h-100 d-flex flex-column">
+      <div class="flex-0-0 pa-2 d-flex gc-2 align-center">
+        <WorkflowFilterControl
+          v-model="selectedWorkflowIds"
+          @update:model-value="flagManuallyChanged"
+        />
+        <TaskStatusFilterControl v-model="selectedTaskStatuses" />
+        <v-spacer />
+        <PeriodFilterControl v-model="period" />
+      </div>
+      <v-list width="500" class="flex-1-1">
+        <v-list-item
+          class="task"
+          v-for="task in sortedTasks"
+          :key="task.taskId"
+        >
+          <TaskRunSummary :task="task" />
+        </v-list-item>
+      </v-list>
+      <div
+        class="flex-0-0 pa-2 d-flex flex-row justify-space-between align-center mt-2"
+      >
+        <div>Last updated: {{ lastUpdatedString }}</div>
+        <!-- Add fixed-height container around refresh button/progress
+               indicator to prevent layout shifts upon refreshing. -->
+        <div class="refresh-container">
+          <v-progress-circular
+            v-if="taskRuns.isLoading.value"
+            size="20"
+            indeterminate
+          />
+          <v-btn
+            v-else
+            density="compact"
+            variant="plain"
+            icon="mdi-refresh"
+            @click="taskRuns.fetch()"
+          />
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+
+import { RelativePeriod } from '@/lib/period'
+import { TaskRun, TaskStatus } from '@/lib/taskruns'
+
+import { useTaskRuns } from '@/services/useTasksRuns'
+
+import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+
+import TaskStatusFilterControl from './TaskStatusFilterControl.vue'
+import TaskRunSummary from './TaskRunSummary.vue'
+import WorkflowFilterControl from './WorkflowFilterControl.vue'
+import PeriodFilterControl from './PeriodFilterControl.vue'
+
+const availableWorkflowsStore = useAvailableWorkflowsStore()
+
+const isPanelOpen = ref(false)
+
+const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
+
+// Automatically select preferred workflow IDs if the user has not changed the
+// filter manually yet, otherwise, leave the filter as-is.
+let hasChangedWorkflowsFilterManually = false
+const flagManuallyChanged = () => (hasChangedWorkflowsFilterManually = true)
+watch(
+  () => availableWorkflowsStore.preferredWorkflowIds,
+  (preferredWorkflowIds) => {
+    if (hasChangedWorkflowsFilterManually) return
+    if (preferredWorkflowIds.length === 0) {
+      // If we have no preferred workflow IDs, select all.
+      selectedWorkflowIds.value = availableWorkflowsStore.workflowIds
+    } else {
+      // Otherwise, show only the preferred workflow IDs.
+      selectedWorkflowIds.value = preferredWorkflowIds
+    }
+  },
+)
+
+// The request for the available workflows may still be pending while this
+// component is created, so we may initialise the default selected workflows
+// with an empty array. To fix this, we reinitialise our selection upon changes
+// in the workflows, which occur when they have been fetched.
+watch(
+  () => availableWorkflowsStore.workflowIds,
+  (fetchedWorkflowIds) => {
+    selectedWorkflowIds.value = fetchedWorkflowIds
+  },
+  { once: true },
+)
+
+// Select all task statuses by default.
+const selectedTaskStatuses = ref<TaskStatus[]>(Object.values(TaskStatus))
+
+// Look 2 hours back by default..
+const period = ref<RelativePeriod | null>({
+  startOffsetSeconds: -2 * 60 * 60,
+  endOffsetSeconds: 0,
+})
+
+const tasksRefreshIntervalSeconds = 30
+const taskRuns = useTaskRuns(
+  tasksRefreshIntervalSeconds,
+  period,
+  selectedWorkflowIds,
+  selectedTaskStatuses,
+)
+
+const sortedTasks = computed<TaskRun[]>(() => {
+  return taskRuns.filteredTaskRuns.value.sort((a, b) => {
+    const hasDispatchTimeA = a.dispatchTimestamp !== null
+    const hasDispatchTimeB = b.dispatchTimestamp !== null
+    if (!hasDispatchTimeA && !hasDispatchTimeB) {
+      // If both tasks are pending, sort by workflowId.
+      return a.workflowId.localeCompare(b.workflowId)
+    } else if (!hasDispatchTimeA) {
+      // If A is pending and B is not, return A.
+      return -1
+    } else if (!hasDispatchTimeB) {
+      // If B is pending and A is not, return B.
+      return 1
+    } else {
+      // Otherwise, sort by timestamp.
+      return b.dispatchTimestamp! - a.dispatchTimestamp!
+    }
+  })
+})
+const lastUpdatedString = computed<string>(() => {
+  const lastUpdated = taskRuns.lastUpdatedTimestamp.value
+  if (lastUpdated === null) return '—'
+  return new Date(lastUpdated).toLocaleString()
+})
+
+function toggleTasksPanel(): void {
+  isPanelOpen.value = !isPanelOpen.value
+}
+</script>
+
+<style scoped>
+.refresh-container {
+  height: 28px;
+}
+
+.v-theme--light.task:nth-child(even) {
+  background-color: #f4f4f4;
+}
+
+.v-theme--dark.task:nth-child(even) {
+  background-color: black;
+}
+</style>
