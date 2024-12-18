@@ -1,16 +1,6 @@
 <template>
   <div class="d-flex flex-row gc-2">
-    <v-menu :close-on-content-click="false">
-      <template #activator="{ props }">
-        <v-text-field
-          v-bind="props"
-          :model-value="dateString"
-          :label="dateLabel"
-          readonly
-        />
-      </template>
-      <v-date-picker v-model="internalDate" />
-    </v-menu>
+    <v-date-input v-model="internalDate" :label="dateLabel" />
     <v-menu :close-on-content-click="false">
       <template #activator="{ props }">
         <v-text-field
@@ -34,6 +24,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import { VDateInput } from 'vuetify/labs/components'
 import { VTimePicker } from 'vuetify/labs/components'
 
 interface Props {
@@ -66,17 +57,6 @@ const internalTime = computed<string>({
   },
 })
 
-// Get date and time from the text fields.
-const dateString = computed<string>(() => {
-  const year = date.value.getFullYear()
-  const month = date.value.getMonth()
-  const day = date.value.getDate()
-
-  const monthString = (month + 1).toString().padStart(2, '0')
-  const dayString = day.toString().padStart(2, '0')
-  return `${year}-${monthString}-${dayString}`
-})
-
 const timeString = computed<string>(() => {
   const hours = date.value.getHours()
   const minutes = date.value.getMinutes()
@@ -98,3 +78,10 @@ function updateMinutes(minutes: number): void {
   date.value = newDate
 }
 </script>
+
+<style scoped>
+/* HACK: hide prepend icon, which cannot be disabled from the API. */
+:deep(.v-input__prepend) {
+  display: none;
+}
+</style>
