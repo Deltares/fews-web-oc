@@ -89,6 +89,17 @@ function onEndLoading(e: MapSourceDataEvent): void {
   isLoading.value = false
 }
 
+function onError(e: ErrorEvent) {
+  // NOTE: All maplibre errors are printed to the console
+  //       if no error event listener is added. Abort errors
+  //       happen mostly when the user moves the map before
+  //       the image is loaded. This is almost never an error.
+  if (e.error.name === 'AbortError') {
+    return
+  }
+  console.error(e)
+}
+
 function addHooksToMapObject() {
   map?.on('load', onLayerChange)
   map?.on('moveend', onMapMove)
@@ -96,6 +107,7 @@ function addHooksToMapObject() {
   map?.on('dblclick', onDoubleClick)
   map?.on('dataloading', onStartLoading)
   map?.on('sourcedata', onEndLoading)
+  map?.on('error', onError)
 }
 
 function removeHooksFromMapObject(): void {
@@ -105,6 +117,7 @@ function removeHooksFromMapObject(): void {
   map?.off('dblclick', onDoubleClick)
   map?.off('dataloading', onStartLoading)
   map?.off('sourcedata', onEndLoading)
+  map?.off('error', onError)
 }
 
 function getImageSourceOptions(): any {
