@@ -156,7 +156,10 @@ interface DisplayTypeItem {
 }
 
 const showDataDownload = computed(() => {
-  return !(props.settings?.downloadEnabled === false) && !downloadDialogStore.disabled
+  return (
+    !(props.settings?.downloadEnabled === false) &&
+    !downloadDialogStore.disabled
+  )
 })
 
 const displayType = ref(DisplayType.TimeSeriesChart)
