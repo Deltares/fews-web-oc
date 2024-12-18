@@ -241,6 +241,10 @@ const showActiveThresholdCrossingsForFilters = computed(() => {
 })
 
 const topologyNodesStore = useTopologyNodesStore()
+topologyNodesStore
+  .fetch()
+  .catch(() => console.error('Failed to fetch topology nodes'))
+
 const subNodes = computed(() =>
   topologyNodesStore.getSubNodesForIds(topologyDisplayNodes.value),
 )
