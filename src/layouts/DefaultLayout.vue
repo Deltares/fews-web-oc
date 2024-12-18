@@ -147,9 +147,9 @@
       <Suspense>
         <router-view></router-view>
       </Suspense>
-      <div class="alerts__container" v-if="alertsStore.hasActiveAlerts">
+      <div class="alerts__container" v-if="alertsStore.hasAlerts">
         <v-alert
-          v-for="alert in alertsStore.activeAlerts"
+          v-for="alert in alertsStore.alerts"
           :type="alert.type"
           closable
           density="compact"
@@ -197,6 +197,17 @@ const showHash = ref(false)
 const logoSrc = ref('')
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
+
+alertsStore.addAlert({
+  id: crypto.randomUUID(),
+  type: 'success',
+  message: 'hallo dit is een bericht',
+})
+alertsStore.addAlert({
+  id: crypto.randomUUID(),
+  type: 'success',
+  message: 'hallo dit is een bericht',
+})
 
 function updateAppBarColor() {
   appBarColor.value = getComputedStyle(document.body).getPropertyValue(
@@ -279,7 +290,7 @@ const shouldRenderInfoMenu = computed(() => {
 })
 
 function onCloseAlert(alert: Alert) {
-  alertsStore.deactiveAlert(alert.id)
+  alertsStore.removeAlert(alert.id)
 }
 
 const useRail = computed(

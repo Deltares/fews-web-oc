@@ -6,7 +6,6 @@ export interface Alert {
   id: string
   type: AlertType
   message: string
-  active: boolean
 }
 
 interface AlertState {
@@ -22,17 +21,13 @@ const useAlertsStore = defineStore('alerts', {
     addAlert(alert: Alert) {
       this.alerts.push(alert)
     },
-    deactiveAlert(id: string) {
-      const alert = this.alerts.find((alert) => alert.id === id)
-      if (alert) {
-        alert.active = false
-      }
+    removeAlert(id: string) {
+      this.alerts = this.alerts.filter((alert) => alert.id !== id)
     },
   },
 
   getters: {
-    activeAlerts: (state) => state.alerts.filter((alert) => alert.active),
-    hasActiveAlerts: (state) => state.alerts.some((alert) => alert.active),
+    hasAlerts: (state) => state.alerts.length > 0,
   },
 })
 
