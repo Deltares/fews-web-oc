@@ -103,11 +103,12 @@ import {
 } from '@/stores/workflows'
 import { useAlertsStore } from '@/stores/alerts.ts'
 
-import { generateDefaultUISchema, generateJsonSchema } from './workflowUtils'
 import { useDisplay } from 'vuetify'
 import { LngLat } from 'maplibre-gl'
 import {
   coordinateToString,
+  generateDefaultUISchema,
+  generateJsonSchema,
   isBoundingBoxInFormData,
   isCoordinateInFormData,
   WorkflowFormData,
