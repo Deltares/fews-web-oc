@@ -86,12 +86,10 @@
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { JsonForms } from '@jsonforms/vue'
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
-import { getResourcesStaticUrl } from '@/lib/fews-config'
 import {
   SecondaryWorkflowGroupItem,
   SecondaryWorkflowProperties,
 } from '@deltares/fews-pi-requests'
-import { asyncComputed } from '@vueuse/core'
 import JsonFormsConfig from '@/assets/JsonFormsConfig.json'
 import { useBoundingBox } from '@/services/useBoundingBox'
 
@@ -107,8 +105,6 @@ import { useDisplay } from 'vuetify'
 import { LngLat } from 'maplibre-gl'
 import {
   coordinateToString,
-  generateDefaultUISchema,
-  generateJsonSchema,
   isBoundingBoxInFormData,
   isCoordinateInFormData,
   WorkflowFormData,
@@ -116,6 +112,7 @@ import {
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 
 import DateTimeField from '@/components/general/DateTimeField.vue'
+import { useWorkflowFormSchemas } from '@/services/useWorkflowFormSchemas'
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[] | null
@@ -141,6 +138,7 @@ const {
   boundingBoxIsValid,
   boundingBoxString,
 } = useBoundingBox(1, 1)
+const { formSchema, formUISchema } = useWorkflowFormSchemas(currentWorkflow)
 
 const workflowsStore = useWorkflowsStore()
 const alertStore = useAlertsStore()
@@ -328,53 +326,6 @@ function toValue(
       return parseInt(value)
     case 'dateTime':
       return new Date(value)
-  }
-}
-
-const formSchema = asyncComputed(async () => {
-  if (!currentWorkflow.value) return undefined
-  return getSchema(`${currentWorkflow.value.secondaryWorkflowId}.schema.json`)
-})
-
-const formUISchema = asyncComputed(async () => {
-  if (!currentWorkflow.value) return undefined
-  return getUISchema(
-    `${currentWorkflow.value.secondaryWorkflowId}.ui-schema.json`,
-  )
-})
-
-async function getUISchema(file: string) {
-  try {
-    const schema = await getFile(file)
-    return schema.json()
-  } catch (error) {
-    const workflowProperties = currentWorkflow.value?.properties
-    if (workflowProperties !== undefined)
-      return generateDefaultUISchema(workflowProperties)
-  }
-}
-
-async function getSchema(file: string) {
-  try {
-    const schema = await getFile(file)
-    return schema.json()
-  } catch (error) {
-    const workflowProperties = currentWorkflow.value?.properties
-    if (workflowProperties !== undefined)
-      return generateJsonSchema(workflowProperties)
-  }
-}
-
-async function getFile(file: string) {
-  const url = getResourcesStaticUrl(file)
-  try {
-    const response = await fetch(url)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${url}`)
-    }
-    return response
-  } catch (error) {
-    throw new Error(`Failed to fetch ${url}`)
   }
 }
 
