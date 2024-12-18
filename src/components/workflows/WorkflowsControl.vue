@@ -52,6 +52,7 @@
         </div>
         <json-forms
           v-if="hasProperties"
+          class="form-container"
           :schema="formSchema"
           :uischema="formUISchema"
           :data="data"
@@ -470,3 +471,22 @@ function getProcessDataFilter(): PartialProcessDataFilter {
   }
 }
 </script>
+
+<style scoped>
+.form-container {
+  max-height: calc(100vh - 400px);
+  overflow-y: auto;
+  /* json-forms' Vuetify renderer is weird and does not respect its container
+     size, so always hide the horizontal scrollbar. */
+  overflow-x: hidden;
+  /* json-forms defines its container to have 0 padding with !important, so
+  override this for 2 reasons:
+     - Part of the label of text fields is cut off, so force the main json-forms
+       container to have some padding to prevent this. */
+  padding-top: 5px !important;
+  /* - We always get a vertical scrollbar even if it is not necessary, so give
+       the contents of the form some extra vertical space in the form of
+       padding. */
+  padding-bottom: 20px !important;
+}
+</style>
