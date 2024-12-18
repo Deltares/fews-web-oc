@@ -47,55 +47,55 @@
       :overlay="overlay"
     />
   </MapComponent>
-  <div class="mapcomponent__controls-container">
-    <v-chip-group class="control-group" selected-class="no-class">
-      <BoundingBoxControl
-        v-model:active="workflowsStore.isDrawingBoundingBox"
-        v-model:boundingBox="workflowsStore.boundingBox"
-        @finish="workflowsStore.showDialog = true"
-        v-if="workflowsStore.isDrawingBoundingBox"
-      />
-      <CoordinateSelectorControl
-        v-if="workflowsStore.isSelectingCoordinate"
-        v-model:active="workflowsStore.isSelectingCoordinate"
-        @finish="workflowsStore.showDialog = true"
-        :coordinate="workflowsStore.coordinate"
-      />
-      <template v-else>
-        <InformationPanel
-          v-if="layerOptions"
-          :layerTitle="props.layerCapabilities?.title"
-          :isLoading="isLoading"
-          :currentTime="currentTime"
-          :forecastTime="forecastTime"
-          :completelyMissing="
-            props.layerCapabilities?.completelyMissing ?? false
-          "
-          :firstValueTime="
-            new Date(props.layerCapabilities?.firstValueTime ?? '')
-          "
-          :lastValueTime="
-            new Date(props.layerCapabilities?.lastValueTime ?? '')
-          "
-          :canUseStreamlines="canUseStreamlines"
-          v-model:layer-kind="layerKind"
-          v-model:show-layer="showLayer"
+  <div class="mapcomponent__controls-container pa-2 ga-2">
+    <BoundingBoxControl
+      v-model:active="workflowsStore.isDrawingBoundingBox"
+      v-model:boundingBox="workflowsStore.boundingBox"
+      @finish="workflowsStore.showDialog = true"
+      v-if="workflowsStore.isDrawingBoundingBox"
+    />
+    <CoordinateSelectorControl
+      v-if="workflowsStore.isSelectingCoordinate"
+      v-model:active="workflowsStore.isSelectingCoordinate"
+      @finish="workflowsStore.showDialog = true"
+      :coordinate="workflowsStore.coordinate"
+    />
+    <template v-else>
+      <InformationPanel
+        v-if="layerOptions"
+        :layerTitle="props.layerCapabilities?.title"
+        :isLoading="isLoading"
+        :currentTime="currentTime"
+        :forecastTime="forecastTime"
+        :completelyMissing="props.layerCapabilities?.completelyMissing ?? false"
+        :firstValueTime="
+          new Date(props.layerCapabilities?.firstValueTime ?? '')
+        "
+        :lastValueTime="new Date(props.layerCapabilities?.lastValueTime ?? '')"
+        :canUseStreamlines="canUseStreamlines"
+        v-model:layer-kind="layerKind"
+        v-model:show-layer="showLayer"
+      >
+        <v-divider />
+        <ColourPanel
           :currentColourScaleIds="currentColourScaleIds"
-          @update:current-colour-scale="currentColourScale = $event"
+          v-model:currentColourScaleIndex="currentColourScaleIndex"
         />
-        <LocationsSearchControl
-          v-if="showLocationSearchControl"
-          v-model:showLocations="showLocationsLayer"
-          width="50vw"
-          max-width="250"
-          :locations="locations"
-          :selectedLocationId="props.locationId"
-          @changeLocationId="onLocationChange"
-        />
-        <OverlayControl />
-        <BaseMapControl />
-      </template>
-    </v-chip-group>
+        <v-divider />
+        <BaseMapPanel />
+        <v-divider />
+        <OverlayPanel />
+      </InformationPanel>
+      <LocationsSearchControl
+        v-if="showLocationSearchControl"
+        v-model:showLocations="showLocationsLayer"
+        width="50vw"
+        max-width="250"
+        :locations="locations"
+        :selectedLocationId="props.locationId"
+        @changeLocationId="onLocationChange"
+      />
+    </template>
   </div>
   <ElevationSlider
     v-if="layerHasElevation"
@@ -141,9 +141,10 @@ import AnimatedRasterLayer, {
 import LocationsSearchControl from '@/components/wms/LocationsSearchControl.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
-import InformationPanel from '@/components/wms/InformationPanel.vue'
-import OverlayControl from '@/components/wms/OverlayControl.vue'
-import BaseMapControl from '@/components/wms/BaseMapControl.vue'
+import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
+import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
+import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
+import BaseMapPanel from '@/components/wms/panel/BaseMapPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
@@ -159,7 +160,7 @@ import {
 import type { Layer, Style } from '@deltares/fews-wms-requests'
 import type { Location } from '@deltares/fews-pi-requests'
 import { LayerKind } from '@/lib/streamlines'
-import { ColourScale, useColourScalesStore } from '@/stores/colourScales'
+import { useColourScalesStore } from '@/stores/colourScales'
 import { useDisplay } from 'vuetify'
 import ColourLegend from '@/components/wms/ColourLegend.vue'
 import { rangeToString, styleToId } from '@/lib/legend'
@@ -171,6 +172,7 @@ import { FeatureCollection, Geometry } from 'geojson'
 import type { MapSettings } from '@/lib/topology/componentSettings'
 import OverlayLayer from '@/components/wms/OverlayLayer.vue'
 import { useComponentSettingsStore } from '@/stores/componentSettings'
+import { useColourScales } from '@/services/useColourScales'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -236,8 +238,13 @@ const showLayer = ref<boolean>(true)
 const layerKind = ref(LayerKind.Static)
 
 const colourScalesStore = useColourScalesStore()
-const currentColourScale = ref<ColourScale>()
 const currentColourScaleIds = ref<string[]>([])
+const currentColourScaleIndex = ref(0)
+const { currentScale: currentColourScale } = useColourScales(
+  currentColourScaleIndex,
+  currentColourScaleIds,
+  colourScalesStore.scales,
+)
 
 const componentSettingsStore = useComponentSettingsStore()
 const workflowsStore = useWorkflowsStore()
@@ -496,6 +503,8 @@ function onCoordinateMoved(lat: number, lng: number): void {
 }
 
 .mapcomponent__controls-container {
+  display: flex;
+  flex-wrap: wrap;
   position: absolute;
   max-width: 100%;
   z-index: 3;
