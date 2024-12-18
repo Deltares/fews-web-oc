@@ -12,7 +12,7 @@ import { ref, watch } from 'vue'
 import type { ColumnItem } from '../components/general/ColumnItem'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import TimeSeriesDisplay from '../components/timeseries/TimeSeriesDisplay.vue'
-import { getTopologyNodes } from '@/lib/topology'
+import { getTopologyNodes } from '@/lib/topology/getTopologyNodes'
 
 const TIME_SERIES_DIALOG_PANEL: string = 'time series dialog'
 

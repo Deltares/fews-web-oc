@@ -1,4 +1,5 @@
-import { createTopologyHashMaps, getTopologyNodes } from '@/lib/topology'
+import { createTopologyHashMaps } from '@/lib/topology/createTopologyHashMaps'
+import { getTopologyNodes } from '@/lib/topology/getTopologyNodes'
 import { TopologyNode } from '@deltares/fews-pi-requests'
 import { defineStore } from 'pinia'
 import { ref, watchEffect } from 'vue'

@@ -2,11 +2,10 @@ import type { FeatureCollection, Geometry } from 'geojson'
 import type { Location } from '@deltares/fews-pi-requests'
 import type { Ref, MaybeRefOrGetter, ShallowRef } from 'vue'
 import { ref, watchEffect, shallowRef, toValue } from 'vue'
-
 import {
   convertGeoJsonToFewsPiLocation,
   fetchLocationsAsGeoJson,
-} from '@/lib/topology'
+} from '@/lib/topology/locations'
 
 export interface UseFilterLocationsReturn {
   error: Ref<any>
