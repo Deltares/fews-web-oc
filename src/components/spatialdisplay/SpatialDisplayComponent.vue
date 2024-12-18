@@ -180,7 +180,7 @@ interface Props {
   layerCapabilities?: Layer
   elevation?: number
   locations?: Location[]
-  geojson: FeatureCollection<Geometry, Location>,
+  geojson: FeatureCollection<Geometry, Location>
   locationId?: string
   latitude?: string
   longitude?: string
