@@ -1,6 +1,6 @@
 import { UserManagerSettings } from 'oidc-client-ts'
 import { ApplicationConfig } from './ApplicationConfig'
-import oidcSettings from '../authentication/oidcSettings.ts'
+import { getOidcSettings } from '@/services/authentication/oidcSettings'
 
 export class ApplicationConfigManager {
   _config!: ApplicationConfig
@@ -30,7 +30,7 @@ export class ApplicationConfigManager {
 
   getUserManagerSettings(): UserManagerSettings {
     return {
-      ...oidcSettings,
+      ...getOidcSettings(),
       ...{
         authority: this.get('VITE_AUTH_AUTHORITY'),
         client_id: this.get('VITE_AUTH_ID'),
