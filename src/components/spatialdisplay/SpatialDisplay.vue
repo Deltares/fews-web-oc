@@ -3,9 +3,9 @@
     <div class="child-container" :class="{ 'd-none': hideMap }">
       <SpatialDisplayComponent
         :layer-name="props.layerName"
-        :location-id="props.locationId"
-        :latitude="props.latitude"
-        :longitude="props.longitude"
+        :location-id="currentLocationId"
+        :latitude="currentLatitude"
+        :longitude="currentLongitude"
         :locations="locations"
         :geojson="geojson"
         @changeLocationId="onLocationChange"
@@ -19,19 +19,22 @@
       ></SpatialDisplayComponent>
     </div>
     <div v-if="showChartPanel" class="child-container">
-      <router-view
-        @close="closeTimeSeriesDisplay"
-        :filter="filter"
-        :elevation-chart-filter="elevationChartFilter"
-        :current-time="currentTime"
-        :settings="props.settings"
-      ></router-view>
+      <router-view v-slot="{ Component }">
+        <component
+          :is="Component ?? SpatialTimeSeriesDisplay"
+          @close="closeTimeSeriesDisplay"
+          :filter="filter"
+          :elevation-chart-filter="elevationChartFilter"
+          :current-time="currentTime"
+          :settings="props.settings"
+        />
+      </router-view>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
@@ -53,6 +56,9 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import type { MapSettings } from '@/lib/topology/componentSettings'
+const SpatialTimeSeriesDisplay = defineAsyncComponent(
+  () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
+)
 
 interface Props {
   layerName?: string
@@ -108,7 +114,7 @@ const onlyCoverageLayersAvailable = computed(
 function getFilterActionsFilter(): filterActionsFilter &
   UseDisplayConfigOptions {
   return {
-    locationIds: props.locationId,
+    locationIds: currentLocationId.value,
     filterId: props.filterIds ? props.filterIds[0] : undefined,
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
@@ -118,12 +124,12 @@ function getFilterActionsFilter(): filterActionsFilter &
 function getTimeSeriesGridActionsFilter():
   | (timeSeriesGridActionsFilter & UseDisplayConfigOptions)
   | undefined {
-  if (!props.longitude || !props.latitude) return
+  if (!currentLongitude.value || !currentLatitude.value) return
   if (!layerCapabilities.value?.boundingBox) return
   if (!layerCapabilities.value?.firstValueTime) return
   if (!layerCapabilities.value?.lastValueTime) return
 
-  const coordinates = [+props.longitude, +props.latitude]
+  const coordinates = [+currentLongitude.value, +currentLatitude.value]
   const [x, y] = toMercator(coordinates)
   const clickRadius = circle(coordinates, 10, { steps: 4, units: 'kilometers' })
   const bboxArray = bbox(clickRadius)
@@ -150,10 +156,10 @@ function getTimeSeriesGridActionsFilter():
 }
 
 const filter = computed(() => {
-  if (props.locationId) {
+  if (currentLocationId.value) {
     return getFilterActionsFilter()
   }
-  if (props.longitude && props.latitude) {
+  if (currentLatitude.value && currentLongitude.value) {
     return getTimeSeriesGridActionsFilter()
   }
 })
@@ -248,11 +254,12 @@ function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
 }
 
 function closeTimeSeriesDisplay(): void {
+  currentLocationId.value = undefined
+  currentLatitude.value = undefined
+  currentLongitude.value = undefined
+
   const parentRoute = findParentRoute(route)
   if (parentRoute !== null) {
-    currentLocationId.value = undefined
-    currentLatitude.value = undefined
-    currentLongitude.value = undefined
     router.push({
       name: parentRoute.name,
       params: {
