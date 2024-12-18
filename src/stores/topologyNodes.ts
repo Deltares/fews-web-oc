@@ -35,12 +35,13 @@ export const useTopologyNodesStore = defineStore('topologyNodes', () => {
     return _childIdToParentNodeMap.value.get(childNodeId)
   }
 
-  watchEffect(async () => {
+  async function fetch() {
     nodes.value = await getTopologyNodes()
-  })
+  }
 
   return {
     nodes,
+    fetch,
     subNodes,
     _idToNodeMap,
     _childIdToParentNodeMap,
