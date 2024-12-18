@@ -119,6 +119,9 @@ import { convertJSDateToFewsPiParameter } from '@/lib/date'
 
 import DateTimeField from '@/components/general/DateTimeField.vue'
 import { useWorkflowFormSchemas } from '@/services/useWorkflowFormSchemas'
+import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+
+const availableWorkflowsStore = useAvailableWorkflowsStore()
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[] | null
@@ -202,14 +205,14 @@ const isBoundingBoxInForm = computed(() => isBoundingBoxInFormData(data.value))
 const isCoordinateInForm = computed(() => isCoordinateInFormData(data.value))
 
 const workflowSelectItems = computed(() => {
-  return props.secondaryWorkflows?.map((workflow) => {
-    const title =
-      workflow.description !== ''
-        ? workflow.description
-        : workflow.secondaryWorkflowId
+  return props.secondaryWorkflows?.map((workflowItem) => {
+    const workflow = availableWorkflowsStore.byId(
+      workflowItem.secondaryWorkflowId,
+    )
+    const title = workflow.name
     return {
       title,
-      value: workflow,
+      value: workflowItem,
     }
   })
 })
