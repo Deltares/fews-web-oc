@@ -16,6 +16,7 @@
         :use-seconds="false"
         @update:hour="updateHours"
         @update:minute="updateMinutes"
+        hide-header
       />
     </v-menu>
   </div>
