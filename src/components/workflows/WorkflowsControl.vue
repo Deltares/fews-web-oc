@@ -68,6 +68,11 @@
           date-label="t0 date"
           time-label="t0 time"
         />
+        <v-text-field
+          v-model="description"
+          label="Task run description"
+          hide-details
+        />
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -130,6 +135,7 @@ const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
 const showDialog = defineModel<boolean>('showDialog', { required: true })
 
 const data = ref<WorkflowFormData>({})
+const description = ref('')
 const userId = ref('')
 
 const {
@@ -444,15 +450,12 @@ async function startWorkflow() {
 }
 
 function getRunTaskFilter(): PartialRunTaskFilter {
-  // TODO: add an apprioriate description. Also, the userId is a random UUID
-  //       now? Why don't we use the ID of the user currently logged in if we
-  //       have it?
-  const description = 'Test run'
-
+  // TODO: The userId is a random UUID now? Why don't we use the ID of the user
+  //       currently logged in if we have it?
   const timeZeroString = convertJSDateToFewsPiParameter(timeZero.value)
   return {
     userId: userId.value,
-    description,
+    description: description.value,
     timeZero: timeZeroString,
     properties: data.value as Record<string, string | number>,
   }
