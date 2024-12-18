@@ -380,28 +380,26 @@ function showMapTool() {
   )
 }
 
-function showErrorMessage(message: string) {
+function showMessage(message: string, type: 'error' | 'success'): void {
+  // Generate a new unique ID for each alert.
+  const id = crypto.randomUUID()
   alertStore.addAlert({
-    id: `workflow-error-${userId.value}`,
-    type: 'error',
+    id,
+    type,
     message,
   })
+}
+
+function showErrorMessage(message: string) {
+  showMessage(message, 'error')
 }
 
 function showStartMessage(message: string) {
-  alertStore.addAlert({
-    id: `workflow-start-${userId.value}`,
-    type: 'success',
-    message,
-  })
+  showMessage(message, 'success')
 }
 
 function showSuccessMessage(message: string) {
-  alertStore.addAlert({
-    id: `workflow-success-${userId.value}`,
-    type: 'success',
-    message,
-  })
+  showMessage(message, 'success')
 }
 
 async function startWorkflow() {
