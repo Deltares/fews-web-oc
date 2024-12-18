@@ -12,11 +12,13 @@
         <v-select
           v-model="currentWorkflow"
           :items="workflowSelectItems"
+          class="workflow-select"
           density="compact"
           variant="solo-filled"
           flat
           label="Workflow"
           mandatory
+          :disabled="workflowSelectItems?.length === 1"
         />
         <div v-if="isBoundingBoxInForm" class="d-flex">
           <v-text-field
@@ -478,6 +480,16 @@ function getProcessDataFilter(): PartialProcessDataFilter {
 </script>
 
 <style scoped>
+/* HACK: make sure the workflow select field is disabled, but its name is still
+         not greyed out. */
+:deep(.workflow-select .v-field--disabled) {
+  opacity: 1;
+}
+:deep(.workflow-select .v-label),
+:deep(.workflow-select .v-field__append-inner) {
+  opacity: 0.38;
+}
+
 .form-container {
   max-height: calc(100vh - 400px);
   overflow-y: auto;
