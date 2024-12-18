@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" ref="container">
     <div class="child-container" :class="{ 'd-none': hideMap }">
       <SpatialDisplayComponent
         :layer-name="props.layerName"
@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, ref, useTemplateRef, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
@@ -54,6 +54,7 @@ import bbox from '@turf/bbox'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import type { MapSettings } from '@/lib/topology/componentSettings'
+import { useElementSize } from '@vueuse/core'
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
 )
@@ -74,7 +75,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const route = useRoute()
 const router = useRouter()
-const { mobile } = useDisplay()
+const { thresholds } = useDisplay()
+const containerRef = useTemplateRef('container')
 
 const userSettings = useUserSettingsStore()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -188,8 +190,17 @@ onMounted(() => {
   currentLongitude.value = props.longitude
 })
 
+const { width: containerWidth } = useElementSize(containerRef)
+
+const containerIsMobileSize = computed(() => {
+  return containerWidth.value < thresholds.value.lg
+})
+
 const hideMap = computed(() => {
-  return mobile.value && (props.locationId || props.latitude || props.longitude)
+  return (
+    containerIsMobileSize.value &&
+    (currentLocationId.value || currentLongitude.value || currentLatitude.value)
+  )
 })
 
 function onLocationChange(locationId: string | null): void {
