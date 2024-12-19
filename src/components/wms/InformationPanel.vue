@@ -164,7 +164,7 @@ const props = withDefaults(defineProps<Props>(), {
   completelyMissing: false,
 })
 
-const emit = defineEmits(['style-click', 'update:layerKind'])
+const emit = defineEmits(['update:layerKind'])
 
 const mutableColorScaleRange = ref(
   colourScalesStore.currentScale?.range
