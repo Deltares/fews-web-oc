@@ -1,24 +1,9 @@
 <template>
   <div class="d-flex flex-row gc-2">
+    <v-date-input v-model="internalDate" :label="dateLabel" />
     <v-menu :close-on-content-click="false">
       <template #activator="{ props }">
-        <v-text-field
-          v-bind="props"
-          :model-value="dateString"
-          :label="dateLabel"
-          readonly
-        />
-      </template>
-      <v-date-picker v-model="internalDate" />
-    </v-menu>
-    <v-menu :close-on-content-click="false">
-      <template #activator="{ props }">
-        <v-text-field
-          v-bind="props"
-          :model-value="timeString"
-          :label="timeLabel"
-          readonly
-        />
+        <v-text-field v-bind="props" v-model="timeString" :label="timeLabel" />
       </template>
       <v-time-picker
         v-model="internalTime"
@@ -26,14 +11,16 @@
         :use-seconds="false"
         @update:hour="updateHours"
         @update:minute="updateMinutes"
+        hide-header
       />
     </v-menu>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
+import { VDateInput } from 'vuetify/labs/components'
 import { VTimePicker } from 'vuetify/labs/components'
 
 interface Props {
@@ -66,24 +53,35 @@ const internalTime = computed<string>({
   },
 })
 
-// Get date and time from the text fields.
-const dateString = computed<string>(() => {
-  const year = date.value.getFullYear()
-  const month = date.value.getMonth()
-  const day = date.value.getDate()
+const timeString = ref('')
+// Update time string when the time was set from the picker.
+watch(
+  date,
+  () => {
+    const hours = date.value.getHours()
+    const minutes = date.value.getMinutes()
 
-  const monthString = (month + 1).toString().padStart(2, '0')
-  const dayString = day.toString().padStart(2, '0')
-  return `${year}-${monthString}-${dayString}`
-})
+    const hoursString = hours.toString().padStart(2, '0')
+    const minutesString = minutes.toString().padStart(2, '0')
+    timeString.value = `${hoursString}:${minutesString}`
+  },
+  { immediate: true },
+)
+// Update the date when a valid date is entered in the text field.
+watch(timeString, (newTimeString) => {
+  const tokens = newTimeString.split(':').map((token) => token.trim())
 
-const timeString = computed<string>(() => {
-  const hours = date.value.getHours()
-  const minutes = date.value.getMinutes()
+  // To prevent confusing interactions, only allow times with the format HH:MM,
+  // so not HH:M without leading 0.
+  const isValid =
+    tokens.length === 2 &&
+    tokens.every((token) => token.length === 2 && !isNaN(parseFloat(token)))
+  if (!isValid) return
 
-  const hoursString = hours.toString().padStart(2, '0')
-  const minutesString = minutes.toString().padStart(2, '0')
-  return `${hoursString}:${minutesString}`
+  // We are now a time string as accepted by v-time-picker, so use that setter
+  // to update the date.
+  const [hours, minutes] = tokens
+  timeString.value = `${hours}:${minutes}`
 })
 
 function updateHours(hours: number): void {
@@ -98,3 +96,10 @@ function updateMinutes(minutes: number): void {
   date.value = newDate
 }
 </script>
+
+<style scoped>
+/* HACK: hide prepend icon, which cannot be disabled from the API. */
+:deep(.v-input__prepend) {
+  display: none;
+}
+</style>

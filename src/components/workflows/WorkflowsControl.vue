@@ -8,55 +8,59 @@
   >
     <v-card>
       <v-card-title>Workflow</v-card-title>
-      <v-container class="pb-0">
-        <v-col>
-          <v-row>
-            <v-select
-              v-model="currentWorkflow"
-              :items="workflowSelectItems"
-              density="compact"
-              variant="solo-filled"
-              flat
-              label="Workflow"
-              mandatory
-            ></v-select>
-          </v-row>
-          <v-row v-if="isBoundingBoxInForm">
-            <v-text-field
-              v-model="boundingBoxString"
-              readonly
-              variant="plain"
-              density="compact"
-              label="Bounding box"
-              class="mx-4"
-            />
-            <v-btn
-              icon="mdi-selection-drag"
-              variant="tonal"
-              density="comfortable"
-              @click="showMapTool"
-            />
-          </v-row>
-          <v-row v-if="isCoordinateInForm">
-            <v-text-field
-              v-model="coordinateString"
-              readonly
-              variant="plain"
-              density="compact"
-              label="Coordinate"
-              class="mx-4"
-            />
-            <v-btn
-              icon="mdi-map-marker-radius"
-              variant="tonal"
-              density="comfortable"
-              @click="showCoordinateSelector"
-            />
-          </v-row>
-        </v-col>
-      </v-container>
-      <v-container v-if="hasProperties" class="d-flex workflow-dialog__form">
+      <v-card-text>
+        <v-select
+          v-model="currentWorkflow"
+          :items="workflowSelectItems"
+          class="workflow-select"
+          density="compact"
+          variant="solo-filled"
+          flat
+          label="Workflow"
+          mandatory
+          :disabled="workflowSelectItems?.length === 1"
+          hide-details
+        />
+        <!-- Always show description <div>, even if the description is null, to
+             make sure the margins around the controls are OK. -->
+        <div class="workflow-description ml-4 mb-4">
+          {{ workflowDescription }}
+        </div>
+        <div v-if="isBoundingBoxInForm" class="d-flex">
+          <v-text-field
+            v-model="boundingBoxString"
+            readonly
+            variant="plain"
+            density="compact"
+            label="Bounding box"
+            class="mx-4"
+          />
+          <v-btn
+            icon="mdi-selection-drag"
+            variant="tonal"
+            density="comfortable"
+            @click="showMapTool"
+          />
+        </div>
+        <div v-if="isCoordinateInForm" class="d-flex">
+          <v-text-field
+            v-model="coordinateString"
+            readonly
+            variant="plain"
+            density="compact"
+            label="Coordinate"
+            class="mx-4"
+          />
+          <v-btn
+            icon="mdi-map-marker-radius"
+            variant="tonal"
+            density="comfortable"
+            @click="showCoordinateSelector"
+          />
+        </div>
         <json-forms
+          v-if="hasProperties"
+          class="form-container"
           :schema="formSchema"
           :uischema="formUISchema"
           :data="data"
@@ -66,20 +70,27 @@
           :config="JsonFormsConfig"
           @change="onFormChange"
         />
-      </v-container>
-      <v-container v-if="!isProcessDataTask">
         <DateTimeField
+          v-if="!isProcessDataTask"
           v-model="timeZero"
-          date-label="t0 date"
-          time-label="t0 time"
+          date-label="T0 date"
+          time-label="T0 time"
         />
-      </v-container>
+        <v-text-field
+          v-model="description"
+          label="Task run description"
+          hide-details
+        />
+      </v-card-text>
       <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn variant="flat" color="primary" @click="startWorkflow">
-          Submit
-        </v-btn>
-        <v-btn @click="closeDialog">Close</v-btn>
+        <v-spacer />
+        <v-btn
+          text="Submit"
+          variant="flat"
+          color="primary"
+          @click="startWorkflow"
+        />
+        <v-btn text="Close" @click="closeDialog" />
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -89,12 +100,10 @@
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { JsonForms } from '@jsonforms/vue'
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
-import { getResourcesStaticUrl } from '@/lib/fews-config'
 import {
   SecondaryWorkflowGroupItem,
   SecondaryWorkflowProperties,
 } from '@deltares/fews-pi-requests'
-import { asyncComputed } from '@vueuse/core'
 import JsonFormsConfig from '@/assets/JsonFormsConfig.json'
 import { useBoundingBox } from '@/services/useBoundingBox'
 
@@ -106,13 +115,21 @@ import {
 } from '@/stores/workflows'
 import { useAlertsStore } from '@/stores/alerts.ts'
 
-import { generateDefaultUISchema, generateJsonSchema } from './workflowUtils'
 import { useDisplay } from 'vuetify'
 import { LngLat } from 'maplibre-gl'
-import { coordinateToString } from '@/lib/workflows'
+import {
+  coordinateToString,
+  isBoundingBoxInFormData,
+  isCoordinateInFormData,
+  WorkflowFormData,
+} from '@/lib/workflows'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 
 import DateTimeField from '@/components/general/DateTimeField.vue'
+import { useWorkflowFormSchemas } from '@/services/useWorkflowFormSchemas'
+import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+
+const availableWorkflowsStore = useAvailableWorkflowsStore()
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[] | null
@@ -125,10 +142,19 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { mobile } = useDisplay()
 
-const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
 const showDialog = defineModel<boolean>('showDialog', { required: true })
 
-const data = ref()
+const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
+const workflowDescription = computed<string | null>(() => {
+  if (currentWorkflow.value === null) return null
+  const workflow = availableWorkflowsStore.byId(
+    currentWorkflow.value.secondaryWorkflowId,
+  )
+  return workflow.description !== '' ? workflow.description : null
+})
+
+const data = ref<WorkflowFormData>({})
+const description = ref('')
 const userId = ref('')
 
 const {
@@ -138,6 +164,7 @@ const {
   boundingBoxIsValid,
   boundingBoxString,
 } = useBoundingBox(1, 1)
+const { formSchema, formUISchema } = useWorkflowFormSchemas(currentWorkflow)
 
 const workflowsStore = useWorkflowsStore()
 const alertStore = useAlertsStore()
@@ -150,9 +177,9 @@ const hasProperties = computed<boolean>(() => {
   const numProperties = currentWorkflow.value?.properties?.length ?? 0
   return numProperties > 0
 })
-const isProcessDataTask = computed<boolean>(() => {
-  return data.value['GET_PROCESS_DATA']
-})
+const isProcessDataTask = computed<boolean>(
+  () => data.value['GET_PROCESS_DATA'] !== undefined,
+)
 
 const timeZero = ref(new Date())
 
@@ -190,30 +217,18 @@ function closeDialog() {
 }
 
 // Check whether the bounding box is defined in the form.
-const isBoundingBoxInForm = computed(() => {
-  const properties = Object.keys(data.value)
-  return (
-    properties.includes('xMin') &&
-    properties.includes('yMin') &&
-    properties.includes('xMax') &&
-    properties.includes('yMax')
-  )
-})
-
-const isCoordinateInForm = computed(() => {
-  const properties = Object.keys(data.value)
-  return properties.includes('latitude') && properties.includes('longitude')
-})
+const isBoundingBoxInForm = computed(() => isBoundingBoxInFormData(data.value))
+const isCoordinateInForm = computed(() => isCoordinateInFormData(data.value))
 
 const workflowSelectItems = computed(() => {
-  return props.secondaryWorkflows?.map((workflow) => {
-    const title =
-      workflow.description !== ''
-        ? workflow.description
-        : workflow.secondaryWorkflowId
+  return props.secondaryWorkflows?.map((workflowItem) => {
+    const workflow = availableWorkflowsStore.byId(
+      workflowItem.secondaryWorkflowId,
+    )
+    const title = workflow.name
     return {
       title,
-      value: workflow,
+      value: workflowItem,
     }
   })
 })
@@ -228,6 +243,7 @@ watch(
       currentWorkflow.value = props.secondaryWorkflows[0]
     }
   },
+  { immediate: true },
 )
 
 watch(data, () => {
@@ -236,18 +252,18 @@ watch(data, () => {
   const xCellSize = data.value.xCellSize
   const yCellSize = data.value.yCellSize
   if (typeof xCellSize === 'number' && xCellSize > 0) {
-    longitudeStepSize.value = data.value.xCellSize
+    longitudeStepSize.value = xCellSize
   }
   if (typeof yCellSize === 'number' && yCellSize > 0) {
-    latitudeStepSize.value = data.value.yCellSize
+    latitudeStepSize.value = yCellSize
   }
 
   if (isBoundingBoxInForm.value) {
     boundingBox.value = {
-      lonMin: data.value.xMin,
-      latMin: data.value.yMin,
-      lonMax: data.value.xMax,
-      latMax: data.value.yMax,
+      lonMin: data.value.xMin as number,
+      latMin: data.value.yMin as number,
+      lonMax: data.value.xMax as number,
+      latMax: data.value.yMax as number,
     }
   } else {
     boundingBox.value = null
@@ -255,8 +271,8 @@ watch(data, () => {
 
   if (isCoordinateInForm.value) {
     workflowsStore.coordinate = new LngLat(
-      +data.value.longitude,
-      +data.value.latitude,
+      +(data.value.longitude as number | string),
+      +(data.value.latitude as number | string),
     )
   } else {
     workflowsStore.coordinate = null
@@ -340,53 +356,6 @@ function toValue(
   }
 }
 
-const formSchema = asyncComputed(async () => {
-  if (!currentWorkflow.value) return undefined
-  return getSchema(`${currentWorkflow.value.secondaryWorkflowId}.schema.json`)
-})
-
-const formUISchema = asyncComputed(async () => {
-  if (!currentWorkflow.value) return undefined
-  return getUISchema(
-    `${currentWorkflow.value.secondaryWorkflowId}.ui-schema.json`,
-  )
-})
-
-async function getUISchema(file: string) {
-  try {
-    const schema = await getFile(file)
-    return schema.json()
-  } catch (error) {
-    const workflowProperties = currentWorkflow.value?.properties
-    if (workflowProperties !== undefined)
-      return generateDefaultUISchema(workflowProperties)
-  }
-}
-
-async function getSchema(file: string) {
-  try {
-    const schema = await getFile(file)
-    return schema.json()
-  } catch (error) {
-    const workflowProperties = currentWorkflow.value?.properties
-    if (workflowProperties !== undefined)
-      return generateJsonSchema(workflowProperties)
-  }
-}
-
-async function getFile(file: string) {
-  const url = getResourcesStaticUrl(file)
-  try {
-    const response = await fetch(url)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${url}`)
-    }
-    return response
-  } catch (error) {
-    throw new Error(`Failed to fetch ${url}`)
-  }
-}
-
 function onFormChange(event: any) {
   if (event.error) {
     showErrorMessage(event.error)
@@ -430,31 +399,27 @@ function showMapTool() {
   )
 }
 
-function showErrorMessage(message: string) {
+function showMessage(message: string, type: 'error' | 'success'): void {
+  // Generate a new unique ID for each alert.
+  const id = crypto.randomUUID()
   alertStore.addAlert({
-    id: `workflow-error-${userId.value}`,
-    type: 'error',
+    id,
+    type,
     message,
     active: true,
   })
+}
+
+function showErrorMessage(message: string) {
+  showMessage(message, 'error')
 }
 
 function showStartMessage(message: string) {
-  alertStore.addAlert({
-    id: `workflow-start-${userId.value}`,
-    type: 'success',
-    message,
-    active: true,
-  })
+  showMessage(message, 'success')
 }
 
 function showSuccessMessage(message: string) {
-  alertStore.addAlert({
-    id: `workflow-success-${userId.value}`,
-    type: 'success',
-    message,
-    active: true,
-  })
+  showMessage(message, 'success')
 }
 
 async function startWorkflow() {
@@ -462,7 +427,7 @@ async function startWorkflow() {
     ? WorkflowType.ProcessData
     : WorkflowType.RunTask
 
-  const fileName = data.value['FILE_NAME']
+  const fileName = data.value['FILE_NAME'] as string
 
   const filter =
     workflowType === WorkflowType.ProcessData
@@ -503,17 +468,14 @@ async function startWorkflow() {
 }
 
 function getRunTaskFilter(): PartialRunTaskFilter {
-  // TODO: add an apprioriate description. Also, the userId is a random UUID
-  //       now? Why don't we use the ID of the user currently logged in if we
-  //       have it?
-  const description = 'Test run'
-
+  // TODO: The userId is a random UUID now? Why don't we use the ID of the user
+  //       currently logged in if we have it?
   const timeZeroString = convertJSDateToFewsPiParameter(timeZero.value)
   return {
     userId: userId.value,
-    description,
+    description: description.value,
     timeZero: timeZeroString,
-    properties: data.value,
+    properties: data.value as Record<string, string | number>,
   }
 }
 
@@ -522,24 +484,45 @@ function getProcessDataFilter(): PartialProcessDataFilter {
     throw new Error('Bounding box is invalid')
   }
   return {
-    xMin: data.value.xMin,
-    yMin: data.value.yMin,
-    xMax: data.value.xMax,
-    yMax: data.value.yMax,
-    xCellSize: data.value.xCellSize,
-    yCellSize: data.value.yCellSize,
+    xMin: data.value.xMin as number,
+    yMin: data.value.yMin as number,
+    xMax: data.value.xMax as number,
+    yMax: data.value.yMax as number,
+    xCellSize: data.value.xCellSize as number,
+    yCellSize: data.value.yCellSize as number,
   }
 }
 </script>
 
 <style scoped>
-.overflow-visible {
-  overflow: visible;
+/* HACK: make sure the workflow select field is disabled, but its name is still
+         not greyed out. */
+:deep(.workflow-select .v-field--disabled) {
+  opacity: 1;
+}
+:deep(.workflow-select .v-label),
+:deep(.workflow-select .v-field__append-inner) {
+  opacity: 0.38;
 }
 
-.workflow-dialog__form {
-  max-height: calc(100vh - 200px);
+.workflow-description {
+  font-size: 0.8em;
+}
+
+.form-container {
+  max-height: calc(100vh - 400px);
   overflow-y: auto;
-  position: relative;
+  /* json-forms' Vuetify renderer is weird and does not respect its container
+     size, so always hide the horizontal scrollbar. */
+  overflow-x: hidden;
+  /* json-forms defines its container to have 0 padding with !important, so
+  override this for 2 reasons:
+     - Part of the label of text fields is cut off, so force the main json-forms
+       container to have some padding to prevent this. */
+  padding-top: 5px !important;
+  /* - We always get a vertical scrollbar even if it is not necessary, so give
+       the contents of the form some extra vertical space in the form of
+       padding. */
+  padding-bottom: 20px !important;
 }
 </style>
