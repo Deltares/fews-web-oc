@@ -10,7 +10,6 @@
     :doubleClickZoom="false"
     :pitchWithRotate="false"
     :dragRotate="false"
-    :touchZoomRotate="false"
     :touchPitch="false"
     :attributionControl="false"
     :bounds="bounds"
