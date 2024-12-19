@@ -245,18 +245,27 @@ watch(
 
     currentColourScaleIds.value = styles.map(styleToId)
 
-    styles.forEach((style) => {
-      colourScalesStore.addScale(
-        style,
-        props.layerName,
-        () => props.layerCapabilities?.title,
-        () => settings.useDisplayUnits,
-        () => props.layerCapabilities?.styles ?? [],
-      )
-    })
+    addScalesForStyles(styles)
   },
   { immediate: true },
 )
+
+watch(() => settings.useDisplayUnits, () => {
+  colourScalesStore.clearScales()
+  addScalesForStyles(legendLayerStyles.value ?? [])
+})
+
+function addScalesForStyles(styles: Style[]): void {
+  styles.forEach((style) => {
+    colourScalesStore.addScale(
+      style,
+      props.layerName,
+      () => props.layerCapabilities?.title,
+      settings.useDisplayUnits,
+      () => props.layerCapabilities?.styles ?? [],
+    )
+  })
+}
 
 const selectedCoordinate = computed(() => {
   if (props.latitude === undefined || props.longitude === undefined) return
