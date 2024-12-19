@@ -198,17 +198,6 @@ const logoSrc = ref('')
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
 
-alertsStore.addAlert({
-  id: crypto.randomUUID(),
-  type: 'success',
-  message: 'hallo dit is een bericht',
-})
-alertsStore.addAlert({
-  id: crypto.randomUUID(),
-  type: 'success',
-  message: 'hallo dit is een bericht',
-})
-
 function updateAppBarColor() {
   appBarColor.value = getComputedStyle(document.body).getPropertyValue(
     '--weboc-app-bar-bg-color',
