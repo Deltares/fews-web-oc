@@ -159,11 +159,7 @@ const props = withDefaults(defineProps<Props>(), {
   completelyMissing: false,
 })
 
-const emit = defineEmits([
-  'style-click',
-  'update:layerKind',
-  'update:current-colour-scale',
-])
+const emit = defineEmits(['update:layerKind', 'update:current-colour-scale'])
 
 const currentColourScaleIndex = ref(0)
 watch(
