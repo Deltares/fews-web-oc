@@ -76,6 +76,7 @@ export function generateDefaultUISchema(
     const element: ControlElement = {
       type: 'Control',
       scope: `#/properties/${property.key}`,
+      label: property.description,
     }
 
     switch (property.type) {
