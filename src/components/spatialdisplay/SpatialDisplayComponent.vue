@@ -146,7 +146,6 @@ import {
   type MapLayerMouseEvent,
   type MapLayerTouchEvent,
 } from 'maplibre-gl'
-import { configManager } from '@/services/application-config'
 import type { Layer, Style } from '@deltares/fews-wms-requests'
 import type { Location } from '@deltares/fews-pi-requests'
 import { LayerKind } from '@/lib/streamlines'
@@ -218,8 +217,6 @@ let debouncedSetLayerOptions!: () => void
 
 const legendLayerStyles = ref<Style[]>()
 const settings = useUserSettingsStore()
-
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const showLayer = ref<boolean>(true)
 const layerKind = ref(LayerKind.Static)
