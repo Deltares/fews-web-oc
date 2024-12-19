@@ -76,10 +76,14 @@
           date-label="T0 date"
           time-label="T0 time"
         />
-        <v-text-field
+        <v-textarea
           v-model="description"
           label="Task run description"
+          variant="outlined"
+          density="compact"
           hide-details
+          rows="5"
+          no-resize
         />
       </v-card-text>
       <v-card-actions>
