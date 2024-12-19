@@ -28,11 +28,16 @@ const useColourScalesStore = defineStore('colourScales', () => {
   const scales = ref<Record<string, ColourScale>>({})
   const processingScaleIds = ref<string[]>([])
 
+  function clearScales() {
+    scales.value = {}
+    processingScaleIds.value = []
+  }
+
   async function addScale(
     style: Style,
     layerName: MaybeRefOrGetter<string>,
     title: MaybeRefOrGetter<string | undefined>,
-    useDisplayUnits: MaybeRefOrGetter<boolean>,
+    useDisplayUnits: boolean,
     activeStyles: MaybeRefOrGetter<Style[]>,
   ) {
     const styleId = styleToId(style)
@@ -47,7 +52,7 @@ const useColourScalesStore = defineStore('colourScales', () => {
     const initialLegendGraphic = await fetchWmsLegend(
       baseUrl,
       toValue(layerName),
-      toValue(useDisplayUnits),
+      useDisplayUnits,
       undefined,
       style,
     )
@@ -94,6 +99,7 @@ const useColourScalesStore = defineStore('colourScales', () => {
   return {
     scales,
     addScale,
+    clearScales,
   }
 })
 
