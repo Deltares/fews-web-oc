@@ -1,5 +1,12 @@
 import { SecondaryWorkflowProperties } from '@deltares/fews-pi-requests'
+
 import { WorkflowFormData } from './types'
+import {
+  ControlElement,
+  JsonSchema,
+  UISchemaElement,
+  VerticalLayout,
+} from '@jsonforms/core'
 
 export function isBoundingBoxInFormData(data: WorkflowFormData): boolean {
   const properties = Object.keys(data)
@@ -21,12 +28,10 @@ export function isCoordinateInFormData(data: WorkflowFormData): boolean {
  * @param properties An array of SecondaryWorkflowProperty objects.
  * @returns The generated JSON schema.
  */
-export function generateJsonSchema(properties: SecondaryWorkflowProperties[]) {
-  const schema: any = {
-    type: 'object',
-    properties: {},
-  }
-
+export function generateJsonSchema(
+  properties: SecondaryWorkflowProperties[],
+): JsonSchema {
+  const schemaProperties: { [key: string]: { type: string } } = {}
   properties.forEach((property) => {
     let type = 'string'
     switch (property.type) {
@@ -42,12 +47,15 @@ export function generateJsonSchema(properties: SecondaryWorkflowProperties[]) {
         break
     }
 
-    schema.properties[property.key] = {
+    schemaProperties[property.key] = {
       type,
     }
   })
 
-  return schema
+  return {
+    type: 'object',
+    properties: schemaProperties,
+  }
 }
 
 /**
@@ -57,15 +65,15 @@ export function generateJsonSchema(properties: SecondaryWorkflowProperties[]) {
  */
 export function generateDefaultUISchema(
   properties: SecondaryWorkflowProperties[],
-) {
-  const uiSchema: any = {
+): UISchemaElement {
+  const uiSchema: VerticalLayout = {
     type: 'VerticalLayout',
     elements: [],
   }
 
   properties.forEach((property) => {
     if (property.editable === false) return
-    const element: any = {
+    const element: ControlElement = {
       type: 'Control',
       scope: `#/properties/${property.key}`,
     }

@@ -1,4 +1,5 @@
 import { SecondaryWorkflowGroupItem } from '@deltares/fews-pi-requests'
+import { JsonSchema, UISchemaElement } from '@jsonforms/core'
 import { asyncComputed, MaybeRefOrGetter } from '@vueuse/core'
 import { toValue } from 'vue'
 
@@ -8,38 +9,41 @@ import { generateDefaultUISchema, generateJsonSchema } from '@/lib/workflows'
 export function useWorkflowFormSchemas(
   workflow: MaybeRefOrGetter<SecondaryWorkflowGroupItem | null>,
 ) {
-  const formSchema = asyncComputed(async () => {
+  const formSchema = asyncComputed<JsonSchema | undefined>(async () => {
     const _workflow = toValue(workflow)
     if (_workflow === null) return undefined
     return getSchema(`${_workflow.secondaryWorkflowId}.schema.json`)
   })
 
-  const formUISchema = asyncComputed(async () => {
+  const formUISchema = asyncComputed<UISchemaElement | undefined>(async () => {
     const _workflow = toValue(workflow)
     if (_workflow === null) return undefined
     return getUISchema(`${_workflow.secondaryWorkflowId}.ui-schema.json`)
-    // temp.elements = [...temp.elements, ...temp.elements, ...temp.elements]
-    // return temp
   })
 
-  async function getUISchema(file: string) {
+  async function getSchema(file: string): Promise<JsonSchema | undefined> {
     try {
       const schema = await getFile(file)
       return schema.json()
     } catch (error) {
       const workflowProperties = toValue(workflow)?.properties
-      if (workflowProperties) return generateDefaultUISchema(workflowProperties)
+      return workflowProperties
+        ? generateJsonSchema(workflowProperties)
+        : undefined
     }
   }
 
-  async function getSchema(file: string) {
+  async function getUISchema(
+    file: string,
+  ): Promise<UISchemaElement | undefined> {
     try {
       const schema = await getFile(file)
       return schema.json()
     } catch (error) {
       const workflowProperties = toValue(workflow)?.properties
-      if (workflowProperties !== undefined)
-        return generateJsonSchema(workflowProperties)
+      return workflowProperties
+        ? generateDefaultUISchema(workflowProperties)
+        : undefined
     }
   }
 
