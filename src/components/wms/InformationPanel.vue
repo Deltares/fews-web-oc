@@ -114,7 +114,7 @@
           <template v-slot:append>
             <v-switch
               density="compact"
-              v-model="animate"
+              v-model="doAnimateStreamlines"
               hide-details
             ></v-switch>
           </template>
@@ -123,11 +123,11 @@
     </v-menu>
     <v-btn
       v-if="showLayer && canUseStreamlines"
-      @click="switchLayerType"
+      @click="toggleLayerType"
       icon
       density="compact"
       variant="plain"
-      :color="animate ? 'primary' : undefined"
+      :color="doAnimateStreamlines ? 'primary' : undefined"
     >
       <v-progress-circular v-if="isLoading" size="20" indeterminate />
       <v-icon v-else>mdi-animation-play</v-icon>
@@ -163,8 +163,15 @@ const props = withDefaults(defineProps<Props>(), {
   layerTitle: '',
   completelyMissing: false,
 })
+const showLayer = defineModel<boolean>('showLayer')
+const layerKind = defineModel<LayerKind>('layerKind')
 
-const emit = defineEmits(['update:layerKind'])
+const doAnimateStreamlines = computed<boolean>({
+  get: () => layerKind.value === LayerKind.Streamline,
+  set: (doAnimate) => {
+    layerKind.value = doAnimate ? LayerKind.Streamline : LayerKind.Static
+  },
+})
 
 const mutableColorScaleRange = ref(
   colourScalesStore.currentScale?.range
@@ -186,9 +193,6 @@ const changecolorScaleRange = () => {
   if (mutableColorScaleRange.value === undefined) return
   colourScalesStore.setCurrentScaleRange(mutableColorScaleRange.value)
 }
-
-const showLayer = defineModel<boolean>('showLayer')
-const animate = defineModel<boolean>('animate', { default: false })
 
 const rules = {
   required: (v: number) =>
@@ -224,17 +228,9 @@ const formattedTimeRange = computed(() => {
   )} → ${DateTime.fromJSDate(props.lastValueTime).toFormat(format)}`
 })
 
-const switchLayerType = () => {
-  animate.value = !animate.value
+function toggleLayerType(): void {
+  doAnimateStreamlines.value = !doAnimateStreamlines.value
 }
-
-watch(
-  () => animate.value,
-  () => {
-    const value = animate.value ? LayerKind.Streamline : LayerKind.Static
-    emit('update:layerKind', value)
-  },
-)
 </script>
 
 <style scoped>
