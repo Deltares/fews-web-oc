@@ -136,7 +136,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick } from 'vue'
 import { DateTime } from 'luxon'
 import { ref } from 'vue'
 import { LayerKind } from '@/lib/streamlines'
@@ -145,6 +145,7 @@ import { watch } from 'vue'
 import { useColourScalesStore } from '@/stores/colourScales'
 import ColourLegendTable from './ColourLegendTable.vue'
 import ControlChip from '@/components/wms/ControlChip.vue'
+import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
   layerTitle?: string
@@ -158,13 +159,14 @@ interface Props {
 }
 
 const colourScalesStore = useColourScalesStore()
+const userSettingsStore = useUserSettingsStore()
 
 const props = withDefaults(defineProps<Props>(), {
   layerTitle: '',
   completelyMissing: false,
 })
 const showLayer = defineModel<boolean>('showLayer')
-const layerKind = defineModel<LayerKind>('layerKind')
+const layerKind = defineModel<LayerKind>('layerKind', { required: true })
 
 const doAnimateStreamlines = computed<boolean>({
   get: () => layerKind.value === LayerKind.Streamline,
@@ -230,6 +232,14 @@ const formattedTimeRange = computed(() => {
 
 function toggleLayerType(): void {
   doAnimateStreamlines.value = !doAnimateStreamlines.value
+
+  // If we are in this function, the user manually selected a layer kind, so
+  // store their preference. Wait for the layerkind to update based on the
+  // change in the doAnimateStreamlines boolean, then store the newly updated
+  // layerKind.
+  nextTick(() => {
+    userSettingsStore.preferredLayerKind = layerKind.value
+  })
 }
 </script>
 

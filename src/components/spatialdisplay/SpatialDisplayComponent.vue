@@ -234,6 +234,7 @@ const layerKind = ref(LayerKind.Static)
 
 const colourScalesStore = useColourScalesStore()
 const workflowsStore = useWorkflowsStore()
+const userSettingsStore = useUserSettingsStore()
 
 const showLocationsLayer = ref<boolean>(true)
 
@@ -342,11 +343,24 @@ const canUseStreamlines = computed(
   () => props.layerCapabilities?.animatedVectors !== undefined,
 )
 
-watch(canUseStreamlines, (canUse) => {
-  // If available, use animated streamlines by default, use static layer
-  // otherwise
-  layerKind.value = canUse ? LayerKind.Streamline : LayerKind.Static
-})
+// When the layer changes, select a default layer type (static or animated).
+watch(
+  () => props.layerCapabilities,
+  () => (layerKind.value = getDefaultLayerKind()),
+  { immediate: true },
+)
+function getDefaultLayerKind() {
+  // If we cannot use streamlines, always use static.
+  if (!canUseStreamlines.value) {
+    return LayerKind.Static
+  }
+  if (userSettingsStore.preferredLayerKind !== null) {
+    // If we have a preference, use that.
+    return userSettingsStore.preferredLayerKind
+  }
+  // Otherwise, use streamlines.
+  return LayerKind.Streamline
+}
 
 const offsetBottomControls = computed(() => {
   return props.times?.length ? '60px' : '0px'
