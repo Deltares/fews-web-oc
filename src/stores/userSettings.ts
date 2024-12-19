@@ -1,6 +1,7 @@
 // src/store/userSettings.ts
 import { defineStore } from 'pinia'
 import DefaultUserSettings from '@/assets/DefaultUserSettings.json'
+import { LayerKind } from '@/lib/streamlines'
 
 export const UserSettingsType = {
   oneOfMultiple: 'oneOfMultiple',
@@ -44,6 +45,7 @@ export interface UserSettingsState {
   groups: string[]
   convertDatum: boolean
   useDisplayUnits: boolean
+  preferredLayerKind: LayerKind | null
 }
 
 const defaultUserSettings = DefaultUserSettings as UserSettingsItem[]
@@ -56,6 +58,7 @@ export const useUserSettingsStore = defineStore({
     items: defaultUserSettings,
     convertDatum: false,
     useDisplayUnits: true,
+    preferredLayerKind: null,
   }),
   getters: {
     listGroups: (state) => {
