@@ -22,7 +22,7 @@
         <v-icon>mdi-chevron-down</v-icon>
       </v-chip>
     </template>
-    <v-sheet min-height="300" height="50dvh">
+    <v-sheet min-height="300" max-height="80dvh">
       <v-banner sticky density="compact" class="pa-2">
         <v-btn
           @click="toggleSelectAll"
@@ -32,9 +32,9 @@
         <slot name="actions"></slot>
       </v-banner>
       <v-list
-        class="flex-1-1 overflow-auto"
         v-model:selected="selectedValues"
         select-strategy="leaf"
+        density="compact"
       >
         <v-list-item
           v-for="item in sortedItems"
@@ -43,9 +43,7 @@
           :value="item.value"
         >
           <template #prepend="{ isSelected }">
-            <v-list-item-action start>
-              <v-checkbox-btn :model-value="isSelected" />
-            </v-list-item-action>
+            <v-checkbox-btn density="compact" :model-value="isSelected" />
           </template>
           <template v-if="item.isPreferred" #append>
             <v-icon icon="mdi-star" />
@@ -124,7 +122,7 @@ const selectAllIcon = computed(() => {
     return 'mdi-checkbox-blank-outline'
   }
   if (selectedValues.value.length === allValues.value.length) {
-    return 'mdi-close-box'
+    return 'mdi-checkbox-marked'
   }
   return 'mdi-minus-box' // 'mdi-checkbox-marked' // 'mdi-minus-box'
 })
