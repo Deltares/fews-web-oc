@@ -1,5 +1,5 @@
 <template>
-  <v-btn icon="mdi-run" :active="isPanelOpen" @click="toggleTasksPanel" />
+  <v-btn icon="mdi-clipboard-text-clock" :active="isPanelOpen" @click="toggleTasksPanel" />
   <Teleport to="#main-side-panel" defer>
     <div v-if="isPanelOpen" class="h-100 d-flex flex-column">
       <v-toolbar density="compact">
