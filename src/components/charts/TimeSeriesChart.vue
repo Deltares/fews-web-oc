@@ -121,6 +121,7 @@ const chipGroup = ref<VChipGroup>()
 const expanded = ref(false)
 const requiresExpand = ref(false)
 const axisTime = ref<CurrentTime>()
+const hasLoadedOnce = ref(false)
 
 const margin = {
   top: 110,
@@ -178,7 +179,7 @@ onMounted(() => {
     axis.accept(mouseOver)
     axis.accept(axisTime.value)
     resize()
-    if (props.config !== undefined) refreshChart()
+    if (props.config !== undefined) onValueChange()
     window.addEventListener('resize', resize)
   }
 })
@@ -304,6 +305,7 @@ const clearChart = () => {
 }
 
 const refreshChart = () => {
+  /* Adds charts to the axis if not yet present, and removes charts that should no longer be there */
   const ids: string[] = axis.charts.map((c: any) => c.id)
   const removeIds: string[] = axis.charts.map((c: any) => c.id)
   if (props.config?.series === undefined) return
@@ -339,6 +341,30 @@ const refreshChart = () => {
     },
     y: {
       autoScale: true,
+    },
+  })
+}
+
+const updateChartData = (series: ChartSeries[]) => {
+  series.forEach((series) => {
+    const chart = axis.charts.find((chart) => chart.id == series.id)
+    if (chart !== undefined) {
+      const rawData = dataFromResources(series.dataResources, props.series)
+      const data = removeUnreliableData(rawData)
+      chart.data = data
+    }
+  })
+  // Ensure the current zoom, which might be user-selected, does not change
+  axis.redraw({
+    x: {
+      nice: false,
+      domain: undefined,
+      fullExtent: false,
+    },
+    y: {
+      nice: false,
+      domain: undefined,
+      fullExtent: false,
     },
   })
 }
@@ -453,11 +479,23 @@ watch(
       newSeriesIds.map((id) => id.split('-')[0]).includes(s.id),
     )
     if (requiredSeries.length > 0) {
-      onValueChange()
+      updateChartData(requiredSeries)
     }
   },
 )
 watch(props.config, onValueChange)
+watch(
+  () => props.isLoading,
+  (newValue, oldValue) => {
+    if (!newValue && oldValue) {
+      hasLoadedOnce.value = hasLoadedOnce.value || true
+    }
+  },
+)
+
+watch(hasLoadedOnce, onValueChange, {
+  once: true,
+})
 
 onBeforeUnmount(() => {
   beforeDestroy()
