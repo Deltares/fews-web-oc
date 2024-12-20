@@ -3,6 +3,7 @@ import { ThresholdLine } from './ThresholdLine'
 import { AxisOptions } from '@deltares/fews-web-oc-charts'
 
 export interface ChartConfig {
+  id: string
   title: string
   xAxis?: AxisOptions[]
   yAxis?: AxisOptions[]

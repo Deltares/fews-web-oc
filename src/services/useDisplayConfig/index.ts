@@ -60,7 +60,7 @@ function actionsResponseToDisplayConfig(
 
     const subplots =
       result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
-        return timeSeriesDisplayToChartConfig(subPlot, title, configPeriod)
+        return timeSeriesDisplayToChartConfig(subPlot, configPeriod)
       }) ?? []
     const display: DisplayConfig = {
       id: title,
