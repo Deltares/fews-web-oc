@@ -3,8 +3,11 @@
     <template #activator="{ props }">
       <v-chip
         variant="tonal"
+        pilled
+        label
         :color="isAllSelected ? undefined : 'primary'"
         v-bind="props"
+        class="mx-1"
       >
         <template #prepend>
           <v-btn
@@ -16,6 +19,7 @@
           />
         </template>
         {{ label }}
+        <v-icon>mdi-chevron-down</v-icon>
       </v-chip>
     </template>
     <v-card min-height="300" height="50dvh">
