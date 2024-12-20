@@ -12,6 +12,9 @@
         <PeriodFilterControl v-model="period" />
       </v-toolbar>
       <v-list width="500" class="flex-1-1">
+        <v-list-item v-if="sortedTasks.length === 0">
+          No tasks available
+        </v-list-item>
         <v-list-item
           class="task"
           v-for="task in sortedTasks"
