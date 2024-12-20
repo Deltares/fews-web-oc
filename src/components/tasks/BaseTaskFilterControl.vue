@@ -22,38 +22,37 @@
         <v-icon>mdi-chevron-down</v-icon>
       </v-chip>
     </template>
-    <v-card min-height="300" height="50dvh">
-      <v-card-text class="h-100 d-flex flex-column gr-2">
-        <div class="flex-0-0 d-flex flex-row justify-space-between">
-          <v-btn @click="selectAll">Select all</v-btn>
-          <v-btn @click="selectNone">Select none</v-btn>
-        </div>
-        <div class="flex-0-0">
-          <slot name="actions"></slot>
-        </div>
-        <v-list
-          class="flex-1-1 overflow-auto"
-          v-model:selected="selectedValues"
-          select-strategy="leaf"
+    <v-sheet min-height="300" height="50dvh">
+      <v-banner sticky density="compact" class="pa-2">
+        <v-btn
+          @click="toggleSelectAll"
+          :icon="selectAllIcon"
+          variant="plain"
+        ></v-btn>
+        <slot name="actions"></slot>
+      </v-banner>
+      <v-list
+        class="flex-1-1 overflow-auto"
+        v-model:selected="selectedValues"
+        select-strategy="leaf"
+      >
+        <v-list-item
+          v-for="item in sortedItems"
+          :key="item.id"
+          :title="item.title"
+          :value="item.value"
         >
-          <v-list-item
-            v-for="item in sortedItems"
-            :key="item.id"
-            :title="item.title"
-            :value="item.value"
-          >
-            <template #prepend="{ isSelected }">
-              <v-list-item-action start>
-                <v-checkbox-btn :model-value="isSelected" />
-              </v-list-item-action>
-            </template>
-            <template v-if="item.isPreferred" #append>
-              <v-icon icon="mdi-star" />
-            </template>
-          </v-list-item>
-        </v-list>
-      </v-card-text>
-    </v-card>
+          <template #prepend="{ isSelected }">
+            <v-list-item-action start>
+              <v-checkbox-btn :model-value="isSelected" />
+            </v-list-item-action>
+          </template>
+          <template v-if="item.isPreferred" #append>
+            <v-icon icon="mdi-star" />
+          </template>
+        </v-list-item>
+      </v-list>
+    </v-sheet>
   </v-menu>
 </template>
 <script setup lang="ts" generic="T">
@@ -112,7 +111,21 @@ function selectAll(): void {
   selectedValues.value = allValues.value
 }
 
-function selectNone(): void {
-  selectedValues.value = []
+function toggleSelectAll(): void {
+  if (selectedValues.value.length === allValues.value.length) {
+    selectedValues.value = []
+  } else {
+    selectedValues.value = allValues.value
+  }
 }
+
+const selectAllIcon = computed(() => {
+  if (selectedValues.value.length === 0) {
+    return 'mdi-checkbox-blank-outline'
+  }
+  if (selectedValues.value.length === allValues.value.length) {
+    return 'mdi-close-box'
+  }
+  return 'mdi-minus-box' // 'mdi-checkbox-marked' // 'mdi-minus-box'
+})
 </script>
