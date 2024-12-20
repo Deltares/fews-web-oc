@@ -250,10 +250,13 @@ watch(
   { immediate: true },
 )
 
-watch(() => settings.useDisplayUnits, () => {
-  colourScalesStore.clearScales()
-  addScalesForStyles(legendLayerStyles.value ?? [])
-})
+watch(
+  () => settings.useDisplayUnits,
+  () => {
+    colourScalesStore.clearScales()
+    addScalesForStyles(legendLayerStyles.value ?? [])
+  },
+)
 
 function addScalesForStyles(styles: Style[]): void {
   styles.forEach((style) => {
