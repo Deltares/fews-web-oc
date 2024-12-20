@@ -38,7 +38,7 @@
       </template>
       <v-list>
         <v-list-item
-          title="Run workflow"
+          title="Run tasks..."
           :disabled="secondaryWorkflows === null"
           @click="workflowsStore.showDialog = true"
         >
