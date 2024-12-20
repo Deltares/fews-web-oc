@@ -1,27 +1,30 @@
 <template>
-  <div class="d-flex flex-row gc-2">
-    <v-date-input v-model="internalDate" :label="dateLabel" />
-    <v-menu :close-on-content-click="false">
-      <template #activator="{ props }">
-        <v-text-field v-bind="props" v-model="timeString" :label="timeLabel" />
-      </template>
-      <v-time-picker
-        v-model="internalTime"
-        format="24hr"
-        :use-seconds="false"
-        @update:hour="updateHours"
-        @update:minute="updateMinutes"
-        hide-header
+  <v-row>
+    <v-col>
+      <v-date-input
+        prepend-icon=""
+        v-model="internalDate"
+        :label="dateLabel"
+        variant="outlined"
+        density="compact"
       />
-    </v-menu>
-  </div>
+    </v-col>
+    <v-col>
+      <v-text-field
+        v-model="timeString"
+        type="time"
+        variant="outlined"
+        density="compact"
+        :label="timeLabel"
+        cleatable
+      />
+    </v-col>
+  </v-row>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-
 import { VDateInput } from 'vuetify/labs/components'
-import { VTimePicker } from 'vuetify/labs/components'
 
 interface Props {
   dateLabel?: string
@@ -41,17 +44,6 @@ const internalDate = computed<Date>({
     date.value = newDate
   },
 })
-const internalTime = computed<string>({
-  get: () => timeString.value,
-  set: (newValue) => {
-    const [hours, minutes] = newValue.split(':').map(parseFloat)
-
-    const newDate = new Date(date.value)
-    newDate.setHours(hours)
-    newDate.setMinutes(minutes)
-    date.value = newDate
-  },
-})
 
 const timeString = ref('')
 // Update time string when the time was set from the picker.
@@ -67,39 +59,17 @@ watch(
   },
   { immediate: true },
 )
-// Update the date when a valid date is entered in the text field.
-watch(timeString, (newTimeString) => {
-  const tokens = newTimeString.split(':').map((token) => token.trim())
-
-  // To prevent confusing interactions, only allow times with the format HH:MM,
-  // so not HH:M without leading 0.
-  const isValid =
-    tokens.length === 2 &&
-    tokens.every((token) => token.length === 2 && !isNaN(parseFloat(token)))
-  if (!isValid) return
-
-  // We are now a time string as accepted by v-time-picker, so use that setter
-  // to update the date.
-  const [hours, minutes] = tokens
-  timeString.value = `${hours}:${minutes}`
-})
-
-function updateHours(hours: number): void {
-  const newDate = new Date(date.value)
-  newDate.setHours(hours)
-  date.value = newDate
-}
-
-function updateMinutes(minutes: number): void {
-  const newDate = new Date(date.value)
-  newDate.setMinutes(minutes)
-  date.value = newDate
-}
 </script>
 
-<style scoped>
-/* HACK: hide prepend icon, which cannot be disabled from the API. */
-:deep(.v-input__prepend) {
+<style>
+/* Hide the clock icon in Chrome, Edge, and other WebKit-based browsers */
+input[type='time']::-webkit-inner-spin-button,
+input[type='time']::-webkit-calendar-picker-indicator {
   display: none;
+  -webkit-appearance: none;
+}
+
+input[type='time']::-moz-selection {
+  background-color: tomato;
 }
 </style>
