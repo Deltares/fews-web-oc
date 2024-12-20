@@ -2,7 +2,7 @@
   <v-btn icon="mdi-run" :active="isPanelOpen" @click="toggleTasksPanel" />
   <Teleport to="#main-side-panel" defer>
     <div v-if="isPanelOpen" class="h-100 d-flex flex-column">
-      <div class="flex-0-0 pa-2 d-flex gc-2 align-center">
+      <v-toolbar density="compact">
         <WorkflowFilterControl
           v-model="selectedWorkflowIds"
           @update:model-value="flagManuallyChanged"
@@ -10,7 +10,7 @@
         <TaskStatusFilterControl v-model="selectedTaskStatuses" />
         <v-spacer />
         <PeriodFilterControl v-model="period" />
-      </div>
+      </v-toolbar>
       <v-list width="500" class="flex-1-1">
         <v-list-item
           class="task"
