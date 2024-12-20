@@ -7,7 +7,6 @@
     :max-width="mobile ? undefined : '600'"
   >
     <v-card>
-      <v-card-title>Workflow</v-card-title>
       <v-card-text>
         <v-select
           v-model="currentWorkflow"
@@ -21,28 +20,29 @@
           :disabled="workflowSelectItems?.length === 1"
           hide-details
         />
-        <!-- Always show description <div>, even if the description is null, to
-             make sure the margins around the controls are OK. -->
-        <div class="workflow-description ml-4 mb-4">
-          {{ workflowDescription }}
-        </div>
-        <div v-if="isBoundingBoxInForm" class="d-flex">
+        <v-banner
+          :text="workflowDescription"
+          label="description"
+          sticky
+          variant="solo-filled"
+          density="compact"
+          hide-details
+        />
+        <div v-if="isBoundingBoxInForm" class="d-flex py-4">
           <v-text-field
             v-model="boundingBoxString"
             readonly
             variant="plain"
-            density="compact"
             label="Bounding box"
             class="mx-4"
           />
           <v-btn
             icon="mdi-selection-drag"
             variant="tonal"
-            density="comfortable"
             @click="showMapTool"
           />
         </div>
-        <div v-if="isCoordinateInForm" class="d-flex">
+        <div v-if="isCoordinateInForm" class="d-flex py-4">
           <v-text-field
             v-model="coordinateString"
             readonly
@@ -60,7 +60,7 @@
         </div>
         <json-forms
           v-if="hasProperties"
-          class="form-container"
+          class="py-4"
           :schema="formSchema"
           :uischema="formUISchema"
           :data="data"
@@ -70,20 +70,24 @@
           :config="JsonFormsConfig"
           @change="onFormChange"
         />
-        <DateTimeField
-          v-if="!isProcessDataTask"
-          v-model="timeZero"
-          date-label="T0 date"
-          time-label="T0 time"
-        />
+        <v-container class="px-0">
+          <DateTimeField
+            v-if="!isProcessDataTask"
+            v-model="timeZero"
+            date-label="T0 date"
+            time-label="T0 time"
+          />
+        </v-container>
         <v-textarea
           v-model="description"
+          placeholder="Use this field to describe the task run, it will be used to identify the run in the task overview."
           label="Task run description"
           variant="outlined"
           density="compact"
           hide-details
           rows="5"
           no-resize
+          persistent-placeholder
         />
       </v-card-text>
       <v-card-actions>
@@ -149,12 +153,14 @@ const { mobile } = useDisplay()
 const showDialog = defineModel<boolean>('showDialog', { required: true })
 
 const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
-const workflowDescription = computed<string | null>(() => {
-  if (currentWorkflow.value === null) return null
+const workflowDescription = computed<string>(() => {
+  if (currentWorkflow.value === null) return ''
   const workflow = availableWorkflowsStore.byId(
     currentWorkflow.value.secondaryWorkflowId,
   )
-  return workflow.description !== '' ? workflow.description : null
+  return workflow.description !== ''
+    ? workflow.description
+    : 'Help text should appear here, but it is not available.'
 })
 
 const data = ref<WorkflowFormData>({})
@@ -510,22 +516,5 @@ function getProcessDataFilter(): PartialProcessDataFilter {
 
 .workflow-description {
   font-size: 0.8em;
-}
-
-.form-container {
-  max-height: calc(100vh - 400px);
-  overflow-y: auto;
-  /* json-forms' Vuetify renderer is weird and does not respect its container
-     size, so always hide the horizontal scrollbar. */
-  overflow-x: hidden;
-  /* json-forms defines its container to have 0 padding with !important, so
-  override this for 2 reasons:
-     - Part of the label of text fields is cut off, so force the main json-forms
-       container to have some padding to prevent this. */
-  padding-top: 5px !important;
-  /* - We always get a vertical scrollbar even if it is not necessary, so give
-       the contents of the form some extra vertical space in the form of
-       padding. */
-  padding-bottom: 20px !important;
 }
 </style>
