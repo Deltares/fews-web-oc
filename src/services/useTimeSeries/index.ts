@@ -143,7 +143,7 @@ export function useTimeSeries(
               ? `${request.key}[${index}]`
               : (request.key ?? '')
             updatedSeriesIds.push(resourceId)
-            const resource = new SeriesUrlRequest('fews-pi', 'dummyUrl')
+            const resource = new SeriesUrlRequest('fews-pi', `dummyUrl-for-resource-${resourceId}`)
             const _series = new Series(resource)
             const header = timeSeries.header
             if (header !== undefined) {
