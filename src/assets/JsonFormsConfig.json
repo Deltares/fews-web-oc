@@ -5,7 +5,8 @@
       "variant": "outlined"
     },
     "v-container": {
-      "class": "pa-0"
+      "class": "pa-0",
+      "density": "compact"
     }
   }
 }
