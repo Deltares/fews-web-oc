@@ -384,10 +384,10 @@ watch(
     ),
   (newValue, oldValue) => {
     const newSeriesIds = difference(newValue, oldValue)
-    const requiredSeriesIds = props.config?.series.filter((s) =>
+    const requiredSeries = props.config?.series.filter((s) =>
       newSeriesIds.map((id) => id.split('-')[0]).includes(s.id),
     )
-    if (requiredSeriesIds.length > 0) {
+    if (requiredSeries.length > 0) {
       onValueChange()
     }
   },
