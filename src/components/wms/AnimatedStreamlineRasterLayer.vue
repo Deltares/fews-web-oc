@@ -4,14 +4,14 @@
 
 <script setup lang="ts">
 import { type Layer } from '@deltares/fews-wms-requests'
-import { useMap } from '@indoorequal/vue-maplibre-gl'
-import { onMounted, onUnmounted, watch } from 'vue'
-
 import {
   StreamlineStyle,
   WMSStreamlineLayer,
   type WMSStreamlineLayerOptions,
-} from '@/lib/streamlines'
+} from '@deltares/webgl-streamline-visualiser'
+import { useMap } from '@indoorequal/vue-maplibre-gl'
+import { onMounted, onUnmounted, watch } from 'vue'
+
 import { configManager } from '@/services/application-config'
 import { type AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
