@@ -4,6 +4,8 @@
     :items="options"
     item-value="numSecondsBack"
     density="compact"
+    variant="plain"
+    flat
     hide-details
   />
 </template>
