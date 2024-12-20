@@ -6,7 +6,12 @@
     @update:model-value="updateSelectedCategories"
   >
     <template #actions>
-      <v-btn-toggle v-model="selectedCategories" multiple density="compact" variant="outlined">
+      <v-btn-toggle
+        v-model="selectedCategories"
+        multiple
+        density="compact"
+        variant="outlined"
+      >
         <v-btn
           v-for="category in getAllTaskStatusCategories()"
           :key="category"
