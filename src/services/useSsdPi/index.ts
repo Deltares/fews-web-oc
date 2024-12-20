@@ -64,7 +64,7 @@ export function useSsdPi(
         subplots = result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          return timeSeriesDisplayToChartConfig(subPlot, title)
+          return timeSeriesDisplayToChartConfig(subPlot)
         })
       }
       const display: DisplayConfig = {

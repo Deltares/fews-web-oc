@@ -99,6 +99,7 @@ interface Tag {
 const props = withDefaults(defineProps<Props>(), {
   config: () => {
     return {
+      id: '',
       title: '',
       series: [],
     }
