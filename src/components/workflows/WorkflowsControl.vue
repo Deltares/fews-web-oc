@@ -158,9 +158,7 @@ const workflowDescription = computed<string>(() => {
   const workflow = availableWorkflowsStore.byId(
     currentWorkflow.value.secondaryWorkflowId,
   )
-  return workflow.description !== ''
-    ? workflow.description
-    : ''
+  return workflow.description !== '' ? workflow.description : ''
 })
 
 const data = ref<WorkflowFormData>({})
