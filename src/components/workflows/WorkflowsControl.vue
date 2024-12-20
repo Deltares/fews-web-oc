@@ -160,7 +160,7 @@ const workflowDescription = computed<string>(() => {
   )
   return workflow.description !== ''
     ? workflow.description
-    : 'Help text should appear here, but it is not available.'
+    : ''
 })
 
 const data = ref<WorkflowFormData>({})
