@@ -19,7 +19,6 @@ import {
 
 export function timeSeriesDisplayToChartConfig(
   subplot: TimeSeriesDisplaySubplot,
-  title: string,
   domain?: [Date, Date],
 ): ChartConfig {
   const xAxis = subplot.xAxis ? xAxisFromPlotItemXAxis(subplot.xAxis) : []
@@ -34,8 +33,10 @@ export function timeSeriesDisplayToChartConfig(
     }
   }
 
+  const subplotId = subplot.items.map(plot => plot.request).toString()
   const config: ChartConfig = {
-    title: title,
+    id: subplotId,
+    title: "",
     xAxis,
     yAxis: yAxisFromSubplot(subplot),
     series: [],
