@@ -201,9 +201,9 @@ watch(geojson, () => {
 onBeforeMount(() => {
   if (map) {
     for (const layerId of [
+      locationsFillLayerId,
       locationsCircleLayerId,
       locationsSymbolLayerId,
-      locationsFillLayerId,
     ]) {
       map.on('click', layerId, clickHandler)
       map.on('mouseenter', layerId, setCursorPointer)
