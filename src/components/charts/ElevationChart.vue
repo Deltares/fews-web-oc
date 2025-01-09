@@ -154,10 +154,7 @@ onMounted(() => {
     axis.accept(zoom)
     axis.accept(mouseOver)
     resize()
-    if (props.config !== undefined) {
-      refreshChart()
-      setTags()
-    }
+    if (props.config !== undefined) onValueChange()
     window.addEventListener('resize', resize)
   }
 })
@@ -253,6 +250,30 @@ const refreshChart = () => {
   })
 }
 
+const updateChartData = (series: ChartSeries[]) => {
+  series.forEach((series) => {
+    const chart = axis.charts.find((chart) => chart.id == series.id)
+    if (chart !== undefined) {
+      const rawData = dataFromResources(series.dataResources, props.series)
+      const data = removeUnreliableData(rawData)
+      chart.data = data
+    }
+  })
+  // Ensure the current zoom, which might be user-selected, does not change
+  axis.redraw({
+    x: {
+      nice: false,
+      domain: undefined,
+      fullExtent: false,
+    },
+    y: {
+      nice: false,
+      domain: undefined,
+      fullExtent: false,
+    },
+  })
+}
+
 const setTags = () => {
   const s = new XMLSerializer()
   const seriesData = props.config?.series
@@ -341,11 +362,11 @@ watch(
     ),
   (newValue, oldValue) => {
     const newSeriesIds = difference(newValue, oldValue)
-    const requiredSeriesIds = props.config?.series.filter((s) =>
+    const requiredSeries = props.config?.series.filter((s) =>
       newSeriesIds.map((id) => id.split('-')[0]).includes(s.id),
     )
-    if (requiredSeriesIds.length > 0) {
-      onValueChange()
+    if (requiredSeries.length > 0) {
+      updateChartData(requiredSeries)
     }
   },
 )
