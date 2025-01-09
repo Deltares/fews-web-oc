@@ -33,10 +33,10 @@ export function timeSeriesDisplayToChartConfig(
     }
   }
 
-  const subplotId = subplot.items.map(plot => plot.request).toString()
+  const subplotId = subplot.items.map((plot) => plot.request).toString()
   const config: ChartConfig = {
     id: subplotId,
-    title: "",
+    title: '',
     xAxis,
     yAxis: yAxisFromSubplot(subplot),
     series: [],
