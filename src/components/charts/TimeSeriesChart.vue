@@ -189,7 +189,7 @@ watch(
   (newValue) => {
     if (axisTime.value) {
       axisTime.value.setDateTime(newValue)
-      onValueChange()
+      axisTime.value.redraw()
     }
   },
 )
