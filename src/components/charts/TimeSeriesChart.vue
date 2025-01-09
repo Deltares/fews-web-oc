@@ -9,8 +9,7 @@
       :settings="settings.legend"
       @toggle-line="toggleLine"
     />
-    <LoadingOverlay v-if="isLoading" :offsets="margin" />
-    <div ref="chartContainer" class="chart-container" v-show="!isLoading"></div>
+    <div ref="chartContainer" class="chart-container"></div>
   </div>
 </template>
 
@@ -34,7 +33,6 @@ import {
   MouseOver,
   VerticalMouseOver,
 } from '@deltares/fews-web-oc-charts'
-import LoadingOverlay from '@/components/charts/LoadingOverlay.vue'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
