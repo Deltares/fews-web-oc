@@ -417,8 +417,10 @@ watch(props.config, onValueChange)
 watch(
   () => props.isLoading,
   (newValue, oldValue) => {
-    if (!newValue && oldValue) {
-      hasLoadedOnce.value = hasLoadedOnce.value || true
+    // isLoading changes every time the data is requested again.
+    // We need to keep track of the first time the data has been loaded, in order to fully draw the chart once
+    if (!newValue) {
+      hasLoadedOnce.value = true
     }
   },
 )
