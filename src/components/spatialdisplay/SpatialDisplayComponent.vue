@@ -1,5 +1,5 @@
 <template>
-  <MapComponent :bounds="bounds">
+  <MapComponent :bounds="bounds" :baseMapId="baseMapId">
     <AnimatedRasterLayer
       v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
       v-model:isLoading="isLoading"
@@ -82,8 +82,6 @@
           v-model:currentColourScaleIndex="currentColourScaleIndex"
         />
         <v-divider />
-        <BaseMapPanel />
-        <v-divider />
         <OverlayPanel />
       </InformationPanel>
       <LocationsSearchControl
@@ -144,7 +142,6 @@ import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vu
 import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
 import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
 import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
-import BaseMapPanel from '@/components/wms/panel/BaseMapPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
@@ -251,6 +248,10 @@ const workflowsStore = useWorkflowsStore()
 const userSettingsStore = useUserSettingsStore()
 
 const showLocationsLayer = ref<boolean>(true)
+
+const baseMapId = computed(
+  () => userSettingsStore.get('ui.map.theme')?.value as string ?? 'automatic',
+)
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
 watchEffect(() => {

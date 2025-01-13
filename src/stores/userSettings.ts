@@ -1,4 +1,3 @@
-// src/store/userSettings.ts
 import { defineStore } from 'pinia'
 import DefaultUserSettings from '@/assets/DefaultUserSettings.json'
 import { LayerKind } from '@/lib/streamlines'
