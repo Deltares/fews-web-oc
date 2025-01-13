@@ -52,6 +52,7 @@ export interface Declarations {
 export interface BaseMap {
   id: string
   name: string
+  icon: string
   style: string
 }
 

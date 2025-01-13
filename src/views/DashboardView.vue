@@ -4,11 +4,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useComponentSettingsStore } from '@/stores/componentSettings'
 import DashboardDisplay from '@/components/general/DashboardDisplay.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { useDashboardsStore } from '@/stores/dashboards'
+import {
+  UserSettingsWithIcon,
+  useUserSettingsStore,
+} from '@/stores/userSettings'
+import { BaseMap } from '@/lib/topology/componentSettings'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -17,10 +22,29 @@ interface Props {
 const props = defineProps<Props>()
 
 const componentSettingsStore = useComponentSettingsStore()
-componentSettingsStore.fetchState()
-
 const dashboardsStore = useDashboardsStore()
-dashboardsStore.fetchState()
+const userSettings = useUserSettingsStore()
+
+onMounted(async () => {
+  dashboardsStore.fetchState()
+  await componentSettingsStore.fetchState()
+  updateUserSettingBaseMaps()
+})
+
+function updateUserSettingBaseMaps() {
+  // FIXME: Remove once baseMaps have moved out of the component settings
+  const items = componentSettingsStore.baseMaps.map(convertBaseMapToUserSetting)
+  const current = userSettings.get('ui.map.theme')
+  if (current?.type !== 'oneOfMultiple') return
+  current.items = items
+}
+
+function convertBaseMapToUserSetting(baseMap: BaseMap): UserSettingsWithIcon {
+  return {
+    value: baseMap.id,
+    icon: baseMap.icon,
+  }
+}
 
 const dashboard = computed(() => {
   if (!props.topologyNode) return

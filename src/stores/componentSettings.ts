@@ -14,7 +14,6 @@ interface State {
   settings: ComponentSettings[]
   declarations?: Declarations
   selectedOverlayIds: string[]
-  selectedBaseMapId: string
 }
 
 function isKeyOfDefaultStyle(key: string): key is keyof typeof DefaultBaseMaps {
@@ -25,7 +24,6 @@ export const useComponentSettingsStore = defineStore('componentSettings', {
   state: (): State => ({
     settings: [],
     selectedOverlayIds: [],
-    selectedBaseMapId: 'automatic',
   }),
   getters: {
     overlays: (state) => state.declarations?.overlays?.locations ?? [],
@@ -38,28 +36,6 @@ export const useComponentSettingsStore = defineStore('componentSettings', {
       const defaultBaseMaps: BaseMap[] = Object.values(DefaultBaseMaps)
       const baseMaps = state.declarations?.baseMaps ?? []
       return [...defaultBaseMaps, ...baseMaps]
-    },
-    selectedBaseMap(): BaseMap {
-      if (this.selectedBaseMapId === 'automatic') {
-        const isDark = useDark()
-        return DefaultBaseMaps[isDark.value ? 'dark' : 'light']
-      }
-      if (isKeyOfDefaultStyle(this.selectedBaseMapId)) {
-        return DefaultBaseMaps[this.selectedBaseMapId]
-      }
-      // FIXME: What to do if the selected base map is not found?
-      //        Could happen when persisting the selected base map
-      return (
-        this.baseMaps.find((b) => b.id === this.selectedBaseMapId) ??
-        this.baseMaps[0]
-      )
-    },
-    selectedStyle(): string {
-      const style = this.selectedBaseMap.style
-      if (style.startsWith('/')) {
-        return getResourcesStaticUrl(style.slice(1))
-      }
-      return style
     },
   },
   actions: {
@@ -75,6 +51,26 @@ export const useComponentSettingsStore = defineStore('componentSettings', {
     getSettingsById(id: string) {
       return this.settings.find((s) => s.id === id)
     },
+    getBaseMapById(id: string) {
+      if (id === 'automatic') {
+        const isDark = useDark()
+        return DefaultBaseMaps[isDark.value ? 'dark' : 'light']
+      }
+      if (isKeyOfDefaultStyle(id)) {
+        return DefaultBaseMaps[id]
+      }
+
+      const baseMap = this.baseMaps.find((b) => b.id === id)
+
+      // FIXME: What to do if the selected base map is not found?
+      //        Could happen when persisting the selected base map
+      if (baseMap === undefined) {
+        console.error(`Base map with id ${id} not found`)
+        return DefaultBaseMaps.light
+      }
+
+      return baseMap
+    }
   },
   persist: {
     key: 'weboc-component-settings-v1.0.0',

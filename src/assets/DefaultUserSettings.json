@@ -83,6 +83,27 @@
     "group": "UI"
   },
   {
+    "id": "ui.map.theme",
+    "type": "oneOfMultiple",
+    "label": "Basemap",
+    "value": "automatic",
+    "items": [
+      {
+        "value": "automatic",
+        "icon": "mdi-theme-light-dark"
+      },
+      {
+        "value": "light",
+        "icon": "mdi-weather-sunny"
+      },
+      {
+        "value": "dark",
+        "icon": "mdi-weather-night"
+      }
+    ],
+    "group": "Map"
+  },
+  {
     "id": "ui.map.showLocationNames",
     "type": "boolean",
     "label": "Show location names",
