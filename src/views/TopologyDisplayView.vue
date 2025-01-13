@@ -312,7 +312,7 @@ watchEffect(() => {
 
 onBeforeRouteUpdate(reroute)
 
-function reroute(to: RouteLocationNormalized, from: RouteLocationNormalized) {
+function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
   if (!to.params.nodeId) {
     const firstSubNodeId = subNodes.value[0].id
     if (firstSubNodeId) {
@@ -368,7 +368,7 @@ function reroute(to: RouteLocationNormalized, from: RouteLocationNormalized) {
 
       const topologyId = to.params.topologyId as string
       const tabs = displayTabsForNode(menuNode, parentNodeId, topologyId)
-      const tab = tabs.find((t) => t.to.name === from.name) ?? tabs[0]
+      const tab = tabs.find((t) => t.to.name === from?.name) ?? tabs[0]
       if (tab) {
         return tab.to
       }
