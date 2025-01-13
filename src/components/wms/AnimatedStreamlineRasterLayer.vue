@@ -32,8 +32,30 @@ const { map } = useMap()
 const layerId = getLayerId('streamlines')
 let layer: WMSStreamlineLayer | null = null
 
-onMounted(addLayer)
-onUnmounted(removeLayer)
+onMounted(() => {
+  addHooksToMapObject()
+  updateLayer()
+})
+
+onUnmounted(() => {
+  removeLayer()
+  removeHooksFromMapObject()
+})
+
+function addHooksToMapObject() {
+  map?.on('load', updateLayer)
+  map?.on('dblclick', onDoubleClick)
+}
+
+function removeHooksFromMapObject(): void {
+  map?.off('load', updateLayer)
+  map?.off('dblclick', onDoubleClick)
+}
+
+function updateLayer() {
+  removeLayer()
+  addLayer()
+}
 
 // Recreate the streamline visualiser when the a different layer is selected.
 watch(
@@ -100,6 +122,7 @@ addUpdateWatcher(
 )
 
 function addLayer(): void {
+  if (!map?.isStyleLoaded()) return
   if (!props.layerOptions || !props.streamlineOptions) return
   const options = mergeOptions(props.layerOptions, props.streamlineOptions)
 
@@ -120,13 +143,11 @@ function addLayer(): void {
   })
 
   map?.addLayer(layer, 'boundary_country_outline')
-  map?.on('dblclick', onDoubleClick)
 }
 
 function removeLayer(): void {
-  if (map !== undefined && map.style !== undefined) {
+  if (map !== undefined && map.style !== undefined && map.getLayer(layerId)) {
     map.removeLayer(layerId)
-    map.off('dblclick', onDoubleClick)
   }
 }
 
