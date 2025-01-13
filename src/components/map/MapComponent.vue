@@ -25,6 +25,7 @@ import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import {
   MglAttributionControl,
+  MglDefaults,
   MglMap,
   MglScaleControl,
 } from '@indoorequal/vue-maplibre-gl'
@@ -37,18 +38,32 @@ import type {
 import { computed, useTemplateRef, watch } from 'vue'
 import { transformStyle } from '@/lib/map'
 import { useComponentSettingsStore } from '@/stores/componentSettings'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 
 interface Props {
   bounds?: LngLatBounds
-  baseMapId?: string
+  baseMapId: string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const mapRef = useTemplateRef('map')
 
+MglDefaults.style =
+  'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+
 const componentSettingsStore = useComponentSettingsStore()
-const selectedStyle = computed(() => componentSettingsStore.selectedStyle)
+
+const selectedStyle = computed(() => {
+  const baseMap = componentSettingsStore.getBaseMapById(props.baseMapId)
+
+  const style = baseMap.style
+  if (style.startsWith('/')) {
+    return getResourcesStaticUrl(style.slice(1))
+  }
+
+  return style
+})
 const initialStyle = selectedStyle.value
 
 watch(selectedStyle, (newBaseStyle) => {
