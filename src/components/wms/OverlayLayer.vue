@@ -20,7 +20,7 @@ import {
   MglLineLayer,
 } from '@indoorequal/vue-maplibre-gl'
 import type { OverlayLocation } from '@/lib/topology/componentSettings'
-import { fetchLocationSetAsGeoJson } from '@/lib/topology'
+import { fetchLocationSetAsGeoJson } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 import { asyncComputed } from '@vueuse/core'
 import { getLayerId, getSourceId } from '@/lib/map'
