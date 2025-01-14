@@ -29,16 +29,18 @@
           <v-spacer />
         </template>
         <template v-slot:toolbar-append>
-          <v-btn size="small" icon>
+          <v-btn size="small" icon v-if="displayActionItems.length">
             <v-icon>mdi-dots-horizontal</v-icon>
             <v-menu activator="parent" density="compact">
               <v-list>
                 <v-list-item
-                  prepend-icon="mdi-download"
-                  @click="downloadDialogStore.showDialog = true"
-                  :disabled="downloadDialogStore.disabled"
-                  >Download time series ...</v-list-item
+                  v-for="item in displayActionItems"
+                  :key="item.label"
+                  @click="item.action"
+                  :prepend-icon="item.icon"
                 >
+                  {{ item.label }}
+                </v-list-item>
               </v-list>
             </v-menu>
           </v-btn>
@@ -86,20 +88,22 @@ import { useSystemTimeStore } from '@/stores/systemTime'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
 import { isFilterActionsFilter } from '@/lib/filters'
 import { useDownloadDialogStore } from '@/stores/downloadDialog'
+import type { ChartSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   filter: filterActionsFilter | timeSeriesGridActionsFilter
   elevationChartFilter?: timeSeriesGridActionsFilter
   currentTime?: Date
+  settings?: ChartSettings
 }
 
-const settings = useUserSettingsStore()
+const userSettings = useUserSettingsStore()
 const systemTimeStore = useSystemTimeStore()
 
 const options = computed<UseDisplayConfigOptions>(() => {
   return {
-    useDisplayUnits: settings.useDisplayUnits,
-    convertDatum: settings.convertDatum,
+    useDisplayUnits: userSettings.useDisplayUnits,
+    convertDatum: userSettings.convertDatum,
   }
 })
 
@@ -153,46 +157,67 @@ interface DisplayTypeItem {
   disabled?: boolean
 }
 
+const displayActionItems = computed(() => {
+  const dataDownloadEnabled = !(props.settings?.downloadEnabled === false)
+  return [
+    {
+      icon: 'mdi-download',
+      label: 'Download time series ...',
+      action: () => {
+        downloadDialogStore.showDialog = true
+      },
+      disabled: downloadDialogStore.disabled,
+      hidden: !dataDownloadEnabled,
+    },
+  ].filter((item) => !item.hidden)
+})
+
 const displayType = ref(DisplayType.TimeSeriesChart)
 const displayTypeItems = computed<DisplayTypeItem[]>(() => {
-  const displayItems: DisplayTypeItem[] = [
+  const noElevationCharts = !(
+    (elevationChartDisplayconfig.value?.subplots?.length ?? 0) > 0
+  )
+  const noTooltip = !tooltip.value
+
+  const chartEnabled = !(props.settings?.chartEnabled === false)
+  const elevationChartEnabled = !(
+    props.settings?.elevationChartEnabled === false
+  )
+  const tableEnabled = !(props.settings?.tableEnabled === false)
+  const metaDataEnabled = !(props.settings?.metaDataEnabled === false)
+  return [
     {
       icon: 'mdi-chart-line',
       label: 'Chart',
       value: DisplayType.TimeSeriesChart,
+      hidden: !chartEnabled,
     },
     {
       icon: 'mdi-elevation-rise',
       label: 'Vertical profile',
       value: DisplayType.ElevationChart,
       iconStyle: 'transform: rotate(-90deg);',
+      disabled: noElevationCharts,
+      hidden: !elevationChartEnabled,
     },
     {
       icon: 'mdi-table',
       label: 'Table',
       value: DisplayType.TimeSeriesTable,
+      hidden: !tableEnabled,
     },
     {
       icon: 'mdi-information-outline',
       label: 'Information',
       value: DisplayType.Information,
+      disabled: noTooltip,
+      hidden: !metaDataEnabled,
     },
-  ]
-  // Mdi icon for metatdata at the current location
-  //    {
-  //     icon: 'mdi-information',
-  //    label: 'Metadata',
-  //
-
-  if (!((elevationChartDisplayconfig.value?.subplots?.length ?? 0) > 0)) {
-    displayItems[1].disabled = true
-  }
-
-  if (!tooltip.value) {
-    displayItems[3].disabled = true
-  }
-
-  return displayItems
+    // Mdi icon for metatdata at the current location
+    //    {
+    //     icon: 'mdi-information',
+    //    label: 'Metadata',
+  ].filter((item) => !item.hidden)
 })
 
 watch(displayTypeItems, () => {

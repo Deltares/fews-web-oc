@@ -43,7 +43,8 @@ export function recursiveUpdateNode(
           showActiveTresholdsCount,
           skipLeaves,
         )
-        if (skipLeaves) {
+        // FIXME: Hack for dashboards as they define topologyNodes children
+        if (skipLeaves || nodeHasDashboard(node)) {
           const itemsWithChildren = items.filter((i) => i.children)
           result.children = itemsWithChildren
         } else {
@@ -161,4 +162,11 @@ export function nodeHasSystemMonitor(node: TopologyNode) {
 
 export function nodeHasWebDisplay(node: TopologyNode) {
   return node.embedUrl !== undefined
+}
+
+export function nodeHasDashboard(node: TopologyNode) {
+  return (
+    node.id.toLowerCase().includes('dashboard') &&
+    node.topologyNodes !== undefined
+  )
 }

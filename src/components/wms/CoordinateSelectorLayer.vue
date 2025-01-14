@@ -18,7 +18,8 @@
 
 <script setup lang="ts">
 import { coordinateToString } from '@/lib/workflows'
-import { MglMarker, useMap } from '@indoorequal/vue-maplibre-gl'
+import { useMap } from '@/services/useMap'
+import { MglMarker } from '@indoorequal/vue-maplibre-gl'
 import { Popup, type LngLat } from 'maplibre-gl'
 import { watchEffect } from 'vue'
 
