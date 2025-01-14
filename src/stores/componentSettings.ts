@@ -56,7 +56,9 @@ export const useComponentSettingsStore = defineStore('componentSettings', {
       const baseMap = this.baseMaps.find((b) => b.id === id)
       if (baseMap) return baseMap
 
-      const defaultBaseMap = DefaultBaseMaps.find((basemap) => basemap.id === id)
+      const defaultBaseMap = DefaultBaseMaps.find(
+        (basemap) => basemap.id === id,
+      )
       if (defaultBaseMap) return defaultBaseMap
 
       // FIXME: What to do if the selected base map is not found?
