@@ -81,8 +81,15 @@
           :currentColourScaleIds="currentColourScaleIds"
           v-model:currentColourScaleIndex="currentColourScaleIndex"
         />
-        <v-divider />
-        <OverlayPanel />
+        <template v-if="componentSettingsStore.overlays.length">
+          <v-divider />
+          <OverlayPanel
+            :overlays="componentSettingsStore.overlays"
+            v-model:selected-overlay-ids="
+              componentSettingsStore.selectedOverlayIds
+            "
+          />
+        </template>
       </InformationPanel>
       <LocationsSearchControl
         v-if="showLocationSearchControl"
@@ -251,7 +258,7 @@ const userSettingsStore = useUserSettingsStore()
 const showLocationsLayer = ref<boolean>(true)
 
 const baseMapId = computed(
-  () => userSettingsStore.get('ui.map.theme')?.value as string ?? 'automatic',
+  () => (userSettingsStore.get('ui.map.theme')?.value as string) ?? 'automatic',
 )
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.

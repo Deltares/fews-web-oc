@@ -13,14 +13,14 @@
     </v-list-item>
     <v-divider />
     <v-list
-      v-model:selected="componentSettingsStore.selectedOverlayIds"
+      v-model:selected="selectedOverlayIds"
       select-strategy="leaf"
       class="pa-0"
       density="compact"
       max-height="160"
     >
       <v-list-item
-        v-for="overlay in componentSettingsStore.overlays"
+        v-for="overlay in overlays"
         :key="overlay.id"
         :title="overlay.name"
         :value="overlay.id"
@@ -38,30 +38,34 @@
 </template>
 
 <script setup lang="ts">
-import { useComponentSettingsStore } from '@/stores/componentSettings'
+import type { OverlayLocation } from '@/lib/topology/componentSettings'
 import { computed } from 'vue'
 
-const componentSettingsStore = useComponentSettingsStore()
+interface Props {
+  overlays: OverlayLocation[]
+}
+
+const props = defineProps<Props>()
+
+const selectedOverlayIds = defineModel<string[]>('selectedOverlayIds', {
+  required: true,
+})
 
 const allSelected = computed(
-  () =>
-    componentSettingsStore.overlays.length ===
-    componentSettingsStore.selectedOverlayIds.length,
+  () => props.overlays.length === selectedOverlayIds.value.length,
 )
 
 const someSelected = computed(
   () =>
-    componentSettingsStore.selectedOverlayIds.length > 0 &&
-    componentSettingsStore.selectedOverlayIds.length <
-      componentSettingsStore.overlays.length,
+    selectedOverlayIds.value.length > 0 &&
+    selectedOverlayIds.value.length < props.overlays.length,
 )
 
 function toggleAll() {
   if (allSelected.value) {
-    componentSettingsStore.selectedOverlayIds = []
+    selectedOverlayIds.value = []
   } else {
-    componentSettingsStore.selectedOverlayIds =
-      componentSettingsStore.overlays.map((overlay) => overlay.id)
+    selectedOverlayIds.value = props.overlays.map((overlay) => overlay.id)
   }
 }
 </script>
