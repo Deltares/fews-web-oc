@@ -151,7 +151,8 @@ export const useUserSettingsStore = defineStore({
                 const index = storedProp.items?.findIndex(
                   (i: UserSettingsWithIcon) => i.value === storedProp.value,
                 )
-                prop.value = prop.items ? prop.items[index ?? 0].value : ''
+                const newValue = prop.items?.[index ?? -1]?.value
+                if (newValue) prop.value = newValue
               } else {
                 prop.value = storedProp.value
               }
