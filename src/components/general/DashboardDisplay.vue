@@ -2,7 +2,7 @@
   <div class="dashboard-container ga-3 pa-3">
     <template v-for="group in groups">
       <template v-for="element in group.elements">
-        <DashboardItems
+        <DashboardElement
           :title="element.gridTemplateArea"
           :gridTemplateArea="element.gridTemplateArea"
           :items="element.items"
@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import type { Dashboard } from '@/lib/dashboard/types'
 import { computed, watch } from 'vue'
-import DashboardItems from '@/components/general/DashboardItems.vue'
+import DashboardElement from '@/components/general/DashboardElement.vue'
 
 interface Props {
   dashboard: Dashboard
