@@ -169,7 +169,6 @@ const items = ref<ColumnItem[]>([])
 const filterIds = ref<string[]>([])
 const topologyNode = ref<TopologyNode | undefined>(undefined)
 
-const activeTab = ref('')
 const displayTabs = ref<DisplayTab[]>([])
 
 const nodesStore = useNodesStore()
@@ -313,7 +312,7 @@ watchEffect(() => {
 
 onBeforeRouteUpdate(reroute)
 
-function reroute(to: RouteLocationNormalized) {
+function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
   if (!to.params.nodeId) {
     const firstSubNodeId = subNodes.value[0].id
     if (firstSubNodeId) {
@@ -369,9 +368,8 @@ function reroute(to: RouteLocationNormalized) {
 
       const topologyId = to.params.topologyId as string
       const tabs = displayTabsForNode(menuNode, parentNodeId, topologyId)
-      const tab = tabs.find((t) => t.type === activeTab.value) ?? tabs[0]
+      const tab = tabs.find((t) => t.to.name === from?.name) ?? tabs[0]
       if (tab) {
-        activeTab.value = tab.type
         return tab.to
       }
     }
