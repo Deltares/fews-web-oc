@@ -44,7 +44,7 @@
           <template v-slot:append>
             <v-switch
               density="compact"
-              v-model="animate"
+              v-model="doAnimateStreamlines"
               hide-details
             ></v-switch>
           </template>
@@ -53,11 +53,11 @@
     </v-menu>
     <v-btn
       v-if="showLayer && canUseStreamlines"
-      @click="switchLayerType"
+      @click="toggleLayerType"
       icon
       density="compact"
       variant="plain"
-      :color="animate ? 'primary' : undefined"
+      :color="doAnimateStreamlines ? 'primary' : undefined"
     >
       <v-progress-circular v-if="isLoading" size="20" indeterminate />
       <v-icon v-else>mdi-animation-play</v-icon>
@@ -66,11 +66,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick } from 'vue'
 import { DateTime } from 'luxon'
 import { LayerKind } from '@/lib/streamlines'
-import { watch } from 'vue'
 import ControlChip from '@/components/wms/ControlChip.vue'
+import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
   layerTitle?: string
@@ -83,15 +83,23 @@ interface Props {
   canUseStreamlines?: boolean
 }
 
+const userSettingsStore = useUserSettingsStore()
+
 const props = withDefaults(defineProps<Props>(), {
   layerTitle: '',
   completelyMissing: false,
 })
-
-const emit = defineEmits(['style-click', 'update:layerKind'])
-
 const showLayer = defineModel<boolean>('showLayer')
-const animate = defineModel<boolean>('animate', { default: false })
+const layerKind = defineModel<LayerKind>('layerKind', { required: true })
+
+const emit = defineEmits(['style-click'])
+
+const doAnimateStreamlines = computed<boolean>({
+  get: () => layerKind.value === LayerKind.Streamline,
+  set: (doAnimate) => {
+    layerKind.value = doAnimate ? LayerKind.Streamline : LayerKind.Static
+  },
+})
 
 const analysisTime = computed(() => {
   if (!props.forecastTime) return undefined
@@ -114,17 +122,17 @@ const formattedTimeRange = computed(() => {
   )} → ${DateTime.fromJSDate(props.lastValueTime).toFormat(format)}`
 })
 
-const switchLayerType = () => {
-  animate.value = !animate.value
-}
+function toggleLayerType(): void {
+  doAnimateStreamlines.value = !doAnimateStreamlines.value
 
-watch(
-  () => animate.value,
-  () => {
-    const value = animate.value ? LayerKind.Streamline : LayerKind.Static
-    emit('update:layerKind', value)
-  },
-)
+  // If we are in this function, the user manually selected a layer kind, so
+  // store their preference. Wait for the layerkind to update based on the
+  // change in the doAnimateStreamlines boolean, then store the newly updated
+  // layerKind.
+  nextTick(() => {
+    userSettingsStore.preferredLayerKind = layerKind.value
+  })
+}
 </script>
 
 <style scoped>
