@@ -60,19 +60,14 @@
 <script lang="ts" setup>
 import { useGlobalSearchState } from '@/stores/globalSearch'
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
 const search = ref('')
-const router = useRouter()
 
 function itemClick(item: any) {
-  router.replace({
-    name: 'TopologySpatialTimeSeriesDisplay',
-    params: { locationId: item.id },
-  })
+  state.selectedItem = item
   state.active = false
 }
 </script>
