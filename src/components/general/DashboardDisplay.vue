@@ -2,13 +2,11 @@
   <div class="dashboard-container ga-3 pa-3">
     <template v-for="group in groups">
       <template v-for="element in group.elements">
-        <v-card
-          :style="{ gridArea: element.gridTemplateArea }"
-          class="d-flex flex-column"
-          density="compact"
-        >
-          <DashboardItems :items="element.items" />
-        </v-card>
+        <DashboardItems
+          :title="element.gridTemplateArea"
+          :gridTemplateArea="element.gridTemplateArea"
+          :items="element.items"
+        />
       </template>
     </template>
   </div>
@@ -63,5 +61,14 @@ watch(
   );
   height: 100%;
   width: 100%;
+}
+
+.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
 }
 </style>

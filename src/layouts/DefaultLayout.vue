@@ -328,7 +328,7 @@ body {
   max-width: 100%;
   bottom: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 2001;
   display: flex;
   flex-direction: column;
   gap: 10px;

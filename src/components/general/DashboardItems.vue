@@ -1,31 +1,48 @@
 <template>
-  <v-tabs
-    v-model="tab"
-    v-if="items.length > 1"
-    bg-color="primary"
-    align-tabs="center"
-    class="flex-0-0 w-100"
-    density="compact"
-  >
-    <v-tab
-      v-for="item in componentItems"
-      :prepend-icon="item.icon"
-      class="text-none"
+  <Teleport to="body" :disabled="!isFullscreen">
+    <v-card
+      :style="{ gridArea: gridTemplateArea }"
+      class="d-flex flex-column"
+      :class="{ fullscreen: isFullscreen }"
+      density="compact"
     >
-      {{ item.title }}
-    </v-tab>
-  </v-tabs>
+      <v-toolbar density="compact" height="50" class="flex-0-0">
+        <v-toolbar-title class="ms-3 text-capitalize">
+          {{ props.title }}
+        </v-toolbar-title>
 
-  <template v-for="(item, i) in componentItems">
-    <component
-      v-if="tab === i"
-      class="overflow-auto flex-1-1"
-      :is="item.component"
-      v-bind="item.componentProps"
-      :topologyNode="item.topologyNode"
-      :settings="item.settings"
-    />
-  </template>
+        <v-tabs v-model="tab" v-if="items.length > 1" align-tabs="center">
+          <v-tab
+            v-for="item in componentItems"
+            :prepend-icon="item.icon"
+            class="text-none"
+          >
+            {{ item.title }}
+          </v-tab>
+        </v-tabs>
+
+        <v-spacer />
+
+        <v-btn
+          :icon="isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
+          density="compact"
+          class="me-1"
+          @click="isFullscreen = !isFullscreen"
+        />
+      </v-toolbar>
+
+      <template v-for="(item, i) in componentItems">
+        <component
+          v-if="tab === i"
+          class="overflow-auto flex-1-1"
+          :is="item.component"
+          v-bind="item.componentProps"
+          :topologyNode="item.topologyNode"
+          :settings="item.settings"
+        />
+      </template>
+    </v-card>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -43,6 +60,8 @@ import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { computed, ref, watch } from 'vue'
 
 interface Props {
+  title: string
+  gridTemplateArea: string
   items: DashboardItem[]
 }
 
@@ -52,6 +71,8 @@ const tab = ref(0)
 
 const topologyNodesStore = useTopologyNodesStore()
 const componentSettingsStore = useComponentSettingsStore()
+
+const isFullscreen = ref(false)
 
 function getComponentSettingsForItem(item: DashboardItem) {
   const settings = componentSettingsStore.getSettingsById(
@@ -85,3 +106,14 @@ watch(componentItems, () => {
   tab.value = 0
 })
 </script>
+
+<style scoped>
+.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2000;
+}
+</style>
