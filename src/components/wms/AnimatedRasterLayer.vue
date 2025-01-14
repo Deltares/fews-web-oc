@@ -80,12 +80,12 @@ function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 }
 
 function onStartLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId !== currentLayer) return
+  if (e.sourceId !== currentSource) return
   isLoading.value = true
 }
 
 function onEndLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId !== currentLayer) return
+  if (e.sourceId !== currentSource) return
   isLoading.value = false
 }
 
