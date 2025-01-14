@@ -1,20 +1,20 @@
-{
-  "automatic": {
+[
+  {
     "id": "automatic",
     "name": "Automatic",
     "icon": "mdi-theme-light-dark",
     "style": "automatic"
   },
-  "light": {
-    "id": "carto-db-light",
+  {
+    "id": "light",
     "name": "CartoDB (light)",
     "icon": "mdi-weather-sunny",
     "style": "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
   },
-  "dark": {
-    "id": "carto-dark-matter",
+  {
+    "id": "dark",
     "name": "CartoDB (dark)",
     "icon": "mdi-weather-night",
     "style": "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
   }
-}
+]
