@@ -48,6 +48,11 @@ const showLocations = defineModel<boolean>('showLocations', { default: true })
 
 const state = useGlobalSearchState()
 
+watch(
+  () => state.selectedItem,
+  (item) => onSelectLocationId(item?.id),
+)
+
 const emit = defineEmits(['changeLocationId'])
 
 const selectedLocation = ref<Location | null>(null)
@@ -82,11 +87,10 @@ watch(
   () => (selectedLocation.value = getLocationFromId(props.selectedLocationId)),
 )
 
-watch(selectedLocation, onSelectLocation)
-function onSelectLocation(newValue: Location | null) {
-  if (newValue === null) {
+function onSelectLocationId(id: string | undefined) {
+  if (id === undefined) {
     return
   }
-  emit('changeLocationId', newValue.locationId)
+  emit('changeLocationId', id)
 }
 </script>
