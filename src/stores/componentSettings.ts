@@ -16,10 +16,6 @@ interface State {
   selectedOverlayIds: string[]
 }
 
-function isKeyOfDefaultStyle(key: string): key is keyof typeof DefaultBaseMaps {
-  return key in DefaultBaseMaps
-}
-
 export const useComponentSettingsStore = defineStore('componentSettings', {
   state: (): State => ({
     settings: [],
@@ -33,7 +29,7 @@ export const useComponentSettingsStore = defineStore('componentSettings', {
         .filter((o) => o !== undefined)
     },
     baseMaps: (state) => {
-      const defaultBaseMaps: BaseMap[] = Object.values(DefaultBaseMaps)
+      const defaultBaseMaps: BaseMap[] = DefaultBaseMaps
       const baseMaps = state.declarations?.baseMaps ?? []
       return [...defaultBaseMaps, ...baseMaps]
     },
@@ -51,26 +47,23 @@ export const useComponentSettingsStore = defineStore('componentSettings', {
     getSettingsById(id: string) {
       return this.settings.find((s) => s.id === id)
     },
-    getBaseMapById(id: string) {
+    getBaseMapById(id: string): BaseMap {
       if (id === 'automatic') {
         const isDark = useDark()
-        return DefaultBaseMaps[isDark.value ? 'dark' : 'light']
-      }
-      if (isKeyOfDefaultStyle(id)) {
-        return DefaultBaseMaps[id]
+        return this.getBaseMapById(isDark.value ? 'dark' : 'light')
       }
 
       const baseMap = this.baseMaps.find((b) => b.id === id)
+      if (baseMap) return baseMap
+
+      const defaultBaseMap = DefaultBaseMaps.find((basemap) => basemap.id === id)
+      if (defaultBaseMap) return defaultBaseMap
 
       // FIXME: What to do if the selected base map is not found?
       //        Could happen when persisting the selected base map
-      if (baseMap === undefined) {
-        console.error(`Base map with id ${id} not found`)
-        return DefaultBaseMaps.light
-      }
-
-      return baseMap
-    }
+      console.error(`Base map with id ${id} not found`)
+      return this.getBaseMapById('automatic')
+    },
   },
   persist: {
     key: 'weboc-component-settings-v1.0.0',
