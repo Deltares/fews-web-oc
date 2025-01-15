@@ -7,7 +7,7 @@
       density="compact"
     >
       <v-toolbar density="compact" height="50" class="flex-0-0">
-        <v-toolbar-title class="ms-3 text-capitalize">
+        <v-toolbar-title class="ms-3 text-capitalize text-body-1">
           {{ props.title }}
         </v-toolbar-title>
 
