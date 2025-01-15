@@ -1,14 +1,12 @@
 <template>
-  <div class="dashboard-container ga-3 pa-3">
+  <div class="dashboard-container ga-2 pa-2">
     <template v-for="group in groups">
       <template v-for="element in group.elements">
-        <v-card
-          :style="{ gridArea: element.gridTemplateArea }"
-          class="d-flex flex-column"
-          density="compact"
-        >
-          <DashboardItems :items="element.items" />
-        </v-card>
+        <DashboardElement
+          :title="element.gridTemplateArea"
+          :gridTemplateArea="element.gridTemplateArea"
+          :items="element.items"
+        />
       </template>
     </template>
   </div>
@@ -17,7 +15,7 @@
 <script setup lang="ts">
 import type { Dashboard } from '@/lib/dashboard/types'
 import { computed, watch } from 'vue'
-import DashboardItems from '@/components/general/DashboardItems.vue'
+import DashboardElement from '@/components/general/DashboardElement.vue'
 
 interface Props {
   dashboard: Dashboard
@@ -63,5 +61,14 @@ watch(
   );
   height: 100%;
   width: 100%;
+}
+
+.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
 }
 </style>
