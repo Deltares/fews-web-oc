@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-container ga-3 pa-3">
+  <div class="dashboard-container ga-2 pa-2">
     <template v-for="group in groups">
       <template v-for="element in group.elements">
         <DashboardElement
