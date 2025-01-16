@@ -1,11 +1,10 @@
 <template>
   <div
-    class="ssd-container w-100 h-100"
     ref="ssdContainer"
     id="ssd-container"
     v-resize="resize"
-    :style="isHidden ? {} : { width: containerWidth + 'px' }"
     :class="{ hidden: isHidden }"
+    class="ssd-container w-100 h-100"
   >
     <schematic-status-display
       v-if="src"
@@ -54,7 +53,6 @@ const width = ref(100)
 const height = ref(100)
 const margin = ref({ top: 0, left: 0 })
 const isHidden = ref(true)
-const containerWidth = ref(0)
 const aspectRatio = ref(1)
 
 const shouldFitWidth = computed(() => !mobile.value && props.fitWidth)
@@ -96,8 +94,6 @@ function setAspectRatio() {
 
 function setDimensions() {
   if (!ssdContainer.value) return
-
-  containerWidth.value = ssdContainer.value.offsetWidth
 
   const dimensions = getDimensions(
     ssdContainer.value,
