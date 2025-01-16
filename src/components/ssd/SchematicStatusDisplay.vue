@@ -8,6 +8,7 @@
       <SsdComponent
         :src="src"
         :key="panelId"
+        :mobile="mobile"
         :allowZooming="!disableZooming"
         @action="onAction"
         ref="ssdComponent"
@@ -83,8 +84,6 @@ const ssdContainer = ref<HTMLElement | null>(null)
 const selectedDate = ref<Date>(new Date())
 const selectedDateSlider = ref<Date>(selectedDate.value)
 
-const { mobile } = useDisplay()
-
 const selectedDateString = computed(() => {
   if (selectedDate.value === undefined) return ''
   const dateString = selectedDate.value.toISOString()
@@ -114,10 +113,18 @@ const hideSSD = computed(() => {
   return mobile.value && props.objectId !== ''
 })
 
-const ssdContainerSize = useElementSize(ssdContainer)
-watch(ssdContainerSize.width, () => {
-  if (ssdComponent.value) {
-    ssdComponent.value.resize()
+const { width: containerWidth } = useElementSize(ssdContainer)
+watch(containerWidth, () => {
+  ssdComponent.value?.resize()
+})
+
+const { thresholds, mobileBreakpoint } = useDisplay()
+const mobile = computed(() => {
+  const breakpoint = mobileBreakpoint.value
+  if (typeof breakpoint === 'number') {
+    return containerWidth.value < breakpoint
+  } else {
+    return containerWidth.value < thresholds.value[breakpoint]
   }
 })
 
