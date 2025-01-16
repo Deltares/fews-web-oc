@@ -18,6 +18,24 @@ export function addD3ZoomToSvg(element: SVGElement) {
     height: 0,
   }
 
+  type D3ZoomEvent = d3.D3ZoomEvent<SVGElement, unknown>
+
+  const zoomStart = (event: D3ZoomEvent) => {
+    if (event.sourceEvent?.type === 'mousedown') {
+      svg.style('cursor', 'grabbing')
+    }
+  }
+
+  const zooming = ({ transform }: D3ZoomEvent) => {
+    content.attr('transform', transform.toString())
+  }
+
+  const zoomEnd = (event: D3ZoomEvent) => {
+    if (event.sourceEvent?.type === 'mouseup') {
+      svg.style('cursor', 'inherit')
+    }
+  }
+
   const zoom = d3
     .zoom<SVGElement, unknown>()
     .scaleExtent([1, 10])
@@ -25,9 +43,9 @@ export function addD3ZoomToSvg(element: SVGElement) {
       [0, 0],
       [width, height],
     ])
-    .on('zoom', ({ transform }) => {
-      content.attr('transform', transform)
-    })
+    .on('start', zoomStart)
+    .on('zoom', zooming)
+    .on('end', zoomEnd)
 
   const resetZoom = () => {
     svg.transition().duration(100).call(zoom.transform, d3.zoomIdentity)
