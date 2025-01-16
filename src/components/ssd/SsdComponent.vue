@@ -1,5 +1,6 @@
 <template>
   <div class="ssd-container h-100" ref="ssdContainer">
+    <LoadingSpinner v-if="isLoading" />
     <div :style="ssdSpacerStyle">
       <schematic-status-display
         v-if="src"
@@ -18,7 +19,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, useTemplateRef } from 'vue'
 import { ref, watch } from 'vue'
-import { useDisplay } from 'vuetify'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
   addD3ZoomToSvg,
@@ -27,9 +27,11 @@ import {
   isSVGElement,
 } from '@/lib/svg'
 import { useHorizontalScroll } from '@/services/useHorizontalScroll'
+import LoadingSpinner from '@/components/general/LoadingSpinner.vue'
 
 interface Props {
   src?: string
+  mobile?: boolean
   fitWidth?: boolean
   allowZooming?: boolean
 }
@@ -45,12 +47,11 @@ const svgContainer =
 const emit = defineEmits(['action'])
 defineExpose({ resize })
 
-const { mobile } = useDisplay()
-
 const width = ref(100)
 const height = ref(100)
 const margin = ref({ top: 0, left: 0 })
 const aspectRatio = ref(1)
+const isLoading = ref(true)
 
 const ssdSpacerStyle = computed(() => {
   return props.allowZooming
@@ -67,10 +68,19 @@ const ssdSpacerStyle = computed(() => {
       }
 })
 
-const shouldFitWidth = computed(() => !mobile.value && props.fitWidth)
+const shouldFitWidth = computed(() => !props.mobile && props.fitWidth)
 watch(shouldFitWidth, setDimensions)
 
+watch(
+  () => props.src,
+  () => {
+    isLoading.value = true
+  },
+)
+
 function onLoad(): void {
+  isLoading.value = false
+
   resize()
 
   if (props.allowZooming) {
