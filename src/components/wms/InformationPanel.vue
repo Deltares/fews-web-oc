@@ -1,10 +1,6 @@
 <template>
   <ControlChip>
-    <v-btn
-      @click="showLayer = !showLayer"
-      density="compact"
-      icon
-    >
+    <v-btn @click="showLayer = !showLayer" density="compact" icon>
       <v-icon>{{ showLayer ? 'mdi-layers' : 'mdi-layers-off' }}</v-icon>
     </v-btn>
     <v-menu
