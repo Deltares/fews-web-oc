@@ -97,15 +97,9 @@
               width="320"
             >
               <template #activator="{ props }">
-                <!-- <v-btn v-bind="props" variant="plain"> -->
-                <!--   <v-icon size="x-large" class="pe-9 me-1">mdi-help-circle-outline</v-icon> -->
-                <!--   <span>Info</span> -->
-                <!-- </v-btn> -->
-                <!-- <v-icon v-bind="props">mdi-help-circle-outline</v-icon> -->
                 <v-btn
                   v-bind="props"
                   size="24"
-                  variant="plain"
                   class="me-4"
                   icon="mdi-help-circle-outline"
                 />
@@ -132,7 +126,6 @@
           </template>
           <template #append>
             <v-btn
-              variant="plain"
               class="text-lowercase"
               size="small"
               @click="showHash = !showHash"

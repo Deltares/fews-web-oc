@@ -32,7 +32,7 @@
   <Teleport to="#app-bar-content-end">
     <v-menu bottom left>
       <template v-slot:activator="{ props }">
-        <v-btn icon variant="plain" v-bind="props">
+        <v-btn icon v-bind="props">
           <v-icon>mdi-dots-horizontal-circle-outline</v-icon>
         </v-btn>
       </template>

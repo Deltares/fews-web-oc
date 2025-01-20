@@ -3,7 +3,6 @@
     <v-btn
       @click="showLocations = !showLocations"
       density="compact"
-      variant="plain"
       icon
     >
       <v-icon>{{
