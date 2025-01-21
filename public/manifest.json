@@ -1,0 +1,16 @@
+{
+  "id": "nl.deltares.fews.weboc",
+  "name": "Delft-FEWS WebOC",
+  "short_name": "Delft-FEWS WebOC",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": "topology/node",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#080C80"
+}

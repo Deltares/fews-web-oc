@@ -42,6 +42,7 @@ export default defineConfig(({ mode }) => {
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices
           `connect-src 'self' https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://login.microsoftonline.com ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices, Authentication, Basemaps
           `frame-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
+          `manifest-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`
         ].join('; '),
       },
     },
