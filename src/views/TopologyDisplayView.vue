@@ -68,6 +68,7 @@
           :is="Component"
           :filter-ids="filterIds"
           :topologyNode="topologyNode"
+          :boundingBox="boundingBox"
         />
       </keep-alive>
     </router-view>
@@ -115,6 +116,7 @@ import {
   type DisplayTab,
 } from '@/lib/topology/displayTabs.js'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
+import type { BoundingBox } from '@deltares/fews-wms-requests'
 
 interface Props {
   topologyId?: string
@@ -162,6 +164,11 @@ const activeNode = computed(() => {
 const secondaryWorkflows = computed(() => {
   if (!activeNode.value?.secondaryWorkflows) return null
   return activeNode.value.secondaryWorkflows
+})
+
+const boundingBox = computed(() => {
+  // @ts-expect-error FIXME: Update when the types are updated
+  return activeNode.value?.boundingBox as BoundingBox | undefined
 })
 
 const items = ref<ColumnItem[]>([])
