@@ -7,7 +7,7 @@ import {
   TerraDrawMapboxGLAdapter,
   TerraDrawRectangleMode,
 } from 'terra-draw'
-import { useMap } from '@indoorequal/vue-maplibre-gl'
+import { useMap } from '@/services/useMap'
 import type {
   FeatureId,
   GeoJSONStoreFeatures,

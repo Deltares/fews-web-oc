@@ -14,7 +14,7 @@ import {
   type MapSourceDataEvent,
 } from 'maplibre-gl'
 import { configManager } from '@/services/application-config'
-import { useMap } from '@indoorequal/vue-maplibre-gl'
+import { useMap } from '@/services/useMap'
 import { point } from '@turf/helpers'
 import { getLayerId, getSourceId } from '@/lib/map'
 
