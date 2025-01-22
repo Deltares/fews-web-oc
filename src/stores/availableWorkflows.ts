@@ -31,7 +31,7 @@ export const useAvailableWorkflowsStore = defineStore('availableWorkflows', {
       return workflow
     },
     async fetch() {
-      const baseUrl = new URL(configManager.get('VITE_FEWS_WEBSERVICES_URL'))
+      const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
       this.workflows = await fetchWorkflowsWithExpectedRunTime(baseUrl)
     },
     setPreferredWorkflowIds(workflowIds: string[]): void {

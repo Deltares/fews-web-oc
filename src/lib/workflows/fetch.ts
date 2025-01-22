@@ -1,8 +1,9 @@
 import { ModuleRuntimesResponse } from '@deltares/fews-pi-requests'
 import { Workflow } from './types'
+import { combineUrls } from '@/lib/utils/url'
 
 export async function fetchWorkflowsWithExpectedRunTime(
-  baseUrl: URL,
+  baseUrl: string,
 ): Promise<Workflow[]> {
   // Fetch workflows and runtimes in parallel.
   const [workflows, runTimes] = await Promise.all([
@@ -18,11 +19,11 @@ export async function fetchWorkflowsWithExpectedRunTime(
   return workflows
 }
 
-export async function fetchWorkflows(baseUrl: URL): Promise<Workflow[]> {
+export async function fetchWorkflows(baseUrl: string): Promise<Workflow[]> {
   // TODO: this should have
   //       a) JSON response
   //       b) a method in @deltares/fews-pi-requests
-  const url = new URL('rest/fewspiservice/v1/workflows', baseUrl)
+  const url = combineUrls(baseUrl, 'rest/fewspiservice/v1/workflows')
   const response = await fetch(url)
   if (!response.ok) {
     throw new Error('Failed to fetch workflows.')
@@ -49,10 +50,12 @@ export async function fetchWorkflows(baseUrl: URL): Promise<Workflow[]> {
 }
 
 export async function fetchWorkflowRuntimesInSeconds(
-  baseUrl: URL,
+  baseUrl: string,
 ): Promise<Record<string, number>> {
   // TODO: add moduleruntimes endpoint to @deltares/fews-pi-requests
-  const url = new URL('rest/fewspiservice/v1/moduleruntimes', baseUrl)
+  const url = new URL(
+    combineUrls(baseUrl, 'rest/fewspiservice/v1/moduleruntimes'),
+  )
   url.searchParams.append('documentFormat', 'PI_JSON')
 
   const response = await fetch(url)
