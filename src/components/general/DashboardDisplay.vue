@@ -7,7 +7,9 @@
           class="d-flex flex-column"
           density="compact"
         >
-          <DashboardItem :items="element.items" />
+          <!-- TODO: For now we only support one item per element -->
+          <!--       to prevent UI clutter. -->
+          <DashboardItem :item="element.items[0]" />
         </v-card>
       </template>
     </template>

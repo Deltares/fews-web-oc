@@ -1,31 +1,11 @@
 <template>
-  <v-tabs
-    v-model="tab"
-    v-if="items.length > 1"
-    bg-color="primary"
-    align-tabs="center"
-    class="flex-0-0 w-100"
-    density="compact"
-  >
-    <v-tab
-      v-for="item in componentItems"
-      :prepend-icon="item.icon"
-      class="text-none"
-    >
-      {{ item.title }}
-    </v-tab>
-  </v-tabs>
-
-  <template v-for="(item, i) in componentItems">
-    <component
-      v-if="tab === i"
-      class="overflow-auto flex-1-1"
-      :is="item.component"
-      v-bind="item.componentProps"
-      :topologyNode="item.topologyNode"
-      :settings="item.settings"
-    />
-  </template>
+  <component
+    class="overflow-auto flex-1-1"
+    :is="componentItem.component"
+    v-bind="componentItem.componentProps"
+    :topologyNode="componentItem.topologyNode"
+    :settings="componentItem.settings"
+  />
 </template>
 
 <script setup lang="ts">
@@ -40,18 +20,39 @@ import {
 } from '@/lib/topology/dashboard'
 import { useComponentSettingsStore } from '@/stores/componentSettings'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 
 interface Props {
-  items: DashboardItem[]
+  item: DashboardItem
 }
 
 const props = defineProps<Props>()
 
-const tab = ref(0)
-
 const topologyNodesStore = useTopologyNodesStore()
 const componentSettingsStore = useComponentSettingsStore()
+
+const componentItem = computed(() => {
+  return convertItemToComponentItem(props.item)
+})
+
+function convertItemToComponentItem(item: DashboardItem) {
+  const componentName = item.component
+  const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
+  const component = componentTypeToComponentMap[componentName]
+  const componentProps = getComponentPropsForNode(componentName, topologyNode)
+  const title = topologyNode?.name ?? componentTypeToTitleMap[componentName]
+  const icon = topologyNode?.iconId ?? componentTypeToIconMap[componentName]
+  const settings = getComponentSettingsForItem(item)
+  return {
+    title,
+    icon,
+    component,
+    componentProps,
+    componentName,
+    topologyNode,
+    settings,
+  }
+}
 
 function getComponentSettingsForItem(item: DashboardItem) {
   const settings = componentSettingsStore.getSettingsById(
@@ -59,29 +60,4 @@ function getComponentSettingsForItem(item: DashboardItem) {
   )
   return settings?.[item.component]
 }
-
-const componentItems = computed(() => {
-  return props.items.map((item) => {
-    const componentName = item.component
-    const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
-    const component = componentTypeToComponentMap[componentName]
-    const componentProps = getComponentPropsForNode(componentName, topologyNode)
-    const title = topologyNode?.name ?? componentTypeToTitleMap[componentName]
-    const icon = topologyNode?.iconId ?? componentTypeToIconMap[componentName]
-    const settings = getComponentSettingsForItem(item)
-    return {
-      title,
-      icon,
-      component,
-      componentProps,
-      componentName,
-      topologyNode,
-      settings,
-    }
-  })
-})
-
-watch(componentItems, () => {
-  tab.value = 0
-})
 </script>
