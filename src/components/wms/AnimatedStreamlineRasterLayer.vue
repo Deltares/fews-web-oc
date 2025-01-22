@@ -9,7 +9,7 @@ import {
   WMSStreamlineLayer,
   type WMSStreamlineLayerOptions,
 } from '@deltares/webgl-streamline-visualizer'
-import { useMap } from '@indoorequal/vue-maplibre-gl'
+import { useMap } from '@/services/useMap'
 import { onMounted, onUnmounted, watch } from 'vue'
 
 import { configManager } from '@/services/application-config'
