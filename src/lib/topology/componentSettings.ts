@@ -44,6 +44,7 @@ export interface ChartSettings {
 export interface MapSettings extends ChartSettings {
   chartPanelEnabled: boolean
   locationSearchEnabled: boolean
+  dateTimeSliderEnabled: boolean
 }
 
 export interface SchematicStatusDisplaySettings {
