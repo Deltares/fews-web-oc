@@ -50,7 +50,7 @@ interface Props {
   groupId?: string
   panelId?: string
   objectId?: string
-  settings: SchematicStatusDisplaySettings
+  settings?: SchematicStatusDisplaySettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
