@@ -7,7 +7,7 @@
           class="d-flex flex-column"
           density="compact"
         >
-          <DashboardItems :items="element.items" />
+          <DashboardItem :items="element.items" />
         </v-card>
       </template>
     </template>
@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import type { Dashboard } from '@/lib/dashboard/types'
 import { computed, watch } from 'vue'
-import DashboardItems from '@/components/general/DashboardItems.vue'
+import DashboardItem from '@/components/general/DashboardItem.vue'
 
 interface Props {
   dashboard: Dashboard
