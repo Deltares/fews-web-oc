@@ -15,9 +15,8 @@
         </template>
       </template>
     </div>
-    <v-card class="flex-0-0">
+    <v-card v-if="dashboard.dateTimeSliderEnabled" class="flex-0-0">
       <DateTimeSlider
-        v-if="dashboard.dateTimeSliderEnabled"
         v-model:selectedDate="selectedDate"
         :dates="combinedDates"
         :hide-speed-controls="mobile"
