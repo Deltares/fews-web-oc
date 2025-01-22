@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onUnmounted, useTemplateRef } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, useTemplateRef } from 'vue'
 import { ref, watch } from 'vue'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
@@ -78,16 +78,18 @@ watch(
   },
 )
 
-function onLoad(): void {
-  isLoading.value = false
-
-  resize()
-
+onMounted(() => {
   if (props.allowZooming) {
     setupD3Zoom()
   } else {
     setupHorizontalScroll()
   }
+})
+
+function onLoad(): void {
+  isLoading.value = false
+
+  resize()
 }
 
 function onAction(event: CustomEvent): void {
