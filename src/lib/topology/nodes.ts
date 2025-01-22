@@ -127,7 +127,8 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
     nodeHasDataDownload(node) ||
     nodeHasReports(node) ||
     nodeHasSystemMonitor(node) ||
-    nodeHasWebDisplay(node)
+    nodeHasWebDisplay(node) ||
+    nodeHasDashboard(node)
   )
 }
 
