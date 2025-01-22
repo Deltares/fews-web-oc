@@ -47,7 +47,9 @@ function convertBaseMapToUserSetting(baseMap: BaseMap): UserSettingsWithIcon {
 }
 
 const dashboard = computed(() => {
-  if (!props.topologyNode) return
-  return dashboardsStore.getDashboardById(props.topologyNode.id)
+  const dashboardId = props.topologyNode?.dashboardPanels?.[0]?.id
+  if (dashboardId === undefined) return
+
+  return dashboardsStore.getDashboardById(dashboardId)
 })
 </script>
