@@ -1,5 +1,5 @@
 <template>
-  <div class="container pa-2 ga-2">
+  <div class="display-container pa-2 ga-2">
     <div class="dashboard-container flex-1-1 ga-2">
       <template v-for="group in groups">
         <template v-for="element in group.elements">
@@ -104,7 +104,7 @@ watch(
   min-height: 0;
 }
 
-.container {
+.display-container {
   display: flex;
   background-color: color-mix(
     in srgb,
