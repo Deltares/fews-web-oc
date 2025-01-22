@@ -252,7 +252,6 @@ function setDimensions(): void {
 
 .weboc-ssd > svg {
   background-color: #fff;
-  border-radius: 4px;
 }
 
 .fit-content-button {
