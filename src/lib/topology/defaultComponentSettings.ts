@@ -18,6 +18,7 @@ const defaultMapSettings: MapSettings = {
   ...defaultChartSettings,
   chartPanelEnabled: true,
   locationSearchEnabled: true,
+  dateTimeSliderEnabled: true,
 }
 
 const defaultSchematicStatusDisplaySettings: SchematicStatusDisplaySettings = {
