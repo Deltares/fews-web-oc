@@ -112,7 +112,7 @@
     :unit="elevationUnit"
   />
   <DateTimeSlider
-    v-if="times && times.length > 0"
+    v-if="settings.dateTimeSliderEnabled && times?.length"
     v-model:selectedDate="currentTimeSlider"
     :dates="times"
     @update:doFollowNow="setLayerOptions"
@@ -356,7 +356,9 @@ function getDefaultLayerKind() {
 }
 
 const offsetBottomControls = computed(() => {
-  return props.times?.length ? '60px' : '0px'
+  return props.settings.dateTimeSliderEnabled && props.times?.length
+    ? '60px'
+    : '0px'
 })
 
 const layerHasElevation = computed(() => {
@@ -470,7 +472,7 @@ function onCoordinateMoved(lat: number, lng: number): void {
 .colourbar-container {
   position: absolute;
   z-index: 1000;
-  bottom: 65px;
+  bottom: v-bind('offsetBottomControls');
   left: 5px;
 }
 
