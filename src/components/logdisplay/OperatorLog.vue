@@ -153,42 +153,21 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
 import type { User } from 'oidc-client-ts'
+import {
+  LogLevelEnum,
+  LogType,
+  type LogLevelType,
+  type ManualLogMessage,
+  type SystemLogMessage,
+  type LogMessage,
+} from '@/lib/log'
+import type { LogsDisplay } from '@deltares/fews-pi-requests';
 
-const LogLevelEnum = {
-  Info: 'Info',
-  Warning: 'Warning',
-  Error: 'Error',
-} as const
-
-type LogLevelType = (typeof LogLevelEnum)[keyof typeof LogLevelEnum]
-
-enum LogType {
-  System = 'System',
-  Manual = 'Manual',
+interface Props {
+  logDisplay: LogsDisplay
 }
 
-interface GeneralLogMessage {
-  level: LogLevelType
-  message: string
-  creationTime: Date
-  eventCode: string
-  logType: LogType
-}
-
-interface ManualLogMessage extends GeneralLogMessage {
-  logType: LogType.Manual
-  user: string
-  topologyNodeId?: string
-}
-
-interface SystemLogMessage extends GeneralLogMessage {
-  logType: LogType.System
-  workflow: string
-}
-
-type LogMessage = Pick<GeneralLogMessage, 'logType'> &
-  Omit<ManualLogMessage, 'logType'> &
-  Omit<SystemLogMessage, 'logType'>
+defineProps<Props>()
 
 const newMessageDialog = ref(false)
 const newLogLevel = ref<LogLevelType>(LogLevelEnum.Info)
