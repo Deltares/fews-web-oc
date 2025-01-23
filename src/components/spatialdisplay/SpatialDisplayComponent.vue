@@ -34,7 +34,7 @@
     <LocationsLayer
       v-if="showLocationsLayer && hasLocations"
       :locationsGeoJson="geojson"
-      :selectedLocationId="props.locationId"
+      :selectedLocationIds="props.locationIds"
       @click="onLocationClick"
     />
     <CoordinateSelectorLayer
@@ -83,8 +83,8 @@
           width="50vw"
           max-width="250"
           :locations="locations"
-          :selectedLocationId="props.locationId"
-          @changeLocationId="onLocationChange"
+          :selectedLocationIds="props.locationIds"
+          @changeLocationIds="onLocationsChange"
         />
       </template>
     </v-chip-group>
@@ -173,7 +173,7 @@ interface Props {
   elevation?: number
   locations?: Location[]
   geojson: FeatureCollection<Geometry, Location>
-  locationId?: string
+  locationIds?: string[]
   latitude?: string
   longitude?: string
   currentTime?: Date
@@ -186,7 +186,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits([
-  'changeLocationId',
+  'changeLocationIds',
   'coordinateClick',
   'update:elevation',
   'update:currentTime',
@@ -285,11 +285,19 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   if (!event.features) return
   const locationId: string | undefined =
     event.features[0].properties?.locationId
-  if (locationId) onLocationChange(locationId)
+  if (!locationId) return
+
+  if (event.originalEvent.ctrlKey) {
+    const locationIds = props.locationIds ?? []
+    const newLocationIds = [...new Set([...locationIds, locationId])]
+    onLocationsChange(newLocationIds)
+  } else {
+    onLocationsChange([locationId])
+  }
 }
 
-function onLocationChange(locationId: string | null): void {
-  emit('changeLocationId', locationId)
+function onLocationsChange(locationIds: string[]): void {
+  emit('changeLocationIds', locationIds)
 }
 
 const canUseStreamlines = computed(
