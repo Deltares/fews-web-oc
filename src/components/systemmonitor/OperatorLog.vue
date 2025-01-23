@@ -7,139 +7,138 @@
     :custom-key-filter="customKeyFilters"
     :sort-by="[{ key: 'creationTime', order: 'desc' }]"
   >
-    <template v-slot:header>
-      <v-toolbar class="px-2" density="compact">
+    <template #header>
+      <div class="d-flex ga-2 w-100 h-100 align-center pa-2">
         <v-text-field
           v-model="search"
           placeholder="Search"
           prepend-inner-icon="mdi-magnify"
-          style="max-width: 300px"
-          variant="solo"
+          variant="outlined"
           clearable
           hide-details
-        ></v-text-field>
+          max-width="300px"
+          density="compact"
+        />
         <v-select
           v-model="selectedLogType"
           :items="selectableLogTypes"
           label="Select log type"
+          variant="outlined"
           clearable
           hide-details
-          style="max-width: 200px"
-        ></v-select>
+          max-width="200px"
+          density="compact"
+        />
         <v-select
           v-model="selectedUsers"
           :items="users"
           label="Filter by User"
+          variant="outlined"
           clearable
           hide-details
           multiple
-          style="max-width: 200px"
-        ></v-select>
+          max-width="200px"
+          density="compact"
+        />
         <v-select
           v-model="selectedLevels"
           :items="logLevels"
           label="Filter by Level"
+          variant="outlined"
           clearable
           hide-details
           multiple
-          style="max-width: 200px"
-        ></v-select>
+          max-width="200px"
+          density="compact"
+        />
         <v-select
           v-model="selectedEventCodes"
           :items="eventCodes"
           label="Filter by Event Code"
+          variant="outlined"
           clearable
           hide-details
           multiple
-          style="max-width: 200px"
-        ></v-select>
-        <v-dialog v-model="newMessageDialog" max-width="80%">
-          <template v-slot:activator="{ props }">
-            <v-btn
-              class="mb-2"
-              color="primary"
-              dark
-              v-bind="props"
-              icon="mdi-plus"
-              variant="text"
-            >
-            </v-btn>
+          max-width="250px"
+          density="compact"
+        />
+        <v-dialog v-model="newMessageDialog" max-width="500px">
+          <template #activator="{ props }">
+            <v-btn v-bind="props" icon="mdi-plus" variant="text" />
           </template>
-          <v-sheet>
-            <v-form ref="form">
+          <v-card>
+            <v-card-title>New Log Message</v-card-title>
+            <v-card-text>
               <v-select
                 v-model="newLogLevel"
                 :items="logLevels"
                 label="Log level"
-              >
-              </v-select>
-              <v-text-field
-                v-model="newLogMessage"
-                label="Message"
-              ></v-text-field>
-              <v-btn @click="saveNewMessage">Save</v-btn>
-            </v-form>
-          </v-sheet>
+              />
+              <v-text-field v-model="newLogMessage" label="Message" />
+            </v-card-text>
+            <v-card-actions>
+              <v-btn
+                text="Save"
+                variant="flat"
+                color="primary"
+                @click="saveNewMessage"
+              />
+              <v-btn text="Close" @click="newMessageDialog = false" />
+            </v-card-actions>
+          </v-card>
         </v-dialog>
         <span>Total: {{ logMessages.length }}</span>
-      </v-toolbar>
+      </div>
     </template>
-    <template v-slot:default="{ items }">
-      <div class="scroll-container">
-        <v-row style="margin: 0">
+    <template #default="{ items }">
+      <div class="scroll-container pa-2">
+        <v-row class="ma-0">
           <v-col
-            v-for="(log, index) in items"
-            :key="index"
+            v-for="log in items"
             :class="{
               'ml-auto': isLogMessageByCurrentUser(log.raw),
               'mr-auto': !isLogMessageByCurrentUser(log.raw),
             }"
             cols="8"
+            class="pa-0"
           >
             <v-card
               :class="{
                 'current-user-message': isLogMessageByCurrentUser(log.raw),
                 'other-message': !isLogMessageByCurrentUser(log.raw),
               }"
-              class="mb-2"
               :color="logToColor(log.raw)"
-              outlined
+              class="mb-4"
+              border
+              flat
             >
-              <template v-slot:prepend>
-                <v-icon
-                  size="small"
-                  :icon="
-                    log.raw.logType === LogType.System
-                      ? 'mdi-robot'
-                      : 'mdi-account'
-                  "
-                ></v-icon>
+              <template #prepend>
+                <v-icon size="small" :icon="logToUserIcon(log.raw)" />
               </template>
-              <template v-slot:title>
-                <div style="font-size: 0.8em">
-                  <strong>{{ logToUser(log.raw) }}</strong>
-                  @<small>{{ log.raw.creationTime.toISOString() }}</small>
+              <template #title>
+                <div class="d-flex align-end ga-2">
+                  <div class="font-weight-bold">{{ logToUser(log.raw) }}</div>
+                  <v-card-subtitle>{{
+                    log.raw.creationTime.toISOString()
+                  }}</v-card-subtitle>
                   <v-btn
                     v-if="log.raw.topologyNodeId"
-                    :to="{
-                      name: 'TopologyDisplay',
-                      params: { nodeId: log.raw.topologyNodeId },
-                    }"
-                    size="small"
+                    :to="logToRoute(log.raw)"
+                    density="compact"
                     icon="mdi-link-variant"
-                    variant="text"
-                  ></v-btn>
+                    variant="plain"
+                  />
                 </div>
               </template>
               <v-card-text>
                 {{ log.raw.message }}
               </v-card-text>
-              <template v-slot:append>
+              <template #append>
                 <v-icon
                   v-if="logToIcon(log.raw)"
                   size="small"
                   :icon="logToIcon(log.raw)"
-                ></v-icon>
+                />
               </template>
             </v-card>
           </v-col>
@@ -213,9 +212,9 @@ const selectableLogTypes = [
 ]
 
 const currentUser = ref<User | null>(null)
-onMounted((): void => {
+onMounted(() => {
   authenticationManager.userManager
-    .getUser()
+    ?.getUser()
     .then((response) => {
       currentUser.value = response
     })
@@ -228,7 +227,7 @@ const originalManualLogMessages = computed(() => {
   const messages: ManualLogMessage[] = [
     {
       logType: LogType.Manual,
-      user: currentUser.value?.profile?.name ?? 'Current User',
+      user: getUserName(),
       creationTime: new Date('2024-11-01T10:15:00Z'),
       level: LogLevelEnum.Info,
       eventCode: 'default',
@@ -253,7 +252,7 @@ const originalManualLogMessages = computed(() => {
     },
     {
       logType: LogType.Manual,
-      user: currentUser.value?.profile?.name ?? 'Current User',
+      user: getUserName(),
       creationTime: new Date('2024-11-01T18:30:00Z'),
       level: LogLevelEnum.Info,
       eventCode: 'default',
@@ -261,7 +260,7 @@ const originalManualLogMessages = computed(() => {
     },
     {
       logType: LogType.Manual,
-      user: currentUser.value?.profile?.name ?? 'Current User',
+      user: getUserName(),
       creationTime: new Date('2024-11-01T23:31:00Z'),
       level: LogLevelEnum.Error,
       eventCode: 'default',
@@ -309,14 +308,14 @@ const systemLogMessages = computed(() => {
   return messages
 })
 
-const logMessages = computed(() => {
-  const messages: LogMessage[] = [
-    ...manualLogMessages.value,
-    ...systemLogMessages.value,
-  ].map((log) => {
-    return { user: logToUser(log), workflow: '', ...log }
+const logMessages = computed<LogMessage[]>(() => {
+  return [...manualLogMessages.value, ...systemLogMessages.value].map((log) => {
+    return {
+      user: logToUser(log),
+      workflow: '',
+      ...log,
+    }
   })
-  return messages
 })
 
 const users = computed(() => {
@@ -333,14 +332,12 @@ const eventCodes = computed(() => {
   return [...new Set(logMessages.value.map((log) => log.eventCode))]
 })
 
-const isLogMessageByCurrentUser = (
-  log: ManualLogMessage | SystemLogMessage,
-) => {
+function isLogMessageByCurrentUser(log: ManualLogMessage | SystemLogMessage) {
   if (log.logType === LogType.System) return false
-  return log.user === currentUser.value?.profile?.name
+  return log.user === getUserName()
 }
 
-const logToUser = (log: ManualLogMessage | SystemLogMessage) => {
+function logToUser(log: ManualLogMessage | SystemLogMessage) {
   if (log.logType === LogType.System) return 'System'
   return isLogMessageByCurrentUser(log) ? 'You' : log.user
 }
@@ -351,36 +348,45 @@ const customKeyFilters: Record<
   string,
   (value: string, query: string, item?: any) => boolean
 > = {
-  logType: (value: string, query: string, item?: any) => {
+  logType: (_value, _query, item) => {
     if (!selectedLogType.value) return true
     return selectedLogType.value === item.raw.logType
   },
-  user: (value: string, query: string, item?: any) => {
+  user: (_value, _query, item) => {
     if (selectedUsers.value.length === 0) return true
     return selectedUsers.value.includes(item.raw.user)
   },
-  level: (value: string, query: string, item?: any) => {
+  level: (_value, _query, item) => {
     if (selectedLevels.value.length === 0) return true
     return selectedLevels.value.includes(item.raw.level)
   },
-  eventCode: (value: string, query: string, item?: any) => {
+  eventCode: (_value, _query, item) => {
     if (selectedEventCodes.value.length === 0) return true
     return selectedEventCodes.value.includes(item.raw.eventCode)
   },
 }
 
-const logToColor = (log: LogMessage) => {
+function logToColor(log: LogMessage) {
   switch (log.level) {
     case LogLevelEnum.Info:
-      return isLogMessageByCurrentUser(log) ? 'surface-variant' : 'surface'
+      return isLogMessageByCurrentUser(log) ? 'info' : 'surface'
     case LogLevelEnum.Warning:
       return 'warning'
     case LogLevelEnum.Error:
-      return 'error'
+      return 'red-darken-4'
   }
 }
 
-const logToIcon = (log: LogMessage) => {
+function logToUserIcon(log: LogMessage) {
+  switch (log.logType) {
+    case LogType.System:
+      return 'mdi-robot'
+    case LogType.Manual:
+      return 'mdi-account'
+  }
+}
+
+function logToIcon(log: LogMessage) {
   switch (log.level) {
     case LogLevelEnum.Info:
       return '$info'
@@ -391,10 +397,17 @@ const logToIcon = (log: LogMessage) => {
   }
 }
 
-const saveNewMessage = () => {
+function logToRoute(log: LogMessage) {
+  return {
+    name: 'TopologyDisplay',
+    params: { nodeId: log.topologyNodeId },
+  }
+}
+
+function saveNewMessage() {
   const newMessage: ManualLogMessage = {
     logType: LogType.Manual,
-    user: currentUser.value?.profile?.name ?? '',
+    user: getUserName(),
     creationTime: new Date(),
     level: newLogLevel.value,
     eventCode: 'default',
@@ -404,6 +417,10 @@ const saveNewMessage = () => {
   newMessageDialog.value = false
   newLogMessage.value = ''
   newLogLevel.value = LogLevelEnum.Info
+}
+
+function getUserName() {
+  return currentUser.value?.profile?.name ?? 'Current User'
 }
 </script>
 
