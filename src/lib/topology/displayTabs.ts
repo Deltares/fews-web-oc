@@ -3,6 +3,7 @@ import { RouteLocationNamedRaw } from 'vue-router'
 import {
   nodeHasCharts,
   nodeHasDataDownload,
+  nodeHasLogDisplay,
   nodeHasMap,
   nodeHasReports,
   nodeHasSchematicStatusDisplay,
@@ -19,6 +20,7 @@ export interface DisplayTab {
     | 'schematic-status-display'
     | 'system-monitor'
     | 'web-display'
+    | 'log-display'
   id: string
   title: string
   href?: string
@@ -85,6 +87,14 @@ const displayTabs: DisplayTab[] = [
     icon: 'mdi-view-dashboard',
     active: false,
   },
+  {
+    type: 'log-display',
+    id: 'log-display',
+    title: 'Log Display',
+    to: { name: 'TopologyLogDisplay' },
+    icon: 'mdi-view-dashboard',
+    active: false,
+  },
 ]
 
 export function displayTabsForNode(
@@ -127,6 +137,10 @@ export function displayTabsForNode(
         break
       case 'web-display':
         tab.active = nodeHasWebDisplay(node)
+        tab.to.params = { ...params }
+        break
+      case 'log-display':
+        tab.active = nodeHasLogDisplay(node)
         tab.to.params = { ...params }
         break
     }

@@ -127,7 +127,8 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
     nodeHasDataDownload(node) ||
     nodeHasReports(node) ||
     nodeHasSystemMonitor(node) ||
-    nodeHasWebDisplay(node)
+    nodeHasWebDisplay(node) ||
+    nodeHasLogDisplay(node)
   )
 }
 
@@ -161,4 +162,8 @@ export function nodeHasSystemMonitor(node: TopologyNode) {
 
 export function nodeHasWebDisplay(node: TopologyNode) {
   return node.embedUrl !== undefined
+}
+
+export function nodeHasLogDisplay(node: TopologyNode) {
+  return node.logDisplay !== undefined
 }

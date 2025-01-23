@@ -3,7 +3,6 @@
     <v-tabs v-model="selectedTab" class="flex-0-0">
       <v-tab value="Running tasks">Running tasks</v-tab>
       <v-tab value="Import status">Import status</v-tab>
-      <v-tab value="Operator log">Operator log</v-tab>
     </v-tabs>
     <v-window v-model="selectedTab" class="flex-1-1">
       <v-window-item value="Running tasks" class="h-100">
@@ -11,9 +10,6 @@
       </v-window-item>
       <v-window-item value="Import status" class="h-100">
         <import-status-component timeOut="1000" style="max-height: 100%" />
-      </v-window-item>
-      <v-window-item value="Operator log" class="h-100">
-        <operator-log timeOut="1000" style="max-height: 100%" />
       </v-window-item>
     </v-window>
   </div>
@@ -23,7 +19,6 @@
 import { ref } from 'vue'
 import RunningTasks from '../components/systemmonitor/RunningTasks.vue'
 import ImportStatusComponent from '../components/systemmonitor/ImportStatusComponent.vue'
-import OperatorLog from '../components/systemmonitor/OperatorLog.vue'
 
 const selectedTab = ref(0)
 </script>
