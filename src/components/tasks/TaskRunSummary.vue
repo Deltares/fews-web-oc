@@ -55,7 +55,6 @@ import {
   TaskStatus,
   TaskStatusCategory,
 } from '@/lib/taskruns'
-import { Workflow } from '@/lib/workflows'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed } from 'vue'
 import TaskRunProgress from './TaskRunProgress.vue'
@@ -67,7 +66,7 @@ interface Props {
 }
 const props = defineProps<Props>()
 
-const workflow = computed<Workflow>(() =>
+const workflow = computed(() =>
   availableWorkflowsStore.byId(props.task.workflowId),
 )
 
