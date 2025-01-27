@@ -167,10 +167,6 @@ function getSvgElement() {
   display: none;
 }
 
-.weboc-ssd > svg {
-  background-color: #fff;
-}
-
 .ssd {
   pointer-events: auto !important;
   user-drag: none;
