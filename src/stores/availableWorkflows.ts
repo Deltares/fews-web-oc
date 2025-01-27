@@ -24,7 +24,7 @@ export const useAvailableWorkflowsStore = defineStore('availableWorkflows', {
       return state.workflows.flatMap((workflow) =>
         workflow.whatIfTemplateId ? [workflow.whatIfTemplateId] : [],
       )
-    }
+    },
   },
   actions: {
     byId(workflowId: string): WorkflowItem {
@@ -41,7 +41,9 @@ export const useAvailableWorkflowsStore = defineStore('availableWorkflows', {
         (workflow) => workflow.whatIfTemplateId === whatIfTemplateId,
       )
       if (!workflow) {
-        throw new Error(`No workflow with what-if template ID "${whatIfTemplateId}" exists.`)
+        throw new Error(
+          `No workflow with what-if template ID "${whatIfTemplateId}" exists.`,
+        )
       }
       return workflow
     },
