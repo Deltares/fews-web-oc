@@ -80,20 +80,18 @@ import jsonFormsConfig from '@/assets/JsonFormsConfig.json'
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
 import { computed, ref } from 'vue'
 
-import { Workflow } from '@/lib/workflows/types'
-
 import {
   SubmitStatus,
   useWhatIfScenarios,
   WhatIfProperties,
 } from '@/services/useWhatIfScenarios'
-import { useWorkflows } from '@/services/useWorkflows'
 
 import { JsonForms } from '@jsonforms/vue'
 import ExpectedWorkflowRuntime from './ExpectedWorkflowRuntime.vue'
 import AvailableWorkflowServers from './AvailableWorkflowServers.vue'
+import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 
-const workflows = useWorkflows()
+const availableWorkflowsStore = useAvailableWorkflowsStore()
 
 interface Props {
   nodeId: string
@@ -103,15 +101,18 @@ const props = defineProps<Props>()
 const selectedWhatIfTemplateId = ref<string | null>(null)
 const whatIfScenarios = useWhatIfScenarios(
   () => props.nodeId,
+  availableWorkflowsStore.whatIfTemplateIds,
   selectedWhatIfTemplateId,
 )
 
-const workflowId = computed(
-  () => whatIfScenarios.selectedTemplate.value?.workflowId ?? null,
+const workflow = computed(() =>
+  selectedWhatIfTemplateId.value === null
+    ? null
+    : availableWorkflowsStore.byWhatIfTemplateId(
+        selectedWhatIfTemplateId.value,
+      ),
 )
-const workflow = computed<Workflow | null>(() =>
-  workflowId.value === null ? null : workflows.byId(workflowId.value),
-)
+const workflowId = computed(() => workflow.value?.id ?? null)
 
 const whatIfScenarioName = ref<string>('')
 const description = ref<string>('')
