@@ -83,6 +83,7 @@ export function getComponentPropsForNode(
       groupId: node.id,
       objectId: '',
       showDateTimeSlider: false,
+      allowZooming: true,
     }
     return result
   }
