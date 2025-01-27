@@ -158,7 +158,7 @@ interface DisplayTypeItem {
 }
 
 const displayActionItems = computed(() => {
-  const dataDownloadEnabled = props.settings.downloadEnabled
+  const dataDownloadEnabled = props.settings.actions.downloadData
   return [
     {
       icon: 'mdi-download',
@@ -179,10 +179,10 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
   )
   const noTooltip = !tooltip.value
 
-  const chartEnabled = props.settings.chartEnabled
-  const elevationChartEnabled = props.settings.elevationChartEnabled
-  const tableEnabled = props.settings.tableEnabled
-  const metaDataEnabled = props.settings.metaDataEnabled
+  const chartEnabled = props.settings.timeseriesChart.show
+  const elevationChartEnabled = props.settings.verticalProfileChart.show
+  const tableEnabled = props.settings.timeseriesTable.show
+  const metaDataEnabled = props.settings.metaDataPanel.show
   return [
     {
       icon: 'mdi-chart-line',
