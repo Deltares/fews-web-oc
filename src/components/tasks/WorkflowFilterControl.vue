@@ -17,13 +17,13 @@ const selectedWorkflowIds = defineModel<string[]>({ required: true })
 
 const workflowItems = computed(() =>
   availableWorkflowsStore.workflows.map((workflow) => {
-    const id = workflow.workflowId
+    const id = workflow.id
     const isPreferred =
       availableWorkflowsStore.preferredWorkflowIds.includes(id)
     return {
       id,
       title: workflow.name,
-      value: workflow.workflowId,
+      value: workflow.id,
       isPreferred,
     }
   }),
