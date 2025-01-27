@@ -4,13 +4,12 @@ import propertiesSchema from './properties-schema.json'
 import uiSchema from './ui-schema.json'
 import { computed, MaybeRefOrGetter, toValue } from 'vue'
 import { asyncComputed } from '@vueuse/core'
-import { useWorkflows } from '../useWorkflows'
 
 export interface WhatIfTemplate {
   id: string
   title: string
-  workflowId: string
   propertiesSchemaUrl: string
+  whatIfTemplateId: string
   uiSchemaUrl: string
 }
 
@@ -42,12 +41,12 @@ export type SubmitResult = SubmitSuccess | SubmitError
 
 export function useWhatIfScenarios(
   nodeId: MaybeRefOrGetter<string>,
+  whatIfTemplateIds: MaybeRefOrGetter<string[]>,
   selectedWhatIfTemplateId: MaybeRefOrGetter<string | null>,
 ) {
-  const workflows = useWorkflows()
-
   const templates = asyncComputed<WhatIfTemplate[]>(
-    async () => fetchWhatIfTemplates(toValue(nodeId)),
+    async () =>
+      fetchWhatIfTemplates(toValue(nodeId), toValue(whatIfTemplateIds)),
     [],
   )
   const selectedTemplate = computed<WhatIfTemplate | null>(() => {
@@ -69,26 +68,21 @@ export function useWhatIfScenarios(
 
     const id = whatIfTemplateId.replace('-template', '')
     const title = whatIfTemplateId.replaceAll('-', ' ')
-    // TODO: non-Durban placeholder workflowIds...
-    const workflowId =
-      whatIfTemplateId === 'what-if-template-1'
-        ? 'HydraulicPCSWMM_North_Umhlanga_Simplified_NOAA'
-        : 'HydraulicPCSWMM_South_Illovu_Simplified_NOAA'
     const propertiesSchemaUrl = 'placeholder'
     const uiSchemaUrl = 'placeholder'
     return {
       id,
       title,
-      workflowId,
+      whatIfTemplateId,
       propertiesSchemaUrl,
       uiSchemaUrl,
     }
   }
 
   async function fetchWhatIfTemplates(
-    nodeId: string,
+    _nodeId: string,
+    whatIfTemplateIds: string[],
   ): Promise<WhatIfTemplate[]> {
-    const whatIfTemplateIds = workflows.whatIfTemplateIds.value
     const whatIfTemplates = await Promise.all(
       whatIfTemplateIds.map(fetchWhatIfTemplate),
     )
