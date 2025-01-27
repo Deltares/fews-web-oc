@@ -8,6 +8,7 @@
       <SsdComponent
         :src="src"
         :key="panelId"
+        :allowZooming="allowZooming"
         @action="onAction"
         ref="ssdComponent"
       />
@@ -49,6 +50,7 @@ interface Props {
   panelId?: string
   objectId?: string
   showDateTimeSlider?: boolean
+  allowZooming?: boolean
 }
 
 interface SsdActionEventPayload {
