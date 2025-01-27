@@ -1,7 +1,6 @@
-export interface Workflow {
-  workflowId: string
-  name: string
-  description: string
+import { Workflow } from '@deltares/fews-pi-requests'
+
+export interface WorkflowItem extends Workflow {
   expectedRuntimeSeconds: number | null
 }
 
