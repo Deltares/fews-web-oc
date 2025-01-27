@@ -11,17 +11,17 @@ export function useWorkflowRuntime(
   })
 
   async function fetchRuntimePercentileInSeconds(
-    workflowId: string,
+    _workflowId: string,
     percentile: number,
   ): Promise<number> {
     // TODO: fetch percentiles of runtime in seconds for the specified workflow.
-    const factor = parseFloat(workflowId.substring(workflowId.length - 1))
+    const factor = Math.random()
     return factor * percentile * 5 * 60
   }
 
   async function fetchNumAvailableServers(workflowId: string): Promise<number> {
     // TODO: fetch the number of servers available ofr the specified workflow.
-    return 2 * parseFloat(workflowId.substring(workflowId.length - 1))
+    return Math.round(5 * Math.random()) + 1
   }
 
   async function getRuntimeRangeInSeconds(
