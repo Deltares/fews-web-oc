@@ -19,6 +19,7 @@ export interface DisplayTab {
     | 'schematic-status-display'
     | 'system-monitor'
     | 'web-display'
+    | 'tasks'
   id: string
   title: string
   href?: string
@@ -83,6 +84,14 @@ const displayTabs: DisplayTab[] = [
     title: 'System Monitor',
     to: { name: 'TopologySystemMonitor' },
     icon: 'mdi-view-dashboard',
+    active: false,
+  },
+  {
+    type: 'tasks',
+    id: 'tasks',
+    title: 'Tasks',
+    to: { name: 'TopologyTasksDisplay' },
+    icon: 'mdi-cog',
     active: false,
   },
 ]
