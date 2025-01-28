@@ -54,7 +54,7 @@ export function createDateRegistry() {
  * @param dates The reactive ref containing `Date[]` to be registered.
  */
 export function useDateRegistry(dates: DateRefOrGetter) {
-  const registry = inject(DATE_REGISTRY_KEY)
+  const registry = inject(DATE_REGISTRY_KEY, undefined)
   if (!registry) return
 
   onMounted(() => {
