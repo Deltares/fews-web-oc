@@ -25,11 +25,9 @@ export function provideSelectedDate(date: DateRefOrGetter) {
  * @returns The selected date.
  */
 export function useSelectedDate(fallbackDate: DateRefOrGetter) {
-  const injectedDate = inject(SELECTED_DATE_KEY)
+  const injectedDate = inject(SELECTED_DATE_KEY, fallbackDate)
 
-  const selectedDate = injectedDate
-    ? computed(() => toValue(injectedDate))
-    : computed(() => toValue(fallbackDate))
+  const selectedDate = computed(() => toValue(injectedDate))
 
   return {
     selectedDate,
