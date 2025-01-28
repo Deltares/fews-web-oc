@@ -15,7 +15,10 @@
         </template>
       </template>
     </div>
-    <v-card v-if="settings.dateTimeSliderEnabled" class="flex-0-0">
+    <v-card
+      v-if="settings.dateTimeSliderEnabled"
+      class="flex-0-0 overflow-visible"
+    >
       <DateTimeSlider
         v-model:selectedDate="selectedDate"
         :dates="combinedDates"
