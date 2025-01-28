@@ -54,6 +54,7 @@
           :current-time="props.currentTime"
           :displayType="displayType"
           :information-content="tooltip"
+          :settings="settings"
         >
         </TimeSeriesComponent>
         <TimeSeriesFileDownloadComponent
@@ -172,7 +173,26 @@ const displayActionItems = computed(() => {
   ].filter((item) => !item.hidden)
 })
 
-const displayType = ref(DisplayType.TimeSeriesChart)
+function toDisplayType(
+  value: typeof props.settings.general.startPanel,
+): DisplayType {
+  switch (value) {
+    case 'metaDataPanel':
+      return DisplayType.Information
+    case 'timeseriesChart':
+      return DisplayType.TimeSeriesChart
+    case 'timeseriesTable':
+      return DisplayType.TimeSeriesTable
+    case 'verticalProfileChart':
+      return DisplayType.ElevationChart
+    case 'verticalProfileTable':
+      throw new Error('Vertical profile table is not supported')
+  }
+}
+
+const displayType = ref<DisplayType>(
+  toDisplayType(props.settings.general.startPanel),
+)
 const displayTypeItems = computed<DisplayTypeItem[]>(() => {
   const noElevationCharts = !(
     (elevationChartDisplayconfig.value?.subplots?.length ?? 0) > 0
