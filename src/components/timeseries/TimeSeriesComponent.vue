@@ -1,6 +1,7 @@
 <template>
   <v-window v-model="tab" class="h-100 w-100" :touch="false">
     <v-window-item
+      v-if="settings.timeseriesChart.show"
       :value="DisplayType.TimeSeriesChart"
       class="time-series-component__container scroll"
     >
@@ -18,6 +19,7 @@
       </KeepAlive>
     </v-window-item>
     <v-window-item
+      v-if="settings.verticalProfileChart.show"
       :value="DisplayType.ElevationChart"
       class="elevation-chart-component__container scroll"
     >
@@ -35,6 +37,7 @@
       </KeepAlive>
     </v-window-item>
     <v-window-item
+      v-if="settings.timeseriesTable.show"
       :value="DisplayType.TimeSeriesTable"
       class="time-series-component__container max-height"
     >
@@ -48,7 +51,11 @@
       >
       </TimeSeriesTable>
     </v-window-item>
-    <v-window-item :value="DisplayType.Information" class="h-100">
+    <v-window-item
+      v-if="settings.metaDataPanel.show"
+      :value="DisplayType.Information"
+      class="h-100"
+    >
       <!-- <div class="px-4 h-100"> -->
       <!--   <iframe :srcdoc="informationContent" class="h-100 w-100 border-none" /> -->
       <!-- </div> -->
@@ -96,6 +103,7 @@ import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'
 import { getUniqueSeries } from '@/lib/charts/getUniqueSeriesIds.ts'
 import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
+import { getDefaultSettings, type ChartSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   config?: DisplayConfig
@@ -103,6 +111,7 @@ interface Props {
   displayType: DisplayType
   currentTime?: Date
   informationContent?: string
+  settings?: ChartSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -132,7 +141,7 @@ const props = withDefaults(defineProps<Props>(), {
       period: undefined,
     }
   },
-  displayType: DisplayType.TimeSeriesChart,
+  settings: () => getDefaultSettings('charts')
 })
 
 const { selectedDate } = useSelectedDate(() => props.currentTime ?? new Date())
