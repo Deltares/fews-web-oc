@@ -152,6 +152,7 @@ onMounted(() => {
       },
     ],
     margin,
+    automargin: true,
   }
 
   if (chartContainer.value) {
