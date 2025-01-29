@@ -39,7 +39,7 @@ export const defaultChartSettings: ChartSettings = {
       show: true,
       yTicks: true,
       yLabel: true,
-      yLabelPlacement: 'beside',
+      yLabelPlacement: 'top',
     },
   },
   timeseriesTable: {
@@ -63,7 +63,7 @@ export const defaultChartSettings: ChartSettings = {
       show: true,
       yTicks: true,
       yLabel: true,
-      yLabelPlacement: 'beside',
+      yLabelPlacement: 'top',
     },
   },
   verticalProfileTable: {
