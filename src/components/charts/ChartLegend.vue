@@ -1,19 +1,24 @@
 <template>
   <!-- Fills up space as v-sheet is absolutely positioned -->
-  <div v-if="!overlay" :style="{ height: `${legendContainerHeight}px` }" />
+  <div
+    v-if="!overlay"
+    class="flex-0-0"
+    :style="{ height: `${legendContainerHeight}px` }"
+  />
   <div class="chart-controls-container">
     <v-sheet
       v-click-outside="onOutsideClick"
       class="chart-controls"
+      :class="{ 'semi-transparent': overlay }"
       :style="chartControlsStyle"
-      :elevation="expanded ? 5 : 0"
+      :elevation="expanded && !overlay ? 5 : 0"
     >
       <div
         ref="chartLegendContainer"
         :style="chartLegendContainerStyle"
         class="chart-legend-container w-100"
       >
-        <v-chip-group ref="chartLegend" column multiple>
+        <v-chip-group ref="chartLegend" class="chart-legend" column multiple>
           <v-chip
             v-for="tag in tags"
             :key="tag.id"
@@ -37,8 +42,9 @@
       <v-btn
         v-show="requiresExpand"
         :icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-        size="small"
+        :size="overlay ? 'x-small' : 'small'"
         variant="plain"
+        :style="expandButtonStyle"
         @click="onToggleExpand()"
       />
     </v-sheet>
@@ -67,11 +73,12 @@ const emit = defineEmits(['toggleLine'])
 const overlay = computed(() => props.settings.placement.includes('inside'))
 
 const height = computed(() => {
+  const chipHeight = overlay.value ? 32 : 40
   const numOfLines = props.settings.numberOfLines
   if (numOfLines === 'all') {
-    return 100 * 40
+    return 100 * chipHeight
   }
-  return numOfLines * 40
+  return numOfLines * chipHeight
 })
 
 const chartLegend = useTemplateRef('chartLegend')
@@ -131,6 +138,15 @@ const chartControlsStyle = computed(() => {
   }
 })
 
+const expandButtonStyle = computed(() => {
+  const alignSelf = props.settings.placement.includes('lower')
+    ? 'flex-end'
+    : 'flex-start'
+  return {
+    alignSelf,
+  }
+})
+
 const chartLegendContainerStyle = computed(() => ({
   overflow: expanded.value ? 'auto' : 'hidden',
 }))
@@ -155,16 +171,25 @@ function onToggleExpand() {
   display: grid;
   position: absolute;
   flex: 0 0 auto;
-  overflow: hidden;
-  z-index: 10;
   width: 100%;
   height: 100%;
   pointer-events: none;
 }
 
 .chart-controls {
+  display: flex;
   pointer-events: auto;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.semi-transparent {
   background-color: rgba(var(--v-theme-surface), 0.9);
+}
+
+.chart-legend {
+  margin-top: 2px;
+  margin-bottom: 2px;
 }
 
 .chart-legend-container {
