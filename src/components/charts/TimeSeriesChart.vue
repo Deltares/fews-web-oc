@@ -1,6 +1,6 @@
 <template>
   <div
-    class="chart-with-chips"
+    class="chart-with-chips mt-1"
     :class="{ 'vertical-profile': verticalProfile }"
   >
     <ChartLegend
