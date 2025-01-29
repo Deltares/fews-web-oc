@@ -16,8 +16,8 @@ import {
 } from '@/lib/filters'
 
 export interface UseDisplayConfigReturn {
-  displayConfig: Ref<DisplayConfig | undefined>
-  displays: Ref<DisplayConfig[] | undefined>
+  displayConfig: Ref<DisplayConfig | null>
+  displays: Ref<DisplayConfig[] | null>
 }
 
 export interface UseDisplayConfigOptions {
@@ -96,8 +96,8 @@ export function useDisplayConfig(
     transformRequestFn: createTransformRequestFn(),
   })
 
-  const displayConfig = ref<DisplayConfig>()
-  const displays = ref<DisplayConfig[]>()
+  const displayConfig = ref<DisplayConfig | null>(null)
+  const displays = ref<DisplayConfig[] | null>(null)
 
   const response = ref<ActionsResponse>()
 
@@ -152,8 +152,8 @@ export function useDisplayConfigFilter(
     transformRequestFn: createTransformRequestFn(),
   })
 
-  const displayConfig = ref<DisplayConfig>()
-  const displays = ref<DisplayConfig[]>()
+  const displayConfig = ref<DisplayConfig | null>(null)
+  const displays = ref<DisplayConfig[] | null>(null)
   const response = ref<ActionsResponse>()
 
   watchEffect(async () => {
@@ -180,8 +180,8 @@ export function useDisplayConfigFilter(
         }
       })
     } else {
-      displayConfig.value = undefined
-      displays.value = undefined
+      displayConfig.value = null
+      displays.value = null
       return
     }
   })

@@ -8,7 +8,7 @@ import { ref, shallowRef, toValue, watchEffect } from 'vue'
 
 export interface UseLocationTooltipReturn {
   error: Ref<string | undefined>
-  tooltip: ShallowRef<string | undefined>
+  tooltip: ShallowRef<string | null>
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
 }
@@ -17,7 +17,7 @@ export function useLocationTooltip(
   baseUrl: string,
   filter: MaybeRefOrGetter<LocationsTooltipFilter | undefined>,
 ): UseLocationTooltipReturn {
-  const tooltip = shallowRef<string>()
+  const tooltip = shallowRef<string | null>(null)
   const isReady = ref(false)
   const isLoading = ref(false)
   const error = shallowRef<string>()
@@ -39,7 +39,7 @@ export function useLocationTooltip(
       tooltip.value = isHTML(response) ? response : formatAsHTML(response)
     } catch {
       error.value = 'Error loading location tooltip'
-      tooltip.value = undefined
+      tooltip.value = null
     } finally {
       isLoading.value = false
       isReady.value = true

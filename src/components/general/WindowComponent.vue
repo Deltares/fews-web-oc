@@ -1,6 +1,11 @@
 <template>
   <div class="d-flex flex-column h-100 w-100" :class="{ fullscreen }">
-    <v-toolbar v-if="!hideToolbar" density="compact" variant="flat" class="toolbar">
+    <v-toolbar
+      v-if="!hideToolbar"
+      density="compact"
+      variant="flat"
+      class="toolbar"
+    >
       <slot name="toolbar">
         {{ props.title }}
       </slot>
