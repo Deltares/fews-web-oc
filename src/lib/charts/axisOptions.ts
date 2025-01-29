@@ -10,7 +10,7 @@ import { merge } from 'lodash-es'
 
 function getDefaultMargin() {
   return {
-    top: 40,
+    top: 25,
     left: 50,
     right: 50,
     bottom: 40,
