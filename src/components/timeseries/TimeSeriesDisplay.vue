@@ -1,5 +1,5 @@
 <template>
-  <WindowComponent>
+  <WindowComponent :hideToolbar="settings.general.hideToolbar">
     <template v-slot:toolbar>
       <v-toolbar-items class="me-10">
         <v-btn
@@ -67,16 +67,19 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useDownloadDialogStore } from '@/stores/downloadDialog'
+import { getDefaultSettings, type ChartSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   nodeId?: string | string[]
+  settings?: ChartSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
   nodeId: '',
+  settings: () => getDefaultSettings('charts'),
 })
 
-const settings = useUserSettingsStore()
+const userSettings = useUserSettingsStore()
 const systemTimeStore = useSystemTimeStore()
 const downloadDialogStore = useDownloadDialogStore()
 
@@ -86,8 +89,8 @@ const selectedPlot = ref(0)
 
 const options = computed<UseDisplayConfigOptions>(() => {
   return {
-    useDisplayUnits: settings.useDisplayUnits,
-    convertDatum: settings.convertDatum,
+    useDisplayUnits: userSettings.useDisplayUnits,
+    convertDatum: userSettings.convertDatum,
   }
 })
 
