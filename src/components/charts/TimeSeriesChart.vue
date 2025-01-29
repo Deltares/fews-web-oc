@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
 import {
   AlertLines,
   ChartArea,
@@ -85,7 +85,6 @@ const showThresholds = ref(true)
 const chartContainer = ref<HTMLElement>()
 const axisTime = ref<CurrentTime>()
 
-
 onMounted(() => {
   if (chartContainer.value) {
     const axisOptions = getAxisOptions(
@@ -125,6 +124,13 @@ onMounted(() => {
     window.addEventListener('resize', resize)
   }
 })
+
+const xTicksDisplay = computed(() =>
+  props.settings.xAxis.xTicks ? undefined : 'none',
+)
+const yTicksDisplay = computed(() =>
+  props.settings.yAxis.yTicks ? undefined : 'none',
+)
 
 watch(
   () => props.currentTime,
@@ -411,5 +417,13 @@ onBeforeUnmount(() => {
 .chart-with-chips.vertical-profile {
   max-height: unset;
   max-width: 600px;
+}
+
+:deep([class*='y-axis-'] > .tick) {
+  display: v-bind(yTicksDisplay);
+}
+
+:deep([class*='x-axis-']) {
+  display: v-bind(xTicksDisplay);
 }
 </style>
