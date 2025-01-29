@@ -1,19 +1,9 @@
 <template>
-  <WindowComponent :hideToolbar="settings.general.hideToolbar">
-    <template v-slot:toolbar>
-      <v-toolbar-items class="me-10">
-        <v-btn
-          v-for="item in displayTypeItems"
-          :key="item.value"
-          :value="item.value"
-          :aria-label="item.label"
-          :text="item.label"
-          @click="displayType = item.value"
-          :active="displayType === item.value"
-        >
-          <v-icon>{{ item.icon }}</v-icon>
-        </v-btn>
-      </v-toolbar-items>
+  <TimeSeriesWindowComponent
+    :displayConfig="displayConfig"
+    :settings="settings"
+  >
+    <template #toolbar-title>
       <v-menu offset-y z-index="10000">
         <template v-slot:activator="{ props }">
           <v-btn class="text-capitalize" variant="text" v-bind="props"
@@ -30,44 +20,24 @@
           </v-list-item>
         </v-list>
       </v-menu>
-      <v-spacer />
-      <v-btn size="small" icon>
-        <v-icon>mdi-dots-horizontal</v-icon>
-        <v-menu activator="parent" density="compact">
-          <v-list>
-            <v-list-item
-              prepend-icon="mdi-download"
-              @click="downloadDialogStore.showDialog = true"
-              :disabled="downloadDialogStore.disabled"
-              >Download time series ...</v-list-item
-            >
-          </v-list>
-        </v-menu>
-      </v-btn>
     </template>
-    <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
-    </TimeSeriesComponent>
-    <TimeSeriesFileDownloadComponent :config="displayConfig" :options="options">
-    </TimeSeriesFileDownloadComponent>
-  </WindowComponent>
+  </TimeSeriesWindowComponent>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import TimeSeriesWindowComponent from './TimeSeriesWindowComponent.vue'
+import { ref, watch, computed } from 'vue'
 import { configManager } from '@/services/application-config'
 import {
   useDisplayConfig,
   type UseDisplayConfigOptions,
 } from '@/services/useDisplayConfig/index.ts'
-import { computed } from 'vue'
-import WindowComponent from '@/components/general/WindowComponent.vue'
-import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
-import { DisplayType } from '@/lib/display/DisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { useSystemTimeStore } from '@/stores/systemTime'
-import { useDownloadDialogStore } from '@/stores/downloadDialog'
-import { getDefaultSettings, type ChartSettings } from '@/lib/topology/componentSettings'
+import {
+  getDefaultSettings,
+  type ChartSettings,
+} from '@/lib/topology/componentSettings'
 
 interface Props {
   nodeId?: string | string[]
@@ -81,7 +51,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const userSettings = useUserSettingsStore()
 const systemTimeStore = useSystemTimeStore()
-const downloadDialogStore = useDownloadDialogStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -119,24 +88,4 @@ const plotIds = computed(() => {
 })
 
 watch(props, () => (selectedPlot.value = 0))
-
-interface DisplayTypeItem {
-  icon: string
-  label: string
-  value: DisplayType
-}
-
-const displayType = ref(DisplayType.TimeSeriesChart)
-const displayTypeItems: DisplayTypeItem[] = [
-  {
-    icon: 'mdi-chart-line',
-    label: 'Chart',
-    value: DisplayType.TimeSeriesChart,
-  },
-  {
-    icon: 'mdi-table',
-    label: 'Table',
-    value: DisplayType.TimeSeriesTable,
-  },
-]
 </script>
