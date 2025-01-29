@@ -115,7 +115,7 @@ interface Props {
   elevationChartConfig?: DisplayConfig
   displayType: DisplayType
   currentTime?: Date
-  informationContent?: string
+  informationContent?: string | null
   settings?: ChartSettings
 }
 
