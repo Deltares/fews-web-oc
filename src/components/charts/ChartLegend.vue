@@ -7,7 +7,6 @@
       class="chart-controls"
       :style="chartControlsStyle"
       :elevation="expanded ? 5 : 0"
-      rounded
     >
       <div
         ref="chartLegendContainer"
@@ -21,7 +20,8 @@
             label
             size="small"
             role="button"
-            :variant="tag.disabled ? 'text' : 'tonal'"
+            :density="overlay ? 'compact' : 'default'"
+            :variant="tag.disabled || overlay ? 'text' : 'tonal'"
             @click="toggleLine(tag)"
           >
             <div
@@ -164,6 +164,7 @@ function onToggleExpand() {
 
 .chart-controls {
   pointer-events: auto;
+  background-color: rgba(var(--v-theme-surface), 0.9);
 }
 
 .chart-legend-container {
@@ -183,5 +184,9 @@ function onToggleExpand() {
 
 :deep(.v-chip__content) {
   overflow: hidden;
+}
+
+:deep(.v-chip-group) {
+  padding: 0;
 }
 </style>

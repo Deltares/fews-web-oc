@@ -58,7 +58,7 @@ function getYLabelVerticalOptions(): Partial<CartesianAxesOptions> {
       },
     ],
     margin: {
-      top: 10,
+      top: 20,
       left: getDefaultMargin().left + 15,
     },
   }
@@ -84,7 +84,7 @@ function getNoYLabelOptions(): Partial<CartesianAxesOptions> {
       },
     ],
     margin: {
-      top: 10,
+      top: 20,
     },
   }
 }
@@ -116,6 +116,7 @@ export function getAxisOptions(
 
   const extraOptions = [configOptions]
 
+  // TODO: What to do in case of 'auto'?
   if (settings.yAxis.yLabelPlacement === 'beside') {
     extraOptions.push(getYLabelVerticalOptions())
   }
