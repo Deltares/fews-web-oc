@@ -12,10 +12,10 @@
         :layer-capabilities="layerCapabilities"
         :bounding-box="boundingBox"
         :times="times"
-        :settings="props.settings"
+        :settings="settings"
         :max-values-time-series="maxValuesTimeSeries"
         v-model:elevation="elevation"
-        v-model:current-time="currentTime"
+        @update:current-time="currentTime = $event"
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
     </div>
@@ -27,7 +27,7 @@
           :filter="filter"
           :elevation-chart-filter="elevationChartFilter"
           :current-time="currentTime"
-          :settings="props.settings"
+          :settings="settings"
         />
       </router-view>
     </div>
@@ -57,8 +57,12 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import type { BoundingBox } from '@deltares/fews-wms-requests'
 import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
-import type { MapSettings } from '@/lib/topology/componentSettings'
+import {
+  type MapSettings,
+  getDefaultSettings,
+} from '@/lib/topology/componentSettings'
 import { useElementSize } from '@vueuse/core'
+import { useDateRegistry } from '@/services/useDateRegistry'
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
 )
@@ -76,6 +80,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
   filterIds: () => [],
+  settings: () => getDefaultSettings('map'),
 })
 
 const route = useRoute()
@@ -102,6 +107,8 @@ const end = computed(() => {
   if (!times.value || times.value.length === 0) return null
   return times.value[times.value.length - 1]
 })
+
+useDateRegistry(() => times.value ?? [])
 
 const maxValuesTimeSeries = useWmsMaxValuesTimeSeries(
   baseUrl,
@@ -170,9 +177,7 @@ const filter = computed(() => {
 })
 
 const showChartPanel = computed(() => {
-  return (
-    filter.value !== undefined && !(props.settings?.chartPanelEnabled === false)
-  )
+  return filter.value !== undefined && props.settings.chartPanelEnabled
 })
 
 const elevationChartFilter = computed(() => {

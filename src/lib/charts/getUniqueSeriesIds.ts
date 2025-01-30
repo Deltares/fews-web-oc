@@ -1,4 +1,4 @@
-import uniq from 'lodash-es/uniq'
+import { uniq, uniqBy } from 'lodash-es'
 import type { ChartSeries } from './types/ChartSeries.js'
 
 export function getUniqueSeriesIds(series: ChartSeries[] | undefined) {
@@ -7,5 +7,13 @@ export function getUniqueSeriesIds(series: ChartSeries[] | undefined) {
   if (series === undefined) return []
   return uniq(
     series.filter((series) => series.visibleInTable).map((series) => series.id),
+  )
+}
+
+export function getUniqueSeries(series: ChartSeries[] | undefined) {
+  if (series === undefined) return []
+  return uniqBy(
+    series.filter((series) => series.visibleInTable),
+    'id',
   )
 }

@@ -107,7 +107,7 @@ import { scaleTime } from 'd3-scale'
 import { DateTime } from 'luxon'
 
 import { onMounted } from 'vue'
-import { findDateIndex } from '@/lib/utils/findDateIndex'
+import { findDateIndex } from '@/lib/utils/dates'
 
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/antd.css'

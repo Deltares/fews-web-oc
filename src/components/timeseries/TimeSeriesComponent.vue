@@ -10,7 +10,7 @@
           :config="subplot"
           :series="series"
           :key="`${subplot.title}-${i}`"
-          :currentTime="props.currentTime"
+          :currentTime="selectedDate"
           :isLoading="isLoading(subplot, loadingSeriesIds)"
           :zoomHandler="sharedZoomHandler"
         >
@@ -93,6 +93,9 @@ import { useDisplay } from 'vuetify'
 import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
 import { until } from '@vueuse/core'
 import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'
+import { getUniqueSeries } from '@/lib/charts/getUniqueSeriesIds.ts'
+import { useDateRegistry } from '@/services/useDateRegistry'
+import { useSelectedDate } from '@/services/useSelectedDate'
 
 interface Props {
   config?: DisplayConfig
@@ -132,6 +135,7 @@ const props = withDefaults(defineProps<Props>(), {
   displayType: DisplayType.TimeSeriesChart,
 })
 
+const { selectedDate } = useSelectedDate(() => props.currentTime ?? new Date())
 const store = useSystemTimeStore()
 const lastUpdated = ref<Date>(new Date())
 const isEditing = ref(false)
@@ -166,8 +170,20 @@ const {
   () => props.elevationChartConfig.requests,
   lastUpdated,
   options,
-  () => props.currentTime,
+  selectedDate,
 )
+
+const dates = computed(() => {
+  const chartSeries = props.config.subplots.flatMap((s) => s.series)
+  const seriesDates = getUniqueSeries(chartSeries)
+    .map((chartSeries) => chartSeries.dataResources[0])
+    .map((resource) => series.value[resource])
+    .flatMap((series) => series?.data ?? [])
+    .flatMap((data) => (data.x as Date) ?? [])
+
+  return seriesDates
+})
+useDateRegistry(dates)
 
 function isLoading(subplot: ChartConfig, loadingSeriesIds: string[]) {
   return subplot.series

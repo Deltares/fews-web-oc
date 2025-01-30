@@ -82,7 +82,6 @@ export function getComponentPropsForNode(
       panelId: node.scadaPanelId,
       groupId: node.id,
       objectId: '',
-      showDateTimeSlider: false,
     }
     return result
   }
