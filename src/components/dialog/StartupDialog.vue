@@ -26,10 +26,9 @@ const imagesBaseUrl = `${import.meta.env.BASE_URL}images/`
 
 const splashSrc = asyncComputed(async () => {
   if (!configStore.general.splashScreen) return
-  return await getLocalOrRemoteFileUrl(
-    imagesBaseUrl,
-    configStore.general.splashScreen,
-  )
+  const localPath = `${imagesBaseUrl}${configStore.general.splashScreen}`
+  const remoteResource = configStore.general.splashScreen
+  return await getLocalOrRemoteFileUrl(localPath, remoteResource)
 })
 
 const shouldAgreeToTerms = computed(
