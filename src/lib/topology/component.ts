@@ -5,7 +5,6 @@ export type ComponentType =
   | 'tasks'
   | 'dashboard'
 
-
 export const ComponentType = {
   map: 'map',
   charts: 'charts',
