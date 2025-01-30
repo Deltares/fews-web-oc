@@ -221,7 +221,7 @@ watch(
       const link = document.createElement('link')
       link.id = 'custom-style-sheet'
       link.rel = 'stylesheet'
-      link.href = configStore.customStyleSheet
+      link.href = await configStore.getCustomStyleSheet()
       link.onload = () => {
         appBarStyle.value = {
           backgroundImage: 'var(--weboc-app-bar-bg-image)',
@@ -251,10 +251,9 @@ watch(
       logoSrc.value = defaultLogo
       return
     }
-    const logoUrl = await getLocalOrRemoteFileUrl(
-      imagesBaseUrl,
-      configStore.general.icons?.logo,
-    )
+    const localPath = `${imagesBaseUrl}${configStore.general.icons.logo}`
+    const remoteResource = configStore.general.icons.logo
+    const logoUrl = await getLocalOrRemoteFileUrl(localPath, remoteResource)
     logoSrc.value = logoUrl ?? defaultLogo
   },
 )
