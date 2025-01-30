@@ -1,6 +1,8 @@
 import type { VDataTable } from 'vuetify/components'
 
-type ReadonlyDataTableHeader = (typeof VDataTable)['headers']
+type ReadonlyHeaders = VDataTable['$props']['headers']
+type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>> ? I : never
+type ReadonlyDataTableHeader = UnwrapReadonlyArrayType<ReadonlyHeaders>
 
 export interface TableHeaders extends ReadonlyDataTableHeader {
   color?: string

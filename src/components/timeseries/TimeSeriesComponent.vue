@@ -48,6 +48,7 @@
         :config="tableConfig"
         :series="series"
         :key="tableConfig.title"
+        :settings="settings.timeseriesTable"
         class="single"
         @change="(event) => onDataChange(event)"
         @update:isEditing="isEditing = $event"

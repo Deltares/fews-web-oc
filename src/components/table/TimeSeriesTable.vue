@@ -5,10 +5,11 @@
     </v-tooltip>
     <v-data-table
       class="data-table"
-      :headers="tableHeaders as any"
+      :headers="tableHeaders"
       :items="tableData"
       :expanded="editedSeriesIds"
       :items-per-page-options="itemsPerPageOptions"
+      :sortBy="sortBy"
       items-per-page="200"
       item-value="date"
       density="compact"
@@ -16,15 +17,27 @@
       fixed-header
       height="100%"
     >
-      <template v-slot:headers="{ columns }">
+      <template v-slot:headers="{ columns, toggleSort, isSorted, getSortIcon }">
         <tr>
           <template v-for="column in columns" :key="column.key">
             <th
               v-if="column.key === 'date'"
               class="table-header table-date sticky-column"
+              :class="{
+                'v-data-table__th--sorted': isSorted(column),
+                'v-data-table__th--sortable': column.sortable && !isEditing,
+              }"
+              @click="
+                column.sortable && !isEditing ? toggleSort(column) : undefined
+              "
             >
               <div class="table-header-indicator-text">
                 <span>{{ column.title }}</span>
+                <v-icon
+                  v-if="column.sortable && !isEditing"
+                  class="v-data-table-header__sort-icon"
+                  :icon="getSortIcon(column)"
+                />
                 <div
                   v-if="isEditing && nonEquidistantSeries.length > 0"
                   class="table-header__actions"
@@ -185,10 +198,12 @@ import {
   getMidpointOfDates,
   toISOString,
 } from '@/lib/date'
+import { type ChartSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   config: ChartConfig
   series: Record<string, Series>
+  settings: ChartSettings['timeseriesTable']
 }
 
 const props = defineProps<Props>()
@@ -229,12 +244,24 @@ const nonEquidistantSeries = computed(() => {
     .map(([id]) => id)
 })
 
+const sortBy = computed(() => {
+  const order: 'asc' | 'desc' =
+    props.settings.sortDateTimeColumn === 'ascending' ? 'asc' : 'desc'
+  return [
+    {
+      key: 'date',
+      order,
+    },
+  ]
+})
+
 onBeforeMount(() => {
   if (props.config !== undefined) {
     seriesIds.value = getUniqueSeriesIds(props.config.series)
     tableHeaders.value = createTableHeaders(
       props.config.series,
       seriesIds.value,
+      props.settings.allowDateTimeSorting,
     )
   }
 
@@ -263,6 +290,7 @@ watch(
     tableHeaders.value = createTableHeaders(
       props.config.series,
       seriesIds.value,
+      props.settings.allowDateTimeSorting,
     )
   },
 )
