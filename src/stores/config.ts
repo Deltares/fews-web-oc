@@ -116,11 +116,12 @@ const useConfigStore = defineStore('config', {
 
       if (this.general.customStyleSheet) {
         const localPath = `${import.meta.env.BASE_URL}${this.general.customStyleSheet}`
-        const remoteResource = `css/${this.general.customStyleSheet}`
-        return (
-          (await getLocalOrRemoteFileUrl(localPath, remoteResource)) ??
-          defaultStyle
+        const remoteResource = this.general.customStyleSheet
+        const customStyle = await getLocalOrRemoteFileUrl(
+          localPath,
+          remoteResource,
         )
+        return customStyle ?? defaultStyle
       }
 
       return defaultStyle
