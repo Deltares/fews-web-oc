@@ -1,49 +1,18 @@
 <template>
   <div class="chart-with-chips">
-    <LoadingOverlay v-if="isLoading" :offsets="margin" height="80%" />
+    <ChartLegend
+      :tags="legendTags"
+      :lines="1"
+      :margin="margin"
+      @toggle-line="toggleLine"
+    />
+    <LoadingOverlay v-if="isLoading" :offsets="margin" />
     <div ref="chartContainer" class="chart-container" v-show="!isLoading"></div>
-    <v-sheet
-      class="chart-controls"
-      rounded
-      :max-height="expanded ? undefined : LEGEND_HEIGHT"
-      :min-height="LEGEND_HEIGHT"
-      :elevation="expanded ? 6 : 0"
-    >
-      <v-chip-group
-        ref="chipGroup"
-        column
-        :class="['chart-legend', { 'chart-legend--large': requiresExpand }]"
-      >
-        <v-chip
-          size="small"
-          :variant="tag.disabled ? 'text' : 'tonal'"
-          label
-          v-for="tag in legendTags"
-          :key="tag.id"
-          @click="toggleLine(tag.id)"
-        >
-          <div>
-            <div
-              style="margin-top: 6px; margin-right: 5px"
-              v-html="tag.legendSvg"
-            ></div>
-          </div>
-          {{ tag.name }}
-        </v-chip>
-      </v-chip-group>
-      <v-btn
-        v-show="requiresExpand"
-        :icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-        size="small"
-        variant="plain"
-        @click="toggleExpand"
-      ></v-btn>
-    </v-sheet>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
 import {
   AlertLines,
   CartesianAxesOptions,
@@ -66,6 +35,7 @@ import {
   MouseOver,
 } from '@deltares/fews-web-oc-charts'
 import LoadingOverlay from '@/components/charts/LoadingOverlay.vue'
+import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
 import type { ThresholdLine } from '../../lib/charts/types/ThresholdLine.js'
@@ -76,10 +46,8 @@ import {
 } from '@/lib/charts/dataFromResources'
 import uniq from 'lodash-es/uniq'
 import { extent } from 'd3'
-import { VChipGroup } from 'vuetify/components'
 import { difference, merge } from 'lodash-es'
-
-const LEGEND_HEIGHT = 76
+import type { Tag } from '@/lib/charts/tags'
 
 interface Props {
   config?: ChartConfig
@@ -87,13 +55,6 @@ interface Props {
   currentTime?: Date
   isLoading?: boolean
   zoomHandler?: ZoomHandler
-}
-
-interface Tag {
-  id: string
-  name: string
-  disabled: boolean
-  legendSvg: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -115,52 +76,60 @@ let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
 const legendTags = ref<Tag[]>([])
+const showThresholds = ref(true)
 const chartContainer = ref<HTMLElement>()
-const chipGroup = ref<VChipGroup>()
-const expanded = ref(false)
-const requiresExpand = ref(false)
 const axisTime = ref<CurrentTime>()
 
-const margin = {
-  top: 110,
-  right: 50,
-  left: 50,
+const defaultOptions: CartesianAxesOptions = {
+  x: [
+    {
+      type: AxisType.time,
+      position: AxisPosition.Bottom,
+      showGrid: true,
+    },
+  ],
+  y: [
+    {
+      position: AxisPosition.Left,
+      showGrid: true,
+      label: ' ',
+      unit: ' ',
+      nice: true,
+    },
+    {
+      position: AxisPosition.Right,
+      label: ' ',
+      unit: ' ',
+      nice: true,
+    },
+  ],
+  margin: {
+    top: 30,
+    right: 50,
+    left: 50,
+  },
 }
 
-onMounted(() => {
-  const axisOptions: CartesianAxesOptions = {
-    x: [
-      {
-        type: AxisType.time,
-        position: AxisPosition.Bottom,
-        showGrid: true,
-      },
-    ],
-    y: [
-      {
-        position: AxisPosition.Left,
-        showGrid: true,
-        label: ' ',
-        unit: ' ',
-        nice: true,
-      },
-      {
-        position: AxisPosition.Right,
-        label: ' ',
-        unit: ' ',
-        nice: true,
-      },
-    ],
-    margin,
-    automargin: true,
+const axisOptions = computed(() => {
+  const configOptions: Partial<CartesianAxesOptions> = {
+    x: props.config?.xAxis,
+    y: props.config?.yAxis,
   }
 
+  return merge(defaultOptions, configOptions)
+})
+
+const margin = computed(() => {
+  return axisOptions.value.margin ?? {}
+})
+
+onMounted(() => {
   if (chartContainer.value) {
     axis = new CartesianAxes(
       chartContainer.value,
       null,
       null,
-      merge(axisOptions, { x: props.config?.xAxis, y: props.config?.yAxis }),
+      axisOptions.value,
     )
     const mouseOver = new MouseOver()
     const zoom = props.zoomHandler ?? new ZoomHandler(WheelMode.NONE)
@@ -254,12 +223,7 @@ const setThresholdLines = () => {
   if (thresholdLinesData === undefined || thresholdLinesData.length === 0)
     return
 
-  const tag = legendTags.value.find((tag) => {
-    return tag.id === 'Thresholds'
-  })
-
-  const disabled = tag?.disabled ?? false
-  if (disabled) {
+  if (!showThresholds.value) {
     thresholdLines = []
     let defaultDomain: [number, number] = [NaN, NaN]
     if (
@@ -395,47 +359,26 @@ const setTags = () => {
   }
 }
 
-const toggleLine = (id: string) => {
-  const tag = legendTags.value.find((tag) => {
-    return tag.id === id
-  })
-  if (tag) {
-    tag.disabled = !tag.disabled
-  }
-
-  if (id === 'Thresholds') {
+const toggleLine = (tag: Tag) => {
+  if (tag.id === 'Thresholds') {
+    showThresholds.value = !tag.disabled
     setThresholdLines()
     axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
   } else {
-    toggleChartVisibility(axis, id)
+    toggleChartVisibility(axis, tag.id)
   }
 }
 
 const resize = () => {
   nextTick(() => {
     axis.resize()
-    setLegendSize()
   })
-}
-
-function setLegendSize() {
-  const contentHeight = chipGroup.value?.$el.scrollHeight
-  if (contentHeight && contentHeight > LEGEND_HEIGHT) {
-    requiresExpand.value = true
-  } else {
-    requiresExpand.value = false
-  }
-}
-
-function toggleExpand() {
-  expanded.value = !expanded.value
 }
 
 const onValueChange = () => {
   clearChart()
   refreshChart()
   setTags()
-  setLegendSize()
 }
 
 const beforeDestroy = () => {
@@ -475,15 +418,6 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-.chart-controls {
-  position: absolute;
-  display: flex;
-  flex: 0;
-  margin: 5px 10px;
-  padding: 0px 0px 0px 40px;
-  overflow: hidden;
-}
-
 .chart-container.hidden > svg {
   display: none;
 }
@@ -492,24 +426,11 @@ onBeforeUnmount(() => {
   max-height: none;
 }
 
-.chart-legend {
-  overflow-y: hidden;
-  align-self: end;
-}
-
-.chart-legend.chart-legend--large {
-  align-self: start;
-}
-
 .chart-with-chips {
   display: flex;
   position: relative;
   flex-direction: column;
   flex: 1 1 80%;
   max-height: 800px;
-}
-
-.v-chip--outlined {
-  opacity: 0.5;
 }
 </style>
