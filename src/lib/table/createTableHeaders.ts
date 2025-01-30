@@ -4,6 +4,7 @@ import type { TableHeaders } from './types/TableHeaders'
 export function createTableHeaders(
   chartSeriesArray: ChartSeries[] | undefined,
   seriesIds: string[],
+  allowDateSorting: boolean,
 ): TableHeaders[] {
   if (chartSeriesArray === undefined) return []
   const tableHeaders: TableHeaders[] = []
@@ -11,6 +12,7 @@ export function createTableHeaders(
     key: 'date',
     title: 'Date',
     editable: false,
+    sortable: allowDateSorting,
   })
   seriesIds.forEach((seriesId) => {
     const chartSeries = chartSeriesArray.find((s) => s.id === seriesId)
