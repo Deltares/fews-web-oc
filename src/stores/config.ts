@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
-import { getFewsConfig } from '../lib/fews-config/index.js'
+import {
+  getFewsConfig,
+  getLocalOrRemoteFileUrl,
+} from '@/lib/fews-config/index.js'
 import type { WebOcGeneralConfig } from '@deltares/fews-pi-requests'
 import type { WebOcComponent } from '@/lib/fews-config/types'
 import { RouteLocation } from 'vue-router'
@@ -108,6 +111,20 @@ const useConfigStore = defineStore('config', {
 
       return components as Extract<WebOcComponent, { type: T }>[]
     },
+    async getCustomStyleSheet() {
+      const defaultStyle = `${import.meta.env.BASE_URL}weboc-default-style.css`
+
+      if (this.general.customStyleSheet) {
+        const localPath = `${import.meta.env.BASE_URL}${this.general.customStyleSheet}`
+        const remoteResource = `css/${this.general.customStyleSheet}`
+        return (
+          (await getLocalOrRemoteFileUrl(localPath, remoteResource)) ??
+          defaultStyle
+        )
+      }
+
+      return defaultStyle
+    },
   },
   getters: {
     activeComponents: (state) => {
@@ -127,14 +144,6 @@ const useConfigStore = defineStore('config', {
     defaultComponent: (state) => {
       if (state.general.defaultComponent) {
         return state.components[state.general.defaultComponent]
-      }
-    },
-
-    customStyleSheet: (state) => {
-      if (state.general.customStyleSheet) {
-        return `${import.meta.env.BASE_URL}${state.general.customStyleSheet}`
-      } else {
-        return `${import.meta.env.BASE_URL}weboc-default-style.css`
       }
     },
   },

@@ -36,7 +36,7 @@ export default defineConfig(({ mode }) => {
         'content-security-policy': [
           `default-src 'none'`,
           `script-src 'self'`,
-          `font-src 'self'`,
+          `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
           `style-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} 'unsafe-inline'`, // vuetify
           `worker-src blob:`, // maplibre-gl
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices
