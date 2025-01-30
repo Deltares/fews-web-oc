@@ -170,7 +170,7 @@ import StartupDialog from '@/components/dialog/StartupDialog.vue'
 import GlobalSearchComponent from '@/components/general/GlobalSearchComponent.vue'
 
 import { configManager } from '@/services/application-config'
-import { getLocalOrRemoteFileUrl } from '@/lib/fews-config'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { StyleValue, nextTick } from 'vue'
 import packageConfig from '@/../package.json'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
@@ -214,7 +214,7 @@ watch(
       const link = document.createElement('link')
       link.id = 'custom-style-sheet'
       link.rel = 'stylesheet'
-      link.href = configStore.customStyleSheet
+      link.href = await configStore.getCustomStyleSheet()
       link.onload = () => {
         appBarStyle.value = {
           backgroundImage: 'var(--weboc-app-bar-bg-image)',
@@ -240,15 +240,10 @@ watch(
   async () => {
     const imagesBaseUrl = `${import.meta.env.BASE_URL}images/`
     const defaultLogo = `${imagesBaseUrl}logo.png`
-    if (configStore.general.icons?.logo === undefined) {
-      logoSrc.value = defaultLogo
-      return
-    }
-    const logoUrl = await getLocalOrRemoteFileUrl(
-      imagesBaseUrl,
-      configStore.general.icons?.logo,
-    )
-    logoSrc.value = logoUrl ?? defaultLogo
+
+    return configStore.general.icons?.logo
+      ? getResourcesStaticUrl(configStore.general.icons.logo)
+      : defaultLogo
   },
 )
 
