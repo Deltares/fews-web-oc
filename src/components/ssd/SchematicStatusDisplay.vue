@@ -8,7 +8,7 @@
       <SsdComponent
         :src="src"
         :key="panelId"
-        :allowZooming="allowZooming"
+        :allowZooming="!disableZooming"
         @action="onAction"
         ref="ssdComponent"
       />
@@ -33,24 +33,20 @@ import type {
 import debounce from 'lodash-es/debounce'
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-
 import { useAlertsStore } from '@/stores/alerts.ts'
-
 import { configManager } from '@/services/application-config/index.ts'
-
 import { useSsd } from '@/services/useSsd/index.ts'
-
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import SsdComponent from '@/components/ssd/SsdComponent.vue'
 import { useDisplay } from 'vuetify'
 import { useElementSize } from '@vueuse/core'
+import type { SchematicStatusDisplaySettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   groupId?: string
   panelId?: string
   objectId?: string
-  showDateTimeSlider?: boolean
-  allowZooming?: boolean
+  settings?: SchematicStatusDisplaySettings
 }
 
 interface SsdActionEventPayload {
@@ -58,6 +54,14 @@ interface SsdActionEventPayload {
   panelId: string
   results: SsdActionResult[]
 }
+
+const disableZooming = computed(() => {
+  return props.settings?.zoomingDisabled ?? true
+})
+
+const showDateTimeSlider = computed(() => {
+  return props.settings?.dateTimeSliderEnabled ?? true
+})
 
 const sliderDebounceInterval = 500
 
