@@ -79,12 +79,17 @@
           @update:current-colour-scale="currentColourScale = $event"
         />
         <LocationsSearchControl
+          v-if="showLocationSearchControl"
           v-model:showLocations="showLocationsLayer"
           width="50vw"
           max-width="250"
           :locations="locations"
           :selectedLocationId="props.locationId"
           @changeLocationId="onLocationChange"
+        />
+        <OverlayControl
+          :settings="settings"
+          v-model:selectedOverlays="selectedOverlays"
         />
       </template>
     </v-chip-group>
@@ -133,7 +138,8 @@ import AnimatedRasterLayer, {
 import LocationsSearchControl from '@/components/wms/LocationsSearchControl.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
-import InformationPanel from '../wms/InformationPanel.vue'
+import InformationPanel from '@/components/wms/InformationPanel.vue'
+import OverlayControl from '@/components/wms/OverlayControl.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
@@ -158,6 +164,7 @@ import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
 import { FeatureCollection, Geometry } from 'geojson'
+import type { MapSettings, OverlayLocation } from '@/lib/topology/componentSettings'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -179,6 +186,7 @@ interface Props {
   currentTime?: Date
   maxValuesTimeSeries?: TimeSeriesData[]
   boundingBox?: BoundingBox
+  settings?: MapSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -217,7 +225,7 @@ const isLoading = ref(false)
 let debouncedSetLayerOptions!: () => void
 
 const legendLayerStyles = ref<Style[]>()
-const settings = useUserSettingsStore()
+const userSettings = useUserSettingsStore()
 
 const showLayer = ref<boolean>(true)
 const layerKind = ref(LayerKind.Static)
@@ -253,7 +261,7 @@ watch(
 )
 
 watch(
-  () => settings.useDisplayUnits,
+  () => userSettings.useDisplayUnits,
   () => {
     colourScalesStore.clearScales()
     addScalesForStyles(legendLayerStyles.value ?? [])
@@ -266,7 +274,7 @@ function addScalesForStyles(styles: Style[]): void {
       style,
       props.layerName,
       () => props.layerCapabilities?.title,
-      settings.useDisplayUnits,
+      userSettings.useDisplayUnits,
       () => props.layerCapabilities?.styles ?? [],
     )
   })
@@ -324,6 +332,12 @@ const layerHasElevation = computed(() => {
   return props.layerCapabilities?.elevation !== undefined
 })
 
+const showLocationSearchControl = computed(() => {
+  return !(props.settings?.locationSearchEnabled === false)
+})
+
+const selectedOverlays = ref<OverlayLocation[]>([])
+
 watch(
   () => props.layerCapabilities,
   (layer) => {
@@ -360,7 +374,7 @@ watch(currentElevation, () => {
 })
 
 watch(
-  [() => currentColourScale.value?.range, () => settings.useDisplayUnits],
+  [() => currentColourScale.value?.range, () => userSettings.useDisplayUnits],
   () => {
     setLayerOptions()
   },
@@ -412,7 +426,7 @@ function setLayerOptions(): void {
         ? rangeToString(currentColourScale.value?.range)
         : undefined,
       style: currentColourScale.value?.style.name,
-      useDisplayUnits: settings.useDisplayUnits,
+      useDisplayUnits: userSettings.useDisplayUnits,
     }
   } else {
     layerOptions.value = undefined
