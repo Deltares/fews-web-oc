@@ -116,7 +116,6 @@ import {
   type DisplayTab,
 } from '@/lib/topology/displayTabs.js'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
-import type { BoundingBox } from '@deltares/fews-wms-requests'
 
 interface Props {
   topologyId?: string
@@ -166,10 +165,7 @@ const secondaryWorkflows = computed(() => {
   return activeNode.value.secondaryWorkflows
 })
 
-const boundingBox = computed(() => {
-  // @ts-expect-error FIXME: Update when the types are updated
-  return activeNode.value?.boundingBox as BoundingBox | undefined
-})
+const boundingBox = computed(() => activeNode.value?.boundingBox)
 
 const items = ref<ColumnItem[]>([])
 
