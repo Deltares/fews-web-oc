@@ -170,10 +170,7 @@ import StartupDialog from '@/components/dialog/StartupDialog.vue'
 import GlobalSearchComponent from '@/components/general/GlobalSearchComponent.vue'
 
 import { configManager } from '@/services/application-config'
-import {
-  getLocalOrRemoteFileUrl,
-  getResourcesStaticUrl,
-} from '@/lib/fews-config'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { StyleValue, nextTick } from 'vue'
 import packageConfig from '@/../package.json'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
