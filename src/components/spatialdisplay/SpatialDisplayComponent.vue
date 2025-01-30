@@ -113,10 +113,9 @@
   />
   <DateTimeSlider
     v-if="times && times.length > 0"
-    v-model:selectedDate="currentTime"
+    v-model:selectedDate="currentTimeSlider"
     :dates="times"
-    @update:doFollowNow="setCurrentTime"
-    @update:selectedDate="updateTime"
+    @update:doFollowNow="setLayerOptions"
     class="spatial-display__slider"
     :hide-speed-controls="mobile"
   >
@@ -152,7 +151,6 @@ import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
-import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
@@ -177,6 +175,7 @@ import type { MapSettings } from '@/lib/topology/componentSettings'
 import OverlayLayer from '@/components/wms/OverlayLayer.vue'
 import { useComponentSettingsStore } from '@/stores/componentSettings'
 import { useColourScales } from '@/services/useColourScales'
+import { useSelectedDate } from '@/services/useSelectedDate'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -195,7 +194,6 @@ interface Props {
   locationIds?: string[]
   latitude?: string
   longitude?: string
-  currentTime?: Date
   maxValuesTimeSeries?: TimeSeriesData[]
   boundingBox?: BoundingBox
   settings: MapSettings
@@ -222,15 +220,18 @@ onBeforeMount(() => {
   })
 })
 
-const dateController = new DateController([])
-
 const currentElevation = ref<number>(0)
 const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
-const currentTime = ref<Date>(new Date())
+const currentTimeSlider = ref(new Date())
+const { selectedDate: currentTime } = useSelectedDate(currentTimeSlider)
+watch(currentTime, () => {
+  emit('update:currentTime', currentTime.value)
+})
+
 const layerOptions = ref<AnimatedRasterLayerOptions>()
 const forecastTime = ref<Date>()
 const isLoading = ref(false)
@@ -405,36 +406,8 @@ watch(
   { deep: true },
 )
 
-watch(
-  () => props.times,
-  () => {
-    if (props.times) {
-      dateController.dates = props.times
-      dateController.selectDate(currentTime.value)
-      currentTime.value = dateController.currentTime
-    }
-    setLayerOptions()
-  },
-  { immediate: true, deep: true },
-)
-
-function setCurrentTime(enabled: boolean): void {
-  if (enabled) {
-    dateController.selectDate(new Date())
-    currentTime.value = dateController.currentTime
-    setLayerOptions()
-  }
-}
-
-function updateTime(date: Date): void {
-  if (dateController.currentTime.getTime() === date.getTime()) return
-  dateController.selectDate(date)
-  currentTime.value = dateController.currentTime
-  debouncedSetLayerOptions()
-}
-
 watch(currentTime, () => {
-  emit('update:currentTime', currentTime.value)
+  debouncedSetLayerOptions()
 })
 
 function setLayerOptions(): void {
