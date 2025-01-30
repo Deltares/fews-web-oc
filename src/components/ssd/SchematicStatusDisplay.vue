@@ -8,11 +8,13 @@
       <SsdComponent
         :src="src"
         :key="panelId"
+        :mobile="mobile"
+        :allowZooming="settings.zoomingEnabled"
         @action="onAction"
         ref="ssdComponent"
       />
       <DateTimeSlider
-        v-if="showDateTimeSlider"
+        v-if="settings.dateTimeSliderEnabled"
         v-model:selectedDate="selectedDateSlider"
         :dates="dates"
         :hide-speed-controls="mobile"
@@ -32,24 +34,31 @@ import type {
 import debounce from 'lodash-es/debounce'
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-
 import { useAlertsStore } from '@/stores/alerts.ts'
-
 import { configManager } from '@/services/application-config/index.ts'
-
 import { useSsd } from '@/services/useSsd/index.ts'
-
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import SsdComponent from '@/components/ssd/SsdComponent.vue'
 import { useDisplay } from 'vuetify'
 import { useElementSize } from '@vueuse/core'
+import {
+  getDefaultSettings,
+  type SchematicStatusDisplaySettings,
+} from '@/lib/topology/componentSettings'
 
 interface Props {
   groupId?: string
   panelId?: string
   objectId?: string
-  showDateTimeSlider?: boolean
+  settings?: SchematicStatusDisplaySettings
 }
+
+const props = withDefaults(defineProps<Props>(), {
+  groupId: '',
+  panelId: '',
+  objectId: '',
+  settings: () => getDefaultSettings('schematic-status-display'),
+})
 
 interface SsdActionEventPayload {
   objectId: string
@@ -64,20 +73,11 @@ const alertsStore = useAlertsStore()
 const route = useRoute()
 const router = useRouter()
 
-const props = withDefaults(defineProps<Props>(), {
-  groupId: '',
-  panelId: '',
-  objectId: '',
-  showDateTimeSlider: true,
-})
-
 const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
 const ssdContainer = ref<HTMLElement | null>(null)
 
 const selectedDate = ref<Date>(new Date())
 const selectedDateSlider = ref<Date>(selectedDate.value)
-
-const { mobile } = useDisplay()
 
 const selectedDateString = computed(() => {
   if (selectedDate.value === undefined) return ''
@@ -108,10 +108,18 @@ const hideSSD = computed(() => {
   return mobile.value && props.objectId !== ''
 })
 
-const ssdContainerSize = useElementSize(ssdContainer)
-watch(ssdContainerSize.width, () => {
-  if (ssdComponent.value) {
-    ssdComponent.value.resize()
+const { width: containerWidth } = useElementSize(ssdContainer)
+watch(containerWidth, () => {
+  ssdComponent.value?.resize()
+})
+
+const { thresholds, mobileBreakpoint } = useDisplay()
+const mobile = computed(() => {
+  const breakpoint = mobileBreakpoint.value
+  if (typeof breakpoint === 'number') {
+    return containerWidth.value < breakpoint
+  } else {
+    return containerWidth.value < thresholds.value[breakpoint]
   }
 })
 

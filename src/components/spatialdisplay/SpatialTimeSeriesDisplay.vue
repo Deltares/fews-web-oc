@@ -94,7 +94,7 @@ interface Props {
   filter: filterActionsFilter | timeSeriesGridActionsFilter
   elevationChartFilter?: timeSeriesGridActionsFilter
   currentTime?: Date
-  settings?: ChartSettings
+  settings: ChartSettings
 }
 
 const userSettings = useUserSettingsStore()
@@ -158,7 +158,7 @@ interface DisplayTypeItem {
 }
 
 const displayActionItems = computed(() => {
-  const dataDownloadEnabled = !(props.settings?.downloadEnabled === false)
+  const dataDownloadEnabled = props.settings.downloadEnabled
   return [
     {
       icon: 'mdi-download',
@@ -179,12 +179,10 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
   )
   const noTooltip = !tooltip.value
 
-  const chartEnabled = !(props.settings?.chartEnabled === false)
-  const elevationChartEnabled = !(
-    props.settings?.elevationChartEnabled === false
-  )
-  const tableEnabled = !(props.settings?.tableEnabled === false)
-  const metaDataEnabled = !(props.settings?.metaDataEnabled === false)
+  const chartEnabled = props.settings.chartEnabled
+  const elevationChartEnabled = props.settings.elevationChartEnabled
+  const tableEnabled = props.settings.tableEnabled
+  const metaDataEnabled = props.settings.metaDataEnabled
   return [
     {
       icon: 'mdi-chart-line',

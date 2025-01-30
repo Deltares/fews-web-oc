@@ -20,6 +20,7 @@ import {
 } from '@/lib/topology/dashboard'
 import { useComponentSettingsStore } from '@/stores/componentSettings'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
+import { getSettings } from '@/lib/topology/componentSettings'
 import { computed } from 'vue'
 
 interface Props {
@@ -58,6 +59,6 @@ function getComponentSettingsForItem(item: WebOCDashboardItem) {
   const settings = item.componentSettingsId
     ? componentSettingsStore.getSettingsById(item.componentSettingsId)
     : undefined
-  return settings?.[item.component]
+  return getSettings(settings, item.component)
 }
 </script>
