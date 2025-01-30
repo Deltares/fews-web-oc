@@ -92,7 +92,7 @@
         </template>
       </InformationPanel>
       <LocationsSearchControl
-        v-if="showLocationSearchControl"
+        v-if="settings.locationSearchEnabled"
         v-model:showLocations="showLocationsLayer"
         width="50vw"
         max-width="250"
@@ -198,7 +198,7 @@ interface Props {
   currentTime?: Date
   maxValuesTimeSeries?: TimeSeriesData[]
   boundingBox?: BoundingBox
-  settings?: MapSettings
+  settings: MapSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -352,10 +352,6 @@ const offsetBottomControls = computed(() => {
 
 const layerHasElevation = computed(() => {
   return props.layerCapabilities?.elevation !== undefined
-})
-
-const showLocationSearchControl = computed(() => {
-  return props.settings?.locationSearchEnabled ?? true
 })
 
 watch(
