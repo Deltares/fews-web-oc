@@ -177,7 +177,10 @@ import StartupDialog from '@/components/dialog/StartupDialog.vue'
 import GlobalSearchComponent from '@/components/general/GlobalSearchComponent.vue'
 
 import { configManager } from '@/services/application-config'
-import { getLocalOrRemoteFileUrl } from '@/lib/fews-config'
+import {
+  getLocalOrRemoteFileUrl,
+  getResourcesStaticUrl,
+} from '@/lib/fews-config'
 import { StyleValue, nextTick } from 'vue'
 import packageConfig from '@/../package.json'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
@@ -247,14 +250,10 @@ watch(
   async () => {
     const imagesBaseUrl = `${import.meta.env.BASE_URL}images/`
     const defaultLogo = `${imagesBaseUrl}logo.png`
-    if (configStore.general.icons?.logo === undefined) {
-      logoSrc.value = defaultLogo
-      return
-    }
-    const localPath = `${imagesBaseUrl}${configStore.general.icons.logo}`
-    const remoteResource = configStore.general.icons.logo
-    const logoUrl = await getLocalOrRemoteFileUrl(localPath, remoteResource)
-    logoSrc.value = logoUrl ?? defaultLogo
+
+    return configStore.general.icons?.logo
+      ? getResourcesStaticUrl(configStore.general.icons.logo)
+      : defaultLogo
   },
 )
 
