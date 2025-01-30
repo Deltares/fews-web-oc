@@ -60,9 +60,9 @@ function convertItemToComponentItem(item: WebOCDashboardItem) {
 }
 
 function getComponentSettingsForItem(item: WebOCDashboardItem) {
-    const settings = item.componentSettingsId
-      ? componentSettingsStore.getSettingsById(item.componentSettingsId)
-      : undefined
+  const settings = item.componentSettingsId
+    ? componentSettingsStore.getSettingsById(item.componentSettingsId)
+    : undefined
   const componentSettings = getSettings(settings, item.component)
 
   // If dashboard has a shared date time slider,
