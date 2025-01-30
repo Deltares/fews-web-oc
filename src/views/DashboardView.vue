@@ -8,12 +8,13 @@ import { computed, onMounted } from 'vue'
 import { useComponentSettingsStore } from '@/stores/componentSettings'
 import DashboardDisplay from '@/components/general/DashboardDisplay.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
-import { useDashboardsStore } from '@/stores/dashboards'
 import {
   UserSettingsWithIcon,
   useUserSettingsStore,
 } from '@/stores/userSettings'
 import { BaseMap } from '@/lib/topology/componentSettings'
+import { useDashboard } from '@/services/useDashboard'
+import { configManager } from '@/services/application-config'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -22,11 +23,9 @@ interface Props {
 const props = defineProps<Props>()
 
 const componentSettingsStore = useComponentSettingsStore()
-const dashboardsStore = useDashboardsStore()
 const userSettings = useUserSettingsStore()
 
 onMounted(async () => {
-  dashboardsStore.fetchState()
   await componentSettingsStore.fetchState()
   updateUserSettingBaseMaps()
 })
@@ -46,10 +45,8 @@ function convertBaseMapToUserSetting(baseMap: BaseMap): UserSettingsWithIcon {
   }
 }
 
-const dashboard = computed(() => {
-  const dashboardId = props.topologyNode?.dashboardPanels?.[0]?.id
-  if (dashboardId === undefined) return
+const dashboardId = computed(() => props.topologyNode?.dashboardPanels?.[0]?.id)
 
-  return dashboardsStore.getDashboardById(dashboardId)
-})
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { dashboard } = useDashboard(baseUrl, dashboardId)
 </script>

@@ -9,7 +9,7 @@
         >
           <!-- TODO: For now we only support one item per element -->
           <!--       to prevent UI clutter. -->
-          <DashboardItem :item="element.items[0]" />
+          <DashboardItem v-if="element.items" :item="element.items[0]" />
         </v-card>
       </template>
     </template>
@@ -17,12 +17,13 @@
 </template>
 
 <script setup lang="ts">
-import type { Dashboard } from '@/lib/dashboard/types'
+import { type WebOCDashboard } from '@deltares/fews-pi-requests'
 import { computed, watch } from 'vue'
 import DashboardItem from '@/components/general/DashboardItem.vue'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 
 interface Props {
-  dashboard: Dashboard
+  dashboard: WebOCDashboard
 }
 
 const props = defineProps<Props>()
@@ -45,8 +46,11 @@ function removeCss(url: string) {
   }
 }
 
+const cssUrl = computed(() =>
+  getResourcesStaticUrl(props.dashboard.cssTemplate),
+)
 watch(
-  () => props.dashboard.cssTemplate,
+  cssUrl,
   (newCss, oldCss) => {
     if (oldCss) removeCss(oldCss)
     loadCss(newCss)
