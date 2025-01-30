@@ -80,11 +80,11 @@ export function getDefaultSettings<T extends ComponentType>(componentType: T) {
 }
 
 export function getSettings<T extends ComponentType>(
-  componentSettings: ComponentSettings,
+  componentSettings: ComponentSettings | undefined,
   componentType: T,
 ) {
   const defaultSettings = getDefaultSettings(componentType)
-  const settings = componentSettings[componentType]
+  const settings = componentSettings?.[componentType]
   return {
     ...defaultSettings,
     ...settings,
