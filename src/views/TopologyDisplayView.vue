@@ -121,7 +121,7 @@ interface Props {
   nodeId?: string | string[]
   panelId?: string
   layerName?: string
-  locationId?: string
+  locationIds?: string
   latitude?: string
   longitude?: string
 }

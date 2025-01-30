@@ -212,7 +212,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         meta: { sidebar: true },
         children: [
           {
-            path: 'location/:locationId',
+            path: 'location/:locationIds',
             name: 'TopologySpatialTimeSeriesDisplay',
             component: SpatialTimeSeriesDisplay,
             props: true,

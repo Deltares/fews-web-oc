@@ -25,8 +25,8 @@
     />
   </mgl-geo-json-source>
   <mgl-marker
-    v-if="selectedLocationCoordinates"
-    :coordinates="selectedLocationCoordinates"
+    v-for="coordinates in selectedLocationsCoordinates"
+    :coordinates="coordinates"
     :offset="[0, 4]"
     anchor="bottom"
   >
@@ -66,7 +66,7 @@ const { map } = useMap()
 
 interface Props {
   locationsGeoJson: FeatureCollection<Geometry, Location>
-  selectedLocationId?: string | null
+  selectedLocationIds?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -92,15 +92,17 @@ const geojson = computed<FeatureCollection<Geometry, Location>>(() => ({
 
 const emit = defineEmits(['click'])
 
-const selectedLocationCoordinates = computed(() => {
-  const selectedLocation = geojson.value.features.find(
-    (feature) => feature.properties.locationId === props.selectedLocationId,
+const selectedLocationsCoordinates = computed(() => {
+  const selectedLocations = geojson.value.features.filter((feature) =>
+    props.selectedLocationIds?.includes(feature.properties.locationId),
   )
-  const lat = selectedLocation?.properties.lat
-  const lng = selectedLocation?.properties.lon
-  if (!lat || !lng) return
 
-  return new LngLat(+lng, +lat)
+  return selectedLocations.flatMap((feature) => {
+    const lat = feature.properties.lat
+    const lon = feature.properties.lon
+    if (!lat || !lon) return []
+    return [new LngLat(+lon, +lat)]
+  })
 })
 
 const layoutSymbolSpecification = {
@@ -145,13 +147,13 @@ const paintCircleSpecification = {
   'circle-stroke-width': 1.5,
 }
 
-function getDarkPaintFillSpecification(selectedId: string, hoverId: string) {
+function getDarkPaintFillSpecification(selectedIds: string[], hoverId: string) {
   return {
     'fill-color': 'darkgrey',
     'fill-opacity': [
       'match',
       ['get', 'locationId'],
-      selectedId,
+      selectedIds,
       0.35,
       hoverId,
       0.3,
@@ -161,13 +163,16 @@ function getDarkPaintFillSpecification(selectedId: string, hoverId: string) {
   }
 }
 
-function getLightPaintFillSpecification(selectedId: string, hoverId: string) {
+function getLightPaintFillSpecification(
+  selectedIds: string[],
+  hoverId: string,
+) {
   return {
     'fill-color': '#dfdfdf',
     'fill-opacity': [
       'match',
       ['get', 'locationId'],
-      selectedId,
+      selectedIds,
       0.8,
       hoverId,
       0.6,
@@ -178,14 +183,14 @@ function getLightPaintFillSpecification(selectedId: string, hoverId: string) {
 }
 
 const paintFillSpecification = computed(() => {
-  const selectedId = props.selectedLocationId ?? 'invalid-no-layer-selected'
-  const hoverId =
-    hoveredStateId.value === selectedId
-      ? 'invalid-already-selected'
-      : (hoveredStateId.value ?? 'invalid-no-hover')
+  const selectedIds = props.selectedLocationIds ?? ['invalid-no-layer-selected']
+  const hoverStateId = hoveredStateId.value ?? 'invalid-no-hover'
+  const hoverId = selectedIds.includes(hoverStateId)
+    ? 'invalid-already-selected'
+    : hoverStateId
   return isDark.value
-    ? getDarkPaintFillSpecification(selectedId, hoverId)
-    : getLightPaintFillSpecification(selectedId, hoverId)
+    ? getDarkPaintFillSpecification(selectedIds, hoverId)
+    : getLightPaintFillSpecification(selectedIds, hoverId)
 })
 
 const locationsCircleLayerId = getLayerId('location-circle')

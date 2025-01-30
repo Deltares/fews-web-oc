@@ -71,7 +71,7 @@ const router = useRouter()
 function itemClick(item: any) {
   router.replace({
     name: 'TopologySpatialTimeSeriesDisplay',
-    params: { locationId: item.id },
+    params: { locationIds: item.id },
   })
   state.active = false
 }
