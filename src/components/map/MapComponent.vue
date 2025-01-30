@@ -28,39 +28,49 @@ import {
   MglDefaults,
   MglMap,
   MglScaleControl,
-  useMap,
 } from '@indoorequal/vue-maplibre-gl'
-import type { ResourceType, RequestParameters, LngLatBounds } from 'maplibre-gl'
-import { useBaseLayers } from '@/services/useBaseLayers'
-import { useUserSettingsStore } from '@/stores/userSettings'
-import { useTemplateRef, watch } from 'vue'
+import type {
+  ResourceType,
+  RequestParameters,
+  LngLatBounds,
+  Map,
+} from 'maplibre-gl'
+import { computed, useTemplateRef, watch } from 'vue'
 import { transformStyle } from '@/lib/map'
+import { useComponentSettingsStore } from '@/stores/componentSettings'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 
 interface Props {
   bounds?: LngLatBounds
+  baseMapId: string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
-const settings = useUserSettingsStore()
+const mapRef = useTemplateRef('map')
 
 MglDefaults.style =
   'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
-const { baseLayerStyle } = useBaseLayers(
-  () => settings.get('ui.map.theme')?.value as string | undefined,
-)
+const componentSettingsStore = useComponentSettingsStore()
 
-const initialStyle = baseLayerStyle.value
+const selectedStyle = computed(() => {
+  const baseMap = componentSettingsStore.getBaseMapById(props.baseMapId)
 
-const mapRef = useTemplateRef('map')
+  const style = baseMap.style
+  if (style.startsWith('/')) {
+    return getResourcesStaticUrl(style.slice(1))
+  }
 
-watch(baseLayerStyle, (newBaseStyle) => {
+  return style
+})
+const initialStyle = selectedStyle.value
+
+watch(selectedStyle, (newBaseStyle) => {
   if (!newBaseStyle) return
 
-  // NOTE: We have to get mapkey because useMap uses inject and we are not a child of MglMap
-  const mapKey = mapRef.value?.mapKey
-  const map = useMap(mapKey).map
+  // @ts-expect-error map is not exposed in the types
+  const map: Map | undefined = mapRef.value?.map
   map?.setStyle(newBaseStyle, { transformStyle })
 })
 

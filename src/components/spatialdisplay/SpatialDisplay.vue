@@ -1,36 +1,41 @@
 <template>
-  <div class="container">
+  <div class="container" ref="container">
     <div class="child-container" :class="{ 'd-none': hideMap }">
       <SpatialDisplayComponent
         :layer-name="props.layerName"
-        :location-id="props.locationId"
-        :latitude="props.latitude"
-        :longitude="props.longitude"
+        :location-id="currentLocationId"
+        :latitude="currentLatitude"
+        :longitude="currentLongitude"
         :locations="locations"
         :geojson="geojson"
         @changeLocationId="onLocationChange"
         :layer-capabilities="layerCapabilities"
         :bounding-box="boundingBox"
         :times="times"
+        :settings="props.settings"
         :max-values-time-series="maxValuesTimeSeries"
         v-model:elevation="elevation"
         v-model:current-time="currentTime"
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
     </div>
-    <div v-if="filter" class="child-container">
-      <router-view
-        @close="closeTimeSeriesDisplay"
-        :filter="filter"
-        :elevation-chart-filter="elevationChartFilter"
-        :current-time="currentTime"
-      ></router-view>
+    <div v-if="showChartPanel" class="child-container">
+      <router-view v-slot="{ Component }">
+        <component
+          :is="Component ?? SpatialTimeSeriesDisplay"
+          @close="closeTimeSeriesDisplay"
+          :filter="filter"
+          :elevation-chart-filter="elevationChartFilter"
+          :current-time="currentTime"
+          :settings="props.settings"
+        />
+      </router-view>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, ref, useTemplateRef, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
@@ -49,9 +54,14 @@ import { toMercator } from '@turf/projection'
 import circle from '@turf/circle'
 import bbox from '@turf/bbox'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import type { BoundingBox } from '@deltares/fews-wms-requests'
+import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
+import type { MapSettings } from '@/lib/topology/componentSettings'
+import { useElementSize } from '@vueuse/core'
+const SpatialTimeSeriesDisplay = defineAsyncComponent(
+  () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
+)
 
 interface Props {
   layerName?: string
@@ -60,6 +70,7 @@ interface Props {
   latitude?: string
   longitude?: string
   boundingBox?: BoundingBox
+  settings?: MapSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -69,9 +80,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 const route = useRoute()
 const router = useRouter()
-const { mobile } = useDisplay()
+const { thresholds } = useDisplay()
+const containerRef = useTemplateRef('container')
 
-const settings = useUserSettingsStore()
+const userSettings = useUserSettingsStore()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { layerCapabilities, times } = useWmsLayerCapabilities(
   baseUrl,
@@ -107,22 +119,22 @@ const onlyCoverageLayersAvailable = computed(
 function getFilterActionsFilter(): filterActionsFilter &
   UseDisplayConfigOptions {
   return {
-    locationIds: props.locationId,
+    locationIds: currentLocationId.value,
     filterId: props.filterIds ? props.filterIds[0] : undefined,
-    useDisplayUnits: settings.useDisplayUnits,
-    convertDatum: settings.convertDatum,
+    useDisplayUnits: userSettings.useDisplayUnits,
+    convertDatum: userSettings.convertDatum,
   }
 }
 
 function getTimeSeriesGridActionsFilter():
   | (timeSeriesGridActionsFilter & UseDisplayConfigOptions)
   | undefined {
-  if (!props.longitude || !props.latitude) return
+  if (!currentLongitude.value || !currentLatitude.value) return
   if (!layerCapabilities.value?.boundingBox) return
   if (!layerCapabilities.value?.firstValueTime) return
   if (!layerCapabilities.value?.lastValueTime) return
 
-  const coordinates = [+props.longitude, +props.latitude]
+  const coordinates = [+currentLongitude.value, +currentLatitude.value]
   const [x, y] = toMercator(coordinates)
   const clickRadius = circle(coordinates, 10, { steps: 4, units: 'kilometers' })
   const bboxArray = bbox(clickRadius)
@@ -142,19 +154,25 @@ function getTimeSeriesGridActionsFilter():
     bbox: mercatorBbox,
     documentFormat: 'PI_JSON',
     elevation: elevation.value ?? layerCapabilities.value.elevation?.upperValue,
-    useDisplayUnits: settings.useDisplayUnits,
+    useDisplayUnits: userSettings.useDisplayUnits,
     // Should be available according to the docs, but errors
     // convertDatum: settings.convertDatum,
   }
 }
 
 const filter = computed(() => {
-  if (props.locationId) {
+  if (currentLocationId.value) {
     return getFilterActionsFilter()
   }
-  if (props.longitude && props.latitude) {
+  if (currentLatitude.value && currentLongitude.value) {
     return getTimeSeriesGridActionsFilter()
   }
+})
+
+const showChartPanel = computed(() => {
+  return (
+    filter.value !== undefined && !(props.settings?.chartPanelEnabled === false)
+  )
 })
 
 const elevationChartFilter = computed(() => {
@@ -181,8 +199,17 @@ onMounted(() => {
   currentLongitude.value = props.longitude
 })
 
+const { width: containerWidth } = useElementSize(containerRef)
+
+const containerIsMobileSize = computed(() => {
+  return containerWidth.value < thresholds.value.lg
+})
+
 const hideMap = computed(() => {
-  return mobile.value && (props.locationId || props.latitude || props.longitude)
+  return (
+    containerIsMobileSize.value &&
+    (currentLocationId.value || currentLongitude.value || currentLatitude.value)
+  )
 })
 
 function onLocationChange(locationId: string | null): void {
@@ -241,11 +268,12 @@ function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
 }
 
 function closeTimeSeriesDisplay(): void {
+  currentLocationId.value = undefined
+  currentLatitude.value = undefined
+  currentLongitude.value = undefined
+
   const parentRoute = findParentRoute(route)
   if (parentRoute !== null) {
-    currentLocationId.value = undefined
-    currentLatitude.value = undefined
-    currentLongitude.value = undefined
     router.push({
       name: parentRoute.name,
       params: {

@@ -27,7 +27,7 @@ export const useTopologyNodesStore = defineStore('topologyNodes', () => {
     })
   }
 
-  function getNodeById(nodeId: string) {
+  function getNodeById(nodeId: string): TopologyNode | undefined {
     return _idToNodeMap.value.get(nodeId)
   }
 

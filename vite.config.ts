@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => {
           `default-src 'none'`,
           `script-src 'self'`,
           `font-src 'self'`,
-          `style-src 'self' 'unsafe-inline'`, // vuetify
+          `style-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} 'unsafe-inline'`, // vuetify
           `worker-src blob:`, // maplibre-gl
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices
           `connect-src 'self' https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://login.microsoftonline.com ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices, Authentication, Basemaps

@@ -2,6 +2,7 @@ import { TopologyNode } from '@deltares/fews-pi-requests'
 import { RouteLocationNamedRaw } from 'vue-router'
 import {
   nodeHasCharts,
+  nodeHasDashboard,
   nodeHasDataDownload,
   nodeHasMap,
   nodeHasReports,
@@ -9,16 +10,16 @@ import {
   nodeHasSystemMonitor,
   nodeHasWebDisplay,
 } from './nodes'
+import {
+  ComponentType,
+  componentTypeToIconMap,
+  componentTypeToIdMap,
+  componentTypeToRouteNameMap,
+  componentTypeToTitleMap,
+} from './component'
 
 export interface DisplayTab {
-  type:
-    | 'charts'
-    | 'map'
-    | 'reports'
-    | 'data-download'
-    | 'schematic-status-display'
-    | 'system-monitor'
-    | 'web-display'
+  type: ComponentType
   id: string
   title: string
   href?: string
@@ -28,64 +29,16 @@ export interface DisplayTab {
   active: boolean
 }
 
-const displayTabs: DisplayTab[] = [
-  {
-    type: 'map',
-    id: 'spatial',
-    title: 'Map',
-    to: { name: 'TopologySpatialDisplay' },
-    icon: 'mdi-map',
+const displayTabs: DisplayTab[] = Object.values(ComponentType).map((type) => {
+  return {
+    type,
+    id: componentTypeToIdMap[type],
+    title: componentTypeToTitleMap[type],
+    to: { name: componentTypeToRouteNameMap[type] },
+    icon: componentTypeToIconMap[type],
     active: false,
-  },
-  {
-    type: 'charts',
-    id: 'timeseries',
-    title: 'Charts',
-    to: { name: 'TopologyTimeSeries' },
-    icon: 'mdi-chart-multiple',
-    active: false,
-  },
-  {
-    type: 'data-download',
-    id: 'download',
-    title: 'Download',
-    to: { name: 'TopologyDataDownload' },
-    icon: 'mdi-download',
-    active: false,
-  },
-  {
-    type: 'web-display',
-    id: 'web-display',
-    title: 'Web Display',
-    to: { name: 'TopologyWebDisplay' },
-    icon: 'mdi-web',
-    active: false,
-  },
-  {
-    type: 'reports',
-    id: 'reports',
-    title: 'Reports',
-    to: { name: 'TopologyReports' },
-    icon: 'mdi-file-document',
-    active: false,
-  },
-  {
-    type: 'schematic-status-display',
-    id: 'ssd',
-    title: 'Schematic',
-    to: { name: 'TopologySchematicStatusDisplay' },
-    icon: 'mdi-view-dashboard',
-    active: false,
-  },
-  {
-    type: 'system-monitor',
-    id: 'ssd',
-    title: 'System Monitor',
-    to: { name: 'TopologySystemMonitor' },
-    icon: 'mdi-view-dashboard',
-    active: false,
-  },
-]
+  }
+})
 
 export function displayTabsForNode(
   node: TopologyNode,
@@ -109,11 +62,11 @@ export function displayTabsForNode(
         tab.active = nodeHasCharts(node)
         tab.to.params = { ...params }
         break
-      case 'data-download':
+      case 'data-download-display':
         tab.active = nodeHasDataDownload(node)
         tab.to.params = { ...params }
         break
-      case 'reports':
+      case 'report':
         tab.active = nodeHasReports(node)
         tab.to.params = { ...params }
         break
@@ -125,8 +78,12 @@ export function displayTabsForNode(
         tab.active = nodeHasSystemMonitor(node)
         tab.to.params = { ...params }
         break
-      case 'web-display':
+      case 'html-display':
         tab.active = nodeHasWebDisplay(node)
+        tab.to.params = { ...params }
+        break
+      case 'dashboard':
+        tab.active = nodeHasDashboard(node)
         tab.to.params = { ...params }
         break
     }

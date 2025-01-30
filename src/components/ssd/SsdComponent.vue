@@ -246,20 +246,12 @@ function setDimensions(): void {
   white-space: nowrap;
 }
 
-.v-theme--light .ssd-container {
-  background-color: lightgray;
-}
-
 .tile-grid-content.hidden {
   display: none;
 }
 
-.v-theme--light .weboc-ssd > svg {
+.weboc-ssd > svg {
   background-color: #fff;
-}
-
-.v-theme--dark .weboc-ssd > svg {
-  background-color: #606060;
 }
 
 .fit-content-button {
