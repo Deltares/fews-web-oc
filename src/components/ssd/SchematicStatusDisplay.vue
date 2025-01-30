@@ -9,12 +9,12 @@
         :src="src"
         :key="panelId"
         :mobile="mobile"
-        :allowZooming="!disableZooming"
+        :allowZooming="settings.zoomingEnabled"
         @action="onAction"
         ref="ssdComponent"
       />
       <DateTimeSlider
-        v-if="showDateTimeSlider"
+        v-if="settings.dateTimeSliderEnabled"
         v-model:selectedDate="selectedDateSlider"
         :dates="dates"
         :hide-speed-controls="mobile"
@@ -41,14 +41,24 @@ import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import SsdComponent from '@/components/ssd/SsdComponent.vue'
 import { useDisplay } from 'vuetify'
 import { useElementSize } from '@vueuse/core'
-import type { SchematicStatusDisplaySettings } from '@/lib/topology/componentSettings'
+import {
+  getDefaultSettings,
+  type SchematicStatusDisplaySettings,
+} from '@/lib/topology/componentSettings'
 
 interface Props {
   groupId?: string
   panelId?: string
   objectId?: string
-  settings?: SchematicStatusDisplaySettings
+  settings: SchematicStatusDisplaySettings
 }
+
+const props = withDefaults(defineProps<Props>(), {
+  groupId: '',
+  panelId: '',
+  objectId: '',
+  settings: () => getDefaultSettings('schematic-status-display'),
+})
 
 interface SsdActionEventPayload {
   objectId: string
@@ -56,27 +66,12 @@ interface SsdActionEventPayload {
   results: SsdActionResult[]
 }
 
-const disableZooming = computed(() => {
-  return props.settings?.zoomingDisabled ?? true
-})
-
-const showDateTimeSlider = computed(() => {
-  return props.settings?.dateTimeSliderEnabled ?? true
-})
-
 const sliderDebounceInterval = 500
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const alertsStore = useAlertsStore()
 const route = useRoute()
 const router = useRouter()
-
-const props = withDefaults(defineProps<Props>(), {
-  groupId: '',
-  panelId: '',
-  objectId: '',
-  showDateTimeSlider: true,
-})
 
 const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
 const ssdContainer = ref<HTMLElement | null>(null)
