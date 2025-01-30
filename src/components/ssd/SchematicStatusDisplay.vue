@@ -45,6 +45,8 @@ import {
   getDefaultSettings,
   type SchematicStatusDisplaySettings,
 } from '@/lib/topology/componentSettings'
+import { useDateRegistry } from '@/services/useDateRegistry'
+import { useSelectedDate } from '@/services/useSelectedDate'
 
 interface Props {
   groupId?: string
@@ -76,8 +78,8 @@ const router = useRouter()
 const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
 const ssdContainer = ref<HTMLElement | null>(null)
 
-const selectedDate = ref<Date>(new Date())
-const selectedDateSlider = ref<Date>(selectedDate.value)
+const selectedDateSlider = ref<Date>(new Date())
+const { selectedDate } = useSelectedDate(selectedDateSlider)
 
 const selectedDateString = computed(() => {
   if (selectedDate.value === undefined) return ''
@@ -85,24 +87,18 @@ const selectedDateString = computed(() => {
   return dateString.substring(0, 19) + 'Z'
 })
 
-// Debounce the selected date from the slider input, so we do not send hundreds of requests when
-// dragging the slider around.
-watch(
-  selectedDateSlider,
-  debounce(
-    () => {
-      selectedDate.value = selectedDateSlider.value
-    },
-    sliderDebounceInterval,
-    { leading: true, trailing: true },
-  ),
-)
-
 const { capabilities, src, dates } = useSsd(
   baseUrl,
   () => props.panelId,
-  selectedDateString,
+  // Debounce the selected date string from the slider input,
+  // so we do not send hundreds of requests when dragging the slider around.
+  debounce(() => selectedDateString.value, sliderDebounceInterval, {
+    leading: true,
+    trailing: true,
+  }),
 )
+
+useDateRegistry(dates)
 
 const hideSSD = computed(() => {
   return mobile.value && props.objectId !== ''
