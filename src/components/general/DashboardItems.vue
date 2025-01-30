@@ -26,7 +26,10 @@
 
 <script setup lang="ts">
 import type { DashboardItem } from '@/lib/dashboard/types'
-import { componentTypeToIconMap, componentTypeToTitleMap } from '@/lib/topology/component'
+import {
+  componentTypeToIconMap,
+  componentTypeToTitleMap,
+} from '@/lib/topology/component'
 import {
   componentTypeToComponentMap,
   getComponentPropsForNode,
@@ -46,6 +49,17 @@ const tab = ref(0)
 const topologyNodesStore = useTopologyNodesStore()
 const componentSettingsStore = useComponentSettingsStore()
 
+function getComponentSettingsForItem(item: DashboardItem) {
+  const settings = componentSettingsStore.getSettingsById(
+    item.componentSettingsId,
+  )
+  const componentSettings = settings?.[item.component]
+  if (!componentSettings) return
+
+  componentSettings.declarations = settings?.declarations
+  return componentSettings
+}
+
 const componentItems = computed(() => {
   return props.items.map((item) => {
     const componentName = item.component
@@ -54,9 +68,7 @@ const componentItems = computed(() => {
     const componentProps = getComponentPropsForNode(componentName, topologyNode)
     const title = componentTypeToTitleMap[componentName]
     const icon = componentTypeToIconMap[componentName]
-    const settings = componentSettingsStore.getSettingsById(
-      item.componentSettingsId,
-    )
+    const settings = getComponentSettingsForItem(item)
     return {
       title,
       icon,

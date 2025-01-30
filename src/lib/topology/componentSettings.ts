@@ -22,8 +22,13 @@ interface ComponentSettingsMapping {
   tasks: undefined
 }
 
-export type WebocComponentSettings = {
+type SettingsPerComponent = {
   [key in ComponentType]?: ComponentSettingsMapping[key]
+}
+
+export interface WebocComponentSettings extends SettingsPerComponent {
+  id: string
+  declarations?: Declarations
 }
 
 interface BaseSettings {
@@ -32,13 +37,14 @@ interface BaseSettings {
 
 export interface ChartSettings extends BaseSettings {
   chartEnabled?: boolean
+  elevationChartEnabled?: boolean
   tableEnabled?: boolean
   metaDataEnabled?: boolean
   downloadEnabled?: boolean
 }
 
 export interface MapSettings extends ChartSettings {
-  graphPanelEnabled?: boolean
+  chartPanelEnabled?: boolean
   locationSearchEnabled?: boolean
   baseMaps?: BaseMaps
   overlays?: DeclarationReference[]
