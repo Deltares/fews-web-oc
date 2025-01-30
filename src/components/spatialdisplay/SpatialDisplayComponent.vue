@@ -423,7 +423,6 @@ const bounds = ref<LngLatBounds>()
 watch(
   () => props.boundingBox,
   (newBoundingBox) => {
-    // TODO: What to do when the topologyNode does not have a bounding box?
     if (!newBoundingBox) return
 
     const newBounds = convertBoundingBoxToLngLatBounds(newBoundingBox)
