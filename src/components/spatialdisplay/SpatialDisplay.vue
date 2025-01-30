@@ -15,7 +15,7 @@
         :settings="settings"
         :max-values-time-series="maxValuesTimeSeries"
         v-model:elevation="elevation"
-        v-model:current-time="currentTime"
+        @update:current-time="currentTime = $event"
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
     </div>
@@ -62,6 +62,7 @@ import {
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
 import { useElementSize } from '@vueuse/core'
+import { useDateRegistry } from '@/services/useDateRegistry'
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
 )
@@ -106,6 +107,8 @@ const end = computed(() => {
   if (!times.value || times.value.length === 0) return null
   return times.value[times.value.length - 1]
 })
+
+useDateRegistry(() => times.value ?? [])
 
 const maxValuesTimeSeries = useWmsMaxValuesTimeSeries(
   baseUrl,
