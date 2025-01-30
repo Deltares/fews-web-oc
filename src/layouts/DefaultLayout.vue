@@ -170,7 +170,10 @@ import StartupDialog from '@/components/dialog/StartupDialog.vue'
 import GlobalSearchComponent from '@/components/general/GlobalSearchComponent.vue'
 
 import { configManager } from '@/services/application-config'
-import { getLocalOrRemoteFileUrl } from '@/lib/fews-config'
+import {
+  getLocalOrRemoteFileUrl,
+  getResourcesStaticUrl,
+} from '@/lib/fews-config'
 import { StyleValue, nextTick } from 'vue'
 import packageConfig from '@/../package.json'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
@@ -187,7 +190,6 @@ const { isRtl } = useRtl()
 const route = useRoute()
 
 const showHash = ref(false)
-const logoSrc = ref('')
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
 
@@ -235,21 +237,14 @@ const currentItemTitle = computed(
     '',
 )
 
-watch(
-  () => configStore.general,
-  async () => {
-    const imagesBaseUrl = `${import.meta.env.BASE_URL}images/`
-    const defaultLogo = `${imagesBaseUrl}logo.png`
-    if (configStore.general.icons?.logo === undefined) {
-      logoSrc.value = defaultLogo
-      return
-    }
-    const localPath = `${imagesBaseUrl}${configStore.general.icons.logo}`
-    const remoteResource = configStore.general.icons.logo
-    const logoUrl = await getLocalOrRemoteFileUrl(localPath, remoteResource)
-    logoSrc.value = logoUrl ?? defaultLogo
-  },
-)
+const logoSrc = computed(() => {
+  const imagesBaseUrl = `${import.meta.env.BASE_URL}images/`
+  const defaultLogo = `${imagesBaseUrl}logo.png`
+
+  return configStore.general.icons?.logo
+    ? getResourcesStaticUrl(configStore.general.icons.logo)
+    : defaultLogo
+})
 
 const versionString = computed(() => {
   if (showHash.value && !__GIT_TAG__) {
