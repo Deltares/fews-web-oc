@@ -1,9 +1,10 @@
 <template>
   <div class="chart-with-chips">
     <ChartLegend
+      v-if="settings.legend.show"
       :tags="legendTags"
-      :lines="1"
       :margin="margin"
+      :settings="settings.legend"
       @toggleLine="toggleLine"
     />
     <LoadingOverlay v-if="isLoading" :offsets="margin" />
@@ -12,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
 import {
   CartesianAxesOptions,
   ChartLine,
@@ -32,11 +33,12 @@ import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
 import { Series } from '../../lib/timeseries/timeSeries.js'
 import uniq from 'lodash-es/uniq'
-import { difference } from 'lodash-es'
+import { difference, merge } from 'lodash-es'
 import {
   dataFromResources,
   removeUnreliableData,
 } from '@/lib/charts/dataFromResources'
+import { type ChartSettings } from '@/lib/topology/componentSettings/chartSettings.js'
 import type { Tag } from '@/lib/charts/tags'
 
 interface Props {
@@ -44,6 +46,7 @@ interface Props {
   series?: Record<string, Series>
   isLoading?: boolean
   zoomHandler?: ZoomHandler
+  settings: ChartSettings['verticalProfileChart']
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -62,50 +65,62 @@ let axis!: CartesianAxes
 const legendTags = ref<Tag[]>([])
 const chartContainer = ref<HTMLElement>()
 
-const margin = {
-  top: 30,
+const defaultMargin = {
+  top: 40,
   left: 70,
   right: 30,
-  bottom: 50,
+  bottom: 40,
 }
 
-onMounted(() => {
-  const axisOptions: CartesianAxesOptions = {
-    x: [
-      {
-        type: AxisType.value,
-        position: AxisPosition.Bottom,
-        showGrid: true,
-        label: ' ',
-        labelOffset: 10,
-        unit: ' ',
-        nice: true,
-      },
-    ],
-    y: [
-      {
-        position: AxisPosition.Left,
-        showGrid: true,
-        label: ' ',
-        unit: ' ',
-        nice: true,
-      },
-    ],
-    margin,
-    automargin: true,
+const defaultOptions: CartesianAxesOptions = {
+  x: [
+    {
+      type: AxisType.time,
+      position: AxisPosition.Bottom,
+      showGrid: true,
+    },
+  ],
+  y: [
+    {
+      position: AxisPosition.Left,
+      showGrid: true,
+      label: ' ',
+      unit: ' ',
+      nice: true,
+    },
+    {
+      position: AxisPosition.Right,
+      label: ' ',
+      unit: ' ',
+      nice: true,
+    },
+  ],
+  margin: defaultMargin,
+}
+
+const axisOptions = computed(() => {
+  const configOptions: Partial<CartesianAxesOptions> = {
+    x: props.config?.xAxis,
+    y: props.config?.yAxis,
   }
 
+  return merge(defaultOptions, configOptions)
+})
+
+const margin = computed(() => {
+  return axisOptions.value.margin ?? {}
+})
+
+onMounted(() => {
   const chartWidth = 800
   const chartHeight = 1200
-
-  setChartConfigValues(axisOptions)
 
   if (chartContainer.value) {
     axis = new CartesianAxes(
       chartContainer.value,
       chartWidth,
       chartHeight,
-      axisOptions,
+      axisOptions.value,
     )
     const mouseOver = new VerticalMouseOver()
     const zoom = props.zoomHandler ?? new ZoomHandler(WheelMode.NONE)
@@ -120,16 +135,6 @@ onMounted(() => {
     window.addEventListener('resize', resize)
   }
 })
-
-const setChartConfigValues = (axisOptions: CartesianAxesOptions) => {
-  props.config.yAxis?.forEach((axis, i) => {
-    axisOptions.y[i].type = axis.type
-  })
-
-  props.config.xAxis?.forEach((axis, i) => {
-    axisOptions.x[i].type = axis.type
-  })
-}
 
 const addToChart = (chartSeries: ChartSeries) => {
   const id = chartSeries.id

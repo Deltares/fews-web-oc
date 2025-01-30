@@ -33,6 +33,7 @@
           :style="`min-width: ${xs ? 100 : 50}%`"
           :isLoading="isLoading(subplot, elevationLoadingSeriesIds)"
           :zoomHandler="sharedVerticalZoomHandler"
+          :settings="settings.verticalProfileChart"
         >
         </ElevationChart>
       </KeepAlive>
