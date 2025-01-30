@@ -1,9 +1,10 @@
 <template>
-  <div class="chart-with-chips">
+  <div class="chart-with-chips mt-1">
     <ChartLegend
+      v-if="settings.legend.show"
       :tags="legendTags"
-      :lines="1"
       :margin="margin"
+      :settings="settings.legend"
       @toggle-line="toggleLine"
     />
     <LoadingOverlay v-if="isLoading" :offsets="margin" />
@@ -48,6 +49,7 @@ import uniq from 'lodash-es/uniq'
 import { extent } from 'd3'
 import { difference, merge } from 'lodash-es'
 import type { Tag } from '@/lib/charts/tags'
+import { type ChartSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   config?: ChartConfig
@@ -55,6 +57,7 @@ interface Props {
   currentTime?: Date
   isLoading?: boolean
   zoomHandler?: ZoomHandler
+  settings: ChartSettings['timeseriesChart']
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -80,6 +83,13 @@ const showThresholds = ref(true)
 const chartContainer = ref<HTMLElement>()
 const axisTime = ref<CurrentTime>()
 
+const defaultMargin = {
+  top: 40,
+  left: 50,
+  right: 50,
+  bottom: 40,
+}
+
 const defaultOptions: CartesianAxesOptions = {
   x: [
     {
@@ -103,11 +113,7 @@ const defaultOptions: CartesianAxesOptions = {
       nice: true,
     },
   ],
-  margin: {
-    top: 30,
-    right: 50,
-    left: 50,
-  },
+  margin: defaultMargin,
 }
 
 const axisOptions = computed(() => {
@@ -151,7 +157,10 @@ onMounted(() => {
     axis.accept(mouseOver)
     axis.accept(axisTime.value)
     resize()
-    if (props.config !== undefined) refreshChart()
+    if (props.config !== undefined) {
+      refreshChart()
+      setTags()
+    }
     window.addEventListener('resize', resize)
   }
 })
