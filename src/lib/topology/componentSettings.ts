@@ -14,13 +14,14 @@ export interface ComponentSettingsResponse {
 interface ComponentSettingsMapping {
   map: MapSettings
   charts: ChartSettings
-  'data-download': undefined
-  reports: undefined
+  'data-download-display': undefined
+  report: undefined
   'schematic-status-display': undefined
   'system-monitor': undefined
-  'web-display': undefined
+  'html-display': undefined
   dashboard: undefined
   tasks: undefined
+  'log-display': undefined
 }
 
 type SettingsPerComponent = {

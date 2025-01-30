@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import type { DashboardItem } from '@/lib/dashboard/types'
+import { type WebOCDashboardItem } from '@deltares/fews-pi-requests'
 import {
   componentTypeToIconMap,
   componentTypeToTitleMap,
@@ -23,7 +23,7 @@ import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { computed } from 'vue'
 
 interface Props {
-  item: DashboardItem
+  item: WebOCDashboardItem
 }
 
 const props = defineProps<Props>()
@@ -35,7 +35,7 @@ const componentItem = computed(() => {
   return convertItemToComponentItem(props.item)
 })
 
-function convertItemToComponentItem(item: DashboardItem) {
+function convertItemToComponentItem(item: WebOCDashboardItem) {
   const componentName = item.component
   const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
   const component = componentTypeToComponentMap[componentName]
@@ -54,10 +54,10 @@ function convertItemToComponentItem(item: DashboardItem) {
   }
 }
 
-function getComponentSettingsForItem(item: DashboardItem) {
-  const settings = componentSettingsStore.getSettingsById(
-    item.componentSettingsId,
-  )
+function getComponentSettingsForItem(item: WebOCDashboardItem) {
+  const settings = item.componentSettingsId
+    ? componentSettingsStore.getSettingsById(item.componentSettingsId)
+    : undefined
   return settings?.[item.component]
 }
 </script>

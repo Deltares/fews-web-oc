@@ -62,11 +62,11 @@ export function displayTabsForNode(
         tab.active = nodeHasCharts(node)
         tab.to.params = { ...params }
         break
-      case 'data-download':
+      case 'data-download-display':
         tab.active = nodeHasDataDownload(node)
         tab.to.params = { ...params }
         break
-      case 'reports':
+      case 'report':
         tab.active = nodeHasReports(node)
         tab.to.params = { ...params }
         break
@@ -78,7 +78,7 @@ export function displayTabsForNode(
         tab.active = nodeHasSystemMonitor(node)
         tab.to.params = { ...params }
         break
-      case 'web-display':
+      case 'html-display':
         tab.active = nodeHasWebDisplay(node)
         tab.to.params = { ...params }
         break

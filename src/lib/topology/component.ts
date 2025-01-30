@@ -1,61 +1,72 @@
+import type { WebOCDashboardItem } from '@deltares/fews-pi-requests'
+
+export type ComponentType =
+  | WebOCDashboardItem['component']
+  | 'tasks'
+  | 'dashboard'
+
+
 export const ComponentType = {
   map: 'map',
   charts: 'charts',
-  'data-download': 'data-download',
-  reports: 'reports',
+  'data-download-display': 'data-download-display',
+  report: 'report',
   'schematic-status-display': 'schematic-status-display',
   'system-monitor': 'system-monitor',
-  'web-display': 'web-display',
+  'html-display': 'html-display',
   dashboard: 'dashboard',
   tasks: 'tasks',
-} as const
-
-export type ComponentType = (typeof ComponentType)[keyof typeof ComponentType]
+  'log-display': 'log-display',
+} satisfies Record<ComponentType, ComponentType>
 
 export const componentTypeToIconMap = {
   map: 'mdi-map',
   charts: 'mdi-chart-multiple',
-  'data-download': 'mdi-download',
-  reports: 'mdi-file-document',
+  'data-download-display': 'mdi-download',
+  report: 'mdi-file-document',
   'schematic-status-display': 'mdi-view-dashboard',
   'system-monitor': 'mdi-monitor',
-  'web-display': 'mdi-web',
+  'html-display': 'mdi-web',
   dashboard: 'mdi-view-dashboard',
   tasks: 'mdi-cog',
+  'log-display': 'mdi-file-document',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToTitleMap = {
   map: 'Map',
   charts: 'Charts',
-  'data-download': 'Download',
-  reports: 'Reports',
+  'data-download-display': 'Download',
+  report: 'Reports',
   'schematic-status-display': 'Schematic',
   'system-monitor': 'System Monitor',
-  'web-display': 'Web Display',
+  'html-display': 'Web Display',
   dashboard: 'Dashboard',
   tasks: 'Tasks',
+  'log-display': 'Log',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToRouteNameMap = {
   map: 'TopologySpatialDisplay',
   charts: 'TopologyTimeSeries',
-  'data-download': 'TopologyDataDownload',
-  reports: 'TopologyReports',
+  'data-download-display': 'TopologyDataDownload',
+  report: 'TopologyReports',
   'schematic-status-display': 'TopologySchematicStatusDisplay',
   'system-monitor': 'TopologySystemMonitor',
-  'web-display': 'TopologyWebDisplay',
+  'html-display': 'TopologyWebDisplay',
   dashboard: 'TopologyDashboard',
   tasks: 'TopologyTasks',
+  'log-display': 'TopologyLogDisplay',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToIdMap = {
   map: 'spatial',
   charts: 'timeseries',
-  'data-download': 'download',
-  reports: 'reports',
+  'data-download-display': 'download',
+  report: 'reports',
   'schematic-status-display': 'ssd',
   'system-monitor': 'systemmonitor',
-  'web-display': 'webdisplay',
+  'html-display': 'webdisplay',
   dashboard: 'dashboard',
   tasks: crypto.randomUUID(),
+  'log-display': 'log',
 } satisfies Record<ComponentType, string>

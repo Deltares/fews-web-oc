@@ -27,13 +27,14 @@ const Empty = defineAsyncComponent(() => import('@/views/Empty.vue'))
 export const componentTypeToComponentMap = {
   map: SpatialDisplay,
   charts: TimeSeriesDisplay,
-  'data-download': DataDownloadDisplayView,
-  reports: ReportsDisplayView,
+  'data-download-display': DataDownloadDisplayView,
+  report: ReportsDisplayView,
   'schematic-status-display': SchematicStatusDisplay,
   'system-monitor': SystemMonitorDisplayView,
   tasks: Empty,
-  'web-display': Empty,
+  'html-display': Empty,
   dashboard: Empty,
+  'log-display': Empty,
 } satisfies Record<ComponentType, Component>
 
 export type PropsForComponentType<T extends ComponentType> = ComponentProps<
@@ -61,16 +62,16 @@ export function getComponentPropsForNode(
     return result
   }
 
-  if (componentType === 'data-download') {
-    const result: PropsForComponentType<'data-download'> = {
+  if (componentType === 'data-download-display') {
+    const result: PropsForComponentType<'data-download-display'> = {
       nodeId: node.id,
       topologyNode: node,
     }
     return result
   }
 
-  if (componentType === 'reports') {
-    const result: PropsForComponentType<'reports'> = {
+  if (componentType === 'report') {
+    const result: PropsForComponentType<'report'> = {
       topologyNode: node,
     }
     return result
