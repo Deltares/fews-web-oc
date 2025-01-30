@@ -10,12 +10,12 @@
           >
             <!-- TODO: For now we only support one item per element -->
             <!--       to prevent UI clutter. -->
-            <DashboardItem v-if="element.items" :item="element.items[0]" />
+            <DashboardItem v-if="element.items" :item="element.items[0]" :settings />
           </v-card>
         </template>
       </template>
     </div>
-    <v-card v-if="dashboard.dateTimeSliderEnabled" class="flex-0-0">
+    <v-card v-if="settings.dateTimeSliderEnabled" class="flex-0-0">
       <DateTimeSlider
         v-model:selectedDate="selectedDate"
         :dates="combinedDates"
@@ -34,12 +34,19 @@ import DateTimeSlider from './DateTimeSlider.vue'
 import { useDisplay } from 'vuetify'
 import { createDateRegistry } from '@/services/useDateRegistry'
 import { provideSelectedDate } from '@/services/useSelectedDate'
+import {
+  type DashboardSettings,
+  getDefaultSettings,
+} from '@/lib/topology/componentSettings'
 
 interface Props {
   dashboard: WebOCDashboard
+  settings?: DashboardSettings
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  settings: () => getDefaultSettings('dashboard'),
+})
 
 const { mobile } = useDisplay()
 
@@ -48,7 +55,7 @@ const { combinedDates } = setupDates()
 
 // Provide date data only when the date slider is enabled
 function setupDates() {
-  if (!props.dashboard.dateTimeSliderEnabled) {
+  if (!props.settings.dateTimeSliderEnabled) {
     return {
       combinedDates: [],
     }

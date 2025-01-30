@@ -7,7 +7,6 @@ export interface DashboardsResponse {
 export interface Dashboard {
   id: string
   cssTemplate: string
-  dateTimeSliderEnabled: boolean
   groups: DashboardGroup[]
 }
 

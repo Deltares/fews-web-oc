@@ -1,6 +1,7 @@
 import type {
   ChartSettings,
   ComponentSettingsMapping,
+  DashboardSettings,
   MapSettings,
   SchematicStatusDisplaySettings,
 } from './componentSettings'
@@ -24,6 +25,10 @@ const defaultSchematicStatusDisplaySettings: SchematicStatusDisplaySettings = {
   zoomingEnabled: false,
 }
 
+const defaultDashboardSettings: DashboardSettings = {
+  dateTimeSliderEnabled: true,
+}
+
 export const componentTypeToDefaultSettingsMap: ComponentSettingsMapping = {
   map: defaultMapSettings,
   charts: defaultChartSettings,
@@ -32,6 +37,6 @@ export const componentTypeToDefaultSettingsMap: ComponentSettingsMapping = {
   'schematic-status-display': defaultSchematicStatusDisplaySettings,
   'system-monitor': undefined,
   'web-display': undefined,
-  dashboard: undefined,
+  dashboard: defaultDashboardSettings,
   tasks: undefined,
 } as const
