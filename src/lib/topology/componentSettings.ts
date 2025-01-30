@@ -1,5 +1,6 @@
 import type { FillPaintProps, LinePaintProps } from 'maplibre-gl'
 import type { ComponentType } from './component'
+import { componentTypeToDefaultSettingsMap } from './defaultComponentSettings'
 
 type PaintMapping = {
   fill: FillPaintProps
@@ -11,7 +12,7 @@ export interface ComponentSettingsResponse {
   declarations?: Declarations
 }
 
-interface ComponentSettingsMapping {
+export interface ComponentSettingsMapping {
   map: MapSettings
   charts: ChartSettings
   'data-download-display': undefined
@@ -25,7 +26,7 @@ interface ComponentSettingsMapping {
 }
 
 type SettingsPerComponent = {
-  [key in ComponentType]?: ComponentSettingsMapping[key]
+  [key in ComponentType]?: Partial<ComponentSettingsMapping[key]>
 }
 
 export interface ComponentSettings extends SettingsPerComponent {
@@ -33,21 +34,21 @@ export interface ComponentSettings extends SettingsPerComponent {
 }
 
 export interface ChartSettings {
-  chartEnabled?: boolean
-  elevationChartEnabled?: boolean
-  tableEnabled?: boolean
-  metaDataEnabled?: boolean
-  downloadEnabled?: boolean
+  chartEnabled: boolean
+  elevationChartEnabled: boolean
+  tableEnabled: boolean
+  metaDataEnabled: boolean
+  downloadEnabled: boolean
 }
 
 export interface MapSettings extends ChartSettings {
-  chartPanelEnabled?: boolean
-  locationSearchEnabled?: boolean
+  chartPanelEnabled: boolean
+  locationSearchEnabled: boolean
 }
 
 export interface SchematicStatusDisplaySettings {
-  dateTimeSliderEnabled?: boolean
-  zoomingDisabled?: boolean
+  dateTimeSliderEnabled: boolean
+  zoomingEnabled: boolean
 }
 
 export interface Declarations {
@@ -72,4 +73,20 @@ export interface OverlayLocation {
   locationSet: string
   type: keyof PaintMapping
   paint: PaintMapping[OverlayLocation['type']]
+}
+
+export function getDefaultSettings<T extends ComponentType>(componentType: T) {
+  return componentTypeToDefaultSettingsMap[componentType]
+}
+
+export function getSettings<T extends ComponentType>(
+  componentSettings: ComponentSettings,
+  componentType: T,
+) {
+  const defaultSettings = getDefaultSettings(componentType)
+  const settings = componentSettings[componentType]
+  return {
+    ...defaultSettings,
+    ...settings,
+  }
 }

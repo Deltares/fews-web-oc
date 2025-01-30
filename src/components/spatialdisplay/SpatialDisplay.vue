@@ -57,7 +57,10 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import type { BoundingBox } from '@deltares/fews-wms-requests'
 import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
-import type { MapSettings } from '@/lib/topology/componentSettings'
+import {
+  type MapSettings,
+  getDefaultSettings,
+} from '@/lib/topology/componentSettings'
 import { useElementSize } from '@vueuse/core'
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
@@ -76,6 +79,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
   filterIds: () => [],
+  settings: () => getDefaultSettings('map'),
 })
 
 const route = useRoute()
@@ -170,9 +174,7 @@ const filter = computed(() => {
 })
 
 const showChartPanel = computed(() => {
-  return (
-    filter.value !== undefined && (props.settings?.chartPanelEnabled ?? true)
-  )
+  return filter.value !== undefined && props.settings.chartPanelEnabled
 })
 
 const elevationChartFilter = computed(() => {
