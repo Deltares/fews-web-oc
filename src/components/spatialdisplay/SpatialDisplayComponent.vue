@@ -355,7 +355,7 @@ const layerHasElevation = computed(() => {
 })
 
 const showLocationSearchControl = computed(() => {
-  return !(props.settings?.locationSearchEnabled === false)
+  return props.settings?.locationSearchEnabled ?? true
 })
 
 watch(

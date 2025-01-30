@@ -12,7 +12,7 @@
         :layer-capabilities="layerCapabilities"
         :bounding-box="boundingBox"
         :times="times"
-        :settings="props.settings"
+        :settings="settings"
         :max-values-time-series="maxValuesTimeSeries"
         v-model:elevation="elevation"
         v-model:current-time="currentTime"
@@ -27,7 +27,7 @@
           :filter="filter"
           :elevation-chart-filter="elevationChartFilter"
           :current-time="currentTime"
-          :settings="props.settings"
+          :settings="settings"
         />
       </router-view>
     </div>
@@ -171,7 +171,7 @@ const filter = computed(() => {
 
 const showChartPanel = computed(() => {
   return (
-    filter.value !== undefined && !(props.settings?.chartPanelEnabled === false)
+    filter.value !== undefined && (props.settings?.chartPanelEnabled ?? true)
   )
 })
 

@@ -16,7 +16,7 @@ interface ComponentSettingsMapping {
   charts: ChartSettings
   'data-download-display': undefined
   report: undefined
-  'schematic-status-display': undefined
+  'schematic-status-display': SchematicStatusDisplaySettings
   'system-monitor': undefined
   'html-display': undefined
   dashboard: undefined
@@ -43,6 +43,11 @@ export interface ChartSettings {
 export interface MapSettings extends ChartSettings {
   chartPanelEnabled?: boolean
   locationSearchEnabled?: boolean
+}
+
+export interface SchematicStatusDisplaySettings {
+  dateTimeSliderEnabled?: boolean
+  zoomingDisabled?: boolean
 }
 
 export interface Declarations {
