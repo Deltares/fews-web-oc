@@ -10,7 +10,11 @@
           >
             <!-- TODO: For now we only support one item per element -->
             <!--       to prevent UI clutter. -->
-            <DashboardItem v-if="element.items" :item="element.items[0]" :settings />
+            <DashboardItem
+              v-if="element.items"
+              :item="element.items[0]"
+              :settings
+            />
           </v-card>
         </template>
       </template>
