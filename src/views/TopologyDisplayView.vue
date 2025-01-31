@@ -32,7 +32,7 @@
   <Teleport to="#app-bar-content-end">
     <v-menu bottom left>
       <template v-slot:activator="{ props }">
-        <v-btn icon variant="plain" v-bind="props">
+        <v-btn icon v-bind="props">
           <v-icon>mdi-dots-horizontal-circle-outline</v-icon>
         </v-btn>
       </template>
@@ -68,6 +68,7 @@
           :is="Component"
           :filter-ids="filterIds"
           :topologyNode="topologyNode"
+          :boundingBox="boundingBox"
         />
       </keep-alive>
     </router-view>
@@ -164,12 +165,13 @@ const secondaryWorkflows = computed(() => {
   return activeNode.value.secondaryWorkflows
 })
 
+const boundingBox = computed(() => activeNode.value?.boundingBox)
+
 const items = ref<ColumnItem[]>([])
 
 const filterIds = ref<string[]>([])
 const topologyNode = ref<TopologyNode | undefined>(undefined)
 
-const activeTab = ref('')
 const displayTabs = ref<DisplayTab[]>([])
 
 const nodesStore = useNodesStore()
@@ -306,14 +308,14 @@ watchEffect(() => {
   }
 
   // Create the displayTabs for the active node.
-  if (node === undefined) return
   displayTabs.value = displayTabsForNode(node, parentNodeIdNodeId)
+
   externalLink.value = node.url
 })
 
 onBeforeRouteUpdate(reroute)
 
-function reroute(to: RouteLocationNormalized) {
+function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
   if (!to.params.nodeId) {
     const firstSubNodeId = subNodes.value[0].id
     if (firstSubNodeId) {
@@ -369,9 +371,8 @@ function reroute(to: RouteLocationNormalized) {
 
       const topologyId = to.params.topologyId as string
       const tabs = displayTabsForNode(menuNode, parentNodeId, topologyId)
-      const tab = tabs.find((t) => t.type === activeTab.value) ?? tabs[0]
+      const tab = tabs.find((t) => t.to.name === from?.name) ?? tabs[0]
       if (tab) {
-        activeTab.value = tab.type
         return tab.to
       }
     }

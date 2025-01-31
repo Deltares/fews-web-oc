@@ -146,7 +146,7 @@ import {
   type MapLayerMouseEvent,
   type MapLayerTouchEvent,
 } from 'maplibre-gl'
-import type { Layer, Style } from '@deltares/fews-wms-requests'
+import type { BoundingBox, Layer, Style } from '@deltares/fews-wms-requests'
 import type { Location } from '@deltares/fews-pi-requests'
 import { LayerKind } from '@/lib/streamlines'
 import { ColourScale, useColourScalesStore } from '@/stores/colourScales'
@@ -178,6 +178,7 @@ interface Props {
   longitude?: string
   currentTime?: Date
   maxValuesTimeSeries?: TimeSeriesData[]
+  boundingBox?: BoundingBox
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -420,13 +421,15 @@ function setLayerOptions(): void {
 
 const bounds = ref<LngLatBounds>()
 watch(
-  () => layerOptions.value?.bbox,
-  (layerBounds) => {
-    if (!layerBounds) return
+  () => props.boundingBox,
+  (newBoundingBox) => {
+    if (!newBoundingBox) return
 
-    const boundsChanged = bounds.value?.toString() !== layerBounds.toString()
+    const newBounds = convertBoundingBoxToLngLatBounds(newBoundingBox)
+
+    const boundsChanged = bounds.value?.toString() !== newBounds.toString()
     if (boundsChanged) {
-      bounds.value = layerBounds
+      bounds.value = newBounds
     }
   },
   { immediate: true },
