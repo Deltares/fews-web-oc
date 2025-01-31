@@ -2,9 +2,9 @@
   <v-app>
     <v-main class="login-container">
       <div>&nbsp;</div>
-      <h1 style="color: white">Delft-FEWS Web Operator Client</h1>
+      <h1 style="color: white">{{ appName }}</h1>
       <div class="login-providers">
-        <deltares-login name="Deltares" />
+        <deltares-login :name="companyName" />
       </div>
     </v-main>
   </v-app>
@@ -12,6 +12,11 @@
 
 <script setup lang="ts">
 import DeltaresLogin from './DeltaresLogin.vue'
+
+import { configManager } from '@/services/application-config';
+
+const appName = configManager.get('APPLICATION_NAME') ?? "Delft-FEWS Web Operator Client"
+const companyName = configManager.get('COMPANY_NAME') ?? "Deltares"
 </script>
 
 <style scoped>
