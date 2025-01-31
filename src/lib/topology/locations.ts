@@ -23,16 +23,29 @@ export async function fetchLocationsAsGeoJson(
   const provider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
-  const allGeoJson = await Promise.all(
+  const settledResponses = await Promise.allSettled(
     filterIds.map((filterId) =>
       fetchLocationsAsGeoJsonForSingleFilterId(provider, filterId),
     ),
   )
+  const error = (
+    settledResponses.find((res) => res.status === 'rejected') as
+      | PromiseRejectedResult
+      | undefined
+  )?.reason
+
+  if (error) {
+    console.error('Error fetching locations:', error)
+  }
+
   // Merge them into a single GeoJSON.
-  const geojson = allGeoJson.reduce(
-    (prev, cur) => {
-      prev.features = prev.features.concat(cur.features)
-      return prev
+  const response = settledResponses
+    .filter((res) => res.status === 'fulfilled')
+    .map((res) => res.value)
+  const geojson = response.reduce(
+    (acc: FeatureCollection<Geometry, Location>, item) => {
+      acc.features = acc.features.concat(item.features)
+      return acc
     },
     { type: 'FeatureCollection', features: [] },
   )

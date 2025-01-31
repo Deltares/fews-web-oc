@@ -1,12 +1,13 @@
 import uniq from 'lodash-es/uniq'
 import { defineStore } from 'pinia'
 
-import { fetchWorkflowsWithExpectedRunTime, Workflow } from '@/lib/workflows'
-
-import { configManager } from '@/services/application-config'
+import {
+  fetchWorkflowsWithExpectedRunTime,
+  WorkflowItem,
+} from '@/lib/workflows'
 
 interface AvailableWorkflowsState {
-  workflows: Workflow[]
+  workflows: WorkflowItem[]
   preferredWorkflowIds: string[]
 }
 
@@ -17,13 +18,13 @@ export const useAvailableWorkflowsStore = defineStore('availableWorkflows', {
   }),
   getters: {
     workflowIds: (state) => {
-      return state.workflows.map((workflow) => workflow.workflowId)
+      return state.workflows.map((workflow) => workflow.id)
     },
   },
   actions: {
-    byId(workflowId: string): Workflow {
+    byId(workflowId: string): WorkflowItem {
       const workflow = this.workflows.find(
-        (workflow) => workflow.workflowId === workflowId,
+        (workflow) => workflow.id === workflowId,
       )
       if (!workflow) {
         throw new Error(`No workflow with ID "{workflowId}" exists.`)
@@ -31,8 +32,7 @@ export const useAvailableWorkflowsStore = defineStore('availableWorkflows', {
       return workflow
     },
     async fetch() {
-      const baseUrl = new URL(configManager.get('VITE_FEWS_WEBSERVICES_URL'))
-      this.workflows = await fetchWorkflowsWithExpectedRunTime(baseUrl)
+      this.workflows = await fetchWorkflowsWithExpectedRunTime()
     },
     setPreferredWorkflowIds(workflowIds: string[]): void {
       // Make sure the workflow IDs are unique.

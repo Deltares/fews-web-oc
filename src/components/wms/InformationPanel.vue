@@ -1,11 +1,6 @@
 <template>
   <ControlChip>
-    <v-btn
-      @click="showLayer = !showLayer"
-      density="compact"
-      variant="plain"
-      icon
-    >
+    <v-btn @click="showLayer = !showLayer" density="compact" icon>
       <v-icon>{{ showLayer ? 'mdi-layers' : 'mdi-layers-off' }}</v-icon>
     </v-btn>
     <v-menu
@@ -14,7 +9,7 @@
       v-if="showLayer"
     >
       <template v-slot:activator="{ props }">
-        <v-btn variant="plain" v-bind="props" class="pe-0 text-none">
+        <v-btn v-bind="props" class="pe-0 text-none">
           <span
             class="me-2"
             :class="{ 'text-decoration-line-through': props.completelyMissing }"
@@ -121,7 +116,6 @@
       @click="toggleLayerType"
       icon
       density="compact"
-      variant="plain"
       :color="doAnimateStreamlines ? 'primary' : undefined"
     >
       <v-progress-circular v-if="isLoading" size="20" indeterminate />

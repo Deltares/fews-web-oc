@@ -35,7 +35,6 @@
         v-show="requiresExpand"
         :icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
         size="small"
-        variant="plain"
         @click="toggleExpand"
       ></v-btn>
     </v-sheet>
@@ -133,6 +132,7 @@ onMounted(() => {
       },
     ],
     margin,
+    automargin: true,
   }
 
   const chartWidth = 800

@@ -10,6 +10,7 @@
         :geojson="geojson"
         @changeLocationId="onLocationChange"
         :layer-capabilities="layerCapabilities"
+        :bounding-box="boundingBox"
         :times="times"
         :max-values-time-series="maxValuesTimeSeries"
         v-model:elevation="elevation"
@@ -50,6 +51,7 @@ import bbox from '@turf/bbox'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useFilterLocations } from '@/services/useFilterLocations'
+import type { BoundingBox } from '@deltares/fews-wms-requests'
 
 interface Props {
   layerName?: string
@@ -57,6 +59,7 @@ interface Props {
   filterIds?: string[]
   latitude?: string
   longitude?: string
+  boundingBox?: BoundingBox
 }
 
 const props = withDefaults(defineProps<Props>(), {
