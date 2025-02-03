@@ -79,15 +79,17 @@ watch(
 )
 
 onMounted(() => {
-  if (props.allowZooming) {
-    setupD3Zoom()
-  } else {
+  if (!props.allowZooming) {
     setupHorizontalScroll()
   }
 })
 
 function onLoad(): void {
   isLoading.value = false
+
+  if (props.allowZooming) {
+    setupD3Zoom()
+  }
 
   resize()
 }
