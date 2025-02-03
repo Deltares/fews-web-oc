@@ -69,13 +69,14 @@ export interface OverlayLocation {
 export const componentTypeToDefaultSettingsMap: ComponentSettingsMapping = {
   map: defaultMapSettings,
   charts: defaultChartSettings,
-  'data-download': undefined,
-  reports: undefined,
+  'data-download-display': undefined,
+  report: undefined,
   'schematic-status-display': defaultSchematicStatusDisplaySettings,
   'system-monitor': undefined,
-  'web-display': undefined,
+  'html-display': undefined,
   dashboard: defaultDashboardSettings,
   tasks: undefined,
+  'log-display': undefined,
 } as const
 
 export function getDefaultSettings<T extends ComponentType>(componentType: T) {
