@@ -13,10 +13,11 @@
 <script setup lang="ts">
 import DeltaresLogin from './DeltaresLogin.vue'
 
-import { configManager } from '@/services/application-config';
+import { configManager } from '@/services/application-config'
 
-const appName = configManager.get('APPLICATION_NAME') ?? "Delft-FEWS Web Operator Client"
-const companyName = configManager.get('COMPANY_NAME') ?? "Deltares"
+const appName =
+  configManager.get('APPLICATION_NAME') ?? 'Delft-FEWS Web Operator Client'
+const companyName = configManager.get('COMPANY_NAME') ?? 'Deltares'
 </script>
 
 <style scoped>
