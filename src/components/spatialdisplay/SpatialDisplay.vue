@@ -63,6 +63,7 @@ import {
 } from '@/lib/topology/componentSettings'
 import { useElementSize } from '@vueuse/core'
 import { useDateRegistry } from '@/services/useDateRegistry'
+import { isDashboardRoute } from '@/lib/topology/dashboard'
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
 )
@@ -276,6 +277,8 @@ function closeTimeSeriesDisplay(): void {
   currentLocationId.value = undefined
   currentLatitude.value = undefined
   currentLongitude.value = undefined
+
+  if (isDashboardRoute(route)) return
 
   const parentRoute = findParentRoute(route)
   if (parentRoute !== null) {

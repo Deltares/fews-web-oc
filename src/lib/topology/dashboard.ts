@@ -2,6 +2,7 @@ import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { defineAsyncComponent, type Component } from 'vue'
 import { ComponentProps } from '@/lib/utils/types'
 import { ComponentType } from '@/lib/topology/component'
+import type { RouteLocationNormalized } from 'vue-router'
 
 const SpatialDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialDisplay.vue'),
@@ -90,4 +91,8 @@ export function getComponentPropsForNode(
     const result: PropsForComponentType<'system-monitor'> = {}
     return result
   }
+}
+
+export function isDashboardRoute(route: RouteLocationNormalized) {
+  return route.name === 'TopologyDashboard'
 }

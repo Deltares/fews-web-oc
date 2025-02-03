@@ -7,7 +7,7 @@
     >
       <SsdComponent
         :src="src"
-        :key="panelId"
+        :key="currentPanelId"
         :mobile="mobile"
         :allowZooming="settings.zoomingEnabled"
         @action="onAction"
@@ -20,8 +20,19 @@
         :hide-speed-controls="mobile"
       />
     </div>
-    <div class="child-container" :class="{ mobile, 'd-none': objectId === '' }">
-      <router-view @close="closeTimeSeriesDisplay"></router-view>
+    <div
+      class="child-container"
+      :class="{ mobile, 'd-none': currentObjectId === '' }"
+    >
+      <router-view v-slot="{ Component }">
+        <component
+          :is="Component ?? SsdTimeSeriesDisplay"
+          :objectId="currentObjectId"
+          :panelId="currentPanelId"
+          :groupId="currentGroupId"
+          @close="closeTimeSeriesDisplay"
+        />
+      </router-view>
     </div>
   </div>
 </template>
@@ -31,7 +42,7 @@ import type {
   SsdActionResult,
   SsdActionRequest,
 } from '@deltares/fews-ssd-requests'
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, watchEffect, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAlertsStore } from '@/stores/alerts.ts'
 import { configManager } from '@/services/application-config/index.ts'
@@ -46,6 +57,11 @@ import {
 } from '@/lib/topology/componentSettings'
 import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
+import { findParentRoute } from '@/router'
+import { isDashboardRoute } from '@/lib/topology/dashboard'
+const SsdTimeSeriesDisplay = defineAsyncComponent(
+  () => import('@/components/ssd/SsdTimeSeriesDisplay.vue'),
+)
 
 interface Props {
   groupId?: string
@@ -59,6 +75,16 @@ const props = withDefaults(defineProps<Props>(), {
   panelId: '',
   objectId: '',
   settings: () => getDefaultSettings('schematic-status-display'),
+})
+
+const currentGroupId = ref<string>('')
+const currentPanelId = ref<string>('')
+const currentObjectId = ref<string>('')
+
+watchEffect(() => {
+  currentGroupId.value = props.groupId
+  currentPanelId.value = props.panelId
+  currentObjectId.value = props.objectId
 })
 
 interface SsdActionEventPayload {
@@ -92,14 +118,14 @@ const debouncedDateString = debouncedRef(selectedDateString, sliderDebounceInter
 
 const { capabilities, src, dates } = useSsd(
   baseUrl,
-  () => props.panelId,
+  currentPanelId,
   debouncedDateString,
 )
 
 useDateRegistry(dates)
 
 const hideSSD = computed(() => {
-  return mobile.value && props.objectId !== ''
+  return mobile.value && currentObjectId.value !== ''
 })
 
 const { width: containerWidth } = useElementSize(ssdContainer)
@@ -176,6 +202,9 @@ function switchPanel(request: SsdActionRequest): void {
     )
   const targetRouteName = parentRoute?.name ?? currentRoute.name
   if (!targetRouteName) return
+  currentGroupId.value = groupId
+  currentPanelId.value = panelId
+  currentObjectId.value = ''
   router.push({
     name: targetRouteName,
     params: { groupId, panelId },
@@ -191,6 +220,9 @@ function openTimeSeriesDisplay(panelId: string, objectId: string) {
   const childRoute = routeConfig?.children?.find((route) =>
     route.name?.toString().endsWith('SSDTimeSeriesDisplay'),
   )
+  currentGroupId.value = props.groupId
+  currentPanelId.value = panelId
+  currentObjectId.value = objectId
   router
     .push({
       name: childRoute?.name,
@@ -202,15 +234,15 @@ function openTimeSeriesDisplay(panelId: string, objectId: string) {
 }
 
 function closeTimeSeriesDisplay(): void {
-  const currentRoute = router.currentRoute.value
-  const parentRoute = router
-    .getRoutes()
-    .find(
-      (route) =>
-        route.children &&
-        route.children.some((child) => child.name === currentRoute.name),
-    )
+  currentGroupId.value = props.groupId
+  currentPanelId.value = props.panelId
+  currentObjectId.value = ''
+
+  if (isDashboardRoute(route)) return
+
+  const parentRoute = findParentRoute(route)
   if (!parentRoute) return
+
   router
     .push({
       name: parentRoute.name,

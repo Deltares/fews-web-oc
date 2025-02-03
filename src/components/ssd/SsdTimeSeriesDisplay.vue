@@ -1,46 +1,31 @@
 <template>
   <div style="dislay: flex; flex-direction: column; height: 100%; width: 100%">
     <div style="flex: 1 1 100%; height: 100%">
-      <WindowComponent>
-        <template v-slot:toolbar>
-          <span class="mx-5">{{ displayConfig?.title }}</span>
-          <v-spacer />
-          <v-btn-toggle class="mr-5" v-model="displayType" mandatory>
-            <v-btn
-              v-for="item in displayTypeItems"
-              :key="item.value"
-              :value="item.value"
-              :aria-label="item.label"
-              :text="item.label"
-              size="small"
-              variant="text"
-              class="text-capitalize"
-            >
-              <v-icon>{{ item.icon }}</v-icon>
-            </v-btn>
-          </v-btn-toggle>
-        </template>
-        <template v-slot:toolbar-append>
-          <v-btn size="small" variant="text" @click="onClose">
+      <TimeSeriesWindowComponent
+        :displayConfig="displayConfig"
+        :settings="chartSettings"
+      >
+        <template #toolbar-append>
+          <v-btn size="small" icon @click="onClose">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </template>
-        <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
-        </TimeSeriesComponent>
-      </WindowComponent>
+      </TimeSeriesWindowComponent>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import { useSsdPi } from '@/services/useSsdPi/index.ts'
-import WindowComponent from '@/components/general/WindowComponent.vue'
-import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
-import { DisplayType } from '@/lib/display/DisplayConfig'
+import TimeSeriesWindowComponent from '@/components/timeseries/TimeSeriesWindowComponent.vue'
 import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import {
+  type ChartSettings,
+  getDefaultSettings,
+} from '@/lib/topology/componentSettings'
 
 interface Props {
   panelId?: string
@@ -50,6 +35,11 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   panelId: '',
   objectId: '',
+})
+
+// TODO: Get this from component settings endpoint
+const chartSettings = computed<ChartSettings>(() => {
+  return getDefaultSettings('charts')
 })
 
 const emit = defineEmits<{ (e: 'close', objectId: string): void }>()
@@ -83,26 +73,6 @@ watch(
   },
   { deep: true },
 )
-
-interface DisplayTypeItem {
-  icon: string
-  label: string
-  value: DisplayType
-}
-
-const displayType = ref(DisplayType.TimeSeriesChart)
-const displayTypeItems: DisplayTypeItem[] = [
-  {
-    icon: 'mdi-chart-line',
-    label: 'Chart',
-    value: DisplayType.TimeSeriesChart,
-  },
-  {
-    icon: 'mdi-table',
-    label: 'Table',
-    value: DisplayType.TimeSeriesTable,
-  },
-]
 
 function onClose(): void {
   emit('close', props.objectId)
