@@ -31,7 +31,6 @@ import type {
   SsdActionResult,
   SsdActionRequest,
 } from '@deltares/fews-ssd-requests'
-import debounce from 'lodash-es/debounce'
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAlertsStore } from '@/stores/alerts.ts'
@@ -40,7 +39,7 @@ import { useSsd } from '@/services/useSsd/index.ts'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import SsdComponent from '@/components/ssd/SsdComponent.vue'
 import { useDisplay } from 'vuetify'
-import { useElementSize } from '@vueuse/core'
+import { debouncedRef, useElementSize } from '@vueuse/core'
 import {
   getDefaultSettings,
   type SchematicStatusDisplaySettings,
@@ -87,15 +86,14 @@ const selectedDateString = computed(() => {
   return dateString.substring(0, 19) + 'Z'
 })
 
+// Debounce the selected date string from the slider input,
+// so we do not send hundreds of requests when dragging the slider around.
+const debouncedDateString = debouncedRef(selectedDateString, sliderDebounceInterval)
+
 const { capabilities, src, dates } = useSsd(
   baseUrl,
   () => props.panelId,
-  // Debounce the selected date string from the slider input,
-  // so we do not send hundreds of requests when dragging the slider around.
-  debounce(() => selectedDateString.value, sliderDebounceInterval, {
-    leading: true,
-    trailing: true,
-  }),
+  debouncedDateString,
 )
 
 useDateRegistry(dates)
