@@ -8,6 +8,7 @@ import {
   nodeHasReports,
   nodeHasSchematicStatusDisplay,
   nodeHasSystemMonitor,
+  nodeHasTasks,
   nodeHasWebDisplay,
 } from './nodes'
 import {
@@ -87,8 +88,7 @@ export function displayTabsForNode(
         tab.to.params = { ...params }
         break
       case 'tasks':
-        // HACK: always show the tasks tab
-        tab.active = true
+        tab.active = nodeHasTasks(node)
         tab.to.params = { ...params }
         break
     }
