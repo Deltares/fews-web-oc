@@ -14,6 +14,7 @@
           :currentTime="selectedDate"
           :isLoading="isLoading(subplot, loadingSeriesIds)"
           :zoomHandler="sharedZoomHandler"
+          :settings="settings.timeseriesChart"
         >
         </TimeSeriesChart>
       </KeepAlive>
@@ -103,7 +104,10 @@ import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'
 import { getUniqueSeries } from '@/lib/charts/getUniqueSeriesIds.ts'
 import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
-import { getDefaultSettings, type ChartSettings } from '@/lib/topology/componentSettings'
+import {
+  getDefaultSettings,
+  type ChartSettings,
+} from '@/lib/topology/componentSettings'
 
 interface Props {
   config?: DisplayConfig
@@ -141,7 +145,7 @@ const props = withDefaults(defineProps<Props>(), {
       period: undefined,
     }
   },
-  settings: () => getDefaultSettings('charts')
+  settings: () => getDefaultSettings('charts'),
 })
 
 const { selectedDate } = useSelectedDate(() => props.currentTime ?? new Date())

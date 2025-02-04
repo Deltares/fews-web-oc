@@ -27,7 +27,7 @@ export const defaultChartSettings: ChartSettings = {
     show: true,
     legend: {
       show: true,
-      numberOfLines: 'all',
+      numberOfLines: 1,
       placement: 'above chart',
     },
     xAxis: {
@@ -39,6 +39,7 @@ export const defaultChartSettings: ChartSettings = {
       show: true,
       yTicks: true,
       yLabel: true,
+      yLabelPlacement: 'beside',
     },
   },
   timeseriesTable: {
@@ -62,6 +63,7 @@ export const defaultChartSettings: ChartSettings = {
       show: true,
       yTicks: true,
       yLabel: true,
+      yLabelPlacement: 'beside',
     },
   },
   verticalProfileTable: {
@@ -110,20 +112,24 @@ interface Legend {
     | 'inside lower left'
 }
 
-interface Axis {
+interface XAxis {
   show: boolean
-  xTicks?: boolean
-  xLabel?: boolean
-  yTicks?: boolean
-  yLabel?: boolean
-  yLabelPlacement?: 'auto' | 'top' | 'beside'
+  xTicks: boolean
+  xLabel: boolean
+}
+
+interface YAxis {
+  show: boolean
+  yTicks: boolean
+  yLabel: boolean
+  yLabelPlacement: 'auto' | 'top' | 'beside'
 }
 
 interface TimeseriesChart {
   show: boolean
   legend: Legend
-  xAxis: Axis
-  yAxis: Axis
+  xAxis: XAxis
+  yAxis: YAxis
 }
 
 interface TimeseriesTable {
@@ -135,8 +141,8 @@ interface TimeseriesTable {
 interface VerticalProfileChart {
   show: boolean
   legend: Legend
-  xAxis: Axis
-  yAxis: Axis
+  xAxis: XAxis
+  yAxis: YAxis
 }
 
 interface VerticalProfileTable {
