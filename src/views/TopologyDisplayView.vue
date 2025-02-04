@@ -280,9 +280,10 @@ watchEffect(() => {
       : props.nodeId[0]
     : props.nodeId
 
-  const parentNodeIdNodeId = Array.isArray(props.nodeId)
-    ? props.nodeId[0]
-    : undefined
+  const parentNodeIdNodeId =
+    Array.isArray(props.nodeId) && props.nodeId.length > 1
+      ? props.nodeId[0]
+      : undefined
 
   // Check if the active node is a leaf.
   const node = topologyNodesStore.getNodeById(activeNodeId)
