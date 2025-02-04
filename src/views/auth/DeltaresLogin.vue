@@ -1,5 +1,5 @@
 <template>
-  <v-btn @click="login" color="primary">
+  <v-btn @click="login" color="primary" variant="elevated">
     <v-icon>mdi-microsoft-windows</v-icon>Sign in
   </v-btn>
 </template>
