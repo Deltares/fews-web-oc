@@ -86,6 +86,11 @@ export function displayTabsForNode(
         tab.active = nodeHasDashboard(node)
         tab.to.params = { ...params }
         break
+      case 'tasks':
+        // HACK: always show the tasks tab
+        tab.active = true
+        tab.to.params = { ...params }
+        break
     }
   }
   return displayTabs.filter((tab) => tab.active)
