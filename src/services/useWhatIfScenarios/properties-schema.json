@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "properties": {
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "radius_degree": {
+      "type": "number"
+    },
+    "number_particle": {
+      "type": "number"
+    },
+    "mass_total_kg": {
+      "type": "number"
+    },
+    "simulation_period_seconds": {
+      "type": "number"
+    }
+  },
+  "required": ["simulation_period_seconds"]
+}
