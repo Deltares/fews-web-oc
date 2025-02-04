@@ -47,7 +47,7 @@ export function displayTabsForNode(
 ) {
   for (const tab of displayTabs) {
     const params = {
-      nodeId: parentNodeId ? [parentNodeId, node.id] : node.id,
+      nodeId: parentNodeId ? [parentNodeId, node.id] : [node.id],
       topologyId,
     }
     switch (tab.type) {
