@@ -36,6 +36,9 @@ export const useAvailableWorkflowsStore = defineStore('availableWorkflows', {
       }
       return workflow
     },
+    hasWhatIfTemplate(workflowId: string): boolean {
+      return this.byId(workflowId).whatIfTemplateId !== undefined
+    },
     byWhatIfTemplateId(whatIfTemplateId: string): WorkflowItem {
       const workflow = this.workflows.find(
         (workflow) => workflow.whatIfTemplateId === whatIfTemplateId,

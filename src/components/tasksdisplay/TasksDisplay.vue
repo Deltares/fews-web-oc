@@ -1,26 +1,15 @@
 <template>
-  <div class="w-100 d-flex flex-column gr-4 pa-4">
-    <div>
-      <v-select
-        v-model="selectedWhatIfTemplateId"
-        :items="whatIfScenarios.templates.value"
-        item-value="id"
-        item-title="title"
-        label="Select what-if scenario template"
-        hide-details
-      />
-      <v-container v-if="workflow !== null">
-        <v-row dense>
-          <v-col cols="2">Workflow:</v-col>
-          <v-col>{{ workflow.name }}</v-col>
-        </v-row>
-        <v-row v-if="workflow.description" dense>
-          <v-col cols="2">Description:</v-col>
-          <v-col>{{ workflow.description }}</v-col>
-        </v-row>
-      </v-container>
-    </div>
-    <v-card v-if="doShowConfiguration">
+  <div class="w-75 mx-auto d-flex flex-column gr-4 pa-4">
+    <v-select
+      v-model="selectedWorkflow"
+      :items="whatIfWorkflows"
+      item-title="name"
+      label="Select what-if scenario template"
+      hide-details
+      return-object
+      class="flex-0-0"
+    />
+    <v-card flat border v-if="doShowConfiguration">
       <v-card-title>Scenario configuration</v-card-title>
       <v-card-text>
         <json-forms
@@ -36,32 +25,19 @@
         />
       </v-card-text>
     </v-card>
-    <v-card>
-      <v-card-title>Run configuration</v-card-title>
-      <v-card-text class="d-flex flex-column gr-2">
-        <v-text-field
-          v-model="whatIfScenarioName"
-          label="What-if scenario name"
-          hide-details
-        />
-        <v-text-field v-model="description" label="Description" hide-details />
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <div class="d-flex flex-row gc-4 mr-2">
-          <ExpectedWorkflowRuntime :workflow-id="workflowId" />
-          <AvailableWorkflowServers :workflow-id="workflowId" />
-        </div>
-        <v-btn
-          variant="flat"
-          color="primary"
-          :disabled="!canSubmit"
-          @click="submit"
-        >
-          Submit
-        </v-btn>
-      </v-card-actions>
-    </v-card>
+    <v-spacer />
+    <div class="d-flex flex-row gc-4 mr-2">
+      <ExpectedWorkflowRuntime :workflow-id="selectedWorkflow?.id ?? null" />
+      <AvailableWorkflowServers :workflow-id="selectedWorkflow?.id ?? null" />
+    </div>
+    <v-btn
+      variant="flat"
+      color="primary"
+      :disabled="!canSubmit"
+      @click="submit"
+    >
+      Submit
+    </v-btn>
     <v-alert
       v-if="isSubmitted && !hasSubmitError"
       class="flex-0-0"
@@ -90,11 +66,15 @@ import { JsonForms } from '@jsonforms/vue'
 import ExpectedWorkflowRuntime from './ExpectedWorkflowRuntime.vue'
 import AvailableWorkflowServers from './AvailableWorkflowServers.vue'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+import { TopologyNode } from '@deltares/fews-pi-requests'
+import { WorkflowItem } from '@/lib/workflows'
+import { getWorkflowIdsForNode } from '@/lib/workflows/tasks'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 
 interface Props {
   nodeId?: string | string[]
+  topologyNode?: TopologyNode
 }
 const props = defineProps<Props>()
 
@@ -105,26 +85,28 @@ const nodeId = computed(() => {
   return props.nodeId ?? ''
 })
 
-const selectedWhatIfTemplateId = ref<string | null>(null)
+const workflowIds = computed<string[]>(() =>
+  props.topologyNode ? getWorkflowIdsForNode(props.topologyNode) : [],
+)
+const workflows = computed<WorkflowItem[]>(() =>
+  workflowIds.value.map((id) => availableWorkflowsStore.byId(id)),
+)
+
+const selectedWorkflow = ref<WorkflowItem>()
+const whatIfWorkflows = computed(() =>
+  workflows.value.filter((wf) => wf.whatIfTemplateId !== undefined),
+)
 const whatIfScenarios = useWhatIfScenarios(
   nodeId,
   availableWorkflowsStore.whatIfTemplateIds,
-  selectedWhatIfTemplateId,
+  () => selectedWorkflow.value?.whatIfTemplateId ?? null,
 )
-
-const workflow = computed(() =>
-  selectedWhatIfTemplateId.value === null
-    ? null
-    : availableWorkflowsStore.byWhatIfTemplateId(
-        selectedWhatIfTemplateId.value,
-      ),
-)
-const workflowId = computed(() => workflow.value?.id ?? null)
 
 const whatIfScenarioName = ref<string>('')
-const description = ref<string>('')
 
-const doShowConfiguration = computed<boolean>(() => workflowId.value !== null)
+const doShowConfiguration = computed<boolean>(
+  () => selectedWorkflow.value !== undefined,
+)
 
 const hasAllRequiredProperties = computed<boolean>(() => {
   const propertiesSchema = whatIfScenarios.formSchemas.value?.properties
@@ -135,7 +117,7 @@ const hasAllRequiredProperties = computed<boolean>(() => {
   )
 })
 const canSubmit = computed<boolean>(() => {
-  const hasSelectedWorkflow = workflowId.value !== null
+  const hasSelectedWorkflow = selectedWorkflow.value !== undefined
   const hasAllProperties = hasAllRequiredProperties.value
   const hasScenarioName = whatIfScenarioName.value.trim() !== ''
   return hasSelectedWorkflow && hasAllProperties && hasScenarioName
