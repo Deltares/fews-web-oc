@@ -20,7 +20,7 @@ export interface ComponentSettingsMapping {
   'schematic-status-display': SchematicStatusDisplaySettings
   'system-monitor': undefined
   'html-display': undefined
-  dashboard: undefined
+  dashboard: DashboardSettings
   tasks: undefined
   'log-display': undefined
 }
@@ -49,6 +49,10 @@ export interface MapSettings extends ChartSettings {
 export interface SchematicStatusDisplaySettings {
   dateTimeSliderEnabled: boolean
   zoomingEnabled: boolean
+}
+
+export interface DashboardSettings {
+  dateTimeSliderEnabled: boolean
 }
 
 export interface Declarations {
