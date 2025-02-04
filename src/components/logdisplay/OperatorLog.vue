@@ -6,9 +6,10 @@
     :search="search"
     :custom-key-filter="customKeyFilters"
     :sort-by="[{ key: 'creationTime', order: 'desc' }]"
+    class="d-flex flex-column h-100 w-100"
   >
     <template #header>
-      <div class="d-flex ga-2 w-100 h-100 align-center pa-2">
+      <div class="d-flex ga-2 align-center pa-2">
         <v-text-field
           v-model="search"
           placeholder="Search"

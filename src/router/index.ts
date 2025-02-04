@@ -38,6 +38,7 @@ const HtmlDisplayView = () => import('../views/HtmlDisplayView.vue')
 const ReportsDisplayView = () => import('../views/ReportsDisplayView.vue')
 const WebDisplay = () => import('../components/webdisplay/WebDisplay.vue')
 const DashboardView = () => import('../views/DashboardView.vue')
+const LogDisplay = () => import('../components/logdisplay/LogDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
@@ -209,6 +210,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         path: 'embed',
         name: 'TopologyWebDisplay',
         component: WebDisplay,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
+        path: 'log',
+        name: 'TopologyLogDisplay',
+        component: LogDisplay,
         props: true,
         meta: { sidebar: true },
       },
