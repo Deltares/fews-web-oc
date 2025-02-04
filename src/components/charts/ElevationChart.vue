@@ -1,7 +1,6 @@
 <template>
   <div class="chart-with-chips">
-    <LoadingOverlay v-if="isLoading" :offsets="margin" height="90%" />
-    <div ref="chartContainer" class="chart-container" v-show="!isLoading"></div>
+    <div ref="chartContainer" class="chart-container"></div>
     <v-sheet
       class="chart-controls"
       rounded
@@ -56,7 +55,6 @@ import {
   VerticalMouseOver,
   ZoomHandler,
 } from '@deltares/fews-web-oc-charts'
-import LoadingOverlay from '@/components/charts/LoadingOverlay.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
 import { Series } from '../../lib/timeseries/timeSeries.js'
@@ -87,6 +85,7 @@ interface Tag {
 const props = withDefaults(defineProps<Props>(), {
   config: () => {
     return {
+      id: '',
       title: '',
       series: [],
     }
@@ -153,10 +152,7 @@ onMounted(() => {
     axis.accept(zoom)
     axis.accept(mouseOver)
     resize()
-    if (props.config !== undefined) {
-      refreshChart()
-      setTags()
-    }
+    if (props.config !== undefined) onValueChange()
     window.addEventListener('resize', resize)
   }
 })
@@ -252,6 +248,30 @@ const refreshChart = () => {
   })
 }
 
+const updateChartData = (series: ChartSeries[]) => {
+  series.forEach((series) => {
+    const chart = axis.charts.find((chart) => chart.id == series.id)
+    if (chart !== undefined) {
+      const rawData = dataFromResources(series.dataResources, props.series)
+      const data = removeUnreliableData(rawData)
+      chart.data = data
+    }
+  })
+  // Ensure the current zoom, which might be user-selected, does not change
+  axis.redraw({
+    x: {
+      nice: false,
+      domain: undefined,
+      fullExtent: false,
+    },
+    y: {
+      nice: false,
+      domain: undefined,
+      fullExtent: false,
+    },
+  })
+}
+
 const setTags = () => {
   const s = new XMLSerializer()
   const seriesData = props.config?.series
@@ -340,11 +360,11 @@ watch(
     ),
   (newValue, oldValue) => {
     const newSeriesIds = difference(newValue, oldValue)
-    const requiredSeriesIds = props.config?.series.filter((s) =>
+    const requiredSeries = props.config?.series.filter((s) =>
       newSeriesIds.map((id) => id.split('-')[0]).includes(s.id),
     )
-    if (requiredSeriesIds.length > 0) {
-      onValueChange()
+    if (requiredSeries.length > 0) {
+      updateChartData(requiredSeries)
     }
   },
 )
