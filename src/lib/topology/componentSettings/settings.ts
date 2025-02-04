@@ -1,6 +1,15 @@
 import type { FillPaintProps, LinePaintProps } from 'maplibre-gl'
-import type { ComponentType } from './component'
-import { componentTypeToDefaultSettingsMap } from './defaultComponentSettings'
+import type { ComponentType } from '../component'
+import { type ChartSettings, defaultChartSettings } from './chartSettings'
+import { type MapSettings, defaultMapSettings } from './mapSettings'
+import {
+  type SchematicStatusDisplaySettings,
+  defaultSchematicStatusDisplaySettings,
+} from './schematicStatusDisplaySettings'
+import {
+  type DashboardSettings,
+  defaultDashboardSettings,
+} from './dashboardSettings'
 
 type PaintMapping = {
   fill: FillPaintProps
@@ -33,29 +42,6 @@ export interface ComponentSettings extends SettingsPerComponent {
   id: string
 }
 
-export interface ChartSettings {
-  chartEnabled: boolean
-  elevationChartEnabled: boolean
-  tableEnabled: boolean
-  metaDataEnabled: boolean
-  downloadEnabled: boolean
-}
-
-export interface MapSettings extends ChartSettings {
-  chartPanelEnabled: boolean
-  locationSearchEnabled: boolean
-  dateTimeSliderEnabled: boolean
-}
-
-export interface SchematicStatusDisplaySettings {
-  dateTimeSliderEnabled: boolean
-  zoomingEnabled: boolean
-}
-
-export interface DashboardSettings {
-  dateTimeSliderEnabled: boolean
-}
-
 export interface Declarations {
   baseMaps?: BaseMap[]
   overlays?: Overlays
@@ -79,6 +65,19 @@ export interface OverlayLocation {
   type: keyof PaintMapping
   paint: PaintMapping[OverlayLocation['type']]
 }
+
+export const componentTypeToDefaultSettingsMap: ComponentSettingsMapping = {
+  map: defaultMapSettings,
+  charts: defaultChartSettings,
+  'data-download-display': undefined,
+  report: undefined,
+  'schematic-status-display': defaultSchematicStatusDisplaySettings,
+  'system-monitor': undefined,
+  'html-display': undefined,
+  dashboard: defaultDashboardSettings,
+  tasks: undefined,
+  'log-display': undefined,
+} as const
 
 export function getDefaultSettings<T extends ComponentType>(componentType: T) {
   return componentTypeToDefaultSettingsMap[componentType]
