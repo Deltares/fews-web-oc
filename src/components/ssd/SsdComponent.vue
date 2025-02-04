@@ -159,7 +159,7 @@ function getSvgElement() {
 .ssd-container {
   display: flex;
   flex-direction: column;
-  overflow-x: scroll;
+  overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
   background-color: white;
