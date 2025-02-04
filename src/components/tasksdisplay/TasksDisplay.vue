@@ -94,13 +94,20 @@ import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 
 interface Props {
-  nodeId: string
+  nodeId?: string | string[]
 }
 const props = defineProps<Props>()
 
+const nodeId = computed(() => {
+  if (Array.isArray(props.nodeId)) {
+    return props.nodeId[props.nodeId.length - 1]
+  }
+  return props.nodeId ?? ''
+})
+
 const selectedWhatIfTemplateId = ref<string | null>(null)
 const whatIfScenarios = useWhatIfScenarios(
-  () => props.nodeId,
+  nodeId,
   availableWorkflowsStore.whatIfTemplateIds,
   selectedWhatIfTemplateId,
 )
