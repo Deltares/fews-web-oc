@@ -9,7 +9,7 @@
           "scope": "#/properties/latitude",
           "label": "Latitude [degrees]",
           "options": {
-            "placeholder": "Latitude [degrees]"
+            "placeholder": "45"
           }
         },
         {
@@ -17,7 +17,7 @@
           "scope": "#/properties/longitude",
           "label": "Longitude [degrees]",
           "options": {
-            "placeholder": "Longitude [degrees]"
+            "placeholder": "30"
           }
         }
       ]

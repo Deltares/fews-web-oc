@@ -1,8 +1,10 @@
 import type { ColumnItem } from '@/components/general/ColumnItem'
+import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import type {
   TopologyNode,
   TopologyThresholdNode,
 } from '@deltares/fews-pi-requests'
+import { getWorkflowIdsForNode } from '../workflows/tasks'
 
 export function nodeButtonItems(
   node: TopologyNode,
@@ -128,7 +130,8 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
     nodeHasReports(node) ||
     nodeHasSystemMonitor(node) ||
     nodeHasWebDisplay(node) ||
-    nodeHasDashboard(node)
+    nodeHasDashboard(node) ||
+    nodeHasTasks(node)
   )
 }
 
@@ -166,4 +169,12 @@ export function nodeHasWebDisplay(node: TopologyNode) {
 
 export function nodeHasDashboard(node: TopologyNode) {
   return node.dashboardPanels !== undefined
+}
+
+export function nodeHasTasks(node: TopologyNode) {
+  const workflowIds = getWorkflowIdsForNode(node)
+  const availableWorkflows = useAvailableWorkflowsStore()
+  return workflowIds.some((workflowId) =>
+    availableWorkflows.hasWhatIfTemplate(workflowId),
+  )
 }
