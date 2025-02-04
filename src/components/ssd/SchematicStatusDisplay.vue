@@ -88,7 +88,10 @@ const selectedDateString = computed(() => {
 
 // Debounce the selected date string from the slider input,
 // so we do not send hundreds of requests when dragging the slider around.
-const debouncedDateString = debouncedRef(selectedDateString, sliderDebounceInterval)
+const debouncedDateString = debouncedRef(
+  selectedDateString,
+  sliderDebounceInterval,
+)
 
 const { capabilities, src, dates } = useSsd(
   baseUrl,
