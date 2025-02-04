@@ -27,11 +27,12 @@ const defaultSchematicStatusDisplaySettings: SchematicStatusDisplaySettings = {
 export const componentTypeToDefaultSettingsMap: ComponentSettingsMapping = {
   map: defaultMapSettings,
   charts: defaultChartSettings,
-  'data-download': undefined,
-  reports: undefined,
+  'data-download-display': undefined,
+  report: undefined,
   'schematic-status-display': defaultSchematicStatusDisplaySettings,
   'system-monitor': undefined,
-  'web-display': undefined,
+  'html-display': undefined,
   dashboard: undefined,
   tasks: undefined,
+  'log-display': undefined,
 } as const
