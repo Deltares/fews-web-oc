@@ -7,9 +7,9 @@
 
 <script setup lang="ts">
 import OperatorLog from '@/components/logdisplay/OperatorLog.vue'
-import { useLogDisplaysStore } from '@/stores/logDisplays'
+import { configManager } from '@/services/application-config'
+import { useLogDisplay } from '@/services/useLogDisplay'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
-import { computed } from 'vue'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -17,11 +17,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const logDisplaysStore = useLogDisplaysStore()
-logDisplaysStore.fetch()
-
-const logDisplay = computed(() => {
-  const id = props.topologyNode?.logDisplay?.id
-  return logDisplaysStore.getById(id)
-})
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { logDisplay } = useLogDisplay(
+  baseUrl,
+  () => props.topologyNode?.logDisplay?.id,
+)
 </script>
