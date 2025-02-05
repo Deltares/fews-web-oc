@@ -35,13 +35,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, useTemplateRef, watch } from 'vue'
+import {
+  computed,
+  defineAsyncComponent,
+  ref,
+  useTemplateRef,
+  watch,
+  watchEffect,
+} from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
 import { useRoute, useRouter } from 'vue-router'
 import { findParentRoute } from '@/router'
-import { onMounted } from 'vue'
 import {
   useWmsLayerCapabilities,
   useWmsMaxValuesTimeSeries,
@@ -195,8 +201,10 @@ const currentLongitude = ref<string>()
 const elevation = ref<number | undefined>()
 const currentTime = ref<Date>()
 
-onMounted(() => {
+watchEffect(() => {
   currentLocationIds.value = props.locationIds?.split(',')
+})
+watchEffect(() => {
   currentLatitude.value = props.latitude
   currentLongitude.value = props.longitude
 })
@@ -210,7 +218,9 @@ const containerIsMobileSize = computed(() => {
 const hideMap = computed(() => {
   return (
     containerIsMobileSize.value &&
-    (currentLocationIds.value || currentLongitude.value || currentLatitude.value)
+    (currentLocationIds.value ||
+      currentLongitude.value ||
+      currentLatitude.value)
   )
 })
 
