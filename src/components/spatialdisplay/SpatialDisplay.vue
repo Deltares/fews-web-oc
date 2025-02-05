@@ -3,12 +3,12 @@
     <div class="child-container" :class="{ 'd-none': hideMap }">
       <SpatialDisplayComponent
         :layer-name="props.layerName"
-        :location-id="currentLocationId"
+        :location-ids="currentLocationIds"
         :latitude="currentLatitude"
         :longitude="currentLongitude"
         :locations="locations"
         :geojson="geojson"
-        @changeLocationId="onLocationChange"
+        @changeLocationIds="onLocationsChange"
         :layer-capabilities="layerCapabilities"
         :bounding-box="boundingBox"
         :times="times"
@@ -68,7 +68,7 @@ const SpatialTimeSeriesDisplay = defineAsyncComponent(
 
 interface Props {
   layerName?: string
-  locationId?: string
+  locationIds?: string
   filterIds?: string[]
   latitude?: string
   longitude?: string
@@ -123,7 +123,7 @@ const onlyCoverageLayersAvailable = computed(
 function getFilterActionsFilter(): filterActionsFilter &
   UseDisplayConfigOptions {
   return {
-    locationIds: currentLocationId.value,
+    locationIds: currentLocationIds.value?.join(','),
     filterId: props.filterIds ? props.filterIds[0] : undefined,
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
@@ -165,7 +165,7 @@ function getTimeSeriesGridActionsFilter():
 }
 
 const filter = computed(() => {
-  if (currentLocationId.value) {
+  if (currentLocationIds.value) {
     return getFilterActionsFilter()
   }
   if (currentLatitude.value && currentLongitude.value) {
@@ -189,14 +189,14 @@ const elevationChartFilter = computed(() => {
   }
 })
 
-const currentLocationId = ref<string>()
+const currentLocationIds = ref<string[]>()
 const currentLatitude = ref<string>()
 const currentLongitude = ref<string>()
 const elevation = ref<number | undefined>()
 const currentTime = ref<Date>()
 
 onMounted(() => {
-  currentLocationId.value = props.locationId
+  currentLocationIds.value = props.locationIds?.split(',')
   currentLatitude.value = props.latitude
   currentLongitude.value = props.longitude
 })
@@ -210,21 +210,21 @@ const containerIsMobileSize = computed(() => {
 const hideMap = computed(() => {
   return (
     containerIsMobileSize.value &&
-    (currentLocationId.value || currentLongitude.value || currentLatitude.value)
+    (currentLocationIds.value || currentLongitude.value || currentLatitude.value)
   )
 })
 
-function onLocationChange(locationId: string | null): void {
-  if (!locationId) return
-  openLocationTimeSeriesDisplay(locationId)
+function onLocationsChange(locationIds: string[] | null): void {
+  if (!locationIds) return
+  openLocationsTimeSeriesDisplay(locationIds)
 }
 
-function openLocationTimeSeriesDisplay(locationId: string) {
+function openLocationsTimeSeriesDisplay(locationIds: string[]) {
   const routeName = route.name
     ?.toString()
     .replace('SpatialDisplay', 'SpatialTimeSeriesDisplay')
     .replace('WithCoordinates', '')
-  currentLocationId.value = locationId
+  currentLocationIds.value = locationIds
   currentLatitude.value = undefined
   currentLongitude.value = undefined
   router.push({
@@ -232,7 +232,7 @@ function openLocationTimeSeriesDisplay(locationId: string) {
     params: {
       nodeId: route.params.nodeId,
       layerName: props.layerName,
-      locationId,
+      locationIds: locationIds.join(','),
     },
     query: route.query,
   })
@@ -256,7 +256,7 @@ function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
 
   currentLatitude.value = latitude.toFixed(3)
   currentLongitude.value = longitude.toFixed(3)
-  currentLocationId.value = undefined
+  currentLocationIds.value = undefined
   router.push({
     name: routeName,
     params: {
@@ -270,7 +270,7 @@ function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
 }
 
 function closeTimeSeriesDisplay(): void {
-  currentLocationId.value = undefined
+  currentLocationIds.value = undefined
   currentLatitude.value = undefined
   currentLongitude.value = undefined
 
@@ -290,13 +290,15 @@ function closeTimeSeriesDisplay(): void {
 watch(
   () => locations.value,
   () => {
-    if (currentLocationId.value && !props.locationId) {
+    if (currentLocationIds.value && !props.locationIds) {
       if (
-        locations.value?.find((l) => l.locationId === currentLocationId.value)
+        locations.value?.filter((l) =>
+          currentLocationIds.value?.includes(l.locationId),
+        ).length
       ) {
-        openLocationTimeSeriesDisplay(currentLocationId.value)
+        openLocationsTimeSeriesDisplay(currentLocationIds.value)
       } else {
-        currentLocationId.value = undefined
+        currentLocationIds.value = undefined
       }
     }
   },
