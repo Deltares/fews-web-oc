@@ -13,7 +13,7 @@ Keycloak will be running on http://localhost:8888.
 docker run -p 8888:8080 -d -e KC_BOOTSTRAP_ADMIN_USERNAME=admin -e KC_BOOTSTRAP_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:26.0.1 start-dev
 ```
 
-After starting the Keycloak docker image, the Keycloak admin console can be accessed at http://localhost:8888/auth/admin.
+After starting the Keycloak docker image, the Keycloak admin console can be accessed at http://localhost:8888/admin.
 
 Create a new realm, for example: weboc.
 
