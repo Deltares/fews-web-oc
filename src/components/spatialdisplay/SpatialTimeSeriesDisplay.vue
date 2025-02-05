@@ -144,7 +144,7 @@ const { tooltip } = useLocationTooltip(baseUrl, () =>
   isFilterActionsFilter(props.filter)
     ? {
         filterId: props.filter.filterId,
-        locationId: props.filter.locationIds,
+        locationId: props.filter.locationIds?.split(',')[0],
       }
     : undefined,
 )
