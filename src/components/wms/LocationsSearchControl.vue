@@ -13,21 +13,23 @@
       hide-details
       @click="showLocationsSearch"
       >{{
-        selectedLocationId ? selectedLocation?.locationName : 'Search locations'
+        selectedLocationIds
+          ? selectedLocation?.locationName
+          : 'Search locations'
       }}</v-btn
     >
   </ControlChip>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 import { type Location } from '@deltares/fews-pi-requests'
 import { useGlobalSearchState } from '@/stores/globalSearch'
 import ControlChip from '@/components/wms/ControlChip.vue'
 
 interface Props {
   locations?: Location[]
-  selectedLocationId?: string | null
+  selectedLocationIds?: string[]
   maxWidth?: string | number
   width?: string | number
   tooltipOpenDelay?: number
@@ -48,7 +50,7 @@ watch(
   (item) => onSelectLocationId(item?.id),
 )
 
-const emit = defineEmits(['changeLocationId'])
+const emit = defineEmits(['changeLocationIds'])
 
 const selectedLocation = ref<Location | null>(null)
 
@@ -56,8 +58,8 @@ const hasLocations = computed(() => {
   return props.locations?.length
 })
 
-function getLocationFromId(locationId: string | null) {
-  if (locationId === null) return null
+function getLocationFromId(locationId: string | undefined) {
+  if (locationId === undefined) return null
   return (
     props.locations.find((location) => location.locationId === locationId) ??
     null
@@ -77,15 +79,19 @@ watch(
   },
 )
 
-watch(
-  () => props.selectedLocationId,
-  () => (selectedLocation.value = getLocationFromId(props.selectedLocationId)),
+watchEffect(
+  () =>
+    // TODO: What should this search control do in case of multiple locations?
+    //       For now just selects the first location.
+    (selectedLocation.value = getLocationFromId(
+      props.selectedLocationIds?.[0],
+    )),
 )
 
 function onSelectLocationId(id: string | undefined) {
   if (id === undefined) {
     return
   }
-  emit('changeLocationId', id)
+  emit('changeLocationIds', [id])
 }
 </script>
