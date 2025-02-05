@@ -161,7 +161,7 @@ import {
   type SystemLogMessage,
   type LogMessage,
 } from '@/lib/log'
-import type { LogsDisplay } from '@deltares/fews-pi-requests';
+import type { LogsDisplay } from '@deltares/fews-pi-requests'
 
 interface Props {
   logDisplay: LogsDisplay
