@@ -1,35 +1,16 @@
-export const LogLevelEnum = {
-  Info: 'Info',
-  Warning: 'Warning',
-  Error: 'Error',
-} as const
+import type {
+  LogDisplayLogs,
+  LogDisplayLogsFilter,
+} from '@deltares/fews-pi-requests'
+import { arrayOfAll } from '@/lib/utils/types'
 
-export type LogLevelType = (typeof LogLevelEnum)[keyof typeof LogLevelEnum]
+export type LogLevel = LogDisplayLogs['level']
 
-export enum LogType {
-  System = 'System',
-  Manual = 'Manual',
+const arrayOfAllLogLevels = arrayOfAll<LogLevel>()
+export const logLevels = arrayOfAllLogLevels(['INFO', 'WARN', 'ERROR'])
+
+export type LogType = NonNullable<LogDisplayLogsFilter['logType']>
+
+export interface LogMessage extends LogDisplayLogs {
+  type: LogType
 }
-
-export interface GeneralLogMessage {
-  level: LogLevelType
-  message: string
-  creationTime: Date
-  eventCode: string
-  logType: LogType
-}
-
-export interface ManualLogMessage extends GeneralLogMessage {
-  logType: LogType.Manual
-  user: string
-  topologyNodeId?: string
-}
-
-export interface SystemLogMessage extends GeneralLogMessage {
-  logType: LogType.System
-  workflow: string
-}
-
-export type LogMessage = Pick<GeneralLogMessage, 'logType'> &
-  Omit<ManualLogMessage, 'logType'> &
-  Omit<SystemLogMessage, 'logType'>

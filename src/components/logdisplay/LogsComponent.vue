@@ -2,10 +2,9 @@
   <v-data-iterator
     :items="logMessages"
     :items-per-page="-1"
-    item-value="creationTime"
     :search="search"
     :custom-key-filter="customKeyFilters"
-    :sort-by="[{ key: 'creationTime', order: 'desc' }]"
+    :sort-by="[{ key: 'entryTime', order: 'desc' }]"
     class="d-flex flex-column h-100 w-100"
   >
     <template #header>
@@ -119,9 +118,7 @@
               <template #title>
                 <div class="d-flex align-end ga-2">
                   <div class="font-weight-bold">{{ logToUser(log.raw) }}</div>
-                  <v-card-subtitle>{{
-                    log.raw.creationTime.toISOString()
-                  }}</v-card-subtitle>
+                  <v-card-subtitle>{{ log.raw.entryTime }}</v-card-subtitle>
                   <v-btn
                     v-if="log.raw.topologyNodeId"
                     :to="logToRoute(log.raw)"
@@ -132,7 +129,7 @@
                 </div>
               </template>
               <v-card-text>
-                {{ log.raw.message }}
+                {{ log.raw.text }}
               </v-card-text>
               <template #append>
                 <v-icon
@@ -150,43 +147,48 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
+import { ref, computed, onMounted } from 'vue'
+import { authenticationManager } from '@/services/authentication/AuthenticationManager.js'
 import type { User } from 'oidc-client-ts'
 import {
-  LogLevelEnum,
-  LogType,
-  type LogLevelType,
-  type ManualLogMessage,
-  type SystemLogMessage,
   type LogMessage,
+  type LogType,
+  type LogLevel,
+  logLevels,
 } from '@/lib/log'
-import type { LogsDisplay } from '@deltares/fews-pi-requests'
+import {
+  LogDisplayManualLog,
+  LogDisplaySystemLog,
+  type LogDisplayLogsFilter,
+  type LogsDisplay,
+} from '@deltares/fews-pi-requests'
+import { useLogDisplayLogs } from '@/services/useLogDisplayLogs'
+import { configManager } from '@/services/application-config'
 
 interface Props {
   logDisplay: LogsDisplay
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const newMessageDialog = ref(false)
-const newLogLevel = ref<LogLevelType>(LogLevelEnum.Info)
+const newLogLevel = ref<LogLevel>('INFO')
 const newLogMessage = ref('')
 
 const search = ref('')
 const selectedUsers = ref<string[]>([])
-const selectedLevels = ref<LogLevelType[]>([])
+const selectedLevels = ref<LogLevel[]>([])
 const selectedEventCodes = ref<string[]>([])
 const selectedLogType = ref<LogType | null>(null)
 const selectableLogTypes = [
   {
-    title: LogType.Manual,
-    value: LogType.Manual,
+    title: 'Manual',
+    value: 'manual',
     props: { prependIcon: 'mdi-account-multiple-outline' },
   },
   {
-    title: LogType.System,
-    value: LogType.System,
+    title: 'System',
+    value: 'system',
     props: { prependIcon: 'mdi-robot-outline' },
   },
 ]
@@ -203,176 +205,137 @@ onMounted(() => {
     })
 })
 
-const originalManualLogMessages = computed(() => {
-  const messages: ManualLogMessage[] = [
-    {
-      logType: LogType.Manual,
-      user: getUserName(),
-      creationTime: new Date('2024-11-01T10:15:00Z'),
-      level: LogLevelEnum.Info,
-      eventCode: 'default',
-      message: 'Shift Ended. Just a regular day.',
-    },
-    {
-      logType: LogType.Manual,
-      user: 'Jane Doe',
-      creationTime: new Date('2024-11-01T10:15:00Z'),
-      level: LogLevelEnum.Info,
-      eventCode: 'default',
-      message: 'Shift Started',
-    },
-    {
-      logType: LogType.Manual,
-      user: 'Jane Doe',
-      creationTime: new Date('2024-11-01T12:30:00Z'),
-      level: LogLevelEnum.Warning,
-      eventCode: 'default',
-      message: 'This is definitely cause for a warning.',
-      topologyNodeId: 'operations.polder',
-    },
-    {
-      logType: LogType.Manual,
-      user: getUserName(),
-      creationTime: new Date('2024-11-01T18:30:00Z'),
-      level: LogLevelEnum.Info,
-      eventCode: 'default',
-      message: 'Shift Started',
-    },
-    {
-      logType: LogType.Manual,
-      user: getUserName(),
-      creationTime: new Date('2024-11-01T23:31:00Z'),
-      level: LogLevelEnum.Error,
-      eventCode: 'default',
-      message: 'Oh no.',
-      topologyNodeId: 'viewer.main.polder.structures',
-    },
-    {
-      logType: LogType.Manual,
-      user: 'Jane Doe',
-      creationTime: new Date('2024-11-02T02:25:00Z'),
-      level: LogLevelEnum.Info,
-      eventCode: 'default',
-      message:
-        'This is a very long message, just to show what it will look like if a message is so long that it will span mutiple lines. A really, really, really, really long message. Because it has too span multiple lines. And not just one. That would not actually show what a long message would look like. And is has to span those multiple lines, even on large screens, which people might use in, for instance, conference rooms and such.',
-    },
-  ]
-  return messages
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const filters = computed(() => {
+  const baseFilter: LogDisplayLogsFilter = {
+    logDisplayId: props.logDisplay.id,
+  }
+
+  const manualLogSettings = props.logDisplay.manualLog
+  const systemLogSettings = props.logDisplay.systemLog
+
+  const manualFilters = manualLogSettings
+    ? getManualFilters(baseFilter, manualLogSettings)
+    : []
+  const systemFilters = systemLogSettings
+    ? getSystemFilters(baseFilter, systemLogSettings)
+    : []
+  return [...manualFilters, ...systemFilters]
 })
 
-const manualLogMessages = ref<ManualLogMessage[]>([])
-
-watch(currentUser, () => {
-  manualLogMessages.value = originalManualLogMessages.value
-})
-
-const systemLogMessages = computed(() => {
-  const messages: SystemLogMessage[] = [
-    {
-      logType: LogType.System,
-      workflow: 'Run SWAN Full Model Train',
-      creationTime: new Date('2024-11-01T11:03:08Z'),
-      level: LogLevelEnum.Info,
-      eventCode: 'Workflow.ActivityStarted',
-      message: 'Started the SWAN Full Model Train',
-    },
-    {
-      logType: LogType.System,
-      workflow: 'Run SWAN Full Model Train',
-      creationTime: new Date('2024-11-01T12:12:12Z'),
-      level: LogLevelEnum.Error,
-      eventCode: 'TaskRun.PartlyFailed',
-      message: 'Something went wrong...',
-    },
-  ]
-  return messages
-})
-
-const logMessages = computed<LogMessage[]>(() => {
-  return [...manualLogMessages.value, ...systemLogMessages.value].map((log) => {
-    return {
-      user: logToUser(log),
-      workflow: '',
-      ...log,
-    }
-  })
-})
-
-const users = computed(() => {
+function getManualFilters(
+  baseFilter: LogDisplayLogsFilter,
+  settings: LogDisplayManualLog,
+): LogDisplayLogsFilter[] {
   return [
-    ...new Set(
-      logMessages.value
-        .filter((log) => log.logType === LogType.Manual)
-        .map((log) => log.user),
-    ),
+    {
+      ...baseFilter,
+      logType: 'manual',
+      level: 'INFO',
+      eventCode: `Manual.event.${settings.noteGroupId}`,
+    },
   ]
-})
+}
 
-const eventCodes = computed(() => {
-  return [...new Set(logMessages.value.map((log) => log.eventCode))]
-})
+function getSystemFilters(
+  baseFilter: LogDisplayLogsFilter,
+  settings: LogDisplaySystemLog,
+): LogDisplayLogsFilter[] {
+  const logLevelFilter: LogDisplayLogsFilter = {
+    ...baseFilter,
+    logType: 'system',
+    level: settings.logLevel,
+  }
+  const codeFilters: LogDisplayLogsFilter[] =
+    settings.eventCodes?.map((eventCode) => ({
+      ...baseFilter,
+      logType: 'system',
+      eventCode,
+    })) ?? []
 
-function isLogMessageByCurrentUser(log: ManualLogMessage | SystemLogMessage) {
-  if (log.logType === LogType.System) return false
+  if (logLevelFilter.level) {
+    return [logLevelFilter, ...codeFilters]
+  } else {
+    return codeFilters
+  }
+}
+
+const { logMessages, manualLogMessages } = useLogDisplayLogs(baseUrl, filters)
+
+const users = computed(() => [
+  ...new Set(manualLogMessages.value.map((log) => log.user)),
+])
+
+const eventCodes = computed(() => [
+  ...new Set(logMessages.value.map((log) => log.code)),
+])
+
+function isLogMessageByCurrentUser(log: LogMessage) {
+  if (log.type === 'system') return false
   return log.user === getUserName()
 }
 
-function logToUser(log: ManualLogMessage | SystemLogMessage) {
-  if (log.logType === LogType.System) return 'System'
+function logToUser(log: LogMessage) {
+  if (log.type === 'system') return 'System'
   return isLogMessageByCurrentUser(log) ? 'You' : log.user
 }
 
-const logLevels = Object.values(LogLevelEnum)
-
-const customKeyFilters: Record<
-  string,
-  (value: string, query: string, item?: any) => boolean
-> = {
-  logType: (_value, _query, item) => {
+type CustomKeyFilter = (
+  value: string,
+  query: string,
+  item?: { raw: LogMessage },
+) => boolean
+const customKeyFilters: Record<string, CustomKeyFilter> = {
+  type: (_value, _query, item) => {
     if (!selectedLogType.value) return true
-    return selectedLogType.value === item.raw.logType
+    if (!item) return false
+    return selectedLogType.value === item.raw.type
   },
   user: (_value, _query, item) => {
     if (selectedUsers.value.length === 0) return true
+    if (!item) return false
+    if (item.raw.user === undefined) return false
     return selectedUsers.value.includes(item.raw.user)
   },
   level: (_value, _query, item) => {
     if (selectedLevels.value.length === 0) return true
+    if (!item) return false
     return selectedLevels.value.includes(item.raw.level)
   },
-  eventCode: (_value, _query, item) => {
+  code: (_value, _query, item) => {
     if (selectedEventCodes.value.length === 0) return true
-    return selectedEventCodes.value.includes(item.raw.eventCode)
+    if (!item) return false
+    return selectedEventCodes.value.includes(item.raw.code)
   },
 }
 
 function logToColor(log: LogMessage) {
   switch (log.level) {
-    case LogLevelEnum.Info:
+    case 'INFO':
       return isLogMessageByCurrentUser(log) ? 'info' : 'surface'
-    case LogLevelEnum.Warning:
+    case 'WARN':
       return 'warning'
-    case LogLevelEnum.Error:
+    case 'ERROR':
       return 'red-darken-4'
   }
 }
 
 function logToUserIcon(log: LogMessage) {
-  switch (log.logType) {
-    case LogType.System:
+  switch (log.type) {
+    case 'system':
       return 'mdi-robot'
-    case LogType.Manual:
+    case 'manual':
       return 'mdi-account'
   }
 }
 
 function logToIcon(log: LogMessage) {
   switch (log.level) {
-    case LogLevelEnum.Info:
+    case 'INFO':
       return '$info'
-    case LogLevelEnum.Warning:
+    case 'WARN':
       return '$warning'
-    case LogLevelEnum.Error:
+    case 'ERROR':
       return '$error'
   }
 }
@@ -385,18 +348,23 @@ function logToRoute(log: LogMessage) {
 }
 
 function saveNewMessage() {
-  const newMessage: ManualLogMessage = {
-    logType: LogType.Manual,
-    user: getUserName(),
-    creationTime: new Date(),
-    level: newLogLevel.value,
-    eventCode: 'default',
-    message: newLogMessage.value,
-  }
-  manualLogMessages.value.push(newMessage)
+  // TODO:
+  // const newMessage: LogMessage = {
+  //   id: 0,
+  //   taskRunId: 'new',
+  //   type: 'manual',
+  //   user: getUserName(),
+  //   entryTime: convertJSDateToFewsPiParameter(new Date()),
+  //   level: newLogLevel.value,
+  //   code: 'default',
+  //   text: newLogMessage.value,
+  //   eventAcknowledged: false,
+  //   source: 'manual',
+  //   componentId: 'OC',
+  // }
   newMessageDialog.value = false
   newLogMessage.value = ''
-  newLogLevel.value = LogLevelEnum.Info
+  newLogLevel.value = 'INFO'
 }
 
 function getUserName() {
