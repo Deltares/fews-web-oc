@@ -1,13 +1,17 @@
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.js'
 import type { User } from 'oidc-client-ts'
 
 export function useCurrentUser() {
-  const currentUser = ref<User | null>(null)
+  const user = ref<User | null>(null)
+
+  const userName = computed(
+    () => user.value?.profile?.name ?? 'Current User',
+  )
 
   const fetchCurrentUser = async () => {
     try {
-      currentUser.value = await authenticationManager.userManager.getUser()
+      user.value = await authenticationManager.userManager.getUser()
     } catch (error) {
       console.error('Error fetching current user:', error)
     }
@@ -18,7 +22,8 @@ export function useCurrentUser() {
   })
 
   return {
-    currentUser,
+    user,
+    userName,
     fetchCurrentUser,
   }
 }
