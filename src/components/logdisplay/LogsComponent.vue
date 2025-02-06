@@ -76,24 +76,26 @@
       <span>Total: {{ filteredLogMessages.length }}</span>
     </div>
 
+    <!-- Important to have item-height as it greatly improves performance -->
     <v-virtual-scroll
       class="scroll-container px-2"
       :items="filteredLogMessages"
+      :item-height="100"
     >
       <template #default="{ item: log }">
         <v-col
-          :class="{
-            'ml-auto': isLogMessageByCurrentUser(log, userName),
-            'mr-auto': !isLogMessageByCurrentUser(log, userName),
-          }"
+          :class="
+            isLogMessageByCurrentUser(log, userName) ? 'ml-auto' : 'mr-auto'
+          "
           cols="8"
           class="pa-0"
         >
           <v-card
-            :class="{
-              'current-user-message': isLogMessageByCurrentUser(log, userName),
-              'other-message': !isLogMessageByCurrentUser(log, userName),
-            }"
+            :class="
+              isLogMessageByCurrentUser(log, userName)
+                ? 'current-user-message'
+                : 'other-message'
+            "
             :color="logToColor(log, userName)"
             class="mb-4"
             border
