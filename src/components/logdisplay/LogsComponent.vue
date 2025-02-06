@@ -76,6 +76,13 @@
       <span>Total: {{ filteredLogMessages.length }}</span>
     </div>
 
+    <v-progress-linear
+      v-if="isLoading"
+      indeterminate
+      color="primary"
+      height="3"
+    />
+
     <!-- Important to have item-height as it greatly improves performance -->
     <v-virtual-scroll
       class="scroll-container px-2"
@@ -231,7 +238,7 @@ const requestDebounce = 500
 const debouncedFilters = debouncedRef(filters, requestDebounce)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { logMessages } = useLogDisplayLogs(baseUrl, debouncedFilters)
+const { logMessages, isLoading } = useLogDisplayLogs(baseUrl, debouncedFilters)
 
 const filterDebounce = 100
 const debouncedSelectedLevels = debouncedRef(selectedLevels, filterDebounce)
