@@ -197,13 +197,15 @@ const filters = computed(() => {
   return [...manualFilters, ...systemFilters]
 })
 
-const debouncedFilters = debouncedRef(filters, 500)
+const requestDebounce = 500
+const debouncedFilters = debouncedRef(filters, requestDebounce)
 
 const { logMessages } = useLogDisplayLogs(baseUrl, debouncedFilters)
 
-const debouncedSelectedLevels = debouncedRef(selectedLevels, 250)
-const debouncedSelectedLogTypes = debouncedRef(selectedLogTypes, 250)
-const debouncedSearch = debouncedRef(search, 250)
+const filterDebounce = 100
+const debouncedSelectedLevels = debouncedRef(selectedLevels, filterDebounce)
+const debouncedSelectedLogTypes = debouncedRef(selectedLogTypes, filterDebounce)
+const debouncedSearch = debouncedRef(search, filterDebounce)
 
 const filteredLogMessages = computed(() =>
   logMessages.value.filter((log) =>
