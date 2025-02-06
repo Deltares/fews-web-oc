@@ -5,19 +5,13 @@ import {
   PiWebserviceProvider,
 } from '@deltares/fews-pi-requests'
 import type { MaybeRefOrGetter } from 'vue'
-import { computed, ref, shallowRef, toValue, watchEffect } from 'vue'
+import { ref, shallowRef, toValue, watchEffect } from 'vue'
 
 export function useLogDisplayLogs(
   baseUrl: string,
   filters: MaybeRefOrGetter<LogDisplayLogsFilter[]>,
 ) {
   const logMessages = shallowRef<LogMessage[]>([])
-  const systemLogMessages = computed(() => {
-    return logMessages.value.filter((log) => log.type === 'system')
-  })
-  const manualLogMessages = computed(() => {
-    return logMessages.value.filter((log) => log.type === 'manual')
-  })
   const isReady = ref(false)
   const isLoading = ref(false)
   const error = shallowRef<string>()
@@ -65,8 +59,6 @@ export function useLogDisplayLogs(
 
   return {
     logMessages,
-    systemLogMessages,
-    manualLogMessages,
     isReady,
     isLoading,
     error,
