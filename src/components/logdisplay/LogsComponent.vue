@@ -113,7 +113,14 @@
               <template #actions> </template>
             </v-expansion-panel-title>
             <v-expansion-panel-text>
-              <template v-for="log in logs.slice(1)">
+
+              <!-- Important to have item-height as it greatly improves performance -->
+              <v-virtual-scroll
+                :class="{ 'half-height': logs.length > 20 }"
+                :items="logs.slice(1)"
+                :item-height="100"
+              >
+                <template #default="{ item: log }">
                 <LogItem
                   :log="log"
                   :userName="userName"
@@ -122,6 +129,7 @@
                   class="mb-2"
                 />
               </template>
+              </v-virtual-scroll>
             </v-expansion-panel-text>
           </v-expansion-panel>
         </v-expansion-panels>
@@ -305,5 +313,9 @@ function saveNewMessage() {
 
 .v-expansion-panel-title:hover .expand-icon-container {
   opacity: 1;
+}
+
+.half-height {
+  max-height: 50vh;
 }
 </style>
