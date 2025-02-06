@@ -1,5 +1,5 @@
 <template>
-  <LogsComponent v-if="logDisplay" :logDisplay />
+  <LogsComponent v-if="logDisplay" :key="logDisplay.id" :logDisplay />
   <div v-else>
     <v-alert type="warning" class="ma-3">No logs display available</v-alert>
   </div>
