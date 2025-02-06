@@ -135,9 +135,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager.js'
-import type { User } from 'oidc-client-ts'
+import { ref, computed } from 'vue'
 import {
   type LogType,
   type LogLevel,
@@ -161,6 +159,7 @@ import {
 import { useLogDisplayLogs } from '@/services/useLogDisplayLogs'
 import { configManager } from '@/services/application-config'
 import { debouncedRef } from '@vueuse/core'
+import { useCurrentUser } from '@/services/useCurrentUser'
 
 interface Props {
   logDisplay: LogsDisplay
@@ -179,17 +178,7 @@ const selectedLevels = ref<LogLevel[]>([])
 const selectedEventCodes = ref<string[]>([])
 const selectedLogTypes = ref<LogType[]>([])
 
-const currentUser = ref<User | null>(null)
-onMounted(() => {
-  authenticationManager.userManager
-    ?.getUser()
-    .then((response) => {
-      currentUser.value = response
-    })
-    .catch((err) => {
-      console.error({ err })
-    })
-})
+const { currentUser } = useCurrentUser()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const filters = computed(() => {
