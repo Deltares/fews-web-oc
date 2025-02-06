@@ -173,9 +173,7 @@ const newLogMessage = ref('')
 
 const search = ref<string>()
 const maxCount = ref<number>(250)
-const selectedUsers = ref<string[]>([])
 const selectedLevels = ref<LogLevel[]>([])
-const selectedEventCodes = ref<string[]>([])
 const selectedLogTypes = ref<LogType[]>([])
 
 const { currentUser } = useCurrentUser()
@@ -203,9 +201,7 @@ const debouncedFilters = debouncedRef(filters, 500)
 
 const { logMessages } = useLogDisplayLogs(baseUrl, debouncedFilters)
 
-const debouncedSelectedUsers = debouncedRef(selectedUsers, 250)
 const debouncedSelectedLevels = debouncedRef(selectedLevels, 250)
-const debouncedSelectedEventCodes = debouncedRef(selectedEventCodes, 250)
 const debouncedSelectedLogTypes = debouncedRef(selectedLogTypes, 250)
 const debouncedSearch = debouncedRef(search, 250)
 
@@ -213,9 +209,7 @@ const filteredLogMessages = computed(() =>
   logMessages.value.filter((log) =>
     filterLog(
       log,
-      debouncedSelectedUsers.value,
       debouncedSelectedLevels.value,
-      debouncedSelectedEventCodes.value,
       debouncedSelectedLogTypes.value,
       debouncedSearch.value,
     ),
