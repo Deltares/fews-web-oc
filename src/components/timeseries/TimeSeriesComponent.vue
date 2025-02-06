@@ -179,7 +179,8 @@ const dates = computed(() => {
     .map((chartSeries) => chartSeries.dataResources[0])
     .map((resource) => series.value[resource])
     .flatMap((series) => series?.data ?? [])
-    .flatMap((data) => (data.x as Date) ?? [])
+    .flatMap((data) => data.x ?? [])
+    .filter((date) => typeof date !== 'number')
 
   return seriesDates
 })
