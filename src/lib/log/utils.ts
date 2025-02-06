@@ -1,4 +1,5 @@
 import type {
+  LogDisplayDisseminationAction,
   LogDisplayLogsFilter,
   LogDisplayManualLog,
   LogDisplaySystemLog,
@@ -75,6 +76,19 @@ export function logToUser(log: LogMessage, userName: string) {
 export function isLogMessageByCurrentUser(log: LogMessage, userName: string) {
   if (log.type === 'system') return false
   return log.user === userName
+}
+
+export function logToActions(
+  log: LogMessage,
+  disseminationActions: LogDisplayDisseminationAction[],
+) {
+  const actions = disseminationActions.filter((action) => {
+    if (action.manualLog && log.type === 'manual') return true
+    if (action.systemLog && log.type === 'system') return true
+    return false
+  })
+
+  return actions
 }
 
 export function getManualFilters(
