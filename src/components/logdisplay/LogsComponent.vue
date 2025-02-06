@@ -12,25 +12,17 @@
         density="compact"
       />
       <v-select
-        v-model="selectedLogType"
-        :items="selectableLogTypes"
-        label="Select log type"
-        variant="outlined"
-        clearable
-        hide-details
-        max-width="200px"
-        density="compact"
-      />
-      <v-select
-        v-model="selectedUsers"
-        :items="users"
-        label="Filter by User"
+        v-model="selectedLogTypes"
+        :items="logTypes"
+        label="Filter by Log Type"
         variant="outlined"
         clearable
         hide-details
         multiple
         max-width="200px"
         density="compact"
+        :item-title="toTitleCase"
+        :item-value="(item) => item"
       />
       <v-select
         v-model="selectedLevels"
@@ -42,24 +34,15 @@
         multiple
         max-width="200px"
         density="compact"
-      />
-      <v-select
-        v-model="selectedEventCodes"
-        :items="eventCodes"
-        label="Filter by Event Code"
-        variant="outlined"
-        clearable
-        hide-details
-        multiple
-        max-width="250px"
-        density="compact"
+        :item-title="toTitleCase"
+        :item-value="(item) => item"
       />
       <v-text-field
         v-model.number="maxCount"
-        label="Max count"
+        label="Request count"
         variant="outlined"
         hide-details
-        max-width="100px"
+        max-width="125px"
         density="compact"
         validate-on="input"
         :max="1000"
@@ -100,18 +83,18 @@
       <template #default="{ item: log }">
         <v-col
           :class="{
-            'ml-auto': isLogMessageByCurrentUser(log),
-            'mr-auto': !isLogMessageByCurrentUser(log),
+            'ml-auto': isLogMessageByCurrentUser(log, userName),
+            'mr-auto': !isLogMessageByCurrentUser(log, userName),
           }"
           cols="8"
           class="pa-0"
         >
           <v-card
             :class="{
-              'current-user-message': isLogMessageByCurrentUser(log),
-              'other-message': !isLogMessageByCurrentUser(log),
+              'current-user-message': isLogMessageByCurrentUser(log, userName),
+              'other-message': !isLogMessageByCurrentUser(log, userName),
             }"
-            :color="logToColor(log)"
+            :color="logToColor(log, userName)"
             class="mb-4"
             border
             flat
@@ -121,7 +104,9 @@
             </template>
             <template #title>
               <div class="d-flex align-end ga-2">
-                <div class="font-weight-bold">{{ logToUser(log) }}</div>
+                <div class="font-weight-bold">
+                  {{ logToUser(log, userName) }}
+                </div>
                 <v-card-subtitle>{{ log.entryTime }}</v-card-subtitle>
                 <v-btn
                   v-if="log.topologyNodeId"
@@ -154,14 +139,22 @@ import { ref, computed, onMounted } from 'vue'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.js'
 import type { User } from 'oidc-client-ts'
 import {
-  type LogMessage,
   type LogType,
   type LogLevel,
   logLevels,
+  filterLog,
+  isLogMessageByCurrentUser,
+  logToIcon,
+  logToUserIcon,
+  logToUser,
+  logToColor,
+  logToRoute,
+  getSystemFilters,
+  getManualFilters,
+  logTypes,
+  toTitleCase,
 } from '@/lib/log'
 import {
-  LogDisplayManualLog,
-  LogDisplaySystemLog,
   type LogDisplayLogsFilter,
   type LogsDisplay,
 } from '@deltares/fews-pi-requests'
@@ -184,19 +177,7 @@ const maxCount = ref<number>(250)
 const selectedUsers = ref<string[]>([])
 const selectedLevels = ref<LogLevel[]>([])
 const selectedEventCodes = ref<string[]>([])
-const selectedLogType = ref<LogType | null>(null)
-const selectableLogTypes = [
-  {
-    title: 'Manual',
-    value: 'manual',
-    props: { prependIcon: 'mdi-account-multiple-outline' },
-  },
-  {
-    title: 'System',
-    value: 'system',
-    props: { prependIcon: 'mdi-robot-outline' },
-  },
-]
+const selectedLogTypes = ref<LogType[]>([])
 
 const currentUser = ref<User | null>(null)
 onMounted(() => {
@@ -231,130 +212,26 @@ const filters = computed(() => {
 
 const debouncedFilters = debouncedRef(filters, 500)
 
-function getManualFilters(
-  baseFilter: LogDisplayLogsFilter,
-  settings: LogDisplayManualLog,
-): LogDisplayLogsFilter[] {
-  return [
-    {
-      ...baseFilter,
-      logType: 'manual',
-      level: 'INFO',
-      eventCode: `Manual.event.${settings.noteGroupId}`,
-    },
-  ]
-}
+const { logMessages } = useLogDisplayLogs(baseUrl, debouncedFilters)
 
-function getSystemFilters(
-  baseFilter: LogDisplayLogsFilter,
-  settings: LogDisplaySystemLog,
-): LogDisplayLogsFilter[] {
-  const logLevelFilter: LogDisplayLogsFilter = {
-    ...baseFilter,
-    logType: 'system',
-    level: settings.logLevel,
-  }
-  const codeFilters: LogDisplayLogsFilter[] =
-    settings.eventCodes?.map((eventCode) => ({
-      ...baseFilter,
-      logType: 'system',
-      eventCode,
-    })) ?? []
-
-  if (logLevelFilter.level) {
-    return [logLevelFilter, ...codeFilters]
-  } else {
-    return codeFilters
-  }
-}
-
-const { logMessages, manualLogMessages } = useLogDisplayLogs(
-  baseUrl,
-  debouncedFilters,
-)
-
-const filteredLogMessages = computed(() => logMessages.value.filter(filterLog))
-
-const users = computed(() => [
-  ...new Set(manualLogMessages.value.map((log) => log.user)),
-])
-
-const eventCodes = computed(() => [
-  ...new Set(logMessages.value.map((log) => log.code)),
-])
-
-function isLogMessageByCurrentUser(log: LogMessage) {
-  if (log.type === 'system') return false
-  return log.user === getUserName()
-}
-
-function logToUser(log: LogMessage) {
-  if (log.type === 'system') return 'System'
-  return isLogMessageByCurrentUser(log) ? 'You' : log.user
-}
-
-const debouncedSearch = debouncedRef(search, 250)
 const debouncedSelectedUsers = debouncedRef(selectedUsers, 250)
 const debouncedSelectedLevels = debouncedRef(selectedLevels, 250)
 const debouncedSelectedEventCodes = debouncedRef(selectedEventCodes, 250)
-const debouncedSelectedLogType = debouncedRef(selectedLogType, 250)
+const debouncedSelectedLogTypes = debouncedRef(selectedLogTypes, 250)
+const debouncedSearch = debouncedRef(search, 250)
 
-function filterLog(log: LogMessage) {
-  const users = debouncedSelectedUsers.value
-  const levels = debouncedSelectedLevels.value
-  const eventCodes = debouncedSelectedEventCodes.value
-  const logType = debouncedSelectedLogType.value
-  const search = debouncedSearch.value
-
-  if (users.length > 0 && !users.includes(log.user ?? 'invalid-user')) {
-    return false
-  }
-  if (levels.length > 0 && !levels.includes(log.level)) return false
-  if (eventCodes.length > 0 && !eventCodes.includes(log.code)) return false
-  if (logType && logType !== log.type) return false
-  if (search && !log.text.toLowerCase().includes(search.toLowerCase())) {
-    return false
-  }
-  return true
-}
-
-function logToColor(log: LogMessage) {
-  switch (log.level) {
-    case 'INFO':
-      return isLogMessageByCurrentUser(log) ? 'info' : 'surface'
-    case 'WARN':
-      return 'warning'
-    case 'ERROR':
-      return 'red-darken-4'
-  }
-}
-
-function logToUserIcon(log: LogMessage) {
-  switch (log.type) {
-    case 'system':
-      return 'mdi-robot'
-    case 'manual':
-      return 'mdi-account'
-  }
-}
-
-function logToIcon(log: LogMessage) {
-  switch (log.level) {
-    case 'INFO':
-      return '$info'
-    case 'WARN':
-      return '$warning'
-    case 'ERROR':
-      return '$error'
-  }
-}
-
-function logToRoute(log: LogMessage) {
-  return {
-    name: 'TopologyDisplay',
-    params: { nodeId: log.topologyNodeId },
-  }
-}
+const filteredLogMessages = computed(() =>
+  logMessages.value.filter((log) =>
+    filterLog(
+      log,
+      debouncedSelectedUsers.value,
+      debouncedSelectedLevels.value,
+      debouncedSelectedEventCodes.value,
+      debouncedSelectedLogTypes.value,
+      debouncedSearch.value,
+    ),
+  ),
+)
 
 function saveNewMessage() {
   // TODO:
@@ -376,9 +253,9 @@ function saveNewMessage() {
   newLogLevel.value = 'INFO'
 }
 
-function getUserName() {
-  return currentUser.value?.profile?.name ?? 'Current User'
-}
+const userName = computed(
+  () => currentUser.value?.profile?.name ?? 'Current User',
+)
 </script>
 
 <style scoped>
