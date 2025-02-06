@@ -7,22 +7,26 @@ import type { LogLevel, LogMessage, LogType } from './types'
 
 export function filterLog(
   log: LogMessage,
-  users: string[],
   levels: LogLevel[],
-  eventCodes: string[],
   logTypes: LogType[],
   search: string | undefined,
 ) {
-  if (users.length > 0 && !users.includes(log.user ?? 'invalid-user')) {
-    return false
-  }
   if (levels.length > 0 && !levels.includes(log.level)) return false
-  if (eventCodes.length > 0 && !eventCodes.includes(log.code)) return false
   if (logTypes.length > 0 && !logTypes.includes(log.type)) return false
-  if (search && !log.text.toLowerCase().includes(search.toLowerCase())) {
-    return false
-  }
-  return true
+
+  const user = log.user?.toLowerCase()
+  const eventCode = log.code?.toLowerCase()
+  const text = log.text.toLowerCase()
+  const searchText = search?.toLowerCase()
+  const taskRunId = log.taskRunId?.toLowerCase()
+
+  return (
+    !searchText ||
+    user?.includes(searchText) ||
+    eventCode?.includes(searchText) ||
+    text.includes(searchText) ||
+    taskRunId?.includes(searchText)
+  )
 }
 
 export function logToColor(log: LogMessage, userName: string) {
