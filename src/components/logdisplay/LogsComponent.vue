@@ -86,84 +86,54 @@
     <!-- Important to have item-height as it greatly improves performance -->
     <v-virtual-scroll
       class="scroll-container px-2"
-      :items="filteredLogMessages"
+      :items="groupedByTaskRunId"
       :item-height="100"
     >
-      <template #default="{ item: log }">
-        <v-col
-          :class="
-            isLogMessageByCurrentUser(log, userName) ? 'ml-auto' : 'mr-auto'
-          "
-          cols="8"
-          class="pa-0"
-        >
-          <v-card
-            :class="
-              isLogMessageByCurrentUser(log, userName)
-                ? 'current-user-message'
-                : 'other-message'
-            "
-            :color="logToColor(log, userName)"
-            class="mb-4"
-            border
-            flat
-          >
-            <template #prepend>
-              <v-icon size="small" :icon="logToUserIcon(log)" />
-            </template>
-            <template #title>
-              <div class="d-flex align-center ga-2">
-                <div class="font-weight-bold">
-                  {{ logToUser(log, userName) }}
-                </div>
-                <v-card-subtitle class="align-self-end">{{
-                  log.entryTime
-                }}</v-card-subtitle>
-                <v-tooltip location="top">
-                  <template #activator="{ props }">
-                    <v-btn
-                      v-if="log.topologyNodeId"
-                      :to="logToRoute(log)"
-                      density="compact"
-                      icon="mdi-link-variant"
-                      variant="plain"
-                      size="small"
-                      v-bind="props"
-                    />
-                  </template>
-                  <span>Go to node</span>
-                </v-tooltip>
-                <template
-                  v-for="dissemination in logToActions(log, disseminations)"
+      <template #default="{ item: logs }">
+        <v-expansion-panels v-if="logs.length > 1" flat focusable class="w-66">
+          <v-expansion-panel class="mb-4">
+            <v-expansion-panel-title class="pa-0">
+              <template #default="{ expandIcon, collapseIcon, expanded }">
+                <LogItem
+                  :log="logs[0]"
+                  :userName="userName"
+                  :disseminations="disseminations"
+                  @disseminate-log="disseminateLog"
                 >
-                  <v-tooltip location="top">
-                    <template #activator="{ props }">
-                      <v-btn
-                        density="compact"
-                        :icon="dissemination.iconId"
-                        variant="plain"
+                  <template #actions>
+                    <div class="expand-icon-container">
+                      <v-icon
+                        :icon="expanded ? collapseIcon : expandIcon"
                         size="small"
-                        v-bind="props"
-                        @click="disseminateLog(log, dissemination)"
                       />
-                    </template>
-                    <span>{{ dissemination.description }}</span>
-                  </v-tooltip>
-                </template>
-              </div>
-            </template>
-            <v-card-text>
-              {{ log.text }}
-            </v-card-text>
-            <template #append>
-              <v-icon
-                v-if="logToIcon(log)"
-                size="small"
-                :icon="logToIcon(log)"
-              />
-            </template>
-          </v-card>
-        </v-col>
+                    </div>
+                  </template>
+                </LogItem>
+              </template>
+              <template #actions> </template>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <template v-for="log in logs.slice(1)">
+                <LogItem
+                  :log="log"
+                  :userName="userName"
+                  :disseminations="disseminations"
+                  @disseminate-log="disseminateLog"
+                  class="mb-2"
+                />
+              </template>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+
+        <div v-else class="w-66 mb-4">
+          <LogItem
+            :log="logs[0]"
+            :userName="userName"
+            :disseminations="disseminations"
+            @disseminate-log="disseminateLog"
+          />
+        </div>
       </template>
     </v-virtual-scroll>
   </div>
@@ -171,18 +141,12 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import LogItem from '@/components/logdisplay/LogItem.vue'
 import {
   type LogType,
   type LogLevel,
   logLevels,
   filterLog,
-  isLogMessageByCurrentUser,
-  logToIcon,
-  logToUserIcon,
-  logToUser,
-  logToColor,
-  logToRoute,
-  logToActions,
   getSystemFilters,
   getManualFilters,
   logTypes,
@@ -256,6 +220,22 @@ const filteredLogMessages = computed(() =>
   ),
 )
 
+const groupedByTaskRunId = computed(() => {
+  return Object.values(
+    filteredLogMessages.value.reduce(
+      (grouped, log) => {
+        const taskRunId = log.taskRunId
+        if (!grouped[taskRunId]) {
+          grouped[taskRunId] = []
+        }
+        grouped[taskRunId].push(log)
+        return grouped
+      },
+      {} as Record<string, LogMessage[]>,
+    ),
+  ) as LogMessage[][]
+})
+
 const disseminations = computed(() => {
   return props.logDisplay.logDissemination
     ? props.logDisplay.logDissemination.disseminationActions
@@ -309,5 +289,21 @@ function saveNewMessage() {
 
 .date-iterator-container > :not([class]) {
   height: 100%;
+}
+
+:deep(.v-expansion-panel-text__wrapper) {
+  padding-right: 0;
+}
+
+.expand-icon-container {
+  display: flex;
+  align-items: center;
+  margin-right: 1px;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.v-expansion-panel-title:hover .expand-icon-container {
+  opacity: 1;
 }
 </style>
