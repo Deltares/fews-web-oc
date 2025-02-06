@@ -176,9 +176,8 @@ const maxCount = ref<number>(250)
 const selectedLevels = ref<LogLevel[]>([])
 const selectedLogTypes = ref<LogType[]>([])
 
-const { currentUser } = useCurrentUser()
+const { userName } = useCurrentUser()
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const filters = computed(() => {
   const baseFilter: LogDisplayLogsFilter = {
     logDisplayId: props.logDisplay.id,
@@ -200,6 +199,7 @@ const filters = computed(() => {
 const requestDebounce = 500
 const debouncedFilters = debouncedRef(filters, requestDebounce)
 
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { logMessages } = useLogDisplayLogs(baseUrl, debouncedFilters)
 
 const filterDebounce = 100
@@ -237,10 +237,6 @@ function saveNewMessage() {
   newLogMessage.value = ''
   newLogLevel.value = 'INFO'
 }
-
-const userName = computed(
-  () => currentUser.value?.profile?.name ?? 'Current User',
-)
 </script>
 
 <style scoped>
