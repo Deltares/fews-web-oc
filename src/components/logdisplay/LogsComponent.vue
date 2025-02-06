@@ -1,6 +1,6 @@
 <template>
-  <div class="w-100 h-100">
-    <div class="d-flex ga-2 align-center pa-2">
+  <div class="d-flex flex-column w-100 h-100">
+    <div class="flex-0-0 d-flex ga-2 align-center pa-2">
       <v-text-field
         v-model="search"
         placeholder="Search"
@@ -77,7 +77,7 @@
     </div>
 
     <v-virtual-scroll
-      class="scroll-container pa-2"
+      class="scroll-container px-2"
       :items="filteredLogMessages"
     >
       <template #default="{ item: log }">
@@ -103,18 +103,44 @@
               <v-icon size="small" :icon="logToUserIcon(log)" />
             </template>
             <template #title>
-              <div class="d-flex align-end ga-2">
+              <div class="d-flex align-center ga-2">
                 <div class="font-weight-bold">
                   {{ logToUser(log, userName) }}
                 </div>
-                <v-card-subtitle>{{ log.entryTime }}</v-card-subtitle>
-                <v-btn
-                  v-if="log.topologyNodeId"
-                  :to="logToRoute(log)"
-                  density="compact"
-                  icon="mdi-link-variant"
-                  variant="plain"
-                />
+                <v-card-subtitle class="align-self-end">{{
+                  log.entryTime
+                }}</v-card-subtitle>
+                <v-tooltip location="top">
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-if="log.topologyNodeId"
+                      :to="logToRoute(log)"
+                      density="compact"
+                      icon="mdi-link-variant"
+                      variant="plain"
+                      size="small"
+                      v-bind="props"
+                    />
+                  </template>
+                  <span>Go to node</span>
+                </v-tooltip>
+                <template
+                  v-for="dissemination in logToActions(log, disseminations)"
+                >
+                  <v-tooltip location="top">
+                    <template #activator="{ props }">
+                      <v-btn
+                        density="compact"
+                        :icon="dissemination.iconId"
+                        variant="plain"
+                        size="small"
+                        v-bind="props"
+                        @click="disseminateLog(log, dissemination)"
+                      />
+                    </template>
+                    <span>{{ dissemination.description }}</span>
+                  </v-tooltip>
+                </template>
               </div>
             </template>
             <v-card-text>
@@ -147,12 +173,15 @@ import {
   logToUser,
   logToColor,
   logToRoute,
+  logToActions,
   getSystemFilters,
   getManualFilters,
   logTypes,
   toTitleCase,
+  LogMessage,
 } from '@/lib/log'
 import {
+  LogDisplayDisseminationAction,
   type LogDisplayLogsFilter,
   type LogsDisplay,
 } from '@deltares/fews-pi-requests'
@@ -217,6 +246,19 @@ const filteredLogMessages = computed(() =>
     ),
   ),
 )
+
+const disseminations = computed(() => {
+  return props.logDisplay.logDissemination
+    ? props.logDisplay.logDissemination.disseminationActions
+    : []
+})
+
+function disseminateLog(
+  log: LogMessage,
+  dissemination: LogDisplayDisseminationAction,
+) {
+  console.log('Disseminating log', log, dissemination)
+}
 
 function saveNewMessage() {
   // TODO:
