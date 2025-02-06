@@ -11,7 +11,7 @@ export function useCurrentUser() {
 
   const fetchCurrentUser = async () => {
     try {
-      user.value = await authenticationManager.userManager.getUser()
+      user.value = await authenticationManager.getUser()
     } catch (error) {
       console.error('Error fetching current user:', error)
     }
