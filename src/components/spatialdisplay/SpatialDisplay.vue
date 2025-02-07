@@ -237,7 +237,6 @@ function openLocationsTimeSeriesDisplay(locationIds: string[]) {
     ?.toString()
     .replace('SpatialDisplay', 'SpatialTimeSeriesDisplay')
     .replace('WithCoordinates', '')
-  currentLocationIds.value = locationIds
   currentLatitude.value = undefined
   currentLongitude.value = undefined
   router.push({
