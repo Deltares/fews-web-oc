@@ -113,7 +113,7 @@
   />
   <DateTimeSlider
     v-if="settings.dateTimeSliderEnabled && times?.length"
-    v-model:selectedDate="currentTimeSlider"
+    v-model:selectedDate="currentTimeOfSlider"
     :dates="times"
     @update:doFollowNow="setLayerOptions"
     class="spatial-display__slider"
@@ -226,8 +226,8 @@ const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
-const currentTimeSlider = ref(new Date())
-const { selectedDate: currentTime } = useSelectedDate(currentTimeSlider)
+const currentTimeOfSlider = ref(new Date())
+const { selectedDate: currentTime } = useSelectedDate(currentTimeOfSlider)
 watch(currentTime, () => {
   emit('update:currentTime', currentTime.value)
 })
