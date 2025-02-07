@@ -1,113 +1,63 @@
-import { JsonSchema, UISchemaElement } from '@jsonforms/core'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import {
+  type WhatIfScenarioDescriptor,
+  type WhatIfScenariosFilter,
+  PiWebserviceProvider,
+} from '@deltares/fews-pi-requests'
+import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
+import { ref, shallowRef, toValue, watchEffect } from 'vue'
 
-import propertiesSchema from './properties-schema.json'
-import uiSchema from './ui-schema.json'
-import { computed, MaybeRefOrGetter, toValue } from 'vue'
-import { asyncComputed } from '@vueuse/core'
-
-export interface WhatIfTemplate {
-  id: string
-  title: string
-  propertiesSchemaUrl: string
-  whatIfTemplateId: string
-  uiSchemaUrl: string
+export interface UseWhatIfScenarioReturn {
+  error: Ref<string | undefined>
+  whatIfScenarios: ShallowRef<WhatIfScenarioDescriptor[]>
+  isReady: Ref<boolean>
+  isLoading: Ref<boolean>
 }
-
-export interface WhatIfFormSchemas {
-  properties: JsonSchema
-  ui: UISchemaElement
-}
-
-export interface WhatIfProperties {
-  [key: string]: number | undefined
-}
-
-export enum SubmitStatus {
-  Success = 'success',
-  Error = 'error',
-}
-
-export interface SubmitSuccess {
-  status: SubmitStatus.Success
-  taskId: string
-}
-
-export interface SubmitError {
-  status: SubmitStatus.Error
-  error: string
-}
-
-export type SubmitResult = SubmitSuccess | SubmitError
 
 export function useWhatIfScenarios(
-  nodeId: MaybeRefOrGetter<string>,
-  whatIfTemplateIds: MaybeRefOrGetter<string[]>,
-  selectedWhatIfTemplateId: MaybeRefOrGetter<string | null>,
-) {
-  const templates = asyncComputed<WhatIfTemplate[]>(
-    async () =>
-      fetchWhatIfTemplates(toValue(nodeId), toValue(whatIfTemplateIds)),
-    [],
-  )
-  const selectedTemplate = computed<WhatIfTemplate | null>(() => {
-    const template = templates.value.find(
-      (template) => template.id === toValue(selectedWhatIfTemplateId),
-    )
-    return template ?? null
-  })
+  baseUrl: string,
+  whatIfTemplateId?: MaybeRefOrGetter<string | undefined>,
+): UseWhatIfScenarioReturn {
+  const whatIfScenarios = shallowRef<WhatIfScenarioDescriptor[]>([])
+  const isReady = ref(false)
+  const isLoading = ref(false)
+  const error = shallowRef<string>()
 
-  const formSchemas = asyncComputed<WhatIfFormSchemas | null>(async () => {
-    if (!selectedTemplate.value) return null
-    return fetchFormSchemas(selectedTemplate.value)
-  }, null)
+  async function loadWhatIfScenario() {
+    isLoading.value = true
+    isReady.value = false
 
-  async function fetchWhatIfTemplate(
-    whatIfTemplateId: string,
-  ): Promise<WhatIfTemplate> {
-    // TODO: fetch properties of a what-if template given its ID.
+    try {
+      const _whatIfTemplateId = toValue(whatIfTemplateId)
+      if (_whatIfTemplateId === undefined) {
+        whatIfScenarios.value = []
+        return
+      }
+      const provider = new PiWebserviceProvider(baseUrl, {
+        transformRequestFn: createTransformRequestFn(),
+      })
+      const filter: WhatIfScenariosFilter = {
+        whatIfTemplateId: _whatIfTemplateId,
+      }
+      const response = await provider.getWhatIfScenarios(filter)
+      if (!response) throw new Error('WhatIfScenarios response is undefined')
 
-    const id = whatIfTemplateId.replace('-template', '')
-    const title = whatIfTemplateId.replaceAll('-', ' ')
-    const propertiesSchemaUrl = 'placeholder'
-    const uiSchemaUrl = 'placeholder'
-    return {
-      id,
-      title,
-      whatIfTemplateId,
-      propertiesSchemaUrl,
-      uiSchemaUrl,
+      whatIfScenarios.value = response.whatIfScenarioDescriptors
+    } catch {
+      error.value = 'Error loading whatIfScenarios'
+      whatIfScenarios.value = []
+    } finally {
+      isLoading.value = false
+      isReady.value = true
     }
   }
 
-  async function fetchWhatIfTemplates(
-    _nodeId: string,
-    whatIfTemplateIds: string[],
-  ): Promise<WhatIfTemplate[]> {
-    const whatIfTemplates = await Promise.all(
-      whatIfTemplateIds.map(fetchWhatIfTemplate),
-    )
-    return whatIfTemplates
-  }
+  watchEffect(loadWhatIfScenario)
 
-  async function fetchFormSchemas(
-    _whatIfTemplate: WhatIfTemplate,
-  ): Promise<WhatIfFormSchemas> {
-    // TODO: actually fetch schemas based on the provided URLs.
-    return {
-      properties: propertiesSchema,
-      ui: uiSchema,
-    }
+  return {
+    whatIfScenarios,
+    isReady,
+    isLoading,
+    error,
   }
-
-  async function submit(properties: WhatIfProperties): Promise<SubmitResult> {
-    // TODO: submit workflow for what-if scenario with these properties.
-    const isSuccess = properties['simulation_period_seconds'] === 5
-    if (isSuccess) {
-      return { status: SubmitStatus.Success, taskId: 'task-id' }
-    } else {
-      return { status: SubmitStatus.Error, error: 'Invalid simulation period.' }
-    }
-  }
-
-  return { templates, selectedTemplate, formSchemas, submit }
 }
