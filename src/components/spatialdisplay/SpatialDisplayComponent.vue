@@ -65,7 +65,7 @@
         v-if="layerOptions"
         :layerTitle="props.layerCapabilities?.title"
         :isLoading="isLoading"
-        :currentTime="currentTime"
+        :currentTime="selectedDate"
         :forecastTime="forecastTime"
         :completelyMissing="props.layerCapabilities?.completelyMissing ?? false"
         :firstValueTime="
@@ -113,7 +113,7 @@
   />
   <DateTimeSlider
     v-if="settings.dateTimeSliderEnabled && times?.length"
-    v-model:selectedDate="currentTimeOfSlider"
+    v-model:selectedDate="selectedDateOfSlider"
     :dates="times"
     @update:doFollowNow="setLayerOptions"
     class="spatial-display__slider"
@@ -226,10 +226,10 @@ const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
-const currentTimeOfSlider = ref(new Date())
-const { selectedDate: currentTime } = useSelectedDate(currentTimeOfSlider)
-watch(currentTime, () => {
-  emit('update:currentTime', currentTime.value)
+const selectedDateOfSlider = ref(new Date())
+const { selectedDate } = useSelectedDate(selectedDateOfSlider)
+watch(selectedDate, () => {
+  emit('update:currentTime', selectedDate.value)
 })
 
 const layerOptions = ref<AnimatedRasterLayerOptions>()
@@ -408,7 +408,7 @@ watch(
   { deep: true },
 )
 
-watch(currentTime, () => {
+watch(selectedDate, () => {
   debouncedSetLayerOptions()
 })
 
@@ -416,7 +416,7 @@ function setLayerOptions(): void {
   if (props.layerName) {
     layerOptions.value = {
       name: props.layerName,
-      time: currentTime.value,
+      time: selectedDate.value,
       bbox: props.layerCapabilities?.boundingBox
         ? convertBoundingBoxToLngLatBounds(props.layerCapabilities.boundingBox)
         : undefined,
