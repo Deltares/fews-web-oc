@@ -250,10 +250,13 @@ topologyNodesStore
 const subNodes = computed(() =>
   topologyNodesStore.getSubNodesForIds(topologyDisplayNodes.value),
 )
-watch(topologyNodesStore.nodes, () => {
-  const to = reroute(route)
-  if (to) router.push(to)
-})
+watch(
+  () => topologyNodesStore.nodes,
+  () => {
+    const to = reroute(route)
+    if (to) router.push(to)
+  },
+)
 
 function updateItems(): void {
   if (subNodes.value) {
