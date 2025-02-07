@@ -15,7 +15,7 @@
       />
       <DateTimeSlider
         v-if="settings.dateTimeSliderEnabled"
-        v-model:selectedDate="selectedDateSlider"
+        v-model:selectedDate="selectedDateOfSlider"
         :dates="dates"
         :hide-speed-controls="mobile"
       />
@@ -77,8 +77,8 @@ const router = useRouter()
 const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
 const ssdContainer = ref<HTMLElement | null>(null)
 
-const selectedDateSlider = ref<Date>(new Date())
-const { selectedDate } = useSelectedDate(selectedDateSlider)
+const selectedDateOfSlider = ref<Date>(new Date())
+const { selectedDate } = useSelectedDate(selectedDateOfSlider)
 
 const selectedDateString = computed(() => {
   if (selectedDate.value === undefined) return ''
