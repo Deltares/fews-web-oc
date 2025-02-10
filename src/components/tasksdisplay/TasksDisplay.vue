@@ -38,6 +38,13 @@
     <div class="d-flex flex-row gc-4 mr-2">
       <ExpectedWorkflowRuntime :workflow-id="selectedWorkflow?.id ?? null" />
       <AvailableWorkflowServers :workflow-id="selectedWorkflow?.id ?? null" />
+      <v-container class="px-0">
+        <DateTimeField
+          v-model="timeZero"
+          date-label="T0 date"
+          time-label="T0 time"
+        />
+      </v-container>
     </div>
     <v-btn
       variant="flat"
@@ -61,6 +68,7 @@
 </template>
 <script setup lang="ts">
 import jsonFormsConfig from '@/assets/JsonFormsConfig.json'
+import DateTimeField from '@/components/general/DateTimeField.vue'
 
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
 import { computed, ref, watchEffect } from 'vue'
@@ -71,7 +79,9 @@ import { JsonForms } from '@jsonforms/vue'
 import ExpectedWorkflowRuntime from './ExpectedWorkflowRuntime.vue'
 import AvailableWorkflowServers from './AvailableWorkflowServers.vue'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
-import {
+import type {
+  PostWhatIfScenarioFilter,
+  RunTaskFilter,
   TopologyNode,
   WhatIfScenarioDescriptor,
   WhatIfTemplate,
@@ -86,6 +96,8 @@ import {
   getJsonDataFromProperties,
   ScenarioData,
 } from '@/lib/whatif'
+import { convertJSDateToFewsPiParameter } from '@/lib/date'
+import { postRunTask, postWhatIfScenario } from '@/lib/whatif/fetch'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 
@@ -97,6 +109,11 @@ const props = defineProps<Props>()
 const selectedWhatIfTemplate = ref<WhatIfTemplate>()
 const selectedWhatIfScenario = ref<WhatIfScenarioDescriptor>()
 const selectedProperties = ref<ScenarioData>({})
+
+// TODO: The userId is a random UUID now? Why don't we use the ID of the user
+//       currently logged in if we have it?
+const userId = ref<string>(crypto.randomUUID())
+const timeZero = ref<Date>(new Date())
 
 const workflowIds = computed<string[]>(() =>
   props.topologyNode ? getWorkflowIdsForNode(props.topologyNode) : [],
@@ -170,14 +187,45 @@ function onPropertiesChange(event: { data: ScenarioData }): void {
 }
 
 async function submit(): Promise<void> {
-  // const result = await submitWhatIf(selectedProperties.value)
-  //
-  // isSubmitted.value = true
-  // if (result.status === "success") {
-  //   hasSubmitError.value = false
-  // } else {
-  //   hasSubmitError.value = true
-  //   submitErrorMessage.value = result.error
-  // }
+  if (!selectedWorkflow.value) return
+  if (!selectedWhatIfTemplate.value) return
+  const whatIfTemplateId = selectedWhatIfTemplate.value.id
+  const workflowId = selectedWorkflow.value.id
+  const properties = selectedProperties.value as Record<string, string | number>
+
+  const scenarioFilter: PostWhatIfScenarioFilter = {
+    whatIfTemplateId,
+    name: 'Temporary',
+    properties,
+  }
+  const scenarioResult = await postWhatIfScenario(scenarioFilter)
+
+  if (scenarioResult.status === 'success') {
+    hasSubmitError.value = false
+  } else {
+    isSubmitted.value = true
+    hasSubmitError.value = true
+    submitErrorMessage.value = scenarioResult.error
+    return
+  }
+
+  const timeZeroString = convertJSDateToFewsPiParameter(timeZero.value)
+
+  const filter: RunTaskFilter = {
+    workflowId,
+    userId: userId.value,
+    timeZero: timeZeroString,
+    scenarioId: scenarioResult.data.id,
+  }
+
+  const result = await postRunTask(filter)
+
+  isSubmitted.value = true
+  if (result.status === 'success') {
+    hasSubmitError.value = false
+  } else {
+    hasSubmitError.value = true
+    submitErrorMessage.value = result.error
+  }
 }
 </script>
