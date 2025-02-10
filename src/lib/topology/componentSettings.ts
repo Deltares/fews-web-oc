@@ -23,7 +23,6 @@ export interface ComponentSettingsMapping {
   dashboard: DashboardSettings
   'whatif-display': undefined
   'log-display': undefined
-  
 }
 
 type SettingsPerComponent = {

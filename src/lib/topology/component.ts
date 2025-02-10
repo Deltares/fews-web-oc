@@ -1,8 +1,6 @@
 import type { WebOCDashboardItem } from '@deltares/fews-pi-requests'
 
-export type ComponentType =
-  | WebOCDashboardItem['component']
-  | 'dashboard'
+export type ComponentType = WebOCDashboardItem['component'] | 'dashboard'
 
 export const ComponentType = {
   map: 'map',
