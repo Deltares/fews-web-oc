@@ -101,10 +101,7 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
   baseUrl,
   () => props.layerName,
 )
-const { locations, geojson } = useFilterLocations(
-  baseUrl,
-  filterIds,
-)
+const { locations, geojson } = useFilterLocations(baseUrl, filterIds)
 
 const start = computed(() => {
   if (!times.value || times.value.length === 0) return null
