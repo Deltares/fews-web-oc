@@ -117,6 +117,15 @@ export function getErrorsForProperties(
       const min = property.minimum
       const max = property.maximum
       const title = property.title
+      if (!isNumber(value.toString())) {
+        errors.push({
+          keyword: 'type',
+          instancePath: `/${key}`,
+          schemaPath: `#/properties/${key}/type`,
+          params: { type: 'number' },
+          message: `"${title}" must be a number`,
+        })
+      }
       if (min !== undefined && (value as number) < min) {
         errors.push({
           keyword: 'minimum',
@@ -138,4 +147,8 @@ export function getErrorsForProperties(
     }
   }
   return errors
+}
+
+function isNumber(value: string) {
+  return !isNaN(Number(value))
 }
