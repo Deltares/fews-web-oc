@@ -66,7 +66,6 @@
       <keep-alive include="SpatialDisplay">
         <component
           :is="Component"
-          :filter-ids="filterIds"
           :topologyNode="topologyNode"
         />
       </keep-alive>
@@ -166,7 +165,6 @@ const secondaryWorkflows = computed(() => {
 
 const items = ref<ColumnItem[]>([])
 
-const filterIds = ref<string[]>([])
 const topologyNode = ref<TopologyNode | undefined>(undefined)
 
 const displayTabs = ref<DisplayTab[]>([])
@@ -288,10 +286,8 @@ watchEffect(() => {
   // Check if the active node is a leaf.
   const node = topologyNodesStore.getNodeById(activeNodeId)
   if (node === undefined) {
-    filterIds.value = []
     return
   }
-  filterIds.value = node.filterIds ?? []
   topologyNode.value = node
 
   if (showLeafsAsButton.value && Array.isArray(props.nodeId)) {

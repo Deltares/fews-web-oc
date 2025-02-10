@@ -50,7 +50,6 @@ export function getComponentPropsForNode(
   if (componentType === 'map') {
     const result: PropsForComponentType<'map'> = {
       layerName: node.gridDisplaySelection?.plotId,
-      filterIds: node.filterIds,
     }
     return result
   }
