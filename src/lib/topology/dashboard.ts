@@ -21,6 +21,9 @@ const SchematicStatusDisplay = defineAsyncComponent(
 const SystemMonitorDisplayView = defineAsyncComponent(
   () => import('@/views/SystemMonitorDisplayView.vue'),
 )
+const TaskDisplay = defineAsyncComponent(
+  () => import('@/components/tasksdisplay/TasksDisplay.vue'),
+)
 
 const Empty = defineAsyncComponent(() => import('@/views/Empty.vue'))
 
@@ -31,10 +34,10 @@ export const componentTypeToComponentMap = {
   report: ReportsDisplayView,
   'schematic-status-display': SchematicStatusDisplay,
   'system-monitor': SystemMonitorDisplayView,
-  tasks: Empty,
   'html-display': Empty,
   dashboard: Empty,
   'log-display': Empty,
+  'whatif-display': TaskDisplay,
 } satisfies Record<ComponentType, Component>
 
 export type PropsForComponentType<T extends ComponentType> = ComponentProps<

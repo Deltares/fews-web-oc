@@ -131,7 +131,7 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
     nodeHasSystemMonitor(node) ||
     nodeHasWebDisplay(node) ||
     nodeHasDashboard(node) ||
-    nodeHasTasks(node)
+    nodeHasWhatIfs(node)
   )
 }
 
@@ -171,7 +171,7 @@ export function nodeHasDashboard(node: TopologyNode) {
   return node.dashboardPanels !== undefined
 }
 
-export function nodeHasTasks(node: TopologyNode) {
+export function nodeHasWhatIfs(node: TopologyNode) {
   const workflowIds = getWorkflowIdsForNode(node)
   const availableWorkflows = useAvailableWorkflowsStore()
   return workflowIds.some((workflowId) =>

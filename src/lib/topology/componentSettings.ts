@@ -21,8 +21,9 @@ export interface ComponentSettingsMapping {
   'system-monitor': undefined
   'html-display': undefined
   dashboard: DashboardSettings
-  tasks: undefined
+  'whatif-display': undefined
   'log-display': undefined
+  
 }
 
 type SettingsPerComponent = {
