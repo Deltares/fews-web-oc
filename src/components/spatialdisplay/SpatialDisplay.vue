@@ -10,7 +10,7 @@
         :geojson="geojson"
         @changeLocationIds="onLocationsChange"
         :layer-capabilities="layerCapabilities"
-        :bounding-box="topologyNode?.boundingBox"
+        :bounding-box="boundingBox"
         :times="times"
         :settings="settings"
         :max-values-time-series="maxValuesTimeSeries"
@@ -76,7 +76,6 @@ const SpatialTimeSeriesDisplay = defineAsyncComponent(
 interface Props {
   layerName?: string
   locationIds?: string
-  filterIds?: string[]
   latitude?: string
   longitude?: string
   topologyNode?: TopologyNode
@@ -85,7 +84,6 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
-  filterIds: () => [],
   settings: () => getDefaultSettings('map'),
 })
 
@@ -93,6 +91,9 @@ const route = useRoute()
 const router = useRouter()
 const { thresholds } = useDisplay()
 const containerRef = useTemplateRef('container')
+
+const boundingBox = computed(() => props.topologyNode?.boundingBox)
+const filterIds = computed(() => props.topologyNode?.filterIds ?? [])
 
 const userSettings = useUserSettingsStore()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -102,7 +103,7 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
 )
 const { locations, geojson } = useFilterLocations(
   baseUrl,
-  () => props.filterIds,
+  filterIds,
 )
 
 const start = computed(() => {
@@ -133,7 +134,7 @@ function getFilterActionsFilter(): filterActionsFilter &
   UseDisplayConfigOptions {
   return {
     locationIds: currentLocationIds.value?.join(','),
-    filterId: props.filterIds ? props.filterIds[0] : undefined,
+    filterId: filterIds.value ? filterIds.value[0] : undefined,
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
   }
