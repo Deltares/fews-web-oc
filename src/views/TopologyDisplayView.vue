@@ -68,7 +68,6 @@
           :is="Component"
           :filter-ids="filterIds"
           :topologyNode="topologyNode"
-          :boundingBox="boundingBox"
         />
       </keep-alive>
     </router-view>
@@ -164,8 +163,6 @@ const secondaryWorkflows = computed(() => {
   if (!activeNode.value?.secondaryWorkflows) return null
   return activeNode.value.secondaryWorkflows
 })
-
-const boundingBox = computed(() => activeNode.value?.boundingBox)
 
 const items = ref<ColumnItem[]>([])
 
