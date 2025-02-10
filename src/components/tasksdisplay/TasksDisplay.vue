@@ -24,13 +24,13 @@
         <json-forms
           class="pt-2"
           :schema="jsonSchema"
-          :uischema="jsonUiSchema"
           :data="selectedProperties"
           :renderers="Object.freeze(vuetifyRenderers)"
           :ajv="undefined"
           validation-mode="NoValidation"
           :config="jsonFormsConfig"
           @change="onPropertiesChange"
+          :additional-errors="additionalErrors"
         />
       </v-card-text>
     </v-card>
@@ -71,7 +71,8 @@ import jsonFormsConfig from '@/assets/JsonFormsConfig.json'
 import DateTimeField from '@/components/general/DateTimeField.vue'
 
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
-import { computed, ref, watchEffect } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
+import { ErrorObject } from 'ajv'
 
 import { useWhatIfScenarios } from '@/services/useWhatIfScenarios'
 
@@ -91,8 +92,8 @@ import { getWorkflowIdsForNode } from '@/lib/workflows/tasks'
 import { configManager } from '@/services/application-config'
 import { useWhatIfTemplates } from '@/services/useWhatIfTemplate'
 import {
-  generateDefaultUISchema,
   generateJsonSchema,
+  getErrorsForProperties,
   getJsonDataFromProperties,
   ScenarioData,
 } from '@/lib/whatif'
@@ -109,6 +110,8 @@ const props = defineProps<Props>()
 const selectedWhatIfTemplate = ref<WhatIfTemplate>()
 const selectedWhatIfScenario = ref<WhatIfScenarioDescriptor>()
 const selectedProperties = ref<ScenarioData>({})
+
+const additionalErrors = ref<ErrorObject[]>([])
 
 // TODO: The userId is a random UUID now? Why don't we use the ID of the user
 //       currently logged in if we have it?
@@ -147,9 +150,6 @@ const { whatIfScenarios } = useWhatIfScenarios(
 const jsonSchema = computed(() =>
   generateJsonSchema(selectedWhatIfTemplate.value?.properties),
 )
-const jsonUiSchema = computed(() =>
-  generateDefaultUISchema(selectedWhatIfTemplate.value?.properties),
-)
 
 watchEffect(() => {
   selectedProperties.value = getJsonDataFromProperties(
@@ -173,7 +173,8 @@ const hasAllRequiredProperties = computed<boolean>(() => {
 const canSubmit = computed<boolean>(() => {
   const hasSelectedWorkflow = selectedWorkflow.value !== undefined
   const hasAllProperties = hasAllRequiredProperties.value
-  return hasSelectedWorkflow && hasAllProperties
+  const hasNoErrors = additionalErrors.value.length === 0
+  return hasSelectedWorkflow && hasAllProperties && hasNoErrors
 })
 
 const isSubmitted = ref<boolean>(false)
@@ -185,6 +186,10 @@ function onPropertiesChange(event: { data: ScenarioData }): void {
   if (!updatedProperties) return
   selectedProperties.value = updatedProperties
 }
+
+watch(selectedProperties, (properties) => {
+  additionalErrors.value = getErrorsForProperties(properties, jsonSchema.value)
+})
 
 async function submit(): Promise<void> {
   if (!selectedWorkflow.value) return

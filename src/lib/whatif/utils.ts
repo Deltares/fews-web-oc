@@ -1,10 +1,5 @@
-import type {
-  ControlElement,
-  JsonSchema7,
-  UISchemaElement,
-  VerticalLayout,
-} from '@jsonforms/core'
-
+import type { JsonSchema7 } from '@jsonforms/core'
+import type { ErrorObject } from 'ajv'
 import type {
   WhatIfScenarioDescriptor,
   WhatIfTemplate,
@@ -34,57 +29,8 @@ export function generateJsonSchema(
   return {
     type: 'object',
     properties: schemaProperties,
+    required: properties?.map((property) => property.id),
   }
-}
-
-/**
- * Generates a default UI schema based on an array of SecondaryWorkflowProperty objects.
- * @param properties An array of SecondaryWorkflowProperty objects.
- * @returns The generated default UI schema.
- */
-export function generateDefaultUISchema(
-  properties: WhatIfTemplate['properties'],
-): UISchemaElement {
-  const uiSchema: VerticalLayout = {
-    type: 'VerticalLayout',
-    elements: [],
-  }
-
-  properties?.forEach((property) => {
-    const element: ControlElement = {
-      type: 'Control',
-      scope: `#/properties/${property.id}`,
-      label: property.name,
-    }
-
-    switch (property.type) {
-      case 'dateTime':
-        element.options = {
-          format: 'date-time',
-        }
-        break
-      case 'number':
-      case 'integer':
-        element.options = {
-          format: 'number',
-        }
-        break
-      case 'boolean':
-        element.options = {
-          format: 'checkbox',
-        }
-        break
-      case 'configFile':
-      case 'whatIfTemplateTemplateId':
-      case 'enumProperty':
-      case 'string':
-        break
-    }
-
-    uiSchema.elements.push(element)
-  })
-
-  return uiSchema
 }
 
 export function getJsonDataFromProperties(
@@ -107,6 +53,7 @@ function convertPropertyToJsonSchemaProperty(
       return {
         type: 'string',
         default: property.defaultValue,
+        title: property.name,
       }
     case 'enumProperty':
       return {
@@ -116,6 +63,7 @@ function convertPropertyToJsonSchemaProperty(
           const: value.code,
           title: value.label,
         })),
+        title: property.name,
       }
     case 'number':
       return {
@@ -123,27 +71,71 @@ function convertPropertyToJsonSchemaProperty(
         default: property.defaultValue,
         minimum: property.minValue,
         maximum: property.maxValue,
+        title: property.name,
+        description: `Min: ${property.minValue}, Max: ${property.maxValue}`,
       }
     case 'integer':
       return {
         type: 'integer',
         default: property.defaultValue,
+        title: property.name,
       }
     case 'boolean':
       return {
         type: 'boolean',
         default: property.defaultValue,
+        title: property.name,
       }
     case 'dateTime':
       return {
         type: 'string',
         format: 'date-time',
         default: property.defaultValue,
+        title: property.name,
       }
     case 'whatIfTemplateTemplateId':
     case 'configFile':
       return {
         type: 'string',
+        title: property.name,
       }
   }
+}
+
+export function getErrorsForProperties(
+  properties: ScenarioData,
+  schema: JsonSchema7,
+) {
+  const errors: ErrorObject[] = []
+  for (const key in properties) {
+    if (!schema.properties) continue
+
+    const property = schema.properties[key]
+
+    if (property.type === 'number') {
+      const value = properties[key] as number
+      const min = property.minimum
+      const max = property.maximum
+      const title = property.title
+      if (min !== undefined && (value as number) < min) {
+        errors.push({
+          keyword: 'minimum',
+          instancePath: `/${key}`,
+          schemaPath: `#/properties/${key}/minimum`,
+          params: { comparison: '>=', limit: min },
+          message: `"${title}" must be greater than or equal to ${min}`,
+        })
+      }
+      if (max !== undefined && (value as number) > max) {
+        errors.push({
+          keyword: 'maximum',
+          instancePath: `/${key}`,
+          schemaPath: `#/properties/${key}/maximum`,
+          params: { comparison: '<=', limit: max },
+          message: `"${title}" must be less than or equal to ${max}`,
+        })
+      }
+    }
+  }
+  return errors
 }
