@@ -1,108 +1,111 @@
 <template>
-  <div class="whatif-container mx-auto d-flex flex-column gr-4 pa-4">
-    <v-select
-      v-model="selectedWhatIfTemplate"
-      :items="whatIfTemplates"
-      :loading="isLoadingTemplates"
-      item-title="name"
-      label="Select what-if scenario template"
-      hide-details
-      return-object
-      class="flex-0-0"
-    />
-    <v-select
-      v-if="selectedWhatIfTemplate"
-      v-model="selectedWhatIfScenario"
-      :items="whatIfScenarios"
-      :loading="isLoadingScenarios"
-      item-title="name"
-      label="Select what-if scenario"
-      hide-details
-      return-object
-      class="flex-0-0"
-    />
+  <div class="d-flex w-100 h-100 justify-center overflow-y-auto">
+    <div class="whatif-container w-100 d-flex flex-column gr-4 pa-4">
+      <v-select
+        v-model="selectedWhatIfTemplate"
+        :items="whatIfTemplates"
+        :loading="isLoadingTemplates"
+        item-title="name"
+        label="Select what-if scenario template"
+        hide-details
+        return-object
+        class="flex-0-0"
+      />
+      <v-select
+        v-if="selectedWhatIfTemplate"
+        v-model="selectedWhatIfScenario"
+        :items="whatIfScenarios"
+        :loading="isLoadingScenarios"
+        item-title="name"
+        label="Select what-if scenario"
+        hide-details
+        return-object
+        class="flex-0-0"
+      />
 
-    <template v-if="doShowConfiguration">
-      <v-card flat border>
-        <v-card-title>Scenario configuration</v-card-title>
-        <v-card-text>
-          <json-forms
-            class="pt-2"
-            :schema="jsonSchema"
-            :data="selectedProperties"
-            :renderers="Object.freeze(vuetifyRenderers)"
-            :ajv="undefined"
-            validation-mode="NoValidation"
-            :config="jsonFormsConfig"
-            @change="onPropertiesChange"
-            :additional-errors="additionalErrors"
-          />
-        </v-card-text>
-      </v-card>
+      <template v-if="doShowConfiguration">
+        <v-card flat border class="flex-0-0">
+          <v-card-title>Scenario configuration</v-card-title>
+          <v-card-text>
+            <json-forms
+              class="pt-2"
+              :schema="jsonSchema"
+              :data="selectedProperties"
+              :renderers="Object.freeze(vuetifyRenderers)"
+              :ajv="undefined"
+              validation-mode="NoValidation"
+              :config="jsonFormsConfig"
+              @change="onPropertiesChange"
+              :additional-errors="additionalErrors"
+            />
+          </v-card-text>
+        </v-card>
 
-      <v-card
-        v-if="doShowConfiguration"
-        flat
-        border
-        title="Analysis time (T0)"
-        density="compact"
-      >
-        <v-card-text>
-          <DateTimeField
-            v-model="timeZero"
-            date-label="Date"
-            date-icon="mdi-calendar"
-            time-label="Time"
-            time-icon="mdi-clock"
-          />
-        </v-card-text>
-      </v-card>
-
-      <div>
-        <v-textarea
-          v-model="description"
-          label="Description"
+        <v-card
+          v-if="doShowConfiguration"
+          flat
+          border
+          title="Analysis time (T0)"
           density="compact"
-          variant="outlined"
-          no-resize
-          hide-details
-          rows="2"
+          class="flex-0-0"
+        >
+          <v-card-text>
+            <DateTimeField
+              v-model="timeZero"
+              date-label="Date"
+              date-icon="mdi-calendar"
+              time-label="Time"
+              time-icon="mdi-clock"
+            />
+          </v-card-text>
+        </v-card>
+
+        <div>
+          <v-textarea
+            v-model="description"
+            label="Description"
+            density="compact"
+            variant="outlined"
+            no-resize
+            hide-details
+            rows="2"
+          />
+        </div>
+      </template>
+      <div class="d-flex flex-column gc-4 gr-1">
+        <ExpectedWorkflowRuntime
+          class="ps-0"
+          :workflow-id="selectedWorkflow?.id ?? null"
         />
+        <AvailableWorkflowServers
+          class="ps-0"
+          :workflow-id="selectedWorkflow?.id ?? null"
+        />
+        <v-btn
+          variant="flat"
+          color="primary"
+          :disabled="!canSubmit"
+          @click="submit"
+          max-width="300"
+          class="my-2"
+        >
+          Submit
+        </v-btn>
+        <v-alert
+          v-if="isSubmitted && !hasSubmitError"
+          class="flex-0-0"
+          type="success"
+        >
+          Task submitted successfully.
+        </v-alert>
+        <v-alert
+          v-if="isSubmitted && hasSubmitError"
+          class="flex-0-0"
+          type="error"
+        >
+          Failed to submit task: {{ submitErrorMessage }}
+        </v-alert>
       </div>
-    </template>
-    <div class="d-flex flex-column gc-4 gr-1">
-      <ExpectedWorkflowRuntime
-        class="ps-0"
-        :workflow-id="selectedWorkflow?.id ?? null"
-      />
-      <AvailableWorkflowServers
-        class="ps-0"
-        :workflow-id="selectedWorkflow?.id ?? null"
-      />
-      <v-btn
-        variant="flat"
-        color="primary"
-        :disabled="!canSubmit"
-        @click="submit"
-        max-width="300"
-        class="mt-2"
-      >
-        Submit
-      </v-btn>
-      <v-alert
-        v-if="isSubmitted && !hasSubmitError"
-        class="flex-0-0"
-        type="success"
-      >
-        Task submitted successfully.
-      </v-alert>
-      <v-alert
-        v-if="isSubmitted && hasSubmitError"
-        class="flex-0-0"
-        type="error"
-      >
-        Failed to submit task: {{ submitErrorMessage }}
-      </v-alert>
     </div>
   </div>
 </template>
@@ -273,6 +276,5 @@ async function submit(): Promise<void> {
 <style scoped>
 .whatif-container {
   max-width: 800px;
-  width: 100%;
 }
 </style>
