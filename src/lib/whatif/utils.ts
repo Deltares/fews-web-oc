@@ -111,8 +111,11 @@ function convertPropertyToJsonSchemaProperty(
     case 'enumProperty':
       return {
         type: 'string',
-        enum: property.values.map((value) => value.code),
         default: property.defaultValue,
+        oneOf: property.values.map((value) => ({
+          const: value.code,
+          title: value.label,
+        })),
       }
     case 'number':
       return {
