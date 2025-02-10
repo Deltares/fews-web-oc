@@ -239,6 +239,7 @@ function openLocationsTimeSeriesDisplay(locationIds: string[]) {
     .replace('WithCoordinates', '')
   currentLatitude.value = undefined
   currentLongitude.value = undefined
+  currentLocationIds.value = locationIds
   router.push({
     name: routeName,
     params: {
