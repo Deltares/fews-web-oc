@@ -78,23 +78,14 @@
           :workflow-id="selectedWorkflow?.id ?? null"
         />
         <AvailableWorkflowServers
-          class="ps-0"
+          class="ps-0 mb-2"
           :workflow-id="selectedWorkflow?.id ?? null"
         />
-        <v-btn
-          variant="flat"
-          color="primary"
-          :disabled="!canSubmit"
-          @click="submit"
-          max-width="300"
-          class="my-2"
-        >
-          Submit
-        </v-btn>
         <v-alert
           v-if="isSubmitted && !hasSubmitError"
           class="flex-0-0"
           type="success"
+          density="compact"
         >
           Task submitted successfully.
         </v-alert>
@@ -105,6 +96,17 @@
         >
           Failed to submit task: {{ submitErrorMessage }}
         </v-alert>
+        <v-btn
+          variant="flat"
+          color="primary"
+          :disabled="!canSubmit"
+          @click="submit"
+          max-width="300"
+          class="mt-2"
+          :loading="isPosting"
+        >
+          Submit
+        </v-btn>
       </div>
     </div>
   </div>
@@ -150,6 +152,8 @@ const selectedWhatIfScenario = ref<WhatIfScenarioDescriptor>()
 const selectedProperties = ref<ScenarioData>({})
 
 const additionalErrors = ref<ErrorObject[]>([])
+
+const isPosting = ref<boolean>(false)
 
 const temporaryWhatIfScenarioName = 'Temporary'
 
@@ -240,6 +244,8 @@ async function submit(): Promise<void> {
     name: temporaryWhatIfScenarioName,
     properties,
   }
+
+  isPosting.value = true
   const scenarioResult = await postWhatIfScenario(scenarioFilter)
 
   if (scenarioResult.status === 'success') {
@@ -248,6 +254,7 @@ async function submit(): Promise<void> {
     isSubmitted.value = true
     hasSubmitError.value = true
     submitErrorMessage.value = scenarioResult.error
+    isPosting.value = false
     return
   }
 
@@ -262,6 +269,7 @@ async function submit(): Promise<void> {
   }
 
   const result = await postRunTask(filter)
+  isPosting.value = false
 
   isSubmitted.value = true
   if (result.status === 'success') {
