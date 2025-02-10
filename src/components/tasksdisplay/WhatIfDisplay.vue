@@ -1,8 +1,9 @@
 <template>
-  <div class="w-75 mx-auto d-flex flex-column gr-4 pa-4">
+  <div class="whatif-container mx-auto d-flex flex-column gr-4 pa-4">
     <v-select
       v-model="selectedWhatIfTemplate"
       :items="whatIfTemplates"
+      :loading="isLoadingTemplates"
       item-title="name"
       label="Select what-if scenario template"
       hide-details
@@ -10,60 +11,99 @@
       class="flex-0-0"
     />
     <v-select
+      v-if="selectedWhatIfTemplate"
       v-model="selectedWhatIfScenario"
       :items="whatIfScenarios"
+      :loading="isLoadingScenarios"
       item-title="name"
-      label="Select what-if scenario template"
+      label="Select what-if scenario"
       hide-details
       return-object
       class="flex-0-0"
     />
-    <v-card flat border v-if="doShowConfiguration">
-      <v-card-title>Scenario configuration</v-card-title>
-      <v-card-text>
-        <json-forms
-          class="pt-2"
-          :schema="jsonSchema"
-          :data="selectedProperties"
-          :renderers="Object.freeze(vuetifyRenderers)"
-          :ajv="undefined"
-          validation-mode="NoValidation"
-          :config="jsonFormsConfig"
-          @change="onPropertiesChange"
-          :additional-errors="additionalErrors"
+
+    <template v-if="doShowConfiguration">
+      <v-card flat border>
+        <v-card-title>Scenario configuration</v-card-title>
+        <v-card-text>
+          <json-forms
+            class="pt-2"
+            :schema="jsonSchema"
+            :data="selectedProperties"
+            :renderers="Object.freeze(vuetifyRenderers)"
+            :ajv="undefined"
+            validation-mode="NoValidation"
+            :config="jsonFormsConfig"
+            @change="onPropertiesChange"
+            :additional-errors="additionalErrors"
+          />
+        </v-card-text>
+      </v-card>
+
+      <v-card
+        v-if="doShowConfiguration"
+        flat
+        border
+        title="Analysis time (T0)"
+        density="compact"
+      >
+        <v-card-text>
+          <DateTimeField
+            v-model="timeZero"
+            date-label="Date"
+            date-icon="mdi-calendar"
+            time-label="Time"
+            time-icon="mdi-clock"
+          />
+        </v-card-text>
+      </v-card>
+
+      <div>
+        <v-textarea
+          v-model="description"
+          label="Description"
+          density="compact"
+          variant="outlined"
+          no-resize
+          hide-details
+          rows="2"
         />
-      </v-card-text>
-    </v-card>
-    <v-spacer />
-    <div class="d-flex flex-row gc-4 mr-2">
-      <ExpectedWorkflowRuntime :workflow-id="selectedWorkflow?.id ?? null" />
-      <AvailableWorkflowServers :workflow-id="selectedWorkflow?.id ?? null" />
-      <v-container class="px-0">
-        <DateTimeField
-          v-model="timeZero"
-          date-label="T0 date"
-          time-label="T0 time"
-        />
-      </v-container>
+      </div>
+    </template>
+    <div class="d-flex flex-column gc-4 gr-1">
+      <ExpectedWorkflowRuntime
+        class="ps-0"
+        :workflow-id="selectedWorkflow?.id ?? null"
+      />
+      <AvailableWorkflowServers
+        class="ps-0"
+        :workflow-id="selectedWorkflow?.id ?? null"
+      />
+      <v-btn
+        variant="flat"
+        color="primary"
+        :disabled="!canSubmit"
+        @click="submit"
+        max-width="300"
+        class="mt-2"
+      >
+        Submit
+      </v-btn>
+      <v-alert
+        v-if="isSubmitted && !hasSubmitError"
+        class="flex-0-0"
+        type="success"
+      >
+        Task submitted successfully.
+      </v-alert>
+      <v-alert
+        v-if="isSubmitted && hasSubmitError"
+        class="flex-0-0"
+        type="error"
+      >
+        Failed to submit task: {{ submitErrorMessage }}
+      </v-alert>
     </div>
-    <v-btn
-      variant="flat"
-      color="primary"
-      :disabled="!canSubmit"
-      @click="submit"
-    >
-      Submit
-    </v-btn>
-    <v-alert
-      v-if="isSubmitted && !hasSubmitError"
-      class="flex-0-0"
-      type="success"
-    >
-      Task submitted successfully.
-    </v-alert>
-    <v-alert v-if="isSubmitted && hasSubmitError" class="flex-0-0" type="error">
-      Failed to submit task: {{ submitErrorMessage }}
-    </v-alert>
   </div>
 </template>
 <script setup lang="ts">
@@ -108,10 +148,13 @@ const selectedProperties = ref<ScenarioData>({})
 
 const additionalErrors = ref<ErrorObject[]>([])
 
+const temporaryWhatIfScenarioName = 'Temporary'
+
 // TODO: The userId is a random UUID now? Why don't we use the ID of the user
 //       currently logged in if we have it?
 const userId = ref<string>(crypto.randomUUID())
 const timeZero = ref<Date>(new Date())
+const description = ref<string>()
 
 const selectedWorkflow = computed(() =>
   props.workflows.find(
@@ -126,10 +169,16 @@ const whatIfTemplateIds = computed(() =>
 )
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { whatIfTemplates } = useWhatIfTemplates(baseUrl, whatIfTemplateIds)
-const { whatIfScenarios } = useWhatIfScenarios(
+const { whatIfTemplates, isLoading: isLoadingTemplates } = useWhatIfTemplates(
   baseUrl,
-  () => selectedWhatIfTemplate.value?.id,
+  whatIfTemplateIds,
+)
+const { whatIfScenarios: allWhatIfScenarios, isLoading: isLoadingScenarios } =
+  useWhatIfScenarios(baseUrl, () => selectedWhatIfTemplate.value?.id)
+const whatIfScenarios = computed(() =>
+  allWhatIfScenarios.value?.filter(
+    (scenario) => scenario.name !== temporaryWhatIfScenarioName,
+  ),
 )
 
 const jsonSchema = computed(() =>
@@ -185,7 +234,7 @@ async function submit(): Promise<void> {
 
   const scenarioFilter: PostWhatIfScenarioFilter = {
     whatIfTemplateId,
-    name: 'Temporary',
+    name: temporaryWhatIfScenarioName,
     properties,
   }
   const scenarioResult = await postWhatIfScenario(scenarioFilter)
@@ -206,6 +255,7 @@ async function submit(): Promise<void> {
     userId: userId.value,
     timeZero: timeZeroString,
     scenarioId: scenarioResult.data.id,
+    description: description.value,
   }
 
   const result = await postRunTask(filter)
@@ -219,3 +269,10 @@ async function submit(): Promise<void> {
   }
 }
 </script>
+
+<style scoped>
+.whatif-container {
+  max-width: 800px;
+  width: 100%;
+}
+</style>
