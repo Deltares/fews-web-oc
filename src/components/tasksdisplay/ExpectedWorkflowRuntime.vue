@@ -1,5 +1,7 @@
 <template>
-  <div>Expected runtime: {{ formattedRuntime }}</div>
+  <v-list-item prepend-icon="mdi-timer" density="compact">
+    Expected runtime: {{ formattedRuntime }}
+  </v-list-item>
 </template>
 <script setup lang="ts">
 import { computed } from 'vue'

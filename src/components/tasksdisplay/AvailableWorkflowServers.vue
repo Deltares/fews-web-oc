@@ -1,5 +1,7 @@
 <template>
-  Number of available servers: {{ formattedNumAvailableServers }}
+  <v-list-item prepend-icon="mdi-server" density="compact">
+    Number of available servers: {{ formattedNumAvailableServers }}
+  </v-list-item>
 </template>
 <script setup lang="ts">
 import { asyncComputed } from '@vueuse/core'
