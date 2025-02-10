@@ -10,7 +10,7 @@
         :geojson="geojson"
         @changeLocationIds="onLocationsChange"
         :layer-capabilities="layerCapabilities"
-        :bounding-box="boundingBox"
+        :bounding-box="topologyNode?.boundingBox"
         :times="times"
         :settings="settings"
         :max-values-time-series="maxValuesTimeSeries"
@@ -55,13 +55,13 @@ import {
 import {
   filterActionsFilter,
   timeSeriesGridActionsFilter,
+  type TopologyNode,
 } from '@deltares/fews-pi-requests'
 import { toMercator } from '@turf/projection'
 import circle from '@turf/circle'
 import bbox from '@turf/bbox'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useFilterLocations } from '@/services/useFilterLocations'
-import type { BoundingBox } from '@deltares/fews-wms-requests'
 import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import {
   type MapSettings,
@@ -79,7 +79,7 @@ interface Props {
   filterIds?: string[]
   latitude?: string
   longitude?: string
-  boundingBox?: BoundingBox
+  topologyNode?: TopologyNode
   settings?: MapSettings
 }
 
