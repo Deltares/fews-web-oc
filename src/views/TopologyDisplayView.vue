@@ -64,10 +64,7 @@
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
       <keep-alive include="SpatialDisplay">
-        <component
-          :is="Component"
-          :topologyNode="topologyNode"
-        />
+        <component :is="Component" :topologyNode="topologyNode" />
       </keep-alive>
     </router-view>
     <div
