@@ -41,29 +41,18 @@
           </v-card-text>
         </v-card>
 
-        <v-card
-          v-if="doShowConfiguration"
-          flat
-          border
-          title="Analysis time (T0)"
-          density="compact"
-          class="flex-0-0"
-        >
-          <v-card-text>
+          <div>
             <DateTimeField
               v-model="timeZero"
-              date-label="Date"
-              date-icon="mdi-calendar"
-              time-label="Time"
-              time-icon="mdi-clock"
+              date-label="T0 date"
+              time-label="T0 time"
             />
-          </v-card-text>
-        </v-card>
+          </div>
 
         <div>
           <v-textarea
             v-model="description"
-            label="Description"
+            label="Task run description"
             density="compact"
             variant="outlined"
             no-resize
@@ -102,7 +91,7 @@
           :disabled="!canSubmit"
           @click="submit"
           max-width="300"
-          class="mt-2"
+          class="my-2"
           :loading="isPosting"
         >
           Submit
