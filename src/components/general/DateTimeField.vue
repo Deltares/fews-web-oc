@@ -2,21 +2,24 @@
   <v-row>
     <v-col>
       <v-date-input
-        prepend-icon=""
+        :prepend-icon="dateIcon"
         v-model="internalDate"
         :label="dateLabel"
         variant="outlined"
         density="compact"
+        hide-details="auto"
       />
     </v-col>
     <v-col>
       <v-text-field
+        :prepend-icon="timeIcon"
         v-model="timeString"
         type="time"
         variant="outlined"
         density="compact"
         :label="timeLabel"
         cleatable
+        hide-details="auto"
       />
     </v-col>
   </v-row>
@@ -28,9 +31,13 @@ import { VDateInput } from 'vuetify/labs/components'
 
 interface Props {
   dateLabel?: string
+  dateIcon?: string
   timeLabel?: string
+  timeIcon?: string
 }
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  dateIcon: '',
+})
 const date = defineModel<Date>({ required: true })
 
 // Get/set date and time from the date/time picker components.
