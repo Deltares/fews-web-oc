@@ -67,7 +67,7 @@
           v-if="logToIcon(log)"
           size="small"
           :icon="logToIcon(log)"
-          :color="logToColor(log, userName)"
+          :color="logToColor(log)"
         />
       </template>
     </v-card>
