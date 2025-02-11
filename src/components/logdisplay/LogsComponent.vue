@@ -112,45 +112,30 @@
       :item-height="100"
     >
       <template #default="{ item: logs }">
-        <v-expansion-panels v-if="logs.length > 1" flat focusable class="w-66">
-          <v-expansion-panel class="mb-4">
+        <v-expansion-panels v-if="logs.length > 1" flat focusable>
+          <v-expansion-panel>
             <v-expansion-panel-title class="pa-0">
-              <template #default="{ expandIcon, collapseIcon, expanded }">
-                <LogItem
-                  :log="logs[0]"
-                  :userName="userName"
-                  :disseminations="disseminations"
-                  @disseminate-log="disseminateLog"
-                >
-                  <template #actions>
-                    <div class="expand-icon-container">
-                      <v-icon
-                        :icon="expanded ? collapseIcon : expandIcon"
-                        size="small"
-                      />
-                    </div>
-                  </template>
-                </LogItem>
+              <template #default="{ expanded }">
+                <TaskRunItem
+                  :title="getTitleForLog(logs[0], userName)"
+                  :taskRun="taskRuns.find(
+                    (taskRun) => taskRun.id === logs[0].taskRunId,
+                  )"
+                  :logs="logs"
+                  :expanded="expanded"
+                />
               </template>
               <template #actions> </template>
             </v-expansion-panel-title>
             <v-expansion-panel-text>
-              <!-- Important to have item-height as it greatly improves performance -->
-              <v-virtual-scroll
-                :class="{ 'half-height': logs.length > 20 }"
-                :items="logs.slice(1)"
-                :item-height="100"
-              >
-                <template #default="{ item: log }">
-                  <LogItem
-                    :log="log"
-                    :userName="userName"
-                    :disseminations="disseminations"
-                    @disseminate-log="disseminateLog"
-                    class="mb-2"
-                  />
-                </template>
-              </v-virtual-scroll>
+              <LogExpansion
+                :logs="logs"
+                :taskRun="taskRuns.find(
+                  (taskRun) => taskRun.id === logs[0].taskRunId,
+                )"
+                :disseminations="disseminations"
+                @disseminate-log="disseminateLog"
+              />
             </v-expansion-panel-text>
           </v-expansion-panel>
         </v-expansion-panels>
@@ -172,6 +157,7 @@
 import { ref, computed } from 'vue'
 import { VDateInput } from 'vuetify/labs/components'
 import LogItem from '@/components/logdisplay/LogItem.vue'
+import TaskRunItem from './TaskRunItem.vue'
 import {
   type LogType,
   type LogLevel,
@@ -182,6 +168,7 @@ import {
   logTypes,
   toTitleCase,
   LogMessage,
+  logToUser,
 } from '@/lib/log'
 import {
   LogDisplayDisseminationAction,
@@ -193,12 +180,17 @@ import { configManager } from '@/services/application-config'
 import { debouncedRef } from '@vueuse/core'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
+import LogExpansion from './LogExpansion.vue'
+import { useTaskRuns } from '@/services/useTaskRuns'
+import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 
 interface Props {
   logDisplay: LogsDisplay
 }
 
 const props = defineProps<Props>()
+
+const availableWorkflows = useAvailableWorkflowsStore()
 
 const newMessageDialog = ref(false)
 const newLogLevel = ref<LogLevel>('INFO')
@@ -278,6 +270,12 @@ const groupedByTaskRunId = computed(() => {
   ) as LogMessage[][]
 })
 
+const taskRunIds = computed(() =>
+  groupedByTaskRunId.value.map((logs) => logs[0].taskRunId),
+)
+
+const { taskRuns } = useTaskRuns(baseUrl, taskRunIds)
+
 const disseminations = computed(() => {
   return props.logDisplay.logDissemination
     ? props.logDisplay.logDissemination.disseminationActions
@@ -309,6 +307,15 @@ function saveNewMessage() {
   newMessageDialog.value = false
   newLogMessage.value = ''
   newLogLevel.value = 'INFO'
+}
+
+function getTitleForLog(log: LogMessage, userName: string) {
+  const workflowId = taskRuns.value.find(
+    (taskRun) => taskRun.id === log.taskRunId,
+  )?.workflowId
+
+  const workflow = workflowId ? availableWorkflows.byId(workflowId) : undefined
+  return workflow?.name ?? logToUser(log, userName)
 }
 </script>
 

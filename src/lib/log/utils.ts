@@ -30,10 +30,10 @@ export function filterLog(
   )
 }
 
-export function logToColor(log: LogMessage, userName: string) {
+export function logToColor(log: LogMessage) {
   switch (log.level) {
     case 'INFO':
-      return isLogMessageByCurrentUser(log, userName) ? 'info' : 'surface'
+      return 'info'
     case 'WARN':
       return 'warning'
     case 'ERROR':
@@ -51,13 +51,28 @@ export function logToUserIcon(log: LogMessage) {
 }
 
 export function logToIcon(log: LogMessage) {
-  switch (log.level) {
+  return levelToIcon(log.level)
+}
+
+export function levelToIcon(level: LogLevel) {
+  switch (level) {
     case 'INFO':
-      return '$info'
+      return 'mdi-information'
     case 'WARN':
-      return '$warning'
+      return 'mdi-alert'
     case 'ERROR':
-      return '$error'
+      return 'mdi-alert-circle'
+  }
+}
+
+export function levelToColor(level: LogLevel) {
+  switch (level) {
+    case 'INFO':
+      return 'info'
+    case 'WARN':
+      return 'warning'
+    case 'ERROR':
+      return 'error'
   }
 }
 

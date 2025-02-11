@@ -35,6 +35,7 @@ export function useLogDisplayLogs(
           response.logs?.map((log) => ({
             ...log,
             type: filter.logType ?? 'system',
+            taskRunId: cleanTaskRunId(log.taskRunId),
           })) ?? []
 
         return logs
@@ -63,4 +64,10 @@ export function useLogDisplayLogs(
     isLoading,
     error,
   }
+}
+
+
+// FIXME: Always has a space followed by -1 for some reason
+function cleanTaskRunId(taskRunId: string): string {
+  return taskRunId.split(' ')[0]
 }
