@@ -221,7 +221,7 @@ onMounted(() => {
 const { width: containerWidth } = useElementSize(containerRef)
 
 const containerIsMobileSize = computed(() => {
-  return containerWidth.value < thresholds.value.lg
+  return containerWidth.value < thresholds.value.md
 })
 
 const hideMap = computed(() => {
