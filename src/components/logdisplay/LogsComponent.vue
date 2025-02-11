@@ -14,12 +14,12 @@
       <v-select
         v-model="selectedLogTypes"
         :items="logTypes"
-        label="Filter by Log Type"
+        label="Log Type"
         variant="outlined"
         clearable
         hide-details
         multiple
-        max-width="200px"
+        max-width="150px"
         density="compact"
         :item-title="toTitleCase"
         :item-value="(item) => item"
@@ -27,15 +27,37 @@
       <v-select
         v-model="selectedLevels"
         :items="logLevels"
-        label="Filter by Level"
+        label="Level"
         variant="outlined"
         clearable
         hide-details
         multiple
-        max-width="200px"
+        max-width="150px"
         density="compact"
         :item-title="toTitleCase"
         :item-value="(item) => item"
+      />
+      <div class="date-input-container ms-2">
+        <v-date-input
+          v-model="endDate"
+          label="Date"
+          variant="outlined"
+          hide-details
+          density="compact"
+          prepend-icon=""
+        />
+      </div>
+      <v-text-field
+        v-model.number="daysBack"
+        label="Days back"
+        variant="outlined"
+        hide-details
+        density="compact"
+        validate-on="input"
+        max-width="80px"
+        class="me-2"
+        :max="365"
+        :min="1"
       />
       <v-text-field
         v-model.number="maxCount"
@@ -73,7 +95,7 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
-      <span>Total: {{ filteredLogMessages.length }}</span>
+      <span>Total: {{ logMessages.length }}</span>
     </div>
 
     <v-progress-linear
@@ -113,7 +135,6 @@
               <template #actions> </template>
             </v-expansion-panel-title>
             <v-expansion-panel-text>
-
               <!-- Important to have item-height as it greatly improves performance -->
               <v-virtual-scroll
                 :class="{ 'half-height': logs.length > 20 }"
@@ -121,14 +142,14 @@
                 :item-height="100"
               >
                 <template #default="{ item: log }">
-                <LogItem
-                  :log="log"
-                  :userName="userName"
-                  :disseminations="disseminations"
-                  @disseminate-log="disseminateLog"
-                  class="mb-2"
-                />
-              </template>
+                  <LogItem
+                    :log="log"
+                    :userName="userName"
+                    :disseminations="disseminations"
+                    @disseminate-log="disseminateLog"
+                    class="mb-2"
+                  />
+                </template>
               </v-virtual-scroll>
             </v-expansion-panel-text>
           </v-expansion-panel>
@@ -149,6 +170,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { VDateInput } from 'vuetify/labs/components'
 import LogItem from '@/components/logdisplay/LogItem.vue'
 import {
   type LogType,
@@ -170,6 +192,7 @@ import { useLogDisplayLogs } from '@/services/useLogDisplayLogs'
 import { configManager } from '@/services/application-config'
 import { debouncedRef } from '@vueuse/core'
 import { useCurrentUser } from '@/services/useCurrentUser'
+import { convertJSDateToFewsPiParameter } from '@/lib/date'
 
 interface Props {
   logDisplay: LogsDisplay
@@ -182,16 +205,27 @@ const newLogLevel = ref<LogLevel>('INFO')
 const newLogMessage = ref('')
 
 const search = ref<string>()
-const maxCount = ref<number>(250)
+const maxCount = ref<number>(1000)
 const selectedLevels = ref<LogLevel[]>([])
 const selectedLogTypes = ref<LogType[]>([])
+
+const daysBack = ref<number>(7)
+const DAY_IN_MS = 1000 * 60 * 60 * 24
+const startDate = computed(
+  () => new Date(endDate.value.getTime() - daysBack.value * DAY_IN_MS),
+)
+const endDate = ref<Date>(new Date())
 
 const { userName } = useCurrentUser()
 
 const filters = computed(() => {
+  const startTime = convertJSDateToFewsPiParameter(startDate.value)
+  const endTime = convertJSDateToFewsPiParameter(endDate.value)
   const baseFilter: LogDisplayLogsFilter = {
     logDisplayId: props.logDisplay.id,
     maxCount: maxCount.value,
+    startTime,
+    endTime,
   }
 
   const manualLogSettings = props.logDisplay.manualLog
@@ -317,5 +351,9 @@ function saveNewMessage() {
 
 .half-height {
   max-height: 50vh;
+}
+
+.date-input-container {
+  width: 120px;
 }
 </style>
