@@ -9,9 +9,9 @@
           ? 'current-user-message'
           : 'other-message'
       "
-      :color="logToColor(log, userName)"
       border
       flat
+      density="compact"
     >
       <template #prepend>
         <v-icon size="small" :icon="logToUserIcon(log)" />
@@ -63,7 +63,12 @@
         </div>
       </v-card-text>
       <template #append>
-        <v-icon v-if="logToIcon(log)" size="small" :icon="logToIcon(log)" />
+        <v-icon
+          v-if="logToIcon(log)"
+          size="small"
+          :icon="logToIcon(log)"
+          :color="logToColor(log, userName)"
+        />
       </template>
     </v-card>
   </div>
