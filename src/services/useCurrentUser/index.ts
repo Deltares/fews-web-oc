@@ -5,9 +5,7 @@ import type { User } from 'oidc-client-ts'
 export function useCurrentUser() {
   const user = ref<User | null>(null)
 
-  const userName = computed(
-    () => user.value?.profile?.name ?? 'Current User',
-  )
+  const userName = computed(() => user.value?.profile?.name ?? 'Current User')
 
   const fetchCurrentUser = async () => {
     try {

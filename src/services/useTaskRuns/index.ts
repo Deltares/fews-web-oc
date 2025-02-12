@@ -40,7 +40,7 @@ export function useTaskRuns(
       const filter: TaskRunsFilter = {
         // @ts-expect-error
         taskRunIds: _taskRunIds,
-        documentFormat: DocumentFormat.PI_JSON
+        documentFormat: DocumentFormat.PI_JSON,
       }
       const response = await provider.getTaskRuns(filter)
       if (!response) throw new Error('TaskRuns response is undefined')
