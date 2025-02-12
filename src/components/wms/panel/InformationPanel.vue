@@ -70,7 +70,7 @@ import { computed, nextTick } from 'vue'
 import { LayerKind } from '@/lib/streamlines'
 import ControlChip from '@/components/wms/ControlChip.vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { toHumanReadableDate } from '@/lib/date'
+import { toDateRangeString, toHumanReadableDate } from '@/lib/date'
 
 interface Props {
   layerTitle?: string
@@ -112,10 +112,7 @@ const analysisTime = computed(() => {
 })
 
 const formattedTimeRange = computed(() => {
-  if (!props.firstValueTime || !props.lastValueTime) return ''
-  const firstValue = toHumanReadableDate(props.firstValueTime)
-  const lastValue = toHumanReadableDate(props.lastValueTime)
-  return `${firstValue} → ${lastValue}`
+  return toDateRangeString(props.firstValueTime, props.lastValueTime)
 })
 
 function toggleLayerType(): void {

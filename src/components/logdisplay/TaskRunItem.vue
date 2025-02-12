@@ -3,6 +3,7 @@
     <v-card border flat density="compact">
       <v-card-text class="py-2">
         <div class="d-flex gap-2 align-center">
+          <v-icon class="me-2" :icon="getIconForStatus(taskRun?.status)" size="20" />
           <div class="text-body-1">{{ title }}</div>
           <v-card-subtitle class="ps-2">{{
             toHumanReadableDate(taskRun?.time0)
@@ -21,27 +22,7 @@
           </template>
         </div>
         <template v-if="expanded">
-          <div class="d-flex gap-2">
-            <v-icon :icon="getIconForStatus(taskRun?.status)" size="20" />
-            <div>{{ taskRun?.current }}</div>
-          </div>
           <div class="table-container">
-            <table class="log-table">
-              <thead>
-                <tr>
-                  <th>Time zero</th>
-                  <th>Output start time</th>
-                  <th>Output end time</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{{ toHumanReadableDate(taskRun?.time0) }}</td>
-                  <td>{{ toHumanReadableDate(taskRun?.outputStartTime) }}</td>
-                  <td>{{ toHumanReadableDate(taskRun?.outputEndTime) }}</td>
-                </tr>
-              </tbody>
-            </table>
             <table class="log-table">
               <thead>
                 <tr>
@@ -61,14 +42,40 @@
             <table class="log-table">
               <thead>
                 <tr>
-                  <th>Dispatch time</th>
-                  <th>Completion time</th>
+                  <th>Time zero</th>
+                  <th>Output time span</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>{{ toHumanReadableDate(taskRun?.dispatchTime) }}</td>
-                  <td>{{ toHumanReadableDate(taskRun?.completionTime) }}</td>
+                  <td>{{ toHumanReadableDate(taskRun?.time0) }}</td>
+                  <td>
+                    {{
+                      toDateSpanString(
+                        taskRun?.outputStartTime,
+                        taskRun?.outputEndTime,
+                      )
+                    }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table class="log-table">
+              <thead>
+                <tr>
+                  <th>Task duration</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    {{
+                      toDateSpanString(
+                        taskRun?.dispatchTime,
+                        taskRun?.completionTime,
+                      )
+                    }}
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -88,7 +95,7 @@ import {
   levelToColor,
 } from '@/lib/log'
 import { computed } from 'vue'
-import { toHumanReadableDate } from '@/lib/date'
+import { toDateSpanString, toHumanReadableDate } from '@/lib/date'
 
 interface Props {
   title?: string
@@ -141,9 +148,10 @@ function getIconForStatus(status: string | undefined) {
 .log-table th,
 .log-table td {
   text-align: left;
+  padding-right: 10px;
 }
 
 .log-table td {
-  padding: 0 10px 5px 0;
+  padding-bottom: 5px;
 }
 </style>
