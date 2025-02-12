@@ -112,15 +112,22 @@
       :item-height="100"
     >
       <template #default="{ item: logs }">
-        <v-expansion-panels v-if="logs.length > 1" flat focusable>
+        <v-expansion-panels
+          v-if="
+            logs[0].type === 'system'
+          "
+          class="task-run-container"
+          flat
+          focusable
+        >
           <v-expansion-panel>
             <v-expansion-panel-title class="pa-0">
               <template #default="{ expanded }">
                 <TaskRunItem
                   :title="getTitleForLog(logs[0], userName)"
-                  :taskRun="taskRuns.find(
-                    (taskRun) => taskRun.id === logs[0].taskRunId,
-                  )"
+                  :taskRun="
+                    taskRuns.find((taskRun) => taskRun.id === logs[0].taskRunId)
+                  "
                   :logs="logs"
                   :expanded="expanded"
                 />
@@ -130,9 +137,9 @@
             <v-expansion-panel-text>
               <LogExpansion
                 :logs="logs"
-                :taskRun="taskRuns.find(
-                  (taskRun) => taskRun.id === logs[0].taskRunId,
-                )"
+                :taskRun="
+                  taskRuns.find((taskRun) => taskRun.id === logs[0].taskRunId)
+                "
                 :disseminations="disseminations"
                 @disseminate-log="disseminateLog"
               />
@@ -140,14 +147,14 @@
           </v-expansion-panel>
         </v-expansion-panels>
 
-        <div v-else class="w-66 mb-4">
-          <LogItem
-            :log="logs[0]"
-            :userName="userName"
-            :disseminations="disseminations"
-            @disseminate-log="disseminateLog"
-          />
-        </div>
+        <LogItem
+          v-else
+          class="py-1"
+          :log="logs[0]"
+          :userName="userName"
+          :disseminations="disseminations"
+          @disseminate-log="disseminateLog"
+        />
       </template>
     </v-virtual-scroll>
   </div>
@@ -258,7 +265,11 @@ const groupedByTaskRunId = computed(() => {
   return Object.values(
     filteredLogMessages.value.reduce(
       (grouped, log) => {
-        const taskRunId = log.taskRunId
+        // In case of manual don't group
+        const taskRunId =
+          log.type === 'system'
+            ? log.taskRunId
+            : `${log.taskRunId}-${log.id}-${log.user}`
         if (!grouped[taskRunId]) {
           grouped[taskRunId] = []
         }
@@ -362,5 +373,9 @@ function getTitleForLog(log: LogMessage, userName: string) {
 
 .date-input-container {
   width: 120px;
+}
+
+.task-run-container {
+  max-width: 1000px;
 }
 </style>
