@@ -1,10 +1,10 @@
-export interface SchematicStatusDisplaySettings {
-  dateTimeSliderEnabled: boolean
-  zoomingEnabled: boolean
-}
+import type { DeepRequired } from '@/lib/utils/types'
+import type { SSDSettings } from '@deltares/fews-pi-requests'
 
-export const defaultSchematicStatusDisplaySettings: SchematicStatusDisplaySettings =
+export const defaultSchematicStatusDisplaySettings: DeepRequired<SSDSettings> =
   {
-    dateTimeSliderEnabled: true,
-    zoomingEnabled: false,
+    zoomEnabled: true,
+    singleClickAction: true,
+    doubleClickAction: true,
+    useBrowserStyle: false,
   }

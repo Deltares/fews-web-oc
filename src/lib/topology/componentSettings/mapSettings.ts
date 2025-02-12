@@ -1,14 +1,18 @@
-import { type ChartSettings, defaultChartSettings } from './chartSettings'
+import type { DeepRequired } from '@/lib/utils/types'
+import type { MapSettings } from '@deltares/fews-pi-requests'
 
-export interface MapSettings extends ChartSettings {
-  chartPanelEnabled: boolean
-  locationSearchEnabled: boolean
-  dateTimeSliderEnabled: boolean
-}
-
-export const defaultMapSettings: MapSettings = {
-  ...defaultChartSettings,
-  chartPanelEnabled: true,
-  locationSearchEnabled: true,
-  dateTimeSliderEnabled: true,
+export const defaultMapSettings: DeepRequired<MapSettings> = {
+  wmsLayer: {
+    show: true,
+    autoPlay: false,
+    animateVectors: true,
+    doubleClickAction: true,
+  },
+  locationsLayer: {
+    show: true,
+    locationNames: true,
+    singleClickAction: true,
+    locationSearchEnabled: true,
+  },
+  overlays: [],
 }
