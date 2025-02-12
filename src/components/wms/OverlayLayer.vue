@@ -19,14 +19,14 @@ import {
   MglFillLayer,
   MglLineLayer,
 } from '@indoorequal/vue-maplibre-gl'
-import type { OverlayLocation } from '@/lib/topology/componentSettings'
 import { fetchLocationSetAsGeoJson } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 import { asyncComputed } from '@vueuse/core'
 import { getLayerId, getSourceId } from '@/lib/map'
+import { Overlay } from '@deltares/fews-pi-requests'
 
 interface Props {
-  overlay: OverlayLocation
+  overlay: Overlay
 }
 
 const props = defineProps<Props>()
@@ -37,6 +37,6 @@ const layerId = getLayerId(`overlay-${props.overlay.id}`)
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const geojson = asyncComputed(
   async () =>
-    await fetchLocationSetAsGeoJson(baseUrl, props.overlay.locationSet),
+    await fetchLocationSetAsGeoJson(baseUrl, props.overlay.locationSetId),
 )
 </script>
