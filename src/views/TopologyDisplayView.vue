@@ -64,7 +64,11 @@
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
       <keep-alive include="SpatialDisplay">
-        <component :is="Component" :topologyNode="topologyNode" />
+        <component
+          :is="Component"
+          :topologyNode="topologyNode"
+          :settings="componentSettings"
+        />
       </keep-alive>
     </router-view>
     <div
@@ -111,6 +115,7 @@ import {
   type DisplayTab,
 } from '@/lib/topology/displayTabs.js'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
+import { useComponentSettings } from '@/services/useComponentSettings'
 
 interface Props {
   topologyId?: string
@@ -216,6 +221,12 @@ const topologyComponentConfig = computed(() => {
     : configStore.getComponentByType('TopologyDisplay')
   return component as WebOcTopologyDisplayConfig | undefined
 })
+
+const { componentSettings } = useComponentSettings(
+  baseUrl,
+  // @ts-expect-error FIXME: Update when the types are updated
+  () => topologyComponentConfig.value.componentSettingsId,
+)
 
 const topologyDisplayNodes = computed<string[] | undefined>(() => {
   // FIXME: Update when the types are updated
