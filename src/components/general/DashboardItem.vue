@@ -1,5 +1,6 @@
 <template>
   <component
+    v-if="componentItem"
     class="overflow-auto flex-1-1"
     :is="componentItem.component"
     v-bind="componentItem.componentProps"
@@ -18,10 +19,13 @@ import {
   componentTypeToComponentMap,
   getComponentPropsForNode,
 } from '@/lib/topology/dashboard'
-import { useComponentSettingsStore } from '@/stores/componentSettings'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
-import { getSettings } from '@/lib/topology/componentSettings'
-import { computed } from 'vue'
+import {
+  getSettings,
+  fetchComponentSettings,
+} from '@/lib/topology/componentSettings'
+import { configManager } from '@/services/application-config'
+import { asyncComputed } from '@vueuse/core'
 
 interface Props {
   item: WebOCDashboardItem
@@ -30,21 +34,21 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const topologyNodesStore = useTopologyNodesStore()
-const componentSettingsStore = useComponentSettingsStore()
 
-const componentItem = computed(() => {
-  return convertItemToComponentItem(props.item)
-})
+const componentItem = asyncComputed(
+  async () => await convertItemToComponentItem(props.item),
+)
 
-function convertItemToComponentItem(item: WebOCDashboardItem) {
+async function convertItemToComponentItem(item: WebOCDashboardItem) {
   const componentName = item.component
   const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
   const component = componentTypeToComponentMap[componentName]
   const componentProps = getComponentPropsForNode(componentName, topologyNode)
   const title = topologyNode?.name ?? componentTypeToTitleMap[componentName]
   const icon = topologyNode?.iconId ?? componentTypeToIconMap[componentName]
-  const settings = getComponentSettingsForItem(item)
+  const settings = await getComponentSettingsForItem(item)
   return {
     title,
     icon,
@@ -56,20 +60,10 @@ function convertItemToComponentItem(item: WebOCDashboardItem) {
   }
 }
 
-function getComponentSettingsForItem(item: WebOCDashboardItem) {
+async function getComponentSettingsForItem(item: WebOCDashboardItem) {
   const settings = item.componentSettingsId
-    ? componentSettingsStore.getSettingsById(item.componentSettingsId)
+    ? await fetchComponentSettings(baseUrl, item.componentSettingsId)
     : undefined
-  const componentSettings = getSettings(settings, item.component)
-
-  // If dashboard has a shared date time slider,
-  // disable the date time slider for child component
-  if (props.sliderEnabled) {
-    if ('dateTimeSliderEnabled' in componentSettings) {
-      componentSettings['dateTimeSliderEnabled'] = false
-    }
-  }
-
-  return componentSettings
+  return getSettings(settings)
 }
 </script>

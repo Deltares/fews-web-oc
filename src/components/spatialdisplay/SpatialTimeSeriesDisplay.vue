@@ -6,7 +6,7 @@
         :elevationChartDisplayconfig="elevationChartDisplayconfig"
         :currentTime="currentTime"
         :filter="filter"
-        :settings="settings"
+        :settings="settings.charts"
         :informationContent="tooltip"
       >
         <template #toolbar-append>
@@ -31,13 +31,13 @@ import { computed } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
 import { isFilterActionsFilter } from '@/lib/filters'
-import type { ChartsSettings } from '@/lib/topology/componentSettings'
+import type { ComponentSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   filter: filterActionsFilter | timeSeriesGridActionsFilter
   elevationChartFilter?: timeSeriesGridActionsFilter
   currentTime?: Date
-  settings: ChartsSettings
+  settings: ComponentSettings
 }
 
 const systemTimeStore = useSystemTimeStore()

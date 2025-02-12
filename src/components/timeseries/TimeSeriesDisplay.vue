@@ -1,7 +1,7 @@
 <template>
   <TimeSeriesWindowComponent
     :displayConfig="displayConfig"
-    :settings="settings"
+    :settings="settings.charts"
   >
     <template #toolbar-title>
       <v-menu offset-y z-index="10000">
@@ -35,18 +35,18 @@ import {
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import {
+  type ComponentSettings,
   getDefaultSettings,
-  type ChartsSettings,
 } from '@/lib/topology/componentSettings'
 
 interface Props {
   nodeId?: string | string[]
-  settings?: ChartsSettings
+  settings?: ComponentSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
   nodeId: '',
-  settings: () => getDefaultSettings('charts'),
+  settings: () => getDefaultSettings(),
 })
 
 const userSettings = useUserSettingsStore()
