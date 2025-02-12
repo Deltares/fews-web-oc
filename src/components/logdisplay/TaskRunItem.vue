@@ -4,8 +4,8 @@
       <v-card-text class="py-2">
         <div class="d-flex gap-2 align-center">
           <v-icon class="me-2" :icon="getIconForStatus(taskRun?.status)" size="20" />
-          <div class="text-body-1">{{ title }}</div>
-          <v-card-subtitle class="ps-2">{{
+          <v-list-item-title>{{ title }}</v-list-item-title>
+          <v-card-subtitle class="ps-2">T0: {{
             toHumanReadableDate(taskRun?.time0)
           }}</v-card-subtitle>
           <v-spacer />
