@@ -1,15 +1,17 @@
 import type { FillPaintProps, LinePaintProps } from 'maplibre-gl'
-import type { ComponentType } from '../component'
-import { type ChartSettings, defaultChartSettings } from './chartSettings'
-import { type MapSettings, defaultMapSettings } from './mapSettings'
+import type { ComponentType } from '@/lib/topology/component'
 import {
-  type SchematicStatusDisplaySettings,
+  defaultChartSettings,
+  defaultMapSettings,
   defaultSchematicStatusDisplaySettings,
-} from './schematicStatusDisplaySettings'
-import {
-  type DashboardSettings,
-  defaultDashboardSettings,
-} from './dashboardSettings'
+  defaultReportSettings,
+} from '.'
+import type {
+  MapSettings,
+  ChartsSettings,
+  ReportSettings,
+  SSDSettings,
+} from '@deltares/fews-pi-requests'
 
 type PaintMapping = {
   fill: FillPaintProps
@@ -23,13 +25,13 @@ export interface ComponentSettingsResponse {
 
 export interface ComponentSettingsMapping {
   map: MapSettings
-  charts: ChartSettings
+  charts: ChartsSettings
   'data-download-display': undefined
-  report: undefined
-  'schematic-status-display': SchematicStatusDisplaySettings
+  report: ReportSettings
+  'schematic-status-display': SSDSettings
   'system-monitor': undefined
   'html-display': undefined
-  dashboard: DashboardSettings
+  dashboard: undefined
   'whatif-display': undefined
   'log-display': undefined
 }
@@ -70,11 +72,11 @@ export const componentTypeToDefaultSettingsMap: ComponentSettingsMapping = {
   map: defaultMapSettings,
   charts: defaultChartSettings,
   'data-download-display': undefined,
-  report: undefined,
+  report: defaultReportSettings,
   'schematic-status-display': defaultSchematicStatusDisplaySettings,
   'system-monitor': undefined,
   'html-display': undefined,
-  dashboard: defaultDashboardSettings,
+  dashboard: undefined,
   'whatif-display': undefined,
   'log-display': undefined,
 } as const
