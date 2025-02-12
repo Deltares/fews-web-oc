@@ -7,6 +7,8 @@
         :loading="isLoadingTemplates"
         item-title="name"
         label="Select what-if scenario template"
+        variant="outlined"
+        density="compact"
         hide-details
         return-object
         class="flex-0-0"
@@ -18,6 +20,8 @@
         :loading="isLoadingScenarios"
         item-title="name"
         label="Select what-if scenario"
+        variant="outlined"
+        density="compact"
         hide-details
         return-object
         class="flex-0-0"
@@ -41,13 +45,13 @@
           </v-card-text>
         </v-card>
 
-          <div>
-            <DateTimeField
-              v-model="timeZero"
-              date-label="T0 date"
-              time-label="T0 time"
-            />
-          </div>
+        <div>
+          <DateTimeField
+            v-model="timeZero"
+            date-label="T0 date"
+            time-label="T0 time"
+          />
+        </div>
 
         <div>
           <v-textarea
