@@ -84,7 +84,7 @@ export function logToRoute(log: LogMessage) {
 }
 
 export function logToUser(log: LogMessage, userName: string) {
-  if (log.type === 'system') return 'System'
+  if (log.type === 'system') return log.code
   return isLogMessageByCurrentUser(log, userName) ? 'You' : log.user
 }
 

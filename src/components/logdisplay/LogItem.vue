@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="log-item"
-  >
+  <div class="log-item">
     <v-card
       :class="
         isLogMessageByCurrentUser(log, userName)
@@ -18,7 +16,7 @@
             {{ logToUser(log, userName) }}
           </v-list-item-title>
           <v-card-subtitle class="align-self-end">{{
-            log.entryTime
+            toHumanReadableDate(log.entryTime)
           }}</v-card-subtitle>
           <v-tooltip location="top">
             <template #activator="{ props }">
@@ -71,6 +69,7 @@
 </template>
 
 <script setup lang="ts">
+import { toHumanReadableDate } from '@/lib/date'
 import {
   isLogMessageByCurrentUser,
   logToIcon,
