@@ -1,9 +1,6 @@
 import type { WebOCDashboardItem } from '@deltares/fews-pi-requests'
 
-export type ComponentType =
-  | WebOCDashboardItem['component']
-  | 'tasks'
-  | 'dashboard'
+export type ComponentType = WebOCDashboardItem['component'] | 'dashboard'
 
 export const ComponentType = {
   map: 'map',
@@ -14,7 +11,7 @@ export const ComponentType = {
   'system-monitor': 'system-monitor',
   'html-display': 'html-display',
   dashboard: 'dashboard',
-  tasks: 'tasks',
+  'whatif-display': 'whatif-display',
   'log-display': 'log-display',
 } satisfies Record<ComponentType, ComponentType>
 
@@ -27,7 +24,7 @@ export const componentTypeToIconMap = {
   'system-monitor': 'mdi-monitor',
   'html-display': 'mdi-web',
   dashboard: 'mdi-view-dashboard',
-  tasks: 'mdi-cog',
+  'whatif-display': 'mdi-cog',
   'log-display': 'mdi-file-document',
 } satisfies Record<ComponentType, string>
 
@@ -40,7 +37,7 @@ export const componentTypeToTitleMap = {
   'system-monitor': 'System Monitor',
   'html-display': 'Web Display',
   dashboard: 'Dashboard',
-  tasks: 'Tasks',
+  'whatif-display': 'What-if Display',
   'log-display': 'Log',
 } satisfies Record<ComponentType, string>
 
@@ -53,7 +50,7 @@ export const componentTypeToRouteNameMap = {
   'system-monitor': 'TopologySystemMonitor',
   'html-display': 'TopologyWebDisplay',
   dashboard: 'TopologyDashboard',
-  tasks: 'TopologyTasks',
+  'whatif-display': 'WhatIfDisplay',
   'log-display': 'TopologyLogDisplay',
 } satisfies Record<ComponentType, string>
 
@@ -66,6 +63,6 @@ export const componentTypeToIdMap = {
   'system-monitor': 'systemmonitor',
   'html-display': 'webdisplay',
   dashboard: 'dashboard',
-  tasks: crypto.randomUUID(),
+  'whatif-display': 'whatif',
   'log-display': 'log',
 } satisfies Record<ComponentType, string>
