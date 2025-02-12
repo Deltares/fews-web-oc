@@ -1,7 +1,9 @@
 import type { DeepRequired } from '@/lib/utils/types'
-import type { ChartsSettings } from '@deltares/fews-pi-requests'
+import type { ChartsSettings as PiChartsSettings } from '@deltares/fews-pi-requests'
 
-export const defaultChartSettings: DeepRequired<ChartsSettings> = {
+export type ChartsSettings = DeepRequired<PiChartsSettings>
+
+export const defaultChartSettings: ChartsSettings = {
   general: {
     startPanel: 'timeseriesChart',
     hideToolBar: 'false',

@@ -1,10 +1,14 @@
 import type { DeepRequired } from '@/lib/utils/types'
-import type { SSDSettings } from '@deltares/fews-pi-requests'
+import type { SSDSettings as PiSSDSettings } from '@deltares/fews-pi-requests'
 
-export const defaultSchematicStatusDisplaySettings: DeepRequired<SSDSettings> =
-  {
-    zoomEnabled: true,
-    singleClickAction: true,
-    doubleClickAction: true,
-    useBrowserStyle: false,
-  }
+export type SSDSettings = DeepRequired<PiSSDSettings> & {
+  dateTimeSliderEnabled: boolean
+}
+
+export const defaultSchematicStatusDisplaySettings: SSDSettings = {
+  zoomEnabled: true,
+  singleClickAction: true,
+  doubleClickAction: true,
+  useBrowserStyle: false,
+  dateTimeSliderEnabled: true,
+}

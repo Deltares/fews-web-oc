@@ -5,13 +5,11 @@ import {
   defaultMapSettings,
   defaultSchematicStatusDisplaySettings,
   defaultReportSettings,
+  type MapSettings,
+  type ChartsSettings,
+  type ReportSettings,
+  type SSDSettings,
 } from '.'
-import type {
-  MapSettings,
-  ChartsSettings,
-  ReportSettings,
-  SSDSettings,
-} from '@deltares/fews-pi-requests'
 
 type PaintMapping = {
   fill: FillPaintProps
