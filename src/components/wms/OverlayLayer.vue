@@ -35,8 +35,9 @@ const sourceId = getSourceId(`overlay-${props.overlay.id}`)
 const layerId = getLayerId(`overlay-${props.overlay.id}`)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const geojson = asyncComputed(
-  async () =>
-    await fetchLocationSetAsGeoJson(baseUrl, props.overlay.locationSetId),
+const geojson = asyncComputed(async () =>
+  props.overlay.locationSetId
+    ? await fetchLocationSetAsGeoJson(baseUrl, props.overlay.locationSetId)
+    : undefined,
 )
 </script>

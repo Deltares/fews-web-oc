@@ -130,9 +130,9 @@ function toDisplayType(
   switch (value) {
     case 'metaDataPanel':
       return DisplayType.Information
-    case 'timeseriesChart':
+    case 'timeSeriesChart':
       return DisplayType.TimeSeriesChart
-    case 'timeseriesTable':
+    case 'timeSeriesTable':
       return DisplayType.TimeSeriesTable
     case 'verticalProfileChart':
       return DisplayType.ElevationChart
