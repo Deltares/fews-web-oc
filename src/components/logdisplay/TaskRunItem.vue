@@ -1,13 +1,18 @@
 <template>
-  <div class="w-100">
+  <div class="w-100 h-100">
     <v-card border flat density="compact">
-      <v-card-text class="py-2">
+      <v-card-text class="py-2 h-100">
         <div class="d-flex gap-2 align-center">
-          <v-icon class="me-2" :icon="getIconForStatus(taskRun?.status)" size="20" />
+          <v-icon
+            v-if="taskRun"
+            class="me-2"
+            :icon="getIconForStatus(taskRun.status)"
+            size="20"
+          />
           <v-list-item-title>{{ title }}</v-list-item-title>
-          <v-card-subtitle class="ps-2">T0: {{
-            toHumanReadableDate(taskRun?.time0)
-          }}</v-card-subtitle>
+          <v-card-subtitle v-if="taskRun" class="ps-2"
+            >T0: {{ toHumanReadableDate(taskRun.time0) }}</v-card-subtitle
+          >
           <v-spacer />
           <template v-for="level in logLevels.toReversed()">
             <v-chip
@@ -21,7 +26,7 @@
             />
           </template>
         </div>
-        <template v-if="expanded">
+        <template v-if="expanded && taskRun">
           <div class="table-container">
             <table class="log-table">
               <thead>
@@ -33,9 +38,9 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>{{ taskRun?.user ?? 'No user' }}</td>
-                  <td>{{ taskRun?.id }}</td>
-                  <td>{{ taskRun?.fssId }}</td>
+                  <td>{{ taskRun.user ?? 'No user' }}</td>
+                  <td>{{ taskRun.id }}</td>
+                  <td>{{ taskRun.fssId }}</td>
                 </tr>
               </tbody>
             </table>
@@ -48,12 +53,12 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>{{ toHumanReadableDate(taskRun?.time0) }}</td>
+                  <td>{{ toHumanReadableDate(taskRun.time0) }}</td>
                   <td>
                     {{
                       toDateSpanString(
-                        taskRun?.outputStartTime,
-                        taskRun?.outputEndTime,
+                        taskRun.outputStartTime,
+                        taskRun.outputEndTime,
                       )
                     }}
                   </td>
@@ -71,8 +76,8 @@
                   <td>
                     {{
                       toDateSpanString(
-                        taskRun?.dispatchTime,
-                        taskRun?.completionTime,
+                        taskRun.dispatchTime,
+                        taskRun.completionTime,
                       )
                     }}
                   </td>
