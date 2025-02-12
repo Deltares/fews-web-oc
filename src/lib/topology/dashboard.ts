@@ -31,7 +31,7 @@ export const componentTypeToComponentMap = {
   report: ReportsDisplayView,
   'schematic-status-display': SchematicStatusDisplay,
   'system-monitor': SystemMonitorDisplayView,
-  tasks: Empty,
+  'whatif-display': Empty,
   'html-display': Empty,
   dashboard: Empty,
   'log-display': Empty,
