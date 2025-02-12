@@ -1,5 +1,5 @@
 <template>
-  <div class="display-container pa-2 ga-2">
+  <div v-if="hasLoadedCss" class="display-container pa-2 ga-2">
     <div class="dashboard-container flex-1-1 ga-2">
       <template v-for="group in groups">
         <template v-for="element in group.elements">
@@ -68,12 +68,16 @@ function setupDates() {
 }
 
 const groups = computed(() => props.dashboard.groups)
+const hasLoadedCss = ref(false)
 
 function loadCss(url: string) {
   if (!document.querySelector(`link[href="${url}"]`)) {
     const link = document.createElement('link')
     link.rel = 'stylesheet'
     link.href = url
+    link.onload = () => {
+      hasLoadedCss.value = true
+    }
     document.head.appendChild(link)
   }
 }
@@ -82,6 +86,7 @@ function removeCss(url: string) {
   const link = document.querySelector(`link[href="${url}"]`)
   if (link) {
     link.remove()
+    hasLoadedCss.value = false
   }
 }
 
