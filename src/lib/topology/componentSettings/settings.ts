@@ -56,10 +56,12 @@ export function getDefaultSettings(): ComponentSettings {
 
 export function getSettings(
   componentSettings: WebOCComponentSettings | undefined,
+  parentComponentSettings?: WebOCComponentSettings,
 ) {
   const defaultSettings = getDefaultSettings()
   return {
     ...defaultSettings,
+    ...parentComponentSettings,
     ...componentSettings,
   }
 }

@@ -14,6 +14,7 @@
               v-if="element.items"
               :item="element.items[0]"
               :slider-enabled="sliderEnabled"
+              :settings="settings"
             />
           </v-card>
         </template>
@@ -38,9 +39,11 @@ import DateTimeSlider from './DateTimeSlider.vue'
 import { useDisplay } from 'vuetify'
 import { createDateRegistry } from '@/services/useDateRegistry'
 import { provideSelectedDate } from '@/services/useSelectedDate'
+import type { ComponentSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   dashboard: WebOCDashboard
+  settings?: ComponentSettings
 }
 
 const props = defineProps<Props>()

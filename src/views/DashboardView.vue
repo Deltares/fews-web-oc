@@ -4,24 +4,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useComponentSettingsStore } from '@/stores/componentSettings'
+import { computed } from 'vue'
 import DashboardDisplay from '@/components/general/DashboardDisplay.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { useDashboard } from '@/services/useDashboard'
 import { configManager } from '@/services/application-config'
+import type { ComponentSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   topologyNode?: TopologyNode
+  settings?: ComponentSettings
 }
 
 const props = defineProps<Props>()
-
-const componentSettingsStore = useComponentSettingsStore()
-
-onMounted(async () => {
-  await componentSettingsStore.fetchState()
-})
 
 const dashboardId = computed(() => props.topologyNode?.dashboardPanels?.[0]?.id)
 
