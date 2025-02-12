@@ -1,12 +1,14 @@
 <template>
-  <div class="display-container pa-2 ga-2">
-    <div class="dashboard-container flex-1-1 ga-2">
+  <div class="display-container">
+    <div class="dashboard-container flex-1-1">
       <template v-for="group in groups">
         <template v-for="element in group.elements">
           <v-card
             :style="{ gridArea: element.gridTemplateArea }"
             class="d-flex flex-column"
             density="compact"
+            flat
+            :rounded="false"
           >
             <!-- TODO: For now we only support one item per element -->
             <!--       to prevent UI clutter. -->
@@ -22,6 +24,8 @@
     <v-card
       v-if="settings.dateTimeSliderEnabled"
       class="flex-0-0 overflow-visible"
+      flat
+      :rounded="false"
     >
       <DateTimeSlider
         v-model:selectedDate="selectedDate"
