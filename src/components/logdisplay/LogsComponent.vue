@@ -113,9 +113,7 @@
     >
       <template #default="{ item: logs }">
         <v-expansion-panels
-          v-if="
-            logs[0].type === 'system'
-          "
+          v-if="logs[0].type === 'system'"
           class="task-run-container"
           flat
           focusable
