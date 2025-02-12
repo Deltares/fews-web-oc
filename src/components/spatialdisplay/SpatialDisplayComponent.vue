@@ -323,7 +323,7 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
     event.features[0].properties?.locationId
   if (!locationId) return
 
-  if (event.originalEvent.ctrlKey) {
+  if (event.originalEvent.ctrlKey || event.originalEvent.metaKey) {
     const locationIds = props.locationIds ?? []
     const newLocationIds = [...new Set([...locationIds, locationId])]
     onLocationsChange(newLocationIds)
