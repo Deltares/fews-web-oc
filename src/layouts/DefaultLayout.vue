@@ -178,7 +178,6 @@ import { toCharacterIcon } from '@/lib/icons/index.ts'
 import {
   convertBaseMapToUserSetting,
   getBaseMapsFromConfig,
-  getBaseMapUserSettingsFromConfig,
 } from '@/lib/basemap/index.ts'
 import type { MapLayerConfig } from '@deltares/fews-pi-requests'
 import { useBaseMapsStore } from '@/stores/baseMaps.ts'
