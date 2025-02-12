@@ -183,7 +183,11 @@ const filter = computed(() => {
 })
 
 const showChartPanel = computed(() => {
-  return filter.value !== undefined && props.settings.chartPanelEnabled
+  return (
+    (currentLocationIds.value ||
+      (currentLongitude.value && currentLatitude.value)) &&
+    props.settings.chartPanelEnabled
+  )
 })
 
 const elevationChartFilter = computed(() => {
