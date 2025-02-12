@@ -5,7 +5,7 @@
     :is="componentItem.component"
     v-bind="componentItem.componentProps"
     :topologyNode="componentItem.topologyNode"
-    :settings="componentItem.settings"
+    :settings="componentSettings"
   />
 </template>
 
@@ -20,16 +20,15 @@ import {
   getComponentPropsForNode,
 } from '@/lib/topology/dashboard'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
-import {
-  getSettings,
-  fetchComponentSettings,
-} from '@/lib/topology/componentSettings'
 import { configManager } from '@/services/application-config'
 import { asyncComputed } from '@vueuse/core'
+import { useComponentSettings } from '@/services/useComponentSettings'
+import type { ComponentSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   item: WebOCDashboardItem
   sliderEnabled: boolean
+  settings?: ComponentSettings
 }
 
 const props = defineProps<Props>()
@@ -41,6 +40,12 @@ const componentItem = asyncComputed(
   async () => await convertItemToComponentItem(props.item),
 )
 
+const { componentSettings } = useComponentSettings(
+  baseUrl,
+  () => props.item.componentSettingsId,
+  () => props.settings,
+)
+
 async function convertItemToComponentItem(item: WebOCDashboardItem) {
   const componentName = item.component
   const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
@@ -48,7 +53,6 @@ async function convertItemToComponentItem(item: WebOCDashboardItem) {
   const componentProps = getComponentPropsForNode(componentName, topologyNode)
   const title = topologyNode?.name ?? componentTypeToTitleMap[componentName]
   const icon = topologyNode?.iconId ?? componentTypeToIconMap[componentName]
-  const settings = await getComponentSettingsForItem(item)
   return {
     title,
     icon,
@@ -56,14 +60,6 @@ async function convertItemToComponentItem(item: WebOCDashboardItem) {
     componentProps,
     componentName,
     topologyNode,
-    settings,
   }
-}
-
-async function getComponentSettingsForItem(item: WebOCDashboardItem) {
-  const settings = item.componentSettingsId
-    ? await fetchComponentSettings(baseUrl, item.componentSettingsId)
-    : undefined
-  return getSettings(settings)
 }
 </script>
