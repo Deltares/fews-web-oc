@@ -1,33 +1,25 @@
-export interface ChartSettings {
-  general: General
-  actions: Actions
-  timeseriesChart: TimeseriesChart
-  timeseriesTable: TimeseriesTable
-  verticalProfileChart: VerticalProfileChart
-  verticalProfileTable: VerticalProfileTable
-  metaDataPanel: MetaDataPanel
-}
+import type { DeepRequired } from '@/lib/utils/types'
+import type { ChartsSettings } from '@deltares/fews-pi-requests'
 
-export const defaultChartSettings: ChartSettings = {
+export const defaultChartSettings: DeepRequired<ChartsSettings> = {
   general: {
     startPanel: 'timeseriesChart',
-    hideToolbar: false,
+    hideToolBar: 'false',
     showLocationNames: true,
   },
   actions: {
     panelPlacement: {
       defaultPlacement: 'right',
-      allowedPlacement: 'all',
+      allowedPlacement: ['all'],
     },
     downloadData: true,
     downloadMetaData: true,
     downloadFigure: true,
   },
-  timeseriesChart: {
-    show: true,
+  timeSeriesChart: {
+    enabled: true,
     legend: {
-      show: true,
-      numberOfLines: 1,
+      numberOfLines: '1',
       placement: 'above chart',
     },
     xAxis: {
@@ -39,19 +31,17 @@ export const defaultChartSettings: ChartSettings = {
       show: true,
       yTicks: true,
       yLabel: true,
-      yLabelPlacement: 'top',
     },
   },
-  timeseriesTable: {
-    show: true,
-    allowDateTimeSorting: true,
-    sortDateTimeColumn: 'descending',
+  timeSeriesTable: {
+    enabled: true,
+    allowDepthSorting: true,
+    sortDepthColumn: 'descending',
   },
   verticalProfileChart: {
-    show: true,
+    enabled: true,
     legend: {
-      show: true,
-      numberOfLines: 1,
+      numberOfLines: '1',
       placement: 'above chart',
     },
     xAxis: {
@@ -63,94 +53,14 @@ export const defaultChartSettings: ChartSettings = {
       show: true,
       yTicks: true,
       yLabel: true,
-      yLabelPlacement: 'top',
     },
   },
   verticalProfileTable: {
-    show: true,
-    allowDepthColumnSorting: true,
+    enabled: true,
+    allowDepthSorting: true,
     sortDepthColumn: 'descending',
   },
   metaDataPanel: {
-    show: true,
+    enabled: true,
   },
-}
-
-interface General {
-  startPanel:
-    | 'metaDataPanel'
-    | 'timeseriesChart'
-    | 'timeseriesTable'
-    | 'verticalProfileChart'
-    | 'verticalProfileTable'
-  hideToolbar: boolean | 'auto'
-  showLocationNames: boolean
-}
-
-interface PanelPlacement {
-  defaultPlacement: 'right'
-  allowedPlacement: 'right' | 'all' | 'left' | 'bottom' | 'detached'
-}
-
-interface Actions {
-  panelPlacement: PanelPlacement
-  downloadData: boolean
-  downloadMetaData: boolean
-  downloadFigure: boolean
-}
-
-interface Legend {
-  show: boolean
-  numberOfLines: number | 'all'
-  placement:
-    | 'auto'
-    | 'above chart'
-    | 'under chart'
-    | 'inside upper right'
-    | 'inside lower right'
-    | 'inside upper left'
-    | 'inside lower left'
-}
-
-interface XAxis {
-  show: boolean
-  xTicks: boolean
-  xLabel: boolean
-}
-
-interface YAxis {
-  show: boolean
-  yTicks: boolean
-  yLabel: boolean
-  yLabelPlacement: 'auto' | 'top' | 'beside'
-}
-
-interface TimeseriesChart {
-  show: boolean
-  legend: Legend
-  xAxis: XAxis
-  yAxis: YAxis
-}
-
-interface TimeseriesTable {
-  show: boolean
-  allowDateTimeSorting: boolean
-  sortDateTimeColumn: 'descending' | 'ascending'
-}
-
-interface VerticalProfileChart {
-  show: boolean
-  legend: Legend
-  xAxis: XAxis
-  yAxis: YAxis
-}
-
-interface VerticalProfileTable {
-  show: boolean
-  allowDepthColumnSorting: boolean
-  sortDepthColumn: 'descending' | 'ascending'
-}
-
-interface MetaDataPanel {
-  show: boolean
 }
