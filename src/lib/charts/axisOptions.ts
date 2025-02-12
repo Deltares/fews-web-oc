@@ -1,11 +1,10 @@
 import {
   type CartesianAxesOptions,
-  LabelOrientation,
   AxisPosition,
   AxisType,
 } from '@deltares/fews-web-oc-charts'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
-import type { ChartSettings } from '@/lib/topology/componentSettings'
+import type { ChartsSettings } from '@/lib/topology/componentSettings'
 import { merge } from 'lodash-es'
 
 function getDefaultMargin() {
@@ -42,25 +41,6 @@ function getDefaultOptions(): CartesianAxesOptions {
       },
     ],
     margin: getDefaultMargin(),
-  }
-}
-
-function getYLabelVerticalOptions(): Partial<CartesianAxesOptions> {
-  return {
-    y: [
-      {
-        labelOrientation: LabelOrientation.Vertical,
-        labelOffset: 15,
-      },
-      {
-        labelOrientation: LabelOrientation.Vertical,
-        labelOffset: 15,
-      },
-    ],
-    margin: {
-      top: 20,
-      left: getDefaultMargin().left + 15,
-    },
   }
 }
 
@@ -105,8 +85,8 @@ function getNoXLabelOptions(): Partial<CartesianAxesOptions> {
 export function getAxisOptions(
   config: ChartConfig,
   settings:
-    | ChartSettings['timeseriesChart']
-    | ChartSettings['verticalProfileChart'],
+    | ChartsSettings['timeSeriesChart']
+    | ChartsSettings['verticalProfileChart'],
   verticalProfile: boolean,
 ): CartesianAxesOptions {
   const configOptions: Partial<CartesianAxesOptions> = {
@@ -115,11 +95,6 @@ export function getAxisOptions(
   }
 
   const extraOptions = [configOptions]
-
-  // TODO: What to do in case of 'auto'?
-  if (settings.yAxis.yLabelPlacement === 'beside') {
-    extraOptions.push(getYLabelVerticalOptions())
-  }
 
   if (verticalProfile) {
     extraOptions.push(getVerticalProfileOptions())

@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex flex-column h-100 w-100" :class="{ fullscreen }">
     <v-toolbar
-      v-if="!hideToolbar"
+      v-if="showToolBar"
       density="compact"
       variant="flat"
       class="toolbar"
@@ -18,17 +18,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 interface Props {
   title?: string
-  // TODO: What does 'auto' mean?
-  hideToolbar?: boolean | 'auto'
+  hideToolBar?: 'true' | 'false' | 'auto'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: '',
-  hideToolbar: false,
+  hideToolBar: 'false',
+})
+
+const showToolBar = computed(() => {
+  // TODO: Add auto support
+  return props.hideToolBar !== 'true'
 })
 
 const fullscreen = ref(false)

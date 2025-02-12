@@ -31,13 +31,13 @@ import { computed } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
 import { isFilterActionsFilter } from '@/lib/filters'
-import type { ChartSettings } from '@/lib/topology/componentSettings'
+import type { ChartsSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   filter: filterActionsFilter | timeSeriesGridActionsFilter
   elevationChartFilter?: timeSeriesGridActionsFilter
   currentTime?: Date
-  settings: ChartSettings
+  settings: ChartsSettings
 }
 
 const systemTimeStore = useSystemTimeStore()

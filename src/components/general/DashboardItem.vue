@@ -20,15 +20,12 @@ import {
 } from '@/lib/topology/dashboard'
 import { useComponentSettingsStore } from '@/stores/componentSettings'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
-import {
-  type DashboardSettings,
-  getSettings,
-} from '@/lib/topology/componentSettings'
+import { getSettings } from '@/lib/topology/componentSettings'
 import { computed } from 'vue'
 
 interface Props {
   item: WebOCDashboardItem
-  settings: DashboardSettings
+  sliderEnabled: boolean
 }
 
 const props = defineProps<Props>()
@@ -67,7 +64,7 @@ function getComponentSettingsForItem(item: WebOCDashboardItem) {
 
   // If dashboard has a shared date time slider,
   // disable the date time slider for child component
-  if (props.settings.dateTimeSliderEnabled) {
+  if (props.sliderEnabled) {
     if ('dateTimeSliderEnabled' in componentSettings) {
       componentSettings['dateTimeSliderEnabled'] = false
     }

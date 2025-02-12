@@ -4,7 +4,6 @@
     :class="{ 'vertical-profile': verticalProfile }"
   >
     <ChartLegend
-      v-if="settings.legend.show"
       :tags="legendTags"
       :margin="margin"
       :settings="settings.legend"
@@ -48,7 +47,7 @@ import {
 import { extent } from 'd3'
 import { difference, uniq } from 'lodash-es'
 import type { Tag } from '@/lib/charts/tags'
-import { type ChartSettings } from '@/lib/topology/componentSettings'
+import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
 
 interface Props {
@@ -58,7 +57,7 @@ interface Props {
   isLoading?: boolean
   zoomHandler?: ZoomHandler
   verticalProfile?: boolean
-  settings: ChartSettings['timeseriesChart']
+  settings: ChartsSettings['timeSeriesChart']
 }
 
 const props = withDefaults(defineProps<Props>(), {

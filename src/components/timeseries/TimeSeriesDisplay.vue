@@ -36,12 +36,12 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import {
   getDefaultSettings,
-  type ChartSettings,
+  type ChartsSettings,
 } from '@/lib/topology/componentSettings'
 
 interface Props {
   nodeId?: string | string[]
-  settings?: ChartSettings
+  settings?: ChartsSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
