@@ -11,8 +11,8 @@ export const ComponentType = {
   'system-monitor': 'system-monitor',
   'html-display': 'html-display',
   dashboard: 'dashboard',
-  'whatif-display': 'whatif-display',
   'log-display': 'log-display',
+  'whatif-display': 'whatif-display',
 } satisfies Record<ComponentType, ComponentType>
 
 export const componentTypeToIconMap = {
@@ -50,7 +50,7 @@ export const componentTypeToRouteNameMap = {
   'system-monitor': 'TopologySystemMonitor',
   'html-display': 'TopologyWebDisplay',
   dashboard: 'TopologyDashboard',
-  'whatif-display': 'WhatIfDisplay',
+  'whatif-display': 'TopologyTasksDisplay',
   'log-display': 'TopologyLogDisplay',
 } satisfies Record<ComponentType, string>
 
