@@ -1,62 +1,7 @@
 <template>
-  <div v-if="reports?.length" class="d-flex flex-column h-100 w-100">
-    <v-toolbar v-if="showToolbar" density="compact">
-      <template v-if="!settings.report.hideReportName">
-        <div v-if="reports.length === 1" class="ml-5">
-          {{ reportToTitle(reports[0]) }}
-        </div>
-        <v-select
-          v-else
-          v-model="selectedReport"
-          :items="reports"
-          return-object
-          :item-title="(item) => reportToTitle(item)"
-          :item-value="(item) => item.moduleInstanceId"
-          hide-details
-          label="Report"
-          class="px-2"
-          menu-icon="mdi-chevron-down"
-          variant="solo-filled"
-          density="compact"
-        />
-      </template>
-      <v-spacer />
-      <template v-if="!settings.report.hideAnalysisTime">
-        <template
-          v-if="settings.report.hideNonCurrentReports && selectedReportItem"
-        >
-          <div class="d-flex flex-column mr-3">
-            <v-list-item-subtitle> Analysis time </v-list-item-subtitle>
-            <div>{{ reportItemToTitle(selectedReportItem) }}</div>
-          </div>
-        </template>
-        <v-select
-          v-else
-          v-model="selectedReportItem"
-          :items="reportItems"
-          return-object
-          :item-title="(item) => reportItemToTitle(item)"
-          :item-value="(item) => reportItemToId(item)"
-          :item-props="
-            (item) => ({ subtitle: item.isCurrent ? 'Current' : undefined })
-          "
-          hide-details
-          label="Analysis time"
-          class="pe-2 flex-0-0"
-          menu-icon="mdi-chevron-down"
-          variant="solo-filled"
-          density="compact"
-        />
-      </template>
-      <v-btn
-        v-if="settings.report.downloadReport"
-        @click="downloadFile"
-        icon="mdi-download"
-      />
-    </v-toolbar>
-    <iframe :key="url" :src="url" class="html-content" />
+  <div class="d-flex flex-column h-100 w-100">
+    <div class="html-content" v-html="html"></div>
   </div>
-  <v-alert v-else class="ma-10">No reports available</v-alert>
 </template>
 
 <script setup lang="ts">
@@ -75,6 +20,7 @@ import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
+import { asyncComputed } from '@vueuse/core'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -83,6 +29,11 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
+})
+
+const html = asyncComputed(async () => {
+  const response = await fetch(`${window.location.origin}/report.html`)
+  return await response.text()
 })
 
 const showToolbar = computed(

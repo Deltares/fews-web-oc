@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>SMART Polder Control Dashboard Status Table</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    article {
+      font-family: Exo-2, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-width: 300px;
+      max-width: 1200px;
+      margin: 0 auto
+    }
+
+    p {
+      font-size: 1em;
+    }
+
+    .content {
+      justify-content: space-around;
+      align-items: center;
+      display: flex;
+      flex-direction: row;
+    }
+
+    .icon {
+      width: 16px;
+      height: 16px;
+    }
+    .circle-icon {
+      fill: blue;
+    }
+    .square-icon {
+      fill: red;
+    }
+
+    .box {
+      padding-right: 1px;
+      align-items: center;
+    }
+
+    table#tableStyle1 {
+      font-size: 0.9em;
+      border-collapse: collapse;
+      width: 100%;
+      border-spacing: 0px;
+      border-collapse: collapse;
+    }
+
+    table#tableStyle1 td {
+      padding: 5px;
+      text-align: left;
+    }
+
+    table#tableStyle1 th {
+      font-weight: bold;
+      text-align: center;
+      vertical-align: bottom;
+      color: #000000;
+      padding: 5px;
+      background-color: #e9f6fdff;
+      border-left: 1px solid #ddd;
+      border-right: 1px solid #ddd;
+    }
+
+    table#tableStyle1 th:nth-child(even) {
+      border-left: 1px solid #ddd;
+    }
+
+    table#tableStyle1 tr {
+      border-bottom: 1px solid #ddd;
+    }
+
+    table#tableStyle1 tr:nth-child(even) {
+      background-color: #F0F0F0;
+    }
+
+    .tableStyle1_data td {
+      text-align: center;
+    }
+
+    .tableStyle1_data_split td {
+      text-align: center;
+      border-left: 1px solid #ddd;
+    }
+
+    .tableStyle1_data_end td {
+      text-align: center;
+      border-right: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <article>
+    <div class="content">
+      <table id=tableStyle1>
+        <tr><th>Time [h]</th><th>+0</th><th>+6</th><th>+12</th></tr>
+        <tr><td>DPS Setpoint [-]</td><td>97.30</td><td>97.05</td><td>97.25</td></tr>
+        <tr><td>DPS WL (Reactive) [m]</td><td>97.31</td><td>97.31</td><td>98.93</td></tr>
+        <tr><td>DPS WL (Proactive) [m]</td><td>97.31</td><td>97.09</td><td>98.76</td></tr>
+        <tr><td>DPS WL (Performance) [m]</td><td>0</td><td>-0.22</td><td>-0.17</td></tr>
+        <tr><td>DPS Q (Reactive)</td><td>0</td><td>0</td><td>16</td></tr>
+        <tr><td>DPS Q (Proactive)</td><td>0</td><td>12</td><td>16</td></tr>
+        <tr><td>SWCP (Reactive)</td><td>97.31</td><td>97.31</td><td>98.93</td></tr>
+        <tr><td>SWCP (Proactive)</td><td>97.31</td><td>97.30</td><td>98.76</td></tr>
+        <tr><td>SWCP (Performance)</td><td>0</td><td>-0.01</td><td>-0.17</td></tr>
+      </table>
+    </div>
+  </article>
+</body>
+</html>
