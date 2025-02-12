@@ -66,7 +66,6 @@ export function useLogDisplayLogs(
   }
 }
 
-
 // FIXME: Always has a space followed by -1 for some reason
 function cleanTaskRunId(taskRunId: string): string {
   return taskRunId.split(' ')[0]

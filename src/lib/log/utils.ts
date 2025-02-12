@@ -93,7 +93,6 @@ export function logToUserColor(log: LogMessage, userName: string) {
   return nameToNiceColor(user ?? '')
 }
 
-
 export function isLogMessageByCurrentUser(log: LogMessage, userName: string) {
   if (log.type === 'system') return false
   return log.user === userName
@@ -157,24 +156,63 @@ export function toTitleCase(str: string) {
 }
 
 const niceColors = [
-    "#E57373", "#F06292", "#BA68C8", "#9575CD", "#7986CB",
-    "#64B5F6", "#4FC3F7", "#4DB6AC", "#81C784", "#AED581",
-    "#FF8A65", "#D4E157", "#FFEE58", "#FFCA28", "#FFA726",
-    "#FF7043", "#8D6E63", "#BDBDBD", "#78909C", "#FF5252",
-    "#E040FB", "#7C4DFF", "#536DFE", "#448AFF", "#40C4FF",
-    "#18FFFF", "#69F0AE", "#00E676", "#76FF03", "#C6FF00",
-    "#FFEA00", "#FFC400", "#FF9100", "#FF3D00", "#DD2C00",
-    "#3E2723", "#212121", "#263238", "#00BFA5", "#1DE9B6",
-    "#00E5FF", "#2979FF", "#651FFF", "#D500F9", "#C51162",
-    "#AA00FF", "#6200EA", "#2962FF", "#304FFE", "#0091EA"
-];
+  '#E57373',
+  '#F06292',
+  '#BA68C8',
+  '#9575CD',
+  '#7986CB',
+  '#64B5F6',
+  '#4FC3F7',
+  '#4DB6AC',
+  '#81C784',
+  '#AED581',
+  '#FF8A65',
+  '#D4E157',
+  '#FFEE58',
+  '#FFCA28',
+  '#FFA726',
+  '#FF7043',
+  '#8D6E63',
+  '#BDBDBD',
+  '#78909C',
+  '#FF5252',
+  '#E040FB',
+  '#7C4DFF',
+  '#536DFE',
+  '#448AFF',
+  '#40C4FF',
+  '#18FFFF',
+  '#69F0AE',
+  '#00E676',
+  '#76FF03',
+  '#C6FF00',
+  '#FFEA00',
+  '#FFC400',
+  '#FF9100',
+  '#FF3D00',
+  '#DD2C00',
+  '#3E2723',
+  '#212121',
+  '#263238',
+  '#00BFA5',
+  '#1DE9B6',
+  '#00E5FF',
+  '#2979FF',
+  '#651FFF',
+  '#D500F9',
+  '#C51162',
+  '#AA00FF',
+  '#6200EA',
+  '#2962FF',
+  '#304FFE',
+  '#0091EA',
+]
 
 function nameToNiceColor(name: string) {
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    let index = Math.abs(hash) % niceColors.length;
-    return niceColors[index];
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  let index = Math.abs(hash) % niceColors.length
+  return niceColors[index]
 }
-
