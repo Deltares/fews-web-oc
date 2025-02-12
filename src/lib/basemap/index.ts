@@ -1,4 +1,3 @@
-import DefaultBaseMaps from '@/assets/DefaultBaseMaps.json'
 import type { UserSettingsWithIcon } from '@/stores/userSettings'
 import type { MapLayerConfig } from '@deltares/fews-pi-requests'
 
@@ -9,9 +8,7 @@ interface BaseMap {
   name: string
 }
 
-export function getBaseMapUserSettingsFromConfig(config: MapLayerConfig) {
-  const defaultBaseMaps: BaseMap[] = DefaultBaseMaps
-
+export function getBaseMapsFromConfig(config: MapLayerConfig) {
   const baseMaps: BaseMap[] =
     config.mapLayers?.flatMap((layer, i) => {
       if (!layer.styleJsonFile) return []
@@ -27,10 +24,12 @@ export function getBaseMapUserSettingsFromConfig(config: MapLayerConfig) {
       ]
     }) ?? []
 
-  return [...defaultBaseMaps, ...baseMaps].map(convertBaseMapToUserSetting)
+  return baseMaps
 }
 
-function convertBaseMapToUserSetting(baseMap: BaseMap): UserSettingsWithIcon {
+export function convertBaseMapToUserSetting(
+  baseMap: BaseMap,
+): UserSettingsWithIcon {
   return {
     value: baseMap.id,
     icon: baseMap.icon,

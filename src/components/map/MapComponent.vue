@@ -37,8 +37,8 @@ import type {
 } from 'maplibre-gl'
 import { computed, useTemplateRef, watch } from 'vue'
 import { transformStyle } from '@/lib/map'
-import { useComponentSettingsStore } from '@/stores/componentSettings'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
+import { useBaseMapsStore } from '@/stores/baseMaps'
 
 interface Props {
   bounds?: LngLatBounds
@@ -52,10 +52,10 @@ const mapRef = useTemplateRef('map')
 MglDefaults.style =
   'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
-const componentSettingsStore = useComponentSettingsStore()
+const baseMapsStore = useBaseMapsStore()
 
 const selectedStyle = computed(() => {
-  const baseMap = componentSettingsStore.getBaseMapById(props.baseMapId)
+  const baseMap = baseMapsStore.getBaseMapById(props.baseMapId)
 
   const style = baseMap.style
   if (style.startsWith('/')) {
