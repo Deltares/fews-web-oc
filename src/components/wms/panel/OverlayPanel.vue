@@ -38,17 +38,17 @@
 </template>
 
 <script setup lang="ts">
-import type { OverlayLocation } from '@/lib/topology/componentSettings'
+import { Overlay } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
 
 interface Props {
-  overlays: OverlayLocation[]
+  overlays: Overlay[]
 }
 
 const props = defineProps<Props>()
 
 const selectedOverlayIds = defineModel<string[]>('selectedOverlayIds', {
-  required: true,
+  default: () => [],
 })
 
 const allSelected = computed(
@@ -65,7 +65,9 @@ function toggleAll() {
   if (allSelected.value) {
     selectedOverlayIds.value = []
   } else {
-    selectedOverlayIds.value = props.overlays.map((overlay) => overlay.id)
+    selectedOverlayIds.value = props.overlays
+      .map((overlay) => overlay.id)
+      .filter((id) => id !== undefined)
   }
 }
 </script>
