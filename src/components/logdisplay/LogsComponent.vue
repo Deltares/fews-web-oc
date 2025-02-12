@@ -378,4 +378,8 @@ function getTitleForLog(log: LogMessage, userName: string) {
 .task-run-container {
   max-width: 1000px;
 }
+
+:deep(.v-expansion-panel-title__overlay) {
+  background-color: transparent;
+}
 </style>
