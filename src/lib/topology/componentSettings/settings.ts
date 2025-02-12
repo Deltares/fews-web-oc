@@ -1,15 +1,12 @@
 import type { FillPaintProps, LinePaintProps } from 'maplibre-gl'
-import type { ComponentType } from '@/lib/topology/component'
 import {
   defaultChartSettings,
   defaultMapSettings,
   defaultSchematicStatusDisplaySettings,
   defaultReportSettings,
-  type MapSettings,
-  type ChartsSettings,
-  type ReportSettings,
-  type SSDSettings,
 } from '.'
+import { WebOCComponentSettings } from '@deltares/fews-pi-requests'
+import { DeepRequired } from '@/lib/utils/types'
 
 type PaintMapping = {
   fill: FillPaintProps
@@ -21,26 +18,7 @@ export interface ComponentSettingsResponse {
   declarations?: Declarations
 }
 
-export interface ComponentSettingsMapping {
-  map: MapSettings
-  charts: ChartsSettings
-  'data-download-display': undefined
-  report: ReportSettings
-  'schematic-status-display': SSDSettings
-  'system-monitor': undefined
-  'html-display': undefined
-  dashboard: undefined
-  'whatif-display': undefined
-  'log-display': undefined
-}
-
-type SettingsPerComponent = {
-  [key in ComponentType]?: Partial<ComponentSettingsMapping[key]>
-}
-
-export interface ComponentSettings extends SettingsPerComponent {
-  id: string
-}
+export type ComponentSettings = DeepRequired<WebOCComponentSettings>
 
 export interface Declarations {
   baseMaps?: BaseMap[]
@@ -66,31 +44,22 @@ export interface OverlayLocation {
   paint: PaintMapping[OverlayLocation['type']]
 }
 
-export const componentTypeToDefaultSettingsMap: ComponentSettingsMapping = {
-  map: defaultMapSettings,
-  charts: defaultChartSettings,
-  'data-download-display': undefined,
-  report: defaultReportSettings,
-  'schematic-status-display': defaultSchematicStatusDisplaySettings,
-  'system-monitor': undefined,
-  'html-display': undefined,
-  dashboard: undefined,
-  'whatif-display': undefined,
-  'log-display': undefined,
-} as const
-
-export function getDefaultSettings<T extends ComponentType>(componentType: T) {
-  return componentTypeToDefaultSettingsMap[componentType]
+export function getDefaultSettings(): ComponentSettings {
+  return {
+    id: '',
+    map: defaultMapSettings,
+    ssd: defaultSchematicStatusDisplaySettings,
+    charts: defaultChartSettings,
+    report: defaultReportSettings,
+  }
 }
 
-export function getSettings<T extends ComponentType>(
-  componentSettings: ComponentSettings | undefined,
-  componentType: T,
+export function getSettings(
+  componentSettings: WebOCComponentSettings | undefined,
 ) {
-  const defaultSettings = getDefaultSettings(componentType)
-  const settings = componentSettings?.[componentType]
+  const defaultSettings = getDefaultSettings()
   return {
     ...defaultSettings,
-    ...settings,
+    ...componentSettings,
   }
 }
