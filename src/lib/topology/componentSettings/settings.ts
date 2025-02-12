@@ -7,6 +7,7 @@ import {
 } from '.'
 import { WebOCComponentSettings } from '@deltares/fews-pi-requests'
 import { DeepRequired } from '@/lib/utils/types'
+import { merge } from 'lodash-es'
 
 type PaintMapping = {
   fill: FillPaintProps
@@ -57,11 +58,7 @@ export function getDefaultSettings(): ComponentSettings {
 export function getSettings(
   componentSettings: WebOCComponentSettings | undefined,
   parentComponentSettings?: WebOCComponentSettings,
-) {
+): WebOCComponentSettings {
   const defaultSettings = getDefaultSettings()
-  return {
-    ...defaultSettings,
-    ...parentComponentSettings,
-    ...componentSettings,
-  }
+  return merge({}, defaultSettings, parentComponentSettings, componentSettings)
 }
