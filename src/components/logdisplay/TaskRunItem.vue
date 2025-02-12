@@ -12,7 +12,7 @@
             <v-chip
               v-if="levelCount[level]"
               :prepend-icon="levelToIcon(level)"
-              :text="levelCount[level]"
+              :text="levelCount[level].toString()"
               :color="levelToColor(level)"
               label
               density="compact"
@@ -22,7 +22,7 @@
         </div>
         <template v-if="expanded">
           <div class="d-flex gap-2">
-            <div>{{ taskRun?.status }}</div>
+            <v-icon :icon="getIconForStatus(taskRun?.status)" size="20" />
             <div>{{ taskRun?.current }}</div>
           </div>
           <div class="table-container">
@@ -107,9 +107,24 @@ const levelCount = computed(() =>
       acc[log.level] = (acc[log.level] ?? 0) + 1
       return acc
     },
-    {} as Record<LogMessage['level'], string>,
+    {} as Record<LogMessage['level'], number>,
   ),
 )
+
+function getIconForStatus(status: string | undefined) {
+  switch (status) {
+    case 'pending':
+      return 'mdi-human-queue'
+    case 'running':
+      return 'mdi-run'
+    case 'completed':
+      return 'mdi-check'
+    case 'failed':
+      return 'mdi-alert-circle'
+    case 'approved':
+      return 'mdi-check'
+  }
+}
 </script>
 
 <style scoped>
