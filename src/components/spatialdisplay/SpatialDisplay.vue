@@ -207,6 +207,7 @@ watch(
 
     currentLocationIds.value = newLocationIds
   },
+  { immediate: true },
 )
 watch(
   [() => props.latitude, () => props.longitude],
@@ -219,6 +220,7 @@ watch(
     currentLatitude.value = newLatitude
     currentLongitude.value = newLongitude
   },
+  { immediate: true },
 )
 
 const { width: containerWidth } = useElementSize(containerRef)
