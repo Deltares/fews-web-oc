@@ -1,7 +1,6 @@
 <template>
   <div
-    :class="isLogMessageByCurrentUser(log, userName) ? 'ml-auto' : 'mr-auto'"
-    class="w-100"
+    class="log-item"
   >
     <v-card
       :class="
@@ -13,14 +12,11 @@
       flat
       density="compact"
     >
-      <template #prepend>
-        <v-icon size="small" :icon="logToUserIcon(log)" />
-      </template>
       <template #title>
         <div class="d-flex align-center ga-2">
-          <div class="font-weight-bold">
+          <v-list-item-title :style="{ color: logToUserColor(log, userName) }">
             {{ logToUser(log, userName) }}
-          </div>
+          </v-list-item-title>
           <v-card-subtitle class="align-self-end">{{
             log.entryTime
           }}</v-card-subtitle>
@@ -80,6 +76,7 @@ import {
   logToIcon,
   logToUserIcon,
   logToUser,
+  logToUserColor,
   logToColor,
   logToRoute,
   logToActions,
@@ -97,3 +94,9 @@ defineProps<Props>()
 
 const emit = defineEmits(['disseminateLog'])
 </script>
+
+<style scoped>
+.log-item {
+  max-width: 1000px;
+}
+</style>
