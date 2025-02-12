@@ -42,7 +42,7 @@
     <v-window-item
       v-if="settings.timeSeriesTable.enabled"
       :value="DisplayType.TimeSeriesTable"
-      class="time-series-component__container max-height"
+      class="time-series-component__container"
     >
       <TimeSeriesTable
         :config="tableConfig"
