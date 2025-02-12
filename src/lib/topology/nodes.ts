@@ -131,7 +131,9 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
     nodeHasSystemMonitor(node) ||
     nodeHasWebDisplay(node) ||
     nodeHasDashboard(node) ||
-    nodeHasWhatIfs(node)
+    nodeHasWhatIfs(node) ||
+    nodeHasWebDisplay(node) ||
+    nodeHasLogDisplay(node)
   )
 }
 
@@ -177,4 +179,7 @@ export function nodeHasWhatIfs(node: TopologyNode) {
   return workflowIds.some((workflowId) =>
     availableWorkflows.hasWhatIfTemplate(workflowId),
   )
+}
+export function nodeHasLogDisplay(node: TopologyNode) {
+  return node.logDisplay !== undefined
 }

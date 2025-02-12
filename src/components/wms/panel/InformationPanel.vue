@@ -67,10 +67,10 @@
 
 <script setup lang="ts">
 import { computed, nextTick } from 'vue'
-import { DateTime } from 'luxon'
 import { LayerKind } from '@/lib/streamlines'
 import ControlChip from '@/components/wms/ControlChip.vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { toDateRangeString, toHumanReadableDate } from '@/lib/date'
 
 interface Props {
   layerTitle?: string
@@ -108,18 +108,11 @@ const analysisTime = computed(() => {
     return 'Analysis time not available'
   }
 
-  return (
-    'Analysis time: ' +
-    DateTime.fromJSDate(props.forecastTime).toFormat('dd/MM/yyyy, HH:mm:ss')
-  )
+  return `Analysis time: ${toHumanReadableDate(props.forecastTime)}`
 })
 
 const formattedTimeRange = computed(() => {
-  if (!props.firstValueTime || !props.lastValueTime) return ''
-  const format = 'dd/MM/yyyy, HH:mm:ss'
-  return `${DateTime.fromJSDate(props.firstValueTime).toFormat(
-    format,
-  )} → ${DateTime.fromJSDate(props.lastValueTime).toFormat(format)}`
+  return toDateRangeString(props.firstValueTime, props.lastValueTime)
 })
 
 function toggleLayerType(): void {

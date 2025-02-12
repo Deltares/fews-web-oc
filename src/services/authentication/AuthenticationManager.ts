@@ -6,13 +6,28 @@ import { mergeHeaders } from '@/lib/requests/transformRequest'
 export class AuthenticationManager {
   userManager!: UserManager
   private user: User | null = null
+  private initPromise: Promise<void> | null = null
 
-  async init(settings: UserManagerSettings) {
-    this.userManager = new UserManager(settings)
-    this.user = await this.userManager.getUser()
-    this.userManager.events.addUserLoaded((user: User) => {
-      this.user = user
-    })
+  async init(settings: UserManagerSettings): Promise<void> {
+    if (!this.initPromise) {
+      this.initPromise = (async () => {
+        this.userManager = new UserManager(settings)
+        this.user = await this.userManager.getUser()
+        this.userManager.events.addUserLoaded((user: User) => {
+          this.user = user
+        })
+      })()
+    }
+    return this.initPromise
+  }
+
+  public async getUser(): Promise<User | null> {
+    if (!this.initPromise) {
+      // Authentication is disabled
+      return null
+    }
+    await this.initPromise
+    return this.user
   }
 
   public getAccessToken(): string {
