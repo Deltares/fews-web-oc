@@ -5,7 +5,7 @@ export type ChartsSettings = DeepRequired<PiChartsSettings>
 
 export const defaultChartSettings: ChartsSettings = {
   general: {
-    startPanel: 'timeseriesChart',
+    startPanel: 'timeSeriesChart',
     hideToolBar: 'false',
     showLocationNames: true,
   },
