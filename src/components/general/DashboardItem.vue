@@ -42,7 +42,7 @@ const componentItem = asyncComputed(
 
 const { componentSettings } = useComponentSettings(
   baseUrl,
-  () => props.item.componentSettingsId,
+  () => [props.item.componentSettingsId],
   () => props.settings,
 )
 
