@@ -1,6 +1,6 @@
 <template>
-  <div class="display-container">
-    <div class="dashboard-container flex-1-1">
+  <div class="display-container pa-1 ga-1">
+    <div class="dashboard-container flex-1-1 ga-1">
       <template v-for="group in groups">
         <template v-for="element in group.elements">
           <v-card
@@ -117,11 +117,6 @@ watch(
 
 .display-container {
   display: flex;
-  background-color: color-mix(
-    in srgb,
-    rgb(var(--v-theme-on-surface-variant)) 90%,
-    rgb(var(--v-theme-on-surface))
-  );
   flex-direction: column;
   width: 100%;
   height: 100%;
