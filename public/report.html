@@ -4,7 +4,10 @@
     <title>SMART Polder Control Dashboard Status Table</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    
+    <link
+      href="https://cdn.materialdesignicons.com/5.4.55/css/materialdesignicons.min.css"
+      rel="stylesheet"
+    />
     <style>
       article {
         font-family: 'RO-Sans', sans-serif;
@@ -14,133 +17,116 @@
         max-width: 1200px;
         margin: 0 auto;
       }
-
       p {
         font-size: 1em;
       }
-
       .content {
         justify-content: space-around;
         align-items: center;
         display: flex;
         flex-direction: row;
       }
-
-      .icon {
-        width: 16px;
-        height: 16px;
-      }
-      .circle-icon {
-        fill: #add8e6; /* Softer blue */
-      }
-      .square-icon {
-        fill: #ffb6c1; /* Softer red */
-      }
-
       .box {
         padding-right: 1px;
         align-items: center;
       }
-
       table#tableStyle1 {
         font-size: 0.9em;
         width: 100%;
         border-spacing: 0px;
         border-collapse: collapse;
       }
-
       table#tableStyle1 td,
       table#tableStyle1 th {
         padding: 5px;
         text-align: left;
       }
-
       table#tableStyle1 th {
         font-weight: bold;
-        text-align: center;
+        text-align: left;
         vertical-align: bottom;
         color: #000000;
-        background-color: #e0f7fa; /* Softer background color */
+        background-color: #eeeeee;
       }
-
-      table#tableStyle1 tr:nth-child(even) {
-        background-color: #f8f8f8; /* Softer even row color */
+      table#tableStyle1 tr:nth-child(odd) {
+        background-color: #f8f8f8;
       }
-
-      .tableStyle1_data td {
-        text-align: center;
-      }
-
-      .tableStyle1_data_split td {
-        text-align: center;
-      }
-
+      .tableStyle1_data td,
+      .tableStyle1_data_split td,
       .tableStyle1_data_end td {
         text-align: center;
       }
     </style>
-
   </head>
   <body>
     <article>
       <div class="content">
         <table id="tableStyle1">
           <tr>
-            <th>Time [h]</th>
-            <th>+0</th>
-            <th>+6</th>
-            <th>+12</th>
+            <th><i class="mdi mdi-clock-outline"></i> Time</th>
+            <th>Now</th>
+            <th><i class="mdi mdi-plus"></i>6h</th>
+            <th><i class="mdi mdi-plus"></i>12h</th>
           </tr>
           <tr>
-            <td>DPS Setpoint [-]</td>
+            <td><i class="mdi mdi-water-check"></i> Setpoint</td>
             <td>97.30</td>
             <td>97.05</td>
             <td>97.25</td>
           </tr>
           <tr>
-            <td>DPS WL (Reactive) [m]</td>
+            <th colspan="4">DPS Water Level [m]</th>
+          </tr>
+          <tr>
+            <td><i class="mdi mdi-water"></i> Reactive</td>
             <td>97.31</td>
             <td>97.31</td>
             <td>98.93</td>
           </tr>
           <tr>
-            <td>DPS WL (Proactive) [m]</td>
+            <td><i class="mdi mdi-water-plus"></i> Proactive</td>
             <td>97.31</td>
             <td>97.09</td>
             <td>98.76</td>
           </tr>
           <tr>
-            <td>DPS WL (Performance) [m]</td>
+            <td><i class="mdi mdi-chart-line"></i> Performance</td>
             <td>0</td>
             <td>-0.22</td>
             <td>-0.17</td>
           </tr>
           <tr>
-            <td>DPS Q (Reactive)</td>
+            <th colspan="4">DPS Flow Rate [m&#179;/s]</th>
+          </tr>
+          <tr>
+            <td><i class="mdi mdi-water"></i> Reactive</td>
             <td>0</td>
             <td>0</td>
             <td>16</td>
           </tr>
           <tr>
-            <td>DPS Q (Proactive)</td>
+            <td><i class="mdi mdi-water-plus"></i> Proactive</td>
             <td>0</td>
             <td>12</td>
             <td>16</td>
           </tr>
           <tr>
-            <td>SWCP (Reactive)</td>
+            <th colspan="4">SWCP [m]</th>
+          </tr>
+          <tr>
+            <td><i class="mdi mdi-water"></i> Reactive</td>
             <td>97.31</td>
             <td>97.31</td>
             <td>98.93</td>
           </tr>
           <tr>
-            <td>SWCP (Proactive)</td>
+            <td><i class="mdi mdi-water-plus"></i> Proactive</td>
             <td>97.31</td>
             <td>97.30</td>
             <td>98.76</td>
           </tr>
           <tr>
-            <td>SWCP (Performance)</td>
+            <td><i class="mdi mdi-chart-line"></i> Performance</td>
             <td>0</td>
             <td>-0.01</td>
             <td>-0.17</td>
