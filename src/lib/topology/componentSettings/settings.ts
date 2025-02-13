@@ -56,9 +56,9 @@ export function getDefaultSettings(): ComponentSettings {
 }
 
 export function getSettings(
-  componentSettings: WebOCComponentSettings | undefined,
-  parentComponentSettings?: WebOCComponentSettings,
+  componentSettings: (WebOCComponentSettings | undefined)[],
 ): WebOCComponentSettings {
   const defaultSettings = getDefaultSettings()
-  return merge({}, defaultSettings, parentComponentSettings, componentSettings)
+  const settings = componentSettings.filter((s) => s !== undefined)
+  return merge({}, defaultSettings, ...settings)
 }
