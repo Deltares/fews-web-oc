@@ -35,14 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  defineAsyncComponent,
-  ref,
-  useTemplateRef,
-  watch,
-  watchEffect,
-} from 'vue'
+import { computed, defineAsyncComponent, ref, useTemplateRef, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
@@ -202,13 +195,31 @@ const currentLongitude = ref<string>()
 const elevation = ref<number | undefined>()
 const currentTime = ref<Date>()
 
-watchEffect(() => {
-  currentLocationIds.value = props.locationIds?.split(',')
-})
-watchEffect(() => {
-  currentLatitude.value = props.latitude
-  currentLongitude.value = props.longitude
-})
+watch(
+  () => props.locationIds?.split(','),
+  (newLocationIds) => {
+    const isSameLocationIds =
+      JSON.stringify(newLocationIds) ===
+      JSON.stringify(currentLocationIds.value)
+    if (isSameLocationIds) return
+
+    currentLocationIds.value = newLocationIds
+  },
+  { immediate: true },
+)
+watch(
+  [() => props.latitude, () => props.longitude],
+  ([newLatitude, newLongitude]) => {
+    const isSameCoordinates =
+      newLatitude === currentLatitude.value &&
+      newLongitude === currentLongitude.value
+    if (isSameCoordinates) return
+
+    currentLatitude.value = newLatitude
+    currentLongitude.value = newLongitude
+  },
+  { immediate: true },
+)
 
 const { width: containerWidth } = useElementSize(containerRef)
 
@@ -237,6 +248,7 @@ function openLocationsTimeSeriesDisplay(locationIds: string[]) {
     .replace('WithCoordinates', '')
   currentLatitude.value = undefined
   currentLongitude.value = undefined
+  currentLocationIds.value = locationIds
   router.push({
     name: routeName,
     params: {
