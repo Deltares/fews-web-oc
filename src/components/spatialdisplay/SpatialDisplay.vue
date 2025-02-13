@@ -41,7 +41,7 @@ import {
   ref,
   useTemplateRef,
   watch,
-  watchEffect,
+  onMounted,
 } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
@@ -180,6 +180,7 @@ const filter = computed(() => {
   if (props.longitude && props.latitude) {
     return getTimeSeriesGridActionsFilter(props.longitude, props.latitude)
   }
+  return {}
 })
 
 const showChartPanel = computed(() => {
@@ -213,10 +214,8 @@ const currentLongitude = ref<string>()
 const elevation = ref<number | undefined>()
 const currentTime = ref<Date>()
 
-watchEffect(() => {
+onMounted(() => {
   currentLocationIds.value = props.locationIds?.split(',')
-})
-watchEffect(() => {
   currentLatitude.value = props.latitude
   currentLongitude.value = props.longitude
 })
@@ -246,6 +245,7 @@ function openLocationsTimeSeriesDisplay(locationIds: string[]) {
     ?.toString()
     .replace('SpatialDisplay', 'SpatialTimeSeriesDisplay')
     .replace('WithCoordinates', '')
+  currentLocationIds.value = locationIds
   currentLatitude.value = undefined
   currentLongitude.value = undefined
   router.push({
@@ -311,16 +311,13 @@ function closeTimeSeriesDisplay(): void {
 watch(
   () => locations.value,
   () => {
-    if (currentLocationIds.value && !props.locationIds) {
-      if (
-        locations.value?.filter((l) =>
-          currentLocationIds.value?.includes(l.locationId),
-        ).length
-      ) {
-        openLocationsTimeSeriesDisplay(currentLocationIds.value)
-      } else {
-        currentLocationIds.value = undefined
-      }
+    const newLocationIds = locations.value
+      ?.filter((l) => currentLocationIds.value?.includes(l.locationId))
+      .map((l) => l.locationId)
+    if (newLocationIds?.length) {
+      openLocationsTimeSeriesDisplay(newLocationIds)
+    } else {
+      currentLocationIds.value = undefined
     }
   },
 )

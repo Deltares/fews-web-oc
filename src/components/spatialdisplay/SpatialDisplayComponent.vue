@@ -34,7 +34,7 @@
     <LocationsLayer
       v-if="showLocationsLayer && hasLocations"
       :locationsGeoJson="geojson"
-      :selectedLocationIds="props.locationIds"
+      :selectedLocationIds="selectedLocationIds"
       @click="onLocationClick"
     />
     <CoordinateSelectorLayer
@@ -195,7 +195,7 @@ interface Props {
   elevation?: number
   locations?: Location[]
   geojson: FeatureCollection<Geometry, Location>
-  locationIds?: string[]
+  locationIds?: string
   latitude?: string
   longitude?: string
   maxValuesTimeSeries?: TimeSeriesData[]
@@ -235,6 +235,8 @@ const { selectedDate } = useSelectedDate(selectedDateOfSlider)
 watch(selectedDate, () => {
   emit('update:currentTime', selectedDate.value)
 })
+
+const selectedLocationIds = computed(() => props.locationIds?.split(',') ?? [])
 
 const layerOptions = ref<AnimatedRasterLayerOptions>()
 const forecastTime = ref<Date>()
@@ -324,7 +326,7 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   if (!locationId) return
 
   if (event.originalEvent.ctrlKey || event.originalEvent.metaKey) {
-    const locationIds = props.locationIds ?? []
+    const locationIds = props.locationIds?.split(',') ?? []
     const newLocationIds = [...new Set([...locationIds, locationId])]
     onLocationsChange(newLocationIds)
   } else {
