@@ -4,8 +4,8 @@
       <SpatialDisplayComponent
         :layer-name="props.layerName"
         :location-ids="currentLocationIds"
-        :latitude="currentLatitude"
-        :longitude="currentLongitude"
+        :latitude="props.latitude"
+        :longitude="props.longitude"
         :locations="locations"
         :geojson="geojson"
         @changeLocationIds="onLocationsChange"
@@ -41,7 +41,7 @@ import {
   ref,
   useTemplateRef,
   watch,
-  watchEffect,
+  onMounted,
 } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
@@ -127,25 +127,27 @@ const onlyCoverageLayersAvailable = computed(
     layerCapabilities.value.onlyGrids,
 )
 
-function getFilterActionsFilter(): filterActionsFilter &
-  UseDisplayConfigOptions {
+function getFilterActionsFilter(
+  locationIds: string,
+): filterActionsFilter & UseDisplayConfigOptions {
   return {
-    locationIds: currentLocationIds.value?.join(','),
+    locationIds: locationIds,
     filterId: filterIds.value ? filterIds.value[0] : undefined,
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
   }
 }
 
-function getTimeSeriesGridActionsFilter():
-  | (timeSeriesGridActionsFilter & UseDisplayConfigOptions)
-  | undefined {
-  if (!currentLongitude.value || !currentLatitude.value) return
+function getTimeSeriesGridActionsFilter(
+  longitude: string,
+  latitude: string,
+): (timeSeriesGridActionsFilter & UseDisplayConfigOptions) | undefined {
+  if (!longitude || !latitude) return
   if (!layerCapabilities.value?.boundingBox) return
   if (!layerCapabilities.value?.firstValueTime) return
   if (!layerCapabilities.value?.lastValueTime) return
 
-  const coordinates = [+currentLongitude.value, +currentLatitude.value]
+  const coordinates = [+longitude, +latitude]
   const [x, y] = toMercator(coordinates)
   const clickRadius = circle(coordinates, 10, { steps: 4, units: 'kilometers' })
   const bboxArray = bbox(clickRadius)
@@ -172,26 +174,36 @@ function getTimeSeriesGridActionsFilter():
 }
 
 const filter = computed(() => {
-  if (currentLocationIds.value) {
-    return getFilterActionsFilter()
+  if (props.locationIds) {
+    return getFilterActionsFilter(props.locationIds)
   }
-  if (currentLatitude.value && currentLongitude.value) {
-    return getTimeSeriesGridActionsFilter()
+  if (props.longitude && props.latitude) {
+    return getTimeSeriesGridActionsFilter(props.longitude, props.latitude)
   }
+  return {}
 })
 
 const showChartPanel = computed(() => {
-  return filter.value !== undefined && props.settings.chartPanelEnabled
+  return (
+    (currentLocationIds.value ||
+      (currentLongitude.value && currentLatitude.value)) &&
+    props.settings.chartPanelEnabled
+  )
 })
 
 const elevationChartFilter = computed(() => {
   if (!layerCapabilities.value?.elevation) return
-  const actionsFilter = getTimeSeriesGridActionsFilter()
-  if (actionsFilter) {
-    return {
-      ...actionsFilter,
-      elevation: undefined,
-      showVerticalProfile: true,
+  if (props.longitude && props.latitude) {
+    const actionsFilter = getTimeSeriesGridActionsFilter(
+      props.longitude,
+      props.latitude,
+    )
+    if (actionsFilter) {
+      return {
+        ...actionsFilter,
+        elevation: undefined,
+        showVerticalProfile: true,
+      }
     }
   }
 })
@@ -202,10 +214,8 @@ const currentLongitude = ref<string>()
 const elevation = ref<number | undefined>()
 const currentTime = ref<Date>()
 
-watchEffect(() => {
+onMounted(() => {
   currentLocationIds.value = props.locationIds?.split(',')
-})
-watchEffect(() => {
   currentLatitude.value = props.latitude
   currentLongitude.value = props.longitude
 })
@@ -235,6 +245,7 @@ function openLocationsTimeSeriesDisplay(locationIds: string[]) {
     ?.toString()
     .replace('SpatialDisplay', 'SpatialTimeSeriesDisplay')
     .replace('WithCoordinates', '')
+  currentLocationIds.value = locationIds
   currentLatitude.value = undefined
   currentLongitude.value = undefined
   router.push({
@@ -300,16 +311,13 @@ function closeTimeSeriesDisplay(): void {
 watch(
   () => locations.value,
   () => {
-    if (currentLocationIds.value && !props.locationIds) {
-      if (
-        locations.value?.filter((l) =>
-          currentLocationIds.value?.includes(l.locationId),
-        ).length
-      ) {
-        openLocationsTimeSeriesDisplay(currentLocationIds.value)
-      } else {
-        currentLocationIds.value = undefined
-      }
+    const newLocationIds = locations.value
+      ?.filter((l) => currentLocationIds.value?.includes(l.locationId))
+      .map((l) => l.locationId)
+    if (newLocationIds?.length) {
+      openLocationsTimeSeriesDisplay(newLocationIds)
+    } else {
+      currentLocationIds.value = undefined
     }
   },
 )
