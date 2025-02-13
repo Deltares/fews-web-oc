@@ -41,6 +41,7 @@ function getDefaultOptions(): CartesianAxesOptions {
       },
     ],
     margin: getDefaultMargin(),
+    automargin: true,
   }
 }
 

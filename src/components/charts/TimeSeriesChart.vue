@@ -1,6 +1,6 @@
 <template>
   <div
-    class="chart-with-chips mt-1"
+    class="chart-with-chips"
     :class="{ 'vertical-profile': verticalProfile }"
   >
     <ChartLegend
@@ -412,7 +412,7 @@ onBeforeUnmount(() => {
   display: flex;
   position: relative;
   flex-direction: column;
-  flex: 1 1 80%;
+  flex: 0 0 auto;
   height: clamp(150px, 100%, 400px);
 }
 

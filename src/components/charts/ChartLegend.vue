@@ -12,14 +12,20 @@
       :class="{ 'semi-transparent': overlay }"
       :style="chartControlsStyle"
       :elevation="expanded && !overlay ? 5 : 0"
-      border
+      :border="overlay"
     >
       <div
         ref="chartLegendContainer"
         :style="chartLegendContainerStyle"
         class="chart-legend-container w-100"
       >
-        <v-chip-group ref="chartLegend" class="chart-legend" column multiple>
+        <v-chip-group
+          ref="chartLegend"
+          class="chart-legend"
+          column
+          multiple
+          selected-class=""
+        >
           <v-chip
             v-for="tag in tags"
             :key="tag.id"
