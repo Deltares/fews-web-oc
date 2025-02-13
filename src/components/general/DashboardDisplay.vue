@@ -79,6 +79,8 @@ function loadCss(url: string) {
       hasLoadedCss.value = true
     }
     document.head.appendChild(link)
+  } else {
+    hasLoadedCss.value = true
   }
 }
 
