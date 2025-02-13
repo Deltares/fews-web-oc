@@ -94,3 +94,11 @@ function transformRequest(
   }
 }
 </script>
+
+<style>
+.maplibregl-map:focus,
+.maplibregl-canvas:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+</style>
