@@ -12,6 +12,7 @@
       :class="{ 'semi-transparent': overlay }"
       :style="chartControlsStyle"
       :elevation="expanded && !overlay ? 5 : 0"
+      border
     >
       <div
         ref="chartLegendContainer"
@@ -73,12 +74,18 @@ const emit = defineEmits(['toggleLine'])
 const overlay = computed(() => props.settings.placement.includes('inside'))
 
 const height = computed(() => {
-  const chipHeight = overlay.value ? 32 : 40
-  const numOfLines = props.settings.numberOfLines
-  if (numOfLines === 'all') {
-    return 100 * chipHeight
+  const numOfLines =
+    props.settings.numberOfLines === 'all'
+      ? 99999
+      : +props.settings.numberOfLines
+
+  if (overlay.value) {
+    const chipHeight = 26
+    return numOfLines * chipHeight + 4
+  } else {
+    const chipHeight = 40
+    return numOfLines * chipHeight
   }
-  return Number(numOfLines) * chipHeight
 })
 
 const chartLegend = useTemplateRef('chartLegend')
