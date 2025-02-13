@@ -5,7 +5,7 @@
       <schematic-status-display
         v-if="src"
         class="ssd w-100"
-        :class="{ 'h-100': props.allowZooming }"
+        :style="svgContainerStyle"
         :src="src"
         ref="svgContainer"
         @load="onLoad"
@@ -52,6 +52,9 @@ const height = ref(100)
 const margin = ref({ top: 0, left: 0 })
 const aspectRatio = ref(1)
 const isLoading = ref(true)
+const svgContainerStyle = computed(() => ({
+  height: props.allowZooming ? '100%' : undefined,
+}))
 
 const ssdSpacerStyle = computed(() => {
   return props.allowZooming
