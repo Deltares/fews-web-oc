@@ -43,7 +43,6 @@ import {
   MglSymbolLayer,
   MglGeoJsonSource,
   MglMarker,
-  useMap,
 } from '@indoorequal/vue-maplibre-gl'
 import { FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
@@ -59,6 +58,7 @@ import { addLocationIconsToMap } from '@/lib/location-icons'
 import { useDark } from '@vueuse/core'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { getLayerId, getSourceId } from '@/lib/map'
+import { useMap } from '@/services/useMap'
 
 const settings = useUserSettingsStore()
 const isDark = useDark()
