@@ -1,10 +1,11 @@
 <template>
   <component
+    v-if="componentItem"
     class="overflow-auto flex-1-1"
     :is="componentItem.component"
     v-bind="componentItem.componentProps"
     :topologyNode="componentItem.topologyNode"
-    :settings="componentItem.settings"
+    :settings="componentSettings"
   />
 </template>
 
@@ -18,36 +19,40 @@ import {
   componentTypeToComponentMap,
   getComponentPropsForNode,
 } from '@/lib/topology/dashboard'
-import { useComponentSettingsStore } from '@/stores/componentSettings'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
-import {
-  type DashboardSettings,
-  getSettings,
-} from '@/lib/topology/componentSettings'
-import { computed } from 'vue'
+import { configManager } from '@/services/application-config'
+import { asyncComputed } from '@vueuse/core'
+import { useComponentSettings } from '@/services/useComponentSettings'
+import type { ComponentSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   item: WebOCDashboardItem
-  settings: DashboardSettings
+  sliderEnabled: boolean
+  settings?: ComponentSettings
 }
 
 const props = defineProps<Props>()
 
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const topologyNodesStore = useTopologyNodesStore()
-const componentSettingsStore = useComponentSettingsStore()
 
-const componentItem = computed(() => {
-  return convertItemToComponentItem(props.item)
-})
+const componentItem = asyncComputed(
+  async () => await convertItemToComponentItem(props.item),
+)
 
-function convertItemToComponentItem(item: WebOCDashboardItem) {
+const { componentSettings } = useComponentSettings(
+  baseUrl,
+  () => [props.item.componentSettingsId],
+  () => props.settings,
+)
+
+async function convertItemToComponentItem(item: WebOCDashboardItem) {
   const componentName = item.component
   const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
   const component = componentTypeToComponentMap[componentName]
   const componentProps = getComponentPropsForNode(componentName, topologyNode)
   const title = topologyNode?.name ?? componentTypeToTitleMap[componentName]
   const icon = topologyNode?.iconId ?? componentTypeToIconMap[componentName]
-  const settings = getComponentSettingsForItem(item)
   return {
     title,
     icon,
@@ -55,24 +60,6 @@ function convertItemToComponentItem(item: WebOCDashboardItem) {
     componentProps,
     componentName,
     topologyNode,
-    settings,
   }
-}
-
-function getComponentSettingsForItem(item: WebOCDashboardItem) {
-  const settings = item.componentSettingsId
-    ? componentSettingsStore.getSettingsById(item.componentSettingsId)
-    : undefined
-  const componentSettings = getSettings(settings, item.component)
-
-  // If dashboard has a shared date time slider,
-  // disable the date time slider for child component
-  if (props.settings.dateTimeSliderEnabled) {
-    if ('dateTimeSliderEnabled' in componentSettings) {
-      componentSettings['dateTimeSliderEnabled'] = false
-    }
-  }
-
-  return componentSettings
 }
 </script>

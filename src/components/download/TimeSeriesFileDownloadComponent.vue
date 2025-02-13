@@ -85,7 +85,7 @@ const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
 })
 
 interface Props {
-  config?: DisplayConfig | undefined
+  config?: DisplayConfig | null
   options: UseDisplayConfigOptions
   filter?:
     | filterActionsFilter

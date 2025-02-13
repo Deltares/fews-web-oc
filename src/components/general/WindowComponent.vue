@@ -1,6 +1,11 @@
 <template>
   <div class="d-flex flex-column h-100 w-100" :class="{ fullscreen }">
-    <v-toolbar density="compact" variant="flat" class="toolbar">
+    <v-toolbar
+      v-if="showToolBar"
+      density="compact"
+      variant="flat"
+      class="toolbar"
+    >
       <slot name="toolbar">
         {{ props.title }}
       </slot>
@@ -13,14 +18,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 interface Props {
   title?: string
+  hideToolBar?: 'true' | 'false' | 'auto'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: '',
+  hideToolBar: 'false',
+})
+
+const showToolBar = computed(() => {
+  // TODO: Add auto support
+  return props.hideToolBar !== 'true'
 })
 
 const fullscreen = ref(false)

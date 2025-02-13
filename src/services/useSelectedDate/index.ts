@@ -29,7 +29,13 @@ export function useSelectedDate(fallbackDate: DateRefOrGetter) {
 
   const selectedDate = computed(() => toValue(injectedDate))
 
+  const dateTimeSliderEnabled = computed(() => {
+    const hasInjectedDate = inject(SELECTED_DATE_KEY, null) !== null
+    return !hasInjectedDate
+  })
+
   return {
     selectedDate,
+    dateTimeSliderEnabled,
   }
 }
