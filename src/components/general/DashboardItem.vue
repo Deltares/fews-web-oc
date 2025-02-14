@@ -21,9 +21,9 @@ import {
 } from '@/lib/topology/dashboard'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { configManager } from '@/services/application-config'
-import { asyncComputed } from '@vueuse/core'
 import { useComponentSettings } from '@/services/useComponentSettings'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
+import { computed } from 'vue'
 
 interface Props {
   item: WebOCDashboardItem
@@ -36,9 +36,9 @@ const props = defineProps<Props>()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const topologyNodesStore = useTopologyNodesStore()
 
-const componentItem = asyncComputed(
-  async () => await convertItemToComponentItem(props.item),
-)
+const componentItem = computed(() => {
+  return convertItemToComponentItem(props.item)
+})
 
 const { componentSettings } = useComponentSettings(
   baseUrl,
@@ -46,7 +46,7 @@ const { componentSettings } = useComponentSettings(
   () => props.settings,
 )
 
-async function convertItemToComponentItem(item: WebOCDashboardItem) {
+function convertItemToComponentItem(item: WebOCDashboardItem) {
   const componentName = item.component
   const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
   const component = componentTypeToComponentMap[componentName]
