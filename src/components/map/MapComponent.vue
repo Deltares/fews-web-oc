@@ -58,8 +58,8 @@ const selectedStyle = computed(() => {
   const baseMap = baseMapsStore.getBaseMapById(props.baseMapId)
 
   const style = baseMap.style
-  if (style.startsWith('/')) {
-    return getResourcesStaticUrl(style.slice(1))
+  if (!style.startsWith('http')) {
+    return getResourcesStaticUrl(style)
   }
 
   return style

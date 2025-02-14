@@ -1,7 +1,7 @@
 import type { UserSettingsWithIcon } from '@/stores/userSettings'
 import type { MapLayerConfig } from '@deltares/fews-pi-requests'
 
-interface BaseMap {
+export interface BaseMap {
   id: string
   icon: string
   style: string
