@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { BaseMap } from '@/lib/topology/componentSettings'
+import type { BaseMap } from '@/lib/basemap'
 import DefaultBaseMaps from '@/assets/DefaultBaseMaps.json'
 import { useDark } from '@vueuse/core'
 
