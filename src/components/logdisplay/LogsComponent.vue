@@ -1,113 +1,107 @@
 <template>
-  <div class="d-flex flex-column w-100 h-100">
-    <div class="flex-0-0 d-flex ga-2 align-center pa-2">
-      <v-text-field
-        v-model="search"
-        placeholder="Search"
-        prepend-inner-icon="mdi-magnify"
-        variant="outlined"
-        clearable
-        hide-details
-        max-width="300px"
-        density="compact"
-      />
-      <v-select
-        v-model="selectedLogTypes"
-        :items="logTypes"
-        label="Log Type"
-        variant="outlined"
-        clearable
-        hide-details
-        multiple
-        max-width="150px"
-        density="compact"
-        :item-title="toTitleCase"
-        :item-value="(item) => item"
-      />
-      <v-select
-        v-model="selectedLevels"
-        :items="logLevels"
-        label="Level"
-        variant="outlined"
-        clearable
-        hide-details
-        multiple
-        max-width="150px"
-        density="compact"
-        :item-title="levelToTitle"
-        :item-value="(item) => item"
-      />
-      <div class="date-input-container ms-2">
-        <v-date-input
-          v-model="endDate"
-          label="Date"
+  <div class="logs-container flex-column w-100 h-100">
+    <div class="flex-0-0 d-flex justify-center pt-2">
+      <div class="flex-0-0 d-flex ga-2 justify-space-between align-center">
+        <v-select
+          v-model="selectedLogTypes"
+          :items="logTypes"
+          label="Log Type"
+          variant="outlined"
+          clearable
+          hide-details
+          multiple
+          density="compact"
+          :item-title="toTitleCase"
+          :item-value="(item) => item"
+        />
+        <v-select
+          v-model="selectedLevels"
+          :items="logLevels"
+          label="Level"
+          variant="outlined"
+          clearable
+          hide-details
+          multiple
+          density="compact"
+          :item-title="levelToTitle"
+          :item-value="(item) => item"
+        />
+        <div class="spacer" />
+        <div class="date-input-container">
+          <v-date-input
+            v-model="endDate"
+            label="Date"
+            variant="outlined"
+            hide-details
+            density="compact"
+            prepend-icon=""
+          />
+        </div>
+        <v-text-field
+          v-model.number="daysBack"
+          label="Days back"
           variant="outlined"
           hide-details
           density="compact"
-          prepend-icon=""
+          validate-on="input"
+          :max="365"
+          :min="1"
+          max-width="80px"
+        />
+        <v-text-field
+          v-model.number="maxCount"
+          label="Request count"
+          variant="outlined"
+          hide-details
+          density="compact"
+          validate-on="input"
+          max-width="100px"
+          :max="1000"
+          :min="1"
         />
       </div>
-      <v-text-field
-        v-model.number="daysBack"
-        label="Days back"
-        variant="outlined"
-        hide-details
-        density="compact"
-        validate-on="input"
-        max-width="80px"
-        class="me-2"
-        :max="365"
-        :min="1"
-      />
-      <v-text-field
-        v-model.number="maxCount"
-        label="Request count"
-        variant="outlined"
-        hide-details
-        max-width="125px"
-        density="compact"
-        validate-on="input"
-        :max="1000"
-        :min="1"
-      />
-      <NewLogMessageDialog
-        v-if="noteGroup"
-        :noteGroup="noteGroup"
-        @newNote="refreshLogs"
-      />
-      <span>Total: {{ logMessages.length }}</span>
-      <v-btn
-        @click="refreshLogs"
-        icon="mdi-refresh"
-        density="compact"
-        :loading="isLoading"
-      />
     </div>
-
-    <v-progress-linear
-      v-if="isLoading && logMessages.length === 0"
-      indeterminate
-      color="primary"
-      height="3"
-    />
+    <div class="flex-0-0 d-flex justify-center py-2">
+      <div class="flex-0-0 d-flex ga-2 align-center">
+        <v-text-field
+          v-model="search"
+          placeholder="Search"
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          clearable
+          hide-details
+          density="compact"
+          max-width="400px"
+          min-width="200px"
+        />
+        <span>Total: {{ logMessages.length }}</span>
+        <v-btn
+          @click="refreshLogs"
+          icon="mdi-refresh"
+          density="compact"
+          :loading="isLoading"
+        />
+        <NewLogMessageDialog
+          v-if="noteGroup"
+          :noteGroup="noteGroup"
+          @newNote="refreshLogs"
+        />
+      </div>
+    </div>
 
     <!-- Important to have item-height as it greatly improves performance -->
     <v-virtual-scroll
-      class="scroll-container px-2"
+      class="scroll-container"
       :items="groupedByTaskRunId"
       :item-height="100"
     >
       <template #default="{ item: logs }">
-        <v-expansion-panels
-          v-if="logs[0].type === 'system'"
-          class="task-run-container"
-          flat
-          focusable
-        >
+        <v-expansion-panels v-if="logs[0].type === 'system'" flat focusable>
           <v-expansion-panel>
             <v-expansion-panel-title class="pa-0">
               <template #default="{ expanded }">
                 <TaskRunItem
+                  class="py-1"
                   :title="getTitleForLog(logs[0], userName)"
                   :taskRun="
                     taskRuns.find((taskRun) => taskRun.id === logs[0].taskRunId)
@@ -328,6 +322,12 @@ function getTitleForLog(log: LogMessage, userName: string) {
   height: 100%;
   overflow-y: auto;
   width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.logs-container > * > * {
+  width: clamp(400px, calc(100% - 10px), 1100px);
 }
 
 .date-iterator-container > :not([class]) {
@@ -355,11 +355,9 @@ function getTitleForLog(log: LogMessage, userName: string) {
 }
 
 .date-input-container {
-  width: 120px;
-}
-
-.task-run-container {
-  max-width: 1000px;
+  max-width: 120px;
+  min-width: 50px;
+  flex: 1 1 auto;
 }
 
 :deep(.v-expansion-panel-title__overlay) {
@@ -369,5 +367,9 @@ function getTitleForLog(log: LogMessage, userName: string) {
 :deep(.v-expansion-panel-text__wrapper) {
   padding: 0;
   padding-bottom: 5px;
+}
+
+.spacer {
+  flex-grow: 0.5;
 }
 </style>
