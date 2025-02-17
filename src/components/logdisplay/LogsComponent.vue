@@ -165,7 +165,6 @@ import {
 import type {
   ForecasterNoteGroup,
   LogDisplayDisseminationAction,
-  LogDisplayLogsFilter,
   LogsDisplay,
 } from '@deltares/fews-pi-requests'
 import { useLogDisplayLogs } from '@/services/useLogDisplayLogs'
@@ -201,33 +200,48 @@ const endDate = ref<Date>(new Date())
 
 const { userName } = useCurrentUser()
 
-const filters = computed(() => {
+const baseFilters = computed(() => {
   const startTime = convertJSDateToFewsPiParameter(startDate.value)
   const endTime = convertJSDateToFewsPiParameter(endDate.value)
-  const baseFilter: LogDisplayLogsFilter = {
+  return {
     logDisplayId: props.logDisplay.id,
     maxCount: maxCount.value,
     startTime,
     endTime,
   }
+})
 
+const manualFilters = computed(() => {
   const manualEventCodeId = props.noteGroup?.note.eventCodeId
-  const systemLogSettings = props.logDisplay.systemLog
+  return manualEventCodeId
+    ? getManualFilters(baseFilters.value, manualEventCodeId)
+    : []
+})
 
-  const manualFilters = manualEventCodeId
-    ? getManualFilters(baseFilter, manualEventCodeId)
+const systemFilters = computed(() => {
+  const systemLogSettings = props.logDisplay.systemLog
+  return systemLogSettings
+    ? getSystemFilters(baseFilters.value, systemLogSettings)
     : []
-  const systemFilters = systemLogSettings
-    ? getSystemFilters(baseFilter, systemLogSettings)
-    : []
-  return [...manualFilters, ...systemFilters]
 })
 
 const requestDebounce = 500
-const debouncedFilters = debouncedRef(filters, requestDebounce)
+const debouncedManualFilters = debouncedRef(manualFilters, requestDebounce)
+const debouncedSystemFilters = debouncedRef(systemFilters, requestDebounce)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { logMessages, isLoading } = useLogDisplayLogs(baseUrl, debouncedFilters)
+const { logMessages: manualLogMessages, isLoading: manualIsLoading } =
+  useLogDisplayLogs(baseUrl, debouncedManualFilters)
+const { logMessages: systemLogMessages, isLoading: systemIsLoading } =
+  useLogDisplayLogs(baseUrl, debouncedSystemFilters)
+
+const logMessages = computed(() =>
+  [...manualLogMessages.value, ...systemLogMessages.value].toSorted((a, b) =>
+    b.entryTime.localeCompare(a.entryTime),
+  ),
+)
+
+const isLoading = computed(() => manualIsLoading.value || systemIsLoading.value)
 
 const filterDebounce = 100
 const debouncedSelectedLevels = debouncedRef(selectedLevels, filterDebounce)

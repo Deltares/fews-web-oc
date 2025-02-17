@@ -44,9 +44,7 @@ export function useLogDisplayLogs(
       const logPromises = _filters.map(fetchLogsForFilter)
       const newLogs = await Promise.all(logPromises)
 
-      logMessages.value = newLogs
-        .flat()
-        .toSorted((a, b) => b.entryTime.localeCompare(a.entryTime))
+      logMessages.value = newLogs.flat()
     } catch {
       error.value = 'Error loading logDisplayLogs'
       logMessages.value = []
