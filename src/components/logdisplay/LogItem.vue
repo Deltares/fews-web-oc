@@ -51,7 +51,7 @@
       </template>
       <v-card-text>
         <div class="d-flex">
-          <span> {{ log.text }} </span>
+          <span class="message-text"> {{ log.text }} </span>
           <v-spacer />
           <slot name="actions"></slot>
         </div>
@@ -92,3 +92,12 @@ defineProps<Props>()
 
 const emit = defineEmits(['disseminateLog'])
 </script>
+
+<style scoped>
+.message-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+} 
+</style>
