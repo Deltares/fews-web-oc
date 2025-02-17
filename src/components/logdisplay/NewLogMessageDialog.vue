@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="newMessageDialog" max-width="500px">
     <template #activator="{ props }">
-      <v-btn v-bind="props" icon="mdi-plus" variant="text" />
+      <v-btn v-bind="props" icon="mdi-plus" density="compact" />
     </template>
     <v-card>
       <v-card-title>New Log Message</v-card-title>
