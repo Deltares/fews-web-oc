@@ -40,7 +40,7 @@
             <v-list density="compact">
               <v-list-item
                 v-for="item in items"
-                key="id"
+                :key="item.raw.id"
                 @click="itemClick(item.raw)"
               >
                 {{ item.raw.name }}
