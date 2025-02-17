@@ -1,5 +1,5 @@
 <template>
-  <div class="logs-container flex-column w-100 h-100">
+  <div class="logs-container d-flex flex-column w-100 h-100">
     <div class="flex-0-0 d-flex justify-center pt-2">
       <div class="flex-0-0 d-flex ga-2 justify-space-between align-center">
         <v-select
@@ -319,9 +319,9 @@ function getTitleForLog(log: LogMessage, userName: string) {
 }
 
 .scroll-container {
-  height: 100%;
   overflow-y: auto;
   width: 100%;
+  flex: 1 1 auto;
   display: flex;
   justify-content: center;
 }
