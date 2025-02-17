@@ -1,17 +1,36 @@
 <template>
-  <v-select
-    v-model="numSecondsBack"
-    :items="options"
-    item-value="numSecondsBack"
-    density="compact"
-    variant="plain"
-    flat
-    hide-details
-  />
+  <v-menu>
+    <template #activator="{ props, isActive }">
+      <v-chip
+        variant="tonal"
+        pilled
+        label
+        v-bind="props"
+        class="me-2 period-filter-chip"
+      >
+        <template #default>
+          <span>{{ selectedOption?.title }}</span>
+          <v-spacer />
+          <v-icon>{{
+            isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'
+          }}</v-icon>
+        </template>
+      </v-chip>
+    </template>
+    <v-list density="compact">
+      <v-list-item
+        v-for="option in options"
+        :key="option.id"
+        :title="option.title"
+        :active="selectedOption?.id === option.id"
+        @click="numSecondsBack = option.numSecondsBack"
+      />
+    </v-list>
+  </v-menu>
 </template>
 <script setup lang="ts">
 import { RelativePeriod } from '@/lib/period'
-import { computed } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 
 const period = defineModel<RelativePeriod | null>({ required: true })
 
@@ -51,6 +70,8 @@ const options: RelativePeriodOption[] = [
   },
 ] as const
 
+const selectedOption = ref<RelativePeriodOption>()
+
 const numSecondsBack = computed<number | null>({
   get: () => {
     if (!period.value) return null
@@ -67,4 +88,24 @@ const numSecondsBack = computed<number | null>({
     }
   },
 })
+
+watchEffect(() => {
+  selectedOption.value = options.find(
+    (option) => option.numSecondsBack === numSecondsBack.value,
+  )
+})
+
+watchEffect(() => {
+  numSecondsBack.value = selectedOption.value?.numSecondsBack ?? null
+})
 </script>
+
+<style scoped>
+.period-filter-chip {
+  width: 120px;
+}
+
+.period-filter-chip :deep(.v-chip__content) {
+  width: 100%;
+}
+</style>
