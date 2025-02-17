@@ -1,5 +1,10 @@
 <template>
-  <LogsComponent v-if="logDisplay" :key="logDisplay.id" :logDisplay />
+  <LogsComponent
+    v-if="logDisplay"
+    :key="logDisplay.id"
+    :logDisplay
+    :noteGroup
+  />
   <div v-else>
     <v-alert type="warning" class="ma-3">No logs display available</v-alert>
   </div>
@@ -9,6 +14,7 @@
 import LogsComponent from '@/components/logdisplay/LogsComponent.vue'
 import { configManager } from '@/services/application-config'
 import { useLogDisplay } from '@/services/useLogDisplay'
+import { useNoteGroup } from '@/services/useNoteGroup'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 
 interface Props {
@@ -21,5 +27,9 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { logDisplay } = useLogDisplay(
   baseUrl,
   () => props.topologyNode?.logDisplay?.id,
+)
+const { noteGroup } = useNoteGroup(
+  baseUrl,
+  () => logDisplay.value?.manualLog?.noteGroupId,
 )
 </script>

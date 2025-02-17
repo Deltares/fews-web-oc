@@ -34,7 +34,7 @@
         multiple
         max-width="150px"
         density="compact"
-        :item-title="toTitleCase"
+        :item-title="levelToTitle"
         :item-value="(item) => item"
       />
       <div class="date-input-container ms-2">
@@ -70,36 +70,22 @@
         :max="1000"
         :min="1"
       />
-      <v-dialog v-model="newMessageDialog" max-width="500px">
-        <template #activator="{ props }">
-          <v-btn v-bind="props" icon="mdi-plus" variant="text" />
-        </template>
-        <v-card>
-          <v-card-title>New Log Message</v-card-title>
-          <v-card-text>
-            <v-select
-              v-model="newLogLevel"
-              :items="logLevels"
-              label="Log level"
-            />
-            <v-text-field v-model="newLogMessage" label="Message" />
-          </v-card-text>
-          <v-card-actions>
-            <v-btn
-              text="Save"
-              variant="flat"
-              color="primary"
-              @click="saveNewMessage"
-            />
-            <v-btn text="Close" @click="newMessageDialog = false" />
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+      <NewLogMessageDialog
+        v-if="noteGroup"
+        :noteGroup="noteGroup"
+        @newNote="refreshLogs"
+      />
       <span>Total: {{ logMessages.length }}</span>
+      <v-btn
+        @click="refreshLogs"
+        icon="mdi-refresh"
+        density="compact"
+        :loading="isLoading"
+      />
     </div>
 
     <v-progress-linear
-      v-if="isLoading"
+      v-if="isLoading && logMessages.length === 0"
       indeterminate
       color="primary"
       height="3"
@@ -174,11 +160,13 @@ import {
   toTitleCase,
   LogMessage,
   logToUser,
+  levelToTitle,
 } from '@/lib/log'
-import {
+import type {
+  ForecasterNoteGroup,
   LogDisplayDisseminationAction,
-  type LogDisplayLogsFilter,
-  type LogsDisplay,
+  LogDisplayLogsFilter,
+  LogsDisplay,
 } from '@deltares/fews-pi-requests'
 import { useLogDisplayLogs } from '@/services/useLogDisplayLogs'
 import { configManager } from '@/services/application-config'
@@ -186,20 +174,18 @@ import { debouncedRef } from '@vueuse/core'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import LogExpansion from './LogExpansion.vue'
+import NewLogMessageDialog from './NewLogMessageDialog.vue'
 import { useTaskRuns } from '@/services/useTaskRuns'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 
 interface Props {
   logDisplay: LogsDisplay
+  noteGroup?: ForecasterNoteGroup
 }
 
 const props = defineProps<Props>()
 
 const availableWorkflows = useAvailableWorkflowsStore()
-
-const newMessageDialog = ref(false)
-const newLogLevel = ref<LogLevel>('INFO')
-const newLogMessage = ref('')
 
 const search = ref<string>()
 const maxCount = ref<number>(1000)
@@ -225,11 +211,11 @@ const filters = computed(() => {
     endTime,
   }
 
-  const manualLogSettings = props.logDisplay.manualLog
+  const manualEventCodeId = props.noteGroup?.note.eventCodeId
   const systemLogSettings = props.logDisplay.systemLog
 
-  const manualFilters = manualLogSettings
-    ? getManualFilters(baseFilter, manualLogSettings)
+  const manualFilters = manualEventCodeId
+    ? getManualFilters(baseFilter, manualEventCodeId)
     : []
   const systemFilters = systemLogSettings
     ? getSystemFilters(baseFilter, systemLogSettings)
@@ -298,24 +284,9 @@ function disseminateLog(
   console.log('Disseminating log', log, dissemination)
 }
 
-function saveNewMessage() {
-  // TODO:
-  // const newMessage: LogMessage = {
-  //   id: 0,
-  //   taskRunId: 'new',
-  //   type: 'manual',
-  //   user: getUserName(),
-  //   entryTime: convertJSDateToFewsPiParameter(new Date()),
-  //   level: newLogLevel.value,
-  //   code: 'default',
-  //   text: newLogMessage.value,
-  //   eventAcknowledged: false,
-  //   source: 'manual',
-  //   componentId: 'OC',
-  // }
-  newMessageDialog.value = false
-  newLogMessage.value = ''
-  newLogLevel.value = 'INFO'
+function refreshLogs() {
+  // Set endDate to now + 5 seconds to ensure the backend will return the latest logs
+  endDate.value = new Date(new Date().getTime() + 5000)
 }
 
 function getTitleForLog(log: LogMessage, userName: string) {
@@ -379,5 +350,10 @@ function getTitleForLog(log: LogMessage, userName: string) {
 
 :deep(.v-expansion-panel-title__overlay) {
   background-color: transparent;
+}
+
+:deep(.v-expansion-panel-text__wrapper) {
+  padding: 0;
+  padding-bottom: 5px;
 }
 </style>

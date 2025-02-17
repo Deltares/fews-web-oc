@@ -1,7 +1,6 @@
 import type {
   LogDisplayDisseminationAction,
   LogDisplayLogsFilter,
-  LogDisplayManualLog,
   LogDisplaySystemLog,
 } from '@deltares/fews-pi-requests'
 import type { LogLevel, LogMessage, LogType } from './types'
@@ -47,6 +46,19 @@ export function logToUserIcon(log: LogMessage) {
       return 'mdi-robot'
     case 'manual':
       return 'mdi-account'
+  }
+}
+
+export function levelToTitle(level: LogLevel) {
+  switch (level) {
+    case 'INFO':
+      return 'Information'
+    case 'WARN':
+      return 'Warning'
+    case 'ERROR':
+      return 'Critical'
+    default:
+      return level
   }
 }
 
@@ -113,14 +125,14 @@ export function logToActions(
 
 export function getManualFilters(
   baseFilter: LogDisplayLogsFilter,
-  settings: LogDisplayManualLog,
+  eventCode: string,
 ): LogDisplayLogsFilter[] {
   return [
     {
       ...baseFilter,
       logType: 'manual',
       level: 'INFO',
-      eventCode: `Manual.event.${settings.noteGroupId}`,
+      eventCode: eventCode,
     },
   ]
 }
