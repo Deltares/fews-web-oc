@@ -7,7 +7,7 @@
         label
         :color="isAllSelected ? undefined : 'primary'"
         v-bind="props"
-        class="mx-1"
+        class="ms-2"
       >
         <template #prepend>
           <v-btn
@@ -22,15 +22,21 @@
         <v-icon>mdi-chevron-down</v-icon>
       </v-chip>
     </template>
-    <v-sheet min-height="300" max-height="80dvh">
-      <v-banner sticky density="compact" class="pa-2">
-        <v-btn
-          @click="toggleSelectAll"
-          :icon="selectAllIcon"
-          variant="plain"
-        ></v-btn>
-        <slot name="actions"></slot>
-      </v-banner>
+    <v-sheet max-height="400">
+      <slot name="actions">
+        <v-list-item title="Select All" @click="toggleSelectAll">
+          <template #prepend>
+            <v-list-item-action start>
+              <v-checkbox-btn
+                :indeterminate="isSomeSelected && !isAllSelected"
+                :model-value="isAllSelected"
+                density="compact"
+              />
+            </v-list-item-action>
+          </template>
+        </v-list-item>
+      </slot>
+      <v-divider />
       <v-list
         v-model:selected="selectedValues"
         select-strategy="leaf"
@@ -40,10 +46,13 @@
           v-for="item in sortedItems"
           :key="item.id"
           :title="item.title"
-          :value="item.value"
+          :value="item.id"
+          :active="false"
         >
           <template #prepend="{ isSelected }">
-            <v-checkbox-btn density="compact" :model-value="isSelected" />
+            <v-list-item-action start>
+              <v-checkbox-btn :model-value="isSelected" density="compact" />
+            </v-list-item-action>
           </template>
           <template v-if="item.isPreferred" #append>
             <v-icon icon="mdi-star" />
@@ -95,6 +104,9 @@ const allValues = computed<T[]>(() => props.items.map((item) => item.value))
 const isAllSelected = computed<boolean>(
   () => selectedValues.value.length === props.items.length,
 )
+const isSomeSelected = computed<boolean>(
+  () => selectedValues.value.length > 0 && !isAllSelected.value,
+)
 
 function removeFilterIfEnabled(event: MouseEvent): void {
   // We don't need to do anything if we have no filter defined.
@@ -116,14 +128,4 @@ function toggleSelectAll(): void {
     selectedValues.value = allValues.value
   }
 }
-
-const selectAllIcon = computed(() => {
-  if (selectedValues.value.length === 0) {
-    return 'mdi-checkbox-blank-outline'
-  }
-  if (selectedValues.value.length === allValues.value.length) {
-    return 'mdi-checkbox-marked'
-  }
-  return 'mdi-minus-box' // 'mdi-checkbox-marked' // 'mdi-minus-box'
-})
 </script>
