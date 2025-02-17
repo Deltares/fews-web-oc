@@ -71,6 +71,7 @@ export function useTaskRuns(
   async function fetchAllTaskRuns(): Promise<FewsPiTaskRun[]> {
     const response = await piProvider.getTaskRuns({
       documentFormat: DocumentFormat.PI_JSON,
+      taskRunStatusIds: Object.values(TaskStatusId),
     })
     return response.taskRuns
   }
@@ -88,22 +89,14 @@ export function useTaskRuns(
     // FIXME: it is documented that tasks can only be fetched for a specific
     //        workflowId (i.e. that that is a required parameter), but that
     //        seems to be untrue.
-    // Fetch pending tasks separately; they are not returned when we specify
-    // a dispatch period, as they have not yet been dispatched. We always return
-    // all pending tasks.
-    const [pendingTasksResponse, tasksResponse] = await Promise.all([
-      piProvider.getTaskRuns({
-        documentFormat: DocumentFormat.PI_JSON,
-        taskRunStatusIds: TaskStatusId.P,
-      }),
-      piProvider.getTaskRuns({
-        documentFormat: DocumentFormat.PI_JSON,
-        startDispatchTime,
-        endDispatchTime,
-      }),
-    ])
+    const response = await piProvider.getTaskRuns({
+      documentFormat: DocumentFormat.PI_JSON,
+      startDispatchTime,
+      endDispatchTime,
+      taskRunStatusIds: Object.values(TaskStatusId),
+    })
 
-    return [...pendingTasksResponse.taskRuns, ...tasksResponse.taskRuns]
+    return response.taskRuns
   }
 
   function filterTasks(): TaskRun[] {
