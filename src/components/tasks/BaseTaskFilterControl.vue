@@ -7,11 +7,11 @@
         label
         :color="isAllSelected ? undefined : 'primary'"
         v-bind="props"
-        class="ms-2"
+        class="ms-1 px-2"
       >
         <template #prepend>
           <v-btn
-            class="mr-2"
+            class="mr-1"
             size="20"
             variant="plain"
             :icon="isAllSelected ? 'mdi-filter-plus' : 'mdi-filter-remove'"
