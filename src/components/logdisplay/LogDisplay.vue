@@ -5,9 +5,6 @@
     :logDisplay
     :noteGroup
   />
-  <div v-else>
-    <v-alert type="warning" class="ma-3">No logs display available</v-alert>
-  </div>
 </template>
 
 <script setup lang="ts">

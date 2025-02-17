@@ -4,15 +4,16 @@
       <v-card-text class="py-2 h-100">
         <div class="d-flex gap-2 align-center">
           <v-icon
-            v-if="taskRun"
             class="me-2"
-            :icon="getIconForStatus(taskRun.status)"
+            :icon="getIconForStatus(taskRun?.status)"
             size="20"
           />
-          <v-list-item-title>{{ title }}</v-list-item-title>
-          <v-card-subtitle v-if="taskRun" class="ps-2"
-            >T0: {{ toHumanReadableDate(taskRun.time0) }}</v-card-subtitle
-          >
+          <div class="d-flex flex-column">
+            <v-list-item-title>{{ title }}</v-list-item-title>
+            <v-card-subtitle class="pa-0">
+              T0: {{ toHumanReadableDate(taskRun?.time0) }}
+            </v-card-subtitle>
+          </div>
           <v-spacer />
           <template v-for="level in logLevels.toReversed()">
             <v-chip
@@ -135,6 +136,8 @@ function getIconForStatus(status: string | undefined) {
       return 'mdi-alert-circle'
     case 'approved':
       return 'mdi-check'
+    default:
+      return 'mdi-help'
   }
 }
 </script>
