@@ -225,12 +225,20 @@ watch(selectedProperties, (properties) => {
   additionalErrors.value = getErrorsForProperties(properties, jsonSchema.value)
 })
 
+function resetAlerts(): void {
+  isSubmitted.value = false
+  hasSubmitError.value = false
+  submitErrorMessage.value = ''
+}
+
 async function submit(): Promise<void> {
   if (!selectedWorkflow.value) return
   if (!selectedWhatIfTemplate.value) return
   const whatIfTemplateId = selectedWhatIfTemplate.value.id
   const workflowId = selectedWorkflow.value.id
   const properties = selectedProperties.value as Record<string, string | number>
+
+  resetAlerts()
 
   const scenarioFilter: PostWhatIfScenarioFilter = {
     whatIfTemplateId,
