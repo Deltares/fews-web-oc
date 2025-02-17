@@ -6,7 +6,7 @@
         pilled
         label
         v-bind="props"
-        class="me-2 period-filter-chip"
+        class="me-1 px-2 period-filter-chip"
       >
         <template #default>
           <span>{{ selectedOption?.title }}</span>
@@ -102,7 +102,7 @@ watchEffect(() => {
 
 <style scoped>
 .period-filter-chip {
-  width: 120px;
+  width: 105px;
 }
 
 .period-filter-chip :deep(.v-chip__content) {
