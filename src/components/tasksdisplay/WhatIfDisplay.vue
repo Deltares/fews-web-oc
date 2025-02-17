@@ -150,9 +150,6 @@ const isPosting = ref<boolean>(false)
 
 const temporaryWhatIfScenarioName = 'Temporary'
 
-// TODO: The userId is a random UUID now? Why don't we use the ID of the user
-//       currently logged in if we have it?
-const userId = ref<string>(crypto.randomUUID())
 const timeZero = ref<Date>(new Date())
 const description = ref<string>()
 
@@ -263,7 +260,6 @@ async function submit(): Promise<void> {
 
   const filter: RunTaskFilter = {
     workflowId,
-    userId: userId.value,
     timeZero: timeZeroString,
     scenarioId: scenarioResult.data.id,
     description: description.value,
