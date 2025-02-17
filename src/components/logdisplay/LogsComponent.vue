@@ -93,7 +93,7 @@
     <v-virtual-scroll
       class="scroll-container"
       :items="groupedByTaskRunId"
-      :item-height="100"
+      :item-height="50"
     >
       <template #default="{ item: logs }">
         <v-expansion-panels v-if="logs[0].type === 'system'" flat focusable>
