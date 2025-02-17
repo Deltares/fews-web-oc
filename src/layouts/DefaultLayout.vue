@@ -144,7 +144,7 @@
             <router-view></router-view>
           </Suspense>
         </div>
-        <div class="flex-0-0 h-100" id="main-side-panel"></div>
+        <div class="border-s flex-0-0 h-100" id="main-side-panel"></div>
       </div>
       <div class="alerts__container" v-if="alertsStore.hasAlerts">
         <v-alert
