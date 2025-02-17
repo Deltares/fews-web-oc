@@ -19,13 +19,6 @@ const useGlobalSearchState = defineStore('globalSearchState', {
     items: [],
     selectedItem: null,
   }),
-
-  actions: {},
-
-  getters: {
-    // activeAlerts: (state) => state.alerts.filter((alert) => alert.active),
-    // hasActiveAlerts: (state) => state.alerts.some((alert) => alert.active),
-  },
 })
 
 export { useGlobalSearchState }
