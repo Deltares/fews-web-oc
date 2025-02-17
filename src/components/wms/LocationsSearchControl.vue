@@ -1,9 +1,9 @@
 <template>
   <ControlChip v-if="hasLocations" :class="{ 'pr-0': showLocations }">
     <v-btn @click="showLocations = !showLocations" density="compact" icon>
-      <v-icon>{{
-        showLocations ? 'mdi-map-marker' : 'mdi-map-marker-off'
-      }}</v-icon>
+      <v-icon>
+        {{ showLocations ? 'mdi-map-marker' : 'mdi-map-marker-off' }}
+      </v-icon>
     </v-btn>
 
     <v-btn
@@ -12,12 +12,13 @@
       class="locations-search text-capitalize"
       hide-details
       @click="showLocationsSearch"
-      >{{
+    >
+      {{
         selectedLocationIds
           ? selectedLocation?.locationName
           : 'Search locations'
-      }}</v-btn
-    >
+      }}
+    </v-btn>
   </ControlChip>
 </template>
 

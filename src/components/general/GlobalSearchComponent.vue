@@ -42,8 +42,9 @@
                 v-for="item in items"
                 key="id"
                 @click="itemClick(item.raw)"
-                >{{ item.raw.name }}</v-list-item
               >
+                {{ item.raw.name }}
+              </v-list-item>
             </v-list>
           </template>
           <template v-slot:footer="{ items }">
