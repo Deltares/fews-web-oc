@@ -1,5 +1,5 @@
 <template>
-  <div class="log-item">
+  <div>
     <v-card
       :class="
         isLogMessageByCurrentUser(log, userName)
@@ -73,7 +73,6 @@ import { toHumanReadableDate } from '@/lib/date'
 import {
   isLogMessageByCurrentUser,
   logToIcon,
-  logToUserIcon,
   logToUser,
   logToUserColor,
   logToColor,
@@ -93,9 +92,3 @@ defineProps<Props>()
 
 const emit = defineEmits(['disseminateLog'])
 </script>
-
-<style scoped>
-.log-item {
-  max-width: 1000px;
-}
-</style>
