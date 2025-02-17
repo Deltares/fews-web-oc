@@ -5,7 +5,7 @@
     @click="toggleTasksPanel"
   />
   <Teleport to="#main-side-panel" defer>
-    <div v-if="isPanelOpen" class="h-100 d-flex flex-column">
+    <div v-if="isPanelOpen" class="task-runs-panel h-100 d-flex flex-column">
       <v-toolbar density="compact">
         <WorkflowFilterControl
           v-model="selectedWorkflowIds"
@@ -15,7 +15,7 @@
         <v-spacer />
         <PeriodFilterControl v-model="period" />
       </v-toolbar>
-      <v-list width="500" class="flex-1-1">
+      <v-list class="flex-1-1">
         <v-list-item v-if="sortedTasks.length === 0">
           No tasks available
         </v-list-item>
@@ -27,13 +27,9 @@
           <TaskRunSummary :task="task" />
         </v-list-item>
       </v-list>
-      <div
-        class="flex-0-0 pa-2 d-flex flex-row justify-space-between align-center mt-2"
-      >
-        <div>Last updated: {{ lastUpdatedString }}</div>
-        <!-- Add fixed-height container around refresh button/progress
-               indicator to prevent layout shifts upon refreshing. -->
-        <div class="refresh-container">
+      <v-divider />
+      <v-list-item :title="`Last updated: ${lastUpdatedString}`">
+        <template #append>
           <v-progress-circular
             v-if="taskRuns.isLoading.value"
             size="20"
@@ -46,8 +42,8 @@
             icon="mdi-refresh"
             @click="taskRuns.fetch()"
           />
-        </div>
-      </div>
+        </template>
+      </v-list-item>
     </div>
   </Teleport>
 </template>
@@ -160,5 +156,9 @@ function toggleTasksPanel(): void {
 
 .v-theme--dark.task:nth-child(even) {
   background-color: black;
+}
+
+.task-runs-panel {
+  width: 400px;
 }
 </style>
