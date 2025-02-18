@@ -8,8 +8,15 @@
             :icon="getIconForStatus(taskRun?.status)"
             size="20"
           />
-          <div class="d-flex flex-column">
-            <v-list-item-title>{{ title }}</v-list-item-title>
+          <div class="d-flex flex-column user-select-text cursor-pointer">
+            <div class="d-flex align-center ga-2">
+              <v-list-item-title>
+                {{ title }}
+              </v-list-item-title>
+              <v-card-subtitle class="pa-0">{{
+                toHumanReadableDate(entryTime)
+              }}</v-card-subtitle>
+            </div>
             <v-card-subtitle class="pa-0">
               T0: {{ toHumanReadableDate(taskRun?.time0) }}
             </v-card-subtitle>
@@ -29,7 +36,7 @@
         </div>
         <template v-if="expanded && taskRun">
           <div class="table-container">
-            <table class="log-table">
+            <table @click.stop class="log-table user-select-text">
               <thead>
                 <tr>
                   <th>User</th>
@@ -45,11 +52,11 @@
                 </tr>
               </tbody>
             </table>
-            <table class="log-table">
+            <table @click.stop class="log-table user-select-text">
               <thead>
                 <tr>
-                  <th>Time zero</th>
-                  <th>Output time span</th>
+                  <th><span>Time zero</span></th>
+                  <th><span>Output time span</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -66,7 +73,7 @@
                 </tr>
               </tbody>
             </table>
-            <table class="log-table">
+            <table @click.stop class="log-table user-select-text">
               <thead>
                 <tr>
                   <th>Task duration</th>
@@ -105,6 +112,7 @@ import { toDateSpanString, toHumanReadableDate } from '@/lib/date'
 
 interface Props {
   title?: string
+  entryTime?: string
   taskRun?: TaskRun
   logs: LogMessage[]
   expanded: boolean
@@ -137,7 +145,7 @@ function getIconForStatus(status: string | undefined) {
     case 'approved':
       return 'mdi-check'
     default:
-      return 'mdi-help'
+      return 'mdi-bell-outline'
   }
 }
 </script>
@@ -161,5 +169,10 @@ function getIconForStatus(status: string | undefined) {
 
 .log-table td {
   padding-bottom: 5px;
+}
+
+.user-select-text {
+  user-select: text;
+  cursor: text;
 }
 </style>

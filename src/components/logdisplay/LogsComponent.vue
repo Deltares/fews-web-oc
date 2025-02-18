@@ -94,15 +94,20 @@
       class="scroll-container"
       :items="groupedByTaskRunId"
       :item-height="50"
+      ref="virtualScroll"
     >
       <template #default="{ item: logs }">
         <v-expansion-panels v-if="logs[0].type === 'system'" flat focusable>
           <v-expansion-panel>
-            <v-expansion-panel-title class="pa-0">
+            <v-expansion-panel-title
+              class="pa-0"
+              @click="onExpansionPanelToggle"
+            >
               <template #default="{ expanded }">
                 <TaskRunItem
                   class="py-1"
                   :title="getTitleForLog(logs[0], userName)"
+                  :entryTime="logs[0].entryTime"
                   :taskRun="
                     taskRuns.find((taskRun) => taskRun.id === logs[0].taskRunId)
                   "
@@ -139,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, useTemplateRef } from 'vue'
 import { VDateInput } from 'vuetify/labs/components'
 import LogItem from '@/components/logdisplay/LogItem.vue'
 import TaskRunItem from './TaskRunItem.vue'
@@ -179,6 +184,8 @@ interface Props {
 const props = defineProps<Props>()
 
 const availableWorkflows = useAvailableWorkflowsStore()
+
+const virtualScroll = useTemplateRef('virtualScroll')
 
 const search = ref<string>()
 const maxCount = ref<number>(1000)
@@ -304,6 +311,12 @@ function getTitleForLog(log: LogMessage, userName: string) {
 
   const workflow = workflowId ? availableWorkflows.byId(workflowId) : undefined
   return workflow?.name ?? logToUser(log, userName)
+}
+
+function onExpansionPanelToggle() {
+  setTimeout(() => {
+    virtualScroll.value?.calculateVisibleItems()
+  }, 310)
 }
 </script>
 

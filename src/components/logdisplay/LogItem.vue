@@ -99,5 +99,5 @@ const emit = defineEmits(['disseminateLog'])
   word-wrap: break-word;
   overflow-wrap: break-word;
   max-width: 100%;
-} 
+}
 </style>
