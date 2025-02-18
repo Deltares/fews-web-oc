@@ -94,7 +94,6 @@
       class="scroll-container"
       :items="groupedByTaskRunId"
       :item-height="50"
-      ref="virtualScroll"
     >
       <template #default="{ item: logs }">
         <LogItem
@@ -103,7 +102,6 @@
           :disseminations="disseminations"
           :userName="userName"
           @disseminate-log="disseminateLog"
-          @on-expansion-panel-toggle="onExpansionPanelToggle"
         />
       </template>
     </v-virtual-scroll>
@@ -145,8 +143,6 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-
-const virtualScroll = useTemplateRef('virtualScroll')
 
 const search = ref<string>()
 const maxCount = ref<number>(1000)
@@ -263,12 +259,6 @@ function disseminateLog(
 function refreshLogs() {
   // Set endDate to now + 5 seconds to ensure the backend will return the latest logs
   endDate.value = new Date(new Date().getTime() + 5000)
-}
-
-function onExpansionPanelToggle() {
-  setTimeout(() => {
-    virtualScroll.value?.calculateVisibleItems()
-  }, 310)
 }
 </script>
 
