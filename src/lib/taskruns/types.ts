@@ -30,3 +30,7 @@ export interface TaskRun {
   userId: string | null
   isScheduled: boolean
 }
+
+export function isTaskStatus(value: string): value is TaskStatus {
+  return Object.values(TaskStatus).includes(value as TaskStatus)
+}
