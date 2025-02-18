@@ -99,3 +99,17 @@ export function getIconForTaskStatus(status: TaskStatus): string {
       return 'mdi-alert-circle'
   }
 }
+
+export function getColorForTaskStatus(status: TaskStatus): string {
+  const category = getTaskStatusCategory(status)
+  switch (category) {
+    case TaskStatusCategory.Pending:
+      return 'info'
+    case TaskStatusCategory.Running:
+      return 'primary'
+    case TaskStatusCategory.Completed:
+      return 'success'
+    case TaskStatusCategory.Failed:
+      return 'error'
+  }
+}
