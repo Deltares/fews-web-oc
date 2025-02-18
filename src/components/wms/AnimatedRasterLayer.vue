@@ -16,7 +16,7 @@ import {
 import { configManager } from '@/services/application-config'
 import { useMap } from '@/services/useMap'
 import { point } from '@turf/helpers'
-import { getBeforeId, getLayerId, getSourceId, isCustomLayer } from '@/lib/map'
+import { getBeforeId, getLayerId, getSourceId } from '@/lib/map'
 
 export interface AnimatedRasterLayerOptions {
   name: string
