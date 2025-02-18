@@ -5,6 +5,7 @@
         <v-icon
           class="me-2"
           :icon="getIconForStatus(taskRun?.status)"
+          :color="getColorForStatus(taskRun?.status)"
           size="20"
         />
         <div class="d-flex flex-column user-select-text cursor-pointer">
@@ -109,7 +110,11 @@ import {
 } from '@/lib/log'
 import { computed } from 'vue'
 import { toDateSpanString, toHumanReadableDate } from '@/lib/date'
-import { getIconForTaskStatus, isTaskStatus } from '@/lib/taskruns'
+import {
+  getColorForTaskStatus,
+  getIconForTaskStatus,
+  isTaskStatus,
+} from '@/lib/taskruns'
 
 interface Props {
   title?: string
@@ -137,6 +142,12 @@ function getIconForStatus(status: string | undefined) {
   return status && isTaskStatus(status)
     ? getIconForTaskStatus(status)
     : 'mdi-bell-outline'
+}
+
+function getColorForStatus(status: string | undefined) {
+  return status && isTaskStatus(status)
+    ? getColorForTaskStatus(status)
+    : 'yellow-darken-1'
 }
 </script>
 
