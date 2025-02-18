@@ -46,8 +46,6 @@ import {
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
-import { useRoute, useRouter } from 'vue-router'
-import { findParentRoute } from '@/router'
 import {
   useWmsLayerCapabilities,
   useWmsMaxValuesTimeSeries,
@@ -87,8 +85,8 @@ const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings('map'),
 })
 
-const route = useRoute()
-const router = useRouter()
+const emit = defineEmits(['navigate'])
+
 const { thresholds } = useDisplay()
 const containerRef = useTemplateRef('container')
 
@@ -241,22 +239,17 @@ function onLocationsChange(locationIds: string[] | null): void {
 }
 
 function openLocationsTimeSeriesDisplay(locationIds: string[]) {
-  const routeName = route.name
-    ?.toString()
-    .replace('SpatialDisplay', 'SpatialTimeSeriesDisplay')
-    .replace('WithCoordinates', '')
   currentLocationIds.value = locationIds
   currentLatitude.value = undefined
   currentLongitude.value = undefined
-  router.push({
-    name: routeName,
+
+  const to = {
+    name: 'SpatialTimeSeriesDisplay',
     params: {
-      nodeId: route.params.nodeId,
-      layerName: props.layerName,
       locationIds: locationIds.join(','),
     },
-    query: route.query,
-  })
+  }
+  emit('navigate', to)
 }
 
 function onCoordinateClick(latitude: number, longitude: number): void {
@@ -265,29 +258,18 @@ function onCoordinateClick(latitude: number, longitude: number): void {
 
 function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
   if (!onlyCoverageLayersAvailable.value) return
-  const routeName = route.name
-    ?.toString()
-    .replace('SpatialDisplay', 'SpatialTimeSeriesDisplay')
-    .replace('WithCoordinates', '')
-    .replace(
-      'SpatialTimeSeriesDisplay',
-      'SpatialTimeSeriesDisplayWithCoordinates',
-    )
-  if (!routeName || !router.hasRoute(routeName)) return
-
   currentLatitude.value = latitude.toFixed(3)
   currentLongitude.value = longitude.toFixed(3)
   currentLocationIds.value = undefined
-  router.push({
-    name: routeName,
+
+  const to = {
+    name: 'SpatialTimeSeriesDisplayWithCoordinates',
     params: {
-      nodeId: route.params.nodeId,
-      layerName: props.layerName,
       latitude,
       longitude,
     },
-    query: route.query,
-  })
+  }
+  emit('navigate', to)
 }
 
 function closeTimeSeriesDisplay(): void {
@@ -295,17 +277,7 @@ function closeTimeSeriesDisplay(): void {
   currentLatitude.value = undefined
   currentLongitude.value = undefined
 
-  const parentRoute = findParentRoute(route)
-  if (parentRoute !== null) {
-    router.push({
-      name: parentRoute.name,
-      params: {
-        nodeId: route.params.nodeId,
-        layerName: props.layerName,
-      },
-      query: route.query,
-    })
-  }
+  emit('navigate', { name: 'SpatialDisplay' })
 }
 
 watch(

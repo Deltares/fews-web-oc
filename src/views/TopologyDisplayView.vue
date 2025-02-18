@@ -64,7 +64,11 @@
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
       <keep-alive include="SpatialDisplay">
-        <component :is="Component" :topologyNode="topologyNode" />
+        <component
+          :is="Component"
+          :topologyNode="topologyNode"
+          @navigate="onNavigate"
+        />
       </keep-alive>
     </router-view>
     <div
@@ -306,6 +310,46 @@ watchEffect(() => {
 
   externalLink.value = node.url
 })
+
+function onNavigate(to: RouteLocationNormalized) {
+  switch (to.name) {
+    case 'SpatialTimeSeriesDisplay':
+      router.push({
+        name: `Topology${to.name}`,
+        params: {
+          nodeId: props.nodeId,
+          layerName: props.layerName,
+          locationIds: to.params.locationIds,
+        },
+        query: route.query,
+      })
+      break
+    case 'SpatialTimeSeriesDisplayWithCoordinates':
+      router.push({
+        name: `Topology${to.name}`,
+        params: {
+          nodeId: props.nodeId,
+          layerName: props.layerName,
+          latitude: to.params.latitude,
+          longitude: to.params.longitude,
+        },
+        query: route.query,
+      })
+      break
+    case 'SpatialDisplay':
+      router.push({
+        name: `Topology${to.name}`,
+        params: {
+          nodeId: props.nodeId,
+          layerName: props.layerName,
+        },
+        query: route.query,
+      })
+      break
+    default:
+      console.warn(`Unknown route name: ${String(to.name)}`)
+  }
+}
 
 onBeforeRouteUpdate(reroute)
 
