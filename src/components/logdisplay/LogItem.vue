@@ -58,7 +58,7 @@ const taskRun = computed(() =>
 
 const log = computed(() => props.logs[0])
 
-const emit = defineEmits(['disseminateLog', 'onExpansionPanelToggle'])
+const emit = defineEmits(['disseminateLog'])
 
 function getTitleForLog(log: LogMessage, userName: string) {
   const workflowId = props.taskRuns.find(
@@ -71,6 +71,5 @@ function getTitleForLog(log: LogMessage, userName: string) {
 
 function onExpansionPanelToggle() {
   expanded.value = !expanded.value
-  emit('onExpansionPanelToggle')
 }
 </script>
