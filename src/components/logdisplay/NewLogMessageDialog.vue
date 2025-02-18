@@ -14,7 +14,7 @@
       <v-card-text>
         <v-select
           v-model="newLogLevel"
-          :items="logLevels"
+          :items="manualLogLevels"
           :item-title="levelToTitle"
           :item-value="(item) => item"
           label="Log level"
@@ -54,11 +54,12 @@
 </template>
 
 <script setup lang="ts">
-import { type LogLevel, logLevels, levelToTitle } from '@/lib/log'
+import { levelToTitle, manualLogLevels, type ManualLogLevel } from '@/lib/log'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { configManager } from '@/services/application-config'
 import {
   ForecasterNoteRequest,
+  LogDisplayLogs,
   PiWebserviceProvider,
   type ForecasterNoteGroup,
 } from '@deltares/fews-pi-requests'
@@ -108,7 +109,7 @@ const validateInput = () => {
 }
 
 const newMessageDialog = ref(false)
-const newLogLevel = ref<LogLevel>('INFO')
+const newLogLevel = ref<ManualLogLevel>('INFO')
 const text = ref('')
 const postErrorMessage = ref<string>()
 
@@ -121,7 +122,7 @@ async function saveNewMessage() {
   const response = await postNewLogMessage(
     props.noteGroup.id,
     text.value,
-    newLogLevel.value,
+    newLogLevel.value === 'CRITICAL' ? 'ERROR' : newLogLevel.value,
   )
   isPosting.value = false
 
@@ -138,7 +139,7 @@ async function saveNewMessage() {
 async function postNewLogMessage(
   noteGroupId: string,
   logMessage: string,
-  logLevel: LogLevel,
+  logLevel: LogDisplayLogs['level'],
 ) {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const provider = new PiWebserviceProvider(baseUrl, {
