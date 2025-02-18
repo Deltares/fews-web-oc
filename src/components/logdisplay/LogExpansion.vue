@@ -4,6 +4,7 @@
     :headers="headers"
     :items="logs"
     class="virtual-table"
+    item-height="41"
   >
     <template #header.actions>
       <!-- empty  -->
@@ -81,6 +82,6 @@ const emit = defineEmits(['disseminateLog'])
 
 <style scoped>
 .virtual-table {
-  max-height: 1000px;
+  max-height: 500px;
 }
 </style>
