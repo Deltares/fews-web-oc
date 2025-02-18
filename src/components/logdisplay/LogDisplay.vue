@@ -1,5 +1,5 @@
 <template>
-  <LogsComponent
+  <LogDisplayComponent
     v-if="logDisplay"
     :key="logDisplay.id"
     :logDisplay
@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import LogsComponent from '@/components/logdisplay/LogsComponent.vue'
+import LogDisplayComponent from './LogDisplayComponent.vue'
 import { configManager } from '@/services/application-config'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import { useNoteGroup } from '@/services/useNoteGroup'
