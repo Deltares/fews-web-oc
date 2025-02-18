@@ -21,11 +21,11 @@
           </v-card-subtitle>
         </div>
         <v-spacer />
-        <template v-for="level in logLevels.toReversed()">
+        <template v-for="level in manualLogLevels.toReversed()">
           <v-chip
-            v-if="levelCount[level]"
+            v-if="levelCount[logLevelToPiLogLevel(level)]"
             :prepend-icon="levelToIcon(level)"
-            :text="levelCount[level].toString()"
+            :text="levelCount[logLevelToPiLogLevel(level)].toString()"
             :color="levelToColor(level)"
             label
             density="compact"
@@ -104,6 +104,8 @@ import {
   type LogMessage,
   levelToIcon,
   levelToColor,
+  logLevelToPiLogLevel,
+  manualLogLevels,
 } from '@/lib/log'
 import { computed } from 'vue'
 import { toDateSpanString, toHumanReadableDate } from '@/lib/date'
