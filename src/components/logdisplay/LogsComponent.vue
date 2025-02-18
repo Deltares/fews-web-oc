@@ -97,7 +97,7 @@
       ref="virtualScroll"
     >
       <template #default="{ item: logs }">
-        <LogExpander
+        <LogItem
           :logs="logs"
           :taskRuns="taskRuns"
           :disseminations="disseminations"
@@ -113,7 +113,7 @@
 <script setup lang="ts">
 import { ref, computed, useTemplateRef } from 'vue'
 import { VDateInput } from 'vuetify/labs/components'
-import LogExpander from './LogExpander.vue'
+import LogItem from './LogItem.vue'
 import {
   type LogType,
   type LogLevel,
