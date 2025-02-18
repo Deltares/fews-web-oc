@@ -107,6 +107,7 @@ import {
 } from '@/lib/log'
 import { computed } from 'vue'
 import { toDateSpanString, toHumanReadableDate } from '@/lib/date'
+import { getIconForTaskStatus, isTaskStatus } from '@/lib/taskruns'
 
 interface Props {
   title?: string
@@ -131,20 +132,9 @@ const levelCount = computed(() =>
 )
 
 function getIconForStatus(status: string | undefined) {
-  switch (status) {
-    case 'pending':
-      return 'mdi-human-queue'
-    case 'running':
-      return 'mdi-run'
-    case 'completed':
-      return 'mdi-check'
-    case 'failed':
-      return 'mdi-alert-circle'
-    case 'approved':
-      return 'mdi-check'
-    default:
-      return 'mdi-bell-outline'
-  }
+  return status && isTaskStatus(status)
+    ? getIconForTaskStatus(status)
+    : 'mdi-bell-outline'
 }
 </script>
 
