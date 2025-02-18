@@ -9,11 +9,9 @@ import DashboardDisplay from '@/components/general/DashboardDisplay.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { useDashboard } from '@/services/useDashboard'
 import { configManager } from '@/services/application-config'
-import type { ComponentSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   topologyNode?: TopologyNode
-  settings?: ComponentSettings
 }
 
 const props = defineProps<Props>()

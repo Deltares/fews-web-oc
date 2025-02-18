@@ -269,28 +269,11 @@ function updateItems(): void {
 watch(subNodes, updateItems)
 watch(thresholds, updateItems)
 
-const topologyComponentSettingIds = computed(() => {
-  if (!topologyNode.value) return []
-
-  const ids: string[] = []
-  let node: TopologyNode | undefined = topologyNode.value
-  while (node) {
-    // @ts-expect-error FIXME: Update when the types are updated
-    const componentSettingsId = node.componentSettingsId as string | undefined
-
-    if (componentSettingsId) {
-      ids.push(componentSettingsId)
-    }
-
-    node = topologyNodesStore.getParentNodeById(node.id)
-  }
-  return ids.toReversed()
-})
-
 const { componentSettings } = useComponentSettings(baseUrl, () => [
   // @ts-expect-error FIXME: Update when the types are updated
-  topologyComponentConfig.value.componentSettingsId,
-  ...topologyComponentSettingIds.value,
+  topologyComponentConfig.value?.componentSettingsId,
+  // @ts-expect-error FIXME: Update when the types are updated
+  topologyNode.value?.componentSettingsId,
 ])
 
 // Update the displayTabs if the active node changes (or if the topologyMap changes).
