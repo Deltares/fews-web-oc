@@ -37,9 +37,8 @@ export function useTaskRuns(
       const provider = new PiWebserviceProvider(baseUrl, {
         transformRequestFn: createTransformRequestFn(),
       })
-      const uniqueTaskRunIds = Array.from(new Set(_taskRunIds))
       const filter: TaskRunsFilter = {
-        taskRunIds: uniqueTaskRunIds.join(','),
+        taskRunIds: _taskRunIds.join(','),
         documentFormat: DocumentFormat.PI_JSON,
       }
       const response = await provider.getTaskRuns(filter)
