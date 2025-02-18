@@ -76,7 +76,7 @@ function addUpdateWatcher<T>(
   watch(watchExpression, async (newValue) => {
     if (!layer) return
 
-    abortController.abort()
+    abortController.abort('Cancelled by new request')
     abortController = new AbortController()
 
     const isInitialised = await layer.waitForInitialisation(
