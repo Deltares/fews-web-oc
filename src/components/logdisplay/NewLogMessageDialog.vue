@@ -94,7 +94,6 @@ const errorMessage = computed(() => {
 })
 
 const validateInput = () => {
-  console.log('Validating input')
   let lines = text.value.split('\n')
 
   // Trim lines if more than allowed
