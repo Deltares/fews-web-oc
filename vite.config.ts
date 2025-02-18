@@ -40,7 +40,15 @@ export default defineConfig(({ mode }) => {
           `style-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} 'unsafe-inline'`, // vuetify
           `worker-src blob:`, // maplibre-gl
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices
-          `connect-src 'self' https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://login.microsoftonline.com ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices, Authentication, Basemaps
+          [
+            `connect-src`,
+            `'self'`,
+            `https://basemaps.cartocdn.com`,
+            `https://*.basemaps.cartocdn.com`,
+            `https://login.microsoftonline.com`,
+            `${env.VITE_FEWS_WEBSERVICES_URL}`,
+            `${env.ADDITIONAL_CONNECT_SRC}`,
+          ].join(' '), // FEWS webservices, Authentication, Basemaps
           `frame-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
         ].join('; '),
       },
