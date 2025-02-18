@@ -3,7 +3,7 @@
     <div class="child-container" :class="{ 'd-none': hideMap }">
       <SpatialDisplayComponent
         :layer-name="props.layerName"
-        :location-ids="currentLocationIds"
+        :location-ids="props.locationIds"
         :latitude="props.latitude"
         :longitude="props.longitude"
         :locations="locations"
