@@ -237,9 +237,11 @@ const groupedByTaskRunId = computed(() => {
   ) as LogMessage[][]
 })
 
-const taskRunIds = computed(() =>
-  groupedByTaskRunId.value.map((logs) => logs[0].taskRunId),
-)
+const taskRunIds = computed(() => {
+  const _taskRunIds = logMessages.value.map((logs) => logs.taskRunId)
+  const uniqueTaskRunIds = Array.from(new Set(_taskRunIds))
+  return uniqueTaskRunIds
+})
 
 const { taskRuns } = useTaskRuns(baseUrl, taskRunIds)
 
