@@ -97,46 +97,13 @@
       ref="virtualScroll"
     >
       <template #default="{ item: logs }">
-        <v-expansion-panels v-if="logs[0].type === 'system'" flat focusable>
-          <v-expansion-panel>
-            <v-expansion-panel-title
-              class="pa-0"
-              @click="onExpansionPanelToggle"
-            >
-              <template #default="{ expanded }">
-                <TaskRunItem
-                  class="py-1"
-                  :title="getTitleForLog(logs[0], userName)"
-                  :entryTime="logs[0].entryTime"
-                  :taskRun="
-                    taskRuns.find((taskRun) => taskRun.id === logs[0].taskRunId)
-                  "
-                  :logs="logs"
-                  :expanded="expanded"
-                />
-              </template>
-              <template #actions> </template>
-            </v-expansion-panel-title>
-            <v-expansion-panel-text>
-              <LogExpansion
-                :logs="logs"
-                :taskRun="
-                  taskRuns.find((taskRun) => taskRun.id === logs[0].taskRunId)
-                "
-                :disseminations="disseminations"
-                @disseminate-log="disseminateLog"
-              />
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-        </v-expansion-panels>
-
-        <LogItem
-          v-else
-          class="py-1"
-          :log="logs[0]"
-          :userName="userName"
+        <LogExpander
+          :logs="logs"
+          :taskRuns="taskRuns"
           :disseminations="disseminations"
+          :userName="userName"
           @disseminate-log="disseminateLog"
+          @on-expansion-panel-toggle="onExpansionPanelToggle"
         />
       </template>
     </v-virtual-scroll>
@@ -146,8 +113,7 @@
 <script setup lang="ts">
 import { ref, computed, useTemplateRef } from 'vue'
 import { VDateInput } from 'vuetify/labs/components'
-import LogItem from '@/components/logdisplay/LogItem.vue'
-import TaskRunItem from './TaskRunItem.vue'
+import LogExpander from './LogExpander.vue'
 import {
   type LogType,
   type LogLevel,
@@ -158,7 +124,6 @@ import {
   logTypes,
   toTitleCase,
   LogMessage,
-  logToUser,
   levelToTitle,
 } from '@/lib/log'
 import type {
@@ -171,10 +136,8 @@ import { configManager } from '@/services/application-config'
 import { debouncedRef } from '@vueuse/core'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
-import LogExpansion from './LogExpansion.vue'
 import NewLogMessageDialog from './NewLogMessageDialog.vue'
 import { useTaskRuns } from '@/services/useTaskRuns'
-import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 
 interface Props {
   logDisplay: LogsDisplay
@@ -182,8 +145,6 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-
-const availableWorkflows = useAvailableWorkflowsStore()
 
 const virtualScroll = useTemplateRef('virtualScroll')
 
@@ -302,15 +263,6 @@ function disseminateLog(
 function refreshLogs() {
   // Set endDate to now + 5 seconds to ensure the backend will return the latest logs
   endDate.value = new Date(new Date().getTime() + 5000)
-}
-
-function getTitleForLog(log: LogMessage, userName: string) {
-  const workflowId = taskRuns.value.find(
-    (taskRun) => taskRun.id === log.taskRunId,
-  )?.workflowId
-
-  const workflow = workflowId ? availableWorkflows.byId(workflowId) : undefined
-  return workflow?.name ?? logToUser(log, userName)
 }
 
 function onExpansionPanelToggle() {

@@ -1,102 +1,100 @@
 <template>
-  <div class="w-100 h-100">
-    <v-card border flat density="compact">
-      <v-card-text class="py-2 h-100">
-        <div class="d-flex gap-2 align-center">
-          <v-icon
-            class="me-2"
-            :icon="getIconForStatus(taskRun?.status)"
-            size="20"
-          />
-          <div class="d-flex flex-column user-select-text cursor-pointer">
-            <div class="d-flex align-center ga-2">
-              <v-list-item-title>
-                {{ title }}
-              </v-list-item-title>
-              <v-card-subtitle class="pa-0">{{
-                toHumanReadableDate(entryTime)
-              }}</v-card-subtitle>
-            </div>
-            <v-card-subtitle class="pa-0">
-              T0: {{ toHumanReadableDate(taskRun?.time0) }}
-            </v-card-subtitle>
+  <v-card border flat density="compact">
+    <v-card-text class="py-2 h-100">
+      <div class="d-flex gap-2 align-center">
+        <v-icon
+          class="me-2"
+          :icon="getIconForStatus(taskRun?.status)"
+          size="20"
+        />
+        <div class="d-flex flex-column user-select-text cursor-pointer">
+          <div class="d-flex align-center ga-2">
+            <v-list-item-title>
+              {{ title }}
+            </v-list-item-title>
+            <v-card-subtitle class="pa-0">{{
+              toHumanReadableDate(entryTime)
+            }}</v-card-subtitle>
           </div>
-          <v-spacer />
-          <template v-for="level in logLevels.toReversed()">
-            <v-chip
-              v-if="levelCount[level]"
-              :prepend-icon="levelToIcon(level)"
-              :text="levelCount[level].toString()"
-              :color="levelToColor(level)"
-              label
-              density="compact"
-              class="ms-2"
-            />
-          </template>
+          <v-card-subtitle class="pa-0">
+            T0: {{ toHumanReadableDate(taskRun?.time0) }}
+          </v-card-subtitle>
         </div>
-        <template v-if="expanded && taskRun">
-          <div class="table-container">
-            <table @click.stop class="log-table user-select-text">
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Task run ID</th>
-                  <th>FSS ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{{ taskRun.user ?? 'No user' }}</td>
-                  <td>{{ taskRun.id }}</td>
-                  <td>{{ taskRun.fssId }}</td>
-                </tr>
-              </tbody>
-            </table>
-            <table @click.stop class="log-table user-select-text">
-              <thead>
-                <tr>
-                  <th><span>Time zero</span></th>
-                  <th><span>Output time span</span></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{{ toHumanReadableDate(taskRun.time0) }}</td>
-                  <td>
-                    {{
-                      toDateSpanString(
-                        taskRun.outputStartTime,
-                        taskRun.outputEndTime,
-                      )
-                    }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <table @click.stop class="log-table user-select-text">
-              <thead>
-                <tr>
-                  <th>Task duration</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    {{
-                      toDateSpanString(
-                        taskRun.dispatchTime,
-                        taskRun.completionTime,
-                      )
-                    }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <v-spacer />
+        <template v-for="level in logLevels.toReversed()">
+          <v-chip
+            v-if="levelCount[level]"
+            :prepend-icon="levelToIcon(level)"
+            :text="levelCount[level].toString()"
+            :color="levelToColor(level)"
+            label
+            density="compact"
+            class="ms-2"
+          />
         </template>
-      </v-card-text>
-    </v-card>
-  </div>
+      </div>
+      <template v-if="expanded && taskRun">
+        <div class="table-container">
+          <table @click.stop class="log-table user-select-text">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Task run ID</th>
+                <th>FSS ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ taskRun.user ?? 'No user' }}</td>
+                <td>{{ taskRun.id }}</td>
+                <td>{{ taskRun.fssId }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <table @click.stop class="log-table user-select-text">
+            <thead>
+              <tr>
+                <th><span>Time zero</span></th>
+                <th><span>Output time span</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ toHumanReadableDate(taskRun.time0) }}</td>
+                <td>
+                  {{
+                    toDateSpanString(
+                      taskRun.outputStartTime,
+                      taskRun.outputEndTime,
+                    )
+                  }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <table @click.stop class="log-table user-select-text">
+            <thead>
+              <tr>
+                <th>Task duration</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  {{
+                    toDateSpanString(
+                      taskRun.dispatchTime,
+                      taskRun.completionTime,
+                    )
+                  }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </template>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script setup lang="ts">
