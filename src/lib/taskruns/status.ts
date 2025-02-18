@@ -85,3 +85,17 @@ export function getTaskStatusesForCategory(
   )
   return category?.statuses ?? []
 }
+
+export function getIconForTaskStatus(status: TaskStatus): string {
+  const category = getTaskStatusCategory(status)
+  switch (category) {
+    case TaskStatusCategory.Pending:
+      return 'mdi-human-queue'
+    case TaskStatusCategory.Running:
+      return 'mdi-run'
+    case TaskStatusCategory.Completed:
+      return 'mdi-check'
+    case TaskStatusCategory.Failed:
+      return 'mdi-alert-circle'
+  }
+}

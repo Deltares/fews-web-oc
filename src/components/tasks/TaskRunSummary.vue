@@ -50,6 +50,7 @@
 <script setup lang="ts">
 import {
   convertTaskStatusToString,
+  getIconForTaskStatus,
   getTaskStatusCategory,
   TaskRun,
   TaskStatus,
@@ -109,19 +110,9 @@ const statusClass = computed<string>(() => {
       return 'failed'
   }
 })
-const statusIcon = computed<string>(() => {
-  const category = getTaskStatusCategory(props.task.status)
-  switch (category) {
-    case TaskStatusCategory.Pending:
-      return 'mdi-human-queue'
-    case TaskStatusCategory.Running:
-      return 'mdi-run'
-    case TaskStatusCategory.Completed:
-      return 'mdi-check'
-    case TaskStatusCategory.Failed:
-      return 'mdi-alert-circle'
-  }
-})
+const statusIcon = computed<string>(() =>
+  getIconForTaskStatus(props.task.status),
+)
 
 function formatTimestamp(timestamp: number | null): string {
   if (timestamp === null) return '—'
