@@ -1,5 +1,5 @@
 <template>
-  <template v-if="taskRun">
+  <template v-if="log.type === 'system'">
     <TaskRunItem
       :title="getTitleForLog(log, userName)"
       :entryTime="log.entryTime"
@@ -19,7 +19,7 @@
     />
   </template>
   <LogMessageItem
-    v-else
+    v-if="log.type === 'manual'"
     class="mt-2"
     :log="log"
     :userName="userName"
