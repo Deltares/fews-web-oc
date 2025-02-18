@@ -10,7 +10,7 @@
       :ripple="false"
       @click="onExpansionPanelToggle"
     />
-    <LogExpansion
+    <LogTable
       v-if="expanded"
       :logs="logs"
       :taskRun="taskRun"
@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import LogMessageItem from '@/components/logdisplay/LogMessageItem.vue'
 import TaskRunItem from './TaskRunItem.vue'
-import LogExpansion from './LogExpansion.vue'
+import LogTable from './LogTable.vue'
 import type {
   LogDisplayDisseminationAction,
   TaskRun,
