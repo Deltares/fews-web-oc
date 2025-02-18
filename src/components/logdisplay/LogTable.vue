@@ -83,5 +83,12 @@ const emit = defineEmits(['disseminateLog'])
 <style scoped>
 .virtual-table {
   max-height: 500px;
+  background-color: transparent;
+}
+
+/* Hide last border-bottom of the table */
+.virtual-table
+  :deep(.v-table__wrapper > table > tbody > tr:nth-last-child(2) > td) {
+  border-bottom: none !important;
 }
 </style>
