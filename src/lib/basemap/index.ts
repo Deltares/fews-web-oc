@@ -1,5 +1,6 @@
 import type { UserSettingsWithIcon } from '@/stores/userSettings'
 import type { MapLayerConfig } from '@deltares/fews-pi-requests'
+import { toCharacterIcon } from '@/lib/icons'
 
 export interface BaseMap {
   id: string
@@ -10,7 +11,7 @@ export interface BaseMap {
 
 export function getBaseMapsFromConfig(config: MapLayerConfig) {
   const baseMaps: BaseMap[] =
-    config.mapLayers?.flatMap((layer, i) => {
+    config.mapLayers?.flatMap((layer) => {
       if (!layer.styleJsonFile) return []
       if (!layer.id) return []
       if (!layer.name) return []
@@ -19,7 +20,7 @@ export function getBaseMapsFromConfig(config: MapLayerConfig) {
           id: layer.id,
           name: layer.name,
           style: layer.styleJsonFile,
-          icon: `mdi-roman-numeral-${i + 1}`,
+          icon: toCharacterIcon(layer.name),
         },
       ]
     }) ?? []
