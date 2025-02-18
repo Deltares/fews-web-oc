@@ -1,5 +1,5 @@
 <template>
-  <div class="logs-container d-flex flex-column w-100 h-100 pb-2">
+  <div class="logs-container d-flex flex-column w-100 h-100 py-2">
     <div class="flex-0-0 d-flex justify-center pt-2">
       <div class="flex-0-0 d-flex ga-2 justify-space-between align-center">
         <v-select

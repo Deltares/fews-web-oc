@@ -34,7 +34,7 @@
         </template>
       </div>
       <template v-if="expanded && taskRun">
-        <div class="table-container">
+        <div class="table-container mt-1">
           <table @click.stop class="log-table user-select-text">
             <thead>
               <tr>
