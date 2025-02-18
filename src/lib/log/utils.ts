@@ -11,7 +11,17 @@ export function filterLog(
   logTypes: LogType[],
   search: string | undefined,
 ) {
-  if (levels.length > 0 && !levels.includes(log.level)) return false
+  switch (log.type) {
+    case 'system':
+      if (levels.length > 0 && !levels.includes(log.level)) return false
+      break
+    case 'manual':
+      // In case of manual logs, ERROR is CRITICAL
+      const level = log.level === 'ERROR' ? 'CRITICAL' : log.level
+      if (levels.length > 0 && !levels.includes(level)) return false
+      break
+  }
+
   if (logTypes.length > 0 && !logTypes.includes(log.type)) return false
 
   const user = log.user?.toLowerCase()
@@ -56,6 +66,8 @@ export function levelToTitle(level: LogLevel) {
     case 'WARN':
       return 'Warning'
     case 'ERROR':
+      return 'Error'
+    case 'CRITICAL':
       return 'Critical'
     default:
       return level
@@ -72,6 +84,7 @@ export function levelToIcon(level: LogLevel) {
       return 'mdi-information'
     case 'WARN':
       return 'mdi-alert'
+    case 'CRITICAL':
     case 'ERROR':
       return 'mdi-alert-circle'
   }
@@ -83,6 +96,7 @@ export function levelToColor(level: LogLevel) {
       return 'info'
     case 'WARN':
       return 'warning'
+    case 'CRITICAL':
     case 'ERROR':
       return 'error'
   }
