@@ -18,7 +18,7 @@
       @disseminate-log="emit('disseminateLog', $event)"
     />
   </template>
-  <LogItem
+  <LogMessageItem
     v-else
     class="mt-2"
     :log="log"
@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import LogItem from '@/components/logdisplay/LogItem.vue'
+import LogMessageItem from '@/components/logdisplay/LogMessageItem.vue'
 import TaskRunItem from './TaskRunItem.vue'
 import LogExpansion from './LogExpansion.vue'
 import type {
