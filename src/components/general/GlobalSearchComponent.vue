@@ -44,7 +44,10 @@
                 :key="item.raw.id"
                 @click="itemClick(item.raw)"
               >
-                {{ item.raw.name }}
+                <HighlightMatch :value="item.raw.name" :query="search" />
+                <span class="id-match" v-if="showId(item.raw)">
+                  ID: <HighlightMatch :value="item.raw.id" :query="search" />
+                </span>
               </v-list-item>
             </v-list>
           </template>
@@ -70,13 +73,25 @@ import {
   useGlobalSearchState,
 } from '@/stores/globalSearch'
 
+import HighlightMatch from './HighlightMatch.vue'
+
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
-const search = ref('')
+const search = ref<string | undefined>()
 
 function itemClick(item: any) {
   state.selectedItem = item
   state.active = false
+}
+
+function showId(item: GlobalSearchItem): boolean {
+  const query = search.value
+  if (!query) return false
+
+  const isMatchingName = containsSubstring(item.name, query)
+  const isMatchingId = containsSubstring(item.id, query)
+  // Only show the ID if the search query matches the ID but not the name.
+  return isMatchingId && !isMatchingName
 }
 
 function isMatchingItem(
@@ -92,4 +107,10 @@ function isMatchingItem(
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.id-match {
+  margin-left: 20px;
+  font-size: 0.8em;
+  font-style: italic;
+}
+</style>
