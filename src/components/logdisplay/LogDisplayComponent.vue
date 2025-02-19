@@ -101,6 +101,7 @@
           :taskRuns="taskRuns"
           :disseminations="disseminations"
           :userName="userName"
+          v-model:expanded="expandedItems[logs[0].taskRunId]"
           @disseminate-log="disseminateLog"
         />
       </template>
@@ -109,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { VDateInput } from 'vuetify/labs/components'
 import LogItem from './LogItem.vue'
 import {
@@ -155,6 +156,11 @@ const startDate = computed(
   () => new Date(endDate.value.getTime() - daysBack.value * DAY_IN_MS),
 )
 const endDate = ref<Date>(new Date())
+
+const expandedItems = ref<Record<string, boolean>>({})
+watch(props.logDisplay, () => {
+  expandedItems.value = {}
+})
 
 const { userName } = useCurrentUser()
 
