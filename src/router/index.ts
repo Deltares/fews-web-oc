@@ -28,7 +28,7 @@ const SpatialDisplay = () =>
   import('../components/spatialdisplay/SpatialDisplay.vue')
 const SpatialTimeSeriesDisplay = () =>
   import('../components/spatialdisplay/SpatialTimeSeriesDisplay.vue')
-const TasksDisplay = () => import('../components/tasksdisplay/TasksDisplay.vue')
+const WhatIfDisplayView = () => import('../views/WhatIfDisplayView.vue')
 const TimeSeriesDisplayView = () => import('../views/TimeSeriesDisplayView.vue')
 const TopologyDisplayView = () => import('../views/TopologyDisplayView.vue')
 const DataDownloadDisplayView = () =>
@@ -238,8 +238,8 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
       },
       {
         path: 'tasks',
-        name: 'TopologyTasksDisplay',
-        component: TasksDisplay,
+        name: 'TopologyWhatIfDisplay',
+        component: WhatIfDisplayView,
         props: true,
         meta: { sidebar: true },
       },
