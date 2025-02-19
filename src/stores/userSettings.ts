@@ -31,6 +31,7 @@ export interface UserSettingsItemOneOf {
   type: 'oneOfMultiple'
   label: string
   value: string
+  initialStorageValue?: string
   disabled?: boolean
   items?: UserSettingsWithIcon[]
   favorite?: boolean
@@ -93,6 +94,18 @@ export const useUserSettingsStore = defineStore({
           break
       }
     },
+    updateSettingItems(id: string, items: UserSettingsWithIcon[]) {
+      const current = this.get(id)
+      if (current?.type !== 'oneOfMultiple') return
+
+      current.items = items
+      if (
+        current.initialStorageValue &&
+        current.items.find((item) => item.value === current.initialStorageValue)
+      ) {
+        current.value = current.initialStorageValue
+      }
+    },
     changeUseDisplayUnits(payload: string) {
       const unitSettings: UserSettingsItemOneOf[] = []
       for (const item of this.items) {
@@ -153,6 +166,7 @@ export const useUserSettingsStore = defineStore({
                 )
                 const newValue = prop.items?.[index ?? -1]?.value
                 if (newValue) prop.value = newValue
+                prop.initialStorageValue = storedProp.value
               } else {
                 prop.value = storedProp.value
               }
