@@ -155,8 +155,12 @@ const expandButtonStyle = computed(() => {
   const alignSelf = props.settings.placement.includes('lower')
     ? 'flex-end'
     : 'flex-start'
+  const height = overlay.value ? '28px' : undefined
+  const width = overlay.value ? '28px' : undefined
   return {
     alignSelf,
+    height,
+    width,
   }
 })
 
