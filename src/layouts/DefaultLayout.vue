@@ -238,13 +238,13 @@ watch(
 const baseMapsStore = useBaseMapsStore()
 
 function updateUserSettingBaseMaps(config: MapLayerConfig) {
-  const current = settings.get('ui.map.theme')
-  if (current?.type !== 'oneOfMultiple') return
-
   const baseMaps = getBaseMapsFromConfig(config)
   baseMapsStore.setBaseMaps(baseMaps)
 
-  current.items = baseMapsStore.allBaseMaps.map(convertBaseMapToUserSetting)
+  const settingItems = baseMapsStore.allBaseMaps.map(
+    convertBaseMapToUserSetting,
+  )
+  settings.updateSettingItems('ui.map.theme', settingItems)
 }
 
 const activeComponent = computed(() => configStore.getComponentByRoute(route))
