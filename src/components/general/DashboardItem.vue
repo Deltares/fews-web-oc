@@ -6,6 +6,7 @@
     v-bind="componentItem.componentProps"
     :topologyNode="componentItem.topologyNode"
     :settings="componentSettings"
+    @navigate="onNavigate"
   />
 </template>
 
@@ -23,7 +24,8 @@ import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { configManager } from '@/services/application-config'
 import { useComponentSettings } from '@/services/useComponentSettings'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import { computed } from 'vue'
+import { computed, reactive } from 'vue'
+import { RouteLocationNormalized } from 'vue-router'
 
 interface Props {
   item: WebOCDashboardItem
@@ -50,7 +52,11 @@ function convertItemToComponentItem(item: WebOCDashboardItem) {
   const componentName = item.component
   const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
   const component = componentTypeToComponentMap[componentName]
-  const componentProps = getComponentPropsForNode(componentName, topologyNode)
+  const componentProps = getComponentPropsForNode(
+    componentName,
+    topologyNode,
+    params,
+  )
   const title = topologyNode?.name ?? componentTypeToTitleMap[componentName]
   const icon = topologyNode?.iconId ?? componentTypeToIconMap[componentName]
   return {
@@ -60,6 +66,38 @@ function convertItemToComponentItem(item: WebOCDashboardItem) {
     componentProps,
     componentName,
     topologyNode,
+  }
+}
+interface Params {
+  locationIds?: string
+  latitude?: string
+  longitude?: string
+}
+
+const params = reactive<Params>({})
+
+function onNavigate(to: RouteLocationNormalized) {
+  switch (to.name) {
+    case 'SpatialTimeSeriesDisplay':
+      params.locationIds =
+        typeof to.params.locationIds === 'string'
+          ? to.params.locationIds
+          : to.params.locationIds.join(',')
+      params.latitude = undefined
+      params.longitude = undefined
+      break
+    case 'SpatialTimeSeriesDisplayWithCoordinates':
+      params.locationIds = undefined
+      params.latitude = String(to.params.latitude)
+      params.longitude = String(to.params.longitude)
+      break
+    case 'SpatialDisplay':
+      params.locationIds = undefined
+      params.latitude = undefined
+      params.longitude = undefined
+      break
+    default:
+      console.warn(`Unknown route name: ${String(to.name)}`)
   }
 }
 </script>
