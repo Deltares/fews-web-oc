@@ -44,12 +44,16 @@ export type PropsForComponentType<T extends ComponentType> = ComponentProps<
 export function getComponentPropsForNode(
   componentType: ComponentType,
   node?: TopologyNode,
+  routeParams?: Record<string, string | undefined>,
 ): PropsForComponentType<ComponentType> | undefined {
   if (!node) return
 
   if (componentType === 'map') {
     const result: PropsForComponentType<'map'> = {
       layerName: node.gridDisplaySelection?.plotId,
+      locationIds: routeParams?.locationIds,
+      longitude: routeParams?.longitude,
+      latitude: routeParams?.latitude,
     }
     return result
   }
