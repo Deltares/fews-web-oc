@@ -37,7 +37,7 @@ export const componentTypeToTitleMap = {
   'system-monitor': 'System Monitor',
   'html-display': 'Web Display',
   dashboard: 'Dashboard',
-  'whatif-display': 'Tasks',
+  'whatif-display': 'What If',
   'log-display': 'Log',
 } satisfies Record<ComponentType, string>
 
