@@ -131,7 +131,7 @@ export function toDateDifferenceString(
   const days = Math.floor(hours / 24)
   const weeks = Math.floor(days / 7)
 
-  return [
+  const result = [
     weeks ? `${weeks}w` : '',
     days % 7 ? `${days % 7}d` : '',
     hours % 24 ? `${hours % 24}h` : '',
@@ -140,6 +140,7 @@ export function toDateDifferenceString(
   ]
     .filter((part) => part)
     .join(' ')
+  return result ? result : '0s'
 }
 
 export function toDateSpanString(
