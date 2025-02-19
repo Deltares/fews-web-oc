@@ -3,6 +3,7 @@
     <div class="flex-0-0 d-flex justify-center pt-2">
       <div class="flex-0-0 d-flex ga-2 justify-space-between align-center">
         <v-select
+          v-if="manualFilters.length && systemFilters.length"
           v-model="selectedLogTypes"
           :items="logTypes"
           label="Log Type"
