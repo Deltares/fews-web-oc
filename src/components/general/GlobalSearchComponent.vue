@@ -31,6 +31,7 @@
       </v-card-title>
       <v-card-text class="pa-0">
         <v-data-iterator
+          :custom-filter="isMatchingItem"
           :items="state.items"
           :items-per-page="200"
           :search="search"
@@ -59,9 +60,15 @@
 </template>
 
 <script lang="ts" setup>
-import { useGlobalSearchState } from '@/stores/globalSearch'
 import { ref } from 'vue'
 import { useDisplay } from 'vuetify'
+
+import { containsSubstring } from '@/lib/search'
+
+import {
+  type GlobalSearchItem,
+  useGlobalSearchState,
+} from '@/stores/globalSearch'
 
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
@@ -70,6 +77,18 @@ const search = ref('')
 function itemClick(item: any) {
   state.selectedItem = item
   state.active = false
+}
+
+function isMatchingItem(
+  id: string,
+  query: string,
+  item?: { raw: GlobalSearchItem },
+): boolean {
+  // A location matches if name and/or ID contains a substring that matches the
+  // query.
+  const isMatchingId = containsSubstring(id, query)
+  const isMatchingName = item ? containsSubstring(item.raw.name, query) : false
+  return isMatchingId || isMatchingName
 }
 </script>
 
