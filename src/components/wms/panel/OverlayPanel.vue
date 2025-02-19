@@ -1,6 +1,12 @@
 <template>
   <v-list-item prepend-icon="mdi-layers-outline">
-    <v-list-item title="Select All" @click="toggleAll" class="ps-1">
+    <span class="pa-0">Overlays</span>
+    <v-list-item
+      title="Select All"
+      @click="toggleAll"
+      class="ps-1"
+      density="compact"
+    >
       <template #prepend>
         <v-list-item-action start>
           <v-checkbox-btn
@@ -26,6 +32,7 @@
         :value="overlay.id"
         :active="false"
         class="ps-1"
+        density="compact"
       >
         <template #prepend="{ isSelected }">
           <v-list-item-action start>
