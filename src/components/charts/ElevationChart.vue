@@ -147,7 +147,11 @@ onMounted(() => {
       chartHeight,
       axisOptions,
     )
-    const mouseOver = new VerticalMouseOver()
+    // Use custom number formatter that just converts the value to a string;
+    // appropriate rounding has already been done by the backend.
+    const mouseOver = new VerticalMouseOver(undefined, (value: number) =>
+      value.toString(),
+    )
     const zoom = props.zoomHandler ?? new ZoomHandler(WheelMode.NONE)
 
     axis.accept(zoom)

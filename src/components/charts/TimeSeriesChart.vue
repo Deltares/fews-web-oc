@@ -161,7 +161,11 @@ onMounted(() => {
       null,
       merge(axisOptions, { x: props.config?.xAxis, y: props.config?.yAxis }),
     )
-    const mouseOver = new MouseOver()
+    // Use custom number formatter that just converts the value to a string;
+    // appropriate rounding has already been done by the backend.
+    const mouseOver = new MouseOver(undefined, (value: number) =>
+      value.toString(),
+    )
     const zoom = props.zoomHandler ?? new ZoomHandler(WheelMode.NONE)
     axisTime.value = new CurrentTime({
       x: {
