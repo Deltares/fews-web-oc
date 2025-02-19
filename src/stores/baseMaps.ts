@@ -37,9 +37,4 @@ export const useBaseMapsStore = defineStore('basemaps', {
       return this.getBaseMapById('automatic')
     },
   },
-  persist: {
-    key: 'weboc-component-settings-v1.0.0',
-    storage: window.localStorage,
-    omit: ['settings', 'declarations'],
-  },
 })
