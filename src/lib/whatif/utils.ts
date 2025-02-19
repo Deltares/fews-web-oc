@@ -112,6 +112,20 @@ export function getErrorsForProperties(
 
     const property = schema.properties[key]
 
+    if (property.type === 'integer') {
+      const value = properties[key] as number
+      const title = property.title
+      if (!isInteger(value.toString())) {
+        errors.push({
+          keyword: 'type',
+          instancePath: `/${key}`,
+          schemaPath: `#/properties/${key}/type`,
+          params: { type: 'integer' },
+          message: `"${title}" must be an integer`,
+        })
+      }
+    }
+
     if (property.type === 'number') {
       const value = properties[key] as number
       const min = property.minimum
@@ -151,4 +165,8 @@ export function getErrorsForProperties(
 
 function isNumber(value: string) {
   return !isNaN(Number(value))
+}
+
+function isInteger(value: string) {
+  return Number.isInteger(Number(value))
 }
