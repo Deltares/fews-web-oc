@@ -55,8 +55,8 @@
           <table @click.stop class="log-table user-select-text">
             <thead>
               <tr>
-                <th><span>Time zero</span></th>
-                <th><span>Output time span</span></th>
+                <th>Time zero</th>
+                <th>Output time span</th>
               </tr>
             </thead>
             <tbody>
@@ -101,7 +101,6 @@
 <script setup lang="ts">
 import type { TaskRun } from '@deltares/fews-pi-requests'
 import {
-  logLevels,
   type LogMessage,
   levelToIcon,
   levelToColor,
