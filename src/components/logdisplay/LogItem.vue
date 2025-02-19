@@ -38,7 +38,7 @@ import type {
 } from '@deltares/fews-pi-requests'
 import { type LogMessage, logToUser } from '@/lib/log'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
 interface Props {
   userName: string
@@ -50,7 +50,7 @@ interface Props {
 const props = defineProps<Props>()
 const availableWorkflows = useAvailableWorkflowsStore()
 
-const expanded = ref(false)
+const expanded = defineModel<boolean>('expanded', { required: true })
 
 const taskRun = computed(() =>
   props.taskRuns.find((taskRun) => taskRun.id === props.logs[0].taskRunId),
