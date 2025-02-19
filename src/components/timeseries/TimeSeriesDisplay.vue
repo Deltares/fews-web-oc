@@ -4,7 +4,7 @@
     :settings="settings.charts"
   >
     <template #toolbar-title>
-      <v-menu offset-y z-index="10000">
+      <v-menu v-if="plotIds.length > 1" offset-y z-index="10000">
         <template v-slot:activator="{ props }">
           <v-btn class="text-capitalize" variant="text" v-bind="props"
             >{{ plotIds[selectedPlot] }}<v-icon>mdi-chevron-down</v-icon>
