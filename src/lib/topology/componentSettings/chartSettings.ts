@@ -7,16 +7,16 @@ export const defaultChartSettings: ChartsSettings = {
   general: {
     startPanel: 'timeSeriesChart',
     hideToolBar: 'false',
-    showLocationNames: true,
+    showLocationNames: true, // TODO: Implement
   },
   actions: {
     panelPlacement: {
-      defaultPlacement: 'right',
-      allowedPlacement: ['all'],
+      defaultPlacement: 'right', // TODO: Implement
+      allowedPlacement: ['all'], // TODO: Implement
     },
     downloadData: true,
-    downloadMetaData: true,
-    downloadFigure: true,
+    downloadMetaData: true, // TODO: Implement
+    downloadFigure: true, // TODO: Implement
   },
   timeSeriesChart: {
     enabled: true,
@@ -58,9 +58,9 @@ export const defaultChartSettings: ChartsSettings = {
     },
   },
   verticalProfileTable: {
-    enabled: true,
-    allowDepthSorting: true,
-    sortDepthColumn: 'descending',
+    enabled: true, // TODO: Implement
+    allowDepthSorting: true, // TODO: Implement
+    sortDepthColumn: 'descending', // TODO: Implement
   },
   metaDataPanel: {
     enabled: true,
