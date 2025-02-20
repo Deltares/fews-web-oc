@@ -64,7 +64,7 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import {
-  type MapSettings,
+  type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
 import { useElementSize } from '@vueuse/core'
@@ -79,12 +79,12 @@ interface Props {
   latitude?: string
   longitude?: string
   topologyNode?: TopologyNode
-  settings?: MapSettings
+  settings?: ComponentSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
-  settings: () => getDefaultSettings('map'),
+  settings: () => getDefaultSettings(),
 })
 
 const route = useRoute()
@@ -172,6 +172,13 @@ function getTimeSeriesGridActionsFilter():
 }
 
 const filter = computed(() => {
+  if (
+    !props.settings.charts.timeSeriesChart.enabled &&
+    !props.settings.charts.timeSeriesTable.enabled
+  ) {
+    return
+  }
+
   if (currentLocationIds.value) {
     return getFilterActionsFilter()
   }
@@ -181,10 +188,17 @@ const filter = computed(() => {
 })
 
 const showChartPanel = computed(() => {
-  return filter.value !== undefined && props.settings.chartPanelEnabled
+  return filter.value !== undefined
 })
 
 const elevationChartFilter = computed(() => {
+  if (
+    !props.settings.charts.verticalProfileChart.enabled &&
+    !props.settings.charts.verticalProfileTable.enabled
+  ) {
+    return
+  }
+
   if (!layerCapabilities.value?.elevation) return
   const actionsFilter = getTimeSeriesGridActionsFilter()
   if (actionsFilter) {

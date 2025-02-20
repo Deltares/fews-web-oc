@@ -1,41 +1,58 @@
 <template>
   <div v-if="reports?.length" class="d-flex flex-column h-100 w-100">
-    <v-toolbar density="compact">
-      <template v-if="reports.length === 1">
-        <div class="ml-5">{{ reportToTitle(reports[0]) }}</div>
-        <v-spacer />
+    <v-toolbar v-if="showToolbar" density="compact">
+      <template v-if="!settings.report.hideReportName">
+        <div v-if="reports.length === 1" class="ml-5">
+          {{ reportToTitle(reports[0]) }}
+        </div>
+        <v-select
+          v-else
+          v-model="selectedReport"
+          :items="reports"
+          return-object
+          :item-title="(item) => reportToTitle(item)"
+          :item-value="(item) => item.moduleInstanceId"
+          hide-details
+          label="Report"
+          class="px-2"
+          menu-icon="mdi-chevron-down"
+          variant="solo-filled"
+          density="compact"
+        />
       </template>
-      <v-select
-        v-else
-        v-model="selectedReport"
-        :items="reports"
-        return-object
-        :item-title="(item) => reportToTitle(item)"
-        :item-value="(item) => item.moduleInstanceId"
-        hide-details
-        label="Report"
-        class="px-2"
-        menu-icon="mdi-chevron-down"
-        variant="solo-filled"
-        density="compact"
+      <v-spacer />
+      <template v-if="!settings.report.hideAnalysisTime">
+        <template
+          v-if="settings.report.hideNonCurrentReports && selectedReportItem"
+        >
+          <div class="d-flex flex-column mr-3">
+            <v-list-item-subtitle> Analysis time </v-list-item-subtitle>
+            <div>{{ reportItemToTitle(selectedReportItem) }}</div>
+          </div>
+        </template>
+        <v-select
+          v-else
+          v-model="selectedReportItem"
+          :items="reportItems"
+          return-object
+          :item-title="(item) => reportItemToTitle(item)"
+          :item-value="(item) => reportItemToId(item)"
+          :item-props="
+            (item) => ({ subtitle: item.isCurrent ? 'Current' : undefined })
+          "
+          hide-details
+          label="Analysis time"
+          class="pe-2 flex-0-0"
+          menu-icon="mdi-chevron-down"
+          variant="solo-filled"
+          density="compact"
+        />
+      </template>
+      <v-btn
+        v-if="settings.report.downloadReport"
+        @click="downloadFile"
+        icon="mdi-download"
       />
-      <v-select
-        v-model="selectedReportItem"
-        :items="reportItems"
-        return-object
-        :item-title="(item) => reportItemToTitle(item)"
-        :item-value="(item) => reportItemToId(item)"
-        :item-props="
-          (item) => ({ subtitle: item.isCurrent ? 'Current' : undefined })
-        "
-        hide-details
-        label="Analysis time"
-        class="pe-2 flex-0-0"
-        menu-icon="mdi-chevron-down"
-        variant="solo-filled"
-        density="compact"
-      />
-      <v-btn @click="downloadFile" icon="mdi-download" />
     </v-toolbar>
     <iframe :key="url" :src="url" class="html-content" />
   </div>
@@ -54,12 +71,26 @@ import { computed, ref, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import { filterToParams } from '@deltares/fews-wms-requests'
 import { downloadFileWithXhr } from '@/lib/download'
+import {
+  type ComponentSettings,
+  getDefaultSettings,
+} from '@/lib/topology/componentSettings'
 
 interface Props {
   topologyNode?: TopologyNode
+  settings?: ComponentSettings
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  settings: () => getDefaultSettings(),
+})
+
+const showToolbar = computed(
+  () =>
+    !props.settings.report.hideReportName ||
+    !props.settings.report.hideAnalysisTime ||
+    props.settings.report.downloadReport,
+)
 
 const moduleInstanceIds = computed(() => {
   return (

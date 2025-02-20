@@ -42,7 +42,7 @@
       v-model:coordinate="workflowsStore.coordinate"
     />
     <OverlayLayer
-      v-for="overlay in componentSettingsStore.selectedOverlays"
+      v-for="overlay in selectedOverlays"
       :key="overlay.id"
       :overlay="overlay"
     />
@@ -76,23 +76,29 @@
         v-model:layer-kind="layerKind"
         v-model:show-layer="showLayer"
       >
-        <v-divider />
-        <ColourPanel
-          :currentColourScaleIds="currentColourScaleIds"
-          v-model:currentColourScaleIndex="currentColourScaleIndex"
-        />
-        <template v-if="componentSettingsStore.overlays.length">
+        <template v-if="layerOptions">
+          <v-divider />
+          <ColourPanel
+            :currentColourScaleIds="currentColourScaleIds"
+            v-model:currentColourScaleIndex="currentColourScaleIndex"
+          />
+        </template>
+        <template v-if="settings.map.overlays.length">
           <v-divider />
           <OverlayPanel
-            :overlays="componentSettingsStore.overlays"
-            v-model:selected-overlay-ids="
-              componentSettingsStore.selectedOverlayIds
-            "
+            :overlays="settings.map.overlays"
+            v-model:selected-overlay-ids="selectedOverlayIds"
           />
         </template>
       </InformationPanel>
+      <OverlayInformationPanel v-else-if="settings.map.overlays.length">
+        <OverlayPanel
+          :overlays="settings.map.overlays"
+          v-model:selected-overlay-ids="selectedOverlayIds"
+        />
+      </OverlayInformationPanel>
       <LocationsSearchControl
-        v-if="settings.locationSearchEnabled"
+        v-if="settings.map.locationsLayer.locationSearchEnabled"
         v-model:showLocations="showLocationsLayer"
         width="50vw"
         max-width="250"
@@ -112,7 +118,7 @@
     :unit="elevationUnit"
   />
   <DateTimeSlider
-    v-if="settings.dateTimeSliderEnabled && times?.length"
+    v-if="dateTimeSliderEnabled && times?.length"
     v-model:selectedDate="selectedDateOfSlider"
     :dates="times"
     @update:doFollowNow="setLayerOptions"
@@ -146,6 +152,7 @@ import LocationsSearchControl from '@/components/wms/LocationsSearchControl.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
+import OverlayInformationPanel from '@/components/wms/panel/OverlayInformationPanel.vue'
 import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
 import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
@@ -171,11 +178,11 @@ import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
 import { FeatureCollection, Geometry } from 'geojson'
-import type { MapSettings } from '@/lib/topology/componentSettings'
+import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import OverlayLayer from '@/components/wms/OverlayLayer.vue'
-import { useComponentSettingsStore } from '@/stores/componentSettings'
 import { useColourScales } from '@/services/useColourScales'
 import { useSelectedDate } from '@/services/useSelectedDate'
+import { useOverlays } from '@/services/useOverlays'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -196,7 +203,7 @@ interface Props {
   longitude?: string
   maxValuesTimeSeries?: TimeSeriesData[]
   boundingBox?: BoundingBox
-  settings: MapSettings
+  settings: ComponentSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -227,7 +234,8 @@ const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
 const selectedDateOfSlider = ref(new Date())
-const { selectedDate } = useSelectedDate(selectedDateOfSlider)
+const { selectedDate, dateTimeSliderEnabled } =
+  useSelectedDate(selectedDateOfSlider)
 watch(selectedDate, () => {
   emit('update:currentTime', selectedDate.value)
 })
@@ -252,7 +260,6 @@ const { currentScale: currentColourScale } = useColourScales(
   colourScalesStore.scales,
 )
 
-const componentSettingsStore = useComponentSettingsStore()
 const workflowsStore = useWorkflowsStore()
 const userSettingsStore = useUserSettingsStore()
 
@@ -260,6 +267,10 @@ const showLocationsLayer = ref<boolean>(true)
 
 const baseMapId = computed(
   () => (userSettingsStore.get('ui.map.theme')?.value as string) ?? 'automatic',
+)
+
+const { selectedOverlayIds, selectedOverlays } = useOverlays(
+  () => props.settings.map.overlays,
 )
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
@@ -356,9 +367,7 @@ function getDefaultLayerKind() {
 }
 
 const offsetBottomControls = computed(() => {
-  return props.settings.dateTimeSliderEnabled && props.times?.length
-    ? '60px'
-    : '0px'
+  return dateTimeSliderEnabled.value && props.times?.length ? '60px' : '0px'
 })
 
 const layerHasElevation = computed(() => {

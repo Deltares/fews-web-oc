@@ -175,6 +175,12 @@ import { StyleValue, nextTick } from 'vue'
 import packageConfig from '@/../package.json'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { toCharacterIcon } from '@/lib/icons/index.ts'
+import {
+  convertBaseMapToUserSetting,
+  getBaseMapsFromConfig,
+} from '@/lib/basemap/index.ts'
+import type { MapLayerConfig } from '@deltares/fews-pi-requests'
+import { useBaseMapsStore } from '@/stores/baseMaps.ts'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
@@ -223,8 +229,23 @@ watch(
       }
       document.head.appendChild(link)
     }
+    if (configStore.general.mapLayerConfig) {
+      updateUserSettingBaseMaps(configStore.general.mapLayerConfig)
+    }
   },
 )
+
+const baseMapsStore = useBaseMapsStore()
+
+function updateUserSettingBaseMaps(config: MapLayerConfig) {
+  const baseMaps = getBaseMapsFromConfig(config)
+  baseMapsStore.setBaseMaps(baseMaps)
+
+  const settingItems = baseMapsStore.allBaseMaps.map(
+    convertBaseMapToUserSetting,
+  )
+  settings.updateSettingItems('ui.map.theme', settingItems)
+}
 
 const activeComponent = computed(() => configStore.getComponentByRoute(route))
 const currentItemTitle = computed(

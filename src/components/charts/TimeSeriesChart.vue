@@ -1,70 +1,41 @@
 <template>
-  <div class="chart-with-chips">
-    <LoadingOverlay v-if="isLoading" :offsets="margin" height="80%" />
+  <div
+    class="chart-with-chips"
+    :class="{ 'vertical-profile': verticalProfile }"
+  >
+    <ChartLegend
+      :tags="legendTags"
+      :margin="margin"
+      :settings="settings.legend"
+      @toggle-line="toggleLine"
+    />
+    <LoadingOverlay v-if="isLoading" :offsets="margin" />
     <div ref="chartContainer" class="chart-container" v-show="!isLoading"></div>
-    <v-sheet
-      class="chart-controls"
-      rounded
-      :max-height="expanded ? undefined : LEGEND_HEIGHT"
-      :min-height="LEGEND_HEIGHT"
-      :elevation="expanded ? 6 : 0"
-    >
-      <v-chip-group
-        ref="chipGroup"
-        column
-        :class="['chart-legend', { 'chart-legend--large': requiresExpand }]"
-      >
-        <v-chip
-          size="small"
-          :variant="tag.disabled ? 'text' : 'tonal'"
-          label
-          v-for="tag in legendTags"
-          :key="tag.id"
-          @click="toggleLine(tag.id)"
-        >
-          <div>
-            <div
-              style="margin-top: 6px; margin-right: 5px"
-              v-html="tag.legendSvg"
-            ></div>
-          </div>
-          {{ tag.name }}
-        </v-chip>
-      </v-chip-group>
-      <v-btn
-        v-show="requiresExpand"
-        :icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-        size="small"
-        @click="toggleExpand"
-      ></v-btn>
-    </v-sheet>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
 import {
   AlertLines,
-  CartesianAxesOptions,
   ChartArea,
   ChartBar,
   ChartLine,
   ChartMarker,
   ChartRule,
+  Margin,
   TooltipAnchor,
   TooltipOptions,
   WheelMode,
   ZoomHandler,
   toggleChartVisibility,
-} from '@deltares/fews-web-oc-charts'
-import {
-  AxisPosition,
-  AxisType,
   CartesianAxes,
   CurrentTime,
   MouseOver,
+  VerticalMouseOver,
 } from '@deltares/fews-web-oc-charts'
 import LoadingOverlay from '@/components/charts/LoadingOverlay.vue'
+import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
 import type { ThresholdLine } from '../../lib/charts/types/ThresholdLine.js'
@@ -73,12 +44,11 @@ import {
   dataFromResources,
   removeUnreliableData,
 } from '@/lib/charts/dataFromResources'
-import uniq from 'lodash-es/uniq'
 import { extent } from 'd3'
-import { VChipGroup } from 'vuetify/components'
-import { difference, merge } from 'lodash-es'
-
-const LEGEND_HEIGHT = 76
+import { difference, uniq } from 'lodash-es'
+import type { Tag } from '@/lib/charts/tags'
+import { type ChartsSettings } from '@/lib/topology/componentSettings'
+import { getAxisOptions } from '@/lib/charts/axisOptions'
 
 interface Props {
   config?: ChartConfig
@@ -86,13 +56,8 @@ interface Props {
   currentTime?: Date
   isLoading?: boolean
   zoomHandler?: ZoomHandler
-}
-
-interface Tag {
-  id: string
-  name: string
-  disabled: boolean
-  legendSvg: string
+  verticalProfile?: boolean
+  settings: ChartsSettings['timeSeriesChart']
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -113,55 +78,39 @@ const props = withDefaults(defineProps<Props>(), {
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
+const margin = ref<Margin>({})
 const legendTags = ref<Tag[]>([])
+const showThresholds = ref(true)
 const chartContainer = ref<HTMLElement>()
-const chipGroup = ref<VChipGroup>()
-const expanded = ref(false)
-const requiresExpand = ref(false)
 const axisTime = ref<CurrentTime>()
 
-const margin = {
-  top: 110,
-  right: 50,
-  left: 50,
-}
-
 onMounted(() => {
-  const axisOptions: CartesianAxesOptions = {
-    x: [
-      {
-        type: AxisType.time,
-        position: AxisPosition.Bottom,
-        showGrid: true,
-      },
-    ],
-    y: [
-      {
-        position: AxisPosition.Left,
-        showGrid: true,
-        label: ' ',
-        unit: ' ',
-        nice: true,
-      },
-      {
-        position: AxisPosition.Right,
-        label: ' ',
-        unit: ' ',
-        nice: true,
-      },
-    ],
-    margin,
-    automargin: true,
-  }
-
   if (chartContainer.value) {
+    const axisOptions = getAxisOptions(
+      props.config,
+      props.settings,
+      props.verticalProfile,
+    )
     axis = new CartesianAxes(
       chartContainer.value,
-      null,
-      null,
-      merge(axisOptions, { x: props.config?.xAxis, y: props.config?.yAxis }),
+      props.verticalProfile ? 800 : null,
+      props.verticalProfile ? 1200 : null,
+      axisOptions,
     )
-    const mouseOver = new MouseOver()
+
+    // Keep margin in sync with axis.margin
+    axis.margin = new Proxy(axis.margin, {
+      set: (target, property, value) => {
+        const res = Reflect.set(target, property, value)
+        margin.value = { ...target }
+        return res
+      },
+    })
+    margin.value = { ...axis.margin }
+
+    const mouseOver = props.verticalProfile
+      ? new VerticalMouseOver()
+      : new MouseOver()
     const zoom = props.zoomHandler ?? new ZoomHandler(WheelMode.NONE)
     axisTime.value = new CurrentTime({
       x: {
@@ -177,10 +126,20 @@ onMounted(() => {
     axis.accept(mouseOver)
     axis.accept(axisTime.value)
     resize()
-    if (props.config !== undefined) refreshChart()
+    if (props.config !== undefined) {
+      refreshChart()
+      setTags()
+    }
     window.addEventListener('resize', resize)
   }
 })
+
+const xTicksDisplay = computed(() =>
+  props.settings.xAxis.xTicks ? undefined : 'none',
+)
+const yTicksDisplay = computed(() =>
+  props.settings.yAxis.yTicks ? undefined : 'none',
+)
 
 watch(
   () => props.currentTime,
@@ -253,12 +212,7 @@ const setThresholdLines = () => {
   if (thresholdLinesData === undefined || thresholdLinesData.length === 0)
     return
 
-  const tag = legendTags.value.find((tag) => {
-    return tag.id === 'Thresholds'
-  })
-
-  const disabled = tag?.disabled ?? false
-  if (disabled) {
+  if (!showThresholds.value) {
     thresholdLines = []
     let defaultDomain: [number, number] = [NaN, NaN]
     if (
@@ -394,47 +348,26 @@ const setTags = () => {
   }
 }
 
-const toggleLine = (id: string) => {
-  const tag = legendTags.value.find((tag) => {
-    return tag.id === id
-  })
-  if (tag) {
-    tag.disabled = !tag.disabled
-  }
-
-  if (id === 'Thresholds') {
+const toggleLine = (tag: Tag) => {
+  if (tag.id === 'Thresholds') {
+    showThresholds.value = !tag.disabled
     setThresholdLines()
     axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
   } else {
-    toggleChartVisibility(axis, id)
+    toggleChartVisibility(axis, tag.id)
   }
 }
 
 const resize = () => {
   nextTick(() => {
     axis.resize()
-    setLegendSize()
   })
-}
-
-function setLegendSize() {
-  const contentHeight = chipGroup.value?.$el.scrollHeight
-  if (contentHeight && contentHeight > LEGEND_HEIGHT) {
-    requiresExpand.value = true
-  } else {
-    requiresExpand.value = false
-  }
-}
-
-function toggleExpand() {
-  expanded.value = !expanded.value
 }
 
 const onValueChange = () => {
   clearChart()
   refreshChart()
   setTags()
-  setLegendSize()
 }
 
 const beforeDestroy = () => {
@@ -474,15 +407,6 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-.chart-controls {
-  position: absolute;
-  display: flex;
-  flex: 0;
-  margin: 5px 10px;
-  padding: 0px 0px 0px 40px;
-  overflow: hidden;
-}
-
 .chart-container.hidden > svg {
   display: none;
 }
@@ -491,24 +415,26 @@ onBeforeUnmount(() => {
   max-height: none;
 }
 
-.chart-legend {
-  overflow-y: hidden;
-  align-self: end;
-}
-
-.chart-legend.chart-legend--large {
-  align-self: start;
-}
-
 .chart-with-chips {
   display: flex;
   position: relative;
   flex-direction: column;
-  flex: 1 1 80%;
-  max-height: 800px;
+  flex: 0 0 auto;
+  height: clamp(200px, 100%, 400px);
 }
 
-.v-chip--outlined {
-  opacity: 0.5;
+.chart-with-chips.vertical-profile {
+  max-height: unset;
+  max-width: 600px;
+  flex: 1 1 80%;
+  height: 100%;
+}
+
+:deep([class*='y-axis-'] > .tick) {
+  display: v-bind(yTicksDisplay);
+}
+
+:deep([class*='x-axis-']) {
+  display: v-bind(xTicksDisplay);
 }
 </style>

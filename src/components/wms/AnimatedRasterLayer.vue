@@ -16,7 +16,7 @@ import {
 import { configManager } from '@/services/application-config'
 import { useMap } from '@/services/useMap'
 import { point } from '@turf/helpers'
-import { getLayerId, getSourceId } from '@/lib/map'
+import { getBeforeId, getLayerId, getSourceId } from '@/lib/map'
 
 export interface AnimatedRasterLayerOptions {
   name: string
@@ -198,7 +198,8 @@ function createSource() {
       'raster-fade-duration': 0,
     },
   }
-  map.addLayer(rasterLayer, 'boundary_country_outline')
+  const beforeId = getBeforeId(map)
+  map.addLayer(rasterLayer, beforeId)
 }
 
 function updateSource() {

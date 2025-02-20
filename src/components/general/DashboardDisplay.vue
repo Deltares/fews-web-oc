@@ -1,5 +1,5 @@
 <template>
-  <div class="display-container pa-2 ga-2">
+  <div v-if="hasLoadedCss" class="display-container pa-2 ga-2">
     <div class="dashboard-container flex-1-1 ga-2">
       <template v-for="group in groups">
         <template v-for="element in group.elements">
@@ -13,16 +13,14 @@
             <DashboardItem
               v-if="element.items"
               :item="element.items[0]"
-              :settings
+              :slider-enabled="sliderEnabled"
+              :settings="settings"
             />
           </v-card>
         </template>
       </template>
     </div>
-    <v-card
-      v-if="settings.dateTimeSliderEnabled"
-      class="flex-0-0 overflow-visible"
-    >
+    <v-card v-if="sliderEnabled" class="flex-0-0 overflow-visible">
       <DateTimeSlider
         v-model:selectedDate="selectedDate"
         :dates="combinedDates"
@@ -41,28 +39,25 @@ import DateTimeSlider from './DateTimeSlider.vue'
 import { useDisplay } from 'vuetify'
 import { createDateRegistry } from '@/services/useDateRegistry'
 import { provideSelectedDate } from '@/services/useSelectedDate'
-import {
-  type DashboardSettings,
-  getDefaultSettings,
-} from '@/lib/topology/componentSettings'
+import type { ComponentSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   dashboard: WebOCDashboard
-  settings?: DashboardSettings
+  settings?: ComponentSettings
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  settings: () => getDefaultSettings('dashboard'),
-})
+const props = defineProps<Props>()
 
 const { mobile } = useDisplay()
 
 const selectedDate = ref<Date>(new Date())
 const { combinedDates } = setupDates()
+const sliderEnabled = true
 
 // Provide date data only when the date slider is enabled
 function setupDates() {
-  if (!props.settings.dateTimeSliderEnabled) {
+  // TODO: Enable the slider based on the dashboard backend
+  if (!sliderEnabled) {
     return {
       combinedDates: [],
     }
@@ -73,13 +68,19 @@ function setupDates() {
 }
 
 const groups = computed(() => props.dashboard.groups)
+const hasLoadedCss = ref(false)
 
 function loadCss(url: string) {
   if (!document.querySelector(`link[href="${url}"]`)) {
     const link = document.createElement('link')
     link.rel = 'stylesheet'
     link.href = url
+    link.onload = () => {
+      hasLoadedCss.value = true
+    }
     document.head.appendChild(link)
+  } else {
+    hasLoadedCss.value = true
   }
 }
 
@@ -87,6 +88,7 @@ function removeCss(url: string) {
   const link = document.querySelector(`link[href="${url}"]`)
   if (link) {
     link.remove()
+    hasLoadedCss.value = false
   }
 }
 

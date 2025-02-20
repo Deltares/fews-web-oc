@@ -9,12 +9,12 @@
         :src="src"
         :key="panelId"
         :mobile="mobile"
-        :allowZooming="settings.zoomingEnabled"
+        :allowZooming="settings.ssd.zoomEnabled"
         @action="onAction"
         ref="ssdComponent"
       />
       <DateTimeSlider
-        v-if="settings.dateTimeSliderEnabled"
+        v-if="dateTimeSliderEnabled"
         v-model:selectedDate="selectedDateOfSlider"
         :dates="dates"
         :hide-speed-controls="mobile"
@@ -42,7 +42,7 @@ import { useDisplay } from 'vuetify'
 import { debouncedRef, useElementSize } from '@vueuse/core'
 import {
   getDefaultSettings,
-  type SchematicStatusDisplaySettings,
+  type ComponentSettings,
 } from '@/lib/topology/componentSettings'
 import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
@@ -51,14 +51,14 @@ interface Props {
   groupId?: string
   panelId?: string
   objectId?: string
-  settings?: SchematicStatusDisplaySettings
+  settings?: ComponentSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
   groupId: '',
   panelId: '',
   objectId: '',
-  settings: () => getDefaultSettings('schematic-status-display'),
+  settings: () => getDefaultSettings(),
 })
 
 interface SsdActionEventPayload {
@@ -78,7 +78,8 @@ const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
 const ssdContainer = ref<HTMLElement | null>(null)
 
 const selectedDateOfSlider = ref<Date>(new Date())
-const { selectedDate } = useSelectedDate(selectedDateOfSlider)
+const { selectedDate, dateTimeSliderEnabled } =
+  useSelectedDate(selectedDateOfSlider)
 
 const selectedDateString = computed(() => {
   if (selectedDate.value === undefined) return ''

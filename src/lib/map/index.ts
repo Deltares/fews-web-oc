@@ -1,4 +1,4 @@
-import { StyleSpecification } from 'maplibre-gl'
+import type { Map, StyleSpecification } from 'maplibre-gl'
 
 const LAYER_PREFIX = 'weboc-layer-'
 const SOURCE_PREFIX = 'weboc-source-'
@@ -45,4 +45,17 @@ export function transformStyle(
     layers,
     glyphs,
   }
+}
+
+export function getBeforeId(map: Map) {
+  const layerIds = map?.getStyle().layers.map((l) => l.id)
+  if (!layerIds.length) return
+
+  // TODO: By default use id of carto
+  //       If carto is not available, use the first custom layer
+  //       Should be able to set this in the config
+  const beforeId =
+    layerIds.find((id) => id === 'boundary_country_outline') ??
+    layerIds.find((id) => isCustomLayer(id))
+  return beforeId
 }

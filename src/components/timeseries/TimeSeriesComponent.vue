@@ -1,8 +1,9 @@
 <template>
   <v-window v-model="tab" class="h-100 w-100" :touch="false">
     <v-window-item
+      v-if="settings.timeSeriesChart.enabled"
       :value="DisplayType.TimeSeriesChart"
-      class="time-series-component__container scroll"
+      class="time-series-component__container pt-2 scroll"
     >
       <KeepAlive>
         <TimeSeriesChart
@@ -13,28 +14,33 @@
           :currentTime="selectedDate"
           :isLoading="isLoading(subplot, loadingSeriesIds)"
           :zoomHandler="sharedZoomHandler"
+          :settings="settings.timeSeriesChart"
         >
         </TimeSeriesChart>
       </KeepAlive>
     </v-window-item>
     <v-window-item
+      v-if="settings.verticalProfileChart.enabled"
       :value="DisplayType.ElevationChart"
       class="elevation-chart-component__container scroll"
     >
       <KeepAlive>
-        <ElevationChart
+        <TimeSeriesChart
           v-for="(subplot, i) in elevationChartSubplots"
+          verticalProfile
           :config="subplot"
           :series="elevationChartSeries"
           :key="`${subplot.title}-${i}`"
           :style="`min-width: ${xs ? 100 : 50}%`"
           :isLoading="isLoading(subplot, elevationLoadingSeriesIds)"
           :zoomHandler="sharedVerticalZoomHandler"
+          :settings="settings.verticalProfileChart"
         >
-        </ElevationChart>
+        </TimeSeriesChart>
       </KeepAlive>
     </v-window-item>
     <v-window-item
+      v-if="settings.timeSeriesTable.enabled"
       :value="DisplayType.TimeSeriesTable"
       class="time-series-component__container max-height"
     >
@@ -42,13 +48,18 @@
         :config="tableConfig"
         :series="series"
         :key="tableConfig.title"
+        :settings="settings.timeSeriesTable"
         class="single"
         @change="(event) => onDataChange(event)"
         @update:isEditing="isEditing = $event"
       >
       </TimeSeriesTable>
     </v-window-item>
-    <v-window-item :value="DisplayType.Information" class="h-100">
+    <v-window-item
+      v-if="settings.metaDataPanel.enabled"
+      :value="DisplayType.Information"
+      class="h-100"
+    >
       <!-- <div class="px-4 h-100"> -->
       <!--   <iframe :srcdoc="informationContent" class="h-100 w-100 border-none" /> -->
       <!-- </div> -->
@@ -74,7 +85,6 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
 import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
-import ElevationChart from '../charts/ElevationChart.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
 import {
   DisplayType,
@@ -96,13 +106,18 @@ import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'
 import { getUniqueSeries } from '@/lib/charts/getUniqueSeriesIds.ts'
 import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
+import {
+  getDefaultSettings,
+  type ChartsSettings,
+} from '@/lib/topology/componentSettings'
 
 interface Props {
   config?: DisplayConfig
   elevationChartConfig?: DisplayConfig
   displayType: DisplayType
   currentTime?: Date
-  informationContent?: string
+  informationContent?: string | null
+  settings?: ChartsSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -132,7 +147,7 @@ const props = withDefaults(defineProps<Props>(), {
       period: undefined,
     }
   },
-  displayType: DisplayType.TimeSeriesChart,
+  settings: () => getDefaultSettings().charts,
 })
 
 const { selectedDate } = useSelectedDate(() => props.currentTime ?? new Date())
