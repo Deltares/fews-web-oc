@@ -22,7 +22,7 @@
         <v-chip-group
           ref="chartLegend"
           class="chart-legend"
-          column
+          :class="{ overlay }"
           multiple
           selected-class=""
         >
@@ -39,6 +39,7 @@
             <div
               v-if="tag.legendSvg"
               class="legend-symbol me-2"
+              :class="{ hidden: tag.disabled }"
               v-html="tag.legendSvg"
             />
 
@@ -209,6 +210,10 @@ function onToggleExpand() {
   margin-bottom: 2px;
 }
 
+.overlay :deep(.v-slide-group__content) {
+  flex-direction: column;
+}
+
 .chart-legend-container {
   max-height: 100%;
   margin-left: v-bind(chipMargin + 'px');
@@ -230,5 +235,9 @@ function onToggleExpand() {
 
 :deep(.v-chip-group) {
   padding: 0;
+}
+
+.overlay .hidden {
+  opacity: 0;
 }
 </style>
