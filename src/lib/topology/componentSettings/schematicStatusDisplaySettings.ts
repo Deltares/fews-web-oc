@@ -5,7 +5,7 @@ export type SSDSettings = DeepRequired<PiSSDSettings>
 
 export const defaultSchematicStatusDisplaySettings: SSDSettings = {
   zoomEnabled: false,
-  singleClickAction: true,
-  doubleClickAction: true,
-  useBrowserStyle: false,
+  singleClickAction: true, // TODO: Implement
+  doubleClickAction: true, // TODO: Implement
+  useBrowserStyle: false, // TODO: Implement
 }
