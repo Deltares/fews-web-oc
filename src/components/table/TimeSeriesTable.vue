@@ -246,7 +246,7 @@ const nonEquidistantSeries = computed(() => {
 
 const sortBy = computed(() => {
   const order: 'asc' | 'desc' =
-    props.settings.sortDepthColumn === 'ascending' ? 'asc' : 'desc'
+    props.settings.sortDateTimeColumn === 'ascending' ? 'asc' : 'desc'
   return [
     {
       key: 'date',
@@ -261,7 +261,7 @@ onBeforeMount(() => {
     tableHeaders.value = createTableHeaders(
       props.config.series,
       seriesIds.value,
-      props.settings.allowDepthSorting,
+      props.settings.allowDateTimeSorting,
     )
   }
 
@@ -290,7 +290,7 @@ watch(
     tableHeaders.value = createTableHeaders(
       props.config.series,
       seriesIds.value,
-      props.settings.allowDepthSorting,
+      props.settings.allowDateTimeSorting,
     )
   },
 )
