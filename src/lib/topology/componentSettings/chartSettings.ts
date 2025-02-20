@@ -37,8 +37,8 @@ export const defaultChartSettings: ChartsSettings = {
   },
   timeSeriesTable: {
     enabled: true,
-    allowDepthSorting: true,
-    sortDepthColumn: 'descending',
+    allowDateTimeSorting: true,
+    sortDateTimeColumn: 'descending',
   },
   verticalProfileChart: {
     enabled: true,
