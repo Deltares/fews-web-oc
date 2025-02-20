@@ -30,7 +30,7 @@ export function useTaskRuns(
 
     try {
       const _taskRunIds = toValue(taskRunIds)
-      if (_taskRunIds === undefined) {
+      if (!_taskRunIds.length) {
         taskRuns.value = []
         return
       }
