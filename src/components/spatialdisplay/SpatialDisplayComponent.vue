@@ -46,89 +46,93 @@
       :key="overlay.id"
       :overlay="overlay"
     />
-  </MapComponent>
-  <div class="mapcomponent__controls-container pa-2 ga-2">
-    <BoundingBoxControl
-      v-model:active="workflowsStore.isDrawingBoundingBox"
-      v-model:boundingBox="workflowsStore.boundingBox"
-      @finish="workflowsStore.showDialog = true"
-      v-if="workflowsStore.isDrawingBoundingBox"
-    />
-    <CoordinateSelectorControl
-      v-if="workflowsStore.isSelectingCoordinate"
-      v-model:active="workflowsStore.isSelectingCoordinate"
-      @finish="workflowsStore.showDialog = true"
-      :coordinate="workflowsStore.coordinate"
-    />
-    <template v-else>
-      <InformationPanel
-        v-if="layerOptions"
-        :layerTitle="props.layerCapabilities?.title"
-        :isLoading="isLoading"
-        :currentTime="selectedDate"
-        :forecastTime="forecastTime"
-        :completelyMissing="props.layerCapabilities?.completelyMissing ?? false"
-        :firstValueTime="
-          new Date(props.layerCapabilities?.firstValueTime ?? '')
-        "
-        :lastValueTime="new Date(props.layerCapabilities?.lastValueTime ?? '')"
-        :canUseStreamlines="canUseStreamlines"
-        v-model:layer-kind="layerKind"
-        v-model:show-layer="showLayer"
-      >
-        <v-divider />
-        <ColourPanel
-          :currentColourScaleIds="currentColourScaleIds"
-          v-model:currentColourScaleIndex="currentColourScaleIndex"
-        />
-        <template v-if="componentSettingsStore.overlays.length">
+    <div class="mapcomponent__controls-container pa-2 ga-2">
+      <BoundingBoxControl
+        v-model:active="workflowsStore.isDrawingBoundingBox"
+        v-model:boundingBox="workflowsStore.boundingBox"
+        @finish="workflowsStore.showDialog = true"
+        v-if="workflowsStore.isDrawingBoundingBox"
+      />
+      <CoordinateSelectorControl
+        v-if="workflowsStore.isSelectingCoordinate"
+        v-model:active="workflowsStore.isSelectingCoordinate"
+        @finish="workflowsStore.showDialog = true"
+        :coordinate="workflowsStore.coordinate"
+      />
+      <template v-else>
+        <InformationPanel
+          v-if="layerOptions"
+          :layerTitle="props.layerCapabilities?.title"
+          :isLoading="isLoading"
+          :currentTime="selectedDate"
+          :forecastTime="forecastTime"
+          :completelyMissing="
+            props.layerCapabilities?.completelyMissing ?? false
+          "
+          :firstValueTime="
+            new Date(props.layerCapabilities?.firstValueTime ?? '')
+          "
+          :lastValueTime="
+            new Date(props.layerCapabilities?.lastValueTime ?? '')
+          "
+          :canUseStreamlines="canUseStreamlines"
+          v-model:layer-kind="layerKind"
+          v-model:show-layer="showLayer"
+        >
           <v-divider />
-          <OverlayPanel
-            :overlays="componentSettingsStore.overlays"
-            v-model:selected-overlay-ids="
-              componentSettingsStore.selectedOverlayIds
-            "
+          <ColourPanel
+            :currentColourScaleIds="currentColourScaleIds"
+            v-model:currentColourScaleIndex="currentColourScaleIndex"
           />
-        </template>
-      </InformationPanel>
-      <LocationsSearchControl
-        v-if="settings.locationSearchEnabled"
-        v-model:showLocations="showLocationsLayer"
-        width="50vw"
-        max-width="250"
-        :locations="locations"
-        :selectedLocationIds="props.locationIds"
-        @changeLocationIds="onLocationsChange"
-      />
-    </template>
-  </div>
-  <ElevationSlider
-    v-if="layerHasElevation"
-    v-model="currentElevation"
-    :key="layerOptions?.name"
-    :min-value="minElevation"
-    :max-value="maxElevation"
-    :ticks="elevationTicks"
-    :unit="elevationUnit"
-  />
-  <DateTimeSlider
-    v-if="settings.dateTimeSliderEnabled && times?.length"
-    v-model:selectedDate="selectedDateOfSlider"
-    :dates="times"
-    @update:doFollowNow="setLayerOptions"
-    class="spatial-display__slider"
-    :hide-speed-controls="mobile"
-  >
-    <template #below-track>
-      <DateTimeSliderValues
-        :values="maxValuesTimeSeries ?? []"
-        :colour-scale="currentColourScale ?? null"
-        height="6px"
-        class="mb-1"
-        style="margin-top: -7px"
-      />
-    </template>
-  </DateTimeSlider>
+          <template v-if="componentSettingsStore.overlays.length">
+            <v-divider />
+            <OverlayPanel
+              :overlays="componentSettingsStore.overlays"
+              v-model:selected-overlay-ids="
+                componentSettingsStore.selectedOverlayIds
+              "
+            />
+          </template>
+        </InformationPanel>
+        <LocationsSearchControl
+          v-if="settings.locationSearchEnabled"
+          v-model:showLocations="showLocationsLayer"
+          width="50vw"
+          max-width="250"
+          :locations="locations"
+          :selectedLocationIds="props.locationIds"
+          @changeLocationIds="onLocationsChange"
+        />
+      </template>
+    </div>
+    <ElevationSlider
+      v-if="layerHasElevation"
+      v-model="currentElevation"
+      :key="layerOptions?.name"
+      :min-value="minElevation"
+      :max-value="maxElevation"
+      :ticks="elevationTicks"
+      :unit="elevationUnit"
+    />
+    <DateTimeSlider
+      v-if="settings.dateTimeSliderEnabled && times?.length"
+      v-model:selectedDate="selectedDateOfSlider"
+      :dates="times"
+      @update:doFollowNow="setLayerOptions"
+      class="spatial-display__slider"
+      :hide-speed-controls="mobile"
+    >
+      <template #below-track>
+        <DateTimeSliderValues
+          :values="maxValuesTimeSeries ?? []"
+          :colour-scale="currentColourScale ?? null"
+          height="6px"
+          class="mb-1"
+          style="margin-top: -7px"
+        />
+      </template>
+    </DateTimeSlider>
+  </MapComponent>
 </template>
 
 <script setup lang="ts">
