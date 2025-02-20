@@ -23,6 +23,7 @@ const workflowIds = computed<string[]>(() =>
 const whatIfWorkflows = computed<WorkflowItem[]>(() =>
   workflowIds.value
     .map((id) => availableWorkflowsStore.byId(id))
+    .filter((wf) => wf !== undefined)
     .filter((wf) => wf.whatIfTemplateId !== undefined),
 )
 </script>
