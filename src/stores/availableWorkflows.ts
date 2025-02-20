@@ -20,6 +20,11 @@ export const useAvailableWorkflowsStore = defineStore('availableWorkflows', {
     workflowIds: (state) => {
       return state.workflows.map((workflow) => workflow.id)
     },
+    whatIfWorkflows(state) {
+      return state.workflows.filter(
+        (workflow) => workflow.whatIfTemplateId !== undefined,
+      )
+    },
   },
   actions: {
     byId(workflowId: string) {
