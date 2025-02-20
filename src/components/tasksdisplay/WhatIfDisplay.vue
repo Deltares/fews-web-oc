@@ -46,10 +46,13 @@
         </v-card>
 
         <div>
-          <DateTimeField
-            v-model="timeZero"
-            date-label="T0 date"
-            time-label="T0 time"
+          <v-text-field
+            v-model="timeZeroString"
+            type="datetime-local"
+            label="Time zero"
+            density="compact"
+            variant="outlined"
+            hide-details
           />
         </div>
 
@@ -103,7 +106,6 @@
 </template>
 <script setup lang="ts">
 import jsonFormsConfig from '@/assets/JsonFormsConfig.json'
-import DateTimeField from '@/components/general/DateTimeField.vue'
 
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
 import { computed, ref, watch, watchEffect } from 'vue'
@@ -128,7 +130,10 @@ import {
   getJsonDataFromProperties,
   ScenarioData,
 } from '@/lib/whatif'
-import { convertJSDateToFewsPiParameter } from '@/lib/date'
+import {
+  convertDateToDateTimeString,
+  convertJSDateToFewsPiParameter,
+} from '@/lib/date'
 import { postRunTask, postWhatIfScenario } from '@/lib/whatif/fetch'
 import type { WorkflowItem } from '@/lib/workflows'
 
@@ -147,7 +152,7 @@ const isPosting = ref<boolean>(false)
 
 const temporaryWhatIfScenarioName = 'Temporary'
 
-const timeZero = ref<Date>(new Date())
+const timeZeroString = ref<string>(convertDateToDateTimeString(new Date()))
 const description = ref<string>()
 
 const selectedWorkflow = computed(() =>
@@ -253,11 +258,12 @@ async function submit(): Promise<void> {
     return
   }
 
-  const timeZeroString = convertJSDateToFewsPiParameter(timeZero.value)
+  const timeZeroDate = new Date(timeZeroString.value)
+  const timeZero = convertJSDateToFewsPiParameter(timeZeroDate)
 
   const filter: RunTaskFilter = {
     workflowId,
-    timeZero: timeZeroString,
+    timeZero,
     scenarioId: scenarioResult.data.id,
     description: description.value,
   }
