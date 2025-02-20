@@ -9,6 +9,7 @@ import {
   nodeHasReports,
   nodeHasSchematicStatusDisplay,
   nodeHasSystemMonitor,
+  nodeHasWhatIfs,
   nodeHasWebDisplay,
 } from './nodes'
 import {
@@ -85,6 +86,10 @@ export function displayTabsForNode(
         break
       case 'dashboard':
         tab.active = nodeHasDashboard(node)
+        tab.to.params = { ...params }
+        break
+      case 'whatif-display':
+        tab.active = nodeHasWhatIfs(node)
         tab.to.params = { ...params }
         break
       case 'log-display':
