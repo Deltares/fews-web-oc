@@ -428,6 +428,8 @@ onBeforeUnmount(() => {
 .chart-with-chips.vertical-profile {
   max-height: unset;
   max-width: 600px;
+  flex: 1 1 80%;
+  height: 100%;
 }
 
 :deep([class*='y-axis-'] > .tick) {
