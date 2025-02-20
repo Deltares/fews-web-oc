@@ -9,20 +9,23 @@
     hide-details
     @change="updateModelValue()"
   >
-    <template v-for="(_, slot) of $slots" v-slot:[slot]="scope">
+    <template v-for="(_, slot) of slots" v-slot:[slot]="scope">
       <slot :name="slot" v-bind="scope" />
     </template>
   </v-text-field>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, useSlots, watch } from 'vue'
 
 interface Props {
   label: string
 }
 
 defineProps<Props>()
+
+// tsc doesnt understand useSlots type
+const slots = useSlots() as Record<string, () => void>
 
 const modelValue = defineModel<Date>({ required: true })
 
