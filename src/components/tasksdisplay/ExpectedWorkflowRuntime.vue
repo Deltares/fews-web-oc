@@ -4,20 +4,17 @@
   </v-list-item>
 </template>
 <script setup lang="ts">
+import { WorkflowItem } from '@/lib/workflows'
 import { computed } from 'vue'
 
-import { useWorkflowRuntime } from '@/services/useWorkflowRuntime'
-
 interface Props {
-  workflowId: string | null
+  workflow: WorkflowItem | undefined
 }
 const props = defineProps<Props>()
 
-const workflowRuntime = useWorkflowRuntime(() => props.workflowId)
-
 const placeholder = '—'
 const formattedRuntime = computed<string>(() => {
-  const runtime = workflowRuntime.runtimeInSeconds.value
+  const runtime = props.workflow?.expectedRuntimeSeconds ?? null
   if (runtime === null) return placeholder
 
   const secondsInMinute = 60

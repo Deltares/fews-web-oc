@@ -66,13 +66,10 @@
         </div>
       </template>
       <div class="d-flex flex-column gc-4 gr-1">
-        <ExpectedWorkflowRuntime
-          class="ps-0"
-          :workflow-id="selectedWorkflow?.id ?? null"
-        />
+        <ExpectedWorkflowRuntime class="ps-0" :workflow="selectedWorkflow" />
         <AvailableWorkflowServers
           class="ps-0 mb-2"
-          :workflow-id="selectedWorkflow?.id ?? null"
+          :workflow="selectedWorkflow"
         />
         <v-alert
           v-if="isSubmitted && !hasSubmitError"
