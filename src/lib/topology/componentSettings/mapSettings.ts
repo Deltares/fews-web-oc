@@ -1,9 +1,7 @@
 import type { DeepRequired } from '@/lib/utils/types'
 import type { MapSettings as PiMapSettings } from '@deltares/fews-pi-requests'
 
-export type MapSettings = DeepRequired<PiMapSettings> & {
-  dateTimeSliderEnabled: boolean
-}
+export type MapSettings = DeepRequired<PiMapSettings>
 
 export const defaultMapSettings: MapSettings = {
   wmsLayer: {
@@ -19,5 +17,4 @@ export const defaultMapSettings: MapSettings = {
     locationSearchEnabled: true,
   },
   overlays: [],
-  dateTimeSliderEnabled: true,
 }
