@@ -61,14 +61,18 @@ const { displayConfig: elevationChartDisplayconfig } = useDisplayConfigFilter(
   () => systemTimeStore.endTime,
 )
 
-const { tooltip } = useLocationTooltip(baseUrl, () =>
-  isFilterActionsFilter(props.filter)
-    ? {
-        filterId: props.filter.filterId,
-        locationId: props.filter.locationIds?.split(',')[0],
-      }
-    : undefined,
-)
+const locationsTooltipFilter = computed(() => {
+  if (!props.settings.charts.metaDataPanel.enabled) return
+  if (isFilterActionsFilter(props.filter)) {
+    return {
+      filterId: props.filter.filterId,
+      locationId: props.filter.locationIds?.split(',')[0],
+    }
+  }
+})
+
+const { tooltip } = useLocationTooltip(baseUrl, locationsTooltipFilter)
+
 function onClose(): void {
   emit('close')
 }
