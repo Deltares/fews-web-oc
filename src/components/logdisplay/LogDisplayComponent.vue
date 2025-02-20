@@ -28,6 +28,12 @@
           :item-value="(item) => item"
         />
         <div class="spacer" />
+        <v-btn
+          @click="refreshLogs"
+          icon="mdi-refresh"
+          density="compact"
+          :loading="isLoading"
+        />
         <div class="date-input-container">
           <v-date-input
             v-model="endDate"
@@ -76,12 +82,6 @@
           min-width="200px"
         />
         <span>Total: {{ logMessages.length }}</span>
-        <v-btn
-          @click="refreshLogs"
-          icon="mdi-refresh"
-          density="compact"
-          :loading="isLoading"
-        />
         <NewLogMessageDialog
           v-if="noteGroup"
           :noteGroup="noteGroup"
@@ -200,11 +200,14 @@ const { logMessages: manualLogMessages, isLoading: manualIsLoading } =
 const { logMessages: systemLogMessages, isLoading: systemIsLoading } =
   useLogDisplayLogs(baseUrl, debouncedSystemFilters)
 
-const logMessages = computed(() =>
-  [...manualLogMessages.value, ...systemLogMessages.value].toSorted((a, b) =>
-    b.entryTime.localeCompare(a.entryTime),
-  ),
-)
+const logMessages = computed(() => {
+  if (manualIsLoading.value || systemIsLoading.value) {
+    return []
+  }
+  return [...manualLogMessages.value, ...systemLogMessages.value].toSorted(
+    (a, b) => b.entryTime.localeCompare(a.entryTime),
+  )
+})
 
 const isLoading = computed(() => manualIsLoading.value || systemIsLoading.value)
 
