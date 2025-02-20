@@ -5,15 +5,15 @@ export type MapSettings = DeepRequired<PiMapSettings>
 
 export const defaultMapSettings: MapSettings = {
   wmsLayer: {
-    show: true,
-    autoPlay: false,
-    animateVectors: true,
-    doubleClickAction: true,
+    show: true, // TODO: Implement
+    autoPlay: false, // TODO: Implement
+    animateVectors: true, // TODO: Implement
+    doubleClickAction: true, // TODO: Implement
   },
   locationsLayer: {
-    show: true,
-    locationNames: true,
-    singleClickAction: true,
+    show: true, // TODO: Implement
+    locationNames: true, // TODO: Implement
+    singleClickAction: true, // TODO: Implement
     locationSearchEnabled: true,
   },
   overlays: [],
