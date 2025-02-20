@@ -31,10 +31,10 @@ export const componentTypeToComponentMap = {
   report: ReportsDisplayView,
   'schematic-status-display': SchematicStatusDisplay,
   'system-monitor': SystemMonitorDisplayView,
-  tasks: Empty,
   'html-display': Empty,
   dashboard: Empty,
   'log-display': Empty,
+  'whatif-display': Empty,
 } satisfies Record<ComponentType, Component>
 
 export type PropsForComponentType<T extends ComponentType> = ComponentProps<
