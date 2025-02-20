@@ -190,15 +190,34 @@ const systemFilters = computed(() => {
     : []
 })
 
+// To keep requests in sync between manual and system logs
+const filters = computed(() => {
+  const hasManual = props.logDisplay.manualLog
+  const hasSystem = props.logDisplay.systemLog
+  if (
+    (hasManual && !manualFilters.value.length) ||
+    (hasSystem && !systemFilters.value.length)
+  ) {
+    return {
+      manualFilters: [],
+      systemFilters: [],
+    }
+  }
+
+  return {
+    manualFilters: manualFilters.value,
+    systemFilters: systemFilters.value,
+  }
+})
+
 const requestDebounce = 500
-const debouncedManualFilters = debouncedRef(manualFilters, requestDebounce)
-const debouncedSystemFilters = debouncedRef(systemFilters, requestDebounce)
+const debouncedFilters = debouncedRef(filters, requestDebounce)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { logMessages: manualLogMessages, isLoading: manualIsLoading } =
-  useLogDisplayLogs(baseUrl, debouncedManualFilters)
+  useLogDisplayLogs(baseUrl, () => debouncedFilters.value.manualFilters)
 const { logMessages: systemLogMessages, isLoading: systemIsLoading } =
-  useLogDisplayLogs(baseUrl, debouncedSystemFilters)
+  useLogDisplayLogs(baseUrl, () => debouncedFilters.value.systemFilters)
 
 const logMessages = computed(() => {
   if (manualIsLoading.value || systemIsLoading.value) {
