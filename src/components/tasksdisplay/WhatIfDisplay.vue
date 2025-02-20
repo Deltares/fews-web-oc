@@ -242,7 +242,8 @@ const canSubmit = computed<boolean>(() => {
   const hasSelectedWorkflow = selectedWorkflow.value !== undefined
   const hasAllProperties = hasAllRequiredProperties.value
   const hasNoErrors = additionalErrors.value.length === 0
-  return hasSelectedWorkflow && hasAllProperties && hasNoErrors
+  const validTimeZero = selectedTimeZero.value !== undefined
+  return hasSelectedWorkflow && hasAllProperties && hasNoErrors && validTimeZero
 })
 
 const isSubmitted = ref<boolean>(false)
@@ -293,11 +294,9 @@ async function submit(): Promise<void> {
     return
   }
 
-  const timeZero = convertJSDateToFewsPiParameter(timeZeroDate.value)
-
   const filter: RunTaskFilter = {
     workflowId,
-    timeZero,
+    timeZero: selectedTimeZero.value,
     scenarioId: scenarioResult.data.id,
     description: description.value,
   }
