@@ -46,14 +46,34 @@
         </v-card>
 
         <div>
-          <v-text-field
-            v-model="timeZeroString"
-            type="datetime-local"
+          <DateTimeTextField
+            v-model="timeZeroDate"
             label="Time zero"
-            density="compact"
-            variant="outlined"
-            hide-details
-          />
+            class="datetime-field"
+          >
+            <template #append-inner>
+              <v-divider vertical />
+              <v-btn
+                size="small"
+                variant="elevated"
+                flat
+                height="100%"
+                @click="setTimeZeroString(previousTimeZero)"
+              >
+                <v-icon>mdi-chevron-down</v-icon>
+              </v-btn>
+              <v-divider vertical />
+              <v-btn
+                size="small"
+                variant="elevated"
+                flat
+                height="100%"
+                @click="setTimeZeroString(nextTimeZero)"
+              >
+                <v-icon>mdi-chevron-up</v-icon>
+              </v-btn>
+            </template>
+          </DateTimeTextField>
         </div>
 
         <div>
@@ -106,6 +126,7 @@
 </template>
 <script setup lang="ts">
 import jsonFormsConfig from '@/assets/JsonFormsConfig.json'
+import DateTimeTextField from '@/components/general/DateTimeTextField.vue'
 
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
 import { computed, ref, watch, watchEffect } from 'vue'
@@ -130,17 +151,17 @@ import {
   getJsonDataFromProperties,
   ScenarioData,
 } from '@/lib/whatif'
-import {
-  convertDateToDateTimeString,
-  convertJSDateToFewsPiParameter,
-} from '@/lib/date'
+import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import { postRunTask, postWhatIfScenario } from '@/lib/whatif/fetch'
 import type { WorkflowItem } from '@/lib/workflows'
+import { useForecastTimes } from '@/services/useForecastTimes'
 
 interface Props {
   workflows: WorkflowItem[]
 }
 const props = defineProps<Props>()
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const selectedWhatIfTemplate = ref<WhatIfTemplate>()
 const selectedWhatIfScenario = ref<WhatIfScenarioDescriptor>()
@@ -152,7 +173,7 @@ const isPosting = ref<boolean>(false)
 
 const temporaryWhatIfScenarioName = 'Temporary'
 
-const timeZeroString = ref<string>(convertDateToDateTimeString(new Date()))
+const timeZeroDate = ref<Date>(new Date())
 const description = ref<string>()
 
 const selectedWorkflow = computed(() =>
@@ -161,13 +182,27 @@ const selectedWorkflow = computed(() =>
   ),
 )
 
+const { selectedTimeZero, nextTimeZero, previousTimeZero, valid } =
+  useForecastTimes(
+    baseUrl,
+    () => selectedWorkflow.value?.id,
+    () => convertJSDateToFewsPiParameter(timeZeroDate.value),
+  )
+
+watch([selectedTimeZero, valid], () => {
+  if (!valid.value) setTimeZeroString(selectedTimeZero.value)
+})
+function setTimeZeroString(date: string | undefined): void {
+  if (!date) return
+  timeZeroDate.value = new Date(date)
+}
+
 const whatIfTemplateIds = computed(() =>
   props.workflows
     .map((wf) => wf.whatIfTemplateId)
     .filter((id) => id !== undefined),
 )
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { whatIfTemplates, isLoading: isLoadingTemplates } = useWhatIfTemplates(
   baseUrl,
   whatIfTemplateIds,
@@ -258,8 +293,7 @@ async function submit(): Promise<void> {
     return
   }
 
-  const timeZeroDate = new Date(timeZeroString.value)
-  const timeZero = convertJSDateToFewsPiParameter(timeZeroDate)
+  const timeZero = convertJSDateToFewsPiParameter(timeZeroDate.value)
 
   const filter: RunTaskFilter = {
     workflowId,
@@ -284,5 +318,9 @@ async function submit(): Promise<void> {
 <style scoped>
 .whatif-container {
   max-width: 800px;
+}
+
+.datetime-field :deep(.v-field) {
+  padding-right: 0;
 }
 </style>
