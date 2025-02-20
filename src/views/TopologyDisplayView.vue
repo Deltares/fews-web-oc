@@ -64,12 +64,7 @@
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
       <keep-alive include="SpatialDisplay">
-        <component
-          :is="Component"
-          :filter-ids="filterIds"
-          :topologyNode="topologyNode"
-          :boundingBox="boundingBox"
-        />
+        <component :is="Component" :topologyNode="topologyNode" />
       </keep-alive>
     </router-view>
     <div
@@ -122,7 +117,7 @@ interface Props {
   nodeId?: string | string[]
   panelId?: string
   layerName?: string
-  locationId?: string
+  locationIds?: string
   latitude?: string
   longitude?: string
 }
@@ -165,11 +160,8 @@ const secondaryWorkflows = computed(() => {
   return activeNode.value.secondaryWorkflows
 })
 
-const boundingBox = computed(() => activeNode.value?.boundingBox)
-
 const items = ref<ColumnItem[]>([])
 
-const filterIds = ref<string[]>([])
 const topologyNode = ref<TopologyNode | undefined>(undefined)
 
 const displayTabs = ref<DisplayTab[]>([])
@@ -250,10 +242,13 @@ topologyNodesStore
 const subNodes = computed(() =>
   topologyNodesStore.getSubNodesForIds(topologyDisplayNodes.value),
 )
-watch(topologyNodesStore.nodes, () => {
-  const to = reroute(route)
-  if (to) router.push(to)
-})
+watch(
+  () => topologyNodesStore.nodes,
+  () => {
+    const to = reroute(route)
+    if (to) router.push(to)
+  },
+)
 
 function updateItems(): void {
   if (subNodes.value) {
@@ -280,17 +275,16 @@ watchEffect(() => {
       : props.nodeId[0]
     : props.nodeId
 
-  const parentNodeIdNodeId = Array.isArray(props.nodeId)
-    ? props.nodeId[0]
-    : undefined
+  const parentNodeIdNodeId =
+    Array.isArray(props.nodeId) && props.nodeId.length > 1
+      ? props.nodeId[0]
+      : undefined
 
   // Check if the active node is a leaf.
   const node = topologyNodesStore.getNodeById(activeNodeId)
   if (node === undefined) {
-    filterIds.value = []
     return
   }
-  filterIds.value = node.filterIds ?? []
   topologyNode.value = node
 
   if (showLeafsAsButton.value && Array.isArray(props.nodeId)) {

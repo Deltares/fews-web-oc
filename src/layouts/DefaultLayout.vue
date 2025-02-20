@@ -170,7 +170,7 @@ import StartupDialog from '@/components/dialog/StartupDialog.vue'
 import GlobalSearchComponent from '@/components/general/GlobalSearchComponent.vue'
 
 import { configManager } from '@/services/application-config'
-import { getLocalOrRemoteFileUrl } from '@/lib/fews-config'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { StyleValue, nextTick } from 'vue'
 import packageConfig from '@/../package.json'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
@@ -187,7 +187,6 @@ const { isRtl } = useRtl()
 const route = useRoute()
 
 const showHash = ref(false)
-const logoSrc = ref('')
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
 
@@ -214,7 +213,7 @@ watch(
       const link = document.createElement('link')
       link.id = 'custom-style-sheet'
       link.rel = 'stylesheet'
-      link.href = configStore.customStyleSheet
+      link.href = await configStore.getCustomStyleSheet()
       link.onload = () => {
         appBarStyle.value = {
           backgroundImage: 'var(--weboc-app-bar-bg-image)',
@@ -235,22 +234,14 @@ const currentItemTitle = computed(
     '',
 )
 
-watch(
-  () => configStore.general,
-  async () => {
-    const imagesBaseUrl = `${import.meta.env.BASE_URL}images/`
-    const defaultLogo = `${imagesBaseUrl}logo.png`
-    if (configStore.general.icons?.logo === undefined) {
-      logoSrc.value = defaultLogo
-      return
-    }
-    const logoUrl = await getLocalOrRemoteFileUrl(
-      imagesBaseUrl,
-      configStore.general.icons?.logo,
-    )
-    logoSrc.value = logoUrl ?? defaultLogo
-  },
-)
+const logoSrc = computed(() => {
+  const imagesBaseUrl = `${import.meta.env.BASE_URL}images/`
+  const defaultLogo = `${imagesBaseUrl}logo.png`
+
+  return configStore.general.icons?.logo
+    ? getResourcesStaticUrl(configStore.general.icons.logo)
+    : defaultLogo
+})
 
 const versionString = computed(() => {
   if (showHash.value && !__GIT_TAG__) {

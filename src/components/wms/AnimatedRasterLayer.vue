@@ -14,7 +14,7 @@ import {
   type MapSourceDataEvent,
 } from 'maplibre-gl'
 import { configManager } from '@/services/application-config'
-import { useMap } from '@indoorequal/vue-maplibre-gl'
+import { useMap } from '@/services/useMap'
 import { point } from '@turf/helpers'
 import { getLayerId, getSourceId } from '@/lib/map'
 
@@ -80,12 +80,12 @@ function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 }
 
 function onStartLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId !== currentLayer) return
+  if (e.sourceId !== currentSource) return
   isLoading.value = true
 }
 
 function onEndLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId !== currentLayer) return
+  if (e.sourceId !== currentSource) return
   isLoading.value = false
 }
 
@@ -153,6 +153,7 @@ function getImageSourceOptions(): any {
   getMapUrl.searchParams.append('height', `${height.toFixed(0)}`)
   getMapUrl.searchParams.append('width', `${width.toFixed(0)}`)
   getMapUrl.searchParams.append('time', `${time}`)
+  getMapUrl.searchParams.append('useLastValue', 'true')
   if (props.layer.style) {
     getMapUrl.searchParams.append('styles', props.layer.style)
   }

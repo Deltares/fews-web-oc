@@ -1,5 +1,5 @@
 <template>
-  <v-btn @click="login" color="primary">
+  <v-btn @click="login" color="primary" variant="elevated">
     <v-icon>{{ loginIcon }}</v-icon
     >{{ loginText }}
   </v-btn>

@@ -1,5 +1,5 @@
 <template>
-  <MapComponent :bounds="bounds">
+  <MapComponent :bounds="bounds" :baseMapId="baseMapId">
     <AnimatedRasterLayer
       v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
       v-model:isLoading="isLoading"
@@ -34,60 +34,73 @@
     <LocationsLayer
       v-if="showLocationsLayer && hasLocations"
       :locationsGeoJson="geojson"
-      :selectedLocationId="props.locationId"
+      :selectedLocationIds="props.locationIds"
       @click="onLocationClick"
     />
     <CoordinateSelectorLayer
       v-if="workflowsStore.isSelectingCoordinate"
       v-model:coordinate="workflowsStore.coordinate"
     />
+    <OverlayLayer
+      v-for="overlay in componentSettingsStore.selectedOverlays"
+      :key="overlay.id"
+      :overlay="overlay"
+    />
   </MapComponent>
-  <div class="mapcomponent__controls-container">
-    <v-chip-group class="control-group" selected-class="no-class">
-      <BoundingBoxControl
-        v-model:active="workflowsStore.isDrawingBoundingBox"
-        v-model:boundingBox="workflowsStore.boundingBox"
-        @finish="workflowsStore.showDialog = true"
-        v-if="workflowsStore.isDrawingBoundingBox"
-      />
-      <CoordinateSelectorControl
-        v-if="workflowsStore.isSelectingCoordinate"
-        v-model:active="workflowsStore.isSelectingCoordinate"
-        @finish="workflowsStore.showDialog = true"
-        :coordinate="workflowsStore.coordinate"
-      />
-      <template v-else>
-        <InformationPanel
-          v-if="layerOptions"
-          :layerTitle="props.layerCapabilities?.title"
-          :isLoading="isLoading"
-          :currentTime="currentTime"
-          :forecastTime="forecastTime"
-          :completelyMissing="
-            props.layerCapabilities?.completelyMissing ?? false
-          "
-          :firstValueTime="
-            new Date(props.layerCapabilities?.firstValueTime ?? '')
-          "
-          :lastValueTime="
-            new Date(props.layerCapabilities?.lastValueTime ?? '')
-          "
-          :canUseStreamlines="canUseStreamlines"
-          v-model:layer-kind="layerKind"
-          v-model:show-layer="showLayer"
+  <div class="mapcomponent__controls-container pa-2 ga-2">
+    <BoundingBoxControl
+      v-model:active="workflowsStore.isDrawingBoundingBox"
+      v-model:boundingBox="workflowsStore.boundingBox"
+      @finish="workflowsStore.showDialog = true"
+      v-if="workflowsStore.isDrawingBoundingBox"
+    />
+    <CoordinateSelectorControl
+      v-if="workflowsStore.isSelectingCoordinate"
+      v-model:active="workflowsStore.isSelectingCoordinate"
+      @finish="workflowsStore.showDialog = true"
+      :coordinate="workflowsStore.coordinate"
+    />
+    <template v-else>
+      <InformationPanel
+        v-if="layerOptions"
+        :layerTitle="props.layerCapabilities?.title"
+        :isLoading="isLoading"
+        :currentTime="selectedDate"
+        :forecastTime="forecastTime"
+        :completelyMissing="props.layerCapabilities?.completelyMissing ?? false"
+        :firstValueTime="
+          new Date(props.layerCapabilities?.firstValueTime ?? '')
+        "
+        :lastValueTime="new Date(props.layerCapabilities?.lastValueTime ?? '')"
+        :canUseStreamlines="canUseStreamlines"
+        v-model:layer-kind="layerKind"
+        v-model:show-layer="showLayer"
+      >
+        <v-divider />
+        <ColourPanel
           :currentColourScaleIds="currentColourScaleIds"
-          @update:current-colour-scale="currentColourScale = $event"
+          v-model:currentColourScaleIndex="currentColourScaleIndex"
         />
-        <LocationsSearchControl
-          v-model:showLocations="showLocationsLayer"
-          width="50vw"
-          max-width="250"
-          :locations="locations"
-          :selectedLocationId="props.locationId"
-          @changeLocationId="onLocationChange"
-        />
-      </template>
-    </v-chip-group>
+        <template v-if="componentSettingsStore.overlays.length">
+          <v-divider />
+          <OverlayPanel
+            :overlays="componentSettingsStore.overlays"
+            v-model:selected-overlay-ids="
+              componentSettingsStore.selectedOverlayIds
+            "
+          />
+        </template>
+      </InformationPanel>
+      <LocationsSearchControl
+        v-if="settings.locationSearchEnabled"
+        v-model:showLocations="showLocationsLayer"
+        width="50vw"
+        max-width="250"
+        :locations="locations"
+        :selectedLocationIds="props.locationIds"
+        @changeLocationIds="onLocationsChange"
+      />
+    </template>
   </div>
   <ElevationSlider
     v-if="layerHasElevation"
@@ -99,11 +112,10 @@
     :unit="elevationUnit"
   />
   <DateTimeSlider
-    v-if="times && times.length > 0"
-    v-model:selectedDate="currentTime"
+    v-if="settings.dateTimeSliderEnabled && times?.length"
+    v-model:selectedDate="selectedDateOfSlider"
     :dates="times"
-    @update:doFollowNow="setCurrentTime"
-    @update:selectedDate="updateTime"
+    @update:doFollowNow="setLayerOptions"
     class="spatial-display__slider"
     :hide-speed-controls="mobile"
   >
@@ -133,11 +145,12 @@ import AnimatedRasterLayer, {
 import LocationsSearchControl from '@/components/wms/LocationsSearchControl.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
-import InformationPanel from '../wms/InformationPanel.vue'
+import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
+import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
+import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
-import { DateController } from '@/lib/TimeControl/DateController.ts'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
@@ -149,7 +162,7 @@ import {
 import type { BoundingBox, Layer, Style } from '@deltares/fews-wms-requests'
 import type { Location } from '@deltares/fews-pi-requests'
 import { LayerKind } from '@/lib/streamlines'
-import { ColourScale, useColourScalesStore } from '@/stores/colourScales'
+import { useColourScalesStore } from '@/stores/colourScales'
 import { useDisplay } from 'vuetify'
 import ColourLegend from '@/components/wms/ColourLegend.vue'
 import { rangeToString, styleToId } from '@/lib/legend'
@@ -158,6 +171,11 @@ import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
 import { FeatureCollection, Geometry } from 'geojson'
+import type { MapSettings } from '@/lib/topology/componentSettings'
+import OverlayLayer from '@/components/wms/OverlayLayer.vue'
+import { useComponentSettingsStore } from '@/stores/componentSettings'
+import { useColourScales } from '@/services/useColourScales'
+import { useSelectedDate } from '@/services/useSelectedDate'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -173,12 +191,12 @@ interface Props {
   elevation?: number
   locations?: Location[]
   geojson: FeatureCollection<Geometry, Location>
-  locationId?: string
+  locationIds?: string[]
   latitude?: string
   longitude?: string
-  currentTime?: Date
   maxValuesTimeSeries?: TimeSeriesData[]
   boundingBox?: BoundingBox
+  settings: MapSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -187,7 +205,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits([
-  'changeLocationId',
+  'changeLocationIds',
   'coordinateClick',
   'update:elevation',
   'update:currentTime',
@@ -202,34 +220,47 @@ onBeforeMount(() => {
   })
 })
 
-const dateController = new DateController([])
-
 const currentElevation = ref<number>(0)
 const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
-const currentTime = ref<Date>(new Date())
+const selectedDateOfSlider = ref(new Date())
+const { selectedDate } = useSelectedDate(selectedDateOfSlider)
+watch(selectedDate, () => {
+  emit('update:currentTime', selectedDate.value)
+})
+
 const layerOptions = ref<AnimatedRasterLayerOptions>()
 const forecastTime = ref<Date>()
 const isLoading = ref(false)
 let debouncedSetLayerOptions!: () => void
 
 const legendLayerStyles = ref<Style[]>()
-const settings = useUserSettingsStore()
+const userSettings = useUserSettingsStore()
 
 const showLayer = ref<boolean>(true)
 const layerKind = ref(LayerKind.Static)
 
 const colourScalesStore = useColourScalesStore()
-const currentColourScale = ref<ColourScale>()
 const currentColourScaleIds = ref<string[]>([])
+const currentColourScaleIndex = ref(0)
+const { currentScale: currentColourScale } = useColourScales(
+  currentColourScaleIndex,
+  currentColourScaleIds,
+  colourScalesStore.scales,
+)
 
+const componentSettingsStore = useComponentSettingsStore()
 const workflowsStore = useWorkflowsStore()
 const userSettingsStore = useUserSettingsStore()
 
 const showLocationsLayer = ref<boolean>(true)
+
+const baseMapId = computed(
+  () => (userSettingsStore.get('ui.map.theme')?.value as string) ?? 'automatic',
+)
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
 watchEffect(() => {
@@ -253,7 +284,7 @@ watch(
 )
 
 watch(
-  () => settings.useDisplayUnits,
+  () => userSettings.useDisplayUnits,
   () => {
     colourScalesStore.clearScales()
     addScalesForStyles(legendLayerStyles.value ?? [])
@@ -266,7 +297,7 @@ function addScalesForStyles(styles: Style[]): void {
       style,
       props.layerName,
       () => props.layerCapabilities?.title,
-      settings.useDisplayUnits,
+      userSettings.useDisplayUnits,
       () => props.layerCapabilities?.styles ?? [],
     )
   })
@@ -286,11 +317,19 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   if (!event.features) return
   const locationId: string | undefined =
     event.features[0].properties?.locationId
-  if (locationId) onLocationChange(locationId)
+  if (!locationId) return
+
+  if (event.originalEvent.ctrlKey) {
+    const locationIds = props.locationIds ?? []
+    const newLocationIds = [...new Set([...locationIds, locationId])]
+    onLocationsChange(newLocationIds)
+  } else {
+    onLocationsChange([locationId])
+  }
 }
 
-function onLocationChange(locationId: string | null): void {
-  emit('changeLocationId', locationId)
+function onLocationsChange(locationIds: string[]): void {
+  emit('changeLocationIds', locationIds)
 }
 
 const canUseStreamlines = computed(
@@ -317,7 +356,9 @@ function getDefaultLayerKind() {
 }
 
 const offsetBottomControls = computed(() => {
-  return props.times?.length ? '60px' : '0px'
+  return props.settings.dateTimeSliderEnabled && props.times?.length
+    ? '60px'
+    : '0px'
 })
 
 const layerHasElevation = computed(() => {
@@ -360,50 +401,22 @@ watch(currentElevation, () => {
 })
 
 watch(
-  [() => currentColourScale.value?.range, () => settings.useDisplayUnits],
+  [() => currentColourScale.value?.range, () => userSettings.useDisplayUnits],
   () => {
     setLayerOptions()
   },
   { deep: true },
 )
 
-watch(
-  () => props.times,
-  () => {
-    if (props.times) {
-      dateController.dates = props.times
-      dateController.selectDate(currentTime.value)
-      currentTime.value = dateController.currentTime
-    }
-    setLayerOptions()
-  },
-  { immediate: true, deep: true },
-)
-
-function setCurrentTime(enabled: boolean): void {
-  if (enabled) {
-    dateController.selectDate(new Date())
-    currentTime.value = dateController.currentTime
-    setLayerOptions()
-  }
-}
-
-function updateTime(date: Date): void {
-  if (dateController.currentTime.getTime() === date.getTime()) return
-  dateController.selectDate(date)
-  currentTime.value = dateController.currentTime
+watch(selectedDate, () => {
   debouncedSetLayerOptions()
-}
-
-watch(currentTime, () => {
-  emit('update:currentTime', currentTime.value)
 })
 
 function setLayerOptions(): void {
   if (props.layerName) {
     layerOptions.value = {
       name: props.layerName,
-      time: currentTime.value,
+      time: selectedDate.value,
       bbox: props.layerCapabilities?.boundingBox
         ? convertBoundingBoxToLngLatBounds(props.layerCapabilities.boundingBox)
         : undefined,
@@ -412,7 +425,7 @@ function setLayerOptions(): void {
         ? rangeToString(currentColourScale.value?.range)
         : undefined,
       style: currentColourScale.value?.style.name,
-      useDisplayUnits: settings.useDisplayUnits,
+      useDisplayUnits: userSettings.useDisplayUnits,
     }
   } else {
     layerOptions.value = undefined
@@ -459,7 +472,7 @@ function onCoordinateMoved(lat: number, lng: number): void {
 .colourbar-container {
   position: absolute;
   z-index: 1000;
-  bottom: 65px;
+  bottom: v-bind('offsetBottomControls');
   left: 5px;
 }
 
@@ -480,6 +493,8 @@ function onCoordinateMoved(lat: number, lng: number): void {
 }
 
 .mapcomponent__controls-container {
+  display: flex;
+  flex-wrap: wrap;
   position: absolute;
   max-width: 100%;
   z-index: 3;

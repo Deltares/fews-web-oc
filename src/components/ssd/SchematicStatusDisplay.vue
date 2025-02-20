@@ -5,9 +5,17 @@
       :class="{ 'd-none': hideSSD }"
       ref="ssdContainer"
     >
-      <SsdComponent :src="src" @action="onAction" ref="ssdComponent" />
+      <SsdComponent
+        :src="src"
+        :key="panelId"
+        :mobile="mobile"
+        :allowZooming="settings.zoomingEnabled"
+        @action="onAction"
+        ref="ssdComponent"
+      />
       <DateTimeSlider
-        v-model:selectedDate="selectedDateSlider"
+        v-if="settings.dateTimeSliderEnabled"
+        v-model:selectedDate="selectedDateOfSlider"
         :dates="dates"
         :hide-speed-controls="mobile"
       />
@@ -23,26 +31,35 @@ import type {
   SsdActionResult,
   SsdActionRequest,
 } from '@deltares/fews-ssd-requests'
-import debounce from 'lodash-es/debounce'
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-
 import { useAlertsStore } from '@/stores/alerts.ts'
-
 import { configManager } from '@/services/application-config/index.ts'
-
 import { useSsd } from '@/services/useSsd/index.ts'
-
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import SsdComponent from '@/components/ssd/SsdComponent.vue'
 import { useDisplay } from 'vuetify'
-import { useElementSize } from '@vueuse/core'
+import { debouncedRef, useElementSize } from '@vueuse/core'
+import {
+  getDefaultSettings,
+  type SchematicStatusDisplaySettings,
+} from '@/lib/topology/componentSettings'
+import { useDateRegistry } from '@/services/useDateRegistry'
+import { useSelectedDate } from '@/services/useSelectedDate'
 
 interface Props {
   groupId?: string
   panelId?: string
   objectId?: string
+  settings?: SchematicStatusDisplaySettings
 }
+
+const props = withDefaults(defineProps<Props>(), {
+  groupId: '',
+  panelId: '',
+  objectId: '',
+  settings: () => getDefaultSettings('schematic-status-display'),
+})
 
 interface SsdActionEventPayload {
   objectId: string
@@ -57,19 +74,11 @@ const alertsStore = useAlertsStore()
 const route = useRoute()
 const router = useRouter()
 
-const props = withDefaults(defineProps<Props>(), {
-  groupId: '',
-  panelId: '',
-  objectId: '',
-})
-
 const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
 const ssdContainer = ref<HTMLElement | null>(null)
 
-const selectedDate = ref<Date>(new Date())
-const selectedDateSlider = ref<Date>(selectedDate.value)
-
-const { mobile } = useDisplay()
+const selectedDateOfSlider = ref<Date>(new Date())
+const { selectedDate } = useSelectedDate(selectedDateOfSlider)
 
 const selectedDateString = computed(() => {
   if (selectedDate.value === undefined) return ''
@@ -77,33 +86,37 @@ const selectedDateString = computed(() => {
   return dateString.substring(0, 19) + 'Z'
 })
 
-// Debounce the selected date from the slider input, so we do not send hundreds of requests when
-// dragging the slider around.
-watch(
-  selectedDateSlider,
-  debounce(
-    () => {
-      selectedDate.value = selectedDateSlider.value
-    },
-    sliderDebounceInterval,
-    { leading: true, trailing: true },
-  ),
+// Debounce the selected date string from the slider input,
+// so we do not send hundreds of requests when dragging the slider around.
+const debouncedDateString = debouncedRef(
+  selectedDateString,
+  sliderDebounceInterval,
 )
 
 const { capabilities, src, dates } = useSsd(
   baseUrl,
   () => props.panelId,
-  selectedDateString,
+  debouncedDateString,
 )
+
+useDateRegistry(dates)
 
 const hideSSD = computed(() => {
   return mobile.value && props.objectId !== ''
 })
 
-const ssdContainerSize = useElementSize(ssdContainer)
-watch(ssdContainerSize.width, () => {
-  if (ssdComponent.value) {
-    ssdComponent.value.resize()
+const { width: containerWidth } = useElementSize(ssdContainer)
+watch(containerWidth, () => {
+  ssdComponent.value?.resize()
+})
+
+const { thresholds, mobileBreakpoint } = useDisplay()
+const mobile = computed(() => {
+  const breakpoint = mobileBreakpoint.value
+  if (typeof breakpoint === 'number') {
+    return containerWidth.value < breakpoint
+  } else {
+    return containerWidth.value < thresholds.value[breakpoint]
   }
 })
 

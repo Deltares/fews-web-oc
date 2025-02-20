@@ -16,20 +16,16 @@ import SplashScreenDialog from '@/components/dialog/SplashScreenDialog.vue'
 import TermsOfUseDialog from '@/components/dialog/TermsOfUseDialog.vue'
 import packageConfig from '@/../package.json'
 import { computed } from 'vue'
-import { getLocalOrRemoteFileUrl } from '@/lib/fews-config'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { useConfigStore } from '@/stores/config'
 import { asyncComputed, useStorage } from '@vueuse/core'
 
 const configStore = useConfigStore()
 
-const imagesBaseUrl = `${import.meta.env.BASE_URL}images/`
-
 const splashSrc = asyncComputed(async () => {
   if (!configStore.general.splashScreen) return
-  return await getLocalOrRemoteFileUrl(
-    imagesBaseUrl,
-    configStore.general.splashScreen,
-  )
+
+  return getResourcesStaticUrl(configStore.general.splashScreen)
 })
 
 const shouldAgreeToTerms = computed(

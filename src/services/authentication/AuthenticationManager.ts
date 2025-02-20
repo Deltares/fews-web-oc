@@ -7,11 +7,9 @@ export class AuthenticationManager {
   userManager!: UserManager
   private user: User | null = null
 
-  init(settings: UserManagerSettings) {
+  async init(settings: UserManagerSettings) {
     this.userManager = new UserManager(settings)
-    this.userManager.getUser().then((user) => {
-      this.user = user
-    })
+    this.user = await this.userManager.getUser()
     this.userManager.events.addUserLoaded((user: User) => {
       this.user = user
     })
@@ -27,7 +25,7 @@ export class AuthenticationManager {
     if (this.user !== null) {
       return this.user.access_token
     }
-    return ''
+    throw new Error('User is undefined')
   }
 
   public getAuthorizationHeaders(): Headers {

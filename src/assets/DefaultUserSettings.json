@@ -86,18 +86,18 @@
     "id": "ui.map.theme",
     "type": "oneOfMultiple",
     "label": "Basemap",
-    "value": "carto-db-automatic",
+    "value": "automatic",
     "items": [
       {
-        "value": "carto-db-automatic",
+        "value": "automatic",
         "icon": "mdi-theme-light-dark"
       },
       {
-        "value": "carto-db-light",
+        "value": "light",
         "icon": "mdi-weather-sunny"
       },
       {
-        "value": "carto-dark-matter",
+        "value": "dark",
         "icon": "mdi-weather-night"
       }
     ],
