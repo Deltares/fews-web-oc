@@ -31,6 +31,7 @@
       </v-card-title>
       <v-card-text class="pa-0">
         <v-data-iterator
+          :custom-filter="isMatchingItem"
           :items="state.items"
           :items-per-page="200"
           :search="search"
@@ -40,10 +41,14 @@
             <v-list density="compact">
               <v-list-item
                 v-for="item in items"
-                key="id"
+                :key="item.raw.id"
                 @click="itemClick(item.raw)"
-                >{{ item.raw.name }}</v-list-item
               >
+                <HighlightMatch :value="item.raw.name" :query="search" />
+                <span class="id-match" v-if="showId(item.raw)">
+                  ID: <HighlightMatch :value="item.raw.id" :query="search" />
+                </span>
+              </v-list-item>
             </v-list>
           </template>
           <template v-slot:footer="{ items }">
@@ -58,18 +63,54 @@
 </template>
 
 <script lang="ts" setup>
-import { useGlobalSearchState } from '@/stores/globalSearch'
 import { ref } from 'vue'
 import { useDisplay } from 'vuetify'
 
+import { containsSubstring } from '@/lib/search'
+
+import {
+  type GlobalSearchItem,
+  useGlobalSearchState,
+} from '@/stores/globalSearch'
+
+import HighlightMatch from './HighlightMatch.vue'
+
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
-const search = ref('')
+const search = ref<string | undefined>()
 
 function itemClick(item: any) {
   state.selectedItem = item
   state.active = false
 }
+
+function showId(item: GlobalSearchItem): boolean {
+  const query = search.value
+  if (!query) return false
+
+  const isMatchingName = containsSubstring(item.name, query)
+  const isMatchingId = containsSubstring(item.id, query)
+  // Only show the ID if the search query matches the ID but not the name.
+  return isMatchingId && !isMatchingName
+}
+
+function isMatchingItem(
+  id: string,
+  query: string,
+  item?: { raw: GlobalSearchItem },
+): boolean {
+  // A location matches if name and/or ID contains a substring that matches the
+  // query.
+  const isMatchingId = containsSubstring(id, query)
+  const isMatchingName = item ? containsSubstring(item.raw.name, query) : false
+  return isMatchingId || isMatchingName
+}
 </script>
 
-<style scoped></style>
+<style scoped>
+.id-match {
+  margin-left: 20px;
+  font-size: 0.8em;
+  font-style: italic;
+}
+</style>

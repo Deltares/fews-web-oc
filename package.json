@@ -10,6 +10,7 @@
     "build:weboc": "vue-tsc && vite build --base=/weboc/",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:dev": "vitest",
     "lint": "npm run prettier",
     "prettier": "prettier . --check",
     "format": "prettier .  --write",
