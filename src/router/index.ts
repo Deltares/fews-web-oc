@@ -237,7 +237,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         ],
       },
       {
-        path: '/topology/node/:nodeId*/tasks',
+        path: 'tasks',
         name: 'TopologyTasksDisplay',
         component: TasksDisplay,
         props: true,
