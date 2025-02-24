@@ -78,7 +78,7 @@ const props = withDefaults(defineProps<Props>(), {
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
-let margin: Margin = {}
+const margin = ref<Margin>({})
 const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = ref<HTMLElement>()
@@ -97,7 +97,16 @@ onMounted(() => {
       props.verticalProfile ? 1200 : null,
       axisOptions,
     )
-    margin = axis.margin
+
+    // Keep margin in sync with axis.margin
+    axis.margin = new Proxy(axis.margin, {
+      set: (target, property, value) => {
+        const res = Reflect.set(target, property, value)
+        margin.value = { ...target }
+        return res
+      },
+    })
+    margin.value = { ...axis.margin }
 
     // Use custom number formatter that just converts the value to a string;
     // appropriate rounding has already been done by the backend.
