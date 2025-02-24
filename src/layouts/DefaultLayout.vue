@@ -175,8 +175,13 @@ import { StyleValue, nextTick } from 'vue'
 import packageConfig from '@/../package.json'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { toCharacterIcon } from '@/lib/icons/index.ts'
-import { getBaseMapUserSettingsFromConfig } from '@/lib/basemap/index.ts'
+import {
+  convertBaseMapToUserSetting,
+  getBaseMapsFromConfig,
+  getBaseMapUserSettingsFromConfig,
+} from '@/lib/basemap/index.ts'
 import type { MapLayerConfig } from '@deltares/fews-pi-requests'
+import { useBaseMapsStore } from '@/stores/baseMaps.ts'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
@@ -231,10 +236,16 @@ watch(
   },
 )
 
+const baseMapsStore = useBaseMapsStore()
+
 function updateUserSettingBaseMaps(config: MapLayerConfig) {
   const current = settings.get('ui.map.theme')
   if (current?.type !== 'oneOfMultiple') return
-  current.items = getBaseMapUserSettingsFromConfig(config)
+
+  const baseMaps = getBaseMapsFromConfig(config)
+  baseMapsStore.setBaseMaps(baseMaps)
+
+  current.items = baseMapsStore.allBaseMaps.map(convertBaseMapToUserSetting)
 }
 
 const activeComponent = computed(() => configStore.getComponentByRoute(route))
