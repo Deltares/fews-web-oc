@@ -42,7 +42,7 @@
       v-model:coordinate="workflowsStore.coordinate"
     />
     <OverlayLayer
-      v-for="overlay in componentSettingsStore.selectedOverlays"
+      v-for="overlay in settings.map.overlays"
       :key="overlay.id"
       :overlay="overlay"
     />
@@ -84,14 +84,9 @@
             :currentColourScaleIds="currentColourScaleIds"
             v-model:currentColourScaleIndex="currentColourScaleIndex"
           />
-          <template v-if="componentSettingsStore.overlays.length">
+          <template v-if="settings.map.overlays.length">
             <v-divider />
-            <OverlayPanel
-              :overlays="componentSettingsStore.overlays"
-              v-model:selected-overlay-ids="
-                componentSettingsStore.selectedOverlayIds
-              "
-            />
+            <OverlayPanel :overlays="settings.map.overlays" />
           </template>
         </InformationPanel>
         <LocationsSearchControl
@@ -177,7 +172,6 @@ import CoordinateSelectorControl from '@/components/map/CoordinateSelectorContro
 import { FeatureCollection, Geometry } from 'geojson'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import OverlayLayer from '@/components/wms/OverlayLayer.vue'
-import { useComponentSettingsStore } from '@/stores/componentSettings'
 import { useColourScales } from '@/services/useColourScales'
 import { useSelectedDate } from '@/services/useSelectedDate'
 
@@ -259,7 +253,6 @@ const { currentScale: currentColourScale } = useColourScales(
   colourScalesStore.scales,
 )
 
-const componentSettingsStore = useComponentSettingsStore()
 const workflowsStore = useWorkflowsStore()
 const userSettingsStore = useUserSettingsStore()
 
