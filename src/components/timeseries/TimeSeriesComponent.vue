@@ -1,7 +1,7 @@
 <template>
   <v-window v-model="tab" class="h-100 w-100" :touch="false">
     <v-window-item
-      v-if="settings.timeseriesChart.show"
+      v-if="settings.timeSeriesChart.enabled"
       :value="DisplayType.TimeSeriesChart"
       class="time-series-component__container scroll"
     >
@@ -14,13 +14,13 @@
           :currentTime="selectedDate"
           :isLoading="isLoading(subplot, loadingSeriesIds)"
           :zoomHandler="sharedZoomHandler"
-          :settings="settings.timeseriesChart"
+          :settings="settings.timeSeriesChart"
         >
         </TimeSeriesChart>
       </KeepAlive>
     </v-window-item>
     <v-window-item
-      v-if="settings.verticalProfileChart.show"
+      v-if="settings.verticalProfileChart.enabled"
       :value="DisplayType.ElevationChart"
       class="elevation-chart-component__container scroll"
     >
@@ -40,7 +40,7 @@
       </KeepAlive>
     </v-window-item>
     <v-window-item
-      v-if="settings.timeseriesTable.show"
+      v-if="settings.timeSeriesTable.enabled"
       :value="DisplayType.TimeSeriesTable"
       class="time-series-component__container max-height"
     >
@@ -48,7 +48,7 @@
         :config="tableConfig"
         :series="series"
         :key="tableConfig.title"
-        :settings="settings.timeseriesTable"
+        :settings="settings.timeSeriesTable"
         class="single"
         @change="(event) => onDataChange(event)"
         @update:isEditing="isEditing = $event"
@@ -56,7 +56,7 @@
       </TimeSeriesTable>
     </v-window-item>
     <v-window-item
-      v-if="settings.metaDataPanel.show"
+      v-if="settings.metaDataPanel.enabled"
       :value="DisplayType.Information"
       class="h-100"
     >
@@ -108,7 +108,7 @@ import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import {
   getDefaultSettings,
-  type ChartSettings,
+  type ChartsSettings,
 } from '@/lib/topology/componentSettings'
 
 interface Props {
@@ -117,7 +117,7 @@ interface Props {
   displayType: DisplayType
   currentTime?: Date
   informationContent?: string | null
-  settings?: ChartSettings
+  settings?: ChartsSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {

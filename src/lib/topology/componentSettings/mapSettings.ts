@@ -1,7 +1,11 @@
 import type { DeepRequired } from '@/lib/utils/types'
-import type { MapSettings } from '@deltares/fews-pi-requests'
+import type { MapSettings as PiMapSettings } from '@deltares/fews-pi-requests'
 
-export const defaultMapSettings: DeepRequired<MapSettings> = {
+export type MapSettings = DeepRequired<PiMapSettings> & {
+  dateTimeSliderEnabled: boolean
+}
+
+export const defaultMapSettings: MapSettings = {
   wmsLayer: {
     show: true,
     autoPlay: false,
@@ -15,4 +19,5 @@ export const defaultMapSettings: DeepRequired<MapSettings> = {
     locationSearchEnabled: true,
   },
   overlays: [],
+  dateTimeSliderEnabled: true,
 }

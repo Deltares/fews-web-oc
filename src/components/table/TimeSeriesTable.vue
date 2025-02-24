@@ -198,12 +198,12 @@ import {
   getMidpointOfDates,
   toISOString,
 } from '@/lib/date'
-import { type ChartSettings } from '@/lib/topology/componentSettings'
+import { type ChartsSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   config: ChartConfig
   series: Record<string, Series>
-  settings: ChartSettings['timeseriesTable']
+  settings: ChartsSettings['timeSeriesTable']
 }
 
 const props = defineProps<Props>()
@@ -246,7 +246,7 @@ const nonEquidistantSeries = computed(() => {
 
 const sortBy = computed(() => {
   const order: 'asc' | 'desc' =
-    props.settings.sortDateTimeColumn === 'ascending' ? 'asc' : 'desc'
+    props.settings.sortDepthColumn === 'ascending' ? 'asc' : 'desc'
   return [
     {
       key: 'date',
@@ -261,7 +261,7 @@ onBeforeMount(() => {
     tableHeaders.value = createTableHeaders(
       props.config.series,
       seriesIds.value,
-      props.settings.allowDateTimeSorting,
+      props.settings.allowDepthSorting,
     )
   }
 
@@ -290,7 +290,7 @@ watch(
     tableHeaders.value = createTableHeaders(
       props.config.series,
       seriesIds.value,
-      props.settings.allowDateTimeSorting,
+      props.settings.allowDepthSorting,
     )
   },
 )

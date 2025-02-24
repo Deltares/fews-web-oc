@@ -95,7 +95,7 @@
           </template>
         </InformationPanel>
         <LocationsSearchControl
-          v-if="settings.locationSearchEnabled"
+          v-if="settings.locationsLayer.locationSearchEnabled"
           v-model:showLocations="showLocationsLayer"
           width="50vw"
           max-width="250"

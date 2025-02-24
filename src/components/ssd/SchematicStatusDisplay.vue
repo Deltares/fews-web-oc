@@ -9,7 +9,7 @@
         :src="src"
         :key="panelId"
         :mobile="mobile"
-        :allowZooming="settings.zoomingEnabled"
+        :allowZooming="settings.zoomEnabled"
         @action="onAction"
         ref="ssdComponent"
       />
@@ -42,7 +42,7 @@ import { useDisplay } from 'vuetify'
 import { debouncedRef, useElementSize } from '@vueuse/core'
 import {
   getDefaultSettings,
-  type SchematicStatusDisplaySettings,
+  type SSDSettings,
 } from '@/lib/topology/componentSettings'
 import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
@@ -51,7 +51,7 @@ interface Props {
   groupId?: string
   panelId?: string
   objectId?: string
-  settings?: SchematicStatusDisplaySettings
+  settings?: SSDSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
