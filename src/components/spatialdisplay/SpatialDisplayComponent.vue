@@ -86,22 +86,22 @@
               v-model:currentColourScaleIndex="currentColourScaleIndex"
             />
           </template>
-          <template v-if="settings.map.overlays.length">
+          <template v-if="settings.overlays.length">
             <v-divider />
             <OverlayPanel
-              :overlays="settings.map.overlays"
+              :overlays="settings.overlays"
               v-model:selected-overlay-ids="selectedOverlayIds"
             />
           </template>
         </InformationPanel>
-        <OverlayInformationPanel v-else-if="settings.map.overlays.length">
+        <OverlayInformationPanel v-else-if="settings.overlays.length">
           <OverlayPanel
-            :overlays="settings.map.overlays"
+            :overlays="settings.overlays"
             v-model:selected-overlay-ids="selectedOverlayIds"
           />
         </OverlayInformationPanel>
         <LocationsSearchControl
-          v-if="settings.map.locationsLayer.locationSearchEnabled"
+          v-if="settings.locationsLayer.locationSearchEnabled"
           v-model:showLocations="showLocationsLayer"
           width="50vw"
           max-width="250"
@@ -207,7 +207,7 @@ interface Props {
   longitude?: string
   maxValuesTimeSeries?: TimeSeriesData[]
   boundingBox?: BoundingBox
-  settings: ComponentSettings
+  settings: ComponentSettings['map']
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -269,14 +269,14 @@ const { currentScale: currentColourScale } = useColourScales(
 const workflowsStore = useWorkflowsStore()
 const userSettingsStore = useUserSettingsStore()
 
-const showLocationsLayer = ref<boolean>(true)
+const showLocationsLayer = ref<boolean>(props.settings.locationsLayer.show)
 
 const baseMapId = computed(
   () => (userSettingsStore.get('ui.map.theme')?.value as string) ?? 'automatic',
 )
 
 const { selectedOverlayIds, selectedOverlays } = useOverlays(
-  () => props.settings.map.overlays,
+  () => props.settings.overlays,
 )
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
