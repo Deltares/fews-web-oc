@@ -3,7 +3,7 @@
     <v-window-item
       v-if="settings.timeSeriesChart.enabled"
       :value="DisplayType.TimeSeriesChart"
-      class="time-series-component__container pt-2 scroll"
+      class="time-series-component__container scroll"
     >
       <KeepAlive>
         <TimeSeriesChart
