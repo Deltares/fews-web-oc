@@ -172,6 +172,13 @@ function getTimeSeriesGridActionsFilter(
 }
 
 const filter = computed(() => {
+  if (
+    !props.settings.charts.timeSeriesChart.enabled &&
+    !props.settings.charts.timeSeriesTable.enabled
+  ) {
+    return
+  }
+
   if (props.locationIds) {
     return getFilterActionsFilter(props.locationIds)
   }
@@ -189,6 +196,13 @@ const showChartPanel = computed(() => {
 })
 
 const elevationChartFilter = computed(() => {
+  if (
+    !props.settings.charts.verticalProfileChart.enabled &&
+    !props.settings.charts.verticalProfileTable.enabled
+  ) {
+    return
+  }
+
   if (!layerCapabilities.value?.elevation) return
   if (props.longitude && props.latitude) {
     const actionsFilter = getTimeSeriesGridActionsFilter(
