@@ -25,8 +25,9 @@
       class="elevation-chart-component__container scroll"
     >
       <KeepAlive>
-        <ElevationChart
+        <TimeSeriesChart
           v-for="(subplot, i) in elevationChartSubplots"
+          verticalProfile
           :config="subplot"
           :series="elevationChartSeries"
           :key="`${subplot.title}-${i}`"
@@ -35,7 +36,7 @@
           :zoomHandler="sharedVerticalZoomHandler"
           :settings="settings.verticalProfileChart"
         >
-        </ElevationChart>
+        </TimeSeriesChart>
       </KeepAlive>
     </v-window-item>
     <v-window-item
@@ -83,7 +84,6 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
 import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
-import ElevationChart from '../charts/ElevationChart.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
 import {
   DisplayType,

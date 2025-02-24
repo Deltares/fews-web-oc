@@ -1,5 +1,8 @@
 <template>
-  <div class="chart-with-chips mt-1">
+  <div
+    class="chart-with-chips mt-1"
+    :class="{ 'vertical-profile': verticalProfile }"
+  >
     <ChartLegend
       v-if="settings.legend.show"
       :tags="legendTags"
@@ -22,6 +25,7 @@ import {
   ChartLine,
   ChartMarker,
   ChartRule,
+  LabelOrientation,
   TooltipAnchor,
   TooltipOptions,
   WheelMode,
@@ -34,6 +38,7 @@ import {
   CartesianAxes,
   CurrentTime,
   MouseOver,
+  VerticalMouseOver,
 } from '@deltares/fews-web-oc-charts'
 import LoadingOverlay from '@/components/charts/LoadingOverlay.vue'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
@@ -57,6 +62,7 @@ interface Props {
   currentTime?: Date
   isLoading?: boolean
   zoomHandler?: ZoomHandler
+  verticalProfile?: boolean
   settings: ChartSettings['timeseriesChart']
 }
 
@@ -116,13 +122,47 @@ const defaultOptions: CartesianAxesOptions = {
   margin: defaultMargin,
 }
 
+const yLabelVerticalOptions: Partial<CartesianAxesOptions> = {
+  y: [
+    {
+      labelOrientation: LabelOrientation.Vertical,
+      labelOffset: 15,
+    },
+    {
+      labelOrientation: LabelOrientation.Vertical,
+      labelOffset: 15,
+    },
+  ],
+  margin: {
+    top: 10,
+    left: defaultMargin.left + 15,
+  },
+}
+
+const verticalProfileOptions: Partial<CartesianAxesOptions> = {
+  margin: {
+    left: 70,
+    right: 30,
+  },
+}
+
 const axisOptions = computed(() => {
   const configOptions: Partial<CartesianAxesOptions> = {
     x: props.config?.xAxis,
     y: props.config?.yAxis,
   }
 
-  return merge(defaultOptions, configOptions)
+  const extraOptions = [configOptions]
+
+  if (props.settings.yAxis.yLabelPlacement === 'beside') {
+    extraOptions.push(yLabelVerticalOptions)
+  }
+
+  if (props.verticalProfile) {
+    extraOptions.push(verticalProfileOptions)
+  }
+
+  return merge(defaultOptions, ...extraOptions)
 })
 
 const margin = computed(() => {
@@ -133,15 +173,15 @@ onMounted(() => {
   if (chartContainer.value) {
     axis = new CartesianAxes(
       chartContainer.value,
-      null,
-      null,
+      props.verticalProfile ? 800 : null,
+      props.verticalProfile ? 1200 : null,
       axisOptions.value,
     )
     // Use custom number formatter that just converts the value to a string;
     // appropriate rounding has already been done by the backend.
-    const mouseOver = new MouseOver(undefined, (value: number) =>
-      value.toString(),
-    )
+    const mouseOver = props.verticalProfile
+      ? new VerticalMouseOver(undefined, (value: number) => value.toString())
+      : new MouseOver(undefined, (value: number) => value.toString())
     const zoom = props.zoomHandler ?? new ZoomHandler(WheelMode.NONE)
     axisTime.value = new CurrentTime({
       x: {
@@ -445,5 +485,10 @@ onBeforeUnmount(() => {
   flex-direction: column;
   flex: 1 1 80%;
   max-height: 800px;
+}
+
+.chart-with-chips.vertical-profile {
+  max-height: unset;
+  max-width: 600px;
 }
 </style>
