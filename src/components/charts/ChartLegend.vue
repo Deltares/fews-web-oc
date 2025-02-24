@@ -1,10 +1,6 @@
 <template>
   <!-- Fills up space as v-sheet is absolutely positioned -->
-  <div
-    v-if="!overlay"
-    class="flex-0-0"
-    :style="{ height: `${legendContainerHeight}px` }"
-  />
+  <div v-if="!overlay" class="flex-0-0" :style="{ height: `${height}px` }" />
   <div class="chart-controls-container">
     <v-sheet
       v-click-outside="onOutsideClick"
@@ -18,12 +14,14 @@
         ref="chartLegendContainer"
         :style="chartLegendContainerStyle"
         class="chart-legend-container w-100"
+        :class="{ 'align-self-end': !overlay }"
       >
         <v-chip-group
           ref="chartLegend"
           class="chart-legend"
           :class="{ overlay }"
           multiple
+          :column="!overlay"
           selected-class=""
         >
           <v-chip
@@ -90,7 +88,7 @@ const height = computed(() => {
     const chipHeight = 26
     return numOfLines * chipHeight + 4
   } else {
-    const chipHeight = 40
+    const chipHeight = 34
     return numOfLines * chipHeight
   }
 })
@@ -111,19 +109,14 @@ function toggleLine(tag: Tag) {
   emit('toggleLine', tag)
 }
 
-const legendContainerHeight = computed(() => {
-  return Math.min(height.value, legendHeight.value)
-})
 const chipMargin = 8
 const chartControlsStyle = computed(() => {
   const { left = 0, right = 0, top = 0, bottom = 0 } = props.margin
   const offset = overlay.value ? -chipMargin : chipMargin
 
   const maxHeight =
-    expanded.value || !requiresExpand.value
-      ? '95%'
-      : `${legendContainerHeight.value}px`
-  const minHeight = `${legendContainerHeight.value}px`
+    expanded.value || !requiresExpand.value ? '95%' : `${height.value}px`
+  const minHeight = `${height.value}px`
   const marginRight = right ? `${right - offset}px` : undefined
   const marginLeft = left ? `${left - offset}px` : undefined
   const marginTop = overlay.value ? `${top - offset}px` : undefined
