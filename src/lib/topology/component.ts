@@ -50,7 +50,7 @@ export const componentTypeToRouteNameMap = {
   'system-monitor': 'TopologySystemMonitor',
   'html-display': 'TopologyWebDisplay',
   dashboard: 'TopologyDashboard',
-  'whatif-display': 'WhatIfDisplay',
+  'whatif-display': 'TopologyWhatIfDisplay',
   'log-display': 'TopologyLogDisplay',
 } satisfies Record<ComponentType, string>
 
