@@ -22,11 +22,12 @@ import { computed, ref } from 'vue'
 
 interface Props {
   title?: string
-  hideToolBar: string
+  hideToolBar?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: '',
+  hideToolBar: 'false',
 })
 
 const showToolBar = computed(() => {
