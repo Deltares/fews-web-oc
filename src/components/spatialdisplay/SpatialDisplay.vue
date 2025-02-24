@@ -62,7 +62,7 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import {
-  type MapSettings,
+  type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
 import { useElementSize } from '@vueuse/core'
@@ -77,12 +77,12 @@ interface Props {
   latitude?: string
   longitude?: string
   topologyNode?: TopologyNode
-  settings?: MapSettings
+  settings?: ComponentSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
-  settings: () => getDefaultSettings('map'),
+  settings: () => getDefaultSettings(),
 })
 
 const emit = defineEmits(['navigate'])

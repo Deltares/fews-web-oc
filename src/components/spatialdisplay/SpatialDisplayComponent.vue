@@ -95,7 +95,7 @@
           </template>
         </InformationPanel>
         <LocationsSearchControl
-          v-if="settings.locationsLayer.locationSearchEnabled"
+          v-if="settings.map.locationsLayer.locationSearchEnabled"
           v-model:showLocations="showLocationsLayer"
           width="50vw"
           max-width="250"
@@ -115,7 +115,7 @@
       :unit="elevationUnit"
     />
     <DateTimeSlider
-      v-if="settings.dateTimeSliderEnabled && times?.length"
+      v-if="dateTimeSliderEnabled && times?.length"
       v-model:selectedDate="selectedDateOfSlider"
       :dates="times"
       @update:doFollowNow="setLayerOptions"
@@ -175,7 +175,7 @@ import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
 import { FeatureCollection, Geometry } from 'geojson'
-import type { MapSettings } from '@/lib/topology/componentSettings'
+import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import OverlayLayer from '@/components/wms/OverlayLayer.vue'
 import { useComponentSettingsStore } from '@/stores/componentSettings'
 import { useColourScales } from '@/services/useColourScales'
@@ -200,7 +200,7 @@ interface Props {
   longitude?: string
   maxValuesTimeSeries?: TimeSeriesData[]
   boundingBox?: BoundingBox
-  settings: MapSettings
+  settings: ComponentSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -231,7 +231,8 @@ const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
 const selectedDateOfSlider = ref(new Date())
-const { selectedDate } = useSelectedDate(selectedDateOfSlider)
+const { selectedDate, dateTimeSliderEnabled } =
+  useSelectedDate(selectedDateOfSlider)
 watch(selectedDate, () => {
   emit('update:currentTime', selectedDate.value)
 })
@@ -362,9 +363,7 @@ function getDefaultLayerKind() {
 }
 
 const offsetBottomControls = computed(() => {
-  return props.settings.dateTimeSliderEnabled && props.times?.length
-    ? '60px'
-    : '0px'
+  return dateTimeSliderEnabled.value && props.times?.length ? '60px' : '0px'
 })
 
 const layerHasElevation = computed(() => {
