@@ -402,7 +402,7 @@ onBeforeUnmount(() => {
 .chart-container {
   display: flex;
   position: relative;
-  flex: 1 1 400px;
+  flex: 1 1 332px;
   width: 100%;
   fill: currentColor;
   margin: 0px auto;
@@ -421,8 +421,8 @@ onBeforeUnmount(() => {
   display: flex;
   position: relative;
   flex-direction: column;
-  flex: 0 0 auto;
-  height: clamp(200px, 100%, 400px);
+  flex: 1 1 80%;
+  max-height: 800px;
 }
 
 .chart-with-chips.vertical-profile {
