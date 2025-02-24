@@ -25,12 +25,12 @@ export const defaultChartSettings: ChartsSettings = {
       placement: 'above chart',
     },
     xAxis: {
-      show: true,
+      show: true, // TODO: Implement
       xTicks: true,
       xLabel: true,
     },
     yAxis: {
-      show: true,
+      show: true, // TODO: Implement
       yTicks: true,
       yLabel: true,
     },
