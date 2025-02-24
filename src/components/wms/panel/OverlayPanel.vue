@@ -48,7 +48,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const selectedOverlayIds = defineModel<string[]>('selectedOverlayIds', {
-  default: () => [],
+  required: true,
 })
 
 const allSelected = computed(
