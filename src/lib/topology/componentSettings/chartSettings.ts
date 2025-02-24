@@ -21,7 +21,7 @@ export const defaultChartSettings: ChartsSettings = {
   timeSeriesChart: {
     enabled: true,
     legend: {
-      numberOfLines: '1',
+      numberOfLines: '2',
       placement: 'above chart',
     },
     xAxis: {
@@ -43,7 +43,7 @@ export const defaultChartSettings: ChartsSettings = {
   verticalProfileChart: {
     enabled: true,
     legend: {
-      numberOfLines: '1',
+      numberOfLines: '2',
       placement: 'above chart',
     },
     xAxis: {
