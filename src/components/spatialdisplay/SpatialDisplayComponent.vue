@@ -79,11 +79,13 @@
           v-model:layer-kind="layerKind"
           v-model:show-layer="showLayer"
         >
-          <v-divider />
-          <ColourPanel
-            :currentColourScaleIds="currentColourScaleIds"
-            v-model:currentColourScaleIndex="currentColourScaleIndex"
-          />
+          <template v-if="layerOptions">
+            <v-divider />
+            <ColourPanel
+              :currentColourScaleIds="currentColourScaleIds"
+              v-model:currentColourScaleIndex="currentColourScaleIndex"
+            />
+          </template>
           <template v-if="settings.map.overlays.length">
             <v-divider />
             <OverlayPanel
@@ -92,6 +94,12 @@
             />
           </template>
         </InformationPanel>
+        <OverlayInformationPanel v-else-if="settings.map.overlays.length">
+          <OverlayPanel
+            :overlays="settings.map.overlays"
+            v-model:selected-overlay-ids="selectedOverlayIds"
+          />
+        </OverlayInformationPanel>
         <LocationsSearchControl
           v-if="settings.map.locationsLayer.locationSearchEnabled"
           v-model:showLocations="showLocationsLayer"
@@ -148,6 +156,7 @@ import LocationsSearchControl from '@/components/wms/LocationsSearchControl.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
+import OverlayInformationPanel from '@/components/wms/panel/OverlayInformationPanel.vue'
 import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
 import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
