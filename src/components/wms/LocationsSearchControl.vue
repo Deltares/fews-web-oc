@@ -13,11 +13,7 @@
       hide-details
       @click="showLocationsSearch"
     >
-      {{
-        selectedLocationIds
-          ? selectedLocation?.locationName
-          : 'Search locations'
-      }}
+      {{ selectedLocation?.locationName ?? 'Search locations' }}
     </v-btn>
   </ControlChip>
 </template>
