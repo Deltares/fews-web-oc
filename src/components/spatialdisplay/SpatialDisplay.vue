@@ -183,9 +183,8 @@ const filter = computed(() => {
 
 const showChartPanel = computed(() => {
   return (
-    (currentLocationIds.value ||
-      (currentLongitude.value && currentLatitude.value)) &&
-    props.settings.chartPanelEnabled
+    currentLocationIds.value ||
+    (currentLongitude.value && currentLatitude.value)
   )
 })
 

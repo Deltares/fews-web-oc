@@ -1,5 +1,5 @@
 <template>
-  <WindowComponent :hideToolbar="settings.general.hideToolbar">
+  <WindowComponent :hideToolbar="settings.general.hideToolBar">
     <template v-slot:toolbar>
       <v-toolbar-items
         class="flex-0-0"
@@ -70,7 +70,7 @@ import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { DisplayConfig, DisplayType } from '@/lib/display/DisplayConfig'
-import { type ChartSettings } from '@/lib/topology/componentSettings'
+import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { computed, ref, StyleValue, watch } from 'vue'
 import { useDownloadDialogStore } from '@/stores/downloadDialog'
 import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
@@ -86,7 +86,7 @@ interface Props {
   currentTime?: Date
   informationContent?: string | null
   filter?: filterActionsFilter | timeSeriesGridActionsFilter
-  settings: ChartSettings
+  settings: ChartsSettings
 }
 
 const props = defineProps<Props>()
@@ -138,6 +138,8 @@ function toDisplayType(
       return DisplayType.ElevationChart
     case 'verticalProfileTable':
       throw new Error('Vertical profile table is not supported')
+    default:
+      throw new Error(`Unknown start panel: ${value}`)
   }
 }
 
@@ -153,11 +155,11 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
   const noTooltip = props.informationContent === null
   const tooltipDefined = props.informationContent !== undefined
 
-  const chartEnabled = props.settings.timeseriesChart.show
+  const chartEnabled = props.settings.timeSeriesChart.enabled
   const elevationChartEnabled =
-    props.settings.verticalProfileChart.show && elevationChartsDefined
-  const tableEnabled = props.settings.timeseriesTable.show
-  const metaDataEnabled = props.settings.metaDataPanel.show && tooltipDefined
+    props.settings.verticalProfileChart.enabled && elevationChartsDefined
+  const tableEnabled = props.settings.timeSeriesTable.enabled
+  const metaDataEnabled = props.settings.metaDataPanel.enabled && tooltipDefined
   return [
     {
       icon: 'mdi-chart-line',

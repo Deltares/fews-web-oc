@@ -1,7 +1,9 @@
 import type { DeepRequired } from '@/lib/utils/types'
-import type { ReportSettings } from '@deltares/fews-pi-requests'
+import type { ReportSettings as PiReportSettings } from '@deltares/fews-pi-requests'
 
-export const defaultReportSettings: DeepRequired<ReportSettings> = {
+export type ReportSettings = DeepRequired<PiReportSettings>
+
+export const defaultReportSettings: ReportSettings = {
   downloadReport: true,
   hideNonCurrentReports: false,
   hideReportName: false,

@@ -56,14 +56,14 @@ import type { Margin } from '@deltares/fews-web-oc-charts'
 import type { Tag } from '@/lib/charts/tags'
 import { useElementSize, useToggle } from '@vueuse/core'
 import { computed, useTemplateRef, watch } from 'vue'
-import { ChartSettings } from '@/lib/topology/componentSettings'
+import type { ChartsSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   tags: Tag[]
   margin: Margin
   settings:
-    | ChartSettings['timeseriesChart']['legend']
-    | ChartSettings['verticalProfileChart']['legend']
+    | ChartsSettings['timeSeriesChart']['legend']
+    | ChartsSettings['verticalProfileChart']['legend']
 }
 
 const props = defineProps<Props>()
@@ -78,7 +78,7 @@ const height = computed(() => {
   if (numOfLines === 'all') {
     return 100 * chipHeight
   }
-  return numOfLines * chipHeight
+  return Number(numOfLines) * chipHeight
 })
 
 const chartLegend = useTemplateRef('chartLegend')
