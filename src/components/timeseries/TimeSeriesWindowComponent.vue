@@ -1,5 +1,5 @@
 <template>
-  <WindowComponent :hideToolbar="settings.general.hideToolBar">
+  <WindowComponent :hideToolBar="settings.general.hideToolBar">
     <template v-slot:toolbar>
       <v-toolbar-items
         class="flex-0-0"
