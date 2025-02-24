@@ -52,8 +52,7 @@ export interface UserSettingsState {
 const defaultUserSettings = DefaultUserSettings as UserSettingsItem[]
 const parameterGroupKey = 'units.parameterGroup.'
 
-export const useUserSettingsStore = defineStore({
-  id: 'userSettings',
+export const useUserSettingsStore = defineStore('userSettings', {
   state: (): UserSettingsState => ({
     groups: ['Units', 'Datum', 'UI', 'Map'],
     items: defaultUserSettings,
