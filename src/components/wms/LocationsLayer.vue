@@ -183,7 +183,9 @@ function getLightPaintFillSpecification(
 }
 
 const paintFillSpecification = computed(() => {
-  const selectedIds = props.selectedLocationIds ?? ['invalid-no-layer-selected']
+  const selectedIds = props.selectedLocationIds?.length
+    ? props.selectedLocationIds
+    : ['invalid-no-layer-selected']
   const hoverStateId = hoveredStateId.value ?? 'invalid-no-hover'
   const hoverId = selectedIds.includes(hoverStateId)
     ? 'invalid-already-selected'
