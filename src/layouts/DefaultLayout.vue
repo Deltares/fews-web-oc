@@ -11,7 +11,6 @@
       <div class="h-100" id="app-bar-content-center"></div>
       <template #append>
         <div id="app-bar-content-end" />
-        <TaskRunsPanel />
         <time-control-menu />
         <user-settings-menu />
         <login-component v-if="configManager.authenticationIsEnabled" />
@@ -138,14 +137,9 @@
       </template>
     </v-navigation-drawer>
     <v-main id="main">
-      <div class="w-100 h-100 d-flex flex-row">
-        <div class="flex-1-1">
-          <Suspense>
-            <router-view></router-view>
-          </Suspense>
-        </div>
-        <div class="border-s flex-0-0 h-100" id="main-side-panel"></div>
-      </div>
+      <Suspense>
+        <router-view></router-view>
+      </Suspense>
       <div class="alerts__container" v-if="alertsStore.hasAlerts">
         <v-alert
           v-for="alert in alertsStore.alerts"
@@ -174,7 +168,6 @@ import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
 import StartupDialog from '@/components/dialog/StartupDialog.vue'
 import GlobalSearchComponent from '@/components/general/GlobalSearchComponent.vue'
-import TaskRunsPanel from '@/components/tasks/TaskRunsPanel.vue'
 
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
@@ -193,7 +186,6 @@ const configStore = useConfigStore()
 const settings = useUserSettingsStore()
 const { mobile } = useDisplay()
 const alertsStore = useAlertsStore()
-
 const theme = useTheme()
 
 const drawer = ref(true)
