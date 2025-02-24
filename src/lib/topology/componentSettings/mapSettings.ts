@@ -11,7 +11,7 @@ export const defaultMapSettings: MapSettings = {
     doubleClickAction: true, // TODO: Implement
   },
   locationsLayer: {
-    show: true, // TODO: Implement
+    show: true,
     locationNames: true, // TODO: Implement
     singleClickAction: true, // TODO: Implement
     locationSearchEnabled: true,

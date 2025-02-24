@@ -12,7 +12,7 @@
         :layer-capabilities="layerCapabilities"
         :bounding-box="boundingBox"
         :times="times"
-        :settings="settings"
+        :settings="settings.map"
         :max-values-time-series="maxValuesTimeSeries"
         v-model:elevation="elevation"
         @update:current-time="currentTime = $event"
