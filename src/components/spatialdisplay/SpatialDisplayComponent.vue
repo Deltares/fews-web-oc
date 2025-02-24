@@ -100,7 +100,7 @@
           width="50vw"
           max-width="250"
           :locations="locations"
-          :selectedLocationIds="props.locationIds"
+          :selectedLocationIds="selectedLocationIds"
           @changeLocationIds="onLocationsChange"
         />
       </template>
