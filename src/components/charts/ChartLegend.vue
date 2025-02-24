@@ -89,7 +89,7 @@ const height = computed(() => {
     return numOfLines * chipHeight + 4
   } else {
     const chipHeight = 34
-    return numOfLines * chipHeight
+    return numOfLines * chipHeight + 4
   }
 })
 
