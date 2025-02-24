@@ -16,25 +16,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import {
   AlertLines,
-  CartesianAxesOptions,
   ChartArea,
   ChartBar,
   ChartLine,
   ChartMarker,
   ChartRule,
-  LabelOrientation,
+  Margin,
   TooltipAnchor,
   TooltipOptions,
   WheelMode,
   ZoomHandler,
   toggleChartVisibility,
-} from '@deltares/fews-web-oc-charts'
-import {
-  AxisPosition,
-  AxisType,
   CartesianAxes,
   CurrentTime,
   MouseOver,
@@ -50,11 +45,11 @@ import {
   dataFromResources,
   removeUnreliableData,
 } from '@/lib/charts/dataFromResources'
-import uniq from 'lodash-es/uniq'
 import { extent } from 'd3'
-import { difference, merge } from 'lodash-es'
+import { difference, uniq } from 'lodash-es'
 import type { Tag } from '@/lib/charts/tags'
 import { type ChartSettings } from '@/lib/topology/componentSettings'
+import { getAxisOptions } from '@/lib/charts/axisOptions'
 
 interface Props {
   config?: ChartConfig
@@ -84,99 +79,28 @@ const props = withDefaults(defineProps<Props>(), {
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
+let margin: Margin = {}
 const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = ref<HTMLElement>()
 const axisTime = ref<CurrentTime>()
 
-const defaultMargin = {
-  top: 40,
-  left: 50,
-  right: 50,
-  bottom: 40,
-}
-
-const defaultOptions: CartesianAxesOptions = {
-  x: [
-    {
-      type: AxisType.time,
-      position: AxisPosition.Bottom,
-      showGrid: true,
-    },
-  ],
-  y: [
-    {
-      position: AxisPosition.Left,
-      showGrid: true,
-      label: ' ',
-      unit: ' ',
-      nice: true,
-    },
-    {
-      position: AxisPosition.Right,
-      label: ' ',
-      unit: ' ',
-      nice: true,
-    },
-  ],
-  margin: defaultMargin,
-}
-
-const yLabelVerticalOptions: Partial<CartesianAxesOptions> = {
-  y: [
-    {
-      labelOrientation: LabelOrientation.Vertical,
-      labelOffset: 15,
-    },
-    {
-      labelOrientation: LabelOrientation.Vertical,
-      labelOffset: 15,
-    },
-  ],
-  margin: {
-    top: 10,
-    left: defaultMargin.left + 15,
-  },
-}
-
-const verticalProfileOptions: Partial<CartesianAxesOptions> = {
-  margin: {
-    left: 70,
-    right: 30,
-  },
-}
-
-const axisOptions = computed(() => {
-  const configOptions: Partial<CartesianAxesOptions> = {
-    x: props.config?.xAxis,
-    y: props.config?.yAxis,
-  }
-
-  const extraOptions = [configOptions]
-
-  if (props.settings.yAxis.yLabelPlacement === 'beside') {
-    extraOptions.push(yLabelVerticalOptions)
-  }
-
-  if (props.verticalProfile) {
-    extraOptions.push(verticalProfileOptions)
-  }
-
-  return merge(defaultOptions, ...extraOptions)
-})
-
-const margin = computed(() => {
-  return axisOptions.value.margin ?? {}
-})
 
 onMounted(() => {
   if (chartContainer.value) {
+    const axisOptions = getAxisOptions(
+      props.config,
+      props.settings,
+      props.verticalProfile,
+    )
     axis = new CartesianAxes(
       chartContainer.value,
       props.verticalProfile ? 800 : null,
       props.verticalProfile ? 1200 : null,
-      axisOptions.value,
+      axisOptions,
     )
+    margin = axis.margin
+
     // Use custom number formatter that just converts the value to a string;
     // appropriate rounding has already been done by the backend.
     const mouseOver = props.verticalProfile
