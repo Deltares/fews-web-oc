@@ -147,7 +147,7 @@ const props = withDefaults(defineProps<Props>(), {
       period: undefined,
     }
   },
-  settings: () => getDefaultSettings('charts'),
+  settings: () => getDefaultSettings().charts,
 })
 
 const { selectedDate } = useSelectedDate(() => props.currentTime ?? new Date())
