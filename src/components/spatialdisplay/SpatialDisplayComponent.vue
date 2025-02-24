@@ -42,7 +42,7 @@
       v-model:coordinate="workflowsStore.coordinate"
     />
     <OverlayLayer
-      v-for="overlay in settings.map.overlays"
+      v-for="overlay in selectedOverlays"
       :key="overlay.id"
       :overlay="overlay"
     />
@@ -86,7 +86,10 @@
           />
           <template v-if="settings.map.overlays.length">
             <v-divider />
-            <OverlayPanel :overlays="settings.map.overlays" />
+            <OverlayPanel
+              :overlays="settings.map.overlays"
+              v-model:selected-overlay-ids="selectedOverlayIds"
+            />
           </template>
         </InformationPanel>
         <LocationsSearchControl
@@ -174,6 +177,7 @@ import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import OverlayLayer from '@/components/wms/OverlayLayer.vue'
 import { useColourScales } from '@/services/useColourScales'
 import { useSelectedDate } from '@/services/useSelectedDate'
+import { useOverlays } from '@/services/useOverlays'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -260,6 +264,10 @@ const showLocationsLayer = ref<boolean>(true)
 
 const baseMapId = computed(
   () => (userSettingsStore.get('ui.map.theme')?.value as string) ?? 'automatic',
+)
+
+const { selectedOverlayIds, selectedOverlays } = useOverlays(
+  () => props.settings.map.overlays,
 )
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
