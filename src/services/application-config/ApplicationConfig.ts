@@ -11,4 +11,8 @@ export type ApplicationConfig = {
   VITE_AUTH_ID: string
   VITE_REQUEST_HEADER_AUTHORIZATION: RequestHeaderAuthorization
   VITE_FEWS_WEBSERVICES_URL: string
+  LOGIN_TEXT: string
+  LOGIN_ICON: string
+  APPLICATION_NAME: string
+  COMPANY_NAME: string
 }
