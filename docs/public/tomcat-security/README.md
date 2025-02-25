@@ -19,41 +19,42 @@ In the following configuration the WS_VIEWER role only has access to GET request
 The list of roles can be extended with more application specific roles that can be used as systemUserGroup in the UserGroups.xml. 
 
 ``` xml
-		<security-constraint>
-             <display-name>SecurityConstraint Web OC Viewer</display-name>
-            <web-resource-collection>
-                  <web-resource-name>WebOC Viewer</web-resource-name>
-                 <url-pattern>/*</url-pattern>
-                 <http-method>GET</http-method>
-         </web-resource-collection>
+
+	    <security-constraint>
+            <display-name>SecurityConstraint Web OC Viewer</display-name>
+                <web-resource-collection>
+                    <web-resource-name>WebOC Viewer</web-resource-name>
+                    <url-pattern>/*</url-pattern>
+                    <http-method>GET</http-method>
+            </web-resource-collection>
             <auth-constraint>
                   <role-name>WS_VIEWER</role-name>
                   <role-name>WS_EDITOR</role-name>
             </auth-constraint>
-       </security-constraint>
-		<security-constraint>
-             <display-name>SecurityConstraint Editor</display-name>
+        </security-constraint>
+	    <security-constraint>
+            <display-name>SecurityConstraint Editor</display-name>
             <web-resource-collection>
                   <web-resource-name>WebOC Editor</web-resource-name>
                  <url-pattern>/*</url-pattern>
-         </web-resource-collection>
+            </web-resource-collection>
             <auth-constraint>
                   <role-name>WS_EDITOR</role-name>
             </auth-constraint>
-       </security-constraint>
-      <login-config>
+        </security-constraint>
+        <login-config>
             <auth-method>FORM</auth-method>
-         <form-login-config>
+            <form-login-config>
                   <form-login-page>/login.html</form-login-page>
                  <form-error-page>/loginfailed.html</form-error-page>
-          </form-login-config>
-     </login-config>
-     <security-role>
-        <role-name>WS_VIEWER</role-name>
-    </security-role>
-     <security-role>
-        <role-name>WS_EDITOR</role-name>
-    </security-role>
+            </form-login-config>
+        </login-config>
+        <security-role>
+            <role-name>WS_VIEWER</role-name>
+        </security-role>
+        <security-role>
+            <role-name>WS_EDITOR</role-name>
+        </security-role>
 ```
 
 ## webapps/ROOT
