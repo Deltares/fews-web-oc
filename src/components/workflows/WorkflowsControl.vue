@@ -158,7 +158,7 @@ const workflowDescription = computed<string>(() => {
   const workflow = availableWorkflowsStore.byId(
     currentWorkflow.value.secondaryWorkflowId,
   )
-  return workflow.description !== '' ? workflow.description : ''
+  return workflow?.description ?? ''
 })
 
 const data = ref<WorkflowFormData>({})
@@ -233,7 +233,7 @@ const workflowSelectItems = computed(() => {
     const workflow = availableWorkflowsStore.byId(
       workflowItem.secondaryWorkflowId,
     )
-    const title = workflow.name
+    const title = workflow?.name
     return {
       title,
       value: workflowItem,
