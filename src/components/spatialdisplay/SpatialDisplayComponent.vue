@@ -270,6 +270,12 @@ const workflowsStore = useWorkflowsStore()
 const userSettingsStore = useUserSettingsStore()
 
 const showLocationsLayer = ref<boolean>(props.settings.locationsLayer.show)
+watch(
+  () => props.settings.locationsLayer.show,
+  (show) => {
+    showLocationsLayer.value = show
+  },
+)
 
 const baseMapId = computed(
   () => (userSettingsStore.get('ui.map.theme')?.value as string) ?? 'automatic',
