@@ -1,7 +1,7 @@
 # The Delft-FEWS Web OC Tomcat Login
 
 To support login with a username and password using tomcat configuration, both the weboc and the Delft-FEWS Web Services have to be deployed on the same tomcat server.
-The weboc will have to be deployed in a Tomcat ROOT.war file: [See Tomcat Deployment](../deployments/tomcat/README.md).
+The weboc will have to be deployed in a Tomcat ROOT.war file: [See Tomcat Deployment](../deployments/README.md).
 Also Single Sign On has to be enabled in the tomcat server.xml. This wil allow sharing a session cookie between the weboc and the fews web services.
 
 ## conf/server.xml
