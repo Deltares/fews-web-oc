@@ -12,17 +12,32 @@ Also Single Sign On has to be enabled in the tomcat server.xml. This wil allow s
 
 ## conf/web.xml
 
-All URLs will be protected by the security constraint. The login page will be login.html and the error page will be loginfailed.html. 
+All URLs will be protected by the security constraint. 
+The login page will be login.html and the error page will be loginfailed.html.
+To access any resources a user needs to have the rol WS_VIEWER or WS_EDITOR.
+In the following configuration the WS_VIEWER role only has access to GET requests.
+The list of roles can be extended with more application specific roles that can be used as systemUserGroup in the UserGroups.xml. 
 
 ``` xml
-        <security-constraint>
-             <display-name>SecurityConstraint</display-name>
+		<security-constraint>
+             <display-name>SecurityConstraint Web OC Viewer</display-name>
             <web-resource-collection>
-                  <web-resource-name>WebOC</web-resource-name>
-                 <url-pattern>*</url-pattern>
+                  <web-resource-name>WebOC Viewer</web-resource-name>
+                 <url-pattern>/*</url-pattern>
+                 <http-method>GET</http-method>
          </web-resource-collection>
             <auth-constraint>
                   <role-name>WS_VIEWER</role-name>
+                  <role-name>WS_EDITOR</role-name>
+            </auth-constraint>
+       </security-constraint>
+		<security-constraint>
+             <display-name>SecurityConstraint Editor</display-name>
+            <web-resource-collection>
+                  <web-resource-name>WebOC Editor</web-resource-name>
+                 <url-pattern>/*</url-pattern>
+         </web-resource-collection>
+            <auth-constraint>
                   <role-name>WS_EDITOR</role-name>
             </auth-constraint>
        </security-constraint>
