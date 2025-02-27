@@ -7,7 +7,7 @@
         label
         :color="isAllSelected ? undefined : 'primary'"
         v-bind="props"
-        class="ms-1 px-2"
+        class="ms-2 px-2"
       >
         <template #prepend>
           <v-btn
