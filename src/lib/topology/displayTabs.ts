@@ -4,6 +4,7 @@ import {
   nodeHasCharts,
   nodeHasDashboard,
   nodeHasDataDownload,
+  nodeHasLogDisplay,
   nodeHasMap,
   nodeHasReports,
   nodeHasSchematicStatusDisplay,
@@ -84,6 +85,10 @@ export function displayTabsForNode(
         break
       case 'dashboard':
         tab.active = nodeHasDashboard(node)
+        tab.to.params = { ...params }
+        break
+      case 'log-display':
+        tab.active = nodeHasLogDisplay(node)
         tab.to.params = { ...params }
         break
     }

@@ -64,5 +64,75 @@ export function convertFewsPiDateTimeToJsDate(
  * @returns string suitable for use as a FEWS PI query parameter.
  */
 export function convertJSDateToFewsPiParameter(date: Date): string {
-  return toISOString(date) + 'Z'
+  return date.toISOString().replace(/\.\d{3}Z$/, 'Z')
+}
+
+export function toHumanReadableDate(
+  date: Date | string | undefined | null,
+): string {
+  if (date === undefined || date === null) {
+    return '—'
+  }
+  if (typeof date === 'string') {
+    return toHumanReadableDate(new Date(date))
+  }
+  // dd/MM/yyyy, HH:mm:ss
+  return date.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+}
+
+export function toDateRangeString(
+  startDate: Date | string | undefined | null,
+  endDate: Date | string | undefined | null,
+): string {
+  return `${toHumanReadableDate(startDate)} → ${toHumanReadableDate(endDate)}`
+}
+
+export function toDateDifferenceString(
+  startDate: Date | string | undefined | null,
+  endDate: Date | string | undefined | null,
+): string {
+  if (
+    startDate === undefined ||
+    startDate === null ||
+    endDate === undefined ||
+    endDate === null
+  ) {
+    return '—'
+  }
+
+  const startDateObj = new Date(startDate)
+  const endDateObj = new Date(endDate)
+
+  const duration = endDateObj.getTime() - startDateObj.getTime()
+  const seconds = Math.floor(duration / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+  const weeks = Math.floor(days / 7)
+
+  const result = [
+    weeks ? `${weeks}w` : '',
+    days % 7 ? `${days % 7}d` : '',
+    hours % 24 ? `${hours % 24}h` : '',
+    minutes % 60 ? `${minutes % 60}m` : '',
+    seconds % 60 ? `${seconds % 60}s` : '',
+  ]
+    .filter((part) => part)
+    .join(' ')
+  return result ? result : '0s'
+}
+
+export function toDateSpanString(
+  startDate: Date | string | undefined | null,
+  endDate: Date | string | undefined | null,
+) {
+  return `${toDateRangeString(startDate, endDate)} (${toDateDifferenceString(startDate, endDate)})`
 }
