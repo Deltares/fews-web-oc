@@ -6,7 +6,7 @@
         pilled
         label
         v-bind="props"
-        class="me-1 px-2 period-filter-chip"
+        class="me-2 px-2 period-filter-chip"
       >
         <template #default>
           <span>{{ selectedOption?.title }}</span>
