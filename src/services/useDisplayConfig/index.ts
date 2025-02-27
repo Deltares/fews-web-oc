@@ -144,7 +144,7 @@ export function useDisplayConfig(
  */
 export function useDisplayConfigFilter(
   baseUrl: string,
-  filter: MaybeRefOrGetter<Filter>,
+  filter: MaybeRefOrGetter<Filter | undefined>,
   startTime: MaybeRefOrGetter<Date | undefined>,
   endTime: MaybeRefOrGetter<Date | undefined>,
 ): UseDisplayConfigReturn {
@@ -158,6 +158,7 @@ export function useDisplayConfigFilter(
 
   watchEffect(async () => {
     const _filter = toValue(filter)
+    if (_filter === undefined) return
     if (isFilterActionsFilter(_filter)) {
       if (!_filter.filterId) return
       response.value = await piProvider.getFilterActions(_filter)

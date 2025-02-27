@@ -34,7 +34,7 @@ import { isFilterActionsFilter } from '@/lib/filters'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
-  filter: filterActionsFilter | timeSeriesGridActionsFilter
+  filter?: filterActionsFilter | timeSeriesGridActionsFilter
   elevationChartFilter?: timeSeriesGridActionsFilter
   currentTime?: Date
   settings: ComponentSettings
@@ -62,7 +62,7 @@ const { displayConfig: elevationChartDisplayconfig } = useDisplayConfigFilter(
 )
 
 const locationsTooltipFilter = computed(() => {
-  if (!props.settings.charts.metaDataPanel.enabled) return
+  if (!props.filter || !props.settings.charts.metaDataPanel.enabled) return
   if (isFilterActionsFilter(props.filter)) {
     return {
       filterId: props.filter.filterId,
