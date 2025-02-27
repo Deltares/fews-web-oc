@@ -20,16 +20,21 @@ export const useAvailableWorkflowsStore = defineStore('availableWorkflows', {
     workflowIds: (state) => {
       return state.workflows.map((workflow) => workflow.id)
     },
+    whatIfWorkflows(state) {
+      return state.workflows.filter(
+        (workflow) => workflow.whatIfTemplateId !== undefined,
+      )
+    },
   },
   actions: {
-    byId(workflowId: string): WorkflowItem {
+    byId(workflowId: string) {
       const workflow = this.workflows.find(
         (workflow) => workflow.id === workflowId,
       )
-      if (!workflow) {
-        throw new Error(`No workflow with ID "{workflowId}" exists.`)
-      }
       return workflow
+    },
+    hasWhatIfTemplate(workflowId: string): boolean {
+      return this.byId(workflowId)?.whatIfTemplateId !== undefined
     },
     async fetch() {
       this.workflows = await fetchWorkflowsWithExpectedRunTime()
