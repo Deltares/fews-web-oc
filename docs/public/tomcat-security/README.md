@@ -105,6 +105,8 @@ FEWS_WS_AUTHENTICATION_TYPE=AuthenticationTomcat
 Tomcat has some options for user management. See:
 https://tomcat.apache.org/tomcat-10.0-doc/realm-howto.html#Standard_Realm_Implementations
 
+Most common are using an LDAP connection or managing the users in a tomcat-users.xml file.
+
 The following shows how to use the tomcat UserDatabseReleam with a SecretKeyCredentialHandler. 
 This handler uses the PBKDF2WithHmacSHA512 algorithm to hash the password. The number of iterations, salt length and key length can be set as well.
 
