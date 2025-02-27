@@ -6,7 +6,7 @@
   />
   <Teleport to="#main-side-panel" defer>
     <div v-if="isPanelOpen" class="task-runs-panel h-100 d-flex flex-column">
-      <v-toolbar density="compact">
+      <div class="d-flex pt-3">
         <WorkflowFilterControl
           v-model="selectedWorkflowIds"
           @update:model-value="flagManuallyChanged"
@@ -14,7 +14,7 @@
         <TaskStatusFilterControl v-model="selectedTaskStatuses" />
         <v-spacer />
         <PeriodFilterControl v-model="period" />
-      </v-toolbar>
+      </div>
       <v-list class="flex-1-1">
         <v-list-item v-if="sortedTasks.length === 0">
           No tasks available
