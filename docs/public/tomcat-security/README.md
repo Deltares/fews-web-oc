@@ -128,7 +128,7 @@ This handler uses the PBKDF2WithHmacSHA512 algorithm to hash the password. The n
 
 If tomcat has been configured, users can be added that are allowed access to the FEWS Web Services.
 The following is an example of a tomcat-users.xml file where two users (viewer and editor) have been added. Alse roles have been assigend to the users.
-All users with the role fewswebservices will get access to the FEWS Web Services. The file can be found in the conf directory the tomcat installation:
+All users with the role WS_VIEWER or WS_EDITOR will get access to the FEWS Web Services. The file can be found in the conf directory the tomcat installation:
 
 ## conf/tomcat-users.xml
 
