@@ -15,13 +15,17 @@ export class ApplicationConfigManager {
 
   get<T extends keyof ApplicationConfig>(name: T): ApplicationConfig[T] {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const value = this.getIfAvailable(name)
+    if (value !== undefined) return value
+    throw new Error(`Cannot find config for '${name}'`)
+  }
+
+  getIfAvailable<T extends keyof ApplicationConfig>(name: T): ApplicationConfig[T] | undefined {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const configValue = this._config[name]
     if (configValue !== undefined) return configValue
     const envValue = import.meta.env[name]
-    if (envValue !== undefined) {
-      return envValue
-    }
-    throw new Error(`Cannot find config for '${name}'`)
+    return envValue;
   }
 
   get authenticationIsEnabled(): boolean {
