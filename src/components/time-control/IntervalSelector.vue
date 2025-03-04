@@ -1,20 +1,20 @@
 <template>
   <v-list class="interval-list" density="compact">
     <v-list-item :active="0 === selectedIndex" @click="onSelectInterval(0)">
-      Default
+      {{ t('default') }}
       <template v-slot:append="{ isActive }">
         <v-icon v-show="isActive" small> mdi-check </v-icon>
       </template>
     </v-list-item>
     <v-list-item :active="1 === selectedIndex" @click="onSelectInterval(1)">
-      Custom
+      {{ t('custom') }}
       <template v-slot:append="{ isActive }">
         <v-icon v-show="isActive" small> mdi-check </v-icon>
       </template>
     </v-list-item>
     <template v-if="props.items.length">
       <v-divider></v-divider>
-      <v-list-subheader>Period presets</v-list-subheader>
+      <v-list-subheader>{{ t('period_presets') }}</v-list-subheader>
       <v-list-item
         v-for="(item, index) in props.items"
         :key="index"
@@ -35,6 +35,8 @@ import type { LabeledIntervalItem, Interval } from '@/lib/TimeControl/interval'
 import { isEqual } from 'lodash-es'
 import { onBeforeMount, ref, watch } from 'vue'
 
+import { useI18n } from 'vue-i18n'
+
 interface Props {
   items: LabeledIntervalItem[]
   now: Date
@@ -46,6 +48,8 @@ const props = withDefaults(defineProps<Props>(), {
   },
   now: () => new Date(),
 })
+
+const { t } = useI18n()
 
 const interval = defineModel<Interval>({ required: true })
 const selectedIndex = ref(0)

@@ -65,6 +65,8 @@ import {
 } from '@/lib/charts/horizontalColorCode.js'
 import { isDefaultD3Domain } from '@/lib/charts/defaultDomain'
 
+import { useI18n } from 'vue-i18n'
+
 interface Props {
   config: ChartConfig
   series?: Record<string, Series>
@@ -90,6 +92,7 @@ const props = withDefaults(defineProps<Props>(), {
   },
 })
 
+const { t } = useI18n()
 interface Emits {
   'update:x-domain': [new: [Date, Date]]
 }
