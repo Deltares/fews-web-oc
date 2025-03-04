@@ -95,7 +95,6 @@ const props = defineProps<Props>()
 
 const { t } = useI18n()
 
-
 const downloadDialogStore = useDownloadDialogStore()
 const userSettings = useUserSettingsStore()
 
