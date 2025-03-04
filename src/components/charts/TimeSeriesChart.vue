@@ -60,6 +60,7 @@ import { PanHandler } from '@deltares/fews-web-oc-charts'
 import { ModifierKey } from '@deltares/fews-web-oc-charts'
 import { useUserSettingsStore } from '@/stores/userSettings'
 
+import { useI18n } from 'vue-i18n'
 import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
 import { getThresholdValues, isUniqueThreshold } from '@/lib/charts/thresholds'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
@@ -78,6 +79,7 @@ interface Props {
 const props = defineProps<Props>()
 const domain = defineModel<[Date, Date]>('domain')
 
+const { t } = useI18n()
 const userSettingsStore = useUserSettingsStore()
 defineExpose({
   getSvgElement,
