@@ -10,6 +10,6 @@ export type ApplicationConfig = {
   VITE_AUTH_METADATA_URL: string
   VITE_AUTH_ID: string
   VITE_REQUEST_HEADER_AUTHORIZATION: RequestHeaderAuthorization
-  VITE_FEWS_WEBSERVICES_URL: string,
+  VITE_FEWS_WEBSERVICES_URL: string
   LOCALE: string
 }

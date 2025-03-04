@@ -20,12 +20,14 @@ export class ApplicationConfigManager {
     throw new Error(`Cannot find config for '${name}'`)
   }
 
-  getIfAvailable<T extends keyof ApplicationConfig>(name: T): ApplicationConfig[T] | undefined {
+  getIfAvailable<T extends keyof ApplicationConfig>(
+    name: T,
+  ): ApplicationConfig[T] | undefined {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const configValue = this._config[name]
     if (configValue !== undefined) return configValue
     const envValue = import.meta.env[name]
-    return envValue;
+    return envValue
   }
 
   get authenticationIsEnabled(): boolean {
