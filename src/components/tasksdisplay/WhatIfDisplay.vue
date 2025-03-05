@@ -82,7 +82,6 @@
             label="Task run description"
             density="compact"
             variant="outlined"
-            no-resize
             hide-details
             rows="2"
           />
