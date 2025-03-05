@@ -7,7 +7,8 @@
         :loading="isLoadingTemplates"
         item-title="name"
         label="Select what-if scenario template"
-        variant="outlined"
+        variant="solo-filled"
+        flat
         density="compact"
         hide-details
         return-object
@@ -20,7 +21,8 @@
         :loading="isLoadingScenarios"
         item-title="name"
         label="Select what-if scenario"
-        variant="outlined"
+        variant="solo-filled"
+        flat
         density="compact"
         hide-details
         return-object
