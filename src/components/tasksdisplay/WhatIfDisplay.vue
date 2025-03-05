@@ -108,17 +108,20 @@
         >
           Failed to submit task: {{ submitErrorMessage }}
         </v-alert>
-        <v-btn
-          variant="flat"
-          color="primary"
-          :disabled="!canSubmit"
-          @click="submit"
-          max-width="300"
-          class="my-2"
-          :loading="isPosting"
-        >
-          Submit
-        </v-btn>
+        <div class="d-flex w-100">
+          <v-spacer />
+          <v-btn
+            variant="flat"
+            color="primary"
+            :disabled="!canSubmit"
+            @click="submit"
+            width="300"
+            class="my-2"
+            :loading="isPosting"
+          >
+            Submit
+          </v-btn>
+        </div>
       </div>
     </div>
   </div>
