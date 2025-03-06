@@ -197,6 +197,15 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         component: SchematicStatusDisplay,
         props: true,
         meta: { sidebar: true },
+        children: [
+          {
+            path: 'object/:objectId',
+            name: 'TopologySSDTimeSeriesDisplay',
+            component: SSDTimeSeriesDisplay,
+            props: true,
+            meta: { sidebar: true },
+          },
+        ],
       },
       {
         path: 'systemmonitor',
