@@ -49,7 +49,7 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
       locale: configManager.getIfAvailable('LOCALE') ?? 'en_EN',
       fallbackLocale: 'en_EN',
       messages: await localeMessages(),
-      fallbackWarn: false
+      fallbackWarn: false,
     })
     app.use(i18n)
     app.use(router)
