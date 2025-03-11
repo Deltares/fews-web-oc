@@ -35,7 +35,7 @@ import type {
   LngLatBounds,
   Map,
 } from 'maplibre-gl'
-import { computed, useTemplateRef, watch } from 'vue'
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { transformStyle } from '@/lib/map'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { useBaseMapsStore } from '@/stores/baseMaps'
@@ -74,23 +74,26 @@ watch(selectedStyle, (newBaseStyle) => {
   map?.setStyle(newBaseStyle, { transformStyle })
 })
 
-function transformRequest(
-  url: string,
-  resourceType?: ResourceType,
-): RequestParameters {
-  if (!configManager.authenticationIsEnabled)
-    return {
-      url,
+const authorizationHeaders = ref<Headers>()
+
+onMounted(async () => {
+  authorizationHeaders.value =
+    await authenticationManager.getAuthorizationHeaders()
+})
+
+const transformRequest = computed(() => {
+  return (url: string, resourceType?: ResourceType): RequestParameters => {
+    if (!configManager.authenticationIsEnabled) return { url }
+
+    if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
+      const headers = authorizationHeaders.value
+      return {
+        url,
+        headers,
+      }
     }
-  if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
-    const requestAuthHeaders = authenticationManager.getAuthorizationHeaders()
-    return {
-      url,
-      headers: requestAuthHeaders,
-    }
+
+    return { url }
   }
-  return {
-    url,
-  }
-}
+})
 </script>

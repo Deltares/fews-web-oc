@@ -2,8 +2,9 @@ import { authenticationManager } from '@/services/authentication/AuthenticationM
 
 export function createTransformRequestFn(controller?: AbortController) {
   return async (request: Request): Promise<Request> => {
-    return Promise.resolve(
-      authenticationManager.transformRequestAuth(request, controller?.signal),
+    return await authenticationManager.transformRequestAuth(
+      request,
+      controller?.signal,
     )
   }
 }
