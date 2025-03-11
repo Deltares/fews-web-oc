@@ -50,7 +50,10 @@ interface Props {
 const props = defineProps<Props>()
 const availableWorkflows = useAvailableWorkflowsStore()
 
-const expanded = defineModel<boolean>('expanded', { required: true })
+const expanded = defineModel<boolean>('expanded', {
+  required: false,
+  default: false,
+})
 
 const taskRun = computed(() =>
   props.taskRuns.find((taskRun) => taskRun.id === props.logs[0].taskRunId),
