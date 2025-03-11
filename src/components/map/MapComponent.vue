@@ -81,19 +81,23 @@ onMounted(async () => {
     await authenticationManager.getAuthorizationHeaders()
 })
 
-const transformRequest = computed(() => {
-  return (url: string, resourceType?: ResourceType): RequestParameters => {
-    if (!configManager.authenticationIsEnabled) return { url }
-
-    if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
-      const headers = authorizationHeaders.value
-      return {
-        url,
-        headers,
-      }
+function transformRequest(
+  url: string,
+  resourceType?: ResourceType,
+): RequestParameters {
+  if (!configManager.authenticationIsEnabled)
+    return {
+      url,
     }
-
-    return { url }
+  if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
+    const headers = authorizationHeaders.value
+    return {
+      url,
+      headers,
+    }
   }
-})
+  return {
+    url,
+  }
+}
 </script>

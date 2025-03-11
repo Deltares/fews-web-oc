@@ -14,7 +14,7 @@ export class AuthenticationManager {
     if (!configManager.authenticationIsEnabled) {
       return null
     }
-    return await this.userManager.getUser()
+    return this.userManager.getUser()
   }
 
   public async getAccessToken(): Promise<string> {
