@@ -64,5 +64,18 @@ export function convertFewsPiDateTimeToJsDate(
  * @returns string suitable for use as a FEWS PI query parameter.
  */
 export function convertJSDateToFewsPiParameter(date: Date): string {
-  return toISOString(date) + 'Z'
+  return date.toISOString().replace(/\.\d{3}Z$/, 'Z')
+}
+export function convertTimestampToFewsPiParameter(timestamp: number): string {
+  return convertJSDateToFewsPiParameter(new Date(timestamp))
+}
+
+/**
+ * Convert date to date time string for datetime-local input.
+ *
+ * @param date - The date to convert.
+ * @returns The date as a string in the format 'YYYY-MM-DDTHH:MM'.
+ */
+export function convertDateToDateTimeString(date: Date): string {
+  return date.toISOString().slice(0, 16)
 }
