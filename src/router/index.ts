@@ -26,8 +26,6 @@ const SSDTimeSeriesDisplay = () =>
 const SpatialDisplayView = () => import('../views/SpatialDisplayView.vue')
 const SpatialDisplay = () =>
   import('../components/spatialdisplay/SpatialDisplay.vue')
-const SpatialTimeSeriesDisplay = () =>
-  import('../components/spatialdisplay/SpatialTimeSeriesDisplay.vue')
 const WhatIfDisplayView = () => import('../views/WhatIfDisplayView.vue')
 const TimeSeriesDisplayView = () => import('../views/TimeSeriesDisplayView.vue')
 const TopologyDisplayView = () => import('../views/TopologyDisplayView.vue')
@@ -134,22 +132,20 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     component: SpatialDisplayView,
     props: true,
     meta: { sidebar: true },
-    children: [
-      {
-        path: '/map/:layerName?/location/:locationId',
-        name: 'SpatialTimeSeriesDisplay',
-        component: SpatialTimeSeriesDisplay,
-        props: true,
-        meta: { sidebar: true },
-      },
-      {
-        path: '/map/:layerName?/coordinates/:latitude/:longitude',
-        name: 'SpatialTimeSeriesDisplayWithCoordinates',
-        component: SpatialTimeSeriesDisplay,
-        props: true,
-        meta: { sidebar: true },
-      },
-    ],
+  },
+  {
+    path: '/map/:layerName?/coordinates/:latitude/:longitude',
+    name: 'SpatialTimeSeriesDisplayWithCoordinates',
+    component: SpatialDisplayView,
+    props: true,
+    meta: { sidebar: true },
+  },
+  {
+    path: '/map/:layerName?/location/:locationId',
+    name: 'SpatialTimeSeriesDisplay',
+    component: SpatialDisplayView,
+    props: true,
+    meta: { sidebar: true },
   },
   {
     path: '/series/node/:nodeId?',
@@ -236,22 +232,20 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         component: SpatialDisplay,
         props: true,
         meta: { sidebar: true },
-        children: [
-          {
-            path: 'location/:locationIds',
-            name: 'TopologySpatialTimeSeriesDisplay',
-            component: SpatialTimeSeriesDisplay,
-            props: true,
-            meta: { sidebar: true },
-          },
-          {
-            path: 'coordinates/:latitude/:longitude',
-            name: 'TopologySpatialTimeSeriesDisplayWithCoordinates',
-            component: SpatialTimeSeriesDisplay,
-            props: true,
-            meta: { sidebar: true },
-          },
-        ],
+      },
+      {
+        path: 'map/:layerName?/location/:locationIds',
+        name: 'TopologySpatialTimeSeriesDisplay',
+        component: SpatialDisplay,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
+        path: 'map/:layerName?/coordinates/:latitude/:longitude',
+        name: 'TopologySpatialTimeSeriesDisplayWithCoordinates',
+        component: SpatialDisplay,
+        props: true,
+        meta: { sidebar: true },
       },
       {
         path: 'whatif',
