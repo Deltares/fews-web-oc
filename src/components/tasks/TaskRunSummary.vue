@@ -45,9 +45,21 @@
           </div>
         </div>
         <v-spacer />
-        <div>
-          <TaskRunSelector icon="mdi-map-outline" color="primary" />
-          <TaskRunSelector icon="mdi-chart-bar" color="secondary" />
+        <div class="d-flex">
+          <v-checkbox-btn
+            density="compact"
+            trueIcon="mdi-map"
+            falseIcon="mdi-map-outline"
+            color="primary"
+            @click.stop
+          />
+          <v-checkbox-btn
+            density="compact"
+            trueIcon="mdi-chart-areaspline-variant"
+            falseIcon="mdi-chart-line"
+            color="primary"
+            @click.stop
+          />
         </div>
       </div>
       <template v-if="expanded">
