@@ -317,8 +317,8 @@ watch(
       data.value.latitude = undefined
       data.value.longitude = undefined
     } else {
-      data.value.latitude = +workflowsStore.coordinate.lat.toFixed(2)
-      data.value.longitude = +workflowsStore.coordinate.lng.toFixed(2)
+      data.value.latitude = +workflowsStore.coordinate.lat.toFixed(5)
+      data.value.longitude = +workflowsStore.coordinate.lng.toFixed(5)
     }
   },
 )
