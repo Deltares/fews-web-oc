@@ -5,49 +5,37 @@ import { mergeHeaders } from '@/lib/requests/transformRequest'
 
 export class AuthenticationManager {
   userManager!: UserManager
-  private user: User | null = null
-  private initPromise: Promise<void> | null = null
 
-  async init(settings: UserManagerSettings): Promise<void> {
-    if (!this.initPromise) {
-      this.initPromise = (async () => {
-        this.userManager = new UserManager(settings)
-        this.user = await this.userManager.getUser()
-        this.userManager.events.addUserLoaded((user: User) => {
-          this.user = user
-        })
-      })()
-    }
-    return this.initPromise
+  init(settings: UserManagerSettings) {
+    this.userManager = new UserManager(settings)
   }
 
   public async getUser(): Promise<User | null> {
-    if (!this.initPromise) {
-      // Authentication is disabled
+    if (!configManager.authenticationIsEnabled) {
       return null
     }
-    await this.initPromise
-    return this.user
+    return this.userManager.getUser()
   }
 
-  public getAccessToken(): string {
+  public async getAccessToken(): Promise<string> {
     if (!configManager.authenticationIsEnabled) return ''
     if (
       configManager.get('VITE_REQUEST_HEADER_AUTHORIZATION') !==
       RequestHeaderAuthorization.BEARER
     )
       return ''
-    if (this.user !== null) {
-      return this.user.access_token
+    const user = await this.getUser()
+    if (user !== null) {
+      return user.access_token
     }
     throw new Error('User is undefined')
   }
 
-  public getAuthorizationHeaders(): Headers {
+  public async getAuthorizationHeaders(): Promise<Headers> {
     if (!configManager.authenticationIsEnabled) return new Headers({})
     switch (configManager.get('VITE_REQUEST_HEADER_AUTHORIZATION')) {
       case RequestHeaderAuthorization.BEARER: {
-        const token = this.getAccessToken()
+        const token = await this.getAccessToken()
         const requestAuthHeaders = new Headers({
           Authorization: `Bearer ${token}`,
         })
@@ -58,8 +46,11 @@ export class AuthenticationManager {
     }
   }
 
-  public transformRequestAuth(request: Request, signal?: AbortSignal): Request {
-    const requestAuthHeaders = this.getAuthorizationHeaders()
+  public async transformRequestAuth(
+    request: Request,
+    signal?: AbortSignal,
+  ): Promise<Request> {
+    const requestAuthHeaders = await this.getAuthorizationHeaders()
     const requestInit = {
       headers: mergeHeaders(request.headers, requestAuthHeaders),
       signal: signal,
