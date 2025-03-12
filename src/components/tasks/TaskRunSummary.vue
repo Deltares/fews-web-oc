@@ -1,64 +1,109 @@
 <template>
-  <div class="d-flex flex-column">
-    <div>
-      <div class="d-flex flex-row justify-space-between">
+  <v-card
+    border
+    flat
+    density="compact"
+    @click="expanded = !expanded"
+    :ripple="false"
+  >
+    <TaskRunProgress
+      v-if="isRunning"
+      :dispatch-timestamp="task.dispatchTimestamp"
+      :expected-runtime-seconds="expectedRunTimeSeconds"
+      color="info"
+    />
+    <v-card-text class="py-2 h-100">
+      <div class="d-flex">
         <div>
-          {{ workflowTitle }}
+          <div class="d-flex align-center ga-2">
+            <v-tooltip>
+              <template #activator="{ props }">
+                <v-icon
+                  class="me-2"
+                  :icon="statusIcon"
+                  :color="statusColor"
+                  size="20"
+                  v-bind="props"
+                />
+              </template>
+              <span>{{ statusString }}</span>
+            </v-tooltip>
+            <v-list-item-title>
+              {{ workflowTitle }}
+            </v-list-item-title>
+          </div>
+          <v-list-item-subtitle>
+            {{ dispatchTimeString }} - {{ whatIfTemplate?.name }}
+          </v-list-item-subtitle>
+          <div class="d-flex gap-2 align-center">
+            <div class="d-flex flex-column user-select-text cursor-pointer">
+              <v-card-subtitle class="pa-0">
+                T0: {{ timeZeroString }} - ETA:
+                {{ expectedCompletionTimeString }}
+              </v-card-subtitle>
+            </div>
+          </div>
         </div>
-        <div v-if="task.isScheduled" class="scheduled-task">Scheduled</div>
-        <div v-else>{{ task.userId }}</div>
+        <v-spacer />
+        <div>
+          <TaskRunSelector icon="mdi-map-outline" color="primary" />
+          <TaskRunSelector icon="mdi-chart-bar" color="secondary" />
+        </div>
       </div>
-    </div>
-    <div v-if="!task.isScheduled && task.description" class="description">
-      {{ task.description }}
-    </div>
-    <div class="d-flex flex-row align-center gc-4">
-      <div
-        class="status d-flex flex-row align-center gc-1"
-        :class="statusClass"
-      >
-        <v-icon :icon="statusIcon" size="20" />
-        <span>{{ statusString }}</span>
-      </div>
-      <TaskRunProgress
-        v-if="isRunning"
-        :dispatch-timestamp="task.dispatchTimestamp"
-        :expected-runtime-seconds="expectedRunTimeSeconds"
-        color="info"
-      />
-    </div>
-    <div class="times d-flex flex-row gc-4">
-      <div>
-        <div>T0</div>
-        <div>{{ timeZeroString }}</div>
-      </div>
-      <div>
-        <div>Dispatched</div>
-        <div>{{ dispatchTimeString }}</div>
-      </div>
-      <div v-if="task.status === TaskStatus.Running">
-        <div>Expected completion</div>
-        <div>{{ expectedCompletionTimeString }}</div>
-      </div>
-      <div v-else>
-        <div>Completed</div>
-        <div>{{ completionTimeString }}</div>
-      </div>
-    </div>
-  </div>
+      <template v-if="expanded">
+        <div @click.stop class="user-select-text">
+          {{ workflow?.description }}
+        </div>
+        <div @click.stop class="user-select-text">{{ task.description }}</div>
+        <div class="table-container mt-1">
+          <table @click.stop class="running-tasks-table user-select-text">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Task run ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ task.userId ?? 'No user' }}</td>
+                <td>{{ task.taskId }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <table @click.stop class="running-tasks-table user-select-text">
+            <thead>
+              <tr>
+                <th>Task duration</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  {{ taskDurationString }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </template>
+    </v-card-text>
+  </v-card>
 </template>
 <script setup lang="ts">
 import {
   convertTaskStatusToString,
+  getColorForTaskStatus,
   getIconForTaskStatus,
-  getTaskStatusCategory,
   TaskRun,
   TaskStatus,
-  TaskStatusCategory,
 } from '@/lib/taskruns'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import TaskRunProgress from './TaskRunProgress.vue'
+import TaskRunSelector from './TaskRunSelector.vue'
+import { toDateSpanString, toHumanReadableDate } from '@/lib/date'
+import { useWhatIfTemplate } from '@/services/useWhatIfTemplate'
+import { configManager } from '@/services/application-config'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 
@@ -67,8 +112,16 @@ interface Props {
 }
 const props = defineProps<Props>()
 
+const expanded = ref(false)
+
 const workflow = computed(() =>
   availableWorkflowsStore.byId(props.task.workflowId),
+)
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { whatIfTemplate } = useWhatIfTemplate(
+  baseUrl,
+  () => workflow.value?.whatIfTemplateId,
 )
 
 const expectedRunTimeSeconds = computed(
@@ -81,80 +134,73 @@ const isRunning = computed<boolean>(
   () => props.task.status === TaskStatus.Running,
 )
 
-const timeZeroString = computed<string>(() =>
-  formatTimestamp(props.task.timeZeroTimestamp),
-)
 const dispatchTimeString = computed<string>(() =>
-  formatTimestamp(props.task.dispatchTimestamp),
+  toHumanReadableDate(props.task.dispatchTimestamp),
 )
-const completionTimeString = computed<string>(() =>
-  formatTimestamp(props.task.completionTimestamp),
+
+const timeZeroString = computed<string>(() =>
+  toHumanReadableDate(props.task.timeZeroTimestamp),
 )
+
+const taskDurationString = computed(() =>
+  toDateSpanString(
+    props.task.dispatchTimestamp,
+    props.task.completionTimestamp,
+  ),
+)
+
 const expectedCompletionTimeString = computed<string>(() => {
   const expectedRunTime = expectedRunTimeSeconds.value
   if (expectedRunTime === null || props.task.dispatchTimestamp === null) {
     // We have no expected runtime, return a placeholder.
-    return formatTimestamp(null)
+    return toHumanReadableDate(null)
   }
   const expectedCompletionTimestamp =
     props.task.dispatchTimestamp + expectedRunTime * 1000
-  return formatTimestamp(expectedCompletionTimestamp)
+  return toHumanReadableDate(expectedCompletionTimestamp)
 })
 
 const statusString = computed<string>(() =>
   convertTaskStatusToString(props.task.status),
 )
-const statusClass = computed<string>(() => {
-  const category = getTaskStatusCategory(props.task.status)
-  switch (category) {
-    case TaskStatusCategory.Pending:
-    case TaskStatusCategory.Running:
-      return 'pending'
-    case TaskStatusCategory.Completed:
-      return 'success'
-    case TaskStatusCategory.Failed:
-      return 'failed'
-  }
-})
+const statusColor = computed<string>(() =>
+  getColorForTaskStatus(props.task.status),
+)
 const statusIcon = computed<string>(() =>
   getIconForTaskStatus(props.task.status),
 )
-
-function formatTimestamp(timestamp: number | null): string {
-  if (timestamp === null) return '—'
-
-  const date = new Date(timestamp)
-  return date.toLocaleString()
-}
 </script>
 
 <style scoped>
-.description {
-  font-size: 0.8em;
-}
-
-.times {
-  font-size: 0.8em;
-}
-
-.times > div {
+.table-container {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
 }
 
-.scheduled-task {
-  color: rgba(var(--v-theme-on-surface), 0.3);
+.running-tasks-table {
+  border-collapse: collapse;
 }
 
-.status.failed {
-  color: rgb(var(--v-theme-error));
+.running-tasks-table th,
+.running-tasks-table td {
+  text-align: left;
+  padding-right: 10px;
 }
 
-.status.success {
-  color: rgb(var(--v-theme-success));
+.running-tasks-table td {
+  padding-bottom: 5px;
 }
 
-.status.pending {
-  color: rgb(var(--v-theme-info));
+.user-select-text {
+  user-select: text;
+  cursor: text;
+}
+
+.selection-container {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
 }
 </style>

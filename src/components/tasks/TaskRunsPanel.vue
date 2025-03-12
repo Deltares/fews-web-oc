@@ -5,8 +5,8 @@
     @click="toggleTasksPanel"
   />
   <Teleport to="#main-side-panel" defer>
-    <div v-if="isPanelOpen" class="task-runs-panel h-100 d-flex flex-column">
-      <div class="d-flex pt-3">
+    <div v-if="isPanelOpen" class="task-runs-panel h-100">
+      <div class="d-flex pt-3 pb-2">
         <WorkflowFilterControl
           v-model="selectedWorkflowIds"
           @update:model-value="flagManuallyChanged"
@@ -15,18 +15,14 @@
         <v-spacer />
         <PeriodFilterControl v-model="period" />
       </div>
-      <v-list class="flex-1-1">
+      <div class="overflow-y-auto">
         <v-list-item v-if="sortedTasks.length === 0">
           No tasks available
         </v-list-item>
-        <v-list-item
-          class="task"
-          v-for="task in sortedTasks"
-          :key="task.taskId"
-        >
+        <div v-for="task in sortedTasks" :key="task.taskId" class="mb-2 mx-2">
           <TaskRunSummary :task="task" />
-        </v-list-item>
-      </v-list>
+        </div>
+      </div>
       <v-divider />
       <v-list-item :title="`Last updated: ${lastUpdatedString}`">
         <template #append>
@@ -150,15 +146,9 @@ function toggleTasksPanel(): void {
   height: 28px;
 }
 
-.v-theme--light.task:nth-child(even) {
-  background-color: #f4f4f4;
-}
-
-.v-theme--dark.task:nth-child(even) {
-  background-color: black;
-}
-
 .task-runs-panel {
-  width: 400px;
+  width: 450px;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
 }
 </style>
