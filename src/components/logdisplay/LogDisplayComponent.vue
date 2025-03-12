@@ -159,9 +159,12 @@ const startDate = computed(
 const endDate = ref<Date>(new Date())
 
 const expandedItems = ref<Record<string, boolean>>({})
-watch(props.logDisplay, () => {
-  expandedItems.value = {}
-})
+watch(
+  () => props.logDisplay,
+  () => {
+    expandedItems.value = {}
+  },
+)
 
 const { userName } = useCurrentUser()
 
