@@ -3,7 +3,7 @@
     <div>
       <div class="d-flex flex-row justify-space-between">
         <div>
-          {{ workflow.name }}
+          {{ workflowTitle }}
         </div>
         <div v-if="task.isScheduled" class="scheduled-task">Scheduled</div>
         <div v-else>{{ task.userId }}</div>
@@ -23,7 +23,7 @@
       <TaskRunProgress
         v-if="isRunning"
         :dispatch-timestamp="task.dispatchTimestamp"
-        :expected-runtime-seconds="workflow.expectedRuntimeSeconds"
+        :expected-runtime-seconds="expectedRunTimeSeconds"
         color="info"
       />
     </div>
@@ -71,6 +71,12 @@ const workflow = computed(() =>
   availableWorkflowsStore.byId(props.task.workflowId),
 )
 
+const expectedRunTimeSeconds = computed(
+  () => workflow.value?.expectedRuntimeSeconds ?? null,
+)
+
+const workflowTitle = computed(() => workflow.value?.name ?? 'Unknown workflow')
+
 const isRunning = computed<boolean>(
   () => props.task.status === TaskStatus.Running,
 )
@@ -85,7 +91,7 @@ const completionTimeString = computed<string>(() =>
   formatTimestamp(props.task.completionTimestamp),
 )
 const expectedCompletionTimeString = computed<string>(() => {
-  const expectedRunTime = workflow.value.expectedRuntimeSeconds
+  const expectedRunTime = expectedRunTimeSeconds.value
   if (expectedRunTime === null || props.task.dispatchTimestamp === null) {
     // We have no expected runtime, return a placeholder.
     return formatTimestamp(null)
