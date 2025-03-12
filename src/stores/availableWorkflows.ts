@@ -25,6 +25,11 @@ export const useAvailableWorkflowsStore = defineStore('availableWorkflows', {
         (workflow) => workflow.whatIfTemplateId !== undefined,
       )
     },
+    whatIfTemplateIds(state) {
+      return state.workflows.flatMap((workflow) =>
+        workflow.whatIfTemplateId ? [workflow.whatIfTemplateId] : [],
+      )
+    },
   },
   actions: {
     byId(workflowId: string) {
@@ -35,6 +40,12 @@ export const useAvailableWorkflowsStore = defineStore('availableWorkflows', {
     },
     hasWhatIfTemplate(workflowId: string): boolean {
       return this.byId(workflowId)?.whatIfTemplateId !== undefined
+    },
+    byWhatIfTemplateId(whatIfTemplateId: string) {
+      const workflow = this.workflows.find(
+        (workflow) => workflow.whatIfTemplateId === whatIfTemplateId,
+      )
+      return workflow
     },
     async fetch() {
       this.workflows = await fetchWorkflowsWithExpectedRunTime()
