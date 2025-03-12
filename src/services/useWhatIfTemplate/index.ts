@@ -5,13 +5,30 @@ import {
   PiWebserviceProvider,
 } from '@deltares/fews-pi-requests'
 import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
-import { ref, shallowRef, toValue, watchEffect } from 'vue'
+import { computed, ref, shallowRef, toValue, watchEffect } from 'vue'
 
 export interface UseWhatIfTemplateReturn {
   error: Ref<string | undefined>
   whatIfTemplates: ShallowRef<WhatIfTemplate[]>
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
+}
+
+export function useWhatIfTemplate(
+  baseUrl: string,
+  whatIfTemplateId?: MaybeRefOrGetter<string | undefined>,
+) {
+  const { whatIfTemplates, ...rest } = useWhatIfTemplates(baseUrl, () => {
+    const _whatIfTemplateId = toValue(whatIfTemplateId)
+    return _whatIfTemplateId ? [_whatIfTemplateId] : []
+  })
+
+  const whatIfTemplate = computed(() => whatIfTemplates.value[0])
+
+  return {
+    whatIfTemplate,
+    ...rest,
+  }
 }
 
 export function useWhatIfTemplates(
