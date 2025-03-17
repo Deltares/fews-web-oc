@@ -1,54 +1,65 @@
+import { ref, computed } from 'vue'
 import uniq from 'lodash-es/uniq'
 import { defineStore } from 'pinia'
-
 import {
   fetchWorkflowsWithExpectedRunTime,
   WorkflowItem,
 } from '@/lib/workflows'
 
-interface AvailableWorkflowsState {
-  workflows: WorkflowItem[]
-  preferredWorkflowIds: string[]
-}
+export const useAvailableWorkflowsStore = defineStore(
+  'availableWorkflows',
+  () => {
+    const workflows = ref<WorkflowItem[]>([])
+    const preferredWorkflowIds = ref<string[]>([])
 
-export const useAvailableWorkflowsStore = defineStore('availableWorkflows', {
-  state: (): AvailableWorkflowsState => ({
-    workflows: [],
-    preferredWorkflowIds: [],
-  }),
-  getters: {
-    workflowIds: (state) => {
-      return state.workflows.map((workflow) => workflow.id)
-    },
-    whatIfWorkflows(state) {
-      return state.workflows.filter(
+    const workflowIds = computed(() => {
+      return workflows.value.map((workflow) => workflow.id)
+    })
+
+    const whatIfWorkflows = computed(() => {
+      return workflows.value.filter(
         (workflow) => workflow.whatIfTemplateId !== undefined,
       )
-    },
-  },
-  actions: {
-    byId(workflowId: string) {
-      const workflow = this.workflows.find(
+    })
+
+    function byId(workflowId: string) {
+      const workflow = workflows.value.find(
         (workflow) => workflow.id === workflowId,
       )
       return workflow
-    },
-    hasWhatIfTemplate(workflowId: string): boolean {
-      return this.byId(workflowId)?.whatIfTemplateId !== undefined
-    },
-    async fetch() {
-      this.workflows = await fetchWorkflowsWithExpectedRunTime()
-    },
-    setPreferredWorkflowIds(workflowIds: string[]): void {
+    }
+
+    function hasWhatIfTemplate(workflowId: string): boolean {
+      return byId(workflowId)?.whatIfTemplateId !== undefined
+    }
+
+    async function fetch() {
+      workflows.value = await fetchWorkflowsWithExpectedRunTime()
+    }
+
+    function setPreferredWorkflowIds(workflowIds: string[]): void {
       // Make sure the workflow IDs are unique.
       const uniqueWorkflowIds = uniq(workflowIds)
       // Check whether all workflows exist by call the byId function for all of
       // them; this should error if the workflow does not exist.
-      uniqueWorkflowIds.forEach((workflowId) => this.byId(workflowId))
-      this.preferredWorkflowIds = uniqueWorkflowIds
-    },
-    clearPreferredWorkflowIds(): void {
-      this.preferredWorkflowIds = []
-    },
+      uniqueWorkflowIds.forEach((workflowId) => byId(workflowId))
+      preferredWorkflowIds.value = uniqueWorkflowIds
+    }
+
+    function clearPreferredWorkflowIds(): void {
+      preferredWorkflowIds.value = []
+    }
+
+    return {
+      workflows,
+      preferredWorkflowIds,
+      workflowIds,
+      whatIfWorkflows,
+      byId,
+      hasWhatIfTemplate,
+      fetch,
+      setPreferredWorkflowIds,
+      clearPreferredWorkflowIds,
+    }
   },
-})
+)
