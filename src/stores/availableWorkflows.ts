@@ -50,6 +50,9 @@ export const useAvailableWorkflowsStore = defineStore(
       preferredWorkflowIds.value = []
     }
 
+    // Fetch metadata for all available workflows.
+    fetch().catch(() => console.error('Failed to fetch available workflows.'))
+
     return {
       workflows,
       preferredWorkflowIds,
