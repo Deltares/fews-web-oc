@@ -44,23 +44,6 @@
             </div>
           </div>
         </div>
-        <v-spacer />
-        <div class="d-flex">
-          <v-checkbox-btn
-            density="compact"
-            trueIcon="mdi-map"
-            falseIcon="mdi-map-outline"
-            color="primary"
-            @click.stop
-          />
-          <v-checkbox-btn
-            density="compact"
-            trueIcon="mdi-chart-areaspline-variant"
-            falseIcon="mdi-chart-line"
-            color="primary"
-            @click.stop
-          />
-        </div>
       </div>
       <template v-if="expanded">
         <div @click.stop class="user-select-text">
@@ -112,7 +95,6 @@ import {
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed, ref } from 'vue'
 import TaskRunProgress from './TaskRunProgress.vue'
-import TaskRunSelector from './TaskRunSelector.vue'
 import { toDateSpanString, toHumanReadableDate } from '@/lib/date'
 import { useWhatIfTemplate } from '@/services/useWhatIfTemplate'
 import { configManager } from '@/services/application-config'
