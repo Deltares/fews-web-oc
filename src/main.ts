@@ -8,7 +8,6 @@ import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { useAvailableWorkflowsStore } from './stores/availableWorkflows'
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
@@ -24,17 +23,11 @@ app.use(vuetify)
 
 fetch(`${import.meta.env.BASE_URL}app-config.json`)
   .then((res) => res.json())
-  .then((data) => {
+  .then(async (data) => {
     configManager.update(data)
     if (configManager.authenticationIsEnabled) {
-      authenticationManager.init(configManager.getUserManagerSettings())
+      await authenticationManager.init(configManager.getUserManagerSettings())
     }
     app.use(router)
     app.mount('#app')
-
-    // Fetch metadata for all available workflows.
-    const availableWorkflowsStore = useAvailableWorkflowsStore()
-    availableWorkflowsStore
-      .fetch()
-      .catch(() => console.error('Failed to fetch available workflows.'))
   })

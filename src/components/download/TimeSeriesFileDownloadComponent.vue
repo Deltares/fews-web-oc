@@ -207,7 +207,7 @@ function determineViewPeriod(): string {
   return viewPeriod
 }
 
-const downloadFile = async (downloadFormat: string) => {
+const downloadFile = (downloadFormat: string) => {
   let viewPeriod = determineViewPeriod()
   if (props.filter) {
     if (isDataDownloadFilter(props.filter)) {
@@ -219,7 +219,7 @@ const downloadFile = async (downloadFormat: string) => {
         url.href,
         fileName.value,
         downloadFormat,
-        await authenticationManager.getAccessToken(),
+        authenticationManager.getAccessToken(),
       )
     }
   }
@@ -233,7 +233,7 @@ const downloadFile = async (downloadFormat: string) => {
         url.href,
         fileName.value,
         downloadFormat,
-        await authenticationManager.getAccessToken(),
+        authenticationManager.getAccessToken(),
       )
     }
     if (isTimeSeriesGridActionsFilter(props.filter)) {
@@ -246,7 +246,7 @@ const downloadFile = async (downloadFormat: string) => {
         url.href,
         fileName.value,
         downloadFormat,
-        await authenticationManager.getAccessToken(),
+        authenticationManager.getAccessToken(),
       )
     }
   }
@@ -266,7 +266,7 @@ const downloadFile = async (downloadFormat: string) => {
     url.href,
     fileName.value,
     downloadFormat,
-    await authenticationManager.getAccessToken(),
+    authenticationManager.getAccessToken(),
   )
 }
 </script>

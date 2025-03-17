@@ -8,7 +8,8 @@ import { authenticationManager } from '@/services/authentication/AuthenticationM
 
 export async function loadTimeSeriesFlags(): Promise<TimeSeriesFlag[]> {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const transformRequestFn = authenticationManager.transformRequestAuth
+  const transformRequestFn = (request: Request) =>
+    Promise.resolve(authenticationManager.transformRequestAuth(request))
   const webServiceProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn,
   })
@@ -21,7 +22,8 @@ export async function loadTimeSeriesFlagSources(): Promise<
   TimeSeriesFlagSource[]
 > {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const transformRequestFn = authenticationManager.transformRequestAuth
+  const transformRequestFn = (request: Request) =>
+    Promise.resolve(authenticationManager.transformRequestAuth(request))
   const webServiceProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn,
   })
