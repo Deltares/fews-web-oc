@@ -24,10 +24,10 @@ app.use(vuetify)
 
 fetch(`${import.meta.env.BASE_URL}app-config.json`)
   .then((res) => res.json())
-  .then((data) => {
+  .then(async (data) => {
     configManager.update(data)
     if (configManager.authenticationIsEnabled) {
-      authenticationManager.init(configManager.getUserManagerSettings())
+      await authenticationManager.init(configManager.getUserManagerSettings())
     }
     app.use(router)
     app.mount('#app')

@@ -1,8 +1,11 @@
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
 
 export function createTransformRequestFn(controller?: AbortController) {
-  return (request: Request) =>
-    authenticationManager.transformRequestAuth(request, controller?.signal)
+  return async (request: Request): Promise<Request> => {
+    return Promise.resolve(
+      authenticationManager.transformRequestAuth(request, controller?.signal),
+    )
+  }
 }
 
 export function mergeHeaders(headers1: Headers, headers2: Headers): Headers {
