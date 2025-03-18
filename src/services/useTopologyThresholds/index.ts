@@ -6,7 +6,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import { type Pausable } from '@vueuse/core'
 import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
-import { ref, shallowRef, toValue } from 'vue'
+import { ref, shallowRef, toValue, watch } from 'vue'
 import { useFocusAwareInterval } from '../useFocusAwareInterval'
 
 export interface UseTopologyThresholdsReturn {
@@ -21,13 +21,14 @@ const THRESHOLDS_POLLING_INTERVAL = 1000 * 30
 
 export function useTopologyThresholds(
   baseUrl: string,
-  nodeId?: MaybeRefOrGetter<string>,
+  nodeId?: MaybeRefOrGetter<string | undefined>,
 ): UseTopologyThresholdsReturn {
   const thresholds = shallowRef<TopologyThresholdNode[]>()
   const isReady = ref(false)
   const isLoading = ref(false)
   const error = shallowRef<string>()
 
+  
   async function loadTopologyThresholds() {
     isLoading.value = true
     isReady.value = false
@@ -54,6 +55,11 @@ export function useTopologyThresholds(
     loadTopologyThresholds,
     THRESHOLDS_POLLING_INTERVAL,
   )
+
+  watch(() => toValue(nodeId), () => {
+    interval.pause()
+    interval.resume()
+  })
 
   return {
     thresholds,
