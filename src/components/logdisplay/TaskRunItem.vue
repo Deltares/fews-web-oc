@@ -36,7 +36,7 @@
       </div>
       <template v-if="expanded && taskRun">
         <div class="table-container mt-1">
-          <table @click.stop class="log-table user-select-text">
+          <table class="log-table">
             <thead>
               <tr>
                 <th>User</th>
@@ -52,7 +52,7 @@
               </tr>
             </tbody>
           </table>
-          <table @click.stop class="log-table user-select-text">
+          <table class="log-table">
             <thead>
               <tr>
                 <th>Time zero</th>
@@ -73,7 +73,7 @@
               </tr>
             </tbody>
           </table>
-          <table @click.stop class="log-table user-select-text">
+          <table class="log-table">
             <thead>
               <tr>
                 <th>Task duration</th>
@@ -169,10 +169,5 @@ function getColorForStatus(status: string | undefined) {
 
 .log-table td {
   padding-bottom: 5px;
-}
-
-.user-select-text {
-  user-select: text;
-  cursor: text;
 }
 </style>
