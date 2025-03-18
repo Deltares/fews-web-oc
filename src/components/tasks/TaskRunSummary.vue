@@ -3,23 +3,20 @@
     border
     flat
     density="compact"
-    @click="expanded = !expanded"
+    @click="onExpansionPanelToggle"
     :ripple="false"
   >
-    <TaskRunProgress
-      v-if="isRunning"
-      :dispatch-timestamp="task.dispatchTimestamp"
-      :expected-runtime-seconds="expectedRunTimeSeconds"
-      color="info"
-    />
     <v-card-text class="py-2 h-100">
-      <div class="d-flex">
-        <div>
-          <div class="d-flex align-center ga-2">
+      <div class="d-flex w-100">
+        <div class="w-100">
+          <v-list-item-subtitle class="mb-1">
+            {{ dispatchTimeString }} &middot; T0: {{ timeZeroString }}
+          </v-list-item-subtitle>
+          <div class="d-flex align-center ga-2 w-100">
             <v-tooltip>
               <template #activator="{ props }">
                 <v-icon
-                  class="me-2"
+                  class="me-2 flex-0-0"
                   :icon="statusIcon"
                   :color="statusColor"
                   size="20"
@@ -28,53 +25,34 @@
               </template>
               <span>{{ statusString }}</span>
             </v-tooltip>
-            <v-list-item-title>
-              {{ workflowTitle }}
-            </v-list-item-title>
-          </div>
-          <v-list-item-subtitle>
-            {{ dispatchTimeString }} - {{ whatIfTemplate?.name }}
-          </v-list-item-subtitle>
-          <div class="d-flex gap-2 align-center">
-            <div class="d-flex flex-column user-select-text cursor-pointer">
-              <v-card-subtitle class="pa-0">
-                T0: {{ timeZeroString }} - ETA:
-                {{ expectedCompletionTimeString }}
-              </v-card-subtitle>
+            <div class="flex-1-1 overflow-hidden">
+              <v-list-item-title :class="{ 'text-wrap': expanded }">
+                {{ workflowTitle }}
+              </v-list-item-title>
+              <v-list-item-subtitle
+                v-if="whatIfTemplate"
+                :class="{ 'text-wrap': expanded, 'text-wrap-no': !expanded }"
+              >
+                {{ whatIfTemplate.name }}
+              </v-list-item-subtitle>
             </div>
           </div>
         </div>
       </div>
       <template v-if="expanded">
-        <div @click.stop class="user-select-text">
-          {{ workflow?.description }}
-        </div>
-        <div @click.stop class="user-select-text">{{ task.description }}</div>
         <div class="table-container mt-1">
-          <table @click.stop class="running-tasks-table user-select-text">
+          <table v-for="table in tableData" class="running-tasks-table">
             <thead>
               <tr>
-                <th>User</th>
-                <th>Task run ID</th>
+                <th v-for="column in table.columns.filter((c) => !!c.value)">
+                  {{ column.header }}
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>{{ task.userId ?? 'No user' }}</td>
-                <td>{{ task.taskId }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <table @click.stop class="running-tasks-table user-select-text">
-            <thead>
-              <tr>
-                <th>Task duration</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  {{ taskDurationString }}
+                <td v-for="column in table.columns.filter((c) => !!c.value)">
+                  {{ column.value }}
                 </td>
               </tr>
             </tbody>
@@ -82,6 +60,12 @@
         </div>
       </template>
     </v-card-text>
+    <TaskRunProgress
+      v-if="isRunning"
+      :dispatch-timestamp="task.dispatchTimestamp"
+      :expected-runtime-seconds="expectedRunTimeSeconds"
+      color="info"
+    />
   </v-card>
 </template>
 <script setup lang="ts">
@@ -96,26 +80,60 @@ import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed, ref } from 'vue'
 import TaskRunProgress from './TaskRunProgress.vue'
 import { toDateSpanString, toHumanReadableDate } from '@/lib/date'
-import { useWhatIfTemplate } from '@/services/useWhatIfTemplate'
-import { configManager } from '@/services/application-config'
+import type { WhatIfTemplate } from '@deltares/fews-pi-requests'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 
 interface Props {
   task: TaskRun
+  whatIfTemplates: WhatIfTemplate[]
 }
 const props = defineProps<Props>()
 
 const expanded = ref(false)
 
+const tableData = computed(() => {
+  const data = [
+    {
+      columns: [{ header: 'Task Description', value: props.task.description }],
+    },
+    {
+      columns: [
+        { header: 'Workflow Description', value: workflow.value?.description },
+      ],
+    },
+    {
+      columns: [
+        { header: 'User', value: props.task.userId ?? 'No user' },
+        { header: 'Task run ID', value: props.task.taskId },
+      ],
+    },
+    {
+      columns: [{ header: 'Output time span', value: outputTimeString.value }],
+    },
+    {
+      columns: [{ header: 'Task duration', value: taskDurationString.value }],
+    },
+    {
+      columns: [
+        {
+          header: 'Expected completion time',
+          value: expectedCompletionTimeString.value,
+        },
+      ],
+    },
+  ]
+  return data.filter((table) => table.columns.some((c) => !!c.value))
+})
+
 const workflow = computed(() =>
   availableWorkflowsStore.byId(props.task.workflowId),
 )
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { whatIfTemplate } = useWhatIfTemplate(
-  baseUrl,
-  () => workflow.value?.whatIfTemplateId,
+const whatIfTemplate = computed(() =>
+  props.whatIfTemplates.find(
+    (template) => template.id === workflow.value?.whatIfTemplateId,
+  ),
 )
 
 const expectedRunTimeSeconds = computed(
@@ -143,11 +161,17 @@ const taskDurationString = computed(() =>
   ),
 )
 
-const expectedCompletionTimeString = computed<string>(() => {
+const outputTimeString = computed(() =>
+  toDateSpanString(
+    props.task.outputStartTimestamp,
+    props.task.outputEndTimestamp,
+  ),
+)
+
+const expectedCompletionTimeString = computed(() => {
   const expectedRunTime = expectedRunTimeSeconds.value
   if (expectedRunTime === null || props.task.dispatchTimestamp === null) {
-    // We have no expected runtime, return a placeholder.
-    return toHumanReadableDate(null)
+    return
   }
   const expectedCompletionTimestamp =
     props.task.dispatchTimestamp + expectedRunTime * 1000
@@ -163,6 +187,13 @@ const statusColor = computed<string>(() =>
 const statusIcon = computed<string>(() =>
   getIconForTaskStatus(props.task.status),
 )
+
+function onExpansionPanelToggle() {
+  // Only expand when no text is selected
+  if (window.getSelection()?.toString() === '') {
+    expanded.value = !expanded.value
+  }
+}
 </script>
 
 <style scoped>
@@ -186,15 +217,18 @@ const statusIcon = computed<string>(() =>
   padding-bottom: 5px;
 }
 
-.user-select-text {
-  user-select: text;
-  cursor: text;
-}
-
 .selection-container {
   display: grid;
   place-items: center;
   width: 28px;
   height: 28px;
+}
+
+.text-wrap {
+  white-space: normal;
+}
+
+.text-wrap-no {
+  white-space: nowrap;
 }
 </style>

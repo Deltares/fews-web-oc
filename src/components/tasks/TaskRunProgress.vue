@@ -77,10 +77,15 @@ function getProgressDetails(): string {
 
 function getRemainingTimeString(): string {
   const currentTimestamp = Date.now()
-  const currentDurationMilliseconds =
-    currentTimestamp - props.dispatchTimestamp!
+  if (
+    props.dispatchTimestamp === null ||
+    props.expectedRuntimeSeconds === null
+  ) {
+    return 'No expected runtime'
+  }
+  const currentDurationMilliseconds = currentTimestamp - props.dispatchTimestamp
   const remainingMilliseconds =
-    props.expectedRuntimeSeconds! * 1000 - currentDurationMilliseconds
+    props.expectedRuntimeSeconds * 1000 - currentDurationMilliseconds
 
   const hasOverrunExpectedTime = remainingMilliseconds < 0
   if (hasOverrunExpectedTime) {
@@ -90,7 +95,7 @@ function getRemainingTimeString(): string {
     return `Overran expected time by: ${remaining}`
   } else {
     const remaining = formatDuration(remainingMilliseconds)
-    return `expected time remaining: ${remaining}`
+    return `Expected time remaining: ${remaining}`
   }
 }
 

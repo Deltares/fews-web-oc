@@ -10,6 +10,12 @@ export function convertFewsPiTaskRunToTaskRun(taskRun: FewsPiTaskRun): TaskRun {
   const completionTimestamp = taskRun.completionTime
     ? new Date(taskRun.completionTime).getTime()
     : null
+  const outputStartTimestamp = taskRun.outputStartTime
+    ? new Date(taskRun.outputStartTime).getTime()
+    : null
+  const outputEndTimestamp = taskRun.outputEndTime
+    ? new Date(taskRun.outputEndTime).getTime()
+    : null
   // Set null for undefined and empty descriptions.
   const description = taskRun.description ? taskRun.description : null
   return {
@@ -24,6 +30,8 @@ export function convertFewsPiTaskRunToTaskRun(taskRun: FewsPiTaskRun): TaskRun {
     dispatchTimestamp,
     completionTimestamp,
     isScheduled: taskRun.user === null,
+    outputStartTimestamp,
+    outputEndTimestamp,
   }
 }
 
