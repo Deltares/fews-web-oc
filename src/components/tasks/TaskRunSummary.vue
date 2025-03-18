@@ -10,7 +10,8 @@
       <div class="d-flex w-100">
         <div class="w-100">
           <v-list-item-subtitle class="mb-1">
-            {{ dispatchTimeString }} &middot; T0: {{ timeZeroString }}
+            {{ dispatchTimeString }} &bull; T0: {{ timeZeroString }}
+            <span v-if="task.isCurrent"> &bull; Current</span>
           </v-list-item-subtitle>
           <div class="d-flex align-center ga-1 w-100">
             <v-tooltip>

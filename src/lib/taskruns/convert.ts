@@ -30,6 +30,7 @@ export function convertFewsPiTaskRunToTaskRun(taskRun: FewsPiTaskRun): TaskRun {
     dispatchTimestamp,
     completionTimestamp,
     isScheduled: taskRun.user === null,
+    isCurrent: taskRun.current,
     outputStartTimestamp,
     outputEndTimestamp,
   }
