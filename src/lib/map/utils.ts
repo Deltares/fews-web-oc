@@ -47,8 +47,12 @@ export function transformStyle(
   }
 }
 
+export function getLayerIds(map: Map) {
+  return map.getStyle().layers.map((layer) => layer.id)
+}
+
 export function getBeforeId(map: Map) {
-  const layerIds = map?.getStyle().layers.map((l) => l.id)
+  const layerIds = getLayerIds(map)
   if (!layerIds.length) return
 
   // TODO: By default use id of carto
