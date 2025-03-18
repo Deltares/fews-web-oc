@@ -29,6 +29,8 @@ export interface TaskRun {
   completionTimestamp: number | null
   userId: string | null
   isScheduled: boolean
+  outputStartTimestamp: number | null
+  outputEndTimestamp: number | null
 }
 
 export function isTaskStatus(value: string): value is TaskStatus {
