@@ -73,6 +73,9 @@ function getTitleForLog(log: LogMessage, userName: string) {
 }
 
 function onExpansionPanelToggle() {
-  expanded.value = !expanded.value
+  // Only expand when no text is selected
+  if (window.getSelection()?.toString() === '') {
+    expanded.value = !expanded.value
+  }
 }
 </script>
