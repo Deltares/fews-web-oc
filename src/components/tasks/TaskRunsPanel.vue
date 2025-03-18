@@ -19,9 +19,23 @@
         <v-list-item v-if="sortedTasks.length === 0">
           No tasks available
         </v-list-item>
-        <div v-for="task in sortedTasks" :key="task.taskId" class="mb-2 mx-2">
-          <TaskRunSummary :task="task" :whatIfTemplates="whatIfTemplates" />
-        </div>
+
+        <!-- Important to have item-height as it greatly improves performance -->
+        <v-virtual-scroll
+          class="scroll-container h-100"
+          :items="sortedTasks"
+          :item-height="62"
+        >
+          <template #default="{ item: task }">
+            <div class="mb-2 mx-2">
+              <TaskRunSummary
+                :task="task"
+                :whatIfTemplates="whatIfTemplates"
+                v-model:expanded="expandedItems[task.taskId]"
+              />
+            </div>
+          </template>
+        </v-virtual-scroll>
       </div>
       <v-divider />
       <v-list-item :title="`Last updated: ${lastUpdatedString}`">
@@ -65,6 +79,7 @@ const availableWorkflowsStore = useAvailableWorkflowsStore()
 const isPanelOpen = ref(false)
 
 const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
+const expandedItems = ref<Record<string, boolean>>({})
 
 // Automatically select preferred workflow IDs if the user has not changed the
 // filter manually yet, otherwise, leave the filter as-is.

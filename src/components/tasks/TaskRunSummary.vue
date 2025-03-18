@@ -12,11 +12,11 @@
           <v-list-item-subtitle class="mb-1">
             {{ dispatchTimeString }} &middot; T0: {{ timeZeroString }}
           </v-list-item-subtitle>
-          <div class="d-flex align-center ga-2 w-100">
+          <div class="d-flex align-center ga-1 w-100">
             <v-tooltip>
               <template #activator="{ props }">
                 <v-icon
-                  class="me-2 flex-0-0"
+                  class="me-1 flex-0-0"
                   :icon="statusIcon"
                   :color="statusColor"
                   size="20"
@@ -77,7 +77,7 @@ import {
   TaskStatus,
 } from '@/lib/taskruns'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import TaskRunProgress from './TaskRunProgress.vue'
 import { toDateSpanString, toHumanReadableDate } from '@/lib/date'
 import type { WhatIfTemplate } from '@deltares/fews-pi-requests'
@@ -90,7 +90,10 @@ interface Props {
 }
 const props = defineProps<Props>()
 
-const expanded = ref(false)
+const expanded = defineModel<boolean>('expanded', {
+  required: false,
+  default: false,
+})
 
 const tableData = computed(() => {
   const data = [
