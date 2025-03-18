@@ -1,7 +1,17 @@
 <template>
   <mgl-geo-json-source v-if="geojson" :sourceId :data="geojson">
-    <mgl-fill-layer v-if="overlay.type === 'fill'" :paint="paint" :layerId />
-    <mgl-line-layer v-if="overlay.type === 'line'" :paint="paint" :layerId />
+    <mgl-fill-layer
+      v-if="overlay.type === 'fill'"
+      :paint="paint"
+      :layerId
+      :before="beforeId"
+    />
+    <mgl-line-layer
+      v-if="overlay.type === 'line'"
+      :paint="paint"
+      :layerId
+      :before="beforeId"
+    />
   </mgl-geo-json-source>
 </template>
 
@@ -14,9 +24,15 @@ import {
 import { fetchLocationSetAsGeoJson } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 import { asyncComputed } from '@vueuse/core'
-import { getLayerId, getSourceId } from '@/lib/map'
+import {
+  getLayerId,
+  getLayerIds,
+  getSourceId,
+  locationLayerIds,
+} from '@/lib/map'
 import { Overlay } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
+import { useMap } from '@/services/useMap'
 
 interface Props {
   overlay: Overlay
@@ -58,4 +74,13 @@ const geojson = asyncComputed(async () =>
     ? await fetchLocationSetAsGeoJson(baseUrl, props.overlay.locationSetId)
     : undefined,
 )
+
+const { map } = useMap()
+
+const beforeId = computed(() => {
+  if (!map) return
+
+  const layerIds = getLayerIds(map)
+  return layerIds.find((id) => locationLayerIds.includes(id))
+})
 </script>
