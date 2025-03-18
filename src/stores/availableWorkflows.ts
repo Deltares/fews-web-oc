@@ -22,9 +22,22 @@ export const useAvailableWorkflowsStore = defineStore(
       )
     })
 
+    const whatIfTemplateIds = computed(() => {
+      return workflows.value.flatMap((workflow) =>
+        workflow.whatIfTemplateId ? [workflow.whatIfTemplateId] : [],
+      )
+    })
+
     function byId(workflowId: string) {
       const workflow = workflows.value.find(
         (workflow) => workflow.id === workflowId,
+      )
+      return workflow
+    }
+
+    function byWhatIfTemplateId(whatIfTemplateId: string) {
+      const workflow = workflows.value.find(
+        (workflow) => workflow.whatIfTemplateId === whatIfTemplateId,
       )
       return workflow
     }
@@ -58,7 +71,9 @@ export const useAvailableWorkflowsStore = defineStore(
       preferredWorkflowIds,
       workflowIds,
       whatIfWorkflows,
+      whatIfTemplateIds,
       byId,
+      byWhatIfTemplateId,
       hasWhatIfTemplate,
       fetch,
       setPreferredWorkflowIds,
