@@ -11,6 +11,7 @@
     :groupId="props.groupId"
     :panelId="props.panelId"
     :objectId="props.objectId"
+    @navigate="onNavigate"
   />
 </template>
 
@@ -20,7 +21,7 @@ import type {
   SsdDisplayPanel,
 } from '@deltares/fews-ssd-requests'
 import { ref, onMounted, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { RouteLocationNormalized, useRoute, useRouter } from 'vue-router'
 
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
 
@@ -143,5 +144,24 @@ function onGroupIdChange(): void {
 
 function onPanelIdChange(): void {
   active.value = props.panelId
+}
+
+function onNavigate(to: RouteLocationNormalized) {
+  const name = route.path.startsWith('/embed')
+    ? `Embed/${String(to.name)}`
+    : to.name
+
+  switch (to.name) {
+    case 'SSDTimeSeriesDisplay':
+    case 'SchematicStatusDisplay':
+      router.push({
+        name,
+        params: { ...to.params },
+        query: route.query,
+      })
+      break
+    default:
+      console.warn(`Unknown route name: ${String(to.name)}`)
+  }
 }
 </script>
