@@ -1,6 +1,16 @@
 <template>
   <v-sheet class="threshold-display-container">
-    <v-list :items=warningLevels></v-list>
+    <v-data-iterator :items=warningLevels>
+      <template v-slot:default="{ items }">
+        <v-list density="compact">
+          <v-list-item
+            v-for="item in items"
+            :key="item.raw.id"
+            :title="item.raw.title">
+          </v-list-item>
+        </v-list>
+      </template>
+    </v-data-iterator>
   </v-sheet>
 </template>
 
@@ -24,7 +34,7 @@ const warningLevels = computed(() => {
   return thresholds.value[0].levelThresholdWarningLevels?.map((warningLevel) => {
     return {
       title: `${warningLevel.name}: ${warningLevel.count}`,
-      value: warningLevel.id
+      id: warningLevel.id
     }
   })
 })
