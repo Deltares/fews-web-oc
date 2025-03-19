@@ -2,12 +2,18 @@
   <v-card border flat density="compact">
     <v-card-text class="py-2 h-100">
       <div class="d-flex gap-2 align-center">
-        <v-icon
-          class="me-2"
-          :icon="getIconForStatus(taskRun?.status)"
-          :color="getColorForStatus(taskRun?.status)"
-          size="20"
-        />
+        <v-tooltip>
+          <template #activator="{ props }">
+            <v-icon
+              class="me-2 flex-0-0"
+              :icon="getIconForStatus(taskRun?.status)"
+              :color="getColorForStatus(taskRun?.status)"
+              size="20"
+              v-bind="props"
+            />
+          </template>
+          <span>{{ getStringForStatus(taskRun?.status) }}</span>
+        </v-tooltip>
         <div class="d-flex flex-column user-select-text cursor-pointer">
           <div class="d-flex align-center ga-2">
             <v-list-item-title>
@@ -60,6 +66,7 @@ import {
   toHumanReadableDate,
 } from '@/lib/date'
 import {
+  convertTaskStatusToString,
   getColorForTaskStatus,
   getIconForTaskStatus,
   isTaskStatus,
@@ -148,6 +155,12 @@ function getIconForStatus(status: string | undefined) {
   return status && isTaskStatus(status)
     ? getIconForTaskStatus(status)
     : 'mdi-bell-outline'
+}
+
+function getStringForStatus(status: string | undefined) {
+  return status && isTaskStatus(status)
+    ? convertTaskStatusToString(status)
+    : 'Unknown status'
 }
 
 function getColorForStatus(status: string | undefined) {
