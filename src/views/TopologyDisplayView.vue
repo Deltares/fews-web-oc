@@ -321,10 +321,12 @@ watchEffect(() => {
 })
 
 function onNavigate(to: RouteLocationNormalized) {
+  const name = `Topology${String(to.name)}`
+
   switch (to.name) {
     case 'SpatialTimeSeriesDisplay':
       router.push({
-        name: `Topology${to.name}`,
+        name,
         params: {
           nodeId: props.nodeId,
           layerName: props.layerName,
@@ -335,7 +337,7 @@ function onNavigate(to: RouteLocationNormalized) {
       break
     case 'SpatialTimeSeriesDisplayWithCoordinates':
       router.push({
-        name: `Topology${to.name}`,
+        name,
         params: {
           nodeId: props.nodeId,
           layerName: props.layerName,
@@ -347,11 +349,19 @@ function onNavigate(to: RouteLocationNormalized) {
       break
     case 'SpatialDisplay':
       router.push({
-        name: `Topology${to.name}`,
+        name,
         params: {
           nodeId: props.nodeId,
           layerName: props.layerName,
         },
+        query: route.query,
+      })
+      break
+    case 'SSDTimeSeriesDisplay':
+    case 'SchematicStatusDisplay':
+      router.push({
+        name,
+        params: { ...to.params },
         query: route.query,
       })
       break
