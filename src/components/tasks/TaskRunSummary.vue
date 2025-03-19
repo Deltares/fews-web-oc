@@ -11,7 +11,6 @@
         <div class="w-100">
           <v-list-item-subtitle class="mb-1">
             {{ timeZeroString }}
-            <span v-if="task.isCurrent"> &bull; Current</span>
           </v-list-item-subtitle>
           <div class="d-flex align-center ga-1 w-100">
             <v-tooltip>
@@ -193,8 +192,8 @@ const expectedCompletionTimeString = computed(() => {
 const statusString = computed<string>(() =>
   convertTaskStatusToString(props.task.status),
 )
-const statusColor = computed<string>(() =>
-  getColorForTaskStatus(props.task.status),
+const statusColor = computed(() =>
+  getColorForTaskStatus(props.task.status, props.task.isCurrent),
 )
 const statusIcon = computed<string>(() =>
   getIconForTaskStatus(props.task.status),
