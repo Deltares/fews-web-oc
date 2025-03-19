@@ -10,7 +10,7 @@
       <div class="d-flex w-100">
         <div class="w-100">
           <v-list-item-subtitle class="mb-1">
-            {{ dispatchTimeString }} &bull; T0: {{ timeZeroString }}
+            {{ timeZeroString }}
             <span v-if="task.isCurrent"> &bull; Current</span>
           </v-list-item-subtitle>
           <div class="d-flex align-center ga-1 w-100">
@@ -27,9 +27,9 @@
               <span>{{ statusString }}</span>
             </v-tooltip>
             <div class="flex-1-1 overflow-hidden">
-              <v-list-item-title :class="{ 'text-wrap': expanded }">
+              <div :class="{ 'text-wrap': expanded }">
                 {{ workflowTitle }}
-              </v-list-item-title>
+              </div>
               <v-list-item-subtitle
                 v-if="whatIfTemplate"
                 :class="{ 'text-wrap': expanded, 'text-wrap-no': !expanded }"
@@ -40,26 +40,7 @@
           </div>
         </div>
       </div>
-      <template v-if="expanded">
-        <div class="table-container mt-1">
-          <table v-for="table in tableData" class="running-tasks-table">
-            <thead>
-              <tr>
-                <th v-for="column in table.columns.filter((c) => !!c.value)">
-                  {{ column.header }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td v-for="column in table.columns.filter((c) => !!c.value)">
-                  {{ column.value }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </template>
+      <DataTable v-if="expanded" class="mt-4" :tableData="tableData" />
     </v-card-text>
     <TaskRunProgress
       v-if="isRunning"
@@ -80,7 +61,12 @@ import {
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed } from 'vue'
 import TaskRunProgress from './TaskRunProgress.vue'
-import { toDateSpanString, toHumanReadableDate } from '@/lib/date'
+import DataTable from '@/components/general/DataTable.vue'
+import {
+  toDateDifferenceString,
+  toDateRangeString,
+  toHumanReadableDate,
+} from '@/lib/date'
 import type { WhatIfTemplate } from '@deltares/fews-pi-requests'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
@@ -96,39 +82,51 @@ const expanded = defineModel<boolean>('expanded', {
   default: false,
 })
 
-const tableData = computed(() => {
-  const data = [
-    {
-      columns: [{ header: 'Task Description', value: props.task.description }],
-    },
-    {
-      columns: [
-        { header: 'Workflow Description', value: workflow.value?.description },
-      ],
-    },
-    {
-      columns: [
-        { header: 'User', value: props.task.userId ?? 'No user' },
-        { header: 'Task run ID', value: props.task.taskId },
-      ],
-    },
-    {
-      columns: [{ header: 'Output time span', value: outputTimeString.value }],
-    },
-    {
-      columns: [{ header: 'Task duration', value: taskDurationString.value }],
-    },
-    {
-      columns: [
-        {
-          header: 'Expected completion time',
-          value: expectedCompletionTimeString.value,
-        },
-      ],
-    },
-  ]
-  return data.filter((table) => table.columns.some((c) => !!c.value))
-})
+const tableData = computed(() => [
+  {
+    columns: [{ header: 'Task Description', value: props.task.description }],
+  },
+  {
+    columns: [
+      { header: 'Workflow Description', value: workflow.value?.description },
+    ],
+  },
+  {
+    columns: [
+      { header: 'User', value: props.task.userId ?? 'No user' },
+      { header: 'Task run ID', value: props.task.taskId },
+    ],
+  },
+  {
+    columns: [{ header: 'T0', value: timeZeroString.value }],
+  },
+  {
+    columns: [
+      {
+        header: 'Output time span',
+        subHeader: outputTimeDifferenceString.value,
+        value: outputTimeString.value,
+      },
+    ],
+  },
+  {
+    columns: [
+      {
+        header: 'Task duration',
+        subHeader: taskDurtionDifferenceString.value,
+        value: taskDurationString.value,
+      },
+    ],
+  },
+  {
+    columns: [
+      {
+        header: 'Expected completion time',
+        value: expectedCompletionTimeString.value,
+      },
+    ],
+  },
+])
 
 const workflow = computed(() =>
   availableWorkflowsStore.byId(props.task.workflowId),
@@ -150,23 +148,33 @@ const isRunning = computed<boolean>(
   () => props.task.status === TaskStatus.Running,
 )
 
-const dispatchTimeString = computed<string>(() =>
-  toHumanReadableDate(props.task.dispatchTimestamp),
-)
-
 const timeZeroString = computed<string>(() =>
   toHumanReadableDate(props.task.timeZeroTimestamp),
 )
 
 const taskDurationString = computed(() =>
-  toDateSpanString(
+  toDateRangeString(
+    props.task.dispatchTimestamp,
+    props.task.completionTimestamp,
+  ),
+)
+
+const taskDurtionDifferenceString = computed(() =>
+  toDateDifferenceString(
     props.task.dispatchTimestamp,
     props.task.completionTimestamp,
   ),
 )
 
 const outputTimeString = computed(() =>
-  toDateSpanString(
+  toDateRangeString(
+    props.task.outputStartTimestamp,
+    props.task.outputEndTimestamp,
+  ),
+)
+
+const outputTimeDifferenceString = computed(() =>
+  toDateDifferenceString(
     props.task.outputStartTimestamp,
     props.task.outputEndTimestamp,
   ),
@@ -201,26 +209,6 @@ function onExpansionPanelToggle() {
 </script>
 
 <style scoped>
-.table-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.running-tasks-table {
-  border-collapse: collapse;
-}
-
-.running-tasks-table th,
-.running-tasks-table td {
-  text-align: left;
-  padding-right: 10px;
-}
-
-.running-tasks-table td {
-  padding-bottom: 5px;
-}
-
 .selection-container {
   display: grid;
   place-items: center;
@@ -234,5 +222,9 @@ function onExpansionPanelToggle() {
 
 .text-wrap-no {
   white-space: nowrap;
+}
+
+.title {
+  font-size: 0.875rem;
 }
 </style>
