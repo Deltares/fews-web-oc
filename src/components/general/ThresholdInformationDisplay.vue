@@ -34,7 +34,6 @@
 <script setup lang="ts">
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
-import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { getResourcesIconsUrl } from '@/lib/fews-config';
 import { computed } from 'vue';
 
@@ -50,13 +49,13 @@ const { thresholds: thresholdsArray } = useTopologyThresholds(baseUrl, () => pro
 const warningLevels = computed(() => {
   if (thresholdsArray.value === undefined || thresholdsArray.value.length === 0) return []
   const thresholds = thresholdsArray.value[0]
-  return thresholds.levelThresholdWarningLevels?.map((warningLevel) => {
+  return thresholds.aggregatedLevelThresholdWarningLevels?.map((warningLevel) => {
     return {
       name: warningLevel.name,
       id: warningLevel.id,
       count: warningLevel.count,
       icon: warningLevel.icon ? getResourcesIconsUrl(warningLevel.icon) : undefined,
-      thresholdCrossing: thresholds.levelThresholdCrossings?.filter(
+      thresholdCrossing: thresholds.aggregatedLevelThresholdCrossings?.filter(
         (crossing) => crossing.warningLevelId == warningLevel.id
       )
     }
