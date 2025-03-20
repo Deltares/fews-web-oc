@@ -52,35 +52,40 @@
         <v-icon size="xsmall">mdi-open-in-new</v-icon>
       </template>
     </v-list-item>
-    <v-list-item
-      v-else
-      :to="item.to"
-      :active="props.active === item.id"
-      density="compact"
-      class="tree-menu--list-item"
-    >
-      <template v-slot:prepend>
-        <v-badge
-          color="#00BBF0"
-          :model-value="(item.thresholdCount ?? 0) > 0"
-          :content="item.thresholdCount"
-        >
-          <v-icon :icon="item.icon ?? toCharacterIcon(item.name)"></v-icon>
-        </v-badge>
-      </template>
-      <v-list-item-title>{{ item.name }}</v-list-item-title>
-      <template v-slot:append>
-        <v-icon v-if="item.appendIcon" size="xsmall">{{
-          item.appendIcon
-        }}</v-icon>
-      </template>
-    </v-list-item>
+    <template v-else>
+      <v-list-item
+        :to="item.to"
+        :active="props.active === item.id"
+        density="compact"
+        class="tree-menu--list-item"
+      >
+        <template v-slot:prepend>
+          <v-badge
+            color="#00BBF0"
+            :model-value="(item.thresholdCount ?? 0) > 0"
+            :content="item.thresholdCount"
+          >
+            <v-icon :icon="item.icon ?? toCharacterIcon(item.name)"></v-icon>
+          </v-badge>
+        </template>
+        <v-list-item-title>{{ item.name }}</v-list-item-title>
+        <template v-slot:append>
+          <v-icon v-if="item.appendIcon" size="xsmall">{{
+            item.appendIcon
+          }}</v-icon>
+        </template>
+      </v-list-item>
+      <v-list-item v-if="props.active === item.id && (item.thresholdCount ?? 0) > 0">
+        <ThresholdSummary :nodeId="item.id"></ThresholdSummary>
+      </v-list-item>
+    </template>
   </template>
 </template>
 
 <script setup lang="ts">
 import { toCharacterIcon } from '@/lib/icons/index.js'
 import type { ColumnItem } from './ColumnItem.js'
+import ThresholdSummary from '@/components/general/ThresholdSummary.vue'
 
 interface Props {
   items?: ColumnItem[]
@@ -104,6 +109,7 @@ const props = withDefaults(defineProps<Props>(), {
 /* To counter act being moved by the above border */
 .tree-menu--list-item > :deep(.v-list-item__prepend) {
   margin-left: -4px;
+  align-self: flex-start;
 }
 
 .tree-menu--list-group :deep(.v-list-group__items .v-list-item) {
