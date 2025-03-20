@@ -1,4 +1,5 @@
 import {
+  ActionResult,
   PiWebserviceProvider,
   type ActionsResponse,
 } from '@deltares/fews-pi-requests'
@@ -147,6 +148,7 @@ export function useDisplayConfigFilter(
   filter: MaybeRefOrGetter<Filter | undefined>,
   startTime: MaybeRefOrGetter<Date | undefined>,
   endTime: MaybeRefOrGetter<Date | undefined>,
+  taskRunIds?: MaybeRefOrGetter<string[] | undefined>,
 ): UseDisplayConfigReturn {
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -159,27 +161,27 @@ export function useDisplayConfigFilter(
   watchEffect(async () => {
     const _filter = toValue(filter)
     if (_filter === undefined) return
+
     if (isFilterActionsFilter(_filter)) {
       if (!_filter.filterId) return
-      response.value = await piProvider.getFilterActions(_filter)
-    } else if (isTimeSeriesGridActionsFilter(_filter)) {
-      response.value = await piProvider.getTimeSeriesGridActions(_filter)
-      response.value.results.forEach((result) => {
-        result.requests.forEach((request) => {
-          request.key = MD5(request.request).toString()
-        })
-        if (result.config?.timeSeriesDisplay.subplots) {
-          let i = 0
-          result.config.timeSeriesDisplay.subplots.forEach((subPlot) => {
-            subPlot.items.forEach((item) => {
-              if (item.request === undefined) {
-                item.request = `${result.requests[0].key}[${i}]`
-              }
-              i++
-            })
-          })
-        }
+
+      const _response = await piProvider.getFilterActions(_filter)
+
+      const _taskRunIds = toValue(taskRunIds)
+      const _taskRunsResponse = await piProvider.getFilterActions({
+        ..._filter,
+        // TODO
+        // @ts-expect-error
+        taskRunIds: _taskRunIds,
       })
+
+      addTaskRunResult(_response, _taskRunsResponse)
+
+      response.value = _response
+    } else if (isTimeSeriesGridActionsFilter(_filter)) {
+      const _response = await piProvider.getTimeSeriesGridActions(_filter)
+      addIndexToKeys(_response.results)
+      response.value = _response
     } else {
       displayConfig.value = null
       displays.value = null
@@ -211,4 +213,42 @@ export function useDisplayConfigFilter(
   }
 
   return shell
+}
+
+function addIndexToKeys(results: ActionResult[]) {
+  results.forEach((result) => {
+    result.requests.forEach((request) => {
+      request.key = MD5(request.request).toString()
+    })
+    if (result.config?.timeSeriesDisplay.subplots) {
+      let i = 0
+      result.config.timeSeriesDisplay.subplots.forEach((subPlot) => {
+        subPlot.items.forEach((item) => {
+          if (item.request === undefined) {
+            item.request = `${result.requests[0].key}[${i}]`
+          }
+          i++
+        })
+      })
+    }
+  })
+}
+
+function addTaskRunResult(
+  response: ActionsResponse,
+  taskRunsResponse: ActionsResponse,
+) {
+  const result = response.results[0]
+  const taskRunsResult = taskRunsResponse.results[0]
+  result.requests = [...result.requests, ...taskRunsResult.requests]
+
+  const timeSeriesDisplay = result.config?.timeSeriesDisplay
+  const taskRunsTimeSeriesDisplay = taskRunsResult.config?.timeSeriesDisplay
+
+  if (timeSeriesDisplay?.subplots && taskRunsTimeSeriesDisplay?.subplots) {
+    timeSeriesDisplay.subplots = [
+      ...timeSeriesDisplay.subplots,
+      ...taskRunsTimeSeriesDisplay.subplots,
+    ]
+  }
 }
