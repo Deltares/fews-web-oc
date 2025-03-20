@@ -38,13 +38,13 @@ import { getResourcesIconsUrl } from '@/lib/fews-config';
 import { computed } from 'vue';
 
 interface Props {
-  topologyNode?: TopologyNode
+  nodeId?: string
 }
 
 const props = defineProps<Props>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { thresholds: thresholdsArray } = useTopologyThresholds(baseUrl, () => props.topologyNode?.id)
+const { thresholds: thresholdsArray } = useTopologyThresholds(baseUrl, () => props.nodeId)
 
 const warningLevels = computed(() => {
   if (thresholdsArray.value === undefined || thresholdsArray.value.length === 0) return []
