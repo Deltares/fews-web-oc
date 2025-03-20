@@ -1,5 +1,5 @@
 <template>
-  <v-sheet class="threshold-display-container">
+  <div v-if="warningLevels?.length" class="threshold-panel h-100 d-flex flex-column">
     <v-data-iterator :items=warningLevels>
       <template v-slot:default="{ items }">
         <v-list density="compact">
@@ -28,7 +28,7 @@
         </v-list>
       </template>
     </v-data-iterator>
-  </v-sheet>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -65,9 +65,7 @@ const warningLevels = computed(() => {
 </script>
 
 <style scoped>
-.threshold-display-container {
-  position: absolute;
-  z-index: 1000;
-  top: 95px;
+.threshold-panel {
+  width: 300px;
 }
 </style>
