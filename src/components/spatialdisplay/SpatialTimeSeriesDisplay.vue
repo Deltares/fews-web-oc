@@ -53,12 +53,14 @@ const { displayConfig } = useDisplayConfigFilter(
   filter,
   () => systemTimeStore.startTime,
   () => systemTimeStore.endTime,
+  ['mc00:000081688']
 )
 const { displayConfig: elevationChartDisplayconfig } = useDisplayConfigFilter(
   baseUrl,
   () => props.elevationChartFilter ?? {},
   () => systemTimeStore.startTime,
   () => systemTimeStore.endTime,
+  ['mc00:000081688']
 )
 
 const locationsTooltipFilter = computed(() => {
