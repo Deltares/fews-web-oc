@@ -62,7 +62,7 @@
     </v-menu>
   </Teleport>
   <div class="d-flex w-100 h-100">
-    <ThresholdInformationDisplay :topologyNode="topologyNode"></ThresholdInformationDisplay>
+    <ThresholdInformationDisplay :nodeId="topologyNode?.id"></ThresholdInformationDisplay>
     <router-view v-slot="{ Component }">
       <keep-alive include="SpatialDisplay">
         <component
