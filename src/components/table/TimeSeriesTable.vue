@@ -429,7 +429,7 @@ function getNewRow(date: Date) {
 }
 
 const rowAdditionDisabled = computed(() => {
-  return selected === undefined && tableData.value.length > 0
+  return selected.value === undefined && tableData.value.length > 0
 })
 
 function handleRowClick(e: any, item: any) {
