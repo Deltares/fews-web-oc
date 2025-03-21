@@ -385,6 +385,7 @@ function addRowToTimeSeries(
     const newRow = getNewRow(new Date())
     tableData.value.push(newRow)
     newTableData.value.push(newRow)
+    selected.value = newRow
     return
   }
 
