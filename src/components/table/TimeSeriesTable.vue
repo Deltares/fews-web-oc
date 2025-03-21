@@ -48,7 +48,7 @@
                     color="primary"
                     variant="text"
                     density="compact"
-                    :disabled="selected === undefined"
+                    :disabled="rowAdditionDisabled"
                   />
                   <v-btn
                     icon="mdi-table-row-plus-after"
@@ -56,10 +56,10 @@
                     color="primary"
                     variant="text"
                     density="compact"
-                    :disabled="selected === undefined"
+                    :disabled="rowAdditionDisabled"
                   />
                   <v-tooltip
-                    v-if="selected === undefined"
+                    v-if="rowAdditionDisabled"
                     activator="parent"
                     text="First select a row"
                     location="bottom"
@@ -381,7 +381,15 @@ function addRowToTimeSeries(
   row: TableData | undefined,
   position: 'before' | 'after',
 ) {
-  if (!row) return
+  if (row === undefined && tableData.value.length === 0) {
+    const newRow = getNewRow(new Date())
+    tableData.value.push(newRow)
+    newTableData.value.push(newRow)
+    selected.value = newRow
+    return
+  }
+
+  if (row === undefined) return
 
   const index = tableData.value.findIndex((item) => item.date === row.date)
   const siblingIndex = position === 'before' ? index - 1 : index + 1
@@ -390,21 +398,7 @@ function addRowToTimeSeries(
     ? getMidpointOfDates(row.date, tableData.value[siblingIndex].date)
     : getDateWithMinutesOffset(row.date, position === 'before' ? -1 : 1)
 
-  const newRow: TableData = {
-    date: newDate,
-    isNewRow: {},
-  }
-  editedSeriesIds.value.forEach((id) => {
-    if (nonEquidistantSeries.value.includes(id)) {
-      newRow[id] = {
-        x: newDate,
-        y: null,
-        flagOrigin: 'CORRECTED',
-        flagQuality: 'RELIABLE',
-        flag: '9',
-      }
-    }
-  })
+  const newRow = getNewRow(newDate)
 
   // Adding a new row with isEditing on will position it incorrectly
   isEditing.value = false
@@ -413,6 +407,30 @@ function addRowToTimeSeries(
 
   newTableData.value.push(newRow)
 }
+
+function getNewRow(date: Date) {
+  const newRow: TableData = {
+    date,
+    isNewRow: {},
+  }
+  editedSeriesIds.value.forEach((id) => {
+    if (nonEquidistantSeries.value.includes(id)) {
+      newRow[id] = {
+        x: date,
+        y: null,
+        flagOrigin: 'CORRECTED',
+        flagQuality: 'RELIABLE',
+        flag: '9',
+      }
+    }
+  })
+
+  return newRow
+}
+
+const rowAdditionDisabled = computed(() => {
+  return selected.value === undefined && tableData.value.length > 0
+})
 
 function handleRowClick(e: any, item: any) {
   const formElements = ['INPUT', 'SELECT', 'OPTION']
