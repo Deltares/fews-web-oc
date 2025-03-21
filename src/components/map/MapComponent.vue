@@ -25,7 +25,6 @@ import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import {
   MglAttributionControl,
-  MglDefaults,
   MglMap,
   MglScaleControl,
 } from '@indoorequal/vue-maplibre-gl'
@@ -48,9 +47,6 @@ interface Props {
 const props = defineProps<Props>()
 
 const mapRef = useTemplateRef('map')
-
-MglDefaults.style =
-  'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
 const baseMapsStore = useBaseMapsStore()
 
