@@ -344,10 +344,10 @@ function stopEdit() {
 }
 
 function save(seriesId: string) {
-  const newModifiedData = newTableData.value.filter(
-    (item) =>
-      !(item.isNewRow && !(item[seriesId] as Partial<TableSeriesData>).y),
-  )
+  const newModifiedData = newTableData.value.filter((item) => {
+    const data = item[seriesId] as Partial<TableSeriesData>
+    return !(item.isNewRow && (data.y === null || data.y === undefined))
+  })
   const newTimeSeriesData = tableDataToTimeSeries(newModifiedData, [seriesId])
   emit('change', newTimeSeriesData)
   stopEditTimeSeries(seriesId)
