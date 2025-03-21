@@ -57,7 +57,13 @@ import { onBeforeMount } from 'vue'
 import { addLocationIconsToMap } from '@/lib/location-icons'
 import { useDark } from '@vueuse/core'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { getLayerId, getSourceId } from '@/lib/map'
+import {
+  locationsCircleLayerId,
+  locationsFillLayerId,
+  locationsSymbolLayerId,
+  locationsSourceId,
+  locationsTextLayerId,
+} from '@/lib/map'
 import { useMap } from '@/services/useMap'
 
 const settings = useUserSettingsStore()
@@ -194,12 +200,6 @@ const paintFillSpecification = computed(() => {
     ? getDarkPaintFillSpecification(selectedIds, hoverId)
     : getLightPaintFillSpecification(selectedIds, hoverId)
 })
-
-const locationsCircleLayerId = getLayerId('location-circle')
-const locationsSymbolLayerId = getLayerId('location-symbol')
-const locationsTextLayerId = getLayerId('location-text')
-const locationsFillLayerId = getLayerId('location-fill')
-const locationsSourceId = getSourceId('location')
 
 watch(geojson, () => {
   addLocationIcons()
