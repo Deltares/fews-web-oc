@@ -9,7 +9,7 @@
       :items="tableData"
       :expanded="editedSeriesIds"
       :items-per-page-options="itemsPerPageOptions"
-      :sortBy="sortBy"
+      v-model:sortBy="sortBy"
       items-per-page="200"
       item-value="date"
       density="compact"
@@ -173,7 +173,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import TableTooltip from './TableTooltip.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -244,16 +244,26 @@ const nonEquidistantSeries = computed(() => {
     .map(([id]) => id)
 })
 
-const sortBy = computed(() => {
-  const order: 'asc' | 'desc' =
-    props.settings.sortDateTimeColumn === 'ascending' ? 'asc' : 'desc'
-  return [
-    {
-      key: 'date',
-      order,
-    },
-  ]
-})
+const dateOrder = computed(() =>
+  props.settings.sortDateTimeColumn === 'ascending' ? 'asc' : 'desc',
+)
+type SortItem = { key: string; order: 'asc' | 'desc' }
+const sortBy = ref<SortItem[]>([
+  {
+    key: 'date',
+    order: dateOrder.value,
+  },
+])
+watch(
+  dateOrder,
+  (order) => {
+    const dateSortItem = sortBy.value.find((item) => item.key === 'date')
+    if (!dateSortItem) return
+
+    dateSortItem.order = order
+  },
+  { immediate: true },
+)
 
 onBeforeMount(() => {
   if (props.config !== undefined) {
@@ -383,12 +393,18 @@ function addRowToTimeSeries(
 ) {
   if (!row) return
 
+  const dateSortItem = sortBy.value.find((item) => item.key === 'date')
+  const addBefore = dateSortItem
+    ? (position === 'before' && dateSortItem.order === 'asc') ||
+      (position === 'after' && dateSortItem.order === 'desc')
+    : position === 'before'
+
   const index = tableData.value.findIndex((item) => item.date === row.date)
-  const siblingIndex = position === 'before' ? index - 1 : index + 1
+  const siblingIndex = addBefore ? index - 1 : index + 1
 
   const newDate = indexIsInRange(tableData.value, siblingIndex)
     ? getMidpointOfDates(row.date, tableData.value[siblingIndex].date)
-    : getDateWithMinutesOffset(row.date, position === 'before' ? -1 : 1)
+    : getDateWithMinutesOffset(row.date, addBefore ? -1 : 1)
 
   const newRow: TableData = {
     date: newDate,
@@ -406,11 +422,7 @@ function addRowToTimeSeries(
     }
   })
 
-  // Adding a new row with isEditing on will position it incorrectly
-  isEditing.value = false
-  tableData.value.splice(index + (position === 'before' ? 0 : 1), 0, newRow)
-  nextTick(() => (isEditing.value = true))
-
+  tableData.value.splice(index + (addBefore ? 0 : 1), 0, newRow)
   newTableData.value.push(newRow)
 }
 
