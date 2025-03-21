@@ -1,6 +1,10 @@
 import type { WebOCDashboardItem } from '@deltares/fews-pi-requests'
 
-export type ComponentType = WebOCDashboardItem['component'] | 'dashboard'
+// FIXME: his is for POC
+export type ComponentType =
+  | WebOCDashboardItem['component']
+  | 'dashboard'
+  | 'his'
 
 export const ComponentType = {
   map: 'map',
@@ -13,6 +17,7 @@ export const ComponentType = {
   dashboard: 'dashboard',
   'whatif-display': 'whatif-display',
   'log-display': 'log-display',
+  his: 'his',
 } satisfies Record<ComponentType, ComponentType>
 
 export const componentTypeToIconMap = {
@@ -26,6 +31,7 @@ export const componentTypeToIconMap = {
   dashboard: 'mdi-view-dashboard',
   'whatif-display': 'mdi-cog',
   'log-display': 'mdi-file-document',
+  his: 'mdi-database',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToTitleMap = {
@@ -39,6 +45,7 @@ export const componentTypeToTitleMap = {
   dashboard: 'Dashboard',
   'whatif-display': 'What If',
   'log-display': 'Log',
+  his: 'Historical Information System',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToRouteNameMap = {
@@ -52,6 +59,7 @@ export const componentTypeToRouteNameMap = {
   dashboard: 'TopologyDashboard',
   'whatif-display': 'TopologyWhatIfDisplay',
   'log-display': 'TopologyLogDisplay',
+  his: 'TopologyHisDisplay',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToIdMap = {
@@ -65,4 +73,5 @@ export const componentTypeToIdMap = {
   dashboard: 'dashboard',
   'whatif-display': 'whatif',
   'log-display': 'log',
+  his: 'his',
 } satisfies Record<ComponentType, string>

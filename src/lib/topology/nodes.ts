@@ -133,7 +133,8 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
     nodeHasDashboard(node) ||
     nodeHasWhatIfs(node) ||
     nodeHasWebDisplay(node) ||
-    nodeHasLogDisplay(node)
+    nodeHasLogDisplay(node) ||
+    nodeHasHIS(node)
   )
 }
 
@@ -182,4 +183,9 @@ export function nodeHasWhatIfs(node: TopologyNode) {
 }
 export function nodeHasLogDisplay(node: TopologyNode) {
   return node.logDisplay !== undefined
+}
+
+export function nodeHasHIS(_node: TopologyNode) {
+  // FIXME: For POC
+  return true
 }
