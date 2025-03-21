@@ -1,31 +1,44 @@
 <template>
   <div v-if="warningLevels?.length" class="threshold-panel h-100 d-flex flex-column">
     <v-data-iterator :items=warningLevels>
-      <template v-slot:default="{ items }">
-        <v-list density="compact">
-          <v-list-group v-for="item in items"
-            :key="item.raw.id" :value="item.raw.id">
-            <template v-slot:activator="{ props }">
-            <v-list-item
-              v-bind="props"
-            >
-              <template v-slot:prepend>
-                <v-avatar start :image="item.raw.icon" rounded size="x-small"></v-avatar>
-              </template>
-              {{ item.raw.name }}
-              <template v-slot:append>
-                <v-avatar end :text="`${item.raw.count}`"></v-avatar>
-              </template>
-            </v-list-item>
-          </template>
+      <template v-slot:default="{ items, isExpanded, toggleExpand}">
+        <v-card v-for="item in items"
+        :key="item.raw.id"
+          border
+          flat
+          density="compact"
+          @click="() => toggleExpand(item)"
+          :ripple="false"
+        >
+          <v-card-text class="py-2 h-100">
+            <div class="d-flex w-100">
+              <div class="w-100">
 
-            <v-list-item v-for="crossing in item.raw.thresholdCrossing"
-              :key="crossing.locationId"
+                <div class="d-flex align-center ga-1 w-100">
+                  <v-avatar start :image="item.raw.icon" rounded class="me-1 flex-0-0" size="20"></v-avatar>
+                  <div class="flex-1-1 overflow-hidden">
+                    <div :class="{ 'text-wrap': isExpanded(item) }">
+                      {{ item.raw.name }}
+                    </div>
+                  </div>
+                  <v-avatar end :text="`${item.raw.count}`"></v-avatar>
+                </div>
+              </div>
+            </div>
+            <div v-if="isExpanded(item)" class="d-flex mt-4">
+              <v-card
+                v-for="crossing in item.raw.thresholdCrossing"
+                :key="crossing.locationId"
+                flat
+                density="compact" :ripple="false"
               >
-              {{ crossing.locationId }}
-            </v-list-item>
-          </v-list-group>
-        </v-list>
+                <div :class="{ 'text-wrap': isExpanded(item) }">
+                  {{ crossing.locationId }}
+                </div>
+              </v-card>
+            </div>
+          </v-card-text>
+        </v-card>
       </template>
     </v-data-iterator>
   </div>
@@ -67,5 +80,13 @@ const warningLevels = computed(() => {
 <style scoped>
 .threshold-panel {
   width: 300px;
+}
+
+.text-wrap {
+  white-space: normal;
+}
+
+.text-wrap-no {
+  white-space: nowrap;
 }
 </style>
