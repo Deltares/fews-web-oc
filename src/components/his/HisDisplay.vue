@@ -1,11 +1,19 @@
 <template>
   <div class="his-container">
     <div class="his-data-selection">
-      <HisDataSelection />
+      <HisDataSelection
+        v-model:selectedLocationIds="selectedLocationIds"
+        :locations="locations"
+      />
     </div>
     <div class="his-map">
       <HisMap :boundingBox="topologyNode?.boundingBox">
-        <HisLocationsLayer :selectedLocationId />
+        <LocationsLayer
+          v-if="geojson.features.length"
+          :locations-geo-json="geojson"
+          :selected-location-ids="selectedLocationIds"
+          @click="onLocationClick"
+        />
       </HisMap>
     </div>
     <div class="his-charts">
@@ -17,18 +25,37 @@
 <script setup lang="ts">
 import HisDataSelection from '@/components/his/HisDataSelection.vue'
 import HisMap from '@/components/his/HisMap.vue'
-import HisLocationsLayer from '@/components/his/HisLocationsLayer.vue'
 import HisCharts from '@/components/his/HisCharts.vue'
+import LocationsLayer from '../wms/LocationsLayer.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useFilterLocations } from '@/services/useFilterLocations'
+import { configManager } from '@/services/application-config'
+import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 
 interface Props {
   topologyNode?: TopologyNode
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
-const selectedLocationId = ref<string | null>(null)
+const selectedLocationIds = ref<string[]>([])
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+
+const filterIds = computed(() => props.topologyNode?.filterIds ?? [])
+const { locations, geojson } = useFilterLocations(baseUrl, filterIds)
+
+function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
+  if (!event.features) return
+  const locationId = event.features[0].properties?.locationId
+  if (!locationId) return
+
+  // Toggle location id in array
+  selectedLocationIds.value = selectedLocationIds.value.includes(locationId)
+    ? selectedLocationIds.value.filter((id) => id !== locationId)
+    : [...selectedLocationIds.value, locationId]
+}
 </script>
 
 <style scoped>
