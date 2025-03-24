@@ -1,5 +1,5 @@
 <template>
-  <MapComponent :bounds :baseMapId>
+  <MapComponent :bounds :baseMapId :showScaleControl="false">
     <slot />
   </MapComponent>
 </template>
