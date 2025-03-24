@@ -75,7 +75,11 @@
           }}</v-icon>
         </template>
       </v-list-item>
-      <v-list-item v-if="props.active === item.id && (item.thresholdCount ?? 0) > 0">
+      <v-list-item
+        v-if="props.active === item.id && (item.thresholdCount ?? 0) > 0"
+        density="compact"
+        class="threshold-summary--list-item"
+      >
         <ThresholdSummary :nodeId="item.id"></ThresholdSummary>
       </v-list-item>
     </template>
@@ -146,5 +150,12 @@ const props = withDefaults(defineProps<Props>(), {
   .v-list-group__items
   .v-list-group {
   --prepend-width: 0px;
+}
+
+.v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
+  .threshold-summary--list-item {
+  padding-left: 0px;
+  padding-right: 0px;
+  padding-inline-start: 2px !important;
 }
 </style>

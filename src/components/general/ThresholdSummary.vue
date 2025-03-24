@@ -7,7 +7,7 @@
       label
       size="small"
       density="compact"
-      class="ml-1 flex-0-0"
+      class="ml-1 flex-0-0 threshold-summary--chip"
     >
       <template v-slot:prepend>
         <v-avatar start :image="warningLevel.icon" rounded size="small"></v-avatar>
@@ -46,3 +46,10 @@ const warningLevels = computed(() => {
 })
 
 </script>
+
+<style scoped>
+.v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
+  .threshold-summary--chip:not(:first-child) {
+    display: none
+  }
+</style>
