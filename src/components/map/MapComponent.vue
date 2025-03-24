@@ -17,7 +17,7 @@
   >
     <!-- Fade duration is set to 100ms instead of 0ms to avoid flickering -->
     <mgl-attribution-control position="top-right" :compact="true" />
-    <mgl-scale-control position="bottom-right" />
+    <mgl-scale-control v-if="showScaleControl" position="bottom-right" />
     <slot></slot>
   </mgl-map>
 </template>
@@ -44,9 +44,12 @@ import { useBaseMapsStore } from '@/stores/baseMaps'
 interface Props {
   bounds?: LngLatBounds
   baseMapId: string
+  showScaleControl?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  showScaleControl: true,
+})
 
 const mapRef = useTemplateRef('map')
 
