@@ -1,6 +1,6 @@
 <template>
   <div v-if="warningLevels?.length" class="threshold-panel h-100 d-flex flex-column">
-    <v-data-iterator :items=warningLevels>
+    <v-data-iterator :items="warningLevels" items-per-page="-1">
       <template v-slot:default="{ items, isExpanded, toggleExpand}">
         <v-card v-for="item in items"
           :key="item.raw.id"
