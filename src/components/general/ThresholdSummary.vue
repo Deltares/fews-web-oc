@@ -35,7 +35,7 @@ const { thresholds: thresholdsArray } = useTopologyThresholds(baseUrl, () => pro
 const warningLevels = computed(() => {
   if (thresholdsArray.value === undefined || thresholdsArray.value.length === 0) return []
   const thresholds = thresholdsArray.value[0]
-  return thresholds.aggregatedLevelThresholdWarningLevels?.map((warningLevel) => {
+  return thresholds.aggregatedLevelThresholdWarningLevels?.filter((warningLevel) => warningLevel.count > 0).map((warningLevel) => {
     return {
       name: warningLevel.name,
       id: warningLevel.id,
