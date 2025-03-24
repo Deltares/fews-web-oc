@@ -30,6 +30,7 @@
     </v-toolbar-items>
   </Teleport>
   <Teleport to="#app-bar-content-end">
+    <ThresholdPanel :nodeId="topologyNode?.id"></ThresholdPanel>
     <v-menu bottom left>
       <template v-slot:activator="{ props }">
         <v-btn icon v-bind="props">
@@ -61,9 +62,6 @@
       </v-list>
     </v-menu>
     <TaskRunsControl v-if="showTaskMenu" :topologyNode="topologyNode" />
-  </Teleport>
-  <Teleport to="#main-side-panel-left" defer>
-    <ThresholdPanel :nodeId="topologyNode?.id"></ThresholdPanel>
   </Teleport>
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
