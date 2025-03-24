@@ -11,7 +11,7 @@
       <div class="h-100" id="app-bar-content-center"></div>
       <template #append>
         <div id="app-bar-content-end" />
-        <TaskRunsPanel />
+        <TaskRunsPanel v-if="showTaskMenu" />
         <time-control-menu />
         <user-settings-menu />
         <login-component v-if="configManager.authenticationIsEnabled" />
@@ -286,6 +286,8 @@ const shouldRenderInfoMenu = computed(() => {
   if (currentRoute === undefined) return false
   return !currentRoute.meta?.sidebar
 })
+
+const showTaskMenu = computed(() => configStore.general.taskMenu?.enabled)
 
 function onCloseAlert(alert: Alert) {
   alertsStore.removeAlert(alert.id)
