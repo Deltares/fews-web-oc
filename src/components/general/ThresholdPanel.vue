@@ -26,16 +26,19 @@
                 </div>
               </div>
             </div>
-            <div v-if="isExpanded(item)" class="d-flex mt-4">
+            <div v-if="isExpanded(item)" class="d-flex mt-4 flex-column">
               <v-card
                 v-for="crossing in item.raw.thresholdCrossing"
                 :key="crossing.locationId"
+                border
                 flat
                 density="compact" :ripple="false"
               >
-                <div :class="{ 'text-wrap': isExpanded(item) }">
-                  {{ crossing.locationId }}
-                </div>
+                <v-card-text class="py-2 h-100">
+                  <div :class="{ 'text-wrap': isExpanded(item) }">
+                    {{ crossing.locationId }}
+                  </div>
+                </v-card-text>
               </v-card>
             </div>
           </v-card-text>
