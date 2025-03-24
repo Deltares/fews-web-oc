@@ -12,9 +12,9 @@
       <template #append>
         <div id="app-bar-content-end" />
         <TaskRunsPanel v-if="showTaskMenu" />
-        <time-control-menu />
-        <user-settings-menu />
-        <login-component v-if="configManager.authenticationIsEnabled" />
+        <TimeControlMenu />
+        <UserSettingsMenu />
+        <LoginComponent v-if="configManager.authenticationIsEnabled" />
       </template>
     </v-app-bar>
 
