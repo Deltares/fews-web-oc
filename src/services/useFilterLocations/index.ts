@@ -9,7 +9,7 @@ import {
 
 export interface UseFilterLocationsReturn {
   error: Ref<any>
-  locations: ShallowRef<Location[] | undefined>
+  locations: ShallowRef<Location[]>
   geojson: ShallowRef<FeatureCollection<Geometry, Location>>
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
