@@ -120,7 +120,7 @@ const period = ref<RelativePeriod | null>({
   endOffsetSeconds: 0,
 })
 
-const tasksRefreshIntervalSeconds = 30
+const tasksRefreshIntervalSeconds = 15
 const taskRuns = useTaskRuns(
   tasksRefreshIntervalSeconds,
   period,
