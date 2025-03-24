@@ -1,7 +1,14 @@
 <template>
-  <div class="d-flex ma-0 pa-0 flex-0-0 overflow-visible">
-    <v-chip v-for="warningLevel in warningLevels"
-    :key="warningLevel.id" variant="tonal" label size="small" density="compact" class="ml-1">
+  <div class="d-flex ma-0 pa-0 flex-0-0 flex-wrap">
+    <v-chip
+      v-for="warningLevel in warningLevels"
+      :key="warningLevel.id"
+      variant="tonal"
+      label
+      size="small"
+      density="compact"
+      class="ml-1 flex-0-0"
+    >
       <template v-slot:prepend>
         <v-avatar start :image="warningLevel.icon" rounded size="small"></v-avatar>
         {{ warningLevel.count }}
