@@ -180,6 +180,8 @@ const outputTimeDifferenceString = computed(() =>
 )
 
 const expectedCompletionTimeString = computed(() => {
+  if (!isRunning.value) return
+
   const expectedRunTime = expectedRunTimeSeconds.value
   if (expectedRunTime === null || props.task.dispatchTimestamp === null) {
     return
