@@ -26,6 +26,13 @@ import { createTimer } from '@/lib/timer'
 import { configManager } from '../application-config'
 import { convertRelativeToAbsolutePeriod } from '@/lib/period/convert'
 
+const shouldRefreshTaskRuns = ref(false)
+
+// Allow other components to trigger a refresh of the task runs.
+export function refreshTaskRuns() {
+  shouldRefreshTaskRuns.value = !shouldRefreshTaskRuns.value
+}
+
 export function useTaskRuns(
   refreshIntervalSeconds: number,
   dispatchPeriod: MaybeRefOrGetter<RelativePeriod | null>,
@@ -53,6 +60,7 @@ export function useTaskRuns(
 
   // Fetch taskruns if a new dispatch period is selected.
   watch(() => toValue(dispatchPeriod), fetch)
+  watch(() => shouldRefreshTaskRuns.value, fetch)
 
   async function fetch(): Promise<void> {
     const _dispatchPeriod = toValue(dispatchPeriod)
