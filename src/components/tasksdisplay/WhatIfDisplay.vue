@@ -159,6 +159,7 @@ import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import { postRunTask, postWhatIfScenario } from '@/lib/whatif/fetch'
 import type { WorkflowItem } from '@/lib/workflows'
 import { useForecastTimes } from '@/services/useForecastTimes'
+import { refreshTaskRuns } from '@/services/useTasksRuns'
 
 interface Props {
   workflows: WorkflowItem[]
@@ -307,6 +308,10 @@ async function submit(): Promise<void> {
 
   const result = await postRunTask(filter)
   isPosting.value = false
+
+  setTimeout(() => {
+    refreshTaskRuns()
+  }, 1500)
 
   isSubmitted.value = true
   if (result.status === 'success') {
