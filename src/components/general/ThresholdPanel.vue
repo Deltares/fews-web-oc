@@ -7,6 +7,7 @@
           border
           flat
           density="compact"
+          :disabled="item.raw.thresholdCrossing?.length === 0"
           @click="() => toggleExpand(item)"
           :ripple="false"
         >
@@ -88,5 +89,9 @@ const warningLevels = computed(() => {
 
 .text-wrap-no {
   white-space: nowrap;
+}
+
+.v-card--disabled > :not(.v-card__loader) {
+  opacity: 1 !important;
 }
 </style>
