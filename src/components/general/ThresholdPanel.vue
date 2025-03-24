@@ -3,7 +3,7 @@
     <v-data-iterator :items=warningLevels>
       <template v-slot:default="{ items, isExpanded, toggleExpand}">
         <v-card v-for="item in items"
-        :key="item.raw.id"
+          :key="item.raw.id"
           border
           flat
           density="compact"
