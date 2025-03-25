@@ -7,7 +7,13 @@
   </v-btn>
   <Teleport to="#main-side-panel-left" defer>
     <div v-if="isPanelOpen" class="threshold-panel h-100 d-flex flex-column">
-      <v-data-iterator v-if="warningLevels?.length" :items="warningLevels" items-per-page="-1" :key="nodeId">
+      <v-data-iterator
+        v-if="warningLevels?.length"
+        :items="warningLevels"
+        items-per-page="-1"
+        :key="nodeId"
+        class="threshold-panel-iterator h-100"
+      >
         <template v-slot:default="{ items: warningLevels, isExpanded: isLevelExpanded, toggleExpand: toggleLevelExpand}">
           <template v-for="warningLevel in warningLevels"
           :key="warningLevel.raw.id">
@@ -33,10 +39,17 @@
                 </div>
               </v-card-text>
             </v-card>
-              <v-data-iterator v-if="isLevelExpanded(warningLevel)" :items="warningLevel.raw.thresholdCrossing" items-per-page="-1" item-value="locationId">
+              <v-data-iterator
+                v-if="isLevelExpanded(warningLevel)"
+                :items="warningLevel.raw.thresholdCrossing"
+                items-per-page="-1"
+                item-value="locationId"
+                class="threshold-panel-iterator ms-2 h-50"
+              >
                 <template v-slot:default="{ items: crossings, isExpanded: isCrossingExpanded, toggleExpand: toggleCrossingExpand}">
+                  <v-virtual-scroll :items="crossings" item-height="50px" height="100%">
+                    <template v-slot:default="{ item: crossing }">
                   <v-card
-                    v-for="crossing in crossings"
                     :key="crossing.raw.locationId"
                     flat
                     density="compact"
@@ -62,6 +75,8 @@
                       </div>
                     </v-card-text>
                   </v-card>
+                    </template>
+                  </v-virtual-scroll>
                 </template>
               </v-data-iterator>
           </template>
@@ -126,5 +141,9 @@ function toggleThresholdPanel(): void {
 
 .v-card--disabled > :not(.v-card__loader) {
   opacity: 1 !important;
+}
+
+.threshold-panel-iterator > * {
+  height: 100%;
 }
 </style>
