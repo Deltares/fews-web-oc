@@ -3,7 +3,9 @@
     <div class="his-data-selection">
       <HisDataSelection
         v-model:selectedLocationIds="selectedLocationIds"
+        v-model:selectedParameters="selectedParameters"
         :locations="locations"
+        :parameters="parameters"
       />
     </div>
     <div class="his-map">
@@ -17,7 +19,7 @@
       </HisMap>
     </div>
     <div class="his-charts">
-      <HisCharts :topologyNodeId="topologyNode?.id" />
+      <HisCharts :display-config="displayConfig" />
     </div>
   </div>
 </template>
@@ -27,11 +29,16 @@ import HisDataSelection from '@/components/his/HisDataSelection.vue'
 import HisMap from '@/components/his/HisMap.vue'
 import HisCharts from '@/components/his/HisCharts.vue'
 import LocationsLayer from '../wms/LocationsLayer.vue'
-import type { TopologyNode } from '@deltares/fews-pi-requests'
+import type {
+  filterActionsFilter,
+  TopologyNode,
+} from '@deltares/fews-pi-requests'
 import { computed, ref } from 'vue'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import { configManager } from '@/services/application-config'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
+import { useTimeSeriesHeaders } from '@/services/useTimeSeries'
+import { useDisplayConfigFilter, UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -39,12 +46,60 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const selectedLocationIds = ref<string[]>([])
-
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const filterIds = computed(() => props.topologyNode?.filterIds ?? [])
-const { locations, geojson } = useFilterLocations(baseUrl, filterIds)
+const filterId = computed(() => props.topologyNode?.filterIds?.[0])
+const { locations, geojson } = useFilterLocations(baseUrl, () =>
+  filterId.value ? [filterId.value] : [],
+)
+const { timeSeriesHeaders } = useTimeSeriesHeaders(baseUrl, filterId)
+
+const selectedLocationIds = ref<string[]>([])
+const selectedParameters = ref<string[]>([])
+
+const parameters = computed(() => {
+  const parameterQualifiersHeaders = timeSeriesHeaders.value.map(
+    ({ parameterId, qualifierId }) => ({ parameterId, qualifierId }),
+  )
+  const uniqueHeaders = parameterQualifiersHeaders.filter(
+    (value, index, self) =>
+      index ===
+      self.findIndex(
+        (t) =>
+          t.parameterId === value.parameterId &&
+          JSON.stringify(t.qualifierId) === JSON.stringify(value.qualifierId),
+      ),
+  )
+  return uniqueHeaders
+})
+
+const filter = computed(() => {
+  if (!filterId.value) return
+  const parameterIds = selectedParameters.value.map((id) => id.split('$')[0])
+  const qualifierIds = selectedParameters.value.flatMap((id) =>
+    id.split('$')[1].split(','),
+  )
+  const _fitler: filterActionsFilter & UseDisplayConfigOptions = {
+    filterId: filterId.value,
+    locationIds: selectedLocationIds.value.join(','),
+    parameterIds: parameterIds.join(','),
+    convertDatum: true,
+    useDisplayUnits: true,
+  }
+  return _fitler
+})
+
+// Backwards 2 weeks forwards 1 week
+const { displayConfig } = useDisplayConfigFilter(
+  baseUrl,
+  filter,
+  () => {
+    return new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+  },
+  () => {
+    return new Date(Date.now() + 1 * 24 * 60 * 60 * 1000)
+  },
+)
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   if (!event.features) return
