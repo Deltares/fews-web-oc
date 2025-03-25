@@ -7,7 +7,7 @@
   </v-btn>
   <Teleport to="#main-side-panel-left" defer>
     <div v-if="isPanelOpen" class="threshold-panel h-100 d-flex flex-column">
-      <v-data-iterator v-if="warningLevels?.length" :items="warningLevels" items-per-page="-1">
+      <v-data-iterator v-if="warningLevels?.length" :items="warningLevels" items-per-page="-1" :key="nodeId">
         <template v-slot:default="{ items: warningLevels, isExpanded: isLevelExpanded, toggleExpand: toggleLevelExpand}">
           <template v-for="warningLevel in warningLevels"
           :key="warningLevel.raw.id">
