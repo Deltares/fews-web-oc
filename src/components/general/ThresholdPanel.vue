@@ -21,8 +21,6 @@
             >
               <v-card-text class="py-2 h-100">
                 <div class="d-flex w-100">
-                  <div class="w-100">
-
                     <div class="d-flex align-center ga-1 w-100">
                       <v-avatar start :image="warningLevel.raw.icon" rounded class="me-1 flex-0-0" size="20"></v-avatar>
                       <div class="flex-1-1 overflow-hidden">
@@ -31,13 +29,11 @@
                         </div>
                       </div>
                       <v-avatar end :text="`${warningLevel.raw.count}`"></v-avatar>
-                    </div>
                   </div>
                 </div>
               </v-card-text>
             </v-card>
-            <div v-if="isLevelExpanded(warningLevel)" class="d-flex flex-column">
-              <v-data-iterator :items="warningLevel.raw.thresholdCrossing" items-per-page="-1" item-value="locationId">
+              <v-data-iterator v-if="isLevelExpanded(warningLevel)" :items="warningLevel.raw.thresholdCrossing" items-per-page="-1" item-value="locationId">
                 <template v-slot:default="{ items: crossings, isExpanded: isCrossingExpanded, toggleExpand: toggleCrossingExpand}">
                   <v-card
                     v-for="crossing in crossings"
@@ -68,7 +64,6 @@
                   </v-card>
                 </template>
               </v-data-iterator>
-            </div>
           </template>
         </template>
       </v-data-iterator>
