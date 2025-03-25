@@ -1,13 +1,21 @@
 <template>
-  <TimeSeriesDisplay :nodeId="topologyNodeId" />
+  <TimeSeriesWindowComponent
+    :displayConfig="displayConfig"
+    :settings="settings.charts"
+  />
 </template>
 
 <script setup lang="ts">
-import TimeSeriesDisplay from '@/components/timeseries/TimeSeriesDisplay.vue'
+import TimeSeriesWindowComponent from '@/components/timeseries/TimeSeriesWindowComponent.vue'
+import { DisplayConfig } from '@/lib/display/DisplayConfig';
+import { getDefaultSettings, type ComponentSettings } from '@/lib/topology/componentSettings';
 
 interface Props {
-  topologyNodeId?: string
+  displayConfig: DisplayConfig | null
+  settings?: ComponentSettings
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  settings: () => getDefaultSettings(),
+})
 </script>
