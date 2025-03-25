@@ -1,44 +1,62 @@
 <template>
-  <v-autocomplete
-    v-model="selectedLocationIds"
+  <HisAutocomplete
+    :items="parameters"
+    label="Parameters"
+    icon="mdi-tag"
+    :getItemValue="getParameterId"
+    :getItemTitle="getParameterTitle"
+    v-model:selectedIds="selectedParameters"
+  />
+  <HisAutocomplete
     :items="locations"
-    item-value="locationId"
-    :item-title="getLocationName"
-    label="Select location"
-    clearable
-    density="compact"
-    variant="outlined"
-    multiple
-    hide-details
-    prepend-icon="mdi-map-marker-multiple"
-    class="pa-4"
-  >
-    <template #selection="{ item, index }">
-      <span v-if="index < 3">{{ item.title }}</span>
-      <span v-else-if="index === 3">
-        ... ({{ selectedLocationIds.length }} selected)
-      </span>
-    </template>
-    <template #append-inner>
-      <v-chip>{{ locations.length }}</v-chip>
-    </template>
-  </v-autocomplete>
+    label="Locations"
+    icon="mdi-map-marker-multiple"
+    :getItemValue="getLocationId"
+    :getItemTitle="getLocationTitle"
+    v-model:selectedIds="selectedLocationIds"
+  />
 </template>
 
 <script setup lang="ts">
 import type { Location } from '@deltares/fews-pi-requests'
+import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
 
 interface Props {
+  parameters: { parameterId: string; qualifierId: string[] | undefined }[]
   locations: Location[]
 }
 
 defineProps<Props>()
 
+const selectedParameters = defineModel<string[]>('selectedParameters', {
+  required: true,
+})
 const selectedLocationIds = defineModel<string[]>('selectedLocationIds', {
   required: true,
 })
 
-function getLocationName(location: Location) {
+function getParameterId(parameter: {
+  parameterId: string
+  qualifierId: string[] | undefined
+}) {
+  return `${parameter.parameterId}$${parameter.qualifierId?.join(',') ?? ''}`
+}
+
+function getLocationId(location: Location) {
+  return location.locationId
+}
+
+function getParameterTitle(parameter: {
+  parameterId: string
+  qualifierId: string[] | undefined
+}) {
+  const qualifiers = parameter.qualifierId
+    ? ` (${parameter.qualifierId.join('')})`
+    : ''
+  return `${parameter.parameterId}${qualifiers}`
+}
+
+function getLocationTitle(location: Location) {
   return location.locationName ?? location.locationId
 }
 </script>
