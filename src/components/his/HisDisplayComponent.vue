@@ -1,27 +1,34 @@
 <template>
-  <div class="his-container">
+  <div class="his-container pa-2 ga-2">
     <div class="his-data-selection">
-      <HisDataSelection
-        v-model:selectedLocationIds="selectedLocationIds"
-        v-model:selectedParameterIds="selectedParameterIds"
-        v-model:selectedModuleInstanceIds="selectedModuleInstanceIds"
-        :locations="filteredLocations"
-        :parameterIds="filteredParameterIds"
-        :moduleInstanceIds="filteredModuleInstanceIds"
-      />
+      <v-card border flat title="Data selection">
+        <HisDataSelection
+          v-model:selectedLocationIds="selectedLocationIds"
+          v-model:selectedParameterIds="selectedParameterIds"
+          v-model:selectedModuleInstanceIds="selectedModuleInstanceIds"
+          :locations="filteredLocations"
+          :parameterIds="filteredParameterIds"
+          :moduleInstanceIds="filteredModuleInstanceIds"
+        />
+      </v-card>
     </div>
     <div class="his-map">
-      <HisMap :boundingBox>
-        <LocationsLayer
-          v-if="geojson.features.length"
-          :locationsGeoJson="filterLocationGeoJson"
-          :selectedLocationIds="selectedLocationIds"
-          @click="onLocationClick"
-        />
-      </HisMap>
+      <v-card class="h-100 w-100" border flat>
+        <HisMap :boundingBox>
+          <LocationsLayer
+            v-if="geojson.features.length"
+            :locationsGeoJson="filterLocationGeoJson"
+            :selectedLocationIds="selectedLocationIds"
+            @click="onLocationClick"
+          />
+        </HisMap>
+      </v-card>
     </div>
     <div class="his-charts">
-      <HisCharts :display-config="displayConfig" />
+      <v-card border flat>
+        <HisCharts v-if="displayConfig" :display-config="displayConfig" />
+        <v-card-text v-else> Select some data to display </v-card-text>
+      </v-card>
     </div>
   </div>
 </template>
@@ -174,7 +181,7 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   width: 100%;
   height: 100%;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: auto 1fr;
   grid-template-areas:
     'his-data-selection his-charts'
     'his-map his-charts';
