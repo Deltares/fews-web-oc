@@ -59,7 +59,6 @@ import { configManager } from '@/services/application-config'
 import { DisplayConfig } from '@/lib/display/DisplayConfig.ts'
 import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
-import { filterToParams } from '@deltares/fews-wms-requests'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
 import {
   computed,
