@@ -3,16 +3,18 @@
     <div class="his-data-selection">
       <HisDataSelection
         v-model:selectedLocationIds="selectedLocationIds"
-        v-model:selectedParameters="selectedParameters"
-        :locations="locations"
-        :parameters="parameters"
+        v-model:selectedParameterIds="selectedParameterIds"
+        v-model:selectedModuleInstanceIds="selectedModuleInstanceIds"
+        :locations="filteredLocations"
+        :parameterIds="filteredParameterIds"
+        :moduleInstanceIds="filteredModuleInstanceIds"
       />
     </div>
     <div class="his-map">
       <HisMap :boundingBox>
         <LocationsLayer
           v-if="geojson.features.length"
-          :locationsGeoJson="geojson"
+          :locationsGeoJson="filterLocationGeoJson"
           :selectedLocationIds="selectedLocationIds"
           @click="onLocationClick"
         />
@@ -61,34 +63,81 @@ const { timeSeriesHeaders } = useTimeSeriesHeaders(
 )
 
 const selectedLocationIds = ref<string[]>([])
-const selectedParameters = ref<string[]>([])
+const selectedParameterIds = ref<string[]>([])
+const selectedModuleInstanceIds = ref<string[]>([])
 
-const parameters = computed(() => {
-  const parameterQualifiersHeaders = timeSeriesHeaders.value.map(
-    ({ parameterId, qualifierId }) => ({ parameterId, qualifierId }),
-  )
-  const uniqueHeaders = parameterQualifiersHeaders.filter(
-    (value, index, self) =>
-      index ===
-      self.findIndex(
-        (t) =>
-          t.parameterId === value.parameterId &&
-          JSON.stringify(t.qualifierId) === JSON.stringify(value.qualifierId),
+const filteredData = computed(() => {
+  const locationIds = selectedLocationIds.value
+  const parameterIds = selectedParameterIds.value
+  const moduleInstanceIds = selectedModuleInstanceIds.value
+
+  const hasLocationIds = locationIds.length > 0
+  const hasParameterIds = parameterIds.length > 0
+  const hasModuleInstanceIds = moduleInstanceIds.length > 0
+
+  const parameters = new Set<string>()
+  const moduleInstanceIdsSet = new Set<string>()
+  const locationIdsSet = new Set<string>()
+
+  timeSeriesHeaders.value.forEach((header) => {
+    const matchesLocation =
+      !hasLocationIds || locationIds.includes(header.locationId)
+    const matchesParameter =
+      !hasParameterIds || parameterIds.includes(header.parameterId)
+    const matchesModuleInstance =
+      !hasModuleInstanceIds ||
+      moduleInstanceIds.includes(header.moduleInstanceId ?? 'invalid')
+
+    if (matchesLocation && matchesModuleInstance && header.parameterId) {
+      parameters.add(header.parameterId)
+    }
+
+    if (matchesLocation && matchesParameter && header.moduleInstanceId) {
+      moduleInstanceIdsSet.add(header.moduleInstanceId)
+    }
+
+    if (matchesModuleInstance && matchesParameter && header.locationId) {
+      locationIdsSet.add(header.locationId)
+    }
+  })
+
+  return {
+    parameterIds: Array.from(parameters),
+    moduleInstanceIds: Array.from(moduleInstanceIdsSet),
+    locationIds: Array.from(locationIdsSet),
+  }
+})
+
+const filteredParameterIds = computed(() => filteredData.value.parameterIds)
+const filteredModuleInstanceIds = computed(
+  () => filteredData.value.moduleInstanceIds,
+)
+const filteredLocations = computed(() =>
+  locations.value.filter((location) =>
+    filteredData.value.locationIds.includes(location.locationId),
+  ),
+)
+
+const filterLocationGeoJson = computed(() => {
+  return {
+    ...geojson.value,
+    features: geojson.value.features.filter((feature) =>
+      filteredLocations.value.some(
+        (location) => location.locationId === feature.properties?.locationId,
       ),
-  )
-  return uniqueHeaders
+    ),
+  }
 })
 
 const filter = computed(() => {
   if (!props.filterId) return
-  const parameterIds = selectedParameters.value.map((id) => id.split('$')[0])
-  // const qualifierIds = selectedParameters.value.flatMap((id) =>
-  //   id.split('$')[1].split(','),
-  // )
+  if (!selectedParameterIds.value.length || !selectedLocationIds.value.length) {
+    return
+  }
   const _fitler: filterActionsFilter & UseDisplayConfigOptions = {
     filterId: props.filterId,
     locationIds: selectedLocationIds.value.join(','),
-    parameterIds: parameterIds.join(','),
+    parameterIds: selectedParameterIds.value.join(','),
     convertDatum: true,
     useDisplayUnits: true,
   }
