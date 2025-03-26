@@ -41,7 +41,7 @@
       <v-card v-show="tab === 'data-selection'" class="h-100 w-100" border flat>
         <HisMap :boundingBox>
           <LocationsLayer
-            v-if="geojson.features.length"
+            v-if="filterLocationGeoJson.features.length"
             :locationsGeoJson="filterLocationGeoJson"
             :selectedLocationIds="selectedLocationIds"
             @click="onLocationClick"
@@ -110,7 +110,7 @@ const filteredData = computed(() => {
   const hasParameterIds = parameterIds.length > 0
   const hasModuleInstanceIds = moduleInstanceIds.length > 0
 
-  const parameters = new Set<string>()
+  const parameterIdsSet = new Set<string>()
   const moduleInstanceIdsSet = new Set<string>()
   const locationIdsSet = new Set<string>()
 
@@ -124,7 +124,7 @@ const filteredData = computed(() => {
       moduleInstanceIds.includes(header.moduleInstanceId ?? 'invalid')
 
     if (matchesLocation && matchesModuleInstance && header.parameterId) {
-      parameters.add(header.parameterId)
+      parameterIdsSet.add(header.parameterId)
     }
 
     if (matchesLocation && matchesParameter && header.moduleInstanceId) {
@@ -137,7 +137,7 @@ const filteredData = computed(() => {
   })
 
   return {
-    parameterIds: Array.from(parameters),
+    parameterIds: Array.from(parameterIdsSet),
     moduleInstanceIds: Array.from(moduleInstanceIdsSet),
     locationIds: Array.from(locationIdsSet),
   }
@@ -157,9 +157,7 @@ const filterLocationGeoJson = computed(() => {
   return {
     ...geojson.value,
     features: geojson.value.features.filter((feature) =>
-      filteredLocations.value.some(
-        (location) => location.locationId === feature.properties?.locationId,
-      ),
+      filteredData.value.locationIds.includes(feature.properties?.locationId),
     ),
   }
 })
