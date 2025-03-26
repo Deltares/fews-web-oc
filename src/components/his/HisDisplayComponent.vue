@@ -1,19 +1,44 @@
 <template>
   <div class="his-container pa-2 ga-2">
     <div class="his-data-selection">
-      <v-card border flat title="Data selection">
-        <HisDataSelection
-          v-model:selectedLocationIds="selectedLocationIds"
-          v-model:selectedParameterIds="selectedParameterIds"
-          v-model:selectedModuleInstanceIds="selectedModuleInstanceIds"
-          :locations="filteredLocations"
-          :parameterIds="filteredParameterIds"
-          :moduleInstanceIds="filteredModuleInstanceIds"
-        />
+      <v-card border flat>
+        <v-tabs v-model="tab">
+          <v-tab
+            prepend-icon="mdi-filter"
+            text="Data selection"
+            value="data-selection"
+          />
+          <v-tab
+            prepend-icon="mdi-chart-line"
+            text="Analysis"
+            value="analysis"
+          />
+        </v-tabs>
+
+        <v-tabs-window v-model="tab">
+          <v-tabs-window-item value="data-selection">
+            <HisDataSelection
+              v-model:selectedLocationIds="selectedLocationIds"
+              v-model:selectedParameterIds="selectedParameterIds"
+              v-model:selectedModuleInstanceIds="selectedModuleInstanceIds"
+              :locations="filteredLocations"
+              :parameterIds="filteredParameterIds"
+              :moduleInstanceIds="filteredModuleInstanceIds"
+            />
+          </v-tabs-window-item>
+          <v-tabs-window-item value="analysis">
+            <HisAutocomplete
+              :items="timeSeriesHeaders.map((header) => header.locationId)"
+              label="Timeseries"
+              icon="mdi-chart-line"
+              v-model:selectedIds="selectedParameterIds"
+            />
+          </v-tabs-window-item>
+        </v-tabs-window>
       </v-card>
     </div>
     <div class="his-map">
-      <v-card class="h-100 w-100" border flat>
+      <v-card v-show="tab === 'data-selection'" class="h-100 w-100" border flat>
         <HisMap :boundingBox>
           <LocationsLayer
             v-if="geojson.features.length"
@@ -51,6 +76,7 @@ import {
   useDisplayConfigFilter,
   UseDisplayConfigOptions,
 } from '@/services/useDisplayConfig'
+import HisAutocomplete from './HisAutocomplete.vue'
 
 interface Props {
   filterId?: string
@@ -58,6 +84,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const tab = ref('data-selection')
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
