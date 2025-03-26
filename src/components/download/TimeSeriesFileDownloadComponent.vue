@@ -220,12 +220,11 @@ const downloadFile = (downloadFormat: DocumentFormat) => {
 
   if (props.filter) {
     if (isDataDownloadFilter(props.filter)) {
-      const queryParameters = filterToParams(props.filter).replace('?', '&')
-      const timeSeriesUrl = piProvider.timeSeriesUrl({
+      const url = piProvider.timeSeriesUrl({
+        ...props.filter,
         documentFormat: downloadFormat,
         ...viewPeriod,
       })
-      const url = new URL(`${timeSeriesUrl.href}${queryParameters}`)
       return downloadFileAttachment(
         url.href,
         fileName.value,
@@ -236,7 +235,7 @@ const downloadFile = (downloadFormat: DocumentFormat) => {
   }
   if (props.filter) {
     if (isFilterActionsFilter(props.filter)) {
-      const url = piProvider.filterActionsUrl({
+      const url = piProvider.timeSeriesFilterActionsUrl({
         ...props.filter,
         documentFormat: downloadFormat,
         ...viewPeriod,
