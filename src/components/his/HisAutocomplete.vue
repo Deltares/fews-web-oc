@@ -1,4 +1,5 @@
 <template>
+  <!-- @vue-expect-error: selectedIds type is not based on item-value causing error -->
   <v-autocomplete
     v-model="selectedIds"
     :items="items"
@@ -36,7 +37,9 @@ interface Props {
 
 defineProps<Props>()
 
-const selectedIds = defineModel<K[]>('selectedIds', {
+type SelectedType = K extends false ? T : K
+
+const selectedIds = defineModel<SelectedType[]>('selectedIds', {
   required: true,
 })
 </script>
