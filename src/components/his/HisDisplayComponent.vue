@@ -28,10 +28,13 @@
           </v-tabs-window-item>
           <v-tabs-window-item value="analysis">
             <HisAutocomplete
-              :items="timeSeriesHeaders.map((header) => header.locationId)"
+              v-if="displayConfig"
+              :items="displayConfig?.subplots.flatMap((s) => s.series)"
               label="Timeseries"
               icon="mdi-chart-line"
-              v-model:selectedIds="selectedParameterIds"
+              :getItemValue="(item) => item.id"
+              :getItemTitle="(item) => item.name"
+              v-model:selectedIds="selectedTimeseries"
             />
           </v-tabs-window-item>
         </v-tabs-window>
@@ -96,6 +99,8 @@ const { timeSeriesHeaders } = useTimeSeriesHeaders(
   baseUrl,
   () => props.filterId,
 )
+
+const selectedTimeseries = ref<string[]>([])
 
 const selectedLocationIds = ref<string[]>([])
 const selectedParameterIds = ref<string[]>([])
