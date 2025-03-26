@@ -1,11 +1,15 @@
 <template>
   <HisAutocomplete
-    :items="parameters"
+    :items="parameterIds"
     label="Parameters"
     icon="mdi-tag"
-    :getItemValue="getParameterId"
-    :getItemTitle="getParameterTitle"
-    v-model:selectedIds="selectedParameters"
+    v-model:selectedIds="selectedParameterIds"
+  />
+  <HisAutocomplete
+    :items="moduleInstanceIds"
+    label="Module instances"
+    icon="mdi-cog"
+    v-model:selectedIds="selectedModuleInstanceIds"
   />
   <HisAutocomplete
     :items="locations"
@@ -22,38 +26,28 @@ import type { Location } from '@deltares/fews-pi-requests'
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
 
 interface Props {
-  parameters: { parameterId: string; qualifierId: string[] | undefined }[]
+  parameterIds: string[]
   locations: Location[]
+  moduleInstanceIds: string[]
 }
 
 defineProps<Props>()
 
-const selectedParameters = defineModel<string[]>('selectedParameters', {
+const selectedParameterIds = defineModel<string[]>('selectedParameterIds', {
   required: true,
 })
 const selectedLocationIds = defineModel<string[]>('selectedLocationIds', {
   required: true,
 })
-
-function getParameterId(parameter: {
-  parameterId: string
-  qualifierId: string[] | undefined
-}) {
-  return `${parameter.parameterId}$${parameter.qualifierId?.join(',') ?? ''}`
-}
+const selectedModuleInstanceIds = defineModel<string[]>(
+  'selectedModuleInstanceIds',
+  {
+    required: true,
+  },
+)
 
 function getLocationId(location: Location) {
   return location.locationId
-}
-
-function getParameterTitle(parameter: {
-  parameterId: string
-  qualifierId: string[] | undefined
-}) {
-  const qualifiers = parameter.qualifierId
-    ? ` (${parameter.qualifierId.join('')})`
-    : ''
-  return `${parameter.parameterId}${qualifiers}`
 }
 
 function getLocationTitle(location: Location) {
