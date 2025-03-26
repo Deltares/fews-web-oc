@@ -269,11 +269,9 @@ const downloadFile = (downloadFormat: DocumentFormat) => {
     timeSeriesDisplayIndex: props.config?.index ?? 0,
     convertDatum: props.options.convertDatum,
     useDisplayUnits: props.options.useDisplayUnits,
+    ...viewPeriod,
   }
-  const queryParameters = filterToParams(timeSeriesFilter)
-  const url = new URL(
-    `${baseUrl}rest/fewspiservice/v1/timeseries/topology/actions${queryParameters}${viewPeriod}`,
-  )
+  const url = piProvider.timeSeriesTopologyActionsUrl(timeSeriesFilter)
   return downloadFileAttachment(
     url.href,
     fileName.value,
