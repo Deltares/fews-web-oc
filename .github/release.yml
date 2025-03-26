@@ -17,6 +17,10 @@ changelog:
       labels:
         - 'rel: fix'
 
+    - title: Beta Features
+      labels:
+        - 'rel: beta'
+
     - title: Other Changes
       labels:
         - '*'
