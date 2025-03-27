@@ -4,6 +4,7 @@
     :class="{ 'vertical-profile': verticalProfile }"
   >
     <ChartLegend
+      v-if="!hideLegend"
       :tags="legendTags"
       :margin="margin"
       :settings="settings.legend"
@@ -55,6 +56,7 @@ interface Props {
   isLoading?: boolean
   zoomHandler?: ZoomHandler
   verticalProfile?: boolean
+  hideLegend?: boolean
   settings: ChartsSettings['timeSeriesChart']
 }
 
