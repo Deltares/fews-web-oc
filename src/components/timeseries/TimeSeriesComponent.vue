@@ -7,10 +7,10 @@
     >
       <KeepAlive>
         <TimeSeriesChart
-          v-for="(subplot, i) in subplots"
+          v-for="subplot in subplots"
           :config="subplot"
           :series="series"
-          :key="`${subplot.title}-${i}`"
+          :key="subplot.id"
           :currentTime="selectedDate"
           :isLoading="isLoading(subplot, loadingSeriesIds)"
           :zoomHandler="sharedZoomHandler"
@@ -26,11 +26,11 @@
     >
       <KeepAlive>
         <TimeSeriesChart
-          v-for="(subplot, i) in elevationChartSubplots"
+          v-for="subplot in elevationChartSubplots"
           verticalProfile
           :config="subplot"
           :series="elevationChartSeries"
-          :key="`${subplot.title}-${i}`"
+          :key="subplot.id"
           :style="`min-width: ${xs ? 100 : 50}%`"
           :isLoading="isLoading(subplot, elevationLoadingSeriesIds)"
           :zoomHandler="sharedVerticalZoomHandler"
@@ -231,7 +231,7 @@ const elevationChartSubplots = computed(() => {
   }
 })
 
-const tableConfig = ref<ChartConfig>({ title: '', series: [] })
+const tableConfig = ref<ChartConfig>({ id: '', title: '', series: [] })
 
 watch(
   () => props.config.subplots,
@@ -247,6 +247,7 @@ watch(
     })
 
     tableConfig.value = {
+      id: 'table',
       title: props.config.title,
       series,
     }

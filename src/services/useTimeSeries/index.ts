@@ -15,7 +15,7 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { difference } from 'lodash-es'
 import { SeriesData } from '@/lib/timeseries/types/SeriesData'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
-import { debouncedRef } from '@vueuse/core'
+import { type Pausable, useIntervalFn } from '@vueuse/core'
 
 export interface UseTimeSeriesReturn {
   error: Ref<any>
@@ -23,7 +23,10 @@ export interface UseTimeSeriesReturn {
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
   loadingSeriesIds: Ref<string[]>
+  interval: Pausable
 }
+
+const TIMESERIES_POLLING_INTERVAL = 1000 * 30
 
 export interface UseTimeSeriesOptions {
   startTime?: Date | null
@@ -61,10 +64,13 @@ export function useTimeSeries(
   const error = shallowRef<any | undefined>(undefined)
   const MAX_SERIES = 20
   const loadingSeriesIds = ref<string[]>([])
-  const debouncedLoadingSeriesIds = debouncedRef(loadingSeriesIds, 100)
-  const isLoading = computed(() => debouncedLoadingSeriesIds.value.length > 0)
+  const isLoading = computed(() => loadingSeriesIds.value.length > 0)
 
   watch([lastUpdated, selectedTime ?? ref(), requests, options], () => {
+    loadTimeSeries()
+  })
+
+  function loadTimeSeries() {
     controller.abort('Timeseries request triggered again before finishing.')
     controller = new AbortController()
     const piProvider = new PiWebserviceProvider(baseUrl, {
@@ -135,7 +141,10 @@ export function useTimeSeries(
               ? `${request.key}[${index}]`
               : (request.key ?? '')
             updatedSeriesIds.push(resourceId)
-            const resource = new SeriesUrlRequest('fews-pi', 'dummyUrl')
+            const resource = new SeriesUrlRequest(
+              'fews-pi',
+              `dummyUrl-for-resource-${resourceId}`,
+            )
             const _series = new Series(resource)
             const header = timeSeries.header
             if (header !== undefined) {
@@ -190,21 +199,25 @@ export function useTimeSeries(
         delete series.value[seriesId]
       }
     }
+  }
+
+  const interval = useIntervalFn(loadTimeSeries, TIMESERIES_POLLING_INTERVAL, {
+    immediate: true,
+    immediateCallback: true,
   })
 
   onUnmounted(() => {
     controller.abort('useTimeSeries unmounted.')
   })
 
-  const shell = {
+  return {
     series,
     isReady,
     isLoading,
-    loadingSeriesIds: debouncedLoadingSeriesIds,
+    loadingSeriesIds,
     error,
+    interval,
   }
-
-  return shell
 }
 
 export async function postTimeSeriesEdit(
