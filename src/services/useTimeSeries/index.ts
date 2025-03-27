@@ -15,7 +15,6 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { difference } from 'lodash-es'
 import { SeriesData } from '@/lib/timeseries/types/SeriesData'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
-import { debouncedRef } from '@vueuse/core'
 import { type Pausable, useIntervalFn } from '@vueuse/core'
 
 export interface UseTimeSeriesReturn {
@@ -65,8 +64,7 @@ export function useTimeSeries(
   const error = shallowRef<any | undefined>(undefined)
   const MAX_SERIES = 20
   const loadingSeriesIds = ref<string[]>([])
-  const debouncedLoadingSeriesIds = debouncedRef(loadingSeriesIds, 100)
-  const isLoading = computed(() => debouncedLoadingSeriesIds.value.length > 0)
+  const isLoading = computed(() => loadingSeriesIds.value.length > 0)
 
   watch([lastUpdated, selectedTime ?? ref(), requests, options], () => {
     loadTimeSeries()
@@ -216,7 +214,7 @@ export function useTimeSeries(
     series,
     isReady,
     isLoading,
-    loadingSeriesIds: debouncedLoadingSeriesIds,
+    loadingSeriesIds,
     error,
     interval,
   }
