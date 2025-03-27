@@ -44,7 +44,7 @@ import {
   MglGeoJsonSource,
   MglMarker,
 } from '@indoorequal/vue-maplibre-gl'
-import { FeatureCollection, Geometry } from 'geojson'
+import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
 import {
   LngLat,
@@ -97,13 +97,28 @@ const selectedLocationsCoordinates = computed(() => {
     props.selectedLocationIds?.includes(feature.properties.locationId),
   )
 
-  return selectedLocations.flatMap((feature) => {
-    const lat = feature.properties.lat
-    const lon = feature.properties.lon
-    if (!lat || !lon) return []
-    return [new LngLat(+lon, +lat)]
-  })
+  return selectedLocations
+    .flatMap(getLngLatForFeature)
+    .filter((lngLat) => lngLat !== undefined)
 })
+
+function getLngLatForFeature(feature: Feature<Geometry, Location>) {
+  const geometry = feature.geometry
+  if (geometry.type === 'Point') {
+    const lng = geometry.coordinates[0]
+    const lat = geometry.coordinates[1]
+
+    return new LngLat(lng, lat)
+  }
+
+  const properties = feature.properties
+  if (properties.lon && properties.lat) {
+    const lng = +properties.lon
+    const lat = +properties.lat
+
+    return new LngLat(lng, lat)
+  }
+}
 
 const layoutSymbolSpecification = {
   'icon-allow-overlap': true,
