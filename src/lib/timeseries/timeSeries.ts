@@ -61,4 +61,8 @@ export class Series {
   idIsValid(): boolean {
     return this.id === this.md5Hash
   }
+
+  clone(): Series {
+    return Object.assign(Object.create(Object.getPrototypeOf(this)), this)
+  }
 }

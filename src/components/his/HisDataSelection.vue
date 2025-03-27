@@ -1,23 +1,26 @@
 <template>
   <HisAutocomplete
+    v-model="selectedParameterIds"
     :items="parameterIds"
     label="Parameters"
     icon="mdi-tag"
-    v-model:selectedIds="selectedParameterIds"
+    multiple
   />
   <HisAutocomplete
+    v-model="selectedModuleInstanceIds"
     :items="moduleInstanceIds"
     label="Module instances"
     icon="mdi-cog"
-    v-model:selectedIds="selectedModuleInstanceIds"
+    multiple
   />
   <HisAutocomplete
+    v-model="selectedLocationIds"
     :items="locations"
     label="Locations"
     icon="mdi-map-marker-multiple"
     :getItemValue="getLocationId"
     :getItemTitle="getLocationTitle"
-    v-model:selectedIds="selectedLocationIds"
+    multiple
   />
 </template>
 

@@ -12,6 +12,7 @@
             prepend-icon="mdi-chart-line"
             text="Analysis"
             value="analysis"
+            :disabled="!displayConfig"
           />
         </v-tabs>
 
@@ -26,15 +27,54 @@
               :moduleInstanceIds="filteredModuleInstanceIds"
             />
           </v-tabs-window-item>
-          <v-tabs-window-item value="analysis">
+          <v-tabs-window-item value="analysis" v-if="displayConfig">
+            <v-btn-group class="ma-3" variant="outlined">
+              <v-btn
+                prepend-icon="mdi-function-variant"
+                text="Correlation"
+                class="text-none"
+                active
+              />
+              <v-btn
+                prepend-icon="mdi-sigma"
+                text="Time Resampling"
+                class="text-none"
+              />
+            </v-btn-group>
             <HisAutocomplete
-              v-if="displayConfig"
-              :items="displayConfig?.subplots.flatMap((s) => s.series)"
-              label="Timeseries"
-              icon="mdi-chart-line"
-              :getItemValue="(item) => item.id"
+              v-model="selectedTimeseries"
+              :items="allSeries"
+              label="First parameter"
+              :getItemValue="(item) => item"
               :getItemTitle="(item) => item.name"
-              v-model:selectedIds="selectedTimeseries"
+            />
+
+            <HisAutocomplete
+              v-model="selectedSecondTimeseries"
+              :items="allSeries"
+              label="Second parameter"
+              :getItemValue="(item) => item"
+              :getItemTitle="(item) => item.name"
+            />
+
+            <v-number-input
+              v-model="windowSize"
+              label="Window size"
+              :min="1"
+              :max="50"
+              variant="outlined"
+              density="compact"
+              width="200px"
+              class="pa-3"
+            />
+
+            <TimeSeriesChart
+              v-if="selectedSeries && selectedSubplot"
+              :config="selectedSubplot"
+              :series="selectedSeries"
+              :settings="settings.charts.timeSeriesChart"
+              :key="newId"
+              hideLegend
             />
           </v-tabs-window-item>
         </v-tabs-window>
@@ -54,7 +94,11 @@
     </div>
     <div class="his-charts">
       <v-card border flat>
-        <HisCharts v-if="displayConfig" :display-config="displayConfig" />
+        <HisCharts
+          v-if="displayConfig"
+          :display-config="displayConfig"
+          :settings
+        />
         <v-card-text v-else> Select some data to display </v-card-text>
       </v-card>
     </div>
@@ -74,19 +118,31 @@ import { computed, ref } from 'vue'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import { configManager } from '@/services/application-config'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
-import { useTimeSeriesHeaders } from '@/services/useTimeSeries'
+import { useTimeSeries, useTimeSeriesHeaders } from '@/services/useTimeSeries'
 import {
   useDisplayConfigFilter,
   UseDisplayConfigOptions,
 } from '@/services/useDisplayConfig'
 import HisAutocomplete from './HisAutocomplete.vue'
+import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
+import { ChartSeries } from '@/lib/charts/types/ChartSeries'
+import {
+  type ComponentSettings,
+  getDefaultSettings,
+} from '@/lib/topology/componentSettings'
+import { calculateCorrelationTimeSeries } from '@/lib/his'
+import { ChartConfig } from '@/lib/charts/types/ChartConfig'
+import { VNumberInput } from 'vuetify/labs/components'
 
 interface Props {
   filterId?: string
   boundingBox?: BoundingBox
+  settings?: ComponentSettings
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  settings: () => getDefaultSettings(),
+})
 
 const tab = ref('data-selection')
 
@@ -100,7 +156,11 @@ const { timeSeriesHeaders } = useTimeSeriesHeaders(
   () => props.filterId,
 )
 
-const selectedTimeseries = ref<string[]>([])
+const selectedTimeseries = ref<ChartSeries>()
+const selectedSecondTimeseries = ref<ChartSeries>()
+const allSeries = computed(
+  () => displayConfig.value?.subplots.flatMap((s) => s.series) ?? [],
+)
 
 const selectedLocationIds = ref<string[]>([])
 const selectedParameterIds = ref<string[]>([])
@@ -187,12 +247,79 @@ const { displayConfig } = useDisplayConfigFilter(
   baseUrl,
   filter,
   () => {
-    return new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+    return new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
   },
   () => {
-    return new Date(Date.now() + 1 * 24 * 60 * 60 * 1000)
+    return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
   },
 )
+
+const { series } = useTimeSeries(
+  baseUrl,
+  () => displayConfig.value?.requests ?? [],
+  () => new Date(),
+  () => ({}),
+)
+
+const newId = computed(() => {
+  if (!selectedTimeseries.value) return 'correlation'
+  if (!selectedSecondTimeseries.value) return 'correlation'
+
+  return `${selectedTimeseries.value.id}-${selectedSecondTimeseries.value.id}-correlation-${windowSize.value}`
+})
+
+const windowSize = ref(4)
+
+const selectedSeries = computed(() => {
+  if (!selectedTimeseries.value) return
+  if (!selectedSecondTimeseries.value) return
+
+  const id1 = selectedTimeseries.value.id
+  const series1 = series.value[id1]
+
+  const id2 = selectedSecondTimeseries.value?.id
+  const series2 = series.value[id2]
+
+  if (!series1.data || !series2.data) return
+
+  const newSeries = series1.clone()
+  newSeries.lastUpdated = new Date()
+
+  newSeries.data = calculateCorrelationTimeSeries(
+    series1.data,
+    series2.data,
+    windowSize.value,
+  )
+
+  return { [newId.value]: newSeries }
+})
+
+const selectedSubplot = computed(() => {
+  if (!selectedTimeseries.value) return
+  if (!selectedSecondTimeseries.value) return
+
+  const config = displayConfig.value?.subplots[0]
+  if (!config) return
+
+  const res: ChartConfig = {
+    ...config,
+    yAxis: [
+      {
+        ...config.yAxis?.[0],
+        label: 'Correlation',
+      },
+    ],
+    series: [
+      {
+        ...config.series[0],
+        dataResources: [newId.value],
+        id: newId.value,
+        visibleInLegend: false,
+      },
+    ],
+  }
+  return res
+})
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   if (!event.features) return
