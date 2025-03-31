@@ -171,12 +171,11 @@ const options = computed<UseTimeSeriesOptions>(() => {
   }
 })
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { series, loadingSeriesIds } = useTimeSeries(
-  baseUrl,
-  () => props.config.requests,
-  lastUpdated,
-  options,
-)
+const {
+  series,
+  loadingSeriesIds,
+  interval: useTimeSeriesInterval,
+} = useTimeSeries(baseUrl, () => props.config.requests, lastUpdated, options)
 const {
   series: elevationChartSeries,
   loadingSeriesIds: elevationLoadingSeriesIds,
@@ -264,6 +263,11 @@ watch(
 )
 
 watch(isEditing, () => {
+  if (isEditing.value) {
+    useTimeSeriesInterval.pause()
+  } else {
+    useTimeSeriesInterval.resume()
+  }
   // Can't set a custom message in modern browsers
   window.onbeforeunload = isEditing.value ? () => true : null
 })
