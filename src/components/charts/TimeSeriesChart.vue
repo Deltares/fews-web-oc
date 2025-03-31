@@ -413,7 +413,7 @@ watch(
     }
   },
 )
-watch(props.config, onValueChange)
+watch(() => props.config, onValueChange)
 watch(
   () => props.isLoading,
   (newValue, oldValue) => {
