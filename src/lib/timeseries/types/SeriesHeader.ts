@@ -7,4 +7,6 @@ export interface SeriesHeader {
   source?: string
   unit?: string
   timeStep?: TimeStep
+  version?: string
+  timeZone?: string
 }
