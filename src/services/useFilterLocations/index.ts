@@ -4,6 +4,7 @@ import type { Ref, MaybeRefOrGetter, ShallowRef } from 'vue'
 import { ref, watchEffect, shallowRef, toValue } from 'vue'
 import {
   convertGeoJsonToFewsPiLocation,
+  createLocationChildsMap,
   fetchLocationsAsGeoJson,
 } from '@/lib/topology/locations'
 
@@ -11,6 +12,7 @@ export interface UseFilterLocationsReturn {
   error: Ref<any>
   locations: ShallowRef<Location[] | undefined>
   geojson: ShallowRef<FeatureCollection<Geometry, Location>>
+  getChildsForLocation: (locationId: string) => string[]
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
 }
@@ -29,6 +31,7 @@ export function useFilterLocations(
   >(emptyFeatureCollection)
 
   const locations = shallowRef<Location[]>([])
+  const locationsChildMap = shallowRef<Map<string, string[]>>(new Map())
 
   const isReady = ref(false)
   const isLoading = ref(false)
@@ -39,6 +42,7 @@ export function useFilterLocations(
     if (_filterdIds.length === 0) {
       geojson.value = emptyFeatureCollection
       locations.value = convertGeoJsonToFewsPiLocation(geojson.value)
+      locationsChildMap.value = new Map()
       return
     }
     await loadLocations(_filterdIds)
@@ -50,6 +54,7 @@ export function useFilterLocations(
     try {
       geojson.value = await fetchLocationsAsGeoJson(baseUrl, ids)
       locations.value = convertGeoJsonToFewsPiLocation(geojson.value)
+      locationsChildMap.value = createLocationChildsMap(locations.value)
     } catch (error) {
       error = 'error-loading'
     } finally {
@@ -58,9 +63,15 @@ export function useFilterLocations(
     }
   }
 
+  function getChildsForLocation(locationId: string): string[] {
+    const childLocations = locationsChildMap.value.get(locationId) ?? []
+    return [...childLocations.flatMap(getChildsForLocation), locationId]
+  }
+
   return {
     locations,
     geojson,
+    getChildsForLocation,
     isReady,
     isLoading,
     error,
