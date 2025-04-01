@@ -1,7 +1,6 @@
 import {
   ActionRequest,
   PiWebserviceProvider,
-  type TimeSeriesFilter,
   type TimeSeriesEvent,
   DomainAxisEventValuesStringArray,
 } from '@deltares/fews-pi-requests'
@@ -153,7 +152,8 @@ export function useTimeSeries(
                 piSeries.timeZone === undefined
                   ? 'Z'
                   : timeZoneOffsetString(+piSeries.timeZone)
-
+              _series.header.timeZone = piSeries.timeZone
+              _series.header.version = piSeries.version
               _series.header.name = `${header.stationName} - ${header.parameterId} (${header.moduleInstanceId})`
 
               _series.header.unit = header.units
@@ -224,6 +224,8 @@ export async function postTimeSeriesEdit(
   baseUrl: string,
   requests: ActionRequest[],
   data: Record<string, TimeSeriesEvent[]>,
+  version: string,
+  timeZone: string,
 ) {
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -234,18 +236,9 @@ export async function postTimeSeriesEdit(
     const request = requests.find((r) => r.key === timeSeriesId)
     if (request === undefined) continue
     const url = absoluteUrl(`${baseUrl}${request.editRequest}`)
-    const queryParams = url.searchParams
-    const timeSeriesSetIndex = +(queryParams.get('timeSeriesSetIndex') ?? -1)
-    const locationId = queryParams.get('locationId') ?? ''
-    const filter: TimeSeriesFilter = {
-      timeSeriesSetIndex,
-      locationIds: [locationId],
-      onlyHeaders: true,
-    }
-    const piSeriesHeaders = await piProvider.getTimeSeries(filter)
     const timeSeriesEdit = {
-      version: piSeriesHeaders.version,
-      timeZone: piSeriesHeaders.timeZone,
+      version,
+      timeZone,
       timeSeries: [{ events }],
     }
     await piProvider.postTimeSeriesEdit(url.toString(), timeSeriesEdit)
