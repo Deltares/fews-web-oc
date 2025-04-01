@@ -49,8 +49,9 @@ const warningLevels = computed(() => {
   if (thresholdsArray.value === undefined || thresholdsArray.value.length === 0)
     return []
   const thresholds = thresholdsArray.value[0]
-  return thresholds.aggregatedLevelThresholdWarningLevels
-    ?.map((warningLevel) => {
+  if (thresholds.aggregatedLevelThresholdWarningLevels === undefined) return []
+  const levels = thresholds.aggregatedLevelThresholdWarningLevels
+    .map((warningLevel) => {
       return {
         ...warningLevel,
         ...{
@@ -61,6 +62,10 @@ const warningLevels = computed(() => {
       }
     })
     .sort((a, b) => b.severity - a.severity)
+  // The warning level with the lowest severity is always the default "no thresholds" level.
+  // That level should not be shown in list of warning levels
+  levels.pop()
+  return levels
 })
 </script>
 
