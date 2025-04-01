@@ -1,6 +1,6 @@
 <template>
   <Teleport to="#main-side-panel-left" defer>
-    <div class="threshold-summary h-100 flex-wrap">
+    <div v-if="warningLevels?.length" class="threshold-summary h-100 flex-wrap">
       <v-list-item
         v-for="warningLevel in warningLevels"
         :key="warningLevel.id"
