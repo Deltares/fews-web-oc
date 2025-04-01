@@ -10,7 +10,12 @@
       class="ml-1 flex-0-0 threshold-summary--chip"
     >
       <template v-slot:prepend>
-        <v-avatar start :image="warningLevel.icon" rounded size="small"></v-avatar>
+        <v-avatar
+          start
+          :image="warningLevel.icon"
+          rounded
+          size="small"
+        ></v-avatar>
         {{ warningLevel.count }}
       </template>
     </v-chip>
@@ -20,8 +25,8 @@
 <script setup lang="ts">
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
-import { getResourcesIconsUrl } from '@/lib/fews-config';
-import { computed } from 'vue';
+import { getResourcesIconsUrl } from '@/lib/fews-config'
+import { computed } from 'vue'
 
 interface Props {
   nodeId?: string
@@ -30,26 +35,33 @@ interface Props {
 const props = defineProps<Props>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { thresholds: thresholdsArray } = useTopologyThresholds(baseUrl, () => props.nodeId)
+const { thresholds: thresholdsArray } = useTopologyThresholds(
+  baseUrl,
+  () => props.nodeId,
+)
 
 const warningLevels = computed(() => {
-  if (thresholdsArray.value === undefined || thresholdsArray.value.length === 0) return []
+  if (thresholdsArray.value === undefined || thresholdsArray.value.length === 0)
+    return []
   const thresholds = thresholdsArray.value[0]
-  return thresholds.aggregatedLevelThresholdWarningLevels?.filter((warningLevel) => warningLevel.count > 0).map((warningLevel) => {
-    return {
-      name: warningLevel.name,
-      id: warningLevel.id,
-      count: warningLevel.count,
-      icon: warningLevel.icon ? getResourcesIconsUrl(warningLevel.icon) : undefined,
-    }
-  })
+  return thresholds.aggregatedLevelThresholdWarningLevels
+    ?.filter((warningLevel) => warningLevel.count > 0)
+    .map((warningLevel) => {
+      return {
+        name: warningLevel.name,
+        id: warningLevel.id,
+        count: warningLevel.count,
+        icon: warningLevel.icon
+          ? getResourcesIconsUrl(warningLevel.icon)
+          : undefined,
+      }
+    })
 })
-
 </script>
 
 <style scoped>
 .v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
   .threshold-summary--chip:not(:first-child) {
-    display: none
-  }
+  display: none;
+}
 </style>

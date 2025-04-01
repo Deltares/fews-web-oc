@@ -27,7 +27,6 @@ export function useTopologyThresholds(
   const isLoading = ref(false)
   const error = shallowRef<string>()
 
-  
   async function loadTopologyThresholds() {
     isLoading.value = true
     isReady.value = false
@@ -37,7 +36,7 @@ export function useTopologyThresholds(
         transformRequestFn: createTransformRequestFn(),
       })
       const filter: TopologyThresholdFilter = {
-        nodeId: _nodeId
+        nodeId: _nodeId,
       }
       const response = await provider.getTopologyThresholds(filter)
       thresholds.value = response.topologyNodes
@@ -59,10 +58,13 @@ export function useTopologyThresholds(
     },
   )
 
-  watch(() => toValue(nodeId), () => {
-    interval.pause()
-    interval.resume()
-  })
+  watch(
+    () => toValue(nodeId),
+    () => {
+      interval.pause()
+      interval.resume()
+    },
+  )
 
   return {
     thresholds,
