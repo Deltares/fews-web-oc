@@ -1,25 +1,30 @@
 <template>
-  <div class="d-flex ma-0 pa-0 flex-0-0 flex-wrap">
-    <v-chip
-      v-for="warningLevel in warningLevels"
-      :key="warningLevel.id"
-      variant="tonal"
-      label
-      size="small"
-      density="compact"
-      class="ml-1 flex-0-0 threshold-summary--chip"
-    >
-      <template v-slot:prepend>
-        <v-avatar
-          start
-          :image="warningLevel.icon"
-          rounded
-          size="small"
-        ></v-avatar>
-        {{ warningLevel.count }}
-      </template>
-    </v-chip>
-  </div>
+  <Teleport to="#main-side-panel-left" defer>
+    <div class="threshold-summary h-100 flex-wrap">
+      <v-list-item
+        v-for="warningLevel in warningLevels"
+        :key="warningLevel.id"
+        label
+        size="small"
+        density="compact"
+        class="ma-0 pa-1"
+      >
+        <div class="d-flex align-center flex-column">
+          <v-list-item-title>
+            <v-img width="40px" :src="warningLevel.icon"></v-img>
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            {{ warningLevel.name }}
+          </v-list-item-subtitle>
+        </div>
+        <template v-slot:append>
+          <v-list-item-subtitle>
+            {{ warningLevel.count }}
+          </v-list-item-subtitle>
+        </template>
+      </v-list-item>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -45,8 +50,7 @@ const warningLevels = computed(() => {
     return []
   const thresholds = thresholdsArray.value[0]
   return thresholds.aggregatedLevelThresholdWarningLevels
-    ?.filter((warningLevel) => warningLevel.count > 0)
-    .map((warningLevel) => {
+    ?.map((warningLevel) => {
       return {
         ...warningLevel,
         ...{
@@ -61,8 +65,11 @@ const warningLevels = computed(() => {
 </script>
 
 <style scoped>
-.v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
-  .threshold-summary--chip:not(:first-child) {
-  display: none;
+.threshold-summary {
+  width: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 0 0 auto;
 }
 </style>
