@@ -48,14 +48,15 @@ const warningLevels = computed(() => {
     ?.filter((warningLevel) => warningLevel.count > 0)
     .map((warningLevel) => {
       return {
-        name: warningLevel.name,
-        id: warningLevel.id,
-        count: warningLevel.count,
-        icon: warningLevel.icon
-          ? getResourcesIconsUrl(warningLevel.icon)
-          : undefined,
+        ...warningLevel,
+        ...{
+          icon: warningLevel.icon
+            ? getResourcesIconsUrl(warningLevel.icon)
+            : undefined,
+        },
       }
     })
+    .sort((a, b) => b.severity - a.severity)
 })
 </script>
 
