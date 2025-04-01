@@ -14,10 +14,18 @@
         :key="nodeId"
         class="threshold-panel-iterator h-100"
       >
-        <template v-slot:default="{ items: warningLevels, isExpanded: isLevelExpanded, toggleExpand: toggleLevelExpand}">
-          <template v-for="warningLevel in warningLevels"
-          :key="warningLevel.raw.id">
-            <v-card 
+        <template
+          v-slot:default="{
+            items: warningLevels,
+            isExpanded: isLevelExpanded,
+            toggleExpand: toggleLevelExpand,
+          }"
+        >
+          <template
+            v-for="warningLevel in warningLevels"
+            :key="warningLevel.raw.id"
+          >
+            <v-card
               border
               flat
               density="compact"
@@ -28,61 +36,88 @@
               <v-card-text class="py-2 h-100">
                 <div class="d-flex w-100">
                   <div class="d-flex align-center ga-1 w-100">
-                    <v-avatar start :image="warningLevel.raw.icon" rounded class="me-1 flex-0-0" size="20"></v-avatar>
+                    <v-avatar
+                      start
+                      :image="warningLevel.raw.icon"
+                      rounded
+                      class="me-1 flex-0-0"
+                      size="20"
+                    ></v-avatar>
                     <div class="flex-1-1 overflow-hidden">
-                      <div :class="{ 'text-wrap': isLevelExpanded(warningLevel) }">
+                      <div
+                        :class="{ 'text-wrap': isLevelExpanded(warningLevel) }"
+                      >
                         {{ warningLevel.raw.name }}
                       </div>
                     </div>
-                    <v-avatar end :text="`${warningLevel.raw.count}`"></v-avatar>
+                    <v-avatar
+                      end
+                      :text="`${warningLevel.raw.count}`"
+                    ></v-avatar>
                   </div>
                 </div>
               </v-card-text>
             </v-card>
-              <v-data-iterator
-                v-if="isLevelExpanded(warningLevel)"
-                :items="warningLevel.raw.thresholdCrossing"
-                items-per-page="-1"
-                item-value="locationId"
-                class="threshold-panel-iterator ms-2 h-50"
+            <v-data-iterator
+              v-if="isLevelExpanded(warningLevel)"
+              :items="warningLevel.raw.thresholdCrossing"
+              items-per-page="-1"
+              item-value="locationId"
+              class="threshold-panel-iterator ms-2 h-50"
+            >
+              <template
+                v-slot:default="{
+                  items: crossings,
+                  isExpanded: isCrossingExpanded,
+                  toggleExpand: toggleCrossingExpand,
+                }"
               >
-                <template v-slot:default="{ items: crossings, isExpanded: isCrossingExpanded, toggleExpand: toggleCrossingExpand}">
-                  <v-virtual-scroll :items="crossings" item-height="50px" height="100%">
-                    <template v-slot:default="{ item: crossing }">
-                      <v-card
-                        border
-                        :key="crossing.raw.locationId"
-                        flat
-                        density="compact"
-                        @click="() => toggleCrossingExpand(crossing)"
-                        :ripple="false"
-                        class="w-100"
-                      >
-                        <v-card-text class="py-2 h-100">
-                          <div class="d-flex flex-column user-select-text cursor-pointer">
-                            <div class="d-flex align-center ga-2">
-                              <v-list-item-title>
-                                {{ crossing.raw.locationId }}
-                              </v-list-item-title>
-                              <v-card-subtitle class="pa-0">from {{
+                <v-virtual-scroll
+                  :items="crossings"
+                  item-height="50px"
+                  height="100%"
+                >
+                  <template v-slot:default="{ item: crossing }">
+                    <v-card
+                      border
+                      :key="crossing.raw.locationId"
+                      flat
+                      density="compact"
+                      @click="() => toggleCrossingExpand(crossing)"
+                      :ripple="false"
+                      class="w-100"
+                    >
+                      <v-card-text class="py-2 h-100">
+                        <div
+                          class="d-flex flex-column user-select-text cursor-pointer"
+                        >
+                          <div class="d-flex align-center ga-2">
+                            <v-list-item-title>
+                              {{ crossing.raw.locationId }}
+                            </v-list-item-title>
+                            <v-card-subtitle class="pa-0"
+                              >from
+                              {{
                                 toHumanReadableDate(crossing.raw.firstValueTime)
-                              }}</v-card-subtitle>
-                            </div>
-                            <v-card-subtitle class="pa-0">
-                              Max: {{ crossing.raw.maxValue }} @ {{ toHumanReadableDate(crossing.raw.maxValueTime) }} 
-                            </v-card-subtitle>
+                              }}</v-card-subtitle
+                            >
                           </div>
-                          <DataTable
-                            v-if="isCrossingExpanded(crossing)"
-                            class="mt-4"
-                            :tableData="toTableDate(crossing.raw)"
-                          />
-                        </v-card-text>
-                      </v-card>
-                    </template>
-                  </v-virtual-scroll>
-                </template>
-              </v-data-iterator>
+                          <v-card-subtitle class="pa-0">
+                            Max: {{ crossing.raw.maxValue }} @
+                            {{ toHumanReadableDate(crossing.raw.maxValueTime) }}
+                          </v-card-subtitle>
+                        </div>
+                        <DataTable
+                          v-if="isCrossingExpanded(crossing)"
+                          class="mt-4"
+                          :tableData="toTableDate(crossing.raw)"
+                        />
+                      </v-card-text>
+                    </v-card>
+                  </template>
+                </v-virtual-scroll>
+              </template>
+            </v-data-iterator>
           </template>
         </template>
       </v-data-iterator>
@@ -94,14 +129,14 @@
 <script setup lang="ts">
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
-import { getResourcesIconsUrl } from '@/lib/fews-config';
-import { computed, ref } from 'vue';
+import { getResourcesIconsUrl } from '@/lib/fews-config'
+import { computed, ref } from 'vue'
 import {
   toDateDifferenceString,
   toDateRangeString,
   toHumanReadableDate,
 } from '@/lib/date'
-import { AggregatedLevelThresholdCrossings } from '@deltares/fews-pi-requests';
+import { AggregatedLevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import DataTable from '@/components/general/DataTable.vue'
 
 interface Props {
@@ -113,22 +148,30 @@ const props = defineProps<Props>()
 const isPanelOpen = ref(false)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { thresholds: thresholdsArray } = useTopologyThresholds(baseUrl, () => props.nodeId)
+const { thresholds: thresholdsArray } = useTopologyThresholds(
+  baseUrl,
+  () => props.nodeId,
+)
 
 const warningLevels = computed(() => {
-  if (thresholdsArray.value === undefined || thresholdsArray.value.length === 0) return []
+  if (thresholdsArray.value === undefined || thresholdsArray.value.length === 0)
+    return []
   const thresholds = thresholdsArray.value[0]
-  return thresholds.aggregatedLevelThresholdWarningLevels?.map((warningLevel) => {
-    return {
-      name: warningLevel.name,
-      id: warningLevel.id,
-      count: warningLevel.count,
-      icon: warningLevel.icon ? getResourcesIconsUrl(warningLevel.icon) : undefined,
-      thresholdCrossing: thresholds.aggregatedLevelThresholdCrossings?.filter(
-        (crossing) => crossing.warningLevelId == warningLevel.id
-      )
-    }
-  })
+  return thresholds.aggregatedLevelThresholdWarningLevels?.map(
+    (warningLevel) => {
+      return {
+        name: warningLevel.name,
+        id: warningLevel.id,
+        count: warningLevel.count,
+        icon: warningLevel.icon
+          ? getResourcesIconsUrl(warningLevel.icon)
+          : undefined,
+        thresholdCrossing: thresholds.aggregatedLevelThresholdCrossings?.filter(
+          (crossing) => crossing.warningLevelId == warningLevel.id,
+        ),
+      }
+    },
+  )
 })
 
 function toTableDate(crossing: AggregatedLevelThresholdCrossings) {
@@ -174,23 +217,22 @@ function toTableDate(crossing: AggregatedLevelThresholdCrossings) {
         {
           header: 'Event duration',
           subHeader: toDateDifferenceString(
-              crossing.firstValueTime,
-              crossing.lastValueTime,
-            ),
-            value: toDateRangeString(
-              crossing.firstValueTime,
-              crossing.lastValueTime,
-            ),
+            crossing.firstValueTime,
+            crossing.lastValueTime,
+          ),
+          value: toDateRangeString(
+            crossing.firstValueTime,
+            crossing.lastValueTime,
+          ),
         },
       ],
-    }
+    },
   ]
 }
 
 function toggleThresholdPanel(): void {
   isPanelOpen.value = !isPanelOpen.value
 }
-
 </script>
 
 <style scoped>
