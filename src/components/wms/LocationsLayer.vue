@@ -1,16 +1,16 @@
 <template>
-  <mgl-geo-json-source :source-id="locationsSourceId" :data="geojson">
+  <mgl-geo-json-source :source-id="locationIds.source" :data="geojson">
     <LocationsFillLayer
-      :layerId="locationsFillLayerId"
+      :layerId="locationIds.layer.fill"
       :selectedLocationIds="selectedLocationIds"
       :isDark="isDark"
       :hoveredStateId="hoveredStateId"
     />
-    <LocationsSymbolLayer :layerId="locationsSymbolLayerId" />
-    <LocationsCircleLayer :layerId="locationsCircleLayerId" />
+    <LocationsSymbolLayer :layerId="locationIds.layer.symbol" />
+    <LocationsCircleLayer :layerId="locationIds.layer.circle" />
     <LocationsTextLayer
       v-if="showNames"
-      :layerId="locationsTextLayerId"
+      :layerId="locationIds.layer.text"
       :isDark="isDark"
     />
   </mgl-geo-json-source>
@@ -40,13 +40,7 @@ import { onBeforeMount } from 'vue'
 import { addLocationIconsToMap } from '@/lib/location-icons'
 import { useDark } from '@vueuse/core'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import {
-  locationsCircleLayerId,
-  locationsFillLayerId,
-  locationsSymbolLayerId,
-  locationsSourceId,
-  locationsTextLayerId,
-} from '@/lib/map'
+import { locationIds, clickableLocationLayerIds } from '@/lib/map'
 import { useMap } from '@/services/useMap'
 
 const settings = useUserSettingsStore()
@@ -87,36 +81,28 @@ watch(geojson, () => {
 
 onBeforeMount(() => {
   if (map) {
-    for (const layerId of [
-      locationsFillLayerId,
-      locationsCircleLayerId,
-      locationsSymbolLayerId,
-    ]) {
+    for (const layerId of clickableLocationLayerIds) {
       map.on('click', layerId, clickHandler)
       map.on('mouseenter', layerId, setCursorPointer)
       map.on('mouseleave', layerId, unsetCursorPointer)
     }
 
-    map.on('mousemove', locationsFillLayerId, onFillMouseMove)
-    map.on('mouseleave', locationsFillLayerId, onFillMouseLeave)
+    map.on('mousemove', locationIds.layer.fill, onFillMouseMove)
+    map.on('mouseleave', locationIds.layer.fill, onFillMouseLeave)
   }
   addLocationIcons()
 })
 
 onBeforeUnmount(() => {
   if (map) {
-    for (const layerId of [
-      locationsFillLayerId,
-      locationsCircleLayerId,
-      locationsSymbolLayerId,
-    ]) {
+    for (const layerId of clickableLocationLayerIds) {
       map.off('click', layerId, clickHandler)
       map.off('mouseenter', layerId, setCursorPointer)
       map.off('mouseleave', layerId, unsetCursorPointer)
     }
 
-    map.off('mousemove', locationsFillLayerId, onFillMouseMove)
-    map.off('mouseleave', locationsFillLayerId, onFillMouseLeave)
+    map.on('mousemove', locationIds.layer.fill, onFillMouseMove)
+    map.on('mouseleave', locationIds.layer.fill, onFillMouseLeave)
   }
 })
 
@@ -130,11 +116,9 @@ function addLocationIcons() {
 
 function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   if (map) {
-    const layers = [
-      locationsSymbolLayerId,
-      locationsCircleLayerId,
-      locationsFillLayerId,
-    ].filter((layerId) => map.getLayer(layerId))
+    const layers = clickableLocationLayerIds.filter((layerId) =>
+      map.getLayer(layerId),
+    )
     const features = map.queryRenderedFeatures(event.point, {
       layers,
     })
