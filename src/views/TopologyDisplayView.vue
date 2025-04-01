@@ -63,6 +63,7 @@
     </v-menu>
   </Teleport>
   <div class="d-flex w-100 h-100">
+    <ThresholdSummary :nodeId="topologyNode?.id"></ThresholdSummary>
     <router-view v-slot="{ Component }">
       <keep-alive include="SpatialDisplay">
         <component
@@ -91,6 +92,7 @@ import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
 import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
 import LeafNodeButtons from '@/components/general/LeafNodeButtons.vue'
 import ThresholdPanel from '@/components/general/ThresholdPanel.vue'
+import ThresholdSummary from '@/components/general/ThresholdSummary.vue'
 
 import type { ColumnItem } from '@/components/general/ColumnItem'
 import { useConfigStore } from '@/stores/config'

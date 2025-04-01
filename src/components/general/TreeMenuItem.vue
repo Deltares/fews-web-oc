@@ -75,13 +75,6 @@
           }}</v-icon>
         </template>
       </v-list-item>
-      <v-list-item
-        v-if="props.active === item.id && (item.thresholdCount ?? 0) > 0"
-        density="compact"
-        class="threshold-summary--list-item"
-      >
-        <ThresholdSummary :nodeId="item.id"></ThresholdSummary>
-      </v-list-item>
     </template>
   </template>
 </template>
@@ -89,7 +82,6 @@
 <script setup lang="ts">
 import { toCharacterIcon } from '@/lib/icons/index.js'
 import type { ColumnItem } from './ColumnItem.js'
-import ThresholdSummary from '@/components/general/ThresholdSummary.vue'
 
 interface Props {
   items?: ColumnItem[]
