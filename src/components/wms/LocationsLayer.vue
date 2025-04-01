@@ -1,53 +1,36 @@
 <template>
   <mgl-geo-json-source :source-id="locationsSourceId" :data="geojson">
-    <mgl-fill-layer
-      :layer-id="locationsFillLayerId"
-      :paint="paintFillSpecification"
-      :filter="['==', '$type', 'Polygon']"
+    <LocationsFillLayer
+      :layerId="locationsFillLayerId"
+      :selectedLocationIds="selectedLocationIds"
+      :isDark="isDark"
+      :hoveredStateId="hoveredStateId"
     />
-    <mgl-symbol-layer
-      :layer-id="locationsSymbolLayerId"
-      :layout="layoutSymbolSpecification"
-      :paint="paintSymbolSpecification"
-      :filter="['all', ['has', 'iconName'], ['==', '$type', 'Point']]"
-    />
-    <mgl-circle-layer
-      :layer-id="locationsCircleLayerId"
-      :paint="paintCircleSpecification"
-      :filter="['all', ['!has', 'iconName'], ['==', '$type', 'Point']]"
-    />
-    <mgl-symbol-layer
+    <LocationsSymbolLayer :layerId="locationsSymbolLayerId" />
+    <LocationsCircleLayer :layerId="locationsCircleLayerId" />
+    <LocationsTextLayer
       v-if="showNames"
-      :layer-id="locationsTextLayerId"
-      :layout="layoutTextSpecification"
-      :paint="paintTextSpecification"
-      :filter="['==', '$type', 'Point']"
+      :layerId="locationsTextLayerId"
+      :isDark="isDark"
     />
   </mgl-geo-json-source>
-  <mgl-marker
-    v-for="coordinates in selectedLocationsCoordinates"
-    :coordinates="coordinates"
-    :offset="[0, 4]"
-    anchor="bottom"
-  >
-    <template #marker>
-      <v-icon class="text-shadow" size="32px">mdi-map-marker</v-icon>
-    </template>
-  </mgl-marker>
+
+  <LocationsMarkers
+    :selectedLocationIds="selectedLocationIds"
+    :geojson="geojson"
+  />
 </template>
 
 <script setup lang="ts">
-import {
-  MglFillLayer,
-  MglCircleLayer,
-  MglSymbolLayer,
-  MglGeoJsonSource,
-  MglMarker,
-} from '@indoorequal/vue-maplibre-gl'
-import type { Feature, FeatureCollection, Geometry } from 'geojson'
+import LocationsFillLayer from '@/components/wms/locations/LocationsFillLayer.vue'
+import LocationsCircleLayer from '@/components/wms/locations/LocationsCircleLayer.vue'
+import LocationsSymbolLayer from '@/components/wms/locations/LocationsSymbolLayer.vue'
+import LocationsTextLayer from '@/components/wms/locations/LocationsTextLayer.vue'
+import LocationsMarkers from '@/components/wms/locations/LocationsMarkers.vue'
+import { MglGeoJsonSource } from '@indoorequal/vue-maplibre-gl'
+import type { FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
 import {
-  LngLat,
   type MapGeoJSONFeature,
   type MapLayerMouseEvent,
   type MapLayerTouchEvent,
@@ -97,124 +80,6 @@ const geojson = computed<FeatureCollection<Geometry, Location>>(() => ({
 }))
 
 const emit = defineEmits(['click'])
-
-const selectedLocationsCoordinates = computed(() => {
-  const selectedLocations = geojson.value.features.filter((feature) =>
-    props.selectedLocationIds?.includes(feature.properties.locationId),
-  )
-
-  return selectedLocations
-    .flatMap(getLngLatForFeature)
-    .filter((lngLat) => lngLat !== undefined)
-})
-
-function getLngLatForFeature(feature: Feature<Geometry, Location>) {
-  const geometry = feature.geometry
-  if (geometry.type === 'Point') {
-    const lng = geometry.coordinates[0]
-    const lat = geometry.coordinates[1]
-
-    return new LngLat(lng, lat)
-  }
-
-  const properties = feature.properties
-  if (properties.lon && properties.lat) {
-    const lng = +properties.lon
-    const lat = +properties.lat
-
-    return new LngLat(lng, lat)
-  }
-}
-
-const layoutSymbolSpecification = {
-  'icon-allow-overlap': true,
-  'icon-image': ['get', 'iconName'],
-  'symbol-sort-key': ['get', 'sortKey'],
-}
-
-const layoutTextSpecification = {
-  'text-field': ['get', 'locationName'],
-  'text-size': 12,
-  'text-overlap': 'never',
-  'text-padding': 10,
-  'text-justify': 'auto',
-  'text-variable-anchor': ['right', 'left'],
-  'text-max-width': 15,
-  // When overlap is false sort order has to be inverted for some reason:
-  // https://maplibre.org/maplibre-style-spec/layers/#symbol-sort-key
-  'symbol-sort-key': ['+', 999, ['-', ['get', 'sortKey']]],
-}
-
-const paintTextSpecification = computed(() => {
-  return {
-    'text-color': isDark.value ? 'rgb(255,255,255)' : 'rgb(0,0,0)',
-    'text-halo-color': isDark.value ? 'rgb(0,0,0)' : 'rgb(255,255,255)',
-    'text-halo-width': 1,
-    'text-halo-blur': 1,
-  }
-})
-
-const defaultOpacity = 1.0
-
-const paintSymbolSpecification = {
-  'icon-opacity': defaultOpacity,
-}
-
-const paintCircleSpecification = {
-  'circle-radius': 5,
-  'circle-color': '#dfdfdf',
-  'circle-opacity': defaultOpacity,
-  'circle-stroke-color': 'black',
-  'circle-stroke-width': 1.5,
-}
-
-function getDarkPaintFillSpecification(selectedIds: string[], hoverId: string) {
-  return {
-    'fill-color': 'darkgrey',
-    'fill-opacity': [
-      'match',
-      ['get', 'locationId'],
-      selectedIds,
-      0.35,
-      hoverId,
-      0.3,
-      0.2,
-    ],
-    'fill-outline-color': 'white',
-  }
-}
-
-function getLightPaintFillSpecification(
-  selectedIds: string[],
-  hoverId: string,
-) {
-  return {
-    'fill-color': '#dfdfdf',
-    'fill-opacity': [
-      'match',
-      ['get', 'locationId'],
-      selectedIds,
-      0.8,
-      hoverId,
-      0.6,
-      0.3,
-    ],
-    'fill-outline-color': 'black',
-  }
-}
-
-const paintFillSpecification = computed(() => {
-  const selectedIds = props.selectedLocationIds?.length
-    ? props.selectedLocationIds
-    : ['invalid-no-layer-selected']
-  const hoverStateId = hoveredStateId.value ?? 'invalid-no-hover'
-  const hoverId = selectedIds.includes(hoverStateId)
-    ? 'invalid-already-selected'
-    : hoverStateId
-  return isDark.value
-    ? getDarkPaintFillSpecification(selectedIds, hoverId)
-    : getLightPaintFillSpecification(selectedIds, hoverId)
-})
 
 watch(geojson, () => {
   addLocationIcons()
