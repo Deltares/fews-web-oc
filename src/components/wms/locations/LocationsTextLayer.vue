@@ -14,11 +14,16 @@ import { computed } from 'vue'
 interface Props {
   layerId: string
   isDark: boolean
+  child?: boolean
 }
 
 const props = defineProps<Props>()
 
-const filter = ['==', '$type', 'Point']
+const filter = [
+  'all',
+  ['==', '$type', 'Point'],
+  [props.child ? 'has' : '!has', 'parentLocationId'],
+]
 
 const layout = {
   'text-field': ['get', 'locationName'],
@@ -28,9 +33,7 @@ const layout = {
   'text-justify': 'auto',
   'text-variable-anchor': ['right', 'left'],
   'text-max-width': 15,
-  // When overlap is false sort order has to be inverted for some reason:
-  // https://maplibre.org/maplibre-style-spec/layers/#symbol-sort-key
-  'symbol-sort-key': ['+', 999, ['-', ['get', 'sortKey']]],
+  'symbol-sort-key': ['get', 'invertedSortKey'],
 }
 
 const paint = computed(() => {

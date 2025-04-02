@@ -6,13 +6,19 @@
       :isDark="isDark"
       :hoveredStateId="hoveredStateId"
     />
-    <LocationsSymbolLayer :layerId="locationIds.layer.symbol" />
+
     <LocationsCircleLayer :layerId="locationIds.layer.circle" />
-    <LocationsTextLayer
-      v-if="showNames"
-      :layerId="locationIds.layer.text"
+
+    <LocationsSymbolLayer
+      :layerId="locationIds.layer.symbol"
       :isDark="isDark"
     />
+    <LocationsSymbolLayer
+      :layerId="locationIds.layer.childSymbol"
+      :isDark="isDark"
+      child
+    />
+    <LocationsTextLayer :layerId="locationIds.layer.text" :isDark="isDark" />
   </mgl-geo-json-source>
 
   <LocationsMarkers
@@ -40,7 +46,11 @@ import { onBeforeMount } from 'vue'
 import { addLocationIconsToMap } from '@/lib/location-icons'
 import { useDark } from '@vueuse/core'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { locationIds, clickableLocationLayerIds } from '@/lib/map'
+import {
+  locationIds,
+  clickableLocationLayerIds,
+  addPropertiesToLocationGeojson,
+} from '@/lib/map'
 import { useMap } from '@/services/useMap'
 
 const settings = useUserSettingsStore()
@@ -60,18 +70,13 @@ const props = withDefaults(defineProps<Props>(), {
   selectedLocationId: null,
 })
 
-const geojson = computed<FeatureCollection<Geometry, Location>>(() => ({
-  type: 'FeatureCollection',
-  features: props.locationsGeoJson.features.map((feature) => ({
-    ...feature,
-    properties: {
-      ...feature.properties,
-      iconName:
-        feature.properties.thresholdIconName ?? feature.properties.iconName,
-      sortKey: feature.properties.thresholdIconName ? 1 : 0,
-    },
-  })),
-}))
+const showNames = computed(() => {
+  return Boolean(settings.get('ui.map.showLocationNames')?.value)
+})
+
+const geojson = computed(() =>
+  addPropertiesToLocationGeojson(props.locationsGeoJson, showNames.value),
+)
 
 const emit = defineEmits(['click'])
 
@@ -104,10 +109,6 @@ onBeforeUnmount(() => {
     map.on('mousemove', locationIds.layer.fill, onFillMouseMove)
     map.on('mouseleave', locationIds.layer.fill, onFillMouseLeave)
   }
-})
-
-const showNames = computed(() => {
-  return settings.get('ui.map.showLocationNames')?.value
 })
 
 function addLocationIcons() {
