@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
           `script-src 'self'`,
           `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
           `style-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} 'unsafe-inline'`, // vuetify
-          `worker-src blob:`, // maplibre-gl
+          `worker-src 'self' blob:`, // maplibre-gl
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices
           [
             `connect-src`,
@@ -86,6 +86,7 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       include: ['**/*.test.?(c|m)[jt]s?(x)'],
+      setupFiles: ['./vitest.setup.ts'],
     },
   }
 })

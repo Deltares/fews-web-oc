@@ -1,0 +1,41 @@
+{
+  "topologyNodes": [
+    {
+      "id": "viewer_meteorology_rainfall",
+      "name": "Rainfall",
+      "localRun": false,
+      "iconId": "mdi-weather-pouring",
+      "topologyNodes": [
+        {
+          "id": "viewer_meteorology_rainfall_forecast",
+          "name": "Forecast",
+          "localRun": false,
+          "iconId": "mdi-arrow-right-bold",
+          "topologyNodes": [
+            {
+              "id": "viewer_meteorology_rainfall_forecast_jaws_1x1",
+              "name": "JAWS 1x1",
+              "workflowId": "ReportRainfallReturnPeriodForecasted",
+              "iconId": "mdi-shark-fin",
+              "localRun": true,
+              "filterIds": [ "shartk-attacks" ],
+              "secondaryWorkflows": [
+                {
+                  "secondaryWorkflowId": "ReportRainfallReturnPeriodForecasted",
+                  "description": "Report Return Periods Rainfall (forecasted)"
+                }
+              ],
+              "reportDisplay": {
+                "reports": [
+                  {
+                    "moduleInstanceId": "ReportRainfallReturnPeriodTableForecast"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

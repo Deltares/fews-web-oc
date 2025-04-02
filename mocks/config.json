@@ -1,0 +1,85 @@
+{
+  "general": {
+    "title": "FEWS Mock System",
+    "icons": {
+      "favicon": "ethekwini_favicon.jpg",
+      "logo": "test-logo.png"
+    },
+    "defaultComponent": "topologyDisplay",
+    "splashScreen": "splashscreen.webp",
+    "helpMenu": {
+      "url": [
+        {
+          "name": "Deltares",
+          "url": "https://www.deltares.nl/"
+        },
+        {
+          "name": "Delft-FEWS Web OC",
+          "url": "https://github.com/Deltares/fews-web-oc"
+        }
+      ],
+      "path": [
+        {
+          "name": "Terms and Conditions",
+          "path": "terms-and-conditions"
+        }
+      ]
+    },
+    "taskMenu": {
+      "enabled": "true"
+    },
+    "readonlyMode": false,
+    "permissionsEnabled": true,
+    "timeSettings": {
+      "viewPeriodPresets": [
+        {
+          "unit": "day",
+          "start": "-31",
+          "label": "last month"
+        },
+        {
+          "unit": "day",
+          "start": "-7",
+          "label": "last week"
+        },
+        {
+          "unit": "day",
+          "end": "7",
+          "label": "next week"
+        },
+        {
+          "unit": "day",
+          "start": "-60",
+          "end": "7",
+          "label": "last 2 months & next week"
+        }
+      ]
+    },
+    "agreeToTermsAndConditions": {
+      "enabled": true
+    },
+    "manifestFile": "app.manifest"
+  },
+  "components": [
+    {
+      "id": "topologyDisplay",
+      "type": "TopologyDisplay",
+      "title": "Overview",
+      "showLeafNodesAsButtons": false,
+      "defaultPath": {
+        "nodeId": "viewer_meteorology_rainfall_forecast_saws_1x1"
+      },
+      "showInNavigationMenu": true,
+      "enableTaskRuns": true,
+      "showActiveThresholdCrossingsForFilters": true
+    },
+    {
+      "id": "htmlDisplay",
+      "type": "HtmlDisplay",
+      "title": "Terms and Conditions",
+      "path": "terms-and-conditions",
+      "url": "terms-and-conditions.html",
+      "showInNavigationMenu": false
+    }
+  ]
+}
