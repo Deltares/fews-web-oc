@@ -1,8 +1,7 @@
 <template>
-  <Teleport to="#main-side-panel-left" defer>
+  <Teleport to="#main-side-panel-left">
     <div v-if="warningLevels?.length" class="threshold-summary h-100 d-flex justify-center flex-column flex-wrap">
-      <div class="align-self-end flex-0-0">
-        <v-btn disabled icon="mdi-menu-open"></v-btn>
+      <div class="align-self-end flex-0-0" id="threshold-summary-top">
       </div>
       <div class="d-flex flex-1-0 flex-column justify-center">
         <v-list-item
