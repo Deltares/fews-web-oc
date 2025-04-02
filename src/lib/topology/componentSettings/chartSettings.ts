@@ -6,8 +6,8 @@ export type ChartsSettings = DeepRequired<PiChartsSettings>
 export const defaultChartSettings: ChartsSettings = {
   general: {
     startPanel: 'timeSeriesChart',
-    hideToolBar: 'false',
-    showLocationNames: true, // TODO: Implement
+    toolBar: 'false',
+    locationNames: true, // TODO: Implement
   },
   actions: {
     panelPlacement: {
@@ -25,12 +25,12 @@ export const defaultChartSettings: ChartsSettings = {
       placement: 'above chart',
     },
     xAxis: {
-      show: true, // TODO: Implement
+      enabled: true, // TODO: Implement
       xTicks: true,
       xLabel: true,
     },
     yAxis: {
-      show: true, // TODO: Implement
+      enabled: true, // TODO: Implement
       yTicks: true,
       yLabel: true,
     },
@@ -47,12 +47,12 @@ export const defaultChartSettings: ChartsSettings = {
       placement: 'above chart',
     },
     xAxis: {
-      show: true,
+      enabled: true,
       xTicks: true,
       xLabel: true,
     },
     yAxis: {
-      show: true,
+      enabled: true,
       yTicks: true,
       yLabel: true,
     },
