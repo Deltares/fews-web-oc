@@ -74,6 +74,7 @@
     "jsdom": "^26.0.0",
     "prettier": "3.5.3",
     "sass-embedded": "^1.86.0",
+    "msw": "^2.7.3",
     "sonarqube-scanner": "^3.3.0",
     "typescript": "^5.8.2",
     "vite": "^6.2.2",
@@ -83,5 +84,10 @@
   },
   "volta": {
     "node": "22.12.0"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

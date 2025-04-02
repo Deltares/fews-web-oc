@@ -1,0 +1,17 @@
+:root {
+  --font-family: 'RO-Sans', sans-serif;
+  --theme-color: white;
+  --contrast-color: black;
+  --canvas-fill: rgb(253, 253, 252);
+  --weboc-app-bar-bg-color: rgb(240, 240, 244);
+  .grid .tick line {
+  stroke: lightgray;
+}
+}
+
+.dark {
+  --contrast-color: rgb(255, 255, 255);
+  --theme-color: black;
+  --canvas-fill: rgb(54, 54, 54);
+  --weboc-app-bar-bg-color: rgb(212, 209, 31);
+}
