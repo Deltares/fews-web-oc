@@ -6,8 +6,8 @@
         :location-ids="props.locationIds"
         :latitude="props.latitude"
         :longitude="props.longitude"
-        :locations="locations"
-        :geojson="geojson"
+        :locations="filteredLocations"
+        :geojson="filteredGeojson"
         @changeLocationIds="onLocationsChange"
         :layer-capabilities="layerCapabilities"
         :bounding-box="boundingBox"
@@ -40,6 +40,7 @@ import {
   useTemplateRef,
   watch,
   onMounted,
+  inject,
 } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
@@ -50,6 +51,7 @@ import {
 } from '@/services/useWms'
 import {
   filterActionsFilter,
+  LevelThresholdWarningLevels,
   timeSeriesGridActionsFilter,
   type TopologyNode,
 } from '@deltares/fews-pi-requests'
@@ -87,6 +89,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['navigate'])
 
+const selectedWarningLevels = ref<LevelThresholdWarningLevels[]>(inject('selectedWarningLevels', []))
+
 const { thresholds } = useDisplay()
 const containerRef = useTemplateRef('container')
 
@@ -100,6 +104,18 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
   () => props.layerName,
 )
 const { locations, geojson } = useFilterLocations(baseUrl, filterIds)
+
+// FIXME: Use the 'severity' instead of the icon, once the backend return the 'severity' with the locations
+const selectedWarningLevelIcons = computed(() => selectedWarningLevels.value.map((level) => level.icon ?? 'no-threshold-icon'))
+const filteredLocations = computed(() => {
+  if (selectedWarningLevelIcons.value.length === 0) return locations.value
+  return locations.value?.filter((location) => selectedWarningLevelIcons.value.includes(location.thresholdIconName ?? 'no-threshold-icon'))
+})
+const filteredGeojson = computed(() => {
+  if (selectedWarningLevelIcons.value.length === 0) return geojson.value
+  const filteredFeatures = geojson.value.features.filter((feature) => selectedWarningLevelIcons.value.includes(feature.properties.thresholdIconName ?? 'no-threshold-icon'))
+  return {...geojson.value, ...{features: filteredFeatures}}
+})
 
 const start = computed(() => {
   if (!times.value || times.value.length === 0) return null
