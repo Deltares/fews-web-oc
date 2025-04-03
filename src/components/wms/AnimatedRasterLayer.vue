@@ -1,11 +1,26 @@
 <template>
-  <div></div>
+  <mgl-image-source
+    :sourceId="sourceId"
+    :url="sourceOptions?.url"
+    :coordinates="sourceOptions?.coordinates"
+  >
+    <mgl-raster-layer
+      :layerId="layerId"
+      :before="beforeId"
+      :paint="{
+        'raster-opacity': 0,
+        'raster-fade-duration': 0,
+        'raster-opacity-transition': { duration: 0, delay: 0 },
+      }"
+    />
+  </mgl-image-source>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { toMercator } from '@turf/projection'
 import {
+  Coordinates,
   ImageSource,
   LngLat,
   LngLatBounds,
@@ -13,6 +28,7 @@ import {
   MapLayerTouchEvent,
   type MapSourceDataEvent,
 } from 'maplibre-gl'
+import { MglImageSource, MglRasterLayer } from '@indoorequal/vue-maplibre-gl'
 import { configManager } from '@/services/application-config'
 import { useMap } from '@/services/useMap'
 import { point } from '@turf/helpers'
@@ -29,49 +45,48 @@ export interface AnimatedRasterLayerOptions {
 }
 
 interface Props {
-  layer?: AnimatedRasterLayerOptions
+  layer: AnimatedRasterLayerOptions
 }
 
 const props = withDefaults(defineProps<Props>(), {})
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 
+const beforeId = computed(() => {
+  if (!map) return
+  return getBeforeId(map)
+})
+
+const sourceId = computed(() => getSourceId(`${props.layer.name}-source`))
+const layerId = computed(() => getLayerId(`${props.layer.name}-layer`))
+
 const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
 
-let currentLayer = ''
-let currentSource = ''
+const sourceOptions = ref(getImageSourceOptions())
 
 onMounted(() => {
+  isLoading.value = true
   addHooksToMapObject()
-  onLayerChange()
 })
 
 onUnmounted(() => {
-  removeLayer()
+  isLoading.value = false
   removeHooksFromMapObject()
 })
 
-function getCoordsFromBounds(bounds: LngLatBounds) {
-  return [
-    bounds.getNorthWest().toArray(),
-    bounds.getNorthEast().toArray(),
-    bounds.getSouthEast().toArray(),
-    bounds.getSouthWest().toArray(),
-  ]
-}
-
+watch(() => props.layer.time, onMapMove)
 function onMapMove(): void {
   updateSource()
 }
 
 function onDataChange(event: MapSourceDataEvent): void {
   if (
-    event.sourceId === currentSource &&
+    event.sourceId === sourceId.value &&
     event.tile !== undefined &&
     event.isSourceLoaded
   ) {
-    map?.setPaintProperty(currentLayer, 'raster-opacity', 1)
+    map?.setPaintProperty(layerId.value, 'raster-opacity', 1)
   }
 }
 
@@ -80,13 +95,15 @@ function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 }
 
 function onStartLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId !== currentSource) return
-  isLoading.value = true
+  if (e.sourceId === sourceId.value) {
+    isLoading.value = true
+  }
 }
 
 function onEndLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId !== currentSource) return
-  isLoading.value = false
+  if (e.isSourceLoaded && e.sourceId === sourceId.value) {
+    isLoading.value = false
+  }
 }
 
 function onError(e: ErrorEvent) {
@@ -101,7 +118,6 @@ function onError(e: ErrorEvent) {
 }
 
 function addHooksToMapObject() {
-  map?.on('load', onLayerChange)
   map?.on('moveend', onMapMove)
   map?.on('sourcedata', onDataChange)
   map?.on('dblclick', onDoubleClick)
@@ -111,7 +127,6 @@ function addHooksToMapObject() {
 }
 
 function removeHooksFromMapObject(): void {
-  map?.off('load', onLayerChange)
   map?.off('moveend', onMapMove)
   map?.off('sourcedata', onDataChange)
   map?.off('dblclick', onDoubleClick)
@@ -120,13 +135,11 @@ function removeHooksFromMapObject(): void {
   map?.off('error', onError)
 }
 
-function getImageSourceOptions(): any {
-  if (
-    props.layer === undefined ||
-    props.layer.time === undefined ||
-    map === undefined
-  )
-    return {}
+function getImageSourceOptions() {
+  if (props.layer.time === undefined || map === undefined) {
+    return
+  }
+
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const time = props.layer.time.toISOString()
   let bounds = map.getBounds()
@@ -170,42 +183,20 @@ function getImageSourceOptions(): any {
       props.layer.useDisplayUnits ? 'true' : 'false',
     )
   }
-  const imageSourceOptions = {
+  return {
     url: getMapUrl.toString(),
     coordinates: getCoordsFromBounds(bounds),
   }
-  return imageSourceOptions
-}
-
-function createSource() {
-  if (!map) return
-
-  const rasterSource: any = {
-    type: 'image',
-    ...getImageSourceOptions(),
-  }
-  map.addSource(currentSource, rasterSource)
-  const rasterLayer: any = {
-    id: currentLayer,
-    type: 'raster',
-    source: currentSource,
-    paint: {
-      'raster-opacity': 0,
-      'raster-opacity-transition': {
-        duration: 0,
-        delay: 0,
-      },
-      'raster-fade-duration': 0,
-    },
-  }
-  const beforeId = getBeforeId(map)
-  map.addLayer(rasterLayer, beforeId)
 }
 
 function updateSource() {
-  if (map === undefined) return
-  const source = map.getSource(currentSource) as ImageSource
-  if (source !== undefined) source.updateImage(getImageSourceOptions())
+  const source = map?.getSource(sourceId.value) as ImageSource
+  if (!source) return
+
+  const imageOptions = getImageSourceOptions()
+  if (!imageOptions) return
+
+  source.updateImage(imageOptions)
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
@@ -214,41 +205,12 @@ function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
   return [...sw.geometry.coordinates, ...ne.geometry.coordinates]
 }
 
-function removeLayer() {
-  if (map !== undefined && map.style !== undefined) {
-    if (map.getSource(currentSource) !== undefined) {
-      map.removeLayer(currentLayer)
-      map.removeSource(currentSource)
-    }
-  }
-}
-
-watch(() => props.layer, onLayerChange)
-function onLayerChange(): void {
-  if (props.layer === undefined || props.layer === null) {
-    removeLayer()
-    return
-  }
-  if (props.layer.name === undefined || props.layer.time === undefined) {
-    return
-  }
-
-  const layerId = getLayerId(props.layer.name)
-  const sourceId = getSourceId(props.layer.name)
-
-  if (layerId !== currentLayer) {
-    removeLayer()
-    currentLayer = layerId
-    currentSource = sourceId
-  }
-
-  const source = map?.getSource(currentSource)
-  if (source === undefined) {
-    createSource()
-  } else {
-    updateSource()
-  }
+function getCoordsFromBounds(bounds: LngLatBounds): Coordinates {
+  return [
+    bounds.getNorthWest().toArray(),
+    bounds.getNorthEast().toArray(),
+    bounds.getSouthEast().toArray(),
+    bounds.getSouthWest().toArray(),
+  ]
 }
 </script>
-
-<style scoped></style>
