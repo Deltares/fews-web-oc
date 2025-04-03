@@ -4,6 +4,7 @@
       v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
       v-model:isLoading="isLoading"
       :layer="layerOptions"
+      :key="layerOptions?.name"
       @doubleclick="onCoordinateClick"
     />
     <AnimatedStreamlineRasterLayer
