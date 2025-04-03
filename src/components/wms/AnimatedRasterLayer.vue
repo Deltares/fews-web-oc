@@ -178,7 +178,7 @@ function getImageSourceOptions(): any {
 }
 
 function createSource() {
-  if (!map) return
+  if (!map?.isStyleLoaded()) return
 
   const rasterSource: any = {
     type: 'image',

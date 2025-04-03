@@ -10,13 +10,12 @@
             flat
             :rounded="false"
           >
-            <!-- TODO: For now we only support one item per element -->
-            <!--       to prevent UI clutter. -->
             <DashboardItem
               v-if="element.items"
-              :item="element.items[0]"
+              :item="getDashboardItem(element.items)"
               :slider-enabled="sliderEnabled"
               :settings="settings"
+              @dashboardAction="onDashboardAction"
             />
           </v-card>
         </template>
@@ -38,7 +37,10 @@
 </template>
 
 <script setup lang="ts">
-import { type WebOCDashboard } from '@deltares/fews-pi-requests'
+import {
+  WebOCDashboardItem,
+  type WebOCDashboard,
+} from '@deltares/fews-pi-requests'
 import { computed, ref, watch } from 'vue'
 import DashboardItem from '@/components/general/DashboardItem.vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
@@ -47,6 +49,7 @@ import { useDisplay } from 'vuetify'
 import { createDateRegistry } from '@/services/useDateRegistry'
 import { provideSelectedDate } from '@/services/useSelectedDate'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
+import { SsdActionResult } from '@deltares/fews-ssd-requests'
 
 interface Props {
   dashboard: WebOCDashboard
@@ -72,6 +75,18 @@ function setupDates() {
 
   provideSelectedDate(selectedDate)
   return createDateRegistry()
+}
+
+const actionId = ref<string>()
+function onDashboardAction(action: SsdActionResult) {
+  actionId.value = action.actionId
+}
+
+function getDashboardItem(items: WebOCDashboardItem[]) {
+  return (
+    // @ts-expect-error: FIXME:: solve in the schema
+    items.find((item) => item.actionIds?.includes(actionId.value)) ?? items[0]
+  )
 }
 
 const groups = computed(() => props.dashboard.groups)
