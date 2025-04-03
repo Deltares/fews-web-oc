@@ -157,14 +157,14 @@ const warningLevels = computed(() => {
   {
     count: 2,
     icon: "https://ws-pulautekongmc00.fews.deltares.nl/FewsWebServices/rest/fewspiservice/v1/resources/icons/triangle_orange.svg",
-    id: "3",
+    id: "2",
     name: "Warning",
     severity: 7,
   },
   {
     count: 47,
     icon: "https://ws-pulautekongmc00.fews.deltares.nl/FewsWebServices/rest/fewspiservice/v1/resources/icons/triangle_yellow.svg",
-    id: "3",
+    id: "1",
     name: "Alert",
     severity: 6,
   }]
