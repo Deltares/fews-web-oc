@@ -20,7 +20,7 @@
         :hide-speed-controls="mobile"
       />
     </div>
-    <div class="child-container" :class="{ mobile, 'd-none': objectId === '' }">
+    <div v-if="objectId" class="child-container" :class="{ mobile }">
       <SSDTimeSeriesDisplay
         :groupId="groupId"
         :panelId="panelId"
