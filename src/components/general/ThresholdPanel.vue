@@ -113,6 +113,14 @@ function toTableDate(crossing: LevelThresholdCrossings) {
     {
       columns: [
         {
+          header: 'Warning level',
+          value: crossing.warningLevelName
+        },
+      ],
+    },
+    {
+      columns: [
+        {
           header: 'First event time',
           value: toHumanReadableDate(crossing.firstValueTime),
         },
