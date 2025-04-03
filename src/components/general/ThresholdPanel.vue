@@ -26,38 +26,40 @@
             height="100%"
           >
             <template v-slot:default="{ item: crossing }">
-              <v-card
-                border
-                :key="crossing.raw.locationId"
-                flat
-                density="compact"
-                @click="() => toggleCrossingExpand(crossing)"
-                :ripple="false"
-                class="w-100"
-              >
-                <v-card-text class="pa-0 h-100">
-                  <div class="d-flex align-center justify-space-between ga-2 h-100">
-                    <div
-                      class="d-flex flex-column pa-2 user-select-text cursor-pointer"
-                    >
-                      <v-list-item-title>
-                        {{ crossing.raw.locationId }}
-                      </v-list-item-title>
-                      <v-card-subtitle class="pa-0">
-                        {{ toHumanReadableDate(crossing.raw.maxValueTime) }}
-                      </v-card-subtitle>
-                    </div>
+              <div class="pb-1">
+                <v-card
+                  border
+                  :key="crossing.raw.locationId"
+                  flat
+                  density="compact"
+                  @click="() => toggleCrossingExpand(crossing)"
+                  :ripple="false"
+                  class="w-100"
+                >
+                  <v-card-text class="pa-0 h-100">
+                    <div class="d-flex align-center justify-space-between ga-2 h-100">
+                      <div
+                        class="d-flex flex-column pa-2 user-select-text cursor-pointer"
+                      >
+                        <v-list-item-title>
+                          {{ crossing.raw.locationId }}
+                        </v-list-item-title>
+                        <v-card-subtitle class="pa-0">
+                          {{ toHumanReadableDate(crossing.raw.maxValueTime) }}
+                        </v-card-subtitle>
+                      </div>
                       <div class="max-value" :style="{background: crossing.raw.color, color: getContrastColor(crossing.raw.color)}">
-                        {{ crossing.raw.maxValue }}
+                          {{ crossing.raw.maxValue }}
+                      </div>
                     </div>
-                  </div>
-                  <DataTable
-                    v-if="isCrossingExpanded(crossing)"
-                    class="mt-2 ms-2"
-                    :tableData="toTableDate(crossing.raw)"
-                  />
-                </v-card-text>
-              </v-card>
+                    <DataTable
+                      v-if="isCrossingExpanded(crossing)"
+                      class="mt-2 ms-2"
+                      :tableData="toTableDate(crossing.raw)"
+                    />
+                  </v-card-text>
+                </v-card>
+              </div>
             </template>
           </v-virtual-scroll>
         </template>
