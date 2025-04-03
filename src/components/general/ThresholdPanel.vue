@@ -47,7 +47,7 @@
                         {{ toHumanReadableDate(crossing.raw.maxValueTime) }}
                       </v-card-subtitle>
                     </div>
-                    <div class="max-value" :style="{background: crossing.raw.color}">
+                      <div class="max-value" :style="{background: crossing.raw.color, color: getContrastColor(crossing.raw.color)}">
                         {{ crossing.raw.maxValue }}
                     </div>
                   </div>
@@ -77,6 +77,7 @@ import {
 } from '@/lib/date'
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import DataTable from '@/components/general/DataTable.vue'
+import { getContrastColor } from "@/lib/charts/styles"
 
 interface Props {
   nodeId?: string
