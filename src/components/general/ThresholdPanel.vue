@@ -39,7 +39,7 @@
                   <v-card-text class="pa-0 h-100">
                     <div class="d-flex align-center justify-space-between ga-2 h-100">
                       <div
-                        class="d-flex flex-column pa-2"
+                        class="d-flex flex-column pa-2 overflow-hidden"
                       >
                         <v-list-item-title>
                           {{ crossing.raw.locationId }}
@@ -48,7 +48,7 @@
                           {{ toHumanReadableDate(crossing.raw.maxValueTime) }}
                         </v-card-subtitle>
                       </div>
-                      <div class="max-value" :style="{background: crossing.raw.color, color: getContrastColor(crossing.raw.color)}">
+                      <div class="max-value flex-shrink-0" :style="{background: crossing.raw.color, color: getContrastColor(crossing.raw.color)}">
                           {{ crossing.raw.maxValue }}
                       </div>
                     </div>
