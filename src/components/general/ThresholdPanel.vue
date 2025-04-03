@@ -71,13 +71,13 @@
 <script setup lang="ts">
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
-import { computed, ref } from 'vue'
+import { computed, inject, ref } from 'vue'
 import {
   toDateDifferenceString,
   toDateRangeString,
   toHumanReadableDate,
 } from '@/lib/date'
-import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
+import { LevelThresholdCrossings, LevelThresholdWarningLevels } from '@deltares/fews-pi-requests'
 import DataTable from '@/components/general/DataTable.vue'
 import { getContrastColor } from "@/lib/charts/styles"
 
@@ -86,6 +86,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const selectedLevels = ref<LevelThresholdWarningLevels[]>(inject('selectedWarningLevels', []))
+const selectedLevelIds = computed(() => selectedLevels.value.map((level) => level.id))
 
 const isPanelOpen = ref(false)
 
@@ -105,7 +108,7 @@ const thresholdCrossings = computed(() => {
   if (thresholdsArray.value === undefined || thresholdsArray.value.length === 0)
     return []
   const thresholds = thresholdsArray.value[0]
-  return thresholds.levelThresholdCrossings?.sort((a, b) => b.severity - a.severity)
+  return thresholds.levelThresholdCrossings?.filter((crossing) => selectedLevelIds.value.includes(crossing.warningLevelId ?? '')).sort((a, b) => b.severity - a.severity)
 })
 
 function toTableDate(crossing: LevelThresholdCrossings) {
