@@ -3,10 +3,11 @@
     <div v-if="warningLevels?.length" class="threshold-summary h-100 d-flex justify-center flex-column flex-wrap">
       <div class="align-self-start flex-0-0 w-100" id="threshold-summary-top">
       </div>
-      <div class="d-flex flex-1-0 flex-column justify-center w-100">
+      <v-list v-model:selected="selectedLevelIds" select-strategy="leaf" class="d-flex flex-1-0 flex-column justify-center w-100 pa-0 overflow-hidden">
         <v-list-item
           v-for="warningLevel in warningLevels"
           :key="warningLevel.id"
+          :value="warningLevel.id"
           label
           size="small"
           density="compact"
@@ -28,7 +29,7 @@
             </span>
           </div>
         </v-list-item>
-      </div>
+      </v-list>
     </div>
   </Teleport>
 </template>
@@ -37,7 +38,8 @@
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
 import { getResourcesIconsUrl } from '@/lib/fews-config'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { LevelThresholdWarningLevels } from '@deltares/fews-pi-requests'
 
 interface Props {
   nodeId?: string
@@ -51,12 +53,27 @@ const { thresholds: thresholdsArray } = useTopologyThresholds(
   () => props.nodeId,
 )
 
-const warningLevels = computed(() => {
+const selectedLevelIds = ref<string[]>([])
+
+const selectedLevels = defineModel<LevelThresholdWarningLevels[]>({default: () => [] })
+
+watch(selectedLevelIds, () => {
+  if (selectedLevelIds.value.length === 0) {
+    selectedLevels.value = aggregatedWarningLevels.value
+  } else {
+    selectedLevels.value = aggregatedWarningLevels.value.filter((level) => selectedLevelIds.value.includes(level.id))
+  }
+})
+
+const aggregatedWarningLevels = computed(() => {
   if (thresholdsArray.value === undefined || thresholdsArray.value.length === 0)
     return []
-  const thresholds = thresholdsArray.value[0]
-  if (thresholds.aggregatedLevelThresholdWarningLevels === undefined) return []
-  const levels = thresholds.aggregatedLevelThresholdWarningLevels
+  const aggregatedLevels = thresholdsArray.value[0]?.aggregatedLevelThresholdWarningLevels
+  return aggregatedLevels !== undefined ? aggregatedLevels : []
+})
+
+const warningLevels = computed(() => {
+  const levels = aggregatedWarningLevels.value
     .map((warningLevel) => {
       return {
         ...warningLevel,
