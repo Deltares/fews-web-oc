@@ -198,7 +198,7 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
 
 watch(displayTypeItems, () => {
   const activeItems = displayTypeItems.value.map((dt) => dt.value)
-  if (!activeItems.includes(displayType.value)) {
+  if (!activeItems.includes(displayType.value) && activeItems.length > 0) {
     displayType.value = activeItems[0]
   }
 })

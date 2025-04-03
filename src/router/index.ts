@@ -21,8 +21,6 @@ const SchematicStatusDisplayView = () =>
   import('../views/SchematicStatusDisplayView.vue')
 const SchematicStatusDisplay = () =>
   import('../components/ssd/SchematicStatusDisplay.vue')
-const SSDTimeSeriesDisplay = () =>
-  import('../components/ssd/SsdTimeSeriesDisplay.vue')
 const SpatialDisplayView = () => import('../views/SpatialDisplayView.vue')
 const SpatialDisplay = () =>
   import('../components/spatialdisplay/SpatialDisplay.vue')
@@ -85,15 +83,13 @@ export const embedRoutes: Readonly<RouteRecordRaw[]> = [
     component: SchematicStatusDisplayView,
     props: true,
     meta: { sidebar: false, layout: 'EmbedLayout' },
-    children: [
-      {
-        path: '/embed/ssd/:groupId?/:panelId?/object/:objectId',
-        name: 'Embed/SSDTimeSeriesDisplay',
-        component: SSDTimeSeriesDisplay,
-        props: true,
-        meta: { sidebar: false, layout: 'EmbedLayout' },
-      },
-    ],
+  },
+  {
+    path: '/embed/ssd/:groupId?/:panelId?/object/:objectId',
+    name: 'Embed/SSDTimeSeriesDisplay',
+    component: SchematicStatusDisplayView,
+    props: true,
+    meta: { sidebar: false, layout: 'EmbedLayout' },
   },
 ]
 
@@ -111,15 +107,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     component: SchematicStatusDisplayView,
     props: true,
     meta: { sidebar: true },
-    children: [
-      {
-        path: '/ssd/:groupId?/:panelId?/object/:objectId',
-        name: 'SSDTimeSeriesDisplay',
-        component: SSDTimeSeriesDisplay,
-        props: true,
-        meta: { sidebar: true },
-      },
-    ],
+  },
+  {
+    path: '/ssd/:groupId?/:panelId?/object/:objectId',
+    name: 'SSDTimeSeriesDisplay',
+    component: SchematicStatusDisplayView,
+    props: true,
+    meta: { sidebar: true },
   },
   {
     path: '/systemmonitor',
@@ -195,15 +189,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         component: SchematicStatusDisplay,
         props: true,
         meta: { sidebar: true },
-        children: [
-          {
-            path: 'object/:objectId',
-            name: 'TopologySSDTimeSeriesDisplay',
-            component: SSDTimeSeriesDisplay,
-            props: true,
-            meta: { sidebar: true },
-          },
-        ],
+      },
+      {
+        path: 'ssd/:panelId?/object/:objectId',
+        name: 'TopologySSDTimeSeriesDisplay',
+        component: SchematicStatusDisplay,
+        props: true,
+        meta: { sidebar: true },
       },
       {
         path: 'systemmonitor',

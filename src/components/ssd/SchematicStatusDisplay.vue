@@ -20,8 +20,13 @@
         :hide-speed-controls="mobile"
       />
     </div>
-    <div class="child-container" :class="{ mobile, 'd-none': objectId === '' }">
-      <router-view @close="closeTimeSeriesDisplay"></router-view>
+    <div v-if="objectId" class="child-container" :class="{ mobile }">
+      <SSDTimeSeriesDisplay
+        :groupId="groupId"
+        :panelId="panelId"
+        :objectId="objectId"
+        @close="closeTimeSeriesDisplay"
+      />
     </div>
   </div>
 </template>
@@ -31,8 +36,7 @@ import type {
   SsdActionResult,
   SsdActionRequest,
 } from '@deltares/fews-ssd-requests'
-import { ref, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, computed, watch, defineAsyncComponent } from 'vue'
 import { useAlertsStore } from '@/stores/alerts.ts'
 import { configManager } from '@/services/application-config/index.ts'
 import { useSsd } from '@/services/useSsd/index.ts'
@@ -46,6 +50,9 @@ import {
 } from '@/lib/topology/componentSettings'
 import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
+const SSDTimeSeriesDisplay = defineAsyncComponent(
+  () => import('@/components/ssd/SsdTimeSeriesDisplay.vue'),
+)
 
 interface Props {
   groupId?: string
@@ -71,8 +78,7 @@ const sliderDebounceInterval = 500
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const alertsStore = useAlertsStore()
-const route = useRoute()
-const router = useRouter()
+const emit = defineEmits(['navigate'])
 
 const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
 const ssdContainer = ref<HTMLElement | null>(null)
@@ -159,7 +165,6 @@ function switchPanel(request: SsdActionRequest): void {
   // the request; we are not actually using it as a URL. Hence, we use a random base URL.
   const url = new URL(request.request, 'https://www.example.com')
   const panelId = url.searchParams.get('ssd')
-
   if (!panelId) return
 
   // Find the display group that contains this panel.
@@ -167,62 +172,29 @@ function switchPanel(request: SsdActionRequest): void {
     return cur.displayPanels.some((panel) => panel.name === panelId)
   })
   const groupId = group?.name
-
   if (!groupId) return
 
-  const currentRoute = router.currentRoute.value
-  const parentRoute = router
-    .getRoutes()
-    .find(
-      (route) =>
-        route.children &&
-        route.children.some((child) => child.name === currentRoute.name),
-    )
-  const targetRouteName = parentRoute?.name ?? currentRoute.name
-  if (!targetRouteName) return
-  router.push({
-    name: targetRouteName,
+  const to = {
+    name: 'SchematicStatusDisplay',
     params: { groupId, panelId },
-    query: route.query,
-  })
+  }
+  emit('navigate', to)
 }
 
 function openTimeSeriesDisplay(panelId: string, objectId: string) {
-  const currentRoute = router.currentRoute.value
-  const routeConfig = router
-    .getRoutes()
-    .find((route) => route.name === currentRoute.name)
-  const childRoute = routeConfig?.children?.find((route) =>
-    route.name?.toString().endsWith('SSDTimeSeriesDisplay'),
-  )
-  router
-    .push({
-      name: childRoute?.name,
-      params: { objectId: objectId, panelId: panelId, groupId: props.groupId },
-    })
-    .then(() => {
-      ssdComponent.value?.resize()
-    })
+  const to = {
+    name: 'SSDTimeSeriesDisplay',
+    params: { groupId: props.groupId, panelId, objectId },
+  }
+  emit('navigate', to)
 }
 
 function closeTimeSeriesDisplay(): void {
-  const currentRoute = router.currentRoute.value
-  const parentRoute = router
-    .getRoutes()
-    .find(
-      (route) =>
-        route.children &&
-        route.children.some((child) => child.name === currentRoute.name),
-    )
-  if (!parentRoute) return
-  router
-    .push({
-      name: parentRoute.name,
-      params: { groupId: props.groupId, panelId: props.panelId },
-    })
-    .then(() => {
-      ssdComponent.value?.resize()
-    })
+  const to = {
+    name: 'SchematicStatusDisplay',
+    params: { groupId: props.groupId, panelId: props.panelId },
+  }
+  emit('navigate', to)
 }
 </script>
 

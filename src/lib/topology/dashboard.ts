@@ -2,6 +2,7 @@ import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { defineAsyncComponent, type Component } from 'vue'
 import { ComponentProps } from '@/lib/utils/types'
 import { ComponentType } from '@/lib/topology/component'
+import { RouteParamsGeneric } from 'vue-router'
 
 const SpatialDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialDisplay.vue'),
@@ -47,12 +48,20 @@ export type PropsForComponentType<T extends ComponentType> = ComponentProps<
 export function getComponentPropsForNode(
   componentType: ComponentType,
   node?: TopologyNode,
+  routeParams?: RouteParamsGeneric,
 ): PropsForComponentType<ComponentType> | undefined {
   if (!node) return
+
+  if (routeParams && !isAllStringRouteParams(routeParams)) {
+    throw new Error('Route params should be strings')
+  }
 
   if (componentType === 'map') {
     const result: PropsForComponentType<'map'> = {
       layerName: node.gridDisplaySelection?.plotId,
+      locationIds: routeParams?.locationIds,
+      longitude: routeParams?.longitude,
+      latitude: routeParams?.latitude,
     }
     return result
   }
@@ -83,7 +92,7 @@ export function getComponentPropsForNode(
     const result: PropsForComponentType<'schematic-status-display'> = {
       panelId: node.scadaPanelId,
       groupId: node.id,
-      objectId: '',
+      objectId: routeParams?.objectId,
     }
     return result
   }
@@ -92,4 +101,10 @@ export function getComponentPropsForNode(
     const result: PropsForComponentType<'system-monitor'> = {}
     return result
   }
+}
+
+function isAllStringRouteParams(
+  routeParams: RouteParamsGeneric,
+): routeParams is Record<string, string> {
+  return Object.values(routeParams).every((value) => !Array.isArray(value))
 }
