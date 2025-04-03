@@ -6,7 +6,7 @@
         <v-icon v-else>mdi-menu-open</v-icon>
       </v-btn>
     </Teleport>
-    <div v-if="isPanelOpen" class="threshold-panel d-flex flex-column h-50">
+    <div v-if="isPanelOpen" class="threshold-panel d-flex flex-column">
       <v-data-iterator
         :items="thresholdCrossings"
         items-per-page="-1"
@@ -22,7 +22,7 @@
         >
           <v-virtual-scroll
             :items="crossings"
-            item-height="50px"
+            :item-height="item_height_px"
             height="100%"
           >
             <template v-slot:default="{ item: crossing }">
@@ -35,29 +35,25 @@
                 :ripple="false"
                 class="w-100"
               >
-                <v-card-text class="py-2 h-100">
-                  <div
-                    class="d-flex flex-column user-select-text cursor-pointer"
-                  >
-                    <div class="d-flex align-center ga-2">
+                <v-card-text class="pa-0 h-100">
+                  <div class="d-flex align-center justify-space-between ga-2 h-100">
+                    <div
+                      class="d-flex flex-column pa-2 user-select-text cursor-pointer"
+                    >
                       <v-list-item-title>
                         {{ crossing.raw.locationId }}
                       </v-list-item-title>
-                      <v-card-subtitle class="pa-0"
-                        >from
-                        {{
-                          toHumanReadableDate(crossing.raw.firstValueTime)
-                        }}</v-card-subtitle
-                      >
+                      <v-card-subtitle class="pa-0">
+                        {{ toHumanReadableDate(crossing.raw.maxValueTime) }}
+                      </v-card-subtitle>
                     </div>
-                    <v-card-subtitle class="pa-0">
-                      Max: {{ crossing.raw.maxValue }} @
-                      {{ toHumanReadableDate(crossing.raw.maxValueTime) }}
-                    </v-card-subtitle>
+                    <div class="max-value" :style="{background: crossing.raw.color}">
+                        {{ crossing.raw.maxValue }}
+                    </div>
                   </div>
                   <DataTable
                     v-if="isCrossingExpanded(crossing)"
-                    class="mt-4"
+                    class="mt-2 ms-2"
                     :tableData="toTableDate(crossing.raw)"
                   />
                 </v-card-text>
@@ -89,6 +85,12 @@ interface Props {
 const props = defineProps<Props>()
 
 const isPanelOpen = ref(false)
+
+const ITEM_HEIGHT = 56
+const item_height_px = `${ITEM_HEIGHT}px`
+const ITEMS_PER_PANEL = 6
+const panel_height_px = `${ITEM_HEIGHT * ITEMS_PER_PANEL}px`
+  
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { thresholds: thresholdsArray } = useTopologyThresholds(
@@ -166,11 +168,12 @@ function toggleThresholdPanel(): void {
 
 <style scoped>
 .threshold-panel {
-  width: 350px;
+  width: 300px;
   position: absolute;
   top: 95px;
   right: 5px;
   z-index: 1000;
+  height: v-bind(panel_height_px)
 }
 
 .text-wrap {
@@ -187,5 +190,14 @@ function toggleThresholdPanel(): void {
 
 .threshold-panel-iterator > * {
   height: 100%;
+}
+
+.max-value {
+  height: v-bind(item_height_px);
+  width: 50px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
