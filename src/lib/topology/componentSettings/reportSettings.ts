@@ -5,7 +5,7 @@ export type ReportSettings = DeepRequired<PiReportSettings>
 
 export const defaultReportSettings: ReportSettings = {
   downloadReport: true,
-  hideNonCurrentReports: false,
-  hideReportName: false,
-  hideAnalysisTime: false,
+  nonCurrentReports: true,
+  reportName: true,
+  analysisTimes: true,
 }

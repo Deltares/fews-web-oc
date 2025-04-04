@@ -4,7 +4,7 @@
       <v-select
         v-model="selectedWhatIfTemplate"
         :items="whatIfTemplates"
-        :loading="isLoadingTemplates"
+        :loading="availableWhatIfTemplatesStore.isLoading"
         item-title="name"
         label="Select what-if scenario template"
         variant="solo-filled"
@@ -148,7 +148,6 @@ import type {
   WhatIfTemplate,
 } from '@deltares/fews-pi-requests'
 import { configManager } from '@/services/application-config'
-import { useWhatIfTemplates } from '@/services/useWhatIfTemplate'
 import {
   generateJsonSchema,
   getErrorsForProperties,
@@ -159,6 +158,8 @@ import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import { postRunTask, postWhatIfScenario } from '@/lib/whatif/fetch'
 import type { WorkflowItem } from '@/lib/workflows'
 import { useForecastTimes } from '@/services/useForecastTimes'
+import { refreshTaskRuns } from '@/services/useTasksRuns'
+import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
 
 interface Props {
   workflows: WorkflowItem[]
@@ -166,6 +167,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
 
 const selectedWhatIfTemplate = ref<WhatIfTemplate>()
 const selectedWhatIfScenario = ref<WhatIfScenarioDescriptor>()
@@ -201,16 +203,21 @@ function setTimeZeroString(date: string | undefined): void {
   timeZeroDate.value = new Date(date)
 }
 
-const whatIfTemplateIds = computed(() =>
+const whatIfTemplates = computed(() =>
   props.workflows
     .map((wf) => wf.whatIfTemplateId)
-    .filter((id) => id !== undefined),
+    .map(availableWhatIfTemplatesStore.byId)
+    .filter((wt) => wt !== undefined),
 )
 
-const { whatIfTemplates, isLoading: isLoadingTemplates } = useWhatIfTemplates(
-  baseUrl,
-  whatIfTemplateIds,
+watch(
+  whatIfTemplates,
+  (templates) => {
+    console.log('templates', templates)
+  },
+  { immediate: true },
 )
+
 const { whatIfScenarios: allWhatIfScenarios, isLoading: isLoadingScenarios } =
   useWhatIfScenarios(baseUrl, () => selectedWhatIfTemplate.value?.id)
 const whatIfScenarios = computed(() =>
@@ -307,6 +314,10 @@ async function submit(): Promise<void> {
 
   const result = await postRunTask(filter)
   isPosting.value = false
+
+  setTimeout(() => {
+    refreshTaskRuns()
+  }, 1500)
 
   isSubmitted.value = true
   if (result.status === 'success') {

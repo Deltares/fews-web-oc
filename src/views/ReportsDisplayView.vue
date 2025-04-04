@@ -1,7 +1,7 @@
 <template>
   <div v-if="reports?.length" class="d-flex flex-column h-100 w-100">
     <v-toolbar v-if="showToolbar" density="compact">
-      <template v-if="!settings.report.hideReportName">
+      <template v-if="settings.report.reportName">
         <div v-if="reports.length === 1" class="ml-5">
           {{ reportToTitle(reports[0]) }}
         </div>
@@ -21,9 +21,9 @@
         />
       </template>
       <v-spacer />
-      <template v-if="!settings.report.hideAnalysisTime">
+      <template v-if="settings.report.analysisTimes">
         <template
-          v-if="settings.report.hideNonCurrentReports && selectedReportItem"
+          v-if="!settings.report.nonCurrentReports && selectedReportItem"
         >
           <div class="d-flex flex-column mr-3">
             <v-list-item-subtitle> Analysis time </v-list-item-subtitle>
@@ -87,8 +87,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const showToolbar = computed(
   () =>
-    !props.settings.report.hideReportName ||
-    !props.settings.report.hideAnalysisTime ||
+    props.settings.report.reportName ||
+    props.settings.report.analysisTimes ||
     props.settings.report.downloadReport,
 )
 

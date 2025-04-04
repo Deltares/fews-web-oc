@@ -100,7 +100,7 @@ export function getIconForTaskStatus(status: TaskStatus): string {
   }
 }
 
-export function getColorForTaskStatus(status: TaskStatus): string {
+export function getColorForTaskStatus(status: TaskStatus, isCurrent = true) {
   const category = getTaskStatusCategory(status)
   switch (category) {
     case TaskStatusCategory.Pending:
@@ -108,6 +108,7 @@ export function getColorForTaskStatus(status: TaskStatus): string {
     case TaskStatusCategory.Running:
       return 'primary'
     case TaskStatusCategory.Completed:
+      if (!isCurrent) return
       return 'success'
     case TaskStatusCategory.Failed:
       return 'error'
