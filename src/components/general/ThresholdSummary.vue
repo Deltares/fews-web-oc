@@ -20,13 +20,15 @@
         >
           <div class="d-flex align-center flex-column flex-nowrap px-1">
             <v-badge
-              color="#dcdddc"
               :model-value="(warningLevel.count ?? 0) > 0"
-              :content="warningLevel.count"
-              location="top start"
-              offset-x="8"
+              location="top end"
+              offset-x="5"
               offset-y="1"
+              color="transparent"
             >
+            <template #badge>
+              <v-chip size="small" density="compact" class="pa-0 px-1">{{ warningLevel.count }}</v-chip>
+            </template>
               <v-img width="30px" :src="warningLevel.icon"></v-img>
             </v-badge>
             <v-list-item-subtitle>
