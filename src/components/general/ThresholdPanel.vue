@@ -184,7 +184,7 @@ function toggleThresholdPanel(): void {
 .threshold-panel {
   width: 300px;
   position: absolute;
-  top: 95px;
+  top: 5px;
   right: 5px;
   z-index: 1000;
   height: v-bind(panel_height_px)
