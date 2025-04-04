@@ -13,13 +13,7 @@ export const locationMapIds = {
   source: getSourceId('location'),
 }
 
-export const locationLayerIds = [
-  locationMapIds.layer.circle,
-  locationMapIds.layer.symbol,
-  locationMapIds.layer.childSymbol,
-  locationMapIds.layer.text,
-  locationMapIds.layer.fill,
-]
+export const locationLayerIds = Object.values(locationMapIds.layer)
 
 // NOTE: When multiple layers are clicked the order of the layers here is important.
 export const clickableLocationLayerIds = [

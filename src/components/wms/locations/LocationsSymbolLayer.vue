@@ -31,6 +31,9 @@ const baseLayout = {
   'symbol-sort-key': ['get', 'sortKey'],
 }
 
+// This symbol layer is for the child locations and can't overlap other symbols.
+// It also contains its own text since we never want to show the text of the
+// child layer without the icon.
 const childLayout = {
   ...baseLayout,
   'icon-overlap': 'never',

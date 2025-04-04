@@ -33,6 +33,7 @@ const layout = {
   'text-justify': 'auto',
   'text-variable-anchor': ['right', 'left'],
   'text-max-width': 15,
+  // When overlap is false sort order has to be inverted for some reason
   'symbol-sort-key': ['get', 'invertedSortKey'],
 }
 
