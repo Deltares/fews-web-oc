@@ -44,7 +44,7 @@ import {
   MglGeoJsonSource,
   MglMarker,
 } from '@indoorequal/vue-maplibre-gl'
-import { FeatureCollection, Geometry } from 'geojson'
+import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
 import {
   LngLat,
@@ -57,7 +57,13 @@ import { onBeforeMount } from 'vue'
 import { addLocationIconsToMap } from '@/lib/location-icons'
 import { useDark } from '@vueuse/core'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { getLayerId, getSourceId } from '@/lib/map'
+import {
+  locationsCircleLayerId,
+  locationsFillLayerId,
+  locationsSymbolLayerId,
+  locationsSourceId,
+  locationsTextLayerId,
+} from '@/lib/map'
 import { useMap } from '@/services/useMap'
 
 const settings = useUserSettingsStore()
@@ -97,13 +103,28 @@ const selectedLocationsCoordinates = computed(() => {
     props.selectedLocationIds?.includes(feature.properties.locationId),
   )
 
-  return selectedLocations.flatMap((feature) => {
-    const lat = feature.properties.lat
-    const lon = feature.properties.lon
-    if (!lat || !lon) return []
-    return [new LngLat(+lon, +lat)]
-  })
+  return selectedLocations
+    .flatMap(getLngLatForFeature)
+    .filter((lngLat) => lngLat !== undefined)
 })
+
+function getLngLatForFeature(feature: Feature<Geometry, Location>) {
+  const geometry = feature.geometry
+  if (geometry.type === 'Point') {
+    const lng = geometry.coordinates[0]
+    const lat = geometry.coordinates[1]
+
+    return new LngLat(lng, lat)
+  }
+
+  const properties = feature.properties
+  if (properties.lon && properties.lat) {
+    const lng = +properties.lon
+    const lat = +properties.lat
+
+    return new LngLat(lng, lat)
+  }
+}
 
 const layoutSymbolSpecification = {
   'icon-allow-overlap': true,
@@ -195,12 +216,6 @@ const paintFillSpecification = computed(() => {
     : getLightPaintFillSpecification(selectedIds, hoverId)
 })
 
-const locationsCircleLayerId = getLayerId('location-circle')
-const locationsSymbolLayerId = getLayerId('location-symbol')
-const locationsTextLayerId = getLayerId('location-text')
-const locationsFillLayerId = getLayerId('location-fill')
-const locationsSourceId = getSourceId('location')
-
 watch(geojson, () => {
   addLocationIcons()
 })
@@ -208,9 +223,9 @@ watch(geojson, () => {
 onBeforeMount(() => {
   if (map) {
     for (const layerId of [
+      locationsFillLayerId,
       locationsCircleLayerId,
       locationsSymbolLayerId,
-      locationsFillLayerId,
     ]) {
       map.on('click', layerId, clickHandler)
       map.on('mouseenter', layerId, setCursorPointer)

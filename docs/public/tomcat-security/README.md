@@ -175,3 +175,39 @@ Map tomcat roles to systemUserGroups in the UserGroups.xml
 	</userGroup>
 </userGroups>
 ```
+
+# Access Web Services API with the tomcat users
+
+Both the Web OC and The Delft-FEWS Web Services can now only be accessed using a session cookie that is obtained by authenticatong as a tomcat user.
+The typical flow to get an authenticated session is as follows:
+
+1. Access the protected page to get the initial session and cookies
+2. Submit the login form with the j_username and j_password parameters
+3. Access the protected page again with the session cookie to verify the login
+
+The following example shows how powershell can be used to login with the viewer user to get a session and then access the Web Services API to get the filters.
+
+``` xml
+# Define the URLs and credentials
+$protectedUrl = "http://localhost:8080/index.html"
+$loginUrl = "http://localhost:8080/j_security_check"
+$webServiceCall = "http://localhost:8080/FewsWebServices/rest/fewspiservice/v1/filters"
+$key = "viewer"
+$secret = "XXX"
+
+# Step 1: Access the protected page to get the initial session and cookies
+$initialResponse = Invoke-WebRequest -Uri $protectedUrl -SessionVariable session
+
+# Step 2: Submit the login form with the j_username and j_password parameters
+$loginResponse = Invoke-WebRequest -Uri $loginUrl -Method Post -WebSession $session -Body @{
+j_username = $key
+j_password = $secret
+}
+
+# Step 3: Access the protected page again with the session cookie to verify the login
+$protectedResponse = Invoke-WebRequest -Uri $webServiceCall -WebSession $session
+
+# Output the final response to verify the login
+$protectedResponse.Content
+
+```

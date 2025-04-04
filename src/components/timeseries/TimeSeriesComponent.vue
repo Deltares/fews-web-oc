@@ -7,10 +7,10 @@
     >
       <KeepAlive>
         <TimeSeriesChart
-          v-for="(subplot, i) in subplots"
+          v-for="subplot in subplots"
           :config="subplot"
           :series="series"
-          :key="`${subplot.title}-${i}`"
+          :key="subplot.id"
           :currentTime="selectedDate"
           :isLoading="isLoading(subplot, loadingSeriesIds)"
           :zoomHandler="sharedZoomHandler"
@@ -26,11 +26,11 @@
     >
       <KeepAlive>
         <TimeSeriesChart
-          v-for="(subplot, i) in elevationChartSubplots"
+          v-for="subplot in elevationChartSubplots"
           verticalProfile
           :config="subplot"
           :series="elevationChartSeries"
-          :key="`${subplot.title}-${i}`"
+          :key="subplot.id"
           :style="`min-width: ${xs ? 100 : 50}%`"
           :isLoading="isLoading(subplot, elevationLoadingSeriesIds)"
           :zoomHandler="sharedVerticalZoomHandler"
@@ -171,12 +171,11 @@ const options = computed<UseTimeSeriesOptions>(() => {
   }
 })
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { series, loadingSeriesIds } = useTimeSeries(
-  baseUrl,
-  () => props.config.requests,
-  lastUpdated,
-  options,
-)
+const {
+  series,
+  loadingSeriesIds,
+  interval: useTimeSeriesInterval,
+} = useTimeSeries(baseUrl, () => props.config.requests, lastUpdated, options)
 const {
   series: elevationChartSeries,
   loadingSeriesIds: elevationLoadingSeriesIds,
@@ -211,7 +210,14 @@ function isLoading(subplot: ChartConfig, loadingSeriesIds: string[]) {
 }
 
 async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
-  await postTimeSeriesEdit(baseUrl, props.config.requests, newData)
+  const seriesHeader = series.value[props.config.requests[0].key].header
+  await postTimeSeriesEdit(
+    baseUrl,
+    props.config.requests,
+    newData,
+    seriesHeader.version ?? '',
+    seriesHeader.timeZone ?? '',
+  )
   lastUpdated.value = new Date()
 }
 
@@ -231,7 +237,7 @@ const elevationChartSubplots = computed(() => {
   }
 })
 
-const tableConfig = ref<ChartConfig>({ title: '', series: [] })
+const tableConfig = ref<ChartConfig>({ id: '', title: '', series: [] })
 
 watch(
   () => props.config.subplots,
@@ -247,6 +253,7 @@ watch(
     })
 
     tableConfig.value = {
+      id: 'table',
       title: props.config.title,
       series,
     }
@@ -263,6 +270,11 @@ watch(
 )
 
 watch(isEditing, () => {
+  if (isEditing.value) {
+    useTimeSeriesInterval.pause()
+  } else {
+    useTimeSeriesInterval.resume()
+  }
   // Can't set a custom message in modern browsers
   window.onbeforeunload = isEditing.value ? () => true : null
 })

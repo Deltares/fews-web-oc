@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { type WebOCDashboard } from '@deltares/fews-pi-requests'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import DashboardItem from '@/components/general/DashboardItem.vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import DateTimeSlider from './DateTimeSlider.vue'
@@ -47,6 +47,7 @@ import { useDisplay } from 'vuetify'
 import { createDateRegistry } from '@/services/useDateRegistry'
 import { provideSelectedDate } from '@/services/useSelectedDate'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
+import { useDynamicCss } from '@/services/useDynamicCss'
 
 interface Props {
   dashboard: WebOCDashboard
@@ -75,41 +76,10 @@ function setupDates() {
 }
 
 const groups = computed(() => props.dashboard.groups)
-const hasLoadedCss = ref(false)
-
-function loadCss(url: string) {
-  if (!document.querySelector(`link[href="${url}"]`)) {
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.href = url
-    link.onload = () => {
-      hasLoadedCss.value = true
-    }
-    document.head.appendChild(link)
-  } else {
-    hasLoadedCss.value = true
-  }
-}
-
-function removeCss(url: string) {
-  const link = document.querySelector(`link[href="${url}"]`)
-  if (link) {
-    link.remove()
-    hasLoadedCss.value = false
-  }
-}
-
 const cssUrl = computed(() =>
   getResourcesStaticUrl(props.dashboard.cssTemplate),
 )
-watch(
-  cssUrl,
-  (newCss, oldCss) => {
-    if (oldCss) removeCss(oldCss)
-    loadCss(newCss)
-  },
-  { immediate: true },
-)
+const { hasLoadedCss } = useDynamicCss(cssUrl)
 </script>
 
 <style scoped>

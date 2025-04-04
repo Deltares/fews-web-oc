@@ -48,16 +48,16 @@
     />
     <div class="mapcomponent__controls-container pa-2 ga-2">
       <BoundingBoxControl
+        v-if="workflowsStore.isDrawingBoundingBox"
         v-model:active="workflowsStore.isDrawingBoundingBox"
         v-model:boundingBox="workflowsStore.boundingBox"
         @finish="workflowsStore.showDialog = true"
-        v-if="workflowsStore.isDrawingBoundingBox"
       />
       <CoordinateSelectorControl
-        v-if="workflowsStore.isSelectingCoordinate"
+        v-else-if="workflowsStore.isSelectingCoordinate"
         v-model:active="workflowsStore.isSelectingCoordinate"
-        @finish="workflowsStore.showDialog = true"
         :coordinate="workflowsStore.coordinate"
+        @finish="workflowsStore.showDialog = true"
       />
       <template v-else>
         <InformationPanel

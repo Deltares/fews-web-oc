@@ -20,16 +20,13 @@
       ></SpatialDisplayComponent>
     </div>
     <div v-if="showChartPanel" class="child-container">
-      <router-view v-slot="{ Component }">
-        <component
-          :is="Component ?? SpatialTimeSeriesDisplay"
-          @close="closeTimeSeriesDisplay"
-          :filter="filter"
-          :elevation-chart-filter="elevationChartFilter"
-          :current-time="currentTime"
-          :settings="settings"
-        />
-      </router-view>
+      <SpatialTimeSeriesDisplay
+        @close="closeTimeSeriesDisplay"
+        :filter="filter"
+        :elevation-chart-filter="elevationChartFilter"
+        :current-time="currentTime"
+        :settings="settings"
+      />
     </div>
   </div>
 </template>

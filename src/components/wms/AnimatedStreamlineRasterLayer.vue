@@ -122,7 +122,7 @@ addUpdateWatcher(
 )
 
 function addLayer(): void {
-  if (!map?.isStyleLoaded()) return
+  if (!map) return
   if (!props.layerOptions || !props.streamlineOptions) return
   const options = mergeOptions(props.layerOptions, props.streamlineOptions)
 

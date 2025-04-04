@@ -9,7 +9,6 @@ import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { useAvailableWorkflowsStore } from './stores/availableWorkflows'
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
@@ -54,10 +53,4 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
     app.use(i18n)
     app.use(router)
     app.mount('#app')
-
-    // Fetch metadata for all available workflows.
-    const availableWorkflowsStore = useAvailableWorkflowsStore()
-    availableWorkflowsStore
-      .fetch()
-      .catch(() => console.error('Failed to fetch available workflows.'))
   })

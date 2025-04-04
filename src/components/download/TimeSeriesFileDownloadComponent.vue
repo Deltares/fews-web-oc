@@ -50,6 +50,7 @@ import {
   ActionsPeriodDate,
   DocumentFormat,
   filterActionsFilter,
+  PiWebserviceProvider,
   TimeSeriesFilter,
   timeSeriesGridActionsFilter,
   TimeSeriesTopologyActionsFilter,
@@ -58,7 +59,6 @@ import { configManager } from '@/services/application-config'
 import { DisplayConfig } from '@/lib/display/DisplayConfig.ts'
 import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
-import { filterToParams } from '@deltares/fews-wms-requests'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
 import {
   computed,
@@ -74,6 +74,7 @@ import { UseTimeSeriesOptions } from '@/services/useTimeSeries'
 import { DateTime } from 'luxon'
 import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
 import { useDownloadDialogStore } from '@/stores/downloadDialog'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 const store = useSystemTimeStore()
 const downloadDialogStore = useDownloadDialogStore()
@@ -166,9 +167,8 @@ function parsePiDateTime(dateTime: ActionsPeriodDate | undefined) {
 }
 
 // use startTime and endTime if set, otherwise use the options from the store, otherwise use the period form the config
-function determineViewPeriod(): string {
+function determineViewPeriod() {
   const _options = toValue(viewPeriodFromStore)
-  let viewPeriod: string = ''
   let startDate: Date | null | undefined = props.startTime
     ? props.startTime
     : _options?.startTime
@@ -185,36 +185,45 @@ function determineViewPeriod(): string {
     if (parsedEndDate) endDate = new Date(parsedEndDate)
   }
 
+  let startTime: string | null = null
+  let endTime: string | null = null
   if (startDate || endDate) {
     // if either startTime or endTime is set, use it.
     if (startDate) {
-      const startTime = DateTime.fromJSDate(startDate, {
+      startTime = DateTime.fromJSDate(startDate, {
         zone: 'UTC',
       })
         .set({ millisecond: 0 })
         .toISO({ suppressMilliseconds: true })
-      viewPeriod = `&startTime=${startTime}`
     }
     if (endDate) {
-      const endTime = DateTime.fromJSDate(endDate, {
+      endTime = DateTime.fromJSDate(endDate, {
         zone: 'UTC',
       })
         .set({ millisecond: 0 })
         .toISO({ suppressMilliseconds: true })
-      viewPeriod = `${viewPeriod}&endTime=${endTime}`
     }
   }
-  return viewPeriod
+  return {
+    startTime: startTime ?? undefined,
+    endTime: endTime ?? undefined,
+  }
 }
 
-const downloadFile = (downloadFormat: string) => {
+const downloadFile = (downloadFormat: DocumentFormat) => {
   let viewPeriod = determineViewPeriod()
+
+  const piProvider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
   if (props.filter) {
     if (isDataDownloadFilter(props.filter)) {
-      const queryParameters = filterToParams(props.filter)
-      const url = new URL(
-        `${baseUrl}rest/fewspiservice/v1/timeseries${queryParameters}&documentFormat=${downloadFormat}${viewPeriod}`,
-      )
+      const url = piProvider.timeSeriesUrl({
+        ...props.filter,
+        documentFormat: downloadFormat,
+        ...viewPeriod,
+      })
       return downloadFileAttachment(
         url.href,
         fileName.value,
@@ -225,10 +234,11 @@ const downloadFile = (downloadFormat: string) => {
   }
   if (props.filter) {
     if (isFilterActionsFilter(props.filter)) {
-      const queryParameters = filterToParams(props.filter)
-      const url = new URL(
-        `${baseUrl}rest/fewspiservice/v1/timeseries/filters/actions${queryParameters}&documentFormat=${downloadFormat}${viewPeriod}`,
-      )
+      const url = piProvider.timeSeriesFilterActionsUrl({
+        ...props.filter,
+        documentFormat: downloadFormat,
+        ...viewPeriod,
+      })
       return downloadFileAttachment(
         url.href,
         fileName.value,
@@ -237,11 +247,11 @@ const downloadFile = (downloadFormat: string) => {
       )
     }
     if (isTimeSeriesGridActionsFilter(props.filter)) {
-      props.filter.documentFormat = downloadFormat
-      const queryParameters = filterToParams(props.filter)
-      const url = new URL(
-        `${baseUrl}rest/fewspiservice/v1/timeseries/grid${queryParameters}&${viewPeriod}`,
-      )
+      const url = piProvider.timeSeriesGridUrl({
+        ...props.filter,
+        documentFormat: downloadFormat,
+        ...viewPeriod,
+      })
       return downloadFileAttachment(
         url.href,
         fileName.value,
@@ -257,11 +267,9 @@ const downloadFile = (downloadFormat: string) => {
     timeSeriesDisplayIndex: props.config?.index ?? 0,
     convertDatum: props.options.convertDatum,
     useDisplayUnits: props.options.useDisplayUnits,
+    ...viewPeriod,
   }
-  const queryParameters = filterToParams(timeSeriesFilter)
-  const url = new URL(
-    `${baseUrl}rest/fewspiservice/v1/timeseries/topology/actions${queryParameters}${viewPeriod}`,
-  )
+  const url = piProvider.timeSeriesTopologyActionsUrl(timeSeriesFilter)
   return downloadFileAttachment(
     url.href,
     fileName.value,

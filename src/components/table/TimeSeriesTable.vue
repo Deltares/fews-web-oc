@@ -9,7 +9,7 @@
       :items="tableData"
       :expanded="editedSeriesIds"
       :items-per-page-options="itemsPerPageOptions"
-      :sortBy="sortBy"
+      v-model:sortBy="sortBy"
       items-per-page="200"
       item-value="date"
       density="compact"
@@ -48,7 +48,7 @@
                     color="primary"
                     variant="text"
                     density="compact"
-                    :disabled="selected === undefined"
+                    :disabled="rowAdditionDisabled"
                   />
                   <v-btn
                     icon="mdi-table-row-plus-after"
@@ -56,10 +56,10 @@
                     color="primary"
                     variant="text"
                     density="compact"
-                    :disabled="selected === undefined"
+                    :disabled="rowAdditionDisabled"
                   />
                   <v-tooltip
-                    v-if="selected === undefined"
+                    v-if="rowAdditionDisabled"
                     activator="parent"
                     text="First select a row"
                     location="bottom"
@@ -173,7 +173,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import TableTooltip from './TableTooltip.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -244,16 +244,26 @@ const nonEquidistantSeries = computed(() => {
     .map(([id]) => id)
 })
 
-const sortBy = computed(() => {
-  const order: 'asc' | 'desc' =
-    props.settings.sortDateTimeColumn === 'ascending' ? 'asc' : 'desc'
-  return [
-    {
-      key: 'date',
-      order,
-    },
-  ]
-})
+const dateOrder = computed(() =>
+  props.settings.sortDateTimeColumn === 'ascending' ? 'asc' : 'desc',
+)
+type SortItem = { key: string; order: 'asc' | 'desc' }
+const sortBy = ref<SortItem[]>([
+  {
+    key: 'date',
+    order: dateOrder.value,
+  },
+])
+watch(
+  dateOrder,
+  (order) => {
+    const dateSortItem = sortBy.value.find((item) => item.key === 'date')
+    if (!dateSortItem) return
+
+    dateSortItem.order = order
+  },
+  { immediate: true },
+)
 
 onBeforeMount(() => {
   if (props.config !== undefined) {
@@ -344,10 +354,10 @@ function stopEdit() {
 }
 
 function save(seriesId: string) {
-  const newModifiedData = newTableData.value.filter(
-    (item) =>
-      !(item.isNewRow && !(item[seriesId] as Partial<TableSeriesData>).y),
-  )
+  const newModifiedData = newTableData.value.filter((item) => {
+    const data = item[seriesId] as Partial<TableSeriesData>
+    return !(item.isNewRow && (data.y === null || data.y === undefined))
+  })
   const newTimeSeriesData = tableDataToTimeSeries(newModifiedData, [seriesId])
   emit('change', newTimeSeriesData)
   stopEditTimeSeries(seriesId)
@@ -381,23 +391,44 @@ function addRowToTimeSeries(
   row: TableData | undefined,
   position: 'before' | 'after',
 ) {
-  if (!row) return
+  if (row === undefined && tableData.value.length === 0) {
+    const newRow = getNewRow(new Date())
+    tableData.value.push(newRow)
+    newTableData.value.push(newRow)
+    selected.value = newRow
+    return
+  }
+
+  if (row === undefined) return
+
+  const dateSortItem = sortBy.value.find((item) => item.key === 'date')
+  const addBefore = dateSortItem
+    ? (position === 'before' && dateSortItem.order === 'asc') ||
+      (position === 'after' && dateSortItem.order === 'desc')
+    : position === 'before'
 
   const index = tableData.value.findIndex((item) => item.date === row.date)
-  const siblingIndex = position === 'before' ? index - 1 : index + 1
+  const siblingIndex = addBefore ? index - 1 : index + 1
 
   const newDate = indexIsInRange(tableData.value, siblingIndex)
     ? getMidpointOfDates(row.date, tableData.value[siblingIndex].date)
-    : getDateWithMinutesOffset(row.date, position === 'before' ? -1 : 1)
+    : getDateWithMinutesOffset(row.date, addBefore ? -1 : 1)
 
+  const newRow = getNewRow(newDate)
+
+  tableData.value.splice(index + (addBefore ? 0 : 1), 0, newRow)
+  newTableData.value.push(newRow)
+}
+
+function getNewRow(date: Date) {
   const newRow: TableData = {
-    date: newDate,
+    date,
     isNewRow: {},
   }
   editedSeriesIds.value.forEach((id) => {
     if (nonEquidistantSeries.value.includes(id)) {
       newRow[id] = {
-        x: newDate,
+        x: date,
         y: null,
         flagOrigin: 'CORRECTED',
         flagQuality: 'RELIABLE',
@@ -406,13 +437,12 @@ function addRowToTimeSeries(
     }
   })
 
-  // Adding a new row with isEditing on will position it incorrectly
-  isEditing.value = false
-  tableData.value.splice(index + (position === 'before' ? 0 : 1), 0, newRow)
-  nextTick(() => (isEditing.value = true))
-
-  newTableData.value.push(newRow)
+  return newRow
 }
+
+const rowAdditionDisabled = computed(() => {
+  return selected.value === undefined && tableData.value.length > 0
+})
 
 function handleRowClick(e: any, item: any) {
   const formElements = ['INPUT', 'SELECT', 'OPTION']

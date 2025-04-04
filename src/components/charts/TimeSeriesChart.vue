@@ -9,8 +9,7 @@
       :settings="settings.legend"
       @toggle-line="toggleLine"
     />
-    <LoadingOverlay v-if="isLoading" :offsets="margin" />
-    <div ref="chartContainer" class="chart-container" v-show="!isLoading"></div>
+    <div ref="chartContainer" class="chart-container"></div>
   </div>
 </template>
 
@@ -34,7 +33,6 @@ import {
   MouseOver,
   VerticalMouseOver,
 } from '@deltares/fews-web-oc-charts'
-import LoadingOverlay from '@/components/charts/LoadingOverlay.vue'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
@@ -65,6 +63,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   config: () => {
     return {
+      id: '',
       title: '',
       series: [],
     }
@@ -87,6 +86,7 @@ const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = ref<HTMLElement>()
 const axisTime = ref<CurrentTime>()
+const hasLoadedOnce = ref(false)
 
 onMounted(() => {
   if (chartContainer.value) {
@@ -132,10 +132,7 @@ onMounted(() => {
     axis.accept(mouseOver)
     axis.accept(axisTime.value)
     resize()
-    if (props.config !== undefined) {
-      refreshChart()
-      setTags()
-    }
+    if (props.config !== undefined) onValueChange()
     window.addEventListener('resize', resize)
   }
 })
@@ -152,7 +149,7 @@ watch(
   (newValue) => {
     if (axisTime.value) {
       axisTime.value.setDateTime(newValue)
-      onValueChange()
+      axisTime.value.redraw()
     }
   },
 )
@@ -263,6 +260,7 @@ const clearChart = () => {
 }
 
 const refreshChart = () => {
+  /* Adds charts to the axis if not yet present, and removes charts that should no longer be there */
   const ids: string[] = axis.charts.map((c: any) => c.id)
   const removeIds: string[] = axis.charts.map((c: any) => c.id)
   if (props.config?.series === undefined) return
@@ -298,6 +296,30 @@ const refreshChart = () => {
     },
     y: {
       autoScale: true,
+    },
+  })
+}
+
+const updateChartData = (series: ChartSeries[]) => {
+  series.forEach((series) => {
+    const chart = axis.charts.find((chart) => chart.id == series.id)
+    if (chart !== undefined) {
+      const rawData = dataFromResources(series.dataResources, props.series)
+      const data = removeUnreliableData(rawData)
+      chart.data = data
+    }
+  })
+  // Ensure the current zoom, which might be user-selected, does not change
+  axis.redraw({
+    x: {
+      nice: false,
+      domain: undefined,
+      fullExtent: false,
+    },
+    y: {
+      nice: false,
+      domain: undefined,
+      fullExtent: false,
     },
   })
 }
@@ -387,15 +409,29 @@ watch(
     ),
   (newValue, oldValue) => {
     const newSeriesIds = difference(newValue, oldValue)
-    const requiredSeriesIds = props.config?.series.filter((s) =>
+    const requiredSeries = props.config?.series.filter((s) =>
       newSeriesIds.map((id) => id.split('-')[0]).includes(s.id),
     )
-    if (requiredSeriesIds.length > 0) {
-      onValueChange()
+    if (requiredSeries.length > 0) {
+      updateChartData(requiredSeries)
     }
   },
 )
-watch(props.config, onValueChange)
+watch(() => props.config, onValueChange)
+watch(
+  () => props.isLoading,
+  (newValue, oldValue) => {
+    // isLoading changes every time the data is requested again.
+    // We need to keep track of the first time the data has been loaded, in order to fully draw the chart once
+    if (!newValue) {
+      hasLoadedOnce.value = true
+    }
+  },
+)
+
+watch(hasLoadedOnce, onValueChange, {
+  once: true,
+})
 
 onBeforeUnmount(() => {
   beforeDestroy()
