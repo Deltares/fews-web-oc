@@ -1,9 +1,9 @@
 <template>
-  <template v-if="thresholdCrossings?.length">
+  <template v-if="allThresholdCrossings.length">
     <Teleport to="#threshold-summary-top" defer>
-      <v-btn class="ms-0 ps-0" @click="toggleThresholdPanel">
-        <v-icon v-if="isPanelOpen">mdi-menu-close</v-icon>
-        <v-icon v-else>mdi-menu-open</v-icon>
+      <v-btn class="ms-0 ps-0" @click="toggleThresholdPanel" :disabled="thresholdCrossings.length === 0">
+        <v-icon v-if="!isPanelOpen">mdi-menu-open</v-icon>
+        <v-icon v-else>mdi-menu-close</v-icon>
       </v-btn>
     </Teleport>
     <div v-if="isPanelOpen" class="threshold-panel d-flex flex-column">
@@ -104,11 +104,21 @@ const { thresholds: thresholdsArray } = useTopologyThresholds(
   () => props.nodeId,
 )
 
-const thresholdCrossings = computed(() => {
+const allThresholdCrossings = computed(() => {
   if (thresholdsArray.value === undefined || thresholdsArray.value.length === 0)
     return []
-  const thresholds = thresholdsArray.value[0]
-  return thresholds.levelThresholdCrossings?.filter((crossing) => selectedLevelIds.value.includes(crossing.warningLevelId ?? '')).sort((a, b) => b.severity - a.severity)
+  return thresholdsArray.value[0].levelThresholdCrossings ?? []
+})
+
+const thresholdCrossings = computed(() => {
+  let crossings = []
+  if (selectedLevelIds.value.length === 0) {
+    crossings = allThresholdCrossings.value.sort((a, b) => b.severity - a.severity)
+  }
+  else {
+    crossings = allThresholdCrossings.value?.filter((crossing) => selectedLevelIds.value.includes(crossing.warningLevelId ?? ''))
+  }
+  return crossings.sort((a, b) => b.severity - a.severity)
 })
 
 function toTableDate(crossing: LevelThresholdCrossings) {
