@@ -3,7 +3,12 @@
     <div v-if="warningLevels?.length" class="threshold-summary-container">
       <div class="threshold-summary-top" id="threshold-summary-top">
       </div>
-      <v-list v-model:selected="selectedLevelIds" select-strategy="leaf" class="threshold-summary-center">
+      <v-list
+        v-model:selected="selectedLevelIds"
+        select-strategy="leaf"
+        class="threshold-summary-center"
+        lines="two"
+      >
         <v-list-item
           v-for="warningLevel in warningLevels"
           :key="warningLevel.id"
@@ -11,7 +16,7 @@
           label
           size="small"
           density="compact"
-          class="ma-0 py-1 px-0 w-100 flex-nowrap"
+          class="ma-0 py-1 px-0 w-100 flex-nowrap overflow-hidden"
         >
           <div class="d-flex align-center flex-column flex-nowrap w-100">
             <v-badge
@@ -24,9 +29,9 @@
             >
               <v-img width="30px" :src="warningLevel.icon"></v-img>
             </v-badge>
-            <span class="warning-label" style="width: 65px;">
+            <v-list-item-subtitle>
               {{ warningLevel.name }}
-            </span>
+            </v-list-item-subtitle>
           </div>
         </v-list-item>
       </v-list>
@@ -115,14 +120,10 @@ const warningLevels = computed(() => {
   text-align: center;
 }
 
-.warning-label {
-  width: 100%;
-  text-align: center;
-  font-size: 0.875em;
-  overflow-wrap: unset !important;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+.v-list-item-subtitle {
+  font-size: 0.8em;
+  color: var(--v-theme-on-surface);
+  opacity: 1;
 }
 
 :deep(.v-list-item__content) {
