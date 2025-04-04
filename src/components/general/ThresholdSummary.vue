@@ -16,9 +16,9 @@
           label
           size="small"
           density="compact"
-          class="ma-0 py-1 px-0 w-100 flex-nowrap overflow-hidden"
+          class="ma-0 py-3 px-0 w-100 flex-nowrap overflow-hidden"
         >
-          <div class="d-flex align-center flex-column flex-nowrap w-100">
+          <div class="d-flex align-center flex-column flex-nowrap px-1">
             <v-badge
               color="#dcdddc"
               :model-value="(warningLevel.count ?? 0) > 0"
