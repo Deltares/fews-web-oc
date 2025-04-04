@@ -14,7 +14,8 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { difference } from 'lodash-es'
 import { SeriesData } from '@/lib/timeseries/types/SeriesData'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
-import { type Pausable, useIntervalFn } from '@vueuse/core'
+import { type Pausable } from '@vueuse/core'
+import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 
 export interface UseTimeSeriesReturn {
   error: Ref<any>
@@ -201,10 +202,10 @@ export function useTimeSeries(
     }
   }
 
-  const interval = useIntervalFn(loadTimeSeries, TIMESERIES_POLLING_INTERVAL, {
-    immediate: true,
-    immediateCallback: true,
-  })
+  const interval = useFocusAwareInterval(
+    loadTimeSeries,
+    TIMESERIES_POLLING_INTERVAL,
+  )
 
   onUnmounted(() => {
     controller.abort('useTimeSeries unmounted.')

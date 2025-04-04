@@ -12,9 +12,9 @@
   </v-tooltip>
 </template>
 <script setup lang="ts">
-import { createTimer, Timer } from '@/lib/timer'
+import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 import { Duration, DurationUnit } from 'luxon'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { ref } from 'vue'
 
 interface Props {
   dispatchTimestamp: number | null
@@ -30,13 +30,9 @@ const progress = ref(0)
 const isUnknownProgress = ref(false)
 const details = ref('')
 
-// Initialise progress, then update every few seconds; remove timer when the
-// component is unmounted.
-let timer: Timer | null = null
-onMounted(() => {
-  timer = createTimer(updateProgress, props.updateIntervalSeconds, true)
+useFocusAwareInterval(updateProgress, () => props.updateIntervalSeconds, {
+  immediate: true,
 })
-onUnmounted(() => timer?.deactivate())
 
 function updateProgress(): void {
   if (
