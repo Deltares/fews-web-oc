@@ -3,7 +3,7 @@
     v-model="selectedWorkflowIds"
     :items="workflowItems"
     label="Workflows"
-    do-sort-items
+    sortItems
   />
 </template>
 <script setup lang="ts">
