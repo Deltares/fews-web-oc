@@ -21,15 +21,12 @@ export function convertFewsPiTaskRunToTaskRun(taskRun: FewsPiTaskRun): TaskRun {
   return {
     taskId: taskRun.id,
     workflowId: taskRun.workflowId,
-    // FIXME: is "user" as userId or a user name? Also, it can be null for
-    //        scheduled tasks, but this is undocumented.
     userId: taskRun.user,
     status: convertToTaskStatus(taskRun.status),
     description,
     timeZeroTimestamp,
     dispatchTimestamp,
     completionTimestamp,
-    isScheduled: taskRun.user === null,
     isCurrent: taskRun.current,
     outputStartTimestamp,
     outputEndTimestamp,

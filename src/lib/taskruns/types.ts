@@ -28,7 +28,6 @@ export interface TaskRun {
   dispatchTimestamp: number | null
   completionTimestamp: number | null
   userId: string | null
-  isScheduled: boolean
   isCurrent: boolean
   outputStartTimestamp: number | null
   outputEndTimestamp: number | null
