@@ -82,9 +82,6 @@ export function useTaskRuns(
     const endDispatchTime = convertTimestampToFewsPiParameter(
       period.endTimestamp,
     )
-    // FIXME: it is documented that tasks can only be fetched for a specific
-    //        workflowId (i.e. that that is a required parameter), but that
-    //        seems to be untrue.
     const response = await piProvider.getTaskRuns({
       documentFormat: DocumentFormat.PI_JSON,
       startDispatchTime,
