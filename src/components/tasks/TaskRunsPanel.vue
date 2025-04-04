@@ -1,60 +1,53 @@
 <template>
-  <v-btn
-    icon="mdi-clipboard-text-clock"
-    :active="isPanelOpen"
-    @click="toggleTasksPanel"
-  />
-  <Teleport to="#main-side-panel" defer>
-    <div v-if="isPanelOpen" class="task-runs-panel h-100">
-      <div class="d-flex pt-3 pb-2">
-        <WorkflowFilterControl
-          v-model="selectedWorkflowIds"
-          @update:model-value="flagManuallyChanged"
-        />
-        <TaskStatusFilterControl v-model="selectedTaskStatuses" />
-        <v-spacer />
-        <PeriodFilterControl v-model="period" />
-      </div>
-      <div class="overflow-y-auto">
-        <v-list-item v-if="sortedTasks.length === 0">
-          No tasks available
-        </v-list-item>
-
-        <!-- Important to have item-height as it greatly improves performance -->
-        <v-virtual-scroll
-          class="scroll-container h-100"
-          :items="sortedTasks"
-          :item-height="62"
-        >
-          <template #default="{ item: task }">
-            <div class="mb-2 mx-2">
-              <TaskRunSummary
-                :task="task"
-                v-model:expanded="expandedItems[task.taskId]"
-              />
-            </div>
-          </template>
-        </v-virtual-scroll>
-      </div>
-      <v-divider />
-      <v-list-item :title="`Last updated: ${lastUpdatedString}`">
-        <template #append>
-          <v-progress-circular
-            v-if="taskRuns.isLoading.value"
-            size="20"
-            indeterminate
-          />
-          <v-btn
-            v-else
-            density="compact"
-            variant="plain"
-            icon="mdi-refresh"
-            @click="taskRuns.fetch()"
-          />
-        </template>
-      </v-list-item>
+  <div class="task-runs-panel h-100">
+    <div class="d-flex pt-3 pb-2">
+      <WorkflowFilterControl
+        v-model="selectedWorkflowIds"
+        @update:model-value="flagManuallyChanged"
+      />
+      <TaskStatusFilterControl v-model="selectedTaskStatuses" />
+      <v-spacer />
+      <PeriodFilterControl v-model="period" />
     </div>
-  </Teleport>
+    <div class="overflow-y-auto">
+      <v-list-item v-if="sortedTasks.length === 0">
+        No tasks available
+      </v-list-item>
+
+      <!-- Important to have item-height as it greatly improves performance -->
+      <v-virtual-scroll
+        class="scroll-container h-100"
+        :items="sortedTasks"
+        :item-height="62"
+      >
+        <template #default="{ item: task }">
+          <div class="mb-2 mx-2">
+            <TaskRunSummary
+              :task="task"
+              v-model:expanded="expandedItems[task.taskId]"
+            />
+          </div>
+        </template>
+      </v-virtual-scroll>
+    </div>
+    <v-divider />
+    <v-list-item :title="`Last updated: ${lastUpdatedString}`">
+      <template #append>
+        <v-progress-circular
+          v-if="taskRuns.isLoading.value"
+          size="20"
+          indeterminate
+        />
+        <v-btn
+          v-else
+          density="compact"
+          variant="plain"
+          icon="mdi-refresh"
+          @click="taskRuns.fetch()"
+        />
+      </template>
+    </v-list-item>
+  </div>
 </template>
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
@@ -72,8 +65,6 @@ import WorkflowFilterControl from './WorkflowFilterControl.vue'
 import PeriodFilterControl from './PeriodFilterControl.vue'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
-
-const isPanelOpen = ref(false)
 
 const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
 const expandedItems = ref<Record<string, boolean>>({})
@@ -150,10 +141,6 @@ const lastUpdatedString = computed<string>(() => {
   if (lastUpdated === null) return '—'
   return new Date(lastUpdated).toLocaleString()
 })
-
-function toggleTasksPanel(): void {
-  isPanelOpen.value = !isPanelOpen.value
-}
 </script>
 
 <style scoped>

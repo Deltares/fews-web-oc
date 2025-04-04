@@ -11,7 +11,7 @@
       <div class="h-100" id="app-bar-content-center"></div>
       <template #append>
         <div id="app-bar-content-end" />
-        <TaskRunsPanel v-if="showTaskMenu" />
+        <TaskRunsControl />
         <TimeControlMenu />
         <UserSettingsMenu />
         <LoginComponent v-if="configManager.authenticationIsEnabled" />
@@ -174,7 +174,7 @@ import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
 import StartupDialog from '@/components/dialog/StartupDialog.vue'
 import GlobalSearchComponent from '@/components/general/GlobalSearchComponent.vue'
-import TaskRunsPanel from '@/components/tasks/TaskRunsPanel.vue'
+import TaskRunsControl from '@/components/tasks/TaskRunsControl.vue'
 
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
