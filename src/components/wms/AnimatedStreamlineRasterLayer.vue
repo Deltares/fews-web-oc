@@ -124,7 +124,10 @@ addUpdateWatcher(
 function addLayer(): void {
   if (!map) return
   if (!props.layerOptions || !props.streamlineOptions) return
-  const options = mergeOptions(props.layerOptions, props.streamlineOptions)
+  const options: WMSStreamlineLayerOptions = {
+    ...mergeOptions(props.layerOptions, props.streamlineOptions),
+    downsampleFactorWMS: 4,
+  }
 
   // Create and initialise new streamline layer.
   layer = new WMSStreamlineLayer(layerId, options)
