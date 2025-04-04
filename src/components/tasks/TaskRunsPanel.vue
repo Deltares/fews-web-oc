@@ -111,7 +111,7 @@ watch(
 // Select all task statuses by default.
 const selectedTaskStatuses = ref<TaskStatus[]>(Object.values(TaskStatus))
 
-// Look 2 hours back by default..
+// Look 2 hours back by default.
 const period = ref<RelativePeriod | null>({
   startOffsetSeconds: -2 * 60 * 60,
   endOffsetSeconds: 0,
