@@ -4,7 +4,7 @@
       <thead>
         <tr>
           <th
-            v-for="column in table.columns.filter((c) => !!c.value)"
+            v-for="column in table.filteredColumns"
             class="font-weight-medium"
           >
             {{ column.header }}
@@ -17,7 +17,7 @@
       <tbody>
         <tr>
           <td
-            v-for="column in table.columns.filter((c) => !!c.value)"
+            v-for="column in table.filteredColumns"
             class="text-medium-emphasis"
           >
             {{ column.value }}
@@ -48,7 +48,12 @@ interface Props {
 const props = defineProps<Props>()
 
 const filteredTableData = computed(() =>
-  props.tableData.filter((table) => table.columns.some((c) => !!c.value)),
+  props.tableData
+    .map((table) => ({
+      ...table,
+      filteredColumns: table.columns.filter((c) => !!c.value),
+    }))
+    .filter((table) => table.filteredColumns.length > 0),
 )
 </script>
 
