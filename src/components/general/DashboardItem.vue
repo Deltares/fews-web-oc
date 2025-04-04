@@ -27,7 +27,10 @@ import { useComponentSettings } from '@/services/useComponentSettings'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref } from 'vue'
 import type { RouteLocationNormalized, RouteParamsGeneric } from 'vue-router'
-import { SsdActionResult } from '@deltares/fews-ssd-requests'
+import type {
+  DashboardActionParams,
+  DashboardSsdActionResult,
+} from '@/lib/topology/dashboardActions'
 
 interface Props {
   item: WebOCDashboardItem
@@ -58,7 +61,8 @@ function convertItemToComponentItem(item: WebOCDashboardItem) {
   const componentProps = getComponentPropsForNode(
     componentName,
     topologyNode,
-    params.value,
+    routeParams.value,
+    actionParams.value,
   )
   const title = topologyNode?.name ?? componentTypeToTitleMap[componentName]
   const icon = topologyNode?.iconId ?? componentTypeToIconMap[componentName]
@@ -72,7 +76,7 @@ function convertItemToComponentItem(item: WebOCDashboardItem) {
   }
 }
 
-const params = ref<RouteParamsGeneric>({})
+const routeParams = ref<RouteParamsGeneric>({})
 
 function onNavigate(to: RouteLocationNormalized) {
   switch (to.name) {
@@ -81,7 +85,7 @@ function onNavigate(to: RouteLocationNormalized) {
     case 'SpatialTimeSeriesDisplay':
     case 'SSDTimeSeriesDisplay':
     case 'SchematicStatusDisplay':
-      params.value = {
+      routeParams.value = {
         ...to.params,
       }
       break
@@ -90,18 +94,12 @@ function onNavigate(to: RouteLocationNormalized) {
   }
 }
 
-// FIXME:: add to the schema
-interface DashboardSsdActionResult extends SsdActionResult {
-  charts?: {
-    displayId?: string
-    chartsLocationId?: string
-  }
-  map?: {
-    locationId?: string
-  }
-}
-
+const actionParams = ref<DashboardActionParams>({})
 function onDashboardAction(action: DashboardSsdActionResult) {
   emit('dashboardAction', action)
+  actionParams.value = {
+    charts: action.charts,
+    map: action.map,
+  }
 }
 </script>
