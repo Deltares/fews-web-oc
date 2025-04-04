@@ -147,6 +147,14 @@ function toDisplayType(
 const displayType = ref<DisplayType>(
   toDisplayType(props.settings.general.startPanel),
 )
+watch(
+  () => props.settings.general.startPanel,
+  (newValue) => {
+    displayType.value = toDisplayType(newValue)
+  },
+  { immediate: true },
+)
+
 const displayTypeItems = computed<DisplayTypeItem[]>(() => {
   const noElevationCharts = !(
     (props.elevationChartDisplayconfig?.subplots?.length ?? 0) > 0
