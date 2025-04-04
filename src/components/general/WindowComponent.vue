@@ -27,12 +27,12 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   title: '',
-  toolBar: 'false',
+  toolBar: 'true',
 })
 
 const showToolBar = computed(() => {
   // TODO: Add auto support
-  return props.toolBar !== 'true'
+  return props.toolBar !== 'false'
 })
 
 const fullscreen = ref(false)
