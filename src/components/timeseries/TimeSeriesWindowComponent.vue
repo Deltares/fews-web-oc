@@ -8,6 +8,7 @@
         size="small"
       >
         <v-btn
+          v-if="displayTypeItems.length > 1"
           v-for="item in displayTypeItems"
           :key="item.value"
           :value="item.value"
@@ -160,7 +161,7 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
     props.settings.verticalProfileChart.enabled && elevationChartsDefined
   const tableEnabled = props.settings.timeSeriesTable.enabled
   const metaDataEnabled = props.settings.metaDataPanel.enabled && tooltipDefined
-  const displayTypeItems = [
+  return [
     {
       icon: 'mdi-chart-line',
       label: 'Chart',
@@ -193,7 +194,6 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
     //     icon: 'mdi-information',
     //    label: 'Metadata',
   ].filter((item) => !item.hidden)
-  return displayTypeItems.length === 1 ? [] : displayTypeItems
 })
 
 watch(displayTypeItems, () => {
