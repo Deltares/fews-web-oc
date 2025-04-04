@@ -13,7 +13,7 @@
     :touchPitch="false"
     :attributionControl="false"
     :bounds="bounds"
-    :fadeDuration="0"
+    :fadeDuration="100"
   >
     <mgl-attribution-control position="top-right" :compact="true" />
     <mgl-scale-control position="bottom-right" />
