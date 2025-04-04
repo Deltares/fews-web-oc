@@ -4,14 +4,7 @@ import {
   TaskStatus as TaskStatusId,
   TaskRun as FewsPiTaskRun,
 } from '@deltares/fews-pi-requests'
-import {
-  computed,
-  MaybeRefOrGetter,
-  onUnmounted,
-  ref,
-  toValue,
-  watch,
-} from 'vue'
+import { computed, MaybeRefOrGetter, ref, toValue, watch } from 'vue'
 
 import { convertTimestampToFewsPiParameter } from '@/lib/date'
 import { RelativePeriod } from '@/lib/period'
@@ -21,10 +14,10 @@ import {
   TaskRun,
   TaskStatus,
 } from '@/lib/taskruns'
-import { createTimer } from '@/lib/timer'
 
 import { configManager } from '../application-config'
 import { convertRelativeToAbsolutePeriod } from '@/lib/period/convert'
+import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 
 const shouldRefreshTaskRuns = ref(false)
 
@@ -49,14 +42,9 @@ export function useTaskRuns(
   const allTaskRuns = ref<TaskRun[]>([])
   const filteredTaskRuns = computed<TaskRun[]>(filterTasks)
 
-  const timer = createTimer(
-    () => {
-      fetch().catch((error) => console.error(`Failed to fetch tasks: ${error}`))
-    },
-    refreshIntervalSeconds,
-    true,
-  )
-  onUnmounted(() => timer.deactivate())
+  useFocusAwareInterval(() => {
+    fetch().catch((error) => console.error(`Failed to fetch tasks: ${error}`))
+  }, refreshIntervalSeconds * 1000)
 
   // Fetch taskruns if a new dispatch period is selected.
   watch(() => toValue(dispatchPeriod), fetch)

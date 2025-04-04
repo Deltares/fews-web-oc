@@ -11,7 +11,7 @@
       <div class="h-100" id="app-bar-content-center"></div>
       <template #append>
         <div id="app-bar-content-end" />
-        <TaskRunsControl />
+        <TaskRunsControl v-if="showTaskMenu" />
         <TimeControlMenu />
         <UserSettingsMenu />
         <LoginComponent v-if="configManager.authenticationIsEnabled" />
