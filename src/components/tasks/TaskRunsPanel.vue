@@ -117,9 +117,9 @@ const period = ref<RelativePeriod | null>({
   endOffsetSeconds: 0,
 })
 
-const tasksRefreshIntervalSeconds = 15
+const TASKS_REFRESH_INTERVAL_SECONDS = 15
 const taskRuns = useTaskRuns(
-  tasksRefreshIntervalSeconds,
+  TASKS_REFRESH_INTERVAL_SECONDS,
   period,
   selectedWorkflowIds,
   selectedTaskStatuses,
