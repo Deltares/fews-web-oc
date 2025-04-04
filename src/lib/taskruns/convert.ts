@@ -37,57 +37,12 @@ export function convertFewsPiTaskRunToTaskRun(taskRun: FewsPiTaskRun): TaskRun {
 }
 
 export function convertToTaskStatus(status: string): TaskStatus {
-  switch (status) {
-    case 'invalid':
-      return TaskStatus.Invalid
-    case 'pending':
-      return TaskStatus.Pending
-    case 'terminated':
-      return TaskStatus.Terminated
-    case 'running':
-      return TaskStatus.Running
-    case 'failed':
-      return TaskStatus.Failed
-    case 'completed fully successful':
-      return TaskStatus.CompletedFullySuccessful
-    case 'completed partly successful':
-      return TaskStatus.CompletePartlySuccessful
-    case 'approved':
-      return TaskStatus.Approved
-    case 'approved partly successful':
-      return TaskStatus.ApprovedPartlySuccessful
-    case 'amalgamated':
-      return TaskStatus.Amalgamated
-    case 'partly completed':
-      return TaskStatus.PartlyCompleted
-    default:
-      throw new Error(`Invalid task status: "${status}".`)
+  if (Object.values(TaskStatus).includes(status as TaskStatus)) {
+    return status as TaskStatus
   }
+  throw new Error(`Invalid task status: "${status}".`)
 }
 
 export function convertTaskStatusToString(status: TaskStatus): string {
-  switch (status) {
-    case TaskStatus.Invalid:
-      return 'Invalid'
-    case TaskStatus.Pending:
-      return 'Pending'
-    case TaskStatus.Terminated:
-      return 'Terminated'
-    case TaskStatus.Running:
-      return 'Running'
-    case TaskStatus.Failed:
-      return 'Failed'
-    case TaskStatus.CompletedFullySuccessful:
-      return 'Completed fully successful'
-    case TaskStatus.CompletePartlySuccessful:
-      return 'Completed partly successful'
-    case TaskStatus.Approved:
-      return 'Approved'
-    case TaskStatus.ApprovedPartlySuccessful:
-      return 'Approved partly successful'
-    case TaskStatus.Amalgamated:
-      return 'Amalgamated'
-    case TaskStatus.PartlyCompleted:
-      return 'Partly completed'
-  }
+  return status.charAt(0).toUpperCase() + status.slice(1)
 }
