@@ -75,16 +75,16 @@ interface SelectItem {
 interface Props {
   label: string
   items: SelectItem[]
-  doSortItems?: boolean
+  sortItems?: boolean
 }
 const props = withDefaults(defineProps<Props>(), {
-  doSortItems: false,
+  sortItems: false,
 })
 const selectedValues = defineModel<T[]>({ required: true })
 
 const sortedItems = computed<SelectItem[]>(() => {
   // Sort items only if selected.
-  if (!props.doSortItems) return props.items
+  if (!props.sortItems) return props.items
 
   return props.items.toSorted((a, b) => {
     if (a.isPreferred && !b.isPreferred) {
