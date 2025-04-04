@@ -1,24 +1,24 @@
 <template>
-  <mgl-geo-json-source :source-id="locationIds.source" :data="geojson">
+  <mgl-geo-json-source :source-id="locationMapIds.source" :data="geojson">
     <LocationsFillLayer
-      :layerId="locationIds.layer.fill"
+      :layerId="locationMapIds.layer.fill"
       :selectedLocationIds="selectedLocationIds"
       :isDark="isDark"
       :hoveredStateId="hoveredStateId"
     />
 
-    <LocationsCircleLayer :layerId="locationIds.layer.circle" />
+    <LocationsCircleLayer :layerId="locationMapIds.layer.circle" />
 
     <LocationsSymbolLayer
-      :layerId="locationIds.layer.symbol"
+      :layerId="locationMapIds.layer.symbol"
       :isDark="isDark"
     />
     <LocationsSymbolLayer
-      :layerId="locationIds.layer.childSymbol"
+      :layerId="locationMapIds.layer.childSymbol"
       :isDark="isDark"
       child
     />
-    <LocationsTextLayer :layerId="locationIds.layer.text" :isDark="isDark" />
+    <LocationsTextLayer :layerId="locationMapIds.layer.text" :isDark="isDark" />
   </mgl-geo-json-source>
 
   <LocationsMarkers
@@ -47,7 +47,7 @@ import { addLocationIconsToMap } from '@/lib/location-icons'
 import { useDark } from '@vueuse/core'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
-  locationIds,
+  locationMapIds,
   clickableLocationLayerIds,
   addPropertiesToLocationGeojson,
 } from '@/lib/map'
@@ -92,8 +92,8 @@ onBeforeMount(() => {
       map.on('mouseleave', layerId, unsetCursorPointer)
     }
 
-    map.on('mousemove', locationIds.layer.fill, onFillMouseMove)
-    map.on('mouseleave', locationIds.layer.fill, onFillMouseLeave)
+    map.on('mousemove', locationMapIds.layer.fill, onFillMouseMove)
+    map.on('mouseleave', locationMapIds.layer.fill, onFillMouseLeave)
   }
   addLocationIcons()
 })
@@ -106,8 +106,8 @@ onBeforeUnmount(() => {
       map.off('mouseleave', layerId, unsetCursorPointer)
     }
 
-    map.on('mousemove', locationIds.layer.fill, onFillMouseMove)
-    map.on('mouseleave', locationIds.layer.fill, onFillMouseLeave)
+    map.on('mousemove', locationMapIds.layer.fill, onFillMouseMove)
+    map.on('mouseleave', locationMapIds.layer.fill, onFillMouseLeave)
   }
 })
 

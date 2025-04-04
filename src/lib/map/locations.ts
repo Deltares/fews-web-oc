@@ -2,7 +2,7 @@ import { getLayerId, getSourceId } from '@/lib/map/utils'
 import { Location } from '@deltares/fews-pi-requests'
 import { Feature, FeatureCollection, Geometry } from 'geojson'
 
-export const locationIds = {
+export const locationMapIds = {
   layer: {
     circle: getLayerId('location-circle'),
     symbol: getLayerId('location-symbol'),
@@ -14,19 +14,19 @@ export const locationIds = {
 }
 
 export const locationLayerIds = [
-  locationIds.layer.circle,
-  locationIds.layer.symbol,
-  locationIds.layer.childSymbol,
-  locationIds.layer.text,
-  locationIds.layer.fill,
+  locationMapIds.layer.circle,
+  locationMapIds.layer.symbol,
+  locationMapIds.layer.childSymbol,
+  locationMapIds.layer.text,
+  locationMapIds.layer.fill,
 ]
 
 // NOTE: When multiple layers are clicked the order of the layers here is important.
 export const clickableLocationLayerIds = [
-  locationIds.layer.fill,
-  locationIds.layer.circle,
-  locationIds.layer.symbol,
-  locationIds.layer.childSymbol,
+  locationMapIds.layer.fill,
+  locationMapIds.layer.circle,
+  locationMapIds.layer.symbol,
+  locationMapIds.layer.childSymbol,
 ]
 
 export function addPropertiesToLocationGeojson(
