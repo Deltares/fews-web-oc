@@ -8,7 +8,7 @@
               <v-badge
                 color="#00BBF0"
                 :model-value="(item.thresholdCount ?? 0) > 0"
-                :content="item.thresholdCount"
+                content="!"
               >
                 <v-icon
                   :icon="
@@ -63,7 +63,7 @@
           <v-badge
             color="#00BBF0"
             :model-value="(item.thresholdCount ?? 0) > 0"
-            :content="item.thresholdCount"
+            content="!"
           >
             <v-icon :icon="item.icon ?? toCharacterIcon(item.name)"></v-icon>
           </v-badge>
