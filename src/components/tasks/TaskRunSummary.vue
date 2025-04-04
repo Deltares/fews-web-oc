@@ -66,13 +66,13 @@ import {
   toDateRangeString,
   toHumanReadableDate,
 } from '@/lib/date'
-import type { WhatIfTemplate } from '@deltares/fews-pi-requests'
+import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
+const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
 
 interface Props {
   task: TaskRun
-  whatIfTemplates: WhatIfTemplate[]
 }
 const props = defineProps<Props>()
 
@@ -132,9 +132,7 @@ const workflow = computed(() =>
 )
 
 const whatIfTemplate = computed(() =>
-  props.whatIfTemplates.find(
-    (template) => template.id === workflow.value?.whatIfTemplateId,
-  ),
+  availableWhatIfTemplatesStore.byId(workflow.value?.whatIfTemplateId),
 )
 
 const expectedRunTimeSeconds = computed(

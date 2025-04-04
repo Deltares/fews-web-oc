@@ -30,7 +30,6 @@
             <div class="mb-2 mx-2">
               <TaskRunSummary
                 :task="task"
-                :whatIfTemplates="whatIfTemplates"
                 v-model:expanded="expandedItems[task.taskId]"
               />
             </div>
@@ -71,8 +70,6 @@ import TaskStatusFilterControl from './TaskStatusFilterControl.vue'
 import TaskRunSummary from './TaskRunSummary.vue'
 import WorkflowFilterControl from './WorkflowFilterControl.vue'
 import PeriodFilterControl from './PeriodFilterControl.vue'
-import { useWhatIfTemplates } from '@/services/useWhatIfTemplate'
-import { configManager } from '@/services/application-config'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 
@@ -147,20 +144,6 @@ const sortedTasks = computed<TaskRun[]>(() => {
     }
   })
 })
-
-const uniqueWhatIfTemplateIds = computed<string[]>(() => {
-  return Array.from(
-    new Set(
-      sortedTasks.value.flatMap((task) => {
-        const workflow = availableWorkflowsStore.byId(task.workflowId)
-        return workflow?.whatIfTemplateId ? [workflow.whatIfTemplateId] : []
-      }),
-    ),
-  )
-})
-
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { whatIfTemplates } = useWhatIfTemplates(baseUrl, uniqueWhatIfTemplateIds)
 
 const lastUpdatedString = computed<string>(() => {
   const lastUpdated = taskRuns.lastUpdatedTimestamp.value
