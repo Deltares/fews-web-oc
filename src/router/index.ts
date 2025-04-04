@@ -26,8 +26,7 @@ const SSDTimeSeriesDisplay = () =>
 const SpatialDisplayView = () => import('../views/SpatialDisplayView.vue')
 const SpatialDisplay = () =>
   import('../components/spatialdisplay/SpatialDisplay.vue')
-const SpatialTimeSeriesDisplay = () =>
-  import('../components/spatialdisplay/SpatialTimeSeriesDisplay.vue')
+const WhatIfDisplayView = () => import('../views/WhatIfDisplayView.vue')
 const TimeSeriesDisplayView = () => import('../views/TimeSeriesDisplayView.vue')
 const TopologyDisplayView = () => import('../views/TopologyDisplayView.vue')
 const DataDownloadDisplayView = () =>
@@ -38,6 +37,7 @@ const HtmlDisplayView = () => import('../views/HtmlDisplayView.vue')
 const ReportsDisplayView = () => import('../views/ReportsDisplayView.vue')
 const WebDisplay = () => import('../components/webdisplay/WebDisplay.vue')
 const DashboardView = () => import('../views/DashboardView.vue')
+const LogDisplay = () => import('../components/logdisplay/LogDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
@@ -132,22 +132,20 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     component: SpatialDisplayView,
     props: true,
     meta: { sidebar: true },
-    children: [
-      {
-        path: '/map/:layerName?/location/:locationId',
-        name: 'SpatialTimeSeriesDisplay',
-        component: SpatialTimeSeriesDisplay,
-        props: true,
-        meta: { sidebar: true },
-      },
-      {
-        path: '/map/:layerName?/coordinates/:latitude/:longitude',
-        name: 'SpatialTimeSeriesDisplayWithCoordinates',
-        component: SpatialTimeSeriesDisplay,
-        props: true,
-        meta: { sidebar: true },
-      },
-    ],
+  },
+  {
+    path: '/map/:layerName?/coordinates/:latitude/:longitude',
+    name: 'SpatialTimeSeriesDisplayWithCoordinates',
+    component: SpatialDisplayView,
+    props: true,
+    meta: { sidebar: true },
+  },
+  {
+    path: '/map/:layerName?/location/:locationId',
+    name: 'SpatialTimeSeriesDisplay',
+    component: SpatialDisplayView,
+    props: true,
+    meta: { sidebar: true },
   },
   {
     path: '/series/node/:nodeId?',
@@ -197,6 +195,15 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         component: SchematicStatusDisplay,
         props: true,
         meta: { sidebar: true },
+        children: [
+          {
+            path: 'object/:objectId',
+            name: 'TopologySSDTimeSeriesDisplay',
+            component: SSDTimeSeriesDisplay,
+            props: true,
+            meta: { sidebar: true },
+          },
+        ],
       },
       {
         path: 'systemmonitor',
@@ -213,27 +220,39 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         meta: { sidebar: true },
       },
       {
+        path: 'log',
+        name: 'TopologyLogDisplay',
+        component: LogDisplay,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
         path: 'map/:layerName?',
         name: 'TopologySpatialDisplay',
         component: SpatialDisplay,
         props: true,
         meta: { sidebar: true },
-        children: [
-          {
-            path: 'location/:locationIds',
-            name: 'TopologySpatialTimeSeriesDisplay',
-            component: SpatialTimeSeriesDisplay,
-            props: true,
-            meta: { sidebar: true },
-          },
-          {
-            path: 'coordinates/:latitude/:longitude',
-            name: 'TopologySpatialTimeSeriesDisplayWithCoordinates',
-            component: SpatialTimeSeriesDisplay,
-            props: true,
-            meta: { sidebar: true },
-          },
-        ],
+      },
+      {
+        path: 'map/:layerName?/location/:locationIds',
+        name: 'TopologySpatialTimeSeriesDisplay',
+        component: SpatialDisplay,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
+        path: 'map/:layerName?/coordinates/:latitude/:longitude',
+        name: 'TopologySpatialTimeSeriesDisplayWithCoordinates',
+        component: SpatialDisplay,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
+        path: 'whatif',
+        name: 'TopologyWhatIfDisplay',
+        component: WhatIfDisplayView,
+        props: true,
+        meta: { sidebar: true },
       },
     ],
   },

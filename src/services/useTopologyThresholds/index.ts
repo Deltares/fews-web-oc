@@ -32,7 +32,7 @@ export function useTopologyThresholds(
       const provider = new PiWebserviceProvider(baseUrl, {
         transformRequestFn: createTransformRequestFn(),
       })
-      const response = await provider.getTopologyThresholds()
+      const response = await provider.getTopologyThresholds({})
       thresholds.value = response.topologyNodes
     } catch {
       error.value = 'Error loading topology thresholds'

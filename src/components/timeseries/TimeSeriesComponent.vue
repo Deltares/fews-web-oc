@@ -1,40 +1,46 @@
 <template>
   <v-window v-model="tab" class="h-100 w-100" :touch="false">
     <v-window-item
+      v-if="settings.timeSeriesChart.enabled"
       :value="DisplayType.TimeSeriesChart"
       class="time-series-component__container scroll"
     >
       <KeepAlive>
         <TimeSeriesChart
-          v-for="(subplot, i) in subplots"
+          v-for="subplot in subplots"
           :config="subplot"
           :series="series"
-          :key="`${subplot.title}-${i}`"
+          :key="subplot.id"
           :currentTime="selectedDate"
           :isLoading="isLoading(subplot, loadingSeriesIds)"
           :zoomHandler="sharedZoomHandler"
+          :settings="settings.timeSeriesChart"
         >
         </TimeSeriesChart>
       </KeepAlive>
     </v-window-item>
     <v-window-item
+      v-if="settings.verticalProfileChart.enabled"
       :value="DisplayType.ElevationChart"
       class="elevation-chart-component__container scroll"
     >
       <KeepAlive>
-        <ElevationChart
-          v-for="(subplot, i) in elevationChartSubplots"
+        <TimeSeriesChart
+          v-for="subplot in elevationChartSubplots"
+          verticalProfile
           :config="subplot"
           :series="elevationChartSeries"
-          :key="`${subplot.title}-${i}`"
+          :key="subplot.id"
           :style="`min-width: ${xs ? 100 : 50}%`"
           :isLoading="isLoading(subplot, elevationLoadingSeriesIds)"
           :zoomHandler="sharedVerticalZoomHandler"
+          :settings="settings.verticalProfileChart"
         >
-        </ElevationChart>
+        </TimeSeriesChart>
       </KeepAlive>
     </v-window-item>
     <v-window-item
+      v-if="settings.timeSeriesTable.enabled"
       :value="DisplayType.TimeSeriesTable"
       class="time-series-component__container max-height"
     >
@@ -42,13 +48,18 @@
         :config="tableConfig"
         :series="series"
         :key="tableConfig.title"
+        :settings="settings.timeSeriesTable"
         class="single"
         @change="(event) => onDataChange(event)"
         @update:isEditing="isEditing = $event"
       >
       </TimeSeriesTable>
     </v-window-item>
-    <v-window-item :value="DisplayType.Information" class="h-100">
+    <v-window-item
+      v-if="settings.metaDataPanel.enabled"
+      :value="DisplayType.Information"
+      class="h-100"
+    >
       <!-- <div class="px-4 h-100"> -->
       <!--   <iframe :srcdoc="informationContent" class="h-100 w-100 border-none" /> -->
       <!-- </div> -->
@@ -74,7 +85,6 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
 import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
-import ElevationChart from '../charts/ElevationChart.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
 import {
   DisplayType,
@@ -96,13 +106,18 @@ import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'
 import { getUniqueSeries } from '@/lib/charts/getUniqueSeriesIds.ts'
 import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
+import {
+  getDefaultSettings,
+  type ChartsSettings,
+} from '@/lib/topology/componentSettings'
 
 interface Props {
   config?: DisplayConfig
   elevationChartConfig?: DisplayConfig
   displayType: DisplayType
   currentTime?: Date
-  informationContent?: string
+  informationContent?: string | null
+  settings?: ChartsSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -132,7 +147,7 @@ const props = withDefaults(defineProps<Props>(), {
       period: undefined,
     }
   },
-  displayType: DisplayType.TimeSeriesChart,
+  settings: () => getDefaultSettings().charts,
 })
 
 const { selectedDate } = useSelectedDate(() => props.currentTime ?? new Date())
@@ -156,12 +171,11 @@ const options = computed<UseTimeSeriesOptions>(() => {
   }
 })
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { series, loadingSeriesIds } = useTimeSeries(
-  baseUrl,
-  () => props.config.requests,
-  lastUpdated,
-  options,
-)
+const {
+  series,
+  loadingSeriesIds,
+  interval: useTimeSeriesInterval,
+} = useTimeSeries(baseUrl, () => props.config.requests, lastUpdated, options)
 const {
   series: elevationChartSeries,
   loadingSeriesIds: elevationLoadingSeriesIds,
@@ -196,7 +210,14 @@ function isLoading(subplot: ChartConfig, loadingSeriesIds: string[]) {
 }
 
 async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
-  await postTimeSeriesEdit(baseUrl, props.config.requests, newData)
+  const seriesHeader = series.value[props.config.requests[0].key].header
+  await postTimeSeriesEdit(
+    baseUrl,
+    props.config.requests,
+    newData,
+    seriesHeader.version ?? '',
+    seriesHeader.timeZone ?? '',
+  )
   lastUpdated.value = new Date()
 }
 
@@ -216,7 +237,7 @@ const elevationChartSubplots = computed(() => {
   }
 })
 
-const tableConfig = ref<ChartConfig>({ title: '', series: [] })
+const tableConfig = ref<ChartConfig>({ id: '', title: '', series: [] })
 
 watch(
   () => props.config.subplots,
@@ -232,6 +253,7 @@ watch(
     })
 
     tableConfig.value = {
+      id: 'table',
       title: props.config.title,
       series,
     }
@@ -248,6 +270,11 @@ watch(
 )
 
 watch(isEditing, () => {
+  if (isEditing.value) {
+    useTimeSeriesInterval.pause()
+  } else {
+    useTimeSeriesInterval.resume()
+  }
   // Can't set a custom message in modern browsers
   window.onbeforeunload = isEditing.value ? () => true : null
 })

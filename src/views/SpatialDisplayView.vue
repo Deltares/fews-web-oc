@@ -11,6 +11,7 @@
     :layer-name="props.layerName"
     :latitude="props.latitude"
     :longitude="props.longitude"
+    @navigate="onNavigate"
   />
 </template>
 
@@ -23,6 +24,7 @@ import { configManager } from '@/services/application-config'
 import { Layer, LayerGroup } from '@deltares/fews-wms-requests'
 import SpatialDisplay from '@/components/spatialdisplay/SpatialDisplay.vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { RouteLocationNormalized, useRoute, useRouter } from 'vue-router'
 
 interface Props {
   layerName?: string
@@ -33,6 +35,9 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   layerName: '',
 })
+
+const route = useRoute()
+const router = useRouter()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const capabilities = useWmsCapilities(baseUrl)
@@ -121,6 +126,43 @@ function attachLayersToMenu(
       },
     }
     groupNode?.children?.push(item)
+  }
+}
+
+function onNavigate(to: RouteLocationNormalized) {
+  switch (to.name) {
+    case 'SpatialTimeSeriesDisplay':
+      router.push({
+        name: to.name,
+        params: {
+          layerName: props.layerName,
+          locationIds: to.params.locationIds,
+        },
+        query: route.query,
+      })
+      break
+    case 'SpatialTimeSeriesDisplayWithCoordinates':
+      router.push({
+        name: to.name,
+        params: {
+          layerName: props.layerName,
+          latitude: to.params.latitude,
+          longitude: to.params.longitude,
+        },
+        query: route.query,
+      })
+      break
+    case 'SpatialDisplay':
+      router.push({
+        name: to.name,
+        params: {
+          layerName: props.layerName,
+        },
+        query: route.query,
+      })
+      break
+    default:
+      console.warn(`Unknown route name: ${String(to.name)}`)
   }
 }
 </script>

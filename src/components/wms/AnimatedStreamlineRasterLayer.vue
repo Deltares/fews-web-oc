@@ -15,7 +15,7 @@ import { onMounted, onUnmounted, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import { type AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
-import { getLayerId } from '@/lib/map'
+import { getBeforeId, getLayerId } from '@/lib/map'
 
 type StreamlineLayerOptionsFews = Layer['animatedVectors']
 
@@ -122,7 +122,7 @@ addUpdateWatcher(
 )
 
 function addLayer(): void {
-  if (!map?.isStyleLoaded()) return
+  if (!map) return
   if (!props.layerOptions || !props.streamlineOptions) return
   const options = mergeOptions(props.layerOptions, props.streamlineOptions)
 
@@ -142,7 +142,8 @@ function addLayer(): void {
     )
   })
 
-  map?.addLayer(layer, 'boundary_country_outline')
+  const beforeId = getBeforeId(map)
+  map?.addLayer(layer, beforeId)
 }
 
 function removeLayer(): void {

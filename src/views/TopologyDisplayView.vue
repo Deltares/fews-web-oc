@@ -64,7 +64,12 @@
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
       <keep-alive include="SpatialDisplay">
-        <component :is="Component" :topologyNode="topologyNode" />
+        <component
+          :is="Component"
+          :topologyNode="topologyNode"
+          :settings="componentSettings"
+          @navigate="onNavigate"
+        />
       </keep-alive>
     </router-view>
     <div
@@ -111,6 +116,7 @@ import {
   type DisplayTab,
 } from '@/lib/topology/displayTabs.js'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
+import { useComponentSettings } from '@/services/useComponentSettings'
 
 interface Props {
   topologyId?: string
@@ -264,6 +270,13 @@ function updateItems(): void {
 watch(subNodes, updateItems)
 watch(thresholds, updateItems)
 
+const { componentSettings } = useComponentSettings(baseUrl, () => [
+  // @ts-expect-error FIXME: Update when the types are updated
+  topologyComponentConfig.value?.componentSettingsId,
+  // @ts-expect-error FIXME: Update when the types are updated
+  topologyNode.value?.componentSettingsId,
+])
+
 // Update the displayTabs if the active node changes (or if the topologyMap changes).
 // Redirect to the corresponding display of the updated active tab.
 watchEffect(() => {
@@ -306,6 +319,46 @@ watchEffect(() => {
 
   externalLink.value = node.url
 })
+
+function onNavigate(to: RouteLocationNormalized) {
+  switch (to.name) {
+    case 'SpatialTimeSeriesDisplay':
+      router.push({
+        name: `Topology${to.name}`,
+        params: {
+          nodeId: props.nodeId,
+          layerName: props.layerName,
+          locationIds: to.params.locationIds,
+        },
+        query: route.query,
+      })
+      break
+    case 'SpatialTimeSeriesDisplayWithCoordinates':
+      router.push({
+        name: `Topology${to.name}`,
+        params: {
+          nodeId: props.nodeId,
+          layerName: props.layerName,
+          latitude: to.params.latitude,
+          longitude: to.params.longitude,
+        },
+        query: route.query,
+      })
+      break
+    case 'SpatialDisplay':
+      router.push({
+        name: `Topology${to.name}`,
+        params: {
+          nodeId: props.nodeId,
+          layerName: props.layerName,
+        },
+        query: route.query,
+      })
+      break
+    default:
+      console.warn(`Unknown route name: ${String(to.name)}`)
+  }
+}
 
 onBeforeRouteUpdate(reroute)
 

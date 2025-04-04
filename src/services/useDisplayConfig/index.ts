@@ -16,8 +16,8 @@ import {
 } from '@/lib/filters'
 
 export interface UseDisplayConfigReturn {
-  displayConfig: Ref<DisplayConfig | undefined>
-  displays: Ref<DisplayConfig[] | undefined>
+  displayConfig: Ref<DisplayConfig | null>
+  displays: Ref<DisplayConfig[] | null>
 }
 
 export interface UseDisplayConfigOptions {
@@ -60,7 +60,7 @@ function actionsResponseToDisplayConfig(
 
     const subplots =
       result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
-        return timeSeriesDisplayToChartConfig(subPlot, title, configPeriod)
+        return timeSeriesDisplayToChartConfig(subPlot, configPeriod)
       }) ?? []
     const display: DisplayConfig = {
       id: title,
@@ -96,8 +96,8 @@ export function useDisplayConfig(
     transformRequestFn: createTransformRequestFn(),
   })
 
-  const displayConfig = ref<DisplayConfig>()
-  const displays = ref<DisplayConfig[]>()
+  const displayConfig = ref<DisplayConfig | null>(null)
+  const displays = ref<DisplayConfig[] | null>(null)
 
   const response = ref<ActionsResponse>()
 
@@ -144,7 +144,7 @@ export function useDisplayConfig(
  */
 export function useDisplayConfigFilter(
   baseUrl: string,
-  filter: MaybeRefOrGetter<Filter>,
+  filter: MaybeRefOrGetter<Filter | undefined>,
   startTime: MaybeRefOrGetter<Date | undefined>,
   endTime: MaybeRefOrGetter<Date | undefined>,
 ): UseDisplayConfigReturn {
@@ -152,12 +152,13 @@ export function useDisplayConfigFilter(
     transformRequestFn: createTransformRequestFn(),
   })
 
-  const displayConfig = ref<DisplayConfig>()
-  const displays = ref<DisplayConfig[]>()
+  const displayConfig = ref<DisplayConfig | null>(null)
+  const displays = ref<DisplayConfig[] | null>(null)
   const response = ref<ActionsResponse>()
 
   watchEffect(async () => {
     const _filter = toValue(filter)
+    if (_filter === undefined) return
     if (isFilterActionsFilter(_filter)) {
       if (!_filter.filterId) return
       response.value = await piProvider.getFilterActions(_filter)
@@ -180,8 +181,8 @@ export function useDisplayConfigFilter(
         }
       })
     } else {
-      displayConfig.value = undefined
-      displays.value = undefined
+      displayConfig.value = null
+      displays.value = null
       return
     }
   })

@@ -15,7 +15,7 @@
         <v-list-item-action v-if="setting.type === 'oneOfMultiple'">
           <v-btn-toggle
             density="compact"
-            class="my-2"
+            class="my-2 multi-line-toggle"
             v-model="setting.value"
             mandatory
             @update:model-value="onValueChange(setting)"
@@ -77,5 +77,18 @@ function onValueChange(item: UserSettingsItem) {
 .menu {
   position: relative;
   z-index: 10000;
+}
+
+.multi-line-toggle {
+  width: 200px;
+  flex-wrap: wrap;
+}
+
+.multi-line-toggle .v-btn {
+  height: 36px !important;
+}
+
+:deep(.v-btn-group--density-compact.v-btn-group) {
+  height: unset;
 }
 </style>

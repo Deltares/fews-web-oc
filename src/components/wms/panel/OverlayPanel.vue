@@ -1,6 +1,12 @@
 <template>
   <v-list-item prepend-icon="mdi-layers-outline">
-    <v-list-item title="Select All" @click="toggleAll" class="ps-1">
+    <span class="pa-0">Overlays</span>
+    <v-list-item
+      title="Select All"
+      @click="toggleAll"
+      class="ps-1"
+      density="compact"
+    >
       <template #prepend>
         <v-list-item-action start>
           <v-checkbox-btn
@@ -26,6 +32,7 @@
         :value="overlay.id"
         :active="false"
         class="ps-1"
+        density="compact"
       >
         <template #prepend="{ isSelected }">
           <v-list-item-action start>
@@ -38,11 +45,11 @@
 </template>
 
 <script setup lang="ts">
-import type { OverlayLocation } from '@/lib/topology/componentSettings'
+import { Overlay } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
 
 interface Props {
-  overlays: OverlayLocation[]
+  overlays: Overlay[]
 }
 
 const props = defineProps<Props>()
@@ -65,7 +72,9 @@ function toggleAll() {
   if (allSelected.value) {
     selectedOverlayIds.value = []
   } else {
-    selectedOverlayIds.value = props.overlays.map((overlay) => overlay.id)
+    selectedOverlayIds.value = props.overlays
+      .map((overlay) => overlay.id)
+      .filter((id) => id !== undefined)
   }
 }
 </script>

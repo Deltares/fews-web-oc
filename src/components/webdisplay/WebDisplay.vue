@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { TopologyNode } from '@deltares/fews-pi-requests'
-import { computed, defineProps, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 
 interface Props {
   nodeId?: string | string[]

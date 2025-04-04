@@ -5,10 +5,11 @@
     </v-tooltip>
     <v-data-table
       class="data-table"
-      :headers="tableHeaders as any"
+      :headers="tableHeaders"
       :items="tableData"
       :expanded="editedSeriesIds"
       :items-per-page-options="itemsPerPageOptions"
+      v-model:sortBy="sortBy"
       items-per-page="200"
       item-value="date"
       density="compact"
@@ -16,15 +17,27 @@
       fixed-header
       height="100%"
     >
-      <template v-slot:headers="{ columns }">
+      <template v-slot:headers="{ columns, toggleSort, isSorted, getSortIcon }">
         <tr>
           <template v-for="column in columns" :key="column.key">
             <th
               v-if="column.key === 'date'"
               class="table-header table-date sticky-column"
+              :class="{
+                'v-data-table__th--sorted': isSorted(column),
+                'v-data-table__th--sortable': column.sortable && !isEditing,
+              }"
+              @click="
+                column.sortable && !isEditing ? toggleSort(column) : undefined
+              "
             >
               <div class="table-header-indicator-text">
                 <span>{{ column.title }}</span>
+                <v-icon
+                  v-if="column.sortable && !isEditing"
+                  class="v-data-table-header__sort-icon"
+                  :icon="getSortIcon(column)"
+                />
                 <div
                   v-if="isEditing && nonEquidistantSeries.length > 0"
                   class="table-header__actions"
@@ -35,7 +48,7 @@
                     color="primary"
                     variant="text"
                     density="compact"
-                    :disabled="selected === undefined"
+                    :disabled="rowAdditionDisabled"
                   />
                   <v-btn
                     icon="mdi-table-row-plus-after"
@@ -43,10 +56,10 @@
                     color="primary"
                     variant="text"
                     density="compact"
-                    :disabled="selected === undefined"
+                    :disabled="rowAdditionDisabled"
                   />
                   <v-tooltip
-                    v-if="selected === undefined"
+                    v-if="rowAdditionDisabled"
                     activator="parent"
                     text="First select a row"
                     location="bottom"
@@ -160,7 +173,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import TableTooltip from './TableTooltip.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -185,10 +198,12 @@ import {
   getMidpointOfDates,
   toISOString,
 } from '@/lib/date'
+import { type ChartsSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   config: ChartConfig
   series: Record<string, Series>
+  settings: ChartsSettings['timeSeriesTable']
 }
 
 const props = defineProps<Props>()
@@ -229,12 +244,34 @@ const nonEquidistantSeries = computed(() => {
     .map(([id]) => id)
 })
 
+const dateOrder = computed(() =>
+  props.settings.sortDateTimeColumn === 'ascending' ? 'asc' : 'desc',
+)
+type SortItem = { key: string; order: 'asc' | 'desc' }
+const sortBy = ref<SortItem[]>([
+  {
+    key: 'date',
+    order: dateOrder.value,
+  },
+])
+watch(
+  dateOrder,
+  (order) => {
+    const dateSortItem = sortBy.value.find((item) => item.key === 'date')
+    if (!dateSortItem) return
+
+    dateSortItem.order = order
+  },
+  { immediate: true },
+)
+
 onBeforeMount(() => {
   if (props.config !== undefined) {
     seriesIds.value = getUniqueSeriesIds(props.config.series)
     tableHeaders.value = createTableHeaders(
       props.config.series,
       seriesIds.value,
+      props.settings.allowDateTimeSorting,
     )
   }
 
@@ -263,6 +300,7 @@ watch(
     tableHeaders.value = createTableHeaders(
       props.config.series,
       seriesIds.value,
+      props.settings.allowDateTimeSorting,
     )
   },
 )
@@ -316,10 +354,10 @@ function stopEdit() {
 }
 
 function save(seriesId: string) {
-  const newModifiedData = newTableData.value.filter(
-    (item) =>
-      !(item.isNewRow && !(item[seriesId] as Partial<TableSeriesData>).y),
-  )
+  const newModifiedData = newTableData.value.filter((item) => {
+    const data = item[seriesId] as Partial<TableSeriesData>
+    return !(item.isNewRow && (data.y === null || data.y === undefined))
+  })
   const newTimeSeriesData = tableDataToTimeSeries(newModifiedData, [seriesId])
   emit('change', newTimeSeriesData)
   stopEditTimeSeries(seriesId)
@@ -353,23 +391,44 @@ function addRowToTimeSeries(
   row: TableData | undefined,
   position: 'before' | 'after',
 ) {
-  if (!row) return
+  if (row === undefined && tableData.value.length === 0) {
+    const newRow = getNewRow(new Date())
+    tableData.value.push(newRow)
+    newTableData.value.push(newRow)
+    selected.value = newRow
+    return
+  }
+
+  if (row === undefined) return
+
+  const dateSortItem = sortBy.value.find((item) => item.key === 'date')
+  const addBefore = dateSortItem
+    ? (position === 'before' && dateSortItem.order === 'asc') ||
+      (position === 'after' && dateSortItem.order === 'desc')
+    : position === 'before'
 
   const index = tableData.value.findIndex((item) => item.date === row.date)
-  const siblingIndex = position === 'before' ? index - 1 : index + 1
+  const siblingIndex = addBefore ? index - 1 : index + 1
 
   const newDate = indexIsInRange(tableData.value, siblingIndex)
     ? getMidpointOfDates(row.date, tableData.value[siblingIndex].date)
-    : getDateWithMinutesOffset(row.date, position === 'before' ? -1 : 1)
+    : getDateWithMinutesOffset(row.date, addBefore ? -1 : 1)
 
+  const newRow = getNewRow(newDate)
+
+  tableData.value.splice(index + (addBefore ? 0 : 1), 0, newRow)
+  newTableData.value.push(newRow)
+}
+
+function getNewRow(date: Date) {
   const newRow: TableData = {
-    date: newDate,
+    date,
     isNewRow: {},
   }
   editedSeriesIds.value.forEach((id) => {
     if (nonEquidistantSeries.value.includes(id)) {
       newRow[id] = {
-        x: newDate,
+        x: date,
         y: null,
         flagOrigin: 'CORRECTED',
         flagQuality: 'RELIABLE',
@@ -378,13 +437,12 @@ function addRowToTimeSeries(
     }
   })
 
-  // Adding a new row with isEditing on will position it incorrectly
-  isEditing.value = false
-  tableData.value.splice(index + (position === 'before' ? 0 : 1), 0, newRow)
-  nextTick(() => (isEditing.value = true))
-
-  newTableData.value.push(newRow)
+  return newRow
 }
+
+const rowAdditionDisabled = computed(() => {
+  return selected.value === undefined && tableData.value.length > 0
+})
 
 function handleRowClick(e: any, item: any) {
   const formElements = ['INPUT', 'SELECT', 'OPTION']

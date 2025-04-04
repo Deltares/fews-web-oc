@@ -1,27 +1,32 @@
 <template>
-  <div class="display-container pa-2 ga-2">
-    <div class="dashboard-container flex-1-1 ga-2">
+  <div v-if="hasLoadedCss" class="display-container pa-1 ga-1">
+    <div class="dashboard-container flex-1-1 ga-1">
       <template v-for="group in groups">
         <template v-for="element in group.elements">
           <v-card
             :style="{ gridArea: element.gridTemplateArea }"
             class="d-flex flex-column"
             density="compact"
+            flat
+            :rounded="false"
           >
             <!-- TODO: For now we only support one item per element -->
             <!--       to prevent UI clutter. -->
             <DashboardItem
               v-if="element.items"
               :item="element.items[0]"
-              :settings
+              :slider-enabled="sliderEnabled"
+              :settings="settings"
             />
           </v-card>
         </template>
       </template>
     </div>
     <v-card
-      v-if="settings.dateTimeSliderEnabled"
+      v-if="sliderEnabled"
       class="flex-0-0 overflow-visible"
+      flat
+      :rounded="false"
     >
       <DateTimeSlider
         v-model:selectedDate="selectedDate"
@@ -34,35 +39,33 @@
 
 <script setup lang="ts">
 import { type WebOCDashboard } from '@deltares/fews-pi-requests'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import DashboardItem from '@/components/general/DashboardItem.vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import DateTimeSlider from './DateTimeSlider.vue'
 import { useDisplay } from 'vuetify'
 import { createDateRegistry } from '@/services/useDateRegistry'
 import { provideSelectedDate } from '@/services/useSelectedDate'
-import {
-  type DashboardSettings,
-  getDefaultSettings,
-} from '@/lib/topology/componentSettings'
+import type { ComponentSettings } from '@/lib/topology/componentSettings'
+import { useDynamicCss } from '@/services/useDynamicCss'
 
 interface Props {
   dashboard: WebOCDashboard
-  settings?: DashboardSettings
+  settings?: ComponentSettings
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  settings: () => getDefaultSettings('dashboard'),
-})
+const props = defineProps<Props>()
 
 const { mobile } = useDisplay()
 
 const selectedDate = ref<Date>(new Date())
 const { combinedDates } = setupDates()
+const sliderEnabled = true
 
 // Provide date data only when the date slider is enabled
 function setupDates() {
-  if (!props.settings.dateTimeSliderEnabled) {
+  // TODO: Enable the slider based on the dashboard backend
+  if (!sliderEnabled) {
     return {
       combinedDates: [],
     }
@@ -73,34 +76,10 @@ function setupDates() {
 }
 
 const groups = computed(() => props.dashboard.groups)
-
-function loadCss(url: string) {
-  if (!document.querySelector(`link[href="${url}"]`)) {
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.href = url
-    document.head.appendChild(link)
-  }
-}
-
-function removeCss(url: string) {
-  const link = document.querySelector(`link[href="${url}"]`)
-  if (link) {
-    link.remove()
-  }
-}
-
 const cssUrl = computed(() =>
   getResourcesStaticUrl(props.dashboard.cssTemplate),
 )
-watch(
-  cssUrl,
-  (newCss, oldCss) => {
-    if (oldCss) removeCss(oldCss)
-    loadCss(newCss)
-  },
-  { immediate: true },
-)
+const { hasLoadedCss } = useDynamicCss(cssUrl)
 </script>
 
 <style scoped>
@@ -113,11 +92,6 @@ watch(
 
 .display-container {
   display: flex;
-  background-color: color-mix(
-    in srgb,
-    rgb(var(--v-theme-on-surface-variant)) 90%,
-    rgb(var(--v-theme-on-surface))
-  );
   flex-direction: column;
   width: 100%;
   height: 100%;

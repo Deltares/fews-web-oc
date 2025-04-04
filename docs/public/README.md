@@ -47,6 +47,6 @@ A dist folder is created that can be used to deploy the web oc to different plat
 
 See [Deployments](deployments/) for more information on how to run Web OC stand-alone and/or from a webserver.
 
-## Authentication and Authorization with Open ID Connect
+## Authentication and Authorization
 
-See [OIDC](oidc/) for more information.
+Open ID Connect: See [OIDC](oidc/) 
