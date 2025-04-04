@@ -7,7 +7,7 @@
     :topologyNode="componentItem.topologyNode"
     :settings="componentSettings"
     @navigate="onNavigate"
-    @dashboardAction="onDashboardAction"
+    @dashboardAction="emit('dashboardAction', $event)"
   />
 </template>
 
@@ -27,14 +27,13 @@ import { useComponentSettings } from '@/services/useComponentSettings'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref } from 'vue'
 import type { RouteLocationNormalized, RouteParamsGeneric } from 'vue-router'
-import type {
-  DashboardActionParams,
-  DashboardSsdActionResult,
-} from '@/lib/topology/dashboardActions'
+import type { DashboardActionParams } from '@/lib/topology/dashboardActions'
 
 interface Props {
   item: WebOCDashboardItem
   sliderEnabled: boolean
+  actionId?: string
+  actionParams: DashboardActionParams
   settings?: ComponentSettings
 }
 
@@ -45,7 +44,13 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const topologyNodesStore = useTopologyNodesStore()
 
 const componentItem = computed(() => {
-  return convertItemToComponentItem(props.item)
+  // @ts-expect-error: FIXME: solve in the schema
+  const hasActionId = props.item.actionIds?.includes(props.actionId)
+  return convertItemToComponentItem(
+    props.item,
+    routeParams.value,
+    hasActionId ? props.actionParams : {},
+  )
 })
 
 const { componentSettings } = useComponentSettings(
@@ -54,15 +59,19 @@ const { componentSettings } = useComponentSettings(
   () => props.settings,
 )
 
-function convertItemToComponentItem(item: WebOCDashboardItem) {
+function convertItemToComponentItem(
+  item: WebOCDashboardItem,
+  routeParams: RouteParamsGeneric,
+  actionParams: DashboardActionParams,
+) {
   const componentName = item.component
   const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
   const component = componentTypeToComponentMap[componentName]
   const componentProps = getComponentPropsForNode(
     componentName,
     topologyNode,
-    routeParams.value,
-    actionParams.value,
+    routeParams,
+    actionParams,
   )
   const title = topologyNode?.name ?? componentTypeToTitleMap[componentName]
   const icon = topologyNode?.iconId ?? componentTypeToIconMap[componentName]
@@ -91,15 +100,6 @@ function onNavigate(to: RouteLocationNormalized) {
       break
     default:
       console.warn(`Unknown route name: ${String(to.name)}`)
-  }
-}
-
-const actionParams = ref<DashboardActionParams>({})
-function onDashboardAction(action: DashboardSsdActionResult) {
-  emit('dashboardAction', action)
-  actionParams.value = {
-    charts: action.charts,
-    map: action.map,
   }
 }
 </script>
