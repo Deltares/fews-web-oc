@@ -8,6 +8,7 @@
         size="small"
       >
         <v-btn
+          v-if="displayTypeItems.length > 1"
           v-for="item in displayTypeItems"
           :key="item.value"
           :value="item.value"
@@ -146,6 +147,14 @@ function toDisplayType(
 const displayType = ref<DisplayType>(
   toDisplayType(props.settings.general.startPanel),
 )
+watch(
+  () => props.settings.general.startPanel,
+  (newValue) => {
+    displayType.value = toDisplayType(newValue)
+  },
+  { immediate: true },
+)
+
 const displayTypeItems = computed<DisplayTypeItem[]>(() => {
   const noElevationCharts = !(
     (props.elevationChartDisplayconfig?.subplots?.length ?? 0) > 0
@@ -160,7 +169,7 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
     props.settings.verticalProfileChart.enabled && elevationChartsDefined
   const tableEnabled = props.settings.timeSeriesTable.enabled
   const metaDataEnabled = props.settings.metaDataPanel.enabled && tooltipDefined
-  const displayTypeItems = [
+  return [
     {
       icon: 'mdi-chart-line',
       label: 'Chart',
@@ -193,7 +202,6 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
     //     icon: 'mdi-information',
     //    label: 'Metadata',
   ].filter((item) => !item.hidden)
-  return displayTypeItems.length === 1 ? [] : displayTypeItems
 })
 
 watch(displayTypeItems, () => {
