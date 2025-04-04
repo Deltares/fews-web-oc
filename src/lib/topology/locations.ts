@@ -117,3 +117,22 @@ export async function fetchLocationSetAsGeoJson(
   }
   return response
 }
+
+export function createLocationChildsMap(
+  locations: Location[],
+): Map<string, string[]> {
+  const parentsMap = new Map<string, string[]>()
+
+  locations.forEach((location) => {
+    const parentId = location.parentLocationId
+    if (parentId === undefined) return
+
+    if (!parentsMap.has(parentId)) {
+      parentsMap.set(parentId, [])
+    }
+
+    parentsMap.get(parentId)?.push(location.locationId)
+  })
+
+  return parentsMap
+}
