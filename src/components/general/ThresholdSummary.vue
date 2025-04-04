@@ -1,9 +1,9 @@
 <template>
   <Teleport to="#main-side-panel">
-    <div v-if="warningLevels?.length" class="threshold-summary h-100 d-flex justify-center flex-column flex-wrap">
-      <div class="align-self-start flex-0-0 w-100" id="threshold-summary-top">
+    <div v-if="warningLevels?.length" class="threshold-summary-container">
+      <div class="threshold-summary-top" id="threshold-summary-top">
       </div>
-      <v-list v-model:selected="selectedLevelIds" select-strategy="leaf" class="d-flex flex-1-0 flex-column justify-center w-100 pa-0 overflow-hidden">
+      <v-list v-model:selected="selectedLevelIds" select-strategy="leaf" class="threshold-summary-center">
         <v-list-item
           v-for="warningLevel in warningLevels"
           :key="warningLevel.id"
@@ -93,8 +93,22 @@ const warningLevels = computed(() => {
 </script>
 
 <style scoped>
-.threshold-summary {
+.threshold-summary-container {
   width: 65px;
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+  height: 100%;
+}
+
+.threshold-summary-top {
+  grid-row: 1;
+  height: 36px;
+}
+
+.threshold-summary-center {
+  grid-row: 2;
+  height: 100%;
+  align-self: center;
 }
 
 .warning-count {
