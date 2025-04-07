@@ -44,11 +44,12 @@ defineProps<Props>()
 .data-table th,
 .data-table td {
   text-align: left;
-  padding-right: 10px;
+  padding-right: 1.5px;
 }
 
 .data-table td {
-  padding-bottom: 5px;
+  padding-bottom: 1px;
+  line-height: 0.9rem;
   font-size: 0.75em;
 }
 </style>

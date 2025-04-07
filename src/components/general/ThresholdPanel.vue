@@ -26,7 +26,7 @@
             height="100%"
           >
             <template v-slot:default="{ item: crossing }">
-              <div class="pb-1">
+              <div class="thresold-panel-card">
                 <v-card
                   border
                   :key="crossing.raw.locationId"
@@ -39,7 +39,7 @@
                   <v-card-text class="pa-0 h-100">
                     <div class="d-flex align-center justify-space-between ga-2 h-100">
                       <div
-                        class="d-flex flex-column pa-2 overflow-hidden"
+                        class="d-flex flex-column px-2 py-0 overflow-hidden"
                       >
                         <v-list-item-title>
                           {{ crossing.raw.locationId }}
@@ -54,7 +54,7 @@
                     </div>
                     <ThresholdDataTable
                       v-if="isCrossingExpanded(crossing)"
-                      class="mt-2 ms-2"
+                      class="ms-2"
                       :tableData="toTableDate(crossing.raw)"
                     />
                   </v-card-text>
@@ -91,7 +91,7 @@ const selectedLevelIds = computed(() => selectedLevels.value.map((level) => leve
 
 const isPanelOpen = ref(false)
 
-const ITEM_HEIGHT = 56
+const ITEM_HEIGHT = 40
 const item_height_px = `${ITEM_HEIGHT}px`
 const ITEMS_PER_PANEL = 6
 const panel_height_px = `${ITEM_HEIGHT * ITEMS_PER_PANEL}px`
@@ -149,7 +149,7 @@ function toggleThresholdPanel(): void {
 
 <style scoped>
 .threshold-panel {
-  width: 300px;
+  width: 230px;
   position: absolute;
   top: 5px;
   right: 5px;
@@ -171,6 +171,10 @@ function toggleThresholdPanel(): void {
 
 .threshold-panel-iterator > * {
   height: 100%;
+}
+
+.thresold-panel-card {
+  padding-bottom: 2px;
 }
 
 .max-value {
