@@ -80,7 +80,7 @@ async function fetchLocationsAsGeoJsonForSingleFilterId(
   const filter = {
     documentFormat: DocumentFormat.GEO_JSON,
     filterId: filterId,
-    showParentLocations: false,
+    showParentLocations: true,
     includeIconNames: true,
     showThresholds: true,
   }
