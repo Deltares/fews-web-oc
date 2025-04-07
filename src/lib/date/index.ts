@@ -1,3 +1,5 @@
+import { DateTime } from 'luxon'
+
 /**
  * Converts a date to a string in the format 'YYYY-MM-DDTHH:MM'.
  * @param date - The date to convert.
@@ -106,6 +108,23 @@ export function toDateRangeString(
   endDate: Date | string | number | undefined | null,
 ): string {
   return `${toHumanReadableDate(startDate)} → ${toHumanReadableDate(endDate)}`
+}
+
+export function toDateRelativeString(
+  date: Date | string | undefined | null,
+): string {
+  if (
+    date === undefined ||
+    date === null
+  ) {
+    return '—'
+  }
+
+  const dateObj = new Date(date)
+  const dateTime = DateTime.fromJSDate(dateObj)
+  const dateString = dateTime.toRelative()
+  if (dateString === null) return '—'
+  return dateString
 }
 
 export function toDateDifferenceString(
