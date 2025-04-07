@@ -22,17 +22,17 @@ import { computed, ref } from 'vue'
 
 interface Props {
   title?: string
-  hideToolBar?: string
+  toolBar?: 'true' | 'false' | 'auto'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: '',
-  hideToolBar: 'false',
+  toolBar: 'true',
 })
 
 const showToolBar = computed(() => {
   // TODO: Add auto support
-  return props.hideToolBar !== 'true'
+  return props.toolBar !== 'false'
 })
 
 const fullscreen = ref(false)

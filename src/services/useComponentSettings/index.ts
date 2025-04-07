@@ -1,7 +1,7 @@
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { getSettings } from '@/lib/topology/componentSettings'
 import {
-  type WebOCComponentSettings,
+  type WebOCComponentSettingsClass,
   type ComponentSettingsFilter,
   PiWebserviceProvider,
 } from '@deltares/fews-pi-requests'
@@ -10,21 +10,24 @@ import { ref, shallowRef, toValue, watchEffect } from 'vue'
 
 export interface UseComponentSettingsReturn {
   error: Ref<string | undefined>
-  componentSettings: ShallowRef<WebOCComponentSettings | undefined>
+  componentSettings: ShallowRef<WebOCComponentSettingsClass | undefined>
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
 }
 
-const cache = new Map<string, Promise<WebOCComponentSettings | undefined>>()
+const cache = new Map<
+  string,
+  Promise<WebOCComponentSettingsClass | undefined>
+>()
 
 export function useComponentSettings(
   baseUrl: string,
   componentSettingsIds: MaybeRefOrGetter<(string | undefined)[]>,
   parentComponentSettings?: MaybeRefOrGetter<
-    WebOCComponentSettings | undefined
+    WebOCComponentSettingsClass | undefined
   >,
 ): UseComponentSettingsReturn {
-  const componentSettings = shallowRef<WebOCComponentSettings>()
+  const componentSettings = shallowRef<WebOCComponentSettingsClass>()
   const isReady = ref(false)
   const isLoading = ref(false)
   const error = shallowRef<string>()

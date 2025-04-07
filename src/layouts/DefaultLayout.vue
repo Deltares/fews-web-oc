@@ -271,11 +271,7 @@ const versionString = computed(() => {
   return packageConfig.version
 })
 
-const helpMenu = computed(() => {
-  if ('helpMenu' in (configStore.general as any)) {
-    return (configStore.general as any).helpMenu
-  } // todo: add type when fews-pi-requests is updated
-})
+const helpMenu = computed(() => configStore.general.helpMenu)
 
 const shouldRenderInfoMenu = computed(() => {
   const currentRoute = route.matched[0]
