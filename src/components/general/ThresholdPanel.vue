@@ -16,7 +16,11 @@
           height="100%"
         >
           <template v-slot:default="{ item: crossing }">
-            <ThresholdItem :crossing="crossing" :item-height="itemHeightPx"/>
+            <ThresholdItem
+              :crossing="crossing"
+              :item-height="itemHeightPx"
+              v-model:expanded="expandedItems[crossing.locationId]"
+            />
           </template>
         </v-virtual-scroll>
       </div>
@@ -37,6 +41,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const expandedItems = ref<Record<string, boolean>>({})
+  
 const selectedLevels = ref<LevelThresholdWarningLevels[]>(inject('selectedWarningLevels', []))
 const selectedLevelIds = computed(() => selectedLevels.value.map((level) => level.id))
 
