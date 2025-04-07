@@ -6,6 +6,7 @@
     v-bind="componentItem.componentProps"
     :topologyNode="componentItem.topologyNode"
     :settings="componentSettings"
+    @navigate="onNavigate"
   />
 </template>
 
@@ -23,7 +24,8 @@ import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { configManager } from '@/services/application-config'
 import { useComponentSettings } from '@/services/useComponentSettings'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import type { RouteLocationNormalized, RouteParamsGeneric } from 'vue-router'
 
 interface Props {
   item: WebOCDashboardItem
@@ -50,7 +52,11 @@ function convertItemToComponentItem(item: WebOCDashboardItem) {
   const componentName = item.component
   const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
   const component = componentTypeToComponentMap[componentName]
-  const componentProps = getComponentPropsForNode(componentName, topologyNode)
+  const componentProps = getComponentPropsForNode(
+    componentName,
+    topologyNode,
+    params.value,
+  )
   const title = topologyNode?.name ?? componentTypeToTitleMap[componentName]
   const icon = topologyNode?.iconId ?? componentTypeToIconMap[componentName]
   return {
@@ -60,6 +66,24 @@ function convertItemToComponentItem(item: WebOCDashboardItem) {
     componentProps,
     componentName,
     topologyNode,
+  }
+}
+
+const params = ref<RouteParamsGeneric>({})
+
+function onNavigate(to: RouteLocationNormalized) {
+  switch (to.name) {
+    case 'SpatialDisplay':
+    case 'SpatialTimeSeriesDisplayWithCoordinates':
+    case 'SpatialTimeSeriesDisplay':
+    case 'SSDTimeSeriesDisplay':
+    case 'SchematicStatusDisplay':
+      params.value = {
+        ...to.params,
+      }
+      break
+    default:
+      console.warn(`Unknown route name: ${String(to.name)}`)
   }
 }
 </script>

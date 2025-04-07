@@ -21,8 +21,6 @@ const SchematicStatusDisplayView = () =>
   import('../views/SchematicStatusDisplayView.vue')
 const SchematicStatusDisplay = () =>
   import('../components/ssd/SchematicStatusDisplay.vue')
-const SSDTimeSeriesDisplay = () =>
-  import('../components/ssd/SsdTimeSeriesDisplay.vue')
 const SpatialDisplayView = () => import('../views/SpatialDisplayView.vue')
 const SpatialDisplay = () =>
   import('../components/spatialdisplay/SpatialDisplay.vue')
@@ -87,9 +85,9 @@ export const embedRoutes: Readonly<RouteRecordRaw[]> = [
     meta: { sidebar: false, layout: 'EmbedLayout' },
     children: [
       {
-        path: '/embed/ssd/:groupId?/:panelId?/object/:objectId',
+        path: 'object/:objectId',
         name: 'Embed/SSDTimeSeriesDisplay',
-        component: SSDTimeSeriesDisplay,
+        component: Empty,
         props: true,
         meta: { sidebar: false, layout: 'EmbedLayout' },
       },
@@ -113,9 +111,9 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     meta: { sidebar: true },
     children: [
       {
-        path: '/ssd/:groupId?/:panelId?/object/:objectId',
+        path: 'object/:objectId',
         name: 'SSDTimeSeriesDisplay',
-        component: SSDTimeSeriesDisplay,
+        component: SchematicStatusDisplayView,
         props: true,
         meta: { sidebar: true },
       },
@@ -132,20 +130,22 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     component: SpatialDisplayView,
     props: true,
     meta: { sidebar: true },
-  },
-  {
-    path: '/map/:layerName?/coordinates/:latitude/:longitude',
-    name: 'SpatialTimeSeriesDisplayWithCoordinates',
-    component: SpatialDisplayView,
-    props: true,
-    meta: { sidebar: true },
-  },
-  {
-    path: '/map/:layerName?/location/:locationId',
-    name: 'SpatialTimeSeriesDisplay',
-    component: SpatialDisplayView,
-    props: true,
-    meta: { sidebar: true },
+    children: [
+      {
+        path: 'coordinates/:latitude/:longitude',
+        name: 'SpatialTimeSeriesDisplayWithCoordinates',
+        component: Empty,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
+        path: 'location/:locationId',
+        name: 'SpatialTimeSeriesDisplay',
+        component: Empty,
+        props: true,
+        meta: { sidebar: true },
+      },
+    ],
   },
   {
     path: '/series/node/:nodeId?',
@@ -199,7 +199,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
           {
             path: 'object/:objectId',
             name: 'TopologySSDTimeSeriesDisplay',
-            component: SSDTimeSeriesDisplay,
+            component: Empty,
             props: true,
             meta: { sidebar: true },
           },
@@ -232,20 +232,22 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         component: SpatialDisplay,
         props: true,
         meta: { sidebar: true },
-      },
-      {
-        path: 'map/:layerName?/location/:locationIds',
-        name: 'TopologySpatialTimeSeriesDisplay',
-        component: SpatialDisplay,
-        props: true,
-        meta: { sidebar: true },
-      },
-      {
-        path: 'map/:layerName?/coordinates/:latitude/:longitude',
-        name: 'TopologySpatialTimeSeriesDisplayWithCoordinates',
-        component: SpatialDisplay,
-        props: true,
-        meta: { sidebar: true },
+        children: [
+          {
+            path: 'location/:locationIds',
+            name: 'TopologySpatialTimeSeriesDisplay',
+            component: Empty,
+            props: true,
+            meta: { sidebar: true },
+          },
+          {
+            path: 'coordinates/:latitude/:longitude',
+            name: 'TopologySpatialTimeSeriesDisplayWithCoordinates',
+            component: Empty,
+            props: true,
+            meta: { sidebar: true },
+          },
+        ],
       },
       {
         path: 'whatif',
