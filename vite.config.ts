@@ -52,6 +52,13 @@ export default defineConfig(({ mode }) => {
           `frame-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
         ].join('; '),
       },
+      proxy: {
+        '/iwp/FewsWebServices/': {
+          target:
+            'https://rwsos-dataservices-prod.avi.deltares.nl',
+          changeOrigin: true,
+        },
+      },
     },
     resolve: {
       alias: {
