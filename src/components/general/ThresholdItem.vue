@@ -26,7 +26,7 @@
           </div>
         </div>
         <ThresholdDataTable
-          v-if="isCrossingExpanded"
+          v-if="expanded"
           class="ms-2"
           :crossing="crossing"
         />
@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { toHumanReadableDate } from '@/lib/date'
 import { getContrastColor } from "@/lib/charts/styles"
 import ThresholdDataTable from '@/components/general/ThresholdDataTable.vue';
@@ -49,14 +49,17 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const itemHeight = computed(() => {return props.itemHeight})
+const expanded = defineModel<boolean>('expanded', {
+  required: false,
+  default: false,
+})
 
-const isCrossingExpanded = ref(false)
+const itemHeight = computed(() => {return props.itemHeight})
 
 function toggleCrossingExpand() {
   // Only expand when no text is selected
   if (window.getSelection()?.toString() === '') {
-    isCrossingExpanded.value = !isCrossingExpanded.value
+    expanded.value = !expanded.value
   }
 }
 </script>
