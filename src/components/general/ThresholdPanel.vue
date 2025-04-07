@@ -7,63 +7,19 @@
       </v-btn>
     </Teleport>
     <div v-if="isPanelOpen" class="threshold-panel d-flex flex-column">
-      <v-data-iterator
-        :items="thresholdCrossings"
-        items-per-page="-1"
-        item-value="locationId"
+      <div
         class="threshold-panel-iterator ms-2 h-100"
       >
-        <template
-          v-slot:default="{
-            items: crossings,
-            isExpanded: isCrossingExpanded,
-            toggleExpand: toggleCrossingExpand,
-          }"
+        <v-virtual-scroll
+          :items="thresholdCrossings"
+          :item-height="itemHeightPx"
+          height="100%"
         >
-          <v-virtual-scroll
-            :items="crossings"
-            :item-height="item_height_px"
-            height="100%"
-          >
-            <template v-slot:default="{ item: crossing }">
-              <div class="thresold-panel-card">
-                <v-card
-                  border
-                  :key="crossing.raw.locationId"
-                  flat
-                  density="compact"
-                  @click="() => toggleCrossingExpand(crossing)"
-                  :ripple="false"
-                  class="w-100"
-                >
-                  <v-card-text class="pa-0 h-100">
-                    <div class="d-flex align-center justify-space-between ga-2 h-100">
-                      <div
-                        class="d-flex flex-column px-2 py-0 overflow-hidden"
-                      >
-                        <v-list-item-title>
-                          {{ crossing.raw.locationId }}
-                        </v-list-item-title>
-                        <v-card-subtitle class="pa-0">
-                          {{ toHumanReadableDate(crossing.raw.maxValueTime) }}
-                        </v-card-subtitle>
-                      </div>
-                      <div class="max-value flex-shrink-0" :style="{background: crossing.raw.color, color: getContrastColor(crossing.raw.color)}">
-                          {{ crossing.raw.maxValue }}
-                      </div>
-                    </div>
-                    <ThresholdDataTable
-                      v-if="isCrossingExpanded(crossing)"
-                      class="ms-2"
-                      :crossing="crossing.raw"
-                    />
-                  </v-card-text>
-                </v-card>
-              </div>
-            </template>
-          </v-virtual-scroll>
-        </template>
-      </v-data-iterator>
+          <template v-slot:default="{ item: crossing }">
+            <ThresholdItem :crossing="crossing" :item-height="itemHeightPx"/>
+          </template>
+        </v-virtual-scroll>
+      </div>
     </div>
   </template>
 </template>
@@ -72,10 +28,8 @@
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
 import { computed, inject, ref } from 'vue'
-import { toHumanReadableDate } from '@/lib/date'
 import { LevelThresholdWarningLevels } from '@deltares/fews-pi-requests'
-import ThresholdDataTable from '@/components/general/ThresholdDataTable.vue'
-import { getContrastColor } from "@/lib/charts/styles"
+import ThresholdItem from '@/components/general/ThresholdItem.vue'
 
 interface Props {
   nodeId?: string
@@ -89,7 +43,7 @@ const selectedLevelIds = computed(() => selectedLevels.value.map((level) => leve
 const isPanelOpen = ref(false)
 
 const ITEM_HEIGHT = 40
-const item_height_px = `${ITEM_HEIGHT}px`
+const itemHeightPx = `${ITEM_HEIGHT}px`
 const ITEMS_PER_PANEL = 6
 const panel_height_px = `${ITEM_HEIGHT * ITEMS_PER_PANEL}px`
   
@@ -150,16 +104,6 @@ function toggleThresholdPanel(): void {
 
 .thresold-panel-card {
   padding-bottom: 2px;
-}
-
-.max-value {
-  height: v-bind(item_height_px);
-  width: 50px;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.75em;
 }
 
 :deep(.v-list-item-title) {
