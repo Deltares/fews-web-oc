@@ -62,6 +62,7 @@ import { authenticationManager } from '@/services/authentication/AuthenticationM
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
 import {
   computed,
+  onMounted,
   onUnmounted,
   onUpdated,
   ref,
@@ -75,6 +76,7 @@ import { DateTime } from 'luxon'
 import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
 import { useDownloadDialogStore } from '@/stores/downloadDialog'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { useAlertsStore } from '@/stores/alerts'
 
 const store = useSystemTimeStore()
 const downloadDialogStore = useDownloadDialogStore()
@@ -83,6 +85,12 @@ const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
     startTime: store.startTime,
     endTime: store.endTime,
   }
+})
+
+const alertStore = useAlertsStore()
+const userId = ref('')
+onMounted(() => {
+  userId.value = crypto.randomUUID()
 })
 
 interface Props {
@@ -224,7 +232,7 @@ const downloadFile = (downloadFormat: DocumentFormat) => {
         documentFormat: downloadFormat,
         ...viewPeriod,
       })
-      return downloadFileAttachment(
+      return downloadFileSafe(
         url.href,
         fileName.value,
         downloadFormat,
@@ -239,7 +247,7 @@ const downloadFile = (downloadFormat: DocumentFormat) => {
         documentFormat: downloadFormat,
         ...viewPeriod,
       })
-      return downloadFileAttachment(
+      return downloadFileSafe(
         url.href,
         fileName.value,
         downloadFormat,
@@ -252,7 +260,7 @@ const downloadFile = (downloadFormat: DocumentFormat) => {
         documentFormat: downloadFormat,
         ...viewPeriod,
       })
-      return downloadFileAttachment(
+      return downloadFileSafe(
         url.href,
         fileName.value,
         downloadFormat,
@@ -270,11 +278,31 @@ const downloadFile = (downloadFormat: DocumentFormat) => {
     ...viewPeriod,
   }
   const url = piProvider.timeSeriesTopologyActionsUrl(timeSeriesFilter)
-  return downloadFileAttachment(
+  return downloadFileSafe(
     url.href,
     fileName.value,
     downloadFormat,
     authenticationManager.getAccessToken(),
   )
+}
+
+async function downloadFileSafe(
+  url: string,
+  fileName: string,
+  documentFormat: string,
+  accessToken: string,
+) {
+  try {
+    await downloadFileAttachment(url, fileName, documentFormat, accessToken)
+  } catch (error) {
+    if (error instanceof Error) {
+      alertStore.addAlert({
+        id: `data-download-error-${userId.value}`,
+        type: 'error',
+        message: error.message,
+      })
+      downloadDialogStore.showDialog = false
+    }
+  }
 }
 </script>

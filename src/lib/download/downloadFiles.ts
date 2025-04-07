@@ -21,7 +21,8 @@ async function downloadFileWithFetch(
     const blob = await response.blob()
     clickDownloadBlob(blob, fileName)
   } else {
-    console.error('Error downloading file')
+    const message = await response.text()
+    throw new Error(message)
   }
 }
 
@@ -41,20 +42,16 @@ export async function downloadFileAttachment(
   documentFormat: string,
   accessToken: string,
 ) {
-  try {
-    const headers = new Headers()
-    if (accessToken) {
-      let extension: string = 'csv'
-      if (documentFormat === DocumentFormat.PI_JSON) extension = '.json'
-      if (documentFormat === DocumentFormat.PI_XML) extension = '.xml'
-      if (documentFormat === DocumentFormat.PI_CSV) extension = '.csv'
-      const downloadFileName = fileName + extension
-      await downloadFileWithFetch(headers, url, downloadFileName, accessToken)
-    }
-    if (!accessToken || accessToken == '') downloadWithLink(url, fileName)
-  } catch (error) {
-    console.error('Error downloading file:', error)
+  const headers = new Headers()
+  if (accessToken) {
+    let extension: string = 'csv'
+    if (documentFormat === DocumentFormat.PI_JSON) extension = '.json'
+    if (documentFormat === DocumentFormat.PI_XML) extension = '.xml'
+    if (documentFormat === DocumentFormat.PI_CSV) extension = '.csv'
+    const downloadFileName = fileName + extension
+    await downloadFileWithFetch(headers, url, downloadFileName, accessToken)
   }
+  if (!accessToken || accessToken == '') downloadWithLink(url, fileName)
 }
 
 export async function downloadFileWithXhr(
