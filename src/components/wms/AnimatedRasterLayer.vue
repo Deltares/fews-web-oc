@@ -75,7 +75,6 @@ onUnmounted(() => {
   removeHooksFromMapObject()
 })
 
-watch(() => props.layer.time, onMapMove)
 function onMapMove(): void {
   updateSource()
 }
@@ -189,6 +188,7 @@ function getImageSourceOptions() {
   }
 }
 
+watch(() => props.layer, updateSource)
 function updateSource() {
   const source = map?.getSource(sourceId.value) as ImageSource
   if (!source) return
