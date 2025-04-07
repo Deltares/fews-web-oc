@@ -223,5 +223,14 @@ function toggleThresholdPanel(): void {
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 0.75em;
+}
+
+:deep(.v-list-item-title) {
+  font-size: 0.8em;
+}
+
+:deep(.v-card-subtitle) {
+  font-size: 0.75em;
 }
 </style>
