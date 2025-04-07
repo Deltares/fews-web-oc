@@ -2,12 +2,18 @@
   <v-card border flat density="compact">
     <v-card-text class="py-2 h-100">
       <div class="d-flex gap-2 align-center">
-        <v-icon
-          class="me-2"
-          :icon="getIconForStatus(taskRun?.status)"
-          :color="getColorForStatus(taskRun?.status)"
-          size="20"
-        />
+        <v-tooltip>
+          <template #activator="{ props }">
+            <v-icon
+              class="me-2 flex-0-0"
+              :icon="getIconForStatus(taskRun?.status)"
+              :color="getColorForStatus(taskRun?.status)"
+              size="20"
+              v-bind="props"
+            />
+          </template>
+          <span>{{ getStringForStatus(taskRun?.status) }}</span>
+        </v-tooltip>
         <div class="d-flex flex-column user-select-text cursor-pointer">
           <div class="d-flex align-center ga-2">
             <v-list-item-title>
@@ -34,71 +40,17 @@
           />
         </template>
       </div>
-      <template v-if="expanded && taskRun">
-        <div class="table-container mt-1">
-          <table @click.stop class="log-table user-select-text">
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Task run ID</th>
-                <th>FSS ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{{ taskRun.user ?? 'No user' }}</td>
-                <td>{{ taskRun.id }}</td>
-                <td>{{ taskRun.fssId }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <table @click.stop class="log-table user-select-text">
-            <thead>
-              <tr>
-                <th>Time zero</th>
-                <th>Output time span</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{{ toHumanReadableDate(taskRun.time0) }}</td>
-                <td>
-                  {{
-                    toDateSpanString(
-                      taskRun.outputStartTime,
-                      taskRun.outputEndTime,
-                    )
-                  }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <table @click.stop class="log-table user-select-text">
-            <thead>
-              <tr>
-                <th>Task duration</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  {{
-                    toDateSpanString(
-                      taskRun.dispatchTime,
-                      taskRun.completionTime,
-                    )
-                  }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </template>
+      <DataTable
+        v-if="expanded && taskRun"
+        class="mt-4"
+        :tableData="tableData"
+      />
     </v-card-text>
   </v-card>
 </template>
 
 <script setup lang="ts">
+import DataTable from '@/components/general/DataTable.vue'
 import type { TaskRun } from '@deltares/fews-pi-requests'
 import {
   type LogMessage,
@@ -108,8 +60,13 @@ import {
   manualLogLevels,
 } from '@/lib/log'
 import { computed } from 'vue'
-import { toDateSpanString, toHumanReadableDate } from '@/lib/date'
 import {
+  toDateDifferenceString,
+  toDateRangeString,
+  toHumanReadableDate,
+} from '@/lib/date'
+import {
+  convertTaskStatusToString,
   getColorForTaskStatus,
   getIconForTaskStatus,
   isTaskStatus,
@@ -137,10 +94,73 @@ const levelCount = computed(() =>
   ),
 )
 
+const tableData = computed(() => [
+  {
+    columns: [
+      {
+        header: 'User',
+        value: props.taskRun?.user ?? 'No user',
+      },
+      {
+        header: 'Task run ID',
+        value: props.taskRun?.id,
+      },
+      {
+        header: 'FSS ID',
+        value: props.taskRun?.fssId,
+      },
+    ],
+  },
+  {
+    columns: [
+      {
+        header: 'T0',
+        value: toHumanReadableDate(props.taskRun?.time0),
+      },
+    ],
+  },
+  {
+    columns: [
+      {
+        header: `Output time span`,
+        subHeader: toDateDifferenceString(
+          props.taskRun?.outputStartTime,
+          props.taskRun?.outputEndTime,
+        ),
+        value: toDateRangeString(
+          props.taskRun?.outputStartTime,
+          props.taskRun?.outputEndTime,
+        ),
+      },
+    ],
+  },
+  {
+    columns: [
+      {
+        header: 'Task duration',
+        subHeader: toDateDifferenceString(
+          props.taskRun?.dispatchTime,
+          props.taskRun?.completionTime,
+        ),
+        value: toDateRangeString(
+          props.taskRun?.dispatchTime,
+          props.taskRun?.completionTime,
+        ),
+      },
+    ],
+  },
+])
+
 function getIconForStatus(status: string | undefined) {
   return status && isTaskStatus(status)
     ? getIconForTaskStatus(status)
     : 'mdi-bell-outline'
+}
+
+function getStringForStatus(status: string | undefined) {
+  return status && isTaskStatus(status)
+    ? convertTaskStatusToString(status)
+    : 'Unknown status'
 }
 
 function getColorForStatus(status: string | undefined) {
@@ -149,30 +169,3 @@ function getColorForStatus(status: string | undefined) {
     : 'yellow-darken-1'
 }
 </script>
-
-<style scoped>
-.table-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.log-table {
-  border-collapse: collapse;
-}
-
-.log-table th,
-.log-table td {
-  text-align: left;
-  padding-right: 10px;
-}
-
-.log-table td {
-  padding-bottom: 5px;
-}
-
-.user-select-text {
-  user-select: text;
-  cursor: text;
-}
-</style>

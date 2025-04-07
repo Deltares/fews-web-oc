@@ -81,12 +81,12 @@ export function convertDateToDateTimeString(date: Date): string {
 }
 
 export function toHumanReadableDate(
-  date: Date | string | undefined | null,
+  date: Date | string | number | undefined | null,
 ): string {
   if (date === undefined || date === null) {
     return '—'
   }
-  if (typeof date === 'string') {
+  if (typeof date === 'string' || typeof date === 'number') {
     return toHumanReadableDate(new Date(date))
   }
   // dd/MM/yyyy, HH:mm:ss
@@ -102,15 +102,15 @@ export function toHumanReadableDate(
 }
 
 export function toDateRangeString(
-  startDate: Date | string | undefined | null,
-  endDate: Date | string | undefined | null,
+  startDate: Date | string | number | undefined | null,
+  endDate: Date | string | number | undefined | null,
 ): string {
   return `${toHumanReadableDate(startDate)} → ${toHumanReadableDate(endDate)}`
 }
 
 export function toDateDifferenceString(
-  startDate: Date | string | undefined | null,
-  endDate: Date | string | undefined | null,
+  startDate: Date | string | number | undefined | null,
+  endDate: Date | string | number | undefined | null,
 ): string {
   if (
     startDate === undefined ||
@@ -144,8 +144,8 @@ export function toDateDifferenceString(
 }
 
 export function toDateSpanString(
-  startDate: Date | string | undefined | null,
-  endDate: Date | string | undefined | null,
+  startDate: Date | string | number | undefined | null,
+  endDate: Date | string | number | undefined | null,
 ) {
   return `${toDateRangeString(startDate, endDate)} (${toDateDifferenceString(startDate, endDate)})`
 }
