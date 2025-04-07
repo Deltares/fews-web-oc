@@ -54,6 +54,7 @@ export function timeSeriesDisplayToChartConfig(
       continue
     }
     if (item.legend) legendLabels.push(item.legend)
+    // @ts-expect-error FIXME: Type has 'bar' instead of 'area' in the json schema
     if (item.type === 'area') {
       // Area has two data resources
       const secondItemIndex = subplot.items.findLastIndex(
@@ -109,7 +110,7 @@ export function timeSeriesDisplayToChartConfig(
             config.yAxis?.findIndex((yAxis) => {
               return yAxis.position === item.yAxis?.axisPosition
             }) ?? 0,
-          color: threshold.color ?? item.color,
+          color: threshold.color ?? item.color ?? 'currentColor',
         })
       }
     }
