@@ -10,6 +10,7 @@
     "build:deltares": "vue-tsc && env-cmd -f deltares.env vite build",
     "build:weboc": "vue-tsc && vite build --base=/weboc/",
     "build:e2e": "vue-tsc && vite build --mode e2e",
+    "build:iwp": "vue-tsc && vite build --base=/iwp/",
     "preview": "vite preview",
     "preview:e2e": "vite preview --port 5172 --strictPort --mode e2e",
     "test:unit": "vitest run",
@@ -19,7 +20,8 @@
     "lint": "npm run prettier",
     "prettier": "prettier . --check",
     "format": "prettier .  --write",
-    "sonar": "sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$SONAR_KEY -Dsonar.projectName='Delft-FEWS Web OC'"
+    "sonar": "sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$SONAR_KEY -Dsonar.projectName='Delft-FEWS Web OC'",
+    "zip:iwp": "npm run build:iwp && node scripts/zip-artifacts.mjs"
   },
   "dependencies": {
     "@deltares/fews-pi-requests": "3.0.1",
@@ -70,6 +72,7 @@
     "@turf/turf": "^7.3.5",
     "@vueuse/core": "^14.3.0",
     "@watergis/maplibre-gl-terradraw": "^1.15.0",
+    "archiver": "^7.0.1",
     "crypto-js": "^4.2.0",
     "d3": "^7.9.0",
     "dompurify": "^3.4.12",
