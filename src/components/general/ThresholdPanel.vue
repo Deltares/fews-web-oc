@@ -52,7 +52,7 @@
                           {{ crossing.raw.maxValue }}
                       </div>
                     </div>
-                    <DataTable
+                    <ThresholdDataTable
                       v-if="isCrossingExpanded(crossing)"
                       class="mt-2 ms-2"
                       :tableData="toTableDate(crossing.raw)"
@@ -73,12 +73,11 @@ import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
 import { computed, inject, ref } from 'vue'
 import {
-  toDateDifferenceString,
   toDateRangeString,
   toHumanReadableDate,
 } from '@/lib/date'
 import { LevelThresholdCrossings, LevelThresholdWarningLevels } from '@deltares/fews-pi-requests'
-import DataTable from '@/components/general/DataTable.vue'
+import ThresholdDataTable from '@/components/general/ThresholdDataTable.vue'
 import { getContrastColor } from "@/lib/charts/styles"
 
 interface Props {
@@ -106,7 +105,7 @@ const { thresholds: thresholdsArray } = useTopologyThresholds(
 
 const allThresholdCrossings = computed(() => {
   if (thresholdsArray.value === undefined || thresholdsArray.value.length === 0)
-    return []
+  return []
   return thresholdsArray.value[0].levelThresholdCrossings ?? []
 })
 
@@ -124,63 +123,21 @@ const thresholdCrossings = computed(() => {
 function toTableDate(crossing: LevelThresholdCrossings) {
   return [
     {
-      columns: [
-        {
-          header: 'Warning level',
-          value: crossing.warningLevelName
-        },
-      ],
+      header: 'Warning level',
+      value: crossing.warningLevelName,
     },
+  
     {
-      columns: [
-        {
-          header: 'First event time',
-          value: toHumanReadableDate(crossing.firstValueTime),
-        },
-        {
-          header: 'First event value',
-          value: crossing.firstValue?.toString(),
-        },
-      ],
+      header: 'Time to event',
+      value: crossing.firstValueTime,
     },
+  
     {
-      columns: [
-        {
-          header: 'Max. event time',
-          value: toHumanReadableDate(crossing.maxValueTime),
-        },
-        {
-          header: 'Max. event value',
-          value: crossing.maxValue?.toString(),
-        },
-      ],
-    },
-    {
-      columns: [
-        {
-          header: 'Last event time',
-          value: toHumanReadableDate(crossing.lastValueTime),
-        },
-        {
-          header: 'Last event value',
-          value: crossing.lastValue?.toString(),
-        },
-      ],
-    },
-    {
-      columns: [
-        {
-          header: 'Event duration',
-          subHeader: toDateDifferenceString(
-            crossing.firstValueTime,
-            crossing.lastValueTime,
-          ),
-          value: toDateRangeString(
-            crossing.firstValueTime,
-            crossing.lastValueTime,
-          ),
-        },
-      ],
+      header: 'Event duration',
+      value: toDateRangeString(
+        crossing.firstValueTime,
+        crossing.lastValueTime,
+      ),
     },
   ]
 }
