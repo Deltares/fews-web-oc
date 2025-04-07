@@ -54,7 +54,7 @@
         icon="mdi-download"
       />
     </v-toolbar>
-    <iframe :key="url" :src="url" class="html-content" />
+    <ShadowFrame :htmlContent="reportHtml" />
   </div>
   <v-alert v-else class="ma-10">No reports available</v-alert>
 </template>
@@ -62,19 +62,19 @@
 <script setup lang="ts">
 import { useReports } from '@/services/useReports'
 import {
-  PiWebserviceProvider,
   type ReportItem,
   type Report,
   type TopologyNode,
 } from '@deltares/fews-pi-requests'
 import { computed, ref, watch } from 'vue'
 import { configManager } from '@/services/application-config'
-import { filterToParams } from '@deltares/fews-wms-requests'
 import { downloadFileWithXhr } from '@/lib/download'
 import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
+import ShadowFrame from '@/components/general/ShadowFrame.vue'
+import { getReportUrl, useReport } from '@/services/useReport'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -123,17 +123,12 @@ watch(selectedReport, () => {
   selectedReportItem.value = items.find((i) => i.isCurrent) ?? items[0]
 })
 
-const url = computed(() => {
-  if (!selectedReportItem.value) return undefined
-
-  const queryParameters = filterToParams({
-    moduleInstanceId: selectedReportItem.value.moduleInstanceId,
-    taskRunId: selectedReportItem.value.taskRunId,
-    reportId: selectedReportItem.value.reportId,
-  })
-  const provider = new PiWebserviceProvider(baseUrl)
-  return `${baseUrl}${provider.API_ENDPOINT}/report${queryParameters}`
-})
+const { reportHtml } = useReport(
+  baseUrl,
+  () => selectedReportItem.value?.moduleInstanceId,
+  () => selectedReportItem.value?.taskRunId,
+  () => selectedReportItem.value?.reportId,
+)
 
 function reportItemToId(item: ReportItem) {
   return `${item.moduleInstanceId} - ${item.taskRunId} - ${item.reportId}`
@@ -149,18 +144,15 @@ function reportToTitle(item: Report) {
 
 async function downloadFile() {
   const report = selectedReportItem.value
-  if (!report || !url.value) return
+  if (!report) return
+
+  const url = getReportUrl(baseUrl, {
+    moduleInstanceId: report.moduleInstanceId,
+    taskRunId: report.taskRunId,
+    reportId: report.reportId,
+  })
 
   const fileName = `${report.timeZero}-${report.moduleInstanceId}`
-  downloadFileWithXhr(url.value, fileName)
+  downloadFileWithXhr(url, fileName)
 }
 </script>
-
-<style scoped>
-.html-content {
-  height: 100%;
-  width: 100%;
-  border: none;
-  overflow-y: auto;
-}
-</style>

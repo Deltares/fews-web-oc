@@ -55,7 +55,7 @@ export async function downloadFileAttachment(
 }
 
 export async function downloadFileWithXhr(
-  url: string,
+  url: string | URL,
   fileName: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
