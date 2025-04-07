@@ -13,7 +13,9 @@
     :touchPitch="false"
     :attributionControl="false"
     :bounds="bounds"
+    :fadeDuration="100"
   >
+    <!-- Fade duration is set to 100ms instead of 0ms to avoid flickering -->
     <mgl-attribution-control position="top-right" :compact="true" />
     <mgl-scale-control position="bottom-right" />
     <slot></slot>
