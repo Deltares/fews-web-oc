@@ -83,13 +83,15 @@ export const embedRoutes: Readonly<RouteRecordRaw[]> = [
     component: SchematicStatusDisplayView,
     props: true,
     meta: { sidebar: false, layout: 'EmbedLayout' },
-  },
-  {
-    path: '/embed/ssd/:groupId?/:panelId?/object/:objectId',
-    name: 'Embed/SSDTimeSeriesDisplay',
-    component: SchematicStatusDisplayView,
-    props: true,
-    meta: { sidebar: false, layout: 'EmbedLayout' },
+    children: [
+      {
+        path: 'object/:objectId',
+        name: 'Embed/SSDTimeSeriesDisplay',
+        component: Empty,
+        props: true,
+        meta: { sidebar: false, layout: 'EmbedLayout' },
+      },
+    ],
   },
 ]
 
@@ -107,13 +109,15 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     component: SchematicStatusDisplayView,
     props: true,
     meta: { sidebar: true },
-  },
-  {
-    path: '/ssd/:groupId?/:panelId?/object/:objectId',
-    name: 'SSDTimeSeriesDisplay',
-    component: SchematicStatusDisplayView,
-    props: true,
-    meta: { sidebar: true },
+    children: [
+      {
+        path: 'object/:objectId',
+        name: 'SSDTimeSeriesDisplay',
+        component: SchematicStatusDisplayView,
+        props: true,
+        meta: { sidebar: true },
+      },
+    ],
   },
   {
     path: '/systemmonitor',
@@ -126,20 +130,22 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     component: SpatialDisplayView,
     props: true,
     meta: { sidebar: true },
-  },
-  {
-    path: '/map/:layerName?/coordinates/:latitude/:longitude',
-    name: 'SpatialTimeSeriesDisplayWithCoordinates',
-    component: SpatialDisplayView,
-    props: true,
-    meta: { sidebar: true },
-  },
-  {
-    path: '/map/:layerName?/location/:locationId',
-    name: 'SpatialTimeSeriesDisplay',
-    component: SpatialDisplayView,
-    props: true,
-    meta: { sidebar: true },
+    children: [
+      {
+        path: 'coordinates/:latitude/:longitude',
+        name: 'SpatialTimeSeriesDisplayWithCoordinates',
+        component: Empty,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
+        path: 'location/:locationId',
+        name: 'SpatialTimeSeriesDisplay',
+        component: Empty,
+        props: true,
+        meta: { sidebar: true },
+      },
+    ],
   },
   {
     path: '/series/node/:nodeId?',
@@ -189,13 +195,15 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         component: SchematicStatusDisplay,
         props: true,
         meta: { sidebar: true },
-      },
-      {
-        path: 'ssd/:panelId?/object/:objectId',
-        name: 'TopologySSDTimeSeriesDisplay',
-        component: SchematicStatusDisplay,
-        props: true,
-        meta: { sidebar: true },
+        children: [
+          {
+            path: 'object/:objectId',
+            name: 'TopologySSDTimeSeriesDisplay',
+            component: Empty,
+            props: true,
+            meta: { sidebar: true },
+          },
+        ],
       },
       {
         path: 'systemmonitor',
@@ -224,20 +232,22 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         component: SpatialDisplay,
         props: true,
         meta: { sidebar: true },
-      },
-      {
-        path: 'map/:layerName?/location/:locationIds',
-        name: 'TopologySpatialTimeSeriesDisplay',
-        component: SpatialDisplay,
-        props: true,
-        meta: { sidebar: true },
-      },
-      {
-        path: 'map/:layerName?/coordinates/:latitude/:longitude',
-        name: 'TopologySpatialTimeSeriesDisplayWithCoordinates',
-        component: SpatialDisplay,
-        props: true,
-        meta: { sidebar: true },
+        children: [
+          {
+            path: 'location/:locationIds',
+            name: 'TopologySpatialTimeSeriesDisplay',
+            component: Empty,
+            props: true,
+            meta: { sidebar: true },
+          },
+          {
+            path: 'coordinates/:latitude/:longitude',
+            name: 'TopologySpatialTimeSeriesDisplayWithCoordinates',
+            component: Empty,
+            props: true,
+            meta: { sidebar: true },
+          },
+        ],
       },
       {
         path: 'whatif',
