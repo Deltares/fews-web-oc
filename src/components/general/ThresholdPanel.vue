@@ -55,7 +55,7 @@
                     <ThresholdDataTable
                       v-if="isCrossingExpanded(crossing)"
                       class="ms-2"
-                      :tableData="toTableDate(crossing.raw)"
+                      :crossing="crossing.raw"
                     />
                   </v-card-text>
                 </v-card>
@@ -72,11 +72,8 @@
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
 import { computed, inject, ref } from 'vue'
-import {
-  toDateRangeString,
-  toHumanReadableDate,
-} from '@/lib/date'
-import { LevelThresholdCrossings, LevelThresholdWarningLevels } from '@deltares/fews-pi-requests'
+import { toHumanReadableDate } from '@/lib/date'
+import { LevelThresholdWarningLevels } from '@deltares/fews-pi-requests'
 import ThresholdDataTable from '@/components/general/ThresholdDataTable.vue'
 import { getContrastColor } from "@/lib/charts/styles"
 
@@ -119,28 +116,6 @@ const thresholdCrossings = computed(() => {
   }
   return crossings.sort((a, b) => b.severity - a.severity)
 })
-
-function toTableDate(crossing: LevelThresholdCrossings) {
-  return [
-    {
-      header: 'Warning level',
-      value: crossing.warningLevelName,
-    },
-  
-    {
-      header: 'Time to event',
-      value: crossing.firstValueTime,
-    },
-  
-    {
-      header: 'Event duration',
-      value: toDateRangeString(
-        crossing.firstValueTime,
-        crossing.lastValueTime,
-      ),
-    },
-  ]
-}
 
 function toggleThresholdPanel(): void {
   isPanelOpen.value = !isPanelOpen.value
