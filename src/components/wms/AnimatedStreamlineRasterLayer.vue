@@ -16,6 +16,7 @@ import { configManager } from '@/services/application-config'
 import { type AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import { getBeforeId, getLayerId } from '@/lib/map'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 type StreamlineLayerOptionsFews = Layer['animatedVectors']
 
@@ -124,7 +125,10 @@ addUpdateWatcher(
 function addLayer(): void {
   if (!map) return
   if (!props.layerOptions || !props.streamlineOptions) return
-  const options = mergeOptions(props.layerOptions, props.streamlineOptions)
+  const options: WMSStreamlineLayerOptions = {
+    ...mergeOptions(props.layerOptions, props.streamlineOptions),
+    transformRequest: createTransformRequestFn(),
+  }
 
   // Create and initialise new streamline layer.
   layer = new WMSStreamlineLayer(layerId, options)
