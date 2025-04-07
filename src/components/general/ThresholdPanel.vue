@@ -51,7 +51,7 @@ const isPanelOpen = ref(false)
 const ITEM_HEIGHT = 40
 const itemHeightPx = `${ITEM_HEIGHT}px`
 const ITEMS_PER_PANEL = 6
-const panel_height_px = `${ITEM_HEIGHT * ITEMS_PER_PANEL}px`
+const panelHeightPx = `${ITEM_HEIGHT * ITEMS_PER_PANEL}px`
   
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -89,7 +89,7 @@ function toggleThresholdPanel(): void {
   top: 5px;
   right: 5px;
   z-index: 1000;
-  height: v-bind(panel_height_px)
+  height: v-bind(panelHeightPx)
 }
 
 .text-wrap {
