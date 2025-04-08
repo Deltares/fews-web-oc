@@ -4,20 +4,28 @@
     :settings="settings.charts"
   >
     <template #toolbar-title>
-      <v-menu v-if="plotIds.length > 1" offset-y z-index="10000">
-        <template v-slot:activator="{ props }">
-          <v-btn class="text-capitalize" variant="text" v-bind="props"
-            >{{ plotIds[selectedPlot] }}<v-icon>mdi-chevron-down</v-icon>
-          </v-btn>
+      <v-menu
+        v-if="displays && displays.length > 1"
+        location="bottom"
+        z-index="10000"
+        max-height="400"
+      >
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            class="text-capitalize"
+            variant="text"
+            append-icon="mdi-chevron-down"
+            :text="displayConfig?.title"
+          />
         </template>
-        <v-list v-model="selectedPlot" density="compact">
+        <v-list v-model="selectedPlotId" density="compact">
           <v-list-item
-            v-for="(plot, i) in plotIds"
-            v-bind:key="i"
-            @click="selectedPlot = i"
-          >
-            <v-list-item-title>{{ plot }}</v-list-item-title>
-          </v-list-item>
+            v-for="display in displays"
+            @click="selectedPlotId = display.id"
+            :title="display.id"
+            :active="selectedPlotId === display.id"
+          />
         </v-list>
       </v-menu>
     </template>
@@ -26,7 +34,7 @@
 
 <script setup lang="ts">
 import TimeSeriesWindowComponent from './TimeSeriesWindowComponent.vue'
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, watchEffect } from 'vue'
 import { configManager } from '@/services/application-config'
 import {
   useDisplayConfig,
@@ -41,11 +49,11 @@ import {
 
 interface Props {
   nodeId?: string | string[]
+  plotId?: string
   settings?: ComponentSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  nodeId: '',
   settings: () => getDefaultSettings(),
 })
 
@@ -54,7 +62,7 @@ const systemTimeStore = useSystemTimeStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const selectedPlot = ref(0)
+const selectedPlotId = ref<string>()
 
 const options = computed<UseDisplayConfigOptions>(() => {
   return {
@@ -63,29 +71,31 @@ const options = computed<UseDisplayConfigOptions>(() => {
   }
 })
 
+const nodeId = computed(() =>
+  Array.isArray(props.nodeId)
+    ? props.nodeId[props.nodeId.length - 1]
+    : props.nodeId,
+)
 const { displays, displayConfig } = useDisplayConfig(
   baseUrl,
-  () => {
-    if (typeof props.nodeId === 'string') {
-      return props.nodeId
-    } else {
-      return props.nodeId[props.nodeId.length - 1]
-    }
-  },
-  selectedPlot,
+  nodeId,
+  selectedPlotId,
   () => systemTimeStore.startTime,
   () => systemTimeStore.endTime,
   options,
 )
 
-const plotIds = computed(() => {
-  if (displays.value && displays.value.length > 0) {
-    return displays.value.map((d) => {
-      return d.title
-    })
-  }
-  return []
+watchEffect(() => {
+  if (props.plotId) selectedPlotId.value = props.plotId
 })
 
-watch(props, () => (selectedPlot.value = 0))
+watch(displays, () => {
+  const plotIds = displays.value?.map((d) => d.id) ?? []
+  if (
+    selectedPlotId.value === undefined ||
+    !plotIds.includes(selectedPlotId.value)
+  ) {
+    selectedPlotId.value = plotIds[0]
+  }
+})
 </script>

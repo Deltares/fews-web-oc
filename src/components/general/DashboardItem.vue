@@ -7,6 +7,7 @@
     :topologyNode="componentItem.topologyNode"
     :settings="componentSettings"
     @navigate="onNavigate"
+    @dashboardAction="onDashboardAction"
   />
 </template>
 
@@ -26,6 +27,7 @@ import { useComponentSettings } from '@/services/useComponentSettings'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref } from 'vue'
 import type { RouteLocationNormalized, RouteParamsGeneric } from 'vue-router'
+import { SsdActionResult } from '@deltares/fews-ssd-requests'
 
 interface Props {
   item: WebOCDashboardItem
@@ -34,6 +36,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits(['dashboardAction'])
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const topologyNodesStore = useTopologyNodesStore()
@@ -85,5 +88,9 @@ function onNavigate(to: RouteLocationNormalized) {
     default:
       console.warn(`Unknown route name: ${String(to.name)}`)
   }
+}
+
+function onDashboardAction(action: SsdActionResult) {
+  emit('dashboardAction', action)
 }
 </script>

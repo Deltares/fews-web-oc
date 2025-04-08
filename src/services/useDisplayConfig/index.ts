@@ -2,7 +2,7 @@ import {
   PiWebserviceProvider,
   type ActionsResponse,
 } from '@deltares/fews-pi-requests'
-import { ref, toValue, watchEffect } from 'vue'
+import { computed, ref, toValue, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { DisplayConfig } from '../../lib/display/DisplayConfig.js'
 import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig.js'
@@ -86,8 +86,8 @@ function actionsResponseToDisplayConfig(
  */
 export function useDisplayConfig(
   baseUrl: string,
-  nodeId: MaybeRefOrGetter<string>,
-  plotId: MaybeRefOrGetter<number>,
+  nodeId: MaybeRefOrGetter<string | undefined>,
+  plotId: MaybeRefOrGetter<string | undefined>,
   startTime?: MaybeRefOrGetter<Date | undefined>,
   endTime?: MaybeRefOrGetter<Date | undefined>,
   options?: MaybeRefOrGetter<UseDisplayConfigOptions>,
@@ -96,43 +96,42 @@ export function useDisplayConfig(
     transformRequestFn: createTransformRequestFn(),
   })
 
-  const displayConfig = ref<DisplayConfig | null>(null)
-  const displays = ref<DisplayConfig[] | null>(null)
-
   const response = ref<ActionsResponse>()
 
   watchEffect(async () => {
-    let filter: any = {}
-    filter.nodeId = toValue(nodeId)
-    const _options = toValue(options)
-    filter = { ...filter, ..._options }
-    response.value = await piProvider.getTopologyActions(filter)
+    const _nodeId = toValue(nodeId)
+    if (_nodeId === undefined) return
+
+    response.value = await piProvider.getTopologyActions({
+      nodeId: _nodeId,
+      ...toValue(options),
+    })
   })
 
-  // Use a second watchEffect to not trigger a fetch on these reactive variables
-  watchEffect(() => {
-    if (!response.value) return
+  const displays = computed(() => {
+    if (!response.value) return null
 
+    const _nodeId = toValue(nodeId)
     const _startTime = toValue(startTime)
     const _endTime = toValue(endTime)
-    const _plotId = toValue(plotId)
 
-    const _displays = actionsResponseToDisplayConfig(
+    return actionsResponseToDisplayConfig(
       response.value,
-      toValue(nodeId),
+      _nodeId,
       _startTime,
       _endTime,
     )
-    displays.value = _displays
-    displayConfig.value = _displays[_plotId]
   })
 
-  const shell = {
+  const displayConfig = computed(() => {
+    const _plotId = toValue(plotId)
+    return displays.value?.find((d) => d.id === _plotId) ?? null
+  })
+
+  return {
     displays,
     displayConfig,
   }
-
-  return shell
 }
 
 /**
