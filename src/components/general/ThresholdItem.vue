@@ -15,7 +15,7 @@
             class="d-flex flex-column px-2 py-0 overflow-hidden"
           >
             <v-list-item-title>
-              {{ locationName }}
+              {{ location?.locationName ?? crossing.locationId }}
             </v-list-item-title>
             <v-card-subtitle class="pa-0">
               {{ toHumanReadableDate(crossing.maxValueTime) }}
@@ -41,12 +41,11 @@ import { computed } from 'vue';
 import { toHumanReadableDate } from '@/lib/date'
 import { getContrastColor } from "@/lib/charts/styles"
 import ThresholdDataTable from '@/components/general/ThresholdDataTable.vue';
-import { configManager } from '@/services/application-config';
-import { fetchSingleLocationsByLocationId } from '@/lib/topology/locations';
-import { computedAsync } from '@vueuse/core'
+import type { Location } from '@deltares/fews-pi-requests'
 
 interface Props {
   crossing: LevelThresholdCrossings
+  location?: Location
   itemHeight: string
 }
 
@@ -58,14 +57,6 @@ const expanded = defineModel<boolean>('expanded', {
 })
 
 const itemHeight = computed(() => {return props.itemHeight})
-
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-
-const locationName = computedAsync(async () => {
-  const locationGeosJson = await fetchSingleLocationsByLocationId(baseUrl, props.crossing.locationId)
-  return locationGeosJson.features[0].properties.locationName ?? props.crossing.locationId
-})
-
 
 function toggleCrossingExpand() {
   // Only expand when no text is selected

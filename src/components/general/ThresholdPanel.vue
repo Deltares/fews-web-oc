@@ -18,6 +18,7 @@
           <template v-slot:default="{ item: crossing }">
             <ThresholdItem
               :crossing="crossing"
+              :location="getLocationById(crossing.locationId)"
               :item-height="itemHeightPx"
               v-model:expanded="expandedItems[`${crossing.locationId}-${crossing.parameterId}`]"
             />
@@ -34,9 +35,11 @@ import { configManager } from '@/services/application-config'
 import { computed, inject, ref } from 'vue'
 import { LevelThresholdWarningLevels } from '@deltares/fews-pi-requests'
 import ThresholdItem from '@/components/general/ThresholdItem.vue'
+import type { Location } from '@deltares/fews-pi-requests'
 
 interface Props {
   nodeId?: string
+  filteredLocations?: Location[]
 }
 
 const props = defineProps<Props>()
@@ -76,6 +79,10 @@ const thresholdCrossings = computed(() => {
   }
   return crossings.sort((a, b) => b.severity - a.severity)
 })
+
+function getLocationById(locationId: string) {
+  return props.filteredLocations?.find((location) => location.locationId === locationId)
+}
 
 function toggleThresholdPanel(): void {
   isPanelOpen.value = !isPanelOpen.value
