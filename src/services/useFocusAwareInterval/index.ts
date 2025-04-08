@@ -20,7 +20,6 @@ export function useFocusAwareInterval(
   watch(visibility, (v) => {
     if (v === 'visible') {
       if (pausedByVisibility.value) {
-        callback()
         resume()
         pausedByVisibility.value = false
       }

@@ -53,6 +53,7 @@ export function useTopologyThresholds(
   const interval = useFocusAwareInterval(
     loadTopologyThresholds,
     THRESHOLDS_POLLING_INTERVAL,
+    { immediateCallback: true }
   )
 
   watch(
