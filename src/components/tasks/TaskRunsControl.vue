@@ -4,7 +4,7 @@
     :active="isPanelOpen"
     @click="toggleTasksPanel"
   />
-  <Teleport to="#main-side-panel" defer>
+  <Teleport to="#secondary-side-panel-start" defer>
     <TaskRunsPanel v-if="isPanelOpen" />
   </Teleport>
 </template>
