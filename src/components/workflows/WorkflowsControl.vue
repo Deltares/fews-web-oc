@@ -8,87 +8,88 @@
   >
     <v-card>
       <v-card-text>
-        <v-select
-          v-model="currentWorkflow"
-          :items="workflowSelectItems"
-          class="workflow-select"
-          density="compact"
-          variant="solo-filled"
-          flat
-          label="Workflow"
-          mandatory
-          :disabled="workflowSelectItems?.length === 1"
-          hide-details
-        />
-        <v-banner
-          :text="workflowDescription"
-          label="description"
-          sticky
-          variant="solo-filled"
-          density="compact"
-          hide-details
-        />
-        <div v-if="isBoundingBoxInForm" class="d-flex py-4">
-          <v-text-field
-            v-model="boundingBoxString"
-            readonly
-            variant="plain"
-            label="Bounding box"
-            class="mx-4"
-          />
-          <v-btn
-            icon="mdi-selection-drag"
-            variant="tonal"
-            @click="showMapTool"
-          />
-        </div>
-        <div v-if="isCoordinateInForm" class="d-flex py-4">
-          <v-text-field
-            v-model="coordinateString"
-            readonly
-            variant="plain"
-            density="compact"
-            label="Coordinate"
-            class="mx-4"
-          />
-          <v-btn
-            icon="mdi-map-marker-radius"
-            variant="tonal"
-            density="comfortable"
-            @click="showCoordinateSelector"
-          />
-        </div>
-        <json-forms
-          v-if="hasProperties"
-          class="py-4"
-          :schema="formSchema"
-          :uischema="formUISchema"
-          :data="data"
-          :renderers="Object.freeze(vuetifyRenderers)"
-          :ajv="undefined"
-          validation-mode="NoValidation"
-          :config="JsonFormsConfig"
-          @change="onFormChange"
-        />
         <v-container class="px-0">
+          <v-select
+            v-model="currentWorkflow"
+            :items="workflowSelectItems"
+            class="workflow-select"
+            density="compact"
+            variant="solo-filled"
+            flat
+            label="Workflow"
+            mandatory
+            :disabled="workflowSelectItems?.length === 1"
+            hide-details
+          />
+          <v-banner
+            :text="workflowDescription"
+            label="description"
+            sticky
+            variant="solo-filled"
+            density="compact"
+            hide-details
+          />
+          <div v-if="isBoundingBoxInForm" class="d-flex py-4">
+            <v-text-field
+              v-model="boundingBoxString"
+              readonly
+              variant="plain"
+              label="Bounding box"
+              class="mx-4"
+            />
+            <v-btn
+              icon="mdi-selection-drag"
+              variant="tonal"
+              @click="showMapTool"
+            />
+          </div>
+          <div v-if="isCoordinateInForm" class="d-flex py-4 mx-auto">
+            <v-text-field
+              v-model="coordinateString"
+              readonly
+              variant="plain"
+              density="compact"
+              label="Coordinate"
+              class="mx-4"
+            />
+            <v-btn
+              icon="mdi-map-marker-radius"
+              variant="tonal"
+              density="comfortable"
+              @click="showCoordinateSelector"
+            />
+          </div>
+          <json-forms
+            v-if="hasProperties"
+            class="py-4"
+            :schema="formSchema"
+            :uischema="formUISchema"
+            :data="data"
+            :renderers="Object.freeze(vuetifyRenderers)"
+            :ajv="undefined"
+            validation-mode="NoValidation"
+            :config="JsonFormsConfig"
+            @change="onFormChange"
+          />
           <DateTimeField
             v-if="!isProcessDataTask"
             v-model="timeZero"
             date-label="T0 date"
             time-label="T0 time"
           />
+          <v-textarea
+            v-model="description"
+            placeholder="Use this field to describe the task run, it will be used to identify the run in the task overview."
+            label="Task run description"
+            variant="outlined"
+            density="compact"
+            class="py-8"
+            hide-details
+            rows="5"
+            no-resize
+            persistent-placeholder
+          />
         </v-container>
-        <v-textarea
-          v-model="description"
-          placeholder="Use this field to describe the task run, it will be used to identify the run in the task overview."
-          label="Task run description"
-          variant="outlined"
-          density="compact"
-          hide-details
-          rows="5"
-          no-resize
-          persistent-placeholder
-        />
       </v-card-text>
       <v-card-actions>
         <v-spacer />
