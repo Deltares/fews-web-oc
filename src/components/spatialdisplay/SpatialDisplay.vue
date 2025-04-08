@@ -18,7 +18,7 @@
         @update:current-time="currentTime = $event"
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
-      <ThresholdPanel :nodeId="topologyNode?.id"></ThresholdPanel>
+      <ThresholdPanel :nodeId="topologyNode?.id" :filteredLocations="filteredLocations"></ThresholdPanel>
     </div>
     <div v-if="showChartPanel" class="child-container">
       <SpatialTimeSeriesDisplay
