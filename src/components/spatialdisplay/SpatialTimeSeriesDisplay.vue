@@ -23,19 +23,20 @@
 import { configManager } from '@/services/application-config'
 import TimeSeriesWindowComponent from '@/components/timeseries/TimeSeriesWindowComponent.vue'
 import { useDisplayConfigFilter } from '@/services/useDisplayConfig'
-import {
+import type {
   filterActionsFilter,
+  LocationsTooltipFilter,
   timeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
-import { isFilterActionsFilter } from '@/lib/filters'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   filter?: filterActionsFilter | timeSeriesGridActionsFilter
   elevationChartFilter?: timeSeriesGridActionsFilter
+  locationsTooltipFilter?: LocationsTooltipFilter
   currentTime?: Date
   settings: ComponentSettings
 }
@@ -61,17 +62,10 @@ const { displayConfig: elevationChartDisplayconfig } = useDisplayConfigFilter(
   () => systemTimeStore.endTime,
 )
 
-const locationsTooltipFilter = computed(() => {
-  if (!props.filter || !props.settings.charts.metaDataPanel.enabled) return
-  if (isFilterActionsFilter(props.filter)) {
-    return {
-      filterId: props.filter.filterId,
-      locationId: props.filter.locationIds?.split(',')[0],
-    }
-  }
-})
-
-const { tooltip } = useLocationTooltip(baseUrl, locationsTooltipFilter)
+const { tooltip } = useLocationTooltip(
+  baseUrl,
+  () => props.locationsTooltipFilter,
+)
 
 function onClose(): void {
   emit('close')

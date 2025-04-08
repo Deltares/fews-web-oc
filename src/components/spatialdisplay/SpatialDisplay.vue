@@ -24,6 +24,7 @@
         @close="closeTimeSeriesDisplay"
         :filter="filter"
         :elevation-chart-filter="elevationChartFilter"
+        :locations-tooltip-filter="locationsTooltipFilter"
         :current-time="currentTime"
         :settings="settings"
       />
@@ -49,6 +50,7 @@ import {
 } from '@/services/useWms'
 import {
   filterActionsFilter,
+  LocationsTooltipFilter,
   timeSeriesGridActionsFilter,
   type TopologyNode,
 } from '@deltares/fews-pi-requests'
@@ -215,6 +217,18 @@ const elevationChartFilter = computed(() => {
     }
   }
 })
+
+const locationsTooltipFilter = computed<LocationsTooltipFilter | undefined>(
+  () => {
+    if (!props.settings.charts.metaDataPanel.enabled) return
+    if (props.locationIds === undefined) return
+    if (filterIds.value.length === 0) return
+    return {
+      locationId: props.locationIds?.split(',')[0],
+      filterId: filterIds.value[0],
+    }
+  },
+)
 
 const currentLocationIds = ref<string[]>()
 const currentLatitude = ref<string>()
