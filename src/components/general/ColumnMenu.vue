@@ -33,7 +33,7 @@
             <v-badge
               color="#00BBF0"
               :model-value="(child.thresholdCount ?? 0) > 0"
-              content="!"
+              :content="(child.thresholdCount ?? 0) > 0 ? '!' : undefined"
             >
               <v-icon
                 :icon="
@@ -79,7 +79,7 @@
             <v-badge
               color="#00BBF0"
               :model-value="(child.thresholdCount ?? 0) > 0"
-              content="!"
+              :content="(child.thresholdCount ?? 0) > 0 ? '!' : undefined"
             >
               <v-icon
                 :icon="child.icon ?? toCharacterIcon(child.name)"
