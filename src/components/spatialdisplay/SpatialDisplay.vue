@@ -18,7 +18,10 @@
         @update:current-time="currentTime = $event"
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
-      <ThresholdPanel :nodeId="topologyNode?.id" :filteredLocations="filteredLocations"></ThresholdPanel>
+      <ThresholdPanel
+        :nodeId="topologyNode?.id"
+        :filteredLocations="filteredLocations"
+      ></ThresholdPanel>
     </div>
     <div v-if="showChartPanel" class="child-container">
       <SpatialTimeSeriesDisplay
@@ -112,15 +115,25 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
 )
 const { locations, geojson } = useFilterLocations(baseUrl, filterIds)
 
-const selectedWarningLevelSeverity = computed(() => selectedWarningLevels.value.map((level) => level.severity))
+const selectedWarningLevelSeverity = computed(() =>
+  selectedWarningLevels.value.map((level) => level.severity),
+)
 const filteredLocations = computed(() => {
   if (selectedWarningLevelSeverity.value.length === 0) return locations.value
-  return locations.value?.filter((location) => selectedWarningLevelSeverity.value.includes(location.thresholdSeverity ?? 0))
+  return locations.value?.filter((location) =>
+    selectedWarningLevelSeverity.value.includes(
+      location.thresholdSeverity ?? 0,
+    ),
+  )
 })
 const filteredGeojson = computed(() => {
   if (selectedWarningLevelSeverity.value.length === 0) return geojson.value
-  const filteredFeatures = geojson.value.features.filter((feature) => selectedWarningLevelSeverity.value.includes(feature.properties.thresholdSeverity ?? 0))
-  return {...geojson.value, ...{features: filteredFeatures}}
+  const filteredFeatures = geojson.value.features.filter((feature) =>
+    selectedWarningLevelSeverity.value.includes(
+      feature.properties.thresholdSeverity ?? 0,
+    ),
+  )
+  return { ...geojson.value, ...{ features: filteredFeatures } }
 })
 
 const start = computed(() => {

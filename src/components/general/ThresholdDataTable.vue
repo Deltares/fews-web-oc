@@ -17,10 +17,10 @@
 </template>
 
 <script setup lang="ts">
-import { toDateDifferenceString } from '@/lib/date';
+import { toDateDifferenceString } from '@/lib/date'
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
-import { useIntervalFn } from '@vueuse/core';
-import { computed, ref, watchEffect } from 'vue';
+import { useIntervalFn } from '@vueuse/core'
+import { computed, ref, watchEffect } from 'vue'
 
 interface Row {
   header: string
@@ -34,12 +34,20 @@ interface Props {
 const props = defineProps<Props>()
 
 const NOW_REFRESH_INTERVAL = 1000
-const timeToMaxString = ref(toDateDifferenceString(new Date(), props.crossing.maxValueTime, { excludeSeconds: true }))
+const timeToMaxString = ref(
+  toDateDifferenceString(new Date(), props.crossing.maxValueTime, {
+    excludeSeconds: true,
+  }),
+)
 useIntervalFn(updateTimeToMaxString, NOW_REFRESH_INTERVAL)
 
 watchEffect(updateTimeToMaxString)
 function updateTimeToMaxString() {
-  timeToMaxString.value = toDateDifferenceString(new Date(), props.crossing.maxValueTime, { excludeSeconds: true })
+  timeToMaxString.value = toDateDifferenceString(
+    new Date(),
+    props.crossing.maxValueTime,
+    { excludeSeconds: true },
+  )
 }
 
 const tableData = computed<Row[]>(() => {
