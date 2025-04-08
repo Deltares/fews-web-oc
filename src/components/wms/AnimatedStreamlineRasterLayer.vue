@@ -10,7 +10,7 @@ import {
   type WMSStreamlineLayerOptions,
 } from '@deltares/webgl-streamline-visualizer'
 import { useMap } from '@/services/useMap'
-import { onMounted, onUnmounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted, watch } from 'vue'
 
 import { configManager } from '@/services/application-config'
 import { type AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
@@ -23,6 +23,7 @@ type StreamlineLayerOptionsFews = Layer['animatedVectors']
 interface Props {
   layerOptions?: AnimatedRasterLayerOptions
   streamlineOptions?: StreamlineLayerOptionsFews
+  beforeId?: string
 }
 const props = defineProps<Props>()
 const isLoading = defineModel<boolean>('isLoading', { default: false })
@@ -146,9 +147,19 @@ function addLayer(): void {
     )
   })
 
-  const beforeId = getBeforeId(map)
+  const beforeId = props.beforeId ?? getBeforeId(map)
   map?.addLayer(layer, beforeId)
 }
+
+watch(
+  () => props.beforeId,
+  (newBeforeId) => {
+    if (!map?.getLayer(layerId)) return
+
+    const beforeId = newBeforeId ?? getBeforeId(map)
+    map.moveLayer(layerId, beforeId)
+  },
+)
 
 function removeLayer(): void {
   if (map !== undefined && map.style !== undefined && map.getLayer(layerId)) {

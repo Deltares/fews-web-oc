@@ -24,12 +24,7 @@ import {
 import { fetchLocationSetAsGeoJson } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 import { asyncComputed } from '@vueuse/core'
-import {
-  getLayerId,
-  getLayerIds,
-  getSourceId,
-  locationLayerIds,
-} from '@/lib/map'
+import { getLayerId, getSourceId, locationLayerIds } from '@/lib/map'
 import { Overlay } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
 import { useMap } from '@/services/useMap'
@@ -80,7 +75,7 @@ const { map } = useMap()
 const beforeId = computed(() => {
   if (!map) return
 
-  const layerIds = getLayerIds(map)
+  const layerIds = map.getLayersOrder()
   return layerIds.find((id) => locationLayerIds.includes(id))
 })
 </script>
