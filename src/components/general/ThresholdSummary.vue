@@ -1,5 +1,5 @@
 <template>
-  <Teleport to="#main-side-panel">
+  <Teleport to="#secondary-side-panel-end">
     <div v-if="warningLevels?.length" class="threshold-summary-container">
       <div class="threshold-summary-top" id="threshold-summary-top">
       </div>
