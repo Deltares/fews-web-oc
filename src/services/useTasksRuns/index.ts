@@ -42,9 +42,13 @@ export function useTaskRuns(
   const allTaskRuns = ref<TaskRun[]>([])
   const filteredTaskRuns = computed<TaskRun[]>(filterTasks)
 
-  useFocusAwareInterval(() => {
-    fetch().catch((error) => console.error(`Failed to fetch tasks: ${error}`))
-  }, refreshIntervalSeconds * 1000, { immediateCallback: true })
+  useFocusAwareInterval(
+    () => {
+      fetch().catch((error) => console.error(`Failed to fetch tasks: ${error}`))
+    },
+    refreshIntervalSeconds * 1000,
+    { immediateCallback: true },
+  )
 
   // Fetch taskruns if a new dispatch period is selected.
   watch(() => toValue(dispatchPeriod), fetch)
