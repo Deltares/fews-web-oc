@@ -109,7 +109,7 @@ export function timeSeriesDisplayToChartConfig(
             config.yAxis?.findIndex((yAxis) => {
               return yAxis.position === item.yAxis?.axisPosition
             }) ?? 0,
-          color: threshold.color ?? item.color,
+          color: threshold.color ?? item.color ?? 'currentColor',
         })
       }
     }

@@ -1,31 +1,5 @@
 import { DocumentFormat } from '@deltares/fews-pi-requests'
 
-function downloadWithLink(url: string, fileName: string) {
-  const encodedFileName = encodeURIComponent(fileName)
-  url = `${url}&downloadAsFile=${encodedFileName}`
-  clickDownloadUrl(url, fileName)
-}
-
-async function downloadFileWithFetch(
-  headers: Headers,
-  url: string,
-  fileName: string,
-  accessToken: string,
-) {
-  headers.append('Authorization', `Bearer ${accessToken}`)
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: headers,
-  })
-  if (response.ok) {
-    const blob = await response.blob()
-    clickDownloadBlob(blob, fileName)
-  } else {
-    const message = await response.text()
-    throw new Error(message)
-  }
-}
-
 export function filterToParams(filter: Record<string, any>): string {
   const filterArgs = Object.entries(filter).flatMap(([key, value]) => {
     if (value === undefined) return []
@@ -55,13 +29,17 @@ export async function downloadFileAttachment(
 }
 
 export async function downloadFileWithXhr(
-  url: string,
+  url: string | URL,
   fileName: string,
+  accessToken: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const req = new XMLHttpRequest()
     req.responseType = 'blob'
     req.open('GET', url)
+    if (accessToken !== '') {
+      req.setRequestHeader('Authorization', `Bearer ${accessToken}`)
+    }
 
     req.onload = () => {
       if (req.status < 200 || req.status >= 300) {
@@ -96,13 +74,39 @@ export async function downloadFileWithXhr(
   })
 }
 
-export function clickDownloadBlob(blob: Blob, fileName: string) {
+async function downloadFileWithFetch(
+  headers: Headers,
+  url: string,
+  fileName: string,
+  accessToken: string,
+) {
+  headers.append('Authorization', `Bearer ${accessToken}`)
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: headers,
+  })
+  if (response.ok) {
+    const blob = await response.blob()
+    clickDownloadBlob(blob, fileName)
+  } else {
+    const message = await response.text()
+    throw new Error(message)
+  }
+}
+
+function clickDownloadBlob(blob: Blob, fileName: string) {
   const blobUrl = window.URL.createObjectURL(blob)
   clickDownloadUrl(blobUrl, fileName)
   window.URL.revokeObjectURL(blobUrl)
 }
 
-export function clickDownloadUrl(url: string, fileName: string) {
+function downloadWithLink(url: string, fileName: string) {
+  const encodedFileName = encodeURIComponent(fileName)
+  url = `${url}&downloadAsFile=${encodedFileName}`
+  clickDownloadUrl(url, fileName)
+}
+
+function clickDownloadUrl(url: string, fileName: string) {
   const a = document.createElement('a')
   a.href = url
   a.setAttribute('download', fileName)

@@ -11,6 +11,7 @@ import { configManager } from '@/services/application-config'
 import type { BoundingBox } from '@/services/useBoundingBox'
 import type { LngLat } from 'maplibre-gl'
 import { toISOString } from '@/lib/date'
+import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 
 interface WorkflowsState {
   showDialog: boolean
@@ -91,7 +92,11 @@ const useWorkflowsStore = defineStore('workflows', {
         const fileName = `${now}${options?.fileName ?? '_DATA'}`
         try {
           this.numActiveWorkflows++
-          await downloadFileWithXhr(url.toString(), fileName)
+          await downloadFileWithXhr(
+            url.toString(),
+            fileName,
+            authenticationManager.getAccessToken(),
+          )
         } finally {
           this.numActiveWorkflows--
         }

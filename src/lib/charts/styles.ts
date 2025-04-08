@@ -39,7 +39,7 @@ function hexToRGB(hex: string, alpha?: string | number) {
 export function cssStyleFromFewsLine(item: {
   lineStyle?: string
   lineWidth?: number
-  color: string
+  color?: string
   opaquenessPercentage?: number
 }): SvgPropertiesHyphen {
   let style: SvgPropertiesHyphen = {}
@@ -69,7 +69,9 @@ export function cssStyleFromFewsLine(item: {
   }
   const alpha = item.opaquenessPercentage ? item.opaquenessPercentage / 100 : 1
   style.stroke =
-    item.color === '#000000' ? 'currentColor' : hexToRGB(item.color, alpha)
+    item.color === undefined || item.color === '#000000'
+      ? 'currentColor'
+      : hexToRGB(item.color, alpha)
   return style
 }
 
@@ -80,7 +82,7 @@ export function cssStyleFromFewsLine(item: {
  */
 export function cssStyleFromFewsArea(item: {
   lineStyle?: string
-  color: string
+  color?: string
   opaquenessPercentage?: number
 }): SvgPropertiesHyphen {
   let style: SvgPropertiesHyphen = {}
@@ -105,7 +107,9 @@ export function cssStyleFromFewsArea(item: {
   }
   const alpha = item.opaquenessPercentage ? item.opaquenessPercentage / 100 : 1
   style.fill =
-    item.color === '#000000' ? 'currentColor' : hexToRGB(item.color, alpha)
+    item.color === undefined || item.color === '#000000'
+      ? 'currentColor'
+      : hexToRGB(item.color, alpha)
   return style
 }
 
@@ -162,7 +166,10 @@ export function cssStyleFromFewsMarker(item: {
   markerStyle?: string
   color?: string
 }): SvgPropertiesHyphen {
-  const color = item.color === '#000000' ? 'currentColor' : item.color
+  const color =
+    item.color === undefined || item.color === '#000000'
+      ? 'currentColor'
+      : item.color
   const style: SvgPropertiesHyphen = {
     stroke: color,
     fill: color,
