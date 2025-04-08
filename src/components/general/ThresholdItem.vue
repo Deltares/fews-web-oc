@@ -2,7 +2,7 @@
   <div class="thresold-panel-card">
     <v-card
       border
-      :key="crossing.locationId"
+      :key="`${crossing.locationId}-${crossing.parameterId}`"
       flat
       density="compact"
       @click="toggleCrossingExpand"
