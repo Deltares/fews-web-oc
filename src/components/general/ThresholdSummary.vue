@@ -1,8 +1,7 @@
 <template>
   <Teleport to="#secondary-side-panel-end">
     <div v-if="warningLevels?.length" class="threshold-summary-container">
-      <div class="threshold-summary-top" id="threshold-summary-top">
-      </div>
+      <div class="threshold-summary-top" id="threshold-summary-top"></div>
       <v-list
         v-model:selected="selectedLevelIds"
         select-strategy="leaf"
@@ -26,9 +25,11 @@
               offset-y="1"
               color="transparent"
             >
-            <template #badge>
-              <v-chip size="small" density="compact" class="pa-0 px-1">{{ warningLevel.count }}</v-chip>
-            </template>
+              <template #badge>
+                <v-chip size="small" density="compact" class="pa-0 px-1">{{
+                  warningLevel.count
+                }}</v-chip>
+              </template>
               <v-img width="30px" :src="warningLevel.icon"></v-img>
             </v-badge>
             <v-list-item-subtitle>
@@ -62,20 +63,25 @@ const { thresholds: thresholdsArray } = useTopologyThresholds(
 
 const selectedLevelIds = ref<string[]>([])
 
-const selectedLevels = defineModel<LevelThresholdWarningLevels[]>({default: () => [] })
+const selectedLevels = defineModel<LevelThresholdWarningLevels[]>({
+  default: () => [],
+})
 
 watch(selectedLevelIds, () => {
   if (selectedLevelIds.value.length === 0) {
     selectedLevels.value = aggregatedWarningLevels.value
   } else {
-    selectedLevels.value = aggregatedWarningLevels.value.filter((level) => selectedLevelIds.value.includes(level.id))
+    selectedLevels.value = aggregatedWarningLevels.value.filter((level) =>
+      selectedLevelIds.value.includes(level.id),
+    )
   }
 })
 
 const aggregatedWarningLevels = computed(() => {
   if (thresholdsArray.value === undefined || thresholdsArray.value.length === 0)
     return []
-  const aggregatedLevels = thresholdsArray.value[0]?.aggregatedLevelThresholdWarningLevels
+  const aggregatedLevels =
+    thresholdsArray.value[0]?.aggregatedLevelThresholdWarningLevels
   return aggregatedLevels !== undefined ? aggregatedLevels : []
 })
 

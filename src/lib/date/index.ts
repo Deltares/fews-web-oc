@@ -111,7 +111,7 @@ export function toDateRangeString(
 export function toDateDifferenceString(
   startDate: Date | string | number | undefined | null,
   endDate: Date | string | number | undefined | null,
-  options? : {excludeSeconds?: boolean}
+  options?: { excludeSeconds?: boolean },
 ): string {
   if (
     startDate === undefined ||
@@ -137,10 +137,10 @@ export function toDateDifferenceString(
     days % 7 ? `${days % 7}d` : '',
     hours % 24 ? `${hours % 24}h` : '',
     minutes % 60 ? `${minutes % 60}m` : '',
-    (!options?.excludeSeconds && seconds % 60) ? `${seconds % 60}s` : '',
+    !options?.excludeSeconds && seconds % 60 ? `${seconds % 60}s` : '',
   ]
     .filter((part) => part)
-    .slice(0,2)
+    .slice(0, 2)
     .join(' ')
   return result ? result : '0s'
 }

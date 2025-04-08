@@ -205,7 +205,7 @@ export function useTimeSeries(
   const interval = useFocusAwareInterval(
     loadTimeSeries,
     TIMESERIES_POLLING_INTERVAL,
-    { immediateCallback: true }
+    { immediateCallback: true },
   )
 
   onUnmounted(() => {

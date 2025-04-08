@@ -11,9 +11,7 @@
     >
       <v-card-text class="pa-0 h-100">
         <div class="d-flex align-center justify-space-between ga-2 h-100">
-          <div
-            class="d-flex flex-column px-2 py-0 overflow-hidden"
-          >
+          <div class="d-flex flex-column px-2 py-0 overflow-hidden">
             <v-list-item-title>
               {{ location?.locationName ?? crossing.locationId }}
             </v-list-item-title>
@@ -21,15 +19,17 @@
               {{ toHumanReadableDate(crossing.maxValueTime) }}
             </v-card-subtitle>
           </div>
-          <div class="max-value flex-shrink-0" :style="{background: crossing.color, color: getContrastColor(crossing.color)}">
-              {{ crossing.maxValue }}
+          <div
+            class="max-value flex-shrink-0"
+            :style="{
+              background: crossing.color,
+              color: getContrastColor(crossing.color),
+            }"
+          >
+            {{ crossing.maxValue }}
           </div>
         </div>
-        <ThresholdDataTable
-          v-if="expanded"
-          class="ms-2"
-          :crossing="crossing"
-        />
+        <ThresholdDataTable v-if="expanded" class="ms-2" :crossing="crossing" />
       </v-card-text>
     </v-card>
   </div>
@@ -37,10 +37,10 @@
 
 <script setup lang="ts">
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
-import { computed } from 'vue';
+import { computed } from 'vue'
 import { toHumanReadableDate } from '@/lib/date'
-import { getContrastColor } from "@/lib/charts/styles"
-import ThresholdDataTable from '@/components/general/ThresholdDataTable.vue';
+import { getContrastColor } from '@/lib/charts/styles'
+import ThresholdDataTable from '@/components/general/ThresholdDataTable.vue'
 import type { Location } from '@deltares/fews-pi-requests'
 
 interface Props {
@@ -56,7 +56,9 @@ const expanded = defineModel<boolean>('expanded', {
   default: false,
 })
 
-const itemHeight = computed(() => {return props.itemHeight})
+const itemHeight = computed(() => {
+  return props.itemHeight
+})
 
 function toggleCrossingExpand() {
   // Only expand when no text is selected
