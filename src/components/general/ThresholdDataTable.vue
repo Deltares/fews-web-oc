@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { toDateRelativeString } from '@/lib/date';
+import { toDateDifferenceString } from '@/lib/date';
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import { useIntervalFn } from '@vueuse/core';
 import { computed, ref, watchEffect } from 'vue';
@@ -34,12 +34,12 @@ interface Props {
 const props = defineProps<Props>()
 
 const NOW_REFRESH_INTERVAL = 1000
-const timeToMaxString = ref(toDateRelativeString(props.crossing.maxValueTime))
+const timeToMaxString = ref(toDateDifferenceString(new Date(), props.crossing.maxValueTime, { excludeSeconds: true }))
 useIntervalFn(updateTimeToMaxString, NOW_REFRESH_INTERVAL)
 
 watchEffect(updateTimeToMaxString)
 function updateTimeToMaxString() {
-  timeToMaxString.value = toDateRelativeString(props.crossing.maxValueTime)
+  timeToMaxString.value = toDateDifferenceString(new Date(), props.crossing.maxValueTime, { excludeSeconds: true })
 }
 
 const tableData = computed<Row[]>(() => {
@@ -49,7 +49,7 @@ const tableData = computed<Row[]>(() => {
       value: props.crossing.warningLevelName,
     },
     {
-      header: 'Max value reached:',
+      header: 'Max value reached in:',
       value: timeToMaxString.value,
     },
     {
