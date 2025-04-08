@@ -19,8 +19,8 @@
   },
   "dependencies": {
     "@deltares/fews-pi-requests": "^1.12.5",
-    "@deltares/fews-ssd-requests": "^1.0.1",
-    "@deltares/fews-ssd-webcomponent": "^1.0.2",
+    "@deltares/fews-ssd-requests": "^1.1.1",
+    "@deltares/fews-ssd-webcomponent": "^1.1.1",
     "@deltares/fews-web-oc-charts": "^4.0.0-alpha.0",
     "@deltares/fews-wms-requests": "^1.0.3",
     "@deltares/webgl-streamline-visualizer": "^2.1.0",
