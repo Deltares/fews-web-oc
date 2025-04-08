@@ -66,6 +66,7 @@ import {
 } from '@/lib/topology/componentSettings'
 import { useElementSize } from '@vueuse/core'
 import { useDateRegistry } from '@/services/useDateRegistry'
+import type { NavigateRoute } from '@/lib/router'
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
 )
@@ -84,7 +85,10 @@ const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
 
-const emit = defineEmits(['navigate'])
+interface Emits {
+  navigate: [to: NavigateRoute]
+}
+const emit = defineEmits<Emits>()
 
 const { thresholds } = useDisplay()
 const containerRef = useTemplateRef('container')
@@ -282,15 +286,18 @@ function onCoordinateClick(latitude: number, longitude: number): void {
 
 function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
   if (!onlyCoverageLayersAvailable.value) return
-  currentLatitude.value = latitude.toFixed(3)
-  currentLongitude.value = longitude.toFixed(3)
+
+  const _latitude = latitude.toFixed(3)
+  const _longitude = longitude.toFixed(3)
+  currentLatitude.value = _latitude
+  currentLongitude.value = _longitude
   currentLocationIds.value = undefined
 
   const to = {
     name: 'SpatialTimeSeriesDisplayWithCoordinates',
     params: {
-      latitude,
-      longitude,
+      latitude: _latitude,
+      longitude: _longitude,
     },
   }
   emit('navigate', to)

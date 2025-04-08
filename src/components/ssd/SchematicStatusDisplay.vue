@@ -50,6 +50,7 @@ import {
 } from '@/lib/topology/componentSettings'
 import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
+import type { NavigateRoute } from '@/lib/router'
 const SSDTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/ssd/SsdTimeSeriesDisplay.vue'),
 )
@@ -78,7 +79,12 @@ const sliderDebounceInterval = 500
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const alertsStore = useAlertsStore()
-const emit = defineEmits(['navigate', 'dashboardAction'])
+
+interface Emits {
+  navigate: [to: NavigateRoute]
+  dashboardAction: [result: SsdActionResult]
+}
+const emit = defineEmits<Emits>()
 
 const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
 const ssdContainer = ref<HTMLElement | null>(null)
@@ -133,12 +139,13 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
 
   const now = new Date()
   const result = results[0]
+  const request = result.requests?.[0]
   switch (result.type) {
     case 'PDF':
-      window.open(new URL(result.requests[0].request))
+      if (request) window.open(new URL(request.request))
       break
     case 'SSD':
-      switchPanel(result.requests[0])
+      if (request) switchPanel(request)
       break
     case 'PI':
       openTimeSeriesDisplay(panelId, objectId)

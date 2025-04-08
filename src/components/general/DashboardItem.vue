@@ -26,8 +26,10 @@ import { configManager } from '@/services/application-config'
 import { useComponentSettings } from '@/services/useComponentSettings'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref } from 'vue'
-import type { RouteLocationNormalized, RouteParamsGeneric } from 'vue-router'
+import type { RouteParamsGeneric } from 'vue-router'
 import type { DashboardActionParams } from '@/lib/topology/dashboardActions'
+import { SsdActionResult } from '@deltares/fews-ssd-requests'
+import type { NavigateRoute } from '@/lib/router'
 
 interface Props {
   item: WebOCDashboardItem
@@ -38,7 +40,11 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['dashboardAction'])
+
+interface Emits {
+  dashboardAction: [result: SsdActionResult]
+}
+const emit = defineEmits<Emits>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const topologyNodesStore = useTopologyNodesStore()
@@ -87,7 +93,7 @@ function convertItemToComponentItem(
 
 const routeParams = ref<RouteParamsGeneric>({})
 
-function onNavigate(to: RouteLocationNormalized) {
+function onNavigate(to: NavigateRoute) {
   switch (to.name) {
     case 'SpatialDisplay':
     case 'SpatialTimeSeriesDisplayWithCoordinates':
@@ -101,5 +107,13 @@ function onNavigate(to: RouteLocationNormalized) {
     default:
       console.warn(`Unknown route name: ${String(to.name)}`)
   }
+
+  emit('dashboardAction', {
+    type: 'WEBOC_DASHBOARD',
+    charts: {
+      displayId: '',
+      chartsLocationId: '',
+    },
+  })
 }
 </script>

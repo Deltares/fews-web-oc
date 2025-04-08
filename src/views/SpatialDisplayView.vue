@@ -24,7 +24,8 @@ import { configManager } from '@/services/application-config'
 import { Layer, LayerGroup } from '@deltares/fews-wms-requests'
 import SpatialDisplay from '@/components/spatialdisplay/SpatialDisplay.vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { RouteLocationNormalized, useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import type { NavigateRoute } from '@/lib/router'
 
 interface Props {
   layerName?: string
@@ -129,14 +130,14 @@ function attachLayersToMenu(
   }
 }
 
-function onNavigate(to: RouteLocationNormalized) {
+function onNavigate(to: NavigateRoute) {
   switch (to.name) {
     case 'SpatialTimeSeriesDisplay':
       router.push({
         name: to.name,
         params: {
           layerName: props.layerName,
-          locationIds: to.params.locationIds,
+          locationIds: to.params?.locationIds,
         },
         query: route.query,
       })
@@ -146,8 +147,8 @@ function onNavigate(to: RouteLocationNormalized) {
         name: to.name,
         params: {
           layerName: props.layerName,
-          latitude: to.params.latitude,
-          longitude: to.params.longitude,
+          latitude: to.params?.latitude,
+          longitude: to.params?.longitude,
         },
         query: route.query,
       })
