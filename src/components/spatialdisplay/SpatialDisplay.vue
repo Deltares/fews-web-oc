@@ -107,7 +107,6 @@ const { locations, geojson } = useFilterLocations(baseUrl, filterIds)
 
 const selectedWarningLevelSeverity = computed(() => selectedWarningLevels.value.map((level) => level.severity))
 const filteredLocations = computed(() => {
-  console.log('computed filteredLocations. selectedWarningLevelSeverity: ', selectedWarningLevelSeverity.value, 'locations: ', locations.value)
   if (selectedWarningLevelSeverity.value.length === 0) return locations.value
   return locations.value?.filter((location) => selectedWarningLevelSeverity.value.includes(location.thresholdSeverity ?? 0))
 })
