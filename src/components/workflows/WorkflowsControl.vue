@@ -43,7 +43,7 @@
               @click="showMapTool"
             />
           </div>
-          <div v-if="isCoordinateInForm" class="d-flex py-4 mx-auto">
+          <div v-if="isCoordinateInForm" class="d-flex py-4">
             <v-text-field
               v-model="coordinateString"
               readonly
