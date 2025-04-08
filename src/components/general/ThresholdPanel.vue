@@ -19,7 +19,7 @@
             <ThresholdItem
               :crossing="crossing"
               :item-height="itemHeightPx"
-              v-model:expanded="expandedItems[crossing.locationId]"
+              v-model:expanded="expandedItems[`${crossing.locationId}-${crossing.parameterId}`]"
             />
           </template>
         </v-virtual-scroll>
