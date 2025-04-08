@@ -10,7 +10,7 @@ import {
   type WMSStreamlineLayerOptions,
 } from '@deltares/webgl-streamline-visualizer'
 import { useMap } from '@/services/useMap'
-import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 
 import { configManager } from '@/services/application-config'
 import { type AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
