@@ -154,10 +154,6 @@ async function downloadFile() {
   })
 
   const fileName = `${report.timeZero}-${report.moduleInstanceId}`
-  downloadFileWithXhr(
-    url,
-    fileName,
-    authenticationManager.getAccessToken(),
-  )
+  downloadFileWithXhr(url, fileName, authenticationManager.getAccessToken())
 }
 </script>
