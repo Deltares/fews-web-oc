@@ -18,7 +18,7 @@
     "test-ct": "playwright test -c playwright-ct.config.ts"
   },
   "dependencies": {
-    "@deltares/fews-pi-requests": "^1.12.4",
+    "@deltares/fews-pi-requests": "^1.12.5",
     "@deltares/fews-ssd-requests": "^1.0.1",
     "@deltares/fews-ssd-webcomponent": "^1.0.2",
     "@deltares/fews-web-oc-charts": "^4.0.0-alpha.0",
