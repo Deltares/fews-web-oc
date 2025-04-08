@@ -71,9 +71,9 @@ export function getComponentPropsForNode(
   if (componentType === 'charts') {
     const result: PropsForComponentType<'charts'> = {
       nodeId: node.id,
-      plotId: actionParams?.charts?.displayId,
-      // TODO: Support filter charts
-      // locationId: actionParams?.charts?.chartsLocationId
+      plotId:
+        actionParams?.charts?.displayId ??
+        actionParams?.charts?.chartsLocationId,
     }
     return result
   }
