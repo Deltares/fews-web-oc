@@ -80,7 +80,7 @@ const items = computed(() => {
       for (const displayPanel of displayGroup.displayPanels) {
         children.push({
           id: displayPanel.name,
-          name: displayPanel.title,
+          name: displayPanel.title ?? '',
           to: {
             name: 'SchematicStatusDisplay',
             params: {

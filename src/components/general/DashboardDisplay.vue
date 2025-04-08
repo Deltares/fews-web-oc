@@ -39,7 +39,10 @@
 </template>
 
 <script setup lang="ts">
-import { WebOCDashboardItem, type WebOCDashboard } from '@deltares/fews-pi-requests'
+import {
+  WebOCDashboardItem,
+  type WebOCDashboard,
+} from '@deltares/fews-pi-requests'
 import { computed, ref } from 'vue'
 import DashboardItem from '@/components/general/DashboardItem.vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
@@ -50,9 +53,7 @@ import { provideSelectedDate } from '@/services/useSelectedDate'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useDynamicCss } from '@/services/useDynamicCss'
 import { SsdActionResult } from '@deltares/fews-ssd-requests'
-import type {
-  DashboardActionParams,
-} from '@/lib/topology/dashboardActions'
+import type { DashboardActionParams } from '@/lib/topology/dashboardActions'
 
 interface Props {
   dashboard: WebOCDashboard
@@ -82,7 +83,7 @@ function setupDates() {
 
 const actionId = ref<string>()
 const actionParams = ref<DashboardActionParams>({})
-function onDashboardAction(action: SsdActionResult) {{
+function onDashboardAction(action: SsdActionResult) {
   actionId.value = action.actionId
   actionParams.value = {
     charts: action.charts,
@@ -91,9 +92,11 @@ function onDashboardAction(action: SsdActionResult) {{
 }
 
 function getDashboardItem(items: WebOCDashboardItem[]) {
-  return (
-    items.find((item) => item.actionIds?.includes(actionId.value)) ?? items[0]
-  )
+  const _actionId = actionId.value
+  if (_actionId === undefined) return items[0]
+
+  const item = items.find((item) => item.actionIds?.includes(_actionId))
+  return item ?? items[0]
 }
 
 const groups = computed(() => props.dashboard.groups)

@@ -27,10 +27,7 @@ import { useComponentSettings } from '@/services/useComponentSettings'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref } from 'vue'
 import type { RouteLocationNormalized, RouteParamsGeneric } from 'vue-router'
-import type {
-  DashboardActionParams,
-} from '@/lib/topology/dashboardActions'
-import type { SsdActionResult } from '@deltares/fews-ssd-requests'
+import type { DashboardActionParams } from '@/lib/topology/dashboardActions'
 
 interface Props {
   item: WebOCDashboardItem
@@ -47,8 +44,8 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const topologyNodesStore = useTopologyNodesStore()
 
 const componentItem = computed(() => {
-  // @ts-expect-error: FIXME: solve in the schema
-  const hasActionId = props.item.actionIds?.includes(props.actionId)
+  const hasActionId =
+    props.actionId && props.item.actionIds?.includes(props.actionId)
   return convertItemToComponentItem(
     props.item,
     routeParams.value,
@@ -103,15 +100,6 @@ function onNavigate(to: RouteLocationNormalized) {
       break
     default:
       console.warn(`Unknown route name: ${String(to.name)}`)
-  }
-}
-
-const actionParams = ref<DashboardActionParams>({})
-function onDashboardAction(action: SsdActionResult) {
-  emit('dashboardAction', action)
-  actionParams.value = {
-    charts: action.charts,
-    map: action.map,
   }
 }
 </script>
