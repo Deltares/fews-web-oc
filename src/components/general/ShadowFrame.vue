@@ -15,6 +15,8 @@ const shadowHost = useTemplateRef<HTMLDivElement>('shadowHost')
 let shadowRoot: ShadowRoot | null = null
 
 onMounted(() => {
+  // Template ref's are only null before mounted and with v-if's
+  // but ts does not know that shadowHost is not null
   if (shadowHost.value) {
     shadowRoot = shadowHost.value.attachShadow({ mode: 'open' })
     shadowRoot.innerHTML = props.htmlContent
