@@ -35,6 +35,7 @@ export function convertBaseMapToUserSetting(
 ): UserSettingsWithIcon {
   return {
     value: baseMap.id,
+    title: baseMap.name,
     icon: baseMap.icon,
   }
 }
