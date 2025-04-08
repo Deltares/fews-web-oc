@@ -117,23 +117,3 @@ export async function fetchLocationSetAsGeoJson(
   }
   return response
 }
-
-export async function fetchSingleLocationsByLocationId(
-  baseUrl: string,
-  locationId: string
-) {
-  const provider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-  const filter = {
-    documentFormat: DocumentFormat.GEO_JSON,
-    locationIds: locationId,
-    showParentLocations: false,
-    showThresholds: true,
-  }
-  const response = await provider.getLocations(filter)
-  if (!isFeatureCollection(response)) {
-    throw new Error('Expected GeoJSON FeatureCollection')
-  }
-  return response
-}
