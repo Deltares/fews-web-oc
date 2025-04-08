@@ -7,6 +7,7 @@
     <mgl-raster-layer
       :layerId="layerId"
       :before="beforeId"
+      :key="beforeId"
       :paint="{
         'raster-opacity': 0,
         'raster-fade-duration': 0,
