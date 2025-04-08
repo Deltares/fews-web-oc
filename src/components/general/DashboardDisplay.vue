@@ -14,6 +14,8 @@
               v-if="element.items"
               :item="getDashboardItem(element.items)"
               :slider-enabled="sliderEnabled"
+              :action-id="actionId"
+              :action-params="actionParams"
               :settings="settings"
               @dashboardAction="onDashboardAction"
             />
@@ -48,6 +50,9 @@ import { provideSelectedDate } from '@/services/useSelectedDate'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useDynamicCss } from '@/services/useDynamicCss'
 import { SsdActionResult } from '@deltares/fews-ssd-requests'
+import type {
+  DashboardActionParams,
+} from '@/lib/topology/dashboardActions'
 
 interface Props {
   dashboard: WebOCDashboard
@@ -76,8 +81,13 @@ function setupDates() {
 }
 
 const actionId = ref<string>()
-function onDashboardAction(action: SsdActionResult) {
+const actionParams = ref<DashboardActionParams>({})
+function onDashboardAction(action: SsdActionResult) {{
   actionId.value = action.actionId
+  actionParams.value = {
+    charts: action.charts,
+    map: action.map,
+  }
 }
 
 function getDashboardItem(items: WebOCDashboardItem[]) {

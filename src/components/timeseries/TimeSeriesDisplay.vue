@@ -22,9 +22,9 @@
         <v-list v-model="selectedPlotId" density="compact">
           <v-list-item
             v-for="display in displays"
-            @click="selectedPlotId = display.id"
+            @click="selectedPlotId = display.plotId"
             :title="display.id"
-            :active="selectedPlotId === display.id"
+            :active="selectedPlotId === display.plotId"
           />
         </v-list>
       </v-menu>

@@ -42,6 +42,7 @@ function actionsResponseToDisplayConfig(
     const title = result.config.timeSeriesDisplay.title ?? ''
     const timeSeriesDisplayIndex = result.config.timeSeriesDisplay.index
     const period = result.config.timeSeriesDisplay.period
+    const plotId = result.config.timeSeriesDisplay.plotId
 
     // The period is always specified in UTC.
     const timeZoneOffsetString = 'Z'
@@ -65,6 +66,7 @@ function actionsResponseToDisplayConfig(
     const display: DisplayConfig = {
       id: title,
       title,
+      plotId,
       nodeId: nodeId,
       class: 'singles',
       index: timeSeriesDisplayIndex,
@@ -125,7 +127,7 @@ export function useDisplayConfig(
 
   const displayConfig = computed(() => {
     const _plotId = toValue(plotId)
-    return displays.value?.find((d) => d.id === _plotId) ?? null
+    return displays.value?.find((d) => d.plotId === _plotId) ?? null
   })
 
   return {

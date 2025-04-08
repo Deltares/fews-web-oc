@@ -7,7 +7,7 @@
     :topologyNode="componentItem.topologyNode"
     :settings="componentSettings"
     @navigate="onNavigate"
-    @dashboardAction="onDashboardAction"
+    @dashboardAction="emit('dashboardAction', $event)"
   />
 </template>
 
@@ -35,6 +35,8 @@ import type { SsdActionResult } from '@deltares/fews-ssd-requests'
 interface Props {
   item: WebOCDashboardItem
   sliderEnabled: boolean
+  actionId?: string
+  actionParams: DashboardActionParams
   settings?: ComponentSettings
 }
 
@@ -45,7 +47,13 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const topologyNodesStore = useTopologyNodesStore()
 
 const componentItem = computed(() => {
-  return convertItemToComponentItem(props.item)
+  // @ts-expect-error: FIXME: solve in the schema
+  const hasActionId = props.item.actionIds?.includes(props.actionId)
+  return convertItemToComponentItem(
+    props.item,
+    routeParams.value,
+    hasActionId ? props.actionParams : {},
+  )
 })
 
 const { componentSettings } = useComponentSettings(
@@ -54,15 +62,19 @@ const { componentSettings } = useComponentSettings(
   () => props.settings,
 )
 
-function convertItemToComponentItem(item: WebOCDashboardItem) {
+function convertItemToComponentItem(
+  item: WebOCDashboardItem,
+  routeParams: RouteParamsGeneric,
+  actionParams: DashboardActionParams,
+) {
   const componentName = item.component
   const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
   const component = componentTypeToComponentMap[componentName]
   const componentProps = getComponentPropsForNode(
     componentName,
     topologyNode,
-    routeParams.value,
-    actionParams.value,
+    routeParams,
+    actionParams,
   )
   const title = topologyNode?.name ?? componentTypeToTitleMap[componentName]
   const icon = topologyNode?.iconId ?? componentTypeToIconMap[componentName]
