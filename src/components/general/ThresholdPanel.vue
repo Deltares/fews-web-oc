@@ -2,13 +2,10 @@
   <template v-if="allThresholdCrossings.length">
     <Teleport to="#threshold-summary-top" defer>
       <v-btn
-        class="ms-0 ps-0"
         @click="toggleThresholdPanel"
         :disabled="thresholdCrossings.length === 0"
-      >
-        <v-icon v-if="!isPanelOpen">mdi-menu-open</v-icon>
-        <v-icon v-else>mdi-menu-close</v-icon>
-      </v-btn>
+        :icon="isPanelOpen ? 'mdi-menu-close' : 'mdi-menu-open'"
+      />
     </Teleport>
     <div v-if="isPanelOpen" class="threshold-panel d-flex flex-column">
       <div class="threshold-panel-iterator ms-2 h-100">
