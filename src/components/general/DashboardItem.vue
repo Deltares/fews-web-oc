@@ -51,7 +51,7 @@ const topologyNodesStore = useTopologyNodesStore()
 
 const componentItem = computed(() => {
   const hasActionId =
-    props.actionId && props.item.actionIds?.includes(props.actionId)
+    !props.actionId || props.item.actionIds?.includes(props.actionId)
   return convertItemToComponentItem(
     props.item,
     routeParams.value,
@@ -95,9 +95,11 @@ const routeParams = ref<RouteParamsGeneric>({})
 
 function onNavigate(to: NavigateRoute) {
   switch (to.name) {
+    case 'SpatialTimeSeriesDisplay':
+      emitDashboardAction(to)
+      break
     case 'SpatialDisplay':
     case 'SpatialTimeSeriesDisplayWithCoordinates':
-    case 'SpatialTimeSeriesDisplay':
     case 'SSDTimeSeriesDisplay':
     case 'SchematicStatusDisplay':
       routeParams.value = {
@@ -107,13 +109,21 @@ function onNavigate(to: NavigateRoute) {
     default:
       console.warn(`Unknown route name: ${String(to.name)}`)
   }
+}
 
-  emit('dashboardAction', {
-    type: 'WEBOC_DASHBOARD',
-    charts: {
-      displayId: '',
-      chartsLocationId: '',
-    },
-  })
+function emitDashboardAction(to: NavigateRoute) {
+  const locationId = Array.isArray(to.params?.locationIds)
+    ? to.params.locationIds[0]
+    : to.params?.locationIds.split(',')[0]
+  if (locationId) {
+    emit('dashboardAction', {
+      type: 'WEBOC_DASHBOARD',
+      charts: {
+        chartsLocationId: locationId,
+        // FIXME: Remove this once fixed in the schema
+        displayId: locationId,
+      },
+    })
+  }
 }
 </script>
