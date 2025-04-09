@@ -59,7 +59,7 @@ const selectedLevelIds = computed(() =>
 
 const isPanelOpen = ref(false)
 
-const ITEM_HEIGHT = 40
+const ITEM_HEIGHT = 50
 const itemHeightPx = `${ITEM_HEIGHT}px`
 const ITEMS_PER_PANEL = 6
 const panelHeightPx = `${ITEM_HEIGHT * ITEMS_PER_PANEL}px`
@@ -132,10 +132,10 @@ function toggleThresholdPanel(): void {
 }
 
 :deep(.v-list-item-title) {
-  font-size: 0.8em;
+  font-size: 0.875rem;
 }
 
 :deep(.v-card-subtitle) {
-  font-size: 0.75em;
+  font-size: 0.875rem;
 }
 </style>
