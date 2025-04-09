@@ -76,6 +76,6 @@ function toggleCrossingExpand() {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 0.75em;
+  font-size: 0.875em;
 }
 </style>

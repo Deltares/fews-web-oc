@@ -1,5 +1,5 @@
 <template>
-  <div class="table-container">
+  <div class="table-container pb-1">
     <table class="data-table">
       <thead></thead>
       <tbody>
@@ -82,12 +82,11 @@ const tableData = computed<Row[]>(() => {
 .data-table th,
 .data-table td {
   text-align: left;
-  padding-right: 1.5px;
 }
 
 .data-table td {
-  padding-bottom: 1px;
-  line-height: 0.9rem;
-  font-size: 0.75em;
+  padding-bottom: 2px;
+  line-height: 1;
+  font-size: 0.875rem;
 }
 </style>
