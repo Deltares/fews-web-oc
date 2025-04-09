@@ -1,13 +1,12 @@
 <template>
   <v-text-field
-    v-model="dateString"
-    type="datetime-local"
+    v-model="datetimeString"
+    :rules="rules"
     :label="label"
     density="compact"
     variant="outlined"
     class="datetime-field"
     hide-details
-    @change="updateModelValue()"
   >
     <template v-for="(_, slot) of slots" v-slot:[slot]="scope">
       <slot :name="slot" v-bind="scope" />
@@ -16,38 +15,68 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useSlots, watch } from 'vue'
+import { DateTime } from 'luxon';
+import { computed, ref, useSlots, watch } from 'vue'
 
 interface Props {
   label: string
+  dateFormat?: string
+  timeFormat?: string
 }
 
-defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  dateFormat: 'yyyy-MM-dd',
+  timeFormat: 'HH:mm'
+})
+
+const datetimeFormat = computed(() => combineDateAndTimeStrings(props.dateFormat, props.timeFormat))
 
 // tsc doesnt understand useSlots type
 const slots = useSlots() as Record<string, () => void>
 
-const modelValue = defineModel<Date>({ required: true })
+const selectedDatetime = defineModel<Date>({required: true})
+const datetimeString = ref(format(selectedDatetime.value, datetimeFormat.value))
 
-const dateString = ref(toLocalDateString(modelValue.value))
+watch(selectedDatetime, () => {
+  datetimeString.value = format(selectedDatetime.value, datetimeFormat.value)
+})
 
-function toLocalDateString(date: Date) {
-  const offset = date.getTimezoneOffset()
-  const localDate = new Date(date.getTime() - offset * 60 * 1000)
-  return localDate.toISOString().slice(0, 16)
+watch(datetimeString, () => {
+  if (isValid(parse(datetimeString.value, datetimeFormat.value))) {
+    selectedDatetime.value = parse(datetimeString.value, datetimeFormat.value)
+  }
+})
+
+function combineDateAndTimeStrings(date:string, time: string) {
+  return `${date} ${time}`
 }
 
-watch(
-  modelValue,
-  (newValue) => {
-    dateString.value = toLocalDateString(newValue)
-  },
-  { immediate: true },
-)
-
-function updateModelValue() {
-  modelValue.value = new Date(dateString.value)
+function format(date: Date | undefined, format: string) {
+  if (!date) return ''
+  return DateTime.fromJSDate(date).toFormat(format)
 }
+
+function isValid(date: Date) {
+  return !isNaN(date.getTime())
+}
+
+function parse(dateString: string, format: string) {
+  return DateTime.fromFormat(dateString, format).toJSDate()
+}
+
+const rules = [
+  () => {
+    const datetime = parse(datetimeString.value, datetimeFormat.value)
+    return (
+      datetimeString.value === '' ||
+      isValid(datetime) ||
+      `Fill in the time as ${datetimeFormat.value}, e.g. ${format(
+        new Date(),
+        datetimeFormat.value
+      )}`
+    )
+  }
+]
 </script>
 
 <style scoped>
