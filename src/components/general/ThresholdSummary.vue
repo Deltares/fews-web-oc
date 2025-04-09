@@ -116,6 +116,8 @@ const warningLevels = computed(() => {
 .threshold-summary-top {
   grid-row: 1;
   height: 36px;
+  display: flex;
+  justify-content: center;
 }
 
 .threshold-summary-center {
