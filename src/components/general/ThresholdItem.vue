@@ -13,6 +13,14 @@
         <div class="d-flex align-center justify-space-between ga-2 h-100">
           <div class="d-flex flex-column px-2 py-0 overflow-hidden">
             <v-list-item-title>
+              <v-chip
+                v-if="crossing.crossings.length > 1"
+                size="small"
+                label
+                density="compact"
+              >
+                {{ crossing.crossings.length }}
+              </v-chip>
               {{ location?.locationName ?? crossing.locationId }}
             </v-list-item-title>
             <v-card-subtitle class="pa-0">
