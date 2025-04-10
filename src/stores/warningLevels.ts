@@ -10,6 +10,7 @@ export const useWarningLevelsStore = defineStore('warningLevels', () => {
   const nodeId = ref<string | undefined>(undefined)
   const selectedWarningLevelIds = ref<string[]>([])
   const selectedWarningLevels = ref<LevelThresholdWarningLevels[]>([])
+  const showCrossingDetails = ref(false)
 
   const { thresholds } = useTopologyThresholds(baseUrl, () => nodeId.value)
 
@@ -92,6 +93,7 @@ export const useWarningLevelsStore = defineStore('warningLevels', () => {
     thresholds,
     thresholdCrossings,
     selectedThresholdCrossings,
+    showCrossingDetails,
     setTopologyNodeId,
   }
 })
