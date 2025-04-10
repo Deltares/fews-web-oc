@@ -1,7 +1,6 @@
 <template>
   <div class="table-container pb-1">
     <table class="data-table">
-      <thead></thead>
       <tbody>
         <tr v-for="row in tableData">
           <td class="text-high-emphasis">
@@ -39,14 +38,9 @@ const now = useNow({ interval: NOW_REFRESH_INTERVAL })
 const timeToMaxString = computed(() =>
   toDateAbsDifferenceString(now.value, props.crossing.maxValueTime, {
     excludeSeconds: true,
+    relativeFormat: true,
   }),
 )
-
-const isMaxValueInFuture = computed(() => {
-  const diff =
-    new Date(props.crossing.maxValueTime ?? '').getTime() - now.value.getTime()
-  return diff > 0
-})
 
 const tableData = computed<Row[]>(() => {
   return [
@@ -56,9 +50,7 @@ const tableData = computed<Row[]>(() => {
     },
     {
       header: 'Max value:',
-      value: isMaxValueInFuture.value
-        ? `in ${timeToMaxString.value}`
-        : `${timeToMaxString.value} ago`,
+      value: timeToMaxString.value,
     },
     {
       header: 'Parameter:',
