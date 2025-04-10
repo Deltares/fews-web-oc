@@ -105,7 +105,6 @@ const props = withDefaults(defineProps<Props>(), {
 /* To counter act being moved by the above border */
 .tree-menu--list-item > :deep(.v-list-item__prepend) {
   margin-left: -4px;
-  align-self: flex-start;
 }
 
 .tree-menu--list-group :deep(.v-list-group__items .v-list-item) {
@@ -142,12 +141,5 @@ const props = withDefaults(defineProps<Props>(), {
   .v-list-group__items
   .v-list-group {
   --prepend-width: 0px;
-}
-
-.v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
-  .threshold-summary--list-item {
-  padding-left: 0px;
-  padding-right: 0px;
-  padding-inline-start: 2px !important;
 }
 </style>
