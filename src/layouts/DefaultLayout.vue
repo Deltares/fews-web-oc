@@ -146,10 +146,7 @@
         </div>
         <div class="border-s h-100 d-flex flex-row" id="main-side-panel">
           <div class="flex-1-1 h-100" id="secondary-side-panel-start"></div>
-          <div
-            class="border-s flex-1-1 h-100"
-            id="secondary-side-panel-end"
-          ></div>
+          <div class="flex-1-1 h-100" id="secondary-side-panel-end"></div>
         </div>
       </div>
       <div class="alerts__container" v-if="alertsStore.hasAlerts">
