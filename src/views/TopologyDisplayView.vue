@@ -450,7 +450,7 @@ function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
       if (!menuNode) return
 
       const topologyId = to.params.topologyId as string
-      const tabs = displayTabsForNode(menuNode, parentNodeId, topologyId)
+      const tabs = displayTabsForNode(menuNode, parentNodeId, topologyId, from)
       const tab = tabs.find((t) => t.to.name === from?.name) ?? tabs[0]
       if (tab) {
         return tab.to

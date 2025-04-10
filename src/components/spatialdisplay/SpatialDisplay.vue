@@ -33,14 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  defineAsyncComponent,
-  ref,
-  useTemplateRef,
-  watch,
-  onMounted,
-} from 'vue'
+import { computed, defineAsyncComponent, ref, useTemplateRef, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
@@ -192,10 +185,7 @@ const filter = computed(() => {
 })
 
 const showChartPanel = computed(() => {
-  return (
-    currentLocationIds.value ||
-    (currentLongitude.value && currentLatitude.value)
-  )
+  return props.locationIds || (props.longitude && props.latitude)
 })
 
 const elevationChartFilter = computed(() => {
@@ -234,17 +224,8 @@ const locationsTooltipFilter = computed<LocationsTooltipFilter | undefined>(
   },
 )
 
-const currentLocationIds = ref<string[]>()
-const currentLatitude = ref<string>()
-const currentLongitude = ref<string>()
 const elevation = ref<number | undefined>()
 const currentTime = ref<Date>()
-
-onMounted(() => {
-  currentLocationIds.value = props.locationIds?.split(',')
-  currentLatitude.value = props.latitude
-  currentLongitude.value = props.longitude
-})
 
 const { width: containerWidth } = useElementSize(containerRef)
 
@@ -253,12 +234,7 @@ const containerIsMobileSize = computed(() => {
 })
 
 const hideMap = computed(() => {
-  return (
-    containerIsMobileSize.value &&
-    (currentLocationIds.value ||
-      currentLongitude.value ||
-      currentLatitude.value)
-  )
+  return containerIsMobileSize.value && showChartPanel.value
 })
 
 function onLocationsChange(locationIds: string[] | null): void {
@@ -267,10 +243,6 @@ function onLocationsChange(locationIds: string[] | null): void {
 }
 
 function openLocationsTimeSeriesDisplay(locationIds: string[]) {
-  currentLocationIds.value = locationIds
-  currentLatitude.value = undefined
-  currentLongitude.value = undefined
-
   const to = {
     name: 'SpatialTimeSeriesDisplay',
     params: {
@@ -289,9 +261,6 @@ function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
 
   const _latitude = latitude.toFixed(3)
   const _longitude = longitude.toFixed(3)
-  currentLatitude.value = _latitude
-  currentLongitude.value = _longitude
-  currentLocationIds.value = undefined
 
   const to = {
     name: 'SpatialTimeSeriesDisplayWithCoordinates',
@@ -304,43 +273,19 @@ function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
 }
 
 function closeTimeSeriesDisplay(): void {
-  currentLocationIds.value = undefined
-  currentLatitude.value = undefined
-  currentLongitude.value = undefined
-
   emit('navigate', { name: 'SpatialDisplay' })
 }
 
-watch(
-  () => locations.value,
-  () => {
-    const newLocationIds = locations.value
-      ?.filter((l) => currentLocationIds.value?.includes(l.locationId))
-      .map((l) => l.locationId)
-    if (newLocationIds?.length) {
-      openLocationsTimeSeriesDisplay(newLocationIds)
-    } else {
-      currentLocationIds.value = undefined
-    }
-  },
-)
-
-watch(
-  () => props.layerName,
-  () => {
-    if (
-      currentLatitude.value &&
-      currentLongitude.value &&
-      !props.latitude &&
-      !props.longitude
-    ) {
-      openCoordinatesTimeSeriesDisplay(
-        +currentLatitude.value,
-        +currentLongitude.value,
-      )
-    }
-  },
-)
+watch(locations, () => {
+  if (
+    locations.value?.length &&
+    props.locationIds
+      ?.split(',')
+      .some((id) => !locations.value?.map((l) => l.locationId).includes(id))
+  ) {
+    closeTimeSeriesDisplay()
+  }
+})
 </script>
 
 <style scoped>
