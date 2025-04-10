@@ -74,16 +74,12 @@ const allThresholdCrossings = computed(() => {
 })
 
 const thresholdCrossings = computed(() => {
-  let crossings = []
-  if (selectedLevelIds.value.length === 0) {
-    crossings = allThresholdCrossings.value.sort(
-      (a, b) => b.severity - a.severity,
-    )
-  } else {
-    crossings = allThresholdCrossings.value?.filter((crossing) =>
-      selectedLevelIds.value.includes(crossing.warningLevelId ?? ''),
-    )
-  }
+  const crossings =
+    selectedLevelIds.value.length === 0
+      ? allThresholdCrossings.value
+      : allThresholdCrossings.value?.filter((crossing) =>
+          selectedLevelIds.value.includes(crossing.warningLevelId ?? ''),
+        )
   return crossings.sort((a, b) => b.severity - a.severity)
 })
 
