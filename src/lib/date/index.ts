@@ -108,7 +108,15 @@ export function toDateRangeString(
   return `${toHumanReadableDate(startDate)} → ${toHumanReadableDate(endDate)}`
 }
 
-export function toDateDifferenceString(
+/**
+ * Determines the absolute difference between to dates, and returns it as a human readable string.
+ * Only the two largest units are returned, e.g. 2w 4d.
+ *
+ * @param startDate - The first date
+ * @param endDate - The second date
+ * @returns The absolute difference between the datas as a human readable string
+ */
+export function toDateAbsDifferenceString(
   startDate: Date | string | number | undefined | null,
   endDate: Date | string | number | undefined | null,
   options?: { excludeSeconds?: boolean },
@@ -121,11 +129,10 @@ export function toDateDifferenceString(
   ) {
     return '—'
   }
-
   const startDateObj = new Date(startDate)
   const endDateObj = new Date(endDate)
 
-  const duration = endDateObj.getTime() - startDateObj.getTime()
+  const duration = Math.abs(endDateObj.getTime() - startDateObj.getTime())
   const seconds = Math.floor(duration / 1000)
   const minutes = Math.floor(seconds / 60)
   const hours = Math.floor(minutes / 60)
@@ -149,5 +156,5 @@ export function toDateSpanString(
   startDate: Date | string | number | undefined | null,
   endDate: Date | string | number | undefined | null,
 ) {
-  return `${toDateRangeString(startDate, endDate)} (${toDateDifferenceString(startDate, endDate)})`
+  return `${toDateRangeString(startDate, endDate)} (${toDateAbsDifferenceString(startDate, endDate)})`
 }
