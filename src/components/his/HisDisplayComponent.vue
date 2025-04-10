@@ -1,7 +1,12 @@
 <template>
   <div class="his-container pa-2 ga-2">
-    <div class="his-data-selection">
-      <v-card border flat>
+    <div class="his-data-selection h-100">
+      <v-card
+        border
+        flat
+        class="d-grid flex-column"
+        :class="{ 'h-100': tab === 'data-selection' }"
+      >
         <v-tabs v-model="tab">
           <v-tab
             prepend-icon="mdi-filter"
@@ -16,8 +21,8 @@
           />
         </v-tabs>
 
-        <v-tabs-window v-model="tab">
-          <v-tabs-window-item value="data-selection">
+        <v-tabs-window v-model="tab" class="h-100">
+          <v-tabs-window-item value="data-selection" class="h-100">
             <HisDataSelection
               v-model:selectedLocationIds="selectedLocationIds"
               v-model:selectedParameterIds="selectedParameterIds"
@@ -26,6 +31,17 @@
               :parameterIds="filteredParameterIds"
               :moduleInstanceIds="filteredModuleInstanceIds"
             />
+
+            <div class="w-100 h-100 border-t" style="min-height: 200px">
+              <HisMap :boundingBox>
+                <LocationsLayer
+                  v-if="filterLocationGeoJson.features.length"
+                  :locationsGeoJson="filterLocationGeoJson"
+                  :selectedLocationIds="selectedLocationIds"
+                  @click="onLocationClick"
+                />
+              </HisMap>
+            </div>
           </v-tabs-window-item>
           <v-tabs-window-item value="analysis" v-if="displayConfig">
             <v-btn-group class="ma-3" variant="outlined">
@@ -80,20 +96,21 @@
         </v-tabs-window>
       </v-card>
     </div>
-    <div class="his-map">
-      <v-card v-show="tab === 'data-selection'" class="h-100 w-100" border flat>
-        <HisMap :boundingBox>
-          <LocationsLayer
-            v-if="filterLocationGeoJson.features.length"
-            :locationsGeoJson="filterLocationGeoJson"
-            :selectedLocationIds="selectedLocationIds"
-            @click="onLocationClick"
-          />
-        </HisMap>
-      </v-card>
-    </div>
-    <div class="his-charts">
+    <div class="his-charts overflow-auto">
       <v-card border flat>
+        <v-card-title class="d-flex ga-1 align-center">
+          <div>Charts</div>
+          <v-spacer />
+          <v-select
+            :items="['1', '2', '3', '4']"
+            label="Select configuration"
+            density="compact"
+            hide-details
+            variant="outlined"
+            class="w-200"
+          />
+          <v-btn icon="mdi-content-save" />
+        </v-card-title>
         <HisCharts
           v-if="displayConfig"
           :display-config="displayConfig"
@@ -339,36 +356,11 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   width: 100%;
   height: 100%;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto 1fr;
-  grid-template-areas:
-    'his-data-selection his-charts'
-    'his-map his-charts';
-}
-
-.his-container > * {
-  overflow: auto;
-}
-
-.his-data-selection {
-  grid-area: his-data-selection;
-}
-
-.his-map {
-  grid-area: his-map;
-}
-
-.his-charts {
-  grid-area: his-charts;
 }
 
 @media (max-width: 600px) {
   .his-container {
     grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    grid-template-areas:
-      'his-data-selection'
-      'his-map'
-      'his-charts';
   }
 }
 </style>
