@@ -2,7 +2,7 @@
   <div class="thresold-panel-card">
     <v-card
       border
-      :key="`${crossing.locationId}-${crossing.parameterId}`"
+      :key="crossing.locationId"
       flat
       density="compact"
       @click="toggleCrossingExpand"
@@ -16,20 +16,26 @@
               {{ location?.locationName ?? crossing.locationId }}
             </v-list-item-title>
             <v-card-subtitle class="pa-0">
-              {{ toHumanReadableDate(crossing.maxValueTime) }}
+              {{ toHumanReadableDate(crossing.crossings[0].maxValueTime) }}
             </v-card-subtitle>
           </div>
           <div
             class="max-value flex-shrink-0"
             :style="{
-              background: crossing.color,
-              color: getContrastColor(crossing.color),
+              background: crossing.crossings[0].color,
+              color: getContrastColor(crossing.crossings[0].color),
             }"
           >
-            {{ crossing.maxValue }}
+            {{ crossing.crossings[0].maxValue }}
           </div>
         </div>
-        <ThresholdDataTable v-if="expanded" class="ms-2" :crossing="crossing" />
+        <ThresholdDataTable
+          v-if="expanded"
+          v-for="levelCrossing in crossing.crossings"
+          :key="levelCrossing.parameterId"
+          class="ms-2"
+          :crossing="levelCrossing"
+        />
       </v-card-text>
     </v-card>
   </div>
@@ -43,8 +49,13 @@ import { getContrastColor } from '@/lib/charts/styles'
 import ThresholdDataTable from '@/components/general/ThresholdDataTable.vue'
 import type { Location } from '@deltares/fews-pi-requests'
 
+interface CrossingItem {
+  locationId: string
+  crossings: Omit<LevelThresholdCrossings, 'locationId'>[]
+}
+
 interface Props {
-  crossing: LevelThresholdCrossings
+  crossing: CrossingItem
   location?: Location
   itemHeight: string
 }
