@@ -75,6 +75,14 @@ const props = withDefaults(defineProps<Props>(), {
   },
 })
 
+watch(
+  () => props.config,
+  () => {
+    console.log('series changed', props.config)
+  },
+  { immediate: true },
+)
+
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
