@@ -18,6 +18,9 @@ import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import { getBeforeId, getLayerId } from '@/lib/map'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
+import relativeWaveSpriteUrl from '@/assets/wave-crest.svg'
+const waveSpriteUrl = new URL(relativeWaveSpriteUrl, document.baseURI)
+
 type StreamlineLayerOptionsFews = Layer['animatedVectors']
 
 interface Props {
@@ -166,6 +169,7 @@ function mergeOptions(
 ): WMSStreamlineLayerOptions {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const baseUrlWms = `${baseUrl}/wms`
+  const isWaveCrest = streamlineOptions?.particleType === 'wave-crest'
   return {
     baseUrl: baseUrlWms,
     layer: layerOptions.name,
@@ -181,6 +185,11 @@ function mergeOptions(
     particleColor: streamlineOptions?.particleColor
       ? `#${streamlineOptions?.particleColor}`
       : undefined,
+    maxAge: streamlineOptions?.maximumParticleAge ?? 2,
+    // For wave crest visualisation, use a wave crest sprite and set a custom
+    // (slower) growth rate.
+    spriteUrl: isWaveCrest ? waveSpriteUrl : undefined,
+    growthRate: isWaveCrest ? 1 : undefined,
   }
 }
 
