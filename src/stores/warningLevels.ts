@@ -61,6 +61,24 @@ export const useWarningLevelsStore = defineStore('warningLevels', () => {
     return crossings.sort((a, b) => b.severity - a.severity)
   })
 
+  const aggregatedThresholdCrossings = computed(() => {
+    if (thresholds.value === undefined || thresholds.value.length === 0)
+      return []
+    return thresholds.value[0].aggregatedLevelThresholdCrossings ?? []
+  })
+
+  const selectedAggregatedThresholdCrossings = computed(() => {
+    const crossings =
+      selectedWarningLevelIds.value.length === 0
+        ? aggregatedThresholdCrossings.value
+        : aggregatedThresholdCrossings.value?.filter((crossing) =>
+            selectedWarningLevelIds.value.includes(
+              crossing.warningLevelId ?? '',
+            ),
+          )
+    return crossings.sort((a, b) => b.severity - a.severity)
+  })
+
   watch([selectedWarningLevelIds, aggregatedWarningLevels], () => {
     updateSelectedLevels()
   })
@@ -93,6 +111,8 @@ export const useWarningLevelsStore = defineStore('warningLevels', () => {
     thresholds,
     thresholdCrossings,
     selectedThresholdCrossings,
+    aggregatedThresholdCrossings,
+    selectedAggregatedThresholdCrossings,
     showCrossingDetails,
     setTopologyNodeId,
   }

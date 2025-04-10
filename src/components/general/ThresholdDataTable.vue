@@ -22,12 +22,12 @@ import { useNow } from '@vueuse/core'
 import { computed } from 'vue'
 
 interface Row {
-  header: string
+  header: string | undefined | null
   value: string | undefined | null
 }
 
 interface Props {
-  crossing: LevelThresholdCrossings
+  crossing: Omit<LevelThresholdCrossings, 'locationId'>
 }
 
 const props = defineProps<Props>()
@@ -50,7 +50,7 @@ const tableData = computed<Row[]>(() => {
     },
     {
       header: 'Max value:',
-      value: timeToMaxString.value,
+      value: `${props.crossing.maxValue}, ${timeToMaxString.value}`,
     },
     {
       header: 'Parameter:',
