@@ -1,27 +1,12 @@
 <template>
   <div v-if="hasLoadedCss" class="display-container pa-1 ga-1">
     <div class="dashboard-container flex-1-1 ga-1">
-      <template v-for="group in groups">
-        <template v-for="element in group.elements">
-          <v-card
-            :style="{ gridArea: element.gridTemplateArea }"
-            class="d-flex flex-column"
-            density="compact"
-            flat
-            :rounded="false"
-          >
-            <DashboardItem
-              v-if="element.items"
-              :item="getDashboardItem(element.items)"
-              :slider-enabled="sliderEnabled"
-              :action-id="actionId"
-              :action-params="actionParams"
-              :settings="settings"
-              @dashboardAction="onDashboardAction"
-            />
-          </v-card>
-        </template>
-      </template>
+      <DashboardGroup
+        v-for="group in groups"
+        :group="group"
+        :slider-enabled="sliderEnabled"
+        :settings="props.settings"
+      />
     </div>
     <v-card
       v-if="sliderEnabled"
@@ -39,12 +24,8 @@
 </template>
 
 <script setup lang="ts">
-import {
-  WebOCDashboardItem,
-  type WebOCDashboard,
-} from '@deltares/fews-pi-requests'
+import { type WebOCDashboard } from '@deltares/fews-pi-requests'
 import { computed, ref } from 'vue'
-import DashboardItem from '@/components/dashboard/DashboardItem.vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { useDisplay } from 'vuetify'
@@ -52,8 +33,7 @@ import { createDateRegistry } from '@/services/useDateRegistry'
 import { provideSelectedDate } from '@/services/useSelectedDate'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useDynamicCss } from '@/services/useDynamicCss'
-import { SsdActionResult } from '@deltares/fews-ssd-requests'
-import type { DashboardActionParams } from '@/lib/topology/dashboardActions'
+import DashboardGroup from './DashboardGroup.vue'
 
 interface Props {
   dashboard: WebOCDashboard
@@ -79,24 +59,6 @@ function setupDates() {
 
   provideSelectedDate(selectedDate)
   return createDateRegistry()
-}
-
-const actionId = ref<string>()
-const actionParams = ref<DashboardActionParams>({})
-function onDashboardAction(action: SsdActionResult) {
-  actionId.value = action.actionId
-  actionParams.value = {
-    charts: action.charts,
-    map: action.map,
-  }
-}
-
-function getDashboardItem(items: WebOCDashboardItem[]) {
-  const _actionId = actionId.value
-  if (_actionId === undefined) return items[0]
-
-  const item = items.find((item) => item.actionIds?.includes(_actionId))
-  return item ?? items[0]
 }
 
 const groups = computed(() => props.dashboard.groups)
