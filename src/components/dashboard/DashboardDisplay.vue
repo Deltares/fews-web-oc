@@ -44,9 +44,9 @@ import {
   type WebOCDashboard,
 } from '@deltares/fews-pi-requests'
 import { computed, ref } from 'vue'
-import DashboardItem from '@/components/general/DashboardItem.vue'
+import DashboardItem from '@/components/dashboard/DashboardItem.vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
-import DateTimeSlider from './DateTimeSlider.vue'
+import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { useDisplay } from 'vuetify'
 import { createDateRegistry } from '@/services/useDateRegistry'
 import { provideSelectedDate } from '@/services/useSelectedDate'
