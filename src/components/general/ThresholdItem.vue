@@ -33,7 +33,6 @@
           v-if="expanded"
           v-for="levelCrossing in crossing.crossings"
           :key="levelCrossing.parameterId"
-          class="ms-2"
           :crossing="levelCrossing"
         />
       </v-card-text>

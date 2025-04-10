@@ -46,7 +46,16 @@ export const useWarningLevelsStore = defineStore('warningLevels', () => {
   const thresholdCrossings = computed(() => {
     if (thresholds.value === undefined || thresholds.value.length === 0)
       return []
-    return thresholds.value[0].levelThresholdCrossings ?? []
+    return (thresholds.value[0].levelThresholdCrossings ?? []).map(
+      (crossing) => {
+        return {
+          ...crossing,
+          ...{
+            icon: crossing.icon ? getResourcesIconsUrl(crossing.icon) : '',
+          },
+        }
+      },
+    )
   })
 
   const selectedThresholdCrossings = computed(() => {

@@ -1,17 +1,29 @@
 <template>
-  <div class="table-container pb-1">
-    <table class="data-table">
-      <tbody>
-        <tr v-for="row in tableData">
-          <td class="text-high-emphasis">
-            {{ row.header }}
-            <span class="text-medium-emphasis">
-              {{ row.value }}
-            </span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="table-container py-1 border-t">
+    <v-list-item class="pa-1 ps-2 w-100">
+      <template #prepend>
+        <v-img width="25px" :src="crossing.icon" class="pe-1"></v-img>
+      </template>
+      <div class="d-flex w-100 justify-space-between align-center">
+        <div>
+          <v-list-item-title class="ps-1">
+            <div>
+              {{ crossing.parameterId }}
+            </div>
+          </v-list-item-title>
+        </div>
+        <div>
+          <v-list-item-title class="ps-1 text-end">
+            <div>
+              {{ crossing.maxValue }}
+            </div>
+          </v-list-item-title>
+          <v-list-item-subtitle class="ps-1 text-end">
+            {{ timeToMaxString }}
+          </v-list-item-subtitle>
+        </div>
+      </div>
+    </v-list-item>
   </div>
 </template>
 
@@ -20,11 +32,6 @@ import { toDateAbsDifferenceString } from '@/lib/date'
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import { useNow } from '@vueuse/core'
 import { computed } from 'vue'
-
-interface Row {
-  header: string | undefined | null
-  value: string | undefined | null
-}
 
 interface Props {
   crossing: Omit<LevelThresholdCrossings, 'locationId'>
@@ -41,23 +48,6 @@ const timeToMaxString = computed(() =>
     relativeFormat: true,
   }),
 )
-
-const tableData = computed<Row[]>(() => {
-  return [
-    {
-      header: 'Warning level:',
-      value: props.crossing.warningLevelName,
-    },
-    {
-      header: 'Max value:',
-      value: `${props.crossing.maxValue}, ${timeToMaxString.value}`,
-    },
-    {
-      header: 'Parameter:',
-      value: props.crossing.parameterId,
-    },
-  ]
-})
 </script>
 
 <style scoped>
@@ -65,20 +55,5 @@ const tableData = computed<Row[]>(() => {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-}
-
-.data-table {
-  border-collapse: collapse;
-}
-
-.data-table th,
-.data-table td {
-  text-align: left;
-}
-
-.data-table td {
-  padding-bottom: 2px;
-  line-height: 1;
-  font-size: 0.875rem;
 }
 </style>
