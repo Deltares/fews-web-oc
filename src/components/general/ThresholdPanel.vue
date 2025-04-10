@@ -42,7 +42,7 @@ import type { Location } from '@deltares/fews-pi-requests'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 
 interface Props {
-  filteredLocations?: Location[]
+  locations?: Location[]
 }
 
 const props = defineProps<Props>()
@@ -59,9 +59,7 @@ const ITEMS_PER_PANEL = 6
 const panelHeightPx = `${ITEM_HEIGHT * ITEMS_PER_PANEL}px`
 
 function getLocationById(locationId: string) {
-  return props.filteredLocations?.find(
-    (location) => location.locationId === locationId,
-  )
+  return props.locations?.find((location) => location.locationId === locationId)
 }
 
 function toggleThresholdPanel(): void {
