@@ -169,7 +169,15 @@ function mergeOptions(
 ): WMSStreamlineLayerOptions {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const baseUrlWms = `${baseUrl}/wms`
+
   const isWaveCrest = streamlineOptions?.particleType === 'wave-crest'
+  const defaultNumParticles = 1000
+  const defaultParticleSize = isWaveCrest ? 12 : 3
+  const defaultSpeedFactor = isWaveCrest ? 0.02 : 0.2
+  const defaultFadeAmountPerSecond = isWaveCrest ? 3 : 0.1
+  const defaultSpeedExponent = 1
+  const defaultMaxAge = isWaveCrest ? 10 : 2
+  const defaultGrowthRate = isWaveCrest ? 1 : undefined
   return {
     baseUrl: baseUrlWms,
     layer: layerOptions.name,
@@ -177,19 +185,20 @@ function mergeOptions(
     streamlineStyle: streamlineOptions?.coloredParticles
       ? StreamlineStyle.MagnitudeColoredParticles
       : StreamlineStyle.ColoredParticles,
-    numParticles: streamlineOptions?.numberOfParticles ?? 1000,
-    particleSize: streamlineOptions?.particleSize ?? 3,
-    speedFactor: streamlineOptions?.speedFactor ?? 0.2,
-    fadeAmountPerSecond: streamlineOptions?.fadeAmount ?? 0.1,
-    speedExponent: streamlineOptions?.speedExponent ?? 1,
+    numParticles: streamlineOptions?.numberOfParticles ?? defaultNumParticles,
+    particleSize: streamlineOptions?.particleSize ?? defaultParticleSize,
+    speedFactor: streamlineOptions?.speedFactor ?? defaultSpeedFactor,
+    fadeAmountPerSecond:
+      streamlineOptions?.fadeAmount ?? defaultFadeAmountPerSecond,
+    speedExponent: streamlineOptions?.speedExponent ?? defaultSpeedExponent,
     particleColor: streamlineOptions?.particleColor
       ? `#${streamlineOptions?.particleColor}`
       : undefined,
-    maxAge: streamlineOptions?.maximumParticleAge ?? 2,
+    maxAge: streamlineOptions?.maximumParticleAge ?? defaultMaxAge,
     // For wave crest visualisation, use a wave crest sprite and set a custom
     // (slower) growth rate.
     spriteUrl: isWaveCrest ? waveSpriteUrl : undefined,
-    growthRate: isWaveCrest ? 1 : undefined,
+    growthRate: defaultGrowthRate,
   }
 }
 
