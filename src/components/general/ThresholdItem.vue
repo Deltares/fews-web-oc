@@ -78,4 +78,8 @@ function toggleCrossingExpand() {
   align-items: center;
   font-size: 0.875em;
 }
+
+.thresold-panel-card {
+  padding-bottom: 2px;
+}
 </style>

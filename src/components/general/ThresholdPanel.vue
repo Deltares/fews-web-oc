@@ -120,10 +120,6 @@ function toggleThresholdPanel(): void {
   height: 100%;
 }
 
-.thresold-panel-card {
-  padding-bottom: 2px;
-}
-
 :deep(.v-list-item-title) {
   font-size: 0.875rem;
 }
