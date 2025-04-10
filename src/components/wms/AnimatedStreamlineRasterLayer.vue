@@ -131,6 +131,7 @@ function addLayer(): void {
   const options: WMSStreamlineLayerOptions = {
     ...mergeOptions(props.layerOptions, props.streamlineOptions),
     transformRequest: createTransformRequestFn(),
+    downsampleFactorWMS: 2,
   }
 
   // Create and initialise new streamline layer.
