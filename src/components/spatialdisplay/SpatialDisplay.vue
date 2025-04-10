@@ -19,7 +19,6 @@
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
       <ThresholdPanel
-        :nodeId="topologyNode?.id"
         :filteredLocations="filteredLocations"
       ></ThresholdPanel>
     </div>
@@ -43,7 +42,6 @@ import {
   useTemplateRef,
   watch,
   onMounted,
-  inject,
 } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
@@ -54,7 +52,6 @@ import {
 } from '@/services/useWms'
 import {
   filterActionsFilter,
-  LevelThresholdWarningLevels,
   timeSeriesGridActionsFilter,
   type TopologyNode,
 } from '@deltares/fews-pi-requests'
@@ -71,6 +68,7 @@ import {
 import { useElementSize } from '@vueuse/core'
 import { useDateRegistry } from '@/services/useDateRegistry'
 import ThresholdPanel from '@/components/general/ThresholdPanel.vue'
+import { useWarningLevelsStore } from '@/stores/warningLevels'
 
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
@@ -92,9 +90,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['navigate'])
 
-const selectedWarningLevels = ref<LevelThresholdWarningLevels[]>(
-  inject('selectedWarningLevels', []),
-)
+const warningLevelsStore = useWarningLevelsStore()
 
 const { thresholds } = useDisplay()
 const containerRef = useTemplateRef('container')
@@ -111,7 +107,7 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
 const { locations, geojson } = useFilterLocations(baseUrl, filterIds)
 
 const selectedWarningLevelSeverity = computed(() =>
-  selectedWarningLevels.value.map((level) => level.severity),
+  warningLevelsStore.selectedWarningLevels.map((level) => level.severity),
 )
 const filteredLocations = computed(() => {
   if (selectedWarningLevelSeverity.value.length === 0) return locations.value

@@ -1,18 +1,18 @@
 <template>
   <Teleport to="#secondary-side-panel-end">
     <div
-      v-if="warningLevels?.length"
+      v-if="warningLevelsStore.warningLevels.length"
       class="threshold-summary-container border-s"
     >
       <div class="threshold-summary-top" id="threshold-summary-top"></div>
       <v-list
-        v-model:selected="selectedLevelIds"
+        v-model:selected="warningLevelsStore.selectedWarningLevelIds"
         select-strategy="leaf"
         class="threshold-summary-center"
         lines="two"
       >
         <v-list-item
-          v-for="warningLevel in warningLevels"
+          v-for="warningLevel in warningLevelsStore.warningLevels"
           :key="warningLevel.id"
           :value="warningLevel.id"
           label
@@ -46,66 +46,22 @@
 </template>
 
 <script setup lang="ts">
-import { useTopologyThresholds } from '@/services/useTopologyThresholds'
-import { configManager } from '@/services/application-config'
-import { getResourcesIconsUrl } from '@/lib/fews-config'
-import { computed, ref, watch } from 'vue'
-import { LevelThresholdWarningLevels } from '@deltares/fews-pi-requests'
+import { watch } from 'vue'
+import { useWarningLevelsStore } from '@/stores/warningLevels'
 
 interface Props {
   nodeId?: string
 }
 
 const props = defineProps<Props>()
+const warningLevelsStore = useWarningLevelsStore()
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { thresholds: thresholdsArray } = useTopologyThresholds(
-  baseUrl,
+watch(
   () => props.nodeId,
+  () => {
+    warningLevelsStore.setTopologyNodeId(props.nodeId)
+  },
 )
-
-const selectedLevelIds = ref<string[]>([])
-
-const selectedLevels = defineModel<LevelThresholdWarningLevels[]>({
-  default: () => [],
-})
-
-watch(selectedLevelIds, () => {
-  if (selectedLevelIds.value.length === 0) {
-    selectedLevels.value = aggregatedWarningLevels.value
-  } else {
-    selectedLevels.value = aggregatedWarningLevels.value.filter((level) =>
-      selectedLevelIds.value.includes(level.id),
-    )
-  }
-})
-
-const aggregatedWarningLevels = computed(() => {
-  if (thresholdsArray.value === undefined || thresholdsArray.value.length === 0)
-    return []
-  const aggregatedLevels =
-    thresholdsArray.value[0]?.aggregatedLevelThresholdWarningLevels
-  return aggregatedLevels ?? []
-})
-
-const warningLevels = computed(() => {
-  const levels = aggregatedWarningLevels.value
-    .map((warningLevel) => {
-      return {
-        ...warningLevel,
-        ...{
-          icon: warningLevel.icon
-            ? getResourcesIconsUrl(warningLevel.icon)
-            : undefined,
-        },
-      }
-    })
-    .sort((a, b) => b.severity - a.severity)
-  // The warning level with the lowest severity is always the default "no thresholds" level.
-  // That level should not be shown in list of warning levels
-  levels.pop()
-  return levels
-})
 </script>
 
 <style scoped>
