@@ -114,7 +114,10 @@ function attachLayersToMenu(
   groupNodes: Map<string, ColumnItem>,
 ) {
   for (const layer of layers) {
-    const groupNode = groupNodes.get(layer.path.toString())
+    const groupNode =
+      layer.path === undefined
+        ? undefined
+        : groupNodes.get(layer.path.toString())
     const item: ColumnItem = {
       id: layer.name,
       name: layer.title || layer.name,
