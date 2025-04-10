@@ -82,7 +82,7 @@ const aggregatedWarningLevels = computed(() => {
     return []
   const aggregatedLevels =
     thresholdsArray.value[0]?.aggregatedLevelThresholdWarningLevels
-  return aggregatedLevels !== undefined ? aggregatedLevels : []
+  return aggregatedLevels ?? []
 })
 
 const warningLevels = computed(() => {
