@@ -11,7 +11,7 @@
     >
       <div class="threshold-panel-iterator ms-2 h-100">
         <v-virtual-scroll
-          :items="warningLevelsStore.selectedThresholdCrossings"
+          :items="thresholdItems"
           :item-height="itemHeightPx"
           height="100%"
         >
@@ -20,9 +20,7 @@
               :crossing="crossing"
               :location="getLocationById(crossing.locationId)"
               :item-height="itemHeightPx"
-              v-model:expanded="
-                expandedItems[`${crossing.locationId}-${crossing.parameterId}`]
-              "
+              v-model:expanded="expandedItems[crossing.locationId]"
             />
           </template>
         </v-virtual-scroll>
@@ -32,10 +30,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import ThresholdItem from '@/components/general/ThresholdItem.vue'
-import type { Location } from '@deltares/fews-pi-requests'
+import type {
+  LevelThresholdCrossings,
+  Location,
+} from '@deltares/fews-pi-requests'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
+
+interface CrossingItem {
+  locationId: string
+  crossings: Omit<LevelThresholdCrossings, 'locationId'>[]
+}
 
 interface Props {
   locations?: Location[]
@@ -55,6 +61,29 @@ const panelHeightPx = `${ITEM_HEIGHT * ITEMS_PER_PANEL}px`
 function getLocationById(locationId: string) {
   return props.locations?.find((location) => location.locationId === locationId)
 }
+
+const selectedLocationIds = computed(() => {
+  // All locations that have a crossing with the selected warning level
+  // There can be more selected locations than shown on the map,
+  // since the map only shows the location based on the highest severity
+  return warningLevelsStore.selectedThresholdCrossings.map(
+    (crossing) => crossing.locationId,
+  )
+})
+
+const thresholdItems = computed<CrossingItem[]>(() => {
+  // sorting is not needed, since the selectedThresholdCrossings, and therefore the selectedLocationIds, are already sorted based on severity
+  const thresholdItems = selectedLocationIds.value.map((locationId) => {
+    const crossings = warningLevelsStore.selectedThresholdCrossings.filter(
+      (crossing) => crossing.locationId === locationId,
+    )
+    return {
+      locationId,
+      crossings,
+    }
+  })
+  return thresholdItems
+})
 </script>
 
 <style scoped>
