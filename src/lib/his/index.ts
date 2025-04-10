@@ -3,60 +3,41 @@ import type { SeriesData } from '@/lib/timeseries/types/SeriesData'
 export function calculateCorrelationTimeSeries(
   series1: SeriesData[],
   series2: SeriesData[],
-  windowSize: number,
-): SeriesData[] {
-  if (series1.length !== series2.length || series1.length === 0) {
-    return []
-  }
+): { points: SeriesData[]; line: SeriesData[] } {
+  const points = series1.map((point, index) => ({
+    x: series2[index]?.y ?? null,
+    y: point.y,
+    flag: point.flag,
+    flagSource: point.flagSource,
+    comment: point.comment,
+    user: point.user,
+  }))
 
-  if (windowSize <= 0) {
-    return []
-  }
+  const n = points.length
+  const sumX = points.reduce((sum, p) => sum + (p.x ?? 0), 0)
+  const sumY = points.reduce((sum, p) => sum + (p.y ?? 0), 0)
+  const sumXY = points.reduce((sum, p) => sum + (p.x ?? 0) * (p.y ?? 0), 0)
+  const sumX2 = points.reduce((sum, p) => sum + (p.x ?? 0) ** 2, 0)
 
-  const result: SeriesData[] = []
+  const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX ** 2)
+  const intercept = (sumY - slope * sumX) / n
 
-  for (let i = 0; i <= series1.length - windowSize; i++) {
-    const window1 = series1.slice(i, i + windowSize)
-    const window2 = series2.slice(i, i + windowSize)
+  const linePoints = points.map((point) => ({
+    x: point.x,
+    y: point.x !== null ? slope * point.x + intercept : null,
+    flag: point.flag,
+    flagSource: null,
+    comment: point.comment,
+    user: point.user,
+  }))
 
-    const validPairs = window1
-      .map((point, index) => [point.y, window2[index]?.y])
-      .filter(([y1, y2]) => y1 !== null && y2 !== null) as [number, number][]
+  // Only min and max values are needed for the line
+  const minX = Math.min(...points.map((p) => p.x ?? Infinity))
+  const maxX = Math.max(...points.map((p) => p.x ?? -Infinity))
 
-    if (validPairs.length === 0) {
-      result.push({
-        x: series1[i + Math.floor(windowSize / 2)].x,
-        y: null,
-        flag: '9',
-        flagSource: 'MAN',
-        comment: 'No valid data in window',
-      })
-      continue
-    }
+  const line = linePoints.filter(
+    (point) => point.x === minX || point.x === maxX,
+  )
 
-    const n = validPairs.length
-    const sumX = validPairs.reduce((sum, [x]) => sum + x, 0)
-    const sumY = validPairs.reduce((sum, [, y]) => sum + y, 0)
-    const sumXY = validPairs.reduce((sum, [x, y]) => sum + x * y, 0)
-    const sumX2 = validPairs.reduce((sum, [x]) => sum + x * x, 0)
-    const sumY2 = validPairs.reduce((sum, [, y]) => sum + y * y, 0)
-
-    const numerator = n * sumXY - sumX * sumY
-    const denominator = Math.sqrt(
-      (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY),
-    )
-
-    const correlation = denominator === 0 ? null : numerator / denominator
-
-    result.push({
-      x: series1[i + Math.floor(windowSize / 2)].x, // Center of the window
-      y: correlation,
-      flag: '0',
-      flagSource: 'MAN',
-      comment: `Correlation for window starting at index ${i}`,
-      user: '',
-    })
-  }
-
-  return result
+  return { points, line }
 }
