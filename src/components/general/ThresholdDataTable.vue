@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { toDateDifferenceString } from '@/lib/date'
+import { toDateAbsDifferenceString } from '@/lib/date'
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import { useNow } from '@vueuse/core'
 import { computed } from 'vue'
@@ -37,10 +37,16 @@ const NOW_REFRESH_INTERVAL = 1000
 const now = useNow({ interval: NOW_REFRESH_INTERVAL })
 
 const timeToMaxString = computed(() =>
-  toDateDifferenceString(now.value, props.crossing.maxValueTime, {
+  toDateAbsDifferenceString(now.value, props.crossing.maxValueTime, {
     excludeSeconds: true,
   }),
 )
+
+const isMaxValueInFuture = computed(() => {
+  const diff =
+    new Date(props.crossing.maxValueTime ?? '').getTime() - now.value.getTime()
+  return diff > 0
+})
 
 const tableData = computed<Row[]>(() => {
   return [
@@ -49,8 +55,10 @@ const tableData = computed<Row[]>(() => {
       value: props.crossing.warningLevelName,
     },
     {
-      header: 'Max value reached in:',
-      value: timeToMaxString.value,
+      header: 'Max value:',
+      value: isMaxValueInFuture.value
+        ? `in ${timeToMaxString.value}`
+        : `${timeToMaxString.value} ago`,
     },
     {
       header: 'Parameter:',

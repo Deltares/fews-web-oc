@@ -62,7 +62,7 @@ import { computed } from 'vue'
 import TaskRunProgress from './TaskRunProgress.vue'
 import DataTable from '@/components/general/DataTable.vue'
 import {
-  toDateDifferenceString,
+  toDateAbsDifferenceString,
   toDateRangeString,
   toHumanReadableDate,
 } from '@/lib/date'
@@ -157,7 +157,7 @@ const taskDurationString = computed(() =>
 )
 
 const taskDurtionDifferenceString = computed(() =>
-  toDateDifferenceString(
+  toDateAbsDifferenceString(
     props.task.dispatchTimestamp,
     props.task.completionTimestamp,
   ),
@@ -171,7 +171,7 @@ const outputTimeString = computed(() =>
 )
 
 const outputTimeDifferenceString = computed(() =>
-  toDateDifferenceString(
+  toDateAbsDifferenceString(
     props.task.outputStartTimestamp,
     props.task.outputEndTimestamp,
   ),
