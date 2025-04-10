@@ -5,14 +5,10 @@
       warningLevelsStore.thresholdCrossings.length
     "
   >
-    <Teleport to="#threshold-summary-top" defer>
-      <v-btn
-        @click="toggleThresholdPanel"
-        :disabled="warningLevelsStore.selectedThresholdCrossings.length === 0"
-        :icon="isPanelOpen ? 'mdi-menu-close' : 'mdi-menu-open'"
-      />
-    </Teleport>
-    <div v-if="isPanelOpen" class="threshold-panel d-flex flex-column">
+    <div
+      v-if="warningLevelsStore.showCrossingDetails"
+      class="threshold-panel d-flex flex-column"
+    >
       <div class="threshold-panel-iterator ms-2 h-100">
         <v-virtual-scroll
           :items="warningLevelsStore.selectedThresholdCrossings"
@@ -51,8 +47,6 @@ const expandedItems = ref<Record<string, boolean>>({})
 
 const warningLevelsStore = useWarningLevelsStore()
 
-const isPanelOpen = ref(false)
-
 const ITEM_HEIGHT = 50
 const itemHeightPx = `${ITEM_HEIGHT}px`
 const ITEMS_PER_PANEL = 6
@@ -60,10 +54,6 @@ const panelHeightPx = `${ITEM_HEIGHT * ITEMS_PER_PANEL}px`
 
 function getLocationById(locationId: string) {
   return props.locations?.find((location) => location.locationId === locationId)
-}
-
-function toggleThresholdPanel(): void {
-  isPanelOpen.value = !isPanelOpen.value
 }
 </script>
 

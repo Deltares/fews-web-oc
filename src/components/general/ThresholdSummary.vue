@@ -1,10 +1,20 @@
 <template>
-  <Teleport to="#secondary-side-panel-end">
+  <Teleport to="#secondary-side-panel-end" defer>
     <div
       v-if="warningLevelsStore.warningLevels.length"
       class="threshold-summary-container border-s"
     >
-      <div class="threshold-summary-top" id="threshold-summary-top"></div>
+      <div v-show="showButton" class="threshold-summary-top">
+        <v-btn
+          @click="toggleThresholdPanel"
+          :disabled="warningLevelsStore.selectedThresholdCrossings.length === 0"
+          :icon="
+            warningLevelsStore.showCrossingDetails
+              ? 'mdi-menu-close'
+              : 'mdi-menu-open'
+          "
+        />
+      </div>
       <v-list
         v-model:selected="warningLevelsStore.selectedWarningLevelIds"
         select-strategy="leaf"
@@ -46,15 +56,18 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
-
+import { useTopologyNodesStore } from '@/stores/topologyNodes'
+import { nodeHasMap } from '@/lib/topology/nodes'
+import { useRoute } from 'vue-router'
 interface Props {
   nodeId?: string
 }
 
 const props = defineProps<Props>()
 const warningLevelsStore = useWarningLevelsStore()
+const topologyNodesStore = useTopologyNodesStore()
 
 watch(
   () => props.nodeId,
@@ -62,6 +75,24 @@ watch(
     warningLevelsStore.setTopologyNodeId(props.nodeId)
   },
 )
+
+function toggleThresholdPanel(): void {
+  warningLevelsStore.showCrossingDetails =
+    !warningLevelsStore.showCrossingDetails
+}
+
+const route = useRoute()
+
+const showButton = computed(() => {
+  const topologyNode = topologyNodesStore.getNodeById(props.nodeId ?? '')
+  if (!topologyNode) return false
+  // FIXME: A node can have display tabs, which mean that the map might not be visible even if the node has a map.
+  // We check the route to check if the map display tab is selected.
+  const isMapVisible =
+    nodeHasMap(topologyNode) &&
+    route.name?.toString().includes('SpatialDisplay')
+  return isMapVisible
+})
 </script>
 
 <style scoped>
