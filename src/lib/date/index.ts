@@ -109,17 +109,23 @@ export function toDateRangeString(
 }
 
 /**
- * Determines the absolute difference between to dates, and returns it as a human readable string.
- * Only the two largest units are returned, e.g. 2w 4d.
+ * Calculates the absolute difference between two dates and returns it
+ * as a human-readable string using the two largest time units.
  *
- * @param startDate - The first date
- * @param endDate - The second date
- * @returns The absolute difference between the datas as a human readable string
+ * For example, a difference of 18 days and 3 hours will be represented as "2w 4d".
+ *
+ * @param startDate - The starting date (can be a Date object, timestamp, or date string)
+ * @param endDate - The ending date (can be a Date object, timestamp, or date string)
+ * @param options - Optional settings:
+ *   - excludeSeconds: If true, seconds will not be included in the output
+ *   - relativeFormat: If true, formats the result as a relative time string (e.g. "in 2w 4d" or "2w 4d ago")
+ * @returns A human-readable string representing the absolute time difference,
+ *          or "—" if either date is invalid or missing
  */
 export function toDateAbsDifferenceString(
   startDate: Date | string | number | undefined | null,
   endDate: Date | string | number | undefined | null,
-  options?: { excludeSeconds?: boolean },
+  options?: { excludeSeconds?: boolean; relativeFormat?: boolean },
 ): string {
   if (
     startDate === undefined ||
@@ -139,7 +145,7 @@ export function toDateAbsDifferenceString(
   const days = Math.floor(hours / 24)
   const weeks = Math.floor(days / 7)
 
-  const result = [
+  const differenceString = [
     weeks ? `${weeks}w` : '',
     days % 7 ? `${days % 7}d` : '',
     hours % 24 ? `${hours % 24}h` : '',
@@ -149,7 +155,15 @@ export function toDateAbsDifferenceString(
     .filter((part) => part)
     .slice(0, 2)
     .join(' ')
-  return result ? result : '0s'
+
+  const result = differenceString ? differenceString : '0s'
+
+  if (options?.relativeFormat) {
+    return endDateObj.getTime() - startDateObj.getTime() < 0
+      ? `${result} ago`
+      : `in ${result}`
+  }
+  return result
 }
 
 export function toDateSpanString(
