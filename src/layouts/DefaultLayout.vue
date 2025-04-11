@@ -139,7 +139,7 @@
     </v-navigation-drawer>
     <v-main id="main">
       <div class="w-100 h-100 d-flex flex-row">
-        <div class="flex-1-1">
+        <div class="flex-1-1 overflow-hidden">
           <Suspense>
             <router-view></router-view>
           </Suspense>
@@ -309,11 +309,6 @@ body {
 #app {
   height: 100%;
   overflow: hidden;
-}
-
-.router-container {
-  padding: 0px;
-  height: 100%;
 }
 
 .alert-container {
