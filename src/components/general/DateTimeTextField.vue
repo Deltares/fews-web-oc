@@ -1,7 +1,7 @@
 <template>
   <v-text-field
     v-model="datetimeString"
-    :rules="rules"
+    :rules="validationRules"
     :label="label"
     density="compact"
     variant="outlined"
@@ -47,11 +47,16 @@
 import { DateTime } from 'luxon'
 import { computed, ref, watch } from 'vue'
 import { VTimePicker } from 'vuetify/labs/VTimePicker'
+import type { VTextField } from 'vuetify/components'
+
+type UnwrapReadonlyArray<A> = A extends Readonly<Array<infer I>> ? I : A;
+type ValidationRule = UnwrapReadonlyArray<VTextField['rules']>
 
 interface Props {
   label: string
   dateFormat?: string
   timeFormat?: string
+  rules?: ValidationRule[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -110,19 +115,23 @@ function parse(dateString: string, format: string) {
   return DateTime.fromFormat(dateString, format).toJSDate()
 }
 
-const rules = [
+const validationRules = computed(() => {
+  const rule = [
   () => {
-    const datetime = parse(datetimeString.value, datetimeFormat.value)
-    return (
-      datetimeString.value === '' ||
-      isValid(datetime) ||
-      `Fill in the time as ${datetimeFormat.value}, e.g. ${format(
-        new Date(),
-        datetimeFormat.value,
-      )}`
-    )
-  },
-]
+      const datetime = parse(datetimeString.value, datetimeFormat.value)
+      return (
+        datetimeString.value === '' ||
+        isValid(datetime) ||
+        `Fill in the time as ${datetimeFormat.value}, e.g. ${format(
+          new Date(),
+          datetimeFormat.value,
+        )}`
+      )
+    },
+  ]
+  const rules = props.rules !== undefined ? props.rules.concat(rule) : rule
+  return rules
+})
 </script>
 
 <style scoped>
