@@ -8,7 +8,7 @@
         <div>
           <v-list-item-title class="ps-1">
             <div>
-              {{ crossing.parameterId }}
+              {{ parameterName }}
             </div>
           </v-list-item-title>
         </div>
@@ -32,12 +32,15 @@ import { toDateAbsDifferenceString } from '@/lib/date'
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import { useNow } from '@vueuse/core'
 import { computed } from 'vue'
+import { useParametersStore } from '@/stores/parameters'
 
 interface Props {
   crossing: Omit<LevelThresholdCrossings, 'locationId'>
 }
 
 const props = defineProps<Props>()
+
+const parameterStore = useParametersStore()
 
 const NOW_REFRESH_INTERVAL = 1000
 const now = useNow({ interval: NOW_REFRESH_INTERVAL })
@@ -48,6 +51,17 @@ const timeToMaxString = computed(() =>
     relativeFormat: true,
   }),
 )
+
+const parameterName = computed(() => {
+  console.log(
+    'computed parameterName. parameter by id: ',
+    parameterStore.byId(props.crossing.parameterId),
+  )
+  return (
+    parameterStore.byId(props.crossing.parameterId)?.shortName ??
+    props.crossing.parameterId
+  )
+})
 </script>
 
 <style scoped>
