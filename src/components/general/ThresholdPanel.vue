@@ -9,11 +9,12 @@
       v-if="warningLevelsStore.showCrossingDetails"
       class="threshold-panel d-flex flex-column"
     >
-      <div class="threshold-panel-iterator ms-2 h-100">
+      <div class="threshold-panel-iterator h-100">
         <v-virtual-scroll
           :items="thresholdItems"
           :item-height="itemHeightPx"
           height="100%"
+          class="px-2 pt-2"
         >
           <template v-slot:default="{ item: crossing }">
             <ThresholdItem
