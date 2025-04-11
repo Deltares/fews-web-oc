@@ -5,17 +5,20 @@
         <template v-slot:activator="{ props }">
           <v-list-item v-bind="props">
             <template v-slot:prepend>
-              <v-badge
-                color="#00BBF0"
-                :model-value="(item.thresholdCount ?? 0) > 0"
-                :content="(item.thresholdCount ?? 0) > 0 ? '!' : undefined"
-              >
+              <div class="icon-container">
                 <v-icon
                   :icon="
                     item.icon ?? toCharacterIcon(item.name, '-circle-outline')
                   "
                 ></v-icon>
-              </v-badge>
+                <v-icon
+                  v-if="(item.thresholdCount ?? 0) > 0"
+                  class="alert-icon"
+                  size="x-small"
+                  color="#00BBF0"
+                  icon="mdi-alert-circle"
+                ></v-icon>
+              </div>
             </template>
             <v-list-item-title>{{ item.name }}</v-list-item-title>
             <template v-slot:append="{ isActive }">
@@ -60,13 +63,16 @@
         class="tree-menu--list-item"
       >
         <template v-slot:prepend>
-          <v-badge
-            color="#00BBF0"
-            :model-value="(item.thresholdCount ?? 0) > 0"
-            :content="(item.thresholdCount ?? 0) > 0 ? '!' : undefined"
-          >
+          <div class="icon-container">
             <v-icon :icon="item.icon ?? toCharacterIcon(item.name)"></v-icon>
-          </v-badge>
+            <v-icon
+              v-if="(item.thresholdCount ?? 0) > 0"
+              class="alert-icon"
+              size="x-small"
+              color="#00BBF0"
+              icon="mdi-alert-circle"
+            ></v-icon>
+          </div>
         </template>
         <v-list-item-title>{{ item.name }}</v-list-item-title>
         <template v-slot:append>
@@ -115,6 +121,24 @@ const props = withDefaults(defineProps<Props>(), {
 
 :deep(.v-list-item__spacer) {
   width: 12px !important;
+}
+
+.icon-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert-icon {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: rgba(
+    var(--v-theme-surface),
+    var(--v-high-emphasis-opacity)
+  );
+  border-radius: 50%;
 }
 </style>
 
