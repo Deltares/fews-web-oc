@@ -1,27 +1,23 @@
 <template>
-  <div class="table-container py-1 border-t">
-    <v-list-item class="pa-1 ps-2 w-100">
-      <template #prepend>
-        <v-img width="25px" :src="crossing.icon" class="pe-1"></v-img>
-      </template>
-      <div class="d-flex w-100 justify-space-between align-center">
-        <div>
-          <v-list-item-title class="ps-1">
-            <div>
-              {{ parameterName }}
-            </div>
-          </v-list-item-title>
-        </div>
-        <div>
-          <v-list-item-title class="ps-1 text-end">
-            <div>
-              {{ crossing.maxValue }}
-            </div>
-          </v-list-item-title>
-          <v-list-item-subtitle class="ps-1 text-end">
-            {{ timeToMaxString }}
-          </v-list-item-subtitle>
-        </div>
+  <div class="table-container border-t">
+    <v-list-item class="parameter-item pa-1 ps-2 w-100">
+      <div class="d-flex pb-1">
+        <v-list-item-title>
+          {{ parameterName }}
+        </v-list-item-title>
+        <v-spacer />
+        <v-list-item-title class="ps-1 flex-0-0">
+          {{ crossing.maxValue }} {{ parameterUnit }}
+        </v-list-item-title>
+      </div>
+      <div class="d-flex">
+        <v-list-item-subtitle class="">
+          {{ crossing.warningLevelName }}
+        </v-list-item-subtitle>
+        <v-spacer />
+        <v-list-item-subtitle class="flex-0-0">
+          {{ timeToMaxString }}
+        </v-list-item-subtitle>
       </div>
     </v-list-item>
   </div>
@@ -52,15 +48,23 @@ const timeToMaxString = computed(() =>
   }),
 )
 
-const parameterName = computed(() => {
-  console.log(
-    'computed parameterName. parameter by id: ',
-    parameterStore.byId(props.crossing.parameterId),
-  )
-  return (
-    parameterStore.byId(props.crossing.parameterId)?.shortName ??
-    props.crossing.parameterId
-  )
+const crossingColor = computed(() => {
+  return props.crossing.color
+})
+
+const parameter = computed(() => {
+  return parameterStore.byId(props.crossing.parameterId)
+})
+
+const parameterName = computed(
+  () =>
+    parameter.value?.shortName ??
+    parameter.value?.name ??
+    props.crossing.parameterId,
+)
+
+const parameterUnit = computed(() => {
+  return parameter.value?.unit
 })
 </script>
 
@@ -69,5 +73,9 @@ const parameterName = computed(() => {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
+}
+
+.parameter-item {
+  border-right: 5px solid v-bind(crossingColor);
 }
 </style>

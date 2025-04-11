@@ -101,6 +101,24 @@ export function toHumanReadableDate(
   })
 }
 
+export function toShortHumanReadableDate(
+  date: Date | string | number | undefined | null,
+): string {
+  if (date === undefined || date === null) {
+    return '—'
+  }
+  if (typeof date === 'string' || typeof date === 'number') {
+    return toShortHumanReadableDate(new Date(date))
+  }
+  return date.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+}
+
 export function toDateRangeString(
   startDate: Date | string | number | undefined | null,
   endDate: Date | string | number | undefined | null,
