@@ -101,6 +101,24 @@ export function toHumanReadableDate(
   })
 }
 
+export function toShortHumanReadableDate(
+  date: Date | string | number | undefined | null,
+): string {
+  if (date === undefined || date === null) {
+    return '—'
+  }
+  if (typeof date === 'string' || typeof date === 'number') {
+    return toShortHumanReadableDate(new Date(date))
+  }
+  return date.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+}
+
 export function toDateRangeString(
   startDate: Date | string | number | undefined | null,
   endDate: Date | string | number | undefined | null,
@@ -108,9 +126,24 @@ export function toDateRangeString(
   return `${toHumanReadableDate(startDate)} → ${toHumanReadableDate(endDate)}`
 }
 
-export function toDateDifferenceString(
+/**
+ * Calculates the absolute difference between two dates and returns it
+ * as a human-readable string using the two largest time units.
+ *
+ * For example, a difference of 18 days and 3 hours will be represented as "2w 4d".
+ *
+ * @param startDate - The starting date (can be a Date object, timestamp, or date string)
+ * @param endDate - The ending date (can be a Date object, timestamp, or date string)
+ * @param options - Optional settings:
+ *   - excludeSeconds: If true, seconds will not be included in the output
+ *   - relativeFormat: If true, formats the result as a relative time string (e.g. "in 2w 4d" or "2w 4d ago")
+ * @returns A human-readable string representing the absolute time difference,
+ *          or "—" if either date is invalid or missing
+ */
+export function toDateAbsDifferenceString(
   startDate: Date | string | number | undefined | null,
   endDate: Date | string | number | undefined | null,
+  options?: { excludeSeconds?: boolean; relativeFormat?: boolean },
 ): string {
   if (
     startDate === undefined ||
@@ -120,32 +153,40 @@ export function toDateDifferenceString(
   ) {
     return '—'
   }
-
   const startDateObj = new Date(startDate)
   const endDateObj = new Date(endDate)
 
-  const duration = endDateObj.getTime() - startDateObj.getTime()
+  const duration = Math.abs(endDateObj.getTime() - startDateObj.getTime())
   const seconds = Math.floor(duration / 1000)
   const minutes = Math.floor(seconds / 60)
   const hours = Math.floor(minutes / 60)
   const days = Math.floor(hours / 24)
   const weeks = Math.floor(days / 7)
 
-  const result = [
+  const differenceString = [
     weeks ? `${weeks}w` : '',
     days % 7 ? `${days % 7}d` : '',
     hours % 24 ? `${hours % 24}h` : '',
     minutes % 60 ? `${minutes % 60}m` : '',
-    seconds % 60 ? `${seconds % 60}s` : '',
+    !options?.excludeSeconds && seconds % 60 ? `${seconds % 60}s` : '',
   ]
     .filter((part) => part)
+    .slice(0, 2)
     .join(' ')
-  return result ? result : '0s'
+
+  const result = differenceString ? differenceString : '0s'
+
+  if (options?.relativeFormat) {
+    return endDateObj.getTime() - startDateObj.getTime() < 0
+      ? `${result} ago`
+      : `in ${result}`
+  }
+  return result
 }
 
 export function toDateSpanString(
   startDate: Date | string | number | undefined | null,
   endDate: Date | string | number | undefined | null,
 ) {
-  return `${toDateRangeString(startDate, endDate)} (${toDateDifferenceString(startDate, endDate)})`
+  return `${toDateRangeString(startDate, endDate)} (${toDateAbsDifferenceString(startDate, endDate)})`
 }
