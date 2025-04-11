@@ -90,7 +90,7 @@ watchEffect(() => {
 })
 
 watch(displays, () => {
-  const plotIds = displays.value?.map((d) => d.id) ?? []
+  const plotIds = displays.value?.map((d) => d.plotId) ?? []
   if (
     selectedPlotId.value === undefined ||
     !plotIds.includes(selectedPlotId.value)
