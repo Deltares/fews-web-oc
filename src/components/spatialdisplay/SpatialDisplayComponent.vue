@@ -1,10 +1,11 @@
 <template>
-  <MapComponent :bounds="bounds" :baseMapId="baseMapId">
+  <MapComponent :bounds="bounds" :style="mapStyle">
     <AnimatedRasterLayer
       v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
       v-model:isLoading="isLoading"
       :layer="layerOptions"
       :key="layerOptions?.name"
+      :beforeId="baseMap.beforeId"
       @doubleclick="onCoordinateClick"
     />
     <AnimatedStreamlineRasterLayer
@@ -12,6 +13,7 @@
       v-model:isLoading="isLoading"
       :layerOptions="layerOptions"
       :streamlineOptions="layerCapabilities?.animatedVectors"
+      :beforeId="baseMap.beforeId"
       @doubleclick="onCoordinateClick"
     />
     <div class="colourbar-container" v-if="currentColourScale">
@@ -188,6 +190,8 @@ import OverlayLayer from '@/components/wms/OverlayLayer.vue'
 import { useColourScales } from '@/services/useColourScales'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import { useOverlays } from '@/services/useOverlays'
+import { useBaseMapsStore } from '@/stores/baseMaps'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -278,9 +282,19 @@ watch(
   },
 )
 
-const baseMapId = computed(
-  () => (userSettingsStore.get('ui.map.theme')?.value as string) ?? 'automatic',
-)
+const baseMapsStore = useBaseMapsStore()
+
+const baseMap = computed(() => {
+  const baseMapId = userSettingsStore.get('ui.map.theme')?.value as
+    | string
+    | undefined
+  return baseMapsStore.getBaseMapById(baseMapId ?? 'automatic')
+})
+
+const mapStyle = computed(() => {
+  const style = baseMap.value.style
+  return style.startsWith('http') ? style : getResourcesStaticUrl(style)
+})
 
 const { selectedOverlayIds, selectedOverlays } = useOverlays(
   () => props.settings.overlays,

@@ -47,19 +47,13 @@ export function transformStyle(
   }
 }
 
-export function getLayerIds(map: Map) {
-  return map.getStyle().layers.map((layer) => layer.id)
-}
+export function getBeforeId(map: Map | undefined) {
+  const layerIds = map?.getLayersOrder() ?? []
 
-export function getBeforeId(map: Map) {
-  const layerIds = getLayerIds(map)
-  if (!layerIds.length) return
-
-  // TODO: By default use id of carto
-  //       If carto is not available, use the first custom layer
-  //       Should be able to set this in the config
-  const beforeId =
+  // By default use id of carto
+  // If carto is not available, use the first custom layer
+  return (
     layerIds.find((id) => id === 'boundary_country_outline') ??
     layerIds.find((id) => isCustomLayer(id))
-  return beforeId
+  )
 }
