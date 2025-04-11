@@ -50,12 +50,12 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const topologyNodesStore = useTopologyNodesStore()
 
 const componentItem = computed(() => {
-  const hasActionId =
+  const isValidAction =
     !props.actionId || props.item.actionIds?.includes(props.actionId)
   return convertItemToComponentItem(
     props.item,
     routeParams.value,
-    hasActionId ? props.actionParams : {},
+    isValidAction ? props.actionParams : {},
   )
 })
 
