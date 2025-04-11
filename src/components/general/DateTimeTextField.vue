@@ -20,11 +20,17 @@
             <v-tab value="date">
               <v-icon>mdi-calendar</v-icon>
             </v-tab>
+            <v-tab value="time">
+              <v-icon>mdi-timer</v-icon>
+            </v-tab>
           </v-tabs>
 
           <v-window v-model="tab">
             <v-window-item value="date">
-              <v-date-picker v-model="date"/>
+              <v-date-picker v-model="date" @update:model-value="() => (tab = 'time')" />
+            </v-window-item>
+            <v-window-item value="time">
+              <v-time-picker v-model="time" ref="timer" format="24hr" />
             </v-window-item>
           </v-window>
         </v-card>
@@ -37,6 +43,7 @@
 <script setup lang="ts">
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue'
+import { VTimePicker } from 'vuetify/labs/VTimePicker'
 
 interface Props {
   label: string
@@ -55,11 +62,13 @@ const tab = ref<'date' | 'time'>('date')
 
 const selectedDatetime = defineModel<Date>({required: true})
 const date = ref(selectedDatetime.value)
+const time = ref(format(selectedDatetime.value, props.timeFormat))
 const datetimeString = ref(format(selectedDatetime.value, datetimeFormat.value))
 
 watch(selectedDatetime, () => {
   datetimeString.value = format(selectedDatetime.value, datetimeFormat.value)
   date.value = selectedDatetime.value
+  time.value = format(selectedDatetime.value, props.timeFormat)
 })
 
 watch(datetimeString, () => {
@@ -72,6 +81,11 @@ watch(date, () => {
   const timeString = format(selectedDatetime.value, props.timeFormat)
   const dateString = format(date.value, props.dateFormat)
   datetimeString.value = combineDateAndTimeStrings(dateString,timeString)
+})
+
+watch(time, () => {
+  const dateString = format(selectedDatetime.value, props.dateFormat)
+  datetimeString.value = combineDateAndTimeStrings(dateString, time.value)
 })
 
 function combineDateAndTimeStrings(date:string, time: string) {
