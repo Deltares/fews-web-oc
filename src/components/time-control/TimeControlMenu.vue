@@ -44,7 +44,7 @@
           </v-form>
         </v-col>
         <v-col>
-          <interval-selector
+          <IntervalSelector
             ref="intervalSelector"
             v-model="store.selectedInterval"
             :items="intervalItems"
