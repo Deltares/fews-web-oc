@@ -9,10 +9,16 @@
       :ripple="false"
       class="w-100"
     >
-      <v-card-text class="pa-0 h-100">
-        <div class="d-flex align-center justify-space-between ga-2 h-100">
-          <div class="d-flex flex-column px-2 py-0 overflow-hidden">
-            <v-list-item-title>
+      <v-card-text class="pa-0 h-100 w-100">
+        <div
+          class="parameter-item d-flex align-center justify-space-between w-100"
+        >
+          <div class="d-flex flex-column ps-2 py-0 overflow-hidden w-100 pe-1">
+            <div class="d-flex">
+              <v-list-item-title>
+                {{ location?.locationName ?? crossing.locationId }}
+              </v-list-item-title>
+              <v-spacer />
               <v-chip
                 v-if="crossing.crossings.length > 1"
                 size="small"
@@ -21,20 +27,16 @@
               >
                 {{ crossing.crossings.length }}
               </v-chip>
-              {{ location?.locationName ?? crossing.locationId }}
-            </v-list-item-title>
-            <v-card-subtitle class="pa-0">
-              {{ toHumanReadableDate(crossing.crossings[0].maxValueTime) }}
-            </v-card-subtitle>
-          </div>
-          <div
-            class="max-value flex-shrink-0"
-            :style="{
-              background: crossing.crossings[0].color,
-              color: getContrastColor(crossing.crossings[0].color),
-            }"
-          >
-            {{ crossing.crossings[0].maxValue }}
+            </div>
+            <div class="d-flex">
+              <v-card-subtitle class="pa-0">
+                {{ toShortHumanReadableDate(mostSevereCrossing.maxValueTime) }}
+              </v-card-subtitle>
+              <v-spacer />
+              <v-card-subtitle class="pa-0">
+                {{ mostSevereCrossing.maxValue }} {{ parameterUnit }}
+              </v-card-subtitle>
+            </div>
           </div>
         </div>
         <ThresholdDataTable
@@ -51,10 +53,10 @@
 <script setup lang="ts">
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
-import { toHumanReadableDate } from '@/lib/date'
-import { getContrastColor } from '@/lib/charts/styles'
+import { toShortHumanReadableDate } from '@/lib/date'
 import ThresholdDataTable from '@/components/general/ThresholdDataTable.vue'
 import type { Location } from '@deltares/fews-pi-requests'
+import { useParametersStore } from '@/stores/parameters'
 
 interface CrossingItem {
   locationId: string
@@ -84,20 +86,32 @@ function toggleCrossingExpand() {
     expanded.value = !expanded.value
   }
 }
+
+const mostSevereCrossing = computed(() => {
+  return props.crossing.crossings[0]
+})
+
+const crossingColor = computed(() => {
+  return mostSevereCrossing.value.color
+})
+
+const parameterStore = useParametersStore()
+const parameter = computed(() => {
+  return parameterStore.byId(mostSevereCrossing.value.parameterId)
+})
+
+const parameterUnit = computed(() => {
+  return parameter.value?.unit
+})
 </script>
 
 <style scoped>
-.max-value {
-  height: v-bind(itemHeight);
-  width: 50px;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.875em;
+.thresold-panel-card {
+  padding-bottom: 3px;
 }
 
-.thresold-panel-card {
-  padding-bottom: 2px;
+.parameter-item {
+  border-left: 5px solid v-bind(crossingColor);
+  height: v-bind(itemHeight);
 }
 </style>
