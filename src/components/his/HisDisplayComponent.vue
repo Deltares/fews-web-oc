@@ -78,7 +78,7 @@
               :config="selectedSubplot"
               :series="selectedSeries"
               :settings="settings.charts.timeSeriesChart"
-              :key="newId"
+              :key="`${newIdLine}-${newIdPoints}`"
               hideLegend
             />
           </v-tabs-window-item>
@@ -90,14 +90,7 @@
         <v-card-title class="d-flex ga-1 align-center">
           <div>Charts</div>
           <v-spacer />
-          <v-select
-            :items="['1', '2', '3', '4']"
-            label="Select configuration"
-            density="compact"
-            hide-details
-            variant="outlined"
-            class="w-200"
-          />
+          <HisCollection />
           <v-btn icon="mdi-content-save" />
         </v-card-title>
         <HisCharts
@@ -115,7 +108,8 @@
 import HisDataSelection from '@/components/his/HisDataSelection.vue'
 import HisMap from '@/components/his/HisMap.vue'
 import HisCharts from '@/components/his/HisCharts.vue'
-import LocationsLayer from '../wms/LocationsLayer.vue'
+import HisCollection from '@/components/his/HisCollection.vue'
+import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import type {
   BoundingBox,
   filterActionsFilter,
