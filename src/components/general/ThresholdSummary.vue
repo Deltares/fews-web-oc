@@ -92,7 +92,7 @@ const showButton = computed(() => {
   // We check the route to check if the map display tab is selected.
   const isMapVisible =
     nodeHasMap(topologyNode) &&
-    route.name?.toString().includes('SpatialDisplay')
+    /Spatial.*Display/.test(route.name?.toString() ?? '')
   return isMapVisible
 })
 </script>
