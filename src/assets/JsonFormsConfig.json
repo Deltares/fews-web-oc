@@ -5,6 +5,12 @@
       "variant": "outlined",
       "persistent-hint": true
     },
+    "v-number-input": {
+      "precision": 2,
+      "density": "compact",
+      "variant": "outlined",
+      "persistent-hint": true
+    },
     "v-container": {
       "class": "pa-0",
       "density": "compact"
