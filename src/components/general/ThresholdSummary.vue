@@ -59,6 +59,7 @@
 import { computed, watch } from 'vue'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
+import { useParametersStore } from '@/stores/parameters'
 import { nodeHasMap } from '@/lib/topology/nodes'
 import { useRoute } from 'vue-router'
 interface Props {
@@ -68,6 +69,7 @@ interface Props {
 const props = defineProps<Props>()
 const warningLevelsStore = useWarningLevelsStore()
 const topologyNodesStore = useTopologyNodesStore()
+useParametersStore()
 
 watch(
   () => props.nodeId,
