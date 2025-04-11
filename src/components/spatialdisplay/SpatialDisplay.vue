@@ -167,13 +167,14 @@ function getTimeSeriesGridActionsFilter(
   }
 }
 
+const shouldFetchFilter = computed(
+  () =>
+    props.settings.charts.timeSeriesChart.enabled ||
+    props.settings.charts.timeSeriesTable.enabled,
+)
+
 const filter = computed(() => {
-  if (
-    !props.settings.charts.timeSeriesChart.enabled &&
-    !props.settings.charts.timeSeriesTable.enabled
-  ) {
-    return
-  }
+  if (!shouldFetchFilter.value) return
 
   if (props.locationIds) {
     return getFilterActionsFilter(props.locationIds)
@@ -188,13 +189,14 @@ const showChartPanel = computed(() => {
   return props.locationIds || (props.longitude && props.latitude)
 })
 
+const shouldFetchElevationChart = computed(
+  () =>
+    props.settings.charts.verticalProfileChart.enabled ||
+    props.settings.charts.verticalProfileTable.enabled,
+)
+
 const elevationChartFilter = computed(() => {
-  if (
-    !props.settings.charts.verticalProfileChart.enabled &&
-    !props.settings.charts.verticalProfileTable.enabled
-  ) {
-    return
-  }
+  if (!shouldFetchElevationChart.value) return
 
   if (!layerCapabilities.value?.elevation) return
   if (props.longitude && props.latitude) {
@@ -212,9 +214,13 @@ const elevationChartFilter = computed(() => {
   }
 })
 
+const shouldFetchLocationsTooltip = computed(
+  () => props.settings.charts.metaDataPanel.enabled,
+)
+
 const locationsTooltipFilter = computed<LocationsTooltipFilter | undefined>(
   () => {
-    if (!props.settings.charts.metaDataPanel.enabled) return
+    if (!shouldFetchLocationsTooltip.value) return
     if (props.locationIds === undefined) return
     if (filterIds.value.length === 0) return
     return {
