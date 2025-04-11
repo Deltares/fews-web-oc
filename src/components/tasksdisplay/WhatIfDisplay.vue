@@ -53,7 +53,7 @@
             label="Time zero"
             class="datetime-field"
           >
-            <template #append-inner>
+            <template #additional-append-inner>
               <v-divider vertical />
               <v-btn
                 size="small"
