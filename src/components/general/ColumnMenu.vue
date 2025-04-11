@@ -30,17 +30,20 @@
           data-testid="column-menu--item"
         >
           <template v-slot:prepend>
-            <v-badge
-              color="#00BBF0"
-              :model-value="(child.thresholdCount ?? 0) > 0"
-              :content="(child.thresholdCount ?? 0) > 0 ? '!' : undefined"
-            >
+            <div class="icon-container">
               <v-icon
                 :icon="
                   child.icon ?? toCharacterIcon(child.name, '-circle-outline')
                 "
               ></v-icon>
-            </v-badge>
+              <v-icon
+                v-if="(child.thresholdCount ?? 0) > 0"
+                class="alert-icon"
+                size="x-small"
+                color="#00BBF0"
+                icon="mdi-alert-circle"
+              ></v-icon>
+            </div>
           </template>
           <v-list-item-title>{{ child.name }}</v-list-item-title>
           <template v-slot:append>
@@ -76,15 +79,18 @@
           data-testid="column-menu--item"
         >
           <template v-slot:prepend>
-            <v-badge
-              color="#00BBF0"
-              :model-value="(child.thresholdCount ?? 0) > 0"
-              :content="(child.thresholdCount ?? 0) > 0 ? '!' : undefined"
-            >
+            <div class="icon-container">
               <v-icon
                 :icon="child.icon ?? toCharacterIcon(child.name)"
               ></v-icon>
-            </v-badge>
+              <v-icon
+                v-if="(child.thresholdCount ?? 0) > 0"
+                class="alert-icon"
+                size="x-small"
+                color="#00BBF0"
+                icon="mdi-alert-circle"
+              ></v-icon>
+            </div>
           </template>
           <v-list-item-title>{{ child.name }}</v-list-item-title>
           <template v-slot:append>
@@ -159,3 +165,23 @@ function onItemClick(event: Event, item: ColumnItem): void {
   }
 }
 </script>
+
+<style scoped>
+.icon-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert-icon {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: rgba(
+    var(--v-theme-surface),
+    var(--v-high-emphasis-opacity)
+  );
+  border-radius: 50%;
+}
+</style>
