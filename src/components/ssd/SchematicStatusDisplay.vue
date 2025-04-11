@@ -50,6 +50,7 @@ import {
 } from '@/lib/topology/componentSettings'
 import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
+import type { NavigateRoute } from '@/lib/router'
 const SSDTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/ssd/SsdTimeSeriesDisplay.vue'),
 )
@@ -78,7 +79,12 @@ const sliderDebounceInterval = 500
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const alertsStore = useAlertsStore()
-const emit = defineEmits(['navigate'])
+
+interface Emits {
+  navigate: [to: NavigateRoute]
+  dashboardAction: [result: SsdActionResult]
+}
+const emit = defineEmits<Emits>()
 
 const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
 const ssdContainer = ref<HTMLElement | null>(null)
@@ -129,31 +135,29 @@ const mobile = computed(() => {
 
 function onAction(event: CustomEvent<SsdActionEventPayload>): void {
   const { panelId, objectId, results } = event.detail
-  const now = new Date()
-  if (results.length === 0) {
-    alertsStore.addAlert({
-      id: `undefined-action-${now.toISOString()}`,
-      type: 'error',
-      message: 'No left click actions defined for this object',
-    })
-    return
-  }
+  if (results.length === 0) return
 
-  switch (results[0].type) {
+  const now = new Date()
+  const result = results[0]
+  const request = result.requests?.[0]
+  switch (result.type) {
     case 'PDF':
-      window.open(new URL(results[0].requests[0].request))
+      if (request) window.open(new URL(request.request))
       break
     case 'SSD':
-      switchPanel(results[0].requests[0])
+      if (request) switchPanel(request)
       break
     case 'PI':
       openTimeSeriesDisplay(panelId, objectId)
       break
+    case 'WEBOC_DASHBOARD':
+      emit('dashboardAction', result)
+      break
     default:
       alertsStore.addAlert({
-        id: `action-${results[0].type}-${now.toISOString()}`,
+        id: `action-${result.type}-${now.toISOString()}`,
         type: 'error',
-        message: `Action '${results[0].type}' not supported yet.`,
+        message: `Action '${result.type}' not supported yet.`,
       })
   }
 }

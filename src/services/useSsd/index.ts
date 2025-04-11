@@ -48,6 +48,12 @@ export function useSsd(
   const panel = ref<SsdDisplayPanel>()
   const dates = ref<Date[]>([])
 
+  function reset() {
+    src.value = ''
+    panel.value = undefined
+    dates.value = []
+  }
+
   async function loadCapabilities(): Promise<void> {
     isLoading.value = true
     isReady.value = false
@@ -69,12 +75,18 @@ export function useSsd(
     const panelIdValue = toValue(panelId)
     const capabilitiesValue = capabilities.value
 
-    if (!capabilitiesValue) return
+    if (!capabilitiesValue) {
+      reset()
+      return
+    }
 
     // Find the panel by ID in the capabilities.
     panel.value = findPanel(capabilitiesValue, panelIdValue)
 
-    if (!panel.value) return
+    if (!panel.value) {
+      reset()
+      return
+    }
 
     // Update the available dates for this display.
     if (panel.value.dimension) {

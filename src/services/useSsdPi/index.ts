@@ -70,10 +70,11 @@ export function useSsdPi(
       const display: DisplayConfig = {
         id: title,
         nodeId: undefined,
+        plotId: undefined,
         index: undefined,
         title,
         class: 'singles',
-        requests: result.requests,
+        requests: result.requests ?? [],
         period: undefined,
         subplots,
       }

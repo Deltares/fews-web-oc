@@ -33,14 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  defineAsyncComponent,
-  ref,
-  useTemplateRef,
-  watch,
-  onMounted,
-} from 'vue'
+import { computed, defineAsyncComponent, ref, useTemplateRef, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
@@ -66,6 +59,7 @@ import {
 } from '@/lib/topology/componentSettings'
 import { useElementSize } from '@vueuse/core'
 import { useDateRegistry } from '@/services/useDateRegistry'
+import type { NavigateRoute } from '@/lib/router'
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
 )
@@ -84,7 +78,10 @@ const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
 
-const emit = defineEmits(['navigate'])
+interface Emits {
+  navigate: [to: NavigateRoute]
+}
+const emit = defineEmits<Emits>()
 
 const { thresholds } = useDisplay()
 const containerRef = useTemplateRef('container')
@@ -170,13 +167,14 @@ function getTimeSeriesGridActionsFilter(
   }
 }
 
+const shouldFetchFilter = computed(
+  () =>
+    props.settings.charts.timeSeriesChart.enabled ||
+    props.settings.charts.timeSeriesTable.enabled,
+)
+
 const filter = computed(() => {
-  if (
-    !props.settings.charts.timeSeriesChart.enabled &&
-    !props.settings.charts.timeSeriesTable.enabled
-  ) {
-    return
-  }
+  if (!shouldFetchFilter.value) return
 
   if (props.locationIds) {
     return getFilterActionsFilter(props.locationIds)
@@ -188,19 +186,17 @@ const filter = computed(() => {
 })
 
 const showChartPanel = computed(() => {
-  return (
-    currentLocationIds.value ||
-    (currentLongitude.value && currentLatitude.value)
-  )
+  return props.locationIds || (props.longitude && props.latitude)
 })
 
+const shouldFetchElevationChart = computed(
+  () =>
+    props.settings.charts.verticalProfileChart.enabled ||
+    props.settings.charts.verticalProfileTable.enabled,
+)
+
 const elevationChartFilter = computed(() => {
-  if (
-    !props.settings.charts.verticalProfileChart.enabled &&
-    !props.settings.charts.verticalProfileTable.enabled
-  ) {
-    return
-  }
+  if (!shouldFetchElevationChart.value) return
 
   if (!layerCapabilities.value?.elevation) return
   if (props.longitude && props.latitude) {
@@ -218,9 +214,13 @@ const elevationChartFilter = computed(() => {
   }
 })
 
+const shouldFetchLocationsTooltip = computed(
+  () => props.settings.charts.metaDataPanel.enabled,
+)
+
 const locationsTooltipFilter = computed<LocationsTooltipFilter | undefined>(
   () => {
-    if (!props.settings.charts.metaDataPanel.enabled) return
+    if (!shouldFetchLocationsTooltip.value) return
     if (props.locationIds === undefined) return
     if (filterIds.value.length === 0) return
     return {
@@ -230,17 +230,8 @@ const locationsTooltipFilter = computed<LocationsTooltipFilter | undefined>(
   },
 )
 
-const currentLocationIds = ref<string[]>()
-const currentLatitude = ref<string>()
-const currentLongitude = ref<string>()
 const elevation = ref<number | undefined>()
 const currentTime = ref<Date>()
-
-onMounted(() => {
-  currentLocationIds.value = props.locationIds?.split(',')
-  currentLatitude.value = props.latitude
-  currentLongitude.value = props.longitude
-})
 
 const { width: containerWidth } = useElementSize(containerRef)
 
@@ -249,12 +240,7 @@ const containerIsMobileSize = computed(() => {
 })
 
 const hideMap = computed(() => {
-  return (
-    containerIsMobileSize.value &&
-    (currentLocationIds.value ||
-      currentLongitude.value ||
-      currentLatitude.value)
-  )
+  return containerIsMobileSize.value && showChartPanel.value
 })
 
 function onLocationsChange(locationIds: string[] | null): void {
@@ -263,10 +249,6 @@ function onLocationsChange(locationIds: string[] | null): void {
 }
 
 function openLocationsTimeSeriesDisplay(locationIds: string[]) {
-  currentLocationIds.value = locationIds
-  currentLatitude.value = undefined
-  currentLongitude.value = undefined
-
   const to = {
     name: 'SpatialTimeSeriesDisplay',
     params: {
@@ -282,58 +264,34 @@ function onCoordinateClick(latitude: number, longitude: number): void {
 
 function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
   if (!onlyCoverageLayersAvailable.value) return
-  currentLatitude.value = latitude.toFixed(3)
-  currentLongitude.value = longitude.toFixed(3)
-  currentLocationIds.value = undefined
+
+  const _latitude = latitude.toFixed(3)
+  const _longitude = longitude.toFixed(3)
 
   const to = {
     name: 'SpatialTimeSeriesDisplayWithCoordinates',
     params: {
-      latitude,
-      longitude,
+      latitude: _latitude,
+      longitude: _longitude,
     },
   }
   emit('navigate', to)
 }
 
 function closeTimeSeriesDisplay(): void {
-  currentLocationIds.value = undefined
-  currentLatitude.value = undefined
-  currentLongitude.value = undefined
-
   emit('navigate', { name: 'SpatialDisplay' })
 }
 
-watch(
-  () => locations.value,
-  () => {
-    const newLocationIds = locations.value
-      ?.filter((l) => currentLocationIds.value?.includes(l.locationId))
-      .map((l) => l.locationId)
-    if (newLocationIds?.length) {
-      openLocationsTimeSeriesDisplay(newLocationIds)
-    } else {
-      currentLocationIds.value = undefined
-    }
-  },
-)
-
-watch(
-  () => props.layerName,
-  () => {
-    if (
-      currentLatitude.value &&
-      currentLongitude.value &&
-      !props.latitude &&
-      !props.longitude
-    ) {
-      openCoordinatesTimeSeriesDisplay(
-        +currentLatitude.value,
-        +currentLongitude.value,
-      )
-    }
-  },
-)
+watch(locations, () => {
+  if (
+    locations.value?.length &&
+    props.locationIds
+      ?.split(',')
+      .some((id) => !locations.value?.map((l) => l.locationId).includes(id))
+  ) {
+    closeTimeSeriesDisplay()
+  }
+})
 </script>
 
 <style scoped>

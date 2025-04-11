@@ -21,7 +21,7 @@ import type {
   SsdDisplayPanel,
 } from '@deltares/fews-ssd-requests'
 import { ref, onMounted, computed, watch } from 'vue'
-import { RouteLocationNormalized, useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
 
@@ -32,6 +32,7 @@ import { useSsd } from '../services/useSsd/index.ts'
 
 import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
 import SchematicStatusDisplay from '@/components/ssd/SchematicStatusDisplay.vue'
+import type { NavigateRoute } from '@/lib/router/types.ts'
 
 interface Props {
   groupId?: string
@@ -80,7 +81,7 @@ const items = computed(() => {
       for (const displayPanel of displayGroup.displayPanels) {
         children.push({
           id: displayPanel.name,
-          name: displayPanel.title,
+          name: displayPanel.title ?? '',
           to: {
             name: 'SchematicStatusDisplay',
             params: {
@@ -146,7 +147,7 @@ function onPanelIdChange(): void {
   active.value = props.panelId
 }
 
-function onNavigate(to: RouteLocationNormalized) {
+function onNavigate(to: NavigateRoute) {
   const name = route.path.startsWith('/embed')
     ? `Embed/${String(to.name)}`
     : to.name

@@ -103,8 +103,6 @@ import { useDisplay } from 'vuetify'
 import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
 import { until } from '@vueuse/core'
 import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'
-import { getUniqueSeries } from '@/lib/charts/getUniqueSeriesIds.ts'
-import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import {
   getDefaultSettings,
@@ -126,6 +124,7 @@ const props = withDefaults(defineProps<Props>(), {
       title: '',
       id: '',
       nodeId: '',
+      plotId: '',
       index: 0,
       displayType: DisplayType.TimeSeriesChart,
       class: '',
@@ -139,6 +138,7 @@ const props = withDefaults(defineProps<Props>(), {
       title: '',
       id: '',
       nodeId: '',
+      plotId: '',
       index: 0,
       displayType: DisplayType.ElevationChart,
       class: '',
@@ -186,19 +186,6 @@ const {
   options,
   selectedDate,
 )
-
-const dates = computed(() => {
-  const chartSeries = props.config.subplots.flatMap((s) => s.series)
-  const seriesDates = getUniqueSeries(chartSeries)
-    .map((chartSeries) => chartSeries.dataResources[0])
-    .map((resource) => series.value[resource])
-    .flatMap((series) => series?.data ?? [])
-    .flatMap((data) => data.x ?? [])
-    .filter((date) => typeof date !== 'number')
-
-  return seriesDates
-})
-useDateRegistry(dates)
 
 function isLoading(subplot: ChartConfig, loadingSeriesIds: string[]) {
   return subplot.series

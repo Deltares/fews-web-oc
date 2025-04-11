@@ -5,7 +5,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import DashboardDisplay from '@/components/general/DashboardDisplay.vue'
+import DashboardDisplay from '@/components/dashboard/DashboardDisplay.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { useDashboard } from '@/services/useDashboard'
 import { configManager } from '@/services/application-config'

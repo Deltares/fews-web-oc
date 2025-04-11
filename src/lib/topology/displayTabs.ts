@@ -1,5 +1,5 @@
 import { TopologyNode } from '@deltares/fews-pi-requests'
-import { RouteLocationNamedRaw } from 'vue-router'
+import { RouteLocationNamedRaw, RouteLocationNormalized } from 'vue-router'
 import {
   nodeHasCharts,
   nodeHasDashboard,
@@ -46,6 +46,7 @@ export function displayTabsForNode(
   node: TopologyNode,
   parentNodeId?: string,
   topologyId?: string,
+  from?: RouteLocationNormalized,
 ) {
   for (const tab of displayTabs) {
     const params = {
@@ -58,6 +59,17 @@ export function displayTabsForNode(
         tab.to.params = {
           ...params,
           layerName: node.gridDisplaySelection?.plotId,
+        }
+
+        if (from?.params.locationIds) {
+          tab.to.name = 'TopologySpatialTimeSeriesDisplay'
+          tab.to.params.locationIds = from.params.locationIds
+        } else if (from?.params.latitude && from?.params.longitude) {
+          tab.to.name = 'TopologySpatialTimeSeriesDisplayWithCoordinates'
+          tab.to.params.latitude = from.params.latitude
+          tab.to.params.longitude = from.params.longitude
+        } else {
+          tab.to.name = 'TopologySpatialDisplay'
         }
         break
       case 'charts':

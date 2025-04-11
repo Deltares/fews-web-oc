@@ -118,6 +118,7 @@ import {
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { useComponentSettings } from '@/services/useComponentSettings'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+import type { NavigateRoute } from '@/lib/router'
 
 interface Props {
   topologyId?: string
@@ -342,7 +343,7 @@ watchEffect(() => {
   externalLink.value = node.url
 })
 
-function onNavigate(to: RouteLocationNormalized) {
+function onNavigate(to: NavigateRoute) {
   const name = `Topology${String(to.name)}`
 
   switch (to.name) {
@@ -352,7 +353,7 @@ function onNavigate(to: RouteLocationNormalized) {
         params: {
           nodeId: props.nodeId,
           layerName: props.layerName,
-          locationIds: to.params.locationIds,
+          locationIds: to.params?.locationIds,
         },
         query: route.query,
       })
@@ -363,8 +364,8 @@ function onNavigate(to: RouteLocationNormalized) {
         params: {
           nodeId: props.nodeId,
           layerName: props.layerName,
-          latitude: to.params.latitude,
-          longitude: to.params.longitude,
+          latitude: to.params?.latitude,
+          longitude: to.params?.longitude,
         },
         query: route.query,
       })
@@ -449,7 +450,7 @@ function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
       if (!menuNode) return
 
       const topologyId = to.params.topologyId as string
-      const tabs = displayTabsForNode(menuNode, parentNodeId, topologyId)
+      const tabs = displayTabsForNode(menuNode, parentNodeId, topologyId, from)
       const tab = tabs.find((t) => t.to.name === from?.name) ?? tabs[0]
       if (tab) {
         return tab.to

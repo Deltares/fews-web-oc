@@ -1,26 +1,12 @@
 <template>
   <div v-if="hasLoadedCss" class="display-container pa-1 ga-1">
     <div class="dashboard-container flex-1-1 ga-1">
-      <template v-for="group in groups">
-        <template v-for="element in group.elements">
-          <v-card
-            :style="{ gridArea: element.gridTemplateArea }"
-            class="d-flex flex-column"
-            density="compact"
-            flat
-            :rounded="false"
-          >
-            <!-- TODO: For now we only support one item per element -->
-            <!--       to prevent UI clutter. -->
-            <DashboardItem
-              v-if="element.items"
-              :item="element.items[0]"
-              :slider-enabled="sliderEnabled"
-              :settings="settings"
-            />
-          </v-card>
-        </template>
-      </template>
+      <DashboardGroup
+        v-for="group in groups"
+        :group="group"
+        :slider-enabled="sliderEnabled"
+        :settings="props.settings"
+      />
     </div>
     <v-card
       v-if="sliderEnabled"
@@ -40,14 +26,14 @@
 <script setup lang="ts">
 import { type WebOCDashboard } from '@deltares/fews-pi-requests'
 import { computed, ref } from 'vue'
-import DashboardItem from '@/components/general/DashboardItem.vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
-import DateTimeSlider from './DateTimeSlider.vue'
+import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { useDisplay } from 'vuetify'
 import { createDateRegistry } from '@/services/useDateRegistry'
 import { provideSelectedDate } from '@/services/useSelectedDate'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useDynamicCss } from '@/services/useDynamicCss'
+import DashboardGroup from './DashboardGroup.vue'
 
 interface Props {
   dashboard: WebOCDashboard
