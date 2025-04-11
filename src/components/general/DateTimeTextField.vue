@@ -27,7 +27,10 @@
 
           <v-window v-model="tab">
             <v-window-item value="date">
-              <v-date-picker v-model="date" @update:model-value="() => (tab = 'time')" />
+              <v-date-picker
+                v-model="date"
+                @update:model-value="() => (tab = 'time')"
+              />
             </v-window-item>
             <v-window-item value="time">
               <v-time-picker v-model="time" ref="timer" format="24hr" />
@@ -35,13 +38,13 @@
           </v-window>
         </v-card>
       </v-menu>
-      <slot name="additional-append-inner"/>
+      <slot name="additional-append-inner" />
     </template>
   </v-text-field>
 </template>
 
 <script setup lang="ts">
-import { DateTime } from 'luxon';
+import { DateTime } from 'luxon'
 import { computed, ref, watch } from 'vue'
 import { VTimePicker } from 'vuetify/labs/VTimePicker'
 
@@ -53,14 +56,16 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   dateFormat: 'yyyy-MM-dd',
-  timeFormat: 'HH:mm'
+  timeFormat: 'HH:mm',
 })
 
-const datetimeFormat = computed(() => combineDateAndTimeStrings(props.dateFormat, props.timeFormat))
+const datetimeFormat = computed(() =>
+  combineDateAndTimeStrings(props.dateFormat, props.timeFormat),
+)
 
 const tab = ref<'date' | 'time'>('date')
 
-const selectedDatetime = defineModel<Date>({required: true})
+const selectedDatetime = defineModel<Date>({ required: true })
 const date = ref(selectedDatetime.value)
 const time = ref(format(selectedDatetime.value, props.timeFormat))
 const datetimeString = ref(format(selectedDatetime.value, datetimeFormat.value))
@@ -80,7 +85,7 @@ watch(datetimeString, () => {
 watch(date, () => {
   const timeString = format(selectedDatetime.value, props.timeFormat)
   const dateString = format(date.value, props.dateFormat)
-  datetimeString.value = combineDateAndTimeStrings(dateString,timeString)
+  datetimeString.value = combineDateAndTimeStrings(dateString, timeString)
 })
 
 watch(time, () => {
@@ -88,7 +93,7 @@ watch(time, () => {
   datetimeString.value = combineDateAndTimeStrings(dateString, time.value)
 })
 
-function combineDateAndTimeStrings(date:string, time: string) {
+function combineDateAndTimeStrings(date: string, time: string) {
   return `${date} ${time}`
 }
 
@@ -113,10 +118,10 @@ const rules = [
       isValid(datetime) ||
       `Fill in the time as ${datetimeFormat.value}, e.g. ${format(
         new Date(),
-        datetimeFormat.value
+        datetimeFormat.value,
       )}`
     )
-  }
+  },
 ]
 </script>
 
