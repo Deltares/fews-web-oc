@@ -70,7 +70,7 @@ const datetimeFormat = computed(() =>
 
 const tab = ref<'date' | 'time'>('date')
 
-const selectedDatetime = defineModel<Date>({ required: true })
+const selectedDatetime = defineModel<Date>()
 const date = ref(selectedDatetime.value)
 const time = ref(format(selectedDatetime.value, props.timeFormat))
 const datetimeString = ref(format(selectedDatetime.value, datetimeFormat.value))
