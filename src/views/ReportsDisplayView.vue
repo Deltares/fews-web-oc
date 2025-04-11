@@ -1,8 +1,9 @@
 <template>
-  <div v-if="reports?.length" class="d-flex flex-column h-100 w-100">
+  <div class="d-flex flex-column h-100 w-100">
     <v-toolbar v-if="showToolbar" density="compact">
       <template v-if="settings.report.reportName">
-        <div v-if="reports.length === 1" class="ml-5">
+        <div v-if="!reports?.length" class="ml-5">No reports available</div>
+        <div v-else-if="reports?.length === 1" class="ml-5">
           {{ reportToTitle(reports[0]) }}
         </div>
         <v-select
@@ -56,7 +57,6 @@
     </v-toolbar>
     <ShadowFrame :htmlContent="reportHtml" />
   </div>
-  <v-alert v-else class="ma-10">No reports available</v-alert>
 </template>
 
 <script setup lang="ts">
