@@ -30,7 +30,7 @@
           density="compact"
           class="ma-0 py-3 px-0 w-100 flex-nowrap overflow-hidden"
         >
-          <div class="d-flex align-center flex-column flex-nowrap px-1">
+          <div class="d-flex align-center flex-column flex-nowrap px-1 w-100">
             <v-badge
               :model-value="(warningLevel.count ?? 0) > 0"
               location="top end"
@@ -126,10 +126,13 @@ const showButton = computed(() => {
   font-size: 0.8em;
   color: var(--v-theme-on-surface);
   opacity: 1;
+  width: 100%;
+  text-align:center;
 }
 
 :deep(.v-list-item__content) {
   overflow: visible !important;
+  width: 65px;
 }
 
 :deep(.v-chip__content) {
