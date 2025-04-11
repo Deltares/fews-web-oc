@@ -127,7 +127,7 @@ const showButton = computed(() => {
   color: var(--v-theme-on-surface);
   opacity: 1;
   width: 100%;
-  text-align:center;
+  text-align: center;
 }
 
 :deep(.v-list-item__content) {
