@@ -101,7 +101,7 @@ import { useSystemTimeStore } from '@/stores/systemTime'
 import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 import { useDisplay } from 'vuetify'
 import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
-import { until } from '@vueuse/core'
+import { debouncedRef, until } from '@vueuse/core'
 import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'
 import { getUniqueSeries } from '@/lib/charts/getUniqueSeriesIds.ts'
 import { useDateRegistry } from '@/services/useDateRegistry'
@@ -200,7 +200,8 @@ const dates = computed(() => {
 
   return seriesDates
 })
-useDateRegistry(dates)
+const debouncedDates = debouncedRef(dates, 1000)
+useDateRegistry(debouncedDates)
 
 function isLoading(subplot: ChartConfig, loadingSeriesIds: string[]) {
   return subplot.series
