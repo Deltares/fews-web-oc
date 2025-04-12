@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" ref="container">
     <div
       class="child-container"
       :class="{ 'd-none': hideSSD }"
@@ -8,7 +8,7 @@
       <SsdComponent
         :src="src"
         :key="panelId"
-        :mobile="mobile"
+        :mobile="ssdMobile"
         :allowZooming="settings.ssd.zoomEnabled"
         @action="onAction"
         ref="ssdComponent"
@@ -20,7 +20,7 @@
         :hide-speed-controls="mobile"
       />
     </div>
-    <div v-if="objectId" class="child-container" :class="{ mobile }">
+    <div v-if="objectId" class="child-container border-s">
       <SSDTimeSeriesDisplay
         :groupId="groupId"
         :panelId="panelId"
@@ -86,7 +86,10 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
+const { thresholds } = useDisplay()
+
 const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
+const container = ref<HTMLElement | null>(null)
 const ssdContainer = ref<HTMLElement | null>(null)
 
 const selectedDateOfSlider = ref<Date>(new Date())
@@ -118,19 +121,17 @@ const hideSSD = computed(() => {
   return mobile.value && props.objectId !== ''
 })
 
-const { width: containerWidth } = useElementSize(ssdContainer)
-watch(containerWidth, () => {
+const { width: ssdContainerWidth } = useElementSize(ssdContainer)
+const ssdMobile = computed(() => {
+  return ssdContainerWidth.value < thresholds.value.md
+})
+watch(ssdContainerWidth, () => {
   ssdComponent.value?.resize()
 })
 
-const { thresholds, mobileBreakpoint } = useDisplay()
+const { width: containerWidth } = useElementSize(container)
 const mobile = computed(() => {
-  const breakpoint = mobileBreakpoint.value
-  if (typeof breakpoint === 'number') {
-    return containerWidth.value < breakpoint
-  } else {
-    return containerWidth.value < thresholds.value[breakpoint]
-  }
+  return containerWidth.value < thresholds.value.md
 })
 
 function onAction(event: CustomEvent<SsdActionEventPayload>): void {
