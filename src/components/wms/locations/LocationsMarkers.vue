@@ -53,3 +53,9 @@ function getLngLatForFeature(feature: Feature<Geometry, Location>) {
   }
 }
 </script>
+
+<style scoped>
+.text-shadow {
+  text-shadow: 0 0 5px var(--theme-color);
+}
+</style>
