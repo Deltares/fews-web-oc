@@ -124,6 +124,13 @@ addUpdateWatcher(
     layer.setDisplayUnits(useDisplayUnits)
   },
 )
+addUpdateWatcher(
+  () => props.layerOptions?.style,
+  async (style) => {
+    if (!layer || !style) return
+    layer.setStyle(style)
+  },
+)
 
 function addLayer(): void {
   if (!map) return
@@ -181,6 +188,7 @@ function mergeOptions(
   return {
     baseUrl: baseUrlWms,
     layer: layerOptions.name,
+    style: layerOptions.style,
     useDisplayUnits: layerOptions.useDisplayUnits,
     streamlineStyle: streamlineOptions?.coloredParticles
       ? StreamlineStyle.MagnitudeColoredParticles
