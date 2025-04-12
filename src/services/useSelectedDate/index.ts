@@ -7,7 +7,7 @@ import {
   toValue,
 } from 'vue'
 
-type DateRefOrGetter = MaybeRefOrGetter<Date>
+type DateRefOrGetter = MaybeRefOrGetter<Date | undefined>
 
 const SELECTED_DATE_KEY: InjectionKey<DateRefOrGetter> = Symbol('selectedDate')
 

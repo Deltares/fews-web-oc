@@ -435,7 +435,7 @@ watch(selectedDate, () => {
 })
 
 function setLayerOptions(): void {
-  if (props.layerName) {
+  if (props.layerName && selectedDate.value !== undefined) {
     layerOptions.value = {
       name: props.layerName,
       time: selectedDate.value,
