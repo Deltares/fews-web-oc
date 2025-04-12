@@ -47,7 +47,7 @@
       </div>
       <v-btn
         v-show="requiresExpand"
-        :icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+        :icon="expandIcon"
         :size="overlay ? 'x-small' : 'small'"
         variant="plain"
         :style="expandButtonStyle"
@@ -147,14 +147,23 @@ const chartControlsStyle = computed(() => {
 
 const expandButtonStyle = computed(() => {
   const alignSelf = props.settings.placement.includes('lower')
-    ? 'flex-end'
-    : 'flex-start'
+    ? 'flex-start'
+    : 'flex-end'
   const height = overlay.value ? '28px' : undefined
   const width = overlay.value ? '28px' : undefined
   return {
     alignSelf,
     height,
     width,
+  }
+})
+
+const expandIcon = computed(() => {
+  const isLower = props.settings.placement.includes('lower')
+  if (isLower) {
+    return expanded.value ? 'mdi-chevron-down' : 'mdi-chevron-up'
+  } else {
+    return expanded.value ? 'mdi-chevron-up' : 'mdi-chevron-down'
   }
 })
 
