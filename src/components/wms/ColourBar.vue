@@ -106,7 +106,7 @@ function updateColourBar() {
 }
 
 .map__colour-bar :deep(text) {
-  fill: white;
+  fill: white !important;
   text-rendering: optimizeLegibility;
   text-shadow:
     -1px 0 1px rgba(0, 0, 0, 0.6),
