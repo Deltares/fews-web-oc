@@ -5,6 +5,7 @@ import { computed, toValue } from 'vue'
 export interface UseColourScalesReturn {
   currentScaleId: ShallowRef<string | undefined>
   currentScale: ShallowRef<ColourScale | undefined>
+  currentScaleTitle: ShallowRef<string>
   currentScales: ShallowRef<ColourScale[]>
   currentScaleIsInitialRange: ShallowRef<boolean>
   resetCurrentScaleRange: () => void
@@ -14,6 +15,7 @@ export function useColourScales(
   currentIndex: MaybeRefOrGetter<number>,
   currentIds: MaybeRefOrGetter<string[]>,
   scales: MaybeRefOrGetter<Record<string, ColourScale>>,
+  title?: MaybeRefOrGetter<string>,
 ): UseColourScalesReturn {
   const currentScaleId = computed<string | undefined>(() => {
     const _currentIndex = toValue(currentIndex)
@@ -41,6 +43,12 @@ export function useColourScales(
     )
   })
 
+  const currentScaleTitle = computed(() => {
+    const unit = currentScale.value?.unit
+    const unitString = unit ? ` [${unit}]` : ''
+    return `${toValue(title)}${unitString}`
+  })
+
   function resetCurrentScaleRange() {
     if (!currentScale.value) return
     currentScale.value.range = currentScale.value.initialRange
@@ -49,6 +57,7 @@ export function useColourScales(
   return {
     currentScaleId,
     currentScale,
+    currentScaleTitle,
     currentScales,
     currentScaleIsInitialRange,
     resetCurrentScaleRange,

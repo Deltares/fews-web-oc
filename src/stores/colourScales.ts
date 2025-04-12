@@ -3,12 +3,7 @@ import type { ColourMap, Style } from '@deltares/fews-wms-requests'
 import { computed, MaybeRefOrGetter, reactive, ref, toValue, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import { fetchWmsLegend, useWmsLegend } from '@/services/useWms'
-import {
-  getLegendTitle,
-  legendToRange,
-  rangeToString,
-  styleToId,
-} from '@/lib/legend'
+import { legendToRange, rangeToString, styleToId } from '@/lib/legend'
 
 export interface Range {
   min: number
@@ -16,12 +11,12 @@ export interface Range {
 }
 
 export interface ColourScale {
-  title: string
   style: Style
   range: Range
   initialRange: Range
   colourMap: ColourMap
   useGradients: boolean
+  unit?: string
 }
 
 const useColourScalesStore = defineStore('colourScales', () => {
@@ -36,7 +31,6 @@ const useColourScalesStore = defineStore('colourScales', () => {
   async function addScale(
     style: Style,
     layerName: MaybeRefOrGetter<string>,
-    title: MaybeRefOrGetter<string | undefined>,
     useDisplayUnits: boolean,
     activeStyles: MaybeRefOrGetter<Style[]>,
   ) {
@@ -59,7 +53,7 @@ const useColourScalesStore = defineStore('colourScales', () => {
 
     const legend = initialLegendGraphic.legend
     const newColourScale = reactive({
-      title: getLegendTitle(toValue(title) ?? '', initialLegendGraphic),
+      unit: initialLegendGraphic.unit,
       style: style,
       colourMap: legend,
       range: legendToRange(legend),
@@ -89,10 +83,6 @@ const useColourScalesStore = defineStore('colourScales', () => {
 
     watch(newLegendGraphic, () => {
       if (newLegendGraphic.value?.legend === undefined) return
-      scales.value[styleId].title = getLegendTitle(
-        toValue(title) ?? '',
-        newLegendGraphic.value,
-      )
       scales.value[styleId].colourMap = newLegendGraphic.value.legend
     })
   }
