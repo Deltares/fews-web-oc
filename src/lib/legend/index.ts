@@ -1,20 +1,9 @@
-import type {
-  Style,
-  GetLegendGraphicResponse,
-} from '@deltares/fews-wms-requests'
+import type { Style } from '@deltares/fews-wms-requests'
 import type { ColourMap } from '@deltares/fews-web-oc-charts'
 import type { Range } from '@/stores/colourScales'
 
 export function rangeToString(range: Range): string {
   return `${range.min},${range.max}`
-}
-
-export function getLegendTitle(
-  layerTitle: string,
-  legendGraphic: GetLegendGraphicResponse,
-) {
-  const unitString = legendGraphic.unit ? ` [${legendGraphic.unit}]` : ''
-  return `${layerTitle}${unitString}`
 }
 
 export function styleToId(style: Style) {
