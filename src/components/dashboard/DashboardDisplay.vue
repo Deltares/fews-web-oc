@@ -9,7 +9,7 @@
       />
     </div>
     <v-card
-      v-if="sliderEnabled"
+      v-if="sliderEnabled && combinedDates.length > 0"
       class="flex-0-0 overflow-visible"
       flat
       :rounded="false"
