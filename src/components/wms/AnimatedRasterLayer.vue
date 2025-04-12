@@ -1,19 +1,20 @@
 <template>
-  <mgl-image-source
+  <mgl-raster-source
     :sourceId="sourceId"
-    :url="sourceOptions?.url"
-    :coordinates="sourceOptions?.coordinates"
+    :tiles="[
+      tilesUrl 
+    ]"
+    :tileSize="256"
   >
     <mgl-raster-layer
       :layerId="layerId"
       :before="beforeId"
       :paint="{
-        'raster-opacity': 0,
         'raster-fade-duration': 0,
         'raster-opacity-transition': { duration: 0, delay: 0 },
       }"
     />
-  </mgl-image-source>
+  </mgl-raster-source>
 </template>
 
 <script setup lang="ts">
@@ -26,9 +27,10 @@ import {
   LngLatBounds,
   MapLayerMouseEvent,
   MapLayerTouchEvent,
+  RasterTileSource,
   type MapSourceDataEvent,
 } from 'maplibre-gl'
-import { MglImageSource, MglRasterLayer } from '@indoorequal/vue-maplibre-gl'
+import { MglRasterSource, MglRasterLayer } from '@indoorequal/vue-maplibre-gl'
 import { configManager } from '@/services/application-config'
 import { useMap } from '@/services/useMap'
 import { point } from '@turf/helpers'
@@ -76,7 +78,7 @@ onUnmounted(() => {
 })
 
 function onMapMove(): void {
-  updateSource()
+  // updateSource()
 }
 
 function onDataChange(event: MapSourceDataEvent): void {
@@ -188,15 +190,55 @@ function getImageSourceOptions() {
   }
 }
 
+function getTilesUrl() {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const time = props.layer.time.toISOString()
+
+  const getMapUrl = new URL(`${baseUrl}/wms`)
+  getMapUrl.searchParams.append('service', 'WMS')
+  getMapUrl.searchParams.append('request', 'GetMap')
+  getMapUrl.searchParams.append('version', '1.3')
+  getMapUrl.searchParams.append('bbox', `{bbox-epsg-3857}`)
+  getMapUrl.searchParams.append('layers', props.layer.name)
+  getMapUrl.searchParams.append('crs', 'EPSG:3857')
+  getMapUrl.searchParams.append('height', `256`)
+  getMapUrl.searchParams.append('width', `256`)
+  getMapUrl.searchParams.append('time', `${time}`)
+  getMapUrl.searchParams.append('useLastValue', 'true')
+  if (props.layer.style) {
+    getMapUrl.searchParams.append('styles', props.layer.style)
+  }
+  if (props.layer.elevation) {
+    getMapUrl.searchParams.append('elevation', `${props.layer.elevation}`)
+  }
+  if (props.layer.colorScaleRange) {
+    getMapUrl.searchParams.append(
+      'colorScaleRange',
+      `${props.layer.colorScaleRange}`,
+    )
+    getMapUrl.searchParams.append(
+      'useDisplayUnits',
+      props.layer.useDisplayUnits ? 'true' : 'false',
+    )
+  }
+  return `${baseUrl}/wms?service=WMS&request=GetMap&version=1.3&layers=${
+    props.layer.name
+  }&bbox={bbox-epsg-3857}&crs=EPSG:3857&width=512&height=512&time=${time}&useLastValue=true&styles=${
+    props.layer.style
+  }`
+}
+
+const tilesUrl = getTilesUrl()
+
 watch(() => props.layer, updateSource)
 function updateSource() {
-  const source = map?.getSource(sourceId.value) as ImageSource
+  const source = map?.getSource(sourceId.value) as RasterTileSource
   if (!source) return
 
-  const imageOptions = getImageSourceOptions()
-  if (!imageOptions) return
+  // const imageOptions = getImageSourceOptions()
+  // if (!imageOptions) return
 
-  source.updateImage(imageOptions)
+  source.setTiles([getTilesUrl()])
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {

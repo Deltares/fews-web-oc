@@ -80,7 +80,10 @@ function transformRequest(
     return {
       url,
     }
-  if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
+  if (
+    (resourceType === 'Image' || resourceType === 'Tile') &&
+    url.indexOf('GetMap') > -1
+  ) {
     const requestAuthHeaders = authenticationManager.getAuthorizationHeaders()
     return {
       url,
