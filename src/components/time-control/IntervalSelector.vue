@@ -35,7 +35,6 @@ import type { LabeledIntervalItem, Interval } from '@/lib/TimeControl/interval'
 import { isEqual } from 'lodash-es'
 import { onBeforeMount, ref, watch } from 'vue'
 
-
 interface Props {
   items: LabeledIntervalItem[]
   now: Date
