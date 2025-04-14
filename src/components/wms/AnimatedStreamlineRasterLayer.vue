@@ -64,7 +64,7 @@ function updateLayer() {
 // Recreate the streamline visualiser when the a different layer is selected.
 watch(
   () => props.layerOptions?.name,
-  async () => {
+  () => {
     removeLayer()
     addLayer()
   },
@@ -103,7 +103,7 @@ addUpdateWatcher(
 )
 addUpdateWatcher(
   () => props.layerOptions?.elevation,
-  async (elevation) => {
+  (elevation) => {
     if (!layer) return
     layer.setElevation(elevation ?? null)
   },
@@ -119,9 +119,16 @@ addUpdateWatcher(
 )
 addUpdateWatcher(
   () => props.layerOptions?.useDisplayUnits,
-  async (useDisplayUnits) => {
+  (useDisplayUnits) => {
     if (!layer) return
     layer.setDisplayUnits(useDisplayUnits)
+  },
+)
+addUpdateWatcher(
+  () => props.layerOptions?.style,
+  (style) => {
+    if (!layer || !style) return
+    layer.setStyle(style)
   },
 )
 
@@ -181,6 +188,7 @@ function mergeOptions(
   return {
     baseUrl: baseUrlWms,
     layer: layerOptions.name,
+    style: layerOptions.style,
     useDisplayUnits: layerOptions.useDisplayUnits,
     streamlineStyle: streamlineOptions?.coloredParticles
       ? StreamlineStyle.MagnitudeColoredParticles
