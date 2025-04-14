@@ -10,6 +10,7 @@ import {
   cssStyleFromFewsLine,
   cssStyleFromFewsMarker,
   chartMarkerFromFews,
+  cssStyleFromFewsBar,
 } from './styles'
 import {
   AxisOptions,
@@ -145,10 +146,18 @@ function getChartSeries(
           }) ?? 0,
       },
     },
-    style:
-      seriesType === 'area' || seriesType === 'bar'
-        ? cssStyleFromFewsArea(items[0])
-        : cssStyleFromFewsLine(items[0]),
+    style: getChartStyle(seriesType, items[0]),
+  }
+}
+
+function getChartStyle(seriesType: string, item: TimeSeriesDisplaySubplotItem) {
+  switch (seriesType) {
+    case 'area':
+      return cssStyleFromFewsArea(item)
+    case 'bar':
+      return cssStyleFromFewsBar(item)
+    default:
+      return cssStyleFromFewsLine(item)
   }
 }
 
