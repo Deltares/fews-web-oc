@@ -114,6 +114,21 @@ export function cssStyleFromFewsArea(item: {
 }
 
 /**
+ * Converts FEWS bar properties to SVG CSS styles.
+ * @param item - The FEWS area properties.
+ * @returns The SVG CSS styles.
+ */
+export function cssStyleFromFewsBar(item: {
+  lineStyle?: string
+  color?: string
+  opaquenessPercentage?: number
+}): SvgPropertiesHyphen {
+  const style = cssStyleFromFewsArea(item)
+  style['shape-rendering'] = 'crispEdges'
+  return style
+}
+
+/**
  * Converts a FEWS line style to CSS style properties for an SVG element.
  * @param lineStyle - The FEWS line style to convert.
  * @returns The CSS style properties for the SVG element.
