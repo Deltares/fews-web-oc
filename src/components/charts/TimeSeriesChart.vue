@@ -22,6 +22,7 @@ import {
   ChartLine,
   ChartMarker,
   ChartRule,
+  CrossSectionSelect,
   Margin,
   TooltipAnchor,
   TooltipOptions,
@@ -81,7 +82,7 @@ const margin = ref<Margin>({})
 const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = ref<HTMLElement>()
-const axisTime = ref<CurrentTime>()
+const axisTime = ref<CrossSectionSelect>()
 const hasLoadedOnce = ref(false)
 
 onMounted(() => {
@@ -114,18 +115,22 @@ onMounted(() => {
       ? new VerticalMouseOver(undefined, (value: number) => value.toString())
       : new MouseOver(undefined, (value: number) => value.toString())
     const zoom = props.zoomHandler ?? new ZoomHandler(WheelMode.NONE)
-    axisTime.value = new CurrentTime({
-      x: {
-        axisIndex: 0,
-      },
-    })
-    axisTime.value.setDateTime(props.currentTime)
+
+    const currentTime = new CurrentTime({ x: { axisIndex: 0 } })
+
+    axisTime.value = new CrossSectionSelect(
+      props.currentTime,
+      onCrossValueChange,
+      { x: { axisIndex: 0 }, draggable: false },
+      [],
+    )
 
     thresholdLinesVisitor = new AlertLines(thresholdLines)
 
     axis.accept(thresholdLinesVisitor)
     axis.accept(zoom)
     axis.accept(mouseOver)
+    axis.accept(currentTime)
     axis.accept(axisTime.value)
     resize()
     if (props.config !== undefined) onValueChange()
@@ -143,12 +148,16 @@ const yTicksDisplay = computed(() =>
 watch(
   () => props.currentTime,
   (newValue) => {
-    if (axisTime.value) {
-      axisTime.value.setDateTime(newValue)
-      axisTime.value.redraw()
-    }
+    onCrossValueChange(newValue)
   },
 )
+
+function onCrossValueChange(value: number | Date) {
+  if (axisTime.value) {
+    axisTime.value.value = value
+    axisTime.value.redraw()
+  }
+}
 
 const addToChart = (chartSeries: ChartSeries) => {
   const id = chartSeries.id
