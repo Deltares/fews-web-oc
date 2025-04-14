@@ -10,7 +10,6 @@
     <DashboardItem
       v-if="element.items"
       :item="getDashboardItem(element.items)"
-      :slider-enabled="sliderEnabled"
       :action-id="actionId"
       :action-params="actionParams"
       :settings="settings"
@@ -32,7 +31,6 @@ import type { ComponentSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   group: WebOCDashboardGroup
-  sliderEnabled: boolean
   settings?: ComponentSettings
 }
 

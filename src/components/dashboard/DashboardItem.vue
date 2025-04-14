@@ -33,7 +33,6 @@ import type { NavigateRoute } from '@/lib/router'
 
 interface Props {
   item: WebOCDashboardItem
-  sliderEnabled: boolean
   actionId?: string
   actionParams: DashboardActionParams
   settings?: ComponentSettings
