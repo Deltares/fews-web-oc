@@ -10,6 +10,7 @@
     <DashboardItem
       v-if="element.items"
       :item="getDashboardItem(element.items)"
+      :siblings="element.items"
       :action-id="actionId"
       :action-params="actionParams"
       :settings="settings"
