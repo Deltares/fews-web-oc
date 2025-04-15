@@ -5,7 +5,7 @@ import {
   DomainAxisEventValuesStringArray,
 } from '@deltares/fews-pi-requests'
 import { computed, onUnmounted, ref, shallowRef, toValue, watch } from 'vue'
-import type { MaybeRefOrGetter, Ref } from 'vue'
+import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl'
 import { DateTime, Interval } from 'luxon'
 import { Series } from '../../lib/timeseries/timeSeries'
@@ -19,7 +19,7 @@ import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 
 export interface UseTimeSeriesReturn {
   error: Ref<any>
-  series: Ref<Record<string, Series>>
+  series: ShallowRef<Record<string, Series>>
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
   loadingSeriesIds: Ref<string[]>
@@ -53,8 +53,7 @@ export function useTimeSeries(
 ): UseTimeSeriesReturn {
   let controller = new AbortController()
   const isReady = ref(false)
-  const series = ref<Record<string, Series>>({})
-  const error = shallowRef<any | undefined>(undefined)
+  const series = shallowRef<Record<string, Series>>({})
   const MAX_SERIES = 20
   const loadingSeriesIds = ref<string[]>([])
   const isLoading = computed(() => loadingSeriesIds.value.length > 0)
@@ -183,7 +182,10 @@ export function useTimeSeries(
               }
               _series.lastUpdated = new Date()
             }
-            series.value[resourceId] = _series
+            series.value = {
+              ...series.value,
+              [resourceId]: _series,
+            }
           }
       })
     }
