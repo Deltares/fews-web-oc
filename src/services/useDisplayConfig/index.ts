@@ -2,7 +2,7 @@ import {
   PiWebserviceProvider,
   type ActionsResponse,
 } from '@deltares/fews-pi-requests'
-import { computed, ref, toValue, watchEffect } from 'vue'
+import { computed, ref, toValue, watch, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { DisplayConfig } from '../../lib/display/DisplayConfig.js'
 import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig.js'
@@ -99,6 +99,7 @@ export function useDisplayConfig(
   })
 
   const response = ref<ActionsResponse>()
+  const displays = ref<DisplayConfig[] | null>(null)
 
   watchEffect(async () => {
     const _nodeId = toValue(nodeId)
@@ -110,14 +111,14 @@ export function useDisplayConfig(
     })
   })
 
-  const displays = computed(() => {
-    if (!response.value) return null
+  watch([startTime, endTime, response], () => {
+    if (!response.value) return
 
     const _nodeId = toValue(nodeId)
     const _startTime = toValue(startTime)
     const _endTime = toValue(endTime)
 
-    return actionsResponseToDisplayConfig(
+    displays.value = actionsResponseToDisplayConfig(
       response.value,
       _nodeId,
       _startTime,
@@ -125,9 +126,14 @@ export function useDisplayConfig(
     )
   })
 
-  const displayConfig = computed(() => {
+  const displayConfig = computed<DisplayConfig | null>((oldDisplayConfig) => {
     const _plotId = toValue(plotId)
-    return displays.value?.find((d) => d.plotId === _plotId) ?? null
+    if (!displays.value) return null
+    return (
+      displays.value.find((d) => d.plotId === _plotId) ??
+      oldDisplayConfig ??
+      null
+    )
   })
 
   return {
