@@ -22,6 +22,7 @@ export interface UseTimeSeriesReturn {
   isLoading: Ref<boolean>
   loadingSeriesIds: Ref<string[]>
   interval: Pausable
+  refresh: () => void
 }
 
 const TIMESERIES_POLLING_INTERVAL = 1000 * 30
@@ -45,7 +46,6 @@ function timeZoneOffsetString(offset: number): string {
 export function useTimeSeries(
   baseUrl: string,
   requests: MaybeRefOrGetter<ActionRequest[]>,
-  lastUpdated: MaybeRefOrGetter<Date | undefined>,
   options: MaybeRefOrGetter<UseTimeSeriesOptions>,
   selectedTime?: MaybeRefOrGetter<Date | undefined>,
 ): UseTimeSeriesReturn {
@@ -55,7 +55,7 @@ export function useTimeSeries(
   const loadingSeriesIds = ref<string[]>([])
   const isLoading = computed(() => loadingSeriesIds.value.length > 0)
 
-  watch([lastUpdated, selectedTime ?? ref(), requests, options], () => {
+  watch([selectedTime ?? ref(), requests, options], () => {
     loadTimeSeries()
   })
 
@@ -209,6 +209,7 @@ export function useTimeSeries(
     isLoading,
     loadingSeriesIds,
     interval,
+    refresh: loadTimeSeries,
   }
 }
 
