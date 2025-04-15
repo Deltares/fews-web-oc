@@ -15,3 +15,9 @@ export interface SeriesArrayData
 export interface TimeSeriesData extends SeriesData {
   x: Date
 }
+
+export function isSeriesArrayData(
+  data: SeriesData | SeriesArrayData,
+): data is SeriesArrayData {
+  return Array.isArray(data.y)
+}

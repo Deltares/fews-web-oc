@@ -1,8 +1,9 @@
 import type { Series } from '../timeseries/timeSeries'
-import type {
-  SeriesArrayData,
-  SeriesData,
-  TimeSeriesData,
+import {
+  isSeriesArrayData,
+  type SeriesArrayData,
+  type SeriesData,
+  type TimeSeriesData,
 } from '@/lib/timeseries/types/SeriesData'
 
 /**
@@ -110,10 +111,16 @@ export function dataFromResources(
 }
 
 /**
- * Filters out unreliable data from a list of SeriesData or SeriesArrayData objects.
+ * Replaces unreliable data with null values from a list of SeriesData or SeriesArrayData objects.
  * @param data - An array of SeriesData or SeriesArrayData objects.
  * @returns An array of SeriesData or SeriesArrayData objects with unreliable data removed.
  */
 export function removeUnreliableData(data: (SeriesArrayData | SeriesData)[]) {
-  return data.filter(isReliableData)
+  return data.map((event) => {
+    if (isReliableData(event)) return { ...event }
+    return {
+      ...event,
+      y: isSeriesArrayData(event) ? new Array(event.y.length).fill(null) : null,
+    }
+  })
 }
