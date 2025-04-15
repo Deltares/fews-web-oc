@@ -2,7 +2,7 @@
   <Teleport to="#secondary-side-panel-end" defer>
     <div
       v-if="warningLevelsStore.warningLevels.length"
-      class="threshold-summary-container border-s"
+      class="threshold-summary-container"
     >
       <div v-show="showButton" class="threshold-summary-top">
         <v-btn
