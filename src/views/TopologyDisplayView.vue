@@ -62,10 +62,7 @@
     </v-menu>
   </Teleport>
   <div class="d-flex w-100 h-100">
-    <ThresholdSummary
-      :nodeId="topologyNode?.id"
-      v-model="selectedWarningLevels"
-    ></ThresholdSummary>
+    <ThresholdSummary :nodeId="topologyNode?.id"></ThresholdSummary>
     <router-view v-slot="{ Component }">
       <keep-alive include="SpatialDisplay">
         <component
@@ -100,21 +97,10 @@ import { useConfigStore } from '@/stores/config'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useWorkflowsStore } from '@/stores/workflows'
 
-import type {
-  LevelThresholdWarningLevels,
-  TopologyNode,
-} from '@deltares/fews-pi-requests'
+import type { TopologyNode } from '@deltares/fews-pi-requests'
 import type { WebOcTopologyDisplayConfig } from '@deltares/fews-pi-requests'
 
-import {
-  computed,
-  onUnmounted,
-  provide,
-  ref,
-  StyleValue,
-  watch,
-  watchEffect,
-} from 'vue'
+import { computed, onUnmounted, ref, StyleValue, watch, watchEffect } from 'vue'
 import {
   onBeforeRouteUpdate,
   RouteLocationNormalized,
@@ -474,9 +460,6 @@ function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
     }
   }
 }
-
-const selectedWarningLevels = ref<LevelThresholdWarningLevels[]>([])
-provide('selectedWarningLevels', selectedWarningLevels)
 </script>
 
 <style scoped>
