@@ -18,6 +18,7 @@
         @update:current-time="currentTime = $event"
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
+      <ThresholdPanel :nodeId="topologyNode?.id"></ThresholdPanel>
     </div>
     <div v-if="showChartPanel" class="child-container">
       <SpatialTimeSeriesDisplay
@@ -60,6 +61,8 @@ import {
 import { useElementSize } from '@vueuse/core'
 import { useDateRegistry } from '@/services/useDateRegistry'
 import type { NavigateRoute } from '@/lib/router'
+import ThresholdPanel from '@/components/general/ThresholdPanel.vue'
+
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
 )
