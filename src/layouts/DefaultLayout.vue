@@ -139,12 +139,13 @@
     </v-navigation-drawer>
     <v-main id="main">
       <div class="w-100 h-100 d-flex flex-row">
+        <div class="border-s flex-0-0 h-100" id="main-side-panel-left"></div>
         <div class="flex-1-1 overflow-hidden">
           <Suspense>
             <router-view></router-view>
           </Suspense>
         </div>
-        <div class="border-s flex-0-0 h-100" id="main-side-panel"></div>
+        <div class="border-s flex-0-0 h-100" id="main-side-panel-right"></div>
       </div>
       <div class="alerts__container" v-if="alertsStore.hasAlerts">
         <v-alert
