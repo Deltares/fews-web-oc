@@ -112,26 +112,15 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
 )
 const { locations, geojson } = useFilterLocations(baseUrl, filterIds)
 
-// FIXME: Use the 'severity' instead of the icon, once the backend return the 'severity' with the locations
-const selectedWarningLevelIcons = computed(() =>
-  selectedWarningLevels.value.map((level) => level.icon ?? 'no-threshold-icon'),
-)
+const selectedWarningLevelSeverity = computed(() => selectedWarningLevels.value.map((level) => level.severity))
 const filteredLocations = computed(() => {
-  if (selectedWarningLevelIcons.value.length === 0) return locations.value
-  return locations.value?.filter((location) =>
-    selectedWarningLevelIcons.value.includes(
-      location.thresholdIconName ?? 'no-threshold-icon',
-    ),
-  )
+  if (selectedWarningLevelSeverity.value.length === 0) return locations.value
+  return locations.value?.filter((location) => selectedWarningLevelSeverity.value.includes(location.thresholdSeverity ?? 0))
 })
 const filteredGeojson = computed(() => {
-  if (selectedWarningLevelIcons.value.length === 0) return geojson.value
-  const filteredFeatures = geojson.value.features.filter((feature) =>
-    selectedWarningLevelIcons.value.includes(
-      feature.properties.thresholdIconName ?? 'no-threshold-icon',
-    ),
-  )
-  return { ...geojson.value, ...{ features: filteredFeatures } }
+  if (selectedWarningLevelSeverity.value.length === 0) return geojson.value
+  const filteredFeatures = geojson.value.features.filter((feature) => selectedWarningLevelSeverity.value.includes(feature.properties.thresholdSeverity ?? 0))
+  return {...geojson.value, ...{features: filteredFeatures}}
 })
 
 const start = computed(() => {
