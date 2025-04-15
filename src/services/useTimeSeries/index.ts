@@ -44,13 +44,6 @@ function timeZoneOffsetString(offset: number): string {
     .padStart(2, '0')}`
 }
 
-/**
- * Reactive async state. Will not block your setup function and will trigger changes once
- * the promise is ready.
- *
- * @see https://vueuse.org/useAsyncState
- * @param url The initial state, used until the first evaluation finishes
- */
 export function useTimeSeries(
   baseUrl: string,
   requests: MaybeRefOrGetter<ActionRequest[]>,
