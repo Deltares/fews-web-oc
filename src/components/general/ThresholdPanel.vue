@@ -91,8 +91,8 @@ const thresholdItems = computed<CrossingItem[]>(() => {
 .threshold-panel {
   width: 230px;
   position: absolute;
-  top: 5px;
-  right: 5px;
+  top: 2px;
+  right: 2px;
   z-index: 1000;
   height: v-bind(panelHeightPx);
 }
