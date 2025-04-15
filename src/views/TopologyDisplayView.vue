@@ -30,7 +30,6 @@
     </v-toolbar-items>
   </Teleport>
   <Teleport to="#app-bar-content-end">
-    <ThresholdPanel :nodeId="topologyNode?.id"></ThresholdPanel>
     <v-menu bottom left>
       <template v-slot:activator="{ props }">
         <v-btn icon v-bind="props">
@@ -91,7 +90,6 @@
 import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
 import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
 import LeafNodeButtons from '@/components/general/LeafNodeButtons.vue'
-import ThresholdPanel from '@/components/general/ThresholdPanel.vue'
 import ThresholdSummary from '@/components/general/ThresholdSummary.vue'
 
 import type { ColumnItem } from '@/components/general/ColumnItem'
