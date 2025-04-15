@@ -18,9 +18,7 @@ import { type Pausable } from '@vueuse/core'
 import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 
 export interface UseTimeSeriesReturn {
-  error: Ref<any>
   series: ShallowRef<Record<string, Series>>
-  isReady: Ref<boolean>
   isLoading: Ref<boolean>
   loadingSeriesIds: Ref<string[]>
   interval: Pausable
@@ -52,7 +50,6 @@ export function useTimeSeries(
   selectedTime?: MaybeRefOrGetter<Date | undefined>,
 ): UseTimeSeriesReturn {
   let controller = new AbortController()
-  const isReady = ref(false)
   const series = shallowRef<Record<string, Series>>({})
   const MAX_SERIES = 20
   const loadingSeriesIds = ref<string[]>([])
@@ -208,10 +205,8 @@ export function useTimeSeries(
 
   return {
     series,
-    isReady,
     isLoading,
     loadingSeriesIds,
-    error,
     interval,
   }
 }
