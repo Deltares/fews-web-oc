@@ -116,7 +116,7 @@ const chartControlsStyle = computed(() => {
 
   const maxHeight =
     expanded.value || !requiresExpand.value ? '95%' : `${height.value}px`
-  const minHeight = `${height.value}px`
+  const minHeight = overlay.value ? undefined : `${height.value}px`
   const marginRight = right ? `${right - offset}px` : undefined
   const marginLeft = left ? `${left - offset}px` : undefined
   const marginTop = overlay.value ? `${top - offset}px` : undefined
