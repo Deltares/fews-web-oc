@@ -34,7 +34,7 @@
         />
       </v-card-text>
       <v-card-actions>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn text @click="dialog = false">Cancel</v-btn>
         <v-btn color="primary" @click="addCollection">Add</v-btn>
       </v-card-actions>
@@ -43,14 +43,11 @@
 </template>
 
 <script setup lang="ts">
+import type { Collection } from '@/lib/his'
 import { ref } from 'vue'
 
-interface Collection {
-  name: string
-}
-
 const collections = ref<Collection[]>([])
-const selectedCollection = ref<Collection | null>(null)
+const selectedCollection = defineModel<Collection>('selectedCollection')
 const dialog = ref(false)
 const newCollectionName = ref('')
 

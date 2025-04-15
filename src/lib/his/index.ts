@@ -1,5 +1,9 @@
 import type { SeriesData } from '@/lib/timeseries/types/SeriesData'
 
+export interface Collection {
+  name: string
+}
+
 export function calculateCorrelationTimeSeries(
   series1: SeriesData[],
   series2: SeriesData[],
