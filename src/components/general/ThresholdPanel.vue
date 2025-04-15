@@ -1,7 +1,7 @@
 <template>
   <template v-if="warningLevels?.length">
     <Teleport to="#threshold-summary-top" defer>
-      <v-btn @click="toggleThresholdPanel">
+      <v-btn class="ms-0 ps-0" @click="toggleThresholdPanel">
         <v-icon v-if="isPanelOpen">mdi-menu-close</v-icon>
         <v-icon v-else>mdi-menu-open</v-icon>
       </v-btn>
