@@ -6,8 +6,8 @@
         :location-ids="props.locationIds"
         :latitude="props.latitude"
         :longitude="props.longitude"
-        :locations="locations"
-        :geojson="geojson"
+        :locations="filteredLocations"
+        :geojson="filteredGeojson"
         @changeLocationIds="onLocationsChange"
         :layer-capabilities="layerCapabilities"
         :bounding-box="boundingBox"
@@ -18,6 +18,7 @@
         @update:current-time="currentTime = $event"
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
+      <ThresholdPanel :locations="locations"></ThresholdPanel>
     </div>
     <div v-if="showChartPanel" class="child-container">
       <SpatialTimeSeriesDisplay
@@ -60,6 +61,9 @@ import {
 import { useElementSize } from '@vueuse/core'
 import { useDateRegistry } from '@/services/useDateRegistry'
 import type { NavigateRoute } from '@/lib/router'
+import ThresholdPanel from '@/components/general/ThresholdPanel.vue'
+import { useWarningLevelsStore } from '@/stores/warningLevels'
+
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
 )
@@ -83,6 +87,8 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
+const warningLevelsStore = useWarningLevelsStore()
+
 const { thresholds } = useDisplay()
 const containerRef = useTemplateRef('container')
 
@@ -96,6 +102,27 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
   () => props.layerName,
 )
 const { locations, geojson } = useFilterLocations(baseUrl, filterIds)
+
+const selectedWarningLevelSeverity = computed(() =>
+  warningLevelsStore.selectedWarningLevels.map((level) => level.severity),
+)
+const filteredLocations = computed(() => {
+  if (selectedWarningLevelSeverity.value.length === 0) return locations.value
+  return locations.value?.filter((location) =>
+    selectedWarningLevelSeverity.value.includes(
+      location.thresholdSeverity ?? 0,
+    ),
+  )
+})
+const filteredGeojson = computed(() => {
+  if (selectedWarningLevelSeverity.value.length === 0) return geojson.value
+  const filteredFeatures = geojson.value.features.filter((feature) =>
+    selectedWarningLevelSeverity.value.includes(
+      feature.properties.thresholdSeverity ?? 0,
+    ),
+  )
+  return { ...geojson.value, ...{ features: filteredFeatures } }
+})
 
 const start = computed(() => {
   if (!times.value || times.value.length === 0) return null
