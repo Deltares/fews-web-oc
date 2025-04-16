@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 import { Duration, DurationUnit } from 'luxon'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
 interface Props {
   dispatchTimestamp: number | null
@@ -29,6 +29,10 @@ const props = withDefaults(defineProps<Props>(), {
 const progress = ref(0)
 const isUnknownProgress = ref(false)
 const details = ref('')
+
+onMounted(() => {
+  updateProgress()
+})
 
 useFocusAwareInterval(updateProgress, () => props.updateIntervalSeconds, {
   immediate: true,
