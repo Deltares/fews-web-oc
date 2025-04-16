@@ -5,7 +5,7 @@ import {
   DomainAxisEventValuesStringArray,
 } from '@deltares/fews-pi-requests'
 import { computed, onUnmounted, ref, shallowRef, toValue, watch } from 'vue'
-import type { MaybeRefOrGetter, Ref } from 'vue'
+import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl'
 import { DateTime, Interval } from 'luxon'
 import { Series } from '../../lib/timeseries/timeSeries'
@@ -18,9 +18,7 @@ import { type Pausable } from '@vueuse/core'
 import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 
 export interface UseTimeSeriesReturn {
-  error: Ref<any>
-  series: Ref<Record<string, Series>>
-  isReady: Ref<boolean>
+  series: ShallowRef<Record<string, Series>>
   isLoading: Ref<boolean>
   loadingSeriesIds: Ref<string[]>
   interval: Pausable
@@ -44,13 +42,6 @@ function timeZoneOffsetString(offset: number): string {
     .padStart(2, '0')}`
 }
 
-/**
- * Reactive async state. Will not block your setup function and will trigger changes once
- * the promise is ready.
- *
- * @see https://vueuse.org/useAsyncState
- * @param url The initial state, used until the first evaluation finishes
- */
 export function useTimeSeries(
   baseUrl: string,
   requests: MaybeRefOrGetter<ActionRequest[]>,
@@ -59,9 +50,7 @@ export function useTimeSeries(
   selectedTime?: MaybeRefOrGetter<Date | undefined>,
 ): UseTimeSeriesReturn {
   let controller = new AbortController()
-  const isReady = ref(false)
-  const series = ref<Record<string, Series>>({})
-  const error = shallowRef<any | undefined>(undefined)
+  const series = shallowRef<Record<string, Series>>({})
   const MAX_SERIES = 20
   const loadingSeriesIds = ref<string[]>([])
   const isLoading = computed(() => loadingSeriesIds.value.length > 0)
@@ -190,7 +179,10 @@ export function useTimeSeries(
               }
               _series.lastUpdated = new Date()
             }
-            series.value[resourceId] = _series
+            series.value = {
+              ...series.value,
+              [resourceId]: _series,
+            }
           }
       })
     }
@@ -213,10 +205,8 @@ export function useTimeSeries(
 
   return {
     series,
-    isReady,
     isLoading,
     loadingSeriesIds,
-    error,
     interval,
   }
 }
