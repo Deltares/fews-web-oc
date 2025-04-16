@@ -110,7 +110,7 @@ function onError(e: ErrorEvent) {
   //       if no error event listener is added. Abort errors
   //       happen mostly when the user moves the map before
   //       the image is loaded. This is almost never an error.
-  if (e.error.name === 'AbortError') {
+  if (e.error.name === 'AbortError' || e.error.message.includes('aborted')) {
     return
   }
   console.error(e)
