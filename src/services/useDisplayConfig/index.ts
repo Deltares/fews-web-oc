@@ -3,7 +3,7 @@ import {
   PiWebserviceProvider,
   type ActionsResponse,
 } from '@deltares/fews-pi-requests'
-import { computed, ref, toValue, watchEffect } from 'vue'
+import { computed, ref, toValue, watch, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { DisplayConfig } from '../../lib/display/DisplayConfig.js'
 import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig.js'
@@ -150,7 +150,7 @@ export function useDisplayConfigFilter(
   filter: MaybeRefOrGetter<Filter | undefined>,
   startTime: MaybeRefOrGetter<Date | undefined>,
   endTime: MaybeRefOrGetter<Date | undefined>,
-  taskRunIds?: MaybeRefOrGetter<string[] | undefined>,
+  taskRunIds?: MaybeRefOrGetter<string[]>,
 ): UseDisplayConfigReturn {
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -168,7 +168,6 @@ export function useDisplayConfigFilter(
       if (!_filter.filterId) return
 
       const _taskRunIds = toValue(taskRunIds)
-
       const taskRunsFilter = {
         ..._filter,
         taskRunIds: _taskRunIds?.join(','),
@@ -176,7 +175,7 @@ export function useDisplayConfigFilter(
       }
 
       const _response = await piProvider.getFilterActions(
-        _taskRunIds ? taskRunsFilter : _filter,
+        _taskRunIds?.length ? taskRunsFilter : _filter,
       )
       response.value = _response
     } else if (isTimeSeriesGridActionsFilter(_filter)) {

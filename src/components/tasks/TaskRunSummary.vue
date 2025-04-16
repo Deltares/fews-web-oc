@@ -36,6 +36,18 @@
                 {{ whatIfTemplate.name }}
               </v-list-item-subtitle>
             </div>
+            <v-checkbox-btn
+              class="flex-0-0"
+              density="compact"
+              trueIcon="mdi-chart-areaspline-variant"
+              falseIcon="mdi-chart-line"
+              color="primary"
+              :disabled="task.isCurrent"
+              :model-value="
+                taskRunsStore.taskRunIsSelected(task) || task.isCurrent
+              "
+              @click.stop="taskRunsStore.toggleTaskRun(task)"
+            />
           </div>
         </div>
       </div>
@@ -67,9 +79,11 @@ import {
   toHumanReadableDate,
 } from '@/lib/date'
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
+import { useTaskRunsStore } from '@/stores/taskRuns'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
+const taskRunsStore = useTaskRunsStore()
 
 interface Props {
   task: TaskRun
