@@ -49,7 +49,7 @@ import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
 
 interface Props {
-  config?: ChartConfig
+  config: ChartConfig
   series?: Record<string, Series>
   currentTime?: Date
   isLoading?: boolean
@@ -69,9 +69,6 @@ const props = withDefaults(defineProps<Props>(), {
   series: () => {
     return {}
   },
-  currentTime: () => {
-    return new Date()
-  },
 })
 
 let thresholdLines!: ThresholdLine[]
@@ -82,7 +79,7 @@ const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = ref<HTMLElement>()
 const axisTime = ref<CurrentTime>()
-const hasLoadedOnce = ref(false)
+const hasRenderedOnce = ref(false)
 
 onMounted(() => {
   if (chartContainer.value) {
@@ -114,21 +111,24 @@ onMounted(() => {
       ? new VerticalMouseOver(undefined, (value: number) => value.toString())
       : new MouseOver(undefined, (value: number) => value.toString())
     const zoom = props.zoomHandler ?? new ZoomHandler(WheelMode.NONE)
-    axisTime.value = new CurrentTime({
-      x: {
-        axisIndex: 0,
-      },
-    })
-    axisTime.value.setDateTime(props.currentTime)
-
     thresholdLinesVisitor = new AlertLines(thresholdLines)
 
+    if (props.currentTime !== undefined) {
+      axisTime.value = new CurrentTime({
+        x: {
+          axisIndex: 0,
+        },
+      })
+      axisTime.value.setDateTime(props.currentTime)
+
+      axis.accept(axisTime.value)
+    }
     axis.accept(thresholdLinesVisitor)
     axis.accept(zoom)
     axis.accept(mouseOver)
-    axis.accept(axisTime.value)
+
     resize()
-    if (props.config !== undefined) onValueChange()
+    onValueChange()
     window.addEventListener('resize', resize)
   }
 })
@@ -143,7 +143,7 @@ const yTicksDisplay = computed(() =>
 watch(
   () => props.currentTime,
   (newValue) => {
-    if (axisTime.value) {
+    if (axisTime.value && newValue !== undefined) {
       axisTime.value.setDateTime(newValue)
       axisTime.value.redraw()
     }
@@ -410,25 +410,18 @@ watch(
     )
     if (requiredSeries.length > 0) {
       updateChartData(requiredSeries)
+
+      if (!hasRenderedOnce.value) {
+        axis.redraw({
+          x: { autoScale: true },
+          y: { autoScale: true },
+        })
+        hasRenderedOnce.value = true
+      }
     }
   },
 )
 watch(() => props.config, onValueChange)
-watch(
-  () => props.isLoading,
-  (newValue, oldValue) => {
-    // isLoading changes every time the data is requested again.
-    // We need to keep track of the first time the data has been loaded, in order to fully draw the chart once
-    if (!newValue) {
-      hasLoadedOnce.value = true
-    }
-  },
-)
-
-watch(hasLoadedOnce, onValueChange, {
-  once: true,
-})
-
 onBeforeUnmount(() => {
   beforeDestroy()
 })
