@@ -212,10 +212,20 @@ function determineViewPeriod() {
         .toISO({ suppressMilliseconds: true })
     }
   }
-  return {
-    startTime: startTime ?? undefined,
-    endTime: endTime ?? undefined,
+
+  const result: {
+    startDate?: string
+    endDate?: string
+  } = {}
+
+  if (startDate) {
+    result.startDate = startTime ?? undefined
   }
+  if (endDate) {
+    result.endDate = endTime ?? undefined
+  }
+
+  return result
 }
 
 const downloadFile = (downloadFormat: DocumentFormat) => {
