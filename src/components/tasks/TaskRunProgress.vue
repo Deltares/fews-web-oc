@@ -51,9 +51,9 @@ function updateProgress(): void {
   // Compute expected fraction done.
   const fractionDone = currentDurationSeconds / props.expectedRuntimeSeconds
 
-  // If we are over 100%, set progress to null since we cannot predict our
+  // If we are over 100%, set progress to 100% and do not show the
   // progress anymore.
-  setProgress(fractionDone <= 1 ? fractionDone * 100 : null)
+  setProgress(fractionDone <= 1 ? fractionDone * 100 : 100)
 }
 
 function setProgress(newProgress: number | null): void {
