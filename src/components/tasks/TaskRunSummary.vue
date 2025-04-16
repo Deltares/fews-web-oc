@@ -37,6 +37,7 @@
               </v-list-item-subtitle>
             </div>
             <v-checkbox-btn
+              v-if="isCompleted"
               class="flex-0-0"
               density="compact"
               trueIcon="mdi-chart-areaspline-variant"
@@ -66,8 +67,10 @@ import {
   convertTaskStatusToString,
   getColorForTaskStatus,
   getIconForTaskStatus,
+  getTaskStatusCategory,
   TaskRun,
   TaskStatus,
+  TaskStatusCategory,
 } from '@/lib/taskruns'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed } from 'vue'
@@ -212,6 +215,10 @@ const statusColor = computed(() =>
 const statusIcon = computed<string>(() =>
   getIconForTaskStatus(props.task.status),
 )
+const isCompleted = computed(() => {
+  const category = getTaskStatusCategory(props.task.status)
+  return category === TaskStatusCategory.Completed
+})
 
 function onExpansionPanelToggle() {
   // Only expand when no text is selected
