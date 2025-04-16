@@ -15,6 +15,7 @@
           :isLoading="isLoading(subplot, loadingSeriesIds)"
           :zoomHandler="sharedZoomHandler"
           :settings="settings.timeSeriesChart"
+          :forecast-legend="config.forecastLegend"
         >
         </TimeSeriesChart>
       </KeepAlive>
@@ -131,6 +132,7 @@ const props = withDefaults(defineProps<Props>(), {
       requests: [],
       subplots: [],
       period: undefined,
+      forecastLegend: undefined,
     }
   },
   elevationChartConfig: () => {
@@ -145,6 +147,7 @@ const props = withDefaults(defineProps<Props>(), {
       requests: [],
       subplots: [],
       period: undefined,
+      forecastLegend: undefined,
     }
   },
   settings: () => getDefaultSettings().charts,

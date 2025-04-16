@@ -44,7 +44,7 @@ import {
 } from '@/lib/charts/dataFromResources'
 import { extent } from 'd3'
 import { difference, uniq } from 'lodash-es'
-import type { Tag } from '@/lib/charts/tags'
+import { getMatchingIndexedString, type Tag } from '@/lib/charts/tags'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
 
@@ -55,6 +55,7 @@ interface Props {
   isLoading?: boolean
   zoomHandler?: ZoomHandler
   verticalProfile?: boolean
+  forecastLegend?: string
   settings: ChartsSettings['timeSeriesChart']
 }
 
@@ -338,12 +339,13 @@ const setTags = () => {
         }
       }
       legendSvg.appendChild(svgGroup)
-      const name = seriesData.find((s) => s.id === id)?.name || ''
+      const name = seriesData.find((s) => s.id === id)?.name ?? ''
       return {
-        id: id,
-        name: name || '',
+        id,
+        name,
         disabled: false,
         legendSvg: s.serializeToString(legendSvg),
+        tooltip: getMatchingIndexedString(name, props.forecastLegend),
       }
     })
   }

@@ -42,6 +42,13 @@
             />
 
             <span class="text-truncate">{{ tag.name }}</span>
+
+            <v-tooltip
+              v-if="tag.tooltip"
+              activator="parent"
+              location="top"
+              :text="tag.tooltip"
+            />
           </v-chip>
         </v-chip-group>
       </div>
@@ -241,5 +248,9 @@ function onToggleExpand() {
 
 .overlay .hidden {
   opacity: 0;
+}
+
+.pre-line {
+  white-space: pre-line;
 }
 </style>

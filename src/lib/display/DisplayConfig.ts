@@ -14,6 +14,7 @@ export interface DisplayConfig {
   plotId: string | undefined
   index: number | undefined
   title: string
+  forecastLegend: string | undefined
   class: string
   requests: any[]
   period: ActionPeriod | undefined

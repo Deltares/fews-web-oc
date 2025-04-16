@@ -67,6 +67,7 @@ function actionsResponseToDisplayConfig(
     const display: DisplayConfig = {
       id: title,
       title,
+      forecastLegend: result.config.timeSeriesDisplay.forecastLegend,
       plotId,
       nodeId: nodeId,
       class: 'singles',
