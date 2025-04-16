@@ -5,12 +5,18 @@
     @click="toggleTasksPanel"
   />
   <Teleport to="#main-side-panel" defer>
-    <TaskRunsPanel v-if="isPanelOpen" />
+    <TaskRunsPanel v-if="isPanelOpen" :topologyNodeId="topologyNodeId" />
   </Teleport>
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
 import TaskRunsPanel from './TaskRunsPanel.vue'
+
+interface Props {
+  topologyNodeId?: string
+}
+
+defineProps<Props>()
 
 const isPanelOpen = ref(false)
 

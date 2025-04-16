@@ -56,7 +56,7 @@ const { displayConfig } = useDisplayConfigFilter(
   filter,
   () => systemTimeStore.startTime,
   () => systemTimeStore.endTime,
-  () => taskRunsStore.selectedTaskRunIds
+  () => taskRunsStore.selectedTaskRunIds,
 )
 const { displayConfig: elevationChartDisplayconfig } = useDisplayConfigFilter(
   baseUrl,

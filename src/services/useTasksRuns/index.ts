@@ -6,7 +6,10 @@ import {
 } from '@deltares/fews-pi-requests'
 import { computed, MaybeRefOrGetter, ref, toValue, watch } from 'vue'
 
-import { convertTimestampToFewsPiParameter } from '@/lib/date'
+import {
+  convertJSDateToFewsPiParameter,
+  convertTimestampToFewsPiParameter,
+} from '@/lib/date'
 import { RelativePeriod } from '@/lib/period'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
@@ -31,6 +34,7 @@ export function useTaskRuns(
   dispatchPeriod: MaybeRefOrGetter<RelativePeriod | null>,
   workflowIds: MaybeRefOrGetter<string[]>,
   statuses: MaybeRefOrGetter<TaskStatus[]>,
+  topologyNodeId: MaybeRefOrGetter<string | undefined>,
 ) {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const piProvider = new PiWebserviceProvider(baseUrl, {
@@ -48,45 +52,51 @@ export function useTaskRuns(
 
   // Fetch taskruns if a new dispatch period is selected.
   watch(() => toValue(dispatchPeriod), fetch)
+  watch(() => toValue(topologyNodeId), fetch)
   watch(() => shouldRefreshTaskRuns.value, fetch)
 
   async function fetch(): Promise<void> {
     const _dispatchPeriod = toValue(dispatchPeriod)
-    const hasPeriod = _dispatchPeriod !== null
+    const _topologyNodeId = toValue(topologyNodeId)
 
     isLoading.value = true
-    const fetchedTaskRuns = hasPeriod
-      ? await fetchTaskRunsForPeriod(_dispatchPeriod)
-      : await fetchAllTaskRuns()
+    const fetchedTaskRuns = await fetchTaskRuns(
+      _topologyNodeId,
+      _dispatchPeriod,
+    )
     isLoading.value = false
 
     allTaskRuns.value = fetchedTaskRuns.map(convertFewsPiTaskRunToTaskRun)
     lastUpdatedTimestamp.value = Date.now()
   }
 
-  async function fetchAllTaskRuns(): Promise<FewsPiTaskRun[]> {
-    const response = await piProvider.getTaskRuns({
-      documentFormat: DocumentFormat.PI_JSON,
-      taskRunStatusIds: Object.values(TaskStatusId),
-    })
-    return response.taskRuns
-  }
-
-  async function fetchTaskRunsForPeriod(
-    dispatchPeriod: RelativePeriod,
+  async function fetchTaskRuns(
+    topologyNodeId?: string,
+    dispatchPeriod?: RelativePeriod | null,
   ): Promise<FewsPiTaskRun[]> {
-    const period = convertRelativeToAbsolutePeriod(dispatchPeriod)
-    const startDispatchTime = convertTimestampToFewsPiParameter(
-      period.startTimestamp,
-    )
-    const endDispatchTime = convertTimestampToFewsPiParameter(
-      period.endTimestamp,
-    )
+    const period = dispatchPeriod
+      ? convertRelativeToAbsolutePeriod(dispatchPeriod)
+      : undefined
+    const startDispatchTime = period
+      ? convertTimestampToFewsPiParameter(period.startTimestamp)
+      : undefined
+    const endDispatchTime = period
+      ? convertTimestampToFewsPiParameter(period.endTimestamp)
+      : undefined
     const response = await piProvider.getTaskRuns({
       documentFormat: DocumentFormat.PI_JSON,
       startDispatchTime,
       endDispatchTime,
       taskRunStatusIds: Object.values(TaskStatusId),
+      topologyNodeId,
+      // @ts-expect-error: FIXME: Remove once the library is fixed.
+      forecastCount: 99999,
+      startForecastTime: convertJSDateToFewsPiParameter(
+        new Date('1900-01-01T00:00:00Z'),
+      ),
+      endForecastTime: convertJSDateToFewsPiParameter(
+        new Date('3000-12-31T23:59:59Z'),
+      ),
     })
 
     return response.taskRuns

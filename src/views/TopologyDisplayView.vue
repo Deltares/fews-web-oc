@@ -60,6 +60,7 @@
         />
       </v-list>
     </v-menu>
+    <TaskRunsControl v-if="showTaskMenu" :topologyNodeId="topologyNode?.id" />
   </Teleport>
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
@@ -108,6 +109,7 @@ import {
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
 import InformationDisplayView from '@/views/InformationDisplayView.vue'
+import TaskRunsControl from '@/components/tasks/TaskRunsControl.vue'
 import { useDisplay } from 'vuetify'
 import { useNodesStore } from '@/stores/nodes'
 import { nodeButtonItems, recursiveUpdateNode } from '@/lib/topology/nodes'
@@ -141,6 +143,8 @@ const menuType = computed(() => {
   const configured = settings.get('ui.hierarchical-menu-style')?.value as string
   return configured ?? 'auto'
 })
+
+const showTaskMenu = computed(() => configStore.general.taskMenu?.enabled)
 
 const active = ref<string | undefined>(undefined)
 watch(active, () => {

@@ -11,7 +11,6 @@
       <div class="h-100" id="app-bar-content-center"></div>
       <template #append>
         <div id="app-bar-content-end" />
-        <TaskRunsControl v-if="showTaskMenu" />
         <TimeControlMenu />
         <UserSettingsMenu />
         <LoginComponent v-if="configManager.authenticationIsEnabled" />
@@ -174,7 +173,6 @@ import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
 import StartupDialog from '@/components/dialog/StartupDialog.vue'
 import GlobalSearchComponent from '@/components/general/GlobalSearchComponent.vue'
-import TaskRunsControl from '@/components/tasks/TaskRunsControl.vue'
 
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
@@ -286,8 +284,6 @@ const shouldRenderInfoMenu = computed(() => {
   if (currentRoute === undefined) return false
   return !currentRoute.meta?.sidebar
 })
-
-const showTaskMenu = computed(() => configStore.general.taskMenu?.enabled)
 
 function onCloseAlert(alert: Alert) {
   alertsStore.removeAlert(alert.id)

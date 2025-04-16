@@ -64,6 +64,12 @@ import TaskRunSummary from './TaskRunSummary.vue'
 import WorkflowFilterControl from './WorkflowFilterControl.vue'
 import PeriodFilterControl from './PeriodFilterControl.vue'
 
+interface Props {
+  topologyNodeId?: string
+}
+
+const props = defineProps<Props>()
+
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 
 const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
@@ -114,6 +120,7 @@ const taskRuns = useTaskRuns(
   period,
   selectedWorkflowIds,
   selectedTaskStatuses,
+  () => props.topologyNodeId,
 )
 
 const sortedTasks = computed<TaskRun[]>(() => {
