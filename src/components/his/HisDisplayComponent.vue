@@ -72,8 +72,9 @@
         </v-card-title>
         <HisCharts
           v-if="displayConfig"
-          :display-config="displayConfig"
-          :settings
+          :displayConfig="displayConfig"
+          :series="series"
+          :settings="settings"
         />
         <v-card-text v-else> Select some data to display </v-card-text>
       </v-card>
@@ -106,6 +107,7 @@ import {
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
 import { type Collection } from '@/lib/his'
+import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
   filterId?: string
@@ -116,6 +118,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
+
+const userSettings = useUserSettingsStore()
 
 const tab = ref('data-selection')
 
@@ -196,6 +200,13 @@ const filterLocationGeoJson = computed(() => {
   }
 })
 
+const displayConfigOptions = computed<UseDisplayConfigOptions>(() => {
+  return {
+    useDisplayUnits: userSettings.useDisplayUnits,
+    convertDatum: userSettings.convertDatum,
+  }
+})
+
 const filter = computed(() => {
   if (!props.filterId) return
   if (!selectedParameterIds.value.length || !selectedLocationIds.value.length) {
@@ -205,29 +216,25 @@ const filter = computed(() => {
     filterId: props.filterId,
     locationIds: selectedLocationIds.value.join(','),
     parameterIds: selectedParameterIds.value.join(','),
-    convertDatum: true,
-    useDisplayUnits: true,
+    ...displayConfigOptions.value,
   }
   return _fitler
 })
 
-// Backwards 2 weeks forwards 1 week
+const startTime = new Date(Date.now() - 0 * 24 * 60 * 60 * 1000)
+const endTime = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000)
+
 const { displayConfig } = useDisplayConfigFilter(
   baseUrl,
   filter,
-  () => {
-    return new Date(Date.now() - 0 * 24 * 60 * 60 * 1000)
-  },
-  () => {
-    return new Date(Date.now() + 1 * 24 * 60 * 60 * 1000)
-  },
+  startTime,
+  endTime,
 )
 
 const { series } = useTimeSeries(
   baseUrl,
   () => displayConfig.value?.requests ?? [],
-  () => new Date(),
-  () => ({}),
+  () => ({ startTime, endTime, thinning: true }),
 )
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
