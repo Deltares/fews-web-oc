@@ -7,10 +7,12 @@
     "items": [
       {
         "value": "system",
+        "title": "System",
         "icon": "mdi-database"
       },
       {
         "value": "display",
+        "title": "Display",
         "icon": "mdi-monitor"
       }
     ],
@@ -31,14 +33,17 @@
     "items": [
       {
         "value": "auto",
+        "title": "Automatic",
         "icon": "mdi-theme-light-dark"
       },
       {
         "value": "light",
+        "title": "Light",
         "icon": "mdi-weather-sunny"
       },
       {
         "value": "dark",
+        "title": "Dark",
         "icon": "mdi-weather-night"
       }
     ],
@@ -52,14 +57,17 @@
     "items": [
       {
         "value": "auto",
+        "title": "Automatic",
         "icon": "mdi-responsive"
       },
       {
         "value": "tree",
+        "title": "Tree",
         "icon": "mdi-file-tree"
       },
       {
         "value": "column",
+        "title": "Column",
         "icon": "mdi-view-week"
       }
     ],
@@ -73,10 +81,12 @@
     "items": [
       {
         "value": "minimal",
+        "title": "Minimal",
         "icon": "mdi-dots-vertical"
       },
       {
         "value": "full labels",
+        "title": "Full labels",
         "icon": "mdi-format-list-bulleted"
       }
     ],
@@ -90,14 +100,17 @@
     "items": [
       {
         "value": "automatic",
+        "title": "Automatic",
         "icon": "mdi-theme-light-dark"
       },
       {
         "value": "light",
+        "title": "Light",
         "icon": "mdi-weather-sunny"
       },
       {
         "value": "dark",
+        "title": "Dark",
         "icon": "mdi-weather-night"
       }
     ],

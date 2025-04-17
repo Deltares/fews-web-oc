@@ -28,9 +28,9 @@
               class="text-none"
             >
               <v-icon v-if="item.icon">{{ item.icon }}</v-icon>
-              <span v-else>{{ item.value }}</span>
+              <span v-else>{{ item.title }}</span>
               <v-tooltip activator="parent" location="top">{{
-                item.value
+                item.title
               }}</v-tooltip>
             </v-btn>
           </v-btn-toggle>
