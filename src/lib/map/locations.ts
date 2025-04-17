@@ -48,14 +48,10 @@ function getIconName({ properties }: Feature<Geometry, Location>) {
   return properties.thresholdIconName ?? properties.iconName
 }
 
-function getSortArray({ properties }: Feature<Geometry, Location>) {
-  return [properties.thresholdIconName]
-}
-
-function getSortKey(feature: Feature<Geometry, Location>): number {
-  return getSortArray(feature).filter(Boolean).length
+function getSortKey({ properties }: Feature<Geometry, Location>): number {
+  return properties.thresholdSeverity ?? 0
 }
 
 function getInvertedSortKey(feature: Feature<Geometry, Location>): number {
-  return getSortArray(feature).filter((v) => !v).length
+  return Number.MAX_SAFE_INTEGER - getSortKey(feature)
 }
