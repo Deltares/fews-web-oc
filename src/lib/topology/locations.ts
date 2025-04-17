@@ -100,6 +100,11 @@ function isFeatureCollection(
   )
 }
 
+const locationSetCache = new Map<
+  string,
+  FeatureCollection<Geometry, Location>
+>()
+
 export async function fetchLocationSetAsGeoJson(
   baseUrl: string,
   locationSetId: string,
@@ -111,9 +116,13 @@ export async function fetchLocationSetAsGeoJson(
     documentFormat: DocumentFormat.GEO_JSON,
     locationSetId: locationSetId,
   }
+  if (locationSetCache.has(locationSetId)) {
+    return locationSetCache.get(locationSetId)!
+  }
   const response = await provider.getLocations(filter)
   if (!isFeatureCollection(response)) {
     throw new Error('Expected GeoJSON FeatureCollection')
   }
+  locationSetCache.set(locationSetId, response)
   return response
 }
