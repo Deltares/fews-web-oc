@@ -149,7 +149,7 @@ const taskRuns = computed(() =>
     : filteredTaskRuns.value,
 )
 
-const sortedTasks = computed(() => taskRuns.value.sort(sortTasks))
+const sortedTasks = computed(() => taskRuns.value.toSorted(sortTasks))
 
 const groupedTasks = computed(() => {
   const currentTasks = sortedTasks.value.filter((task) => task.isCurrent)
