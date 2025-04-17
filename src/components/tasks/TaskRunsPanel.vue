@@ -1,21 +1,34 @@
 <template>
   <div class="task-runs-panel h-100">
-    <div class="d-flex pt-3 pb-2">
+    <div class="d-flex pt-3 pb-2 align-center">
       <WorkflowFilterControl
         v-model="selectedWorkflowIds"
         @update:model-value="flagManuallyChanged"
       />
       <TaskStatusFilterControl v-model="selectedTaskStatuses" />
       <v-spacer />
+      <v-checkbox-btn
+        v-model="showAllSelectedTaskRuns"
+        class="flex-0-0 me-2"
+        density="compact"
+        false-icon="mdi-chart-line"
+        true-icon="mdi-chart-areaspline-variant"
+        color="primary"
+      />
       <PeriodFilterControl v-model="period" />
     </div>
     <div class="overflow-y-auto">
       <v-list-item v-if="sortedTasks.length === 0">
-        No tasks available
+        {{
+          showAllSelectedTaskRuns
+            ? 'You have no visualized tasks'
+            : 'No tasks available'
+        }}
       </v-list-item>
 
       <!-- Important to have item-height as it greatly improves performance -->
       <v-virtual-scroll
+        v-else
         class="scroll-container h-100"
         :items="groupedTasks"
         :item-height="62"
@@ -36,17 +49,13 @@
     <v-divider />
     <v-list-item :title="`Last updated: ${lastUpdatedString}`">
       <template #append>
-        <v-progress-circular
-          v-if="taskRuns.isLoading.value"
-          size="20"
-          indeterminate
-        />
+        <v-progress-circular v-if="isLoading" size="20" indeterminate />
         <v-btn
           v-else
           density="compact"
           variant="plain"
           icon="mdi-refresh"
-          @click="taskRuns.fetch()"
+          @click="refreshTaskRuns()"
         />
       </template>
     </v-list-item>
@@ -56,7 +65,7 @@
 import { computed, ref, watch } from 'vue'
 
 import { RelativePeriod } from '@/lib/period'
-import { sortTasks, isTaskRun, TaskRun, TaskStatus } from '@/lib/taskruns'
+import { sortTasks, isTaskRun, TaskStatus } from '@/lib/taskruns'
 
 import { useTaskRuns } from '@/services/useTasksRuns'
 
@@ -66,6 +75,7 @@ import TaskStatusFilterControl from './TaskStatusFilterControl.vue'
 import TaskRunSummary from './TaskRunSummary.vue'
 import WorkflowFilterControl from './WorkflowFilterControl.vue'
 import PeriodFilterControl from './PeriodFilterControl.vue'
+import { useTaskRunsStore } from '@/stores/taskRuns'
 
 interface Props {
   topologyNodeId?: string
@@ -74,6 +84,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
+const taskRunsStore = useTaskRunsStore()
 
 const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
 const expandedItems = ref<Record<string, boolean>>({})
@@ -118,17 +129,27 @@ const period = ref<RelativePeriod | null>({
 })
 
 const TASKS_REFRESH_INTERVAL_SECONDS = 15
-const taskRuns = useTaskRuns(
+const {
+  filteredTaskRuns,
+  isLoading,
+  lastUpdatedTimestamp,
+  fetch: refreshTaskRuns,
+} = useTaskRuns(
   TASKS_REFRESH_INTERVAL_SECONDS,
   period,
   selectedWorkflowIds,
   selectedTaskStatuses,
   () => props.topologyNodeId,
 )
+const showAllSelectedTaskRuns = ref(false)
 
-const sortedTasks = computed<TaskRun[]>(() =>
-  taskRuns.filteredTaskRuns.value.sort(sortTasks),
+const taskRuns = computed(() =>
+  showAllSelectedTaskRuns.value
+    ? taskRunsStore.selectedTaskRuns
+    : filteredTaskRuns.value,
 )
+
+const sortedTasks = computed(() => taskRuns.value.sort(sortTasks))
 
 const groupedTasks = computed(() => {
   const currentTasks = sortedTasks.value.filter((task) => task.isCurrent)
@@ -139,14 +160,15 @@ const groupedTasks = computed(() => {
     result.push({ isHeader: true, label: 'Current' }, ...currentTasks)
   }
   if (nonCurrentTasks.length) {
-    result.push({ isHeader: true, label: 'Non Current' }, ...nonCurrentTasks)
+    const label = showAllSelectedTaskRuns.value ? 'Visualized' : 'Non Current'
+    result.push({ isHeader: true, label }, ...nonCurrentTasks)
   }
 
   return result
 })
 
 const lastUpdatedString = computed<string>(() => {
-  const lastUpdated = taskRuns.lastUpdatedTimestamp.value
+  const lastUpdated = lastUpdatedTimestamp.value
   if (lastUpdated === null) return '—'
   return new Date(lastUpdated).toLocaleString()
 })

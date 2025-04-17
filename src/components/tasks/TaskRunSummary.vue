@@ -38,15 +38,13 @@
             </div>
             <v-checkbox-btn
               v-if="isCompleted"
+              v-model="selected"
               class="flex-0-0"
               density="compact"
               trueIcon="mdi-chart-areaspline-variant"
               falseIcon="mdi-chart-line"
               color="primary"
               :disabled="task.isCurrent"
-              :model-value="
-                taskRunsStore.taskRunIsSelected(task) || task.isCurrent
-              "
               @click.stop="taskRunsStore.toggleTaskRun(task)"
             />
           </div>
@@ -96,6 +94,17 @@ const props = defineProps<Props>()
 const expanded = defineModel<boolean>('expanded', {
   required: false,
   default: false,
+})
+
+// This should be done with :model-value but its internal watch sometimes
+// doesn't trigger when the value changes
+const selected = computed({
+  get() {
+    return taskRunsStore.taskRunIsSelected(props.task) || props.task.isCurrent
+  },
+  set(_) {
+    // No-op
+  },
 })
 
 const tableData = computed(() => [
