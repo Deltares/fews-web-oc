@@ -1,6 +1,6 @@
 <template>
   <!-- Fills up space as v-sheet is absolutely positioned -->
-  <div v-if="!overlay" class="flex-0-0" :style="{ height: `${height}px` }" />
+  <div v-if="!overlay" class="flex-0-0" :style="{ height: heightStyle }" />
   <div class="chart-controls-container">
     <v-sheet
       v-click-outside="onOutsideClick"
@@ -79,11 +79,11 @@ const emit = defineEmits(['toggleLine'])
 const overlay = computed(() => props.settings.placement.includes('inside'))
 
 const height = computed(() => {
-  const numOfLines =
-    props.settings.numberOfLines === 'all'
-      ? 99999
-      : +props.settings.numberOfLines
+  if (props.settings.numberOfLines === 'all') {
+    return
+  }
 
+  const numOfLines = +props.settings.numberOfLines
   if (overlay.value) {
     const chipHeight = 26
     return numOfLines * chipHeight + 4
@@ -92,11 +92,20 @@ const height = computed(() => {
     return numOfLines * chipHeight + 4
   }
 })
+const heightStyle = computed(() => {
+  if (props.settings.numberOfLines === 'all') {
+    return `${legendHeight.value}px`
+  }
+
+  return `${height.value}px`
+})
 
 const chartLegend = useTemplateRef('chartLegend')
 const chartLegendContainer = useTemplateRef('chartLegendContainer')
 const { height: legendHeight } = useElementSize(chartLegend)
-const requiresExpand = computed(() => legendHeight.value > height.value)
+const requiresExpand = computed(
+  () => height.value && legendHeight.value > height.value,
+)
 watch(requiresExpand, () => {
   if (!requiresExpand.value) {
     toggleExpand(false)
@@ -115,8 +124,8 @@ const chartControlsStyle = computed(() => {
   const offset = overlay.value ? -chipMargin : chipMargin
 
   const maxHeight =
-    expanded.value || !requiresExpand.value ? '95%' : `${height.value}px`
-  const minHeight = `${height.value}px`
+    expanded.value || !requiresExpand.value ? '95%' : heightStyle.value
+  const minHeight = heightStyle.value
   const marginRight = right ? `${right - offset}px` : undefined
   const marginLeft = left ? `${left - offset}px` : undefined
   const marginTop = overlay.value ? `${top - offset}px` : undefined
