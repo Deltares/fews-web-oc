@@ -33,7 +33,7 @@ import type { NavigateRoute } from '@/lib/router'
 
 interface Props {
   item: WebOCDashboardItem
-  sliderEnabled: boolean
+  siblings: WebOCDashboardItem[]
   actionId?: string
   actionParams: DashboardActionParams
   settings?: ComponentSettings
@@ -96,18 +96,29 @@ const routeParams = ref<RouteParamsGeneric>({})
 function onNavigate(to: NavigateRoute) {
   switch (to.name) {
     case 'SpatialTimeSeriesDisplay':
-      emitDashboardAction(to)
+      const hasChartSibling = props.siblings.some(
+        (item) => item.component === 'charts',
+      )
+      if (hasChartSibling) {
+        emitDashboardAction(to)
+      } else {
+        navigateTo(to)
+      }
       break
     case 'SpatialDisplay':
     case 'SpatialTimeSeriesDisplayWithCoordinates':
     case 'SSDTimeSeriesDisplay':
     case 'SchematicStatusDisplay':
-      routeParams.value = {
-        ...to.params,
-      }
+      navigateTo(to)
       break
     default:
       console.warn(`Unknown route name: ${String(to.name)}`)
+  }
+}
+
+function navigateTo(to: NavigateRoute) {
+  routeParams.value = {
+    ...to.params,
   }
 }
 

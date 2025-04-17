@@ -4,7 +4,6 @@
       <DashboardGroup
         v-for="group in groups"
         :group="group"
-        :slider-enabled="sliderEnabled"
         :settings="props.settings"
       />
     </div>
