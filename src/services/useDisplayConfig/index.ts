@@ -3,7 +3,7 @@ import {
   PiWebserviceProvider,
   type ActionsResponse,
 } from '@deltares/fews-pi-requests'
-import { computed, ref, toValue, watch, watchEffect } from 'vue'
+import { computed, ref, toValue, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { DisplayConfig } from '../../lib/display/DisplayConfig.js'
 import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig.js'
