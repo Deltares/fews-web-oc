@@ -17,11 +17,14 @@
       <!-- Important to have item-height as it greatly improves performance -->
       <v-virtual-scroll
         class="scroll-container h-100"
-        :items="sortedTasks"
+        :items="groupedTasks"
         :item-height="62"
       >
         <template #default="{ item: task }">
-          <div class="mb-2 mx-2">
+          <div v-if="!isTaskRun(task)" class="mx-2">
+            {{ task.label }}
+          </div>
+          <div v-else class="mb-2 mx-2">
             <TaskRunSummary
               :task="task"
               v-model:expanded="expandedItems[task.taskId]"
@@ -53,7 +56,7 @@
 import { computed, ref, watch } from 'vue'
 
 import { RelativePeriod } from '@/lib/period'
-import { TaskRun, TaskStatus } from '@/lib/taskruns'
+import { sortTasks, isTaskRun, TaskRun, TaskStatus } from '@/lib/taskruns'
 
 import { useTaskRuns } from '@/services/useTasksRuns'
 
@@ -123,24 +126,23 @@ const taskRuns = useTaskRuns(
   () => props.topologyNodeId,
 )
 
-const sortedTasks = computed<TaskRun[]>(() => {
-  return taskRuns.filteredTaskRuns.value.sort((a, b) => {
-    const hasDispatchTimeA = a.dispatchTimestamp !== null
-    const hasDispatchTimeB = b.dispatchTimestamp !== null
-    if (!hasDispatchTimeA && !hasDispatchTimeB) {
-      // If both tasks are pending, sort by workflowId.
-      return a.workflowId.localeCompare(b.workflowId)
-    } else if (!hasDispatchTimeA) {
-      // If A is pending and B is not, return A.
-      return -1
-    } else if (!hasDispatchTimeB) {
-      // If B is pending and A is not, return B.
-      return 1
-    } else {
-      // Otherwise, sort by timestamp.
-      return b.dispatchTimestamp! - a.dispatchTimestamp!
-    }
-  })
+const sortedTasks = computed<TaskRun[]>(() =>
+  taskRuns.filteredTaskRuns.value.sort(sortTasks),
+)
+
+const groupedTasks = computed(() => {
+  const currentTasks = sortedTasks.value.filter((task) => task.isCurrent)
+  const nonCurrentTasks = sortedTasks.value.filter((task) => !task.isCurrent)
+
+  const result = []
+  if (currentTasks.length) {
+    result.push({ isHeader: true, label: 'Current' }, ...currentTasks)
+  }
+  if (nonCurrentTasks.length) {
+    result.push({ isHeader: true, label: 'Non Current' }, ...nonCurrentTasks)
+  }
+
+  return result
 })
 
 const lastUpdatedString = computed<string>(() => {

@@ -36,3 +36,7 @@ export interface TaskRun {
 export function isTaskStatus(value: string): value is TaskStatus {
   return Object.values(TaskStatus).includes(value as TaskStatus)
 }
+
+export function isTaskRun(value: unknown): value is TaskRun {
+  return typeof value === 'object' && value !== null && 'taskId' in value
+}
