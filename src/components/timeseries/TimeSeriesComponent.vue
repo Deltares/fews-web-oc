@@ -152,7 +152,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { selectedDate } = useSelectedDate(() => props.currentTime ?? new Date())
 const store = useSystemTimeStore()
-const lastUpdated = ref<Date>(new Date())
 const isEditing = ref(false)
 const confirmationDialog = ref(false)
 const { xs } = useDisplay()
@@ -168,21 +167,21 @@ const options = computed<UseTimeSeriesOptions>(() => {
     startTime: store.startTime,
     endTime: store.endTime,
     thinning: false,
+    enabled: !isEditing.value,
   }
 })
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const {
   series,
   loadingSeriesIds,
-  interval: useTimeSeriesInterval,
-} = useTimeSeries(baseUrl, () => props.config.requests, lastUpdated, options)
+  refresh: refreshTimeSeries,
+} = useTimeSeries(baseUrl, () => props.config.requests, options)
 const {
   series: elevationChartSeries,
   loadingSeriesIds: elevationLoadingSeriesIds,
 } = useTimeSeries(
   baseUrl,
   () => props.elevationChartConfig.requests,
-  lastUpdated,
   options,
   selectedDate,
 )
@@ -205,7 +204,7 @@ async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
     seriesHeader.version ?? '',
     seriesHeader.timeZone ?? '',
   )
-  lastUpdated.value = new Date()
+  refreshTimeSeries()
 }
 
 const subplots = computed(() => {
@@ -257,11 +256,6 @@ watch(
 )
 
 watch(isEditing, () => {
-  if (isEditing.value) {
-    useTimeSeriesInterval.pause()
-  } else {
-    useTimeSeriesInterval.resume()
-  }
   // Can't set a custom message in modern browsers
   window.onbeforeunload = isEditing.value ? () => true : null
 })
