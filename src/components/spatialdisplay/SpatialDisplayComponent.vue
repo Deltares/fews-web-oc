@@ -238,12 +238,21 @@ const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
 
-const selectedDateOfSlider = ref(new Date())
+const selectedDateOfSlider = ref<Date>()
 const { selectedDate, dateTimeSliderEnabled } =
   useSelectedDate(selectedDateOfSlider)
 watch(selectedDate, () => {
   emit('update:currentTime', selectedDate.value)
 })
+watch(
+  () => props.times,
+  (times) => {
+    if (!times || times.length === 0) {
+      selectedDateOfSlider.value = undefined
+      return
+    }
+  },
+)
 
 const selectedLocationIds = computed(() => props.locationIds?.split(',') ?? [])
 

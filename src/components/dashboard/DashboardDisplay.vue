@@ -44,7 +44,7 @@ const props = defineProps<Props>()
 
 const { mobile } = useDisplay()
 
-const selectedDate = ref<Date>(new Date())
+const selectedDate = ref<Date>()
 const { combinedDates } = setupDates()
 const sliderEnabled = true
 

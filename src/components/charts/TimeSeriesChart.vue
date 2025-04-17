@@ -70,9 +70,6 @@ const props = withDefaults(defineProps<Props>(), {
   series: () => {
     return {}
   },
-  currentTime: () => {
-    return new Date()
-  },
 })
 
 let thresholdLines!: ThresholdLine[]
@@ -118,20 +115,22 @@ onMounted(() => {
 
     const currentTime = new CurrentTime({ x: { axisIndex: 0 } })
 
-    axisTime.value = new CrossSectionSelect(
-      props.currentTime,
-      onCrossValueChange,
-      { x: { axisIndex: 0 }, draggable: false },
-      [],
-    )
-
     thresholdLinesVisitor = new AlertLines(thresholdLines)
+
+    if (props.currentTime !== undefined) {
+      axisTime.value = new CrossSectionSelect(
+        props.currentTime,
+        onCrossValueChange,
+        { x: { axisIndex: 0 }, draggable: false },
+        [],
+      )
+      axis.accept(axisTime.value)
+    }
 
     axis.accept(thresholdLinesVisitor)
     axis.accept(zoom)
     axis.accept(mouseOver)
     axis.accept(currentTime)
-    axis.accept(axisTime.value)
     resize()
     if (props.config !== undefined) onValueChange()
     window.addEventListener('resize', resize)
@@ -148,7 +147,7 @@ const yTicksDisplay = computed(() =>
 watch(
   () => props.currentTime,
   (newValue) => {
-    onCrossValueChange(newValue)
+    if (newValue !== undefined) onCrossValueChange(newValue)
   },
 )
 

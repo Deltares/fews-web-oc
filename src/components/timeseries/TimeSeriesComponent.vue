@@ -150,7 +150,7 @@ const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings().charts,
 })
 
-const { selectedDate } = useSelectedDate(() => props.currentTime ?? new Date('invalid'))
+const { selectedDate } = useSelectedDate(() => props.currentTime)
 const store = useSystemTimeStore()
 const lastUpdated = ref<Date>(new Date())
 const isEditing = ref(false)
