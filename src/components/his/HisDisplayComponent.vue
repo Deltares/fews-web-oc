@@ -12,12 +12,14 @@
             prepend-icon="mdi-filter"
             text="Data selection"
             value="data-selection"
+            class="text-none"
           />
           <v-tab
             prepend-icon="mdi-chart-line"
             text="Analysis"
             value="analysis"
             :disabled="!displayConfig"
+            class="text-none"
           />
         </v-tabs>
 
