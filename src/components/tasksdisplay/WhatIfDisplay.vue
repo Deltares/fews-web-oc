@@ -1,7 +1,11 @@
 <template>
   <div class="d-flex w-100 h-100 justify-center overflow-y-auto">
     <div class="whatif-container w-100 d-flex flex-column gr-4 pa-4">
+      <div v-if="whatIfTemplates.length === 1">
+        {{ whatIfTemplates[0].name }}
+      </div>
       <v-select
+        v-else
         v-model="selectedWhatIfTemplate"
         :items="whatIfTemplates"
         :loading="availableWhatIfTemplatesStore.isLoading"
@@ -209,11 +213,10 @@ const whatIfTemplates = computed(() =>
     .map(availableWhatIfTemplatesStore.byId)
     .filter((wt) => wt !== undefined),
 )
-
 watch(
   whatIfTemplates,
   (templates) => {
-    console.log('templates', templates)
+    selectedWhatIfTemplate.value = templates[0]
   },
   { immediate: true },
 )
