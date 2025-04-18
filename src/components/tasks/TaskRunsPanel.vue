@@ -11,7 +11,11 @@
     </div>
     <div class="overflow-y-auto">
       <v-list-item v-if="sortedTasks.length === 0">
-        {{ 'No tasks available' }}
+        {{
+          props.topologyNode
+            ? 'No tasks with data to visualize for this display.'
+            : 'No tasks available.'
+        }}
       </v-list-item>
 
       <!-- Important to have item-height as it greatly improves performance -->
@@ -22,9 +26,15 @@
         :item-height="62"
       >
         <template #default="{ item: task }">
-          <div v-if="!isTaskRun(task)" class="mx-2">
+          <v-btn
+            v-if="!isTaskRun(task)"
+            class="mx-2 px-1 text-none"
+            variant="plain"
+            :append-icon="getIcon(task.label)"
+            @click="toggle(task.label)"
+          >
             {{ task.label }}
-          </div>
+          </v-btn>
           <div v-else class="mb-2 mx-2">
             <TaskRunSummary
               :task="task"
@@ -134,6 +144,8 @@ const {
 )
 
 const sortedTasks = computed(() => filteredTaskRuns.value.toSorted(sortTasks))
+const showCurrent = ref(true)
+const showNonCurrent = ref(true)
 
 const groupedTasks = computed(() => {
   const currentTasks = sortedTasks.value.filter((task) => task.isCurrent)
@@ -141,14 +153,37 @@ const groupedTasks = computed(() => {
 
   const result = []
   if (currentTasks.length) {
-    result.push({ isHeader: true, label: 'Current' }, ...currentTasks)
+    result.push({ isHeader: true, label: 'Current' })
+    if (showCurrent.value) {
+      result.push(...currentTasks)
+    }
   }
   if (nonCurrentTasks.length) {
-    result.push({ isHeader: true, label: 'Non Current' }, ...nonCurrentTasks)
+    result.push({ isHeader: true, label: 'Non Current' })
+    if (showNonCurrent.value) {
+      result.push(...nonCurrentTasks)
+    }
   }
 
   return result
 })
+
+function toggle(label: string) {
+  if (label === 'Current') {
+    showCurrent.value = !showCurrent.value
+  } else if (label === 'Non Current') {
+    showNonCurrent.value = !showNonCurrent.value
+  }
+}
+
+function getIcon(label: string) {
+  if (label === 'Current') {
+    return showCurrent.value ? 'mdi-chevron-down' : 'mdi-chevron-right'
+  } else if (label === 'Non Current') {
+    return showNonCurrent.value ? 'mdi-chevron-down' : 'mdi-chevron-right'
+  }
+  return ''
+}
 
 const lastUpdatedString = computed<string>(() => {
   const lastUpdated = lastUpdatedTimestamp.value
