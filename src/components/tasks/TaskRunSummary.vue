@@ -46,7 +46,13 @@
               color="primary"
               :disabled="task.isCurrent"
               @click.stop="taskRunsStore.toggleTaskRun(task)"
-            />
+            >
+              <v-tooltip
+                text="Visualize task in graphs"
+                open-delay="500"
+                activator="parent"
+              />
+            </v-checkbox-btn>
           </div>
         </div>
       </div>
