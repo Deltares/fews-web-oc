@@ -17,7 +17,7 @@
           v-for="category in getAllTaskStatusCategories()"
           :key="category"
           :value="category"
-          @click="toggleStatusCategory(category)"
+          @click="updateSelectedTaskStatus"
         >
           {{ getTaskStatusCategoryName(category) }}
         </v-btn>
@@ -31,7 +31,7 @@ import { ref } from 'vue'
 import {
   getAllTaskStatusCategories,
   getCompleteTaskStatusCategories,
-  getTaskStatusesForCategory,
+  getTaskStatusesForCategories,
   getTaskStatusCategoryName,
   TaskStatus,
   TaskStatusCategory,
@@ -41,9 +41,6 @@ import BaseTaskFilterControl from '@/components/tasks/BaseTaskFilterControl.vue'
 
 const selectedTaskStatuses = defineModel<TaskStatus[]>({ required: true })
 const selectedCategories = ref<TaskStatusCategory[]>([])
-// Initialise the group selections based on the initially selected task
-// statuses.
-updateSelectedCategories(selectedTaskStatuses.value)
 
 interface TaskStatusItem {
   id: string
@@ -61,33 +58,28 @@ const taskStatusOptions: TaskStatusItem[] = Object.values(TaskStatus).map(
     }
   },
 )
+// Initialise the group selections based on the initially selected task
+// statuses.
+updateSelectedCategories(selectedTaskStatuses.value)
 
 // Update the selected task status groups when the user selects or deselects
 // individual statuses.
 function updateSelectedCategories(newStatuses: TaskStatus[]): void {
-  selectedCategories.value = getCompleteTaskStatusCategories(newStatuses)
+  if (newStatuses.length === taskStatusOptions.length) {
+    selectedCategories.value = []
+  } else {
+    selectedCategories.value = getCompleteTaskStatusCategories(newStatuses)
+  }
 }
 
-function toggleStatusCategory(category: TaskStatusCategory): void {
-  const isCurrentlySelected = selectedCategories.value.includes(category)
-
-  // This function is triggered _after_ the model value has been updated, so if
-  // we no longer have this category in the selected category, remove the
-  // associated statuses.
-  const doRemove = !isCurrentlySelected
-
-  const categoryStatuses = getTaskStatusesForCategory(category)
-  if (doRemove) {
-    // Remove statuses for this group from the current selection.
-    selectedTaskStatuses.value = selectedTaskStatuses.value.filter(
-      (status) => !categoryStatuses.includes(status),
-    )
-  } else {
-    // Add statuses for this group to the current selection.
-    selectedTaskStatuses.value = [
-      ...selectedTaskStatuses.value,
-      ...categoryStatuses,
-    ]
+function updateSelectedTaskStatus(): void {
+  if (selectedCategories.value.length === 0) {
+    selectedTaskStatuses.value = Object.values(TaskStatus)
+    return
   }
+
+  selectedTaskStatuses.value = getTaskStatusesForCategories(
+    selectedCategories.value,
+  )
 }
 </script>

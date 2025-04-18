@@ -36,6 +36,23 @@
                 {{ whatIfTemplate.name }}
               </v-list-item-subtitle>
             </div>
+            <v-checkbox-btn
+              v-if="isCompleted && canVisualize"
+              v-model="selected"
+              class="flex-0-0"
+              density="compact"
+              trueIcon="mdi-chart-areaspline-variant"
+              falseIcon="mdi-chart-line"
+              color="primary"
+              :disabled="task.isCurrent"
+              @click.stop="taskRunsStore.toggleTaskRun(task)"
+            >
+              <v-tooltip
+                text="Visualize task in graphs"
+                open-delay="500"
+                activator="parent"
+              />
+            </v-checkbox-btn>
           </div>
         </div>
       </div>
@@ -54,8 +71,10 @@ import {
   convertTaskStatusToString,
   getColorForTaskStatus,
   getIconForTaskStatus,
+  getTaskStatusCategory,
   TaskRun,
   TaskStatus,
+  TaskStatusCategory,
 } from '@/lib/taskruns'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed } from 'vue'
@@ -67,18 +86,32 @@ import {
   toHumanReadableDate,
 } from '@/lib/date'
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
+import { useTaskRunsStore } from '@/stores/taskRuns'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
+const taskRunsStore = useTaskRunsStore()
 
 interface Props {
   task: TaskRun
+  canVisualize: boolean
 }
 const props = defineProps<Props>()
 
 const expanded = defineModel<boolean>('expanded', {
   required: false,
   default: false,
+})
+
+// This should be done with :model-value but its internal watch sometimes
+// doesn't trigger when the value changes
+const selected = computed({
+  get() {
+    return taskRunsStore.taskRunIsSelected(props.task) || props.task.isCurrent
+  },
+  set(_) {
+    // No-op
+  },
 })
 
 const tableData = computed(() => [
@@ -198,6 +231,10 @@ const statusColor = computed(() =>
 const statusIcon = computed<string>(() =>
   getIconForTaskStatus(props.task.status),
 )
+const isCompleted = computed(() => {
+  const category = getTaskStatusCategory(props.task.status)
+  return category === TaskStatusCategory.Completed
+})
 
 function onExpansionPanelToggle() {
   // Only expand when no text is selected

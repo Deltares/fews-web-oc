@@ -3,4 +3,14 @@ export interface Tag {
   name: string
   disabled: boolean
   legendSvg: string
+  tooltip?: string
+}
+
+export function getMatchingIndexedString(item: string, text?: string) {
+  if (!text) return
+
+  const match = item.match(/\[(\d+)\]/)?.[0]
+  if (!match) return
+
+  return text.split('\n').find((line) => line.includes(match))
 }

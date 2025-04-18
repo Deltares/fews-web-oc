@@ -77,13 +77,13 @@ export function getCompleteTaskStatusCategories(
   return completeCategories
 }
 
-export function getTaskStatusesForCategory(
-  selectedCategory: TaskStatusCategory,
+export function getTaskStatusesForCategories(
+  selectedCategories: TaskStatusCategory[],
 ): TaskStatus[] {
-  const category = STATUS_CATEGORIES.find(
-    (current) => current.category === selectedCategory,
+  const categories = STATUS_CATEGORIES.filter((current) =>
+    selectedCategories.includes(current.category),
   )
-  return category?.statuses ?? []
+  return categories.flatMap((category) => category.statuses)
 }
 
 export function getIconForTaskStatus(status: TaskStatus): string {

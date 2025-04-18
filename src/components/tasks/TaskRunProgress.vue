@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 import { Duration, DurationUnit } from 'luxon'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
 interface Props {
   dispatchTimestamp: number | null
@@ -29,6 +29,10 @@ const props = withDefaults(defineProps<Props>(), {
 const progress = ref(0)
 const isUnknownProgress = ref(false)
 const details = ref('')
+
+onMounted(() => {
+  updateProgress()
+})
 
 useFocusAwareInterval(updateProgress, () => props.updateIntervalSeconds, {
   immediate: true,
@@ -51,9 +55,9 @@ function updateProgress(): void {
   // Compute expected fraction done.
   const fractionDone = currentDurationSeconds / props.expectedRuntimeSeconds
 
-  // If we are over 100%, set progress to null since we cannot predict our
+  // If we are over 100%, set progress to 100% and do not show the
   // progress anymore.
-  setProgress(fractionDone <= 1 ? fractionDone * 100 : null)
+  setProgress(fractionDone <= 1 ? fractionDone * 100 : 100)
 }
 
 function setProgress(newProgress: number | null): void {

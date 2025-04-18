@@ -60,6 +60,7 @@
         />
       </v-list>
     </v-menu>
+    <TaskRunsControl v-if="showTaskMenu" :topologyNode="topologyNode" />
   </Teleport>
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
@@ -108,6 +109,7 @@ import {
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
 import InformationDisplayView from '@/views/InformationDisplayView.vue'
+import TaskRunsControl from '@/components/tasks/TaskRunsControl.vue'
 import { useDisplay } from 'vuetify'
 import { useNodesStore } from '@/stores/nodes'
 import { nodeButtonItems, recursiveUpdateNode } from '@/lib/topology/nodes'
@@ -118,6 +120,7 @@ import {
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { useComponentSettings } from '@/services/useComponentSettings'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+import { useTaskRunsStore } from '@/stores/taskRuns'
 import type { NavigateRoute } from '@/lib/router'
 
 interface Props {
@@ -136,11 +139,14 @@ const configStore = useConfigStore()
 const settings = useUserSettingsStore()
 const workflowsStore = useWorkflowsStore()
 const availableWorkflowsStore = useAvailableWorkflowsStore()
+const taskRunsStore = useTaskRunsStore()
 
 const menuType = computed(() => {
   const configured = settings.get('ui.hierarchical-menu-style')?.value as string
   return configured ?? 'auto'
 })
+
+const showTaskMenu = computed(() => configStore.general.taskMenu?.enabled)
 
 const active = ref<string | undefined>(undefined)
 watch(active, () => {
@@ -149,6 +155,8 @@ watch(active, () => {
   workflowsStore.isDrawingBoundingBox = false
   workflowsStore.coordinate = null
   workflowsStore.isSelectingCoordinate = false
+
+  taskRunsStore.clearSelectedTaskRuns()
 })
 
 const activeNode = computed(() => {
@@ -163,24 +171,6 @@ const activeNode = computed(() => {
   }
   return node
 })
-
-// Set preferred workflow IDs for the running tasks menu, if this node has
-// associated workflows.
-watch(
-  activeNode,
-  (node) => {
-    const primaryWorkflowId = node?.workflowId ? [node.workflowId] : []
-    const secondaryWorkflowIds =
-      node?.secondaryWorkflows?.map(
-        (workflow) => workflow.secondaryWorkflowId,
-      ) ?? []
-    // Note: this list of workflow IDs may be empty, in which case we have no
-    //       preferred workflow.
-    const workflowIds = [...primaryWorkflowId, ...secondaryWorkflowIds]
-    availableWorkflowsStore.setPreferredWorkflowIds(workflowIds)
-  },
-  { immediate: true },
-)
 // Clear the preferred workflow IDs when we unmount.
 onUnmounted(() => availableWorkflowsStore.clearPreferredWorkflowIds())
 

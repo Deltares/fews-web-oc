@@ -1,9 +1,9 @@
 <template>
   <div class="task-runs-panel h-100">
-    <div class="d-flex pt-3 pb-2">
+    <div class="d-flex pt-3 pb-2 align-center">
       <WorkflowFilterControl
+        v-if="!topologyNode"
         v-model="selectedWorkflowIds"
-        @update:model-value="flagManuallyChanged"
       />
       <TaskStatusFilterControl v-model="selectedTaskStatuses" />
       <v-spacer />
@@ -11,19 +11,34 @@
     </div>
     <div class="overflow-y-auto">
       <v-list-item v-if="sortedTasks.length === 0">
-        No tasks available
+        {{
+          props.topologyNode
+            ? 'No tasks with data to visualize for this display.'
+            : 'No tasks available.'
+        }}
       </v-list-item>
 
       <!-- Important to have item-height as it greatly improves performance -->
       <v-virtual-scroll
+        v-else
         class="scroll-container h-100"
-        :items="sortedTasks"
+        :items="groupedTasks"
         :item-height="62"
       >
         <template #default="{ item: task }">
-          <div class="mb-2 mx-2">
+          <v-btn
+            v-if="!isTaskRun(task)"
+            class="mx-2 px-1 text-none"
+            variant="plain"
+            :append-icon="getTaskSectionIcon(task.label)"
+            @click="toggleTaskSection(task.label)"
+          >
+            {{ task.label }}
+          </v-btn>
+          <div v-else class="mb-2 mx-2">
             <TaskRunSummary
               :task="task"
+              :canVisualize="props.topologyNode !== undefined"
               v-model:expanded="expandedItems[task.taskId]"
             />
           </div>
@@ -33,17 +48,13 @@
     <v-divider />
     <v-list-item :title="`Last updated: ${lastUpdatedString}`">
       <template #append>
-        <v-progress-circular
-          v-if="taskRuns.isLoading.value"
-          size="20"
-          indeterminate
-        />
+        <v-progress-circular v-if="isLoading" size="20" indeterminate />
         <v-btn
           v-else
           density="compact"
           variant="plain"
           icon="mdi-refresh"
-          @click="taskRuns.fetch()"
+          @click="refreshTaskRuns()"
         />
       </template>
     </v-list-item>
@@ -53,7 +64,7 @@
 import { computed, ref, watch } from 'vue'
 
 import { RelativePeriod } from '@/lib/period'
-import { TaskRun, TaskStatus } from '@/lib/taskruns'
+import { sortTasks, isTaskRun, TaskStatus } from '@/lib/taskruns'
 
 import { useTaskRuns } from '@/services/useTasksRuns'
 
@@ -63,81 +74,119 @@ import TaskStatusFilterControl from './TaskStatusFilterControl.vue'
 import TaskRunSummary from './TaskRunSummary.vue'
 import WorkflowFilterControl from './WorkflowFilterControl.vue'
 import PeriodFilterControl from './PeriodFilterControl.vue'
+import type { TopologyNode } from '@deltares/fews-pi-requests'
+
+interface Props {
+  topologyNode?: TopologyNode
+}
+
+const props = defineProps<Props>()
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 
 const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
 const expandedItems = ref<Record<string, boolean>>({})
 
-// Automatically select preferred workflow IDs if the user has not changed the
-// filter manually yet, otherwise, leave the filter as-is.
-let hasChangedWorkflowsFilterManually = false
-const flagManuallyChanged = () => (hasChangedWorkflowsFilterManually = true)
+// Set preferred workflow IDs for the running tasks menu, if this node has
+// associated workflows.
 watch(
-  () => availableWorkflowsStore.preferredWorkflowIds,
-  (preferredWorkflowIds) => {
-    if (hasChangedWorkflowsFilterManually) return
-    if (preferredWorkflowIds.length === 0) {
-      // If we have no preferred workflow IDs, select all.
-      selectedWorkflowIds.value = availableWorkflowsStore.workflowIds
-    } else {
-      // Otherwise, show only the preferred workflow IDs.
+  () => props.topologyNode,
+  (node) => {
+    const primaryWorkflowId = node?.workflowId ? [node.workflowId] : []
+    const secondaryWorkflowIds =
+      node?.secondaryWorkflows?.map(
+        (workflow) => workflow.secondaryWorkflowId,
+      ) ?? []
+    // Note: this list of workflow IDs may be empty, in which case we have no
+    //       preferred workflow.
+    const preferredWorkflowIds = [...primaryWorkflowId, ...secondaryWorkflowIds]
+    availableWorkflowsStore.setPreferredWorkflowIds(preferredWorkflowIds)
+
+    if (preferredWorkflowIds.length > 0) {
+      // If we have preferred workflow IDs, select them.
       selectedWorkflowIds.value = preferredWorkflowIds
+    } else {
+      // Otherwise, select all available workflows.
+      selectedWorkflowIds.value = availableWorkflowsStore.workflowIds
     }
   },
+  { immediate: true },
 )
 
-// The request for the available workflows may still be pending while this
-// component is created, so we may initialise the default selected workflows
-// with an empty array. To fix this, we reinitialise our selection upon changes
-// in the workflows, which occur when they have been fetched.
 watch(
-  () => availableWorkflowsStore.workflowIds,
-  (fetchedWorkflowIds) => {
-    selectedWorkflowIds.value = fetchedWorkflowIds
+  () => props.topologyNode,
+  () => {
+    refreshTaskRuns()
   },
-  { once: true },
 )
 
 // Select all task statuses by default.
 const selectedTaskStatuses = ref<TaskStatus[]>(Object.values(TaskStatus))
 
-// Look 2 hours back by default.
+// Look 1 day back by default.
 const period = ref<RelativePeriod | null>({
-  startOffsetSeconds: -2 * 60 * 60,
+  startOffsetSeconds: -24 * 60 * 60,
   endOffsetSeconds: 0,
 })
 
 const TASKS_REFRESH_INTERVAL_SECONDS = 15
-const taskRuns = useTaskRuns(
+const {
+  filteredTaskRuns,
+  isLoading,
+  lastUpdatedTimestamp,
+  fetch: refreshTaskRuns,
+} = useTaskRuns(
   TASKS_REFRESH_INTERVAL_SECONDS,
   period,
   selectedWorkflowIds,
   selectedTaskStatuses,
+  () => props.topologyNode?.id,
 )
 
-const sortedTasks = computed<TaskRun[]>(() => {
-  return taskRuns.filteredTaskRuns.value.sort((a, b) => {
-    const hasDispatchTimeA = a.dispatchTimestamp !== null
-    const hasDispatchTimeB = b.dispatchTimestamp !== null
-    if (!hasDispatchTimeA && !hasDispatchTimeB) {
-      // If both tasks are pending, sort by workflowId.
-      return a.workflowId.localeCompare(b.workflowId)
-    } else if (!hasDispatchTimeA) {
-      // If A is pending and B is not, return A.
-      return -1
-    } else if (!hasDispatchTimeB) {
-      // If B is pending and A is not, return B.
-      return 1
-    } else {
-      // Otherwise, sort by timestamp.
-      return b.dispatchTimestamp! - a.dispatchTimestamp!
+const sortedTasks = computed(() => filteredTaskRuns.value.toSorted(sortTasks))
+const showCurrent = ref(true)
+const showNonCurrent = ref(true)
+
+const groupedTasks = computed(() => {
+  const currentTasks = sortedTasks.value.filter((task) => task.isCurrent)
+  const nonCurrentTasks = sortedTasks.value.filter((task) => !task.isCurrent)
+
+  const result = []
+  if (currentTasks.length) {
+    result.push({ isHeader: true, label: 'Current' })
+    if (showCurrent.value) {
+      result.push(...currentTasks)
     }
-  })
+  }
+  if (nonCurrentTasks.length) {
+    result.push({ isHeader: true, label: 'Non Current' })
+    if (showNonCurrent.value) {
+      result.push(...nonCurrentTasks)
+    }
+  }
+
+  return result
 })
 
+function toggleTaskSection(label: string) {
+  if (label === 'Current') {
+    showCurrent.value = !showCurrent.value
+  } else if (label === 'Non Current') {
+    showNonCurrent.value = !showNonCurrent.value
+  }
+}
+
+function getTaskSectionIcon(label: string) {
+  if (label === 'Current') {
+    return showCurrent.value ? 'mdi-chevron-down' : 'mdi-chevron-right'
+  } else if (label === 'Non Current') {
+    return showNonCurrent.value ? 'mdi-chevron-down' : 'mdi-chevron-right'
+  }
+  return ''
+}
+
 const lastUpdatedString = computed<string>(() => {
-  const lastUpdated = taskRuns.lastUpdatedTimestamp.value
+  const lastUpdated = lastUpdatedTimestamp.value
   if (lastUpdated === null) return '—'
   return new Date(lastUpdated).toLocaleString()
 })

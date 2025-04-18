@@ -73,6 +73,7 @@ export function useSsdPi(
         plotId: undefined,
         index: undefined,
         title,
+        forecastLegend: undefined,
         class: 'singles',
         requests: result.requests ?? [],
         period: undefined,
