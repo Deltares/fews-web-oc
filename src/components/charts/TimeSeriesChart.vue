@@ -52,7 +52,7 @@ import { getAxisOptions } from '@/lib/charts/axisOptions'
 interface Props {
   config?: ChartConfig
   series?: Record<string, Series>
-  currentTime?: Date
+  highlightTime?: Date
   isLoading?: boolean
   zoomHandler?: ZoomHandler
   verticalProfile?: boolean
@@ -117,9 +117,9 @@ onMounted(() => {
 
     thresholdLinesVisitor = new AlertLines(thresholdLines)
 
-    if (props.currentTime !== undefined) {
+    if (props.highlightTime !== undefined) {
       axisTime.value = new CrossSectionSelect(
-        props.currentTime,
+        props.highlightTime,
         onCrossValueChange,
         { x: { axisIndex: 0 }, draggable: false },
         [],
@@ -145,7 +145,7 @@ const yTicksDisplay = computed(() =>
 )
 
 watch(
-  () => props.currentTime,
+  () => props.highlightTime,
   (newValue) => {
     if (newValue !== undefined) onCrossValueChange(newValue)
   },

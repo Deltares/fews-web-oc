@@ -11,7 +11,7 @@
           :config="subplot"
           :series="series"
           :key="subplot.id"
-          :currentTime="selectedDate"
+          :highlightTime="selectedDate"
           :isLoading="isLoading(subplot, loadingSeriesIds)"
           :zoomHandler="sharedZoomHandler"
           :settings="settings.timeSeriesChart"
