@@ -7,7 +7,7 @@ export interface Collection {
 export function calculateCorrelationTimeSeries(
   series1: SeriesData[],
   series2: SeriesData[],
-): { points: SeriesData[]; line: SeriesData[] } {
+) {
   const points = series1.map((point, index) => ({
     x: series2[index]?.y ?? null,
     y: point.y,
@@ -26,7 +26,7 @@ export function calculateCorrelationTimeSeries(
   const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX ** 2)
   const intercept = (sumY - slope * sumX) / n
 
-  const linePoints = points.map((point) => ({
+  const line = points.map((point) => ({
     x: point.x,
     y: point.x !== null ? slope * point.x + intercept : null,
     flag: point.flag,
@@ -35,13 +35,5 @@ export function calculateCorrelationTimeSeries(
     user: point.user,
   }))
 
-  // Only min and max values are needed for the line
-  const minX = Math.min(...points.map((p) => p.x ?? Infinity))
-  const maxX = Math.max(...points.map((p) => p.x ?? -Infinity))
-
-  const line = linePoints.filter(
-    (point) => point.x === minX || point.x === maxX,
-  )
-
-  return { points, line }
+  return { points, line, slope, intercept }
 }

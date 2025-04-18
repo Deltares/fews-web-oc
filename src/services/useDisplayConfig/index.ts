@@ -1,4 +1,5 @@
 import {
+  ActionPeriod,
   PiWebserviceProvider,
   type ActionsResponse,
 } from '@deltares/fews-pi-requests'
@@ -44,20 +45,7 @@ function actionsResponseToDisplayConfig(
     const period = result.config.timeSeriesDisplay.period
     const plotId = result.config.timeSeriesDisplay.plotId
 
-    // The period is always specified in UTC.
-    const timeZoneOffsetString = 'Z'
-    let configPeriod: [Date, Date]
-    if (period) {
-      const periodStart = convertFewsPiDateTimeToJsDate(
-        period.startDate,
-        timeZoneOffsetString,
-      )
-      const periodEnd = convertFewsPiDateTimeToJsDate(
-        period.endDate,
-        timeZoneOffsetString,
-      )
-      configPeriod = [startTime ?? periodStart, endTime ?? periodEnd]
-    }
+    const configPeriod = periodToConfigPeriod(period, startTime, endTime)
 
     const subplots =
       result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
@@ -77,6 +65,27 @@ function actionsResponseToDisplayConfig(
     displays.push(display)
   }
   return displays
+}
+
+export function periodToConfigPeriod(
+  period: ActionPeriod | undefined,
+  startTime?: Date,
+  endTime?: Date,
+): [Date, Date] | undefined {
+  if (!period) return
+
+  // The period is always specified in UTC.
+  const timeZoneOffsetString = 'Z'
+  const periodStart = convertFewsPiDateTimeToJsDate(
+    period.startDate,
+    timeZoneOffsetString,
+  )
+  const periodEnd = convertFewsPiDateTimeToJsDate(
+    period.endDate,
+    timeZoneOffsetString,
+  )
+
+  return [startTime ?? periodStart, endTime ?? periodEnd]
 }
 
 /**

@@ -4,7 +4,7 @@
       <v-card
         border
         flat
-        class="d-grid flex-column"
+        class="d-grid flex-column pb-2"
         :class="{ 'h-100': tab === 'data-selection' }"
       >
         <v-tabs v-model="tab">
@@ -57,30 +57,7 @@
                 class="text-none"
               />
             </v-btn-group>
-            <HisAutocomplete
-              v-model="selectedTimeseries"
-              :items="allSeries"
-              label="First parameter"
-              :getItemValue="(item) => item"
-              :getItemTitle="(item) => item.name"
-            />
-
-            <HisAutocomplete
-              v-model="selectedSecondTimeseries"
-              :items="allSeries"
-              label="Second parameter"
-              :getItemValue="(item) => item"
-              :getItemTitle="(item) => item.name"
-            />
-
-            <TimeSeriesChart
-              v-if="selectedSeries && selectedSubplot"
-              :config="selectedSubplot"
-              :series="selectedSeries"
-              :settings="settings.charts.timeSeriesChart"
-              :key="`${newIdLine}-${newIdPoints}`"
-              hideLegend
-            />
+            <HisCorrelation :displayConfig :series :settings />
           </v-tabs-window-item>
         </v-tabs-window>
       </v-card>
@@ -109,6 +86,7 @@ import HisDataSelection from '@/components/his/HisDataSelection.vue'
 import HisMap from '@/components/his/HisMap.vue'
 import HisCharts from '@/components/his/HisCharts.vue'
 import HisCollection from '@/components/his/HisCollection.vue'
+import HisCorrelation from '@/components/his/functions/HisCorrelation.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import type {
   BoundingBox,
@@ -123,16 +101,11 @@ import {
   useDisplayConfigFilter,
   UseDisplayConfigOptions,
 } from '@/services/useDisplayConfig'
-import HisAutocomplete from './HisAutocomplete.vue'
-import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
-import { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
-import { calculateCorrelationTimeSeries, type Collection } from '@/lib/his'
-import { ChartConfig } from '@/lib/charts/types/ChartConfig'
-import { AxisType } from '@deltares/fews-web-oc-charts'
+import { type Collection } from '@/lib/his'
 
 interface Props {
   filterId?: string
@@ -156,12 +129,6 @@ const { locations, geojson } = useFilterLocations(baseUrl, () =>
 const { timeSeriesHeaders } = useTimeSeriesHeaders(
   baseUrl,
   () => props.filterId,
-)
-
-const selectedTimeseries = ref<ChartSeries>()
-const selectedSecondTimeseries = ref<ChartSeries>()
-const allSeries = computed(
-  () => displayConfig.value?.subplots.flatMap((s) => s.series) ?? [],
 )
 
 const selectedLocationIds = ref<string[]>([])
@@ -262,97 +229,6 @@ const { series } = useTimeSeries(
   () => new Date(),
   () => ({}),
 )
-
-const newIdLine = computed(() => {
-  if (!selectedTimeseries.value) return 'correlation'
-  if (!selectedSecondTimeseries.value) return 'correlation'
-
-  return `${selectedTimeseries.value.id}-${selectedSecondTimeseries.value.id}-correlation-line`
-})
-
-const newIdPoints = computed(() => {
-  if (!selectedTimeseries.value) return 'correlation'
-  if (!selectedSecondTimeseries.value) return 'correlation'
-
-  return `${selectedTimeseries.value.id}-${selectedSecondTimeseries.value.id}-correlation-points`
-})
-
-const selectedSeries = computed(() => {
-  if (!selectedTimeseries.value) return
-  if (!selectedSecondTimeseries.value) return
-
-  const id1 = selectedTimeseries.value.id
-  const series1 = series.value[id1]
-
-  const id2 = selectedSecondTimeseries.value?.id
-  const series2 = series.value[id2]
-
-  if (!series1.data || !series2.data) return
-
-  const { line, points } = calculateCorrelationTimeSeries(
-    series1.data,
-    series2.data,
-  )
-
-  console.log('Correlation', line, points, series1.data, series2.data)
-
-  const newSeriesLine = series1.clone()
-  newSeriesLine.lastUpdated = new Date()
-  newSeriesLine.data = line
-
-  const newSeriesPoints = series1.clone()
-  newSeriesPoints.lastUpdated = new Date()
-  newSeriesPoints.data = points
-
-  return {
-    [newIdLine.value]: newSeriesLine,
-    [newIdPoints.value]: newSeriesPoints,
-  }
-})
-
-const selectedSubplot = computed(() => {
-  if (!selectedTimeseries.value) return
-  if (!selectedSecondTimeseries.value) return
-
-  const config = displayConfig.value?.subplots[0]
-  if (!config) return
-
-  const res: ChartConfig = {
-    ...config,
-    yAxis: [
-      {
-        ...config.yAxis?.[0],
-        domain: undefined,
-        label: 'Correlation',
-      },
-    ],
-    xAxis: [
-      {
-        ...config.xAxis?.[0],
-        domain: undefined,
-        type: AxisType.value,
-      },
-    ],
-    series: [
-      {
-        ...config.series[0],
-        dataResources: [newIdLine.value],
-        id: newIdLine.value,
-        visibleInLegend: false,
-        type: 'line',
-      },
-      {
-        ...config.series[1],
-        dataResources: [newIdPoints.value],
-        id: newIdPoints.value,
-        visibleInLegend: false,
-        type: 'marker',
-      },
-    ],
-  }
-  console.log('Selected subplot', res)
-  return res
-})
 
 function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
   if (!event.features) return
