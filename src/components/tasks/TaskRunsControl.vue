@@ -63,13 +63,6 @@ function toggleTasksPanel(): void {
   grid-template-rows: auto 1fr auto auto;
 }
 
-.contain {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  height: 100%;
-  width: 100%;
-}
-
 :deep(.v-window__container) {
   height: 100%;
 }
