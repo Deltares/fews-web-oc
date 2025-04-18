@@ -210,14 +210,6 @@ const whatIfTemplates = computed(() =>
     .filter((wt) => wt !== undefined),
 )
 
-watch(
-  whatIfTemplates,
-  (templates) => {
-    console.log('templates', templates)
-  },
-  { immediate: true },
-)
-
 const { whatIfScenarios: allWhatIfScenarios, isLoading: isLoadingScenarios } =
   useWhatIfScenarios(baseUrl, () => selectedWhatIfTemplate.value?.id)
 const whatIfScenarios = computed(() =>
