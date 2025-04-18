@@ -30,8 +30,8 @@
             v-if="!isTaskRun(task)"
             class="mx-2 px-1 text-none"
             variant="plain"
-            :append-icon="getIcon(task.label)"
-            @click="toggle(task.label)"
+            :append-icon="getTaskSectionIcon(task.label)"
+            @click="toggleTaskSection(task.label)"
           >
             {{ task.label }}
           </v-btn>
@@ -168,7 +168,7 @@ const groupedTasks = computed(() => {
   return result
 })
 
-function toggle(label: string) {
+function toggleTaskSection(label: string) {
   if (label === 'Current') {
     showCurrent.value = !showCurrent.value
   } else if (label === 'Non Current') {
@@ -176,7 +176,7 @@ function toggle(label: string) {
   }
 }
 
-function getIcon(label: string) {
+function getTaskSectionIcon(label: string) {
   if (label === 'Current') {
     return showCurrent.value ? 'mdi-chevron-down' : 'mdi-chevron-right'
   } else if (label === 'Non Current') {
