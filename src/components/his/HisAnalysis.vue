@@ -18,7 +18,14 @@
       <HisCorrelation :displayConfig :series :settings />
     </v-tabs-window-item>
     <v-tabs-window-item value="time-resampling">
-      <HisTimeResampling :displayConfig :series :settings />
+      <HisTimeResampling
+        :filterId
+        :displayConfig
+        :series
+        :startTime
+        :endTime
+        :settings
+      />
     </v-tabs-window-item>
   </v-tabs-window>
 </template>
@@ -32,8 +39,11 @@ import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
+  filterId?: string
   displayConfig: DisplayConfig
   series: Record<string, Series>
+  startTime?: Date
+  endTime?: Date
   settings: ComponentSettings
 }
 
