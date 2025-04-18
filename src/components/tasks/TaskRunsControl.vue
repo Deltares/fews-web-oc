@@ -45,7 +45,7 @@ interface Props {
 defineProps<Props>()
 
 const isPanelOpen = ref(false)
-const selectedTab = ref('tasks')
+const selectedTab = ref('visualize-tasks')
 
 function toggleTasksPanel(): void {
   isPanelOpen.value = !isPanelOpen.value
