@@ -15,6 +15,7 @@
     :bounds="bounds"
     :fadeDuration="100"
   >
+    <SyncMap />
     <!-- Fade duration is set to 100ms instead of 0ms to avoid flickering -->
     <mgl-attribution-control position="top-right" :compact="true" />
     <mgl-scale-control position="bottom-right" />
@@ -25,6 +26,7 @@
 <script setup lang="ts">
 import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
+import SyncMap from '@/components/map/SyncMap.vue'
 import {
   MglAttributionControl,
   MglMap,
