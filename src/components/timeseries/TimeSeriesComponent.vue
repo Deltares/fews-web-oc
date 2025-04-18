@@ -15,7 +15,7 @@
           :isLoading="isLoading(subplot, loadingSeriesIds)"
           :zoomHandler="sharedZoomHandler"
           :settings="settings.timeSeriesChart"
-          :forecast-legend="config.forecastLegend"
+          :forecastLegend="config.forecastLegend"
         >
         </TimeSeriesChart>
       </KeepAlive>
