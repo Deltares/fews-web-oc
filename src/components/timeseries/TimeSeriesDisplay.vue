@@ -42,6 +42,7 @@ import {
 } from '@/services/useDisplayConfig/index.ts'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useSystemTimeStore } from '@/stores/systemTime'
+import { useTaskRunsStore } from '@/stores/taskRuns'
 import {
   type ComponentSettings,
   getDefaultSettings,
@@ -59,6 +60,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const userSettings = useUserSettingsStore()
 const systemTimeStore = useSystemTimeStore()
+const taskRunsStore = useTaskRunsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -83,6 +85,7 @@ const { displays, displayConfig } = useDisplayConfig(
   () => systemTimeStore.startTime,
   () => systemTimeStore.endTime,
   options,
+  () => taskRunsStore.selectedTaskRunIds,
 )
 
 watchEffect(() => {

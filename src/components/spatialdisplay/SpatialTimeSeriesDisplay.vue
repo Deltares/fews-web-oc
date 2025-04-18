@@ -63,6 +63,7 @@ const { displayConfig: elevationChartDisplayconfig } = useDisplayConfigFilter(
   () => props.elevationChartFilter ?? {},
   () => systemTimeStore.startTime,
   () => systemTimeStore.endTime,
+  () => taskRunsStore.selectedTaskRunIds,
 )
 
 const { tooltip } = useLocationTooltip(

@@ -95,6 +95,7 @@ export function useDisplayConfig(
   startTime?: MaybeRefOrGetter<Date | undefined>,
   endTime?: MaybeRefOrGetter<Date | undefined>,
   options?: MaybeRefOrGetter<UseDisplayConfigOptions>,
+  taskRunIds?: MaybeRefOrGetter<string[]>,
 ): UseDisplayConfigReturn {
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -106,10 +107,22 @@ export function useDisplayConfig(
     const _nodeId = toValue(nodeId)
     if (_nodeId === undefined) return
 
-    response.value = await piProvider.getTopologyActions({
+    const filter = {
       nodeId: _nodeId,
       ...toValue(options),
-    })
+    }
+
+    const _taskRunIds = toValue(taskRunIds)
+    const taskRunsFilter = {
+      ...filter,
+      // TODO: Change this to string.join(',') when the backend is fixed
+      taskRunIds: _taskRunIds,
+      currentForecastsAlwaysVisible: true,
+    }
+
+    response.value = await piProvider.getTopologyActions(
+      _taskRunIds?.length ? taskRunsFilter : filter,
+    )
   })
 
   const displays = computed(() => {
