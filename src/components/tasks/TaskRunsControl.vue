@@ -8,26 +8,26 @@
     <div v-if="isPanelOpen" class="d-flex flex-column h-100 w-100">
       <v-tabs v-model="selectedTab" density="compact" class="flex-0-0">
         <v-tab
-          value="tasks"
-          prepend-icon="mdi-clipboard-text"
-          class="text-none"
-        >
-          Tasks
-        </v-tab>
-        <v-tab
           value="visualize-tasks"
           prepend-icon="mdi-chart-line"
           class="text-none"
         >
-          Visualize Tasks
+          Visualize Data
+        </v-tab>
+        <v-tab
+          value="tasks"
+          prepend-icon="mdi-clipboard-text"
+          class="text-none"
+        >
+          All Tasks
         </v-tab>
       </v-tabs>
       <v-window v-model="selectedTab" class="flex-1-1">
-        <v-window-item value="tasks" class="h-100">
-          <TaskRunsPanel />
-        </v-window-item>
         <v-window-item value="visualize-tasks" class="h-100">
           <TaskRunsPanel :topologyNode="topologyNode" />
+        </v-window-item>
+        <v-window-item value="tasks" class="h-100">
+          <TaskRunsPanel />
         </v-window-item>
       </v-window>
     </div>
