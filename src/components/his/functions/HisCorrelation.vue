@@ -53,6 +53,7 @@ const chartSettings = computed(() =>
   merge({}, props.settings.charts.timeSeriesChart, {
     legend: {
       placement: 'inside upper left',
+      numberOfLines: 1,
     },
   }),
 )
