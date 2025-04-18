@@ -89,7 +89,6 @@ export function useTaskRuns(
       endDispatchTime,
       taskRunStatusIds: Object.values(TaskStatusId),
       topologyNodeId,
-      // @ts-expect-error: FIXME: Remove once the library is fixed.
       forecastCount: 99999,
       startForecastTime: convertJSDateToFewsPiParameter(
         new Date('1900-01-01T00:00:00Z'),
