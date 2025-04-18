@@ -1,26 +1,17 @@
 <template>
   <div class="task-runs-panel h-100">
     <div class="d-flex pt-3 pb-2 align-center">
-      <WorkflowFilterControl v-model="selectedWorkflowIds" />
+      <WorkflowFilterControl
+        v-if="!topologyNode"
+        v-model="selectedWorkflowIds"
+      />
       <TaskStatusFilterControl v-model="selectedTaskStatuses" />
       <v-spacer />
-      <v-checkbox-btn
-        v-model="showAllSelectedTaskRuns"
-        class="flex-0-0 me-2"
-        density="compact"
-        false-icon="mdi-chart-line"
-        true-icon="mdi-chart-areaspline-variant"
-        color="primary"
-      />
       <PeriodFilterControl v-model="period" />
     </div>
     <div class="overflow-y-auto">
       <v-list-item v-if="sortedTasks.length === 0">
-        {{
-          showAllSelectedTaskRuns
-            ? 'You have no visualized tasks'
-            : 'No tasks available'
-        }}
+        {{ 'No tasks available' }}
       </v-list-item>
 
       <!-- Important to have item-height as it greatly improves performance -->
@@ -37,6 +28,7 @@
           <div v-else class="mb-2 mx-2">
             <TaskRunSummary
               :task="task"
+              :canVisualize="props.topologyNode !== undefined"
               v-model:expanded="expandedItems[task.taskId]"
             />
           </div>
@@ -64,7 +56,7 @@ import { computed, ref, watch } from 'vue'
 import { RelativePeriod } from '@/lib/period'
 import { sortTasks, isTaskRun, TaskStatus } from '@/lib/taskruns'
 
-import { useTaskRuns, useTopologyWorkflows } from '@/services/useTasksRuns'
+import { useTaskRuns } from '@/services/useTasksRuns'
 
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 
@@ -72,7 +64,6 @@ import TaskStatusFilterControl from './TaskStatusFilterControl.vue'
 import TaskRunSummary from './TaskRunSummary.vue'
 import WorkflowFilterControl from './WorkflowFilterControl.vue'
 import PeriodFilterControl from './PeriodFilterControl.vue'
-import { useTaskRunsStore } from '@/stores/taskRuns'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 
 interface Props {
@@ -82,19 +73,15 @@ interface Props {
 const props = defineProps<Props>()
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
-const taskRunsStore = useTaskRunsStore()
 
 const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
 const expandedItems = ref<Record<string, boolean>>({})
 
-const { workflowIds } = useTopologyWorkflows(() => props.topologyNode?.id)
-
 // Set preferred workflow IDs for the running tasks menu, if this node has
 // associated workflows.
 watch(
-  workflowIds,
-  () => {
-    const node = props.topologyNode
+  () => props.topologyNode,
+  (node) => {
     const primaryWorkflowId = node?.workflowId ? [node.workflowId] : []
     const secondaryWorkflowIds =
       node?.secondaryWorkflows?.map(
@@ -102,11 +89,7 @@ watch(
       ) ?? []
     // Note: this list of workflow IDs may be empty, in which case we have no
     //       preferred workflow.
-    const preferredWorkflowIds = [
-      ...primaryWorkflowId,
-      ...secondaryWorkflowIds,
-      ...workflowIds.value,
-    ]
+    const preferredWorkflowIds = [...primaryWorkflowId, ...secondaryWorkflowIds]
     availableWorkflowsStore.setPreferredWorkflowIds(preferredWorkflowIds)
 
     if (preferredWorkflowIds.length > 0) {
@@ -118,6 +101,13 @@ watch(
     }
   },
   { immediate: true },
+)
+
+watch(
+  () => props.topologyNode,
+  () => {
+    refreshTaskRuns()
+  },
 )
 
 // Select all task statuses by default.
@@ -140,16 +130,10 @@ const {
   period,
   selectedWorkflowIds,
   selectedTaskStatuses,
-)
-const showAllSelectedTaskRuns = ref(false)
-
-const taskRuns = computed(() =>
-  showAllSelectedTaskRuns.value
-    ? taskRunsStore.selectedTaskRuns
-    : filteredTaskRuns.value,
+  () => props.topologyNode?.id,
 )
 
-const sortedTasks = computed(() => taskRuns.value.toSorted(sortTasks))
+const sortedTasks = computed(() => filteredTaskRuns.value.toSorted(sortTasks))
 
 const groupedTasks = computed(() => {
   const currentTasks = sortedTasks.value.filter((task) => task.isCurrent)
@@ -160,8 +144,7 @@ const groupedTasks = computed(() => {
     result.push({ isHeader: true, label: 'Current' }, ...currentTasks)
   }
   if (nonCurrentTasks.length) {
-    const label = showAllSelectedTaskRuns.value ? 'Visualized' : 'Non Current'
-    result.push({ isHeader: true, label }, ...nonCurrentTasks)
+    result.push({ isHeader: true, label: 'Non Current' }, ...nonCurrentTasks)
   }
 
   return result

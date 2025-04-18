@@ -20,7 +20,7 @@ export const useTaskRunsStore = defineStore('taskRuns', () => {
     return selectedTaskRuns.value.some((tr) => tr.taskId === taskRun.taskId)
   }
 
-  function clearTaskRuns() {
+  function clearSelectedTaskRuns() {
     selectedTaskRuns.value = []
   }
 
@@ -36,6 +36,6 @@ export const useTaskRunsStore = defineStore('taskRuns', () => {
     selectedTaskRunIds,
     taskRunIsSelected,
     toggleTaskRun,
-    clearTaskRuns,
+    clearSelectedTaskRuns,
   }
 })

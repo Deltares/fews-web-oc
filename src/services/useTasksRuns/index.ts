@@ -34,6 +34,7 @@ export function useTaskRuns(
   dispatchPeriod: MaybeRefOrGetter<RelativePeriod | null>,
   workflowIds: MaybeRefOrGetter<string[]>,
   statuses: MaybeRefOrGetter<TaskStatus[]>,
+  topologyNodeId?: MaybeRefOrGetter<string | undefined>,
 ) {
   const isLoading = ref(false)
   const lastUpdatedTimestamp = ref<number | null>(null)
@@ -50,9 +51,13 @@ export function useTaskRuns(
 
   async function fetch(): Promise<void> {
     const _dispatchPeriod = toValue(dispatchPeriod)
+    const _topologyNodeId = toValue(topologyNodeId)
 
     isLoading.value = true
-    const fetchedTaskRuns = await fetchTaskRuns(_dispatchPeriod)
+    const fetchedTaskRuns = await fetchTaskRuns(
+      _dispatchPeriod,
+      _topologyNodeId,
+    )
     isLoading.value = false
 
     allTaskRuns.value = fetchedTaskRuns.map(convertFewsPiTaskRunToTaskRun)
@@ -75,39 +80,6 @@ export function useTaskRuns(
     lastUpdatedTimestamp,
     isLoading,
     fetch,
-  }
-}
-
-export function useTopologyWorkflows(
-  topologyNodeId: MaybeRefOrGetter<string | undefined>,
-) {
-  const isLoading = ref(false)
-  const workflowIds = ref<string[]>([])
-
-  watch(() => toValue(topologyNodeId), fetch)
-
-  async function fetch(): Promise<void> {
-    const _topologyNodeId = toValue(topologyNodeId)
-    if (!_topologyNodeId) return
-
-    // FIXME: Currently only gets the workflows of the last 48 hours.
-    // We should have a separate endpoint for this.
-    const period = {
-      startOffsetSeconds: -48 * 60 * 60,
-      endOffsetSeconds: 0,
-    }
-
-    isLoading.value = true
-    const fetchedTaskRuns = await fetchTaskRuns(period, _topologyNodeId)
-    isLoading.value = false
-
-    workflowIds.value = fetchedTaskRuns.map((taskRun) => taskRun.workflowId)
-  }
-
-  return {
-    isLoading,
-    fetch,
-    workflowIds,
   }
 }
 

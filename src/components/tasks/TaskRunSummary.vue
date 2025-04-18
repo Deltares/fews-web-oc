@@ -37,7 +37,7 @@
               </v-list-item-subtitle>
             </div>
             <v-checkbox-btn
-              v-if="isCompleted"
+              v-if="isCompleted && canVisualize"
               v-model="selected"
               class="flex-0-0"
               density="compact"
@@ -88,6 +88,7 @@ const taskRunsStore = useTaskRunsStore()
 
 interface Props {
   task: TaskRun
+  canVisualize: boolean
 }
 const props = defineProps<Props>()
 

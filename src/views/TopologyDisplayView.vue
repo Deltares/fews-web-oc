@@ -120,6 +120,7 @@ import {
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { useComponentSettings } from '@/services/useComponentSettings'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+import { useTaskRunsStore } from '@/stores/taskRuns'
 import type { NavigateRoute } from '@/lib/router'
 
 interface Props {
@@ -138,6 +139,7 @@ const configStore = useConfigStore()
 const settings = useUserSettingsStore()
 const workflowsStore = useWorkflowsStore()
 const availableWorkflowsStore = useAvailableWorkflowsStore()
+const taskRunsStore = useTaskRunsStore()
 
 const menuType = computed(() => {
   const configured = settings.get('ui.hierarchical-menu-style')?.value as string
@@ -153,6 +155,8 @@ watch(active, () => {
   workflowsStore.isDrawingBoundingBox = false
   workflowsStore.coordinate = null
   workflowsStore.isSelectingCoordinate = false
+
+  taskRunsStore.clearSelectedTaskRuns()
 })
 
 const activeNode = computed(() => {
