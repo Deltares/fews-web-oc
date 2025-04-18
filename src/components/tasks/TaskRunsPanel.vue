@@ -1,10 +1,7 @@
 <template>
   <div class="task-runs-panel h-100">
     <div class="d-flex pt-3 pb-2 align-center">
-      <WorkflowFilterControl
-        v-model="selectedWorkflowIds"
-        @update:model-value="flagManuallyChanged"
-      />
+      <WorkflowFilterControl v-model="selectedWorkflowIds" />
       <TaskStatusFilterControl v-model="selectedTaskStatuses" />
       <v-spacer />
       <v-checkbox-btn
@@ -67,7 +64,7 @@ import { computed, ref, watch } from 'vue'
 import { RelativePeriod } from '@/lib/period'
 import { sortTasks, isTaskRun, TaskStatus } from '@/lib/taskruns'
 
-import { useTaskRuns } from '@/services/useTasksRuns'
+import { useTaskRuns, useTopologyWorkflows } from '@/services/useTasksRuns'
 
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 
@@ -76,9 +73,10 @@ import TaskRunSummary from './TaskRunSummary.vue'
 import WorkflowFilterControl from './WorkflowFilterControl.vue'
 import PeriodFilterControl from './PeriodFilterControl.vue'
 import { useTaskRunsStore } from '@/stores/taskRuns'
+import type { TopologyNode } from '@deltares/fews-pi-requests'
 
 interface Props {
-  topologyNodeId?: string
+  topologyNode?: TopologyNode
 }
 
 const props = defineProps<Props>()
@@ -89,34 +87,37 @@ const taskRunsStore = useTaskRunsStore()
 const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
 const expandedItems = ref<Record<string, boolean>>({})
 
-// Automatically select preferred workflow IDs if the user has not changed the
-// filter manually yet, otherwise, leave the filter as-is.
-let hasChangedWorkflowsFilterManually = false
-const flagManuallyChanged = () => (hasChangedWorkflowsFilterManually = true)
+const { workflowIds } = useTopologyWorkflows(() => props.topologyNode?.id)
+
+// Set preferred workflow IDs for the running tasks menu, if this node has
+// associated workflows.
 watch(
-  () => availableWorkflowsStore.preferredWorkflowIds,
-  (preferredWorkflowIds) => {
-    if (hasChangedWorkflowsFilterManually) return
-    if (preferredWorkflowIds.length === 0) {
-      // If we have no preferred workflow IDs, select all.
-      selectedWorkflowIds.value = availableWorkflowsStore.workflowIds
-    } else {
-      // Otherwise, show only the preferred workflow IDs.
+  workflowIds,
+  () => {
+    const node = props.topologyNode
+    const primaryWorkflowId = node?.workflowId ? [node.workflowId] : []
+    const secondaryWorkflowIds =
+      node?.secondaryWorkflows?.map(
+        (workflow) => workflow.secondaryWorkflowId,
+      ) ?? []
+    // Note: this list of workflow IDs may be empty, in which case we have no
+    //       preferred workflow.
+    const preferredWorkflowIds = [
+      ...primaryWorkflowId,
+      ...secondaryWorkflowIds,
+      ...workflowIds.value,
+    ]
+    availableWorkflowsStore.setPreferredWorkflowIds(preferredWorkflowIds)
+
+    if (preferredWorkflowIds.length > 0) {
+      // If we have preferred workflow IDs, select them.
       selectedWorkflowIds.value = preferredWorkflowIds
+    } else {
+      // Otherwise, select all available workflows.
+      selectedWorkflowIds.value = availableWorkflowsStore.workflowIds
     }
   },
-)
-
-// The request for the available workflows may still be pending while this
-// component is created, so we may initialise the default selected workflows
-// with an empty array. To fix this, we reinitialise our selection upon changes
-// in the workflows, which occur when they have been fetched.
-watch(
-  () => availableWorkflowsStore.workflowIds,
-  (fetchedWorkflowIds) => {
-    selectedWorkflowIds.value = fetchedWorkflowIds
-  },
-  { once: true },
+  { immediate: true },
 )
 
 // Select all task statuses by default.
@@ -139,7 +140,6 @@ const {
   period,
   selectedWorkflowIds,
   selectedTaskStatuses,
-  () => props.topologyNodeId,
 )
 const showAllSelectedTaskRuns = ref(false)
 

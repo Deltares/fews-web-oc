@@ -34,13 +34,7 @@ export function useTaskRuns(
   dispatchPeriod: MaybeRefOrGetter<RelativePeriod | null>,
   workflowIds: MaybeRefOrGetter<string[]>,
   statuses: MaybeRefOrGetter<TaskStatus[]>,
-  topologyNodeId: MaybeRefOrGetter<string | undefined>,
 ) {
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const piProvider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-
   const isLoading = ref(false)
   const lastUpdatedTimestamp = ref<number | null>(null)
   const allTaskRuns = ref<TaskRun[]>([])
@@ -52,53 +46,17 @@ export function useTaskRuns(
 
   // Fetch taskruns if a new dispatch period is selected.
   watch(() => toValue(dispatchPeriod), fetch)
-  watch(() => toValue(topologyNodeId), fetch)
   watch(() => shouldRefreshTaskRuns.value, fetch)
 
   async function fetch(): Promise<void> {
     const _dispatchPeriod = toValue(dispatchPeriod)
-    const _topologyNodeId = toValue(topologyNodeId)
 
     isLoading.value = true
-    const fetchedTaskRuns = await fetchTaskRuns(
-      _topologyNodeId,
-      _dispatchPeriod,
-    )
+    const fetchedTaskRuns = await fetchTaskRuns(_dispatchPeriod)
     isLoading.value = false
 
     allTaskRuns.value = fetchedTaskRuns.map(convertFewsPiTaskRunToTaskRun)
     lastUpdatedTimestamp.value = Date.now()
-  }
-
-  async function fetchTaskRuns(
-    topologyNodeId?: string,
-    dispatchPeriod?: RelativePeriod | null,
-  ): Promise<FewsPiTaskRun[]> {
-    const period = dispatchPeriod
-      ? convertRelativeToAbsolutePeriod(dispatchPeriod)
-      : undefined
-    const startDispatchTime = period
-      ? convertTimestampToFewsPiParameter(period.startTimestamp)
-      : undefined
-    const endDispatchTime = period
-      ? convertTimestampToFewsPiParameter(period.endTimestamp)
-      : undefined
-    const response = await piProvider.getTaskRuns({
-      documentFormat: DocumentFormat.PI_JSON,
-      startDispatchTime,
-      endDispatchTime,
-      taskRunStatusIds: Object.values(TaskStatusId),
-      topologyNodeId,
-      forecastCount: 99999,
-      startForecastTime: convertJSDateToFewsPiParameter(
-        new Date('1900-01-01T00:00:00Z'),
-      ),
-      endForecastTime: convertJSDateToFewsPiParameter(
-        new Date('3000-12-31T23:59:59Z'),
-      ),
-    })
-
-    return response.taskRuns
   }
 
   function filterTasks(): TaskRun[] {
@@ -118,4 +76,81 @@ export function useTaskRuns(
     isLoading,
     fetch,
   }
+}
+
+export function useTopologyWorkflows(
+  topologyNodeId: MaybeRefOrGetter<string | undefined>,
+) {
+  const isLoading = ref(false)
+  const workflowIds = ref<string[]>([])
+
+  watch(() => toValue(topologyNodeId), fetch)
+
+  async function fetch(): Promise<void> {
+    const _topologyNodeId = toValue(topologyNodeId)
+    if (!_topologyNodeId) return
+
+    // FIXME: Currently only gets the workflows of the last 48 hours.
+    // We should have a separate endpoint for this.
+    const period = {
+      startOffsetSeconds: -48 * 60 * 60,
+      endOffsetSeconds: 0,
+    }
+
+    isLoading.value = true
+    const fetchedTaskRuns = await fetchTaskRuns(period, _topologyNodeId)
+    isLoading.value = false
+
+    workflowIds.value = fetchedTaskRuns.map((taskRun) => taskRun.workflowId)
+  }
+
+  return {
+    isLoading,
+    fetch,
+    workflowIds,
+  }
+}
+
+async function fetchTaskRuns(
+  dispatchPeriod?: RelativePeriod | null,
+  topologyNodeId?: string,
+): Promise<FewsPiTaskRun[]> {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const piProvider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
+  const period = dispatchPeriod
+    ? convertRelativeToAbsolutePeriod(dispatchPeriod)
+    : undefined
+  const startDispatchTime = period
+    ? convertTimestampToFewsPiParameter(period.startTimestamp)
+    : undefined
+  const endDispatchTime = period
+    ? convertTimestampToFewsPiParameter(period.endTimestamp)
+    : undefined
+
+  const filter = {
+    documentFormat: DocumentFormat.PI_JSON,
+    startDispatchTime,
+    endDispatchTime,
+    taskRunStatusIds: Object.values(TaskStatusId),
+  }
+
+  const topologyNodeFilter = {
+    ...filter,
+    topologyNodeId,
+    forecastCount: 99999,
+    startForecastTime: convertJSDateToFewsPiParameter(
+      new Date('1900-01-01T00:00:00Z'),
+    ),
+    endForecastTime: convertJSDateToFewsPiParameter(
+      new Date('3000-12-31T23:59:59Z'),
+    ),
+  }
+  const response = await piProvider.getTaskRuns(
+    topologyNodeId ? topologyNodeFilter : filter,
+  )
+
+  return response.taskRuns
 }

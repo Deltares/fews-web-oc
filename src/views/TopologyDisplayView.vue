@@ -60,7 +60,7 @@
         />
       </v-list>
     </v-menu>
-    <TaskRunsControl v-if="showTaskMenu" :topologyNodeId="topologyNode?.id" />
+    <TaskRunsControl v-if="showTaskMenu" :topologyNode="topologyNode" />
   </Teleport>
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
@@ -167,24 +167,6 @@ const activeNode = computed(() => {
   }
   return node
 })
-
-// Set preferred workflow IDs for the running tasks menu, if this node has
-// associated workflows.
-watch(
-  activeNode,
-  (node) => {
-    const primaryWorkflowId = node?.workflowId ? [node.workflowId] : []
-    const secondaryWorkflowIds =
-      node?.secondaryWorkflows?.map(
-        (workflow) => workflow.secondaryWorkflowId,
-      ) ?? []
-    // Note: this list of workflow IDs may be empty, in which case we have no
-    //       preferred workflow.
-    const workflowIds = [...primaryWorkflowId, ...secondaryWorkflowIds]
-    availableWorkflowsStore.setPreferredWorkflowIds(workflowIds)
-  },
-  { immediate: true },
-)
 // Clear the preferred workflow IDs when we unmount.
 onUnmounted(() => availableWorkflowsStore.clearPreferredWorkflowIds())
 

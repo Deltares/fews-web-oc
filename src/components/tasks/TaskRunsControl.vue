@@ -5,15 +5,16 @@
     @click="toggleTasksPanel"
   />
   <Teleport to="#main-side-panel" defer>
-    <TaskRunsPanel v-if="isPanelOpen" :topologyNodeId="topologyNodeId" />
+    <TaskRunsPanel v-if="isPanelOpen" :topologyNode="topologyNode" />
   </Teleport>
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
 import TaskRunsPanel from './TaskRunsPanel.vue'
+import type { TopologyNode } from '@deltares/fews-pi-requests'
 
 interface Props {
-  topologyNodeId?: string
+  topologyNode?: TopologyNode
 }
 
 defineProps<Props>()
