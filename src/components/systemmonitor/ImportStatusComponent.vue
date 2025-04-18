@@ -1,26 +1,26 @@
 <template>
   <v-data-table
     :headers="headers"
+    :items-per-page="100"
     :items="importStatus"
-    :footer-props="{
-      itemsPerPageOptions: [100, 200, 300],
-    }"
     sticky
-    class="elevation-1"
   >
     <template v-slot:[`item.lastImportTime`]="{ item }">
       <v-chip
         size="small"
         :color="item.lastImportTimeBackgroundColor"
-        light
-        small
-        >{{ item.lastImportTime }}
+        variant="flat"
+      >
+        {{ item.lastImportTime }}
       </v-chip>
     </template>
     <template v-slot:[`item.fileFailed`]="{ item }">
-      <v-chip size="small" :color="getColor(item.fileFailed)" light small>
+      <v-chip size="small" :color="getColor(item.fileFailed)" variant="flat">
         {{ item.fileFailed }}
       </v-chip>
+    </template>
+    <template #bottom>
+      <v-data-table-footer :items-per-page-options="[100, 200, 300]" />
     </template>
   </v-data-table>
 </template>
@@ -28,12 +28,14 @@
 <script setup lang="ts">
 import { ImportStatus, PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { onMounted, onUnmounted, ref } from 'vue'
-import { configManager } from '../../services/application-config'
-import { type VDataTable } from 'vuetify/components'
+import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-type ReadonlyDataTableHeader = (typeof VDataTable)['headers']
+import type { ReadonlyDataTableHeader } from '@/lib/table/types/TableHeaders'
 
-const props = defineProps(['timeOut'])
+interface Props {
+  timeOut: number
+}
+const props = defineProps<Props>()
 
 const headers: ReadonlyDataTableHeader[] = [
   { title: 'Source', key: 'dataFeed' },
@@ -43,7 +45,7 @@ const headers: ReadonlyDataTableHeader[] = [
   { title: 'Files imported', key: 'fileRead' },
   { title: 'Failed imports', key: 'fileFailed' },
 ]
-let importStatus = ref<ImportStatus[]>([])
+const importStatus = ref<ImportStatus[]>([])
 let active: boolean = false
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
