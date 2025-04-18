@@ -46,37 +46,11 @@
             </div>
           </v-tabs-window-item>
           <v-tabs-window-item value="analysis" v-if="displayConfig">
-            <v-btn-toggle
-              v-model="selectedFunction"
-              class="ma-3"
-              variant="outlined"
-            >
-              <v-btn
-                prepend-icon="mdi-function-variant"
-                text="Correlation"
-                class="text-none"
-                value="correlation"
-              />
-              <v-btn
-                prepend-icon="mdi-sigma"
-                text="Time Resampling"
-                class="text-none"
-                value="time-resampling"
-              />
-            </v-btn-toggle>
-            <v-tabs-window v-model="selectedFunction">
-              <v-tabs-window-item value="correlation">
-                <HisCorrelation :displayConfig :series :settings />
-              </v-tabs-window-item>
-              <v-tabs-window-item value="time-resampling">
-                <v-card flat>
-                  <v-card-title>Time Resampling</v-card-title>
-                  <v-card-text>
-                    <p>Time resampling is not yet implemented.</p>
-                  </v-card-text>
-                </v-card>
-              </v-tabs-window-item>
-            </v-tabs-window>
+            <HisAnalysis
+              :displayConfig="displayConfig"
+              :series="series"
+              :settings="settings"
+            />
           </v-tabs-window-item>
         </v-tabs-window>
       </v-card>
@@ -106,13 +80,13 @@ import HisDataSelection from '@/components/his/HisDataSelection.vue'
 import HisMap from '@/components/his/HisMap.vue'
 import HisCharts from '@/components/his/HisCharts.vue'
 import HisCollection from '@/components/his/HisCollection.vue'
-import HisCorrelation from '@/components/his/functions/HisCorrelation.vue'
+import HisAnalysis from '@/components/his/HisAnalysis.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import type {
   BoundingBox,
   filterActionsFilter,
 } from '@deltares/fews-pi-requests'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import { configManager } from '@/services/application-config'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
@@ -141,7 +115,6 @@ const props = withDefaults(defineProps<Props>(), {
 const userSettings = useUserSettingsStore()
 
 const tab = ref('data-selection')
-const selectedFunction = ref('correlation')
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -241,8 +214,8 @@ const filter = computed(() => {
   return _fitler
 })
 
-const startTime = new Date(Date.now() - 0 * 24 * 60 * 60 * 1000)
-const endTime = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000)
+const startTime = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+const endTime = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
 
 const { displayConfig } = useDisplayConfigFilter(
   baseUrl,
