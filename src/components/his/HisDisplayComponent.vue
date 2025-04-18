@@ -46,20 +46,37 @@
             </div>
           </v-tabs-window-item>
           <v-tabs-window-item value="analysis" v-if="displayConfig">
-            <v-btn-group class="ma-3" variant="outlined">
+            <v-btn-toggle
+              v-model="selectedFunction"
+              class="ma-3"
+              variant="outlined"
+            >
               <v-btn
                 prepend-icon="mdi-function-variant"
                 text="Correlation"
                 class="text-none"
-                active
+                value="correlation"
               />
               <v-btn
                 prepend-icon="mdi-sigma"
                 text="Time Resampling"
                 class="text-none"
+                value="time-resampling"
               />
-            </v-btn-group>
-            <HisCorrelation :displayConfig :series :settings />
+            </v-btn-toggle>
+            <v-tabs-window v-model="selectedFunction">
+              <v-tabs-window-item value="correlation">
+                <HisCorrelation :displayConfig :series :settings />
+              </v-tabs-window-item>
+              <v-tabs-window-item value="time-resampling">
+                <v-card flat>
+                  <v-card-title>Time Resampling</v-card-title>
+                  <v-card-text>
+                    <p>Time resampling is not yet implemented.</p>
+                  </v-card-text>
+                </v-card>
+              </v-tabs-window-item>
+            </v-tabs-window>
           </v-tabs-window-item>
         </v-tabs-window>
       </v-card>
@@ -95,7 +112,7 @@ import type {
   BoundingBox,
   filterActionsFilter,
 } from '@deltares/fews-pi-requests'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import { configManager } from '@/services/application-config'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
@@ -124,6 +141,7 @@ const props = withDefaults(defineProps<Props>(), {
 const userSettings = useUserSettingsStore()
 
 const tab = ref('data-selection')
+const selectedFunction = ref('correlation')
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
