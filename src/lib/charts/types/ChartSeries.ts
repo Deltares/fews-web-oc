@@ -16,4 +16,5 @@ export interface ChartSeries {
   unit: string
   style: CSS.SvgPropertiesHyphen
   editable?: boolean
+  locationId?: string
 }

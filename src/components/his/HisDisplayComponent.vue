@@ -47,8 +47,11 @@
           </v-tabs-window-item>
           <v-tabs-window-item value="analysis" v-if="displayConfig">
             <HisAnalysis
+              :filterId="filterId"
               :displayConfig="displayConfig"
               :series="series"
+              :startTime="startTime"
+              :endTime="endTime"
               :settings="settings"
             />
           </v-tabs-window-item>
