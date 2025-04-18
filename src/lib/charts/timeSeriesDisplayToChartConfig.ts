@@ -123,7 +123,7 @@ function getChartSeries(
   items: TimeSeriesDisplaySubplotItem[],
   seriesType: string,
   config: ChartConfig,
-) {
+): ChartSeries {
   return {
     id: `${items[0].request}`,
     dataResources: items.map((item) => `${item.request}`),
@@ -133,6 +133,7 @@ function getChartSeries(
     visibleInLegend: items[0].visibleInLegend,
     visibleInPlot: items[0].visibleInPlot,
     visibleInTable: items[0].visibleInTable,
+    locationId: items[0].locationId,
     options: {
       x: {
         key: 'x',
