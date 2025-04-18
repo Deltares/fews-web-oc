@@ -11,7 +11,7 @@
           :config="subplot"
           :series="series"
           :key="subplot.id"
-          :currentTime="selectedDate"
+          :highlightTime="selectedDate"
           :isLoading="isLoading(subplot, loadingSeriesIds)"
           :zoomHandler="sharedZoomHandler"
           :settings="settings.timeSeriesChart"
@@ -153,7 +153,7 @@ const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings().charts,
 })
 
-const { selectedDate } = useSelectedDate(() => props.currentTime ?? new Date())
+const { selectedDate } = useSelectedDate(() => props.currentTime)
 const store = useSystemTimeStore()
 const lastUpdated = ref<Date>(new Date())
 const isEditing = ref(false)

@@ -22,6 +22,7 @@ import {
   ChartLine,
   ChartMarker,
   ChartRule,
+  CrossSectionSelect,
   Margin,
   TooltipAnchor,
   TooltipOptions,
@@ -51,7 +52,7 @@ import { getAxisOptions } from '@/lib/charts/axisOptions'
 interface Props {
   config?: ChartConfig
   series?: Record<string, Series>
-  currentTime?: Date
+  highlightTime?: Date
   isLoading?: boolean
   zoomHandler?: ZoomHandler
   verticalProfile?: boolean
@@ -70,9 +71,6 @@ const props = withDefaults(defineProps<Props>(), {
   series: () => {
     return {}
   },
-  currentTime: () => {
-    return new Date()
-  },
 })
 
 let thresholdLines!: ThresholdLine[]
@@ -82,7 +80,7 @@ const margin = ref<Margin>({})
 const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = ref<HTMLElement>()
-const axisTime = ref<CurrentTime>()
+const axisTime = ref<CrossSectionSelect>()
 const hasLoadedOnce = ref(false)
 
 onMounted(() => {
@@ -115,19 +113,25 @@ onMounted(() => {
       ? new VerticalMouseOver(undefined, (value: number) => value.toString())
       : new MouseOver(undefined, (value: number) => value.toString())
     const zoom = props.zoomHandler ?? new ZoomHandler(WheelMode.NONE)
-    axisTime.value = new CurrentTime({
-      x: {
-        axisIndex: 0,
-      },
-    })
-    axisTime.value.setDateTime(props.currentTime)
+
+    const currentTime = new CurrentTime({ x: { axisIndex: 0 } })
 
     thresholdLinesVisitor = new AlertLines(thresholdLines)
+
+    if (props.highlightTime !== undefined) {
+      axisTime.value = new CrossSectionSelect(
+        props.highlightTime,
+        onCrossValueChange,
+        { x: { axisIndex: 0 }, draggable: false },
+        [],
+      )
+      axis.accept(axisTime.value)
+    }
 
     axis.accept(thresholdLinesVisitor)
     axis.accept(zoom)
     axis.accept(mouseOver)
-    axis.accept(axisTime.value)
+    axis.accept(currentTime)
     resize()
     if (props.config !== undefined) onValueChange()
     window.addEventListener('resize', resize)
@@ -142,14 +146,18 @@ const yTicksDisplay = computed(() =>
 )
 
 watch(
-  () => props.currentTime,
+  () => props.highlightTime,
   (newValue) => {
-    if (axisTime.value) {
-      axisTime.value.setDateTime(newValue)
-      axisTime.value.redraw()
-    }
+    if (newValue !== undefined) onCrossValueChange(newValue)
   },
 )
+
+function onCrossValueChange(value: number | Date) {
+  if (axisTime.value) {
+    axisTime.value.value = value
+    axisTime.value.redraw()
+  }
+}
 
 const addToChart = (chartSeries: ChartSeries) => {
   const id = chartSeries.id
