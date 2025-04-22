@@ -1,46 +1,36 @@
 <template>
   <v-btn icon class="thresholds-button">
     <v-badge :content="badgeCount">
-      <v-icon>mdi-alert</v-icon>
-      <template
-        v-for="level in warningLevelsStore.warningLevels"
+      <img
+        v-for="level in filteredWarningLevels"
         :key="level.id"
-      >
-        <img
-          v-if="level.icon && level.count"
-          class="thresholds-button__img"
-          :src="getResourcesIconsUrl(level.icon)"
-          alt="Threshold Icon"
-        />
-      </template>
+        class="thresholds-button__img"
+        :src="level.icon"
+        alt="Threshold Icon"
+      />
+      <v-icon :icon="defaultIcon" />
     </v-badge>
   </v-btn>
 </template>
 
 <script lang="ts" setup>
-import { computed, watch } from 'vue'
-import { getResourcesIconsUrl } from '@/lib/fews-config'
+import { computed } from 'vue'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
-import { onMounted } from 'vue'
 
 const warningLevelsStore = useWarningLevelsStore()
 
-onMounted(() => {
-  console.log(warningLevelsStore.warningLevels)
-})
-
-watch(
-  () => warningLevelsStore.warningLevels,
-  () => {
-    console.log(warningLevelsStore.warningLevels)
-  },
+const badgeCount = computed(() =>
+  warningLevelsStore.warningLevels.reduce((tot, lvl) => tot + lvl.count, 0),
 )
 
-const badgeCount = computed(() => {
-  return warningLevelsStore.warningLevels.reduce((a, b) => {
-    return a + b.count
-  }, 0)
-})
+const filteredWarningLevels = computed(() =>
+  warningLevelsStore.warningLevels.filter((level) => level.count && level.icon),
+)
+
+const defaultIcon = computed(() =>
+  // Hide the default icon if there are icons to show
+  filteredWarningLevels.value.length ? undefined : 'mdi-alert',
+)
 </script>
 
 <style scoped>
