@@ -15,16 +15,20 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue'
-import { useWarningLevelsStore } from '@/stores/warningLevels'
+import type { WarningLevel } from '@/lib/thresholds'
 
-const warningLevelsStore = useWarningLevelsStore()
+interface Props {
+  warningLevels: WarningLevel[]
+}
+
+const props = defineProps<Props>()
 
 const badgeCount = computed(() =>
-  warningLevelsStore.warningLevels.reduce((tot, lvl) => tot + lvl.count, 0),
+  props.warningLevels.reduce((tot, lvl) => tot + lvl.count, 0),
 )
 
 const filteredWarningLevels = computed(() =>
-  warningLevelsStore.warningLevels.filter((level) => level.count && level.icon),
+  props.warningLevels.filter((level) => level.count && level.icon).slice(0, 2),
 )
 
 const defaultIcon = computed(() =>

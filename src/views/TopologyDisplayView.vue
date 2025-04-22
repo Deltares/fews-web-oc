@@ -60,10 +60,10 @@
         />
       </v-list>
     </v-menu>
+    <ThresholdsControl :topologyNode="topologyNode" :thresholds="thresholds" />
     <TaskRunsControl v-if="showTaskMenu" :topologyNode="topologyNode" />
   </Teleport>
   <div class="d-flex w-100 h-100">
-    <ThresholdSummary :nodeId="topologyNode?.id"></ThresholdSummary>
     <router-view v-slot="{ Component }">
       <keep-alive include="SpatialDisplay">
         <component
@@ -91,7 +91,6 @@
 import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
 import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
 import LeafNodeButtons from '@/components/general/LeafNodeButtons.vue'
-import ThresholdSummary from '@/components/general/ThresholdSummary.vue'
 
 import type { ColumnItem } from '@/components/general/ColumnItem'
 import { useConfigStore } from '@/stores/config'
@@ -112,6 +111,7 @@ import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
 import InformationDisplayView from '@/views/InformationDisplayView.vue'
 import TaskRunsControl from '@/components/tasks/TaskRunsControl.vue'
+import ThresholdsControl from '@/components/thresholds/TresholdsControl.vue'
 import { useDisplay } from 'vuetify'
 import { useNodesStore } from '@/stores/nodes'
 import { nodeButtonItems, recursiveUpdateNode } from '@/lib/topology/nodes'

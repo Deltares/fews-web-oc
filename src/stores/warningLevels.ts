@@ -4,6 +4,7 @@ import { LevelThresholdWarningLevels } from '@deltares/fews-pi-requests'
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
 import { getResourcesIconsUrl } from '@/lib/fews-config'
+import type { WarningLevel } from '@/lib/thresholds'
 
 export const useWarningLevelsStore = defineStore('warningLevels', () => {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -22,7 +23,7 @@ export const useWarningLevelsStore = defineStore('warningLevels', () => {
     return aggregatedLevels ?? []
   })
 
-  const warningLevels = computed(() => {
+  const warningLevels = computed<WarningLevel[]>(() => {
     const levels = aggregatedWarningLevels.value
       .map((warningLevel) => {
         return {
