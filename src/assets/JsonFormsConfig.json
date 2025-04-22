@@ -3,12 +3,14 @@
     "v-text-field": {
       "density": "compact",
       "variant": "outlined",
+      "hide-details": "auto",
       "persistent-hint": true
     },
     "v-number-input": {
       "precision": 2,
       "density": "compact",
       "variant": "outlined",
+      "hide-details": "auto",
       "persistent-hint": true
     },
     "v-container": {
