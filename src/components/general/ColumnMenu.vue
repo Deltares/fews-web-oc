@@ -30,20 +30,7 @@
           data-testid="column-menu--item"
         >
           <template v-slot:prepend>
-            <div class="icon-container">
-              <v-icon
-                :icon="
-                  child.icon ?? toCharacterIcon(child.name, '-circle-outline')
-                "
-              ></v-icon>
-              <v-icon
-                v-if="(child.thresholdCount ?? 0) > 0"
-                class="alert-icon"
-                size="x-small"
-                color="#00BBF0"
-                icon="mdi-alert-circle"
-              ></v-icon>
-            </div>
+            <ColumnItemIcon :item="child" />
           </template>
           <v-list-item-title>{{ child.name }}</v-list-item-title>
           <template v-slot:append>
@@ -62,9 +49,7 @@
           data-testid="column-menu--item"
         >
           <template v-slot:prepend>
-            <v-icon>{{
-              child.icon ? child.icon : toCharacterIcon(child.name)
-            }}</v-icon>
+            <ColumnItemIcon :item="child" leaf />
           </template>
           <v-list-item-title>{{ child.name }}</v-list-item-title>
           <template v-slot:append>
@@ -79,18 +64,7 @@
           data-testid="column-menu--item"
         >
           <template v-slot:prepend>
-            <div class="icon-container">
-              <v-icon
-                :icon="child.icon ?? toCharacterIcon(child.name)"
-              ></v-icon>
-              <v-icon
-                v-if="(child.thresholdCount ?? 0) > 0"
-                class="alert-icon"
-                size="x-small"
-                color="#00BBF0"
-                icon="mdi-alert-circle"
-              ></v-icon>
-            </div>
+            <ColumnItemIcon :item="child" leaf />
           </template>
           <v-list-item-title>{{ child.name }}</v-list-item-title>
           <template v-slot:append>
@@ -107,8 +81,8 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import type { ColumnItem } from './ColumnItem'
+import ColumnItemIcon from '@/components/general/ColumnItemIcon.vue'
 import { useMenuItemsStack } from '../../services/useMenuItemsStack'
-import { toCharacterIcon } from '@/lib/icons'
 
 interface Props {
   items?: ColumnItem[]

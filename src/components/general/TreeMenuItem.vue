@@ -5,20 +5,7 @@
         <template v-slot:activator="{ props }">
           <v-list-item v-bind="props">
             <template v-slot:prepend>
-              <div class="icon-container">
-                <v-icon
-                  :icon="
-                    item.icon ?? toCharacterIcon(item.name, '-circle-outline')
-                  "
-                ></v-icon>
-                <v-icon
-                  v-if="(item.thresholdCount ?? 0) > 0"
-                  class="alert-icon"
-                  size="x-small"
-                  color="#00BBF0"
-                  icon="mdi-alert-circle"
-                ></v-icon>
-              </div>
+              <ColumnItemIcon :item="item" />
             </template>
             <v-list-item-title>{{ item.name }}</v-list-item-title>
             <template v-slot:append="{ isActive }">
@@ -48,7 +35,7 @@
       class="tree-menu--list-item"
     >
       <template v-slot:prepend>
-        <v-icon :icon="item.icon ?? toCharacterIcon(item.name)"></v-icon>
+        <ColumnItemIcon :item="item" leaf />
       </template>
       <v-list-item-title>{{ item.name }}</v-list-item-title>
       <template v-slot:append>
@@ -63,16 +50,7 @@
         class="tree-menu--list-item"
       >
         <template v-slot:prepend>
-          <div class="icon-container">
-            <v-icon :icon="item.icon ?? toCharacterIcon(item.name)"></v-icon>
-            <v-icon
-              v-if="(item.thresholdCount ?? 0) > 0"
-              class="alert-icon"
-              size="x-small"
-              color="#00BBF0"
-              icon="mdi-alert-circle"
-            ></v-icon>
-          </div>
+          <ColumnItemIcon :item="item" leaf />
         </template>
         <v-list-item-title>{{ item.name }}</v-list-item-title>
         <template v-slot:append>
@@ -86,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { toCharacterIcon } from '@/lib/icons/index.js'
+import ColumnItemIcon from '@/components/general/ColumnItemIcon.vue'
 import type { ColumnItem } from './ColumnItem.js'
 
 interface Props {
