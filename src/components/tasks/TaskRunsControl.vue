@@ -4,7 +4,7 @@
     :active="isPanelOpen"
     @click="toggleTasksPanel"
   />
-  <Teleport to="#main-side-panel" defer>
+  <Teleport to="#secondary-side-panel-start" defer>
     <div v-if="isPanelOpen" class="d-flex flex-column h-100 w-100">
       <v-tabs v-model="selectedTab" density="compact" class="flex-0-0">
         <v-tab
