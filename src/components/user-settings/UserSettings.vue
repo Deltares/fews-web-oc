@@ -14,7 +14,7 @@
         :disabled="setting.disabled"
         variant="solo-filled"
         density="compact"
-        item-title="value"
+        item-title="title"
         item-value="value"
         :item-props="true"
         flat

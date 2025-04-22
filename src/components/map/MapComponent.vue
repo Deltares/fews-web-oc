@@ -38,41 +38,30 @@ import type {
   LngLatBounds,
   Map,
 } from 'maplibre-gl'
-import { computed, useTemplateRef, watch } from 'vue'
+import { useTemplateRef, watch } from 'vue'
 import { transformStyle } from '@/lib/map'
-import { getResourcesStaticUrl } from '@/lib/fews-config'
-import { useBaseMapsStore } from '@/stores/baseMaps'
 
 interface Props {
   bounds?: LngLatBounds
-  baseMapId: string
+  style: string
 }
 
 const props = defineProps<Props>()
 
 const mapRef = useTemplateRef('map')
 
-const baseMapsStore = useBaseMapsStore()
+const initialStyle = props.style
 
-const selectedStyle = computed(() => {
-  const baseMap = baseMapsStore.getBaseMapById(props.baseMapId)
+watch(
+  () => props.style,
+  (newBaseStyle) => {
+    if (!newBaseStyle) return
 
-  const style = baseMap.style
-  if (!style.startsWith('http')) {
-    return getResourcesStaticUrl(style)
-  }
-
-  return style
-})
-const initialStyle = selectedStyle.value
-
-watch(selectedStyle, (newBaseStyle) => {
-  if (!newBaseStyle) return
-
-  // @ts-expect-error map is not exposed in the types
-  const map: Map | undefined = mapRef.value?.map
-  map?.setStyle(newBaseStyle, { transformStyle })
-})
+    // @ts-expect-error map is not exposed in the types
+    const map: Map | undefined = mapRef.value?.map
+    map?.setStyle(newBaseStyle, { transformStyle })
+  },
+)
 
 function transformRequest(
   url: string,

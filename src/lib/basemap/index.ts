@@ -7,6 +7,7 @@ export interface BaseMap {
   icon: string
   style: string
   name: string
+  beforeId?: string
 }
 
 export function getBaseMapsFromConfig(config: MapLayerConfig) {
@@ -20,7 +21,8 @@ export function getBaseMapsFromConfig(config: MapLayerConfig) {
           id: layer.id,
           name: layer.name,
           style: layer.styleJsonFile,
-          icon: toCharacterIcon(layer.name),
+          icon: layer.iconId ?? toCharacterIcon(layer.name),
+          beforeId: layer.insertWmsBeforeLayerId,
         },
       ]
     }) ?? []
@@ -33,6 +35,7 @@ export function convertBaseMapToUserSetting(
 ): UserSettingsWithIcon {
   return {
     value: baseMap.id,
+    title: baseMap.name,
     icon: baseMap.icon,
   }
 }

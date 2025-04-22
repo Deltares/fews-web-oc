@@ -7,6 +7,7 @@
     <mgl-raster-layer
       :layerId="layerId"
       :before="beforeId"
+      :key="beforeId"
       :paint="{
         'raster-opacity': 0,
         'raster-fade-duration': 0,
@@ -46,14 +47,14 @@ export interface AnimatedRasterLayerOptions {
 
 interface Props {
   layer: AnimatedRasterLayerOptions
+  beforeId?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {})
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 
 const beforeId = computed(() => {
-  if (!map) return
-  return getBeforeId(map)
+  return props.beforeId ?? getBeforeId(map)
 })
 
 const sourceId = computed(() => getSourceId(`${props.layer.name}-source`))
