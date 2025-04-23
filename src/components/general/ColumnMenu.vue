@@ -141,13 +141,6 @@ function onItemClick(event: Event, item: ColumnItem): void {
 </script>
 
 <style scoped>
-.icon-container {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .alert-icon {
   position: absolute;
   top: -4px;

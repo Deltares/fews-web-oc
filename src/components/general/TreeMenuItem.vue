@@ -101,13 +101,6 @@ const props = withDefaults(defineProps<Props>(), {
   width: 12px !important;
 }
 
-.icon-container {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .alert-icon {
   position: absolute;
   top: -4px;

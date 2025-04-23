@@ -32,3 +32,12 @@ const icon = computed(
     ),
 )
 </script>
+
+<style scoped>
+.icon-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>
