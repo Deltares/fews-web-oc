@@ -51,9 +51,13 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const sortedCrossings = computed(() =>
+  props.crossings.sort((a, b) => b.severity - a.severity),
+)
+
 const groupedCrossings = computed(() => {
   const grouped: Record<string, LevelThresholdCrossings[]> = {}
-  props.crossings.forEach((crossing) => {
+  sortedCrossings.value.forEach((crossing) => {
     const key = crossing.locationId
     if (!grouped[key]) {
       grouped[key] = []
