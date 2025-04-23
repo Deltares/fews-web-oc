@@ -13,7 +13,7 @@
           <div class="d-flex ga-1 w-100">
             <div
               :class="{ 'text-truncate': !expanded }"
-              class="overflow-hidden title mt-2"
+              class="overflow-hidden mt-2"
             >
               {{ maxLocationName }}
             </div>
@@ -23,7 +23,7 @@
               density="compact"
               label
               :text="crossings.length"
-              class="flex-0-0 mt-2"
+              class="flex-0-0 mt-2 ms-1"
             />
             <v-spacer />
             <div class="flex-0-0">
@@ -97,10 +97,6 @@ function onExpansionPanelToggle() {
 <style scoped>
 .text-wrap {
   white-space: normal;
-}
-
-.title {
-  font-size: 0.875rem;
 }
 
 .threshold-border {
