@@ -1,3 +1,5 @@
+<template></template>
+
 <script setup lang="ts">
 import { useMap } from '@/services/useMap'
 import { useMapSync } from '@/services/useMapSync'
