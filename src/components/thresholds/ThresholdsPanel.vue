@@ -1,5 +1,8 @@
 <template>
   <div class="threshold-summary-container h-100 d-flex flex-column">
+    <div v-if="warningLevels.length === 0" class="pa-2">
+      No active threshold crossings
+    </div>
     <v-chip-group
       class="px-2 flex-0-0"
       v-model="selectedWarningLevelIds"
