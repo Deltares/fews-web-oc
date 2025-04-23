@@ -1,6 +1,7 @@
 <template>
   <ThresholdsButton
     :warningLevels="warningLevelsStore.warningLevels"
+    :crossings="warningLevelsStore.thresholdCrossings"
     @click="toggleTasksPanel"
   />
   <Teleport to="#secondary-side-panel-end" defer>

@@ -60,7 +60,7 @@
         />
       </v-list>
     </v-menu>
-    <ThresholdsControl :topologyNode="topologyNode" :thresholds="thresholds" />
+    <ThresholdsControl :topologyNode="topologyNode" />
     <TaskRunsControl v-if="showTaskMenu" :topologyNode="topologyNode" />
   </Teleport>
   <div class="d-flex w-100 h-100">
@@ -111,7 +111,7 @@ import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
 import InformationDisplayView from '@/views/InformationDisplayView.vue'
 import TaskRunsControl from '@/components/tasks/TaskRunsControl.vue'
-import ThresholdsControl from '@/components/thresholds/TresholdsControl.vue'
+import ThresholdsControl from '@/components/thresholds/ThresholdsControl.vue'
 import { useDisplay } from 'vuetify'
 import { useNodesStore } from '@/stores/nodes'
 import { nodeButtonItems, recursiveUpdateNode } from '@/lib/topology/nodes'
