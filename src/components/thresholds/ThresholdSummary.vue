@@ -15,7 +15,7 @@
               :class="{ 'text-truncate': !expanded }"
               class="overflow-hidden title mt-2"
             >
-              {{ maxCrossing.locationId }}
+              {{ maxLocationName }}
             </div>
             <v-chip
               v-if="crossings.length > 1"
@@ -55,6 +55,7 @@ import ThresholdsParameter from '@/components/thresholds/ThresholdsParameter.vue
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import { toShortHumanReadableDate } from '@/lib/date'
 import { useParametersStore } from '@/stores/parameters'
+import { useLocationNamesStore } from '@/stores/locationNames'
 
 interface Props {
   crossings: LevelThresholdCrossings[]
@@ -62,6 +63,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const parameterStore = useParametersStore()
+const locationNamesStore = useLocationNamesStore()
 
 const maxCrossing = computed(() => props.crossings[0])
 const maxColor = computed(() => maxCrossing.value.color)
@@ -72,6 +74,11 @@ const maxParameterUnit = computed(() => maxParameter.value?.unit)
 
 const maxTimeString = computed(() =>
   toShortHumanReadableDate(maxCrossing.value.maxValueTime),
+)
+const maxLocationName = computed(
+  () =>
+    locationNamesStore.byId(maxCrossing.value.locationId) ??
+    maxCrossing.value.locationId,
 )
 
 const expanded = defineModel<boolean>('expanded', {

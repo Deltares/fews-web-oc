@@ -63,6 +63,7 @@ import { useDateRegistry } from '@/services/useDateRegistry'
 import type { NavigateRoute } from '@/lib/router'
 import ThresholdPanel from '@/components/general/ThresholdPanel.vue'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
+import { useLocationNamesStore } from '@/stores/locationNames'
 
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
@@ -88,6 +89,7 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 const warningLevelsStore = useWarningLevelsStore()
+const locationNamesStore = useLocationNamesStore()
 
 const { thresholds } = useDisplay()
 const containerRef = useTemplateRef('container')
@@ -102,6 +104,9 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
   () => props.layerName,
 )
 const { locations, geojson } = useFilterLocations(baseUrl, filterIds)
+watch(locations, (newLocations) =>
+  locationNamesStore.addLocationNames(newLocations ?? []),
+)
 
 const selectedWarningLevelSeverity = computed(() =>
   warningLevelsStore.selectedWarningLevels.map((level) => level.severity),
