@@ -1,7 +1,7 @@
 <template>
   <div class="parameter-container d-flex align-center ps-1 pe-4">
     <div class="flex-0-0">
-      <v-img :src="crossing.icon" width="25" height="25" />
+      <v-img :src="crossing.icon" width="20" height="20" />
     </div>
     <div class="w-100 ms-2">
       <div class="d-flex">
