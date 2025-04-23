@@ -1,14 +1,7 @@
 <template>
-  <v-btn icon class="thresholds-button">
+  <v-btn icon class="thresholds-button" :active="active">
     <v-badge :content="badgeCount">
-      <img
-        v-for="level in filteredWarningLevels"
-        :key="level.id"
-        class="thresholds-button__img"
-        :src="level.icon"
-        alt="Threshold Icon"
-      />
-      <v-icon :icon="defaultIcon" />
+      <v-icon icon="mdi-alert" :color="maxWarningLevelColor" />
     </v-badge>
   </v-btn>
 </template>
@@ -16,9 +9,12 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 import type { WarningLevel } from '@/lib/thresholds'
+import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 
 interface Props {
   warningLevels: WarningLevel[]
+  crossings: LevelThresholdCrossings[]
+  active: boolean
 }
 
 const props = defineProps<Props>()
@@ -27,14 +23,15 @@ const badgeCount = computed(() =>
   props.warningLevels.reduce((tot, lvl) => tot + lvl.count, 0),
 )
 
-const filteredWarningLevels = computed(() =>
-  props.warningLevels.filter((level) => level.count && level.icon).slice(0, 2),
-)
-
-const defaultIcon = computed(() =>
-  // Hide the default icon if there are icons to show
-  filteredWarningLevels.value.length ? undefined : 'mdi-alert',
-)
+const maxWarningLevelColor = computed(() => {
+  const maxWarningLevel = props.warningLevels.find(
+    (warningLevel) => warningLevel.count > 0,
+  )
+  const crossing = props.crossings.find(
+    (crossing) => crossing.warningLevelId === maxWarningLevel?.id,
+  )
+  return crossing?.color
+})
 </script>
 
 <style scoped>

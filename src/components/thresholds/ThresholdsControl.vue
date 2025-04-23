@@ -1,5 +1,6 @@
 <template>
   <ThresholdsButton
+    :active="isPanelOpen"
     :warningLevels="warningLevelsStore.warningLevels"
     :crossings="warningLevelsStore.thresholdCrossings"
     @click="toggleTasksPanel"
