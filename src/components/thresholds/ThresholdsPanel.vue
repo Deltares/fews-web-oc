@@ -1,12 +1,21 @@
 <template>
   <div class="threshold-summary-container h-100 d-flex flex-column">
-    <v-chip-group class="px-2 flex-0-0" column>
+    <v-chip-group
+      class="px-2 flex-0-0"
+      v-model="selectedWarningLevelIds"
+      multiple
+      column
+      selected-class="v-chip--variant-tonal"
+    >
       <v-chip
         v-for="level in warningLevels"
         :key="level.id"
+        :value="level.id"
         :text="level.name"
         label
+        variant="text"
         class="pe-0 ps-2"
+        border
       >
         <template #prepend>
           <v-img width="20" height="20" :src="level.icon" class="me-1" />
@@ -16,8 +25,9 @@
             :text="level.count"
             label
             density="compact"
-            class="ms-2 pa-1"
+            class="ms-2 pa-1 opacity-100"
             size="small"
+            disabled
           />
         </template>
       </v-chip>
@@ -47,17 +57,16 @@ import { computed } from 'vue'
 interface Props {
   warningLevels: WarningLevel[]
   crossings: LevelThresholdCrossings[]
+  selectedThresholdCrossings: LevelThresholdCrossings[]
 }
 
 const props = defineProps<Props>()
 
-const sortedCrossings = computed(() =>
-  props.crossings.sort((a, b) => b.severity - a.severity),
-)
+const selectedWarningLevelIds = defineModel<string[]>('selectedWarningLevelIds')
 
 const groupedCrossings = computed(() => {
   const grouped: Record<string, LevelThresholdCrossings[]> = {}
-  sortedCrossings.value.forEach((crossing) => {
+  props.selectedThresholdCrossings.forEach((crossing) => {
     const key = crossing.locationId
     if (!grouped[key]) {
       grouped[key] = []

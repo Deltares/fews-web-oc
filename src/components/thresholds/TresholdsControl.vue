@@ -6,8 +6,14 @@
   <Teleport to="#secondary-side-panel-end" defer>
     <div v-if="isPanelOpen" class="d-flex flex-column h-100 w-100">
       <ThresholdsPanel
+        v-model:selectedWarningLevelIds="
+          warningLevelsStore.selectedWarningLevelIds
+        "
         :warningLevels="warningLevelsStore.warningLevels"
         :crossings="warningLevelsStore.thresholdCrossings"
+        :selectedThresholdCrossings="
+          warningLevelsStore.selectedThresholdCrossings
+        "
       />
     </div>
   </Teleport>
@@ -30,6 +36,7 @@ watch(
   () => props.topologyNode?.id,
   (newId) => {
     warningLevelsStore.setTopologyNodeId(newId)
+    warningLevelsStore.selectedWarningLevelIds = []
   },
 )
 
