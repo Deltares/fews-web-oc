@@ -6,9 +6,11 @@
         :key="level.id"
         :text="level.name"
         label
-        :prepend-avatar="level.icon"
-        class="pe-0"
+        class="pe-0 ps-2"
       >
+        <template #prepend>
+          <v-img width="20" height="20" :src="level.icon" class="me-1" />
+        </template>
         <template #append>
           <v-chip
             :text="level.count"
