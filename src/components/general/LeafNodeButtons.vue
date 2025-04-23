@@ -37,7 +37,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 import type { ColumnItem } from '@/components/general/ColumnItem'
-import ThresholdSummaryChip from '@/components/general/ThresholdSummaryChip.vue'
+import ThresholdSummaryChip from '@/components/thresholds/ThresholdSummaryChip.vue'
 import type { VBtn } from 'vuetify/components'
 
 interface Props {
