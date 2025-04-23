@@ -1,6 +1,10 @@
 <template>
   <v-btn icon class="thresholds-button" :active="active">
-    <v-badge :content="badgeCount">
+    <v-badge
+      :content="badgeCount"
+      :model-value="badgeCount > 0"
+      color="#00BBF0"
+    >
       <v-icon icon="mdi-alert" :color="maxWarningLevelColor" />
     </v-badge>
   </v-btn>
