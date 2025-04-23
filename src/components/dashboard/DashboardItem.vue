@@ -25,17 +25,19 @@ import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { configManager } from '@/services/application-config'
 import { useComponentSettings } from '@/services/useComponentSettings'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { RouteParamsGeneric } from 'vue-router'
-import type { DashboardActionParams } from '@/lib/topology/dashboardActions'
+import type {
+  DashboardActionEventBus,
+  DashboardActionParams,
+} from '@/lib/topology/dashboardActions'
 import { SsdActionResult } from '@deltares/fews-ssd-requests'
 import type { NavigateRoute } from '@/lib/router'
 
 interface Props {
   item: WebOCDashboardItem
   siblings: WebOCDashboardItem[]
-  actionId?: string
-  actionParams: DashboardActionParams
+  actionEventBus: DashboardActionEventBus
   settings?: ComponentSettings
 }
 
@@ -49,13 +51,26 @@ const emit = defineEmits<Emits>()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const topologyNodesStore = useTopologyNodesStore()
 
+const actionParams = ref<DashboardActionParams>({})
+watch(
+  () => props.actionEventBus.trigger,
+  () => {
+    const { actionId, ...params } = props.actionEventBus.payload
+    const isValidAction = !actionId || props.item.actionIds?.includes(actionId)
+    if (isValidAction) {
+      actionParams.value = {
+        ...actionParams.value,
+        ...params,
+      }
+    }
+  },
+)
+
 const componentItem = computed(() => {
-  const isValidAction =
-    !props.actionId || props.item.actionIds?.includes(props.actionId)
   return convertItemToComponentItem(
     props.item,
     routeParams.value,
-    isValidAction ? props.actionParams : {},
+    actionParams.value,
   )
 })
 

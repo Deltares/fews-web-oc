@@ -11,8 +11,7 @@
       v-if="element.items"
       :item="getDashboardItem(element.items)"
       :siblings="element.items"
-      :action-id="actionId"
-      :action-params="actionParams"
+      :actionEventBus="actionEventBus"
       :settings="settings"
       @dashboardAction="onDashboardAction"
     />
@@ -27,7 +26,7 @@ import type {
 } from '@deltares/fews-pi-requests'
 import { ref } from 'vue'
 import type { SsdActionResult } from '@deltares/fews-ssd-requests'
-import type { DashboardActionParams } from '@/lib/topology/dashboardActions'
+import type { DashboardActionEventBus } from '@/lib/topology/dashboardActions'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
@@ -37,18 +36,26 @@ interface Props {
 
 defineProps<Props>()
 
-const actionId = ref<string>()
-const actionParams = ref<DashboardActionParams>({})
+const activeActionId = ref<string>()
 function onDashboardAction(action: SsdActionResult) {
-  actionId.value = action.actionId
-  actionParams.value = {
-    charts: action.charts,
-    map: action.map,
+  activeActionId.value = action.actionId
+  actionEventBus.value = {
+    trigger: actionEventBus.value.trigger + 1,
+    payload: {
+      actionId: action.actionId,
+      charts: action.charts,
+      map: action.map,
+    },
   }
 }
 
+const actionEventBus = ref<DashboardActionEventBus>({
+  trigger: 0,
+  payload: {},
+})
+
 function getDashboardItem(items: WebOCDashboardItem[]) {
-  const _actionId = actionId.value
+  const _actionId = activeActionId.value
   if (_actionId === undefined) return items[0]
 
   const item = items.find((item) => item.actionIds?.includes(_actionId))
