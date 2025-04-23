@@ -44,7 +44,10 @@
     >
       <template #default="{ item: crossingsGroup }">
         <div class="mb-2 mx-2">
-          <ThresholdSummary :crossings="crossingsGroup" />
+          <ThresholdSummary
+            v-model:expanded="expandedItems[crossingsGroup[0].locationId]"
+            :crossings="crossingsGroup"
+          />
         </div>
       </template>
     </v-virtual-scroll>
@@ -55,7 +58,7 @@
 import type { WarningLevel } from '@/lib/thresholds'
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import ThresholdSummary from '@/components/thresholds/ThresholdSummary.vue'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 interface Props {
   warningLevels: WarningLevel[]
@@ -66,6 +69,8 @@ interface Props {
 const props = defineProps<Props>()
 
 const selectedWarningLevelIds = defineModel<string[]>('selectedWarningLevelIds')
+
+const expandedItems = ref<Record<string, boolean>>({})
 
 const groupedCrossings = computed(() => {
   const grouped: Record<string, LevelThresholdCrossings[]> = {}
