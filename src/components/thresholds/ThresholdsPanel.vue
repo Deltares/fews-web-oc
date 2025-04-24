@@ -26,11 +26,10 @@
         <template #append>
           <v-chip
             :text="level.count"
-            label
             density="compact"
-            class="ms-2 pa-1 opacity-100"
+            variant="flat"
+            class="ms-2 pa-1"
             size="small"
-            disabled
           />
         </template>
       </v-chip>
@@ -43,7 +42,7 @@
       :item-height="52"
     >
       <template #default="{ item: crossingsGroup }">
-        <div class="mb-2 mx-2">
+        <div class="my-1 mx-2">
           <ThresholdSummary
             v-model:expanded="expandedItems[crossingsGroup[0].locationId]"
             :crossings="crossingsGroup"
