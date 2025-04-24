@@ -35,7 +35,7 @@
           >
             {{ task.label }}
           </v-btn>
-          <div v-else class="mb-2 mx-2">
+          <div v-else class="my-1 mx-2">
             <TaskRunSummary
               :task="task"
               :canVisualize="props.topologyNode !== undefined"
