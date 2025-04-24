@@ -90,7 +90,7 @@ const parameterUnit = computed(() => {
   width: calc(100% - 7px);
 }
 
-.threshold_field__location_parameter{
+.threshold_field__location_parameter {
   flex: 1;
   min-width: 0;
 }
