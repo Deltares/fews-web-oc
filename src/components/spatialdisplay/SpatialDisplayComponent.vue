@@ -192,6 +192,7 @@ import { useSelectedDate } from '@/services/useSelectedDate'
 import { useOverlays } from '@/services/useOverlays'
 import { useBaseMapsStore } from '@/stores/baseMaps'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
+import { useDark } from '@vueuse/core'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -297,11 +298,13 @@ watch(
 
 const baseMapsStore = useBaseMapsStore()
 
+const isDark = useDark()
+
 const baseMap = computed(() => {
   const baseMapId = userSettingsStore.get('ui.map.theme')?.value as
     | string
     | undefined
-  return baseMapsStore.getBaseMapById(baseMapId ?? 'automatic')
+  return baseMapsStore.getBaseMapById(baseMapId ?? 'automatic', isDark.value)
 })
 
 const mapStyle = computed(() => {
