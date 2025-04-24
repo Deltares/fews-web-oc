@@ -1,17 +1,16 @@
 <template>
-  <div class="threshold_field d-flex d-row w-100">
+  <div class="d-flex">
     <div class="threshold_field__border flex-0-0 vh-100" />
-    <div class="d-flex flex-1-1 flex-row align-center mt-1 mb-2">
-      <div class="ms-2 d-flex flex-0-0 flex-column">
-        <span class="text-truncate threshold_field__location_parameter">
+    <div class="threshold_field__container d-flex flex-row mt-1 mb-2">
+      <div class="threshold_field__location_parameter ms-2 d-flex flex-column">
+        <span class="text-truncate">
           {{ maxLocationName }}
         </span>
         <v-list-item-subtitle>
           {{ parameterName }}
         </v-list-item-subtitle>
       </div>
-      <v-spacer />
-      <div class="flex-column">
+      <div class="flex-column ms-2">
         <span class="d-inline"> <slot name="append"></slot> </span>
       </div>
       <div
@@ -87,8 +86,13 @@ const parameterUnit = computed(() => {
   width: 7px;
 }
 
+.threshold_field__container {
+  width: calc(100% - 7px);
+}
+
 .threshold_field__location_parameter{
-  max-width: 266px;
+  flex: 1;
+  min-width: 0;
 }
 
 .threshold_field__value_date {
