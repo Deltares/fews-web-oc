@@ -18,14 +18,17 @@
         <v-col>
           <v-form ref="form">
             <div class="pa-4">
-              <DateTimeTextField
+              <v-date-input
                 v-model="customStartDate"
                 label="Start"
+                density="compact"
+                variant="solo-filled"
+                flat
                 :rules="[
                   () =>
                     dateOrderIsCorrect || 'Start date must be before end date',
                 ]"
-              ></DateTimeTextField>
+              />
               <v-date-input
                 v-model="customEndDate"
                 label="End"
@@ -67,7 +70,6 @@
 </template>
 
 <script setup lang="ts">
-import DateTimeTextField from '@/components/general/DateTimeTextField.vue'
 import IntervalSelector from './IntervalSelector.vue'
 import { VDateInput } from 'vuetify/labs/components'
 import type { VForm } from 'vuetify/components'
