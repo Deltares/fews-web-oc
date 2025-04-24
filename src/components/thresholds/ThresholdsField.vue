@@ -16,7 +16,7 @@
       <div
         class="threshold_field__value_date ms-2 me-2 d-flex flex-column align-end"
       >
-        <span> {{ crossing.maxValue }} {{ parameterUnit }} </span>
+        <span> {{ crossing.maxValue }}&thinsp;{{ parameterUnit }} </span>
         <v-list-item-subtitle>
           {{ timeToMaxString }}
         </v-list-item-subtitle>
@@ -91,12 +91,12 @@ const parameterUnit = computed(() => {
 }
 
 .threshold_field__location_parameter {
-  flex: 1;
+  flex: 10;
   min-width: 0;
 }
 
 .threshold_field__value_date {
-  flex: 0 0 90px;
+  flex: 1 0 90px;
 }
 
 .threshold_field {
