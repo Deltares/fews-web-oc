@@ -61,7 +61,7 @@ import {
 } from '@/lib/log'
 import { computed } from 'vue'
 import {
-  toDateDifferenceString,
+  toDateAbsDifferenceString,
   toDateRangeString,
   toHumanReadableDate,
 } from '@/lib/date'
@@ -123,7 +123,7 @@ const tableData = computed(() => [
     columns: [
       {
         header: `Output time span`,
-        subHeader: toDateDifferenceString(
+        subHeader: toDateAbsDifferenceString(
           props.taskRun?.outputStartTime,
           props.taskRun?.outputEndTime,
         ),
@@ -138,7 +138,7 @@ const tableData = computed(() => [
     columns: [
       {
         header: 'Task duration',
-        subHeader: toDateDifferenceString(
+        subHeader: toDateAbsDifferenceString(
           props.taskRun?.dispatchTime,
           props.taskRun?.completionTime,
         ),

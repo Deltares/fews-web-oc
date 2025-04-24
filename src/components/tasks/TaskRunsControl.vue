@@ -1,11 +1,14 @@
 <template>
   <v-btn
     icon="mdi-clipboard-text-clock"
-    :active="isPanelOpen"
-    @click="toggleTasksPanel"
+    :active="sidePanelStore.isActive('tasks')"
+    @click="sidePanelStore.toggleActive('tasks')"
   />
   <Teleport to="#main-side-panel" defer>
-    <div v-if="isPanelOpen" class="d-flex flex-column h-100 w-100">
+    <div
+      v-if="sidePanelStore.isActive('tasks')"
+      class="d-flex flex-column h-100 w-100"
+    >
       <v-tabs v-model="selectedTab" density="compact" class="flex-0-0">
         <v-tab
           value="visualize-tasks"
@@ -37,6 +40,7 @@
 import { ref } from 'vue'
 import TaskRunsPanel from './TaskRunsPanel.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
+import { useSidePanelStore } from '@/stores/sidePanel'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -44,12 +48,9 @@ interface Props {
 
 defineProps<Props>()
 
-const isPanelOpen = ref(false)
-const selectedTab = ref('visualize-tasks')
+const sidePanelStore = useSidePanelStore()
 
-function toggleTasksPanel(): void {
-  isPanelOpen.value = !isPanelOpen.value
-}
+const selectedTab = ref('visualize-tasks')
 </script>
 
 <style scoped>

@@ -30,17 +30,7 @@
           data-testid="column-menu--item"
         >
           <template v-slot:prepend>
-            <v-badge
-              color="#00BBF0"
-              :model-value="(child.thresholdCount ?? 0) > 0"
-              :content="child.thresholdCount"
-            >
-              <v-icon
-                :icon="
-                  child.icon ?? toCharacterIcon(child.name, '-circle-outline')
-                "
-              ></v-icon>
-            </v-badge>
+            <ColumnItemIcon :item="child" />
           </template>
           <v-list-item-title>{{ child.name }}</v-list-item-title>
           <template v-slot:append>
@@ -59,9 +49,7 @@
           data-testid="column-menu--item"
         >
           <template v-slot:prepend>
-            <v-icon>{{
-              child.icon ? child.icon : toCharacterIcon(child.name)
-            }}</v-icon>
+            <ColumnItemIcon :item="child" leaf />
           </template>
           <v-list-item-title>{{ child.name }}</v-list-item-title>
           <template v-slot:append>
@@ -76,15 +64,7 @@
           data-testid="column-menu--item"
         >
           <template v-slot:prepend>
-            <v-badge
-              color="#00BBF0"
-              :model-value="(child.thresholdCount ?? 0) > 0"
-              :content="child.thresholdCount"
-            >
-              <v-icon
-                :icon="child.icon ?? toCharacterIcon(child.name)"
-              ></v-icon>
-            </v-badge>
+            <ColumnItemIcon :item="child" leaf />
           </template>
           <v-list-item-title>{{ child.name }}</v-list-item-title>
           <template v-slot:append>
@@ -101,8 +81,8 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import type { ColumnItem } from './ColumnItem'
+import ColumnItemIcon from '@/components/general/ColumnItemIcon.vue'
 import { useMenuItemsStack } from '../../services/useMenuItemsStack'
-import { toCharacterIcon } from '@/lib/icons'
 
 interface Props {
   items?: ColumnItem[]
@@ -159,3 +139,16 @@ function onItemClick(event: Event, item: ColumnItem): void {
   }
 }
 </script>
+
+<style scoped>
+.alert-icon {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: rgba(
+    var(--v-theme-surface),
+    var(--v-high-emphasis-opacity)
+  );
+  border-radius: 50%;
+}
+</style>

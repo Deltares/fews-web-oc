@@ -23,7 +23,7 @@
           {{ item.name }}
           <template #append>
             <v-icon v-if="item.icon" size="xsmall">{{ item.icon }}</v-icon>
-            <ThresholdInformation
+            <ThresholdSummaryChip
               :icon="item.thresholdIcon"
               :count="item.thresholdCount"
             />
@@ -37,7 +37,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 import type { ColumnItem } from '@/components/general/ColumnItem'
-import ThresholdInformation from '@/components/general/ThresholdInformation.vue'
+import ThresholdSummaryChip from '@/components/thresholds/ThresholdSummaryChip.vue'
 import type { VBtn } from 'vuetify/components'
 
 interface Props {

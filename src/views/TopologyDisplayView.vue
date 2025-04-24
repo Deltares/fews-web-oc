@@ -30,6 +30,8 @@
     </v-toolbar-items>
   </Teleport>
   <Teleport to="#app-bar-content-end">
+    <ThresholdsControl :topologyNode="topologyNode" />
+    <TaskRunsControl v-if="showTaskMenu" :topologyNode="topologyNode" />
     <v-menu bottom left>
       <template v-slot:activator="{ props }">
         <v-btn icon v-bind="props">
@@ -56,11 +58,11 @@
           title="More Info"
           prepend-icon="mdi-information"
           :disabled="!topologyNode?.documentFile"
-          @click="showInformationDisplay = true"
+          :active="sidePanelStore.isActive('info')"
+          @click="sidePanelStore.toggleActive('info')"
         />
       </v-list>
     </v-menu>
-    <TaskRunsControl v-if="showTaskMenu" :topologyNode="topologyNode" />
   </Teleport>
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
@@ -74,13 +76,13 @@
       </keep-alive>
     </router-view>
     <div
-      v-if="showInformationDisplay"
+      v-if="sidePanelStore.isActive('info')"
       class="w-100 h-100"
       :style="informationDisplayStyle"
     >
       <InformationDisplayView
         :topologyNode="topologyNode"
-        @close="showInformationDisplay = false"
+        @close="sidePanelStore.close()"
       />
     </div>
   </div>
@@ -110,6 +112,7 @@ import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
 import InformationDisplayView from '@/views/InformationDisplayView.vue'
 import TaskRunsControl from '@/components/tasks/TaskRunsControl.vue'
+import ThresholdsControl from '@/components/thresholds/ThresholdsControl.vue'
 import { useDisplay } from 'vuetify'
 import { useNodesStore } from '@/stores/nodes'
 import { nodeButtonItems, recursiveUpdateNode } from '@/lib/topology/nodes'
@@ -122,6 +125,7 @@ import { useComponentSettings } from '@/services/useComponentSettings'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { useTaskRunsStore } from '@/stores/taskRuns'
 import type { NavigateRoute } from '@/lib/router'
+import { useSidePanelStore } from '@/stores/sidePanel'
 
 interface Props {
   topologyId?: string
@@ -140,6 +144,7 @@ const settings = useUserSettingsStore()
 const workflowsStore = useWorkflowsStore()
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const taskRunsStore = useTaskRunsStore()
+const sidePanelStore = useSidePanelStore()
 
 const menuType = computed(() => {
   const configured = settings.get('ui.hierarchical-menu-style')?.value as string
@@ -199,7 +204,6 @@ const informationDisplayStyle = computed<StyleValue>(() => {
   }
 })
 
-const showInformationDisplay = ref(false)
 // watchEffect(() => {
 //   if (!topologyNode.value?.documentFile) {
 //     showInformationDisplay.value = false
