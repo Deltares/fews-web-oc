@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import type { BaseMap } from '@/lib/basemap'
 import DefaultBaseMaps from '@/assets/DefaultBaseMaps.json'
-import { useDark } from '@vueuse/core'
 
 interface State {
   baseMaps: BaseMap[]
@@ -20,10 +19,10 @@ export const useBaseMapsStore = defineStore('basemaps', {
     setBaseMaps(baseMaps: BaseMap[]): void {
       this.baseMaps = baseMaps
     },
-    getBaseMapById(id: string): BaseMap {
+    getBaseMapById(id: string, isDark: boolean): BaseMap {
       if (id === 'automatic') {
-        const isDark = useDark()
-        return this.getBaseMapById(isDark.value ? 'dark' : 'light')
+        const newId = isDark ? 'dark' : 'light'
+        return this.getBaseMapById(newId, isDark)
       }
 
       const baseMap = this.baseMaps.find((b) => b.id === id)
@@ -34,7 +33,7 @@ export const useBaseMapsStore = defineStore('basemaps', {
       )
       if (defaultBaseMap) return defaultBaseMap
 
-      return this.getBaseMapById('automatic')
+      return this.getBaseMapById('automatic', isDark)
     },
   },
 })
