@@ -1,7 +1,7 @@
 <template>
   <div class="threshold_field d-flex d-row w-100">
     <div class="threshold_field__border flex-0-0 vh-100" />
-    <div class="d-flex flex-1-1 flex-row align-center ps-1 pe-4 my-1">
+    <div class="d-flex flex-1-1 flex-row align-center ps-1 pe-4 mt-1 mb-2">
       <div class="ms-2 d-flex flex-0-0 flex-column">
         <span>
           {{ maxLocationName }}
