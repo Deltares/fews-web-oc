@@ -85,7 +85,10 @@ watch(selectedDatetime, () => {
 
 watch(datetimeString, () => {
   if (isValid(parse(datetimeString.value, datetimeFormat.value))) {
-    selectedDatetime.value = parse(datetimeString.value, datetimeFormat.value)
+    const newDateTime = parse(datetimeString.value, datetimeFormat.value)
+    if (newDateTime.getTime() !== selectedDatetime.value?.getTime()) {
+      selectedDatetime.value = newDateTime
+    }
   }
 })
 
