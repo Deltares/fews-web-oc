@@ -6,7 +6,7 @@
     :density="density"
     :variant="variant"
     class="datetime-field"
-    hide-details
+    hide-details="auto"
   >
     <template #append-inner>
       <v-menu offset-y :close-on-content-click="false">
