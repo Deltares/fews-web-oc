@@ -52,6 +52,8 @@
             v-model="timeZeroDate"
             label="Time zero"
             class="datetime-field"
+            variant="outlined"
+            density="compact"
           >
             <template #additional-append-inner>
               <v-divider vertical />

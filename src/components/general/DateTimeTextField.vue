@@ -3,8 +3,8 @@
     v-model="datetimeString"
     :rules="validationRules"
     :label="label"
-    density="compact"
-    variant="outlined"
+    :density="density"
+    :variant="variant"
     class="datetime-field"
     hide-details
   >
@@ -49,7 +49,7 @@ import { computed, ref, watch } from 'vue'
 import { VTimePicker } from 'vuetify/labs/VTimePicker'
 import type { VTextField } from 'vuetify/components'
 
-type UnwrapReadonlyArray<A> = A extends Readonly<Array<infer I>> ? I : A;
+type UnwrapReadonlyArray<A> = A extends Readonly<Array<infer I>> ? I : A
 type ValidationRule = UnwrapReadonlyArray<VTextField['rules']>
 
 interface Props {
@@ -57,6 +57,8 @@ interface Props {
   dateFormat?: string
   timeFormat?: string
   rules?: ValidationRule[]
+  variant?: VTextField['variant']
+  density?: VTextField['density']
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -117,7 +119,7 @@ function parse(dateString: string, format: string) {
 
 const validationRules = computed(() => {
   const rule = [
-  () => {
+    () => {
       const datetime = parse(datetimeString.value, datetimeFormat.value)
       return (
         datetimeString.value === '' ||
