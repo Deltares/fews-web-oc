@@ -27,7 +27,7 @@
   </v-card>
 </template>
 <script setup lang="ts">
-import ThresholdsParameter from '@/components/thresholds/ThresholdsParameter.vue'
+import ThresholdsParameter from '@/components/thresholds/ThresholdsField.vue'
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 
 interface Props {
