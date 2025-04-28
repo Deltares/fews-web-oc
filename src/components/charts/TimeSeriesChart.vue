@@ -50,7 +50,7 @@ import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
 
 interface Props {
-  config?: ChartConfig
+  config: ChartConfig
   series?: Record<string, Series>
   highlightTime?: Date
   isLoading?: boolean
@@ -81,7 +81,7 @@ const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = ref<HTMLElement>()
 const axisTime = ref<CrossSectionSelect>()
-const hasLoadedOnce = ref(false)
+const hasRenderedOnce = ref(false)
 
 onMounted(() => {
   if (chartContainer.value) {
@@ -133,7 +133,7 @@ onMounted(() => {
     axis.accept(mouseOver)
     axis.accept(currentTime)
     resize()
-    if (props.config !== undefined) onValueChange()
+    onValueChange()
     window.addEventListener('resize', resize)
   }
 })
@@ -420,25 +420,18 @@ watch(
     )
     if (requiredSeries.length > 0) {
       updateChartData(requiredSeries)
+
+      if (!hasRenderedOnce.value) {
+        axis.redraw({
+          x: { autoScale: true },
+          y: { autoScale: true },
+        })
+        hasRenderedOnce.value = true
+      }
     }
   },
 )
 watch(() => props.config, onValueChange)
-watch(
-  () => props.isLoading,
-  (newValue, oldValue) => {
-    // isLoading changes every time the data is requested again.
-    // We need to keep track of the first time the data has been loaded, in order to fully draw the chart once
-    if (!newValue) {
-      hasLoadedOnce.value = true
-    }
-  },
-)
-
-watch(hasLoadedOnce, onValueChange, {
-  once: true,
-})
-
 onBeforeUnmount(() => {
   beforeDestroy()
 })
