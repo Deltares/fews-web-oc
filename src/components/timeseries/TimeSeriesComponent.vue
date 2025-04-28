@@ -170,13 +170,13 @@ const options = computed<UseTimeSeriesOptions>(() => {
     startTime: store.startTime,
     endTime: store.endTime,
     thinning: false,
+    enabled: !isEditing.value,
   }
 })
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const {
   series,
   loadingSeriesIds,
-  interval: useTimeSeriesInterval,
   refresh: refreshTimeSeries,
 } = useTimeSeries(baseUrl, () => props.config.requests, options)
 const {
@@ -259,11 +259,6 @@ watch(
 )
 
 watch(isEditing, () => {
-  if (isEditing.value) {
-    useTimeSeriesInterval.pause()
-  } else {
-    useTimeSeriesInterval.resume()
-  }
   // Can't set a custom message in modern browsers
   window.onbeforeunload = isEditing.value ? () => true : null
 })

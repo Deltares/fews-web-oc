@@ -5,16 +5,16 @@ import {
 } from '@deltares/fews-pi-requests'
 import { computed, ref, toValue, watch, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
-import { DisplayConfig } from '../../lib/display/DisplayConfig.js'
-import { timeSeriesDisplayToChartConfig } from '../../lib/charts/timeSeriesDisplayToChartConfig.js'
-import { createTransformRequestFn } from '@/lib/requests/transformRequest.js'
+import type { DisplayConfig } from '@/lib/display/DisplayConfig'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { MD5 } from 'crypto-js'
-import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 import {
   type Filter,
   isFilterActionsFilter,
   isTimeSeriesGridActionsFilter,
 } from '@/lib/filters'
+import { actionsResponseToDisplayConfig } from '@/lib/actions'
+import { useFocusAwareInterval } from '../useFocusAwareInterval'
 
 export interface UseDisplayConfigReturn {
   displayConfig: Ref<DisplayConfig | null>
@@ -26,60 +26,7 @@ export interface UseDisplayConfigOptions {
   useDisplayUnits?: boolean
 }
 
-/**
- * Converts the actions response to an array of display configurations.
- * @param actionsResponse The actions response object.
- * @returns An array of display configurations.
- */
-function actionsResponseToDisplayConfig(
-  actionsResponse: ActionsResponse,
-  nodeId: string | undefined,
-  startTime?: Date,
-  endTime?: Date,
-): DisplayConfig[] {
-  const displays: DisplayConfig[] = []
-  for (const result of actionsResponse.results) {
-    if (result.config === undefined) continue
-    const title = result.config.timeSeriesDisplay.title ?? ''
-    const timeSeriesDisplayIndex = result.config.timeSeriesDisplay.index
-    const period = result.config.timeSeriesDisplay.period
-    const plotId = result.config.timeSeriesDisplay.plotId
-
-    // The period is always specified in UTC.
-    const timeZoneOffsetString = 'Z'
-    let configPeriod: [Date, Date]
-    if (period) {
-      const periodStart = convertFewsPiDateTimeToJsDate(
-        period.startDate,
-        timeZoneOffsetString,
-      )
-      const periodEnd = convertFewsPiDateTimeToJsDate(
-        period.endDate,
-        timeZoneOffsetString,
-      )
-      configPeriod = [startTime ?? periodStart, endTime ?? periodEnd]
-    }
-
-    const subplots =
-      result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
-        return timeSeriesDisplayToChartConfig(subPlot, configPeriod)
-      }) ?? []
-    const display: DisplayConfig = {
-      id: title,
-      title,
-      forecastLegend: result.config.timeSeriesDisplay.forecastLegend,
-      plotId,
-      nodeId: nodeId,
-      class: 'singles',
-      index: timeSeriesDisplayIndex,
-      requests: result.requests,
-      period: result.config.timeSeriesDisplay.period,
-      subplots,
-    }
-    displays.push(display)
-  }
-  return displays
-}
+const POLLING_INTERVAL = 1000 * 30
 
 /**
  * Create the displays and the display configs of a node and selected time series display.
@@ -104,7 +51,11 @@ export function useDisplayConfig(
   const response = ref<ActionsResponse>()
   const displays = ref<DisplayConfig[] | null>(null)
 
-  watchEffect(async () => {
+  watchEffect(loadTopologyActions)
+  useFocusAwareInterval(loadTopologyActions, POLLING_INTERVAL, {
+    immediate: true,
+  })
+  async function loadTopologyActions() {
     const _nodeId = toValue(nodeId)
     if (_nodeId === undefined) return
 
@@ -124,7 +75,7 @@ export function useDisplayConfig(
     response.value = await piProvider.getTopologyActions(
       _taskRunIds?.length ? taskRunsFilter : filter,
     )
-  })
+  }
 
   watch([startTime, endTime, response], () => {
     if (!response.value) return
@@ -179,7 +130,12 @@ export function useDisplayConfigFilter(
   const displays = ref<DisplayConfig[] | null>(null)
   const response = ref<ActionsResponse>()
 
-  watchEffect(async () => {
+  watchEffect(loadActions)
+  useFocusAwareInterval(loadActions, POLLING_INTERVAL, {
+    immediate: true,
+  })
+
+  async function loadActions() {
     const _filter = toValue(filter)
     if (_filter === undefined) return
 
@@ -206,7 +162,7 @@ export function useDisplayConfigFilter(
       displays.value = null
       return
     }
-  })
+  }
 
   // Use a second watchEffect to not trigger a fetch on these reactive variables
   watchEffect(() => {
