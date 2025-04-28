@@ -181,7 +181,10 @@ export function useDisplayConfigFilter(
 
   watchEffect(async () => {
     const _filter = toValue(filter)
-    if (_filter === undefined) return
+    if (_filter === undefined) {
+      response.value = undefined
+      return
+    }
 
     if (isFilterActionsFilter(_filter)) {
       if (!_filter.filterId) return
@@ -210,7 +213,11 @@ export function useDisplayConfigFilter(
 
   // Use a second watchEffect to not trigger a fetch on these reactive variables
   watchEffect(() => {
-    if (!response.value) return
+    if (!response.value) {
+      displayConfig.value = null
+      displays.value = null
+      return
+    }
 
     const _startTime = toValue(startTime)
     const _endTime = toValue(endTime)
