@@ -28,7 +28,7 @@
             :text="level.count"
             density="compact"
             variant="flat"
-            class="ms-2 pa-1"
+            class="ms-2 pa-1 pointer-events-none"
             size="small"
           />
         </template>
