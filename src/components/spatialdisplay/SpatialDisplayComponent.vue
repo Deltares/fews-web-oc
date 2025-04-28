@@ -191,9 +191,7 @@ import OverlayLayer from '@/components/wms/OverlayLayer.vue'
 import { useColourScales } from '@/services/useColourScales'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import { useOverlays } from '@/services/useOverlays'
-import { useBaseMapsStore } from '@/stores/baseMaps'
-import { getResourcesStaticUrl } from '@/lib/fews-config'
-import { useDark } from '@vueuse/core'
+import { useBaseMap } from '@/services/useBaseMap'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -297,21 +295,7 @@ watch(
   },
 )
 
-const baseMapsStore = useBaseMapsStore()
-
-const isDark = useDark()
-
-const baseMap = computed(() => {
-  const baseMapId = userSettingsStore.get('ui.map.theme')?.value as
-    | string
-    | undefined
-  return baseMapsStore.getBaseMapById(baseMapId ?? 'automatic', isDark.value)
-})
-
-const mapStyle = computed(() => {
-  const style = baseMap.value.style
-  return style.startsWith('http') ? style : getResourcesStaticUrl(style)
-})
+const { baseMap, mapStyle } = useBaseMap()
 
 const { selectedOverlayIds, selectedOverlays } = useOverlays(
   () => props.settings.overlays,
