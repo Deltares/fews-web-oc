@@ -11,17 +11,12 @@
 <script setup lang="ts">
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import { DisplayConfig, DisplayType } from '@/lib/display/DisplayConfig'
-import {
-  getDefaultSettings,
-  type ComponentSettings,
-} from '@/lib/topology/componentSettings'
+import { type ComponentSettings } from '@/lib/topology/componentSettings'
 
 interface Props {
   displayConfig: DisplayConfig | null
-  settings?: ComponentSettings
+  settings: ComponentSettings
 }
 
-withDefaults(defineProps<Props>(), {
-  settings: () => getDefaultSettings(),
-})
+defineProps<Props>()
 </script>
