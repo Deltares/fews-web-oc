@@ -1,16 +1,16 @@
 <template>
-  <MapComponent :bounds :baseMapId :showScaleControl="false">
+  <MapComponent :bounds :style="mapStyle" :showScaleControl="false">
     <slot />
   </MapComponent>
 </template>
 
 <script setup lang="ts">
 import MapComponent from '@/components/map/MapComponent.vue'
+import { useBaseMap } from '@/services/useBaseMap'
 import { convertBoundingBoxToLngLatBounds } from '@/services/useWms'
-import { useUserSettingsStore } from '@/stores/userSettings'
 import type { BoundingBox } from '@deltares/fews-pi-requests'
 import type { LngLatBounds } from 'maplibre-gl'
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 
 interface Props {
   boundingBox?: BoundingBox
@@ -18,10 +18,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const userSettingsStore = useUserSettingsStore()
-const baseMapId = computed(
-  () => (userSettingsStore.get('ui.map.theme')?.value as string) ?? 'automatic',
-)
+const { mapStyle } = useBaseMap()
 
 const bounds = ref<LngLatBounds>()
 watch(
