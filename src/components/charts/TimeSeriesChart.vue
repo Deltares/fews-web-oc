@@ -464,6 +464,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   flex: 1 1 80%;
   max-height: max(50%, 400px);
+  width: 100%;
 }
 
 .chart-with-chips.vertical-profile {
