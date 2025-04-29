@@ -103,7 +103,8 @@ const filter = computed(() => {
   if (
     !selectedParameterIds.value.length ||
     !selectedLocationIds.value.length ||
-    !selectedResamplingMethods.value.length
+    !selectedResamplingMethods.value.length ||
+    !selectedResamplingTimeSteps.value.length
   ) {
     return
   }
