@@ -1,0 +1,14 @@
+.ProseMirror time {
+  background-position: right;
+  padding-right: 1.5em;
+  outline: 2px solid #68cef8;
+  outline-offset: 2px;
+  border-radius: 2px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 64.7273 512 448.462"><g transform="scale(1,-1) translate(0, -480.36365)"><path data-glyph="clock-time-eight-outline" fill="currentColor" d="M256 21q46 0 85.5 23t62.5 62.5t23 85.5t-23 85.5t-62.5 62.5t-85.5 23t-85.5 -23t-62.5 -62.5t-23 -85.5t23 -85.5t62.5 -62.5t85.5 -23zM256 405q58 0 107 -28.5t77.5 -77.5t28.5 -107t-28.5 -107t-77.5 -77.5t-107 -28.5t-107 28.5t-77.5 77.5t-28.5 107t28.5 107 t77.5 77.5t107 28.5zM267 175l-103 -60l-15 30l86 49v105h32v-124z"/></g></svg>');
+}
+
+img {
+  &.ProseMirror-selectednode {
+    outline: 3px solid #68cef8;
+  }
+}
