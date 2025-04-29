@@ -199,7 +199,10 @@ function isLoading(subplot: ChartConfig, loadingSeriesIds: string[]) {
 }
 
 async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
-  const seriesHeader = series.value[props.config.requests[0].key].header
+  const requestKey = props.config.requests[0].key
+  if (requestKey === undefined) return
+
+  const seriesHeader = series.value[requestKey].header
   await postTimeSeriesEdit(
     baseUrl,
     props.config.requests,

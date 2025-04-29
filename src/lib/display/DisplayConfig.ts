@@ -1,5 +1,5 @@
 import { ChartConfig } from '../charts/types/ChartConfig.js'
-import { ActionPeriod } from '@deltares/fews-pi-requests'
+import { ActionPeriod, ActionRequest } from '@deltares/fews-pi-requests'
 
 export enum DisplayType {
   TimeSeriesChart = 'TimeSeriesChart',
@@ -16,7 +16,7 @@ export interface DisplayConfig {
   title: string
   forecastLegend: string | undefined
   class: string
-  requests: any[]
+  requests: ActionRequest[]
   period: ActionPeriod | undefined
   subplots: ChartConfig[]
 }
