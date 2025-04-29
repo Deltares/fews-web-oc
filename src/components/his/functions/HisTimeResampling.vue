@@ -28,7 +28,7 @@
 
   <HisCharts
     v-if="resampledDisplayConfig"
-    :displayConfig="resampledDisplayConfig"
+    :subplots="resampledDisplayConfig.subplots"
     :series="resampledSeries"
     :settings="settings"
   />
