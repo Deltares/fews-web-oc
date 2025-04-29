@@ -15,17 +15,17 @@
     :getItemTitle="(item) => item.name"
   />
 
-  <TimeSeriesChart
-    v-if="selectedSeries && selectedSubplot"
-    :config="selectedSubplot"
-    :series="selectedSeries"
-    :settings="chartSettings"
+  <HisCharts
+    v-if="correlationSubplots"
+    :subplots="correlationSubplots"
+    :series="correlationSeries"
+    :settings="settings"
   />
 </template>
 
 <script setup lang="ts">
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
-import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
+import HisCharts from '@/components/his/HisCharts.vue'
 import { computed, ref, watchEffect } from 'vue'
 import { DisplayConfig } from '@/lib/display/DisplayConfig'
 import { ComponentSettings } from '@/lib/topology/componentSettings'
@@ -39,7 +39,6 @@ import {
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import { SeriesData } from '@/lib/timeseries/types/SeriesData'
 import { SeriesResourceType } from '@/lib/timeseries/types'
-import { merge } from 'lodash-es'
 
 interface Props {
   displayConfig?: DisplayConfig
@@ -48,15 +47,6 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-
-const chartSettings = computed(() =>
-  merge({}, props.settings.charts.timeSeriesChart, {
-    legend: {
-      placement: 'inside upper left',
-      numberOfLines: 1,
-    },
-  }),
-)
 
 const allSeries = computed(
   () => props.displayConfig?.subplots.flatMap((s) => s.series) ?? [],
@@ -114,9 +104,9 @@ watchEffect(() => {
   intercept.value = correlation.intercept
 })
 
-const selectedSeries = computed(() => {
-  if (!line.value) return
-  if (!points.value) return
+const correlationSeries = computed(() => {
+  if (!line.value) return {}
+  if (!points.value) return {}
 
   const newSeriesLine = new Series({
     type: SeriesResourceType.Derived,
@@ -136,12 +126,12 @@ const selectedSeries = computed(() => {
   }
 })
 
-const selectedSubplot = computed(() => {
-  if (!selectedTimeseries.value) return
-  if (!selectedSecondTimeseries.value) return
+const correlationSubplots = computed(() => {
+  if (!selectedTimeseries.value) return []
+  if (!selectedSecondTimeseries.value) return []
 
   const config = props.displayConfig?.subplots[0]
-  if (!config) return
+  if (!config) return []
 
   const baseItem = {
     visibleInPlot: true,
@@ -183,7 +173,7 @@ const selectedSubplot = computed(() => {
     items: [line, points],
   }
 
-  return timeSeriesDisplayToChartConfig(subplot)
+  return [timeSeriesDisplayToChartConfig(subplot)]
 })
 
 function getSlopeInterceptLegend(
