@@ -68,7 +68,7 @@
         </v-card-title>
         <HisCharts
           v-if="displayConfig"
-          :displayConfig="displayConfig"
+          :subplots="displayConfig.subplots"
           :series="series"
           :settings="settings"
         />
