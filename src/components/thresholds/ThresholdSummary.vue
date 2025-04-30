@@ -1,6 +1,7 @@
 <template>
   <v-card
     :border="true"
+    :color="isSelected ? 'rgba(0, 0, 0, 0.13)' : 'transparent'"
     flat
     density="compact"
     :ripple="false"
@@ -32,13 +33,16 @@
 import ThresholdsParameter from '@/components/thresholds/ThresholdsField.vue'
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 interface Props {
   crossings: LevelThresholdCrossings[]
+  isSelected: boolean
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 const relativeFormat = ref(false)
+const router = useRouter()
 
 const expanded = defineModel<boolean>('expanded', {
   required: false,
@@ -58,5 +62,12 @@ function onExpansionPanelToggle() {
   if (window.getSelection()?.toString() === '') {
     expanded.value = !expanded.value
   }
+  // Route to open the crossing in the map
+  router.push({
+    name: 'TopologySpatialTimeSeriesDisplay',
+    params: {
+      locationIds: props.crossings[0].locationId,
+    },
+  })
 }
 </script>

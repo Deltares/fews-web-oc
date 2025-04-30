@@ -46,6 +46,7 @@
           <ThresholdSummary
             v-model:expanded="expandedItems[crossingsGroup[0].locationId]"
             :crossings="crossingsGroup"
+            :isSelected="isLocationSelected(crossingsGroup[0].locationId)"
           />
         </div>
       </template>
@@ -58,6 +59,7 @@ import type { WarningLevel } from '@/lib/thresholds'
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import ThresholdSummary from '@/components/thresholds/ThresholdSummary.vue'
 import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 
 interface Props {
   warningLevels: WarningLevel[]
@@ -68,8 +70,24 @@ interface Props {
 const props = defineProps<Props>()
 
 const selectedWarningLevelIds = defineModel<string[]>('selectedWarningLevelIds')
-
 const expandedItems = ref<Record<string, boolean>>({})
+const route = useRoute()
+
+// Check if a locationId is selected in the route
+const isLocationSelected = computed(() => {
+  // Get location IDs from route params
+  const routeLocationIds = (() => {
+    if (typeof route.params.locationIds === 'string') {
+      return route.params.locationIds.split(',')
+    }
+    return Array.isArray(route.params.locationIds)
+      ? route.params.locationIds
+      : []
+  })()
+  return (locationId: string): boolean => {
+    return routeLocationIds.includes(locationId)
+  }
+})
 
 const groupedCrossings = computed(() => {
   const grouped: Record<string, LevelThresholdCrossings[]> = {}
