@@ -37,6 +37,7 @@
 
     <!-- Important to have item-height as it greatly improves performance -->
     <v-virtual-scroll
+      ref="virtualScroll"
       class="scroll-container h-100"
       :items="groupedCrossings"
       :item-height="52"
@@ -58,7 +59,7 @@
 import type { WarningLevel } from '@/lib/thresholds'
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import ThresholdSummary from '@/components/thresholds/ThresholdSummary.vue'
-import { computed, ref } from 'vue'
+import { computed, ref, watch, nextTick, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 
 interface Props {
@@ -72,18 +73,17 @@ const props = defineProps<Props>()
 const selectedWarningLevelIds = defineModel<string[]>('selectedWarningLevelIds')
 const expandedItems = ref<Record<string, boolean>>({})
 const route = useRoute()
+const virtualScroll = ref<any>(null)
 
-// Check if a locationId is selected in the route
+const getRouteLocationIds = (): string[] => {
+  if (typeof route.params.locationIds === 'string') {
+    return route.params.locationIds.split(',')
+  }
+  return Array.isArray(route.params.locationIds) ? route.params.locationIds : []
+}
+
 const isLocationSelected = computed(() => {
-  // Get location IDs from route params
-  const routeLocationIds = (() => {
-    if (typeof route.params.locationIds === 'string') {
-      return route.params.locationIds.split(',')
-    }
-    return Array.isArray(route.params.locationIds)
-      ? route.params.locationIds
-      : []
-  })()
+  const routeLocationIds = getRouteLocationIds()
   return (locationId: string): boolean => {
     return routeLocationIds.includes(locationId)
   }
@@ -99,6 +99,30 @@ const groupedCrossings = computed(() => {
     grouped[key].push(crossing)
   })
   return Object.values(grouped)
+})
+
+// Scroll to the selected item
+async function scrollToSelectedItem() {
+  const locationIds = getRouteLocationIds()
+  if (locationIds.length === 0 || !virtualScroll.value) return
+  const selectedIndex = groupedCrossings.value.findIndex((group) =>
+    locationIds.includes(group[0].locationId),
+  )
+  if (selectedIndex !== -1) {
+    // Wait for the next DOM update cycle
+    await nextTick()
+    // Scroll to the item
+    virtualScroll.value.scrollToIndex(selectedIndex)
+  }
+}
+
+watch([() => route.params.locationIds, groupedCrossings], () => {
+  scrollToSelectedItem()
+})
+
+// Scroll to the selected item when we directly navigate to the page
+onMounted(() => {
+  nextTick(() => scrollToSelectedItem())
 })
 </script>
 
