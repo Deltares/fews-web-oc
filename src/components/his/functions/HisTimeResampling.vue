@@ -52,11 +52,11 @@ import { type ResamplingMethod, resamplingMethods } from '@/lib/his/resampling'
 import { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import { uniq } from 'lodash-es'
 import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
-import { ChartConfig } from '@/lib/charts/types/ChartConfig'
+import { Chart } from '@/lib/his'
 
 interface Props {
   filterId?: string
-  subplots: ChartConfig[]
+  charts: Chart[]
   series: Record<string, Series>
   startTime?: Date
   endTime?: Date
@@ -74,8 +74,8 @@ const selectedResamplingTimeSteps = ref<TimeSteps[]>([])
 const availableTimeStepsStore = useAvailableTimeStepsStore()
 
 const allSeries = computed(() =>
-  props.subplots
-    .flatMap((sub) => sub.series)
+  props.charts
+    .flatMap((chart) => chart.config.series)
     .filter(
       (series, index, self) =>
         index === self.findIndex((s) => s.id === series.id),

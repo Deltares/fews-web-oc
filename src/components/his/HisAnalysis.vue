@@ -15,12 +15,12 @@
   </v-btn-toggle>
   <v-tabs-window v-model="selectedFunction">
     <v-tabs-window-item value="correlation">
-      <HisCorrelation :subplots :series :settings />
+      <HisCorrelation :charts :series :settings />
     </v-tabs-window-item>
     <v-tabs-window-item value="time-resampling">
       <HisTimeResampling
         :filterId
-        :subplots
+        :charts
         :series
         :startTime
         :endTime
@@ -36,11 +36,11 @@ import HisTimeResampling from '@/components/his/functions/HisTimeResampling.vue'
 import { ref } from 'vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import { ChartConfig } from '@/lib/charts/types/ChartConfig'
+import { Chart } from '@/lib/his'
 
 interface Props {
   filterId?: string
-  subplots: ChartConfig[]
+  charts: Chart[]
   series: Record<string, Series>
   startTime?: Date
   endTime?: Date
