@@ -60,9 +60,9 @@
             v-model:collections="collections"
           />
         </v-card-title>
-        <HisCharts
+        <HisCollectionCharts
           v-if="selectedCollection.charts.length"
-          :subplots="selectedCollection.charts.map((chart) => chart.config)"
+          :collection="selectedCollection"
           :series="series"
           :settings="settings"
           class="flex-1-1"
@@ -75,7 +75,7 @@
 
 <script setup lang="ts">
 import HisDataSelection from '@/components/his/HisDataSelection.vue'
-import HisCharts from '@/components/his/HisCharts.vue'
+import HisCollectionCharts from './HisCollectionCharts.vue'
 import HisCollection from '@/components/his/HisCollection.vue'
 import HisAnalysis from '@/components/his/HisAnalysis.vue'
 import type {
@@ -149,13 +149,7 @@ function getActionRequestsForSubplot(
 }
 
 function getNewChartTitle(collection: Collection) {
-  let id = 1
-  let title = `Chart ${1}`
-  while (collection.charts.some((chart) => chart.title === title)) {
-    id++
-    title = `Chart ${id}`
-  }
-  return title
+  return `Chart ${collection.charts.length + 1}`
 }
 
 const { locations, geojson } = useFilterLocations(baseUrl, () =>
