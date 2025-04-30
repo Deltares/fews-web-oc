@@ -1,10 +1,9 @@
 <template>
-  <div class="pt-2 h-100 w-100 d-flex">
+  <div class="overflow-auto">
     <TimeSeriesChart
       v-for="subplot in subplots"
       :config="subplot"
       :series="series"
-      :key="subplot.id"
       :zoomHandler="sharedZoomHandler"
       :settings="settings.charts.timeSeriesChart"
     />

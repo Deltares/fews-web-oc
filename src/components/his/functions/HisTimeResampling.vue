@@ -37,7 +37,6 @@
 <script setup lang="ts">
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
 import HisCharts from '@/components/his/HisCharts.vue'
-import type { DisplayConfig } from '@/lib/display/DisplayConfig'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref } from 'vue'
@@ -53,10 +52,11 @@ import { type ResamplingMethod, resamplingMethods } from '@/lib/his/resampling'
 import { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import { uniq } from 'lodash-es'
 import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
+import { ChartConfig } from '@/lib/charts/types/ChartConfig'
 
 interface Props {
   filterId?: string
-  displayConfig: DisplayConfig
+  subplots: ChartConfig[]
   series: Record<string, Series>
   startTime?: Date
   endTime?: Date
@@ -73,9 +73,7 @@ const selectedResamplingTimeSteps = ref<TimeSteps[]>([])
 
 const availableTimeStepsStore = useAvailableTimeStepsStore()
 
-const allSeries = computed(
-  () => props.displayConfig?.subplots.flatMap((s) => s.series) ?? [],
-)
+const allSeries = computed(() => props.subplots.flatMap((s) => s.series) ?? [])
 
 const selectedSeries = computed(() => {
   return selectedTimeseries.value.flatMap((series) =>
