@@ -48,7 +48,14 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const allSeries = computed(() => props.subplots.flatMap((s) => s.series) ?? [])
+const allSeries = computed(() =>
+  props.subplots
+    .flatMap((sub) => sub.series)
+    .filter(
+      (series, index, self) =>
+        index === self.findIndex((s) => s.id === series.id),
+    ),
+)
 
 const selectedTimeseries = ref<ChartSeries>()
 const selectedSecondTimeseries = ref<ChartSeries>()
