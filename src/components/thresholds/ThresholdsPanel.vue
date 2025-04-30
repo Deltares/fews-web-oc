@@ -75,7 +75,7 @@ const expandedItems = ref<Record<string, boolean>>({})
 const route = useRoute()
 const virtualScroll = ref<any>(null)
 
-const getRouteLocationIds = (): string[] => {
+function getRouteLocationIds(): string[] {
   if (typeof route.params.locationIds === 'string') {
     return route.params.locationIds.split(',')
   }
