@@ -1,10 +1,10 @@
 <template>
   <div class="his-container pa-2 ga-2">
-    <div class="his-data-selection h-100">
+    <div class="his-data-selection h-100 overflow-y-auto">
       <v-card
         border
         flat
-        class="d-grid flex-column pb-2"
+        class="pb-2"
         :class="{ 'h-100': tab === 'data-selection' }"
       >
         <v-tabs v-model="tab">
@@ -18,7 +18,7 @@
             prepend-icon="mdi-chart-line"
             text="Analysis"
             value="analysis"
-            :disabled="!subplots.length"
+            :disabled="!selectedCollection.charts.length"
             class="text-none"
           />
         </v-tabs>
@@ -34,10 +34,13 @@
               @addFilter="addFilter"
             />
           </v-tabs-window-item>
-          <v-tabs-window-item value="analysis" v-if="subplots.length">
+          <v-tabs-window-item
+            value="analysis"
+            v-if="selectedCollection.charts.length"
+          >
             <HisAnalysis
               :filterId="filterId"
-              :subplots="subplots"
+              :charts="selectedCollection.charts"
               :series="series"
               :startTime="startTime"
               :endTime="endTime"
@@ -47,17 +50,19 @@
         </v-tabs-window>
       </v-card>
     </div>
-    <div class="his-charts overflow-auto">
+    <div class="his-charts h-100 overflow-y-auto">
       <v-card border flat class="h-100 d-flex flex-column">
         <v-card-title class="flex-0-0 d-flex ga-1 align-center">
           <div>Charts</div>
           <v-spacer />
-          <HisCollection v-model:selectedCollection="selectedCollection" />
-          <v-btn :disabled="!selectedCollection" icon="mdi-content-save" />
+          <HisCollection
+            v-model:selectedCollection="selectedCollection"
+            v-model:collections="collections"
+          />
         </v-card-title>
         <HisCharts
-          v-if="subplots.length"
-          :subplots="subplots"
+          v-if="selectedCollection.charts.length"
+          :subplots="selectedCollection.charts.map((chart) => chart.config)"
           :series="series"
           :settings="settings"
           class="flex-1-1"
@@ -78,7 +83,7 @@ import type {
   BoundingBox,
   filterActionsFilter,
 } from '@deltares/fews-pi-requests'
-import { ref, shallowRef } from 'vue'
+import { computed, ref } from 'vue'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import { configManager } from '@/services/application-config'
 import { useTimeSeries, useTimeSeriesHeaders } from '@/services/useTimeSeries'
@@ -87,7 +92,7 @@ import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
-import { type Collection } from '@/lib/his'
+import { Chart, type Collection } from '@/lib/his'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -108,7 +113,50 @@ const tab = ref('data-selection')
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const selectedCollection = ref<Collection>()
+const collections = ref<Collection[]>([
+  {
+    name: 'Default',
+    charts: [],
+  },
+])
+const selectedCollection = ref<Collection>(collections.value[0])
+
+function addChartsToCollection(
+  subplots: ChartConfig[],
+  requests: ActionRequest[],
+) {
+  const collection = selectedCollection.value
+  if (!collection) return
+
+  const newCharts: Chart[] = subplots.map((subPlot) => ({
+    title: getNewChartTitle(collection),
+    config: subPlot,
+    requests: getActionRequestsForSubplot(subPlot, requests),
+  }))
+
+  selectedCollection.value.charts = [...collection.charts, ...newCharts]
+}
+
+function getActionRequestsForSubplot(
+  subplot: ChartConfig,
+  requests: ActionRequest[],
+) {
+  return subplot.series.flatMap((series) =>
+    series.dataResources.flatMap(
+      (resource) => requests.find((req) => req.key === resource) ?? [],
+    ),
+  )
+}
+
+function getNewChartTitle(collection: Collection) {
+  let id = 1
+  let title = `Chart ${1}`
+  while (collection.charts.some((chart) => chart.title === title)) {
+    id++
+    title = `Chart ${id}`
+  }
+  return title
+}
 
 const { locations, geojson } = useFilterLocations(baseUrl, () =>
   props.filterId ? [props.filterId] : [],
@@ -121,9 +169,6 @@ const { timeSeriesHeaders } = useTimeSeriesHeaders(
 const startTime = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
 const endTime = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
 
-const requests = shallowRef<ActionRequest[]>([])
-const subplots = shallowRef<ChartConfig[]>([])
-
 async function addFilter(filter: filterActionsFilter) {
   const actions = await fetchActions(baseUrl, filter)
   const results = actions.results
@@ -134,14 +179,18 @@ async function addFilter(filter: filterActionsFilter) {
         timeSeriesDisplayToChartConfig(subPlot, [startTime, endTime]),
       ) ?? [],
   )
-  subplots.value = [...subplots.value, ...newSubplots]
+  const newRequests = results
+    .flatMap((result) => result.requests)
+    .filter((req, i, s) => i === s.findIndex((r) => r.key === req.key))
 
-  const getUniqueRequests = (requests: ActionRequest[]) =>
-    requests.filter((req, i, s) => i === s.findIndex((r) => r.key === req.key))
-
-  const newRequests = results.flatMap((result) => result.requests)
-  requests.value = getUniqueRequests([...requests.value, ...newRequests])
+  addChartsToCollection(newSubplots, newRequests)
 }
+
+const requests = computed(() =>
+  selectedCollection.value.charts
+    .flatMap((chart) => chart.requests)
+    .filter((req, i, s) => i === s.findIndex((r) => r.key === req.key)),
+)
 
 const { series } = useTimeSeries(baseUrl, requests, () => ({
   startTime,
