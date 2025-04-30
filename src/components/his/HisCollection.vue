@@ -9,7 +9,6 @@
     hide-details
     density="compact"
     return-object
-    clearable
     max-width="250"
   >
     <template #append-item>
@@ -46,15 +45,17 @@
 import type { Collection } from '@/lib/his'
 import { ref } from 'vue'
 
-const collections = ref<Collection[]>([])
 const selectedCollection = defineModel<Collection>('selectedCollection')
+const collections = defineModel<Collection[]>('collections', {
+  required: true,
+})
 const dialog = ref(false)
 const newCollectionName = ref('')
 
 function addCollection(): void {
   const name = newCollectionName.value.trim()
   if (name && !collections.value.some((c) => c.name === name)) {
-    const newItem = { name }
+    const newItem = { name, charts: [] }
     collections.value.push(newItem)
     selectedCollection.value = newItem
   }
