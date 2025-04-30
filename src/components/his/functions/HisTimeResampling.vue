@@ -73,7 +73,14 @@ const selectedResamplingTimeSteps = ref<TimeSteps[]>([])
 
 const availableTimeStepsStore = useAvailableTimeStepsStore()
 
-const allSeries = computed(() => props.subplots.flatMap((s) => s.series) ?? [])
+const allSeries = computed(() =>
+  props.subplots
+    .flatMap((sub) => sub.series)
+    .filter(
+      (series, index, self) =>
+        index === self.findIndex((s) => s.id === series.id),
+    ),
+)
 
 const selectedSeries = computed(() => {
   return selectedTimeseries.value.flatMap((series) =>
