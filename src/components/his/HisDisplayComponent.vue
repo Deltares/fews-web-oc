@@ -74,33 +74,22 @@ import HisCharts from '@/components/his/HisCharts.vue'
 import HisCollection from '@/components/his/HisCollection.vue'
 import HisAnalysis from '@/components/his/HisAnalysis.vue'
 import type {
+  ActionRequest,
   BoundingBox,
   filterActionsFilter,
 } from '@deltares/fews-pi-requests'
-import {
-  computed,
-  effectScope,
-  EffectScope,
-  Ref,
-  ref,
-  shallowRef,
-  ShallowRef,
-} from 'vue'
+import { ref, shallowRef } from 'vue'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import { configManager } from '@/services/application-config'
 import { useTimeSeries, useTimeSeriesHeaders } from '@/services/useTimeSeries'
-import {
-  useDisplayConfigFilter,
-  UseDisplayConfigOptions,
-} from '@/services/useDisplayConfig'
+import { fetchActions } from '@/services/useDisplayConfig'
 import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
 import { type Collection } from '@/lib/his'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { DisplayConfig } from '@/lib/display/DisplayConfig'
-import { Series } from '@/lib/timeseries/timeSeries'
+import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import { ChartConfig } from '@/lib/charts/types/ChartConfig'
 
 interface Props {
@@ -129,71 +118,38 @@ const { timeSeriesHeaders } = useTimeSeriesHeaders(
   () => props.filterId,
 )
 
-const displayConfigOptions = computed<UseDisplayConfigOptions>(() => {
-  return {
-    useDisplayUnits: userSettings.useDisplayUnits,
-    convertDatum: userSettings.convertDatum,
-  }
-})
-
 const startTime = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
 const endTime = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
 
-interface State {
-  scope: EffectScope
-  displayConfig: Ref<DisplayConfig | null>
-  series: ShallowRef<Record<string, Series>>
+const requests = shallowRef<ActionRequest[]>([])
+const subplots = shallowRef<ChartConfig[]>([])
+
+async function addFilter(filter: filterActionsFilter) {
+  const actions = await fetchActions(baseUrl, filter)
+  const results = actions.results
+
+  const newSubplots = results.flatMap(
+    (result) =>
+      result.config?.timeSeriesDisplay.subplots?.map((subPlot) =>
+        timeSeriesDisplayToChartConfig(subPlot, [startTime, endTime]),
+      ) ?? [],
+  )
+  subplots.value = [...subplots.value, ...newSubplots]
+
+  const getUniqueRequests = (requests: ActionRequest[]) =>
+    requests.filter((req, i, s) => i === s.findIndex((r) => r.key === req.key))
+
+  const newRequests = results.flatMap((result) => result.requests)
+  requests.value = getUniqueRequests([...requests.value, ...newRequests])
 }
 
-const results = shallowRef<Record<number, State>>({})
-const id = ref(0)
-
-function addFilter(filter: filterActionsFilter) {
-  const scope = effectScope()
-
-  scope.run(() => {
-    const { displayConfig } = useDisplayConfigFilter(
-      baseUrl,
-      () => ({ ...filter, ...displayConfigOptions.value }),
-      startTime,
-      endTime,
-    )
-
-    const { series } = useTimeSeries(
-      baseUrl,
-      () => displayConfig.value?.requests ?? [],
-      () => ({ startTime, endTime, thinning: true }),
-    )
-
-    results.value = {
-      ...results.value,
-      [id.value]: {
-        scope,
-        displayConfig,
-        series,
-      },
-    }
-    id.value += 1
-  })
-}
-
-const series = computed(() => {
-  const allSeries: Record<string, Series> = {}
-  Object.values(results.value).forEach((result) => {
-    Object.assign(allSeries, result.series.value)
-  })
-  return allSeries
-})
-
-const subplots = computed(() => {
-  const allSubplots: ChartConfig[] = []
-  Object.values(results.value).forEach((result) => {
-    if (result.displayConfig.value) {
-      allSubplots.push(...result.displayConfig.value.subplots)
-    }
-  })
-  return allSubplots
-})
+const { series } = useTimeSeries(baseUrl, requests, () => ({
+  startTime,
+  endTime,
+  useDisplayUnits: userSettings.useDisplayUnits,
+  convertDatum: userSettings.convertDatum,
+  thinning: true,
+}))
 </script>
 
 <style scoped>
