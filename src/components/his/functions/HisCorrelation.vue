@@ -29,7 +29,7 @@ import HisCharts from '@/components/his/HisCharts.vue'
 import { computed, ref, watchEffect } from 'vue'
 import { ComponentSettings } from '@/lib/topology/componentSettings'
 import { ChartSeries } from '@/lib/charts/types/ChartSeries'
-import { calculateCorrelationTimeSeries } from '@/lib/his'
+import { calculateCorrelationTimeSeries, Chart } from '@/lib/his'
 import { Series } from '@/lib/timeseries/timeSeries'
 import {
   TimeSeriesDisplaySubplot,
@@ -38,10 +38,9 @@ import {
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import { SeriesData } from '@/lib/timeseries/types/SeriesData'
 import { SeriesResourceType } from '@/lib/timeseries/types'
-import { ChartConfig } from '@/lib/charts/types/ChartConfig'
 
 interface Props {
-  subplots: ChartConfig[]
+  charts: Chart[]
   settings: ComponentSettings
   series: Record<string, Series>
 }
@@ -49,8 +48,8 @@ interface Props {
 const props = defineProps<Props>()
 
 const allSeries = computed(() =>
-  props.subplots
-    .flatMap((sub) => sub.series)
+  props.charts
+    .flatMap((chart) => chart.config.series)
     .filter(
       (series, index, self) =>
         index === self.findIndex((s) => s.id === series.id),
@@ -134,9 +133,6 @@ const correlationSeries = computed(() => {
 const correlationSubplots = computed(() => {
   if (!selectedTimeseries.value) return []
   if (!selectedSecondTimeseries.value) return []
-
-  const config = props.subplots?.[0]
-  if (!config) return []
 
   const baseItem = {
     visibleInPlot: true,

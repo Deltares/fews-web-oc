@@ -1,5 +1,5 @@
 <template>
-  <div class="overflow-auto">
+  <div class="overflow-y-auto">
     <TimeSeriesChart
       v-for="subplot in subplots"
       :config="subplot"
