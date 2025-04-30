@@ -59,7 +59,7 @@
 import type { WarningLevel } from '@/lib/thresholds'
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import ThresholdSummary from '@/components/thresholds/ThresholdSummary.vue'
-import { computed, ref, watch, nextTick, onMounted } from 'vue'
+import { computed, ref, watch, nextTick, onMounted, useTemplateRef } from 'vue'
 import { useRoute } from 'vue-router'
 
 interface Props {
@@ -73,7 +73,7 @@ const props = defineProps<Props>()
 const selectedWarningLevelIds = defineModel<string[]>('selectedWarningLevelIds')
 const expandedItems = ref<Record<string, boolean>>({})
 const route = useRoute()
-const virtualScroll = ref<any>(null)
+const virtualScroll = useTemplateRef('virtualScroll')
 
 function getRouteLocationIds(): string[] {
   if (typeof route.params.locationIds === 'string') {
@@ -122,7 +122,7 @@ watch([() => route.params.locationIds, groupedCrossings], () => {
 
 // Scroll to the selected item when we directly navigate to the page
 onMounted(() => {
-  nextTick(() => scrollToSelectedItem())
+  scrollToSelectedItem()
 })
 </script>
 

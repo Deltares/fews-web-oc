@@ -1,7 +1,7 @@
 <template>
   <v-card
     :border="true"
-    :color="isSelected ? 'rgba(0, 0, 0, 0.13)' : 'transparent'"
+    :color="isSelected ? 'var(--selected-color)' : 'transparent'"
     flat
     density="compact"
     :ripple="false"
