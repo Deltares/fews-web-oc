@@ -27,7 +27,6 @@
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
 import HisCharts from '@/components/his/HisCharts.vue'
 import { computed, ref, watchEffect } from 'vue'
-import { DisplayConfig } from '@/lib/display/DisplayConfig'
 import { ComponentSettings } from '@/lib/topology/componentSettings'
 import { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import { calculateCorrelationTimeSeries } from '@/lib/his'
@@ -39,18 +38,17 @@ import {
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import { SeriesData } from '@/lib/timeseries/types/SeriesData'
 import { SeriesResourceType } from '@/lib/timeseries/types'
+import { ChartConfig } from '@/lib/charts/types/ChartConfig'
 
 interface Props {
-  displayConfig?: DisplayConfig
+  subplots: ChartConfig[]
   settings: ComponentSettings
   series: Record<string, Series>
 }
 
 const props = defineProps<Props>()
 
-const allSeries = computed(
-  () => props.displayConfig?.subplots.flatMap((s) => s.series) ?? [],
-)
+const allSeries = computed(() => props.subplots.flatMap((s) => s.series) ?? [])
 
 const selectedTimeseries = ref<ChartSeries>()
 const selectedSecondTimeseries = ref<ChartSeries>()
@@ -130,7 +128,7 @@ const correlationSubplots = computed(() => {
   if (!selectedTimeseries.value) return []
   if (!selectedSecondTimeseries.value) return []
 
-  const config = props.displayConfig?.subplots[0]
+  const config = props.subplots?.[0]
   if (!config) return []
 
   const baseItem = {
