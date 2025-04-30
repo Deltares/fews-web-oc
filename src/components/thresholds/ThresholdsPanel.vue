@@ -45,9 +45,9 @@
       <template #default="{ item: crossingsGroup }">
         <div class="my-1 mx-2">
           <ThresholdSummary
-            v-model:expanded="expandedItems[crossingsGroup[0].locationId]"
             :crossings="crossingsGroup"
-            :isSelected="isLocationSelected(crossingsGroup[0].locationId)"
+            :isSelected="crossingsGroup[0].locationId === props.locationIds"
+            @navigate="emit('navigate', $event)"
           />
         </div>
       </template>
@@ -59,35 +59,25 @@
 import type { WarningLevel } from '@/lib/thresholds'
 import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import ThresholdSummary from '@/components/thresholds/ThresholdSummary.vue'
-import { computed, ref, watch, nextTick, onMounted, useTemplateRef } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, watch, nextTick, onMounted, useTemplateRef } from 'vue'
+import { NavigateRoute } from '@/lib/router/types'
 
 interface Props {
   warningLevels: WarningLevel[]
   crossings: LevelThresholdCrossings[]
   selectedThresholdCrossings: LevelThresholdCrossings[]
+  locationIds?: string
 }
 
 const props = defineProps<Props>()
 
-const selectedWarningLevelIds = defineModel<string[]>('selectedWarningLevelIds')
-const expandedItems = ref<Record<string, boolean>>({})
-const route = useRoute()
-const virtualScroll = useTemplateRef('virtualScroll')
-
-function getRouteLocationIds(): string[] {
-  if (typeof route.params.locationIds === 'string') {
-    return route.params.locationIds.split(',')
-  }
-  return Array.isArray(route.params.locationIds) ? route.params.locationIds : []
+interface Emits {
+  navigate: [to: NavigateRoute]
 }
+const emit = defineEmits<Emits>()
 
-const isLocationSelected = computed(() => {
-  const routeLocationIds = getRouteLocationIds()
-  return (locationId: string): boolean => {
-    return routeLocationIds.includes(locationId)
-  }
-})
+const selectedWarningLevelIds = defineModel<string[]>('selectedWarningLevelIds')
+const virtualScroll = useTemplateRef('virtualScroll')
 
 const groupedCrossings = computed(() => {
   const grouped: Record<string, LevelThresholdCrossings[]> = {}
@@ -103,10 +93,9 @@ const groupedCrossings = computed(() => {
 
 // Scroll to the selected item
 async function scrollToSelectedItem() {
-  const locationIds = getRouteLocationIds()
-  if (locationIds.length === 0 || !virtualScroll.value) return
-  const selectedIndex = groupedCrossings.value.findIndex((group) =>
-    locationIds.includes(group[0].locationId),
+  if (!virtualScroll.value) return
+  const selectedIndex = groupedCrossings.value.findIndex(
+    (group) => group[0].locationId === props.locationIds,
   )
   if (selectedIndex !== -1) {
     // Wait for the next DOM update cycle
@@ -116,7 +105,7 @@ async function scrollToSelectedItem() {
   }
 }
 
-watch([() => route.params.locationIds, groupedCrossings], () => {
+watch([() => props.locationIds, groupedCrossings], () => {
   scrollToSelectedItem()
 })
 
