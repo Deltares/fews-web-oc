@@ -250,6 +250,22 @@ export function useDisplayConfigFilter(
   return shell
 }
 
+export function fetchActions(
+  baseUrl: string,
+  filter: Filter,
+): Promise<ActionsResponse> {
+  const piProvider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
+  if (isFilterActionsFilter(filter)) {
+    return piProvider.getFilterActions(filter)
+  } else if (isTimeSeriesGridActionsFilter(filter)) {
+    return piProvider.getTimeSeriesGridActions(filter)
+  }
+  throw new Error('Invalid filter type')
+}
+
 function addIndexToKeys(results: ActionResult[]) {
   results.forEach((result) => {
     result.requests.forEach((request) => {
