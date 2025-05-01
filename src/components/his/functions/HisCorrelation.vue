@@ -31,7 +31,12 @@
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
 import { computed, ref } from 'vue'
 import { ChartSeries } from '@/lib/charts/types/ChartSeries'
-import { calculateCorrelationTimeSeries, Chart, Dependant } from '@/lib/his'
+import {
+  calculateCorrelationTimeSeries,
+  Chart,
+  Dependant,
+  DerivedChart,
+} from '@/lib/his'
 import { Series } from '@/lib/timeseries/timeSeries'
 import {
   TimeSeriesDisplaySubplot,
@@ -158,10 +163,10 @@ function addChart() {
 
   const config = getSubplot(name1, name2, lineId, pointsId)
 
-  const chart: Chart = {
+  const chart: DerivedChart = {
+    type: 'derived',
     title: `Correlation between ${selectedTimeseries.value?.name} and ${selectedSecondTimeseries.value?.name}`,
     config,
-    requests: [],
     dependants: [dependant],
   }
 
