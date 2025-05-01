@@ -31,19 +31,13 @@
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
 import { computed, ref } from 'vue'
 import { ChartSeries } from '@/lib/charts/types/ChartSeries'
-import {
-  calculateCorrelationTimeSeries,
-  Chart,
-  Dependant,
-  DerivedChart,
-} from '@/lib/his'
+import { Chart, Dependant, DerivedChart } from '@/lib/his'
 import { Series } from '@/lib/timeseries/timeSeries'
 import {
   TimeSeriesDisplaySubplot,
   TimeSeriesDisplaySubplotItem,
 } from '@deltares/fews-pi-requests'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
-import { SeriesResourceType } from '@/lib/timeseries/types'
 
 interface Props {
   charts: Chart[]
@@ -130,40 +124,13 @@ function addChart() {
 
   const dependant: Dependant = {
     seriesIds: [id1, id2],
-    generateSeries: (series) => {
-      const series1 = series[id1]
-      const series2 = series[id2]
-
-      // TODO: Add some behaviour for missing dependants
-      if (!series1.data || !series2.data) return {}
-
-      const correlation = calculateCorrelationTimeSeries(
-        series1.data,
-        series2.data,
-      )
-
-      const newSeriesLine = new Series({
-        type: SeriesResourceType.Derived,
-      })
-      newSeriesLine.lastUpdated = new Date()
-      newSeriesLine.data = correlation.line
-
-      const newSeriesPoints = new Series({
-        type: SeriesResourceType.Derived,
-      })
-      newSeriesPoints.lastUpdated = new Date()
-      newSeriesPoints.data = correlation.points
-
-      return {
-        [lineId]: newSeriesLine,
-        [pointsId]: newSeriesPoints,
-      }
-    },
+    function: 'correlation',
   }
 
   const config = getSubplot(name1, name2, lineId, pointsId)
 
   const chart: DerivedChart = {
+    id: crypto.randomUUID(),
     type: 'derived',
     title: `Correlation between ${selectedTimeseries.value?.name} and ${selectedSecondTimeseries.value?.name}`,
     config,

@@ -1,6 +1,8 @@
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { ActionRequest } from '@deltares/fews-pi-requests'
-import { Series } from '../timeseries/timeSeries'
+import { hisFunctionToGenerator } from './functions'
+
+type HisFunction = keyof typeof hisFunctionToGenerator
 
 export interface Collection {
   name: string
@@ -8,6 +10,7 @@ export interface Collection {
 }
 
 export interface BaseChart {
+  id: string
   title: string
   config: ChartConfig
 }
@@ -26,5 +29,5 @@ export type Chart = FilterChart | DerivedChart
 
 export interface Dependant {
   seriesIds: string[]
-  generateSeries: (series: Record<string, Series>) => Record<string, Series>
+  function: HisFunction
 }
