@@ -23,19 +23,7 @@
     multiple
   />
 
-  <div class="d-flex pa-3">
-    <v-spacer />
-    <v-btn
-      variant="flat"
-      color="primary"
-      :disabled="!filter"
-      prepend-icon="mdi-plus"
-      text="Add to collection"
-      @click="addFilter"
-    />
-  </div>
-
-  <div class="w-100 h-100 border-t" style="min-height: 200px">
+  <div class="border rounded me-3 ms-13" style="height: 400px">
     <HisMap :boundingBox>
       <LocationsLayer
         v-if="filterLocationGeoJson.features.length"
@@ -44,6 +32,17 @@
         @click="onLocationClick"
       />
     </HisMap>
+  </div>
+
+  <div class="d-flex pa-3">
+    <v-spacer />
+    <v-btn
+      variant="tonal"
+      :disabled="!filter"
+      prepend-icon="mdi-plus"
+      text="Add to collection"
+      @click="addFilter"
+    />
   </div>
 </template>
 
@@ -70,7 +69,11 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['add-filter'])
+
+interface Emits {
+  addFilter: [filter: filterActionsFilter]
+}
+const emit = defineEmits<Emits>()
 
 function getLocationId(location: Location) {
   return location.locationId
