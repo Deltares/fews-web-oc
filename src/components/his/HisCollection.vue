@@ -2,7 +2,7 @@
   <v-select
     v-model="selectedCollection"
     :items="collections"
-    label="Select a Collection"
+    label="Collection"
     item-title="name"
     item-value="name"
     variant="outlined"
@@ -14,7 +14,7 @@
     <template #append-item>
       <v-divider class="mt-2" />
       <v-list-item
-        title="Add New Collection"
+        title="New Collection"
         @click="dialog = true"
         prepend-icon="mdi-plus"
       />
@@ -35,7 +35,7 @@
       <v-card-actions>
         <v-spacer />
         <v-btn text @click="dialog = false">Cancel</v-btn>
-        <v-btn color="primary" @click="addCollection">Add</v-btn>
+        <v-btn variant="tonal" @click="addCollection">Add</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

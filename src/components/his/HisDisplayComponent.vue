@@ -1,43 +1,54 @@
 <template>
-  <div class="his-container pa-2 ga-2">
-    <div class="his-data-selection h-100 overflow-y-auto">
-      <v-card
-        border
-        flat
-        class="pb-2"
-        :class="{ 'h-100': tab === 'data-selection' }"
-      >
-        <v-tabs v-model="tab">
-          <v-tab
-            prepend-icon="mdi-filter"
-            text="Data selection"
-            value="data-selection"
-            class="text-none"
-          />
-          <v-tab
-            prepend-icon="mdi-chart-line"
-            text="Analysis"
-            value="analysis"
-            :disabled="!selectedCollection.charts.length"
-            class="text-none"
-          />
-        </v-tabs>
-
-        <v-tabs-window v-model="tab" class="h-100">
-          <v-tabs-window-item value="data-selection" class="h-100">
-            <HisDataSelection
-              :filterId="filterId"
-              :locations="locations"
-              :geojson="geojson"
-              :timeSeriesHeaders="timeSeriesHeaders"
-              :boundingBox="boundingBox"
-              @addFilter="addFilter"
+  <div class="his-container pt-2">
+    <div class="his-charts h-100 overflow-y-auto">
+      <v-card-title class="flex-0-0 d-flex ga-2 align-center">
+        <v-menu
+          max-width="700"
+          width="100%"
+          :close-on-content-click="false"
+          eager
+        >
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              prepend-icon="mdi-filter-plus"
+              text="Data selection"
+              value="data-selection"
+              variant="tonal"
+              class="text-none"
             />
-          </v-tabs-window-item>
-          <v-tabs-window-item
-            value="analysis"
-            v-if="selectedCollection.charts.length"
-          >
+          </template>
+          <template #default="{ isActive }">
+            <v-card>
+              <HisDataSelection
+                :filterId="filterId"
+                :locations="locations"
+                :geojson="geojson"
+                :timeSeriesHeaders="timeSeriesHeaders"
+                :boundingBox="boundingBox"
+                @addFilter="
+                  (filter) => {
+                    isActive.value = false
+                    addFilter(filter)
+                  }
+                "
+              />
+            </v-card>
+          </template>
+        </v-menu>
+        <v-menu max-width="1200" :close-on-content-click="false" eager>
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              prepend-icon="mdi-chart-box-plus-outline"
+              text="Analysis"
+              value="analysis"
+              variant="tonal"
+              :disabled="!selectedCollection.charts.length"
+              class="text-none"
+            />
+          </template>
+          <v-card>
             <HisAnalysis
               :filterId="filterId"
               :charts="selectedCollection.charts"
@@ -46,29 +57,22 @@
               :endTime="endTime"
               :settings="settings"
             />
-          </v-tabs-window-item>
-        </v-tabs-window>
-      </v-card>
-    </div>
-    <div class="his-charts h-100 overflow-y-auto">
-      <v-card border flat class="h-100 d-flex flex-column">
-        <v-card-title class="flex-0-0 d-flex ga-1 align-center">
-          <div>Charts</div>
-          <v-spacer />
-          <HisCollection
-            v-model:selectedCollection="selectedCollection"
-            v-model:collections="collections"
-          />
-        </v-card-title>
-        <HisCollectionCharts
-          v-if="selectedCollection.charts.length"
-          :collection="selectedCollection"
-          :series="series"
-          :settings="settings"
-          class="flex-1-1"
+          </v-card>
+        </v-menu>
+        <v-spacer />
+        <HisCollection
+          v-model:selectedCollection="selectedCollection"
+          v-model:collections="collections"
         />
-        <v-card-text v-else> Select some data to display </v-card-text>
-      </v-card>
+      </v-card-title>
+      <HisCollectionCharts
+        v-if="selectedCollection.charts.length"
+        :collection="selectedCollection"
+        :series="series"
+        :settings="settings"
+        class="flex-1-1"
+      />
+      <v-card-text v-else> Select some data to display </v-card-text>
     </div>
   </div>
 </template>
@@ -108,8 +112,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const userSettings = useUserSettingsStore()
-
-const tab = ref('data-selection')
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -196,16 +198,17 @@ const { series } = useTimeSeries(baseUrl, requests, () => ({
 </script>
 
 <style scoped>
-.his-container {
-  display: grid;
+.his-charts {
+  max-width: 1200px;
   width: 100%;
   height: 100%;
-  grid-template-columns: 1fr 1fr;
 }
 
-@media (max-width: 600px) {
-  .his-container {
-    grid-template-columns: 1fr;
-  }
+.his-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
 }
 </style>
