@@ -34,6 +34,7 @@
       prepend-icon="mdi-plus"
       text="Add to collection"
       @click="addFilter"
+      :loading="isLoading"
     />
   </div>
 </template>
@@ -59,6 +60,7 @@ interface Props {
   startTime?: Date
   endTime?: Date
   settings: ComponentSettings
+  isLoading?: boolean
 }
 
 const props = defineProps<Props>()

@@ -41,6 +41,7 @@
       :disabled="!filter"
       prepend-icon="mdi-plus"
       text="Add to collection"
+      :loading="isLoading"
       @click="addFilter"
     />
   </div>
@@ -66,6 +67,7 @@ interface Props {
   geojson: FeatureCollection<Geometry, Location>
   timeSeriesHeaders: Header[]
   boundingBox?: BoundingBox
+  isLoading?: boolean
 }
 
 const props = defineProps<Props>()

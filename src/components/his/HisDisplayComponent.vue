@@ -16,10 +16,11 @@
                 :geojson="geojson"
                 :timeSeriesHeaders="timeSeriesHeaders"
                 :boundingBox="boundingBox"
+                :isLoading="isLoadingActions"
                 @addFilter="
-                  (filter) => {
+                  async (filter) => {
+                    await addFilter(filter)
                     isActive.value = false
-                    addFilter(filter)
                   }
                 "
               />
@@ -40,6 +41,7 @@
                 :startTime="startTime"
                 :endTime="endTime"
                 :settings="settings"
+                :isLoading="isLoadingActions"
                 @addChart="
                   (chart) => {
                     isActive.value = false
@@ -47,9 +49,9 @@
                   }
                 "
                 @addFilter="
-                  (filter) => {
+                  async (filter) => {
+                    await addFilter(filter)
                     isActive.value = false
-                    addFilter(filter)
                   }
                 "
               />
@@ -172,8 +174,13 @@ function addChart(chart: Chart) {
   }
 }
 
+const isLoadingActions = ref(false)
+
 async function addFilter(filter: filterActionsFilter) {
+  isLoadingActions.value = true
   const actions = await fetchActions(baseUrl, filter)
+  isLoadingActions.value = false
+
   const results = actions.results
 
   const newSubplots = results.flatMap(
