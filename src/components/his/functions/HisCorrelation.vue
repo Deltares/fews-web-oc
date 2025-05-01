@@ -15,37 +15,42 @@
     :getItemTitle="(item) => item.name"
   />
 
-  <HisCharts
-    v-if="correlationSubplots"
-    :subplots="correlationSubplots"
-    :series="correlationSeries"
-    :settings="settings"
-  />
+  <div class="d-flex pa-3">
+    <v-spacer />
+    <v-btn
+      variant="tonal"
+      :disabled="!selectedTimeseries && !selectedSecondTimeseries"
+      prepend-icon="mdi-plus"
+      text="Add to collection"
+      @click="addChart"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
-import HisCharts from '@/components/his/HisCharts.vue'
-import { computed, ref, watchEffect } from 'vue'
-import { ComponentSettings } from '@/lib/topology/componentSettings'
+import { computed, ref } from 'vue'
 import { ChartSeries } from '@/lib/charts/types/ChartSeries'
-import { calculateCorrelationTimeSeries, Chart } from '@/lib/his'
+import { calculateCorrelationTimeSeries, Chart, Dependant } from '@/lib/his'
 import { Series } from '@/lib/timeseries/timeSeries'
 import {
   TimeSeriesDisplaySubplot,
   TimeSeriesDisplaySubplotItem,
 } from '@deltares/fews-pi-requests'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
-import { SeriesData } from '@/lib/timeseries/types/SeriesData'
 import { SeriesResourceType } from '@/lib/timeseries/types'
 
 interface Props {
   charts: Chart[]
-  settings: ComponentSettings
   series: Record<string, Series>
 }
 
 const props = defineProps<Props>()
+
+interface Emits {
+  addChart: [chart: Chart]
+}
+const emit = defineEmits<Emits>()
 
 const allSeries = computed(() =>
   props.charts
@@ -59,100 +64,29 @@ const allSeries = computed(() =>
 const selectedTimeseries = ref<ChartSeries>()
 const selectedSecondTimeseries = ref<ChartSeries>()
 
-const newIdLine = computed(() => {
-  if (!selectedTimeseries.value) return 'correlation'
-  if (!selectedSecondTimeseries.value) return 'correlation'
-
-  return `${selectedTimeseries.value.id}-${selectedSecondTimeseries.value.id}-correlation-line`
-})
-
-const newIdPoints = computed(() => {
-  if (!selectedTimeseries.value) return 'correlation'
-  if (!selectedSecondTimeseries.value) return 'correlation'
-
-  return `${selectedTimeseries.value.id}-${selectedSecondTimeseries.value.id}-correlation-points`
-})
-
-const firstSeriesData = computed(() => {
-  if (!selectedTimeseries.value) return
-  if (!selectedSecondTimeseries.value) return
-
-  const id1 = selectedTimeseries.value.id
-  return props.series[id1].data
-})
-
-const secondSeriesData = computed(() => {
-  if (!selectedTimeseries.value) return
-  if (!selectedSecondTimeseries.value) return
-
-  const id2 = selectedSecondTimeseries.value.id
-  return props.series[id2].data
-})
-
-const line = ref<SeriesData[]>()
-const points = ref<SeriesData[]>()
-const slope = ref<number>()
-const intercept = ref<number>()
-
-watchEffect(() => {
-  if (!firstSeriesData.value || !secondSeriesData.value) return
-
-  const correlation = calculateCorrelationTimeSeries(
-    firstSeriesData.value,
-    secondSeriesData.value,
-  )
-
-  line.value = correlation.line
-  points.value = correlation.points
-  slope.value = correlation.slope
-  intercept.value = correlation.intercept
-})
-
-const correlationSeries = computed(() => {
-  if (!line.value) return {}
-  if (!points.value) return {}
-
-  const newSeriesLine = new Series({
-    type: SeriesResourceType.Derived,
-  })
-  newSeriesLine.lastUpdated = new Date()
-  newSeriesLine.data = line.value
-
-  const newSeriesPoints = new Series({
-    type: SeriesResourceType.Derived,
-  })
-  newSeriesPoints.lastUpdated = new Date()
-  newSeriesPoints.data = points.value
-
-  return {
-    [newIdLine.value]: newSeriesLine,
-    [newIdPoints.value]: newSeriesPoints,
-  }
-})
-
-const correlationSubplots = computed(() => {
-  if (!selectedTimeseries.value) return []
-  if (!selectedSecondTimeseries.value) return []
-
+function getSubplot(
+  leftName: string,
+  rightName: string,
+  lineId: string,
+  pointsId: string,
+) {
   const baseItem = {
     visibleInPlot: true,
     visibleInTable: true,
     yAxis: {
       axisPosition: 'left',
-      axisLabel: selectedTimeseries.value.name,
+      axisLabel: leftName,
     },
   }
-
-  const lineLegend = getSlopeInterceptLegend(slope.value, intercept.value)
 
   const line: TimeSeriesDisplaySubplotItem = {
     ...baseItem,
     type: 'line',
-    legend: lineLegend,
+    legend: 'Correlation line',
     color: '#080c80',
     lineStyle: 'solid;thick',
     lineWidth: 1.0,
-    request: newIdLine.value,
+    request: lineId,
     visibleInLegend: true,
   }
 
@@ -163,32 +97,89 @@ const correlationSubplots = computed(() => {
     color: '#ff0000',
     markerStyle: 'solid',
     markerSize: 6,
-    request: newIdPoints.value,
+    request: pointsId,
     visibleInLegend: false,
   }
 
   const subplot: TimeSeriesDisplaySubplot = {
     xAxis: {
-      axisLabel: selectedSecondTimeseries.value.name,
+      axisLabel: rightName,
     },
     items: [line, points],
   }
 
-  return [timeSeriesDisplayToChartConfig(subplot)]
-})
+  return timeSeriesDisplayToChartConfig(subplot)
+}
 
-function getSlopeInterceptLegend(
-  slope: number | undefined,
-  intercept: number | undefined,
-  precision: number = 3,
-): string {
-  if (slope === undefined || intercept === undefined) {
-    return 'Correlation line'
+function addChart() {
+  if (!selectedTimeseries.value) return
+  if (!selectedSecondTimeseries.value) return
+
+  const id1 = selectedTimeseries.value?.id
+  const id2 = selectedSecondTimeseries.value?.id
+  const name1 = selectedTimeseries.value?.name
+  const name2 = selectedSecondTimeseries.value?.name
+
+  const lineId = `${id1}-${id2}-correlation-line`
+  const pointsId = `${id1}-${id2}-correlation-points`
+
+  const dependant: Dependant = {
+    seriesIds: [id1, id2],
+    generateSeries: (series) => {
+      const series1 = series[id1]
+      const series2 = series[id2]
+
+      // TODO: Add some behaviour for missing dependants
+      if (!series1.data || !series2.data) return {}
+
+      const correlation = calculateCorrelationTimeSeries(
+        series1.data,
+        series2.data,
+      )
+
+      const newSeriesLine = new Series({
+        type: SeriesResourceType.Derived,
+      })
+      newSeriesLine.lastUpdated = new Date()
+      newSeriesLine.data = correlation.line
+
+      const newSeriesPoints = new Series({
+        type: SeriesResourceType.Derived,
+      })
+      newSeriesPoints.lastUpdated = new Date()
+      newSeriesPoints.data = correlation.points
+
+      return {
+        [lineId]: newSeriesLine,
+        [pointsId]: newSeriesPoints,
+      }
+    },
   }
 
-  const slopeText = `${slope.toFixed(precision)}x`
-  const interceptSign = intercept < 0 ? '- ' : '+ '
-  const interceptText = `${Math.abs(intercept).toFixed(precision)}`
-  return `f(x) = ${slopeText} ${interceptSign}${interceptText}`
+  const config = getSubplot(name1, name2, lineId, pointsId)
+
+  const chart: Chart = {
+    title: `Correlation between ${selectedTimeseries.value?.name} and ${selectedSecondTimeseries.value?.name}`,
+    config,
+    requests: [],
+    dependants: [dependant],
+  }
+
+  emit('addChart', chart)
 }
+
+// function getSlopeInterceptLegend(
+//   slope: number | undefined,
+//   intercept: number | undefined,
+//   precision: number = 3,
+// ): string {
+//   if (slope === undefined || intercept === undefined) {
+//     return 'Correlation line'
+//   }
+//
+//   const slopeText = `${slope.toFixed(precision)}x`
+//   const interceptSign = intercept < 0 ? '- ' : '+ '
+//   const interceptText = `${Math.abs(intercept).toFixed(precision)}`
+//   return `f(x) = ${slopeText} ${interceptSign}${interceptText}`
+// }
 </script>

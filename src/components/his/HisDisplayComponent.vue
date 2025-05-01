@@ -2,22 +2,12 @@
   <div class="his-container pt-2">
     <div class="his-charts h-100 overflow-y-auto">
       <v-card-title class="flex-0-0 d-flex ga-2 align-center">
-        <v-menu
+        <HisMenu
           max-width="700"
           width="100%"
-          :close-on-content-click="false"
-          eager
+          text="Data selection"
+          icon="mdi-filter-plus"
         >
-          <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              prepend-icon="mdi-filter-plus"
-              text="Data selection"
-              value="data-selection"
-              variant="tonal"
-              class="text-none"
-            />
-          </template>
           <template #default="{ isActive }">
             <v-card>
               <HisDataSelection
@@ -35,30 +25,37 @@
               />
             </v-card>
           </template>
-        </v-menu>
-        <v-menu max-width="1200" :close-on-content-click="false" eager>
-          <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              prepend-icon="mdi-chart-box-plus-outline"
-              text="Analysis"
-              value="analysis"
-              variant="tonal"
-              :disabled="!selectedCollection.charts.length"
-              class="text-none"
-            />
+        </HisMenu>
+        <HisMenu
+          max-width="1200"
+          text="Analysis"
+          icon="mdi-chart-box-plus-outline"
+        >
+          <template #default="{ isActive }">
+            <v-card>
+              <HisAnalysis
+                :filterId="filterId"
+                :charts="selectedCollection.charts"
+                :series="series"
+                :startTime="startTime"
+                :endTime="endTime"
+                :settings="settings"
+                @addChart="
+                  (chart) => {
+                    isActive.value = false
+                    addChart(chart)
+                  }
+                "
+                @addFilter="
+                  (filter) => {
+                    isActive.value = false
+                    addFilter(filter)
+                  }
+                "
+              />
+            </v-card>
           </template>
-          <v-card>
-            <HisAnalysis
-              :filterId="filterId"
-              :charts="selectedCollection.charts"
-              :series="series"
-              :startTime="startTime"
-              :endTime="endTime"
-              :settings="settings"
-            />
-          </v-card>
-        </v-menu>
+        </HisMenu>
         <v-spacer />
         <HisCollection
           v-model:selectedCollection="selectedCollection"
@@ -82,6 +79,7 @@ import HisDataSelection from '@/components/his/HisDataSelection.vue'
 import HisCollectionCharts from './HisCollectionCharts.vue'
 import HisCollection from '@/components/his/HisCollection.vue'
 import HisAnalysis from '@/components/his/HisAnalysis.vue'
+import HisMenu from '@/components/his/HisMenu.vue'
 import type {
   ActionRequest,
   BoundingBox,
@@ -96,10 +94,11 @@ import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
-import { Chart, type Collection } from '@/lib/his'
+import type { Chart, Collection, Dependant } from '@/lib/his'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import { ChartConfig } from '@/lib/charts/types/ChartConfig'
+import { Series } from '@/lib/timeseries/timeSeries'
 
 interface Props {
   filterId?: string
@@ -134,6 +133,7 @@ function addChartsToCollection(
     title: getNewChartTitle(collection),
     config: subPlot,
     requests: getActionRequestsForSubplot(subPlot, requests),
+    dependants: [],
   }))
 
   selectedCollection.value.charts = [...collection.charts, ...newCharts]
@@ -165,6 +165,11 @@ const { timeSeriesHeaders } = useTimeSeriesHeaders(
 const startTime = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
 const endTime = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
 
+function addChart(chart: Chart) {
+  selectedCollection.value.charts = [...selectedCollection.value.charts, chart]
+  updateDependants(chart.dependants)
+}
+
 async function addFilter(filter: filterActionsFilter) {
   const actions = await fetchActions(baseUrl, filter)
   const results = actions.results
@@ -188,13 +193,30 @@ const requests = computed(() =>
     .filter((req, i, s) => i === s.findIndex((r) => r.key === req.key)),
 )
 
-const { series } = useTimeSeries(baseUrl, requests, () => ({
+const { series: fetchedSeries } = useTimeSeries(baseUrl, requests, () => ({
   startTime,
   endTime,
   useDisplayUnits: userSettings.useDisplayUnits,
   convertDatum: userSettings.convertDatum,
   thinning: true,
 }))
+
+const generatedSeries = ref<Record<string, Series>>({})
+
+const series = computed(() => ({
+  ...fetchedSeries.value,
+  ...generatedSeries.value,
+}))
+
+function updateDependants(dependants: Dependant[]) {
+  dependants.forEach((dependant) => {
+    const newSeries = dependant.generateSeries(fetchedSeries.value)
+    generatedSeries.value = {
+      ...generatedSeries.value,
+      ...newSeries,
+    }
+  })
+}
 </script>
 
 <style scoped>
