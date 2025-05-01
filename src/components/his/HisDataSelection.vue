@@ -108,7 +108,7 @@ const filter = computed(() => {
 
 function addFilter() {
   if (!filter.value) return
-  emit('add-filter', filter.value)
+  emit('addFilter', filter.value)
 }
 
 const selectedLocationIds = ref<string[]>([])

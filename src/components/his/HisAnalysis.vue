@@ -1,21 +1,21 @@
 <template>
-  <v-btn-toggle v-model="selectedFunction" class="ma-3" variant="outlined">
-    <v-btn
+  <v-tabs v-model="selectedFunction" variant="outlined">
+    <v-tab
       prepend-icon="mdi-function-variant"
       text="Correlation"
       class="text-none"
       value="correlation"
     />
-    <v-btn
+    <v-tab
       prepend-icon="mdi-sigma"
       text="Time Resampling"
       class="text-none"
       value="time-resampling"
     />
-  </v-btn-toggle>
-  <v-tabs-window v-model="selectedFunction">
+  </v-tabs>
+  <v-tabs-window v-model="selectedFunction" class="pt-1">
     <v-tabs-window-item value="correlation">
-      <HisCorrelation :charts :series :settings />
+      <HisCorrelation :charts :series @addChart="emit('addChart', $event)" />
     </v-tabs-window-item>
     <v-tabs-window-item value="time-resampling">
       <HisTimeResampling
@@ -25,6 +25,7 @@
         :startTime
         :endTime
         :settings
+        @addFilter="emit('addFilter', $event)"
       />
     </v-tabs-window-item>
   </v-tabs-window>
@@ -37,6 +38,7 @@ import { ref } from 'vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { Chart } from '@/lib/his'
+import { filterActionsFilter } from '@deltares/fews-pi-requests'
 
 interface Props {
   filterId?: string
@@ -48,6 +50,12 @@ interface Props {
 }
 
 defineProps<Props>()
+
+interface Emits {
+  addChart: [chart: Chart]
+  addFilter: [filter: filterActionsFilter]
+}
+const emit = defineEmits<Emits>()
 
 const selectedFunction = ref('correlation')
 </script>

@@ -26,28 +26,26 @@
     multiple
   />
 
-  <HisCharts
-    v-if="resampledDisplayConfig"
-    :subplots="resampledDisplayConfig.subplots"
-    :series="resampledSeries"
-    :settings="settings"
-  />
+  <div class="d-flex pa-3">
+    <v-spacer />
+    <v-btn
+      variant="tonal"
+      :disabled="!filter"
+      prepend-icon="mdi-plus"
+      text="Add to collection"
+      @click="addFilter"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
-import HisCharts from '@/components/his/HisCharts.vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref } from 'vue'
-import {
-  useDisplayConfigFilter,
-  UseDisplayConfigOptions,
-} from '@/services/useDisplayConfig'
+import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { filterActionsFilter, type TimeSteps } from '@deltares/fews-pi-requests'
-import { configManager } from '@/services/application-config'
-import { useTimeSeries } from '@/services/useTimeSeries'
 import { type ResamplingMethod, resamplingMethods } from '@/lib/his/resampling'
 import { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import { uniq } from 'lodash-es'
@@ -64,8 +62,13 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+interface Emits {
+  addFilter: [filter: filterActionsFilter]
+}
+const emit = defineEmits<Emits>()
+
 const userSettings = useUserSettingsStore()
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const selectedTimeseries = ref<ChartSeries[]>([])
 const selectedResamplingMethods = ref<ResamplingMethod[]>([])
@@ -75,6 +78,7 @@ const availableTimeStepsStore = useAvailableTimeStepsStore()
 
 const allSeries = computed(() =>
   props.charts
+    .filter((chart) => !chart.dependants.length)
     .flatMap((chart) => chart.config.series)
     .filter(
       (series, index, self) =>
@@ -133,20 +137,8 @@ const filter = computed(() => {
   return _fitler
 })
 
-const { displayConfig: resampledDisplayConfig } = useDisplayConfigFilter(
-  baseUrl,
-  filter,
-  () => props.startTime,
-  () => props.endTime,
-)
-
-const { series: resampledSeries } = useTimeSeries(
-  baseUrl,
-  () => resampledDisplayConfig.value?.requests ?? [],
-  () => ({
-    startTime: props.startTime,
-    endTime: props.endTime,
-    thinning: true,
-  }),
-)
+function addFilter() {
+  if (!filter.value) return
+  emit('addFilter', filter.value)
+}
 </script>
