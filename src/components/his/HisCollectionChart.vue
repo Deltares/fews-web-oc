@@ -1,5 +1,5 @@
 <template>
-  <v-card flat density="compact">
+  <v-card flat density="compact" color="transparent">
     <v-card-title class="d-flex align-center">
       <div>{{ chart.title }}</div>
       <v-spacer />
