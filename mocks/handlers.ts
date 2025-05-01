@@ -4,7 +4,7 @@ import topology from './topology.json'
 import splashsceen from './assets/splashsceen.webp'
 import logo from './assets/tests-log.png'
 import stylesheet from './assets/custom.css?inline'
-import sharks from './assets/sharks.csv'
+import sharks from './assets/sharks.csv?raw'
 
 interface Shark {
   Year: string
@@ -14,10 +14,31 @@ interface Shark {
   Outcome: string
 }
 
+// Parse the CSV data
+const parsedSharks: Shark[] = sharks
+  .split('\n')
+  .filter((line) => line.trim() && !line.startsWith('//'))
+  .map((line) => {
+    const [year, lat, lon, species, outcome] = line.split(',')
+    return {
+      Year: year,
+      LatGIS: lat,
+      LonGIS: lon,
+      Species: species,
+      Outcome: outcome,
+    }
+  })
+
 export const handlers = [
   // An example handler
   http.get(
     'https://mockserver.dev/FewsWebServices/rest/fewspiservice/v1/weboc/config',
+    () => {
+      return HttpResponse.json(config)
+    },
+  ),
+  http.get(
+    'https://mockserver.dev/FewsWebServices/rest/fewspiservice/v1/weboc/config?documentFormat=PI_JSON',
     () => {
       return HttpResponse.json(config)
     },
@@ -48,7 +69,7 @@ export const handlers = [
     () => {
       const geosjson = {
         type: 'FeatureCollection',
-        features: sharks.map((shark: Shark) => {
+        features: parsedSharks.map((shark: Shark) => {
           return {
             type: 'Feature',
             geometry: {

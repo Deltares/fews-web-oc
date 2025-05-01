@@ -65,7 +65,7 @@
       "id": "topologyDisplay",
       "type": "TopologyDisplay",
       "title": "Overview",
-      "showLeafNodesAsButtons": false,
+      "showLeafNodesAsButtons": true,
       "defaultPath": {
         "nodeId": "viewer_meteorology_rainfall_forecast_saws_1x1"
       },
