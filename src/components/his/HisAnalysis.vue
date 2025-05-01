@@ -26,6 +26,7 @@
         :endTime
         :settings
         @addFilter="emit('addFilter', $event)"
+        :isLoading="isLoading"
       />
     </v-tabs-window-item>
   </v-tabs-window>
@@ -47,6 +48,7 @@ interface Props {
   startTime?: Date
   endTime?: Date
   settings: ComponentSettings
+  isLoading?: boolean
 }
 
 defineProps<Props>()
