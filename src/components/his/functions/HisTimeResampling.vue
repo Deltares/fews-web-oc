@@ -78,7 +78,7 @@ const availableTimeStepsStore = useAvailableTimeStepsStore()
 
 const allSeries = computed(() =>
   props.charts
-    .filter((chart) => !chart.dependants.length)
+    .filter((chart) => chart.type === 'filter')
     .flatMap((chart) => chart.config.series)
     .filter(
       (series, index, self) =>

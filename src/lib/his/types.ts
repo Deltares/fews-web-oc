@@ -7,12 +7,22 @@ export interface Collection {
   charts: Chart[]
 }
 
-export interface Chart {
+export interface BaseChart {
   title: string
   config: ChartConfig
+}
+
+export interface FilterChart extends BaseChart {
+  type: 'filter'
   requests: ActionRequest[]
+}
+
+export interface DerivedChart extends BaseChart {
+  type: 'derived'
   dependants: Dependant[]
 }
+
+export type Chart = FilterChart | DerivedChart
 
 export interface Dependant {
   seriesIds: string[]

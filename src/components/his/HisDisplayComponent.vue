@@ -85,7 +85,7 @@ import type {
   BoundingBox,
   filterActionsFilter,
 } from '@deltares/fews-pi-requests'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import { configManager } from '@/services/application-config'
 import { useTimeSeries, useTimeSeriesHeaders } from '@/services/useTimeSeries'
@@ -94,7 +94,7 @@ import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
-import type { Chart, Collection, Dependant } from '@/lib/his'
+import type { Chart, Collection, Dependant, FilterChart } from '@/lib/his'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -129,11 +129,11 @@ function addChartsToCollection(
   const collection = selectedCollection.value
   if (!collection) return
 
-  const newCharts: Chart[] = subplots.map((subPlot) => ({
+  const newCharts: FilterChart[] = subplots.map((subPlot) => ({
+    type: 'filter',
     title: getNewChartTitle(collection),
     config: subPlot,
     requests: getActionRequestsForSubplot(subPlot, requests),
-    dependants: [],
   }))
 
   selectedCollection.value.charts = [...collection.charts, ...newCharts]
@@ -167,7 +167,9 @@ const endTime = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
 
 function addChart(chart: Chart) {
   selectedCollection.value.charts = [...selectedCollection.value.charts, chart]
-  updateDependants(chart.dependants)
+  if (chart.type === 'derived') {
+    updateDependants(chart.dependants)
+  }
 }
 
 async function addFilter(filter: filterActionsFilter) {
@@ -189,6 +191,7 @@ async function addFilter(filter: filterActionsFilter) {
 
 const requests = computed(() =>
   selectedCollection.value.charts
+    .filter((chart) => chart.type === 'filter')
     .flatMap((chart) => chart.requests)
     .filter((req, i, s) => i === s.findIndex((r) => r.key === req.key)),
 )
@@ -200,6 +203,7 @@ const { series: fetchedSeries } = useTimeSeries(baseUrl, requests, () => ({
   convertDatum: userSettings.convertDatum,
   thinning: true,
 }))
+watch(fetchedSeries, updateAllDependants)
 
 const generatedSeries = ref<Record<string, Series>>({})
 
@@ -214,6 +218,14 @@ function updateDependants(dependants: Dependant[]) {
     generatedSeries.value = {
       ...generatedSeries.value,
       ...newSeries,
+    }
+  })
+}
+
+function updateAllDependants() {
+  selectedCollection.value.charts.forEach((chart) => {
+    if (chart.type === 'derived') {
+      updateDependants(chart.dependants)
     }
   })
 }

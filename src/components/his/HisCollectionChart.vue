@@ -48,7 +48,7 @@ interface Props {
   collection: Collection
   chart: Chart
   series: Record<string, Series>
-  zoomHandler: ZoomHandler
+  zoomHandler?: ZoomHandler
   settings: ComponentSettings
 }
 
