@@ -2,6 +2,7 @@
   <div class="overflow-y-auto">
     <HisCollectionChart
       v-for="chart in collection.charts"
+      :key="chart.id"
       :collection
       :chart
       :series

@@ -101,6 +101,9 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { Series } from '@/lib/timeseries/timeSeries'
+import { difference } from 'lodash-es'
+import { useStorage } from '@vueuse/core'
+import { hisFunctionToGenerator } from '@/lib/his/functions'
 
 interface Props {
   filterId?: string
@@ -116,12 +119,35 @@ const userSettings = useUserSettingsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const collections = ref<Collection[]>([
+function isIsoDate(str: string) {
+  return /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/.test(str)
+}
+
+const dateTimeReviver = (_: unknown, value: unknown) => {
+  if (typeof value === 'string') {
+    if (isIsoDate(value)) {
+      return new Date(value)
+    }
+  }
+  return value
+}
+
+const collections = useStorage<Collection[]>(
+  'weboc-his-collections-v1.0.0',
+  [
+    {
+      name: 'Default',
+      charts: [],
+    },
+  ],
+  undefined,
   {
-    name: 'Default',
-    charts: [],
+    serializer: {
+      read: (value) => JSON.parse(value, dateTimeReviver),
+      write: (value) => JSON.stringify(value),
+    },
   },
-])
+)
 const selectedCollection = ref<Collection>(collections.value[0])
 
 function addChartsToCollection(
@@ -132,6 +158,7 @@ function addChartsToCollection(
   if (!collection) return
 
   const newCharts: FilterChart[] = subplots.map((subPlot) => ({
+    id: crypto.randomUUID(),
     type: 'filter',
     title: getNewChartTitle(collection),
     config: subPlot,
@@ -196,21 +223,33 @@ async function addFilter(filter: filterActionsFilter) {
   addChartsToCollection(newSubplots, newRequests)
 }
 
-const requests = computed(() =>
-  selectedCollection.value.charts
+const requests = computed<ActionRequest[]>((prevRequests) => {
+  const newRequests = selectedCollection.value.charts
     .filter((chart) => chart.type === 'filter')
     .flatMap((chart) => chart.requests)
-    .filter((req, i, s) => i === s.findIndex((r) => r.key === req.key)),
-)
+    .filter((req, i, s) => i === s.findIndex((r) => r.key === req.key))
 
-const { series: fetchedSeries } = useTimeSeries(baseUrl, requests, () => ({
-  startTime,
-  endTime,
-  useDisplayUnits: userSettings.useDisplayUnits,
-  convertDatum: userSettings.convertDatum,
-  thinning: true,
-}))
-watch(fetchedSeries, updateAllDependants)
+  if (
+    prevRequests &&
+    JSON.stringify(newRequests) === JSON.stringify(prevRequests)
+  ) {
+    return prevRequests
+  }
+
+  return newRequests
+})
+
+const { series: fetchedSeries, loadingSeriesIds } = useTimeSeries(
+  baseUrl,
+  requests,
+  () => ({
+    startTime,
+    endTime,
+    useDisplayUnits: userSettings.useDisplayUnits,
+    convertDatum: userSettings.convertDatum,
+    thinning: true,
+  }),
+)
 
 const generatedSeries = ref<Record<string, Series>>({})
 
@@ -219,22 +258,43 @@ const series = computed(() => ({
   ...generatedSeries.value,
 }))
 
-function updateDependants(dependants: Dependant[]) {
-  dependants.forEach((dependant) => {
-    const newSeries = dependant.generateSeries(fetchedSeries.value)
-    generatedSeries.value = {
-      ...generatedSeries.value,
-      ...newSeries,
-    }
-  })
+watch(
+  () =>
+    Object.entries(fetchedSeries.value).map(
+      ([key, value]) => `${key}-${value.lastUpdated?.getTime()}`,
+    ),
+  (newValue, oldValue) => {
+    const newSeriesIds = difference(newValue, oldValue).map(
+      (id) => id.split('-')[0],
+    )
+
+    selectedCollection.value.charts
+      .filter((chart) => chart.type === 'derived')
+      .flatMap((chart) => chart.dependants)
+      .filter(
+        (dependant) =>
+          dependant.seriesIds.some((id) => newSeriesIds.includes(id)) &&
+          !dependant.seriesIds.some((id) =>
+            loadingSeriesIds.value.includes(id),
+          ),
+      )
+      .forEach(updateDependant)
+  },
+)
+
+function updateDependant(dependant: Dependant) {
+  const newSeries = hisFunctionToGenerator[dependant.function](
+    fetchedSeries.value,
+    dependant.seriesIds,
+  )
+  generatedSeries.value = {
+    ...generatedSeries.value,
+    ...newSeries,
+  }
 }
 
-function updateAllDependants() {
-  selectedCollection.value.charts.forEach((chart) => {
-    if (chart.type === 'derived') {
-      updateDependants(chart.dependants)
-    }
-  })
+function updateDependants(dependants: Dependant[]) {
+  dependants.forEach(updateDependant)
 }
 </script>
 
