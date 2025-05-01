@@ -1,7 +1,9 @@
 import {
   ActionResult,
   PiWebserviceProvider,
+  TimeSeriesDisplaySubplot,
   type ActionsResponse,
+  type Color,
 } from '@deltares/fews-pi-requests'
 import { computed, ref, toValue, watch, watchEffect } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
@@ -27,6 +29,39 @@ export interface UseDisplayConfigOptions {
 }
 
 /**
+ * Applies colors to subplot items based on their IDs.
+ * @param subPlot The subplot to which colors will be applied.
+ * @param colors The array of colors to be used.
+ * @param colorsMapping A map to store the mapping of series IDs to colors.
+ */
+function applyColorsToSubplotItems(
+  subPlot: TimeSeriesDisplaySubplot,
+  colors: Color[],
+  colorsMapping: Map<string, string>,
+): void {
+  for (const item of subPlot.items) {
+    // Split the request to get the part corresponding to the runId
+    const seriesId = item.request?.split('__').pop() ?? ''
+    // check if the mapping already exists, if so use it
+    if (colorsMapping.has(seriesId)) {
+      item.color = colorsMapping.get(seriesId)
+    } else {
+      // If we are out of colors, we can stop assigning colors
+      // and use the default color of the chart
+      if (colors.length === 0) {
+        return
+      }
+      // Assign the color to the item from the colors array and create a mapping
+      const currentColor = colors.pop()?.color
+      if (currentColor) {
+        item.color = currentColor
+        colorsMapping.set(seriesId, currentColor)
+      }
+    }
+  }
+}
+
+/**
  * Converts the actions response to an array of display configurations.
  * @param actionsResponse The actions response object.
  * @returns An array of display configurations.
@@ -34,6 +69,8 @@ export interface UseDisplayConfigOptions {
 function actionsResponseToDisplayConfig(
   actionsResponse: ActionsResponse,
   nodeId: string | undefined,
+  colors: Color[],
+  colorsMapping: Map<string, string>,
   startTime?: Date,
   endTime?: Date,
 ): DisplayConfig[] {
@@ -59,9 +96,9 @@ function actionsResponseToDisplayConfig(
       )
       configPeriod = [startTime ?? periodStart, endTime ?? periodEnd]
     }
-
     const subplots =
       result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
+        applyColorsToSubplotItems(subPlot, colors, colorsMapping)
         return timeSeriesDisplayToChartConfig(subPlot, configPeriod)
       }) ?? []
     const display: DisplayConfig = {
@@ -103,6 +140,13 @@ export function useDisplayConfig(
 
   const response = ref<ActionsResponse>()
   const displays = ref<DisplayConfig[] | null>(null)
+  const colorsMapping = new Map<string, string>()
+  let colors: Color[] = []
+  piProvider.getColors().then((response) => {
+    if (response.colors) {
+      colors = response.colors.reverse()
+    }
+  })
 
   watchEffect(async () => {
     const _nodeId = toValue(nodeId)
@@ -136,6 +180,8 @@ export function useDisplayConfig(
     displays.value = actionsResponseToDisplayConfig(
       response.value,
       _nodeId,
+      colors,
+      colorsMapping,
       _startTime,
       _endTime,
     )
@@ -173,6 +219,13 @@ export function useDisplayConfigFilter(
 ): UseDisplayConfigReturn {
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
+  })
+  const colorsMapping = new Map<string, string>()
+  let colors: Color[] = []
+  piProvider.getColors().then((response) => {
+    if (response.colors) {
+      colors = response.colors.reverse()
+    }
   })
 
   const displayConfig = ref<DisplayConfig | null>(null)
@@ -219,6 +272,8 @@ export function useDisplayConfigFilter(
     const _displays = actionsResponseToDisplayConfig(
       response.value,
       nodeId,
+      colors,
+      colorsMapping,
       _startTime,
       _endTime,
     )
