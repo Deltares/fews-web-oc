@@ -5,7 +5,7 @@
       :collection
       :chart
       :series
-      :zoomHandler
+      :zoomHandler="chart.type === 'filter' ? zoomHandler : undefined"
       :settings
     />
   </div>
