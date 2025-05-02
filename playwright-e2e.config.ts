@@ -40,14 +40,14 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    {
+    /*{
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
     },
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-    },
+    },*/ // Note they are to slow for github actions and are disabled for now
   ],
   /* Run the dev server during the tests */
   webServer: {
