@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:e2e": "vite --config vite-e2e.config.ts",
     "build": "vue-tsc && vite build",
     "build:deltares": "vue-tsc && env-cmd -f deltares.env vite build",
     "build:weboc": "vue-tsc && vite build --base=/weboc/",
@@ -15,7 +16,9 @@
     "prettier": "prettier . --check",
     "format": "prettier .  --write",
     "sonar": "sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$SONAR_KEY -Dsonar.projectName='Delft-FEWS Web OC'",
-    "test-ct": "playwright test -c playwright-ct.config.ts"
+    "test-ct": "playwright test -c playwright-ct.config.ts",
+    "test-e2e": "playwright test -c playwright-e2e.config.ts",
+    "test-e2e:ui": "playwright test --ui -c playwright-e2e.config.ts"
   },
   "dependencies": {
     "@deltares/fews-pi-requests": "^1.13.6",

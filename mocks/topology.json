@@ -1,24 +1,26 @@
 {
   "topologyNodes": [
     {
-      "id": "viewer_meteorology_rainfall",
-      "name": "Rainfall",
+      "id": "viewer_meteorology_dangers",
+      "name": "Dangers",
       "localRun": false,
       "iconId": "mdi-weather-pouring",
       "topologyNodes": [
         {
-          "id": "viewer_meteorology_rainfall_forecast",
-          "name": "Forecast",
+          "id": "viewer_shark_attacks",
+          "name": "Shark Attacks",
           "localRun": false,
-          "iconId": "mdi-arrow-right-bold",
+          "iconId": "mdi-shark-fin",
           "topologyNodes": [
             {
               "id": "viewer_meteorology_rainfall_forecast_jaws_1x1",
-              "name": "JAWS 1x1",
+              "name": "All Attacks",
               "workflowId": "ReportRainfallReturnPeriodForecasted",
               "iconId": "mdi-shark-fin",
               "localRun": true,
-              "filterIds": [ "shartk-attacks" ],
+              "filterIds": [
+                "shark-attacks"
+              ],
               "secondaryWorkflows": [
                 {
                   "secondaryWorkflowId": "ReportRainfallReturnPeriodForecasted",
@@ -32,6 +34,29 @@
                   }
                 ]
               }
+            },
+            {
+              "id": "Hemispheres",
+              "name": "Hemispheres",
+              "iconId": "mdi-earth",
+              "topologyNodes": [
+                {
+                  "id": "northern_hemisphere",
+                  "name": "Northern Hemisphere",
+                  "filterIds": [
+                    "shark-attacks-northern-hemisphere"
+                  ],
+                  "iconId": "mdi-map"
+                },
+                {
+                  "id": "southern_hemisphere",
+                  "name": "Southern Hemisphere",
+                  "filterIds": [
+                    "shark-attacks-southern-hemisphere"
+                  ],
+                  "iconId": "mdi-map"
+                }
+              ]
             }
           ]
         }

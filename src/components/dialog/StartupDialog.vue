@@ -8,6 +8,7 @@
     v-model="showSplashDialog"
     :img-url="splashSrc"
     :version="packageConfig.version"
+    data-testid="fews-splash-screen"
   />
 </template>
 

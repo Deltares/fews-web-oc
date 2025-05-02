@@ -65,9 +65,9 @@
       "id": "topologyDisplay",
       "type": "TopologyDisplay",
       "title": "Overview",
-      "showLeafNodesAsButtons": true,
+      "showLeafNodesAsButtons": false,
       "defaultPath": {
-        "nodeId": "viewer_meteorology_rainfall_forecast_saws_1x1"
+        "nodeId": "northern_hemisphere"
       },
       "showInNavigationMenu": true,
       "enableTaskRuns": true,

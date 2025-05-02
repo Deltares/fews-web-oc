@@ -63,10 +63,14 @@ export const handlers = [
       return HttpResponse.json(topology)
     },
   ),
-
   http.get(
     'https://mockserver.dev/FewsWebServices/rest/fewspiservice/v1/locations',
-    () => {
+    ({ request }) => {
+      // Extract the URL from the request
+      const url = new URL(request.url)
+      // Get the filterId parameter
+      const filterId = url.searchParams.get('filterId')
+
       const geosjson = {
         type: 'FeatureCollection',
         features: parsedSharks.map((shark: Shark) => {
@@ -83,7 +87,18 @@ export const handlers = [
           }
         }),
       }
-
+      if (filterId == 'shark-attacks-southern-hemisphere') {
+        // Filter the features based on the filterId
+        geosjson.features = geosjson.features.filter(
+          (feature) => parseFloat(feature.geometry.coordinates[1]) < 0,
+        )
+      }
+      if (filterId == 'shark-attacks-northern-hemisphere') {
+        // Filter the features based on the filterId
+        geosjson.features = geosjson.features.filter(
+          (feature) => parseFloat(feature.geometry.coordinates[1]) >= 0,
+        )
+      }
       return HttpResponse.json(geosjson)
     },
   ),
