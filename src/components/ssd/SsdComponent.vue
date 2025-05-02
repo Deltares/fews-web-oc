@@ -165,7 +165,6 @@ function getSvgElement() {
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
-  background-color: white;
 }
 
 .hidden {
