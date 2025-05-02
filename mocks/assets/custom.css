@@ -5,8 +5,8 @@
   --canvas-fill: rgb(253, 253, 252);
   --weboc-app-bar-bg-color: rgb(240, 240, 244);
   .grid .tick line {
-  stroke: lightgray;
-}
+    stroke: lightgray;
+  }
 }
 
 .dark {
