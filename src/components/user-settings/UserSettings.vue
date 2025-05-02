@@ -9,6 +9,7 @@
       <v-select
         v-if="setting.type === 'oneOfMultiple'"
         :label="setting.label"
+        :data-testid="setting.label"
         v-model="setting.value"
         :items="setting.items"
         :disabled="setting.disabled"
