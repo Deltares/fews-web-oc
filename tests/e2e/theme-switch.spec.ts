@@ -11,7 +11,7 @@ test.describe('Theme switch', () => {
     // Click the all settings button
     await page.getByText('All Settings ...').click()
     // Switch to dark mode
-    await vuetifySelectByTestId(page, 'Theme', 'dark')
+    await vuetifySelectByTestId(page, 'Theme', 'Dark')
     const htmlClass = await page.locator('html').getAttribute('class')
     expect(htmlClass).toContain('dark')
   })
