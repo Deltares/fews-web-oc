@@ -56,8 +56,10 @@
             v-model="timeZeroDate"
             label="Time zero"
             class="datetime-field"
+            variant="outlined"
+            density="compact"
           >
-            <template #append-inner>
+            <template #additional-append-inner>
               <v-divider vertical />
               <v-btn
                 size="small"
