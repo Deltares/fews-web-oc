@@ -49,6 +49,8 @@ import { getMatchingIndexedString, type Tag } from '@/lib/charts/tags'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
 
+import { useI18n } from 'vue-i18n'
+
 interface Props {
   config?: ChartConfig
   series?: Record<string, Series>
@@ -72,6 +74,8 @@ const props = withDefaults(defineProps<Props>(), {
     return {}
   },
 })
+
+const { t } = useI18n()
 
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
@@ -363,7 +367,7 @@ const setTags = () => {
     legendSvg.appendChild(svgGroup)
     const thresholdLegend = {
       id: 'Thresholds',
-      name: 'Thresholds',
+      name: t('thresholds'),
       disabled: false,
       legendSvg:
         '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M13 14h-2V9h2m0 9h-2v-2h2M1 21h22L12 2L1 21Z"/></svg>',
