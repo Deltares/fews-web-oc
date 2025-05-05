@@ -46,7 +46,7 @@ export function useTaskRuns(
       fetch().catch((error) => console.error(`Failed to fetch tasks: ${error}`))
     },
     refreshIntervalSeconds * 1000,
-    { immediateCallback: true },
+    { immediate: true },
   )
 
   // Fetch taskruns if a new dispatch period is selected.

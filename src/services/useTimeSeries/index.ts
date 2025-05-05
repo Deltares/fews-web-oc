@@ -14,23 +14,20 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { difference } from 'lodash-es'
 import { SeriesData } from '@/lib/timeseries/types/SeriesData'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
-import { type Pausable } from '@vueuse/core'
-import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 
 export interface UseTimeSeriesReturn {
   series: ShallowRef<Record<string, Series>>
   isLoading: Ref<boolean>
   loadingSeriesIds: Ref<string[]>
-  interval: Pausable
+  refresh: () => void
 }
-
-const TIMESERIES_POLLING_INTERVAL = 1000 * 30
 
 export interface UseTimeSeriesOptions {
   startTime?: Date | null
   endTime?: Date | null
   thinning?: boolean
   showVerticalProfile?: boolean
+  enabled?: boolean
 }
 
 function timeZoneOffsetString(offset: number): string {
@@ -45,7 +42,6 @@ function timeZoneOffsetString(offset: number): string {
 export function useTimeSeries(
   baseUrl: string,
   requests: MaybeRefOrGetter<ActionRequest[]>,
-  lastUpdated: MaybeRefOrGetter<Date | undefined>,
   options: MaybeRefOrGetter<UseTimeSeriesOptions>,
   selectedTime?: MaybeRefOrGetter<Date | undefined>,
 ): UseTimeSeriesReturn {
@@ -55,7 +51,7 @@ export function useTimeSeries(
   const loadingSeriesIds = ref<string[]>([])
   const isLoading = computed(() => loadingSeriesIds.value.length > 0)
 
-  watch([lastUpdated, selectedTime ?? ref(), requests, options], () => {
+  watch([selectedTime ?? ref(), requests, options], () => {
     loadTimeSeries()
   })
 
@@ -68,6 +64,8 @@ export function useTimeSeries(
     const _requests = toValue(requests)
     const _options = toValue(options)
     const _selectedTime = toValue(selectedTime)
+
+    if (!_options?.enabled) return
 
     const currentSeriesIds = Object.keys(series.value)
     const updatedSeriesIds: string[] = []
@@ -194,12 +192,6 @@ export function useTimeSeries(
     }
   }
 
-  const interval = useFocusAwareInterval(
-    loadTimeSeries,
-    TIMESERIES_POLLING_INTERVAL,
-    { immediateCallback: true },
-  )
-
   onUnmounted(() => {
     controller.abort('useTimeSeries unmounted.')
   })
@@ -208,7 +200,7 @@ export function useTimeSeries(
     series,
     isLoading,
     loadingSeriesIds,
-    interval,
+    refresh: loadTimeSeries,
   }
 }
 

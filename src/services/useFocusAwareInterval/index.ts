@@ -20,6 +20,10 @@ export function useFocusAwareInterval(
   watch(visibility, (v) => {
     if (v === 'visible') {
       if (pausedByVisibility.value) {
+        // Always call the callback when the document becomes visible again
+        if (options?.immediateCallback === false) {
+          callback()
+        }
         resume()
         pausedByVisibility.value = false
       }
