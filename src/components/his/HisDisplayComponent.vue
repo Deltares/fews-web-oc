@@ -17,6 +17,7 @@
                 :timeSeriesHeaders="timeSeriesHeaders"
                 :boundingBox="boundingBox"
                 :isLoading="isLoadingActions"
+                :isActive="isActive.value"
                 @addFilter="
                   async (filter) => {
                     await addFilter(filter)
@@ -42,6 +43,7 @@
                 :endTime="selectedCollection.settings.endTime"
                 :settings="settings"
                 :isLoading="isLoadingActions"
+                :isActive="isActive.value"
                 @addChart="
                   (chart) => {
                     isActive.value = false
