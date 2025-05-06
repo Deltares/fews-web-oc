@@ -119,45 +119,56 @@ export function useTimeSeries(
   function getRelativeUrlForRequest(request: ActionRequest): string {
     const _options = toValue(options)
 
+    // Parse request URL to URL object to be able to append query parameters.
     const url = absoluteUrl(`${baseUrl}/${request.request}`)
-    if (_options?.startTime) {
-      const startTime = DateTime.fromJSDate(_options.startTime, {
+
+    const convertToDateTime = (date: Date | null | undefined) => {
+      if (!date) return null
+      return DateTime.fromJSDate(date, {
         zone: 'UTC',
       })
-      url.searchParams.set(
-        'startTime',
-        startTime.toISO({ suppressMilliseconds: true }) ?? '',
-      )
     }
-    if (_options?.endTime) {
-      const endTime = DateTime.fromJSDate(_options.endTime, {
-        zone: 'UTC',
-      })
-      url.searchParams.set(
-        'endTime',
-        endTime.toISO({ suppressMilliseconds: true }) ?? '',
-      )
+    const startTime = convertToDateTime(_options.startTime)
+    const endTime = convertToDateTime(_options.endTime)
+
+    const convertToFewsPiDateTimeQueryParameter = (
+      datetime: DateTime | null,
+    ) => {
+      if (!datetime) return null
+      return datetime.toISO({ suppressMilliseconds: true })
     }
-    // Set thinning
-    if (_options?.thinning) {
-      const startTimeString = url.searchParams.get('startTime')
-      const endTimeString = url.searchParams.get('endTime')
-      if (startTimeString !== null && endTimeString !== null) {
-        const startTime = DateTime.fromISO(startTimeString, {
-          zone: 'UTC',
-        })
-        const endTime = DateTime.fromISO(endTimeString, {
-          zone: 'UTC',
-        })
+    const startTimeQuery = convertToFewsPiDateTimeQueryParameter(startTime)
+    const endTimeQuery = convertToFewsPiDateTimeQueryParameter(endTime)
+
+    // Set start and end time.
+    if (startTimeQuery) url.searchParams.set('startTime', startTimeQuery)
+    if (endTimeQuery) url.searchParams.set('endTime', endTimeQuery)
+
+    // Set thinning if specified.
+    if (_options.thinning) {
+      const parseDateTimeFromSearchParam = (param: string) => {
+        const dateTimeString = url.searchParams.get(param)
+        if (!dateTimeString) return null
+        return DateTime.fromISO(dateTimeString)
+      }
+      // If no start or end time was specified, parse it from the query
+      // parameter obtained from the original actions request URL.
+      const requestStartTime =
+        startTime ?? parseDateTimeFromSearchParam('startTime')
+      const requestEndTime = endTime ?? parseDateTimeFromSearchParam('endTime')
+
+      if (requestStartTime && requestEndTime) {
         const timeStepPerPixel = Math.round(
-          Interval.fromDateTimes(startTime, endTime).length() /
+          Interval.fromDateTimes(requestStartTime, requestEndTime).length() /
             window.outerWidth /
             2,
         )
-        url.searchParams.set('thinning', `${timeStepPerPixel}`)
+        url.searchParams.set('thinning', timeStepPerPixel.toString())
       }
     }
 
+    // Convert absolute URL back into relative URL with updated search
+    // parameters.
     return request.request.split('?')[0] + url.search
   }
 
