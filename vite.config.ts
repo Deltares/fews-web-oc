@@ -90,6 +90,9 @@ export default defineConfig(({ mode }) => {
       }) :
       vuetify(),
     ],
+    preview: {
+      cors: false,
+    },
     optimizeDeps: {
       exclude: ['@deltares/fews-ssd-webcomponent', 'vuetify'],
     },
