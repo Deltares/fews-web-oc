@@ -15,7 +15,12 @@
   </v-tabs>
   <v-tabs-window v-model="selectedFunction" class="pt-1">
     <v-tabs-window-item value="correlation">
-      <HisCorrelation :charts :series @addChart="emit('addChart', $event)" />
+      <HisCorrelation
+        :charts
+        :series
+        @addChart="emit('addChart', $event)"
+        :isActive="isActive"
+      />
     </v-tabs-window-item>
     <v-tabs-window-item value="time-resampling">
       <HisTimeResampling
@@ -27,6 +32,7 @@
         :settings
         @addFilter="emit('addFilter', $event)"
         :isLoading="isLoading"
+        :isActive="isActive"
       />
     </v-tabs-window-item>
   </v-tabs-window>
@@ -35,7 +41,7 @@
 <script setup lang="ts">
 import HisCorrelation from '@/components/his/functions/HisCorrelation.vue'
 import HisTimeResampling from '@/components/his/functions/HisTimeResampling.vue'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { Chart } from '@/lib/his'
@@ -49,9 +55,10 @@ interface Props {
   endTime?: Date
   settings: ComponentSettings
   isLoading?: boolean
+  isActive?: boolean
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 interface Emits {
   addChart: [chart: Chart]
@@ -60,4 +67,9 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 const selectedFunction = ref('correlation')
+
+watch(() => props.isActive, resetSelectedFunction)
+function resetSelectedFunction() {
+  selectedFunction.value = 'correlation'
+}
 </script>

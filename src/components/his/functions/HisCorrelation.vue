@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Chart, Dependant, DerivedChart } from '@/lib/his'
 import { Series } from '@/lib/timeseries/timeSeries'
 import {
@@ -40,6 +40,7 @@ import {
 interface Props {
   charts: Chart[]
   series: Record<string, Series>
+  isActive?: boolean
 }
 
 const props = defineProps<Props>()
@@ -60,6 +61,12 @@ const allSeries = computed(() =>
 
 const selectedTimeseries = ref<TimeSeriesDisplaySubplotItem>()
 const selectedSecondTimeseries = ref<TimeSeriesDisplaySubplotItem>()
+
+watch(() => props.isActive, clearSelections)
+function clearSelections() {
+  selectedTimeseries.value = undefined
+  selectedSecondTimeseries.value = undefined
+}
 
 function getSubplot(
   leftName: string,
