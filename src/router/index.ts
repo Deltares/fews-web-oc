@@ -50,12 +50,6 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
     component: AboutView,
   },
   {
-    path: '/products/:productId?',
-    name: 'ProductsBrowser',
-    props: true,
-    component: ProductsBrowserView,
-  },
-  {
     path: '/about',
     name: 'About',
     meta: { title: 'About' },
@@ -190,6 +184,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         path: 'reports',
         name: 'TopologyReports',
         component: ReportsDisplayView,
+        props: true,
+        meta: { sidebar: true },
+      },
+        {
+        path: 'documents/:productId?',
+        name: 'TopologyDocumentsBrowser',
+        component: ProductsBrowserView,
         props: true,
         meta: { sidebar: true },
       },
