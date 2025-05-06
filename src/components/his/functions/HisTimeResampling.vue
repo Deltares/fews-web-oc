@@ -2,7 +2,7 @@
   <HisAutocomplete
     v-model="selectedTimeseries"
     :items="allSeries"
-    label="Parameter"
+    label="Timeseries"
     :getItemValue="(item) => item"
     :getItemTitle="(item) => item.legend ?? ''"
     multiple
