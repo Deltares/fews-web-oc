@@ -116,6 +116,10 @@ function addChart() {
   const id2 = selectedSecondTimeseries.value?.request ?? ''
   const name1 = selectedTimeseries.value?.legend ?? ''
   const name2 = selectedSecondTimeseries.value?.legend ?? ''
+  const unit1 = selectedTimeseries.value?.yAxis?.axisLabel
+  const unit2 = selectedSecondTimeseries.value?.yAxis?.axisLabel
+  const nameWithUnit1 = unit1 ? `${name1} - ${unit1}` : name1
+  const nameWithUnit2 = unit2 ? `${name2} - ${unit2}` : name2
 
   const lineId = `${id1}-${id2}-correlation-line`
   const pointsId = `${id1}-${id2}-correlation-points`
@@ -125,7 +129,7 @@ function addChart() {
     function: 'correlation',
   }
 
-  const subplot = getSubplot(name1, name2, lineId, pointsId)
+  const subplot = getSubplot(nameWithUnit1, nameWithUnit2, lineId, pointsId)
 
   const chart: DerivedChart = {
     id: crypto.randomUUID(),
