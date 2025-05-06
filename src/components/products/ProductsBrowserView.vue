@@ -47,7 +47,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watchEffect } from 'vue'
 import ProductsBrowserTable from '@/components/products/ProductsBrowserTable.vue'
-import ReactiveIframe from '@/components/products/ReactiveIFrame.vue'
+import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
 import { getProductURL } from './productTools'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
