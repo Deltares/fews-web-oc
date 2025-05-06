@@ -127,11 +127,11 @@ import {
 import {
   type Chart,
   type Collection,
-  type Dependant,
   type FilterChart,
-  hisFunctionToGenerator,
   getDateTimeSerializer,
   createCollection,
+  DerivedChart,
+  getGenerator,
 } from '@/lib/his'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { Series } from '@/lib/timeseries/timeSeries'
@@ -206,7 +206,7 @@ const { timeSeriesHeaders } = useTimeSeriesHeaders(
 function addChart(chart: Chart) {
   selectedCollection.value.charts = [...selectedCollection.value.charts, chart]
   if (chart.type === 'derived') {
-    updateDependants(chart.dependants)
+    updateDependants(chart)
   }
 }
 
@@ -281,31 +281,25 @@ watch(
 
     selectedCollection.value.charts
       .filter((chart) => chart.type === 'derived')
-      .flatMap((chart) => chart.dependants)
-      .filter(
-        (dependant) =>
-          dependant.seriesIds.some((id) => newSeriesIds.includes(id)) &&
-          !dependant.seriesIds.some((id) =>
-            loadingSeriesIds.value.includes(id),
-          ),
+      .filter((chart) =>
+        chart.dependants.some(
+          (dependant) =>
+            dependant.seriesIds.some((id) => newSeriesIds.includes(id)) &&
+            !dependant.seriesIds.some((id) =>
+              loadingSeriesIds.value.includes(id),
+            ),
+        ),
       )
-      .forEach(updateDependant)
+      .forEach(updateDependants)
   },
 )
 
-function updateDependant(dependant: Dependant) {
-  const newSeries = hisFunctionToGenerator[dependant.function](
-    fetchedSeries.value,
-    dependant.seriesIds,
-  )
-  generatedSeries.value = {
-    ...generatedSeries.value,
-    ...newSeries,
-  }
-}
-
-function updateDependants(dependants: Dependant[]) {
-  dependants.forEach(updateDependant)
+function updateDependants(chart: DerivedChart) {
+  const newSeries = chart.dependants.map((dependant) => {
+    const generate = getGenerator(dependant.function)
+    return generate(fetchedSeries.value, chart.subplot, dependant.seriesIds)
+  })
+  Object.assign(generatedSeries.value, ...newSeries)
 }
 </script>
 

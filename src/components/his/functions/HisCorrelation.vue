@@ -141,19 +141,4 @@ function addChart() {
 
   emit('addChart', chart)
 }
-
-// function getSlopeInterceptLegend(
-//   slope: number | undefined,
-//   intercept: number | undefined,
-//   precision: number = 3,
-// ): string {
-//   if (slope === undefined || intercept === undefined) {
-//     return 'Correlation line'
-//   }
-//
-//   const slopeText = `${slope.toFixed(precision)}x`
-//   const interceptSign = intercept < 0 ? '- ' : '+ '
-//   const interceptText = `${Math.abs(intercept).toFixed(precision)}`
-//   return `f(x) = ${slopeText} ${interceptSign}${interceptText}`
-// }
 </script>
