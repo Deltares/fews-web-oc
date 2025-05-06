@@ -9,7 +9,15 @@
         >Upload</v-btn
       >
       <v-spacer />
-      <v-btn prepend-icon="mdi-magnify"></v-btn>
+      <v-text-field
+        v-model="search"
+        variant="underlined"
+        density="compact"
+        placeholder="Search"
+        hide-details
+        class="me-4"
+        append-inner-icon="mdi-magnify"
+      ></v-text-field>
       <v-btn prepend-icon="mdi-filter-variant">
         <v-menu activator="parent">
           <v-list density="compact">
@@ -49,6 +57,7 @@
       :expanded="[]"
       :items-per-page="-1"
       :group-by="[groupBy]"
+      :search="search"
       hide-default-footer
       density="compact"
       @click:row="onClick"
@@ -164,6 +173,9 @@ interface Props {
 const props = defineProps<Props>()
 
 const router = useRouter()
+
+const search = ref('')
+
 const groupByKey = ref([''])
 const groupByOrder = ref<[boolean | 'asc' | 'desc']>(['asc'])
 const selectedColumns = ref<string[]>([])
