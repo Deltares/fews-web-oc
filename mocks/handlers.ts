@@ -298,6 +298,115 @@ export const handlers = [
       return HttpResponse.json(timeSeriesData)
     },
   ),
+
+  // Handler for topology thresholds endpoint
+  http.get(
+    'https://mockserver.dev/FewsWebServices/rest/fewspiservice/v1/topology/thresholds',
+    () => {
+      // Return empty topology thresholds
+      return HttpResponse.json({
+        topologyNodes: [],
+      })
+    },
+  ),
+
+  // Handler for flags endpoint
+  http.get(
+    'https://mockserver.dev/FewsWebServices/rest/fewspiservice/v1/flags',
+    () => {
+      return HttpResponse.json({
+        flags: [
+          {
+            flag: '0',
+            name: 'No flag',
+            description: 'No flag is set',
+            colorHash: '#FFFFFF',
+            quality: 'RELIABLE',
+          },
+          {
+            flag: '1',
+            name: 'Original',
+            description: 'Original data',
+            colorHash: '#FFFFFF',
+            quality: 'RELIABLE',
+          },
+          {
+            flag: '2',
+            name: 'Original missing',
+            description: 'Original data, missing',
+            colorHash: '#FFFFFF',
+            quality: 'RELIABLE',
+          },
+          {
+            flag: '3',
+            name: 'Interpolated',
+            description: 'Interpolated data',
+            colorHash: '#FFFF00',
+            quality: 'DOUBTFUL',
+          },
+          {
+            flag: '4',
+            name: 'Doubtful',
+            description: 'Doubtful data',
+            colorHash: '#FFC800',
+            quality: 'DOUBTFUL',
+          },
+          {
+            flag: '5',
+            name: 'Validated',
+            description: 'Validated data',
+            colorHash: '#FFFFFF',
+            quality: 'RELIABLE',
+          },
+          {
+            flag: '6',
+            name: 'Missing',
+            description: 'Missing data',
+            colorHash: '#FFFFFF',
+            quality: 'UNRELIABLE',
+          },
+          {
+            flag: '14',
+            name: 'Accumulation reset',
+            description: 'Accumulation reset',
+            colorHash: '#BEIGE',
+            quality: 'RELIABLE',
+          },
+        ],
+      })
+    },
+  ),
+
+  // Handler for flag sources endpoint
+  http.get(
+    'https://mockserver.dev/FewsWebServices/rest/fewspiservice/v1/flagsources',
+    () => {
+      return HttpResponse.json({
+        flagSources: [
+          {
+            id: 'SFP',
+            name: 'Statistical Flag Procedure',
+            description: 'Flags set by statistical analysis',
+          },
+          {
+            id: 'MAN',
+            name: 'Manual Flag',
+            description: 'Flags set manually by operators',
+          },
+          {
+            id: 'IMP',
+            name: 'Imported Flag',
+            description: 'Flags imported from external systems',
+          },
+          {
+            id: 'MOD',
+            name: 'Model Flag',
+            description: 'Flags set by model runs',
+          },
+        ],
+      })
+    },
+  ),
 ]
 
 // Helper function to generate mock timeseries events
