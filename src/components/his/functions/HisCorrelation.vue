@@ -2,7 +2,7 @@
   <HisAutocomplete
     v-model="selectedTimeseries"
     :items="allSeries"
-    label="First parameter"
+    label="First timeseries"
     :getItemValue="(item) => item"
     :getItemTitle="(item) => item.legend ?? ''"
   />
@@ -10,7 +10,7 @@
   <HisAutocomplete
     v-model="selectedSecondTimeseries"
     :items="allSeries"
-    label="Second parameter"
+    label="Second timeseries"
     :getItemValue="(item) => item"
     :getItemTitle="(item) => item.legend ?? ''"
   />
