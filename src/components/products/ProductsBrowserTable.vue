@@ -1,5 +1,5 @@
 <template>
-  <div class="products-browser-panel h-100">
+  <div class="products-browser position-relative h-100">
     <v-toolbar density="compact">
       <v-btn
         prepend-icon="mdi-file-upload"
@@ -130,7 +130,10 @@
         </tr>
       </template>
     </v-data-table>
-    <v-list-item :title="`Last updated: ${lastUpdatedString}`">
+    <v-list-item
+      class="products-browser__footer w-100"
+      :title="`Last updated: ${lastUpdatedString}`"
+    >
       <template #append>
         <v-progress-circular v-if="isLoading" size="20" indeterminate />
         <v-btn v-else density="compact" variant="plain" icon="mdi-refresh" />
@@ -217,7 +220,7 @@ const headers = computed(() => {
       key: 'Actions',
       title: '',
       align: 'end',
-    } as const, 
+    } as const,
   ]
 })
 
@@ -251,5 +254,10 @@ function onClick(_event: PointerEvent, entry: { item: ProductMetaDataType }) {
   height: 100%;
   display: grid;
   grid-template-rows: auto 1fr auto auto;
+}
+
+.products-browser__footer {
+  position: absolute;
+  bottom: 0px;
 }
 </style>
