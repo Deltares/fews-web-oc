@@ -35,7 +35,7 @@
           v-if="viewMode === 'img'"
           :src="src"
         />
-        <ReactiveIframe v-else :src="src"></ReactiveIframe>
+        <ReactiveIframe v-else-if="viewMode === 'html'" :src="src"></ReactiveIframe>
       </div>
     </div>
   </div>
