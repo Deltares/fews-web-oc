@@ -2,9 +2,8 @@ import type {
   ActionRequest,
   TimeSeriesDisplaySubplot,
 } from '@deltares/fews-pi-requests'
-import { hisFunctionToGenerator } from './functions'
 
-type HisFunction = keyof typeof hisFunctionToGenerator
+export type HisFunction = 'correlation'
 
 export interface Collection {
   name: string
