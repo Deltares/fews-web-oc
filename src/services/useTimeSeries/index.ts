@@ -86,25 +86,25 @@ export function useTimeSeries(
             1,
           )
         }
-        if (piSeries.timeSeries !== undefined) {
-          for (const index in piSeries.timeSeries) {
-            const timeSeries = piSeries.timeSeries[index]
-            const resourceId = isGridTimeSEries
-              ? `${request.key}[${index}]`
-              : (request.key ?? '')
-            updatedSeriesIds.push(resourceId)
+        if (piSeries.timeSeries === undefined) return
 
-            const _series = convertTimeSeriesResultToSeries(
-              timeSeries,
-              piSeries,
-              resourceId,
-              _selectedTime,
-            )
-            if (_series !== undefined) {
-              series.value = {
-                ...series.value,
-                [resourceId]: _series,
-              }
+        for (const index in piSeries.timeSeries) {
+          const timeSeries = piSeries.timeSeries[index]
+          const resourceId = isGridTimeSEries
+            ? `${request.key}[${index}]`
+            : (request.key ?? '')
+          updatedSeriesIds.push(resourceId)
+
+          const _series = convertTimeSeriesResultToSeries(
+            timeSeries,
+            piSeries,
+            resourceId,
+            _selectedTime,
+          )
+          if (_series !== undefined) {
+            series.value = {
+              ...series.value,
+              [resourceId]: _series,
             }
           }
         }
