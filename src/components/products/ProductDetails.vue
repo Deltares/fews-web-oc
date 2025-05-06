@@ -30,7 +30,7 @@ defineProps<Props>()
 
 function routeForProduct(product: ProductMetaDataType) {
   return {
-    name: 'ProductsBrowser',
+    name: 'TopologyDocumentsBrowser',
     params: {
       productId: product.key,
     },

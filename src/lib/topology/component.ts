@@ -5,6 +5,7 @@ export type ComponentType =
   | WebOCDashboardItem['component']
   | 'dashboard'
   | 'his'
+  | 'documents-display'
 
 export const ComponentType = {
   map: 'map',
@@ -18,6 +19,7 @@ export const ComponentType = {
   'whatif-display': 'whatif-display',
   'log-display': 'log-display',
   his: 'his',
+  'documents-display': 'documents-display',
 } satisfies Record<ComponentType, ComponentType>
 
 export const componentTypeToIconMap = {
@@ -32,6 +34,7 @@ export const componentTypeToIconMap = {
   'whatif-display': 'mdi-cog',
   'log-display': 'mdi-file-document',
   his: 'mdi-database',
+  'documents-display': 'mdi-file-document-multiple',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToTitleMap = {
@@ -46,6 +49,7 @@ export const componentTypeToTitleMap = {
   'whatif-display': 'What If',
   'log-display': 'Log',
   his: 'Historical Information System',
+  'documents-display': 'Documents Browser',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToRouteNameMap = {
@@ -60,6 +64,7 @@ export const componentTypeToRouteNameMap = {
   'whatif-display': 'TopologyWhatIfDisplay',
   'log-display': 'TopologyLogDisplay',
   his: 'TopologyHisDisplay',
+  'documents-display': 'TopologyDocumentsBrowser',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToIdMap = {
@@ -74,4 +79,5 @@ export const componentTypeToIdMap = {
   'whatif-display': 'whatif',
   'log-display': 'log',
   his: 'his',
+  'documents-display': 'documents',
 } satisfies Record<ComponentType, string>
