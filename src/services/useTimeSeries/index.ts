@@ -88,8 +88,7 @@ export function useTimeSeries(
         }
         if (piSeries.timeSeries === undefined) return
 
-        for (const index in piSeries.timeSeries) {
-          const timeSeries = piSeries.timeSeries[index]
+        piSeries.timeSeries.forEach((timeSeries, index) => {
           const resourceId = isGridTimeSEries
             ? `${request.key}[${index}]`
             : (request.key ?? '')
@@ -107,7 +106,7 @@ export function useTimeSeries(
               [resourceId]: _series,
             }
           }
-        }
+        })
       })
     }
     const oldSeriesIds = difference(currentSeriesIds, updatedSeriesIds)
