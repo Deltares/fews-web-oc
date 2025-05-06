@@ -85,7 +85,7 @@ export function displayTabsForNode(
         tab.to.params = { ...params }
         break
       case 'schematic-status-display':
-        tab.active = nodeHasSchematicStatusDisplay(node)
+        tab.active = nodeHasSchematicStatusDisplay(node) && node.id !== 'main_document_widget'
         tab.to.params = { ...params, panelId: node.scadaPanelId }
         break
       case 'system-monitor':
@@ -106,6 +106,10 @@ export function displayTabsForNode(
         break
       case 'log-display':
         tab.active = nodeHasLogDisplay(node)
+        tab.to.params = { ...params }
+        break
+      case 'documents-display':
+        tab.active = node.id === 'main_document_widget'
         tab.to.params = { ...params }
         break
     }
