@@ -214,6 +214,7 @@ const headers = computed(() => {
     {
       key: 'Actions',
       title: '',
+      align: 'right',
     },
   ]
 })
