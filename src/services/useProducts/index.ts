@@ -8,6 +8,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import { ref, toValue, watchEffect, type MaybeRefOrGetter } from 'vue'
 import { ProductMetaDataWithoutAttributes } from './types'
+import { configManager } from '../application-config'
 
 const daysBack = 7 // Number of days to look back for product metadata
 
@@ -22,7 +23,7 @@ export function useProducts(filter: MaybeRefOrGetter<ProductsMetaDataFilter>) {
   const error = ref<string | null>(null)
 
   const provider = new PiArchiveWebserviceProvider(
-    import.meta.env.VITE_APP_FEWS_PI_URL,
+    configManager.get('VITE_APP_FEWS_PI_URL'),
     { transformRequestFn: createTransformRequestFn() },
   )
 

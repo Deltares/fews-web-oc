@@ -2,6 +2,7 @@ import { createTransformRequestFn } from "@/lib/requests/transformRequest"
 import type { ProductMetaDataType } from '@/services/useProducts/types';
 import { convertToProductMetaDataType } from '@/services/useProducts/';
 import { PiArchiveWebserviceProvider, ProductsMetaDataFilter } from "@deltares/fews-pi-requests"
+import { configManager } from '@/services/application-config'
 
 /**
  * Retrieves the latest products from a list of product metadata.
@@ -67,7 +68,7 @@ export async function getLastProductsMetaData(
   const startForecastTime = '1970-01-01T00:00:00Z'
   const endForecastTime = new Date().toISOString()
   const provider = new PiArchiveWebserviceProvider(
-    import.meta.env.VITE_APP_FEWS_PI_URL,
+    configManager.get('VITE_APP_FEWS_PI_URL'),
     { transformRequestFn: createTransformRequestFn() },
   )
 
@@ -100,12 +101,11 @@ export async function getLastProductsMetaData(
  * - The URL is constructed using the `relativePathProducts` property of the metadata and the base URL from environment variables.
  * - Ensure that the `metaData` parameter is valid and contains the required `relativePathProducts` property.
  */
-export function getProductURL(
-  metaData?: ProductMetaDataType,
-): string {
+export function getProductURL(metaData?: ProductMetaDataType): string {
   if (metaData) {
     const relativePath = metaData.relativePathProducts[0]
-    return `${import.meta.env.VITE_APP_FEWS_PI_URL}/rest/fewspiservice/v1/archive/products/id?relativePath=${relativePath}`
+    const baseUrl = configManager.get('VITE_APP_FEWS_PI_URL')
+    return `${baseUrl}/rest/fewspiservice/v1/archive/products/id?relativePath=${relativePath}`
   }
   return 'invalid'
 }
