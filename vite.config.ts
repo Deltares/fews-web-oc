@@ -32,12 +32,15 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      proxy: {
+          '/FewsWebServices/': `${env.DEV_SERVER_PROXY_FEWS_PI}`,
+      },
       headers: {
         'content-security-policy': [
           `default-src 'none'`,
-          `script-src 'self'`,
+          `script-src 'self' blob:`,
           `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
-          `style-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} 'unsafe-inline'`, // vuetify
+          `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} 'unsafe-inline'`, // vuetify
           `worker-src blob:`, // maplibre-gl
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices
           [
@@ -49,7 +52,11 @@ export default defineConfig(({ mode }) => {
             `${env.VITE_FEWS_WEBSERVICES_URL}`,
             `${env.DEV_CONNECT_SRC}`,
           ].join(' '), // FEWS webservices, Authentication, Basemaps
-          `frame-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
+          [
+            `frame-src`,
+            `'self' blob:`,
+            `${env.VITEDEVSERVER_FRAME_SRC}`,
+          ].join(' '), // FEWS webservices, Authentication, Basemaps
         ].join('; '),
       },
     },
@@ -74,12 +81,14 @@ export default defineConfig(({ mode }) => {
           },
         },
       }),
+      mode === 'production' ? 
       vuetify({
         styles: {
           configFile:
             path.resolve(__dirname, './src') + '/styles/settings.scss',
         },
-      }),
+      }) :
+      vuetify(),
     ],
     optimizeDeps: {
       exclude: ['@deltares/fews-ssd-webcomponent', 'vuetify'],
