@@ -197,13 +197,14 @@ function isLoading(subplot: ChartConfig, loadingSeriesIds: string[]) {
 }
 
 async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
-  const seriesHeader = series.value[props.config.requests[0].key].header
+  const seriesKey = props.config.requests[0]?.key
+  const seriesHeader = seriesKey ? series.value[seriesKey].header : undefined
   await postTimeSeriesEdit(
     baseUrl,
     props.config.requests,
     newData,
-    seriesHeader.version ?? '',
-    seriesHeader.timeZone ?? '',
+    seriesHeader?.version ?? '',
+    seriesHeader?.timeZone ?? '',
   )
   lastUpdated.value = new Date()
 }
