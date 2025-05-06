@@ -158,12 +158,15 @@ export function useTimeSeries(
       const requestEndTime = endTime ?? parseDateTimeFromSearchParam('endTime')
 
       if (requestStartTime && requestEndTime) {
-        const timeStepPerPixel = Math.round(
-          Interval.fromDateTimes(requestStartTime, requestEndTime).length() /
-            window.outerWidth /
-            2,
+        const durationMilliseconds = Interval.fromDateTimes(
+          requestStartTime,
+          requestEndTime,
+        ).length('millisecond')
+        const estimatedChartWidth = 0.5 * window.outerWidth
+        const millisecondsPerPixel = Math.round(
+          durationMilliseconds / estimatedChartWidth,
         )
-        url.searchParams.set('thinning', timeStepPerPixel.toString())
+        url.searchParams.set('thinning', millisecondsPerPixel.toString())
       }
     }
 
