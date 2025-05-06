@@ -4,6 +4,8 @@
     :items="filteredParameterIds"
     label="Parameters"
     icon="mdi-tag"
+    :getItemValue="(item) => item"
+    :getItemTitle="parametersStore.getName"
     multiple
   />
   <HisAutocomplete
@@ -60,6 +62,7 @@ import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import type { FeatureCollection, Geometry } from 'geojson'
+import { useParametersStore } from '@/stores/parameters'
 
 interface Props {
   filterId?: string
@@ -72,6 +75,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const parametersStore = useParametersStore()
 
 interface Emits {
   addFilter: [filter: filterActionsFilter]
