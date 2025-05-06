@@ -66,7 +66,6 @@ export function useTimeSeries(
       transformRequestFn: createTransformRequestFn(controller),
     })
     const _requests = toValue(requests)
-    const _options = toValue(options)
     const _selectedTime = toValue(selectedTime)
 
     const currentSeriesIds = Object.keys(series.value)
@@ -75,47 +74,8 @@ export function useTimeSeries(
 
     for (const r in _requests) {
       const request = _requests[r]
-      const url = absoluteUrl(`${baseUrl}/${request.request}`)
-      const queryParams = url.searchParams
-      if (_options?.startTime) {
-        const startTime = DateTime.fromJSDate(_options.startTime, {
-          zone: 'UTC',
-        })
-        url.searchParams.set(
-          'startTime',
-          startTime.toISO({ suppressMilliseconds: true }) ?? '',
-        )
-      }
-      if (_options?.endTime) {
-        const endTime = DateTime.fromJSDate(_options.endTime, {
-          zone: 'UTC',
-        })
-        url.searchParams.set(
-          'endTime',
-          endTime.toISO({ suppressMilliseconds: true }) ?? '',
-        )
-      }
-      // Set thinning
-      if (_options?.thinning) {
-        const startTimeString = queryParams.get('startTime')
-        const endTimeString = queryParams.get('endTime')
-        if (startTimeString !== null && endTimeString !== null) {
-          const startTime = DateTime.fromISO(startTimeString, {
-            zone: 'UTC',
-          })
-          const endTime = DateTime.fromISO(endTimeString, {
-            zone: 'UTC',
-          })
-          const timeStepPerPixel = Math.round(
-            Interval.fromDateTimes(startTime, endTime).length() /
-              window.outerWidth /
-              2,
-          )
-          url.searchParams.set('thinning', `${timeStepPerPixel}`)
-        }
-      }
+      const relativeUrl = getRelativeUrlForRequest(request)
 
-      const relativeUrl = request.request.split('?')[0] + url.search
       const isGridTimeSEries = request.request.includes('/timeseries/grid?')
       piProvider.getTimeSeriesWithRelativeUrl(relativeUrl).then((piSeries) => {
         if (request.key)
@@ -192,6 +152,51 @@ export function useTimeSeries(
         delete series.value[seriesId]
       }
     }
+  }
+
+  function getRelativeUrlForRequest(request: ActionRequest): string {
+    const _options = toValue(options)
+
+    const url = absoluteUrl(`${baseUrl}/${request.request}`)
+    if (_options?.startTime) {
+      const startTime = DateTime.fromJSDate(_options.startTime, {
+        zone: 'UTC',
+      })
+      url.searchParams.set(
+        'startTime',
+        startTime.toISO({ suppressMilliseconds: true }) ?? '',
+      )
+    }
+    if (_options?.endTime) {
+      const endTime = DateTime.fromJSDate(_options.endTime, {
+        zone: 'UTC',
+      })
+      url.searchParams.set(
+        'endTime',
+        endTime.toISO({ suppressMilliseconds: true }) ?? '',
+      )
+    }
+    // Set thinning
+    if (_options?.thinning) {
+      const startTimeString = url.searchParams.get('startTime')
+      const endTimeString = url.searchParams.get('endTime')
+      if (startTimeString !== null && endTimeString !== null) {
+        const startTime = DateTime.fromISO(startTimeString, {
+          zone: 'UTC',
+        })
+        const endTime = DateTime.fromISO(endTimeString, {
+          zone: 'UTC',
+        })
+        const timeStepPerPixel = Math.round(
+          Interval.fromDateTimes(startTime, endTime).length() /
+            window.outerWidth /
+            2,
+        )
+        url.searchParams.set('thinning', `${timeStepPerPixel}`)
+      }
+    }
+
+    return request.request.split('?')[0] + url.search
   }
 
   const interval = useFocusAwareInterval(
