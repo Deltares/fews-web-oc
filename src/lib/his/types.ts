@@ -8,7 +8,13 @@ type HisFunction = keyof typeof hisFunctionToGenerator
 
 export interface Collection {
   name: string
+  settings: Settings
   charts: Chart[]
+}
+
+export interface Settings {
+  startTime: Date
+  endTime: Date
 }
 
 export interface BaseChart {

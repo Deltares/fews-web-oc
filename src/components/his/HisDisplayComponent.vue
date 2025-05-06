@@ -38,8 +38,8 @@
                 :filterId="filterId"
                 :charts="selectedCollection.charts"
                 :series="series"
-                :startTime="startTime"
-                :endTime="endTime"
+                :startTime="selectedCollection.settings.startTime"
+                :endTime="selectedCollection.settings.endTime"
                 :settings="settings"
                 :isLoading="isLoadingActions"
                 @addChart="
@@ -62,7 +62,7 @@
           <v-card class="pt-3 pb-2">
             <div class="d-flex ga-2 px-2">
               <v-date-input
-                v-model="startTime"
+                v-model="selectedCollection.settings.startTime"
                 label="Start date"
                 variant="outlined"
                 hide-details
@@ -71,13 +71,14 @@
                 min-width="120"
               />
               <v-date-input
-                v-model="endTime"
+                v-model="selectedCollection.settings.endTime"
                 label="End date"
                 variant="outlined"
                 hide-details
                 density="compact"
                 prepend-icon=""
                 min-width="120"
+                display-format="fullDate"
               />
             </div>
           </v-card>
@@ -93,8 +94,8 @@
         :collection="selectedCollection"
         :series="series"
         :settings="settings"
-        :startTime="startTime"
-        :endTime="endTime"
+        :startTime="selectedCollection.settings.startTime"
+        :endTime="selectedCollection.settings.endTime"
         class="flex-1-1"
       />
       <v-card-text v-else> Select some data to display </v-card-text>
@@ -123,14 +124,20 @@ import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
-import type { Chart, Collection, Dependant, FilterChart } from '@/lib/his'
+import {
+  type Chart,
+  type Collection,
+  type Dependant,
+  type FilterChart,
+  hisFunctionToGenerator,
+  getDateTimeSerializer,
+  createCollection,
+} from '@/lib/his'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { difference } from 'lodash-es'
 import { useStorage } from '@vueuse/core'
-import { hisFunctionToGenerator } from '@/lib/his/functions'
 import { TimeSeriesDisplaySubplot } from '@deltares/fews-pi-requests'
-import { getDateTimeSerializer } from '@/lib/his/serializer'
 
 interface Props {
   filterId?: string
@@ -149,12 +156,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const collections = useStorage<Collection[]>(
   'weboc-his-collections-v1.0.0',
-  [
-    {
-      name: 'Default',
-      charts: [],
-    },
-  ],
+  [createCollection('Default')],
   undefined,
   {
     serializer: getDateTimeSerializer(),
@@ -200,9 +202,6 @@ const { timeSeriesHeaders } = useTimeSeriesHeaders(
   baseUrl,
   () => props.filterId,
 )
-
-const startTime = ref(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000))
-const endTime = ref(new Date(Date.now() + 2 * 24 * 60 * 60 * 1000))
 
 function addChart(chart: Chart) {
   selectedCollection.value.charts = [...selectedCollection.value.charts, chart]
@@ -250,8 +249,8 @@ const { series: fetchedSeries, loadingSeriesIds } = useTimeSeries(
   baseUrl,
   requests,
   () => ({
-    startTime: startTime.value,
-    endTime: endTime.value,
+    startTime: selectedCollection.value.settings.startTime,
+    endTime: selectedCollection.value.settings.endTime,
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
     thinning: true,
