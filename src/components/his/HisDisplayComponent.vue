@@ -58,6 +58,30 @@
             </v-card>
           </template>
         </HisMenu>
+        <HisMenu text="Settings" icon="mdi-cog-outline">
+          <v-card class="pt-3 pb-2">
+            <div class="d-flex ga-2 px-2">
+              <v-date-input
+                v-model="startTime"
+                label="Start date"
+                variant="outlined"
+                hide-details
+                density="compact"
+                prepend-icon=""
+                min-width="120"
+              />
+              <v-date-input
+                v-model="endTime"
+                label="End date"
+                variant="outlined"
+                hide-details
+                density="compact"
+                prepend-icon=""
+                min-width="120"
+              />
+            </div>
+          </v-card>
+        </HisMenu>
         <v-spacer />
         <HisCollection
           v-model:selectedCollection="selectedCollection"
@@ -84,6 +108,7 @@ import HisCollectionCharts from './HisCollectionCharts.vue'
 import HisCollection from '@/components/his/HisCollection.vue'
 import HisAnalysis from '@/components/his/HisAnalysis.vue'
 import HisMenu from '@/components/his/HisMenu.vue'
+import { VDateInput } from 'vuetify/labs/components'
 import type {
   ActionRequest,
   BoundingBox,
