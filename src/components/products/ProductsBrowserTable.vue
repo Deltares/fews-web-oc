@@ -5,7 +5,7 @@
         prepend-icon="mdi-file-upload"
         class="text-none"
         variant="flat"
-        disabled
+        color="primary"
         >Upload</v-btn
       >
       <v-spacer />
