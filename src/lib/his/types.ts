@@ -1,5 +1,7 @@
-import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
-import type { ActionRequest } from '@deltares/fews-pi-requests'
+import type {
+  ActionRequest,
+  TimeSeriesDisplaySubplot,
+} from '@deltares/fews-pi-requests'
 import { hisFunctionToGenerator } from './functions'
 
 type HisFunction = keyof typeof hisFunctionToGenerator
@@ -12,7 +14,7 @@ export interface Collection {
 export interface BaseChart {
   id: string
   title: string
-  config: ChartConfig
+  subplot: TimeSeriesDisplaySubplot
 }
 
 export interface FilterChart extends BaseChart {
