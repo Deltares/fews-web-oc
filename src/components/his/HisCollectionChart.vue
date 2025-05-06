@@ -3,7 +3,7 @@
     <v-card-title class="d-flex align-center">
       <div>{{ chart.title }}</div>
       <v-spacer />
-      <v-menu>
+      <v-menu location="bottom right">
         <template #activator="{ props }">
           <v-btn
             icon="mdi-dots-horizontal"
@@ -24,6 +24,18 @@
             prepend-icon="mdi-delete"
             density="compact"
             @click="removeChart(chart)"
+          />
+          <v-list-item
+            title="Download"
+            prepend-icon="mdi-download"
+            density="compact"
+            @click="() => {}"
+          />
+          <v-list-item
+            title="Save as Image"
+            prepend-icon="mdi-image"
+            density="compact"
+            @click="() => {}"
           />
         </v-list>
       </v-menu>
