@@ -78,35 +78,42 @@ export function useTimeSeries(
       const relativeUrl = getRelativeUrlForRequest(request)
 
       const isGridTimeSeries = request.request.includes('/timeseries/grid?')
-      piProvider.getTimeSeriesWithRelativeUrl(relativeUrl).then((piSeries) => {
-        if (request.key) {
-          loadingSeriesIds.value.splice(
-            loadingSeriesIds.value.indexOf(request.key),
-            1,
-          )
-        }
-        if (piSeries.timeSeries === undefined) return
-
-        piSeries.timeSeries.forEach((timeSeries, index) => {
-          const resourceId = isGridTimeSeries
-            ? `${request.key}[${index}]`
-            : (request.key ?? '')
-          updatedSeriesIds.push(resourceId)
-
-          const _series = convertTimeSeriesResultToSeries(
-            timeSeries,
-            piSeries,
-            resourceId,
-            _selectedTime,
-          )
-          if (_series !== undefined) {
-            series.value = {
-              ...series.value,
-              [resourceId]: _series,
-            }
+      piProvider
+        .getTimeSeriesWithRelativeUrl(relativeUrl)
+        .then((piSeries) => {
+          if (request.key) {
+            loadingSeriesIds.value.splice(
+              loadingSeriesIds.value.indexOf(request.key),
+              1,
+            )
           }
+          if (piSeries.timeSeries === undefined) return
+
+          piSeries.timeSeries.forEach((timeSeries, index) => {
+            const resourceId = isGridTimeSeries
+              ? `${request.key}[${index}]`
+              : (request.key ?? '')
+            updatedSeriesIds.push(resourceId)
+
+            const _series = convertTimeSeriesResultToSeries(
+              timeSeries,
+              piSeries,
+              resourceId,
+              _selectedTime,
+            )
+            if (_series !== undefined) {
+              series.value = {
+                ...series.value,
+                [resourceId]: _series,
+              }
+            }
+          })
         })
-      })
+        .catch((error) => {
+          console.error(
+            `Failed to fetch time series for request URL ${request.request}: ${error}`,
+          )
+        })
     }
     const oldSeriesIds = difference(currentSeriesIds, updatedSeriesIds)
     if (oldSeriesIds.length > MAX_SERIES) {
