@@ -3,6 +3,8 @@ import {
   PiWebserviceProvider,
   type TimeSeriesEvent,
   DomainAxisEventValuesStringArray,
+  TimeSeriesResult,
+  TimeSeriesResponse,
 } from '@deltares/fews-pi-requests'
 import { computed, onUnmounted, ref, shallowRef, toValue, watch } from 'vue'
 import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
@@ -78,72 +80,34 @@ export function useTimeSeries(
 
       const isGridTimeSEries = request.request.includes('/timeseries/grid?')
       piProvider.getTimeSeriesWithRelativeUrl(relativeUrl).then((piSeries) => {
-        if (request.key)
+        if (request.key) {
           loadingSeriesIds.value.splice(
             loadingSeriesIds.value.indexOf(request.key),
             1,
           )
-        if (piSeries.timeSeries !== undefined)
+        }
+        if (piSeries.timeSeries !== undefined) {
           for (const index in piSeries.timeSeries) {
             const timeSeries = piSeries.timeSeries[index]
             const resourceId = isGridTimeSEries
               ? `${request.key}[${index}]`
               : (request.key ?? '')
             updatedSeriesIds.push(resourceId)
-            const resource = new SeriesUrlRequest(
-              'fews-pi',
-              `dummyUrl-for-resource-${resourceId}`,
-            )
-            const _series = new Series(resource)
-            const header = timeSeries.header
-            if (header !== undefined) {
-              _series.missingValue = header.missVal
-              const timeZone =
-                piSeries.timeZone === undefined
-                  ? 'Z'
-                  : timeZoneOffsetString(+piSeries.timeZone)
-              _series.header.timeZone = piSeries.timeZone
-              _series.header.version = piSeries.version
-              _series.header.name = `${header.stationName} - ${header.parameterId} (${header.moduleInstanceId})`
 
-              _series.header.unit = header.units
-              _series.header.timeStep = header.timeStep
-              _series.header.parameter = header.parameterId
-              _series.header.location = header.stationName
-              _series.header.source = header.moduleInstanceId
-              _series.start = convertFewsPiDateTimeToJsDate(
-                header.startDate,
-                timeZone,
-              )
-              _series.end = convertFewsPiDateTimeToJsDate(
-                header.endDate,
-                timeZone,
-              )
-              if (timeSeries.events) {
-                _series.data = timeSeries.events.map((event) => {
-                  return {
-                    x: convertFewsPiDateTimeToJsDate(event, timeZone),
-                    y:
-                      event.value === _series.missingValue
-                        ? null
-                        : +event.value,
-                    flag: event.flag,
-                    flagSource: event.flagSource,
-                    comment: event.comment,
-                    user: event.user,
-                  }
-                })
-              } else if (timeSeries.domains && _selectedTime) {
-                _series.domains = timeSeries.domains
-                fillSeriesForElevation(_series, _selectedTime, timeZone)
+            const _series = convertTimeSeriesResultToSeries(
+              timeSeries,
+              piSeries,
+              resourceId,
+              _selectedTime,
+            )
+            if (_series !== undefined) {
+              series.value = {
+                ...series.value,
+                [resourceId]: _series,
               }
-              _series.lastUpdated = new Date()
-            }
-            series.value = {
-              ...series.value,
-              [resourceId]: _series,
             }
           }
+        }
       })
     }
     const oldSeriesIds = difference(currentSeriesIds, updatedSeriesIds)
@@ -197,6 +161,57 @@ export function useTimeSeries(
     }
 
     return request.request.split('?')[0] + url.search
+  }
+
+  function convertTimeSeriesResultToSeries(
+    timeSeries: TimeSeriesResult,
+    response: TimeSeriesResponse,
+    resourceId: string,
+    selectedTime?: Date,
+  ): Series | undefined {
+    const header = timeSeries.header
+    if (header === undefined) return undefined
+
+    const resource = new SeriesUrlRequest(
+      'fews-pi',
+      `dummyUrl-for-resource-${resourceId}`,
+    )
+    const series = new Series(resource)
+
+    series.missingValue = header.missVal
+    const timeZone =
+      response.timeZone === undefined
+        ? 'Z'
+        : timeZoneOffsetString(+response.timeZone)
+    series.header.timeZone = response.timeZone
+    series.header.version = response.version
+    series.header.name = `${header.stationName} - ${header.parameterId} (${header.moduleInstanceId})`
+
+    series.header.unit = header.units
+    series.header.timeStep = header.timeStep
+    series.header.parameter = header.parameterId
+    series.header.location = header.stationName
+    series.header.source = header.moduleInstanceId
+    series.start = convertFewsPiDateTimeToJsDate(header.startDate, timeZone)
+    series.end = convertFewsPiDateTimeToJsDate(header.endDate, timeZone)
+    if (timeSeries.events) {
+      series.data = timeSeries.events.map((event) => {
+        return {
+          x: convertFewsPiDateTimeToJsDate(event, timeZone),
+          y: event.value === series.missingValue ? null : +event.value,
+          flag: event.flag,
+          flagSource: event.flagSource,
+          comment: event.comment,
+          user: event.user,
+        }
+      })
+    } else if (timeSeries.domains && selectedTime) {
+      series.domains = timeSeries.domains
+      fillSeriesForElevation(series, selectedTime, timeZone)
+    }
+    series.lastUpdated = new Date()
+
+    return series
   }
 
   const interval = useFocusAwareInterval(
