@@ -130,6 +130,7 @@ import { difference } from 'lodash-es'
 import { useStorage } from '@vueuse/core'
 import { hisFunctionToGenerator } from '@/lib/his/functions'
 import { TimeSeriesDisplaySubplot } from '@deltares/fews-pi-requests'
+import { getDateTimeSerializer } from '@/lib/his/serializer'
 
 interface Props {
   filterId?: string
@@ -145,19 +146,6 @@ const userSettings = useUserSettingsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-function isIsoDate(str: string) {
-  return /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/.test(str)
-}
-
-const dateTimeReviver = (_: unknown, value: unknown) => {
-  if (typeof value === 'string') {
-    if (isIsoDate(value)) {
-      return new Date(value)
-    }
-  }
-  return value
-}
-
 const collections = useStorage<Collection[]>(
   'weboc-his-collections-v1.0.0',
   [
@@ -168,10 +156,7 @@ const collections = useStorage<Collection[]>(
   ],
   undefined,
   {
-    serializer: {
-      read: (value) => JSON.parse(value, dateTimeReviver),
-      write: (value) => JSON.stringify(value),
-    },
+    serializer: getDateTimeSerializer(),
   },
 )
 const selectedCollection = ref<Collection>(collections.value[0])
