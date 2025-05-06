@@ -116,6 +116,7 @@ const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
 
+const CHART_CONTAINER_WIDTH = 1200
 const userSettings = useUserSettingsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -244,6 +245,11 @@ const { series: fetchedSeries, loadingSeriesIds } = useTimeSeries(
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
     thinning: true,
+    // TODO: update this with changing window size
+    thinningChartWidth: Math.min(
+      CHART_CONTAINER_WIDTH - 100,
+      window.innerWidth,
+    ),
   }),
 )
 
@@ -296,7 +302,7 @@ function updateDependants(dependants: Dependant[]) {
 
 <style scoped>
 .his-charts {
-  max-width: 1200px;
+  max-width: v-bind(CHART_CONTAINER_WIDTH + 'px');
   width: 100%;
   height: 100%;
 }

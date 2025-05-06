@@ -41,6 +41,7 @@ export interface UseTimeSeriesOptions {
   startTime?: Date | null
   endTime?: Date | null
   thinning?: boolean
+  thinningChartWidth?: number
   showVerticalProfile?: boolean
   convertDatum?: boolean
   useDisplayUnits?: boolean
@@ -127,10 +128,10 @@ export function useTimeSeries(
           const endTime = DateTime.fromISO(endTimeString, {
             zone: 'UTC',
           })
+          const chartWidth =
+            _options.thinningChartWidth ?? window.outerWidth / 2
           const timeStepPerPixel = Math.round(
-            Interval.fromDateTimes(startTime, endTime).length() /
-              window.outerWidth /
-              2,
+            Interval.fromDateTimes(startTime, endTime).length() / chartWidth,
           )
           url.searchParams.set('thinning', `${timeStepPerPixel}`)
         }
