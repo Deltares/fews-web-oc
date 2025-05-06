@@ -4,7 +4,7 @@
     :items="allSeries"
     label="Parameter"
     :getItemValue="(item) => item"
-    :getItemTitle="(item) => item.name"
+    :getItemTitle="(item) => item.legend ?? ''"
     multiple
   />
 
@@ -46,9 +46,12 @@ import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref } from 'vue'
 import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { filterActionsFilter, type TimeSteps } from '@deltares/fews-pi-requests'
+import {
+  filterActionsFilter,
+  TimeSeriesDisplaySubplotItem,
+  type TimeSteps,
+} from '@deltares/fews-pi-requests'
 import { type ResamplingMethod, resamplingMethods } from '@/lib/his/resampling'
-import { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import { uniq } from 'lodash-es'
 import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
 import { Chart } from '@/lib/his'
@@ -72,7 +75,7 @@ const emit = defineEmits<Emits>()
 
 const userSettings = useUserSettingsStore()
 
-const selectedTimeseries = ref<ChartSeries[]>([])
+const selectedTimeseries = ref<TimeSeriesDisplaySubplotItem[]>([])
 const selectedResamplingMethods = ref<ResamplingMethod[]>([])
 const selectedResamplingTimeSteps = ref<TimeSteps[]>([])
 
@@ -81,16 +84,16 @@ const availableTimeStepsStore = useAvailableTimeStepsStore()
 const allSeries = computed(() =>
   props.charts
     .filter((chart) => chart.type === 'filter')
-    .flatMap((chart) => chart.config.series)
+    .flatMap((chart) => chart.subplot.items)
     .filter(
       (series, index, self) =>
-        index === self.findIndex((s) => s.id === series.id),
+        index === self.findIndex((s) => s.request === series.request),
     ),
 )
 
 const selectedSeries = computed(() => {
-  return selectedTimeseries.value.flatMap((series) =>
-    series.dataResources.map((resource) => props.series[resource]),
+  return selectedTimeseries.value.flatMap(
+    (item) => props.series[item.request ?? ''],
   )
 })
 

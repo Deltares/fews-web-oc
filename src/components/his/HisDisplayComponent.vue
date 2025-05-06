@@ -69,6 +69,8 @@
         :collection="selectedCollection"
         :series="series"
         :settings="settings"
+        :startTime="startTime"
+        :endTime="endTime"
         class="flex-1-1"
       />
       <v-card-text v-else> Select some data to display </v-card-text>
@@ -98,12 +100,11 @@ import {
 } from '@/lib/topology/componentSettings'
 import type { Chart, Collection, Dependant, FilterChart } from '@/lib/his'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
-import { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { difference } from 'lodash-es'
 import { useStorage } from '@vueuse/core'
 import { hisFunctionToGenerator } from '@/lib/his/functions'
+import { TimeSeriesDisplaySubplot } from '@deltares/fews-pi-requests'
 
 interface Props {
   filterId?: string
@@ -151,7 +152,7 @@ const collections = useStorage<Collection[]>(
 const selectedCollection = ref<Collection>(collections.value[0])
 
 function addChartsToCollection(
-  subplots: ChartConfig[],
+  subplots: TimeSeriesDisplaySubplot[],
   requests: ActionRequest[],
 ) {
   const collection = selectedCollection.value
@@ -161,7 +162,7 @@ function addChartsToCollection(
     id: crypto.randomUUID(),
     type: 'filter',
     title: getNewChartTitle(collection),
-    config: subPlot,
+    subplot: subPlot,
     requests: getActionRequestsForSubplot(subPlot, requests),
   }))
 
@@ -169,13 +170,11 @@ function addChartsToCollection(
 }
 
 function getActionRequestsForSubplot(
-  subplot: ChartConfig,
+  subplot: TimeSeriesDisplaySubplot,
   requests: ActionRequest[],
 ) {
-  return subplot.series.flatMap((series) =>
-    series.dataResources.flatMap(
-      (resource) => requests.find((req) => req.key === resource) ?? [],
-    ),
+  return subplot.items.flatMap(
+    (item) => requests.find((req) => req.key === item.request) ?? [],
   )
 }
 
@@ -191,8 +190,8 @@ const { timeSeriesHeaders } = useTimeSeriesHeaders(
   () => props.filterId,
 )
 
-const startTime = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
-const endTime = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
+const startTime = ref(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000))
+const endTime = ref(new Date(Date.now() + 2 * 24 * 60 * 60 * 1000))
 
 function addChart(chart: Chart) {
   selectedCollection.value.charts = [...selectedCollection.value.charts, chart]
@@ -211,10 +210,7 @@ async function addFilter(filter: filterActionsFilter) {
   const results = actions.results
 
   const newSubplots = results.flatMap(
-    (result) =>
-      result.config?.timeSeriesDisplay.subplots?.map((subPlot) =>
-        timeSeriesDisplayToChartConfig(subPlot, [startTime, endTime]),
-      ) ?? [],
+    (result) => result.config?.timeSeriesDisplay.subplots ?? [],
   )
   const newRequests = results
     .flatMap((result) => result.requests)
@@ -243,8 +239,8 @@ const { series: fetchedSeries, loadingSeriesIds } = useTimeSeries(
   baseUrl,
   requests,
   () => ({
-    startTime,
-    endTime,
+    startTime: startTime.value,
+    endTime: endTime.value,
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
     thinning: true,

@@ -8,6 +8,8 @@
       :series
       :zoomHandler="chart.type === 'filter' ? zoomHandler : undefined"
       :settings
+      :startTime
+      :endTime
     />
   </div>
 </template>
@@ -23,6 +25,8 @@ interface Props {
   collection: Collection
   series: Record<string, Series>
   settings: ComponentSettings
+  startTime: Date
+  endTime: Date
 }
 
 defineProps<Props>()

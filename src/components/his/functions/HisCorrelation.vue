@@ -4,7 +4,7 @@
     :items="allSeries"
     label="First parameter"
     :getItemValue="(item) => item"
-    :getItemTitle="(item) => item.name"
+    :getItemTitle="(item) => item.legend ?? ''"
   />
 
   <HisAutocomplete
@@ -12,7 +12,7 @@
     :items="allSeries"
     label="Second parameter"
     :getItemValue="(item) => item"
-    :getItemTitle="(item) => item.name"
+    :getItemTitle="(item) => item.legend ?? ''"
   />
 
   <div class="d-flex pa-3">
@@ -30,14 +30,12 @@
 <script setup lang="ts">
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
 import { computed, ref } from 'vue'
-import { ChartSeries } from '@/lib/charts/types/ChartSeries'
 import { Chart, Dependant, DerivedChart } from '@/lib/his'
 import { Series } from '@/lib/timeseries/timeSeries'
 import {
   TimeSeriesDisplaySubplot,
   TimeSeriesDisplaySubplotItem,
 } from '@deltares/fews-pi-requests'
-import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 
 interface Props {
   charts: Chart[]
@@ -53,15 +51,15 @@ const emit = defineEmits<Emits>()
 
 const allSeries = computed(() =>
   props.charts
-    .flatMap((chart) => chart.config.series)
+    .flatMap((chart) => chart.subplot.items)
     .filter(
       (series, index, self) =>
-        index === self.findIndex((s) => s.id === series.id),
+        index === self.findIndex((s) => s.request === series.request),
     ),
 )
 
-const selectedTimeseries = ref<ChartSeries>()
-const selectedSecondTimeseries = ref<ChartSeries>()
+const selectedTimeseries = ref<TimeSeriesDisplaySubplotItem>()
+const selectedSecondTimeseries = ref<TimeSeriesDisplaySubplotItem>()
 
 function getSubplot(
   leftName: string,
@@ -107,17 +105,17 @@ function getSubplot(
     items: [line, points],
   }
 
-  return timeSeriesDisplayToChartConfig(subplot)
+  return subplot
 }
 
 function addChart() {
   if (!selectedTimeseries.value) return
   if (!selectedSecondTimeseries.value) return
 
-  const id1 = selectedTimeseries.value?.id
-  const id2 = selectedSecondTimeseries.value?.id
-  const name1 = selectedTimeseries.value?.name
-  const name2 = selectedSecondTimeseries.value?.name
+  const id1 = selectedTimeseries.value?.request ?? ''
+  const id2 = selectedSecondTimeseries.value?.request ?? ''
+  const name1 = selectedTimeseries.value?.legend ?? ''
+  const name2 = selectedSecondTimeseries.value?.legend ?? ''
 
   const lineId = `${id1}-${id2}-correlation-line`
   const pointsId = `${id1}-${id2}-correlation-points`
@@ -127,13 +125,13 @@ function addChart() {
     function: 'correlation',
   }
 
-  const config = getSubplot(name1, name2, lineId, pointsId)
+  const subplot = getSubplot(name1, name2, lineId, pointsId)
 
   const chart: DerivedChart = {
     id: crypto.randomUUID(),
     type: 'derived',
-    title: `Correlation between ${selectedTimeseries.value?.name} and ${selectedSecondTimeseries.value?.name}`,
-    config,
+    title: `Correlation between ${name1} and ${name2}`,
+    subplot,
     dependants: [dependant],
   }
 
