@@ -61,9 +61,6 @@
       :value="DisplayType.Information"
       class="h-100"
     >
-      <!-- <div class="px-4 h-100"> -->
-      <!--   <iframe :srcdoc="informationContent" class="h-100 w-100 border-none" /> -->
-      <!-- </div> -->
       <div v-html="informationContent" class="pa-4 h-100 w-100" />
     </v-window-item>
   </v-window>
