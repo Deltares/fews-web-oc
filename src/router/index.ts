@@ -37,12 +37,19 @@ const WebDisplay = () => import('../components/webdisplay/WebDisplay.vue')
 const DashboardView = () => import('../views/DashboardView.vue')
 const LogDisplay = () => import('../components/logdisplay/LogDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
+const ProductsBrowserView = () => import('../components/products/ProductsBrowserView.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
   {
     path: '/',
     name: 'Default',
     component: AboutView,
+  },
+  {
+    path: '/products/:productId?',
+    name: 'ProductsBrowser',
+    props: true,
+    component: ProductsBrowserView,
   },
   {
     path: '/about',
