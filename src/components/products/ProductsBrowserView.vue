@@ -21,8 +21,7 @@
             <v-menu activator="parent">
               <v-list density="compact">
                 <v-item-group>
-                  <v-list-item>2025-02-01T12:00:00Z</v-list-item>
-                  <v-list-item>2025-02-01T00:00:00Z</v-list-item>
+                  <v-list-item> {{ timeZero }} </v-list-item>
                 </v-item-group>
               </v-list>
             </v-menu>
@@ -107,6 +106,7 @@ watchEffect(async () => {
     const productMetaData = getProductByKey(props.productId)
     if (!productMetaData) {
       src.value = ''
+      timeZero.value = ''
       return
     }
     const url = getProductURL(productMetaData)
@@ -118,6 +118,8 @@ watchEffect(async () => {
     const request = await transformRequest(new Request(url, {}))
     const reponse = await fetch(request)
     const urlObject = URL.createObjectURL(await reponse.blob())
+
+    timeZero.value = productMetaData.timeZero
     src.value = urlObject
   } else {
     src.value = ''
