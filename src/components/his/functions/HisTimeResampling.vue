@@ -43,7 +43,7 @@
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
@@ -64,6 +64,7 @@ interface Props {
   endTime?: Date
   settings: ComponentSettings
   isLoading?: boolean
+  isActive?: boolean
 }
 
 const props = defineProps<Props>()
@@ -78,6 +79,13 @@ const userSettings = useUserSettingsStore()
 const selectedTimeseries = ref<TimeSeriesDisplaySubplotItem[]>([])
 const selectedResamplingMethods = ref<ResamplingMethod[]>([])
 const selectedResamplingTimeSteps = ref<TimeSteps[]>([])
+
+watch(() => props.isActive, clearSelections)
+function clearSelections() {
+  selectedTimeseries.value = []
+  selectedResamplingMethods.value = []
+  selectedResamplingTimeSteps.value = []
+}
 
 const availableTimeStepsStore = useAvailableTimeStepsStore()
 

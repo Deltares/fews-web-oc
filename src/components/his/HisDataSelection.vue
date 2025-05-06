@@ -57,7 +57,7 @@ import type {
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
 import HisMap from '@/components/his/HisMap.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import type { FeatureCollection, Geometry } from 'geojson'
 
@@ -68,6 +68,7 @@ interface Props {
   timeSeriesHeaders: Header[]
   boundingBox?: BoundingBox
   isLoading?: boolean
+  isActive?: boolean
 }
 
 const props = defineProps<Props>()
@@ -76,6 +77,13 @@ interface Emits {
   addFilter: [filter: filterActionsFilter]
 }
 const emit = defineEmits<Emits>()
+
+watch(() => props.isActive, clearSelections)
+function clearSelections() {
+  selectedLocationIds.value = []
+  selectedParameterIds.value = []
+  selectedModuleInstanceIds.value = []
+}
 
 function getLocationId(location: Location) {
   return location.locationId
