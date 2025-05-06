@@ -163,25 +163,32 @@ const sharedVerticalZoomHandler = new ZoomHandler({
   sharedZoomMode: ZoomMode.Y,
 })
 
-const options = computed<UseTimeSeriesOptions>(() => {
-  return {
-    startTime: store.startTime,
-    endTime: store.endTime,
-    thinning: false,
-  }
-})
+const chartOptions = computed<UseTimeSeriesOptions>(() => ({
+  startTime: store.startTime,
+  endTime: store.endTime,
+  thinning: true,
+}))
+const tableOptions = computed<UseTimeSeriesOptions>(() => ({
+  ...chartOptions.value,
+  thinning: false,
+}))
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const {
   series: chartSeries,
   loadingSeriesIds,
   interval: useTimeSeriesInterval,
-} = useTimeSeries(baseUrl, () => props.config.requests, lastUpdated, options)
+} = useTimeSeries(
+  baseUrl,
+  () => props.config.requests,
+  lastUpdated,
+  chartOptions,
+)
 const { series: tableSeries } = useTimeSeries(
   baseUrl,
   () => props.config.requests,
   lastUpdated,
-  options,
+  tableOptions,
 )
 const {
   series: elevationChartSeries,
@@ -190,7 +197,7 @@ const {
   baseUrl,
   () => props.elevationChartConfig.requests,
   lastUpdated,
-  options,
+  chartOptions,
   selectedDate,
 )
 
