@@ -9,7 +9,7 @@
         <TimeSeriesChart
           v-for="subplot in subplots"
           :config="subplot"
-          :series="series"
+          :series="chartSeries"
           :key="subplot.id"
           :highlightTime="selectedDate"
           :isLoading="isLoading(subplot, loadingSeriesIds)"
@@ -47,7 +47,7 @@
     >
       <TimeSeriesTable
         :config="tableConfig"
-        :series="series"
+        :series="tableSeries"
         :key="tableConfig.title"
         :settings="settings.timeSeriesTable"
         class="single"
@@ -170,12 +170,19 @@ const options = computed<UseTimeSeriesOptions>(() => {
     thinning: false,
   }
 })
+
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const {
-  series,
+  series: chartSeries,
   loadingSeriesIds,
   interval: useTimeSeriesInterval,
 } = useTimeSeries(baseUrl, () => props.config.requests, lastUpdated, options)
+const { series: tableSeries } = useTimeSeries(
+  baseUrl,
+  () => props.config.requests,
+  lastUpdated,
+  options,
+)
 const {
   series: elevationChartSeries,
   loadingSeriesIds: elevationLoadingSeriesIds,
@@ -198,7 +205,9 @@ function isLoading(subplot: ChartConfig, loadingSeriesIds: string[]) {
 
 async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
   const seriesKey = props.config.requests[0]?.key
-  const seriesHeader = seriesKey ? series.value[seriesKey].header : undefined
+  const seriesHeader = seriesKey
+    ? chartSeries.value[seriesKey].header
+    : undefined
   await postTimeSeriesEdit(
     baseUrl,
     props.config.requests,
