@@ -77,7 +77,7 @@ export function useTimeSeries(
     for (const request of _requests) {
       const relativeUrl = getRelativeUrlForRequest(request)
 
-      const isGridTimeSEries = request.request.includes('/timeseries/grid?')
+      const isGridTimeSeries = request.request.includes('/timeseries/grid?')
       piProvider.getTimeSeriesWithRelativeUrl(relativeUrl).then((piSeries) => {
         if (request.key) {
           loadingSeriesIds.value.splice(
@@ -88,7 +88,7 @@ export function useTimeSeries(
         if (piSeries.timeSeries === undefined) return
 
         piSeries.timeSeries.forEach((timeSeries, index) => {
-          const resourceId = isGridTimeSEries
+          const resourceId = isGridTimeSeries
             ? `${request.key}[${index}]`
             : (request.key ?? '')
           updatedSeriesIds.push(resourceId)
