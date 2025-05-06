@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Collection } from '@/lib/his'
+import { createCollection, type Collection } from '@/lib/his'
 import { ref } from 'vue'
 
 const selectedCollection = defineModel<Collection>('selectedCollection')
@@ -55,7 +55,7 @@ const newCollectionName = ref('')
 function addCollection(): void {
   const name = newCollectionName.value.trim()
   if (name && !collections.value.some((c) => c.name === name)) {
-    const newItem = { name, charts: [] }
+    const newItem = createCollection(name)
     collections.value.push(newItem)
     selectedCollection.value = newItem
   }
