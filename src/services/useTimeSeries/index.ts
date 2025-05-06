@@ -74,8 +74,7 @@ export function useTimeSeries(
     const updatedSeriesIds: string[] = []
     loadingSeriesIds.value = _requests.flatMap((r) => (r.key ? [r.key] : []))
 
-    for (const r in _requests) {
-      const request = _requests[r]
+    for (const request of _requests) {
       const relativeUrl = getRelativeUrlForRequest(request)
 
       const isGridTimeSEries = request.request.includes('/timeseries/grid?')
