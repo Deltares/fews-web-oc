@@ -25,7 +25,7 @@
         <v-menu activator="parent" :close-on-content-click="false">
           <v-list v-model:selected="groupByKey" density="compact">
             <v-list-subheader>Group by</v-list-subheader>
-            <v-list-item v-for="column in availableColumns" :value="column.key">
+            <v-list-item v-for="column in filteredColumns" :value="column.key">
               {{ column.title }}
               <template v-slot:prepend="{ isSelected, select }">
                 <v-list-item-action start>
@@ -60,15 +60,16 @@
             <th v-else-if="column.key === 'Actions'" class="pa-0">
               <v-btn icon size="small" variant="plain">
                 <v-icon icon="mdi-dots-vertical" />
-                <v-menu
-                  :selected="selectedColumns"
-                  activator="parent"
-                  :close-on-content-click="false"
-                >
-                  <v-list select-strategy="independent" density="compact">
+                <v-menu activator="parent" :close-on-content-click="false">
+                  <v-list
+                    v-model:selected="selectedColumns"
+                    select-strategy="independent"
+                    density="compact"
+                  >
                     <v-list-subheader>View columns</v-list-subheader>
                     <v-list-item
                       v-for="column in availableColumns"
+                      :key="column.key"
                       :value="column.key"
                     >
                       {{ column.title }}
@@ -76,7 +77,7 @@
                         <v-list-item-action start>
                           <v-checkbox-btn
                             :model-value="isSelected"
-                            @update:model-value="select"
+                            @update:modelValue="select"
                           ></v-checkbox-btn>
                         </v-list-item-action>
                       </template>
@@ -110,7 +111,7 @@
           <td :colspan="columns.length">
             <v-list-item density="compact" class="px-0">
               <v-list-item-subtitle>
-                {{ groupBy.name }} 
+                {{ groupBy.name }}
                 <span> {{ item.value }} </span>
                 <v-chip class="ms-4" size="small">{{
                   item.items.length
@@ -138,11 +139,11 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import type { ProductMetaDataType } from '@/services/useProducts/types';
+import { computed, ref, watch } from 'vue'
+import type { ProductMetaDataType } from '@/services/useProducts/types'
 import { useRouter } from 'vue-router'
 import { toHumanReadableDate } from '@/lib/date'
-import { ViewConfig } from '@/lib/products/documentDisplay';
+import { ViewConfig } from '@/lib/products/documentDisplay'
 
 const productPropertyNames: string[] = [
   'version',
@@ -178,20 +179,38 @@ function groupName(key: string) {
   return column?.title || key
 }
 
-const availableColumns = computed(() => {
-  const result = props.config.headers.map((header) => ({
-    key: productPropertyNames.includes(header.attribute)? header.attribute : `attributes.${header.attribute}`,
-    title: header.title,
-  }))
-  return result
+const availableColumns = ref<{ key: string; title: string }[]>([])
+
+watch(
+  () => props.config?.headers,
+  (newHeaders) => {
+    if (!newHeaders) {
+      availableColumns.value = []
+      return
+    }
+    const result = newHeaders.map((header) => ({
+      key: productPropertyNames.includes(header.attribute)
+        ? header.attribute
+        : `attributes.${header.attribute}`,
+      title: header.title,
+    }))
+    availableColumns.value = result
+    selectedColumns.value = result.map((column) => column.key)
+  },
+  { immediate: true },
+)
+
+const filteredColumns = computed(() => {
+  return availableColumns.value.filter((column) => {
+    return selectedColumns.value.includes(column.key)
+  })
 })
 
 const headers = computed(() => {
   return [
-    ...availableColumns.value
-      .filter((column) => {
-        return column.key !== groupBy.value.key
-      }),
+    ...filteredColumns.value.filter((column) => {
+      return column.key !== groupBy.value.key
+    }),
     {
       key: 'Actions',
       title: '',
