@@ -110,7 +110,7 @@
           <td :colspan="columns.length">
             <v-list-item density="compact" class="px-0">
               <v-list-item-subtitle>
-                {{ groupName(groupByKey[0]) }} 
+                {{ groupBy.name }} 
                 <span> {{ item.value }} </span>
                 <v-chip class="ms-4" size="small">{{
                   item.items.length
@@ -142,51 +142,48 @@ import { computed, ref } from 'vue'
 import type { ProductMetaDataType } from '@/services/useProducts/types';
 import { useRouter } from 'vue-router'
 import { toHumanReadableDate } from '@/lib/date'
-import attributeNames from '@/assets/attributeNames.json'
+import { ViewConfig } from '@/lib/products/documentDisplay';
+
+const productPropertyNames: string[] = [
+  'version',
+  'sourceId',
+  'areaId',
+  'timeZero',
+  'dataSetCreationTime',
+]
 
 interface Props {
   products: ProductMetaDataType[]
+  config: ViewConfig
 }
 
 const props = defineProps<Props>()
 
 const router = useRouter()
-const groupByKey = ref(['attributes.status'])
+const groupByKey = ref([''])
 const groupByOrder = ref<[boolean | 'asc' | 'desc']>(['asc'])
 const selectedColumns = ref<string[]>([])
-
-const typedAttributeNames = attributeNames as Record<string, string>
 
 const groupBy = computed(() => {
   return {
     key: groupByKey.value[0],
     order: groupByOrder.value[0],
+    name: groupName(groupByKey.value[0]),
   }
 })
 function groupName(key: string) {
-  const groupByKey = key.split('.')[1]
-  return typedAttributeNames[groupByKey] ?? groupByKey
+  const column = availableColumns.value.find((column) => {
+    return column.key === key
+  })
+  return column?.title || key
 }
 
 const availableColumns = computed(() => {
-  const attributesSet = new Set<string>()
-  for (const product of props.products) {
-    for (const key of Object.keys(product.attributes)) {
-      attributesSet.add(key)
-    }
-  }
-  return [
-    { key: 'timeZero', title: attributeNames.timeZero },
-    { key: 'dataSetCreationTime', title: attributeNames.dataSetCreationTime },
-    ...Array.from(attributesSet).filter((key) =>
-      typedAttributeNames[key]
-    ).map((key) => {
-      return {
-        key: `attributes.${key}`,
-        title: typedAttributeNames[key] ?? key,
-      }
-    }),
-  ]
+  const result = props.config.headers.map((header) => ({
+    key: productPropertyNames.includes(header.attribute)? header.attribute : `attributes.${header.attribute}`,
+    title: header.title,
+  }))
+  return result
 })
 
 const headers = computed(() => {
