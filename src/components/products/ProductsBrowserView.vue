@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex flex-row h-100 w-100">
-    <ProductsBrowserTable :products="products" class="product-browser__table" />
+    <ProductsBrowserTable :products="products" :config="displayConfig?.documentDiplay.documentBrowser.viewConfig" class="product-browser__table" />
     <div class="flex-1-1 h-100 flex-column position-relative">
       <v-toolbar density="compact" absolute>
         <v-btn
@@ -42,13 +42,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
+import { onMounted, ref, watchEffect } from 'vue'
 import ProductsBrowserTable from '@/components/products/ProductsBrowserTable.vue'
 import ReactiveIframe from '@/components/products/ReactiveIFrame.vue'
 import { getProductURL } from './productTools'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
 import { useProducts } from '@/services/useProducts'
+import { getResourcesStaticUrl } from '@/lib/fews-config'
+import { DocumentDisplay } from '@/lib/products/documentDisplay'
 
 interface Props {
   productId?: string
@@ -78,11 +80,22 @@ const props = defineProps<Props>()
 const src = ref('')
 const viewMode = ref('')
 const timeZero = ref('')
+const displayConfig = ref<DocumentDisplay>()
+
 const filter = ref<ProductsMetaDataFilter>({
   versionKey: ['archiveProductId'],
 })
 
 const { products, getProductByKey } = useProducts(filter)
+
+onMounted(async () => {
+  const transformRequest = createTransformRequestFn()
+  const url = getResourcesStaticUrl('documentBrowser.json').toString()
+  const request = await transformRequest(new Request(url, {}))
+  const reponse = await fetch(request)
+  displayConfig.value = await reponse.json() as DocumentDisplay
+})
+
 
 watchEffect(async () => {
   if (props.productId) {
