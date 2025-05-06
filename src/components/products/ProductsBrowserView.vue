@@ -1,8 +1,12 @@
 <template>
   <div class="d-flex flex-row h-100 w-100">
-    <ProductsBrowserTable :products="products" :config="viewConfig" class="product-browser__table" />
+    <ProductsBrowserTable
+      :products="products"
+      :config="viewConfig"
+      class="product-browser__table"
+    />
     <div class="flex-1-1 h-100 flex-column position-relative">
-    <v-toolbar density="compact" absolute>
+      <v-toolbar density="compact" absolute>
         <v-btn
           v-if="viewMode === 'html'"
           color="primary"
@@ -31,11 +35,11 @@
         class="pdf-iframe"
       ></iframe>
       <div v-else class="products-browser-view__canvas overflow-y-auto w-100">
-        <img
-          v-if="viewMode === 'img'"
+        <img v-if="viewMode === 'img'" :src="src" />
+        <ReactiveIframe
+          v-else-if="viewMode === 'html'"
           :src="src"
-        />
-        <ReactiveIframe v-else-if="viewMode === 'html'" :src="src"></ReactiveIframe>
+        ></ReactiveIframe>
       </div>
     </div>
   </div>
@@ -61,7 +65,7 @@ function getFileExtension(url: string): string {
   return urlParts[urlParts.length - 1]
 }
 
-function getViewMode(extension: string): string{
+function getViewMode(extension: string): string {
   switch (extension) {
     case 'html':
       return 'html'
@@ -75,13 +79,12 @@ function getViewMode(extension: string): string{
   }
 }
 
-
 const props = defineProps<Props>()
 const src = ref('')
 const viewMode = ref('')
 const timeZero = ref('')
 const displayConfig = ref<DocumentDisplay>()
-const viewConfig = ref<ViewConfig>({ type: 'table', headers: []} as ViewConfig)
+const viewConfig = ref<ViewConfig>({ type: 'table', headers: [] } as ViewConfig)
 
 const filter = ref<ProductsMetaDataFilter>({
   versionKey: ['archiveProductId'],
@@ -94,11 +97,10 @@ onMounted(async () => {
   const url = getResourcesStaticUrl('documentBrowser.json').toString()
   const request = await transformRequest(new Request(url, {}))
   const reponse = await fetch(request)
-  const config = await reponse.json() as DocumentDisplay
+  const config = (await reponse.json()) as DocumentDisplay
   displayConfig.value = config
   viewConfig.value = config.documentDiplay.documentBrowser.viewConfig
 })
-
 
 watchEffect(async () => {
   if (props.productId) {
