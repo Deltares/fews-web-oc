@@ -1,8 +1,8 @@
 <template>
   <div class="d-flex flex-row h-100 w-100">
-    <ProductsBrowserTable :products="products" :config="displayConfig?.documentDiplay.documentBrowser.viewConfig" class="product-browser__table" />
+    <ProductsBrowserTable :products="products" :config="viewConfig" class="product-browser__table" />
     <div class="flex-1-1 h-100 flex-column position-relative">
-      <v-toolbar density="compact" absolute>
+    <v-toolbar density="compact" absolute>
         <v-btn
           v-if="viewMode === 'html'"
           color="primary"
@@ -50,7 +50,7 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
 import { useProducts } from '@/services/useProducts'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
-import { DocumentDisplay } from '@/lib/products/documentDisplay'
+import { DocumentDisplay, ViewConfig } from '@/lib/products/documentDisplay'
 
 interface Props {
   productId?: string
@@ -81,6 +81,7 @@ const src = ref('')
 const viewMode = ref('')
 const timeZero = ref('')
 const displayConfig = ref<DocumentDisplay>()
+const viewConfig = ref<ViewConfig>({ type: 'table', headers: []} as ViewConfig)
 
 const filter = ref<ProductsMetaDataFilter>({
   versionKey: ['archiveProductId'],
@@ -93,7 +94,9 @@ onMounted(async () => {
   const url = getResourcesStaticUrl('documentBrowser.json').toString()
   const request = await transformRequest(new Request(url, {}))
   const reponse = await fetch(request)
-  displayConfig.value = await reponse.json() as DocumentDisplay
+  const config = await reponse.json() as DocumentDisplay
+  displayConfig.value = config
+  viewConfig.value = config.documentDiplay.documentBrowser.viewConfig
 })
 
 
