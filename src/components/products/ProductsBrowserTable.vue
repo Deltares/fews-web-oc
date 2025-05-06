@@ -179,7 +179,7 @@ function groupName(key: string) {
   return column?.title || key
 }
 
-const availableColumns = ref<{ key: string; title: string }[]>([])
+const availableColumns = ref<{ key: string; title: string, align?: 'start' | 'center' | 'end' }[]>([])
 
 watch(
   () => props.config?.headers,
@@ -214,8 +214,8 @@ const headers = computed(() => {
     {
       key: 'Actions',
       title: '',
-      align: 'right',
-    },
+      align: 'end',
+    } as const, 
   ]
 })
 
