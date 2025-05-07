@@ -15,7 +15,10 @@
       :logs="logs"
       :taskRun="taskRun"
       :disseminations="disseminations"
-      @disseminate-log="emit('disseminateLog', $event)"
+      @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
+      @edit-log="emit('editLog', $event)"
+      @delete-log="emit('deleteLog', $event)"
+      v-bind="$attrs"
     />
   </template>
   <LogMessageItem
@@ -24,7 +27,9 @@
     :log="log"
     :userName="userName"
     :disseminations="disseminations"
-    @disseminate-log="emit('disseminateLog', $event)"
+    @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
+    @edit-log="emit('editLog', $event)"
+    @delete-log="emit('deleteLog', $event)"
   />
 </template>
 
@@ -36,7 +41,7 @@ import type {
   LogDisplayDisseminationAction,
   TaskRun,
 } from '@deltares/fews-pi-requests'
-import { type LogMessage, logToUser } from '@/lib/log'
+import { type LogActionEmit, type LogMessage, logToUser } from '@/lib/log'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed } from 'vue'
 
@@ -61,7 +66,7 @@ const taskRun = computed(() =>
 
 const log = computed(() => props.logs[0])
 
-const emit = defineEmits(['disseminateLog'])
+const emit = defineEmits<LogActionEmit>()
 
 function getTitleForLog(log: LogMessage, userName: string) {
   const workflowId = props.taskRuns.find(

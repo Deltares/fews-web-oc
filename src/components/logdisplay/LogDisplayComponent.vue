@@ -104,6 +104,8 @@
           :userName="userName"
           v-model:expanded="expandedItems[logs[0].taskRunId]"
           @disseminate-log="disseminateLog"
+          @delete-log="deleteLog"
+          @edit-log="editLog"
         />
       </template>
     </v-virtual-scroll>
@@ -288,6 +290,14 @@ function disseminateLog(
   dissemination: LogDisplayDisseminationAction,
 ) {
   console.log('Disseminating log', log, dissemination)
+}
+
+function deleteLog(log: LogMessage) {
+  console.log('Deleting log', log)
+}
+
+function editLog(log: LogMessage) {
+  console.log('Editing log', log)
 }
 
 function refreshLogs() {
