@@ -10,7 +10,8 @@ import { ref, toValue, watchEffect, type MaybeRefOrGetter } from 'vue'
 import { ProductMetaDataWithoutAttributes } from './types'
 import { configManager } from '../application-config'
 
-const daysBack = 7 // Number of days to look back for product metadata
+// FIXME: a year for demo
+const daysBack = 365 // Number of days to look back for product metadata
 
 /**
  * Hook to fetch and manage product metadata based on a given filter.
