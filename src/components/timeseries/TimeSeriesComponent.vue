@@ -156,6 +156,10 @@ const props = withDefaults(defineProps<Props>(), {
 // performed. Note: zooming out (i.e. zoom ratio > 1) will always refetch.
 const MAX_ZOOM_RATIO_FOR_REFETCH = 0.8
 
+// Minimum domain width in hours below which no refetch is done, because it is
+// unlikely that there is any effect of thinning.
+const MIN_HOURS_FOR_REFETCH = 12
+
 const { selectedDate } = useSelectedDate(() => props.currentTime)
 const store = useSystemTimeStore()
 const lastUpdated = ref<Date>(new Date())
@@ -329,6 +333,13 @@ function refetchChartTimeSeries(
 ) {
   const getRange = (domain: [Date, Date]) =>
     domain[1].getTime() - domain[0].getTime()
+
+  // Do not refetch if we are zoomed in past the point where thinning has
+  // any effect.
+  const isDomainLargeEnough =
+    getRange(newDomain) >= MIN_HOURS_FOR_REFETCH * 60 * 60 * 1000
+  if (!isDomainLargeEnough) return
+
   const zoomRatio = getRange(newDomain) / getRange(oldDomain)
 
   // When zooming out, always refresh the data; we need more data than we had
