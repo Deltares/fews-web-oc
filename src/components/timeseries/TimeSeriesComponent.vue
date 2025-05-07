@@ -168,13 +168,16 @@ const sharedVerticalZoomHandler = new ZoomHandler({
   sharedZoomMode: ZoomMode.Y,
 })
 
+const tab = ref<DisplayType>(props.displayType)
+
 const chartOptions = ref<UseTimeSeriesOptions>({
   startTime: store.startTime,
   endTime: store.endTime,
   thinning: true,
 })
 const tableOptions = computed<UseTimeSeriesOptions>(() => ({
-  ...chartOptions.value,
+  startTime: store.startTime,
+  endTime: store.endTime,
   thinning: false,
 }))
 
@@ -188,12 +191,14 @@ const {
   () => props.config.requests,
   lastUpdated,
   chartOptions,
+  () => tab.value === DisplayType.TimeSeriesChart,
 )
 const { series: tableSeries } = useTimeSeries(
   baseUrl,
   () => props.config.requests,
   lastUpdated,
   tableOptions,
+  () => tab.value === DisplayType.TimeSeriesTable,
 )
 const {
   series: elevationChartSeries,
@@ -203,6 +208,7 @@ const {
   () => props.elevationChartConfig.requests,
   lastUpdated,
   chartOptions,
+  () => tab.value === DisplayType.ElevationChart,
   selectedDate,
 )
 
@@ -268,8 +274,6 @@ watch(
     }
   },
 )
-
-const tab = ref<DisplayType>(props.displayType)
 
 watch(
   () => props.displayType,

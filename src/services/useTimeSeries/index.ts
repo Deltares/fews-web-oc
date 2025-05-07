@@ -49,6 +49,7 @@ export function useTimeSeries(
   requests: MaybeRefOrGetter<ActionRequest[]>,
   lastUpdated: MaybeRefOrGetter<Date | undefined>,
   options: MaybeRefOrGetter<UseTimeSeriesOptions>,
+  fetchingEnabled: MaybeRefOrGetter<boolean>,
   selectedTime?: MaybeRefOrGetter<Date | undefined>,
 ): UseTimeSeriesReturn {
   let controller = new AbortController()
@@ -57,11 +58,14 @@ export function useTimeSeries(
   const loadingSeriesIds = ref<string[]>([])
   const isLoading = computed(() => loadingSeriesIds.value.length > 0)
 
-  watch([lastUpdated, selectedTime ?? ref(), requests, options], () => {
-    loadTimeSeries()
-  })
+  watch(
+    [lastUpdated, selectedTime ?? ref(), requests, options, fetchingEnabled],
+    loadTimeSeries,
+  )
 
   function loadTimeSeries() {
+    if (!toValue(fetchingEnabled)) return
+
     controller.abort('Timeseries request triggered again before finishing.')
     controller = new AbortController()
     const piProvider = new PiWebserviceProvider(baseUrl, {
