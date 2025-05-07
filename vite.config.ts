@@ -43,6 +43,7 @@ export default defineConfig(({ mode }) => {
           [
             `connect-src`,
             `'self'`,
+            `blob:`,
             `https://basemaps.cartocdn.com`,
             `https://*.basemaps.cartocdn.com`,
             `https://login.microsoftonline.com`,

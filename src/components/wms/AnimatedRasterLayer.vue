@@ -27,6 +27,7 @@ import {
   LngLatBounds,
   MapLayerMouseEvent,
   MapLayerTouchEvent,
+  UpdateImageOptions,
   type MapSourceDataEvent,
 } from 'maplibre-gl'
 import { MglImageSource, MglRasterLayer } from '@indoorequal/vue-maplibre-gl'
@@ -47,6 +48,7 @@ export interface AnimatedRasterLayerOptions {
 
 interface Props {
   layer: AnimatedRasterLayerOptions
+  dates: Date[]
   beforeId?: string
 }
 
@@ -64,11 +66,12 @@ const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
 
-const sourceOptions = ref(getImageSourceOptions())
+const sourceOptions = ref(getImageSourceOptions(props.layer))
 
 onMounted(() => {
   isLoading.value = true
   addHooksToMapObject()
+  populateCache()
 })
 
 onUnmounted(() => {
@@ -135,13 +138,15 @@ function removeHooksFromMapObject(): void {
   map?.off('error', onError)
 }
 
-function getImageSourceOptions() {
-  if (props.layer.time === undefined || map === undefined) {
+function getImageSourceOptions(
+  layer: AnimatedRasterLayerOptions,
+): UpdateImageOptions | undefined {
+  if (layer.time === undefined || map === undefined) {
     return
   }
 
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const time = props.layer.time.toISOString()
+  const time = layer.time.toISOString()
   let bounds = map.getBounds()
   let { width, height } = map.getCanvas()
 
@@ -159,7 +164,7 @@ function getImageSourceOptions() {
   getMapUrl.searchParams.append('service', 'WMS')
   getMapUrl.searchParams.append('request', 'GetMap')
   getMapUrl.searchParams.append('version', '1.3')
-  getMapUrl.searchParams.append('layers', props.layer.name)
+  getMapUrl.searchParams.append('layers', layer.name)
   getMapUrl.searchParams.append('crs', 'EPSG:3857')
   getMapUrl.searchParams.append('bbox', `${getMercatorBboxFromBounds(bounds)}`)
   // Width and height are in pixels, this can cause the image can be distorted a bit relicative to the bbox coordinates
@@ -167,20 +172,17 @@ function getImageSourceOptions() {
   getMapUrl.searchParams.append('width', `${width.toFixed(0)}`)
   getMapUrl.searchParams.append('time', `${time}`)
   getMapUrl.searchParams.append('useLastValue', 'true')
-  if (props.layer.style) {
-    getMapUrl.searchParams.append('styles', props.layer.style)
+  if (layer.style) {
+    getMapUrl.searchParams.append('styles', layer.style)
   }
-  if (props.layer.elevation) {
-    getMapUrl.searchParams.append('elevation', `${props.layer.elevation}`)
+  if (layer.elevation) {
+    getMapUrl.searchParams.append('elevation', `${layer.elevation}`)
   }
-  if (props.layer.colorScaleRange) {
-    getMapUrl.searchParams.append(
-      'colorScaleRange',
-      `${props.layer.colorScaleRange}`,
-    )
+  if (layer.colorScaleRange) {
+    getMapUrl.searchParams.append('colorScaleRange', `${layer.colorScaleRange}`)
     getMapUrl.searchParams.append(
       'useDisplayUnits',
-      props.layer.useDisplayUnits ? 'true' : 'false',
+      layer.useDisplayUnits ? 'true' : 'false',
     )
   }
   return {
@@ -190,14 +192,73 @@ function getImageSourceOptions() {
 }
 
 watch(() => props.layer, updateSource)
-function updateSource() {
+async function updateSource() {
   const source = map?.getSource(sourceId.value) as ImageSource
   if (!source) return
 
-  const imageOptions = getImageSourceOptions()
-  if (!imageOptions) return
+  populateCache()
 
-  source.updateImage(imageOptions)
+  const cacheKey = getCacheKey(props.layer)
+  if (cachedRequests.hasOwnProperty(cacheKey)) {
+    const cachedRequest = cachedRequests[cacheKey]
+
+    isLoading.value = true
+
+    const imageOptions = await cachedRequest
+    if (cacheKey !== getCacheKey(props.layer)) {
+      // Cache key has changed, do not update the source
+      return
+    }
+    source.updateImage(imageOptions)
+
+    isLoading.value = false
+  }
+}
+
+let cachedRequests: Record<string, Promise<UpdateImageOptions>> = {}
+
+function getCacheKey(layer: AnimatedRasterLayerOptions) {
+  return `${JSON.stringify(layer)}-${map?.getBounds().toString()}`
+}
+
+async function populateCache() {
+  if (props.layer === undefined || props.layer.time === undefined) return
+
+  const cacheSize = 10
+
+  const layer = {
+    ...props.layer,
+    time: new Date(props.layer.time),
+  }
+
+  const dates = props.dates
+  const dateIndex = dates.findIndex(
+    (date) => date.getTime() === layer.time.getTime(),
+  )
+
+  for (let i = dateIndex; i < dateIndex + cacheSize; i++) {
+    layer.time = dates[i % dates.length]
+
+    const cacheKey = getCacheKey(layer)
+    if (cachedRequests.hasOwnProperty(cacheKey)) continue
+
+    const imageOptions = getImageSourceOptions(layer)
+    if (!imageOptions) return
+
+    cachedRequests[cacheKey] = fetchImage(imageOptions)
+  }
+}
+
+async function fetchImage(
+  imageSourceOptions: UpdateImageOptions,
+): Promise<UpdateImageOptions> {
+  const response = await fetch(imageSourceOptions.url)
+  const blob = await response.blob()
+  const blobUrl = URL.createObjectURL(blob)
+  return {
+    url: blobUrl,
+    coordinates: imageSourceOptions.coordinates,
+  }
 }
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {

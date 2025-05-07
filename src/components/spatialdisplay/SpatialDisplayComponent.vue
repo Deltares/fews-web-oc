@@ -6,6 +6,7 @@
       :layer="layerOptions"
       :key="layerOptions?.name"
       :beforeId="baseMap.beforeId"
+      :dates="times ?? []"
       @doubleclick="onCoordinateClick"
     />
     <AnimatedStreamlineRasterLayer
