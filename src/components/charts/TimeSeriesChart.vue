@@ -307,11 +307,14 @@ const refreshChart = () => {
 
 const updateChartData = (series: ChartSeries[]) => {
   series.forEach((series) => {
-    const chart = axis.charts.find((chart) => chart.id == series.id)
-    if (chart !== undefined) {
+    const charts = axis.charts.filter((chart) => chart.id == series.id)
+    if (charts.length > 0) {
       const rawData = dataFromResources(series.dataResources, props.series)
       const data = removeUnreliableData(rawData)
-      chart.data = data
+      // Update each matching chart
+      charts.forEach((chart) => {
+        chart.data = data
+      })
     }
   })
   // Ensure the current zoom, which might be user-selected, does not change
