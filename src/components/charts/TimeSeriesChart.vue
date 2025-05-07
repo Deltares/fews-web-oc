@@ -73,6 +73,11 @@ const props = withDefaults(defineProps<Props>(), {
   },
 })
 
+interface Emits {
+  'update:x-domain': [old: [Date, Date], new: [Date, Date]]
+}
+const emit = defineEmits<Emits>()
+
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
@@ -96,6 +101,13 @@ onMounted(() => {
       props.verticalProfile ? 1200 : null,
       axisOptions,
     )
+    axis.addEventListener('update:x-domain', (event) => {
+      emit(
+        'update:x-domain',
+        event.old as [Date, Date],
+        event.new as [Date, Date],
+      )
+    })
 
     // Keep margin in sync with axis.margin
     axis.margin = new Proxy(axis.margin, {
