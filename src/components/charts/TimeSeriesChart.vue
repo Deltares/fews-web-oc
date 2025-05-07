@@ -14,7 +14,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
+import {
+  ref,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  computed,
+  useTemplateRef,
+} from 'vue'
 import {
   AlertLines,
   ChartArea,
@@ -84,7 +92,7 @@ let axis!: CartesianAxes
 const margin = ref<Margin>({})
 const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
-const chartContainer = ref<HTMLElement>()
+const chartContainer = useTemplateRef('chartContainer')
 const axisTime = ref<CrossSectionSelect>()
 const hasLoadedOnce = ref(false)
 
