@@ -51,6 +51,7 @@
         :series="tableSeries"
         :key="tableConfig.title"
         :settings="settings.timeSeriesTable"
+        :is-loading="isLoadingTableSeries"
         class="single"
         @change="(event) => onDataChange(event)"
         @update:isEditing="isEditing = $event"
@@ -193,7 +194,7 @@ const {
   chartOptions,
   () => tab.value === DisplayType.TimeSeriesChart,
 )
-const { series: tableSeries } = useTimeSeries(
+const { series: tableSeries, isLoading: isLoadingTableSeries } = useTimeSeries(
   baseUrl,
   () => props.config.requests,
   lastUpdated,
