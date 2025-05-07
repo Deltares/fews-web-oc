@@ -13,14 +13,23 @@ export function calculateCorrelationTimeSeries(
     user: point.user,
   }))
 
-  const n = points.length
-  const sumX = points.reduce((sum, p) => sum + (p.x ?? 0), 0)
-  const sumY = points.reduce((sum, p) => sum + (p.y ?? 0), 0)
-  const sumXY = points.reduce((sum, p) => sum + (p.x ?? 0) * (p.y ?? 0), 0)
-  const sumX2 = points.reduce((sum, p) => sum + (p.x ?? 0) ** 2, 0)
+  const n = points.filter((p) => p.x !== null && p.y !== null).length
+  const validPoints = points.filter((p) => p.x !== null && p.y !== null)
 
-  const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX ** 2)
-  const intercept = (sumY - slope * sumX) / n
+  const sumX = validPoints.reduce((sum, p) => sum + (p.x as number), 0)
+  const sumY = validPoints.reduce((sum, p) => sum + (p.y as number), 0)
+  const sumXY = validPoints.reduce(
+    (sum, p) => sum + (p.x as number) * (p.y as number),
+    0,
+  )
+  const sumX2 = validPoints.reduce((sum, p) => sum + (p.x as number) ** 2, 0)
+  const sumY2 = validPoints.reduce((sum, p) => sum + (p.y as number) ** 2, 0)
+
+  const denominator = Math.sqrt(
+    (n * sumX2 - sumX ** 2) * (n * sumY2 - sumY ** 2),
+  )
+  const slope = denominator !== 0 ? (n * sumXY - sumX * sumY) / denominator : 0
+  const intercept = denominator !== 0 ? (sumY - slope * sumX) / n : 0
 
   const line = points.map((point) => ({
     x: point.x,
