@@ -32,6 +32,20 @@
             </template>
             <span>Go to node</span>
           </v-tooltip>
+          <v-btn
+            density="compact"
+            icon="mdi-pencil"
+            variant="plain"
+            size="small"
+            @click="emit('editLog', log)"
+          />
+          <v-btn
+            density="compact"
+            icon="mdi-delete"
+            variant="plain"
+            size="small"
+            @click="emit('deleteLog', log)"
+          />
           <template v-for="dissemination in logToActions(log, disseminations)">
             <v-tooltip location="top">
               <template #activator="{ props }">
@@ -79,6 +93,7 @@ import {
   logToRoute,
   logToActions,
   type LogMessage,
+  type LogActionEmit,
 } from '@/lib/log'
 import type { LogDisplayDisseminationAction } from '@deltares/fews-pi-requests'
 
@@ -90,7 +105,7 @@ interface Props {
 
 defineProps<Props>()
 
-const emit = defineEmits(['disseminateLog'])
+const emit = defineEmits<LogActionEmit>()
 </script>
 
 <style scoped>
