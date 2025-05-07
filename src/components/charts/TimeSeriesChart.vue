@@ -14,7 +14,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
+import {
+  ref,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  computed,
+  useTemplateRef,
+} from 'vue'
 import {
   AlertLines,
   ChartArea,
@@ -73,13 +81,18 @@ const props = withDefaults(defineProps<Props>(), {
   },
 })
 
+interface Emits {
+  'update:x-domain': [old: [Date, Date], new: [Date, Date]]
+}
+const emit = defineEmits<Emits>()
+
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
 const margin = ref<Margin>({})
 const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
-const chartContainer = ref<HTMLElement>()
+const chartContainer = useTemplateRef('chartContainer')
 const axisTime = ref<CrossSectionSelect>()
 const hasLoadedOnce = ref(false)
 
@@ -96,6 +109,13 @@ onMounted(() => {
       props.verticalProfile ? 1200 : null,
       axisOptions,
     )
+    axis.addEventListener('update:x-domain', (event) => {
+      emit(
+        'update:x-domain',
+        event.old as [Date, Date],
+        event.new as [Date, Date],
+      )
+    })
 
     // Keep margin in sync with axis.margin
     axis.margin = new Proxy(axis.margin, {
