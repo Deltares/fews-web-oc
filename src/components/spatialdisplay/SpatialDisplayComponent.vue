@@ -130,6 +130,7 @@
       @update:doFollowNow="setLayerOptions"
       class="spatial-display__slider"
       :hide-speed-controls="mobile"
+      :isLoading="isLoading"
     >
       <template #below-track>
         <DateTimeSliderValues

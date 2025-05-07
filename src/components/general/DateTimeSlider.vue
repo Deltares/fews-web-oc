@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, WatchHandle } from 'vue'
 import { scaleTime } from 'd3-scale'
 import { DateTime } from 'luxon'
 
@@ -296,14 +296,42 @@ function startPlay(): void {
   play()
 }
 
+const playLoadingWatchHandle = ref<WatchHandle>()
+
+// Stops watching the loading state and cleans up the watch handle
+function unwatchPlayLoading(): void {
+  playLoadingWatchHandle.value?.()
+  playLoadingWatchHandle.value = undefined
+}
+
 function stopPlay(): void {
   if (playTimeoutTimer.value) {
+    unwatchPlayLoading()
     clearTimeout(playTimeoutTimer.value)
     playTimeoutTimer.value = undefined
   }
 }
 
 function play(): void {
+  if (props.isLoading) {
+    // Watch the loading state and wait until it finishes before continuing
+    playLoadingWatchHandle.value = watch(
+      () => props.isLoading,
+      (newVal) => {
+        if (!newVal) {
+          unwatchPlayLoading()
+          // Proceed with the play process once loading is complete
+          continuePlay()
+        }
+      },
+    )
+  } else {
+    // Directly proceed if not loading
+    continuePlay()
+  }
+}
+
+function continuePlay(): void {
   if (dateIndex.value === maxIndex.value) {
     dateIndex.value = 0
   } else {
