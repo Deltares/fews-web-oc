@@ -35,6 +35,7 @@ import { configManager } from '@/services/application-config'
 import { useMap } from '@/services/useMap'
 import { point } from '@turf/helpers'
 import { getBeforeId, getLayerId, getSourceId } from '@/lib/map'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 export interface AnimatedRasterLayerOptions {
   name: string
@@ -80,6 +81,7 @@ onUnmounted(() => {
 })
 
 function onMapMove(): void {
+  abortCacheRequests()
   updateSource()
 }
 
@@ -198,32 +200,24 @@ async function updateSource() {
 
   populateCache()
 
-  const cacheKey = getCacheKey(props.layer)
-  if (cachedRequests.hasOwnProperty(cacheKey)) {
-    const cachedRequest = cachedRequests[cacheKey]
-
-    isLoading.value = true
-
-    const imageOptions = await cachedRequest
-    if (cacheKey !== getCacheKey(props.layer)) {
-      // Cache key has changed, do not update the source
-      return
-    }
-    source.updateImage(imageOptions)
-
-    isLoading.value = false
-  }
+  const imageOptions = getImageSourceOptions(props.layer)
+  if (!imageOptions) return
+  source.updateImage(imageOptions)
 }
 
-let cachedRequests: Record<string, Promise<UpdateImageOptions>> = {}
+let cachedRequestsSet: Map<string, AbortController> = new Map()
+function abortCacheRequests() {
+  cachedRequestsSet.forEach((abortController) => {
+    abortController.abort()
+  })
+  cachedRequestsSet.clear()
+}
 
 function getCacheKey(layer: AnimatedRasterLayerOptions) {
   return `${JSON.stringify(layer)}-${map?.getBounds().toString()}`
 }
 
 async function populateCache() {
-  if (props.layer === undefined || props.layer.time === undefined) return
-
   const cacheSize = 10
 
   const layer = {
@@ -240,24 +234,19 @@ async function populateCache() {
     layer.time = dates[i % dates.length]
 
     const cacheKey = getCacheKey(layer)
-    if (cachedRequests.hasOwnProperty(cacheKey)) continue
+    if (cachedRequestsSet.has(cacheKey)) continue
 
     const imageOptions = getImageSourceOptions(layer)
     if (!imageOptions) return
 
-    cachedRequests[cacheKey] = fetchImage(imageOptions)
-  }
-}
+    const abortController = new AbortController()
+    cachedRequestsSet.set(cacheKey, abortController)
 
-async function fetchImage(
-  imageSourceOptions: UpdateImageOptions,
-): Promise<UpdateImageOptions> {
-  const response = await fetch(imageSourceOptions.url)
-  const blob = await response.blob()
-  const blobUrl = URL.createObjectURL(blob)
-  return {
-    url: blobUrl,
-    coordinates: imageSourceOptions.coordinates,
+    const request = new Request(imageOptions.url, {
+      signal: abortController.signal,
+    })
+    const transformedRequest = await createTransformRequestFn()(request)
+    fetch(transformedRequest)
   }
 }
 
