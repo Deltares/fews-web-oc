@@ -155,7 +155,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { selectedDate } = useSelectedDate(() => props.currentTime)
 const store = useSystemTimeStore()
-const lastUpdated = ref<Date>(new Date())
 const isEditing = ref(false)
 const confirmationDialog = ref(false)
 const { xs } = useDisplay()
@@ -178,14 +177,14 @@ const {
   series,
   loadingSeriesIds,
   interval: useTimeSeriesInterval,
-} = useTimeSeries(baseUrl, () => props.config.requests, lastUpdated, options)
+  refresh: refreshTimeSeries,
+} = useTimeSeries(baseUrl, () => props.config.requests, options)
 const {
   series: elevationChartSeries,
   loadingSeriesIds: elevationLoadingSeriesIds,
 } = useTimeSeries(
   baseUrl,
   () => props.elevationChartConfig.requests,
-  lastUpdated,
   options,
   selectedDate,
 )
@@ -200,7 +199,10 @@ function isLoading(subplot: ChartConfig, loadingSeriesIds: string[]) {
 }
 
 async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
-  const seriesHeader = series.value[props.config.requests[0].key].header
+  const requestKey = props.config.requests[0].key
+  if (requestKey === undefined) return
+
+  const seriesHeader = series.value[requestKey].header
   await postTimeSeriesEdit(
     baseUrl,
     props.config.requests,
@@ -208,7 +210,7 @@ async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
     seriesHeader.version ?? '',
     seriesHeader.timeZone ?? '',
   )
-  lastUpdated.value = new Date()
+  refreshTimeSeries()
 }
 
 const subplots = computed(() => {

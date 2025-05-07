@@ -1,10 +1,20 @@
 import {
-  ActionRequest,
   PiWebserviceProvider,
+  type ActionRequest,
   type TimeSeriesEvent,
-  DomainAxisEventValuesStringArray,
+  type DomainAxisEventValuesStringArray,
+  type Header,
+  type TimeSeriesFilter,
 } from '@deltares/fews-pi-requests'
-import { computed, onUnmounted, ref, shallowRef, toValue, watch } from 'vue'
+import {
+  computed,
+  onUnmounted,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchEffect,
+} from 'vue'
 import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl'
 import { DateTime, Interval } from 'luxon'
@@ -22,6 +32,7 @@ export interface UseTimeSeriesReturn {
   isLoading: Ref<boolean>
   loadingSeriesIds: Ref<string[]>
   interval: Pausable
+  refresh: () => void
 }
 
 const TIMESERIES_POLLING_INTERVAL = 1000 * 30
@@ -30,7 +41,10 @@ export interface UseTimeSeriesOptions {
   startTime?: Date | null
   endTime?: Date | null
   thinning?: boolean
+  thinningChartWidth?: number
   showVerticalProfile?: boolean
+  convertDatum?: boolean
+  useDisplayUnits?: boolean
 }
 
 function timeZoneOffsetString(offset: number): string {
@@ -45,7 +59,6 @@ function timeZoneOffsetString(offset: number): string {
 export function useTimeSeries(
   baseUrl: string,
   requests: MaybeRefOrGetter<ActionRequest[]>,
-  lastUpdated: MaybeRefOrGetter<Date | undefined>,
   options: MaybeRefOrGetter<UseTimeSeriesOptions>,
   selectedTime?: MaybeRefOrGetter<Date | undefined>,
 ): UseTimeSeriesReturn {
@@ -55,7 +68,7 @@ export function useTimeSeries(
   const loadingSeriesIds = ref<string[]>([])
   const isLoading = computed(() => loadingSeriesIds.value.length > 0)
 
-  watch([lastUpdated, selectedTime ?? ref(), requests, options], () => {
+  watch([selectedTime ?? ref(), requests, options], () => {
     loadTimeSeries()
   })
 
@@ -95,6 +108,15 @@ export function useTimeSeries(
           endTime.toISO({ suppressMilliseconds: true }) ?? '',
         )
       }
+      if (_options?.convertDatum) {
+        url.searchParams.set('convertDatum', _options.convertDatum.toString())
+      }
+      if (_options?.useDisplayUnits) {
+        url.searchParams.set(
+          'useDisplayUnits',
+          _options.useDisplayUnits.toString(),
+        )
+      }
       // Set thinning
       if (_options?.thinning) {
         const startTimeString = queryParams.get('startTime')
@@ -106,10 +128,10 @@ export function useTimeSeries(
           const endTime = DateTime.fromISO(endTimeString, {
             zone: 'UTC',
           })
+          const chartWidth =
+            _options.thinningChartWidth ?? window.outerWidth / 2
           const timeStepPerPixel = Math.round(
-            Interval.fromDateTimes(startTime, endTime).length() /
-              window.outerWidth /
-              2,
+            Interval.fromDateTimes(startTime, endTime).length() / chartWidth,
           )
           url.searchParams.set('thinning', `${timeStepPerPixel}`)
         }
@@ -209,6 +231,57 @@ export function useTimeSeries(
     isLoading,
     loadingSeriesIds,
     interval,
+    refresh: loadTimeSeries,
+  }
+}
+
+export function useTimeSeriesHeaders(
+  baseUrl: string,
+  filterId: MaybeRefOrGetter<string | undefined>,
+) {
+  const timeSeriesHeaders = ref<Header[]>([])
+
+  const isLoading = ref(false)
+  const isReady = ref(false)
+  const error = shallowRef<string>()
+
+  const piProvider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
+  async function fetch() {
+    const _filterId = toValue(filterId)
+    if (_filterId === undefined) {
+      timeSeriesHeaders.value = []
+      return
+    }
+
+    isLoading.value = true
+    isReady.value = false
+
+    const filter: TimeSeriesFilter = {
+      onlyHeaders: true,
+      filterId: _filterId,
+    }
+    try {
+      const timeSeriesResponse = await piProvider.getTimeSeries(filter)
+      timeSeriesHeaders.value =
+        timeSeriesResponse.timeSeries
+          ?.flatMap((ts) => ts.header)
+          .filter((header) => header !== undefined) ?? []
+    } catch {
+      error.value = 'Error loading time series headers'
+      timeSeriesHeaders.value = []
+    } finally {
+      isLoading.value = false
+      isReady.value = true
+    }
+  }
+
+  watchEffect(fetch)
+
+  return {
+    timeSeriesHeaders,
   }
 }
 

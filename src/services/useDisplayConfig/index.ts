@@ -1,5 +1,6 @@
 import {
   ActionResult,
+  ActionPeriod,
   PiWebserviceProvider,
   type ActionsResponse,
 } from '@deltares/fews-pi-requests'
@@ -45,20 +46,7 @@ function actionsResponseToDisplayConfig(
     const period = result.config.timeSeriesDisplay.period
     const plotId = result.config.timeSeriesDisplay.plotId
 
-    // The period is always specified in UTC.
-    const timeZoneOffsetString = 'Z'
-    let configPeriod: [Date, Date]
-    if (period) {
-      const periodStart = convertFewsPiDateTimeToJsDate(
-        period.startDate,
-        timeZoneOffsetString,
-      )
-      const periodEnd = convertFewsPiDateTimeToJsDate(
-        period.endDate,
-        timeZoneOffsetString,
-      )
-      configPeriod = [startTime ?? periodStart, endTime ?? periodEnd]
-    }
+    const configPeriod = periodToConfigPeriod(period, startTime, endTime)
 
     const subplots =
       result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
@@ -79,6 +67,27 @@ function actionsResponseToDisplayConfig(
     displays.push(display)
   }
   return displays
+}
+
+export function periodToConfigPeriod(
+  period: ActionPeriod | undefined,
+  startTime?: Date,
+  endTime?: Date,
+): [Date, Date] | undefined {
+  if (!period) return
+
+  // The period is always specified in UTC.
+  const timeZoneOffsetString = 'Z'
+  const periodStart = convertFewsPiDateTimeToJsDate(
+    period.startDate,
+    timeZoneOffsetString,
+  )
+  const periodEnd = convertFewsPiDateTimeToJsDate(
+    period.endDate,
+    timeZoneOffsetString,
+  )
+
+  return [startTime ?? periodStart, endTime ?? periodEnd]
 }
 
 /**
@@ -181,7 +190,10 @@ export function useDisplayConfigFilter(
 
   watchEffect(async () => {
     const _filter = toValue(filter)
-    if (_filter === undefined) return
+    if (_filter === undefined) {
+      response.value = undefined
+      return
+    }
 
     if (isFilterActionsFilter(_filter)) {
       if (!_filter.filterId) return
@@ -210,7 +222,11 @@ export function useDisplayConfigFilter(
 
   // Use a second watchEffect to not trigger a fetch on these reactive variables
   watchEffect(() => {
-    if (!response.value) return
+    if (!response.value) {
+      displayConfig.value = null
+      displays.value = null
+      return
+    }
 
     const _startTime = toValue(startTime)
     const _endTime = toValue(endTime)
@@ -232,6 +248,22 @@ export function useDisplayConfigFilter(
   }
 
   return shell
+}
+
+export function fetchActions(
+  baseUrl: string,
+  filter: Filter,
+): Promise<ActionsResponse> {
+  const piProvider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
+  if (isFilterActionsFilter(filter)) {
+    return piProvider.getFilterActions(filter)
+  } else if (isTimeSeriesGridActionsFilter(filter)) {
+    return piProvider.getTimeSeriesGridActions(filter)
+  }
+  throw new Error('Invalid filter type')
 }
 
 function addIndexToKeys(results: ActionResult[]) {
