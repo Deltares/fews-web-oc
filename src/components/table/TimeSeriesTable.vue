@@ -9,6 +9,7 @@
       :items="tableData"
       :expanded="editedSeriesIds"
       :items-per-page-options="itemsPerPageOptions"
+      :loading="isWaitingForTableUpdate"
       v-model:sortBy="sortBy"
       items-per-page="200"
       item-value="date"
@@ -204,6 +205,7 @@ interface Props {
   config: ChartConfig
   series: Record<string, Series>
   settings: ChartsSettings['timeSeriesTable']
+  isLoading: boolean
 }
 
 const props = defineProps<Props>()
@@ -305,6 +307,14 @@ watch(
   },
 )
 
+// We debounce the table update, so even though loading the time series may have
+// finished, updating the table items may not. Keep the loading indicator until
+// the table items have been updated.
+const isWaitingForTableUpdate = ref(true)
+watch(
+  () => props.isLoading,
+  () => (isWaitingForTableUpdate.value = true),
+)
 watchDebounced(
   // We cannot use a getter on props.series directly here, since it is not
   // reassigned, but instead its contents are modified. We also do not want to
@@ -319,6 +329,7 @@ watchDebounced(
       props.series,
       seriesIds.value,
     )
+    isWaitingForTableUpdate.value = props.isLoading
   },
   { debounce: 500, maxWait: 1000 },
 )
