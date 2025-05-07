@@ -16,6 +16,7 @@
           :zoomHandler="sharedZoomHandler"
           :settings="settings.timeSeriesChart"
           :forecastLegend="config.forecastLegend"
+          @update:x-domain="refetchChartTimeSeries"
         >
         </TimeSeriesChart>
       </KeepAlive>
@@ -150,6 +151,10 @@ const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings().charts,
 })
 
+// Ratio between old and new domain when zooming above which no refetch is
+// performed. Note: zooming out (i.e. zoom ratio > 1) will always refetch.
+const MAX_ZOOM_RATIO_FOR_REFETCH = 0.8
+
 const { selectedDate } = useSelectedDate(() => props.currentTime)
 const store = useSystemTimeStore()
 const lastUpdated = ref<Date>(new Date())
@@ -163,11 +168,11 @@ const sharedVerticalZoomHandler = new ZoomHandler({
   sharedZoomMode: ZoomMode.Y,
 })
 
-const chartOptions = computed<UseTimeSeriesOptions>(() => ({
+const chartOptions = ref<UseTimeSeriesOptions>({
   startTime: store.startTime,
   endTime: store.endTime,
   thinning: true,
-}))
+})
 const tableOptions = computed<UseTimeSeriesOptions>(() => ({
   ...chartOptions.value,
   thinning: false,
@@ -311,6 +316,30 @@ function onConfirmationCancel() {
 function onConfirmationLeave() {
   confirmationDialog.value = false
   isEditing.value = false
+}
+
+function refetchChartTimeSeries(
+  oldDomain: [Date, Date],
+  newDomain: [Date, Date],
+) {
+  const getRange = (domain: [Date, Date]) =>
+    domain[1].getTime() - domain[0].getTime()
+  const zoomRatio = getRange(newDomain) / getRange(oldDomain)
+
+  // When zooming out, always refresh the data; we need more data than we had
+  // before.
+  // When zooming in, only fetch new data when zooming in more than a threshold,
+  // to prevent small changes in domain from updating all the data due to a
+  // slightly changed thinning parameter.
+  const isZoomingOut = zoomRatio > 1
+  const isZoomingInEnough = zoomRatio < MAX_ZOOM_RATIO_FOR_REFETCH
+  if (isZoomingOut || isZoomingInEnough) {
+    // Request a time series update with the new domain by setting a new
+    // lastUpdated value.
+    const [startTime, endTime] = newDomain
+    chartOptions.value = { ...chartOptions.value, startTime, endTime }
+    lastUpdated.value = new Date()
+  }
 }
 </script>
 
