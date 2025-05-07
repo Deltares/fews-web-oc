@@ -1,0 +1,60 @@
+{
+  "topologyNodes": [
+    {
+      "id": "viewer_meteorology_dangers",
+      "name": "Dangers",
+      "localRun": false,
+      "iconId": "mdi-weather-pouring",
+      "topologyNodes": [
+        {
+          "id": "viewer_shark_attacks",
+          "name": "Shark Attacks",
+          "localRun": false,
+          "iconId": "mdi-shark-fin",
+          "topologyNodes": [
+            {
+              "id": "viewer_meteorology_rainfall_forecast_jaws_1x1",
+              "name": "All Attacks",
+              "workflowId": "ReportRainfallReturnPeriodForecasted",
+              "iconId": "mdi-shark-fin",
+              "localRun": true,
+              "filterIds": ["shark-attacks"],
+              "secondaryWorkflows": [
+                {
+                  "secondaryWorkflowId": "ReportRainfallReturnPeriodForecasted",
+                  "description": "Report Return Periods Rainfall (forecasted)"
+                }
+              ],
+              "reportDisplay": {
+                "reports": [
+                  {
+                    "moduleInstanceId": "ReportRainfallReturnPeriodTableForecast"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "Hemispheres",
+              "name": "Hemispheres",
+              "iconId": "mdi-earth",
+              "topologyNodes": [
+                {
+                  "id": "northern_hemisphere",
+                  "name": "Northern Hemisphere",
+                  "filterIds": ["shark-attacks-northern-hemisphere"],
+                  "iconId": "mdi-map"
+                },
+                {
+                  "id": "southern_hemisphere",
+                  "name": "Southern Hemisphere",
+                  "filterIds": ["shark-attacks-southern-hemisphere"],
+                  "iconId": "mdi-map"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

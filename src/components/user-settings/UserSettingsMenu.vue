@@ -1,7 +1,7 @@
 <template>
   <v-menu left bottom :close-on-content-click="false" class="menu">
     <template v-slot:activator="{ props }">
-      <v-btn icon v-bind="props">
+      <v-btn icon v-bind="props" data-testid="fews-user-settings-button">
         <v-icon>mdi-cog</v-icon>
       </v-btn>
     </template>

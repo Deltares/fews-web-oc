@@ -1,0 +1,108 @@
+{
+  "resultsNotAvailableForRequest": false,
+  "results": [
+    {
+      "type": "PI",
+      "requests": [
+        {
+          "key": "2742b26d",
+          "request": "rest/fewspiservice/v1/timeseries?timeSeriesSetIndex=225&locationIds=Virginia_Airport_Culvert_level&endForecastTime=2025-05-06T07%3A56%3A03Z&startTime=2025-04-29T07%3A56%3A03Z&endTime=2025-05-11T07%3A56%3A03Z&useDisplayUnits=true&matchAsQualifierSet=true&convertDatum=true&documentFormat=PI_JSON",
+          "historyRequest": "rest/fewspiservice/v1/timeseries/history?timeSeriesSetIndex=225&locationId=Virginia_Airport_Culvert_level&convertDatum=true&useDisplayUnits=true"
+        },
+        {
+          "key": "2742b26e",
+          "request": "rest/fewspiservice/v1/timeseries?timeSeriesSetIndex=6&locationIds=Virginia_Airport_Culvert_level&endForecastTime=2025-05-06T07%3A56%3A03Z&startTime=2025-04-29T07%3A56%3A03Z&endTime=2025-05-11T07%3A56%3A03Z&useDisplayUnits=true&matchAsQualifierSet=true&convertDatum=true&documentFormat=PI_JSON",
+          "historyRequest": "rest/fewspiservice/v1/timeseries/history?timeSeriesSetIndex=6&locationId=Virginia_Airport_Culvert_level&convertDatum=true&useDisplayUnits=true"
+        },
+        {
+          "key": "2742b26f",
+          "request": "rest/fewspiservice/v1/timeseries?timeSeriesSetIndex=8&locationIds=Virginia_Airport_Culvert_level&endForecastTime=2025-05-06T07%3A56%3A03Z&startTime=2025-04-29T07%3A56%3A03Z&endTime=2025-05-11T07%3A56%3A03Z&useDisplayUnits=true&matchAsQualifierSet=true&convertDatum=true&documentFormat=PI_JSON",
+          "historyRequest": "rest/fewspiservice/v1/timeseries/history?timeSeriesSetIndex=8&locationId=Virginia_Airport_Culvert_level&convertDatum=true&useDisplayUnits=true"
+        }
+      ],
+      "config": {
+        "timeSeriesDisplay": {
+          "index": 0,
+          "period": {
+            "startDate": {
+              "date": "2025-04-29",
+              "time": "07:56:03"
+            },
+            "endDate": {
+              "date": "2025-05-11",
+              "time": "07:56:03"
+            }
+          },
+          "title": "Placeholder",
+          "forecastLegend": "SFINCS Inland: [1] 2025-05-05 06:00 GMT Current",
+          "subplots": [
+            {
+              "items": [
+                {
+                  "type": "line",
+                  "legend": "Shark attack risk (obs)",
+                  "color": "#000000",
+                  "lineStyle": "solid;thick",
+                  "visibleInLegend": true,
+                  "visibleInPlot": true,
+                  "visibleInTable": true,
+                  "lineWidth": 1.0,
+                  "markerStyle": "circle",
+                  "markerSize": 3,
+                  "locationId": "Virginia_Airport_Culvert_level",
+                  "yAxis": {
+                    "axisPosition": "left",
+                    "axisLabel": "Risk level (rel.)",
+                    "axisMinValue": -2.0,
+                    "axisMaxValue": 2.0
+                  },
+                  "request": "2742b26d"
+                },
+                {
+                  "type": "line",
+                  "legend": "Shark attack risk (modelled)",
+                  "color": "#801650",
+                  "lineStyle": "solid;thick",
+                  "visibleInLegend": true,
+                  "visibleInPlot": true,
+                  "visibleInTable": true,
+                  "lineWidth": 1.0,
+                  "locationId": "Virginia_Airport_Culvert_level",
+                  "yAxis": {
+                    "axisPosition": "left",
+                    "axisLabel": "Risk level (rel.)",
+                    "axisMinValue": -2.0,
+                    "axisMaxValue": 2.0
+                  },
+                  "request": "2742b26e"
+                }
+              ]
+            },
+            {
+              "items": [
+                {
+                  "type": "line",
+                  "legend": "Shark attack risk [1]",
+                  "color": "#FF4500",
+                  "lineStyle": "solid;thick",
+                  "visibleInLegend": true,
+                  "visibleInPlot": true,
+                  "visibleInTable": true,
+                  "lineWidth": 1.0,
+                  "locationId": "Virginia_Airport_Culvert_level",
+                  "yAxis": {
+                    "axisPosition": "left",
+                    "axisLabel": "Shark Attack Risk (scale 0-10)",
+                    "axisMinValue": 0.0,
+                    "axisMaxValue": 10.0
+                  },
+                  "request": "2742b26f"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
