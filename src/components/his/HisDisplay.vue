@@ -1,5 +1,5 @@
 <template>
-  <HisDisplayComponent v-if="filterId" :key="filterId" :filterId :boundingBox />
+  <HisDisplayComponent v-if="filterId" :filterId :boundingBox />
 </template>
 
 <script setup lang="ts">

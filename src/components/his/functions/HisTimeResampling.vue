@@ -1,41 +1,43 @@
 <template>
-  <HisAutocomplete
-    v-model="selectedTimeseries"
-    :items="allSeries"
-    label="Timeseries"
-    :getItemValue="(item) => item"
-    :getItemTitle="(item) => item.legend ?? ''"
-    multiple
-  />
-
-  <HisAutocomplete
-    v-model="selectedResamplingMethods"
-    :items="resamplingMethods"
-    label="Resampling methods"
-    :getItemValue="(item) => item"
-    :getItemTitle="(item) => item.label"
-    multiple
-  />
-
-  <HisAutocomplete
-    v-model="selectedResamplingTimeSteps"
-    :items="availableTimeStepsStore.resamplingTimeSteps"
-    label="Time steps"
-    :getItemValue="(item) => item"
-    :getItemTitle="(item) => item.label"
-    multiple
-  />
-
-  <div class="d-flex pa-3">
-    <v-spacer />
-    <v-btn
-      variant="tonal"
-      :disabled="!filter"
-      prepend-icon="mdi-plus"
-      text="Add to collection"
-      @click="addFilter"
-      :loading="isLoading"
+  <div class="his-resampling-container h-100 pa-2 ga-2">
+    <HisAutocomplete
+      v-model="selectedTimeseries"
+      :items="allSeries"
+      label="Timeseries"
+      :getItemValue="(item) => item"
+      :getItemTitle="(item) => item.legend ?? ''"
+      multiple
     />
+
+    <HisAutocomplete
+      v-model="selectedResamplingMethods"
+      :items="resamplingMethods"
+      label="Resampling methods"
+      :getItemValue="(item) => item"
+      :getItemTitle="(item) => item.label"
+      multiple
+    />
+
+    <HisAutocomplete
+      v-model="selectedResamplingTimeSteps"
+      :items="availableTimeStepsStore.resamplingTimeSteps"
+      label="Time steps"
+      :getItemValue="(item) => item"
+      :getItemTitle="(item) => item.label"
+      multiple
+    />
+
+    <div class="d-flex pa-3">
+      <v-spacer />
+      <v-btn
+        variant="tonal"
+        :disabled="!filter"
+        prepend-icon="mdi-plus"
+        text="Add to collection"
+        @click="addFilter"
+        :loading="isLoading"
+      />
+    </div>
   </div>
 </template>
 
@@ -155,3 +157,11 @@ function addFilter() {
   emit('addFilter', filter.value)
 }
 </script>
+
+<style scoped>
+.his-resampling-container {
+  display: grid;
+  grid-template-rows: 1fr 1fr auto;
+  height: 100%;
+}
+</style>

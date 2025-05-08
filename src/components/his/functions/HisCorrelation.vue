@@ -1,29 +1,31 @@
 <template>
-  <HisAutocomplete
-    v-model="selectedTimeseries"
-    :items="allSeries"
-    label="First timeseries"
-    :getItemValue="(item) => item"
-    :getItemTitle="(item) => item.legend ?? ''"
-  />
-
-  <HisAutocomplete
-    v-model="selectedSecondTimeseries"
-    :items="allSeries"
-    label="Second timeseries"
-    :getItemValue="(item) => item"
-    :getItemTitle="(item) => item.legend ?? ''"
-  />
-
-  <div class="d-flex pa-3">
-    <v-spacer />
-    <v-btn
-      variant="tonal"
-      :disabled="!selectedTimeseries && !selectedSecondTimeseries"
-      prepend-icon="mdi-plus"
-      text="Add to collection"
-      @click="addChart"
+  <div class="his-correlation-container h-100 pa-2 ga-2">
+    <HisAutocomplete
+      v-model="selectedTimeseries"
+      :items="allSeries"
+      label="First timeseries"
+      :getItemValue="(item) => item"
+      :getItemTitle="(item) => item.legend ?? ''"
     />
+
+    <HisAutocomplete
+      v-model="selectedSecondTimeseries"
+      :items="allSeries"
+      label="Second timeseries"
+      :getItemValue="(item) => item"
+      :getItemTitle="(item) => item.legend ?? ''"
+    />
+
+    <div class="d-flex pa-3">
+      <v-spacer />
+      <v-btn
+        variant="tonal"
+        :disabled="!selectedTimeseries && !selectedSecondTimeseries"
+        prepend-icon="mdi-plus"
+        text="Add to collection"
+        @click="addChart"
+      />
+    </div>
   </div>
 </template>
 
@@ -150,3 +152,11 @@ function addChart() {
   emit('addChart', chart)
 }
 </script>
+
+<style scoped>
+.his-correlation-container {
+  display: grid;
+  grid-template-rows: 1fr 1fr auto;
+  height: 100%;
+}
+</style>
