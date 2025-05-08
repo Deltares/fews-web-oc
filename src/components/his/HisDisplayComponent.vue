@@ -1,68 +1,36 @@
 <template>
-  <div class="his-container pt-2">
-    <div class="his-charts h-100 overflow-y-auto">
-      <v-card-title class="flex-0-0 d-flex ga-2 align-center">
-        <HisMenu
-          max-width="700"
-          width="100%"
-          text="Data selection"
-          icon="mdi-filter-plus"
-        >
-          <template #default="{ isActive }">
-            <v-card>
-              <HisDataSelection
-                :filterId="filterId"
-                :locations="locations"
-                :geojson="geojson"
-                :timeSeriesHeaders="timeSeriesHeaders"
-                :boundingBox="boundingBox"
-                :isLoading="isLoadingActions"
-                :isActive="isActive.value"
-                @addFilter="
-                  async (filter) => {
-                    await addFilter(filter)
-                    isActive.value = false
-                  }
-                "
-              />
-            </v-card>
-          </template>
-        </HisMenu>
-        <HisMenu
-          max-width="1200"
-          text="Analysis"
-          icon="mdi-chart-box-plus-outline"
-        >
-          <template #default="{ isActive }">
-            <v-card>
-              <HisAnalysis
-                :filterId="filterId"
-                :charts="selectedCollection.charts"
-                :series="series"
-                :startTime="selectedCollection.settings.startTime"
-                :endTime="selectedCollection.settings.endTime"
-                :settings="settings"
-                :isLoading="isLoadingActions"
-                :isActive="isActive.value"
-                @addChart="
-                  (chart) => {
-                    isActive.value = false
-                    addChart(chart)
-                  }
-                "
-                @addFilter="
-                  async (filter) => {
-                    await addFilter(filter)
-                    isActive.value = false
-                  }
-                "
-              />
-            </v-card>
-          </template>
-        </HisMenu>
-        <HisMenu text="Settings" icon="mdi-cog-outline">
-          <v-card class="pt-3 pb-2">
-            <div class="d-flex ga-2 px-2">
+  <div class="his-container">
+    <v-navigation-drawer v-model="drawer" width="500" class="his-selection">
+      <div v-show="tab === 'data-selection'">
+        <v-card flat>
+          <v-card-title>Date Selection</v-card-title>
+          <HisDataSelection
+            :filterId="filterId"
+            :locations="locations"
+            :geojson="geojson"
+            :timeSeriesHeaders="timeSeriesHeaders"
+            :boundingBox="boundingBox"
+            :isLoading="isLoadingActions"
+            @addFilter="addFilter"
+          />
+        </v-card>
+      </div>
+      <div v-show="tab === 'analysis'">
+        <HisAnalysis
+          :filterId="filterId"
+          :charts="selectedCollection.charts"
+          :series="series"
+          :startTime="selectedCollection.settings.startTime"
+          :endTime="selectedCollection.settings.endTime"
+          :settings="settings"
+          :isLoading="isLoadingActions"
+          @addChart="addChart"
+        />
+      </div>
+      <div v-show="tab === 'settings'">
+        <v-card flat title="Settings">
+          <v-card-text>
+            <div class="d-flex ga-2">
               <v-date-input
                 v-model="selectedCollection.settings.startTime"
                 label="Start date"
@@ -83,24 +51,56 @@
                 display-format="fullDate"
               />
             </div>
-          </v-card>
-        </HisMenu>
-        <v-spacer />
-        <HisCollection
-          v-model:selectedCollection="selectedCollection"
-          v-model:collections="collections"
+          </v-card-text>
+        </v-card>
+      </div>
+    </v-navigation-drawer>
+    <div class="tab-buttons">
+      <v-toolbar-items class="flex-column mt-2 border-e border-t border-b">
+        <v-btn
+          icon="mdi-chart-line"
+          @click="
+            tab === 'data-selection'
+              ? (tab = undefined)
+              : (tab = 'data-selection')
+          "
+          height="40"
+          :active="tab === 'data-selection'"
         />
-      </v-card-title>
-      <HisCollectionCharts
-        v-if="selectedCollection.charts.length"
-        :collection="selectedCollection"
-        :series="series"
-        :settings="settings"
-        :startTime="selectedCollection.settings.startTime"
-        :endTime="selectedCollection.settings.endTime"
-        class="flex-1-1"
-      />
-      <v-card-text v-else> Select some data to display </v-card-text>
+        <v-btn
+          icon="mdi-chart-bar"
+          @click="tab === 'analysis' ? (tab = undefined) : (tab = 'analysis')"
+          height="40"
+          :active="tab === 'analysis'"
+        />
+        <v-btn
+          icon="mdi-cog-outline"
+          @click="tab === 'settings' ? (tab = undefined) : (tab = 'settings')"
+          height="40"
+          :active="tab === 'settings'"
+        />
+      </v-toolbar-items>
+    </div>
+    <div class="his-charts-container">
+      <div class="his-charts overflow-y-auto">
+        <v-card-title class="flex-0-0 d-flex ga-2 align-center">
+          <v-spacer />
+          <HisCollection
+            v-model:selectedCollection="selectedCollection"
+            v-model:collections="collections"
+          />
+        </v-card-title>
+        <HisCollectionCharts
+          v-if="selectedCollection.charts.length"
+          :collection="selectedCollection"
+          :series="series"
+          :settings="settings"
+          :startTime="selectedCollection.settings.startTime"
+          :endTime="selectedCollection.settings.endTime"
+          class="flex-1-1"
+        />
+        <v-card-text v-else> Select some data to display </v-card-text>
+      </div>
     </div>
   </div>
 </template>
@@ -152,6 +152,11 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const userSettings = useUserSettingsStore()
+const tab = ref()
+const drawer = ref(false)
+watch(tab, () => {
+  drawer.value = tab.value !== undefined
+})
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -303,14 +308,23 @@ function updateDependants(chart: DerivedChart) {
 .his-charts {
   max-width: 1200px;
   width: 100%;
-  height: 100%;
+}
+
+.his-charts-container {
+  display: flex;
+  justify-content: center;
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+.tab-buttons {
+  flex: 0 0 auto;
 }
 
 .his-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
   height: 100%;
   width: 100%;
+  overflow: hidden;
 }
 </style>
