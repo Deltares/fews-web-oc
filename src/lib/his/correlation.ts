@@ -5,12 +5,24 @@ export function calculateCorrelationAndRegression(
   series2: SeriesData[],
 ) {
   if (series1.length !== series2.length) {
-    throw new Error('Input series must have the same length.')
+    console.error(
+      `Series lengths do not match: ${series1.length} vs ${series2.length}`,
+    )
+    return {
+      points: [],
+      correlation: NaN,
+      regression: {
+        line: [],
+        slope: NaN,
+        intercept: NaN,
+      },
+    }
   }
 
   const points = series1.map((point, index) => ({
     x: series2[index]?.y ?? null,
     y: point.y,
+    flag: '0' as SeriesData['flag'],
   }))
 
   const validPoints = points.filter((p) => p.x !== null && p.y !== null)
@@ -44,7 +56,7 @@ export function calculateCorrelationAndRegression(
   const slope = covariance / varianceX
   const intercept = meanY - slope * meanX
 
-  const line = points.map((point) => ({
+  const line: SeriesData[] = points.map((point) => ({
     x: point.x,
     y: point.x !== null ? slope * point.x + intercept : null,
     flag: '0',
