@@ -1,21 +1,18 @@
 <template>
   <div class="his-container">
     <v-navigation-drawer v-model="drawer" width="500" class="his-selection">
-      <div v-show="tab === 'data-selection'">
-        <v-card flat>
-          <v-card-title>Date Selection</v-card-title>
-          <HisDataSelection
-            :filterId="filterId"
-            :locations="locations"
-            :geojson="geojson"
-            :timeSeriesHeaders="timeSeriesHeaders"
-            :boundingBox="boundingBox"
-            :isLoading="isLoadingActions"
-            @addFilter="addFilter"
-          />
-        </v-card>
+      <div v-show="tab === 'data-selection'" class="h-100">
+        <HisDataSelection
+          :filterId="filterId"
+          :locations="locations"
+          :geojson="geojson"
+          :timeSeriesHeaders="timeSeriesHeaders"
+          :boundingBox="boundingBox"
+          :isLoading="isLoadingActions"
+          @addFilter="addFilter"
+        />
       </div>
-      <div v-show="tab === 'analysis'">
+      <div v-show="tab === 'analysis'" class="h-100">
         <HisAnalysis
           :filterId="filterId"
           :charts="selectedCollection.charts"

@@ -1,29 +1,29 @@
 <template>
-  <v-tabs v-model="selectedFunction" variant="outlined">
-    <v-tab
-      prepend-icon="mdi-function-variant"
-      text="Correlation"
-      class="text-none"
-      value="correlation"
-    />
-    <v-tab
-      prepend-icon="mdi-sigma"
-      text="Time Resampling"
-      class="text-none"
-      value="time-resampling"
-    />
-  </v-tabs>
-  <v-tabs-window v-model="selectedFunction" class="pt-1">
-    <v-tabs-window-item value="correlation">
+  <div class="d-flex flex-column h-100">
+    <v-tabs v-model="selectedFunction" variant="outlined" class="flex-0-0">
+      <v-tab
+        prepend-icon="mdi-function-variant"
+        text="Correlation"
+        class="text-none"
+        value="correlation"
+      />
+      <v-tab
+        prepend-icon="mdi-sigma"
+        text="Time Resampling"
+        class="text-none"
+        value="time-resampling"
+      />
+    </v-tabs>
+    <div class="flex-1-1 overflow-auto">
       <HisCorrelation
+        v-if="selectedFunction === 'correlation'"
         :charts
         :series
         @addChart="emit('addChart', $event)"
         :isActive="isActive"
       />
-    </v-tabs-window-item>
-    <v-tabs-window-item value="time-resampling">
       <HisTimeResampling
+        v-if="selectedFunction === 'time-resampling'"
         :filterId
         :charts
         :series
@@ -34,8 +34,8 @@
         :isLoading="isLoading"
         :isActive="isActive"
       />
-    </v-tabs-window-item>
-  </v-tabs-window>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
