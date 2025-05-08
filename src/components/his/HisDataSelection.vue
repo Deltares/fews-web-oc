@@ -1,51 +1,53 @@
 <template>
-  <HisAutocomplete
-    v-model="selectedParameterIds"
-    :items="filteredParameterIds"
-    label="Parameters"
-    icon="mdi-tag"
-    :getItemValue="(item) => item"
-    :getItemTitle="parametersStore.getName"
-    multiple
-  />
-  <HisAutocomplete
-    v-model="selectedModuleInstanceIds"
-    :items="filteredModuleInstanceIds"
-    label="Module instances"
-    icon="mdi-cog"
-    multiple
-  />
-  <HisAutocomplete
-    v-model="selectedLocationIds"
-    :items="filteredLocations"
-    label="Locations"
-    icon="mdi-map-marker-multiple"
-    :getItemValue="getLocationId"
-    :getItemTitle="getLocationTitle"
-    multiple
-  />
-
-  <div class="border rounded me-3 ms-13" style="height: 400px">
-    <HisMap :boundingBox>
-      <LocationsLayer
-        v-if="filterLocationGeoJson.features.length"
-        :locationsGeoJson="filterLocationGeoJson"
-        :selectedLocationIds="selectedLocationIds"
-        @click="onLocationClick"
-      />
-    </HisMap>
-  </div>
-
-  <div class="d-flex pa-3">
-    <v-spacer />
-    <v-btn
-      variant="tonal"
-      :disabled="!filter"
-      prepend-icon="mdi-plus"
-      text="Add to collection"
-      :loading="isLoading"
-      @click="addFilter"
+  <div class="his-selection-container h-100 pa-2 ga-2">
+    <HisAutocomplete
+      v-model="selectedParameterIds"
+      :items="filteredParameterIds"
+      label="Parameters"
+      icon="mdi-tag"
+      :getItemValue="(item) => item"
+      :getItemTitle="parametersStore.getName"
+      multiple
     />
+    <HisAutocomplete
+      v-model="selectedModuleInstanceIds"
+      :items="filteredModuleInstanceIds"
+      label="Module instances"
+      icon="mdi-cog"
+      multiple
+    />
+    <HisAutocomplete
+      v-model="selectedLocationIds"
+      :items="filteredLocations"
+      label="Locations"
+      icon="mdi-map-marker-multiple"
+      :getItemValue="getLocationId"
+      :getItemTitle="getLocationTitle"
+      multiple
+    />
+
+    <div class="border rounded" style="height: 300px">
+      <HisMap :boundingBox>
+        <LocationsLayer
+          v-if="filterLocationGeoJson.features.length"
+          :locationsGeoJson="filterLocationGeoJson"
+          :selectedLocationIds="selectedLocationIds"
+          @click="onLocationClick"
+        />
+      </HisMap>
+    </div>
+
+    <div class="d-flex">
+      <v-spacer />
+      <v-btn
+        variant="tonal"
+        :disabled="!filter"
+        prepend-icon="mdi-plus"
+        text="Add to collection"
+        :loading="isLoading"
+        @click="addFilter"
+      />
+    </div>
   </div>
 </template>
 
@@ -85,8 +87,20 @@ const emit = defineEmits<Emits>()
 
 watch(() => props.isActive, clearSelections)
 function clearSelections() {
+  clearSelectedLocations()
+  clearSelectedParameters()
+  clearSelectedModuleInstances()
+}
+
+function clearSelectedLocations() {
   selectedLocationIds.value = []
+}
+
+function clearSelectedParameters() {
   selectedParameterIds.value = []
+}
+
+function clearSelectedModuleInstances() {
   selectedModuleInstanceIds.value = []
 }
 
@@ -192,3 +206,11 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
     : [...selectedLocationIds.value, locationId]
 }
 </script>
+
+<style scoped>
+.his-selection-container {
+  display: grid;
+  grid-template-rows: 1fr 1fr 2fr;
+  height: 100%;
+}
+</style>

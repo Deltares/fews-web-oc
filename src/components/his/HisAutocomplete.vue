@@ -1,29 +1,30 @@
 <template>
-  <!-- @vue-expect-error: selectedIds type is not based on item-value causing error -->
-  <v-autocomplete
-    v-model="selected"
-    :items="items"
-    :item-value="getItemValue"
-    :item-title="getItemTitle"
-    :label="label"
-    clearable
-    density="compact"
-    variant="outlined"
-    :multiple
-    hide-details
-    :prepend-icon="icon"
-    class="pa-3"
-  >
-    <template #selection="{ item, index }">
-      <span v-if="index < 3">{{ item.title }}</span>
-      <span v-else-if="index === 3 && Array.isArray(selected)">
-        ... ({{ selected.length }} selected)
-      </span>
-    </template>
-    <template #append-inner>
-      <v-chip>{{ items.length }}</v-chip>
-    </template>
-  </v-autocomplete>
+  <div class="d-flex flex-column overflow-auto">
+    <div class="d-flex align-center ga-1 px-2 py-1">
+      <span>{{ label }}</span>
+      <v-btn
+        icon="mdi-refresh"
+        variant="plain"
+        density="compact"
+        @click="clearSelected"
+      />
+    </div>
+    <v-list
+      v-model:selected="selected"
+      class="overflow-auto flex-1-1"
+      select-strategy="leaf"
+      border
+      rounded
+      density="compact"
+    >
+      <v-list-item
+        v-for="item in items"
+        :value="getItemValue?.(item) ?? item"
+        :title="getItemTitle?.(item) ?? String(item)"
+        density="compact"
+      />
+    </v-list>
+  </div>
 </template>
 
 <script setup lang="ts" generic="Item, Id, Multiple extends boolean = false">
@@ -46,4 +47,12 @@ type Selected = Multiple extends true
 const selected = defineModel<Selected>({
   required: true,
 })
+
+function clearSelected() {
+  if (Array.isArray(selected.value)) {
+    selected.value = [] as Selected
+  } else {
+    selected.value = undefined as Selected
+  }
+}
 </script>
