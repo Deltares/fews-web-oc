@@ -255,7 +255,6 @@ function onExpansionPanelToggle() {
 }
 </script>
 
-<!-- Update the style to use computed property -->
 <style scoped>
 .task_run__border {
   background-color: v-bind(taskRunColor);

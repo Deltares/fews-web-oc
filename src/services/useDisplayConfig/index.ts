@@ -211,25 +211,17 @@ export function useDisplayConfigFilter(
   const displays = ref<DisplayConfig[] | null>(null)
   const response = ref<ActionsResponse>()
   const taskRunColorsStore = useTaskRunColorsStore()
-  const filterId = ref<string | undefined>(undefined)
-  console.log(taskRunIds)
+  const prevFilterId = ref<string | undefined>(undefined)
 
-  watch(
-    () => toValue(filter),
-    (newFilter) => {
-      if (newFilter === undefined) return
-      if (!isFilterActionsFilter(newFilter)) return
-    },
-  )
   watchEffect(async () => {
     const _filter = toValue(filter)
     if (_filter === undefined) return
     if (isFilterActionsFilter(_filter)) {
       if (!_filter.filterId) return
 
-      if (_filter.filterId !== filterId.value) {
+      if (_filter.filterId !== prevFilterId.value) {
         taskRunColorsStore.clearColors()
-        filterId.value = _filter.filterId
+        prevFilterId.value = _filter.filterId
       }
 
       const _taskRunIds = toValue(taskRunIds)
