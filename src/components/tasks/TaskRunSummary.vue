@@ -6,7 +6,11 @@
     @click="onExpansionPanelToggle"
     :ripple="false"
   >
-    <v-card-text class="py-2 h-100">
+    <div
+      class="task_run__border"
+      v-if="isCompleted && canVisualize && !task.isCurrent"
+    />
+    <v-card-text class="py-2 h-100 flex-grow-1">
       <div class="d-flex w-100">
         <div class="w-100">
           <v-list-item-subtitle class="mb-1">
@@ -87,16 +91,23 @@ import {
 } from '@/lib/date'
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
 import { useTaskRunsStore } from '@/stores/taskRuns'
+import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
 const taskRunsStore = useTaskRunsStore()
+const taskRunColorsStore = useTaskRunColorsStore()
 
 interface Props {
   task: TaskRun
   canVisualize: boolean
 }
 const props = defineProps<Props>()
+
+const taskRunColor = computed(() => {
+  // Get color from store, fallback to 'primary' if not found
+  return taskRunColorsStore.getColor(props.task.taskId) || 'primary'
+})
 
 const expanded = defineModel<boolean>('expanded', {
   required: false,
@@ -244,7 +255,15 @@ function onExpansionPanelToggle() {
 }
 </script>
 
+<!-- Update the style to use computed property -->
 <style scoped>
+.task_run__border {
+  background-color: v-bind(taskRunColor);
+  width: 10px;
+  position: absolute;
+  height: 100%;
+}
+
 .selection-container {
   display: grid;
   place-items: center;
