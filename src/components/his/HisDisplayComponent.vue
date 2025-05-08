@@ -24,6 +24,7 @@
           :endTime="selectedCollection.settings.endTime"
           :settings="settings"
           :isLoading="isLoadingActions"
+          @addFilter="addFilter"
           @addChart="addChart"
         />
       </div>
