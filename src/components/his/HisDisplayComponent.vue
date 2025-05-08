@@ -59,32 +59,27 @@
       <v-toolbar-items class="flex-column mt-2 border-e border-t border-b">
         <v-btn
           icon="mdi-chart-line"
-          @click="
-            tab === 'data-selection'
-              ? (tab = undefined)
-              : (tab = 'data-selection')
-          "
+          @click="toggleTab('data-selection')"
           height="40"
-          :active="tab === 'data-selection'"
+          :active="isActive('data-selection')"
         />
         <v-btn
           icon="mdi-chart-bar"
-          @click="tab === 'analysis' ? (tab = undefined) : (tab = 'analysis')"
+          @click="toggleTab('analysis')"
           height="40"
-          :active="tab === 'analysis'"
+          :active="isActive('analysis')"
         />
         <v-btn
           icon="mdi-cog-outline"
-          @click="tab === 'settings' ? (tab = undefined) : (tab = 'settings')"
+          @click="toggleTab('settings')"
           height="40"
-          :active="tab === 'settings'"
+          :active="isActive('settings')"
         />
       </v-toolbar-items>
     </div>
     <div class="his-charts-container">
       <div class="his-charts overflow-y-auto">
         <v-card-title class="flex-0-0 d-flex ga-2 align-center">
-          <v-spacer />
           <HisCollection
             v-model:selectedCollection="selectedCollection"
             v-model:collections="collections"
@@ -110,7 +105,6 @@ import HisDataSelection from '@/components/his/HisDataSelection.vue'
 import HisCollectionCharts from './HisCollectionCharts.vue'
 import HisCollection from '@/components/his/HisCollection.vue'
 import HisAnalysis from '@/components/his/HisAnalysis.vue'
-import HisMenu from '@/components/his/HisMenu.vue'
 import { VDateInput } from 'vuetify/labs/components'
 import type {
   ActionRequest,
@@ -152,11 +146,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const userSettings = useUserSettingsStore()
-const tab = ref()
-const drawer = ref(false)
-watch(tab, () => {
-  drawer.value = tab.value !== undefined
-})
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -301,6 +290,20 @@ function updateDependants(chart: DerivedChart) {
     return generate(fetchedSeries.value, chart.subplot, dependant.seriesIds)
   })
   Object.assign(generatedSeries.value, ...newSeries)
+}
+
+const tab = ref()
+const drawer = ref(false)
+watch(tab, () => {
+  drawer.value = tab.value !== undefined
+})
+
+function isActive(tabName: string) {
+  return tab.value === tabName
+}
+
+function toggleTab(tabName: string) {
+  tab.value = tab.value === tabName ? undefined : tabName
 }
 </script>
 
