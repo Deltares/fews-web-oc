@@ -1,35 +1,62 @@
 import type { SeriesData } from '@/lib/timeseries/types/SeriesData'
 
-export function calculateCorrelationTimeSeries(
+export function calculateCorrelationAndRegression(
   series1: SeriesData[],
   series2: SeriesData[],
 ) {
+  if (series1.length !== series2.length) {
+    throw new Error('Input series must have the same length.')
+  }
+
   const points = series1.map((point, index) => ({
     x: series2[index]?.y ?? null,
     y: point.y,
-    flag: point.flag,
-    flagSource: point.flagSource,
-    comment: point.comment,
-    user: point.user,
   }))
 
-  const n = points.length
-  const sumX = points.reduce((sum, p) => sum + (p.x ?? 0), 0)
-  const sumY = points.reduce((sum, p) => sum + (p.y ?? 0), 0)
-  const sumXY = points.reduce((sum, p) => sum + (p.x ?? 0) * (p.y ?? 0), 0)
-  const sumX2 = points.reduce((sum, p) => sum + (p.x ?? 0) ** 2, 0)
+  const validPoints = points.filter((p) => p.x !== null && p.y !== null)
 
-  const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX ** 2)
-  const intercept = (sumY - slope * sumX) / n
+  const n = validPoints.length
+
+  if (n === 0) {
+    throw new Error('No valid points to calculate correlation and regression.')
+  }
+
+  const meanX = validPoints.reduce((sum, p) => sum + p.x!, 0) / n
+  const meanY = validPoints.reduce((sum, p) => sum + p.y!, 0) / n
+
+  let covariance = 0
+  let varianceX = 0
+  let varianceY = 0
+
+  for (const p of validPoints) {
+    const diffX = p.x! - meanX
+    const diffY = p.y! - meanY
+
+    covariance += diffX * diffY
+    varianceX += diffX * diffX
+    varianceY += diffY * diffY
+  }
+
+  // Calculates the pearson correlation coefficient
+  const correlation = covariance / Math.sqrt(varianceX * varianceY)
+
+  // Calculates the slope and intercept of the regression line
+  const slope = covariance / varianceX
+  const intercept = meanY - slope * meanX
 
   const line = points.map((point) => ({
     x: point.x,
     y: point.x !== null ? slope * point.x + intercept : null,
-    flag: point.flag,
-    flagSource: null,
-    comment: point.comment,
-    user: point.user,
+    flag: '0',
   }))
 
-  return { points, line, slope, intercept }
+  return {
+    points,
+    correlation,
+    regression: {
+      line,
+      slope,
+      intercept,
+    },
+  }
 }
