@@ -309,7 +309,6 @@ function toggleTab(tabName: string) {
 
 <style scoped>
 .his-charts {
-  max-width: 1200px;
   width: 100%;
 }
 
