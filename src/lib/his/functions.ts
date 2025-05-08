@@ -1,6 +1,6 @@
 import { Series } from '@/lib/timeseries/timeSeries'
 import { SeriesResourceType } from '@/lib/timeseries/types'
-import { calculateCorrelationTimeSeries } from './correlation'
+import { calculateCorrelationAndRegression } from './correlation'
 import { TimeSeriesDisplaySubplot } from '@deltares/fews-pi-requests'
 import { HisFunction } from './types'
 
@@ -36,19 +36,22 @@ export function generateSeriesCorrelation(
   // TODO: Add some behaviour for missing dependants
   if (!series1?.data || !series2?.data) return {}
 
-  const correlation = calculateCorrelationTimeSeries(series1.data, series2.data)
+  const { correlation, regression, points } = calculateCorrelationAndRegression(
+    series1.data,
+    series2.data,
+  )
 
   const newSeriesLine = new Series({
     type: SeriesResourceType.Derived,
   })
   newSeriesLine.lastUpdated = new Date()
-  newSeriesLine.data = correlation.line
+  newSeriesLine.data = regression.line
 
   const newSeriesPoints = new Series({
     type: SeriesResourceType.Derived,
   })
   newSeriesPoints.lastUpdated = new Date()
-  newSeriesPoints.data = correlation.points
+  newSeriesPoints.data = points
 
   const lineId = `${id1}-${id2}-correlation-line`
   const pointsId = `${id1}-${id2}-correlation-points`
@@ -61,8 +64,9 @@ export function generateSeriesCorrelation(
   subplot.items.forEach((item) => {
     if (item.request === lineId) {
       item.legend = getSlopeInterceptLegend(
-        correlation.slope,
-        correlation.intercept,
+        regression.slope,
+        regression.intercept,
+        correlation,
       )
     }
   })
@@ -73,14 +77,18 @@ export function generateSeriesCorrelation(
 function getSlopeInterceptLegend(
   slope: number | undefined,
   intercept: number | undefined,
+  correlation: number | undefined,
   precision: number = 3,
 ): string {
   if (slope === undefined || intercept === undefined) {
-    return 'Correlation line'
+    return 'Regression line'
   }
 
-  const slopeText = `${slope.toExponential(precision)}x`
+  const slopeText = `${slope.toFixed(precision)}x`
   const interceptSign = intercept < 0 ? '- ' : '+ '
-  const interceptText = `${Math.abs(intercept).toExponential(precision)}`
-  return `f(x) = ${slopeText} ${interceptSign}${interceptText}`
+  const interceptText = `${Math.abs(intercept).toFixed(precision)}`
+  const correlationText = correlation
+    ? `, r = ${correlation.toFixed(precision)}`
+    : ''
+  return `f(x) = ${slopeText} ${interceptSign}${interceptText} ${correlationText}`
 }
