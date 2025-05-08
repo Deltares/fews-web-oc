@@ -16,7 +16,6 @@ import {
   isFilterActionsFilter,
   isTimeSeriesGridActionsFilter,
 } from '@/lib/filters'
-import { useTaskRunsStore } from '@/stores/taskRuns.js'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 
 export interface UseDisplayConfigReturn {
@@ -34,19 +33,11 @@ export interface UseDisplayConfigOptions {
  * @param subPlot The subplot to which colors will be applied.
  */
 function applyColorsToSubplotItems(subPlot: TimeSeriesDisplaySubplot): void {
-  const taskRunsStore = useTaskRunsStore()
   const taskRunColorsStore = useTaskRunColorsStore()
-
   for (const item of subPlot.items) {
     // find the taskRunId in the actionRequest array
     const taskRunId = item.taskRunId
     if (!taskRunId) continue
-    // Find the corresponding task
-    const task = taskRunsStore.selectedTaskRuns.find(
-      (taskRun) => taskRun.taskId === taskRunId,
-    )
-    if (!task || task?.isCurrent) continue
-
     // Get color from the taskRunColorsStore
     const color = taskRunColorsStore.getColor(taskRunId)
     if (color) {
@@ -67,22 +58,6 @@ function actionsResponseToDisplayConfig(
   endTime?: Date,
 ): DisplayConfig[] {
   const displays: DisplayConfig[] = []
-  const taskRunsStore = useTaskRunsStore()
-  const taskRunColorsStore = useTaskRunColorsStore()
-
-  // Assign a color to each task run id in the actions response
-  // and add it to the colorsMapping
-  for (const taskRunId of actionsResponse.taskRunIds ?? []) {
-    // Check if the taskRunId is selected in the taskRunsStore
-    const task = taskRunsStore.selectedTaskRuns.find(
-      (taskRun) => taskRun.taskId === taskRunId,
-    )
-    if (!task) continue
-    // If it is not current and doesn't have a color already, assign a color to the taskRunId
-    if (!task.isCurrent && !taskRunColorsStore.getColor(taskRunId)) {
-      taskRunColorsStore.setColor(taskRunId)
-    }
-  }
   for (const result of actionsResponse.results) {
     if (result.config === undefined) continue
     const title = result.config.timeSeriesDisplay.title ?? ''
@@ -149,11 +124,15 @@ export function useDisplayConfig(
   const response = ref<ActionsResponse>()
   const displays = ref<DisplayConfig[] | null>(null)
   const taskRunColorsStore = useTaskRunColorsStore()
-  taskRunColorsStore.setColors(baseUrl)
+  const prevNodeId = ref<string | undefined>(undefined)
 
   watchEffect(async () => {
     const _nodeId = toValue(nodeId)
     if (_nodeId === undefined) return
+    if (_nodeId !== prevNodeId.value) {
+      taskRunColorsStore.clearColors()
+      prevNodeId.value = _nodeId
+    }
 
     const filter = {
       nodeId: _nodeId,
@@ -170,6 +149,14 @@ export function useDisplayConfig(
     response.value = await piProvider.getTopologyActions(
       _taskRunIds?.length ? taskRunsFilter : filter,
     )
+    // Assign a color to each task run id in the actions response
+    // and add it to the colorsMapping
+    for (const taskRunId of _taskRunIds ?? []) {
+      // If it is not current and doesn't have a color already, assign a color to the taskRunId
+      if (!taskRunColorsStore.getColor(taskRunId)) {
+        taskRunColorsStore.setColor(taskRunId)
+      }
+    }
   })
 
   watch([startTime, endTime, response], () => {
@@ -224,8 +211,8 @@ export function useDisplayConfigFilter(
   const displays = ref<DisplayConfig[] | null>(null)
   const response = ref<ActionsResponse>()
   const taskRunColorsStore = useTaskRunColorsStore()
-  taskRunColorsStore.setColors(baseUrl)
   const filterId = ref<string | undefined>(undefined)
+  console.log(taskRunIds)
 
   watch(
     () => toValue(filter),
@@ -250,6 +237,14 @@ export function useDisplayConfigFilter(
         ..._filter,
         taskRunIds: _taskRunIds?.join(','),
         currentForecastsAlwaysVisible: true,
+      }
+      // Assign a color to each task run id in the actions response
+      // and add it to the colorsMapping
+      for (const taskRunId of _taskRunIds ?? []) {
+        // If it is not current and doesn't have a color already, assign a color to the taskRunId
+        if (!taskRunColorsStore.getColor(taskRunId)) {
+          taskRunColorsStore.setColor(taskRunId)
+        }
       }
       const _response = await piProvider.getFilterActions(
         _taskRunIds?.length ? taskRunsFilter : _filter,

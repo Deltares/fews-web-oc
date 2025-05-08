@@ -1,9 +1,11 @@
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { configManager } from '@/services/application-config'
 import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useTaskRunColorsStore = defineStore('taskRunColors', () => {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const colorMap = ref<Map<string, string>>(new Map())
   const colors = ref<string[]>([])
   const currentColors = ref<string[]>([])
@@ -26,7 +28,7 @@ export const useTaskRunColorsStore = defineStore('taskRunColors', () => {
     colorMap.value = newMap
   }
 
-  function setColors(baseUrl: string) {
+  function fetchColors() {
     const piProvider = new PiWebserviceProvider(baseUrl, {
       transformRequestFn: createTransformRequestFn(),
     })
@@ -38,10 +40,12 @@ export const useTaskRunColorsStore = defineStore('taskRunColors', () => {
     })
   }
 
+  fetchColors()
+
   return {
     colorMap,
     setColor,
-    setColors,
+    fetchColors,
     getColor,
     clearColors,
     setColorMap,
