@@ -52,6 +52,7 @@ const emit = defineEmits<Emits>()
 
 const allSeries = computed(() =>
   props.charts
+    .filter((chart) => chart.type === 'filter')
     .flatMap((chart) => chart.subplot.items)
     .filter(
       (series, index, self) =>
