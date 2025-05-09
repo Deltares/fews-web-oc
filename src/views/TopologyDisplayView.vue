@@ -30,7 +30,11 @@
     </v-toolbar-items>
   </Teleport>
   <Teleport to="#app-bar-content-end">
-    <ThresholdsControl :topologyNode="topologyNode" />
+    <ThresholdsControl
+      :topologyNode="topologyNode"
+      @navigate="onNavigate"
+      :locationIds="props.locationIds"
+    />
     <TaskRunsControl v-if="showTaskMenu" :topologyNode="topologyNode" />
     <v-menu bottom left>
       <template v-slot:activator="{ props }">
