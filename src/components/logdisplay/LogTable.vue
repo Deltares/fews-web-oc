@@ -24,21 +24,9 @@
             prepend-icon="mdi-link-variant"
           />
           <v-list-item
-            prepend-icon="mdi-pencil"
-            @click="emit('editLog', item)"
-            title="Edit"
-          />
-          <v-list-item
-            prepend-icon="mdi-delete"
-            @click="emit('deleteLog', item)"
-            title="Delete"
-          />
-          <v-divider />
-          <v-list-item
             v-for="dissemination in systemDisseminations"
             :prepend-icon="dissemination.iconId"
-            title="Disseminate"
-            :subtitle="dissemination.description"
+            :title="dissemination.description"
             :lines="false"
             @click="emit('disseminateLog', item, dissemination)"
           />

@@ -211,7 +211,6 @@ const maxChars = computed(
 )
 
 const canEdit = computed(() => {
-  return true
   // Allow editing only for manual logs created by the current user
   return (
     props.log.type === 'manual' &&

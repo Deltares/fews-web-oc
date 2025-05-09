@@ -9,9 +9,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps<{
+interface Props {
   date: string
-}>()
+}
+
+const props = defineProps<Props>()
 
 const formattedDate = computed(() => {
   const messageDate = new Date(props.date)
