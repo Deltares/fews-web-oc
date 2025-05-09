@@ -101,6 +101,24 @@ export function toHumanReadableDate(
   })
 }
 
+export function toHumanReadableTime(
+  date: Date | string | number | undefined | null,
+): string {
+  if (date === undefined || date === null) {
+    return '—'
+  }
+  if (typeof date === 'string' || typeof date === 'number') {
+    return toHumanReadableTime(new Date(date))
+  }
+  // HH:mm:ss
+  return date.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+}
+
 export function toShortHumanReadableDate(
   date: Date | string | number | undefined | null,
 ): string {

@@ -2,14 +2,14 @@
   <div>
     <v-card
       :class="
-        isLogMessageByCurrentUser(log, props.userName)
+        isLogMessageByCurrentUser(props.log, props.userName)
           ? 'current-user-message'
           : 'other-message'
       "
       border
       flat
       density="compact"
-      width="45%"
+      width="60%"
     >
       <template #title>
         <div class="d-flex align-center ga-2">
@@ -17,7 +17,7 @@
             {{ logToUser(log, userName) }}
           </v-list-item-title>
           <v-card-subtitle class="align-self-end">{{
-            toHumanReadableDate(log.entryTime)
+            toHumanReadableTime(log.entryTime)
           }}</v-card-subtitle>
           <template v-if="isEditing">
             <v-tooltip location="top">
@@ -84,16 +84,13 @@
                 title="Delete message"
                 @click="emit('deleteLog', log)"
               />
-              <template
-                v-if="!isEditing"
+              <v-list-item
                 v-for="dissemination in logToActions(log, disseminations)"
-              >
-                <v-list-item
-                  :prepend-icon="dissemination.iconId"
-                  :title="dissemination.description"
-                  @click="emit('disseminateLog', log, dissemination)"
-                />
-              </template>
+                :prepend-icon="dissemination.iconId"
+                :key="dissemination.id"
+                :title="dissemination.description"
+                @click="emit('disseminateLog', log, dissemination)"
+              />
             </v-list>
           </v-menu>
           <template v-if="isAcknowledged">
@@ -149,22 +146,22 @@
         </div>
       </v-card-text>
       <template #append>
-        <v-card-subtitle class="pa-1">{{
-          levelToTitle(log.level)
-        }}</v-card-subtitle>
         <v-icon
           v-if="logToIcon(log) && !isEditing"
           size="small"
           :icon="logToIcon(log)"
           :color="isAcknowledged ? undefined : logToColor(log)"
         />
+        <v-card-subtitle class="pa-1">{{
+          levelToTitle(log.level === 'ERROR' ? 'CRITICAL' : log.level)
+        }}</v-card-subtitle>
       </template>
     </v-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { toHumanReadableDate } from '@/lib/date'
+import { toHumanReadableTime } from '@/lib/date'
 import { ref, computed } from 'vue'
 import {
   isLogMessageByCurrentUser,
@@ -210,7 +207,6 @@ const maxChars = computed(
 
 // Determine if the current user can edit this message
 const canEdit = computed(() => {
-  return true
   // Allow editing only for manual logs created by the current user
   return (
     props.log.type === 'manual' &&
@@ -302,5 +298,10 @@ function saveEdit() {
 
 .other-message {
   margin-right: auto;
+}
+
+.dissimination-buttons {
+  margin-right: auto;
+  margin-left: auto;
 }
 </style>

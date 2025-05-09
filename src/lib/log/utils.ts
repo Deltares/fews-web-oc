@@ -75,7 +75,18 @@ export function levelToTitle(level: LogLevel) {
 }
 
 export function logToIcon(log: LogMessage) {
-  return levelToIcon(log.level)
+  switch (log.level) {
+    case 'INFO':
+      return log.eventAcknowledged
+        ? 'mdi-information-outline'
+        : 'mdi-information'
+    case 'WARN':
+      return log.eventAcknowledged ? 'mdi-alert-outline' : 'mdi-alert'
+    case 'ERROR':
+      return log.eventAcknowledged
+        ? 'mdi-alert-octagon-outline'
+        : 'mdi-alert-octagon'
+  }
 }
 
 export function levelToIcon(level: LogLevel) {

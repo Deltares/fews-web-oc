@@ -89,22 +89,27 @@
         />
       </div>
     </div>
-
-    <!-- Important to have item-height as it greatly improves performance -->
+    <!-- Use dynamic item height based on item type -->
     <v-virtual-scroll
       class="scroll-container"
       :items="groupedByTaskRunId"
-      :item-height="50"
+      :item-height="
+        (item: VirtualScrollItem) => (item.type === 'dateSeparator' ? 60 : 50)
+      "
     >
-      <template #default="{ item: logs }">
+      <template #default="{ item }">
+        <!-- Date separator -->
+        <DateSeparator v-if="item.type === 'dateSeparator'" :date="item.date" />
+
+        <!-- Log item -->
         <LogItem
-          v-if="noteGroup"
-          :logs="logs"
+          v-else-if="item.type === 'logItem' && noteGroup"
+          :logs="item.logs"
           :taskRuns="taskRuns"
           :disseminations="disseminations"
           :userName="userName"
           :noteGroup="noteGroup"
-          v-model:expanded="expandedItems[logs[0].taskRunId]"
+          v-model:expanded="expandedItems[item.logs[0].taskRunId]"
           @disseminate-log="disseminateLog"
           @delete-log="deleteLog"
           @edit-log="editLog"
@@ -120,6 +125,7 @@
 import { ref, computed, watch } from 'vue'
 import { VDateInput } from 'vuetify/labs/components'
 import LogItem from './LogItem.vue'
+import DateSeparator from './DateSeparator.vue'
 import {
   type LogType,
   type LogLevel,
@@ -259,9 +265,56 @@ const filteredLogMessages = computed(() =>
   ),
 )
 
+// Helper function to get the date string from a log entry time
+function getDateString(entryTime: string): string {
+  const date = new Date(entryTime)
+  return date.toISOString().split('T')[0] // Get YYYY-MM-DD format
+}
+
+// Define types for our virtual scroll items
+type DateSeparatorItem = {
+  type: 'dateSeparator'
+  date: string
+}
+
+type LogItem = {
+  type: 'logItem'
+  logs: LogMessage[]
+}
+
+type VirtualScrollItem = DateSeparatorItem | LogItem
+
+// Group logs by task run ID
 const groupedByTaskRunId = computed(() => {
-  return Object.values(
-    filteredLogMessages.value.reduce(
+  // First, group logs by date
+  const logsByDate: Record<string, LogMessage[]> = {}
+
+  filteredLogMessages.value.forEach((log) => {
+    const dateStr = getDateString(log.entryTime)
+    if (!logsByDate[dateStr]) {
+      logsByDate[dateStr] = []
+    }
+    logsByDate[dateStr].push(log)
+  })
+
+  // Now, for each date, group logs by task run ID
+  const result: VirtualScrollItem[] = []
+
+  // Sort dates in descending order (newest first)
+  const sortedDates = Object.keys(logsByDate).sort((a, b) => b.localeCompare(a))
+
+  sortedDates.forEach((date) => {
+    // Add date separator
+    result.push({
+      type: 'dateSeparator',
+      date,
+    })
+
+    // Add log items for this date
+    const logsForDate = logsByDate[date]
+
+    // Group by task run ID for this date
+    const groupedByTaskId = logsForDate.reduce(
       (grouped, log) => {
         // In case of manual don't group
         const taskRunId =
@@ -275,8 +328,18 @@ const groupedByTaskRunId = computed(() => {
         return grouped
       },
       {} as Record<string, LogMessage[]>,
-    ),
-  ) as LogMessage[][]
+    )
+
+    // Add each group as a log item
+    Object.values(groupedByTaskId).forEach((logs) => {
+      result.push({
+        type: 'logItem',
+        logs,
+      })
+    })
+  })
+
+  return result
 })
 
 const taskRunIds = computed(() => {
@@ -301,19 +364,14 @@ function disseminateLog(
 }
 
 async function deleteLog(log: LogMessage) {
-  console.log('Deleting log', log)
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const provider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
   const keys: ForecasterNoteKeysRequest = {
-    logs: [{ id: log.id as unknown as string, taskRunId: log.taskRunId }],
+    logs: [{ id: log.id, taskRunId: log.taskRunId }],
   }
-  try {
-    await provider.deleteForecasterNote(keys)
-  } catch (e) {
-    console.error(`Failed to delete log message: ${e}`)
-  }
+  await provider.deleteForecasterNote(keys)
   refreshLogs()
 }
 
@@ -326,15 +384,11 @@ async function editLog(log: LogMessage) {
     noteGroupId: props.noteGroup?.id ?? '',
     logMessage: log.text,
     logLevel: log.level,
-    id: log.id as unknown as string,
+    id: log.id,
     taskRunId: log.taskRunId,
     userId: log.user,
   }
-  try {
-    await provider.postForecasterNote(note)
-  } catch (e) {
-    console.error(`Failed to update log message: ${e}`)
-  }
+  await provider.postForecasterNote(note)
   refreshLogs()
 }
 
@@ -344,13 +398,9 @@ async function acknowledgeLog(log: LogMessage) {
     transformRequestFn: createTransformRequestFn(),
   })
   const keys: ForecasterNoteKeysRequest = {
-    logs: [{ id: log.id as unknown as string, taskRunId: log.taskRunId }],
+    logs: [{ id: log.id, taskRunId: log.taskRunId }],
   }
-  try {
-    await provider.acknowledgeForecasterNote(keys)
-  } catch (e) {
-    console.error(`Failed to acknowledge log message: ${e}`)
-  }
+  await provider.acknowledgeForecasterNote(keys)
   refreshLogs()
 }
 
@@ -360,13 +410,9 @@ async function unacknowledgeLog(log: LogMessage) {
     transformRequestFn: createTransformRequestFn(),
   })
   const keys: ForecasterNoteKeysRequest = {
-    logs: [{ id: log.id as unknown as string, taskRunId: log.taskRunId }],
+    logs: [{ id: log.id, taskRunId: log.taskRunId }],
   }
-  try {
-    await provider.unacknowledgeForecasterNote(keys)
-  } catch (e) {
-    console.error(`Failed to unacknowledge log message: ${e}`)
-  }
+  await provider.unacknowledgeForecasterNote(keys)
   refreshLogs()
 }
 
