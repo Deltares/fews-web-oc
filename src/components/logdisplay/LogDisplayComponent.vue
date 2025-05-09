@@ -98,14 +98,18 @@
     >
       <template #default="{ item: logs }">
         <LogItem
+          v-if="noteGroup"
           :logs="logs"
           :taskRuns="taskRuns"
           :disseminations="disseminations"
           :userName="userName"
+          :noteGroup="noteGroup"
           v-model:expanded="expandedItems[logs[0].taskRunId]"
           @disseminate-log="disseminateLog"
           @delete-log="deleteLog"
           @edit-log="editLog"
+          @acknowledge-log="acknowledgeLog"
+          @unacknowledge-log="unacknowledgeLog"
         />
       </template>
     </v-virtual-scroll>
@@ -128,10 +132,13 @@ import {
   LogMessage,
   levelToTitle,
 } from '@/lib/log'
-import type {
-  ForecasterNoteGroup,
-  LogDisplayDisseminationAction,
-  LogsDisplay,
+import {
+  ForecasterNoteKeysRequest,
+  ForecasterNoteRequest,
+  PiWebserviceProvider,
+  type ForecasterNoteGroup,
+  type LogDisplayDisseminationAction,
+  type LogsDisplay,
 } from '@deltares/fews-pi-requests'
 import { useLogDisplayLogs } from '@/services/useLogDisplayLogs'
 import { configManager } from '@/services/application-config'
@@ -140,6 +147,7 @@ import { useCurrentUser } from '@/services/useCurrentUser'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import NewLogMessageDialog from './NewLogMessageDialog.vue'
 import { useTaskRuns } from '@/services/useTaskRuns'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 interface Props {
   logDisplay: LogsDisplay
@@ -292,12 +300,74 @@ function disseminateLog(
   console.log('Disseminating log', log, dissemination)
 }
 
-function deleteLog(log: LogMessage) {
+async function deleteLog(log: LogMessage) {
   console.log('Deleting log', log)
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const keys: ForecasterNoteKeysRequest = {
+    logs: [{ id: log.id as unknown as string, taskRunId: log.taskRunId }],
+  }
+  try {
+    await provider.deleteForecasterNote(keys)
+  } catch (e) {
+    console.error(`Failed to delete log message: ${e}`)
+  }
+  refreshLogs()
 }
 
-function editLog(log: LogMessage) {
-  console.log('Editing log', log)
+async function editLog(log: LogMessage) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const note: ForecasterNoteRequest = {
+    noteGroupId: props.noteGroup?.id ?? '',
+    logMessage: log.text,
+    logLevel: log.level,
+    id: log.id as unknown as string,
+    taskRunId: log.taskRunId,
+    userId: log.user,
+  }
+  try {
+    await provider.postForecasterNote(note)
+  } catch (e) {
+    console.error(`Failed to update log message: ${e}`)
+  }
+  refreshLogs()
+}
+
+async function acknowledgeLog(log: LogMessage) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const keys: ForecasterNoteKeysRequest = {
+    logs: [{ id: log.id as unknown as string, taskRunId: log.taskRunId }],
+  }
+  try {
+    await provider.acknowledgeForecasterNote(keys)
+  } catch (e) {
+    console.error(`Failed to acknowledge log message: ${e}`)
+  }
+  refreshLogs()
+}
+
+async function unacknowledgeLog(log: LogMessage) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const keys: ForecasterNoteKeysRequest = {
+    logs: [{ id: log.id as unknown as string, taskRunId: log.taskRunId }],
+  }
+  try {
+    await provider.unacknowledgeForecasterNote(keys)
+  } catch (e) {
+    console.error(`Failed to unacknowledge log message: ${e}`)
+  }
+  refreshLogs()
 }
 
 function refreshLogs() {

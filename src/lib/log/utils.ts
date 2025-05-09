@@ -86,7 +86,7 @@ export function levelToIcon(level: LogLevel) {
       return 'mdi-alert'
     case 'CRITICAL':
     case 'ERROR':
-      return 'mdi-alert-circle'
+      return 'mdi-alert-octagon'
   }
 }
 

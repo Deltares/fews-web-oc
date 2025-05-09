@@ -8,4 +8,6 @@ export interface LogActionEmit {
   ]
   deleteLog: [log: LogMessage]
   editLog: [log: LogMessage]
+  acknowledgeLog: [log: LogMessage]
+  unacknowledgeLog: [log: LogMessage]
 }
