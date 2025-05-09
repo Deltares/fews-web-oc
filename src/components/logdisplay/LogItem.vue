@@ -24,12 +24,15 @@
   <LogMessageItem
     v-if="log.type === 'manual'"
     class="mt-2"
+    :noteGroup="noteGroup"
     :log="log"
     :userName="userName"
     :disseminations="disseminations"
     @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
     @edit-log="emit('editLog', $event)"
     @delete-log="emit('deleteLog', $event)"
+    @acknowledge-log="emit('acknowledgeLog', $event)"
+    @unacknowledge-log="emit('unacknowledgeLog', $event)"
   />
 </template>
 
@@ -38,6 +41,7 @@ import LogMessageItem from '@/components/logdisplay/LogMessageItem.vue'
 import TaskRunItem from './TaskRunItem.vue'
 import LogTable from './LogTable.vue'
 import type {
+  ForecasterNoteGroup,
   LogDisplayDisseminationAction,
   TaskRun,
 } from '@deltares/fews-pi-requests'
@@ -47,6 +51,7 @@ import { computed } from 'vue'
 
 interface Props {
   userName: string
+  noteGroup: ForecasterNoteGroup
   logs: LogMessage[]
   taskRuns: TaskRun[]
   disseminations: LogDisplayDisseminationAction[]
