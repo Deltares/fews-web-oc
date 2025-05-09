@@ -183,6 +183,8 @@ const { userName } = useCurrentUser()
 
 const baseFilters = computed(() => {
   const startTime = convertJSDateToFewsPiParameter(startDate.value)
+  // Set endTime to 23:59:59 of the endDate
+  endDate.value.setHours(23, 59, 59, 999)
   const endTime = convertJSDateToFewsPiParameter(endDate.value)
   return {
     logDisplayId: props.logDisplay.id,
