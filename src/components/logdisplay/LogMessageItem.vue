@@ -19,35 +19,6 @@
           <v-card-subtitle class="align-self-end">{{
             toHumanReadableTime(log.entryTime)
           }}</v-card-subtitle>
-          <template v-if="isEditing">
-            <v-tooltip location="top">
-              <template #activator="{ props }">
-                <v-btn
-                  density="compact"
-                  icon="mdi-close"
-                  variant="plain"
-                  size="small"
-                  v-bind="props"
-                  @click="toggleEditing"
-                />
-              </template>
-              <span>Discard changes</span>
-            </v-tooltip>
-            <v-tooltip location="top">
-              <template #activator="{ props }">
-                <v-btn
-                  density="compact"
-                  icon="mdi-check"
-                  variant="plain"
-                  size="small"
-                  color="success"
-                  v-bind="props"
-                  @click="saveEdit"
-                />
-              </template>
-              <span>Save changes</span>
-            </v-tooltip>
-          </template>
           <v-menu location="bottom" :close-on-content-click="true">
             <template #activator="{ props }">
               <v-btn
@@ -71,6 +42,12 @@
                 prepend-icon="mdi-check"
                 title="Acknowledge message"
                 @click="emit('acknowledgeLog', log)"
+              />
+              <v-list-item
+                v-if="!isEditing && isAcknowledged"
+                prepend-icon="mdi-check-all"
+                title="Remove acknowledgement"
+                @click="emit('unacknowledgeLog', log)"
               />
               <v-list-item
                 v-if="canEdit && !isEditing"
@@ -145,16 +122,47 @@
           <slot name="actions"></slot>
         </div>
       </v-card-text>
+      <template v-if="isEditing">
+        <div class="d-flex justify-end">
+          <v-tooltip location="top">
+            <template #activator="{ props }">
+              <v-btn
+                density="compact"
+                icon="mdi-close"
+                variant="plain"
+                v-bind="props"
+                @click="toggleEditing"
+              />
+            </template>
+            <span>Discard changes</span>
+          </v-tooltip>
+          <v-tooltip location="top">
+            <template #activator="{ props }">
+              <v-btn
+                density="compact"
+                icon="mdi-check"
+                variant="plain"
+                color="success"
+                v-bind="props"
+                @click="saveEdit"
+              />
+            </template>
+            <span>Save changes</span>
+          </v-tooltip>
+        </div>
+      </template>
       <template #append>
-        <v-icon
-          v-if="logToIcon(log) && !isEditing"
-          size="small"
-          :icon="logToIcon(log)"
-          :color="isAcknowledged ? undefined : logToColor(log)"
-        />
-        <v-card-subtitle class="pa-1">{{
-          levelToTitle(log.level === 'ERROR' ? 'CRITICAL' : log.level)
-        }}</v-card-subtitle>
+        <div class="level-label">
+          <v-icon
+            v-if="logToIcon(log) && !isEditing"
+            size="small"
+            :icon="logToIcon(log)"
+            :color="isAcknowledged ? undefined : logToColor(log)"
+          />
+          <v-card-subtitle class="pa-1">
+            {{ levelToTitle(log.level === 'ERROR' ? 'CRITICAL' : log.level) }}
+          </v-card-subtitle>
+        </div>
       </template>
     </v-card>
   </div>
@@ -196,7 +204,6 @@ const isEditing = ref(false)
 const editedText = ref('')
 const editedLogLevel = ref<ManualLogLevel>('INFO')
 
-// Compute the acknowledgement status using our new function
 const isAcknowledged = computed(() => props.log.eventAcknowledged)
 
 // Text validation constants
@@ -205,7 +212,6 @@ const maxChars = computed(
   () => props.noteGroup.note.maxNumberOfCharactersInLine,
 )
 
-// Determine if the current user can edit this message
 const canEdit = computed(() => {
   // Allow editing only for manual logs created by the current user
   return (
@@ -303,5 +309,13 @@ function saveEdit() {
 .dissimination-buttons {
   margin-right: auto;
   margin-left: auto;
+}
+
+.level-label {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  column-gap: 0.25em;
+  width: 6.5em;
 }
 </style>

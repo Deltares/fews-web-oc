@@ -243,7 +243,6 @@ const logMessages = computed(() => {
     manualLogMessages.value.length === 0 &&
     systemLogMessages.value.length === 0
   ) {
-    // Only return empty array if we're loading and have no previous data
     return []
   }
   return [...manualLogMessages.value, ...systemLogMessages.value].toSorted(
