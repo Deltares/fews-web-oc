@@ -1,8 +1,8 @@
 <template>
-  <div class="date-separator-container">
-    <div class="date-separator-line"></div>
-    <div class="date-separator-text">{{ formattedDate }}</div>
-    <div class="date-separator-line"></div>
+  <div class="date-separator__container">
+    <div class="date-separator__line"></div>
+    <div class="date-separator__text">{{ formattedDate }}</div>
+    <div class="date-separator__line"></div>
   </div>
 </template>
 
@@ -37,7 +37,7 @@ const formattedDate = computed(() => {
 </script>
 
 <style scoped>
-.date-separator-container {
+.date-separator__container {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,14 +46,14 @@ const formattedDate = computed(() => {
   width: 100%;
 }
 
-.date-separator-text {
+.date-separator__text {
   font-size: 0.85rem;
   color: rgba(var(--v-theme-on-surface), 0.7);
   padding: 0 8px;
   white-space: nowrap;
 }
 
-.date-separator-line {
+.date-separator__line {
   flex: 1;
   height: 1px;
   background-color: rgba(var(--v-theme-on-surface), 0.1);

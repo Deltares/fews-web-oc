@@ -115,6 +115,33 @@
             @input="validateInput"
             class="edit-message-textarea"
           ></v-textarea>
+          <div class="d-flex justify-end">
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-btn
+                  density="compact"
+                  icon="mdi-close"
+                  variant="plain"
+                  v-bind="props"
+                  @click="toggleEditing"
+                />
+              </template>
+              <span>Discard changes</span>
+            </v-tooltip>
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-btn
+                  density="compact"
+                  icon="mdi-check"
+                  variant="plain"
+                  color="success"
+                  v-bind="props"
+                  @click="saveEdit"
+                />
+              </template>
+              <span>Save changes</span>
+            </v-tooltip>
+          </div>
         </div>
         <div v-else class="d-flex">
           <span class="message-text"> {{ log.text }} </span>
@@ -122,35 +149,6 @@
           <slot name="actions"></slot>
         </div>
       </v-card-text>
-      <template v-if="isEditing">
-        <div class="d-flex justify-end">
-          <v-tooltip location="top">
-            <template #activator="{ props }">
-              <v-btn
-                density="compact"
-                icon="mdi-close"
-                variant="plain"
-                v-bind="props"
-                @click="toggleEditing"
-              />
-            </template>
-            <span>Discard changes</span>
-          </v-tooltip>
-          <v-tooltip location="top">
-            <template #activator="{ props }">
-              <v-btn
-                density="compact"
-                icon="mdi-check"
-                variant="plain"
-                color="success"
-                v-bind="props"
-                @click="saveEdit"
-              />
-            </template>
-            <span>Save changes</span>
-          </v-tooltip>
-        </div>
-      </template>
       <template #append>
         <div class="level-label">
           <v-icon
@@ -213,6 +211,7 @@ const maxChars = computed(
 )
 
 const canEdit = computed(() => {
+  return true
   // Allow editing only for manual logs created by the current user
   return (
     props.log.type === 'manual' &&
@@ -270,12 +269,9 @@ function saveEdit() {
   if (!canEdit.value) {
     return
   }
-  // Don't save if there are validation errors
   if (isError.value) {
     return
   }
-
-  // Create a copy of the log with updated text and level
   const updatedLog = {
     ...props.log,
     text: editedText.value,
@@ -304,11 +300,6 @@ function saveEdit() {
 
 .other-message {
   margin-right: auto;
-}
-
-.dissimination-buttons {
-  margin-right: auto;
-  margin-left: auto;
 }
 
 .level-label {

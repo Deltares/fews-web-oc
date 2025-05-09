@@ -96,9 +96,7 @@
       v-if="groupedByTaskRunId.length"
     >
       <template #default="{ item }">
-        <!-- Date separator -->
         <DateSeparator v-if="item.type === 'dateSeparator'" :date="item.date" />
-        <!-- Log item -->
         <LogItem
           v-else-if="item.type === 'logItem' && noteGroup"
           :logs="item.logs"
