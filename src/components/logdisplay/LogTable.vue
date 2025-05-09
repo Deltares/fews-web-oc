@@ -13,7 +13,7 @@
       <v-icon class="ms-2" :icon="logToIcon(item)" :color="logToColor(item)" />
     </template>
     <template #item.actions="{ item }">
-      <v-menu v-if="systemDisseminations.length || item.topologyNodeId">
+      <v-menu location="bottom right" max-width="300">
         <template #activator="{ props }">
           <v-btn v-bind="props" icon="mdi-dots-horizontal" density="compact" />
         </template>
@@ -27,7 +27,8 @@
             v-for="dissemination in systemDisseminations"
             :prepend-icon="dissemination.iconId"
             :title="dissemination.description"
-            @click="emit('disseminateLog', { log: item, dissemination })"
+            :lines="false"
+            @click="emit('disseminateLog', item, dissemination)"
           />
         </v-list>
       </v-menu>
@@ -38,7 +39,13 @@
 <script setup lang="ts">
 import { toHumanReadableDate } from '@/lib/date'
 import type { VDataTableVirtual } from 'vuetify/components'
-import { type LogMessage, logToIcon, logToColor, logToRoute } from '@/lib/log'
+import {
+  type LogMessage,
+  logToIcon,
+  logToColor,
+  logToRoute,
+  LogActionEmit,
+} from '@/lib/log'
 import {
   LogDisplayDisseminationAction,
   TaskRun,
@@ -77,7 +84,7 @@ const headers = computed<VDataTableVirtual['headers']>(() => {
   ]
 })
 
-const emit = defineEmits(['disseminateLog'])
+const emit = defineEmits<LogActionEmit>()
 </script>
 
 <style scoped>
