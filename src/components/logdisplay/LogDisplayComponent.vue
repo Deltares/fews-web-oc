@@ -89,18 +89,15 @@
         />
       </div>
     </div>
-    <!-- Use dynamic item height based on item type -->
     <v-virtual-scroll
       class="scroll-container"
       :items="groupedByTaskRunId"
-      :item-height="
-        (item: VirtualScrollItem) => (item.type === 'dateSeparator' ? 60 : 50)
-      "
+      :item-height="50"
+      v-if="groupedByTaskRunId.length"
     >
       <template #default="{ item }">
         <!-- Date separator -->
         <DateSeparator v-if="item.type === 'dateSeparator'" :date="item.date" />
-
         <!-- Log item -->
         <LogItem
           v-else-if="item.type === 'logItem' && noteGroup"
@@ -239,7 +236,12 @@ const { logMessages: systemLogMessages, isLoading: systemIsLoading } =
   useLogDisplayLogs(baseUrl, () => debouncedFilters.value.systemFilters)
 
 const logMessages = computed(() => {
-  if (manualIsLoading.value || systemIsLoading.value) {
+  if (
+    (manualIsLoading.value || systemIsLoading.value) &&
+    manualLogMessages.value.length === 0 &&
+    systemLogMessages.value.length === 0
+  ) {
+    // Only return empty array if we're loading and have no previous data
     return []
   }
   return [...manualLogMessages.value, ...systemLogMessages.value].toSorted(
@@ -416,7 +418,7 @@ async function unacknowledgeLog(log: LogMessage) {
   refreshLogs()
 }
 
-function refreshLogs() {
+async function refreshLogs() {
   // Set endDate to now + 5 seconds to ensure the backend will return the latest logs
   endDate.value = new Date(new Date().getTime() + 5000)
 }
