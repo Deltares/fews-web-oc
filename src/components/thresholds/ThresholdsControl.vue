@@ -19,6 +19,8 @@
         :selectedThresholdCrossings="
           warningLevelsStore.selectedThresholdCrossings
         "
+        :locationIds="props.locationIds"
+        @navigate="emit('navigate', $event)"
       />
     </div>
   </Teleport>
@@ -30,10 +32,17 @@ import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 import { useSidePanelStore } from '@/stores/sidePanel'
+import { NavigateRoute } from '@/lib/router/types'
 
 interface Props {
   topologyNode?: TopologyNode
+  locationIds?: string
 }
+
+interface Emits {
+  navigate: [to: NavigateRoute]
+}
+const emit = defineEmits<Emits>()
 
 const props = defineProps<Props>()
 
