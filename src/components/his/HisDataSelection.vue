@@ -7,14 +7,14 @@
       icon="mdi-tag"
       :getItemValue="(item) => item"
       :getItemTitle="parametersStore.getName"
-      multiple
+      :multiple="true"
     />
     <HisAutocomplete
       v-model="selectedModuleInstanceIds"
       :items="filteredModuleInstanceIds"
       label="Module instances"
       icon="mdi-cog"
-      multiple
+      :multiple="true"
     />
     <HisAutocomplete
       v-model="selectedLocationIds"
@@ -23,7 +23,7 @@
       icon="mdi-map-marker-multiple"
       :getItemValue="getLocationId"
       :getItemTitle="getLocationTitle"
-      multiple
+      :multiple="true"
     />
 
     <div class="border rounded" style="height: 300px">
@@ -39,12 +39,9 @@
 
     <div class="d-flex">
       <v-spacer />
-      <v-btn
-        variant="tonal"
+      <HisAddButton
         :disabled="!filter"
-        prepend-icon="mdi-plus"
-        text="Add to collection"
-        :loading="isLoading"
+        :loading="props.isLoading"
         @click="addFilter"
       />
     </div>
@@ -60,6 +57,7 @@ import type {
 } from '@deltares/fews-pi-requests'
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
 import HisMap from '@/components/his/HisMap.vue'
+import HisAddButton from '@/components/his/HisAddButton.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
