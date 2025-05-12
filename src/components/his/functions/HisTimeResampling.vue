@@ -6,7 +6,7 @@
       label="Timeseries"
       :getItemValue="(item) => item"
       :getItemTitle="(item) => item.legend ?? ''"
-      multiple
+      :multiple="true"
     />
 
     <HisAutocomplete
@@ -15,7 +15,7 @@
       label="Resampling methods"
       :getItemValue="(item) => item"
       :getItemTitle="(item) => item.label"
-      multiple
+      :multiple="true"
     />
 
     <HisAutocomplete
@@ -24,18 +24,15 @@
       label="Time steps"
       :getItemValue="(item) => item"
       :getItemTitle="(item) => item.label"
-      multiple
+      :multiple="true"
     />
 
     <div class="d-flex pa-3">
       <v-spacer />
-      <v-btn
-        variant="tonal"
+      <HisAddButton
         :disabled="!filter"
-        prepend-icon="mdi-plus"
-        text="Add to collection"
+        :loading="props.isLoading"
         @click="addFilter"
-        :loading="isLoading"
       />
     </div>
   </div>
@@ -43,6 +40,7 @@
 
 <script setup lang="ts">
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
+import HisAddButton from '@/components/his/HisAddButton.vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref, watch } from 'vue'
@@ -160,8 +158,6 @@ function addFilter() {
 
 <style scoped>
 .his-resampling-container {
-  display: grid;
-  grid-template-rows: 1fr 1fr auto;
   height: 100%;
 }
 </style>

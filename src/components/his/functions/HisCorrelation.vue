@@ -1,5 +1,5 @@
 <template>
-  <div class="his-correlation-container h-100 pa-2 ga-2">
+  <div class="h-100 pa-2 ga-2">
     <HisAutocomplete
       v-model="selectedTimeseries"
       :items="allSeries"
@@ -18,11 +18,8 @@
 
     <div class="d-flex pa-3">
       <v-spacer />
-      <v-btn
-        variant="tonal"
-        :disabled="!selectedTimeseries && !selectedSecondTimeseries"
-        prepend-icon="mdi-plus"
-        text="Add to collection"
+      <HisAddButton
+        :disabled="!selectedTimeseries || !selectedSecondTimeseries"
         @click="addChart"
       />
     </div>
@@ -31,6 +28,7 @@
 
 <script setup lang="ts">
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
+import HisAddButton from '@/components/his/HisAddButton.vue'
 import { computed, ref, watch } from 'vue'
 import { Chart, Dependant, DerivedChart } from '@/lib/his'
 import { Series } from '@/lib/timeseries/timeSeries'
@@ -156,7 +154,7 @@ function addChart() {
 <style scoped>
 .his-correlation-container {
   display: grid;
-  grid-template-rows: 1fr 1fr auto;
+  grid-template-rows: auto auto auto;
   height: 100%;
 }
 </style>
