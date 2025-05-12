@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, WatchHandle } from 'vue'
+import { computed, ref, watch, type WatchHandle } from 'vue'
 import { scaleTime } from 'd3-scale'
 import { DateTime } from 'luxon'
 
@@ -296,6 +296,8 @@ function startPlay(): void {
   play()
 }
 
+// Watch handle allows for unwatching a watch
+// https://vuejs.org/guide/essentials/watchers.html#stopping-a-watcher
 const playLoadingWatchHandle = ref<WatchHandle>()
 
 // Stops watching the loading state and cleans up the watch handle
