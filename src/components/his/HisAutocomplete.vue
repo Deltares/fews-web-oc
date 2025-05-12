@@ -22,7 +22,13 @@
         :value="getItemValue?.(item) ?? item"
         :title="getItemTitle?.(item) ?? String(item)"
         density="compact"
-      />
+      >
+        <template #prepend="{ isSelected }">
+          <v-list-item-action start>
+            <v-checkbox-btn :model-value="isSelected" density="compact" />
+          </v-list-item-action>
+        </template>
+      </v-list-item>
     </v-list>
   </div>
 </template>
