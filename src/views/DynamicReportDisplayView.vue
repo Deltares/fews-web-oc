@@ -3,6 +3,7 @@
     <v-toolbar v-if="hasSelectableLocations" density="compact">
       <v-btn
         prepend-icon="mdi-map-marker"
+        append-icon="mdi-chevron-down"
         variant="text"
         v-if="hasSelectableLocations"
         class="locations-search text-capitalize"
