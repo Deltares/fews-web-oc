@@ -102,7 +102,7 @@
           :logs="item.logs"
           :taskRuns="taskRuns"
           :disseminations="disseminations"
-          :userName="userName"
+          :userName="preferredUsername"
           :noteGroup="noteGroup"
           v-model:expanded="expandedItems[item.logs[0].taskRunId]"
           @disseminate-log="disseminateLog"
@@ -177,7 +177,7 @@ watch(
   },
 )
 
-const { userName } = useCurrentUser()
+const { preferredUsername } = useCurrentUser()
 
 const baseFilters = computed(() => {
   const startTime = convertJSDateToFewsPiParameter(startDate.value)

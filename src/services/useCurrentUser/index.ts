@@ -6,6 +6,14 @@ export function useCurrentUser() {
   const user = ref<User | null>(null)
 
   const userName = computed(() => user.value?.profile?.name ?? 'Current User')
+  const preferredUsername = computed(
+    () =>
+      user.value?.profile?.preferred_username ??
+      'Current User Preferred Username',
+  )
+  const userEmail = computed(
+    () => user.value?.profile?.email ?? 'Current User Email',
+  )
 
   const fetchCurrentUser = async () => {
     try {
@@ -22,6 +30,8 @@ export function useCurrentUser() {
   return {
     user,
     userName,
+    preferredUsername,
+    userEmail,
     fetchCurrentUser,
   }
 }
