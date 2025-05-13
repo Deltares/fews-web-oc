@@ -82,6 +82,17 @@
             v-model:selectedCollection="selectedCollection"
             v-model:collections="collections"
           />
+          <v-select
+            v-model="filterId"
+            :items="config.filters"
+            item-value="id"
+            item-title="name"
+            label="Filter"
+            variant="outlined"
+            hide-details
+            density="compact"
+            max-width="250"
+          />
         </v-card-title>
         <HisCollectionCharts
           v-if="selectedCollection.charts.length"
@@ -132,9 +143,10 @@ import { Series } from '@/lib/timeseries/timeSeries'
 import { difference } from 'lodash-es'
 import { useStorage } from '@vueuse/core'
 import { TimeSeriesDisplaySubplot } from '@deltares/fews-pi-requests'
+import { DataAnalysisDisplay } from '@/services/useHisDisplay'
 
 interface Props {
-  filterId?: string
+  config: DataAnalysisDisplay
   boundingBox?: BoundingBox
   settings?: ComponentSettings
 }
@@ -188,13 +200,12 @@ function getNewChartTitle(collection: Collection) {
   return `Chart ${collection.charts.length + 1}`
 }
 
+const filterId = ref(props.config.filters?.[0].id)
+
 const { locations, geojson } = useFilterLocations(baseUrl, () =>
-  props.filterId ? [props.filterId] : [],
+  filterId.value ? [filterId.value] : [],
 )
-const { timeSeriesHeaders } = useTimeSeriesHeaders(
-  baseUrl,
-  () => props.filterId,
-)
+const { timeSeriesHeaders } = useTimeSeriesHeaders(baseUrl, filterId)
 
 function addChart(chart: Chart) {
   selectedCollection.value.charts = [...selectedCollection.value.charts, chart]
