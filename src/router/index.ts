@@ -31,6 +31,8 @@ const DataDownloadDisplayView = () =>
   import('../views/DataDownloadDisplayView.vue')
 const TimeSeriesDisplay = () =>
   import('../components/timeseries/TimeSeriesDisplay.vue')
+const DynamicReportDisplayView = () =>
+  import('../views/DynamicReportDisplayView.vue')
 const HtmlDisplayView = () => import('../views/HtmlDisplayView.vue')
 const ReportsDisplayView = () => import('../views/ReportsDisplayView.vue')
 const WebDisplay = () => import('../components/webdisplay/WebDisplay.vue')
@@ -179,6 +181,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         path: 'reports',
         name: 'TopologyReports',
         component: ReportsDisplayView,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
+        path: 'dynamicreport',
+        name: 'TopologyDynamicReports',
+        component: DynamicReportDisplayView,
         props: true,
         meta: { sidebar: true },
       },
