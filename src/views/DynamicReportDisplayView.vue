@@ -1,17 +1,20 @@
 <template>
   <div class="d-flex flex-column h-100 w-100">
     <v-toolbar v-if="hasSelectableLocations" density="compact">
-      <v-btn
+      <v-select
+        v-model="selectedLocation"
+        :items="locations"
+        item-title="name"
+        item-value="id"
         prepend-icon="mdi-map-marker"
-        append-icon="mdi-chevron-down"
-        variant="text"
-        v-if="hasSelectableLocations"
-        class="locations-search text-capitalize"
+        density="compact"
+        variant="plain"
         hide-details
-        @click="showLocationsSearch"
-      >
-        {{ searchState.selectedItem?.name ?? 'Search locations' }}
-      </v-btn>
+        class="locations-select"
+        :placeholder="
+          locations.length ? 'Select location' : 'No locations available'
+        "
+      />
     </v-toolbar>
     <ShadowFrame :htmlContent="reportHtml" />
     <DateTimeSlider
@@ -35,7 +38,7 @@
 
 <script setup lang="ts">
 import { type TopologyNode } from '@deltares/fews-pi-requests'
-import { computed, ref, watchEffect } from 'vue'
+import { computed, ref } from 'vue'
 import { configManager } from '@/services/application-config'
 import {
   type ComponentSettings,
@@ -48,7 +51,6 @@ import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { useDisplay } from 'vuetify'
 import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import { toDateArray } from '@/lib/date'
-import { useGlobalSearchState } from '@/stores/globalSearch'
 interface Props {
   topologyNode?: TopologyNode
   settings?: ComponentSettings
@@ -86,8 +88,6 @@ const times = computed(() => {
 })
 const maxValuesTimeSeries = ref<TimeSeriesData[]>([])
 const dateTimeSliderEnabled = computed(() => {
-  console.log(capabilities.value)
-  console.log(capabilities.value?.dynamicReportDisplayCapabilities.dimension)
   return (
     capabilities.value?.dynamicReportDisplayCapabilities.dimension?.name ===
     'time'
@@ -102,17 +102,11 @@ const hasSelectableLocations = computed(() => {
 })
 
 const { mobile } = useDisplay()
-const searchState = useGlobalSearchState()
-
-function showLocationsSearch() {
-  searchState.active = true
-}
-
-watchEffect(() => {
-  searchState.items = locations.value
-})
-
-watchEffect(() => {
-  selectedLocation.value = searchState.selectedItem?.id ?? undefined
-})
 </script>
+
+<style scoped>
+.locations-select {
+  max-width: 20%;
+  min-width: 16em;
+}
+</style>
