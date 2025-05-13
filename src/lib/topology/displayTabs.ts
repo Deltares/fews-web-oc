@@ -8,6 +8,7 @@ import {
   nodeHasMap,
   nodeHasReports,
   nodeHasSchematicStatusDisplay,
+  nodeHasDynamicReportDisplay,
   nodeHasSystemMonitor,
   nodeHasWhatIfs,
   nodeHasWebDisplay,
@@ -94,6 +95,10 @@ export function displayTabsForNode(
         break
       case 'html-display':
         tab.active = nodeHasWebDisplay(node)
+        tab.to.params = { ...params }
+        break
+      case 'dynamic-report-display':
+        tab.active = nodeHasDynamicReportDisplay(node)
         tab.to.params = { ...params }
         break
       case 'dashboard':
