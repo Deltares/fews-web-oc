@@ -1,11 +1,18 @@
 <template>
-  <HisDisplayComponent v-if="filterId" :filterId :boundingBox />
+  <HisDisplayComponent
+    v-if="dataAnalysisDisplay"
+    :key="dataAnalysisDisplay.id"
+    :config="dataAnalysisDisplay"
+    :boundingBox
+  />
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import HisDisplayComponent from './HisDisplayComponent.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
+import { useDataAnalysisDisplay } from '@/services/useHisDisplay'
+import { configManager } from '@/services/application-config'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -13,6 +20,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const filterId = computed(() => props.topologyNode?.filterIds?.[0])
 const boundingBox = computed(() => props.topologyNode?.boundingBox)
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { dataAnalysisDisplay } = useDataAnalysisDisplay(baseUrl)
 </script>
