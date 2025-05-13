@@ -101,8 +101,6 @@ const hasSelectableLocations = computed(() => {
 })
 
 const { mobile } = useDisplay()
-
-// Locations search logic
 const searchState = useGlobalSearchState()
 
 function showLocationsSearch() {
