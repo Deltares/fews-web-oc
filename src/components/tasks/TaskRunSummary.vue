@@ -6,10 +6,6 @@
     @click="onExpansionPanelToggle"
     :ripple="false"
   >
-    <div
-      class="task_run__border"
-      v-if="isCompleted && canVisualize && !task.isCurrent"
-    />
     <v-card-text class="py-2 h-100 flex-grow-1">
       <div class="d-flex w-100">
         <div class="w-100">
@@ -47,7 +43,7 @@
               density="compact"
               trueIcon="mdi-chart-areaspline-variant"
               falseIcon="mdi-chart-line"
-              color="primary"
+              :color="selected ? taskRunColor : 'primary'"
               :disabled="task.isCurrent"
               @click.stop="taskRunsStore.toggleTaskRun(task)"
             >
@@ -256,13 +252,6 @@ function onExpansionPanelToggle() {
 </script>
 
 <style scoped>
-.task_run__border {
-  background-color: v-bind(taskRunColor);
-  width: 10px;
-  position: absolute;
-  height: 100%;
-}
-
 .selection-container {
   display: grid;
   place-items: center;
