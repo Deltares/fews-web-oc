@@ -41,6 +41,9 @@ import {
   CurrentTime,
   MouseOver,
   VerticalMouseOver,
+  PanningDirection,
+  MouseButton,
+  ModifierKey,
 } from '@deltares/fews-web-oc-charts'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
@@ -56,6 +59,7 @@ import { difference, uniq } from 'lodash-es'
 import { getMatchingIndexedString, type Tag } from '@/lib/charts/tags'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
+import { PanHandler } from '@deltares/fews-web-oc-charts'
 
 interface Props {
   config?: ChartConfig
@@ -63,6 +67,7 @@ interface Props {
   highlightTime?: Date
   isLoading?: boolean
   zoomHandler?: ZoomHandler
+  panHandler?: PanHandler
   verticalProfile?: boolean
   forecastLegend?: string
   settings: ChartsSettings['timeSeriesChart']
@@ -129,6 +134,12 @@ onMounted(() => {
       ? new VerticalMouseOver(undefined, (value: number) => value.toString())
       : new MouseOver(undefined, (value: number) => value.toString())
     const zoom = props.zoomHandler ?? new ZoomHandler(WheelMode.NONE)
+    const panX = props.panHandler ?? new PanHandler()
+    const panY = new PanHandler({
+      mouseButton: MouseButton.Left,
+      modifierKey: ModifierKey.Shift,
+      direction: PanningDirection.Y,
+    })
 
     const currentTime = new CurrentTime({ x: { axisIndex: 0 } })
 
@@ -146,6 +157,8 @@ onMounted(() => {
 
     axis.accept(thresholdLinesVisitor)
     axis.accept(zoom)
+    axis.accept(panX)
+    axis.accept(panY)
     axis.accept(mouseOver)
     axis.accept(currentTime)
     resize()
