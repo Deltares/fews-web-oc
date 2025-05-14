@@ -57,6 +57,7 @@ import { difference, uniq } from 'lodash-es'
 import { getMatchingIndexedString, type Tag } from '@/lib/charts/tags'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
+import { PanHandler } from '@deltares/fews-web-oc-charts'
 
 interface Props {
   config?: ChartConfig
@@ -64,6 +65,7 @@ interface Props {
   highlightTime?: Date
   isLoading?: boolean
   zoomHandler?: ZoomHandler
+  panHandler?: PanHandler
   verticalProfile?: boolean
   forecastLegend?: string
   settings: ChartsSettings['timeSeriesChart']
@@ -129,7 +131,6 @@ onMounted(() => {
       ? new VerticalMouseOver(undefined, (value: number) => value.toString())
       : new MouseOver(undefined, (value: number) => value.toString())
     const zoom = props.zoomHandler ?? new ZoomHandler(WheelMode.NONE)
-
     const currentTime = new CurrentTime({ x: { axisIndex: 0 } })
 
     thresholdLinesVisitor = new AlertLines(thresholdLines)
@@ -142,6 +143,9 @@ onMounted(() => {
         [],
       )
       axis.accept(axisTime.value)
+    }
+    if (props.panHandler) {
+      axis.accept(props.panHandler)
     }
 
     axis.accept(thresholdLinesVisitor)
