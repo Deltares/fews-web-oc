@@ -214,22 +214,22 @@ function determineViewPeriod() {
   }
 
   const result: {
-    startDate?: string
-    endDate?: string
+    startTime?: string
+    endTime?: string
   } = {}
 
   if (startDate) {
-    result.startDate = startTime ?? undefined
+    result.startTime = startTime ?? undefined
   }
   if (endDate) {
-    result.endDate = endTime ?? undefined
+    result.endTime = endTime ?? undefined
   }
 
   return result
 }
 
 const downloadFile = (downloadFormat: DocumentFormat) => {
-  let viewPeriod = determineViewPeriod()
+  const viewPeriod = determineViewPeriod()
 
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
