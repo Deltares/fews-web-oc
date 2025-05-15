@@ -35,7 +35,7 @@ export default defineConfig(({ mode }) => {
       headers: {
         'content-security-policy': [
           `default-src 'none'`,
-          `script-src 'self'`,
+          `script-src 'unsafe-inline' 'unsafe-eval' 'self'`,
           `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
           `style-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} 'unsafe-inline'`, // vuetify
           `worker-src 'self' blob:`, // maplibre-gl
