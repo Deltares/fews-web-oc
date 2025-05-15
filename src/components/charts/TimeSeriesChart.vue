@@ -82,7 +82,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 interface Emits {
-  'update:x-domain': [old: [Date, Date], new: [Date, Date]]
+  'update:x-domain': [new: [Date, Date]]
 }
 const emit = defineEmits<Emits>()
 
@@ -110,11 +110,7 @@ onMounted(() => {
       axisOptions,
     )
     axis.addEventListener('update:x-domain', (event) => {
-      emit(
-        'update:x-domain',
-        event.old as [Date, Date],
-        event.new as [Date, Date],
-      )
+      emit('update:x-domain', event.new as [Date, Date])
     })
 
     // Keep margin in sync with axis.margin
@@ -326,30 +322,46 @@ const refreshChart = () => {
 }
 
 const updateChartData = (series: ChartSeries[]) => {
+  let needsAxisRescale = true
   series.forEach((series) => {
     const charts = axis.charts.filter((chart) => chart.id == series.id)
-    if (charts.length > 0) {
-      const rawData = dataFromResources(series.dataResources, props.series)
-      const data = removeUnreliableData(rawData)
-      // Update each matching chart
-      charts.forEach((chart) => {
-        chart.data = data
-      })
-    }
+    if (charts.length === 0) return
+
+    const rawData = dataFromResources(series.dataResources, props.series)
+    const data = removeUnreliableData(rawData)
+    // Update each matching chart
+    charts.forEach((chart) => {
+      // If any chart has previous data, we should not rescale the axes.
+      needsAxisRescale &&= chart.data === undefined || chart.data.length === 0
+      chart.data = data
+    })
   })
-  // Ensure the current zoom, which might be user-selected, does not change
-  axis.redraw({
-    x: {
-      nice: false,
-      domain: undefined,
-      fullExtent: false,
-    },
-    y: {
-      nice: false,
-      domain: undefined,
-      fullExtent: false,
-    },
-  })
+  if (needsAxisRescale) {
+    // Autoscale only the y-axis, the x-axis should keep the domain set from
+    // the start and end time or zooming.
+    axis.redraw({
+      x: {
+        nice: false,
+        domain: undefined,
+        fullExtent: false,
+      },
+      y: { autoScale: true },
+    })
+  } else {
+    // Ensure the current zoom, which might be user-selected, does not change
+    axis.redraw({
+      x: {
+        nice: false,
+        domain: undefined,
+        fullExtent: false,
+      },
+      y: {
+        nice: false,
+        domain: undefined,
+        fullExtent: false,
+      },
+    })
+  }
 }
 
 const setTags = () => {
