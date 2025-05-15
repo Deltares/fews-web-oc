@@ -36,11 +36,6 @@ export const useWarningLevelsStore = defineStore('warningLevels', () => {
         }
       })
       .sort((a, b) => b.severity - a.severity)
-    // The warning level with the lowest severity is always the default "no thresholds" level.
-    // That level should not be shown in list of warning levels
-    if (levels.length > 0) {
-      levels.pop()
-    }
     return levels
   })
 
