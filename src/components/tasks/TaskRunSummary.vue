@@ -43,7 +43,7 @@
               density="compact"
               trueIcon="mdi-chart-areaspline-variant"
               falseIcon="mdi-chart-line"
-              :color="selected ? taskRunColor : 'primary'"
+              :color="taskRunColor"
               :disabled="task.isCurrent"
               @click.stop="taskRunsStore.toggleTaskRun(task)"
             >
@@ -101,8 +101,8 @@ interface Props {
 const props = defineProps<Props>()
 
 const taskRunColor = computed(() => {
-  // Get color from store, fallback to 'primary' if not found
-  return taskRunColorsStore.getColor(props.task.taskId) || 'primary'
+  // Get color from store, fallback to contrast color if not found
+  return taskRunColorsStore.getColor(props.task.taskId) || '--contrast-color'
 })
 
 const expanded = defineModel<boolean>('expanded', {
