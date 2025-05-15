@@ -213,10 +213,7 @@ function determineViewPeriod() {
     }
   }
 
-  const result: {
-    startTime?: string
-    endTime?: string
-  } = {}
+  const result: Pick<TimeSeriesFilter, 'startTime' | 'endTime'> = {}
 
   if (startDate) {
     result.startTime = startTime ?? undefined
