@@ -9,13 +9,15 @@
         <TimeSeriesChart
           v-for="subplot in subplots"
           :config="subplot"
-          :series="series"
+          :series="chartSeries"
           :key="subplot.id"
           :highlightTime="selectedDate"
           :isLoading="isLoading(subplot, loadingSeriesIds)"
           :zoomHandler="sharedZoomHandler"
+          :panHandler="sharedPanHandler"
           :settings="settings.timeSeriesChart"
           :forecastLegend="config.forecastLegend"
+          @update:x-domain="debouncedRefetchChartTimeSeries"
         >
         </TimeSeriesChart>
       </KeepAlive>
@@ -47,9 +49,10 @@
     >
       <TimeSeriesTable
         :config="tableConfig"
-        :series="series"
+        :series="tableSeries"
         :key="tableConfig.title"
         :settings="settings.timeSeriesTable"
+        :is-loading="isLoadingTableSeries"
         class="single"
         @change="(event) => onDataChange(event)"
         @update:isEditing="isEditing = $event"
@@ -61,9 +64,6 @@
       :value="DisplayType.Information"
       class="h-100"
     >
-      <!-- <div class="px-4 h-100"> -->
-      <!--   <iframe :srcdoc="informationContent" class="h-100 w-100 border-none" /> -->
-      <!-- </div> -->
       <div v-html="informationContent" class="pa-4 h-100 w-100" />
     </v-window-item>
   </v-window>
@@ -103,12 +103,20 @@ import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 import { useDisplay } from 'vuetify'
 import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
 import { until } from '@vueuse/core'
-import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'
+import {
+  ModifierKey,
+  MouseButton,
+  PanHandler,
+  PanningDirection,
+  ZoomHandler,
+  ZoomMode,
+} from '@deltares/fews-web-oc-charts'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import {
   getDefaultSettings,
   type ChartsSettings,
 } from '@/lib/topology/componentSettings'
+import { debounce } from 'lodash-es'
 
 interface Props {
   config?: DisplayConfig
@@ -153,6 +161,14 @@ const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings().charts,
 })
 
+// Ratio between old and new domain when zooming above which no refetch is
+// performed. Note: zooming out (i.e. zoom ratio > 1) will always refetch.
+const MAX_ZOOM_RATIO_FOR_REFETCH = 0.8
+
+// Minimum domain width in hours below which no refetch is done, because it is
+// unlikely that there is any effect of thinning.
+const MIN_HOURS_FOR_REFETCH = 12
+
 const { selectedDate } = useSelectedDate(() => props.currentTime)
 const store = useSystemTimeStore()
 const lastUpdated = ref<Date>(new Date())
@@ -165,20 +181,44 @@ const sharedZoomHandler = new ZoomHandler({
 const sharedVerticalZoomHandler = new ZoomHandler({
   sharedZoomMode: ZoomMode.Y,
 })
-
-const options = computed<UseTimeSeriesOptions>(() => {
-  return {
-    startTime: store.startTime,
-    endTime: store.endTime,
-    thinning: false,
-  }
+const sharedPanHandler = new PanHandler({
+  mouseButton: MouseButton.Left,
+  modifierKey: ModifierKey.Shift,
+  direction: PanningDirection.X,
 })
+
+const tab = ref<DisplayType>(props.displayType)
+
+const chartOptions = ref<UseTimeSeriesOptions>({
+  startTime: store.startTime,
+  endTime: store.endTime,
+  thinning: true,
+})
+const tableOptions = computed<UseTimeSeriesOptions>(() => ({
+  startTime: store.startTime,
+  endTime: store.endTime,
+  thinning: false,
+}))
+
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const {
-  series,
+  series: chartSeries,
   loadingSeriesIds,
   interval: useTimeSeriesInterval,
-} = useTimeSeries(baseUrl, () => props.config.requests, lastUpdated, options)
+} = useTimeSeries(
+  baseUrl,
+  () => props.config.requests,
+  lastUpdated,
+  chartOptions,
+  () => tab.value === DisplayType.TimeSeriesChart,
+)
+const { series: tableSeries, isLoading: isLoadingTableSeries } = useTimeSeries(
+  baseUrl,
+  () => props.config.requests,
+  lastUpdated,
+  tableOptions,
+  () => tab.value === DisplayType.TimeSeriesTable,
+)
 const {
   series: elevationChartSeries,
   loadingSeriesIds: elevationLoadingSeriesIds,
@@ -186,7 +226,8 @@ const {
   baseUrl,
   () => props.elevationChartConfig.requests,
   lastUpdated,
-  options,
+  chartOptions,
+  () => tab.value === DisplayType.ElevationChart,
   selectedDate,
 )
 
@@ -200,13 +241,16 @@ function isLoading(subplot: ChartConfig, loadingSeriesIds: string[]) {
 }
 
 async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
-  const seriesHeader = series.value[props.config.requests[0].key].header
+  const seriesKey = props.config.requests[0]?.key
+  const seriesHeader = seriesKey
+    ? chartSeries.value[seriesKey].header
+    : undefined
   await postTimeSeriesEdit(
     baseUrl,
     props.config.requests,
     newData,
-    seriesHeader.version ?? '',
-    seriesHeader.timeZone ?? '',
+    seriesHeader?.version ?? '',
+    seriesHeader?.timeZone ?? '',
   )
   lastUpdated.value = new Date()
 }
@@ -249,8 +293,6 @@ watch(
     }
   },
 )
-
-const tab = ref<DisplayType>(props.displayType)
 
 watch(
   () => props.displayType,
@@ -298,6 +340,48 @@ function onConfirmationLeave() {
   confirmationDialog.value = false
   isEditing.value = false
 }
+
+function shouldRefetchAfterDomainUpdate(newDomain: [Date, Date]): boolean {
+  // Always refetch if we have no previously set domain; we have no guarantees
+  // what the (FEWS-configured) domain is.
+  if (!chartOptions.value.startTime || !chartOptions.value.endTime) return true
+
+  const newDomainRange = newDomain[1].getTime() - newDomain[0].getTime()
+  const oldDomainRange =
+    chartOptions.value.endTime.getTime() -
+    chartOptions.value.startTime.getTime()
+  const zoomRatio = newDomainRange / oldDomainRange
+
+  // Detect panning; we should always refetch if we are panning.
+  const isPanning = Math.abs(zoomRatio - 1.0) < 1e-6
+  if (isPanning) return true
+
+  // Do not refetch if we are zoomed in past the point where thinning has
+  // any effect.
+  const isDomainLargeEnough =
+    newDomainRange >= MIN_HOURS_FOR_REFETCH * 60 * 60 * 1000
+  if (!isDomainLargeEnough) return false
+
+  // When zooming out, always refresh the data; we need more data than we had
+  // before.
+  // When zooming in, only fetch new data when zooming in more than a threshold,
+  // to prevent small changes in domain from updating all the data due to a
+  // slightly changed thinning parameter.
+  const isZoomingOut = zoomRatio > 1
+  const isZoomingInEnough = zoomRatio < MAX_ZOOM_RATIO_FOR_REFETCH
+  return isZoomingOut || isZoomingInEnough
+}
+
+function refetchChartTimeSeries(newDomain: [Date, Date]) {
+  if (!shouldRefetchAfterDomainUpdate(newDomain)) return
+
+  // Request a time series update with the new domain by setting a new
+  // lastUpdated value.
+  const [startTime, endTime] = newDomain
+  chartOptions.value = { ...chartOptions.value, startTime, endTime }
+  lastUpdated.value = new Date()
+}
+const debouncedRefetchChartTimeSeries = debounce(refetchChartTimeSeries, 500)
 </script>
 
 <style scoped>
