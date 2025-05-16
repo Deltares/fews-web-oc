@@ -14,7 +14,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
+import {
+  ref,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  computed,
+  useTemplateRef,
+} from 'vue'
 import {
   AlertLines,
   ChartArea,
@@ -73,13 +81,18 @@ const props = withDefaults(defineProps<Props>(), {
   },
 })
 
+interface Emits {
+  'update:x-domain': [new: [Date, Date]]
+}
+const emit = defineEmits<Emits>()
+
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
 const margin = ref<Margin>({})
 const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
-const chartContainer = ref<HTMLElement>()
+const chartContainer = useTemplateRef('chartContainer')
 const axisTime = ref<CrossSectionSelect>()
 const hasLoadedOnce = ref(false)
 
@@ -96,6 +109,9 @@ onMounted(() => {
       props.verticalProfile ? 1200 : null,
       axisOptions,
     )
+    axis.addEventListener('update:x-domain', (event) => {
+      emit('update:x-domain', event.new as [Date, Date])
+    })
 
     // Keep margin in sync with axis.margin
     axis.margin = new Proxy(axis.margin, {
@@ -306,30 +322,46 @@ const refreshChart = () => {
 }
 
 const updateChartData = (series: ChartSeries[]) => {
+  let needsAxisRescale = true
   series.forEach((series) => {
     const charts = axis.charts.filter((chart) => chart.id == series.id)
-    if (charts.length > 0) {
-      const rawData = dataFromResources(series.dataResources, props.series)
-      const data = removeUnreliableData(rawData)
-      // Update each matching chart
-      charts.forEach((chart) => {
-        chart.data = data
-      })
-    }
+    if (charts.length === 0) return
+
+    const rawData = dataFromResources(series.dataResources, props.series)
+    const data = removeUnreliableData(rawData)
+    // Update each matching chart
+    charts.forEach((chart) => {
+      // If any chart has previous data, we should not rescale the axes.
+      needsAxisRescale &&= chart.data === undefined || chart.data.length === 0
+      chart.data = data
+    })
   })
-  // Ensure the current zoom, which might be user-selected, does not change
-  axis.redraw({
-    x: {
-      nice: false,
-      domain: undefined,
-      fullExtent: false,
-    },
-    y: {
-      nice: false,
-      domain: undefined,
-      fullExtent: false,
-    },
-  })
+  if (needsAxisRescale) {
+    // Autoscale only the y-axis, the x-axis should keep the domain set from
+    // the start and end time or zooming.
+    axis.redraw({
+      x: {
+        nice: false,
+        domain: undefined,
+        fullExtent: false,
+      },
+      y: { autoScale: true },
+    })
+  } else {
+    // Ensure the current zoom, which might be user-selected, does not change
+    axis.redraw({
+      x: {
+        nice: false,
+        domain: undefined,
+        fullExtent: false,
+      },
+      y: {
+        nice: false,
+        domain: undefined,
+        fullExtent: false,
+      },
+    })
+  }
 }
 
 const setTags = () => {
