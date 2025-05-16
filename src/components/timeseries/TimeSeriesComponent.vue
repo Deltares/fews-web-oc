@@ -327,20 +327,23 @@ function onConfirmationLeave() {
   isEditing.value = false
 }
 
-function refetchChartTimeSeries(
-  oldDomain: [Date, Date],
-  newDomain: [Date, Date],
-) {
-  const getRange = (domain: [Date, Date]) =>
-    domain[1].getTime() - domain[0].getTime()
+function shouldRefetchAfterDomainUpdate(newDomain: [Date, Date]): boolean {
+  // Always refetch if we have no previously set domain; we have no guarantees
+  // what the (FEWS-configured) domain is.
+  if (!chartOptions.value.startTime || !chartOptions.value.endTime) return true
+
+  const newDomainRange = newDomain[1].getTime() - newDomain[0].getTime()
 
   // Do not refetch if we are zoomed in past the point where thinning has
   // any effect.
   const isDomainLargeEnough =
-    getRange(newDomain) >= MIN_HOURS_FOR_REFETCH * 60 * 60 * 1000
-  if (!isDomainLargeEnough) return
+    newDomainRange >= MIN_HOURS_FOR_REFETCH * 60 * 60 * 1000
+  if (!isDomainLargeEnough) return false
 
-  const zoomRatio = getRange(newDomain) / getRange(oldDomain)
+  const oldDomainRange =
+    chartOptions.value.endTime.getTime() -
+    chartOptions.value.startTime.getTime()
+  const zoomRatio = newDomainRange / oldDomainRange
 
   // When zooming out, always refresh the data; we need more data than we had
   // before.
@@ -349,13 +352,17 @@ function refetchChartTimeSeries(
   // slightly changed thinning parameter.
   const isZoomingOut = zoomRatio > 1
   const isZoomingInEnough = zoomRatio < MAX_ZOOM_RATIO_FOR_REFETCH
-  if (isZoomingOut || isZoomingInEnough) {
-    // Request a time series update with the new domain by setting a new
-    // lastUpdated value.
-    const [startTime, endTime] = newDomain
-    chartOptions.value = { ...chartOptions.value, startTime, endTime }
-    lastUpdated.value = new Date()
-  }
+  return isZoomingOut || isZoomingInEnough
+}
+
+function refetchChartTimeSeries(newDomain: [Date, Date]) {
+  if (!shouldRefetchAfterDomainUpdate(newDomain)) return
+
+  // Request a time series update with the new domain by setting a new
+  // lastUpdated value.
+  const [startTime, endTime] = newDomain
+  chartOptions.value = { ...chartOptions.value, startTime, endTime }
+  lastUpdated.value = new Date()
 }
 </script>
 
