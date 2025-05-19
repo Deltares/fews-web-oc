@@ -1,3 +1,22 @@
+<!-- TOC -->
+* [The Delft-FEWS Web OC Tomcat Login](#the-delft-fews-web-oc-tomcat-login)
+  * [conf/server.xml](#confserverxml)
+  * [Login Configuration](#login-configuration)
+    * [Basic Authentication Based login conf/web.xml](#basic-authentication-based-login-confwebxml)
+    * [FORM Based login conf/web.xml](#form-based-login-confwebxml)
+      * [web.xml](#webxml)
+      * [webapps/ROOT](#webappsroot)
+      * [login.html](#loginhtml)
+    * [loginfailed.html](#loginfailedhtml)
+* [User Management with Tomcat](#user-management-with-tomcat)
+  * [conf/server.xml](#confserverxml-1)
+  * [conf/tomcat-users.xml](#conftomcat-usersxml)
+  * [digest](#digest)
+* [Delft-FEWS Configuration](#delft-fews-configuration)
+  * [UserGroups.xml](#usergroupsxml)
+* [Access Web Services API with the tomcat users](#access-web-services-api-with-the-tomcat-users)
+<!-- TOC -->
+
 # The Delft-FEWS Web OC Tomcat Login
 
 To support login with a username and password using tomcat configuration, both the weboc and the Delft-FEWS Web Services have to be deployed on the same tomcat server.
@@ -10,13 +29,70 @@ Also Single Sign On has to be enabled in the tomcat server.xml. This wil allow s
 <Valve className="org.apache.catalina.authenticator.SingleSignOn" />
 ```
 
-## conf/web.xml
+## Login Configuration
+
+The login configuration can be done in the web.xml by either configuring Basic Authentication or FORM based authentication.
+Basic Authentication is the simplest way to authenticate users. It requires no additional configuration and is supported by all browsers.
+
+### Basic Authentication Based login conf/web.xml
+
+Basic authentication is a simple authentication scheme built into the HTTP protocol that is supported by all browsers.
+You will receive a pop-up window to enter your credentials. Once authenticated, the credentials are sent in the HTTP header with each request.
+This also allows access to the WebOC and WebServices with the same session cookie.
+There is no need to add a login page or error page.
+
+All URLs will be protected by the security constraint.
+To access any resources a user needs to have the rol WS_VIEWER or WS_EDITOR.
+In the following configuration the WS_VIEWER role only has access to GET requests.
+The list of roles can be extended with more application specific roles that can be used as systemUserGroup in the UserGroups.xml.
+
+``` xml
+
+	    <security-constraint>
+            <display-name>SecurityConstraint Web OC Viewer</display-name>
+                <web-resource-collection>
+                    <web-resource-name>WebOC Viewer</web-resource-name>
+                    <url-pattern>/*</url-pattern>
+                    <http-method>GET</http-method>
+            </web-resource-collection>
+            <auth-constraint>
+                  <role-name>WS_VIEWER</role-name>
+                  <role-name>WS_EDITOR</role-name>
+            </auth-constraint>
+        </security-constraint>
+	    <security-constraint>
+            <display-name>SecurityConstraint Editor</display-name>
+            <web-resource-collection>
+                  <web-resource-name>WebOC Editor</web-resource-name>
+                 <url-pattern>/*</url-pattern>
+            </web-resource-collection>
+            <auth-constraint>
+                  <role-name>WS_EDITOR</role-name>
+            </auth-constraint>
+        </security-constraint>
+        <login-config>
+            <auth-method>BASIC</auth-method>
+            <realm-name>Delft-FEWS Login</realm-name>
+        </login-config>
+        <security-role>
+            <role-name>WS_VIEWER</role-name>
+        </security-role>
+        <security-role>
+            <role-name>WS_EDITOR</role-name>
+        </security-role>
+```
+
+### FORM Based login conf/web.xml
+
+FORM based authentication requires a custom login page and error page. All styling in the login form will have to be embedded in the page itself.
 
 All URLs will be protected by the security constraint. 
 The login page will be login.html and the error page will be loginfailed.html.
 To access any resources a user needs to have the rol WS_VIEWER or WS_EDITOR.
 In the following configuration the WS_VIEWER role only has access to GET requests.
-The list of roles can be extended with more application specific roles that can be used as systemUserGroup in the UserGroups.xml. 
+The list of roles can be extended with more application specific roles that can be used as systemUserGroup in the UserGroups.xml.
+
+#### web.xml
 
 ``` xml
 
@@ -57,11 +133,11 @@ The list of roles can be extended with more application specific roles that can 
         </security-role>
 ```
 
-## webapps/ROOT
-The login.html and loginfailed.html pages have to be added to the ROOT.war file.
+#### webapps/ROOT
+The login.html and loginfailed.html pages have to be added to the ROOT.war file in case FORM based authentication is used.
 The login page will be login.html and the error page will be loginfailed.html.
 
-### login.html
+#### login.html
 The following is a very basic login page. The form will post the username and password to the j_security_check action that will trigger the tomcat login.
 ``` html
 <!DOCTYPE html>
@@ -93,12 +169,6 @@ The following is a very basic login page. The form will post the username and pa
 </body>
 </html>
 ```
-
-## ENV variable
-The Fews Web Services will have to know that the authentication type is tomcat. This can be done by setting the following environment variable:
-
-FEWS_WS_AUTHENTICATION_TYPE=AuthenticationTomcat
-
 
 # User Management with Tomcat
 
@@ -147,7 +217,7 @@ version="1.0">
 ## digest
 
 Password hashes have to be generated. Tomcat provides the digest tool in the bin folder of the tomcat installation. 
-To generate a hashed passwrod of "dummy_password", the following command can be issued (on Windows, the command is available on Linux as well). 
+To generate a hashed password of "dummy_password", the following command can be issued (on Windows, the command is available on Linux as well). 
 Note that the algorithm, number of iterations, salt length and keyLength all are passed to the tool:
 
 ``` bash

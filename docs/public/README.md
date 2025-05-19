@@ -49,4 +49,5 @@ See [Deployments](deployments/) for more information on how to run Web OC stand-
 
 ## Authentication and Authorization
 
-Open ID Connect: See [OIDC](oidc/) 
+Open ID Connect: See [OIDC](oidc/)
+Tomcat Security: See [Tomcat](tomcat-security/)
