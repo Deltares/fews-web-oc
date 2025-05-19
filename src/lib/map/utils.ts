@@ -25,10 +25,26 @@ export function transformStyle(
 ): StyleSpecification {
   if (!oldStyle) return newStyle
 
-  const customLayers = oldStyle.layers.filter((layer) =>
-    isCustomLayer(layer.id),
-  )
-  const layers = newStyle.layers.concat(customLayers)
+  const customLayers = oldStyle.layers.flatMap((layer, i) => {
+    if (!isCustomLayer(layer.id)) return []
+
+    return {
+      layer,
+      beforeId: oldStyle.layers[i + 1]?.id,
+    }
+  })
+
+  const layers = [...newStyle.layers]
+
+  customLayers.forEach(({ layer, beforeId }) => {
+    const beforeIndex = layers.findIndex((l) => l.id === beforeId)
+
+    if (beforeIndex !== -1) {
+      layers.splice(beforeIndex, 0, layer)
+    } else {
+      layers.push(layer)
+    }
+  })
 
   const sources = newStyle.sources
   for (const [key, value] of Object.entries(oldStyle.sources)) {
