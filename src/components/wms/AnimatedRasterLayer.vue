@@ -55,10 +55,7 @@ const isLoading = defineModel<boolean>('isLoading', { default: false })
 
 const sourceId = computed(() => getSourceId(`${props.layer.name}-source`))
 const layerId = computed(() => getLayerId(`${props.layer.name}-layer`))
-
-const beforeId = computed(() => {
-  return props.beforeId ?? getBeforeId(map, layerId.value)
-})
+const beforeId = computed(() => getBeforeId(map, layerId.value, props.beforeId))
 
 const emit = defineEmits(['doubleclick'])
 

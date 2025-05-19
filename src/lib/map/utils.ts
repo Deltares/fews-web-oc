@@ -63,9 +63,16 @@ export function transformStyle(
   }
 }
 
-export function getBeforeId(map: Map | undefined, layerId?: string) {
+export function getBeforeId(
+  map: Map | undefined,
+  layerId?: string,
+  customId?: string,
+) {
   const layerIds = map?.getLayersOrder() ?? []
 
-  // Use the first custom layer
-  return layerIds.find((id) => isCustomLayer(id) && id !== layerId)
+  // Use the customId if provided or the first custom layer id
+  return (
+    layerIds.find((id) => id === customId) ??
+    layerIds.find((id) => isCustomLayer(id) && id !== layerId)
+  )
 }
