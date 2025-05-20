@@ -14,9 +14,10 @@
           :highlightTime="selectedDate"
           :isLoading="isLoading(subplot, loadingSeriesIds)"
           :zoomHandler="sharedZoomHandler"
+          :panHandler="sharedPanHandler"
           :settings="settings.timeSeriesChart"
           :forecastLegend="config.forecastLegend"
-          @update:x-domain="refetchChartTimeSeries"
+          @update:x-domain="debouncedRefetchChartTimeSeries"
         >
         </TimeSeriesChart>
       </KeepAlive>
@@ -102,12 +103,20 @@ import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 import { useDisplay } from 'vuetify'
 import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
 import { until } from '@vueuse/core'
-import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'
+import {
+  ModifierKey,
+  MouseButton,
+  PanHandler,
+  PanningDirection,
+  ZoomHandler,
+  ZoomMode,
+} from '@deltares/fews-web-oc-charts'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import {
   getDefaultSettings,
   type ChartsSettings,
 } from '@/lib/topology/componentSettings'
+import { debounce } from 'lodash-es'
 
 interface Props {
   config?: DisplayConfig
@@ -171,6 +180,11 @@ const sharedZoomHandler = new ZoomHandler({
 })
 const sharedVerticalZoomHandler = new ZoomHandler({
   sharedZoomMode: ZoomMode.Y,
+})
+const sharedPanHandler = new PanHandler({
+  mouseButton: MouseButton.Left,
+  modifierKey: ModifierKey.Shift,
+  direction: PanningDirection.X,
 })
 
 const tab = ref<DisplayType>(props.displayType)
@@ -333,17 +347,20 @@ function shouldRefetchAfterDomainUpdate(newDomain: [Date, Date]): boolean {
   if (!chartOptions.value.startTime || !chartOptions.value.endTime) return true
 
   const newDomainRange = newDomain[1].getTime() - newDomain[0].getTime()
+  const oldDomainRange =
+    chartOptions.value.endTime.getTime() -
+    chartOptions.value.startTime.getTime()
+  const zoomRatio = newDomainRange / oldDomainRange
+
+  // Detect panning; we should always refetch if we are panning.
+  const isPanning = Math.abs(zoomRatio - 1.0) < 1e-6
+  if (isPanning) return true
 
   // Do not refetch if we are zoomed in past the point where thinning has
   // any effect.
   const isDomainLargeEnough =
     newDomainRange >= MIN_HOURS_FOR_REFETCH * 60 * 60 * 1000
   if (!isDomainLargeEnough) return false
-
-  const oldDomainRange =
-    chartOptions.value.endTime.getTime() -
-    chartOptions.value.startTime.getTime()
-  const zoomRatio = newDomainRange / oldDomainRange
 
   // When zooming out, always refresh the data; we need more data than we had
   // before.
@@ -364,6 +381,7 @@ function refetchChartTimeSeries(newDomain: [Date, Date]) {
   chartOptions.value = { ...chartOptions.value, startTime, endTime }
   lastUpdated.value = new Date()
 }
+const debouncedRefetchChartTimeSeries = debounce(refetchChartTimeSeries, 500)
 </script>
 
 <style scoped>
