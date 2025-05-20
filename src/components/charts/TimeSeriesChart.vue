@@ -14,7 +14,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
+import {
+  ref,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  computed,
+  useTemplateRef,
+} from 'vue'
 import {
   AlertLines,
   ChartArea,
@@ -33,6 +41,7 @@ import {
   CurrentTime,
   MouseOver,
   VerticalMouseOver,
+  DomainChangeEvent,
 } from '@deltares/fews-web-oc-charts'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
@@ -73,15 +82,21 @@ const props = withDefaults(defineProps<Props>(), {
   },
 })
 
+interface Emits {
+  'update:x-domain': [new: [Date, Date]]
+}
+const emit = defineEmits<Emits>()
+
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
 const margin = ref<Margin>({})
 const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
-const chartContainer = ref<HTMLElement>()
+const chartContainer = useTemplateRef('chartContainer')
 const axisTime = ref<CrossSectionSelect>()
 const hasLoadedOnce = ref(false)
+const hasResetAxes = ref(true)
 
 onMounted(() => {
   if (chartContainer.value) {
@@ -96,6 +111,7 @@ onMounted(() => {
       props.verticalProfile ? 1200 : null,
       axisOptions,
     )
+    axis.addEventListener('update:x-domain', onUpdateXDomain)
 
     // Keep margin in sync with axis.margin
     axis.margin = new Proxy(axis.margin, {
@@ -151,6 +167,11 @@ watch(
     if (newValue !== undefined) onCrossValueChange(newValue)
   },
 )
+
+function onUpdateXDomain(event: DomainChangeEvent): void {
+  hasResetAxes.value = event.fromZoomReset
+  emit('update:x-domain', event.new as [Date, Date])
+}
 
 function onCrossValueChange(value: number | Date) {
   if (axisTime.value) {
@@ -303,33 +324,55 @@ const refreshChart = () => {
       autoScale: true,
     },
   })
+  hasResetAxes.value = true
 }
 
 const updateChartData = (series: ChartSeries[]) => {
+  let allMissingData = true
   series.forEach((series) => {
     const charts = axis.charts.filter((chart) => chart.id == series.id)
-    if (charts.length > 0) {
-      const rawData = dataFromResources(series.dataResources, props.series)
-      const data = removeUnreliableData(rawData)
-      // Update each matching chart
-      charts.forEach((chart) => {
-        chart.data = data
-      })
-    }
+    if (charts.length === 0) return
+
+    const rawData = dataFromResources(series.dataResources, props.series)
+    const data = removeUnreliableData(rawData)
+    // Update each matching chart
+    charts.forEach((chart) => {
+      // Keep track of whether all charts had missing data before this data
+      // update, in that case we should reset the y-axes as the domain is
+      // probably [NaN, NaN].
+      allMissingData &&= chart.data === undefined || chart.data.length === 0
+      chart.data = data
+    })
   })
-  // Ensure the current zoom, which might be user-selected, does not change
-  axis.redraw({
-    x: {
-      nice: false,
-      domain: undefined,
-      fullExtent: false,
-    },
-    y: {
-      nice: false,
-      domain: undefined,
-      fullExtent: false,
-    },
-  })
+  const needsAxisRescale = allMissingData || hasResetAxes.value
+  if (needsAxisRescale) {
+    // Autoscale only the y-axis, the x-axis should keep the domain set from
+    // the start and end time or zooming.
+    axis.redraw({
+      x: {
+        nice: false,
+        domain: undefined,
+        fullExtent: false,
+      },
+      y: { autoScale: true },
+    })
+    hasResetAxes.value = true
+  } else {
+    // Ensure the current zoom, which might be user-selected, does not change
+    axis.redraw({
+      x: {
+        nice: false,
+        domain: undefined,
+        fullExtent: false,
+      },
+      y: {
+        nice: false,
+        domain: undefined,
+        fullExtent: false,
+      },
+    })
+    hasResetAxes.value = false
+  }
 }
 
 const setTags = () => {
