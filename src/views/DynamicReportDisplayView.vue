@@ -79,12 +79,31 @@ const locations = computed(() => {
   )
 })
 
+interface DimensionWithPeriod {
+  name: string
+  units: string
+  default: string
+  period: string
+}
+interface DimensionWithTimes {
+  name: string
+  units: string
+  default: string
+  times: string
+}
+
+function isDimensionWithPeriod(
+  dimension: DimensionWithPeriod | DimensionWithTimes,
+): dimension is DimensionWithPeriod {
+  return (dimension as DimensionWithPeriod).period !== undefined
+}
+
 const times = computed(() => {
   if (!dateTimeSliderEnabled.value) return []
-  return toDateArray(
+  const dimension =
     capabilities.value?.dynamicReportDisplayCapabilities.dimension
-      ?.period as string,
-  )
+  if (!dimension) return []
+  if (isDimensionWithPeriod(dimension)) return toDateArray(dimension.period)
 })
 const maxValuesTimeSeries = ref<TimeSeriesData[]>([])
 const dateTimeSliderEnabled = computed(() => {
