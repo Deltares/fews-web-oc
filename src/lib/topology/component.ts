@@ -1,6 +1,9 @@
 import type { WebOCDashboardItem } from '@deltares/fews-pi-requests'
 
-export type ComponentType = WebOCDashboardItem['component'] | 'dashboard'
+export type ComponentType =
+  | WebOCDashboardItem['component']
+  | 'dashboard'
+  | 'dynamic-report-display'
 
 export const ComponentType = {
   map: 'map',
@@ -10,6 +13,7 @@ export const ComponentType = {
   'schematic-status-display': 'schematic-status-display',
   'system-monitor': 'system-monitor',
   'html-display': 'html-display',
+  'dynamic-report-display': 'dynamic-report-display',
   dashboard: 'dashboard',
   'whatif-display': 'whatif-display',
   'log-display': 'log-display',
@@ -21,6 +25,7 @@ export const componentTypeToIconMap = {
   'data-download-display': 'mdi-download',
   report: 'mdi-file-document',
   'schematic-status-display': 'mdi-view-dashboard',
+  'dynamic-report-display': 'mdi-file-document-edit',
   'system-monitor': 'mdi-monitor',
   'html-display': 'mdi-web',
   dashboard: 'mdi-view-dashboard',
@@ -36,6 +41,7 @@ export const componentTypeToTitleMap = {
   'schematic-status-display': 'Schematic',
   'system-monitor': 'System Monitor',
   'html-display': 'Web Display',
+  'dynamic-report-display': 'Dynamic Report',
   dashboard: 'Dashboard',
   'whatif-display': 'What If',
   'log-display': 'Log',
@@ -50,6 +56,7 @@ export const componentTypeToRouteNameMap = {
   'system-monitor': 'TopologySystemMonitor',
   'html-display': 'TopologyWebDisplay',
   dashboard: 'TopologyDashboard',
+  'dynamic-report-display': 'TopologyDynamicReports',
   'whatif-display': 'TopologyWhatIfDisplay',
   'log-display': 'TopologyLogDisplay',
 } satisfies Record<ComponentType, string>
@@ -64,5 +71,6 @@ export const componentTypeToIdMap = {
   'html-display': 'webdisplay',
   dashboard: 'dashboard',
   'whatif-display': 'whatif',
+  'dynamic-report-display': 'dynamicreport',
   'log-display': 'log',
 } satisfies Record<ComponentType, string>

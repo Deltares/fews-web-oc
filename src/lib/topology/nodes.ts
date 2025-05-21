@@ -133,7 +133,8 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
     nodeHasDashboard(node) ||
     nodeHasWhatIfs(node) ||
     nodeHasWebDisplay(node) ||
-    nodeHasLogDisplay(node)
+    nodeHasLogDisplay(node) ||
+    nodeHasDynamicReportDisplay(node)
   )
 }
 
@@ -155,6 +156,10 @@ export function nodeHasDataDownload(node: TopologyNode) {
 
 export function nodeHasReports(node: TopologyNode) {
   return node.reportDisplay?.reports !== undefined
+}
+
+export function nodeHasDynamicReportDisplay(node: TopologyNode) {
+  return node.dynamicReportDisplay !== undefined
 }
 
 export function nodeHasSchematicStatusDisplay(node: TopologyNode) {

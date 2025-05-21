@@ -1,3 +1,5 @@
+import { Duration } from 'luxon'
+
 /**
  * Converts a date to a string in the format 'YYYY-MM-DDTHH:MM'.
  * @param date - The date to convert.
@@ -189,4 +191,32 @@ export function toDateSpanString(
   endDate: Date | string | number | undefined | null,
 ) {
   return `${toDateRangeString(startDate, endDate)} (${toDateAbsDifferenceString(startDate, endDate)})`
+}
+
+export function toDateArray(period: string): Date[] {
+  // Split the period string into start, end, and interval parts
+  const [start, end, interval] = period.split('/')
+
+  // Parse dates using JavaScript Date
+  const startDate = new Date(start)
+  const endDate = new Date(end)
+
+  // Parse interval duration using Luxon
+  const intervalDuration = Duration.fromISO(interval)
+
+  // Convert Luxon duration to milliseconds
+  const intervalMs = intervalDuration.as('milliseconds')
+
+  // Generate array of datetimes
+  const result = []
+  let currentDate = new Date(startDate)
+
+  while (currentDate <= endDate) {
+    result.push(currentDate)
+
+    // Add interval using milliseconds
+    currentDate = new Date(currentDate.getTime() + intervalMs)
+  }
+
+  return result
 }
