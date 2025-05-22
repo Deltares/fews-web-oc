@@ -30,7 +30,7 @@
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
 import HisAddButton from '@/components/his/HisAddButton.vue'
 import { computed, ref, watch } from 'vue'
-import { Chart, Dependant, DerivedChart } from '@/lib/his'
+import { Chart, Dependant, DerivedChart, getValidFilterCharts } from '@/lib/his'
 import { Series } from '@/lib/timeseries/timeSeries'
 import {
   TimeSeriesDisplaySubplot,
@@ -50,15 +50,7 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-const allSeries = computed(() =>
-  props.charts
-    .filter((chart) => chart.type === 'filter')
-    .flatMap((chart) => chart.subplot.items)
-    .filter(
-      (series, index, self) =>
-        index === self.findIndex((s) => s.request === series.request),
-    ),
-)
+const allSeries = computed(() => getValidFilterCharts(props.charts))
 
 const selectedTimeseries = ref<TimeSeriesDisplaySubplotItem>()
 const selectedSecondTimeseries = ref<TimeSeriesDisplaySubplotItem>()
