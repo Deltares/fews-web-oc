@@ -5,8 +5,18 @@ import {
   DomainAxisEventValuesStringArray,
   TimeSeriesResult,
   TimeSeriesResponse,
+  type Header,
+  type TimeSeriesFilter,
 } from '@deltares/fews-pi-requests'
-import { computed, onUnmounted, ref, shallowRef, toValue, watch } from 'vue'
+import {
+  computed,
+  onUnmounted,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchEffect,
+} from 'vue'
 import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl'
 import { DateTime, Interval } from 'luxon'
@@ -254,6 +264,56 @@ export function useTimeSeries(
     isLoading,
     loadingSeriesIds,
     interval,
+  }
+}
+
+export function useTimeSeriesHeaders(
+  baseUrl: string,
+  filterId: MaybeRefOrGetter<string | undefined>,
+) {
+  const timeSeriesHeaders = ref<Header[]>([])
+
+  const isLoading = ref(false)
+  const isReady = ref(false)
+  const error = shallowRef<string>()
+
+  const piProvider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
+  async function fetch() {
+    const _filterId = toValue(filterId)
+    if (_filterId === undefined) {
+      timeSeriesHeaders.value = []
+      return
+    }
+
+    isLoading.value = true
+    isReady.value = false
+
+    const filter: TimeSeriesFilter = {
+      onlyHeaders: true,
+      filterId: _filterId,
+    }
+    try {
+      const timeSeriesResponse = await piProvider.getTimeSeries(filter)
+      timeSeriesHeaders.value =
+        timeSeriesResponse.timeSeries
+          ?.flatMap((ts) => ts.header)
+          .filter((header) => header !== undefined) ?? []
+    } catch {
+      error.value = 'Error loading time series headers'
+      timeSeriesHeaders.value = []
+    } finally {
+      isLoading.value = false
+      isReady.value = true
+    }
+  }
+
+  watchEffect(fetch)
+
+  return {
+    timeSeriesHeaders,
   }
 }
 
