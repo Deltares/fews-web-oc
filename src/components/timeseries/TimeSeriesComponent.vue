@@ -171,7 +171,6 @@ const MIN_HOURS_FOR_REFETCH = 12
 
 const { selectedDate } = useSelectedDate(() => props.currentTime)
 const store = useSystemTimeStore()
-const lastUpdated = ref<Date>(new Date())
 const isEditing = ref(false)
 const confirmationDialog = ref(false)
 const { xs } = useDisplay()
@@ -208,14 +207,16 @@ const {
 } = useTimeSeries(
   baseUrl,
   () => props.config.requests,
-  lastUpdated,
   chartOptions,
   () => tab.value === DisplayType.TimeSeriesChart,
 )
-const { series: tableSeries, isLoading: isLoadingTableSeries } = useTimeSeries(
+const {
+  series: tableSeries,
+  isLoading: isLoadingTableSeries,
+  refresh: refreshTableTimeSeries,
+} = useTimeSeries(
   baseUrl,
   () => props.config.requests,
-  lastUpdated,
   tableOptions,
   () => tab.value === DisplayType.TimeSeriesTable,
 )
@@ -225,7 +226,6 @@ const {
 } = useTimeSeries(
   baseUrl,
   () => props.elevationChartConfig.requests,
-  lastUpdated,
   chartOptions,
   () => tab.value === DisplayType.ElevationChart,
   selectedDate,
@@ -252,7 +252,7 @@ async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
     seriesHeader?.version ?? '',
     seriesHeader?.timeZone ?? '',
   )
-  lastUpdated.value = new Date()
+  refreshTableTimeSeries()
 }
 
 const subplots = computed(() => {
@@ -379,7 +379,6 @@ function refetchChartTimeSeries(newDomain: [Date, Date]) {
   // lastUpdated value.
   const [startTime, endTime] = newDomain
   chartOptions.value = { ...chartOptions.value, startTime, endTime }
-  lastUpdated.value = new Date()
 }
 const debouncedRefetchChartTimeSeries = debounce(refetchChartTimeSeries, 500)
 </script>
