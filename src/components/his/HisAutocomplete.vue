@@ -9,7 +9,10 @@
         density="compact"
         @click="clearSelected"
       />
+      <v-spacer />
+      <slot name="append-title" />
     </div>
+    <slot name="prepend" />
     <v-list
       v-model:selected="listSelected"
       class="overflow-auto flex-1-1 py-0"
