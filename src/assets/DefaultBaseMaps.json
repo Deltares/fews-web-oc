@@ -9,12 +9,14 @@
     "id": "light",
     "name": "CartoDB (light)",
     "icon": "mdi-weather-sunny",
-    "style": "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+    "style": "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+    "beforeId": "boundary_country_outline"
   },
   {
     "id": "dark",
     "name": "CartoDB (dark)",
     "icon": "mdi-weather-night",
-    "style": "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+    "style": "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+    "beforeId": "boundary_country_outline"
   }
 ]
