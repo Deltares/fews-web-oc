@@ -224,7 +224,7 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 <style scoped>
 .his-selection-container {
   display: grid;
-  grid-template-rows: 1fr 1fr 2fr;
+  grid-template-rows: 1fr 1fr 1fr 2fr;
   height: 100%;
 }
 </style>

@@ -1,11 +1,13 @@
 <template>
   <div class="his-resampling-container h-100 pa-2 ga-2">
-    <HisAutocomplete
+    <HisGroupSelect
       v-model="selectedTimeseries"
       :items="allSeries"
       label="Timeseries"
-      :getItemValue="(item) => item"
-      :getItemTitle="(item) => item.legend ?? ''"
+      :getItemValue="(item) => item.series"
+      :getItemTitle="(item) => item.series.legend ?? ''"
+      :getItemGroupTitle="(item) => item.chartTitle"
+      :groupBy="(item) => item.chartId"
       :multiple="true"
     />
 
@@ -41,6 +43,7 @@
 <script setup lang="ts">
 import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
 import HisAddButton from '@/components/his/HisAddButton.vue'
+import HisGroupSelect from '@/components/his/HisGroupSelect.vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref, watch } from 'vue'
