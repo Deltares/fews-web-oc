@@ -1,19 +1,23 @@
 <template>
   <div class="h-100 pa-2 ga-2">
-    <HisAutocomplete
+    <HisGroupSelect
       v-model="selectedTimeseries"
       :items="allSeries"
-      label="First timeseries"
-      :getItemValue="(item) => item"
-      :getItemTitle="(item) => item.legend ?? ''"
+      label="Timeseries"
+      :getItemValue="(item) => item.series"
+      :getItemTitle="(item) => item.series.legend ?? ''"
+      :getItemGroupTitle="(item) => item.chartTitle"
+      :groupBy="(item) => item.chartId"
     />
 
-    <HisAutocomplete
+    <HisGroupSelect
       v-model="selectedSecondTimeseries"
       :items="allSeries"
-      label="Second timeseries"
-      :getItemValue="(item) => item"
-      :getItemTitle="(item) => item.legend ?? ''"
+      label="Timeseries"
+      :getItemValue="(item) => item.series"
+      :getItemTitle="(item) => item.series.legend ?? ''"
+      :getItemGroupTitle="(item) => item.chartTitle"
+      :groupBy="(item) => item.chartId"
     />
 
     <div class="d-flex pa-3">
@@ -27,8 +31,8 @@
 </template>
 
 <script setup lang="ts">
-import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
 import HisAddButton from '@/components/his/HisAddButton.vue'
+import HisGroupSelect from '@/components/his/HisGroupSelect.vue'
 import { computed, ref, watch } from 'vue'
 import { Chart, Dependant, DerivedChart, getValidFilterCharts } from '@/lib/his'
 import { Series } from '@/lib/timeseries/timeSeries'
