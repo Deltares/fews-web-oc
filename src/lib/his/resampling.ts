@@ -3,7 +3,8 @@ import { arrayOfAll } from '@/lib/utils/types'
 
 export type ResamplingMethod = {
   label: string
-  value: Required<TimeSeriesFilter>['resamplingMethod']
+  // FIXME: Percentile currently does not work in the backend
+  value: Exclude<Required<TimeSeriesFilter>['resamplingMethod'], 'percentile'>
 }
 
 const arrayOfAllResamplingMethods = arrayOfAll<ResamplingMethod>()
@@ -14,5 +15,4 @@ export const resamplingMethods = arrayOfAllResamplingMethods([
   { label: 'Mean (time weighted)', value: 'mean_over_time' },
   { label: 'Sum', value: 'sum' },
   { label: 'Instantaneous', value: 'instantaneous' },
-  { label: 'Percentile', value: 'percentile' },
 ])
