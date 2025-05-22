@@ -1,10 +1,10 @@
 import {
-  ActionRequest,
   PiWebserviceProvider,
+  type ActionRequest,
   type TimeSeriesEvent,
-  DomainAxisEventValuesStringArray,
   TimeSeriesResult,
   TimeSeriesResponse,
+  type DomainAxisEventValuesStringArray,
   type Header,
   type TimeSeriesFilter,
 } from '@deltares/fews-pi-requests'
