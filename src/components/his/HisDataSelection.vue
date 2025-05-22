@@ -24,18 +24,33 @@
       :getItemValue="getLocationId"
       :getItemTitle="getLocationTitle"
       :multiple="true"
-    />
-
-    <div class="border rounded" style="height: 300px">
-      <HisMap :boundingBox>
-        <LocationsLayer
-          v-if="filterLocationGeoJson.features.length"
-          :locationsGeoJson="filterLocationGeoJson"
-          :selectedLocationIds="selectedLocationIds"
-          @click="onLocationClick"
+    >
+      <template #append-title>
+        <!-- show map toggle -->
+        <v-btn
+          prepend-icon="mdi-map"
+          :append-icon="showMap ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+          variant="plain"
+          density="compact"
+          :active="showMap"
+          text="Show map"
+          class="text-none"
+          @click="showMap = !showMap"
         />
-      </HisMap>
-    </div>
+      </template>
+      <template #prepend>
+        <div v-show="showMap" class="border rounded mb-1 flex-0-0 h-50">
+          <HisMap :boundingBox>
+            <LocationsLayer
+              v-if="filterLocationGeoJson.features.length"
+              :locationsGeoJson="filterLocationGeoJson"
+              :selectedLocationIds="selectedLocationIds"
+              @click="onLocationClick"
+            />
+          </HisMap>
+        </div>
+      </template>
+    </HisAutocomplete>
 
     <div class="d-flex">
       <v-spacer />
@@ -75,6 +90,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const showMap = ref(false)
 
 const parametersStore = useParametersStore()
 
