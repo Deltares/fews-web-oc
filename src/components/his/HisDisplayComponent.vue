@@ -90,8 +90,8 @@
         <v-card-title class="d-flex ga-1 align-center">
           <div>Charts</div>
           <v-spacer />
-          <HisCollection />
-          <v-btn icon="mdi-content-save" />
+          <HisCollection v-model:selectedCollection="selectedCollection" />
+          <v-btn :disabled="!selectedCollection" icon="mdi-content-save" />
         </v-card-title>
         <HisCharts
           v-if="displayConfig"
@@ -130,7 +130,7 @@ import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
-import { calculateCorrelationTimeSeries } from '@/lib/his'
+import { calculateCorrelationTimeSeries, type Collection } from '@/lib/his'
 import { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { AxisType } from '@deltares/fews-web-oc-charts'
 
@@ -147,6 +147,8 @@ const props = withDefaults(defineProps<Props>(), {
 const tab = ref('data-selection')
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+
+const selectedCollection = ref<Collection>()
 
 const { locations, geojson } = useFilterLocations(baseUrl, () =>
   props.filterId ? [props.filterId] : [],
