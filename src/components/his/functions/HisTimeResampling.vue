@@ -54,7 +54,7 @@ import {
 import { type ResamplingMethod, resamplingMethods } from '@/lib/his/resampling'
 import { uniq } from 'lodash-es'
 import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
-import { Chart } from '@/lib/his'
+import { Chart, getValidFilterCharts } from '@/lib/his'
 
 interface Props {
   filterId?: string
@@ -89,15 +89,7 @@ function clearSelections() {
 
 const availableTimeStepsStore = useAvailableTimeStepsStore()
 
-const allSeries = computed(() =>
-  props.charts
-    .filter((chart) => chart.type === 'filter')
-    .flatMap((chart) => chart.subplot.items)
-    .filter(
-      (series, index, self) =>
-        index === self.findIndex((s) => s.request === series.request),
-    ),
-)
+const allSeries = computed(() => getValidFilterCharts(props.charts))
 
 const selectedSeries = computed(() => {
   return selectedTimeseries.value.flatMap(
