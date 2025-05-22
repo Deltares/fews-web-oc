@@ -73,17 +73,6 @@
               :getItemTitle="(item) => item.name"
             />
 
-            <v-number-input
-              v-model="windowSize"
-              label="Window size"
-              :min="1"
-              :max="50"
-              variant="outlined"
-              density="compact"
-              width="200px"
-              class="pa-3"
-            />
-
             <TimeSeriesChart
               v-if="selectedSeries && selectedSubplot"
               :config="selectedSubplot"
@@ -149,7 +138,7 @@ import {
 } from '@/lib/topology/componentSettings'
 import { calculateCorrelationTimeSeries } from '@/lib/his'
 import { ChartConfig } from '@/lib/charts/types/ChartConfig'
-import { VNumberInput } from 'vuetify/labs/components'
+import { AxisType } from '@deltares/fews-web-oc-charts'
 
 interface Props {
   filterId?: string
@@ -264,10 +253,10 @@ const { displayConfig } = useDisplayConfigFilter(
   baseUrl,
   filter,
   () => {
-    return new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+    return new Date(Date.now() - 0 * 24 * 60 * 60 * 1000)
   },
   () => {
-    return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    return new Date(Date.now() + 1 * 24 * 60 * 60 * 1000)
   },
 )
 
@@ -278,14 +267,19 @@ const { series } = useTimeSeries(
   () => ({}),
 )
 
-const newId = computed(() => {
+const newIdLine = computed(() => {
   if (!selectedTimeseries.value) return 'correlation'
   if (!selectedSecondTimeseries.value) return 'correlation'
 
-  return `${selectedTimeseries.value.id}-${selectedSecondTimeseries.value.id}-correlation-${windowSize.value}`
+  return `${selectedTimeseries.value.id}-${selectedSecondTimeseries.value.id}-correlation-line`
 })
 
-const windowSize = ref(4)
+const newIdPoints = computed(() => {
+  if (!selectedTimeseries.value) return 'correlation'
+  if (!selectedSecondTimeseries.value) return 'correlation'
+
+  return `${selectedTimeseries.value.id}-${selectedSecondTimeseries.value.id}-correlation-points`
+})
 
 const selectedSeries = computed(() => {
   if (!selectedTimeseries.value) return
@@ -299,16 +293,25 @@ const selectedSeries = computed(() => {
 
   if (!series1.data || !series2.data) return
 
-  const newSeries = series1.clone()
-  newSeries.lastUpdated = new Date()
-
-  newSeries.data = calculateCorrelationTimeSeries(
+  const { line, points } = calculateCorrelationTimeSeries(
     series1.data,
     series2.data,
-    windowSize.value,
   )
 
-  return { [newId.value]: newSeries }
+  console.log('Correlation', line, points, series1.data, series2.data)
+
+  const newSeriesLine = series1.clone()
+  newSeriesLine.lastUpdated = new Date()
+  newSeriesLine.data = line
+
+  const newSeriesPoints = series1.clone()
+  newSeriesPoints.lastUpdated = new Date()
+  newSeriesPoints.data = points
+
+  return {
+    [newIdLine.value]: newSeriesLine,
+    [newIdPoints.value]: newSeriesPoints,
+  }
 })
 
 const selectedSubplot = computed(() => {
@@ -323,18 +326,35 @@ const selectedSubplot = computed(() => {
     yAxis: [
       {
         ...config.yAxis?.[0],
+        domain: undefined,
         label: 'Correlation',
+      },
+    ],
+    xAxis: [
+      {
+        ...config.xAxis?.[0],
+        domain: undefined,
+        type: AxisType.value,
       },
     ],
     series: [
       {
         ...config.series[0],
-        dataResources: [newId.value],
-        id: newId.value,
+        dataResources: [newIdLine.value],
+        id: newIdLine.value,
         visibleInLegend: false,
+        type: 'line',
+      },
+      {
+        ...config.series[1],
+        dataResources: [newIdPoints.value],
+        id: newIdPoints.value,
+        visibleInLegend: false,
+        type: 'marker',
       },
     ],
   }
+  console.log('Selected subplot', res)
   return res
 })
 
