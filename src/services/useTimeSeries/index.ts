@@ -44,6 +44,8 @@ export interface UseTimeSeriesOptions {
   endTime?: Date | null
   thinning?: boolean
   showVerticalProfile?: boolean
+  convertDatum?: boolean
+  useDisplayUnits?: boolean
 }
 
 function timeZoneOffsetString(offset: number): string {
@@ -190,6 +192,17 @@ export function useTimeSeries(
         )
         url.searchParams.set('thinning', millisecondsPerPixel.toString())
       }
+    }
+
+    if (_options.convertDatum) {
+      url.searchParams.set('convertDatum', _options.convertDatum.toString())
+    }
+
+    if (_options.useDisplayUnits) {
+      url.searchParams.set(
+        'useDisplayUnits',
+        _options.useDisplayUnits.toString(),
+      )
     }
 
     // Convert absolute URL back into relative URL with updated search
