@@ -63,7 +63,7 @@ export function useTimeSeries(
     loadTimeSeries,
   )
 
-  function loadTimeSeries() {
+  async function loadTimeSeries() {
     if (!toValue(fetchingEnabled)) return
 
     controller.abort('Timeseries request triggered again before finishing.')
@@ -78,47 +78,49 @@ export function useTimeSeries(
     const updatedSeriesIds: string[] = []
     loadingSeriesIds.value = _requests.flatMap((r) => (r.key ? [r.key] : []))
 
-    for (const request of _requests) {
+    const promises = _requests.map(async (request) => {
       const relativeUrl = getRelativeUrlForRequest(request)
 
       const isGridTimeSeries = request.request.includes('/timeseries/grid?')
-      piProvider
-        .getTimeSeriesWithRelativeUrl(relativeUrl)
-        .then((piSeries) => {
-          if (request.key) {
-            loadingSeriesIds.value.splice(
-              loadingSeriesIds.value.indexOf(request.key),
-              1,
-            )
+      const piSeries =
+        await piProvider.getTimeSeriesWithRelativeUrl(relativeUrl)
+      if (request.key) {
+        loadingSeriesIds.value.splice(
+          loadingSeriesIds.value.indexOf(request.key),
+          1,
+        )
+      }
+      if (piSeries.timeSeries === undefined) return
+
+      piSeries.timeSeries.forEach((timeSeries, index) => {
+        const resourceId = isGridTimeSeries
+          ? `${request.key}[${index}]`
+          : (request.key ?? '')
+        updatedSeriesIds.push(resourceId)
+
+        const _series = convertTimeSeriesResultToSeries(
+          timeSeries,
+          piSeries,
+          resourceId,
+          _selectedTime,
+        )
+        if (_series !== undefined) {
+          series.value = {
+            ...series.value,
+            [resourceId]: _series,
           }
-          if (piSeries.timeSeries === undefined) return
+        }
+      })
+    })
+    const results = await Promise.allSettled(promises)
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        console.error(
+          `Failed to fetch time series for request URL ${_requests[index].request}: ${result.reason}`,
+        )
+      }
+    })
 
-          piSeries.timeSeries.forEach((timeSeries, index) => {
-            const resourceId = isGridTimeSeries
-              ? `${request.key}[${index}]`
-              : (request.key ?? '')
-            updatedSeriesIds.push(resourceId)
-
-            const _series = convertTimeSeriesResultToSeries(
-              timeSeries,
-              piSeries,
-              resourceId,
-              _selectedTime,
-            )
-            if (_series !== undefined) {
-              series.value = {
-                ...series.value,
-                [resourceId]: _series,
-              }
-            }
-          })
-        })
-        .catch((error) => {
-          console.error(
-            `Failed to fetch time series for request URL ${request.request}: ${error}`,
-          )
-        })
-    }
     const oldSeriesIds = difference(currentSeriesIds, updatedSeriesIds)
     if (oldSeriesIds.length > MAX_SERIES) {
       for (const seriesId of oldSeriesIds) {
