@@ -469,9 +469,11 @@ watch(
       (k) => `${k}-${props.series[k].lastUpdated?.getTime()}`,
     ),
   (newValue, oldValue) => {
-    const newSeriesIds = difference(newValue, oldValue)
+    const newSeriesIds = difference(newValue, oldValue).map(
+      (id) => id.split('-')[0],
+    )
     const requiredSeries = props.config?.series.filter((s) =>
-      newSeriesIds.map((id) => id.split('-')[0]).includes(s.id),
+      s.dataResources.some((resourceId) => newSeriesIds.includes(resourceId)),
     )
     if (requiredSeries.length > 0) {
       updateChartData(requiredSeries)
