@@ -337,6 +337,11 @@ const updateChartData = (series: ChartSeries[]) => {
     const charts = axis.charts.filter((chart) => chart.id == series.id)
     if (charts.length === 0) return
 
+    const hasMissingResource = series.dataResources.some(
+      (id) => props.series[id] === undefined,
+    )
+    if (hasMissingResource) return
+
     const rawData = dataFromResources(series.dataResources, props.series)
     const data = removeUnreliableData(rawData)
     // Update each matching chart
