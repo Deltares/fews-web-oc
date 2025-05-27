@@ -116,5 +116,6 @@ const { mobile } = useDisplay()
 .locations-select {
   max-width: 20%;
   min-width: 16em;
+  padding-left: 0.75em;
 }
 </style>
