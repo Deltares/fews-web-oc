@@ -6,6 +6,16 @@ interface DataAnalysisDisplaysResponse {
   dataAnalysisDisplays?: DataAnalysisDisplay[]
 }
 
+export interface DataAnalysisDisplayFilter {
+  id: string
+  name: string
+}
+
+export interface DataAnalysisDisplayLocationAttribute {
+  id: string
+  name: string
+}
+
 export interface DataAnalysisDisplay {
   id: string
   relativeViewPeriod?: string
@@ -16,8 +26,8 @@ export interface DataAnalysisDisplay {
       attributes?: Record<string, string>
     }
   }
-  filters?: { id: string; name: string }[]
-  locationAttributes?: { id: string; name: string }[]
+  filters?: DataAnalysisDisplayFilter[]
+  locationAttributes?: DataAnalysisDisplayLocationAttribute[]
   toolboxes?: {
     resampling?: { enabled?: boolean }
     correlation?: { enabled?: boolean }

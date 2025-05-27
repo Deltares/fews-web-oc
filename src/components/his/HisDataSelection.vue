@@ -1,5 +1,16 @@
 <template>
   <div class="his-selection-container h-100 pa-2 ga-2">
+    <v-select
+      v-model="filterId"
+      :items="filters"
+      item-value="id"
+      item-title="name"
+      label="Filter"
+      variant="outlined"
+      hide-details
+      density="compact"
+      max-width="250"
+    />
     <HisAutocomplete
       v-model="selectedParameterIds"
       :items="filteredParameterIds"
@@ -78,9 +89,10 @@ import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import type { FeatureCollection, Geometry } from 'geojson'
 import { useParametersStore } from '@/stores/parameters'
+import type { DataAnalysisDisplayFilter } from '@/services/useHisDisplay'
 
 interface Props {
-  filterId?: string
+  filters?: DataAnalysisDisplayFilter[]
   locations: Location[]
   geojson: FeatureCollection<Geometry, Location>
   timeSeriesHeaders: Header[]
@@ -93,6 +105,10 @@ const props = defineProps<Props>()
 const showMap = ref(false)
 
 const parametersStore = useParametersStore()
+
+const filterId = defineModel<string | undefined>('filterId', {
+  required: true,
+})
 
 interface Emits {
   addFilter: [filter: filterActionsFilter]
@@ -137,12 +153,12 @@ const filteredLocations = computed(() =>
 )
 
 const filter = computed(() => {
-  if (!props.filterId) return
+  if (!filterId.value) return
   if (!selectedParameterIds.value.length || !selectedLocationIds.value.length) {
     return
   }
   const _fitler: filterActionsFilter = {
-    filterId: props.filterId,
+    filterId: filterId.value,
     locationIds: selectedLocationIds.value.join(','),
     parameterIds: selectedParameterIds.value.join(','),
   }
@@ -224,7 +240,7 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 <style scoped>
 .his-selection-container {
   display: grid;
-  grid-template-rows: 1fr 1fr 2fr;
+  grid-template-rows: auto 1fr 1fr 2fr;
   height: 100%;
 }
 </style>

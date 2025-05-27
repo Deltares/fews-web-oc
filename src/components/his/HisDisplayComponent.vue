@@ -3,7 +3,8 @@
     <v-navigation-drawer v-model="drawer" width="500" class="his-selection">
       <div v-show="tab === 'data-selection'" class="h-100">
         <HisDataSelection
-          :filterId="filterId"
+          v-model:filterId="filterId"
+          :filters="config.filters"
           :locations="locations"
           :geojson="geojson"
           :timeSeriesHeaders="timeSeriesHeaders"
@@ -81,17 +82,6 @@
           <HisCollection
             v-model:selectedCollection="selectedCollection"
             v-model:collections="collections"
-          />
-          <v-select
-            v-model="filterId"
-            :items="config.filters"
-            item-value="id"
-            item-title="name"
-            label="Filter"
-            variant="outlined"
-            hide-details
-            density="compact"
-            max-width="250"
           />
         </v-card-title>
         <HisCollectionCharts
