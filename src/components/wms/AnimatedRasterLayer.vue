@@ -53,12 +53,9 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {})
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 
-const beforeId = computed(() => {
-  return props.beforeId ?? getBeforeId(map)
-})
-
 const sourceId = computed(() => getSourceId(`${props.layer.name}-source`))
 const layerId = computed(() => getLayerId(`${props.layer.name}-layer`))
+const beforeId = computed(() => getBeforeId(map, layerId.value, props.beforeId))
 
 const emit = defineEmits(['doubleclick'])
 

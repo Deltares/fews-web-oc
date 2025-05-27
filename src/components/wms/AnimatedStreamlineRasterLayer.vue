@@ -158,7 +158,7 @@ function addLayer(): void {
     )
   })
 
-  const beforeId = props.beforeId ?? getBeforeId(map)
+  const beforeId = getBeforeId(map, layerId, props.beforeId)
   map?.addLayer(layer, beforeId)
 }
 
@@ -167,7 +167,7 @@ watch(
   (newBeforeId) => {
     if (!map?.getLayer(layerId)) return
 
-    const beforeId = newBeforeId ?? getBeforeId(map)
+    const beforeId = getBeforeId(map, layerId, newBeforeId)
     map.moveLayer(layerId, beforeId)
   },
 )
