@@ -17,6 +17,11 @@ const DataDownloadDisplayView = defineAsyncComponent(
 const ReportsDisplayView = defineAsyncComponent(
   () => import('@/views/ReportsDisplayView.vue'),
 )
+
+const DynamicReportDisplayView = defineAsyncComponent(
+  () => import('@/views/DynamicReportDisplayView.vue'),
+)
+
 const SchematicStatusDisplay = defineAsyncComponent(
   () => import('@/components/ssd/SchematicStatusDisplay.vue'),
 )
@@ -33,6 +38,7 @@ export const componentTypeToComponentMap = {
   map: SpatialDisplay,
   charts: TimeSeriesDisplay,
   'data-download-display': DataDownloadDisplayView,
+  'dynamic-report-display': DynamicReportDisplayView,
   report: ReportsDisplayView,
   'schematic-status-display': SchematicStatusDisplay,
   'system-monitor': SystemMonitorDisplayView,
@@ -88,6 +94,13 @@ export function getComponentPropsForNode(
 
   if (componentType === 'report') {
     const result: PropsForComponentType<'report'> = {
+      topologyNode: node,
+    }
+    return result
+  }
+
+  if (componentType === 'dynamic-report-display') {
+    const result: PropsForComponentType<'dynamic-report-display'> = {
       topologyNode: node,
     }
     return result
