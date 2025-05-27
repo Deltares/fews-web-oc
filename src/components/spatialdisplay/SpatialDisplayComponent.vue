@@ -282,7 +282,7 @@ const {
 } = useColourScales(
   currentColourScaleIndex,
   currentColourScaleIds,
-  colourScalesStore.scales,
+  () => colourScalesStore.scales,
   () => props.layerCapabilities?.title ?? props.layerName,
 )
 
