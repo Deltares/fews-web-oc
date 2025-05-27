@@ -23,7 +23,7 @@
     <HisAutocomplete
       v-model="selectedModuleInstanceIds"
       :items="filteredModuleInstanceIds"
-      label="Module instances"
+      label="Source"
       icon="mdi-cog"
       :multiple="true"
     />
