@@ -15,16 +15,24 @@
       :logs="logs"
       :taskRun="taskRun"
       :disseminations="disseminations"
-      @disseminate-log="emit('disseminateLog', $event)"
+      @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
+      @edit-log="emit('editLog', $event)"
+      @delete-log="emit('deleteLog', $event)"
+      v-bind="$attrs"
     />
   </template>
   <LogMessageItem
     v-if="log.type === 'manual'"
     class="mt-2"
+    :noteGroup="noteGroup"
     :log="log"
     :userName="userName"
     :disseminations="disseminations"
-    @disseminate-log="emit('disseminateLog', $event)"
+    @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
+    @edit-log="emit('editLog', $event)"
+    @delete-log="emit('deleteLog', $event)"
+    @acknowledge-log="emit('acknowledgeLog', $event)"
+    @unacknowledge-log="emit('unacknowledgeLog', $event)"
   />
 </template>
 
@@ -33,15 +41,17 @@ import LogMessageItem from '@/components/logdisplay/LogMessageItem.vue'
 import TaskRunItem from './TaskRunItem.vue'
 import LogTable from './LogTable.vue'
 import type {
+  ForecasterNoteGroup,
   LogDisplayDisseminationAction,
   TaskRun,
 } from '@deltares/fews-pi-requests'
-import { type LogMessage, logToUser } from '@/lib/log'
+import { type LogActionEmit, type LogMessage, logToUser } from '@/lib/log'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed } from 'vue'
 
 interface Props {
   userName: string
+  noteGroup: ForecasterNoteGroup
   logs: LogMessage[]
   taskRuns: TaskRun[]
   disseminations: LogDisplayDisseminationAction[]
@@ -61,7 +71,7 @@ const taskRun = computed(() =>
 
 const log = computed(() => props.logs[0])
 
-const emit = defineEmits(['disseminateLog'])
+const emit = defineEmits<LogActionEmit>()
 
 function getTitleForLog(log: LogMessage, userName: string) {
   const workflowId = props.taskRuns.find(

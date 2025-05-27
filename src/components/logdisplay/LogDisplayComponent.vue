@@ -89,21 +89,27 @@
         />
       </div>
     </div>
-
-    <!-- Important to have item-height as it greatly improves performance -->
     <v-virtual-scroll
       class="scroll-container"
       :items="groupedByTaskRunId"
       :item-height="50"
+      v-if="groupedByTaskRunId.length"
     >
-      <template #default="{ item: logs }">
+      <template #default="{ item }">
+        <DateSeparator v-if="item.type === 'dateSeparator'" :date="item.date" />
         <LogItem
-          :logs="logs"
+          v-else-if="item.type === 'logItem' && noteGroup"
+          :logs="item.logs"
           :taskRuns="taskRuns"
           :disseminations="disseminations"
-          :userName="userName"
-          v-model:expanded="expandedItems[logs[0].taskRunId]"
+          :userName="preferredUsername"
+          :noteGroup="noteGroup"
+          v-model:expanded="expandedItems[item.logs[0].taskRunId]"
           @disseminate-log="disseminateLog"
+          @delete-log="deleteLog"
+          @edit-log="editLog"
+          @acknowledge-log="acknowledgeLog"
+          @unacknowledge-log="unacknowledgeLog"
         />
       </template>
     </v-virtual-scroll>
@@ -114,6 +120,7 @@
 import { ref, computed, watch } from 'vue'
 import { VDateInput } from 'vuetify/labs/components'
 import LogItem from './LogItem.vue'
+import DateSeparator from './DateSeparator.vue'
 import {
   type LogType,
   type LogLevel,
@@ -126,10 +133,13 @@ import {
   LogMessage,
   levelToTitle,
 } from '@/lib/log'
-import type {
-  ForecasterNoteGroup,
-  LogDisplayDisseminationAction,
-  LogsDisplay,
+import {
+  ForecasterNoteKeysRequest,
+  ForecasterNoteRequest,
+  PiWebserviceProvider,
+  type ForecasterNoteGroup,
+  type LogDisplayDisseminationAction,
+  type LogsDisplay,
 } from '@deltares/fews-pi-requests'
 import { useLogDisplayLogs } from '@/services/useLogDisplayLogs'
 import { configManager } from '@/services/application-config'
@@ -138,6 +148,7 @@ import { useCurrentUser } from '@/services/useCurrentUser'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import NewLogMessageDialog from './NewLogMessageDialog.vue'
 import { useTaskRuns } from '@/services/useTaskRuns'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 interface Props {
   logDisplay: LogsDisplay
@@ -166,10 +177,12 @@ watch(
   },
 )
 
-const { userName } = useCurrentUser()
+const { preferredUsername } = useCurrentUser()
 
 const baseFilters = computed(() => {
   const startTime = convertJSDateToFewsPiParameter(startDate.value)
+  // Set endTime to 23:59:59 of the endDate
+  endDate.value.setHours(23, 59, 59, 999)
   const endTime = convertJSDateToFewsPiParameter(endDate.value)
   return {
     logDisplayId: props.logDisplay.id,
@@ -223,7 +236,11 @@ const { logMessages: systemLogMessages, isLoading: systemIsLoading } =
   useLogDisplayLogs(baseUrl, () => debouncedFilters.value.systemFilters)
 
 const logMessages = computed(() => {
-  if (manualIsLoading.value || systemIsLoading.value) {
+  if (
+    (manualIsLoading.value || systemIsLoading.value) &&
+    manualLogMessages.value.length === 0 &&
+    systemLogMessages.value.length === 0
+  ) {
     return []
   }
   return [...manualLogMessages.value, ...systemLogMessages.value].toSorted(
@@ -249,9 +266,56 @@ const filteredLogMessages = computed(() =>
   ),
 )
 
+// Helper function to get the date string from a log entry time
+function getDateString(entryTime: string): string {
+  const date = new Date(entryTime)
+  return date.toISOString().split('T')[0] // Get YYYY-MM-DD format
+}
+
+// Define types for our virtual scroll items
+type DateSeparatorItem = {
+  type: 'dateSeparator'
+  date: string
+}
+
+type LogItem = {
+  type: 'logItem'
+  logs: LogMessage[]
+}
+
+type VirtualScrollItem = DateSeparatorItem | LogItem
+
+// Group logs by task run ID
 const groupedByTaskRunId = computed(() => {
-  return Object.values(
-    filteredLogMessages.value.reduce(
+  // First, group logs by date
+  const logsByDate: Record<string, LogMessage[]> = {}
+
+  filteredLogMessages.value.forEach((log) => {
+    const dateStr = getDateString(log.entryTime)
+    if (!logsByDate[dateStr]) {
+      logsByDate[dateStr] = []
+    }
+    logsByDate[dateStr].push(log)
+  })
+
+  // Now, for each date, group logs by task run ID
+  const result: VirtualScrollItem[] = []
+
+  // Sort dates in descending order (newest first)
+  const sortedDates = Object.keys(logsByDate).sort((a, b) => b.localeCompare(a))
+
+  sortedDates.forEach((date) => {
+    // Add date separator
+    result.push({
+      type: 'dateSeparator',
+      date,
+    })
+
+    // Add log items for this date
+    const logsForDate = logsByDate[date]
+
+    // Group by task run ID for this date
+    const groupedByTaskId = logsForDate.reduce(
       (grouped, log) => {
         // In case of manual don't group
         const taskRunId =
@@ -265,8 +329,18 @@ const groupedByTaskRunId = computed(() => {
         return grouped
       },
       {} as Record<string, LogMessage[]>,
-    ),
-  ) as LogMessage[][]
+    )
+
+    // Add each group as a log item
+    Object.values(groupedByTaskId).forEach((logs) => {
+      result.push({
+        type: 'logItem',
+        logs,
+      })
+    })
+  })
+
+  return result
 })
 
 const taskRunIds = computed(() => {
@@ -290,7 +364,60 @@ function disseminateLog(
   console.log('Disseminating log', log, dissemination)
 }
 
-function refreshLogs() {
+async function deleteLog(log: LogMessage) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const keys: ForecasterNoteKeysRequest = {
+    logs: [{ id: log.id, taskRunId: log.taskRunId }],
+  }
+  await provider.deleteForecasterNote(keys)
+  refreshLogs()
+}
+
+async function editLog(log: LogMessage) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const note: ForecasterNoteRequest = {
+    noteGroupId: props.noteGroup?.id ?? '',
+    logMessage: log.text,
+    logLevel: log.level,
+    id: log.id,
+    taskRunId: log.taskRunId,
+    userId: log.user,
+  }
+  await provider.postForecasterNote(note)
+  refreshLogs()
+}
+
+async function acknowledgeLog(log: LogMessage) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const keys: ForecasterNoteKeysRequest = {
+    logs: [{ id: log.id, taskRunId: log.taskRunId }],
+  }
+  await provider.acknowledgeForecasterNote(keys)
+  refreshLogs()
+}
+
+async function unacknowledgeLog(log: LogMessage) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const keys: ForecasterNoteKeysRequest = {
+    logs: [{ id: log.id, taskRunId: log.taskRunId }],
+  }
+  await provider.unacknowledgeForecasterNote(keys)
+  refreshLogs()
+}
+
+async function refreshLogs() {
   // Set endDate to now + 5 seconds to ensure the backend will return the latest logs
   endDate.value = new Date(new Date().getTime() + 5000)
 }
