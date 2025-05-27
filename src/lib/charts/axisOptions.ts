@@ -23,6 +23,7 @@ function getDefaultOptions(): CartesianAxesOptions {
         type: AxisType.time,
         position: AxisPosition.Bottom,
         showGrid: true,
+        labelOffset: 7,
       },
     ],
     y: [
