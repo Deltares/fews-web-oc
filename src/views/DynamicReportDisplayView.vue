@@ -37,7 +37,10 @@
 </template>
 
 <script setup lang="ts">
-import { type TopologyNode } from '@deltares/fews-pi-requests'
+import {
+  type TopologyNode,
+  isDimensionWithPeriod,
+} from '@deltares/fews-pi-requests'
 import { computed, ref } from 'vue'
 import { configManager } from '@/services/application-config'
 import {
@@ -78,25 +81,6 @@ const locations = computed(() => {
     []
   )
 })
-
-interface DimensionWithPeriod {
-  name: string
-  units: string
-  default: string
-  period: string
-}
-interface DimensionWithTimes {
-  name: string
-  units: string
-  default: string
-  times: string
-}
-
-function isDimensionWithPeriod(
-  dimension: DimensionWithPeriod | DimensionWithTimes,
-): dimension is DimensionWithPeriod {
-  return (dimension as DimensionWithPeriod).period !== undefined
-}
 
 const times = computed(() => {
   if (!dateTimeSliderEnabled.value) return []
