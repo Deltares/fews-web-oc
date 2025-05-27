@@ -30,43 +30,45 @@
     </v-toolbar-items>
   </Teleport>
   <Teleport to="#app-bar-content-end">
-    <ThresholdsControl
-      :topologyNode="topologyNode"
-      @navigate="onNavigate"
-      :locationIds="props.locationIds"
-    />
-    <TaskRunsControl v-if="showTaskMenu" :topologyNode="topologyNode" />
-    <v-menu bottom left>
-      <template v-slot:activator="{ props }">
-        <v-btn icon v-bind="props">
-          <v-icon>mdi-dots-horizontal-circle-outline</v-icon>
-        </v-btn>
-      </template>
-      <v-list>
-        <v-list-item
-          title="Run tasks..."
-          :disabled="secondaryWorkflows === null"
-          @click="workflowsStore.showDialog = true"
-        >
-          <template #prepend>
-            <v-badge
-              :model-value="workflowsStore.hasActiveWorkflows"
-              :content="workflowsStore.numActiveWorkflows"
-              color="success"
-            >
-              <v-icon>mdi-wrench</v-icon>
-            </v-badge>
-          </template>
-        </v-list-item>
-        <v-list-item
-          title="More Info"
-          prepend-icon="mdi-information"
-          :disabled="!topologyNode?.documentFile"
-          :active="sidePanelStore.isActive('info')"
-          @click="sidePanelStore.toggleActive('info')"
-        />
-      </v-list>
-    </v-menu>
+    <v-btn-group variant="text" density="comfortable">
+      <ThresholdsControl
+        :topologyNode="topologyNode"
+        @navigate="onNavigate"
+        :locationIds="props.locationIds"
+      />
+      <TaskRunsControl v-if="showTaskMenu" :topologyNode="topologyNode" />
+      <v-menu bottom left>
+        <template v-slot:activator="{ props }">
+          <v-btn icon v-bind="props">
+            <v-icon>mdi-dots-horizontal-circle-outline</v-icon>
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item
+            title="Run tasks..."
+            :disabled="secondaryWorkflows === null"
+            @click="workflowsStore.showDialog = true"
+          >
+            <template #prepend>
+              <v-badge
+                :model-value="workflowsStore.hasActiveWorkflows"
+                :content="workflowsStore.numActiveWorkflows"
+                color="success"
+              >
+                <v-icon>mdi-wrench</v-icon>
+              </v-badge>
+            </template>
+          </v-list-item>
+          <v-list-item
+            title="More Info"
+            prepend-icon="mdi-information"
+            :disabled="!topologyNode?.documentFile"
+            :active="sidePanelStore.isActive('info')"
+            @click="sidePanelStore.toggleActive('info')"
+          />
+        </v-list>
+      </v-menu>
+    </v-btn-group>
   </Teleport>
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
@@ -459,6 +461,12 @@ function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
 
 <style scoped>
 .v-btn-group {
-  color: inherit;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.v-btn-group .v-btn {
+  background-color: transparent;
+  border-radius: 0;
 }
 </style>
