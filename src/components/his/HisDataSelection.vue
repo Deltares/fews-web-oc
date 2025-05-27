@@ -154,13 +154,16 @@ const filteredLocations = computed(() =>
 
 const filter = computed(() => {
   if (!filterId.value) return
-  if (!selectedParameterIds.value.length || !selectedLocationIds.value.length) {
-    return
-  }
+  if (!selectedParameterIds.value.length) return
+  if (!selectedLocationIds.value.length) return
+  if (!selectedModuleInstanceIds.value.length) return
+
   const _fitler: filterActionsFilter = {
     filterId: filterId.value,
     locationIds: selectedLocationIds.value.join(','),
     parameterIds: selectedParameterIds.value.join(','),
+    // @ts-expect-error FIXME: Update when the types are updated
+    moduleInstanceIds: selectedModuleInstanceIds.value.join(','),
   }
   return _fitler
 })
