@@ -6,7 +6,6 @@
         :items="locations"
         item-title="name"
         item-value="id"
-        prepend-icon="mdi-map-marker"
         density="compact"
         variant="plain"
         hide-details
@@ -41,7 +40,7 @@ import {
   type TopologyNode,
   isDimensionWithPeriod,
 } from '@deltares/fews-pi-requests'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import {
   type ComponentSettings,
@@ -102,6 +101,12 @@ const hasSelectableLocations = computed(() => {
     capabilities.value?.dynamicReportDisplayCapabilities.selectableLocations
       ?.length ?? 0 > 0
   )
+})
+
+watch(locations, (newLocations) => {
+  if (newLocations.length > 0 && !selectedLocation.value) {
+    selectedLocation.value = newLocations[0].id
+  }
 })
 
 const { mobile } = useDisplay()
