@@ -24,7 +24,11 @@ const useColourScalesStore = defineStore('colourScales', () => {
   const processingScaleIds = ref<string[]>([])
 
   function clearScales() {
-    scales.value = {}
+    // Clear scales in a way that does not trigger reactivity issues
+    const keys = Object.keys(scales.value)
+    keys.forEach((key) => {
+      delete scales.value[key]
+    })
     processingScaleIds.value = []
   }
 
