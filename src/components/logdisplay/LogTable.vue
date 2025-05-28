@@ -13,7 +13,11 @@
       <v-icon class="ms-2" :icon="logToIcon(item)" :color="logToColor(item)" />
     </template>
     <template #item.actions="{ item }">
-      <v-menu location="bottom right" max-width="300">
+      <v-menu
+        location="bottom right"
+        max-width="300"
+        :close-on-content-click="false"
+      >
         <template #activator="{ props }">
           <v-btn v-bind="props" icon="mdi-dots-horizontal" density="compact" />
         </template>
@@ -29,7 +33,17 @@
             :title="dissemination.description"
             :lines="false"
             @click="emit('disseminateLog', item, dissemination)"
-          />
+            :disabled="isDisseminationSuccessful(item, dissemination)"
+          >
+            <template
+              v-if="isDisseminationLoading(item, dissemination)"
+              #prepend
+            >
+              <div class="v-icon v-icon--size-default">
+                <v-progress-circular indeterminate width="2" />
+              </div>
+            </template>
+          </v-list-item>
         </v-list>
       </v-menu>
     </template>
@@ -45,6 +59,8 @@ import {
   logToColor,
   logToRoute,
   LogActionEmit,
+  type LogDisseminationStatus,
+  getLogDisseminationKey,
 } from '@/lib/log'
 import {
   LogDisplayDisseminationAction,
@@ -56,6 +72,7 @@ interface Props {
   logs: LogMessage[]
   taskRun?: TaskRun
   disseminations: LogDisplayDisseminationAction[]
+  disseminationStatus: Record<string, LogDisseminationStatus>
 }
 
 const props = defineProps<Props>()
@@ -85,6 +102,22 @@ const headers = computed<VDataTableVirtual['headers']>(() => {
 })
 
 const emit = defineEmits<LogActionEmit>()
+
+function isDisseminationLoading(
+  log: LogMessage,
+  dissemination: LogDisplayDisseminationAction,
+): boolean {
+  const key = getLogDisseminationKey(log, dissemination)
+  return props.disseminationStatus[key]?.isLoading ?? false
+}
+
+function isDisseminationSuccessful(
+  log: LogMessage,
+  dissemination: LogDisplayDisseminationAction,
+): boolean {
+  const key = getLogDisseminationKey(log, dissemination)
+  return props.disseminationStatus[key]?.success ?? false
+}
 </script>
 
 <style scoped>

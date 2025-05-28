@@ -102,6 +102,7 @@
           :logs="item.logs"
           :taskRuns="taskRuns"
           :disseminations="disseminations"
+          :disseminationStatus="disseminationStatus"
           :userName="preferredUsername"
           :noteGroup="noteGroup"
           v-model:expanded="expandedItems[item.logs[0].taskRunId]"
@@ -132,6 +133,8 @@ import {
   toTitleCase,
   LogMessage,
   levelToTitle,
+  LogDisseminationStatus,
+  getLogDisseminationKey,
 } from '@/lib/log'
 import {
   ForecasterNoteKeysRequest,
@@ -355,6 +358,7 @@ const { taskRuns } = useTaskRuns(baseUrl, taskRunIds)
 const disseminations = computed(
   () => props.logDisplay.logDissemination?.disseminationActions ?? [],
 )
+const disseminationStatus = ref<Record<string, LogDisseminationStatus>>({})
 
 async function disseminateLog(
   log: LogMessage,
@@ -370,11 +374,25 @@ async function disseminateLog(
     logMessage: log.text,
     logLevel: log.level,
   }
+  const key = getLogDisseminationKey(log, dissemination)
+
+  disseminationStatus.value[key] = {
+    isLoading: true,
+  }
+
   try {
     await provider.postLogDisplaysAction(request)
   } catch (error) {
-    console.error('Error disseminating log:', error)
+    disseminationStatus.value[key] = {
+      isLoading: false,
+      error: (error as Error).message,
+    }
     return
+  }
+
+  disseminationStatus.value[key] = {
+    isLoading: false,
+    success: true,
   }
 }
 

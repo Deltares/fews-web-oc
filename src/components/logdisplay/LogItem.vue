@@ -15,6 +15,7 @@
       :logs="logs"
       :taskRun="taskRun"
       :disseminations="disseminations"
+      :disseminationStatus="disseminationStatus"
       @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
       @edit-log="emit('editLog', $event)"
       @delete-log="emit('deleteLog', $event)"
@@ -28,6 +29,7 @@
     :log="log"
     :userName="userName"
     :disseminations="disseminations"
+    :disseminationStatus="disseminationStatus"
     @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
     @edit-log="emit('editLog', $event)"
     @delete-log="emit('deleteLog', $event)"
@@ -45,7 +47,12 @@ import type {
   LogDisplayDisseminationAction,
   TaskRun,
 } from '@deltares/fews-pi-requests'
-import { type LogActionEmit, type LogMessage, logToUser } from '@/lib/log'
+import {
+  type LogActionEmit,
+  type LogDisseminationStatus,
+  type LogMessage,
+  logToUser,
+} from '@/lib/log'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed } from 'vue'
 
@@ -55,6 +62,7 @@ interface Props {
   logs: LogMessage[]
   taskRuns: TaskRun[]
   disseminations: LogDisplayDisseminationAction[]
+  disseminationStatus: Record<string, LogDisseminationStatus>
 }
 
 const props = defineProps<Props>()
