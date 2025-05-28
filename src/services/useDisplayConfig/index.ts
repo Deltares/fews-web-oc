@@ -17,6 +17,7 @@ import {
   isTimeSeriesGridActionsFilter,
 } from '@/lib/filters'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
+import { addFilterPeriodToConfig } from '@/lib/display'
 
 export interface UseDisplayConfigReturn {
   displayConfig: Ref<DisplayConfig | null>
@@ -244,6 +245,11 @@ export function useDisplayConfigFilter(
       response.value = _response
     } else if (isTimeSeriesGridActionsFilter(_filter)) {
       const _response = await piProvider.getTimeSeriesGridActions(_filter)
+      // Grid actions normally do not return a period, if that is the case,
+      // we add the requested period from the filter to the config.
+      // This is done to have a default period for necessary for resetting
+      // the domain of a chart after zooming in.
+      addFilterPeriodToConfig(_response.results, _filter)
       addIndexToKeys(_response.results)
       response.value = _response
     } else {
