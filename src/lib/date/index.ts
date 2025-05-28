@@ -57,6 +57,26 @@ export function convertFewsPiDateTimeToJsDate(
 }
 
 /**
+ * Converts a JavaScript Date object to a FEWS PI date/time object.
+ *
+ * @param date - The JavaScript Date object to convert.
+ * @returns An object with 'date' and 'time' properties in the format
+ *  expected by FEWS PI.
+ */
+export function convertJsDateToFewsPiDateTime(date: Date): {
+  date: string
+  time: string
+} {
+  const isoString = date.toISOString()
+  const datePart = isoString.slice(0, 10) // 'YYYY-MM-DD'
+  const timePart = isoString.slice(11, 19) // 'HH:mm:ss'
+  return {
+    date: datePart,
+    time: timePart,
+  }
+}
+
+/**
  * Converts a date to a string suitable for use as a FEWS PI query parameter.
  *
  * FEWS PI accepts dates in the format 'YYYY-MM-DDTHH:MM:SSZ', almost an ISO8601
