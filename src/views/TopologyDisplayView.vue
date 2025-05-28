@@ -30,22 +30,65 @@
     </v-toolbar-items>
   </Teleport>
   <Teleport to="#app-bar-content-end">
-    <v-btn-group variant="text" density="comfortable">
+    <v-btn-group
+      variant="text"
+      density="comfortable"
+      color="white"
+      class="app-bar-btn-group"
+    >
       <ThresholdsControl
+        class="app-bar-btn-group"
+        v-if="activeControl === 'thresholds'"
         :topologyNode="topologyNode"
         @navigate="onNavigate"
         :locationIds="props.locationIds"
       />
-      <TaskRunsControl v-if="showTaskMenu" :topologyNode="topologyNode" />
+      <TaskRunsControl
+        class="app-bar-btn-group"
+        v-if="activeControl === 'tasks' && showTaskMenu"
+        :topologyNode="topologyNode"
+      />
+      <v-btn
+        v-if="activeControl === 'info'"
+        icon="mdi-information"
+        :disabled="!topologyNode?.documentFile"
+        :active="sidePanelStore.isActive('info')"
+        @click="sidePanelStore.toggleActive('info')"
+      />
       <v-menu bottom left>
         <template v-slot:activator="{ props }">
           <v-btn icon v-bind="props">
-            <v-icon>mdi-dots-horizontal-circle-outline</v-icon>
+            <v-icon>mdi-chevron-right</v-icon>
           </v-btn>
         </template>
         <v-list>
           <v-list-item
-            title="Run tasks..."
+            prepend-icon="mdi-alert"
+            title="Thresholds"
+            @click="activeControl = 'thresholds'"
+            :active="activeControl === 'thresholds'"
+          />
+          <v-list-item
+            v-if="showTaskMenu"
+            prepend-icon="mdi-clipboard-text-clock"
+            title="Task Runs"
+            @click="activeControl = 'tasks'"
+            :active="activeControl === 'tasks'"
+          >
+            <template #prepend>
+              <v-badge
+                v-if="workflowsStore.hasActiveWorkflows"
+                :content="workflowsStore.numActiveWorkflows"
+                color="success"
+              >
+                <v-icon>mdi-clipboard-text-clock</v-icon>
+              </v-badge>
+              <v-icon v-else>mdi-clipboard-text-clock</v-icon>
+            </template>
+          </v-list-item>
+          <!-- Run Tasks option (open dialog directly) -->
+          <v-list-item
+            title="Run Tasks..."
             :disabled="secondaryWorkflows === null"
             @click="workflowsStore.showDialog = true"
           >
@@ -59,12 +102,18 @@
               </v-badge>
             </template>
           </v-list-item>
+          <!-- Info option -->
           <v-list-item
-            title="More Info"
             prepend-icon="mdi-information"
+            title="More Info"
             :disabled="!topologyNode?.documentFile"
-            :active="sidePanelStore.isActive('info')"
-            @click="sidePanelStore.toggleActive('info')"
+            @click="
+              () => {
+                activeControl = 'info'
+                sidePanelStore.setActive('info')
+              }
+            "
+            :active="activeControl === 'info'"
           />
         </v-list>
       </v-menu>
@@ -151,6 +200,30 @@ const workflowsStore = useWorkflowsStore()
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const taskRunsStore = useTaskRunsStore()
 const sidePanelStore = useSidePanelStore()
+
+// For managing which control is active in the button group
+const activeControl = ref('thresholds') // Options: 'thresholds', 'tasks', 'info'
+
+// Sync activeControl with sidePanelStore
+watch(
+  () => sidePanelStore.activeSidePanel,
+  (newPanel) => {
+    if (newPanel === 'thresholds') activeControl.value = 'thresholds'
+    else if (newPanel === 'tasks') activeControl.value = 'tasks'
+    else if (newPanel === 'info') activeControl.value = 'info'
+  },
+)
+
+// When activeControl changes, update the side panel if needed
+watch(activeControl, (newControl) => {
+  if (
+    (newControl === 'thresholds' && !sidePanelStore.isActive('thresholds')) ||
+    (newControl === 'tasks' && !sidePanelStore.isActive('tasks')) ||
+    (newControl === 'info' && !sidePanelStore.isActive('info'))
+  ) {
+    sidePanelStore.setActive(newControl)
+  }
+})
 
 const menuType = computed(() => {
   const configured = settings.get('ui.hierarchical-menu-style')?.value as string
@@ -460,13 +533,16 @@ function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
 </script>
 
 <style scoped>
-.v-btn-group {
+.app-bar-btn-group {
   border-radius: 4px;
   overflow: hidden;
 }
-
-.v-btn-group .v-btn {
+.app-bar-btn-group .v-btn {
   background-color: transparent;
   border-radius: 0;
+}
+.app-bar-btn-group :deep(.v-btn:focus) {
+  outline: none !important;
+  box-shadow: none !important;
 }
 </style>
