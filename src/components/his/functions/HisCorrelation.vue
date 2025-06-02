@@ -34,7 +34,12 @@
 import HisAddButton from '@/components/his/HisAddButton.vue'
 import HisGroupSelect from '@/components/his/HisGroupSelect.vue'
 import { computed, ref, watch } from 'vue'
-import { Chart, Dependant, DerivedChart, getValidFilterCharts } from '@/lib/his'
+import {
+  Chart,
+  Dependant,
+  DerivedChart,
+  getValidFilterCharts,
+} from '@/lib/analysis'
 import { Series } from '@/lib/timeseries/timeSeries'
 import {
   TimeSeriesDisplaySubplot,

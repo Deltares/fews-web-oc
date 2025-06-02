@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import HisCollectionChart from './HisCollectionChart.vue'
-import type { Collection } from '@/lib/his'
+import type { Collection } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'

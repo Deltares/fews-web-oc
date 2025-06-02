@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
-import type { Collection, Chart } from '@/lib/his'
+import type { Collection, Chart } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import type { ZoomHandler } from '@deltares/fews-web-oc-charts'

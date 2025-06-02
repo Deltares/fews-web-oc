@@ -44,7 +44,7 @@ import HisTimeResampling from '@/components/his/functions/HisTimeResampling.vue'
 import { ref, watch } from 'vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import { Chart } from '@/lib/his'
+import { Chart } from '@/lib/analysis'
 import { filterActionsFilter } from '@deltares/fews-pi-requests'
 
 interface Props {

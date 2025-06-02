@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { createCollection, type Collection } from '@/lib/his'
+import { createCollection, type Collection } from '@/lib/analysis'
 import { ref } from 'vue'
 
 const selectedCollection = defineModel<Collection>('selectedCollection')

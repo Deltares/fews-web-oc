@@ -127,7 +127,7 @@ import {
   createCollection,
   DerivedChart,
   getGenerator,
-} from '@/lib/his'
+} from '@/lib/analysis'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { difference } from 'lodash-es'

@@ -54,10 +54,13 @@ import {
   TimeSeriesDisplaySubplotItem,
   type TimeSteps,
 } from '@deltares/fews-pi-requests'
-import { type ResamplingMethod, resamplingMethods } from '@/lib/his/resampling'
+import {
+  type ResamplingMethod,
+  resamplingMethods,
+} from '@/lib/analysis/resampling'
 import { uniq } from 'lodash-es'
 import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
-import { Chart, getValidFilterCharts } from '@/lib/his'
+import { Chart, getValidFilterCharts } from '@/lib/analysis'
 
 interface Props {
   filterId?: string

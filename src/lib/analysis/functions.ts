@@ -2,7 +2,7 @@ import { Series } from '@/lib/timeseries/timeSeries'
 import { SeriesResourceType } from '@/lib/timeseries/types'
 import { calculateCorrelationAndRegression } from './correlation'
 import { TimeSeriesDisplaySubplot } from '@deltares/fews-pi-requests'
-import { HisFunction } from './types'
+import { AnalysisFunction } from './types'
 
 type Generator = (
   series: Record<string, Series>,
@@ -10,12 +10,13 @@ type Generator = (
   seriesIds: string[],
 ) => Record<string, Series>
 
-export const hisFunctionToGenerator: Record<HisFunction, Generator> = {
-  correlation: generateSeriesCorrelation,
-} as const
+export const analysisFunctionToGenerator: Record<AnalysisFunction, Generator> =
+  {
+    correlation: generateSeriesCorrelation,
+  } as const
 
-export function getGenerator(functionName: HisFunction): Generator {
-  const generator = hisFunctionToGenerator[functionName]
+export function getGenerator(functionName: AnalysisFunction): Generator {
+  const generator = analysisFunctionToGenerator[functionName]
   if (!generator) {
     throw new Error(`No generator found for function ${functionName}`)
   }

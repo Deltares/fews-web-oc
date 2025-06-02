@@ -3,7 +3,7 @@ import type {
   TimeSeriesDisplaySubplot,
 } from '@deltares/fews-pi-requests'
 
-export type HisFunction = 'correlation'
+export type AnalysisFunction = 'correlation'
 
 export interface Collection {
   name: string
@@ -36,5 +36,5 @@ export type Chart = FilterChart | DerivedChart
 
 export interface Dependant {
   seriesIds: string[]
-  function: HisFunction
+  function: AnalysisFunction
 }
