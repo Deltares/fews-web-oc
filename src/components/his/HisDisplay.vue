@@ -23,5 +23,8 @@ const props = defineProps<Props>()
 const boundingBox = computed(() => props.topologyNode?.boundingBox)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { dataAnalysisDisplay } = useDataAnalysisDisplay(baseUrl)
+const { dataAnalysisDisplay } = useDataAnalysisDisplay(
+  baseUrl,
+  () => props.topologyNode?.dataAnalysisDisplayId,
+)
 </script>

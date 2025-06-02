@@ -1,6 +1,13 @@
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
-import { ref, shallowRef, watchEffect } from 'vue'
+import {
+  computed,
+  MaybeRefOrGetter,
+  ref,
+  shallowRef,
+  toValue,
+  watchEffect,
+} from 'vue'
 
 interface DataAnalysisDisplaysResponse {
   dataAnalysisDisplays?: DataAnalysisDisplay[]
@@ -47,8 +54,15 @@ interface CustomToolbox {
   }
 }
 
-export function useDataAnalysisDisplay(baseUrl: string) {
-  const dataAnalysisDisplay = shallowRef<DataAnalysisDisplay>()
+export function useDataAnalysisDisplay(
+  baseUrl: string,
+  dataAnalysisDisplayId: MaybeRefOrGetter<string | undefined>,
+) {
+  const dataAnalysisDisplays = shallowRef<DataAnalysisDisplay[]>()
+  const dataAnalysisDisplay = computed(() => {
+    const id = toValue(dataAnalysisDisplayId)
+    return dataAnalysisDisplays.value?.find((display) => display.id === id)
+  })
   const isReady = ref(false)
   const isLoading = ref(false)
   const error = shallowRef<string>()
@@ -66,10 +80,10 @@ export function useDataAnalysisDisplay(baseUrl: string) {
       const response: DataAnalysisDisplaysResponse = await resp.json()
       if (!response) throw new Error('HisDisplays response is undefined')
 
-      dataAnalysisDisplay.value = response.dataAnalysisDisplays?.[0]
+      dataAnalysisDisplays.value = response.dataAnalysisDisplays
     } catch {
       error.value = 'Error loading HisDisplays'
-      dataAnalysisDisplay.value = undefined
+      dataAnalysisDisplays.value = []
     } finally {
       isLoading.value = false
       isReady.value = true
@@ -80,6 +94,7 @@ export function useDataAnalysisDisplay(baseUrl: string) {
 
   return {
     dataAnalysisDisplay,
+    dataAnalysisDisplays,
     isReady,
     isLoading,
     error,

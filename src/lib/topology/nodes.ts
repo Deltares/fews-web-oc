@@ -190,7 +190,6 @@ export function nodeHasLogDisplay(node: TopologyNode) {
   return node.logDisplay !== undefined
 }
 
-export function nodeHasHIS(_node: TopologyNode) {
-  // FIXME: For POC
-  return true
+export function nodeHasHIS(node: TopologyNode) {
+  return node.dataAnalysisDisplayId !== undefined
 }
