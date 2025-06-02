@@ -45,7 +45,9 @@ interface Props {
 const props = defineProps<Props>()
 
 const badgeCount = computed(() =>
-  props.warningLevels.reduce((tot, lvl) => tot + lvl.count, 0),
+  props.warningLevels
+    .filter((wl) => wl.severity > 0)
+    .reduce((tot, lvl) => tot + lvl.count, 0),
 )
 
 const maxWarningLevelColor = computed(() => {
