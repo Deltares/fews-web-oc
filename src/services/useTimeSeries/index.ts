@@ -61,7 +61,7 @@ export function useTimeSeries(
   baseUrl: string,
   requests: MaybeRefOrGetter<ActionRequest[]>,
   options: MaybeRefOrGetter<UseTimeSeriesOptions>,
-  fetchingEnabled: MaybeRefOrGetter<boolean>,
+  fetchingEnabled?: MaybeRefOrGetter<boolean>,
   selectedTime?: MaybeRefOrGetter<Date | undefined>,
 ): UseTimeSeriesReturn {
   let controller = new AbortController()
@@ -70,12 +70,18 @@ export function useTimeSeries(
   const loadingSeriesIds = ref<string[]>([])
   const isLoading = computed(() => loadingSeriesIds.value.length > 0)
 
-  watch([selectedTime ?? ref(), requests, options, fetchingEnabled], () => {
+  const watchedParams = [
+    requests,
+    options,
+    fetchingEnabled,
+    selectedTime,
+  ].filter((p) => p !== undefined)
+  watch(watchedParams, () => {
     loadTimeSeries()
   })
 
   async function loadTimeSeries() {
-    if (!toValue(fetchingEnabled)) return
+    if (fetchingEnabled !== undefined && !toValue(fetchingEnabled)) return
 
     controller.abort('Timeseries request triggered again before finishing.')
     controller = new AbortController()
