@@ -133,7 +133,7 @@ import { Series } from '@/lib/timeseries/timeSeries'
 import { difference } from 'lodash-es'
 import { useStorage } from '@vueuse/core'
 import { TimeSeriesDisplaySubplot } from '@deltares/fews-pi-requests'
-import { DataAnalysisDisplay } from '@/services/useHisDisplay'
+import { DataAnalysisDisplay } from '@/services/useDataAnalysisDisplay'
 
 interface Props {
   config: DataAnalysisDisplay

@@ -11,7 +11,7 @@
 import { computed } from 'vue'
 import HisDisplayComponent from './HisDisplayComponent.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
-import { useDataAnalysisDisplay } from '@/services/useHisDisplay'
+import { useDataAnalysisDisplay } from '@/services/useDataAnalysisDisplay'
 import { configManager } from '@/services/application-config'
 
 interface Props {

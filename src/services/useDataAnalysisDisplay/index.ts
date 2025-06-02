@@ -67,7 +67,7 @@ export function useDataAnalysisDisplay(
   const isLoading = ref(false)
   const error = shallowRef<string>()
 
-  async function loadHisDisplay() {
+  async function loadDataAnalyisDisplay() {
     isLoading.value = true
     isReady.value = false
 
@@ -78,11 +78,13 @@ export function useDataAnalysisDisplay(
       const url = provider.resourcesStaticUrl('dataAnalysisDisplays.json')
       const resp = await fetch(url)
       const response: DataAnalysisDisplaysResponse = await resp.json()
-      if (!response) throw new Error('HisDisplays response is undefined')
+      if (!response) {
+        throw new Error('DataAnalysisDisplays response is undefined')
+      }
 
       dataAnalysisDisplays.value = response.dataAnalysisDisplays
     } catch {
-      error.value = 'Error loading HisDisplays'
+      error.value = 'Error loading DataAnalysisDisplays'
       dataAnalysisDisplays.value = []
     } finally {
       isLoading.value = false
@@ -90,7 +92,7 @@ export function useDataAnalysisDisplay(
     }
   }
 
-  watchEffect(loadHisDisplay)
+  watchEffect(loadDataAnalyisDisplay)
 
   return {
     dataAnalysisDisplay,
