@@ -73,6 +73,7 @@
           @click="toggleTab('analysis')"
           height="40"
           :active="isActive('analysis')"
+          :disabled="!canDoAnalysis"
         />
         <v-btn
           icon="mdi-cog-outline"
@@ -133,6 +134,7 @@ import {
   createCollection,
   DerivedChart,
   getGenerator,
+  hasValidFilterCharts,
 } from '@/lib/analysis'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { Series } from '@/lib/timeseries/timeSeries'
@@ -310,6 +312,15 @@ function isActive(tabName: string) {
 function toggleTab(tabName: string) {
   tab.value = tab.value === tabName ? undefined : tabName
 }
+
+const canDoAnalysis = computed(() =>
+  hasValidFilterCharts(selectedCollection.value.charts),
+)
+watch(canDoAnalysis, (canDo) => {
+  if (!canDo && tab.value !== undefined) {
+    tab.value = 'data-selection'
+  }
+})
 </script>
 
 <style scoped>

@@ -24,6 +24,16 @@ export function getValidFilterCharts(charts: Chart[]) {
     )
 }
 
+export function hasValidFilterCharts(charts: Chart[]) {
+  return charts.some(
+    (chart) =>
+      chart.type === 'filter' &&
+      chart.subplot.items.some((series) =>
+        isOriginalTimeseries(series, chart.requests),
+      ),
+  )
+}
+
 function isOriginalTimeseries(
   series: TimeSeriesDisplaySubplotItem,
   requests: ActionRequest[],
