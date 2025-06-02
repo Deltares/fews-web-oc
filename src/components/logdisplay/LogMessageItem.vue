@@ -61,23 +61,14 @@
                 title="Delete message"
                 @click="emit('deleteLog', log)"
               />
-              <v-list-item
-                v-for="dissemination in logToActions(log, disseminations)"
-                :prepend-icon="dissemination.iconId"
-                :key="dissemination.id"
-                :title="dissemination.description"
-                @click="emit('disseminateLog', log, dissemination)"
-                :disabled="isDisseminationSuccessful(log, dissemination)"
-              >
-                <template
-                  v-if="isDisseminationLoading(log, dissemination)"
-                  #prepend
-                >
-                  <div class="v-icon v-icon--size-default">
-                    <v-progress-circular indeterminate width="2" />
-                  </div>
-                </template>
-              </v-list-item>
+              <LogDisseminations
+                :log="log"
+                :disseminations="logToActions(log, disseminations)"
+                :disseminationStatus="props.disseminationStatus"
+                @disseminate-log="
+                  (log, dis) => emit('disseminateLog', log, dis)
+                "
+              />
             </v-list>
           </v-menu>
           <template v-if="isAcknowledged">
@@ -193,12 +184,12 @@ import {
   manualLogLevels,
   type ManualLogLevel,
   type LogDisseminationStatus,
-  getLogDisseminationKey,
 } from '@/lib/log'
 import type {
   ForecasterNoteGroup,
   LogDisplayDisseminationAction,
 } from '@deltares/fews-pi-requests'
+import LogDisseminations from '@/components/logdisplay/LogDisseminations.vue'
 
 interface Props {
   noteGroup: ForecasterNoteGroup
@@ -291,22 +282,6 @@ function saveEdit() {
   }
   emit('editLog', updatedLog as LogMessage)
   isEditing.value = false
-}
-
-function isDisseminationLoading(
-  log: LogMessage,
-  dissemination: LogDisplayDisseminationAction,
-): boolean {
-  const key = getLogDisseminationKey(log, dissemination)
-  return props.disseminationStatus[key]?.isLoading ?? false
-}
-
-function isDisseminationSuccessful(
-  log: LogMessage,
-  dissemination: LogDisplayDisseminationAction,
-): boolean {
-  const key = getLogDisseminationKey(log, dissemination)
-  return props.disseminationStatus[key]?.success ?? false
 }
 </script>
 

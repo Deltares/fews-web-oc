@@ -27,23 +27,12 @@
             :to="logToRoute(item)"
             prepend-icon="mdi-link-variant"
           />
-          <v-list-item
-            v-for="dissemination in systemDisseminations"
-            :prepend-icon="dissemination.iconId"
-            :title="dissemination.description"
-            :lines="false"
-            @click="emit('disseminateLog', item, dissemination)"
-            :disabled="isDisseminationSuccessful(item, dissemination)"
-          >
-            <template
-              v-if="isDisseminationLoading(item, dissemination)"
-              #prepend
-            >
-              <div class="v-icon v-icon--size-default">
-                <v-progress-circular indeterminate width="2" />
-              </div>
-            </template>
-          </v-list-item>
+          <LogDisseminations
+            :log="item"
+            :disseminations="systemDisseminations"
+            :disseminationStatus="props.disseminationStatus"
+            @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
+          />
         </v-list>
       </v-menu>
     </template>
@@ -60,13 +49,13 @@ import {
   logToRoute,
   LogActionEmit,
   type LogDisseminationStatus,
-  getLogDisseminationKey,
 } from '@/lib/log'
 import {
   LogDisplayDisseminationAction,
   TaskRun,
 } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
+import LogDisseminations from '@/components/logdisplay/LogDisseminations.vue'
 
 interface Props {
   logs: LogMessage[]
@@ -102,22 +91,6 @@ const headers = computed<VDataTableVirtual['headers']>(() => {
 })
 
 const emit = defineEmits<LogActionEmit>()
-
-function isDisseminationLoading(
-  log: LogMessage,
-  dissemination: LogDisplayDisseminationAction,
-): boolean {
-  const key = getLogDisseminationKey(log, dissemination)
-  return props.disseminationStatus[key]?.isLoading ?? false
-}
-
-function isDisseminationSuccessful(
-  log: LogMessage,
-  dissemination: LogDisplayDisseminationAction,
-): boolean {
-  const key = getLogDisseminationKey(log, dissemination)
-  return props.disseminationStatus[key]?.success ?? false
-}
 </script>
 
 <style scoped>
