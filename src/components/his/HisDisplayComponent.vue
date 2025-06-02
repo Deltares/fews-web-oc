@@ -1,6 +1,12 @@
 <template>
   <div class="his-container">
-    <v-navigation-drawer v-model="drawer" width="500" class="his-selection">
+    <v-navigation-drawer
+      v-model="drawer"
+      permanent
+      :mobile="false"
+      width="500"
+      class="his-selection"
+    >
       <div v-show="tab === 'data-selection'" class="h-100">
         <HisDataSelection
           v-model:filterId="filterId"
