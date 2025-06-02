@@ -63,7 +63,7 @@
     <div class="tab-buttons">
       <v-toolbar-items class="flex-column mt-2 border-e border-t border-b">
         <v-btn
-          icon="mdi-chart-line"
+          icon="mdi-filter"
           @click="toggleTab('data-selection')"
           height="40"
           :active="isActive('data-selection')"
