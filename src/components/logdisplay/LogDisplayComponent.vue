@@ -44,8 +44,8 @@
             prepend-icon=""
           />
         </div>
-        <v-text-field
-          v-model.number="daysBack"
+        <v-number-input
+          v-model="daysBack"
           label="Days back"
           variant="outlined"
           hide-details
@@ -53,18 +53,21 @@
           validate-on="input"
           :max="365"
           :min="1"
-          max-width="80px"
+          max-width="85px"
+          control-variant="stacked"
         />
-        <v-text-field
-          v-model.number="maxCount"
+        <v-number-input
+          v-model="maxCount"
           label="Request count"
           variant="outlined"
           hide-details
           density="compact"
           validate-on="input"
-          max-width="100px"
-          :max="1000"
+          max-width="105px"
+          :max="9999"
           :min="1"
+          :step="10"
+          control-variant="stacked"
         />
       </div>
     </div>
@@ -118,7 +121,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { VDateInput } from 'vuetify/labs/components'
+import { VDateInput, VNumberInput } from 'vuetify/labs/components'
 import LogItem from './LogItem.vue'
 import DateSeparator from './DateSeparator.vue'
 import {
@@ -226,7 +229,7 @@ const filters = computed(() => {
   }
 })
 
-const requestDebounce = 500
+const requestDebounce = 600
 const debouncedFilters = debouncedRef(filters, requestDebounce)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
