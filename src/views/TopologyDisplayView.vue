@@ -294,7 +294,6 @@ watch(thresholds, updateItems)
 const { componentSettings } = useComponentSettings(baseUrl, () => [
   // @ts-expect-error FIXME: Update when the types are updated
   topologyComponentConfig.value?.componentSettingsId,
-  // @ts-expect-error FIXME: Update when the types are updated
   topologyNode.value?.componentSettingsId,
 ])
 
