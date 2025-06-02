@@ -6,7 +6,6 @@
           v-bind="props"
           :prepend-icon="dissemination.iconId"
           :title="dissemination.description"
-          :lines="false"
           :disabled="isDisseminationDisabled(dissemination)"
         >
           <template v-if="isDisseminationLoading(dissemination)" #prepend>
