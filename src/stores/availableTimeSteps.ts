@@ -25,10 +25,7 @@ export const useAvailableTimeStepsStore = defineStore(
           // @ts-expect-error: FIXME: fix type in the library
           onlyResampling: true,
         })
-        const timesteps = response.timeSteps ?? []
-        resamplingTimeSteps.value = timesteps.toSorted((a, b) =>
-          a.id.localeCompare(b.id),
-        )
+        resamplingTimeSteps.value = response.timeSteps ?? []
       } catch (error) {
         console.error('Failed to fetch available timesteps.', error)
       } finally {
