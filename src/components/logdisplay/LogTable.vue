@@ -13,7 +13,11 @@
       <v-icon class="ms-2" :icon="logToIcon(item)" :color="logToColor(item)" />
     </template>
     <template #item.actions="{ item }">
-      <v-menu location="bottom right" max-width="300">
+      <v-menu
+        location="bottom right"
+        max-width="300"
+        :close-on-content-click="false"
+      >
         <template #activator="{ props }">
           <v-btn v-bind="props" icon="mdi-dots-horizontal" density="compact" />
         </template>
@@ -23,12 +27,11 @@
             :to="logToRoute(item)"
             prepend-icon="mdi-link-variant"
           />
-          <v-list-item
-            v-for="dissemination in systemDisseminations"
-            :prepend-icon="dissemination.iconId"
-            :title="dissemination.description"
-            :lines="false"
-            @click="emit('disseminateLog', item, dissemination)"
+          <LogDisseminations
+            :log="item"
+            :disseminations="systemDisseminations"
+            :disseminationStatus="props.disseminationStatus"
+            @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
           />
         </v-list>
       </v-menu>
@@ -45,17 +48,20 @@ import {
   logToColor,
   logToRoute,
   LogActionEmit,
+  type LogDisseminationStatus,
 } from '@/lib/log'
 import {
   LogDisplayDisseminationAction,
   TaskRun,
 } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
+import LogDisseminations from '@/components/logdisplay/LogDisseminations.vue'
 
 interface Props {
   logs: LogMessage[]
   taskRun?: TaskRun
   disseminations: LogDisplayDisseminationAction[]
+  disseminationStatus: Record<string, LogDisseminationStatus>
 }
 
 const props = defineProps<Props>()

@@ -35,3 +35,9 @@ export type LogType = NonNullable<LogDisplayLogsFilter['logType']>
 export interface LogMessage extends LogDisplayLogs {
   type: LogType
 }
+
+export interface LogDisseminationStatus {
+  isLoading: boolean
+  error?: string
+  success?: boolean
+}

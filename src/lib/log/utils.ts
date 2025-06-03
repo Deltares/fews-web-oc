@@ -253,3 +253,10 @@ function nameToNiceColor(name: string) {
   let index = Math.abs(hash) % niceColors.length
   return niceColors[index]
 }
+
+export function getLogDisseminationKey(
+  log: LogMessage,
+  dissemination: LogDisplayDisseminationAction,
+) {
+  return `${log.taskRunId}-${log.entryTime}-${log.text.length}-${dissemination.id}`
+}

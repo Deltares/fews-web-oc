@@ -19,7 +19,7 @@
           <v-card-subtitle class="align-self-end">{{
             toHumanReadableTime(log.entryTime)
           }}</v-card-subtitle>
-          <v-menu location="bottom" :close-on-content-click="true">
+          <v-menu location="bottom" :close-on-content-click="false">
             <template #activator="{ props }">
               <v-btn
                 v-if="!isEditing"
@@ -61,12 +61,13 @@
                 title="Delete message"
                 @click="emit('deleteLog', log)"
               />
-              <v-list-item
-                v-for="dissemination in logToActions(log, disseminations)"
-                :prepend-icon="dissemination.iconId"
-                :key="dissemination.id"
-                :title="dissemination.description"
-                @click="emit('disseminateLog', log, dissemination)"
+              <LogDisseminations
+                :log="log"
+                :disseminations="logToActions(log, disseminations)"
+                :disseminationStatus="props.disseminationStatus"
+                @disseminate-log="
+                  (log, dis) => emit('disseminateLog', log, dis)
+                "
               />
             </v-list>
           </v-menu>
@@ -182,17 +183,20 @@ import {
   levelToTitle,
   manualLogLevels,
   type ManualLogLevel,
+  type LogDisseminationStatus,
 } from '@/lib/log'
 import type {
   ForecasterNoteGroup,
   LogDisplayDisseminationAction,
 } from '@deltares/fews-pi-requests'
+import LogDisseminations from '@/components/logdisplay/LogDisseminations.vue'
 
 interface Props {
   noteGroup: ForecasterNoteGroup
   log: LogMessage
   userName: string
   disseminations: LogDisplayDisseminationAction[]
+  disseminationStatus: Record<string, LogDisseminationStatus>
 }
 
 const props = defineProps<Props>()
