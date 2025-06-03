@@ -117,7 +117,7 @@ import type {
   BoundingBox,
   filterActionsFilter,
 } from '@deltares/fews-pi-requests'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import { configManager } from '@/services/application-config'
 import { useTimeSeries, useTimeSeriesHeaders } from '@/services/useTimeSeries'
@@ -259,7 +259,7 @@ const { series: fetchedSeries, loadingSeriesIds } = useTimeSeries(
   }),
 )
 
-const generatedSeries = ref<Record<string, Series>>({})
+const generatedSeries = shallowRef<Record<string, Series>>({})
 
 const series = computed(() => ({
   ...fetchedSeries.value,
