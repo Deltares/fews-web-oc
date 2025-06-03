@@ -17,8 +17,7 @@ function datePlusDuration(date: Date, duration: DurationLikeObject) {
 }
 
 export const useSystemTimeStore = () => {
-  const store = defineStore({
-    id: 'systemTime',
+  const store = defineStore('systemTime', {
     state: (): SystemTimeStore => ({
       systemTime: new Date(),
       intervalTimer: undefined,
