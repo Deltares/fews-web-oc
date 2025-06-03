@@ -272,8 +272,8 @@ watch(
       ([key, value]) => `${key}-${value.lastUpdated?.getTime()}`,
     ),
   (newValue, oldValue) => {
-    const newSeriesIds = difference(newValue, oldValue).map(
-      (id) => id.split('-')[0],
+    const newSeriesIds = difference(newValue, oldValue).map((id) =>
+      id.substring(0, id.lastIndexOf('-')),
     )
 
     selectedCollection.value.charts

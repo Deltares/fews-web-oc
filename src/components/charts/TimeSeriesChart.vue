@@ -469,8 +469,8 @@ watch(
       (k) => `${k}-${props.series[k].lastUpdated?.getTime()}`,
     ),
   (newValue, oldValue) => {
-    const newSeriesIds = difference(newValue, oldValue).map(
-      (id) => id.split('-')[0],
+    const newSeriesIds = difference(newValue, oldValue).map((id) =>
+      id.substring(0, id.lastIndexOf('-')),
     )
     const requiredSeries = props.config?.series.filter((s) =>
       s.dataResources.some((resourceId) => newSeriesIds.includes(resourceId)),
