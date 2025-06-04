@@ -13,6 +13,7 @@ import {
   nodeHasWhatIfs,
   nodeHasWebDisplay,
   nodeHasDataAnalysisDisplay,
+  nodeHasDocumentDisplay,
 } from './nodes'
 import {
   ComponentType,
@@ -119,7 +120,7 @@ export function displayTabsForNode(
         tab.to.params = { ...params }
         break
       case 'documents-display':
-        tab.active = node.id === 'main_document_widget'
+        tab.active = nodeHasDocumentDisplay(node)
         tab.to.params = { ...params }
         break
     }
