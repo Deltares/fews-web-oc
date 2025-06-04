@@ -2,10 +2,6 @@
   <Teleport to="#web-oc-sidebar-target">
     <HierarchicalMenu v-model:active="active" :type="menuType" :items="items" />
   </Teleport>
-  <WorkflowsControl
-    v-model:showDialog="workflowsStore.showDialog"
-    :secondaryWorkflows="secondaryWorkflows"
-  />
   <Teleport to="#app-bar-content-start">
     <LeafNodeButtons
       v-if="nodesStore.nodeButtons.length > 0"
@@ -30,94 +26,96 @@
     </v-toolbar-items>
   </Teleport>
   <Teleport to="#app-bar-content-end">
-    <v-btn-group
-      variant="text"
-      density="comfortable"
-      color="white"
-      class="app-bar-btn-group"
-    >
-      <ThresholdsControl
-        class="app-bar-btn-group"
-        v-if="activeControl === 'thresholds'"
-        :topologyNode="topologyNode"
-        @navigate="onNavigate"
-        :locationIds="props.locationIds"
-      />
-      <TaskRunsControl
-        class="app-bar-btn-group"
-        v-if="activeControl === 'tasks' && showTaskMenu"
-        :topologyNode="topologyNode"
-      />
-      <v-btn
-        v-if="activeControl === 'info'"
-        icon="mdi-information"
-        :disabled="!topologyNode?.documentFile"
-        :active="sidePanelStore.isActive('info')"
-        @click="sidePanelStore.toggleActive('info')"
-      />
-      <v-menu bottom left>
-        <template v-slot:activator="{ props }">
-          <v-btn icon v-bind="props">
-            <v-icon>mdi-chevron-right</v-icon>
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item
-            prepend-icon="mdi-alert"
-            title="Thresholds"
-            @click="activeControl = 'thresholds'"
-            :active="activeControl === 'thresholds'"
-          />
-          <v-list-item
-            v-if="showTaskMenu"
-            prepend-icon="mdi-clipboard-text-clock"
-            title="Task Runs"
-            @click="activeControl = 'tasks'"
-            :active="activeControl === 'tasks'"
-          >
-            <template #prepend>
-              <v-badge
-                v-if="workflowsStore.hasActiveWorkflows"
-                :content="workflowsStore.numActiveWorkflows"
-                color="success"
-              >
-                <v-icon>mdi-clipboard-text-clock</v-icon>
-              </v-badge>
-              <v-icon v-else>mdi-clipboard-text-clock</v-icon>
-            </template>
-          </v-list-item>
-          <!-- Run Tasks option (open dialog directly) -->
-          <v-list-item
-            title="Run Tasks..."
-            :disabled="secondaryWorkflows === null"
-            @click="workflowsStore.showDialog = true"
-          >
-            <template #prepend>
-              <v-badge
-                :model-value="workflowsStore.hasActiveWorkflows"
-                :content="workflowsStore.numActiveWorkflows"
-                color="success"
-              >
-                <v-icon>mdi-wrench</v-icon>
-              </v-badge>
-            </template>
-          </v-list-item>
-          <!-- Info option -->
-          <v-list-item
-            prepend-icon="mdi-information"
-            title="More Info"
-            :disabled="!topologyNode?.documentFile"
-            @click="
-              () => {
-                activeControl = 'info'
-                sidePanelStore.setActive('info')
-              }
-            "
-            :active="activeControl === 'info'"
-          />
-        </v-list>
-      </v-menu>
-    </v-btn-group>
+    <ThresholdsControl
+      :topologyNode="topologyNode"
+      @navigate="onNavigate"
+      :locationIds="props.locationIds"
+    />
+    <TaskRunsControl
+      v-if="secondaryControl === 'tasks' && showTaskMenu"
+      :topologyNode="topologyNode"
+    />
+    <WorkflowsControl
+      v-if="secondaryControl === 'workflows'"
+      :secondaryWorkflows="secondaryWorkflows"
+    />
+    <v-btn
+      v-if="secondaryControl === 'info'"
+      icon="mdi-information-outline"
+      :disabled="!topologyNode?.documentFile"
+      :active="sidePanelStore.isActive('info')"
+      @click="sidePanelStore.toggleActive('info')"
+    />
+    <v-menu location="bottom right">
+      <template v-slot:activator="{ props }">
+        <v-btn icon v-bind="props">
+          <v-icon>mdi-dots-vertical</v-icon>
+        </v-btn>
+      </template>
+      <v-list>
+        <v-list-item
+          v-if="showTaskMenu && secondaryControl !== 'tasks'"
+          prepend-icon="mdi-clipboard-text-clock"
+          title="Task Run Overview"
+          @click="
+            () => {
+              activeControl = 'tasks'
+              secondaryControl = 'tasks'
+              sidePanelStore.setActive('tasks')
+            }
+          "
+        >
+          <template #prepend>
+            <v-badge
+              v-if="workflowsStore.hasActiveWorkflows"
+              :content="workflowsStore.numActiveWorkflows"
+              color="success"
+            >
+              <v-icon>mdi-clipboard-text-clock</v-icon>
+            </v-badge>
+            <v-icon v-else>mdi-clipboard-text-clock</v-icon>
+          </template>
+        </v-list-item>
+        <!-- Run Tasks option (open dialog directly) -->
+        <v-list-item
+          v-if="secondaryControl !== 'workflows'"
+          title="Run Tasks..."
+          :disabled="secondaryWorkflows === null"
+          @click="
+            () => {
+              activeControl = 'workflows'
+              secondaryControl = 'workflows'
+              sidePanelStore.setActive('workflows')
+            }
+          "
+        >
+          <template #prepend>
+            <v-badge
+              :model-value="workflowsStore.hasActiveWorkflows"
+              :content="workflowsStore.numActiveWorkflows"
+              color="success"
+            >
+              <v-icon>mdi-wrench</v-icon>
+            </v-badge>
+          </template>
+        </v-list-item>
+        <!-- Info option -->
+        <v-list-item
+          v-if="secondaryControl !== 'info'"
+          prepend-icon="mdi-information-outline"
+          title="More Info"
+          :disabled="!topologyNode?.documentFile"
+          @click="
+            () => {
+              activeControl = 'info'
+              secondaryControl = 'info'
+              sidePanelStore.setActive('info')
+            }
+          "
+          :active="activeControl === 'info'"
+        />
+      </v-list>
+    </v-menu>
   </Teleport>
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
@@ -203,6 +201,7 @@ const sidePanelStore = useSidePanelStore()
 
 // For managing which control is active in the button group
 const activeControl = ref('thresholds') // Options: 'thresholds', 'tasks', 'info'
+const secondaryControl = ref('tasks') // Options: 'workflows', 'tasks', 'info'
 
 // Sync activeControl with sidePanelStore
 watch(
@@ -532,17 +531,4 @@ function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
 }
 </script>
 
-<style scoped>
-.app-bar-btn-group {
-  border-radius: 4px;
-  overflow: hidden;
-}
-.app-bar-btn-group .v-btn {
-  background-color: transparent;
-  border-radius: 0;
-}
-.app-bar-btn-group :deep(.v-btn:focus) {
-  outline: none !important;
-  box-shadow: none !important;
-}
-</style>
+<style scoped></style>

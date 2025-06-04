@@ -1,30 +1,42 @@
 <template>
   <v-btn
-    icon="mdi-clipboard-text-clock"
+    icon
     :active="sidePanelStore.isActive('tasks')"
     @click="sidePanelStore.toggleActive('tasks')"
-  />
+  >
+    <v-icon icon="mdi-clipboard-text-clock" />
+  </v-btn>
   <Teleport to="#main-side-panel" defer>
     <div
       v-if="sidePanelStore.isActive('tasks')"
       class="d-flex flex-column h-100 w-100"
     >
-      <v-tabs v-model="selectedTab" density="compact" class="flex-0-0">
-        <v-tab
-          value="visualize-tasks"
-          prepend-icon="mdi-chart-line"
-          class="text-none"
-        >
-          Visualize Data
-        </v-tab>
-        <v-tab
-          value="tasks"
-          prepend-icon="mdi-clipboard-text"
-          class="text-none"
-        >
-          All Tasks
-        </v-tab>
-      </v-tabs>
+      <v-toolbar density="compact">
+        <v-tabs v-model="selectedTab" density="compact" class="flex-0-0">
+          <v-tab
+            value="visualize-tasks"
+            prepend-icon="mdi-chart-line"
+            class="text-none"
+          >
+            Visualize Data
+          </v-tab>
+          <v-tab
+            value="tasks"
+            prepend-icon="mdi-clipboard-text"
+            class="text-none"
+          >
+            All Tasks
+          </v-tab>
+        </v-tabs>
+        <template #append>
+          <v-btn
+            @click="sidePanelStore.toggleActive('tasks')"
+            size="small"
+            variant="text"
+            icon="mdi-close"
+          />
+        </template>
+      </v-toolbar>
       <v-window v-model="selectedTab" class="flex-1-1">
         <v-window-item value="visualize-tasks" class="h-100">
           <TaskRunsPanel :topologyNode="topologyNode" />
