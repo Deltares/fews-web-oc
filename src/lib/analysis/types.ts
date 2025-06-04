@@ -32,7 +32,12 @@ export interface DerivedChart extends BaseChart {
   dependants: Dependant[]
 }
 
-export type Chart = FilterChart | DerivedChart
+export interface AsyncChart extends BaseChart {
+  type: 'async'
+  taskId: string
+}
+
+export type Chart = FilterChart | DerivedChart | AsyncChart
 
 export interface Dependant {
   seriesIds: string[]

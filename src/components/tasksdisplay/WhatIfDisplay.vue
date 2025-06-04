@@ -170,6 +170,8 @@ interface Props {
 }
 const props = defineProps<Props>()
 
+const emit = defineEmits(['postTask'])
+
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
 
@@ -324,6 +326,7 @@ async function submit(): Promise<void> {
 
   isSubmitted.value = true
   if (result.status === 'success') {
+    emit('postTask', result.data)
     hasSubmitError.value = false
   } else {
     hasSubmitError.value = true

@@ -35,20 +35,20 @@ export interface DataAnalysisDisplay {
   }
   filters?: DataAnalysisDisplayFilter[]
   locationAttributes?: DataAnalysisDisplayLocationAttribute[]
-  toolboxes?: {
+  toolBoxes?: {
     resampling?: { enabled?: boolean }
     correlation?: { enabled?: boolean }
-    customToolboxes?: CustomToolbox[]
+    toolboxWorkflow?: CustomToolbox[]
   }
 }
 
-interface CustomToolbox {
+export interface CustomToolbox {
   id: string
   iconId: string
   name: string
   workflowId: string
   whatIfTemplateId: string
-  output: {
+  results: {
     filterId: string
     archiveProductId: string
   }
