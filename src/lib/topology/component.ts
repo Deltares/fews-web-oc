@@ -6,6 +6,7 @@ export type ComponentType =
   | 'dynamic-report-display'
 
 export const ComponentType = {
+  dashboard: 'dashboard',
   map: 'map',
   charts: 'charts',
   'data-download-display': 'data-download-display',
@@ -14,12 +15,12 @@ export const ComponentType = {
   'system-monitor': 'system-monitor',
   'html-display': 'html-display',
   'dynamic-report-display': 'dynamic-report-display',
-  dashboard: 'dashboard',
   'whatif-display': 'whatif-display',
   'log-display': 'log-display',
 } satisfies Record<ComponentType, ComponentType>
 
 export const componentTypeToIconMap = {
+  dashboard: 'mdi-view-dashboard',
   map: 'mdi-map',
   charts: 'mdi-chart-multiple',
   'data-download-display': 'mdi-download',
@@ -28,12 +29,12 @@ export const componentTypeToIconMap = {
   'dynamic-report-display': 'mdi-file-document-edit',
   'system-monitor': 'mdi-monitor',
   'html-display': 'mdi-web',
-  dashboard: 'mdi-view-dashboard',
   'whatif-display': 'mdi-cog',
   'log-display': 'mdi-file-document',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToTitleMap = {
+  dashboard: 'Dashboard',
   map: 'Map',
   charts: 'Charts',
   'data-download-display': 'Download',
@@ -42,12 +43,12 @@ export const componentTypeToTitleMap = {
   'system-monitor': 'System Monitor',
   'html-display': 'Web Display',
   'dynamic-report-display': 'Dynamic Report',
-  dashboard: 'Dashboard',
   'whatif-display': 'What If',
   'log-display': 'Log',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToRouteNameMap = {
+  dashboard: 'TopologyDashboard',
   map: 'TopologySpatialDisplay',
   charts: 'TopologyTimeSeries',
   'data-download-display': 'TopologyDataDownload',
@@ -55,13 +56,13 @@ export const componentTypeToRouteNameMap = {
   'schematic-status-display': 'TopologySchematicStatusDisplay',
   'system-monitor': 'TopologySystemMonitor',
   'html-display': 'TopologyWebDisplay',
-  dashboard: 'TopologyDashboard',
   'dynamic-report-display': 'TopologyDynamicReports',
   'whatif-display': 'TopologyWhatIfDisplay',
   'log-display': 'TopologyLogDisplay',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToIdMap = {
+  dashboard: 'dashboard',
   map: 'spatial',
   charts: 'timeseries',
   'data-download-display': 'download',
@@ -69,7 +70,6 @@ export const componentTypeToIdMap = {
   'schematic-status-display': 'ssd',
   'system-monitor': 'systemmonitor',
   'html-display': 'webdisplay',
-  dashboard: 'dashboard',
   'whatif-display': 'whatif',
   'dynamic-report-display': 'dynamicreport',
   'log-display': 'log',

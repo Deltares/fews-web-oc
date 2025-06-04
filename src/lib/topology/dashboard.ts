@@ -35,6 +35,7 @@ const WhatIfDisplayView = defineAsyncComponent(
 const Empty = defineAsyncComponent(() => import('@/views/Empty.vue'))
 
 export const componentTypeToComponentMap = {
+  dashboard: Empty,
   map: SpatialDisplay,
   charts: TimeSeriesDisplay,
   'data-download-display': DataDownloadDisplayView,
@@ -43,7 +44,6 @@ export const componentTypeToComponentMap = {
   'schematic-status-display': SchematicStatusDisplay,
   'system-monitor': SystemMonitorDisplayView,
   'html-display': Empty,
-  dashboard: Empty,
   'log-display': Empty,
   'whatif-display': WhatIfDisplayView,
 } satisfies Record<ComponentType, Component>
