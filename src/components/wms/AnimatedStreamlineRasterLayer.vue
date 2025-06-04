@@ -8,7 +8,6 @@ import {
   StreamlineStyle,
   WMSStreamlineLayer,
   type WMSStreamlineLayerOptions,
-  type TrailParticleOptions,
   TrailParticleShape,
 } from '@deltares/webgl-streamline-visualizer'
 import { useMap } from '@/services/useMap'
@@ -21,6 +20,32 @@ import { getBeforeId, getLayerId } from '@/lib/map'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 type StreamlineLayerOptionsFews = Layer['animatedVectors']
+
+const DEFAULT_STREAMLINE_OPTIONS = {
+  defaultNumParticles: 1000,
+  defaultParticleSize: 3,
+  defaultSpeedFactor: 0.2,
+  defaultFadeAmountPerSecond: 0.1,
+  defaultSpeedExponent: 1,
+  defaultMaxAge: 2,
+  defaultGrowthRate: undefined,
+  trailParticleOptions: undefined,
+}
+
+const DEFAULT_WAVECREST_OPTIONS = {
+  defaultNumParticles: 1000,
+  defaultParticleSize: 12,
+  defaultSpeedFactor: 0.02,
+  defaultFadeAmountPerSecond: 3,
+  defaultSpeedExponent: 1,
+  defaultMaxAge: 10,
+  defaultGrowthRate: 1,
+  trailParticleOptions: {
+    shape: TrailParticleShape.Rectangle,
+    aspectRatio: 10,
+    doRotate: true,
+  },
+}
 
 interface Props {
   layerOptions?: AnimatedRasterLayerOptions
@@ -190,21 +215,16 @@ function mergeOptions(
 
   const isWaveCrest = streamlineOptions?.particleType === 'wave-crest'
 
-  const defaultNumParticles = 1000
-  const defaultParticleSize = isWaveCrest ? 12 : 3
-  const defaultSpeedFactor = isWaveCrest ? 0.02 : 0.2
-  const defaultFadeAmountPerSecond = isWaveCrest ? 3 : 0.1
-  const defaultSpeedExponent = 1
-  const defaultMaxAge = isWaveCrest ? 10 : 2
-  const defaultGrowthRate = isWaveCrest ? 1 : undefined
-
-  const trailParticleOptions: TrailParticleOptions | undefined = isWaveCrest
-    ? {
-        shape: TrailParticleShape.Rectangle,
-        aspectRatio: 10,
-        doRotate: true,
-      }
-    : undefined
+  const {
+    defaultNumParticles,
+    defaultParticleSize,
+    defaultSpeedFactor,
+    defaultFadeAmountPerSecond,
+    defaultSpeedExponent,
+    defaultMaxAge,
+    defaultGrowthRate,
+    trailParticleOptions,
+  } = isWaveCrest ? DEFAULT_WAVECREST_OPTIONS : DEFAULT_STREAMLINE_OPTIONS
 
   return {
     baseUrl: baseUrlWms,
