@@ -8,6 +8,7 @@ import {
   StreamlineStyle,
   WMSStreamlineLayer,
   type WMSStreamlineLayerOptions,
+  TrailParticleShape,
 } from '@deltares/webgl-streamline-visualizer'
 import { useMap } from '@/services/useMap'
 import { onMounted, onUnmounted, watch } from 'vue'
@@ -18,10 +19,33 @@ import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import { getBeforeId, getLayerId } from '@/lib/map'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
-import relativeWaveSpriteUrl from '@/assets/wave-crest.svg'
-const waveSpriteUrl = new URL(relativeWaveSpriteUrl, document.baseURI)
-
 type StreamlineLayerOptionsFews = Layer['animatedVectors']
+
+const DEFAULT_STREAMLINE_OPTIONS = {
+  defaultNumParticles: 1000,
+  defaultParticleSize: 3,
+  defaultSpeedFactor: 0.2,
+  defaultFadeAmountPerSecond: 0.1,
+  defaultSpeedExponent: 1,
+  defaultMaxAge: 2,
+  defaultGrowthRate: undefined,
+  trailParticleOptions: undefined,
+}
+
+const DEFAULT_WAVECREST_OPTIONS = {
+  defaultNumParticles: 1000,
+  defaultParticleSize: 12,
+  defaultSpeedFactor: 0.02,
+  defaultFadeAmountPerSecond: 3,
+  defaultSpeedExponent: 1,
+  defaultMaxAge: 10,
+  defaultGrowthRate: 1,
+  trailParticleOptions: {
+    shape: TrailParticleShape.Rectangle,
+    aspectRatio: 10,
+    doRotate: true,
+  },
+}
 
 interface Props {
   layerOptions?: AnimatedRasterLayerOptions
@@ -190,13 +214,18 @@ function mergeOptions(
   const baseUrlWms = `${baseUrl}/wms`
 
   const isWaveCrest = streamlineOptions?.particleType === 'wave-crest'
-  const defaultNumParticles = 1000
-  const defaultParticleSize = isWaveCrest ? 12 : 3
-  const defaultSpeedFactor = isWaveCrest ? 0.02 : 0.2
-  const defaultFadeAmountPerSecond = isWaveCrest ? 3 : 0.1
-  const defaultSpeedExponent = 1
-  const defaultMaxAge = isWaveCrest ? 10 : 2
-  const defaultGrowthRate = isWaveCrest ? 1 : undefined
+
+  const {
+    defaultNumParticles,
+    defaultParticleSize,
+    defaultSpeedFactor,
+    defaultFadeAmountPerSecond,
+    defaultSpeedExponent,
+    defaultMaxAge,
+    defaultGrowthRate,
+    trailParticleOptions,
+  } = isWaveCrest ? DEFAULT_WAVECREST_OPTIONS : DEFAULT_STREAMLINE_OPTIONS
+
   return {
     baseUrl: baseUrlWms,
     layer: layerOptions.name,
@@ -215,10 +244,8 @@ function mergeOptions(
       ? `#${streamlineOptions?.particleColor}`
       : undefined,
     maxAge: streamlineOptions?.maximumParticleAge ?? defaultMaxAge,
-    // For wave crest visualisation, use a wave crest sprite and set a custom
-    // (slower) growth rate.
-    spriteUrl: isWaveCrest ? waveSpriteUrl : undefined,
     growthRate: defaultGrowthRate,
+    trailParticleOptions,
   }
 }
 
