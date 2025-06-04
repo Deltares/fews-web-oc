@@ -14,9 +14,14 @@ export function horizontalColorCodeDataFromData(
   series: ChartSeries,
   data: (SeriesData | SeriesArrayData)[],
 ) {
-  return data.map(({ x, y }) => ({
-    x,
-    y: series.name,
-    color: y,
-  }))
+  return data
+    .filter(
+      (event, index, arr) =>
+        index === 0 || index === arr.length - 1 || arr[index - 1].y !== event.y,
+    )
+    .map(({ x, y }) => ({
+      x,
+      y: series.name,
+      color: y,
+    }))
 }
