@@ -31,6 +31,9 @@ const SystemMonitorDisplayView = defineAsyncComponent(
 const WhatIfDisplayView = defineAsyncComponent(
   () => import('@/views/WhatIfDisplayView.vue'),
 )
+const DataAnalysisDisplay = defineAsyncComponent(
+  () => import('@/components/his/DataAnalysisDisplay.vue'),
+)
 
 const Empty = defineAsyncComponent(() => import('@/views/Empty.vue'))
 
@@ -46,6 +49,7 @@ export const componentTypeToComponentMap = {
   'html-display': Empty,
   'log-display': Empty,
   'whatif-display': WhatIfDisplayView,
+  'data-analysis-display': DataAnalysisDisplay,
 } satisfies Record<ComponentType, Component>
 
 export type PropsForComponentType<T extends ComponentType> = ComponentProps<

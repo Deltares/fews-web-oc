@@ -134,7 +134,8 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
     nodeHasWhatIfs(node) ||
     nodeHasWebDisplay(node) ||
     nodeHasLogDisplay(node) ||
-    nodeHasDynamicReportDisplay(node)
+    nodeHasDynamicReportDisplay(node) ||
+    nodeHasDataAnalysisDisplay(node)
   )
 }
 
@@ -187,4 +188,8 @@ export function nodeHasWhatIfs(node: TopologyNode) {
 }
 export function nodeHasLogDisplay(node: TopologyNode) {
   return node.logDisplay !== undefined
+}
+
+export function nodeHasDataAnalysisDisplay(node: TopologyNode) {
+  return node.dataAnalysisDisplayId !== undefined
 }

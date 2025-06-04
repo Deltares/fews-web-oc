@@ -60,7 +60,7 @@ import { getAxisOptions } from '@/lib/charts/axisOptions'
 import { PanHandler } from '@deltares/fews-web-oc-charts'
 
 interface Props {
-  config?: ChartConfig
+  config: ChartConfig
   series?: Record<string, Series>
   highlightTime?: Date
   isLoading?: boolean
@@ -97,7 +97,7 @@ const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = useTemplateRef('chartContainer')
 const axisTime = ref<CrossSectionSelect>()
-const hasLoadedOnce = ref(false)
+const hasRenderedOnce = ref(false)
 const hasResetAxes = ref(true)
 
 onMounted(() => {
@@ -153,7 +153,7 @@ onMounted(() => {
     axis.accept(mouseOver)
     axis.accept(currentTime)
     resize()
-    if (props.config !== undefined) onValueChange()
+    onValueChange()
     window.addEventListener('resize', resize)
   }
 })
@@ -469,33 +469,26 @@ watch(
       (k) => `${k}-${props.series[k].lastUpdated?.getTime()}`,
     ),
   (newValue, oldValue) => {
-    const newSeriesIds = difference(newValue, oldValue).map(
-      (id) => id.split('-')[0],
+    const newSeriesIds = difference(newValue, oldValue).map((id) =>
+      id.substring(0, id.lastIndexOf('-')),
     )
     const requiredSeries = props.config?.series.filter((s) =>
       s.dataResources.some((resourceId) => newSeriesIds.includes(resourceId)),
     )
     if (requiredSeries.length > 0) {
       updateChartData(requiredSeries)
+
+      if (!hasRenderedOnce.value) {
+        axis.redraw({
+          x: { autoScale: true },
+          y: { autoScale: true },
+        })
+        hasRenderedOnce.value = true
+      }
     }
   },
 )
 watch(() => props.config, onValueChange)
-watch(
-  () => props.isLoading,
-  (newValue, oldValue) => {
-    // isLoading changes every time the data is requested again.
-    // We need to keep track of the first time the data has been loaded, in order to fully draw the chart once
-    if (!newValue) {
-      hasLoadedOnce.value = true
-    }
-  },
-)
-
-watch(hasLoadedOnce, onValueChange, {
-  once: true,
-})
-
 onBeforeUnmount(() => {
   beforeDestroy()
 })
@@ -526,6 +519,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   flex: 1 1 80%;
   max-height: max(50%, 400px);
+  width: 100%;
 }
 
 .chart-with-chips.vertical-profile {

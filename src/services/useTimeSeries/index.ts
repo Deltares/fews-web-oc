@@ -1,12 +1,22 @@
 import {
-  ActionRequest,
   PiWebserviceProvider,
+  type ActionRequest,
   type TimeSeriesEvent,
-  DomainAxisEventValuesStringArray,
   TimeSeriesResult,
   TimeSeriesResponse,
+  type DomainAxisEventValuesStringArray,
+  type Header,
+  type TimeSeriesFilter,
 } from '@deltares/fews-pi-requests'
-import { computed, onUnmounted, ref, shallowRef, toValue, watch } from 'vue'
+import {
+  computed,
+  onUnmounted,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchEffect,
+} from 'vue'
 import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl'
 import { DateTime, Interval } from 'luxon'
@@ -24,6 +34,7 @@ export interface UseTimeSeriesReturn {
   isLoading: Ref<boolean>
   loadingSeriesIds: Ref<string[]>
   interval: Pausable
+  refresh: () => void
 }
 
 const TIMESERIES_POLLING_INTERVAL = 1000 * 30
@@ -33,6 +44,8 @@ export interface UseTimeSeriesOptions {
   endTime?: Date | null
   thinning?: boolean
   showVerticalProfile?: boolean
+  convertDatum?: boolean
+  useDisplayUnits?: boolean
 }
 
 function timeZoneOffsetString(offset: number): string {
@@ -47,9 +60,8 @@ function timeZoneOffsetString(offset: number): string {
 export function useTimeSeries(
   baseUrl: string,
   requests: MaybeRefOrGetter<ActionRequest[]>,
-  lastUpdated: MaybeRefOrGetter<Date | undefined>,
   options: MaybeRefOrGetter<UseTimeSeriesOptions>,
-  fetchingEnabled: MaybeRefOrGetter<boolean>,
+  fetchingEnabled?: MaybeRefOrGetter<boolean>,
   selectedTime?: MaybeRefOrGetter<Date | undefined>,
 ): UseTimeSeriesReturn {
   let controller = new AbortController()
@@ -58,13 +70,18 @@ export function useTimeSeries(
   const loadingSeriesIds = ref<string[]>([])
   const isLoading = computed(() => loadingSeriesIds.value.length > 0)
 
-  watch(
-    [lastUpdated, selectedTime ?? ref(), requests, options, fetchingEnabled],
-    loadTimeSeries,
-  )
+  const watchedParams = [
+    requests,
+    options,
+    fetchingEnabled,
+    selectedTime,
+  ].filter((p) => p !== undefined)
+  watch(watchedParams, () => {
+    loadTimeSeries()
+  })
 
   async function loadTimeSeries() {
-    if (!toValue(fetchingEnabled)) return
+    if (fetchingEnabled !== undefined && !toValue(fetchingEnabled)) return
 
     controller.abort('Timeseries request triggered again before finishing.')
     controller = new AbortController()
@@ -183,6 +200,17 @@ export function useTimeSeries(
       }
     }
 
+    if (_options.convertDatum) {
+      url.searchParams.set('convertDatum', _options.convertDatum.toString())
+    }
+
+    if (_options.useDisplayUnits) {
+      url.searchParams.set(
+        'useDisplayUnits',
+        _options.useDisplayUnits.toString(),
+      )
+    }
+
     // Convert absolute URL back into relative URL with updated search
     // parameters.
     return request.request.split('?')[0] + url.search
@@ -254,6 +282,57 @@ export function useTimeSeries(
     isLoading,
     loadingSeriesIds,
     interval,
+    refresh: loadTimeSeries,
+  }
+}
+
+export function useTimeSeriesHeaders(
+  baseUrl: string,
+  filterId: MaybeRefOrGetter<string | undefined>,
+) {
+  const timeSeriesHeaders = ref<Header[]>([])
+
+  const isLoading = ref(false)
+  const isReady = ref(false)
+  const error = shallowRef<string>()
+
+  const piProvider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
+  async function fetch() {
+    const _filterId = toValue(filterId)
+    if (_filterId === undefined) {
+      timeSeriesHeaders.value = []
+      return
+    }
+
+    isLoading.value = true
+    isReady.value = false
+
+    const filter: TimeSeriesFilter = {
+      onlyHeaders: true,
+      filterId: _filterId,
+    }
+    try {
+      const timeSeriesResponse = await piProvider.getTimeSeries(filter)
+      timeSeriesHeaders.value =
+        timeSeriesResponse.timeSeries
+          ?.flatMap((ts) => ts.header)
+          .filter((header) => header !== undefined) ?? []
+    } catch {
+      error.value = 'Error loading time series headers'
+      timeSeriesHeaders.value = []
+    } finally {
+      isLoading.value = false
+      isReady.value = true
+    }
+  }
+
+  watchEffect(fetch)
+
+  return {
+    timeSeriesHeaders,
   }
 }
 

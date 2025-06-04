@@ -4,6 +4,7 @@ export type ComponentType =
   | WebOCDashboardItem['component']
   | 'dashboard'
   | 'dynamic-report-display'
+  | 'data-analysis-display'
 
 export const ComponentType = {
   dashboard: 'dashboard',
@@ -17,6 +18,7 @@ export const ComponentType = {
   'dynamic-report-display': 'dynamic-report-display',
   'whatif-display': 'whatif-display',
   'log-display': 'log-display',
+  'data-analysis-display': 'data-analysis-display',
 } satisfies Record<ComponentType, ComponentType>
 
 export const componentTypeToIconMap = {
@@ -31,6 +33,7 @@ export const componentTypeToIconMap = {
   'html-display': 'mdi-web',
   'whatif-display': 'mdi-cog',
   'log-display': 'mdi-file-document',
+  'data-analysis-display': 'mdi-database',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToTitleMap = {
@@ -45,6 +48,7 @@ export const componentTypeToTitleMap = {
   'dynamic-report-display': 'Dynamic Report',
   'whatif-display': 'What If',
   'log-display': 'Log',
+  'data-analysis-display': 'Data Analysis',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToRouteNameMap = {
@@ -59,6 +63,7 @@ export const componentTypeToRouteNameMap = {
   'dynamic-report-display': 'TopologyDynamicReports',
   'whatif-display': 'TopologyWhatIfDisplay',
   'log-display': 'TopologyLogDisplay',
+  'data-analysis-display': 'TopologyDataAnalysisDisplay',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToIdMap = {
@@ -73,4 +78,5 @@ export const componentTypeToIdMap = {
   'whatif-display': 'whatif',
   'dynamic-report-display': 'dynamicreport',
   'log-display': 'log',
+  'data-analysis-display': 'analysis',
 } satisfies Record<ComponentType, string>

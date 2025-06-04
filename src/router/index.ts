@@ -38,6 +38,8 @@ const ReportsDisplayView = () => import('../views/ReportsDisplayView.vue')
 const WebDisplay = () => import('../components/webdisplay/WebDisplay.vue')
 const DashboardView = () => import('../views/DashboardView.vue')
 const LogDisplay = () => import('../components/logdisplay/LogDisplay.vue')
+const DataAnalysisDisplay = () =>
+  import('../components/his/DataAnalysisDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
@@ -262,6 +264,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         path: 'whatif',
         name: 'TopologyWhatIfDisplay',
         component: WhatIfDisplayView,
+        props: true,
+        meta: { sidebar: true },
+      },
+      {
+        path: 'analysis',
+        name: 'TopologyDataAnalysisDisplay',
+        component: DataAnalysisDisplay,
         props: true,
         meta: { sidebar: true },
       },

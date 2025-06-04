@@ -12,6 +12,7 @@ import {
   nodeHasSystemMonitor,
   nodeHasWhatIfs,
   nodeHasWebDisplay,
+  nodeHasDataAnalysisDisplay,
 } from './nodes'
 import {
   ComponentType,
@@ -111,6 +112,10 @@ export function displayTabsForNode(
         break
       case 'log-display':
         tab.active = nodeHasLogDisplay(node)
+        tab.to.params = { ...params }
+        break
+      case 'data-analysis-display':
+        tab.active = nodeHasDataAnalysisDisplay(node)
         tab.to.params = { ...params }
         break
     }

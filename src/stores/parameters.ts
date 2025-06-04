@@ -23,6 +23,11 @@ export const useParametersStore = defineStore('parameters', () => {
     return parameters.value.find((parameter) => parameter.id === parameterId)
   }
 
+  function getName(parameterId: string | undefined): string {
+    const parameter = byId(parameterId)
+    return parameter?.name ?? parameter?.shortName ?? parameterId ?? 'Unknown'
+  }
+
   async function fetch() {
     isLoading.value = true
     try {
@@ -43,6 +48,7 @@ export const useParametersStore = defineStore('parameters', () => {
     parameters,
     isLoading,
     byId,
+    getName,
     fetch,
   }
 })
