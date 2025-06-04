@@ -46,16 +46,18 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watchEffect } from 'vue'
-import ProductsBrowserTable from '@/components/products/ProductsBrowserTable.vue'
+import ProductsBrowserTable, { type ProductBrowserTableConfig} from '@/components/products/ProductsBrowserTable.vue'
 import ReactiveIframe from '@/components/products/ReactiveIFrame.vue'
 import { getProductURL } from './productTools'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import { ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
+import { ProductsMetaDataFilter, TopologyNode } from '@deltares/fews-pi-requests'
 import { useProducts } from '@/services/useProducts'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
-import { DocumentDisplay, ViewConfig } from '@/lib/products/documentDisplay'
+import { isDocumentBrowser, type DocumentBrowserDisplay, type ReportDisplay, type DocumentDisplaysConfig } from '@/lib/products/documentDisplay'
 
 interface Props {
+  nodeId?: string | string[]
+  topologyNode: TopologyNode
   productId?: string
 }
 
@@ -82,8 +84,8 @@ const props = defineProps<Props>()
 const src = ref('')
 const viewMode = ref('')
 const timeZero = ref('')
-const displayConfig = ref<DocumentDisplay>()
-const viewConfig = ref<ViewConfig>({ type: 'table', headers: [] } as ViewConfig)
+const displayConfig = ref<(DocumentBrowserDisplay | ReportDisplay)[]>()
+const viewConfig = ref<ProductBrowserTableConfig>({ type: 'table', headers: [] } as ProductBrowserTableConfig)
 
 const filter = ref<ProductsMetaDataFilter>({
   versionKey: ['archiveProductId'],
@@ -93,13 +95,33 @@ const { products, getProductByKey } = useProducts(filter)
 
 onMounted(async () => {
   const transformRequest = createTransformRequestFn()
-  const url = getResourcesStaticUrl('documentBrowser.json').toString()
+  const url = getResourcesStaticUrl('documentDisplays.json').toString()
   const request = await transformRequest(new Request(url, {}))
   const reponse = await fetch(request)
-  const config = (await reponse.json()) as DocumentDisplay
-  displayConfig.value = config
-  viewConfig.value = config.documentDiplay.documentBrowser.viewConfig
+  const config = (await reponse.json()) as DocumentDisplaysConfig
+  displayConfig.value = config.documentDisplays
 })
+
+
+watchEffect(
+  () => {
+
+    const documentDisplayId = props.topologyNode?.documentDisplayId
+    const documentDisplays = displayConfig.value
+    if (documentDisplayId && documentDisplays) {
+      const documentDisplay = documentDisplays.find(
+        (display) => display.id === documentDisplayId
+      ) 
+      if (documentDisplay && isDocumentBrowser(documentDisplay)) {
+        viewConfig.value = documentDisplay.documentBrowser.layout
+      } else {
+        console.warn(`Document display with ID ${documentDisplayId} not found.`)
+      }
+    } else {
+      console.warn('No document display ID provided or display config not loaded.')
+    }
+  }
+)
 
 watchEffect(async () => {
   if (props.productId) {

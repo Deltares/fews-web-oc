@@ -155,19 +155,30 @@ import { computed, ref, watch } from 'vue'
 import type { ProductMetaDataType } from '@/services/useProducts/types'
 import { useRouter } from 'vue-router'
 import { toHumanReadableDate } from '@/lib/date'
-import { ViewConfig } from '@/lib/products/documentDisplay'
 
-const productPropertyNames: string[] = [
-  'version',
-  'sourceId',
-  'areaId',
-  'timeZero',
-  'dataSetCreationTime',
-]
+interface AttributeHeader {
+  attribute: string
+  title: string
+}
+
+interface PropertyHeader {
+  property: string
+  title: string
+}
+
+export interface ProductBrowserTableConfig {
+  headers: (AttributeHeader | PropertyHeader)[]
+}
+
+function isPropertyHeader(
+  header: PropertyHeader | AttributeHeader,
+): header is PropertyHeader {
+  return (header as PropertyHeader).property !== undefined
+}
 
 interface Props {
   products: ProductMetaDataType[]
-  config: ViewConfig
+  config: ProductBrowserTableConfig
 }
 
 const props = defineProps<Props>()
@@ -206,8 +217,8 @@ watch(
       return
     }
     const result = newHeaders.map((header) => ({
-      key: productPropertyNames.includes(header.attribute)
-        ? header.attribute
+      key: isPropertyHeader(header)
+        ? header.property
         : `attributes.${header.attribute}`,
       title: header.title,
     }))

@@ -1,5 +1,4 @@
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import { ProductMetaDataType } from '@/stores/product'
 import {
   ArchiveProductsMetadataAttribute,
   ArchiveProductsMetadataEntry,
@@ -7,9 +6,9 @@ import {
   type ProductsMetaDataFilter,
 } from '@deltares/fews-pi-requests'
 import { ref, toValue, watchEffect, type MaybeRefOrGetter } from 'vue'
-import { ProductMetaDataWithoutAttributes } from './types'
+import { ProductMetaDataType, ProductMetaDataWithoutAttributes } from './types'
 
-const daysBack = 7 // Number of days to look back for product metadata
+const daysBack = 100 // Number of days to look back for product metadata
 
 /**
  * Hook to fetch and manage product metadata based on a given filter.
@@ -81,6 +80,7 @@ function excludeProps<T extends ArchiveProductsMetadataEntry>(
 ): ProductMetaDataWithoutAttributes {
   return Object.keys(obj).reduce((acc, key) => {
     if (!excludeProperties.includes(key as keyof T)) {
+      // @ts-ignore: TypeScript doesn't know that key is a valid key of T
       acc[key] = obj[key]
     }
     return acc
@@ -113,12 +113,13 @@ const attributesToObject = (
  */
 export async function convertToProductMetaDataType(
   entry: ArchiveProductsMetadataEntry,
-) {
+): Promise<ProductMetaDataType> {
   const attributes: Record<string, string> = attributesToObject(
     entry.attributes,
   )
   const key = await keyForProductMetaDataType(entry)
   const copy = excludeProps(entry, ['attributes'])
+  // @ts-ignore
   return { key, ...copy, attributes }
 }
 
