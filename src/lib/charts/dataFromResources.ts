@@ -5,7 +5,6 @@ import {
   type SeriesData,
   type TimeSeriesData,
 } from '@/lib/timeseries/types/SeriesData'
-import { ChartSeries } from './types/ChartSeries'
 
 /**
  * Determines if the specified data is reliable.
