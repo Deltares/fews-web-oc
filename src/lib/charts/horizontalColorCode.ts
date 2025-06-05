@@ -17,7 +17,7 @@ export function horizontalColorCodeDataFromData(
   return data
     .filter(
       (event, index, arr) =>
-        index === 0 || index === arr.length - 1 || arr[index - 1].y !== event.y,
+        index === 0 || index === arr.length - 1 || arr[index + 1].y !== event.y,
     )
     .map(({ x, y }) => ({
       x,
