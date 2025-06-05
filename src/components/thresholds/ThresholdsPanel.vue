@@ -1,22 +1,22 @@
 <template>
   <div class="threshold-summary-container h-100 d-flex flex-column">
-    <v-toolbar density="compact" height="100%" class="px-2" >
+    <v-toolbar density="compact" height="100%">
       <template #append>
         <v-btn
           @click="emit('close')"
           size="small"
           variant="text"
           icon="mdi-close"
-          class="align-self-start"
         />
       </template>
+        <div class="spacer"></div>
         <v-chip-group
           class="px-2"
           v-model="selectedWarningLevelIds"
           multiple
           column
           selected-class="v-chip--variant-tonal"
-        >
+        >  
           <v-chip
             v-for="level in warningLevels"
             :key="level.id"
@@ -129,6 +129,10 @@ onMounted(() => {
 <style scoped>
 .threshold-summary-container {
   width: 450px;
+}
+
+.spacer {
+  height: 48px;
 }
 
 .warning-count {
