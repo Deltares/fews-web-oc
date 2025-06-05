@@ -116,7 +116,9 @@ import { VDateInput } from 'vuetify/labs/components'
 import type {
   ActionRequest,
   BoundingBox,
+  DataAnalysisDisplayElement,
   filterActionsFilter,
+  TimeSeriesDisplaySubplot,
 } from '@deltares/fews-pi-requests'
 import { computed, ref, shallowRef, watch } from 'vue'
 import { useFilterLocations } from '@/services/useFilterLocations'
@@ -141,11 +143,9 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { difference } from 'lodash-es'
 import { useStorage } from '@vueuse/core'
-import { TimeSeriesDisplaySubplot } from '@deltares/fews-pi-requests'
-import { DataAnalysisDisplay } from '@/services/useDataAnalysisDisplay'
 
 interface Props {
-  config: DataAnalysisDisplay
+  config: DataAnalysisDisplayElement
   boundingBox?: BoundingBox
   settings?: ComponentSettings
 }

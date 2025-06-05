@@ -77,6 +77,7 @@
 <script setup lang="ts">
 import type {
   BoundingBox,
+  Filter,
   filterActionsFilter,
   Header,
   Location,
@@ -89,10 +90,9 @@ import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import type { FeatureCollection, Geometry } from 'geojson'
 import { useParametersStore } from '@/stores/parameters'
-import type { DataAnalysisDisplayFilter } from '@/services/useDataAnalysisDisplay'
 
 interface Props {
-  filters?: DataAnalysisDisplayFilter[]
+  filters?: Filter[]
   locations: Location[]
   geojson: FeatureCollection<Geometry, Location>
   timeSeriesHeaders: Header[]

@@ -1,68 +1,15 @@
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import {
-  computed,
-  MaybeRefOrGetter,
-  ref,
-  shallowRef,
-  toValue,
-  watchEffect,
-} from 'vue'
-
-interface DataAnalysisDisplaysResponse {
-  dataAnalysisDisplays?: DataAnalysisDisplay[]
-}
-
-export interface DataAnalysisDisplayFilter {
-  id: string
-  name: string
-}
-
-export interface DataAnalysisDisplayLocationAttribute {
-  id: string
-  name: string
-}
-
-export interface DataAnalysisDisplay {
-  id: string
-  relativeViewPeriod?: string
-  archiveCoupling?: {
-    enabled?: boolean
-    metadata?: {
-      properties?: Record<string, string>
-      attributes?: Record<string, string>
-    }
-  }
-  filters?: DataAnalysisDisplayFilter[]
-  locationAttributes?: DataAnalysisDisplayLocationAttribute[]
-  toolBoxes?: {
-    resampling?: { enabled?: boolean }
-    correlation?: { enabled?: boolean }
-    toolboxWorkflow?: CustomToolbox[]
-  }
-}
-
-export interface CustomToolbox {
-  id: string
-  iconId: string
-  name: string
-  workflowId: string
-  whatIfTemplateId: string
-  results: {
-    filterId: string
-    archiveProductId: string
-  }
-}
+  DataAnalysisDisplayElement,
+  PiWebserviceProvider,
+} from '@deltares/fews-pi-requests'
+import { MaybeRefOrGetter, ref, shallowRef, toValue, watchEffect } from 'vue'
 
 export function useDataAnalysisDisplay(
   baseUrl: string,
   dataAnalysisDisplayId: MaybeRefOrGetter<string | undefined>,
 ) {
-  const dataAnalysisDisplays = shallowRef<DataAnalysisDisplay[]>()
-  const dataAnalysisDisplay = computed(() => {
-    const id = toValue(dataAnalysisDisplayId)
-    return dataAnalysisDisplays.value?.find((display) => display.id === id)
-  })
+  const dataAnalysisDisplay = ref<DataAnalysisDisplayElement>()
   const isReady = ref(false)
   const isLoading = ref(false)
   const error = shallowRef<string>()
@@ -71,21 +18,19 @@ export function useDataAnalysisDisplay(
     isLoading.value = true
     isReady.value = false
 
+    const _dataAnalysisDisplayId = toValue(dataAnalysisDisplayId)
+
     try {
       const provider = new PiWebserviceProvider(baseUrl, {
         transformRequestFn: createTransformRequestFn(),
       })
-      const url = provider.resourcesStaticUrl('dataAnalysisDisplays.json')
-      const resp = await fetch(url)
-      const response: DataAnalysisDisplaysResponse = await resp.json()
-      if (!response) {
-        throw new Error('DataAnalysisDisplays response is undefined')
-      }
-
-      dataAnalysisDisplays.value = response.dataAnalysisDisplays
+      const response = await provider.getDataAnalysisDisplays({
+        dataAnalysisDisplayId: _dataAnalysisDisplayId,
+      })
+      dataAnalysisDisplay.value = response.dataAnalysisDisplays?.[0]
     } catch {
-      error.value = 'Error loading DataAnalysisDisplays'
-      dataAnalysisDisplays.value = []
+      error.value = 'Error loading DataAnalysisDisplay'
+      dataAnalysisDisplay.value = undefined
     } finally {
       isLoading.value = false
       isReady.value = true
@@ -96,7 +41,6 @@ export function useDataAnalysisDisplay(
 
   return {
     dataAnalysisDisplay,
-    dataAnalysisDisplays,
     isReady,
     isLoading,
     error,
