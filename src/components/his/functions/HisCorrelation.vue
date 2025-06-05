@@ -1,6 +1,6 @@
 <template>
   <div class="h-100 pa-2 ga-2">
-    <HisGroupSelect
+    <GroupSelect
       v-model="selectedTimeseries"
       :items="allSeries"
       label="Timeseries"
@@ -10,7 +10,7 @@
       :groupBy="(item) => item.chartId"
     />
 
-    <HisGroupSelect
+    <GroupSelect
       v-model="selectedSecondTimeseries"
       :items="allSeries"
       label="Timeseries"
@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import HisAddButton from '@/components/his/HisAddButton.vue'
-import HisGroupSelect from '@/components/his/HisGroupSelect.vue'
+import GroupSelect from '@/components/general/GroupSelect.vue'
 import { computed, ref, watch } from 'vue'
 import {
   Chart,
