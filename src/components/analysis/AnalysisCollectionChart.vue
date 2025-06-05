@@ -35,9 +35,11 @@ import { TimeSeriesDisplaySubplot } from '@deltares/fews-pi-requests'
 import {
   convertSvgElementToImageBitmap,
   createExportableSvgElement,
+  fetchAndInlineCssAndFonts,
 } from '@/lib/svg'
 import { downloadImageBitmapAsPng } from '@/lib/download'
 import { computed, nextTick, ref, useTemplateRef } from 'vue'
+import { useConfigStore } from '@/stores/config'
 
 interface Props {
   chart: Chart
@@ -50,6 +52,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const chartRef = useTemplateRef('render-chart')
+const configStore = useConfigStore()
 
 const renderingChart = ref(false)
 
@@ -65,44 +68,12 @@ async function downloadChartImage() {
   if (!svg) {
     throw new Error('Could not obtain SVG element for chart.')
   }
-  // Get print and font style sheet contents and concatenate them into a
-  // self-contained complete stylesheet for exporting the SVG.
-  const getCssContents = async (file: string): Promise<string> => {
-    const baseUrl = import.meta.env.BASE_URL || ''
-    const response = await fetch(`${baseUrl}${file}`, {
-      headers: {
-        'Content-Type': 'text/css',
-      },
-    })
-    return response.text()
-  }
-  const cssContents = await Promise.all(
-    ['weboc-default-style.css', 'default-styles.css', 'rwsos-style.css'].map(
-      getCssContents,
-    ),
-  )
-  const finalCssContents = cssContents.join('')
 
-  const response = await fetch('/fonts/RO/ROsanswebtextregular.woff');
-  const blob = await response.blob();
-  const reader = new FileReader();
-
-  const css = await new Promise((resolve) => {
-    reader.onloadend = () => {
-      const base64 = (reader.result as any).split(',')[1];
-      const css = `@font-face {
-        font-family: 'RO-Sans';
-        src: url('data:font/woff;charset=utf-8;base64,${base64}') format('woff');
-        font-weight: normal;
-        font-style: normal;
-      }`;
-      resolve(css);
-    };
-    reader.readAsDataURL(blob);
-  })
+  const styleSheet = await configStore.getCustomStyleSheet()
+  const css = await fetchAndInlineCssAndFonts(styleSheet)
 
   // Create exportable SVG element with embedded style sheet.
-  const exportSvg = createExportableSvgElement(svg, finalCssContents + css)
+  const exportSvg = createExportableSvgElement(svg, css)
   renderingChart.value = false
 
   // Convert SVG to bitmap, then download it as PNG.
@@ -110,7 +81,6 @@ async function downloadChartImage() {
   const bitmap = await convertSvgElementToImageBitmap(exportSvg, targetSize)
 
   await downloadImageBitmapAsPng(bitmap, 'chart.png')
-
 }
 </script>
 
