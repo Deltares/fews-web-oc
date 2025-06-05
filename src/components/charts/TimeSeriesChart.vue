@@ -42,6 +42,7 @@ import {
   MouseOver,
   VerticalMouseOver,
   DomainChangeEvent,
+  ChartMatrix,
 } from '@deltares/fews-web-oc-charts'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
@@ -58,6 +59,10 @@ import { getMatchingIndexedString, type Tag } from '@/lib/charts/tags'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
 import { PanHandler } from '@deltares/fews-web-oc-charts'
+import {
+  getColorMap,
+  horizontalColorCodeDataFromData,
+} from '@/lib/charts/horizontalColorCode.js'
 
 interface Props {
   config: ChartConfig
@@ -216,6 +221,18 @@ const addToChart = (chartSeries: ChartSeries) => {
     case 'bar':
       chart = new ChartBar(data, { tooltip })
       break
+    case 'horizontalColorCode':
+      const matrixData = horizontalColorCodeDataFromData(chartSeries, data)
+      chart = new ChartMatrix(matrixData, {
+        y: {
+          paddingInner: chartSeries.barMargin,
+        },
+        color: {
+          map: getColorMap(chartSeries.classBreaks),
+        },
+        tooltip,
+      })
+      break
     default:
       chart = new ChartMarker(data, {
         symbol: chartSeries.marker,
@@ -223,21 +240,7 @@ const addToChart = (chartSeries: ChartSeries) => {
       })
   }
   if (chart === undefined) return
-  chart.addTo(
-    axis,
-    {
-      x: {
-        key: 'x',
-        axisIndex: 0,
-      },
-      y: {
-        key: 'y',
-        axisIndex: chartSeries.options.y.axisIndex,
-      },
-    },
-    id,
-    chartSeries.style,
-  )
+  chart.addTo(axis, chartSeries.options, id, chartSeries.style)
 }
 
 const setThresholdLines = () => {
@@ -344,13 +347,19 @@ const updateChartData = (series: ChartSeries[]) => {
 
     const rawData = dataFromResources(series.dataResources, props.series)
     const data = removeUnreliableData(rawData)
+
+    const matrixData =
+      series.type === 'horizontalColorCode'
+        ? horizontalColorCodeDataFromData(series, data)
+        : undefined
+
     // Update each matching chart
     charts.forEach((chart) => {
       // Keep track of whether all charts had missing data before this data
       // update, in that case we should reset the y-axes as the domain is
       // probably [NaN, NaN].
       allMissingData &&= chart.data === undefined || chart.data.length === 0
-      chart.data = data
+      chart.data = matrixData ?? data
     })
   })
   const needsAxisRescale = allMissingData || hasResetAxes.value
@@ -384,57 +393,94 @@ const updateChartData = (series: ChartSeries[]) => {
   }
 }
 
-const setTags = () => {
-  const s = new XMLSerializer()
-  const seriesData = props.config?.series
-  if (seriesData === undefined) {
-    legendTags.value = []
+function setTags() {
+  const series = props.config?.series ?? []
+  const isHorizontalColorCode = series.some(
+    (s) => s.type === 'horizontalColorCode',
+  )
+  if (isHorizontalColorCode) {
+    setHorizontalColorCodeTags(series)
   } else {
-    const ids = uniq(
-      seriesData.filter((s) => s.visibleInLegend).map((s) => s.id),
-    )
-    legendTags.value = ids.map((id) => {
-      const { svgGroup, legendSvg } = createChip()
-      for (const chart of axis.charts) {
-        if (chart.id === id) {
-          let node = chart.drawLegendSymbol(undefined, true)
-          svgGroup.appendChild(node)
-        }
-      }
-      legendSvg.appendChild(svgGroup)
-      const name = seriesData.find((s) => s.id === id)?.name ?? ''
-      return {
-        id,
-        name,
-        disabled: false,
-        legendSvg: s.serializeToString(legendSvg),
-        tooltip: getMatchingIndexedString(name, props.forecastLegend),
-      }
-    })
+    setSeriesTags(series)
   }
-  const thresholdsData = props.config?.thresholds
-  if (thresholdsData !== undefined && thresholdsData.length > 0) {
-    const { svgGroup, legendSvg } = createChip()
-    legendSvg.appendChild(svgGroup)
-    const thresholdLegend = {
-      id: 'Thresholds',
-      name: 'Thresholds',
-      disabled: false,
-      legendSvg:
-        '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M13 14h-2V9h2m0 9h-2v-2h2M1 21h22L12 2L1 21Z"/></svg>',
-    }
-    legendTags.value.push(thresholdLegend)
-  }
+  setThresholdTag()
+}
 
-  function createChip() {
-    const legendSvg = document.createElement('svg')
-    legendSvg.setAttribute('width', '20')
-    legendSvg.setAttribute('height', '20')
-    legendSvg.setAttribute('viewBox', '0 0 20 20')
-    const svgGroup = document.createElement('g')
-    svgGroup.setAttribute('transform', 'translate(0 10)')
-    return { svgGroup, legendSvg }
+function setSeriesTags(series: ChartSeries[]) {
+  const s = new XMLSerializer()
+  const ids = uniq(series.filter((s) => s.visibleInLegend).map((s) => s.id))
+
+  legendTags.value = ids.map((id) => {
+    const { svgGroup, legendSvg } = createChip()
+    for (const chart of axis.charts) {
+      if (chart.id === id) {
+        let node = chart.drawLegendSymbol(undefined, true)
+        svgGroup.appendChild(node)
+      }
+    }
+    legendSvg.appendChild(svgGroup)
+    const name = series.find((s) => s.id === id)?.name ?? ''
+    return {
+      id,
+      name,
+      disabled: false,
+      legendSvg: s.serializeToString(legendSvg),
+      tooltip: getMatchingIndexedString(name, props.forecastLegend),
+      interactive: true,
+    }
+  })
+}
+
+function setHorizontalColorCodeTags(series: ChartSeries[]) {
+  const s = new XMLSerializer()
+  const classBreaks = series[0]?.classBreaks ?? []
+
+  legendTags.value = classBreaks.map((classBreak) => {
+    const { legendSvg } = createChip()
+
+    // Create a rect svg with height and widht of 20px and color from classBreak
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+    rect.setAttribute('width', '20')
+    rect.setAttribute('height', '20')
+    rect.setAttribute('fill', classBreak.color)
+
+    legendSvg.appendChild(rect)
+
+    return {
+      id: classBreak.label,
+      name: classBreak.label,
+      disabled: false,
+      interactive: false,
+      legendSvg: s.serializeToString(legendSvg),
+    }
+  })
+}
+
+function setThresholdTag() {
+  const thresholdsData = props.config?.thresholds
+  if (!thresholdsData?.length) return
+
+  const { svgGroup, legendSvg } = createChip()
+  legendSvg.appendChild(svgGroup)
+  const thresholdLegend: Tag = {
+    id: 'Thresholds',
+    name: 'Thresholds',
+    disabled: false,
+    legendSvg:
+      '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M13 14h-2V9h2m0 9h-2v-2h2M1 21h22L12 2L1 21Z"/></svg>',
+    interactive: true,
   }
+  legendTags.value.push(thresholdLegend)
+}
+
+function createChip() {
+  const legendSvg = document.createElement('svg')
+  legendSvg.setAttribute('width', '20')
+  legendSvg.setAttribute('height', '20')
+  legendSvg.setAttribute('viewBox', '0 0 20 20')
+  const svgGroup = document.createElement('g')
+  svgGroup.setAttribute('transform', 'translate(0 10)')
+  return { svgGroup, legendSvg }
 }
 
 const toggleLine = (tag: Tag) => {

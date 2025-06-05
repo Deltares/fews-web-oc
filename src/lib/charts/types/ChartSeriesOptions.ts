@@ -7,4 +7,7 @@ export interface ChartSeriesOptions {
     key: string
     axisIndex: number
   }
+  color?: {
+    key: string
+  }
 }

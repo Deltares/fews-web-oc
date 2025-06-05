@@ -122,5 +122,5 @@ export function removeUnreliableData(data: (SeriesArrayData | SeriesData)[]) {
       ...event,
       y: isSeriesArrayData(event) ? new Array(event.y.length).fill(null) : null,
     }
-  })
+  }) as (SeriesArrayData | SeriesData)[]
 }
