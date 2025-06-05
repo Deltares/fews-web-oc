@@ -1,5 +1,5 @@
 <template>
-  <div class="his-container">
+  <div class="d-flex h-100 w-100 overflow-hidden">
     <v-navigation-drawer
       v-model="drawer"
       permanent
@@ -60,7 +60,7 @@
         </v-card>
       </div>
     </v-navigation-drawer>
-    <div class="tab-buttons">
+    <div class="flex-0-0">
       <v-toolbar-items class="flex-column mt-2 border-e border-t border-b">
         <v-btn
           icon="mdi-filter"
@@ -83,8 +83,8 @@
         />
       </v-toolbar-items>
     </div>
-    <div class="his-charts-container">
-      <div class="his-charts overflow-y-auto">
+    <div class="d-flex justify-center flex-1-1 overflow-auto">
+      <div class="w-100 overflow-y-auto">
         <v-card-title class="flex-0-0 d-flex ga-2 align-center">
           <HisCollection
             v-model:selectedCollection="selectedCollection"
@@ -322,27 +322,3 @@ watch(canDoAnalysis, (canDo) => {
   }
 })
 </script>
-
-<style scoped>
-.his-charts {
-  width: 100%;
-}
-
-.his-charts-container {
-  display: flex;
-  justify-content: center;
-  flex: 1 1 auto;
-  overflow: auto;
-}
-
-.tab-buttons {
-  flex: 0 0 auto;
-}
-
-.his-container {
-  display: flex;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
-</style>
