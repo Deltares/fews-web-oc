@@ -20,6 +20,7 @@
           warningLevelsStore.selectedThresholdCrossings
         "
         :locationIds="props.locationIds"
+        @close="sidePanelStore.toggleActive('thresholds')"
         @navigate="emit('navigate', $event)"
       />
     </div>

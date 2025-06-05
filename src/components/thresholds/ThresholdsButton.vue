@@ -1,5 +1,5 @@
 <template>
-  <v-btn icon :active="active">
+  <v-btn icon width="48px" :active="active">
     <v-badge
       :content="badgeCount"
       :model-value="badgeCount > 0"
