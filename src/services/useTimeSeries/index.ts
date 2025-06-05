@@ -293,7 +293,6 @@ export function useTimeSeriesHeaders(
   const timeSeriesHeaders = ref<Header[]>([])
 
   const isLoading = ref(false)
-  const isReady = ref(false)
   const error = shallowRef<string>()
 
   const piProvider = new PiWebserviceProvider(baseUrl, {
@@ -308,7 +307,6 @@ export function useTimeSeriesHeaders(
     }
 
     isLoading.value = true
-    isReady.value = false
 
     const filter: TimeSeriesFilter = {
       onlyHeaders: true,
@@ -325,7 +323,6 @@ export function useTimeSeriesHeaders(
       timeSeriesHeaders.value = []
     } finally {
       isLoading.value = false
-      isReady.value = true
     }
   }
 

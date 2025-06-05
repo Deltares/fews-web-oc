@@ -11,7 +11,7 @@
       density="compact"
       max-width="250"
     />
-    <HisAutocomplete
+    <Autocomplete
       v-model="selectedParameterIds"
       :items="filteredParameterIds"
       label="Parameters"
@@ -20,14 +20,14 @@
       :getItemTitle="parametersStore.getName"
       :multiple="true"
     />
-    <HisAutocomplete
+    <Autocomplete
       v-model="selectedModuleInstanceIds"
       :items="filteredModuleInstanceIds"
       label="Source"
       icon="mdi-cog"
       :multiple="true"
     />
-    <HisAutocomplete
+    <Autocomplete
       v-model="selectedLocationIds"
       :items="filteredLocations"
       label="Locations"
@@ -61,7 +61,7 @@
           </HisMap>
         </div>
       </template>
-    </HisAutocomplete>
+    </Autocomplete>
 
     <div class="d-flex">
       <v-spacer />
@@ -82,7 +82,7 @@ import type {
   Header,
   Location,
 } from '@deltares/fews-pi-requests'
-import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
+import Autocomplete from '@/components/general/Autocomplete.vue'
 import HisMap from '@/components/his/HisMap.vue'
 import HisAddButton from '@/components/his/HisAddButton.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'

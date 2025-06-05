@@ -1,9 +1,9 @@
 <template>
-  <div class="his-resampling-container h-100 pa-2 ga-2">
-    <HisGroupSelect
+  <div class="h-100 pa-2 ga-2">
+    <GroupSelect
       v-model="selectedTimeseries"
       :items="allSeries"
-      label="Timeseries"
+      label="Time Series"
       :getItemValue="(item) => item.series"
       :getItemTitle="(item) => item.series.legend ?? ''"
       :getItemGroupTitle="(item) => item.chartTitle"
@@ -11,19 +11,19 @@
       :multiple="true"
     />
 
-    <HisAutocomplete
+    <Autocomplete
       v-model="selectedResamplingMethods"
       :items="resamplingMethods"
-      label="Resampling methods"
+      label="Resampling Methods"
       :getItemValue="(item) => item"
       :getItemTitle="(item) => item.label"
       :multiple="true"
     />
 
-    <HisAutocomplete
+    <Autocomplete
       v-model="selectedResamplingTimeSteps"
       :items="availableTimeStepsStore.resamplingTimeSteps"
-      label="Time steps"
+      label="Time Steps"
       :getItemValue="(item) => item"
       :getItemTitle="(item) => item.label"
       :multiple="true"
@@ -41,9 +41,9 @@
 </template>
 
 <script setup lang="ts">
-import HisAutocomplete from '@/components/his/HisAutocomplete.vue'
+import Autocomplete from '@/components/general/Autocomplete.vue'
+import GroupSelect from '@/components/general/GroupSelect.vue'
 import HisAddButton from '@/components/his/HisAddButton.vue'
-import HisGroupSelect from '@/components/his/HisGroupSelect.vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref, watch } from 'vue'
@@ -153,9 +153,3 @@ function addFilter() {
   emit('addFilter', filter.value)
 }
 </script>
-
-<style scoped>
-.his-resampling-container {
-  height: 100%;
-}
-</style>

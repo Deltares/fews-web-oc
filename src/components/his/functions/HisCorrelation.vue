@@ -1,19 +1,19 @@
 <template>
   <div class="h-100 pa-2 ga-2">
-    <HisGroupSelect
+    <GroupSelect
       v-model="selectedTimeseries"
       :items="allSeries"
-      label="Timeseries"
+      label="Time Series 1"
       :getItemValue="(item) => item.series"
       :getItemTitle="(item) => item.series.legend ?? ''"
       :getItemGroupTitle="(item) => item.chartTitle"
       :groupBy="(item) => item.chartId"
     />
 
-    <HisGroupSelect
+    <GroupSelect
       v-model="selectedSecondTimeseries"
       :items="allSeries"
-      label="Timeseries"
+      label="Time Series 2"
       :getItemValue="(item) => item.series"
       :getItemTitle="(item) => item.series.legend ?? ''"
       :getItemGroupTitle="(item) => item.chartTitle"
@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import HisAddButton from '@/components/his/HisAddButton.vue'
-import HisGroupSelect from '@/components/his/HisGroupSelect.vue'
+import GroupSelect from '@/components/general/GroupSelect.vue'
 import { computed, ref, watch } from 'vue'
 import {
   Chart,
@@ -151,11 +151,3 @@ function addChart() {
   emit('addChart', chart)
 }
 </script>
-
-<style scoped>
-.his-correlation-container {
-  display: grid;
-  grid-template-rows: auto auto auto;
-  height: 100%;
-}
-</style>
