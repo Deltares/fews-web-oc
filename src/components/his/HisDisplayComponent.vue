@@ -38,7 +38,7 @@
             <div class="d-flex ga-2">
               <v-date-input
                 v-model="selectedCollection.settings.startTime"
-                label="Start date"
+                label="Start Date"
                 variant="outlined"
                 hide-details
                 density="compact"
@@ -47,7 +47,7 @@
               />
               <v-date-input
                 v-model="selectedCollection.settings.endTime"
-                label="End date"
+                label="End Date"
                 variant="outlined"
                 hide-details
                 density="compact"

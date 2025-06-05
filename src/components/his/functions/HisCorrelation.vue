@@ -3,7 +3,7 @@
     <GroupSelect
       v-model="selectedTimeseries"
       :items="allSeries"
-      label="Timeseries"
+      label="Time Series 1"
       :getItemValue="(item) => item.series"
       :getItemTitle="(item) => item.series.legend ?? ''"
       :getItemGroupTitle="(item) => item.chartTitle"
@@ -13,7 +13,7 @@
     <GroupSelect
       v-model="selectedSecondTimeseries"
       :items="allSeries"
-      label="Timeseries"
+      label="Time Series 2"
       :getItemValue="(item) => item.series"
       :getItemTitle="(item) => item.series.legend ?? ''"
       :getItemGroupTitle="(item) => item.chartTitle"

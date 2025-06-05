@@ -3,7 +3,7 @@
     <GroupSelect
       v-model="selectedTimeseries"
       :items="allSeries"
-      label="Timeseries"
+      label="Time Series"
       :getItemValue="(item) => item.series"
       :getItemTitle="(item) => item.series.legend ?? ''"
       :getItemGroupTitle="(item) => item.chartTitle"
@@ -14,7 +14,7 @@
     <Autocomplete
       v-model="selectedResamplingMethods"
       :items="resamplingMethods"
-      label="Resampling methods"
+      label="Resampling Methods"
       :getItemValue="(item) => item"
       :getItemTitle="(item) => item.label"
       :multiple="true"
@@ -23,7 +23,7 @@
     <Autocomplete
       v-model="selectedResamplingTimeSteps"
       :items="availableTimeStepsStore.resamplingTimeSteps"
-      label="Time steps"
+      label="Time Steps"
       :getItemValue="(item) => item"
       :getItemTitle="(item) => item.label"
       :multiple="true"
