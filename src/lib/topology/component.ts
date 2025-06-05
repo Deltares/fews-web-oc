@@ -33,7 +33,7 @@ export const componentTypeToIconMap = {
   'html-display': 'mdi-web',
   'whatif-display': 'mdi-cog',
   'log-display': 'mdi-file-document',
-  'data-analysis-display': 'mdi-database',
+  'data-analysis-display': 'mdi-database-search',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToTitleMap = {
