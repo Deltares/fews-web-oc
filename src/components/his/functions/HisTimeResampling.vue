@@ -1,5 +1,5 @@
 <template>
-  <div class="his-resampling-container h-100 pa-2 ga-2">
+  <div class="h-100 pa-2 ga-2">
     <GroupSelect
       v-model="selectedTimeseries"
       :items="allSeries"
@@ -153,9 +153,3 @@ function addFilter() {
   emit('addFilter', filter.value)
 }
 </script>
-
-<style scoped>
-.his-resampling-container {
-  height: 100%;
-}
-</style>

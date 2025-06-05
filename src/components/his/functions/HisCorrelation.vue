@@ -151,11 +151,3 @@ function addChart() {
   emit('addChart', chart)
 }
 </script>
-
-<style scoped>
-.his-correlation-container {
-  display: grid;
-  grid-template-rows: auto auto auto;
-  height: 100%;
-}
-</style>
