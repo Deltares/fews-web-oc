@@ -2,7 +2,7 @@ import {
   PiWebserviceProvider,
   type ActionsResponse,
 } from '@deltares/fews-pi-requests'
-import { computed, ref, toValue, watch, watchEffect } from 'vue'
+import { computed, ref, toValue, watch } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import type { DisplayConfig } from '@/lib/display'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.js'
@@ -53,53 +53,58 @@ export function useDisplayConfig(
   const taskRunColorsStore = useTaskRunColorsStore()
   const prevNodeId = ref<string | undefined>(undefined)
 
-  watchEffect(async () => {
-    const _nodeId = toValue(nodeId)
-    if (_nodeId === undefined) return
-    if (_nodeId !== prevNodeId.value) {
-      taskRunColorsStore.clearColors()
-      prevNodeId.value = _nodeId
-    }
-
-    const filter = {
-      nodeId: _nodeId,
-      ...toValue(options),
-    }
-    const _taskRunIds = toValue(taskRunIds)
-    const taskRunsFilter = {
-      ...filter,
-      // TODO: Change this to string.join(',') when the backend is fixed
-      taskRunIds: _taskRunIds,
-      currentForecastsAlwaysVisible: true,
-    }
-
-    response.value = await piProvider.getTopologyActions(
-      _taskRunIds?.length ? taskRunsFilter : filter,
-    )
-    // Assign a color to each task run id in the actions response
-    // and add it to the colorsMapping
-    for (const taskRunId of _taskRunIds ?? []) {
-      // If it is not current and doesn't have a color already, assign a color to the taskRunId
-      if (!taskRunColorsStore.getColor(taskRunId)) {
-        taskRunColorsStore.setColor(taskRunId)
+  watch(
+    [() => toValue(nodeId), () => toValue(taskRunIds), () => toValue(options)],
+    async ([_nodeId, _taskRunIds, _options]) => {
+      if (_nodeId === undefined) return
+      if (_nodeId !== prevNodeId.value) {
+        taskRunColorsStore.clearColors()
+        prevNodeId.value = _nodeId
       }
-    }
-  })
 
-  watch([startTime, endTime, response], () => {
-    if (!response.value) return
+      const filter = {
+        nodeId: _nodeId,
+        ..._options,
+      }
+      const taskRunsFilter = {
+        ...filter,
+        // TODO: Change this to string.join(',') when the backend is fixed
+        taskRunIds: _taskRunIds,
+        currentForecastsAlwaysVisible: true,
+      }
 
-    const _nodeId = toValue(nodeId)
-    const _startTime = toValue(startTime)
-    const _endTime = toValue(endTime)
+      response.value = await piProvider.getTopologyActions(
+        _taskRunIds?.length ? taskRunsFilter : filter,
+      )
+      // Assign a color to each task run id in the actions response
+      // and add it to the colorsMapping
+      for (const taskRunId of _taskRunIds ?? []) {
+        // If it is not current and doesn't have a color already, assign a color to the taskRunId
+        if (!taskRunColorsStore.getColor(taskRunId)) {
+          taskRunColorsStore.setColor(taskRunId)
+        }
+      }
+    },
+  )
 
-    displays.value = actionsResponseToDisplayConfig(
-      response.value,
-      _nodeId,
-      _startTime,
-      _endTime,
-    )
-  })
+  watch(
+    [
+      response,
+      () => toValue(nodeId),
+      () => toValue(startTime),
+      () => toValue(endTime),
+    ],
+    ([_response, _nodeId, _startTime, _endTime]) => {
+      if (!_response) return
+
+      displays.value = actionsResponseToDisplayConfig(
+        _response,
+        _nodeId,
+        _startTime,
+        _endTime,
+      )
+    },
+  )
 
   const displayConfig = computed<DisplayConfig | null>((oldDisplayConfig) => {
     const _plotId = toValue(plotId)
@@ -140,76 +145,75 @@ export function useDisplayConfigFilter(
   const taskRunColorsStore = useTaskRunColorsStore()
   const prevFilterId = ref<string | undefined>(undefined)
 
-  watchEffect(async () => {
-    const _filter = toValue(filter)
-    if (_filter === undefined) {
-      response.value = undefined
-      return
-    }
-
-    if (isFilterActionsFilter(_filter)) {
-      if (!_filter.filterId) return
-
-      if (_filter.filterId !== prevFilterId.value) {
-        taskRunColorsStore.clearColors()
-        prevFilterId.value = _filter.filterId
-      }
-
-      const _taskRunIds = toValue(taskRunIds)
-      const taskRunsFilter = {
-        ..._filter,
-        taskRunIds: _taskRunIds?.join(','),
-        currentForecastsAlwaysVisible: true,
-      }
-      // Assign a color to each task run id in the actions response
-      // and add it to the colorsMapping
-      for (const taskRunId of _taskRunIds ?? []) {
-        // If it is not current and doesn't have a color already, assign a color to the taskRunId
-        if (!taskRunColorsStore.getColor(taskRunId)) {
-          taskRunColorsStore.setColor(taskRunId)
+  watch(
+    [() => toValue(filter), () => toValue(taskRunIds)],
+    async ([_filter, _taskRunIds]) => {
+      if (_filter === undefined) return
+      if (isFilterActionsFilter(_filter)) {
+        if (!_filter.filterId) {
+          response.value = undefined
+          return
         }
+
+        if (_filter.filterId !== prevFilterId.value) {
+          taskRunColorsStore.clearColors()
+          prevFilterId.value = _filter.filterId
+        }
+
+        const taskRunsFilter = {
+          ..._filter,
+          taskRunIds: _taskRunIds?.join(','),
+          currentForecastsAlwaysVisible: true,
+        }
+        // Assign a color to each task run id in the actions response
+        // and add it to the colorsMapping
+        for (const taskRunId of _taskRunIds ?? []) {
+          // If it is not current and doesn't have a color already, assign a color to the taskRunId
+          if (!taskRunColorsStore.getColor(taskRunId)) {
+            taskRunColorsStore.setColor(taskRunId)
+          }
+        }
+        const _response = await piProvider.getFilterActions(
+          _taskRunIds?.length ? taskRunsFilter : _filter,
+        )
+        response.value = _response
+      } else if (isTimeSeriesGridActionsFilter(_filter)) {
+        const _response = await piProvider.getTimeSeriesGridActions(_filter)
+        // Grid actions normally do not return a period, if that is the case,
+        // we add the requested period from the filter to the config.
+        // This is done to have a default period for necessary for resetting
+        // the domain of a chart after zooming in.
+        addFilterPeriodToConfig(_response.results, _filter)
+        addIndexToKeys(_response.results)
+        response.value = _response
+      } else {
+        displayConfig.value = null
+        displays.value = null
+        return
       }
-      const _response = await piProvider.getFilterActions(
-        _taskRunIds?.length ? taskRunsFilter : _filter,
-      )
-      response.value = _response
-    } else if (isTimeSeriesGridActionsFilter(_filter)) {
-      const _response = await piProvider.getTimeSeriesGridActions(_filter)
-      // Grid actions normally do not return a period, if that is the case,
-      // we add the requested period from the filter to the config.
-      // This is done to have a default period for necessary for resetting
-      // the domain of a chart after zooming in.
-      addFilterPeriodToConfig(_response.results, _filter)
-      addIndexToKeys(_response.results)
-      response.value = _response
-    } else {
-      displayConfig.value = null
-      displays.value = null
-      return
-    }
-  })
+    },
+  )
 
   // Use a second watchEffect to not trigger a fetch on these reactive variables
-  watchEffect(() => {
-    if (!response.value) {
-      displayConfig.value = null
-      displays.value = null
-      return
-    }
+  watch(
+    [response, () => toValue(startTime), () => toValue(endTime)],
+    ([_reponse, _startTime, _endTime]) => {
+      if (!_reponse) {
+        displayConfig.value = null
+        displays.value = null
+        return
+      }
 
-    const _startTime = toValue(startTime)
-    const _endTime = toValue(endTime)
-    let nodeId = undefined
-
-    const _displays = actionsResponseToDisplayConfig(
-      response.value,
-      nodeId,
-      _startTime,
-      _endTime,
-    )
-    displays.value = _displays
-    displayConfig.value = _displays[0]
-  })
+      const _displays = actionsResponseToDisplayConfig(
+        _reponse,
+        undefined,
+        _startTime,
+        _endTime,
+      )
+      displays.value = _displays
+      displayConfig.value = _displays[0]
+    },
+  )
 
   const shell = {
     displays,
