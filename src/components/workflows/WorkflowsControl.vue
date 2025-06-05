@@ -34,14 +34,11 @@
           :disabled="workflowSelectItems?.length === 1"
           hide-details
         />
-        <v-banner
-          :text="workflowDescription"
-          label="description"
-          sticky
-          variant="solo-filled"
-          density="compact"
-          hide-details
-        />
+        <v-card variant="flat" v-if="workflowDescription" density="compact">
+          <v-card-text>
+            {{ workflowDescription }}
+          </v-card-text>
+        </v-card>
         <div v-if="isBoundingBoxInForm" class="d-flex py-4">
           <v-text-field
             v-model="boundingBoxString"
