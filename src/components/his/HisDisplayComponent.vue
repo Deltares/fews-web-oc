@@ -177,7 +177,7 @@ function addChartsToCollection(
   const newCharts: FilterChart[] = subplots.map((subPlot) => ({
     id: crypto.randomUUID(),
     type: 'filter',
-    title: getNewChartTitle(collection),
+    title: 'New Chart',
     subplot: subPlot,
     requests: getActionRequestsForSubplot(subPlot, requests),
   }))
@@ -192,10 +192,6 @@ function getActionRequestsForSubplot(
   return subplot.items.flatMap(
     (item) => requests.find((req) => req.key === item.request) ?? [],
   )
-}
-
-function getNewChartTitle(collection: Collection) {
-  return `Chart ${collection.charts.length + 1}`
 }
 
 const filterId = ref(props.config.filters?.[0].id)
