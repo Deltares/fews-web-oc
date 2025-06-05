@@ -1,17 +1,31 @@
 import * as CSS from 'csstype'
 import { SymbolOptions } from '@deltares/fews-web-oc-charts'
 import { ChartSeriesOptions } from './ChartSeriesOptions'
+import { TimeSeriesDisplaySubplotItem } from '@deltares/fews-pi-requests'
 
-export interface ChartSeries {
+type ChartSeriesType =
+  | TimeSeriesDisplaySubplotItem['type']
+  | 'rule'
+  | 'bar'
+  | 'marker'
+  | 'dummy'
+
+type SubplotItem = Pick<
+  TimeSeriesDisplaySubplotItem,
+  | 'classBreaks'
+  | 'barMargin'
+  | 'visibleInLegend'
+  | 'visibleInPlot'
+  | 'visibleInTable'
+>
+
+export interface ChartSeries extends SubplotItem {
   id: string
   dataResources: string[]
   name: string
-  visibleInPlot: boolean
-  visibleInLegend: boolean
-  visibleInTable: boolean
   label?: string
   marker?: SymbolOptions
-  type: string
+  type: ChartSeriesType
   options: ChartSeriesOptions
   unit: string
   style: CSS.SvgPropertiesHyphen

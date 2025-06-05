@@ -72,6 +72,15 @@ export function timeSeriesDisplayToChartConfig(
       }
     }
 
+    if (item.type === 'horizontalColorCode') {
+      const chartSeries: ChartSeries = getChartSeries(
+        [item],
+        'horizontalColorCode',
+        config,
+      )
+      chartSeriesArray.push(chartSeries)
+    }
+
     if (
       item.type === 'line' &&
       item.lineStyle !== undefined &&
@@ -121,7 +130,7 @@ export function timeSeriesDisplayToChartConfig(
 
 function getChartSeries(
   items: TimeSeriesDisplaySubplotItem[],
-  seriesType: string,
+  seriesType: ChartSeries['type'],
   config: ChartConfig,
 ): ChartSeries {
   return {
@@ -134,28 +143,50 @@ function getChartSeries(
     visibleInPlot: items[0].visibleInPlot,
     visibleInTable: items[0].visibleInTable,
     locationId: items[0].locationId,
-    options: {
-      x: {
-        key: 'x',
-        axisIndex: 0,
-      },
-      y: {
-        key: 'y',
-        axisIndex:
-          config.yAxis?.findIndex((yAxis) => {
-            return yAxis.position === items[0].yAxis?.axisPosition
-          }) ?? 0,
-      },
-    },
+    classBreaks: items[0].classBreaks,
+    barMargin: items[0].barMargin,
+    options: getChartOptions(seriesType, items[0], config),
     style: getChartStyle(seriesType, items[0]),
   }
 }
 
-function getChartStyle(seriesType: string, item: TimeSeriesDisplaySubplotItem) {
+function getChartOptions(
+  seriesType: ChartSeries['type'],
+  item: TimeSeriesDisplaySubplotItem,
+  config: ChartConfig,
+) {
+  const yAxisIndex = config.yAxis?.findIndex(
+    (yAxis) => yAxis.position === item.yAxis?.axisPosition,
+  )
+  const result: ChartSeries['options'] = {
+    x: {
+      key: 'x',
+      axisIndex: 0,
+    },
+    y: {
+      key: 'y',
+      axisIndex: yAxisIndex ?? 0,
+    },
+  }
+
+  if (seriesType === 'horizontalColorCode') {
+    result.color = {
+      key: 'color',
+    }
+  }
+
+  return result
+}
+
+function getChartStyle(
+  seriesType: ChartSeries['type'],
+  item: TimeSeriesDisplaySubplotItem,
+) {
   switch (seriesType) {
     case 'area':
       return cssStyleFromFewsArea(item)
     case 'bar':
+    case 'horizontalColorCode':
       return cssStyleFromFewsBar(item)
     default:
       return cssStyleFromFewsLine(item)
@@ -192,40 +223,43 @@ function xAxisFromPlotItemXAxis(
 }
 
 function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
-  const axes = []
+  const axes: AxisOptions[] = []
   const positions = [AxisPosition.Left, AxisPosition.Right]
   for (const position of positions) {
-    const axisItem = subplot.items.find((item) => {
-      return item.yAxis?.axisPosition === position
-    })
-    if (axisItem?.yAxis !== undefined) {
-      const yAxis = axisItem.yAxis
-      const includeZero =
-        yAxis.axisMinValue === 0 && yAxis.axisMaxValue === undefined
-      const axis: AxisOptions = {
-        type: AxisType.value,
+    const axisItem = subplot.items.find(
+      (item) => item.yAxis?.axisPosition === position,
+    )
+    if (axisItem?.yAxis === undefined) continue
+    const yAxis = axisItem?.yAxis
+
+    if (axisItem.type === 'horizontalColorCode') {
+      axes.push({
+        type: AxisType.band,
         position,
         label: yAxis.axisLabel,
-        includeZero,
-      }
-      if (
-        yAxis.axisMinValue !== undefined &&
-        yAxis.axisMaxValue !== undefined
-      ) {
-        const domain: [number, number] = [
-          yAxis.axisMinValue,
-          yAxis.axisMaxValue,
-        ]
-        if (yAxis.axisMinValue === 0 && yAxis.axisMaxValue === 360) {
-          axis.type = AxisType.degrees
-          axis.domain = domain
-          axis.nice = false
-        } else {
-          axis.defaultDomain = domain
-        }
-      }
-      axes.push(axis)
+      })
+      continue
     }
+
+    const includeZero =
+      yAxis.axisMinValue === 0 && yAxis.axisMaxValue === undefined
+    const axis: AxisOptions = {
+      type: AxisType.value,
+      position,
+      label: yAxis.axisLabel,
+      includeZero,
+    }
+    if (yAxis.axisMinValue !== undefined && yAxis.axisMaxValue !== undefined) {
+      const domain: [number, number] = [yAxis.axisMinValue, yAxis.axisMaxValue]
+      if (yAxis.axisMinValue === 0 && yAxis.axisMaxValue === 360) {
+        axis.type = AxisType.degrees
+        axis.domain = domain
+        axis.nice = false
+      } else {
+        axis.defaultDomain = domain
+      }
+    }
+    axes.push(axis)
   }
   return axes
 }

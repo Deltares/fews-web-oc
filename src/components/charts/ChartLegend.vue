@@ -32,7 +32,7 @@
             role="button"
             :density="overlay ? 'compact' : 'default'"
             :variant="tag.disabled || overlay ? 'text' : 'tonal'"
-            @click="toggleLine(tag)"
+            @click="tag.interactive ? toggleLine(tag) : undefined"
           >
             <div
               v-if="tag.legendSvg"

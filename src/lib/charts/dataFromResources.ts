@@ -5,6 +5,7 @@ import {
   type SeriesData,
   type TimeSeriesData,
 } from '@/lib/timeseries/types/SeriesData'
+import { ChartSeries } from './types/ChartSeries'
 
 /**
  * Determines if the specified data is reliable.
@@ -122,5 +123,5 @@ export function removeUnreliableData(data: (SeriesArrayData | SeriesData)[]) {
       ...event,
       y: isSeriesArrayData(event) ? new Array(event.y.length).fill(null) : null,
     }
-  })
+  }) as (SeriesArrayData | SeriesData)[]
 }

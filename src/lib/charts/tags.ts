@@ -4,6 +4,7 @@ export interface Tag {
   disabled: boolean
   legendSvg: string
   tooltip?: string
+  interactive: boolean
 }
 
 export function getMatchingIndexedString(item: string, text?: string) {
