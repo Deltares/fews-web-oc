@@ -63,13 +63,13 @@
     <div class="tab-buttons">
       <v-toolbar-items class="flex-column mt-2 border-e border-t border-b">
         <v-btn
-          icon="mdi-filter"
+          icon="mdi-chart-box-plus-outline"
           @click="toggleTab('data-selection')"
           height="40"
           :active="isActive('data-selection')"
         />
         <v-btn
-          icon="mdi-chart-bar"
+          icon="mdi-finance"
           @click="toggleTab('analysis')"
           height="40"
           :active="isActive('analysis')"
