@@ -115,6 +115,7 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
+watch(filterId, clearSelections)
 watch(() => props.isActive, clearSelections)
 function clearSelections() {
   clearSelectedLocations()
