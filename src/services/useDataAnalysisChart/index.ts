@@ -30,6 +30,7 @@ export function useDataAnalysisChart(
     const _chart = toValue(chart)
     switch (_chart.type) {
       case 'filter':
+      case 'async':
         return useFilterChartData(chart, series, startTime, endTime)
       case 'correlation':
         return useCorrelationChartData(chart, series, startTime, endTime)

@@ -26,6 +26,7 @@
           :series="series"
           :startTime="selectedCollection.settings.startTime"
           :endTime="selectedCollection.settings.endTime"
+          :config="config"
           :settings="settings"
           :isLoading="isLoadingActions"
           @addFilter="addFilter"
