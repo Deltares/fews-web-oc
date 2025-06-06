@@ -50,6 +50,7 @@ export const componentTypeToComponentMap = {
   'log-display': Empty,
   'whatif-display': WhatIfDisplayView,
   'data-analysis-display': DataAnalysisDisplay,
+  'documents-display': Empty,
 } satisfies Record<ComponentType, Component>
 
 export type PropsForComponentType<T extends ComponentType> = ComponentProps<
