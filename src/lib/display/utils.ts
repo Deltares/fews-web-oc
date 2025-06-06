@@ -43,12 +43,19 @@ export function actionsResponseToDisplayConfig(
   endTime?: Date,
 ): DisplayConfig[] {
   const displays: DisplayConfig[] = []
+  const uniquePlotIds = new Set<string>()
   for (const result of actionsResponse.results) {
     if (result.config === undefined) continue
     const title = result.config.timeSeriesDisplay.title ?? ''
     const timeSeriesDisplayIndex = result.config.timeSeriesDisplay.index
     const period = result.config.timeSeriesDisplay.period
-    const plotId = result.config.timeSeriesDisplay.plotId
+    // TODO: Remove this when the backend is fixed to always return an unique plotId.
+    let plotId = result.config.timeSeriesDisplay.plotId ?? crypto.randomUUID()
+    if (uniquePlotIds.has(plotId)) {
+      console.warn(`Duplicate plotId found: ${plotId}. Adding index to make it unique.`)
+      plotId=  `${plotId}-${timeSeriesDisplayIndex}`
+    }
+    uniquePlotIds.add(plotId)
 
     // The period is always specified in UTC.
     const timeZoneOffsetString = 'Z'
