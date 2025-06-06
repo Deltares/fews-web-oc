@@ -49,23 +49,13 @@
           density="compact"
         />
       </template>
-      <v-btn @click="editFile" :color="isEditing ? 'primary' : ''"
-        ><v-icon icon="mdi-pen" />
-        Edit
-      </v-btn>
       <v-btn
         v-if="settings.report.downloadReport"
         @click="downloadFile"
         icon="mdi-download"
       />
     </v-toolbar>
-    <ShadowFrame v-if="!isEditing" :htmlContent="reportHtml" />
-    <EditReport
-      v-if="isEditing"
-      v-model="reportHtml"
-      @save="onSave"
-      class="shadow-frame"
-    />
+    <ShadowFrame :htmlContent="reportHtml" />
   </div>
 </template>
 
@@ -84,7 +74,6 @@ import {
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
 import ShadowFrame from '@/components/general/ShadowFrame.vue'
-import EditReport from '@/components/reports/EditReport.vue'
 import { getReportUrl, useReport } from '@/services/useReport'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 
@@ -96,8 +85,6 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
-
-const isEditing = ref(false)
 
 const showToolbar = computed(
   () =>
@@ -168,14 +155,5 @@ async function downloadFile() {
 
   const fileName = `${report.timeZero}-${report.moduleInstanceId}`
   downloadFileWithXhr(url, fileName, authenticationManager.getAccessToken())
-}
-
-function editFile() {
-  isEditing.value = !isEditing.value
-}
-
-function onSave() {
-  // todo: save the report
-  console.log('Saving report...')
 }
 </script>
