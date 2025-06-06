@@ -1,20 +1,20 @@
 <template>
-  <div class="header sticky" v-if="editor">
-    <v-toolbar flat>
-      <TableMenu :editor="editor" ref="EditMenu" />
-      <v-spacer />
-      <v-btn
-        variant="flat"
-        @click="onSave"
-        color="primary"
-        class="text-none mr-5"
-        :disabled="!hasChanges || isUploading"
-      >
-        Save
-      </v-btn>
-    </v-toolbar>
-  </div>
-  <editor-content :editor="editor" class="shadow-frame" />
+  <v-toolbar v-if="editor">
+    <TableMenu :editor="editor" ref="EditMenu" />
+    <v-spacer />
+    <v-btn
+      variant="flat"
+      @click="onSave"
+      color="primary"
+      class="text-none mr-5"
+      :disabled="!hasChanges || isUploading"
+    >
+      Save
+    </v-btn>
+  </v-toolbar>
+  <v-sheet theme="light" class="flex-1-1 h-100 position-relative">
+    <editor-content :editor="editor" class="shadow-frame" />
+  </v-sheet>
 </template>
 
 <script setup lang="ts">
@@ -136,31 +136,6 @@ onBeforeUnmount(() => {
   }
 })
 </script>
-
-<style>
-/* The sticky class is added to the header with JS when it reaches its scroll position */
-.sticky {
-  position: sticky;
-  top: 0;
-  width: 100%;
-  z-index: 1000;
-  background-color: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(5px);
-  padding: 5px;
-}
-
-/* Add some top padding to the page content to prevent sudden quick movement (as the header gets a new position at the top of the page (position:fixed and top:0) */
-.sticky + .content {
-  padding: 60px 0px 0px;
-  margin: 10px;
-}
-
-.shadow-frame {
-  height: 100%;
-  width: 100%;
-  overflow-y: auto;
-}
-</style>
 
 <style src="./tiptap/data.css" />
 <style src="./tiptap/time.css" />
