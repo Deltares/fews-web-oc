@@ -13,7 +13,7 @@ export interface LabeledIntervalItem extends IntervalItem {
 }
 
 export function periodToIntervalItem(
-  period: Omit<TimeSettingsViewPeriodPreset,'label'>
+  period: Omit<TimeSettingsViewPeriodPreset, 'label'>,
 ): IntervalItem {
   return {
     start: {

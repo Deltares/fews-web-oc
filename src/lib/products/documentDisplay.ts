@@ -1,4 +1,7 @@
-import { ArchiveProductsMetadataAttribute, type TimeSettingsViewPeriodPreset } from "@deltares/fews-pi-requests"
+import {
+  ArchiveProductsMetadataAttribute,
+  type TimeSettingsViewPeriodPreset,
+} from '@deltares/fews-pi-requests'
 
 export interface DocumentDisplaysConfig {
   documentDisplays: (DocumentBrowserDisplay | ReportDisplay)[]
@@ -8,7 +11,7 @@ export interface DocumentBrowserDisplay {
   id: string
   name: string
   type: 'browser'
-  relativeViewPeriod: Omit<TimeSettingsViewPeriodPreset,'label'>
+  relativeViewPeriod: Omit<TimeSettingsViewPeriodPreset, 'label'>
   documentBrowser: DocumentBrowser
 }
 
@@ -16,7 +19,7 @@ export interface ReportDisplay {
   id: string
   name: string
   type: 'report'
-  relativeViewPeriod: Omit<TimeSettingsViewPeriodPreset,'label'>
+  relativeViewPeriod: Omit<TimeSettingsViewPeriodPreset, 'label'>
   report: ReportDisplayConfig
 }
 
@@ -90,9 +93,7 @@ export interface ShowReports {
 export function isDocumentBrowser(
   documentDisplay: DocumentBrowserDisplay | ReportDisplay,
 ): documentDisplay is DocumentBrowserDisplay {
-  return (
-    (documentDisplay as DocumentBrowserDisplay).type === 'browser'
-  )
+  return (documentDisplay as DocumentBrowserDisplay).type === 'browser'
 }
 
 export function isReportDisplay(

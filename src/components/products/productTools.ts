@@ -1,7 +1,10 @@
-import { createTransformRequestFn } from "@/lib/requests/transformRequest"
-import type { ProductMetaDataType } from '@/services/useProducts/types';
-import { convertToProductMetaDataType } from '@/services/useProducts/';
-import { PiArchiveWebserviceProvider, ProductsMetaDataFilter } from "@deltares/fews-pi-requests"
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import type { ProductMetaDataType } from '@/services/useProducts/types'
+import { convertToProductMetaDataType } from '@/services/useProducts/'
+import {
+  PiArchiveWebserviceProvider,
+  ProductsMetaDataFilter,
+} from '@deltares/fews-pi-requests'
 
 /**
  * Retrieves the latest products from a list of product metadata.
@@ -83,9 +86,7 @@ export async function getLastProductsMetaData(
   }
 
   const response = await provider.getProductsMetaData(filter)
-  const products = response.productsMetadata.map(
-          convertToProductMetaDataType,
-        )
+  const products = response.productsMetadata.map(convertToProductMetaDataType)
   const latestProducts = getLatestProducts(products as any)
   return latestProducts[0]
 }
@@ -100,9 +101,7 @@ export async function getLastProductsMetaData(
  * - The URL is constructed using the `relativePathProducts` property of the metadata and the base URL from environment variables.
  * - Ensure that the `metaData` parameter is valid and contains the required `relativePathProducts` property.
  */
-export function getProductURL(
-  metaData?: ProductMetaDataType,
-): string {
+export function getProductURL(metaData?: ProductMetaDataType): string {
   if (metaData) {
     const relativePath = metaData.relativePathProducts[0]
     return `${import.meta.env.VITE_APP_FEWS_PI_URL}/rest/fewspiservice/v1/archive/products/id?relativePath=${relativePath}`

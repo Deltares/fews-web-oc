@@ -1,4 +1,4 @@
-import { type ArchiveProductsMetadataEntry } from "@deltares/fews-pi-requests"
+import { type ArchiveProductsMetadataEntry } from '@deltares/fews-pi-requests'
 
 export type ProductMetaDataWithoutAttributes = Omit<
   ArchiveProductsMetadataEntry,
@@ -6,6 +6,6 @@ export type ProductMetaDataWithoutAttributes = Omit<
 >
 
 export type ProductMetaDataType = Required<ProductMetaDataWithoutAttributes> & {
-  key: string,
+  key: string
   attributes: Record<string, string>
 }

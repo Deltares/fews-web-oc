@@ -20,7 +20,7 @@
   </v-card>
 </template>
 <script setup lang="ts">
-import type { ProductMetaDataType } from '@/services/useProducts/types';
+import type { ProductMetaDataType } from '@/services/useProducts/types'
 
 interface Props {
   product: ProductMetaDataType

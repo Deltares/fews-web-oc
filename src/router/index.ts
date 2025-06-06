@@ -187,7 +187,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         props: true,
         meta: { sidebar: true },
       },
-        {
+      {
         path: 'documents/:productId?',
         name: 'TopologyDocumentDisplay',
         component: DocumentDisplayView,

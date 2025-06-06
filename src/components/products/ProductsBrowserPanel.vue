@@ -1,7 +1,9 @@
 <template>
   <div class="products-browser-panel h-100">
     <v-toolbar density="compact">
-      <v-btn prepend-icon="mdi-file-upload" class="text-none" variant="flat">Upload</v-btn>
+      <v-btn prepend-icon="mdi-file-upload" class="text-none" variant="flat"
+        >Upload</v-btn
+      >
       <v-spacer />
       <v-btn prepend-icon="mdi-magnify"></v-btn>
       <v-btn prepend-icon="mdi-filter-variant">
@@ -54,12 +56,7 @@
     <v-list-item :title="`Last updated: ${lastUpdatedString}`">
       <template #append>
         <v-progress-circular v-if="isLoading" size="20" indeterminate />
-        <v-btn
-          v-else
-          density="compact"
-          variant="plain"
-          icon="mdi-refresh"
-        />
+        <v-btn v-else density="compact" variant="plain" icon="mdi-refresh" />
       </template>
     </v-list-item>
   </div>
@@ -67,7 +64,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import ProductDetails from './ProductDetails.vue'
-import type { ProductMetaDataType } from '@/services/useProducts/types';
+import type { ProductMetaDataType } from '@/services/useProducts/types'
 
 interface Props {
   products: ProductMetaDataType[]
