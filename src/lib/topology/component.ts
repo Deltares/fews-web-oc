@@ -3,6 +3,7 @@ import type { WebOCDashboardItem } from '@deltares/fews-pi-requests'
 export type ComponentType =
   | WebOCDashboardItem['component']
   | 'dashboard'
+  | 'documents-display'
   | 'dynamic-report-display'
   | 'data-analysis-display'
 
@@ -19,6 +20,7 @@ export const ComponentType = {
   'whatif-display': 'whatif-display',
   'log-display': 'log-display',
   'data-analysis-display': 'data-analysis-display',
+  'documents-display': 'documents-display',
 } satisfies Record<ComponentType, ComponentType>
 
 export const componentTypeToIconMap = {
@@ -34,6 +36,7 @@ export const componentTypeToIconMap = {
   'whatif-display': 'mdi-cog',
   'log-display': 'mdi-file-document',
   'data-analysis-display': 'mdi-database-search',
+  'documents-display': 'mdi-file-document-multiple',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToTitleMap = {
@@ -49,6 +52,7 @@ export const componentTypeToTitleMap = {
   'whatif-display': 'What If',
   'log-display': 'Log',
   'data-analysis-display': 'Data Analysis',
+  'documents-display': 'Documents Browser',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToRouteNameMap = {
@@ -64,6 +68,7 @@ export const componentTypeToRouteNameMap = {
   'whatif-display': 'TopologyWhatIfDisplay',
   'log-display': 'TopologyLogDisplay',
   'data-analysis-display': 'TopologyDataAnalysisDisplay',
+  'documents-display': 'TopologyDocumentDisplay',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToIdMap = {
@@ -79,4 +84,5 @@ export const componentTypeToIdMap = {
   'dynamic-report-display': 'dynamicreport',
   'log-display': 'log',
   'data-analysis-display': 'analysis',
+  'documents-display': 'documents',
 } satisfies Record<ComponentType, string>
