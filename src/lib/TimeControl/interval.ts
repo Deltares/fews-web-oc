@@ -4,23 +4,34 @@ import type { DurationLikeObject } from 'luxon'
 export type Interval = IntervalItem | 'default' | 'custom'
 
 export interface IntervalItem {
-  label: string
   start?: DurationLikeObject
   end?: DurationLikeObject
 }
 
+export interface LabeledIntervalItem extends IntervalItem {
+  label: string
+}
+
+export function periodToIntervalItem(
+  period: Omit<TimeSettingsViewPeriodPreset,'label'>
+): IntervalItem {
+  return {
+    start: {
+      [period.unit]: Number(period.start),
+    },
+    end: {
+      [period.unit]: Number(period.end),
+    },
+  }
+}
+
 export function periodPresetToIntervalItem(
   preset: TimeSettingsViewPeriodPreset,
-): IntervalItem {
-  const start = {
-    [preset.unit]: Number(preset.start),
-  }
-  const end = {
-    [preset.unit]: Number(preset.end),
-  }
+): LabeledIntervalItem {
+  const period = periodToIntervalItem(preset)
   return {
     label: preset.label,
-    start: preset.start ? start : undefined,
-    end: preset.end ? end : undefined,
+    start: period.start,
+    end: period.end,
   }
 }

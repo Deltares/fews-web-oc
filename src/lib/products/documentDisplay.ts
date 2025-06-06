@@ -1,3 +1,5 @@
+import { type TimeSettingsViewPeriodPreset } from "@deltares/fews-pi-requests"
+
 export interface DocumentDisplaysConfig {
   documentDisplays: (DocumentBrowserDisplay | ReportDisplay)[]
 }
@@ -5,14 +7,16 @@ export interface DocumentDisplaysConfig {
 export interface DocumentBrowserDisplay {
   id: string
   name: string
-  relativeViewPeriod: string
+  type: 'browser'
+  relativeViewPeriod: Omit<TimeSettingsViewPeriodPreset,'label'>
   documentBrowser: DocumentBrowser
 }
 
 export interface ReportDisplay {
   id: string
   name: string
-  relativeViewPeriod: string
+  type: 'report'
+  relativeViewPeriod: Omit<TimeSettingsViewPeriodPreset,'label'>
   reportDisplay: ReportDisplayConfig
 }
 
@@ -74,6 +78,6 @@ export function isDocumentBrowser(
   documentDisplay: DocumentBrowserDisplay | ReportDisplay,
 ): documentDisplay is DocumentBrowserDisplay {
   return (
-    (documentDisplay as DocumentBrowserDisplay).documentBrowser !== undefined
+    (documentDisplay as DocumentBrowserDisplay).type === 'browser'
   )
 }

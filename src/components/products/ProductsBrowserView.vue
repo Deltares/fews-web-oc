@@ -57,14 +57,19 @@ import {
   TopologyNode,
 } from '@deltares/fews-pi-requests'
 import { useProducts } from '@/services/useProducts'
-import { getResourcesStaticUrl } from '@/lib/fews-config'
 import {
   isDocumentBrowser,
   type DocumentBrowserDisplay,
   type ReportDisplay,
   type DocumentDisplaysConfig,
 } from '@/lib/products/documentDisplay'
-import { DateTime, Duration } from 'luxon'
+import { DateTime } from 'luxon'
+import { configManager } from '@/services/application-config'
+import {
+  type IntervalItem,
+  periodToIntervalItem,
+} from '@/lib/TimeControl/interval'
+import { layout } from '@/assets/browserLayout.json'
 
 interface Props {
   nodeId?: string | string[]
@@ -100,20 +105,26 @@ const viewConfig = ref<ProductBrowserTableConfig>({
   type: 'table',
   headers: [],
 } as ProductBrowserTableConfig)
-const viewPeriod = ref<Duration[]>([])
+const viewPeriod = ref<IntervalItem>({})
 
 const filter = computed(() => {
+  if (
+    viewPeriod.value.start === undefined ||
+    viewPeriod.value.end === undefined
+  ) {
+    return {}
+  }
   const startForecastTime = DateTime.now()
-    .plus(viewPeriod.value[0])
+    .plus(viewPeriod.value.start)
     .toUTC()
     .toISO({ suppressMilliseconds: true })
   const endForecastTime = DateTime.now()
-    .plus(viewPeriod.value[1])
+    .plus(viewPeriod.value.end)
     .toUTC()
     .toISO({ suppressMilliseconds: true })
 
   const result: ProductsMetaDataFilter = {
-    versionKey: ['archiveProductId'],
+    versionKey: ['productId'],
     startForecastTime,
     endForecastTime,
   }
@@ -124,7 +135,8 @@ const { products, getProductByKey } = useProducts(filter)
 
 onMounted(async () => {
   const transformRequest = createTransformRequestFn()
-  const url = getResourcesStaticUrl('documentDisplays.json').toString()
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const url = `${baseUrl}rest/fewspiservice/v1/documentdisplays`
   const request = await transformRequest(new Request(url, {}))
   const reponse = await fetch(request)
   const config = (await reponse.json()) as DocumentDisplaysConfig
@@ -142,13 +154,10 @@ watchEffect(() => {
     if (!documentDisplay) {
       return
     }
-
-    viewPeriod.value = documentDisplay.relativeViewPeriod
-      .split('/')
-      .map((d) => Duration.fromISO(d))
-
+    viewPeriod.value = periodToIntervalItem(documentDisplay.relativeViewPeriod)
     if (isDocumentBrowser(documentDisplay)) {
-      viewConfig.value = documentDisplay.documentBrowser.layout
+      // TODO: Get layout from config
+      viewConfig.value = layout
     } else {
       console.warn(`Document display with ID ${documentDisplayId} not found.`)
     }
