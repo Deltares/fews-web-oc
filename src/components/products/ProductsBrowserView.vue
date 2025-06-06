@@ -49,7 +49,7 @@ import { computed, onMounted, ref, toValue, watchEffect } from 'vue'
 import ProductsBrowserTable, {
   type ProductBrowserTableConfig,
 } from '@/components/products/ProductsBrowserTable.vue'
-import ReactiveIframe from '@/components/products/ReactiveIFrame.vue'
+import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
 import { getProductURL } from './productTools'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
