@@ -45,15 +45,26 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watchEffect } from 'vue'
-import ProductsBrowserTable, { type ProductBrowserTableConfig} from '@/components/products/ProductsBrowserTable.vue'
+import { computed, onMounted, ref, toValue, watchEffect } from 'vue'
+import ProductsBrowserTable, {
+  type ProductBrowserTableConfig,
+} from '@/components/products/ProductsBrowserTable.vue'
 import ReactiveIframe from '@/components/products/ReactiveIFrame.vue'
 import { getProductURL } from './productTools'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import { ProductsMetaDataFilter, TopologyNode } from '@deltares/fews-pi-requests'
+import {
+  ProductsMetaDataFilter,
+  TopologyNode,
+} from '@deltares/fews-pi-requests'
 import { useProducts } from '@/services/useProducts'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
-import { isDocumentBrowser, type DocumentBrowserDisplay, type ReportDisplay, type DocumentDisplaysConfig } from '@/lib/products/documentDisplay'
+import {
+  isDocumentBrowser,
+  type DocumentBrowserDisplay,
+  type ReportDisplay,
+  type DocumentDisplaysConfig,
+} from '@/lib/products/documentDisplay'
+import { DateTime, Duration } from 'luxon'
 
 interface Props {
   nodeId?: string | string[]
@@ -85,10 +96,28 @@ const src = ref('')
 const viewMode = ref('')
 const timeZero = ref('')
 const displayConfig = ref<(DocumentBrowserDisplay | ReportDisplay)[]>()
-const viewConfig = ref<ProductBrowserTableConfig>({ type: 'table', headers: [] } as ProductBrowserTableConfig)
+const viewConfig = ref<ProductBrowserTableConfig>({
+  type: 'table',
+  headers: [],
+} as ProductBrowserTableConfig)
+const viewPeriod = ref<Duration[]>([])
 
-const filter = ref<ProductsMetaDataFilter>({
-  versionKey: ['archiveProductId'],
+const filter = computed(() => {
+  const startForecastTime = DateTime.now()
+    .plus(viewPeriod.value[0])
+    .toUTC()
+    .toISO({ suppressMilliseconds: true })
+  const endForecastTime = DateTime.now()
+    .plus(viewPeriod.value[1])
+    .toUTC()
+    .toISO({ suppressMilliseconds: true })
+
+  const result: ProductsMetaDataFilter = {
+    versionKey: ['archiveProductId'],
+    startForecastTime,
+    endForecastTime,
+  }
+  return result
 })
 
 const { products, getProductByKey } = useProducts(filter)
@@ -102,26 +131,33 @@ onMounted(async () => {
   displayConfig.value = config.documentDisplays
 })
 
+watchEffect(() => {
+  const documentDisplayId = toValue(props.topologyNode?.documentDisplayId)
+  const documentDisplays = toValue(displayConfig.value)
 
-watchEffect(
-  () => {
-
-    const documentDisplayId = props.topologyNode?.documentDisplayId
-    const documentDisplays = displayConfig.value
-    if (documentDisplayId && documentDisplays) {
-      const documentDisplay = documentDisplays.find(
-        (display) => display.id === documentDisplayId
-      ) 
-      if (documentDisplay && isDocumentBrowser(documentDisplay)) {
-        viewConfig.value = documentDisplay.documentBrowser.layout
-      } else {
-        console.warn(`Document display with ID ${documentDisplayId} not found.`)
-      }
-    } else {
-      console.warn('No document display ID provided or display config not loaded.')
+  if (documentDisplayId && documentDisplays) {
+    const documentDisplay = documentDisplays.find(
+      (display) => display.id === documentDisplayId,
+    )
+    if (!documentDisplay) {
+      return
     }
+
+    viewPeriod.value = documentDisplay.relativeViewPeriod
+      .split('/')
+      .map((d) => Duration.fromISO(d))
+
+    if (isDocumentBrowser(documentDisplay)) {
+      viewConfig.value = documentDisplay.documentBrowser.layout
+    } else {
+      console.warn(`Document display with ID ${documentDisplayId} not found.`)
+    }
+  } else {
+    console.warn(
+      'No document display ID provided or display config not loaded.',
+    )
   }
-)
+})
 
 watchEffect(async () => {
   if (props.productId) {

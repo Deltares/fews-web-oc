@@ -8,8 +8,6 @@ import {
 import { ref, toValue, watchEffect, type MaybeRefOrGetter } from 'vue'
 import { ProductMetaDataType, ProductMetaDataWithoutAttributes } from './types'
 
-const daysBack = 100 // Number of days to look back for product metadata
-
 /**
  * Hook to fetch and manage product metadata based on a given filter.
  *
@@ -27,19 +25,12 @@ export function useProducts(filter: MaybeRefOrGetter<ProductsMetaDataFilter>) {
 
   const fetchProducts = async () => {
     const filterValue = toValue(filter)
-    const now = new Date()
-    const startForecastTime = new Date(
-      now.getTime() - daysBack * 24 * 60 * 60 * 1000,
-    ).toISOString()
-    const endForecastTime = now.toISOString()
-
-    const productFilter: ProductsMetaDataFilter = {
-      startForecastTime,
-      endForecastTime,
-      ...filterValue,
+    // Ensure the filter has a valid date range
+    if (!filterValue.startForecastTime || !filterValue.endForecastTime) {
+      return
     }
     try {
-      const response = await provider.getProductsMetaData(productFilter)
+      const response = await provider.getProductsMetaData(filterValue)
       const itemPromises = response.productsMetadata
         .filter((p) => p.sourceId === 'demo')
         .map(convertToProductMetaDataType)

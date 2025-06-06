@@ -1,50 +1,49 @@
 export interface DocumentDisplaysConfig {
-    documentDisplays: (DocumentBrowserDisplay | ReportDisplay) [];
+  documentDisplays: (DocumentBrowserDisplay | ReportDisplay)[]
 }
-
 
 export interface DocumentBrowserDisplay {
-    id:               string;
-    name:             string;
-    documentBrowser: DocumentBrowser;
+  id: string
+  name: string
+  relativeViewPeriod: string
+  documentBrowser: DocumentBrowser
 }
 
-
 export interface ReportDisplay {
-    id:               string;
-    name:             string;
-    reportDisplay:   ReportDisplayConfig;
+  id: string
+  name: string
+  relativeViewPeriod: string
+  reportDisplay: ReportDisplayConfig
 }
 
 export interface DocumentBrowser {
-    layout:             Layout;
-    relativeViewPeriod: string;
-    reports:            Reports;
-    archiveProducts:    ArchiveProducts;
-    archiveProductSet:  ArchiveProductSet;
+  layout: Layout
+  reports: Reports
+  archiveProducts: ArchiveProducts
+  archiveProductSet: ArchiveProductSet
 }
 
 export interface ArchiveProductSet {
-    contstraints: Contstraints;
+  contstraints: Contstraints
 }
 
 export interface Contstraints {
-    areaId:          string;
-    sourceId:        string;
-    attributeExists: AttributeExists;
+  areaId: string
+  sourceId: string
+  attributeExists: AttributeExists
 }
 
 export interface AttributeExists {
-    id: string;
+  id: string
 }
 
 export interface ArchiveProducts {
-    archiveProductId: string[];
+  archiveProductId: string[]
 }
 
 export interface Layout {
-    preview: string;
-    headers: (AttributeHeader | PropertyHeader)[];
+  preview: string | boolean
+  headers: (AttributeHeader | PropertyHeader)[]
 }
 
 interface AttributeHeader {
@@ -58,21 +57,23 @@ interface PropertyHeader {
 }
 
 export interface Reports {
-    reportModuleInstanceId: string[];
+  reportModuleInstanceId: string[]
 }
 
 export interface ReportDisplayConfig {
-    archiveProductId?:       string;
-    showReports:             ShowReports;
-    reportModuleInstanceId?: string;
+  archiveProductId?: string
+  showReports: ShowReports
+  reportModuleInstanceId?: string
 }
 
 export interface ShowReports {
-    relativeViewPeriod:       string;
-    productWorkflowStatusId?: string;
+  productWorkflowStatusId?: string
 }
 
-export function isDocumentBrowser(documentDisplay: DocumentBrowserDisplay | ReportDisplay): documentDisplay is DocumentBrowserDisplay {
-    return (documentDisplay as DocumentBrowserDisplay).documentBrowser !== undefined;
+export function isDocumentBrowser(
+  documentDisplay: DocumentBrowserDisplay | ReportDisplay,
+): documentDisplay is DocumentBrowserDisplay {
+  return (
+    (documentDisplay as DocumentBrowserDisplay).documentBrowser !== undefined
+  )
 }
-
