@@ -113,6 +113,7 @@ const filterId = defineModel<string | undefined>('filterId', {
 
 const emit = defineEmits<CollectionEmits>()
 
+watch(filterId, clearSelections)
 watch(() => props.isActive, clearSelections)
 function clearSelections() {
   clearSelectedLocations()

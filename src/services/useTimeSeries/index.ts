@@ -335,11 +335,10 @@ export function useTimeSeriesHeaders(
   })
 
   async function fetch() {
+    timeSeriesHeaders.value = []
+
     const _filterId = toValue(filterId)
-    if (_filterId === undefined) {
-      timeSeriesHeaders.value = []
-      return
-    }
+    if (_filterId === undefined) return
 
     isLoading.value = true
 
