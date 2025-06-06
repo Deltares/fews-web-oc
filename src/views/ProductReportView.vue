@@ -1,40 +1,46 @@
 <template>
-  <div v-if="!isEditing" class="flex-1-1 h-100 flex-column position-relative">
-    <v-toolbar density="compact" absolute>
-      <v-btn
-        v-if="viewMode === 'html' && editorEnabled"
-        color="primary"
-        prepend-icon="mdi-pencil"
-        variant="flat"
-        @click="isEditing = !isEditing"
-        >edit</v-btn
-      >
-      <v-spacer />
-      <v-toolbar-items>
-        <v-btn append-icon="mdi-chevron-down" class="me-4">
-          {{ selectedTimeZero }}
-          <v-menu activator="parent">
-            <v-list density="compact">
-              <v-item-group>
-                <v-list-item v-for="item in items" :key="item.timeZero">
-                  {{ item.timeZero }}
-                </v-list-item>
-              </v-item-group>
-            </v-list>
-          </v-menu>
-        </v-btn>
-      </v-toolbar-items>
-    </v-toolbar>
-    <iframe v-if="viewMode === 'iframe'" :src="src" class="pdf-iframe"></iframe>
-    <div v-else class="products-browser-view__canvas overflow-y-auto w-100">
-      <img v-if="viewMode === 'img'" :src="src" />
-      <ReactiveIframe
-        v-else-if="viewMode === 'html'"
+  <div class="d-flex flex-column h-100 w-100">
+    <EditReport v-if="isEditing" v-model="htmlContent" />
+    <div v-if="!isEditing" class="flex-1-1 h-100 flex-column position-relative">
+      <v-toolbar density="compact" absolute>
+        <v-btn
+          v-if="viewMode === 'html' && editorEnabled"
+          color="primary"
+          prepend-icon="mdi-pencil"
+          variant="flat"
+          @click="isEditing = !isEditing"
+          >edit</v-btn
+        >
+        <v-spacer />
+        <v-toolbar-items>
+          <v-btn append-icon="mdi-chevron-down" class="me-4">
+            {{ selectedTimeZero }}
+            <v-menu activator="parent">
+              <v-list density="compact">
+                <v-item-group>
+                  <v-list-item v-for="item in items" :key="item.timeZero">
+                    {{ item.timeZero }}
+                  </v-list-item>
+                </v-item-group>
+              </v-list>
+            </v-menu>
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+      <iframe
+        v-if="viewMode === 'iframe'"
         :src="src"
-      ></ReactiveIframe>
+        class="pdf-iframe"
+      ></iframe>
+      <div v-else class="products-browser-view__canvas overflow-y-auto w-100">
+        <img v-if="viewMode === 'img'" :src="src" />
+        <ReactiveIframe
+          v-else-if="viewMode === 'html'"
+          :src="src"
+        ></ReactiveIframe>
+      </div>
     </div>
   </div>
-  <EditReport v-if="isEditing" v-model="htmlContent" />
 </template>
 
 <script setup lang="ts">
@@ -48,6 +54,8 @@ import { computed, ref, toValue, watchEffect } from 'vue'
 import { type ReportDisplay } from '@/lib/products/documentDisplay'
 import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
 import { configManager } from '@/services/application-config'
+import EditReport from '@/components/reports/EditReport.vue'
+import DOMPurify from 'dompurify'
 
 interface Props {
   config?: ReportDisplay
@@ -156,8 +164,13 @@ watchEffect(async () => {
 
   const transformRequest = createTransformRequestFn()
   const request = await transformRequest(new Request(url, {}))
-  const reponse = await fetch(request)
-  const urlObject = URL.createObjectURL(await reponse.blob())
+  const response = await fetch(request)
+  const clone = response.clone()
+
+  const urlObject = URL.createObjectURL(await response.blob())
+  htmlContent.value = DOMPurify.sanitize(await clone.text(), {
+    USE_PROFILES: { html: true },
+  })
 
   selectedTimeZero.value = productMetaData.timeZero
   src.value = urlObject
