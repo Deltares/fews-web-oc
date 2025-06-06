@@ -3,7 +3,7 @@
     <GroupSelect
       v-model="selectedTimeseries"
       :items="allSeries"
-      label="Time Series 1"
+      label="X Axis Time Series"
       :getItemValue="(item) => item.series"
       :getItemTitle="(item) => item.series.legend ?? ''"
       :getItemGroupTitle="(item) => item.chartTitle"
@@ -13,12 +13,45 @@
     <GroupSelect
       v-model="selectedSecondTimeseries"
       :items="allSeries"
-      label="Time Series 2"
+      label="Y Axis Time Series"
       :getItemValue="(item) => item.series"
       :getItemTitle="(item) => item.series.legend ?? ''"
       :getItemGroupTitle="(item) => item.chartTitle"
       :groupBy="(item) => item.chartId"
     />
+
+    <Autocomplete
+      v-model="selectedRegressionEquation"
+      :items="regressionEquations"
+      label="Regression Equation"
+      :getItemValue="(item) => item"
+      :getItemTitle="(item) => item.label"
+    />
+    <div class="d-flex ga-2 mt-3">
+      <v-number-input
+        v-model="lowerThreshold"
+        label="Lower Threshold"
+        :min="0"
+        :max="100"
+        hide-details
+        density="compact"
+        variant="outlined"
+        clearable
+        control-variant="stacked"
+      />
+
+      <v-number-input
+        v-model="upperThreshold"
+        label="Upper Threshold"
+        :min="0"
+        :max="100"
+        hide-details
+        density="compact"
+        variant="outlined"
+        clearable
+        control-variant="stacked"
+      />
+    </div>
 
     <div class="d-flex pa-3">
       <v-spacer />
@@ -33,6 +66,8 @@
 <script setup lang="ts">
 import HisAddButton from '@/components/his/HisAddButton.vue'
 import GroupSelect from '@/components/general/GroupSelect.vue'
+import Autocomplete from '@/components/general/Autocomplete.vue'
+import { VNumberInput } from 'vuetify/labs/components'
 import { computed, ref, watch } from 'vue'
 import { Chart, CorrelationChart, getValidFilterCharts } from '@/lib/analysis'
 import { Series } from '@/lib/timeseries/timeSeries'
@@ -40,6 +75,10 @@ import {
   CorrelationFilter,
   TimeSeriesDisplaySubplotItem,
 } from '@deltares/fews-pi-requests'
+import {
+  RegressionEquation,
+  regressionEquations,
+} from '@/lib/analysis/correlation'
 
 interface Props {
   charts: Chart[]
@@ -58,6 +97,11 @@ const allSeries = computed(() => getValidFilterCharts(props.charts))
 
 const selectedTimeseries = ref<TimeSeriesDisplaySubplotItem>()
 const selectedSecondTimeseries = ref<TimeSeriesDisplaySubplotItem>()
+const selectedRegressionEquation = ref<RegressionEquation>(
+  regressionEquations[0],
+)
+const upperThreshold = ref<number | undefined>(undefined)
+const lowerThreshold = ref<number | undefined>(undefined)
 
 watch(() => props.isActive, clearSelections)
 function clearSelections() {
@@ -74,10 +118,12 @@ function addChart() {
   const name1 = selectedTimeseries.value?.legend ?? ''
   const name2 = selectedSecondTimeseries.value?.legend ?? ''
 
+  const { value: regressionEquation } = selectedRegressionEquation.value
+
   const filter: CorrelationFilter = {
     timeSeriesIdXaxis: request1,
     timeSeriesIdYaxis: request2,
-    regressionEquation: 'simple linear',
+    regressionEquation,
   }
 
   const chart: CorrelationChart = {
