@@ -100,7 +100,7 @@ const items = computed(() => {
   })
 })
 
-const { products, getProductByKey } = useProducts(filter)
+const { products } = useProducts(filter)
 
 const viewMode = ref('html') // or 'iframe', 'img'
 const selectedTimeZero = ref('') // Example timeZero
