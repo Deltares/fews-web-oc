@@ -85,6 +85,7 @@ export function useDisplayConfig(
         }
       }
     },
+    { immediate: true },
   )
 
   watch(
@@ -192,6 +193,7 @@ export function useDisplayConfigFilter(
         return
       }
     },
+    { immediate: true },
   )
 
   // Use a second watchEffect to not trigger a fetch on these reactive variables
