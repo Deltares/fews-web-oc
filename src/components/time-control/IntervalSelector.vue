@@ -31,12 +31,12 @@
 </template>
 
 <script setup lang="ts">
-import type { IntervalItem, Interval } from '@/lib/TimeControl/interval'
+import type { LabeledIntervalItem, Interval } from '@/lib/TimeControl/interval'
 import { isEqual } from 'lodash-es'
 import { onBeforeMount, ref, watch } from 'vue'
 
 interface Props {
-  items: IntervalItem[]
+  items: LabeledIntervalItem[]
   now: Date
 }
 
