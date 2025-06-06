@@ -1,7 +1,7 @@
 <template>
   <v-card flat density="compact" color="transparent">
     <v-card-title class="d-flex align-center">
-      <div>{{ chart.title }}</div>
+      <EditableTitle v-model="chart.title" class="ml-2" />
       <v-spacer />
       <v-menu location="bottom right">
         <template #activator="{ props }">
@@ -51,6 +51,7 @@
 
 <script setup lang="ts">
 import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
+import EditableTitle from '@/components/general/EditableTitle.vue'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import type { Collection, Chart } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
