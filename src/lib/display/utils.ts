@@ -52,8 +52,10 @@ export function actionsResponseToDisplayConfig(
     // TODO: Remove this when the backend is fixed to always return an unique plotId.
     let plotId = result.config.timeSeriesDisplay.plotId ?? crypto.randomUUID()
     if (uniquePlotIds.has(plotId)) {
-      console.warn(`Duplicate plotId found: ${plotId}. Adding index to make it unique.`)
-      plotId=  `${plotId}-${timeSeriesDisplayIndex}`
+      console.warn(
+        `Duplicate plotId found: ${plotId}. Adding index to make it unique.`,
+      )
+      plotId = `${plotId}-${timeSeriesDisplayIndex}`
     }
     uniquePlotIds.add(plotId)
 
