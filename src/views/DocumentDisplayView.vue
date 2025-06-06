@@ -3,6 +3,10 @@
     v-if="viewMode === 'browser'"
     :config="config"
   ></ProductsBrowserView>
+  <ProductReportView
+    v-else-if="viewMode === 'report'"
+    :config="config"
+  ></ProductReportView>
   <span v-else class="text-center">
     Document display is not supported in this view mode.
   </span>
@@ -21,6 +25,7 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { configManager } from '@/services/application-config'
 import { TopologyNode } from '@deltares/fews-pi-requests'
 import { onMounted, ref, toValue, watchEffect } from 'vue'
+import ProductReportView from './ProductReportView.vue'
 
 interface Props {
   nodeId?: string | string[]
@@ -31,7 +36,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const displayConfig = ref<(DocumentBrowserDisplay | ReportDisplay)[]>()
-const config =  ref<DocumentBrowserDisplay>()
+const config = ref<DocumentBrowserDisplay | ReportDisplay>()
 const viewMode = ref<'browser' | 'report' | 'unsupported'>('browser')
 
 onMounted(async () => {
@@ -45,11 +50,15 @@ onMounted(async () => {
 })
 
 watchEffect(() => {
-  const documentDisplayId = toValue(props.topologyNode?.documentDisplayId)
-  console.log(
-    'Document display ID from props:',
-    documentDisplayId,
-  )
+  let documentDisplayId = toValue(props.topologyNode?.documentDisplayId)
+  console.log('Document display ID from props:', documentDisplayId)
+  if (documentDisplayId === 'archiveProductId') {
+    documentDisplayId = 'end_shift_form'
+    console.warn(
+      'Temporarily using overriding "archiveProductId" with "end_shift_form" for report display.',
+      documentDisplayId,
+    )
+  }
   const documentDisplays = toValue(displayConfig.value)
 
   if (documentDisplayId && documentDisplays) {
@@ -66,10 +75,10 @@ watchEffect(() => {
       config.value = documentDisplay
       viewMode.value = 'browser'
     } else if (isReportDisplay(documentDisplay)) {
-      config.value = undefined
+      config.value = documentDisplay
       viewMode.value = 'report'
     } else {
-      config.value = documentDisplay
+      config.value = undefined
       viewMode.value = 'unsupported'
       console.warn(`Document display with ID ${documentDisplayId} not found.`)
     }

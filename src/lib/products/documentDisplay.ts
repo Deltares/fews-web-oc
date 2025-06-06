@@ -1,4 +1,4 @@
-import { type TimeSettingsViewPeriodPreset } from "@deltares/fews-pi-requests"
+import { ArchiveProductsMetadataAttribute, type TimeSettingsViewPeriodPreset } from "@deltares/fews-pi-requests"
 
 export interface DocumentDisplaysConfig {
   documentDisplays: (DocumentBrowserDisplay | ReportDisplay)[]
@@ -17,7 +17,7 @@ export interface ReportDisplay {
   name: string
   type: 'report'
   relativeViewPeriod: Omit<TimeSettingsViewPeriodPreset,'label'>
-  reportDisplay: ReportDisplayConfig
+  report: ReportDisplayConfig
 }
 
 export interface DocumentBrowser {
@@ -39,6 +39,18 @@ export interface Contstraints {
 
 export interface AttributeExists {
   id: string
+}
+
+export interface ArchiveProduct {
+  id: string
+  name: string
+  description: string
+  sourceId: string
+  areaId: string
+  timeZero: string
+  version: string
+  versionKeys: string[]
+  attributes: ArchiveProductsMetadataAttribute[]
 }
 
 export interface ArchiveProducts {
@@ -65,7 +77,7 @@ export interface Reports {
 }
 
 export interface ReportDisplayConfig {
-  archiveProductId?: string
+  archiveProduct: ArchiveProduct
   showReports: ShowReports
   reportModuleInstanceId?: string
 }

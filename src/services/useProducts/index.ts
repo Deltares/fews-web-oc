@@ -84,9 +84,9 @@ function excludeProps<T extends ArchiveProductsMetadataEntry>(
  * @param attrs - An array of metadata attributes.
  * @returns A record where keys are attribute keys and values are attribute values.
  */
-const attributesToObject = (
+export function attributesToObject(
   attrs: ArchiveProductsMetadataAttribute[],
-): Record<string, string> => {
+): Record<string, string> {
   return attrs.reduce(
     (acc, attr) => {
       acc[attr.key] = attr.value
