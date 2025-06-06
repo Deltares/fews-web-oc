@@ -1,0 +1,8 @@
+.ProseMirror data {
+  background-position: right;
+  padding-right: 1.5em;
+  outline: 2px solid #68cef8;
+  outline-offset: 2px;
+  border-radius: 2px;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 64.7273 512 448.462"><g transform="scale(1,-1) translate(0, -480.36365)"><path data-glyph="tag" fill="currentColor" d="M117 299q-13 0 -22.5 9t-9.5 22.5t9.5 23t23 9.5t22.5 -9.5t9 -23t-9 -22.5t-23 -9zM457 201l-192 192q-13 12 -30 12h-150q-17 0 -29.5 -12.5t-12.5 -29.5v-150q0 -18 12 -30l192 -192q13 -12 30.5 -12t29.5 12l150 150q12 12 12 29.5t-12 30.5z"/></g></svg>');
+}
