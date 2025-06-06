@@ -1,5 +1,5 @@
 <template>
-  <v-toolbar v-if="editor">
+  <v-toolbar v-if="editor" density="compact">
     <TableMenu :editor="editor" ref="EditMenu" />
     <v-spacer />
     <v-btn

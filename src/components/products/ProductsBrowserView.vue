@@ -6,40 +6,44 @@
       class="product-browser__table"
     />
     <div class="flex-1-1 h-100 flex-column position-relative">
-      <v-toolbar density="compact" absolute>
-        <v-btn
-          v-if="viewMode === 'html'"
-          color="primary"
-          prepend-icon="mdi-pencil"
-          variant="flat"
-          >edit</v-btn
-        >
-        <v-spacer />
-        <v-toolbar-items>
-          <v-btn append-icon="mdi-chevron-down" class="me-4">
-            {{ timeZero }}
-            <v-menu activator="parent">
-              <v-list density="compact">
-                <v-item-group>
-                  <v-list-item> {{ timeZero }} </v-list-item>
-                </v-item-group>
-              </v-list>
-            </v-menu>
-          </v-btn>
-        </v-toolbar-items>
-      </v-toolbar>
-      <iframe
-        v-if="viewMode === 'iframe'"
-        :src="src"
-        class="pdf-iframe"
-      ></iframe>
-      <div v-else class="products-browser-view__canvas overflow-y-auto w-100">
-        <img v-if="viewMode === 'img'" :src="src" />
-        <ReactiveIframe
-          v-else-if="viewMode === 'html'"
+      <EditReport v-if="isEditing" v-model="htmlContent" @save="onSave" />
+      <template v-else>
+        <v-toolbar density="compact" absolute>
+          <v-btn
+            v-if="viewMode === 'html'"
+            color="primary"
+            prepend-icon="mdi-pencil"
+            variant="flat"
+            @click="isEditing = !isEditing"
+            >edit</v-btn
+          >
+          <v-spacer />
+          <v-toolbar-items>
+            <v-btn append-icon="mdi-chevron-down" class="me-4">
+              {{ timeZero }}
+              <v-menu activator="parent">
+                <v-list density="compact">
+                  <v-item-group>
+                    <v-list-item> {{ timeZero }} </v-list-item>
+                  </v-item-group>
+                </v-list>
+              </v-menu>
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <iframe
+          v-if="viewMode === 'iframe'"
           :src="src"
-        ></ReactiveIframe>
-      </div>
+          class="pdf-iframe"
+        ></iframe>
+        <div v-else class="products-browser-view__canvas overflow-y-auto w-100">
+          <img v-if="viewMode === 'img'" :src="src" />
+          <ReactiveIframe
+            v-else-if="viewMode === 'html'"
+            :src="src"
+          ></ReactiveIframe>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -62,6 +66,8 @@ import {
 } from '@/lib/TimeControl/interval'
 import { layout } from '@/assets/browserLayout.json'
 import { configManager } from '@/services/application-config'
+import EditReport from '@/components/reports/EditReport.vue'
+import DOMPurify from 'dompurify'
 
 interface Props {
   config?: DocumentBrowserDisplay
@@ -96,6 +102,8 @@ const tableLayout = ref<ProductBrowserTableConfig>({
   headers: [],
 } as ProductBrowserTableConfig)
 const viewPeriod = ref<IntervalItem>({})
+const htmlContent = ref('')
+const isEditing = ref(false)
 
 const filter = computed(() => {
   if (
@@ -147,8 +155,13 @@ watchEffect(async () => {
 
     const transformRequest = createTransformRequestFn()
     const request = await transformRequest(new Request(url, {}))
-    const reponse = await fetch(request)
-    const urlObject = URL.createObjectURL(await reponse.blob())
+    const response = await fetch(request)
+    const clone = response.clone()
+
+    const urlObject = URL.createObjectURL(await response.blob())
+    htmlContent.value = DOMPurify.sanitize(await clone.text(), {
+      USE_PROFILES: { html: true },
+    })
 
     timeZero.value = productMetaData.timeZero
     src.value = urlObject
@@ -156,6 +169,10 @@ watchEffect(async () => {
     src.value = ''
   }
 })
+
+function onSave() {
+  isEditing.value = false
+}
 </script>
 
 <style scoped>
