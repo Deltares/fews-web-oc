@@ -64,13 +64,14 @@ function getUniqueProducts(products: ProductMetaDataType[]) {
  * - If no products are found, the function may return `undefined`.
  */
 export async function getLastProductsMetaData(
+  baseUrl: string,
   areaId: string,
   productId: string,
 ): Promise<ProductMetaDataType> {
   const startForecastTime = '1970-01-01T00:00:00Z'
   const endForecastTime = new Date().toISOString()
   const provider = new PiArchiveWebserviceProvider(
-    import.meta.env.VITE_APP_FEWS_PI_URL,
+    baseUrl,
     { transformRequestFn: createTransformRequestFn() },
   )
 
@@ -101,10 +102,10 @@ export async function getLastProductsMetaData(
  * - The URL is constructed using the `relativePathProducts` property of the metadata and the base URL from environment variables.
  * - Ensure that the `metaData` parameter is valid and contains the required `relativePathProducts` property.
  */
-export function getProductURL(metaData?: ProductMetaDataType): string {
+export function getProductURL(baseUrl: string, metaData?: ProductMetaDataType): string {
   if (metaData) {
     const relativePath = metaData.relativePathProducts[0]
-    return `${import.meta.env.VITE_APP_FEWS_PI_URL}/rest/fewspiservice/v1/archive/products/id?relativePath=${relativePath}`
+    return `${baseUrl}/rest/fewspiservice/v1/archive/products/id?relativePath=${relativePath}`
   }
   return 'invalid'
 }

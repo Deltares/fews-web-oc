@@ -14,12 +14,14 @@ import { ProductMetaDataType, ProductMetaDataWithoutAttributes } from './types'
  * @param filter - A reactive reference or getter function for the product metadata filter.
  * @returns An object containing a reactive reference to the list of product metadata.
  */
-export function useProducts(filter: MaybeRefOrGetter<ProductsMetaDataFilter>) {
+export function useProducts(
+  baseUrl: string,
+  filter: MaybeRefOrGetter<ProductsMetaDataFilter>) {
   const products = ref<ProductMetaDataType[]>([])
   const error = ref<string | null>(null)
 
   const provider = new PiArchiveWebserviceProvider(
-    import.meta.env.VITE_APP_FEWS_PI_URL,
+    baseUrl,
     { transformRequestFn: createTransformRequestFn() },
   )
 
