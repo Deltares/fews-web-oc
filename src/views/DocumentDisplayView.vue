@@ -1,11 +1,12 @@
 <template>
   <ProductsBrowserView
     v-if="viewMode === 'browser'"
-    :config="config"
+    :config="documentBrowserDisplay"
+    :productId="props.productId"
   ></ProductsBrowserView>
   <ProductReportView
     v-else-if="viewMode === 'report'"
-    :config="config"
+    :config="reportDisplay"
   ></ProductReportView>
   <span v-else class="text-center">
     Document display is not supported in this view mode.
@@ -36,7 +37,9 @@ interface Props {
 const props = defineProps<Props>()
 
 const displayConfig = ref<(DocumentBrowserDisplay | ReportDisplay)[]>()
-const config = ref<DocumentBrowserDisplay | ReportDisplay>()
+const documentBrowserDisplay = ref<DocumentBrowserDisplay>()
+const reportDisplay = ref<ReportDisplay>()
+
 const viewMode = ref<'browser' | 'report' | 'unsupported'>('browser')
 
 onMounted(async () => {
@@ -72,13 +75,14 @@ watchEffect(() => {
     }
     if (isDocumentBrowser(documentDisplay)) {
       // TODO: Get layout from config
-      config.value = documentDisplay
+      documentBrowserDisplay.value = documentDisplay
       viewMode.value = 'browser'
     } else if (isReportDisplay(documentDisplay)) {
-      config.value = documentDisplay
+      reportDisplay.value = documentDisplay
       viewMode.value = 'report'
     } else {
-      config.value = undefined
+      documentBrowserDisplay.value = undefined
+      reportDisplay.value = undefined
       viewMode.value = 'unsupported'
       console.warn(`Document display with ID ${documentDisplayId} not found.`)
     }
