@@ -7,7 +7,7 @@
       @click="onSave"
       color="primary"
       class="text-none mr-5"
-      :disabled="!hasChanges || isUploading"
+      :disabled="!hasChanges"
     >
       Save
     </v-btn>
@@ -30,7 +30,6 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-const isUploading = ref(false)
 const initialContent = ref('')
 const extractedStyles = ref('')
 

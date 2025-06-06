@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex flex-column h-100 w-100">
-    <EditReport v-if="isEditing" v-model="htmlContent" />
+    <EditReport v-if="isEditing" v-model="htmlContent" @save="onSave" />
     <div v-if="!isEditing" class="flex-1-1 h-100 flex-column position-relative">
       <v-toolbar density="compact" absolute>
         <v-btn
@@ -175,6 +175,10 @@ watchEffect(async () => {
   selectedTimeZero.value = productMetaData.timeZero
   src.value = urlObject
 })
+
+function onSave() {
+  isEditing.value = false
+}
 </script>
 
 <style scoped>
