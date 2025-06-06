@@ -2,7 +2,7 @@
   <div class="flex-1-1 h-100 flex-column position-relative">
     <v-toolbar density="compact" absolute>
       <v-btn
-        v-if="viewMode === 'html'"
+        v-if="viewMode === 'html' && editorEnabled"
         color="primary"
         prepend-icon="mdi-pencil"
         variant="flat"
@@ -52,6 +52,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const viewPeriod = ref<IntervalItem>({})
+const editorEnabled = ref(false) // Example flag to enable editor mode
 
 const filter = computed(() => {
   if (
@@ -129,6 +130,7 @@ watchEffect(() => {
   console.log('Config changed:', props.config)
   if (documentDisplay) {
     viewPeriod.value = periodToIntervalItem(documentDisplay.relativeViewPeriod)
+    editorEnabled.value = documentDisplay.report?.editor ?? false
     console.log('View period set to:', viewPeriod.value)
   }
 })

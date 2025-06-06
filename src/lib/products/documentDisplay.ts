@@ -80,6 +80,7 @@ export interface ReportDisplayConfig {
   archiveProduct: ArchiveProduct
   showReports: ShowReports
   reportModuleInstanceId?: string
+  editor?: boolean
 }
 
 export interface ShowReports {
