@@ -70,10 +70,9 @@ export async function getLastProductsMetaData(
 ): Promise<ProductMetaDataType> {
   const startForecastTime = '1970-01-01T00:00:00Z'
   const endForecastTime = new Date().toISOString()
-  const provider = new PiArchiveWebserviceProvider(
-    baseUrl,
-    { transformRequestFn: createTransformRequestFn() },
-  )
+  const provider = new PiArchiveWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
 
   const filter: ProductsMetaDataFilter = {
     startForecastTime,
@@ -102,7 +101,10 @@ export async function getLastProductsMetaData(
  * - The URL is constructed using the `relativePathProducts` property of the metadata and the base URL from environment variables.
  * - Ensure that the `metaData` parameter is valid and contains the required `relativePathProducts` property.
  */
-export function getProductURL(baseUrl: string, metaData?: ProductMetaDataType): string {
+export function getProductURL(
+  baseUrl: string,
+  metaData?: ProductMetaDataType,
+): string {
   if (metaData) {
     const relativePath = metaData.relativePathProducts[0]
     return `${baseUrl}/rest/fewspiservice/v1/archive/products/id?relativePath=${relativePath}`

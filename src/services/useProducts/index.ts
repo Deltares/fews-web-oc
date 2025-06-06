@@ -16,14 +16,14 @@ import { ProductMetaDataType, ProductMetaDataWithoutAttributes } from './types'
  */
 export function useProducts(
   baseUrl: string,
-  filter: MaybeRefOrGetter<ProductsMetaDataFilter>) {
+  filter: MaybeRefOrGetter<ProductsMetaDataFilter>,
+) {
   const products = ref<ProductMetaDataType[]>([])
   const error = ref<string | null>(null)
 
-  const provider = new PiArchiveWebserviceProvider(
-    baseUrl,
-    { transformRequestFn: createTransformRequestFn() },
-  )
+  const provider = new PiArchiveWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
 
   const fetchProducts = async () => {
     const filterValue = toValue(filter)
