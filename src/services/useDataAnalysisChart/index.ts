@@ -31,8 +31,6 @@ export function useDataAnalysisChart(
     switch (_chart.type) {
       case 'filter':
         return useFilterChartData(chart, series, startTime, endTime)
-      case 'derived':
-        return useDerivedChartData(chart, series, startTime, endTime)
       case 'correlation':
         return useCorrelationChartData(chart, series, startTime, endTime)
     }
@@ -63,18 +61,6 @@ export function useDataAnalysisChart(
 }
 
 function useFilterChartData(
-  chart: MaybeRefOrGetter<Chart>,
-  _series: MaybeRefOrGetter<Record<string, Series>>,
-  _startTime: MaybeRefOrGetter<Date>,
-  _endTime: MaybeRefOrGetter<Date>,
-): ChartData {
-  return {
-    subplot: () => toValue(chart).subplot,
-    derivedSeries: {},
-  }
-}
-
-function useDerivedChartData(
   chart: MaybeRefOrGetter<Chart>,
   _series: MaybeRefOrGetter<Record<string, Series>>,
   _startTime: MaybeRefOrGetter<Date>,

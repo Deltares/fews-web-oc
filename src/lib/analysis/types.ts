@@ -28,11 +28,6 @@ export interface FilterChart extends BaseChart {
   requests: ActionRequest[]
 }
 
-export interface DerivedChart extends BaseChart {
-  type: 'derived'
-  dependants: Dependant[]
-}
-
 export interface CorrelationChart extends BaseChart {
   type: 'correlation'
   timeSeriesNameYAxis: string
@@ -40,7 +35,7 @@ export interface CorrelationChart extends BaseChart {
   filter: Omit<CorrelationFilter, 'startTime' | 'endTime'>
 }
 
-export type Chart = FilterChart | DerivedChart | CorrelationChart
+export type Chart = FilterChart | CorrelationChart
 
 export interface Dependant {
   seriesIds: string[]
