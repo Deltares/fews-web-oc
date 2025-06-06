@@ -139,6 +139,7 @@ interface Props {
   locationIds?: string
   latitude?: string
   longitude?: string
+  productId?: string
 }
 
 const props = defineProps<Props>()
