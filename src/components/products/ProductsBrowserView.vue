@@ -61,6 +61,7 @@ import {
   periodToIntervalItem,
 } from '@/lib/TimeControl/interval'
 import { layout } from '@/assets/browserLayout.json'
+import { configManager } from '@/services/application-config'
 
 interface Props {
   config?: DocumentBrowserDisplay
@@ -120,7 +121,8 @@ const filter = computed(() => {
   return result
 })
 
-const { products, getProductByKey } = useProducts(filter)
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { products, getProductByKey } = useProducts(baseUrl, filter)
 
 watchEffect(() => {
   const documentDisplay = toValue(props.config)
@@ -138,7 +140,7 @@ watchEffect(async () => {
       timeZero.value = ''
       return
     }
-    const url = getProductURL(productMetaData)
+    const url = getProductURL(baseUrl, productMetaData)
     const extension = getFileExtension(url)
 
     viewMode.value = getViewMode(extension)

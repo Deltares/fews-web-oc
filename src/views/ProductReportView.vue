@@ -1,11 +1,12 @@
 <template>
-  <div class="flex-1-1 h-100 flex-column position-relative">
+  <div v-if="!isEditing" class="flex-1-1 h-100 flex-column position-relative">
     <v-toolbar density="compact" absolute>
       <v-btn
         v-if="viewMode === 'html' && editorEnabled"
         color="primary"
         prepend-icon="mdi-pencil"
         variant="flat"
+        @click="isEditing = !isEditing"
         >edit</v-btn
       >
       <v-spacer />
@@ -33,6 +34,7 @@
       ></ReactiveIframe>
     </div>
   </div>
+  <EditReport v-if="isEditing" v-model="htmlContent" />
 </template>
 
 <script setup lang="ts">
@@ -45,6 +47,7 @@ import { DateTime } from 'luxon'
 import { computed, ref, toValue, watchEffect } from 'vue'
 import { type ReportDisplay } from '@/lib/products/documentDisplay'
 import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
+import { configManager } from '@/services/application-config'
 
 interface Props {
   config?: ReportDisplay
@@ -53,6 +56,8 @@ interface Props {
 const props = defineProps<Props>()
 const viewPeriod = ref<IntervalItem>({})
 const editorEnabled = ref(false) // Example flag to enable editor mode
+const isEditing = ref(false) // Example flag to toggle editing mode
+const htmlContent = ref('') // Placeholder for HTML content
 
 const filter = computed(() => {
   if (
@@ -100,7 +105,8 @@ const items = computed(() => {
   })
 })
 
-const { products } = useProducts(filter)
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { products } = useProducts(baseUrl, filter)
 
 const viewMode = ref('html') // or 'iframe', 'img'
 const selectedTimeZero = ref('') // Example timeZero
@@ -143,7 +149,7 @@ watchEffect(async () => {
     selectedTimeZero.value = ''
     return
   }
-  const url = getProductURL(productMetaData)
+  const url = getProductURL(baseUrl, productMetaData)
   const extension = getFileExtension(url)
 
   viewMode.value = getViewMode(extension)
