@@ -1,0 +1,23 @@
+{
+  "layout": {
+    "preview": true,
+    "headers": [
+      {
+        "attribute": "name",
+        "title": "Name"
+      },
+      {
+        "attribute": "author",
+        "title": "Author"
+      },
+      {
+        "property": "timeZero",
+        "title": "Date"
+      },
+      {
+        "attribute": "status",
+        "title": "Status"
+      }
+    ]
+  }
+}

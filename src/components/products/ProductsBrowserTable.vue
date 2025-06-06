@@ -260,7 +260,7 @@ const lastUpdatedString = ref('')
 
 function onClick(_event: PointerEvent, entry: { item: ProductMetaDataType }) {
   router.push({
-    name: 'TopologyDocumentsBrowser',
+    name: 'TopologyDocumentDisplay',
     params: {
       productId: entry.item.key,
     },

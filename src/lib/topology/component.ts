@@ -68,7 +68,7 @@ export const componentTypeToRouteNameMap = {
   'whatif-display': 'TopologyWhatIfDisplay',
   'log-display': 'TopologyLogDisplay',
   'data-analysis-display': 'TopologyDataAnalysisDisplay',
-  'documents-display': 'TopologyDocumentsBrowser',
+  'documents-display': 'TopologyDocumentDisplay',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToIdMap = {

@@ -41,7 +41,7 @@ const LogDisplay = () => import('../components/logdisplay/LogDisplay.vue')
 const DataAnalysisDisplay = () =>
   import('../components/his/DataAnalysisDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
-const ProductsBrowserView = () => import('../components/products/ProductsBrowserView.vue')
+const DocumentDisplayView = () => import('../views/DocumentDisplayView.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
   {
@@ -189,8 +189,8 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
       },
         {
         path: 'documents/:productId?',
-        name: 'TopologyDocumentsBrowser',
-        component: ProductsBrowserView,
+        name: 'TopologyDocumentDisplay',
+        component: DocumentDisplayView,
         props: true,
         meta: { sidebar: true },
       },

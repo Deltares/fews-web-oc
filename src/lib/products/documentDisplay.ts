@@ -81,3 +81,9 @@ export function isDocumentBrowser(
     (documentDisplay as DocumentBrowserDisplay).type === 'browser'
   )
 }
+
+export function isReportDisplay(
+  documentDisplay: DocumentBrowserDisplay | ReportDisplay,
+): documentDisplay is ReportDisplay {
+  return (documentDisplay as ReportDisplay).type === 'report'
+}

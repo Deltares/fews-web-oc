@@ -2,7 +2,7 @@
   <div class="d-flex flex-row h-100 w-100">
     <ProductsBrowserTable
       :products="products"
-      :config="viewConfig"
+      :config="tableLayout"
       class="product-browser__table"
     />
     <div class="flex-1-1 h-100 flex-column position-relative">
@@ -45,26 +45,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, toValue, watchEffect } from 'vue'
+import { computed, ref, toValue, watchEffect } from 'vue'
 import ProductsBrowserTable, {
   type ProductBrowserTableConfig,
 } from '@/components/products/ProductsBrowserTable.vue'
 import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
 import { getProductURL } from './productTools'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import {
-  ProductsMetaDataFilter,
-  TopologyNode,
-} from '@deltares/fews-pi-requests'
+import { ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
 import { useProducts } from '@/services/useProducts'
-import {
-  isDocumentBrowser,
-  type DocumentBrowserDisplay,
-  type ReportDisplay,
-  type DocumentDisplaysConfig,
-} from '@/lib/products/documentDisplay'
+import { type DocumentBrowserDisplay } from '@/lib/products/documentDisplay'
 import { DateTime } from 'luxon'
-import { configManager } from '@/services/application-config'
 import {
   type IntervalItem,
   periodToIntervalItem,
@@ -72,8 +63,7 @@ import {
 import { layout } from '@/assets/browserLayout.json'
 
 interface Props {
-  nodeId?: string | string[]
-  topologyNode: TopologyNode
+  config?: DocumentBrowserDisplay
   productId?: string
 }
 
@@ -100,8 +90,7 @@ const props = defineProps<Props>()
 const src = ref('')
 const viewMode = ref('')
 const timeZero = ref('')
-const displayConfig = ref<(DocumentBrowserDisplay | ReportDisplay)[]>()
-const viewConfig = ref<ProductBrowserTableConfig>({
+const tableLayout = ref<ProductBrowserTableConfig>({
   type: 'table',
   headers: [],
 } as ProductBrowserTableConfig)
@@ -133,38 +122,11 @@ const filter = computed(() => {
 
 const { products, getProductByKey } = useProducts(filter)
 
-onMounted(async () => {
-  const transformRequest = createTransformRequestFn()
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const url = `${baseUrl}rest/fewspiservice/v1/documentdisplays`
-  const request = await transformRequest(new Request(url, {}))
-  const reponse = await fetch(request)
-  const config = (await reponse.json()) as DocumentDisplaysConfig
-  displayConfig.value = config.documentDisplays
-})
-
 watchEffect(() => {
-  const documentDisplayId = toValue(props.topologyNode?.documentDisplayId)
-  const documentDisplays = toValue(displayConfig.value)
-
-  if (documentDisplayId && documentDisplays) {
-    const documentDisplay = documentDisplays.find(
-      (display) => display.id === documentDisplayId,
-    )
-    if (!documentDisplay) {
-      return
-    }
+  const documentDisplay = toValue(props.config)
+  if (documentDisplay) {
     viewPeriod.value = periodToIntervalItem(documentDisplay.relativeViewPeriod)
-    if (isDocumentBrowser(documentDisplay)) {
-      // TODO: Get layout from config
-      viewConfig.value = layout
-    } else {
-      console.warn(`Document display with ID ${documentDisplayId} not found.`)
-    }
-  } else {
-    console.warn(
-      'No document display ID provided or display config not loaded.',
-    )
+    tableLayout.value = layout
   }
 })
 
