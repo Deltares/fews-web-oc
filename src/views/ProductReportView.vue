@@ -160,18 +160,23 @@ watchEffect(async () => {
   const url = getProductURL(baseUrl, productMetaData)
   const extension = getFileExtension(url)
 
-  viewMode.value = getViewMode(extension)
+  const currentViewMode = getViewMode(extension)
 
   const transformRequest = createTransformRequestFn()
   const request = await transformRequest(new Request(url, {}))
   const response = await fetch(request)
-  const clone = response.clone()
+  if (currentViewMode === 'html') {
+    const clone = response.clone()
+    htmlContent.value = DOMPurify.sanitize(await clone.text(), {
+      USE_PROFILES: { html: true },
+    })
+  } else {
+    htmlContent.value = ''
+  }
 
   const urlObject = URL.createObjectURL(await response.blob())
-  htmlContent.value = DOMPurify.sanitize(await clone.text(), {
-    USE_PROFILES: { html: true },
-  })
 
+  viewMode.value = currentViewMode
   selectedTimeZero.value = productMetaData.timeZero
   src.value = urlObject
 })
