@@ -443,7 +443,7 @@ function setHorizontalColorCodeTags(series: ChartSeries[]) {
   const s = new XMLSerializer()
   const classBreaks = series[0]?.classBreaks ?? []
 
-  legendTags.value = classBreaks.map((classBreak) => {
+  const classBreakTags = classBreaks.map((classBreak) => {
     const { legendSvg } = createChip()
 
     // Create a rect svg with height and widht of 20px and color from classBreak
@@ -462,6 +462,17 @@ function setHorizontalColorCodeTags(series: ChartSeries[]) {
       legendSvg: s.serializeToString(legendSvg),
     }
   })
+
+  const parameterTags = series
+    .filter((s) => s.type === 'line' && s.visibleInLegend)
+    .map((series) => ({
+      id: series.name,
+      name: series.name,
+      disabled: false,
+      interactive: false,
+      legendSvg: '',
+    }))
+  legendTags.value = [...classBreakTags, ...parameterTags]
 }
 
 function setThresholdTag() {
