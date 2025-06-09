@@ -83,8 +83,8 @@ import type {
   Location,
 } from '@deltares/fews-pi-requests'
 import Autocomplete from '@/components/general/Autocomplete.vue'
-import HisMap from '@/components/his/HisMap.vue'
-import HisAddButton from '@/components/his/HisAddButton.vue'
+import HisMap from '@/components/analysis/HisMap.vue'
+import HisAddButton from '@/components/analysis/HisAddButton.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'

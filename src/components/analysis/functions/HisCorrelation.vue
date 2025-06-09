@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import HisAddButton from '@/components/his/HisAddButton.vue'
+import HisAddButton from '@/components/analysis/HisAddButton.vue'
 import GroupSelect from '@/components/general/GroupSelect.vue'
 import Autocomplete from '@/components/general/Autocomplete.vue'
 import { VNumberInput } from 'vuetify/labs/components'

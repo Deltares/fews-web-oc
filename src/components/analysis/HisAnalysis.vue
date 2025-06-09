@@ -39,8 +39,8 @@
 </template>
 
 <script setup lang="ts">
-import HisCorrelation from '@/components/his/functions/HisCorrelation.vue'
-import HisTimeResampling from '@/components/his/functions/HisTimeResampling.vue'
+import HisCorrelation from '@/components/analysis/functions/HisCorrelation.vue'
+import HisTimeResampling from '@/components/analysis/functions/HisTimeResampling.vue'
 import { ref, watch } from 'vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'

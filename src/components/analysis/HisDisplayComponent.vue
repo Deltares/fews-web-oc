@@ -107,10 +107,10 @@
 </template>
 
 <script setup lang="ts">
-import HisDataSelection from '@/components/his/HisDataSelection.vue'
+import HisDataSelection from '@/components/analysis/HisDataSelection.vue'
 import HisCollectionCharts from './HisCollectionCharts.vue'
-import HisCollection from '@/components/his/HisCollection.vue'
-import HisAnalysis from '@/components/his/HisAnalysis.vue'
+import HisCollection from '@/components/analysis/HisCollection.vue'
+import HisAnalysis from '@/components/analysis/HisAnalysis.vue'
 import { VDateInput } from 'vuetify/labs/components'
 import type {
   ActionRequest,

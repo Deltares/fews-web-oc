@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import Autocomplete from '@/components/general/Autocomplete.vue'
 import GroupSelect from '@/components/general/GroupSelect.vue'
-import HisAddButton from '@/components/his/HisAddButton.vue'
+import HisAddButton from '@/components/analysis/HisAddButton.vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref, watch } from 'vue'
