@@ -42,7 +42,7 @@
     </v-card-title>
     <TimeSeriesChart
       :config
-      :series="combinedSeries"
+      :series
       :zoomHandler
       :settings="settings.charts.timeSeriesChart"
     />
@@ -58,35 +58,22 @@ import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import type { ZoomHandler } from '@deltares/fews-web-oc-charts'
 import { computed } from 'vue'
-import { useDataAnalysisChart } from '@/services/useDataAnalysisChart'
+import { TimeSeriesDisplaySubplot } from '@deltares/fews-pi-requests'
 
 interface Props {
   collection: Collection
   chart: Chart
+  subplot: TimeSeriesDisplaySubplot
   series: Record<string, Series>
   zoomHandler?: ZoomHandler
   settings: ComponentSettings
-  startTime: Date
-  endTime: Date
+  domain?: [Date, Date]
 }
 
 const props = defineProps<Props>()
 
-const domain = computed<[Date, Date] | undefined>(() => {
-  return props.chart.type === 'filter'
-    ? [props.startTime, props.endTime]
-    : undefined
-})
-
-const { subplot, series: combinedSeries } = useDataAnalysisChart(
-  () => props.chart,
-  () => props.series,
-  () => props.startTime,
-  () => props.endTime,
-)
-
 const config = computed(() =>
-  timeSeriesDisplayToChartConfig(subplot.value, domain.value),
+  timeSeriesDisplayToChartConfig(props.subplot, props.domain),
 )
 
 function removeChart(chart: Chart) {

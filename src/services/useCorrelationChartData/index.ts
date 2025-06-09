@@ -9,75 +9,12 @@ import { useCorrelation } from '../useCorrelation'
 import { SeriesResourceType } from '@/lib/timeseries/types'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 
-type ChartData = {
-  subplot: MaybeRefOrGetter<TimeSeriesDisplaySubplot>
-  derivedSeries: MaybeRefOrGetter<Record<string, Series>>
-}
-
-export function useDataAnalysisChart(
-  chart: MaybeRefOrGetter<Chart>,
-  series: MaybeRefOrGetter<Record<string, Series>>,
-  startTime: MaybeRefOrGetter<Date>,
-  endTime: MaybeRefOrGetter<Date>,
-) {
-  function getChartData(
-    chart: MaybeRefOrGetter<Chart>,
-    series: MaybeRefOrGetter<Record<string, Series>>,
-    startTime: MaybeRefOrGetter<Date>,
-    endTime: MaybeRefOrGetter<Date>,
-  ) {
-    // NOTE: This assumes that the chart type does not change after the initial load.
-    const _chart = toValue(chart)
-    switch (_chart.type) {
-      case 'filter':
-        return useFilterChartData(chart, series, startTime, endTime)
-      case 'correlation':
-        return useCorrelationChartData(chart, series, startTime, endTime)
-    }
-  }
-
-  const { subplot: newSubplot, derivedSeries: newDerivedSeries } = getChartData(
-    chart,
-    series,
-    startTime,
-    endTime,
-  )
-
-  const combinedSeries = computed(() => {
-    const originalSeries = toValue(series)
-    const derivedSeries = toValue(newDerivedSeries)
-    return {
-      ...originalSeries,
-      ...derivedSeries,
-    }
-  })
-
-  const subplot = computed(() => toValue(newSubplot))
-
-  return {
-    subplot,
-    series: combinedSeries,
-  }
-}
-
-function useFilterChartData(
-  chart: MaybeRefOrGetter<Chart>,
-  _series: MaybeRefOrGetter<Record<string, Series>>,
-  _startTime: MaybeRefOrGetter<Date>,
-  _endTime: MaybeRefOrGetter<Date>,
-): ChartData {
-  return {
-    subplot: () => toValue(chart).subplot,
-    derivedSeries: {},
-  }
-}
-
-function useCorrelationChartData(
+export function useCorrelationChartData(
   _chart: MaybeRefOrGetter<Chart>,
   _series: MaybeRefOrGetter<Record<string, Series>>,
   startTime: MaybeRefOrGetter<Date>,
   endTime: MaybeRefOrGetter<Date>,
-): ChartData {
+) {
   const chart = computed(() => {
     const newChart = toValue(_chart)
     if (newChart.type !== 'correlation') {
@@ -157,7 +94,7 @@ function useCorrelationChartData(
     )
   })
 
-  const derivedSeries = computed(() => {
+  const series = computed(() => {
     const arr1 = correlation.value?.fitPoints // x, y
     const arr2 = correlation.value?.values // time, x, y
 
@@ -191,6 +128,6 @@ function useCorrelationChartData(
 
   return {
     subplot,
-    derivedSeries,
+    series,
   }
 }

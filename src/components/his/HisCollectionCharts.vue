@@ -1,21 +1,32 @@
 <template>
   <div class="overflow-y-auto">
-    <HisCollectionChart
-      v-for="chart in collection.charts"
-      :key="chart.id"
-      :collection
-      :chart
-      :series
-      :zoomHandler="chart.type === 'filter' ? zoomHandler : undefined"
-      :settings
-      :startTime
-      :endTime
-    />
+    <template v-for="chart in collection.charts" :key="chart.id">
+      <HisCollectionChart
+        v-if="chart.type === 'filter'"
+        :collection
+        :chart
+        :subplot="chart.subplot"
+        :series
+        :zoomHandler
+        :settings
+        :domain="[startTime, endTime]"
+      />
+      <HisCorrelationChart
+        v-if="chart.type === 'correlation'"
+        :collection
+        :chart
+        :series
+        :settings
+        :startTime
+        :endTime
+      />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
 import HisCollectionChart from './HisCollectionChart.vue'
+import HisCorrelationChart from './HisCorrelationChart.vue'
 import type { Collection } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
