@@ -15,14 +15,14 @@
       />
     </v-tabs>
     <div class="flex-1-1 overflow-auto">
-      <HisCorrelation
+      <AnalysisCorrelation
         v-if="selectedFunction === 'correlation'"
         :charts
         :series
         @addChart="emit('addChart', $event)"
         :isActive="isActive"
       />
-      <HisTimeResampling
+      <AnalysisTimeResampling
         v-if="selectedFunction === 'time-resampling'"
         :filterId
         :charts
@@ -39,8 +39,8 @@
 </template>
 
 <script setup lang="ts">
-import HisCorrelation from '@/components/analysis/functions/HisCorrelation.vue'
-import HisTimeResampling from '@/components/analysis/functions/HisTimeResampling.vue'
+import AnalysisCorrelation from '@/components/analysis/functions/AnalysisCorrelation.vue'
+import AnalysisTimeResampling from '@/components/analysis/functions/AnalysisTimeResampling.vue'
 import { ref, watch } from 'vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'

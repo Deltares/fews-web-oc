@@ -1,9 +1,9 @@
 <template>
-  <HisCollectionChart :collection :chart :subplot :series :settings />
+  <AnalysisCollectionChart :collection :chart :subplot :series :settings />
 </template>
 
 <script setup lang="ts">
-import HisCollectionChart from './HisCollectionChart.vue'
+import AnalysisCollectionChart from './AnalysisCollectionChart.vue'
 import type { Collection, Chart } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'

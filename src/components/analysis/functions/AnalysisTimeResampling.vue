@@ -31,7 +31,7 @@
 
     <div class="d-flex pa-3">
       <v-spacer />
-      <HisAddButton
+      <AnalysisAddButton
         :disabled="!filter"
         :loading="props.isLoading"
         @click="addFilter"
@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import Autocomplete from '@/components/general/Autocomplete.vue'
 import GroupSelect from '@/components/general/GroupSelect.vue'
-import HisAddButton from '@/components/analysis/HisAddButton.vue'
+import AnalysisAddButton from '@/components/analysis/AnalysisAddButton.vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref, watch } from 'vue'

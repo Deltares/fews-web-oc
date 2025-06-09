@@ -8,7 +8,7 @@
       class="his-selection"
     >
       <div v-show="tab === 'data-selection'" class="h-100">
-        <HisDataSelection
+        <AnalysisDataSelection
           v-model:filterId="filterId"
           :filters="config.filters"
           :locations="locations"
@@ -20,7 +20,7 @@
         />
       </div>
       <div v-show="tab === 'analysis'" class="h-100">
-        <HisAnalysis
+        <AnalysisFunctions
           :filterId="filterId"
           :charts="selectedCollection.charts"
           :series="series"
@@ -86,12 +86,12 @@
     <div class="d-flex justify-center flex-1-1 overflow-auto">
       <div class="w-100 overflow-y-auto">
         <v-card-title class="flex-0-0 d-flex ga-2 align-center">
-          <HisCollection
+          <AnalysisCollection
             v-model:selectedCollection="selectedCollection"
             v-model:collections="collections"
           />
         </v-card-title>
-        <HisCollectionCharts
+        <AnalysisCollectionCharts
           v-if="selectedCollection.charts.length"
           :collection="selectedCollection"
           :series="series"
@@ -107,10 +107,10 @@
 </template>
 
 <script setup lang="ts">
-import HisDataSelection from '@/components/analysis/HisDataSelection.vue'
-import HisCollectionCharts from './HisCollectionCharts.vue'
-import HisCollection from '@/components/analysis/HisCollection.vue'
-import HisAnalysis from '@/components/analysis/HisAnalysis.vue'
+import AnalysisDataSelection from '@/components/analysis/AnalysisDataSelection.vue'
+import AnalysisCollectionCharts from './AnalysisCollectionCharts.vue'
+import AnalysisCollection from '@/components/analysis/AnalysisCollection.vue'
+import AnalysisFunctions from '@/components/analysis/AnalysisFunctions.vue'
 import { VDateInput } from 'vuetify/labs/components'
 import type {
   ActionRequest,

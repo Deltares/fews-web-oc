@@ -1,7 +1,7 @@
 <template>
   <div class="overflow-y-auto">
     <template v-for="chart in collection.charts" :key="chart.id">
-      <HisCollectionChart
+      <AnalysisCollectionChart
         v-if="chart.type === 'filter'"
         :collection
         :chart
@@ -11,7 +11,7 @@
         :settings
         :domain="[startTime, endTime]"
       />
-      <HisCorrelationChart
+      <AnalysisCorrelationChart
         v-if="chart.type === 'correlation'"
         :collection
         :chart
@@ -25,8 +25,8 @@
 </template>
 
 <script setup lang="ts">
-import HisCollectionChart from './HisCollectionChart.vue'
-import HisCorrelationChart from './HisCorrelationChart.vue'
+import AnalysisCollectionChart from './AnalysisCollectionChart.vue'
+import AnalysisCorrelationChart from './AnalysisCorrelationChart.vue'
 import type { Collection } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'

@@ -51,21 +51,21 @@
       </template>
       <template #prepend>
         <div v-show="showMap" class="border rounded mb-1 flex-0-0 h-50">
-          <HisMap :boundingBox>
+          <AnalysisMap :boundingBox>
             <LocationsLayer
               v-if="filterLocationGeoJson.features.length"
               :locationsGeoJson="filterLocationGeoJson"
               :selectedLocationIds="selectedLocationIds"
               @click="onLocationClick"
             />
-          </HisMap>
+          </AnalysisMap>
         </div>
       </template>
     </Autocomplete>
 
     <div class="d-flex">
       <v-spacer />
-      <HisAddButton
+      <AnalysisAddButton
         :disabled="!filter"
         :loading="props.isLoading"
         @click="addFilter"
@@ -83,8 +83,8 @@ import type {
   Location,
 } from '@deltares/fews-pi-requests'
 import Autocomplete from '@/components/general/Autocomplete.vue'
-import HisMap from '@/components/analysis/HisMap.vue'
-import HisAddButton from '@/components/analysis/HisAddButton.vue'
+import AnalysisMap from '@/components/analysis/AnalysisMap.vue'
+import AnalysisAddButton from '@/components/analysis/AnalysisAddButton.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'

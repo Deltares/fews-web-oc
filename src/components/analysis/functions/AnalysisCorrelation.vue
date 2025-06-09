@@ -55,7 +55,7 @@
 
     <div class="d-flex pa-3">
       <v-spacer />
-      <HisAddButton
+      <AnalysisAddButton
         :disabled="!selectedTimeseries || !selectedSecondTimeseries"
         @click="addChart"
       />
@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import HisAddButton from '@/components/analysis/HisAddButton.vue'
+import AnalysisAddButton from '@/components/analysis/AnalysisAddButton.vue'
 import GroupSelect from '@/components/general/GroupSelect.vue'
 import Autocomplete from '@/components/general/Autocomplete.vue'
 import { VNumberInput } from 'vuetify/labs/components'
