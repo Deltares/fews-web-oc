@@ -233,11 +233,12 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
     const yAxis = axisItem?.yAxis
 
     if (axisItem.type === 'horizontalColorCode') {
-      axes.push({
-        type: AxisType.band,
+      const axis = getHorizontalColorCodeYAxis(
+        subplot,
+        yAxis.axisLabel,
         position,
-        label: yAxis.axisLabel,
-      })
+      )
+      axes.push(axis)
       continue
     }
 
@@ -262,4 +263,44 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
     axes.push(axis)
   }
   return axes
+}
+
+function getHorizontalColorCodeYAxis(
+  subplot: TimeSeriesDisplaySubplot,
+  label: string | undefined,
+  position: AxisPosition,
+): AxisOptions {
+  const parameters: string[] = []
+
+  // Replace parameter names in the legend with indices
+  subplot.items.forEach((item) => {
+    const split = item.legend?.split(' - ')
+    const location = split?.[0]
+    const parameter = split?.[1]
+    if (!location || !parameter) return
+
+    let parameterIndex = parameters.indexOf(parameter)
+    if (parameterIndex === -1) {
+      parameters.push(parameter)
+      parameterIndex = parameters.length - 1
+    }
+
+    item.legend = `${location} [${parameterIndex}]`
+  })
+
+  // Join the parameters with indices
+  const joinedParameters = parameters
+    .map((parameter, index) => `[${index}] ${parameter}`)
+    .join(' ')
+
+  // Add non-breaking spaces for alignment
+  const spaces = '\u00A0'.repeat(6)
+  const parameterString = joinedParameters ? `${spaces}${joinedParameters}` : ''
+
+  return {
+    type: AxisType.band,
+    position,
+    // Add the parameter string to the label
+    label: label ? `${label}${parameterString}` : parameterString,
+  }
 }
