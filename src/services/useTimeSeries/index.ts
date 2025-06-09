@@ -83,7 +83,7 @@ export function useTimeSeries(
   async function loadTimeSeries() {
     if (fetchingEnabled !== undefined && !toValue(fetchingEnabled)) return
 
-    controller.abort('Timeseries request triggered again before finishing.')
+    controller.abort()
     controller = new AbortController()
     const piProvider = new PiWebserviceProvider(baseUrl, {
       transformRequestFn: createTransformRequestFn(controller),
@@ -131,7 +131,7 @@ export function useTimeSeries(
     })
     const results = await Promise.allSettled(promises)
     results.forEach((result, index) => {
-      if (result.status === 'rejected') {
+      if (result.status === 'rejected' && result.reason.name !== 'AbortError') {
         console.error(
           `Failed to fetch time series for request URL ${_requests[index].request}: ${result.reason}`,
         )
