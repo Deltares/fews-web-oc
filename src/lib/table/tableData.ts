@@ -136,7 +136,6 @@ function getFlagEdit(
     return 'Persistent Unreliable'
   }
 
-  // @ts-expect-error: remove once pi-requests is updated
   if (flag === '14') {
     return 'Accumulation Reset'
   }
