@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import TaskRunSummary from '@/components/tasks/TaskRunSummary.vue'
 import AnalysisChartCard from '@/components/analysis/AnalysisChartCard.vue'
-import type { AsyncChart } from '@/lib/analysis'
+import type { AsyncChart, CollectionEmits } from '@/lib/analysis'
 import {
   convertFewsPiTaskRunToTaskRun,
   getTaskStatusCategory,
@@ -27,6 +27,11 @@ interface Props {
   chart: AsyncChart
 }
 const props = defineProps<Props>()
+
+interface Emits extends CollectionEmits {
+  remove: []
+}
+const emit = defineEmits<Emits>()
 
 const { taskRunStatus, interval: taskRunStatusInterval } = useTaskRunStatus(
   () => ({
@@ -66,6 +71,21 @@ const category = computed(() => {
 watchEffect(() => {
   if (category.value === 'completed' || category.value === 'failed') {
     taskRunInterval.value?.pause()
+  }
+})
+
+watchEffect(() => {
+  if (category.value === 'completed') {
+    const taskRunIds = task.value?.taskId
+    const filterId = props.chart.result.filterId
+
+    emit('remove')
+
+    const filter = {
+      taskRunIds,
+      filterId,
+    }
+    emit('addFilter', { filter })
   }
 })
 </script>
