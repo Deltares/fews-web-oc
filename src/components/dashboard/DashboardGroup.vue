@@ -5,7 +5,8 @@
     class="d-flex flex-column"
     density="compact"
     flat
-    :rounded="false"
+    rounded
+    border
   >
     <DashboardItem
       v-if="element.items"
