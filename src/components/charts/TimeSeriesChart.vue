@@ -63,6 +63,7 @@ import {
   getColorMap,
   horizontalColorCodeDataFromData,
 } from '@/lib/charts/horizontalColorCode.js'
+import { isDefaultD3TimeScaleDomain } from '@/lib/charts/defaultDomain.js'
 
 interface Props {
   config: ChartConfig
@@ -179,6 +180,13 @@ watch(
 
 function onUpdateXDomain(event: DomainChangeEvent): void {
   hasResetAxes.value = event.fromZoomReset
+
+  const old = event.old as [Date, Date]
+  // The first time the domain change event is emitted, the old domain is
+  // the default d3 time scale domain. We do not want to emit an update
+  // event in that case, as it is not a user-initiated change.
+  if (isDefaultD3TimeScaleDomain(old)) return
+
   emit('update:x-domain', event.new as [Date, Date])
 }
 
