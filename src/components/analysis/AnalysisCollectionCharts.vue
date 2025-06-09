@@ -22,6 +22,7 @@
       <AnalysisAsyncChart
         v-if="chart.type === 'async'"
         :chart
+        @addFilter="emit('addFilter', $event)"
         @remove="removeChart(chart)"
       />
     </template>
@@ -32,7 +33,7 @@
 import AnalysisCollectionChart from './AnalysisCollectionChart.vue'
 import AnalysisCorrelationChart from './AnalysisCorrelationChart.vue'
 import AnalysisAsyncChart from './AnalysisAsyncChart.vue'
-import type { Chart, Collection } from '@/lib/analysis'
+import type { Chart, Collection, CollectionEmits } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'
@@ -46,6 +47,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const emit = defineEmits<CollectionEmits>()
 
 const zoomHandler = new ZoomHandler({
   sharedZoomMode: ZoomMode.X,
