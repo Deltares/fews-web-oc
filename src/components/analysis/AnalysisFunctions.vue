@@ -39,6 +39,7 @@
       />
       <AnalysisWorkflow
         v-if="selectedFunction === activeWorkflowToolbox?.id"
+        :key="activeWorkflowToolbox?.id"
         :customToolBox="activeWorkflowToolbox"
         @addChart="emit('addChart', $event)"
       />
