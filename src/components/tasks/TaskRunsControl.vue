@@ -45,12 +45,6 @@ const sidePanelStore = useSidePanelStore()
   height: 28px;
 }
 
-.task-runs-panel {
-  width: 450px;
-  display: grid;
-  grid-template-rows: auto 1fr auto auto;
-}
-
 :deep(.v-window__container) {
   height: 100%;
 }
