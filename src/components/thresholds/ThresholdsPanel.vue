@@ -131,10 +131,6 @@ onMounted(() => {
   width: 450px;
 }
 
-.spacer {
-  height: 48px;
-}
-
 .warning-count {
   text-align: center;
 }
