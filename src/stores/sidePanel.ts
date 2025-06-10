@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-type SidePanel = 'tasks' | 'thresholds' | 'info'
+type SidePanel = 'tasks' | 'thresholds' | 'info' | 'workflows' | 'visualize'
 
 export const useSidePanelStore = defineStore('sidePanel', () => {
   const activeSidePanel = ref<SidePanel>()

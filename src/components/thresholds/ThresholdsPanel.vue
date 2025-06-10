@@ -1,10 +1,18 @@
 <template>
   <div class="threshold-summary-container h-100 d-flex flex-column">
-    <div v-if="warningLevels.length === 0" class="pa-2">
-      No active threshold crossings
-    </div>
+    <v-toolbar density="compact">
+      <span class="ms-4">Thresholds Overview</span>
+      <template #append>
+        <v-btn
+          @click="emit('close')"
+          size="small"
+          variant="text"
+          icon="mdi-close"
+        />
+      </template>
+    </v-toolbar>
     <v-chip-group
-      class="px-2 flex-0-0"
+      class="px-2 py-2 d-flex flex-wrap"
       v-model="selectedWarningLevelIds"
       multiple
       column
@@ -34,7 +42,9 @@
         </template>
       </v-chip>
     </v-chip-group>
-
+    <div v-if="warningLevels.length === 0" class="pa-2">
+      No active threshold crossings
+    </div>
     <!-- Important to have item-height as it greatly improves performance -->
     <v-virtual-scroll
       ref="virtualScroll"
@@ -73,6 +83,7 @@ const props = defineProps<Props>()
 
 interface Emits {
   navigate: [to: NavigateRoute]
+  close: []
 }
 const emit = defineEmits<Emits>()
 

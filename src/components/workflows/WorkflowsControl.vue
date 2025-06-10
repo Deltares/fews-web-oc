@@ -1,108 +1,116 @@
 <template>
-  <v-dialog
-    width="500"
-    v-model="showDialog"
-    persistent
-    :fullscreen="mobile"
-    :max-width="mobile ? undefined : '600'"
+  <v-btn
+    icon
+    :active="sidePanelStore.isActive('workflows')"
+    @click="sidePanelStore.toggleActive('workflows')"
   >
-    <v-card>
-      <v-card-text>
-        <v-container class="px-0">
-          <v-select
-            v-model="currentWorkflow"
-            :items="workflowSelectItems"
-            class="workflow-select"
+    <v-icon>mdi-wrench</v-icon>
+  </v-btn>
+  <Teleport to="#main-side-panel" defer>
+    <div
+      v-if="sidePanelStore.isActive('workflows')"
+      class="h-100 workflows-panel"
+    >
+      <v-toolbar density="compact">
+        <span class="ms-4">Run Workflow</span>
+        <template #append>
+          <v-btn
+            @click="sidePanelStore.toggleActive('workflows')"
+            size="small"
+            variant="text"
+            icon="mdi-close"
+          />
+        </template>
+      </v-toolbar>
+      <div v-if="!workflowSelectItems" class="pa-2">No workflows available</div>
+      <v-container v-else>
+        <v-select
+          v-model="currentWorkflow"
+          :items="workflowSelectItems"
+          class="workflow-select"
+          density="compact"
+          variant="solo-filled"
+          flat
+          label="Workflow"
+          mandatory
+          :disabled="workflowSelectItems?.length === 1"
+          hide-details
+        />
+        <v-card variant="text" v-if="workflowDescription" density="compact">
+          <v-card-text>
+            {{ workflowDescription }}
+          </v-card-text>
+        </v-card>
+        <div v-if="isBoundingBoxInForm" class="d-flex py-4">
+          <v-text-field
+            v-model="boundingBoxString"
+            readonly
+            variant="plain"
+            label="Bounding box"
+            class="mx-4"
+          />
+          <v-btn
+            icon="mdi-selection-drag"
+            variant="tonal"
+            @click="showMapTool"
+          />
+        </div>
+        <div v-if="isCoordinateInForm" class="d-flex py-4">
+          <v-text-field
+            v-model="coordinateString"
+            readonly
+            variant="plain"
             density="compact"
-            variant="solo-filled"
-            flat
-            label="Workflow"
-            mandatory
-            :disabled="workflowSelectItems?.length === 1"
-            hide-details
+            label="Coordinate"
+            class="mx-4"
           />
-          <v-banner
-            :text="workflowDescription"
-            label="description"
-            sticky
-            variant="solo-filled"
-            density="compact"
-            hide-details
+          <v-btn
+            icon="mdi-map-marker-radius"
+            variant="tonal"
+            density="comfortable"
+            @click="showCoordinateSelector"
           />
-          <div v-if="isBoundingBoxInForm" class="d-flex py-4">
-            <v-text-field
-              v-model="boundingBoxString"
-              readonly
-              variant="plain"
-              label="Bounding box"
-              class="mx-4"
-            />
-            <v-btn
-              icon="mdi-selection-drag"
-              variant="tonal"
-              @click="showMapTool"
-            />
-          </div>
-          <div v-if="isCoordinateInForm" class="d-flex py-4">
-            <v-text-field
-              v-model="coordinateString"
-              readonly
-              variant="plain"
-              density="compact"
-              label="Coordinate"
-              class="mx-4"
-            />
-            <v-btn
-              icon="mdi-map-marker-radius"
-              variant="tonal"
-              density="comfortable"
-              @click="showCoordinateSelector"
-            />
-          </div>
-          <json-forms
-            v-if="hasProperties"
-            class="py-4"
-            :schema="formSchema"
-            :uischema="formUISchema"
-            :data="data"
-            :renderers="Object.freeze(vuetifyRenderers)"
-            :ajv="undefined"
-            validation-mode="NoValidation"
-            :config="JsonFormsConfig"
-            @change="onFormChange"
-          />
-          <DateTimeField
-            v-if="!isProcessDataTask"
-            v-model="timeZero"
-            date-label="T0 date"
-            time-label="T0 time"
-          />
-          <v-textarea
-            v-model="description"
-            placeholder="Use this field to describe the task run, it will be used to identify the run in the task overview."
-            label="Task run description"
-            variant="outlined"
-            density="compact"
-            class="py-8"
-            hide-details
-            rows="5"
-            no-resize
-            persistent-placeholder
-          />
-        </v-container>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
+        </div>
+        <json-forms
+          v-if="hasProperties"
+          class="py-4"
+          :schema="formSchema"
+          :uischema="formUISchema"
+          :data="data"
+          :renderers="Object.freeze(vuetifyRenderers)"
+          :ajv="undefined"
+          validation-mode="NoValidation"
+          :config="JsonFormsConfig"
+          @change="onFormChange"
+        />
+        <DateTimeField
+          v-if="!isProcessDataTask"
+          v-model="timeZero"
+          date-label="T0 date"
+          time-label="T0 time"
+        />
+        <v-textarea
+          v-model="description"
+          placeholder="Use this field to describe the task run, it will be used to identify the run in the task overview."
+          label="Task run description"
+          variant="outlined"
+          density="compact"
+          class="py-8"
+          hide-details
+          rows="5"
+          no-resize
+          persistent-placeholder
+        />
         <v-btn
           text="Submit"
           variant="flat"
           color="primary"
+          block
           @click="startWorkflow"
         />
-        <v-btn text="Close" @click="closeDialog" />
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+      </v-container>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -115,6 +123,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import JsonFormsConfig from '@/assets/JsonFormsConfig.json'
 import { useBoundingBox } from '@/services/useBoundingBox'
+import { useSidePanelStore } from '@/stores/sidePanel'
 
 import {
   PartialProcessDataFilter,
@@ -124,7 +133,6 @@ import {
 } from '@/stores/workflows'
 import { useAlertsStore } from '@/stores/alerts.ts'
 
-import { useDisplay } from 'vuetify'
 import { LngLat } from 'maplibre-gl'
 import {
   coordinateToString,
@@ -139,6 +147,7 @@ import { useWorkflowFormSchemas } from '@/services/useWorkflowFormSchemas'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
+const sidePanelStore = useSidePanelStore()
 
 interface Props {
   secondaryWorkflows: SecondaryWorkflowGroupItem[] | null
@@ -148,10 +157,6 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
 })
-
-const { mobile } = useDisplay()
-
-const showDialog = defineModel<boolean>('showDialog', { required: true })
 
 const currentWorkflow = ref<SecondaryWorkflowGroupItem | null>(null)
 const workflowDescription = computed<string>(() => {
@@ -220,10 +225,6 @@ watch(
     nextTick(() => (isRounding = false))
   },
 )
-
-function closeDialog() {
-  showDialog.value = false
-}
 
 // Check whether the bounding box is defined in the form.
 const isBoundingBoxInForm = computed(() => isBoundingBoxInFormData(data.value))
@@ -376,22 +377,16 @@ function onFormChange(event: any) {
 
 function showCoordinateSelector() {
   workflowsStore.isSelectingCoordinate = true
-  showDialog.value = false
 
   watch(
     () => workflowsStore.isSelectingCoordinate,
-    () => {
-      if (workflowsStore.coordinate !== null) {
-        showDialog.value = true
-      }
-    },
+    () => {},
     { once: true },
   )
 }
 
 function showMapTool() {
   workflowsStore.isDrawingBoundingBox = true
-  showDialog.value = false
   // Show the dialog again when the bounding box has been drawn.
   watch(
     () => workflowsStore.isDrawingBoundingBox,
@@ -400,9 +395,6 @@ function showMapTool() {
       // drawing. If it is null, it has been forcibly closed by the application (e.g. because we
       // navigated to a different node), so we should abandon the workflow (and hence the dialog)
       // altogether.
-      if (workflowsStore.boundingBox !== null) {
-        showDialog.value = true
-      }
     },
     { once: true },
   )
@@ -453,7 +445,6 @@ async function startWorkflow() {
       }, 500)
     }
 
-    closeDialog()
     await workflowsStore.startWorkflow(workflowType, filter, { fileName })
 
     if (workflowType === WorkflowType.ProcessData) {
@@ -515,5 +506,8 @@ function getProcessDataFilter(): PartialProcessDataFilter {
 
 .workflow-description {
   font-size: 0.8em;
+}
+.workflows-panel {
+  width: 450px;
 }
 </style>
