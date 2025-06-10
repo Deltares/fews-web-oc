@@ -42,6 +42,7 @@ const DataAnalysisDisplay = () =>
   import('../components/analysis/DataAnalysisDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
 const DocumentDisplayView = () => import('../views/DocumentDisplayView.vue')
+const PluginDisplayView = () => import('../views/PluginDisplayView.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
   {
@@ -281,6 +282,22 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         component: DataAnalysisDisplay,
         props: true,
         meta: { sidebar: true },
+      },
+      {
+        path: 'plugin',
+        name: 'TopologyPluginDisplay',
+        component: PluginDisplayView,
+        props: true,
+        meta: { sidebar: true },
+        children: [
+          {
+            path: 'location/:locationIds',
+            name: 'TopologyPluginTimeSeriesDisplay',
+            component: Empty,
+            props: true,
+            meta: { sidebar: true },
+          },
+        ],
       },
     ],
   },
