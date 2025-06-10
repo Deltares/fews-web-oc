@@ -6,6 +6,7 @@
         class="text-none"
         variant="flat"
         color="primary"
+        @click="showUploadDialog = true"
         >Upload</v-btn
       >
       <v-spacer />
@@ -153,6 +154,67 @@
     <div>
       <slot name="footer"> </slot>
     </div>
+    <v-dialog v-model="showUploadDialog" max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">Upload Product</span>
+        </v-card-title>
+        <v-card-text>
+          <v-alert v-if="uploadError" type="error" variant="tonal" class="mb-4">
+            {{ uploadError }}
+          </v-alert>
+
+          <v-file-input
+            v-model="uploadFile"
+            :loading="uploading"
+            :disabled="uploading"
+            truncate-length="30"
+            accept=".pdf,.jpg,.jpeg,.png"
+            placeholder="Select file"
+            prepend-icon="mdi-file-document-outline"
+            label="Product File"
+            hint="Select a file to upload"
+            :rules="[(v) => !!v || 'A file is required']"
+          ></v-file-input>
+
+          <v-text-field
+            v-model="uploadData.name"
+            label="Product Name"
+            :disabled="uploading"
+            :rules="[(v) => !!v || 'Product name is required']"
+            class="mt-4"
+          ></v-text-field>
+
+          <v-text-field
+            v-model="uploadData.author"
+            label="Author"
+            :disabled="uploading"
+            :rules="[(v) => !!v || 'Product name is required']"
+            class="mt-4"
+          ></v-text-field>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="grey-darken-1"
+            variant="text"
+            :disabled="uploading"
+            @click="showUploadDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            :loading="uploading"
+            :disabled="!canUpload"
+            variant="flat"
+            @click="uploadProduct"
+          >
+            Upload
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 <script setup lang="ts">
@@ -160,6 +222,8 @@ import { computed, onMounted, ref, watch } from 'vue'
 import type { ProductMetaDataType } from '@/services/useProducts/types'
 import { useRouter } from 'vue-router'
 import { toHumanReadableDate } from '@/lib/date'
+import { configManager } from '@/services/application-config'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 interface AttributeHeader {
   attribute: string
@@ -188,15 +252,102 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits(['refresh'])
 
 const router = useRouter()
 
+// Search and filtering state
 const search = ref('')
-
 const groupByKey = ref([''])
 const groupByOrder = ref<[boolean | 'asc' | 'desc']>(['asc'])
 const selectedColumns = ref<string[]>([])
 const selectedRows = ref<string[]>([])
+
+// Upload dialog state
+const showUploadDialog = ref(false)
+const uploading = ref(false)
+const uploadError = ref('')
+const uploadFile = ref<File | undefined>(undefined)
+const uploadData = ref({
+  name: '',
+  author: '',
+})
+
+// Computed properties for upload validation and table display
+const canUpload = computed(() => {
+  const hasName = uploadData.value.name.trim() !== ''
+  const hasAuthor = uploadData.value.author.trim() !== ''
+  if (!uploadFile.value || !hasName || !hasAuthor) {
+    return false
+  }
+  return true
+})
+
+const resetUploadForm = () => {
+  uploadFile.value = undefined
+  uploadData.value = {
+    name: '',
+    author: '',
+  }
+  uploadError.value = ''
+}
+
+// Upload product function
+async function uploadProduct() {
+  if (!canUpload.value) return
+
+  uploading.value = true
+  uploadError.value = ''
+
+  try {
+    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+    const timeZero = new Date().toISOString()
+    const url = `${baseUrl}rest/fewspiservice/v1/archive/products?\
+      areaId=products&\
+      sourceId=weboc&\
+      timeZero=${timeZero}&\
+      attribute(product_id)=${uploadData.value.name}&\
+      attribute(status)=concept&\
+      attribute(author)=${uploadData.value.author}&\
+      versionKey=area_id&\
+      versionKey=product_id`
+
+    const formData = new FormData()
+    formData.append('file', uploadFile.value as File)
+
+    // Use transformRequestFn to properly handle authentication
+    const transformRequest = createTransformRequestFn()
+    const request = new Request(url, {
+      method: 'POST',
+      body: formData,
+    })
+    const authenticatedRequest = await transformRequest(request)
+    const response = await fetch(authenticatedRequest)
+
+    if (!response.ok) {
+      const msg = await response.text()
+      throw new Error(msg || 'Failed to send request.')
+    }
+
+    // Reset the form and close dialog on success
+    resetUploadForm()
+    showUploadDialog.value = false
+
+    // Refresh the product list
+    emit('refresh')
+
+    // Update last updated time
+    lastUpdatedString.value = new Date().toLocaleString()
+  } catch (error) {
+    console.error('Upload error:', error)
+    uploadError.value =
+      error instanceof Error
+        ? error.message
+        : 'An unknown error occurred while uploading your product'
+  } finally {
+    uploading.value = false
+  }
+}
 
 const groupBy = computed(() => {
   return {
