@@ -103,20 +103,13 @@ import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 import { useDisplay } from 'vuetify'
 import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
 import { until } from '@vueuse/core'
-import {
-  ModifierKey,
-  MouseButton,
-  PanHandler,
-  PanningDirection,
-  ZoomHandler,
-  ZoomMode,
-} from '@deltares/fews-web-oc-charts'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import {
   getDefaultSettings,
   type ChartsSettings,
 } from '@/lib/topology/componentSettings'
 import { debounce } from 'lodash-es'
+import { useChartHandlers } from '@/services/useChartHandlers'
 
 interface Props {
   config?: DisplayConfig
@@ -174,17 +167,8 @@ const store = useSystemTimeStore()
 const isEditing = ref(false)
 const confirmationDialog = ref(false)
 const { xs } = useDisplay()
-const sharedZoomHandler = new ZoomHandler({
-  sharedZoomMode: ZoomMode.X,
-})
-const sharedVerticalZoomHandler = new ZoomHandler({
-  sharedZoomMode: ZoomMode.Y,
-})
-const sharedPanHandler = new PanHandler({
-  mouseButton: MouseButton.Left,
-  modifierKey: ModifierKey.Shift,
-  direction: PanningDirection.X,
-})
+const { sharedZoomHandler, sharedPanHandler, sharedVerticalZoomHandler } =
+  useChartHandlers()
 
 const tab = ref<DisplayType>(props.displayType)
 
