@@ -27,12 +27,17 @@
   </Teleport>
   <Teleport to="#app-bar-content-end">
     <ThresholdsControl
+      v-if="secondaryControl === 'thresholds'"
       :topologyNode="topologyNode"
       @navigate="onNavigate"
       :locationIds="props.locationIds"
     />
     <TaskRunsControl
       v-if="secondaryControl === 'tasks' && showTaskMenu"
+      :topologyNode="topologyNode"
+    />
+    <VisualizeDataControl
+      v-if="secondaryControl === 'visualize' && showTaskMenu"
       :topologyNode="topologyNode"
     />
     <WorkflowsControl
@@ -53,6 +58,21 @@
         </v-btn>
       </template>
       <v-list>
+        <!-- Thresholds option -->
+        <v-list-item
+          v-if="secondaryControl !== 'thresholds'"
+          prepend-icon="mdi-alert"
+          title="Thresholds"
+          @click="
+            () => {
+              activeControl = 'thresholds'
+              secondaryControl = 'thresholds'
+              sidePanelStore.setActive('thresholds')
+            }
+          "
+        >
+        </v-list-item>
+        <!-- Task Run Overview option -->
         <v-list-item
           v-if="showTaskMenu && secondaryControl !== 'tasks'"
           prepend-icon="mdi-clipboard-text-clock"
@@ -75,6 +95,20 @@
             </v-badge>
             <v-icon v-else>mdi-clipboard-text-clock</v-icon>
           </template>
+        </v-list-item>
+        <!-- Visualize Data option -->
+        <v-list-item
+          v-if="showTaskMenu && secondaryControl !== 'visualize'"
+          prepend-icon="mdi-chart-line"
+          title="Visualize Data"
+          @click="
+            () => {
+              activeControl = 'visualize'
+              secondaryControl = 'visualize'
+              sidePanelStore.setActive('visualize')
+            }
+          "
+        >
         </v-list-item>
         <!-- Run Tasks option (open dialog directly) -->
         <v-list-item
@@ -179,6 +213,7 @@ import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { useTaskRunsStore } from '@/stores/taskRuns'
 import type { NavigateRoute } from '@/lib/router'
 import { useSidePanelStore } from '@/stores/sidePanel'
+import VisualizeDataControl from '@/components/tasks/VisualizeDataControl.vue'
 
 interface Props {
   topologyId?: string
@@ -201,15 +236,16 @@ const sidePanelStore = useSidePanelStore()
 
 // For managing which control is active in the button group
 const activeControl = ref('thresholds') // Options: 'thresholds', 'tasks', 'info'
-const secondaryControl = ref('tasks') // Options: 'workflows', 'tasks', 'info'
+const secondaryControl = ref('thresholds') // Options: 'thresholds', 'workflows', 'tasks', 'info'
 
-// Sync activeControl with sidePanelStore
+// Sync activeControl and secondaryControl with sidePanelStore
 watch(
   () => sidePanelStore.activeSidePanel,
   (newPanel) => {
     if (newPanel === 'thresholds') activeControl.value = 'thresholds'
     else if (newPanel === 'tasks') activeControl.value = 'tasks'
     else if (newPanel === 'info') activeControl.value = 'info'
+    else if (newPanel === 'visualize') activeControl.value = 'visualize'
   },
 )
 

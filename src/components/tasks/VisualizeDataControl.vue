@@ -1,28 +1,28 @@
 <template>
   <v-btn
     icon
-    :active="sidePanelStore.isActive('tasks')"
-    @click="sidePanelStore.toggleActive('tasks')"
+    :active="sidePanelStore.isActive('visualize')"
+    @click="sidePanelStore.toggleActive('visualize')"
   >
     <v-icon icon="mdi-clipboard-text-clock" />
   </v-btn>
   <Teleport to="#main-side-panel" defer>
     <div
-      v-if="sidePanelStore.isActive('tasks')"
+      v-if="sidePanelStore.isActive('visualize')"
       class="d-flex flex-column h-100 w-100"
     >
       <v-toolbar density="compact">
-        Task Run Overview
+        Visualize Data
         <template #append>
           <v-btn
-            @click="sidePanelStore.toggleActive('tasks')"
+            @click="sidePanelStore.toggleActive('visualize')"
             size="small"
             variant="text"
             icon="mdi-close"
           />
         </template>
       </v-toolbar>
-      <TaskRunsPanel class="flex-1-1" />
+      <TaskRunsPanel :topologyNode="topologyNode" class="flex-1-1" />
     </div>
   </Teleport>
 </template>

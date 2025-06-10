@@ -1,6 +1,7 @@
 <template>
   <div class="threshold-summary-container h-100 d-flex flex-column">
     <v-toolbar density="compact" height="100%">
+      Thresholds
       <template #append>
         <v-btn
           @click="emit('close')"
@@ -9,39 +10,38 @@
           icon="mdi-close"
         />
       </template>
-      <div class="spacer"></div>
-      <v-chip-group
-        class="px-2"
-        v-model="selectedWarningLevelIds"
-        multiple
-        column
-        selected-class="v-chip--variant-tonal"
-      >
-        <v-chip
-          v-for="level in warningLevels"
-          :key="level.id"
-          :value="level.id"
-          :text="level.name"
-          label
-          variant="text"
-          class="pe-0 ps-2"
-          border
-        >
-          <template #prepend>
-            <v-img width="20" height="20" :src="level.icon" class="me-1" />
-          </template>
-          <template #append>
-            <v-chip
-              :text="level.count"
-              density="compact"
-              variant="flat"
-              class="ms-2 pa-1 pointer-events-none"
-              size="small"
-            />
-          </template>
-        </v-chip>
-      </v-chip-group>
     </v-toolbar>
+    <v-chip-group
+      class="px-2 py-2 d-flex flex-wrap"
+      v-model="selectedWarningLevelIds"
+      multiple
+      column
+      selected-class="v-chip--variant-tonal"
+    >
+      <v-chip
+        v-for="level in warningLevels"
+        :key="level.id"
+        :value="level.id"
+        :text="level.name"
+        label
+        variant="text"
+        class="pe-0 ps-2"
+        border
+      >
+        <template #prepend>
+          <v-img width="20" height="20" :src="level.icon" class="me-1" />
+        </template>
+        <template #append>
+          <v-chip
+            :text="level.count"
+            density="compact"
+            variant="flat"
+            class="ms-2 pa-1 pointer-events-none"
+            size="small"
+          />
+        </template>
+      </v-chip>
+    </v-chip-group>
     <div v-if="warningLevels.length === 0" class="pa-2">
       No active threshold crossings
     </div>
