@@ -480,6 +480,15 @@ function onNavigate(to: NavigateRoute) {
         query: route.query,
       })
       break
+    case 'PluginDisplay':
+      router.push({
+        name,
+        params: {
+          nodeId: props.nodeId,
+        },
+        query: route.query,
+      })
+      break
     default:
       console.warn(`Unknown route name: ${String(to.name)}`)
   }
