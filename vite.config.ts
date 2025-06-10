@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vuetify from 'vite-plugin-vuetify'
 import { dirname, resolve } from 'path'
+import { federation } from '@module-federation/vite'
 import { execSync } from 'child_process'
 import { fileURLToPath } from 'url'
 
@@ -22,6 +23,7 @@ export default defineConfig(({ mode }) => {
       __BUILD_DATE__: JSON.stringify(buildDate),
     },
     build: {
+      target: 'chrome89',
       rollupOptions: {
         output: {
           manualChunks: {
@@ -39,8 +41,8 @@ export default defineConfig(({ mode }) => {
       headers: {
         'content-security-policy': [
           `default-src 'none'`,
-          `script-src 'self' blob:`,
-          `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
+          `script-src 'self' blob: ${env.DEV_SCRIPT_SRC}`,
+          `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_FONT_SRC}`,
           `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} 'unsafe-inline'`, // vuetify
           `worker-src blob:`, // maplibre-gl
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices
@@ -88,6 +90,17 @@ export default defineConfig(({ mode }) => {
             },
           })
         : vuetify(),
+      federation({
+        name: 'weboc_plugins',
+        remotes: {
+          weboc_plugins: `${env.VITE_FEWS_WEBOC_PLUGINS_MANIFEST}`,
+        },
+        shared: {
+          vue: {
+            singleton: true,
+          },
+        },
+      }),
     ],
     optimizeDeps: {
       exclude: ['@deltares/fews-ssd-webcomponent', 'vuetify'],

@@ -14,6 +14,7 @@ import {
   nodeHasWebDisplay,
   nodeHasDataAnalysisDisplay,
   nodeHasDocumentDisplay,
+  nodeHasPlugin,
 } from './nodes'
 import {
   ComponentType,
@@ -123,6 +124,10 @@ export function displayTabsForNode(
         break
       case 'documents-display':
         tab.active = nodeHasDocumentDisplay(node)
+        tab.to.params = { ...params }
+        break
+      case 'plugin-display':
+        tab.active = nodeHasPlugin(node)
         tab.to.params = { ...params }
         break
     }
