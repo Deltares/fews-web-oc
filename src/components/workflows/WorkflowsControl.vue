@@ -224,10 +224,6 @@ watch(
   },
 )
 
-function closeDialog() {
-  showDialog.value = false
-}
-
 // Check whether the bounding box is defined in the form.
 const isBoundingBoxInForm = computed(() => isBoundingBoxInFormData(data.value))
 const isCoordinateInForm = computed(() => isCoordinateInFormData(data.value))
@@ -447,7 +443,6 @@ async function startWorkflow() {
       }, 500)
     }
 
-    closeDialog()
     await workflowsStore.startWorkflow(workflowType, filter, { fileName })
 
     if (workflowType === WorkflowType.ProcessData) {
