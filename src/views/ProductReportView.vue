@@ -60,7 +60,6 @@ import { getProductURL } from '@/components/products/productTools'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
   IntervalItem,
-  intervalToDateRange,
   intervalToFewsPiDateRange,
   periodToIntervalItem,
 } from '@/lib/TimeControl/interval'
