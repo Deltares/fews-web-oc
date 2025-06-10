@@ -3,16 +3,16 @@
     <!-- View Mode -->
     <div
       v-if="!editing"
-      class="pa-1 rounded cursor-pointer"
-      :class="{ border: isHovering }"
+      class="pa-1 rounded cursor-pointer border border-opacity-0"
+      :class="{ 'border-opacity-100': isHovering }"
       @click="startEditing"
     >
       {{ model }}
       <v-icon
-        v-if="isHovering"
         icon="mdi-pencil"
         size="18"
-        class="edit-icon pb-1"
+        class="edit-icon pb-1 opacity-0"
+        :class="{ 'opacity-100': isHovering }"
       />
     </div>
 
