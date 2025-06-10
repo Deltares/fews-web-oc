@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vuetify from 'vite-plugin-vuetify'
 import { dirname, resolve } from 'path'
+import { federation } from '@module-federation/vite'
 import { execSync } from 'child_process'
 import { fileURLToPath } from 'url'
 
@@ -30,12 +31,12 @@ export default defineConfig(({ mode }) => {
         'content-security-policy': [
           `default-src 'none'`,
           `manifest-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
-          `script-src 'self' blob: ${env.DEV_CSP_MEDIA_SRC}`,
           `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_FONT_SRC}`,
-          `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_STYLE_SRC} 'unsafe-inline'`, // vuetify
-          `worker-src blob: ${env.DEV_CSP_WORKER_SRC}`, // maplibre-gl
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_IMG_SRC}`, // FEWS webservices
           `media-src 'self' ${env.DEV_CSP_MEDIA_SRC}`,
+          `script-src 'self' blob: ${env.DEV_SCRIPT_SRC}`,
+          `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_STYLE_SRC} 'unsafe-inline'`, // vuetify
+          `worker-src blob: ${env.DEV_CSP_WORKER_SRC}`, // maplibre-gl
           [
             `connect-src`,
             `'self'`,
@@ -84,6 +85,17 @@ export default defineConfig(({ mode }) => {
             },
           })
         : vuetify(),
+      federation({
+        name: 'weboc_plugins',
+        remotes: {
+          weboc_plugins: `${env.VITE_FEWS_WEBOC_PLUGINS_MANIFEST}`,
+        },
+        shared: {
+          vue: {
+            singleton: true,
+          },
+        },
+      }),
     ],
     optimizeDeps: {
       exclude: ['@deltares/fews-ssd-webcomponent', 'vuetify'],
