@@ -89,15 +89,11 @@ export function useDisplayConfig(
   )
 
   watch(
-    [
-      response,
-      () => toValue(nodeId),
-      () => toValue(startTime),
-      () => toValue(endTime),
-    ],
-    ([_response, _nodeId, _startTime, _endTime]) => {
+    [response, () => toValue(startTime), () => toValue(endTime)],
+    ([_response, _startTime, _endTime]) => {
       if (!_response) return
 
+      const _nodeId = toValue(nodeId)
       displays.value = actionsResponseToDisplayConfig(
         _response,
         _nodeId,
