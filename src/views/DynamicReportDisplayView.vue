@@ -17,7 +17,7 @@
     </v-toolbar>
     <ShadowFrame :htmlContent="reportHtml" />
     <DateTimeSlider
-      v-if="dateTimeSliderEnabled && times?.length"
+      v-if="dateTimeSliderEnabled && times?.length && hasTimeDimension"
       v-model:selectedDate="selectedDateOfSlider"
       :dates="times"
       :hide-speed-controls="mobile"
@@ -53,6 +53,8 @@ import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { useDisplay } from 'vuetify'
 import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import { toDateArray } from '@/lib/date'
+import { useSelectedDate } from '@/services/useSelectedDate'
+import { useDateRegistry } from '@/services/useDateRegistry'
 interface Props {
   topologyNode?: TopologyNode
   settings?: ComponentSettings
@@ -65,11 +67,13 @@ const props = withDefaults(defineProps<Props>(), {
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const selectedLocation = ref<string | undefined>(undefined)
 const selectedDateOfSlider = ref<Date | undefined>(undefined)
+const { selectedDate, dateTimeSliderEnabled } =
+  useSelectedDate(selectedDateOfSlider)
 
 const { reportHtml, capabilities } = useDynamicReport(
   baseUrl,
   () => props.topologyNode?.dynamicReportDisplay?.id,
-  () => selectedDateOfSlider.value?.toISOString(),
+  () => selectedDate.value?.toISOString(),
   () => selectedLocation.value,
   () => undefined,
 )
@@ -88,8 +92,11 @@ const times = computed(() => {
   if (!dimension) return []
   if (isDimensionWithPeriod(dimension)) return toDateArray(dimension.period)
 })
+
+useDateRegistry(() => times.value ?? [])
+
 const maxValuesTimeSeries = ref<TimeSeriesData[]>([])
-const dateTimeSliderEnabled = computed(() => {
+const hasTimeDimension = computed(() => {
   return (
     capabilities.value?.dynamicReportDisplayCapabilities.dimension?.name ===
     'time'
