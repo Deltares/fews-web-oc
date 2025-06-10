@@ -142,6 +142,8 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { difference } from 'lodash-es'
 import { useStorage } from '@vueuse/core'
+import { useTaskRunColorsStore } from '@/stores/taskRunColors'
+import { replaceDuplicateColors } from '@/lib/display'
 
 interface Props {
   config: DataAnalysisDisplayElement
@@ -154,6 +156,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const userSettings = useUserSettingsStore()
+const colorsStore = useTaskRunColorsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -214,6 +217,8 @@ async function addFilter(filter: filterActionsFilter) {
   isLoadingActions.value = true
   const actions = await fetchActions(baseUrl, filter)
   isLoadingActions.value = false
+
+  replaceDuplicateColors(actions, colorsStore.colors)
 
   const results = actions.results
 

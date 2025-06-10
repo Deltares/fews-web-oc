@@ -135,3 +135,37 @@ export function addFilterPeriodToConfig(
     }
   })
 }
+
+export function replaceDuplicateColors(
+  response: ActionsResponse,
+  colors: string[],
+) {
+  const seenColors = new Set<string>()
+  const availableColors = [...colors].toReversed()
+
+  const results = response.results
+  const subplots = results.flatMap(
+    (result) => result.config?.timeSeriesDisplay.subplots ?? [],
+  )
+  const subplotItems = subplots.flatMap((subplot) => subplot.items)
+
+  function findValidColor() {
+    while (availableColors.length > 0) {
+      const color = availableColors.pop()
+      if (color && !seenColors.has(color)) {
+        return color
+      }
+    }
+  }
+
+  subplotItems.forEach((item) => {
+    if (!item.color) return
+
+    if (seenColors.has(item.color)) {
+      const newColor = findValidColor()
+      item.color = newColor ?? item.color
+    }
+
+    seenColors.add(item.color)
+  })
+}
