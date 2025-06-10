@@ -4,7 +4,7 @@
     :active="sidePanelStore.isActive('visualize')"
     @click="sidePanelStore.toggleActive('visualize')"
   >
-    <v-icon icon="mdi-clipboard-text-clock" />
+    <v-icon icon="mdi-chart-box-multiple" />
   </v-btn>
   <Teleport to="#main-side-panel" defer>
     <div
@@ -12,7 +12,7 @@
       class="d-flex flex-column h-100 w-100"
     >
       <v-toolbar density="compact">
-        Visualize Data
+        <span class="ms-4">Visualize Data</span>
         <template #append>
           <v-btn
             @click="sidePanelStore.toggleActive('visualize')"

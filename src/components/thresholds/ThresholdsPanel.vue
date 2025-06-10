@@ -1,7 +1,7 @@
 <template>
   <div class="threshold-summary-container h-100 d-flex flex-column">
-    <v-toolbar density="compact" height="100%">
-      Thresholds
+    <v-toolbar density="compact">
+      <span class="ms-4">Thresholds Overview</span>
       <template #append>
         <v-btn
           @click="emit('close')"

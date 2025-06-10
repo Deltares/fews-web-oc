@@ -12,7 +12,7 @@
       class="d-flex flex-column h-100 w-100"
     >
       <v-toolbar density="compact">
-        Task Run Overview
+        <span class="ms-4">Task Run Overview</span>
         <template #append>
           <v-btn
             @click="sidePanelStore.toggleActive('tasks')"

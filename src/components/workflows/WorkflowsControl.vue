@@ -11,6 +11,7 @@
       class="h-100 workflows-panel"
     >
       <v-toolbar density="compact">
+        <span class="ms-4">Run Workflow</span>
         <template #append>
           <v-btn
             @click="sidePanelStore.toggleActive('workflows')"
@@ -34,7 +35,7 @@
           :disabled="workflowSelectItems?.length === 1"
           hide-details
         />
-        <v-card variant="flat" v-if="workflowDescription" density="compact">
+        <v-card variant="text" v-if="workflowDescription" density="compact">
           <v-card-text>
             {{ workflowDescription }}
           </v-card-text>

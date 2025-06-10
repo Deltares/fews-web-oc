@@ -27,7 +27,6 @@
   </Teleport>
   <Teleport to="#app-bar-content-end">
     <ThresholdsControl
-      v-if="secondaryControl === 'thresholds'"
       :topologyNode="topologyNode"
       @navigate="onNavigate"
       :locationIds="props.locationIds"
@@ -58,20 +57,6 @@
         </v-btn>
       </template>
       <v-list>
-        <!-- Thresholds option -->
-        <v-list-item
-          v-if="secondaryControl !== 'thresholds'"
-          prepend-icon="mdi-alert"
-          title="Thresholds"
-          @click="
-            () => {
-              activeControl = 'thresholds'
-              secondaryControl = 'thresholds'
-              sidePanelStore.setActive('thresholds')
-            }
-          "
-        >
-        </v-list-item>
         <!-- Task Run Overview option -->
         <v-list-item
           v-if="showTaskMenu && secondaryControl !== 'tasks'"
@@ -99,7 +84,7 @@
         <!-- Visualize Data option -->
         <v-list-item
           v-if="showTaskMenu && secondaryControl !== 'visualize'"
-          prepend-icon="mdi-chart-line"
+          prepend-icon="mdi-chart-box-multiple"
           title="Visualize Data"
           @click="
             () => {
@@ -235,8 +220,8 @@ const taskRunsStore = useTaskRunsStore()
 const sidePanelStore = useSidePanelStore()
 
 // For managing which control is active in the button group
-const activeControl = ref('thresholds') // Options: 'thresholds', 'tasks', 'info'
-const secondaryControl = ref('thresholds') // Options: 'thresholds', 'workflows', 'tasks', 'info'
+const activeControl = ref('thresholds') // Options: 'thresholds', 'workflows', 'tasks', 'info', visualize
+const secondaryControl = ref('tasks') // Options: 'workflows', 'tasks', 'info', 'visualize'
 
 // Sync activeControl and secondaryControl with sidePanelStore
 watch(

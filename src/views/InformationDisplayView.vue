@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex h-100 w-100 flex-column">
-    <v-toolbar density="compact" class="flex-0-0 px-2">
-      Information
+    <v-toolbar density="compact">
+      <span class="ms-4">Information</span>
       <template #append>
         <v-btn @click="onClose" size="small" variant="text" icon="mdi-close" />
       </template>
