@@ -43,6 +43,7 @@ export const useTaskRunColorsStore = defineStore('taskRunColors', () => {
   fetchColors()
 
   return {
+    colors,
     colorMap,
     setColor,
     fetchColors,
