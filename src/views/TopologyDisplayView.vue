@@ -220,27 +220,26 @@ const taskRunsStore = useTaskRunsStore()
 const sidePanelStore = useSidePanelStore()
 
 // For managing which control is active in the button group
-const activeControl = ref('thresholds') // Options: 'thresholds', 'workflows', 'tasks', 'info', visualize
-const secondaryControl = ref('tasks') // Options: 'workflows', 'tasks', 'info', 'visualize'
+const activeControl = ref<
+  'thresholds' | 'workflows' | 'tasks' | 'info' | 'visualize'
+>('thresholds') // Options: 'thresholds', 'workflows', 'tasks', 'info', visualize
+const secondaryControl = ref<'workflows' | 'tasks' | 'info' | 'visualize'>(
+  'tasks',
+) // Options: 'workflows', 'tasks', 'info', 'visualize'
 
 // Sync activeControl and secondaryControl with sidePanelStore
 watch(
   () => sidePanelStore.activeSidePanel,
   (newPanel) => {
-    if (newPanel === 'thresholds') activeControl.value = 'thresholds'
-    else if (newPanel === 'tasks') activeControl.value = 'tasks'
-    else if (newPanel === 'info') activeControl.value = 'info'
-    else if (newPanel === 'visualize') activeControl.value = 'visualize'
+    if (newPanel && newPanel !== 'thresholds') {
+      activeControl.value = newPanel
+    }
   },
 )
 
 // When activeControl changes, update the side panel if needed
 watch(activeControl, (newControl) => {
-  if (
-    (newControl === 'thresholds' && !sidePanelStore.isActive('thresholds')) ||
-    (newControl === 'tasks' && !sidePanelStore.isActive('tasks')) ||
-    (newControl === 'info' && !sidePanelStore.isActive('info'))
-  ) {
+  if (!sidePanelStore.isActive(newControl)) {
     sidePanelStore.setActive(newControl)
   }
 })
