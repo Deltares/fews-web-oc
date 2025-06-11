@@ -17,6 +17,8 @@ import { ProductMetaDataType, ProductMetaDataWithoutAttributes } from './types'
 export function useProducts(
   baseUrl: string,
   filter: MaybeRefOrGetter<ProductsMetaDataFilter>,
+  sourceId: MaybeRefOrGetter = ref('weboc'),
+  areaId: MaybeRefOrGetter = ref('products'),
 ) {
   const products = ref<ProductMetaDataType[]>([])
   const error = ref<string | null>(null)
@@ -36,7 +38,10 @@ export function useProducts(
 
     try {
       const response = await fetchProductsMetaData(baseUrl, filterValue)
-      products.value = response.filter((p) => p.sourceId === 'demo')
+      const filteredItems = response.filter(
+        (p) => p.sourceId === toValue(sourceId) && p.areaId === toValue(areaId),
+      )
+      products.value = filteredItems
       lastUpdated.value = new Date()
     } catch (err) {
       error.value = 'Error fetching product metadata'

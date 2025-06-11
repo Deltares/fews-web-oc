@@ -148,9 +148,25 @@ const filter = computed(() => {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+
+// Create computed properties for the optional sourceId and areaId
+const sourceId = computed(
+  () =>
+    props.config?.documentBrowser?.archiveProductSet?.constraints?.sourceId ||
+    'weboc',
+)
+const areaId = computed(
+  () =>
+    props.config?.documentBrowser?.archiveProductSet?.constraints?.areaId ||
+    'products',
+)
+
+// Pass the computed properties to useProducts
 const { products, getProductByKey, refresh, lastUpdated } = useProducts(
   baseUrl,
   filter,
+  sourceId,
+  areaId,
 )
 
 watchEffect(() => {

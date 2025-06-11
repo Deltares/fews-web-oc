@@ -33,10 +33,10 @@ export interface DocumentBrowser {
 }
 
 export interface ArchiveProductSet {
-  contstraints: Contstraints
+  constraints: Constraints
 }
 
-export interface Contstraints {
+export interface Constraints {
   areaId: string
   sourceId: string
   attributeExists: AttributeExists
