@@ -2,6 +2,7 @@ import type {
   ActionRequest,
   filterActionsFilter,
   CorrelationFilter,
+  Results,
   TimeSeriesDisplaySubplot,
 } from '@deltares/fews-pi-requests'
 
@@ -36,7 +37,13 @@ export interface CorrelationChart extends BaseChart {
   filter: Omit<CorrelationFilter, 'startTime' | 'endTime'>
 }
 
-export type Chart = FilterChart | CorrelationChart
+export interface AsyncChart extends BaseChart {
+  type: 'async'
+  taskId: string
+  result: Results
+}
+
+export type Chart = FilterChart | CorrelationChart | AsyncChart
 
 export interface Dependant {
   seriesIds: string[]
