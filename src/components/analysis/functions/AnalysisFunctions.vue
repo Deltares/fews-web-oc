@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import AnalysisCorrelation from '@/components/analysis/functions/AnalysisCorrelation.vue'
 import AnalysisTimeResampling from '@/components/analysis/functions/AnalysisTimeResampling.vue'
-import AnalysisWorkflow from '@/components/analysis/functions/AnalysisWorkflow.vue'
+import AnalysisWorkflow from '@/components/analysis/workflows/AnalysisWorkflow.vue'
 import { computed, ref, watch } from 'vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
