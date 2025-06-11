@@ -52,13 +52,23 @@
     </v-toolbar>
     <v-data-table
       v-if="items.length > 0"
+      v-model="selectedRows"
       :items="items"
       :headers="headers"
       :expanded="[]"
       :items-per-page="-1"
+      item-value="key"
+      hover
       :group-by="[groupBy]"
       :search="search"
       hide-default-footer
+      :row-props="
+        (data) => ({
+          class: selectedRows.includes(data.item)
+            ? 'selected-row'
+            : 'unselected-row',
+        })
+      "
       density="compact"
       @click:row="onClick"
     >
@@ -190,6 +200,7 @@ const search = ref('')
 const groupByKey = ref([''])
 const groupByOrder = ref<[boolean | 'asc' | 'desc']>(['asc'])
 const selectedColumns = ref<string[]>([])
+const selectedRows = ref<ProductMetaDataType[]>([])
 
 const groupBy = computed(() => {
   return {
@@ -258,7 +269,13 @@ const items = computed(() => {
 const isLoading = ref(false)
 const lastUpdatedString = ref('')
 
-function onClick(_event: PointerEvent, entry: { item: ProductMetaDataType }) {
+function onClick(
+  _event: PointerEvent,
+  entry: {
+    item: ProductMetaDataType
+  },
+) {
+  selectedRows.value = [entry.item]
   router.push({
     name: 'TopologyDocumentDisplay',
     params: {
@@ -282,5 +299,9 @@ function onClick(_event: PointerEvent, entry: { item: ProductMetaDataType }) {
 .products-browser__footer {
   position: absolute;
   bottom: 0px;
+}
+
+:deep(.selected-row) {
+  background-color: rgb(var(--v-theme-on-surface), var(--v-activated-opacity));
 }
 </style>
