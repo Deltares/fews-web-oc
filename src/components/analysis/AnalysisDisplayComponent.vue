@@ -81,6 +81,7 @@
           <AnalysisCollection
             v-model:selectedCollection="selectedCollection"
             v-model:collections="collections"
+            :config="config"
           />
         </v-card-title>
         <AnalysisCollectionCharts
@@ -145,7 +146,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const collections = useStorage<Collection[]>(
   'weboc-his-collections-v1.0.0',
-  [createCollection('Default')],
+  [createCollection('Default', props.config)],
   undefined,
   {
     serializer: getDateTimeSerializer(),

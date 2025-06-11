@@ -64,11 +64,6 @@ export interface ProductChart extends BaseChart {
 
 export type Chart = FilterChart | CorrelationChart | AsyncChart | ProductChart
 
-export interface Dependant {
-  seriesIds: string[]
-  function: AnalysisFunction
-}
-
 export interface CollectionEmits {
   addChart: [chart: Chart]
 }

@@ -59,9 +59,9 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
 import { useProducts } from '@/services/useProducts'
 import { type DocumentBrowserDisplay } from '@/lib/products/documentDisplay'
-import { DateTime } from 'luxon'
 import {
   type IntervalItem,
+  intervalToFewsPiDateRange,
   periodToIntervalItem,
 } from '@/lib/TimeControl/interval'
 import { layout } from '@/assets/browserLayout.json'
@@ -112,14 +112,10 @@ const filter = computed(() => {
   ) {
     return {}
   }
-  const startForecastTime = DateTime.now()
-    .plus(viewPeriod.value.start)
-    .toUTC()
-    .toISO({ suppressMilliseconds: true })
-  const endForecastTime = DateTime.now()
-    .plus(viewPeriod.value.end)
-    .toUTC()
-    .toISO({ suppressMilliseconds: true })
+
+  const [startForecastTime, endForecastTime] = intervalToFewsPiDateRange(
+    viewPeriod.value,
+  )
 
   const result: ProductsMetaDataFilter = {
     versionKey: ['productId'],

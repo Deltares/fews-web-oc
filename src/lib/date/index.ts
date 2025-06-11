@@ -1,4 +1,4 @@
-import { Duration } from 'luxon'
+import { DateTime, Duration, DurationLikeObject } from 'luxon'
 
 /**
  * Converts a date to a string in the format 'YYYY-MM-DDTHH:MM'.
@@ -256,4 +256,10 @@ export function toDateArray(period: string): Date[] {
   }
 
   return result
+}
+
+export function addDuration(date: Date, duration: DurationLikeObject) {
+  return DateTime.fromJSDate(date)
+    .plus(Duration.fromObject(duration))
+    .toJSDate()
 }
