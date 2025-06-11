@@ -18,68 +18,32 @@
         return-object
         class="flex-0-0"
       />
-      <v-select
-        v-if="selectedWhatIfTemplate"
+
+      <WhatIfScenarioSelect
         v-model="selectedWhatIfScenario"
-        :items="whatIfScenarios"
-        :loading="isLoadingScenarios"
-        item-title="name"
-        label="Select what-if scenario"
-        variant="solo-filled"
-        flat
-        density="compact"
-        hide-details
-        return-object
-        class="flex-0-0"
+        :whatIfTemplateId="selectedWhatIfTemplate?.id"
+        :temporaryWhatIfScenarioName
       />
 
       <template v-if="doShowConfiguration">
-        <v-card flat border class="flex-0-0">
-          <v-card-title>Scenario configuration</v-card-title>
-          <v-card-text>
-            <json-forms
-              class="pt-2"
-              :schema="jsonSchema"
-              :data="selectedProperties"
-              :renderers="Object.freeze(vuetifyRenderers)"
-              :ajv="undefined"
-              validation-mode="NoValidation"
-              :config="jsonFormsConfig"
-              @change="onPropertiesChange"
-              :additional-errors="additionalErrors"
-            />
-          </v-card-text>
-        </v-card>
-
+        <div class="pb-2">
+          <json-forms
+            class="px-1"
+            :schema="jsonSchema"
+            :data="selectedProperties"
+            :renderers="Object.freeze(vuetifyRenderers)"
+            :ajv="undefined"
+            validation-mode="NoValidation"
+            :config="jsonFormsConfig"
+            @change="onPropertiesChange"
+            :additional-errors="additionalErrors"
+          />
+        </div>
         <div>
-          <DateTimeTextField
-            v-model="timeZeroDate"
-            label="Time zero"
-            class="datetime-field"
-          >
-            <template #append-inner>
-              <v-divider vertical />
-              <v-btn
-                size="small"
-                variant="elevated"
-                flat
-                height="100%"
-                @click="setTimeZeroString(previousTimeZero)"
-              >
-                <v-icon>mdi-chevron-down</v-icon>
-              </v-btn>
-              <v-divider vertical />
-              <v-btn
-                size="small"
-                variant="elevated"
-                flat
-                height="100%"
-                @click="setTimeZeroString(nextTimeZero)"
-              >
-                <v-icon>mdi-chevron-up</v-icon>
-              </v-btn>
-            </template>
-          </DateTimeTextField>
+          <WhatIfTimeZeroSelect
+            v-model="timeZero"
+            :workflowId="selectedWorkflow?.id"
+          />
         </div>
 
         <div>
@@ -134,13 +98,12 @@
 </template>
 <script setup lang="ts">
 import jsonFormsConfig from '@/assets/JsonFormsConfig.json'
-import DateTimeTextField from '@/components/general/DateTimeTextField.vue'
+import WhatIfScenarioSelect from './WhatIfScenarioSelect.vue'
+import WhatIfTimeZeroSelect from './WhatIfTimeZeroSelect.vue'
 
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
 import { computed, ref, watch, watchEffect } from 'vue'
 import { ErrorObject } from 'ajv'
-
-import { useWhatIfScenarios } from '@/services/useWhatIfScenarios'
 
 import { JsonForms } from '@jsonforms/vue'
 import ExpectedWorkflowRuntime from './ExpectedWorkflowRuntime.vue'
@@ -151,17 +114,14 @@ import type {
   WhatIfScenarioDescriptor,
   WhatIfTemplate,
 } from '@deltares/fews-pi-requests'
-import { configManager } from '@/services/application-config'
 import {
   generateJsonSchema,
   getErrorsForProperties,
   getJsonDataFromProperties,
   ScenarioData,
 } from '@/lib/whatif'
-import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import { postRunTask, postWhatIfScenario } from '@/lib/whatif/fetch'
 import type { WorkflowItem } from '@/lib/workflows'
-import { useForecastTimes } from '@/services/useForecastTimes'
 import { refreshTaskRuns } from '@/services/useTasksRuns'
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
 
@@ -172,7 +132,6 @@ const props = defineProps<Props>()
 
 const emit = defineEmits(['postTask'])
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
 
 const selectedWhatIfTemplate = ref<WhatIfTemplate>()
@@ -185,7 +144,7 @@ const isPosting = ref<boolean>(false)
 
 const temporaryWhatIfScenarioName = 'Temporary'
 
-const timeZeroDate = ref<Date>(new Date())
+const timeZero = ref<string>()
 const description = ref<string>()
 
 const selectedWorkflow = computed(() =>
@@ -193,21 +152,6 @@ const selectedWorkflow = computed(() =>
     (wf) => wf.whatIfTemplateId === selectedWhatIfTemplate.value?.id,
   ),
 )
-
-const { selectedTimeZero, nextTimeZero, previousTimeZero, valid } =
-  useForecastTimes(
-    baseUrl,
-    () => selectedWorkflow.value?.id,
-    () => convertJSDateToFewsPiParameter(timeZeroDate.value),
-  )
-
-watch([selectedTimeZero, valid], () => {
-  if (!valid.value) setTimeZeroString(selectedTimeZero.value)
-})
-function setTimeZeroString(date: string | undefined): void {
-  if (!date) return
-  timeZeroDate.value = new Date(date)
-}
 
 const whatIfTemplates = computed(() =>
   props.workflows
@@ -221,14 +165,6 @@ watch(
     selectedWhatIfTemplate.value = templates[0]
   },
   { immediate: true },
-)
-
-const { whatIfScenarios: allWhatIfScenarios, isLoading: isLoadingScenarios } =
-  useWhatIfScenarios(baseUrl, () => selectedWhatIfTemplate.value?.id)
-const whatIfScenarios = computed(() =>
-  allWhatIfScenarios.value?.filter(
-    (scenario) => scenario.name !== temporaryWhatIfScenarioName,
-  ),
 )
 
 const jsonSchema = computed(() =>
@@ -258,7 +194,7 @@ const canSubmit = computed<boolean>(() => {
   const hasSelectedWorkflow = selectedWorkflow.value !== undefined
   const hasAllProperties = hasAllRequiredProperties.value
   const hasNoErrors = additionalErrors.value.length === 0
-  const validTimeZero = selectedTimeZero.value !== undefined
+  const validTimeZero = timeZero.value !== undefined
   return hasSelectedWorkflow && hasAllProperties && hasNoErrors && validTimeZero
 })
 
@@ -312,7 +248,7 @@ async function submit(): Promise<void> {
 
   const filter: RunTaskFilter = {
     workflowId,
-    timeZero: selectedTimeZero.value,
+    timeZero: timeZero.value,
     scenarioId: scenarioResult.data.id,
     description: description.value,
   }
