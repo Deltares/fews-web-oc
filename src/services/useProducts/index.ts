@@ -17,6 +17,8 @@ import { ProductMetaDataType, ProductMetaDataWithoutAttributes } from './types'
 export function useProducts(
   baseUrl: string,
   filter: MaybeRefOrGetter<ProductsMetaDataFilter>,
+  sourceId: MaybeRefOrGetter = ref('weboc'),
+  areaId: MaybeRefOrGetter = ref('products'),
 ) {
   const products = ref<ProductMetaDataType[]>([])
   const error = ref<string | null>(null)
@@ -40,7 +42,10 @@ export function useProducts(
     try {
       const response = await provider.getProductsMetaData(filterValue)
       const itemPromises = response.productsMetadata
-        .filter((p) => p.sourceId === 'demo')
+        .filter(
+          (p) =>
+            p.sourceId === toValue(sourceId) && p.areaId === toValue(areaId),
+        )
         .map(convertToProductMetaDataType)
       products.value = await Promise.all(itemPromises)
       lastUpdated.value = new Date()
