@@ -26,19 +26,22 @@
       />
 
       <template v-if="doShowConfiguration">
-        <div class="pb-2">
-          <json-forms
-            class="px-1"
-            :schema="jsonSchema"
-            :data="selectedProperties"
-            :renderers="Object.freeze(vuetifyRenderers)"
-            :ajv="undefined"
-            validation-mode="NoValidation"
-            :config="jsonFormsConfig"
-            @change="onPropertiesChange"
-            :additional-errors="additionalErrors"
-          />
-        </div>
+        <v-card flat border class="flex-0-0">
+          <v-card-title>Scenario configuration</v-card-title>
+          <v-card-text>
+            <json-forms
+              class="pt-1"
+              :schema="jsonSchema"
+              :data="selectedProperties"
+              :renderers="Object.freeze(vuetifyRenderers)"
+              :ajv="undefined"
+              validation-mode="NoValidation"
+              :config="jsonFormsConfig"
+              @change="onPropertiesChange"
+              :additional-errors="additionalErrors"
+            />
+          </v-card-text>
+        </v-card>
         <div>
           <WhatIfTimeZeroSelect
             v-model="timeZero"
