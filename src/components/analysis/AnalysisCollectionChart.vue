@@ -58,27 +58,22 @@ import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import type { ZoomHandler } from '@deltares/fews-web-oc-charts'
 import { computed } from 'vue'
+import { TimeSeriesDisplaySubplot } from '@deltares/fews-pi-requests'
 
 interface Props {
   collection: Collection
   chart: Chart
+  subplot: TimeSeriesDisplaySubplot
   series: Record<string, Series>
   zoomHandler?: ZoomHandler
   settings: ComponentSettings
-  startTime: Date
-  endTime: Date
+  domain?: [Date, Date]
 }
 
 const props = defineProps<Props>()
 
-const domain = computed<[Date, Date] | undefined>(() => {
-  return props.chart.type === 'filter'
-    ? [props.startTime, props.endTime]
-    : undefined
-})
-
 const config = computed(() =>
-  timeSeriesDisplayToChartConfig(props.chart.subplot, domain.value),
+  timeSeriesDisplayToChartConfig(props.subplot, props.domain),
 )
 
 function removeChart(chart: Chart) {

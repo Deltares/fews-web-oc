@@ -32,7 +32,7 @@ const WhatIfDisplayView = defineAsyncComponent(
   () => import('@/views/WhatIfDisplayView.vue'),
 )
 const DataAnalysisDisplay = defineAsyncComponent(
-  () => import('@/components/his/DataAnalysisDisplay.vue'),
+  () => import('@/components/analysis/DataAnalysisDisplay.vue'),
 )
 
 const Empty = defineAsyncComponent(() => import('@/views/Empty.vue'))

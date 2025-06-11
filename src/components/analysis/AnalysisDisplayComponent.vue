@@ -8,7 +8,7 @@
       class="his-selection"
     >
       <div v-show="tab === 'data-selection'" class="h-100">
-        <HisDataSelection
+        <AnalysisDataSelection
           v-model:filterId="filterId"
           :filters="config.filters"
           :locations="locations"
@@ -20,7 +20,7 @@
         />
       </div>
       <div v-show="tab === 'analysis'" class="h-100">
-        <HisAnalysis
+        <AnalysisFunctions
           :filterId="filterId"
           :charts="selectedCollection.charts"
           :series="series"
@@ -86,12 +86,12 @@
     <div class="d-flex justify-center flex-1-1 overflow-auto">
       <div class="w-100 overflow-y-auto">
         <v-card-title class="flex-0-0 d-flex ga-2 align-center">
-          <HisCollection
+          <AnalysisCollection
             v-model:selectedCollection="selectedCollection"
             v-model:collections="collections"
           />
         </v-card-title>
-        <HisCollectionCharts
+        <AnalysisCollectionCharts
           v-if="selectedCollection.charts.length"
           :collection="selectedCollection"
           :series="series"
@@ -107,17 +107,17 @@
 </template>
 
 <script setup lang="ts">
-import HisDataSelection from '@/components/his/HisDataSelection.vue'
-import HisCollectionCharts from './HisCollectionCharts.vue'
-import HisCollection from '@/components/his/HisCollection.vue'
-import HisAnalysis from '@/components/his/HisAnalysis.vue'
+import AnalysisDataSelection from '@/components/analysis/AnalysisDataSelection.vue'
+import AnalysisCollectionCharts from './AnalysisCollectionCharts.vue'
+import AnalysisCollection from '@/components/analysis/AnalysisCollection.vue'
+import AnalysisFunctions from '@/components/analysis/AnalysisFunctions.vue'
 import { VDateInput } from 'vuetify/labs/components'
 import type {
   ActionRequest,
   BoundingBox,
   DataAnalysisDisplayElement,
 } from '@deltares/fews-pi-requests'
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import { configManager } from '@/services/application-config'
 import { useTimeSeries, useTimeSeriesHeaders } from '@/services/useTimeSeries'
@@ -130,15 +130,11 @@ import {
   type Collection,
   getDateTimeSerializer,
   createCollection,
-  DerivedChart,
-  getGenerator,
   hasValidFilterCharts,
   AddFilter,
   createNewChartsForFilter,
 } from '@/lib/analysis'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { Series } from '@/lib/timeseries/timeSeries'
-import { difference } from 'lodash-es'
 import { useStorage } from '@vueuse/core'
 
 interface Props {
@@ -181,9 +177,6 @@ const { timeSeriesHeaders } = useTimeSeriesHeaders(baseUrl, filterId)
 
 function addChart(chart: Chart) {
   selectedCollection.value.charts = [...selectedCollection.value.charts, chart]
-  if (chart.type === 'derived') {
-    updateDependants(chart)
-  }
 }
 
 const isLoadingActions = ref(false)
@@ -224,51 +217,7 @@ const timeSeriesOptions = computed(() => ({
   thinning: true,
 }))
 
-const { series: fetchedSeries, loadingSeriesIds } = useTimeSeries(
-  baseUrl,
-  requests,
-  timeSeriesOptions,
-)
-
-const generatedSeries = shallowRef<Record<string, Series>>({})
-
-const series = computed(() => ({
-  ...fetchedSeries.value,
-  ...generatedSeries.value,
-}))
-
-watch(
-  () =>
-    Object.entries(fetchedSeries.value).map(
-      ([key, value]) => `${key}-${value.lastUpdated?.getTime()}`,
-    ),
-  (newValue, oldValue) => {
-    const newSeriesIds = difference(newValue, oldValue).map((id) =>
-      id.substring(0, id.lastIndexOf('-')),
-    )
-
-    selectedCollection.value.charts
-      .filter((chart) => chart.type === 'derived')
-      .filter((chart) =>
-        chart.dependants.some(
-          (dependant) =>
-            dependant.seriesIds.some((id) => newSeriesIds.includes(id)) &&
-            !dependant.seriesIds.some((id) =>
-              loadingSeriesIds.value.includes(id),
-            ),
-        ),
-      )
-      .forEach(updateDependants)
-  },
-)
-
-function updateDependants(chart: DerivedChart) {
-  const newSeries = chart.dependants.map((dependant) => {
-    const generate = getGenerator(dependant.function)
-    return generate(fetchedSeries.value, chart.subplot, dependant.seriesIds)
-  })
-  Object.assign(generatedSeries.value, ...newSeries)
-}
+const { series } = useTimeSeries(baseUrl, requests, timeSeriesOptions)
 
 const tab = ref()
 const drawer = ref(false)
