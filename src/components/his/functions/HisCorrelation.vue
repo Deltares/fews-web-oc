@@ -34,15 +34,10 @@
 import HisAddButton from '@/components/his/HisAddButton.vue'
 import GroupSelect from '@/components/general/GroupSelect.vue'
 import { computed, ref, watch } from 'vue'
-import {
-  Chart,
-  Dependant,
-  DerivedChart,
-  getValidFilterCharts,
-} from '@/lib/analysis'
+import { Chart, CorrelationChart, getValidFilterCharts } from '@/lib/analysis'
 import { Series } from '@/lib/timeseries/timeSeries'
 import {
-  TimeSeriesDisplaySubplot,
+  CorrelationFilter,
   TimeSeriesDisplaySubplotItem,
 } from '@deltares/fews-pi-requests'
 
@@ -70,82 +65,29 @@ function clearSelections() {
   selectedSecondTimeseries.value = undefined
 }
 
-function getSubplot(
-  leftName: string,
-  rightName: string,
-  lineId: string,
-  pointsId: string,
-) {
-  const baseItem = {
-    visibleInPlot: true,
-    visibleInTable: true,
-    yAxis: {
-      axisPosition: 'left',
-      axisLabel: leftName,
-    },
-  }
-
-  const line: TimeSeriesDisplaySubplotItem = {
-    ...baseItem,
-    type: 'line',
-    legend: 'Correlation line',
-    color: '#080c80',
-    lineStyle: 'solid;thick',
-    lineWidth: 1.0,
-    request: lineId,
-    visibleInLegend: true,
-  }
-
-  const points: TimeSeriesDisplaySubplotItem = {
-    ...baseItem,
-    type: 'line',
-    legend: 'Points',
-    color: '#ff0000',
-    markerStyle: 'solid',
-    markerSize: 6,
-    request: pointsId,
-    visibleInLegend: false,
-  }
-
-  const subplot: TimeSeriesDisplaySubplot = {
-    xAxis: {
-      axisLabel: rightName,
-    },
-    items: [line, points],
-  }
-
-  return subplot
-}
-
 function addChart() {
   if (!selectedTimeseries.value) return
   if (!selectedSecondTimeseries.value) return
 
-  const id1 = selectedTimeseries.value?.request ?? ''
-  const id2 = selectedSecondTimeseries.value?.request ?? ''
+  const request1 = selectedTimeseries.value?.request ?? ''
+  const request2 = selectedSecondTimeseries.value?.request ?? ''
   const name1 = selectedTimeseries.value?.legend ?? ''
   const name2 = selectedSecondTimeseries.value?.legend ?? ''
-  const unit1 = selectedTimeseries.value?.yAxis?.axisLabel
-  const unit2 = selectedSecondTimeseries.value?.yAxis?.axisLabel
-  const nameWithUnit1 = unit1 ? `${name1} - ${unit1}` : name1
-  const nameWithUnit2 = unit2 ? `${name2} - ${unit2}` : name2
 
-  const lineId = `${id1}-${id2}-correlation-line`
-  const pointsId = `${id1}-${id2}-correlation-points`
-
-  const dependant: Dependant = {
-    seriesIds: [id1, id2],
-    function: 'correlation',
+  const filter: CorrelationFilter = {
+    timeSeriesIdXaxis: request1,
+    timeSeriesIdYaxis: request2,
+    regressionEquation: 'simple linear',
   }
 
-  const subplot = getSubplot(nameWithUnit1, nameWithUnit2, lineId, pointsId)
-
-  const chart: DerivedChart = {
+  const chart: CorrelationChart = {
     id: crypto.randomUUID(),
-    type: 'derived',
+    type: 'correlation',
     title: `Correlation between ${name1} and ${name2}`,
-    subplot,
-    dependants: [dependant],
+    timeSeriesNameXAxis: name1,
+    timeSeriesNameYAxis: name2,
+    filter,
+    subplot: { items: [] },
   }
 
   emit('addChart', chart)
