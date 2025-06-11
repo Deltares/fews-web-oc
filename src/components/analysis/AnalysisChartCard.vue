@@ -1,5 +1,5 @@
 <template>
-  <v-card flat density="compact" color="transparent" class="mx-2">
+  <v-card flat density="compact" color="transparent">
     <v-card-title class="d-flex align-center">
       <EditableTitle v-model="chart.title" class="ml-2" />
       <v-spacer />
