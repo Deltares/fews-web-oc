@@ -189,7 +189,7 @@
             v-model="uploadData.author"
             label="Author"
             :disabled="uploading"
-            :rules="[(v) => !!v || 'Product name is required']"
+            :rules="[(v) => !!v || 'Author name is required']"
             class="mt-4"
           ></v-text-field>
         </v-card-text>
@@ -305,7 +305,7 @@ async function uploadProduct() {
     const timeZero = DateTime.now().toUTC().startOf('second').toISO({
       suppressMilliseconds: true,
     })
-    const url = `${baseUrl}rest/fewspiservice/v1/archive/products?areaId=products&sourceId=weboc&timeZero=${timeZero}&attribute(productId)=${toSnakeCase(uploadData.value.name)}&attribute(name)=${uploadData.value.name}&attribute(status)=concept&attribute(author)=${uploadData.value.author}`
+    const url = `${baseUrl}rest/fewspiservice/v1/archive/products?areaId=${props.products[0].areaId}&sourceId=${props.products[0].sourceId}&timeZero=${timeZero}&attribute(productId)=${toSnakeCase(uploadData.value.name)}&attribute(name)=${uploadData.value.name}&attribute(status)=concept&attribute(author)=${uploadData.value.author}`
     // remove whitespace from URL
     const formData = new FormData()
     formData.append('file', uploadFile.value as File)
