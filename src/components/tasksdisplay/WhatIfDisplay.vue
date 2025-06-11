@@ -20,6 +20,7 @@
       />
 
       <WhatIfScenarioSelect
+        v-if="!hideScenarioSelect"
         v-model="selectedWhatIfScenario"
         :whatIfTemplateId="selectedWhatIfTemplate?.id"
         :temporaryWhatIfScenarioName
@@ -27,10 +28,9 @@
 
       <template v-if="doShowConfiguration">
         <v-card flat border class="flex-0-0">
-          <v-card-title>Scenario configuration</v-card-title>
+          <div class="px-4 pt-2">{{ configurationTitle }}</div>
           <v-card-text>
             <json-forms
-              class="pt-1"
               :schema="jsonSchema"
               :data="selectedProperties"
               :renderers="Object.freeze(vuetifyRenderers)"
@@ -42,14 +42,15 @@
             />
           </v-card-text>
         </v-card>
-        <div>
+
+        <div v-if="!hideTimeZeroSelect">
           <WhatIfTimeZeroSelect
             v-model="timeZero"
             :workflowId="selectedWorkflow?.id"
           />
         </div>
 
-        <div>
+        <div v-if="!hideDescription">
           <v-textarea
             v-model="description"
             label="Task run description"
@@ -130,8 +131,14 @@ import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTempla
 
 interface Props {
   workflows: WorkflowItem[]
+  configurationTitle?: string
+  hideScenarioSelect?: boolean
+  hideTimeZeroSelect?: boolean
+  hideDescription?: boolean
 }
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  configurationTitle: 'Scenario configuration',
+})
 
 const emit = defineEmits(['postTask'])
 
