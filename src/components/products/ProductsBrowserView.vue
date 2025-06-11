@@ -4,6 +4,7 @@
       :products="products"
       :config="tableLayout"
       class="product-browser__table"
+      :productId="props.productId"
     />
     <div class="flex-1-1 h-100 flex-column position-relative">
       <EditReport v-if="isEditing" v-model="htmlContent" @save="onSave" />
