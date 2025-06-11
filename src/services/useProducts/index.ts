@@ -18,8 +18,8 @@ import { Constraints } from '@/lib/products/documentDisplay'
 export function useProducts(
   baseUrl: string,
   filter: MaybeRefOrGetter<ProductsMetaDataFilter>,
-  sourceId: MaybeRefOrGetter = ref('weboc'),
-  areaId: MaybeRefOrGetter = ref('products'),
+  sourceId: MaybeRefOrGetter<string> = ref('weboc'),
+  areaId: MaybeRefOrGetter<string> = ref('products'),
   constraints: MaybeRefOrGetter<Constraints | undefined> = ref(undefined),
 ) {
   const products = ref<ProductMetaDataType[]>([])
@@ -57,7 +57,7 @@ export function useProducts(
       const response = await provider.getProductsMetaData(filterValue)
       const itemPromises = response.productsMetadata
         .filter((p) => {
-          if (anyValid) {
+          if (anyValid && anyValid.length > 0) {
             return (
               p.attributes.some((attr) => {
                 return anyValid.some(
