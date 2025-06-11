@@ -37,12 +37,6 @@
         :isLoading="isLoading"
         :isActive="isActive"
       />
-      <AnalysisWorkflow
-        v-if="selectedFunction === activeWorkflowToolbox?.id"
-        :key="activeWorkflowToolbox?.id"
-        :customToolBox="activeWorkflowToolbox"
-        @addChart="emit('addChart', $event)"
-      />
     </div>
   </div>
 </template>
@@ -50,7 +44,6 @@
 <script setup lang="ts">
 import AnalysisCorrelation from '@/components/analysis/functions/AnalysisCorrelation.vue'
 import AnalysisTimeResampling from '@/components/analysis/functions/AnalysisTimeResampling.vue'
-import AnalysisWorkflow from '@/components/analysis/workflows/AnalysisWorkflow.vue'
 import { computed, ref, watch } from 'vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
@@ -73,15 +66,8 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<CollectionEmits>()
 
-const activeWorkflowToolbox = computed(() =>
-  props.config.toolBoxes?.toolboxWorkflows?.find(
-    (toolbox) => toolbox.id === selectedFunction.value,
-  ),
-)
-
 const tabs = computed(() => {
   const toolboxes = props.config.toolBoxes
-  const workflowToolboxes = toolboxes?.toolboxWorkflows ?? []
   return [
     {
       enabled: toolboxes?.correlation?.enabled ?? false,
@@ -95,12 +81,6 @@ const tabs = computed(() => {
       icon: 'mdi-sigma',
       text: 'Time Resampling',
     },
-    ...workflowToolboxes.map((item) => ({
-      enabled: true,
-      value: item.id,
-      icon: item.iconId,
-      text: item.name,
-    })),
   ].filter((tab) => tab.enabled)
 })
 
