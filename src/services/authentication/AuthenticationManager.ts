@@ -13,6 +13,9 @@ export class AuthenticationManager {
       this.initPromise = (async () => {
         this.userManager = new UserManager(settings)
         this.user = await this.userManager.getUser()
+        if (this.user?.expired) {
+          this.user = await this.userManager.signinSilent()
+        }
         this.userManager.events.addUserLoaded((user: User) => {
           this.user = user
         })
