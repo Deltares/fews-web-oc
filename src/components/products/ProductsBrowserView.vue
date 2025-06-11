@@ -184,7 +184,7 @@ watchEffect(async () => {
     const extension = getFileExtension(url)
     const currentViewMode = getViewMode(extension)
     const urlFragments =
-      currentViewMode === 'pdf' ? '#view=FitH&theme=light' : ''
+      currentViewMode === 'pdf' ? '#view=FitH' : ''
 
     const transformRequest = createTransformRequestFn()
     const request = await transformRequest(new Request(url, {}))
