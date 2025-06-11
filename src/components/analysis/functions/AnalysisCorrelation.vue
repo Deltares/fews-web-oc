@@ -31,25 +31,23 @@
       <v-number-input
         v-model="lowerThreshold"
         label="Lower Threshold"
-        :min="0"
-        :max="100"
         hide-details
         density="compact"
         variant="outlined"
         clearable
         control-variant="stacked"
+        :precision="null"
       />
 
       <v-number-input
         v-model="upperThreshold"
         label="Upper Threshold"
-        :min="0"
-        :max="100"
         hide-details
         density="compact"
         variant="outlined"
         clearable
         control-variant="stacked"
+        :precision="null"
       />
     </div>
 
@@ -124,6 +122,14 @@ function addChart() {
     timeSeriesIdXaxis: request1,
     timeSeriesIdYaxis: request2,
     regressionEquation,
+  }
+
+  if (upperThreshold.value !== undefined) {
+    filter.upperThreshold = upperThreshold.value
+  }
+
+  if (lowerThreshold.value !== undefined) {
+    filter.lowerThreshold = lowerThreshold.value
   }
 
   const chart: CorrelationChart = {
