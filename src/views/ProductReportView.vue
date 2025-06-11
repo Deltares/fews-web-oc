@@ -65,7 +65,6 @@ import {
 } from '@/lib/TimeControl/interval'
 import { attributesToObject, useProducts } from '@/services/useProducts'
 import { ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
-import { DateTime } from 'luxon'
 import { computed, ref, toValue, watchEffect } from 'vue'
 import { type ReportDisplay } from '@/lib/products/documentDisplay'
 import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
