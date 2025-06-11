@@ -112,7 +112,7 @@
 import AnalysisDataSelection from '@/components/analysis/AnalysisDataSelection.vue'
 import AnalysisCollectionCharts from './AnalysisCollectionCharts.vue'
 import AnalysisCollection from '@/components/analysis/AnalysisCollection.vue'
-import AnalysisFunctions from '@/components/analysis/AnalysisFunctions.vue'
+import AnalysisFunctions from '@/components/analysis/functions/AnalysisFunctions.vue'
 import { VDateInput } from 'vuetify/labs/components'
 import type {
   ActionRequest,
