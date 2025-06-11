@@ -97,6 +97,9 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 const userSettingsStore = useUserSettingsStore()
+defineExpose({
+  getSvgElement,
+})
 
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
@@ -528,6 +531,10 @@ function createChip() {
   const svgGroup = document.createElement('g')
   svgGroup.setAttribute('transform', 'translate(0 10)')
   return { svgGroup, legendSvg }
+}
+
+function getSvgElement() {
+  return axis.svg.node()
 }
 
 const toggleLine = (tag: Tag) => {
