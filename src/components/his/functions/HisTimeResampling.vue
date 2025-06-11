@@ -60,7 +60,11 @@ import {
 } from '@/lib/analysis/resampling'
 import { uniq } from 'lodash-es'
 import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
-import { Chart, getValidFilterCharts } from '@/lib/analysis'
+import {
+  Chart,
+  type CollectionEmits,
+  getValidFilterCharts,
+} from '@/lib/analysis'
 
 interface Props {
   filterId?: string
@@ -75,10 +79,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-interface Emits {
-  addFilter: [filter: filterActionsFilter]
-}
-const emit = defineEmits<Emits>()
+const emit = defineEmits<CollectionEmits>()
 
 const userSettings = useUserSettingsStore()
 
@@ -150,6 +151,6 @@ const filter = computed(() => {
 
 function addFilter() {
   if (!filter.value) return
-  emit('addFilter', filter.value)
+  emit('addFilter', { titlePrefix: 'Resampled ', filter: filter.value })
 }
 </script>

@@ -1,6 +1,7 @@
 import {
   DocumentFormat,
   Location,
+  LocationsFilter,
   PiWebserviceProvider,
 } from '@deltares/fews-pi-requests'
 import { FeatureCollection, Geometry } from 'geojson'
@@ -125,4 +126,31 @@ export async function fetchLocationSetAsGeoJson(
   }
   locationSetCache.set(locationSetId, response)
   return response
+}
+
+/**
+ * Fetch locations based on a LocationsFilter.
+ *
+ * @param baseUrl - The base URL of the FEWS PI Webservice.
+ * @param locationsFilter - The filter to apply when fetching locations.
+ * @return A promise that resolves to an array of Location objects.
+ * @throws Error if the fetch operation fails.
+ */
+export async function fetchLocations(
+  baseUrl: string,
+  locationsFilter: LocationsFilter,
+): Promise<Location[]> {
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  try {
+    const response = await provider.getLocations({
+      ...locationsFilter,
+      documentFormat: DocumentFormat.PI_JSON,
+    })
+    return response.locations
+  } catch (error) {
+    console.error('Error fetching locations:', error)
+  }
+  return []
 }
