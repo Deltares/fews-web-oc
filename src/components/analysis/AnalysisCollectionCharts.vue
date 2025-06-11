@@ -22,7 +22,6 @@
       <AnalysisAsyncChart
         v-if="chart.type === 'async'"
         :chart
-        @addFilter="emit('addFilter', $event)"
         @addChart="emit('addChart', $event)"
         @remove="removeChart(chart)"
       />

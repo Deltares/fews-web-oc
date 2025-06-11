@@ -67,7 +67,7 @@
       <v-spacer />
       <AnalysisAddButton
         :disabled="!filter"
-        :loading="props.isLoading"
+        :loading="isLoading"
         @click="addFilter"
       />
     </div>
@@ -90,7 +90,7 @@ import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import type { FeatureCollection, Geometry } from 'geojson'
 import { useParametersStore } from '@/stores/parameters'
-import type { CollectionEmits } from '@/lib/analysis'
+import { createNewChartsForFilter, type CollectionEmits } from '@/lib/analysis'
 
 interface Props {
   filters?: Filter[]
@@ -98,13 +98,13 @@ interface Props {
   geojson: FeatureCollection<Geometry, Location>
   timeSeriesHeaders: Header[]
   boundingBox?: BoundingBox
-  isLoading?: boolean
   isActive?: boolean
 }
 
 const props = defineProps<Props>()
 const showMap = ref(false)
 
+const isLoading = ref(false)
 const parametersStore = useParametersStore()
 
 const filterId = defineModel<string | undefined>('filterId', {
@@ -167,9 +167,12 @@ const filter = computed(() => {
   return _fitler
 })
 
-function addFilter() {
+async function addFilter() {
   if (!filter.value) return
-  emit('addFilter', { filter: filter.value })
+  isLoading.value = true
+  const charts = await createNewChartsForFilter(filter.value)
+  isLoading.value = false
+  charts.forEach((chart) => emit('addChart', chart))
 }
 
 const selectedLocationIds = ref<string[]>([])

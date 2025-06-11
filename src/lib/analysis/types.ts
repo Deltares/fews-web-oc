@@ -1,7 +1,6 @@
 import { ProductMetaDataType } from '@/services/useProducts/types'
 import type {
   ActionRequest,
-  filterActionsFilter,
   CorrelationFilter,
   TimeSeriesDisplaySubplot,
   ArchiveProductsMetadataAttribute,
@@ -71,11 +70,5 @@ export interface Dependant {
 }
 
 export interface CollectionEmits {
-  addFilter: [addFilter: AddFilter]
   addChart: [chart: Chart]
-}
-
-export interface AddFilter {
-  filter: filterActionsFilter
-  titlePrefix?: string
 }

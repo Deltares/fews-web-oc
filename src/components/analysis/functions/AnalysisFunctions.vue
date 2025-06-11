@@ -33,8 +33,7 @@
         :startTime
         :endTime
         :settings
-        @addFilter="emit('addFilter', $event)"
-        :isLoading="isLoading"
+        @addChart="emit('addChart', $event)"
         :isActive="isActive"
       />
     </div>
@@ -58,7 +57,6 @@ interface Props {
   endTime?: Date
   config: DataAnalysisDisplayElement
   settings: ComponentSettings
-  isLoading?: boolean
   isActive?: boolean
 }
 

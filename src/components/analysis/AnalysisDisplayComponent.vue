@@ -15,8 +15,7 @@
           :geojson="geojson"
           :timeSeriesHeaders="timeSeriesHeaders"
           :boundingBox="boundingBox"
-          :isLoading="isLoadingActions"
-          @addFilter="addFilter"
+          @addChart="addChart"
         />
       </div>
       <div v-show="tab === 'analysis'" class="h-100">
@@ -28,8 +27,6 @@
           :endTime="selectedCollection.settings.endTime"
           :config="config"
           :settings="settings"
-          :isLoading="isLoadingActions"
-          @addFilter="addFilter"
           @addChart="addChart"
         />
       </div>
@@ -94,7 +91,6 @@
           :startTime="selectedCollection.settings.startTime"
           :endTime="selectedCollection.settings.endTime"
           class="flex-1-1"
-          @addFilter="addFilter"
           @addChart="addChart"
         />
         <v-card-text v-else> Select some data to display </v-card-text>
@@ -129,8 +125,6 @@ import {
   getDateTimeSerializer,
   createCollection,
   hasValidFilterCharts,
-  AddFilter,
-  createNewChartsForFilter,
 } from '@/lib/analysis'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useStorage } from '@vueuse/core'
@@ -159,13 +153,6 @@ const collections = useStorage<Collection[]>(
 )
 const selectedCollection = ref<Collection>(collections.value[0])
 
-function addChartsToCollection(charts: Chart[]) {
-  const collection = selectedCollection.value
-  if (!collection) return
-
-  selectedCollection.value.charts = [...collection.charts, ...charts]
-}
-
 const filterId = ref(props.config.filters?.[0].id)
 
 const { locations, geojson } = useFilterLocations(baseUrl, () =>
@@ -175,20 +162,6 @@ const { timeSeriesHeaders } = useTimeSeriesHeaders(baseUrl, filterId)
 
 function addChart(chart: Chart) {
   selectedCollection.value.charts = [...selectedCollection.value.charts, chart]
-}
-
-const isLoadingActions = ref(false)
-
-async function addFilter({ filter, titlePrefix }: AddFilter) {
-  isLoadingActions.value = true
-  const charts = await createNewChartsForFilter(
-    baseUrl,
-    filter,
-    titlePrefix,
-    timeSeriesOptions.value,
-  )
-  addChartsToCollection(charts)
-  isLoadingActions.value = false
 }
 
 const requests = computed<ActionRequest[]>((prevRequests) => {

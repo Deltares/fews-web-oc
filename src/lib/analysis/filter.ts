@@ -1,8 +1,5 @@
 import { fetchActions } from '@/services/useDisplayConfig'
-import {
-  fetchTimeSeriesHeaders,
-  UseTimeSeriesOptions,
-} from '@/services/useTimeSeries'
+import { fetchTimeSeriesHeaders } from '@/services/useTimeSeries'
 import { useParametersStore } from '@/stores/parameters'
 import {
   ActionRequest,
@@ -15,12 +12,13 @@ import { fetchLocations } from '@/lib/topology/locations'
 import { FilterChart } from './types'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import { replaceDuplicateColors } from '@/lib/display'
+import { configManager } from '@/services/application-config'
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 export async function createNewChartsForFilter(
-  baseUrl: string,
   filter: filterActionsFilter,
-  titlePrefix: string | undefined,
-  timeSeriesOptions: UseTimeSeriesOptions,
+  titlePrefix?: string,
 ) {
   const actions = await fetchActions(baseUrl, filter)
 
@@ -36,11 +34,7 @@ export async function createNewChartsForFilter(
     .flatMap((result) => result.requests)
     .filter((req, i, s) => i === s.findIndex((r) => r.key === req.key))
 
-  const newHeaders = await fetchTimeSeriesHeaders(
-    baseUrl,
-    newRequests,
-    timeSeriesOptions,
-  )
+  const newHeaders = await fetchTimeSeriesHeaders(baseUrl, newRequests, {})
 
   const locationIds = newSubplots
     .flatMap((subPlot) =>

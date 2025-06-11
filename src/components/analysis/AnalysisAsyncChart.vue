@@ -18,7 +18,12 @@
 <script setup lang="ts">
 import TaskRunSummary from '@/components/tasks/TaskRunSummary.vue'
 import AnalysisChartCard from '@/components/analysis/AnalysisChartCard.vue'
-import type { AsyncChart, CollectionEmits, ProductChart } from '@/lib/analysis'
+import {
+  createNewChartsForFilter,
+  type AsyncChart,
+  type CollectionEmits,
+  type ProductChart,
+} from '@/lib/analysis'
 import {
   convertFewsPiTaskRunToTaskRun,
   getTaskStatusCategory,
@@ -101,21 +106,23 @@ watch(
       const filterId = props.chart.result.filterId
       const archiveProduct = props.chart.result.archiveProduct
 
-      const filter = filterId
-        ? {
+      isLoading.value = true
+      const filterCharts = filterId
+        ? await createNewChartsForFilter({
             taskRunIds: taskRunId,
             filterId,
-          }
-        : undefined
+          })
+        : []
 
-      isLoading.value = true
-      const charts = archiveProduct ? await getChartsForTaskRun(taskRunId) : []
+      const archiveCharts = archiveProduct
+        ? await getChartsForTaskRun(taskRunId)
+        : []
       isLoading.value = false
 
-      if (filterId || archiveProduct) {
+      if (filterCharts.length || archiveCharts.length) {
         emit('remove')
-        if (filter) emit('addFilter', { filter })
-        charts.forEach((chart) => emit('addChart', chart))
+        filterCharts.forEach((chart) => emit('addChart', chart))
+        archiveCharts.forEach((chart) => emit('addChart', chart))
       }
     }
   },
