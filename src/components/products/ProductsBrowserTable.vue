@@ -52,13 +52,23 @@
     </v-toolbar>
     <v-data-table
       v-if="items.length > 0"
+      v-model="selectedRows"
       :items="items"
       :headers="headers"
       :expanded="[]"
       :items-per-page="-1"
+      item-value="key"
+      hover
       :group-by="[groupBy]"
       :search="search"
       hide-default-footer
+      :row-props="
+        (data) => ({
+          class: selectedRows.includes(data.item.key)
+            ? 'selected-row'
+            : 'unselected-row',
+        })
+      "
       density="compact"
       @click:row="onClick"
     >
@@ -151,7 +161,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import type { ProductMetaDataType } from '@/services/useProducts/types'
 import { useRouter } from 'vue-router'
 import { toHumanReadableDate } from '@/lib/date'
@@ -179,6 +189,7 @@ function isPropertyHeader(
 interface Props {
   products: ProductMetaDataType[]
   config: ProductBrowserTableConfig
+  productId?: string
 }
 
 const props = defineProps<Props>()
@@ -190,6 +201,7 @@ const search = ref('')
 const groupByKey = ref([''])
 const groupByOrder = ref<[boolean | 'asc' | 'desc']>(['asc'])
 const selectedColumns = ref<string[]>([])
+const selectedRows = ref<string[]>([])
 
 const groupBy = computed(() => {
   return {
@@ -204,6 +216,12 @@ function groupName(key: string) {
   })
   return column?.title || key
 }
+
+onMounted(() => {
+  if (props.productId) {
+    selectedRows.value = [props.productId]
+  }
+})
 
 const availableColumns = ref<
   { key: string; title: string; align?: 'start' | 'center' | 'end' }[]
@@ -258,7 +276,13 @@ const items = computed(() => {
 const isLoading = ref(false)
 const lastUpdatedString = ref('')
 
-function onClick(_event: PointerEvent, entry: { item: ProductMetaDataType }) {
+function onClick(
+  _event: PointerEvent,
+  entry: {
+    item: ProductMetaDataType
+  },
+) {
+  selectedRows.value = [entry.item.key]
   router.push({
     name: 'TopologyDocumentDisplay',
     params: {
@@ -282,5 +306,9 @@ function onClick(_event: PointerEvent, entry: { item: ProductMetaDataType }) {
 .products-browser__footer {
   position: absolute;
   bottom: 0px;
+}
+
+:deep(.selected-row) {
+  background-color: rgb(var(--v-theme-on-surface), var(--v-activated-opacity));
 }
 </style>
