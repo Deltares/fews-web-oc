@@ -7,6 +7,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import { ref, toValue, watchEffect, type MaybeRefOrGetter } from 'vue'
 import { ProductMetaDataType, ProductMetaDataWithoutAttributes } from './types'
+import { Constraints } from '@/lib/products/documentDisplay'
 
 /**
  * Hook to fetch and manage product metadata based on a given filter.
@@ -19,6 +20,7 @@ export function useProducts(
   filter: MaybeRefOrGetter<ProductsMetaDataFilter>,
   sourceId: MaybeRefOrGetter = ref('weboc'),
   areaId: MaybeRefOrGetter = ref('products'),
+  constraints: MaybeRefOrGetter<Constraints | undefined> = ref(undefined),
 ) {
   const products = ref<ProductMetaDataType[]>([])
   const error = ref<string | null>(null)
@@ -35,13 +37,35 @@ export function useProducts(
     if (!filterValue.startForecastTime || !filterValue.endForecastTime) {
       return
     }
-
+    const allValid = toValue(constraints)?.allValid
+    if (allValid) {
+      filterValue.attribute = allValid.reduce(
+        (acc: Record<string, string>, constraint) => {
+          acc[constraint.attributeTextEquals.id] =
+            constraint.attributeTextEquals.equals
+          return acc
+        },
+        {} as Record<string, string>,
+      )
+    }
+    const anyValid = toValue(constraints)?.anyValid
     try {
       const response = await fetchProductsMetaData(baseUrl, filterValue)
-      const filteredItems = response.filter(
-        (p) => p.sourceId === toValue(sourceId) && p.areaId === toValue(areaId),
-      )
-      products.value = filteredItems
+      const filteredProducts = response.filter((p) => {
+        if (anyValid) {
+          return (
+            anyValid.some(
+              (constraint) =>
+                p.attributes[constraint.attributeTextEquals.id] ===
+                constraint.attributeTextEquals.equals,
+            ) &&
+            p.sourceId === toValue(sourceId) &&
+            p.areaId === toValue(areaId)
+          )
+        }
+        return p.sourceId === toValue(sourceId) && p.areaId === toValue(areaId)
+      })
+      products.value = filteredProducts
       lastUpdated.value = new Date()
     } catch (err) {
       error.value = 'Error fetching product metadata'

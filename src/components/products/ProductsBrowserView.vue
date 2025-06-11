@@ -161,12 +161,17 @@ const areaId = computed(
     'products',
 )
 
+const constraints = computed(() => {
+  return props.config?.documentBrowser?.archiveProductSet?.constraints
+})
+
 // Pass the computed properties to useProducts
 const { products, getProductByKey, refresh, lastUpdated } = useProducts(
   baseUrl,
   filter,
   sourceId,
   areaId,
+  constraints,
 )
 
 watchEffect(() => {

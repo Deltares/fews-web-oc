@@ -40,10 +40,19 @@ export interface Constraints {
   areaId: string
   sourceId: string
   attributeExists: AttributeExists
+  allValid?: AttributeEquals[]
+  anyValid?: AttributeEquals[]
 }
 
 export interface AttributeExists {
   id: string
+}
+
+export interface AttributeEquals {
+  attributeTextEquals: {
+    id: string
+    equals: string
+  }
 }
 
 export interface ArchiveProduct {
