@@ -95,6 +95,7 @@
           :endTime="selectedCollection.settings.endTime"
           class="flex-1-1"
           @addFilter="addFilter"
+          @addChart="addChart"
         />
         <v-card-text v-else> Select some data to display </v-card-text>
       </div>
