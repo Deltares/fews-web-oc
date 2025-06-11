@@ -23,6 +23,12 @@
         v-if="chart.type === 'async'"
         :chart
         @addFilter="emit('addFilter', $event)"
+        @addChart="emit('addChart', $event)"
+        @remove="removeChart(chart)"
+      />
+      <AnalysisProductChart
+        v-if="chart.type === 'product'"
+        :chart
         @remove="removeChart(chart)"
       />
     </template>
@@ -30,6 +36,7 @@
 </template>
 
 <script setup lang="ts">
+import AnalysisProductChart from './AnalysisProductChart.vue'
 import AnalysisCollectionChart from './AnalysisCollectionChart.vue'
 import AnalysisCorrelationChart from './AnalysisCorrelationChart.vue'
 import AnalysisAsyncChart from './AnalysisAsyncChart.vue'

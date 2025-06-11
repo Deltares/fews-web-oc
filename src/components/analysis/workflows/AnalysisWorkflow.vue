@@ -36,13 +36,21 @@ function addChart(taskId: string) {
   const result = props.customToolBox.results
   const title = props.customToolBox.name
 
+  const [areaId, sourceId] = result.archiveProductId.split('_')
+
   const chart: AsyncChart = {
     id: crypto.randomUUID(),
     type: 'async',
     title,
     subplot: { items: [] },
     taskId,
-    result,
+    result: {
+      filterId: result.filterId,
+      archiveProduct: {
+        areaId,
+        sourceId,
+      },
+    },
   }
 
   emit('addChart', chart)

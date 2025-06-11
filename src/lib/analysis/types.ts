@@ -1,9 +1,10 @@
+import { ProductMetaDataType } from '@/services/useProducts/types'
 import type {
   ActionRequest,
   filterActionsFilter,
   CorrelationFilter,
-  Results,
   TimeSeriesDisplaySubplot,
+  ArchiveProductsMetadataAttribute,
 } from '@deltares/fews-pi-requests'
 
 export type AnalysisFunction = 'correlation'
@@ -37,13 +38,32 @@ export interface CorrelationChart extends BaseChart {
   filter: Omit<CorrelationFilter, 'startTime' | 'endTime'>
 }
 
+interface ArchiveProduct {
+  id?: string
+  name?: string
+  areaId: string
+  sourceId?: string
+  versionKeys?: string[]
+  attributes?: ArchiveProductsMetadataAttribute[]
+}
+
+interface Result {
+  filterId?: string
+  archiveProduct?: ArchiveProduct
+}
+
 export interface AsyncChart extends BaseChart {
   type: 'async'
   taskId: string
-  result: Results
+  result: Result
 }
 
-export type Chart = FilterChart | CorrelationChart | AsyncChart
+export interface ProductChart extends BaseChart {
+  type: 'product'
+  product: ProductMetaDataType
+}
+
+export type Chart = FilterChart | CorrelationChart | AsyncChart | ProductChart
 
 export interface Dependant {
   seriesIds: string[]
