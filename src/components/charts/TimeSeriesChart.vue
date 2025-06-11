@@ -95,6 +95,10 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
+defineExpose({
+  getSvgElement,
+})
+
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
@@ -489,6 +493,10 @@ function createChip() {
   const svgGroup = document.createElement('g')
   svgGroup.setAttribute('transform', 'translate(0 10)')
   return { svgGroup, legendSvg }
+}
+
+function getSvgElement() {
+  return axis.svg.node()
 }
 
 const toggleLine = (tag: Tag) => {
