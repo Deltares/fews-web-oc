@@ -33,6 +33,9 @@
           @addChart="addChart"
         />
       </div>
+      <div v-show="tab === 'workflows'">
+        <AnalysisWorkflows :config="config" @addChart="addChart" />
+      </div>
       <div v-show="tab === 'settings'">
         <v-card flat title="Settings">
           <v-card-text>
@@ -64,23 +67,14 @@
     <div class="flex-0-0">
       <v-toolbar-items class="flex-column mt-2 border-e border-t border-b">
         <v-btn
-          icon="mdi-chart-box-plus-outline"
-          @click="toggleTab('data-selection')"
+          v-for="tab in tabs"
+          :key="tab.value"
+          :icon="tab.icon"
+          @click="toggleTab(tab.value)"
           height="40"
-          :active="isActive('data-selection')"
-        />
-        <v-btn
-          icon="mdi-finance"
-          @click="toggleTab('analysis')"
-          height="40"
-          :active="isActive('analysis')"
-          :disabled="!canDoAnalysis"
-        />
-        <v-btn
-          icon="mdi-cog-outline"
-          @click="toggleTab('settings')"
-          height="40"
-          :active="isActive('settings')"
+          :active="isActive(tab.value)"
+          :disabled="tab.disabled"
+          v-tooltip="tab.text"
         />
       </v-toolbar-items>
     </div>
@@ -113,6 +107,7 @@ import AnalysisDataSelection from '@/components/analysis/AnalysisDataSelection.v
 import AnalysisCollectionCharts from './AnalysisCollectionCharts.vue'
 import AnalysisCollection from '@/components/analysis/AnalysisCollection.vue'
 import AnalysisFunctions from '@/components/analysis/functions/AnalysisFunctions.vue'
+import AnalysisWorkflows from '@/components/analysis/workflows/AnalysisWorkflows.vue'
 import { VDateInput } from 'vuetify/labs/components'
 import type {
   ActionRequest,
@@ -238,9 +233,31 @@ function toggleTab(tabName: string) {
 const canDoAnalysis = computed(() =>
   hasValidFilterCharts(selectedCollection.value.charts),
 )
-watch(canDoAnalysis, (canDo) => {
-  if (!canDo && tab.value !== undefined) {
-    tab.value = 'data-selection'
+
+const tabs = computed(() => [
+  {
+    value: 'data-selection',
+    icon: 'mdi-database',
+    text: 'Data Selection',
+  },
+  {
+    value: 'analysis',
+    icon: 'mdi-finance',
+    text: 'Analysis',
+    disabled: !canDoAnalysis.value,
+  },
+  { value: 'workflows', icon: 'mdi-tools', text: 'Workflows' },
+  { value: 'settings', icon: 'mdi-cog-outline', text: 'Settings' },
+])
+
+watch(tabs, () => {
+  if (!tab.value) return
+
+  // When active tab is disabled, switch to the first enabled tab
+  const activeTab = tabs.value.find((t) => t.value === tab.value)
+  if (!activeTab || activeTab.disabled) {
+    const firstEnabledTab = tabs.value.find((t) => !t.disabled)
+    tab.value = firstEnabledTab ? firstEnabledTab.value : undefined
   }
 })
 </script>
