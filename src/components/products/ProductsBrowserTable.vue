@@ -224,6 +224,7 @@ import { useRouter } from 'vue-router'
 import { toHumanReadableDate } from '@/lib/date'
 import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { DateTime } from 'luxon'
 
 interface AttributeHeader {
   attribute: string
@@ -301,17 +302,11 @@ async function uploadProduct() {
 
   try {
     const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-    const timeZero = new Date().toISOString()
-    const url = `${baseUrl}rest/fewspiservice/v1/archive/products?\
-      areaId=products&\
-      sourceId=weboc&\
-      timeZero=${timeZero}&\
-      attribute(product_id)=${uploadData.value.name}&\
-      attribute(status)=concept&\
-      attribute(author)=${uploadData.value.author}&\
-      versionKey=area_id&\
-      versionKey=product_id`
-
+    const timeZero = DateTime.now().toUTC().startOf('second').toISO({
+      suppressMilliseconds: true,
+    })
+    const url = `${baseUrl}rest/fewspiservice/v1/archive/products?areaId=products&sourceId=weboc&timeZero=${timeZero}&attribute(productId)=${toSnakeCase(uploadData.value.name)}&attribute(name)=${uploadData.value.name}&attribute(status)=concept&attribute(author)=${uploadData.value.author}`
+    // remove whitespace from URL
     const formData = new FormData()
     formData.append('file', uploadFile.value as File)
 
@@ -432,6 +427,26 @@ function onClick(
       productId: entry.item.key,
     },
   })
+}
+/**
+ * Converts a string to snake case format
+ * @param name The string to convert to snake case
+ * @returns The string in snake_case format
+ */
+function toSnakeCase(name: string): string {
+  // Convert spaces to underscores and lowercase the string
+  return (
+    name
+      .toLowerCase()
+      // Replace spaces with underscores
+      .replace(/\s+/g, '_')
+      // Remove special characters and replace with underscores
+      .replace(/[^\w_]/g, '_')
+      // Replace multiple consecutive underscores with a single one
+      .replace(/_+/g, '_')
+      // Remove leading and trailing underscores
+      .replace(/^_|_$/g, '')
+  )
 }
 </script>
 
