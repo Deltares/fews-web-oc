@@ -33,7 +33,7 @@
       <v-spacer />
       <AnalysisAddButton
         :disabled="!filter"
-        :loading="props.isLoading"
+        :loading="isLoading"
         @click="addFilter"
       />
     </div>
@@ -63,6 +63,7 @@ import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
 import {
   Chart,
   type CollectionEmits,
+  createNewChartsForFilter,
   getValidFilterCharts,
 } from '@/lib/analysis'
 
@@ -73,7 +74,6 @@ interface Props {
   startTime?: Date
   endTime?: Date
   settings: ComponentSettings
-  isLoading?: boolean
   isActive?: boolean
 }
 
@@ -86,6 +86,7 @@ const userSettings = useUserSettingsStore()
 const selectedTimeseries = ref<TimeSeriesDisplaySubplotItem[]>([])
 const selectedResamplingMethods = ref<ResamplingMethod[]>([])
 const selectedResamplingTimeSteps = ref<TimeSteps[]>([])
+const isLoading = ref(false)
 
 watch(() => props.isActive, clearSelections)
 function clearSelections() {
@@ -149,8 +150,11 @@ const filter = computed(() => {
   return _fitler
 })
 
-function addFilter() {
+async function addFilter() {
   if (!filter.value) return
-  emit('addFilter', { titlePrefix: 'Resampled ', filter: filter.value })
+  isLoading.value = true
+  const charts = await createNewChartsForFilter(filter.value, 'Resampled ')
+  isLoading.value = false
+  charts.forEach((chart) => emit('addChart', chart))
 }
 </script>
