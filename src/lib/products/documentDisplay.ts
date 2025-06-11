@@ -14,6 +14,7 @@ export interface DocumentBrowserDisplay {
   relativeViewPeriod: Omit<TimeSettingsViewPeriodPreset, 'label'>
   editPermissions?: boolean
   documentBrowser: DocumentBrowser
+  browser: DocumentBrowser
 }
 
 export interface ReportDisplay {
@@ -29,7 +30,7 @@ export interface DocumentBrowser {
   layout: Layout
   reports: Reports
   archiveProducts: ArchiveProducts
-  archiveProductSet: ArchiveProductSet
+  archiveProductSets: ArchiveProductSet[]
 }
 
 export interface ArchiveProductSet {
@@ -39,7 +40,7 @@ export interface ArchiveProductSet {
 export interface Constraints {
   areaId: string
   sourceId: string
-  attributeExists: AttributeExists
+  attributeExists?: AttributeExists
   allValid?: AttributeEquals[]
   anyValid?: AttributeEquals[]
 }
