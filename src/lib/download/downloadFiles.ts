@@ -131,8 +131,12 @@ async function convertImageBitmapToBlob(bitmap: ImageBitmap): Promise<Blob> {
   if (!context)
     throw new Error('Could not create 2D context for offscreen canvas')
 
+  context.fillStyle = 'white'
+  context.fillRect(0, 0, bitmap.width, bitmap.height)
+
   // Draw image onto the canvas, then convert the canvas contents to a Blob
   // (asynchronously).
   context.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height)
+
   return canvas.convertToBlob()
 }
