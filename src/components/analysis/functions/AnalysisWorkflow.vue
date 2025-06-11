@@ -1,5 +1,11 @@
 <template>
-  <WhatIfDisplay :workflows @postTask="addChart" />
+  <WhatIfDisplay
+    :workflows
+    configuration-title="Configuration"
+    hide-scenario-select
+    hide-description
+    @postTask="addChart"
+  />
 </template>
 
 <script setup lang="ts">
