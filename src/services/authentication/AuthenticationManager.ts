@@ -14,7 +14,13 @@ export class AuthenticationManager {
         this.userManager = new UserManager(settings)
         this.user = await this.userManager.getUser()
         if (this.user?.expired) {
-          this.user = await this.userManager.signinSilent()
+          try {
+            this.user = await this.userManager.signinSilent()
+          } catch (error) {
+            console.error('Silent sign-in failed:', error)
+            // Redirect to interactive login as a fallback
+            await this.userManager.signinRedirect()
+          }
         }
         this.userManager.events.addUserLoaded((user: User) => {
           this.user = user
