@@ -44,8 +44,7 @@ import HisTimeResampling from '@/components/his/functions/HisTimeResampling.vue'
 import { ref, watch } from 'vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import { Chart } from '@/lib/analysis'
-import { filterActionsFilter } from '@deltares/fews-pi-requests'
+import type { Chart, CollectionEmits } from '@/lib/analysis'
 
 interface Props {
   filterId?: string
@@ -60,11 +59,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-interface Emits {
-  addChart: [chart: Chart]
-  addFilter: [filter: filterActionsFilter]
-}
-const emit = defineEmits<Emits>()
+const emit = defineEmits<CollectionEmits>()
 
 const selectedFunction = ref('correlation')
 

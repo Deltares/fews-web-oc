@@ -90,6 +90,7 @@ import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import type { FeatureCollection, Geometry } from 'geojson'
 import { useParametersStore } from '@/stores/parameters'
+import type { CollectionEmits } from '@/lib/analysis'
 
 interface Props {
   filters?: Filter[]
@@ -110,10 +111,7 @@ const filterId = defineModel<string | undefined>('filterId', {
   required: true,
 })
 
-interface Emits {
-  addFilter: [filter: filterActionsFilter]
-}
-const emit = defineEmits<Emits>()
+const emit = defineEmits<CollectionEmits>()
 
 watch(() => props.isActive, clearSelections)
 function clearSelections() {
@@ -170,7 +168,7 @@ const filter = computed(() => {
 
 function addFilter() {
   if (!filter.value) return
-  emit('addFilter', filter.value)
+  emit('addFilter', { filter: filter.value })
 }
 
 const selectedLocationIds = ref<string[]>([])

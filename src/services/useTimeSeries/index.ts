@@ -46,6 +46,7 @@ export interface UseTimeSeriesOptions {
   showVerticalProfile?: boolean
   convertDatum?: boolean
   useDisplayUnits?: boolean
+  onlyHeaders?: boolean
 }
 
 function timeZoneOffsetString(offset: number): string {
@@ -90,13 +91,14 @@ export function useTimeSeries(
     })
     const _requests = toValue(requests)
     const _selectedTime = toValue(selectedTime)
+    const _options = toValue(options)
 
     const currentSeriesIds = Object.keys(series.value)
     const updatedSeriesIds: string[] = []
     loadingSeriesIds.value = _requests.flatMap((r) => (r.key ? [r.key] : []))
 
     const promises = _requests.map(async (request) => {
-      const relativeUrl = getRelativeUrlForRequest(request)
+      const relativeUrl = getRelativeUrlForRequest(baseUrl, _options, request)
 
       const isGridTimeSeries = request.request.includes('/timeseries/grid?')
       const piSeries =
@@ -144,76 +146,6 @@ export function useTimeSeries(
         delete series.value[seriesId]
       }
     }
-  }
-
-  function getRelativeUrlForRequest(request: ActionRequest): string {
-    const _options = toValue(options)
-
-    // Parse request URL to URL object to be able to append query parameters.
-    const url = absoluteUrl(`${baseUrl}/${request.request}`)
-
-    const convertToDateTime = (date: Date | null | undefined) => {
-      if (!date) return null
-      return DateTime.fromJSDate(date, {
-        zone: 'UTC',
-      })
-    }
-    const startTime = convertToDateTime(_options.startTime)
-    const endTime = convertToDateTime(_options.endTime)
-
-    const convertToFewsPiDateTimeQueryParameter = (
-      datetime: DateTime | null,
-    ) => {
-      if (!datetime) return null
-      return datetime.toISO({ suppressMilliseconds: true })
-    }
-    const startTimeQuery = convertToFewsPiDateTimeQueryParameter(startTime)
-    const endTimeQuery = convertToFewsPiDateTimeQueryParameter(endTime)
-
-    // Set start and end time.
-    if (startTimeQuery) url.searchParams.set('startTime', startTimeQuery)
-    if (endTimeQuery) url.searchParams.set('endTime', endTimeQuery)
-
-    // Set thinning if specified.
-    if (_options.thinning) {
-      const parseDateTimeFromSearchParam = (param: string) => {
-        const dateTimeString = url.searchParams.get(param)
-        if (!dateTimeString) return null
-        return DateTime.fromISO(dateTimeString)
-      }
-      // If no start or end time was specified, parse it from the query
-      // parameter obtained from the original actions request URL.
-      const requestStartTime =
-        startTime ?? parseDateTimeFromSearchParam('startTime')
-      const requestEndTime = endTime ?? parseDateTimeFromSearchParam('endTime')
-
-      if (requestStartTime && requestEndTime) {
-        const durationMilliseconds = Interval.fromDateTimes(
-          requestStartTime,
-          requestEndTime,
-        ).length('millisecond')
-        const estimatedChartWidth = 0.5 * window.outerWidth
-        const millisecondsPerPixel = Math.round(
-          durationMilliseconds / estimatedChartWidth,
-        )
-        url.searchParams.set('thinning', millisecondsPerPixel.toString())
-      }
-    }
-
-    if (_options.convertDatum) {
-      url.searchParams.set('convertDatum', _options.convertDatum.toString())
-    }
-
-    if (_options.useDisplayUnits) {
-      url.searchParams.set(
-        'useDisplayUnits',
-        _options.useDisplayUnits.toString(),
-      )
-    }
-
-    // Convert absolute URL back into relative URL with updated search
-    // parameters.
-    return request.request.split('?')[0] + url.search
   }
 
   function convertTimeSeriesResultToSeries(
@@ -284,6 +216,109 @@ export function useTimeSeries(
     interval,
     refresh: loadTimeSeries,
   }
+}
+
+export function getRelativeUrlForRequest(
+  baseUrl: string,
+  options: UseTimeSeriesOptions,
+  request: ActionRequest,
+): string {
+  // Parse request URL to URL object to be able to append query parameters.
+  const url = absoluteUrl(`${baseUrl}/${request.request}`)
+
+  const convertToDateTime = (date: Date | null | undefined) => {
+    if (!date) return null
+    return DateTime.fromJSDate(date, {
+      zone: 'UTC',
+    })
+  }
+  const startTime = convertToDateTime(options.startTime)
+  const endTime = convertToDateTime(options.endTime)
+
+  const convertToFewsPiDateTimeQueryParameter = (datetime: DateTime | null) => {
+    if (!datetime) return null
+    return datetime.toISO({ suppressMilliseconds: true })
+  }
+  const startTimeQuery = convertToFewsPiDateTimeQueryParameter(startTime)
+  const endTimeQuery = convertToFewsPiDateTimeQueryParameter(endTime)
+
+  // Set start and end time.
+  if (startTimeQuery) url.searchParams.set('startTime', startTimeQuery)
+  if (endTimeQuery) url.searchParams.set('endTime', endTimeQuery)
+
+  // Set thinning if specified.
+  if (options.thinning) {
+    const parseDateTimeFromSearchParam = (param: string) => {
+      const dateTimeString = url.searchParams.get(param)
+      if (!dateTimeString) return null
+      return DateTime.fromISO(dateTimeString)
+    }
+    // If no start or end time was specified, parse it from the query
+    // parameter obtained from the original actions request URL.
+    const requestStartTime =
+      startTime ?? parseDateTimeFromSearchParam('startTime')
+    const requestEndTime = endTime ?? parseDateTimeFromSearchParam('endTime')
+
+    if (requestStartTime && requestEndTime) {
+      const durationMilliseconds = Interval.fromDateTimes(
+        requestStartTime,
+        requestEndTime,
+      ).length('millisecond')
+      const estimatedChartWidth = 0.5 * window.outerWidth
+      const millisecondsPerPixel = Math.round(
+        durationMilliseconds / estimatedChartWidth,
+      )
+      url.searchParams.set('thinning', millisecondsPerPixel.toString())
+    }
+  }
+
+  if (options.convertDatum) {
+    url.searchParams.set('convertDatum', options.convertDatum.toString())
+  }
+
+  if (options.useDisplayUnits) {
+    url.searchParams.set('useDisplayUnits', options.useDisplayUnits.toString())
+  }
+
+  // Convert absolute URL back into relative URL with updated search
+  // parameters.
+  return request.request.split('?')[0] + url.search
+}
+
+export async function fetchTimeSeriesHeaders(
+  baseUrl: string,
+  requests: ActionRequest[],
+  options: UseTimeSeriesOptions,
+) {
+  const piProvider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
+  const _options = {
+    ...options,
+    onlyHeaders: true,
+  }
+
+  const promises = requests.map(async (request) => {
+    const relativeUrl = getRelativeUrlForRequest(baseUrl, _options, request)
+    const timeSeriesResponse =
+      await piProvider.getTimeSeriesWithRelativeUrl(relativeUrl)
+    return (
+      timeSeriesResponse.timeSeries
+        ?.flatMap((ts) => ts.header)
+        .filter((header) => header !== undefined) ?? []
+    )
+  })
+
+  const settled = await Promise.allSettled(promises)
+  const results = settled.filter((result) => result.status === 'fulfilled')
+
+  const headers: Record<string, Header[]> = {}
+  requests.forEach((request, index) => {
+    const key = request.key ?? ''
+    headers[key] = results[index].value
+  })
+  return headers
 }
 
 export function useTimeSeriesHeaders(

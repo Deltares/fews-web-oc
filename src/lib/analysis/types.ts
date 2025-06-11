@@ -1,5 +1,6 @@
 import type {
   ActionRequest,
+  filterActionsFilter,
   TimeSeriesDisplaySubplot,
 } from '@deltares/fews-pi-requests'
 
@@ -37,4 +38,14 @@ export type Chart = FilterChart | DerivedChart
 export interface Dependant {
   seriesIds: string[]
   function: AnalysisFunction
+}
+
+export interface CollectionEmits {
+  addFilter: [addFilter: AddFilter]
+  addChart: [chart: Chart]
+}
+
+export interface AddFilter {
+  filter: filterActionsFilter
+  titlePrefix?: string
 }

@@ -28,6 +28,15 @@ export const useParametersStore = defineStore('parameters', () => {
     return parameter?.name ?? parameter?.shortName ?? parameterId ?? 'Unknown'
   }
 
+  function getGroupName(parameterId: string | undefined): string {
+    const parameter = byId(parameterId)
+    return (
+      parameter?.parameterGroupName ??
+      parameter?.parameterGroup ??
+      'Unknown Group'
+    )
+  }
+
   async function fetch() {
     isLoading.value = true
     try {
@@ -49,6 +58,7 @@ export const useParametersStore = defineStore('parameters', () => {
     isLoading,
     byId,
     getName,
+    getGroupName,
     fetch,
   }
 })

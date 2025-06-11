@@ -116,14 +116,11 @@ import type {
   ActionRequest,
   BoundingBox,
   DataAnalysisDisplayElement,
-  filterActionsFilter,
-  TimeSeriesDisplaySubplot,
 } from '@deltares/fews-pi-requests'
 import { computed, ref, shallowRef, watch } from 'vue'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import { configManager } from '@/services/application-config'
 import { useTimeSeries, useTimeSeriesHeaders } from '@/services/useTimeSeries'
-import { fetchActions } from '@/services/useDisplayConfig'
 import {
   type ComponentSettings,
   getDefaultSettings,
@@ -131,19 +128,18 @@ import {
 import {
   type Chart,
   type Collection,
-  type FilterChart,
   getDateTimeSerializer,
   createCollection,
   DerivedChart,
   getGenerator,
   hasValidFilterCharts,
+  AddFilter,
+  createNewChartsForFilter,
 } from '@/lib/analysis'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { difference } from 'lodash-es'
 import { useStorage } from '@vueuse/core'
-import { useTaskRunColorsStore } from '@/stores/taskRunColors'
-import { replaceDuplicateColors } from '@/lib/display'
 
 interface Props {
   config: DataAnalysisDisplayElement
@@ -156,7 +152,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const userSettings = useUserSettingsStore()
-const colorsStore = useTaskRunColorsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -170,31 +165,11 @@ const collections = useStorage<Collection[]>(
 )
 const selectedCollection = ref<Collection>(collections.value[0])
 
-function addChartsToCollection(
-  subplots: TimeSeriesDisplaySubplot[],
-  requests: ActionRequest[],
-) {
+function addChartsToCollection(charts: Chart[]) {
   const collection = selectedCollection.value
   if (!collection) return
 
-  const newCharts: FilterChart[] = subplots.map((subPlot) => ({
-    id: crypto.randomUUID(),
-    type: 'filter',
-    title: 'New Chart',
-    subplot: subPlot,
-    requests: getActionRequestsForSubplot(subPlot, requests),
-  }))
-
-  selectedCollection.value.charts = [...collection.charts, ...newCharts]
-}
-
-function getActionRequestsForSubplot(
-  subplot: TimeSeriesDisplaySubplot,
-  requests: ActionRequest[],
-) {
-  return subplot.items.flatMap(
-    (item) => requests.find((req) => req.key === item.request) ?? [],
-  )
+  selectedCollection.value.charts = [...collection.charts, ...charts]
 }
 
 const filterId = ref(props.config.filters?.[0].id)
@@ -213,23 +188,16 @@ function addChart(chart: Chart) {
 
 const isLoadingActions = ref(false)
 
-async function addFilter(filter: filterActionsFilter) {
+async function addFilter({ filter, titlePrefix }: AddFilter) {
   isLoadingActions.value = true
-  const actions = await fetchActions(baseUrl, filter)
-  isLoadingActions.value = false
-
-  replaceDuplicateColors(actions, colorsStore.colors)
-
-  const results = actions.results
-
-  const newSubplots = results.flatMap(
-    (result) => result.config?.timeSeriesDisplay.subplots ?? [],
+  const charts = await createNewChartsForFilter(
+    baseUrl,
+    filter,
+    titlePrefix,
+    timeSeriesOptions.value,
   )
-  const newRequests = results
-    .flatMap((result) => result.requests)
-    .filter((req, i, s) => i === s.findIndex((r) => r.key === req.key))
-
-  addChartsToCollection(newSubplots, newRequests)
+  addChartsToCollection(charts)
+  isLoadingActions.value = false
 }
 
 const requests = computed<ActionRequest[]>((prevRequests) => {
@@ -248,16 +216,18 @@ const requests = computed<ActionRequest[]>((prevRequests) => {
   return newRequests
 })
 
+const timeSeriesOptions = computed(() => ({
+  startTime: selectedCollection.value.settings.startTime,
+  endTime: selectedCollection.value.settings.endTime,
+  useDisplayUnits: userSettings.useDisplayUnits,
+  convertDatum: userSettings.convertDatum,
+  thinning: true,
+}))
+
 const { series: fetchedSeries, loadingSeriesIds } = useTimeSeries(
   baseUrl,
   requests,
-  () => ({
-    startTime: selectedCollection.value.settings.startTime,
-    endTime: selectedCollection.value.settings.endTime,
-    useDisplayUnits: userSettings.useDisplayUnits,
-    convertDatum: userSettings.convertDatum,
-    thinning: true,
-  }),
+  timeSeriesOptions,
 )
 
 const generatedSeries = shallowRef<Record<string, Series>>({})
