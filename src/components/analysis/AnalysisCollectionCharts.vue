@@ -3,22 +3,26 @@
     <template v-for="chart in collection.charts" :key="chart.id">
       <AnalysisCollectionChart
         v-if="chart.type === 'filter'"
-        :collection
         :chart
         :subplot="chart.subplot"
         :series
         :zoomHandler
         :settings
         :domain="[startTime, endTime]"
+        @remove="removeChart(chart)"
       />
       <AnalysisCorrelationChart
         v-if="chart.type === 'correlation'"
-        :collection
         :chart
-        :series
         :settings
         :startTime
         :endTime
+        @remove="removeChart(chart)"
+      />
+      <AnalysisAsyncChart
+        v-if="chart.type === 'async'"
+        :chart
+        @remove="removeChart(chart)"
       />
     </template>
   </div>
@@ -27,7 +31,8 @@
 <script setup lang="ts">
 import AnalysisCollectionChart from './AnalysisCollectionChart.vue'
 import AnalysisCorrelationChart from './AnalysisCorrelationChart.vue'
-import type { Collection } from '@/lib/analysis'
+import AnalysisAsyncChart from './AnalysisAsyncChart.vue'
+import type { Chart, Collection } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'
@@ -40,9 +45,16 @@ interface Props {
   endTime: Date
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const zoomHandler = new ZoomHandler({
   sharedZoomMode: ZoomMode.X,
 })
+
+function removeChart(chart: Chart) {
+  props.collection.charts.splice(
+    props.collection.charts.findIndex((c) => c === chart),
+    1,
+  )
+}
 </script>
