@@ -1,6 +1,11 @@
 <template>
   <AnalysisChartCard :chart="chart" v-bind="$attrs" @remove="emit('remove')">
-    <TaskRunSummary v-if="task" :task :canVisualize="false" class="mb-2 mx-3" />
+    <TaskRunSummary
+      v-if="task && !isLoading"
+      :task
+      :canVisualize="false"
+      class="mb-2 mx-3"
+    />
     <v-skeleton-loader
       v-else
       height="70"
@@ -21,11 +26,15 @@ import {
 import { configManager } from '@/services/application-config'
 import { useTaskRuns } from '@/services/useTaskRuns'
 import { useTaskRunStatus } from '@/services/useTaskRunStatus'
-import { computed, watchEffect } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 import {
   attributesToObject,
   fetchProductsMetaData,
 } from '@/services/useProducts'
+
+const TASK_STATUS_REFRESH_INTERVAL = 1000
+const TASK_RUN_REFRESH_INTERVAL = 5000
+const PRODUCT_META_DATA_REFRESH_INTERVAL = 2000
 
 interface Props {
   chart: AsyncChart
@@ -37,11 +46,13 @@ interface Emits extends CollectionEmits {
 }
 const emit = defineEmits<Emits>()
 
+const isLoading = ref(false)
+
 const { taskRunStatus, interval: taskRunStatusInterval } = useTaskRunStatus(
   () => ({
     taskId: props.chart.taskId,
   }),
-  1000,
+  TASK_STATUS_REFRESH_INTERVAL,
 )
 
 watchEffect(() => {
@@ -58,7 +69,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { taskRuns, interval: taskRunInterval } = useTaskRuns(
   baseUrl,
   taskRunIds,
-  5000,
+  TASK_RUN_REFRESH_INTERVAL,
 )
 const task = computed(() => {
   if (!taskRuns.value?.length) return
@@ -78,54 +89,77 @@ watchEffect(() => {
   }
 })
 
-watchEffect(async () => {
-  if (category.value === 'completed') {
-    const taskRunId = task.value?.taskId
-    if (!taskRunId) {
-      throw new Error('Task run ID is not available')
-    }
-
-    const filterId = props.chart.result.filterId
-    const archiveProduct = props.chart.result.archiveProduct
-
-    if (filterId) {
-      const filter = {
-        taskRunIds: taskRunId,
-        filterId,
+watch(
+  category,
+  async () => {
+    if (category.value === 'completed') {
+      const taskRunId = task.value?.taskId
+      if (!taskRunId) {
+        throw new Error('Task run ID is not available')
       }
-      emit('addFilter', { filter })
-      emit('remove')
-    }
 
-    if (archiveProduct) {
-      const charts = await getChartsForTaskRun(taskRunId)
-      charts.forEach((chart) => emit('addChart', chart))
-      emit('remove')
+      const filterId = props.chart.result.filterId
+      const archiveProduct = props.chart.result.archiveProduct
+
+      const filter = filterId
+        ? {
+            taskRunIds: taskRunId,
+            filterId,
+          }
+        : undefined
+
+      isLoading.value = true
+      const charts = archiveProduct ? await getChartsForTaskRun(taskRunId) : []
+      isLoading.value = false
+
+      if (filterId || archiveProduct) {
+        emit('remove')
+        if (filter) emit('addFilter', { filter })
+        charts.forEach((chart) => emit('addChart', chart))
+      }
     }
-  }
-})
+  },
+  { immediate: true },
+)
 
 async function getChartsForTaskRun(taskRunId: string): Promise<ProductChart[]> {
   const attributes = [{ key: 'taskRunId', value: taskRunId }]
 
-  try {
-    const products = await fetchProductsMetaData(baseUrl, {
-      attribute: attributesToObject(attributes),
-      // @ts-expect-error: FIXME: Not yet added to the filter type
-      forecastCount: 1,
-    })
+  const fetchProducts = async (): Promise<ProductChart[]> => {
+    try {
+      const response = await fetchProductsMetaData(baseUrl, {
+        attribute: attributesToObject(attributes),
+        // @ts-expect-error: FIXME: Not yet added to the filter type
+        forecastCount: 10,
+      })
 
-    // TODO: Filter on area and source id?
-    return products.map((product) => ({
-      id: crypto.randomUUID(),
-      type: 'product',
-      title: `Product for Task Run ${taskRunId}`,
-      product,
-      subplot: { items: [] },
-    }))
-  } catch (error) {
-    console.error('Error fetching products metadata:', error)
-    return []
+      // TODO: Filter on area and source id?
+      return response.map((product) => ({
+        id: crypto.randomUUID(),
+        type: 'product',
+        title: `Product for Task Run ${taskRunId}`,
+        product,
+        subplot: { items: [] },
+      }))
+    } catch (error) {
+      console.error('Error fetching products metadata:', error)
+      return []
+    }
   }
+
+  const waitForProducts = async (): Promise<ProductChart[]> => {
+    let products: ProductChart[] = []
+    while (products.length === 0) {
+      products = await fetchProducts()
+      if (products.length === 0) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, PRODUCT_META_DATA_REFRESH_INTERVAL),
+        )
+      }
+    }
+    return products
+  }
+
+  return await waitForProducts()
 }
 </script>
