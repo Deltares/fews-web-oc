@@ -7,9 +7,7 @@
       :productId="props.productId"
     >
       <template #footer>
-        <v-list-item
-          density="compact"
-        >
+        <v-list-item density="compact">
           Last updated: {{ toHumanReadableDate(lastUpdated) }}
           <template #append>
             <v-btn
@@ -19,8 +17,8 @@
               @click="refresh()"
             >
               <v-icon>mdi-refresh</v-icon>
-            </v-btn></template
-          >
+            </v-btn>
+          </template>
         </v-list-item>
       </template>
     </ProductsBrowserTable>
