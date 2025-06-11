@@ -20,6 +20,12 @@ export function useProducts(
 ) {
   const products = ref<ProductMetaDataType[]>([])
   const error = ref<string | null>(null)
+  const lastUpdated = ref<Date | null>(null)
+
+  const refresh = () => {
+    error.value = null
+    fetchProducts()
+  }
 
   const provider = new PiArchiveWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -37,6 +43,7 @@ export function useProducts(
         .filter((p) => p.sourceId === 'demo')
         .map(convertToProductMetaDataType)
       products.value = await Promise.all(itemPromises)
+      lastUpdated.value = new Date()
     } catch (err) {
       error.value = 'Error fetching product metadata'
       console.error(err)
@@ -55,6 +62,8 @@ export function useProducts(
     products,
     fetchProducts,
     getProductByKey,
+    refresh,
+    lastUpdated,
     error,
   }
 }

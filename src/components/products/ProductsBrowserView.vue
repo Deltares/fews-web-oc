@@ -5,7 +5,25 @@
       :config="tableLayout"
       class="product-browser__table"
       :productId="props.productId"
-    />
+    >
+      <template #footer>
+        <v-list-item
+          density="compact"
+        >
+          Last updated: {{ toHumanReadableDate(lastUpdated) }}
+          <template #append>
+            <v-btn
+              class="refresh-container"
+              variant="text"
+              icon
+              @click="refresh()"
+            >
+              <v-icon>mdi-refresh</v-icon>
+            </v-btn></template
+          >
+        </v-list-item>
+      </template>
+    </ProductsBrowserTable>
     <div class="flex-1-1 h-100 flex-column position-relative">
       <EditReport v-if="isEditing" v-model="htmlContent" @save="onSave" />
       <template v-else>
@@ -61,6 +79,7 @@ import { ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
 import { useProducts } from '@/services/useProducts'
 import { type DocumentBrowserDisplay } from '@/lib/products/documentDisplay'
 import { DateTime } from 'luxon'
+import { toHumanReadableDate } from '@/lib/date'
 import {
   type IntervalItem,
   periodToIntervalItem,
@@ -131,7 +150,10 @@ const filter = computed(() => {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { products, getProductByKey } = useProducts(baseUrl, filter)
+const { products, getProductByKey, refresh, lastUpdated } = useProducts(
+  baseUrl,
+  filter,
+)
 
 watchEffect(() => {
   const documentDisplay = toValue(props.config)
