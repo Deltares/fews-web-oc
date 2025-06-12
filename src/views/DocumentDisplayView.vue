@@ -27,7 +27,10 @@ import { configManager } from '@/services/application-config'
 import { TopologyNode } from '@deltares/fews-pi-requests'
 import { onMounted, ref, toValue, watchEffect } from 'vue'
 import ProductReportView from './ProductReportView.vue'
-import { type ComponentSettings, getDefaultSettings } from '@/lib/topology/componentSettings'
+import {
+  type ComponentSettings,
+  getDefaultSettings,
+} from '@/lib/topology/componentSettings'
 
 interface Props {
   nodeId?: string | string[]
