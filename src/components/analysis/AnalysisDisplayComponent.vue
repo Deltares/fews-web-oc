@@ -70,14 +70,14 @@
         />
       </v-toolbar-items>
     </div>
-    <div class="d-flex justify-center flex-1-1 overflow-auto">
+    <div class="d-flex flex-column flex-1-1 overflow-auto">
+      <v-card-title class="flex-0-0 d-flex ga-2 align-center">
+        <AnalysisCollection
+          v-model:selectedCollection="selectedCollection"
+          v-model:collections="collections"
+        />
+      </v-card-title>
       <div class="w-100 overflow-y-auto">
-        <v-card-title class="flex-0-0 d-flex ga-2 align-center">
-          <AnalysisCollection
-            v-model:selectedCollection="selectedCollection"
-            v-model:collections="collections"
-          />
-        </v-card-title>
         <AnalysisCollectionCharts
           v-if="selectedCollection.charts.length"
           v-model:collection="selectedCollection"
