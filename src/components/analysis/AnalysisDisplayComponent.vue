@@ -148,7 +148,7 @@ const collections = useStorage<Collection[]>(
 const selectedCollection = ref<Collection>(collections.value[0])
 
 function addChart(chart: Chart) {
-  selectedCollection.value.charts = [...selectedCollection.value.charts, chart]
+  selectedCollection.value.charts = [chart, ...selectedCollection.value.charts]
 }
 
 const requests = computed<ActionRequest[]>((prevRequests) => {
