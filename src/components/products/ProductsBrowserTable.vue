@@ -1,5 +1,5 @@
 <template>
-  <div class="products-browser position-relative h-100">
+  <div class="products-browser position-relative h-100 d-flex flex-column">
     <v-toolbar density="compact">
       <v-btn
         prepend-icon="mdi-file-upload"
@@ -69,6 +69,7 @@
             : 'unselected-row',
         })
       "
+      class="d-flex flex-1-1"
       density="compact"
       @click:row="onClick"
     >
@@ -149,15 +150,9 @@
         </tr>
       </template>
     </v-data-table>
-    <v-list-item
-      class="products-browser__footer w-100"
-      :title="`Last updated: ${lastUpdatedString}`"
-    >
-      <template #append>
-        <v-progress-circular v-if="isLoading" size="20" indeterminate />
-        <v-btn v-else density="compact" variant="plain" icon="mdi-refresh" />
-      </template>
-    </v-list-item>
+    <div>
+      <slot name="footer"> </slot>
+    </div>
   </div>
 </template>
 <script setup lang="ts">
@@ -273,9 +268,6 @@ const items = computed(() => {
   }))
 })
 
-const isLoading = ref(false)
-const lastUpdatedString = ref('')
-
 function onClick(
   _event: PointerEvent,
   entry: {
@@ -295,17 +287,6 @@ function onClick(
 <style scoped>
 .refresh-container {
   height: 28px;
-}
-
-.products-browser__table {
-  height: 100%;
-  display: grid;
-  grid-template-rows: auto 1fr auto auto;
-}
-
-.products-browser__footer {
-  position: absolute;
-  bottom: 0px;
 }
 
 :deep(.selected-row) {
