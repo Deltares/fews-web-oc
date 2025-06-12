@@ -149,7 +149,6 @@ async function getChartsForTaskRun(
         type: 'product',
         title: `Product of ${chartTitle}`,
         product,
-        subplot: { items: [] },
       }))
     } catch (error) {
       console.error('Error fetching products metadata:', error)

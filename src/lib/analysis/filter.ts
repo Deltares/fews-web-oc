@@ -26,10 +26,10 @@ export async function createNewChartsForFilter(
   replaceDuplicateColors(actions, colorsStore.colors)
 
   const results = actions.results
-
-  const newSubplots = results.flatMap(
-    (result) => result.config?.timeSeriesDisplay.subplots ?? [],
+  const displays = results.flatMap(
+    (result) => result.config?.timeSeriesDisplay ?? [],
   )
+  const newSubplots = displays.flatMap((display) => display.subplots ?? [])
   const newRequests = results
     .flatMap((result) => result.requests)
     .filter((req, i, s) => i === s.findIndex((r) => r.key === req.key))
@@ -46,17 +46,22 @@ export async function createNewChartsForFilter(
     locationIds,
   })
 
-  const newCharts: FilterChart[] = newSubplots.map((subPlot) => {
-    const requests = getActionRequestsForSubplot(subPlot, newRequests)
-    const headers = requests.flatMap((req) => newHeaders[req.key ?? ''])
-    const title = getTitleFromHeaders(headers, locations)
-    return {
-      id: crypto.randomUUID(),
-      type: 'filter',
-      title: titlePrefix ? `${titlePrefix}${title}` : title,
-      subplot: subPlot,
-      requests: requests,
-    }
+  const newCharts: FilterChart[] = displays.flatMap((display) => {
+    const subplots = display.subplots ?? []
+    const forecastLegend = display.forecastLegend
+    return subplots.flatMap((subplot) => {
+      const requests = getActionRequestsForSubplot(subplot, newRequests)
+      const headers = requests.flatMap((req) => newHeaders[req.key ?? ''])
+      const title = getTitleFromHeaders(headers, locations)
+      return {
+        id: crypto.randomUUID(),
+        type: 'filter',
+        title: titlePrefix ? `${titlePrefix}${title}` : title,
+        subplot,
+        requests,
+        forecastLegend,
+      }
+    })
   })
   return newCharts
 }

@@ -22,12 +22,14 @@ export interface Settings {
 export interface BaseChart {
   id: string
   title: string
-  subplot: TimeSeriesDisplaySubplot
+  type: string
 }
 
 export interface FilterChart extends BaseChart {
   type: 'filter'
   requests: ActionRequest[]
+  subplot: TimeSeriesDisplaySubplot
+  forecastLegend?: string
 }
 
 export interface CorrelationChart extends BaseChart {
@@ -35,6 +37,8 @@ export interface CorrelationChart extends BaseChart {
   timeSeriesNameYAxis: string
   timeSeriesNameXAxis: string
   filter: Omit<CorrelationFilter, 'startTime' | 'endTime'>
+  subplot: TimeSeriesDisplaySubplot
+  forecastLegend?: string
 }
 
 interface ArchiveProduct {
@@ -62,7 +66,14 @@ export interface ProductChart extends BaseChart {
   product: ProductMetaDataType
 }
 
-export type Chart = FilterChart | CorrelationChart | AsyncChart | ProductChart
+export type PlotChart = FilterChart | CorrelationChart
+
+export type Chart =
+  | FilterChart
+  | CorrelationChart
+  | AsyncChart
+  | ProductChart
+  | PlotChart
 
 export interface Dependant {
   seriesIds: string[]

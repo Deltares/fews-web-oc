@@ -42,7 +42,6 @@ function addChart(taskId: string) {
     id: crypto.randomUUID(),
     type: 'async',
     title,
-    subplot: { items: [] },
     taskId,
     result: {
       filterId: result.filterId,
