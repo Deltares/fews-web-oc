@@ -1,7 +1,7 @@
 <template>
   <div class="overflow-y-auto">
     <template v-for="chart in collection.charts" :key="chart.id">
-      <AnalysisCollectionChart
+      <AnalysisFilterChart
         v-if="chart.type === 'filter'"
         :chart
         :subplot="chart.subplot"
@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import AnalysisProductChart from './AnalysisProductChart.vue'
-import AnalysisCollectionChart from './AnalysisCollectionChart.vue'
+import AnalysisFilterChart from './AnalysisFilterChart.vue'
 import AnalysisCorrelationChart from './AnalysisCorrelationChart.vue'
 import AnalysisAsyncChart from './AnalysisAsyncChart.vue'
 import type { Chart, Collection, CollectionEmits } from '@/lib/analysis'
