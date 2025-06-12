@@ -6,8 +6,8 @@ import {
   PiWebserviceProvider,
 } from '@deltares/fews-pi-requests'
 import type { MaybeRefOrGetter } from 'vue'
-import { ref, shallowRef, toValue, watchEffect } from 'vue'
-import { useFocusAwareInterval } from '../useFocusAwareInterval'
+import { ref, shallowRef, toValue, watch } from 'vue'
+import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 import { Pausable } from '@vueuse/core'
 
 export function useTaskRuns(
@@ -53,9 +53,11 @@ export function useTaskRuns(
     interval.value = useFocusAwareInterval(loadTaskRun, refreshInterval, {
       immediateCallback: true,
     })
+  } else {
+    loadTaskRun()
   }
 
-  watchEffect(loadTaskRun)
+  watch(() => toValue(taskRunIds), loadTaskRun)
 
   return {
     taskRuns,

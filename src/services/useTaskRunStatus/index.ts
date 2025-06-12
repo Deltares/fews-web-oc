@@ -6,9 +6,9 @@ import {
   type TaskRunStatusResponse,
 } from '@deltares/fews-pi-requests'
 import type { MaybeRefOrGetter } from 'vue'
-import { ref, shallowRef, toValue, watchEffect } from 'vue'
+import { ref, shallowRef, toValue, watch } from 'vue'
 import { configManager } from '@/services/application-config'
-import { useFocusAwareInterval } from '../useFocusAwareInterval'
+import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 import { Pausable } from '@vueuse/core'
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -51,9 +51,11 @@ export function useTaskRunStatus(
     interval.value = useFocusAwareInterval(loadTaskRunStatus, refreshInterval, {
       immediateCallback: true,
     })
+  } else {
+    loadTaskRunStatus()
   }
 
-  watchEffect(loadTaskRunStatus)
+  watch(() => toValue(filter), loadTaskRunStatus)
 
   return {
     taskRunStatus,
