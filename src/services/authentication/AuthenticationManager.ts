@@ -13,6 +13,18 @@ export class AuthenticationManager {
       this.initPromise = (async () => {
         this.userManager = new UserManager(settings)
         this.user = await this.userManager.getUser()
+        if (this.user?.expired) {
+          try {
+            this.user = await this.userManager.signinSilent()
+          } catch (error) {
+            console.error('Silent sign-in failed:', error)
+            // Redirect to interactive login as a fallback
+            await this.userManager.signinRedirect()
+            // The following return ensures no further code is executed after signinRedirect,
+            // as it performs a full-page navigation and interrupts the current execution.
+            return
+          }
+        }
         this.userManager.events.addUserLoaded((user: User) => {
           this.user = user
         })
