@@ -14,7 +14,7 @@
         ref="chartLegendContainer"
         :style="chartLegendContainerStyle"
         class="chart-legend-container w-100"
-        :class="{ 'align-self-end': !overlay }"
+        :class="{ 'mt-auto': !overlay }"
       >
         <v-chip-group
           ref="chartLegend"
