@@ -1,7 +1,15 @@
 <template>
   <AnalysisChartCard :chart="chart" v-bind="$attrs">
-    <div class="product-container px-8 mb-4">
-      <Product :product="chart.product" />
+    <div class="h-100 w-100 px-8 d-flex justify-center align-center">
+      <v-card
+        flat
+        class="product-container mb-4 d-flex justify-center overflow-y-auto"
+        max-height="400"
+        max-width="1000"
+        width="100%"
+      >
+        <Product :product="chart.product" />
+      </v-card>
     </div>
   </AnalysisChartCard>
 </template>
@@ -18,14 +26,6 @@ defineProps<Props>()
 </script>
 
 <style scoped>
-.product-container {
-  max-height: 400px;
-  width: 100%;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-}
-
 .product-container :deep(img) {
   width: 100%;
   height: auto;
@@ -34,8 +34,7 @@ defineProps<Props>()
 }
 
 .product-container :deep(iframe) {
-  width: min(1000px, 100%);
+  width: 100%;
   height: 400px;
-  border-radius: 2px;
 }
 </style>
