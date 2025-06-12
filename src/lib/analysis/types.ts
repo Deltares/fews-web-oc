@@ -27,6 +27,7 @@ export interface BaseChart {
 
 export interface FilterChart extends BaseChart {
   type: 'filter'
+  filterId: string
   requests: ActionRequest[]
   subplot: TimeSeriesDisplaySubplot
   forecastLegend?: string

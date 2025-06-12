@@ -79,7 +79,6 @@ import type {
   BoundingBox,
   Filter,
   filterActionsFilter,
-  Header,
   Location,
 } from '@deltares/fews-pi-requests'
 import Autocomplete from '@/components/general/Autocomplete.vue'
@@ -88,28 +87,31 @@ import AnalysisAddButton from '@/components/analysis/AnalysisAddButton.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
-import type { FeatureCollection, Geometry } from 'geojson'
 import { useParametersStore } from '@/stores/parameters'
 import { createNewChartsForFilter, type CollectionEmits } from '@/lib/analysis'
+import { useFilterLocations } from '@/services/useFilterLocations'
+import { useTimeSeriesHeaders } from '@/services/useTimeSeries'
+import { configManager } from '@/services/application-config'
 
 interface Props {
   filters?: Filter[]
-  locations: Location[]
-  geojson: FeatureCollection<Geometry, Location>
-  timeSeriesHeaders: Header[]
   boundingBox?: BoundingBox
   isActive?: boolean
 }
 
 const props = defineProps<Props>()
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const showMap = ref(false)
 
 const isLoading = ref(false)
 const parametersStore = useParametersStore()
 
-const filterId = defineModel<string | undefined>('filterId', {
-  required: true,
-})
+const filterId = ref<string | undefined>(props.filters?.[0]?.id)
+
+const { locations, geojson } = useFilterLocations(baseUrl, () =>
+  filterId.value ? [filterId.value] : [],
+)
+const { timeSeriesHeaders } = useTimeSeriesHeaders(baseUrl, filterId)
 
 const emit = defineEmits<CollectionEmits>()
 
@@ -146,7 +148,7 @@ const filteredModuleInstanceIds = computed(
   () => filteredData.value.moduleInstanceIds,
 )
 const filteredLocations = computed(() =>
-  props.locations.filter((location) =>
+  locations.value.filter((location) =>
     filteredData.value.locationIds.includes(location.locationId),
   ),
 )
@@ -192,7 +194,7 @@ const filteredData = computed(() => {
   const moduleInstanceIdsSet = new Set<string>()
   const locationIdsSet = new Set<string>()
 
-  props.timeSeriesHeaders.forEach((header) => {
+  timeSeriesHeaders.value.forEach((header) => {
     const matchesLocation =
       !hasLocationIds || locationIds.includes(header.locationId)
     const matchesParameter =
@@ -223,8 +225,8 @@ const filteredData = computed(() => {
 
 const filterLocationGeoJson = computed(() => {
   return {
-    ...props.geojson,
-    features: props.geojson.features.filter((feature) =>
+    ...geojson.value,
+    features: geojson.value.features.filter((feature) =>
       filteredData.value.locationIds.includes(feature.properties?.locationId),
     ),
   }

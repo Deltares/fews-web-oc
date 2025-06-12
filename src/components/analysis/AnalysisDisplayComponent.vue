@@ -9,18 +9,13 @@
     >
       <div v-show="tab === 'data-selection'" class="h-100">
         <AnalysisDataSelection
-          v-model:filterId="filterId"
           :filters="config.filters"
-          :locations="locations"
-          :geojson="geojson"
-          :timeSeriesHeaders="timeSeriesHeaders"
           :boundingBox="boundingBox"
           @addChart="addChart"
         />
       </div>
       <div v-show="tab === 'analysis'" class="h-100">
         <AnalysisFunctions
-          :filterId="filterId"
           :charts="selectedCollection.charts"
           :series="series"
           :startTime="selectedCollection.settings.startTime"
@@ -112,9 +107,8 @@ import type {
   DataAnalysisDisplayElement,
 } from '@deltares/fews-pi-requests'
 import { computed, ref, watch } from 'vue'
-import { useFilterLocations } from '@/services/useFilterLocations'
 import { configManager } from '@/services/application-config'
-import { useTimeSeries, useTimeSeriesHeaders } from '@/services/useTimeSeries'
+import { useTimeSeries } from '@/services/useTimeSeries'
 import {
   type ComponentSettings,
   getDefaultSettings,
@@ -135,7 +129,7 @@ interface Props {
   settings?: ComponentSettings
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
 
@@ -152,13 +146,6 @@ const collections = useStorage<Collection[]>(
   },
 )
 const selectedCollection = ref<Collection>(collections.value[0])
-
-const filterId = ref(props.config.filters?.[0].id)
-
-const { locations, geojson } = useFilterLocations(baseUrl, () =>
-  filterId.value ? [filterId.value] : [],
-)
-const { timeSeriesHeaders } = useTimeSeriesHeaders(baseUrl, filterId)
 
 function addChart(chart: Chart) {
   selectedCollection.value.charts = [...selectedCollection.value.charts, chart]

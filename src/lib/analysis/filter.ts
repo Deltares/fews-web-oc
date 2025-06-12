@@ -57,6 +57,7 @@ export async function createNewChartsForFilter(
         id: crypto.randomUUID(),
         type: 'filter',
         title: titlePrefix ? `${titlePrefix}${title}` : title,
+        filterId: filter.filterId ?? 'invalid',
         subplot,
         requests,
         forecastLegend,

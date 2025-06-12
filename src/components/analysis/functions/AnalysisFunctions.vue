@@ -27,7 +27,6 @@
       />
       <AnalysisTimeResampling
         v-if="selectedFunction === 'time-resampling'"
-        :filterId
         :charts
         :series
         :startTime
@@ -50,7 +49,6 @@ import type { Chart, CollectionEmits } from '@/lib/analysis'
 import type { DataAnalysisDisplayElement } from '@deltares/fews-pi-requests'
 
 interface Props {
-  filterId?: string
   charts: Chart[]
   series: Record<string, Series>
   startTime?: Date
