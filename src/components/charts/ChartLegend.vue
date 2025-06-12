@@ -99,12 +99,10 @@ const height = computed(() => {
     return numOfLines * chipHeight + 4
   }
 })
-const heightStyle = computed(() => {
-  if (props.settings.numberOfLines === 'all') {
-    return `${legendHeight.value}px`
-  }
 
-  return `${height.value}px`
+const heightStyle = computed(() => {
+  const smallestHeight = Math.min(height.value ?? Infinity, legendHeight.value)
+  return `${smallestHeight}px`
 })
 
 const chartLegend = useTemplateRef('chartLegend')
