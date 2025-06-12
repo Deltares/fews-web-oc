@@ -151,8 +151,7 @@
       </template>
     </v-data-table>
     <div>
-      <slot name="footer">
-      </slot>
+      <slot name="footer"> </slot>
     </div>
   </div>
 </template>
@@ -289,8 +288,6 @@ function onClick(
 .refresh-container {
   height: 28px;
 }
-
-
 
 :deep(.selected-row) {
   background-color: rgb(var(--v-theme-on-surface), var(--v-activated-opacity));
