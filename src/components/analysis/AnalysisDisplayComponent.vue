@@ -80,7 +80,7 @@
         </v-card-title>
         <AnalysisCollectionCharts
           v-if="selectedCollection.charts.length"
-          :collection="selectedCollection"
+          v-model:collection="selectedCollection"
           :series="series"
           :settings="settings"
           :startTime="selectedCollection.settings.startTime"

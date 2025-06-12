@@ -45,14 +45,17 @@ import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'
 
 interface Props {
-  collection: Collection
   series: Record<string, Series>
   settings: ComponentSettings
   startTime: Date
   endTime: Date
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
+
+const collection = defineModel<Collection>('collection', {
+  required: true,
+})
 
 const emit = defineEmits<CollectionEmits>()
 
@@ -61,8 +64,8 @@ const zoomHandler = new ZoomHandler({
 })
 
 function removeChart(chart: Chart) {
-  props.collection.charts.splice(
-    props.collection.charts.findIndex((c) => c === chart),
+  collection.value.charts.splice(
+    collection.value.charts.findIndex((c) => c === chart),
     1,
   )
 }
