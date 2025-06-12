@@ -115,7 +115,7 @@ watch(
         : []
 
       const archiveCharts = archiveProduct
-        ? await getChartsForTaskRun(taskRunId)
+        ? await getChartsForTaskRun(props.chart.title, taskRunId)
         : []
       isLoading.value = false
 
@@ -129,7 +129,10 @@ watch(
   { immediate: true },
 )
 
-async function getChartsForTaskRun(taskRunId: string): Promise<ProductChart[]> {
+async function getChartsForTaskRun(
+  chartTitle: string,
+  taskRunId: string,
+): Promise<ProductChart[]> {
   const attributes = [{ key: 'taskRunId', value: taskRunId }]
 
   const fetchProducts = async (): Promise<ProductChart[]> => {
@@ -144,7 +147,7 @@ async function getChartsForTaskRun(taskRunId: string): Promise<ProductChart[]> {
       return response.map((product) => ({
         id: crypto.randomUUID(),
         type: 'product',
-        title: `Product for Task Run ${taskRunId}`,
+        title: `Product of ${chartTitle}`,
         product,
         subplot: { items: [] },
       }))
