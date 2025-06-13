@@ -122,6 +122,8 @@ import {
 } from '@/lib/analysis'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useStorage } from '@vueuse/core'
+import { useTaskRunColorsStore } from '@/stores/taskRunColors'
+import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
 
 interface Props {
   config: DataAnalysisDisplayElement
@@ -132,6 +134,10 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
+
+// Fetch colors and time steps from stores
+useTaskRunColorsStore()
+useAvailableTimeStepsStore()
 
 const userSettings = useUserSettingsStore()
 
