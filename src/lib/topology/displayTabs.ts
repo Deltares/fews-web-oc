@@ -139,8 +139,9 @@ export async function displayTabsForNode(
         tab.to.params = { ...params }
         break
       case 'plugin-display':
+        const customComponent = node.id.split('-')[1]
         tab.active = nodeHasPlugin(node)
-        tab.to.params = { ...params }
+        tab.to.params = { ...params, customComponent }
         break
     }
   }
