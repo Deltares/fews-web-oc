@@ -5,7 +5,6 @@
       :series
       :zoomHandler
       :settings="settings.charts.timeSeriesChart"
-      :forecast-legend="chart.forecastLegend"
     />
   </AnalysisChartCard>
 </template>

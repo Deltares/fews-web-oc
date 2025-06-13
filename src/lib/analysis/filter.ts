@@ -48,7 +48,6 @@ export async function createNewChartsForFilter(
 
   const newCharts: FilterChart[] = displays.flatMap((display) => {
     const subplots = display.subplots ?? []
-    const forecastLegend = display.forecastLegend
     return subplots.flatMap((subplot) => {
       const requests = getActionRequestsForSubplot(subplot, newRequests)
       const headers = requests.flatMap((req) => newHeaders[req.key ?? ''])
@@ -60,7 +59,6 @@ export async function createNewChartsForFilter(
         filterId: filter.filterId ?? 'invalid',
         subplot,
         requests,
-        forecastLegend,
       }
     })
   })

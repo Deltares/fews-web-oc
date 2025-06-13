@@ -30,7 +30,6 @@ export interface FilterChart extends BaseChart {
   filterId: string
   requests: ActionRequest[]
   subplot: TimeSeriesDisplaySubplot
-  forecastLegend?: string
 }
 
 export interface CorrelationChart extends BaseChart {
@@ -39,7 +38,6 @@ export interface CorrelationChart extends BaseChart {
   timeSeriesNameXAxis: string
   filter: Omit<CorrelationFilter, 'startTime' | 'endTime'>
   subplot: TimeSeriesDisplaySubplot
-  forecastLegend?: string
 }
 
 interface ArchiveProduct {
