@@ -12,7 +12,7 @@
       </template>
     </v-toolbar>
     <v-chip-group
-      class="px-2 py-2 d-flex flex-wrap"
+      class="px-2 py-2 d-flex flex-wrap flex-0-0"
       v-model="selectedWarningLevelIds"
       multiple
       column
@@ -48,7 +48,7 @@
     <!-- Important to have item-height as it greatly improves performance -->
     <v-virtual-scroll
       ref="virtualScroll"
-      class="scroll-container h-100"
+      class="scroll-container flex-1-1"
       :items="groupedCrossings"
       :item-height="52"
     >
