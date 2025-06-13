@@ -56,6 +56,7 @@ import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
 import { configManager } from '@/services/application-config'
 import EditReport from '@/components/reports/EditReport.vue'
 import DOMPurify from 'dompurify'
+import { postProduct } from '@/lib/products/requests'
 
 interface Props {
   config?: ReportDisplay
@@ -150,7 +151,7 @@ watchEffect(() => {
 })
 
 watchEffect(async () => {
-  const productMetaData = products.value[0]
+  const productMetaData = products.value[1]
   console.log('Selected product metadata:', productMetaData)
   if (!productMetaData) {
     src.value = ''
@@ -165,6 +166,7 @@ watchEffect(async () => {
   const transformRequest = createTransformRequestFn()
   const request = await transformRequest(new Request(url, {}))
   const response = await fetch(request)
+
   if (currentViewMode === 'html') {
     const clone = response.clone()
     htmlContent.value = DOMPurify.sanitize(await clone.text(), {
@@ -181,8 +183,28 @@ watchEffect(async () => {
   src.value = urlObject
 })
 
-function onSave() {
-  isEditing.value = false
+async function onSave() {
+  console.log('Saving report content...')
+  const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const archiveUrl = `${piUrl}rest/fewspiservice/v1/archive/`
+  const metaData = products.value[0]
+  const fileName = metaData.relativePathProducts[0].split('/').pop() ?? 'unknown'
+  try {
+    const response = await postProduct(
+      archiveUrl,
+      metaData.areaId,
+      metaData.sourceId,
+      metaData.timeZero,
+      htmlContent.value,
+      fileName,
+      metaData.attributes,
+    )
+  } catch (error) {
+    console.error('Error saving report:', error)
+    return
+  } finally {
+    isEditing.value = false
+  }
 }
 </script>
 
