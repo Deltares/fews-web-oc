@@ -85,8 +85,7 @@ const showChartPanel = computed(() => {
 const selectedDateOfSlider = ref<Date>(times.value[0])
 
 function onNavigate(event: any) {
-  console.log('navigate event', event)
-  router.push(event)
+  emit('navigate', event)
 }
 
 function closeTimeSeriesDisplay(): void {
