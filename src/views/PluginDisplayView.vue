@@ -1,10 +1,6 @@
 <template>
   <div class="d-flex w-100 h-100 flex-row">
     <div class="h-100 d-flex flex-column child-container">
-      <v-toolbar density="compact">
-        Plugin Display View
-        <div class="d-flex align-center" id="plugin-toolbar"></div>
-      </v-toolbar>
       <div class="w-100 d-flex flex-1-1 overflow-x-auto overflow-y-hidden">
         <PluginLoader
           :componentName="correctComponent"
