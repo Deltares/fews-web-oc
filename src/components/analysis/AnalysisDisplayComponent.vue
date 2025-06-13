@@ -9,6 +9,7 @@
     >
       <div v-show="tab === 'data-selection'" class="h-100">
         <AnalysisDataSelection
+          :charts="selectedCollection.charts"
           :filters="config.filters"
           :boundingBox="boundingBox"
           @addChart="addChart"
@@ -70,17 +71,17 @@
         />
       </v-toolbar-items>
     </div>
-    <div class="d-flex justify-center flex-1-1 overflow-auto">
+    <div class="d-flex flex-column flex-1-1 overflow-auto">
+      <v-card-title class="flex-0-0 d-flex ga-2 align-center">
+        <AnalysisCollection
+          v-model:selectedCollection="selectedCollection"
+          v-model:collections="collections"
+        />
+      </v-card-title>
       <div class="w-100 overflow-y-auto">
-        <v-card-title class="flex-0-0 d-flex ga-2 align-center">
-          <AnalysisCollection
-            v-model:selectedCollection="selectedCollection"
-            v-model:collections="collections"
-          />
-        </v-card-title>
         <AnalysisCollectionCharts
           v-if="selectedCollection.charts.length"
-          :collection="selectedCollection"
+          v-model:collection="selectedCollection"
           :series="series"
           :settings="settings"
           :startTime="selectedCollection.settings.startTime"
@@ -122,6 +123,8 @@ import {
 } from '@/lib/analysis'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useStorage } from '@vueuse/core'
+import { useTaskRunColorsStore } from '@/stores/taskRunColors'
+import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
 
 interface Props {
   config: DataAnalysisDisplayElement
@@ -132,6 +135,10 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
+
+// Fetch colors and time steps from stores
+useTaskRunColorsStore()
+useAvailableTimeStepsStore()
 
 const userSettings = useUserSettingsStore()
 
@@ -148,7 +155,7 @@ const collections = useStorage<Collection[]>(
 const selectedCollection = ref<Collection>(collections.value[0])
 
 function addChart(chart: Chart) {
-  selectedCollection.value.charts = [...selectedCollection.value.charts, chart]
+  selectedCollection.value.charts = [chart, ...selectedCollection.value.charts]
 }
 
 const requests = computed<ActionRequest[]>((prevRequests) => {

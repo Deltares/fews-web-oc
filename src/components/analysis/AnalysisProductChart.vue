@@ -1,6 +1,6 @@
 <template>
   <AnalysisChartCard :chart="chart" v-bind="$attrs">
-    <div class="h-100 w-100 px-8 d-flex justify-center align-center">
+    <div class="px-8 d-flex justify-center align-center">
       <v-card
         flat
         class="product-container mb-4 d-flex justify-center overflow-y-auto"

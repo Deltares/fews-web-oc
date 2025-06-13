@@ -1,9 +1,9 @@
 <template>
-  <AnalysisCollectionChart :chart :subplot :series :settings v-bind="$attrs" />
+  <AnalysisFilterChart :chart :subplot :series :settings v-bind="$attrs" />
 </template>
 
 <script setup lang="ts">
-import AnalysisCollectionChart from './AnalysisCollectionChart.vue'
+import AnalysisFilterChart from './AnalysisFilterChart.vue'
 import type { CorrelationChart } from '@/lib/analysis'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import type { ZoomHandler } from '@deltares/fews-web-oc-charts'
