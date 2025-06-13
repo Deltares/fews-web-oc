@@ -284,7 +284,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         meta: { sidebar: true },
       },
       {
-        path: 'plugin',
+        path: 'plugin/:customComponent',
         name: 'TopologyPluginDisplay',
         component: PluginDisplayView,
         props: true,
