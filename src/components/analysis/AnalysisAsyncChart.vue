@@ -19,7 +19,7 @@
 import TaskRunSummary from '@/components/tasks/TaskRunSummary.vue'
 import AnalysisChartCard from '@/components/analysis/AnalysisChartCard.vue'
 import {
-  createNewChartsForFilter,
+  createNewChartsForFilters,
   type AsyncChart,
   type CollectionEmits,
   type ProductChart,
@@ -108,10 +108,12 @@ watch(
 
       isLoading.value = true
       const filterCharts = filterId
-        ? await createNewChartsForFilter({
-            taskRunIds: taskRunId,
-            filterId,
-          })
+        ? await createNewChartsForFilters([
+            {
+              taskRunIds: taskRunId,
+              filterId,
+            },
+          ])
         : []
 
       const archiveCharts = archiveProduct

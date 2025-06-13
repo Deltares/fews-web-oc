@@ -54,6 +54,7 @@
     <div class="d-flex pa-3">
       <v-spacer />
       <AnalysisAddButton
+        :charts="[]"
         :disabled="!selectedTimeseries || !selectedSecondTimeseries"
         @click="addChart"
       />

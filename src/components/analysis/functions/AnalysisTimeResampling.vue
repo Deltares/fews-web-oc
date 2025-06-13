@@ -32,9 +32,13 @@
     <div class="d-flex pa-3">
       <v-spacer />
       <AnalysisAddButton
+        :charts
         :disabled="!canAddFilter"
         :loading="isLoading"
-        @click="addFilter"
+        :newChartTitle="`Create ${filters.length} new chart${
+          filters.length > 1 ? 's' : ''
+        }`"
+        @addToChart="addFilter"
       />
     </div>
   </div>
@@ -57,10 +61,11 @@ import {
 import { uniq } from 'lodash-es'
 import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
 import {
+  addFilterToChart,
   Chart,
   ChartSeriesItem,
   type CollectionEmits,
-  createNewChartsForFilter,
+  createNewChartsForFilters,
   getValidFilterCharts,
 } from '@/lib/analysis'
 
@@ -102,35 +107,35 @@ const displayConfigOptions = computed<UseDisplayConfigOptions>(() => {
   }
 })
 
-const filterIds = computed(() =>
-  uniq(selectedTimeseries.value.map((item) => item.chart.filterId)),
-)
+const filters = computed(() => {
+  return []
+})
 
 const canAddFilter = computed(() => {
   return (
-    filterIds.value.length > 0 &&
+    filters.value.length > 0 &&
     selectedResamplingMethods.value.length > 0 &&
     selectedResamplingTimeSteps.value.length > 0
   )
 })
 
-async function addFilter() {
+async function addFilter(chart?: Chart) {
   if (!canAddFilter.value) return
 
-  const promises = filterIds.value.map((filterId) => {
-    const items = selectedTimeseries.value.filter(
-      (item) => item.chart.filterId === filterId,
-    )
-    const filter = getFilter(filterId, items)
+  if (chart === undefined) {
+    isLoading.value = true
+    const charts = await createNewChartsForFilters(filters.value)
+    isLoading.value = false
+    charts.forEach((chart) => emit('addChart', chart))
+    return
+  }
 
-    return createNewChartsForFilter(filter, 'Resampled ')
-  })
+  if (filters.value.length !== 1)
+    throw new Error('Only one filter can be added to an existing chart')
+  const filter = filters.value[0]
+  if (chart.type !== 'filter') return
 
-  isLoading.value = true
-  const charts = (await Promise.all(promises)).flat()
-  isLoading.value = false
-
-  charts.forEach((chart) => emit('addChart', chart))
+  await addFilterToChart(chart, filter)
 }
 
 function getLocationIds(items: ChartSeriesItem[]) {
@@ -145,9 +150,17 @@ function getModuleInstanceIds(series: Series[]) {
   return uniq(series.flatMap((series) => series.header.source ?? []))
 }
 
-function getFilter(filterId: string, items: ChartSeriesItem[]) {
+function getFilterIds(items: ChartSeriesItem[]) {
+  return uniq([
+    ...items.flatMap((item) => item.chart.filters.left.filterId ?? []),
+    ...items.flatMap((item) => item.chart.filters.right?.filterId ?? []),
+  ])
+}
+
+function getFilter(items: ChartSeriesItem[]) {
   const series = items.map((item) => props.series[item.series.request ?? ''])
 
+  const filterIds = getFilterIds(items).join(',')
   const locationIds = getLocationIds(items).join(',')
   const parameterIds = getParameterIds(series).join(',')
   const moduleInstanceIds = getModuleInstanceIds(series).join(',')
@@ -160,7 +173,7 @@ function getFilter(filterId: string, items: ChartSeriesItem[]) {
     .join(',')
 
   const filter: filterActionsFilter & UseDisplayConfigOptions = {
-    filterId,
+    filterId: filterIds,
     locationIds,
     parameterIds,
     // @ts-expect-error FIXME: Update when the types are updated

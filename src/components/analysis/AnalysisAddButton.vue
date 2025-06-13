@@ -1,21 +1,56 @@
 <template>
-  <v-btn
-    variant="flat"
-    :disabled="disabled"
-    prepend-icon="mdi-plus"
-    text="Add to collection"
-    :color="disabled ? undefined : 'primary'"
-    :loading="loading"
-    @click="emit('click', $event)"
-  />
+  <v-menu>
+    <template #activator="{ props }">
+      <v-btn
+        v-bind="props"
+        variant="flat"
+        :disabled="disabled"
+        prepend-icon="mdi-plus"
+        text="Add to chart"
+        :color="disabled ? undefined : 'primary'"
+        :loading="loading"
+      />
+    </template>
+    <v-list>
+      <v-list-item
+        v-for="chart in filterCharts"
+        :key="chart.id"
+        :title="chart.title"
+        prepend-icon="mdi-chart-bar"
+        density="compact"
+        @click="emit('addToChart', chart)"
+      />
+      <v-divider />
+      <v-list-item
+        :title="newChartTitle"
+        prepend-icon="mdi-plus"
+        density="compact"
+        @click="emit('addToChart')"
+      />
+    </v-list>
+  </v-menu>
 </template>
 
 <script setup lang="ts">
+import { Chart } from '@/lib/analysis'
+import { computed } from 'vue'
+
 interface Props {
+  charts: Chart[]
   disabled?: boolean
   loading?: boolean
+  newChartTitle?: string
 }
-defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  newChartTitle: 'Create new chart',
+})
 
-const emit = defineEmits(['click'])
+interface Emits {
+  addToChart: [chart?: Chart]
+}
+const emit = defineEmits<Emits>()
+
+const filterCharts = computed(() =>
+  props.charts.filter((chart) => chart.type === 'filter'),
+)
 </script>
