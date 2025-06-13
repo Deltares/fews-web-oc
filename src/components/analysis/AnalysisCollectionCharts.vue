@@ -12,7 +12,7 @@
         @remove="removeChart(chart)"
       />
       <AnalysisCorrelationChart
-        v-if="chart.type === 'correlation'"
+        v-else-if="chart.type === 'correlation'"
         :chart
         :settings
         :startTime
@@ -20,14 +20,19 @@
         @remove="removeChart(chart)"
       />
       <AnalysisAsyncChart
-        v-if="chart.type === 'async'"
+        v-else-if="chart.type === 'async'"
         :chart
         @addChart="emit('addChart', $event)"
         @remove="removeChart(chart)"
       />
       <AnalysisProductChart
-        v-if="chart.type === 'product'"
+        v-else-if="chart.type === 'product'"
         :chart
+        @remove="removeChart(chart)"
+      />
+      <AnalysisUnsupportedChart
+        v-else
+        :chart="chart"
         @remove="removeChart(chart)"
       />
     </template>
@@ -39,6 +44,7 @@ import AnalysisProductChart from './AnalysisProductChart.vue'
 import AnalysisFilterChart from './AnalysisFilterChart.vue'
 import AnalysisCorrelationChart from './AnalysisCorrelationChart.vue'
 import AnalysisAsyncChart from './AnalysisAsyncChart.vue'
+import AnalysisUnsupportedChart from './AnalysisUnsupportedChart.vue'
 import type { Chart, Collection, CollectionEmits } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
