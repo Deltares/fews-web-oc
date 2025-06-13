@@ -9,6 +9,7 @@
     >
       <div v-show="tab === 'data-selection'" class="h-100">
         <AnalysisDataSelection
+          :charts="selectedCollection.charts"
           :filters="config.filters"
           :boundingBox="boundingBox"
           @addChart="addChart"
