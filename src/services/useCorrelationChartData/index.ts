@@ -1,30 +1,21 @@
-import { Chart } from '@/lib/analysis'
+import { CorrelationChart } from '@/lib/analysis'
 import { Series } from '@/lib/timeseries/timeSeries'
 import {
   TimeSeriesDisplaySubplot,
   TimeSeriesDisplaySubplotItem,
 } from '@deltares/fews-pi-requests'
 import { computed, MaybeRefOrGetter, toValue } from 'vue'
-import { useCorrelation } from '../useCorrelation'
+import { useCorrelation } from '@/services/useCorrelation'
 import { SeriesResourceType } from '@/lib/timeseries/types'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 
 export function useCorrelationChartData(
-  _chart: MaybeRefOrGetter<Chart>,
-  _series: MaybeRefOrGetter<Record<string, Series>>,
+  chart: MaybeRefOrGetter<CorrelationChart>,
   startTime: MaybeRefOrGetter<Date>,
   endTime: MaybeRefOrGetter<Date>,
 ) {
-  const chart = computed(() => {
-    const newChart = toValue(_chart)
-    if (newChart.type !== 'correlation') {
-      throw new Error('Chart is not a correlation chart')
-    }
-    return newChart
-  })
-
   const filter = computed(() => ({
-    ...chart.value.filter,
+    ...toValue(chart).filter,
     startTime: convertJSDateToFewsPiParameter(toValue(startTime)),
     endTime: convertJSDateToFewsPiParameter(toValue(endTime)),
   }))
@@ -82,12 +73,14 @@ export function useCorrelationChartData(
   const pointsId = 'correlation-points'
 
   const subplot = computed(() => {
+    const _chart = toValue(chart)
+
     const description = correlation.value?.equation?.description
     const rSquared = correlation.value?.equation?.['R-squared']
     const legend = `${description} with r²=${rSquared?.toFixed(3)}`
     return getSubplot(
-      chart.value.timeSeriesNameXAxis,
-      chart.value.timeSeriesNameYAxis,
+      _chart.timeSeriesNameXAxis,
+      _chart.timeSeriesNameYAxis,
       lineId,
       pointsId,
       legend,

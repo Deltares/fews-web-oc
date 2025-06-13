@@ -1,0 +1,19 @@
+export function getFileExtension(url: string): string {
+  const urlParts = url.split('.')
+  return urlParts[urlParts.length - 1]
+}
+
+export type ViewMode = 'html' | 'iframe' | 'img'
+export function getViewMode(extension: string): ViewMode {
+  switch (extension) {
+    case 'html':
+      return 'html'
+    case 'png':
+    case 'jpg':
+    case 'jpeg':
+      return 'img'
+    case 'pdf':
+    default:
+      return 'iframe'
+  }
+}

@@ -2,25 +2,20 @@ import {
   ActionRequest,
   TimeSeriesDisplaySubplotItem,
 } from '@deltares/fews-pi-requests'
-import { Chart } from './types'
+import { Chart, FilterChart } from './types'
 
 export type ChartSeriesItem = {
-  chartId: string
-  chartTitle: string
+  chart: FilterChart
   series: TimeSeriesDisplaySubplotItem
 }
 
-export function getValidFilterCharts(charts: Chart[]) {
+export function getValidFilterCharts(charts: Chart[]): ChartSeriesItem[] {
   return charts
     .filter((chart) => chart.type === 'filter')
     .flatMap((chart) =>
       chart.subplot.items
         .filter((series) => isOriginalTimeseries(series, chart.requests))
-        .map((series) => ({
-          chartId: chart.id,
-          chartTitle: chart.title,
-          series,
-        })),
+        .map((series) => ({ chart, series })),
     )
 }
 

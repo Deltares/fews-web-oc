@@ -6,8 +6,8 @@
       label="X Axis Time Series"
       :getItemValue="(item) => item.series"
       :getItemTitle="(item) => item.series.legend ?? ''"
-      :getItemGroupTitle="(item) => item.chartTitle"
-      :groupBy="(item) => item.chartId"
+      :getItemGroupTitle="(item) => item.chart.title"
+      :groupBy="(item) => item.chart.id"
     />
 
     <GroupSelect
@@ -16,8 +16,8 @@
       label="Y Axis Time Series"
       :getItemValue="(item) => item.series"
       :getItemTitle="(item) => item.series.legend ?? ''"
-      :getItemGroupTitle="(item) => item.chartTitle"
-      :groupBy="(item) => item.chartId"
+      :getItemGroupTitle="(item) => item.chart.title"
+      :groupBy="(item) => item.chart.id"
     />
 
     <Autocomplete

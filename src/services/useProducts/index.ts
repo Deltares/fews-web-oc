@@ -27,26 +27,19 @@ export function useProducts(
     fetchProducts()
   }
 
-  const provider = new PiArchiveWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-
   const fetchProducts = async () => {
     const filterValue = toValue(filter)
     // Ensure the filter has a valid date range
     if (!filterValue.startForecastTime || !filterValue.endForecastTime) {
       return
     }
+
     try {
-      const response = await provider.getProductsMetaData(filterValue)
-      const itemPromises = response.productsMetadata
-        .filter((p) => p.sourceId === 'demo')
-        .map(convertToProductMetaDataType)
-      products.value = await Promise.all(itemPromises)
+      const response = await fetchProductsMetaData(baseUrl, filterValue)
+      products.value = response.filter((p) => p.sourceId === 'demo')
       lastUpdated.value = new Date()
     } catch (err) {
       error.value = 'Error fetching product metadata'
-      console.error(err)
     }
   }
 
@@ -65,6 +58,33 @@ export function useProducts(
     refresh,
     lastUpdated,
     error,
+  }
+}
+
+/**
+ * Fetch product metadata based on a given filter.
+ *
+ * @param baseUrl - The base URL for the product metadata API.
+ * @param filter - The product metadata filter.
+ * @returns A promise resolving to the list of product metadata.
+ */
+export async function fetchProductsMetaData(
+  baseUrl: string,
+  filter: ProductsMetaDataFilter,
+): Promise<ProductMetaDataType[]> {
+  const provider = new PiArchiveWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
+  try {
+    const response = await provider.getProductsMetaData(filter)
+    const itemPromises = response.productsMetadata.map(
+      convertToProductMetaDataType,
+    )
+    return await Promise.all(itemPromises)
+  } catch (err) {
+    console.error(err)
+    throw new Error('Error fetching product metadata')
   }
 }
 

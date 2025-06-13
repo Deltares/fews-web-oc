@@ -4,10 +4,10 @@
       v-model="selectedTimeseries"
       :items="allSeries"
       label="Time Series"
-      :getItemValue="(item) => item.series"
+      :getItemValue="(item) => item"
       :getItemTitle="(item) => item.series.legend ?? ''"
-      :getItemGroupTitle="(item) => item.chartTitle"
-      :groupBy="(item) => item.chartId"
+      :getItemGroupTitle="(item) => item.chart.title"
+      :groupBy="(item) => item.chart.id"
       :multiple="true"
     />
 
@@ -32,8 +32,8 @@
     <div class="d-flex pa-3">
       <v-spacer />
       <AnalysisAddButton
-        :disabled="!filter"
-        :loading="props.isLoading"
+        :disabled="!canAddFilter"
+        :loading="isLoading"
         @click="addFilter"
       />
     </div>
@@ -49,11 +49,7 @@ import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref, watch } from 'vue'
 import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import {
-  filterActionsFilter,
-  TimeSeriesDisplaySubplotItem,
-  type TimeSteps,
-} from '@deltares/fews-pi-requests'
+import { filterActionsFilter, type TimeSteps } from '@deltares/fews-pi-requests'
 import {
   type ResamplingMethod,
   resamplingMethods,
@@ -62,18 +58,18 @@ import { uniq } from 'lodash-es'
 import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
 import {
   Chart,
+  ChartSeriesItem,
   type CollectionEmits,
+  createNewChartsForFilter,
   getValidFilterCharts,
 } from '@/lib/analysis'
 
 interface Props {
-  filterId?: string
   charts: Chart[]
   series: Record<string, Series>
   startTime?: Date
   endTime?: Date
   settings: ComponentSettings
-  isLoading?: boolean
   isActive?: boolean
 }
 
@@ -83,9 +79,10 @@ const emit = defineEmits<CollectionEmits>()
 
 const userSettings = useUserSettingsStore()
 
-const selectedTimeseries = ref<TimeSeriesDisplaySubplotItem[]>([])
+const selectedTimeseries = ref<ChartSeriesItem[]>([])
 const selectedResamplingMethods = ref<ResamplingMethod[]>([])
 const selectedResamplingTimeSteps = ref<TimeSteps[]>([])
+const isLoading = ref(false)
 
 watch(() => props.isActive, clearSelections)
 function clearSelections() {
@@ -98,20 +95,6 @@ const availableTimeStepsStore = useAvailableTimeStepsStore()
 
 const allSeries = computed(() => getValidFilterCharts(props.charts))
 
-const selectedSeries = computed(() => {
-  return selectedTimeseries.value.flatMap(
-    (item) => props.series[item.request ?? ''],
-  )
-})
-
-const selectedParameterIds = computed(() =>
-  uniq(selectedSeries.value.flatMap((series) => series.header.parameter ?? [])),
-)
-
-const selectedLocationIds = computed(() =>
-  uniq(selectedTimeseries.value.flatMap((series) => series.locationId ?? [])),
-)
-
 const displayConfigOptions = computed<UseDisplayConfigOptions>(() => {
   return {
     useDisplayUnits: userSettings.useDisplayUnits,
@@ -119,38 +102,75 @@ const displayConfigOptions = computed<UseDisplayConfigOptions>(() => {
   }
 })
 
-const filter = computed(() => {
-  if (!props.filterId) return
-  if (
-    !selectedParameterIds.value.length ||
-    !selectedLocationIds.value.length ||
-    !selectedResamplingMethods.value.length ||
-    !selectedResamplingTimeSteps.value.length
-  ) {
-    return
-  }
+const filterIds = computed(() =>
+  uniq(selectedTimeseries.value.map((item) => item.chart.filterId)),
+)
 
-  const _fitler: filterActionsFilter & UseDisplayConfigOptions = {
-    filterId: props.filterId,
-    locationIds: selectedLocationIds.value.join(','),
-    parameterIds: selectedParameterIds.value.join(','),
-    // @ts-ignore: FIXME: fix in types
-    resamplingMethods: selectedResamplingMethods.value
-      .map((method) => method.value)
-      .join(','),
-    // TODO: add option for this
-    resamplingOmitMissing: true,
-    resamplingTimeStepIds: selectedResamplingTimeSteps.value
-      .map((timeStep) => timeStep.id)
-      .join(','),
-    includeNonResampled: true,
-    ...displayConfigOptions.value,
-  }
-  return _fitler
+const canAddFilter = computed(() => {
+  return (
+    filterIds.value.length > 0 &&
+    selectedResamplingMethods.value.length > 0 &&
+    selectedResamplingTimeSteps.value.length > 0
+  )
 })
 
-function addFilter() {
-  if (!filter.value) return
-  emit('addFilter', { titlePrefix: 'Resampled ', filter: filter.value })
+async function addFilter() {
+  if (!canAddFilter.value) return
+
+  const promises = filterIds.value.map((filterId) => {
+    const items = selectedTimeseries.value.filter(
+      (item) => item.chart.filterId === filterId,
+    )
+    const filter = getFilter(filterId, items)
+
+    return createNewChartsForFilter(filter, 'Resampled ')
+  })
+
+  isLoading.value = true
+  const charts = (await Promise.all(promises)).flat()
+  isLoading.value = false
+
+  charts.forEach((chart) => emit('addChart', chart))
+}
+
+function getLocationIds(items: ChartSeriesItem[]) {
+  return uniq(items.flatMap((item) => item.series.locationId ?? []))
+}
+
+function getParameterIds(series: Series[]) {
+  return uniq(series.flatMap((series) => series.header.parameter ?? []))
+}
+
+function getModuleInstanceIds(series: Series[]) {
+  return uniq(series.flatMap((series) => series.header.source ?? []))
+}
+
+function getFilter(filterId: string, items: ChartSeriesItem[]) {
+  const series = items.map((item) => props.series[item.series.request ?? ''])
+
+  const locationIds = getLocationIds(items).join(',')
+  const parameterIds = getParameterIds(series).join(',')
+  const moduleInstanceIds = getModuleInstanceIds(series).join(',')
+
+  const resamplingMethods = selectedResamplingMethods.value
+    .map((method) => method.value)
+    .join(',')
+  const resamplingTimeStepIds = selectedResamplingTimeSteps.value
+    .map((timeStep) => timeStep.id)
+    .join(',')
+
+  const filter: filterActionsFilter & UseDisplayConfigOptions = {
+    filterId,
+    locationIds,
+    parameterIds,
+    // @ts-expect-error FIXME: Update when the types are updated
+    moduleInstanceIds,
+    resamplingMethods,
+    resamplingTimeStepIds,
+    resamplingOmitMissing: true, // TODO: add option for this
+    includeNonResampled: true, // TODO: add option for this
+    ...displayConfigOptions.value,
+  }
+  return filter
 }
 </script>

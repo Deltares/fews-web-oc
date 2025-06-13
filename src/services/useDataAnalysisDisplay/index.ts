@@ -19,6 +19,10 @@ export function useDataAnalysisDisplay(
     isReady.value = false
 
     const _dataAnalysisDisplayId = toValue(dataAnalysisDisplayId)
+    if (_dataAnalysisDisplayId === undefined) {
+      dataAnalysisDisplay.value = undefined
+      return
+    }
 
     try {
       const provider = new PiWebserviceProvider(baseUrl, {
