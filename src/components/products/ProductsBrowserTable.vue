@@ -6,6 +6,7 @@
         class="text-none"
         variant="flat"
         color="primary"
+        @click="showUploadDialog = true"
         >Upload</v-btn
       >
       <v-spacer />
@@ -149,10 +150,82 @@
           </td>
         </tr>
       </template>
+      <template v-slot:item.Actions="{ item }">
+        <v-btn
+          icon="mdi-delete"
+          size="small"
+          variant="text"
+          @click.stop="deleteProduct(item)"
+          :title="'Delete product'"
+          class="delete-action-btn"
+          :hover="true"
+        ></v-btn>
+      </template>
     </v-data-table>
     <div>
       <slot name="footer"> </slot>
     </div>
+    <v-dialog v-model="showUploadDialog" max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">Upload Product</span>
+        </v-card-title>
+        <v-card-text>
+          <v-alert v-if="uploadError" type="error" variant="tonal" class="mb-4">
+            {{ uploadError }}
+          </v-alert>
+
+          <v-file-input
+            v-model="uploadFile"
+            :loading="uploading"
+            :disabled="uploading"
+            truncate-length="30"
+            accept=".pdf,.jpg,.jpeg,.png"
+            placeholder="Select file"
+            prepend-icon="mdi-file-document-outline"
+            label="Product File"
+            hint="Select a file to upload"
+            :rules="[(v) => !!v || 'A file is required']"
+          ></v-file-input>
+
+          <v-text-field
+            v-model="uploadData.name"
+            label="Product Name"
+            :disabled="uploading"
+            :rules="[(v) => !!v || 'Product name is required']"
+            class="mt-4"
+          ></v-text-field>
+
+          <v-text-field
+            v-model="uploadData.author"
+            label="Author"
+            :disabled="uploading"
+            :rules="[(v) => !!v || 'Author name is required']"
+            class="mt-4"
+          ></v-text-field>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="grey-darken-1"
+            variant="text"
+            :disabled="uploading"
+            @click="showUploadDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            :loading="uploading"
+            :disabled="!canUpload"
+            variant="flat"
+            @click="uploadProduct"
+          >
+            Upload
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 <script setup lang="ts">
@@ -160,6 +233,9 @@ import { computed, onMounted, ref, watch } from 'vue'
 import type { ProductMetaDataType } from '@/services/useProducts/types'
 import { useRouter } from 'vue-router'
 import { toHumanReadableDate } from '@/lib/date'
+import { configManager } from '@/services/application-config'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { DateTime } from 'luxon'
 
 interface AttributeHeader {
   attribute: string
@@ -188,15 +264,91 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits(['refresh'])
 
 const router = useRouter()
 
+// Search and filtering state
 const search = ref('')
-
 const groupByKey = ref([''])
 const groupByOrder = ref<[boolean | 'asc' | 'desc']>(['asc'])
 const selectedColumns = ref<string[]>([])
 const selectedRows = ref<string[]>([])
+
+// Upload dialog state
+const showUploadDialog = ref(false)
+const uploading = ref(false)
+const uploadError = ref('')
+const uploadFile = ref<File | undefined>(undefined)
+const uploadData = ref({
+  name: '',
+  author: '',
+})
+
+// Computed properties for upload validation and table display
+const canUpload = computed(() => {
+  const hasName = uploadData.value.name.trim() !== ''
+  const hasAuthor = uploadData.value.author.trim() !== ''
+  if (!uploadFile.value || !hasName || !hasAuthor) {
+    return false
+  }
+  return true
+})
+
+const resetUploadForm = () => {
+  uploadFile.value = undefined
+  uploadData.value = {
+    name: '',
+    author: '',
+  }
+  uploadError.value = ''
+}
+
+// Upload product function
+async function uploadProduct() {
+  if (!canUpload.value) return
+
+  uploading.value = true
+  uploadError.value = ''
+
+  try {
+    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+    const timeZero = DateTime.now().toUTC().startOf('second').toISO({
+      suppressMilliseconds: true,
+    })
+    const url = `${baseUrl}rest/fewspiservice/v1/archive/products?areaId=${props.products[0].areaId}&sourceId=${props.products[0].sourceId}&timeZero=${timeZero}&attribute(productId)=${toSnakeCase(uploadData.value.name)}&attribute(name)=${uploadData.value.name}&attribute(status)=concept&attribute(author)=${uploadData.value.author}`
+    // remove whitespace from URL
+    const formData = new FormData()
+    formData.append('file', uploadFile.value as File)
+
+    // Use transformRequest to properly handle authentication
+    const transformRequest = createTransformRequestFn()
+    const request = new Request(url, {
+      method: 'POST',
+      body: formData,
+    })
+    const authenticatedRequest = await transformRequest(request)
+    const response = await fetch(authenticatedRequest)
+
+    if (!response.ok) {
+      const msg = await response.text()
+      throw new Error(msg || 'Failed to send request.')
+    }
+
+    // Reset the form and close dialog on success
+    resetUploadForm()
+    showUploadDialog.value = false
+    emit('refresh')
+  } catch (error) {
+    console.error('Upload error:', error)
+    uploadError.value =
+      error instanceof Error
+        ? error.message
+        : 'An unknown error occurred while uploading your product'
+  } finally {
+    uploading.value = false
+  }
+}
 
 const groupBy = computed(() => {
   return {
@@ -268,6 +420,40 @@ const items = computed(() => {
   }))
 })
 
+// Method to handle product deletion
+async function deleteProduct(product: ProductMetaDataType) {
+  console.log(product)
+  console.log(
+    'Delete button clicked for product:',
+    product.key,
+    product.attributes?.product_id || 'unknown',
+  )
+  try {
+    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+    console.log(encodeURIComponent(product.relativePathMetaDataFile))
+    const url = `${baseUrl}rest/fewspiservice/v1/archive/products/attributes?relativePath=${encodeURIComponent(product.relativePathMetaDataFile)}&attribute(delete)=true`
+    // Use transformRequest to properly handle authentication
+    const transformRequest = createTransformRequestFn()
+    const request = new Request(url, {
+      method: 'POST',
+    })
+    const authenticatedRequest = await transformRequest(request)
+    const response = await fetch(authenticatedRequest)
+
+    if (!response.ok) {
+      const msg = await response.text()
+      throw new Error(msg || 'Failed to send request.')
+    }
+    emit('refresh')
+  } catch (error) {
+    console.error('Upload error:', error)
+    uploadError.value =
+      error instanceof Error
+        ? error.message
+        : 'An unknown error occurred while uploading your product'
+  }
+}
+
 function onClick(
   _event: PointerEvent,
   entry: {
@@ -282,6 +468,26 @@ function onClick(
     },
   })
 }
+/**
+ * Converts a string to snake case format
+ * @param name The string to convert to snake case
+ * @returns The string in snake_case format
+ */
+function toSnakeCase(name: string): string {
+  // Convert spaces to underscores and lowercase the string
+  return (
+    name
+      .toLowerCase()
+      // Replace spaces with underscores
+      .replace(/\s+/g, '_')
+      // Remove special characters and replace with underscores
+      .replace(/[^\w_]/g, '_')
+      // Replace multiple consecutive underscores with a single one
+      .replace(/_+/g, '_')
+      // Remove leading and trailing underscores
+      .replace(/^_|_$/g, '')
+  )
+}
 </script>
 
 <style scoped>
@@ -291,5 +497,18 @@ function onClick(
 
 :deep(.selected-row) {
   background-color: rgb(var(--v-theme-on-surface), var(--v-activated-opacity));
+}
+
+.delete-action {
+  opacity: 0;
+}
+
+:deep(.v-data-table__tr:hover) .delete-action-btn {
+  opacity: 1;
+}
+
+.delete-action-btn {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
 }
 </style>

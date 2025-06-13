@@ -12,7 +12,7 @@ export interface DocumentBrowserDisplay {
   name: string
   type: 'browser'
   relativeViewPeriod: Omit<TimeSettingsViewPeriodPreset, 'label'>
-  documentBrowser: DocumentBrowser
+  browser: DocumentBrowser
 }
 
 export interface ReportDisplay {
@@ -27,21 +27,30 @@ export interface DocumentBrowser {
   layout: Layout
   reports: Reports
   archiveProducts: ArchiveProducts
-  archiveProductSet: ArchiveProductSet
+  archiveProductSets: ArchiveProductSet[]
 }
 
 export interface ArchiveProductSet {
-  contstraints: Contstraints
+  constraints: Constraints
 }
 
-export interface Contstraints {
+export interface Constraints {
   areaId: string
   sourceId: string
-  attributeExists: AttributeExists
+  attributeExists?: AttributeExists
+  allValid?: AttributeEquals[]
+  anyValid?: AttributeEquals[]
 }
 
 export interface AttributeExists {
   id: string
+}
+
+export interface AttributeEquals {
+  attributeTextEquals: {
+    id: string
+    equals: string
+  }
 }
 
 export interface ArchiveProduct {

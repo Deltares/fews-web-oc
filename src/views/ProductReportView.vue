@@ -113,8 +113,15 @@ const items = computed(() => {
   })
 })
 
+const sourceId = computed(() => {
+  return props.config?.report?.archiveProduct.sourceId ?? ''
+})
+const areaId = computed(() => {
+  return props.config?.report?.archiveProduct.areaId ?? ''
+})
+
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { products } = useProducts(baseUrl, filter)
+const { products } = useProducts(baseUrl, filter, sourceId, areaId)
 
 const viewMode = ref('html') // or 'iframe', 'img'
 const selectedTimeZero = ref('') // Example timeZero
