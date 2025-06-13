@@ -150,6 +150,17 @@
           </td>
         </tr>
       </template>
+      <template v-slot:item.Actions="{ item }">
+        <v-btn
+          icon="mdi-delete"
+          size="small"
+          variant="text"
+          @click.stop="deleteProduct(item)"
+          :title="'Delete product'"
+          class="delete-action-btn"
+          :hover="true"
+        ></v-btn>
+      </template>
     </v-data-table>
     <div>
       <slot name="footer"> </slot>
@@ -310,7 +321,7 @@ async function uploadProduct() {
     const formData = new FormData()
     formData.append('file', uploadFile.value as File)
 
-    // Use transformRequestFn to properly handle authentication
+    // Use transformRequest to properly handle authentication
     const transformRequest = createTransformRequestFn()
     const request = new Request(url, {
       method: 'POST',
@@ -327,12 +338,7 @@ async function uploadProduct() {
     // Reset the form and close dialog on success
     resetUploadForm()
     showUploadDialog.value = false
-
-    // Refresh the product list
     emit('refresh')
-
-    // Update last updated time
-    lastUpdatedString.value = new Date().toLocaleString()
   } catch (error) {
     console.error('Upload error:', error)
     uploadError.value =
@@ -414,6 +420,40 @@ const items = computed(() => {
   }))
 })
 
+// Method to handle product deletion
+async function deleteProduct(product: ProductMetaDataType) {
+  console.log(product)
+  console.log(
+    'Delete button clicked for product:',
+    product.key,
+    product.attributes?.product_id || 'unknown',
+  )
+  try {
+    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+    console.log(encodeURIComponent(product.relativePathMetaDataFile))
+    const url = `${baseUrl}rest/fewspiservice/v1/archive/products/attributes?relativePath=${encodeURIComponent(product.relativePathMetaDataFile)}&attribute(delete)=true`
+    // Use transformRequest to properly handle authentication
+    const transformRequest = createTransformRequestFn()
+    const request = new Request(url, {
+      method: 'POST',
+    })
+    const authenticatedRequest = await transformRequest(request)
+    const response = await fetch(authenticatedRequest)
+
+    if (!response.ok) {
+      const msg = await response.text()
+      throw new Error(msg || 'Failed to send request.')
+    }
+    emit('refresh')
+  } catch (error) {
+    console.error('Upload error:', error)
+    uploadError.value =
+      error instanceof Error
+        ? error.message
+        : 'An unknown error occurred while uploading your product'
+  }
+}
+
 function onClick(
   _event: PointerEvent,
   entry: {
@@ -457,5 +497,18 @@ function toSnakeCase(name: string): string {
 
 :deep(.selected-row) {
   background-color: rgb(var(--v-theme-on-surface), var(--v-activated-opacity));
+}
+
+.delete-action {
+  opacity: 0;
+}
+
+:deep(.v-data-table__tr:hover) .delete-action-btn {
+  opacity: 1;
+}
+
+.delete-action-btn {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
 }
 </style>
