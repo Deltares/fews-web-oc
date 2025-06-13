@@ -85,12 +85,7 @@ function convertItemToComponentItem(
   routeParams: RouteParamsGeneric,
   actionParams: DashboardActionParams,
 ) {
-  // FIXME: Html display is not configurable in the backend yet
-  // so for now we use the unused html-display component name.
-  const componentName =
-    item.component === 'html-display'
-      ? 'dynamic-report-display'
-      : item.component
+  const componentName = item.component
   const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
   const component = componentTypeToComponentMap[componentName]
   const componentProps = getComponentPropsForNode(
