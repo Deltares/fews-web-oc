@@ -137,7 +137,12 @@ const areaId = computed(() => {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { products } = useProducts(baseUrl, filter, sourceId, areaId)
+const { products, fetchProducts } = useProducts(
+  baseUrl,
+  filter,
+  sourceId,
+  areaId,
+)
 
 const viewMode = ref('html') // or 'iframe', 'img'
 const selected = ref(0) // Example timeZero
