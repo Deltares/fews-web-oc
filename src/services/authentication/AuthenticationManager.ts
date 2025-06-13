@@ -19,7 +19,7 @@ export class AuthenticationManager {
           } catch (error) {
             console.error('Silent sign-in failed:', error)
             // Redirect to interactive login as a fallback
-            await this.userManager.signinRedirect()
+            window.location.href = import.meta.env.BASE_URL + 'login'
             // The following return ensures no further code is executed after signinRedirect,
             // as it performs a full-page navigation and interrupts the current execution.
             return
