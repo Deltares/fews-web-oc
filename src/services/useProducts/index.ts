@@ -7,7 +7,10 @@ import {
 } from '@deltares/fews-pi-requests'
 import { ref, toValue, watchEffect, type MaybeRefOrGetter } from 'vue'
 import { ProductMetaDataType, ProductMetaDataWithoutAttributes } from './types'
-import { ArchiveProductSet } from '@/lib/products/documentDisplay'
+import {
+  ArchiveProduct,
+  ArchiveProductSet,
+} from '@/lib/products/documentDisplay'
 
 /**
  * Hook to fetch and manage product metadata based on a given filter.
@@ -33,6 +36,43 @@ export function useProducts(
 
   const fetchProducts = async () => {
     products.value = [] // Reset products before fetching new ones
+    // If we have ArchiveProducts we can use the filter to fetch products
+    for (const product of toValue(archiveProducts)) {
+      const filterValue = toValue(filter)
+      // Ensure the filter has a valid date range
+      if (!filterValue.startForecastTime || !filterValue.endForecastTime) {
+        return
+      }
+      filterValue.versionKey = product.versionKeys
+      // Set all attributes from the product
+      filterValue.attribute = product.attributes.reduce(
+        (
+          acc: Record<string, string>,
+          attr: ArchiveProductsMetadataAttribute,
+        ) => {
+          acc[attr.key] = attr.value
+          return acc
+        },
+        {} as Record<string, string>,
+      )
+      try {
+        const response = await provider.getProductsMetaData(filterValue)
+        const itemPromises = response.productsMetadata
+          .filter((p) => {
+            return (
+              p.sourceId === toValue(sourceId) && p.areaId === toValue(areaId)
+            )
+          })
+          .map(convertToProductMetaDataType)
+        products.value.push(...(await Promise.all(itemPromises)))
+        lastUpdated.value = new Date()
+      } catch (err) {
+        error.value = 'Error fetching product metadata'
+        console.error(err)
+      }
+    }
+    if (toValue(archiveProducts).length > 0) return
+
     // if we have product sets, we need to fetch for each set
     const constraints = toValue(archiveProductSets).map(
       (set) => set.constraints,
