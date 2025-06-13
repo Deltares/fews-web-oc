@@ -20,6 +20,7 @@
       <SpatialTimeSeriesDisplay
         :current-time="selectedDateOfSlider"
         :settings="settings"
+        :filter="filter"
         @close="closeTimeSeriesDisplay"
       />
     </div>
@@ -27,21 +28,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref } from 'vue'
+import { computed, defineAsyncComponent, ref, watchEffect } from 'vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
 )
 import { timeSeries } from '@/assets/timeseries.json'
 import { DateTime } from 'luxon'
-import { useRouter } from 'vue-router'
 import type { NavigateRoute } from '@/lib/router'
-import { type TopologyNode } from '@deltares/fews-pi-requests'
+import { filterActionsFilter, type TopologyNode } from '@deltares/fews-pi-requests'
 
 import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
+import { useUserSettingsStore } from '@/stores/userSettings'
+import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 
 const PluginLoader = defineAsyncComponent(
   // @ts-ignore
@@ -50,7 +52,7 @@ const PluginLoader = defineAsyncComponent(
 
 interface Props {
   customComponent?: string
-  locationIds?: string[]
+  locationIds?: string
   topologyNode?: TopologyNode
   settings?: ComponentSettings
 }
@@ -58,6 +60,7 @@ interface Props {
 const {
   customComponent = 'Sankey',
   locationIds,
+  topologyNode,
   settings = getDefaultSettings(),
 } = defineProps<Props>()
 
@@ -65,8 +68,7 @@ interface Emits {
   navigate: [to: NavigateRoute]
 }
 const emit = defineEmits<Emits>()
-
-const router = useRouter()
+const userSettings = useUserSettingsStore()
 
 const dateTimeSliderEnabled = ref<boolean>(true)
 const times = ref<Date[]>([
@@ -79,6 +81,34 @@ const showChartPanel = computed(() => {
 })
 
 const selectedDateOfSlider = ref<Date>(times.value[0])
+
+const filterIds = computed(() => topologyNode?.filterIds ?? [])
+
+function getFilterActionsFilter(
+  locationIds: string,
+): filterActionsFilter & UseDisplayConfigOptions {
+  return {
+    locationIds: locationIds,
+    filterId: filterIds.value ? filterIds.value[0] : undefined,
+    useDisplayUnits: userSettings.useDisplayUnits,
+    convertDatum: userSettings.convertDatum,
+  }
+}
+
+const filter = computed(() => {
+
+  if (locationIds) {
+    return getFilterActionsFilter(locationIds)
+  }
+  return {}
+})
+
+watchEffect(
+  () => {
+    // Reset the selected date when the component changes
+    console.log('Custom component changed, resetting selected date', customComponent)
+  }
+)
 
 const correctComponent = computed(() => {
   if (customComponent === 'sankey') {
