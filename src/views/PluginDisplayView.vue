@@ -7,7 +7,7 @@
       </v-toolbar>
       <div class="w-100 d-flex flex-1-1 overflow-x-auto overflow-y-hidden">
         <PluginLoader
-          :componentName="customComponent"
+          :componentName="correctComponent"
           :timeSeries="timeSeries"
           :selectedDate="selectedDateOfSlider"
           @navigate="onNavigate"
@@ -83,6 +83,16 @@ const showChartPanel = computed(() => {
 })
 
 const selectedDateOfSlider = ref<Date>(times.value[0])
+
+const correctComponent = computed(() => {
+  if (customComponent === 'sankey') {
+    return 'Sankey'
+  }
+  if (customComponent === 'basin_storages') {
+    return 'BasinStorage'
+  }
+  return customComponent
+})
 
 function onNavigate(event: any) {
   emit('navigate', event)
