@@ -36,7 +36,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       proxy: {
-        '/FewsWebServices/': `${env.DEV_SERVER_PROXY_FEWS_PI}`,
+        '/FewsWebServices/': `${env.DEVSERVER_PROXY_FEWS_PI}`,
       },
       headers: {
         'content-security-policy': [
