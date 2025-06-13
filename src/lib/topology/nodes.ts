@@ -201,5 +201,5 @@ export function nodeHasDocumentDisplay(node: TopologyNode) {
 }
 
 export function nodeHasPlugin(node: TopologyNode) {
-  return node.id === 'viewer_coastal_flooding_warning_warning'
+  return node.id.startsWith('micro_frontend')
 }

@@ -49,6 +49,7 @@
         :is="Component"
         :topologyNode="topologyNode"
         :settings="componentSettings"
+        :customComponent="props.customComponent"
         @navigate="onNavigate"
       />
     </router-view>
@@ -97,6 +98,7 @@ interface Props {
   hasAppBar?: boolean
   hasSideBar?: boolean
   embed?: string
+  customComponent?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -290,6 +292,27 @@ function onNavigate(to: NavigateRoute) {
         query: route.query,
       })
       break
+    case 'PluginDisplay':
+      router.push({
+        name,
+        params: {
+          nodeId: props.nodeId,
+        },
+        query: route.query,
+      })
+      break
+    case 'PluginTimeSeriesDisplay':
+      router.push({
+        name,
+        params: {
+          nodeId: props.nodeId,
+          customComponent: props.customComponent,
+          locationIds: to.params?.locationIds,
+        },
+        query: route.query,
+      })
+      break
+
     default:
       console.warn(`Unknown route name: ${String(to.name)}`)
   }
