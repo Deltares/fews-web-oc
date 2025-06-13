@@ -75,6 +75,7 @@
           :is="Component"
           :topologyNode="topologyNode"
           :settings="componentSettings"
+          :customComponent="props.customComponent"
           @navigate="onNavigate"
         />
       </keep-alive>
@@ -140,6 +141,7 @@ interface Props {
   latitude?: string
   longitude?: string
   productId?: string
+  customComponent?: string
 }
 
 const props = defineProps<Props>()
@@ -395,6 +397,27 @@ function onNavigate(to: NavigateRoute) {
         query: route.query,
       })
       break
+    case 'PluginDisplay':
+      router.push({
+        name,
+        params: {
+          nodeId: props.nodeId,
+        },
+        query: route.query,
+      })
+      break
+    case 'PluginTimeSeriesDisplay':
+      router.push({
+        name,
+        params: {
+          nodeId: props.nodeId,
+          customComponent: props.customComponent,
+          locationIds: to.params?.locationIds,
+        },
+        query: route.query,
+      })
+      break
+
     default:
       console.warn(`Unknown route name: ${String(to.name)}`)
   }
