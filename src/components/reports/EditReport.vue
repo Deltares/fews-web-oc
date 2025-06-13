@@ -138,3 +138,9 @@ onBeforeUnmount(() => {
 
 <style src="./tiptap/data.css" />
 <style src="./tiptap/time.css" />
+
+<style>
+.tiptap {
+  padding: 1em;
+}
+</style>
