@@ -14,14 +14,17 @@
         <v-spacer />
         <v-toolbar-items>
           <v-btn append-icon="mdi-chevron-down" class="me-4">
-            {{ selectedTimeZero }}
+            {{ selected }}
             <v-menu activator="parent">
               <v-list density="compact">
-                <v-item-group>
-                  <v-list-item v-for="item in items" :key="item.timeZero">
-                    {{ item.timeZero }}
-                  </v-list-item>
-                </v-item-group>
+                <v-list-item
+                  v-for="(item, index) in products"
+                  :key="item.key"
+                  :title="item.timeZero"
+                  :subtitle="`Version ${item.version}`"
+                  @click="selected = index"
+                >
+                </v-list-item>
               </v-list>
             </v-menu>
           </v-btn>
@@ -103,22 +106,11 @@ const filter = computed(() => {
   return result
 })
 
-const items = computed(() => {
-  return products.value.map((product) => {
-    return {
-      timeZero:
-        DateTime.fromISO(product.timeZero ?? 'Invalid timeZero')
-          .toUTC()
-          .toISO() ?? undefined,
-    }
-  })
-})
-
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { products } = useProducts(baseUrl, filter)
 
 const viewMode = ref('html') // or 'iframe', 'img'
-const selectedTimeZero = ref('') // Example timeZero
+const selected = ref(0) // Example timeZero
 const src = ref('')
 
 function getFileExtension(url: string): string {
@@ -151,13 +143,15 @@ watchEffect(() => {
 })
 
 watchEffect(async () => {
-  const productMetaData = products.value[1]
-  console.log('Selected product metadata:', productMetaData)
-  if (!productMetaData) {
+  if (!products.value || products.value.length === 0) {
+    console.warn('No products available for the selected filter.')
     src.value = ''
-    selectedTimeZero.value = ''
+    selected.value = 0
     return
   }
+
+  const productMetaData = products.value[selected.value]
+
   const url = getProductURL(baseUrl, productMetaData)
   const extension = getFileExtension(url)
 
@@ -179,7 +173,6 @@ watchEffect(async () => {
   const urlObject = URL.createObjectURL(await response.blob())
 
   viewMode.value = currentViewMode
-  selectedTimeZero.value = productMetaData.timeZero
   src.value = urlObject
 })
 
@@ -188,7 +181,8 @@ async function onSave() {
   const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const archiveUrl = `${piUrl}rest/fewspiservice/v1/archive/`
   const metaData = products.value[0]
-  const fileName = metaData.relativePathProducts[0].split('/').pop() ?? 'unknown'
+  const fileName =
+    metaData.relativePathProducts[0].split('/').pop() ?? 'unknown'
   try {
     const response = await postProduct(
       archiveUrl,
