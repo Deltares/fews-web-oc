@@ -250,3 +250,21 @@ export function chartMarkerFromFews(
   }
   return marker
 }
+
+export const markerStyles = [
+  { label: 'None', value: 'none', icon: 'mdi-border-none-variant' },
+  { label: 'Circle', value: 'circle', icon: 'mdi-circle' },
+  { label: 'Diamond', value: 'diamond', icon: 'mdi-cards-diamond' },
+  { label: 'Square', value: 'square', icon: 'mdi-square' },
+  { label: 'Triangle Up', value: 'triangleup', icon: 'mdi-triangle' },
+  { label: 'Cross', value: 'x', icon: 'mdi-close' },
+  { label: 'Plus', value: '+', icon: 'mdi-plus' },
+]
+
+export const lineStyles = [
+  { label: 'None', value: 'none' },
+  { label: 'Solid', value: 'solid' },
+  { label: 'Dashed', value: 'dashed' },
+  { label: 'Dashdot', value: 'dashdot' },
+  { label: 'Dotted', value: 'dotted' },
+]
