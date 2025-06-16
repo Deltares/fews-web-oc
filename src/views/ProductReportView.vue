@@ -14,11 +14,11 @@
         <v-spacer />
         <v-toolbar-items>
           <v-btn append-icon="mdi-chevron-down" class="me-4">
-            {{ selected }}
+            {{ selectedProduct?.timeZero }}
             <v-menu activator="parent">
               <v-list density="compact">
                 <v-list-item
-                  v-for="(item, index) in products"
+                  v-for="(item, index) in filteredProducts"
                   :key="item.key"
                   :title="item.timeZero"
                   :subtitle="`Version ${item.version}`"
@@ -109,8 +109,15 @@ const filter = computed(() => {
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { products } = useProducts(baseUrl, filter)
 
+const filteredProducts = computed(() => {
+  return products.value.toReversed()
+})
+
 const viewMode = ref('html') // or 'iframe', 'img'
 const selected = ref(0) // Example timeZero
+const selectedProduct = computed(() => {
+  return filteredProducts.value[selected.value]
+})
 const src = ref('')
 
 function getFileExtension(url: string): string {
@@ -143,14 +150,14 @@ watchEffect(() => {
 })
 
 watchEffect(async () => {
-  if (!products.value || products.value.length === 0) {
+  if (!filteredProducts.value || filteredProducts.value.length === 0) {
     console.warn('No products available for the selected filter.')
     src.value = ''
     selected.value = 0
     return
   }
 
-  const productMetaData = products.value[selected.value]
+  const productMetaData = filteredProducts.value[selected.value]
 
   const url = getProductURL(baseUrl, productMetaData)
   const extension = getFileExtension(url)
@@ -180,7 +187,7 @@ async function onSave() {
   console.log('Saving report content...')
   const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const archiveUrl = `${piUrl}rest/fewspiservice/v1/archive/`
-  const metaData = products.value[0]
+  const metaData = selectedProduct.value
   const fileName =
     metaData.relativePathProducts[0].split('/').pop() ?? 'unknown'
   try {
