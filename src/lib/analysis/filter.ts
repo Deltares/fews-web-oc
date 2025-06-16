@@ -146,13 +146,6 @@ export function getFilterSubplotTitle(subplot: FilterSubplot) {
   return `${format(uniqueParameterGroups)} at ${format(uniqueLocationNames)}`
 }
 
-function isLeftItem(item: FilterSubplotItem) {
-  return item.yAxis?.axisPosition === 'left'
-}
-function isRightItem(item: FilterSubplotItem) {
-  return item.yAxis?.axisPosition === 'right'
-}
-
 export function canAddFilterToChart(
   chart: FilterChart,
   filter: filterActionsFilter,
@@ -175,22 +168,22 @@ function getAddPositionForFilter(
   }
 
   const items = chart.subplot.items
-  const leftItem = items.find(isLeftItem)
-  const rightItem = items.find(isRightItem)
+  const leftItem = items.find((item) => item.yAxis?.axisPosition === 'left')
+  const rightItem = items.find((item) => item.yAxis?.axisPosition === 'right')
   const leftParameterGroup = leftItem?.parameterGroup
   const rightParameterGroup = rightItem?.parameterGroup
 
-  if (filterParameterGroup === leftParameterGroup) {
-    return 'addToLeft'
+  if (
+    filterParameterGroup === leftParameterGroup ||
+    leftParameterGroup === undefined
+  ) {
+    return 'left'
   }
-  if (filterParameterGroup === rightParameterGroup) {
-    return 'addToRight'
-  }
-  if (leftParameterGroup === undefined) {
-    return 'addLeft'
-  }
-  if (rightParameterGroup === undefined) {
-    return 'addRight'
+  if (
+    filterParameterGroup === rightParameterGroup ||
+    rightParameterGroup === undefined
+  ) {
+    return 'right'
   }
 }
 
@@ -198,75 +191,33 @@ export async function addFilterToChart(
   chart: FilterChart,
   filter: filterActionsFilter,
 ) {
-  const addPosition = getAddPositionForFilter(chart, filter)
+  const position = getAddPositionForFilter(chart, filter)
+  if (!position) return
 
-  switch (addPosition) {
-    case 'addToLeft':
-      const leftItems = chart.subplot.items.filter(isLeftItem)
-      const leftFilter = combineFilters(filter, leftItems)
-      return addFilterToChartPosition(chart, leftFilter, 'left')
-    case 'addToRight':
-      const rightItems = chart.subplot.items.filter(isRightItem)
-      const rightFilter = combineFilters(filter, rightItems)
-      return addFilterToChartPosition(chart, rightFilter, 'right')
-    case 'addLeft':
-      return addFilterToChartPosition(chart, filter, 'left')
-    case 'addRight':
-      return addFilterToChartPosition(chart, filter, 'right')
-  }
+  addFilterToChartPosition(chart, filter, position)
 }
 
-function combineFilters(
-  filter: FilterSubplotItem['filter'],
-  items: FilterSubplotItem[],
-): FilterSubplotItem['filter'] {
-  const filterIdsFilter = filter.filterId?.split(',') ?? []
-  const locationIdsFilter = filter.locationIds?.split(',') ?? []
-  const parameterIdsFilter = filter.parameterIds?.split(',') ?? []
-  const moduleInstanceIdsFilter = filter.moduleInstanceIds?.split(',') ?? []
-  const resamplingMethodsFilter = filter.resamplingMethods?.split(',') ?? []
-  const resamplingTimeStepIdsFilter =
-    filter.resamplingTimeStepIds?.split(',') ?? []
+async function addFilterToChartPosition(
+  chart: FilterChart,
+  filter: filterActionsFilter,
+  position: 'left' | 'right',
+) {
+  const newChart = await createNewChartForFilter(filter)
 
-  const filterIdsItems = getFilterIds(items)
-  const locationIdsItems = getLocationIds(items)
-  const parameterIdsItems = getParameterIds(items)
-  const moduleInstanceIdsItems = getModuleInstanceIds(items)
-  const resamplingMethodsItems = getResamplingMethods(items)
-  const resamplingTimeStepIdsItems = getResamplingTimeStepIds(items)
+  if (!newChart) return
 
-  const filterId = uniq([filterIdsFilter, filterIdsItems])
-  const locationIds = uniq([locationIdsFilter, locationIdsItems])
-  const parameterIds = uniq([parameterIdsFilter, parameterIdsItems])
-  const moduleInstanceIds = uniq([
-    moduleInstanceIdsFilter,
-    moduleInstanceIdsItems,
-  ])
-  const resamplingMethods = uniq([
-    resamplingMethodsFilter,
-    resamplingMethodsItems,
-  ])
-  const resamplingTimeStepIds = uniq([
-    resamplingTimeStepIdsFilter,
-    resamplingTimeStepIdsItems,
-  ])
+  newChart.subplot.items.forEach((item) => {
+    if (!item.yAxis) return
+    item.yAxis.axisPosition = position
+  })
 
-  return {
-    filterId: filterId.length ? filterId.join(',') : undefined,
-    locationIds: locationIds.length ? locationIds.join(',') : undefined,
-    parameterIds: parameterIds.length ? parameterIds.join(',') : undefined,
-    moduleInstanceIds: moduleInstanceIds.length
-      ? moduleInstanceIds.join(',')
-      : undefined,
-    resamplingMethods: resamplingMethods.length
-      ? resamplingMethods.join(',')
-      : undefined,
-    resamplingTimeStepIds: resamplingTimeStepIds.length
-      ? resamplingTimeStepIds.join(',')
-      : undefined,
-    // TODO: Do two requests if resamplingOmitMissing is different?
-    resamplingOmitMissing: filter.resamplingOmitMissing,
-  }
+  const newItems = [...newChart.subplot.items, ...chart.subplot.items]
+  chart.subplot.items = uniqBy(newItems, (item) => item.request)
+
+  const newRequests = [...newChart.requests, ...chart.requests]
+  chart.requests = uniqBy(newRequests, (req) => req.request)
+
+  chart.title = getFilterSubplotTitle(chart.subplot)
 }
 
 export function getLocationNames(items: FilterSubplotItem[]) {
@@ -291,35 +242,4 @@ export function getModuleInstanceIds(items: FilterSubplotItem[]) {
 
 export function getFilterIds(items: FilterSubplotItem[]) {
   return uniq(items.flatMap((item) => item.filter.filterId ?? []))
-}
-
-export function getResamplingMethods(items: FilterSubplotItem[]) {
-  return uniq(items.flatMap((item) => item.filter.resamplingMethods ?? []))
-}
-
-export function getResamplingTimeStepIds(items: FilterSubplotItem[]) {
-  return uniq(items.flatMap((item) => item.filter.resamplingTimeStepIds ?? []))
-}
-
-async function addFilterToChartPosition(
-  chart: FilterChart,
-  filter: filterActionsFilter,
-  position: 'left' | 'right',
-) {
-  const newChart = await createNewChartForFilter(filter)
-
-  if (!newChart) return
-
-  newChart.subplot.items.forEach((item) => {
-    if (!item.yAxis) return
-    item.yAxis.axisPosition = position
-  })
-
-  const newItems = [...chart.subplot.items, ...newChart.subplot.items]
-  chart.subplot.items = uniqBy(newItems, (item) => item.request)
-
-  const newRequests = [...chart.requests, ...newChart.requests]
-  chart.requests = uniqBy(newRequests, (req) => req.request)
-
-  chart.title = getFilterSubplotTitle(chart.subplot)
 }
