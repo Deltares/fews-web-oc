@@ -163,7 +163,6 @@ watchEffect(() => {
   if (documentDisplay) {
     viewPeriod.value = periodToIntervalItem(documentDisplay.relativeViewPeriod)
     editorEnabled.value = documentDisplay.editPermissions ?? false
-    console.log('View period set to:', viewPeriod.value)
   }
 })
 
