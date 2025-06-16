@@ -153,6 +153,7 @@ import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import NewLogMessageDialog from './NewLogMessageDialog.vue'
 import { useTaskRuns } from '@/services/useTaskRuns'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 
 interface Props {
   logDisplay: LogsDisplay
@@ -182,6 +183,7 @@ watch(
 )
 
 const { preferredUsername } = useCurrentUser()
+const { workflows } = useAvailableWorkflowsStore()
 
 const baseFilters = computed(() => {
   const startTime = convertJSDateToFewsPiParameter(startDate.value)
@@ -259,16 +261,36 @@ const debouncedSelectedLevels = debouncedRef(selectedLevels, filterDebounce)
 const debouncedSelectedLogTypes = debouncedRef(selectedLogTypes, filterDebounce)
 const debouncedSearch = debouncedRef(search, filterDebounce)
 
-const filteredLogMessages = computed(() =>
-  logMessages.value.filter((log) =>
-    filterLog(
-      log,
-      debouncedSelectedLevels.value,
-      debouncedSelectedLogTypes.value,
-      debouncedSearch.value,
-    ),
-  ),
-)
+const filteredLogMessages = computed(() => {
+  // Filter log messages based on selected levels, types, search text, task runs, and workflows
+  // We filter in two passes, first we find which taskRuns have any logs that match the filter criteria
+  // and then we filter the log messages based on those taskRuns.
+  const filteredTaskRunIds = new Set<string>()
+
+  logMessages.value
+    .filter((log) =>
+      filterLog(
+        log,
+        debouncedSelectedLevels.value,
+        debouncedSelectedLogTypes.value,
+        debouncedSearch.value,
+        taskRuns.value,
+        workflows,
+      ),
+    )
+    .forEach((log) => filteredTaskRunIds.add(log.taskRunId))
+  return logMessages.value.filter(
+    (log) =>
+      filterLog(
+        log,
+        debouncedSelectedLevels.value,
+        debouncedSelectedLogTypes.value,
+        debouncedSearch.value,
+        taskRuns.value,
+        workflows,
+      ) || filteredTaskRunIds.has(log.taskRunId),
+  )
+})
 
 // Helper function to get the date string from a log entry time
 function getDateString(entryTime: string): string {
