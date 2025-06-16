@@ -6,12 +6,13 @@
       label="Time Series"
       :getItemValue="(item) => item"
       :getItemTitle="(item) => item.series.legend ?? ''"
+      :getItemColor="(item) => item.series.color ?? 'black'"
       :getItemGroupTitle="(item) => item.chart.title"
       :groupBy="(item) => item.chart.id"
       :multiple="true"
     />
 
-    <Autocomplete
+    <Multiselect
       v-model="selectedResamplingMethods"
       :items="resamplingMethods"
       label="Resampling Methods"
@@ -44,6 +45,7 @@
 
 <script setup lang="ts">
 import Autocomplete from '@/components/general/Autocomplete.vue'
+import Multiselect from '@/components/general/Multiselect.vue'
 import GroupSelect from '@/components/general/GroupSelect.vue'
 import AnalysisAddToButton from '@/components/analysis/AnalysisAddToButton.vue'
 import type { Series } from '@/lib/timeseries/timeSeries'

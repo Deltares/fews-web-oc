@@ -14,7 +14,7 @@
     </div>
     <v-list
       v-model:selected="listSelected"
-      class="overflow-auto flex-1-1 py-0"
+      class="overflow-auto flex-1-1 py-0 border-opacity-25"
       :select-strategy="multiple ? 'leaf' : undefined"
       border
       rounded
@@ -40,12 +40,15 @@
                     :model-value="isGroupSelected(groupKey)"
                     density="compact"
                   />
+                  <v-icon icon="mdi-chart-bar" class="ps-2" />
                 </v-list-item-action>
               </template>
               <template #append>
                 <v-list-item-action end>
                   <v-icon
-                    :icon="isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                    class="menu-icon"
+                    :class="{ 'active-menu-icon': isOpen }"
+                    icon="mdi-chevron-down"
                   />
                 </v-list-item-action>
               </template>
@@ -63,6 +66,7 @@
             <template v-if="multiple" #prepend="{ isSelected }">
               <v-list-item-action start>
                 <v-checkbox-btn :model-value="isSelected" density="compact" />
+                <v-icon icon="mdi-chart-timeline-variant" :color="getItemColor(item)" class="ps-2" />
               </v-list-item-action>
             </template>
           </v-list-item>
@@ -85,6 +89,7 @@ interface Props {
   label: string
   getItemValue: (item: Item) => Id
   getItemTitle: (item: Item) => string
+  getItemColor: (item: Item) => string
   getItemGroupTitle: (name: Item) => string
   groupBy: (item: Item) => string
   multiple?: Multiple
@@ -163,8 +168,16 @@ function clearSelection() {
 }
 </script>
 
-<style>
+<style scoped>
 .grouped-select-list {
   --prepend-width: 0px;
+}
+
+.menu-icon {
+  transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.active-menu-icon {
+  transform: rotate(180deg);
 }
 </style>
