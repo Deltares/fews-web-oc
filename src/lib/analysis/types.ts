@@ -36,6 +36,8 @@ export interface FilterSubplotItem extends TimeSeriesDisplaySubplotItem {
     resamplingMethods?: string
     resamplingTimeStepIds?: string
   }
+  locationName?: string
+  parameterGroup?: string
 }
 
 export interface FilterSubplot extends Omit<TimeSeriesDisplaySubplot, 'items'> {

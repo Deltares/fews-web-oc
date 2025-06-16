@@ -63,7 +63,7 @@ export async function createNewChartForFilter(filter: filterActionsFilter) {
   const newCharts: FilterChart = {
     id: crypto.randomUUID(),
     type: 'filter',
-    title: 'New Chart',
+    title: getFilterSubplotTitle(filterSubplot),
     subplot: filterSubplot,
     requests,
   }
@@ -76,6 +76,8 @@ function subplotToFilterSubplot(
   headers: Record<string, Header[]>,
   requests: ActionRequest[],
 ): FilterSubplot {
+  const parametersStore = useParametersStore()
+
   const newItems = item.items.flatMap((item) => {
     const header = headers[item.request ?? '']?.[0]
     const request = requests.find((req) => req.key === item.request)
@@ -116,14 +118,32 @@ function subplotToFilterSubplot(
       filter.resamplingOmitMissing = resamplingOmitMissing
     }
 
-    const filterItem: FilterSubplotItem = { ...item, filter }
+    const parameter = parametersStore.byId(header.parameterId)
+    const parameterGroup = parameter?.parameterGroup
+    const locationName = header.stationName ?? header.locationId
+
+    const filterItem: FilterSubplotItem = {
+      ...item,
+      filter,
+      locationName,
+      parameterGroup,
+    }
     return filterItem
   })
   return { ...item, items: newItems }
 }
 
-export function getFilterChartTitle(chart: FilterChart) {
-  return chart.title
+export function getFilterSubplotTitle(subplot: FilterSubplot) {
+  const uniqueParameterGroups = getParameterGroups(subplot.items)
+  const uniqueLocationNames = getLocationNames(subplot.items)
+
+  const format = (items: string[]) => {
+    const displayed = items.slice(0, 2).join(', ')
+    const extra = items.length > 2 ? `, +${items.length - 2} more` : ''
+    return displayed + extra
+  }
+
+  return `${format(uniqueParameterGroups)} at ${format(uniqueLocationNames)}`
 }
 
 export async function addFilterToChart(
@@ -144,13 +164,8 @@ export async function addFilterToChart(
   const rightItems = items.filter(
     (item) => item.yAxis?.axisPosition === 'right',
   )
-  const leftParameterId = leftItems?.[0]?.filter.parameterIds
-  const rightParameterId = rightItems?.[0]?.filter.parameterIds
-
-  const leftParameterGroup =
-    parametersStore.byId(leftParameterId)?.parameterGroup
-  const rightParameterGroup =
-    parametersStore.byId(rightParameterId)?.parameterGroup
+  const leftParameterGroup = leftItems?.[0]?.parameterGroup
+  const rightParameterGroup = rightItems?.[0]?.parameterGroup
 
   const addToLeft = filterParameterGroup === leftParameterGroup
   const addToRight = filterParameterGroup === rightParameterGroup
@@ -218,12 +233,20 @@ function combineFilters(
   }
 }
 
+export function getLocationNames(items: FilterSubplotItem[]) {
+  return uniq(items.map((item) => item.locationName ?? ''))
+}
+
 export function getLocationIds(items: FilterSubplotItem[]) {
   return uniq(items.flatMap((item) => item.filter.locationIds ?? []))
 }
 
 export function getParameterIds(items: FilterSubplotItem[]) {
   return uniq(items.flatMap((item) => item.filter.parameterIds ?? []))
+}
+
+export function getParameterGroups(items: FilterSubplotItem[]) {
+  return uniq(items.flatMap((item) => item.parameterGroup ?? []))
 }
 
 export function getModuleInstanceIds(items: FilterSubplotItem[]) {
@@ -270,5 +293,5 @@ async function addFilterToChartPosition(
       index === self.findIndex((r) => r.request === request.request),
   )
 
-  chart.title = getFilterChartTitle(chart)
+  chart.title = getFilterSubplotTitle(chart.subplot)
 }
