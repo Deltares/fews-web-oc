@@ -13,8 +13,13 @@
         >
         <v-spacer />
         <v-toolbar-items>
-          <v-btn append-icon="mdi-chevron-down" class="me-4">
-            {{ selectedProduct?.timeZero }}
+          <v-btn append-icon="mdi-chevron-down" variant="text" class="text-start">
+            <v-list-item
+              class="ps-0 pe-2"
+              :title="selectedProduct?.timeZero"
+              :subtitle="`Version ${ selectedProduct?.version }`"
+            >
+            </v-list-item>
             <v-menu activator="parent">
               <v-list density="compact">
                 <v-list-item
