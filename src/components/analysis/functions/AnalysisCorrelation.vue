@@ -6,6 +6,7 @@
       label="X Axis Time Series"
       :getItemValue="(item) => item.series"
       :getItemTitle="(item) => item.series.legend ?? ''"
+      :getItemColor="(item) => item.series.color ?? 'black'"
       :getItemGroupTitle="(item) => item.chart.title"
       :groupBy="(item) => item.chart.id"
     />
@@ -16,6 +17,7 @@
       label="Y Axis Time Series"
       :getItemValue="(item) => item.series"
       :getItemTitle="(item) => item.series.legend ?? ''"
+      :getItemColor="(item) => item.series.color ?? 'black'"
       :getItemGroupTitle="(item) => item.chart.title"
       :groupBy="(item) => item.chart.id"
     />

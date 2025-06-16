@@ -20,12 +20,6 @@
             @click="$emit('edit')"
           />
           <v-list-item
-            title="Remove"
-            prepend-icon="mdi-delete"
-            density="compact"
-            @click="$emit('remove')"
-          />
-          <v-list-item
             title="Download"
             prepend-icon="mdi-download"
             density="compact"
@@ -36,6 +30,12 @@
             prepend-icon="mdi-image"
             density="compact"
             @click="$emit('saveAsImage')"
+          />
+          <v-list-item
+            title="Remove"
+            prepend-icon="mdi-delete"
+            density="compact"
+            @click="$emit('remove')"
           />
         </v-list>
       </v-menu>
