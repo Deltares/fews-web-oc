@@ -1,5 +1,4 @@
-import type { Interval } from '@/lib/TimeControl/interval'
-import { DateTime, Duration, type DurationLikeObject } from 'luxon'
+import { intervalToDateRange, type Interval } from '@/lib/TimeControl/interval'
 import { defineStore } from 'pinia'
 
 export interface SystemTimeStore {
@@ -8,12 +7,6 @@ export interface SystemTimeStore {
   startTime: Date | undefined
   endTime: Date | undefined
   selectedInterval: Interval
-}
-
-function datePlusDuration(date: Date, duration: DurationLikeObject) {
-  return DateTime.fromJSDate(date)
-    .plus(Duration.fromObject(duration))
-    .toJSDate()
 }
 
 export const useSystemTimeStore = () => {
@@ -46,12 +39,9 @@ export const useSystemTimeStore = () => {
         } else {
           const now = this.systemTime
           const interval = this.selectedInterval
-          this.startTime = interval.start
-            ? datePlusDuration(now, interval.start)
-            : undefined
-          this.endTime = interval.end
-            ? datePlusDuration(now, interval.end)
-            : undefined
+          const [startTime, endTime] = intervalToDateRange(interval, now)
+          this.startTime = startTime
+          this.endTime = endTime
         }
       },
     },

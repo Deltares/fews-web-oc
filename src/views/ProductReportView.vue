@@ -58,7 +58,12 @@
 <script setup lang="ts">
 import { getProductURL } from '@/components/products/productTools'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import { IntervalItem, periodToIntervalItem } from '@/lib/TimeControl/interval'
+import {
+  IntervalItem,
+  intervalToDateRange,
+  intervalToFewsPiDateRange,
+  periodToIntervalItem,
+} from '@/lib/TimeControl/interval'
 import { attributesToObject, useProducts } from '@/services/useProducts'
 import { ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
 import { DateTime } from 'luxon'
@@ -89,14 +94,9 @@ const filter = computed(() => {
   ) {
     return {}
   }
-  const startForecastTime = DateTime.now()
-    .plus(viewPeriod.value.start)
-    .toUTC()
-    .toISO({ suppressMilliseconds: true })
-  const endForecastTime = DateTime.now()
-    .plus(viewPeriod.value.end)
-    .toUTC()
-    .toISO({ suppressMilliseconds: true })
+  const [startForecastTime, endForecastTime] = intervalToFewsPiDateRange(
+    viewPeriod.value,
+  )
 
   const archiveProduct = config?.report?.archiveProduct
   if (!archiveProduct) {
