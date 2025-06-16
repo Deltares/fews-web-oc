@@ -81,7 +81,11 @@
             <th v-else-if="column.key === 'actions'" class="pa-0">
               <v-btn icon size="small" variant="plain">
                 <v-icon icon="mdi-dots-vertical" />
-                <v-menu activator="parent" :close-on-content-click="false" location="bottom end">
+                <v-menu
+                  activator="parent"
+                  :close-on-content-click="false"
+                  location="bottom end"
+                >
                   <v-list
                     v-model:selected="selectedColumns"
                     select-strategy="independent"
