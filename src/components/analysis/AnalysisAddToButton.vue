@@ -1,7 +1,7 @@
 <template>
   <AnalysisAddButton
     :disabled="numberOfNewCharts === 0"
-    :text="newChartsTitle"
+    text="Create new charts"
     :loading="loadingNewCharts"
     class="mr-2"
     @click="emit('addToChart')"
@@ -60,8 +60,4 @@ const filterCharts = computed(() => {
 })
 
 const numberOfNewCharts = computed(() => props.filters.length)
-const newChartsTitle = computed(() => {
-  if (props.filters.length === 0) return 'No new charts'
-  return `Create ${props.filters.length} new chart${props.filters.length !== 1 ? 's' : ''}`
-})
 </script>
