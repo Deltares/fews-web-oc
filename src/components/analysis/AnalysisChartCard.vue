@@ -40,7 +40,7 @@
         </v-list>
       </v-menu>
     </v-card-title>
-    <slot />
+    <slot></slot>
   </v-card>
 </template>
 
