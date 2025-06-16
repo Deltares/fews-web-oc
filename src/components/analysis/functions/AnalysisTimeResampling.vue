@@ -36,7 +36,7 @@
         :disabled="!canAddFilter"
         :loading="isLoading"
         :newChartTitle="`Create ${filters.length} new chart${
-          filters.length > 1 ? 's' : ''
+          filters.length !== 1 ? 's' : ''
         }`"
         @addToChart="addFilter"
       />

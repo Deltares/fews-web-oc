@@ -1,11 +1,23 @@
 <template>
+  <v-btn
+    v-bind="props"
+    variant="flat"
+    :disabled="disabled"
+    prepend-icon="mdi-plus"
+    :text="newChartTitle"
+    :color="disabled ? undefined : 'primary'"
+    :loading="loading"
+    class="mr-2"
+    @click="emit('addToChart')"
+  />
+
   <v-menu>
     <template #activator="{ props }">
       <v-btn
         v-bind="props"
         variant="flat"
         :disabled="disabled"
-        prepend-icon="mdi-plus"
+        prepend-icon="mdi-playlist-plus"
         text="Add to chart"
         :color="disabled ? undefined : 'primary'"
         :loading="loading"
@@ -19,13 +31,6 @@
         prepend-icon="mdi-chart-bar"
         density="compact"
         @click="emit('addToChart', chart)"
-      />
-      <v-divider />
-      <v-list-item
-        :title="newChartTitle"
-        prepend-icon="mdi-plus"
-        density="compact"
-        @click="emit('addToChart')"
       />
     </v-list>
   </v-menu>
