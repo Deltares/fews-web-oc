@@ -107,7 +107,7 @@ const filter = computed(() => {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { products } = useProducts(baseUrl, filter)
+const { products, fetchProducts } = useProducts(baseUrl, filter)
 
 const filteredProducts = computed(() => {
   return products.value.toReversed()
@@ -191,7 +191,7 @@ async function onSave() {
   const fileName =
     metaData.relativePathProducts[0].split('/').pop() ?? 'unknown'
   try {
-    const response = await postProduct(
+    await postProduct(
       archiveUrl,
       metaData.areaId,
       metaData.sourceId,
@@ -200,6 +200,7 @@ async function onSave() {
       fileName,
       metaData.attributes,
     )
+    await fetchProducts()
   } catch (error) {
     console.error('Error saving report:', error)
     return
