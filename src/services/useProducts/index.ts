@@ -38,7 +38,6 @@ export function useProducts(
   const fetchProducts = async () => {
     products.value = [] // Reset products before fetching new ones
     // If we have ArchiveProducts we can use the filter to fetch products
-    console.log(archiveProducts)
     for (const product of toValue(archiveProducts)) {
       const filterValue = toValue(filter)
       // Ensure the filter has a valid date range
@@ -255,8 +254,6 @@ async function hashObject(obj: any): Promise<string> {
   const hashBuffer = await crypto.subtle.digest('SHA-256', data)
 
   const hexString = bufferToHex(hashBuffer)
-  console.log('HashBuffer:', hexString)
-
   return hexString
 }
 

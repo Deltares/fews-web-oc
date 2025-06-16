@@ -192,7 +192,6 @@ watchEffect(() => {
   if (documentDisplay) {
     viewPeriod.value = periodToIntervalItem(documentDisplay.relativeViewPeriod)
   }
-  console.log(documentDisplay)
 })
 
 watchEffect(async () => {
