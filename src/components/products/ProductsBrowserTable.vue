@@ -414,7 +414,8 @@ const items = computed(() => {
 
 async function onDeleteProduct(product: ProductMetaDataType) {
   try {
-    await deleteProduct(import.meta.env.VITE_FEWS_WEBSERVICES_URL, product)
+    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+    await deleteProduct(baseUrl, product)
     emit('refresh')
   } catch (error) {
     console.error(error)
