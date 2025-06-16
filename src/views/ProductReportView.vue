@@ -65,12 +65,14 @@ import { configManager } from '@/services/application-config'
 import EditReport from '@/components/reports/EditReport.vue'
 import DOMPurify from 'dompurify'
 import { postProduct } from '@/lib/products/requests'
+import { ProductMetaDataType } from '@/services/useProducts/types'
 
 interface Props {
   config?: ReportDisplay
+  showAllVersions?: boolean
 }
 
-const props = defineProps<Props>()
+const { showAllVersions = false, config } = defineProps<Props>()
 const viewPeriod = ref<IntervalItem>({})
 const editorEnabled = ref(false) // Example flag to enable editor mode
 const isEditing = ref(false) // Example flag to toggle editing mode
@@ -92,9 +94,8 @@ const filter = computed(() => {
     .toUTC()
     .toISO({ suppressMilliseconds: true })
 
-  console.log('Filter attributes:', props.config?.report?.archiveProduct)
 
-  const archiveProduct = props.config?.report?.archiveProduct
+  const archiveProduct = config?.report?.archiveProduct
   if (!archiveProduct) {
     console.warn('No archive product defined in the report configuration.')
     return {}
@@ -115,7 +116,18 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { products, fetchProducts } = useProducts(baseUrl, filter)
 
 const filteredProducts = computed(() => {
-  return products.value.toReversed()
+
+  if( showAllVersions ) {
+    return products.value.toReversed()
+  }
+  const latestMap = new Map<string, ProductMetaDataType>()
+  for (const product of products.value) {
+    const existing = latestMap.get(product.timeZero);
+    if (!existing || product.version > existing.version) {
+      latestMap.set(product.timeZero, product);
+    }
+  }
+  return Array.from(latestMap.values()).toReversed()
 })
 
 const viewMode = ref('html') // or 'iframe', 'img'
@@ -145,8 +157,7 @@ function getViewMode(extension: string): string {
 }
 
 watchEffect(() => {
-  const documentDisplay = toValue(props.config)
-  console.log('Config changed:', props.config)
+  const documentDisplay = toValue(config)
   if (documentDisplay) {
     viewPeriod.value = periodToIntervalItem(documentDisplay.relativeViewPeriod)
     editorEnabled.value = documentDisplay.report?.editor ?? false
