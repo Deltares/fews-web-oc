@@ -5,28 +5,23 @@ import {
   DocumentFormat,
   PiWebserviceProvider,
 } from '@deltares/fews-pi-requests'
-import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
-import { ref, shallowRef, toValue, watchEffect } from 'vue'
-
-export interface UseTaskRunReturn {
-  error: Ref<string | undefined>
-  taskRuns: ShallowRef<TaskRun[]>
-  isReady: Ref<boolean>
-  isLoading: Ref<boolean>
-}
+import type { MaybeRefOrGetter } from 'vue'
+import { ref, shallowRef, toValue, watch } from 'vue'
+import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
+import { Pausable } from '@vueuse/core'
 
 export function useTaskRuns(
   baseUrl: string,
   taskRunIds: MaybeRefOrGetter<string[]>,
-): UseTaskRunReturn {
+  refreshInterval?: number,
+) {
   const taskRuns = shallowRef<TaskRun[]>([])
-  const isReady = ref(false)
   const isLoading = ref(false)
   const error = shallowRef<string>()
+  const interval = ref<Pausable>()
 
   async function loadTaskRun() {
     isLoading.value = true
-    isReady.value = false
 
     try {
       const _taskRunIds = toValue(taskRunIds)
@@ -51,16 +46,23 @@ export function useTaskRuns(
       taskRuns.value = []
     } finally {
       isLoading.value = false
-      isReady.value = true
     }
   }
 
-  watchEffect(loadTaskRun)
+  if (refreshInterval) {
+    interval.value = useFocusAwareInterval(loadTaskRun, refreshInterval, {
+      immediateCallback: true,
+    })
+  } else {
+    loadTaskRun()
+  }
+
+  watch(() => toValue(taskRunIds), loadTaskRun)
 
   return {
     taskRuns,
-    isReady,
     isLoading,
+    interval,
     error,
   }
 }

@@ -1,8 +1,5 @@
 import { fetchActions } from '@/services/useDisplayConfig'
-import {
-  fetchTimeSeriesHeaders,
-  UseTimeSeriesOptions,
-} from '@/services/useTimeSeries'
+import { fetchTimeSeriesHeaders } from '@/services/useTimeSeries'
 import { useParametersStore } from '@/stores/parameters'
 import {
   ActionRequest,
@@ -15,12 +12,13 @@ import { fetchLocations } from '@/lib/topology/locations'
 import { FilterChart } from './types'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import { replaceDuplicateColors } from '@/lib/display'
+import { configManager } from '@/services/application-config'
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 export async function createNewChartsForFilter(
-  baseUrl: string,
   filter: filterActionsFilter,
-  titlePrefix: string | undefined,
-  timeSeriesOptions: UseTimeSeriesOptions,
+  titlePrefix?: string,
 ) {
   const actions = await fetchActions(baseUrl, filter)
 
@@ -28,19 +26,15 @@ export async function createNewChartsForFilter(
   replaceDuplicateColors(actions, colorsStore.colors)
 
   const results = actions.results
-
-  const newSubplots = results.flatMap(
-    (result) => result.config?.timeSeriesDisplay.subplots ?? [],
+  const displays = results.flatMap(
+    (result) => result.config?.timeSeriesDisplay ?? [],
   )
+  const newSubplots = displays.flatMap((display) => display.subplots ?? [])
   const newRequests = results
     .flatMap((result) => result.requests)
     .filter((req, i, s) => i === s.findIndex((r) => r.key === req.key))
 
-  const newHeaders = await fetchTimeSeriesHeaders(
-    baseUrl,
-    newRequests,
-    timeSeriesOptions,
-  )
+  const newHeaders = await fetchTimeSeriesHeaders(baseUrl, newRequests, {})
 
   const locationIds = newSubplots
     .flatMap((subPlot) =>
@@ -52,17 +46,23 @@ export async function createNewChartsForFilter(
     locationIds,
   })
 
-  const newCharts: FilterChart[] = newSubplots.map((subPlot) => {
-    const requests = getActionRequestsForSubplot(subPlot, newRequests)
-    const headers = requests.flatMap((req) => newHeaders[req.key ?? ''])
-    const title = getTitleFromHeaders(headers, locations)
-    return {
-      id: crypto.randomUUID(),
-      type: 'filter',
-      title: titlePrefix ? `${titlePrefix}${title}` : title,
-      subplot: subPlot,
-      requests: requests,
-    }
+  const newCharts: FilterChart[] = displays.flatMap((display) => {
+    const subplots = display.subplots ?? []
+    const forecastLegend = display.forecastLegend
+    return subplots.flatMap((subplot) => {
+      const requests = getActionRequestsForSubplot(subplot, newRequests)
+      const headers = requests.flatMap((req) => newHeaders[req.key ?? ''])
+      const title = getTitleFromHeaders(headers, locations)
+      return {
+        id: crypto.randomUUID(),
+        type: 'filter',
+        title: titlePrefix ? `${titlePrefix}${title}` : title,
+        filterId: filter.filterId ?? 'invalid',
+        subplot,
+        requests,
+        forecastLegend,
+      }
+    })
   })
   return newCharts
 }

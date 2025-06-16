@@ -9,28 +9,24 @@
     >
       <div v-show="tab === 'data-selection'" class="h-100">
         <AnalysisDataSelection
-          v-model:filterId="filterId"
           :filters="config.filters"
-          :locations="locations"
-          :geojson="geojson"
-          :timeSeriesHeaders="timeSeriesHeaders"
           :boundingBox="boundingBox"
-          :isLoading="isLoadingActions"
-          @addFilter="addFilter"
+          @addChart="addChart"
         />
       </div>
       <div v-show="tab === 'analysis'" class="h-100">
         <AnalysisFunctions
-          :filterId="filterId"
           :charts="selectedCollection.charts"
           :series="series"
           :startTime="selectedCollection.settings.startTime"
           :endTime="selectedCollection.settings.endTime"
+          :config="config"
           :settings="settings"
-          :isLoading="isLoadingActions"
-          @addFilter="addFilter"
           @addChart="addChart"
         />
+      </div>
+      <div v-show="tab === 'workflows'">
+        <AnalysisWorkflows :config="config" @addChart="addChart" />
       </div>
       <div v-show="tab === 'settings'">
         <v-card flat title="Settings">
@@ -63,23 +59,14 @@
     <div class="flex-0-0">
       <v-toolbar-items class="flex-column mt-2 border-e border-t border-b">
         <v-btn
-          icon="mdi-chart-box-plus-outline"
-          @click="toggleTab('data-selection')"
+          v-for="tab in tabs"
+          :key="tab.value"
+          :icon="tab.icon"
+          @click="toggleTab(tab.value)"
           height="40"
-          :active="isActive('data-selection')"
-        />
-        <v-btn
-          icon="mdi-finance"
-          @click="toggleTab('analysis')"
-          height="40"
-          :active="isActive('analysis')"
-          :disabled="!canDoAnalysis"
-        />
-        <v-btn
-          icon="mdi-cog-outline"
-          @click="toggleTab('settings')"
-          height="40"
-          :active="isActive('settings')"
+          :active="isActive(tab.value)"
+          :disabled="tab.disabled"
+          v-tooltip="tab.text"
         />
       </v-toolbar-items>
     </div>
@@ -99,6 +86,7 @@
           :startTime="selectedCollection.settings.startTime"
           :endTime="selectedCollection.settings.endTime"
           class="flex-1-1"
+          @addChart="addChart"
         />
         <v-card-text v-else> Select some data to display </v-card-text>
       </div>
@@ -110,7 +98,8 @@
 import AnalysisDataSelection from '@/components/analysis/AnalysisDataSelection.vue'
 import AnalysisCollectionCharts from './AnalysisCollectionCharts.vue'
 import AnalysisCollection from '@/components/analysis/AnalysisCollection.vue'
-import AnalysisFunctions from '@/components/analysis/AnalysisFunctions.vue'
+import AnalysisFunctions from '@/components/analysis/functions/AnalysisFunctions.vue'
+import AnalysisWorkflows from '@/components/analysis/workflows/AnalysisWorkflows.vue'
 import { VDateInput } from 'vuetify/labs/components'
 import type {
   ActionRequest,
@@ -118,9 +107,8 @@ import type {
   DataAnalysisDisplayElement,
 } from '@deltares/fews-pi-requests'
 import { computed, ref, watch } from 'vue'
-import { useFilterLocations } from '@/services/useFilterLocations'
 import { configManager } from '@/services/application-config'
-import { useTimeSeries, useTimeSeriesHeaders } from '@/services/useTimeSeries'
+import { useTimeSeries } from '@/services/useTimeSeries'
 import {
   type ComponentSettings,
   getDefaultSettings,
@@ -131,8 +119,6 @@ import {
   getDateTimeSerializer,
   createCollection,
   hasValidFilterCharts,
-  AddFilter,
-  createNewChartsForFilter,
 } from '@/lib/analysis'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useStorage } from '@vueuse/core'
@@ -143,7 +129,7 @@ interface Props {
   settings?: ComponentSettings
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
 
@@ -161,36 +147,8 @@ const collections = useStorage<Collection[]>(
 )
 const selectedCollection = ref<Collection>(collections.value[0])
 
-function addChartsToCollection(charts: Chart[]) {
-  const collection = selectedCollection.value
-  if (!collection) return
-
-  selectedCollection.value.charts = [...collection.charts, ...charts]
-}
-
-const filterId = ref(props.config.filters?.[0].id)
-
-const { locations, geojson } = useFilterLocations(baseUrl, () =>
-  filterId.value ? [filterId.value] : [],
-)
-const { timeSeriesHeaders } = useTimeSeriesHeaders(baseUrl, filterId)
-
 function addChart(chart: Chart) {
   selectedCollection.value.charts = [...selectedCollection.value.charts, chart]
-}
-
-const isLoadingActions = ref(false)
-
-async function addFilter({ filter, titlePrefix }: AddFilter) {
-  isLoadingActions.value = true
-  const charts = await createNewChartsForFilter(
-    baseUrl,
-    filter,
-    titlePrefix,
-    timeSeriesOptions.value,
-  )
-  addChartsToCollection(charts)
-  isLoadingActions.value = false
 }
 
 const requests = computed<ActionRequest[]>((prevRequests) => {
@@ -236,9 +194,31 @@ function toggleTab(tabName: string) {
 const canDoAnalysis = computed(() =>
   hasValidFilterCharts(selectedCollection.value.charts),
 )
-watch(canDoAnalysis, (canDo) => {
-  if (!canDo && tab.value !== undefined) {
-    tab.value = 'data-selection'
+
+const tabs = computed(() => [
+  {
+    value: 'data-selection',
+    icon: 'mdi-database',
+    text: 'Data Selection',
+  },
+  {
+    value: 'analysis',
+    icon: 'mdi-finance',
+    text: 'Analysis',
+    disabled: !canDoAnalysis.value,
+  },
+  { value: 'workflows', icon: 'mdi-tools', text: 'Workflows' },
+  { value: 'settings', icon: 'mdi-cog-outline', text: 'Settings' },
+])
+
+watch(tabs, () => {
+  if (!tab.value) return
+
+  // When active tab is disabled, switch to the first enabled tab
+  const activeTab = tabs.value.find((t) => t.value === tab.value)
+  if (!activeTab || activeTab.disabled) {
+    const firstEnabledTab = tabs.value.find((t) => !t.disabled)
+    tab.value = firstEnabledTab ? firstEnabledTab.value : undefined
   }
 })
 </script>
