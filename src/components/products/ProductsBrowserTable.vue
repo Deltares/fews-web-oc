@@ -155,7 +155,7 @@
           icon="mdi-delete"
           size="small"
           variant="text"
-          @click.stop="deleteProduct(item)"
+          @click.stop="onDeleteProduct(item)"
           :title="'Delete product'"
           class="delete-action-btn"
           :hover="true"
@@ -233,8 +233,8 @@ import { computed, onMounted, ref, watch } from 'vue'
 import type { ProductMetaDataType } from '@/services/useProducts/types'
 import { useRouter } from 'vue-router'
 import { toHumanReadableDate } from '@/lib/date'
+import { deleteProduct, postFileProduct } from '@/lib/products/requests'
 import { configManager } from '@/services/application-config'
-import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { DateTime } from 'luxon'
 
 interface AttributeHeader {
@@ -248,6 +248,8 @@ interface PropertyHeader {
 }
 
 export interface ProductBrowserTableConfig {
+  preview: boolean | string
+  type: 'table' | 'list'
   headers: (AttributeHeader | PropertyHeader)[]
 }
 
@@ -261,6 +263,8 @@ interface Props {
   products: ProductMetaDataType[]
   config: ProductBrowserTableConfig
   productId?: string
+  areaId: string
+  sourceId: string
 }
 
 const props = defineProps<Props>()
@@ -304,47 +308,34 @@ const resetUploadForm = () => {
   uploadError.value = ''
 }
 
-// Upload product function
 async function uploadProduct() {
   if (!canUpload.value) return
-
   uploading.value = true
   uploadError.value = ''
-
   try {
     const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
     const timeZero = DateTime.now().toUTC().startOf('second').toISO({
       suppressMilliseconds: true,
     })
-    const url = `${baseUrl}rest/fewspiservice/v1/archive/products?areaId=${props.products[0].areaId}&sourceId=${props.products[0].sourceId}&timeZero=${timeZero}&attribute(productId)=${toSnakeCase(uploadData.value.name)}&attribute(name)=${uploadData.value.name}&attribute(status)=concept&attribute(author)=${uploadData.value.author}`
-    // remove whitespace from URL
-    const formData = new FormData()
-    formData.append('file', uploadFile.value as File)
-
-    // Use transformRequest to properly handle authentication
-    const transformRequest = createTransformRequestFn()
-    const request = new Request(url, {
-      method: 'POST',
-      body: formData,
-    })
-    const authenticatedRequest = await transformRequest(request)
-    const response = await fetch(authenticatedRequest)
-
-    if (!response.ok) {
-      const msg = await response.text()
-      throw new Error(msg || 'Failed to send request.')
+    const attributes = {
+      name: uploadData.value.name,
+      author: uploadData.value.author,
     }
-
-    // Reset the form and close dialog on success
+    await postFileProduct(
+      `${baseUrl}rest/fewspiservice/v1/archive/`,
+      props.areaId, // areaId
+      props.sourceId, // sourceId
+      timeZero,
+      uploadFile.value!,
+      attributes,
+    )
     resetUploadForm()
     showUploadDialog.value = false
     emit('refresh')
   } catch (error) {
     console.error('Upload error:', error)
     uploadError.value =
-      error instanceof Error
-        ? error.message
-        : 'An unknown error occurred while uploading your product'
+      error instanceof Error ? error.message : 'Unknown error occurred'
   } finally {
     uploading.value = false
   }
@@ -420,37 +411,12 @@ const items = computed(() => {
   }))
 })
 
-// Method to handle product deletion
-async function deleteProduct(product: ProductMetaDataType) {
-  console.log(product)
-  console.log(
-    'Delete button clicked for product:',
-    product.key,
-    product.attributes?.product_id || 'unknown',
-  )
+async function onDeleteProduct(product: ProductMetaDataType) {
   try {
-    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-    console.log(encodeURIComponent(product.relativePathMetaDataFile))
-    const url = `${baseUrl}rest/fewspiservice/v1/archive/products/attributes?relativePath=${encodeURIComponent(product.relativePathMetaDataFile)}&attribute(delete)=true`
-    // Use transformRequest to properly handle authentication
-    const transformRequest = createTransformRequestFn()
-    const request = new Request(url, {
-      method: 'POST',
-    })
-    const authenticatedRequest = await transformRequest(request)
-    const response = await fetch(authenticatedRequest)
-
-    if (!response.ok) {
-      const msg = await response.text()
-      throw new Error(msg || 'Failed to send request.')
-    }
+    await deleteProduct(import.meta.env.VITE_FEWS_WEBSERVICES_URL, product)
     emit('refresh')
   } catch (error) {
-    console.error('Upload error:', error)
-    uploadError.value =
-      error instanceof Error
-        ? error.message
-        : 'An unknown error occurred while uploading your product'
+    console.error(error)
   }
 }
 
@@ -467,26 +433,6 @@ function onClick(
       productId: entry.item.key,
     },
   })
-}
-/**
- * Converts a string to snake case format
- * @param name The string to convert to snake case
- * @returns The string in snake_case format
- */
-function toSnakeCase(name: string): string {
-  // Convert spaces to underscores and lowercase the string
-  return (
-    name
-      .toLowerCase()
-      // Replace spaces with underscores
-      .replace(/\s+/g, '_')
-      // Remove special characters and replace with underscores
-      .replace(/[^\w_]/g, '_')
-      // Replace multiple consecutive underscores with a single one
-      .replace(/_+/g, '_')
-      // Remove leading and trailing underscores
-      .replace(/^_|_$/g, '')
-  )
 }
 </script>
 

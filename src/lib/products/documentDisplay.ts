@@ -74,17 +74,17 @@ export interface ArchiveProducts {
 
 export interface Layout {
   preview: string | boolean
-  headers: (AttributeHeader | PropertyHeader)[]
+  headers: (AttributeHeaderFews | PropertyHeaderFews)[]
 }
 
-interface AttributeHeader {
-  attribute: string
-  title: string
+interface AttributeHeaderFews {
+  name: string
+  productAttribute: string
 }
 
-interface PropertyHeader {
-  property: string
-  title: string
+interface PropertyHeaderFews {
+  name: string
+  productProperty: string
 }
 
 export interface Reports {

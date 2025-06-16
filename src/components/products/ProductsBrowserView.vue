@@ -4,7 +4,10 @@
       :products="products"
       :config="tableLayout"
       class="product-browser__table"
-      :productId="props.productId"
+      :productId="productId"
+      :areaId="areaId"
+      :sourceId="sourceId"
+      @refresh="refresh()"
     >
       <template #footer>
         <v-list-item density="compact">
@@ -82,7 +85,6 @@ import {
   type IntervalItem,
   periodToIntervalItem,
 } from '@/lib/TimeControl/interval'
-import { layout } from '@/assets/browserLayout.json'
 import { configManager } from '@/services/application-config'
 import EditReport from '@/components/reports/EditReport.vue'
 import DOMPurify from 'dompurify'
@@ -111,14 +113,30 @@ function getViewMode(extension: string): string {
   }
 }
 
-const props = defineProps<Props>()
+const { config, productId } = defineProps<Props>()
 const src = ref('')
 const viewMode = ref('')
 const timeZero = ref('')
-const tableLayout = ref<ProductBrowserTableConfig>({
-  type: 'table',
-  headers: [],
-} as ProductBrowserTableConfig)
+const tableLayout = computed(() => {
+  if (config?.browser?.layout) {
+    return {
+      preview: config.browser.layout.preview,
+      type: 'table',
+      headers: config.browser.layout.headers.map((header) => ({
+        title: header.name,
+        property:
+          'productProperty' in header ? header.productProperty : undefined,
+        attribute:
+          'productAttribute' in header ? header.productAttribute : undefined,
+      })),
+    } as ProductBrowserTableConfig
+  }
+  return {
+    preview: false,
+    type: 'table',
+    headers: [],
+  } as ProductBrowserTableConfig
+})
 const viewPeriod = ref<IntervalItem>({})
 const htmlContent = ref('')
 const isEditing = ref(false)
@@ -149,23 +167,18 @@ const filter = computed(() => {
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-// Create computed properties for the optional sourceId and areaId
 const sourceId = computed(
-  () =>
-    props.config?.browser?.archiveProductSets[0].constraints?.sourceId ||
-    'weboc',
+  () => config?.browser?.archiveProductSets[0].constraints?.sourceId || 'weboc',
 )
 const areaId = computed(
   () =>
-    props.config?.browser?.archiveProductSets[0].constraints?.areaId ||
-    'products',
+    config?.browser?.archiveProductSets[0].constraints?.areaId || 'products',
 )
 
 const archiveProductSets = computed(() => {
-  return props.config?.browser?.archiveProductSets ?? []
+  return config?.browser?.archiveProductSets ?? []
 })
 
-// Pass the computed properties to useProducts
 const { products, getProductByKey, refresh, lastUpdated } = useProducts(
   baseUrl,
   filter,
@@ -175,17 +188,16 @@ const { products, getProductByKey, refresh, lastUpdated } = useProducts(
 )
 
 watchEffect(() => {
-  const documentDisplay = toValue(props.config)
+  const documentDisplay = toValue(config)
   if (documentDisplay) {
     viewPeriod.value = periodToIntervalItem(documentDisplay.relativeViewPeriod)
-    tableLayout.value = layout
   }
   console.log(documentDisplay)
 })
 
 watchEffect(async () => {
-  if (props.productId) {
-    const productMetaData = getProductByKey(props.productId)
+  if (productId) {
+    const productMetaData = getProductByKey(productId)
     if (!productMetaData) {
       src.value = ''
       timeZero.value = ''

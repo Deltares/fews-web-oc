@@ -23,7 +23,8 @@ export function useProducts(
   filter: MaybeRefOrGetter<ProductsMetaDataFilter>,
   sourceId: MaybeRefOrGetter = ref('weboc'),
   areaId: MaybeRefOrGetter = ref('products'),
-  constraints: MaybeRefOrGetter<Constraints | undefined> = ref(undefined),
+  archiveProductSets: MaybeRefOrGetter<ArchiveProductSet[]> = ref([]),
+  archiveProducts: MaybeRefOrGetter<ArchiveProduct[]> = ref([]),
 ) {
   const products = ref<ProductMetaDataType[]>([])
   const error = ref<string | null>(null)
@@ -37,6 +38,7 @@ export function useProducts(
   const fetchProducts = async () => {
     products.value = [] // Reset products before fetching new ones
     // If we have ArchiveProducts we can use the filter to fetch products
+    console.log(archiveProducts)
     for (const product of toValue(archiveProducts)) {
       const filterValue = toValue(filter)
       // Ensure the filter has a valid date range
@@ -56,15 +58,13 @@ export function useProducts(
         {} as Record<string, string>,
       )
       try {
-        const response = await provider.getProductsMetaData(filterValue)
-        const itemPromises = response.productsMetadata
-          .filter((p) => {
-            return (
-              p.sourceId === toValue(sourceId) && p.areaId === toValue(areaId)
-            )
-          })
-          .map(convertToProductMetaDataType)
-        products.value.push(...(await Promise.all(itemPromises)))
+        const response = await fetchProductsMetaData(baseUrl, filterValue)
+        const filteredProducts = response.filter((p) => {
+          return (
+            p.sourceId === toValue(sourceId) && p.areaId === toValue(areaId)
+          )
+        })
+        products.value.push(...filteredProducts)
         lastUpdated.value = new Date()
       } catch (err) {
         error.value = 'Error fetching product metadata'
