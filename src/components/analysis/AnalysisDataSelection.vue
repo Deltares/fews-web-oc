@@ -65,13 +65,11 @@
 
     <div class="d-flex">
       <v-spacer />
-      <AnalysisAddButton
+      <AnalysisAddToButton
         :charts
-        :disabled="!filters.length"
-        :loading="isLoading"
-        :newChartTitle="`Create ${filters.length} new chart${
-          filters.length !== 1 ? 's' : ''
-        }`"
+        :filters
+        :loadingNewCharts="isLoadingNewCharts"
+        :loadingAddToChart="isLoadingAddToChart"
         @addToChart="addFilter"
       />
     </div>
@@ -82,7 +80,7 @@
 import type { BoundingBox, Filter, Location } from '@deltares/fews-pi-requests'
 import Autocomplete from '@/components/general/Autocomplete.vue'
 import AnalysisMap from '@/components/analysis/AnalysisMap.vue'
-import AnalysisAddButton from '@/components/analysis/AnalysisAddButton.vue'
+import AnalysisAddToButton from '@/components/analysis/AnalysisAddToButton.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
@@ -108,7 +106,8 @@ const props = defineProps<Props>()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const showMap = ref(false)
 
-const isLoading = ref(false)
+const isLoadingNewCharts = ref(false)
+const isLoadingAddToChart = ref(false)
 const parametersStore = useParametersStore()
 
 const filterId = ref<string | undefined>(props.filters?.[0]?.id)
@@ -196,20 +195,23 @@ async function addFilter(chart?: Chart) {
   if (!filters.value.length) return
 
   if (chart === undefined) {
-    isLoading.value = true
+    isLoadingNewCharts.value = true
     const charts = await createNewChartsForFilters(filters.value)
-    isLoading.value = false
+    isLoadingNewCharts.value = false
 
     charts.forEach((newChart) => emit('addChart', newChart))
     return
   }
 
-  if (filters.value.length !== 1)
-    throw new Error('Only one filter can be added to an existing chart')
-  const filter = filters.value[0]
   if (chart.type !== 'filter') return
 
-  await addFilterToChart(chart, filter)
+  const promises = filters.value.map((filter) =>
+    addFilterToChart(chart, filter),
+  )
+
+  isLoadingAddToChart.value = true
+  await Promise.all(promises)
+  isLoadingAddToChart.value = false
 }
 
 const selectedLocationIds = ref<string[]>([])

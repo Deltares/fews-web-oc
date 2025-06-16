@@ -31,13 +31,11 @@
 
     <div class="d-flex pa-3">
       <v-spacer />
-      <AnalysisAddButton
+      <AnalysisAddToButton
         :charts
-        :disabled="!canAddFilter"
-        :loading="isLoading"
-        :newChartTitle="`Create ${filters.length} new chart${
-          filters.length !== 1 ? 's' : ''
-        }`"
+        :filters
+        :loadingNewCharts="isLoadingNewCharts"
+        :loadingAddToChart="isLoadingAddToChart"
         @addToChart="addFilter"
       />
     </div>
@@ -47,7 +45,7 @@
 <script setup lang="ts">
 import Autocomplete from '@/components/general/Autocomplete.vue'
 import GroupSelect from '@/components/general/GroupSelect.vue'
-import AnalysisAddButton from '@/components/analysis/AnalysisAddButton.vue'
+import AnalysisAddToButton from '@/components/analysis/AnalysisAddToButton.vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref, watch } from 'vue'
@@ -90,7 +88,9 @@ const parametersStore = useParametersStore()
 const selectedTimeseries = ref<ChartSeriesItem[]>([])
 const selectedResamplingMethods = ref<ResamplingMethod[]>([])
 const selectedResamplingTimeSteps = ref<TimeSteps[]>([])
-const isLoading = ref(false)
+
+const isLoadingNewCharts = ref(false)
+const isLoadingAddToChart = ref(false)
 
 watch(() => props.isActive, clearSelections)
 function clearSelections() {
@@ -119,9 +119,9 @@ async function addFilter(chart?: Chart) {
   if (!canAddFilter.value) return
 
   if (chart === undefined) {
-    isLoading.value = true
+    isLoadingNewCharts.value = true
     const charts = await createNewChartsForFilters(filters.value)
-    isLoading.value = false
+    isLoadingNewCharts.value = false
     charts.forEach((chart) => emit('addChart', chart))
     return
   }
@@ -131,7 +131,9 @@ async function addFilter(chart?: Chart) {
   const promises = filters.value.map((filter) =>
     addFilterToChart(chart, filter),
   )
+  isLoadingAddToChart.value = true
   await Promise.all(promises)
+  isLoadingAddToChart.value = false
 }
 
 function getFilters(items: FilterSubplotItem[]) {

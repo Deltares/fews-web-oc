@@ -10,7 +10,7 @@ import {
 import { FilterChart, FilterSubplot, FilterSubplotItem } from './types'
 import { configManager } from '@/services/application-config'
 import { absoluteUrl } from '../utils/absoluteUrl'
-import { uniq } from 'lodash-es'
+import { uniq, uniqBy } from 'lodash-es'
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -146,7 +146,22 @@ export function getFilterSubplotTitle(subplot: FilterSubplot) {
   return `${format(uniqueParameterGroups)} at ${format(uniqueLocationNames)}`
 }
 
-export async function addFilterToChart(
+function isLeftItem(item: FilterSubplotItem) {
+  return item.yAxis?.axisPosition === 'left'
+}
+function isRightItem(item: FilterSubplotItem) {
+  return item.yAxis?.axisPosition === 'right'
+}
+
+export function canAddFilterToChart(
+  chart: FilterChart,
+  filter: filterActionsFilter,
+): boolean {
+  const addPosition = getAddPositionForFilter(chart, filter)
+  return addPosition !== undefined
+}
+
+function getAddPositionForFilter(
   chart: FilterChart,
   filter: filterActionsFilter,
 ) {
@@ -160,41 +175,44 @@ export async function addFilterToChart(
   }
 
   const items = chart.subplot.items
-  const leftItems = items.filter((item) => item.yAxis?.axisPosition === 'left')
-  const rightItems = items.filter(
-    (item) => item.yAxis?.axisPosition === 'right',
-  )
-  const leftParameterGroup = leftItems?.[0]?.parameterGroup
-  const rightParameterGroup = rightItems?.[0]?.parameterGroup
+  const leftItem = items.find(isLeftItem)
+  const rightItem = items.find(isRightItem)
+  const leftParameterGroup = leftItem?.parameterGroup
+  const rightParameterGroup = rightItem?.parameterGroup
 
-  const addToLeft = filterParameterGroup === leftParameterGroup
-  const addToRight = filterParameterGroup === rightParameterGroup
-  const addLeft = leftParameterGroup === undefined
-  const addRight = rightParameterGroup === undefined
+  if (filterParameterGroup === leftParameterGroup) {
+    return 'addToLeft'
+  }
+  if (filterParameterGroup === rightParameterGroup) {
+    return 'addToRight'
+  }
+  if (leftParameterGroup === undefined) {
+    return 'addLeft'
+  }
+  if (rightParameterGroup === undefined) {
+    return 'addRight'
+  }
+}
 
-  if (addToLeft) {
-    await addFilterToChartPosition(
-      chart,
-      combineFilters(filter, leftItems),
-      'left',
-    )
-    return
-  }
-  if (addToRight) {
-    await addFilterToChartPosition(
-      chart,
-      combineFilters(filter, rightItems),
-      'right',
-    )
-    return
-  }
-  if (addLeft) {
-    await addFilterToChartPosition(chart, filter, 'left')
-    return
-  }
-  if (addRight) {
-    await addFilterToChartPosition(chart, filter, 'right')
-    return
+export async function addFilterToChart(
+  chart: FilterChart,
+  filter: filterActionsFilter,
+) {
+  const addPosition = getAddPositionForFilter(chart, filter)
+
+  switch (addPosition) {
+    case 'addToLeft':
+      const leftItems = chart.subplot.items.filter(isLeftItem)
+      const leftFilter = combineFilters(filter, leftItems)
+      return addFilterToChartPosition(chart, leftFilter, 'left')
+    case 'addToRight':
+      const rightItems = chart.subplot.items.filter(isRightItem)
+      const rightFilter = combineFilters(filter, rightItems)
+      return addFilterToChartPosition(chart, rightFilter, 'right')
+    case 'addLeft':
+      return addFilterToChartPosition(chart, filter, 'left')
+    case 'addRight':
+      return addFilterToChartPosition(chart, filter, 'right')
   }
 }
 
@@ -202,32 +220,50 @@ function combineFilters(
   filter: FilterSubplotItem['filter'],
   items: FilterSubplotItem[],
 ): FilterSubplotItem['filter'] {
-  const filterIds = getFilterIds(items)
-  const locationIds = getLocationIds(items)
-  const parameterIds = getParameterIds(items)
-  const moduleInstanceIds = getModuleInstanceIds(items)
-  const resamplingMethods = getResamplingMethods(items)
-  const resamplingTimeStepIds = getResamplingTimeStepIds(items)
+  const filterIdsFilter = filter.filterId?.split(',') ?? []
+  const locationIdsFilter = filter.locationIds?.split(',') ?? []
+  const parameterIdsFilter = filter.parameterIds?.split(',') ?? []
+  const moduleInstanceIdsFilter = filter.moduleInstanceIds?.split(',') ?? []
+  const resamplingMethodsFilter = filter.resamplingMethods?.split(',') ?? []
+  const resamplingTimeStepIdsFilter =
+    filter.resamplingTimeStepIds?.split(',') ?? []
+
+  const filterIdsItems = getFilterIds(items)
+  const locationIdsItems = getLocationIds(items)
+  const parameterIdsItems = getParameterIds(items)
+  const moduleInstanceIdsItems = getModuleInstanceIds(items)
+  const resamplingMethodsItems = getResamplingMethods(items)
+  const resamplingTimeStepIdsItems = getResamplingTimeStepIds(items)
+
+  const filterId = uniq([filterIdsFilter, filterIdsItems])
+  const locationIds = uniq([locationIdsFilter, locationIdsItems])
+  const parameterIds = uniq([parameterIdsFilter, parameterIdsItems])
+  const moduleInstanceIds = uniq([
+    moduleInstanceIdsFilter,
+    moduleInstanceIdsItems,
+  ])
+  const resamplingMethods = uniq([
+    resamplingMethodsFilter,
+    resamplingMethodsItems,
+  ])
+  const resamplingTimeStepIds = uniq([
+    resamplingTimeStepIdsFilter,
+    resamplingTimeStepIdsItems,
+  ])
+
   return {
-    filterId: uniq([filter.filterId?.split(',') ?? [], filterIds]).join(','),
-    locationIds: uniq([filter.locationIds?.split(',') ?? [], locationIds]).join(
-      ',',
-    ),
-    parameterIds: uniq([
-      filter.parameterIds?.split(',') ?? [],
-      parameterIds,
-    ]).join(','),
-    moduleInstanceIds: uniq([
-      filter.moduleInstanceIds?.split(',') ?? [],
-      moduleInstanceIds,
-    ]).join(','),
-    resamplingMethods: uniq([filter.resamplingMethods, resamplingMethods]).join(
-      ',',
-    ),
-    resamplingTimeStepIds: uniq([
-      filter.resamplingTimeStepIds,
-      ...resamplingTimeStepIds,
-    ]).join(','),
+    filterId: filterId.length ? filterId.join(',') : undefined,
+    locationIds: locationIds.length ? locationIds.join(',') : undefined,
+    parameterIds: parameterIds.length ? parameterIds.join(',') : undefined,
+    moduleInstanceIds: moduleInstanceIds.length
+      ? moduleInstanceIds.join(',')
+      : undefined,
+    resamplingMethods: resamplingMethods.length
+      ? resamplingMethods.join(',')
+      : undefined,
+    resamplingTimeStepIds: resamplingTimeStepIds.length
+      ? resamplingTimeStepIds.join(',')
+      : undefined,
     // TODO: Do two requests if resamplingOmitMissing is different?
     resamplingOmitMissing: filter.resamplingOmitMissing,
   }
@@ -275,23 +311,15 @@ async function addFilterToChartPosition(
   if (!newChart) return
 
   newChart.subplot.items.forEach((item) => {
-    item.yAxis = {
-      ...item.yAxis,
-      axisPosition: position,
-    }
+    if (!item.yAxis) return
+    item.yAxis.axisPosition = position
   })
 
   const newItems = [...chart.subplot.items, ...newChart.subplot.items]
-  chart.subplot.items = newItems.filter(
-    (item, index, self) =>
-      index === self.findIndex((i) => i.request === item.request),
-  )
+  chart.subplot.items = uniqBy(newItems, (item) => item.request)
 
   const newRequests = [...chart.requests, ...newChart.requests]
-  chart.requests = newRequests.filter(
-    (request, index, self) =>
-      index === self.findIndex((r) => r.request === request.request),
-  )
+  chart.requests = uniqBy(newRequests, (req) => req.request)
 
   chart.title = getFilterSubplotTitle(chart.subplot)
 }
