@@ -3,7 +3,7 @@
     <div class="d-flex align-center ga-1 px-2 py-1">
       <span>{{ label }}</span>
       <v-btn
-        v-if="multiple"
+        v-if="multiple && listSelected.length > 0"
         icon="mdi-refresh"
         variant="plain"
         density="compact"
