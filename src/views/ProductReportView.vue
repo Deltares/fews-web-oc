@@ -160,7 +160,7 @@ watchEffect(() => {
   const documentDisplay = toValue(config)
   if (documentDisplay) {
     viewPeriod.value = periodToIntervalItem(documentDisplay.relativeViewPeriod)
-    editorEnabled.value = documentDisplay.report?.editor ?? false
+    editorEnabled.value = documentDisplay.editPermissions ?? false
     console.log('View period set to:', viewPeriod.value)
   }
 })
@@ -200,7 +200,6 @@ watchEffect(async () => {
 })
 
 async function onSave() {
-  console.log('Saving report content...')
   const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const archiveUrl = `${piUrl}rest/fewspiservice/v1/archive/`
   const metaData = selectedProduct.value
