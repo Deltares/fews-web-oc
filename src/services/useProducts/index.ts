@@ -7,6 +7,10 @@ import {
 } from '@deltares/fews-pi-requests'
 import { ref, toValue, watchEffect, type MaybeRefOrGetter } from 'vue'
 import { ProductMetaDataType, ProductMetaDataWithoutAttributes } from './types'
+import {
+  ArchiveProduct,
+  ArchiveProductSet,
+} from '@/lib/products/documentDisplay'
 
 /**
  * Hook to fetch and manage product metadata based on a given filter.
@@ -17,6 +21,10 @@ import { ProductMetaDataType, ProductMetaDataWithoutAttributes } from './types'
 export function useProducts(
   baseUrl: string,
   filter: MaybeRefOrGetter<ProductsMetaDataFilter>,
+  sourceId: MaybeRefOrGetter = ref('weboc'),
+  areaId: MaybeRefOrGetter = ref('products'),
+  archiveProductSets: MaybeRefOrGetter<ArchiveProductSet[]> = ref([]),
+  archiveProducts: MaybeRefOrGetter<ArchiveProduct[]> = ref([]),
 ) {
   const products = ref<ProductMetaDataType[]>([])
   const error = ref<string | null>(null)
@@ -28,18 +36,91 @@ export function useProducts(
   }
 
   const fetchProducts = async () => {
-    const filterValue = toValue(filter)
-    // Ensure the filter has a valid date range
-    if (!filterValue.startForecastTime || !filterValue.endForecastTime) {
-      return
+    products.value = [] // Reset products before fetching new ones
+    // If we have ArchiveProducts we can use the filter to fetch products
+    for (const product of toValue(archiveProducts)) {
+      const filterValue = toValue(filter)
+      // Ensure the filter has a valid date range
+      if (!filterValue.startForecastTime || !filterValue.endForecastTime) {
+        return
+      }
+      filterValue.versionKey = product.versionKeys
+      // Set all attributes from the product
+      filterValue.attribute = product.attributes.reduce(
+        (
+          acc: Record<string, string>,
+          attr: ArchiveProductsMetadataAttribute,
+        ) => {
+          acc[attr.key] = attr.value
+          return acc
+        },
+        {} as Record<string, string>,
+      )
+      try {
+        const response = await fetchProductsMetaData(baseUrl, filterValue)
+        const filteredProducts = response.filter((p) => {
+          return (
+            p.sourceId === toValue(sourceId) && p.areaId === toValue(areaId)
+          )
+        })
+        products.value.push(...filteredProducts)
+        lastUpdated.value = new Date()
+      } catch (err) {
+        error.value = 'Error fetching product metadata'
+        console.error(err)
+      }
     }
+    if (toValue(archiveProducts).length > 0) return
 
-    try {
-      const response = await fetchProductsMetaData(baseUrl, filterValue)
-      products.value = response.filter((p) => p.sourceId === 'demo')
-      lastUpdated.value = new Date()
-    } catch (err) {
-      error.value = 'Error fetching product metadata'
+    // if we have product sets, we need to fetch for each set
+    const constraints = toValue(archiveProductSets).map(
+      (set) => set.constraints,
+    )
+    // if we get no explicit constraints, we use the default filter
+    if (constraints.length === 0) {
+      constraints.push({ areaId: toValue(areaId), sourceId: toValue(sourceId) })
+    }
+    for (const constraint of constraints) {
+      const filterValue = toValue(filter)
+      // Ensure the filter has a valid date range
+      if (!filterValue.startForecastTime || !filterValue.endForecastTime) {
+        return
+      }
+      const allValid = toValue(constraint)?.allValid
+      if (allValid) {
+        filterValue.attribute = allValid.reduce(
+          (acc: Record<string, string>, constraint) => {
+            acc[constraint.attributeTextEquals.id] =
+              constraint.attributeTextEquals.equals
+            return acc
+          },
+          {} as Record<string, string>,
+        )
+      }
+      const anyValid = toValue(constraint)?.anyValid
+      try {
+        const response = await fetchProductsMetaData(baseUrl, filterValue)
+        const filteredProducts = response.filter((p) => {
+          if (anyValid) {
+            return (
+              anyValid.some(
+                (constraint) =>
+                  p.attributes[constraint.attributeTextEquals.id] ===
+                  constraint.attributeTextEquals.equals,
+              ) &&
+              p.sourceId === toValue(sourceId) &&
+              p.areaId === toValue(areaId)
+            )
+          }
+          return (
+            p.sourceId === toValue(sourceId) && p.areaId === toValue(areaId)
+          )
+        })
+        products.value = filteredProducts
+      } catch (err) {
+        error.value = 'Error fetching product metadata'
+        console.error(err)
+      }
     }
   }
 
@@ -173,8 +254,6 @@ async function hashObject(obj: any): Promise<string> {
   const hashBuffer = await crypto.subtle.digest('SHA-256', data)
 
   const hexString = bufferToHex(hashBuffer)
-  console.log('HashBuffer:', hexString)
-
   return hexString
 }
 

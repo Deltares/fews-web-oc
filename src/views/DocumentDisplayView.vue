@@ -54,7 +54,6 @@ onMounted(async () => {
 
 watchEffect(() => {
   let documentDisplayId = toValue(props.topologyNode?.documentDisplayId)
-  console.log('Document display ID from props:', documentDisplayId)
   if (documentDisplayId === 'archiveProductId') {
     documentDisplayId = 'end_shift_form'
     console.warn(

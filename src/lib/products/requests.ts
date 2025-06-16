@@ -1,3 +1,4 @@
+import { ProductMetaDataType } from '@/services/useProducts/types.js'
 import { createTransformRequestFn } from '../requests/transformRequest.js'
 import type { PostResponse } from './types.js'
 
@@ -120,4 +121,67 @@ export async function postProduct(
 
   const responseData = await response.json()
   return responseData.productsMetadata[0]
+}
+
+/**
+ * Sends a file as product to the specified archive URL using a POST request.
+ *
+ * @param archiveUrl - The base URL of the archive endpoint.
+ * @param areaId - The identifier for the area.
+ * @param productId - The identifier for the product.
+ * @param timeZero - The reference time for the product.
+ * @param file - The product content to be sent.
+ * @param attributes - Additional attributes to include in the request as key-value pairs.
+ * @returns A promise that resolves to the metadata of the posted product.
+ * @throws Will throw an error if the request fails or the response is not OK.
+ */
+export async function postFileProduct(
+  archiveUrl: string,
+  areaId: string,
+  sourceId: string,
+  timeZero: string,
+  file: File,
+  attributes: Record<string, string | boolean>,
+): Promise<PostResponse> {
+  let url = `${archiveUrl}products?areaId=${areaId}&sourceId=${sourceId}&timeZero=${timeZero}`
+
+  for (const key in attributes) {
+    url = `${url}&attribute(${key})=${attributes[key]}`
+  }
+  const transformRequest = createTransformRequestFn()
+  const formData = new FormData()
+  formData.append('file', file)
+  const request = await transformRequest(
+    new Request(url, {
+      method: 'POST',
+      body: formData,
+    }),
+  )
+  const response = await fetch(request)
+
+  if (!response.ok) {
+    const msg = await response.text()
+    throw new Error(msg || 'Failed to send request.')
+  }
+
+  const responseData = await response.json()
+  return responseData.productsMetadata[0]
+}
+
+export async function deleteProduct(
+  archiveUrl: string,
+  product: ProductMetaDataType,
+): Promise<void> {
+  const url = `${archiveUrl}products/attributes?relativePath=${encodeURIComponent(product.relativePathMetaDataFile)}&attribute(${encodeURIComponent('fews:delete')})=true`
+  const transformRequest = createTransformRequestFn()
+  const request = await transformRequest(
+    new Request(url, {
+      method: 'POST',
+    }),
+  )
+  const response = await fetch(request)
+  if (!response.ok) {
+    const msg = await response.text()
+    throw new Error(msg || 'Failed to delete product.')
+  }
 }

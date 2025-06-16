@@ -6,6 +6,7 @@
         class="text-none"
         variant="flat"
         color="primary"
+        @click="showUploadDialog = true"
         >Upload</v-btn
       >
       <v-spacer />
@@ -77,10 +78,14 @@
         <tr>
           <template v-for="(column, index) in columns" :key="column.key">
             <th v-if="index === 0"></th>
-            <th v-else-if="column.key === 'Actions'" class="pa-0">
+            <th v-else-if="column.key === 'actions'" class="pa-0">
               <v-btn icon size="small" variant="plain">
                 <v-icon icon="mdi-dots-vertical" />
-                <v-menu activator="parent" :close-on-content-click="false">
+                <v-menu
+                  activator="parent"
+                  :close-on-content-click="false"
+                  location="bottom end"
+                >
                   <v-list
                     v-model:selected="selectedColumns"
                     select-strategy="independent"
@@ -149,10 +154,82 @@
           </td>
         </tr>
       </template>
+      <template v-slot:item.actions="{ item }">
+        <v-btn
+          icon="mdi-delete"
+          size="small"
+          variant="text"
+          @click.stop="onDeleteProduct(item)"
+          :title="'Delete product'"
+          class="delete-action-btn"
+          :hover="true"
+        ></v-btn>
+      </template>
     </v-data-table>
     <div>
       <slot name="footer"> </slot>
     </div>
+    <v-dialog v-model="showUploadDialog" max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">Upload Product</span>
+        </v-card-title>
+        <v-card-text>
+          <v-alert v-if="uploadError" type="error" variant="tonal" class="mb-4">
+            {{ uploadError }}
+          </v-alert>
+
+          <v-file-input
+            v-model="uploadFile"
+            :loading="uploading"
+            :disabled="uploading"
+            truncate-length="30"
+            accept=".pdf,.jpg,.jpeg,.png"
+            placeholder="Select file"
+            prepend-icon="mdi-file-document-outline"
+            label="Product File"
+            hint="Select a file to upload"
+            :rules="[(v) => !!v || 'A file is required']"
+          ></v-file-input>
+
+          <v-text-field
+            v-model="uploadData.name"
+            label="Product Name"
+            :disabled="uploading"
+            :rules="[(v) => !!v || 'Product name is required']"
+            class="mt-4"
+          ></v-text-field>
+
+          <v-text-field
+            v-model="uploadData.author"
+            label="Author"
+            :disabled="uploading"
+            :rules="[(v) => !!v || 'Author name is required']"
+            class="mt-4"
+          ></v-text-field>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="grey-darken-1"
+            variant="text"
+            :disabled="uploading"
+            @click="showUploadDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            :loading="uploading"
+            :disabled="!canUpload"
+            variant="flat"
+            @click="uploadProduct"
+          >
+            Upload
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 <script setup lang="ts">
@@ -160,6 +237,9 @@ import { computed, onMounted, ref, watch } from 'vue'
 import type { ProductMetaDataType } from '@/services/useProducts/types'
 import { useRouter } from 'vue-router'
 import { toHumanReadableDate } from '@/lib/date'
+import { deleteProduct, postFileProduct } from '@/lib/products/requests'
+import { configManager } from '@/services/application-config'
+import { DateTime } from 'luxon'
 
 interface AttributeHeader {
   attribute: string
@@ -172,6 +252,8 @@ interface PropertyHeader {
 }
 
 export interface ProductBrowserTableConfig {
+  preview: boolean | string
+  type: 'table' | 'list'
   headers: (AttributeHeader | PropertyHeader)[]
 }
 
@@ -185,18 +267,83 @@ interface Props {
   products: ProductMetaDataType[]
   config: ProductBrowserTableConfig
   productId?: string
+  areaId: string
+  sourceId: string
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits(['refresh'])
 
 const router = useRouter()
 
+// Search and filtering state
 const search = ref('')
-
 const groupByKey = ref([''])
 const groupByOrder = ref<[boolean | 'asc' | 'desc']>(['asc'])
 const selectedColumns = ref<string[]>([])
 const selectedRows = ref<string[]>([])
+
+// Upload dialog state
+const showUploadDialog = ref(false)
+const uploading = ref(false)
+const uploadError = ref('')
+const uploadFile = ref<File | undefined>(undefined)
+const uploadData = ref({
+  name: '',
+  author: '',
+})
+
+// Computed properties for upload validation and table display
+const canUpload = computed(() => {
+  const hasName = uploadData.value.name.trim() !== ''
+  const hasAuthor = uploadData.value.author.trim() !== ''
+  if (!uploadFile.value || !hasName || !hasAuthor) {
+    return false
+  }
+  return true
+})
+
+const resetUploadForm = () => {
+  uploadFile.value = undefined
+  uploadData.value = {
+    name: '',
+    author: '',
+  }
+  uploadError.value = ''
+}
+
+async function uploadProduct() {
+  if (!canUpload.value) return
+  uploading.value = true
+  uploadError.value = ''
+  try {
+    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+    const timeZero = DateTime.now().toUTC().startOf('second').toISO({
+      suppressMilliseconds: true,
+    })
+    const attributes = {
+      name: uploadData.value.name,
+      author: uploadData.value.author,
+    }
+    await postFileProduct(
+      `${baseUrl}rest/fewspiservice/v1/archive/`,
+      props.areaId, // areaId
+      props.sourceId, // sourceId
+      timeZero,
+      uploadFile.value!,
+      attributes,
+    )
+    resetUploadForm()
+    showUploadDialog.value = false
+    emit('refresh')
+  } catch (error) {
+    console.error('Upload error:', error)
+    uploadError.value =
+      error instanceof Error ? error.message : 'Unknown error occurred'
+  } finally {
+    uploading.value = false
+  }
+}
 
 const groupBy = computed(() => {
   return {
@@ -253,9 +400,10 @@ const headers = computed(() => {
       return column.key !== groupBy.value.key
     }),
     {
-      key: 'Actions',
+      key: 'actions',
       title: '',
       align: 'end',
+      sortable: false,
     } as const,
   ]
 })
@@ -267,6 +415,16 @@ const items = computed(() => {
     dataSetCreationTime: toHumanReadableDate(product.dataSetCreationTime),
   }))
 })
+
+async function onDeleteProduct(product: ProductMetaDataType) {
+  try {
+    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+    await deleteProduct(baseUrl, product)
+    emit('refresh')
+  } catch (error) {
+    console.error(error)
+  }
+}
 
 function onClick(
   _event: PointerEvent,
@@ -291,5 +449,18 @@ function onClick(
 
 :deep(.selected-row) {
   background-color: rgb(var(--v-theme-on-surface), var(--v-activated-opacity));
+}
+
+.delete-action {
+  opacity: 0;
+}
+
+:deep(.v-data-table__tr:hover) .delete-action-btn {
+  opacity: 1;
+}
+
+.delete-action-btn {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
 }
 </style>

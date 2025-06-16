@@ -86,7 +86,6 @@ const debouncedOnLoad = useDebounceFn(() => {
 }, 100)
 
 const resizeMessage = (event: MessageEvent) => {
-  console.log('Received message from iframe:', event.data)
   const iframeElement = iframeRef.value
   if (iframeElement !== null && event.data.height) {
     iframeElement.style.height = `${event.data.height}px`

@@ -115,9 +115,6 @@ const filter = computed(() => {
   return result
 })
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { products, fetchProducts } = useProducts(baseUrl, filter)
-
 const filteredProducts = computed(() => {
   if (showAllVersions) {
     return products.value.toReversed()
@@ -131,6 +128,21 @@ const filteredProducts = computed(() => {
   }
   return Array.from(latestMap.values()).toReversed()
 })
+
+const sourceId = computed(() => {
+  return config?.report?.archiveProduct.sourceId ?? ''
+})
+const areaId = computed(() => {
+  return config?.report?.archiveProduct.areaId ?? ''
+})
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { products, fetchProducts } = useProducts(
+  baseUrl,
+  filter,
+  sourceId,
+  areaId,
+)
 
 const viewMode = ref('html') // or 'iframe', 'img'
 const selected = ref(0) // Example timeZero
