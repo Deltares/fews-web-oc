@@ -31,10 +31,12 @@
 
     <div class="d-flex pa-3">
       <v-spacer />
-      <AnalysisAddButton
-        :disabled="!canAddFilter"
-        :loading="isLoading"
-        @click="addFilter"
+      <AnalysisAddToButton
+        :charts
+        :filters
+        :loadingNewCharts="isLoadingNewCharts"
+        :loadingAddToChart="isLoadingAddToChart"
+        @addToChart="addFilter"
       />
     </div>
   </div>
@@ -43,26 +45,30 @@
 <script setup lang="ts">
 import Autocomplete from '@/components/general/Autocomplete.vue'
 import GroupSelect from '@/components/general/GroupSelect.vue'
-import AnalysisAddButton from '@/components/analysis/AnalysisAddButton.vue'
+import AnalysisAddToButton from '@/components/analysis/AnalysisAddToButton.vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { computed, ref, watch } from 'vue'
-import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
-import { useUserSettingsStore } from '@/stores/userSettings'
-import { filterActionsFilter, type TimeSteps } from '@deltares/fews-pi-requests'
+import { type TimeSteps } from '@deltares/fews-pi-requests'
 import {
   type ResamplingMethod,
   resamplingMethods,
 } from '@/lib/analysis/resampling'
-import { uniq } from 'lodash-es'
 import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
 import {
+  addFilterToChart,
   Chart,
   ChartSeriesItem,
   type CollectionEmits,
-  createNewChartsForFilter,
+  createNewChartsForFilters,
+  FilterSubplotItem,
+  getFilterIds,
+  getLocationIds,
+  getModuleInstanceIds,
+  getParameterIds,
   getValidFilterCharts,
 } from '@/lib/analysis'
+import { useParametersStore } from '@/stores/parameters'
 
 interface Props {
   charts: Chart[]
@@ -77,12 +83,14 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<CollectionEmits>()
 
-const userSettings = useUserSettingsStore()
+const parametersStore = useParametersStore()
 
 const selectedTimeseries = ref<ChartSeriesItem[]>([])
 const selectedResamplingMethods = ref<ResamplingMethod[]>([])
 const selectedResamplingTimeSteps = ref<TimeSteps[]>([])
-const isLoading = ref(false)
+
+const isLoadingNewCharts = ref(false)
+const isLoadingAddToChart = ref(false)
 
 watch(() => props.isActive, clearSelections)
 function clearSelections() {
@@ -95,62 +103,60 @@ const availableTimeStepsStore = useAvailableTimeStepsStore()
 
 const allSeries = computed(() => getValidFilterCharts(props.charts))
 
-const displayConfigOptions = computed<UseDisplayConfigOptions>(() => {
-  return {
-    useDisplayUnits: userSettings.useDisplayUnits,
-    convertDatum: userSettings.convertDatum,
-  }
-})
-
-const filterIds = computed(() =>
-  uniq(selectedTimeseries.value.map((item) => item.chart.filterId)),
+const filters = computed(() =>
+  getFilters(selectedTimeseries.value.map((item) => item.series)),
 )
 
 const canAddFilter = computed(() => {
   return (
-    filterIds.value.length > 0 &&
+    filters.value.length > 0 &&
     selectedResamplingMethods.value.length > 0 &&
     selectedResamplingTimeSteps.value.length > 0
   )
 })
 
-async function addFilter() {
+async function addFilter(chart?: Chart) {
   if (!canAddFilter.value) return
 
-  const promises = filterIds.value.map((filterId) => {
-    const items = selectedTimeseries.value.filter(
-      (item) => item.chart.filterId === filterId,
-    )
-    const filter = getFilter(filterId, items)
+  if (chart === undefined) {
+    isLoadingNewCharts.value = true
+    const charts = await createNewChartsForFilters(filters.value)
+    isLoadingNewCharts.value = false
+    charts.forEach((chart) => emit('addChart', chart))
+    return
+  }
 
-    return createNewChartsForFilter(filter, 'Resampled ')
+  if (chart.type !== 'filter') return
+
+  const promises = filters.value.map((filter) =>
+    addFilterToChart(chart, filter),
+  )
+  isLoadingAddToChart.value = true
+  await Promise.all(promises)
+  isLoadingAddToChart.value = false
+}
+
+function getFilters(items: FilterSubplotItem[]) {
+  const filterIds = getFilterIds(items)
+  const locationIds = getLocationIds(items)
+  const parameterIds = getParameterIds(items)
+  const moduleInstanceIds = getModuleInstanceIds(items)
+
+  const parameters = parameterIds
+    .map(parametersStore.byId)
+    .filter((parameter) => parameter !== undefined)
+
+  // Group by parameterGroup
+  const groupedParameters: Record<string, string[]> = {}
+  parameters.forEach((parameter) => {
+    const group = parameter?.parameterGroup
+    if (!group) return
+
+    if (!groupedParameters[group]) {
+      groupedParameters[group] = []
+    }
+    groupedParameters[group].push(parameter.id)
   })
-
-  isLoading.value = true
-  const charts = (await Promise.all(promises)).flat()
-  isLoading.value = false
-
-  charts.forEach((chart) => emit('addChart', chart))
-}
-
-function getLocationIds(items: ChartSeriesItem[]) {
-  return uniq(items.flatMap((item) => item.series.locationId ?? []))
-}
-
-function getParameterIds(series: Series[]) {
-  return uniq(series.flatMap((series) => series.header.parameter ?? []))
-}
-
-function getModuleInstanceIds(series: Series[]) {
-  return uniq(series.flatMap((series) => series.header.source ?? []))
-}
-
-function getFilter(filterId: string, items: ChartSeriesItem[]) {
-  const series = items.map((item) => props.series[item.series.request ?? ''])
-
-  const locationIds = getLocationIds(items).join(',')
-  const parameterIds = getParameterIds(series).join(',')
-  const moduleInstanceIds = getModuleInstanceIds(series).join(',')
 
   const resamplingMethods = selectedResamplingMethods.value
     .map((method) => method.value)
@@ -159,18 +165,15 @@ function getFilter(filterId: string, items: ChartSeriesItem[]) {
     .map((timeStep) => timeStep.id)
     .join(',')
 
-  const filter: filterActionsFilter & UseDisplayConfigOptions = {
-    filterId,
-    locationIds,
-    parameterIds,
-    // @ts-expect-error FIXME: Update when the types are updated
-    moduleInstanceIds,
+  return Object.values(groupedParameters).map((parameterIds) => ({
+    filterId: filterIds.join(','),
+    locationIds: locationIds.join(','),
+    parameterIds: parameterIds.join(','),
+    moduleInstanceIds: moduleInstanceIds.join(','),
     resamplingMethods,
     resamplingTimeStepIds,
     resamplingOmitMissing: true, // TODO: add option for this
     includeNonResampled: true, // TODO: add option for this
-    ...displayConfigOptions.value,
-  }
-  return filter
+  }))
 }
 </script>

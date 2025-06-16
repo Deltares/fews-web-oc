@@ -4,6 +4,8 @@ import type {
   CorrelationFilter,
   TimeSeriesDisplaySubplot,
   ArchiveProductsMetadataAttribute,
+  filterActionsFilter,
+  TimeSeriesDisplaySubplotItem,
 } from '@deltares/fews-pi-requests'
 
 export type AnalysisFunction = 'correlation'
@@ -25,12 +27,27 @@ export interface BaseChart {
   type: string
 }
 
+export interface FilterSubplotItem extends TimeSeriesDisplaySubplotItem {
+  filter: Omit<
+    filterActionsFilter,
+    'resamplingMethod' | 'resamplingTimeStepId'
+  > & {
+    moduleInstanceIds?: string
+    resamplingMethods?: string
+    resamplingTimeStepIds?: string
+  }
+  locationName?: string
+  parameterGroup?: string
+}
+
+export interface FilterSubplot extends Omit<TimeSeriesDisplaySubplot, 'items'> {
+  items: FilterSubplotItem[]
+}
+
 export interface FilterChart extends BaseChart {
   type: 'filter'
-  filterId: string
   requests: ActionRequest[]
-  subplot: TimeSeriesDisplaySubplot
-  forecastLegend?: string
+  subplot: FilterSubplot
 }
 
 export interface CorrelationChart extends BaseChart {
@@ -39,7 +56,6 @@ export interface CorrelationChart extends BaseChart {
   timeSeriesNameXAxis: string
   filter: Omit<CorrelationFilter, 'startTime' | 'endTime'>
   subplot: TimeSeriesDisplaySubplot
-  forecastLegend?: string
 }
 
 interface ArchiveProduct {

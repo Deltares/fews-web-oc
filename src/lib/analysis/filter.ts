@@ -5,93 +5,137 @@ import {
   ActionRequest,
   filterActionsFilter,
   Header,
-  Location,
   TimeSeriesDisplaySubplot,
 } from '@deltares/fews-pi-requests'
-import { fetchLocations } from '@/lib/topology/locations'
-import { FilterChart } from './types'
-import { useTaskRunColorsStore } from '@/stores/taskRunColors'
-import { replaceDuplicateColors } from '@/lib/display'
+import { FilterChart, FilterSubplot, FilterSubplotItem } from './types'
 import { configManager } from '@/services/application-config'
+import { absoluteUrl } from '../utils/absoluteUrl'
+import { uniq, uniqBy } from 'lodash-es'
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-export async function createNewChartsForFilter(
-  filter: filterActionsFilter,
-  titlePrefix?: string,
+export async function createNewChartsForFilters(
+  filters: filterActionsFilter[],
 ) {
-  const actions = await fetchActions(baseUrl, filter)
+  const promises = filters.map(createNewChartForFilter)
+  const charts = await Promise.all(promises)
+  return charts.filter((chart) => chart !== undefined)
+}
 
-  const colorsStore = useTaskRunColorsStore()
-  replaceDuplicateColors(actions, colorsStore.colors)
+export async function createNewChartForFilter(filter: filterActionsFilter) {
+  if (!filter.filterId) {
+    throw new Error('Filter must have a filterId')
+  }
 
-  const results = actions.results
-  const displays = results.flatMap(
-    (result) => result.config?.timeSeriesDisplay ?? [],
+  const promises = filter.filterId.split(',').map((id) =>
+    fetchActions(baseUrl, {
+      ...filter,
+      filterId: id,
+    }),
   )
-  const newSubplots = displays.flatMap((display) => display.subplots ?? [])
-  const newRequests = results
-    .flatMap((result) => result.requests)
-    .filter((req, i, s) => i === s.findIndex((r) => r.key === req.key))
+  const actions = await Promise.all(promises)
+  const result = actions[0].results[0]
 
-  const newHeaders = await fetchTimeSeriesHeaders(baseUrl, newRequests, {})
+  const requests = result.requests
 
-  const locationIds = newSubplots
-    .flatMap((subPlot) =>
-      subPlot.items.flatMap((item) => item.locationId ?? []),
-    )
-    .filter((value, index, self) => self.indexOf(value) === index)
+  const subplot = result.config?.timeSeriesDisplay.subplots?.[0]
+  if (!subplot) return
 
-  const locations = await fetchLocations(baseUrl, {
-    locationIds,
+  actions.slice(1).forEach((action) => {
+    const requestsToAdd = action.results[0].requests
+    const subplotItemsToAdd =
+      action.results[0].config?.timeSeriesDisplay.subplots?.[0].items ?? []
+    requests.push(...requestsToAdd)
+    subplot.items.push(...subplotItemsToAdd)
   })
 
-  const newCharts: FilterChart[] = displays.flatMap((display) => {
-    const subplots = display.subplots ?? []
-    const forecastLegend = display.forecastLegend
-    return subplots.flatMap((subplot) => {
-      const requests = getActionRequestsForSubplot(subplot, newRequests)
-      const headers = requests.flatMap((req) => newHeaders[req.key ?? ''])
-      const title = getTitleFromHeaders(headers, locations)
-      return {
-        id: crypto.randomUUID(),
-        type: 'filter',
-        title: titlePrefix ? `${titlePrefix}${title}` : title,
-        filterId: filter.filterId ?? 'invalid',
-        subplot,
-        requests,
-        forecastLegend,
-      }
-    })
-  })
+  const filterId = filter.filterId
+  if (!filterId) return
+
+  const headers = await fetchTimeSeriesHeaders(baseUrl, requests, {})
+  const filterSubplot = subplotToFilterSubplot(
+    filterId,
+    subplot,
+    headers,
+    requests,
+  )
+
+  const newCharts: FilterChart = {
+    id: crypto.randomUUID(),
+    type: 'filter',
+    title: getFilterSubplotTitle(filterSubplot),
+    subplot: filterSubplot,
+    requests,
+  }
   return newCharts
 }
 
-function getTitleFromHeaders(headers: Header[], locations: Location[]) {
+function subplotToFilterSubplot(
+  filterId: string,
+  item: TimeSeriesDisplaySubplot,
+  headers: Record<string, Header[]>,
+  requests: ActionRequest[],
+): FilterSubplot {
   const parametersStore = useParametersStore()
 
-  const uniqueParameters = headers
-    .map((header) => header.parameterId)
-    .filter((value, index, self) => self.indexOf(value) === index)
+  const newItems = item.items.flatMap((item) => {
+    const header = headers[item.request ?? '']?.[0]
+    const request = requests.find((req) => req.key === item.request)
 
-  const uniqueParameterGroups = uniqueParameters
-    .map(parametersStore.getGroupName)
-    .filter((value, index, self) => self.indexOf(value) === index)
+    if (!request) return []
+    if (!header) return []
 
-  const uniqueLocations = headers
-    .map((header) => header.locationId)
-    .filter((value, index, self) => self.indexOf(value) === index)
+    const requestUrl = absoluteUrl(`${baseUrl}/${request}`)
 
-  const getLocationName = (locationId: string) => {
-    const location = locations.find(
-      (location) => location.locationId === locationId,
-    )
-    return location?.locationName ?? location?.shortName ?? locationId
-  }
+    const methodKey: keyof FilterSubplotItem['filter'] = 'resamplingMethods'
+    const resamplingMethods = requestUrl.searchParams.get(methodKey)
 
-  const uniqueLocationNames = uniqueLocations
-    .map(getLocationName)
-    .filter((value, index, self) => self.indexOf(value) === index)
+    const timeStepIdKey: keyof FilterSubplotItem['filter'] =
+      'resamplingTimeStepIds'
+    const resamplingTimeStepIds = requestUrl.searchParams.get(timeStepIdKey)
+
+    const omitMissingKey: keyof FilterSubplotItem['filter'] =
+      'resamplingOmitMissing'
+    const resamplingOmitMissing =
+      requestUrl.searchParams.get(omitMissingKey) === 'true'
+
+    const filter: FilterSubplotItem['filter'] = {
+      filterId,
+      locationIds: header.locationId,
+      parameterIds: header.parameterId,
+      moduleInstanceIds: header.moduleInstanceId,
+    }
+
+    if (resamplingMethods) {
+      filter.resamplingMethods = resamplingMethods
+    }
+
+    if (resamplingTimeStepIds) {
+      filter.resamplingTimeStepIds = resamplingTimeStepIds
+    }
+
+    if (resamplingOmitMissing) {
+      filter.resamplingOmitMissing = resamplingOmitMissing
+    }
+
+    const parameter = parametersStore.byId(header.parameterId)
+    const parameterGroup = parameter?.parameterGroup
+    const locationName = header.stationName ?? header.locationId
+
+    const filterItem: FilterSubplotItem = {
+      ...item,
+      filter,
+      locationName,
+      parameterGroup,
+    }
+    return filterItem
+  })
+  return { ...item, items: newItems }
+}
+
+export function getFilterSubplotTitle(subplot: FilterSubplot) {
+  const uniqueParameterGroups = getParameterGroups(subplot.items)
+  const uniqueLocationNames = getLocationNames(subplot.items)
 
   const format = (items: string[]) => {
     const displayed = items.slice(0, 2).join(', ')
@@ -102,11 +146,100 @@ function getTitleFromHeaders(headers: Header[], locations: Location[]) {
   return `${format(uniqueParameterGroups)} at ${format(uniqueLocationNames)}`
 }
 
-function getActionRequestsForSubplot(
-  subplot: TimeSeriesDisplaySubplot,
-  requests: ActionRequest[],
+export function canAddFilterToChart(
+  chart: FilterChart,
+  filter: filterActionsFilter,
+): boolean {
+  const addPosition = getAddPositionForFilter(chart, filter)
+  return addPosition !== undefined
+}
+
+function getAddPositionForFilter(
+  chart: FilterChart,
+  filter: filterActionsFilter,
 ) {
-  return subplot.items.flatMap(
-    (item) => requests.find((req) => req.key === item.request) ?? [],
-  )
+  const parametersStore = useParametersStore()
+
+  const filterParameter = filter.parameterIds?.split(',')[0]
+  const filterParameterGroup =
+    parametersStore.byId(filterParameter)?.parameterGroup
+  if (!filterParameterGroup) {
+    throw new Error('No parameter group found for filter')
+  }
+
+  const items = chart.subplot.items
+  const leftItem = items.find((item) => item.yAxis?.axisPosition === 'left')
+  const rightItem = items.find((item) => item.yAxis?.axisPosition === 'right')
+  const leftParameterGroup = leftItem?.parameterGroup
+  const rightParameterGroup = rightItem?.parameterGroup
+
+  if (
+    filterParameterGroup === leftParameterGroup ||
+    leftParameterGroup === undefined
+  ) {
+    return 'left'
+  }
+  if (
+    filterParameterGroup === rightParameterGroup ||
+    rightParameterGroup === undefined
+  ) {
+    return 'right'
+  }
+}
+
+export async function addFilterToChart(
+  chart: FilterChart,
+  filter: filterActionsFilter,
+) {
+  const position = getAddPositionForFilter(chart, filter)
+  if (!position) return
+
+  addFilterToChartPosition(chart, filter, position)
+}
+
+async function addFilterToChartPosition(
+  chart: FilterChart,
+  filter: filterActionsFilter,
+  position: 'left' | 'right',
+) {
+  const newChart = await createNewChartForFilter(filter)
+
+  if (!newChart) return
+
+  newChart.subplot.items.forEach((item) => {
+    if (!item.yAxis) return
+    item.yAxis.axisPosition = position
+  })
+
+  const newItems = [...newChart.subplot.items, ...chart.subplot.items]
+  chart.subplot.items = uniqBy(newItems, (item) => item.request)
+
+  const newRequests = [...newChart.requests, ...chart.requests]
+  chart.requests = uniqBy(newRequests, (req) => req.request)
+
+  chart.title = getFilterSubplotTitle(chart.subplot)
+}
+
+export function getLocationNames(items: FilterSubplotItem[]) {
+  return uniq(items.map((item) => item.locationName ?? ''))
+}
+
+export function getLocationIds(items: FilterSubplotItem[]) {
+  return uniq(items.flatMap((item) => item.filter.locationIds ?? []))
+}
+
+export function getParameterIds(items: FilterSubplotItem[]) {
+  return uniq(items.flatMap((item) => item.filter.parameterIds ?? []))
+}
+
+export function getParameterGroups(items: FilterSubplotItem[]) {
+  return uniq(items.flatMap((item) => item.parameterGroup ?? []))
+}
+
+export function getModuleInstanceIds(items: FilterSubplotItem[]) {
+  return uniq(items.flatMap((item) => item.filter.moduleInstanceIds ?? []))
+}
+
+export function getFilterIds(items: FilterSubplotItem[]) {
+  return uniq(items.flatMap((item) => item.filter.filterId ?? []))
 }

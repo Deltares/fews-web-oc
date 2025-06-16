@@ -2,7 +2,7 @@
   <div class="his-selection-container h-100 pa-2 ga-2">
     <v-select
       v-model="filterId"
-      :items="filters"
+      :items="props.filters"
       item-value="id"
       item-title="name"
       label="Filter"
@@ -65,35 +65,38 @@
 
     <div class="d-flex">
       <v-spacer />
-      <AnalysisAddButton
-        :disabled="!filter"
-        :loading="isLoading"
-        @click="addFilter"
+      <AnalysisAddToButton
+        :charts
+        :filters
+        :loadingNewCharts="isLoadingNewCharts"
+        :loadingAddToChart="isLoadingAddToChart"
+        @addToChart="addFilter"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type {
-  BoundingBox,
-  Filter,
-  filterActionsFilter,
-  Location,
-} from '@deltares/fews-pi-requests'
+import type { BoundingBox, Filter, Location } from '@deltares/fews-pi-requests'
 import Autocomplete from '@/components/general/Autocomplete.vue'
 import AnalysisMap from '@/components/analysis/AnalysisMap.vue'
-import AnalysisAddButton from '@/components/analysis/AnalysisAddButton.vue'
+import AnalysisAddToButton from '@/components/analysis/AnalysisAddToButton.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import { useParametersStore } from '@/stores/parameters'
-import { createNewChartsForFilter, type CollectionEmits } from '@/lib/analysis'
+import {
+  type Chart,
+  type CollectionEmits,
+  createNewChartsForFilters,
+  addFilterToChart,
+} from '@/lib/analysis'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import { useTimeSeriesHeaders } from '@/services/useTimeSeries'
 import { configManager } from '@/services/application-config'
 
 interface Props {
+  charts: Chart[]
   filters?: Filter[]
   boundingBox?: BoundingBox
   isActive?: boolean
@@ -103,7 +106,8 @@ const props = defineProps<Props>()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const showMap = ref(false)
 
-const isLoading = ref(false)
+const isLoadingNewCharts = ref(false)
+const isLoadingAddToChart = ref(false)
 const parametersStore = useParametersStore()
 
 const filterId = ref<string | undefined>(props.filters?.[0]?.id)
@@ -153,28 +157,61 @@ const filteredLocations = computed(() =>
   ),
 )
 
-const filter = computed(() => {
-  if (!filterId.value) return
-  if (!selectedParameterIds.value.length) return
-  if (!selectedLocationIds.value.length) return
-  if (!selectedModuleInstanceIds.value.length) return
+const filters = computed(() => {
+  if (!filterId.value) return []
+  if (!selectedParameterIds.value.length) return []
+  if (!selectedLocationIds.value.length) return []
 
-  const _fitler: filterActionsFilter = {
-    filterId: filterId.value,
-    locationIds: selectedLocationIds.value.join(','),
-    parameterIds: selectedParameterIds.value.join(','),
-    // @ts-expect-error FIXME: Update when the types are updated
-    moduleInstanceIds: selectedModuleInstanceIds.value.join(','),
-  }
-  return _fitler
+  const parameters = selectedParameterIds.value
+    .map(parametersStore.byId)
+    .filter((parameter) => parameter !== undefined)
+
+  // Group by parameterGroup
+  const groupedParameters: Record<string, string[]> = {}
+  parameters.forEach((parameter) => {
+    const group = parameter?.parameterGroup
+    if (!group) return
+
+    if (!groupedParameters[group]) {
+      groupedParameters[group] = []
+    }
+    groupedParameters[group].push(parameter.id)
+  })
+
+  return Object.values(groupedParameters).map((parameterIds) => {
+    const moduleInstanceIds = selectedModuleInstanceIds.value
+    return {
+      filterId: filterId.value,
+      locationIds: selectedLocationIds.value.join(','),
+      parameterIds: parameterIds.join(','),
+      moduleInstanceIds: moduleInstanceIds.length
+        ? moduleInstanceIds.join(',')
+        : undefined,
+    }
+  })
 })
 
-async function addFilter() {
-  if (!filter.value) return
-  isLoading.value = true
-  const charts = await createNewChartsForFilter(filter.value)
-  isLoading.value = false
-  charts.forEach((chart) => emit('addChart', chart))
+async function addFilter(chart?: Chart) {
+  if (!filters.value.length) return
+
+  if (chart === undefined) {
+    isLoadingNewCharts.value = true
+    const charts = await createNewChartsForFilters(filters.value)
+    isLoadingNewCharts.value = false
+
+    charts.forEach((newChart) => emit('addChart', newChart))
+    return
+  }
+
+  if (chart.type !== 'filter') return
+
+  const promises = filters.value.map((filter) =>
+    addFilterToChart(chart, filter),
+  )
+
+  isLoadingAddToChart.value = true
+  await Promise.all(promises)
+  isLoadingAddToChart.value = false
 }
 
 const selectedLocationIds = ref<string[]>([])

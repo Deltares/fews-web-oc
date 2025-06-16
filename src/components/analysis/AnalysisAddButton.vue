@@ -2,8 +2,8 @@
   <v-btn
     variant="flat"
     :disabled="disabled"
-    prepend-icon="mdi-plus"
-    text="Add to collection"
+    :prepend-icon="icon"
+    :text="title"
     :color="disabled ? undefined : 'primary'"
     :loading="loading"
     @click="emit('click', $event)"
@@ -14,8 +14,13 @@
 interface Props {
   disabled?: boolean
   loading?: boolean
+  title?: string
+  icon?: string
 }
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  title: 'Create new chart',
+  icon: 'mdi-plus',
+})
 
 const emit = defineEmits(['click'])
 </script>
