@@ -11,6 +11,13 @@
           @click="isEditing = !isEditing"
           >edit</v-btn
         >
+        <v-btn
+          v-if="viewMode === 'html' && dissiminationEnabled"
+          prepend-icon="mdi-email"
+          variant="flat"
+          @click="openEmailClient"
+          >Send</v-btn
+        >
         <v-spacer />
         <v-toolbar-items>
           <v-btn
@@ -74,6 +81,7 @@ import DOMPurify from 'dompurify'
 import { postProduct } from '@/lib/products/requests'
 import { ProductMetaDataType } from '@/services/useProducts/types'
 import { getFileExtension, getViewMode } from '@/lib/products'
+import { convert } from 'html-to-text'
 
 interface Props {
   config?: ReportDisplay
@@ -83,6 +91,7 @@ interface Props {
 const { showAllVersions = false, config } = defineProps<Props>()
 const viewPeriod = ref<IntervalItem>({})
 const editorEnabled = ref(false) // Example flag to enable editor mode
+const dissiminationEnabled = ref(true) // Example flag to enable dissimination
 const isEditing = ref(false) // Example flag to toggle editing mode
 const htmlContent = ref('') // Placeholder for HTML content
 
@@ -216,6 +225,20 @@ async function onSave() {
     isEditing.value = false
   }
 }
+
+function openEmailClient() {
+  const subject = `${selectedProduct.value.attributes.name}: ${selectedProduct.value.timeZero}`
+  const textContent = convert(htmlContent.value, {
+    wordwrap: 130,
+    selectors: [
+      { selector: 'img', format: 'skip' }, // Skip images
+      { selector: 'iframe', format: 'skip' }, // Skip iframes
+    ],
+  })
+  const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(textContent)}`
+  window.location.href = mailtoLink
+}
+
 </script>
 
 <style scoped>
