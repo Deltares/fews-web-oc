@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex h-100 w-100 overflow-hidden">
+  <v-sheet class="d-flex h-100 w-100 overflow-hidden">
     <v-navigation-drawer
       v-model="drawer"
       permanent
@@ -92,7 +92,7 @@
         <v-card-text v-else> Select some data to display </v-card-text>
       </div>
     </div>
-  </div>
+  </v-sheet>
 </template>
 
 <script setup lang="ts">
