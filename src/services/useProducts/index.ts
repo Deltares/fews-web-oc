@@ -71,7 +71,6 @@ export function useProducts(
       }
     }
     if (toValue(archiveProducts).length > 0) return
-
     // if we have product sets, we need to fetch for each set
     const constraints = toValue(archiveProductSets).map(
       (set) => set.constraints,
@@ -116,7 +115,7 @@ export function useProducts(
             p.sourceId === toValue(sourceId) && p.areaId === toValue(areaId)
           )
         })
-        products.value = filteredProducts
+        products.value.push(...filteredProducts)
       } catch (err) {
         error.value = 'Error fetching product metadata'
         console.error(err)
