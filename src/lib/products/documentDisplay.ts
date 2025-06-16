@@ -12,6 +12,7 @@ export interface DocumentBrowserDisplay {
   name: string
   type: 'browser'
   relativeViewPeriod: Omit<TimeSettingsViewPeriodPreset, 'label'>
+  editPermissions?: boolean
   documentBrowser: DocumentBrowser
 }
 
@@ -20,6 +21,7 @@ export interface ReportDisplay {
   name: string
   type: 'report'
   relativeViewPeriod: Omit<TimeSettingsViewPeriodPreset, 'label'>
+  editPermissions?: boolean
   report: ReportDisplayConfig
 }
 
@@ -83,7 +85,6 @@ export interface ReportDisplayConfig {
   archiveProduct: ArchiveProduct
   showReports: ShowReports
   reportModuleInstanceId?: string
-  editor?: boolean
 }
 
 export interface ShowReports {

@@ -13,15 +13,27 @@
         >
         <v-spacer />
         <v-toolbar-items>
-          <v-btn append-icon="mdi-chevron-down" class="me-4">
-            {{ selectedTimeZero }}
+          <v-btn
+            append-icon="mdi-chevron-down"
+            variant="text"
+            class="text-start"
+          >
+            <v-list-item
+              class="ps-0 pe-2"
+              :title="selectedProduct?.timeZero"
+              :subtitle="`Version ${selectedProduct?.version}`"
+            >
+            </v-list-item>
             <v-menu activator="parent">
               <v-list density="compact">
-                <v-item-group>
-                  <v-list-item v-for="item in items" :key="item.timeZero">
-                    {{ item.timeZero }}
-                  </v-list-item>
-                </v-item-group>
+                <v-list-item
+                  v-for="(item, index) in filteredProducts"
+                  :key="item.key"
+                  :title="item.timeZero"
+                  :subtitle="`Version ${item.version}`"
+                  @click="selected = index"
+                >
+                </v-list-item>
               </v-list>
             </v-menu>
           </v-btn>
@@ -56,12 +68,15 @@ import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
 import { configManager } from '@/services/application-config'
 import EditReport from '@/components/reports/EditReport.vue'
 import DOMPurify from 'dompurify'
+import { postProduct } from '@/lib/products/requests'
+import { ProductMetaDataType } from '@/services/useProducts/types'
 
 interface Props {
   config?: ReportDisplay
+  showAllVersions?: boolean
 }
 
-const props = defineProps<Props>()
+const { showAllVersions = false, config } = defineProps<Props>()
 const viewPeriod = ref<IntervalItem>({})
 const editorEnabled = ref(false) // Example flag to enable editor mode
 const isEditing = ref(false) // Example flag to toggle editing mode
@@ -83,9 +98,7 @@ const filter = computed(() => {
     .toUTC()
     .toISO({ suppressMilliseconds: true })
 
-  console.log('Filter attributes:', props.config?.report?.archiveProduct)
-
-  const archiveProduct = props.config?.report?.archiveProduct
+  const archiveProduct = config?.report?.archiveProduct
   if (!archiveProduct) {
     console.warn('No archive product defined in the report configuration.')
     return {}
@@ -102,22 +115,28 @@ const filter = computed(() => {
   return result
 })
 
-const items = computed(() => {
-  return products.value.map((product) => {
-    return {
-      timeZero:
-        DateTime.fromISO(product.timeZero ?? 'Invalid timeZero')
-          .toUTC()
-          .toISO() ?? undefined,
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { products, fetchProducts } = useProducts(baseUrl, filter)
+
+const filteredProducts = computed(() => {
+  if (showAllVersions) {
+    return products.value.toReversed()
+  }
+  const latestMap = new Map<string, ProductMetaDataType>()
+  for (const product of products.value) {
+    const existing = latestMap.get(product.timeZero)
+    if (!existing || product.version > existing.version) {
+      latestMap.set(product.timeZero, product)
     }
-  })
+  }
+  return Array.from(latestMap.values()).toReversed()
 })
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { products } = useProducts(baseUrl, filter)
-
 const viewMode = ref('html') // or 'iframe', 'img'
-const selectedTimeZero = ref('') // Example timeZero
+const selected = ref(0) // Example timeZero
+const selectedProduct = computed(() => {
+  return filteredProducts.value[selected.value]
+})
 const src = ref('')
 
 function getFileExtension(url: string): string {
@@ -140,23 +159,23 @@ function getViewMode(extension: string): string {
 }
 
 watchEffect(() => {
-  const documentDisplay = toValue(props.config)
-  console.log('Config changed:', props.config)
+  const documentDisplay = toValue(config)
   if (documentDisplay) {
     viewPeriod.value = periodToIntervalItem(documentDisplay.relativeViewPeriod)
-    editorEnabled.value = documentDisplay.report?.editor ?? false
-    console.log('View period set to:', viewPeriod.value)
+    editorEnabled.value = documentDisplay.editPermissions ?? false
   }
 })
 
 watchEffect(async () => {
-  const productMetaData = products.value[0]
-  console.log('Selected product metadata:', productMetaData)
-  if (!productMetaData) {
+  if (!filteredProducts.value || filteredProducts.value.length === 0) {
+    console.warn('No products available for the selected filter.')
     src.value = ''
-    selectedTimeZero.value = ''
+    selected.value = 0
     return
   }
+
+  const productMetaData = filteredProducts.value[selected.value]
+
   const url = getProductURL(baseUrl, productMetaData)
   const extension = getFileExtension(url)
 
@@ -165,6 +184,7 @@ watchEffect(async () => {
   const transformRequest = createTransformRequestFn()
   const request = await transformRequest(new Request(url, {}))
   const response = await fetch(request)
+
   if (currentViewMode === 'html') {
     const clone = response.clone()
     htmlContent.value = DOMPurify.sanitize(await clone.text(), {
@@ -177,12 +197,32 @@ watchEffect(async () => {
   const urlObject = URL.createObjectURL(await response.blob())
 
   viewMode.value = currentViewMode
-  selectedTimeZero.value = productMetaData.timeZero
   src.value = urlObject
 })
 
-function onSave() {
-  isEditing.value = false
+async function onSave() {
+  const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const archiveUrl = `${piUrl}rest/fewspiservice/v1/archive/`
+  const metaData = selectedProduct.value
+  const fileName =
+    metaData.relativePathProducts[0].split('/').pop() ?? 'unknown'
+  try {
+    await postProduct(
+      archiveUrl,
+      metaData.areaId,
+      metaData.sourceId,
+      metaData.timeZero,
+      htmlContent.value,
+      fileName,
+      metaData.attributes,
+    )
+    await fetchProducts()
+  } catch (error) {
+    console.error('Error saving report:', error)
+    return
+  } finally {
+    isEditing.value = false
+  }
 }
 </script>
 
