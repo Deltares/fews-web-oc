@@ -104,11 +104,13 @@ export async function postProduct(
   const formBody = encodedKey + '=' + encodedValue
 
   const transformRequest = createTransformRequestFn()
-  const request = await transformRequest(new Request(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: formBody,
-  }))
+  const request = await transformRequest(
+    new Request(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formBody,
+    }),
+  )
   const response = await fetch(request)
 
   if (!response.ok) {

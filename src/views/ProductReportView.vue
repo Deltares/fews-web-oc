@@ -13,11 +13,15 @@
         >
         <v-spacer />
         <v-toolbar-items>
-          <v-btn append-icon="mdi-chevron-down" variant="text" class="text-start">
+          <v-btn
+            append-icon="mdi-chevron-down"
+            variant="text"
+            class="text-start"
+          >
             <v-list-item
               class="ps-0 pe-2"
               :title="selectedProduct?.timeZero"
-              :subtitle="`Version ${ selectedProduct?.version }`"
+              :subtitle="`Version ${selectedProduct?.version}`"
             >
             </v-list-item>
             <v-menu activator="parent">
@@ -94,7 +98,6 @@ const filter = computed(() => {
     .toUTC()
     .toISO({ suppressMilliseconds: true })
 
-
   const archiveProduct = config?.report?.archiveProduct
   if (!archiveProduct) {
     console.warn('No archive product defined in the report configuration.')
@@ -116,15 +119,14 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { products, fetchProducts } = useProducts(baseUrl, filter)
 
 const filteredProducts = computed(() => {
-
-  if( showAllVersions ) {
+  if (showAllVersions) {
     return products.value.toReversed()
   }
   const latestMap = new Map<string, ProductMetaDataType>()
   for (const product of products.value) {
-    const existing = latestMap.get(product.timeZero);
+    const existing = latestMap.get(product.timeZero)
     if (!existing || product.version > existing.version) {
-      latestMap.set(product.timeZero, product);
+      latestMap.set(product.timeZero, product)
     }
   }
   return Array.from(latestMap.values()).toReversed()
