@@ -78,10 +78,10 @@
         <tr>
           <template v-for="(column, index) in columns" :key="column.key">
             <th v-if="index === 0"></th>
-            <th v-else-if="column.key === 'Actions'" class="pa-0">
+            <th v-else-if="column.key === 'actions'" class="pa-0">
               <v-btn icon size="small" variant="plain">
                 <v-icon icon="mdi-dots-vertical" />
-                <v-menu activator="parent" :close-on-content-click="false">
+                <v-menu activator="parent" :close-on-content-click="false" location="bottom end">
                   <v-list
                     v-model:selected="selectedColumns"
                     select-strategy="independent"
@@ -150,7 +150,7 @@
           </td>
         </tr>
       </template>
-      <template v-slot:item.Actions="{ item }">
+      <template v-slot:item.actions="{ item }">
         <v-btn
           icon="mdi-delete"
           size="small"
@@ -396,9 +396,10 @@ const headers = computed(() => {
       return column.key !== groupBy.value.key
     }),
     {
-      key: 'Actions',
+      key: 'actions',
       title: '',
       align: 'end',
+      sortable: false,
     } as const,
   ]
 })
