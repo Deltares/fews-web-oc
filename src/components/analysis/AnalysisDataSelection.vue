@@ -162,7 +162,6 @@ const filters = computed(() => {
   if (!filterId.value) return []
   if (!selectedParameterIds.value.length) return []
   if (!selectedLocationIds.value.length) return []
-  if (!selectedModuleInstanceIds.value.length) return []
 
   const parameters = selectedParameterIds.value
     .map(parametersStore.byId)
@@ -180,12 +179,17 @@ const filters = computed(() => {
     groupedParameters[group].push(parameter.id)
   })
 
-  return Object.values(groupedParameters).map((parameterIds) => ({
-    filterId: filterId.value,
-    locationIds: selectedLocationIds.value.join(','),
-    parameterIds: parameterIds.join(','),
-    moduleInstanceIds: selectedModuleInstanceIds.value.join(','),
-  }))
+  return Object.values(groupedParameters).map((parameterIds) => {
+    const moduleInstanceIds = selectedModuleInstanceIds.value
+    return {
+      filterId: filterId.value,
+      locationIds: selectedLocationIds.value.join(','),
+      parameterIds: parameterIds.join(','),
+      moduleInstanceIds: moduleInstanceIds.length
+        ? moduleInstanceIds.join(',')
+        : undefined,
+    }
+  })
 })
 
 async function addFilter(chart?: Chart) {
