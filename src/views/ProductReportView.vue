@@ -96,7 +96,6 @@ import {
   PiWebserviceProvider,
   ProductsMetaDataFilter,
 } from '@deltares/fews-pi-requests'
-import { DateTime } from 'luxon'
 import { computed, ref, toValue, watchEffect } from 'vue'
 import { type ReportDisplay } from '@/lib/products/documentDisplay'
 import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
