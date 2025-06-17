@@ -1,9 +1,10 @@
 <template>
   <div class="d-flex flex-column overflow-auto">
-    <div class="d-flex align-center ga-1 px-2 py-1">
-      <span>{{ label }}</span>
+    <v-toolbar height="32">
+      <span class="ms-2">{{ label }}</span>
+      <slot name="prepend-title" />
       <v-btn
-        v-if="multiple && listSelected.length > 0"
+        v-show="multiple && listSelected.length > 0"
         icon="mdi-refresh"
         variant="plain"
         density="compact"
@@ -11,7 +12,7 @@
       />
       <v-spacer />
       <slot name="append-title" />
-    </div>
+    </v-toolbar>
     <slot name="prepend" />
     <v-list
       v-model:selected="listSelected"

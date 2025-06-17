@@ -1,35 +1,41 @@
 <template>
-  <div class="h-100 pa-2 ga-2">
+  <div class="d-flex flex-column h-100 pa-2 ga-2">
     <GroupSelect
       v-model="selectedTimeseries"
       :items="allSeries"
       label="Time Series"
-      :getItemValue="(item) => item"
+      :getItemValue="(item) => item.series"
       :getItemTitle="(item) => item.series.legend ?? ''"
+      :getItemColor="(item) => item.series.color ?? 'black'"
       :getItemGroupTitle="(item) => item.chart.title"
       :groupBy="(item) => item.chart.id"
       :multiple="true"
     />
 
-    <Autocomplete
-      v-model="selectedResamplingMethods"
-      :items="resamplingMethods"
-      label="Resampling Methods"
-      :getItemValue="(item) => item"
-      :getItemTitle="(item) => item.label"
-      :multiple="true"
-    />
+    <div class="d-flex ga-2 w-100">
+      <SelectCard
+        v-model="selectedResamplingMethods"
+        :items="resamplingMethods"
+        label="Resampling Methods"
+        :getItemValue="(item) => item"
+        :getItemTitle="(item) => item.label"
+        :multiple="true"
+        class="w-50"
+      />
 
-    <Autocomplete
-      v-model="selectedResamplingTimeSteps"
-      :items="availableTimeStepsStore.resamplingTimeSteps"
-      label="Time Steps"
-      :getItemValue="(item) => item"
-      :getItemTitle="(item) => item.label"
-      :multiple="true"
-    />
+      <SelectCard
+        v-model="selectedResamplingTimeSteps"
+        :items="availableTimeStepsStore.resamplingTimeSteps"
+        label="Time Steps"
+        :getItemValue="(item) => item"
+        :getItemTitle="(item) => item.label"
+        :multiple="true"
+        class="w-50"
+      />
+    </div>
 
-    <div class="d-flex pa-3">
+    <v-spacer />
+    <div class="d-flex">
       <v-spacer />
       <AnalysisAddToButton
         :charts
@@ -43,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import Autocomplete from '@/components/general/Autocomplete.vue'
+import SelectCard from '@/components/general/SelectCard.vue'
 import GroupSelect from '@/components/general/GroupSelect.vue'
 import AnalysisAddToButton from '@/components/analysis/AnalysisAddToButton.vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
@@ -58,7 +64,6 @@ import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
 import {
   addFilterToChart,
   Chart,
-  ChartSeriesItem,
   type CollectionEmits,
   createNewChartsForFilters,
   FilterSubplotItem,
@@ -85,7 +90,7 @@ const emit = defineEmits<CollectionEmits>()
 
 const parametersStore = useParametersStore()
 
-const selectedTimeseries = ref<ChartSeriesItem[]>([])
+const selectedTimeseries = ref<FilterSubplotItem[]>([])
 const selectedResamplingMethods = ref<ResamplingMethod[]>([])
 const selectedResamplingTimeSteps = ref<TimeSteps[]>([])
 
@@ -103,9 +108,7 @@ const availableTimeStepsStore = useAvailableTimeStepsStore()
 
 const allSeries = computed(() => getValidFilterCharts(props.charts))
 
-const filters = computed(() =>
-  getFilters(selectedTimeseries.value.map((item) => item.series)),
-)
+const filters = computed(() => getFilters(selectedTimeseries.value))
 
 const canAddFilter = computed(() => {
   return (

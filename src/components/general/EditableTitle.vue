@@ -1,5 +1,5 @@
 <template>
-  <div ref="container" class="d-inline-block">
+  <div ref="container" class="title d-inline-block">
     <!-- View Mode -->
     <div
       v-if="!editing"
@@ -107,10 +107,13 @@ function onBlur() {
   opacity: 1;
 }
 
+.title {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .editable-content {
   outline: none;
   min-height: 24px;
-  white-space: pre-wrap;
-  word-break: break-word;
 }
 </style>
