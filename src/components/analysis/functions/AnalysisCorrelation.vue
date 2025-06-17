@@ -1,6 +1,7 @@
 <template>
-  <div class="h-100 pa-2 ga-2">
+  <div class="d-flex flex-column h-100 pa-2 ga-1">
     <GroupSelect
+      class="flex-0-0"
       v-model="selectedTimeseries"
       :items="allSeries"
       label="X Axis Time Series"
@@ -12,6 +13,7 @@
     />
 
     <GroupSelect
+      class="flex-0-0"
       v-model="selectedSecondTimeseries"
       :items="allSeries"
       label="Y Axis Time Series"
@@ -22,38 +24,47 @@
       :groupBy="(item) => item.chart.id"
     />
 
-    <Autocomplete
-      v-model="selectedRegressionEquation"
-      :items="regressionEquations"
-      label="Regression Equation"
-      :getItemValue="(item) => item"
-      :getItemTitle="(item) => item.label"
-    />
-    <div class="d-flex ga-2 mt-3">
-      <v-number-input
-        v-model="lowerThreshold"
-        label="Lower Threshold"
-        hide-details
-        density="compact"
-        variant="outlined"
-        clearable
-        control-variant="stacked"
-        :precision="null"
+    <div class="d-flex flex-0-0 ga-2">
+      <Autocomplete
+        class="flex-1-1 w-100"
+        v-model="selectedRegressionEquation"
+        :items="regressionEquations"
+        label="Regression Equation"
+        :getItemValue="(item) => item"
+        :getItemTitle="(item) => item.label"
       />
+      <div class="flex-1-1 w-100">
+        <v-toolbar height="32">
+          <span>Thresholds</span>
+        </v-toolbar>
 
-      <v-number-input
-        v-model="upperThreshold"
-        label="Upper Threshold"
-        hide-details
-        density="compact"
-        variant="outlined"
-        clearable
-        control-variant="stacked"
-        :precision="null"
-      />
+        <v-number-input
+          v-model="upperThreshold"
+          label="Upper Threshold"
+          hide-details
+          density="compact"
+          variant="outlined"
+          clearable
+          control-variant="stacked"
+          :precision="null"
+          class="mb-2"
+        />
+
+        <v-number-input
+          v-model="lowerThreshold"
+          label="Lower Threshold"
+          hide-details
+          density="compact"
+          variant="outlined"
+          clearable
+          control-variant="stacked"
+          :precision="null"
+        />
+      </div>
     </div>
 
-    <div class="d-flex pa-3">
+    <v-spacer />
+    <div class="d-flex pt-2">
       <v-spacer />
       <AnalysisAddButton
         :disabled="!selectedTimeseries || !selectedSecondTimeseries"

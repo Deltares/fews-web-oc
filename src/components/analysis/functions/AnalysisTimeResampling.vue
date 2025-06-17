@@ -1,5 +1,5 @@
 <template>
-  <div class="h-100 pa-2 ga-2">
+  <div class="d-flex flex-column h-100 pa-2 ga-2">
     <GroupSelect
       v-model="selectedTimeseries"
       :items="allSeries"
@@ -12,25 +12,30 @@
       :multiple="true"
     />
 
-    <Multiselect
-      v-model="selectedResamplingMethods"
-      :items="resamplingMethods"
-      label="Resampling Methods"
-      :getItemValue="(item) => item"
-      :getItemTitle="(item) => item.label"
-      :multiple="true"
-    />
+    <div class="d-flex ga-2 w-100">
+      <Autocomplete
+        v-model="selectedResamplingMethods"
+        :items="resamplingMethods"
+        label="Resampling Methods"
+        :getItemValue="(item) => item"
+        :getItemTitle="(item) => item.label"
+        :multiple="true"
+        class="w-50"
+      />
 
-    <Autocomplete
-      v-model="selectedResamplingTimeSteps"
-      :items="availableTimeStepsStore.resamplingTimeSteps"
-      label="Time Steps"
-      :getItemValue="(item) => item"
-      :getItemTitle="(item) => item.label"
-      :multiple="true"
-    />
+      <Autocomplete
+        v-model="selectedResamplingTimeSteps"
+        :items="availableTimeStepsStore.resamplingTimeSteps"
+        label="Time Steps"
+        :getItemValue="(item) => item"
+        :getItemTitle="(item) => item.label"
+        :multiple="true"
+        class="w-50"
+      />
+    </div>
 
-    <div class="d-flex pa-3">
+    <v-spacer />
+    <div class="d-flex">
       <v-spacer />
       <AnalysisAddToButton
         :charts

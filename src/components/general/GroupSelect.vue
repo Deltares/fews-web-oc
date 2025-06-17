@@ -1,9 +1,9 @@
 <template>
   <div class="d-flex flex-column overflow-auto">
-    <div class="d-flex align-center ga-1 px-2 py-1">
+    <v-toolbar height="32">
       <span>{{ label }}</span>
       <v-btn
-        v-if="multiple"
+        v-if="multiple && listSelected.length > 0"
         icon="mdi-refresh"
         variant="plain"
         density="compact"
@@ -11,7 +11,7 @@
       />
       <v-spacer />
       <slot name="append-title" />
-    </div>
+    </v-toolbar>
     <v-list
       v-model:selected="listSelected"
       class="overflow-auto flex-1-1 py-0 border-opacity-25"
@@ -19,6 +19,7 @@
       border
       rounded
       density="compact"
+      :lines="false"
     >
       <div
         v-for="(groupItems, groupKey, index) in groupedItems"
@@ -32,9 +33,10 @@
               density="compact"
               v-bind="props"
             >
-              <template v-if="multiple" #prepend>
+              <template #prepend>
                 <v-list-item-action start>
                   <v-checkbox-btn
+                    v-if="multiple"
                     @click.stop="() => toggleGroup(groupKey)"
                     :indeterminate="isGroupIndeterminate(groupKey)"
                     :model-value="isGroupSelected(groupKey)"
@@ -63,10 +65,18 @@
             :title="getItemTitle(item)"
             :value="getItemValue(item)"
           >
-            <template v-if="multiple" #prepend="{ isSelected }">
+            <template #prepend="{ isSelected }">
               <v-list-item-action start>
-                <v-checkbox-btn :model-value="isSelected" density="compact" />
-                <v-icon icon="mdi-chart-timeline-variant" :color="getItemColor(item)" class="ps-2" />
+                <v-checkbox-btn
+                  v-if="multiple"
+                  :model-value="isSelected"
+                  density="compact"
+                />
+                <v-icon
+                  icon="mdi-chart-timeline-variant"
+                  :color="getItemColor(item)"
+                  class="ps-2"
+                />
               </v-list-item-action>
             </template>
           </v-list-item>

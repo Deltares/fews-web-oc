@@ -1,5 +1,5 @@
 <template>
-  <div class="his-selection-container h-100 pa-2 ga-2">
+  <div class="his-selection-container h-100 pa-2">
     <v-select
       v-model="filterId"
       :items="props.filters"
@@ -63,7 +63,7 @@
       </template>
     </Autocomplete>
 
-    <div class="d-flex">
+    <div class="d-flex pt-2">
       <v-spacer />
       <AnalysisAddToButton
         :charts
