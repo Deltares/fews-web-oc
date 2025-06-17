@@ -441,6 +441,7 @@ async function uploadProduct() {
       ...mostRecentTemplate.value,
       attributes: {
         ...mostRecentTemplate.value.attributes,
+        author: uploadData.value.author,
         name: uploadData.value.name,
         productId: mostRecentTemplate.value.attributes.productId.replace(/^template_/,''),
     }}
