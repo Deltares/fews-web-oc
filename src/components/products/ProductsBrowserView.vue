@@ -161,16 +161,25 @@ const filter = computed(() => {
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const sourceId = computed(
-  () => config?.browser?.archiveProductSets[0].constraints?.sourceId || 'weboc',
-)
-const areaId = computed(
-  () =>
-    config?.browser?.archiveProductSets[0].constraints?.areaId || 'products',
-)
+const sourceId = computed(() => {
+  if (config?.browser?.archiveProducts)
+    return config?.browser?.archiveProducts[0].sourceId || ''
+  return config?.browser?.archiveProductSets[0].constraints?.sourceId || 'weboc'
+})
+const areaId = computed(() => {
+  if (config?.browser?.archiveProducts)
+    return config?.browser?.archiveProducts[0].areaId || ''
+  return (
+    config?.browser?.archiveProductSets[0].constraints?.areaId || 'products'
+  )
+})
 
 const archiveProductSets = computed(() => {
   return config?.browser?.archiveProductSets ?? []
+})
+
+const archiveProducts = computed(() => {
+  return config?.browser?.archiveProducts ?? []
 })
 
 const { products, getProductByKey, refresh, lastUpdated } = useProducts(
@@ -179,6 +188,7 @@ const { products, getProductByKey, refresh, lastUpdated } = useProducts(
   sourceId,
   areaId,
   archiveProductSets,
+  archiveProducts,
 )
 
 const filteredProductsMap = computed(() => {
