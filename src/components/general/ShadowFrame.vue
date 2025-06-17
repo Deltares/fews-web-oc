@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { useDark } from '@vueuse/core';
+import { useDark } from '@vueuse/core'
 import { watch, onMounted, useTemplateRef } from 'vue'
 
 interface Props {
@@ -30,7 +30,6 @@ onMounted(() => {
     shadowRoot.appendChild(html)
   }
 })
-
 
 watch(
   () => isDark.value,

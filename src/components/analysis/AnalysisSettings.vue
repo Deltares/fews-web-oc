@@ -25,11 +25,7 @@
         />
       </div>
       <div class="d-flex ga-2 mt-4">
-        <v-switch
-          v-model="liveUpdate"
-          label="Live Update"
-          hide-details
-        />
+        <v-switch v-model="liveUpdate" label="Live Update" hide-details />
       </div>
       <div class="d-flex ga-2 mt-4">
         <v-number-input
