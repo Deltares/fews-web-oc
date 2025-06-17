@@ -150,7 +150,6 @@ const filter = computed(() => {
   return result
 })
 
-
 const filteredProducts = computed(() => {
   if (showAllVersions) {
     return products.value.toReversed()
@@ -296,7 +295,7 @@ async function runDisseminateAction(
     actionIsActive.value = true
     await provider.postLogDisplaysAction(request)
   } catch (error) {
-    console.error('Error occurred while executing runDisseminateAction:', error);
+    console.error('Error occurred while executing runDisseminateAction:', error)
   } finally {
     actionIsActive.value = false
   }
