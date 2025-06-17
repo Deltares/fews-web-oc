@@ -166,19 +166,8 @@
           :title="'Create new product'"
         ></v-btn>
       </template>
-      <template v-slot:body.prepend>
-        <tr>
-          <td></td>
-          <td :colspan="headers.length" class="pa-0">
-            <v-btn
-              prepend-icon="mdi-plus"
-              size="small"
-              variant="tonal"
-              @click="showUploadDialog = true"
-              >Upload</v-btn
-            >
-          </td>
-        </tr>
+      <template v-slot:body.prepend="props" >
+        <slot name="prepend" v-bind="props"></slot>
       </template>
     </v-data-table>
     <div>

@@ -25,6 +25,28 @@
           </template>
         </v-list-item>
       </template>
+      <template #prepend="{ headers }">
+        <tr v-if="canUpload">
+          <td :colspan="headers[0].length + 3" class="ps-4">
+            <v-btn
+              prepend-icon="mdi-plus"
+              size="small"
+              variant="tonal"
+              >Upload</v-btn
+            >
+          </td>
+        </tr>
+        <tr v-else-if="canCreateNew">
+          <td :colspan="headers[0].length + 3" class="ps-4">
+            <v-btn
+              prepend-icon="mdi-plus"
+              size="small"
+              variant="tonal"
+              >New</v-btn
+            >
+          </td>
+        </tr>
+      </template>
     </ProductsBrowserTable>
     <div class="flex-1-1 h-100 flex-column position-relative">
       <EditReport v-if="isEditing" v-model="htmlContent" @save="onSave" />
@@ -181,6 +203,24 @@ const archiveProductSets = computed(() => {
 
 const archiveProducts = computed(() => {
   return config?.browser?.archiveProducts ?? []
+})
+
+const canUpload = computed(() => {
+  return archiveProductSets.value.length > 0
+})
+
+const canCreateNew = computed(() => {
+  return archiveProducts.value.length > 0
+})
+
+const sourceId = computed(() => {
+  if (archiveProducts.value.length)
+    return archiveProducts.value[0].sourceId || ''
+  return archiveProductSets.value[0].constraints?.sourceId || 'weboc'
+})
+const areaId = computed(() => {
+  if (archiveProducts.value.length) return archiveProducts.value[0].areaId || ''
+  return archiveProductSets.value[0].constraints?.areaId || 'weboc'
 })
 
 const { products, getProductByKey, refresh, lastUpdated, mostRecentTemplate } =
