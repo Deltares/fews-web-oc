@@ -35,13 +35,13 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       proxy: {
-        '/FewsWebServices/': `${env.DEVSERVER_PROXY_FEWS_PI}`,
+        '/FewsWebServices/': `${env.DEV_PROXY_FEWS_PI}`,
       },
       headers: {
         'content-security-policy': [
           `default-src 'none'`,
-          `script-src 'self' blob: ${env.DEVSERVER_SCRIPT_SRC}`,
-          `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEVSERVER_FONT_SRC}`,
+          `script-src 'self' blob: ${env.DEV_CSP_SCRIPT_SRC}`,
+          `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_FONT_SRC}`,
           `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} 'unsafe-inline'`, // vuetify
           `worker-src blob:`, // maplibre-gl
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices
@@ -52,9 +52,9 @@ export default defineConfig(({ mode }) => {
             `https://*.basemaps.cartocdn.com`,
             `https://login.microsoftonline.com`,
             `${env.VITE_FEWS_WEBSERVICES_URL}`,
-            `${env.DEVSERVER_CONNECT_SRC}`,
+            `${env.DEV_CSP_CONNECT_SRC}`,
           ].join(' '), // FEWS webservices, Authentication, Basemaps
-          [`frame-src`, `'self' blob:`, `${env.DEVSERVER_FRAME_SRC}`].join(
+          [`frame-src`, `'self' blob:`, `${env.DEV_CSP_FRAME_SRC}`].join(
             ' ',
           ), // FEWS webservices, Authentication, Basemaps
         ].join('; '),
