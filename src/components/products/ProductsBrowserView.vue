@@ -28,49 +28,69 @@
         <template v-if="canUpload && uploadData">
           <tr>
             <td colspan="100%" class="py-2">
-              <v-file-input
-                v-model="file"
-                :height="10"
-                label="Upload file"
-                hide-details="auto"
-                variant="plain"
-                density="compact"
-                :clearable="false"
-                accept=".html,.pdf,.png,.jpg,.jpeg,.gif"
-                append-icon="mdi-close"
-                @click:append="uploadData = undefined; file = undefined"
-              >
-              </v-file-input>
-            </td>
-          </tr>
-          <tr v-if="file">
-            <td></td>
-            <td>
-              <v-text-field
-                v-model="uploadData.name"
-                label="Product Name"
-                variant="plain"
-                :rules="[(v) => !!v || 'Product name is required']"
-                hide-details
-                single-line
-                density="compact"
-              ></v-text-field>
-            </td>
-            <td colspan="2">
-              <v-text-field
-                v-model="uploadData.author"
-                label="Author"
-                variant="plain"
-                :rules="[(v) => !!v || 'Author name is required']"
-                hide-details
-                single-line
-                density="compact"
-              ></v-text-field>
-            </td>
-            <td colspan="2">
-              <v-btn variant="flat" color="primary" @click="uploadProduct(file)"
-                >Save</v-btn
-              >
+              <v-card flat>
+                <v-form v-model="uploadIsValid">
+                  <v-container>
+                    <v-row>
+                      <v-col cols="12">
+                        <v-file-input
+                          v-model="file"
+                          :height="10"
+                          label="Upload file"
+                          hide-details="auto"
+                          variant="plain"
+                          density="compact"
+                          :rules="[(v) => !!v || 'File is required']"
+                          accept=".html,.pdf,.png,.jpg,.jpeg,.gif"
+                        >
+                        </v-file-input>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col cols="12">
+                        <v-text-field
+                          v-model="uploadData.name"
+                          label="Product Name"
+                          variant="outlined"
+                          :rules="[(v) => !!v || 'Product name is required']"
+                          hide-details
+                          density="compact"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col cols="12">
+                        <v-text-field
+                          v-model="uploadData.author"
+                          label="Author"
+                          variant="outlined"
+                          :rules="[(v) => !!v || 'Author name is required']"
+                          hide-details
+                          density="compact"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                  </v-container>
+                </v-form>
+                <v-card-actions>
+                  <v-spacer />
+                  <v-btn
+                    variant="flat"
+                    size="small"
+
+                    @click="resetUpload"
+                    >Cancel</v-btn
+                  >
+                  <v-btn
+                    variant="flat"
+                    color="primary"
+                    size="small"
+                    :disabled="!uploadIsValid"
+                    @click="uploadProduct(file)"
+                    >Save</v-btn
+                  >
+                </v-card-actions>
+              </v-card>
             </td>
           </tr>
         </template>
@@ -269,6 +289,7 @@ watch(file, (newFile) => {
     uploadData.value.name = newFile.name
   }
 })
+const uploadIsValid = ref(false)
 
 const canCreateNew = computed(() => {
   return archiveProducts.value.length > 0
@@ -384,8 +405,13 @@ function onSave() {
   isEditing.value = false
 }
 
-async function uploadProduct(file: File) {
-  if (!canUpload.value || !uploadData) return
+function resetUpload() {
+  uploadData.value = undefined
+  file.value = undefined
+}
+
+async function uploadProduct(file?: File) {
+  if (!canUpload.value || !uploadData || !file) return
   try {
     const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
     const productId = await hashObject(uploadData.value)
