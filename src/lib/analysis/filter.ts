@@ -133,6 +133,7 @@ function subplotToFilterSubplot(
   })
 
   replaceDuplicateColors(newItems)
+  replaceDuplicateLegendNames(newItems)
   return { ...item, items: newItems }
 }
 
@@ -217,6 +218,7 @@ async function addFilterToChartPosition(
   const newItems = [...chart.subplot.items, ...newChart.subplot.items]
   const uniqItems = uniqBy(newItems, (item) => item.request)
   replaceDuplicateColors(uniqItems)
+  replaceDuplicateLegendNames(newItems)
 
   chart.subplot.items = uniqItems
 
@@ -226,9 +228,32 @@ async function addFilterToChartPosition(
   chart.title = getFilterSubplotTitle(chart.subplot)
 }
 
-export function replaceDuplicateColors(
-  items: FilterSubplotItem[],
-) {
+function addLocationNameToLegend(item: FilterSubplotItem) {
+  if (!item.legend || !item.locationName) return
+  if (item.legend.includes(item.locationName)) return
+
+  // Place location name before [d+] if it exists
+  // otherwise appends it at the end.
+  item.legend = item.legend.replace(/(\[\d+\])?$/, ` ${item.locationName} $1`)
+}
+
+export function replaceDuplicateLegendNames(items: FilterSubplotItem[]) {
+  const seenLegends = new Map<string, FilterSubplotItem>()
+
+  items.forEach((item) => {
+    if (!item.legend) return
+
+    const seenItem = seenLegends.get(item.legend)
+    if (seenItem) {
+      addLocationNameToLegend(item)
+      addLocationNameToLegend(seenItem)
+    } else {
+      seenLegends.set(item.legend, item)
+    }
+  })
+}
+
+export function replaceDuplicateColors(items: FilterSubplotItem[]) {
   const { colors } = useTaskRunColorsStore()
 
   const seenColors = new Set<string>()
