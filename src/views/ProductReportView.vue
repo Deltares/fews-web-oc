@@ -296,7 +296,7 @@ async function runDisseminateAction(
     actionIsActive.value = true
     await provider.postLogDisplaysAction(request)
   } catch (error) {
-
+    console.error('Error occurred while executing runDisseminateAction:', error);
   } finally {
     actionIsActive.value = false
   }
