@@ -4,7 +4,7 @@
       v-model="selectedTimeseries"
       :items="allSeries"
       label="Time Series"
-      :getItemValue="(item) => item"
+      :getItemValue="(item) => item.series"
       :getItemTitle="(item) => item.series.legend ?? ''"
       :getItemColor="(item) => item.series.color ?? 'black'"
       :getItemGroupTitle="(item) => item.chart.title"
@@ -64,7 +64,6 @@ import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
 import {
   addFilterToChart,
   Chart,
-  ChartSeriesItem,
   type CollectionEmits,
   createNewChartsForFilters,
   FilterSubplotItem,
@@ -91,7 +90,7 @@ const emit = defineEmits<CollectionEmits>()
 
 const parametersStore = useParametersStore()
 
-const selectedTimeseries = ref<ChartSeriesItem[]>([])
+const selectedTimeseries = ref<FilterSubplotItem[]>([])
 const selectedResamplingMethods = ref<ResamplingMethod[]>([])
 const selectedResamplingTimeSteps = ref<TimeSteps[]>([])
 
@@ -109,9 +108,7 @@ const availableTimeStepsStore = useAvailableTimeStepsStore()
 
 const allSeries = computed(() => getValidFilterCharts(props.charts))
 
-const filters = computed(() =>
-  getFilters(selectedTimeseries.value.map((item) => item.series)),
-)
+const filters = computed(() => getFilters(selectedTimeseries.value))
 
 const canAddFilter = computed(() => {
   return (
