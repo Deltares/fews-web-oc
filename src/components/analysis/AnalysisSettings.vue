@@ -105,7 +105,7 @@
 <script setup lang="ts">
 import { Collection } from '@/lib/analysis'
 import { ref, watchEffect } from 'vue'
-import { VDateInput, VNumberInput } from 'vuetify/labs/components'
+import { VDateInput } from 'vuetify/labs/components'
 
 interface Props {
   collection: Collection
