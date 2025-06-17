@@ -209,6 +209,8 @@ watchEffect(async () => {
   const extension = getFileExtension(url)
 
   const currentViewMode = getViewMode(extension)
+  const urlFragments =
+    currentViewMode === 'pdf' ? '#view=FitH&zoom=page-width' : ''
 
   const transformRequest = createTransformRequestFn()
   const request = await transformRequest(new Request(url, {}))
@@ -226,7 +228,7 @@ watchEffect(async () => {
   const urlObject = URL.createObjectURL(await response.blob())
 
   viewMode.value = currentViewMode
-  src.value = urlObject
+  src.value = urlObject + urlFragments
 })
 
 async function onSave() {
