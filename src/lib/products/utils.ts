@@ -3,7 +3,7 @@ export function getFileExtension(url: string): string {
   return urlParts[urlParts.length - 1]
 }
 
-export type ViewMode = 'html' | 'iframe' | 'img'
+export type ViewMode = 'html' | 'iframe' | 'img' | 'pdf'
 export function getViewMode(extension: string): ViewMode {
   switch (extension) {
     case 'html':
@@ -13,6 +13,7 @@ export function getViewMode(extension: string): ViewMode {
     case 'jpeg':
       return 'img'
     case 'pdf':
+      return 'pdf'
     default:
       return 'iframe'
   }

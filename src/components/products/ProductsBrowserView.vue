@@ -52,7 +52,7 @@
           </v-toolbar-items>
         </v-toolbar>
         <iframe
-          v-if="viewMode === 'iframe'"
+          v-if="viewMode === 'iframe' || viewMode === 'pdf'"
           :src="src"
           class="pdf-iframe"
         ></iframe>
@@ -183,6 +183,8 @@ watchEffect(async () => {
     const url = getProductURL(baseUrl, productMetaData)
     const extension = getFileExtension(url)
     const currentViewMode = getViewMode(extension)
+    const urlFragments =
+      currentViewMode === 'pdf' ? '#view=FitH&zoom=page-width' : ''
 
     const transformRequest = createTransformRequestFn()
     const request = await transformRequest(new Request(url, {}))
@@ -199,7 +201,7 @@ watchEffect(async () => {
     const urlObject = URL.createObjectURL(await response.blob())
     viewMode.value = currentViewMode
     timeZero.value = productMetaData.timeZero
-    src.value = urlObject
+    src.value = urlObject + urlFragments
   } else {
     src.value = ''
   }
