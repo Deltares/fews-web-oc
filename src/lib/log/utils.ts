@@ -279,8 +279,8 @@ function nameToNiceColor(name: string) {
 }
 
 export function getLogDisseminationKey(
-  log: Pick<LogMessage, 'taskRunId' | 'entryTime' | 'text'>,
-  dissemination: Pick<LogDisplayDisseminationAction, 'id'>,
+  log: LogMessage,
+  dissemination: LogDisplayDisseminationAction,
 ) {
   return `${log.taskRunId}-${log.entryTime}-${log.text.length}-${dissemination.id}`
 }
