@@ -44,16 +44,18 @@
                 </v-row>
               </v-card>
             </v-menu>
-            <v-select
-              v-model="item.lineStyle"
-              :items="lineStyles"
+            <AnalysisLineStyleEdit :item="item" />
+            <v-number-input
+              v-model="item.lineWidth"
               density="compact"
               variant="outlined"
-              width="120"
-              item-value="value"
-              item-title="label"
               hide-details
+              type="number"
+              :min="0.1"
+              :max="10"
               class="mx-2"
+              label="Width"
+              control-variant="stacked"
             />
           </template>
           <div class="d-flex align-center ga-1">
@@ -70,8 +72,10 @@
 
 <script setup lang="ts">
 import EditableTitle from '@/components/general/EditableTitle.vue'
-import { markerStyles, lineStyles } from '@/lib/charts/styles'
+import AnalysisLineStyleEdit from './AnalysisLineStyleEdit.vue'
+import { markerStyles } from '@/lib/charts/styles'
 import type { PlotChart } from '@/lib/analysis'
+import { VNumberInput } from 'vuetify/labs/components'
 
 interface Props {
   chart: PlotChart
