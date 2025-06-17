@@ -210,7 +210,6 @@ import { ProductMetaDataType } from '@/services/useProducts/types'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { DateTime } from 'luxon'
 import { postFileProduct, postProduct } from '@/lib/products/requests'
-import { useRouter } from 'vue-router'
 
 interface Props {
   config?: DocumentBrowserDisplay
@@ -218,7 +217,6 @@ interface Props {
 }
 
 const { config, productId } = defineProps<Props>()
-const router = useRouter()
 const src = ref('')
 const viewMode = ref('')
 
