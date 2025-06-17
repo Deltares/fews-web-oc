@@ -293,7 +293,7 @@ function addHorizontalColorCodeLegendItems(subplot: TimeSeriesDisplaySubplot) {
         visibleInLegend: true,
         visibleInPlot: false,
         visibleInTable: false,
-        lineStyle: 'invalid'
+        lineStyle: 'invalid',
       }
       return item
     })
