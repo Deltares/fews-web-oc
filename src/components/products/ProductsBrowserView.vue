@@ -25,13 +25,13 @@
         </v-list-item>
       </template>
       <template #prepend="{ headers }">
-        <template v-if="canUpload && uploadData">
+        <template v-if="uploadData">
           <tr>
             <td colspan="100%" class="py-2">
               <v-card flat>
                 <v-form v-model="uploadIsValid">
                   <v-container>
-                    <v-row>
+                    <v-row v-if="canUpload">
                       <v-col cols="12">
                         <v-file-input
                           v-model="file"
@@ -70,15 +70,24 @@
                         ></v-text-field>
                       </v-col>
                     </v-row>
+                    <v-row v-if="uploadData.timeZero">
+                      <v-col cols="12">
+                        <v-text-field
+                          readonly
+                          v-model="uploadData.timeZero"
+                          label="Time"
+                          variant="outlined"
+                          :rules="[(v) => !!v || 'Author name is required']"
+                          hide-details
+                          density="compact"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
                   </v-container>
                 </v-form>
                 <v-card-actions>
                   <v-spacer />
-                  <v-btn
-                    variant="flat"
-                    size="small"
-
-                    @click="resetUpload"
+                  <v-btn variant="flat" size="small" @click="resetUpload"
                     >Cancel</v-btn
                   >
                   <v-btn
@@ -86,7 +95,7 @@
                     color="primary"
                     size="small"
                     :disabled="!uploadIsValid"
-                    @click="uploadProduct(file)"
+                    @click="uploadProduct()"
                     >Save</v-btn
                   >
                 </v-card-actions>
@@ -195,7 +204,7 @@ import DOMPurify from 'dompurify'
 import { ProductMetaDataType } from '@/services/useProducts/types'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { DateTime } from 'luxon'
-import { postFileProduct } from '@/lib/products/requests'
+import { postFileProduct, postProduct } from '@/lib/products/requests'
 import { useRouter } from 'vue-router'
 
 interface Props {
@@ -271,6 +280,7 @@ const uploadData = ref<
   | {
       name: string
       author: string
+      timeZero?: string
     }
   | undefined
 >()
@@ -281,6 +291,14 @@ function newUploadFile() {
   uploadData.value = {
     name: '',
     author: userName.value || '',
+  }
+}
+
+function newProduct() {
+  uploadData.value = {
+    name: mostRecentTemplate.value?.attributes.name || '',
+    author: userName.value || '',
+    timeZero: mostRecentTemplate.value?.timeZero,
   }
 }
 
@@ -410,7 +428,51 @@ function resetUpload() {
   file.value = undefined
 }
 
-async function uploadProduct(file?: File) {
+async function uploadProduct() {
+  if( canUpload.value && uploadData.value && file.value) {
+    await uploadProductFile(file.value)
+  } else if (canCreateNew.value && uploadData.value && mostRecentTemplate.value) {
+    const url = getProductURL(baseUrl, mostRecentTemplate.value)
+    const transformRequest = createTransformRequestFn()
+    const request = await transformRequest(new Request(url, {}))
+    const response = await fetch(request)
+    const htmlContent = await response.text()
+    const newProductEntry: ProductMetaDataType = {
+      ...mostRecentTemplate.value,
+      attributes: {
+        ...mostRecentTemplate.value.attributes,
+        name: uploadData.value.name,
+        productId: mostRecentTemplate.value.attributes.productId.replace(/^template_/,''),
+    }}
+    const fileName = mostRecentTemplate.value.relativePathProducts[0].split('/').pop() ?? 'unknown'
+    await uploadHtmlProduct(newProductEntry, htmlContent, fileName)
+  }
+}
+
+async function uploadHtmlProduct(metaData: ProductMetaDataType, htmlContent: string, fileName: string) {
+  const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const archiveUrl = `${piUrl}rest/fewspiservice/v1/archive/`
+  try {
+    await postProduct(
+      archiveUrl,
+      metaData.areaId,
+      metaData.sourceId,
+      metaData.timeZero,
+      htmlContent,
+      fileName,
+      metaData.attributes,
+    )
+    await fetchProducts()
+  } catch (error) {
+    console.error('Error uploading new product:', error)
+    return
+  } finally {
+    uploadData.value = undefined
+  }
+}
+
+
+async function uploadProductFile(file?: File) {
   if (!canUpload.value || !uploadData || !file) return
   try {
     const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
