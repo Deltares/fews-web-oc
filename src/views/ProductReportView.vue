@@ -17,7 +17,7 @@
               icon="mdi-dots-horizontal"
               variant="text"
               v-bind="props"
-              :loading="disseminateActionIsActive"
+              :loading="actionIsActive"
             />
           </template>
           <v-list density="compact">
@@ -32,7 +32,7 @@
                 ?.disseminationActions"
               :prepend-icon="action.iconId"
               :title="action.description"
-              @click="disseminateLog(createLogEntry(), action)"
+              @click="runDisseminateAction(htmlContent, action)"
             >
             </v-list-item>
           </v-list>
@@ -110,18 +110,10 @@ import { convert } from 'html-to-text'
 import { useLogDisplay } from '@/services/useLogDisplay'
 
 const LOG_DISPLAY_ID = 'email_reports'
-const LOG_ACTION_ID = 'email_reports'
 
 interface Props {
   config?: ReportDisplay
   showAllVersions?: boolean
-}
-
-interface LogMessage {
-  text: string
-  level: 'INFO' | 'WARNING' | 'ERROR'
-  taskRunId: string
-  entryTime: string
 }
 
 const { showAllVersions = false, config } = defineProps<Props>()
@@ -129,7 +121,7 @@ const viewPeriod = ref<IntervalItem>({})
 const editorEnabled = ref(false) // Example flag to enable editor mode
 const isEditing = ref(false) // Example flag to toggle editing mode
 const htmlContent = ref('') // Placeholder for HTML content
-const disseminateActionIsActive = ref(false) // Flag to indicate if a dissemination action is active
+const actionIsActive = ref(false) // Flag to indicate if a dissemination action is active
 
 const filter = computed(() => {
   if (
@@ -277,25 +269,16 @@ function openEmailClient() {
   window.location.href = mailtoLink
 }
 
-function createLogEntry(): LogMessage {
-  return {
-    text: htmlContent.value,
-    level: 'INFO',
-    taskRunId: '',
-    entryTime: DateTime.now().toISO(),
-  }
-}
-
-async function disseminateLog(
-  log: LogMessage,
-  dissemination: LogDisplayDisseminationAction,
+async function runDisseminateAction(
+  htmlContent: string,
+  action: LogDisplayDisseminationAction,
 ) {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const provider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
 
-  const textContent = convert(log.text, {
+  const textContent = convert(htmlContent, {
     wordwrap: 130,
     selectors: [
       { selector: 'img', format: 'skip' }, // Skip images
@@ -305,18 +288,18 @@ async function disseminateLog(
 
   const request: LogDisplayLogsActionRequest = {
     logDisplayId: LOG_DISPLAY_ID,
-    actionId: LOG_ACTION_ID,
+    actionId: action.id,
     logMessage: textContent,
     logLevel: 'INFO',
   }
 
   try {
-    disseminateActionIsActive.value = true
+    actionIsActive.value = true
     await provider.postLogDisplaysAction(request)
   } catch (error) {
 
   } finally {
-    disseminateActionIsActive.value = false
+    actionIsActive.value = false
   }
 }
 </script>
