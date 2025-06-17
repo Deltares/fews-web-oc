@@ -24,7 +24,7 @@
                   <v-color-picker v-model="item.color" />
                 </v-card>
               </v-menu>
-              <v-menu :close-on-content-click="false">
+              <v-menu>
                 <template #activator="{ props }">
                   <v-btn v-bind="props" icon>
                     <v-icon>{{
