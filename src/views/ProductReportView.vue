@@ -73,6 +73,7 @@ import EditReport from '@/components/reports/EditReport.vue'
 import DOMPurify from 'dompurify'
 import { postProduct } from '@/lib/products/requests'
 import { ProductMetaDataType } from '@/services/useProducts/types'
+import { getFileExtension, getViewMode } from '@/lib/products'
 
 interface Props {
   config?: ReportDisplay
@@ -148,25 +149,6 @@ const selectedProduct = computed(() => {
   return filteredProducts.value[selected.value]
 })
 const src = ref('')
-
-function getFileExtension(url: string): string {
-  const urlParts = url.split('.')
-  return urlParts[urlParts.length - 1]
-}
-
-function getViewMode(extension: string): string {
-  switch (extension) {
-    case 'html':
-      return 'html'
-    case 'png':
-    case 'jpg':
-    case 'jpeg':
-      return 'img'
-    case 'pdf':
-    default:
-      return 'iframe'
-  }
-}
 
 watchEffect(() => {
   const documentDisplay = toValue(config)

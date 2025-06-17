@@ -80,6 +80,7 @@ import { ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
 import { useProducts } from '@/services/useProducts'
 import { type DocumentBrowserDisplay } from '@/lib/products/documentDisplay'
 import { toHumanReadableDate } from '@/lib/date'
+import { getFileExtension, getViewMode } from '@/lib/products'
 import {
   type IntervalItem,
   intervalToFewsPiDateRange,
@@ -92,25 +93,6 @@ import DOMPurify from 'dompurify'
 interface Props {
   config?: DocumentBrowserDisplay
   productId?: string
-}
-
-function getFileExtension(url: string): string {
-  const urlParts = url.split('.')
-  return urlParts[urlParts.length - 1]
-}
-
-function getViewMode(extension: string): string {
-  switch (extension) {
-    case 'html':
-      return 'html'
-    case 'png':
-    case 'jpg':
-    case 'jpeg':
-      return 'img'
-    case 'pdf':
-    default:
-      return 'iframe'
-  }
 }
 
 const { config, productId } = defineProps<Props>()
