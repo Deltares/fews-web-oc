@@ -148,6 +148,8 @@ const selectedWhatIfTemplate = ref<WhatIfTemplate>()
 const selectedWhatIfScenario = ref<WhatIfScenarioDescriptor>()
 const selectedProperties = ref<ScenarioData>({})
 
+watch(selectedWhatIfTemplate, () => (selectedWhatIfScenario.value = undefined))
+
 const additionalErrors = ref<ErrorObject[]>([])
 
 const isPosting = ref<boolean>(false)
