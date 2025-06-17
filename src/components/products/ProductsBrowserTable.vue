@@ -156,6 +156,7 @@
       </template>
       <template v-slot:item.actions="{ item }">
         <v-btn
+          v-if="item.attributes.name !== 'Create new'"
           icon="mdi-delete"
           size="small"
           variant="text"
@@ -163,6 +164,14 @@
           :title="'Delete product'"
           class="delete-action-btn"
           :hover="true"
+        ></v-btn>
+        <v-btn
+          v-else
+          icon="mdi-plus"
+          size="small"
+          variant="text"
+          @click="onNewProduct(template ?? item)"
+          :title="'Create new product'"
         ></v-btn>
       </template>
     </v-data-table>
@@ -237,9 +246,16 @@ import { computed, onMounted, ref, watch } from 'vue'
 import type { ProductMetaDataType } from '@/services/useProducts/types'
 import { useRouter } from 'vue-router'
 import { toHumanReadableDate } from '@/lib/date'
-import { deleteProduct, postFileProduct } from '@/lib/products/requests'
+import {
+  deleteProduct,
+  postFileProduct,
+  postProduct,
+} from '@/lib/products/requests'
 import { configManager } from '@/services/application-config'
 import { DateTime } from 'luxon'
+import { getProductURL } from './productTools'
+import { useCurrentUser } from '@/services/useCurrentUser'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 interface AttributeHeader {
   attribute: string
@@ -265,6 +281,7 @@ function isPropertyHeader(
 
 interface Props {
   products: ProductMetaDataType[]
+  template?: ProductMetaDataType
   config: ProductBrowserTableConfig
   productId?: string
   areaId: string
@@ -415,11 +432,28 @@ const headers = computed(() => {
 })
 
 const items = computed(() => {
-  return props.products.map((product) => ({
-    ...product,
-    timeZero: toHumanReadableDate(product.timeZero),
-    dataSetCreationTime: toHumanReadableDate(product.dataSetCreationTime),
-  }))
+  const items: ProductMetaDataType[] = []
+  if (props.template) {
+    console.log('Adding template to items:', props.template)
+    items.push({
+      ...props.template,
+      attributes: {
+        ...props.template.attributes,
+        name: 'Create new',
+      },
+      timeZero: '',
+      dataSetCreationTime: '',
+    })
+  }
+  items.push(
+    ...props.products.map((product) => ({
+      ...product,
+      timeZero: toHumanReadableDate(product.timeZero),
+      dataSetCreationTime: toHumanReadableDate(product.dataSetCreationTime),
+    })),
+  )
+
+  return items
 })
 
 async function onDeleteProduct(product: ProductMetaDataType) {
@@ -445,6 +479,39 @@ function onClick(
       productId: entry.item.key,
     },
   })
+}
+
+const { preferredUsername } = useCurrentUser()
+
+async function onNewProduct(item: ProductMetaDataType) {
+  const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const archiveUrl = `${piUrl}rest/fewspiservice/v1/archive/`
+  const fileName = item.relativePathProducts[0].split('/').pop() ?? 'unknown'
+  item.attributes.productId = item.attributes.productId.replace(
+    /^template_/,
+    '',
+  )
+  item.attributes.author = preferredUsername.value
+
+  const transformRequest = createTransformRequestFn()
+  const request = await transformRequest(
+    new Request(getProductURL(piUrl, item), {}),
+  )
+  const htmlContent = await (await fetch(request)).text()
+  try {
+    await postProduct(
+      archiveUrl,
+      item.areaId,
+      item.sourceId,
+      item.timeZero,
+      htmlContent,
+      fileName,
+      item.attributes,
+    )
+  } catch (error) {
+    console.error('Error creating new product:', error)
+  }
+  emit('refresh')
 }
 /**
  * Converts a string to snake_case

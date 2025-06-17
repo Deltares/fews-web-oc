@@ -74,7 +74,7 @@ export function useProducts(
           const response = await fetchProductsMetaData(baseUrl, filterValue)
           if (response.length > 0) {
             // If we find a template, we set it as the most recent template
-            mostRecentTemplate.value = response[0]
+            mostRecentTemplate.value = response[response.length - 1]
           } else {
             mostRecentTemplate.value = null
           }
@@ -154,6 +154,7 @@ export function useProducts(
     refresh,
     lastUpdated,
     error,
+    mostRecentTemplate,
   }
 }
 
