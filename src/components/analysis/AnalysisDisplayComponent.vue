@@ -30,31 +30,10 @@
         <AnalysisWorkflows :config="config" @addChart="addChart" />
       </div>
       <div v-show="tab === 'settings'">
-        <v-card flat title="Settings">
-          <v-card-text>
-            <div class="d-flex ga-2">
-              <v-date-input
-                v-model="selectedCollection.settings.startTime"
-                label="Start Date"
-                variant="outlined"
-                hide-details
-                density="compact"
-                prepend-icon=""
-                min-width="120"
-              />
-              <v-date-input
-                v-model="selectedCollection.settings.endTime"
-                label="End Date"
-                variant="outlined"
-                hide-details
-                density="compact"
-                prepend-icon=""
-                min-width="120"
-                display-format="fullDate"
-              />
-            </div>
-          </v-card-text>
-        </v-card>
+        <AnalysisSettings
+          :collection="selectedCollection"
+          @delete-collection="deleteSelectedCollection"
+        />
       </div>
     </v-navigation-drawer>
     <div class="flex-0-0">
@@ -102,7 +81,7 @@ import AnalysisCollectionCharts from './AnalysisCollectionCharts.vue'
 import AnalysisCollection from '@/components/analysis/AnalysisCollection.vue'
 import AnalysisFunctions from '@/components/analysis/functions/AnalysisFunctions.vue'
 import AnalysisWorkflows from '@/components/analysis/workflows/AnalysisWorkflows.vue'
-import { VDateInput } from 'vuetify/labs/components'
+import AnalysisSettings from '@/components/analysis/AnalysisSettings.vue'
 import type {
   ActionRequest,
   BoundingBox,
@@ -154,6 +133,15 @@ const collections = useStorage<Collection[]>(
   },
 )
 const selectedCollection = ref<Collection>(collections.value[0])
+
+function deleteSelectedCollection() {
+  const index = collections.value.indexOf(selectedCollection.value)
+  if (index !== -1) {
+    collections.value.splice(index, 1)
+    selectedCollection.value =
+      collections.value[0] || createCollection('Default', props.config)
+  }
+}
 
 function addChart(chart: Chart) {
   selectedCollection.value.charts = [chart, ...selectedCollection.value.charts]
