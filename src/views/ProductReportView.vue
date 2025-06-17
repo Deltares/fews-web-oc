@@ -11,13 +11,32 @@
           @click="isEditing = !isEditing"
           >edit</v-btn
         >
-        <v-btn
-          v-if="viewMode === 'html' && dissiminationEnabled"
-          prepend-icon="mdi-email"
-          variant="flat"
-          @click="openEmailClient"
-          >Send</v-btn
-        >
+        <v-menu location="bottom left">
+          <template #activator="{ props }">
+            <v-btn
+              icon="mdi-dots-horizontal"
+              variant="text"
+              v-bind="props"
+              :loading="disseminateActionIsActive"
+            />
+          </template>
+          <v-list density="compact">
+            <v-list-item
+              v-if="viewMode === 'html'"
+              prepend-icon="mdi-email"
+              title="Open in Email Client..."
+              @click="openEmailClient"
+            />
+            <v-list-item
+              v-for="action in logDisplay?.logDissemination
+                ?.disseminationActions"
+              :prepend-icon="action.iconId"
+              :title="action.description"
+              @click="disseminateLog(createLogEntry(), action)"
+            >
+            </v-list-item>
+          </v-list>
+        </v-menu>
         <v-spacer />
         <v-toolbar-items>
           <v-btn
@@ -71,7 +90,13 @@ import {
   periodToIntervalItem,
 } from '@/lib/TimeControl/interval'
 import { attributesToObject, useProducts } from '@/services/useProducts'
-import { ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
+import {
+  LogDisplayDisseminationAction,
+  LogDisplayLogsActionRequest,
+  PiWebserviceProvider,
+  ProductsMetaDataFilter,
+} from '@deltares/fews-pi-requests'
+import { DateTime } from 'luxon'
 import { computed, ref, toValue, watchEffect } from 'vue'
 import { type ReportDisplay } from '@/lib/products/documentDisplay'
 import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
@@ -82,18 +107,29 @@ import { postProduct } from '@/lib/products/requests'
 import { ProductMetaDataType } from '@/services/useProducts/types'
 import { getFileExtension, getViewMode } from '@/lib/products'
 import { convert } from 'html-to-text'
+import { useLogDisplay } from '@/services/useLogDisplay'
+
+const LOG_DISPLAY_ID = 'email_reports'
+const LOG_ACTION_ID = 'email_reports'
 
 interface Props {
   config?: ReportDisplay
   showAllVersions?: boolean
 }
 
+interface LogMessage {
+  text: string
+  level: 'INFO' | 'WARNING' | 'ERROR'
+  taskRunId: string
+  entryTime: string
+}
+
 const { showAllVersions = false, config } = defineProps<Props>()
 const viewPeriod = ref<IntervalItem>({})
 const editorEnabled = ref(false) // Example flag to enable editor mode
-const dissiminationEnabled = ref(true) // Example flag to enable dissimination
 const isEditing = ref(false) // Example flag to toggle editing mode
 const htmlContent = ref('') // Placeholder for HTML content
+const disseminateActionIsActive = ref(false) // Flag to indicate if a dissemination action is active
 
 const filter = computed(() => {
   if (
@@ -123,6 +159,7 @@ const filter = computed(() => {
   return result
 })
 
+
 const filteredProducts = computed(() => {
   if (showAllVersions) {
     return products.value.toReversed()
@@ -151,6 +188,7 @@ const { products, fetchProducts } = useProducts(
   sourceId,
   areaId,
 )
+const { logDisplay } = useLogDisplay(baseUrl, () => LOG_DISPLAY_ID)
 
 const viewMode = ref('html') // or 'iframe', 'img'
 const selected = ref(0) // Example timeZero
@@ -237,6 +275,49 @@ function openEmailClient() {
   })
   const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(textContent)}`
   window.location.href = mailtoLink
+}
+
+function createLogEntry(): LogMessage {
+  return {
+    text: htmlContent.value,
+    level: 'INFO',
+    taskRunId: '',
+    entryTime: DateTime.now().toISO(),
+  }
+}
+
+async function disseminateLog(
+  log: LogMessage,
+  dissemination: LogDisplayDisseminationAction,
+) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
+  const textContent = convert(log.text, {
+    wordwrap: 130,
+    selectors: [
+      { selector: 'img', format: 'skip' }, // Skip images
+      { selector: 'iframe', format: 'skip' }, // Skip iframes
+    ],
+  })
+
+  const request: LogDisplayLogsActionRequest = {
+    logDisplayId: LOG_DISPLAY_ID,
+    actionId: LOG_ACTION_ID,
+    logMessage: textContent,
+    logLevel: 'INFO',
+  }
+
+  try {
+    disseminateActionIsActive.value = true
+    await provider.postLogDisplaysAction(request)
+  } catch (error) {
+
+  } finally {
+    disseminateActionIsActive.value = false
+  }
 }
 </script>
 
