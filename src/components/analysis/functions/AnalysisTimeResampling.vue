@@ -50,7 +50,6 @@
 
 <script setup lang="ts">
 import Autocomplete from '@/components/general/Autocomplete.vue'
-import Multiselect from '@/components/general/Multiselect.vue'
 import GroupSelect from '@/components/general/GroupSelect.vue'
 import AnalysisAddToButton from '@/components/analysis/AnalysisAddToButton.vue'
 import type { Series } from '@/lib/timeseries/timeSeries'
