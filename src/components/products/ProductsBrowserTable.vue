@@ -321,10 +321,16 @@ async function uploadProduct() {
     const timeZero = DateTime.now().toUTC().startOf('second').toISO({
       suppressMilliseconds: true,
     })
+    const productId = toSnakeCase(
+      uploadData.value.name + '_' + uploadData.value.author,
+    )
+
     const attributes = {
       name: uploadData.value.name,
       author: uploadData.value.author,
+      productId: productId,
     }
+
     await postFileProduct(
       `${baseUrl}rest/fewspiservice/v1/archive/`,
       props.areaId, // areaId
@@ -439,6 +445,20 @@ function onClick(
       productId: entry.item.key,
     },
   })
+}
+/**
+ * Converts a string to snake_case
+ * @param str The string to convert
+ * @returns The snake_case version of the string
+ */
+function toSnakeCase(str: string): string {
+  // Remove special characters and replace spaces with underscores
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/[\s-]+/g, '_') // Replace spaces and hyphens with underscores
+    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
 }
 </script>
 

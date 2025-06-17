@@ -149,8 +149,14 @@ export async function postFileProduct(
     url = `${url}&attribute(${key})=${attributes[key]}`
   }
   const transformRequest = createTransformRequestFn()
+  const fileExtension = file.name.split('.').pop()?.toLowerCase() || ''
+  const fileName = file.name.substring(0, file.name.lastIndexOf('.'))
+  const newFileName = `${fileName}.${fileExtension}`
+
+  const renamedFile = new File([file], newFileName, { type: file.type })
+
   const formData = new FormData()
-  formData.append('file', file)
+  formData.append('file', renamedFile)
   const request = await transformRequest(
     new Request(url, {
       method: 'POST',

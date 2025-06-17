@@ -117,6 +117,7 @@ export function useProducts(
           )
         })
         products.value = filteredProducts
+        lastUpdated.value = new Date()
       } catch (err) {
         error.value = 'Error fetching product metadata'
         console.error(err)
