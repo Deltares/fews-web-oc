@@ -25,7 +25,12 @@
               v-if="viewMode === 'html'"
               prepend-icon="mdi-email"
               title="Open in Email Client..."
-              @click="openEmailClient"
+              @click="
+                openEmailClient(
+                  `${selectedProduct.attributes.name}: ${selectedProduct.timeZero}`,
+                  htmlContent,
+                )
+              "
             />
             <v-list-item
               v-for="action in logDisplay?.logDissemination
@@ -256,9 +261,8 @@ async function onSave() {
   }
 }
 
-function openEmailClient() {
-  const subject = `${selectedProduct.value.attributes.name}: ${selectedProduct.value.timeZero}`
-  const textContent = convert(htmlContent.value, {
+function openEmailClient(subject: string, content: string) {
+  const textContent = convert(content, {
     wordwrap: 130,
     selectors: [
       { selector: 'img', format: 'skip' }, // Skip images
