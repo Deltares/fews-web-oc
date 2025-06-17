@@ -13,7 +13,7 @@
     />
 
     <div class="d-flex ga-2 w-100">
-      <Autocomplete
+      <SelectCard
         v-model="selectedResamplingMethods"
         :items="resamplingMethods"
         label="Resampling Methods"
@@ -23,7 +23,7 @@
         class="w-50"
       />
 
-      <Autocomplete
+      <SelectCard
         v-model="selectedResamplingTimeSteps"
         :items="availableTimeStepsStore.resamplingTimeSteps"
         label="Time Steps"
@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import Autocomplete from '@/components/general/Autocomplete.vue'
+import SelectCard from '@/components/general/SelectCard.vue'
 import GroupSelect from '@/components/general/GroupSelect.vue'
 import AnalysisAddToButton from '@/components/analysis/AnalysisAddToButton.vue'
 import type { Series } from '@/lib/timeseries/timeSeries'

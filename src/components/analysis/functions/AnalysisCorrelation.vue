@@ -25,7 +25,7 @@
     />
 
     <div class="d-flex flex-0-0 ga-2">
-      <Autocomplete
+      <SelectCard
         class="flex-1-1 w-100"
         v-model="selectedRegressionEquation"
         :items="regressionEquations"
@@ -77,7 +77,7 @@
 <script setup lang="ts">
 import AnalysisAddButton from '@/components/analysis/AnalysisAddButton.vue'
 import GroupSelect from '@/components/general/GroupSelect.vue'
-import Autocomplete from '@/components/general/Autocomplete.vue'
+import SelectCard from '@/components/general/SelectCard.vue'
 import { VNumberInput } from 'vuetify/labs/components'
 import { computed, ref, watch } from 'vue'
 import { Chart, CorrelationChart, getValidFilterCharts } from '@/lib/analysis'

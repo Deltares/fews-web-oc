@@ -11,7 +11,7 @@
       density="compact"
       max-width="250"
     />
-    <Autocomplete
+    <SelectCard
       v-model="selectedParameterIds"
       :items="filteredParameterIds"
       label="Parameters"
@@ -20,14 +20,14 @@
       :getItemTitle="parametersStore.getName"
       :multiple="true"
     />
-    <Autocomplete
+    <SelectCard
       v-model="selectedModuleInstanceIds"
       :items="filteredModuleInstanceIds"
       label="Source"
       icon="mdi-cog"
       :multiple="true"
     />
-    <Autocomplete
+    <SelectCard
       v-model="selectedLocationIds"
       :items="filteredLocations"
       label="Locations"
@@ -61,7 +61,7 @@
           </AnalysisMap>
         </div>
       </template>
-    </Autocomplete>
+    </SelectCard>
 
     <div class="d-flex pt-2">
       <v-spacer />
@@ -78,7 +78,7 @@
 
 <script setup lang="ts">
 import type { BoundingBox, Filter, Location } from '@deltares/fews-pi-requests'
-import Autocomplete from '@/components/general/Autocomplete.vue'
+import SelectCard from '@/components/general/SelectCard.vue'
 import AnalysisMap from '@/components/analysis/AnalysisMap.vue'
 import AnalysisAddToButton from '@/components/analysis/AnalysisAddToButton.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
