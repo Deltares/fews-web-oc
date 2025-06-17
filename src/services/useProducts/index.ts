@@ -261,7 +261,7 @@ export function keyForProductMetaDataType(entry: ArchiveProductsMetadataEntry) {
  * @param obj - The object to hash.
  * @returns A promise that resolves to the hash as a hexadecimal string.
  */
-async function hashObject(obj: any): Promise<string> {
+export async function hashObject(obj: any): Promise<string> {
   const json = JSON.stringify(sortObjectKeys(obj))
 
   const encoder = new TextEncoder()

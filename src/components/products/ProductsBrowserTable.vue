@@ -173,67 +173,6 @@
     <div>
       <slot name="footer"> </slot>
     </div>
-    <v-dialog v-model="showUploadDialog" max-width="600px">
-      <v-card>
-        <v-card-title>
-          <span class="text-h5">Upload Product</span>
-        </v-card-title>
-        <v-card-text>
-          <v-alert v-if="uploadError" type="error" variant="tonal" class="mb-4">
-            {{ uploadError }}
-          </v-alert>
-
-          <v-file-input
-            v-model="uploadFile"
-            :loading="uploading"
-            :disabled="uploading"
-            truncate-length="30"
-            accept=".pdf,.jpg,.jpeg,.png"
-            placeholder="Select file"
-            prepend-icon="mdi-file-document-outline"
-            label="Product File"
-            hint="Select a file to upload"
-            :rules="[(v) => !!v || 'A file is required']"
-          ></v-file-input>
-
-          <v-text-field
-            v-model="uploadData.name"
-            label="Product Name"
-            :disabled="uploading"
-            :rules="[(v) => !!v || 'Product name is required']"
-            class="mt-4"
-          ></v-text-field>
-
-          <v-text-field
-            v-model="uploadData.author"
-            label="Author"
-            :disabled="uploading"
-            :rules="[(v) => !!v || 'Author name is required']"
-            class="mt-4"
-          ></v-text-field>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="grey-darken-1"
-            variant="text"
-            :disabled="uploading"
-            @click="showUploadDialog = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="primary"
-            :loading="uploading"
-            :disabled="!canUpload"
-            variant="flat"
-            @click="uploadProduct"
-          >
-            Upload
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 <script setup lang="ts">
@@ -295,73 +234,6 @@ const groupByOrder = ref<[boolean | 'asc' | 'desc']>(['asc'])
 const selectedColumns = ref<string[]>([])
 const selectedRows = ref<string[]>([])
 
-// Upload dialog state
-const showUploadDialog = ref(false)
-const uploading = ref(false)
-const uploadError = ref('')
-const uploadFile = ref<File | undefined>(undefined)
-const uploadData = ref({
-  name: '',
-  author: '',
-})
-
-// Computed properties for upload validation and table display
-const canUpload = computed(() => {
-  const hasName = uploadData.value.name.trim() !== ''
-  const hasAuthor = uploadData.value.author.trim() !== ''
-  if (!uploadFile.value || !hasName || !hasAuthor) {
-    return false
-  }
-  return true
-})
-
-const resetUploadForm = () => {
-  uploadFile.value = undefined
-  uploadData.value = {
-    name: '',
-    author: '',
-  }
-  uploadError.value = ''
-}
-
-async function uploadProduct() {
-  if (!canUpload.value) return
-  uploading.value = true
-  uploadError.value = ''
-  try {
-    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-    const timeZero = DateTime.now().toUTC().startOf('second').toISO({
-      suppressMilliseconds: true,
-    })
-    const productId = toSnakeCase(
-      uploadData.value.name + '_' + uploadData.value.author,
-    )
-
-    const attributes = {
-      name: uploadData.value.name,
-      author: uploadData.value.author,
-      productId: productId,
-    }
-
-    await postFileProduct(
-      `${baseUrl}rest/fewspiservice/v1/archive/`,
-      props.areaId, // areaId
-      props.sourceId, // sourceId
-      timeZero,
-      uploadFile.value!,
-      attributes,
-    )
-    resetUploadForm()
-    showUploadDialog.value = false
-    emit('refresh')
-  } catch (error) {
-    console.error('Upload error:', error)
-    uploadError.value =
-      error instanceof Error ? error.message : 'Unknown error occurred'
-  } finally {
-    uploading.value = false
-  }
-}
 
 const groupBy = computed(() => {
   return {
@@ -496,20 +368,6 @@ async function onNewProduct(item: ProductMetaDataType) {
     console.error('Error creating new product:', error)
   }
   emit('refresh')
-}
-/**
- * Converts a string to snake_case
- * @param str The string to convert
- * @returns The snake_case version of the string
- */
-function toSnakeCase(str: string): string {
-  // Remove special characters and replace spaces with underscores
-  return str
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '') // Remove special characters
-    .replace(/[\s-]+/g, '_') // Replace spaces and hyphens with underscores
-    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
 }
 </script>
 

@@ -2,13 +2,12 @@
   <div class="d-flex flex-row h-100 w-100">
     <ProductsBrowserTable
       :products="filteredProducts"
-      :template="mostRecentTemplate"
       :config="tableLayout"
       class="product-browser__table"
       :productId="productId"
       :areaId="areaId"
       :sourceId="sourceId"
-      @refresh="refresh()"
+      @refresh="fetchProducts()"
     >
       <template #footer>
         <v-list-item density="compact">
@@ -18,7 +17,7 @@
               class="refresh-container"
               variant="text"
               icon
-              @click="refresh()"
+              @click="fetchProducts()"
             >
               <v-icon>mdi-refresh</v-icon>
             </v-btn>
@@ -26,22 +25,70 @@
         </v-list-item>
       </template>
       <template #prepend="{ headers }">
-        <tr v-if="canUpload">
+        <template v-if="canUpload && uploadData">
+          <tr>
+            <td colspan="100%" class="py-2">
+              <v-file-input
+                v-model="file"
+                :height="10"
+                label="Upload file"
+                hide-details="auto"
+                variant="plain"
+                density="compact"
+                :clearable="false"
+                accept=".html,.pdf,.png,.jpg,.jpeg,.gif"
+                append-icon="mdi-close"
+                @click:append="uploadData = undefined; file = undefined"
+              >
+              </v-file-input>
+            </td>
+          </tr>
+          <tr v-if="file">
+            <td></td>
+            <td>
+              <v-text-field
+                v-model="uploadData.name"
+                label="Product Name"
+                variant="plain"
+                :rules="[(v) => !!v || 'Product name is required']"
+                hide-details
+                single-line
+                density="compact"
+              ></v-text-field>
+            </td>
+            <td colspan="2">
+              <v-text-field
+                v-model="uploadData.author"
+                label="Author"
+                variant="plain"
+                :rules="[(v) => !!v || 'Author name is required']"
+                hide-details
+                single-line
+                density="compact"
+              ></v-text-field>
+            </td>
+            <td colspan="2">
+              <v-btn variant="flat" color="primary" @click="uploadProduct(file)"
+                >Save</v-btn
+              >
+            </td>
+          </tr>
+        </template>
+        <tr v-else-if="canUpload">
           <td :colspan="headers[0].length + 3" class="ps-4">
             <v-btn
               prepend-icon="mdi-plus"
               size="small"
               variant="tonal"
-              >Upload</v-btn
+              @click="newUploadFile"
+            >
+              Upload</v-btn
             >
           </td>
         </tr>
         <tr v-else-if="canCreateNew">
           <td :colspan="headers[0].length + 3" class="ps-4">
-            <v-btn
-              prepend-icon="mdi-plus"
-              size="small"
-              variant="tonal"
+            <v-btn prepend-icon="mdi-plus" size="small" variant="tonal"
               >New</v-btn
             >
           </td>
@@ -105,7 +152,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, toValue, watchEffect } from 'vue'
+import { computed, ref, toValue, watch, watchEffect } from 'vue'
 import ProductsBrowserTable, {
   type ProductBrowserTableConfig,
 } from '@/components/products/ProductsBrowserTable.vue'
@@ -113,7 +160,7 @@ import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
 import { getProductURL } from './productTools'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
-import { useProducts } from '@/services/useProducts'
+import { hashObject, useProducts } from '@/services/useProducts'
 import { type DocumentBrowserDisplay } from '@/lib/products/documentDisplay'
 import { toHumanReadableDate } from '@/lib/date'
 import { getFileExtension, getViewMode } from '@/lib/products'
@@ -126,6 +173,9 @@ import { configManager } from '@/services/application-config'
 import EditReport from '@/components/reports/EditReport.vue'
 import DOMPurify from 'dompurify'
 import { ProductMetaDataType } from '@/services/useProducts/types'
+import { useCurrentUser } from '@/services/useCurrentUser'
+import { DateTime } from 'luxon'
+import { postFileProduct } from '@/lib/products/requests'
 import { useRouter } from 'vue-router'
 
 interface Props {
@@ -184,19 +234,6 @@ const filter = computed(() => {
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const sourceId = computed(() => {
-  if (config?.browser?.archiveProducts?.length)
-    return config?.browser?.archiveProducts[0].sourceId || ''
-  return config?.browser?.archiveProductSets[0].constraints?.sourceId || 'weboc'
-})
-const areaId = computed(() => {
-  if (config?.browser?.archiveProducts?.length)
-    return config?.browser?.archiveProducts[0].areaId || ''
-  return (
-    config?.browser?.archiveProductSets[0].constraints?.areaId || 'products'
-  )
-})
-
 const archiveProductSets = computed(() => {
   return config?.browser?.archiveProductSets ?? []
 })
@@ -207,6 +244,30 @@ const archiveProducts = computed(() => {
 
 const canUpload = computed(() => {
   return archiveProductSets.value.length > 0
+})
+
+const file = ref<File>()
+const uploadData = ref<
+  | {
+      name: string
+      author: string
+    }
+  | undefined
+>()
+
+const { userName } = useCurrentUser()
+
+function newUploadFile() {
+  uploadData.value = {
+    name: '',
+    author: userName.value || '',
+  }
+}
+
+watch(file, (newFile) => {
+  if (newFile && uploadData.value) {
+    uploadData.value.name = newFile.name
+  }
 })
 
 const canCreateNew = computed(() => {
@@ -223,7 +284,7 @@ const areaId = computed(() => {
   return archiveProductSets.value[0].constraints?.areaId || 'weboc'
 })
 
-const { products, getProductByKey, refresh, lastUpdated, mostRecentTemplate } =
+const { products, getProductByKey, fetchProducts, lastUpdated } =
   useProducts(
     baseUrl,
     filter,
@@ -321,6 +382,35 @@ watchEffect(async () => {
 
 function onSave() {
   isEditing.value = false
+}
+
+async function uploadProduct(file: File) {
+  if (!canUpload.value || !uploadData) return
+  try {
+    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+    const productId = await hashObject(uploadData.value)
+    const timeZero = DateTime.now().toUTC().startOf('second').toISO({
+      suppressMilliseconds: true,
+    })
+    const attributes = {
+      ...uploadData.value,
+      productId: productId,
+    }
+
+    await postFileProduct(
+      `${baseUrl}rest/fewspiservice/v1/archive/`,
+      areaId.value,
+      sourceId.value,
+      timeZero,
+      file,
+      attributes,
+    )
+    await fetchProducts()
+  } catch (error) {
+    console.error('Upload error:', error)
+  } finally {
+    uploadData.value = undefined
+  }
 }
 </script>
 
