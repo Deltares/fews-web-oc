@@ -172,7 +172,14 @@ const timeSeriesOptions = computed(() => ({
   thinning: true,
 }))
 
-const { series } = useTimeSeries(baseUrl, requests, timeSeriesOptions)
+const { series } = useTimeSeries(
+  baseUrl,
+  requests,
+  timeSeriesOptions,
+  true,
+  undefined,
+  false,
+)
 
 const tab = ref()
 const drawer = ref(false)
