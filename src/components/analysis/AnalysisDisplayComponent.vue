@@ -76,6 +76,7 @@
         <AnalysisCollection
           v-model:selectedCollection="selectedCollection"
           v-model:collections="collections"
+          :config="config"
         />
       </v-card-title>
       <div class="w-100 overflow-y-auto">
@@ -132,7 +133,7 @@ interface Props {
   settings?: ComponentSettings
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   settings: () => getDefaultSettings(),
 })
 
@@ -146,7 +147,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const collections = useStorage<Collection[]>(
   'weboc-his-collections-v1.0.0',
-  [createCollection('Default')],
+  [createCollection('Default', props.config)],
   undefined,
   {
     serializer: getDateTimeSerializer(),

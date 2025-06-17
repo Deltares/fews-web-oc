@@ -92,11 +92,6 @@ export type Chart =
   | ProductChart
   | PlotChart
 
-export interface Dependant {
-  seriesIds: string[]
-  function: AnalysisFunction
-}
-
 export interface CollectionEmits {
   addChart: [chart: Chart]
 }

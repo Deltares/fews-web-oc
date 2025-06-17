@@ -25,6 +25,7 @@
         v-for="item in items"
         :value="getItemValue?.(item) ?? item"
         :title="getItemTitle?.(item) ?? String(item)"
+        :lines="false"
         density="compact"
       >
         <template v-if="multiple" #prepend="{ isSelected }">

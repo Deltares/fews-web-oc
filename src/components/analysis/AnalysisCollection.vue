@@ -43,7 +43,13 @@
 
 <script setup lang="ts">
 import { createCollection, type Collection } from '@/lib/analysis'
+import { DataAnalysisDisplayElement } from '@deltares/fews-pi-requests'
 import { ref } from 'vue'
+
+interface Props {
+  config: DataAnalysisDisplayElement
+}
+const props = defineProps<Props>()
 
 const selectedCollection = defineModel<Collection>('selectedCollection')
 const collections = defineModel<Collection[]>('collections', {
@@ -55,7 +61,7 @@ const newCollectionName = ref('')
 function addCollection(): void {
   const name = newCollectionName.value.trim()
   if (name && !collections.value.some((c) => c.name === name)) {
-    const newItem = createCollection(name)
+    const newItem = createCollection(name, props.config)
     collections.value.push(newItem)
     selectedCollection.value = newItem
   }
