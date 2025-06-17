@@ -25,13 +25,13 @@
         />
       </div>
       <div class="d-flex ga-2 mt-4">
-        <v-checkbox
+        <v-switch
           v-model="liveUpdate"
           label="Live Update"
-          variant="outlined"
           hide-details
-          density="compact"
         />
+      </div>
+      <div class="d-flex ga-2 mt-4">
         <v-number-input
           v-model="daysBeforeNow"
           label="Days Before Now"
