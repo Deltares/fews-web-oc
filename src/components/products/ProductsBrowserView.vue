@@ -117,7 +117,11 @@
         </tr>
         <tr v-else-if="canCreateNew">
           <td :colspan="headers[0].length + 3" class="ps-4">
-            <v-btn prepend-icon="mdi-plus" size="small" variant="tonal"
+            <v-btn
+              prepend-icon="mdi-plus"
+              size="small"
+              variant="tonal"
+              @click="newProduct"
               >New</v-btn
             >
           </td>
@@ -138,26 +142,27 @@
           >
           <v-spacer />
           <v-toolbar-items>
-            <v-btn append-icon="mdi-chevron-down" class="me-4">
-              {{ timeZero }}
+            <v-btn
+              append-icon="mdi-chevron-down"
+              variant="text"
+              class="text-start"
+            >
+              <v-list-item
+                class="ps-0 pe-2"
+                :title="selectedProduct?.timeZero"
+                :subtitle="`Version ${selectedProduct?.version}`"
+              >
+              </v-list-item>
               <v-menu activator="parent">
                 <v-list density="compact">
-                  <v-item-group>
-                    <v-list-item
-                      v-for="(item, _) in versions"
-                      :key="item.key"
-                      :title="item.timeZero"
-                      :subtitle="`Version ${item.version}`"
-                      @click="
-                        router.replace({
-                          name: 'TopologyDocumentDisplay',
-                          params: {
-                            productId: item.key,
-                          },
-                        })
-                      "
-                    />
-                  </v-item-group>
+                  <v-list-item
+                    v-for="(item, index) in filteredProducts"
+                    :key="item.key"
+                    :title="item.timeZero"
+                    :subtitle="`Version ${item.version}`"
+                    @click="selected = index"
+                  >
+                  </v-list-item>
                 </v-list>
               </v-menu>
             </v-btn>
@@ -216,7 +221,12 @@ const { config, productId } = defineProps<Props>()
 const router = useRouter()
 const src = ref('')
 const viewMode = ref('')
-const timeZero = ref('')
+
+const selected = ref(0) // Example timeZero
+const selectedProduct = computed(() => {
+  return filteredProducts.value[selected.value]
+})
+
 const tableLayout = computed(() => {
   if (config?.browser?.layout) {
     return {
@@ -240,6 +250,7 @@ const tableLayout = computed(() => {
 const viewPeriod = ref<IntervalItem>({})
 const htmlContent = ref('')
 const isEditing = ref(false)
+const showAllVersions = ref(false)
 
 const filter = computed(() => {
   if (
@@ -310,7 +321,7 @@ watch(file, (newFile) => {
 const uploadIsValid = ref(false)
 
 const canCreateNew = computed(() => {
-  return archiveProducts.value.length > 0
+  return mostRecentTemplate.value !== undefined
 })
 
 const sourceId = computed(() => {
@@ -323,59 +334,35 @@ const areaId = computed(() => {
   return archiveProductSets.value[0].constraints?.areaId || 'weboc'
 })
 
-const { products, getProductByKey, fetchProducts, lastUpdated } =
-  useProducts(
-    baseUrl,
-    filter,
-    sourceId,
-    areaId,
-    archiveProductSets,
-    archiveProducts,
-  )
-
-const filteredProductsMap = computed(() => {
-  const map = new Map<string, ProductMetaDataType[]>()
-  for (const product of products.value) {
-    if (!product.attributes.productId) {
-      continue
-    }
-    const existing = map.get(product.attributes.productId)
-    if (existing) {
-      existing.push(product)
-    } else {
-      map.set(product.attributes.productId, [product])
-    }
-  }
-  // Sort each array by version
-  for (const [key, productArray] of map.entries()) {
-    productArray.sort((a, b) => +b.version - +a.version)
-    map.set(key, productArray)
-  }
-  return map
-})
+const {
+  products,
+  getProductByKey,
+  fetchProducts,
+  lastUpdated,
+  mostRecentTemplate,
+} = useProducts(
+  baseUrl,
+  filter,
+  sourceId,
+  areaId,
+  archiveProductSets,
+  archiveProducts,
+)
 
 const filteredProducts = computed(() => {
-  // return the latest version of each product in the map
-  return Array.from(filteredProductsMap.value.values()).map(
-    (products) => products[0],
-  )
-})
-
-const versions = computed(() => {
-  if (!productId) {
-    return []
+  if (showAllVersions.value) {
+    return products.value.toReversed()
   }
-  return (
-    filteredProductsMap.value.get(
-      getProductByKey(productId)?.attributes.productId ?? '',
-    ) ?? []
-  )
+  const latestMap = new Map<string, ProductMetaDataType>()
+  for (const product of products.value) {
+    const existing = latestMap.get(product.timeZero)
+    if (!existing || product.version > existing.version) {
+      latestMap.set(product.timeZero, product)
+    }
+  }
+  return Array.from(latestMap.values()).toReversed()
 })
 
-watchEffect(() => {
-  console.log('Products:', productId)
-  console.log('Filtered products map:', filteredProductsMap.value)
-})
 
 watchEffect(() => {
   const documentDisplay = toValue(config)
@@ -384,14 +371,25 @@ watchEffect(() => {
   }
 })
 
-watchEffect(async () => {
+watchEffect(() => {
   if (productId) {
     const productMetaData = getProductByKey(productId)
-    if (!productMetaData) {
-      src.value = ''
-      timeZero.value = ''
-      return
+    if (productMetaData) {
+      selected.value = filteredProducts.value.findIndex(
+        (p) => p.key === productMetaData.key,
+      )
+    } else {
+      console.warn(`Product with ID ${productId} not found.`)
+      selected.value = -1
     }
+  } else {
+    selected.value = -1
+  }
+})
+
+watchEffect(async () => {
+  if (selected.value > -1) {
+    const productMetaData = filteredProducts.value[selected.value]
     const url = getProductURL(baseUrl, productMetaData)
     const extension = getFileExtension(url)
     const currentViewMode = getViewMode(extension)
@@ -409,10 +407,8 @@ watchEffect(async () => {
     } else {
       htmlContent.value = ''
     }
-
     const urlObject = URL.createObjectURL(await response.blob())
     viewMode.value = currentViewMode
-    timeZero.value = productMetaData.timeZero
     src.value = urlObject + urlFragments
   } else {
     src.value = ''
