@@ -32,7 +32,8 @@
             role="button"
             :density="overlay ? 'compact' : 'default'"
             :variant="tag.disabled || overlay ? 'text' : 'tonal'"
-            @click="tag.interactive ? toggleLine(tag) : undefined"
+            @click="toggleLine(tag)"
+            :disabled="!tag.interactive"
           >
             <div
               v-if="tag.legendSvg"
@@ -261,5 +262,10 @@ function onToggleExpand() {
 
 .pre-line {
   white-space: pre-line;
+}
+
+:deep(.v-chip.v-chip--disabled) {
+  opacity: 1 !important;
+  pointer-events: none;
 }
 </style>

@@ -238,6 +238,7 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
         position,
         label: yAxis.axisLabel,
       })
+      addHorizontalColorCodeLegendItems(subplot)
       continue
     }
 
@@ -262,4 +263,40 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
     axes.push(axis)
   }
   return axes
+}
+
+function addHorizontalColorCodeLegendItems(subplot: TimeSeriesDisplaySubplot) {
+  const parameters: string[] = []
+
+  // Replace parameter names in the legend with indices
+  subplot.items.forEach((item) => {
+    const split = item.legend?.split(' - ')
+    const location = split?.[0]
+    const parameter = split?.[1]
+    if (!location || !parameter) return
+
+    let parameterIndex = parameters.indexOf(parameter)
+    if (parameterIndex === -1) {
+      parameters.push(parameter)
+      parameterIndex = parameters.length - 1
+    }
+
+    item.legend = `${location} [${parameterIndex}]`
+  })
+
+  const parameterLegendItems = parameters
+    .map((parameter, index) => `[${index}] ${parameter}`)
+    .map((legend) => {
+      const item: TimeSeriesDisplaySubplotItem = {
+        type: 'line',
+        legend,
+        visibleInLegend: true,
+        visibleInPlot: false,
+        visibleInTable: false,
+        lineStyle: 'invalid',
+      }
+      return item
+    })
+
+  subplot.items.push(...parameterLegendItems)
 }
