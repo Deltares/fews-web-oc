@@ -44,7 +44,8 @@ export function useProducts(
       if (!filterValue.startForecastTime || !filterValue.endForecastTime) {
         return
       }
-      filterValue.versionKey = product.versionKeys
+      // FIXME: Configure correct versionKey
+      // filterValue.versionKey = product.versionKeys
       // Set all attributes from the product
       filterValue.attribute = product.attributes.reduce(
         (
