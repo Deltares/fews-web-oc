@@ -4,7 +4,7 @@
       <div class="w-100 d-flex flex-1-1 overflow-x-auto overflow-y-hidden">
         <PluginLoader
           :componentName="correctComponent"
-          :timeSeries="timeSeries"
+          :timeSeries="Object.values(series)"
           :selectedDate="selectedDateOfSlider"
           @navigate="onNavigate"
         />
@@ -33,10 +33,12 @@ import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
 )
-import { timeSeries } from '@/assets/timeseries.json'
 import { DateTime } from 'luxon'
 import type { NavigateRoute } from '@/lib/router'
-import { filterActionsFilter, type TopologyNode } from '@deltares/fews-pi-requests'
+import {
+  filterActionsFilter,
+  type TopologyNode,
+} from '@deltares/fews-pi-requests'
 
 import {
   type ComponentSettings,
@@ -44,6 +46,11 @@ import {
 } from '@/lib/topology/componentSettings'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
+import {
+  useFilterTimeSeries,
+  UseTimeSeriesOptions,
+} from '@/services/useFilterTimeSeries'
+import { configManager } from '@/services/application-config'
 
 const PluginLoader = defineAsyncComponent(
   // @ts-ignore
@@ -72,8 +79,50 @@ const userSettings = useUserSettingsStore()
 
 const dateTimeSliderEnabled = ref<boolean>(true)
 const times = ref<Date[]>([
-  DateTime.fromISO('2025-05-26T22:00:00Z').toJSDate(),
-  DateTime.fromISO('2025-05-27T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-01T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-02T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-03T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-04T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-05T22:00:00Z').toJSDate(),
+
+  DateTime.fromISO('2025-03-06T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-07T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-08T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-09T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-10T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-11T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-12T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-13T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-14T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-15T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-16T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-17T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-18T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-19T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-20T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-21T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-22T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-23T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-24T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-25T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-26T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-27T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-28T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-29T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-30T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-03-31T22:00:00Z').toJSDate(),
+
+  DateTime.fromISO('2025-04-01T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-04-02T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-04-03T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-04-04T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-04-05T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-04-06T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-04-07T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-04-08T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-04-09T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-04-10T22:00:00Z').toJSDate(),
+  DateTime.fromISO('2025-04-11T22:00:00Z').toJSDate(),
 ])
 
 const showChartPanel = computed(() => {
@@ -83,6 +132,31 @@ const showChartPanel = computed(() => {
 const selectedDateOfSlider = ref<Date>(times.value[0])
 
 const filterIds = computed(() => topologyNode?.filterIds ?? [])
+
+const timeSeriesFilter = computed(() => {
+  return {
+    filterId: filterIds.value ? filterIds.value[0] : undefined,
+    startTime:
+      DateTime.fromJSDate(times.value[0])
+        .toUTC()
+        .toISO({ suppressMilliseconds: true }) ?? undefined,
+    endTime:
+      DateTime.fromJSDate(times.value[times.value.length - 1])
+        .toUTC()
+        .toISO({ suppressMilliseconds: true }) ?? undefined,
+  }
+})
+
+const timeSeriesOptions = ref<UseTimeSeriesOptions>({
+  thinning: false,
+})
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { series } = useFilterTimeSeries(
+  baseUrl,
+  timeSeriesFilter,
+  timeSeriesOptions,
+)
 
 function getFilterActionsFilter(
   locationIds: string,
@@ -96,19 +170,19 @@ function getFilterActionsFilter(
 }
 
 const filter = computed(() => {
-
   if (locationIds) {
     return getFilterActionsFilter(locationIds)
   }
   return {}
 })
 
-watchEffect(
-  () => {
-    // Reset the selected date when the component changes
-    console.log('Custom component changed, resetting selected date', customComponent)
-  }
-)
+watchEffect(() => {
+  // Reset the selected date when the component changes
+  console.log(
+    'Custom component changed, resetting selected date',
+    customComponent,
+  )
+})
 
 const correctComponent = computed(() => {
   if (customComponent === 'sankey') {
