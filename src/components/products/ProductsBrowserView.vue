@@ -415,8 +415,29 @@ watchEffect(async () => {
   }
 })
 
-function onSave() {
-  isEditing.value = false
+async function onSave() {
+  const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const archiveUrl = `${piUrl}rest/fewspiservice/v1/archive/`
+  const metaData = selectedProduct.value
+  const fileName =
+    metaData.relativePathProducts[0].split('/').pop() ?? 'unknown'
+  try {
+    await postProduct(
+      archiveUrl,
+      metaData.areaId,
+      metaData.sourceId,
+      metaData.timeZero,
+      htmlContent.value,
+      fileName,
+      metaData.attributes,
+    )
+    await fetchProducts()
+  } catch (error) {
+    console.error('Error saving report:', error)
+    return
+  } finally {
+    isEditing.value = false
+  }
 }
 
 function resetUpload() {
