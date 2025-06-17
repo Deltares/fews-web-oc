@@ -57,7 +57,7 @@ watch(
 .shadow-frame {
   all: initial;
   height: 100%;
-  width: 100%;
+  padding: 10px;
   overflow-y: auto;
 }
 </style>
