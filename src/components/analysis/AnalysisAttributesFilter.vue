@@ -1,41 +1,38 @@
 <template>
-  <v-menu :close-on-content-click="false">
+  <v-menu :close-on-content-click="false" max-height="400">
     <template #activator="{ props }">
       <v-btn
         v-bind="props"
-        icon="mdi-filter-variant"
+        icon="mdi-filter"
         variant="plain"
         density="compact"
         class="ms-1"
+        size="small"
       />
     </template>
     <v-card>
-      <v-card-text class="d-flex flex-column ga-2">
-        <v-select
-          v-model="selectedAttribute"
-          :items="Object.values(locationAttributes)"
-          item-value="id"
-          item-title="name"
-          label="Select Attribute"
-          variant="outlined"
-          hide-details
-          density="compact"
-          width="250"
-          return-object
-        />
-        <v-select
-          v-model="selectedAttributes[selectedAttribute?.id ?? '']"
-          :items="Object.keys(selectedAttribute?.valueToLocationIds ?? {})"
-          item-value="value"
-          item-title="value"
-          label="Select Values"
-          variant="outlined"
-          hide-details
-          density="compact"
-          multiple
-          width="250"
-          clearable
-        />
+      <v-card-text>
+        <div class="attributes-grid ga-2">
+          <div
+            v-for="attribute in Object.values(locationAttributes)"
+            :key="attribute.id"
+          >
+            <span>{{ attribute.name }}</span>
+            <v-select
+              v-model="selectedAttributes[attribute.id]"
+              :items="Object.keys(attribute.valueToLocationIds ?? {})"
+              item-value="value"
+              item-title="value"
+              placeholder="Select values"
+              variant="outlined"
+              hide-details
+              density="compact"
+              multiple
+              width="250"
+              clearable
+            />
+          </div>
+        </div>
       </v-card-text>
     </v-card>
   </v-menu>
@@ -58,7 +55,6 @@ const props = defineProps<Props>()
 const emit = defineEmits(['update:filteredLocationIds'])
 
 const selectedAttributes = ref<Record<string, string[]>>({})
-const selectedAttribute = ref<Attribute>()
 
 const filteredLocationIds = computed(() => {
   const locationIdsSet = new Set<string>()
@@ -123,3 +119,10 @@ const locationAttributes = computed(() => {
   return attributes
 })
 </script>
+
+<style scoped>
+.attributes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+</style>
