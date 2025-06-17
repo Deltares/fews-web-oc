@@ -11,6 +11,7 @@ import { FilterChart, FilterSubplot, FilterSubplotItem } from './types'
 import { configManager } from '@/services/application-config'
 import { absoluteUrl } from '../utils/absoluteUrl'
 import { uniq, uniqBy } from 'lodash-es'
+import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -130,6 +131,8 @@ function subplotToFilterSubplot(
     }
     return filterItem
   })
+
+  replaceDuplicateColors(newItems)
   return { ...item, items: newItems }
 }
 
@@ -211,13 +214,45 @@ async function addFilterToChartPosition(
     item.yAxis.axisPosition = position
   })
 
-  const newItems = [...newChart.subplot.items, ...chart.subplot.items]
-  chart.subplot.items = uniqBy(newItems, (item) => item.request)
+  const newItems = [...chart.subplot.items, ...newChart.subplot.items]
+  const uniqItems = uniqBy(newItems, (item) => item.request)
+  replaceDuplicateColors(uniqItems)
 
-  const newRequests = [...newChart.requests, ...chart.requests]
+  chart.subplot.items = uniqItems
+
+  const newRequests = [...chart.requests, ...newChart.requests]
   chart.requests = uniqBy(newRequests, (req) => req.request)
 
   chart.title = getFilterSubplotTitle(chart.subplot)
+}
+
+export function replaceDuplicateColors(
+  items: FilterSubplotItem[],
+) {
+  const { colors } = useTaskRunColorsStore()
+
+  const seenColors = new Set<string>()
+  const availableColors = [...colors].toReversed()
+
+  function findValidColor() {
+    while (availableColors.length > 0) {
+      const color = availableColors.pop()
+      if (color && !seenColors.has(color)) {
+        return color
+      }
+    }
+  }
+
+  items.forEach((item) => {
+    if (!item.color) return
+
+    if (seenColors.has(item.color)) {
+      const newColor = findValidColor()
+      item.color = newColor ?? item.color
+    }
+
+    seenColors.add(item.color)
+  })
 }
 
 export function getLocationNames(items: FilterSubplotItem[]) {
