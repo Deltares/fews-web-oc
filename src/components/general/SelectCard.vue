@@ -2,6 +2,7 @@
   <div class="d-flex flex-column overflow-auto">
     <v-toolbar height="32">
       <span class="ms-2">{{ label }}</span>
+      <slot name="prepend-title" />
       <v-btn
         v-show="multiple && listSelected.length > 0"
         icon="mdi-refresh"

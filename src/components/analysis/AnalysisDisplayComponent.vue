@@ -12,6 +12,7 @@
           :charts="selectedCollection.charts"
           :filters="config.filters"
           :boundingBox="boundingBox"
+          :config="config.selectionPanel"
           @addChart="addChart"
         />
       </div>

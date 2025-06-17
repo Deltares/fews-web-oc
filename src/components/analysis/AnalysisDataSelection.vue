@@ -14,28 +14,37 @@
     <SelectCard
       v-model="selectedParameterIds"
       :items="filteredParameterIds"
-      label="Parameters"
+      :label="config.parameterSelection.name ?? 'Parameters'"
       icon="mdi-tag"
       :getItemValue="(item) => item"
       :getItemTitle="parametersStore.getName"
       :multiple="true"
     />
     <SelectCard
+      v-if="config.moduleInstanceSelection.enabled"
       v-model="selectedModuleInstanceIds"
       :items="filteredModuleInstanceIds"
-      label="Source"
+      :label="config.moduleInstanceSelection.name ?? 'Sources'"
       icon="mdi-cog"
       :multiple="true"
     />
     <SelectCard
       v-model="selectedLocationIds"
       :items="filteredLocations"
-      label="Locations"
+      :label="config.locationSelection.name ?? 'Locations'"
       icon="mdi-map-marker-multiple"
       :getItemValue="getLocationId"
       :getItemTitle="getLocationTitle"
       :multiple="true"
     >
+      <template #prepend-title>
+        <AnalysisAttributesFilter
+          v-if="config.locationAttributeSelection.enabled"
+          :locations="locations"
+          :attributes="config.locationAttributeSelection.attributes"
+          @update:filteredLocationIds="selectedAttributeLocationIds = $event"
+        />
+      </template>
       <template #append-title>
         <!-- show map toggle -->
         <v-btn
@@ -77,10 +86,16 @@
 </template>
 
 <script setup lang="ts">
-import type { BoundingBox, Filter, Location } from '@deltares/fews-pi-requests'
+import type {
+  BoundingBox,
+  Filter,
+  Location,
+  SelectionPanel,
+} from '@deltares/fews-pi-requests'
 import SelectCard from '@/components/general/SelectCard.vue'
 import AnalysisMap from '@/components/analysis/AnalysisMap.vue'
 import AnalysisAddToButton from '@/components/analysis/AnalysisAddToButton.vue'
+import AnalysisAttributesFilter from '@/components/analysis/AnalysisAttributesFilter.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
@@ -97,6 +112,7 @@ import { configManager } from '@/services/application-config'
 
 interface Props {
   charts: Chart[]
+  config: SelectionPanel
   filters?: Filter[]
   boundingBox?: BoundingBox
   isActive?: boolean
@@ -112,10 +128,21 @@ const parametersStore = useParametersStore()
 
 const filterId = ref<string | undefined>(props.filters?.[0]?.id)
 
-const { locations, geojson } = useFilterLocations(baseUrl, () =>
-  filterId.value ? [filterId.value] : [],
+const { locations, geojson } = useFilterLocations(
+  baseUrl,
+  () => (filterId.value ? [filterId.value] : []),
+  { showAttributes: true },
 )
 const { timeSeriesHeaders } = useTimeSeriesHeaders(baseUrl, filterId)
+
+const filteredHeaders = computed(() => {
+  if (selectedAttributeLocationIds.value.length === 0) {
+    return timeSeriesHeaders.value
+  }
+  return timeSeriesHeaders.value.filter((header) =>
+    selectedAttributeLocationIds.value.includes(header.locationId),
+  )
+})
 
 const emit = defineEmits<CollectionEmits>()
 
@@ -129,6 +156,7 @@ function clearSelections() {
 
 function clearSelectedLocations() {
   selectedLocationIds.value = []
+  selectedAttributeLocationIds.value = []
 }
 
 function clearSelectedParameters() {
@@ -156,7 +184,6 @@ const filteredLocations = computed(() =>
     filteredData.value.locationIds.includes(location.locationId),
   ),
 )
-
 const filters = computed(() => {
   if (!filterId.value) return []
   if (!selectedParameterIds.value.length) return []
@@ -217,6 +244,7 @@ async function addFilter(chart?: Chart) {
 const selectedLocationIds = ref<string[]>([])
 const selectedParameterIds = ref<string[]>([])
 const selectedModuleInstanceIds = ref<string[]>([])
+const selectedAttributeLocationIds = ref<string[]>([])
 
 const filteredData = computed(() => {
   const locationIds = selectedLocationIds.value
@@ -231,7 +259,7 @@ const filteredData = computed(() => {
   const moduleInstanceIdsSet = new Set<string>()
   const locationIdsSet = new Set<string>()
 
-  timeSeriesHeaders.value.forEach((header) => {
+  filteredHeaders.value.forEach((header) => {
     const matchesLocation =
       !hasLocationIds || locationIds.includes(header.locationId)
     const matchesParameter =
