@@ -132,14 +132,46 @@
       <EditReport v-if="isEditing" v-model="htmlContent" @save="onSave" />
       <template v-else>
         <v-toolbar density="compact" absolute>
+          <template v-if="viewMode === 'html'"">
           <v-btn
-            v-if="viewMode === 'html'"
             color="primary"
             prepend-icon="mdi-pencil"
             variant="flat"
             @click="isEditing = !isEditing"
             >edit</v-btn
           >
+          <v-menu location="bottom left">
+            <template #activator="{ props }">
+              <v-btn
+                icon="mdi-dots-horizontal"
+                variant="text"
+                v-bind="props"
+                :loading="actionIsActive"
+              />
+            </template>
+            <v-list density="compact">
+              <v-list-item
+                v-if="viewMode === 'html'"
+                prepend-icon="mdi-email"
+                title="Open in Email Client..."
+                @click="
+                  openEmailClient(
+                    `${selectedProduct.attributes.name}: ${selectedProduct.timeZero}`,
+                    htmlContent,
+                  )
+                "
+              />
+              <v-list-item
+                v-for="action in logDisplay?.logDissemination
+                  ?.disseminationActions"
+                :prepend-icon="action.iconId"
+                :title="action.description"
+                @click="runDisseminateAction(htmlContent, action)"
+              >
+              </v-list-item>
+            </v-list>
+          </v-menu>
+          </template>
           <v-spacer />
           <v-toolbar-items>
             <v-btn
@@ -193,7 +225,7 @@ import ProductsBrowserTable, {
 import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
 import { getProductURL } from './productTools'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import { ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
+import { type LogDisplayDisseminationAction, type LogDisplayLogsActionRequest, PiWebserviceProvider, type ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
 import { hashObject, useProducts } from '@/services/useProducts'
 import { type DocumentBrowserDisplay } from '@/lib/products/documentDisplay'
 import { toHumanReadableDate } from '@/lib/date'
@@ -210,6 +242,10 @@ import { ProductMetaDataType } from '@/services/useProducts/types'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { DateTime } from 'luxon'
 import { postFileProduct, postProduct } from '@/lib/products/requests'
+import { useLogDisplay } from '@/services/useLogDisplay'
+import { convert } from 'html-to-text'
+
+const LOG_DISPLAY_ID = 'email_reports'
 
 interface Props {
   config?: DocumentBrowserDisplay
@@ -271,6 +307,9 @@ const filter = computed(() => {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const actionIsActive = ref(false) // Flag to indicate if a dissemination action is active
+const { logDisplay } = useLogDisplay(baseUrl, () => LOG_DISPLAY_ID)
+
 
 const archiveProductSets = computed(() => {
   return config?.browser?.archiveProductSets ?? []
@@ -361,7 +400,6 @@ const filteredProducts = computed(() => {
   return Array.from(latestMap.values()).toReversed()
 })
 
-
 watchEffect(() => {
   const documentDisplay = toValue(config)
   if (documentDisplay) {
@@ -444,9 +482,13 @@ function resetUpload() {
 }
 
 async function uploadProduct() {
-  if( canUpload.value && uploadData.value && file.value) {
+  if (canUpload.value && uploadData.value && file.value) {
     await uploadProductFile(file.value)
-  } else if (canCreateNew.value && uploadData.value && mostRecentTemplate.value) {
+  } else if (
+    canCreateNew.value &&
+    uploadData.value &&
+    mostRecentTemplate.value
+  ) {
     const url = getProductURL(baseUrl, mostRecentTemplate.value)
     const transformRequest = createTransformRequestFn()
     const request = await transformRequest(new Request(url, {}))
@@ -458,14 +500,24 @@ async function uploadProduct() {
         ...mostRecentTemplate.value.attributes,
         author: uploadData.value.author,
         name: uploadData.value.name,
-        productId: mostRecentTemplate.value.attributes.productId.replace(/^template_/,''),
-    }}
-    const fileName = mostRecentTemplate.value.relativePathProducts[0].split('/').pop() ?? 'unknown'
+        productId: mostRecentTemplate.value.attributes.productId.replace(
+          /^template_/,
+          '',
+        ),
+      },
+    }
+    const fileName =
+      mostRecentTemplate.value.relativePathProducts[0].split('/').pop() ??
+      'unknown'
     await uploadHtmlProduct(newProductEntry, htmlContent, fileName)
   }
 }
 
-async function uploadHtmlProduct(metaData: ProductMetaDataType, htmlContent: string, fileName: string) {
+async function uploadHtmlProduct(
+  metaData: ProductMetaDataType,
+  htmlContent: string,
+  fileName: string,
+) {
   const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const archiveUrl = `${piUrl}rest/fewspiservice/v1/archive/`
   try {
@@ -486,7 +538,6 @@ async function uploadHtmlProduct(metaData: ProductMetaDataType, htmlContent: str
     uploadData.value = undefined
   }
 }
-
 
 async function uploadProductFile(file?: File) {
   if (!canUpload.value || !uploadData || !file) return
@@ -515,6 +566,52 @@ async function uploadProductFile(file?: File) {
   } finally {
     uploadData.value = undefined
   }
+}
+
+async function runDisseminateAction(
+  htmlContent: string,
+  action: LogDisplayDisseminationAction,
+) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
+  const textContent = convert(htmlContent, {
+    wordwrap: 130,
+    selectors: [
+      { selector: 'img', format: 'skip' }, // Skip images
+      { selector: 'iframe', format: 'skip' }, // Skip iframes
+    ],
+  })
+
+  const request: LogDisplayLogsActionRequest = {
+    logDisplayId: LOG_DISPLAY_ID,
+    actionId: action.id,
+    logMessage: textContent,
+    logLevel: 'INFO',
+  }
+
+  try {
+    actionIsActive.value = true
+    await provider.postLogDisplaysAction(request)
+  } catch (error) {
+    console.error('Error occurred while executing runDisseminateAction:', error)
+  } finally {
+    actionIsActive.value = false
+  }
+}
+
+function openEmailClient(subject: string, content: string) {
+  const textContent = convert(content, {
+    wordwrap: 130,
+    selectors: [
+      { selector: 'img', format: 'skip' }, // Skip images
+      { selector: 'iframe', format: 'skip' }, // Skip iframes
+    ],
+  })
+  const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(textContent)}`
+  window.location.href = mailtoLink
 }
 </script>
 
