@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex flex-row h-100 w-100">
     <ProductsBrowserTable
-      :products="products"
+      :products="filteredProducts"
       :config="tableLayout"
       class="product-browser__table"
       :productId="productId"
@@ -44,7 +44,20 @@
               <v-menu activator="parent">
                 <v-list density="compact">
                   <v-item-group>
-                    <v-list-item> {{ timeZero }} </v-list-item>
+                    <v-list-item
+                      v-for="(item, _) in versions"
+                      :key="item.key"
+                      :title="item.timeZero"
+                      :subtitle="`Version ${item.version}`"
+                      @click="
+                        router.replace({
+                          name: 'TopologyDocumentDisplay',
+                          params: {
+                            productId: item.key,
+                          },
+                        })
+                      "
+                    />
                   </v-item-group>
                 </v-list>
               </v-menu>
@@ -89,6 +102,8 @@ import {
 import { configManager } from '@/services/application-config'
 import EditReport from '@/components/reports/EditReport.vue'
 import DOMPurify from 'dompurify'
+import { ProductMetaDataType } from '@/services/useProducts/types'
+import { useRouter } from 'vue-router'
 
 interface Props {
   config?: DocumentBrowserDisplay
@@ -96,6 +111,7 @@ interface Props {
 }
 
 const { config, productId } = defineProps<Props>()
+const router = useRouter()
 const src = ref('')
 const viewMode = ref('')
 const timeZero = ref('')
@@ -164,6 +180,50 @@ const { products, getProductByKey, refresh, lastUpdated } = useProducts(
   areaId,
   archiveProductSets,
 )
+
+const filteredProductsMap = computed(() => {
+  const map = new Map<string, ProductMetaDataType[]>()
+  for (const product of products.value) {
+    if (!product.attributes.productId) {
+      continue
+    }
+    const existing = map.get(product.attributes.productId)
+    if (existing) {
+      existing.push(product)
+    } else {
+      map.set(product.attributes.productId, [product])
+    }
+  }
+  // Sort each array by version
+  for (const [key, productArray] of map.entries()) {
+    productArray.sort((a, b) => +b.version - +a.version)
+    map.set(key, productArray)
+  }
+  return map
+})
+
+const filteredProducts = computed(() => {
+  // return the latest version of each product in the map
+  return Array.from(filteredProductsMap.value.values()).map(
+    (products) => products[0],
+  )
+})
+
+const versions = computed(() => {
+  if (!productId) {
+    return []
+  }
+  return (
+    filteredProductsMap.value.get(
+      getProductByKey(productId)?.attributes.productId ?? '',
+    ) ?? []
+  )
+})
+
+watchEffect(() => {
+  console.log('Products:', productId)
+  console.log('Filtered products map:', filteredProductsMap.value)
+})
 
 watchEffect(() => {
   const documentDisplay = toValue(config)
