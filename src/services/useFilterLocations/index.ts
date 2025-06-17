@@ -1,5 +1,5 @@
 import type { FeatureCollection, Geometry } from 'geojson'
-import type { Location } from '@deltares/fews-pi-requests'
+import type { Location, LocationsFilter } from '@deltares/fews-pi-requests'
 import type { Ref, MaybeRefOrGetter, ShallowRef } from 'vue'
 import { ref, watchEffect, shallowRef, toValue } from 'vue'
 import {
@@ -23,6 +23,7 @@ const emptyFeatureCollection: FeatureCollection<Geometry, Location> = {
 export function useFilterLocations(
   baseUrl: string,
   filterIds: MaybeRefOrGetter<string[]>,
+  filterOptions?: Partial<LocationsFilter>,
 ): UseFilterLocationsReturn {
   const geojson = shallowRef<
     GeoJSON.FeatureCollection<GeoJSON.Geometry, Location>
@@ -49,7 +50,7 @@ export function useFilterLocations(
     if (ids.length === 0) return
 
     try {
-      geojson.value = await fetchLocationsAsGeoJson(baseUrl, ids)
+      geojson.value = await fetchLocationsAsGeoJson(baseUrl, ids, filterOptions)
       locations.value = convertGeoJsonToFewsPiLocation(geojson.value)
     } catch (error) {
       error = 'error-loading'

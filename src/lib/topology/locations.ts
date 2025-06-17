@@ -19,6 +19,7 @@ import { createTransformRequestFn } from '../requests/transformRequest'
 export async function fetchLocationsAsGeoJson(
   baseUrl: string,
   filterIds: string[],
+  filterOptions?: Partial<LocationsFilter>,
 ): Promise<FeatureCollection<Geometry, Location>> {
   // Fetch GeoJSON for all filterIds.
   const provider = new PiWebserviceProvider(baseUrl, {
@@ -26,7 +27,11 @@ export async function fetchLocationsAsGeoJson(
   })
   const settledResponses = await Promise.allSettled(
     filterIds.map((filterId) =>
-      fetchLocationsAsGeoJsonForSingleFilterId(provider, filterId),
+      fetchLocationsAsGeoJsonForSingleFilterId(
+        provider,
+        filterId,
+        filterOptions,
+      ),
     ),
   )
   const error = (
@@ -77,13 +82,15 @@ export function convertGeoJsonToFewsPiLocation(
 async function fetchLocationsAsGeoJsonForSingleFilterId(
   provider: PiWebserviceProvider,
   filterId: string,
+  filterOptions?: Partial<LocationsFilter>,
 ): Promise<FeatureCollection<Geometry, Location>> {
-  const filter = {
+  const filter: LocationsFilter = {
     documentFormat: DocumentFormat.GEO_JSON,
     filterId: filterId,
     showParentLocations: false,
     includeIconNames: true,
     showThresholds: true,
+    ...filterOptions,
   }
   const response = await provider.getLocations(filter)
   if (!isFeatureCollection(response)) {
