@@ -163,12 +163,12 @@ const filter = computed(() => {
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const sourceId = computed(() => {
-  if (config?.browser?.archiveProducts)
+  if (config?.browser?.archiveProducts?.length)
     return config?.browser?.archiveProducts[0].sourceId || ''
   return config?.browser?.archiveProductSets[0].constraints?.sourceId || 'weboc'
 })
 const areaId = computed(() => {
-  if (config?.browser?.archiveProducts)
+  if (config?.browser?.archiveProducts?.length)
     return config?.browser?.archiveProducts[0].areaId || ''
   return (
     config?.browser?.archiveProductSets[0].constraints?.areaId || 'products'
