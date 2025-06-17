@@ -433,6 +433,7 @@ const headers = computed(() => {
       title: '',
       align: 'end',
       sortable: false,
+      width: '0px',
     } as const,
   ]
 })
