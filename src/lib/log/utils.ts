@@ -30,13 +30,10 @@ export function filterLog(
   search: string | undefined,
   taskRuns: TaskRun[],
   workflows: WorkflowItem[],
-  LogMessages: LogMessage[] = [],
 ) {
   switch (log.type) {
     case 'system':
-      // Check if the corresponding taskRun has any logs with a level that matches the filter
-      const taskRun = taskRuns.find((tr) => tr.id === log.taskRunId)
-      if (levels.length > 0 && !LogMessages.) return false
+      if (levels.length > 0 && !levels.includes(log.level)) return false
       break
     case 'manual':
       // In case of manual logs, ERROR is CRITICAL
