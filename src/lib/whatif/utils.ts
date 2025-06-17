@@ -126,6 +126,18 @@ export function getErrorsForProperties(
       }
     }
 
+    if (schema.required && schema.required.includes(key)) {
+      if (properties[key] === undefined || properties[key] === null) {
+        errors.push({
+          keyword: 'required',
+          instancePath: `/${key}`,
+          schemaPath: `#/required`,
+          params: { missingProperty: key },
+          message: `"${key}" is a required property`,
+        })
+      }
+    }
+
     if (property.type === 'number') {
       const value = properties[key] as number
       const min = property.minimum
