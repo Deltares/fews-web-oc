@@ -2,14 +2,34 @@ import type {
   LogDisplayDisseminationAction,
   LogDisplayLogsFilter,
   LogDisplaySystemLog,
+  TaskRun,
 } from '@deltares/fews-pi-requests'
 import type { LogLevel, LogMessage, LogType } from './types'
+import { WorkflowItem } from '../workflows'
+
+export function getTitleForLog(
+  log: LogMessage,
+  userName: string,
+  taskRuns: TaskRun[],
+  workflows: WorkflowItem[],
+) {
+  const workflowId = taskRuns.find(
+    (taskRun) => taskRun.id === log.taskRunId,
+  )?.workflowId
+
+  const workflow = workflowId
+    ? workflows.find((w) => w.id === workflowId)
+    : undefined
+  return workflow?.name ?? logToUser(log, userName)
+}
 
 export function filterLog(
   log: LogMessage,
   levels: LogLevel[],
   logTypes: LogType[],
   search: string | undefined,
+  taskRuns: TaskRun[],
+  workflows: WorkflowItem[],
 ) {
   switch (log.type) {
     case 'system':
@@ -29,13 +49,17 @@ export function filterLog(
   const text = log.text.toLowerCase()
   const searchText = search?.toLowerCase()
   const taskRunId = log.taskRunId?.toLowerCase()
-
+  const taskRun = taskRuns.find((tr) => tr.id === log.taskRunId)
+  const taskRunUser = taskRun?.user?.toLowerCase()
+  const title = getTitleForLog(log, '', taskRuns, workflows)?.toLowerCase()
   return (
     !searchText ||
     user?.includes(searchText) ||
     eventCode?.includes(searchText) ||
     text.includes(searchText) ||
-    taskRunId?.includes(searchText)
+    taskRunId?.includes(searchText) ||
+    title?.includes(searchText) ||
+    taskRunUser?.includes(searchText)
   )
 }
 
