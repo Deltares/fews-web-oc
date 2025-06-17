@@ -1,22 +1,14 @@
 <template>
   <div class="products-browser position-relative h-100 d-flex flex-column">
     <v-toolbar density="compact">
-      <v-btn
-        prepend-icon="mdi-file-upload"
-        class="text-none"
-        variant="flat"
-        color="primary"
-        @click="showUploadDialog = true"
-        >Upload</v-btn
-      >
-      <v-spacer />
       <v-text-field
         v-model="search"
-        variant="underlined"
+        variant="outlined"
         density="compact"
+        rounded=""
         placeholder="Search"
         hide-details
-        class="me-4"
+        class="px-4"
         append-inner-icon="mdi-magnify"
       ></v-text-field>
       <v-btn prepend-icon="mdi-filter-variant">
@@ -173,6 +165,20 @@
           @click="onNewProduct(template ?? item)"
           :title="'Create new product'"
         ></v-btn>
+      </template>
+      <template v-slot:body.prepend>
+        <tr>
+          <td></td>
+          <td :colspan="headers.length" class="pa-0">
+            <v-btn
+              prepend-icon="mdi-plus"
+              size="small"
+              variant="tonal"
+              @click="showUploadDialog = true"
+              >Upload</v-btn
+            >
+          </td>
+        </tr>
       </template>
     </v-data-table>
     <div>
@@ -433,18 +439,6 @@ const headers = computed(() => {
 
 const items = computed(() => {
   const items: ProductMetaDataType[] = []
-  if (props.template) {
-    console.log('Adding template to items:', props.template)
-    items.push({
-      ...props.template,
-      attributes: {
-        ...props.template.attributes,
-        name: 'Create new',
-      },
-      timeZero: '',
-      dataSetCreationTime: '',
-    })
-  }
   items.push(
     ...props.products.map((product) => ({
       ...product,
