@@ -2,6 +2,7 @@
   <div class="d-flex flex-row h-100 w-100">
     <ProductsBrowserTable
       :products="filteredProducts"
+      :template="mostRecentTemplate"
       :config="tableLayout"
       class="product-browser__table"
       :productId="productId"
@@ -182,14 +183,15 @@ const archiveProducts = computed(() => {
   return config?.browser?.archiveProducts ?? []
 })
 
-const { products, getProductByKey, refresh, lastUpdated } = useProducts(
-  baseUrl,
-  filter,
-  sourceId,
-  areaId,
-  archiveProductSets,
-  archiveProducts,
-)
+const { products, getProductByKey, refresh, lastUpdated, mostRecentTemplate } =
+  useProducts(
+    baseUrl,
+    filter,
+    sourceId,
+    areaId,
+    archiveProductSets,
+    archiveProducts,
+  )
 
 const filteredProductsMap = computed(() => {
   const map = new Map<string, ProductMetaDataType[]>()
