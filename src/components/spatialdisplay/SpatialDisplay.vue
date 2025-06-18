@@ -322,6 +322,12 @@ watch(locations, () => {
     closeTimeSeriesDisplay()
   }
 })
+
+watch(onlyCoverageLayersAvailable, (newValue) => {
+  if (!newValue) {
+    closeTimeSeriesDisplay()
+  }
+})
 </script>
 
 <style scoped>
