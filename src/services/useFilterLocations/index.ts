@@ -37,17 +37,17 @@ export function useFilterLocations(
 
   watchEffect(async () => {
     const _filterdIds = toValue(filterIds)
+    if (_filterdIds.length === 0) {
+      geojson.value = emptyFeatureCollection
+      locations.value = convertGeoJsonToFewsPiLocation(geojson.value)
+      return
+    }
     await loadLocations(_filterdIds)
   })
 
   async function loadLocations(ids: string[]): Promise<void> {
     isLoading.value = true
     isReady.value = false
-
-    geojson.value = emptyFeatureCollection
-    locations.value = []
-
-    if (ids.length === 0) return
 
     try {
       geojson.value = await fetchLocationsAsGeoJson(baseUrl, ids, filterOptions)
