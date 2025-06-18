@@ -626,8 +626,11 @@ img {
   margin: auto;
   box-shadow: 0 0.5mm 2mm rgba(0, 0, 0, 0.3);
   position: absolute;
+  object-fit: contain;
   left: 20px;
   top: 20px;
+  max-width: calc(100% - 40px);
+  max-height: calc(100% - 40px);
 }
 
 .pdf-iframe {
