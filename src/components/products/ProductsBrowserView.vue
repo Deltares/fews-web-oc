@@ -132,45 +132,45 @@
       <EditReport v-if="isEditing" v-model="htmlContent" @save="onSave" />
       <template v-else>
         <v-toolbar density="compact" absolute>
-          <template v-if="viewMode === 'html'"">
-          <v-btn
-            color="primary"
-            prepend-icon="mdi-pencil"
-            variant="flat"
-            @click="isEditing = !isEditing"
-            >edit</v-btn
-          >
-          <v-menu location="bottom left">
-            <template #activator="{ props }">
-              <v-btn
-                icon="mdi-dots-horizontal"
-                variant="text"
-                v-bind="props"
-                :loading="actionIsActive"
-              />
-            </template>
-            <v-list density="compact">
-              <v-list-item
-                v-if="viewMode === 'html'"
-                prepend-icon="mdi-email"
-                title="Open in Email Client..."
-                @click="
-                  openEmailClient(
-                    `${selectedProduct.attributes.name}: ${selectedProduct.timeZero}`,
-                    htmlContent,
-                  )
-                "
-              />
-              <v-list-item
-                v-for="action in logDisplay?.logDissemination
-                  ?.disseminationActions"
-                :prepend-icon="action.iconId"
-                :title="action.description"
-                @click="runDisseminateAction(htmlContent, action)"
-              >
-              </v-list-item>
-            </v-list>
-          </v-menu>
+          <template v-if="viewMode === 'html'">
+            <v-btn
+              color="primary"
+              prepend-icon="mdi-pencil"
+              variant="flat"
+              @click="isEditing = !isEditing"
+              >edit</v-btn
+            >
+            <v-menu location="bottom left">
+              <template #activator="{ props }">
+                <v-btn
+                  icon="mdi-dots-horizontal"
+                  variant="text"
+                  v-bind="props"
+                  :loading="actionIsActive"
+                />
+              </template>
+              <v-list density="compact">
+                <v-list-item
+                  v-if="viewMode === 'html'"
+                  prepend-icon="mdi-email"
+                  title="Open in Email Client..."
+                  @click="
+                    openEmailClient(
+                      `${selectedProduct.attributes.name}: ${selectedProduct.timeZero}`,
+                      htmlContent,
+                    )
+                  "
+                />
+                <v-list-item
+                  v-for="action in logDisplay?.logDissemination
+                    ?.disseminationActions"
+                  :prepend-icon="action.iconId"
+                  :title="action.description"
+                  @click="runDisseminateAction(htmlContent, action)"
+                >
+                </v-list-item>
+              </v-list>
+            </v-menu>
           </template>
           <v-spacer />
           <v-toolbar-items>
@@ -225,7 +225,12 @@ import ProductsBrowserTable, {
 import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
 import { getProductURL } from './productTools'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import { type LogDisplayDisseminationAction, type LogDisplayLogsActionRequest, PiWebserviceProvider, type ProductsMetaDataFilter } from '@deltares/fews-pi-requests'
+import {
+  type LogDisplayDisseminationAction,
+  type LogDisplayLogsActionRequest,
+  PiWebserviceProvider,
+  type ProductsMetaDataFilter,
+} from '@deltares/fews-pi-requests'
 import { hashObject, useProducts } from '@/services/useProducts'
 import { type DocumentBrowserDisplay } from '@/lib/products/documentDisplay'
 import { toHumanReadableDate } from '@/lib/date'
@@ -309,7 +314,6 @@ const filter = computed(() => {
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const actionIsActive = ref(false) // Flag to indicate if a dissemination action is active
 const { logDisplay } = useLogDisplay(baseUrl, () => LOG_DISPLAY_ID)
-
 
 const archiveProductSets = computed(() => {
   return config?.browser?.archiveProductSets ?? []

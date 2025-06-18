@@ -166,7 +166,7 @@
           :title="'Create new product'"
         ></v-btn>
       </template>
-      <template v-slot:body.prepend="props" >
+      <template v-slot:body.prepend="props">
         <slot name="prepend" v-bind="props"></slot>
       </template>
     </v-data-table>
@@ -180,13 +180,8 @@ import { computed, onMounted, ref, watch } from 'vue'
 import type { ProductMetaDataType } from '@/services/useProducts/types'
 import { useRouter } from 'vue-router'
 import { toHumanReadableDate } from '@/lib/date'
-import {
-  deleteProduct,
-  postFileProduct,
-  postProduct,
-} from '@/lib/products/requests'
+import { deleteProduct, postProduct } from '@/lib/products/requests'
 import { configManager } from '@/services/application-config'
-import { DateTime } from 'luxon'
 import { getProductURL } from './productTools'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
@@ -233,7 +228,6 @@ const groupByKey = ref([''])
 const groupByOrder = ref<[boolean | 'asc' | 'desc']>(['asc'])
 const selectedColumns = ref<string[]>([])
 const selectedRows = ref<string[]>([])
-
 
 const groupBy = computed(() => {
   return {
