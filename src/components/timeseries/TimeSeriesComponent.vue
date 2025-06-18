@@ -287,9 +287,9 @@ watch(
 
 watch(isEditing, () => {
   if (isEditing.value) {
-    useTimeSeriesInterval.pause()
+    useTimeSeriesInterval?.pause()
   } else {
-    useTimeSeriesInterval.resume()
+    useTimeSeriesInterval?.resume()
   }
   // Can't set a custom message in modern browsers
   window.onbeforeunload = isEditing.value ? () => true : null

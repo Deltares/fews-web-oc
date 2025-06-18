@@ -33,7 +33,7 @@ export interface UseTimeSeriesReturn {
   series: ShallowRef<Record<string, Series>>
   isLoading: Ref<boolean>
   loadingSeriesIds: Ref<string[]>
-  interval: Pausable
+  interval: Pausable | undefined
   refresh: () => void
 }
 
@@ -64,6 +64,7 @@ export function useTimeSeries(
   options: MaybeRefOrGetter<UseTimeSeriesOptions>,
   fetchingEnabled?: MaybeRefOrGetter<boolean>,
   selectedTime?: MaybeRefOrGetter<Date | undefined>,
+  refresh = true,
 ): UseTimeSeriesReturn {
   let controller = new AbortController()
   const series = shallowRef<Record<string, Series>>({})
@@ -199,11 +200,16 @@ export function useTimeSeries(
     return series
   }
 
-  const interval = useFocusAwareInterval(
-    loadTimeSeries,
-    TIMESERIES_POLLING_INTERVAL,
-    { immediateCallback: true },
-  )
+  let interval: Pausable | undefined = undefined
+  if (refresh) {
+    interval = useFocusAwareInterval(
+      loadTimeSeries,
+      TIMESERIES_POLLING_INTERVAL,
+      { immediateCallback: true },
+    )
+  } else {
+    loadTimeSeries()
+  }
 
   onUnmounted(() => {
     controller.abort('useTimeSeries unmounted.')

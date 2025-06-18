@@ -172,7 +172,14 @@ const timeSeriesOptions = computed(() => ({
   thinning: true,
 }))
 
-const { series } = useTimeSeries(baseUrl, requests, timeSeriesOptions)
+const { series } = useTimeSeries(
+  baseUrl,
+  requests,
+  timeSeriesOptions,
+  true,
+  undefined,
+  false,
+)
 
 const tab = ref()
 const drawer = ref(false)
@@ -204,7 +211,7 @@ const tabs = computed(() => [
     text: 'Analysis',
     disabled: !canDoAnalysis.value,
   },
-  { value: 'workflows', icon: 'mdi-tools', text: 'Workflows' },
+  { value: 'workflows', icon: 'mdi-tools', text: 'Analysis Workflows' },
   { value: 'settings', icon: 'mdi-cog-outline', text: 'Settings' },
 ])
 
