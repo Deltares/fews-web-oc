@@ -175,6 +175,11 @@
           <v-spacer />
           <v-toolbar-items>
             <v-btn
+              icon="mdi-download"
+              :disabled="!selectedProduct"
+              @click="downloadProduct()"
+            />
+            <v-btn
               append-icon="mdi-chevron-down"
               variant="text"
               class="text-start"
@@ -248,6 +253,7 @@ import { DateTime } from 'luxon'
 import { postFileProduct, postProduct } from '@/lib/products/requests'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import { convert } from 'html-to-text'
+import { clickDownloadUrl } from '@/lib/download'
 
 const LOG_DISPLAY_ID = 'email_reports'
 
@@ -448,6 +454,13 @@ watchEffect(async () => {
     src.value = ''
   }
 })
+
+function downloadProduct() {
+  if (!src.value) return
+  if (!selectedProduct.value) return
+
+  clickDownloadUrl(src.value, selectedProduct.value.attributes.name)
+}
 
 async function onSave() {
   const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
