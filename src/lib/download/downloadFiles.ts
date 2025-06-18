@@ -106,7 +106,7 @@ function downloadWithLink(url: string, fileName: string) {
   clickDownloadUrl(url, fileName)
 }
 
-function clickDownloadUrl(url: string, fileName: string) {
+export function clickDownloadUrl(url: string, fileName: string) {
   const a = document.createElement('a')
   a.href = url
   a.setAttribute('download', fileName)
