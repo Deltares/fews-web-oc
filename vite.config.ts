@@ -61,6 +61,10 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
+        'vuetify/labs/VNumberInput': path.resolve(
+          __dirname,
+          'node_modules/vuetify/lib/components/VNumberInput/index.js',
+        ),
       },
     },
     css: {

@@ -78,7 +78,6 @@
 import AnalysisAddButton from '@/components/analysis/AnalysisAddButton.vue'
 import GroupSelect from '@/components/general/GroupSelect.vue'
 import SelectCard from '@/components/general/SelectCard.vue'
-import { VNumberInput } from 'vuetify/labs/components'
 import { computed, ref, watch } from 'vue'
 import { Chart, CorrelationChart, getValidFilterCharts } from '@/lib/analysis'
 import { Series } from '@/lib/timeseries/timeSeries'

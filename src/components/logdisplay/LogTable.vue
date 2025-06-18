@@ -41,7 +41,6 @@
 
 <script setup lang="ts">
 import { toHumanReadableDate } from '@/lib/date'
-import type { VDataTableVirtual } from 'vuetify/components'
 import {
   type LogMessage,
   logToIcon,
@@ -70,7 +69,7 @@ const systemDisseminations = computed(() =>
   props.disseminations.filter((d) => d.systemLog),
 )
 
-const headers = computed<VDataTableVirtual['headers']>(() => {
+const headers = computed(() => {
   const hasDisseminations = systemDisseminations.value.length
   const hasTopologyNodeId = props.logs.some((l) => l.topologyNodeId)
   const actionsHeader =
@@ -83,7 +82,7 @@ const headers = computed<VDataTableVirtual['headers']>(() => {
       title: 'Time',
       width: '160px',
       key: 'entryTime',
-      value: (item) => toHumanReadableDate(item.entryTime),
+      value: (item: LogMessage) => toHumanReadableDate(item.entryTime),
     },
     { title: 'Message', key: 'text' },
     ...actionsHeader,

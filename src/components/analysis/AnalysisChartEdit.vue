@@ -75,7 +75,6 @@ import EditableTitle from '@/components/general/EditableTitle.vue'
 import AnalysisLineStyleEdit from './AnalysisLineStyleEdit.vue'
 import { markerStyles } from '@/lib/charts/styles'
 import type { PlotChart } from '@/lib/analysis'
-import { VNumberInput } from 'vuetify/labs/components'
 
 interface Props {
   chart: PlotChart
