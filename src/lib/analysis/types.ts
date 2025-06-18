@@ -48,6 +48,7 @@ export interface FilterChart extends BaseChart {
   type: 'filter'
   requests: ActionRequest[]
   subplot: FilterSubplot
+  domain?: [Date, Date]
 }
 
 export interface CorrelationChart extends BaseChart {

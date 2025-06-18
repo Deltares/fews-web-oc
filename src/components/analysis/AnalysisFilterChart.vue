@@ -33,8 +33,22 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const domain = computed(() => {
+  if (props.chart.type === 'filter') {
+    return props.chart.domain ?? props.domain
+  }
+  return props.domain
+})
+
+const zoomHandler = computed(() => {
+  if (props.chart.type === 'filter' && props.chart.domain) {
+    return undefined
+  }
+  return props.zoomHandler
+})
+
 const config = computed(() =>
-  timeSeriesDisplayToChartConfig(props.subplot, props.domain),
+  timeSeriesDisplayToChartConfig(props.subplot, domain.value),
 )
 
 const editing = ref(false)

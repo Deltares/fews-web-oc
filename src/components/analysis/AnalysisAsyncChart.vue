@@ -110,12 +110,15 @@ watch(
 
       isLoading.value = true
       const filterCharts = filterId
-        ? await createNewChartsForFilters([
-            {
-              taskRunIds: taskRunId,
-              filterId,
-            },
-          ])
+        ? await createNewChartsForFilters(
+            [
+              {
+                taskRunIds: taskRunId,
+                filterId,
+              },
+            ],
+            true,
+          )
         : []
 
       const archiveCharts = archiveProducts
