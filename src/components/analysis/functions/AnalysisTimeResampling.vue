@@ -33,6 +33,12 @@
         class="w-50"
       />
     </div>
+    <v-checkbox
+      v-model="includeOriginals"
+      label="Include original time series"
+      density="compact"
+      hide-details
+    />
 
     <v-spacer />
     <div class="d-flex">
@@ -96,6 +102,7 @@ const selectedResamplingTimeSteps = ref<TimeSteps[]>([])
 
 const isLoadingNewCharts = ref(false)
 const isLoadingAddToChart = ref(false)
+const includeOriginals = ref(false)
 
 watch(() => props.isActive, clearSelections)
 function clearSelections() {
@@ -176,7 +183,7 @@ function getFilters(items: FilterSubplotItem[]) {
     resamplingMethods,
     resamplingTimeStepIds,
     resamplingOmitMissing: true, // TODO: add option for this
-    includeNonResampled: false, // TODO: add option for this
+    includeNonResampled: includeOriginals.value,
   }))
 }
 </script>
