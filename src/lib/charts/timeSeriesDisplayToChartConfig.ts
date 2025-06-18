@@ -24,12 +24,8 @@ export function timeSeriesDisplayToChartConfig(
 ): ChartConfig {
   const xAxis = subplot.xAxis ? xAxisFromPlotItemXAxis(subplot.xAxis) : []
   if (domain) {
-    // Set the domain of the x-axis to be equal to the period, even if there are
-    // no data points in parts of the period.
-    if (xAxis.length === 0) {
-      xAxis.push({ domain })
-    } else {
-      // Time series charts always have just a single x-axis.
+    // Time series charts always have just a single x-axis.
+    if (xAxis[0]?.type === AxisType.time) {
       xAxis[0].domain = domain
     }
   }
