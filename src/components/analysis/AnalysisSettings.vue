@@ -20,7 +20,6 @@
           density="compact"
           prepend-icon=""
           min-width="120"
-          display-format="fullDate"
           :disabled="liveUpdate"
         />
       </div>
