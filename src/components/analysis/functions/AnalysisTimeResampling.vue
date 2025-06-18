@@ -115,7 +115,12 @@ const availableTimeStepsStore = useAvailableTimeStepsStore()
 
 const allSeries = computed(() => getValidFilterCharts(props.charts))
 
-const filters = computed(() => getFilters(selectedTimeseries.value))
+const filters = computed(() => {
+  if (selectedTimeseries.value.length === 0) return []
+  if (selectedResamplingMethods.value.length === 0) return []
+  if (selectedResamplingTimeSteps.value.length === 0) return []
+  return getFilters(selectedTimeseries.value)
+})
 
 const canAddFilter = computed(() => {
   return (
