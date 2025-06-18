@@ -7,20 +7,18 @@
     <template #append-inner>
       <v-divider vertical />
       <v-btn
+        variant="text"
+        icon
         size="small"
-        variant="elevated"
-        flat
-        height="100%"
         @click="setTimeZero(previousTimeZero)"
       >
         <v-icon>mdi-chevron-down</v-icon>
       </v-btn>
       <v-divider vertical />
       <v-btn
+        variant="text"
+        icon
         size="small"
-        variant="elevated"
-        flat
-        height="100%"
         @click="setTimeZero(nextTimeZero)"
       >
         <v-icon>mdi-chevron-up</v-icon>
