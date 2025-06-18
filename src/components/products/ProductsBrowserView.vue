@@ -237,7 +237,6 @@ import { toHumanReadableDate } from '@/lib/date'
 import { getFileExtension, getViewMode } from '@/lib/products'
 import {
   type IntervalItem,
-  intervalToFewsPiDateRange,
   periodToIntervalItem,
 } from '@/lib/TimeControl/interval'
 import { configManager } from '@/services/application-config'
@@ -299,14 +298,8 @@ const filter = computed(() => {
     return {}
   }
 
-  const [startForecastTime, endForecastTime] = intervalToFewsPiDateRange(
-    viewPeriod.value,
-  )
-
   const result: ProductsMetaDataFilter = {
     versionKey: ['productId'],
-    startForecastTime,
-    endForecastTime,
   }
   return result
 })
@@ -384,6 +377,7 @@ const {
 } = useProducts(
   baseUrl,
   filter,
+  viewPeriod,
   sourceId,
   areaId,
   archiveProductSets,

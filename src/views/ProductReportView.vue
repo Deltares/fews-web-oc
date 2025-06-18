@@ -89,11 +89,7 @@
 <script setup lang="ts">
 import { getProductURL } from '@/components/products/productTools'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import {
-  IntervalItem,
-  intervalToFewsPiDateRange,
-  periodToIntervalItem,
-} from '@/lib/TimeControl/interval'
+import { IntervalItem, periodToIntervalItem } from '@/lib/TimeControl/interval'
 import { attributesToObject, useProducts } from '@/services/useProducts'
 import {
   LogDisplayDisseminationAction,
@@ -134,10 +130,6 @@ const filter = computed(() => {
   ) {
     return {}
   }
-  const [startForecastTime, endForecastTime] = intervalToFewsPiDateRange(
-    viewPeriod.value,
-  )
-
   const archiveProduct = config?.report?.archiveProduct
   if (!archiveProduct) {
     console.warn('No archive product defined in the report configuration.')
@@ -149,8 +141,6 @@ const filter = computed(() => {
   const result: ProductsMetaDataFilter = {
     versionKey: archiveProduct.versionKeys,
     attribute,
-    startForecastTime,
-    endForecastTime,
   }
   return result
 })
@@ -180,6 +170,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { products, fetchProducts } = useProducts(
   baseUrl,
   filter,
+  viewPeriod,
   sourceId,
   areaId,
 )
