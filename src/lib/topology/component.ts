@@ -6,6 +6,7 @@ export type ComponentType =
   | 'documents-display'
   | 'dynamic-report-display'
   | 'data-analysis-display'
+  | 'html-display'
 
 export const ComponentType = {
   dashboard: 'dashboard',

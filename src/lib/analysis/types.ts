@@ -3,9 +3,9 @@ import type {
   ActionRequest,
   CorrelationFilter,
   TimeSeriesDisplaySubplot,
-  ArchiveProductsMetadataAttribute,
   filterActionsFilter,
   TimeSeriesDisplaySubplotItem,
+  Results,
 } from '@deltares/fews-pi-requests'
 
 export type AnalysisFunction = 'correlation'
@@ -58,24 +58,10 @@ export interface CorrelationChart extends BaseChart {
   subplot: TimeSeriesDisplaySubplot
 }
 
-interface ArchiveProduct {
-  id?: string
-  name?: string
-  areaId: string
-  sourceId?: string
-  versionKeys?: string[]
-  attributes?: ArchiveProductsMetadataAttribute[]
-}
-
-interface Result {
-  filterId?: string
-  archiveProduct?: ArchiveProduct
-}
-
 export interface AsyncChart extends BaseChart {
   type: 'async'
   taskId: string
-  result: Result
+  results: Results
 }
 
 export interface ProductChart extends BaseChart {
