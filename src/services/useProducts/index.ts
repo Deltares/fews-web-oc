@@ -11,6 +11,10 @@ import {
   ArchiveProduct,
   ArchiveProductSet,
 } from '@/lib/products/documentDisplay'
+import {
+  IntervalItem,
+  intervalToFewsPiDateRange,
+} from '@/lib/TimeControl/interval'
 
 /**
  * Hook to fetch and manage product metadata based on a given filter.
@@ -21,6 +25,7 @@ import {
 export function useProducts(
   baseUrl: string,
   filter: MaybeRefOrGetter<ProductsMetaDataFilter>,
+  viewPeriod: MaybeRefOrGetter<IntervalItem>,
   sourceId: MaybeRefOrGetter = ref('weboc'),
   areaId: MaybeRefOrGetter = ref('products'),
   archiveProductSets: MaybeRefOrGetter<ArchiveProductSet[]> = ref([]),
@@ -38,12 +43,21 @@ export function useProducts(
 
   const fetchProducts = async () => {
     products.value = [] // Reset products before fetching new ones
+    const period = toValue(viewPeriod)
+    const [startForecastTime, endForecastTime] =
+      intervalToFewsPiDateRange(period)
+
     for (const product of toValue(archiveProducts)) {
       const filterValue = toValue(filter)
+
+      filterValue.startForecastTime = startForecastTime
+      filterValue.endForecastTime = endForecastTime
+
       // Ensure the filter has a valid date range
       if (!filterValue.startForecastTime || !filterValue.endForecastTime) {
         return
       }
+
       // FIXME: Configure correct versionKey
       // filterValue.versionKey = product.versionKeys
       // Set all attributes from the product
@@ -97,6 +111,10 @@ export function useProducts(
     }
     for (const constraint of constraints) {
       const filterValue = toValue(filter)
+
+      filterValue.startForecastTime = startForecastTime
+      filterValue.endForecastTime = endForecastTime
+
       // Ensure the filter has a valid date range
       if (!filterValue.startForecastTime || !filterValue.endForecastTime) {
         return
