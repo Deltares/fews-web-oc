@@ -3,9 +3,10 @@
     <v-progress-circular indeterminate color="primary" />
   </div>
   <template v-else>
-    <iframe v-if="viewMode === 'iframe'" :src="src" />
     <img v-if="viewMode === 'img'" :src="src" />
-    <iframe v-if="viewMode === 'html'" :src="src" />
+    <template v-if="['html', 'pdf', 'iframe'].includes(viewMode)">
+      <iframe :src="src" />
+    </template>
   </template>
 </template>
 
