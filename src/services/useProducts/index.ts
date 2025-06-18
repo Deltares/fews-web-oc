@@ -29,6 +29,7 @@ export function useProducts(
   const products = ref<ProductMetaDataType[]>([])
   const error = ref<string | null>(null)
   const lastUpdated = ref<Date | null>(null)
+  const mostRecentTemplate = ref<ProductMetaDataType | null>(null)
 
   const refresh = () => {
     error.value = null
@@ -37,14 +38,14 @@ export function useProducts(
 
   const fetchProducts = async () => {
     products.value = [] // Reset products before fetching new ones
-    // If we have ArchiveProducts we can use the filter to fetch products
     for (const product of toValue(archiveProducts)) {
       const filterValue = toValue(filter)
       // Ensure the filter has a valid date range
       if (!filterValue.startForecastTime || !filterValue.endForecastTime) {
         return
       }
-      filterValue.versionKey = product.versionKeys
+      // FIXME: Configure correct versionKey
+      // filterValue.versionKey = product.versionKeys
       // Set all attributes from the product
       filterValue.attribute = product.attributes.reduce(
         (
@@ -56,6 +57,9 @@ export function useProducts(
         },
         {} as Record<string, string>,
       )
+      if (product.id) {
+        filterValue.attribute['productId'] = product.id
+      }
       try {
         const response = await fetchProductsMetaData(baseUrl, filterValue)
         const filteredProducts = response.filter((p) => {
@@ -65,6 +69,17 @@ export function useProducts(
         })
         products.value.push(...filteredProducts)
         lastUpdated.value = new Date()
+        if (product.id) {
+          // If the product has an ID, we check for templates
+          filterValue.attribute['productId'] = 'template_' + product.id
+          const response = await fetchProductsMetaData(baseUrl, filterValue)
+          if (response.length > 0) {
+            // If we find a template, we set it as the most recent template
+            mostRecentTemplate.value = response[response.length - 1]
+          } else {
+            mostRecentTemplate.value = null
+          }
+        }
       } catch (err) {
         error.value = 'Error fetching product metadata'
         console.error(err)
@@ -117,6 +132,7 @@ export function useProducts(
           )
         })
         products.value = filteredProducts
+        lastUpdated.value = new Date()
       } catch (err) {
         error.value = 'Error fetching product metadata'
         console.error(err)
@@ -139,6 +155,7 @@ export function useProducts(
     refresh,
     lastUpdated,
     error,
+    mostRecentTemplate,
   }
 }
 
@@ -245,7 +262,7 @@ export function keyForProductMetaDataType(entry: ArchiveProductsMetadataEntry) {
  * @param obj - The object to hash.
  * @returns A promise that resolves to the hash as a hexadecimal string.
  */
-async function hashObject(obj: any): Promise<string> {
+export async function hashObject(obj: any): Promise<string> {
   const json = JSON.stringify(sortObjectKeys(obj))
 
   const encoder = new TextEncoder()

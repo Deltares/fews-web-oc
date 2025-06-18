@@ -29,7 +29,7 @@ export interface ReportDisplay {
 export interface DocumentBrowser {
   layout: Layout
   reports: Reports
-  archiveProducts: ArchiveProducts
+  archiveProducts: ArchiveProduct[]
   archiveProductSets: ArchiveProductSet[]
 }
 

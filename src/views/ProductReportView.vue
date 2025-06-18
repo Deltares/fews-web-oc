@@ -25,7 +25,12 @@
               v-if="viewMode === 'html'"
               prepend-icon="mdi-email"
               title="Open in Email Client..."
-              @click="openEmailClient"
+              @click="
+                openEmailClient(
+                  `${selectedProduct.attributes.name}: ${selectedProduct.timeZero}`,
+                  htmlContent,
+                )
+              "
             />
             <v-list-item
               v-for="action in logDisplay?.logDissemination
@@ -209,6 +214,8 @@ watchEffect(async () => {
   const extension = getFileExtension(url)
 
   const currentViewMode = getViewMode(extension)
+  const urlFragments =
+    currentViewMode === 'pdf' ? '#view=FitH&zoom=page-width' : ''
 
   const transformRequest = createTransformRequestFn()
   const request = await transformRequest(new Request(url, {}))
@@ -226,7 +233,7 @@ watchEffect(async () => {
   const urlObject = URL.createObjectURL(await response.blob())
 
   viewMode.value = currentViewMode
-  src.value = urlObject
+  src.value = urlObject + urlFragments
 })
 
 async function onSave() {
@@ -254,9 +261,8 @@ async function onSave() {
   }
 }
 
-function openEmailClient() {
-  const subject = `${selectedProduct.value.attributes.name}: ${selectedProduct.value.timeZero}`
-  const textContent = convert(htmlContent.value, {
+function openEmailClient(subject: string, content: string) {
+  const textContent = convert(content, {
     wordwrap: 130,
     selectors: [
       { selector: 'img', format: 'skip' }, // Skip images

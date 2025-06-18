@@ -1,22 +1,14 @@
 <template>
   <div class="products-browser position-relative h-100 d-flex flex-column">
     <v-toolbar density="compact">
-      <v-btn
-        prepend-icon="mdi-file-upload"
-        class="text-none"
-        variant="flat"
-        color="primary"
-        @click="showUploadDialog = true"
-        >Upload</v-btn
-      >
-      <v-spacer />
       <v-text-field
         v-model="search"
-        variant="underlined"
+        variant="outlined"
         density="compact"
+        rounded=""
         placeholder="Search"
         hide-details
-        class="me-4"
+        class="px-4"
         append-inner-icon="mdi-magnify"
       ></v-text-field>
       <v-btn prepend-icon="mdi-filter-variant">
@@ -156,6 +148,7 @@
       </template>
       <template v-slot:item.actions="{ item }">
         <v-btn
+          v-if="item.attributes.name !== 'Create new'"
           icon="mdi-delete"
           size="small"
           variant="text"
@@ -164,72 +157,22 @@
           class="delete-action-btn"
           :hover="true"
         ></v-btn>
+        <v-btn
+          v-else
+          icon="mdi-plus"
+          size="small"
+          variant="text"
+          @click="onNewProduct(template ?? item)"
+          :title="'Create new product'"
+        ></v-btn>
+      </template>
+      <template v-slot:body.prepend="props">
+        <slot name="prepend" v-bind="props"></slot>
       </template>
     </v-data-table>
     <div>
       <slot name="footer"> </slot>
     </div>
-    <v-dialog v-model="showUploadDialog" max-width="600px">
-      <v-card>
-        <v-card-title>
-          <span class="text-h5">Upload Product</span>
-        </v-card-title>
-        <v-card-text>
-          <v-alert v-if="uploadError" type="error" variant="tonal" class="mb-4">
-            {{ uploadError }}
-          </v-alert>
-
-          <v-file-input
-            v-model="uploadFile"
-            :loading="uploading"
-            :disabled="uploading"
-            truncate-length="30"
-            accept=".pdf,.jpg,.jpeg,.png"
-            placeholder="Select file"
-            prepend-icon="mdi-file-document-outline"
-            label="Product File"
-            hint="Select a file to upload"
-            :rules="[(v) => !!v || 'A file is required']"
-          ></v-file-input>
-
-          <v-text-field
-            v-model="uploadData.name"
-            label="Product Name"
-            :disabled="uploading"
-            :rules="[(v) => !!v || 'Product name is required']"
-            class="mt-4"
-          ></v-text-field>
-
-          <v-text-field
-            v-model="uploadData.author"
-            label="Author"
-            :disabled="uploading"
-            :rules="[(v) => !!v || 'Author name is required']"
-            class="mt-4"
-          ></v-text-field>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="grey-darken-1"
-            variant="text"
-            :disabled="uploading"
-            @click="showUploadDialog = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="primary"
-            :loading="uploading"
-            :disabled="!canUpload"
-            variant="flat"
-            @click="uploadProduct"
-          >
-            Upload
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 <script setup lang="ts">
@@ -237,9 +180,11 @@ import { computed, onMounted, ref, watch } from 'vue'
 import type { ProductMetaDataType } from '@/services/useProducts/types'
 import { useRouter } from 'vue-router'
 import { toHumanReadableDate } from '@/lib/date'
-import { deleteProduct, postFileProduct } from '@/lib/products/requests'
+import { deleteProduct, postProduct } from '@/lib/products/requests'
 import { configManager } from '@/services/application-config'
-import { DateTime } from 'luxon'
+import { getProductURL } from './productTools'
+import { useCurrentUser } from '@/services/useCurrentUser'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 interface AttributeHeader {
   attribute: string
@@ -265,6 +210,7 @@ function isPropertyHeader(
 
 interface Props {
   products: ProductMetaDataType[]
+  template?: ProductMetaDataType
   config: ProductBrowserTableConfig
   productId?: string
   areaId: string
@@ -282,68 +228,6 @@ const groupByKey = ref([''])
 const groupByOrder = ref<[boolean | 'asc' | 'desc']>(['asc'])
 const selectedColumns = ref<string[]>([])
 const selectedRows = ref<string[]>([])
-
-// Upload dialog state
-const showUploadDialog = ref(false)
-const uploading = ref(false)
-const uploadError = ref('')
-const uploadFile = ref<File | undefined>(undefined)
-const uploadData = ref({
-  name: '',
-  author: '',
-})
-
-// Computed properties for upload validation and table display
-const canUpload = computed(() => {
-  const hasName = uploadData.value.name.trim() !== ''
-  const hasAuthor = uploadData.value.author.trim() !== ''
-  if (!uploadFile.value || !hasName || !hasAuthor) {
-    return false
-  }
-  return true
-})
-
-const resetUploadForm = () => {
-  uploadFile.value = undefined
-  uploadData.value = {
-    name: '',
-    author: '',
-  }
-  uploadError.value = ''
-}
-
-async function uploadProduct() {
-  if (!canUpload.value) return
-  uploading.value = true
-  uploadError.value = ''
-  try {
-    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-    const timeZero = DateTime.now().toUTC().startOf('second').toISO({
-      suppressMilliseconds: true,
-    })
-    const attributes = {
-      name: uploadData.value.name,
-      author: uploadData.value.author,
-    }
-    await postFileProduct(
-      `${baseUrl}rest/fewspiservice/v1/archive/`,
-      props.areaId, // areaId
-      props.sourceId, // sourceId
-      timeZero,
-      uploadFile.value!,
-      attributes,
-    )
-    resetUploadForm()
-    showUploadDialog.value = false
-    emit('refresh')
-  } catch (error) {
-    console.error('Upload error:', error)
-    uploadError.value =
-      error instanceof Error ? error.message : 'Unknown error occurred'
-  } finally {
-    uploading.value = false
-  }
-}
 
 const groupBy = computed(() => {
   return {
@@ -404,16 +288,22 @@ const headers = computed(() => {
       title: '',
       align: 'end',
       sortable: false,
+      width: '0px',
     } as const,
   ]
 })
 
 const items = computed(() => {
-  return props.products.map((product) => ({
-    ...product,
-    timeZero: toHumanReadableDate(product.timeZero),
-    dataSetCreationTime: toHumanReadableDate(product.dataSetCreationTime),
-  }))
+  const items: ProductMetaDataType[] = []
+  items.push(
+    ...props.products.map((product) => ({
+      ...product,
+      timeZero: toHumanReadableDate(product.timeZero),
+      dataSetCreationTime: toHumanReadableDate(product.dataSetCreationTime),
+    })),
+  )
+
+  return items
 })
 
 async function onDeleteProduct(product: ProductMetaDataType) {
@@ -439,6 +329,39 @@ function onClick(
       productId: entry.item.key,
     },
   })
+}
+
+const { preferredUsername } = useCurrentUser()
+
+async function onNewProduct(item: ProductMetaDataType) {
+  const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const archiveUrl = `${piUrl}rest/fewspiservice/v1/archive/`
+  const fileName = item.relativePathProducts[0].split('/').pop() ?? 'unknown'
+  item.attributes.productId = item.attributes.productId.replace(
+    /^template_/,
+    '',
+  )
+  item.attributes.author = preferredUsername.value
+
+  const transformRequest = createTransformRequestFn()
+  const request = await transformRequest(
+    new Request(getProductURL(piUrl, item), {}),
+  )
+  const htmlContent = await (await fetch(request)).text()
+  try {
+    await postProduct(
+      archiveUrl,
+      item.areaId,
+      item.sourceId,
+      item.timeZero,
+      htmlContent,
+      fileName,
+      item.attributes,
+    )
+  } catch (error) {
+    console.error('Error creating new product:', error)
+  }
+  emit('refresh')
 }
 </script>
 
