@@ -36,6 +36,8 @@ import {
   attributesToObject,
   fetchProductsMetaData,
 } from '@/services/useProducts'
+import { DataAnalysisDisplayArchiveProduct } from '@deltares/fews-pi-requests'
+import { ProductMetaDataType } from '@/services/useProducts/types'
 
 const TASK_STATUS_REFRESH_INTERVAL = 1000
 const TASK_RUN_REFRESH_INTERVAL = 5000
@@ -103,28 +105,36 @@ watch(
         throw new Error('Task run ID is not available')
       }
 
-      const filterId = props.chart.result.filterId
-      const archiveProduct = props.chart.result.archiveProduct
+      const filterId = props.chart.results.filterId
+      const archiveProducts = props.chart.results.archiveProducts
 
       isLoading.value = true
       const filterCharts = filterId
-        ? await createNewChartsForFilters([
-            {
-              taskRunIds: taskRunId,
-              filterId,
-            },
-          ])
+        ? await createNewChartsForFilters(
+            [
+              {
+                taskRunIds: taskRunId,
+                filterId,
+              },
+            ],
+            true,
+          )
         : []
 
-      const archiveCharts = archiveProduct
-        ? await getChartsForTaskRun(props.chart.title, taskRunId)
+      const archiveCharts = archiveProducts
+        ? await getChartsForTaskRun(
+            props.chart.title,
+            taskRunId,
+            archiveProducts,
+          )
         : []
       isLoading.value = false
 
       if (filterCharts.length || archiveCharts.length) {
         emit('remove')
+        // Reverse the order of archiveCharts to maintain the configured order
+        archiveCharts.toReversed().forEach((chart) => emit('addChart', chart))
         filterCharts.forEach((chart) => emit('addChart', chart))
-        archiveCharts.forEach((chart) => emit('addChart', chart))
       }
     }
   },
@@ -134,43 +144,61 @@ watch(
 async function getChartsForTaskRun(
   chartTitle: string,
   taskRunId: string,
+  archiveProducts: DataAnalysisDisplayArchiveProduct[],
 ): Promise<ProductChart[]> {
   const attributes = [{ key: 'taskRunId', value: taskRunId }]
 
-  const fetchProducts = async (): Promise<ProductChart[]> => {
+  const fetchProducts = async () => {
     try {
-      const response = await fetchProductsMetaData(baseUrl, {
+      return await fetchProductsMetaData(baseUrl, {
         attribute: attributesToObject(attributes),
         // @ts-expect-error: FIXME: Not yet added to the filter type
         forecastCount: 10,
       })
-
-      // TODO: Filter on area and source id?
-      return response.map((product) => ({
-        id: crypto.randomUUID(),
-        type: 'product',
-        title: `Product of ${chartTitle}`,
-        product,
-      }))
     } catch (error) {
       console.error('Error fetching products metadata:', error)
       return []
     }
   }
 
-  const waitForProducts = async (): Promise<ProductChart[]> => {
-    let products: ProductChart[] = []
-    while (products.length === 0) {
-      products = await fetchProducts()
-      if (products.length === 0) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, PRODUCT_META_DATA_REFRESH_INTERVAL),
-        )
-      }
-    }
-    return products
+  const findArchiveProducts = (products: ProductMetaDataType[]) => {
+    return archiveProducts
+      .map((archiveProduct) =>
+        products.find(
+          (product) =>
+            archiveProduct.areaId === product.areaId &&
+            archiveProduct.sourceId === product.sourceId &&
+            archiveProduct.attributes?.every(
+              (attr) => product.attributes[attr.key ?? ''] === attr.value,
+            ),
+        ),
+      )
+      .filter((product) => product !== undefined)
   }
 
-  return await waitForProducts()
+  const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+  const waitForProducts = async () => {
+    let matchingProducts: ProductMetaDataType[] = []
+    while (matchingProducts.length !== archiveProducts.length) {
+      const newProducts = await fetchProducts()
+      matchingProducts = findArchiveProducts(newProducts)
+      if (matchingProducts.length !== archiveProducts.length) {
+        await wait(PRODUCT_META_DATA_REFRESH_INTERVAL)
+      }
+    }
+    return matchingProducts
+  }
+
+  const products = await waitForProducts()
+  return products.map((product) => {
+    const name = product.attributes.name
+    return {
+      id: crypto.randomUUID(),
+      type: 'product',
+      title: name ?? `Product of ${chartTitle}`,
+      product,
+    }
+  })
 }
 </script>

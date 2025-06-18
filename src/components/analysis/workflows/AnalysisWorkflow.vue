@@ -33,23 +33,15 @@ const workflows = computed(() => {
 })
 
 function addChart(taskId: string) {
-  const result = props.customToolBox.results
+  const results = props.customToolBox.results
   const title = props.customToolBox.name
-
-  const [areaId, sourceId] = result.archiveProductId.split('_')
 
   const chart: AsyncChart = {
     id: crypto.randomUUID(),
     type: 'async',
     title,
     taskId,
-    result: {
-      filterId: result.filterId,
-      archiveProduct: {
-        areaId,
-        sourceId,
-      },
-    },
+    results,
   }
 
   emit('addChart', chart)

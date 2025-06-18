@@ -12,18 +12,25 @@ import { configManager } from '@/services/application-config'
 import { absoluteUrl } from '../utils/absoluteUrl'
 import { uniq, uniqBy } from 'lodash-es'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
+import { convertFewsPiDateTimeToJsDate } from '../date'
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 export async function createNewChartsForFilters(
   filters: filterActionsFilter[],
+  useDataDomain: boolean = false,
 ) {
-  const promises = filters.map(createNewChartForFilter)
+  const promises = filters.map((filter) =>
+    createNewChartForFilter(filter, useDataDomain),
+  )
   const charts = await Promise.all(promises)
   return charts.filter((chart) => chart !== undefined)
 }
 
-export async function createNewChartForFilter(filter: filterActionsFilter) {
+export async function createNewChartForFilter(
+  filter: filterActionsFilter,
+  useDataDomain: boolean = false,
+) {
   if (!filter.filterId) {
     throw new Error('Filter must have a filterId')
   }
@@ -61,14 +68,20 @@ export async function createNewChartForFilter(filter: filterActionsFilter) {
     requests,
   )
 
-  const newCharts: FilterChart = {
+  const newChart: FilterChart = {
     id: crypto.randomUUID(),
     type: 'filter',
     title: getFilterSubplotTitle(filterSubplot),
     subplot: filterSubplot,
     requests,
   }
-  return newCharts
+  const period = result.config?.timeSeriesDisplay.period
+  if (useDataDomain && period) {
+    const periodStart = convertFewsPiDateTimeToJsDate(period.startDate, 'Z')
+    const periodEnd = convertFewsPiDateTimeToJsDate(period.endDate, 'Z')
+    newChart.domain = [periodStart, periodEnd]
+  }
+  return newChart
 }
 
 function subplotToFilterSubplot(
