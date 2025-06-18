@@ -1,5 +1,6 @@
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import type {
+  ActionRequest,
   ActionResult,
   ActionsResponse,
   TimeSeriesDisplaySubplot,
@@ -10,6 +11,7 @@ import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayTo
 import {
   convertFewsPiDateTimeToJsDate,
   convertJsDateToFewsPiDateTime,
+  convertJSDateToFewsPiParameter,
 } from '@/lib/date'
 import { MD5 } from 'crypto-js'
 
@@ -61,7 +63,7 @@ export function actionsResponseToDisplayConfig(
 
     // The period is always specified in UTC.
     const timeZoneOffsetString = 'Z'
-    let configPeriod: [Date, Date]
+    let configPeriod: [Date, Date] | undefined = undefined
     if (period) {
       const periodStart = convertFewsPiDateTimeToJsDate(
         period.startDate,
@@ -86,13 +88,36 @@ export function actionsResponseToDisplayConfig(
       nodeId: nodeId,
       class: 'singles',
       index: timeSeriesDisplayIndex,
-      requests: result.requests,
+      requests: addPeriodIfNotSet(result.requests, configPeriod),
       period: result.config.timeSeriesDisplay.period,
       subplots,
     }
     displays.push(display)
   }
   return displays
+}
+
+function addPeriodIfNotSet(
+  requests: ActionRequest[],
+  period?: [Date, Date],
+): ActionRequest[] {
+  return requests.map((request) => {
+    const url = request.request
+    if (
+      period === undefined ||
+      url.includes('startTime') ||
+      url.includes('endTime')
+    ) {
+      return request
+    }
+
+    const startTime = convertJSDateToFewsPiParameter(period[0])
+    const endTime = convertJSDateToFewsPiParameter(period[1])
+    return {
+      ...request,
+      request: `${url}&startTime=${startTime}&endTime=${endTime}`,
+    }
+  })
 }
 
 export function addIndexToKeys(results: ActionResult[]) {
