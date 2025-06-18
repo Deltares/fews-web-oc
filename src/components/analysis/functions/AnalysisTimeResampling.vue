@@ -176,7 +176,7 @@ function getFilters(items: FilterSubplotItem[]) {
     resamplingMethods,
     resamplingTimeStepIds,
     resamplingOmitMissing: true, // TODO: add option for this
-    includeNonResampled: true, // TODO: add option for this
+    includeNonResampled: false, // TODO: add option for this
   }))
 }
 </script>
