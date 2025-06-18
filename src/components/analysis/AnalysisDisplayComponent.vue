@@ -211,7 +211,7 @@ const tabs = computed(() => [
     text: 'Analysis',
     disabled: !canDoAnalysis.value,
   },
-  { value: 'workflows', icon: 'mdi-tools', text: 'Workflows' },
+  { value: 'workflows', icon: 'mdi-tools', text: 'Analysis Workflows' },
   { value: 'settings', icon: 'mdi-cog-outline', text: 'Settings' },
 ])
 
