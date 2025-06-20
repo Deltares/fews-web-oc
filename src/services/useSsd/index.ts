@@ -4,16 +4,15 @@ import {
   type SsdGetCapabilitiesResponse,
   type SsdDisplayPanel,
 } from '@deltares/fews-ssd-requests'
-import { ref, shallowRef, toValue, watchEffect } from 'vue'
+import { computed, ref, shallowRef, toValue, watchEffect } from 'vue'
 import { absoluteUrl } from '../../lib/utils/absoluteUrl.ts'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-export interface UseSsdReturn {
+export interface UseSsdCapabilitiesReturn {
   error: Ref<any>
   capabilities: Ref<SsdGetCapabilitiesResponse | undefined>
   isReady: Ref<boolean>
   isLoading: Ref<boolean>
-  src: Ref<string>
   panel: Ref<SsdDisplayPanel | undefined>
   dates: Ref<Date[]>
 }
@@ -31,11 +30,10 @@ function findPanel(
     })
 }
 
-export function useSsd(
+export function useSsdCapabilities(
   baseUrl: string,
   panelId: MaybeRefOrGetter<string>,
-  time: MaybeRefOrGetter<string>,
-): UseSsdReturn {
+): UseSsdCapabilitiesReturn {
   const ssdProvider = new SsdWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
@@ -44,12 +42,10 @@ export function useSsd(
   const isLoading = ref(false)
   const capabilities = ref<SsdGetCapabilitiesResponse>()
   const error = shallowRef<unknown | undefined>(undefined)
-  const src = ref('')
   const panel = ref<SsdDisplayPanel>()
   const dates = ref<Date[]>([])
 
   function reset() {
-    src.value = ''
     panel.value = undefined
     dates.value = []
   }
@@ -94,6 +90,25 @@ export function useSsd(
         dates.value = datesFromPeriod(panel.value.dimension.period)
       }
     }
+  })
+
+  return {
+    capabilities,
+    isReady,
+    isLoading,
+    error,
+    panel,
+    dates,
+  }
+}
+
+export function useSsd(
+  baseUrl: string,
+  panelId: MaybeRefOrGetter<string>,
+  time: MaybeRefOrGetter<string>,
+) {
+  const src = computed(() => {
+    const panelIdValue = toValue(panelId)
 
     // Update the source URL based on the found panel.
     let sourceUrl = absoluteUrl(
@@ -103,16 +118,8 @@ export function useSsd(
     const timeValue = toValue(time)
     if (timeValue) sourceUrl += `&time=${timeValue}`
 
-    src.value = sourceUrl
+    return sourceUrl
   })
 
-  return {
-    capabilities,
-    isReady,
-    isLoading,
-    error,
-    src,
-    panel,
-    dates,
-  }
+  return { src }
 }
