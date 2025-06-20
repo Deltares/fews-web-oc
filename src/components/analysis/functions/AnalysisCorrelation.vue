@@ -86,6 +86,7 @@ import {
   TimeSeriesDisplaySubplotItem,
 } from '@deltares/fews-pi-requests'
 import {
+  getCorrelationSubplot,
   RegressionEquation,
   regressionEquations,
 } from '@/lib/analysis/correlation'
@@ -148,10 +149,8 @@ function addChart() {
     id: crypto.randomUUID(),
     type: 'correlation',
     title: `Correlation between ${name1} and ${name2}`,
-    timeSeriesNameXAxis: name1,
-    timeSeriesNameYAxis: name2,
     filter,
-    subplot: { items: [] },
+    subplot: getCorrelationSubplot(name1, name2),
   }
 
   emit('addChart', chart)

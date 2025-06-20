@@ -1,13 +1,13 @@
 import { CorrelationChart } from '@/lib/analysis'
 import { Series } from '@/lib/timeseries/timeSeries'
-import {
-  TimeSeriesDisplaySubplot,
-  TimeSeriesDisplaySubplotItem,
-} from '@deltares/fews-pi-requests'
 import { computed, MaybeRefOrGetter, toValue } from 'vue'
 import { useCorrelation } from '@/services/useCorrelation'
 import { SeriesResourceType } from '@/lib/timeseries/types'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
+import {
+  CORRELATION_LINE_ID,
+  CORRELATION_POINTS_ID,
+} from '@/lib/analysis/correlation'
 
 export function useCorrelationChartData(
   chart: MaybeRefOrGetter<CorrelationChart>,
@@ -22,69 +22,12 @@ export function useCorrelationChartData(
 
   const { correlation } = useCorrelation(filter)
 
-  function getSubplot(
-    yAxisName: string,
-    xAxisName: string,
-    lineId: string,
-    pointsId: string,
-    legend: string,
-  ) {
-    const baseItem = {
-      visibleInPlot: true,
-      visibleInTable: true,
-      yAxis: {
-        axisPosition: 'left',
-        axisLabel: yAxisName,
-      },
-    }
+  const description = computed(() => {
+    return correlation.value?.equation?.description
+  })
 
-    const line: TimeSeriesDisplaySubplotItem = {
-      ...baseItem,
-      type: 'line',
-      legend,
-      color: '#080c80',
-      lineStyle: 'solid;thick',
-      lineWidth: 1.0,
-      request: lineId,
-      visibleInLegend: true,
-    }
-
-    const points: TimeSeriesDisplaySubplotItem = {
-      ...baseItem,
-      type: 'line',
-      color: '#ff0000',
-      markerStyle: 'solid',
-      markerSize: 6,
-      request: pointsId,
-      visibleInLegend: false,
-    }
-
-    const subplot: TimeSeriesDisplaySubplot = {
-      xAxis: {
-        axisLabel: xAxisName,
-      },
-      items: [line, points],
-    }
-
-    return subplot
-  }
-
-  const lineId = 'correlation-line'
-  const pointsId = 'correlation-points'
-
-  const subplot = computed(() => {
-    const _chart = toValue(chart)
-
-    const description = correlation.value?.equation?.description
-    const rSquared = correlation.value?.equation?.['R-squared']
-    const legend = `${description} with r²=${rSquared?.toFixed(3)}`
-    return getSubplot(
-      _chart.timeSeriesNameXAxis,
-      _chart.timeSeriesNameYAxis,
-      lineId,
-      pointsId,
-      legend,
-    )
+  const rSquared = computed(() => {
+    return correlation.value?.equation?.['R-squared']
   })
 
   const series = computed(() => {
@@ -114,13 +57,14 @@ export function useCorrelationChartData(
       })) ?? []
 
     return {
-      [lineId]: newSeriesLine,
-      [pointsId]: newSeriesPoints,
+      [CORRELATION_LINE_ID]: newSeriesLine,
+      [CORRELATION_POINTS_ID]: newSeriesPoints,
     }
   })
 
   return {
-    subplot,
     series,
+    description,
+    rSquared,
   }
 }

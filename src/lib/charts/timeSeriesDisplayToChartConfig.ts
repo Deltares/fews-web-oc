@@ -80,7 +80,7 @@ export function timeSeriesDisplayToChartConfig(
     if (
       item.type === 'line' &&
       item.lineStyle !== undefined &&
-      item.lineStyle !== 'none'
+      !item.lineStyle.startsWith('none')
     ) {
       const chartSeries: ChartSeries = getChartSeries(
         [item],
