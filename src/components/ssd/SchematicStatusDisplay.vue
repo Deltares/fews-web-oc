@@ -39,7 +39,7 @@ import type {
 import { ref, computed, watch, defineAsyncComponent } from 'vue'
 import { useAlertsStore } from '@/stores/alerts.ts'
 import { configManager } from '@/services/application-config/index.ts'
-import { useSsd } from '@/services/useSsd/index.ts'
+import { useSsd, useSsdCapabilities } from '@/services/useSsd/index.ts'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import SsdComponent from '@/components/ssd/SsdComponent.vue'
 import { useDisplay } from 'vuetify'
@@ -51,6 +51,7 @@ import {
 import { useDateRegistry } from '@/services/useDateRegistry'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import type { NavigateRoute } from '@/lib/router'
+import { convertJSDateToFewsPiParameter, isInDatesRange } from '@/lib/date'
 const SSDTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/ssd/SsdTimeSeriesDisplay.vue'),
 )
@@ -92,14 +93,24 @@ const ssdComponent = ref<InstanceType<typeof SsdComponent> | null>(null)
 const container = ref<HTMLElement | null>(null)
 const ssdContainer = ref<HTMLElement | null>(null)
 
+const { capabilities, dates } = useSsdCapabilities(baseUrl, () => props.panelId)
+useDateRegistry(dates)
+
 const selectedDateOfSlider = ref<Date>(new Date())
 const { selectedDate, dateTimeSliderEnabled } =
   useSelectedDate(selectedDateOfSlider)
 
 const selectedDateString = computed(() => {
-  if (selectedDate.value === undefined) return ''
-  const dateString = selectedDate.value.toISOString()
-  return dateString.substring(0, 19) + 'Z'
+  const isInvalidDate =
+    !selectedDate.value || isNaN(selectedDate.value.getTime())
+  const isOutOfRange = !isInDatesRange(selectedDate.value, dates.value)
+
+  if (isInvalidDate || isOutOfRange) {
+    // Use epoch date as a fallback as no date leads to most recent ssd
+    return convertJSDateToFewsPiParameter(new Date(0))
+  }
+
+  return convertJSDateToFewsPiParameter(selectedDate.value)
 })
 
 // Debounce the selected date string from the slider input,
@@ -109,13 +120,11 @@ const debouncedDateString = debouncedRef(
   sliderDebounceInterval,
 )
 
-const { capabilities, src, dates } = useSsd(
+const { src } = useSsd(
   baseUrl,
   () => props.panelId,
-  debouncedDateString,
+  () => debouncedDateString.value,
 )
-
-useDateRegistry(dates)
 
 const hideSSD = computed(() => {
   return mobile.value && props.objectId !== ''
