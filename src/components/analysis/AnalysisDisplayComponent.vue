@@ -139,8 +139,10 @@ function deleteSelectedCollection() {
   const index = collections.value.indexOf(selectedCollection.value)
   if (index !== -1) {
     collections.value.splice(index, 1)
-    selectedCollection.value =
-      collections.value[0] || createCollection('Default', props.config)
+    if (collections.value.length === 0) {
+      collections.value.push(createCollection('Default', props.config))
+    }
+    selectedCollection.value = collections.value[0]
   }
 }
 

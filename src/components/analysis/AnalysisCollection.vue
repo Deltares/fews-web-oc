@@ -35,7 +35,9 @@
       <v-card-actions>
         <v-spacer />
         <v-btn text @click="dialog = false">Cancel</v-btn>
-        <v-btn variant="tonal" @click="addCollection">Add</v-btn>
+        <v-btn :disabled="!canAddName" variant="tonal" @click="addCollection">
+          Add
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -44,7 +46,7 @@
 <script setup lang="ts">
 import { createCollection, type Collection } from '@/lib/analysis'
 import { DataAnalysisDisplayElement } from '@deltares/fews-pi-requests'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 interface Props {
   config: DataAnalysisDisplayElement
@@ -58,9 +60,14 @@ const collections = defineModel<Collection[]>('collections', {
 const dialog = ref(false)
 const newCollectionName = ref('')
 
+const canAddName = computed(() => {
+  const name = newCollectionName.value.trim()
+  return name && !collections.value.some((c) => c.name === name)
+})
+
 function addCollection(): void {
   const name = newCollectionName.value.trim()
-  if (name && !collections.value.some((c) => c.name === name)) {
+  if (canAddName.value) {
     const newItem = createCollection(name, props.config)
     collections.value.push(newItem)
     selectedCollection.value = newItem
