@@ -1,6 +1,6 @@
 export interface Serializer<T> {
-    read: (raw: string) => T;
-    write: (value: T) => string;
+  read: (raw: string) => T
+  write: (value: T) => string
 }
 
 export function getJsonSerializer<T>(): Serializer<T> {
