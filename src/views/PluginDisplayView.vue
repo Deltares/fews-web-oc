@@ -3,6 +3,7 @@
     <div class="h-100 d-flex flex-column child-container">
       <div class="w-100 d-flex flex-1-1 overflow-x-auto overflow-y-hidden">
         <PluginLoader
+          v-if="loaded"
           :componentName="correctComponent"
           :timeSeries="timeSeries"
           :time="selectedDateOfSlider"
@@ -28,7 +29,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, watchEffect } from 'vue'
+import {
+  computed,
+  defineAsyncComponent,
+  onMounted,
+  ref,
+  shallowRef,
+  watchEffect,
+} from 'vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
@@ -51,11 +59,15 @@ import {
   UseTimeSeriesOptions,
 } from '@/services/useFilterTimeSeries'
 import { configManager } from '@/services/application-config'
+import { loadRemote } from '@module-federation/enhanced/runtime'
 
-const PluginLoader = defineAsyncComponent(
-  // @ts-ignore
-  () => import(`weboc_mdba_plugins/plugin-loader`),
-)
+const loaded = ref(false)
+const PluginLoader = shallowRef<any>(null)
+
+async function loadRemoteVueComponent() {
+  return ((await loadRemote('weboc_mdba_plugins/plugin-loader')) as any).default
+}
+
 
 interface Props {
   customComponent?: string
@@ -76,6 +88,11 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 const userSettings = useUserSettingsStore()
+
+onMounted(async () => {
+  PluginLoader.value = await loadRemoteVueComponent()
+  loaded.value = true
+})
 
 const dateTimeSliderEnabled = ref<boolean>(true)
 const times = ref<Date[]>([
