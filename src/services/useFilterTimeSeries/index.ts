@@ -42,14 +42,13 @@ export function useFilterTimeSeries(
   filter: MaybeRefOrGetter<TimeSeriesFilter>,
   options: MaybeRefOrGetter<UseTimeSeriesOptions>,
   fetchingEnabled?: MaybeRefOrGetter<boolean>,
-  selectedTime?: MaybeRefOrGetter<Date | undefined>,
 ): UseTimeSeriesReturn {
   let controller = new AbortController()
   const series = shallowRef<Record<string, TimeSeriesResult>>({})
   const loadingSeriesIds = ref<string[]>([])
   const isLoading = computed(() => loadingSeriesIds.value.length > 0)
 
-  const watchedParams = [filter, options, fetchingEnabled, selectedTime].filter(
+  const watchedParams = [filter, options, fetchingEnabled].filter(
     (p) => p !== undefined,
   )
   watch(watchedParams, () => {
@@ -65,7 +64,8 @@ export function useFilterTimeSeries(
       transformRequestFn: createTransformRequestFn(controller),
     })
     const _filter = toValue(filter)
-
+    console.debug('useFilterTimeSeries: loadTimeSeries', _filter)
+    if (_filter === undefined || !_filter.filterId?.length ) return
     const updatedSeriesIds: string[] = []
 
     const piSeries = await piProvider.getTimeSeries(_filter)
