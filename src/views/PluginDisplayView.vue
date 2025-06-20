@@ -54,7 +54,7 @@ import { configManager } from '@/services/application-config'
 
 const PluginLoader = defineAsyncComponent(
   // @ts-ignore
-  () => import(`weboc_plugins/plugin-loader`),
+  () => import(`weboc_mdba_plugins/plugin-loader`),
 )
 
 interface Props {
