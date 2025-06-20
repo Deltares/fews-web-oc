@@ -4,8 +4,8 @@
       <div class="w-100 d-flex flex-1-1 overflow-x-auto overflow-y-hidden">
         <PluginLoader
           :componentName="correctComponent"
-          :timeSeries="Object.values(series)"
-          :selectedDate="selectedDateOfSlider"
+          :timeSeries="timeSeries"
+          :time="selectedDateOfSlider"
           @navigate="onNavigate"
         />
       </div>
@@ -122,7 +122,6 @@ const times = ref<Date[]>([
   DateTime.fromISO('2025-04-08T22:00:00Z').toJSDate(),
   DateTime.fromISO('2025-04-09T22:00:00Z').toJSDate(),
   DateTime.fromISO('2025-04-10T22:00:00Z').toJSDate(),
-  DateTime.fromISO('2025-04-11T22:00:00Z').toJSDate(),
 ])
 
 const showChartPanel = computed(() => {
@@ -134,6 +133,7 @@ const selectedDateOfSlider = ref<Date>(times.value[0])
 const filterIds = computed(() => topologyNode?.filterIds ?? [])
 
 const timeSeriesFilter = computed(() => {
+  console.log('Creating time series filter with filterIds:', filterIds.value)
   return {
     filterId: filterIds.value ? filterIds.value[0] : undefined,
     startTime:
@@ -157,6 +157,11 @@ const { series } = useFilterTimeSeries(
   timeSeriesFilter,
   timeSeriesOptions,
 )
+
+const timeSeries = computed(() => {
+  console.log('Time series data:', series.value)
+  return Object.values(series.value)
+})
 
 function getFilterActionsFilter(
   locationIds: string,
@@ -191,6 +196,7 @@ const correctComponent = computed(() => {
   if (customComponent === 'basin_storages') {
     return 'BasinStorage'
   }
+  console.log('Using custom component:', customComponent)
   return customComponent
 })
 
