@@ -459,7 +459,10 @@ function downloadProduct() {
   if (!src.value) return
   if (!selectedProduct.value) return
 
-  clickDownloadUrl(src.value, selectedProduct.value.attributes.name)
+  const productUrl = getProductURL(baseUrl, selectedProduct.value)
+  const fileExtension = getFileExtension(productUrl)
+  const fileName = `${selectedProduct.value.attributes.name}.${fileExtension}`
+  clickDownloadUrl(src.value, fileName)
 }
 
 async function onSave() {
