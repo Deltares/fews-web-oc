@@ -1,3 +1,4 @@
+import { WheelMode } from '@deltares/fews-web-oc-charts'
 import { defineStore } from 'pinia'
 import DefaultUserSettings from '@/assets/DefaultUserSettings.json'
 import { LayerKind } from '@/lib/streamlines'
@@ -54,7 +55,7 @@ const parameterGroupKey = 'units.parameterGroup.'
 
 export const useUserSettingsStore = defineStore('userSettings', {
   state: (): UserSettingsState => ({
-    groups: ['Units', 'Datum', 'UI', 'Map'],
+    groups: ['Units', 'Datum', 'UI', 'Map', 'Charts'],
     items: defaultUserSettings,
     convertDatum: false,
     useDisplayUnits: true,
@@ -72,6 +73,23 @@ export const useUserSettingsStore = defineStore('userSettings', {
     },
     get: (state) => (id: string) => {
       return state.items.find((item) => item.id === id)
+    },
+    scrollZoomMode: (state): WheelMode => {
+      const item = state.items.find(
+        (item) => item.id === 'charts.scrollZoomMode',
+      )
+      switch (item?.value) {
+        case 'x':
+          return WheelMode.X
+        case 'y':
+          return WheelMode.Y
+        case 'xy':
+          return WheelMode.XY
+        case 'off':
+          return WheelMode.NONE
+        default:
+          return WheelMode.X
+      }
     },
   },
   actions: {
