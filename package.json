@@ -28,6 +28,7 @@
     "@jsonforms/core": "^3.6.0",
     "@jsonforms/vue": "^3.6.0",
     "@jsonforms/vue-vuetify": "^3.6.0",
+    "@module-federation/enhanced": "^0.15.0",
     "@module-federation/vite": "^1.4.1",
     "@tiptap/core": "^2.14.0",
     "@tiptap/extension-blockquote": "^2.14.0",
