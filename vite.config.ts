@@ -98,7 +98,7 @@ export default defineConfig(({ mode }) => {
       federation({
         name: 'weboc_plugins',
         remotes: {
-          weboc_plugins: `${env.VITE_FEWS_WEBOC_MF_MANIFEST}`,
+          weboc_mdba_plugins: `${env.VITE_FEWS_WEBOC_MF_MANIFEST_URL}`,
         },
         shared: {
           vue: {
