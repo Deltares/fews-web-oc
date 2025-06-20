@@ -1,5 +1,5 @@
 <template>
-  <AnalysisDisplayComponent
+  <AnalysisDisplayCollectionComponent
     v-if="dataAnalysisDisplay"
     :key="dataAnalysisDisplay.id"
     :config="dataAnalysisDisplay"
@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import AnalysisDisplayComponent from './AnalysisDisplayComponent.vue'
+import AnalysisDisplayCollectionComponent from './AnalysisDisplayCollectionComponent.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { useDataAnalysisDisplay } from '@/services/useDataAnalysisDisplay'
 import { configManager } from '@/services/application-config'
