@@ -97,9 +97,6 @@ export default defineConfig(({ mode }) => {
         : vuetify(),
       federation({
         name: 'weboc_plugins',
-        remotes: {
-          weboc_mdba_plugins: `${env.VITE_FEWS_WEBOC_MF_MANIFEST_URL}`,
-        },
         shared: {
           vue: {
             singleton: true,
