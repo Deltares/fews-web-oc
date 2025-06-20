@@ -22,7 +22,6 @@ export const useAvailableTimeStepsStore = defineStore(
       isLoading.value = true
       try {
         const response = await piProvider.getTimeSteps({
-          // @ts-expect-error: FIXME: fix type in the library
           onlyResampling: true,
         })
         resamplingTimeSteps.value = response.timeSteps ?? []

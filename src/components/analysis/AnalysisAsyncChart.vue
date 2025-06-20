@@ -152,7 +152,6 @@ async function getChartsForTaskRun(
     try {
       return await fetchProductsMetaData(baseUrl, {
         attribute: attributesToObject(attributes),
-        // @ts-expect-error: FIXME: Not yet added to the filter type
         forecastCount: 10,
       })
     } catch (error) {
