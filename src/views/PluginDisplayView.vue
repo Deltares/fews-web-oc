@@ -2,9 +2,8 @@
   <div class="d-flex w-100 h-100 flex-row">
     <div class="h-100 d-flex flex-column child-container">
       <div class="w-100 d-flex flex-1-1 overflow-x-auto overflow-y-hidden">
-        <PluginLoader
+        <PluginComponent
           v-if="loaded"
-          :componentName="correctComponent"
           :timeSeries="timeSeries"
           :time="selectedDateOfSlider"
           @navigate="onNavigate"
@@ -62,12 +61,11 @@ import { configManager } from '@/services/application-config'
 import { loadRemote } from '@module-federation/enhanced/runtime'
 
 const loaded = ref(false)
-const PluginLoader = shallowRef<any>(null)
+const PluginComponent = shallowRef<any>(null)
 
-async function loadRemoteVueComponent() {
-  return ((await loadRemote('weboc_mdba_plugins/plugin-loader')) as any).default
+async function loadRemoteVueComponent(entryId: string) {
+  return ((await loadRemote(entryId)) as any).default
 }
-
 
 interface Props {
   customComponent?: string
@@ -89,8 +87,16 @@ interface Emits {
 const emit = defineEmits<Emits>()
 const userSettings = useUserSettingsStore()
 
-onMounted(async () => {
-  PluginLoader.value = await loadRemoteVueComponent()
+watchEffect(async () => {
+  loaded.value = false
+  const entryId =
+    customComponent === 'sankey'
+      ? 'weboc_mdba_plugins/sankey'
+      : customComponent === 'basin_storage'
+        ? 'weboc_mdba_plugins/basin-storage'
+        : customComponent
+
+  PluginComponent.value = await loadRemoteVueComponent(entryId)
   loaded.value = true
 })
 
