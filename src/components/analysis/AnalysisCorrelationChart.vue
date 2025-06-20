@@ -1,17 +1,17 @@
 <template>
-  <AnalysisFilterChart :chart :subplot :series :settings v-bind="$attrs" />
+  <AnalysisPlotChart :chart :config :series :settings v-bind="$attrs" />
 </template>
 
 <script setup lang="ts">
-import AnalysisFilterChart from './AnalysisFilterChart.vue'
+import AnalysisPlotChart from '@/components/analysis/AnalysisPlotChart.vue'
 import type { CorrelationChart } from '@/lib/analysis'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import type { ZoomHandler } from '@deltares/fews-web-oc-charts'
 import { useCorrelationChartData } from '@/services/useCorrelationChartData'
+import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
+import { computed } from 'vue'
 
 interface Props {
   chart: CorrelationChart
-  zoomHandler?: ZoomHandler
   settings: ComponentSettings
   startTime: Date
   endTime: Date
@@ -19,9 +19,25 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { subplot, series } = useCorrelationChartData(
+const { series, description, rSquared } = useCorrelationChartData(
   () => props.chart,
   () => props.startTime,
   () => props.endTime,
 )
+
+const chartConfig = computed(() =>
+  timeSeriesDisplayToChartConfig(props.chart.subplot),
+)
+
+const config = computed(() => {
+  return {
+    ...chartConfig.value,
+    series: chartConfig.value.series.map((s) => ({
+      ...s,
+      name: s.name
+        .replace('{description}', description.value ?? 'unknown')
+        .replace('{rSquared}', rSquared.value?.toFixed(3) ?? 'unknown'),
+    })),
+  }
+})
 </script>
