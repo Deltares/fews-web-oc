@@ -168,7 +168,7 @@ function getFilterActionsFilter(
 ): filterActionsFilter & UseDisplayConfigOptions {
   return {
     locationIds: locationIds,
-    filterId: filterIds.value ? filterIds.value[0] : undefined,
+    filterId: filterIds.value.length ? filterIds.value[0] : undefined,
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
   }
