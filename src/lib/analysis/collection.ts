@@ -1,5 +1,5 @@
 import { DataAnalysisDisplayElement } from '@deltares/fews-pi-requests'
-import type { Collection } from './types'
+import type { Collection, DisplayCollections } from './types'
 import {
   intervalToDateRange,
   periodToIntervalItem,
@@ -20,6 +20,20 @@ export function createCollection(
     settings: {
       startTime,
       endTime,
+      liveUpdate: {
+        enabled: false,
+        daysBeforeNow: 2,
+        daysAfterNow: 2,
+      },
     },
+  }
+}
+
+export function createDefaultDisplayCollections(
+  config: DataAnalysisDisplayElement,
+): DisplayCollections {
+  return {
+    version: '1.0',
+    collections: [createCollection('Default', config)],
   }
 }

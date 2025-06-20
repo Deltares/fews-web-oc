@@ -50,26 +50,24 @@ import { computed, ref } from 'vue'
 
 interface Props {
   config: DataAnalysisDisplayElement
+  collections: Collection[]
 }
 const props = defineProps<Props>()
 
 const selectedCollection = defineModel<Collection>('selectedCollection')
-const collections = defineModel<Collection[]>('collections', {
-  required: true,
-})
 const dialog = ref(false)
 const newCollectionName = ref('')
 
 const canAddName = computed(() => {
   const name = newCollectionName.value.trim()
-  return name && !collections.value.some((c) => c.name === name)
+  return name && !props.collections.some((c) => c.name === name)
 })
 
 function addCollection(): void {
   const name = newCollectionName.value.trim()
   if (canAddName.value) {
     const newItem = createCollection(name, props.config)
-    collections.value.push(newItem)
+    props.collections.push(newItem)
     selectedCollection.value = newItem
   }
   newCollectionName.value = ''

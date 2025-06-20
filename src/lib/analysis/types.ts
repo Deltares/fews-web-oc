@@ -10,6 +10,11 @@ import type {
 
 export type AnalysisFunction = 'correlation'
 
+export interface DisplayCollections {
+  version?: '1.0'
+  collections: Collection[]
+}
+
 export interface Collection {
   name: string
   settings: Settings
@@ -19,6 +24,11 @@ export interface Collection {
 export interface Settings {
   startTime: Date
   endTime: Date
+  liveUpdate: {
+    enabled: boolean
+    daysBeforeNow: number
+    daysAfterNow: number
+  }
 }
 
 export interface BaseChart {
