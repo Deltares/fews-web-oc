@@ -156,6 +156,13 @@ addUpdateWatcher(
     layer.setStyle(style)
   },
 )
+addUpdateWatcher(
+  () => props.layerOptions?.useLastValue,
+  (useLastValue) => {
+    if (!layer) return
+    layer.setUseLastValue(useLastValue)
+  },
+)
 
 function addLayer(): void {
   if (!map) return
