@@ -314,11 +314,17 @@ function closeTimeSeriesDisplay(): void {
 
 watch(locations, () => {
   if (
-    !locations.value?.length ||
+    props.locationIds &&
     props.locationIds
       ?.split(',')
       .some((id) => !locations.value?.map((l) => l.locationId).includes(id))
   ) {
+    closeTimeSeriesDisplay()
+  }
+})
+
+watch(onlyCoverageLayersAvailable, (newValue) => {
+  if (!newValue) {
     closeTimeSeriesDisplay()
   }
 })
