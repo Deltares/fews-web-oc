@@ -14,6 +14,7 @@ import {
   nodeHasWebDisplay,
   nodeHasDataAnalysisDisplay,
   nodeHasDocumentDisplay,
+  nodeHasPlugin,
 } from './nodes'
 import {
   ComponentType,
@@ -124,6 +125,11 @@ export function displayTabsForNode(
       case 'documents-display':
         tab.active = nodeHasDocumentDisplay(node)
         tab.to.params = { ...params }
+        break
+      case 'plugin-display':
+        const customComponent = node.id.split('-')[1]
+        tab.active = nodeHasPlugin(node)
+        tab.to.params = { ...params, customComponent }
         break
     }
   }

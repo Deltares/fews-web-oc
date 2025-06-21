@@ -1,0 +1,2818 @@
+{
+  "version" : "1.25",
+  "timeZone" : "0.0",
+  "timeSeries" : [ {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_401027",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "401027 - HUME DAM",
+      "lat" : "-36.125",
+      "lon" : "147.04",
+      "x" : "147.04",
+      "y" : "-36.125",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "26.92",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "27.21",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_401224A",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "401224A - Dartmouth Dam",
+      "lat" : "-36.55709641",
+      "lon" : "147.5296224",
+      "x" : "147.5296224",
+      "y" : "-36.55709641",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "72.38",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "72.19",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_403234A",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "403234A - LAKE WILLIAM HOVELL (HG)",
+      "lat" : "-36.91340337",
+      "lon" : "146.3863558",
+      "x" : "146.3863558",
+      "y" : "-36.91340337",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "39.09",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "39.06",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_403235A",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "403235A - LAKE BUFFALO (HG)",
+      "lat" : "-36.7159314",
+      "lon" : "146.6551425",
+      "x" : "146.6551425",
+      "y" : "-36.7159314",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "51.9",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "52.08",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_404218A",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "404218A - Nillahcootie",
+      "lat" : "-36.85471607",
+      "lon" : "146.0092056",
+      "x" : "146.0092056",
+      "y" : "-36.85471607",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_405258A",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "405258A - LAKE EILDON (HG)",
+      "lat" : "-37.22512324",
+      "lon" : "145.9320494",
+      "x" : "145.9320494",
+      "y" : "-37.22512324",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "59.07",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "58.99",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_405260A",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "405260A - WARANGA @ H. GAUGE",
+      "lat" : "-36.51111978",
+      "lon" : "145.0911842",
+      "x" : "145.0911842",
+      "y" : "-36.51111978",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_406219A",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "406219A - Lake Eppalock HG",
+      "lat" : "-36.8510207",
+      "lon" : "144.5312227",
+      "x" : "144.5312227",
+      "y" : "-36.8510207",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "58.68",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "58.59",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_407241A",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "407241A - Cairn Curran (HG)",
+      "lat" : "-36.98903",
+      "lon" : "143.96842",
+      "x" : "143.96842",
+      "y" : "-36.98903",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_407244A",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "407244A - TULLAROOP RESERVOIR (HG)",
+      "lat" : "-37.09296795",
+      "lon" : "143.8637307",
+      "x" : "143.8637307",
+      "y" : "-37.09296795",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "46.77",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "46.73",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_410102",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "410102 - Blowering Dam",
+      "lat" : "-35.4012",
+      "lon" : "148.2429",
+      "x" : "148.2429",
+      "y" : "-35.4012",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "38.38",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "38.77",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_410131",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "410131 - Burrinjuck Dam",
+      "lat" : "-35.0",
+      "lon" : "148.5989",
+      "x" : "148.5989",
+      "y" : "-35.0",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "42",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "42.21",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_412010",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "412010 - Wyangala Dam",
+      "lat" : "-33.9688",
+      "lon" : "148.9517",
+      "x" : "148.9517",
+      "y" : "-33.9688",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "78.77",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "78.85",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_412106",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "412106 - Carcoar Dam",
+      "lat" : "-33.6179",
+      "lon" : "149.1776",
+      "x" : "149.1776",
+      "y" : "-33.6179",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "93.02",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "93.04",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_416030",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "416030 - Pindari Dam",
+      "lat" : "-29.3854",
+      "lon" : "151.243",
+      "x" : "151.243",
+      "y" : "-29.3854",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "48.14",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "48.18",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_416315A",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "416315A - Glenlyon Dam (Qld)",
+      "lat" : "-28.9651",
+      "lon" : "151.4511",
+      "x" : "151.4511",
+      "y" : "-28.9651",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "54.31",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "54.3",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_416409A",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "416409A - Coolmunda",
+      "lat" : "-28.4387222",
+      "lon" : "151.2172222",
+      "x" : "151.2172222",
+      "y" : "-28.4387222",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "59.59",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "59.54",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_418035",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "418035 - Copeton Dam",
+      "lat" : "-29.9049",
+      "lon" : "150.9234",
+      "x" : "150.9234",
+      "y" : "-29.9049",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "53.35",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "53.38",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_419041",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "419041 - Keepit Dam",
+      "lat" : "-30.8792",
+      "lon" : "150.4928",
+      "x" : "150.4928",
+      "y" : "-30.8792",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "67.26",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "67.78",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_419069",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "419069 - Chaffey Dam",
+      "lat" : "-31.3475",
+      "lon" : "151.1383",
+      "x" : "151.1383",
+      "y" : "-31.3475",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "103.89",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "105.33",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_419080",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "419080 - Split Rock Dam",
+      "lat" : "-30.5776",
+      "lon" : "150.6997",
+      "x" : "150.6997",
+      "y" : "-30.5776",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "78.2",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "78.2",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_421078",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "421078 - Burrendong Dam",
+      "lat" : "-32.6673",
+      "lon" : "149.1115",
+      "x" : "149.1115",
+      "y" : "-32.6673",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "51.8",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "51.94",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_421148",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "421148 - Windamere Dam",
+      "lat" : "-32.7259",
+      "lon" : "149.7675",
+      "x" : "149.7675",
+      "y" : "-32.7259",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "89.14",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "89.14",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_422212B",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "422212B - Beardmore",
+      "lat" : "-27.906985",
+      "lon" : "148.646699",
+      "x" : "148.646699",
+      "y" : "-27.906985",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "95.54",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "95.16",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_422214A",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "422214A - Jack Taylor",
+      "lat" : "-28.043869",
+      "lon" : "148.567001",
+      "x" : "148.567001",
+      "y" : "-28.043869",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "97.06",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "97.18",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_422312A",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "422312A - Cooby",
+      "lat" : "-27.382438",
+      "lon" : "151.924909",
+      "x" : "151.924909",
+      "y" : "-27.382438",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_422315B",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "422315B - Leslie",
+      "lat" : "-28.2172222",
+      "lon" : "151.9166667",
+      "x" : "151.9166667",
+      "y" : "-28.2172222",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "73.5",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "73.47",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_422358A",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "422358A - Chinchilla",
+      "lat" : "-26.80009",
+      "lon" : "150.57715",
+      "x" : "150.57715",
+      "y" : "-26.80009",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "103.3",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "103.06",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_A4261093",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "A4261093 - Lake Victoria (Lake Centre)",
+      "lat" : "-33.9837",
+      "lon" : "141.2764",
+      "x" : "141.2764",
+      "y" : "-33.9837",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "53.57",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "53.88",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_LKALBERT",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "LKALBERT - Lake Albert",
+      "lat" : "-35.6289",
+      "lon" : "139.302",
+      "x" : "139.302",
+      "y" : "-35.6289",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "95.54",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "101.04",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_LKALEX",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "LKALEX - Lake Alexandrina",
+      "lat" : "-35.4405",
+      "lon" : "139.156",
+      "x" : "139.156",
+      "y" : "-35.4405",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "92.36",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "92.32",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_MENINDE",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "MENINDE - MENINDEE LAKES TOTAL",
+      "lat" : "-32.4",
+      "lon" : "142.395",
+      "x" : "142.395",
+      "y" : "-32.4",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "64.63",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "65.66",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_412000",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "LACHLANVALLEY - Lachlan Valley Summary",
+      "lat" : "-33.344887",
+      "lon" : "146.788291",
+      "x" : "146.788291",
+      "y" : "-33.344887",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "79.17",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "79.26",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_NORTHBASIN",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "NORTHBASIN - Northern Basin Summary",
+      "lat" : "-29.891459",
+      "lon" : "146.529795",
+      "x" : "146.529795",
+      "y" : "-29.891459",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_SOUTHBASIN",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "SOUTHBASIN - Southern Basin Summary",
+      "lat" : "-35.774381",
+      "lon" : "142.447973",
+      "x" : "142.447973",
+      "y" : "-35.774381",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_WHOLEBASIN",
+      "parameterId" : "V%_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "WHOLEBASIN - Whole Basin Summary",
+      "lat" : "-32.640909",
+      "lon" : "146.221898",
+      "x" : "146.221898",
+      "y" : "-32.640909",
+      "z" : "0.0",
+      "units" : "%"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_401027",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "401027 - HUME DAM",
+      "lat" : "-36.125",
+      "lon" : "147.04",
+      "x" : "147.04",
+      "y" : "-36.125",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "809054",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "817791",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_401224A",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "401224A - Dartmouth Dam",
+      "lat" : "-36.55709641",
+      "lon" : "147.5296224",
+      "x" : "147.5296224",
+      "y" : "-36.55709641",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "2791040",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "2783993",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_403234A",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "403234A - LAKE WILLIAM HOVELL (HG)",
+      "lat" : "-36.91340337",
+      "lon" : "146.3863558",
+      "x" : "146.3863558",
+      "y" : "-36.91340337",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "5355",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "5351",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_403235A",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "403235A - LAKE BUFFALO (HG)",
+      "lat" : "-36.7159314",
+      "lon" : "146.6551425",
+      "x" : "146.6551425",
+      "y" : "-36.7159314",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "12199",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "12240",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_404218A",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "404218A - Nillahcootie",
+      "lat" : "-36.85471607",
+      "lon" : "146.0092056",
+      "x" : "146.0092056",
+      "y" : "-36.85471607",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_405258A",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "405258A - LAKE EILDON (HG)",
+      "lat" : "-37.22512324",
+      "lon" : "145.9320494",
+      "x" : "145.9320494",
+      "y" : "-37.22512324",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "1969440",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "1966829",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_405260A",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "405260A - WARANGA @ H. GAUGE",
+      "lat" : "-36.51111978",
+      "lon" : "145.0911842",
+      "x" : "145.0911842",
+      "y" : "-36.51111978",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_406219A",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "406219A - Lake Eppalock HG",
+      "lat" : "-36.8510207",
+      "lon" : "144.5312227",
+      "x" : "144.5312227",
+      "y" : "-36.8510207",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "178963",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "178698",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_407241A",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "407241A - Cairn Curran (HG)",
+      "lat" : "-36.98903",
+      "lon" : "143.96842",
+      "x" : "143.96842",
+      "y" : "-36.98903",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_407244A",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "407244A - TULLAROOP RESERVOIR (HG)",
+      "lat" : "-37.09296795",
+      "lon" : "143.8637307",
+      "x" : "143.8637307",
+      "y" : "-37.09296795",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "33676",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "33643",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_410102",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "410102 - Blowering Dam",
+      "lat" : "-35.4012",
+      "lon" : "148.2429",
+      "x" : "148.2429",
+      "y" : "-35.4012",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "626048",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "632391",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_410131",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "410131 - Burrinjuck Dam",
+      "lat" : "-35.0",
+      "lon" : "148.5989",
+      "x" : "148.5989",
+      "y" : "-35.0",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "431742",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "433916",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_412010",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "412010 - Wyangala Dam",
+      "lat" : "-33.9688",
+      "lon" : "148.9517",
+      "x" : "148.9517",
+      "y" : "-33.9688",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "958594",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "959607",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_412106",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "412106 - Carcoar Dam",
+      "lat" : "-33.6179",
+      "lon" : "149.1776",
+      "x" : "149.1776",
+      "y" : "-33.6179",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "33302",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "33308",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_416030",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "416030 - Pindari Dam",
+      "lat" : "-29.3854",
+      "lon" : "151.243",
+      "x" : "151.243",
+      "y" : "-29.3854",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "150195",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "150326",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_416315A",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "416315A - Glenlyon Dam (Qld)",
+      "lat" : "-28.9651",
+      "lon" : "151.4511",
+      "x" : "151.4511",
+      "y" : "-28.9651",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "137940",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "137929",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_416409A",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "416409A - Coolmunda",
+      "lat" : "-28.4387222",
+      "lon" : "151.2172222",
+      "x" : "151.2172222",
+      "y" : "-28.4387222",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "41155",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "41121",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_418035",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "418035 - Copeton Dam",
+      "lat" : "-29.9049",
+      "lon" : "150.9234",
+      "x" : "150.9234",
+      "y" : "-29.9049",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "727680",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "728104",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_419041",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "419041 - Keepit Dam",
+      "lat" : "-30.8792",
+      "lon" : "150.4928",
+      "x" : "150.4928",
+      "y" : "-30.8792",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "286204",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "288409",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_419069",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "419069 - Chaffey Dam",
+      "lat" : "-31.3475",
+      "lon" : "151.1383",
+      "x" : "151.1383",
+      "y" : "-31.3475",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "104407",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "105852",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_419080",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "419080 - Split Rock Dam",
+      "lat" : "-30.5776",
+      "lon" : "150.6997",
+      "x" : "150.6997",
+      "y" : "-30.5776",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "310747",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "310738",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_421078",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "421078 - Burrendong Dam",
+      "lat" : "-32.6673",
+      "lon" : "149.1115",
+      "x" : "149.1115",
+      "y" : "-32.6673",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "615397",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "617068",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_421148",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "421148 - Windamere Dam",
+      "lat" : "-32.7259",
+      "lon" : "149.7675",
+      "x" : "149.7675",
+      "y" : "-32.7259",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "328157",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "328134",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_422212B",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "422212B - Beardmore",
+      "lat" : "-27.906985",
+      "lon" : "148.646699",
+      "x" : "148.646699",
+      "y" : "-27.906985",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "78054",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "77747",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_422214A",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "422214A - Jack Taylor",
+      "lat" : "-28.043869",
+      "lon" : "148.567001",
+      "x" : "148.567001",
+      "y" : "-28.043869",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "9771",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "9783",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_422312A",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "422312A - Cooby",
+      "lat" : "-27.382438",
+      "lon" : "151.924909",
+      "x" : "151.924909",
+      "y" : "-27.382438",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "-999.0",
+      "flag" : "8"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_422315B",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "422315B - Leslie",
+      "lat" : "-28.2172222",
+      "lon" : "151.9166667",
+      "x" : "151.9166667",
+      "y" : "-28.2172222",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "78094",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "78063",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_422358A",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "422358A - Chinchilla",
+      "lat" : "-26.80009",
+      "lon" : "150.57715",
+      "x" : "150.57715",
+      "y" : "-26.80009",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "10103",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "10079",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_A4261093",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "A4261093 - Lake Victoria (Lake Centre)",
+      "lat" : "-33.9837",
+      "lon" : "141.2764",
+      "x" : "141.2764",
+      "y" : "-33.9837",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "362636",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "364749",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_LKALBERT",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "LKALBERT - Lake Albert",
+      "lat" : "-35.6289",
+      "lon" : "139.302",
+      "x" : "139.302",
+      "y" : "-35.6289",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "267117",
+      "flag" : "2",
+      "comment" : "Gap_Filled"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "282492",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_LKALEX",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "LKALEX - Lake Alexandrina",
+      "lat" : "-35.4405",
+      "lon" : "139.156",
+      "x" : "139.156",
+      "y" : "-35.4405",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "1519136",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "1518489",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessVopo",
+      "locationId" : "R_MENINDE",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "MENINDE - MENINDEE LAKES TOTAL",
+      "lat" : "-32.4",
+      "lon" : "142.395",
+      "x" : "142.395",
+      "y" : "-32.4",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "1118726",
+      "valueSource" : "MAN",
+      "flag" : "2",
+      "user" : "Alec Jagger (MDBA)"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "1136519",
+      "valueSource" : "MAN",
+      "flag" : "2",
+      "user" : "Patrick Ross-Magee (MDBA)"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_412000",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "LACHLANVALLEY - Lachlan Valley Summary",
+      "lat" : "-33.344887",
+      "lon" : "146.788291",
+      "x" : "146.788291",
+      "y" : "-33.344887",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "991896",
+      "flag" : "0"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "992915",
+      "flag" : "0"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_NORTHBASIN",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "NORTHBASIN - Northern Basin Summary",
+      "lat" : "-29.891459",
+      "lon" : "146.529795",
+      "x" : "146.529795",
+      "y" : "-29.891459",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "2701882",
+      "flag" : "8"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "2707681",
+      "flag" : "8"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_SOUTHBASIN",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "SOUTHBASIN - Southern Basin Summary",
+      "lat" : "-35.774381",
+      "lon" : "142.447973",
+      "x" : "142.447973",
+      "y" : "-35.774381",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "6335763",
+      "flag" : "8"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "6365648",
+      "flag" : "8"
+    } ]
+  }, {
+    "header" : {
+      "type" : "instantaneous",
+      "moduleInstanceId" : "ProcessStorages",
+      "locationId" : "R_WHOLEBASIN",
+      "parameterId" : "V_obs",
+      "qualifierId" : [ "opo" ],
+      "timeStep" : {
+        "unit" : "second",
+        "multiplier" : "86400"
+      },
+      "startDate" : {
+        "date" : "2025-05-26",
+        "time" : "22:00:00"
+      },
+      "endDate" : {
+        "date" : "2025-05-27",
+        "time" : "22:00:00"
+      },
+      "missVal" : "-999.0",
+      "stationName" : "WHOLEBASIN - Whole Basin Summary",
+      "lat" : "-32.640909",
+      "lon" : "146.221898",
+      "x" : "146.221898",
+      "y" : "-32.640909",
+      "z" : "0.0",
+      "units" : "ML"
+    },
+    "events" : [ {
+      "date" : "2025-05-26",
+      "time" : "22:00:00",
+      "value" : "991896",
+      "flag" : "8"
+    }, {
+      "date" : "2025-05-27",
+      "time" : "22:00:00",
+      "value" : "992915",
+      "flag" : "8"
+    } ]
+  } ]
+}
