@@ -300,6 +300,10 @@ body {
   margin: 0px;
   overflow-y: auto !important;
   height: 100%;
+  background-color: rgba(
+    var(--v-theme-surface),
+    var(--v-high-emphasis-opacity)
+  );
 }
 
 #app {
