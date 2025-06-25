@@ -88,7 +88,10 @@ const emit = defineEmits<Emits>()
 const userSettings = useUserSettingsStore()
 
 onMounted(async () => {
-  console.log( 'Mounted MicroFrontendDisplay with customComponent:', customComponent)
+  console.log(
+    'Mounted MicroFrontendDisplay with customComponent:',
+    customComponent,
+  )
 })
 
 watchEffect(async () => {

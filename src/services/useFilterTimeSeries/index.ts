@@ -56,7 +56,7 @@ export function useFilterTimeSeries(
     })
     const _filter = toValue(filter)
     console.debug('useFilterTimeSeries: loadTimeSeries', _filter)
-    if (_filter === undefined || !_filter.filterId?.length ) return
+    if (_filter === undefined || !_filter.filterId?.length) return
     const updatedSeriesIds: string[] = []
 
     const piSeries = await piProvider.getTimeSeries(_filter)
