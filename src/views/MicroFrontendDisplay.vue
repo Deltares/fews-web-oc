@@ -31,6 +31,7 @@
 import {
   computed,
   defineAsyncComponent,
+  onMounted,
   ref,
   shallowRef,
   watchEffect,
@@ -86,6 +87,10 @@ interface Emits {
 const emit = defineEmits<Emits>()
 const userSettings = useUserSettingsStore()
 
+onMounted(async () => {
+  console.log( 'Mounted MicroFrontendDisplay with customComponent:', customComponent)
+})
+
 watchEffect(async () => {
   loaded.value = false
   const entryId =
@@ -94,7 +99,6 @@ watchEffect(async () => {
       : customComponent === 'basin_storage'
         ? 'mdba-micro-frontend/basin-storage'
         : customComponent
-
   PluginComponent.value = await loadRemoteVueComponent(entryId)
   loaded.value = true
 })
@@ -216,7 +220,7 @@ function onNavigate(event: any) {
 }
 
 function closeTimeSeriesDisplay(): void {
-  emit('navigate', { name: 'PluginDisplay' })
+  emit('navigate', { name: 'MicroFrontendDisplay' })
 }
 </script>
 

@@ -144,7 +144,7 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
     nodeHasDynamicReportDisplay(node) ||
     nodeHasDataAnalysisDisplay(node) ||
     nodeHasDocumentDisplay(node) ||
-    nodeHasPlugin(node)
+    nodeHasMF(node)
   )
 }
 
@@ -210,6 +210,6 @@ export function nodeHasDocumentDisplay(node: TopologyNode) {
   return node.documentDisplayId !== undefined
 }
 
-export function nodeHasPlugin(node: TopologyNode) {
+export function nodeHasMF(node: TopologyNode) {
   return node.id.startsWith('micro_frontend')
 }

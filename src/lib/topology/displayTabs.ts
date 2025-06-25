@@ -14,7 +14,7 @@ import {
   nodeHasWebDisplay,
   nodeHasDataAnalysisDisplay,
   nodeHasDocumentDisplay,
-  nodeHasPlugin,
+  nodeHasMF,
 } from './nodes'
 import {
   ComponentType,
@@ -126,9 +126,9 @@ export function displayTabsForNode(
         tab.active = nodeHasDocumentDisplay(node)
         tab.to.params = { ...params }
         break
-      case 'plugin-display':
+      case 'micro-frontend-display':
         const customComponent = node.id.split('-')[1]
-        tab.active = nodeHasPlugin(node)
+        tab.active = nodeHasMF(node)
         tab.to.params = { ...params, customComponent }
         break
     }

@@ -505,7 +505,7 @@ function onNavigate(to: NavigateRoute) {
         query: route.query,
       })
       break
-    case 'PluginDisplay':
+    case 'MicroFrontendDisplay':
       router.push({
         name,
         params: {
@@ -514,7 +514,7 @@ function onNavigate(to: NavigateRoute) {
         query: route.query,
       })
       break
-    case 'PluginTimeSeriesDisplay':
+    case 'MicroFrontendTimeSeriesDisplay':
       router.push({
         name,
         params: {

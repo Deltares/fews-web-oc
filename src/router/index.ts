@@ -42,7 +42,7 @@ const DataAnalysisDisplay = () =>
   import('../components/analysis/DataAnalysisDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
 const DocumentDisplayView = () => import('../views/DocumentDisplayView.vue')
-const PluginDisplayView = () => import('../views/PluginDisplayView.vue')
+const MicroFrontendDisplay = () => import('../views/MicroFrontendDisplay.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
   {
@@ -284,15 +284,15 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         meta: { sidebar: true },
       },
       {
-        path: 'plugin/:customComponent',
-        name: 'TopologyPluginDisplay',
-        component: PluginDisplayView,
+        path: 'mf/:customComponent',
+        name: 'TopologyMicroFrontendDisplay',
+        component: MicroFrontendDisplay,
         props: true,
         meta: { sidebar: true },
         children: [
           {
             path: 'location/:locationIds',
-            name: 'TopologyPluginTimeSeriesDisplay',
+            name: 'TopologyMicroFrontendTimeSeriesDisplay',
             component: Empty,
             props: true,
             meta: { sidebar: true },
