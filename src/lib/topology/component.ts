@@ -7,7 +7,7 @@ export type ComponentType =
   | 'dynamic-report-display'
   | 'data-analysis-display'
   | 'html-display'
-  | 'plugin-display'
+  | 'micro-frontend-display'
 
 export const ComponentType = {
   dashboard: 'dashboard',
@@ -23,7 +23,7 @@ export const ComponentType = {
   'runtask-display': 'runtask-display',
   'log-display': 'log-display',
   'documents-display': 'documents-display',
-  'plugin-display': 'plugin-display',
+  'micro-frontend-display': 'micro-frontend-display',
 } satisfies Record<ComponentType, ComponentType>
 
 export const componentTypeToIconMap = {
@@ -40,7 +40,7 @@ export const componentTypeToIconMap = {
   'runtask-display': 'mdi-cog',
   'log-display': 'mdi-file-document',
   'documents-display': 'mdi-file-document-multiple',
-  'plugin-display': 'mdi-toy-brick',
+  'micro-frontend-display': 'mdi-toy-brick',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToTitleMap = {
@@ -57,7 +57,7 @@ export const componentTypeToTitleMap = {
   'runtask-display': 'Run Task',
   'log-display': 'Log',
   'documents-display': 'Documents Browser',
-  'plugin-display': 'Plugin',
+  'micro-frontend-display': 'Micro Frontend',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToRouteNameMap = {
@@ -74,7 +74,7 @@ export const componentTypeToRouteNameMap = {
   'runtask-display': 'TopologyWhatIfDisplay',
   'log-display': 'TopologyLogDisplay',
   'documents-display': 'TopologyDocumentDisplay',
-  'plugin-display': 'TopologyPluginDisplay',
+  'micro-frontend-display': 'TopologyMicroFrontendDisplay',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToIdMap = {
@@ -91,5 +91,5 @@ export const componentTypeToIdMap = {
   'dynamic-report-display': 'dynamicreport',
   'log-display': 'log',
   'documents-display': 'documents',
-  'plugin-display': 'plugin',
+  'micro-frontend-display': 'mf',
 } satisfies Record<ComponentType, string>
