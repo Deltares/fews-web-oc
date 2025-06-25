@@ -33,13 +33,14 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
     if (remoteManifest) {
       console.log(`Loading remote manifest from: ${remoteManifest}`)
       const initOptions = {
-        name: 'weboc_plugins',
+        name: 'weboc',
         remotes: [{
           // mf-manifest.json is a file type generated in the new version of Module Federation build tools, providing richer functionality compared to remoteEntry
           // Preloading depends on the use of the mf-manifest.json file type
-          name: 'weboc_mdba_plugins',
+          name: 'mdba-micro-frontend',
           entry: remoteManifest,
-        }],
+        }  
+      ],
       }
       await init(initOptions)
     }
