@@ -31,7 +31,6 @@
 import {
   computed,
   defineAsyncComponent,
-  onMounted,
   ref,
   shallowRef,
   watchEffect,
@@ -210,17 +209,6 @@ watchEffect(() => {
     'Custom component changed, resetting selected date',
     customComponent,
   )
-})
-
-const correctComponent = computed(() => {
-  if (customComponent === 'sankey') {
-    return 'Sankey'
-  }
-  if (customComponent === 'basin_storages') {
-    return 'BasinStorage'
-  }
-  console.log('Using custom component:', customComponent)
-  return customComponent
 })
 
 function onNavigate(event: any) {
