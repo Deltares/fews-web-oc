@@ -91,7 +91,7 @@ export default defineConfig(({ mode }) => {
           })
         : vuetify(),
       federation({
-        name: 'weboc_plugins',
+        name: 'weboc-micro-frontend',
         shared: {
           vue: {
             singleton: true,
