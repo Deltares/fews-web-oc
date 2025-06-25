@@ -28,15 +28,6 @@ export interface UseTimeSeriesOptions {
   useDisplayUnits?: boolean
 }
 
-function timeZoneOffsetString(offset: number): string {
-  const offsetInMinutes = offset * 60
-  const minutes = offsetInMinutes % 60
-  const hours = Math.round(offsetInMinutes / 60)
-  return `+${hours.toString().padStart(2, '0')}:${minutes
-    .toString()
-    .padStart(2, '0')}`
-}
-
 export function useFilterTimeSeries(
   baseUrl: string,
   filter: MaybeRefOrGetter<TimeSeriesFilter>,
