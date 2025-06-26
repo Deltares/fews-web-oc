@@ -427,6 +427,7 @@ watch(
         (layer.elevation as ElevationWithUnitSymbol).unitSymbol ?? ''
       elevationTicks.value = layer.elevation.irregularTicks
     }
+    setLayerOptions()
   },
   { immediate: true, deep: true },
 )
