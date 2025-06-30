@@ -49,7 +49,7 @@ export function getDateWithMinutesOffset(date: Date, minutesOffset: number) {
  */
 export function convertFewsPiDateTimeToJsDate(
   fewsDatetime: { date: string; time: string },
-  timeZoneOffsetString: string,
+  timeZoneOffsetString: string = 'Z',
 ): Date {
   return new Date(
     `${fewsDatetime.date}T${fewsDatetime.time}${timeZoneOffsetString}`,

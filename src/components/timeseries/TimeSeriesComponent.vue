@@ -110,6 +110,7 @@ import {
 } from '@/lib/topology/componentSettings'
 import { debounce } from 'lodash-es'
 import { useChartHandlers } from '@/services/useChartHandlers'
+import { getSubplotsWithDomain } from '@/lib/display/utils.ts'
 
 interface Props {
   config?: DisplayConfig
@@ -239,13 +240,9 @@ async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
   refreshTableTimeSeries()
 }
 
-const subplots = computed(() => {
-  if (props.config) {
-    return props.config.subplots
-  } else {
-    return []
-  }
-})
+const subplots = computed(() =>
+  getSubplotsWithDomain(props.config, store.startTime, store.endTime),
+)
 
 const elevationChartSubplots = computed(() => {
   if (props.elevationChartConfig) {

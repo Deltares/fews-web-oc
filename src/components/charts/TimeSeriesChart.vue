@@ -298,6 +298,7 @@ const setThresholdLines = () => {
 
 const clearChart = () => {
   axis.removeAllCharts()
+  axis.removeInitialExtent()
 }
 
 const refreshChart = () => {
@@ -331,14 +332,7 @@ const refreshChart = () => {
 
   setThresholdLines()
 
-  axis.redraw({
-    x: {
-      autoScale: true,
-    },
-    y: {
-      autoScale: true,
-    },
-  })
+  redraw()
   hasResetAxes.value = true
 }
 
@@ -506,7 +500,7 @@ const toggleLine = (tag: Tag) => {
   if (tag.id === 'Thresholds') {
     showThresholds.value = !tag.disabled
     setThresholdLines()
-    axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
+    redraw()
   } else {
     toggleChartVisibility(axis, tag.id)
   }
@@ -544,10 +538,7 @@ watch(
       updateChartData(requiredSeries)
 
       if (!hasRenderedOnce.value) {
-        axis.redraw({
-          x: { autoScale: true },
-          y: { autoScale: true },
-        })
+        redraw()
         hasRenderedOnce.value = true
       }
     }
@@ -557,6 +548,15 @@ watch(() => props.config, onValueChange)
 onBeforeUnmount(() => {
   beforeDestroy()
 })
+
+function redraw() {
+  axis.redraw({
+    x: {
+      domain: props.config.xAxis?.[0]?.domain,
+    },
+    y: { autoScale: true },
+  })
+}
 </script>
 
 <style scoped>
