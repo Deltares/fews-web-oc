@@ -79,7 +79,6 @@ interface Props {
 const props = defineProps<Props>()
 const domain = defineModel<[Date, Date]>('domain')
 
-const { t } = useI18n()
 const userSettingsStore = useUserSettingsStore()
 defineExpose({
   getSvgElement,
