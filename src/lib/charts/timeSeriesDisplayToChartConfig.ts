@@ -41,17 +41,18 @@ export function timeSeriesDisplayToChartConfig(
   const chartSeriesArray: ChartSeries[] = []
   config.thresholds = []
 
-  const legendLabels: string[] = []
+  const areaLegendLabels: string[] = []
   const thresholdIds: string[] = []
   for (const item of subplot.items) {
-    if (item.legend && legendLabels.includes(item.legend)) {
-      // Create second item as dummy for item.type 'area'
-      const chartSeries: ChartSeries = getChartSeries([item], 'dummy', config)
-      chartSeriesArray.push(chartSeries)
-      continue
-    }
-    if (item.legend) legendLabels.push(item.legend)
-    if (item.type === 'area') {
+    if (item.type === 'area' && item.legend) {
+      if (areaLegendLabels.includes(item.legend)) {
+        // Create second item as dummy for item.type 'area'
+        const chartSeries = getChartSeries([item], 'dummy', config)
+        chartSeriesArray.push(chartSeries)
+        continue
+      }
+      areaLegendLabels.push(item.legend)
+
       // Area has two data resources
       const secondItemIndex = subplot.items.findLastIndex(
         (i) => i.legend === item.legend,
