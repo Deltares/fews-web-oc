@@ -23,7 +23,7 @@
     />
   </template>
   <LogMessageItem
-    v-if="log.type === 'manual'"
+    v-if="log.type === 'manual' && noteGroup"
     class="mt-2"
     :noteGroup="noteGroup"
     :log="log"
@@ -58,7 +58,7 @@ import { computed } from 'vue'
 
 interface Props {
   userName: string
-  noteGroup: ForecasterNoteGroup
+  noteGroup?: ForecasterNoteGroup
   logs: LogMessage[]
   taskRuns: TaskRun[]
   disseminations: LogDisplayDisseminationAction[]
