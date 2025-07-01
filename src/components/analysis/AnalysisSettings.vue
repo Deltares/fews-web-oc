@@ -3,50 +3,54 @@
     <v-card-text>
       <div class="d-flex ga-2">
         <v-date-input
-          v-model="startDate"
+          v-model="collection.settings.startTime"
           label="Start Date"
           variant="outlined"
           hide-details
           density="compact"
           prepend-icon=""
           min-width="120"
-          :disabled="liveUpdate"
+          :disabled="collection.settings.liveUpdate.enabled"
         />
         <v-date-input
-          v-model="endDate"
+          v-model="collection.settings.endTime"
           label="End Date"
           variant="outlined"
           hide-details
           density="compact"
           prepend-icon=""
           min-width="120"
-          :disabled="liveUpdate"
+          :disabled="collection.settings.liveUpdate.enabled"
         />
       </div>
       <div class="d-flex ga-2 mt-4">
-        <v-switch v-model="liveUpdate" label="Live Update" hide-details />
+        <v-switch
+          v-model="collection.settings.liveUpdate.enabled"
+          label="Live Update"
+          hide-details
+        />
       </div>
       <div class="d-flex ga-2 mt-4">
         <v-number-input
-          v-model="daysBeforeNow"
+          v-model="collection.settings.liveUpdate.daysBeforeNow"
           label="Days Before Now"
           variant="outlined"
           hide-details
           density="compact"
           type="number"
           :min="0"
-          :disabled="!liveUpdate"
+          :disabled="!collection.settings.liveUpdate.enabled"
           control-variant="stacked"
         />
         <v-number-input
-          v-model="daysAfterNow"
+          v-model="collection.settings.liveUpdate.daysAfterNow"
           label="Days After Now"
           variant="outlined"
           hide-details
           density="compact"
           type="number"
           :min="0"
-          :disabled="!liveUpdate"
+          :disabled="!collection.settings.liveUpdate.enabled"
           control-variant="stacked"
         />
       </div>
@@ -99,37 +103,13 @@
 
 <script setup lang="ts">
 import { Collection } from '@/lib/analysis'
-import { ref, watchEffect } from 'vue'
 import { VDateInput } from 'vuetify/labs/components'
 
 interface Props {
   collection: Collection
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 defineEmits(['delete-collection'])
-
-const startDate = ref(props.collection.settings.startTime)
-const endDate = ref(props.collection.settings.endTime)
-
-const liveUpdate = ref(false)
-const daysBeforeNow = ref(2)
-const daysAfterNow = ref(2)
-
-const MS_IN_DAY = 24 * 60 * 60 * 1000
-
-watchEffect(() => {
-  if (liveUpdate.value) {
-    props.collection.settings.startTime = new Date(
-      Date.now() - daysBeforeNow.value * MS_IN_DAY,
-    )
-    props.collection.settings.endTime = new Date(
-      Date.now() + daysAfterNow.value * MS_IN_DAY,
-    )
-  } else {
-    props.collection.settings.startTime = startDate.value
-    props.collection.settings.endTime = endDate.value
-  }
-})
 </script>
