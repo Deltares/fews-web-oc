@@ -5,6 +5,7 @@ export interface Tag {
   legendSvg: string
   tooltip?: string
   interactive: boolean
+  seriesIds?: string[]
 }
 
 export function getMatchingIndexedString(item: string, text?: string) {
