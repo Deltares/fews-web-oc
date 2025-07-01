@@ -11,6 +11,7 @@
 <script setup lang="ts">
 import WhatIfDisplay from '@/components/tasksdisplay/WhatIfDisplay.vue'
 import { AsyncChart, Chart } from '@/lib/analysis'
+import { uid } from '@/lib/utils/uid'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import type { ToolboxWorkflow } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
@@ -37,7 +38,7 @@ function addChart(taskId: string) {
   const title = props.customToolBox.name
 
   const chart: AsyncChart = {
-    id: crypto.randomUUID(),
+    id: uid(),
     type: 'async',
     title,
     taskId,

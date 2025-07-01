@@ -13,6 +13,7 @@ import { absoluteUrl } from '../utils/absoluteUrl'
 import { uniq, uniqBy } from 'lodash-es'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import { convertFewsPiDateTimeToJsDate } from '../date'
+import { uid } from '@/lib/utils/uid'
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -69,7 +70,7 @@ export async function createNewChartForFilter(
   )
 
   const newChart: FilterChart = {
-    id: crypto.randomUUID(),
+    id: uid(),
     type: 'filter',
     title: getFilterSubplotTitle(filterSubplot),
     subplot: filterSubplot,

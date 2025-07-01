@@ -77,6 +77,7 @@ import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
 import { useDownloadDialogStore } from '@/stores/downloadDialog'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { useAlertsStore } from '@/stores/alerts'
+import { uid } from '@/lib/utils/uid'
 
 const store = useSystemTimeStore()
 const downloadDialogStore = useDownloadDialogStore()
@@ -90,7 +91,7 @@ const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
 const alertStore = useAlertsStore()
 const userId = ref('')
 onMounted(() => {
-  userId.value = crypto.randomUUID()
+  userId.value = uid()
 })
 
 interface Props {
