@@ -44,7 +44,7 @@
           v-else-if="configStore.activeComponents.length > 1"
           density="compact"
         >
-          <v-list-subheader>Switch to</v-list-subheader>
+          <v-list-subheader>{{ $t('switch_to') }}</v-list-subheader>
           <v-menu origin="bottom" width="320">
             <template #activator="{ props }">
               <v-list-item
@@ -120,7 +120,9 @@
                   href="#"
                   >{{ item.name }}</v-list-item
                 >
-                <v-list-item :to="{ name: 'About' }">About</v-list-item>
+                <v-list-item :to="{ name: 'About' }">{{
+                  $t('about')
+                }}</v-list-item>
               </v-list>
             </v-menu>
           </template>
