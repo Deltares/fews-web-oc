@@ -28,7 +28,7 @@ import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { configManager } from '../services/application-config/index.ts'
 import type { ColumnItem } from '../components/general/ColumnItem'
 
-import { useSsd } from '../services/useSsd/index.ts'
+import { useSsdCapabilities } from '@/services/useSsd/index.ts'
 
 import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
 import SchematicStatusDisplay from '@/components/ssd/SchematicStatusDisplay.vue'
@@ -54,8 +54,6 @@ const props = withDefaults(defineProps<Props>(), {
 const active = ref<string | undefined>(undefined)
 const open = ref<string[]>([])
 
-const selectedDate = ref<Date>(new Date())
-
 onMounted(() => {
   onGroupIdChange()
   onPanelIdChange()
@@ -66,11 +64,6 @@ const menuType = computed(() => {
   return configured ?? 'auto'
 })
 
-const selectedDateString = computed(() => {
-  if (selectedDate.value === undefined) return ''
-  const dateString = selectedDate.value.toISOString()
-  return dateString.substring(0, 19) + 'Z'
-})
 const items = computed(() => {
   const result: ColumnItem[] = []
   if (capabilities.value !== undefined) {
@@ -101,11 +94,7 @@ const items = computed(() => {
 watch(() => props.groupId, onGroupIdChange)
 watch(() => props.panelId, onPanelIdChange)
 
-const { capabilities } = useSsd(
-  baseUrl,
-  () => props.panelId,
-  selectedDateString,
-)
+const { capabilities } = useSsdCapabilities(baseUrl, () => props.panelId)
 
 // If the capabilities changes, make sure our currently selected groupId and panelId are still
 // valid. If invalid or empty, select the first group and panel.
