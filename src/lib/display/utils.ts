@@ -14,6 +14,7 @@ import {
   convertJSDateToFewsPiParameter,
 } from '@/lib/date'
 import { MD5 } from 'crypto-js'
+import { uid } from '@/lib/utils/uid'
 
 /**
  * Applies colors to subplot items based on their taskRunIds.
@@ -52,7 +53,7 @@ export function actionsResponseToDisplayConfig(
     const timeSeriesDisplayIndex = result.config.timeSeriesDisplay.index
     const period = result.config.timeSeriesDisplay.period
     // TODO: Remove this when the backend is fixed to always return an unique plotId.
-    let plotId = result.config.timeSeriesDisplay.plotId ?? crypto.randomUUID()
+    let plotId = result.config.timeSeriesDisplay.plotId ?? uid()
     if (uniquePlotIds.has(plotId)) {
       console.warn(
         `Duplicate plotId found: ${plotId}. Adding index to make it unique.`,

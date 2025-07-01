@@ -89,6 +89,7 @@ import {
   RegressionEquation,
   regressionEquations,
 } from '@/lib/analysis/correlation'
+import { uid } from '@/lib/utils/uid'
 
 interface Props {
   charts: Chart[]
@@ -145,7 +146,7 @@ function addChart() {
   }
 
   const chart: CorrelationChart = {
-    id: crypto.randomUUID(),
+    id: uid(),
     type: 'correlation',
     title: `Correlation between ${name1} and ${name2}`,
     timeSeriesNameXAxis: name1,

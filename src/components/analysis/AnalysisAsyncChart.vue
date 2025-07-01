@@ -38,6 +38,7 @@ import {
 } from '@/services/useProducts'
 import { DataAnalysisDisplayArchiveProduct } from '@deltares/fews-pi-requests'
 import { ProductMetaDataType } from '@/services/useProducts/types'
+import { uid } from '@/lib/utils/uid'
 
 const TASK_STATUS_REFRESH_INTERVAL = 1000
 const TASK_RUN_REFRESH_INTERVAL = 5000
@@ -193,7 +194,7 @@ async function getChartsForTaskRun(
   return products.map((product) => {
     const name = product.attributes.name
     return {
-      id: crypto.randomUUID(),
+      id: uid(),
       type: 'product',
       title: name ?? `Product of ${chartTitle}`,
       product,

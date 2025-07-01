@@ -145,6 +145,7 @@ import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import DateTimeField from '@/components/general/DateTimeField.vue'
 import { useWorkflowFormSchemas } from '@/services/useWorkflowFormSchemas'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+import { uid } from '@/lib/utils/uid'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const sidePanelStore = useSidePanelStore()
@@ -184,7 +185,7 @@ const workflowsStore = useWorkflowsStore()
 const alertStore = useAlertsStore()
 
 onMounted(() => {
-  userId.value = crypto.randomUUID()
+  userId.value = uid()
 })
 
 const hasProperties = computed<boolean>(() => {
@@ -402,7 +403,7 @@ function showMapTool() {
 
 function showMessage(message: string, type: 'error' | 'success'): void {
   // Generate a new unique ID for each alert.
-  const id = crypto.randomUUID()
+  const id = uid()
   alertStore.addAlert({
     id,
     type,
@@ -462,7 +463,7 @@ async function startWorkflow() {
       showErrorMessage(e.message)
     }
   } finally {
-    userId.value = crypto.randomUUID()
+    userId.value = uid()
   }
 }
 
