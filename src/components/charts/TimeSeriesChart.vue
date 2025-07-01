@@ -54,7 +54,7 @@ import {
   removeUnreliableData,
 } from '@/lib/charts/dataFromResources'
 import { extent } from 'd3'
-import { difference, uniq } from 'lodash-es'
+import { difference } from 'lodash-es'
 import { getMatchingIndexedString, type Tag } from '@/lib/charts/tags'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
@@ -410,25 +410,38 @@ function setTags() {
 
 function setSeriesTags(series: ChartSeries[]) {
   const s = new XMLSerializer()
-  const ids = uniq(series.filter((s) => s.visibleInLegend).map((s) => s.id))
+  const seriesByLegend: Record<string, ChartSeries[]> = {}
+  series
+    .filter((s) => s.visibleInLegend)
+    .forEach((s) => {
+      if (!seriesByLegend[s.name]) {
+        seriesByLegend[s.name] = []
+      }
+      seriesByLegend[s.name].push(s)
+    })
 
-  legendTags.value = ids.map((id) => {
+  legendTags.value = Object.values(seriesByLegend).map((series) => {
     const { svgGroup, legendSvg } = createChip()
+    // In case of multiple series with the same label, we only show the
+    // legend for the first series.
+    const firstSeries = series[0]
+
     for (const chart of axis.charts) {
-      if (chart.id === id) {
+      if (chart.id === firstSeries.id) {
         let node = chart.drawLegendSymbol(undefined, true)
         svgGroup.appendChild(node)
       }
     }
     legendSvg.appendChild(svgGroup)
-    const name = series.find((s) => s.id === id)?.name ?? ''
+    const name = series.find((s) => s.id === firstSeries.id)?.name ?? ''
     return {
-      id,
+      id: firstSeries.id,
       name,
       disabled: false,
       legendSvg: s.serializeToString(legendSvg),
       tooltip: getMatchingIndexedString(name, props.forecastLegend),
       interactive: true,
+      seriesIds: series.map((s) => s.id),
     }
   })
 }
@@ -502,7 +515,7 @@ const toggleLine = (tag: Tag) => {
     setThresholdLines()
     redraw()
   } else {
-    toggleChartVisibility(axis, tag.id)
+    tag.seriesIds?.forEach((id) => toggleChartVisibility(axis, id))
   }
 }
 
