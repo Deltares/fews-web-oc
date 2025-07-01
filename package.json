@@ -84,6 +84,7 @@
     "terra-draw-maplibre-gl-adapter": "^1.1.2",
     "typescript-json-serializer": "^6.0.1",
     "vue": "^3.5.21",
+    "vue-i18n": "^11.1.7",
     "vue-router": "^4.5.1",
     "vue-slider-component": "^4.1.0-beta.7",
     "vuetify": "^3.10.1"
