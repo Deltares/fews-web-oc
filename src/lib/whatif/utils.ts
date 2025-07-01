@@ -9,7 +9,7 @@ export type TemplateProperty = NonNullable<WhatIfTemplate['properties']>[number]
 export type ScenarioProperty = NonNullable<
   WhatIfScenarioDescriptor['properties']
 >[number]
-export type ScenarioData = Record<string, ScenarioProperty['value']>
+export type ScenarioData = Record<string, string | number | boolean>
 
 /**
  * Generates a JSON schema based on an array of SecondaryWorkflowProperty objects.
@@ -39,7 +39,13 @@ export function getJsonDataFromProperties(
   const data: ScenarioData = {}
 
   properties?.forEach((property) => {
-    data[property.id] = property.value
+    if (property.id === undefined) return
+
+    if (property.type === 'enumProperty') {
+      data[property.id] = property.value.code
+    } else {
+      data[property.id] = property.value
+    }
   })
 
   return data
