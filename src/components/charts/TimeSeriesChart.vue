@@ -66,8 +66,6 @@ import { isDefaultD3Domain } from '@/lib/charts/defaultDomain'
 import { ModifierKey } from '@deltares/fews-web-oc-charts'
 import { useUserSettingsStore } from '@/stores/userSettings.js'
 
-import { useI18n } from 'vue-i18n'
-
 interface Props {
   config: ChartConfig
   series?: Record<string, Series>
@@ -93,7 +91,6 @@ const props = withDefaults(defineProps<Props>(), {
   },
 })
 
-const { t } = useI18n()
 interface Emits {
   'update:x-domain': [new: [Date, Date]]
 }
