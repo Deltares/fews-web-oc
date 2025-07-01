@@ -39,8 +39,6 @@ export function useDisplayConfig(
   baseUrl: string,
   nodeId: MaybeRefOrGetter<string | undefined>,
   plotId: MaybeRefOrGetter<string | undefined>,
-  startTime?: MaybeRefOrGetter<Date | undefined>,
-  endTime?: MaybeRefOrGetter<Date | undefined>,
   options?: MaybeRefOrGetter<UseDisplayConfigOptions>,
   taskRunIds?: MaybeRefOrGetter<string[]>,
 ): UseDisplayConfigReturn {
@@ -84,23 +82,10 @@ export function useDisplayConfig(
           taskRunColorsStore.setColor(taskRunId)
         }
       }
+
+      displays.value = actionsResponseToDisplayConfig(response.value, _nodeId)
     },
     { immediate: true },
-  )
-
-  watch(
-    [response, () => toValue(startTime), () => toValue(endTime)],
-    ([_response, _startTime, _endTime]) => {
-      if (!_response) return
-
-      const _nodeId = toValue(nodeId)
-      displays.value = actionsResponseToDisplayConfig(
-        _response,
-        _nodeId,
-        _startTime,
-        _endTime,
-      )
-    },
   )
 
   const displayConfig = computed<DisplayConfig | null>((oldDisplayConfig) => {
@@ -129,8 +114,6 @@ export function useDisplayConfig(
 export function useDisplayConfigFilter(
   baseUrl: string,
   filter: MaybeRefOrGetter<Filter | undefined>,
-  startTime: MaybeRefOrGetter<Date | undefined>,
-  endTime: MaybeRefOrGetter<Date | undefined>,
   taskRunIds?: MaybeRefOrGetter<string[]>,
 ): UseDisplayConfigReturn {
   const piProvider = new PiWebserviceProvider(baseUrl, {
@@ -193,25 +176,17 @@ export function useDisplayConfigFilter(
   )
 
   // Use a second watchEffect to not trigger a fetch on these reactive variables
-  watch(
-    [response, () => toValue(startTime), () => toValue(endTime)],
-    ([_reponse, _startTime, _endTime]) => {
-      if (!_reponse) {
-        displayConfig.value = null
-        displays.value = null
-        return
-      }
+  watch(response, (_reponse) => {
+    if (!_reponse) {
+      displayConfig.value = null
+      displays.value = null
+      return
+    }
 
-      const _displays = actionsResponseToDisplayConfig(
-        _reponse,
-        undefined,
-        _startTime,
-        _endTime,
-      )
-      displays.value = _displays
-      displayConfig.value = _displays[0]
-    },
-  )
+    const _displays = actionsResponseToDisplayConfig(_reponse, undefined)
+    displays.value = _displays
+    displayConfig.value = _displays[0]
+  })
 
   const shell = {
     displays,

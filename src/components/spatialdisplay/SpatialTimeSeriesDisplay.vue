@@ -29,7 +29,6 @@ import type {
   timeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
-import { useSystemTimeStore } from '@/stores/systemTime'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useTaskRunsStore } from '@/stores/taskRuns'
@@ -42,7 +41,6 @@ interface Props {
   settings: ComponentSettings
 }
 
-const systemTimeStore = useSystemTimeStore()
 const taskRunsStore = useTaskRunsStore()
 
 const props = defineProps<Props>()
@@ -54,15 +52,11 @@ const filter = computed(() => props.filter)
 const { displayConfig } = useDisplayConfigFilter(
   baseUrl,
   filter,
-  () => systemTimeStore.startTime,
-  () => systemTimeStore.endTime,
   () => taskRunsStore.selectedTaskRunIds,
 )
 const { displayConfig: elevationChartDisplayconfig } = useDisplayConfigFilter(
   baseUrl,
   () => props.elevationChartFilter ?? {},
-  () => systemTimeStore.startTime,
-  () => systemTimeStore.endTime,
   () => taskRunsStore.selectedTaskRunIds,
 )
 

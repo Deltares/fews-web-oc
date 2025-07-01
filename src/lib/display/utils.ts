@@ -42,8 +42,6 @@ function applyColorsToSubplotItems(subPlot: TimeSeriesDisplaySubplot): void {
 export function actionsResponseToDisplayConfig(
   actionsResponse: ActionsResponse,
   nodeId: string | undefined,
-  startTime?: Date,
-  endTime?: Date,
 ): DisplayConfig[] {
   const displays: DisplayConfig[] = []
   const uniquePlotIds = new Set<string>()
@@ -51,7 +49,6 @@ export function actionsResponseToDisplayConfig(
     if (result.config === undefined) continue
     const title = result.config.timeSeriesDisplay.title ?? ''
     const timeSeriesDisplayIndex = result.config.timeSeriesDisplay.index
-    const period = result.config.timeSeriesDisplay.period
     // TODO: Remove this when the backend is fixed to always return an unique plotId.
     let plotId = result.config.timeSeriesDisplay.plotId ?? uid()
     if (uniquePlotIds.has(plotId)) {
@@ -62,24 +59,10 @@ export function actionsResponseToDisplayConfig(
     }
     uniquePlotIds.add(plotId)
 
-    // The period is always specified in UTC.
-    const timeZoneOffsetString = 'Z'
-    let configPeriod: [Date, Date] | undefined = undefined
-    if (period) {
-      const periodStart = convertFewsPiDateTimeToJsDate(
-        period.startDate,
-        timeZoneOffsetString,
-      )
-      const periodEnd = convertFewsPiDateTimeToJsDate(
-        period.endDate,
-        timeZoneOffsetString,
-      )
-      configPeriod = [startTime ?? periodStart, endTime ?? periodEnd]
-    }
     const subplots =
       result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
         applyColorsToSubplotItems(subPlot)
-        return timeSeriesDisplayToChartConfig(subPlot, configPeriod)
+        return timeSeriesDisplayToChartConfig(subPlot)
       }) ?? []
     const display: DisplayConfig = {
       id: title,
@@ -89,7 +72,7 @@ export function actionsResponseToDisplayConfig(
       nodeId: nodeId,
       class: 'singles',
       index: timeSeriesDisplayIndex,
-      requests: addPeriodIfNotSet(result.requests, configPeriod),
+      requests: addPeriodIfNotSet(result.requests),
       period: result.config.timeSeriesDisplay.period,
       subplots,
     }
@@ -193,5 +176,37 @@ export function replaceDuplicateColors(
     }
 
     seenColors.add(item.color)
+  })
+}
+
+export function getSubplotsWithDomain(
+  config: DisplayConfig,
+  startTime: Date | undefined,
+  endTime: Date | undefined,
+) {
+  const period = config.period
+
+  const periodStartTime = period?.startDate
+    ? convertFewsPiDateTimeToJsDate(period.startDate)
+    : undefined
+
+  const periodEndTime = period?.endDate
+    ? convertFewsPiDateTimeToJsDate(period.endDate)
+    : undefined
+
+  const _startTime = startTime ?? periodStartTime
+  const _endTime = endTime ?? periodEndTime
+
+  return config.subplots.map((subplot) => {
+    if (!_startTime || !_endTime) return subplot
+
+    const axis = subplot.xAxis?.[0]
+    const domain = [_startTime, _endTime] as [Date, Date]
+    const updatedAxis = { ...axis, domain }
+
+    return {
+      ...subplot,
+      xAxis: updatedAxis ? [updatedAxis] : subplot.xAxis,
+    }
   })
 }

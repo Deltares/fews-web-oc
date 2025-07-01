@@ -21,12 +21,16 @@ interface Period {
 
 export function periodToIntervalItem(period: Period): IntervalItem {
   return {
-    start: {
-      [period.unit]: Number(period.start),
-    },
-    end: {
-      [period.unit]: Number(period.end),
-    },
+    start: period.start
+      ? {
+          [period.unit]: Number(period.start),
+        }
+      : undefined,
+    end: period.end
+      ? {
+          [period.unit]: Number(period.end),
+        }
+      : undefined,
   }
 }
 
