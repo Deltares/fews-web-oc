@@ -98,7 +98,7 @@
       <template #default="{ item }">
         <DateSeparator v-if="item.type === 'dateSeparator'" :date="item.date" />
         <LogItem
-          v-else-if="item.type === 'logItem' && noteGroup"
+          v-else-if="item.type === 'logItem'"
           :logs="item.logs"
           :taskRuns="taskRuns"
           :disseminations="disseminations"
