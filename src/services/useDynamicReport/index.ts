@@ -52,6 +52,7 @@ export function useDynamicReport(
         time: _time,
         locationId: _locationId,
         timeZero: _timeZero,
+        useLastValue: true,
       })
       reportHtml.value = response
     } catch {
