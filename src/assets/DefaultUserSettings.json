@@ -2,7 +2,7 @@
   {
     "id": "units.displayUnits",
     "type": "oneOfMultiple",
-    "label": "Unit System",
+    "label": "Einheit",
     "value": "display",
     "items": [
       {
@@ -16,34 +16,34 @@
         "icon": "mdi-monitor"
       }
     ],
-    "group": "Units"
+    "group": "Einheiten"
   },
   {
     "id": "datum.verticalDatum",
     "type": "boolean",
-    "label": "Absolute vertical datum",
+    "label": "Absolutes Höhenbezugssystem",
     "value": true,
-    "group": "Datum"
+    "group": "Höhenbezugssystem"
   },
   {
     "id": "ui.theme",
     "type": "oneOfMultiple",
-    "label": "Theme",
+    "label": "Darstellungsmodus",
     "value": "auto",
     "items": [
       {
         "value": "auto",
-        "title": "Automatic",
+        "title": "Automatisch",
         "icon": "mdi-theme-light-dark"
       },
       {
         "value": "light",
-        "title": "Light",
+        "title": "Hell",
         "icon": "mdi-weather-sunny"
       },
       {
         "value": "dark",
-        "title": "Dark",
+        "title": "Dunkel",
         "icon": "mdi-weather-night"
       }
     ],
@@ -52,22 +52,22 @@
   {
     "id": "ui.hierarchical-menu-style",
     "type": "oneOfMultiple",
-    "label": "Menu style",
+    "label": "Menüdarstellung",
     "value": "auto",
     "items": [
       {
         "value": "auto",
-        "title": "Automatic",
+        "title": "Automatisch",
         "icon": "mdi-responsive"
       },
       {
         "value": "tree",
-        "title": "Tree",
+        "title": "Baum",
         "icon": "mdi-file-tree"
       },
       {
         "value": "column",
-        "title": "Column",
+        "title": "Spalten",
         "icon": "mdi-view-week"
       }
     ],
@@ -76,7 +76,7 @@
   {
     "id": "ui.sidebar-style",
     "type": "oneOfMultiple",
-    "label": "Sidebar style",
+    "label": "Sidebar",
     "value": "full labels",
     "items": [
       {
@@ -86,7 +86,7 @@
       },
       {
         "value": "full labels",
-        "title": "Full labels",
+        "title": "Vollständig",
         "icon": "mdi-format-list-bulleted"
       }
     ],
@@ -95,31 +95,31 @@
   {
     "id": "ui.map.theme",
     "type": "oneOfMultiple",
-    "label": "Basemap",
+    "label": "Hintergrundkarte",
     "value": "automatic",
     "items": [
       {
         "value": "automatic",
-        "title": "Automatic",
+        "title": "Automatisch",
         "icon": "mdi-theme-light-dark"
       },
       {
         "value": "light",
-        "title": "Light",
+        "title": "Hell",
         "icon": "mdi-weather-sunny"
       },
       {
         "value": "dark",
-        "title": "Dark",
+        "title": "Dunkel",
         "icon": "mdi-weather-night"
       }
     ],
-    "group": "Map"
+    "group": "Karte"
   },
   {
     "id": "ui.map.showLocationNames",
     "type": "boolean",
-    "label": "Show location names",
+    "label": "Gebiet- / Messstellennamen anzeigen",
     "value": true,
     "group": "Map"
   },

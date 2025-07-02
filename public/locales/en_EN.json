@@ -5,5 +5,15 @@
   "about": "About",
   "default": "Default",
   "custom": "Custom",
-  "period_presets": "period presets"
+  "period_presets": "period presets",
+  "all_settings": "All Settings ...",
+  "search_for_locations": "Search for locations",
+  "search_location": "Search locations",
+  "cancel": "Cancel",
+  "download_timeseries": "Download timeseries",
+  "file_name": "File Name",
+  "no_threshold_crossing": "No active threshold crossings",
+  "threshold_overview": "Thresholds Overview",
+  "time_range": "Time Range",
+  "sign_out": "Sign out"
 }

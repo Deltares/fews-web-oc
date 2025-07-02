@@ -5,5 +5,15 @@
   "about": "Über",
   "default": "Standard",
   "custom": "Benutzerdefiniert",
-  "period_presets": "Zeitraum-Voreinstellungen"
+  "period_presets": "Zeitraum-Voreinstellungen",
+  "all_settings": "Einstellungen ...",
+  "search_for_locations": "Suche Gebiet / Messstelle",
+  "search_location": "Suche Gebiet / Messstelle",
+  "cancel": "Abbrechen",
+  "download_timeseries": "Zeitreihe herunterladen",
+  "file_name": "Dateiname",
+  "no_threshold_crossing": "Zurzeit keine Schwellenwertüberschreitungen",
+  "threshold_overview": "Übersicht Schwellenwerte",
+  "time_range": "Zeitbereich",
+  "sign_out": "Abmelden"
 }

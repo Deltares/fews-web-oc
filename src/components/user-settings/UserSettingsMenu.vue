@@ -57,7 +57,7 @@
             aria-label="All User Settings"
             role="button"
           >
-            All Settings ...
+            {{  t('all_settings') }}
           </v-list-item>
         </template>
       </UserSettingsDialog>
@@ -71,6 +71,9 @@ import {
   useUserSettingsStore,
 } from '@/stores/userSettings'
 import UserSettingsDialog from './UserSettingsDialog.vue'
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const store = useUserSettingsStore()
 
