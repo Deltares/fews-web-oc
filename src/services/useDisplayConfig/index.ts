@@ -38,7 +38,7 @@ export interface UseDisplayConfigOptions {
 export function useDisplayConfig(
   baseUrl: string,
   nodeId: MaybeRefOrGetter<string | undefined>,
-  plotId: MaybeRefOrGetter<string | undefined>,
+  plotIndex: MaybeRefOrGetter<number | undefined>,
   options?: MaybeRefOrGetter<UseDisplayConfigOptions>,
   taskRunIds?: MaybeRefOrGetter<string[]>,
 ): UseDisplayConfigReturn {
@@ -89,13 +89,9 @@ export function useDisplayConfig(
   )
 
   const displayConfig = computed<DisplayConfig | null>((oldDisplayConfig) => {
-    const _plotId = toValue(plotId)
+    const _plotIndex = toValue(plotIndex)
     if (!displays.value) return null
-    return (
-      displays.value.find((d) => d.plotId === _plotId) ??
-      oldDisplayConfig ??
-      null
-    )
+    return displays.value[_plotIndex ?? 0] ?? oldDisplayConfig ?? null
   })
 
   return {

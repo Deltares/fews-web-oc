@@ -1,6 +1,8 @@
-import { ChartSeries } from './ChartSeries'
-import { ThresholdLine } from './ThresholdLine'
-import { AxisOptions } from '@deltares/fews-web-oc-charts'
+import type { ChartSeries } from './ChartSeries'
+import type {
+  AxisOptions,
+  AlertLineOptions,
+} from '@deltares/fews-web-oc-charts'
 
 export interface ChartConfig {
   id: string
@@ -10,5 +12,5 @@ export interface ChartConfig {
   radialAxis?: AxisOptions[]
   angularAxis?: AxisOptions[]
   series: ChartSeries[]
-  thresholds?: ThresholdLine[]
+  thresholds?: AlertLineOptions[]
 }

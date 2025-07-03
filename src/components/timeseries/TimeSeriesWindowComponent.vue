@@ -1,33 +1,34 @@
 <template>
   <WindowComponent :toolBar="settings.general.toolBar">
     <template v-slot:toolbar>
-      <v-toolbar-items
-        class="flex-0-0"
-        v-model="displayType"
-        mandatory
-        size="small"
-      >
-        <v-btn
-          v-if="displayTypeItems.length > 1"
-          v-for="item in displayTypeItems"
-          :key="item.value"
-          :value="item.value"
-          :aria-label="item.label"
-          :text="item.label"
-          :active="displayType === item.value"
+      <v-toolbar-items class="flex-0-0 ga-4" mandatory size="small">
+        <v-btn-toggle
+          tile
           variant="text"
-          width="20px"
-          class="pa-0 text-capitalize"
-          @click="displayType = item.value"
-          :disabled="item.disabled"
+          v-model="displayType"
+          v-if="displayTypeItems.length > 1"
         >
-          <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
-        </v-btn>
+          <v-btn
+            v-if="displayTypeItems.length > 1"
+            v-for="item in displayTypeItems"
+            :key="item.value"
+            :value="item.value"
+            :aria-label="item.label"
+            :text="item.label"
+            :active="displayType === item.value"
+            variant="text"
+            width="20px"
+            class="pa-0 text-capitalize"
+            @click="displayType = item.value"
+            :disabled="item.disabled"
+          >
+            <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
+          </v-btn>
+        </v-btn-toggle>
+        <slot name="toolbar-title">
+          <v-list-item class="ml-5">{{ displayConfig?.title }}</v-list-item>
+        </slot>
       </v-toolbar-items>
-
-      <slot name="toolbar-title">
-        <span class="ml-5">{{ displayConfig?.title }}</span>
-      </slot>
       <v-spacer />
     </template>
     <template v-slot:toolbar-append>

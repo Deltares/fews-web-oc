@@ -100,11 +100,11 @@ export function timeSeriesDisplayToChartConfig(
         if (thresholdIds.includes(thresholdId)) continue
         thresholdIds.push(thresholdId)
         config.thresholds.push({
-          id: 'Thresholds',
           x1: new Date(0),
           x2: new Date(8.64e15),
           value: threshold.value,
           description: threshold.label ?? '',
+          labelPosition: threshold.labelAlignment,
           yAxisIndex:
             config.yAxis?.findIndex((yAxis) => {
               return yAxis.position === item.yAxis?.axisPosition
