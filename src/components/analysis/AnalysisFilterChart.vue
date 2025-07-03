@@ -21,6 +21,7 @@ import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import type { ZoomHandler } from '@deltares/fews-web-oc-charts'
 import { computed, ref } from 'vue'
 import { TimeSeriesDisplaySubplot } from '@deltares/fews-pi-requests'
+import { getSubplotWithDomain } from '@/lib/display'
 
 interface Props {
   chart: PlotChart
@@ -48,7 +49,10 @@ const zoomHandler = computed(() => {
 })
 
 const config = computed(() =>
-  timeSeriesDisplayToChartConfig(props.subplot, domain.value),
+  getSubplotWithDomain(
+    timeSeriesDisplayToChartConfig(props.subplot),
+    domain.value,
+  ),
 )
 
 const editing = ref(false)

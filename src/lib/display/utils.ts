@@ -15,6 +15,7 @@ import {
 } from '@/lib/date'
 import { MD5 } from 'crypto-js'
 import { uid } from '@/lib/utils/uid'
+import { ChartConfig } from '@/lib/charts/types/ChartConfig'
 
 /**
  * Applies colors to subplot items based on their taskRunIds.
@@ -196,17 +197,23 @@ export function getSubplotsWithDomain(
 
   const _startTime = startTime ?? periodStartTime
   const _endTime = endTime ?? periodEndTime
+  const domain: [Date, Date] | undefined =
+    _startTime && _endTime ? [_startTime, _endTime] : undefined
 
-  return config.subplots.map((subplot) => {
-    if (!_startTime || !_endTime) return subplot
+  return config.subplots.map((subplot) => getSubplotWithDomain(subplot, domain))
+}
 
-    const axis = subplot.xAxis?.[0]
-    const domain = [_startTime, _endTime] as [Date, Date]
-    const updatedAxis = { ...axis, domain }
+export function getSubplotWithDomain(
+  subplot: ChartConfig,
+  domain: [Date, Date] | undefined,
+) {
+  if (!domain) return subplot
 
-    return {
-      ...subplot,
-      xAxis: updatedAxis ? [updatedAxis] : subplot.xAxis,
-    }
-  })
+  const axis = subplot.xAxis?.[0]
+  const updatedAxis = { ...axis, domain }
+
+  return {
+    ...subplot,
+    xAxis: updatedAxis ? [updatedAxis] : subplot.xAxis,
+  }
 }
