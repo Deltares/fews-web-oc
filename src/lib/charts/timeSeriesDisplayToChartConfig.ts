@@ -20,15 +20,8 @@ import {
 
 export function timeSeriesDisplayToChartConfig(
   subplot: TimeSeriesDisplaySubplot,
-  domain?: [Date, Date],
 ): ChartConfig {
   const xAxis = subplot.xAxis ? xAxisFromPlotItemXAxis(subplot.xAxis) : []
-  if (domain) {
-    // Time series charts always have just a single x-axis.
-    if (xAxis[0]?.type === AxisType.time) {
-      xAxis[0].domain = domain
-    }
-  }
 
   const subplotId = subplot.items.map((plot) => plot.request).toString()
   const config: ChartConfig = {
