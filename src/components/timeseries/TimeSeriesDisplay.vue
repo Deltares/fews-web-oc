@@ -4,37 +4,49 @@
     :settings="settings.charts"
   >
     <template #toolbar-title>
-      <v-menu
-        v-if="displays && displays.length > 1"
-        location="bottom"
-        z-index="10000"
-        max-height="400"
-      >
-        <template #activator="{ props }">
-          <v-btn
-            v-bind="props"
-            class="text-capitalize"
-            variant="text"
-            append-icon="mdi-chevron-down"
-            :text="displayConfig?.title"
-          />
-        </template>
-        <v-list v-model="selectedPlotId" density="compact">
-          <v-list-item
-            v-for="display in displays"
-            @click="selectedPlotId = display.plotId"
-            :title="display.id"
-            :active="selectedPlotId === display.plotId"
-          />
-        </v-list>
-      </v-menu>
+      <v-btn-group variant="text" tile v-if="displays && displays.length > 1">
+        <v-btn
+          min-width="40px"
+          :disabled="selectedPlotIndex === 0"
+          @click="prevDisplay"
+          ><v-icon>mdi-chevron-left</v-icon></v-btn
+        >
+        <v-btn
+          min-width="40px"
+          :disabled="selectedPlotIndex === displays.length - 1"
+          @click="nextDisplay"
+          ><v-icon>mdi-chevron-right</v-icon></v-btn
+        >
+        <v-btn
+          v-bind="props"
+          variant="text"
+          class="text-start"
+          min-width="150px"
+          append-icon="mdi-chevron-down"
+        >
+          <v-list-item class="ps-0 pe-0" :title="displayConfig?.title">
+          </v-list-item>
+          <v-menu activator="parent">
+            <v-list density="compact">
+              <v-list-item
+                v-for="(display, index) in displays"
+                :key="display.plotId"
+                :title="display.id"
+                :active="selectedPlotIndex === index"
+                @click="selectedPlotIndex = index"
+              >
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </v-btn>
+      </v-btn-group>
     </template>
   </TimeSeriesWindowComponent>
 </template>
 
 <script setup lang="ts">
 import TimeSeriesWindowComponent from './TimeSeriesWindowComponent.vue'
-import { ref, watch, computed, watchEffect } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 import { configManager } from '@/services/application-config'
 import {
   useDisplayConfig,
@@ -62,7 +74,7 @@ const taskRunsStore = useTaskRunsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const selectedPlotId = ref<string>()
+const selectedPlotIndex = ref<number>()
 
 const options = computed<UseDisplayConfigOptions>(() => {
   return {
@@ -79,22 +91,40 @@ const nodeId = computed(() =>
 const { displays, displayConfig } = useDisplayConfig(
   baseUrl,
   nodeId,
-  selectedPlotId,
+  selectedPlotIndex,
   options,
   () => taskRunsStore.selectedTaskRunIds,
 )
 
-watchEffect(() => {
-  if (props.plotId) selectedPlotId.value = props.plotId
-})
+function prevDisplay() {
+  if (!displays.value || displays.value.length === 0) return
+  if (selectedPlotIndex.value !== undefined && selectedPlotIndex.value > 0) {
+    selectedPlotIndex.value -= 1
+  }
+}
 
-watch(displays, () => {
-  const plotIds = displays.value?.map((d) => d.plotId) ?? []
+function nextDisplay() {
+  if (!displays.value || displays.value.length === 0) return
   if (
-    selectedPlotId.value === undefined ||
-    !plotIds.includes(selectedPlotId.value)
+    selectedPlotIndex.value !== undefined &&
+    selectedPlotIndex.value < displays.value.length - 1
   ) {
-    selectedPlotId.value = plotIds[0]
+    selectedPlotIndex.value += 1
+  }
+}
+
+watchEffect(() => {
+  if (props.plotId) {
+    const plotIndex = displays.value?.findIndex(
+      (d) => d.plotId === props.plotId,
+    )
+    if (plotIndex !== undefined && plotIndex >= 0) {
+      selectedPlotIndex.value = plotIndex
+    } else {
+      selectedPlotIndex.value = 0
+    }
+  } else {
+    selectedPlotIndex.value = 0
   }
 })
 </script>
