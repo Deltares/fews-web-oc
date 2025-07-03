@@ -579,7 +579,7 @@ function redraw() {
 .chart-container {
   display: flex;
   position: relative;
-  flex: 1 1 332px;
+  flex: 1 1 250px;
   width: 100%;
   fill: currentColor;
   margin: 0px auto;
