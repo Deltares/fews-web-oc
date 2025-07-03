@@ -268,4 +268,6 @@ export const lineStyles = [
   { label: 'Dashed', value: 'dashed' },
   { label: 'Dashdot', value: 'dashdot' },
   { label: 'Dotted', value: 'dotted' },
+  { label: 'Bar', value: 'bar' },
+  { label: 'Area', value: 'area' },
 ]
