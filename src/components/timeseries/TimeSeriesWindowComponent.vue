@@ -1,12 +1,13 @@
 <template>
   <WindowComponent :toolBar="settings.general.toolBar">
     <template v-slot:toolbar>
-      <v-toolbar-items
-        class="flex-0-0 ga-4"
-        mandatory
-        size="small"
-      >
-        <v-btn-toggle tile variant="text" v-model="displayType" v-if="displayTypeItems.length > 1">
+      <v-toolbar-items class="flex-0-0 ga-4" mandatory size="small">
+        <v-btn-toggle
+          tile
+          variant="text"
+          v-model="displayType"
+          v-if="displayTypeItems.length > 1"
+        >
           <v-btn
             v-if="displayTypeItems.length > 1"
             v-for="item in displayTypeItems"

@@ -91,11 +91,7 @@ export function useDisplayConfig(
   const displayConfig = computed<DisplayConfig | null>((oldDisplayConfig) => {
     const _plotIndex = toValue(plotIndex)
     if (!displays.value) return null
-    return (
-      displays.value[_plotIndex ?? 0] ??
-      oldDisplayConfig ??
-      null
-    )
+    return displays.value[_plotIndex ?? 0] ?? oldDisplayConfig ?? null
   })
 
   return {

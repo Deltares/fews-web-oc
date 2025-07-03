@@ -115,9 +115,7 @@ function nextDisplay() {
 
 watchEffect(() => {
   if (displays.value) {
-    const plotIndex = displays.value.findIndex(
-      (d) => d.plotId === props.plotId,
-    )
+    const plotIndex = displays.value.findIndex((d) => d.plotId === props.plotId)
     if (plotIndex >= 0) {
       selectedPlotIndex.value = plotIndex
     } else {
