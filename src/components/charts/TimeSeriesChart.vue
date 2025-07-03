@@ -47,7 +47,6 @@ import {
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
 import type { ChartSeries } from '../../lib/charts/types/ChartSeries.js'
-import type { ThresholdLine } from '../../lib/charts/types/ThresholdLine.js'
 import { Series } from '../../lib/timeseries/timeSeries.js'
 import {
   dataFromResources,
@@ -58,7 +57,7 @@ import { difference } from 'lodash-es'
 import { getMatchingIndexedString, type Tag } from '@/lib/charts/tags'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
-import { PanHandler } from '@deltares/fews-web-oc-charts'
+import { PanHandler, type AlertLineOptions } from '@deltares/fews-web-oc-charts'
 import {
   getColorMap,
   horizontalColorCodeDataFromData,
@@ -95,7 +94,7 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-let thresholdLines!: ThresholdLine[]
+let thresholdLines!: AlertLineOptions[]
 let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
 const margin = ref<Margin>({})
