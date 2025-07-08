@@ -42,7 +42,7 @@ export default defineConfig({
     // },
   ],
   webServer: {
-    command: 'vite --strictPort --mode e2e',
+    command: 'npx vite --strictPort --mode e2e',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
   },
