@@ -1,15 +1,9 @@
-import { defineConfig, devices } from '@playwright/experimental-ct-vue'
-import getViteConfig from './vite.config'
-const viteConfig = getViteConfig({
-  command: 'build',
-  mode: 'test',
-})
-
+import { defineConfig, devices } from '@playwright/test'
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: './src',
+  testDir: './tests/e2e',
   testMatch: '*.spec.ts',
   /* The base directory, relative to the config file, for snapshot files created with toMatchSnapshot and toHaveScreenshot. */
   snapshotDir: './__snapshots__',
@@ -28,11 +22,9 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    baseURL: 'http://localhost:5180',
+    screenshot: 'only-on-failure', 
     trace: 'on-first-retry',
-
-    /* Port to use for Playwright component endpoint. */
-    ctPort: 3100,
-    ctViteConfig: viteConfig,
   },
   /* Configure projects for major browsers */
   projects: [
@@ -49,4 +41,9 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
   ],
+  webServer: {
+    command: 'vite --strictPort',
+    url: 'http://localhost:5173',
+    reuseExistingServer: !process.env.CI,
+  },
 })

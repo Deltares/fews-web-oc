@@ -1,6 +1,6 @@
 <template>
   <v-layout id="app">
-    <v-app-bar :color="appBarColor" :style="appBarStyle" density="compact">
+    <v-app-bar :color="appBarColor" :style="appBarStyle" density="compact" data-test-id="app-bar">
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-btn :to="{ name: 'Default' }">
