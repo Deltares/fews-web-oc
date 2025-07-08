@@ -23,7 +23,7 @@ test.describe('Topology Thresholds', () => {
 
     const topologyTree = await page.locator('[data-test-id="topology-tree"]')
     await expect(topologyTree).toBeVisible()
-  
+
     const thresholdNodes = await topologyTree.getByRole('status')
     await expect(thresholdNodes).toHaveCount(4)
     await expect(thresholdNodes).toHaveText(thresholdCounts)
@@ -36,7 +36,6 @@ test.describe('Topology Thresholds', () => {
     await expect(thresholdButton).toBeVisible()
     const badge = await thresholdButton.getByRole('status')
     await expect(badge).toHaveText('4')
-
   })
 
   test('should display the thresholds for node viewer_coastal_water_levels', async ({
