@@ -23,7 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
-.env.*
 /test-results/
 /playwright-report/
 /blob-report/
