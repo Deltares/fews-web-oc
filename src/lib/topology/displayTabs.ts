@@ -61,7 +61,7 @@ export function displayTabsForNode(
         tab.active = nodeHasMap(node)
         tab.to.params = {
           ...params,
-          layerName: node.gridDisplaySelection?.plotId,
+          layerName: node.gridDisplaySelection?.plotId ?? '',
         }
 
         if (from?.params.locationIds) {
