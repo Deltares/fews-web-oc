@@ -2,13 +2,13 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Topology Thresholds', () => {
   test('should display the thresholds correctly', async ({ page }) => {
-    await page.goto('http://localhost:5173/topology/node/')
+    await page.goto('/topology/node/')
     const thresholdCounts = ['12', '1']
 
-    const topologyTree = await page.locator('[data-test-id="topology-tree"]')
+    const topologyTree = page.locator('[data-test-id="topology-tree"]')
     await expect(topologyTree).toBeVisible()
 
-    const thresholdNodes = await topologyTree.getByRole('status')
+    const thresholdNodes = topologyTree.getByRole('status')
     await expect(thresholdNodes).toHaveCount(2)
     await expect(thresholdNodes).toHaveText(thresholdCounts)
   })
@@ -17,24 +17,24 @@ test.describe('Topology Thresholds', () => {
     page,
   }) => {
     await page.goto(
-      'http://localhost:5173/topology/node/viewer_rivers_level_stations/viewer_rivers_level_stations_forecast/map/waterdepth_sfincs_inland',
+      '/topology/node/viewer_rivers_level_stations/viewer_rivers_level_stations_forecast/map/waterdepth_sfincs_inland',
     )
     const thresholdCounts = ['12', '4', '8', '1']
 
-    const topologyTree = await page.locator('[data-test-id="topology-tree"]')
+    const topologyTree = page.locator('[data-test-id="topology-tree"]')
     await expect(topologyTree).toBeVisible()
 
-    const thresholdNodes = await topologyTree.getByRole('status')
+    const thresholdNodes = topologyTree.getByRole('status')
     await expect(thresholdNodes).toHaveCount(4)
     await expect(thresholdNodes).toHaveText(thresholdCounts)
 
-    const appBar = await page.locator('[data-test-id="app-bar"]')
+    const appBar = page.locator('[data-test-id="app-bar"]')
     await expect(appBar).toBeVisible()
 
-    const thresholdButton = await appBar.getByRole('button', { name: 'Badge' })
+    const thresholdButton = appBar.getByRole('button', { name: 'Badge' })
 
     await expect(thresholdButton).toBeVisible()
-    const badge = await thresholdButton.getByRole('status')
+    const badge = thresholdButton.getByRole('status')
     await expect(badge).toHaveText('4')
   })
 
@@ -42,14 +42,14 @@ test.describe('Topology Thresholds', () => {
     page,
   }) => {
     await page.goto(
-      'http://localhost:5173/topology/node/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map/kzn_waterlevel',
+      '/topology/node/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map/kzn_waterlevel',
     )
     const thresholdCounts = ['12', '1', '1']
 
-    const topologyTree = await page.locator('[data-test-id="topology-tree"]')
+    const topologyTree = page.locator('[data-test-id="topology-tree"]')
     await expect(topologyTree).toBeVisible()
 
-    const thresholdNodes = await topologyTree.getByRole('status')
+    const thresholdNodes = topologyTree.getByRole('status')
     await expect(thresholdNodes).toHaveCount(3)
     await expect(thresholdNodes).toHaveText(thresholdCounts)
   })
