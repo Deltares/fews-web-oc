@@ -1,5 +1,9 @@
 <template>
-  <v-menu :close-on-content-click="false" max-height="400">
+  <v-menu
+    v-if="Object.keys(locationAttributes).length > 0"
+    :close-on-content-click="false"
+    max-height="400"
+  >
     <template #activator="{ props }">
       <v-btn
         v-bind="props"
