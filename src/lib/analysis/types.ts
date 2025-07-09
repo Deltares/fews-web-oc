@@ -28,6 +28,7 @@ export interface BaseChart {
 }
 
 export interface FilterSubplotItem extends TimeSeriesDisplaySubplotItem {
+  id: string
   filter: Omit<
     filterActionsFilter,
     'resamplingMethod' | 'resamplingTimeStepId'

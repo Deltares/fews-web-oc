@@ -1,10 +1,10 @@
 <template>
   <div class="d-flex flex-column h-100 pa-2 ga-2">
     <GroupSelect
-      v-model="selectedTimeseries"
+      v-model="selectedTimeseriesIds"
       :items="allSeries"
       label="Time Series"
-      :getItemValue="(item) => item.series"
+      :getItemValue="(item) => item.series.id"
       :getItemTitle="(item) => item.series.legend ?? ''"
       :getItemColor="(item) => item.series.color ?? 'black'"
       :getItemGroupTitle="(item) => item.chart.title"
@@ -96,9 +96,15 @@ const emit = defineEmits<CollectionEmits>()
 
 const parametersStore = useParametersStore()
 
-const selectedTimeseries = ref<FilterSubplotItem[]>([])
+const selectedTimeseriesIds = ref<string[]>([])
 const selectedResamplingMethods = ref<ResamplingMethod[]>([])
 const selectedResamplingTimeSteps = ref<TimeSteps[]>([])
+
+const selectedTimeseries = computed(() => {
+  return allSeries.value
+    .filter((item) => selectedTimeseriesIds.value.includes(item.series.id))
+    .map((item) => item.series)
+})
 
 const isLoadingNewCharts = ref(false)
 const isLoadingAddToChart = ref(false)
@@ -106,7 +112,7 @@ const includeOriginals = ref(false)
 
 watch(() => props.isActive, clearSelections)
 function clearSelections() {
-  selectedTimeseries.value = []
+  selectedTimeseriesIds.value = []
   selectedResamplingMethods.value = []
   selectedResamplingTimeSteps.value = []
 }

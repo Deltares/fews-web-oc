@@ -142,6 +142,7 @@ function subplotToFilterSubplot(
       filter,
       locationName,
       parameterGroup,
+      id: uid(),
     }
     return filterItem
   })
