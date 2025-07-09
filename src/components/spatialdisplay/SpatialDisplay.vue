@@ -145,11 +145,11 @@ const maxValuesTimeSeries = useWmsMaxValuesTimeSeries(
   end,
 )
 
-const onlyCoverageLayersAvailable = computed(
-  () =>
-    layerCapabilities.value?.onlyGrids === undefined ||
-    layerCapabilities.value.onlyGrids,
-)
+const onlyCoverageLayersAvailable = computed(() => {
+  const capabilities = layerCapabilities.value
+  if (!capabilities) return false
+  return capabilities.onlyGrids ?? true
+})
 
 function getFilterActionsFilter(
   locationIds: string,
@@ -314,7 +314,6 @@ function closeTimeSeriesDisplay(): void {
 
 watch(locations, () => {
   if (
-    !locations.value?.length ||
     props.locationIds
       ?.split(',')
       .some((id) => !locations.value?.map((l) => l.locationId).includes(id))
@@ -322,6 +321,15 @@ watch(locations, () => {
     closeTimeSeriesDisplay()
   }
 })
+
+watch(
+  () => onlyCoverageLayersAvailable.value,
+  (onlyCoverage) => {
+    if (!onlyCoverage && props.longitude && props.latitude) {
+      closeTimeSeriesDisplay()
+    }
+  },
+)
 </script>
 
 <style scoped>

@@ -11,13 +11,14 @@ import {
   TrailParticleShape,
 } from '@deltares/webgl-streamline-visualizer'
 import { useMap } from '@/services/useMap'
-import { onMounted, onUnmounted, watch } from 'vue'
+import { inject, onMounted, onUnmounted, watch } from 'vue'
 
 import { configManager } from '@/services/application-config'
 import { type AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import { getBeforeId, getLayerId } from '@/lib/map'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { isLoadedSymbol } from '@indoorequal/vue-maplibre-gl'
 
 type StreamlineLayerOptionsFews = Layer['animatedVectors']
 
@@ -63,7 +64,6 @@ let layer: WMSStreamlineLayer | null = null
 
 onMounted(() => {
   addHooksToMapObject()
-  updateLayer()
 })
 
 onUnmounted(() => {
@@ -72,28 +72,29 @@ onUnmounted(() => {
 })
 
 function addHooksToMapObject() {
-  map?.on('load', updateLayer)
   map?.on('dblclick', onDoubleClick)
 }
 
 function removeHooksFromMapObject(): void {
-  map?.off('load', updateLayer)
   map?.off('dblclick', onDoubleClick)
 }
+
+const isLoaded = inject(isLoadedSymbol)!
+
+watch(
+  [isLoaded, () => props.layerOptions?.name],
+  ([loaded]) => {
+    if (loaded) {
+      updateLayer()
+    }
+  },
+  { immediate: true },
+)
 
 function updateLayer() {
   removeLayer()
   addLayer()
 }
-
-// Recreate the streamline visualiser when the a different layer is selected.
-watch(
-  () => props.layerOptions?.name,
-  () => {
-    removeLayer()
-    addLayer()
-  },
-)
 
 // Allow only one simultaneous request to wait for layer initialisation; abort
 // all requests but the last.
