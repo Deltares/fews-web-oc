@@ -53,8 +53,6 @@ export interface FilterChart extends BaseChart {
 
 export interface CorrelationChart extends BaseChart {
   type: 'correlation'
-  timeSeriesNameYAxis: string
-  timeSeriesNameXAxis: string
   filter: Omit<CorrelationFilter, 'startTime' | 'endTime'>
   subplot: TimeSeriesDisplaySubplot
 }
