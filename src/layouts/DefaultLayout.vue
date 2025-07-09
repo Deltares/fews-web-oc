@@ -142,14 +142,14 @@
       </template>
     </v-navigation-drawer>
     <v-main id="main">
-      <div class="w-100 h-100 d-flex flex-row">
+      <v-sheet class="w-100 h-100 d-flex flex-row">
         <div class="flex-1-1 overflow-hidden">
           <Suspense>
             <router-view></router-view>
           </Suspense>
         </div>
         <div class="border-s h-100" id="main-side-panel" />
-      </div>
+      </v-sheet>
       <div class="alerts__container" v-if="alertsStore.hasAlerts">
         <v-alert
           v-for="alert in alertsStore.alerts"
