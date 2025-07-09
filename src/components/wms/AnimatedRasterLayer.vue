@@ -43,6 +43,7 @@ export interface AnimatedRasterLayerOptions {
   elevation?: number | null
   colorScaleRange?: string
   style?: string
+  useLastValue?: boolean
 }
 
 interface Props {
@@ -163,7 +164,9 @@ function getImageSourceOptions() {
   getMapUrl.searchParams.append('height', `${height.toFixed(0)}`)
   getMapUrl.searchParams.append('width', `${width.toFixed(0)}`)
   getMapUrl.searchParams.append('time', `${time}`)
-  getMapUrl.searchParams.append('useLastValue', 'true')
+  if (props.layer.useLastValue) {
+    getMapUrl.searchParams.append('useLastValue', 'true')
+  }
   if (props.layer.style) {
     getMapUrl.searchParams.append('styles', props.layer.style)
   }

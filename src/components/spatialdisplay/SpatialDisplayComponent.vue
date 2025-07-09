@@ -192,6 +192,7 @@ import { useColourScales } from '@/services/useColourScales'
 import { useSelectedDate } from '@/services/useSelectedDate'
 import { useOverlays } from '@/services/useOverlays'
 import { useBaseMap } from '@/services/useBaseMap'
+import { isInDatesRange } from '@/lib/date'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -463,6 +464,7 @@ function setLayerOptions(): void {
         : undefined,
       style: currentColourScale.value?.style.name,
       useDisplayUnits: userSettings.useDisplayUnits,
+      useLastValue: !isInDatesRange(selectedDate.value, props.times),
     }
   } else {
     layerOptions.value = undefined
