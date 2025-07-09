@@ -24,7 +24,7 @@ test('Thresholds locations should be visible for viewer_rivers_level_stations_fo
   const alertLocations = mapLocator(
     'map[id=mainMap] layer[id=weboc-layer-location-symbol] filter["all", ["==", ["get", "thresholdSeverity"], 2]]',
   )
-  const alertLocationsCount = await alertLocations.count()  
+  const alertLocationsCount = await alertLocations.count()
   await expect(alertLocations, 'Alert locations visible').toBeVisibleOnMap()
   await expect(alertLocationsCount, 'Alert locations count').toBe(1)
 
@@ -104,7 +104,6 @@ test('Thresholds locations should be visible for viewer_coastal_water_levels', a
   mapLocator,
   mapController,
 }) => {
-
   await page.goto(
     '/topology/node/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map',
   )
@@ -142,8 +141,13 @@ test('Thresholds locations should be visible for viewer_coastal_water_levels', a
   )
   const watchPercentilesLocationsCount = await watchPercentilesLocations.count()
 
-  await expect(watchPercentilesLocations, 'Warning locations visible').toBeVisibleOnMap()
-  await expect(watchPercentilesLocationsCount, 'Warning locations count').toBe(1)
+  await expect(
+    watchPercentilesLocations,
+    'Warning locations visible',
+  ).toBeVisibleOnMap()
+  await expect(watchPercentilesLocationsCount, 'Warning locations count').toBe(
+    1,
+  )
 
   const noThresholdLocations = mapLocator(
     'map[id=mainMap] layer[id=weboc-layer-location-symbol] filter["all", ["!", ["has", "thresholdSeverity"]]]',
@@ -158,5 +162,3 @@ test('Thresholds locations should be visible for viewer_coastal_water_levels', a
     10,
   )
 })
-
-
