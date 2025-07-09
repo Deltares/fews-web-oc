@@ -142,7 +142,7 @@ function subplotToFilterSubplot(
       filter,
       locationName,
       parameterGroup,
-      id: crypto.randomUUID(),
+      id: uid(),
     }
     return filterItem
   })
