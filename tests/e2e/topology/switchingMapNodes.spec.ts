@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('Switching Nodes', () => {
+test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplay', () => {
   test('when switching nodes the location has to be remembered', async ({
     page,
   }) => {
@@ -33,7 +33,9 @@ test.describe('Switching Nodes', () => {
     await expect(page.getByText('Water Level (m + MSL)')).not.toBeVisible()
     await expect(page.getByRole('button', { name: 'Chart' })).not.toBeVisible()
   })
+})
 
+test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplayWithCoordinates', () => {
   test('when switching nodes the coordinates have to be remembered', async ({
     page,
   }) => {
