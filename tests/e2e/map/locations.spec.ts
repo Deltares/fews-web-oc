@@ -1,5 +1,4 @@
-import { map } from 'd3'
-import { test, expect } from '../map-testing'
+import { test, expect } from '../util/map-testing'
 
 test('Thresholds locations should be visible for viewer_rivers_level_stations_forecast', async ({
   page,
