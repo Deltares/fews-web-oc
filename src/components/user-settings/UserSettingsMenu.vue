@@ -1,9 +1,7 @@
 <template>
   <v-menu left bottom :close-on-content-click="false" class="menu">
     <template v-slot:activator="{ props }">
-      <v-btn icon v-bind="props">
-        <v-icon>mdi-cog</v-icon>
-      </v-btn>
+      <v-btn v-bind="props" icon="mdi-cog" aria-label="User Settings" />
     </template>
     <v-list>
       <v-list-item
@@ -26,6 +24,7 @@
               :value="item.value"
               :disabled="item.disabled"
               class="text-none"
+              :aria-label="`${setting.label} ${item.title}`"
             >
               <v-icon v-if="item.icon">{{ item.icon }}</v-icon>
               <span v-else>{{ item.title }}</span>
@@ -44,6 +43,7 @@
             :disabled="setting.disabled"
             @update:modelValue="onValueChange(setting)"
             hide-details
+            :aria-label="setting.label"
           >
           </v-switch>
         </v-list-item-action>
@@ -52,7 +52,13 @@
       <v-divider />
       <UserSettingsDialog>
         <template #activator="{ props }">
-          <v-list-item v-bind="props">All Settings ...</v-list-item>
+          <v-list-item
+            v-bind="props"
+            aria-label="All User Settings"
+            role="button"
+          >
+            All Settings ...
+          </v-list-item>
         </template>
       </UserSettingsDialog>
     </v-list>
