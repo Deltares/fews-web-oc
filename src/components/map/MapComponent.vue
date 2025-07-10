@@ -40,6 +40,7 @@ import type {
 } from 'maplibre-gl'
 import { onMounted, useTemplateRef, watch } from 'vue'
 import { transformStyle } from '@/lib/map'
+import { useMapId } from '@/services/useMapId'
 
 interface Props {
   bounds?: LngLatBounds
@@ -56,12 +57,15 @@ const mapRef = useTemplateRef('map')
 const initialStyle = props.style
 
 if (import.meta.env.VITE_MAPGRAB_ENABLED) {
+  const mapId = useMapId()
+
   onMounted(() => {
     // @ts-expect-error map is not exposed in the types
     const map: Map | undefined = mapRef.value?.map
     if (!map) return
+
     import('@mapgrab/map-interface').then(({ installMapGrab }) => {
-      installMapGrab(map, 'mainMap')
+      installMapGrab(map, mapId)
     })
   })
 }
