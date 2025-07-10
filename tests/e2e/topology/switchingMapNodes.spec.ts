@@ -27,8 +27,8 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplay', () => {
     await expect(page.getByText('Water Level (m + MSL)')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Chart' })).toBeVisible()
 
-    await page.getByText('Rainfall').click()
-    await page.getByRole('link', { name: 'Forecast' }).click()
+    await page.getByText('Rivers').click()
+    await page.getByRole('link', { name: 'Palmiet' }).click()
 
     await expect(page.getByText('Water Level (m + MSL)')).not.toBeVisible()
     await expect(page.getByRole('button', { name: 'Chart' })).not.toBeVisible()
@@ -45,7 +45,9 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplayWithCoordina
     await expect(page.getByText('Precipitation Rate (mm)')).toBeVisible()
 
     await page.getByText('Coastal processes').click()
-    await page.getByRole('link', { name: 'Particle tracking' }).click()
+    await page
+      .getByRole('link', { name: 'Particle tracking', exact: true })
+      .click()
 
     await expect(page.getByText('Wind Speed (m/s)')).toBeVisible()
     await expect(page.getByText('Wind Direction (degrees)')).toBeVisible()

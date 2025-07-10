@@ -19,11 +19,16 @@
         :item-props="true"
         flat
         hide-details
+        :aria-label="`${group} ${setting.label}`"
         @click.preventDefault
         @update:modelValue="onValueChange(setting)"
       >
         <template #item="{ props }">
-          <v-list-item v-bind="props" :disabled="props?.disabled === true">
+          <v-list-item
+            v-bind="props"
+            :disabled="props?.disabled === true"
+            :aria-label="`${group} ${setting.label} ${props.title}`"
+          >
             <template #prepend>
               <v-icon>
                 {{ props.icon }}
@@ -40,6 +45,7 @@
         :disabled="setting.disabled"
         hide-details
         @update:modelValue="onValueChange(setting)"
+        :aria-label="`${group} ${setting.label}`"
       >
       </v-switch>
       <template v-slot:append>
@@ -49,6 +55,7 @@
           variant="text"
           class="flex-0-0 align-self-center"
           @click="onFavoriteChange(setting)"
+          :aria-label="`favorite ${group} ${setting.label}`"
         >
           <v-icon>{{
             setting.favorite ? 'mdi-star' : 'mdi-star-outline'

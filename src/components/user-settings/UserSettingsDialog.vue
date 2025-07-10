@@ -10,7 +10,11 @@
     </template>
     <v-card>
       <v-toolbar title="Settings" density="compact">
-        <v-btn icon="mdi-close" @click="dialog = false" />
+        <v-btn
+          icon="mdi-close"
+          @click="dialog = false"
+          aria-label="Close User Settings"
+        />
       </v-toolbar>
       <v-card-text>
         <UserSettings />

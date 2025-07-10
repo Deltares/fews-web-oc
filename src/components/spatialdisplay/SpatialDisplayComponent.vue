@@ -16,7 +16,11 @@
       :beforeId="baseMap.beforeId"
       @doubleclick="onCoordinateClick"
     />
-    <div class="colourbar-container" v-if="currentColourScale">
+    <div
+      class="colourbar-container"
+      aria-label="map legend"
+      v-if="currentColourScale"
+    >
       <ColourLegend
         v-if="!currentColourScale.useGradients"
         :colourMap="currentColourScale.colourMap"
