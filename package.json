@@ -91,6 +91,8 @@
     "vuetify": "^3.8.9"
   },
   "devDependencies": {
+    "@mapgrab/map-interface": "^1.0.2",
+    "@mapgrab/playwright": "^0.0.4",
     "@mdi/font": "^7.4.47",
     "@playwright/experimental-ct-vue": "^1.53.0",
     "@playwright/test": "^1.53.0",
