@@ -65,11 +65,12 @@
             :title="getItemTitle(item)"
             :value="getItemValue(item)"
           >
-            <template #prepend="{ isSelected }">
+            <template #prepend="{ isSelected, select }">
               <v-list-item-action start>
                 <v-checkbox-btn
                   v-if="multiple"
                   :model-value="isSelected"
+                  @update:model-value="select"
                   density="compact"
                 />
                 <v-icon
