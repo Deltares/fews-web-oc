@@ -21,8 +21,7 @@ export default defineConfig({
   reporter: [
   ['list'],
   ['junit', { outputFile: 'results/test-results.xml' }],
-  ['html', { outputFolder: 'playwright-report', open: 'never' }],
-  ['playwright-teamcity-reporter', {'testMetadataArtifacts': 'test-results', logConfig: false}],
+  ['html', { outputFolder: 'playwright-report', open: 'never' }]
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
