@@ -92,3 +92,67 @@ export type Chart =
 export interface CollectionEmits {
   addChart: [chart: Chart]
 }
+
+export function validateDisplayCollections(data: DisplayCollections): boolean {
+  if (data.version && data.version !== '1.0') {
+    console.error("Version must be '1.0' if provided")
+    return false
+  }
+
+  if (!Array.isArray(data.collections)) {
+    console.error('Collections must be an array')
+    return false
+  }
+
+  data.collections.forEach((collection, index) => {
+    if (typeof collection.name !== 'string') {
+      console.error(`Collection at index ${index} must have a string name`)
+      return false
+    }
+
+    const settings = collection.settings
+    if (
+      !settings ||
+      !(settings.startTime instanceof Date) ||
+      !(settings.endTime instanceof Date)
+    ) {
+      console.error(
+        `Collection at index ${index} must have valid startTime and endTime`,
+      )
+      return false
+    }
+
+    const liveUpdate = settings.liveUpdate
+    if (
+      !liveUpdate ||
+      typeof liveUpdate.enabled !== 'boolean' ||
+      typeof liveUpdate.daysBeforeNow !== 'number' ||
+      typeof liveUpdate.daysAfterNow !== 'number'
+    ) {
+      console.error(
+        `Collection at index ${index} must have valid liveUpdate settings`,
+      )
+      return false
+    }
+
+    if (!Array.isArray(collection.charts)) {
+      console.error(`Collection at index ${index} must have an array of charts`)
+      return false
+    }
+
+    collection.charts.forEach((chart, chartIndex) => {
+      if (
+        typeof chart.id !== 'string' ||
+        typeof chart.title !== 'string' ||
+        typeof chart.type !== 'string'
+      ) {
+        console.error(
+          `Chart at index ${chartIndex} in collection ${index} must have valid id, title, and type`,
+        )
+        return false
+      }
+    })
+  })
+
+  return true
+}

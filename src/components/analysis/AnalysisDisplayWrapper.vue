@@ -12,6 +12,7 @@ import {
   createDefaultDisplayCollections,
   DisplayCollections,
   getDateTimeSerializer,
+  validateDisplayCollections,
 } from '@/lib/analysis'
 import AnalysisDisplayComponent from './AnalysisDisplayComponent.vue'
 import { ComponentSettings } from '@/lib/topology/componentSettings'
@@ -38,9 +39,10 @@ const { state: displayCollections } = useRemoteStorage<DisplayCollections>(
   },
 )
 
-// TODO: Do a full validation of the displayCollections structure?
-const isValidDisplayCollections = computed(
-  () => displayCollections.value?.version === '1.0',
+const isValidDisplayCollections = computed(() =>
+  displayCollections.value
+    ? validateDisplayCollections(displayCollections.value)
+    : false,
 )
 
 watch(
@@ -48,7 +50,7 @@ watch(
   (newValue) => {
     if (!newValue) return
     if (!newValue.version || newValue.version !== '1.0') {
-      // TODO: Handle version migration if needed
+      // In the future handle version migrations here
       displayCollections.value = createDefaultDisplayCollections(props.config)
     }
   },
