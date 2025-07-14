@@ -563,15 +563,11 @@ onBeforeUnmount(() => {
 })
 
 function redraw() {
-  if (props.verticalProfile) {
-    axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
+  const xDomain = props.config.xAxis?.[0]?.domain
+  if (xDomain) {
+    axis.redraw({ x: { domain: xDomain }, y: { autoScale: true } })
   } else {
-    axis.redraw({
-      x: {
-        domain: props.config.xAxis?.[0]?.domain,
-      },
-      y: { autoScale: true },
-    })
+    axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
   }
 }
 </script>
