@@ -34,7 +34,6 @@ import {
   Margin,
   TooltipAnchor,
   TooltipOptions,
-  WheelMode,
   ZoomHandler,
   toggleChartVisibility,
   CartesianAxes,
@@ -64,6 +63,8 @@ import {
   horizontalColorCodeDataFromData,
 } from '@/lib/charts/horizontalColorCode.js'
 import { isDefaultD3Domain } from '@/lib/charts/defaultDomain'
+import { ModifierKey } from '@deltares/fews-web-oc-charts'
+import { useUserSettingsStore } from '@/stores/userSettings.js'
 
 interface Props {
   config: ChartConfig
@@ -95,9 +96,13 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
+const userSettingsStore = useUserSettingsStore()
+
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
+let zoom!: ZoomHandler
+
 const margin = ref<Margin>({})
 const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
@@ -136,7 +141,16 @@ onMounted(() => {
     const mouseOver = props.verticalProfile
       ? new VerticalMouseOver(undefined, (value: number) => value.toString())
       : new MouseOver(undefined, (value: number) => value.toString())
-    const zoom = props.zoomHandler ?? new ZoomHandler(WheelMode.NONE)
+
+    const wheelMode = userSettingsStore.scrollZoomMode
+    const scrollModifierKey = ModifierKey.Shift
+    if (props.zoomHandler) {
+      zoom = props.zoomHandler
+      zoom.updateOptions({ wheelMode, scrollModifierKey })
+    } else {
+      zoom = new ZoomHandler(wheelMode, scrollModifierKey)
+    }
+
     const currentTime = new CurrentTime({ x: { axisIndex: 0 } })
 
     thresholdLinesVisitor = new AlertLines(thresholdLines)
@@ -163,6 +177,11 @@ onMounted(() => {
     window.addEventListener('resize', resize)
   }
 })
+
+watch(
+  () => userSettingsStore.scrollZoomMode,
+  (scrollZoomMode) => zoom.updateOptions({ wheelMode: scrollZoomMode }),
+)
 
 const xTicksDisplay = computed(() =>
   props.settings.xAxis.xTicks ? undefined : 'none',
