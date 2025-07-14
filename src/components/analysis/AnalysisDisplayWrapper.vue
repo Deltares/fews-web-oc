@@ -45,11 +45,13 @@ const isValidDisplayCollections = computed(() =>
     : false,
 )
 
+// HACK: We watch displayCollections object and set it to a default value
+//       if the version is not present or '1.0'. Hack since this function will run again
+//       when the object is set to a default value. In the future, we should handle version migrations here.
 watch(
-  displayCollections,
-  (newValue) => {
-    if (!newValue) return
-    if (!newValue.version || newValue.version !== '1.0') {
+  () => displayCollections.value?.version,
+  (newVersion) => {
+    if (!newVersion || newVersion !== '1.0') {
       // In the future handle version migrations here
       displayCollections.value = createDefaultDisplayCollections(props.config)
     }
