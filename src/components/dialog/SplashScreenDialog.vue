@@ -1,8 +1,8 @@
 <template>
-  <v-dialog v-model="showDialog" max-width="900">
+  <v-dialog v-model="showDialog" max-width="900" role="dialog">
     <v-card @click="showDialog = false" style="cursor: default">
       <v-img :src="imgUrl" />
-      <div class="info-overlay">
+      <div class="info-overlay" aria-label="Version Information">
         <div v-if="version">Delft-FEWS WebOC Version {{ version }}</div>
         <a
           v-if="termsComponent"
