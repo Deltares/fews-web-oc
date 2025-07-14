@@ -49,9 +49,13 @@
           :value="item.id"
           :active="false"
         >
-          <template #prepend="{ isSelected }">
+          <template #prepend="{ isSelected, select }">
             <v-list-item-action start>
-              <v-checkbox-btn :model-value="isSelected" density="compact" />
+              <v-checkbox-btn
+                :model-value="isSelected"
+                @update:model-value="select"
+                density="compact"
+              />
             </v-list-item-action>
           </template>
           <template v-if="item.isPreferred" #append>
