@@ -17,7 +17,7 @@ const piProvider = new PiWebserviceProvider(baseUrl, {
 
 export function useRemoteStorage<T>(
   key: string,
-  defaultValue: T,
+  defaultValueCallback: () => T,
   options: UseRemoteStorageOptions<T>,
 ) {
   const { debounce = 1000, serializer = getJsonSerializer<T>() } = options
@@ -25,7 +25,7 @@ export function useRemoteStorage<T>(
   // Use local storage if we have no user
   if (!configManager.authenticationIsEnabled) {
     return {
-      state: useStorage(key, defaultValue, undefined, {
+      state: useStorage(key, defaultValueCallback(), undefined, {
         serializer,
       }),
     }
@@ -58,7 +58,7 @@ export function useRemoteStorage<T>(
         const body = await e.cause.text()
         if (body.includes('No user settings found for this user and topic.')) {
           // If no settings found, initialize with default value
-          state.value = defaultValue
+          state.value = defaultValueCallback()
         }
         console.error(`Remote load failed: ${body}`, e)
       } else {

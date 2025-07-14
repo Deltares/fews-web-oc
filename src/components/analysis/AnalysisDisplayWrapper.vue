@@ -33,7 +33,7 @@ const props = defineProps<Props>()
 
 const { state: displayCollections } = useRemoteStorage<DisplayCollections>(
   `weboc-data-analysis-collections-${props.config.id}`,
-  createDefaultDisplayCollections(props.config),
+  () => createDefaultDisplayCollections(props.config),
   {
     serializer: getDateTimeSerializer(),
   },
