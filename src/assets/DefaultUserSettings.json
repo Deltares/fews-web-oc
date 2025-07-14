@@ -122,5 +122,30 @@
     "label": "Show location names",
     "value": true,
     "group": "Map"
+  },
+  {
+    "id": "charts.scrollZoomMode",
+    "type": "oneOfMultiple",
+    "label": "Scroll wheel zoom mode",
+    "value": "x",
+    "items": [
+      {
+        "value": "off",
+        "title": "Off"
+      },
+      {
+        "value": "x",
+        "title": "Only X"
+      },
+      {
+        "value": "y",
+        "title": "Only Y"
+      },
+      {
+        "value": "xy",
+        "title": "Both X and Y"
+      }
+    ],
+    "group": "Charts"
   }
 ]
