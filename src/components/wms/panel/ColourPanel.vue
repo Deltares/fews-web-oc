@@ -58,6 +58,7 @@
             icon="mdi-restore"
             variant="flat"
             density="compact"
+            aria-label="Reset current colour scale range"
             @click="resetCurrentScaleRange"
           />
         </v-col>
