@@ -20,8 +20,8 @@
         <AnalysisFunctions
           :charts="selectedCollection.charts"
           :series="series"
-          :startTime="selectedCollection.settings.startTime"
-          :endTime="selectedCollection.settings.endTime"
+          :startTime="startTime"
+          :endTime="endTime"
           :config="config"
           :settings="settings"
           @addChart="addChart"
@@ -55,7 +55,7 @@
       <v-card-title class="flex-0-0 d-flex ga-2 align-center">
         <AnalysisCollection
           v-model:selectedCollection="selectedCollection"
-          v-model:collections="collections"
+          :collections="collections"
           :config="config"
         />
       </v-card-title>
@@ -65,8 +65,8 @@
           v-model:collection="selectedCollection"
           :series="series"
           :settings="settings"
-          :startTime="selectedCollection.settings.startTime"
-          :endTime="selectedCollection.settings.endTime"
+          :startTime="startTime"
+          :endTime="endTime"
           class="flex-1-1"
           @addChart="addChart"
         />
@@ -98,16 +98,16 @@ import {
 import {
   type Chart,
   type Collection,
-  getDateTimeSerializer,
   createCollection,
   hasValidFilterCharts,
 } from '@/lib/analysis'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { useStorage } from '@vueuse/core'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
+import { addDuration } from '@/lib/date'
 
 interface Props {
+  collections: Collection[]
   config: DataAnalysisDisplayElement
   boundingBox?: BoundingBox
   settings?: ComponentSettings
@@ -125,24 +125,16 @@ const userSettings = useUserSettingsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const collections = useStorage<Collection[]>(
-  'weboc-his-collections-v1.0.0',
-  [createCollection('Default', props.config)],
-  undefined,
-  {
-    serializer: getDateTimeSerializer(),
-  },
-)
-const selectedCollection = ref<Collection>(collections.value[0])
+const selectedCollection = ref<Collection>(props.collections[0])
 
 function deleteSelectedCollection() {
-  const index = collections.value.indexOf(selectedCollection.value)
+  const index = props.collections.indexOf(selectedCollection.value)
   if (index !== -1) {
-    collections.value.splice(index, 1)
-    if (collections.value.length === 0) {
-      collections.value.push(createCollection('Default', props.config))
+    props.collections.splice(index, 1)
+    if (props.collections.length === 0) {
+      props.collections.push(createCollection('Default', props.config))
     }
-    selectedCollection.value = collections.value[0]
+    selectedCollection.value = props.collections[0]
   }
 }
 
@@ -166,9 +158,31 @@ const requests = computed<ActionRequest[]>((prevRequests) => {
   return newRequests
 })
 
+const startTime = computed(() => {
+  const settings = selectedCollection.value.settings
+  const liveUpdate = settings.liveUpdate
+  if (liveUpdate.enabled) {
+    return addDuration(new Date(), {
+      days: -liveUpdate.daysBeforeNow,
+    })
+  }
+  return settings.startTime
+})
+
+const endTime = computed(() => {
+  const settings = selectedCollection.value.settings
+  const liveUpdate = settings.liveUpdate
+  if (liveUpdate.enabled) {
+    return addDuration(new Date(), {
+      days: liveUpdate.daysAfterNow,
+    })
+  }
+  return settings.endTime
+})
+
 const timeSeriesOptions = computed(() => ({
-  startTime: selectedCollection.value.settings.startTime,
-  endTime: selectedCollection.value.settings.endTime,
+  startTime: startTime.value,
+  endTime: endTime.value,
   useDisplayUnits: userSettings.useDisplayUnits,
   convertDatum: userSettings.convertDatum,
   thinning: true,

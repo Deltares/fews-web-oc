@@ -72,12 +72,9 @@ export function useTimeSeries(
   const loadingSeriesIds = ref<string[]>([])
   const isLoading = computed(() => loadingSeriesIds.value.length > 0)
 
-  const watchedParams = [
-    requests,
-    options,
-    fetchingEnabled,
-    selectedTime,
-  ].filter((p) => p !== undefined)
+  const watchedParams = [requests, options, fetchingEnabled, selectedTime]
+    .filter((p) => p !== undefined)
+    .map((p) => () => toValue(p))
   watch(watchedParams, () => {
     loadTimeSeries()
   })
