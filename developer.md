@@ -18,6 +18,12 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has a
    2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
 2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
 
+## E2E testing
+
+For end-to-end testing we use [Playwright](https://playwright.dev/).
+
+For map related testing [MapGrab](https://mapgrab.github.io/) is used. A browser extension for Chrome (of Edge) can be used to get details on layer objects. This requires injection `@mapgrab/map-interface` to the maplibre map object. This is only done when `VITE_MAPGRAB_ENABLED=true` is set in the environment.
+
 ## Creating a release
 
 Before creating a release make sure that all changes are merged to the main branch.
