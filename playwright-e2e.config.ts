@@ -28,7 +28,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:5172',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
   },
@@ -48,8 +48,8 @@ export default defineConfig({
     // },
   ],
   webServer: {
-    command: 'npx vite --strictPort --mode e2e',
-    url: 'http://localhost:5173',
+    command: 'npm run preview:e2e',
+    url: 'http://localhost:5172',
     reuseExistingServer: !process.env.CI,
   },
 })

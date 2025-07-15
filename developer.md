@@ -18,6 +18,35 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has a
    2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
 2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
 
+
+
+## E2E testing
+
+For end-to-end testing we use [Playwright](https://playwright.dev/).
+
+To run end-to-end tests, you have two options:
+
+**Option 1: Build and test with preview server (default)**
+
+```
+npm run build:e2e
+npm run test:e2e
+```
+
+`npm run test:e2e` will automatically start a preview server, or reuse an existing preview or dev server if one is already running.
+
+**Option 2: Use the dev server**
+
+```
+npm run dev:e2e
+npm run test:e2e
+```
+
+If the dev server is running, `npm run test:e2e` will reuse it automatically.
+
+> [!WARNING]
+> The dev server might time out for certain tests.
+
 ## Creating a release
 
 Before creating a release make sure that all changes are merged to the main branch.
