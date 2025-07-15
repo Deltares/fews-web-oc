@@ -65,15 +65,13 @@ test.describe('Default Selection in Topology', () => {
               return {
                 ...component,
                 defaultPath: {
-                  nodeId:
-                    'viewer_meteorology_rainfall_hazard_map',
+                  nodeId: 'viewer_meteorology_rainfall_hazard_map',
                 },
               }
             }
             return component
           })
         }
-        console.log('Mocked config with defaultPath:', JSON.stringify(json, null, 2))
 
         await route.fulfill({ json })
       },
@@ -87,13 +85,11 @@ test.describe('Default Selection in Topology', () => {
     await expect(topologyTree).toBeVisible()
 
     // Wait for the topology to load and the node to be selected
-    await page.waitForTimeout(1000) 
+    await page.waitForTimeout(1000)
 
     // Check that we're redirected to the specific node defined in defaultPath
     const url = page.url()
-    await expect(url).toContain(
-      'viewer_meteorology_rainfall_hazard_map',
-    )
+    await expect(url).toContain('viewer_meteorology_rainfall_hazard_map')
 
     // Verify that the specified node is selected in the topology tree
     const nodeLink = topologyTree.getByRole('link', { name: /Hazard map/ })
