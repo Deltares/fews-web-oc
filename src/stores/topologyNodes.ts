@@ -8,7 +8,6 @@ export const useTopologyNodesStore = defineStore('topologyNodes', () => {
   const nodes = ref<TopologyNode[]>([])
   const _idToNodeMap = ref<Map<string, TopologyNode>>(new Map())
   const _childIdToParentNodeMap = ref<Map<string, TopologyNode>>(new Map())
-  const subNodes = ref<TopologyNode[]>([])
 
   watchEffect(() => {
     const { idToNodeMap, childIdToParentNodeMap } = createTopologyHashMaps(
@@ -27,6 +26,16 @@ export const useTopologyNodesStore = defineStore('topologyNodes', () => {
     })
   }
 
+  function getFirstLeafNodeForId(nodeId: string): TopologyNode | undefined {
+    const node = _idToNodeMap.value.get(nodeId)
+    if (!node) return undefined
+    if (node.topologyNodes && node.topologyNodes.length > 0) {
+      return getFirstLeafNodeForId(node.topologyNodes[0].id)
+    }
+    // If the node has no children, return itself
+    return node
+  }
+
   function getNodeById(nodeId: string): TopologyNode | undefined {
     return _idToNodeMap.value.get(nodeId)
   }
@@ -42,10 +51,10 @@ export const useTopologyNodesStore = defineStore('topologyNodes', () => {
   return {
     nodes,
     fetch,
-    subNodes,
     _idToNodeMap,
     _childIdToParentNodeMap,
     getSubNodesForIds,
+    getFirstLeafNodeForId,
     getNodeById,
     getParentNodeById,
   }

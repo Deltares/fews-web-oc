@@ -494,10 +494,12 @@ onBeforeRouteUpdate(reroute)
 
 function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
   if (!to.params.nodeId) {
-    const firstSubNodeId = subNodes.value[0].id
+    const firstSubNodeId = topologyNodesStore.getFirstLeafNodeForId(
+      subNodes.value[0].id,
+    )?.id
     if (firstSubNodeId) {
       to.params.nodeId = firstSubNodeId
-      return to
+      return reroute(to, from)
     }
     return
   }
