@@ -373,7 +373,7 @@ watch(
   () => topologyNodesStore.nodes,
   () => {
     const to = reroute(route)
-    if (to) router.push(to)
+    if (to) router.push(reroute(to as RouteLocationNormalized) ?? to)
   },
 )
 
@@ -494,7 +494,7 @@ onBeforeRouteUpdate(reroute)
 
 function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
   if (!to.params.nodeId) {
-    const firstSubNodeId = subNodes.value[0].id
+    const firstSubNodeId = topologyNodesStore.getFirstLeafNodeForId(subNodes.value[0].id)?.id
     if (firstSubNodeId) {
       to.params.nodeId = firstSubNodeId
       return to
