@@ -1,7 +1,15 @@
 <template>
-  <v-dialog v-model="showTermsDialog" persistent max-width="900">
+  <v-dialog
+    v-model="showTermsDialog"
+    persistent
+    max-width="900"
+    role="dialog"
+    aria-labelledby="terms-dialog-title"
+  >
     <v-card style="cursor: default">
-      <v-card-title class="text-h5">Terms and Conditions</v-card-title>
+      <v-card-title class="text-h5" id="terms-dialog-title"
+        >Terms and Conditions</v-card-title
+      >
       <HtmlDisplay class="pt-4 px-4" :url="url" />
       <v-card-actions class="pt-0">
         <v-checkbox
