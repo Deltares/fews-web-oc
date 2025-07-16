@@ -128,9 +128,9 @@
       :unit="elevationUnit"
     />
     <DateTimeSlider
-      v-if="dateTimeSliderEnabled && times?.length"
+      v-if="showDateTimeSlider"
       v-model:selectedDate="selectedDateOfSlider"
-      :dates="times"
+      :dates="times ?? []"
       @update:doFollowNow="setLayerOptions"
       class="spatial-display__slider"
       :hide-speed-controls="mobile"
@@ -138,6 +138,7 @@
     >
       <template #below-track>
         <DateTimeSliderValues
+          v-if="!(props.layerCapabilities?.completelyMissing ?? false)"
           :values="maxValuesTimeSeries ?? []"
           :colour-scale="currentColourScale ?? null"
           height="6px"
@@ -253,6 +254,15 @@ const { selectedDate, dateTimeSliderEnabled } =
 watch(selectedDate, () => {
   emit('update:currentTime', selectedDate.value)
 })
+
+const showDateTimeSlider = computed(() => {
+  return (
+    dateTimeSliderEnabled.value &&
+    props.times?.length &&
+    !(props.layerCapabilities?.completelyMissing ?? false)
+  )
+})
+
 watch(
   () => props.times,
   (times) => {
@@ -399,7 +409,7 @@ function getDefaultLayerKind() {
 }
 
 const offsetBottomControls = computed(() => {
-  return dateTimeSliderEnabled.value && props.times?.length ? '60px' : '0px'
+  return showDateTimeSlider.value && props.times?.length ? '60px' : '0px'
 })
 
 const layerHasElevation = computed(() => {
@@ -455,10 +465,10 @@ watch(selectedDate, () => {
 })
 
 function setLayerOptions(): void {
-  if (props.layerName && selectedDate.value !== undefined) {
+  if (props.layerName) {
     layerOptions.value = {
       name: props.layerName,
-      time: selectedDate.value,
+      time: selectedDate.value ?? new Date(),
       bbox: props.layerCapabilities?.boundingBox
         ? convertBoundingBoxToLngLatBounds(props.layerCapabilities.boundingBox)
         : undefined,
