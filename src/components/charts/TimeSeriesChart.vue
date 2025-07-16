@@ -460,7 +460,9 @@ function setSeriesTags(series: ChartSeries[]) {
       legendSvg: s.serializeToString(legendSvg),
       tooltip: getMatchingIndexedString(name, props.forecastLegend),
       interactive: true,
-      seriesIds: series.map((s) => s.id),
+      seriesIds: series
+        .map((s) => s.id)
+        .filter((id, index, self) => self.indexOf(id) === index),
     }
   })
 }

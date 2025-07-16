@@ -1,5 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 
+const base = '/topology/early_warning/node'
+
 async function switchToSystemUnits(page: Page) {
   await page.getByRole('button', { name: 'User Settings' }).click()
   await page.getByRole('button', { name: 'All User Settings' }).click()
@@ -38,7 +40,7 @@ test.describe('WMS Legend', () => {
     page,
   }) => {
     await page.goto(
-      '/topology/node/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1',
+      `${base}/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1`,
     )
 
     const legendSvg = locateLegendSvg(page)
@@ -54,7 +56,7 @@ test.describe('WMS Legend', () => {
     page,
   }) => {
     await page.goto(
-      '/topology/node/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1',
+      `${base}/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1`,
     )
 
     const legendSvg = locateLegendSvg(page)
@@ -119,7 +121,7 @@ test.describe('WMS Legend', () => {
     page,
   }) => {
     await page.goto(
-      '/topology/node/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1',
+      `${base}/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1`,
     )
 
     const legendSvg = locateLegendSvg(page)
