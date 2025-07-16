@@ -1,11 +1,13 @@
 import { test, expect } from '@playwright/test'
 
+const base = '/topology/early_warning/node'
+
 test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplay', () => {
   test('when switching nodes the location has to be remembered', async ({
     page,
   }) => {
     await page.goto(
-      '/topology/node/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map/kzn_waterlevel/location/Umgeni_Mouth_level',
+      `${base}/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map/kzn_waterlevel/location/Umgeni_Mouth_level`,
     )
 
     await expect(page.getByText('Water Level (m + MSL)')).toBeVisible()
@@ -21,7 +23,7 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplay', () => {
     page,
   }) => {
     await page.goto(
-      '/topology/node/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map/kzn_waterlevel/location/Umgeni_Mouth_level',
+      `${base}/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map/kzn_waterlevel/location/Umgeni_Mouth_level`,
     )
 
     await expect(page.getByText('Water Level (m + MSL)')).toBeVisible()
@@ -36,11 +38,9 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplay', () => {
 })
 
 test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplayWithCoordinates', () => {
-  test('when switching nodes the coordinates have to be remembered', async ({
-    page,
-  }) => {
+  test('when switching nodes the coordinates remembered', async ({ page }) => {
     await page.goto(
-      '/topology/node/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1/coordinates/-29.115/32.083',
+      `${base}/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1/coordinates/-29.115/32.083`,
     )
     await expect(page.getByText('Precipitation Rate (mm)')).toBeVisible()
 
@@ -49,7 +49,7 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplayWithCoordina
       .getByRole('link', { name: 'Particle tracking', exact: true })
       .click()
 
-    await expect(page.getByText('Wind Speed (m/s)')).toBeVisible()
+    await expect(page.getByText('Wind speed NOAA')).toBeVisible()
     await expect(page.getByText('Wind Direction (degrees)')).toBeVisible()
   })
 
@@ -57,7 +57,7 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplayWithCoordina
     page,
   }) => {
     await page.goto(
-      '/topology/node/viewer_rivers_palmiet/viewer_rivers_palmiet_scenario/map/waterdepth_sfincs_palmiet/coordinates/-29.812/30.905',
+      `${base}/viewer_rivers_palmiet/viewer_rivers_palmiet_scenario/map/waterdepth_sfincs_palmiet/coordinates/-29.812/30.905`,
     )
 
     await expect(page.getByText('Water Level (m + MSL)')).toBeVisible()

@@ -1,10 +1,12 @@
 import { test, expect } from '@playwright/test'
 
+const base = '/topology/early_warning/node'
+
 test.describe('Chart Legend Interaction', () => {
   test.describe('Line Series Toggle', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(
-        '/topology/early_warning/node/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map/kzn_waterlevel/location/NSRI_Tide_Gauge_level',
+        `${base}/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map/kzn_waterlevel/location/NSRI_Tide_Gauge_level`,
       )
     })
 
@@ -32,7 +34,7 @@ test.describe('Chart Legend Interaction', () => {
   test.describe('Line with Markers Series Toggle', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(
-        '/topology/early_warning/node/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map/kzn_waterlevel/location/NSRI_Tide_Gauge_level',
+        `${base}/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map/kzn_waterlevel/location/NSRI_Tide_Gauge_level`,
       )
     })
 
@@ -70,7 +72,7 @@ test.describe('Chart Legend Interaction', () => {
   test.describe('Bar Series Toggle', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(
-        '/topology/early_warning/node/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1/coordinates/-28.781/31.841',
+        `${base}/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1/coordinates/-28.781/31.841`,
       )
     })
 

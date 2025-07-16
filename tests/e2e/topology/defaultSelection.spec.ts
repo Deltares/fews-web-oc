@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
-import { timeout } from 'd3'
+
+const base = '/topology/early_warning/node'
 
 test.describe('Default Selection in Topology', () => {
   test('when no defaultPath is defined, the first topology node should be auto selected', async ({
@@ -29,7 +30,7 @@ test.describe('Default Selection in Topology', () => {
     )
 
     // Go to the base topology URL without specifying a node
-    await page.goto('/')
+    await page.goto(base)
 
     // Wait for the page to load and the topology tree to be visible
     const topologyTree = page.locator('[data-test-id="topology-tree"]')
@@ -37,7 +38,7 @@ test.describe('Default Selection in Topology', () => {
 
     // Check that we're redirected to a specific node page (URL should change from /topology to include a node ID)
     const url = page.url()
-    await expect(url).toMatch(/\/topology\/node\/[^/]+/)
+    expect(url).toMatch(/\/topology\/early_warning\/node\/[^/]+/)
 
     // Verify that the first node in the topology tree is selected (has active class or visual indicator)
     const firstNode = topologyTree.getByRole('link').first()
@@ -78,7 +79,7 @@ test.describe('Default Selection in Topology', () => {
     )
 
     // Go to the base topology URL without specifying a node
-    await page.goto('/')
+    await page.goto(base)
 
     // Wait for the page to load and the topology tree to be visible
     const topologyTree = page.locator('[data-test-id="topology-tree"]')
