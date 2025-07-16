@@ -54,7 +54,7 @@
     <div class="d-flex flex-column flex-1-1 overflow-auto">
       <v-card-title class="flex-0-0 d-flex ga-2 align-center">
         <AnalysisCollection
-          v-model:selectedCollection="selectedCollection"
+          v-model:selectedCollectionName="selectedCollectionName"
           :collections="collections"
           :config="config"
         />
@@ -125,16 +125,29 @@ const userSettings = useUserSettingsStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
-const selectedCollection = ref<Collection>(props.collections[0])
+const selectedCollectionName = ref<string>(props.collections[0].name)
+const selectedCollection = computed<Collection>(() => {
+  const collection = props.collections.find(
+    (c) => c.name === selectedCollectionName.value,
+  )
+  if (!collection) {
+    throw new Error(
+      `Collection with name ${selectedCollectionName.value} not found`,
+    )
+  }
+  return collection
+})
 
 function deleteSelectedCollection() {
-  const index = props.collections.indexOf(selectedCollection.value)
+  const index = props.collections.findIndex(
+    (c) => c.name === selectedCollectionName.value,
+  )
   if (index !== -1) {
     props.collections.splice(index, 1)
     if (props.collections.length === 0) {
       props.collections.push(createCollection('Default', props.config))
     }
-    selectedCollection.value = props.collections[0]
+    selectedCollectionName.value = props.collections[0].name
   }
 }
 

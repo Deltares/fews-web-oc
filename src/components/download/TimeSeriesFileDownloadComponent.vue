@@ -22,7 +22,10 @@
                   v-for="(_item, key) in fileTypes"
                   :key="key"
                   density="compact"
-                  :disabled="isOnlyHeadersDownload && key === 'csv'"
+                  :disabled="
+                    (isOnlyHeadersDownload && key === 'csv') ||
+                    isCorrelationFilter(props.filter)
+                  "
                   @click="fileType = key"
                 >
                   <v-list-item-title>{{ key }}</v-list-item-title>
@@ -48,6 +51,7 @@
 <script lang="ts" setup>
 import {
   ActionsPeriodDate,
+  CorrelationFilter,
   DocumentFormat,
   filterActionsFilter,
   PiWebserviceProvider,
@@ -96,11 +100,12 @@ onMounted(() => {
 
 interface Props {
   config?: DisplayConfig | null
-  options: UseDisplayConfigOptions
+  options?: UseDisplayConfigOptions
   filter?:
     | filterActionsFilter
     | timeSeriesGridActionsFilter
     | DataDownloadFilter
+    | CorrelationFilter
     | undefined
   startTime?: Date | undefined
   endTime?: Date | undefined
@@ -163,10 +168,27 @@ function isDataDownloadFilter(
   return (filter as DataDownloadFilter)?.filterId !== undefined
 }
 
+function isTimeSeriesFilter(
+  filter:
+    | filterActionsFilter
+    | timeSeriesGridActionsFilter
+    | TimeSeriesFilter
+    | undefined,
+): filter is TimeSeriesFilter {
+  // @ts-expect-error
+  return (filter as TimeSeriesFilter)?.timeSeriesIds !== undefined
+}
+
 function isFilterActionsFilter(
   filter: filterActionsFilter | timeSeriesGridActionsFilter | undefined,
 ): filter is filterActionsFilter {
   return (filter as filterActionsFilter)?.filterId !== undefined
+}
+
+function isCorrelationFilter(
+  filter: filterActionsFilter | timeSeriesGridActionsFilter | undefined,
+): filter is CorrelationFilter {
+  return (filter as CorrelationFilter)?.timeSeriesIdXaxis !== undefined
 }
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -234,7 +256,10 @@ const downloadFile = (downloadFormat: DocumentFormat) => {
   })
 
   if (props.filter) {
-    if (isDataDownloadFilter(props.filter)) {
+    if (
+      isDataDownloadFilter(props.filter) ||
+      isTimeSeriesFilter(props.filter)
+    ) {
       const url = piProvider.timeSeriesUrl({
         ...props.filter,
         documentFormat: downloadFormat,
@@ -247,8 +272,6 @@ const downloadFile = (downloadFormat: DocumentFormat) => {
         authenticationManager.getAccessToken(),
       )
     }
-  }
-  if (props.filter) {
     if (isFilterActionsFilter(props.filter)) {
       const url = piProvider.timeSeriesFilterActionsUrl({
         ...props.filter,
@@ -275,14 +298,27 @@ const downloadFile = (downloadFormat: DocumentFormat) => {
         authenticationManager.getAccessToken(),
       )
     }
+    if (isCorrelationFilter(props.filter)) {
+      const url = piProvider.correlationUrl({
+        ...props.filter,
+        documentFormat: downloadFormat,
+        ...viewPeriod,
+      })
+      return downloadFileSafe(
+        url.href,
+        fileName.value,
+        downloadFormat,
+        authenticationManager.getAccessToken(),
+      )
+    }
   }
 
   const timeSeriesFilter: TimeSeriesTopologyActionsFilter = {
     documentFormat: downloadFormat,
     nodeId: props.config?.nodeId ?? '',
     timeSeriesDisplayIndex: props.config?.index ?? 0,
-    convertDatum: props.options.convertDatum,
-    useDisplayUnits: props.options.useDisplayUnits,
+    convertDatum: props.options?.convertDatum,
+    useDisplayUnits: props.options?.useDisplayUnits,
     ...viewPeriod,
   }
   const url = piProvider.timeSeriesTopologyActionsUrl(timeSeriesFilter)

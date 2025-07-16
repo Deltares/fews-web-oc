@@ -8,7 +8,8 @@
         :series
         :zoomHandler
         :settings
-        :domain="[startTime, endTime]"
+        :startTime
+        :endTime
         @remove="removeChart(chart)"
       />
       <AnalysisCorrelationChart
