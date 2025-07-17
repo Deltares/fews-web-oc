@@ -143,13 +143,12 @@
       </v-card-actions>
     </v-card>
     <TimeSeriesFileDownloadComponent
-      v-model="downloadDialogStore.showDialog"
+      v-model="showDownloadDialog"
       :options="options"
       :startTime="downloadStartTime"
       :endTime="downloadEndTime"
       :filter="timeSeriesFilter"
-    >
-    </TimeSeriesFileDownloadComponent>
+    />
   </v-container>
 </template>
 
@@ -176,7 +175,6 @@ import { ParameterQualifiersHeader } from '@/lib/download/types'
 import { isEqual, uniqWith } from 'lodash-es'
 import { filterToParams } from '@/lib/download/downloadFiles.ts'
 import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
-import { useDownloadDialogStore } from '@/stores/downloadDialog'
 
 interface Props {
   nodeId?: string | string[]
@@ -184,7 +182,6 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const downloadDialogStore = useDownloadDialogStore()
 const settings = useUserSettingsStore()
 
 const options = computed<UseDisplayConfigOptions>(() => {
@@ -194,6 +191,7 @@ const options = computed<UseDisplayConfigOptions>(() => {
   }
 })
 
+const showDownloadDialog = ref(false)
 const selectionIsValid = ref(false)
 const downloadStartTime = ref<Date>()
 const downloadEndTime = ref<Date>()
@@ -429,7 +427,7 @@ function downloadData() {
   downloadStartTime.value = startTimeRequest.toJSDate()
   downloadEndTime.value = endTimeRequest.toJSDate()
 
-  downloadDialogStore.showDialog = true
+  showDownloadDialog.value = true
 }
 
 function getLocationName(location: Location): string {
