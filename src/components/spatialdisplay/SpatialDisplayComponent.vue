@@ -138,7 +138,6 @@
     >
       <template #below-track>
         <DateTimeSliderValues
-          v-if="!(props.layerCapabilities?.completelyMissing ?? false)"
           :values="maxValuesTimeSeries ?? []"
           :colour-scale="currentColourScale ?? null"
           height="6px"
@@ -468,7 +467,7 @@ function setLayerOptions(): void {
   if (props.layerName) {
     layerOptions.value = {
       name: props.layerName,
-      time: selectedDate.value ?? new Date(),
+      time: selectedDate.value,
       bbox: props.layerCapabilities?.boundingBox
         ? convertBoundingBoxToLngLatBounds(props.layerCapabilities.boundingBox)
         : undefined,
