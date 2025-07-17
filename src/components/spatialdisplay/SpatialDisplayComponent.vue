@@ -468,7 +468,7 @@ function setLayerOptions(): void {
         : undefined,
       style: currentColourScale.value?.style.name,
       useDisplayUnits: userSettings.useDisplayUnits,
-      useLastValue: !isInDatesRange(selectedDate.value, props.times),
+      useLastValue: isInDatesRange(selectedDate.value, props.times),
     }
   } else {
     layerOptions.value = undefined
