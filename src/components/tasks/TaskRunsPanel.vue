@@ -9,7 +9,7 @@
       <v-spacer />
       <PeriodFilterControl v-model="period" />
     </div>
-    <div class="overflow-y-auto">
+    <div class="task-content">
       <v-list-item v-if="sortedTasks.length === 0">
         {{
           props.topologyNode
@@ -21,7 +21,7 @@
       <!-- Important to have item-height as it greatly improves performance -->
       <v-virtual-scroll
         v-else
-        class="scroll-container h-100"
+        class="overflow-y-auto h-100"
         :items="groupedTasks"
         :item-height="62"
       >
@@ -201,5 +201,12 @@ const lastUpdatedString = computed<string>(() => {
   width: 450px;
   display: grid;
   grid-template-rows: auto 1fr auto auto;
+  height: 100%;
+  overflow: hidden;
+}
+
+.task-content {
+  overflow: hidden;
+  position: relative;
 }
 </style>
