@@ -1,11 +1,6 @@
 <template>
   <Teleport to="#web-oc-sidebar-target">
-    <HierarchicalMenu
-      v-model:active="active"
-      :type="menuType"
-      :items="items"
-      data-test-id="topology-tree"
-    />
+    <HierarchicalMenu v-model:active="active" :type="menuType" :items="items" />
   </Teleport>
   <Teleport to="#app-bar-content-start">
     <LeafNodeButtons
