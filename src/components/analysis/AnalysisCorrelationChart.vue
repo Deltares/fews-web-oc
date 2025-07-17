@@ -1,14 +1,29 @@
 <template>
-  <AnalysisPlotChart :chart :config :series :settings v-bind="$attrs" />
+  <AnalysisPlotChart
+    :chart
+    :config
+    :series
+    :settings
+    v-bind="$attrs"
+    @download="downloadChart"
+  />
+  <TimeSeriesFileDownloadComponent
+    v-model="showDownloadDialog"
+    :filter
+    :startTime
+    :endTime
+  />
 </template>
 
 <script setup lang="ts">
 import AnalysisPlotChart from '@/components/analysis/AnalysisPlotChart.vue'
+import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import type { CorrelationChart } from '@/lib/analysis'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useCorrelationChartData } from '@/services/useCorrelationChartData'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { convertJSDateToFewsPiParameter } from '@/lib/date'
 
 interface Props {
   chart: CorrelationChart
@@ -19,11 +34,15 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { series, description, rSquared } = useCorrelationChartData(
-  () => props.chart,
-  () => props.startTime,
-  () => props.endTime,
-)
+const showDownloadDialog = ref(false)
+
+const filter = computed(() => ({
+  ...props.chart.filter,
+  startTime: convertJSDateToFewsPiParameter(props.startTime),
+  endTime: convertJSDateToFewsPiParameter(props.endTime),
+}))
+
+const { series, description, rSquared } = useCorrelationChartData(filter)
 
 const chartConfig = computed(() =>
   timeSeriesDisplayToChartConfig(props.chart.subplot),
@@ -40,4 +59,8 @@ const config = computed(() => {
     })),
   }
 })
+
+function downloadChart() {
+  showDownloadDialog.value = true
+}
 </script>

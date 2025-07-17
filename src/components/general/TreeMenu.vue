@@ -5,6 +5,7 @@
     density="comfortable"
     class="weboc-treemenu"
     :lines="false"
+    data-test-id="topology-tree"
   >
     <TreeMenuItem :items="props.items" :active="active"></TreeMenuItem>
   </v-list>

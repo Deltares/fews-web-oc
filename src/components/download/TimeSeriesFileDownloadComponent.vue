@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="downloadDialogStore.showDialog" max-width="400">
+  <v-dialog v-model="showDialog" max-width="400">
     <v-card>
       <v-card-title class="headline">Download timeseries</v-card-title>
       <v-card-text>
@@ -13,20 +13,20 @@
             <v-menu>
               <template v-slot:activator="{ props }">
                 <v-btn v-bind="props" size="small" variant="tonal">
-                  {{ fileType }}
+                  {{ fileType.title }}
                   <v-icon>mdi-chevron-down</v-icon>
                 </v-btn>
               </template>
               <v-list>
                 <v-list-item
-                  v-for="(_item, key) in fileTypes"
-                  :key="key"
+                  v-for="ft in fileTypes"
+                  :key="ft.title"
                   density="compact"
-                  :disabled="isOnlyHeadersDownload && key === 'csv'"
-                  @click="fileType = key"
-                >
-                  <v-list-item-title>{{ key }}</v-list-item-title>
-                </v-list-item>
+                  :disabled="ft.disabled"
+                  :title="ft.title"
+                  :active="selectedFileType === ft.title"
+                  @click="selectedFileType = ft.title"
+                />
               </v-list>
             </v-menu>
           </template>
@@ -36,9 +36,10 @@
         <v-btn
           variant="flat"
           color="primary"
-          @click="() => downloadFile(fileTypes[fileType])"
-          >Download</v-btn
+          @click="() => downloadFile(fileType.format)"
         >
+          Download
+        </v-btn>
         <v-btn @click="() => cancelDialog()">Cancel</v-btn>
       </v-card-actions>
     </v-card>
@@ -47,7 +48,7 @@
 
 <script lang="ts" setup>
 import {
-  ActionsPeriodDate,
+  CorrelationFilter,
   DocumentFormat,
   filterActionsFilter,
   PiWebserviceProvider,
@@ -60,27 +61,42 @@ import { DisplayConfig } from '@/lib/display/DisplayConfig.ts'
 import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
-import {
-  computed,
-  onMounted,
-  onUnmounted,
-  onUpdated,
-  ref,
-  toValue,
-  watch,
-  watchEffect,
-} from 'vue'
+import { computed, onUpdated, ref, toValue, watchEffect } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime.ts'
 import { UseTimeSeriesOptions } from '@/services/useTimeSeries'
 import { DateTime } from 'luxon'
 import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
-import { useDownloadDialogStore } from '@/stores/downloadDialog'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { useAlertsStore } from '@/stores/alerts'
-import { uid } from '@/lib/utils/uid'
+import {
+  isCorrelationFilter,
+  isDataDownloadFilter,
+  isFilterActionsFilter,
+  isTimeSeriesFilter,
+  isTimeSeriesGridActionsFilter,
+} from '@/lib/filters'
+import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
+
+interface Props {
+  config?: DisplayConfig | null
+  options?: UseDisplayConfigOptions
+  filter?:
+    | filterActionsFilter
+    | timeSeriesGridActionsFilter
+    | DataDownloadFilter
+    | CorrelationFilter
+    | undefined
+  startTime?: Date | undefined
+  endTime?: Date | undefined
+}
+
+const props = defineProps<Props>()
+
+const showDialog = defineModel<boolean>({
+  default: false,
+})
 
 const store = useSystemTimeStore()
-const downloadDialogStore = useDownloadDialogStore()
 const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
   return {
     startTime: store.startTime,
@@ -89,91 +105,61 @@ const viewPeriodFromStore = computed<UseTimeSeriesOptions>(() => {
 })
 
 const alertStore = useAlertsStore()
-const userId = ref('')
-onMounted(() => {
-  userId.value = uid()
-})
-
-interface Props {
-  config?: DisplayConfig | null
-  options: UseDisplayConfigOptions
-  filter?:
-    | filterActionsFilter
-    | timeSeriesGridActionsFilter
-    | DataDownloadFilter
-    | undefined
-  startTime?: Date | undefined
-  endTime?: Date | undefined
-}
-
-const fileTypes = {
-  csv: DocumentFormat.PI_CSV,
-  json: DocumentFormat.PI_JSON,
-  xml: DocumentFormat.PI_XML,
-} as const
-
-const props = defineProps<Props>()
-
-const fileType = ref<keyof typeof fileTypes>('csv')
-
-const cancelDialog = () => {
-  downloadDialogStore.showDialog = false
-}
-const fileName = ref('timeseries')
-onUpdated(() => {
-  if (!downloadDialogStore.showDialog) return
-  let dateValue = new Date()
-  const FILE_FORMAT_DATE_FMT = 'yyyyMMddHHmmss'
-  const defaultDateTimeString =
-    DateTime.fromJSDate(dateValue).toFormat(FILE_FORMAT_DATE_FMT)
-  fileName.value = `timeseries_${defaultDateTimeString}`
-})
-watch(
-  () => props.config,
-  () => {
-    downloadDialogStore.disabled = (props.config?.index ?? -1) == -1
-  },
-)
-onUnmounted(() => {
-  downloadDialogStore.disabled = true
-})
 
 const isOnlyHeadersDownload = computed(() => {
-  return isDataDownloadFilter(props.filter) ? props.filter.onlyHeaders : false
+  return props.filter && isDataDownloadFilter(props.filter)
+    ? props.filter.onlyHeaders
+    : false
 })
+
+const fileTypes = computed(() => [
+  {
+    title: 'csv',
+    format: DocumentFormat.PI_CSV,
+    disabled:
+      isOnlyHeadersDownload.value ||
+      (props.filter && isCorrelationFilter(props.filter)),
+  },
+  {
+    title: 'json',
+    format: DocumentFormat.PI_JSON,
+    disabled: false,
+  },
+  {
+    title: 'xml',
+    format: DocumentFormat.PI_XML,
+    disabled: props.filter && isCorrelationFilter(props.filter),
+  },
+])
+
+const selectedFileType = ref('csv')
+const fileType = computed(() => {
+  return (
+    fileTypes.value.find((ft) => ft.title === selectedFileType.value) ??
+    fileTypes.value[0]
+  )
+})
+
 watchEffect(() => {
-  if (isOnlyHeadersDownload.value && fileType.value === 'csv') {
-    fileType.value = 'json'
+  if (fileType.value.disabled) {
+    selectedFileType.value =
+      fileTypes.value.find((ft) => !ft.disabled)?.title ??
+      fileTypes.value[0].title
   }
 })
 
-function isTimeSeriesGridActionsFilter(
-  filter: filterActionsFilter | timeSeriesGridActionsFilter | undefined,
-): filter is timeSeriesGridActionsFilter {
-  return (filter as timeSeriesGridActionsFilter)?.x !== undefined
+const cancelDialog = () => {
+  showDialog.value = false
 }
-
-function isDataDownloadFilter(
-  filter:
-    | filterActionsFilter
-    | timeSeriesGridActionsFilter
-    | TimeSeriesFilter
-    | undefined,
-): filter is DataDownloadFilter {
-  return (filter as DataDownloadFilter)?.filterId !== undefined
-}
-
-function isFilterActionsFilter(
-  filter: filterActionsFilter | timeSeriesGridActionsFilter | undefined,
-): filter is filterActionsFilter {
-  return (filter as filterActionsFilter)?.filterId !== undefined
-}
+const fileName = ref('timeseries')
+onUpdated(() => {
+  if (!showDialog.value) return
+  const FILE_FORMAT_DATE_FMT = 'yyyyMMddHHmmss'
+  const defaultDateTimeString = DateTime.now().toFormat(FILE_FORMAT_DATE_FMT)
+  fileName.value = `timeseries_${defaultDateTimeString}`
+})
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-
-function parsePiDateTime(dateTime: ActionsPeriodDate | undefined) {
-  return dateTime ? `${dateTime.date}T${dateTime.time}Z` : dateTime
-}
 
 // use startTime and endTime if set, otherwise use the options from the store, otherwise use the period form the config
 function determineViewPeriod() {
@@ -185,13 +171,13 @@ function determineViewPeriod() {
     ? props.endTime
     : _options?.endTime
 
-  if (!startDate) {
-    const parsedStartDate = parsePiDateTime(props.config?.period?.startDate)
-    if (parsedStartDate) startDate = new Date(parsedStartDate)
+  const period = props.config?.period
+
+  if (!startDate && period) {
+    startDate = convertFewsPiDateTimeToJsDate(period.startDate)
   }
-  if (!endDate) {
-    const parsedEndDate = parsePiDateTime(props.config?.period?.endDate)
-    if (parsedEndDate) endDate = new Date(parsedEndDate)
+  if (!endDate && period) {
+    endDate = convertFewsPiDateTimeToJsDate(period.endDate)
   }
 
   let startTime: string | null = null
@@ -226,7 +212,7 @@ function determineViewPeriod() {
   return result
 }
 
-const downloadFile = (downloadFormat: DocumentFormat) => {
+function getDownloadFileUrl(downloadFormat: DocumentFormat) {
   const viewPeriod = determineViewPeriod()
 
   const piProvider = new PiWebserviceProvider(baseUrl, {
@@ -234,46 +220,35 @@ const downloadFile = (downloadFormat: DocumentFormat) => {
   })
 
   if (props.filter) {
-    if (isDataDownloadFilter(props.filter)) {
-      const url = piProvider.timeSeriesUrl({
+    if (
+      isDataDownloadFilter(props.filter) ||
+      isTimeSeriesFilter(props.filter)
+    ) {
+      return piProvider.timeSeriesUrl({
         ...props.filter,
         documentFormat: downloadFormat,
         ...viewPeriod,
       })
-      return downloadFileSafe(
-        url.href,
-        fileName.value,
-        downloadFormat,
-        authenticationManager.getAccessToken(),
-      )
     }
-  }
-  if (props.filter) {
     if (isFilterActionsFilter(props.filter)) {
-      const url = piProvider.timeSeriesFilterActionsUrl({
+      return piProvider.timeSeriesFilterActionsUrl({
         ...props.filter,
         documentFormat: downloadFormat,
         ...viewPeriod,
       })
-      return downloadFileSafe(
-        url.href,
-        fileName.value,
-        downloadFormat,
-        authenticationManager.getAccessToken(),
-      )
     }
     if (isTimeSeriesGridActionsFilter(props.filter)) {
-      const url = piProvider.timeSeriesGridUrl({
+      return piProvider.timeSeriesGridUrl({
         ...props.filter,
         documentFormat: downloadFormat,
         ...viewPeriod,
       })
-      return downloadFileSafe(
-        url.href,
-        fileName.value,
-        downloadFormat,
-        authenticationManager.getAccessToken(),
-      )
+    }
+    if (isCorrelationFilter(props.filter)) {
+      return piProvider.correlationUrl({
+        ...props.filter,
+        ...viewPeriod,
+      })
     }
   }
 
@@ -281,17 +256,18 @@ const downloadFile = (downloadFormat: DocumentFormat) => {
     documentFormat: downloadFormat,
     nodeId: props.config?.nodeId ?? '',
     timeSeriesDisplayIndex: props.config?.index ?? 0,
-    convertDatum: props.options.convertDatum,
-    useDisplayUnits: props.options.useDisplayUnits,
+    convertDatum: props.options?.convertDatum,
+    useDisplayUnits: props.options?.useDisplayUnits,
     ...viewPeriod,
   }
-  const url = piProvider.timeSeriesTopologyActionsUrl(timeSeriesFilter)
-  return downloadFileSafe(
-    url.href,
-    fileName.value,
-    downloadFormat,
-    authenticationManager.getAccessToken(),
-  )
+  return piProvider.timeSeriesTopologyActionsUrl(timeSeriesFilter)
+}
+
+async function downloadFile(downloadFormat: DocumentFormat) {
+  const url = getDownloadFileUrl(downloadFormat)
+  const accessToken = authenticationManager.getAccessToken()
+
+  await downloadFileSafe(url.href, fileName.value, downloadFormat, accessToken)
 }
 
 async function downloadFileSafe(
@@ -305,11 +281,11 @@ async function downloadFileSafe(
   } catch (error) {
     if (error instanceof Error) {
       alertStore.addAlert({
-        id: `data-download-error-${userId.value}`,
+        id: `data-download-error`,
         type: 'error',
         message: error.message,
       })
-      downloadDialogStore.showDialog = false
+      showDialog.value = false
     }
   }
 }

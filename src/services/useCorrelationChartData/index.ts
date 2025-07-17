@@ -1,25 +1,16 @@
-import { CorrelationChart } from '@/lib/analysis'
 import { Series } from '@/lib/timeseries/timeSeries'
-import { computed, MaybeRefOrGetter, toValue } from 'vue'
+import { computed, MaybeRefOrGetter } from 'vue'
 import { useCorrelation } from '@/services/useCorrelation'
 import { SeriesResourceType } from '@/lib/timeseries/types'
-import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import {
   CORRELATION_LINE_ID,
   CORRELATION_POINTS_ID,
 } from '@/lib/analysis/correlation'
+import type { CorrelationFilter } from '@deltares/fews-pi-requests'
 
 export function useCorrelationChartData(
-  chart: MaybeRefOrGetter<CorrelationChart>,
-  startTime: MaybeRefOrGetter<Date>,
-  endTime: MaybeRefOrGetter<Date>,
+  filter: MaybeRefOrGetter<CorrelationFilter | undefined>,
 ) {
-  const filter = computed(() => ({
-    ...toValue(chart).filter,
-    startTime: convertJSDateToFewsPiParameter(toValue(startTime)),
-    endTime: convertJSDateToFewsPiParameter(toValue(endTime)),
-  }))
-
   const { correlation } = useCorrelation(filter)
 
   const description = computed(() => {

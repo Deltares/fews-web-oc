@@ -58,11 +58,11 @@
     >
     </TimeSeriesComponent>
     <TimeSeriesFileDownloadComponent
+      v-model="showDownloadDialog"
       :config="displayConfig"
       :options="options"
       :filter="filter"
-    >
-    </TimeSeriesFileDownloadComponent>
+    />
   </WindowComponent>
 </template>
 
@@ -73,7 +73,6 @@ import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFil
 import { DisplayConfig, DisplayType } from '@/lib/display/DisplayConfig'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { computed, ref, StyleValue, watch } from 'vue'
-import { useDownloadDialogStore } from '@/stores/downloadDialog'
 import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type {
@@ -92,7 +91,6 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const downloadDialogStore = useDownloadDialogStore()
 const userSettings = useUserSettingsStore()
 
 const options = computed<UseDisplayConfigOptions>(() => {
@@ -110,6 +108,8 @@ interface DisplayTypeItem {
   disabled?: boolean
 }
 
+const showDownloadDialog = ref(false)
+
 const displayActionItems = computed(() => {
   const dataDownloadEnabled = props.settings.actions.downloadData
   return [
@@ -117,9 +117,9 @@ const displayActionItems = computed(() => {
       icon: 'mdi-download',
       label: 'Download time series ...',
       action: () => {
-        downloadDialogStore.showDialog = true
+        showDownloadDialog.value = true
       },
-      disabled: downloadDialogStore.disabled,
+      disabled: (props.displayConfig?.index ?? -1) === -1,
       hidden: !dataDownloadEnabled,
     },
   ].filter((item) => !item.hidden)

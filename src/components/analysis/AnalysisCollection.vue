@@ -1,14 +1,13 @@
 <template>
   <v-select
-    v-model="selectedCollection"
-    :items="collections"
+    v-model="selectedCollectionName"
+    :items="collections.map((c) => c.name)"
     label="Collection"
     item-title="name"
     item-value="name"
     variant="outlined"
     hide-details
     density="compact"
-    return-object
     max-width="250"
   >
     <template #append-item>
@@ -54,7 +53,7 @@ interface Props {
 }
 const props = defineProps<Props>()
 
-const selectedCollection = defineModel<Collection>('selectedCollection')
+const selectedCollectionName = defineModel<string>('selectedCollectionName')
 const dialog = ref(false)
 const newCollectionName = ref('')
 
@@ -68,7 +67,7 @@ function addCollection(): void {
   if (canAddName.value) {
     const newItem = createCollection(name, props.config)
     props.collections.push(newItem)
-    selectedCollection.value = newItem
+    selectedCollectionName.value = newItem.name
   }
   newCollectionName.value = ''
   dialog.value = false

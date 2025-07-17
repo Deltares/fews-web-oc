@@ -1,7 +1,7 @@
 <template>
   <AnalysisDisplayComponent
-    v-if="isValidDisplayCollections && displayCollections"
-    :collections="displayCollections?.collections"
+    v-if="isValidDisplayCollections && state?.collections.length"
+    :collections="state?.collections"
     :config
     :boundingBox
   />
@@ -31,7 +31,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { state: displayCollections } = useRemoteStorage<DisplayCollections>(
+const { state } = useRemoteStorage<DisplayCollections>(
   `weboc-data-analysis-collections-${props.config.id}`,
   () => createDefaultDisplayCollections(props.config),
   {
@@ -40,20 +40,18 @@ const { state: displayCollections } = useRemoteStorage<DisplayCollections>(
 )
 
 const isValidDisplayCollections = computed(() =>
-  displayCollections.value
-    ? validateDisplayCollections(displayCollections.value)
-    : false,
+  state.value ? validateDisplayCollections(state.value) : false,
 )
 
 // HACK: We watch displayCollections object and set it to a default value
 //       if the version is not present or '1.0'. Hack since this function will run again
 //       when the object is set to a default value. In the future, we should handle version migrations here.
 watch(
-  () => displayCollections.value?.version,
+  () => state.value?.version,
   (newVersion) => {
     if (!newVersion || newVersion !== '1.0') {
       // In the future handle version migrations here
-      displayCollections.value = createDefaultDisplayCollections(props.config)
+      state.value = createDefaultDisplayCollections(props.config)
     }
   },
   { immediate: true },
