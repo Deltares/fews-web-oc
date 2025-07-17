@@ -30,6 +30,7 @@
       :topologyNode="topologyNode"
       @navigate="onNavigate"
       :locationIds="props.locationIds"
+      v-if="showActiveThresholdCrossingsForFilters"
     />
     <TaskRunsControl
       v-if="secondaryControl === 'tasks' && showTaskMenu"
