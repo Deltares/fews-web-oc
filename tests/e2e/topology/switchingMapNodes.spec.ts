@@ -45,12 +45,12 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplayWithCoordina
     await expect(page.getByText('Precipitation Rate (mm)')).toBeVisible()
 
     await page.getByText('Coastal processes').click()
-    await page
-      .getByRole('link', { name: 'Particle tracking', exact: true })
-      .click()
+    await page.getByRole('link', { name: 'Currents', exact: true }).click()
 
-    await expect(page.getByText('Wind speed NOAA')).toBeVisible()
-    await expect(page.getByText('Wind Direction (degrees)')).toBeVisible()
+    await expect(page.getByText('Current Speed (m/s)')).toBeVisible()
+    await expect(
+      page.getByText('Current direction (going to) [1] Delft3D'),
+    ).toBeVisible()
   })
 
   test('when switching nodes if the node does not support coordinates, the coordinates should not be displayed', async ({
