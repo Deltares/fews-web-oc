@@ -104,6 +104,53 @@ function computeSvgBitmapSize(
   return [width, height].map(Math.round) as [number, number]
 }
 
+export interface Offset {
+  dx: number
+  dy: number
+}
+
+export function combineSvgParts(
+  svgElements: SVGSVGElement[],
+  spacing: number = 10, // default vertical spacing
+): SVGSVGElement {
+  if (svgElements.length === 0) {
+    throw new Error('No SVG elements provided')
+  }
+
+  const outputDoc = document.implementation.createDocument('', '', null)
+  const newSvg = outputDoc.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  newSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+
+  let currentY = 0
+  let maxWidth = 0
+
+  svgElements.forEach((svg) => {
+    const width = parseFloat(svg.getAttribute('width') || '100')
+    const height = parseFloat(svg.getAttribute('height') || '100')
+    maxWidth = Math.max(maxWidth, width)
+
+    // Wrap the contents in a <g> with transform to offset vertically
+    const group = outputDoc.createElementNS('http://www.w3.org/2000/svg', 'g')
+    group.setAttribute('transform', `translate(0, ${currentY})`)
+
+    const children = Array.from(svg.children)
+    children.forEach((child) => {
+      const imported = outputDoc.importNode(child, true)
+      group.appendChild(imported)
+    })
+
+    newSvg.appendChild(group)
+    currentY += height + spacing
+  })
+
+  // Set total dimensions
+  newSvg.setAttribute('width', `${maxWidth}`)
+  newSvg.setAttribute('height', `${currentY - spacing}`) // remove last extra spacing
+  newSvg.setAttribute('viewBox', `0 0 ${maxWidth} ${currentY - spacing}`)
+
+  return newSvg
+}
+
 function getSvgViewBoxAspectRatio(svg: SVGSVGElement): number | null {
   const viewBox = svg.getAttribute('viewBox')
   if (!viewBox) return null

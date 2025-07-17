@@ -42,6 +42,7 @@ import {
   VerticalMouseOver,
   DomainChangeEvent,
   ChartMatrix,
+  Visitor,
 } from '@deltares/fews-web-oc-charts'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
@@ -99,6 +100,7 @@ const emit = defineEmits<Emits>()
 const userSettingsStore = useUserSettingsStore()
 defineExpose({
   getSvgElement,
+  axisAccept,
 })
 
 let thresholdLines!: ThresholdLine[]
@@ -535,6 +537,10 @@ function createChip() {
 
 function getSvgElement() {
   return axis.svg.node()
+}
+
+function axisAccept(visitor: Visitor) {
+  axis?.accept(visitor)
 }
 
 const toggleLine = (tag: Tag) => {
