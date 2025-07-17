@@ -4,7 +4,7 @@
     :active="sidePanelStore.isActive('tasks')"
     @click="sidePanelStore.toggleActive('tasks')"
   >
-    <v-icon icon="mdi-clipboard-text-clock" />
+    <v-icon icon="mdi-format-list-checks" />
   </v-btn>
   <Teleport to="#main-side-panel" defer>
     <div
@@ -12,7 +12,7 @@
       class="d-flex flex-column h-100 w-100"
     >
       <v-toolbar density="compact">
-        <span class="ms-4">Task Run Overview</span>
+        <span class="ms-4">Task Overview</span>
         <template #append>
           <v-btn
             @click="sidePanelStore.toggleActive('tasks')"
