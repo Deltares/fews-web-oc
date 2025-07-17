@@ -8,7 +8,12 @@
     v-bind="$attrs"
     @download="downloadChart"
   />
-  <TimeSeriesFileDownloadComponent :filter :startTime :endTime />
+  <TimeSeriesFileDownloadComponent
+    v-model="showDownloadDialog"
+    :filter
+    :startTime
+    :endTime
+  />
 </template>
 
 <script setup lang="ts">
@@ -19,10 +24,9 @@ import type { FilterChart } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import type { ZoomHandler } from '@deltares/fews-web-oc-charts'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { getSubplotWithDomain } from '@/lib/display'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { useDownloadDialogStore } from '@/stores/downloadDialog'
 
 interface Props {
   chart: FilterChart
@@ -36,7 +40,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const userSettings = useUserSettingsStore()
-const downloadDialogStore = useDownloadDialogStore()
+const showDownloadDialog = ref(false)
 
 const domain = computed(
   () =>
@@ -66,6 +70,6 @@ const filter = computed(() => ({
 }))
 
 function downloadChart() {
-  downloadDialogStore.showDialog = true
+  showDownloadDialog.value = true
 }
 </script>

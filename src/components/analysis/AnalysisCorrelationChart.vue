@@ -7,7 +7,12 @@
     v-bind="$attrs"
     @download="downloadChart"
   />
-  <TimeSeriesFileDownloadComponent :filter :startTime :endTime />
+  <TimeSeriesFileDownloadComponent
+    v-model="showDownloadDialog"
+    :filter
+    :startTime
+    :endTime
+  />
 </template>
 
 <script setup lang="ts">
@@ -17,9 +22,8 @@ import type { CorrelationChart } from '@/lib/analysis'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useCorrelationChartData } from '@/services/useCorrelationChartData'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
-import { useDownloadDialogStore } from '@/stores/downloadDialog'
 
 interface Props {
   chart: CorrelationChart
@@ -30,7 +34,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const downloadDialogStore = useDownloadDialogStore()
+const showDownloadDialog = ref(false)
 
 const filter = computed(() => ({
   ...props.chart.filter,
@@ -57,6 +61,6 @@ const config = computed(() => {
 })
 
 function downloadChart() {
-  downloadDialogStore.showDialog = true
+  showDownloadDialog.value = true
 }
 </script>
