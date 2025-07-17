@@ -114,7 +114,7 @@ function getSvgViewBoxAspectRatio(svg: SVGSVGElement): number | null {
   return viewBoxWidth / viewBoxHeight
 }
 
-const fetchedCss = new Map<string, string>() // url -> css text
+const inlinedCssCache = new Map<string, string>() // url -> inlined css text
 type CssChunk = { css: string; baseUrl: string }
 
 const formatMap: Record<string, { mime: string; format: string }> = {
@@ -126,11 +126,11 @@ const formatMap: Record<string, { mime: string; format: string }> = {
 } as const
 
 export async function fetchAndInlineCssAndFonts(mainCssUrl: string) {
-  async function fetchCssRecursively(url: string): Promise<CssChunk[]> {
-    if (fetchedCss.has(url)) {
-      return [{ css: fetchedCss.get(url)!, baseUrl: url }]
-    }
+  if (inlinedCssCache.has(mainCssUrl)) {
+    return inlinedCssCache.get(mainCssUrl)!
+  }
 
+  async function fetchCssRecursively(url: string): Promise<CssChunk[]> {
     const res = await fetch(url)
     if (!res.ok) throw new Error(`Failed to fetch CSS at ${url}`)
     const cssText = await res.text()
@@ -164,9 +164,6 @@ export async function fetchAndInlineCssAndFonts(mainCssUrl: string) {
     if (afterImportsCss.trim()) {
       chunks.push({ css: afterImportsCss, baseUrl: url })
     }
-
-    // Cache combined CSS text for this URL (optional)
-    fetchedCss.set(url, cssText)
 
     return chunks
   }
@@ -231,6 +228,9 @@ export async function fetchAndInlineCssAndFonts(mainCssUrl: string) {
 
   const chunks = await fetchCssRecursively(mainCssUrl)
   const finalCss = await inlineFontUrlsInChunks(chunks)
+
+  // Cache the final CSS text for this URL
+  inlinedCssCache.set(mainCssUrl, finalCss)
 
   return finalCss
 }
