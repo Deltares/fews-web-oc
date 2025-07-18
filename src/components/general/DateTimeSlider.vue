@@ -1,5 +1,5 @@
 <template>
-  <div class="datetime-slider">
+  <div class="datetime-slider" aria-labelledby="date time slider">
     <div class="slider-container">
       <vue-slider
         v-model="dateIndex"

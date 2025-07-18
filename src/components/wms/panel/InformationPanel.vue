@@ -117,6 +117,7 @@ const analysisTime = computed(() => {
 })
 
 const formattedTimeRange = computed(() => {
+  if (props.completelyMissing) return 'Currently no data available'
   return toDateRangeString(props.firstValueTime, props.lastValueTime)
 })
 

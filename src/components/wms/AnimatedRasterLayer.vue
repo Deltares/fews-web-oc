@@ -37,7 +37,7 @@ import { getBeforeId, getLayerId, getSourceId } from '@/lib/map'
 
 export interface AnimatedRasterLayerOptions {
   name: string
-  time: Date
+  time?: Date
   useDisplayUnits?: boolean
   bbox?: LngLatBounds
   elevation?: number | null
