@@ -31,7 +31,12 @@
       <v-spacer />
     </template>
     <template v-slot:toolbar-append>
-      <v-btn size="small" icon v-if="displayActionItems.length">
+      <v-btn
+        size="small"
+        icon
+        v-if="displayActionItems.length"
+        aria-labelledby="display-action-menu"
+      >
         <v-icon>mdi-dots-horizontal</v-icon>
         <v-menu activator="parent" density="compact">
           <v-list>
