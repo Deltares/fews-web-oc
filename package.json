@@ -22,7 +22,7 @@
     "sonar": "sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$SONAR_KEY -Dsonar.projectName='Delft-FEWS Web OC'"
   },
   "dependencies": {
-    "@deltares/fews-pi-requests": "^1.19.3",
+    "@deltares/fews-pi-requests": "^1.19.4",
     "@deltares/fews-ssd-requests": "^1.1.1",
     "@deltares/fews-ssd-webcomponent": "^1.1.1",
     "@deltares/fews-web-oc-charts": "^4.0.0-alpha.15",
