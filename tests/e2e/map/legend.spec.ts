@@ -17,32 +17,81 @@ function locateLegendSvg(page: Page) {
   return page.getByLabel('map legend').getByRole('img')
 }
 
-test.describe('WMS Legend', () => {
-  test.fixme(
-    'when changing display units for layer with different units the legend should change',
-    async ({ page }) => {
-      // FIXME: Requires a node with different units in the legend
-      await page.goto('')
+test.describe('WMS Legend with different display and system units', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto(
+      `${base}/viewer_wind_gfs/viewer_wind_gfs_forecast/map/noaa_gfs_wind`,
+    )
 
-      const legendSvg = locateLegendSvg(page)
+    // Disable animated vectors for the test
+    await page.route(
+      '**request=GetCapabilities&format=application/json&version=1.3&layers=noaa_gfs_wind',
+      async (route) => {
+        const response = await route.fetch()
+        const json = await response.json()
 
-      // TODO: Add before text
-      await expect(legendSvg).toContainText('')
+        if (json.layers) {
+          json.layers = json.layers.map((layer) => {
+            return {
+              ...layer,
+              animatedVectors: undefined,
+            }
+          })
+        }
 
-      await switchToSystemUnits(page)
+        await route.fulfill({ json })
+      },
+    )
+  })
 
-      // TODO: Add after text
-      await expect(legendSvg).toContainText('')
-    },
-  )
-
-  test('when changing display units for layer with same units the legend should not change', async ({
+  test('when changing display units the legend should change', async ({
     page,
   }) => {
+    const legendSvg = locateLegendSvg(page)
+
+    await expect(legendSvg).toContainText('01224364860GFS wind [knots]')
+
+    await switchToSystemUnits(page)
+
+    await expect(legendSvg).toContainText(
+      '06.17312.34718.5224.69330.867GFS wind [m/s]',
+    )
+  })
+
+  test('when changing display units the range is reset', async ({ page }) => {
+    const legendSvg = locateLegendSvg(page)
+
+    await expect(legendSvg).toContainText('01224364860GFS wind [knots]')
+
+    await page.getByRole('button', { name: 'Layer information' }).click()
+
+    const maxInput = page.getByRole('textbox', { name: 'Max Max' })
+    await maxInput.click()
+    await maxInput.fill('100')
+    await maxInput.press('Enter')
+
+    await expect(legendSvg).toContainText(
+      '0204060.00180.001100.001GFS wind [knots]',
+    )
+
+    await switchToSystemUnits(page)
+
+    await expect(legendSvg).toContainText(
+      '06.17312.34718.5224.69330.867GFS wind [m/s]',
+    )
+  })
+})
+
+test.describe('WMS Legend with the same display and system units', () => {
+  test.beforeEach(async ({ page }) => {
     await page.goto(
       `${base}/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1`,
     )
+  })
 
+  test('when changing display units the legend should change', async ({
+    page,
+  }) => {
     const legendSvg = locateLegendSvg(page)
 
     await expect(legendSvg).toContainText('0210203050SAWS forecast (1x1 km)')
@@ -55,10 +104,6 @@ test.describe('WMS Legend', () => {
   test('when changing the range of the legend, the legend should update', async ({
     page,
   }) => {
-    await page.goto(
-      `${base}/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1`,
-    )
-
     const legendSvg = locateLegendSvg(page)
     const originalText = '0210203050SAWS forecast (1x1 km)'
 
@@ -89,41 +134,7 @@ test.describe('WMS Legend', () => {
     await expect(legendSvg).toContainText(originalText)
   })
 
-  test.fixme(
-    'when changing display units for layer with different units the range is reset',
-    async ({ page }) => {
-      // FIXME: Requires a node with different units in the legend
-      await page.goto('')
-
-      const legendSvg = locateLegendSvg(page)
-
-      // TODO: Add before text
-      await expect(legendSvg).toContainText('')
-
-      await page.getByRole('button', { name: 'Layer information' }).click()
-
-      const maxInput = page.getByRole('textbox', { name: 'Max Max' })
-      await maxInput.click()
-      await maxInput.fill('100')
-      await maxInput.press('Enter')
-
-      // TODO: Add after range change text
-      await expect(legendSvg).toContainText('')
-
-      await switchToSystemUnits(page)
-
-      // TODO: Add after switch to systems units text
-      await expect(legendSvg).toContainText('')
-    },
-  )
-
-  test('when changing display units for layer with same units the range is reset', async ({
-    page,
-  }) => {
-    await page.goto(
-      `${base}/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1`,
-    )
-
+  test('when changing display units the range is reset', async ({ page }) => {
     const legendSvg = locateLegendSvg(page)
     const originalText = '0210203050SAWS forecast (1x1 km)'
 
