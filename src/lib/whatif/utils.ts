@@ -71,6 +71,16 @@ function convertPropertyToJsonSchemaProperty(
         })),
         title: property.name,
       }
+    case 'multiProperty':
+      return {
+        type: 'string',
+        default: property.defaultValue,
+        oneOf: property.selectionOptions.map((value) => ({
+          const: value.code,
+          title: value.label,
+        })),
+        title: property.name,
+      }
     case 'number':
       return {
         type: 'number',
