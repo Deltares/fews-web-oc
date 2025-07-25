@@ -32,23 +32,16 @@ test.describe('Default time settings', () => {
     // Wait for the timeline to be visible
     await timelineImage.waitFor({ state: 'visible' })
 
-    // Get the text elements for our start and end points
-    const startElement = page.getByText('Tue').first()
-    const endElement = page.getByText('Sat').first()
-
-    // Get the bounding boxes
-    const startBox = await startElement.boundingBox()
-    const endBox = await endElement.boundingBox()
-
-    if (!startBox || !endBox) {
-      throw new Error('Timeline text elements not found or not visible')
+    // First, let's change the time range by dragging
+    // Get the bounding box of the timeline
+    const timelineBox = await timelineImage.boundingBox()
+    if (!timelineBox) {
+      throw new Error('Timeline image not found or not visible')
     }
 
-    // Calculate positions for the start and end of the drag
-    // Use the middle of each text element horizontally and 20px above vertically
-    const startX = startBox.x + startBox.width / 2
-    const endX = endBox.x + endBox.width / 2
-    const dragY = startBox.y - 20 // 20 pixels above the text elements
+    const startX = timelineBox.x + timelineBox.width * 0.3
+    const endX = timelineBox.x + timelineBox.width * 0.65
+    const dragY = timelineBox.y + timelineBox.height / 2 - 20
 
     // Perform the drag operation
     await page.mouse.move(startX, dragY)
@@ -84,22 +77,15 @@ test.describe('Default time settings', () => {
     await timelineImage.waitFor({ state: 'visible' })
 
     // First, let's change the time range by dragging
-    // Get the text elements for our start and end points
-    const startElement = page.getByText('Tue').first()
-    const endElement = page.getByText('Sat').first()
-
-    // Get the bounding boxes
-    const startBox = await startElement.boundingBox()
-    const endBox = await endElement.boundingBox()
-
-    if (!startBox || !endBox) {
-      throw new Error('Timeline text elements not found or not visible')
+    // Get the bounding box of the timeline
+    const timelineBox = await timelineImage.boundingBox()
+    if (!timelineBox) {
+      throw new Error('Timeline image not found or not visible')
     }
 
-    // Perform the drag operation to select a time range
-    const startX = startBox.x + startBox.width / 2
-    const endX = endBox.x + endBox.width / 2
-    const dragY = startBox.y - 20
+    const startX = timelineBox.x + timelineBox.width * 0.3
+    const endX = timelineBox.x + timelineBox.width * 0.65
+    const dragY = timelineBox.y + timelineBox.height / 2 - 20
 
     await page.mouse.move(startX, dragY)
     await page.mouse.down()
@@ -114,7 +100,7 @@ test.describe('Default time settings', () => {
     await expect(changedTimelineImages.nth(0)).toBeVisible()
     await expect(changedTimelineImages.nth(1)).toBeVisible()
     // Now, double-click to reset the time range
-    await page.mouse.dblclick(startBox.x, startBox.y - 20)
+    await page.mouse.dblclick(startX, dragY)
 
     // Verify that the time range has been reset to the default
     const resetTimelineImages = page
