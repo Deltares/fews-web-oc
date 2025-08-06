@@ -13,7 +13,7 @@
         <v-toolbar class="px-1" density="compact">
           <v-text-field
             v-model="search"
-            placeholder="Search for locations"
+            :placeholder="t('search_for_locations')"
             variant="outlined"
             hide-details
             clearable
@@ -74,6 +74,10 @@ import {
 } from '@/stores/globalSearch'
 
 import HighlightMatch from './HighlightMatch.vue'
+
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()

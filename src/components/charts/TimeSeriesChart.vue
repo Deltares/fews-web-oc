@@ -66,6 +66,10 @@ import { isDefaultD3Domain } from '@/lib/charts/defaultDomain'
 import { ModifierKey } from '@deltares/fews-web-oc-charts'
 import { useUserSettingsStore } from '@/stores/userSettings.js'
 
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 interface Props {
   config: ChartConfig
   series?: Record<string, Series>
@@ -511,7 +515,7 @@ function setThresholdTag() {
   legendSvg.appendChild(svgGroup)
   const thresholdLegend: Tag = {
     id: 'Thresholds',
-    name: 'Thresholds',
+    name: t('thresholds'),
     disabled: false,
     legendSvg:
       '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M13 14h-2V9h2m0 9h-2v-2h2M1 21h22L12 2L1 21Z"/></svg>',

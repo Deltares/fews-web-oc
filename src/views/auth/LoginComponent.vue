@@ -11,7 +11,7 @@
         <v-list density="compact">
           <v-list-item>{{ name }}</v-list-item>
           <v-list-item @click="logout">
-            <v-list-item-title>Sign out</v-list-item-title>
+            <v-list-item-title>{{ t('sign_out') }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
@@ -25,6 +25,10 @@ import { ref } from 'vue'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
 import { useRoute } from 'vue-router'
 import type { User } from 'oidc-client-ts'
+
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 function initialsFromName(givenName: string): string {
   let initials = ''
