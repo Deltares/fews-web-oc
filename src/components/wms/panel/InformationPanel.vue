@@ -36,7 +36,7 @@
         </v-list-item>
         <v-divider></v-divider>
         <v-list-item
-          :title="'Time range'"
+          :title="t('time_range')"
           :subtitle="formattedTimeRange"
           prepend-icon="mdi-clock-time-four-outline"
         >
@@ -111,6 +111,10 @@ import { LayerKind } from '@/lib/streamlines'
 import ControlChip from '@/components/wms/ControlChip.vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { toDateRangeString, toHumanReadableDateTime } from '@/lib/date'
+
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Props {
   layerTitle?: string

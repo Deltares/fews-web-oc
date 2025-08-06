@@ -29,6 +29,10 @@ import { type Location } from '@deltares/fews-pi-requests'
 import { useGlobalSearchState } from '@/stores/globalSearch'
 import ControlChip from '@/components/wms/ControlChip.vue'
 
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 interface Props {
   locations?: Location[]
   locationToChildrenMap?: Map<string, Location[]>

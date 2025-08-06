@@ -99,6 +99,10 @@ interface GlobalSearchItemWithTreeIds extends GlobalSearchItem {
   treeIds: string[]
 }
 
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
 const search = ref<string | undefined>()

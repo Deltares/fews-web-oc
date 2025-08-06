@@ -1,7 +1,9 @@
 <template>
   <v-dialog v-model="showDialog" max-width="400">
     <v-card>
-      <v-card-title class="headline">Download timeseries</v-card-title>
+      <v-card-title class="headline">{{
+        t('download_timeseries')
+      }}</v-card-title>
       <v-card-text>
         <v-text-field
           v-model="fileName"
@@ -77,6 +79,9 @@ import {
 } from '@/lib/filters'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 interface Props {
   config?: DisplayConfig | null
   options?: UseDisplayConfigOptions

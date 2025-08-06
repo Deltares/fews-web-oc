@@ -35,7 +35,7 @@
       />
       <div class="flex-1-1 w-100">
         <v-toolbar height="32" color="transparent">
-          <span>Thresholds</span>
+          <span>{{ t('thresholds') }}</span>
         </v-toolbar>
 
         <v-number-input
@@ -91,6 +91,10 @@ import {
   regressionEquations,
 } from '@/lib/analysis/correlation'
 import { uid } from '@/lib/utils/uid'
+
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Props {
   charts: Chart[]
