@@ -60,6 +60,10 @@ import ThresholdSummary from '@/components/thresholds/ThresholdSummary.vue'
 import { computed, watch, nextTick, onMounted, useTemplateRef } from 'vue'
 import { NavigateRoute } from '@/lib/router/types'
 
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 interface Props {
   warningLevels: WarningLevel[]
   crossings: LevelThresholdCrossings[]
