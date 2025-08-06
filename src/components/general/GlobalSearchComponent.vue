@@ -75,9 +75,9 @@ import {
 
 import HighlightMatch from './HighlightMatch.vue'
 
-import { useI18n } from "vue-i18n";
+import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n();
+const { t } = useI18n()
 
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()

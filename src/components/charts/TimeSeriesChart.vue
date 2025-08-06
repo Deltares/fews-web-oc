@@ -66,9 +66,9 @@ import { isDefaultD3Domain } from '@/lib/charts/defaultDomain'
 import { ModifierKey } from '@deltares/fews-web-oc-charts'
 import { useUserSettingsStore } from '@/stores/userSettings.js'
 
-import { useI18n } from "vue-i18n";
+import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n();
+const { t } = useI18n()
 
 interface Props {
   config: ChartConfig

@@ -77,9 +77,9 @@ import ControlChip from '@/components/wms/ControlChip.vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { toDateRangeString, toHumanReadableDate } from '@/lib/date'
 
-import { useI18n } from "vue-i18n";
+import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n();
+const { t } = useI18n()
 
 interface Props {
   layerTitle?: string

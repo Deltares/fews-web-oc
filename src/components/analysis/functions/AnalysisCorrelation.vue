@@ -92,9 +92,9 @@ import {
 } from '@/lib/analysis/correlation'
 import { uid } from '@/lib/utils/uid'
 
-import { useI18n } from "vue-i18n";
+import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n();
+const { t } = useI18n()
 
 interface Props {
   charts: Chart[]

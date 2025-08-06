@@ -26,9 +26,9 @@ import { authenticationManager } from '../../services/authentication/Authenticat
 import { useRoute } from 'vue-router'
 import type { User } from 'oidc-client-ts'
 
-import { useI18n } from "vue-i18n";
+import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n();
+const { t } = useI18n()
 
 function initialsFromName(givenName: string): string {
   let initials = ''
