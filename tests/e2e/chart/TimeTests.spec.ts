@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test'
 
-const base =
-  '/topology/early_warning/node/viewer_rivers_level_stations/viewer_rivers_level_stations_forecast/map/waterdepth_sfincs_inland/location/Umgeni_Mouth_level'
+const base = '/topology/early_warning/node'
+const url = `${base}/viewer_rivers_level_stations/viewer_rivers_level_stations_forecast/map/waterdepth_sfincs_inland/location/Umgeni_Mouth_level`
 
 test.describe('Default time settings', () => {
   test('should display the correct time settings', async ({ page }) => {
-    await page.goto(base)
+    await page.goto(url)
     // Get all image elements with the specified text
     const timelineImages = page
       .getByRole('img')
@@ -21,7 +21,7 @@ test.describe('Default time settings', () => {
 
   test('should change time range by dragging on timeline', async ({ page }) => {
     // Navigate to the same page
-    await page.goto(base)
+    await page.goto(url)
 
     // Get the first timeline image
     const timelineImage = page
@@ -65,7 +65,7 @@ test.describe('Default time settings', () => {
     page,
   }) => {
     // Navigate to the same page
-    await page.goto(base)
+    await page.goto(url)
 
     // Get the first timeline image
     const timelineImage = page
@@ -115,7 +115,7 @@ test.describe('Default time settings', () => {
     page,
   }) => {
     // Navigate to the same page
-    await page.goto(base)
+    await page.goto(url)
 
     // Get the first timeline image
     const timelineImage = page
