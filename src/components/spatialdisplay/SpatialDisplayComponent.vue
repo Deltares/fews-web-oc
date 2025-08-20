@@ -4,7 +4,7 @@
       v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
       v-model:isLoading="isLoading"
       :layer="layerOptions"
-      :key="layerOptions?.name"
+      :key="`layer-${layerOptions.name}`"
       :beforeId="baseMap.beforeId"
       @doubleclick="onCoordinateClick"
     />
