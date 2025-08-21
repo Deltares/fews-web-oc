@@ -116,8 +116,16 @@ function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
       layers,
     })
     if (!features.length) return
-    // Prioratise clicks on the top-most feature
-    event.features?.sort((a, b) => b.properties.sortKey - a.properties.sortKey)
+    // Sort by properties.sortKey and the order of the layers
+    features.sort((a, b) => {
+      const aLayerIndex = layers.indexOf(a.layer.id)
+      const bLayerIndex = layers.indexOf(b.layer.id)
+      if (aLayerIndex !== bLayerIndex) {
+        return aLayerIndex - bLayerIndex
+      }
+      return b.properties.sortKey - a.properties.sortKey
+    })
+    event.features = features
     onLocationClick(event)
   }
 }
