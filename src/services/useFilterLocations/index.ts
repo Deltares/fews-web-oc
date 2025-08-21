@@ -67,7 +67,7 @@ export function useFilterLocations(
 
   function getLocationWithChilds(locationId: string): string[] {
     const childLocations = locationsChildMap.value.get(locationId) ?? []
-    return [...childLocations, locationId]
+    return [locationId, ...childLocations]
   }
 
   return {
