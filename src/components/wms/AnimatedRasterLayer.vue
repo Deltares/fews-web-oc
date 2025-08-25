@@ -1,8 +1,9 @@
 <template>
   <mgl-image-source
+    v-if="sourceOptions"
     :sourceId="sourceId"
-    :url="sourceOptions?.url"
-    :coordinates="sourceOptions?.coordinates"
+    :url="sourceOptions.url"
+    :coordinates="sourceOptions.coordinates"
   >
     <mgl-raster-layer
       :layerId="layerId"
@@ -34,6 +35,7 @@ import { configManager } from '@/services/application-config'
 import { useMap } from '@/services/useMap'
 import { point } from '@turf/helpers'
 import { getBeforeId, getLayerId, getSourceId } from '@/lib/map'
+import { debounce } from 'lodash-es'
 
 export interface AnimatedRasterLayerOptions {
   name: string
@@ -62,7 +64,7 @@ const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
 
-const sourceOptions = ref(getImageSourceOptions())
+const sourceOptions = ref<ReturnType<typeof getImageSourceOptions>>()
 
 onMounted(() => {
   isLoading.value = true
@@ -74,8 +76,14 @@ onUnmounted(() => {
   removeHooksFromMapObject()
 })
 
-function onMapMove(): void {
-  updateSource()
+const debouncedUpdate = debounce(updateSource, 100)
+
+function onMapMoveStart(): void {
+  debouncedUpdate.cancel()
+}
+
+function onMapMoveEnd(): void {
+  debouncedUpdate()
 }
 
 function onDataChange(event: MapSourceDataEvent): void {
@@ -116,7 +124,8 @@ function onError(e: ErrorEvent) {
 }
 
 function addHooksToMapObject() {
-  map?.on('moveend', onMapMove)
+  map?.on('movestart', onMapMoveStart)
+  map?.on('moveend', onMapMoveEnd)
   map?.on('sourcedata', onDataChange)
   map?.on('dblclick', onDoubleClick)
   map?.on('dataloading', onStartLoading)
@@ -125,7 +134,8 @@ function addHooksToMapObject() {
 }
 
 function removeHooksFromMapObject(): void {
-  map?.off('moveend', onMapMove)
+  map?.off('movestart', onMapMoveStart)
+  map?.off('moveend', onMapMoveEnd)
   map?.off('sourcedata', onDataChange)
   map?.off('dblclick', onDoubleClick)
   map?.off('dataloading', onStartLoading)
@@ -189,9 +199,16 @@ function getImageSourceOptions() {
   }
 }
 
-watch(() => props.layer, updateSource)
-function updateSource() {
-  const source = map?.getSource(sourceId.value) as ImageSource
+watch(() => props.layer, debouncedUpdate, { immediate: true })
+async function updateSource() {
+  if (!map || map.isMoving()) return
+
+  if (!sourceOptions.value) {
+    sourceOptions.value = getImageSourceOptions()
+    return
+  }
+
+  const source = map.getSource(sourceId.value) as ImageSource
   if (!source) return
 
   const imageOptions = getImageSourceOptions()
