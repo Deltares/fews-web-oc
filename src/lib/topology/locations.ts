@@ -162,31 +162,17 @@ export async function fetchLocations(
   return []
 }
 
-export function createLocationChildsMap(
-  locations: Location[],
-): Map<string, string[]> {
-  const parentsMap = new Map<string, string[]>()
+export function createLocationToChildrenMap(locations: Location[]) {
+  const nodeToChildrenMap = new Map<string, Location[]>()
 
-  const addChildrenRecursively = (parentId: string, childId: string) => {
-    if (!parentsMap.has(parentId)) {
-      parentsMap.set(parentId, [])
+  locations.forEach((loc) => {
+    if (loc.parentLocationId === undefined) return
+
+    if (!nodeToChildrenMap.has(loc.parentLocationId)) {
+      nodeToChildrenMap.set(loc.parentLocationId, [])
     }
-    parentsMap.get(parentId)?.push(childId)
-
-    const subChildren = locations.filter(
-      (loc) => loc.parentLocationId === childId,
-    )
-    subChildren.forEach((subChild) =>
-      addChildrenRecursively(parentId, subChild.locationId),
-    )
-  }
-
-  locations.forEach((location) => {
-    const parentId = location.parentLocationId
-    if (parentId === undefined) return
-
-    addChildrenRecursively(parentId, location.locationId)
+    nodeToChildrenMap.get(loc.parentLocationId)?.push(loc)
   })
 
-  return parentsMap
+  return nodeToChildrenMap
 }
