@@ -93,7 +93,7 @@ export function timeSeriesDisplayToChartConfig(
       chartSeriesArray.push(chartSeries)
     }
 
-    if (item.thresholds !== undefined) {
+    if (item.thresholds !== undefined && item.type !== 'horizontalColorCode') {
       for (const threshold of item.thresholds) {
         if (threshold.value === undefined) continue
         const thresholdId = `${threshold.label}-${threshold.value}`
