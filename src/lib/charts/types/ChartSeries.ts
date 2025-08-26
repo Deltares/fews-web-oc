@@ -2,6 +2,7 @@ import * as CSS from 'csstype'
 import { SymbolOptions } from '@deltares/fews-web-oc-charts'
 import { ChartSeriesOptions } from './ChartSeriesOptions'
 import { TimeSeriesDisplaySubplotItem } from '@deltares/fews-pi-requests'
+import { ThresholdLine } from './ThresholdLine'
 
 type ChartSeriesType =
   | TimeSeriesDisplaySubplotItem['type']
@@ -31,4 +32,6 @@ export interface ChartSeries extends SubplotItem {
   style: CSS.SvgPropertiesHyphen
   editable?: boolean
   locationId?: string
+  thresholds?: ThresholdLine[]
+  thresholdAxisScaling?: TimeSeriesDisplaySubplotItem['thresholdAxisScaling']
 }
