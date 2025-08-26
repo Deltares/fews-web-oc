@@ -78,7 +78,9 @@ export function useProducts(
         const response = await fetchProductsMetaData(baseUrl, filterValue)
         const filteredProducts = response.filter((p) => {
           return (
-            p.sourceId === toValue(sourceId) && p.areaId === toValue(areaId)
+            p.sourceId === toValue(sourceId) &&
+            p.areaId === toValue(areaId) &&
+            !p.attributes['fews:delete']
           )
         })
         products.value.push(...filteredProducts)
@@ -142,11 +144,14 @@ export function useProducts(
                   constraint.attributeTextEquals.equals,
               ) &&
               p.sourceId === toValue(sourceId) &&
-              p.areaId === toValue(areaId)
+              p.areaId === toValue(areaId) &&
+              !p.attributes['fews:delete']
             )
           }
           return (
-            p.sourceId === toValue(sourceId) && p.areaId === toValue(areaId)
+            p.sourceId === toValue(sourceId) &&
+            p.areaId === toValue(areaId) &&
+            !p.attributes['fews:delete']
           )
         })
         products.value = filteredProducts
