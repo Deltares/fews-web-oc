@@ -10,7 +10,6 @@
           variant="outlined"
           clearable
           hide-details
-          multiple
           density="compact"
           :item-title="toTitleCase"
           :item-value="(item) => item"
@@ -165,7 +164,7 @@ const props = defineProps<Props>()
 const search = ref<string>()
 const maxCount = ref<number>(1000)
 const selectedLevels = ref<LogLevel[]>([])
-const selectedLogTypes = ref<LogType[]>([])
+const selectedLogTypes = ref<LogType | null>(null)
 
 const daysBack = ref<number>(7)
 const DAY_IN_MS = 1000 * 60 * 60 * 24
@@ -272,7 +271,7 @@ const filteredLogMessages = computed(() => {
       filterLog(
         log,
         debouncedSelectedLevels.value,
-        debouncedSelectedLogTypes.value,
+        debouncedSelectedLogTypes.value ? [debouncedSelectedLogTypes.value] : [],
         debouncedSearch.value,
         taskRuns.value,
         workflows,
@@ -284,7 +283,7 @@ const filteredLogMessages = computed(() => {
       filterLog(
         log,
         debouncedSelectedLevels.value,
-        debouncedSelectedLogTypes.value,
+        debouncedSelectedLogTypes.value ? [debouncedSelectedLogTypes.value] : [],
         debouncedSearch.value,
         taskRuns.value,
         workflows,
