@@ -41,7 +41,7 @@
       </v-card-text>
       <v-card-actions>
         <v-btn
-          text="Save"
+          text="Send"
           variant="flat"
           color="primary"
           :loading="isPosting"
