@@ -104,6 +104,7 @@ export function timeSeriesDisplayToChartConfig(
           x2: new Date(8.64e15),
           value: threshold.value,
           description: threshold.label ?? '',
+          labelPosition: threshold.labelAlignment,
           yAxisIndex:
             config.yAxis?.findIndex((yAxis) => {
               return yAxis.position === item.yAxis?.axisPosition
