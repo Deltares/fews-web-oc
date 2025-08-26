@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex flex-column h-100 w-100">
-    <EditReport v-if="isEditing" v-model="htmlContent" @save="onSave" />
+    <EditReport v-if="isEditing" v-model="htmlContent" @save="onSave" @close="isEditing = false"/>
     <div v-if="!isEditing" class="flex-1-1 h-100 flex-column position-relative">
       <v-toolbar density="compact" absolute>
         <v-btn

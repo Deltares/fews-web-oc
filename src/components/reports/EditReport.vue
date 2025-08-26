@@ -11,6 +11,11 @@
     >
       Save
     </v-btn>
+    <v-tooltip text="Close editor">
+      <template v-slot:activator="{ props }">
+        <v-btn v-bind="props" icon="mdi-close" @click="onClose" />
+      </template>
+    </v-tooltip>
   </v-toolbar>
   <v-sheet theme="light" class="flex-1-1 h-100 position-relative">
     <editor-content :editor="editor" class="shadow-frame" />
@@ -22,11 +27,13 @@ import { ref, watch, onMounted, onBeforeUnmount, computed } from 'vue'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { extensions } from '@/components/reports/tiptap/extensions'
 import TableMenu from '@/components/reports/tiptap/TableMenu.vue'
+import { onBeforeRouteLeave } from 'vue-router'
 
 const modelValue = defineModel<string>()
 
 interface Emits {
   save: []
+  close: []
 }
 const emit = defineEmits<Emits>()
 
@@ -105,6 +112,33 @@ onMounted(() => {
     initialContent.value = editor.value.getHTML()
   }
   applyCssToEditor(css)
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      onClose()
+    }
+  })
+})
+
+function onClose() {
+  if (hasChanges.value) {
+    const answer = window.confirm(
+      'Do you really want to leave? you have unsaved changes!',
+    )
+    if (answer) {
+      emit("close")
+    }
+  } else {
+    emit("close")
+  }
+}
+
+onBeforeRouteLeave(() => {
+  if (!hasChanges.value) return true
+  const answer = window.confirm(
+    'Do you really want to leave? you have unsaved changes!',
+  )
+  if (!answer) return false
+  return true
 })
 
 // Reattach the CSS to HTML when saving

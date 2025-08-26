@@ -129,7 +129,7 @@
       </template>
     </ProductsBrowserTable>
     <div class="flex-1-1 h-100 flex-column position-relative">
-      <EditReport v-if="isEditing" v-model="htmlContent" @save="onSave" />
+      <EditReport v-if="isEditing" v-model="htmlContent" @save="onSave" @close="isEditing = false"/>
       <template v-else>
         <v-toolbar density="compact" absolute>
           <template v-if="viewMode === 'html'">
