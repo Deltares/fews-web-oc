@@ -312,10 +312,10 @@ async function onDeleteProduct(product: ProductMetaDataType) {
   try {
     const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
     await deleteProduct(baseUrl, product)
-    emit('refresh')
   } catch (error) {
     console.error(error)
   }
+  emit('refresh')
 }
 
 function onClick(
