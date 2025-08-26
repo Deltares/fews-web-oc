@@ -116,6 +116,7 @@
           width="50vw"
           max-width="250"
           :locations="locations"
+          :locationToChildrenMap="locationToChildrenMap"
           :selectedLocationIds="selectedLocationIds"
           @changeLocationIds="onLocationsChange"
         />
@@ -200,6 +201,8 @@ import { useSelectedDate } from '@/services/useSelectedDate'
 import { useOverlays } from '@/services/useOverlays'
 import { useBaseMap } from '@/services/useBaseMap'
 import { isInDatesRange } from '@/lib/date'
+import { getLocationWithChilds } from '@/lib/map'
+import { createLocationToChildrenMap } from '@/lib/topology/locations'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -249,6 +252,10 @@ const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
+
+const locationToChildrenMap = computed(() =>
+  createLocationToChildrenMap(props.locations ?? []),
+)
 
 const selectedDateOfSlider = ref<Date>()
 const { selectedDate, dateTimeSliderEnabled } =
@@ -374,13 +381,25 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
     event.features[0].properties?.locationId
   if (!locationId) return
 
-  if (event.originalEvent.ctrlKey || event.originalEvent.metaKey) {
+  const appendLocationId = (id: string) => {
     const locationIds = props.locationIds?.split(',') ?? []
-    const newLocationIds = [...new Set([...locationIds, locationId])]
-    onLocationsChange(newLocationIds)
-  } else {
-    onLocationsChange([locationId])
+    return Array.from(new Set([...locationIds, id]))
   }
+
+  const isCtrlOrMetaPressed =
+    event.originalEvent.ctrlKey || event.originalEvent.metaKey
+  const newLocationIds = isCtrlOrMetaPressed
+    ? appendLocationId(locationId)
+    : [locationId]
+
+  const locationIds = Array.from(
+    new Set(
+      newLocationIds.flatMap((id) =>
+        getLocationWithChilds(id, locationToChildrenMap.value),
+      ),
+    ),
+  )
+  onLocationsChange(locationIds)
 }
 
 function onLocationsChange(locationIds: string[]): void {

@@ -2,14 +2,15 @@ import { defineStore } from 'pinia'
 
 export interface GlobalSearchItem {
   id: string
-  name: string
+  title: string
+  children?: GlobalSearchItem[]
 }
 
 interface GlobalSearchState {
   active: boolean
   type: 'locations' | 'parameters' | 'nodes'
   items: GlobalSearchItem[]
-  selectedItem: GlobalSearchItem | null
+  selectedItems: string[]
 }
 
 const useGlobalSearchState = defineStore('globalSearchState', {
@@ -17,7 +18,7 @@ const useGlobalSearchState = defineStore('globalSearchState', {
     active: false,
     type: 'locations',
     items: [],
-    selectedItem: null,
+    selectedItems: [],
   }),
 })
 
