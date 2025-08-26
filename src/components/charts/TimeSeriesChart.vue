@@ -62,7 +62,11 @@ import {
   getColorMap,
   horizontalColorCodeDataFromData,
 } from '@/lib/charts/horizontalColorCode.js'
-import { isDefaultD3Domain } from '@/lib/charts/defaultDomain'
+import {
+  isDateDomain,
+  isDefaultD3Domain,
+  isNumberDomain,
+} from '@/lib/charts/defaultDomain'
 import { ModifierKey } from '@deltares/fews-web-oc-charts'
 import { useUserSettingsStore } from '@/stores/userSettings.js'
 
@@ -272,47 +276,26 @@ const addToChart = (chartSeries: ChartSeries) => {
 
 const setThresholdLines = () => {
   const thresholdLinesData = props.config.thresholds
-  if (thresholdLinesData === undefined || thresholdLinesData.length === 0)
-    return
+  if (!thresholdLinesData?.length) return
 
-  if (!showThresholds.value) {
-    thresholdLines = []
-    let defaultDomain: [number, number] = [NaN, NaN]
-    if (
-      props.config.yAxis &&
-      props.config.yAxis.length > 0 &&
-      props.config.yAxis[0].defaultDomain
-    ) {
-      defaultDomain = props.config.yAxis[0].defaultDomain as any
+  const yDomain = props.config.yAxis?.[0].defaultDomain
+  let defaultDomain = yDomain && isDateDomain(yDomain) ? undefined : yDomain
+
+  if (showThresholds.value) {
+    thresholdLinesVisitor.options = thresholdLinesData
+
+    const domainValues = defaultDomain ?? []
+    const thresholdValues = thresholdLinesData.map((l) => l.value)
+
+    const domain = extent<number>([...domainValues, ...thresholdValues])
+    if (isNumberDomain(domain)) {
+      defaultDomain = domain
     }
-    axis.setOptions({
-      y: [{ defaultDomain, nice: true }],
-    })
   } else {
-    thresholdLines = thresholdLinesData
-    let defaultDomain: [number, number] = extent<number>(
-      thresholdLinesData.map((l) => {
-        return l.value ?? NaN
-      }),
-    ) as any
-    if (
-      props.config.yAxis &&
-      props.config.yAxis.length > 0 &&
-      props.config.yAxis[0].defaultDomain &&
-      typeof props.config.yAxis[0].defaultDomain[0] === 'number' &&
-      typeof props.config.yAxis[0].defaultDomain[1] === 'number'
-    ) {
-      defaultDomain = extent<number>([
-        ...defaultDomain,
-        ...props.config.yAxis[0].defaultDomain,
-      ] as any) as any
-    }
-    axis.setOptions({
-      y: [{ defaultDomain, nice: true }],
-    })
+    thresholdLinesVisitor.options = []
   }
 
-  thresholdLinesVisitor.options = thresholdLines
+  axis.setOptions({ y: [{ defaultDomain, nice: true }] })
 }
 
 const clearChart = () => {
