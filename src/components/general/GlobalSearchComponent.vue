@@ -30,7 +30,7 @@
           v-model:selected="state.selectedItems"
           :items="state.items"
           item-value="id"
-          select-strategy="independent"
+          :select-strategy="cascadeStrategy"
           selectable
           density="compact"
           :custom-filter="isMatchingItem"
@@ -60,6 +60,7 @@ import {
 } from '@/stores/globalSearch'
 
 import HighlightMatch from './HighlightMatch.vue'
+import { cascadeStrategy } from '@/lib/selection'
 
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
