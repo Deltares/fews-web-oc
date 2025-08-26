@@ -29,76 +29,148 @@ For the general configuration of Topology.xml, please refer to: [Topology Config
 Topology nodes in the Web OC component TopologyDisplay can be linked using Topology.xml as described below.
 
 | **Link topology node to** | **Back-end support** | **Web OC Support** | **Topology.xml config element**                                     | 
-|--------------------------| -------------------- | ------------------ | ------------------------------------------------------------------- |
-| Spatial Display          | Yes                  | Yes                | `<gridDisplaySelection>`                                            |
-| Filters                  | Yes                  | Yes                | `<filterId>`                                                        | 
-| External url             | Yes                  | Yes                | `<url>`                                                             | 
-| Embedded Browser         | Yes                  | Yes                | `<embedUrl>`                                                        | 
-| DisplayGroup             | Yes                  | Yes                | `<nodeId>` (DisplayGroups.xml) or `<displayGroupId>` (Topology.xml) | 
-| Run Task                 | Yes                  | Yes                | `<secondaryWorkflowId>`                                             | 
-| Data download            | Yes                  | Yes                | `<dataDownloadDisplayId>`                                           | 
-| Report                   | Yes                  | Yes                | `<reportModuleInstanceId>`                                          | 
-| Document                 | Yes                  | Yes                | `<documentFile>`                                                    | 
-| SchematicStatusDisplay   | Yes                  | Yes                | `<scadaDisplayId>` and `<scadaPanelId>`                             | 
-| LogDisplays              | Yes                  | Yes                | `<logDisplayId>`                           |
-| System Monitor           | Not yet              | Not yet            | -                                                                   | 
+|----------------------------|----------------------|--------------------|---------------------------------------------------------------------|
+| Data Analysis Display      | Yes                  | Yes                | `<dataAnalysisDisplayId>`                                           | 
+| Data download              | Yes                  | Yes                | `<dataDownloadDisplayId>`                                           | 
+| DisplayGroup               | Yes                  | Yes                | `<nodeId>` (DisplayGroups.xml) or `<displayGroupId>` (Topology.xml) | 
+| Display Information Document   | Yes                  | Yes                | `<documentFile>`                                                    | 
+| Document Displays          | Yes                  | Yes                | `<documentDisplayId>`                                               |
+| Embedded Browser           | Yes                  | Yes                | `<embedUrl>`                                                        | 
+| External url               | Yes                  | Yes                | `<url>`                                                             | 
+| Filters                    | Yes                  | Yes                | `<filterId>`                                                        | 
+| Log Displays                | Yes                  | Yes               | `<logDisplayId>`                                                    | 
+| Report                     | Yes                  | Yes                | `<reportModuleInstanceId>`                                          | 
+| Run Task                   | Yes                  | Yes                | `<secondaryWorkflowId>`                                             | 
+| SchematicStatusDisplay     | Yes                  | Yes                | `<scadaDisplayId>` and `<scadaPanelId>`                             | 
+| Spatial Display            | Yes                  | Yes                | `<gridDisplaySelection>`                                            |
+| System Monitor             | Not yet              | Not yet            | -                                                                   |  
 
-**Spatial Display**
+**Data Analysis Display**
 
-Web OC will show a map, displaying the configured plotId linked to the selected topology node. Use the `<gridDisplaySelection>` item in Toplogy.xml to configure a plotId. A time slider will show up for navigation in time. The period covered by the time slider is based on the configured relative view period of the time series in the GridDisplay.xml with reference to the system time of Web OC (system time of user's device).
-The classbreaks (legend) on the Spatial Display is only shown in the Web-OC when the Spatial Display plotId uses classbreaks from the TimeSeriesDisplayConfig.xml. Examples are provided on the Delft-FEWS WIKI pages: [Time Series Display Configuration](https://publicwiki.deltares.nl/display/FEWSDOC/02+Time+Series+Display+Configuration) and [Grid Display Configuration](https://publicwiki.deltares.nl/display/FEWSDOC/01+Grid+Display#id-01GridDisplay-_Toc154574473_Toc95297306classBreaks). It is possible to configure multiple classBreaks for a single gridPlot. Web OC will allow users to switch between them. 
+Data Analysis Displays can be configured in the `DataAnalysisDisplays.xml`, part of the DisplayConfigFiles. One or more Data Analysis Displays can be configured and referenced in the `Topology.xml` using the `<dataAnalysisDisplayId>` element. 
 
-Optionally, gridded vector data can be shown as an animated layer in Web OC by configuring the `<animatedVectors>` settings in [Spatial Display](https://publicwiki.deltares.nl/display/FEWSDOC/01+Grid+Display).
+Please refer to the configuration documentation on how to configure the Data Analysis Displays [documentation](https://publicwiki.deltares.nl/spaces/FEWSDOC/pages/352944209/35+Data+Analysis+Displays+Web+OC+only).
 
-**Filters**
+---
 
-Web OC will show a map, displaying all locations configured in the filterId linked to the selected topology node. Locations are also listed in a drop-down menu. Use the `<filterId>` item in Topology.xml to configure a filterId. By selecting a location on the map (hold Ctrl key for multi-select) or from the list, time series graphs will be displayed for all parameters configured in Filters.xml for the linked filterId. Time series graphs are grouped by parameterGroup. The period shown in the graph corresponds to the configured relative view period (relative to Web OC system time) of the time series in the Filters.xml.
+**Data download**
 
-When locations are shown on the Web OC map, icons are used as configured in Delft-FEWS. Also, icon overlays for threshold crossings are shown consistently with the Delft-FEWS Desktop OC. Check threshold configuration [documentation](https://publicwiki.deltares.nl/display/FEWSDOC/09+Thresholds). When `<showActiveThresholdCrossingsForFilters>true</showActiveThresholdCrossingsForFilters>` is configured in WebOperatorClient.xml, an indicator for the number of locations with threshold crossings per topology node will be shown in Web OC.
+A data download display can be visualised in the WebOC by referencing a configured dataDownLoadDisplay Template through the `<dataDownloadDisplayId>` in combination with a `<filterId>`.
 
-**External url**
-
-When a `<url>` element is configured in the selected topology node, Web OC will open a new browser window (outside Web OC) for the url configured. NB This is only supported for topology nodes with _only_ the `<url>` element configured. 
-
-**Embedded Browser**
-
-When a `<embedUrl>` element is configured in the selected topology node, Web OC will open an embedded browser window for the url configured. Please note that [Content Security Policy](https://deltares.github.io/fews-web-oc/deployments/#content-security-policy-csp-headers) have to be configured correctly to allow embedding.
+---
 
 **DisplayGroup**
 
 Web OC will show a time series graph and a drop-down menu for selection of displays within the configured displayGroup. Currently, two configuration options are supported by Web OC to link DisplayGroups to Topology nodes:
 
-1. Configure a `<nodeId>` element for a DisplayGroup in DisplayGroups.xml. No additional configuration is required in Topology.xml.
-2. Configure a `<displayGroupId>` element for a Topology node in Topology.xml
+1. Configure a `<nodeId>` element for a DisplayGroup in `DisplayGroups.xml`. No additional configuration is required in `Topology.xml`.
+2. Configure a `<displayGroupId>` element for a Topology node in `Topology.xml`.
 
-The period shown in the graph corresponds to the configured relative view period in DisplayGroups.xml
+The period shown in the graph corresponds to the configured relative view period in `DisplayGroups.xml`.
+
+---
+
+**Display Information Document**
+
+A static document (typically HTML format) can be linked to a topology node. In order to link a document to a topology node, the element `<documentFile>` in `Topology.xml` has be configured at topology node level. The document itself should be part of the FEWS configuration (`Config/WebResourcesFiles`). The content of the document will be visualised under the **"More Info"** button.  
+
+---
+
+**Document Displays**
+
+Document Displays as configured in the `DisplayConfigFiles` folder of the Delft-FEWS Config are available in the WebOC. One or more displays can be configured in the `DocumentDisplays.xml`. There are three different types of document displays: 
+
+1. **Report display**: Visualise and edit reports based on  
+   - `reportModuleInstanceId` or  
+   - `archiveProductId`
+2. **Document Browser**: Browse and visualise products in the Archive.  
+3. **Compose display**: Produce on the fly a new `archiveProduct` based on a template.  
+
+For more information about the configuration of the Document Displays refer to the [Document Display configuration documentation](https://publicwiki.deltares.nl/spaces/FEWSDOC/pages/352944205/34+Document+Displays+Web+OC+only).
+
+---
+
+**Embedded Browser**
+
+When a `<embedUrl>` element is configured in the selected topology node, Web OC will open an embedded browser window for the URL configured. Please note that [Content Security Policy](https://deltares.github.io/fews-web-oc/deployments/#content-security-policy-csp-headers) must be configured correctly to allow embedding.
+
+---
+
+**External url**
+
+When a `<url>` element is configured in the selected topology node, Web OC will open a new browser window (outside Web OC) for the URL configured.  
+⚠️ This is only supported for topology nodes with *only* the `<url>` element configured.  
+
+---
+
+**Filters**
+
+Web OC will show a map, displaying all locations configured in the `filterId` linked to the selected topology node. Locations are also listed in a drop-down menu. Use the `<filterId>` item in `Topology.xml` to configure a filterId.  
+
+By selecting a location on the map (hold **Ctrl** key for multi-select) or from the list, time series graphs will be displayed for all parameters configured in `Filters.xml` for the linked filterId. Time series graphs are grouped by `parameterGroup`. The period shown in the graph corresponds to the configured relative view period (relative to Web OC system time) of the time series in the `Filters.xml`.
+
+When locations are shown on the Web OC map, icons are used as configured in Delft-FEWS. Icon overlays for threshold crossings are also shown consistently with the Delft-FEWS Desktop OC.  
+
+See [Thresholds documentation](https://publicwiki.deltares.nl/display/FEWSDOC/09+Thresholds). When  
+```xml
+<showActiveThresholdCrossingsForFilters>true</showActiveThresholdCrossingsForFilters>
+```
+is configured in `WebOperatorClient.xml`, an indicator for the number of locations with threshold crossings per topology node will be shown in Web OC.
+
+---
+
+**Log Displays**
+
+Log Displays as configured in the `DisplayConfigFiles` folder of the Delft-FEWS Config. One or more log displays can be configured and referenced in the `Topology.xml` using the `<logDisplayId>` element. For more information about the configuration of the Log Displays refer to the [configuration documentation](https://publicwiki.deltares.nl/spaces/FEWSDOC/pages/352944218/36+Log+Displays+Web+OC+only).
+
+---
+
+**Report**
+
+Reports generated by the [FEWS Report Module](https://publicwiki.deltares.nl/display/FEWSDOC/09+Report+Module) can be made available for display in Web OC. In order to link a report to a topology node, the element `<reportModuleInstanceId>` in `Topology.xml` has be configured at topology node level. Only reports that are stored in the FEWS database can be displayed in Web OC (`<sendToLocalFileSystem> = false` in report module configuration).
+
+---
 
 **Run Task**
 
-It is possible to submit a task to the Delft-FEWS back-end by configuring a `<secondaryWorkflowId>` in Topology.xml. You have to explicitly allow tasks to run from Web OC by configuring `<enableTaskRuns>true</enableTaskRuns>` in WebOperatorClient.xml (default is false). When correctly configured, a run button will appear in Web OC above the topology tree. When selected, a pop-up menu will allow the user to choose from the secondary workflows configured (multiple workflows can be linked to a single node). A task description can be added before submitting the task.
+It is possible to submit a task to the Delft-FEWS back-end by configuring a `<secondaryWorkflowId>` in `Topology.xml`. You have to explicitly allow tasks to run from Web OC by configuring `<enableTaskRuns>true</enableTaskRuns>` in `WebOperatorClient.xml` (default is false). When correctly configured, a run button will appear in Web OC above the topology tree. When selected, a pop-up menu will allow the user to choose from the secondary workflows configured (multiple workflows can be linked to a single node). A task description can be added before submitting the task.
 
-_Workflow properties_
+_workflow properties_
 
 Workflow properties can be configured in [WorkflowDescriptors.xml](https://publicwiki.deltares.nl/display/FEWSDOC/13+WorkflowDescriptors). If properties are configured to be editable with `<editableProperty>`, a form will be shown in Web OC where these properties can be modified from their default value by the user. 
 
-Pre-defined properties are xMin, xMax, yMin, yMax, xCellSize, and yCellSize. When these properties are configured, Web OC will provide users with the option to draw a bounding box on the map. The task will be submitted using the [processdata endpoint](https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+PI+REST+Web+Service#FEWSPIRESTWebService-GETprocessdata(2017.02)) instead of [POST run task](https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+PI+REST+Web+Service#FEWSPIRESTWebService-POSTruntask(2017.02)). The purpose of the processdata endpoint is to download data based on the xMin, xMax, yMin, yMax, xCellSize, and yCellSize properties provided by the user. A pre-defined property "FILE_NAME" can be configured in [WorkflowDescriptors.xml](https://publicwiki.deltares.nl/display/FEWSDOC/13+WorkflowDescriptors) to set the name of the file to be downloaded. The file name will then be "yyyyMMddTHHmmssFILE_NAME".
+Pre-defined properties are xMin, xMax, yMin, yMax, xCellSize, and yCellSize. When these properties are configured, Web OC will provide users with the option to draw a bounding box on the map. The task will be submitted using the [processdata endpoint](https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+PI+REST+Web+Service#FEWSPIRESTWebService-GETprocessdata(2017.02)) instead of [POST run task](https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+PI+REST+Web+Service#FEWSPIRESTWebService-POSTruntask(2017.02)). 
 
-Limitations:
+The purpose of the processdata endpoint is to download data based on the xMin, xMax, yMin, yMax, xCellSize, and yCellSize properties provided by the user. A pre-defined property `FILE_NAME` can be configured in [WorkflowDescriptors.xml](https://publicwiki.deltares.nl/display/FEWSDOC/13+WorkflowDescriptors) to set the name of the file to be downloaded. The file name will then be `yyyyMMddTHHmmssFILE_NAME`.
+
+_Limitations:_
 - T0 will be set to time of submission (respecting cardinal time step)
 - Only secondary workflows are supported
 - Features such as state selection, what-if scenarios, etc. are not supported
 
-**Reports**
+---
 
-Reports generated by the [FEWS Report Module](https://publicwiki.deltares.nl/display/FEWSDOC/09+Report+Module) can be made available for display in Web OC. In order to link a report to a topology node, the element `<reportModuleInstanceId>` in Topology.xml has be configured at topology node level. Only reports that are stored in the FEWS database can be displayed in Web OC (`<sendToLocalFileSystem> = false`) in report module configuration)
+**SchematicStatusDisplay**
 
-**LogsDisplays**
+_(no description provided yet — add details here if needed, e.g., how `<scadaDisplayId>` and `<scadaPanelId>` are configured)_
 
-Log Displays as configured in the DisplayConfigFiles folder of the Delft-FEWS Config. One or more log displays can be configured and referenced in the Topology.xml using the `<logDisplayId>` element.
+---
 
-**Document**
+**Spatial Display**
 
-A static document (typically HTML format) can be linked to a topology node. In order to link a document to a topology node, the element `<documentFile>` in Topology.xml has be configured at topology node level. The document itself should be part of the FEWS configuration (Config/WebResourcesFiles).
+Web OC will show a map, displaying the configured plotId linked to the selected topology node. Use the `<gridDisplaySelection>` item in `Topology.xml` to configure a plotId. A time slider will show up for navigation in time. The period covered by the time slider is based on the configured relative view period of the time series in the `GridDisplay.xml` with reference to the system time of Web OC (system time of user's device).
+
+The classbreaks (legend) on the Spatial Display is only shown in the Web-OC when the Spatial Display plotId uses classbreaks from the `TimeSeriesDisplayConfig.xml`. Examples are provided on the Delft-FEWS WIKI pages: [Time Series Display Configuration](https://publicwiki.deltares.nl/display/FEWSDOC/02+Time+Series+Display+Configuration) and [Grid Display Configuration](https://publicwiki.deltares.nl/display/FEWSDOC/01+Grid+Display#id-01GridDisplay-_Toc154574473_Toc95297306classBreaks). It is possible to configure multiple classBreaks for a single gridPlot. Web OC will allow users to switch between them. 
+
+Optionally, gridded vector data can be shown as an animated layer in Web OC by configuring the `<animatedVectors>` settings in [Spatial Display](https://publicwiki.deltares.nl/display/FEWSDOC/01+Grid+Display).
+
+---
+
+**System Monitor**
+
+The system monitor is not supported yet.
+
+---
 
 **Topology active threshold crossings**
 
