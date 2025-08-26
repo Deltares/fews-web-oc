@@ -68,7 +68,7 @@ export function timeSeriesDisplayToChartConfig(
         'horizontalColorCode',
         config,
       )
-      chartSeriesArray.push(chartSeries)
+      chartSeriesArray.unshift(chartSeries)
     }
 
     if (
