@@ -1,9 +1,10 @@
 <template>
-  <div class="d-flex flex-row h-100 w-100">
+  <div class="d-flex flex-row h-100 w-100 position-relative">
     <ProductsBrowserTable
       :products="filteredProducts"
       :config="tableLayout"
       class="product-browser__table"
+      :style="{ width: tableWidth + 'px' }"
       :productId="productId"
       :areaId="areaId"
       :sourceId="sourceId"
@@ -128,6 +129,12 @@
         </tr>
       </template>
     </ProductsBrowserTable>
+    <div
+      class="resizer"
+      @mousedown="startResize"
+      @touchstart="startResize"
+      :title="'Drag to resize'"
+    ></div>
     <div class="flex-1-1 h-100 flex-column position-relative">
       <EditReport v-if="isEditing" v-model="htmlContent" @save="onSave" />
       <template v-else>
@@ -183,17 +190,20 @@
               append-icon="mdi-chevron-down"
               variant="text"
               class="text-start"
+              v-if="
+                productVersions.length > 1
+              "
             >
               <v-list-item
                 class="ps-0 pe-2"
-                :title="selectedProduct?.timeZero"
+                :title="toHumanReadableDate(selectedProduct?.timeZero)"
                 :subtitle="`Version ${selectedProduct?.version}`"
               >
               </v-list-item>
               <v-menu activator="parent">
                 <v-list density="compact">
                   <v-list-item
-                    v-for="(item, index) in filteredProducts"
+                    v-for="(item, index) in productVersions"
                     :key="item.key"
                     :title="item.timeZero"
                     :subtitle="`Version ${item.version}`"
@@ -203,6 +213,18 @@
                 </v-list>
               </v-menu>
             </v-btn>
+            <v-sheet
+              v-else-if="selectedProduct"
+              class="d-flex align-center text-start px-3 py-2"
+              color="transparent"
+            >
+              <v-list-item
+                class="ps-0 pe-2"
+                :title="toHumanReadableDate(selectedProduct?.timeZero)"
+                :subtitle="`Version ${selectedProduct?.version}`"
+              >
+              </v-list-item>
+            </v-sheet>
           </v-toolbar-items>
         </v-toolbar>
         <iframe
@@ -223,7 +245,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, toValue, watch, watchEffect } from 'vue'
+import {
+  computed,
+  ref,
+  toValue,
+  watch,
+  watchEffect,
+  onMounted,
+  onBeforeUnmount,
+} from 'vue'
 import ProductsBrowserTable, {
   type ProductBrowserTableConfig,
 } from '@/components/products/ProductsBrowserTable.vue'
@@ -254,13 +284,117 @@ import { postFileProduct, postProduct } from '@/lib/products/requests'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import { convert } from 'html-to-text'
 import { clickDownloadUrl } from '@/lib/download'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const LOG_DISPLAY_ID = 'email_reports'
+
+// Table resizing functionality
+const tableWidth = ref(600) // Default width
+const minWidth = 200 // Minimum table width
+const maxWidth = 1000 // Maximum table width
+const isResizing = ref(false)
+const initialX = ref(0) // Track the initial X position
+const initialWidth = ref(0) // Track the initial width
+
+function startResize(event: MouseEvent | TouchEvent) {
+  // Prevent default behavior to avoid text selection during drag
+  event.preventDefault()
+  isResizing.value = true
+
+  // Store the initial mouse position
+  if (event.type === 'mousedown') {
+    initialX.value = (event as MouseEvent).clientX
+  } else if (event.type === 'touchstart') {
+    initialX.value = (event as TouchEvent).touches[0].clientX
+  }
+
+  // Store the initial width
+  initialWidth.value = tableWidth.value
+
+  // Add a class to the body to indicate resizing
+  document.body.classList.add('resizing')
+
+  // Add event listeners for mouse/touch movement and release
+  if (event.type === 'mousedown') {
+    document.addEventListener('mousemove', resize as EventListener)
+    document.addEventListener('mouseup', stopResize)
+  } else if (event.type === 'touchstart') {
+    document.addEventListener('touchmove', resize as EventListener)
+    document.addEventListener('touchend', stopResize)
+  }
+}
+
+function resize(event: MouseEvent | TouchEvent) {
+  if (!isResizing.value) return
+
+  // Get the current mouse/touch position
+  let currentX: number
+
+  if (event.type.includes('touch')) {
+    currentX = (event as TouchEvent).touches[0].clientX
+  } else {
+    currentX = (event as MouseEvent).clientX
+  }
+
+  const deltaX = currentX - initialX.value
+
+  // Calculate new width based on the initial width plus the delta
+  let newWidth = initialWidth.value + deltaX
+
+  // Enforce min/max constraints
+  newWidth = Math.max(minWidth, Math.min(newWidth, maxWidth))
+
+  tableWidth.value = newWidth
+
+  document.documentElement.style.setProperty('--table-width', `${newWidth}px`)
+}
+
+function stopResize() {
+  isResizing.value = false
+
+  // Remove the resizing class from the body
+  document.body.classList.remove('resizing')
+
+  // Remove event listeners
+  document.removeEventListener('mousemove', resize)
+  document.removeEventListener('mouseup', stopResize)
+  document.removeEventListener('touchmove', resize)
+  document.removeEventListener('touchend', stopResize)
+}
+
+onMounted(() => {
+    // Set the initial CSS variable
+    document.documentElement.style.setProperty(
+      '--table-width',
+      `${tableWidth.value}px`,
+    )
+})
+
+// Clean up event listeners when component is unmounted
+onBeforeUnmount(() => {
+  document.removeEventListener('mousemove', resize)
+  document.removeEventListener('mouseup', stopResize)
+  document.removeEventListener('touchmove', resize)
+  document.removeEventListener('touchend', stopResize)
+})
 
 interface Props {
   config?: DocumentBrowserDisplay
   productId?: string
 }
+
+
+const productVersions = computed(() => {
+  return filteredProducts.value.filter((product) => {
+    console.log(product)
+    if (product.key === selectedProduct?.value.key) return true
+    if (product.attributes.productId) {
+      return product.attributes.productId === selectedProduct?.value.attributes.productId && product.timeZero === selectedProduct?.value.timeZero
+    }
+  })
+})
 
 const { config, productId } = defineProps<Props>()
 const src = ref('')
@@ -408,6 +542,20 @@ watchEffect(() => {
   const documentDisplay = toValue(config)
   if (documentDisplay) {
     viewPeriod.value = periodToIntervalItem(documentDisplay.relativeViewPeriod)
+  }
+})
+
+watchEffect(() => {
+  if (!productId) {
+    if (filteredProducts.value.length > 0) {
+      console.log(filteredProducts.value[0].key)
+      router.push({
+        name: 'TopologyDocumentDisplay',
+        params: {
+          productId: filteredProducts.value[0].key,
+        },
+      })
+    }
   }
 })
 
@@ -661,9 +809,33 @@ img {
 }
 
 .product-browser__table {
-  width: 600px;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+  position: relative;
+  transition: width 0.1s ease;
+}
+
+.resizer {
+  position: absolute;
+  width: 8px;
+  height: 100%;
+  background-color: transparent;
+  cursor: col-resize;
+  z-index: 10;
+  left: calc(var(--table-width, 600px) - 4px);
+}
+
+.resizer:hover,
+.resizer:active {
+  background-color: rgba(0, 0, 0, 0.2);
+  width: 8px;
+  left: calc(var(--table-width, 600px) - 4px);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+}
+
+/* When resizing is active, disable text selection to improve UX */
+body.resizing {
+  user-select: none;
 }
 </style>

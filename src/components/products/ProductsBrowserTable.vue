@@ -11,13 +11,29 @@
         class="px-4"
         append-inner-icon="mdi-magnify"
       ></v-text-field>
-      <v-btn prepend-icon="mdi-filter-variant">
+      <v-btn prepend-icon="mdi-filter-variant" :color="fileType ? 'primary' : undefined">
         <v-menu activator="parent">
           <v-list density="compact">
             <v-list-subheader>Filter</v-list-subheader>
             <v-item-group>
-              <v-list-item prepend-icon="mdi-file-pdf-box">PDF</v-list-item>
-              <v-list-item prepend-icon="mdi-file-image">Images</v-list-item>
+              <v-list-item prepend-icon="mdi-file-pdf-box" @click="filterByType('pdf')" :active="fileType === 'pdf'">
+                PDF
+                <template v-slot:append v-if="fileType === 'pdf'">
+                  <v-icon color="primary" icon="mdi-check"></v-icon>
+                </template>
+              </v-list-item>
+              <v-list-item prepend-icon="mdi-file-image" @click="filterByType('image')" :active="fileType === 'image'">
+                Images
+                <template v-slot:append v-if="fileType === 'image'">
+                  <v-icon color="primary" icon="mdi-check"></v-icon>
+                </template>
+              </v-list-item>
+              <v-list-item prepend-icon="mdi-file-document" @click="filterByType('html')" :active="fileType === 'html'">
+                HTML Documents
+                <template v-slot:append v-if="fileType === 'html'">
+                  <v-icon color="primary" icon="mdi-check"></v-icon>
+                </template>
+              </v-list-item>
             </v-item-group>
           </v-list>
         </v-menu>
@@ -176,7 +192,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 import type { ProductMetaDataType } from '@/services/useProducts/types'
 import { useRouter } from 'vue-router'
 import { toHumanReadableDate } from '@/lib/date'
@@ -228,6 +244,12 @@ const groupByKey = ref([''])
 const groupByOrder = ref<[boolean | 'asc' | 'desc']>(['asc'])
 const selectedColumns = ref<string[]>([])
 const selectedRows = ref<string[]>([])
+const fileType = ref<string>('')
+
+// Function to filter products by type - toggle if already selected
+const filterByType = (type: string) => {
+  fileType.value = fileType.value === type ? '' : type
+}
 
 const groupBy = computed(() => {
   return {
@@ -243,7 +265,7 @@ function groupName(key: string) {
   return column?.title || key
 }
 
-onMounted(() => {
+watchEffect(() => {
   if (props.productId) {
     selectedRows.value = [props.productId]
   }
@@ -302,7 +324,19 @@ const items = computed(() => {
       dataSetCreationTime: toHumanReadableDate(product.dataSetCreationTime),
     })),
   )
-
+  if (fileType.value) {
+    return items.filter((item) => {
+      const itemFileType = item.relativePathProducts[0].split('.').pop()?.toLowerCase() ?? 'unknown'
+      switch (itemFileType) {
+        case 'png':
+        case 'jpg':
+        case 'jpeg':
+          return fileType.value === 'image'
+        default:
+          return itemFileType === fileType.value
+      }
+    })
+  }
   return items
 })
 
