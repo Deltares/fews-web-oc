@@ -39,3 +39,15 @@ export function isDefaultD3TimeScaleDomain([start, end]: [
     end.getDate() === 2
   )
 }
+
+export function isNumberDomain(
+  domain: [number, number] | [Date, Date] | [undefined, undefined],
+): domain is [number, number] {
+  return typeof domain[0] === 'number' && typeof domain[1] === 'number'
+}
+
+export function isDateDomain(
+  domain: [number, number] | [Date, Date],
+): domain is [Date, Date] {
+  return domain[0] instanceof Date && domain[1] instanceof Date
+}
