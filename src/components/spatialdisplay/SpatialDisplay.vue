@@ -101,10 +101,7 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
   baseUrl,
   () => props.layerName,
 )
-const { locations, geojson, getLocationWithChilds } = useFilterLocations(
-  baseUrl,
-  filterIds,
-)
+const { locations, geojson } = useFilterLocations(baseUrl, filterIds)
 watch(locations, (newLocations) =>
   locationNamesStore.addLocationNames(newLocations ?? []),
 )
@@ -281,14 +278,14 @@ function onLocationsChange(locationIds: string[] | null): void {
   openLocationsTimeSeriesDisplay(locationIds)
 }
 
-function openLocationsTimeSeriesDisplay(newLocationIds: string[]) {
-  const locationIds = Array.from(
-    new Set(newLocationIds.flatMap(getLocationWithChilds)),
-  ).join(',')
-
+function openLocationsTimeSeriesDisplay(locationIds: string[]) {
+  if (locationIds.length === 0) {
+    closeTimeSeriesDisplay()
+    return
+  }
   const to = {
     name: 'SpatialTimeSeriesDisplay',
-    params: { locationIds },
+    params: { locationIds: locationIds.join(',') },
   }
   emit('navigate', to)
 }
