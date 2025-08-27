@@ -47,6 +47,7 @@ import { nextTick, ref, useTemplateRef } from 'vue'
 import { useConfigStore } from '@/stores/config'
 import { toSnakeCase } from '@/lib/utils/toSnakeCase'
 import { fetchAndInlineCssAndFonts } from '@/lib/css'
+import { getSeriesByLegend } from '@/lib/legend'
 
 interface Props {
   chart: PlotChart
@@ -78,8 +79,13 @@ async function downloadChartImage() {
   const chartSvg = chartRef.value.getSvgElement()
   if (!chartSvg) return
 
+  const seriesByLegend = getSeriesByLegend(props.config.series)
+  // In case of multiple series with the same label, we only show the
+  // legend for the first series.
+  const series = Object.values(seriesByLegend).map((s) => s[0])
+
   const legend = new Legend(
-    props.config.series.map((s) => ({
+    series.map((s) => ({
       selector: s.id,
       label: s.name,
     })),
