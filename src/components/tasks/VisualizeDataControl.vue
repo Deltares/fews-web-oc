@@ -12,7 +12,7 @@
       class="d-flex flex-column h-100 w-100"
     >
       <v-toolbar density="compact">
-        <span class="ms-4">Visualize Data</span>
+        <span class="ms-4">Non-current Data</span>
         <template #append>
           <v-btn
             @click="sidePanelStore.toggleActive('visualize')"
@@ -22,7 +22,11 @@
           />
         </template>
       </v-toolbar>
-      <TaskRunsPanel :topologyNode="topologyNode" class="flex-1-1" />
+      <TaskRunsPanel
+        :topologyNode="topologyNode"
+        isVisualizeMenu
+        class="flex-1-1"
+      />
     </div>
   </Teleport>
 </template>

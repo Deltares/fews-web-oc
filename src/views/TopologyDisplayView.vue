@@ -86,7 +86,7 @@
         <v-list-item
           v-if="showTaskMenu && secondaryControl !== 'visualize'"
           prepend-icon="mdi-chart-box-multiple"
-          title="Visualize Data"
+          title="Non-current Data"
           @click="
             () => {
               activeControl = 'visualize'

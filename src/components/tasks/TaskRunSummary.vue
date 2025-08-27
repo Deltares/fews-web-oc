@@ -48,7 +48,7 @@
               @click.stop="taskRunsStore.toggleTaskRun(task)"
             >
               <v-tooltip
-                text="Visualize task in graphs"
+                text="Visualize in charts"
                 open-delay="500"
                 activator="parent"
               />
