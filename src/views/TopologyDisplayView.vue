@@ -36,6 +36,10 @@
       v-if="secondaryControl === 'tasks' && showTaskMenu"
       :topologyNode="topologyNode"
     />
+    <ImportStatusControl
+      v-if="secondaryControl === 'import' && showTaskMenu"
+      :topologyNode="topologyNode"
+    />
     <VisualizeDataControl
       v-if="secondaryControl === 'visualize' && showTaskMenu"
       :topologyNode="topologyNode"
@@ -82,6 +86,17 @@
             <v-icon v-else>mdi-clipboard-text-clock</v-icon>
           </template>
         </v-list-item>
+        <!-- Import Data option -->
+        <v-list-item
+          v-if="showTaskMenu && secondaryControl !== 'import'"
+          prepend-icon="mdi-file-import"
+          title="Import Status"
+          @click="() => {
+            activeControl = 'import'
+            secondaryControl = 'import'
+            sidePanelStore.setActive('import')
+          }"
+        />
         <!-- Visualize Data option -->
         <v-list-item
           v-if="showTaskMenu && secondaryControl !== 'visualize'"
@@ -185,6 +200,7 @@ import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
 import InformationDisplayView from '@/views/InformationDisplayView.vue'
 import TaskRunsControl from '@/components/tasks/TaskRunsControl.vue'
+import ImportStatusControl from '@/components/systemmonitor/ImportStatusControl.vue'
 import ThresholdsControl from '@/components/thresholds/ThresholdsControl.vue'
 import { useDisplay } from 'vuetify'
 import { useNodesStore } from '@/stores/nodes'
@@ -223,11 +239,11 @@ const sidePanelStore = useSidePanelStore()
 
 // For managing which control is active in the button group
 const activeControl = ref<
-  'thresholds' | 'workflows' | 'tasks' | 'info' | 'visualize'
+  'thresholds' | 'workflows' | 'tasks' | 'info' | 'visualize' | 'import'
 >('thresholds') // Options: 'thresholds', 'workflows', 'tasks', 'info', visualize
-const secondaryControl = ref<'workflows' | 'tasks' | 'info' | 'visualize'>(
+const secondaryControl = ref<'workflows' | 'tasks' | 'info' | 'visualize' | 'import'>(
   'tasks',
-) // Options: 'workflows', 'tasks', 'info', 'visualize'
+) // Options: 'workflows', 'tasks', 'info', 'visualize', 'import'
 
 // Sync activeControl and secondaryControl with sidePanelStore
 watch(
