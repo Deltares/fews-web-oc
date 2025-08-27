@@ -11,11 +11,15 @@
     >
       Save
     </v-btn>
-    <v-tooltip text="Close editor">
-      <template v-slot:activator="{ props }">
-        <v-btn v-bind="props" icon="mdi-close" @click="onClose" />
-      </template>
-    </v-tooltip>
+    <v-btn
+      prepend-icon="mdi-close"
+      @click="onClose"
+      variant="flat"
+      class="text-none mr-5"
+      color="grey-lighten-2"
+    >
+      Discard
+    </v-btn>
   </v-toolbar>
   <v-sheet theme="light" class="flex-1-1 h-100 position-relative">
     <editor-content :editor="editor" class="shadow-frame" />

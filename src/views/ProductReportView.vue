@@ -45,6 +45,11 @@
         <v-spacer />
         <v-toolbar-items>
           <v-btn
+              icon="mdi-download"
+              :disabled="!selectedProduct"
+              @click="downloadProduct()"
+            />
+          <v-btn
             append-icon="mdi-chevron-down"
             variant="text"
             class="text-start"
@@ -69,6 +74,7 @@
             </v-menu>
           </v-btn>
         </v-toolbar-items>
+        
       </v-toolbar>
       <iframe
         v-if="viewMode === 'iframe'"
@@ -108,6 +114,7 @@ import { ProductMetaDataType } from '@/services/useProducts/types'
 import { getFileExtension, getViewMode } from '@/lib/products'
 import { convert } from 'html-to-text'
 import { useLogDisplay } from '@/services/useLogDisplay'
+import { clickDownloadUrl } from '@/lib/download'
 
 const LOG_DISPLAY_ID = 'email_reports'
 
@@ -226,6 +233,16 @@ watchEffect(async () => {
   viewMode.value = currentViewMode
   src.value = urlObject + urlFragments
 })
+
+function downloadProduct() {
+  if (!src.value) return
+  if (!selectedProduct.value) return
+
+  const productUrl = getProductURL(baseUrl, selectedProduct.value)
+  const fileExtension = getFileExtension(productUrl)
+  const fileName = `${selectedProduct.value.attributes.name}.${fileExtension}`
+  clickDownloadUrl(src.value, fileName)
+}
 
 async function onSave() {
   const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
