@@ -5,7 +5,6 @@
         v-bind="props"
         variant="flat"
         color="primary"
-        class="ms-auto"
         text="New message"
       />
     </template>
