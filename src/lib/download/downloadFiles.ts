@@ -138,5 +138,5 @@ async function convertImageBitmapToBlob(bitmap: ImageBitmap): Promise<Blob> {
   // (asynchronously).
   context.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height)
 
-  return canvas.convertToBlob()
+  return await canvas.convertToBlob()
 }

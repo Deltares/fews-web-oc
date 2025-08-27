@@ -12,6 +12,7 @@
       :settings="settings.charts.timeSeriesChart"
     />
     <!-- Used to render the chart for downloading as image. -->
+    <!-- This is done to have the same chart size across different devices. -->
     <div v-if="renderingChart" class="render-chart-container">
       <div ref="render-chart-legend" />
       <TimeSeriesChart
@@ -40,12 +41,12 @@ import {
   combineSvgParts,
   convertSvgElementToImageBitmap,
   createExportableSvgElement,
-  fetchAndInlineCssAndFonts,
 } from '@/lib/svg'
 import { downloadImageBitmapAsPng } from '@/lib/download'
 import { nextTick, ref, useTemplateRef } from 'vue'
 import { useConfigStore } from '@/stores/config'
 import { toSnakeCase } from '@/lib/utils/toSnakeCase'
+import { fetchAndInlineCssAndFonts } from '@/lib/css'
 
 interface Props {
   chart: PlotChart
@@ -67,13 +68,14 @@ async function downloadChartImage() {
   renderingChart.value = true
 
   // Wait two ticks to ensure the chart is rendered before we start downloading.
+  // For some reason one tick is not enough sometimes.
   await nextTick()
   await nextTick()
 
   if (!chartRef.value) return
   if (!legendRef.value) return
 
-  const chartSvg = chartRef.value?.getSvgElement()
+  const chartSvg = chartRef.value.getSvgElement()
   if (!chartSvg) return
 
   const legend = new Legend(
@@ -83,7 +85,7 @@ async function downloadChartImage() {
     })),
     legendRef.value,
   )
-  chartRef.value?.axisAccept(legend)
+  chartRef.value.axisAccept(legend)
   const legendSvg = legendRef.value.children[0] as SVGSVGElement
   if (!legendSvg) return
 
@@ -116,9 +118,8 @@ async function downloadChartImage() {
 
 <style scoped>
 .render-chart-container {
+  visibility: hidden;
   position: fixed;
-  top: -9999px;
-  left: -9999px;
 }
 
 .render-chart {
