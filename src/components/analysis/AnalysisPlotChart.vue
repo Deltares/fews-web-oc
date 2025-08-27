@@ -39,10 +39,10 @@ import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { Legend, type ZoomHandler } from '@deltares/fews-web-oc-charts'
 import {
   combineSvgParts,
-  convertSvgElementToImageBitmap,
+  convertSvgElementToImage,
   createExportableSvgElement,
 } from '@/lib/svg'
-import { downloadImageBitmapAsPng } from '@/lib/download'
+import { downloadImageAsPng } from '@/lib/download'
 import { nextTick, ref, useTemplateRef } from 'vue'
 import { useConfigStore } from '@/stores/config'
 import { toSnakeCase } from '@/lib/utils/toSnakeCase'
@@ -107,12 +107,9 @@ async function downloadChartImage() {
 
   // Convert SVG to bitmap, then download it as PNG.
   const targetSize: [number, number] = [1920, 1080]
-  const bitmap = await convertSvgElementToImageBitmap(exportSvg, targetSize)
+  const image = await convertSvgElementToImage(exportSvg, targetSize)
 
-  await downloadImageBitmapAsPng(
-    bitmap,
-    `${toSnakeCase(props.chart.title)}.png`,
-  )
+  await downloadImageAsPng(image, `${toSnakeCase(props.chart.title)}.png`)
 }
 </script>
 

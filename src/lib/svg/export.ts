@@ -60,10 +60,10 @@ export function convertSvgElementToDataUrl(
   return `data:image/svg+xml;base64,${base64String}`
 }
 
-export async function convertSvgElementToImageBitmap(
+export async function convertSvgElementToImage(
   svg: SVGSVGElement,
   targetSize: [number, number],
-): Promise<ImageBitmap> {
+): Promise<HTMLImageElement> {
   // Determine the width and height of the resulting bitmap based on the SVG
   // viewBox (if available) and the target size.
   const [width, height] = computeSvgBitmapSize(svg, targetSize)
@@ -72,11 +72,7 @@ export async function convertSvgElementToImageBitmap(
   image.src = convertSvgElementToDataUrl(svg, width, height)
   await image.decode()
 
-  return createImageBitmap(image, {
-    resizeWidth: width,
-    resizeHeight: height,
-    resizeQuality: 'high',
-  })
+  return image
 }
 
 function computeSvgBitmapSize(
