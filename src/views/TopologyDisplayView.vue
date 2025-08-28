@@ -4,7 +4,7 @@
   </Teleport>
   <Teleport to="#app-bar-content-start">
     <LeafNodeButtons
-      v-if="nodesStore.nodeButtons.length > 0"
+      v-if="nodesStore.nodeButtons.length > 0 && showLeafsAsButton"
       v-model:activeNodeId="nodesStore.activeNodeId"
       :items="nodesStore.nodeButtons"
       variant="tonal"
@@ -415,7 +415,6 @@ watchEffect(() => {
     return
   }
   topologyNode.value = node
-
   if (showLeafsAsButton.value && Array.isArray(props.nodeId)) {
     const menuNodeId = props.nodeId[0]
     const menuNode = topologyNodesStore.getNodeById(menuNodeId)
@@ -438,7 +437,6 @@ watchEffect(() => {
 
 function onNavigate(to: NavigateRoute) {
   const name = `Topology${String(to.name)}`
-
   switch (to.name) {
     case 'SpatialTimeSeriesDisplay':
       router.push({
@@ -499,14 +497,18 @@ function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
     }
     return
   }
+  const component = (to.params.topologyId
+    ? configStore.getComponentById(to.params.topologyId as string)
+    : configStore.getComponentByType('TopologyDisplay')) as WebOcTopologyDisplayConfig | undefined
   if (
-    showLeafsAsButton.value &&
+    component?.showLeafNodesAsButtons &&
     (typeof to.params.nodeId === 'string' ||
       (Array.isArray(to.params.nodeId) && to.params.nodeId.length === 1))
   ) {
     const parentNodeId = Array.isArray(to.params.nodeId)
       ? to.params.nodeId[0]
       : to.params.nodeId
+    const parentTopologyId = to.params.topologyId
     const menuNode = topologyNodesStore.getNodeById(parentNodeId)
     if (menuNode === undefined) return
     if (menuNode.topologyNodes === undefined) {
@@ -517,6 +519,7 @@ function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
         name: 'TopologyDisplay',
         params: {
           nodeId: [parentNode?.id, leafNodeId],
+          topologyId: parentTopologyId,
         },
       }
       return to
