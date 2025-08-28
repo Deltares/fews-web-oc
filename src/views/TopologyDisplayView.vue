@@ -336,8 +336,9 @@ watch(
 const topologyComponentConfig = computed(() => {
   const component = props.topologyId
     ? configStore.getComponentById(props.topologyId)
-    : configStore.getComponentByType('TopologyDisplay')
-  return component as WebOcTopologyDisplayConfig | undefined
+    : undefined
+  const config = component as WebOcTopologyDisplayConfig | undefined
+  return config ?? configStore.getComponentByType('TopologyDisplay')
 })
 
 const topologyDisplayNodes = computed<string[] | undefined>(() => {
