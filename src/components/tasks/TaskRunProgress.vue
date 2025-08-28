@@ -5,7 +5,8 @@
         v-bind="activatorProps"
         v-model="progress"
         :color="color"
-        :indeterminate="isUnknownProgress"
+        :striped="isUnknownProgress"
+        height="5"
       />
     </template>
     {{ details }}
@@ -62,7 +63,7 @@ function updateProgress(): void {
 
 function setProgress(newProgress: number | null): void {
   isUnknownProgress.value = newProgress === null
-  progress.value = newProgress ?? 0
+  progress.value = newProgress ?? 100
   details.value = getProgressDetails()
 }
 
