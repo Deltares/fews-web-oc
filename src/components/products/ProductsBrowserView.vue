@@ -192,6 +192,7 @@
               class="text-start"
               v-if="
                 productVersions.length > 1
+                && showTimezeroSelect
               "
             >
               <v-list-item
@@ -213,18 +214,6 @@
                 </v-list>
               </v-menu>
             </v-btn>
-            <v-sheet
-              v-else-if="selectedProduct"
-              class="d-flex align-center text-start px-3 py-2"
-              color="transparent"
-            >
-              <v-list-item
-                class="ps-0 pe-2"
-                :title="toHumanReadableDate(selectedProduct?.timeZero)"
-                :subtitle="`Version ${selectedProduct?.version}`"
-              >
-              </v-list-item>
-            </v-sheet>
           </v-toolbar-items>
         </v-toolbar>
         <iframe
@@ -289,6 +278,8 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const LOG_DISPLAY_ID = 'email_reports'
+
+const showTimezeroSelect = ref(false)
 
 // Table resizing functionality
 const tableWidth = ref(600) // Default width
