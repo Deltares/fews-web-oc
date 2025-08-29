@@ -43,7 +43,7 @@ Topology nodes in the Web OC component TopologyDisplay can be linked using Topol
 | Run Task                   | Yes                  | Yes                | `<secondaryWorkflowId>`                                             | 
 | SchematicStatusDisplay     | Yes                  | Yes                | `<scadaDisplayId>` and `<scadaPanelId>`                             | 
 | Spatial Display            | Yes                  | Yes                | `<gridDisplaySelection>`                                            |
-| System Monitor             | Not yet              | Not yet            | -                                                                   |  
+| System Monitor             | No                   | No                 | -                                                                   |  
 
 **Data Analysis Display**
 
