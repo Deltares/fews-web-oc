@@ -75,15 +75,21 @@ const selectedOption = ref<RelativePeriodOption>()
 const numSecondsBack = computed<number | null>({
   get: () => {
     if (!period.value) return null
-    return -period.value?.startOffsetSeconds
+    return -period.value.startOffsetSeconds
   },
   set: (newNumSecondsBack) => {
     if (newNumSecondsBack === null) {
       period.value = null
     } else {
-      period.value = {
+      const newPeriod = {
         startOffsetSeconds: -newNumSecondsBack,
         endOffsetSeconds: 0,
+      }
+      if (
+        period.value?.startOffsetSeconds !== newPeriod.startOffsetSeconds ||
+        period.value?.endOffsetSeconds !== newPeriod.endOffsetSeconds
+      ) {
+        period.value = newPeriod
       }
     }
   },

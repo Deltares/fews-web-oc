@@ -49,9 +49,14 @@ export function useTaskRuns(
     { immediateCallback: true },
   )
 
-  // Fetch taskruns if a new dispatch period is selected.
-  watch(() => toValue(dispatchPeriod), fetch)
-  watch(() => shouldRefreshTaskRuns.value, fetch)
+  watch(
+    [
+      () => toValue(dispatchPeriod),
+      () => toValue(topologyNodeId),
+      () => shouldRefreshTaskRuns.value,
+    ],
+    fetch,
+  )
 
   async function fetch(): Promise<void> {
     const _dispatchPeriod = toValue(dispatchPeriod)

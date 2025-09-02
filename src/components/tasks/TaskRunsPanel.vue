@@ -2,17 +2,20 @@
   <div class="task-runs-panel h-100">
     <div class="d-flex pt-3 pb-2 align-center">
       <WorkflowFilterControl
-        v-if="!topologyNode"
+        v-if="!isVisualizeMenu"
         v-model="selectedWorkflowIds"
       />
-      <TaskStatusFilterControl v-model="selectedTaskStatuses" />
+      <TaskStatusFilterControl
+        v-if="!isVisualizeMenu"
+        v-model="selectedTaskStatuses"
+      />
       <v-spacer />
       <PeriodFilterControl v-model="period" />
     </div>
     <div class="task-content">
       <v-list-item v-if="sortedTasks.length === 0">
         {{
-          props.topologyNode
+          isVisualizeMenu
             ? 'No tasks with data to visualize for this display.'
             : 'No tasks available.'
         }}
@@ -33,12 +36,12 @@
             :append-icon="getTaskSectionIcon(task.label)"
             @click="toggleTaskSection(task.label)"
           >
-            {{ task.label }}
+            {{ formatSectionLabel(task.label) }}
           </v-btn>
           <div v-else class="my-1 mx-2">
             <TaskRunSummary
               :task="task"
-              :canVisualize="props.topologyNode !== undefined"
+              :canVisualize="isVisualizeMenu"
               v-model:expanded="expandedItems[task.taskId]"
             />
           </div>
@@ -64,7 +67,13 @@
 import { computed, ref, watch } from 'vue'
 
 import { RelativePeriod } from '@/lib/period'
-import { sortTasks, isTaskRun, TaskStatus } from '@/lib/taskruns'
+import {
+  sortTasks,
+  isTaskRun,
+  TaskStatus,
+  getTaskStatusesForCategories,
+  TaskStatusCategory,
+} from '@/lib/taskruns'
 
 import { useTaskRuns } from '@/services/useTasksRuns'
 
@@ -78,9 +87,12 @@ import type { TopologyNode } from '@deltares/fews-pi-requests'
 
 interface Props {
   topologyNode?: TopologyNode
+  isVisualizeMenu?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  isVisualizeMenu: false,
+})
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 
@@ -113,15 +125,16 @@ watch(
   { immediate: true },
 )
 
-watch(
-  () => props.topologyNode,
-  () => {
-    refreshTaskRuns()
-  },
-)
+const visualizeMenuTaskStatuses = getTaskStatusesForCategories([
+  TaskStatusCategory.Completed,
+  TaskStatusCategory.Pending,
+  TaskStatusCategory.Running,
+])
+const allTaskStatuses = Object.values(TaskStatus)
 
-// Select all task statuses by default.
-const selectedTaskStatuses = ref<TaskStatus[]>(Object.values(TaskStatus))
+const selectedTaskStatuses = ref<TaskStatus[]>(
+  props.isVisualizeMenu ? visualizeMenuTaskStatuses : allTaskStatuses,
+)
 
 // Look 1 day back by default.
 const period = ref<RelativePeriod | null>({
@@ -183,6 +196,13 @@ function getTaskSectionIcon(label: string) {
     return showNonCurrent.value ? 'mdi-chevron-down' : 'mdi-chevron-right'
   }
   return ''
+}
+
+function formatSectionLabel(label: string) {
+  if (label === 'Current' && props.isVisualizeMenu) {
+    return 'Current (default view)'
+  }
+  return label
 }
 
 const lastUpdatedString = computed<string>(() => {
