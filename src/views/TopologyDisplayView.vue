@@ -333,13 +333,9 @@ watch(
   { immediate: true },
 )
 
-const topologyComponentConfig = computed(() => {
-  const component = props.topologyId
-    ? configStore.getComponentById(props.topologyId)
-    : undefined
-  const config = component as WebOcTopologyDisplayConfig | undefined
-  return config ?? configStore.getComponentByType('TopologyDisplay')
-})
+const topologyComponentConfig = computed(() =>
+  getComponentConfig(props.topologyId),
+)
 
 const topologyDisplayNodes = computed<string[] | undefined>(() => {
   // FIXME: Update when the types are updated
@@ -380,9 +376,18 @@ function updateItems(): void {
       subNodes.value,
       thresholds.value,
       showActiveThresholdCrossingsForFilters.value,
+      props.topologyId,
       showLeafsAsButton.value,
     )
   }
+}
+
+function getComponentConfig(topologyId?: string) {
+  const component = topologyId
+    ? configStore.getComponentById(topologyId)
+    : undefined
+  const config = component as WebOcTopologyDisplayConfig | undefined
+  return config ?? configStore.getComponentByType('TopologyDisplay')
 }
 
 watch(subNodes, updateItems)
@@ -423,6 +428,7 @@ watchEffect(() => {
     nodesStore.setNodeButtons(
       nodeButtonItems(
         menuNode,
+        props.topologyId,
         thresholds.value,
         showActiveThresholdCrossingsForFilters.value,
       ),
@@ -498,64 +504,56 @@ function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
     }
     return
   }
-  const component = (to.params.topologyId
-    ? configStore.getComponentById(to.params.topologyId as string)
-    : configStore.getComponentByType('TopologyDisplay')) as WebOcTopologyDisplayConfig | undefined
-  if (
-    component?.showLeafNodesAsButtons &&
-    (typeof to.params.nodeId === 'string' ||
-      (Array.isArray(to.params.nodeId) && to.params.nodeId.length === 1))
-  ) {
-    const parentNodeId = Array.isArray(to.params.nodeId)
-      ? to.params.nodeId[0]
-      : to.params.nodeId
-    const parentTopologyId = to.params.topologyId
-    const menuNode = topologyNodesStore.getNodeById(parentNodeId)
-    if (menuNode === undefined) return
-    if (menuNode.topologyNodes === undefined) {
-      const leafNodeId = parentNodeId
-      const parentNode = topologyNodesStore.getParentNodeById(leafNodeId)
-      if (parentNode?.id === undefined) return
-      const to = {
+
+  if (to.name !== 'TopologyDisplay') return
+
+  const topologyId = to.params.topologyId as string | undefined
+  const nodeId = Array.isArray(to.params.nodeId)
+    ? to.params.nodeId[to.params.nodeId.length - 1]
+    : to.params.nodeId
+  const node = topologyNodesStore.getNodeById(nodeId)
+  if (!node) return
+
+  const parentNode = topologyNodesStore.getParentNodeById(nodeId)
+  const parentNodeId = parentNode?.id
+
+  const componentConfig = getComponentConfig(topologyId)
+
+  const showLeafNodesAsButtons =
+    componentConfig?.showLeafNodesAsButtons ?? false
+  const hasOneNodeId =
+    typeof to.params.nodeId === 'string' ||
+    (Array.isArray(to.params.nodeId) && to.params.nodeId.length === 1)
+
+  if (showLeafNodesAsButtons && hasOneNodeId) {
+    if (node.topologyNodes === undefined && parentNodeId) {
+      return {
         name: 'TopologyDisplay',
         params: {
-          nodeId: [parentNode?.id, leafNodeId],
-          topologyId: parentTopologyId,
+          nodeId: [parentNodeId, nodeId],
+          topologyId,
         },
       }
-      return to
-    }
-    if (to.name === 'TopologyDisplay') {
+    } else {
       return nodesStore.getRouteTarget(
         nodeButtonItems(
-          menuNode,
+          node,
+          topologyId,
           thresholds.value,
           showActiveThresholdCrossingsForFilters.value,
         ),
       )
     }
-  } else {
-    if (to.name === 'TopologyDisplay') {
-      const leafNodeId = Array.isArray(to.params.nodeId)
-        ? to.params.nodeId.length > 1
-          ? to.params.nodeId[to.params.nodeId.length - 1]
-          : to.params.nodeId[0]
-        : to.params.nodeId
-      const parentNodeId =
-        Array.isArray(to.params.nodeId) && to.params.nodeId.length > 1
-          ? to.params.nodeId[0]
-          : undefined
-      const menuNode = topologyNodesStore.getNodeById(leafNodeId)
-      if (!menuNode) return
-
-      const topologyId = to.params.topologyId as string
-      const tabs = displayTabsForNode(menuNode, parentNodeId, topologyId, from)
-      const tab = tabs.find((t) => t.to.name === from?.name) ?? tabs[0]
-      if (tab) {
-        return tab.to
-      }
-    }
   }
+
+  const tabs = displayTabsForNode(
+    node,
+    showLeafNodesAsButtons ? parentNodeId : undefined,
+    topologyId,
+    from,
+  )
+  const tab = tabs.find((t) => t.to.name === from?.name) ?? tabs[0]
+  return tab?.to
 }
 </script>
 

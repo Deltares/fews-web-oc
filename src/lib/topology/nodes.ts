@@ -8,6 +8,7 @@ import { getWorkflowIdsForNode } from '../workflows/tasks'
 
 export function nodeButtonItems(
   node: TopologyNode,
+  topologyId: string | undefined,
   thresholds: TopologyThresholdNode[] | undefined,
   showActiveTresholds: boolean | undefined,
 ) {
@@ -19,6 +20,7 @@ export function nodeButtonItems(
         childNode,
         thresholds,
         showActiveTresholds,
+        topologyId,
         node,
       ),
     )
@@ -28,6 +30,7 @@ export function recursiveUpdateNode(
   nodes: TopologyNode[],
   thresholds: TopologyThresholdNode[] | undefined,
   showActiveTresholdsCount: boolean | undefined,
+  topologyId: string | undefined,
   skipLeaves = false,
 ) {
   return nodes
@@ -37,12 +40,14 @@ export function recursiveUpdateNode(
         node,
         thresholds,
         showActiveTresholdsCount,
+        topologyId,
       )
       if (node.topologyNodes) {
         const items = recursiveUpdateNode(
           node.topologyNodes,
           thresholds,
           showActiveTresholdsCount,
+          topologyId,
           skipLeaves,
         )
         if (skipLeaves) {
@@ -89,6 +94,7 @@ function getColumnItemFromTopologyNode(
   node: TopologyNode,
   thresholds: TopologyThresholdNode[] | undefined,
   showActiveTresholdsCount: boolean | undefined,
+  topologyId: string | undefined,
   parentNode?: TopologyNode,
 ) {
   const result: ColumnItem = {
@@ -108,6 +114,7 @@ function getColumnItemFromTopologyNode(
       name: 'TopologyDisplay',
       params: {
         nodeId: parentNode ? [parentNode.id, node.id] : node.id,
+        topologyId,
       },
     }
   }
