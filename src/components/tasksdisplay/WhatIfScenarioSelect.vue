@@ -1,5 +1,6 @@
 <template>
   <v-select
+    v-if="whatIfScenarios.length || isLoadingScenarios"
     v-model="selected"
     :items="whatIfScenarios"
     :loading="isLoadingScenarios"
