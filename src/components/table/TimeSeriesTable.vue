@@ -3,7 +3,8 @@
     <v-tooltip v-model="tooltip" :activator="activator" :key="activator">
       <TableTooltip v-bind="tooltipItem">/</TableTooltip>
     </v-tooltip>
-    <v-data-table
+    <v-data-table-virtual
+      ref="dataTable"
       class="data-table"
       :headers="tableHeaders"
       :items="tableData"
@@ -11,9 +12,9 @@
       :items-per-page-options="itemsPerPageOptions"
       :loading="isWaitingForTableUpdate"
       v-model:sortBy="sortBy"
-      items-per-page="200"
       item-value="date"
       density="compact"
+      item-height="36"
       no-filter
       fixed-header
       height="100%"
@@ -169,7 +170,7 @@
           </td>
         </tr>
       </template>
-    </v-data-table>
+    </v-data-table-virtual>
   </div>
 </template>
 
@@ -191,7 +192,7 @@ import {
 } from '@/lib/table/tableData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import { useConfigStore } from '@/stores/config'
-import { onBeforeMount } from 'vue'
+import { onBeforeMount, onMounted, onUnmounted } from 'vue'
 import TableCellEdit from '@/components/table/TableCellEdit.vue'
 import TableCell from '@/components/table/TableCell.vue'
 import {
@@ -200,6 +201,7 @@ import {
   toISOString,
 } from '@/lib/date'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
+import { debounce } from 'lodash-es'
 
 interface Props {
   config: ChartConfig
@@ -218,7 +220,7 @@ const itemsPerPageOptions = [
   { value: -1, title: '$vuetify.dataFooter.itemsPerPageAll' },
 ]
 
-const emit = defineEmits(['change', 'update:isEditing'])
+const emit = defineEmits(['change', 'update:isEditing', 'load-more-data'])
 
 const store = useFewsPropertiesStore()
 const configStore = useConfigStore()
@@ -235,6 +237,10 @@ const tableHeaders = ref<TableHeaders[]>([])
 
 const isEditing = ref<boolean>(false)
 const editedSeriesIds = ref<string[]>([])
+const dataTable = ref<any>(null)
+const isLoadingMore = ref<boolean>(false)
+const scrollThreshold = 100 // pixels from top/bottom to trigger loading
+const tableWrapperElement = ref<HTMLElement | null>(null)
 
 const nonEquidistantSeries = computed(() => {
   return Object.entries(props.series)
@@ -306,6 +312,32 @@ watch(
     )
   },
 )
+
+// Attach scroll event listener to the actual scrollable element
+// Workaround since @scroll was not working
+onMounted(() => {
+  // Wait for Vue to render the component
+  setTimeout(() => {
+    if (dataTable.value) {
+      // Find the actual scrollable element (.v-table__wrapper) inside the virtual table
+      tableWrapperElement.value =
+        dataTable.value.$el.querySelector('.v-table__wrapper')
+      if (tableWrapperElement.value) {
+        console.log('Adding scroll event listener to table wrapper')
+        tableWrapperElement.value.addEventListener('scroll', handleTableScroll)
+      }
+    }
+  }, 500)
+})
+
+// Clean up the event listener when component is unmounted
+onUnmounted(() => {
+  if (tableWrapperElement.value) {
+    console.log('Removing scroll event listener from table wrapper')
+    tableWrapperElement.value.removeEventListener('scroll', handleTableScroll)
+    tableWrapperElement.value = null
+  }
+})
 
 // We debounce the table update, so even though loading the time series may have
 // finished, updating the table items may not. Keep the loading indicator until
@@ -513,6 +545,37 @@ function onUpdateItem(event: TableData) {
     newTableData.value.push(event)
   }
 }
+
+// Debounce the scroll handler to avoid too many calls
+const handleTableScroll = debounce((event: Event) => {
+  console.log('Handling table scroll event')
+  if (isEditing.value || isWaitingForTableUpdate.value || isLoadingMore.value)
+    return
+
+  const target = event.target as HTMLElement
+  const scrollTop = target.scrollTop
+  const scrollHeight = target.scrollHeight
+  const clientHeight = target.clientHeight
+  console.log('Scroll position:', { scrollTop, scrollHeight, clientHeight })
+  // Check if we're near the top
+  if (scrollTop < scrollThreshold) {
+    isLoadingMore.value = true
+    emit('load-more-data', 'after')
+    // 20 elements * 36 px height
+    target.scrollTop = 20 * 36 + scrollTop
+  }
+
+  // Check if we're near the bottom
+  if (scrollHeight - (scrollTop + clientHeight) < scrollThreshold) {
+    isLoadingMore.value = true
+    emit('load-more-data', 'before')
+  }
+}, 50)
+
+// Reset loading state when data is updated
+watch(tableData, () => {
+  isLoadingMore.value = false
+})
 </script>
 
 <style scoped>
@@ -538,7 +601,7 @@ function onUpdateItem(event: TableData) {
   width: 100%;
   height: 100%;
   margin: auto;
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 
 .data-table.hidden > svg {
@@ -551,6 +614,8 @@ function onUpdateItem(event: TableData) {
 
 .v-table__wrapper {
   width: 100%;
+  height: 100%;
+  overflow: auto;
 }
 
 th {
