@@ -335,8 +335,8 @@ body {
   width: 500px;
   max-width: 100%;
   bottom: 0;
-  right: 0;
-  z-index: 1000;
+  left: 0;
+  z-index: 10000;
   display: flex;
   flex-direction: column;
   gap: 10px;

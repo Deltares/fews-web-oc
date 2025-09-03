@@ -61,13 +61,11 @@
         v-if="workflowsStore.isDrawingBoundingBox"
         v-model:active="workflowsStore.isDrawingBoundingBox"
         v-model:boundingBox="workflowsStore.boundingBox"
-        @finish="workflowsStore.showDialog = true"
       />
       <CoordinateSelectorControl
         v-else-if="workflowsStore.isSelectingCoordinate"
         v-model:active="workflowsStore.isSelectingCoordinate"
         :coordinate="workflowsStore.coordinate"
-        @finish="workflowsStore.showDialog = true"
       />
       <template v-else>
         <InformationPanel

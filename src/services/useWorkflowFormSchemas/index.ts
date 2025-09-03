@@ -1,27 +1,27 @@
-import { SecondaryWorkflowGroupItem } from '@deltares/fews-pi-requests'
+import { WhatIfTemplate } from '@deltares/fews-pi-requests'
 import { JsonSchema, UISchemaElement } from '@jsonforms/core'
 import { asyncComputed, MaybeRefOrGetter } from '@vueuse/core'
 import { toValue } from 'vue'
 
 import { getResourcesStaticUrl } from '@/lib/fews-config'
-import { generateDefaultUISchema, generateJsonSchema } from '@/lib/workflows'
+import { generateJsonSchema } from '@/lib/whatif'
 
 export function useWorkflowFormSchemas(
-  workflow: MaybeRefOrGetter<SecondaryWorkflowGroupItem | null>,
+  workflow: MaybeRefOrGetter<WhatIfTemplate | undefined>,
 ) {
-  const formSchema = asyncComputed<JsonSchema | undefined>(async () => {
+  const jsonSchema = asyncComputed<JsonSchema | undefined>(async () => {
     const _workflow = toValue(workflow)
-    if (_workflow === null) return undefined
-    return getSchema(`${_workflow.secondaryWorkflowId}.schema.json`)
+    if (!_workflow) return undefined
+    return getJsonSchema(`${_workflow.id}.schema.json`)
   })
 
-  const formUISchema = asyncComputed<UISchemaElement | undefined>(async () => {
+  const uiSchema = asyncComputed<UISchemaElement | undefined>(async () => {
     const _workflow = toValue(workflow)
-    if (_workflow === null) return undefined
-    return getUISchema(`${_workflow.secondaryWorkflowId}.ui-schema.json`)
+    if (!_workflow) return undefined
+    return getUISchema(`${_workflow.id}.ui-schema.json`)
   })
 
-  async function getSchema(file: string): Promise<JsonSchema | undefined> {
+  async function getJsonSchema(file: string): Promise<JsonSchema | undefined> {
     try {
       const schema = await getFile(file)
       return schema.json()
@@ -40,10 +40,7 @@ export function useWorkflowFormSchemas(
       const schema = await getFile(file)
       return schema.json()
     } catch (error) {
-      const workflowProperties = toValue(workflow)?.properties
-      return workflowProperties
-        ? generateDefaultUISchema(workflowProperties)
-        : undefined
+      return undefined
     }
   }
 
@@ -60,5 +57,5 @@ export function useWorkflowFormSchemas(
     }
   }
 
-  return { formSchema, formUISchema }
+  return { jsonSchema, uiSchema }
 }
