@@ -2,6 +2,7 @@ import { ProductMetaDataType } from '@/services/useProducts/types.js'
 import { createTransformRequestFn } from '../requests/transformRequest.js'
 import type { PostResponse } from './types.js'
 import { PiArchiveWebserviceProvider } from '@deltares/fews-pi-requests'
+import { FEWS_PRODUCT_ATTRIBUTE_DELETE } from '@/services/useProducts/index.js'
 
 /**
  * Determines if a given string contains HTML content.
@@ -180,7 +181,10 @@ export async function deleteProduct(
   product: ProductMetaDataType,
 ): Promise<void> {
   const provider = new PiArchiveWebserviceProvider(baseUrl, {
-      transformRequestFn: createTransformRequestFn(),
-    })
-  await provider.postProductAttributes({ relativePath: product.relativePathMetaDataFile, attribute: { 'fews:delete': 'true' } })
+    transformRequestFn: createTransformRequestFn(),
+  })
+  await provider.postProductAttributes({
+    relativePath: product.relativePathMetaDataFile,
+    attribute: { [FEWS_PRODUCT_ATTRIBUTE_DELETE]: 'true' },
+  })
 }

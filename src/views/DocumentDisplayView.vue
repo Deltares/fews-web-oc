@@ -45,10 +45,10 @@ const viewMode = ref<'browser' | 'report' | 'unsupported'>('browser')
 onMounted(async () => {
   const transformRequest = createTransformRequestFn()
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const url = `${baseUrl}rest/fewspiservice/v1/documentdisplays`
+  const url = new URL('rest/fewspiservice/v1/documentdisplays', baseUrl)
   const request = await transformRequest(new Request(url, {}))
-  const reponse = await fetch(request)
-  const config = (await reponse.json()) as DocumentDisplaysConfig
+  const response = await fetch(request)
+  const config = (await response.json()) as DocumentDisplaysConfig
   displayConfig.value = config.documentDisplays
 })
 
