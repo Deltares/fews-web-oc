@@ -1,7 +1,7 @@
 <template>
   <v-menu v-if="items.length > 0">
     <template #activator="{ props }">
-      <v-btn :variant v-bind="props" class="text-none">
+      <v-btn :variant v-bind="props" class="text-none" aria-label="Leaf node">
         <v-icon start>mdi-filter-variant</v-icon>
         {{ activeNode?.name || 'All' }}
         <v-icon v-if="items.length > 1" end>mdi-menu-down</v-icon>
