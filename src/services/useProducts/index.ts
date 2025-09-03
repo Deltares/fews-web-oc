@@ -16,6 +16,8 @@ import {
   intervalToFewsPiDateRange,
 } from '@/lib/TimeControl/interval'
 
+export const FEWS_PRODUCT_ATTRIBUTE_DELETE = 'fews:delete'
+
 /**
  * Hook to fetch and manage product metadata based on a given filter.
  *
@@ -80,7 +82,7 @@ export function useProducts(
           return (
             p.sourceId === toValue(sourceId) &&
             p.areaId === toValue(areaId) &&
-            !p.attributes['fews:delete']
+            !p.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE]
           )
         })
         products.value.push(...filteredProducts)
@@ -145,13 +147,13 @@ export function useProducts(
               ) &&
               p.sourceId === toValue(sourceId) &&
               p.areaId === toValue(areaId) &&
-              !p.attributes['fews:delete']
+              !p.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE]
             )
           }
           return (
             p.sourceId === toValue(sourceId) &&
             p.areaId === toValue(areaId) &&
-            !p.attributes['fews:delete']
+            !p.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE]
           )
         })
         products.value = filteredProducts

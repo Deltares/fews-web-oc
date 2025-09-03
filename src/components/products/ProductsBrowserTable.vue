@@ -312,8 +312,9 @@ async function onDeleteProduct(product: ProductMetaDataType) {
     await deleteProduct(baseUrl, product)
   } catch (error) {
     console.error(error)
+  } finally {
+    emit('refresh')
   }
-  emit('refresh')
 }
 
 function onClick(
