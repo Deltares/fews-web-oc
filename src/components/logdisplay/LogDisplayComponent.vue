@@ -39,8 +39,7 @@
           max-width="200px"
           min-width="200px"
         />
-        
-        
+
         <div class="spacer" />
         <v-btn
           @click="refreshLogs"
@@ -275,7 +274,9 @@ const filteredLogMessages = computed(() => {
       filterLog(
         log,
         debouncedSelectedLevels.value,
-        debouncedSelectedLogTypes.value ? [debouncedSelectedLogTypes.value] : [],
+        debouncedSelectedLogTypes.value
+          ? [debouncedSelectedLogTypes.value]
+          : [],
         debouncedSearch.value,
         taskRuns.value,
         workflows,
@@ -287,7 +288,9 @@ const filteredLogMessages = computed(() => {
       filterLog(
         log,
         debouncedSelectedLevels.value,
-        debouncedSelectedLogTypes.value ? [debouncedSelectedLogTypes.value] : [],
+        debouncedSelectedLogTypes.value
+          ? [debouncedSelectedLogTypes.value]
+          : [],
         debouncedSearch.value,
         taskRuns.value,
         workflows,

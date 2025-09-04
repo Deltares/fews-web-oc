@@ -1,12 +1,7 @@
 <template>
   <v-dialog v-model="newMessageDialog" max-width="500px">
     <template #activator="{ props }">
-      <v-btn
-        v-bind="props"
-        variant="flat"
-        color="primary"
-        text="New message"
-      />
+      <v-btn v-bind="props" variant="flat" color="primary" text="New message" />
     </template>
     <v-card>
       <v-card-title>New Log Message</v-card-title>
