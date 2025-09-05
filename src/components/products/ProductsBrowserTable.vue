@@ -11,24 +11,39 @@
         class="px-4"
         append-inner-icon="mdi-magnify"
       ></v-text-field>
-      <v-btn prepend-icon="mdi-filter-variant" :color="fileType ? 'primary' : undefined">
+      <v-btn
+        prepend-icon="mdi-filter-variant"
+        :color="fileType ? 'primary' : undefined"
+      >
         <v-menu activator="parent">
           <v-list density="compact">
             <v-list-subheader>Filter</v-list-subheader>
             <v-item-group>
-              <v-list-item prepend-icon="mdi-file-pdf-box" @click="filterByType('pdf')" :active="fileType === 'pdf'">
+              <v-list-item
+                prepend-icon="mdi-file-pdf-box"
+                @click="filterByType('pdf')"
+                :active="fileType === 'pdf'"
+              >
                 PDF
                 <template v-slot:append v-if="fileType === 'pdf'">
                   <v-icon color="primary" icon="mdi-check"></v-icon>
                 </template>
               </v-list-item>
-              <v-list-item prepend-icon="mdi-file-image" @click="filterByType('image')" :active="fileType === 'image'">
+              <v-list-item
+                prepend-icon="mdi-file-image"
+                @click="filterByType('image')"
+                :active="fileType === 'image'"
+              >
                 Images
                 <template v-slot:append v-if="fileType === 'image'">
                   <v-icon color="primary" icon="mdi-check"></v-icon>
                 </template>
               </v-list-item>
-              <v-list-item prepend-icon="mdi-file-document" @click="filterByType('html')" :active="fileType === 'html'">
+              <v-list-item
+                prepend-icon="mdi-file-document"
+                @click="filterByType('html')"
+                :active="fileType === 'html'"
+              >
                 HTML Documents
                 <template v-slot:append v-if="fileType === 'html'">
                   <v-icon color="primary" icon="mdi-check"></v-icon>
@@ -326,7 +341,9 @@ const items = computed(() => {
   )
   if (fileType.value) {
     return items.filter((item) => {
-      const itemFileType = item.relativePathProducts[0].split('.').pop()?.toLowerCase() ?? 'unknown'
+      const itemFileType =
+        item.relativePathProducts[0].split('.').pop()?.toLowerCase() ??
+        'unknown'
       switch (itemFileType) {
         case 'png':
         case 'jpg':
