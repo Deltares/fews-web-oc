@@ -107,7 +107,7 @@ const margin = ref<Margin>({})
 const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = useTemplateRef('chartContainer')
-const axisTime = ref<CrossSectionSelect>()
+const axisTime = ref<CrossSectionSelect<Date>>()
 const hasRenderedOnce = ref(false)
 const hasResetAxes = ref(true)
 
@@ -209,7 +209,7 @@ function onUpdateXDomain(event: DomainChangeEvent): void {
   emit('update:x-domain', event.new as [Date, Date])
 }
 
-function onCrossValueChange(value: number | Date) {
+function onCrossValueChange(value: Date) {
   if (axisTime.value) {
     axisTime.value.value = value
     axisTime.value.redraw()
