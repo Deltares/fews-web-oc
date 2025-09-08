@@ -241,9 +241,7 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
       reverse: axisItem.inverted,
     }
     if (yAxis.axisMinValue !== undefined && yAxis.axisMaxValue !== undefined) {
-      const domain: [number, number] = !axisItem.inverted
-        ? [yAxis.axisMinValue, yAxis.axisMaxValue]
-        : [yAxis.axisMaxValue, yAxis.axisMinValue]
+      const domain: [number, number] = [yAxis.axisMinValue, yAxis.axisMaxValue]
       if (yAxis.axisMinValue === 0 && yAxis.axisMaxValue === 360) {
         axis.type = AxisType.degrees
         axis.domain = domain
