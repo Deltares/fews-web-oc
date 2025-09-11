@@ -19,7 +19,10 @@
     </v-tabs>
     <div class="flex-1-1 overflow-auto">
       <AnalysisWorkflow
-        v-if="selectedFunction === activeWorkflowToolbox?.id"
+        v-if="
+          selectedFunction !== undefined &&
+          selectedFunction === activeWorkflowToolbox?.id
+        "
         :key="activeWorkflowToolbox?.id"
         :customToolBox="activeWorkflowToolbox"
         @addChart="emit('addChart', $event)"

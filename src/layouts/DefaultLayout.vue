@@ -53,7 +53,8 @@
           <v-menu origin="bottom" width="320">
             <template #activator="{ props }">
               <v-list-item
-                aria-label="Menu button"
+                role="button"
+                aria-label="Switch topology group"
                 v-bind="props"
                 :title="currentItemTitle"
                 class="ma-2 mb-1 px-2"

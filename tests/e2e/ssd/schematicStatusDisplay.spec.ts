@@ -43,7 +43,8 @@ test.describe('Schematic Status Display Tests', () => {
     await page
       .getByRole('button', { name: 'Switch to TimeSeriesDisplay' })
       .click()
-    const graphs = page.getByRole('img')
-    await expect(graphs).toHaveCount(2)
+
+    await expect(page.getByText('Water Level (m + MSL)')).toBeVisible()
+    await expect(page.getByText('Wave Height (m)')).toBeVisible()
   })
 })
