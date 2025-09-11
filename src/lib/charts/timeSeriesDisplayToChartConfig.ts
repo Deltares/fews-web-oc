@@ -33,7 +33,6 @@ export function timeSeriesDisplayToChartConfig(
   }
   const chartSeriesArray: ChartSeries[] = []
   config.thresholds = []
-
   const areaLegendLabels: string[] = []
   const thresholdIds: string[] = []
   for (const item of subplot.items) {
@@ -239,6 +238,7 @@ function yAxisFromSubplot(subplot: TimeSeriesDisplaySubplot): AxisOptions[] {
       position,
       label: yAxis.axisLabel,
       includeZero,
+      reverse: axisItem.inverted,
     }
     if (yAxis.axisMinValue !== undefined && yAxis.axisMaxValue !== undefined) {
       const domain: [number, number] = [yAxis.axisMinValue, yAxis.axisMaxValue]
