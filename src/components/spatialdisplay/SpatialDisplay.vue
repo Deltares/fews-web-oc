@@ -279,11 +279,13 @@ function onLocationsChange(locationIds: string[] | null): void {
 }
 
 function openLocationsTimeSeriesDisplay(locationIds: string[]) {
+  if (locationIds.length === 0) {
+    closeTimeSeriesDisplay()
+    return
+  }
   const to = {
     name: 'SpatialTimeSeriesDisplay',
-    params: {
-      locationIds: locationIds.join(','),
-    },
+    params: { locationIds: locationIds.join(',') },
   }
   emit('navigate', to)
 }

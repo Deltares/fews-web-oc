@@ -66,6 +66,10 @@ export default defineConfig(({ mode }) => {
           __dirname,
           'node_modules/vuetify/lib/components/VNumberInput/index.js',
         ),
+        'vuetify/labs/VTimePicker': path.resolve(
+          __dirname,
+          'node_modules/vuetify/lib/components/VTimePicker/index.js',
+        ),
       },
     },
     css: {

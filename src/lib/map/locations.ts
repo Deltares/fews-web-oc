@@ -55,3 +55,19 @@ function getSortKey({ properties }: Feature<Geometry, Location>): number {
 function getInvertedSortKey(feature: Feature<Geometry, Location>): number {
   return Number.MAX_SAFE_INTEGER - getSortKey(feature)
 }
+
+export function getLocationWithChilds(
+  locationId: string,
+  rootToDescendantsMap: Map<string, Location[]>,
+): string[] {
+  if (!rootToDescendantsMap.has(locationId)) {
+    return [locationId]
+  }
+  const childLocations = rootToDescendantsMap.get(locationId) ?? []
+  return [
+    locationId,
+    ...childLocations.flatMap((loc) =>
+      getLocationWithChilds(loc.locationId, rootToDescendantsMap),
+    ),
+  ]
+}
