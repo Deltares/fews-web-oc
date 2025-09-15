@@ -1,7 +1,7 @@
 <template>
   <div class="threshold-summary-container h-100 d-flex flex-column">
     <v-toolbar density="compact">
-      <span class="ms-4">Thresholds Overview</span>
+      <span class="ms-4">{{ t('threshold_overview') }}</span>
       <template #append>
         <v-btn
           @click="emit('close')"
@@ -43,7 +43,7 @@
       </v-chip>
     </v-chip-group>
     <div v-if="warningLevels.length === 0" class="pa-2">
-      No active threshold crossings
+      {{ t('no_threshold_crossing') }}
     </div>
     <!-- Important to have item-height as it greatly improves performance -->
     <v-virtual-scroll
@@ -71,6 +71,10 @@ import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import ThresholdSummary from '@/components/thresholds/ThresholdSummary.vue'
 import { computed, watch, nextTick, onMounted, useTemplateRef } from 'vue'
 import { NavigateRoute } from '@/lib/router/types'
+
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Props {
   warningLevels: WarningLevel[]
