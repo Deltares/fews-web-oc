@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vuetify from 'vite-plugin-vuetify'
+import { federation } from '@module-federation/vite'
 import path from 'path'
 import { execSync } from 'child_process'
 import { fileURLToPath } from 'url'
@@ -22,6 +23,7 @@ export default defineConfig(({ mode }) => {
       __BUILD_DATE__: JSON.stringify(buildDate),
     },
     build: {
+      target: 'chrome89',
       rollupOptions: {
         output: {
           manualChunks: {
@@ -34,13 +36,13 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       proxy: {
-        '/FewsWebServices/': `${env.DEV_SERVER_PROXY_FEWS_PI}`,
+        '/FewsWebServices/': `${env.DEV_PROXY_FEWS_PI}`,
       },
       headers: {
         'content-security-policy': [
           `default-src 'none'`,
-          `script-src 'self' blob:`,
-          `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
+          `script-src 'self' blob: ${env.DEV_CSP_SCRIPT_SRC}`,
+          `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_FONT_SRC}`,
           `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} 'unsafe-inline'`, // vuetify
           `worker-src blob:`, // maplibre-gl
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices
@@ -51,11 +53,9 @@ export default defineConfig(({ mode }) => {
             `https://*.basemaps.cartocdn.com`,
             `https://login.microsoftonline.com`,
             `${env.VITE_FEWS_WEBSERVICES_URL}`,
-            `${env.DEV_CONNECT_SRC}`,
+            `${env.DEV_CSP_CONNECT_SRC}`,
           ].join(' '), // FEWS webservices, Authentication, Basemaps
-          [`frame-src`, `'self' blob:`, `${env.VITEDEVSERVER_FRAME_SRC}`].join(
-            ' ',
-          ), // FEWS webservices, Authentication, Basemaps
+          [`frame-src`, `'self' blob:`, `${env.DEV_CSP_FRAME_SRC}`].join(' '), // FEWS webservices, Authentication, Basemaps
         ].join('; '),
       },
     },
@@ -92,6 +92,14 @@ export default defineConfig(({ mode }) => {
             },
           })
         : vuetify(),
+      federation({
+        name: 'weboc-micro-frontend',
+        shared: {
+          vue: {
+            singleton: true,
+          },
+        },
+      }),
     ],
     optimizeDeps: {
       exclude: ['@deltares/fews-ssd-webcomponent', 'vuetify'],
