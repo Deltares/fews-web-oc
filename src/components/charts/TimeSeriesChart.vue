@@ -42,6 +42,7 @@ import {
   VerticalMouseOver,
   DomainChangeEvent,
   ChartMatrix,
+  Visitor,
 } from '@deltares/fews-web-oc-charts'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
@@ -65,6 +66,7 @@ import {
 import { isDefaultD3Domain } from '@/lib/charts/defaultDomain'
 import { ModifierKey } from '@deltares/fews-web-oc-charts'
 import { useUserSettingsStore } from '@/stores/userSettings.js'
+import { getSeriesByLegend } from '@/lib/legend/index.js'
 
 interface Props {
   config: ChartConfig
@@ -97,6 +99,10 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 const userSettingsStore = useUserSettingsStore()
+defineExpose({
+  getSvgElement,
+  axisAccept,
+})
 
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
@@ -429,16 +435,8 @@ function setTags() {
 
 function setSeriesTags(series: ChartSeries[]) {
   const s = new XMLSerializer()
-  const seriesByLegend: Record<string, ChartSeries[]> = {}
-  series
-    .filter((s) => s.visibleInLegend)
-    .forEach((s) => {
-      if (!seriesByLegend[s.name]) {
-        seriesByLegend[s.name] = []
-      }
-      seriesByLegend[s.name].push(s)
-    })
 
+  const seriesByLegend = getSeriesByLegend(series)
   legendTags.value = Object.values(seriesByLegend).map((series) => {
     const { svgGroup, legendSvg } = createChip()
     // In case of multiple series with the same label, we only show the
@@ -528,6 +526,14 @@ function createChip() {
   const svgGroup = document.createElement('g')
   svgGroup.setAttribute('transform', 'translate(0 10)')
   return { svgGroup, legendSvg }
+}
+
+function getSvgElement() {
+  return axis.svg.node()
+}
+
+function axisAccept(visitor: Visitor) {
+  axis?.accept(visitor)
 }
 
 const toggleLine = (tag: Tag) => {

@@ -115,3 +115,28 @@ export function clickDownloadUrl(url: string, fileName: string) {
   a.click()
   a.remove()
 }
+
+export async function downloadImageAsPng(
+  image: HTMLImageElement,
+  defaultFilename: string,
+): Promise<void> {
+  const blob = await convertImageToBlob(image)
+  clickDownloadBlob(blob, defaultFilename)
+}
+
+async function convertImageToBlob(image: HTMLImageElement): Promise<Blob> {
+  const canvas = new OffscreenCanvas(image.width, image.height)
+
+  const context = canvas.getContext('2d')
+  if (!context)
+    throw new Error('Could not create 2D context for offscreen canvas')
+
+  context.fillStyle = 'white'
+  context.fillRect(0, 0, image.width, image.height)
+
+  // Draw image onto the canvas, then convert the canvas contents to a Blob
+  // (asynchronously).
+  context.drawImage(image, 0, 0, image.width, image.height)
+
+  return await canvas.convertToBlob()
+}
