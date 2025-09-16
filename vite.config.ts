@@ -84,8 +84,7 @@ export default defineConfig(({ mode }) => {
       mode === 'production'
         ? vuetify({
             styles: {
-              configFile:
-                resolve(__dirname, './src') + '/styles/settings.scss',
+              configFile: resolve(__dirname, './src') + '/styles/settings.scss',
             },
           })
         : vuetify(),
