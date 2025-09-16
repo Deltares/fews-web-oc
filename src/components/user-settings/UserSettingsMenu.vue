@@ -10,8 +10,11 @@
         :disabled="setting?.disabled"
       >
         <v-list-item-subtitle>{{ setting.label }} </v-list-item-subtitle>
-        <v-list-item-action v-if="setting.type === 'oneOfMultiple'">
+        <v-list-item-action
+          v-if="setting.type === 'oneOfMultiple' && setting.items"
+        >
           <v-btn-toggle
+            v-if="setting.items.length < 4"
             density="compact"
             class="my-2 multi-line-toggle"
             v-model="setting.value"
@@ -33,6 +36,37 @@
               }}</v-tooltip>
             </v-btn>
           </v-btn-toggle>
+          <v-select
+            v-else
+            v-model="setting.value"
+            :items="setting.items"
+            :disabled="setting.disabled"
+            variant="solo-filled"
+            density="compact"
+            item-title="title"
+            item-value="value"
+            :item-props="true"
+            flat
+            hide-details
+            :aria-label="`${setting.label}`"
+            class="my-2"
+            @click.preventDefault
+            @update:modelValue="onValueChange(setting)"
+          >
+            <template #item="{ props }">
+              <v-list-item
+                v-bind="props"
+                :disabled="props?.disabled === true"
+                :aria-label="`${setting.label} ${props.title}`"
+              >
+                <template #prepend>
+                  <v-icon>
+                    {{ props.icon }}
+                  </v-icon>
+                </template>
+              </v-list-item>
+            </template>
+          </v-select>
         </v-list-item-action>
         <v-list-item-action v-else-if="setting.type === 'boolean'">
           <v-switch
