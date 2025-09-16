@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vuetify from 'vite-plugin-vuetify'
-import path from 'path'
+import { dirname, resolve } from 'path'
 import { execSync } from 'child_process'
 import { fileURLToPath } from 'url'
 
@@ -10,7 +10,7 @@ const commitTag = execSync('git tag --points-at HEAD').toString()
 const buildDate = new Date().toISOString()
 
 const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __dirname = dirname(__filename)
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -61,18 +61,15 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src'),
-        'vuetify/labs/VNumberInput': path.resolve(
+        '@': resolve(__dirname, './src'),
+        'vuetify/labs/VNumberInput': resolve(
           __dirname,
           'node_modules/vuetify/lib/components/VNumberInput/index.js',
         ),
-      },
-    },
-    css: {
-      preprocessorOptions: {
-        scss: {
-          api: 'modern-compiler',
-        },
+        'vuetify/labs/VTimePicker': resolve(
+          __dirname,
+          'node_modules/vuetify/lib/components/VTimePicker/index.js',
+        ),
       },
     },
     plugins: [
@@ -88,7 +85,7 @@ export default defineConfig(({ mode }) => {
         ? vuetify({
             styles: {
               configFile:
-                path.resolve(__dirname, './src') + '/styles/settings.scss',
+                resolve(__dirname, './src') + '/styles/settings.scss',
             },
           })
         : vuetify(),
