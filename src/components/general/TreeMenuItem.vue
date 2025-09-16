@@ -126,6 +126,11 @@ const props = withDefaults(defineProps<Props>(), {
   --prepend-width: 0px;
 }
 
+.v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
+  .v-list-item__content {
+  display: none;
+}
+
 .tree-menu--list-group {
   --prepend-width: 0px;
 }
