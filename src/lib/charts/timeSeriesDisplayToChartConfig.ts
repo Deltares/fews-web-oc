@@ -32,9 +32,8 @@ export function timeSeriesDisplayToChartConfig(
     series: [],
   }
   const chartSeriesArray: ChartSeries[] = []
-  config.thresholds = []
   const areaLegendLabels: string[] = []
-  const thresholdIds: string[] = []
+
   for (const item of subplot.items) {
     if (item.type === 'area' && item.legend) {
       if (areaLegendLabels.includes(item.legend)) {
@@ -91,28 +90,6 @@ export function timeSeriesDisplayToChartConfig(
       chartSeries.style = cssStyleFromFewsMarker(item)
       chartSeriesArray.push(chartSeries)
     }
-
-    if (item.thresholds !== undefined && item.type !== 'horizontalColorCode') {
-      for (const threshold of item.thresholds) {
-        if (threshold.value === undefined) continue
-        const thresholdId = `${threshold.label}-${threshold.value}`
-        if (thresholdIds.includes(thresholdId)) continue
-        thresholdIds.push(thresholdId)
-        config.thresholds.push({
-          id: 'Thresholds',
-          x1: new Date(0),
-          x2: new Date(8.64e15),
-          value: threshold.value,
-          description: threshold.label ?? '',
-          labelPosition: threshold.labelAlignment,
-          yAxisIndex:
-            config.yAxis?.findIndex((yAxis) => {
-              return yAxis.position === item.yAxis?.axisPosition
-            }) ?? 0,
-          color: threshold.color ?? item.color ?? 'currentColor',
-        })
-      }
-    }
   }
   config.series = chartSeriesArray
   return config
@@ -137,7 +114,33 @@ function getChartSeries(
     barMargin: items[0].barMargin,
     options: getChartOptions(seriesType, items[0], config),
     style: getChartStyle(seriesType, items[0]),
+    thresholds: getThresholdLinesFromItem(items[0], config),
+    thresholdAxisScaling: items[0].thresholdAxisScaling,
   }
+}
+
+function getThresholdLinesFromItem(
+  item: TimeSeriesDisplaySubplotItem,
+  config: ChartConfig,
+) {
+  if (item.type === 'horizontalColorCode') return []
+  if (item.thresholds === undefined) return []
+  const yAxisIndex = config.yAxis?.findIndex(
+    (yAxis) => yAxis.position === item.yAxis?.axisPosition,
+  )
+  return item.thresholds.flatMap((threshold) => {
+    if (threshold.value === undefined) return []
+    return {
+      id: 'Thresholds',
+      x1: new Date(0),
+      x2: new Date(8.64e15),
+      value: threshold.value,
+      description: threshold.label ?? '',
+      labelPosition: threshold.labelAlignment,
+      yAxisIndex: yAxisIndex ?? 0,
+      color: threshold.color ?? item.color ?? 'currentColor',
+    }
+  })
 }
 
 function getChartOptions(

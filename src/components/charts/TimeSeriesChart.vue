@@ -62,13 +62,13 @@ import {
   getColorMap,
   horizontalColorCodeDataFromData,
 } from '@/lib/charts/horizontalColorCode.js'
-import {
-  isDateDomain,
-  isDefaultD3Domain,
-  isNumberDomain,
-} from '@/lib/charts/defaultDomain'
+import { isDefaultD3Domain, isNumberDomain } from '@/lib/charts/defaultDomain'
 import { ModifierKey } from '@deltares/fews-web-oc-charts'
 import { useUserSettingsStore } from '@/stores/userSettings.js'
+import {
+  getThresholdValues,
+  isUniqueThreshold,
+} from '@/lib/charts/thresholds.js'
 
 interface Props {
   config: ChartConfig
@@ -275,27 +275,51 @@ const addToChart = (chartSeries: ChartSeries) => {
 }
 
 const setThresholdLines = () => {
-  const thresholdLinesData = props.config.thresholds
-  if (!thresholdLinesData?.length) return
+  const series = props.config.series
+  if (!series.some((s) => s.thresholds?.length)) return
 
-  const yDomain = props.config.yAxis?.[0].defaultDomain
-  let defaultDomain = yDomain && isDateDomain(yDomain) ? undefined : yDomain
+  const yDomains = props.config.yAxis?.map((y) => y.defaultDomain)
 
   if (showThresholds.value) {
-    thresholdLinesVisitor.options = thresholdLinesData
+    thresholdLinesVisitor.options = series
+      .flatMap((s) => s.thresholds ?? [])
+      .filter(isUniqueThreshold)
 
-    const domainValues = defaultDomain ?? []
-    const thresholdValues = thresholdLinesData.map((l) => l.value)
+    const axisIndexMap = new Map<number, number[]>()
 
-    const domain = extent<number>([...domainValues, ...thresholdValues])
-    if (isNumberDomain(domain)) {
-      defaultDomain = domain
+    series
+      .filter((s) => s.thresholds?.length)
+      .forEach((s) => {
+        // Is the same for all thresholds in a series
+        const yAxisIndex = s.thresholds![0].yAxisIndex
+
+        const values = getThresholdValues(
+          s.thresholds ?? [],
+          s.thresholdAxisScaling,
+        )
+
+        const list = axisIndexMap.get(yAxisIndex) ?? []
+        list.push(...values)
+        axisIndexMap.set(yAxisIndex, list)
+      })
+
+    const config = props.config.yAxis ?? [{}, {}]
+    for (const [yAxisIndex, values] of axisIndexMap.entries()) {
+      const yDomain = yDomains?.[yAxisIndex]
+
+      const domain =
+        yDomain && isNumberDomain(yDomain)
+          ? extent([...yDomain, ...values])
+          : extent(values)
+      if (isNumberDomain(domain)) {
+        config[yAxisIndex] = { defaultDomain: domain, nice: true }
+      }
     }
+    axis.setOptions({ y: config })
   } else {
     thresholdLinesVisitor.options = []
+    axis.setOptions({ y: props.config.yAxis })
   }
-
-  axis.setOptions({ y: [{ defaultDomain, nice: true }] })
 }
 
 const clearChart = () => {
@@ -406,8 +430,8 @@ function setTags() {
     setHorizontalColorCodeTags(series)
   } else {
     setSeriesTags(series)
+    setThresholdTag()
   }
-  setThresholdTag()
 }
 
 function setSeriesTags(series: ChartSeries[]) {
@@ -487,8 +511,8 @@ function setHorizontalColorCodeTags(series: ChartSeries[]) {
 }
 
 function setThresholdTag() {
-  const thresholdsData = props.config?.thresholds
-  if (!thresholdsData?.length) return
+  const hasThresholds = props.config.series.some((s) => s.thresholds?.length)
+  if (!hasThresholds) return
 
   const { svgGroup, legendSvg } = createChip()
   legendSvg.appendChild(svgGroup)
