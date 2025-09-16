@@ -163,8 +163,8 @@
               v-else
               :id="id"
               :item="item"
-              @mouseenter="(event) => showTooltip(event, item[id])"
-              @mouseleave="(event) => hideTooltip(event)"
+              @mouseenter="(event: MouseEvent) => showTooltip(event, item[id])"
+              @mouseleave="(event: MouseEvent) => hideTooltip(event)"
             />
           </td>
         </tr>
@@ -334,10 +334,11 @@ watchDebounced(
   { debounce: 500, maxWait: 1000 },
 )
 
-const showTooltip = (event: any, item: any) => {
+const showTooltip = (event: MouseEvent, item: any) => {
   if (!item.tooltip) return
   const id = 'tooltip' + Math.random().toString(16).slice(2)
-  const element = event.target
+  const element = event.target as HTMLElement
+  if (!element) return
   element.id = id
   activator.value = `#${id}`
   tooltip.value = true
@@ -351,9 +352,10 @@ const showTooltip = (event: any, item: any) => {
   }
 }
 
-const hideTooltip = (event: any) => {
-  const element = event.target
-  element.id = null
+const hideTooltip = (event: MouseEvent) => {
+  const element = event.target as HTMLElement
+  if (!element) return
+  element.id = ''
   activator.value = ''
   tooltip.value = false
 }
