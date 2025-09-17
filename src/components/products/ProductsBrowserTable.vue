@@ -64,6 +64,8 @@
       "
       class="d-flex flex-1-1"
       density="compact"
+      fixed-header
+      height="400"
       @click:row="onClick"
     >
       <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }">
