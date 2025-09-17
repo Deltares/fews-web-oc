@@ -124,12 +124,12 @@ const tableData = computed(() => [
       {
         header: `Output time span`,
         subHeader: toDateAbsDifferenceString(
-          props.taskRun?.outputStartTime,
-          props.taskRun?.outputEndTime,
+          props.taskRun?.outputStartTime ?? props.taskRun?.time0,
+          props.taskRun?.outputEndTime ?? props.taskRun?.time0,
         ),
         value: toDateRangeString(
-          props.taskRun?.outputStartTime,
-          props.taskRun?.outputEndTime,
+          props.taskRun?.outputStartTime ?? props.taskRun?.time0,
+          props.taskRun?.outputEndTime ?? props.taskRun?.time0,
         ),
       },
     ],
