@@ -4,8 +4,8 @@
       <v-progress-linear
         v-bind="activatorProps"
         v-model="progress"
-        :color="color"
-        :indeterminate="isUnknownProgress"
+        :color="isOverTime ? 'warning' : color"
+        height="5"
       />
     </template>
     {{ details }}
@@ -28,6 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const progress = ref(0)
 const isUnknownProgress = ref(false)
+const isOverTime = ref(false)
 const details = ref('')
 
 onMounted(() => {
@@ -45,6 +46,7 @@ function updateProgress(): void {
   ) {
     // If we do not know how long to take, set progress to unknown to show
     // progress bar as indeterminate.
+    isOverTime.value = false
     setProgress(null)
     return
   }
@@ -57,6 +59,7 @@ function updateProgress(): void {
 
   // If we are over 100%, set progress to 100% and do not show the
   // progress anymore.
+  isOverTime.value = fractionDone > 1
   setProgress(fractionDone <= 1 ? fractionDone * 100 : 100)
 }
 
