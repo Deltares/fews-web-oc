@@ -3,7 +3,7 @@
     :headers="headers"
     :items-per-page="100"
     :items="importStatus"
-    sticky
+    fixed-header
   >
     <template v-slot:[`item.lastImportTime`]="{ item }">
       <v-chip
