@@ -131,19 +131,23 @@
     "items": [
       {
         "value": "off",
-        "title": "Off"
+        "title": "Off",
+        "icon": "mdi-cancel"
       },
       {
         "value": "x",
-        "title": "Only X"
+        "title": "Only X",
+        "icon": "mdi-arrow-expand-horizontal"
       },
       {
         "value": "y",
-        "title": "Only Y"
+        "title": "Only Y",
+        "icon": "mdi-arrow-expand-vertical"
       },
       {
         "value": "xy",
-        "title": "Both X and Y"
+        "title": "Both X and Y",
+        "icon": "mdi-arrow-expand-all"
       }
     ],
     "group": "Charts"
