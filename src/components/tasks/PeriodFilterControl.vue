@@ -9,7 +9,7 @@
         class="me-2 px-2 period-filter-chip"
       >
         <template #default>
-          <span>{{ selectedOption?.title }}</span>
+          <span>{{ getTitle(selectedOption[0]) }}</span>
           <v-spacer />
           <v-icon>{{
             isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'
@@ -17,14 +17,32 @@
         </template>
       </v-chip>
     </template>
-    <v-list density="compact">
+    <v-list
+      v-model:selected="selectedOption"
+      density="compact"
+      mandatory
+      select-strategy="single-leaf"
+    >
       <v-list-item
         v-for="option in options"
         :key="option.id"
         :title="option.title"
-        :active="selectedOption?.id === option.id"
-        @click="numSecondsBack = option.numSecondsBack"
-      />
+        :value="option.numSecondsBack"
+      >
+        <template v-slot:prepend="{ isSelected, select }">
+          <v-list-item-action start tabindex="-1">
+            <v-checkbox-btn
+              :model-value="isSelected"
+              @update:model-value="select"
+              true-icon="mdi-circle-small"
+              false-icon=""
+              indeterminate-icon=""
+              density="compact"
+              tabindex="-1"
+            ></v-checkbox-btn>
+          </v-list-item-action>
+        </template>
+      </v-list-item>
     </v-list>
   </v-menu>
 </template>
@@ -37,7 +55,7 @@ const period = defineModel<RelativePeriod | null>({ required: true })
 interface RelativePeriodOption {
   id: string
   title: string
-  numSecondsBack: number | null
+  numSecondsBack: number | 'All'
 }
 
 const secondsPerHour = 60 * 60
@@ -66,11 +84,11 @@ const options: RelativePeriodOption[] = [
   {
     id: 'all',
     title: 'All',
-    numSecondsBack: null,
+    numSecondsBack: 'All',
   },
 ] as const
 
-const selectedOption = ref<RelativePeriodOption>()
+const selectedOption = ref<[number | 'All']>(['All'])
 
 const numSecondsBack = computed<number | null>({
   get: () => {
@@ -96,19 +114,19 @@ const numSecondsBack = computed<number | null>({
 })
 
 watchEffect(() => {
-  selectedOption.value = options.find(
-    (option) => option.numSecondsBack === numSecondsBack.value,
-  )
+  numSecondsBack.value =
+    selectedOption.value[0] === 'All' ? null : selectedOption.value[0]
 })
 
-watchEffect(() => {
-  numSecondsBack.value = selectedOption.value?.numSecondsBack ?? null
-})
+function getTitle(numSecondsBack: number | 'All'): string {
+  const option = options.find((opt) => opt.numSecondsBack === numSecondsBack)
+  return option ? option.title : 'Unknown'
+}
 </script>
 
 <style scoped>
 .period-filter-chip {
-  width: 105px;
+  width: 150px;
 }
 
 .period-filter-chip :deep(.v-chip__content) {

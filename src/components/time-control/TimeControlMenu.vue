@@ -45,6 +45,7 @@
         </v-col>
         <v-col>
           <interval-selector
+            tabindex="0"
             ref="intervalSelector"
             v-model="store.selectedInterval"
             :items="intervalItems"
@@ -74,7 +75,7 @@ import IntervalSelector from './IntervalSelector.vue'
 import { VDateInput } from 'vuetify/labs/components'
 import type { VForm } from 'vuetify/components'
 
-import { ref, computed, watchEffect, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch, watchEffect } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
@@ -82,7 +83,7 @@ import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
 const store = useSystemTimeStore()
 const configStore = useConfigStore()
 
-const form = ref<VForm>()
+const form = useTemplateRef('form')
 
 const dateOrderIsCorrect = computed(
   () =>
@@ -114,6 +115,10 @@ watch([customStartDate, customEndDate], () => {
 })
 
 function onIntervalChange() {
+  if (store.selectedInterval === 'custom') {
+    // Set focuns to the form to allow keyboard navigation.
+    form.value?.focus()
+  }
   store.changeInterval()
 }
 </script>

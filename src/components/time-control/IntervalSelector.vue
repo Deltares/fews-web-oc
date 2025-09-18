@@ -1,29 +1,64 @@
 <template>
-  <v-list class="interval-list" density="compact">
-    <v-list-item :active="0 === selectedIndex" @click="onSelectInterval(0)">
+  <v-list
+    v-model:selected="selectedIndex"
+    select-strategy="single-leaf"
+    mandatory
+    density="compact"
+    class="interval-list"
+  >
+    <v-list-subheader>Period presets</v-list-subheader>
+    <v-list-item :value="0" tabindex="1">
       Default
-      <template v-slot:append="{ isActive }">
-        <v-icon v-show="isActive" small> mdi-check </v-icon>
+      <template v-slot:prepend="{ isSelected, select }">
+        <v-list-item-action start tabindex="-1">
+          <v-checkbox-btn
+            :model-value="isSelected"
+            @update:model-value="select"
+            true-icon="mdi-circle-small"
+            false-icon=""
+            indeterminate-icon=""
+            density="compact"
+            tabindex="-1"
+          ></v-checkbox-btn>
+        </v-list-item-action>
       </template>
     </v-list-item>
-    <v-list-item :active="1 === selectedIndex" @click="onSelectInterval(1)">
+    <v-list-item :value="1">
       Custom
-      <template v-slot:append="{ isActive }">
-        <v-icon v-show="isActive" small> mdi-check </v-icon>
+      <template v-slot:prepend="{ isSelected, select }">
+        <v-list-item-action start tabindex="-1">
+          <v-checkbox-btn
+            :model-value="isSelected"
+            @update:model-value="select"
+            true-icon="mdi-circle-small"
+            false-icon=""
+            indeterminate-icon=""
+            density="compact"
+            tabindex="-1"
+          ></v-checkbox-btn>
+        </v-list-item-action>
       </template>
     </v-list-item>
     <template v-if="props.items.length">
-      <v-divider></v-divider>
-      <v-list-subheader>Period presets</v-list-subheader>
+      <v-divider />
       <v-list-item
         v-for="(item, index) in props.items"
         :key="index"
-        :active="index === selectedIndex - 2"
-        @click="onSelectInterval(index + 2)"
+        :value="index + 2"
       >
         {{ item.label }}
-        <template v-slot:append="{ isActive }">
-          <v-icon v-show="isActive" small> mdi-check </v-icon>
+        <template v-slot:prepend="{ isSelected, select }">
+          <v-list-item-action start tabindex="-1">
+            <v-checkbox-btn
+              :model-value="isSelected"
+              @update:model-value="select"
+              true-icon="mdi-circle-small"
+              false-icon=""
+              indeterminate-icon=""
+              density="compact"
+              tabindex="-1"
+            ></v-checkbox-btn>
+          </v-list-item-action>
         </template>
       </v-list-item>
     </template>
@@ -48,10 +83,14 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const interval = defineModel<Interval>({ required: true })
-const selectedIndex = ref(0)
+const selectedIndex = ref([0])
 
 onBeforeMount(() => {
   updateIndex(interval.value)
+})
+
+watch(selectedIndex, (newValue) => {
+  onSelectInterval(newValue[0])
 })
 
 const onSelectInterval = (index: number) => {
@@ -66,12 +105,13 @@ const onSelectInterval = (index: number) => {
 
 function updateIndex(newValue: Interval) {
   if (newValue === 'default') {
-    selectedIndex.value = 0
+    selectedIndex.value = [0]
   } else if (newValue === 'custom' || newValue === undefined) {
-    selectedIndex.value = 1
+    selectedIndex.value = [1]
   } else {
-    selectedIndex.value =
-      props.items.findIndex((entry) => isEqual(entry, newValue)) + 2
+    selectedIndex.value = [
+      props.items.findIndex((entry) => isEqual(entry, newValue)) + 2,
+    ]
   }
 }
 

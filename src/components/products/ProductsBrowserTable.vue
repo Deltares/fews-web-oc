@@ -23,18 +23,21 @@
         </v-menu>
       </v-btn>
       <v-btn prepend-icon="mdi-sort">
-        <v-menu activator="parent" :close-on-content-click="false">
+        <v-menu activator="parent">
           <v-list v-model:selected="groupByKey" density="compact">
             <v-list-subheader>Group by</v-list-subheader>
             <v-list-item v-for="column in filteredColumns" :value="column.key">
               {{ column.title }}
               <template v-slot:prepend="{ isSelected, select }">
-                <v-list-item-action start>
+                <v-list-item-action start tabindex="-1">
                   <v-checkbox-btn
                     :model-value="isSelected"
                     @update:model-value="select"
-                    true-icon="mdi-check"
+                    true-icon="mdi-circle-small"
                     false-icon=""
+                    indeterminate-icon=""
+                    density="compact"
+                    tabindex="-1"
                   ></v-checkbox-btn>
                 </v-list-item-action>
               </template>
