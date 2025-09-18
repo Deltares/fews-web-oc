@@ -90,9 +90,9 @@ export function getIconForTaskStatus(status: TaskStatus): string {
   const category = getTaskStatusCategory(status)
   switch (category) {
     case TaskStatusCategory.Pending:
-      return 'mdi-human-queue'
+      return 'mdi-timer-cog'
     case TaskStatusCategory.Running:
-      return 'mdi-run'
+      return 'mdi-spin mdi-cog'
     case TaskStatusCategory.Completed:
       return 'mdi-check'
     case TaskStatusCategory.Failed:
