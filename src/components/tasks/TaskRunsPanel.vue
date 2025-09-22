@@ -51,14 +51,17 @@
     <v-divider />
     <v-list-item :title="`Last updated: ${lastUpdatedString}`">
       <template #append>
-        <v-progress-circular v-if="isLoading" size="20" indeterminate />
         <v-btn
-          v-else
           density="compact"
           variant="plain"
           icon="mdi-refresh"
+          :loading="isLoading"
           @click="refreshTaskRuns()"
-        />
+        >
+          <template #loader>
+            <v-progress-circular size="20" indeterminate />
+          </template>
+        </v-btn>
       </template>
     </v-list-item>
   </div>
