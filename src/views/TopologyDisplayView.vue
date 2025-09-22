@@ -65,7 +65,6 @@
         <!-- Task Run Overview option -->
         <v-list-item
           v-if="showTaskMenu && secondaryControl !== 'tasks'"
-          prepend-icon="mdi-format-list-checks"
           title="Task Overview"
           @click="
             () => {
