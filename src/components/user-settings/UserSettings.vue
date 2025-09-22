@@ -26,7 +26,6 @@
         <template #item="{ props }">
           <v-list-item
             v-bind="props"
-            :disabled="props?.disabled === true"
             :aria-label="`${group} ${setting.label} ${props.title}`"
           >
             <template #prepend>
