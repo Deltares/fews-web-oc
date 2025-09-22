@@ -3,25 +3,79 @@
   <div v-if="!overlay" class="flex-0-0" :style="{ height: heightStyle }" />
   <div class="chart-controls-container">
     <v-sheet
+      v-if="overlay"
       v-click-outside="onOutsideClick"
-      class="chart-controls"
-      :class="{ 'semi-transparent': overlay }"
+      class="chart-controls semi-transparent"
       :style="chartControlsStyle"
       :elevation="expanded && !overlay ? 5 : 0"
-      :border="overlay"
+      :border="true"
     >
       <div
         ref="chartLegendContainer"
         :style="chartLegendContainerStyle"
         class="chart-legend-container w-100"
-        :class="{ 'mt-auto': !overlay }"
+      >
+        <v-list
+          ref="chartLegend"
+          class="chart-legend py-0 overlay"
+          multiple
+          :lines="false"
+          width="200"
+          selected-class=""
+        >
+          <v-list-item
+            v-for="tag in tags"
+            :key="tag.id"
+            size="small"
+            density="compact"
+            @click="toggleLine(tag)"
+            :disabled="!tag.interactive"
+          >
+            <template v-slot:prepend>
+              <v-icon
+                v-if="tag.legendSvg"
+                :class="{ hidden: tag.disabled }"
+                v-html="tag.legendSvg"
+              ></v-icon>
+            </template>
+            <v-list-item-title class="text-truncate">{{
+              tag.name
+            }}</v-list-item-title>
+            <v-tooltip
+              v-if="tag.tooltip"
+              activator="parent"
+              location="top"
+              :text="tag.tooltip"
+            />
+          </v-list-item>
+        </v-list>
+      </div>
+      <v-btn
+        v-show="requiresExpand"
+        :icon="expandIcon"
+        size="small"
+        variant="plain"
+        :style="expandButtonStyle"
+        @click="onToggleExpand()"
+      />
+    </v-sheet>
+    <v-sheet
+      v-else
+      v-click-outside="onOutsideClick"
+      class="chart-controls"
+      :style="chartControlsStyle"
+      :elevation="expanded ? 5 : 0"
+    >
+      <div
+        ref="chartLegendContainer"
+        :style="chartLegendContainerStyle"
+        class="chart-legend-container w-100 mt-auto"
       >
         <v-chip-group
           ref="chartLegend"
           class="chart-legend"
-          :class="{ overlay }"
           multiple
-          :column="!overlay"
+          column
           selected-class=""
         >
           <v-chip
@@ -30,7 +84,6 @@
             label
             size="small"
             role="button"
-            :density="overlay ? 'compact' : 'default'"
             :variant="tag.disabled || overlay ? 'text' : 'tonal'"
             @click="toggleLine(tag)"
             :disabled="!tag.interactive"
@@ -56,7 +109,7 @@
       <v-btn
         v-show="requiresExpand"
         :icon="expandIcon"
-        :size="overlay ? 'x-small' : 'small'"
+        size="small"
         variant="plain"
         :style="expandButtonStyle"
         @click="onToggleExpand()"
