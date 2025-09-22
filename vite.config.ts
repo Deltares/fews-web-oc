@@ -58,7 +58,7 @@ export default defineConfig(({ mode }) => {
             `'self'`,
             `blob:`,
             `${env.VITE_FEWS_WEBSERVICES_URL}`,
-            `${env.VITEDEVSERVER_FRAME_SRC}`,
+            `${env.DEV_FRAME_SRC}`,
           ].join(' '),
         ].join('; '),
       },
