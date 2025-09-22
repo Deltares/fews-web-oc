@@ -25,23 +25,27 @@ import {
 } from 'vue'
 import {
   AlertLines,
+  CartesianAxes,
   ChartArea,
   ChartBar,
   ChartLine,
   ChartMarker,
+  ChartMatrix,
   ChartRule,
   CrossSectionSelect,
+  CurrentTime,
+  DomainChangeEvent,
+  isDefaultD3Domain,
+  isNumberDomain,
   Margin,
+  ModifierKey,
+  MouseOver,
+  PanHandler,
+  toggleChartVisibility,
   TooltipAnchor,
   TooltipOptions,
-  ZoomHandler,
-  toggleChartVisibility,
-  CartesianAxes,
-  CurrentTime,
-  MouseOver,
   VerticalMouseOver,
-  DomainChangeEvent,
-  ChartMatrix,
+  ZoomHandler,
 } from '@deltares/fews-web-oc-charts'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
@@ -57,13 +61,11 @@ import { difference } from 'lodash-es'
 import { getMatchingIndexedString, type Tag } from '@/lib/charts/tags'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
-import { PanHandler } from '@deltares/fews-web-oc-charts'
 import {
   getColorMap,
   horizontalColorCodeDataFromData,
 } from '@/lib/charts/horizontalColorCode.js'
-import { isDefaultD3Domain, isNumberDomain } from '@/lib/charts/defaultDomain'
-import { ModifierKey } from '@deltares/fews-web-oc-charts'
+
 import { useUserSettingsStore } from '@/stores/userSettings.js'
 import {
   getThresholdValues,
