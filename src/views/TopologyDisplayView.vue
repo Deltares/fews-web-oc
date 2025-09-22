@@ -91,11 +91,13 @@
           v-if="showTaskMenu && secondaryControl !== 'import'"
           prepend-icon="mdi-file-import"
           title="Import Status"
-          @click="() => {
-            activeControl = 'import'
-            secondaryControl = 'import'
-            sidePanelStore.setActive('import')
-          }"
+          @click="
+            () => {
+              activeControl = 'import'
+              secondaryControl = 'import'
+              sidePanelStore.setActive('import')
+            }
+          "
         />
         <!-- Visualize Data option -->
         <v-list-item
@@ -241,9 +243,9 @@ const sidePanelStore = useSidePanelStore()
 const activeControl = ref<
   'thresholds' | 'workflows' | 'tasks' | 'info' | 'visualize' | 'import'
 >('thresholds') // Options: 'thresholds', 'workflows', 'tasks', 'info', visualize
-const secondaryControl = ref<'workflows' | 'tasks' | 'info' | 'visualize' | 'import'>(
-  'tasks',
-) // Options: 'workflows', 'tasks', 'info', 'visualize', 'import'
+const secondaryControl = ref<
+  'workflows' | 'tasks' | 'info' | 'visualize' | 'import'
+>('tasks') // Options: 'workflows', 'tasks', 'info', 'visualize', 'import'
 
 // Sync activeControl and secondaryControl with sidePanelStore
 watch(

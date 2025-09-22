@@ -53,7 +53,7 @@
 import { computed } from 'vue'
 import DataTable from '@/components/general/DataTable.vue'
 import type { ImportStatus } from '@deltares/fews-pi-requests'
-import { toHumanReadableDate } from '@/lib/date';
+import { toHumanReadableDate } from '@/lib/date'
 
 interface ImportStatusDirectory extends ImportStatus {
   directory: string
@@ -73,13 +73,18 @@ const tableData = computed(() => [
   {
     columns: [
       { header: 'Source', value: props.item.dataFeed || '' },
-      { header: 'Directory', value: props.item.directory || props.item.dataFeed || '' },
+      {
+        header: 'Directory',
+        value: props.item.directory || props.item.dataFeed || '',
+      },
     ],
-    
   },
   {
     columns: [
-      { header: 'Last Import Time', value: toHumanReadableDate(props.item.lastImportTime) || '' },
+      {
+        header: 'Last Import Time',
+        value: toHumanReadableDate(props.item.lastImportTime) || '',
+      },
       {
         header: 'Last File Imported',
         value: props.item.lastFileImported || '',
