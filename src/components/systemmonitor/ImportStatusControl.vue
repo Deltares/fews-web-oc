@@ -9,7 +9,7 @@
   <Teleport to="#main-side-panel" defer>
     <div
       v-if="sidePanelStore.isActive('import')"
-      class="d-flex flex-column h-100 w-100"
+      class="d-flex flex-column h-100 import-status-panel"
     >
       <v-toolbar density="compact">
         <span class="ms-4">Import Status</span>
@@ -89,3 +89,9 @@ async function loadImportStatus() {
   }
 }
 </script>
+
+<style scoped>
+.import-status-panel {
+  width: 450px;
+}
+</style>
