@@ -7,43 +7,39 @@
     :ripple="false"
   >
     <v-card-text class="py-2 h-100 flex-grow-1">
-      <div class="d-flex w-100">
-        <div class="w-100">
-          <div class="d-flex align-center ga-1 w-100">
-            <v-tooltip>
-              <template #activator="{ props: tooltipProps }">
-                <v-chip
-                  class="me-1 flex-0-0"
-                  size="small"
-                  :color="props.item.lastImportTimeBackgroundColor"
-                  variant="flat"
-                  v-bind="tooltipProps"
-                >
-                  {{ toHumanReadableDate(props.item.lastImportTime) }}
-                </v-chip>
-              </template>
-              <span>Last import time</span>
-            </v-tooltip>
-            <div class="flex-1-1 overflow-hidden">
-              <div :class="{ 'text-wrap': expanded }">
-                {{ props.item.dataFeed }}
-              </div>
-            </div>
-            <v-tooltip>
-              <template #activator="{ props: tooltipProps }">
-                <v-chip
-                  size="small"
-                  :color="getColor(props.item.fileFailed)"
-                  variant="flat"
-                  v-bind="tooltipProps"
-                >
-                  {{ props.item.fileFailed }}
-                </v-chip>
-              </template>
-              <span>Failed imports</span>
-            </v-tooltip>
+      <div class="d-flex w-100 align-center ga-1">
+        <v-tooltip>
+          <template #activator="{ props: tooltipProps }">
+            <v-chip
+              class="me-1 flex-0-0"
+              size="small"
+              :color="props.item.lastImportTimeBackgroundColor"
+              variant="flat"
+              v-bind="tooltipProps"
+            >
+              {{ toHumanReadableDate(props.item.lastImportTime) }}
+            </v-chip>
+          </template>
+          <span>Last import time</span>
+        </v-tooltip>
+        <div class="flex-1-1 overflow-hidden">
+          <div :class="{ 'text-wrap': expanded }">
+            {{ props.item.dataFeed }}
           </div>
         </div>
+        <v-tooltip>
+          <template #activator="{ props: tooltipProps }">
+            <v-chip
+              size="small"
+              :color="getColor(props.item.fileFailed)"
+              variant="flat"
+              v-bind="tooltipProps"
+            >
+              {{ props.item.fileFailed }}
+            </v-chip>
+          </template>
+          <span>Failed imports</span>
+        </v-tooltip>
       </div>
       <DataTable v-if="expanded" class="mt-4" :tableData="tableData" />
     </v-card-text>
@@ -55,7 +51,7 @@ import DataTable from '@/components/general/DataTable.vue'
 import type { ImportStatus } from '@deltares/fews-pi-requests'
 import { toHumanReadableDate } from '@/lib/date'
 
-interface ImportStatusDirectory extends ImportStatus {
+export interface ImportStatusDirectory extends ImportStatus {
   directory: string
 }
 
@@ -72,7 +68,6 @@ const expanded = defineModel<boolean>('expanded', {
 const tableData = computed(() => [
   {
     columns: [
-      { header: 'Source', value: props.item.dataFeed || '' },
       {
         header: 'Directory',
         value: props.item.directory || props.item.dataFeed || '',
@@ -81,10 +76,6 @@ const tableData = computed(() => [
   },
   {
     columns: [
-      {
-        header: 'Last Import Time',
-        value: toHumanReadableDate(props.item.lastImportTime) || '',
-      },
       {
         header: 'Last File Imported',
         value: props.item.lastFileImported || '',

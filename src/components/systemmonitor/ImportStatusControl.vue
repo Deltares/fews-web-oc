@@ -23,16 +23,16 @@
         </template>
       </v-toolbar>
       <v-virtual-scroll
-        v-if="importStatus.length"
+        v-if="importStatusItems.length"
         class="overflow-y-auto h-100"
-        :items="importStatus"
+        :items="importStatusItems"
         :item-height="62"
       >
-        <template #default="{ item: importStatus }">
+        <template #default="{ item }">
           <div class="my-1 mx-2">
             <ImportStatusSummary
-              :item="importStatus as ImportStatusDirectory"
-              v-model:expanded="expandedItems[importStatus.dataFeed]"
+              :item="item"
+              v-model:expanded="expandedItems[item.dataFeed]"
             />
           </div>
         </template>
@@ -42,17 +42,15 @@
 </template>
 
 <script setup lang="ts">
-import { ImportStatus, PiWebserviceProvider } from '@deltares/fews-pi-requests'
+import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { useSidePanelStore } from '@/stores/sidePanel'
-import ImportStatusSummary from './ImportStatusSummary.vue'
-
-interface ImportStatusDirectory extends ImportStatus {
-  directory: string
-}
+import ImportStatusSummary, {
+  type ImportStatusDirectory,
+} from './ImportStatusSummary.vue'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -61,7 +59,7 @@ interface Props {
 defineProps<Props>()
 
 const sidePanelStore = useSidePanelStore()
-const importStatus = ref<ImportStatusDirectory[]>([])
+const importStatusItems = ref<ImportStatusDirectory[]>([])
 const expandedItems = ref<Record<string, boolean>>({})
 let active: boolean = false
 
@@ -83,11 +81,11 @@ async function loadImportStatus() {
   try {
     if (!active) return
     const res = await webServiceProvider.getImportStatus()
-    importStatus.value = res.importStatus as ImportStatusDirectory[]
+    importStatusItems.value = res.importStatus as ImportStatusDirectory[]
   } catch (error) {
     console.warn(error)
   } finally {
-    setTimeout(loadImportStatus, 1000)
+    setTimeout(loadImportStatus, 10000)
   }
 }
 </script>
