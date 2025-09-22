@@ -1,53 +1,98 @@
 <template>
   <v-card
-    border
-    flat
-    density="compact"
     @click="onExpansionPanelToggle"
     :ripple="false"
+    :border="true"
+    flat
+    density="compact"
   >
-    <v-card-text class="py-2 h-100 flex-grow-1">
-      <div class="d-flex w-100 align-center ga-1">
-        <v-tooltip>
-          <template #activator="{ props: tooltipProps }">
+    <!-- Row 1: Date + Source + Error count (summary) -->
+    <div class="d-flex w-100 justify-space-between align-left">
+      <v-list-item>
+        <v-list-item-subtitle v-if="expanded">
+          Last import time
+        </v-list-item-subtitle>
+        <v-chip
+          :color="item.lastImportTimeBackgroundColor"
+          variant="flat"
+          size="small"
+        >
+          {{ toHumanReadableDate(item.lastImportTime) }}
+        </v-chip>
+      </v-list-item>
+
+      <v-list-item class="flex-grow-1 align-self-left">
+        <v-list-item-subtitle v-if="expanded"> Source </v-list-item-subtitle>
+        <span class="text-body-2 text-truncate">
+          {{ item.dataFeed }}
+        </span>
+      </v-list-item>
+
+      <!-- Only show error chip in summary when collapsed -->
+      <v-list-item>
+        <template v-slot:append>
+          <transition name="fade-slide">
             <v-chip
-              class="me-1 flex-0-0"
+              v-show="!expanded && item.fileFailed > 0"
+              :color="item.fileFailed ? 'error' : 'grey'"
               size="small"
-              :color="props.item.lastImportTimeBackgroundColor"
               variant="flat"
-              v-bind="tooltipProps"
             >
-              {{ toHumanReadableDate(props.item.lastImportTime) }}
+              {{ item.fileFailed }}
             </v-chip>
-          </template>
-          <span>Last import time</span>
-        </v-tooltip>
-        <div class="flex-1-1 overflow-hidden">
-          <div :class="{ 'text-wrap': expanded }">
-            {{ props.item.dataFeed }}
-          </div>
+          </transition>
+        </template>
+      </v-list-item>
+    </div>
+    <v-expand-transition>
+      <div v-if="expanded">
+        <v-list-item>
+          <v-list-item-subtitle>Directory</v-list-item-subtitle>
+          <span class="text-body-2">{{ item.directory }}</span>
+        </v-list-item>
+
+        <v-list-item>
+          <v-list-item-subtitle>Last file</v-list-item-subtitle>
+          <span class="text-body-2">{{ item.lastFileImported }}</span>
+        </v-list-item>
+
+        <div class="d-flex w-100 justify-space-between align-left">
+          <v-list-item class="flex-grow-1">
+            <v-list-item-subtitle>Files imported</v-list-item-subtitle>
+            <template v-slot:append>
+              <transition name="fade-slide">
+                <v-chip
+                  v-if="expanded"
+                  size="small"
+                  color="grey"
+                  variant="flat"
+                >
+                  {{ item.fileRead }}
+                </v-chip>
+              </transition>
+            </template>
+          </v-list-item>
+          <v-list-item class="flex-grow-1">
+            <v-list-item-subtitle>Files failed</v-list-item-subtitle>
+            <template v-slot:append>
+              <transition name="fade-slide">
+                <v-chip
+                  v-if="expanded"
+                  :color="item.fileFailed ? 'error' : 'grey'"
+                  size="small"
+                  variant="flat"
+                >
+                  {{ item.fileFailed }}
+                </v-chip>
+              </transition>
+            </template>
+          </v-list-item>
         </div>
-        <v-tooltip>
-          <template #activator="{ props: tooltipProps }">
-            <v-chip
-              size="small"
-              :color="getColor(props.item.fileFailed)"
-              variant="flat"
-              v-bind="tooltipProps"
-            >
-              {{ props.item.fileFailed }}
-            </v-chip>
-          </template>
-          <span>Failed imports</span>
-        </v-tooltip>
       </div>
-      <DataTable v-if="expanded" class="mt-4" :tableData="tableData" />
-    </v-card-text>
+    </v-expand-transition>
   </v-card>
 </template>
 <script setup lang="ts">
-import { computed } from 'vue'
-import DataTable from '@/components/general/DataTable.vue'
 import type { ImportStatus } from '@deltares/fews-pi-requests'
 import { toHumanReadableDate } from '@/lib/date'
 
@@ -58,42 +103,12 @@ export interface ImportStatusDirectory extends ImportStatus {
 interface Props {
   item: ImportStatusDirectory
 }
-const props = defineProps<Props>()
+const { item } = defineProps<Props>()
 
 const expanded = defineModel<boolean>('expanded', {
   required: false,
   default: false,
 })
-
-const tableData = computed(() => [
-  {
-    columns: [
-      {
-        header: 'Directory',
-        value: props.item.directory || props.item.dataFeed || '',
-      },
-    ],
-  },
-  {
-    columns: [
-      {
-        header: 'Last File Imported',
-        value: props.item.lastFileImported || '',
-      },
-    ],
-  },
-  {
-    columns: [
-      { header: 'Files Imported', value: String(props.item.fileRead || 0) },
-      { header: 'Failed Imports', value: String(props.item.fileFailed || 0) },
-    ],
-  },
-])
-
-function getColor(failure: number): string {
-  if (failure == 0) return 'grey'
-  return 'red'
-}
 
 function onExpansionPanelToggle() {
   // Only expand when no text is selected
@@ -110,5 +125,16 @@ function onExpansionPanelToggle() {
 
 .text-wrap-no {
   white-space: nowrap;
+}
+
+/* Smooth slide + fade for chip transitions */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(136px);
 }
 </style>
