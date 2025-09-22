@@ -23,13 +23,16 @@
 
       <v-list-item class="flex-grow-1 align-self-left">
         <v-list-item-subtitle v-if="expanded"> Source </v-list-item-subtitle>
-        <span class="text-body-2 text-truncate">
+        <span
+          class="text-body-2 text-truncate"
+          :class="[
+            item.fileFailed > 0 && !expanded
+              ? 'datafeed-label'
+              : 'datafeed-label long',
+          ]"
+        >
           {{ item.dataFeed }}
         </span>
-      </v-list-item>
-
-      <!-- Only show error chip in summary when collapsed -->
-      <v-list-item>
         <template v-slot:append>
           <transition name="fade-slide">
             <v-chip
@@ -119,19 +122,32 @@ function onExpansionPanelToggle() {
 </script>
 
 <style scoped>
-.text-wrap {
-  white-space: normal;
+.datafeed-label {
+  display: inline-block;
+  width: 200px;
+  transition: width 0.1s ease;
+  transition-delay: 0s;
 }
 
-.text-wrap-no {
-  white-space: nowrap;
+.datafeed-label.long {
+  width: 240px;
+  transition-delay: 0.3s;
 }
 
 /* Smooth slide + fade for chip transitions */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.fade-slide-leave-active {
+  transition-delay: 0s;
+}
+
+.fade-slide-enter-active {
+  transition-delay: 0.1s;
+}
+
 .fade-slide-enter-from,
 .fade-slide-leave-to {
   opacity: 0;
