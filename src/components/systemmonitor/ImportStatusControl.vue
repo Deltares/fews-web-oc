@@ -4,7 +4,7 @@
     :active="sidePanelStore.isActive('import')"
     @click="sidePanelStore.toggleActive('import')"
   >
-    <v-icon icon="mdi-file-import" />
+    <v-icon icon="mdi-database-import" />
   </v-btn>
   <Teleport to="#main-side-panel" defer>
     <div

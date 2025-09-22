@@ -89,7 +89,7 @@
         <!-- Import Data option -->
         <v-list-item
           v-if="showTaskMenu && secondaryControl !== 'import'"
-          prepend-icon="mdi-file-import"
+          prepend-icon="mdi-database-import"
           title="Import Status"
           @click="
             () => {
