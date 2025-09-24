@@ -345,6 +345,18 @@ async function addDynamicRoutes() {
       })
     }
   }
+  // Without a defaultComponent route to the first component by default
+  else if (Object.values(store.components).length > 0) {
+    const firstComponent = Object.values(store.components)[0]
+    if (router.hasRoute(firstComponent.type)) {
+      router.removeRoute('Default')
+      router.addRoute({
+        path: '/',
+        redirect: { name: firstComponent.type },
+        name: 'Default',
+      })
+    }
+  }
 }
 
 function defaultRouteParams(to: RouteLocationNormalized) {
@@ -407,6 +419,7 @@ router.beforeEach(async (to, from) => {
   if (!routesAreInitialized) {
     await addDynamicRoutes()
     routesAreInitialized = true
+    console.log(redirect, to)
     if (redirect) {
       return redirect
     }
