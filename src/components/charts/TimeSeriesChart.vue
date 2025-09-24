@@ -25,23 +25,27 @@ import {
 } from 'vue'
 import {
   AlertLines,
+  CartesianAxes,
   ChartArea,
   ChartBar,
   ChartLine,
   ChartMarker,
+  ChartMatrix,
   ChartRule,
   CrossSectionSelect,
+  CurrentTime,
+  DomainChangeEvent,
+  isDefaultD3Domain,
+  isNumberDomain,
   Margin,
+  ModifierKey,
+  MouseOver,
+  PanHandler,
+  toggleChartVisibility,
   TooltipAnchor,
   TooltipOptions,
-  ZoomHandler,
-  toggleChartVisibility,
-  CartesianAxes,
-  CurrentTime,
-  MouseOver,
   VerticalMouseOver,
-  DomainChangeEvent,
-  ChartMatrix,
+  ZoomHandler,
 } from '@deltares/fews-web-oc-charts'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '../../lib/charts/types/ChartConfig.js'
@@ -57,14 +61,16 @@ import { difference } from 'lodash-es'
 import { getMatchingIndexedString, type Tag } from '@/lib/charts/tags'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
-import { PanHandler } from '@deltares/fews-web-oc-charts'
 import {
   getColorMap,
   horizontalColorCodeDataFromData,
 } from '@/lib/charts/horizontalColorCode.js'
-import { isDefaultD3Domain } from '@/lib/charts/defaultDomain'
-import { ModifierKey } from '@deltares/fews-web-oc-charts'
+
 import { useUserSettingsStore } from '@/stores/userSettings.js'
+import {
+  getThresholdValues,
+  isUniqueThreshold,
+} from '@/lib/charts/thresholds.js'
 
 interface Props {
   config: ChartConfig
@@ -271,48 +277,51 @@ const addToChart = (chartSeries: ChartSeries) => {
 }
 
 const setThresholdLines = () => {
-  const thresholdLinesData = props.config.thresholds
-  if (thresholdLinesData === undefined || thresholdLinesData.length === 0)
-    return
+  const series = props.config.series
+  if (!series.some((s) => s.thresholds?.length)) return
 
-  if (!showThresholds.value) {
-    thresholdLines = []
-    let defaultDomain: [number, number] = [NaN, NaN]
-    if (
-      props.config.yAxis &&
-      props.config.yAxis.length > 0 &&
-      props.config.yAxis[0].defaultDomain
-    ) {
-      defaultDomain = props.config.yAxis[0].defaultDomain as any
+  const yDomains = props.config.yAxis?.map((y) => y.defaultDomain)
+
+  if (showThresholds.value) {
+    thresholdLinesVisitor.options = series
+      .flatMap((s) => s.thresholds ?? [])
+      .filter(isUniqueThreshold)
+
+    const axisIndexMap = new Map<number, number[]>()
+
+    series
+      .filter((s) => s.thresholds?.length)
+      .forEach((s) => {
+        // Is the same for all thresholds in a series
+        const yAxisIndex = s.thresholds![0].yAxisIndex
+
+        const values = getThresholdValues(
+          s.thresholds ?? [],
+          s.thresholdAxisScaling,
+        )
+
+        const list = axisIndexMap.get(yAxisIndex) ?? []
+        list.push(...values)
+        axisIndexMap.set(yAxisIndex, list)
+      })
+
+    const config = props.config.yAxis ?? [{}, {}]
+    for (const [yAxisIndex, values] of axisIndexMap.entries()) {
+      const yDomain = yDomains?.[yAxisIndex]
+
+      const domain =
+        yDomain && isNumberDomain(yDomain)
+          ? extent([...yDomain, ...values])
+          : extent(values)
+      if (isNumberDomain(domain)) {
+        config[yAxisIndex] = { defaultDomain: domain, nice: true }
+      }
     }
-    axis.setOptions({
-      y: [{ defaultDomain, nice: true }],
-    })
+    axis.setOptions({ y: config })
   } else {
-    thresholdLines = thresholdLinesData
-    let defaultDomain: [number, number] = extent<number>(
-      thresholdLinesData.map((l) => {
-        return l.value ?? NaN
-      }),
-    ) as any
-    if (
-      props.config.yAxis &&
-      props.config.yAxis.length > 0 &&
-      props.config.yAxis[0].defaultDomain &&
-      typeof props.config.yAxis[0].defaultDomain[0] === 'number' &&
-      typeof props.config.yAxis[0].defaultDomain[1] === 'number'
-    ) {
-      defaultDomain = extent<number>([
-        ...defaultDomain,
-        ...props.config.yAxis[0].defaultDomain,
-      ] as any) as any
-    }
-    axis.setOptions({
-      y: [{ defaultDomain, nice: true }],
-    })
+    thresholdLinesVisitor.options = []
+    axis.setOptions({ y: props.config.yAxis })
   }
-
-  thresholdLinesVisitor.options = thresholdLines
 }
 
 const clearChart = () => {
@@ -423,8 +432,8 @@ function setTags() {
     setHorizontalColorCodeTags(series)
   } else {
     setSeriesTags(series)
+    setThresholdTag()
   }
-  setThresholdTag()
 }
 
 function setSeriesTags(series: ChartSeries[]) {
@@ -504,8 +513,8 @@ function setHorizontalColorCodeTags(series: ChartSeries[]) {
 }
 
 function setThresholdTag() {
-  const thresholdsData = props.config?.thresholds
-  if (!thresholdsData?.length) return
+  const hasThresholds = props.config.series.some((s) => s.thresholds?.length)
+  if (!hasThresholds) return
 
   const { svgGroup, legendSvg } = createChip()
   legendSvg.appendChild(svgGroup)
