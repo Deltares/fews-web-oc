@@ -131,7 +131,7 @@
               :content="workflowsStore.numActiveWorkflows"
               color="success"
             >
-              <v-icon>mdi-wrench</v-icon>
+              <v-icon>mdi-cog-play</v-icon>
             </v-badge>
           </template>
         </v-list-item>

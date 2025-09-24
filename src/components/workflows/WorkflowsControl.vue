@@ -4,7 +4,7 @@
     :active="sidePanelStore.isActive('workflows')"
     @click="sidePanelStore.toggleActive('workflows')"
   >
-    <v-icon>mdi-wrench</v-icon>
+    <v-icon>mdi-cog-play</v-icon>
   </v-btn>
   <Teleport to="#main-side-panel" defer>
     <div
