@@ -46,7 +46,7 @@
     />
     <WorkflowsControl
       v-if="secondaryControl === 'workflows'"
-      :secondaryWorkflows="secondaryWorkflows"
+      :topologyNode="topologyNode"
     />
     <v-btn
       v-if="secondaryControl === 'info'"
@@ -114,9 +114,12 @@
         </v-list-item>
         <!-- Run Tasks option (open dialog directly) -->
         <v-list-item
-          v-if="secondaryControl !== 'workflows'"
+          v-if="showTaskRuns && secondaryControl !== 'workflows'"
           title="Run Tasks..."
-          :disabled="secondaryWorkflows === null"
+          :disabled="
+            !topologyNode?.secondaryWorkflows?.length &&
+            !topologyNode?.workflowId
+          "
           @click="
             () => {
               activeControl = 'workflows'
@@ -281,25 +284,8 @@ watch(active, () => {
   taskRunsStore.clearSelectedTaskRuns()
 })
 
-const activeNode = computed(() => {
-  if (!active.value) return
-
-  const node = topologyNodesStore.getNodeById(active.value)
-  if (node?.topologyNodes) {
-    const leafNode = node.topologyNodes.find(
-      (n) => n.id === nodesStore.activeNodeId,
-    )
-    return leafNode
-  }
-  return node
-})
 // Clear the preferred workflow IDs when we unmount.
 onUnmounted(() => availableWorkflowsStore.clearPreferredWorkflowIds())
-
-const secondaryWorkflows = computed(() => {
-  if (!activeNode.value?.secondaryWorkflows) return null
-  return activeNode.value.secondaryWorkflows
-})
 
 const items = ref<ColumnItem[]>([])
 
@@ -370,6 +356,10 @@ const showActiveThresholdCrossingsForFilters = computed(() => {
     false
   )
 })
+
+const showTaskRuns = computed(
+  () => topologyComponentConfig.value?.enableTaskRuns ?? false,
+)
 
 const topologyNodesStore = useTopologyNodesStore()
 topologyNodesStore
