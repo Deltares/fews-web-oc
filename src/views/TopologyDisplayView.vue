@@ -65,7 +65,6 @@
         <!-- Task Run Overview option -->
         <v-list-item
           v-if="showTaskMenu && secondaryControl !== 'tasks'"
-          prepend-icon="mdi-format-list-checks"
           title="Task Overview"
           @click="
             () => {
@@ -89,7 +88,7 @@
         <!-- Import Data option -->
         <v-list-item
           v-if="showTaskMenu && secondaryControl !== 'import'"
-          prepend-icon="mdi-file-import"
+          prepend-icon="mdi-database-import"
           title="Import Status"
           @click="
             () => {
@@ -132,7 +131,7 @@
               :content="workflowsStore.numActiveWorkflows"
               color="success"
             >
-              <v-icon>mdi-wrench</v-icon>
+              <v-icon>mdi-cog-play</v-icon>
             </v-badge>
           </template>
         </v-list-item>
