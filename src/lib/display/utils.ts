@@ -1,5 +1,6 @@
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import type {
+  ActionPeriod,
   ActionRequest,
   ActionResult,
   ActionsResponse,
@@ -9,13 +10,13 @@ import type {
 import type { DisplayConfig } from './DisplayConfig'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import {
-  convertFewsPiDateTimeToJsDate,
   convertJsDateToFewsPiDateTime,
   convertJSDateToFewsPiParameter,
 } from '@/lib/date'
 import { MD5 } from 'crypto-js'
 import { uid } from '@/lib/utils/uid'
 import { ChartConfig } from '@/lib/charts/types/ChartConfig'
+import { convertActionPeriodToDomain } from '@/lib/period'
 
 /**
  * Applies colors to subplot items based on their taskRunIds.
@@ -65,6 +66,7 @@ export function actionsResponseToDisplayConfig(
         applyColorsToSubplotItems(subPlot)
         return timeSeriesDisplayToChartConfig(subPlot)
       }) ?? []
+    const period = result.config.timeSeriesDisplay.period
     const display: DisplayConfig = {
       id: title,
       title,
@@ -73,8 +75,8 @@ export function actionsResponseToDisplayConfig(
       nodeId: nodeId,
       class: 'singles',
       index: timeSeriesDisplayIndex,
-      requests: addPeriodIfNotSet(result.requests),
-      period: result.config.timeSeriesDisplay.period,
+      requests: addPeriodIfNotSet(result.requests, period),
+      period,
       subplots,
     }
     displays.push(display)
@@ -84,20 +86,21 @@ export function actionsResponseToDisplayConfig(
 
 function addPeriodIfNotSet(
   requests: ActionRequest[],
-  period?: [Date, Date],
+  period: ActionPeriod | undefined,
 ): ActionRequest[] {
+  const domain = period ? convertActionPeriodToDomain(period) : undefined
   return requests.map((request) => {
     const url = request.request
     if (
-      period === undefined ||
+      domain === undefined ||
       url.includes('startTime') ||
       url.includes('endTime')
     ) {
       return request
     }
 
-    const startTime = convertJSDateToFewsPiParameter(period[0])
-    const endTime = convertJSDateToFewsPiParameter(period[1])
+    const startTime = convertJSDateToFewsPiParameter(domain[0])
+    const endTime = convertJSDateToFewsPiParameter(domain[1])
     return {
       ...request,
       request: `${url}&startTime=${startTime}&endTime=${endTime}`,
@@ -185,22 +188,17 @@ export function getSubplotsWithDomain(
   startTime: Date | undefined,
   endTime: Date | undefined,
 ) {
-  const period = config.period
+  const period = convertActionPeriodToDomain(config.period)
 
-  const periodStartTime = period?.startDate
-    ? convertFewsPiDateTimeToJsDate(period.startDate)
-    : undefined
+  const _startTime = startTime ?? period?.[0]
+  const _endTime = endTime ?? period?.[1]
 
-  const periodEndTime = period?.endDate
-    ? convertFewsPiDateTimeToJsDate(period.endDate)
-    : undefined
-
-  const _startTime = startTime ?? periodStartTime
-  const _endTime = endTime ?? periodEndTime
-  const domain: [Date, Date] | undefined =
-    _startTime && _endTime ? [_startTime, _endTime] : undefined
-
-  return config.subplots.map((subplot) => getSubplotWithDomain(subplot, domain))
+  return config.subplots.map((subplot) =>
+    getSubplotWithDomain(
+      subplot,
+      _startTime && _endTime ? [_startTime, _endTime] : undefined,
+    ),
+  )
 }
 
 export function getSubplotWithDomain(
