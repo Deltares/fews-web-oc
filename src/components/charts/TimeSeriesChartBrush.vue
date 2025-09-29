@@ -19,6 +19,7 @@ import {
   refreshChart,
   updateChartData,
 } from '@/lib/charts/timeSeriesChart'
+import { toHumanReadableDate } from '@/lib/date'
 
 interface Props {
   brushDomain?: [Date, Date]
@@ -70,7 +71,10 @@ onMounted(() => {
 
   axis = new CartesianAxes(brushContainer.value, null, null, opts)
 
-  brushHandler = new BrushHandler({ domain: { x: domain.value } })
+  brushHandler = new BrushHandler({
+    domain: { x: domain.value },
+    labelFormatter: toHumanReadableDate,
+  })
   axis.accept(brushHandler)
 
   brushHandler.addEventListener('update:x-brush-domain', (e) => {
@@ -119,9 +123,12 @@ function redraw() {
   axis.redraw({ x: { domain: props.brushDomain }, y: { autoScale: true } })
 }
 
-watch(() => props.brushDomain, (newDomain) => {
-  axis.redraw({ x: { domain: newDomain } })
-})
+watch(
+  () => props.brushDomain,
+  (newDomain) => {
+    axis.redraw({ x: { domain: newDomain } })
+  },
+)
 </script>
 
 <style scoped>
