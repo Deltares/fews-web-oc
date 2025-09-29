@@ -34,7 +34,6 @@ import {
   CrossSectionSelect,
   CurrentTime,
   DomainChangeEvent,
-  isDefaultD3Domain,
   isNumberDomain,
   Margin,
   ZoomHandler,
@@ -203,13 +202,6 @@ watch(
 
 function onUpdateXDomain(event: DomainChangeEvent): void {
   hasResetAxes.value = event.fromZoomReset
-
-  const old = event.old
-  // The first time the domain change event is emitted, the old domain is
-  // the default d3 domain. We do not want to emit an update
-  // event in that case, as it is not a user-initiated change.
-  if (isDefaultD3Domain(old)) return
-
   domain.value = event.new as [Date, Date]
 }
 
