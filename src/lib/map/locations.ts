@@ -1,6 +1,14 @@
 import { getLayerId, getSourceId } from '@/lib/map/utils'
-import { Location } from '@deltares/fews-pi-requests'
-import { Feature, FeatureCollection, Geometry } from 'geojson'
+import type { Location } from '@deltares/fews-pi-requests'
+import type { Feature, FeatureCollection, Geometry } from 'geojson'
+
+export interface ExtendedLocation extends Location {
+  locationName: string | undefined
+  iconName: string | undefined
+  sortKey: number
+  invertedSortKey: number
+  selected?: boolean
+}
 
 export const locationMapIds = {
   layer: {
@@ -25,8 +33,9 @@ export const clickableLocationLayerIds = [
 
 export function addPropertiesToLocationGeojson(
   geojson: FeatureCollection<Geometry, Location>,
+  selectedLocationIds: string[],
   showNames: boolean,
-): FeatureCollection<Geometry, Location> {
+): FeatureCollection<Geometry, ExtendedLocation> {
   const features = geojson.features.map((feature) => ({
     ...feature,
     properties: {
@@ -35,6 +44,7 @@ export function addPropertiesToLocationGeojson(
       iconName: getIconName(feature),
       sortKey: getSortKey(feature),
       invertedSortKey: getInvertedSortKey(feature),
+      selected: selectedLocationIds.includes(feature.properties.locationId),
     },
   }))
 
