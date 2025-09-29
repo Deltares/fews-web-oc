@@ -64,7 +64,6 @@ import { difference } from 'lodash-es'
 import { getThresholdValues, isUniqueThreshold } from '@/lib/charts/thresholds'
 
 interface Props {
-  domain?: [Date, Date]
   config: ChartConfig
   series?: Record<string, Series>
   highlightTime?: Date
@@ -89,10 +88,7 @@ const props = withDefaults(defineProps<Props>(), {
   },
 })
 
-interface Emits {
-  'update:x-domain': [new: [Date, Date]]
-}
-const emit = defineEmits<Emits>()
+const domain = defineModel<[Date, Date]>('domain')
 
 const userSettingsStore = useUserSettingsStore()
 
@@ -204,7 +200,7 @@ function onUpdateXDomain(event: DomainChangeEvent): void {
   // event in that case, as it is not a user-initiated change.
   if (isDefaultD3Domain(old)) return
 
-  emit('update:x-domain', event.new as [Date, Date])
+  domain.value = event.new as [Date, Date]
 }
 
 function onCrossValueChange(value: Date) {
@@ -307,12 +303,9 @@ const beforeDestroy = () => {
   window.removeEventListener('resize', resize)
 }
 
-watch(
-  () => props.domain,
-  (newDomain) => {
-    axis.redraw({ x: { domain: newDomain } })
-  },
-)
+watch(domain, (newDomain) => {
+  axis.redraw({ x: { domain: newDomain } })
+})
 
 watch(
   () =>

@@ -21,7 +21,7 @@ import {
 } from '@/lib/charts/timeSeriesChart'
 
 interface Props {
-  domain?: [Date, Date]
+  brushDomain?: [Date, Date]
   config: ChartConfig
   series?: Record<string, Series>
   settings: ChartsSettings['timeSeriesChart']
@@ -40,10 +40,7 @@ const props = withDefaults(defineProps<Props>(), {
   },
 })
 
-interface Emits {
-  'update:x-domain': [new: [Date, Date]]
-}
-const emit = defineEmits<Emits>()
+const domain = defineModel<[Date, Date]>('domain')
 
 const brushContainer = useTemplateRef('brushContainer')
 
@@ -79,11 +76,11 @@ onMounted(() => {
 
   axis = new CartesianAxes(brushContainer.value, null, null, opts)
 
-  brushHandler = new BrushHandler({ domain: { x: props.domain } })
+  brushHandler = new BrushHandler({ domain: { x: domain.value } })
   axis.accept(brushHandler)
 
   brushHandler.addEventListener('update:x-brush-domain', (e) => {
-    emit('update:x-domain', e.new as [Date, Date])
+    domain.value = e.new as [Date, Date]
   })
 
   onValueChange()
@@ -120,13 +117,17 @@ function onValueChange() {
 }
 watch(() => props.config, onValueChange)
 
-watch(() => props.domain, (newDomain) => {
+watch(domain, (newDomain) => {
   brushHandler.setBrushDomain({ x: newDomain })
 })
 
 function redraw() {
-  axis.redraw({ x: { autoScale: true }, y: { autoScale: true } })
+  axis.redraw({ x: { domain: props.brushDomain }, y: { autoScale: true } })
 }
+
+watch(() => props.brushDomain, (newDomain) => {
+  axis.redraw({ x: { domain: newDomain } })
+})
 </script>
 
 <style scoped>
