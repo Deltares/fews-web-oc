@@ -18,6 +18,8 @@ import {
   AxisType,
 } from '@deltares/fews-web-oc-charts'
 
+const MAX_MILLISECONDS_FROM_EPOCH = 8.64e15
+
 export function timeSeriesDisplayToChartConfig(
   subplot: TimeSeriesDisplaySubplot,
 ): ChartConfig {
@@ -132,8 +134,8 @@ function getThresholdLinesFromItem(
     if (threshold.value === undefined) return []
     return {
       id: 'Thresholds',
-      x1: new Date(0),
-      x2: new Date(8.64e15),
+      x1: new Date(-MAX_MILLISECONDS_FROM_EPOCH),
+      x2: new Date(MAX_MILLISECONDS_FROM_EPOCH),
       value: threshold.value,
       description: threshold.label ?? '',
       labelPosition: threshold.labelAlignment,
