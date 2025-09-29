@@ -81,3 +81,11 @@ export function getLocationWithChilds(
     ),
   ]
 }
+
+export function shouldBehaveLikeChildFilter(isChild: boolean | undefined) {
+  return isChild
+    ? // Child: has parentLocationId AND not selected
+      ['all', ['has', 'parentLocationId'], ['!=', 'selected', true]]
+    : // Parent: no parentLocationId OR selected
+      ['any', ['!has', 'parentLocationId'], ['==', 'selected', true]]
+}
