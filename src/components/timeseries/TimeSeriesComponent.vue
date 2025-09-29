@@ -8,7 +8,7 @@
       <KeepAlive>
         <template v-for="subplot in subplots" :key="subplot.id">
           <TimeSeriesChart
-            :domain="domain"
+            v-model:domain="domain"
             :config="subplot"
             :series="chartSeries"
             :highlightTime="selectedDate"
@@ -17,14 +17,13 @@
             :panHandler="sharedPanHandler"
             :settings="settings.timeSeriesChart"
             :forecastLegend="config.forecastLegend"
-            @update:x-domain="updateBrushDomain"
           >
             <TimeSeriesChartBrush
-              :domain="brushDomain"
+              v-model:domain="domain"
+              :brushDomain="brushDomain"
               :config="subplot"
               :series="brushChartSeries"
               :settings="settings.timeSeriesChart"
-              @update:x-domain="updateDomain"
             />
           </TimeSeriesChart>
         </template>
@@ -183,15 +182,18 @@ const { sharedZoomHandler, sharedPanHandler, sharedVerticalZoomHandler } =
 const tab = ref<DisplayType>(props.displayType)
 
 const domain = ref<[Date, Date]>()
-const brushDomain = ref<[Date, Date]>()
+const brushDomain = ref<[Date, Date]>([
+  new Date('2024-05-01T00:00:00Z'),
+  new Date('2025-12-31T23:59:59Z'),
+])
 const chartOptions = ref<UseTimeSeriesOptions>({
   startTime: store.startTime,
   endTime: store.endTime,
   thinning: true,
 })
 const brushOptions = ref<UseTimeSeriesOptions>({
-  startTime: new Date('2023-01-01T00:00:00Z'),
-  endTime: new Date('2025-12-31T23:59:59Z'),
+  startTime: brushDomain.value[0],
+  endTime: brushDomain.value[1],
   thinning: true,
 })
 const tableOptions = computed<UseTimeSeriesOptions>(() => ({
@@ -389,14 +391,6 @@ watch(domain, (newDomain) => {
   if (!newDomain) return
   debouncedRefetchChartTimeSeries(newDomain)
 })
-
-function updateBrushDomain(newDomain: [Date, Date]) {
-  brushDomain.value = newDomain
-}
-
-function updateDomain(newDomain: [Date, Date]) {
-  domain.value = newDomain
-}
 </script>
 
 <style scoped>
