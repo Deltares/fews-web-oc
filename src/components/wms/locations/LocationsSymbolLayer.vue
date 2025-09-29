@@ -8,6 +8,7 @@
 </template>
 
 <script setup lang="ts">
+import { shouldBehaveLikeChildFilter } from '@/lib/map'
 import { MglSymbolLayer } from '@indoorequal/vue-maplibre-gl'
 import { computed } from 'vue'
 
@@ -23,11 +24,7 @@ const filter = [
   'all',
   ['has', 'iconName'],
   ['==', '$type', 'Point'],
-  props.child
-    ? // Child: has parentLocationId AND not selected
-      ['all', ['has', 'parentLocationId'], ['!=', 'selected', true]]
-    : // Parent: no parentLocationId OR selected
-      ['any', ['!has', 'parentLocationId'], ['==', 'selected', true]],
+  shouldBehaveLikeChildFilter(props.child),
 ]
 
 const baseLayout = {
