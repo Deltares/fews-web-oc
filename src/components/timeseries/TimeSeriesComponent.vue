@@ -6,20 +6,28 @@
       class="time-series-component__container scroll"
     >
       <KeepAlive>
-        <TimeSeriesChart
-          v-for="subplot in subplots"
-          :config="subplot"
-          :series="chartSeries"
-          :key="subplot.id"
-          :highlightTime="selectedDate"
-          :isLoading="isLoading(subplot, loadingSeriesIds)"
-          :zoomHandler="sharedZoomHandler"
-          :panHandler="sharedPanHandler"
-          :settings="settings.timeSeriesChart"
-          :forecastLegend="config.forecastLegend"
-          @update:x-domain="debouncedRefetchChartTimeSeries"
-        >
-        </TimeSeriesChart>
+        <template v-for="subplot in subplots" :key="subplot.id">
+          <TimeSeriesChart
+            :domain="domain"
+            :config="subplot"
+            :series="chartSeries"
+            :highlightTime="selectedDate"
+            :isLoading="isLoading(subplot, loadingSeriesIds)"
+            :zoomHandler="sharedZoomHandler"
+            :panHandler="sharedPanHandler"
+            :settings="settings.timeSeriesChart"
+            :forecastLegend="config.forecastLegend"
+            @update:x-domain="updateBrushDomain"
+          >
+            <TimeSeriesChartBrush
+              :domain="brushDomain"
+              :config="subplot"
+              :series="brushChartSeries"
+              :settings="settings.timeSeriesChart"
+              @update:x-domain="updateDomain"
+            />
+          </TimeSeriesChart>
+        </template>
       </KeepAlive>
     </v-window-item>
     <v-window-item
@@ -86,6 +94,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
 import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
+import TimeSeriesChartBrush from '../charts/TimeSeriesChartBrush.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
 import {
   DisplayType,
@@ -173,9 +182,16 @@ const { sharedZoomHandler, sharedPanHandler, sharedVerticalZoomHandler } =
 
 const tab = ref<DisplayType>(props.displayType)
 
+const domain = ref<[Date, Date]>()
+const brushDomain = ref<[Date, Date]>()
 const chartOptions = ref<UseTimeSeriesOptions>({
   startTime: store.startTime,
   endTime: store.endTime,
+  thinning: true,
+})
+const brushOptions = ref<UseTimeSeriesOptions>({
+  startTime: new Date('2023-01-01T00:00:00Z'),
+  endTime: new Date('2025-12-31T23:59:59Z'),
   thinning: true,
 })
 const tableOptions = computed<UseTimeSeriesOptions>(() => ({
@@ -193,6 +209,12 @@ const {
   baseUrl,
   () => props.config.requests,
   chartOptions,
+  () => tab.value === DisplayType.TimeSeriesChart,
+)
+const { series: brushChartSeries } = useTimeSeries(
+  baseUrl,
+  () => props.config.requests,
+  brushOptions,
   () => tab.value === DisplayType.TimeSeriesChart,
 )
 const {
@@ -362,6 +384,19 @@ function refetchChartTimeSeries(newDomain: [Date, Date]) {
   chartOptions.value = { ...chartOptions.value, startTime, endTime }
 }
 const debouncedRefetchChartTimeSeries = debounce(refetchChartTimeSeries, 500)
+
+watch(domain, (newDomain) => {
+  if (!newDomain) return
+  debouncedRefetchChartTimeSeries(newDomain)
+})
+
+function updateBrushDomain(newDomain: [Date, Date]) {
+  brushDomain.value = newDomain
+}
+
+function updateDomain(newDomain: [Date, Date]) {
+  domain.value = newDomain
+}
 </script>
 
 <style scoped>
