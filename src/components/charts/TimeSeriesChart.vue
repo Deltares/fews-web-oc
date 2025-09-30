@@ -72,7 +72,6 @@ interface Props {
   config: ChartConfig
   series?: Record<string, Series>
   highlightTime?: Date
-  isLoading?: boolean
   zoomHandler?: ZoomHandler
   panHandler?: PanHandler
   verticalProfile?: boolean
