@@ -148,7 +148,10 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
 }
 
 export function nodeHasMap(node: TopologyNode) {
-  return node.gridDisplaySelection !== undefined || node.filterIds !== undefined
+  return (
+    node.gridDisplaySelection !== undefined ||
+    (node.filterIds !== undefined && !node.disableMap)
+  )
 }
 
 export function nodeHasCharts(node: TopologyNode) {
