@@ -84,12 +84,31 @@ function getNoXLabelOptions(): Partial<CartesianAxesOptions> {
   }
 }
 
+function getBrushOptions(): Partial<CartesianAxesOptions> {
+  return {
+    margin: { top: 5 },
+    x: [
+      {
+        showAxis: false,
+        showGrid: false,
+      },
+    ],
+    y: [
+      { showAxis: false, showGrid: false, label: '', unit: '' },
+      { showAxis: false, showGrid: false, label: '', unit: '' },
+    ],
+  }
+}
+
 export function getAxisOptions(
   config: ChartConfig,
   settings:
     | ChartsSettings['timeSeriesChart']
     | ChartsSettings['verticalProfileChart'],
-  verticalProfile: boolean,
+  options?: {
+    isVerticalProfile?: boolean
+    isBrush?: boolean
+  },
 ): CartesianAxesOptions {
   const configOptions: Partial<CartesianAxesOptions> = {
     x: config?.xAxis,
@@ -98,7 +117,7 @@ export function getAxisOptions(
 
   const extraOptions = [configOptions]
 
-  if (verticalProfile) {
+  if (options?.isVerticalProfile) {
     extraOptions.push(getVerticalProfileOptions())
   }
 
@@ -108,6 +127,10 @@ export function getAxisOptions(
 
   if (!settings.xAxis.xLabel) {
     extraOptions.push(getNoXLabelOptions())
+  }
+
+  if (options?.isBrush) {
+    extraOptions.push(getBrushOptions())
   }
 
   return merge(getDefaultOptions(), ...extraOptions)
