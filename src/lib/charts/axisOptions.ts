@@ -86,7 +86,7 @@ function getNoXLabelOptions(): Partial<CartesianAxesOptions> {
 
 function getBrushOptions(): Partial<CartesianAxesOptions> {
   return {
-    margin: { top: 5 },
+    margin: { top: 5, bottom: 25 },
     x: [
       {
         showAxis: false,

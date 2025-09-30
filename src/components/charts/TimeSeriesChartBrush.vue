@@ -70,8 +70,8 @@ watch(domain, (newDomain) => {
 .brush-container {
   display: flex;
   position: relative;
-  flex: 1 1 80px;
-  max-height: 80px;
+  flex: 1 1 65px;
+  max-height: 65px;
   width: 100%;
   fill: currentColor;
   margin: 0px auto;
