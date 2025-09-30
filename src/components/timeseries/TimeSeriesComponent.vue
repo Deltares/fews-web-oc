@@ -8,7 +8,7 @@
       <KeepAlive>
         <template v-for="subplot in subplots" :key="subplot.id">
           <TimeSeriesChart
-            v-model:domain="domain"
+            v-model:domain="visibleDomain"
             :config="subplot"
             :series="chartSeries"
             :highlightTime="selectedDate"
@@ -18,8 +18,8 @@
             :forecastLegend="config.forecastLegend"
           >
             <TimeSeriesChartBrush
-              v-model:domain="domain"
-              :config="getSubplotWithDomain(subplot, brushDomain)"
+              v-model:domain="visibleDomain"
+              :config="getSubplotWithDomain(subplot, fullBrushDomain)"
               :series="brushChartSeries"
               :settings="settings.timeSeriesChart"
             />
@@ -116,7 +116,7 @@ import {
 import { debounce } from 'lodash-es'
 import { useChartHandlers } from '@/services/useChartHandlers'
 import {
-  getSubplotsWithDomain,
+  getDomainWithConfigFallback,
   getSubplotWithDomain,
 } from '@/lib/display/utils'
 
@@ -181,8 +181,11 @@ const { sharedZoomHandler, sharedPanHandler, sharedVerticalZoomHandler } =
 
 const tab = ref<DisplayType>(props.displayType)
 
-const domain = ref<[Date, Date]>()
-const brushDomain = ref<[Date, Date]>([
+const visibleDomain = ref<[Date, Date]>()
+const fullDomain = computed(() =>
+  getDomainWithConfigFallback(store.startTime, store.endTime, props.config),
+)
+const fullBrushDomain = ref<[Date, Date]>([
   new Date('2024-05-01T00:00:00Z'),
   new Date('2025-12-31T23:59:59Z'),
 ])
@@ -192,8 +195,8 @@ const chartOptions = ref<UseTimeSeriesOptions>({
   thinning: true,
 })
 const brushOptions = ref<UseTimeSeriesOptions>({
-  startTime: brushDomain.value[0],
-  endTime: brushDomain.value[1],
+  startTime: fullBrushDomain.value[0],
+  endTime: fullBrushDomain.value[1],
   thinning: true,
 })
 const tableOptions = computed<UseTimeSeriesOptions>(() => ({
@@ -249,7 +252,9 @@ async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
 }
 
 const subplots = computed(() =>
-  getSubplotsWithDomain(props.config, store.startTime, store.endTime),
+  props.config.subplots.map((subplot) =>
+    getSubplotWithDomain(subplot, fullDomain.value),
+  ),
 )
 
 const elevationChartSubplots = computed(() => {
@@ -371,7 +376,7 @@ function refetchChartTimeSeries(newDomain: [Date, Date]) {
 }
 const debouncedRefetchChartTimeSeries = debounce(refetchChartTimeSeries, 500)
 
-watch(domain, (newDomain) => {
+watch(visibleDomain, (newDomain) => {
   if (!newDomain) return
   debouncedRefetchChartTimeSeries(newDomain)
 })
