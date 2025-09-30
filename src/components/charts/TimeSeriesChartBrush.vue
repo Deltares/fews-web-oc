@@ -53,7 +53,7 @@ onMounted(() => {
 
   const axisOptions = getAxisOptions(props.config, props.settings, false)
   const brushOptions: Partial<CartesianAxesOptions> = {
-    margin: { top: 0 },
+    margin: { top: 5 },
     x: [
       {
         showAxis: false,
