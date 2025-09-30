@@ -7,16 +7,11 @@ import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import { BrushHandler, CartesianAxes } from '@deltares/fews-web-oc-charts'
 import type { ChartsSettings } from '@/lib/topology/componentSettings'
-import { onMounted, ref, useTemplateRef, watch } from 'vue'
+import { onMounted, useTemplateRef, watch } from 'vue'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
-import { difference } from 'lodash-es'
-import {
-  clearChart,
-  redraw,
-  refreshChart,
-  updateChartData,
-} from '@/lib/charts/timeSeriesChart'
+import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
 import { toHumanReadableDate } from '@/lib/date'
+import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 
 interface Props {
   config: ChartConfig
@@ -53,28 +48,10 @@ onMounted(() => {
   onValueChange()
 })
 
-const hasRenderedOnce = ref(false)
-watch(
-  () =>
-    Object.keys(props.series).map(
-      (k) => `${k}-${props.series[k].lastUpdated?.getTime()}`,
-    ),
-  (newValue, oldValue) => {
-    const newSeriesIds = difference(newValue, oldValue).map((id) =>
-      id.substring(0, id.lastIndexOf('-')),
-    )
-    const requiredSeries = props.config?.series.filter((s) =>
-      s.dataResources.some((resourceId) => newSeriesIds.includes(resourceId)),
-    )
-    if (requiredSeries.length > 0) {
-      updateChartData(axis, requiredSeries, props.series)
-
-      if (!hasRenderedOnce.value) {
-        redraw(axis, props.config)
-        hasRenderedOnce.value = true
-      }
-    }
-  },
+useSeriesUpdateChartData(
+  () => props.series,
+  () => props.config,
+  () => axis,
 )
 
 function onValueChange() {
