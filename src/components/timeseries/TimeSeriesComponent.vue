@@ -12,7 +12,6 @@
             :config="subplot"
             :series="chartSeries"
             :highlightTime="selectedDate"
-            :isLoading="isLoading(subplot, loadingSeriesIds)"
             :zoomHandler="sharedZoomHandler"
             :panHandler="sharedPanHandler"
             :settings="settings.timeSeriesChart"
@@ -42,7 +41,6 @@
           :series="elevationChartSeries"
           :key="subplot.id"
           :style="`min-width: ${xs ? 100 : 50}%`"
-          :isLoading="isLoading(subplot, elevationLoadingSeriesIds)"
           :zoomHandler="sharedVerticalZoomHandler"
           :settings="settings.verticalProfileChart"
         >
@@ -118,7 +116,7 @@ import {
 } from '@/lib/topology/componentSettings'
 import { debounce } from 'lodash-es'
 import { useChartHandlers } from '@/services/useChartHandlers'
-import { getSubplotsWithDomain } from '@/lib/display/utils.ts'
+import { getSubplotsWithDomain } from '@/lib/display/utils'
 
 interface Props {
   config?: DisplayConfig
@@ -203,11 +201,7 @@ const tableOptions = computed<UseTimeSeriesOptions>(() => ({
 }))
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const {
-  series: chartSeries,
-  loadingSeriesIds,
-  interval: useTimeSeriesInterval,
-} = useTimeSeries(
+const { series: chartSeries, interval: useTimeSeriesInterval } = useTimeSeries(
   baseUrl,
   () => props.config.requests,
   chartOptions,
@@ -229,25 +223,13 @@ const {
   tableOptions,
   () => tab.value === DisplayType.TimeSeriesTable,
 )
-const {
-  series: elevationChartSeries,
-  loadingSeriesIds: elevationLoadingSeriesIds,
-} = useTimeSeries(
+const { series: elevationChartSeries } = useTimeSeries(
   baseUrl,
   () => props.elevationChartConfig.requests,
   chartOptions,
   () => tab.value === DisplayType.ElevationChart,
   selectedDate,
 )
-
-function isLoading(subplot: ChartConfig, loadingSeriesIds: string[]) {
-  return subplot.series
-    .map((s) => s.id)
-    .some((id) => {
-      const idWithoutIndex = id.replace(/\[\d+\]$/, '')
-      return loadingSeriesIds.includes(idWithoutIndex)
-    })
-}
 
 async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
   const seriesKey = props.config.requests[0]?.key
