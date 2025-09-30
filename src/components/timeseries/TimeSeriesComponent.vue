@@ -18,6 +18,7 @@
             :forecastLegend="config.forecastLegend"
           >
             <TimeSeriesChartBrush
+              v-if="showBrush"
               v-model:domain="visibleDomain"
               :config="getSubplotWithDomain(subplot, fullBrushDomain)"
               :series="brushChartSeries"
@@ -119,6 +120,7 @@ import {
   getDomainWithConfigFallback,
   getSubplotWithDomain,
 } from '@/lib/display/utils'
+import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
   config?: DisplayConfig
@@ -165,6 +167,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { selectedDate } = useSelectedDate(() => props.currentTime)
 const store = useSystemTimeStore()
+const userSettings = useUserSettingsStore()
 const isEditing = ref(false)
 const confirmationDialog = ref(false)
 const { xs } = useDisplay()
@@ -181,6 +184,9 @@ const fullBrushDomain = ref<[Date, Date]>([
   new Date('2024-05-01T00:00:00Z'),
   new Date('2025-12-31T23:59:59Z'),
 ])
+const showBrush = computed(
+  () => userSettings.get('charts.brush')?.value === true,
+)
 const chartOptions = ref<UseTimeSeriesOptions>({
   startTime: store.startTime,
   endTime: store.endTime,
@@ -208,7 +214,7 @@ const { series: brushChartSeries } = useTimeSeries(
   baseUrl,
   () => props.config.requests,
   brushOptions,
-  () => tab.value === DisplayType.TimeSeriesChart,
+  () => tab.value === DisplayType.TimeSeriesChart && showBrush.value,
 )
 const {
   series: tableSeries,

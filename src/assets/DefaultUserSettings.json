@@ -151,5 +151,12 @@
       }
     ],
     "group": "Charts"
+  },
+  {
+    "id": "charts.brush",
+    "type": "boolean",
+    "label": "Show brush chart",
+    "value": false,
+    "group": "Charts"
   }
 ]
