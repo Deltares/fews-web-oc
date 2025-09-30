@@ -115,7 +115,10 @@ import {
 } from '@/lib/topology/componentSettings'
 import { debounce } from 'lodash-es'
 import { useChartHandlers } from '@/services/useChartHandlers'
-import { getSubplotsWithDomain, getSubplotWithDomain } from '@/lib/display/utils'
+import {
+  getSubplotsWithDomain,
+  getSubplotWithDomain,
+} from '@/lib/display/utils'
 
 interface Props {
   config?: DisplayConfig

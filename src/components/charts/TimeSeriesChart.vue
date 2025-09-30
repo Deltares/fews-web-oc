@@ -59,14 +59,9 @@ import { getAxisOptions } from '@/lib/charts/axisOptions'
 import { PanHandler } from '@deltares/fews-web-oc-charts'
 import { ModifierKey } from '@deltares/fews-web-oc-charts'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import {
-  clearChart,
-  redraw,
-  refreshChart,
-  updateChartData,
-} from '@/lib/charts/timeSeriesChart'
-import { difference } from 'lodash-es'
+import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
 import { getThresholdValues, isUniqueThreshold } from '@/lib/charts/thresholds'
+import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 
 interface Props {
   config: ChartConfig
@@ -98,8 +93,6 @@ const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = useTemplateRef('chartContainer')
 const axisTime = ref<CrossSectionSelect<Date>>()
-const hasRenderedOnce = ref(false)
-const hasResetAxes = ref(true)
 
 onMounted(() => {
   if (chartContainer.value) {
@@ -294,33 +287,12 @@ watch(domain, (newDomain) => {
   axis.redraw({ x: { domain: newDomain } })
 })
 
-watch(
-  () =>
-    Object.keys(props.series).map(
-      (k) => `${k}-${props.series[k].lastUpdated?.getTime()}`,
-    ),
-  (newValue, oldValue) => {
-    const newSeriesIds = difference(newValue, oldValue).map((id) =>
-      id.substring(0, id.lastIndexOf('-')),
-    )
-    const requiredSeries = props.config?.series.filter((s) =>
-      s.dataResources.some((resourceId) => newSeriesIds.includes(resourceId)),
-    )
-    if (requiredSeries.length > 0) {
-      hasResetAxes.value = updateChartData(
-        axis,
-        requiredSeries,
-        props.series,
-        hasResetAxes.value,
-      )
-
-      if (!hasRenderedOnce.value) {
-        redraw(axis, props.config)
-        hasRenderedOnce.value = true
-      }
-    }
-  },
+const { hasResetAxes } = useSeriesUpdateChartData(
+  () => props.series,
+  () => props.config,
+  () => axis,
 )
+
 watch(() => props.config, onValueChange)
 onBeforeUnmount(() => {
   beforeDestroy()
