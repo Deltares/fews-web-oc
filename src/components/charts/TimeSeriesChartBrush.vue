@@ -24,23 +24,11 @@ import { toHumanReadableDate } from '@/lib/date'
 
 interface Props {
   config: ChartConfig
-  series?: Record<string, Series>
+  series: Record<string, Series>
   settings: ChartsSettings['timeSeriesChart']
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  config: () => {
-    return {
-      id: '',
-      title: '',
-      series: [],
-    }
-  },
-  series: () => {
-    return {}
-  },
-})
-
+const props = defineProps<Props>()
 const domain = defineModel<[Date, Date]>('domain')
 
 const brushContainer = useTemplateRef('brushContainer')

@@ -64,7 +64,7 @@ import { getThresholdValues, isUniqueThreshold } from '@/lib/charts/thresholds'
 
 interface Props {
   config: ChartConfig
-  series?: Record<string, Series>
+  series: Record<string, Series>
   highlightTime?: Date
   zoomHandler?: ZoomHandler
   panHandler?: PanHandler
@@ -73,19 +73,7 @@ interface Props {
   settings: ChartsSettings['timeSeriesChart']
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  config: () => {
-    return {
-      id: '',
-      title: '',
-      series: [],
-    }
-  },
-  series: () => {
-    return {}
-  },
-})
-
+const props = defineProps<Props>()
 const domain = defineModel<[Date, Date]>('domain')
 
 const userSettingsStore = useUserSettingsStore()
