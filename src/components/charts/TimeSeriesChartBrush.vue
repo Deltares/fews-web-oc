@@ -16,13 +16,13 @@ import { getAxisOptions } from '@/lib/charts/axisOptions'
 import { difference, merge } from 'lodash-es'
 import {
   clearChart,
+  redraw,
   refreshChart,
   updateChartData,
 } from '@/lib/charts/timeSeriesChart'
 import { toHumanReadableDate } from '@/lib/date'
 
 interface Props {
-  brushDomain?: [Date, Date]
   config: ChartConfig
   series?: Record<string, Series>
   settings: ChartsSettings['timeSeriesChart']
@@ -67,7 +67,6 @@ onMounted(() => {
   }
 
   const opts = merge({}, axisOptions, brushOptions)
-  delete opts.x[0].domain
 
   axis = new CartesianAxes(brushContainer.value, null, null, opts)
 
@@ -101,7 +100,7 @@ watch(
       updateChartData(axis, requiredSeries, props.series)
 
       if (!hasRenderedOnce.value) {
-        redraw()
+        redraw(axis, props.config)
         hasRenderedOnce.value = true
       }
     }
@@ -111,24 +110,13 @@ watch(
 function onValueChange() {
   clearChart(axis)
   refreshChart(axis, props.config, props.series)
-  redraw()
+  redraw(axis, props.config)
 }
 watch(() => props.config, onValueChange)
 
 watch(domain, (newDomain) => {
   brushHandler.setBrushDomain({ x: newDomain })
 })
-
-function redraw() {
-  axis.redraw({ x: { domain: props.brushDomain }, y: { autoScale: true } })
-}
-
-watch(
-  () => props.brushDomain,
-  (newDomain) => {
-    axis.redraw({ x: { domain: newDomain } })
-  },
-)
 </script>
 
 <style scoped>

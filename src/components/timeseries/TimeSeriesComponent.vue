@@ -19,8 +19,7 @@
           >
             <TimeSeriesChartBrush
               v-model:domain="domain"
-              :brushDomain="brushDomain"
-              :config="subplot"
+              :config="getSubplotWithDomain(subplot, brushDomain)"
               :series="brushChartSeries"
               :settings="settings.timeSeriesChart"
             />
@@ -116,7 +115,7 @@ import {
 } from '@/lib/topology/componentSettings'
 import { debounce } from 'lodash-es'
 import { useChartHandlers } from '@/services/useChartHandlers'
-import { getSubplotsWithDomain } from '@/lib/display/utils'
+import { getSubplotsWithDomain, getSubplotWithDomain } from '@/lib/display/utils'
 
 interface Props {
   config?: DisplayConfig
