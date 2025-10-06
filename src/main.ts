@@ -43,7 +43,7 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
           },
         ],
       }
-      await init(initOptions)
+      init(initOptions)
     }
     app.use(router)
     app.mount('#app')
