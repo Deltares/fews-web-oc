@@ -12,6 +12,10 @@ test.describe('Switching Nodes with ReportsDisplayView', () => {
 
     await expect(page.getByText('Rainfall return period report')).toBeVisible()
 
+    await expect(
+      page.getByRole('button', { name: 'Download Report' }),
+    ).toBeVisible()
+
     const combo = page
       .getByRole('combobox')
       .filter({ hasText: 'Analysis timeAnalysis' })
