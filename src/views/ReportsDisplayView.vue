@@ -51,9 +51,15 @@
       </template>
       <v-btn
         v-if="selectedReportItem && settings.report.downloadReport"
+        icon
         @click="downloadFile"
-        icon="mdi-download"
-      />
+        aria-label="Download Report"
+      >
+        <v-icon>mdi-download</v-icon>
+        <v-tooltip activator="parent" location="bottom"
+          >Download Report</v-tooltip
+        >
+      </v-btn>
     </v-toolbar>
     <ShadowFrame :htmlContent="reportHtml" />
   </div>
