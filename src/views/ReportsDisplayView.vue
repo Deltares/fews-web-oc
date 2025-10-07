@@ -50,7 +50,7 @@
         />
       </template>
       <v-btn
-        v-if="settings.report.downloadReport"
+        v-if="selectedReportItem && settings.report.downloadReport"
         @click="downloadFile"
         icon="mdi-download"
       />
