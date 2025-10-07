@@ -114,14 +114,18 @@ watch(reports, () => {
     selectedReport.value =
       reports.value.find((r) => r.items.find((i) => i.isCurrent)) ??
       reports.value[0]
+  } else {
+    selectedReport.value = undefined
   }
 })
 
 watch(selectedReport, () => {
   const items = selectedReport.value?.items
-  if (!items) return
-
-  selectedReportItem.value = items.find((i) => i.isCurrent) ?? items[0]
+  if (items?.length) {
+    selectedReportItem.value = items.find((i) => i.isCurrent) ?? items[0]
+  } else {
+    selectedReportItem.value = undefined
+  }
 })
 
 const { reportHtml } = useReport(
