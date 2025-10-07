@@ -32,7 +32,7 @@
           </div>
         </template>
         <v-select
-          v-else
+          v-else-if="reportItems.length > 0"
           v-model="selectedReportItem"
           :items="reportItems"
           return-object
