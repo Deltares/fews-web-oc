@@ -273,16 +273,15 @@ const hideMap = computed(() => {
   return containerIsMobileSize.value && showChartPanel.value
 })
 
-function onLocationsChange(locationIds: string[] | null): void {
-  if (!locationIds) return
-  openLocationsTimeSeriesDisplay(locationIds)
+function onLocationsChange(locationIds: string[]): void {
+  if (locationIds.length) {
+    openLocationsTimeSeriesDisplay(locationIds)
+  } else {
+    closeTimeSeriesDisplay()
+  }
 }
 
 function openLocationsTimeSeriesDisplay(locationIds: string[]) {
-  if (locationIds.length === 0) {
-    closeTimeSeriesDisplay()
-    return
-  }
   const to = {
     name: 'SpatialTimeSeriesDisplay',
     params: { locationIds: locationIds.join(',') },

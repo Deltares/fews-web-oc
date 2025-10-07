@@ -50,7 +50,10 @@ watch(
 
 watch(
   () => props.selectedLocationIds,
-  (ids) => (state.selectedItems = ids),
+  (ids) => {
+    if (ids.length === 0 && state.selectedItems.length === 0) return
+    return (state.selectedItems = ids)
+  },
   { immediate: true, deep: true },
 )
 
