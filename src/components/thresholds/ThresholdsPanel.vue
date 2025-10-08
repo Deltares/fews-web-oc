@@ -56,7 +56,8 @@
         <div class="my-1 mx-2">
           <ThresholdSummary
             :crossings="crossingsGroup"
-            :isSelected="crossingsGroup[0].locationId === props.locationIds"
+            :isSelected="crossingsGroup[0].locationId === locationIds"
+            :selectable="selectable"
             @navigate="emit('navigate', $event)"
           />
         </div>
@@ -77,9 +78,14 @@ interface Props {
   crossings: LevelThresholdCrossings[]
   selectedThresholdCrossings: LevelThresholdCrossings[]
   locationIds?: string
+  selectable?: boolean
 }
 
-const props = defineProps<Props>()
+const {
+  selectedThresholdCrossings,
+  selectable = false,
+  locationIds,
+} = defineProps<Props>()
 
 interface Emits {
   navigate: [to: NavigateRoute]
@@ -92,7 +98,7 @@ const virtualScroll = useTemplateRef('virtualScroll')
 
 const groupedCrossings = computed(() => {
   const grouped: Record<string, LevelThresholdCrossings[]> = {}
-  props.selectedThresholdCrossings.forEach((crossing) => {
+  selectedThresholdCrossings.forEach((crossing) => {
     const key = crossing.locationId
     if (!grouped[key]) {
       grouped[key] = []
@@ -106,7 +112,7 @@ const groupedCrossings = computed(() => {
 async function scrollToSelectedItem() {
   if (!virtualScroll.value) return
   const selectedIndex = groupedCrossings.value.findIndex(
-    (group) => group[0].locationId === props.locationIds,
+    (group) => group[0].locationId === locationIds,
   )
   if (selectedIndex !== -1) {
     // Wait for the next DOM update cycle
@@ -116,7 +122,7 @@ async function scrollToSelectedItem() {
   }
 }
 
-watch([() => props.locationIds, groupedCrossings], () => {
+watch([() => locationIds, groupedCrossings], () => {
   scrollToSelectedItem()
 })
 

@@ -20,6 +20,7 @@
           warningLevelsStore.selectedThresholdCrossings
         "
         :locationIds="props.locationIds"
+        :selectable="nodeCanShowThresholds"
         @close="sidePanelStore.toggleActive('thresholds')"
         @navigate="emit('navigate', $event)"
       />
@@ -27,13 +28,14 @@
   </Teleport>
 </template>
 <script setup lang="ts">
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 import ThresholdsPanel from '@/components/thresholds/ThresholdsPanel.vue'
 import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 import { useSidePanelStore } from '@/stores/sidePanel'
 import { NavigateRoute } from '@/lib/router/types'
+import { nodeHasMap } from '@/lib/topology/nodes'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -49,12 +51,26 @@ const props = defineProps<Props>()
 
 const sidePanelStore = useSidePanelStore()
 const warningLevelsStore = useWarningLevelsStore()
+const nodeCanShowThresholds = ref(false)
+
 watch(
   () => props.topologyNode?.id,
   (newId) => {
     warningLevelsStore.setTopologyNodeId(newId)
     warningLevelsStore.selectedWarningLevelIds = []
   },
+)
+
+watch(
+  () => props.topologyNode,
+  (newNode) => {
+    if (newNode && nodeHasMap(newNode)) {
+      nodeCanShowThresholds.value = true
+    } else {
+      nodeCanShowThresholds.value = false
+    }
+  },
+  { immediate: true },
 )
 </script>
 

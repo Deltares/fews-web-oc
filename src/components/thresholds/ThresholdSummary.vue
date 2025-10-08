@@ -5,7 +5,7 @@
     flat
     density="compact"
     :ripple="false"
-    @click="onPanelClick"
+    v-bind="selectable ? { onClick: () => onPanelClick() } : {}"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
@@ -37,10 +37,15 @@ import { ref } from 'vue'
 
 interface Props {
   crossings: LevelThresholdCrossings[]
-  isSelected: boolean
+  isSelected?: boolean
+  selectable?: boolean
 }
 
-const props = defineProps<Props>()
+const {
+  crossings,
+  isSelected = false,
+  selectable = false,
+} = defineProps<Props>()
 const relativeFormat = ref(false)
 
 interface Emits {
@@ -61,7 +66,7 @@ function onPanelClick() {
   const to = {
     name: 'SpatialTimeSeriesDisplay',
     params: {
-      locationIds: props.crossings[0].locationId,
+      locationIds: crossings[0].locationId,
     },
   }
   emit('navigate', to)
