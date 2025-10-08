@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-column h-100 w-100">
+  <div class="d-flex position-relative flex-column h-100 w-100">
     <v-toolbar v-if="showToolbar" density="compact">
       <template v-if="settings.report.reportName">
         <div v-if="!reports?.length" class="ml-5">No reports available</div>
@@ -61,7 +61,14 @@
         >
       </v-btn>
     </v-toolbar>
-    <ShadowFrame :htmlContent="reportHtml" />
+    <div
+      class="report-display-view__canvas position-absolute w-100 overflow-y-auto"
+    >
+      <ReactiveIframe
+        :src="src"
+        class="report-display-view__item w-100"
+      ></ReactiveIframe>
+    </div>
   </div>
 </template>
 
@@ -79,7 +86,7 @@ import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
-import ShadowFrame from '@/components/general/ShadowFrame.vue'
+import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
 import { getReportUrl, useReport } from '@/services/useReport'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 
@@ -112,6 +119,13 @@ const { reports } = useReports(baseUrl, moduleInstanceIds)
 const selectedReport = ref<Report>()
 const reportItems = computed(() => {
   return selectedReport.value?.items ?? []
+})
+
+const src = computed(() => {
+  if (!reportHtml.value) return ''
+  const blob = new Blob([reportHtml.value], { type: 'text/html' })
+  const url = window.URL.createObjectURL(blob)
+  return url
 })
 
 const selectedReportItem = ref<ReportItem>()
@@ -167,3 +181,14 @@ async function downloadFile() {
   downloadFileWithXhr(url, fileName, authenticationManager.getAccessToken())
 }
 </script>
+
+<style scoped>
+.report-display-view__canvas {
+  top: 48px;
+  bottom: 0;
+}
+
+.report-display-view__item {
+  background-color: white;
+}
+</style>

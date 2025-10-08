@@ -79,7 +79,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const iframeRef = useTemplateRef<HTMLIFrameElement>('iframeRef')
-const isLoading = ref(true)
+const isLoading = ref(false)
 
 const debouncedOnLoad = useDebounceFn(() => {
   isLoading.value = false
@@ -124,12 +124,10 @@ watch(
 
 <style scoped>
 .iframe {
+  display: block;
   height: 0px;
-  width: 1060px;
-  margin: 20px;
   border: none;
   box-sizing: border-box;
-  background-color: white;
   box-shadow: 0 0.5mm 2mm rgba(0, 0, 0, 0.3);
   transition: opacity 100ms ease-in;
 }

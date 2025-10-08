@@ -215,6 +215,7 @@
           <ReactiveIframe
             v-else-if="viewMode === 'html'"
             :src="src"
+            class="products-browser-view__item"
           ></ReactiveIframe>
         </div>
       </template>
@@ -635,6 +636,12 @@ function openEmailClient(subject: string, content: string) {
   top: 48px;
   bottom: 0;
   background-color: #e0e0e0;
+}
+
+.products-browser-view__item {
+  width: 1060px;
+  margin: 20px auto;
+  background-color: white;
 }
 
 img {
