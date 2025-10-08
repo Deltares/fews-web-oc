@@ -32,7 +32,7 @@
           </div>
         </template>
         <v-select
-          v-else
+          v-else-if="reportItems.length > 0"
           v-model="selectedReportItem"
           :items="reportItems"
           return-object
@@ -50,10 +50,16 @@
         />
       </template>
       <v-btn
-        v-if="settings.report.downloadReport"
+        v-if="selectedReportItem && settings.report.downloadReport"
+        icon
         @click="downloadFile"
-        icon="mdi-download"
-      />
+        aria-label="Download Report"
+      >
+        <v-icon>mdi-download</v-icon>
+        <v-tooltip activator="parent" location="bottom"
+          >Download Report</v-tooltip
+        >
+      </v-btn>
     </v-toolbar>
     <ShadowFrame :htmlContent="reportHtml" />
   </div>
@@ -114,14 +120,18 @@ watch(reports, () => {
     selectedReport.value =
       reports.value.find((r) => r.items.find((i) => i.isCurrent)) ??
       reports.value[0]
+  } else {
+    selectedReport.value = undefined
   }
 })
 
 watch(selectedReport, () => {
   const items = selectedReport.value?.items
-  if (!items) return
-
-  selectedReportItem.value = items.find((i) => i.isCurrent) ?? items[0]
+  if (items?.length) {
+    selectedReportItem.value = items.find((i) => i.isCurrent) ?? items[0]
+  } else {
+    selectedReportItem.value = undefined
+  }
 })
 
 const { reportHtml } = useReport(
