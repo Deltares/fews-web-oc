@@ -42,6 +42,7 @@
             <TaskRunSummary
               :task="task"
               :canVisualize="isVisualizeMenu"
+              :key="task.taskId"
               v-model:expanded="expandedItems[task.taskId]"
             />
           </div>
