@@ -317,7 +317,9 @@ async function handleAuthorization(to: RouteLocationNormalized) {
 async function addDynamicRoutes() {
   const store = useConfigStore()
   await store.setFewsConfig()
-  Object.values(store.components).forEach((component: any) => {
+  const configuredComponents = Object.values(store.components)
+
+  configuredComponents.forEach((component: any) => {
     const route = dynamicRoutes.find((route) => route.name === component.type)
     if (route !== undefined) {
       router.addRoute(route)
@@ -335,15 +337,20 @@ async function addDynamicRoutes() {
       router.addRoute(embedRoute)
     }
   })
+  let defaultComponent
   if (store.defaultComponent !== undefined) {
-    if (router.hasRoute(store.defaultComponent.type)) {
-      router.removeRoute('Default')
-      router.addRoute({
-        path: '/',
-        redirect: { name: store.defaultComponent.type },
-        name: 'Default',
-      })
-    }
+    defaultComponent = store.defaultComponent
+  } else if (configuredComponents.length > 0) {
+    // Set first component as default if no default is set
+    defaultComponent = configuredComponents[0]
+  }
+  if (defaultComponent && router.hasRoute(defaultComponent.type)) {
+    router.removeRoute('Default')
+    router.addRoute({
+      path: '/',
+      redirect: { name: defaultComponent.type },
+      name: 'Default',
+    })
   }
 }
 
