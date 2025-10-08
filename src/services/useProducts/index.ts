@@ -82,7 +82,7 @@ export function useProducts(
           return (
             p.sourceId === toValue(sourceId) &&
             p.areaId === toValue(areaId) &&
-            !p.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE]
+            p.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true'
           )
         })
         products.value.push(...filteredProducts)
@@ -147,13 +147,13 @@ export function useProducts(
               ) &&
               p.sourceId === toValue(sourceId) &&
               p.areaId === toValue(areaId) &&
-              !p.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE]
+            p.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true'
             )
           }
           return (
             p.sourceId === toValue(sourceId) &&
             p.areaId === toValue(areaId) &&
-            !p.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE]
+            p.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true'
           )
         })
         products.value = filteredProducts
