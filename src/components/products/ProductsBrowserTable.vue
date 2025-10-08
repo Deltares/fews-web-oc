@@ -178,7 +178,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 import type { ProductMetaDataType } from '@/services/useProducts/types'
 import { useRouter } from 'vue-router'
 import { toHumanReadableDate } from '@/lib/date'
@@ -245,7 +245,7 @@ function groupName(key: string) {
   return column?.title || key
 }
 
-onMounted(() => {
+watchEffect(() => {
   if (props.productId) {
     selectedRows.value = [props.productId]
   }
@@ -315,7 +315,17 @@ async function onDeleteProduct(product: ProductMetaDataType) {
   } catch (error) {
     console.error(error)
   } finally {
+    const index = items.value.findIndex((p) => p.key === product.key)
+    const previousItem = items.value[index - 1]
     emit('refresh')
+    if (index > 0) {
+      router.replace({
+        name: 'TopologyDocumentDisplay',
+        params: {
+          productId: previousItem.key,
+        },
+      })
+    }
   }
 }
 

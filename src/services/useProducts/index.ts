@@ -147,7 +147,7 @@ export function useProducts(
               ) &&
               p.sourceId === toValue(sourceId) &&
               p.areaId === toValue(areaId) &&
-            p.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true'
+              p.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true'
             )
           }
           return (
