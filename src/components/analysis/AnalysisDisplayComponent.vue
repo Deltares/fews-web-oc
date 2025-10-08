@@ -28,7 +28,7 @@
         />
       </div>
       <div v-show="tab === 'workflows'">
-        <AnalysisWorkflows :config="config" @addChart="addChart" />
+        <AnalysisWorkflows :workflows="workflows" @addChart="addChart" />
       </div>
       <div v-show="tab === 'settings'">
         <AnalysisSettings
@@ -228,21 +228,30 @@ const canDoAnalysis = computed(() =>
   hasValidFilterCharts(selectedCollection.value.charts),
 )
 
-const tabs = computed(() => [
-  {
-    value: 'data-selection',
-    icon: 'mdi-database',
-    text: 'Data Selection',
-  },
-  {
-    value: 'analysis',
-    icon: 'mdi-finance',
-    text: 'Analysis',
-    disabled: !canDoAnalysis.value,
-  },
-  { value: 'workflows', icon: 'mdi-tools', text: 'Analysis Workflows' },
-  { value: 'settings', icon: 'mdi-cog-outline', text: 'Settings' },
-])
+const workflows = computed(() => props.config.toolBoxes.toolboxWorkflows ?? [])
+
+const tabs = computed(() =>
+  [
+    {
+      value: 'data-selection',
+      icon: 'mdi-database',
+      text: 'Data Selection',
+    },
+    {
+      value: 'analysis',
+      icon: 'mdi-finance',
+      text: 'Analysis',
+      disabled: !canDoAnalysis.value,
+    },
+    {
+      value: 'workflows',
+      icon: 'mdi-tools',
+      text: 'Analysis Workflows',
+      enabled: workflows.value.length > 0,
+    },
+    { value: 'settings', icon: 'mdi-cog-outline', text: 'Settings' },
+  ].filter((tab) => tab.enabled !== false),
+)
 
 watch(tabs, () => {
   if (!tab.value) return
