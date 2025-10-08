@@ -8,7 +8,6 @@
     :class="{ loading: isLoading }"
     @load="onLoad"
   ></iframe>
-  <v-skeleton-loader v-else type="card" class="iframe"> </v-skeleton-loader>
 </template>
 
 <script setup lang="ts">
