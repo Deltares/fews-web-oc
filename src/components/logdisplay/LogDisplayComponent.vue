@@ -10,8 +10,8 @@
           variant="outlined"
           clearable
           hide-details
-          multiple
           density="compact"
+          class="logs-filter"
           :item-title="toTitleCase"
           :item-value="(item) => item"
         />
@@ -25,8 +25,21 @@
           multiple
           density="compact"
           :item-title="levelToTitle"
+          class="logs-filter"
           :item-value="(item) => item"
         />
+        <v-text-field
+          v-model="search"
+          placeholder="Search"
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          clearable
+          hide-details
+          density="compact"
+          max-width="200px"
+          min-width="200px"
+        />
+
         <div class="spacer" />
         <v-btn
           @click="refreshLogs"
@@ -66,22 +79,11 @@
           :max="1000"
           :min="1"
         />
+        <span>Total: {{ logMessages.length }}</span>
       </div>
     </div>
     <div class="flex-0-0 d-flex justify-center py-2">
-      <div class="flex-0-0 d-flex ga-2 align-center">
-        <v-text-field
-          v-model="search"
-          placeholder="Search"
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          clearable
-          hide-details
-          density="compact"
-          max-width="400px"
-          min-width="200px"
-        />
-        <span>Total: {{ logMessages.length }}</span>
+      <div class="flex-0-0 d-flex ga-2 align-left">
         <NewLogMessageDialog
           v-if="noteGroup"
           :noteGroup="noteGroup"
@@ -165,7 +167,7 @@ const props = defineProps<Props>()
 const search = ref<string>()
 const maxCount = ref<number>(1000)
 const selectedLevels = ref<LogLevel[]>([])
-const selectedLogTypes = ref<LogType[]>([])
+const selectedLogTypes = ref<LogType | null>(null)
 
 const daysBack = ref<number>(7)
 const DAY_IN_MS = 1000 * 60 * 60 * 24
@@ -272,7 +274,9 @@ const filteredLogMessages = computed(() => {
       filterLog(
         log,
         debouncedSelectedLevels.value,
-        debouncedSelectedLogTypes.value,
+        debouncedSelectedLogTypes.value
+          ? [debouncedSelectedLogTypes.value]
+          : [],
         debouncedSearch.value,
         taskRuns.value,
         workflows,
@@ -284,7 +288,9 @@ const filteredLogMessages = computed(() => {
       filterLog(
         log,
         debouncedSelectedLevels.value,
-        debouncedSelectedLogTypes.value,
+        debouncedSelectedLogTypes.value
+          ? [debouncedSelectedLogTypes.value]
+          : [],
         debouncedSearch.value,
         taskRuns.value,
         workflows,
@@ -541,5 +547,9 @@ async function refreshLogs() {
 
 .spacer {
   flex-grow: 0.5;
+}
+
+.logs-filter {
+  max-width: 140px;
 }
 </style>
