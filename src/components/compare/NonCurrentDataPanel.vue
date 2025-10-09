@@ -1,22 +1,19 @@
 <template>
   <div class="task-runs-panel h-100">
     <div class="d-flex pt-3 pb-2 align-center">
-      <WorkflowFilterControl v-model="selectedWorkflowIds" />
-      <TaskStatusFilterControl v-model="selectedTaskStatuses" />
       <v-spacer />
       <PeriodFilterControl v-model="period" />
     </div>
     <div class="task-content">
       <v-list-item v-if="sortedTasks.length === 0">
-        No tasks available.
+        No tasks with data to visualize for this display.
       </v-list-item>
-
       <!-- Important to have item-height as it greatly improves performance -->
       <v-virtual-scroll
         v-else
         class="overflow-y-auto h-100"
         :items="groupedTasks"
-        :item-height="62"
+        :item-height="75"
       >
         <template #default="{ item: task }">
           <v-btn
@@ -26,11 +23,14 @@
             :append-icon="getTaskSectionIcon(task.label)"
             @click="toggleTaskSection(task.label)"
           >
-            {{ task.label }}
+            {{ formatSectionLabel(task.label) }}
           </v-btn>
           <div v-else class="my-1 mx-2">
-            <TaskRunSummary
+            <ForecastSummary
               :task="task"
+              :canVisualize="true"
+              :startTime="outputStartTime"
+              :endTime="outputEndTime"
               :key="task.taskId"
               v-model:expanded="expandedItems[task.taskId]"
             />
@@ -60,27 +60,32 @@
 import { computed, ref, watch } from 'vue'
 
 import { RelativePeriod } from '@/lib/period'
-import { sortTasks, isTaskRun, TaskStatus } from '@/lib/taskruns'
+import {
+  sortTasks,
+  isTaskRun,
+  TaskStatus,
+  getTaskStatusesForCategories,
+  TaskStatusCategory,
+} from '@/lib/taskruns'
 
 import { useTaskRuns } from '@/services/useTasksRuns'
 
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 
-import TaskStatusFilterControl from './TaskStatusFilterControl.vue'
-import TaskRunSummary from './TaskRunSummary.vue'
-import WorkflowFilterControl from './WorkflowFilterControl.vue'
-import PeriodFilterControl from './PeriodFilterControl.vue'
+import ForecastSummary from './ForecastSummary.vue'
+import PeriodFilterControl from '@/components/tasks/PeriodFilterControl.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 
 interface Props {
   topologyNode?: TopologyNode
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {})
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 
 const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
+
 const expandedItems = ref<Record<string, boolean>>({})
 
 // Set preferred workflow IDs for the running tasks menu, if this node has
@@ -109,8 +114,14 @@ watch(
   { immediate: true },
 )
 
-const allTaskStatuses = Object.values(TaskStatus)
-const selectedTaskStatuses = ref<TaskStatus[]>(allTaskStatuses)
+const visualizeMenuTaskStatuses = getTaskStatusesForCategories([
+  TaskStatusCategory.Completed,
+  TaskStatusCategory.Pending,
+  TaskStatusCategory.Running,
+])
+
+const selectedTaskStatuses = ref<TaskStatus[]>(visualizeMenuTaskStatuses)
+
 // Look 1 day back by default.
 const period = ref<RelativePeriod | null>({
   startOffsetSeconds: -24 * 60 * 60,
@@ -122,6 +133,8 @@ const {
   filteredTaskRuns,
   isLoading,
   lastUpdatedTimestamp,
+  outputStartTime,
+  outputEndTime,
   fetch: refreshTaskRuns,
 } = useTaskRuns(
   TASKS_REFRESH_INTERVAL_SECONDS,
@@ -132,6 +145,7 @@ const {
 )
 
 const sortedTasks = computed(() => filteredTaskRuns.value.toSorted(sortTasks))
+
 const showCurrent = ref(true)
 const showNonCurrent = ref(true)
 
@@ -171,6 +185,13 @@ function getTaskSectionIcon(label: string) {
     return showNonCurrent.value ? 'mdi-chevron-down' : 'mdi-chevron-right'
   }
   return ''
+}
+
+function formatSectionLabel(label: string) {
+  if (label === 'Current') {
+    return 'Current (default view)'
+  }
+  return label
 }
 
 const lastUpdatedString = computed<string>(() => {

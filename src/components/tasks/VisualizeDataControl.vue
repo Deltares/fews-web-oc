@@ -22,16 +22,12 @@
           />
         </template>
       </v-toolbar>
-      <TaskRunsPanel
-        :topologyNode="topologyNode"
-        isVisualizeMenu
-        class="flex-1-1"
-      />
+      <NonCurrentDataPanel :topologyNode="topologyNode" class="flex-1-1" />
     </div>
   </Teleport>
 </template>
 <script setup lang="ts">
-import TaskRunsPanel from './TaskRunsPanel.vue'
+import NonCurrentDataPanel from '@/components/compare/NonCurrentDataPanel.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { useSidePanelStore } from '@/stores/sidePanel'
 
