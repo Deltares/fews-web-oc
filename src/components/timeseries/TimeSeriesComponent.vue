@@ -56,6 +56,7 @@
         class="single"
         @change="(event) => onDataChange(event)"
         @update:isEditing="isEditing = $event"
+        @load-more-data="loadMoreTableData"
       >
       </TimeSeriesTable>
     </v-window-item>
@@ -182,7 +183,13 @@ const tableOptions = computed<UseTimeSeriesOptions>(() => ({
   startTime: store.startTime,
   endTime: store.endTime,
   thinning: false,
+  beforeStartTimeCount: beforeStartCount.value,
+  afterEndTimeCount: afterEndCount.value,
 }))
+
+// Track the table counts
+const beforeStartCount = ref<number>(0)
+const afterEndCount = ref<number>(0)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const {
@@ -362,6 +369,21 @@ function refetchChartTimeSeries(newDomain: [Date, Date]) {
   chartOptions.value = { ...chartOptions.value, startTime, endTime }
 }
 const debouncedRefetchChartTimeSeries = debounce(refetchChartTimeSeries, 500)
+
+/**
+ * Handle loading more data for the time series table when scrolling to the top or bottom
+ * @param direction 'before' for top of table, 'after' for bottom of table
+ */
+function loadMoreTableData(direction: 'before' | 'after') {
+  if (direction === 'before') {
+    beforeStartCount.value += 20
+  } else {
+    afterEndCount.value += 20
+  }
+
+  // Force a refresh of the time series data
+  refreshTableTimeSeries()
+}
 </script>
 
 <style scoped>
