@@ -22,10 +22,7 @@
           />
         </template>
       </v-toolbar>
-      <NonCurrrentDataPanel
-        :topologyNode="topologyNode"
-        class="flex-1-1"
-      />
+      <NonCurrrentDataPanel :topologyNode="topologyNode" class="flex-1-1" />
     </div>
   </Teleport>
 </template>

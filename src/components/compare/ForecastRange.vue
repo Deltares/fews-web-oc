@@ -1,8 +1,16 @@
 <template>
   <div class="forecast-range">
     <div class="forecast-range__track v-progress-linear__background"></div>
-    <div v-if="startForecastTime" class="forecast-range__indicator bg-secondary" :style="hindcastStyle"></div>
-    <div v-if="endForecastTime" class="forecast-range__indicator bg-primary" :style="forecastStyle"></div>
+    <div
+      v-if="startForecastTime"
+      class="forecast-range__indicator bg-secondary"
+      :style="hindcastStyle"
+    ></div>
+    <div
+      v-if="endForecastTime"
+      class="forecast-range__indicator bg-primary"
+      :style="forecastStyle"
+    ></div>
     <div class="forecast-range__now" :style="nowStyle"></div>
   </div>
 </template>
@@ -38,7 +46,6 @@ const nowStyle = computed(() => ({
   left: `${(((new Date().getTime() ?? endTime.getTime()) - startTime.getTime()) / (endTime.getTime() - startTime.getTime())) * 100}%`,
   width: '2px',
 }))
-
 </script>
 
 <style scoped>
@@ -63,7 +70,7 @@ const nowStyle = computed(() => ({
   display: inline-block;
 }
 
-.forecast-range__now{
+.forecast-range__now {
   position: absolute;
   top: -2px;
   height: calc(100% + 2px);

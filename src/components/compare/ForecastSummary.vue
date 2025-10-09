@@ -63,10 +63,7 @@
   </v-card>
 </template>
 <script setup lang="ts">
-import {
-  TaskRun,
-  TaskStatus,
-} from '@/lib/taskruns'
+import { TaskRun, TaskStatus } from '@/lib/taskruns'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed } from 'vue'
 import ForecastRange from './ForecastRange.vue'
@@ -160,9 +157,7 @@ const tableData = computed(() => [
   },
 ])
 
-const workflow = computed(() =>
-  availableWorkflowsStore.byId(task.workflowId),
-)
+const workflow = computed(() => availableWorkflowsStore.byId(task.workflowId))
 
 const whatIfTemplate = computed(() =>
   availableWhatIfTemplatesStore.byId(workflow.value?.whatIfTemplateId),
@@ -174,40 +169,26 @@ const expectedRunTimeSeconds = computed(
 
 const workflowTitle = computed(() => workflow.value?.name ?? 'Unknown workflow')
 
-const isRunning = computed<boolean>(
-  () => task.status === TaskStatus.Running,
-)
+const isRunning = computed<boolean>(() => task.status === TaskStatus.Running)
 
 const timeZeroString = computed<string>(() =>
   toHumanReadableDate(task.timeZeroTimestamp),
 )
 
 const taskDurationString = computed(() =>
-  toDateRangeString(
-    task.dispatchTimestamp,
-    task.completionTimestamp,
-  ),
+  toDateRangeString(task.dispatchTimestamp, task.completionTimestamp),
 )
 
 const taskDurtionDifferenceString = computed(() =>
-  toDateAbsDifferenceString(
-    task.dispatchTimestamp,
-    task.completionTimestamp,
-  ),
+  toDateAbsDifferenceString(task.dispatchTimestamp, task.completionTimestamp),
 )
 
 const outputTimeString = computed(() =>
-  toDateRangeString(
-    task.outputStartTimestamp,
-    task.outputEndTimestamp,
-  ),
+  toDateRangeString(task.outputStartTimestamp, task.outputEndTimestamp),
 )
 
 const outputTimeDifferenceString = computed(() =>
-  toDateAbsDifferenceString(
-    task.outputStartTimestamp,
-    task.outputEndTimestamp,
-  ),
+  toDateAbsDifferenceString(task.outputStartTimestamp, task.outputEndTimestamp),
 )
 
 const expectedCompletionTimeString = computed(() => {

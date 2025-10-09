@@ -73,24 +73,22 @@ export function useTaskRuns(
 
     allTaskRuns.value = fetchedTaskRuns.map(convertFewsPiTaskRunToTaskRun)
     if (allTaskRuns.value.length > 0) {
-      const minStartTime = allTaskRuns.value
-        .reduce(
-          (min, task) =>
-            task.outputStartTimestamp
-              ? Math.min(min, task.outputStartTimestamp)
-              : min,
-          Infinity,
-        )
+      const minStartTime = allTaskRuns.value.reduce(
+        (min, task) =>
+          task.outputStartTimestamp
+            ? Math.min(min, task.outputStartTimestamp)
+            : min,
+        Infinity,
+      )
       outputStartTime.value =
         minStartTime === Infinity ? null : new Date(minStartTime)
-      const maxEndTime = allTaskRuns.value
-        .reduce(
-          (max, task) =>
-            task.outputEndTimestamp
-              ? Math.max(max, task.outputEndTimestamp)
-              : max,
-          -Infinity,
-        )
+      const maxEndTime = allTaskRuns.value.reduce(
+        (max, task) =>
+          task.outputEndTimestamp
+            ? Math.max(max, task.outputEndTimestamp)
+            : max,
+        -Infinity,
+      )
       outputEndTime.value =
         maxEndTime === -Infinity ? null : new Date(maxEndTime)
     }

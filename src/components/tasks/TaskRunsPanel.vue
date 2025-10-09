@@ -60,11 +60,7 @@
 import { computed, ref, watch } from 'vue'
 
 import { RelativePeriod } from '@/lib/period'
-import {
-  sortTasks,
-  isTaskRun,
-  TaskStatus,
-} from '@/lib/taskruns'
+import { sortTasks, isTaskRun, TaskStatus } from '@/lib/taskruns'
 
 import { useTaskRuns } from '@/services/useTasksRuns'
 

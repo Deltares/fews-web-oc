@@ -146,7 +146,6 @@ const {
 
 const sortedTasks = computed(() => filteredTaskRuns.value.toSorted(sortTasks))
 
-
 const showCurrent = ref(true)
 const showNonCurrent = ref(true)
 
