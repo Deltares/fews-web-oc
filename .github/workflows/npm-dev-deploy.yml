@@ -4,6 +4,10 @@ name: Deploy Web OC dev applications.
 # 1. Add a new repository secret with the name of the deployment target and the value of the Azure Static Web Apps API token.
 # 2. Add a new repository varaibel with the name of the deployment target and the value of the app-config.json file in base64 format.
 #
+
+permissions:
+  contents: read
+
 on:
   push:
     branches:
