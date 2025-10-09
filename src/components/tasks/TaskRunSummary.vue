@@ -112,7 +112,7 @@ const tableData = computed(() => [
     columns: [
       {
         header: 'Task duration',
-        subHeader: taskDurtionDifferenceString.value,
+        subHeader: taskDurationDifferenceString.value,
         value: taskDurationString.value,
       },
     ],
@@ -156,7 +156,7 @@ const taskDurationString = computed(() =>
   ),
 )
 
-const taskDurtionDifferenceString = computed(() =>
+const taskDurationDifferenceString = computed(() =>
   toDateAbsDifferenceString(
     props.task.dispatchTimestamp,
     props.task.completionTimestamp,

@@ -142,7 +142,7 @@ const tableData = computed(() => [
     columns: [
       {
         header: 'Task duration',
-        subHeader: taskDurtionDifferenceString.value,
+        subHeader: taskDurationDifferenceString.value,
         value: taskDurationString.value,
       },
     ],
@@ -179,7 +179,7 @@ const taskDurationString = computed(() =>
   toDateRangeString(task.dispatchTimestamp, task.completionTimestamp),
 )
 
-const taskDurtionDifferenceString = computed(() =>
+const taskDurationDifferenceString = computed(() =>
   toDateAbsDifferenceString(task.dispatchTimestamp, task.completionTimestamp),
 )
 
