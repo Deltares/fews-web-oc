@@ -40,6 +40,8 @@ export function useTaskRuns(
   const lastUpdatedTimestamp = ref<number | null>(null)
   const allTaskRuns = ref<TaskRun[]>([])
   const filteredTaskRuns = computed<TaskRun[]>(filterTasks)
+  const outputStartTime = ref<Date | null>(null)
+  const outputEndTime = ref<Date | null>(null)
 
   useFocusAwareInterval(
     () => {
@@ -70,6 +72,29 @@ export function useTaskRuns(
     isLoading.value = false
 
     allTaskRuns.value = fetchedTaskRuns.map(convertFewsPiTaskRunToTaskRun)
+    if (allTaskRuns.value.length > 0) {
+      const minStartTime = allTaskRuns.value
+        .reduce(
+          (min, task) =>
+            task.outputStartTimestamp
+              ? Math.min(min, task.outputStartTimestamp)
+              : min,
+          Infinity,
+        )
+      outputStartTime.value =
+        minStartTime === Infinity ? null : new Date(minStartTime)
+      const maxEndTime = allTaskRuns.value
+        .reduce(
+          (max, task) =>
+            task.outputEndTimestamp
+              ? Math.max(max, task.outputEndTimestamp)
+              : max,
+          -Infinity,
+        )
+      outputEndTime.value =
+        maxEndTime === -Infinity ? null : new Date(maxEndTime)
+    }
+
     lastUpdatedTimestamp.value = Date.now()
   }
 
@@ -87,6 +112,8 @@ export function useTaskRuns(
     allTaskRuns,
     filteredTaskRuns,
     lastUpdatedTimestamp,
+    outputStartTime,
+    outputEndTime,
     isLoading,
     fetch,
   }
