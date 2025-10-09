@@ -13,20 +13,21 @@
       hide-details
       @click="showLocationsSearch"
     >
-      {{ selectedLocation?.locationName ?? 'Search locations' }}
+      {{ formatLocationsText(selectedLocations) }}
     </v-btn>
   </ControlChip>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, watchEffect } from 'vue'
+import { computed, watch } from 'vue'
 import { type Location } from '@deltares/fews-pi-requests'
 import { useGlobalSearchState } from '@/stores/globalSearch'
 import ControlChip from '@/components/wms/ControlChip.vue'
 
 interface Props {
   locations?: Location[]
-  selectedLocationIds?: string[]
+  locationToChildrenMap?: Map<string, Location[]>
+  selectedLocationIds: string[]
   maxWidth?: string | number
   width?: string | number
   tooltipOpenDelay?: number
@@ -34,7 +35,6 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   locations: () => [],
-  selectedLocationId: null,
   tooltipOpenDelay: 500,
 })
 
@@ -43,23 +43,31 @@ const showLocations = defineModel<boolean>('showLocations', { default: true })
 const state = useGlobalSearchState()
 
 watch(
-  () => state.selectedItem,
-  (item) => onSelectLocationId(item?.id),
+  () => state.selectedItems,
+  (items) => onSelectLocationIds(items),
+  { deep: true },
+)
+
+watch(
+  () => props.selectedLocationIds,
+  (ids) => {
+    if (ids.length === 0 && state.selectedItems.length === 0) return
+    return (state.selectedItems = ids)
+  },
+  { immediate: true, deep: true },
 )
 
 const emit = defineEmits(['changeLocationIds'])
 
-const selectedLocation = ref<Location | null>(null)
+const selectedLocations = computed<Location[]>(() =>
+  getLocationsFromIds(props.selectedLocationIds),
+)
 
-const hasLocations = computed(() => {
-  return props.locations?.length
-})
+const hasLocations = computed(() => props.locations?.length)
 
-function getLocationFromId(locationId: string | undefined) {
-  if (locationId === undefined) return null
-  return (
-    props.locations.find((location) => location.locationId === locationId) ??
-    null
+function getLocationsFromIds(locationIds: string[]) {
+  return props.locations.filter((location) =>
+    locationIds.includes(location.locationId),
   )
 }
 
@@ -67,28 +75,46 @@ function showLocationsSearch() {
   state.active = true
 }
 
+type TreeNode = {
+  id: string
+  title: string
+  children?: TreeNode[]
+}
+
+function buildTree(location: Location): TreeNode {
+  const childLocations = props.locationToChildrenMap?.get(location.locationId)
+  const children = childLocations?.map(buildTree)
+  return {
+    id: location.locationId,
+    title: location.locationName ?? '',
+    children,
+  }
+}
+
 watch(
   () => props.locations,
   () => {
-    state.items = props.locations.map((l) => {
-      return { id: l.locationId, name: l.locationName ?? '' }
-    })
+    state.items = props.locations
+      .filter((location) => location.parentLocationId === undefined)
+      .map(buildTree)
   },
+  { immediate: true },
 )
 
-watchEffect(
-  () =>
-    // TODO: What should this search control do in case of multiple locations?
-    //       For now just selects the first location.
-    (selectedLocation.value = getLocationFromId(
-      props.selectedLocationIds?.[0],
-    )),
-)
+function onSelectLocationIds(ids: string[]) {
+  emit('changeLocationIds', ids)
+}
 
-function onSelectLocationId(id: string | undefined) {
-  if (id === undefined) {
-    return
+function formatLocationsText(locations: Location[]) {
+  if (!locations.length) return 'Search locations'
+  if (locations.length > 1) {
+    return (
+      locations
+        .slice(0, 1)
+        .map((l) => l.locationName)
+        .join(', ') + ` + ${locations.length - 1} more`
+    )
   }
-  emit('changeLocationIds', [id])
+  return locations.map((l) => l.locationName).join(', ')
 }
 </script>

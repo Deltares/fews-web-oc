@@ -10,7 +10,7 @@
   >
     <v-card>
       <v-card-title class="pa-0">
-        <v-toolbar class="px-1" density="compact">
+        <v-toolbar density="compact">
           <v-text-field
             v-model="search"
             placeholder="Search for locations"
@@ -19,44 +19,31 @@
             clearable
             density="compact"
             autofocus
-          >
-            <template v-slot:prepend-inner>
-              <v-btn icon size="small">
-                <v-icon>mdi-map-marker</v-icon>
-              </v-btn>
-            </template>
-          </v-text-field>
+            prepend-icon="mdi-map-marker"
+            class="ps-3"
+          />
           <v-btn icon="mdi-close" @click="state.active = false" />
         </v-toolbar>
       </v-card-title>
       <v-card-text class="pa-0">
-        <v-data-iterator
-          :custom-filter="isMatchingItem"
+        <v-treeview
+          v-model:selected="state.selectedItems"
           :items="state.items"
-          :items-per-page="200"
+          item-value="id"
+          :select-strategy="cascadeStrategy"
+          selectable
+          density="compact"
+          :custom-filter="isMatchingItem"
           :search="search"
+          open-all
         >
-          <template v-slot:header> </template>
-          <template v-slot:default="{ items }">
-            <v-list density="compact">
-              <v-list-item
-                v-for="item in items"
-                :key="item.raw.id"
-                @click="itemClick(item.raw)"
-              >
-                <HighlightMatch :value="item.raw.name" :query="search" />
-                <span class="id-match" v-if="showId(item.raw)">
-                  ID: <HighlightMatch :value="item.raw.id" :query="search" />
-                </span>
-              </v-list-item>
-            </v-list>
+          <template #title="{ item }">
+            <HighlightMatch :value="item.title" :query="search" />
+            <span class="id-match" v-if="showId(item)">
+              ID: <HighlightMatch :value="item.id" :query="search" />
+            </span>
           </template>
-          <template v-slot:footer="{ items }">
-            <v-list-item color="primary" v-if="items.length === 200">
-              + {{ state.items.length - 200 }} more locations</v-list-item
-            >
-          </template>
-        </v-data-iterator>
+        </v-treeview>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -74,35 +61,31 @@ import {
 } from '@/stores/globalSearch'
 
 import HighlightMatch from './HighlightMatch.vue'
+import { cascadeStrategy } from '@/lib/selection'
 
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
 const search = ref<string | undefined>()
 
-function itemClick(item: any) {
-  state.selectedItem = item
-  state.active = false
-}
-
 function showId(item: GlobalSearchItem): boolean {
   const query = search.value
   if (!query) return false
 
-  const isMatchingName = containsSubstring(item.name, query)
+  const isMatchingName = containsSubstring(item.title, query)
   const isMatchingId = containsSubstring(item.id, query)
   // Only show the ID if the search query matches the ID but not the name.
   return isMatchingId && !isMatchingName
 }
 
 function isMatchingItem(
-  id: string,
+  _id: string,
   query: string,
   item?: { raw: GlobalSearchItem },
 ): boolean {
   // A location matches if name and/or ID contains a substring that matches the
   // query.
-  const isMatchingId = containsSubstring(id, query)
-  const isMatchingName = item ? containsSubstring(item.raw.name, query) : false
+  const isMatchingId = item ? containsSubstring(item.raw.id, query) : false
+  const isMatchingName = item ? containsSubstring(item.raw.title, query) : false
   return isMatchingId || isMatchingName
 }
 </script>
