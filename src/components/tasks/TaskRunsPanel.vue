@@ -1,24 +1,14 @@
 <template>
   <div class="task-runs-panel h-100">
     <div class="d-flex pt-3 pb-2 align-center">
-      <WorkflowFilterControl
-        v-if="!isVisualizeMenu"
-        v-model="selectedWorkflowIds"
-      />
-      <TaskStatusFilterControl
-        v-if="!isVisualizeMenu"
-        v-model="selectedTaskStatuses"
-      />
+      <WorkflowFilterControl v-model="selectedWorkflowIds" />
+      <TaskStatusFilterControl v-model="selectedTaskStatuses" />
       <v-spacer />
       <PeriodFilterControl v-model="period" />
     </div>
     <div class="task-content">
       <v-list-item v-if="sortedTasks.length === 0">
-        {{
-          isVisualizeMenu
-            ? 'No tasks with data to visualize for this display.'
-            : 'No tasks available.'
-        }}
+        No tasks available.
       </v-list-item>
 
       <!-- Important to have item-height as it greatly improves performance -->
@@ -36,12 +26,11 @@
             :append-icon="getTaskSectionIcon(task.label)"
             @click="toggleTaskSection(task.label)"
           >
-            {{ formatSectionLabel(task.label) }}
+            {{ task.label }}
           </v-btn>
           <div v-else class="my-1 mx-2">
             <TaskRunSummary
               :task="task"
-              :canVisualize="isVisualizeMenu"
               :key="task.taskId"
               v-model:expanded="expandedItems[task.taskId]"
             />
@@ -75,8 +64,6 @@ import {
   sortTasks,
   isTaskRun,
   TaskStatus,
-  getTaskStatusesForCategories,
-  TaskStatusCategory,
 } from '@/lib/taskruns'
 
 import { useTaskRuns } from '@/services/useTasksRuns'
@@ -91,12 +78,9 @@ import type { TopologyNode } from '@deltares/fews-pi-requests'
 
 interface Props {
   topologyNode?: TopologyNode
-  isVisualizeMenu?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  isVisualizeMenu: false,
-})
+const props = defineProps<Props>()
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 
@@ -129,17 +113,8 @@ watch(
   { immediate: true },
 )
 
-const visualizeMenuTaskStatuses = getTaskStatusesForCategories([
-  TaskStatusCategory.Completed,
-  TaskStatusCategory.Pending,
-  TaskStatusCategory.Running,
-])
 const allTaskStatuses = Object.values(TaskStatus)
-
-const selectedTaskStatuses = ref<TaskStatus[]>(
-  props.isVisualizeMenu ? visualizeMenuTaskStatuses : allTaskStatuses,
-)
-
+const selectedTaskStatuses = ref<TaskStatus[]>(allTaskStatuses)
 // Look 1 day back by default.
 const period = ref<RelativePeriod | null>({
   startOffsetSeconds: -24 * 60 * 60,
@@ -200,13 +175,6 @@ function getTaskSectionIcon(label: string) {
     return showNonCurrent.value ? 'mdi-chevron-down' : 'mdi-chevron-right'
   }
   return ''
-}
-
-function formatSectionLabel(label: string) {
-  if (label === 'Current' && props.isVisualizeMenu) {
-    return 'Current (default view)'
-  }
-  return label
 }
 
 const lastUpdatedString = computed<string>(() => {
