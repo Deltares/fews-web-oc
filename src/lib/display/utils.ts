@@ -183,22 +183,18 @@ export function replaceDuplicateColors(
   })
 }
 
-export function getSubplotsWithDomain(
-  config: DisplayConfig,
+export function getDomainWithConfigFallback(
   startTime: Date | undefined,
   endTime: Date | undefined,
-) {
+  config: DisplayConfig,
+): [Date, Date] | undefined {
   const period = convertActionPeriodToDomain(config.period)
 
   const _startTime = startTime ?? period?.[0]
   const _endTime = endTime ?? period?.[1]
+  if (!_startTime || !_endTime) return
 
-  return config.subplots.map((subplot) =>
-    getSubplotWithDomain(
-      subplot,
-      _startTime && _endTime ? [_startTime, _endTime] : undefined,
-    ),
-  )
+  return [_startTime, _endTime]
 }
 
 export function getSubplotWithDomain(
