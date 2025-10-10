@@ -12,7 +12,7 @@
       class="d-flex flex-column h-100 w-100"
     >
       <v-toolbar density="compact">
-        <span class="ms-4">Non-current Data</span>
+        <span class="ms-4">Non-Current Data</span>
         <template #append>
           <v-btn
             @click="sidePanelStore.toggleActive('visualize')"
