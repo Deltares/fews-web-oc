@@ -42,6 +42,7 @@ const DataAnalysisDisplay = () =>
   import('../components/analysis/DataAnalysisDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
 const DocumentDisplayView = () => import('../views/DocumentDisplayView.vue')
+const CompareDisplayView = () => import('../views/CompareDisplayView.vue')
 
 const routesBase: Readonly<RouteRecordRaw[]> = [
   {
@@ -267,6 +268,13 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
             meta: { sidebar: true },
           },
         ],
+      },
+      {
+        path: 'compare',
+        name: 'TopologyCompareDisplay',
+        component: CompareDisplayView,
+        props: true,
+        meta: { sidebar: true },
       },
       {
         path: 'whatif',
