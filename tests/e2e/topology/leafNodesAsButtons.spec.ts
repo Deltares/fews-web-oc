@@ -18,12 +18,15 @@ test.describe('Leaf nodes as buttons enabled', () => {
     const layerInfo = page.getByRole('button', { name: 'Layer information' })
 
     await expect(leafNodeButton).toBeVisible()
-    await expect(layerInfo).toContainText('SAWS forecast (1x1 km)')
+    await expect(layerInfo).toContainText('Regional NWP forecast (1x1 km)')
 
     await leafNodeButton.click()
-    await page.getByRole('listitem').filter({ hasText: 'SAWS 4x4' }).click()
+    await page
+      .getByRole('listitem')
+      .filter({ hasText: 'Regional NWP 4x4' })
+      .click()
 
-    await expect(layerInfo).toContainText('SAWS forecast (4x4 km)')
+    await expect(layerInfo).toContainText('Regional NWP forecast (4x4 km)')
   })
 
   test('when navigating to node group with leaf nodes as buttons disabled', async ({

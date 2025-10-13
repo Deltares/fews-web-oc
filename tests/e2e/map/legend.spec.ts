@@ -49,19 +49,19 @@ test.describe('WMS Legend with different display and system units', () => {
   }) => {
     const legendSvg = locateLegendSvg(page)
 
-    await expect(legendSvg).toContainText('01224364860GFS wind [knots]')
+    await expect(legendSvg).toContainText('01224364860NOAA GFS wind [knots]')
 
     await switchToSystemUnits(page)
 
     await expect(legendSvg).toContainText(
-      '06.17312.34718.5224.69330.867GFS wind [m/s]',
+      '06.17312.34718.5224.69330.867NOAA GFS wind [m/s]',
     )
   })
 
   test('when changing display units the range is reset', async ({ page }) => {
     const legendSvg = locateLegendSvg(page)
 
-    await expect(legendSvg).toContainText('01224364860GFS wind [knots]')
+    await expect(legendSvg).toContainText('01224364860NOAA GFS wind [knots]')
 
     await page.getByRole('button', { name: 'Layer information' }).click()
 
@@ -71,13 +71,13 @@ test.describe('WMS Legend with different display and system units', () => {
     await maxInput.press('Enter')
 
     await expect(legendSvg).toContainText(
-      '0204060.00180.001100.001GFS wind [knots]',
+      '0204060.00180.001100.001NOAA GFS wind [knots]',
     )
 
     await switchToSystemUnits(page)
 
     await expect(legendSvg).toContainText(
-      '06.17312.34718.5224.69330.867GFS wind [m/s]',
+      '06.17312.34718.5224.69330.867NOAA GFS wind [m/s]',
     )
   })
 })
@@ -94,18 +94,22 @@ test.describe('WMS Legend with the same display and system units', () => {
   }) => {
     const legendSvg = locateLegendSvg(page)
 
-    await expect(legendSvg).toContainText('0210203050SAWS forecast (1x1 km)')
+    await expect(legendSvg).toContainText(
+      '0210203050Regional NWP forecast (1x1 km)',
+    )
 
     await switchToSystemUnits(page)
 
-    await expect(legendSvg).toContainText('0210203050SAWS forecast (1x1 km)')
+    await expect(legendSvg).toContainText(
+      '0210203050Regional NWP forecast (1x1 km)',
+    )
   })
 
   test('when changing the range of the legend, the legend should update', async ({
     page,
   }) => {
     const legendSvg = locateLegendSvg(page)
-    const originalText = '0210203050SAWS forecast (1x1 km)'
+    const originalText = '0210203050Regional NWP forecast (1x1 km)'
 
     await expect(legendSvg).toContainText(originalText)
 
@@ -116,7 +120,9 @@ test.describe('WMS Legend with the same display and system units', () => {
     await maxInput.fill('100')
     await maxInput.press('Enter')
 
-    await expect(legendSvg).toContainText('04204060100SAWS forecast (1x1 km)')
+    await expect(legendSvg).toContainText(
+      '04204060100Regional NWP forecast (1x1 km)',
+    )
 
     const minInput = page.getByRole('textbox', { name: 'Min Min' })
     await minInput.click()
@@ -124,7 +130,7 @@ test.describe('WMS Legend with the same display and system units', () => {
     await minInput.press('Enter')
 
     await expect(legendSvg).toContainText(
-      '2023.2365268100SAWS forecast (1x1 km)',
+      '2023.2365268100Regional NWP forecast (1x1 km)',
     )
 
     await page
@@ -136,7 +142,7 @@ test.describe('WMS Legend with the same display and system units', () => {
 
   test('when changing display units the range is reset', async ({ page }) => {
     const legendSvg = locateLegendSvg(page)
-    const originalText = '0210203050SAWS forecast (1x1 km)'
+    const originalText = '0210203050Regional NWP forecast (1x1 km)'
 
     await expect(legendSvg).toContainText(originalText)
 
@@ -147,7 +153,9 @@ test.describe('WMS Legend with the same display and system units', () => {
     await maxInput.fill('100')
     await maxInput.press('Enter')
 
-    await expect(legendSvg).toContainText('04204060100SAWS forecast (1x1 km)')
+    await expect(legendSvg).toContainText(
+      '04204060100Regional NWP forecast (1x1 km)',
+    )
 
     await switchToSystemUnits(page)
 

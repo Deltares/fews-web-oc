@@ -83,7 +83,7 @@ test.describe('Chart Legend Interaction', () => {
       await expect(barSeries).toBeVisible()
 
       const legendItem = page.getByRole('button', {
-        name: 'Precipitation [1] SAWS',
+        name: 'Precipitation [1] Regional NWP',
       })
       await legendItem.click() // Toggle off
 
