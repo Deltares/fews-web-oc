@@ -50,7 +50,7 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplayWithCoordina
     await page.getByText('Coastal processes').click()
     await page.getByRole('listitem').filter({ hasText: 'Currents' }).click()
 
-    await expect(page.getByText('Current Speed (m/s)')).toBeVisible()
+    await expect(page.getByText('Current Speed [1] Delft3D')).toBeVisible()
     await expect(
       page.getByText('Current direction (going to) [1] Delft3D'),
     ).toBeVisible()
