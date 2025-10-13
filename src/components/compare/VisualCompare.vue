@@ -1,3 +1,80 @@
+<template>
+  <div
+    v-if="skeleton && !allImagesLoaded"
+    data-testid="skeleton"
+    :style="containerStyle"
+    v-html="skeleton"
+  />
+  <div
+    v-else
+    :id="componentId"
+    ref="containerRef"
+    class="vci--container"
+    tabindex="0"
+    data-testid="vci-container"
+    :style="containerStyle"
+    @click="handleOnClick"
+    @touchstart="startSliding"
+    @touchend="finishSliding"
+    @focusin="handleFocusIn"
+    @focusout="handleFocusOut"
+    @mousedown="startSliding"
+    @mouseup="finishSliding"
+  >
+    <div
+      ref="rightImageRef"
+      class="vci--right-container"
+      data-testid="right-image"
+      :style="rightImageStyle"
+    >
+      <slot name="right" />
+    </div>
+    <div
+      ref="leftImageRef"
+      class="vci--left-container"
+      data-testid="left-image"
+      :style="leftImageStyle"
+    >
+      <slot name="left" />
+    </div>
+    <div class="vci--slider" :style="sliderStyle">
+      <div class="vci--slider-line" :style="lineStyle" />
+      <div v-if="handle" class="vci--custom-handle" v-html="handle" />
+      <div v-else class="vci--default-handle" :style="handleDefaultStyle">
+        <div class="vci--left-arrow" :style="leftArrowStyle" />
+        <div class="vci--right-arrow" :style="rightArrowStyle" />
+      </div>
+      <div class="vci--slider-line" :style="lineStyle" />
+    </div>
+    <div
+      v-if="leftImageLabel"
+      class="vci--left-label-container"
+      :style="leftLabelContainerStyle"
+    >
+      <div
+        class="vci--left-label"
+        data-testid="left-image-label"
+        :style="leftLabelStyle"
+      >
+        {{ leftImageLabel }}
+      </div>
+    </div>
+    <div
+      v-if="rightImageLabel"
+      class="vci--right-label-container"
+      :style="rightLabelContainerStyle"
+    >
+      <div
+        class="vci--right-label"
+        data-testid="right-image-label"
+        :style="rightLabelStyle"
+      >
+        {{ rightImageLabel }}
+      </div>
+    </div>
+  </div>
+</template>
+
 <!-- eslint-disable no-irregular-whitespace -->
 <script setup lang="ts">
 
@@ -502,83 +579,6 @@ watch(
   },
 )
 </script>
-
-<template>
-  <div
-    v-if="skeleton && !allImagesLoaded"
-    data-testid="skeleton"
-    :style="containerStyle"
-    v-html="skeleton"
-  />
-  <div
-    v-else
-    :id="componentId"
-    ref="containerRef"
-    class="vci--container"
-    tabindex="0"
-    data-testid="vci-container"
-    :style="containerStyle"
-    @click="handleOnClick"
-    @touchstart="startSliding"
-    @touchend="finishSliding"
-    @focusin="handleFocusIn"
-    @focusout="handleFocusOut"
-    @mousedown="startSliding"
-    @mouseup="finishSliding"
-  >
-    <div
-      ref="rightImageRef"
-      class="vci--right-container"
-      data-testid="right-image"
-      :style="rightImageStyle"
-    >
-      <slot name="right" />
-    </div>
-    <div
-      ref="leftImageRef"
-      class="vci--left-container"
-      data-testid="left-image"
-      :style="leftImageStyle"
-    >
-      <slot name="left" />
-    </div>
-    <div class="vci--slider" :style="sliderStyle">
-      <div class="vci--slider-line" :style="lineStyle" />
-      <div v-if="handle" class="vci--custom-handle" v-html="handle" />
-      <div v-else class="vci--default-handle" :style="handleDefaultStyle">
-        <div class="vci--left-arrow" :style="leftArrowStyle" />
-        <div class="vci--right-arrow" :style="rightArrowStyle" />
-      </div>
-      <div class="vci--slider-line" :style="lineStyle" />
-    </div>
-    <div
-      v-if="leftImageLabel"
-      class="vci--left-label-container"
-      :style="leftLabelContainerStyle"
-    >
-      <div
-        class="vci--left-label"
-        data-testid="left-image-label"
-        :style="leftLabelStyle"
-      >
-        {{ leftImageLabel }}
-      </div>
-    </div>
-    <div
-      v-if="rightImageLabel"
-      class="vci--right-label-container"
-      :style="rightLabelContainerStyle"
-    >
-      <div
-        class="vci--right-label"
-        data-testid="right-image-label"
-        :style="rightLabelStyle"
-      >
-        {{ rightImageLabel }}
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .vci--container {
