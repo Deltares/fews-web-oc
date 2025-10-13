@@ -72,6 +72,7 @@ import {
   getThresholdValues,
   isUniqueThreshold,
 } from '@/lib/charts/thresholds.js'
+import { getSeriesByLegend } from '@/lib/legend/index.js'
 
 interface Props {
   config: ChartConfig
@@ -443,16 +444,8 @@ function setTags() {
 
 function setSeriesTags(series: ChartSeries[]) {
   const s = new XMLSerializer()
-  const seriesByLegend: Record<string, ChartSeries[]> = {}
-  series
-    .filter((s) => s.visibleInLegend)
-    .forEach((s) => {
-      if (!seriesByLegend[s.name]) {
-        seriesByLegend[s.name] = []
-      }
-      seriesByLegend[s.name].push(s)
-    })
 
+  const seriesByLegend = getSeriesByLegend(series)
   legendTags.value = Object.values(seriesByLegend).map((series) => {
     const { svgGroup, legendSvg } = createChip()
     // In case of multiple series with the same label, we only show the
