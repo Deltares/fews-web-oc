@@ -1,10 +1,17 @@
 <template>
-  <VisualCompare
-    leftImage="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
-    rightImage="https://cdn.vuetifyjs.com/images/cards/sunshine.jpg"
-    :skeleton="false"
-    class="h-100"
-  >
+  <VisualCompare :skeleton="false">
+    <template #left>
+      <img
+        src="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
+        alt="Left Image"
+      />
+    </template>
+    <template #right>
+      <img
+        src="https://cdn.vuetifyjs.com/images/cards/sunshine.jpg"
+        alt="Right Image"
+      />
+    </template>
   </VisualCompare>
 </template>
 
@@ -28,5 +35,4 @@ interface Emits {
 }
 
 const emit = defineEmits<Emits>()
-
 </script>

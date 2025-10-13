@@ -6,6 +6,7 @@ import type { CSSProperties } from 'vue'
 import {
   computed,
   getCurrentInstance,
+  nextTick,
   onBeforeUnmount,
   onMounted,
   ref,
@@ -22,14 +23,8 @@ export interface Props {
   slideOnClick?: boolean
   keyboard?: boolean
   keyboardStep?: number
-  leftImage: string
-  leftImageAlt?: string
-  leftImageCss?: object
   leftImageLabel?: string
   onSliderPositionChange?: (position: number) => void
-  rightImage: string
-  rightImageAlt?: string
-  rightImageCss?: object
   rightImageLabel?: string
   skeleton?: string | number | boolean
   sliderLineColor?: string
@@ -63,14 +58,8 @@ const emit = defineEmits<{
 // variables
 const {
   aspectRatio,
-  leftImage,
-  leftImageAlt,
   leftImageLabel,
-  leftImageCss,
-  rightImage,
-  rightImageAlt,
   rightImageLabel,
-  rightImageCss,
   hover,
   handle,
   handleSize,
@@ -123,7 +112,6 @@ const rightImageStyle = computed((): CSSProperties => {
     clipPath: horizontal
       ? `inset(0px 0px 0px ${containerWidth.value * rightImageClip.value}px)`
       : `inset(${containerHeight.value * rightImageClip.value}px 0px 0px 0px)`,
-    ...rightImageCss,
   }
 })
 
@@ -132,7 +120,6 @@ const leftImageStyle = computed((): CSSProperties => {
     clipPath: horizontal
       ? `inset(0px ${containerWidth.value * leftImageClip.value}px 0px 0px)`
       : `inset(0px 0px ${containerHeight.value * leftImageClip.value}px 0px)`,
-    ...leftImageCss,
   }
 })
 
@@ -374,6 +361,42 @@ onMounted(() => {
   })
   resizeObserver.observe(containerElement)
 
+  // Initialize image loaded states
+  const checkAndSetupImages = () => {
+    if (leftImageRef.value) {
+      const leftImg = leftImageRef.value.querySelector('img')
+      if (leftImg) {
+        if (leftImg.complete) {
+          leftImgLoaded.value = true
+        } else {
+          leftImg.addEventListener('load', () => {
+            leftImgLoaded.value = true
+          }, { once: true })
+        }
+      } else {
+        leftImgLoaded.value = true
+      }
+    }
+
+    if (rightImageRef.value) {
+      const rightImg = rightImageRef.value.querySelector('img')
+      if (rightImg) {
+        if (rightImg.complete) {
+          rightImgLoaded.value = true
+        } else {
+          rightImg.addEventListener('load', () => {
+            rightImgLoaded.value = true
+          }, { once: true })
+        }
+      } else {
+        rightImgLoaded.value = true
+      }
+    }
+  }
+
+  // Use nextTick to ensure slots are rendered
+  nextTick(checkAndSetupImages)
+
   return () => resizeObserver.disconnect()
 })
 
@@ -402,16 +425,44 @@ onBeforeUnmount(() => {
   window.removeEventListener('touchend', finishSliding)
 })
 
-// Watch for changes in leftImage
+// Watch for changes in leftImage slot content
 watch(leftImageRef, () => {
   leftImgLoaded.value = false
-  if (leftImageRef.value?.complete) leftImgLoaded.value = true
+  if (leftImageRef.value) {
+    const img = leftImageRef.value.querySelector('img')
+    if (img) {
+      if (img.complete) {
+        leftImgLoaded.value = true
+      } else {
+        img.addEventListener('load', () => {
+          leftImgLoaded.value = true
+        }, { once: true })
+      }
+    } else {
+      // If no img found, assume content is loaded
+      leftImgLoaded.value = true
+    }
+  }
 })
 
-// Watch for changes in rightImage
+// Watch for changes in rightImage slot content
 watch(rightImageRef, () => {
   rightImgLoaded.value = false
-  if (rightImageRef.value?.complete) rightImgLoaded.value = true
+  if (rightImageRef.value) {
+    const img = rightImageRef.value.querySelector('img')
+    if (img) {
+      if (img.complete) {
+        rightImgLoaded.value = true
+      } else {
+        img.addEventListener('load', () => {
+          rightImgLoaded.value = true
+        }, { once: true })
+      }
+    } else {
+      // If no img found, assume content is loaded
+      rightImgLoaded.value = true
+    }
+  }
 })
 
 // since hover is the only listener set on mount, we need to rerender component if the value changes
@@ -427,10 +478,19 @@ watch(
     () => rightImgLoaded.value,
   ],
   () => {
-    const leftImageWidthHeightRatio =
-      leftImageRef.value!.naturalHeight / leftImageRef.value!.naturalWidth
-    const rightImageWidthHeightRatio =
-      rightImageRef.value!.naturalHeight / rightImageRef.value!.naturalWidth
+    if (!leftImageRef.value || !rightImageRef.value) return
+    
+    const leftImg = leftImageRef.value.querySelector('img')
+    const rightImg = rightImageRef.value.querySelector('img')
+    
+    if (!leftImg || !rightImg) {
+      // If no images found, use a default aspect ratio
+      containerHeight.value = containerWidth.value * 0.6
+      return
+    }
+
+    const leftImageWidthHeightRatio = leftImg.naturalHeight / leftImg.naturalWidth
+    const rightImageWidthHeightRatio = rightImg.naturalHeight / rightImg.naturalWidth
 
     const idealWidthHeightRatio =
       aspectRatio.value === 'taller'
@@ -466,24 +526,22 @@ watch(
     @mousedown="startSliding"
     @mouseup="finishSliding"
   >
-    <img
+    <div
       ref="rightImageRef"
-      class="vci--right-image"
-      :alt="rightImageAlt"
+      class="vci--right-container"
       data-testid="right-image"
-      :src="rightImage"
       :style="rightImageStyle"
-      @load="rightImgLoaded = true"
-    />
-    <img
+    >
+      <slot name="right" />
+    </div>
+    <div
       ref="leftImageRef"
-      class="vci--left-image"
-      :alt="leftImageAlt"
+      class="vci--left-container"
       data-testid="left-image"
-      :src="leftImage"
       :style="leftImageStyle"
-      @load="leftImgLoaded = true"
-    />
+    >
+      <slot name="left" />
+    </div>
     <div class="vci--slider" :style="sliderStyle">
       <div class="vci--slider-line" :style="lineStyle" />
       <div v-if="handle" class="vci--custom-handle" v-html="handle" />
@@ -531,20 +589,26 @@ watch(
   width: 100%;
 }
 
-.vci--right-image {
+.vci--right-container {
   display: flex;
   position: absolute;
-  object-fit: cover;
   height: 100%;
   width: 100%;
 }
 
-.vci--left-image {
+.vci--right-container > * {
+  object-fit: cover;
+}
+
+.vci--left-container {
   display: flex;
   position: absolute;
-  object-fit: cover;
   height: 100%;
   width: 100%;
+}
+
+.vci--left-container > * {
+  object-fit: cover;
 }
 
 .vci--slider {
