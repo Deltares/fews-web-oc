@@ -49,59 +49,67 @@ export function useWorkflowBoundingBox(data: Ref<ScenarioData>) {
   )
   const isCoordinateInForm = computed(() => isCoordinateInFormData(data.value))
 
-  watch(data, () => {
-    // Update the lat/lon step sizes when the appropriate fields are changed in
-    // the form.
-    const xCellSize = data.value.xCellSize
-    const yCellSize = data.value.yCellSize
-    if (typeof xCellSize === 'number' && xCellSize > 0) {
-      longitudeStepSize.value = xCellSize
-    }
-    if (typeof yCellSize === 'number' && yCellSize > 0) {
-      latitudeStepSize.value = yCellSize
-    }
-
-    if (isBoundingBoxInForm.value) {
-      boundingBox.value = {
-        lonMin: data.value.xMin as number,
-        latMin: data.value.yMin as number,
-        lonMax: data.value.xMax as number,
-        latMax: data.value.yMax as number,
+  watch(
+    data,
+    () => {
+      // Update the lat/lon step sizes when the appropriate fields are changed in
+      // the form.
+      const xCellSize = data.value.xCellSize
+      const yCellSize = data.value.yCellSize
+      if (typeof xCellSize === 'number' && xCellSize > 0) {
+        longitudeStepSize.value = xCellSize
       }
-    } else {
-      boundingBox.value = null
-    }
+      if (typeof yCellSize === 'number' && yCellSize > 0) {
+        latitudeStepSize.value = yCellSize
+      }
 
-    if (isCoordinateInForm.value) {
-      workflowsStore.coordinate = new LngLat(
-        +(data.value.longitude as number | string),
-        +(data.value.latitude as number | string),
-      )
-    } else {
-      workflowsStore.coordinate = null
-      workflowsStore.isSelectingCoordinate = false
-    }
-  })
+      if (isBoundingBoxInForm.value) {
+        boundingBox.value = {
+          lonMin: data.value.xMin as number,
+          latMin: data.value.yMin as number,
+          lonMax: data.value.xMax as number,
+          latMax: data.value.yMax as number,
+        }
+      } else {
+        boundingBox.value = null
+      }
+
+      if (isCoordinateInForm.value) {
+        workflowsStore.coordinate = new LngLat(
+          +(data.value.longitude as number | string),
+          +(data.value.latitude as number | string),
+        )
+      } else {
+        workflowsStore.coordinate = null
+        workflowsStore.isSelectingCoordinate = false
+      }
+    },
+    { immediate: true },
+  )
 
   // Update the form when the bounding box is changed (e.g. through clicking).
-  watch(boundingBox, () => {
-    if (!isBoundingBoxInForm.value) return
+  watch(
+    boundingBox,
+    () => {
+      if (!isBoundingBoxInForm.value) return
 
-    if (boundingBox.value === null) {
-      data.value.xMin = undefined
-      data.value.yMin = undefined
-      data.value.xMax = undefined
-      data.value.yMax = undefined
-    } else {
-      data.value.xMin = boundingBox.value.lonMin
-      data.value.yMin = boundingBox.value.latMin
-      data.value.xMax = boundingBox.value.lonMax
-      data.value.yMax = boundingBox.value.latMax
-    }
-    if (boundingBoxIsValid.value) {
-      workflowsStore.boundingBox = boundingBox.value
-    }
-  })
+      if (boundingBox.value === null) {
+        data.value.xMin = undefined
+        data.value.yMin = undefined
+        data.value.xMax = undefined
+        data.value.yMax = undefined
+      } else {
+        data.value.xMin = boundingBox.value.lonMin
+        data.value.yMin = boundingBox.value.latMin
+        data.value.xMax = boundingBox.value.lonMax
+        data.value.yMax = boundingBox.value.latMax
+      }
+      if (boundingBoxIsValid.value) {
+        workflowsStore.boundingBox = boundingBox.value
+      }
+    },
+    { immediate: true },
+  )
 
   watch(
     () => workflowsStore.coordinate,
