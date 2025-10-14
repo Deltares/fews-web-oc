@@ -13,7 +13,7 @@ export const defaultMapSettings: MapSettings = {
   locationsLayer: {
     show: true,
     locationNames: true, // TODO: Implement
-    singleClickAction: true, // TODO: Implement
+    singleClickAction: true,
     locationSearchEnabled: true,
   },
   overlays: [],

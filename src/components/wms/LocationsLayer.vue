@@ -60,6 +60,7 @@ const { map } = useMap()
 interface Props {
   locationsGeoJson: FeatureCollection<Geometry, Location>
   selectedLocationIds?: string[]
+  locationsClickable?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -68,6 +69,7 @@ const props = withDefaults(defineProps<Props>(), {
     features: [],
   }),
   selectedLocationId: null,
+  locationsClickable: true,
 })
 
 const showNames = computed(() => {
@@ -86,10 +88,12 @@ watch(geojson, () => {
 
 onBeforeMount(() => {
   if (map) {
-    for (const layerId of clickableLocationLayerIds) {
-      map.on('click', layerId, clickHandler)
-      map.on('mouseenter', layerId, setCursorPointer)
-      map.on('mouseleave', layerId, unsetCursorPointer)
+    if (props.locationsClickable) {
+      for (const layerId of clickableLocationLayerIds) {
+        map.on('click', layerId, clickHandler)
+        map.on('mouseenter', layerId, setCursorPointer)
+        map.on('mouseleave', layerId, unsetCursorPointer)
+      }
     }
 
     map.on('mousemove', locationMapIds.layer.fill, onFillMouseMove)
@@ -100,10 +104,12 @@ onBeforeMount(() => {
 
 onBeforeUnmount(() => {
   if (map) {
-    for (const layerId of clickableLocationLayerIds) {
-      map.off('click', layerId, clickHandler)
-      map.off('mouseenter', layerId, setCursorPointer)
-      map.off('mouseleave', layerId, unsetCursorPointer)
+    if (props.locationsClickable) {
+      for (const layerId of clickableLocationLayerIds) {
+        map.off('click', layerId, clickHandler)
+        map.off('mouseenter', layerId, setCursorPointer)
+        map.off('mouseleave', layerId, unsetCursorPointer)
+      }
     }
 
     map.on('mousemove', locationMapIds.layer.fill, onFillMouseMove)
@@ -116,7 +122,7 @@ function addLocationIcons() {
 }
 
 function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
-  if (map) {
+  if (map && props.locationsClickable) {
     const layers = clickableLocationLayerIds.filter((layerId) =>
       map.getLayer(layerId),
     )

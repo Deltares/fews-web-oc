@@ -42,6 +42,7 @@
       v-if="showLocationsLayer && hasLocations"
       :locationsGeoJson="geojson"
       :selectedLocationIds="selectedLocationIds"
+      :locationsClickable="props.settings.locationsLayer.singleClickAction"
       @click="onLocationClick"
     />
     <CoordinateSelectorLayer
