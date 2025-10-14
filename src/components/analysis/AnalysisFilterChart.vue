@@ -62,7 +62,9 @@ const config = computed(() =>
 )
 
 const filter = computed(() => ({
-  timeSeriesIds: props.chart.requests.flatMap((r) => r.key ?? []),
+  timeSeriesIds: props.chart.requests
+    .flatMap((r) => r.key ?? [])
+    .filter((v, i, a) => a.indexOf(v) === i),
   useDisplayUnits: userSettings.useDisplayUnits,
   convertDatum: userSettings.convertDatum,
   startTime: props.startTime,
