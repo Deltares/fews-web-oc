@@ -154,7 +154,7 @@ import { uid } from '@/lib/utils/uid'
 import { useAlertsStore } from '@/stores/alerts'
 import { useWorkflowsStore, WorkflowType } from '@/stores/workflows'
 import { useWorkflowBoundingBox } from '@/services/useWorkflowBoundingBox'
-import { useWorkflowFormSchemas } from '@/services/useWorkflowFormSchemas'
+import { useWhatIfTemplateSchemas } from '@/services/useWhatIfTemplateSchemas'
 
 interface Props {
   workflows: WorkflowItem[]
@@ -208,7 +208,9 @@ watch(
   { immediate: true },
 )
 
-const { jsonSchema, uiSchema } = useWorkflowFormSchemas(selectedWhatIfTemplate)
+const { jsonSchema, uiSchema } = useWhatIfTemplateSchemas(
+  selectedWhatIfTemplate,
+)
 
 watchEffect(() => {
   selectedProperties.value = getJsonDataFromProperties(

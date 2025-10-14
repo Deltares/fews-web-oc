@@ -1,35 +1,33 @@
 import { WhatIfTemplate } from '@deltares/fews-pi-requests'
-import { JsonSchema, UISchemaElement } from '@jsonforms/core'
+import { JsonSchema7, UISchemaElement } from '@jsonforms/core'
 import { asyncComputed, MaybeRefOrGetter } from '@vueuse/core'
 import { toValue } from 'vue'
 
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { generateJsonSchema } from '@/lib/whatif'
 
-export function useWorkflowFormSchemas(
-  workflow: MaybeRefOrGetter<WhatIfTemplate | undefined>,
+export function useWhatIfTemplateSchemas(
+  whatIfTemplate: MaybeRefOrGetter<WhatIfTemplate | undefined>,
 ) {
-  const jsonSchema = asyncComputed<JsonSchema | undefined>(async () => {
-    const _workflow = toValue(workflow)
-    if (!_workflow) return undefined
-    return getJsonSchema(`${_workflow.id}.schema.json`)
+  const jsonSchema = asyncComputed<JsonSchema7 | undefined>(async () => {
+    const _whatIfTemplate = toValue(whatIfTemplate)
+    if (!_whatIfTemplate) return undefined
+    return getJsonSchema(`${_whatIfTemplate.id}.schema.json`)
   })
 
   const uiSchema = asyncComputed<UISchemaElement | undefined>(async () => {
-    const _workflow = toValue(workflow)
-    if (!_workflow) return undefined
-    return getUISchema(`${_workflow.id}.ui-schema.json`)
+    const _whatIfTemplate = toValue(whatIfTemplate)
+    if (!_whatIfTemplate) return undefined
+    return getUISchema(`${_whatIfTemplate.id}.ui-schema.json`)
   })
 
-  async function getJsonSchema(file: string): Promise<JsonSchema | undefined> {
+  async function getJsonSchema(file: string): Promise<JsonSchema7 | undefined> {
     try {
       const schema = await getFile(file)
       return schema.json()
     } catch (error) {
-      const workflowProperties = toValue(workflow)?.properties
-      return workflowProperties
-        ? generateJsonSchema(workflowProperties)
-        : undefined
+      const properties = toValue(whatIfTemplate)?.properties
+      return properties ? generateJsonSchema(properties) : undefined
     }
   }
 
