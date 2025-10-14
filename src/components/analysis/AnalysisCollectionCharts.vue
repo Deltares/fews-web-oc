@@ -6,7 +6,8 @@
         :chart
         :subplot="chart.subplot"
         :series
-        :zoomHandler
+        :zoomHandler="sharedZoomHandler"
+        :panHandler="sharedPanHandler"
         :settings
         :startTime
         :endTime
@@ -49,7 +50,7 @@ import AnalysisUnsupportedChart from './AnalysisUnsupportedChart.vue'
 import type { Chart, Collection, CollectionEmits } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'
+import { useChartHandlers } from '@/services/useChartHandlers'
 
 interface Props {
   series: Record<string, Series>
@@ -66,9 +67,7 @@ const collection = defineModel<Collection>('collection', {
 
 const emit = defineEmits<CollectionEmits>()
 
-const zoomHandler = new ZoomHandler({
-  sharedZoomMode: ZoomMode.X,
-})
+const { sharedZoomHandler, sharedPanHandler } = useChartHandlers()
 
 function removeChart(chart: Chart) {
   collection.value.charts.splice(

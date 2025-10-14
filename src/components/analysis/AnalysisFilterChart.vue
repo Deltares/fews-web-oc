@@ -5,6 +5,7 @@
     :series
     :settings
     :zoomHandler
+    :panHandler
     v-bind="$attrs"
     @download="downloadChart"
   />
@@ -23,7 +24,7 @@ import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayTo
 import type { FilterChart } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import type { ZoomHandler } from '@deltares/fews-web-oc-charts'
+import type { PanHandler, ZoomHandler } from '@deltares/fews-web-oc-charts'
 import { computed, ref } from 'vue'
 import { getSubplotWithDomain } from '@/lib/display'
 import { useUserSettingsStore } from '@/stores/userSettings'
@@ -32,6 +33,7 @@ interface Props {
   chart: FilterChart
   series: Record<string, Series>
   zoomHandler?: ZoomHandler
+  panHandler?: PanHandler
   settings: ComponentSettings
   startTime?: Date
   endTime?: Date

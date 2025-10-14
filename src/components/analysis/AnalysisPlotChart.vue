@@ -9,6 +9,7 @@
       :config
       :series
       :zoomHandler
+      :panHandler
       :settings="settings.charts.timeSeriesChart"
     />
     <!-- Used to render the chart for downloading as image. -->
@@ -20,7 +21,6 @@
         class="render-chart"
         :config
         :series
-        :zoomHandler
         :settings="settings.charts.timeSeriesChart"
       />
     </div>
@@ -36,7 +36,11 @@ import type { PlotChart } from '@/lib/analysis'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import { Legend, type ZoomHandler } from '@deltares/fews-web-oc-charts'
+import {
+  Legend,
+  type ZoomHandler,
+  type PanHandler,
+} from '@deltares/fews-web-oc-charts'
 import {
   combineSvgParts,
   convertSvgElementToImage,
@@ -53,6 +57,7 @@ interface Props {
   chart: PlotChart
   series: Record<string, Series>
   zoomHandler?: ZoomHandler
+  panHandler?: PanHandler
   settings: ComponentSettings
   config: ChartConfig
 }
