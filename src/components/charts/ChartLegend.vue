@@ -169,6 +169,7 @@ const chartControlsStyle = computed(() => {
   return {
     maxHeight,
     minHeight,
+    height: expanded.value ? maxHeight : undefined,
     marginRight,
     marginLeft,
     marginTop,
@@ -201,9 +202,12 @@ const expandIcon = computed(() => {
   }
 })
 
-const chartLegendContainerStyle = computed(() => ({
-  overflow: expanded.value ? 'auto' : 'hidden',
-}))
+const chartLegendContainerStyle = computed(() => {
+  return {
+    height: expanded.value ? '100%' : heightStyle.value,
+    overflow: expanded.value ? 'auto' : 'hidden',
+  }
+})
 
 function onOutsideClick() {
   if (expanded.value) {
