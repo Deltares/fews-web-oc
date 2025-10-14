@@ -1,20 +1,19 @@
 <template>
   <ControlChip class="outer-chip justify-center overflow-visible">
-    <v-icon class="pr-2">mdi-selection-drag</v-icon>
+    <v-icon start>mdi-selection-drag</v-icon>
     <DrawBoundingBoxControl v-if="isActive" v-model="boundingBox" />
 
-    <span class="mr-4 text-medium-emphasis" width="400px">
+    <span class="text-medium-emphasis">
       {{ boundingBoxString }}
     </span>
+
     <v-btn
       :disabled="boundingBox === null"
       @click="onFinish"
       density="compact"
-      color="primary"
-      class="px-0 text-medium-emphasis"
-    >
-      Apply
-    </v-btn>
+      icon="mdi-close"
+      class="ms-2"
+    />
   </ControlChip>
 </template>
 

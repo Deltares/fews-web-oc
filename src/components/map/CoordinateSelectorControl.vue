@@ -1,22 +1,22 @@
 <template>
   <ControlChip class="outer-chip justify-center overflow-visible">
-    <v-icon class="pr-2">mdi-map-marker</v-icon>
+    <v-icon start>mdi-map-marker</v-icon>
 
-    <span class="coordinate-selector__value text-right mr-1">
+    <span
+      class="coordinate-selector__value text-right text-medium-emphasis mr-1"
+    >
       {{ coordinateStringParts[0] }}
     </span>
-    <span class="coordinate-selector__value text-right mr-2">
+    <span class="coordinate-selector__value text-right text-medium-emphasis">
       {{ coordinateStringParts[1] }}
     </span>
     <v-btn
       :disabled="coordinate === null"
       @click="onFinish"
       density="compact"
-      color="primary"
-      class="px-0"
-    >
-      Apply
-    </v-btn>
+      icon="mdi-close"
+      class="ms-2"
+    />
   </ControlChip>
 </template>
 

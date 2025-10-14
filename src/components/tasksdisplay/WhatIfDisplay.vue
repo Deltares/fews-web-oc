@@ -41,7 +41,11 @@
                 icon="mdi-selection-drag"
                 variant="tonal"
                 density="comfortable"
-                @click="showMapTool"
+                :active="workflowsStore.isDrawingBoundingBox"
+                @click="
+                  workflowsStore.isDrawingBoundingBox =
+                    !workflowsStore.isDrawingBoundingBox
+                "
               />
             </div>
             <div v-if="isCoordinateInForm" class="d-flex">
@@ -56,7 +60,11 @@
                 icon="mdi-map-marker-radius"
                 variant="tonal"
                 density="comfortable"
-                @click="showCoordinateSelector"
+                :active="workflowsStore.isSelectingCoordinate"
+                @click="
+                  workflowsStore.isSelectingCoordinate =
+                    !workflowsStore.isSelectingCoordinate
+                "
               />
             </div>
             <json-forms
@@ -210,8 +218,6 @@ watchEffect(() => {
 })
 
 const {
-  showMapTool,
-  showCoordinateSelector,
   getProcessDataFilter,
   boundingBoxString,
   coordinateString,

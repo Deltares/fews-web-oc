@@ -130,31 +130,6 @@ export function useWorkflowBoundingBox(data: Ref<ScenarioData>) {
     coordinateToString(workflowsStore.coordinate),
   )
 
-  function showCoordinateSelector() {
-    workflowsStore.isSelectingCoordinate = true
-
-    watch(
-      () => workflowsStore.isSelectingCoordinate,
-      () => {},
-      { once: true },
-    )
-  }
-
-  function showMapTool() {
-    workflowsStore.isDrawingBoundingBox = true
-    // Show the dialog again when the bounding box has been drawn.
-    watch(
-      () => workflowsStore.isDrawingBoundingBox,
-      () => {
-        // Only show the dialog if the bounding box is not null, which means the user finished
-        // drawing. If it is null, it has been forcibly closed by the application (e.g. because we
-        // navigated to a different node), so we should abandon the workflow (and hence the dialog)
-        // altogether.
-      },
-      { once: true },
-    )
-  }
-
   function getProcessDataFilter(workflowId: string): PartialProcessDataFilter {
     if (!boundingBoxIsValid.value) {
       throw new Error('Bounding box is invalid')
@@ -172,8 +147,6 @@ export function useWorkflowBoundingBox(data: Ref<ScenarioData>) {
   }
 
   return {
-    showMapTool,
-    showCoordinateSelector,
     getProcessDataFilter,
     boundingBoxString,
     coordinateString,
