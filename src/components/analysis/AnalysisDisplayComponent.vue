@@ -69,6 +69,7 @@
           :endTime="endTime"
           class="flex-1-1"
           @addChart="addChart"
+          @update:x-domain="debouncedRefetchChartTimeSeries"
         />
         <v-card-text v-else> Select some data to display </v-card-text>
       </div>
@@ -105,6 +106,7 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
 import { addDuration } from '@/lib/date'
+import { useFetchDomain } from '@/services/useFetchDomain'
 
 interface Props {
   collections: Collection[]
@@ -193,9 +195,15 @@ const endTime = computed(() => {
   return settings.endTime
 })
 
-const timeSeriesOptions = computed(() => ({
+const domainOptions = ref({
   startTime: startTime.value,
   endTime: endTime.value,
+})
+
+const { debouncedRefetchChartTimeSeries } = useFetchDomain(domainOptions)
+
+const timeSeriesOptions = computed(() => ({
+  ...domainOptions.value,
   useDisplayUnits: userSettings.useDisplayUnits,
   convertDatum: userSettings.convertDatum,
   thinning: true,

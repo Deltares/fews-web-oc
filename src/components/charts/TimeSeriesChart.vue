@@ -73,6 +73,7 @@ import {
   isUniqueThreshold,
 } from '@/lib/charts/thresholds.js'
 import { getSeriesByLegend } from '@/lib/legend/index.js'
+import type { UpdateDomainEmits } from '@/lib/charts/domain'
 
 interface Props {
   config: ChartConfig
@@ -99,10 +100,7 @@ const props = withDefaults(defineProps<Props>(), {
   },
 })
 
-interface Emits {
-  'update:x-domain': [new: [Date, Date]]
-}
-const emit = defineEmits<Emits>()
+const emit = defineEmits<UpdateDomainEmits>()
 
 const userSettingsStore = useUserSettingsStore()
 defineExpose({

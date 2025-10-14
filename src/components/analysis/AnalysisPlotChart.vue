@@ -11,6 +11,7 @@
       :zoomHandler
       :panHandler
       :settings="settings.charts.timeSeriesChart"
+      @update:x-domain="$emit('update:x-domain', $event)"
     />
     <!-- Used to render the chart for downloading as image. -->
     <!-- This is done to have the same chart size across different devices. -->
