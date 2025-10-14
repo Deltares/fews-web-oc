@@ -8,7 +8,7 @@ export const defaultMapSettings: MapSettings = {
     show: true, // TODO: Implement
     autoPlay: false, // TODO: Implement
     animateVectors: true, // TODO: Implement
-    doubleClickAction: true, // TODO: Implement
+    doubleClickAction: true,
   },
   locationsLayer: {
     show: true,

@@ -51,9 +51,12 @@ export interface AnimatedRasterLayerOptions {
 interface Props {
   layer: AnimatedRasterLayerOptions
   beforeId?: string
+  enableDoubleClick: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {})
+const props = withDefaults(defineProps<Props>(), {
+  enableDoubleClick: false,
+})
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 
 const sourceId = computed(() => getSourceId(`${props.layer.name}-source`))
@@ -75,6 +78,17 @@ onUnmounted(() => {
   isLoading.value = false
   removeHooksFromMapObject()
 })
+
+watch(
+  () => props.enableDoubleClick,
+  (enableDoubleClick) => {
+    if (enableDoubleClick) {
+      addHooksToMapObject()
+    } else {
+      removeHooksFromMapObject()
+    }
+  },
+)
 
 const debouncedUpdate = debounce(updateSource, 100)
 
@@ -127,7 +141,9 @@ function addHooksToMapObject() {
   map?.on('movestart', onMapMoveStart)
   map?.on('moveend', onMapMoveEnd)
   map?.on('sourcedata', onDataChange)
-  map?.on('dblclick', onDoubleClick)
+  if (props.enableDoubleClick) {
+    map?.on('dblclick', onDoubleClick)
+  }
   map?.on('dataloading', onStartLoading)
   map?.on('sourcedata', onEndLoading)
   map?.on('error', onError)

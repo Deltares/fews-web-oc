@@ -6,6 +6,7 @@
       :layer="layerOptions"
       :key="`layer-${layerOptions.name}`"
       :beforeId="baseMap.beforeId"
+      :enableDoubleClick="props.settings.wmsLayer.doubleClickAction"
       @doubleclick="onCoordinateClick"
     />
     <AnimatedStreamlineRasterLayer
@@ -14,6 +15,7 @@
       :layerOptions="layerOptions"
       :streamlineOptions="layerCapabilities?.animatedVectors"
       :beforeId="baseMap.beforeId"
+      :enableDoubleClick="props.settings.wmsLayer.doubleClickAction"
       @doubleclick="onCoordinateClick"
     />
     <div
