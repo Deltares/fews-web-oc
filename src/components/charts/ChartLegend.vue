@@ -86,22 +86,39 @@ const emit = defineEmits(['toggleLine'])
 
 const overlay = computed(() => props.settings.placement.includes('inside'))
 
+const numberOfLines = computed(() => {
+  const minLines =
+    props.settings.minNumberOfLines === 'All'
+      ? props.tags.length
+      : Math.min(
+          +props.settings.minNumberOfLines,
+          Math.max(props.tags.length, +props.settings.minNumberOfLines),
+        )
+  const maxLines =
+    props.settings.maxNumberOfLines === 'All'
+      ? Math.max(props.tags.length, minLines)
+      : Math.min(
+          +props.settings.maxNumberOfLines,
+          Math.max(props.tags.length, +props.settings.maxNumberOfLines),
+        )
+  return props.tags.length >= maxLines ? maxLines : minLines
+})
+
 const height = computed(() => {
-  if (props.settings.numberOfLines === 'all') {
+  if (numberOfLines.value === props.tags.length) {
     return
   }
 
-  const numOfLines = +props.settings.numberOfLines
   if (overlay.value) {
     const chipHeight = 26
-    return numOfLines * chipHeight + 4
+    return numberOfLines.value * chipHeight + 4
   } else {
     const chipHeight = 34
-    return numOfLines * chipHeight + 4
+    return numberOfLines.value * chipHeight + 4
   }
 })
 const heightStyle = computed(() => {
-  if (props.settings.numberOfLines === 'all') {
+  if (numberOfLines.value === props.tags.length) {
     return `${legendHeight.value}px`
   }
 
