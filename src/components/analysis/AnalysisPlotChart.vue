@@ -11,7 +11,7 @@
       :zoomHandler
       :panHandler
       :settings="settings.charts.timeSeriesChart"
-      @update:x-domain="$emit('update:x-domain', $event)"
+      @update:x-domain="updateDomain"
     />
     <!-- Used to render the chart for downloading as image. -->
     <!-- This is done to have the same chart size across different devices. -->
@@ -20,7 +20,7 @@
       <TimeSeriesChart
         ref="render-chart"
         class="render-chart"
-        :config
+        :config="renderConfig"
         :series
         :settings="settings.charts.timeSeriesChart"
       />
@@ -48,11 +48,13 @@ import {
   createExportableSvgElement,
 } from '@/lib/svg'
 import { downloadImageAsPng } from '@/lib/download'
-import { nextTick, ref, useTemplateRef } from 'vue'
+import { computed, nextTick, ref, useTemplateRef } from 'vue'
 import { useConfigStore } from '@/stores/config'
 import { toSnakeCase } from '@/lib/utils/toSnakeCase'
 import { fetchAndInlineCssAndFonts } from '@/lib/css'
 import { getSeriesByLegend } from '@/lib/legend'
+import { getSubplotWithDomain } from '@/lib/display'
+import { UpdateDomainEmits } from '@/lib/charts/domain'
 
 interface Props {
   chart: PlotChart
@@ -70,6 +72,18 @@ const configStore = useConfigStore()
 
 const renderingChart = ref(false)
 const editing = ref(false)
+
+const emit = defineEmits<UpdateDomainEmits>()
+
+const renderDomain = ref<[Date, Date]>()
+function updateDomain(domain: [Date, Date]) {
+  renderDomain.value = domain
+  emit('update:x-domain', domain)
+}
+
+const renderConfig = computed(() =>
+  getSubplotWithDomain(props.config, renderDomain.value),
+)
 
 async function downloadChartImage() {
   renderingChart.value = true

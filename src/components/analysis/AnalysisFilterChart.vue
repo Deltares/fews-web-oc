@@ -7,13 +7,14 @@
     :zoomHandler
     :panHandler
     v-bind="$attrs"
+    @update:x-domain="updateDomain"
     @download="downloadChart"
   />
   <TimeSeriesFileDownloadComponent
     v-model="showDownloadDialog"
     :filter
-    :startTime
-    :endTime
+    :startTime="downloadDomain?.[0] ?? startTime"
+    :endTime="downloadDomain?.[1] ?? endTime"
   />
 </template>
 
@@ -28,6 +29,7 @@ import type { PanHandler, ZoomHandler } from '@deltares/fews-web-oc-charts'
 import { computed, ref } from 'vue'
 import { getSubplotWithDomain } from '@/lib/display'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { UpdateDomainEmits } from '@/lib/charts/domain'
 
 interface Props {
   chart: FilterChart
@@ -51,6 +53,14 @@ const domain = computed(
       ? ([props.startTime, props.endTime] as [Date, Date])
       : undefined),
 )
+
+const emit = defineEmits<UpdateDomainEmits>()
+
+const downloadDomain = ref<[Date, Date]>()
+function updateDomain(domain: [Date, Date]) {
+  downloadDomain.value = domain
+  emit('update:x-domain', domain)
+}
 
 const zoomHandler = computed(() =>
   props.chart.domain ? undefined : props.zoomHandler,
