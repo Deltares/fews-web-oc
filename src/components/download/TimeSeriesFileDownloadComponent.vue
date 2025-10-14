@@ -112,10 +112,16 @@ const isOnlyHeadersDownload = computed(() => {
     : false
 })
 
-const fileTypes = computed(() => [
+interface FileType {
+  title: string
+  format: DocumentFormat
+  disabled?: boolean
+}
+
+const fileTypes = computed<FileType[]>(() => [
   {
     title: 'csv',
-    format: DocumentFormat.PI_CSV,
+    format: DocumentFormat.PI_CSV_ID_AND_NAME,
     disabled:
       isOnlyHeadersDownload.value ||
       (props.filter && isCorrelationFilter(props.filter)),
@@ -273,7 +279,7 @@ async function downloadFile(downloadFormat: DocumentFormat) {
 async function downloadFileSafe(
   url: string,
   fileName: string,
-  documentFormat: string,
+  documentFormat: DocumentFormat,
   accessToken: string,
 ) {
   try {
