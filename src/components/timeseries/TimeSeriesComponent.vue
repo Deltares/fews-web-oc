@@ -6,20 +6,25 @@
       class="time-series-component__container scroll"
     >
       <KeepAlive>
-        <TimeSeriesChart
-          v-for="subplot in subplots"
-          :config="subplot"
-          :series="chartSeries"
-          :key="subplot.id"
-          :highlightTime="selectedDate"
-          :isLoading="isLoading(subplot, loadingSeriesIds)"
-          :zoomHandler="sharedZoomHandler"
-          :panHandler="sharedPanHandler"
-          :settings="settings.timeSeriesChart"
-          :forecastLegend="config.forecastLegend"
-          @update:x-domain="debouncedRefetchChartTimeSeries"
-        >
-        </TimeSeriesChart>
+        <template v-for="subplot in subplots" :key="subplot.id">
+          <TimeSeriesChart
+            v-model:domain="visibleDomain"
+            :config="subplot"
+            :series="chartSeries"
+            :highlightTime="selectedDate"
+            :zoomHandler="sharedZoomHandler"
+            :panHandler="sharedPanHandler"
+            :settings="settings.timeSeriesChart"
+            :forecastLegend="config.forecastLegend"
+          >
+            <TimeSeriesChartBrush
+              v-model:domain="visibleDomain"
+              :config="getSubplotWithDomain(subplot, fullBrushDomain)"
+              :series="brushChartSeries"
+              :settings="settings.timeSeriesChart"
+            />
+          </TimeSeriesChart>
+        </template>
       </KeepAlive>
     </v-window-item>
     <v-window-item
@@ -35,7 +40,6 @@
           :series="elevationChartSeries"
           :key="subplot.id"
           :style="`min-width: ${xs ? 100 : 50}%`"
-          :isLoading="isLoading(subplot, elevationLoadingSeriesIds)"
           :zoomHandler="sharedVerticalZoomHandler"
           :settings="settings.verticalProfileChart"
         >
@@ -86,6 +90,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
 import TimeSeriesChart from '../charts/TimeSeriesChart.vue'
+import TimeSeriesChartBrush from '../charts/TimeSeriesChartBrush.vue'
 import TimeSeriesTable from '../table/TimeSeriesTable.vue'
 import {
   DisplayType,
@@ -109,8 +114,11 @@ import {
   type ChartsSettings,
 } from '@/lib/topology/componentSettings'
 import { useChartHandlers } from '@/services/useChartHandlers'
-import { getSubplotsWithDomain } from '@/lib/display/utils.ts'
 import { useFetchDomain } from '@/services/useFetchDomain/index.ts'
+import {
+  getDomainWithConfigFallback,
+  getSubplotWithDomain,
+} from '@/lib/display/utils'
 
 interface Props {
   config?: DisplayConfig
@@ -165,9 +173,22 @@ const { sharedZoomHandler, sharedPanHandler, sharedVerticalZoomHandler } =
 
 const tab = ref<DisplayType>(props.displayType)
 
+const visibleDomain = ref<[Date, Date]>()
+const fullDomain = computed(() =>
+  getDomainWithConfigFallback(store.startTime, store.endTime, props.config),
+)
+const fullBrushDomain = ref<[Date, Date]>([
+  new Date('2024-05-01T00:00:00Z'),
+  new Date('2025-12-31T23:59:59Z'),
+])
 const chartOptions = ref<UseTimeSeriesOptions>({
   startTime: store.startTime,
   endTime: store.endTime,
+  thinning: true,
+})
+const brushOptions = ref<UseTimeSeriesOptions>({
+  startTime: fullBrushDomain.value[0],
+  endTime: fullBrushDomain.value[1],
   thinning: true,
 })
 const tableOptions = computed<UseTimeSeriesOptions>(() => ({
@@ -177,14 +198,16 @@ const tableOptions = computed<UseTimeSeriesOptions>(() => ({
 }))
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const {
-  series: chartSeries,
-  loadingSeriesIds,
-  interval: useTimeSeriesInterval,
-} = useTimeSeries(
+const { series: chartSeries, interval: useTimeSeriesInterval } = useTimeSeries(
   baseUrl,
   () => props.config.requests,
   chartOptions,
+  () => tab.value === DisplayType.TimeSeriesChart,
+)
+const { series: brushChartSeries } = useTimeSeries(
+  baseUrl,
+  () => props.config.requests,
+  brushOptions,
   () => tab.value === DisplayType.TimeSeriesChart,
 )
 const {
@@ -197,25 +220,13 @@ const {
   tableOptions,
   () => tab.value === DisplayType.TimeSeriesTable,
 )
-const {
-  series: elevationChartSeries,
-  loadingSeriesIds: elevationLoadingSeriesIds,
-} = useTimeSeries(
+const { series: elevationChartSeries } = useTimeSeries(
   baseUrl,
   () => props.elevationChartConfig.requests,
   chartOptions,
   () => tab.value === DisplayType.ElevationChart,
   selectedDate,
 )
-
-function isLoading(subplot: ChartConfig, loadingSeriesIds: string[]) {
-  return subplot.series
-    .map((s) => s.id)
-    .some((id) => {
-      const idWithoutIndex = id.replace(/\[\d+\]$/, '')
-      return loadingSeriesIds.includes(idWithoutIndex)
-    })
-}
 
 async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
   const seriesKey = props.config.requests[0]?.key
@@ -233,7 +244,9 @@ async function onDataChange(newData: Record<string, TimeSeriesEvent[]>) {
 }
 
 const subplots = computed(() =>
-  getSubplotsWithDomain(props.config, store.startTime, store.endTime),
+  props.config.subplots.map((subplot) =>
+    getSubplotWithDomain(subplot, fullDomain.value),
+  ),
 )
 
 const elevationChartSubplots = computed(() => {
@@ -315,6 +328,11 @@ function onConfirmationLeave() {
 }
 
 const { debouncedRefetchChartTimeSeries } = useFetchDomain(chartOptions)
+
+watch(visibleDomain, (newDomain) => {
+  if (!newDomain) return
+  debouncedRefetchChartTimeSeries(newDomain)
+})
 </script>
 
 <style scoped>
