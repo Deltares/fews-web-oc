@@ -65,6 +65,7 @@
               v-if="filterLocationGeoJson.features.length"
               :locationsGeoJson="filterLocationGeoJson"
               :selectedLocationIds="selectedLocationIds"
+              :locationsClickable="true"
               @click="onLocationClick"
             />
           </AnalysisMap>
