@@ -43,3 +43,17 @@ defineProps<Props>()
 
 const sidePanelStore = useSidePanelStore()
 </script>
+
+<style scoped>
+:deep(.v-window__container) {
+  height: 100%;
+}
+
+.workflows-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  width: 450px;
+}
+</style>
