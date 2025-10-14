@@ -34,7 +34,7 @@
         :getItemTitle="(item) => item.label"
       />
       <div class="flex-1-1 w-100">
-        <v-toolbar height="32">
+        <v-toolbar height="32" color="transparent">
           <span>Thresholds</span>
         </v-toolbar>
 

@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex flex-column overflow-auto">
-    <v-toolbar height="32">
+    <v-toolbar height="32" color="transparent">
       <span>{{ label }}</span>
       <v-btn
         v-if="multiple && listSelected.length > 0"

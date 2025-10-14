@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex flex-column overflow-auto">
-    <v-toolbar height="32">
+    <v-toolbar height="32" color="transparent">
       <span class="ms-2">{{ label }}</span>
       <slot name="prepend-title" />
       <v-btn
