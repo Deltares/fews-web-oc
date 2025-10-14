@@ -1,6 +1,11 @@
 <template>
   <ControlChip v-if="hasLocations" :class="{ 'pr-0': showLocations }">
-    <v-btn @click="showLocations = !showLocations" density="compact" icon>
+    <v-btn
+      @click="showLocations = !showLocations"
+      density="compact"
+      icon
+      variant="plain"
+    >
       <v-icon>
         {{ showLocations ? 'mdi-map-marker' : 'mdi-map-marker-off' }}
       </v-icon>
