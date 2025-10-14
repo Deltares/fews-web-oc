@@ -15,7 +15,7 @@
       class="h-100 workflows-panel"
     >
       <v-toolbar density="compact">
-        <span class="ms-4">Run Workflow</span>
+        <span class="ms-4">Run Tasks</span>
         <template #append>
           <v-btn
             @click="sidePanelStore.toggleActive('workflows')"
