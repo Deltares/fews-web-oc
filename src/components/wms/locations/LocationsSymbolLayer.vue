@@ -23,7 +23,11 @@ const filter = [
   'all',
   ['has', 'iconName'],
   ['==', '$type', 'Point'],
-  [props.child ? 'has' : '!has', 'parentLocationId'],
+  props.child
+    ? // Child: has parentLocationId AND not selected
+      ['all', ['has', 'parentLocationId'], ['!=', 'selected', true]]
+    : // Parent: no parentLocationId OR selected
+      ['any', ['!has', 'parentLocationId'], ['==', 'selected', true]],
 ]
 
 const baseLayout = {

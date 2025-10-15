@@ -21,10 +21,7 @@
     <LocationsTextLayer :layerId="locationMapIds.layer.text" :isDark="isDark" />
   </mgl-geo-json-source>
 
-  <LocationsMarkers
-    :selectedLocationIds="selectedLocationIds"
-    :geojson="geojson"
-  />
+  <LocationsMarkers :geojson="geojson" />
 </template>
 
 <script setup lang="ts">
@@ -70,6 +67,7 @@ const props = withDefaults(defineProps<Props>(), {
   }),
   selectedLocationId: null,
   locationsClickable: true,
+  selectedLocationIds: () => [],
 })
 
 const showNames = computed(() => {
@@ -77,7 +75,11 @@ const showNames = computed(() => {
 })
 
 const geojson = computed(() =>
-  addPropertiesToLocationGeojson(props.locationsGeoJson, showNames.value),
+  addPropertiesToLocationGeojson(
+    props.locationsGeoJson,
+    props.selectedLocationIds,
+    showNames.value,
+  ),
 )
 
 const emit = defineEmits(['click'])
