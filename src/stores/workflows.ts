@@ -16,7 +16,6 @@ import { authenticationManager } from '@/services/authentication/AuthenticationM
 interface WorkflowsState {
   startTime: string | null
   endTime: string | null
-  numActiveWorkflows: number
   boundingBox: BoundingBox | null
   isDrawingBoundingBox: boolean
   coordinate: LngLat | null
@@ -51,7 +50,6 @@ export const useWorkflowsStore = defineStore('workflows', {
   state: (): WorkflowsState => ({
     startTime: null,
     endTime: null,
-    numActiveWorkflows: 0,
     boundingBox: null,
     isDrawingBoundingBox: false,
     isSelectingCoordinate: false,
