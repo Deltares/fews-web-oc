@@ -11,6 +11,7 @@
     <div
       v-if="sidePanelStore.isActive(type)"
       class="d-flex flex-column h-100 side-panel"
+      aria-label="Side panel"
     >
       <v-toolbar density="compact">
         <span class="ms-4">{{ title }}</span>

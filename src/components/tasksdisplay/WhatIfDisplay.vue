@@ -41,6 +41,7 @@
                 icon="mdi-selection-drag"
                 variant="tonal"
                 density="comfortable"
+                aria-label="Draw bounding box on map"
                 :active="workflowsStore.isDrawingBoundingBox"
                 @click="
                   workflowsStore.isDrawingBoundingBox =
@@ -60,6 +61,7 @@
                 icon="mdi-map-marker-radius"
                 variant="tonal"
                 density="comfortable"
+                aria-label="Select coordinate on map"
                 :active="workflowsStore.isSelectingCoordinate"
                 @click="
                   workflowsStore.isSelectingCoordinate =

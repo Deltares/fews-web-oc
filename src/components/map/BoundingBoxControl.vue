@@ -1,5 +1,8 @@
 <template>
-  <ControlChip class="outer-chip justify-center overflow-visible">
+  <ControlChip
+    class="outer-chip justify-center overflow-visible"
+    aria-label="Bounding Box Control"
+  >
     <v-icon start>mdi-selection-drag</v-icon>
     <DrawBoundingBoxControl v-if="isActive" v-model="boundingBox" />
 

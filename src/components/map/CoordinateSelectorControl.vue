@@ -1,5 +1,8 @@
 <template>
-  <ControlChip class="outer-chip justify-center overflow-visible">
+  <ControlChip
+    class="outer-chip justify-center overflow-visible"
+    aria-label="Coordinate Selector Control"
+  >
     <v-icon start>mdi-map-marker</v-icon>
 
     <span

@@ -44,10 +44,12 @@
       />
     </SidePanelControl>
     <v-menu location="bottom right">
-      <template v-slot:activator="{ props }">
-        <v-btn icon v-bind="props">
-          <v-icon>mdi-dots-vertical</v-icon>
-        </v-btn>
+      <template #activator="{ props }">
+        <v-btn
+          icon="mdi-dots-vertical"
+          v-bind="props"
+          aria-label="More Sidepanel Options"
+        />
       </template>
       <v-list>
         <v-list-item
