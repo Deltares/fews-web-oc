@@ -81,12 +81,9 @@ onUnmounted(() => {
 
 watch(
   () => props.enableDoubleClick,
-  (enableDoubleClick) => {
-    if (enableDoubleClick) {
-      addHooksToMapObject()
-    } else {
-      removeHooksFromMapObject()
-    }
+  () => {
+    removeHooksFromMapObject()
+    addHooksToMapObject()
   },
 )
 
