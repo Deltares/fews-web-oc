@@ -1,5 +1,8 @@
 <template>
-  <iframe :src="url" class="w-100 h-100 ma-0 pa-0 border-none" />
+  <iframe v-if="url" :src="url" class="w-100 h-100 ma-0 pa-0 border-none" />
+  <div v-else class="pa-4">
+    <span>No information document configured</span>
+  </div>
 </template>
 
 <script setup lang="ts">
