@@ -48,7 +48,7 @@ export const componentTypeToComponentMap = {
   'system-monitor': SystemMonitorDisplayView,
   'html-display': Empty,
   'log-display': Empty,
-  'whatif-display': WhatIfDisplayView,
+  'runtask-display': WhatIfDisplayView,
   'data-analysis-display': DataAnalysisDisplay,
   'documents-display': Empty,
 } satisfies Record<ComponentType, Component>
