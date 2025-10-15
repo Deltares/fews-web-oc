@@ -28,6 +28,8 @@ See [Technical Architecture](architecture/). This page includes information on t
 See [Web OC Delft-FEWS configuration ](configuration/). This page includes information on the Delft-FEWS configuration for Web OC and in addition covers the following:
 
 - Web OC navigation using Topology
+- Threshold Information in Web OC
+- Web OC side panel
 - Other WEB OC functional components
 - Permissions
 
