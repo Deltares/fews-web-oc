@@ -159,9 +159,11 @@ const chartControlsStyle = computed(() => {
     ? 'min-content'
     : `calc(100% - ${marginRight ?? 0} - ${marginLeft ?? 0})`
 
-  const alignSelf = props.settings.placement.includes('lower')
-    ? 'flex-end'
-    : 'flex-start'
+  const alignSelf =
+    props.settings.placement.includes('lower') ||
+    props.settings.placement.includes('under')
+      ? 'flex-end'
+      : 'flex-start'
   const justifySelf = props.settings.placement.includes('right')
     ? 'flex-end'
     : 'flex-start'
@@ -181,9 +183,11 @@ const chartControlsStyle = computed(() => {
 })
 
 const expandButtonStyle = computed(() => {
-  const alignSelf = props.settings.placement.includes('lower')
-    ? 'flex-start'
-    : 'flex-end'
+  const alignSelf =
+    props.settings.placement.includes('lower') ||
+    props.settings.placement.includes('under')
+      ? 'flex-start'
+      : 'flex-end'
   const height = overlay.value ? '28px' : undefined
   const width = overlay.value ? '28px' : undefined
   return {
@@ -194,7 +198,9 @@ const expandButtonStyle = computed(() => {
 })
 
 const expandIcon = computed(() => {
-  const isLower = props.settings.placement.includes('lower')
+  const isLower =
+    props.settings.placement.includes('lower') ||
+    props.settings.placement.includes('under')
   if (isLower) {
     return expanded.value ? 'mdi-chevron-down' : 'mdi-chevron-up'
   } else {
@@ -206,6 +212,9 @@ const chartLegendContainerStyle = computed(() => {
   return {
     height: expanded.value ? '100%' : heightStyle.value,
     overflow: expanded.value ? 'auto' : 'hidden',
+    marginBottom: props.settings.placement.includes('under')
+      ? '2px'
+      : undefined,
   }
 })
 
