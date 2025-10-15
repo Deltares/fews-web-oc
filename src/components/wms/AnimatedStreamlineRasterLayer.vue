@@ -52,8 +52,11 @@ interface Props {
   layerOptions?: AnimatedRasterLayerOptions
   streamlineOptions?: StreamlineLayerOptionsFews
   beforeId?: string
+  enableDoubleClick: boolean
 }
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  enableDoubleClick: false,
+})
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 const emit = defineEmits(['doubleclick'])
 
@@ -71,8 +74,18 @@ onUnmounted(() => {
   removeHooksFromMapObject()
 })
 
+watch(
+  () => props.enableDoubleClick,
+  () => {
+    removeHooksFromMapObject()
+    addHooksToMapObject()
+  },
+)
+
 function addHooksToMapObject() {
-  map?.on('dblclick', onDoubleClick)
+  if (props.enableDoubleClick) {
+    map?.on('dblclick', onDoubleClick)
+  }
 }
 
 function removeHooksFromMapObject(): void {

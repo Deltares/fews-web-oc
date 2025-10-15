@@ -86,22 +86,39 @@ const emit = defineEmits(['toggleLine'])
 
 const overlay = computed(() => props.settings.placement.includes('inside'))
 
+const numberOfLines = computed(() => {
+  const minLines =
+    props.settings.minNumberOfLines === 'All'
+      ? props.tags.length
+      : Math.min(
+          +props.settings.minNumberOfLines,
+          Math.max(props.tags.length, +props.settings.minNumberOfLines),
+        )
+  const maxLines =
+    props.settings.maxNumberOfLines === 'All'
+      ? Math.max(props.tags.length, minLines)
+      : Math.min(
+          +props.settings.maxNumberOfLines,
+          Math.max(props.tags.length, +props.settings.maxNumberOfLines),
+        )
+  return props.tags.length >= maxLines ? maxLines : minLines
+})
+
 const height = computed(() => {
-  if (props.settings.numberOfLines === 'all') {
+  if (numberOfLines.value === props.tags.length) {
     return
   }
 
-  const numOfLines = +props.settings.numberOfLines
   if (overlay.value) {
     const chipHeight = 26
-    return numOfLines * chipHeight + 4
+    return numberOfLines.value * chipHeight + 4
   } else {
     const chipHeight = 34
-    return numOfLines * chipHeight + 4
+    return numberOfLines.value * chipHeight + 4
   }
 })
 const heightStyle = computed(() => {
-  if (props.settings.numberOfLines === 'all') {
+  if (numberOfLines.value === props.tags.length) {
     return `${legendHeight.value}px`
   }
 
@@ -142,9 +159,11 @@ const chartControlsStyle = computed(() => {
     ? 'min-content'
     : `calc(100% - ${marginRight ?? 0} - ${marginLeft ?? 0})`
 
-  const alignSelf = props.settings.placement.includes('lower')
-    ? 'flex-end'
-    : 'flex-start'
+  const alignSelf =
+    props.settings.placement.includes('lower') ||
+    props.settings.placement.includes('under')
+      ? 'flex-end'
+      : 'flex-start'
   const justifySelf = props.settings.placement.includes('right')
     ? 'flex-end'
     : 'flex-start'
@@ -152,6 +171,7 @@ const chartControlsStyle = computed(() => {
   return {
     maxHeight,
     minHeight,
+    height: expanded.value ? maxHeight : undefined,
     marginRight,
     marginLeft,
     marginTop,
@@ -163,9 +183,11 @@ const chartControlsStyle = computed(() => {
 })
 
 const expandButtonStyle = computed(() => {
-  const alignSelf = props.settings.placement.includes('lower')
-    ? 'flex-start'
-    : 'flex-end'
+  const alignSelf =
+    props.settings.placement.includes('lower') ||
+    props.settings.placement.includes('under')
+      ? 'flex-start'
+      : 'flex-end'
   const height = overlay.value ? '28px' : undefined
   const width = overlay.value ? '28px' : undefined
   return {
@@ -176,7 +198,9 @@ const expandButtonStyle = computed(() => {
 })
 
 const expandIcon = computed(() => {
-  const isLower = props.settings.placement.includes('lower')
+  const isLower =
+    props.settings.placement.includes('lower') ||
+    props.settings.placement.includes('under')
   if (isLower) {
     return expanded.value ? 'mdi-chevron-down' : 'mdi-chevron-up'
   } else {
@@ -184,9 +208,15 @@ const expandIcon = computed(() => {
   }
 })
 
-const chartLegendContainerStyle = computed(() => ({
-  overflow: expanded.value ? 'auto' : 'hidden',
-}))
+const chartLegendContainerStyle = computed(() => {
+  return {
+    height: expanded.value ? '100%' : heightStyle.value,
+    overflow: expanded.value ? 'auto' : 'hidden',
+    marginBottom: props.settings.placement.includes('under')
+      ? '2px'
+      : undefined,
+  }
+})
 
 function onOutsideClick() {
   if (expanded.value) {

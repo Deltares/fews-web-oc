@@ -269,7 +269,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         ],
       },
       {
-        path: 'whatif',
+        path: 'runtask',
         name: 'TopologyWhatIfDisplay',
         component: WhatIfDisplayView,
         props: true,

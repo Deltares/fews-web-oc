@@ -2,6 +2,11 @@
   <div
     class="chart-with-chips"
     :class="{ 'vertical-profile': verticalProfile }"
+    :style="{
+      'flex-direction': settings.legend.placement.includes('under')
+        ? 'column-reverse'
+        : 'column',
+    }"
   >
     <ChartLegend
       :tags="legendTags"
@@ -630,7 +635,6 @@ function redraw() {
 .chart-with-chips {
   display: flex;
   position: relative;
-  flex-direction: column;
   flex: 1 1 80%;
   max-height: max(50%, 400px);
   width: 100%;

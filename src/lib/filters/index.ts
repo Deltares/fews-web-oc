@@ -32,7 +32,6 @@ export function isDataDownloadFilter(
 }
 
 export function isTimeSeriesFilter(filter: Filter): filter is TimeSeriesFilter {
-  // @ts-expect-error: FIXME: Should be updated in the json schema and PI requests
   return (filter as TimeSeriesFilter).timeSeriesIds !== undefined
 }
 export function isCorrelationFilter(

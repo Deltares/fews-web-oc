@@ -84,6 +84,15 @@ function getNoXLabelOptions(): Partial<CartesianAxesOptions> {
   }
 }
 
+function getLegendBelowChartOptions(): Partial<CartesianAxesOptions> {
+  return {
+    margin: {
+      top: 40,
+      bottom: 25,
+    },
+  }
+}
+
 export function getAxisOptions(
   config: ChartConfig,
   settings:
@@ -108,6 +117,10 @@ export function getAxisOptions(
 
   if (!settings.xAxis.xLabel) {
     extraOptions.push(getNoXLabelOptions())
+  }
+
+  if (settings.legend.placement.includes('under')) {
+    extraOptions.push(getLegendBelowChartOptions())
   }
 
   return merge(getDefaultOptions(), ...extraOptions)
