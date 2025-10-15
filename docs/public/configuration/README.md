@@ -40,10 +40,10 @@ Topology nodes in the Web OC component TopologyDisplay can be linked using Topol
 | Filters                    | Yes                  | Yes                | `<filterId>`                                                        | 
 | Log Displays                | Yes                  | Yes               | `<logDisplayId>`                                                    | 
 | Report                     | Yes                  | Yes                | `<reportModuleInstanceId>`                                          | 
-| Run Task                   | Yes                  | Yes                | `<secondaryWorkflowId>`                                             | 
+| Run Task                   | Yes                  | Yes                | `<workflowId>` and `<secondaryWorkflowId>`                          | 
 | SchematicStatusDisplay     | Yes                  | Yes                | `<scadaDisplayId>` and `<scadaPanelId>`                             | 
 | Spatial Display            | Yes                  | Yes                | `<gridDisplaySelection>`                                            |
-| System Monitor             | No                   | No                 | -                                                                   |  
+| Web OC Dashboard           | Yes                  | Yes                | `<webOCDashboardId>`                                                |
 
 **Data Analysis Display**
 
@@ -166,16 +166,67 @@ Optionally, gridded vector data can be shown as an animated layer in Web OC by c
 
 ---
 
-**System Monitor**
+**Web OC Dashboards**
 
-The system monitor is not supported yet.
+The functionality of **Web OC** essentially consists of a number of components that can be linked to [topology nodes](https://deltares.github.io/fews-web-oc/configuration/#web-oc-navigation-using-topology).  
+Within a Web OC dashboard, several of these components can be displayed together on a single screen.  
+It is also possible to include multiple instances of the same component within one dashboard — for example, to spatially compare different meteorological products.  
+
+In `Topology.xml`, a dashboard is linked to a node using `<webOCDashboardId>`.  
+For further configuration, see: [WebOCDashboards.xml](https://publicwiki.deltares.nl/spaces/FEWSDOC/pages/356779153/38+Web+OC+Dashboards).
 
 ---
 
-**Topology active threshold crossings**
+## Threshold Information in WebOC
 
-Both Desktop OC and Web OC can show location threshold icons in the topology tree: [documentation](https://publicwiki.deltares.nl/display/FEWSDOC/24+Topology#id-24Topology-Thresholdicons).
+In **WebOC**, the following options exist for displaying threshold information:
 
+1. **Icons on the map**  
+   For this feature, a `filterId` must be linked to a topology node.  
+   Location overlay icons are displayed on the map, consistent with the Desktop OC.
+
+2. **Count on topology tree**  
+   Indicates the number of threshold crossings by means of a “count” per topology node.  
+   A `filterId` must be linked to a topology node for this to work.  
+   When this is the case, the topology tree shows the number of locations for which threshold exceedances exist.  
+   This option is only visible if  
+   `<showActiveThresholdCrossingsForFilters>true</showActiveThresholdCrossingsForFilters>`
+
+3. **Thresholds overview**
+   Indicates the number of threshold crossings by means of a “count” per topology node.  
+   A `filterId` must be linked to a topology node for this to work.  
+   When this is the case, the top bar displays a count of the number of locations for which threshold exceedances exist.  
+   By double-clicking, the threshold overview becomes visible in a side panel.  
+   This option is only visible if  
+   `<showActiveThresholdCrossingsForFilters>true</showActiveThresholdCrossingsForFilters>`
+
+## Web OC side panel
+
+Web OC includes a side panel that can be opened via the *kebab menu* (three vertical dots) in the top-right corner of the screen.  
+Depending on the [configuration](https://publicwiki.deltares.nl/display/FEWSDOC/11+Web+Operator+Client), the following information may be visible:
+
+- **Task overview**  
+Overview of tasks, which can be filtered by task status (running, pending, completed, etc.).  
+`<taskOverview enabled="true"/>`
+
+- **Non-Current Data**  
+By default, both charts and maps display the current forecast.
+Through this panel, the current forecast can be compared with other available forecasts.
+`<nonCurrentData enabled="true"/>`
+
+- **Import Status**  
+Import status overview, equivalent to the System Monitor → Import Status view in Desktop OC.
+`<importStatus enabled="true"/>`
+
+- **Run Tasks**  
+If a topology node is linked to a `workflowId` or a `secondaryWorkflow` (with `whatIfTemplateId`), the corresponding task can be started via this panel.
+`<runTask enabled="true"/>` 
+See also: [Web OC navigation using Topology](https://deltares.github.io/fews-web-oc/configuration/#web-oc-navigation-using-topology).  
+
+- **More Info**
+If a `<documentFile>` is linked to a topology node, it can be accessed via this panel.
+`<documentFile enabled="true"/>`
+See also: [Web OC navigation using Topology](https://deltares.github.io/fews-web-oc/configuration/#web-oc-navigation-using-topology).  
 
 ### Permissions
 
