@@ -103,11 +103,9 @@ const hasResetAxes = ref(true)
 
 onMounted(() => {
   if (chartContainer.value) {
-    const axisOptions = getAxisOptions(
-      props.config,
-      props.settings,
-      props.verticalProfile,
-    )
+    const axisOptions = getAxisOptions(props.config, props.settings, {
+      isVerticalProfile: props.verticalProfile,
+    })
     axis = new CartesianAxes(
       chartContainer.value,
       props.verticalProfile ? 800 : null,

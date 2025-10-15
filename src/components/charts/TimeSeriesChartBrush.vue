@@ -5,15 +5,11 @@
 <script setup lang="ts">
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { Series } from '@/lib/timeseries/timeSeries'
-import {
-  BrushHandler,
-  CartesianAxes,
-  CartesianAxesOptions,
-} from '@deltares/fews-web-oc-charts'
+import { BrushHandler, CartesianAxes } from '@deltares/fews-web-oc-charts'
 import type { ChartsSettings } from '@/lib/topology/componentSettings'
 import { onMounted, ref, useTemplateRef, watch } from 'vue'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
-import { difference, merge } from 'lodash-es'
+import { difference } from 'lodash-es'
 import {
   clearChart,
   redraw,
@@ -39,24 +35,10 @@ let brushHandler!: BrushHandler
 onMounted(() => {
   if (!brushContainer.value) throw new Error('No brush container found')
 
-  const axisOptions = getAxisOptions(props.config, props.settings, false)
-  const brushOptions: Partial<CartesianAxesOptions> = {
-    margin: { top: 5 },
-    x: [
-      {
-        showAxis: false,
-        showGrid: false,
-      },
-    ],
-    y: [
-      { showAxis: false, showGrid: false, label: '', unit: '' },
-      { showAxis: false, showGrid: false, label: '', unit: '' },
-    ],
-  }
-
-  const opts = merge({}, axisOptions, brushOptions)
-
-  axis = new CartesianAxes(brushContainer.value, null, null, opts)
+  const axisOptions = getAxisOptions(props.config, props.settings, {
+    isBrush: true,
+  })
+  axis = new CartesianAxes(brushContainer.value, null, null, axisOptions)
 
   brushHandler = new BrushHandler({
     domain: { x: domain.value },
