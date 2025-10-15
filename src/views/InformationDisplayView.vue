@@ -1,15 +1,5 @@
 <template>
-  <div class="d-flex h-100 w-100 flex-column">
-    <v-toolbar density="compact">
-      <span class="ms-4">Information</span>
-      <template #append>
-        <v-btn @click="onClose" size="small" variant="text" icon="mdi-close" />
-      </template>
-    </v-toolbar>
-    <v-sheet class="flex-1-1">
-      <iframe :src="url" class="w-100 h-100 ma-0 pa-0 border-none" />
-    </v-sheet>
-  </div>
+  <iframe :src="url" class="w-100 h-100 ma-0 pa-0 border-none" />
 </template>
 
 <script setup lang="ts">
@@ -22,11 +12,6 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['close'])
-
-function onClose() {
-  emit('close')
-}
 
 const url = computed(() => {
   const resource = props.topologyNode?.documentFile

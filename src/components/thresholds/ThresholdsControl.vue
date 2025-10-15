@@ -1,33 +1,32 @@
 <template>
-  <ThresholdsButton
-    :active="sidePanelStore.isActive('thresholds')"
-    :warningLevels="warningLevelsStore.warningLevels"
-    :crossings="warningLevelsStore.thresholdCrossings"
-    @click="sidePanelStore.toggleActive('thresholds')"
-  />
-  <Teleport to="#main-side-panel" defer>
-    <div
-      v-if="sidePanelStore.isActive('thresholds')"
-      class="d-flex flex-column h-100 w-100"
-    >
-      <ThresholdsPanel
-        v-model:selectedWarningLevelIds="
-          warningLevelsStore.selectedWarningLevelIds
-        "
+  <SidePanelControl type="thresholds" title="Thresholds">
+    <template #button>
+      <ThresholdsButton
+        :active="sidePanelStore.isActive('thresholds')"
         :warningLevels="warningLevelsStore.warningLevels"
         :crossings="warningLevelsStore.thresholdCrossings"
-        :selectedThresholdCrossings="
-          warningLevelsStore.selectedThresholdCrossings
-        "
-        :locationIds="props.locationIds"
-        :selectable="nodeCanShowThresholds"
-        @close="sidePanelStore.toggleActive('thresholds')"
-        @navigate="emit('navigate', $event)"
+        @click="sidePanelStore.toggleActive('thresholds')"
       />
-    </div>
-  </Teleport>
+    </template>
+
+    <ThresholdsPanel
+      v-model:selectedWarningLevelIds="
+        warningLevelsStore.selectedWarningLevelIds
+      "
+      :warningLevels="warningLevelsStore.warningLevels"
+      :crossings="warningLevelsStore.thresholdCrossings"
+      :selectedThresholdCrossings="
+        warningLevelsStore.selectedThresholdCrossings
+      "
+      :locationIds="props.locationIds"
+      :selectable="nodeCanShowThresholds"
+      @close="sidePanelStore.toggleActive('thresholds')"
+      @navigate="emit('navigate', $event)"
+    />
+  </SidePanelControl>
 </template>
 <script setup lang="ts">
+import SidePanelControl from '@/components/sidepanel/SidePanelControl.vue'
 import { ref, watch } from 'vue'
 import ThresholdsPanel from '@/components/thresholds/ThresholdsPanel.vue'
 import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
@@ -83,9 +82,5 @@ watch(
   width: 450px;
   display: grid;
   grid-template-rows: auto 1fr auto auto;
-}
-
-:deep(.v-window__container) {
-  height: 100%;
 }
 </style>
