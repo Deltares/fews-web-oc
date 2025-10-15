@@ -165,43 +165,51 @@ interface SecondaryControl {
   disabled?: boolean
 }
 
-const secondaryControls = computed<SecondaryControl[]>(() => [
-  {
-    type: 'tasks',
-    title: 'Task Overview',
-    icon: 'mdi-clipboard-text-clock',
-    component: TaskRunsControl,
-    disabled: !configStore.general.sidePanel?.taskOverview?.enabled,
-  },
-  {
-    type: 'import',
-    title: 'Import Status',
-    icon: 'mdi-database-import',
-    component: ImportStatusControl,
-    disabled: !configStore.general.sidePanel?.importStatus?.enabled,
-  },
-  {
-    type: 'visualize',
-    title: 'Non-Current Data',
-    icon: 'mdi-chart-box-multiple',
-    component: VisualizeDataControl,
-    disabled: !configStore.general.sidePanel?.nonCurrentData?.enabled,
-  },
-  {
-    type: 'workflows',
-    title: 'Run Tasks',
-    icon: 'mdi-cog-play',
-    component: WorkflowsControl,
-    disabled: !configStore.general.sidePanel?.runTask?.enabled,
-  },
-  {
-    type: 'info',
-    title: 'More Info',
-    icon: 'mdi-information-outline',
-    component: InformationDisplayView,
-    disabled: !configStore.general.sidePanel?.documentFile?.enabled,
-  },
-])
+const secondaryControls = computed<SecondaryControl[]>(() => {
+  const sidePanelConfig = configStore.general.sidePanel
+  return [
+    {
+      type: 'tasks',
+      title: 'Task Overview',
+      icon: 'mdi-clipboard-text-clock',
+      component: TaskRunsControl,
+      disabled:
+        !showTaskMenu.value && sidePanelConfig?.runTask?.enabled === false,
+    },
+    {
+      type: 'import',
+      title: 'Import Status',
+      icon: 'mdi-database-import',
+      component: ImportStatusControl,
+      disabled:
+        !showTaskMenu.value && sidePanelConfig?.importStatus?.enabled === false,
+    },
+    {
+      type: 'visualize',
+      title: 'Non-Current Data',
+      icon: 'mdi-chart-box-multiple',
+      component: VisualizeDataControl,
+      disabled:
+        !showTaskMenu.value &&
+        sidePanelConfig?.nonCurrentData?.enabled === false,
+    },
+    {
+      type: 'workflows',
+      title: 'Run Tasks',
+      icon: 'mdi-cog-play',
+      component: WorkflowsControl,
+      disabled:
+        !showTaskRuns.value && sidePanelConfig?.runTask?.enabled === false,
+    },
+    {
+      type: 'info',
+      title: 'More Info',
+      icon: 'mdi-information-outline',
+      component: InformationDisplayView,
+      disabled: sidePanelConfig?.documentFile?.enabled === false,
+    },
+  ]
+})
 
 // Sync activeControl and secondaryControl with sidePanelStore
 watch(
