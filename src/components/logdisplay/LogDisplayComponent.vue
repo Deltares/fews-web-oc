@@ -1,5 +1,5 @@
 <template>
-  <div class="w-100 h-100">
+  <div class="w-100 h-100 d-flex flex-column">
     <v-navigation-drawer right permanent width="350">
       <v-list>
         <template v-if="manualFilters.length && systemFilters.length">
@@ -9,11 +9,10 @@
               v-if="manualFilters.length && systemFilters.length"
               v-model="selectedLogTypes"
               :items="logTypes"
-              label="Log Type"
               variant="outlined"
               hide-details
+              clearable
               density="compact"
-              class="logs-filter"
               :item-title="toTitleCase"
               :item-value="(item) => item"
             />
@@ -56,46 +55,45 @@
             :min="1"
           />
         </v-list-item>
+        <v-list-subheader>Limit</v-list-subheader>
+        <v-list-item>
+          <v-number-input
+            v-model.number="maxCount"
+            variant="outlined"
+            hide-details
+            density="compact"
+            validate-on="input"
+            :step="100"
+            :max="1000"
+            :min="1"
+          />
+        </v-list-item>
       </v-list>
+      <v-footer>
+        <v-spacer />
+      </v-footer>
     </v-navigation-drawer>
     <v-toolbar density="compact">
-      <v-text-field
-        v-model="search"
-        placeholder="Search"
-        prepend-inner-icon="mdi-magnify"
-        variant="outlined"
-        rounded
-        clearable
-        hide-details
-        class="px-2"
-        density="compact"
-      />
       <v-spacer />
-      <span class="mx-2">Limit</span>
-
-      <v-number-input
-        v-model.number="maxCount"
-        variant="outlined"
-        hide-details
-        density="compact"
-        validate-on="input"
-        max-width="150px"
-        :step="100"
-        :max="1000"
-        :min="1"
-      />
+      <v-btn @click="refreshLogs" :loading="isLoading" icon="mdi-refresh">
+      </v-btn>
       <span class="mx-2">Total:</span>
       <span style="width: 4rem"> {{ logMessages.length }}</span>
-      <v-btn
-        @click="refreshLogs"
-        icon="mdi-refresh"
-        density="compact"
-        :loading="isLoading"
-      />
     </v-toolbar>
-    <div class="logs-container d-flex flex-column">
+    <div class="logs-container">
       <div class="flex-0-0 d-flex justify-center py-2">
         <div class="flex-0-0 d-flex ga-2 align-left">
+          <v-text-field
+            v-model="search"
+            placeholder="Search"
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            rounded
+            clearable
+            hide-details
+            class="px-2"
+            density="compact"
+          />
           <NewLogMessageDialog
             v-if="noteGroup"
             :noteGroup="noteGroup"
@@ -104,7 +102,7 @@
         </div>
       </div>
       <v-virtual-scroll
-        class="scroll-container"
+        class="scroll-container h-100"
         :items="groupedByTaskRunId"
         :item-height="50"
         v-if="groupedByTaskRunId.length"
@@ -516,6 +514,10 @@ async function refreshLogs() {
   flex: 1 1 auto;
   display: flex;
   justify-content: center;
+}
+
+.logs-container {
+  height: calc(100% - 104px);
 }
 
 .logs-container > * > * {
