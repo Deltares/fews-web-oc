@@ -64,7 +64,10 @@
       <v-list>
         <!-- Task Run Overview option -->
         <v-list-item
-          v-if="showTaskMenu && secondaryControl !== 'tasks'"
+          v-if="
+            configStore.general.sidePanel?.taskOverview?.enabled &&
+            secondaryControl !== 'tasks'
+          "
           title="Task Overview"
           @click="
             () => {
@@ -87,7 +90,10 @@
         </v-list-item>
         <!-- Import Data option -->
         <v-list-item
-          v-if="showTaskMenu && secondaryControl !== 'import'"
+          v-if="
+            configStore.general.sidePanel?.importStatus?.enabled &&
+            secondaryControl !== 'import'
+          "
           prepend-icon="mdi-database-import"
           title="Import Status"
           @click="
@@ -100,7 +106,10 @@
         />
         <!-- Visualize Data option -->
         <v-list-item
-          v-if="showTaskMenu && secondaryControl !== 'visualize'"
+          v-if="
+            configStore.general.sidePanel?.nonCurrentData?.enabled &&
+            secondaryControl !== 'visualize'
+          "
           prepend-icon="mdi-chart-box-multiple"
           title="Non-Current Data"
           @click="
@@ -114,7 +123,10 @@
         </v-list-item>
         <!-- Run Tasks option (open dialog directly) -->
         <v-list-item
-          v-if="secondaryControl !== 'workflows'"
+          v-if="
+            configStore.general.sidePanel?.runTask?.enabled &&
+            secondaryControl !== 'workflows'
+          "
           title="Run Tasks..."
           :disabled="secondaryWorkflows === null"
           @click="
@@ -137,7 +149,10 @@
         </v-list-item>
         <!-- Info option -->
         <v-list-item
-          v-if="secondaryControl !== 'info'"
+          v-if="
+            configStore.general.sidePanel?.documentFile?.enabled &&
+            secondaryControl !== 'info'
+          "
           prepend-icon="mdi-information-outline"
           title="More Info"
           :disabled="!topologyNode?.documentFile"
@@ -268,7 +283,9 @@ const menuType = computed(() => {
   return configured ?? 'auto'
 })
 
-const showTaskMenu = computed(() => configStore.general.taskMenu?.enabled)
+const showTaskMenu = computed(
+  () => configStore.general.sidePanel?.runTask?.enabled,
+)
 
 const active = ref<string | undefined>(undefined)
 watch(active, () => {
