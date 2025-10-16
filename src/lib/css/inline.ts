@@ -1,3 +1,5 @@
+import { absoluteUrl } from '@/lib/utils/absoluteUrl'
+
 const inlinedCssCache = new Map<string, string>() // url -> inlined css text
 type CssChunk = { css: string; baseUrl: string }
 
@@ -31,7 +33,7 @@ async function fetchCssRecursively(url: string): Promise<CssChunk[]> {
     }
 
     // Recursively get imported chunks
-    const importUrl = new URL(importPath, url).href
+    const importUrl = new URL(importPath, absoluteUrl(url)).href
     const importedChunks = await fetchCssRecursively(importUrl)
     chunks = chunks.concat(importedChunks)
 

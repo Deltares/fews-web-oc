@@ -6,11 +6,13 @@
         :chart
         :subplot="chart.subplot"
         :series
-        :zoomHandler
+        :zoomHandler="sharedZoomHandler"
+        :panHandler="sharedPanHandler"
         :settings
         :startTime
         :endTime
         @remove="removeChart(chart)"
+        @update:x-domain="emit('update:x-domain', $event)"
       />
       <AnalysisCorrelationChart
         v-else-if="chart.type === 'correlation'"
@@ -49,7 +51,8 @@ import AnalysisUnsupportedChart from './AnalysisUnsupportedChart.vue'
 import type { Chart, Collection, CollectionEmits } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import { ZoomHandler, ZoomMode } from '@deltares/fews-web-oc-charts'
+import { useChartHandlers } from '@/services/useChartHandlers'
+import type { UpdateDomainEmits } from '@/lib/charts/domain'
 
 interface Props {
   series: Record<string, Series>
@@ -64,11 +67,9 @@ const collection = defineModel<Collection>('collection', {
   required: true,
 })
 
-const emit = defineEmits<CollectionEmits>()
+const emit = defineEmits<CollectionEmits & UpdateDomainEmits>()
 
-const zoomHandler = new ZoomHandler({
-  sharedZoomMode: ZoomMode.X,
-})
+const { sharedZoomHandler, sharedPanHandler } = useChartHandlers()
 
 function removeChart(chart: Chart) {
   collection.value.charts.splice(
