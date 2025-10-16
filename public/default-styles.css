@@ -18,7 +18,8 @@ svg.wb-charts,
 .mouse-over,
 .legend,
 .label,
-.tooltip {
+.tooltip,
+.brush-labels {
   font-size: 0.9rem;
 }
 
