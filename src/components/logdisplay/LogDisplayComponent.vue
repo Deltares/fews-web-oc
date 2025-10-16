@@ -1,121 +1,142 @@
 <template>
-  <div class="logs-container d-flex flex-column w-100 h-100 py-2">
-    <div class="flex-0-0 d-flex justify-center pt-2">
-      <div class="flex-0-0 d-flex ga-2 justify-space-between align-center">
-        <v-select
-          v-if="manualFilters.length && systemFilters.length"
-          v-model="selectedLogTypes"
-          :items="logTypes"
-          label="Log Type"
-          variant="outlined"
-          clearable
-          hide-details
-          density="compact"
-          class="logs-filter"
-          :item-title="toTitleCase"
-          :item-value="(item) => item"
-        />
-        <v-select
-          v-model="selectedLevels"
-          :items="logLevels"
-          label="Level"
-          variant="outlined"
-          clearable
-          hide-details
-          multiple
-          density="compact"
-          :item-title="levelToTitle"
-          class="logs-filter"
-          :item-value="(item) => item"
-        />
-        <v-text-field
-          v-model="search"
-          placeholder="Search"
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          clearable
-          hide-details
-          density="compact"
-          max-width="200px"
-          min-width="200px"
-        />
+  <div class="w-100 h-100">
+    <v-navigation-drawer right permanent width="350">
+      <v-list>
+        <template v-if="manualFilters.length && systemFilters.length">
+          <v-list-subheader>Types</v-list-subheader>
+          <v-list-item>
+            <v-select
+              v-if="manualFilters.length && systemFilters.length"
+              v-model="selectedLogTypes"
+              :items="logTypes"
+              label="Log Type"
+              variant="outlined"
+              hide-details
+              density="compact"
+              class="logs-filter"
+              :item-title="toTitleCase"
+              :item-value="(item) => item"
+            />
+          </v-list-item>
+        </template>
 
-        <div class="spacer" />
-        <v-btn
-          @click="refreshLogs"
-          icon="mdi-refresh"
-          density="compact"
-          :loading="isLoading"
-        />
-        <div class="date-input-container">
+        <v-list-subheader>Levels</v-list-subheader>
+        <v-list-item>
+          <v-select
+            v-model="selectedLevels"
+            :items="logLevels"
+            variant="outlined"
+            clearable
+            hide-details
+            multiple
+            density="compact"
+            :item-title="levelToTitle"
+            :item-value="(item) => item"
+          />
+        </v-list-item>
+        <v-list-subheader>Date</v-list-subheader>
+        <v-list-item>
           <v-date-input
             v-model="endDate"
-            label="Date"
             variant="outlined"
             hide-details
             density="compact"
             prepend-icon=""
           />
+        </v-list-item>
+        <v-list-subheader>Days back</v-list-subheader>
+        <v-list-item>
+          <v-number-input
+            v-model.number="daysBack"
+            variant="outlined"
+            hide-details
+            density="compact"
+            validate-on="input"
+            :max="365"
+            :min="1"
+          />
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+    <v-toolbar density="compact">
+      <v-text-field
+        v-model="search"
+        placeholder="Search"
+        prepend-inner-icon="mdi-magnify"
+        variant="outlined"
+        rounded
+        clearable
+        hide-details
+        class="px-2"
+        density="compact"
+      />
+      <v-spacer />
+      <span class="mx-2">Limit</span>
+
+      <v-number-input
+        v-model.number="maxCount"
+        variant="outlined"
+        hide-details
+        density="compact"
+        validate-on="input"
+        max-width="150px"
+        :step="100"
+        :max="1000"
+        :min="1"
+      />
+      <span class="mx-2">Total:</span>
+      <span style="width: 4rem"> {{ logMessages.length }}</span>
+      <v-btn
+        @click="refreshLogs"
+        icon="mdi-refresh"
+        density="compact"
+        :loading="isLoading"
+      />
+    </v-toolbar>
+    <div class="logs-container d-flex flex-column">
+      <div class="flex-0-0 d-flex justify-center pt-2">
+        <div
+          class="flex-0-0 d-flex ga-2 justify-space-between align-center"
+        ></div>
+      </div>
+      <div class="flex-0-0 d-flex justify-center py-2">
+        <div class="flex-0-0 d-flex ga-2 align-left">
+          <NewLogMessageDialog
+            v-if="noteGroup"
+            :noteGroup="noteGroup"
+            @newNote="refreshLogs"
+          />
         </div>
-        <v-text-field
-          v-model.number="daysBack"
-          label="Days back"
-          variant="outlined"
-          hide-details
-          density="compact"
-          validate-on="input"
-          :max="365"
-          :min="1"
-          max-width="80px"
-        />
-        <v-text-field
-          v-model.number="maxCount"
-          label="Request count"
-          variant="outlined"
-          hide-details
-          density="compact"
-          validate-on="input"
-          max-width="100px"
-          :max="1000"
-          :min="1"
-        />
-        <span>Total: {{ logMessages.length }}</span>
       </div>
+      <v-virtual-scroll
+        class="scroll-container"
+        :items="groupedByTaskRunId"
+        :item-height="50"
+        v-if="groupedByTaskRunId.length"
+      >
+        <template #default="{ item }">
+          <DateSeparator
+            v-if="item.type === 'dateSeparator'"
+            :date="item.date"
+          />
+          <LogItem
+            v-else-if="item.type === 'logItem'"
+            :logs="item.logs"
+            :taskRuns="taskRuns"
+            :disseminations="disseminations"
+            :disseminationStatus="disseminationStatus"
+            :userName="preferredUsername"
+            :noteGroup="noteGroup"
+            v-model:expanded="expandedItems[item.logs[0].taskRunId]"
+            @disseminate-log="disseminateLog"
+            @delete-log="deleteLog"
+            @edit-log="editLog"
+            @acknowledge-log="acknowledgeLog"
+            @unacknowledge-log="unacknowledgeLog"
+          />
+        </template>
+      </v-virtual-scroll>
     </div>
-    <div class="flex-0-0 d-flex justify-center py-2">
-      <div class="flex-0-0 d-flex ga-2 align-left">
-        <NewLogMessageDialog
-          v-if="noteGroup"
-          :noteGroup="noteGroup"
-          @newNote="refreshLogs"
-        />
-      </div>
-    </div>
-    <v-virtual-scroll
-      class="scroll-container"
-      :items="groupedByTaskRunId"
-      :item-height="50"
-      v-if="groupedByTaskRunId.length"
-    >
-      <template #default="{ item }">
-        <DateSeparator v-if="item.type === 'dateSeparator'" :date="item.date" />
-        <LogItem
-          v-else-if="item.type === 'logItem'"
-          :logs="item.logs"
-          :taskRuns="taskRuns"
-          :disseminations="disseminations"
-          :disseminationStatus="disseminationStatus"
-          :userName="preferredUsername"
-          :noteGroup="noteGroup"
-          v-model:expanded="expandedItems[item.logs[0].taskRunId]"
-          @disseminate-log="disseminateLog"
-          @delete-log="deleteLog"
-          @edit-log="editLog"
-          @acknowledge-log="acknowledgeLog"
-          @unacknowledge-log="unacknowledgeLog"
-        />
-      </template>
-    </v-virtual-scroll>
   </div>
 </template>
 
@@ -550,6 +571,6 @@ async function refreshLogs() {
 }
 
 .logs-filter {
-  max-width: 140px;
+  max-width: 200px;
 }
 </style>
