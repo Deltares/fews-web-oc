@@ -47,6 +47,8 @@ export interface UseTimeSeriesOptions {
   convertDatum?: boolean
   useDisplayUnits?: boolean
   onlyHeaders?: boolean
+  beforeStartTimeCount?: number
+  afterEndTimeCount?: number
 }
 
 function timeZoneOffsetString(offset: number): string {
@@ -281,6 +283,12 @@ export function getRelativeUrlForRequest(
 
   if (options.useDisplayUnits) {
     url.searchParams.set('useDisplayUnits', options.useDisplayUnits.toString())
+  }
+  if (options.beforeStartTimeCount) {
+    url.searchParams.set('beforeStartTimeCount', options.beforeStartTimeCount.toString())
+  }
+  if (options.afterEndTimeCount) {
+    url.searchParams.set('afterEndTimeCount', options.afterEndTimeCount.toString())
   }
 
   // Convert absolute URL back into relative URL with updated search
