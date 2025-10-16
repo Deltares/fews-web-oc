@@ -10,18 +10,29 @@ export function filterToParams(filter: Record<string, any>): string {
 
   return filterArgs.length ? '?' + filterArgs.join('&') : ''
 }
+
+export function getExtension(documentFormat: DocumentFormat): string {
+  switch (documentFormat) {
+    case DocumentFormat.PI_JSON:
+      return '.json'
+    case DocumentFormat.PI_XML:
+      return '.xml'
+    case DocumentFormat.PI_CSV_ID_AND_NAME:
+    case DocumentFormat.PI_CSV:
+      return '.csv'
+    default:
+      return ''
+  }
+}
 export async function downloadFileAttachment(
   url: string,
   fileName: string,
-  documentFormat: string,
+  documentFormat: DocumentFormat,
   accessToken: string,
 ) {
   const headers = new Headers()
   if (accessToken) {
-    let extension: string = 'csv'
-    if (documentFormat === DocumentFormat.PI_JSON) extension = '.json'
-    if (documentFormat === DocumentFormat.PI_XML) extension = '.xml'
-    if (documentFormat === DocumentFormat.PI_CSV) extension = '.csv'
+    const extension = getExtension(documentFormat)
     const downloadFileName = fileName + extension
     await downloadFileWithFetch(headers, url, downloadFileName, accessToken)
   }
