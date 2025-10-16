@@ -94,11 +94,6 @@
       />
     </v-toolbar>
     <div class="logs-container d-flex flex-column">
-      <div class="flex-0-0 d-flex justify-center pt-2">
-        <div
-          class="flex-0-0 d-flex ga-2 justify-space-between align-center"
-        ></div>
-      </div>
       <div class="flex-0-0 d-flex justify-center py-2">
         <div class="flex-0-0 d-flex ga-2 align-left">
           <NewLogMessageDialog
