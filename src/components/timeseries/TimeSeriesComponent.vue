@@ -192,7 +192,9 @@ const fullBrushDomain = ref<[Date, Date]>([
   new Date('2024-05-01T00:00:00Z'),
   new Date('2025-12-31T23:59:59Z'),
 ])
-const showBrush = computed(() => userSettings.get('charts.brush')?.value)
+const showBrush = computed(
+  () => userSettings.get('charts.brush')?.value === true,
+)
 const chartOptions = ref<UseTimeSeriesOptions>({
   startTime: store.startTime,
   endTime: store.endTime,
