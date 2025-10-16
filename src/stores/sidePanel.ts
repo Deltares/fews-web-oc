@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-type SidePanel =
+export type SidePanel =
   | 'tasks'
   | 'thresholds'
   | 'info'

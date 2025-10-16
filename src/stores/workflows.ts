@@ -14,11 +14,8 @@ import { toISOString } from '@/lib/date'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 
 interface WorkflowsState {
-  showDialog: boolean
-  workflowId: string | null
   startTime: string | null
   endTime: string | null
-  numActiveWorkflows: number
   boundingBox: BoundingBox | null
   isDrawingBoundingBox: boolean
   coordinate: LngLat | null
@@ -35,8 +32,7 @@ const webServiceProvider = new PiWebserviceProvider(baseUrl, {
   transformRequestFn: createTransformRequestFn(),
 })
 
-type OmitForWorkflow<T> = Omit<T, 'workflowId' | 'startTime' | 'endTime'>
-export type PartialRunTaskFilter = OmitForWorkflow<RunTaskFilter>
+type OmitForWorkflow<T> = Omit<T, 'startTime' | 'endTime'>
 export type PartialProcessDataFilter = OmitForWorkflow<ProcessDataFilter>
 
 export interface StartWorkflowOptions {
@@ -45,18 +41,15 @@ export interface StartWorkflowOptions {
 }
 
 function isPartialProcessDataFilter(
-  config: PartialRunTaskFilter | PartialProcessDataFilter,
+  config: RunTaskFilter | PartialProcessDataFilter,
 ): config is PartialProcessDataFilter {
   return (config as PartialProcessDataFilter).xCellSize !== undefined
 }
 
-const useWorkflowsStore = defineStore('workflows', {
+export const useWorkflowsStore = defineStore('workflows', {
   state: (): WorkflowsState => ({
-    showDialog: false,
-    workflowId: null,
     startTime: null,
     endTime: null,
-    numActiveWorkflows: 0,
     boundingBox: null,
     isDrawingBoundingBox: false,
     isSelectingCoordinate: false,
@@ -66,12 +59,9 @@ const useWorkflowsStore = defineStore('workflows', {
   actions: {
     async startWorkflow(
       type: WorkflowType,
-      filter: PartialRunTaskFilter | PartialProcessDataFilter,
+      filter: RunTaskFilter | PartialProcessDataFilter,
       options?: StartWorkflowOptions,
     ) {
-      if (this.workflowId === null) {
-        throw new Error('Workflow ID has not been set.')
-      }
       if (
         type === WorkflowType.ProcessData &&
         isPartialProcessDataFilter(filter)
@@ -81,7 +71,6 @@ const useWorkflowsStore = defineStore('workflows', {
         }
         const completeFilter: ProcessDataFilter = {
           ...filter,
-          workflowId: this.workflowId,
           startTime: this.startTime,
           endTime: this.endTime,
         }
@@ -90,39 +79,15 @@ const useWorkflowsStore = defineStore('workflows', {
           .replaceAll('-', '')
           .replaceAll(':', '')
         const fileName = `${now}${options?.fileName ?? '_DATA'}`
-        try {
-          this.numActiveWorkflows++
-          await downloadFileWithXhr(
-            url.toString(),
-            fileName,
-            authenticationManager.getAccessToken(),
-          )
-        } finally {
-          this.numActiveWorkflows--
-        }
+
+        await downloadFileWithXhr(
+          url.toString(),
+          fileName,
+          authenticationManager.getAccessToken(),
+        )
       } else if (type === WorkflowType.RunTask) {
-        const completeFilter: RunTaskFilter = {
-          ...filter,
-          workflowId: this.workflowId,
-        }
-        try {
-          this.numActiveWorkflows++
-          await webServiceProvider.postRunTask(
-            completeFilter,
-            options?.body ?? '',
-          )
-        } finally {
-          this.numActiveWorkflows--
-        }
+        await webServiceProvider.postRunTask(filter, options?.body ?? '')
       }
     },
   },
-
-  getters: {
-    hasActiveWorkflows: (state) => {
-      return state.numActiveWorkflows > 0
-    },
-  },
 })
-
-export { useWorkflowsStore }

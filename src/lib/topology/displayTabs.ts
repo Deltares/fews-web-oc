@@ -10,7 +10,6 @@ import {
   nodeHasSchematicStatusDisplay,
   nodeHasDynamicReportDisplay,
   nodeHasSystemMonitor,
-  nodeHasWhatIfs,
   nodeHasWebDisplay,
   nodeHasDataAnalysisDisplay,
   nodeHasDocumentDisplay,
@@ -107,10 +106,6 @@ export function displayTabsForNode(
         break
       case 'dashboard':
         tab.active = nodeHasDashboard(node)
-        tab.to.params = { ...params }
-        break
-      case 'runtask-display':
-        tab.active = nodeHasWhatIfs(node)
         tab.to.params = { ...params }
         break
       case 'log-display':

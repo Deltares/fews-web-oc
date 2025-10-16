@@ -9,7 +9,14 @@ export type TemplateProperty = NonNullable<WhatIfTemplate['properties']>[number]
 export type ScenarioProperty = NonNullable<
   WhatIfScenarioDescriptor['properties']
 >[number]
-export type ScenarioData = Record<string, string | number | boolean>
+export type ScenarioValue = string | number | boolean | Date
+export type ScenarioData = Record<string, ScenarioValue | undefined>
+
+const EXCLUDED_PROPERTY_IDS = ['GET_PROCESS_DATA']
+
+function isValidPropertyId(id: string | undefined) {
+  return id !== undefined && !EXCLUDED_PROPERTY_IDS.includes(id)
+}
 
 /**
  * Generates a JSON schema based on an array of SecondaryWorkflowProperty objects.
@@ -22,6 +29,8 @@ export function generateJsonSchema(
   const schemaProperties: NonNullable<JsonSchema7['properties']> = {}
 
   properties?.forEach((property) => {
+    if (!isValidPropertyId(property.id)) return
+
     schemaProperties[property.id] =
       convertPropertyToJsonSchemaProperty(property)
   })
@@ -29,17 +38,25 @@ export function generateJsonSchema(
   return {
     type: 'object',
     properties: schemaProperties,
-    required: properties?.map((property) => property.id),
+    required: Object.keys(schemaProperties),
   }
 }
 
 export function getJsonDataFromProperties(
-  properties: WhatIfScenarioDescriptor['properties'],
+  templateProperties: WhatIfTemplate['properties'],
+  scenarioProperties: WhatIfScenarioDescriptor['properties'],
 ) {
   const data: ScenarioData = {}
 
-  properties?.forEach((property) => {
-    if (property.id === undefined) return
+  templateProperties?.forEach((property) => {
+    if (!isValidPropertyId(property.id)) return
+
+    const schemaProperty = convertPropertyToJsonSchemaProperty(property)
+    data[property.id] = schemaProperty.default
+  })
+
+  scenarioProperties?.forEach((property) => {
+    if (!isValidPropertyId(property.id)) return
 
     if (property.type === 'enumProperty') {
       data[property.id] = property.value.code
@@ -110,23 +127,30 @@ function convertPropertyToJsonSchemaProperty(
         title: property.name,
       }
     case 'whatIfTemplateTemplateId':
+      return {
+        type: 'string',
+        title: property.name,
+        default: property.templateId,
+      }
     case 'configFile':
       return {
         type: 'string',
         title: property.name,
+        default: property.default,
       }
   }
 }
 
 export function getErrorsForProperties(
   properties: ScenarioData,
-  schema: JsonSchema7,
+  schema: JsonSchema7 | undefined,
 ) {
   const errors: ErrorObject[] = []
   for (const key in properties) {
-    if (!schema.properties) continue
+    if (!schema?.properties) continue
 
     const property = schema.properties[key]
+    if (!property) continue
 
     if (property.type === 'integer') {
       const value = properties[key] as number

@@ -53,9 +53,13 @@ export default defineConfig(({ mode }) => {
             `${env.VITE_FEWS_WEBSERVICES_URL}`,
             `${env.DEV_CONNECT_SRC}`,
           ].join(' '), // FEWS webservices, Authentication, Basemaps
-          [`frame-src`, `'self' blob:`, `${env.VITEDEVSERVER_FRAME_SRC}`].join(
-            ' ',
-          ), // FEWS webservices, Authentication, Basemaps
+          [
+            `frame-src`,
+            `'self'`,
+            `blob:`,
+            `${env.VITE_FEWS_WEBSERVICES_URL}`,
+            `${env.DEV_FRAME_SRC}`,
+          ].join(' '),
         ].join('; '),
       },
     },

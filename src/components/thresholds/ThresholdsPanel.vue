@@ -1,69 +1,56 @@
 <template>
-  <div class="threshold-summary-container h-100 d-flex flex-column">
-    <v-toolbar density="compact">
-      <span class="ms-4">Thresholds Overview</span>
+  <v-chip-group
+    class="px-2 py-2 d-flex flex-wrap flex-0-0"
+    v-model="selectedWarningLevelIds"
+    multiple
+    column
+    selected-class="v-chip--variant-tonal"
+  >
+    <v-chip
+      v-for="level in warningLevels"
+      :key="level.id"
+      :value="level.id"
+      :text="level.name"
+      label
+      variant="text"
+      class="pe-0 ps-2"
+      border
+    >
+      <template #prepend>
+        <v-img width="20" height="20" :src="level.icon" class="me-1" />
+      </template>
       <template #append>
-        <v-btn
-          @click="emit('close')"
+        <v-chip
+          :text="level.count"
+          density="compact"
+          variant="flat"
+          class="ms-2 pa-1 pointer-events-none"
           size="small"
-          variant="text"
-          icon="mdi-close"
         />
       </template>
-    </v-toolbar>
-    <v-chip-group
-      class="px-2 py-2 d-flex flex-wrap flex-0-0"
-      v-model="selectedWarningLevelIds"
-      multiple
-      column
-      selected-class="v-chip--variant-tonal"
-    >
-      <v-chip
-        v-for="level in warningLevels"
-        :key="level.id"
-        :value="level.id"
-        :text="level.name"
-        label
-        variant="text"
-        class="pe-0 ps-2"
-        border
-      >
-        <template #prepend>
-          <v-img width="20" height="20" :src="level.icon" class="me-1" />
-        </template>
-        <template #append>
-          <v-chip
-            :text="level.count"
-            density="compact"
-            variant="flat"
-            class="ms-2 pa-1 pointer-events-none"
-            size="small"
-          />
-        </template>
-      </v-chip>
-    </v-chip-group>
-    <div v-if="warningLevels.length === 0" class="pa-2">
-      No active threshold crossings
-    </div>
-    <!-- Important to have item-height as it greatly improves performance -->
-    <v-virtual-scroll
-      ref="virtualScroll"
-      class="scroll-container flex-1-1"
-      :items="groupedCrossings"
-      :item-height="52"
-    >
-      <template #default="{ item: crossingsGroup }">
-        <div class="my-1 mx-2">
-          <ThresholdSummary
-            :crossings="crossingsGroup"
-            :isSelected="crossingsGroup[0].locationId === locationIds"
-            :selectable="selectable"
-            @navigate="emit('navigate', $event)"
-          />
-        </div>
-      </template>
-    </v-virtual-scroll>
+    </v-chip>
+  </v-chip-group>
+  <div v-if="warningLevels.length === 0" class="pa-2">
+    No active threshold crossings
   </div>
+  <!-- Important to have item-height as it greatly improves performance -->
+  <v-virtual-scroll
+    ref="virtualScroll"
+    class="scroll-container flex-1-1"
+    :items="groupedCrossings"
+    :item-height="52"
+  >
+    <template #default="{ item: crossingsGroup }">
+      <div class="my-1 mx-2">
+        <ThresholdSummary
+          :crossings="crossingsGroup"
+          :isSelected="crossingsGroup[0].locationId === locationIds"
+          :selectable="selectable"
+          @navigate="emit('navigate', $event)"
+        />
+      </div>
+    </template>
+  </v-virtual-scroll>
 </template>
 
 <script setup lang="ts">

@@ -30,8 +30,48 @@
         <v-card flat border class="flex-0-0">
           <div class="px-4 pt-2">{{ configurationTitle }}</div>
           <v-card-text>
+            <div v-if="isBoundingBoxInForm" class="d-flex align-center">
+              <v-text-field
+                v-model="boundingBoxString"
+                readonly
+                variant="plain"
+                label="Bounding box"
+              />
+              <v-btn
+                icon="mdi-selection-drag"
+                variant="tonal"
+                density="comfortable"
+                aria-label="Draw bounding box on map"
+                :active="workflowsStore.isDrawingBoundingBox"
+                @click="
+                  workflowsStore.isDrawingBoundingBox =
+                    !workflowsStore.isDrawingBoundingBox
+                "
+              />
+            </div>
+            <div v-if="isCoordinateInForm" class="d-flex">
+              <v-text-field
+                v-model="coordinateString"
+                readonly
+                variant="plain"
+                density="compact"
+                label="Coordinate"
+              />
+              <v-btn
+                icon="mdi-map-marker-radius"
+                variant="tonal"
+                density="comfortable"
+                aria-label="Select coordinate on map"
+                :active="workflowsStore.isSelectingCoordinate"
+                @click="
+                  workflowsStore.isSelectingCoordinate =
+                    !workflowsStore.isSelectingCoordinate
+                "
+              />
+            </div>
             <json-forms
               :schema="jsonSchema"
+              :uischema="uiSchema"
               :data="selectedProperties"
               :renderers="Object.freeze(vuetifyRenderers)"
               :ajv="undefined"
@@ -67,21 +107,6 @@
           class="ps-0 mb-2"
           :workflow="selectedWorkflow"
         />
-        <v-alert
-          v-if="isSubmitted && !hasSubmitError"
-          class="flex-0-0"
-          type="success"
-          density="compact"
-        >
-          Task submitted successfully.
-        </v-alert>
-        <v-alert
-          v-if="isSubmitted && hasSubmitError"
-          class="flex-0-0"
-          type="error"
-        >
-          Failed to submit task: {{ submitErrorMessage }}
-        </v-alert>
         <div class="d-flex w-100">
           <v-spacer />
           <v-btn
@@ -119,15 +144,19 @@ import type {
   WhatIfTemplate,
 } from '@deltares/fews-pi-requests'
 import {
-  generateJsonSchema,
   getErrorsForProperties,
   getJsonDataFromProperties,
   ScenarioData,
 } from '@/lib/whatif'
-import { postRunTask, postWhatIfScenario } from '@/lib/whatif/fetch'
+import { postWhatIfScenario } from '@/lib/whatif/fetch'
 import type { WorkflowItem } from '@/lib/workflows'
 import { refreshTaskRuns } from '@/services/useTasksRuns'
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
+import { uid } from '@/lib/utils/uid'
+import { useAlertsStore } from '@/stores/alerts'
+import { useWorkflowsStore, WorkflowType } from '@/stores/workflows'
+import { useWorkflowBoundingBox } from '@/services/useWorkflowBoundingBox'
+import { useWhatIfTemplateSchemas } from '@/services/useWhatIfTemplateSchemas'
 
 interface Props {
   workflows: WorkflowItem[]
@@ -143,6 +172,8 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits(['postTask'])
 
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
+const alertStore = useAlertsStore()
+const workflowsStore = useWorkflowsStore()
 
 const selectedWhatIfTemplate = ref<WhatIfTemplate>()
 const selectedWhatIfScenario = ref<WhatIfScenarioDescriptor>()
@@ -179,15 +210,24 @@ watch(
   { immediate: true },
 )
 
-const jsonSchema = computed(() =>
-  generateJsonSchema(selectedWhatIfTemplate.value?.properties),
+const { jsonSchema, uiSchema } = useWhatIfTemplateSchemas(
+  selectedWhatIfTemplate,
 )
 
 watchEffect(() => {
   selectedProperties.value = getJsonDataFromProperties(
+    selectedWhatIfTemplate.value?.properties,
     selectedWhatIfScenario.value?.properties,
   )
 })
+
+const {
+  getProcessDataFilter,
+  boundingBoxString,
+  coordinateString,
+  isBoundingBoxInForm,
+  isCoordinateInForm,
+} = useWorkflowBoundingBox(selectedProperties)
 
 const doShowConfiguration = computed<boolean>(
   () => selectedWorkflow.value !== undefined,
@@ -210,10 +250,6 @@ const canSubmit = computed<boolean>(() => {
   return hasSelectedWorkflow && hasAllProperties && hasNoErrors && validTimeZero
 })
 
-const isSubmitted = ref<boolean>(false)
-const hasSubmitError = ref<boolean>(false)
-const submitErrorMessage = ref<string>('')
-
 function onPropertiesChange(event: { data: ScenarioData }): void {
   const updatedProperties = event.data
   if (!updatedProperties) return
@@ -224,20 +260,28 @@ watch(selectedProperties, (properties) => {
   additionalErrors.value = getErrorsForProperties(properties, jsonSchema.value)
 })
 
-function resetAlerts(): void {
-  isSubmitted.value = false
-  hasSubmitError.value = false
-  submitErrorMessage.value = ''
-}
+const isProcessDataTask = computed<boolean>(
+  () =>
+    selectedWhatIfTemplate.value?.properties?.some(
+      (p) =>
+        p.id === 'GET_PROCESS_DATA' &&
+        p.type === 'string' &&
+        p.defaultValue === 'true',
+    ) ?? false,
+)
 
-async function submit(): Promise<void> {
-  if (!selectedWorkflow.value) return
-  if (!selectedWhatIfTemplate.value) return
-  const whatIfTemplateId = selectedWhatIfTemplate.value.id
+async function submit() {
+  if (!selectedWorkflow.value) {
+    showErrorMessage('No workflow selected')
+    return
+  }
+  if (!selectedWhatIfTemplate.value) {
+    showErrorMessage('No what-if template selected')
+    return
+  }
   const workflowId = selectedWorkflow.value.id
+  const whatIfTemplateId = selectedWhatIfTemplate.value.id
   const properties = selectedProperties.value as Record<string, string | number>
-
-  resetAlerts()
 
   const scenarioFilter: PostWhatIfScenarioFilter = {
     whatIfTemplateId,
@@ -248,38 +292,91 @@ async function submit(): Promise<void> {
   isPosting.value = true
   const scenarioResult = await postWhatIfScenario(scenarioFilter)
 
-  if (scenarioResult.status === 'success') {
-    hasSubmitError.value = false
-  } else {
-    isSubmitted.value = true
-    hasSubmitError.value = true
-    submitErrorMessage.value = scenarioResult.error
+  if (scenarioResult.status === 'error') {
     isPosting.value = false
+    showErrorMessage(scenarioResult.error)
     return
   }
 
-  const filter: RunTaskFilter = {
+  const workflowType = isProcessDataTask.value
+    ? WorkflowType.ProcessData
+    : WorkflowType.RunTask
+
+  const fileName = selectedProperties.value['FILE_NAME'] as string
+
+  const filter =
+    workflowType === WorkflowType.ProcessData
+      ? getProcessDataFilter(workflowId)
+      : getRunTaskFilter(workflowId, scenarioResult.data.id)
+
+  let error = false
+  try {
+    if (workflowType === WorkflowType.ProcessData) {
+      setTimeout(() => {
+        if (error) return
+        showStartMessage(
+          'Task submitted successfully. Your file will be available for download shortly.',
+        )
+      }, 500)
+    }
+
+    await workflowsStore.startWorkflow(workflowType, filter, { fileName })
+
+    if (workflowType === WorkflowType.ProcessData) {
+      showSuccessMessage('File download completed')
+    } else {
+      showStartMessage(
+        'Workflow submitted successfully. You can monitor the task progress using the Task Overview.',
+      )
+
+      setTimeout(() => {
+        refreshTaskRuns()
+      }, 1500)
+    }
+  } catch (e) {
+    error = true
+    if (typeof e === 'string') {
+      showErrorMessage(e)
+    } else if (e instanceof Error) {
+      showErrorMessage(e.message)
+    }
+  } finally {
+    isPosting.value = false
+  }
+}
+
+function getRunTaskFilter(
+  workflowId: string,
+  scenarioId: string,
+): RunTaskFilter {
+  return {
     workflowId,
     timeZero: timeZero.value,
-    scenarioId: scenarioResult.data.id,
+    scenarioId,
     description: description.value,
   }
+}
 
-  const result = await postRunTask(filter)
-  isPosting.value = false
+function showMessage(message: string, type: 'error' | 'success'): void {
+  // Generate a new unique ID for each alert.
+  const id = uid()
+  alertStore.addAlert({
+    id,
+    type,
+    message,
+  })
+}
 
-  setTimeout(() => {
-    refreshTaskRuns()
-  }, 1500)
+function showErrorMessage(message: string) {
+  showMessage(message, 'error')
+}
 
-  isSubmitted.value = true
-  if (result.status === 'success') {
-    emit('postTask', result.data)
-    hasSubmitError.value = false
-  } else {
-    hasSubmitError.value = true
-    submitErrorMessage.value = result.error
-  }
+function showStartMessage(message: string) {
+  showMessage(message, 'success')
+}
+
+function showSuccessMessage(message: string) {
+  showMessage(message, 'success')
 }
 </script>
 
