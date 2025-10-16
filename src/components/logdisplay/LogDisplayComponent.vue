@@ -1,119 +1,135 @@
 <template>
-  <div class="logs-container d-flex flex-column w-100 h-100 py-2">
-    <div class="flex-0-0 d-flex justify-center pt-2">
-      <div class="flex-0-0 d-flex ga-2 justify-space-between align-center">
-        <v-select
-          v-if="manualFilters.length && systemFilters.length"
-          v-model="selectedLogTypes"
-          :items="logTypes"
-          label="Log Type"
-          variant="outlined"
-          clearable
-          hide-details
-          multiple
-          density="compact"
-          :item-title="toTitleCase"
-          :item-value="(item) => item"
-        />
-        <v-select
-          v-model="selectedLevels"
-          :items="logLevels"
-          label="Level"
-          variant="outlined"
-          clearable
-          hide-details
-          multiple
-          density="compact"
-          :item-title="levelToTitle"
-          :item-value="(item) => item"
-        />
-        <div class="spacer" />
-        <v-btn
-          @click="refreshLogs"
-          icon="mdi-refresh"
-          density="compact"
-          :loading="isLoading"
-        />
-        <div class="date-input-container">
+  <div class="w-100 h-100 d-flex flex-column">
+    <v-navigation-drawer right permanent width="350">
+      <v-list>
+        <template v-if="manualFilters.length && systemFilters.length">
+          <v-list-subheader>Types</v-list-subheader>
+          <v-list-item>
+            <v-select
+              v-if="manualFilters.length && systemFilters.length"
+              v-model="selectedLogTypes"
+              :items="logTypes"
+              variant="outlined"
+              hide-details
+              clearable
+              density="compact"
+              :item-title="toTitleCase"
+              :item-value="(item) => item"
+            />
+          </v-list-item>
+        </template>
+
+        <v-list-subheader>Levels</v-list-subheader>
+        <v-list-item>
+          <v-select
+            v-model="selectedLevels"
+            :items="logLevels"
+            variant="outlined"
+            clearable
+            hide-details
+            multiple
+            density="compact"
+            :item-title="levelToTitle"
+            :item-value="(item) => item"
+          />
+        </v-list-item>
+        <v-list-subheader>Date</v-list-subheader>
+        <v-list-item>
           <v-date-input
             v-model="endDate"
-            label="Date"
             variant="outlined"
             hide-details
             density="compact"
             prepend-icon=""
           />
+        </v-list-item>
+        <v-list-subheader>Days back</v-list-subheader>
+        <v-list-item>
+          <v-number-input
+            v-model.number="daysBack"
+            variant="outlined"
+            hide-details
+            density="compact"
+            validate-on="input"
+            :max="365"
+            :min="1"
+          />
+        </v-list-item>
+        <v-list-subheader>Limit</v-list-subheader>
+        <v-list-item>
+          <v-number-input
+            v-model.number="maxCount"
+            variant="outlined"
+            hide-details
+            density="compact"
+            validate-on="input"
+            :step="100"
+            :max="1000"
+            :min="1"
+          />
+        </v-list-item>
+      </v-list>
+      <v-footer>
+        <v-spacer />
+      </v-footer>
+    </v-navigation-drawer>
+    <v-toolbar density="compact">
+      <v-spacer />
+      <v-btn @click="refreshLogs" :loading="isLoading" icon="mdi-refresh">
+      </v-btn>
+      <span class="mx-2">Total:</span>
+      <span style="width: 4rem"> {{ logMessages.length }}</span>
+    </v-toolbar>
+    <div class="logs-container">
+      <div class="flex-0-0 d-flex justify-center py-2">
+        <div class="flex-0-0 d-flex ga-2 align-left">
+          <v-text-field
+            v-model="search"
+            placeholder="Search"
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            rounded
+            clearable
+            hide-details
+            class="px-2"
+            density="compact"
+          />
+          <NewLogMessageDialog
+            v-if="noteGroup"
+            :noteGroup="noteGroup"
+            @newNote="refreshLogs"
+          />
         </div>
-        <v-text-field
-          v-model.number="daysBack"
-          label="Days back"
-          variant="outlined"
-          hide-details
-          density="compact"
-          validate-on="input"
-          :max="365"
-          :min="1"
-          max-width="80px"
-        />
-        <v-text-field
-          v-model.number="maxCount"
-          label="Request count"
-          variant="outlined"
-          hide-details
-          density="compact"
-          validate-on="input"
-          max-width="100px"
-          :max="1000"
-          :min="1"
-        />
       </div>
+      <v-virtual-scroll
+        class="scroll-container h-100"
+        :items="groupedByTaskRunId"
+        :item-height="50"
+        v-if="groupedByTaskRunId.length"
+      >
+        <template #default="{ item }">
+          <DateSeparator
+            v-if="item.type === 'dateSeparator'"
+            :date="item.date"
+          />
+          <LogItem
+            v-else-if="item.type === 'logItem'"
+            :logs="item.logs"
+            :taskRuns="taskRuns"
+            :disseminations="disseminations"
+            :disseminationStatus="disseminationStatus"
+            :userName="preferredUsername"
+            :noteGroup="noteGroup"
+            v-model:expanded="expandedItems[item.logs[0].taskRunId]"
+            @disseminate-log="disseminateLog"
+            @delete-log="deleteLog"
+            @edit-log="editLog"
+            @acknowledge-log="acknowledgeLog"
+            @unacknowledge-log="unacknowledgeLog"
+          />
+        </template>
+      </v-virtual-scroll>
     </div>
-    <div class="flex-0-0 d-flex justify-center py-2">
-      <div class="flex-0-0 d-flex ga-2 align-center">
-        <v-text-field
-          v-model="search"
-          placeholder="Search"
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          clearable
-          hide-details
-          density="compact"
-          max-width="400px"
-          min-width="200px"
-        />
-        <span>Total: {{ logMessages.length }}</span>
-        <NewLogMessageDialog
-          v-if="noteGroup"
-          :noteGroup="noteGroup"
-          @newNote="refreshLogs"
-        />
-      </div>
-    </div>
-    <v-virtual-scroll
-      class="scroll-container"
-      :items="groupedByTaskRunId"
-      :item-height="50"
-      v-if="groupedByTaskRunId.length"
-    >
-      <template #default="{ item }">
-        <DateSeparator v-if="item.type === 'dateSeparator'" :date="item.date" />
-        <LogItem
-          v-else-if="item.type === 'logItem'"
-          :logs="item.logs"
-          :taskRuns="taskRuns"
-          :disseminations="disseminations"
-          :disseminationStatus="disseminationStatus"
-          :userName="preferredUsername"
-          :noteGroup="noteGroup"
-          v-model:expanded="expandedItems[item.logs[0].taskRunId]"
-          @disseminate-log="disseminateLog"
-          @delete-log="deleteLog"
-          @edit-log="editLog"
-          @acknowledge-log="acknowledgeLog"
-          @unacknowledge-log="unacknowledgeLog"
-        />
-      </template>
-    </v-virtual-scroll>
   </div>
 </template>
 
@@ -165,7 +181,7 @@ const props = defineProps<Props>()
 const search = ref<string>()
 const maxCount = ref<number>(1000)
 const selectedLevels = ref<LogLevel[]>([])
-const selectedLogTypes = ref<LogType[]>([])
+const selectedLogTypes = ref<LogType | null>(null)
 
 const daysBack = ref<number>(7)
 const DAY_IN_MS = 1000 * 60 * 60 * 24
@@ -272,7 +288,9 @@ const filteredLogMessages = computed(() => {
       filterLog(
         log,
         debouncedSelectedLevels.value,
-        debouncedSelectedLogTypes.value,
+        debouncedSelectedLogTypes.value
+          ? [debouncedSelectedLogTypes.value]
+          : [],
         debouncedSearch.value,
         taskRuns.value,
         workflows,
@@ -284,7 +302,9 @@ const filteredLogMessages = computed(() => {
       filterLog(
         log,
         debouncedSelectedLevels.value,
-        debouncedSelectedLogTypes.value,
+        debouncedSelectedLogTypes.value
+          ? [debouncedSelectedLogTypes.value]
+          : [],
         debouncedSearch.value,
         taskRuns.value,
         workflows,
@@ -496,6 +516,10 @@ async function refreshLogs() {
   justify-content: center;
 }
 
+.logs-container {
+  height: calc(100% - 104px);
+}
+
 .logs-container > * > * {
   width: clamp(400px, calc(100% - 10px), 1100px);
 }
@@ -541,5 +565,9 @@ async function refreshLogs() {
 
 .spacer {
   flex-grow: 0.5;
+}
+
+.logs-filter {
+  max-width: 200px;
 }
 </style>

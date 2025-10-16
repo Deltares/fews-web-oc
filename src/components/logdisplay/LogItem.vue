@@ -54,7 +54,7 @@ import {
   logToUser,
 } from '@/lib/log'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 interface Props {
   userName: string
@@ -90,10 +90,20 @@ function getTitleForLog(log: LogMessage, userName: string) {
   return workflow?.name ?? logToUser(log, userName)
 }
 
+const clickTimer = ref<NodeJS.Timeout | null>(null)
+
 function onExpansionPanelToggle() {
-  // Only expand when no text is selected
-  if (window.getSelection()?.toString() === '') {
-    expanded.value = !expanded.value
+  // discard double clicks
+  if (clickTimer.value) {
+    clearTimeout(clickTimer.value)
+    clickTimer.value = null
   }
+  clickTimer.value = setTimeout(() => {
+    // Only expand when no text is selected
+    if (window.getSelection()?.toString() === '') {
+      expanded.value = !expanded.value
+      clickTimer.value = null
+    }
+  }, 200)
 }
 </script>
