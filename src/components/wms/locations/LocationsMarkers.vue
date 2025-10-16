@@ -14,20 +14,19 @@
 <script setup lang="ts">
 import { MglMarker } from '@indoorequal/vue-maplibre-gl'
 import type { Feature, FeatureCollection, Geometry } from 'geojson'
-import { type Location } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
 import { LngLat } from 'maplibre-gl'
+import type { ExtendedLocation } from '@/lib/map'
 
 interface Props {
-  selectedLocationIds: string[] | undefined
-  geojson: FeatureCollection<Geometry, Location>
+  geojson: FeatureCollection<Geometry, ExtendedLocation>
 }
 
 const props = defineProps<Props>()
 
 const selectedLocationsCoordinates = computed(() => {
-  const selectedLocations = props.geojson.features.filter((feature) =>
-    props.selectedLocationIds?.includes(feature.properties.locationId),
+  const selectedLocations = props.geojson.features.filter(
+    (feature) => feature.properties.selected,
   )
 
   return selectedLocations
@@ -35,7 +34,7 @@ const selectedLocationsCoordinates = computed(() => {
     .filter((lngLat) => lngLat !== undefined)
 })
 
-function getLngLatForFeature(feature: Feature<Geometry, Location>) {
+function getLngLatForFeature(feature: Feature<Geometry, ExtendedLocation>) {
   const geometry = feature.geometry
   if (geometry.type === 'Point') {
     const lng = geometry.coordinates[0]

@@ -87,7 +87,7 @@ async function fetchLocationsAsGeoJsonForSingleFilterId(
   const filter: LocationsFilter = {
     documentFormat: DocumentFormat.GEO_JSON,
     filterId: filterId,
-    showParentLocations: false,
+    showParentLocations: true,
     includeIconNames: true,
     showThresholds: true,
     ...filterOptions,
@@ -160,4 +160,19 @@ export async function fetchLocations(
     console.error('Error fetching locations:', error)
   }
   return []
+}
+
+export function createLocationToChildrenMap(locations: Location[]) {
+  const nodeToChildrenMap = new Map<string, Location[]>()
+
+  locations.forEach((loc) => {
+    if (loc.parentLocationId === undefined) return
+
+    if (!nodeToChildrenMap.has(loc.parentLocationId)) {
+      nodeToChildrenMap.set(loc.parentLocationId, [])
+    }
+    nodeToChildrenMap.get(loc.parentLocationId)?.push(loc)
+  })
+
+  return nodeToChildrenMap
 }

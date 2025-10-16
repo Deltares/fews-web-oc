@@ -21,10 +21,7 @@
     <LocationsTextLayer :layerId="locationMapIds.layer.text" :isDark="isDark" />
   </mgl-geo-json-source>
 
-  <LocationsMarkers
-    :selectedLocationIds="selectedLocationIds"
-    :geojson="geojson"
-  />
+  <LocationsMarkers :geojson="geojson" />
 </template>
 
 <script setup lang="ts">
@@ -70,6 +67,7 @@ const props = withDefaults(defineProps<Props>(), {
   }),
   selectedLocationId: null,
   locationsClickable: true,
+  selectedLocationIds: () => [],
 })
 
 const showNames = computed(() => {
@@ -77,7 +75,11 @@ const showNames = computed(() => {
 })
 
 const geojson = computed(() =>
-  addPropertiesToLocationGeojson(props.locationsGeoJson, showNames.value),
+  addPropertiesToLocationGeojson(
+    props.locationsGeoJson,
+    props.selectedLocationIds,
+    showNames.value,
+  ),
 )
 
 const emit = defineEmits(['click'])
@@ -116,8 +118,16 @@ function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
       layers,
     })
     if (!features.length) return
-    // Prioratise clicks on the top-most feature
-    event.features?.sort((a, b) => b.properties.sortKey - a.properties.sortKey)
+    // Sort by properties.sortKey and the order of the layers
+    features.sort((a, b) => {
+      const aLayerIndex = layers.indexOf(a.layer.id)
+      const bLayerIndex = layers.indexOf(b.layer.id)
+      if (aLayerIndex !== bLayerIndex) {
+        return aLayerIndex - bLayerIndex
+      }
+      return b.properties.sortKey - a.properties.sortKey
+    })
+    event.features = features
     onLocationClick(event)
   }
 }
