@@ -60,11 +60,7 @@ import { PanHandler } from '@deltares/fews-web-oc-charts'
 import { ModifierKey } from '@deltares/fews-web-oc-charts'
 import { useUserSettingsStore } from '@/stores/userSettings'
 
-import {
-  clearChart,
-  redraw,
-  refreshChart,
-} from '@/lib/charts/timeSeriesChart'
+import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
 import { getThresholdValues, isUniqueThreshold } from '@/lib/charts/thresholds'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 
