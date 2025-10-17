@@ -16,9 +16,9 @@
 <script setup lang="ts">
 import ProductsBrowserView from '@/components/products/ProductsBrowserView.vue'
 import {
-  DisplayCompose,
-  DocumentBrowserDisplay,
-  DocumentDisplaysConfig,
+  type DisplayCompose,
+  type DocumentBrowserDisplay,
+  type DocumentDisplaysConfig,
   isDocumentBrowser,
   isReportDisplay,
   ReportDisplay,
