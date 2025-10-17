@@ -297,3 +297,7 @@ svg.wb-charts,
 .colourbar text {
   fill: var(--contrast-color);
 }
+
+.brush-labels text {
+  fill: var(--contrast-color);
+}
