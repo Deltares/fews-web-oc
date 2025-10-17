@@ -1,28 +1,25 @@
-import {
-  ArchiveProductsMetadataAttribute,
-  type TimeSettingsViewPeriodPreset,
+import type {
+  DocumentDisplayArchiveProduct,
+  DocumentDisplayReport,
+  DocumentDisplayReportType,
+  DocumentDisplayArchiveProductSet,
+  ArchiveProductSetConstraints,
+  DocumentDisplayCompose,
+  DocumentDisplayBrowser,
 } from '@deltares/fews-pi-requests'
 
 export interface DocumentDisplaysConfig {
   documentDisplays: (DocumentBrowserDisplay | ReportDisplay)[]
 }
 
-export interface DocumentBrowserDisplay {
-  id: string
-  name: string
+export interface DocumentBrowserDisplay
+  extends Omit<DocumentDisplayBrowser, 'type' | 'browser'> {
   type: 'browser'
-  relativeViewPeriod: Omit<TimeSettingsViewPeriodPreset, 'label'>
-  editPermissions?: boolean
-  documentBrowser: DocumentBrowser
   browser: DocumentBrowser
 }
 
-export interface ReportDisplay {
-  id: string
-  name: string
+export interface ReportDisplay extends Omit<DocumentDisplayReport, 'type'> {
   type: 'report'
-  relativeViewPeriod: Omit<TimeSettingsViewPeriodPreset, 'label'>
-  editPermissions?: boolean
   report: ReportDisplayConfig
 }
 
@@ -33,16 +30,13 @@ export interface DocumentBrowser {
   archiveProductSets: ArchiveProductSet[]
 }
 
-export interface ArchiveProductSet {
+export interface ArchiveProductSet
+  extends Omit<DocumentDisplayArchiveProductSet, 'constraints'> {
   constraints: Constraints
 }
 
-export interface Constraints {
-  areaId: string
-  sourceId: string
+export interface Constraints extends ArchiveProductSetConstraints {
   attributeExists?: AttributeExists
-  allValid?: AttributeEquals[]
-  anyValid?: AttributeEquals[]
 }
 
 export interface AttributeExists {
@@ -56,16 +50,10 @@ export interface AttributeEquals {
   }
 }
 
-export interface ArchiveProduct {
-  id: string
-  name: string
+export interface ArchiveProduct extends DocumentDisplayArchiveProduct {
   description: string
-  sourceId: string
-  areaId: string
   timeZero: string
   version: string
-  versionKeys: string[]
-  attributes: ArchiveProductsMetadataAttribute[]
 }
 
 export interface ArchiveProducts {
@@ -91,10 +79,9 @@ export interface Reports {
   reportModuleInstanceId: string[]
 }
 
-export interface ReportDisplayConfig {
+export interface ReportDisplayConfig
+  extends Omit<DocumentDisplayReportType, 'archiveProduct'> {
   archiveProduct: ArchiveProduct
-  showReports: ShowReports
-  reportModuleInstanceId?: string
 }
 
 export interface ShowReports {
