@@ -18,7 +18,8 @@ svg.wb-charts,
 .mouse-over,
 .legend,
 .label,
-.tooltip {
+.tooltip,
+.brush-labels {
   font-size: 0.9rem;
 }
 
@@ -294,5 +295,9 @@ svg.wb-charts,
 }
 
 .colourbar text {
+  fill: var(--contrast-color);
+}
+
+.brush-labels text {
   fill: var(--contrast-color);
 }
