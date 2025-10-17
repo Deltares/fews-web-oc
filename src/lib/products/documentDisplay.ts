@@ -9,7 +9,7 @@ import type {
 } from '@deltares/fews-pi-requests'
 
 export interface DocumentDisplaysConfig {
-  documentDisplays: (DocumentBrowserDisplay | ReportDisplay)[]
+  documentDisplays: (DocumentBrowserDisplay | ReportDisplay | DisplayCompose)[]
 }
 
 export interface DocumentBrowserDisplay
@@ -21,6 +21,10 @@ export interface DocumentBrowserDisplay
 export interface ReportDisplay extends Omit<DocumentDisplayReport, 'type'> {
   type: 'report'
   report: ReportDisplayConfig
+}
+
+export interface DisplayCompose extends Omit<DocumentDisplayCompose, 'type'> {
+  type: 'compose'
 }
 
 export interface DocumentBrowser {
@@ -89,13 +93,19 @@ export interface ShowReports {
 }
 
 export function isDocumentBrowser(
-  documentDisplay: DocumentBrowserDisplay | ReportDisplay,
+  documentDisplay: DocumentBrowserDisplay | ReportDisplay | DisplayCompose,
 ): documentDisplay is DocumentBrowserDisplay {
   return (documentDisplay as DocumentBrowserDisplay).type === 'browser'
 }
 
 export function isReportDisplay(
-  documentDisplay: DocumentBrowserDisplay | ReportDisplay,
+  documentDisplay: DocumentBrowserDisplay | ReportDisplay | DisplayCompose,
 ): documentDisplay is ReportDisplay {
   return (documentDisplay as ReportDisplay).type === 'report'
+}
+
+export function isDisplayCompose(
+  documentDisplay: DocumentBrowserDisplay | ReportDisplay | DisplayCompose,
+): documentDisplay is DisplayCompose {
+  return (documentDisplay as DisplayCompose).type === 'compose'
 }

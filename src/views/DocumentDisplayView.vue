@@ -16,6 +16,7 @@
 <script setup lang="ts">
 import ProductsBrowserView from '@/components/products/ProductsBrowserView.vue'
 import {
+  DisplayCompose,
   DocumentBrowserDisplay,
   DocumentDisplaysConfig,
   isDocumentBrowser,
@@ -40,7 +41,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const displayConfig = ref<(DocumentBrowserDisplay | ReportDisplay)[]>()
+const displayConfig =
+  ref<(DocumentBrowserDisplay | ReportDisplay | DisplayCompose)[]>()
 const documentBrowserDisplay = ref<DocumentBrowserDisplay>()
 const reportDisplay = ref<ReportDisplay>()
 
