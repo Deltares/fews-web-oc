@@ -24,7 +24,11 @@ import {
 } from '@/lib/products/documentDisplay'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { configManager } from '@/services/application-config'
-import { TopologyNode } from '@deltares/fews-pi-requests'
+import {
+  type DocumentDisplaysFilter,
+  PiWebserviceProvider,
+  type TopologyNode,
+} from '@deltares/fews-pi-requests'
 import { onMounted, ref, toValue, watchEffect } from 'vue'
 import ProductReportView from './ProductReportView.vue'
 
@@ -43,13 +47,15 @@ const reportDisplay = ref<ReportDisplay>()
 const viewMode = ref<'browser' | 'report' | 'unsupported'>('browser')
 
 onMounted(async () => {
-  const transformRequest = createTransformRequestFn()
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const url = new URL('rest/fewspiservice/v1/documentdisplays', baseUrl)
-  const request = await transformRequest(new Request(url, {}))
-  const response = await fetch(request)
-  const config = (await response.json()) as DocumentDisplaysConfig
-  displayConfig.value = config.documentDisplays
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const filter: DocumentDisplaysFilter = {}
+  const response = (await provider.getDocumentDisplays(
+    filter,
+  )) as DocumentDisplaysConfig
+  displayConfig.value = response.documentDisplays
 })
 
 watchEffect(() => {
