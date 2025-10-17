@@ -63,8 +63,7 @@
             hide-details
             density="compact"
             validate-on="input"
-            :step="100"
-            :max="1000"
+            :step="10000"
             :min="1"
           />
         </v-list-item>
@@ -179,11 +178,11 @@ interface Props {
 const props = defineProps<Props>()
 
 const search = ref<string>()
-const maxCount = ref<number>(1000)
+const maxCount = ref<number>(20000)
 const selectedLevels = ref<LogLevel[]>([])
 const selectedLogTypes = ref<LogType | null>(null)
 
-const daysBack = ref<number>(7)
+const daysBack = ref<number>(2)
 const DAY_IN_MS = 1000 * 60 * 60 * 24
 const startDate = computed(
   () => new Date(endDate.value.getTime() - daysBack.value * DAY_IN_MS),
