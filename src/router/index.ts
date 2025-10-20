@@ -345,10 +345,19 @@ async function addDynamicRoutes() {
     defaultComponent = configuredComponents[0]
   }
   if (defaultComponent && router.hasRoute(defaultComponent.type)) {
+    const isTopology = defaultComponent.type === 'TopologyDisplay'
+    // Ensure topologyId param is present for default topology display
+    const redirectTarget = isTopology
+      ? {
+          name: 'TopologyDisplay',
+          params: { topologyId: defaultComponent.id },
+        }
+      : { name: defaultComponent.type }
+
     router.removeRoute('Default')
     router.addRoute({
       path: '/',
-      redirect: { name: defaultComponent.type },
+      redirect: redirectTarget,
       name: 'Default',
     })
   }
