@@ -16,11 +16,23 @@ export const useWarningLevelsStore = defineStore('warningLevels', () => {
   const { thresholds } = useTopologyThresholds(baseUrl, () => nodeId.value)
 
   const aggregatedWarningLevels = computed(() => {
-    if (thresholds.value === undefined || thresholds.value.length === 0)
+    if (thresholds.value === undefined || thresholds.value.length === 0) {
       return []
-    const aggregatedLevels =
-      thresholds.value[0]?.aggregatedLevelThresholdWarningLevels
-    return aggregatedLevels ?? []
+    }
+
+    const aggregatedLevels = thresholds.value[0]?.levelThresholdWarningLevels
+    return (
+      aggregatedLevels?.map((level) => {
+        return {
+          ...level,
+          count:
+            level.parameterWarningLevelCount?.reduce(
+              (a, b) => a + b.count,
+              0,
+            ) ?? 0,
+        }
+      }) ?? []
+    )
   })
 
   const warningLevels = computed<WarningLevel[]>(() => {
