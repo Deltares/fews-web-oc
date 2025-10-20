@@ -7,16 +7,18 @@ import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import { BrushHandler, CartesianAxes } from '@deltares/fews-web-oc-charts'
 import type { ChartsSettings } from '@/lib/topology/componentSettings'
-import { onMounted, useTemplateRef, watch } from 'vue'
+import { computed, onMounted, useTemplateRef, watch } from 'vue'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
 import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
 import { toHumanReadableDate } from '@/lib/date'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
+import { getSubplotWithDomain } from '@/lib/display'
 
 interface Props {
   config: ChartConfig
   series: Record<string, Series>
   settings: ChartsSettings['timeSeriesChart']
+  fullDomain: [Date, Date]
 }
 
 const props = defineProps<Props>()
@@ -27,10 +29,14 @@ const brushContainer = useTemplateRef('brushContainer')
 let axis!: CartesianAxes
 let brushHandler!: BrushHandler
 
+const chartConfig = computed(() =>
+  getSubplotWithDomain(props.config, props.fullDomain),
+)
+
 onMounted(() => {
   if (!brushContainer.value) throw new Error('No brush container found')
 
-  const axisOptions = getAxisOptions(props.config, props.settings, {
+  const axisOptions = getAxisOptions(chartConfig.value, props.settings, {
     isBrush: true,
   })
   axis = new CartesianAxes(brushContainer.value, null, null, axisOptions)
@@ -45,21 +51,21 @@ onMounted(() => {
     domain.value = e.new as [Date, Date]
   })
 
-  onValueChange()
+  onValueChange(chartConfig.value)
 })
 
 useSeriesUpdateChartData(
   () => props.series,
-  () => props.config,
+  chartConfig,
   () => axis,
 )
 
-function onValueChange() {
+function onValueChange(config: ChartConfig) {
   clearChart(axis)
-  refreshChart(axis, props.config, props.series)
-  redraw(axis, props.config)
+  refreshChart(axis, config, props.series)
+  redraw(axis, config)
 }
-watch(() => props.config, onValueChange)
+watch(chartConfig, (newConfig) => onValueChange(newConfig))
 
 watch(domain, (newDomain) => {
   brushHandler.setBrushDomain({ x: newDomain })

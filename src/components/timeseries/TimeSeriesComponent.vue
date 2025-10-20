@@ -20,7 +20,8 @@
             <TimeSeriesChartBrush
               v-if="showBrush"
               v-model:domain="visibleDomain"
-              :config="getSubplotWithDomain(subplot, fullBrushDomain)"
+              :fullDomain="fullBrushDomain"
+              :config="subplot"
               :series="brushChartSeries"
               :settings="settings.timeSeriesChart"
             />
