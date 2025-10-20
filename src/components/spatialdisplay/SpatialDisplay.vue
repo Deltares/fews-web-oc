@@ -62,6 +62,10 @@ import { useDateRegistry } from '@/services/useDateRegistry'
 import type { NavigateRoute } from '@/lib/router'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 import { useLocationNamesStore } from '@/stores/locationNames'
+import {
+  filterFeaturesByThresholds,
+  filterLocationsByThresholds,
+} from '@/lib/thresholds/utils'
 
 const SpatialTimeSeriesDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialTimeSeriesDisplay.vue'),
@@ -106,25 +110,42 @@ watch(locations, (newLocations) =>
   locationNamesStore.addLocationNames(newLocations ?? []),
 )
 
-const selectedWarningLevelSeverity = computed(() =>
+const selectedCrossings = computed(() => {
+  if (warningLevelsStore.selectedWarningLevelIds.length === 0) return []
+  return warningLevelsStore.selectedThresholdCrossings
+    .sort((a, b) => b.severity - a.severity)
+    .filter(
+      (crossing, index, self) =>
+        index === self.findIndex((c) => c.locationId === crossing.locationId),
+    )
+})
+const selectedSeverities = computed(() =>
   warningLevelsStore.selectedWarningLevels.map((level) => level.severity),
 )
 const filteredLocations = computed(() => {
-  if (selectedWarningLevelSeverity.value.length === 0) return locations.value
-  return locations.value?.filter((location) =>
-    selectedWarningLevelSeverity.value.includes(
-      location.thresholdSeverity ?? 0,
-    ),
+  if (warningLevelsStore.selectedWarningLevelIds.length === 0) {
+    return locations.value
+  }
+  return filterLocationsByThresholds(
+    locations.value,
+    selectedSeverities.value,
+    selectedCrossings.value,
   )
 })
 const filteredGeojson = computed(() => {
-  if (selectedWarningLevelSeverity.value.length === 0) return geojson.value
-  const filteredFeatures = geojson.value.features.filter((feature) =>
-    selectedWarningLevelSeverity.value.includes(
-      feature.properties.thresholdSeverity ?? 0,
-    ),
-  )
-  return { ...geojson.value, ...{ features: filteredFeatures } }
+  if (warningLevelsStore.selectedWarningLevelIds.length === 0) {
+    return geojson.value
+  }
+  return {
+    ...geojson.value,
+    ...{
+      features: filterFeaturesByThresholds(
+        geojson.value.features,
+        selectedSeverities.value,
+        selectedCrossings.value,
+      ),
+    },
+  }
 })
 
 const start = computed(() => {
