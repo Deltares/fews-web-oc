@@ -69,10 +69,12 @@ async function addCustomLocationIconsToMap(
   locations: FeatureCollection<Geometry, Location>,
 ): Promise<void> {
   const locationIcons = getUniqueIconNames(locations)
-  for (const iconName of locationIcons) {
-    const url = getResourcesIconsUrl(iconName)
-    await addIconToMap(map, iconName, url)
-  }
+  await Promise.all(
+    locationIcons.map(async (iconName) => {
+      const url = getResourcesIconsUrl(iconName)
+      await addIconToMap(map, iconName, url)
+    }),
+  )
 }
 
 /**
