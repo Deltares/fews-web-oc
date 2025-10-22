@@ -86,10 +86,12 @@ async function addCustomLocationIconsToMap(
  * @param map - The map object to add the icons to.
  * @param locations - The collection of locations to add icons for.
  */
-export function addLocationIconsToMap(
+export async function addLocationIconsToMap(
   map: Map,
   locations: FeatureCollection<Geometry, Location>,
-): void {
-  addDefaultIconsToMap(map)
-  addCustomLocationIconsToMap(map, locations)
+): Promise<void> {
+  await Promise.all([
+    addDefaultIconsToMap(map),
+    addCustomLocationIconsToMap(map, locations),
+  ])
 }

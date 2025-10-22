@@ -105,8 +105,12 @@ watch(
   },
 )
 
-function addLocationIcons() {
-  if (map) addLocationIconsToMap(map, geojson.value)
+async function addLocationIcons() {
+  if (!map) return
+
+  addLocationIconsToMap(map, geojson.value).catch((error) =>
+    console.error(`Failed to add location icons to the map: ${error}`),
+  )
 }
 
 function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
