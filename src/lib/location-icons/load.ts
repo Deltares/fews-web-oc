@@ -13,16 +13,31 @@ function getUniqueIconNames(
     .filter((iconName) => iconName !== undefined) as string[]
 }
 
-async function addDefaultSelectedLocationIconToMap(map: Map): Promise<void> {
-  const iconId = 'selected-location'
+async function addDefaultIconsToMap(map: Map): Promise<void> {
+  const defaultIcons = [
+    { id: 'selected-location', path: 'images/map-marker.png' },
+  ]
+  await Promise.all(
+    defaultIcons.map((icon) =>
+      addIconToMap(map, icon.id, `${import.meta.env.BASE_URL}${icon.path}`),
+    ),
+  )
+}
+
+async function addIconToMap(
+  map: Map,
+  iconId: string,
+  url: string,
+): Promise<void> {
   if (map.hasImage(iconId)) return
-  try {
-    const image = await map.loadImage(
-      `${import.meta.env.BASE_URL}images/map-marker.png`,
-    )
+
+  if (url.toLowerCase().endsWith('.svg')) {
+    // Load SVG as 128x128 bitmap.
+    const image = await convertSvgToBitmap(url, 128, 128)
+    map.addImage(iconId, image)
+  } else {
+    const image = await map.loadImage(url)
     map.addImage(iconId, image.data)
-  } catch (error) {
-    console.error('Failed to load default location icon:', error)
   }
 }
 
@@ -55,23 +70,8 @@ async function addCustomLocationIconsToMap(
 ): Promise<void> {
   const locationIcons = getUniqueIconNames(locations)
   for (const iconName of locationIcons) {
-    if (map.hasImage(iconName)) continue
-
     const url = getResourcesIconsUrl(iconName)
-
-    if (url.endsWith('.svg')) {
-      // Load SVG as 128x128 bitmap.
-      convertSvgToBitmap(url, 128, 128).then((image) => {
-        map.addImage(iconName, image)
-      })
-    } else {
-      try {
-        const image = await map.loadImage(url)
-        map.addImage(iconName, image.data)
-      } catch (error) {
-        console.error(`Failed to load location icon ${iconName}:`, error)
-      }
-    }
+    await addIconToMap(map, iconName, url)
   }
 }
 
@@ -88,6 +88,6 @@ export function addLocationIconsToMap(
   map: Map,
   locations: FeatureCollection<Geometry, Location>,
 ): void {
-  addDefaultSelectedLocationIconToMap(map)
+  addDefaultIconsToMap(map)
   addCustomLocationIconsToMap(map, locations)
 }
