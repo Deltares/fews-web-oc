@@ -13,6 +13,7 @@ export interface ExtendedLocation extends Location {
 
 export const locationMapIds = {
   layer: {
+    dataAvailability: getLayerId('data-availability'),
     circle: getLayerId('location-circle'),
     symbol: getLayerId('location-symbol'),
     childSymbol: getLayerId('location-child-symbol'),
