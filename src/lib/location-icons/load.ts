@@ -16,6 +16,8 @@ function getUniqueIconNames(
 async function addDefaultIconsToMap(map: Map): Promise<void> {
   const defaultIcons = [
     { id: 'selected-location', path: 'images/map-marker.png' },
+    { id: 'no-data', path: 'images/no-data.svg' },
+    { id: 'no-data-in-view-period', path: 'images/no-data-in-view-period.svg' },
   ]
   await Promise.all(
     defaultIcons.map((icon) =>
