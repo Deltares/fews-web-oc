@@ -1,6 +1,7 @@
 import { getLayerId, getSourceId } from '@/lib/map/utils'
 import type { Location } from '@deltares/fews-pi-requests'
 import type { Feature, FeatureCollection, Geometry } from 'geojson'
+import type { LegacyFilterSpecification } from 'maplibre-gl'
 
 export interface ExtendedLocation extends Location {
   locationName: string | undefined
@@ -82,7 +83,9 @@ export function getLocationWithChilds(
   ]
 }
 
-export function shouldBehaveLikeChildFilter(isChild: boolean | undefined) {
+export function shouldBehaveLikeChildFilter(
+  isChild: boolean | undefined,
+): LegacyFilterSpecification {
   return isChild
     ? // Child: has parentLocationId AND not selected
       ['all', ['has', 'parentLocationId'], ['!=', 'selected', true]]

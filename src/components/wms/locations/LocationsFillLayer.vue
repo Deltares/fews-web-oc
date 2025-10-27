@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+import type { FillLayerSpecification } from 'maplibre-gl'
 import { MglFillLayer } from '@indoorequal/vue-maplibre-gl'
 import { computed } from 'vue'
 
@@ -15,7 +16,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const filter = ['==', '$type', 'Polygon']
+const filter: FillLayerSpecification['filter'] = ['==', '$type', 'Polygon']
 
 const paint = computed(() => {
   const selectedIds = props.selectedLocationIds?.length
@@ -30,7 +31,10 @@ const paint = computed(() => {
     : getLightPaint(selectedIds, hoverId)
 })
 
-function getDarkPaint(selectedIds: string[], hoverId: string) {
+function getDarkPaint(
+  selectedIds: string[],
+  hoverId: string,
+): FillLayerSpecification['paint'] {
   return {
     'fill-color': 'darkgrey',
     'fill-opacity': [
@@ -46,7 +50,10 @@ function getDarkPaint(selectedIds: string[], hoverId: string) {
   }
 }
 
-function getLightPaint(selectedIds: string[], hoverId: string) {
+function getLightPaint(
+  selectedIds: string[],
+  hoverId: string,
+): FillLayerSpecification['paint'] {
   return {
     'fill-color': '#dfdfdf',
     'fill-opacity': [

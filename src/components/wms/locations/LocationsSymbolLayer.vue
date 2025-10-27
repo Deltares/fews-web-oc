@@ -8,6 +8,7 @@
 </template>
 
 <script setup lang="ts">
+import type { SymbolLayerSpecification } from 'maplibre-gl'
 import { shouldBehaveLikeChildFilter } from '@/lib/map'
 import { MglSymbolLayer } from '@indoorequal/vue-maplibre-gl'
 import { computed } from 'vue'
@@ -20,14 +21,14 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const filter = [
+const filter: SymbolLayerSpecification['filter'] = [
   'all',
   ['has', 'iconName'],
   ['==', '$type', 'Point'],
   shouldBehaveLikeChildFilter(props.child),
 ]
 
-const baseLayout = {
+const baseLayout: SymbolLayerSpecification['layout'] = {
   'icon-image': ['get', 'iconName'],
   'symbol-sort-key': ['get', 'sortKey'],
 }
@@ -35,7 +36,7 @@ const baseLayout = {
 // This symbol layer is for the child locations and can't overlap other symbols.
 // It also contains its own text since we never want to show the text of the
 // child layer without the icon.
-const childLayout = {
+const childLayout: SymbolLayerSpecification['layout'] = {
   ...baseLayout,
   'icon-overlap': 'never',
   'text-optional': true,
@@ -47,16 +48,16 @@ const childLayout = {
   'text-max-width': 15,
 }
 
-const parentLayout = {
+const parentLayout: SymbolLayerSpecification['layout'] = {
   ...baseLayout,
   'icon-overlap': 'always',
 }
 
-const layout = computed(() => {
+const layout = computed<SymbolLayerSpecification['layout']>(() => {
   return props.child ? childLayout : parentLayout
 })
 
-const paint = computed(() => {
+const paint = computed<SymbolLayerSpecification['paint']>(() => {
   return {
     'text-color': props.isDark ? 'rgb(255,255,255)' : 'rgb(0,0,0)',
     'text-halo-color': props.isDark ? 'rgb(0,0,0)' : 'rgb(255,255,255)',

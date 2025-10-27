@@ -8,6 +8,7 @@
 </template>
 
 <script setup lang="ts">
+import type { SymbolLayerSpecification } from 'maplibre-gl'
 import { shouldBehaveLikeChildFilter } from '@/lib/map'
 import { MglSymbolLayer } from '@indoorequal/vue-maplibre-gl'
 import { computed } from 'vue'
@@ -20,13 +21,13 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const filter = [
+const filter: SymbolLayerSpecification['filter'] = [
   'all',
   ['==', '$type', 'Point'],
   ['any', ['!has', 'iconName'], shouldBehaveLikeChildFilter(props.child)],
 ]
 
-const layout = {
+const layout: SymbolLayerSpecification['layout'] = {
   'text-field': ['get', 'locationName'],
   'text-size': 12,
   'text-overlap': 'never',
@@ -38,7 +39,7 @@ const layout = {
   'symbol-sort-key': ['get', 'invertedSortKey'],
 }
 
-const paint = computed(() => {
+const paint = computed<SymbolLayerSpecification['paint']>(() => {
   return {
     'text-color': props.isDark ? 'rgb(255,255,255)' : 'rgb(0,0,0)',
     'text-halo-color': props.isDark ? 'rgb(0,0,0)' : 'rgb(255,255,255)',

@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+import type { CircleLayerSpecification } from 'maplibre-gl'
 import { MglCircleLayer } from '@indoorequal/vue-maplibre-gl'
 
 interface Props {
@@ -11,12 +12,16 @@ interface Props {
 
 defineProps<Props>()
 
-const paint = {
+const paint: CircleLayerSpecification['paint'] = {
   'circle-radius': 5,
   'circle-color': '#dfdfdf',
   'circle-stroke-color': 'black',
   'circle-stroke-width': 1.5,
 }
 
-const filter = ['all', ['!has', 'iconName'], ['==', '$type', 'Point']]
+const filter: CircleLayerSpecification['filter'] = [
+  'all',
+  ['!has', 'iconName'],
+  ['==', '$type', 'Point'],
+]
 </script>
