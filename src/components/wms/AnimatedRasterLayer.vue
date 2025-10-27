@@ -46,12 +46,13 @@ export interface AnimatedRasterLayerOptions {
   colorScaleRange?: string
   style?: string
   useLastValue?: boolean
+  layerType?: string
 }
 
 interface Props {
   layer: AnimatedRasterLayerOptions
   beforeId?: string
-  enableDoubleClick: boolean
+  enableDoubleClick?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -195,6 +196,9 @@ function getImageSourceOptions() {
   }
   if (props.layer.elevation) {
     getMapUrl.searchParams.append('elevation', `${props.layer.elevation}`)
+  }
+  if (props.layer.layerType) {
+    getMapUrl.searchParams.append('layerType', props.layer.layerType)
   }
   if (props.layer.colorScaleRange) {
     getMapUrl.searchParams.append(

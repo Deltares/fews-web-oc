@@ -28,7 +28,7 @@
       <v-list-item
         v-for="overlay in overlays"
         :key="overlay.id"
-        :title="overlay.name"
+        :title="getTitle(overlay)"
         :value="overlay.id"
         :active="false"
         class="ps-1"
@@ -49,14 +49,23 @@
 </template>
 
 <script setup lang="ts">
-import { Overlay } from '@deltares/fews-pi-requests'
+import type { Overlay } from '@deltares/fews-pi-requests'
+import type { GetCapabilitiesResponse } from '@deltares/fews-wms-requests'
 import { computed } from 'vue'
 
 interface Props {
   overlays: Overlay[]
+  capabilties?: GetCapabilitiesResponse
 }
 
 const props = defineProps<Props>()
+
+function getTitle(overlay: Overlay): string {
+  const layer = props.capabilties?.layers.find(
+    (layer) => layer.name === overlay.id,
+  )
+  return layer?.title ?? overlay.id ?? 'Unnamed overlay'
+}
 
 const selectedOverlayIds = defineModel<string[]>('selectedOverlayIds', {
   required: true,

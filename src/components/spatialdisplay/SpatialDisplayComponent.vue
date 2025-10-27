@@ -51,11 +51,14 @@
       v-if="workflowsStore.isSelectingCoordinate"
       v-model:coordinate="workflowsStore.coordinate"
     />
-    <OverlayLayer
-      v-for="overlay in selectedOverlays"
-      :key="overlay.id"
-      :overlay="overlay"
-    />
+    <template v-if="layerOptions">
+      <OverlayLayer
+        v-for="overlay in selectedOverlays"
+        :key="overlay.id"
+        :overlay="overlay"
+        :layerOptions="layerOptions"
+      />
+    </template>
     <div class="mapcomponent__controls-container pa-2 ga-2">
       <BoundingBoxControl
         v-if="workflowsStore.isDrawingBoundingBox"
@@ -99,6 +102,7 @@
             <OverlayPanel
               :overlays="settings.overlays"
               v-model:selected-overlay-ids="selectedOverlayIds"
+              :capabilties="staticCapabilities"
             />
           </template>
         </InformationPanel>
@@ -157,7 +161,10 @@ import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
 import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
-import { convertBoundingBoxToLngLatBounds } from '@/services/useWms'
+import {
+  convertBoundingBoxToLngLatBounds,
+  useWmsCapabilities,
+} from '@/services/useWms'
 import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedRasterLayer, {
   AnimatedRasterLayerOptions,
@@ -201,6 +208,7 @@ import { useBaseMap } from '@/services/useBaseMap'
 import { isInDatesRange } from '@/lib/date'
 import { getLocationWithChilds } from '@/lib/map'
 import { createLocationToChildrenMap } from '@/lib/topology/locations'
+import { configManager } from '@/services/application-config'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -503,6 +511,12 @@ function setLayerOptions(): void {
     layerOptions.value = undefined
   }
 }
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { capabilities: staticCapabilities } = useWmsCapabilities(baseUrl, {
+  // @ts-expect-error Missing in json-schema definition
+  layerType: 'static',
+})
 
 const bounds = ref<LngLatBounds>()
 watch(
