@@ -28,7 +28,7 @@
     "@deltares/fews-web-oc-charts": "^4.1.2",
     "@deltares/fews-wms-requests": "^2.0.0",
     "@deltares/webgl-streamline-visualizer": "^4.3.1",
-    "@indoorequal/vue-maplibre-gl": "8.3.0",
+    "@indoorequal/vue-maplibre-gl": "8.4.1",
     "@jsonforms/core": "^3.6.0",
     "@jsonforms/vue": "^3.6.0",
     "@jsonforms/vue-vuetify": "^3.6.0",

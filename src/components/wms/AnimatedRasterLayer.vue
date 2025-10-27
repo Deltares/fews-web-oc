@@ -12,7 +12,6 @@
       :paint="{
         'raster-opacity': 0,
         'raster-fade-duration': 0,
-        'raster-opacity-transition': { duration: 0, delay: 0 },
       }"
     />
   </mgl-image-source>
