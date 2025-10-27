@@ -1,9 +1,6 @@
-<template>
-  <div></div>
-</template>
+<template></template>
 
 <script setup lang="ts">
-import { type Layer } from '@deltares/fews-wms-requests'
 import {
   StreamlineStyle,
   WMSStreamlineLayer,
@@ -14,13 +11,10 @@ import { useMap } from '@/services/useMap'
 import { inject, onMounted, onUnmounted, watch } from 'vue'
 
 import { configManager } from '@/services/application-config'
-import { type AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
-import { getBeforeId, getLayerId } from '@/lib/map'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { isLoadedSymbol } from '@indoorequal/vue-maplibre-gl'
-
-type StreamlineLayerOptionsFews = Layer['animatedVectors']
+import { LayerOptions } from '@/lib/map'
 
 const DEFAULT_STREAMLINE_OPTIONS = {
   defaultNumParticles: 1000,
@@ -49,8 +43,8 @@ const DEFAULT_WAVECREST_OPTIONS = {
 }
 
 interface Props {
-  layerOptions?: AnimatedRasterLayerOptions
-  streamlineOptions?: StreamlineLayerOptionsFews
+  layerOptions?: LayerOptions
+  layerId: string
   beforeId?: string
   enableDoubleClick: boolean
 }
@@ -62,7 +56,6 @@ const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
 
-const layerId = getLayerId('streamlines')
 let layer: WMSStreamlineLayer | null = null
 
 onMounted(() => {
@@ -180,15 +173,15 @@ addUpdateWatcher(
 
 function addLayer(): void {
   if (!map) return
-  if (!props.layerOptions || !props.streamlineOptions) return
+  if (!props.layerOptions) return
   const options: WMSStreamlineLayerOptions = {
-    ...mergeOptions(props.layerOptions, props.streamlineOptions),
+    ...getStreamlineOptions(props.layerOptions),
     transformRequest: createTransformRequestFn(),
     downsampleFactorWMS: 2,
   }
 
   // Create and initialise new streamline layer.
-  layer = new WMSStreamlineLayer(layerId, options)
+  layer = new WMSStreamlineLayer(props.layerId, options)
   layer.on('start-loading', () => (isLoading.value = true))
   layer.on('end-loading', () => (isLoading.value = false))
 
@@ -203,23 +196,24 @@ function addLayer(): void {
     )
   })
 
-  const beforeId = getBeforeId(map, layerId, props.beforeId)
-  map?.addLayer(layer, beforeId)
+  map?.addLayer(layer, props.beforeId)
 }
 
 watch(
   () => props.beforeId,
   (newBeforeId) => {
-    if (!map?.getLayer(layerId)) return
-
-    const beforeId = getBeforeId(map, layerId, newBeforeId)
-    map.moveLayer(layerId, beforeId)
+    if (!map?.getLayer(props.layerId)) return
+    map.moveLayer(props.layerId, newBeforeId)
   },
 )
 
 function removeLayer(): void {
-  if (map !== undefined && map.style !== undefined && map.getLayer(layerId)) {
-    map.removeLayer(layerId)
+  if (
+    map !== undefined &&
+    map.style !== undefined &&
+    map.getLayer(props.layerId)
+  ) {
+    map.removeLayer(props.layerId)
   }
 }
 
@@ -227,14 +221,13 @@ function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent) {
   emit('doubleclick', event)
 }
 
-function mergeOptions(
-  layerOptions: AnimatedRasterLayerOptions,
-  streamlineOptions: StreamlineLayerOptionsFews,
+function getStreamlineOptions(
+  layerOptions: LayerOptions,
 ): WMSStreamlineLayerOptions {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   const baseUrlWms = `${baseUrl}/wms`
 
-  const isWaveCrest = streamlineOptions?.particleType === 'wave-crest'
+  const isWaveCrest = layerOptions?.particleType === 'wave-crest'
 
   const {
     defaultNumParticles,
@@ -252,19 +245,18 @@ function mergeOptions(
     layer: layerOptions.name,
     style: layerOptions.style,
     useDisplayUnits: layerOptions.useDisplayUnits,
-    streamlineStyle: streamlineOptions?.coloredParticles
+    streamlineStyle: layerOptions?.coloredParticles
       ? StreamlineStyle.MagnitudeColoredParticles
       : StreamlineStyle.ColoredParticles,
-    numParticles: streamlineOptions?.numberOfParticles ?? defaultNumParticles,
-    particleSize: streamlineOptions?.particleSize ?? defaultParticleSize,
-    speedFactor: streamlineOptions?.speedFactor ?? defaultSpeedFactor,
-    fadeAmountPerSecond:
-      streamlineOptions?.fadeAmount ?? defaultFadeAmountPerSecond,
-    speedExponent: streamlineOptions?.speedExponent ?? defaultSpeedExponent,
-    particleColor: streamlineOptions?.particleColor
-      ? `#${streamlineOptions?.particleColor}`
+    numParticles: layerOptions?.numberOfParticles ?? defaultNumParticles,
+    particleSize: layerOptions?.particleSize ?? defaultParticleSize,
+    speedFactor: layerOptions?.speedFactor ?? defaultSpeedFactor,
+    fadeAmountPerSecond: layerOptions?.fadeAmount ?? defaultFadeAmountPerSecond,
+    speedExponent: layerOptions?.speedExponent ?? defaultSpeedExponent,
+    particleColor: layerOptions?.particleColor
+      ? `#${layerOptions?.particleColor}`
       : undefined,
-    maxAge: streamlineOptions?.maximumParticleAge ?? defaultMaxAge,
+    maxAge: layerOptions?.maximumParticleAge ?? defaultMaxAge,
     growthRate: defaultGrowthRate,
     trailParticleOptions,
   }

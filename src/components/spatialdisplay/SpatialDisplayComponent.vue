@@ -1,23 +1,5 @@
 <template>
   <MapComponent :bounds="bounds" :style="mapStyle">
-    <AnimatedRasterLayer
-      v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
-      v-model:isLoading="isLoading"
-      :layer="layerOptions"
-      :key="`layer-${layerOptions.name}`"
-      :beforeId="baseMap.beforeId"
-      :enableDoubleClick="settings.wmsLayer.doubleClickAction"
-      @doubleclick="onCoordinateClick"
-    />
-    <AnimatedStreamlineRasterLayer
-      v-if="layerKind === LayerKind.Streamline && showLayer && layerOptions"
-      v-model:isLoading="isLoading"
-      :layerOptions="layerOptions"
-      :streamlineOptions="layerCapabilities?.animatedVectors"
-      :beforeId="baseMap.beforeId"
-      :enableDoubleClick="settings.wmsLayer.doubleClickAction"
-      @doubleclick="onCoordinateClick"
-    />
     <div
       class="colourbar-container"
       aria-label="map legend"
@@ -53,10 +35,16 @@
     />
     <template v-if="layerOptions">
       <OverlayLayer
-        v-for="overlay in selectedOverlays"
-        :key="overlay.id"
+        v-for="overlay in layers"
+        :key="overlay.id ?? overlay.type"
+        :layerKind="layerKind"
+        v-model:isLoading="isLoading"
         :overlay="overlay"
+        :overlays="settings.overlays"
         :layerOptions="layerOptions"
+        :beforeId="baseMap.beforeId"
+        :settings="settings.wmsLayer"
+        @doubleclick="onCoordinateClick"
       />
     </template>
     <div class="mapcomponent__controls-container pa-2 ga-2">
@@ -158,7 +146,6 @@
 <script setup lang="ts">
 import DateTimeSliderValues from '@/components/general/DateTimeSliderValues.vue'
 import MapComponent from '@/components/map/MapComponent.vue'
-import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
 import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
 import {
@@ -166,9 +153,6 @@ import {
   useWmsCapabilities,
 } from '@/services/useWms'
 import ColourBar from '@/components/wms/ColourBar.vue'
-import AnimatedRasterLayer, {
-  AnimatedRasterLayerOptions,
-} from '@/components/wms/AnimatedRasterLayer.vue'
 import LocationsSearchControl from '@/components/wms/LocationsSearchControl.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
@@ -188,7 +172,7 @@ import {
   type MapLayerTouchEvent,
 } from 'maplibre-gl'
 import type { BoundingBox, Layer, Style } from '@deltares/fews-wms-requests'
-import type { Location } from '@deltares/fews-pi-requests'
+import type { Location, Overlay } from '@deltares/fews-pi-requests'
 import { LayerKind } from '@/lib/streamlines'
 import { useColourScalesStore } from '@/stores/colourScales'
 import { useDisplay } from 'vuetify'
@@ -206,7 +190,7 @@ import { useSelectedDate } from '@/services/useSelectedDate'
 import { useOverlays } from '@/services/useOverlays'
 import { useBaseMap } from '@/services/useBaseMap'
 import { isInDatesRange } from '@/lib/date'
-import { getLocationWithChilds } from '@/lib/map'
+import { getLocationWithChilds, LayerOptions, mapIds } from '@/lib/map'
 import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 
@@ -290,7 +274,7 @@ watch(
 
 const selectedLocationIds = computed(() => props.locationIds?.split(',') ?? [])
 
-const layerOptions = ref<AnimatedRasterLayerOptions>()
+const layerOptions = ref<LayerOptions>()
 const forecastTime = ref<Date>()
 const isLoading = ref(false)
 let debouncedSetLayerOptions!: () => void
@@ -330,6 +314,21 @@ const { baseMap, mapStyle } = useBaseMap()
 const { selectedOverlayIds, selectedOverlays } = useOverlays(
   () => props.settings.overlays,
 )
+
+const layers = computed(() => {
+  const gridLayer: Overlay = {
+    type: 'gridLayer',
+  }
+  const hasGridLayer = selectedOverlays.value.some(
+    (overlay) => overlay.type === 'gridLayer',
+  )
+  const items = hasGridLayer
+    ? selectedOverlays.value
+    : [gridLayer, ...selectedOverlays.value]
+  return showLayer.value
+    ? items
+    : items.filter((item) => item.type !== 'gridLayer')
+})
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
 watchEffect(() => {
@@ -506,6 +505,7 @@ function setLayerOptions(): void {
       style: currentColourScale.value?.style.name,
       useDisplayUnits: userSettings.useDisplayUnits,
       useLastValue: isInDatesRange(selectedDate.value, props.times),
+      ...props.layerCapabilities?.animatedVectors,
     }
   } else {
     layerOptions.value = undefined

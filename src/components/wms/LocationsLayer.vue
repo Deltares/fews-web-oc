@@ -1,24 +1,27 @@
 <template>
-  <mgl-geo-json-source :source-id="locationMapIds.source" :data="geojson">
+  <mgl-geo-json-source :source-id="mapIds.location.source" :data="geojson">
     <LocationsFillLayer
-      :layerId="locationMapIds.layer.fill"
+      :layerId="mapIds.location.layer.fill"
       :selectedLocationIds="selectedLocationIds"
       :isDark="isDark"
       :hoveredStateId="hoveredStateId"
     />
 
-    <LocationsCircleLayer :layerId="locationMapIds.layer.circle" />
+    <LocationsCircleLayer :layerId="mapIds.location.layer.circle" />
 
     <LocationsSymbolLayer
-      :layerId="locationMapIds.layer.symbol"
+      :layerId="mapIds.location.layer.symbol"
       :isDark="isDark"
     />
     <LocationsSymbolLayer
-      :layerId="locationMapIds.layer.childSymbol"
+      :layerId="mapIds.location.layer.childSymbol"
       :isDark="isDark"
       child
     />
-    <LocationsTextLayer :layerId="locationMapIds.layer.text" :isDark="isDark" />
+    <LocationsTextLayer
+      :layerId="mapIds.location.layer.text"
+      :isDark="isDark"
+    />
   </mgl-geo-json-source>
 
   <LocationsMarkers :geojson="geojson" />
@@ -44,7 +47,7 @@ import { addLocationIconsToMap } from '@/lib/location-icons'
 import { useDark } from '@vueuse/core'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
-  locationMapIds,
+  mapIds,
   clickableLocationLayerIds,
   addPropertiesToLocationGeojson,
 } from '@/lib/map'

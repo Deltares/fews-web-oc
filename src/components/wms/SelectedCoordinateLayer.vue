@@ -15,7 +15,7 @@
 import { LngLat, MapMouseEvent, MapTouchEvent, Popup } from 'maplibre-gl'
 import { computed, ref, watch } from 'vue'
 import { MglGeoJsonSource, MglCircleLayer } from '@indoorequal/vue-maplibre-gl'
-import { getLayerId, getSourceId } from '@/lib/map'
+import { mapIds } from '@/lib/map'
 import { useMap } from '@/services/useMap'
 
 interface Props {
@@ -29,8 +29,8 @@ const { map } = useMap()
 if (!map) throw new Error('Map is not available to show selected coordinate')
 const canvas = map.getCanvasContainer()
 
-const layerId = getLayerId('selected-coordinate')
-const sourceId = getSourceId('selected-coordinate')
+const layerId = mapIds.selectedCoordinate.layer
+const sourceId = mapIds.selectedCoordinate.source
 
 const paintSpecification = {
   'circle-radius': 8,

@@ -1,4 +1,3 @@
-import { getLayerId, getSourceId } from '@/lib/map/utils'
 import type { Location } from '@deltares/fews-pi-requests'
 import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import type { LegacyFilterSpecification } from 'maplibre-gl'
@@ -10,27 +9,6 @@ export interface ExtendedLocation extends Location {
   invertedSortKey: number
   selected?: boolean
 }
-
-export const locationMapIds = {
-  layer: {
-    circle: getLayerId('location-circle'),
-    symbol: getLayerId('location-symbol'),
-    childSymbol: getLayerId('location-child-symbol'),
-    text: getLayerId('location-text'),
-    fill: getLayerId('location-fill'),
-  },
-  source: getSourceId('location'),
-}
-
-export const locationLayerIds = Object.values(locationMapIds.layer)
-
-// NOTE: When multiple layers are clicked the order of the layers here is important.
-export const clickableLocationLayerIds = [
-  locationMapIds.layer.fill,
-  locationMapIds.layer.circle,
-  locationMapIds.layer.symbol,
-  locationMapIds.layer.childSymbol,
-]
 
 export function addPropertiesToLocationGeojson(
   geojson: FeatureCollection<Geometry, Location>,

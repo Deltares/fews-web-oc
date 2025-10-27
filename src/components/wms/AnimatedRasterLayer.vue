@@ -8,7 +8,6 @@
     <mgl-raster-layer
       :layerId="layerId"
       :before="beforeId"
-      :key="beforeId"
       :paint="{
         'raster-opacity': 0,
         'raster-fade-duration': 0,
@@ -18,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { toMercator } from '@turf/projection'
 import {
   Coordinates,
@@ -33,23 +32,13 @@ import { MglImageSource, MglRasterLayer } from '@indoorequal/vue-maplibre-gl'
 import { configManager } from '@/services/application-config'
 import { useMap } from '@/services/useMap'
 import { point } from '@turf/helpers'
-import { getBeforeId, getLayerId, getSourceId } from '@/lib/map'
 import { debounce } from 'lodash-es'
-
-export interface AnimatedRasterLayerOptions {
-  name: string
-  time?: Date
-  useDisplayUnits?: boolean
-  bbox?: LngLatBounds
-  elevation?: number | null
-  colorScaleRange?: string
-  style?: string
-  useLastValue?: boolean
-  layerType?: string
-}
+import type { LayerOptions } from '@/lib/map'
 
 interface Props {
-  layer: AnimatedRasterLayerOptions
+  layerOptions: LayerOptions
+  sourceId: string
+  layerId: string
   beforeId?: string
   enableDoubleClick?: boolean
 }
@@ -59,13 +48,17 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 
-const sourceId = computed(() => getSourceId(`${props.layer.name}-source`))
-const layerId = computed(() => getLayerId(`${props.layer.name}-layer`))
-const beforeId = computed(() => getBeforeId(map, layerId.value, props.beforeId))
-
 const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
+
+watch(
+  () => props.beforeId,
+  (newBeforeId) => {
+    if (!map?.getLayer(props.layerId)) return
+    map.moveLayer(props.layerId, newBeforeId)
+  },
+)
 
 const sourceOptions = ref<ReturnType<typeof getImageSourceOptions>>()
 
@@ -99,11 +92,11 @@ function onMapMoveEnd(): void {
 
 function onDataChange(event: MapSourceDataEvent): void {
   if (
-    event.sourceId === sourceId.value &&
+    event.sourceId === props.sourceId &&
     event.tile !== undefined &&
     event.isSourceLoaded
   ) {
-    map?.setPaintProperty(layerId.value, 'raster-opacity', 1)
+    map?.setPaintProperty(props.layerId, 'raster-opacity', 1)
   }
 }
 
@@ -112,13 +105,13 @@ function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 }
 
 function onStartLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId === sourceId.value) {
+  if (e.sourceId === props.sourceId) {
     isLoading.value = true
   }
 }
 
 function onEndLoading(e: MapSourceDataEvent): void {
-  if (e.isSourceLoaded && e.sourceId === sourceId.value) {
+  if (e.isSourceLoaded && e.sourceId === props.sourceId) {
     isLoading.value = false
   }
 }
@@ -157,12 +150,11 @@ function removeHooksFromMapObject(): void {
 }
 
 function getImageSourceOptions() {
-  if (props.layer.time === undefined || map === undefined) {
+  if (map === undefined) {
     return
   }
 
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const time = props.layer.time.toISOString()
   let bounds = map.getBounds()
   let { width, height } = map.getCanvas()
 
@@ -180,33 +172,40 @@ function getImageSourceOptions() {
   getMapUrl.searchParams.append('service', 'WMS')
   getMapUrl.searchParams.append('request', 'GetMap')
   getMapUrl.searchParams.append('version', '1.3')
-  getMapUrl.searchParams.append('layers', props.layer.name)
+  getMapUrl.searchParams.append('layers', props.layerOptions.name)
   getMapUrl.searchParams.append('crs', 'EPSG:3857')
   getMapUrl.searchParams.append('bbox', `${getMercatorBboxFromBounds(bounds)}`)
   // Width and height are in pixels, this can cause the image can be distorted a bit relicative to the bbox coordinates
   getMapUrl.searchParams.append('height', `${height.toFixed(0)}`)
   getMapUrl.searchParams.append('width', `${width.toFixed(0)}`)
-  getMapUrl.searchParams.append('time', `${time}`)
-  if (props.layer.useLastValue) {
+
+  if (props.layerOptions.time) {
+    getMapUrl.searchParams.append('time', props.layerOptions.time.toISOString())
+  }
+
+  if (props.layerOptions.useLastValue) {
     getMapUrl.searchParams.append('useLastValue', 'true')
   }
-  if (props.layer.style) {
-    getMapUrl.searchParams.append('styles', props.layer.style)
+  if (props.layerOptions.style) {
+    getMapUrl.searchParams.append('styles', props.layerOptions.style)
   }
-  if (props.layer.elevation) {
-    getMapUrl.searchParams.append('elevation', `${props.layer.elevation}`)
+  if (props.layerOptions.elevation) {
+    getMapUrl.searchParams.append(
+      'elevation',
+      `${props.layerOptions.elevation}`,
+    )
   }
-  if (props.layer.layerType) {
-    getMapUrl.searchParams.append('layerType', props.layer.layerType)
+  if (props.layerOptions.layerType) {
+    getMapUrl.searchParams.append('layerType', props.layerOptions.layerType)
   }
-  if (props.layer.colorScaleRange) {
+  if (props.layerOptions.colorScaleRange) {
     getMapUrl.searchParams.append(
       'colorScaleRange',
-      `${props.layer.colorScaleRange}`,
+      `${props.layerOptions.colorScaleRange}`,
     )
     getMapUrl.searchParams.append(
       'useDisplayUnits',
-      props.layer.useDisplayUnits ? 'true' : 'false',
+      props.layerOptions.useDisplayUnits ? 'true' : 'false',
     )
   }
   return {
@@ -215,7 +214,7 @@ function getImageSourceOptions() {
   }
 }
 
-watch(() => props.layer, debouncedUpdate, { immediate: true })
+watch(() => props.layerOptions, debouncedUpdate, { immediate: true })
 async function updateSource() {
   if (!map || map.isMoving()) return
 
@@ -224,7 +223,7 @@ async function updateSource() {
     return
   }
 
-  const source = map.getSource(sourceId.value) as ImageSource
+  const source = map.getSource(props.sourceId) as ImageSource
   if (!source) return
 
   const imageOptions = getImageSourceOptions()
