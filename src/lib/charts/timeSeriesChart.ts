@@ -6,6 +6,8 @@ import {
   ChartMarker,
   ChartMatrix,
   ChartRule,
+  DataValue,
+  MouseOverOptions,
   TooltipAnchor,
   TooltipOptions,
 } from '@deltares/fews-web-oc-charts'
@@ -43,12 +45,19 @@ function addToChart(
     anchor: TooltipAnchor.Top,
   }
 
+  const mouseover: MouseOverOptions = {
+    textFormatter: (d: DataValue, precision: number) => {
+      // FEWS backend already formats the number appropriately
+      return d.toString()
+    }
+  }
+
   let chart
   switch (chartSeries.type) {
     case 'dummy':
       break
     case 'line':
-      chart = new ChartLine(data, {})
+      chart = new ChartLine(data, { mouseover })
       break
     case 'area':
       chart = new ChartArea(data, {})
