@@ -10,7 +10,9 @@ test.describe('Topology Thresholds Overview Visibility', () => {
     )
 
     // Check that the ThresholdsControl button is visible in the app bar
-    const thresholdButton = await page.getByRole('button', { name: 'Badge' })
+    const thresholdButton = page.getByRole('button', {
+      name: 'Thresholds button',
+    })
     await expect(thresholdButton).toBeVisible()
   })
 
@@ -47,7 +49,9 @@ test.describe('Topology Thresholds Overview Visibility', () => {
     )
 
     // Check that the ThresholdsControl button is not visible in the app bar
-    const thresholdButton = await page.getByRole('button', { name: 'Badge' })
+    const thresholdButton = page.getByRole('button', {
+      name: 'Thresholds button',
+    })
     await expect(thresholdButton).not.toBeVisible()
   })
 })
