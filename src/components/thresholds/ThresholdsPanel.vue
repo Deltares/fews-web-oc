@@ -31,7 +31,7 @@
     </v-chip>
   </v-chip-group>
   <div v-if="warningLevels.length === 0" class="pa-2">
-    No active threshold crossings
+    {{ t('no_threshold_crossing') }}
   </div>
   <!-- Important to have item-height as it greatly improves performance -->
   <v-virtual-scroll
