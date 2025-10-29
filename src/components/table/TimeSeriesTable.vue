@@ -45,7 +45,7 @@
                 >
                   <v-btn
                     icon="mdi-table-row-plus-before"
-                    @click="addRowToTimeSeries(selected, 'before')"
+                    @click.stop="addRowToTimeSeries(selected, 'before')"
                     color="primary"
                     variant="text"
                     density="compact"
@@ -53,7 +53,7 @@
                   />
                   <v-btn
                     icon="mdi-table-row-plus-after"
-                    @click="addRowToTimeSeries(selected, 'after')"
+                    @click.stop="addRowToTimeSeries(selected, 'after')"
                     color="primary"
                     variant="text"
                     density="compact"
@@ -96,7 +96,7 @@
                     >
                       <v-btn
                         prepend-icon="mdi-content-save-outline"
-                        @click="save(column.key as string)"
+                        @click.stop="save(column.key as string)"
                         :disabled="newTableData.length === 0"
                         color="primary"
                         variant="flat"
@@ -108,7 +108,7 @@
                         size="small"
                         variant="flat"
                         class="my-2"
-                        @click="stopEditTimeSeries(column.key || '')"
+                        @click.stop="stopEditTimeSeries(column.key || '')"
                         >Cancel</v-btn
                       >
                     </div>
@@ -117,7 +117,7 @@
                       size="x-small"
                       variant="text"
                       icon="mdi-pencil"
-                      @click="toggleEditTimeSeries(column.key as string)"
+                      @click.stop="toggleEditTimeSeries(column.key as string)"
                     ></v-btn>
                   </template>
                   <v-icon
