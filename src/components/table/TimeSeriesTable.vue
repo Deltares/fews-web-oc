@@ -16,7 +16,9 @@
       density="compact"
       no-filter
       fixed-header
+      must-sort
       height="100%"
+      @update:sortBy="updateSortBy"
     >
       <template v-slot:headers="{ columns, toggleSort, isSorted, getSortIcon }">
         <tr>
@@ -28,14 +30,12 @@
                 'v-data-table__th--sorted': isSorted(column),
                 'v-data-table__th--sortable': column.sortable && !isEditing,
               }"
-              @click="
-                column.sortable && !isEditing ? toggleSort(column) : undefined
-              "
+              @click="column.sortable ? toggleSort(column) : undefined"
             >
               <div class="table-header-indicator-text">
                 <span>{{ column.title }}</span>
                 <v-icon
-                  v-if="column.sortable && !isEditing"
+                  v-if="column.sortable"
                   class="v-data-table-header__sort-icon"
                   :icon="getSortIcon(column)"
                 />
@@ -253,7 +253,7 @@ const nonEquidistantSeries = computed(() => {
     .map(([id]) => id)
 })
 
-const dateOrder = computed(() =>
+const dateOrder = ref<'asc' | 'desc'>(
   props.settings.sortDateTimeColumn === 'ascending' ? 'asc' : 'desc',
 )
 type SortItem = { key: string; order: 'asc' | 'desc' }
@@ -264,15 +264,23 @@ const sortBy = ref<SortItem[]>([
   },
 ])
 watch(
-  dateOrder,
+  () => props.settings.sortDateTimeColumn,
   (order) => {
+    dateOrder.value = order === 'ascending' ? 'asc' : 'desc'
     const dateSortItem = sortBy.value.find((item) => item.key === 'date')
     if (!dateSortItem) return
 
-    dateSortItem.order = order
+    dateSortItem.order = dateOrder.value
   },
   { immediate: true },
 )
+
+function updateSortBy(newSortBy: SortItem[]) {
+  const dateSortItem = newSortBy.find((item) => item.key === 'date')
+  if (dateSortItem) {
+    dateOrder.value = dateSortItem.order
+  }
+}
 
 onBeforeMount(() => {
   if (props.config !== undefined) {
@@ -387,6 +395,13 @@ function toggleEditTimeSeries(seriesId: string) {
   if (isEditingTimeSeries(seriesId)) {
     stopEditTimeSeries(seriesId)
   } else {
+    // set sorting to date column when starting to edit
+    sortBy.value = [
+      {
+        key: 'date',
+        order: dateOrder.value,
+      },
+    ]
     editTimeSeries(seriesId)
   }
 }
