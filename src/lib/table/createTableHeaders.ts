@@ -22,6 +22,7 @@ export function createTableHeaders(
         title: formatHeader(chartSeries),
         color: chartSeries.style.stroke?.toString(),
         editable: chartSeries.editable ?? false,
+        sortable: !chartSeries.editable,
       })
     }
   })

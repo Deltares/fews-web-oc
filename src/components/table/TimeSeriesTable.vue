@@ -76,7 +76,10 @@
                 'table-header--editing': isEditingTimeSeries(
                   column.key as string,
                 ),
+                'v-data-table__th--sorted': isSorted(column),
+                'v-data-table__th--sortable': column.sortable && !isEditing,
               }"
+              @click="toggleSort(column)"
             >
               <div class="table-header-indicator">
                 <div class="table-header-indicator-text">
@@ -117,6 +120,10 @@
                       @click="toggleEditTimeSeries(column.key as string)"
                     ></v-btn>
                   </template>
+                  <v-icon
+                    class="v-data-table-header__sort-icon"
+                    :icon="getSortIcon(column)"
+                  ></v-icon>
                 </div>
                 <div
                   class="table-header-indicator-color"
