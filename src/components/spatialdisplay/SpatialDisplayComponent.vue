@@ -5,6 +5,8 @@
       v-model:isLoading="isLoading"
       :layer="layerOptions"
       :key="`layer-${layerOptions.name}`"
+      :layerId="mapIds.wms.layer"
+      :sourceId="mapIds.wms.source"
       :beforeId="baseMap.beforeId"
       :enableDoubleClick="settings.wmsLayer.doubleClickAction"
       @doubleclick="onCoordinateClick"
@@ -14,6 +16,7 @@
       v-model:isLoading="isLoading"
       :layerOptions="layerOptions"
       :streamlineOptions="layerCapabilities?.animatedVectors"
+      :layerId="mapIds.wms.layer"
       :beforeId="baseMap.beforeId"
       :enableDoubleClick="settings.wmsLayer.doubleClickAction"
       @doubleclick="onCoordinateClick"
@@ -206,7 +209,7 @@ import { useSelectedDate } from '@/services/useSelectedDate'
 import { useOverlays } from '@/services/useOverlays'
 import { useBaseMap } from '@/services/useBaseMap'
 import { isInDatesRange } from '@/lib/date'
-import { getLocationWithChilds } from '@/lib/map'
+import { getLocationWithChilds, mapIds } from '@/lib/map'
 import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 

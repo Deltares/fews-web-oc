@@ -33,7 +33,7 @@ import { MglImageSource, MglRasterLayer } from '@indoorequal/vue-maplibre-gl'
 import { configManager } from '@/services/application-config'
 import { useMap } from '@/services/useMap'
 import { point } from '@turf/helpers'
-import { getBeforeId, getLayerId, getSourceId } from '@/lib/map'
+import { getBeforeId } from '@/lib/map'
 import { debounce } from 'lodash-es'
 
 export interface AnimatedRasterLayerOptions {
@@ -50,6 +50,8 @@ export interface AnimatedRasterLayerOptions {
 
 interface Props {
   layer: AnimatedRasterLayerOptions
+  layerId: string
+  sourceId: string
   beforeId?: string
   enableDoubleClick?: boolean
 }
@@ -59,9 +61,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 
-const sourceId = computed(() => getSourceId(`${props.layer.name}-source`))
-const layerId = computed(() => getLayerId(`${props.layer.name}-layer`))
-const beforeId = computed(() => getBeforeId(map, layerId.value, props.beforeId))
+const beforeId = computed(() => getBeforeId(map, props.layerId, props.beforeId))
 
 const emit = defineEmits(['doubleclick'])
 
@@ -99,11 +99,11 @@ function onMapMoveEnd(): void {
 
 function onDataChange(event: MapSourceDataEvent): void {
   if (
-    event.sourceId === sourceId.value &&
+    event.sourceId === props.sourceId &&
     event.tile !== undefined &&
     event.isSourceLoaded
   ) {
-    map?.setPaintProperty(layerId.value, 'raster-opacity', 1)
+    map?.setPaintProperty(props.layerId, 'raster-opacity', 1)
   }
 }
 
@@ -112,13 +112,13 @@ function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 }
 
 function onStartLoading(e: MapSourceDataEvent): void {
-  if (e.sourceId === sourceId.value) {
+  if (e.sourceId === props.sourceId) {
     isLoading.value = true
   }
 }
 
 function onEndLoading(e: MapSourceDataEvent): void {
-  if (e.isSourceLoaded && e.sourceId === sourceId.value) {
+  if (e.isSourceLoaded && e.sourceId === props.sourceId) {
     isLoading.value = false
   }
 }
@@ -157,12 +157,11 @@ function removeHooksFromMapObject(): void {
 }
 
 function getImageSourceOptions() {
-  if (props.layer.time === undefined || map === undefined) {
+  if (map === undefined) {
     return
   }
 
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const time = props.layer.time.toISOString()
   let bounds = map.getBounds()
   let { width, height } = map.getCanvas()
 
@@ -186,7 +185,9 @@ function getImageSourceOptions() {
   // Width and height are in pixels, this can cause the image can be distorted a bit relicative to the bbox coordinates
   getMapUrl.searchParams.append('height', `${height.toFixed(0)}`)
   getMapUrl.searchParams.append('width', `${width.toFixed(0)}`)
-  getMapUrl.searchParams.append('time', `${time}`)
+  if (props.layer.time) {
+    getMapUrl.searchParams.append('time', props.layer.time.toISOString())
+  }
   if (props.layer.useLastValue) {
     getMapUrl.searchParams.append('useLastValue', 'true')
   }
@@ -224,7 +225,7 @@ async function updateSource() {
     return
   }
 
-  const source = map.getSource(sourceId.value) as ImageSource
+  const source = map.getSource(props.sourceId) as ImageSource
   if (!source) return
 
   const imageOptions = getImageSourceOptions()
