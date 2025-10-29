@@ -35,16 +35,12 @@
     />
     <template v-if="layerOptions">
       <OverlayLayer
-        v-for="overlay in layers"
+        v-for="overlay in selectedOverlays"
         :key="overlay.id ?? overlay.type"
-        :layerKind="layerKind"
-        v-model:isLoading="isLoading"
         :overlay="overlay"
         :overlays="settings.overlays"
         :layerOptions="layerOptions"
         :beforeId="baseMap.beforeId"
-        :settings="settings.wmsLayer"
-        @doubleclick="onCoordinateClick"
       />
     </template>
     <div class="mapcomponent__controls-container pa-2 ga-2">
@@ -172,7 +168,7 @@ import {
   type MapLayerTouchEvent,
 } from 'maplibre-gl'
 import type { BoundingBox, Layer, Style } from '@deltares/fews-wms-requests'
-import type { Location, Overlay } from '@deltares/fews-pi-requests'
+import type { Location } from '@deltares/fews-pi-requests'
 import { LayerKind } from '@/lib/streamlines'
 import { useColourScalesStore } from '@/stores/colourScales'
 import { useDisplay } from 'vuetify'
@@ -190,7 +186,7 @@ import { useSelectedDate } from '@/services/useSelectedDate'
 import { useOverlays } from '@/services/useOverlays'
 import { useBaseMap } from '@/services/useBaseMap'
 import { isInDatesRange } from '@/lib/date'
-import { getLocationWithChilds, LayerOptions, mapIds } from '@/lib/map'
+import { getLocationWithChilds, LayerOptions } from '@/lib/map'
 import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 
@@ -314,21 +310,6 @@ const { baseMap, mapStyle } = useBaseMap()
 const { selectedOverlayIds, selectedOverlays } = useOverlays(
   () => props.settings.overlays,
 )
-
-const layers = computed(() => {
-  const gridLayer: Overlay = {
-    type: 'gridLayer',
-  }
-  const hasGridLayer = selectedOverlays.value.some(
-    (overlay) => overlay.type === 'gridLayer',
-  )
-  const items = hasGridLayer
-    ? selectedOverlays.value
-    : [gridLayer, ...selectedOverlays.value]
-  return showLayer.value
-    ? items
-    : items.filter((item) => item.type !== 'gridLayer')
-})
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
 watchEffect(() => {
