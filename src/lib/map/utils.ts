@@ -18,7 +18,7 @@ export function transformStyle(
 
   const layers = [...newStyle.layers]
 
-  customLayers.forEach(({ layer, beforeId }) => {
+  customLayers.toReversed().forEach(({ layer, beforeId }) => {
     const beforeIndex = layers.findIndex((l) => l.id === beforeId)
 
     if (beforeIndex !== -1) {
@@ -36,6 +36,8 @@ export function transformStyle(
   }
 
   const glyphs = newStyle.glyphs ?? oldStyle.glyphs
+  console.log(oldStyle.layers.filter((l) => isCustomLayer(l.id)))
+  console.log(layers.filter((l) => isCustomLayer(l.id)))
 
   return {
     ...newStyle,

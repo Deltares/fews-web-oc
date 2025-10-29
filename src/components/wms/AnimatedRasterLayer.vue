@@ -7,7 +7,7 @@
   >
     <mgl-raster-layer
       :layerId="layerId"
-      :before="beforeId"
+      :before="determineBeforeId()"
       :paint="{
         'raster-opacity': 0,
         'raster-fade-duration': 0,
@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { toMercator } from '@turf/projection'
 import {
   Coordinates,
@@ -33,7 +33,8 @@ import { configManager } from '@/services/application-config'
 import { useMap } from '@/services/useMap'
 import { point } from '@turf/helpers'
 import { debounce } from 'lodash-es'
-import type { LayerOptions } from '@/lib/map'
+import { getOverlayLayerId, getBeforeId, type LayerOptions } from '@/lib/map'
+import type { Overlay } from '@deltares/fews-pi-requests'
 
 interface Props {
   layerOptions: LayerOptions
@@ -41,10 +42,12 @@ interface Props {
   layerId: string
   beforeId?: string
   enableDoubleClick?: boolean
+  overlays?: Overlay[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   enableDoubleClick: false,
+  overlays: () => [],
 })
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 
@@ -52,13 +55,31 @@ const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
 
-watch(
-  () => props.beforeId,
-  (newBeforeId) => {
-    if (!map?.getLayer(props.layerId)) return
-    map.moveLayer(props.layerId, newBeforeId)
-  },
-)
+function determineBeforeId() {
+  if (!map) return
+
+  const layerIds = map.getLayersOrder()
+
+  // Find the index of the next overlay layer that has a layerId in the map
+  const gridIndex = props.overlays.findIndex((o) => o.type === 'gridLayer')
+
+  for (let i = gridIndex + 1; i < props.overlays.length; i++) {
+    const nextOverlay = props.overlays[i]
+    const nextLayerId = getOverlayLayerId(nextOverlay)
+    if (layerIds.includes(nextLayerId)) {
+      return nextLayerId
+    }
+  }
+  return getBeforeId(map, props.layerId, props.beforeId)
+}
+
+// watch(
+//   () => props.beforeId,
+//   () => {
+//     if (!map?.getLayer(props.layerId)) return
+//     map.moveLayer(props.layerId, beforeId.value)
+//   },
+// )
 
 const sourceOptions = ref<ReturnType<typeof getImageSourceOptions>>()
 

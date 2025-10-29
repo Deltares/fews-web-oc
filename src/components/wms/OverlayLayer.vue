@@ -6,14 +6,12 @@
 import AnimatedRasterLayer from '@/components/wms/AnimatedRasterLayer.vue'
 import {
   getBeforeId,
-  getLayerId,
-  getSourceId,
   type LayerOptions,
-  mapIds,
 } from '@/lib/map'
 import { Overlay } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
 import { useMap } from '@/services/useMap'
+import { getOverlayLayerId, getOverlaySourceId } from '@/lib/map/overlay'
 
 interface Props {
   beforeId: string | undefined
@@ -35,27 +33,10 @@ const options = computed(() => ({
 
 const { map } = useMap()
 
-function prefix(overlay: Overlay): string {
-  return `overlay-${overlay.id}`
-}
-
-function getOverlayLayerId(overlay: Overlay): string {
-  switch (overlay.type) {
-    case 'overLay':
-      return getLayerId(prefix(overlay))
-    case 'gridLayer':
-      return mapIds.wms.layer
-  }
-}
-
-function getOverlaySourceId(overlay: Overlay): string {
-  switch (overlay.type) {
-    case 'overLay':
-      return getSourceId(prefix(overlay))
-    case 'gridLayer':
-      return mapIds.wms.source
-  }
-}
+// const ordering = computed(() => [
+//   ...props.overlays.map(o => o.id),
+//   props.beforeId
+// ])
 
 const beforeId = computed(() => {
   if (!map) return

@@ -1,5 +1,28 @@
 <template>
   <MapComponent :bounds="bounds" :style="mapStyle">
+    <AnimatedRasterLayer
+      v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
+      v-model:isLoading="isLoading"
+      :layerOptions="layerOptions"
+      :key="`layer-${layerOptions.name}`"
+      :layerId="mapIds.wms.layer"
+      :sourceId="mapIds.wms.source"
+      :beforeId="baseMap.beforeId"
+      :enableDoubleClick="settings.wmsLayer.doubleClickAction"
+      @doubleclick="onCoordinateClick"
+      :overlays="settings.overlays"
+    />
+    <AnimatedStreamlineRasterLayer
+      v-if="layerKind === LayerKind.Streamline && showLayer && layerOptions"
+      v-model:isLoading="isLoading"
+      :layerOptions="layerOptions"
+      :key="`layer-${layerOptions.name}`"
+      :layerId="mapIds.wms.layer"
+      :beforeId="baseMap.beforeId"
+      :enableDoubleClick="settings.wmsLayer.doubleClickAction"
+      @doubleclick="onCoordinateClick"
+      :overlays="settings.overlays"
+    />
     <div
       class="colourbar-container"
       aria-label="map legend"
@@ -140,6 +163,8 @@
 </template>
 
 <script setup lang="ts">
+import AnimatedRasterLayer from '@/components/wms/AnimatedRasterLayer.vue'
+import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 import DateTimeSliderValues from '@/components/general/DateTimeSliderValues.vue'
 import MapComponent from '@/components/map/MapComponent.vue'
 
@@ -186,7 +211,7 @@ import { useSelectedDate } from '@/services/useSelectedDate'
 import { useOverlays } from '@/services/useOverlays'
 import { useBaseMap } from '@/services/useBaseMap'
 import { isInDatesRange } from '@/lib/date'
-import { getLocationWithChilds, LayerOptions } from '@/lib/map'
+import { getLocationWithChilds, LayerOptions, mapIds } from '@/lib/map'
 import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 

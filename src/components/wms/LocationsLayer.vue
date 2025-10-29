@@ -169,8 +169,8 @@ function addHooksToMapObject() {
       }
     }
 
-    map.on('mousemove', locationMapIds.layer.fill, onFillMouseMove)
-    map.on('mouseleave', locationMapIds.layer.fill, onFillMouseLeave)
+    map.on('mousemove', mapIds.location.layer.fill, onFillMouseMove)
+    map.on('mouseleave', mapIds.location.layer.fill, onFillMouseLeave)
   }
 }
 
@@ -182,8 +182,8 @@ function removeHooksFromMapObject() {
       map.off('mouseleave', layerId, unsetCursorPointer)
     }
 
-    map.on('mousemove', locationMapIds.layer.fill, onFillMouseMove)
-    map.on('mouseleave', locationMapIds.layer.fill, onFillMouseLeave)
+    map.on('mousemove', mapIds.location.layer.fill, onFillMouseMove)
+    map.on('mouseleave', mapIds.location.layer.fill, onFillMouseLeave)
   }
 }
 </script>

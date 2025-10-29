@@ -8,13 +8,14 @@ import {
   TrailParticleShape,
 } from '@deltares/webgl-streamline-visualizer'
 import { useMap } from '@/services/useMap'
-import { inject, onMounted, onUnmounted, watch } from 'vue'
+import { computed, inject, onMounted, onUnmounted, watch } from 'vue'
 
 import { configManager } from '@/services/application-config'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { isLoadedSymbol } from '@indoorequal/vue-maplibre-gl'
-import { LayerOptions } from '@/lib/map'
+import { getOverlayLayerId, getBeforeId, type LayerOptions } from '@/lib/map'
+import type { Overlay } from '@deltares/fews-pi-requests'
 
 const DEFAULT_STREAMLINE_OPTIONS = {
   defaultNumParticles: 1000,
@@ -47,14 +48,42 @@ interface Props {
   layerId: string
   beforeId?: string
   enableDoubleClick: boolean
+  overlays?: Overlay[]
 }
 const props = withDefaults(defineProps<Props>(), {
   enableDoubleClick: false,
+  overlays: () => [],
 })
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
+
+function determineBeforeId() {
+  if (!map) return
+
+  const layerIds = map.getLayersOrder()
+
+  // Find the index of the next overlay layer that has a layerId in the map
+  const gridIndex = props.overlays.findIndex((o) => o.type === 'gridLayer')
+
+  for (let i = gridIndex + 1; i < props.overlays.length; i++) {
+    const nextOverlay = props.overlays[i]
+    const nextLayerId = getOverlayLayerId(nextOverlay)
+    if (layerIds.includes(nextLayerId)) {
+      return nextLayerId
+    }
+  }
+  return getBeforeId(map, props.layerId, props.beforeId)
+}
+
+// watch(
+//   () => props.beforeId,
+//   () => {
+//     if (!map?.getLayer(props.layerId)) return
+//     map.moveLayer(props.layerId, beforeId.value)
+//   },
+// )
 
 let layer: WMSStreamlineLayer | null = null
 
@@ -196,16 +225,8 @@ function addLayer(): void {
     )
   })
 
-  map?.addLayer(layer, props.beforeId)
+  map?.addLayer(layer, determineBeforeId())
 }
-
-watch(
-  () => props.beforeId,
-  (newBeforeId) => {
-    if (!map?.getLayer(props.layerId)) return
-    map.moveLayer(props.layerId, newBeforeId)
-  },
-)
 
 function removeLayer(): void {
   if (
