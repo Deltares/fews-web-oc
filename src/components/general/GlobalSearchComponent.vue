@@ -26,67 +26,147 @@
         </v-toolbar>
       </v-card-title>
       <v-card-text class="pa-0">
-        <v-treeview
-          v-model:selected="state.selectedItems"
-          :items="state.items"
-          item-value="id"
-          :select-strategy="cascadeStrategy"
-          selectable
-          density="compact"
-          :custom-filter="isMatchingItem"
-          :search="search"
-          open-all
-        >
-          <template #title="{ item }">
-            <HighlightMatch :value="item.title" :query="search" />
-            <span class="id-match" v-if="showId(item)">
-              ID: <HighlightMatch :value="item.id" :query="search" />
-            </span>
-          </template>
-        </v-treeview>
+        <v-list slim>
+          <v-virtual-scroll
+            :items="filteredNodes"
+            :item-size="36"
+            item-key="__uid"
+            class="overflow-y-auto h-100"
+          >
+            <template #default="{ item }">
+              <v-list-item>
+                <template v-slot:prepend="{ isSelected, select }">
+                  <v-list-item-action start>
+                    <v-checkbox-btn
+                      :model-value="isSelected"
+                      @update:model-value="select"
+                    ></v-checkbox-btn>
+                  </v-list-item-action>
+                </template>
+                <HighlightMatch :value="item.title" :query="search" />
+                <span class="id-match" v-if="showId(item)">
+                  ID:
+                  <HighlightMatch :value="item.id.toString()" :query="search" />
+                </span>
+              </v-list-item>
+            </template>
+          </v-virtual-scroll>
+        </v-list>
       </v-card-text>
     </v-card>
   </v-dialog>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useDisplay } from 'vuetify'
 
 import { containsSubstring } from '@/lib/search'
 
-import {
-  type GlobalSearchItem,
-  useGlobalSearchState,
-} from '@/stores/globalSearch'
+import { useGlobalSearchState } from '@/stores/globalSearch'
 
 import HighlightMatch from './HighlightMatch.vue'
 import { cascadeStrategy } from '@/lib/selection'
+import { debouncedRef } from '@vueuse/core'
+
+interface TreeNode {
+  id?: string | number
+  title?: string
+  subtitle?: string
+  children?: TreeNode[]
+  expanded?: boolean
+  [key: string]: any
+}
+
+interface FlatNode {
+  _uid: string | number
+  id: string | number
+  title: string
+  subtitle?: string
+  depth: number
+  hasChildren: boolean
+  raw: TreeNode
+  path: Array<string | number>
+}
 
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
-const search = ref<string | undefined>()
+const search = ref<string>()
+const debouncedSearch = debouncedRef(search, 100)
 
-function showId(item: GlobalSearchItem): boolean {
+const visibleNodes = computed<FlatNode[]>(() => flattenTree(state.items))
+
+const filteredNodes = computed(() => {
+  // Filter log messages based on selected levels, types, search text, task runs, and workflows
+  // We filter in two passes, first we find which taskRuns have any logs that match the filter criteria
+  // and then we filter the log messages based on those taskRuns.
+
+  const searchString = debouncedSearch.value
+  if (searchString === undefined || searchString.trim() === '') {
+    return visibleNodes.value
+  }
+
+  return visibleNodes.value.filter((node) =>
+    isMatchingItem(node.id.toString(), searchString, node),
+  )
+})
+
+function showId(item: FlatNode): boolean {
   const query = search.value
   if (!query) return false
 
   const isMatchingName = containsSubstring(item.title, query)
-  const isMatchingId = containsSubstring(item.id, query)
+  const isMatchingId = containsSubstring(item._uid.toString(), query)
   // Only show the ID if the search query matches the ID but not the name.
   return isMatchingId && !isMatchingName
 }
 
-function isMatchingItem(
-  _id: string,
-  query: string,
-  item?: { raw: GlobalSearchItem },
-): boolean {
+function isMatchingItem(id: string, query: string, item?: FlatNode): boolean {
   // A location matches if name and/or ID contains a substring that matches the
   // query.
-  const isMatchingId = item ? containsSubstring(item.raw.id, query) : false
-  const isMatchingName = item ? containsSubstring(item.raw.title, query) : false
+  const isMatchingId = item ? containsSubstring(id, query) : false
+  const isMatchingName = item ? containsSubstring(item.title, query) : false
   return isMatchingId || isMatchingName
+}
+
+let __uid = 1
+function makeUid(): string {
+  return `vt-${__uid++}`
+}
+
+function flattenTree(
+  nodes: TreeNode[],
+  depth = 0,
+  parentPath: Array<string | number> = [],
+): FlatNode[] {
+  console.time('flattenTree')
+  const out: FlatNode[] = []
+  for (const node of nodes) {
+    const id = node.id ?? makeUid()
+    const title = node.title ?? ''
+    const children = Array.isArray(node.children)
+      ? (node.children as TreeNode[])
+      : []
+    const hasChildren = children.length > 0
+
+    const flat: FlatNode = {
+      _uid: id,
+      id,
+      title,
+      subtitle: node.subtitle,
+      depth,
+      hasChildren,
+      raw: node,
+      path: [...parentPath, id],
+    }
+
+    out.push(flat)
+
+    if (hasChildren) {
+      out.push(...flattenTree(children, depth + 1, flat.path))
+    }
+  }
+  return out
 }
 </script>
 
