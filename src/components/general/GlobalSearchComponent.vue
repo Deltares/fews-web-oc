@@ -25,34 +25,31 @@
           <v-btn icon="mdi-close" @click="state.active = false" />
         </v-toolbar>
       </v-card-title>
-      <v-card-text class="pa-0">
-        <v-list slim>
-          <v-virtual-scroll
-            :items="filteredNodes"
-            :item-size="36"
-            item-key="__uid"
-            class="overflow-y-auto h-100"
-          >
-            <template #default="{ item }">
-              <v-list-item>
-                <template v-slot:prepend="{ isSelected, select }">
-                  <v-list-item-action start>
-                    <v-checkbox-btn
-                      :model-value="isSelected"
-                      @update:model-value="select"
-                    ></v-checkbox-btn>
-                  </v-list-item-action>
-                </template>
-                <HighlightMatch :value="item.title" :query="search" />
-                <span class="id-match" v-if="showId(item)">
-                  ID:
-                  <HighlightMatch :value="item.id.toString()" :query="search" />
-                </span>
-              </v-list-item>
-            </template>
-          </v-virtual-scroll>
-        </v-list>
-      </v-card-text>
+      <v-list slim class="search-scroll-container py-0">
+        <v-virtual-scroll
+          :items="filteredNodes"
+          :item-size="36"
+          item-key="__uid"
+        >
+          <template #default="{ item }">
+            <v-list-item density="compact" class="py-0">
+              <template v-slot:prepend="{ isSelected, select }">
+                <v-list-item-action start>
+                  <v-checkbox-btn
+                    :model-value="isSelected"
+                    @update:model-value="select"
+                  ></v-checkbox-btn>
+                </v-list-item-action>
+              </template>
+              <HighlightMatch :value="item.title" :query="search" />
+              <span class="id-match" v-if="showId(item)">
+                ID:
+                <HighlightMatch :value="item.id.toString()" :query="search" />
+              </span>
+            </v-list-item>
+          </template>
+        </v-virtual-scroll>
+      </v-list>
     </v-card>
   </v-dialog>
 </template>
@@ -139,7 +136,6 @@ function flattenTree(
   depth = 0,
   parentPath: Array<string | number> = [],
 ): FlatNode[] {
-  console.time('flattenTree')
   const out: FlatNode[] = []
   for (const node of nodes) {
     const id = node.id ?? makeUid()
@@ -175,5 +171,11 @@ function flattenTree(
   margin-left: 20px;
   font-size: 0.8em;
   font-style: italic;
+}
+
+.search-scroll-container {
+  display: flex;
+  height: calc(100vh - 48px);
+  overflow-y: hidden;
 }
 </style>
