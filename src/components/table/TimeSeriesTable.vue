@@ -323,7 +323,7 @@ watchDebounced(
   // of last updated dates.
   () => Object.values(props.series).map((series) => series.lastUpdated),
   () => {
-    if (props.series === undefined) return
+    if (props.series === undefined || isEditing.value) return
     tableData.value = createTableData(
       props.config.series,
       props.series,
