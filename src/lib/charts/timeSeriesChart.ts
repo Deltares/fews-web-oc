@@ -49,7 +49,7 @@ function addToChart(
     textFormatter: (d: DataValue, precision: number) => {
       // FEWS backend already formats the number appropriately
       return d.toString()
-    }
+    },
   }
 
   let chart
