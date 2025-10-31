@@ -99,7 +99,7 @@ const showOnlySelected = ref(false)
 const augmentedItems = computed(() => {
   // Return all items from the store, add property with all children ids for easier filtering
   return state.items.map((item) => {
-    const childIds = item.children?.flatMap((child) => child.id) || []
+    const childIds = item.children?.flatMap((child) => child.id) ?? []
     return {
       ...item,
       allTreeIds: [item.id, ...childIds],
