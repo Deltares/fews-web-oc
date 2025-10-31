@@ -9,65 +9,129 @@
     @keydown.esc="state.active = false"
   >
     <v-card>
-      <v-card-title class="pa-0">
-        <v-toolbar density="compact">
-          <v-text-field
-            v-model="search"
-            placeholder="Search for locations"
-            variant="outlined"
-            hide-details
-            clearable
-            density="compact"
-            autofocus
-            prepend-icon="mdi-map-marker"
-            class="ps-3"
-          />
-          <v-btn icon="mdi-close" @click="state.active = false" />
-        </v-toolbar>
-      </v-card-title>
-      <v-card-text class="pa-0">
-        <v-treeview
-          v-model:selected="state.selectedItems"
-          :items="state.items"
-          item-value="id"
-          :select-strategy="cascadeStrategy"
-          selectable
+      <v-toolbar density="compact">
+        <v-text-field
+          v-model="search"
+          placeholder="Search for locations"
+          variant="outlined"
+          hide-details
+          clearable
           density="compact"
-          :custom-filter="isMatchingItem"
-          :search="search"
-          open-all
+          autofocus
+          prepend-icon="mdi-map-marker"
+          class="ps-3"
+        />
+        <v-btn icon="mdi-close" @click="state.active = false" />
+      </v-toolbar>
+      <div class="d-flex px-1 pt-3 pb-2 align-center">
+        <span class="pe-1">Filter</span>
+        <v-btn-toggle density="compact" v-model="showOnlySelected">
+          <v-btn variant="tonal" :value="false">All </v-btn>
+          <v-btn
+            prepend-icon="mdi-checkbox-marked"
+            variant="tonal"
+            :value="true"
+            >Selected
+          </v-btn>
+        </v-btn-toggle>
+        <v-spacer />
+        <v-btn
+          prepend-icon="mdi-close-circle"
+          variant="tonal"
+          rounded
+          @click.stop="state.selectedItems = []"
+          >Clear all</v-btn
         >
-          <template #title="{ item }">
-            <HighlightMatch :value="item.title" :query="search" />
-            <span class="id-match" v-if="showId(item)">
-              ID: <HighlightMatch :value="item.id" :query="search" />
-            </span>
+      </div>
+      <v-list slim class="search-scroll-container py-0">
+        <v-virtual-scroll :items="filteredNodes" item-key="id" item-height="40">
+          <template #default="{ item }">
+            <v-treeview
+              :selected="selectedChildren(item)"
+              :items="[item]"
+              item-value="id"
+              :select-strategy="cascadeStrategy"
+              selectable
+              density="compact"
+              indent-lines="simple"
+              class="py-0"
+              @update:selected="
+                (selection) =>
+                  updateSelectedChildren(item, selection as string[])
+              "
+              :key="item.id"
+              :open-all="showAll(item, debouncedSearch)"
+            >
+              <template #title="{ item: subItem }">
+                <HighlightMatch
+                  :value="subItem.title"
+                  :query="debouncedSearch"
+                />
+                <span class="id-match" v-if="showId(subItem)">
+                  ID:
+                  <HighlightMatch
+                    :value="subItem.id"
+                    :query="debouncedSearch"
+                  />
+                </span>
+              </template>
+            </v-treeview>
           </template>
-        </v-treeview>
-      </v-card-text>
+        </v-virtual-scroll>
+      </v-list>
     </v-card>
   </v-dialog>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useDisplay } from 'vuetify'
 
 import { containsSubstring } from '@/lib/search'
 
-import {
-  type GlobalSearchItem,
-  useGlobalSearchState,
-} from '@/stores/globalSearch'
+import { GlobalSearchItem, useGlobalSearchState } from '@/stores/globalSearch'
 
 import HighlightMatch from './HighlightMatch.vue'
 import { cascadeStrategy } from '@/lib/selection'
+import { debouncedRef } from '@vueuse/core'
+
+interface GlobalSearchItemWithTreeIds extends GlobalSearchItem {
+  treeIds: string[]
+}
 
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
 const search = ref<string | undefined>()
+const debouncedSearch = debouncedRef(search, 100)
+const showOnlySelected = ref(false)
 
-function showId(item: GlobalSearchItem): boolean {
+const itemWithTreeIds = computed(() => {
+  // Return all items from the store, add property with all children ids for easier filtering
+  return state.items.map((item) => {
+    const childIds = item.children?.flatMap((child) => child.id) ?? []
+    return {
+      ...item,
+      treeIds: [item.id, ...childIds],
+    }
+  })
+})
+
+const filteredNodes = computed(() => {
+  const items = showOnlySelected.value
+    ? itemWithTreeIds.value.filter((item) => {
+        return item.treeIds.some((id) => state.selectedItems.includes(id))
+      })
+    : itemWithTreeIds.value
+
+  const searchString = debouncedSearch.value?.trim()
+  if (!searchString) {
+    return items
+  }
+
+  return items.filter((node) => isMatchingItem(node, searchString))
+})
+
+function showId(item: GlobalSearchItemWithTreeIds): boolean {
   const query = search.value
   if (!query) return false
 
@@ -77,16 +141,46 @@ function showId(item: GlobalSearchItem): boolean {
   return isMatchingId && !isMatchingName
 }
 
-function isMatchingItem(
-  _id: string,
-  query: string,
-  item?: { raw: GlobalSearchItem },
+function selectedChildren(item: GlobalSearchItemWithTreeIds) {
+  return state.selectedItems.filter((id) => item.treeIds.includes(id))
+}
+
+function updateSelectedChildren(
+  item: GlobalSearchItemWithTreeIds,
+  selection: string[],
+) {
+  // Remove any previously selected child IDs of this item.
+  const filtered = state.selectedItems.filter(
+    (id) => !item.treeIds.includes(id),
+  )
+  // Add the newly selected child IDs.
+  state.selectedItems = filtered.concat(selection)
+}
+
+function isMatchingItem(item: GlobalSearchItem, query: string): boolean {
+  if (
+    containsSubstring(item.id, query) ||
+    containsSubstring(item.title, query)
+  ) {
+    return true
+  }
+  if (item.children?.some((child) => isMatchingItem(child, query))) {
+    return true
+  }
+  return false
+}
+
+function showAll(
+  item: GlobalSearchItemWithTreeIds,
+  query: string | undefined,
 ): boolean {
-  // A location matches if name and/or ID contains a substring that matches the
-  // query.
-  const isMatchingId = item ? containsSubstring(item.raw.id, query) : false
-  const isMatchingName = item ? containsSubstring(item.raw.title, query) : false
-  return isMatchingId || isMatchingName
+  if (!query) {
+    return false
+  }
+  if (item.children?.some((child) => isMatchingItem(child, query))) {
+    return true
+  }
+  return false
 }
 </script>
 
@@ -95,5 +189,11 @@ function isMatchingItem(
   margin-left: 20px;
   font-size: 0.8em;
   font-style: italic;
+}
+
+.search-scroll-container {
+  display: flex;
+  height: calc(100vh - 48px);
+  overflow-y: hidden;
 }
 </style>
