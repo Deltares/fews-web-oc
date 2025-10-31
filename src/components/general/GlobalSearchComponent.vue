@@ -56,7 +56,8 @@
               indent-lines="simple"
               class="py-0"
               @update:selected="
-                (selection) => updateSelectedChildren(item, selection)
+                (selection) =>
+                  updateSelectedChildren(item, selection as string[])
               "
               :key="item.id"
               :open-all="showAll(item, debouncedSearch)"
@@ -146,14 +147,14 @@ function selectedChildren(item: GlobalSearchItemWithTreeIds) {
 
 function updateSelectedChildren(
   item: GlobalSearchItemWithTreeIds,
-  selection: unknown,
+  selection: string[],
 ) {
   // Remove any previously selected child IDs of this item.
   const filtered = state.selectedItems.filter(
     (id) => !item.treeIds.includes(id),
   )
   // Add the newly selected child IDs.
-  state.selectedItems = filtered.concat(selection as string[])
+  state.selectedItems = filtered.concat(selection)
 }
 
 function isMatchingItem(item: GlobalSearchItem, query: string): boolean {
