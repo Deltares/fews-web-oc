@@ -91,6 +91,14 @@
           v-model:layer-kind="layerKind"
           v-model:show-layer="showLayer"
         >
+          <template v-if="aggregationLabels.length > 0">
+            <v-divider />
+            <AggregationPanel
+              :aggregation-labels="aggregationLabels"
+              v-model:do-show-aggregated="doShowAggregated"
+              v-model:selected-aggregation-label="selectedAggregationLabel"
+            />
+          </template>
           <template v-if="layerOptions">
             <v-divider />
             <ColourPanel
@@ -176,6 +184,7 @@ import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
 import OverlayInformationPanel from '@/components/wms/panel/OverlayInformationPanel.vue'
+import AggregationPanel from '../wms/panel/AggregationPanel.vue'
 import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
 import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
@@ -290,6 +299,16 @@ watch(
 
 const selectedLocationIds = computed(() => props.locationIds?.split(',') ?? [])
 
+const aggregationLabels = computed<string[]>(() => {
+  // For now, we only ever have one entry for aggregation: "Accumulation".
+  return props.layerCapabilities?.aggregation?.[0].labels ?? []
+})
+const doShowAggregated = ref<boolean>(false)
+const selectedAggregationLabel = ref<string | null>(
+  aggregationLabels.value[0] ?? null,
+)
+watch([doShowAggregated, selectedAggregationLabel], () => setLayerOptions())
+
 const layerOptions = ref<AnimatedRasterLayerOptions>()
 const forecastTime = ref<Date>()
 const isLoading = ref(false)
@@ -342,6 +361,8 @@ const maxValuesTimeSeries = useWmsMaxValuesTimeSeries(
   () => props.layerName,
   start,
   end,
+  doShowAggregated,
+  selectedAggregationLabel,
 )
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
@@ -509,6 +530,9 @@ function setLayerOptions(): void {
     layerOptions.value = {
       name: props.layerName,
       time: selectedDate.value,
+      aggregationLabel: doShowAggregated.value
+        ? (selectedAggregationLabel.value ?? undefined)
+        : undefined,
       bbox: props.layerCapabilities?.boundingBox
         ? convertBoundingBoxToLngLatBounds(props.layerCapabilities.boundingBox)
         : undefined,
