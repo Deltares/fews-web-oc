@@ -27,7 +27,12 @@
         <span class="pe-1">Filter</span>
         <v-btn-toggle density="compact" v-model="showOnlySelected">
           <v-btn variant="tonal" :value="false">All </v-btn>
-          <v-btn variant="tonal" :value="true">Selected </v-btn>
+          <v-btn
+            prepend-icon="mdi-checkbox-marked"
+            variant="tonal"
+            :value="true"
+            >Selected
+          </v-btn>
         </v-btn-toggle>
         <v-spacer />
         <v-btn
@@ -85,7 +90,6 @@ interface AugmentedGlobalSearchItem extends GlobalSearchItem {
   allTreeIds: string[]
 }
 
-
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
 const search = ref<string>()
@@ -137,7 +141,10 @@ function selectedChildren(item: AugmentedGlobalSearchItem) {
   return state.selectedItems.filter((id) => allIds.includes(id))
 }
 
-function updateSelectedChildren(item: AugmentedGlobalSearchItem, selection: unknown) {
+function updateSelectedChildren(
+  item: AugmentedGlobalSearchItem,
+  selection: unknown,
+) {
   const allIds = item.allTreeIds
   // Remove any previously selected child IDs of this item.
   const filtered = state.selectedItems.filter((id) => !allIds.includes(id))
