@@ -149,8 +149,13 @@ function updateSelectedChildren(
 }
 
 function isMatchingItem(item: GlobalSearchItem, query: string): boolean {
-  // A location matches if name and/or ID contains a substring that matches the
-  // query.
+  const childMatches = item.children?.some((child) =>
+    isMatchingItem(child, query),
+  )
+  if (childMatches)  {
+    return true
+  }
+
   const isMatchingId = item ? containsSubstring(item.id, query) : false
   const isMatchingName = item ? containsSubstring(item.title, query) : false
   return isMatchingId || isMatchingName
