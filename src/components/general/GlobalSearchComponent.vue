@@ -119,7 +119,11 @@ const filteredNodes = computed(() => {
     : augmentedItems.value
 
   const searchString = debouncedSearch.value
-  if (searchString === undefined || searchString.trim() === '') {
+  if (
+    searchString === undefined ||
+    searchString === null ||
+    searchString.trim() === ''
+  ) {
     return items
   }
 
