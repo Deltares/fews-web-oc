@@ -108,9 +108,6 @@ const augmentedItems = computed(() => {
 })
 
 const filteredNodes = computed(() => {
-  // Filter log messages based on selected levels, types, search text, task runs, and workflows
-  // We filter in two passes, first we find which taskRuns have any logs that match the filter criteria
-  // and then we filter the log messages based on those taskRuns.
 
   const items = showOnlySelected.value
     ? augmentedItems.value.filter((item) => {
