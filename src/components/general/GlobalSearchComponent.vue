@@ -9,44 +9,59 @@
     @keydown.esc="state.active = false"
   >
     <v-card>
-      <v-card-title class="pa-0">
-        <v-toolbar density="compact">
-          <v-text-field
-            v-model="search"
-            placeholder="Search for locations"
-            variant="outlined"
-            hide-details
-            clearable
-            density="compact"
-            autofocus
-            prepend-icon="mdi-map-marker"
-            class="ps-3"
-          />
-          <v-btn icon="mdi-close" @click="state.active = false" />
-        </v-toolbar>
-      </v-card-title>
-      <v-list slim class="search-scroll-container py-0">
-        <v-virtual-scroll
-          :items="filteredNodes"
-          :item-size="36"
-          item-key="__uid"
+      <v-toolbar density="compact">
+        <v-text-field
+          v-model="search"
+          placeholder="Search for locations"
+          variant="outlined"
+          hide-details
+          clearable
+          density="compact"
+          autofocus
+          prepend-icon="mdi-map-marker"
+          class="ps-3"
+        />
+        <v-btn icon="mdi-close" @click="state.active = false" />
+      </v-toolbar>
+      <div class="d-flex px-1 pt-3 pb-2 align-center">
+        <span class="pe-1">Filter:</span>
+        <v-btn-toggle density="compact" v-model="showOnlySelected">
+          <v-btn variant="tonal" :value="false">All </v-btn>
+          <v-btn variant="tonal" :value="true">Selected </v-btn>
+        </v-btn-toggle>
+        <v-spacer />
+        <v-btn
+          prepend-icon="mdi-close-circle"
+          variant="tonal"
+          rounded
+          @click.stop="state.selectedItems = []"
+          >Clear all</v-btn
         >
+      </div>
+      <v-list slim class="search-scroll-container py-0">
+        <v-virtual-scroll :items="filteredNodes" item-key="id" item-height="40">
           <template #default="{ item }">
-            <v-list-item density="compact" class="py-0">
-              <template v-slot:prepend="{ isSelected, select }">
-                <v-list-item-action start>
-                  <v-checkbox-btn
-                    :model-value="isSelected"
-                    @update:model-value="select"
-                  ></v-checkbox-btn>
-                </v-list-item-action>
+            <v-treeview
+              :selected="selectedChildren(item)"
+              :items="[item]"
+              item-value="id"
+              :select-strategy="cascadeStrategy"
+              selectable
+              density="compact"
+              indent-lines="simple"
+              class="py-0"
+              @update:selected="
+                (selection) => updateSelectedChildren(item, selection)
+              "
+              :key="item.id"
+            >
+              <template #title="{ item: subItem }">
+                <HighlightMatch :value="subItem.title" :query="search" />
+                <span class="id-match" v-if="showId(subItem)">
+                  ID: <HighlightMatch :value="subItem.id" :query="search" />
+                </span>
               </template>
-              <HighlightMatch :value="item.title" :query="search" />
-              <span class="id-match" v-if="showId(item)">
-                ID:
-                <HighlightMatch :value="item.id.toString()" :query="search" />
-              </span>
-            </v-list-item>
+            </v-treeview>
           </template>
         </v-virtual-scroll>
       </v-list>
@@ -60,109 +75,70 @@ import { useDisplay } from 'vuetify'
 
 import { containsSubstring } from '@/lib/search'
 
-import { useGlobalSearchState } from '@/stores/globalSearch'
+import { GlobalSearchItem, useGlobalSearchState } from '@/stores/globalSearch'
 
 import HighlightMatch from './HighlightMatch.vue'
 import { cascadeStrategy } from '@/lib/selection'
 import { debouncedRef } from '@vueuse/core'
 
-interface TreeNode {
-  id?: string | number
-  title?: string
-  subtitle?: string
-  children?: TreeNode[]
-  expanded?: boolean
-  [key: string]: any
-}
-
-interface FlatNode {
-  _uid: string | number
-  id: string | number
-  title: string
-  subtitle?: string
-  depth: number
-  hasChildren: boolean
-  raw: TreeNode
-  path: Array<string | number>
-}
-
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
 const search = ref<string>()
 const debouncedSearch = debouncedRef(search, 100)
-
-const visibleNodes = computed<FlatNode[]>(() => flattenTree(state.items))
+const showOnlySelected = ref(false)
 
 const filteredNodes = computed(() => {
   // Filter log messages based on selected levels, types, search text, task runs, and workflows
   // We filter in two passes, first we find which taskRuns have any logs that match the filter criteria
   // and then we filter the log messages based on those taskRuns.
 
+  const items = showOnlySelected.value
+    ? state.items.filter((item) => {
+        const childIds = item.children?.flatMap((child) => child.id) || []
+        const allIds = childIds.concat(item.id)
+        return allIds.some((id) => state.selectedItems.includes(id))
+      })
+    : state.items
+
   const searchString = debouncedSearch.value
   if (searchString === undefined || searchString.trim() === '') {
-    return visibleNodes.value
+    return items
   }
 
-  return visibleNodes.value.filter((node) =>
-    isMatchingItem(node.id.toString(), searchString, node),
-  )
+  return items.filter((node) => isMatchingItem(node, searchString))
 })
 
-function showId(item: FlatNode): boolean {
+function showId(item: GlobalSearchItem): boolean {
   const query = search.value
   if (!query) return false
 
   const isMatchingName = containsSubstring(item.title, query)
-  const isMatchingId = containsSubstring(item._uid.toString(), query)
+  const isMatchingId = containsSubstring(item.id, query)
   // Only show the ID if the search query matches the ID but not the name.
   return isMatchingId && !isMatchingName
 }
 
-function isMatchingItem(id: string, query: string, item?: FlatNode): boolean {
+function selectedChildren(item: GlobalSearchItem) {
+  const childIds = item.children?.flatMap((child) => child.id) || []
+  const allIds = childIds.concat(item.id)
+  return state.selectedItems.filter((id) => allIds.includes(id))
+}
+
+function updateSelectedChildren(item: GlobalSearchItem, selection: unknown) {
+  const childIds = item.children?.flatMap((child) => child.id) || []
+  const allIds = childIds.concat(item.id)
+  // Remove any previously selected child IDs of this item.
+  const filtered = state.selectedItems.filter((id) => !allIds.includes(id))
+  // Add the newly selected child IDs.
+  state.selectedItems = filtered.concat(selection as string[])
+}
+
+function isMatchingItem(item: GlobalSearchItem, query: string): boolean {
   // A location matches if name and/or ID contains a substring that matches the
   // query.
-  const isMatchingId = item ? containsSubstring(id, query) : false
+  const isMatchingId = item ? containsSubstring(item.id, query) : false
   const isMatchingName = item ? containsSubstring(item.title, query) : false
   return isMatchingId || isMatchingName
-}
-
-let __uid = 1
-function makeUid(): string {
-  return `vt-${__uid++}`
-}
-
-function flattenTree(
-  nodes: TreeNode[],
-  depth = 0,
-  parentPath: Array<string | number> = [],
-): FlatNode[] {
-  const out: FlatNode[] = []
-  for (const node of nodes) {
-    const id = node.id ?? makeUid()
-    const title = node.title ?? ''
-    const children = Array.isArray(node.children)
-      ? (node.children as TreeNode[])
-      : []
-    const hasChildren = children.length > 0
-
-    const flat: FlatNode = {
-      _uid: id,
-      id,
-      title,
-      subtitle: node.subtitle,
-      depth,
-      hasChildren,
-      raw: node,
-      path: [...parentPath, id],
-    }
-
-    out.push(flat)
-
-    if (hasChildren) {
-      out.push(...flattenTree(children, depth + 1, flat.path))
-    }
-  }
-  return out
 }
 </script>
 
