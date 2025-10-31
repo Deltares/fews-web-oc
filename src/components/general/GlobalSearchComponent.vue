@@ -86,7 +86,7 @@ import HighlightMatch from './HighlightMatch.vue'
 import { cascadeStrategy } from '@/lib/selection'
 import { debouncedRef } from '@vueuse/core'
 
-interface AugmentedGlobalSearchItem extends GlobalSearchItem {
+interface GlobalSearchItemWithAllTreeIds extends GlobalSearchItem {
   allTreeIds: string[]
 }
 
@@ -122,7 +122,7 @@ const filteredNodes = computed(() => {
   return items.filter((node) => isMatchingItem(node, searchString))
 })
 
-function showId(item: AugmentedGlobalSearchItem): boolean {
+function showId(item: GlobalSearchItemWithAllTreeIds): boolean {
   const query = search.value
   if (!query) return false
 
@@ -132,13 +132,13 @@ function showId(item: AugmentedGlobalSearchItem): boolean {
   return isMatchingId && !isMatchingName
 }
 
-function selectedChildren(item: AugmentedGlobalSearchItem) {
+function selectedChildren(item: GlobalSearchItemWithAllTreeIds) {
   const allIds = item.allTreeIds
   return state.selectedItems.filter((id) => allIds.includes(id))
 }
 
 function updateSelectedChildren(
-  item: AugmentedGlobalSearchItem,
+  item: GlobalSearchItemWithAllTreeIds,
   selection: unknown,
 ) {
   const allIds = item.allTreeIds
