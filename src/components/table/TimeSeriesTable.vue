@@ -79,7 +79,7 @@
                 'v-data-table__th--sorted': isSorted(column),
                 'v-data-table__th--sortable': column.sortable && !isEditing,
               }"
-              @click="toggleSort(column)"
+              @click="!isEditing ? toggleSort(column) : undefined"
             >
               <div class="table-header-indicator">
                 <div class="table-header-indicator-text">
@@ -121,6 +121,7 @@
                     ></v-btn>
                   </template>
                   <v-icon
+                    v-if="column.sortable && !isEditing"
                     class="v-data-table-header__sort-icon"
                     :icon="getSortIcon(column)"
                   ></v-icon>
