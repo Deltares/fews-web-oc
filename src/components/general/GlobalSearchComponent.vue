@@ -92,7 +92,7 @@ interface AugmentedGlobalSearchItem extends GlobalSearchItem {
 
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
-const search = ref<string>()
+const search = ref<string | undefined>()
 const debouncedSearch = debouncedRef(search, 100)
 const showOnlySelected = ref(false)
 
