@@ -108,19 +108,14 @@ const augmentedItems = computed(() => {
 })
 
 const filteredNodes = computed(() => {
-
   const items = showOnlySelected.value
     ? augmentedItems.value.filter((item) => {
         return item.allTreeIds.some((id) => state.selectedItems.includes(id))
       })
     : augmentedItems.value
 
-  const searchString = debouncedSearch.value
-  if (
-    searchString === undefined ||
-    searchString === null ||
-    searchString.trim() === ''
-  ) {
+  const searchString = debouncedSearch.value?.trim()
+  if (!searchString) {
     return items
   }
 
