@@ -13,7 +13,6 @@
         :bounding-box="boundingBox"
         :times="times"
         :settings="settings.map"
-        :max-values-time-series="maxValuesTimeSeries"
         v-model:elevation="elevation"
         @update:current-time="currentTime = $event"
         @coordinate-click="onCoordinateClick"
@@ -37,10 +36,7 @@ import { computed, defineAsyncComponent, ref, useTemplateRef, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
-import {
-  useWmsLayerCapabilities,
-  useWmsMaxValuesTimeSeries,
-} from '@/services/useWms'
+import { useWmsLayerCapabilities } from '@/services/useWms'
 import {
   filterActionsFilter,
   LocationsTooltipFilter,
@@ -148,23 +144,7 @@ const filteredGeojson = computed(() => {
   }
 })
 
-const start = computed(() => {
-  if (!times.value || times.value.length === 0) return null
-  return times.value[0]
-})
-const end = computed(() => {
-  if (!times.value || times.value.length === 0) return null
-  return times.value[times.value.length - 1]
-})
-
 useDateRegistry(() => times.value ?? [])
-
-const maxValuesTimeSeries = useWmsMaxValuesTimeSeries(
-  baseUrl,
-  () => props.layerName,
-  start,
-  end,
-)
 
 const onlyCoverageLayersAvailable = computed(() => {
   const capabilities = layerCapabilities.value

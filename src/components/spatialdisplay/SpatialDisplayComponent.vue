@@ -145,7 +145,7 @@
     >
       <template #below-track>
         <DateTimeSliderValues
-          :values="maxValuesTimeSeries ?? []"
+          :values="maxValuesTimeSeries"
           :colour-scale="currentColourScale ?? null"
           height="6px"
           class="mb-1"
@@ -165,6 +165,7 @@ import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
   useWmsCapabilities,
+  useWmsMaxValuesTimeSeries,
 } from '@/services/useWms'
 import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedRasterLayer, {
@@ -196,7 +197,6 @@ import { useDisplay } from 'vuetify'
 import ColourLegend from '@/components/wms/ColourLegend.vue'
 import { rangeToString, styleToId } from '@/lib/legend'
 import { useWorkflowsStore } from '@/stores/workflows'
-import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
 import { FeatureCollection, Geometry } from 'geojson'
@@ -228,7 +228,6 @@ interface Props {
   locationIds?: string
   latitude?: string
   longitude?: string
-  maxValuesTimeSeries?: TimeSeriesData[]
   boundingBox?: BoundingBox
   settings: ComponentSettings['map']
 }
@@ -330,6 +329,19 @@ const { baseMap, mapStyle } = useBaseMap()
 
 const { selectedOverlayIds, selectedOverlays } = useOverlays(
   () => props.settings.overlays,
+)
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const start = computed<Date | null>(() => props.times?.[0] ?? null)
+const end = computed<Date | null>(() => {
+  if (!props.times || props.times.length === 0) return null
+  return props.times[props.times.length - 1]
+})
+const maxValuesTimeSeries = useWmsMaxValuesTimeSeries(
+  baseUrl,
+  () => props.layerName,
+  start,
+  end,
 )
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
@@ -513,7 +525,6 @@ function setLayerOptions(): void {
   }
 }
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { capabilities: staticCapabilities } = useWmsCapabilities(baseUrl, {
   // @ts-expect-error Missing in json-schema definition
   layerType: 'static',
