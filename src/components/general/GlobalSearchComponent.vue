@@ -24,7 +24,7 @@
         <v-btn icon="mdi-close" @click="state.active = false" />
       </v-toolbar>
       <div class="d-flex px-1 pt-3 pb-2 align-center">
-        <span class="pe-1">Filter:</span>
+        <span class="pe-1">Filter</span>
         <v-btn-toggle density="compact" v-model="showOnlySelected">
           <v-btn variant="tonal" :value="false">All </v-btn>
           <v-btn variant="tonal" :value="true">Selected </v-btn>
