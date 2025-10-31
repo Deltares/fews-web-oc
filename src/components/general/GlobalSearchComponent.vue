@@ -81,11 +81,27 @@ import HighlightMatch from './HighlightMatch.vue'
 import { cascadeStrategy } from '@/lib/selection'
 import { debouncedRef } from '@vueuse/core'
 
+interface AugmentedGlobalSearchItem extends GlobalSearchItem {
+  allTreeIds: string[]
+}
+
+
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
 const search = ref<string>()
 const debouncedSearch = debouncedRef(search, 100)
 const showOnlySelected = ref(false)
+
+const augmentedItems = computed(() => {
+  // Return all items from the store, add property with all children ids for easier filtering
+  return state.items.map((item) => {
+    const childIds = item.children?.flatMap((child) => child.id) || []
+    return {
+      ...item,
+      allTreeIds: [item.id, ...childIds],
+    }
+  })
+})
 
 const filteredNodes = computed(() => {
   // Filter log messages based on selected levels, types, search text, task runs, and workflows
@@ -93,12 +109,10 @@ const filteredNodes = computed(() => {
   // and then we filter the log messages based on those taskRuns.
 
   const items = showOnlySelected.value
-    ? state.items.filter((item) => {
-        const childIds = item.children?.flatMap((child) => child.id) || []
-        const allIds = childIds.concat(item.id)
-        return allIds.some((id) => state.selectedItems.includes(id))
+    ? augmentedItems.value.filter((item) => {
+        return item.allTreeIds.some((id) => state.selectedItems.includes(id))
       })
-    : state.items
+    : augmentedItems.value
 
   const searchString = debouncedSearch.value
   if (searchString === undefined || searchString.trim() === '') {
@@ -108,7 +122,7 @@ const filteredNodes = computed(() => {
   return items.filter((node) => isMatchingItem(node, searchString))
 })
 
-function showId(item: GlobalSearchItem): boolean {
+function showId(item: AugmentedGlobalSearchItem): boolean {
   const query = search.value
   if (!query) return false
 
@@ -118,15 +132,13 @@ function showId(item: GlobalSearchItem): boolean {
   return isMatchingId && !isMatchingName
 }
 
-function selectedChildren(item: GlobalSearchItem) {
-  const childIds = item.children?.flatMap((child) => child.id) || []
-  const allIds = childIds.concat(item.id)
+function selectedChildren(item: AugmentedGlobalSearchItem) {
+  const allIds = item.allTreeIds
   return state.selectedItems.filter((id) => allIds.includes(id))
 }
 
-function updateSelectedChildren(item: GlobalSearchItem, selection: unknown) {
-  const childIds = item.children?.flatMap((child) => child.id) || []
-  const allIds = childIds.concat(item.id)
+function updateSelectedChildren(item: AugmentedGlobalSearchItem, selection: unknown) {
+  const allIds = item.allTreeIds
   // Remove any previously selected child IDs of this item.
   const filtered = state.selectedItems.filter((id) => !allIds.includes(id))
   // Add the newly selected child IDs.
