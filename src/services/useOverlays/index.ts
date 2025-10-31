@@ -10,7 +10,7 @@ export function useOverlays(overlays: MaybeRefOrGetter<Overlay[]>) {
       if (JSON.stringify(newOverlays) === JSON.stringify(oldOverlays)) return
 
       selectedOverlayIds.value = newOverlays
-        .filter((overlay) => overlay.visible)
+        .filter((overlay) => overlay.type === 'overLay' && overlay.visible)
         .map((overlay) => overlay.id)
         .filter((id) => id !== undefined)
     },

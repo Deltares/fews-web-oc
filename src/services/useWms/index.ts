@@ -4,6 +4,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import {
   BoundingBox,
+  GetCapabilitiesFilter,
   GetCapabilitiesResponse,
   Layer,
   WMSProvider,
@@ -208,9 +209,10 @@ export function fetchWmsLegend(
   }
 }
 
-export function useWmsCapilities(
+export function useWmsCapabilities(
   baseUrl: string,
-): Ref<GetCapabilitiesResponse | undefined> {
+  filter: GetCapabilitiesFilter,
+) {
   const capabilities = ref<GetCapabilitiesResponse>()
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
@@ -219,14 +221,15 @@ export function useWmsCapilities(
 
   async function loadCapabilities(): Promise<void> {
     try {
-      capabilities.value = await wmsProvider.getCapabilities({})
+      capabilities.value = await wmsProvider.getCapabilities(filter)
     } catch (error) {
       console.error(error)
     }
   }
 
   loadCapabilities()
-  return capabilities
+
+  return { capabilities }
 }
 
 export function convertBoundingBoxToLngLatBounds(

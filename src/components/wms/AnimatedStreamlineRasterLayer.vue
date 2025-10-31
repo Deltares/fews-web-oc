@@ -16,7 +16,7 @@ import { inject, onMounted, onUnmounted, watch } from 'vue'
 import { configManager } from '@/services/application-config'
 import { type AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
-import { getBeforeId, getLayerId } from '@/lib/map'
+import { getBeforeId } from '@/lib/map'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { isLoadedSymbol } from '@indoorequal/vue-maplibre-gl'
 
@@ -51,6 +51,7 @@ const DEFAULT_WAVECREST_OPTIONS = {
 interface Props {
   layerOptions?: AnimatedRasterLayerOptions
   streamlineOptions?: StreamlineLayerOptionsFews
+  layerId: string
   beforeId?: string
   enableDoubleClick: boolean
 }
@@ -62,7 +63,6 @@ const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
 
-const layerId = getLayerId('streamlines')
 let layer: WMSStreamlineLayer | null = null
 
 onMounted(() => {
@@ -188,7 +188,7 @@ function addLayer(): void {
   }
 
   // Create and initialise new streamline layer.
-  layer = new WMSStreamlineLayer(layerId, options)
+  layer = new WMSStreamlineLayer(props.layerId, options)
   layer.on('start-loading', () => (isLoading.value = true))
   layer.on('end-loading', () => (isLoading.value = false))
 
@@ -203,23 +203,27 @@ function addLayer(): void {
     )
   })
 
-  const beforeId = getBeforeId(map, layerId, props.beforeId)
+  const beforeId = getBeforeId(map, props.layerId, props.beforeId)
   map?.addLayer(layer, beforeId)
 }
 
 watch(
   () => props.beforeId,
   (newBeforeId) => {
-    if (!map?.getLayer(layerId)) return
+    if (!map?.getLayer(props.layerId)) return
 
-    const beforeId = getBeforeId(map, layerId, newBeforeId)
-    map.moveLayer(layerId, beforeId)
+    const beforeId = getBeforeId(map, props.layerId, newBeforeId)
+    map.moveLayer(props.layerId, beforeId)
   },
 )
 
 function removeLayer(): void {
-  if (map !== undefined && map.style !== undefined && map.getLayer(layerId)) {
-    map.removeLayer(layerId)
+  if (
+    map !== undefined &&
+    map.style !== undefined &&
+    map.getLayer(props.layerId)
+  ) {
+    map.removeLayer(props.layerId)
   }
 }
 

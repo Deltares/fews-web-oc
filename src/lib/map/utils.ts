@@ -19,6 +19,13 @@ export function isCustomSource(id: string) {
   return id.startsWith(SOURCE_PREFIX)
 }
 
+export const mapIds = {
+  wms: {
+    layer: getLayerId('wms'),
+    source: getSourceId('wms'),
+  },
+}
+
 export function transformStyle(
   oldStyle: StyleSpecification | undefined,
   newStyle: StyleSpecification,
@@ -73,6 +80,8 @@ export function getBeforeId(
   // Use the customId if provided or the first custom layer id
   return (
     layerIds.find((id) => id === customId) ??
-    layerIds.find((id) => isCustomLayer(id) && id !== layerId)
+    layerIds.find(
+      (id) => isCustomLayer(id) && id !== layerId && id !== mapIds.wms.layer,
+    )
   )
 }
