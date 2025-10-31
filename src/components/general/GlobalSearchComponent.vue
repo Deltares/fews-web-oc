@@ -59,11 +59,19 @@
                 (selection) => updateSelectedChildren(item, selection)
               "
               :key="item.id"
+              :open-all="showAll(item, debouncedSearch)"
             >
               <template #title="{ item: subItem }">
-                <HighlightMatch :value="subItem.title" :query="search" />
+                <HighlightMatch
+                  :value="subItem.title"
+                  :query="debouncedSearch"
+                />
                 <span class="id-match" v-if="showId(subItem)">
-                  ID: <HighlightMatch :value="subItem.id" :query="search" />
+                  ID:
+                  <HighlightMatch
+                    :value="subItem.id"
+                    :query="debouncedSearch"
+                  />
                 </span>
               </template>
             </v-treeview>
@@ -149,16 +157,29 @@ function updateSelectedChildren(
 }
 
 function isMatchingItem(item: GlobalSearchItem, query: string): boolean {
-  const childMatches = item.children?.some((child) =>
-    isMatchingItem(child, query),
-  )
-  if (childMatches)  {
+  if (
+    containsSubstring(item.id, query) ||
+    containsSubstring(item.title, query)
+  ) {
     return true
   }
+  if (item.children?.some((child) => isMatchingItem(child, query))) {
+    return true
+  }
+  return false
+}
 
-  const isMatchingId = item ? containsSubstring(item.id, query) : false
-  const isMatchingName = item ? containsSubstring(item.title, query) : false
-  return isMatchingId || isMatchingName
+function showAll(
+  item: GlobalSearchItemWithTreeIds,
+  query: string | undefined,
+): boolean {
+  if (!query) {
+    return false
+  }
+  if (item.children?.some((child) => isMatchingItem(child, query))) {
+    return true
+  }
+  return false
 }
 </script>
 
