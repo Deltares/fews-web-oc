@@ -181,10 +181,23 @@ const visibleDomain = ref<[Date, Date]>()
 const fullDomain = computed(() =>
   getDomainWithConfigFallback(store.startTime, store.endTime, props.config),
 )
-const fullBrushDomain = ref<[Date, Date]>([
-  new Date('2024-05-01T00:00:00Z'),
-  new Date('2025-12-31T23:59:59Z'),
-])
+
+function getDefaultBrushDomain(): [Date, Date] {
+  const now = new Date()
+
+  // now - 2 years
+  const startDate = new Date(now)
+  startDate.setFullYear(startDate.getFullYear() - 2)
+
+  // now + 2 months
+  const endDate = new Date(now)
+  endDate.setMonth(endDate.getMonth() + 2)
+
+  return [startDate, endDate]
+}
+
+const fullBrushDomain = getDefaultBrushDomain()
+
 const showBrush = computed(
   () => userSettings.get('charts.brush')?.value === true,
 )
@@ -194,8 +207,8 @@ const chartOptions = ref<UseTimeSeriesOptions>({
   thinning: true,
 })
 const brushOptions = ref<UseTimeSeriesOptions>({
-  startTime: fullBrushDomain.value[0],
-  endTime: fullBrushDomain.value[1],
+  startTime: fullBrushDomain[0],
+  endTime: fullBrushDomain[1],
   thinning: true,
 })
 const tableOptions = computed<UseTimeSeriesOptions>(() => ({
