@@ -98,7 +98,6 @@ function getBrushOptions(): Partial<CartesianAxesOptions> {
     margin: { top: 5, bottom: 25 },
     x: [
       {
-        showAxis: false,
         showGrid: false,
       },
     ],

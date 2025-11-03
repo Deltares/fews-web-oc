@@ -10,7 +10,6 @@ import type { ChartsSettings } from '@/lib/topology/componentSettings'
 import { computed, onMounted, useTemplateRef, watch } from 'vue'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
 import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
-import { toHumanReadableDate } from '@/lib/date'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 import { getSubplotWithDomain } from '@/lib/display'
 
@@ -43,7 +42,7 @@ onMounted(() => {
 
   brushHandler = new BrushHandler({
     domain: { x: domain.value },
-    labelFormatter: toHumanReadableDate,
+    labelFormatter: () => '',
   })
   axis.accept(brushHandler)
 
@@ -82,5 +81,9 @@ watch(domain, (newDomain) => {
   fill: currentColor;
   margin: 0px auto;
   overflow: hidden;
+}
+
+:deep(.brush .selection) {
+  stroke: none;
 }
 </style>
