@@ -54,14 +54,12 @@
       v-if="workflowsStore.isSelectingCoordinate"
       v-model:coordinate="workflowsStore.coordinate"
     />
-    <template v-if="layerOptions">
-      <OverlayLayer
-        v-for="overlay in selectedOverlays"
-        :key="overlay.id"
-        :overlay="overlay"
-        :layerOptions="layerOptions"
-      />
-    </template>
+    <OverlayLayer
+      v-for="overlay in selectedOverlays"
+      :key="overlay.id"
+      :overlay="overlay"
+      :beforeId="baseMap.beforeId"
+    />
     <div class="mapcomponent__controls-container pa-2 ga-2">
       <BoundingBoxControl
         v-if="workflowsStore.isDrawingBoundingBox"
