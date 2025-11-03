@@ -59,7 +59,7 @@
         />
       </template>
       <template #prepend>
-        <div v-show="showMap" class="border rounded mb-1 flex-0-0 h-50">
+        <div v-if="showMap" class="border rounded mb-1 flex-0-0 h-50">
           <AnalysisMap :boundingBox>
             <LocationsLayer
               v-if="filterLocationGeoJson.features.length"
