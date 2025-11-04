@@ -162,10 +162,6 @@ _Support for what-if scenarios_
 
 What-if templates consist of what-if properties and modifiers. Currently only what-if properties are supported in the Web OC.
 
-_Limitations_
-
-TO BE ADDED
-
 _Pre-defined properties_
 
 Pre-defined properties are xMin, xMax, yMin, yMax, xCellSize, and yCellSize. When these properties are configured in the whatIfTemplate, Web OC will provide users with the option to draw a bounding box on the map. The task will be submitted using the [processdata endpoint](https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+PI+REST+Web+Service#FEWSPIRESTWebService-GETprocessdata(2017.02)) instead of [POST run task](https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+PI+REST+Web+Service#FEWSPIRESTWebService-POSTruntask(2017.02)). 
