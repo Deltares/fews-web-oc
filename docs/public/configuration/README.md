@@ -111,11 +111,14 @@ By selecting a location on the map (hold **Ctrl** key for multi-select) or from 
 
 When locations are shown on the Web OC map, icons are used as configured in Delft-FEWS. Icon overlays for threshold crossings are also shown consistently with the Delft-FEWS Desktop OC.  
 
-See [Thresholds documentation](https://publicwiki.deltares.nl/display/FEWSDOC/09+Thresholds). When  
+See [Thresholds documentation](https://publicwiki.deltares.nl/display/FEWSDOC/09+Thresholds). Information on threshold crossings for the configured filter will be visualised when  
 ```xml
 <showActiveThresholdCrossingsForFilters>true</showActiveThresholdCrossingsForFilters>
 ```
-is configured in `WebOperatorClient.xml`, an indicator for the number of locations with threshold crossings per topology node will be shown in Web OC.
+is configured in `WebOperatorClient.xml`. If configured the following threshold information will be made available:
+1. An indicator for the number of locations with threshold crossings per topology node will be shown in the topology navigation panel on the left-side of the GUI. 
+2. A threshold icon in the topbar. The icon is greyed out when no threshold crossings are active for the configured filter. If there are threshold crossings, then the icon will have the color of the most severe threshold color.
+3. A threshold panel, accessible by clicking on the threshold icon in the topbar. The panel shows an overview with the thresholdcrossings, sorted by location. In addition location on the map can be filtered by clicking on the threshold summary icons.
 
 ---
 
@@ -168,7 +171,7 @@ Optionally, gridded vector data can be shown as an animated layer in Web OC by c
 
 **System Monitor**
 
-The system monitor is not supported yet.
+The system monitor will not be supported. The functions of the System Monitor will be made available in dedicated Web OC implementations. For example through the Task Menu, Log Displays, the import status panel. 
 
 ---
 
