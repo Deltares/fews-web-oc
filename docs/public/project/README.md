@@ -31,7 +31,6 @@ Furthermore, key overall assumptions are:
 Key assumptions regarding the development process are:
 
 - The development of the Web OC will apply a growth model. Starting from initial requirements and an initial prioritization, relevant functionality will be gradually and iteratively included or enhanced (in line with the current Delft-FEWS business model).
-- An initial Minimum Viable Product (MVP) version of the Web OC will likely include functionality to: 1) visualize data (time series, map fields, SCADA displays, also including associated information such as thresholds), 2) dispatching jobs, 3) visualize monitoring information.
 - Deltares will provide long-term [support](https://oss.deltares.nl/web/delft-fews/services) on the Web OC.
 
 ## Project timeline
@@ -51,6 +50,7 @@ Key assumptions regarding the development process are:
 |              | **July Delft-FEWS Web OC [Release 1.1.0](https://github.com/Deltares/fews-web-oc/releases/tag/v1.1.0)** (compatible with 2023.02 & 2024.01 back-end).                                             |
 |              | **December Delft-FEWS Web OC [Release 1.2.0](https://github.com/Deltares/fews-web-oc/releases/tag/v1.2.0)** (compatible with 2023.02, 2024.01 & 2024.02 back-end).                                |
 | 2025         | **April Delft-FEWS Web OC [Release 1.3.0](https://github.com/Deltares/fews-web-oc/releases/tag/v1.3.0)** (compatible with 2023.02, 2024.01 & 2024.02 back-end).                                   |
+|              | **November Delft-FEWS Web OC [Release 1.4.0](https://github.com/Deltares/fews-web-oc/releases/tag/v1.4.0-rc.0)** (compatible with 2024.01, 2024.02 & 2025.01 back-end).                                   |
 |              | Web OC Development in line with the current Delft-FEWS business model.                                                                                                                            |
 
 ## Present status
@@ -70,33 +70,9 @@ Non-functional:
 - Performance
 - Relevant configuration will be part of the existing Delft-FEWS configuration concept.
 
-In line with the features listed above, the first release of Web OC ([Dec 2023](https://github.com/Deltares/fews-web-oc/releases/tag/v1.0.0)), will include the following:
-
-| Initial requirements | Web OC release 1.0.0 (Dec 2023)\* |
-| -------------------- | --------------------------------- |
-| **Functional** ||
-| Visualize data (time series, map fields, SCADA displays, also including associated information such as thresholds). | Visualize configured Display Groups when linked to topology node (graph/table view).<br>Visualize timeseries configured in Filters.xml when linked to topology node (graph/table view).<br>Show associated threshold levels in time series graphs.<br>Show associated quality flags in table view.<br>Show SCADA displays including support for most click-actions.<br>Visualize data layers configured in the spatial display.<br>Ensembles not supported yet. |
-| Dispatching jobs | Not supported in this release. However, FewsWebServices topology/nodes? Endpoint extended with information on workflows. |
-| Visualize monitoring information | “Import status” and “Running Tasks” components of system monitor available in Web OC. |
-| **Non-functional** ||
-| Focus on code quality, test and deployment process. | Back-end (FewsWebServices):<br>- Version management: Subversion<br>- Issue tracking in JIRA<br>- Development feature and unit tests<br>- Code Review<br>- Deploy new FewsWebServices on test server (both open and authorized version). ||
-|| Front-end (Libraries and Web OC components):<br>- Version management: Deltares Github<br>- Issue tracking in JIRA<br>- New branch in Git for each issue (manual) <br>- Review and push to main branch (manual)<br>- Run tests for Typescript libraries (automated Teamcity)<br>- Run test for Web OC components (automated Teamcity)<br>- Test successful, deploy on Azure test environment (artifact on build server) |
-| Adhere present day insights regarding cyber security, authentication and authorization | Using OpenID Connect / Oauth2, for both Web OC front-end and FewsWebServices<br>FEWS permissions as configured in FEWS configuration respected by FewsWebServices<br>Run automated ZAP scan (OWASP) on Web OC components and demo Web OC.<br>Web OC will directly connect to FewsWebServices to obtain configuration and relevant data from the FEWS database.|
-| Performance | During the development process of Web OC, the FewsWebServices back-end will be enhanced continuously to improve performance and add functionality. It is intended not to introduce any additional software to the Web OC stack to further improve the performance of Web OC.|
-| Relevant configuration will be part of the existing Delft-FEWS configuration concept. | All configuration related to what content is being displayed in Web OC, is managed by the Delft-FEWS configuration. [Web OC Configuration](https://deltares.github.io/fews-web-oc/configuration/) |
-
 See [release notes](https://github.com/Deltares/fews-web-oc/releases) section for updates since Dec 2023.
 
 \*Please note that Web OC will not support all functionality available in the Desktop OC regarding the features listed above. In addition, not all configurations might be supported. For questions on this matter, please contact Web OC Team via fews-pm@deltares.nl.
-
-## Future plans
-
-Following the current release of Web OC, the software will be developed further in line with the current Delft-FEWS business model. Currently, the following features are planned for:
-
-- Run workflow from Topology node.
-- Visualize scada display linked to Topology node.
-- Show reports stored in FEWS database.
-- Information/documentation panel linked to topology nodes.
 
 ## Architectural principles
 
