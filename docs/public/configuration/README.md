@@ -85,7 +85,7 @@ Document Displays as configured in the `DisplayConfigFiles` folder of the Delft-
    - `reportModuleInstanceId` or  
    - `archiveProductId`
 2. **Document Browser**: Browse and visualise products in the Archive.  
-3. **Compose display**: Produce on the fly a new `archiveProduct` based on a template.  
+3. **Compose display**: Produce on the fly a new `archiveProduct` based on a template. Please note that the compose display is not availble yet.
 
 For more information about the configuration of the Document Displays refer to the [Document Display configuration documentation](https://publicwiki.deltares.nl/spaces/FEWSDOC/pages/352944205/34+Document+Displays+Web+OC+only).
 
@@ -130,6 +130,16 @@ is configured in `WebOperatorClient.xml`. If configured the following threshold 
 2. A threshold icon in the topbar. The icon is greyed out when no threshold crossings are active for the configured filter. If there are threshold crossings, then the icon will have the color of the most severe threshold color.
 3. A threshold panel, accessible by clicking on the threshold icon in the topbar. The panel shows an overview with the thresholdcrossings, sorted by location. In addition location on the map can be filtered by clicking on the threshold summary icons.
 
+**Handling of parent and child locations**
+
+The Web OC handles parent and child locations similar to the data viewer and map component in the Operator Client. In summary:
+
+1. Location icons & zoomlevel: parent locations are always visible on the map. child locations appear dynamically depending on the zoomlevel and the available space on the map.
+2. Threshold icons: parents that have child locations with an exceeded threshold inherit the most severe child threshold icon.
+3. Location selection on the map: when a parent location is selected, automatically all childs are selected as well. Childs can be deselected through the location search menu.
+4. The location search menu: in the location menu parents and their childs are grouped together, similar to the data viewer. By expanding the parent child locations can be selected or deselected.
+
+
 ---
 
 **Log Displays**
@@ -150,7 +160,7 @@ It is possible to submit a task to the Delft-FEWS back-end by configuring a `<wo
 
 _Support for what-if scenarios_
 
-TO BE ADDED
+What-if templates consist of what-if properties and modifiers. Currently only what-if properties are supported in the Web OC.
 
 _Limitations_
 
@@ -255,7 +265,7 @@ Next to the Topology Display, three additional components can be configured in W
 
 **spatialDisplay**: A tree view will list all gridPlots (configured permissions respected) from the Spatial Display. Selected dataLayer will be displayed on the map.
 
-**systemMonitor**: “Import status” and “Running Tasks” components of system monitor will be displayed in Web OC.
+**systemMonitor**: “Import status” and “Running Tasks” components of system monitor will be displayed in Web OC side panel. The System Monitor as seperate component will be phased out.
 
 **schematicStatusDisplay**: A tree view will list all SSD displayGroups including all displayPanels (configured permissions respected) available to FewsWebServices. Most click-actions on displayPanels are supported, see [SSD Service documentation](https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+Schematic+Status+Display+%28SSD%29+Web+Service).
 
