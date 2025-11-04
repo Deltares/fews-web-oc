@@ -6,7 +6,9 @@ This means that the server will have to redirect all HTTP 404 errors to the inde
 
 ## Tomcat
 
-The Delft-FEWS Web OC can be deployed in Tomcat as follows:
+The Delft-FEWS Web OC can be deployed in Tomcat. The Web OC can be provided as different distributions: root or weboc.
+
+The following assumes a root distribution, but where "ROOT" is used in the following it can also be replaced with "weboc" when a weboc distribution is used.
 
 In the webapps folder of tomcat, create a directory named: "ROOT".
 Unzip the Delft-FEWS Web OC distribution into that folder.
