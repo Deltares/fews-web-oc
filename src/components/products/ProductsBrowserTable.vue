@@ -181,7 +181,7 @@
 import { computed, ref, watch, watchEffect } from 'vue'
 import type { ProductMetaDataType } from '@/services/useProducts/types'
 import { useRouter } from 'vue-router'
-import { toHumanReadableDate } from '@/lib/date'
+import { toHumanReadableDateTime } from '@/lib/date'
 import { deleteProduct, postProduct } from '@/lib/products/requests'
 import { configManager } from '@/services/application-config'
 import { getProductURL } from './productTools'
@@ -300,8 +300,8 @@ const items = computed(() => {
   items.push(
     ...props.products.map((product) => ({
       ...product,
-      timeZero: toHumanReadableDate(product.timeZero),
-      dataSetCreationTime: toHumanReadableDate(product.dataSetCreationTime),
+      timeZero: toHumanReadableDateTime(product.timeZero),
+      dataSetCreationTime: toHumanReadableDateTime(product.dataSetCreationTime),
     })),
   )
 

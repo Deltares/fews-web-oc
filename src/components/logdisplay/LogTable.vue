@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { toHumanReadableDate } from '@/lib/date'
+import { toHumanReadableDateTime } from '@/lib/date'
 import {
   type LogMessage,
   logToIcon,
@@ -82,7 +82,7 @@ const headers = computed(() => {
       title: 'Time',
       width: '160px',
       key: 'entryTime',
-      value: (item: LogMessage) => toHumanReadableDate(item.entryTime),
+      value: (item: LogMessage) => toHumanReadableDateTime(item.entryTime),
     },
     { title: 'Message', key: 'text' },
     ...actionsHeader,

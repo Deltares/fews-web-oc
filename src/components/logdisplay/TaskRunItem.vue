@@ -20,11 +20,11 @@
               {{ title }}
             </v-list-item-title>
             <v-card-subtitle class="pa-0">{{
-              toHumanReadableDate(entryTime)
+              toHumanReadableDateTime(entryTime)
             }}</v-card-subtitle>
           </div>
           <v-card-subtitle class="pa-0">
-            T0: {{ toHumanReadableDate(taskRun?.time0) }}
+            T0: {{ toHumanReadableDateTime(taskRun?.time0) }}
           </v-card-subtitle>
         </div>
         <v-spacer />
@@ -63,7 +63,7 @@ import { computed } from 'vue'
 import {
   toDateAbsDifferenceString,
   toDateRangeString,
-  toHumanReadableDate,
+  toHumanReadableDateTime,
 } from '@/lib/date'
 import {
   convertTaskStatusToString,
@@ -115,7 +115,7 @@ const tableData = computed(() => [
     columns: [
       {
         header: 'T0',
-        value: toHumanReadableDate(props.taskRun?.time0),
+        value: toHumanReadableDateTime(props.taskRun?.time0),
       },
     ],
   },

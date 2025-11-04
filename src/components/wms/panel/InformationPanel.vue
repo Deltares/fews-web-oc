@@ -75,7 +75,7 @@ import { computed, nextTick } from 'vue'
 import { LayerKind } from '@/lib/streamlines'
 import ControlChip from '@/components/wms/ControlChip.vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { toDateRangeString, toHumanReadableDate } from '@/lib/date'
+import { toDateRangeString, toHumanReadableDateTime } from '@/lib/date'
 
 interface Props {
   layerTitle?: string
@@ -113,7 +113,7 @@ const analysisTime = computed(() => {
     return 'Analysis time not available'
   }
 
-  return `Analysis time: ${toHumanReadableDate(props.forecastTime)}`
+  return `Analysis time: ${toHumanReadableDateTime(props.forecastTime)}`
 })
 
 const formattedTimeRange = computed(() => {

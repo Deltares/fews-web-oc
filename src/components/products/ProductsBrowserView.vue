@@ -11,7 +11,7 @@
     >
       <template #footer>
         <v-list-item density="compact">
-          Last updated: {{ toHumanReadableDate(lastUpdated) }}
+          Last updated: {{ toHumanReadableDateTime(lastUpdated) }}
           <template #append>
             <v-btn
               class="refresh-container"
@@ -239,7 +239,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import { hashObject, useProducts } from '@/services/useProducts'
 import { type DocumentBrowserDisplay } from '@/lib/products/documentDisplay'
-import { toHumanReadableDate } from '@/lib/date'
+import { toHumanReadableDateTime } from '@/lib/date'
 import { getFileExtension, getViewMode } from '@/lib/products'
 import {
   type IntervalItem,
