@@ -111,6 +111,23 @@ export function toHumanReadableDate(
   if (typeof date === 'string' || typeof date === 'number') {
     return toHumanReadableDate(new Date(date))
   }
+  // dd/MM/yyyy
+  return date.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+}
+
+export function toHumanReadableDateTime(
+  date: Date | string | number | undefined | null,
+): string {
+  if (date === undefined || date === null) {
+    return '—'
+  }
+  if (typeof date === 'string' || typeof date === 'number') {
+    return toHumanReadableDateTime(new Date(date))
+  }
   // dd/MM/yyyy, HH:mm:ss
   return date.toLocaleString('en-GB', {
     day: '2-digit',
@@ -162,7 +179,7 @@ export function toDateRangeString(
   startDate: Date | string | number | undefined | null,
   endDate: Date | string | number | undefined | null,
 ): string {
-  return `${toHumanReadableDate(startDate)} → ${toHumanReadableDate(endDate)}`
+  return `${toHumanReadableDateTime(startDate)} → ${toHumanReadableDateTime(endDate)}`
 }
 
 /**

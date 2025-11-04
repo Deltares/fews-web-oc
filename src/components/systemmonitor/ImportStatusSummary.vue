@@ -17,7 +17,7 @@
           variant="flat"
           size="small"
         >
-          {{ toHumanReadableDate(item.lastImportTime) }}
+          {{ toHumanReadableDateTime(item.lastImportTime) }}
         </v-chip>
       </v-list-item>
 
@@ -97,7 +97,7 @@
 </template>
 <script setup lang="ts">
 import type { ImportStatus } from '@deltares/fews-pi-requests'
-import { toHumanReadableDate } from '@/lib/date'
+import { toHumanReadableDateTime } from '@/lib/date'
 
 export interface ImportStatusDirectory extends ImportStatus {
   directory: string

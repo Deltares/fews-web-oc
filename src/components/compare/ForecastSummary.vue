@@ -71,7 +71,7 @@ import DataTable from '@/components/general/DataTable.vue'
 import {
   toDateAbsDifferenceString,
   toDateRangeString,
-  toHumanReadableDate,
+  toHumanReadableDateTime,
 } from '@/lib/date'
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
 import { useTaskRunsStore } from '@/stores/taskRuns'
@@ -172,7 +172,7 @@ const workflowTitle = computed(() => workflow.value?.name ?? 'Unknown workflow')
 const isRunning = computed<boolean>(() => task.status === TaskStatus.Running)
 
 const timeZeroString = computed<string>(() =>
-  toHumanReadableDate(task.timeZeroTimestamp),
+  toHumanReadableDateTime(task.timeZeroTimestamp),
 )
 
 const taskDurationString = computed(() =>
@@ -200,7 +200,7 @@ const expectedCompletionTimeString = computed(() => {
   }
   const expectedCompletionTimestamp =
     task.dispatchTimestamp + expectedRunTime * 1000
-  return toHumanReadableDate(expectedCompletionTimestamp)
+  return toHumanReadableDateTime(expectedCompletionTimestamp)
 })
 
 function onExpansionPanelToggle() {

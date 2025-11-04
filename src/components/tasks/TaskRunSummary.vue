@@ -64,7 +64,7 @@ import DataTable from '@/components/general/DataTable.vue'
 import {
   toDateAbsDifferenceString,
   toDateRangeString,
-  toHumanReadableDate,
+  toHumanReadableDateTime,
 } from '@/lib/date'
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
 
@@ -146,7 +146,7 @@ const isRunning = computed<boolean>(
 )
 
 const timeZeroString = computed<string>(() =>
-  toHumanReadableDate(props.task.timeZeroTimestamp),
+  toHumanReadableDateTime(props.task.timeZeroTimestamp),
 )
 
 const taskDurationString = computed(() =>
@@ -186,7 +186,7 @@ const expectedCompletionTimeString = computed(() => {
   }
   const expectedCompletionTimestamp =
     props.task.dispatchTimestamp + expectedRunTime * 1000
-  return toHumanReadableDate(expectedCompletionTimestamp)
+  return toHumanReadableDateTime(expectedCompletionTimestamp)
 })
 
 const statusString = computed<string>(() =>
