@@ -91,6 +91,14 @@
           v-model:layer-kind="layerKind"
           v-model:show-layer="showLayer"
         >
+          <template v-if="aggregationLabels.length > 0">
+            <v-divider />
+            <AggregationPanel
+              :aggregation-labels="aggregationLabels"
+              v-model:do-show-aggregated="doShowAggregated"
+              v-model:selected-aggregation-label="selectedAggregationLabel"
+            />
+          </template>
           <template v-if="layerOptions">
             <v-divider />
             <ColourPanel
@@ -145,7 +153,7 @@
     >
       <template #below-track>
         <DateTimeSliderValues
-          :values="maxValuesTimeSeries ?? []"
+          :values="maxValuesTimeSeries"
           :colour-scale="currentColourScale ?? null"
           height="6px"
           class="mb-1"
@@ -165,6 +173,7 @@ import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
   useWmsCapabilities,
+  useWmsMaxValuesTimeSeries,
 } from '@/services/useWms'
 import ColourBar from '@/components/wms/ColourBar.vue'
 import AnimatedRasterLayer, {
@@ -175,6 +184,7 @@ import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vue'
 import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
 import OverlayInformationPanel from '@/components/wms/panel/OverlayInformationPanel.vue'
+import AggregationPanel from '../wms/panel/AggregationPanel.vue'
 import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
 import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
@@ -196,7 +206,6 @@ import { useDisplay } from 'vuetify'
 import ColourLegend from '@/components/wms/ColourLegend.vue'
 import { rangeToString, styleToId } from '@/lib/legend'
 import { useWorkflowsStore } from '@/stores/workflows'
-import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
 import { FeatureCollection, Geometry } from 'geojson'
@@ -228,7 +237,6 @@ interface Props {
   locationIds?: string
   latitude?: string
   longitude?: string
-  maxValuesTimeSeries?: TimeSeriesData[]
   boundingBox?: BoundingBox
   settings: ComponentSettings['map']
 }
@@ -291,6 +299,16 @@ watch(
 
 const selectedLocationIds = computed(() => props.locationIds?.split(',') ?? [])
 
+const aggregationLabels = computed<string[]>(() => {
+  // For now, we only ever have one entry for aggregation: "Accumulation".
+  return props.layerCapabilities?.aggregation?.[0].labels ?? []
+})
+const doShowAggregated = ref<boolean>(false)
+const selectedAggregationLabel = ref<string | null>(
+  aggregationLabels.value[0] ?? null,
+)
+watch([doShowAggregated, selectedAggregationLabel], () => setLayerOptions())
+
 const layerOptions = ref<AnimatedRasterLayerOptions>()
 const forecastTime = ref<Date>()
 const isLoading = ref(false)
@@ -330,6 +348,21 @@ const { baseMap, mapStyle } = useBaseMap()
 
 const { selectedOverlayIds, selectedOverlays } = useOverlays(
   () => props.settings.overlays,
+)
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const start = computed<Date | null>(() => props.times?.[0] ?? null)
+const end = computed<Date | null>(() => {
+  if (!props.times || props.times.length === 0) return null
+  return props.times[props.times.length - 1]
+})
+const maxValuesTimeSeries = useWmsMaxValuesTimeSeries(
+  baseUrl,
+  () => props.layerName,
+  start,
+  end,
+  doShowAggregated,
+  selectedAggregationLabel,
 )
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
@@ -497,6 +530,9 @@ function setLayerOptions(): void {
     layerOptions.value = {
       name: props.layerName,
       time: selectedDate.value,
+      aggregationLabel: doShowAggregated.value
+        ? (selectedAggregationLabel.value ?? undefined)
+        : undefined,
       bbox: props.layerCapabilities?.boundingBox
         ? convertBoundingBoxToLngLatBounds(props.layerCapabilities.boundingBox)
         : undefined,
@@ -513,7 +549,6 @@ function setLayerOptions(): void {
   }
 }
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { capabilities: staticCapabilities } = useWmsCapabilities(baseUrl, {
   // @ts-expect-error Missing in json-schema definition
   layerType: 'static',

@@ -39,6 +39,7 @@ import { debounce } from 'lodash-es'
 export interface AnimatedRasterLayerOptions {
   name: string
   time?: Date
+  aggregationLabel?: string
   useDisplayUnits?: boolean
   bbox?: LngLatBounds
   elevation?: number | null
@@ -187,6 +188,9 @@ function getImageSourceOptions() {
   getMapUrl.searchParams.append('width', `${width.toFixed(0)}`)
   if (props.layer.time) {
     getMapUrl.searchParams.append('time', props.layer.time.toISOString())
+  }
+  if (props.layer.aggregationLabel) {
+    getMapUrl.searchParams.append('aggregation', props.layer.aggregationLabel)
   }
   if (props.layer.useLastValue) {
     getMapUrl.searchParams.append('useLastValue', 'true')
