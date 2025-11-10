@@ -130,6 +130,7 @@ import { useTaskRunsStore } from '@/stores/taskRuns'
 import type { NavigateRoute } from '@/lib/router'
 import { SidePanel, useSidePanelStore } from '@/stores/sidePanel'
 import VisualizeDataControl from '@/components/tasks/VisualizeDataControl.vue'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   topologyId?: string
@@ -141,6 +142,8 @@ interface Props {
   longitude?: string
   productId?: string
 }
+
+const { t } = useI18n()
 
 const props = defineProps<Props>()
 
@@ -172,7 +175,7 @@ const secondaryControls = computed<SecondaryControl[]>(() => {
   return [
     {
       type: 'tasks',
-      title: 'Task Overview',
+      title: t('task_overview'),
       icon: 'mdi-clipboard-text-clock',
       component: TaskRunsControl,
       disabled:
@@ -180,7 +183,7 @@ const secondaryControls = computed<SecondaryControl[]>(() => {
     },
     {
       type: 'import',
-      title: 'Import Status',
+      title: t('import_status'),
       icon: 'mdi-database-import',
       component: ImportStatusControl,
       disabled:
@@ -188,7 +191,7 @@ const secondaryControls = computed<SecondaryControl[]>(() => {
     },
     {
       type: 'visualize',
-      title: 'Non-Current Data',
+      title: t('noncurrent_data'),
       icon: 'mdi-chart-box-multiple',
       component: VisualizeDataControl,
       disabled:
@@ -197,7 +200,7 @@ const secondaryControls = computed<SecondaryControl[]>(() => {
     },
     {
       type: 'workflows',
-      title: 'Run Tasks',
+      title: t('run_tasks'),
       icon: 'mdi-cog-play',
       component: WorkflowsControl,
       disabled:
@@ -205,7 +208,7 @@ const secondaryControls = computed<SecondaryControl[]>(() => {
     },
     {
       type: 'info',
-      title: 'More Info',
+      title: t('more_info'),
       icon: 'mdi-information-outline',
       component: InformationDisplayView,
       disabled: sidePanelConfig?.documentFile?.enabled === false,

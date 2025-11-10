@@ -27,5 +27,10 @@
   "end": "End",
   "browser_time": "Browser time:",
   "startDateBeforeEndDate": "Start date must be before end date",
-  "EndDateAfterStartDate": "End date must be after start date"
+  "EndDateAfterStartDate": "End date must be after start date",
+  "task_overview": "Task Overview",
+  "import_status": "Import Status",
+  "noncurrent_data": "Non-Current Data",
+  "run_tasks": "Run Tasks",
+  "more_info": "More Info"
 }
