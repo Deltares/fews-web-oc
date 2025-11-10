@@ -21,11 +21,16 @@
   "select_all": "Alle auswählen",
   "overlays": "Layerauswahl",
   "all": "Alle",
-  "clear_all": "Alle entfernen",
+  "clear_all": "Entfernen",
   "selected": "Ausgewählt",
   "start": "Start",
   "end": "Ende",
   "browser_time": "Browser Zeit:",
   "startDateBeforeEndDate": "Startdatum muss vor Enddatum liegen",
-  "EndDateAfterStartDate": "Enddatum muss nach Startdtaum liegen"
+  "EndDateAfterStartDate": "Enddatum muss nach Startdtaum liegen",
+  "task_overview": "Aufgaben Übersicht",
+  "import_status": "Import Status",
+  "noncurrent_data": "Nicht-Aktuelle Daten",
+  "run_tasks": "Aufgabe ausführen",
+  "more_info": "Informationen"
 }
