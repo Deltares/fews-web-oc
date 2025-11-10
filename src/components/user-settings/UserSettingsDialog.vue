@@ -9,7 +9,7 @@
       <slot name="activator" :props="props"></slot>
     </template>
     <v-card>
-      <v-toolbar title="Settings" density="compact">
+      <v-toolbar :title="t('settings')" density="compact">
         <v-btn
           icon="mdi-close"
           @click="dialog = false"
@@ -27,6 +27,9 @@
 import { ref } from 'vue'
 import UserSettings from './UserSettings.vue'
 import { useDisplay } from 'vuetify'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const { mobile } = useDisplay()
 const dialog = ref(false)

@@ -5,7 +5,7 @@
         <div class="icon-group__underlay"></div>
         <span class="icon-group__label">
           {{
-            Intl.DateTimeFormat('nl', {
+            Intl.DateTimeFormat(t('locale'), {
               hour: '2-digit',
               minute: '2-digit',
               timeZoneName: 'short',
@@ -27,24 +27,22 @@
             <div class="pa-4">
               <v-date-input
                 v-model="customStartDate"
-                label="Start"
+                :label="t('start')"
                 density="compact"
                 variant="solo-filled"
                 flat
                 :rules="[
-                  () =>
-                    dateOrderIsCorrect || 'Start date must be before end date',
+                  () => dateOrderIsCorrect || t('startDateBeforeEndDate'),
                 ]"
               />
               <v-date-input
                 v-model="customEndDate"
-                label="End"
+                :label="t('end')"
                 density="compact"
                 variant="solo-filled"
                 flat
                 :rules="[
-                  () =>
-                    dateOrderIsCorrect || 'End date must be after start date',
+                  () => dateOrderIsCorrect || t('EndDateAfterStartDate'),
                 ]"
               />
             </div>
@@ -61,10 +59,10 @@
         </v-col>
       </v-row>
       <v-card-actions>
-        <span>Browser time:</span>
+        <span>{{ t('browser_time') }}</span>
         <v-chip small>
           {{
-            Intl.DateTimeFormat('nl', {
+            Intl.DateTimeFormat('de', {
               hour: '2-digit',
               minute: '2-digit',
               timeZoneName: 'short',
@@ -85,6 +83,9 @@ import { ref, computed, watchEffect, watch } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const store = useSystemTimeStore()
 const configStore = useConfigStore()
