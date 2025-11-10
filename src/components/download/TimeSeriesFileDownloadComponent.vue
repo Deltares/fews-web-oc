@@ -7,7 +7,7 @@
       <v-card-text>
         <v-text-field
           v-model="fileName"
-          label="File Name"
+          :label="t('file_name')"
           variant="underlined"
           density="compact"
         >
@@ -42,7 +42,7 @@
         >
           Download
         </v-btn>
-        <v-btn @click="() => cancelDialog()">Cancel</v-btn>
+        <v-btn @click="() => cancelDialog()">{{ t('cancel') }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
