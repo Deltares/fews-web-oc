@@ -176,7 +176,7 @@ const secondaryControls = computed<SecondaryControl[]>(() => {
       icon: 'mdi-clipboard-text-clock',
       component: TaskRunsControl,
       disabled:
-        !showTaskMenu.value && sidePanelConfig?.runTask?.enabled === false,
+        !showTaskMenu.value && sidePanelConfig?.taskOverview?.enabled === false,
     },
     {
       type: 'import',
