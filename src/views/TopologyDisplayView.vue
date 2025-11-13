@@ -114,7 +114,7 @@ import {
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
 import InformationDisplayView from '@/views/InformationDisplayView.vue'
-import TaskRunsControl from '@/components/tasks/TaskRunsControl.vue'
+import TaskRunsOverview from '@/components/tasks/TaskRunsOverview.vue'
 import ImportStatusControl from '@/components/systemmonitor/ImportStatusControl.vue'
 import ThresholdsControl from '@/components/thresholds/ThresholdsControl.vue'
 import { useNodesStore } from '@/stores/nodes'
@@ -174,7 +174,7 @@ const secondaryControls = computed<SecondaryControl[]>(() => {
       type: 'tasks',
       title: 'Task Overview',
       icon: 'mdi-clipboard-text-clock',
-      component: TaskRunsControl,
+      component: TaskRunsOverview,
       disabled:
         !showTaskMenu.value && sidePanelConfig?.taskOverview?.enabled === false,
     },
