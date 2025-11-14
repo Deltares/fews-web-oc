@@ -37,6 +37,8 @@
       :type="activeSecondaryControl.type"
       :title="activeSecondaryControl.title"
       :icon="activeSecondaryControl.icon"
+      :badge="activeSecondaryControl.badge"
+      @clear="taskRunsStore.clearSelectedTaskRuns()"
     >
       <component
         :is="activeSecondaryControl.component"
@@ -56,7 +58,6 @@
           v-for="control in secondaryControls.filter(
             (c) => !c.disabled && c.type !== secondaryControl,
           )"
-          :prepend-icon="control.icon"
           :title="control.title"
           @click="
             () => {
@@ -65,7 +66,16 @@
               sidePanelStore.setActive(control.type)
             }
           "
-        />
+          ><template #prepend>
+            <v-badge
+              v-if="control.badge"
+              :content="control.badge"
+            >
+              <v-icon>{{ control.icon }}</v-icon>
+            </v-badge>
+            <v-icon v-else>{{ control.icon }}</v-icon>
+          </template>
+        </v-list-item>
       </v-list>
     </v-menu>
   </Teleport>
@@ -164,6 +174,7 @@ interface SecondaryControl {
   title: string
   icon: string
   component: Component
+  badge?: number
   disabled?: boolean
 }
 
@@ -191,6 +202,7 @@ const secondaryControls = computed<SecondaryControl[]>(() => {
       title: 'Non-Current Data',
       icon: 'mdi-chart-box-multiple',
       component: VisualizeDataControl,
+      badge: taskRunsStore.selectedTaskRunIds.length,
       disabled:
         !showTaskMenu.value &&
         sidePanelConfig?.nonCurrentData?.enabled === false,
