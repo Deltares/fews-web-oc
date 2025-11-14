@@ -4,7 +4,16 @@
       :icon="icon"
       :active="sidePanelStore.isActive(type)"
       @click="sidePanelStore.toggleActive(type)"
-    />
+    >
+      <v-badge v-if="badge" location="top right" :content="badge">
+        <v-icon>
+          {{ icon }}
+        </v-icon>
+      </v-badge>
+      <v-icon v-else>
+        {{ icon }}
+      </v-icon>
+    </v-btn>
   </slot>
 
   <Teleport to="#main-side-panel" defer>
@@ -16,6 +25,14 @@
       <v-toolbar density="compact">
         <span class="ms-4">{{ title }}</span>
         <template #append>
+          <v-btn
+            v-if="badge"
+            size="small"
+            variant="flat"
+            rounded=""
+            @click="$emit('clear')"
+            >Clear all</v-btn
+          >
           <v-btn
             @click="sidePanelStore.toggleActive(type)"
             size="small"
@@ -38,6 +55,7 @@ interface Props {
   type: SidePanel
   title: string
   icon?: string
+  badge?: number
 }
 defineProps<Props>()
 
