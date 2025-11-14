@@ -15,9 +15,11 @@ import { toWgs84 } from '@turf/projection'
 // @ts-ignore
 import { point } from '@turf/helpers'
 import { LngLatBounds } from 'maplibre-gl'
-import { GetLegendGraphicResponse } from '@deltares/fews-wms-requests/src/response/getLegendGraphicResponse.ts'
+import type {
+  GetLegendGraphicResponse,
+  Style,
+} from '@deltares/fews-wms-requests'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import { Style } from '@deltares/fews-wms-requests'
 import { styleToId } from '@/lib/legend'
 import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
