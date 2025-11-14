@@ -16,7 +16,12 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const filter: FillLayerSpecification['filter'] = ['==', '$type', 'Polygon']
+// Type definition for FillLayerSpecification does not match with @indoorequal/vue-maplibre-gl
+const filter: FillLayerSpecification['filter'] | any = [
+  '==',
+  '$type',
+  'Polygon',
+]
 
 const paint = computed(() => {
   const selectedIds = props.selectedLocationIds?.length
