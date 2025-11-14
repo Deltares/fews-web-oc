@@ -157,6 +157,9 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
     case 'SSD':
       if (request) switchPanel(request)
       break
+    case 'URL':
+      if (request) window.open(new URL(request.request))
+      break
     case 'PI':
       openTimeSeriesDisplay(panelId, objectId)
       break
