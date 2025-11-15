@@ -14,7 +14,7 @@
         </v-list-item-subtitle>
         <v-chip
           :color="item.lastImportTimeBackgroundColor"
-          variant="flat"
+          :variant="isDark ? 'tonal' : 'flat'"
           size="small"
         >
           {{ toHumanReadableDateTime(item.lastImportTime) }}
@@ -22,7 +22,7 @@
       </v-list-item>
 
       <v-list-item class="flex-grow-1 align-self-left">
-        <v-list-item-subtitle v-if="expanded"> Source </v-list-item-subtitle>
+        <v-list-item-subtitle> Source </v-list-item-subtitle>
         <span
           class="text-body-2 text-truncate"
           :class="[
@@ -98,6 +98,7 @@
 <script setup lang="ts">
 import type { ImportStatus } from '@deltares/fews-pi-requests'
 import { toHumanReadableDateTime } from '@/lib/date'
+import { useDark } from '@vueuse/core'
 
 export interface ImportStatusDirectory extends ImportStatus {
   directory: string
@@ -112,6 +113,8 @@ const expanded = defineModel<boolean>('expanded', {
   required: false,
   default: false,
 })
+
+const isDark = useDark()
 
 function onExpansionPanelToggle() {
   // Only expand when no text is selected
