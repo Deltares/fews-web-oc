@@ -31,11 +31,9 @@ const url = computed(() => {
   return getResourcesStaticUrl(resource)
 })
 
-watchEffect(
-  () => {
-    updateIframeClass(isDark.value)
-  },
-)
+watchEffect(() => {
+  updateIframeClass(isDark.value)
+})
 
 function updateIframeClass(isDark: boolean) {
   const iframe = frameRef.value
