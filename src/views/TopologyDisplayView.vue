@@ -26,48 +26,55 @@
     </v-toolbar-items>
   </Teleport>
   <Teleport to="#app-bar-content-end">
-    <ThresholdsControl
-      :topologyNode="topologyNode"
-      @navigate="onNavigate"
-      :locationIds="locationIds"
-      v-if="showActiveThresholdCrossingsForFilters"
-    />
-    <SidePanelControl
-      v-if="activeSecondaryControl"
-      :type="activeSecondaryControl.type"
-      :title="activeSecondaryControl.title"
-      :icon="activeSecondaryControl.icon"
-    >
-      <component
-        :is="activeSecondaryControl.component"
+    <div class="icon-group me-2">
+      <div
+        v-if="secondaryControls.length > 0"
+        class="icon-group__undelay"
+      ></div>
+      <ThresholdsControl
         :topologyNode="topologyNode"
+        @navigate="onNavigate"
+        :locationIds="locationIds"
+        v-if="showActiveThresholdCrossingsForFilters"
       />
-    </SidePanelControl>
-    <v-menu location="bottom right">
-      <template #activator="{ props }">
-        <v-btn
-          icon="mdi-dots-vertical"
-          v-bind="props"
-          aria-label="More Sidepanel Options"
+      <SidePanelControl
+        v-if="activeSecondaryControl"
+        :type="activeSecondaryControl.type"
+        :title="activeSecondaryControl.title"
+        :icon="activeSecondaryControl.icon"
+      >
+        <component
+          :is="activeSecondaryControl.component"
+          :topologyNode="topologyNode"
         />
-      </template>
-      <v-list>
-        <v-list-item
-          v-for="control in secondaryControls.filter(
-            (c) => !c.disabled && c.type !== secondaryControl,
-          )"
-          :prepend-icon="control.icon"
-          :title="control.title"
-          @click="
-            () => {
-              activeControl = control.type
-              secondaryControl = control.type
-              sidePanelStore.setActive(control.type)
-            }
-          "
-        />
-      </v-list>
-    </v-menu>
+      </SidePanelControl>
+      <v-menu location="bottom right" v-if="secondaryControls.length > 1">
+        <template #activator="{ isActive, props }">
+          <v-btn
+            :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+            v-bind="props"
+            aria-label="More Sidepanel Options"
+            class="last-btn"
+          />
+        </template>
+        <v-list>
+          <v-list-item
+            v-for="control in secondaryControls.filter(
+              (c) => !c.disabled && c.type !== secondaryControl,
+            )"
+            :prepend-icon="control.icon"
+            :title="control.title"
+            @click="
+              () => {
+                activeControl = control.type
+                secondaryControl = control.type
+                sidePanelStore.setActive(control.type)
+              }
+            "
+          />
+        </v-list>
+      </v-menu>
+    </div>
   </Teleport>
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
@@ -514,3 +521,32 @@ function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
   return tab?.to
 }
 </script>
+
+<style scoped>
+.icon-group {
+  display: inline-flex;
+  position: relative;
+  border-radius: 24px;
+}
+
+.icon-group__undelay {
+  position: absolute;
+  inset: 0; /* fill the container */
+  border-radius: 24px;
+  background-color: currentColor;
+  opacity: var(--v-activated-opacity); /* hidden by default */
+  transition: opacity 0.18s ease;
+}
+
+/* ✨ 1. Remove focus style from buttons */
+.last-btn:focus {
+  outline: none !important;
+}
+
+/* ✨ 2. Show focus outline on the *group* instead */
+.icon-group:has(.last-btn:focus) {
+  outline: 1px solid rgb(33, 150, 243) !important;
+  outline: 2px solid var(--v-theme-primary);
+  outline-offset: -1px;
+}
+</style>
