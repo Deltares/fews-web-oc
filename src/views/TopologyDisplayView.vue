@@ -27,7 +27,7 @@
   </Teleport>
   <Teleport to="#app-bar-content-end">
     <div class="icon-group">
-      <div class="icon-group__undelay v-btn--variant-tonal"></div>
+      <div v-if="secondaryControls.length > 0" class="icon-group__undelay v-btn--variant-tonal"></div>
       <ThresholdsControl
         :topologyNode="topologyNode"
         @navigate="onNavigate"
@@ -45,7 +45,7 @@
           :topologyNode="topologyNode"
         />
       </SidePanelControl>
-      <v-menu location="bottom right">
+      <v-menu location="bottom right" v-if="secondaryControls.length > 1">
         <template #activator="{ isActive, props }">
           <v-btn
             :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"
