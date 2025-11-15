@@ -27,7 +27,7 @@
   </Teleport>
   <Teleport to="#app-bar-content-end">
     <div class="icon-group">
-      <div v-if="secondaryControls.length > 0" class="icon-group__undelay v-btn--variant-tonal"></div>
+      <div v-if="secondaryControls.length > 0" class="icon-group__undelay"></div>
       <ThresholdsControl
         :topologyNode="topologyNode"
         @navigate="onNavigate"
