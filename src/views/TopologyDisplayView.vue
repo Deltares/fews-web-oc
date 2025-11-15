@@ -26,7 +26,7 @@
     </v-toolbar-items>
   </Teleport>
   <Teleport to="#app-bar-content-end">
-    <div class="icon-group">
+    <div class="icon-group me-2">
       <div v-if="secondaryControls.length > 0" class="icon-group__undelay"></div>
       <ThresholdsControl
         :topologyNode="topologyNode"
