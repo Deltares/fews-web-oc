@@ -90,6 +90,7 @@ async function fetchLocationsAsGeoJsonForSingleFilterId(
     showParentLocations: true,
     includeIconNames: true,
     showThresholds: true,
+    showTimeSeriesInfo: true,
     ...filterOptions,
   }
   const response = await provider.getLocations(filter)
