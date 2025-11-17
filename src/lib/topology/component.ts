@@ -30,7 +30,7 @@ export const componentTypeToIconMap = {
   charts: 'mdi-chart-multiple',
   'data-download-display': 'mdi-download',
   report: 'mdi-file-document',
-  'schematic-status-display': 'mdi-view-dashboard',
+  'schematic-status-display': 'mdi-application',
   'dynamic-report-display': 'mdi-file-document-edit',
   'system-monitor': 'mdi-monitor',
   'html-display': 'mdi-web',
