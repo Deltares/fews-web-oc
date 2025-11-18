@@ -14,7 +14,7 @@
       </div>
     </template>
 
-    <v-card width="500px">
+    <v-card :style="{ width: '90vw', maxWidth: '500px' }">
       <v-row no-gutters>
         <v-col>
           <v-form ref="form">
