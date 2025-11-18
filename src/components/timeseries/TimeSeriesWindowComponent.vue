@@ -18,6 +18,7 @@
           variant="text"
           width="20px"
           class="pa-0 text-capitalize"
+          :style="`min-width: ${mobile ? 48 : 64}px !important`"
           @click="displayType = item.value"
           :disabled="item.disabled"
         >
@@ -26,7 +27,7 @@
       </v-toolbar-items>
 
       <slot name="toolbar-title">
-        <span class="ml-5">{{ displayConfig?.title }}</span>
+        <span class="ml-5" :style="`font-size: ${mobile ? 0.75 : 1.25}rem !important`">{{ displayConfig?.title }}</span>
       </slot>
       <v-spacer />
     </template>
@@ -73,6 +74,7 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { useDisplay } from 'vuetify'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
@@ -98,6 +100,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t } = useI18n()
+const { mobile } = useDisplay()
 
 const userSettings = useUserSettingsStore()
 
