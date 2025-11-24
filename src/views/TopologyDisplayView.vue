@@ -37,7 +37,7 @@
         :locationIds="locationIds"
         v-if="showActiveThresholdCrossingsForFilters"
       />
-      <SidePanelControl
+      <SidePanelControl 
         v-if="activeSecondaryControl"
         :type="activeSecondaryControl.type"
         :title="activeSecondaryControl.title"
@@ -50,7 +50,7 @@
       </SidePanelControl>
       <v-menu location="bottom right" v-if="secondaryControls.length > 1">
         <template #activator="{ isActive, props }">
-          <v-btn
+          <v-btn :size="mobile? 'small' : 'default'"
             :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"
             v-bind="props"
             aria-label="More Sidepanel Options"
@@ -137,6 +137,7 @@ import { useTaskRunsStore } from '@/stores/taskRuns'
 import type { NavigateRoute } from '@/lib/router'
 import { SidePanel, useSidePanelStore } from '@/stores/sidePanel'
 import VisualizeDataControl from '@/components/tasks/VisualizeDataControl.vue'
+import { useDisplay } from 'vuetify'
 
 interface Props {
   topologyId?: string
@@ -165,6 +166,7 @@ const secondaryControl = ref<SidePanel>('tasks')
 const activeSecondaryControl = computed(() =>
   secondaryControls.value.find((s) => s.type === secondaryControl.value),
 )
+const { mobile } = useDisplay()
 
 interface SecondaryControl {
   type: SidePanel
