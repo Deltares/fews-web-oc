@@ -95,8 +95,8 @@
   },
   "devDependencies": {
     "@mdi/font": "^7.4.47",
-    "@playwright/experimental-ct-vue": "^1.55.0",
-    "@playwright/test": "^1.55.0",
+    "@playwright/experimental-ct-vue": "^1.57.0",
+    "@playwright/test": "^1.57.0",
     "@types/crypto-js": "^4.2.2",
     "@types/d3": "^7.4.3",
     "@types/html-to-text": "^9.0.4",
@@ -118,7 +118,7 @@
     "sass-embedded": "^1.92.1",
     "sonarqube-scanner": "^3.3.0",
     "typescript": "^5.9.2",
-    "vite": "^7.1.5",
+    "vite": "^7.2.4",
     "vite-plugin-vuetify": "^2.1.2",
     "vitest": "^3.2.4",
     "vue-tsc": "^3.0.7"
