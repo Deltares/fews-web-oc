@@ -1,19 +1,15 @@
 <template>
   <v-menu left bottom :close-on-content-click="false" class="menu">
     <template v-slot:activator="{ props, isActive }">
-      <v-btn v-bind="props" variant="tonal" rounded>
+      <v-btn v-bind="props" :size="mobile? 'small' : 'default'" variant="tonal" rounded>
         {{
-          Intl.DateTimeFormat('nl', {
-            hour: '2-digit',
-            minute: '2-digit',
-            timeZoneName: 'short',
-          }).format(store.systemTime)
+          Intl.DateTimeFormat('nl', mobile ? dateFormatMobile : dateFormatNormal).format(store.systemTime)
         }}
         <v-icon>{{ isActive ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
       </v-btn>
     </template>
 
-    <v-card width="500px">
+    <v-card :style="{ width: '90vw', maxWidth: '500px' }">
       <v-row no-gutters>
         <v-col>
           <v-form ref="form">
@@ -78,9 +74,11 @@ import { ref, computed, watchEffect, watch } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
+import { useDisplay } from 'vuetify'
 
 const store = useSystemTimeStore()
 const configStore = useConfigStore()
+const { mobile } = useDisplay()
 
 const form = ref<VForm>()
 
@@ -90,6 +88,9 @@ const dateOrderIsCorrect = computed(
     !customEndDate.value ||
     customStartDate.value < customEndDate.value,
 )
+
+const dateFormatMobile = { hour: '2-digit', minute: '2-digit' };
+const dateFormatNormal = { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
 
 const intervalItems = computed(() => {
   const presets = configStore.general.timeSettings?.viewPeriodPresets
