@@ -27,14 +27,21 @@ import { configManager } from '@/services/application-config'
 import { TopologyNode } from '@deltares/fews-pi-requests'
 import { onMounted, ref, toValue, watchEffect } from 'vue'
 import ProductReportView from './ProductReportView.vue'
+import {
+  type ComponentSettings,
+  getDefaultSettings,
+} from '@/lib/topology/componentSettings'
 
 interface Props {
   nodeId?: string | string[]
   topologyNode?: TopologyNode
   productId?: string
+  settings?: ComponentSettings
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  settings: () => getDefaultSettings(),
+})
 
 const displayConfig = ref<(DocumentBrowserDisplay | ReportDisplay)[]>()
 const documentBrowserDisplay = ref<DocumentBrowserDisplay>()
