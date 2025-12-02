@@ -1,10 +1,13 @@
 <template>
   <slot name="button">
     <v-btn
-      :icon="icon"
+      icon
       :active="sidePanelStore.isActive(type)"
       @click="sidePanelStore.toggleActive(type)"
-    />
+      size="small"
+    >
+      <v-icon :icon="icon" size="large"></v-icon>
+    </v-btn>
   </slot>
 
   <Teleport to="#main-side-panel" defer>
