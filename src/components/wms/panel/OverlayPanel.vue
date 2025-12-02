@@ -1,8 +1,8 @@
 <template>
   <v-list-item prepend-icon="mdi-layers-outline">
-    <span class="pa-0">Overlays</span>
+    <span class="pa-0">{{ t('overlays') }}</span>
     <v-list-item
-      title="Select All"
+      :title="t('select_all')"
       @click="toggleAll"
       class="ps-1"
       density="compact"
@@ -52,6 +52,10 @@
 import type { Overlay } from '@deltares/fews-pi-requests'
 import type { GetCapabilitiesResponse } from '@deltares/fews-wms-requests'
 import { computed } from 'vue'
+
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Props {
   overlays: Overlay[]
