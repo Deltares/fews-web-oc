@@ -1,1 +1,6 @@
-{}
+{
+  "LOGIN_TEXT": "Sign in",
+  "LOGIN_ICON": "mdi-microsoft-windows",
+  "APPLICATION_NAME": "Delft-FEWS Web Operator Client",
+  "COMPANY_NAME": "Deltares"
+}
