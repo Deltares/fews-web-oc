@@ -9,7 +9,7 @@
     "build": "vue-tsc && vite build",
     "build:deltares": "vue-tsc && env-cmd -f deltares.env vite build",
     "build:weboc": "vue-tsc && vite build --base=/weboc/",
-    "build:e2e": "vite build --mode e2e",
+    "build:e2e": "vue-tsc && vite build --mode e2e",
     "preview": "vite preview",
     "preview:e2e": "vite preview --port 5172 --strictPort --mode e2e",
     "test:unit": "vitest run",
@@ -24,7 +24,7 @@
   "dependencies": {
     "@deltares/fews-pi-requests": "^2.0.0-beta.1",
     "@deltares/fews-ssd-requests": "^2.0.0-rc.3",
-    "@deltares/fews-ssd-webcomponent": "^2.0.0-rc.3",
+    "@deltares/fews-ssd-webcomponent": "^2.0.0-rc.4",
     "@deltares/fews-web-oc-charts": "^4.2.0",
     "@deltares/fews-wms-requests": "^4.0.1",
     "@deltares/webgl-streamline-visualizer": "^4.5.0",
