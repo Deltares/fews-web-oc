@@ -29,7 +29,7 @@
     <div class="icon-group me-2">
       <div
         v-if="secondaryControls.length > 0"
-        class="icon-group__undelay"
+        class="icon-group__underlay"
       ></div>
       <ThresholdsControl
         :topologyNode="topologyNode"
@@ -51,11 +51,13 @@
       <v-menu location="bottom right" v-if="secondaryControls.length > 1">
         <template #activator="{ isActive, props }">
           <v-btn
-            :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+            icon
             v-bind="props"
             aria-label="More Sidepanel Options"
             class="last-btn"
-          />
+            size="small"
+          ><v-icon :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'" size="large"></v-icon>
+        </v-btn>
         </template>
         <v-list>
           <v-list-item
@@ -532,21 +534,21 @@ function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
   border-radius: 24px;
 }
 
-.icon-group__undelay {
+.icon-group__underlay {
   position: absolute;
   inset: 0; /* fill the container */
-  border-radius: 24px;
+  border-radius: 20px;
   background-color: currentColor;
   opacity: var(--v-activated-opacity); /* hidden by default */
   transition: opacity 0.18s ease;
 }
 
-/* ✨ 1. Remove focus style from buttons */
+/* 1. Remove focus style from buttons */
 .last-btn:focus {
   outline: none !important;
 }
 
-/* ✨ 2. Show focus outline on the *group* instead */
+/* 2. Show focus outline on the *group* instead */
 .icon-group:has(.last-btn:focus) {
   outline: 1px solid rgb(33, 150, 243) !important;
   outline: 2px solid var(--v-theme-primary);

@@ -1,5 +1,5 @@
 <template>
-  <v-btn icon width="48px" :active="active" aria-label="Thresholds button">
+  <v-btn icon size="small" :active="active" aria-label="Thresholds button">
     <v-avatar size="24" :rounded="false" v-if="maxWarningLevelColor">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
         <path
@@ -21,7 +21,7 @@
         </text>
       </svg>
     </v-avatar>
-    <v-icon v-else icon="mdi-alert" />
+    <v-icon size="large" v-else icon="mdi-alert" />
   </v-btn>
 </template>
 

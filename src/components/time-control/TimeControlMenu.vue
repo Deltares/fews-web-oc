@@ -1,16 +1,23 @@
 <template>
   <v-menu left bottom :close-on-content-click="false" class="menu">
     <template v-slot:activator="{ props, isActive }">
-      <v-btn v-bind="props" variant="tonal" rounded>
-        {{
-          Intl.DateTimeFormat(t('locale'), {
-            hour: '2-digit',
-            minute: '2-digit',
-            timeZoneName: 'short',
-          }).format(store.systemTime)
-        }}
-        <v-icon>{{ isActive ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-      </v-btn>
+      <div class="icon-group" v-bind="props">
+        <div class="icon-group__underlay"></div>
+        <span class="icon-group__label">
+          {{
+            Intl.DateTimeFormat(t('locale'), {
+              hour: '2-digit',
+              minute: '2-digit',
+              timeZoneName: 'short',
+            }).format(store.systemTime)
+          }}
+        </span>
+        <v-btn icon size="small" class="last-btn">
+          <v-icon size="large">{{
+            isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'
+          }}</v-icon>
+        </v-btn>
+      </div>
     </template>
 
     <v-card width="500px">
@@ -127,5 +134,37 @@ function onIntervalChange() {
 input {
   width: 100%;
   color: white;
+}
+
+.icon-group {
+  display: inline-flex;
+  position: relative;
+  border-radius: 24px;
+}
+
+.icon-group__label {
+  line-height: 40px;
+  padding-left: 15px;
+}
+
+.icon-group__underlay {
+  position: absolute;
+  inset: 0; /* fill the container */
+  border-radius: 20px;
+  background-color: currentColor;
+  opacity: var(--v-activated-opacity); /* hidden by default */
+  transition: opacity 0.18s ease;
+}
+
+/* 1. Remove focus style from buttons */
+.last-btn:focus {
+  outline: none !important;
+}
+
+/* 2. Show focus outline on the *group* instead */
+.icon-group:has(.last-btn:focus) {
+  outline: 1px solid rgb(33, 150, 243) !important;
+  outline: 2px solid var(--v-theme-primary);
+  outline-offset: -1px;
 }
 </style>
