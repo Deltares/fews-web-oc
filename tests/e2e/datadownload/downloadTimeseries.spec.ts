@@ -5,17 +5,10 @@ const base = '/topology/early_warning/node'
 
 test.describe('Download Time Series', () => {
   test.describe('Go to Download Time Series', () => {
-    test.beforeEach(async ({ page }) => {
+    test('Should download in CSV format', async ({ page }) => {
       await page.goto(
         `${base}/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map/kzn_waterlevel/location/NSRI_Tide_Gauge_level`,
       )
-      const actionmenu = page.locator('[aria-labelledby="display-action-menu"]')
-      // Wait for the action menu to be visible
-      await expect(actionmenu).toBeVisible()
-      await actionmenu.click()
-    })
-
-    test('Should download in CSV format', async ({ page }) => {
       await page.getByText('Download time series').click()
 
       // Set up the download promise before clicking the download button
@@ -43,6 +36,9 @@ test.describe('Download Time Series', () => {
     })
 
     test('Should download in JSON format', async ({ page }) => {
+      await page.goto(
+        `${base}/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map/kzn_waterlevel/location/NSRI_Tide_Gauge_level`,
+      )
       await page.getByText('Download time series').click()
 
       // Select JSON format instead of default CSV
@@ -69,39 +65,46 @@ test.describe('Download Time Series', () => {
 
       // Additional checks on the JSON structure
       expect(jsonData).toBeDefined()
-      expect(typeof jsonData === 'object').toBeTruthy()
 
-      // Check for expected properties in the JSON data based on actual structure
-      expect(jsonData).toHaveProperty('timeSeries')
-      expect(jsonData).toHaveProperty('version')
-      expect(jsonData).toHaveProperty('timeZone')
+      if (jsonData !== undefined) {
+        expect(typeof jsonData === 'object').toBeTruthy()
 
-      // Check timeSeries array structure
-      expect(Array.isArray(jsonData.timeSeries)).toBeTruthy()
-      expect(jsonData.timeSeries.length).toBeGreaterThan(0)
+        // Check for expected properties in the JSON data based on actual structure
+        expect(jsonData).toHaveProperty('timeSeries')
+        expect(jsonData).toHaveProperty('version')
+        expect(jsonData).toHaveProperty('timeZone')
 
-      // Check first time series object structure
-      const firstTimeSeries = jsonData.timeSeries[0]
-      expect(firstTimeSeries).toHaveProperty('header')
-      expect(firstTimeSeries).toHaveProperty('events')
+        // Check timeSeries array structure
+        expect(Array.isArray(jsonData.timeSeries)).toBeTruthy()
+        expect(jsonData.timeSeries.length).toBeGreaterThan(0)
 
-      // Check header properties
-      expect(firstTimeSeries.header).toHaveProperty('locationId')
-      expect(firstTimeSeries.header).toHaveProperty('parameterId')
+        // Check first time series object structure
+        const firstTimeSeries = jsonData.timeSeries[0]
+        expect(firstTimeSeries).toHaveProperty('header')
+        expect(firstTimeSeries).toHaveProperty('events')
 
-      // Check events array
-      expect(Array.isArray(firstTimeSeries.events)).toBeTruthy()
-      if (firstTimeSeries.events.length > 0) {
-        // Check event structure
-        const firstEvent = firstTimeSeries.events[0]
-        expect(firstEvent).toHaveProperty('date')
-        expect(firstEvent).toHaveProperty('time')
-        expect(firstEvent).toHaveProperty('value')
-        expect(firstEvent).toHaveProperty('flag')
+        // Check header properties
+        expect(firstTimeSeries.header).toHaveProperty('locationId')
+        expect(firstTimeSeries.header).toHaveProperty('parameterId')
+
+        // Check events array
+        expect(Array.isArray(firstTimeSeries.events)).toBeTruthy()
+        if (firstTimeSeries.events.length > 0) {
+          // Check event structure
+          const firstEvent = firstTimeSeries.events[0]
+          expect(firstEvent).toHaveProperty('date')
+          expect(firstEvent).toHaveProperty('time')
+          expect(firstEvent).toHaveProperty('value')
+          expect(firstEvent).toHaveProperty('flag')
+        }
       }
     })
 
     test('Should download in XML format', async ({ page }) => {
+      await page.goto(
+        `${base}/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map/kzn_waterlevel/location/NSRI_Tide_Gauge_level`,
+      )
+
       await page.getByText('Download time series').click()
 
       // Select XML format instead of default CSV
