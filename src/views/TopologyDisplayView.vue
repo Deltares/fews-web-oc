@@ -26,17 +26,14 @@
     </v-toolbar-items>
   </Teleport>
   <Teleport to="#app-bar-content-end">
-    <div class="icon-group me-2">
-      <div
-        v-if="secondaryControls.length > 0"
-        class="icon-group__underlay"
-      ></div>
-      <ThresholdsControl
-        :topologyNode="topologyNode"
-        @navigate="onNavigate"
-        :locationIds="locationIds"
-        v-if="showActiveThresholdCrossingsForFilters"
-      />
+    <BtnGroup class="me-2">
+      <template v-slot:persistent v-if="showActiveThresholdCrossingsForFilters">
+        <ThresholdsControl
+          :topologyNode="topologyNode"
+          @navigate="onNavigate"
+          :locationIds="locationIds"
+        />
+      </template>
       <SidePanelControl
         v-if="activeSecondaryControl"
         :type="activeSecondaryControl.type"
@@ -56,8 +53,11 @@
             aria-label="More Sidepanel Options"
             class="last-btn"
             size="small"
-          ><v-icon :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'" size="large"></v-icon>
-        </v-btn>
+            ><v-icon
+              :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+              size="large"
+            ></v-icon>
+          </v-btn>
         </template>
         <v-list>
           <v-list-item
@@ -76,7 +76,7 @@
           />
         </v-list>
       </v-menu>
-    </div>
+    </BtnGroup>
   </Teleport>
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
@@ -97,6 +97,7 @@ import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
 import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
 import LeafNodeButtons from '@/components/general/LeafNodeButtons.vue'
 import SidePanelControl from '@/components/sidepanel/SidePanelControl.vue'
+import BtnGroup from '@/components/general/BtnGroup.vue'
 
 import type { ColumnItem } from '@/components/general/ColumnItem'
 import { useConfigStore } from '@/stores/config'
@@ -524,31 +525,4 @@ function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
 }
 </script>
 
-<style scoped>
-.icon-group {
-  display: inline-flex;
-  position: relative;
-  border-radius: 24px;
-}
-
-.icon-group__underlay {
-  position: absolute;
-  inset: 0; /* fill the container */
-  border-radius: 20px;
-  background-color: currentColor;
-  opacity: var(--v-activated-opacity); /* hidden by default */
-  transition: opacity 0.18s ease;
-}
-
-/* 1. Remove focus style from buttons */
-.last-btn:focus {
-  outline: none !important;
-}
-
-/* 2. Show focus outline on the *group* instead */
-.icon-group:has(.last-btn:focus) {
-  outline: 1px solid rgb(33, 150, 243) !important;
-  outline: 2px solid var(--v-theme-primary);
-  outline-offset: -1px;
-}
-</style>
+<style scoped></style>
