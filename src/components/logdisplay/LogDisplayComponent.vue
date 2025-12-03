@@ -3,35 +3,87 @@
     <v-navigation-drawer right permanent width="350">
       <v-list>
         <template v-if="manualFilters.length && systemFilters.length">
-          <v-list-subheader>Types</v-list-subheader>
-          <v-list-item>
-            <v-select
-              v-if="manualFilters.length && systemFilters.length"
-              v-model="selectedLogTypes"
-              :items="logTypes"
-              variant="outlined"
-              hide-details
-              clearable
-              density="compact"
-              :item-title="toTitleCase"
-              :item-value="(item) => item"
-            />
+          <v-list-subheader class="d-flex align-center">Types</v-list-subheader>
+          <v-list-item class="pt-0">
+            <div class="d-flex flex-column w-100">
+              <div class="d-flex align-center mb-1 ga-2">
+                <span class="filter-label">Filter</span>
+                <v-btn-toggle
+                  v-model="showOnlySelectedTypes"
+                  density="compact"
+                  mandatory
+                  class="me-2"
+                  size="small"
+                >
+                  <v-btn variant="tonal" :value="false" size="small">All</v-btn>
+                  <v-btn
+                    variant="tonal"
+                    :value="true"
+                    prepend-icon="mdi-filter"
+                    size="small"
+                    >Selected</v-btn
+                  >
+                </v-btn-toggle>
+                <v-btn
+                  v-if="showOnlySelectedTypes"
+                  variant="tonal"
+                  size="x-small"
+                  prepend-icon="mdi-close-circle"
+                  @click.stop="selectedLogTypes = []"
+                  >Clear</v-btn
+                >
+              </div>
+              <v-select
+                v-if="showOnlySelectedTypes"
+                v-model="selectedLogTypes"
+                :items="logTypes"
+                variant="outlined"
+                hide-details
+                clearable
+                multiple
+                density="compact"
+                :item-title="toTitleCase"
+                :item-value="(item) => item"
+              />
+            </div>
           </v-list-item>
         </template>
 
-        <v-list-subheader>Levels</v-list-subheader>
-        <v-list-item>
-          <v-select
-            v-model="selectedLevels"
-            :items="logLevels"
-            variant="outlined"
-            clearable
-            hide-details
-            multiple
-            density="compact"
-            :item-title="levelToTitle"
-            :item-value="(item) => item"
-          />
+        <v-list-subheader class="d-flex align-center">Levels</v-list-subheader>
+        <v-list-item class="pt-0">
+          <div class="d-flex flex-column w-100">
+            <div class="d-flex align-center mb-1 ga-2">
+              <span class="filter-label">Filter</span>
+              <v-btn-toggle
+                v-model="showOnlySelectedLevels"
+                density="compact"
+                mandatory
+                class="me-2"
+                size="small"
+              >
+                <v-btn variant="tonal" :value="false" size="small">All</v-btn>
+                <v-btn
+                  variant="tonal"
+                  :value="true"
+                  prepend-icon="mdi-filter"
+                  size="small"
+                  >Selected</v-btn
+                >
+              </v-btn-toggle>
+            </div>
+            <v-select
+              v-if="showOnlySelectedLevels"
+              v-model="selectedLevels"
+              :items="logLevels"
+              variant="outlined"
+              clearable
+              hide-details
+              multiple
+              density="compact"
+              :item-title="levelToTitle"
+              :item-value="(item) => item"
+            />
+          </div>
         </v-list-item>
         <v-list-subheader>Date</v-list-subheader>
         <v-list-item>
@@ -178,9 +230,23 @@ interface Props {
 const props = defineProps<Props>()
 
 const search = ref<string>()
-const maxCount = ref<number>(20000)
+const maxCount = ref<number>(2000)
+const showOnlySelectedTypes = ref(false)
+const showOnlySelectedLevels = ref(false)
 const selectedLevels = ref<LogLevel[]>([])
-const selectedLogTypes = ref<LogType | null>(null)
+const selectedLogTypes = ref<LogType[]>([])
+
+// When switching to Selected mode, if nothing chosen yet, select all by default
+watch(showOnlySelectedTypes, (val) => {
+  if (val && selectedLogTypes.value.length === 0) {
+    selectedLogTypes.value = [...logTypes]
+  }
+})
+watch(showOnlySelectedLevels, (val) => {
+  if (val && selectedLevels.value.length === 0) {
+    selectedLevels.value = [...logLevels]
+  }
+})
 
 const daysBack = ref<number>(2)
 const DAY_IN_MS = 1000 * 60 * 60 * 24
@@ -282,14 +348,28 @@ const filteredLogMessages = computed(() => {
   // and then we filter the log messages based on those taskRuns.
   const filteredTaskRunIds = new Set<string>()
 
+  if (
+    (showOnlySelectedLevels.value &&
+      debouncedSelectedLevels.value.length === 0) ||
+    (showOnlySelectedTypes.value &&
+      debouncedSelectedLogTypes.value.length === 0)
+  ) {
+    return []
+  }
+
+  const levelsFilter = showOnlySelectedLevels.value
+    ? (debouncedSelectedLevels.value as LogLevel[])
+    : []
+  const typesFilter = showOnlySelectedTypes.value
+    ? (debouncedSelectedLogTypes.value as LogType[])
+    : []
+
   logMessages.value
     .filter((log) =>
       filterLog(
         log,
-        debouncedSelectedLevels.value,
-        debouncedSelectedLogTypes.value
-          ? [debouncedSelectedLogTypes.value]
-          : [],
+        levelsFilter,
+        typesFilter,
         debouncedSearch.value,
         taskRuns.value,
         workflows,
@@ -300,10 +380,8 @@ const filteredLogMessages = computed(() => {
     (log) =>
       filterLog(
         log,
-        debouncedSelectedLevels.value,
-        debouncedSelectedLogTypes.value
-          ? [debouncedSelectedLogTypes.value]
-          : [],
+        levelsFilter,
+        typesFilter,
         debouncedSearch.value,
         taskRuns.value,
         workflows,
