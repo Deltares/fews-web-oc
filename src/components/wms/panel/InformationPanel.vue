@@ -48,8 +48,9 @@
           <v-list-item-title>Animate</v-list-item-title>
           <template v-slot:append>
             <v-switch
-              density="compact"
               v-model="doAnimateStreamlines"
+              color="primary"
+              density="compact"
               hide-details
             ></v-switch>
           </template>
