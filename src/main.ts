@@ -45,7 +45,7 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
     }
     const i18n = createI18n({
       legacy: false,
-      locale: configManager.getIfAvailable('LOCALE') ?? 'en_EN',
+      locale: configManager.getWithDefault('LOCALE', 'en_EN'),
       fallbackLocale: 'en_EN',
       messages: await localeMessages(),
       fallbackWarn: false,
