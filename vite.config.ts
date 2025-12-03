@@ -41,7 +41,7 @@ export default defineConfig(({ mode }) => {
           `default-src 'none'`,
           `script-src 'self' blob:`,
           `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
-          `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} 'unsafe-inline'`, // vuetify
+          `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} 'nonce-RANDOM_NONCE_VALUE'`,
           `worker-src blob:`, // maplibre-gl
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices
           [
