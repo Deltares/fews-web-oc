@@ -8,7 +8,7 @@
   >
     <!-- Row 1: Date + Source + Error count (summary) -->
     <div class="d-flex w-100 justify-space-between align-left">
-      <v-list-item>
+      <v-list-item class="px-2 date-time-item">
         <v-list-item-subtitle v-if="expanded">
           Last import time
         </v-list-item-subtitle>
@@ -20,8 +20,7 @@
           {{ toHumanReadableDateTime(item.lastImportTime) }}
         </v-chip>
       </v-list-item>
-
-      <v-list-item class="flex-grow-1 align-self-left">
+      <v-list-item class="flex-grow-1 align-self-left ps-2">
         <v-list-item-subtitle> Source </v-list-item-subtitle>
         <span
           class="text-body-2 text-truncate"
@@ -125,6 +124,10 @@ function onExpansionPanelToggle() {
 </script>
 
 <style scoped>
+.date-time-item {
+  min-width: 155px;
+}
+
 .datafeed-label {
   display: inline-block;
   width: 200px;
