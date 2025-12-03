@@ -39,11 +39,12 @@ export default defineConfig(({ mode }) => {
       headers: {
         'content-security-policy': [
           `default-src 'none'`,
-          `script-src 'self' blob:`,
-          `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
-          `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} 'unsafe-inline'`, // vuetify
-          `worker-src blob:`, // maplibre-gl
-          `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL}`, // FEWS webservices
+          `script-src 'self' blob: ${env.DEV_CSP_MEDIA_SRC}`,
+          `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_FONT_SRC}`,
+          `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_STYLE_SRC} 'unsafe-inline'`, // vuetify
+          `worker-src blob: ${env.DEV_CSP_WORKER_SRC}`, // maplibre-gl
+          `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_IMG_SRC}`, // FEWS webservices
+          `media-src 'self' ${env.DEV_CSP_MEDIA_SRC}`,
           [
             `connect-src`,
             `'self'`,
@@ -51,14 +52,14 @@ export default defineConfig(({ mode }) => {
             `https://*.basemaps.cartocdn.com`,
             `https://login.microsoftonline.com`,
             `${env.VITE_FEWS_WEBSERVICES_URL}`,
-            `${env.DEV_CONNECT_SRC}`,
+            `${env.DEV_CSP_CONNECT_SRC}`,
           ].join(' '), // FEWS webservices, Authentication, Basemaps
           [
             `frame-src`,
             `'self'`,
             `blob:`,
             `${env.VITE_FEWS_WEBSERVICES_URL}`,
-            `${env.DEV_FRAME_SRC}`,
+            `${env.DEV_CSP_FRAME_SRC}`,
           ].join(' '),
         ].join('; '),
       },
