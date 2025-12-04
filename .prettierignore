@@ -1,2 +1,4 @@
 # Ignore all Markdown files:
 **/*.md
+# Ignore all files in the public directory
+public
