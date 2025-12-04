@@ -1,5 +1,10 @@
 <template>
-  <mgl-symbol-layer :layerId="layerId" :layout="layout" :filter="filter" />
+  <mgl-symbol-layer
+    :layerId="layerId"
+    :layout="layout"
+    :filter="filter"
+    :paint="paint"
+  />
 </template>
 
 <script setup lang="ts">
@@ -19,15 +24,17 @@ const filter: SymbolLayerSpecification['filter'] = [
 ]
 
 const layout: SymbolLayerSpecification['layout'] = {
-  // Show a different icon when there is data available outside the view period
-  // and when there is no data available whatsoever.
-  'icon-image': [
+  'icon-image': 'mdi:overlay-remove',
+  'icon-overlap': 'always',
+  'icon-size': 1.2,
+}
+
+const paint: SymbolLayerSpecification['paint'] = {
+  'icon-color': [
     'case',
     ['get', 'hasDataOutsideViewPeriod'],
-    'no-data-in-view-period',
-    'no-data',
+    '#770000',
+    '#cc0000',
   ],
-  'icon-overlap': 'always',
-  'icon-size': 0.25,
 }
 </script>

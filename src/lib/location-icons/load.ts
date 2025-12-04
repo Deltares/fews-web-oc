@@ -16,8 +16,6 @@ function getUniqueIconNames(
 async function addDefaultIconsToMap(map: Map): Promise<void> {
   const defaultIcons = [
     { id: 'selected-location', path: 'images/map-marker.png' },
-    { id: 'no-data', path: 'images/no-data.svg' },
-    { id: 'no-data-in-view-period', path: 'images/no-data-in-view-period.svg' },
   ]
   await Promise.all(
     defaultIcons.map((icon) =>
@@ -79,6 +77,11 @@ async function addCustomLocationIconsToMap(
   )
 }
 
+async function addSprites(map: Map): Promise<void> {
+  const url = new URL(`${import.meta.env.BASE_URL}sprites/mdi_overlay_sdf`, window.location.href).toString()
+  map.addSprite('mdi', url.toString())
+}
+
 /**
  * Adds location icons to the map.
  *
@@ -94,6 +97,7 @@ export async function addLocationIconsToMap(
 ): Promise<void> {
   await Promise.all([
     addDefaultIconsToMap(map),
+    addSprites(map),
     addCustomLocationIconsToMap(map, locations),
   ])
 }

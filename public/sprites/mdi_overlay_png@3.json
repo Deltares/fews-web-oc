@@ -1,0 +1,226 @@
+{
+  "overlay-arrow-down": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 0,
+    "y": 0
+  },
+  "overlay-arrow-left": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 72,
+    "y": 0
+  },
+  "overlay-arrow-right": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 144,
+    "y": 0
+  },
+  "overlay-arrow-up": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 216,
+    "y": 0
+  },
+  "overlay-cancel": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 288,
+    "y": 0
+  },
+  "overlay-check": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 360,
+    "y": 0
+  },
+  "overlay-clock": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 432,
+    "y": 0
+  },
+  "overlay-cog": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 0,
+    "y": 72
+  },
+  "overlay-edit": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 0,
+    "y": 144
+  },
+  "overlay-education": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 0,
+    "y": 216
+  },
+  "overlay-heart": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 0,
+    "y": 288
+  },
+  "overlay-heat": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 0,
+    "y": 360
+  },
+  "overlay-lock": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 0,
+    "y": 432
+  },
+  "overlay-lock-open": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 72,
+    "y": 72
+  },
+  "overlay-marker": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 144,
+    "y": 72
+  },
+  "overlay-minus": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 216,
+    "y": 72
+  },
+  "overlay-music": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 288,
+    "y": 72
+  },
+  "overlay-off": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 360,
+    "y": 72
+  },
+  "overlay-pause": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 432,
+    "y": 72
+  },
+  "overlay-play": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 72,
+    "y": 144
+  },
+  "overlay-plus": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 72,
+    "y": 216
+  },
+  "overlay-refresh": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 72,
+    "y": 288
+  },
+  "overlay-remove": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 72,
+    "y": 360
+  },
+  "overlay-search": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 72,
+    "y": 432
+  },
+  "overlay-settings": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 144,
+    "y": 144
+  },
+  "overlay-star": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 216,
+    "y": 144
+  },
+  "overlay-stop": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 288,
+    "y": 144
+  },
+  "overlay-sync": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 360,
+    "y": 144
+  },
+  "overlay-thermometer": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 432,
+    "y": 144
+  },
+  "overlay-transfer": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 144,
+    "y": 216
+  },
+  "overlay-water": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 144,
+    "y": 288
+  },
+  "overlay-wrench": {
+    "height": 72,
+    "pixelRatio": 3,
+    "width": 72,
+    "x": 144,
+    "y": 360
+  }
+}
