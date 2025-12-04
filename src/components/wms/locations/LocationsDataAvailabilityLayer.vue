@@ -1,4 +1,5 @@
 <template>
+  <!-- @vue-ignore -->
   <mgl-symbol-layer
     :layerId="layerId"
     :layout="layout"
@@ -10,18 +11,21 @@
 <script setup lang="ts">
 import { MglSymbolLayer } from '@indoorequal/vue-maplibre-gl'
 import { SymbolLayerSpecification } from 'maplibre-gl'
+import { computed } from 'vue'
 
 interface Props {
   layerId: string
+  show: boolean
 }
-defineProps<Props>()
+const props = defineProps<Props>()
 
-// Only show overlay icons for locations with no data available in the view
-// period.
-const filter: SymbolLayerSpecification['filter'] = [
-  '!',
-  ['get', 'hasDataInViewPeriod'],
-]
+const filter = computed<SymbolLayerSpecification['filter']>(() => {
+  if (props.show) {
+    return ['!', ['get', 'hasDataInViewPeriod']]
+  } else {
+    return ['==', '1', '0'] // Always false filter
+  }
+})
 
 const layout: SymbolLayerSpecification['layout'] = {
   'icon-image': 'mdi:overlay-remove',
