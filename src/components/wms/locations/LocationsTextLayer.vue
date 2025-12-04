@@ -31,7 +31,7 @@ const layout: SymbolLayerSpecification['layout'] = {
   'text-field': ['get', 'locationName'],
   'text-size': 12,
   'text-overlap': 'never',
-  'text-padding': 10,
+  'text-padding': 15,
   'text-justify': 'auto',
   'text-variable-anchor': ['right', 'left'],
   'text-max-width': 15,

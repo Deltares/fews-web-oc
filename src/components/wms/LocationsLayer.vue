@@ -20,6 +20,7 @@
     />
 
     <LocationsDataAvailabilityLayer
+      :show="showDataAvailability"
       :layerId="locationMapIds.layer.dataAvailability"
     />
 
@@ -78,6 +79,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 const showNames = computed(() => {
   return Boolean(settings.get('ui.map.showLocationNames')?.value)
+})
+
+const showDataAvailability = computed(() => {
+  return Boolean(settings.get('ui.map.showDataAvailability')?.value)
 })
 
 const geojson = computed(() =>
