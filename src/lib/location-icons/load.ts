@@ -13,16 +13,31 @@ function getUniqueIconNames(
     .filter((iconName) => iconName !== undefined) as string[]
 }
 
-async function addDefaultSelectedLocationIconToMap(map: Map): Promise<void> {
-  const iconId = 'selected-location'
+async function addDefaultIconsToMap(map: Map): Promise<void> {
+  const defaultIcons = [
+    { id: 'selected-location', path: 'images/map-marker.png' },
+  ]
+  await Promise.allSettled(
+    defaultIcons.map((icon) =>
+      addIconToMap(map, icon.id, `${import.meta.env.BASE_URL}${icon.path}`),
+    ),
+  )
+}
+
+async function addIconToMap(
+  map: Map,
+  iconId: string,
+  url: string,
+): Promise<void> {
   if (map.hasImage(iconId)) return
-  try {
-    const image = await map.loadImage(
-      `${import.meta.env.BASE_URL}images/map-marker.png`,
-    )
+
+  if (url.toLowerCase().endsWith('.svg')) {
+    // Load SVG as 128x128 bitmap.
+    const image = await convertSvgToBitmap(url, 128, 128)
+    map.addImage(iconId, image)
+  } else {
+    const image = await map.loadImage(url)
     map.addImage(iconId, image.data)
-  } catch (error) {
-    console.error('Failed to load default location icon:', error)
   }
 }
 
@@ -54,25 +69,21 @@ async function addCustomLocationIconsToMap(
   locations: FeatureCollection<Geometry, Location>,
 ): Promise<void> {
   const locationIcons = getUniqueIconNames(locations)
-  for (const iconName of locationIcons) {
-    if (map.hasImage(iconName)) continue
+  await Promise.allSettled(
+    locationIcons.map(async (iconName) => {
+      const url = getResourcesIconsUrl(iconName)
+      await addIconToMap(map, iconName, url)
+    }),
+  )
+}
 
-    const url = getResourcesIconsUrl(iconName)
-
-    if (url.endsWith('.svg')) {
-      // Load SVG as 128x128 bitmap.
-      convertSvgToBitmap(url, 128, 128).then((image) => {
-        map.addImage(iconName, image)
-      })
-    } else {
-      try {
-        const image = await map.loadImage(url)
-        map.addImage(iconName, image.data)
-      } catch (error) {
-        console.error(`Failed to load location icon ${iconName}:`, error)
-      }
-    }
-  }
+async function addSprites(map: Map): Promise<void> {
+  if (map.getSprite().find((sprite) => sprite.id === 'overlay')) return
+  const url = new URL(
+    `${import.meta.env.BASE_URL}sprites/mdi-overlay-sdf`,
+    window.location.href,
+  ).toString()
+  map.addSprite('overlay', url.toString())
 }
 
 /**
@@ -84,10 +95,13 @@ async function addCustomLocationIconsToMap(
  * @param map - The map object to add the icons to.
  * @param locations - The collection of locations to add icons for.
  */
-export function addLocationIconsToMap(
+export async function addLocationIconsToMap(
   map: Map,
   locations: FeatureCollection<Geometry, Location>,
-): void {
-  addDefaultSelectedLocationIconToMap(map)
-  addCustomLocationIconsToMap(map, locations)
+): Promise<void> {
+  await Promise.allSettled([
+    addDefaultIconsToMap(map),
+    addSprites(map),
+    addCustomLocationIconsToMap(map, locations),
+  ])
 }

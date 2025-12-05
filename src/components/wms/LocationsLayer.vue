@@ -18,6 +18,12 @@
       :isDark="isDark"
       child
     />
+
+    <LocationsDataAvailabilityLayer
+      :show="showDataAvailability"
+      :layerId="locationMapIds.layer.dataAvailability"
+    />
+
     <LocationsTextLayer :layerId="locationMapIds.layer.text" :isDark="isDark" />
   </mgl-geo-json-source>
 
@@ -28,6 +34,7 @@
 import LocationsFillLayer from '@/components/wms/locations/LocationsFillLayer.vue'
 import LocationsCircleLayer from '@/components/wms/locations/LocationsCircleLayer.vue'
 import LocationsSymbolLayer from '@/components/wms/locations/LocationsSymbolLayer.vue'
+import LocationsDataAvailabilityLayer from '@/components/wms/locations/LocationsDataAvailabilityLayer.vue'
 import LocationsTextLayer from '@/components/wms/locations/LocationsTextLayer.vue'
 import LocationsMarkers from '@/components/wms/locations/LocationsMarkers.vue'
 import { MglGeoJsonSource } from '@indoorequal/vue-maplibre-gl'
@@ -74,6 +81,10 @@ const showNames = computed(() => {
   return Boolean(settings.get('ui.map.showLocationNames')?.value)
 })
 
+const showDataAvailability = computed(() => {
+  return Boolean(settings.get('ui.map.showDataAvailability')?.value)
+})
+
 const geojson = computed(() =>
   addPropertiesToLocationGeojson(
     props.locationsGeoJson,
@@ -105,8 +116,12 @@ watch(
   },
 )
 
-function addLocationIcons() {
-  if (map) addLocationIconsToMap(map, geojson.value)
+async function addLocationIcons() {
+  if (!map) return
+
+  addLocationIconsToMap(map, geojson.value).catch((error) =>
+    console.error(`Failed to add location icons to the map: ${error}`),
+  )
 }
 
 function clickHandler(event: MapLayerMouseEvent | MapLayerTouchEvent): void {

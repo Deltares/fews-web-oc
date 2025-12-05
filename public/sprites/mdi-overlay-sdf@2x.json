@@ -1,0 +1,274 @@
+{
+  "arrow-down": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 162,
+    "y": 0,
+    "sdf": true
+  },
+  "arrow-left": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 192,
+    "y": 0,
+    "sdf": true
+  },
+  "arrow-right": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 222,
+    "y": 0,
+    "sdf": true
+  },
+  "arrow-up": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 162,
+    "y": 30,
+    "sdf": true
+  },
+  "backslash": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 192,
+    "y": 30,
+    "sdf": true
+  },
+  "cancel": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 222,
+    "y": 30,
+    "sdf": true
+  },
+  "check": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 0,
+    "y": 54,
+    "sdf": true
+  },
+  "cog": {
+    "height": 54,
+    "pixelRatio": 2,
+    "width": 54,
+    "x": 0,
+    "y": 0,
+    "sdf": true
+  },
+  "edit": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 30,
+    "y": 54,
+    "sdf": true
+  },
+  "education": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 60,
+    "y": 54,
+    "sdf": true
+  },
+  "eye": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 90,
+    "y": 54,
+    "sdf": true
+  },
+  "eye-off": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 120,
+    "y": 54,
+    "sdf": true
+  },
+  "heart": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 150,
+    "y": 60,
+    "sdf": true
+  },
+  "heat": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 180,
+    "y": 60,
+    "sdf": true
+  },
+  "lock": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 210,
+    "y": 60,
+    "sdf": true
+  },
+  "lock-open": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 0,
+    "y": 84,
+    "sdf": true
+  },
+  "marker": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 30,
+    "y": 84,
+    "sdf": true
+  },
+  "minus": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 60,
+    "y": 84,
+    "sdf": true
+  },
+  "music": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 90,
+    "y": 84,
+    "sdf": true
+  },
+  "off": {
+    "height": 54,
+    "pixelRatio": 2,
+    "width": 54,
+    "x": 54,
+    "y": 0,
+    "sdf": true
+  },
+  "pause": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 120,
+    "y": 84,
+    "sdf": true
+  },
+  "play": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 150,
+    "y": 90,
+    "sdf": true
+  },
+  "plus": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 180,
+    "y": 90,
+    "sdf": true
+  },
+  "refresh": {
+    "height": 54,
+    "pixelRatio": 2,
+    "width": 54,
+    "x": 108,
+    "y": 0,
+    "sdf": true
+  },
+  "remove": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 210,
+    "y": 90,
+    "sdf": true
+  },
+  "search": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 0,
+    "y": 114,
+    "sdf": true
+  },
+  "slash": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 30,
+    "y": 114,
+    "sdf": true
+  },
+  "star": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 60,
+    "y": 114,
+    "sdf": true
+  },
+  "stop": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 90,
+    "y": 114,
+    "sdf": true
+  },
+  "sync": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 120,
+    "y": 114,
+    "sdf": true
+  },
+  "thermometer": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 150,
+    "y": 120,
+    "sdf": true
+  },
+  "transfer": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 180,
+    "y": 120,
+    "sdf": true
+  },
+  "water": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 210,
+    "y": 120,
+    "sdf": true
+  },
+  "wrench": {
+    "height": 30,
+    "pixelRatio": 2,
+    "width": 30,
+    "x": 0,
+    "y": 144,
+    "sdf": true
+  }
+}

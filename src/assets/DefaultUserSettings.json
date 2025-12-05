@@ -124,6 +124,13 @@
     "group": "Map"
   },
   {
+    "id": "ui.map.showDataAvailability",
+    "type": "boolean",
+    "label": "Show data availability",
+    "value": true,
+    "group": "Map"
+  },
+  {
     "id": "charts.scrollZoomMode",
     "type": "oneOfMultiple",
     "label": "Scroll wheel zoom mode",
