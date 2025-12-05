@@ -78,7 +78,6 @@ import { useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
 
-
 const { t, d } = useI18n()
 
 const store = useSystemTimeStore()
