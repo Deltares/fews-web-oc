@@ -78,12 +78,12 @@ async function addCustomLocationIconsToMap(
 }
 
 async function addSprites(map: Map): Promise<void> {
-  if (map.getSprite().find((sprite) => sprite.id === 'mdi')) return
+  if (map.getSprite().find((sprite) => sprite.id === 'overlay')) return
   const url = new URL(
-    `${import.meta.env.BASE_URL}sprites/mdi_overlay_sdf`,
+    `${import.meta.env.BASE_URL}sprites/mdi-overlay-sdf`,
     window.location.href,
   ).toString()
-  map.addSprite('mdi', url.toString())
+  map.addSprite('overlay', url.toString())
 }
 
 /**
