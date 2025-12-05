@@ -28,17 +28,23 @@ const filter = computed<SymbolLayerSpecification['filter']>(() => {
 })
 
 const layout: SymbolLayerSpecification['layout'] = {
-  'icon-image': 'mdi:overlay-remove',
+  'icon-image': [
+    'case',
+    ['get', 'hasDataOutsideViewPeriod'],
+    'overlay:eye-off',
+    'overlay:remove',
+  ],
   'icon-overlap': 'always',
-  'icon-size': 1.2,
+  'icon-size': 1,
+  'icon-offset': [9, 9],
 }
 
 const paint: SymbolLayerSpecification['paint'] = {
   'icon-color': [
     'case',
     ['get', 'hasDataOutsideViewPeriod'],
-    '#770000',
-    '#cc0000',
+    'rgb(24, 103, 192)',
+    '#C21807',
   ],
 }
 </script>
