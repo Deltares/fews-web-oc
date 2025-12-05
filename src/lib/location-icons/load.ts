@@ -17,7 +17,7 @@ async function addDefaultIconsToMap(map: Map): Promise<void> {
   const defaultIcons = [
     { id: 'selected-location', path: 'images/map-marker.png' },
   ]
-  await Promise.all(
+  await Promise.allSettled(
     defaultIcons.map((icon) =>
       addIconToMap(map, icon.id, `${import.meta.env.BASE_URL}${icon.path}`),
     ),
@@ -69,7 +69,7 @@ async function addCustomLocationIconsToMap(
   locations: FeatureCollection<Geometry, Location>,
 ): Promise<void> {
   const locationIcons = getUniqueIconNames(locations)
-  await Promise.all(
+  await Promise.allSettled(
     locationIcons.map(async (iconName) => {
       const url = getResourcesIconsUrl(iconName)
       await addIconToMap(map, iconName, url)
@@ -99,7 +99,7 @@ export async function addLocationIconsToMap(
   map: Map,
   locations: FeatureCollection<Geometry, Location>,
 ): Promise<void> {
-  await Promise.all([
+  await Promise.allSettled([
     addDefaultIconsToMap(map),
     addSprites(map),
     addCustomLocationIconsToMap(map, locations),
