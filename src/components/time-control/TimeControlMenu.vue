@@ -75,6 +75,7 @@ import { useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
 import { useDisplay } from 'vuetify'
+import { DateTimeFormatOptions } from 'luxon'
 
 const store = useSystemTimeStore()
 const configStore = useConfigStore()
@@ -89,8 +90,8 @@ const dateOrderIsCorrect = computed(
     customStartDate.value < customEndDate.value,
 )
 
-const dateFormatMobile = { hour: '2-digit', minute: '2-digit' };
-const dateFormatNormal = { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
+const dateFormatMobile: DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
+const dateFormatNormal: DateTimeFormatOptions  = { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
 
 const intervalItems = computed(() => {
   const presets = configStore.general.timeSettings?.viewPeriodPresets
