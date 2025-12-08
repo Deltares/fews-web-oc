@@ -214,11 +214,11 @@ export function cssStyleFromFewsMarker(item: {
  */
 export function chartMarkerFromFews(
   style: string,
-  pointSize: number = 3,
+  markerSize: number = 3,
 ): SymbolOptions {
   const marker: SymbolOptions = {
     id: SymbolType.Circle,
-    size: pointSize ** 2,
+    size: markerSize ** 2,
     skip: 1,
   }
   switch (style) {
