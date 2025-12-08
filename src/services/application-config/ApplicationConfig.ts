@@ -1,4 +1,4 @@
-import { VBtn } from "vuetify/components"
+import { VBtn } from 'vuetify/components'
 
 export enum RequestHeaderAuthorization {
   BEARER = 'Bearer',
