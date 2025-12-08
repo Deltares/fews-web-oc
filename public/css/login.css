@@ -1,0 +1,35 @@
+.weboc-login__main {
+  background-image: url('../images/D111-103_getijdenland_small.jpg');
+  background-position-x: center;
+  background-size: cover;
+  width: 100vw;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+}
+
+@media only screen and (min-width: 2561px),
+  only screen and (min-width: 1281px) and (min-device-pixel-ratio: 2) {
+  .weboc-login__main {
+    background-image: url('../images/D111-103_103_getijdenland.jpg');
+  }
+}
+
+.weboc-login__container {
+  display: block;
+  width: 600px;
+  height: 400px;
+  margin: auto;
+  text-align: center;
+}
+
+.weboc-login__title {
+  color: white;
+  text-shadow: 2px 2px 4px #000000;
+  background-clip: text;
+  padding-bottom: 20px;
+}
+
+.weboc-login-provider__button:hover {
+  background-color: red;
+}

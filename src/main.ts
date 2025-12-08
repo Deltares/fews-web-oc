@@ -40,6 +40,13 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
   .then((res) => res.json())
   .then(async (data) => {
     configManager.update(data)
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = configManager.getWithDefault(
+      'VITE_LOGIN_STYLESHEET_URL',
+      'css/login.css',
+    )
+    document.head.appendChild(link)
     if (configManager.authenticationIsEnabled) {
       await authenticationManager.init(configManager.getUserManagerSettings())
     }
