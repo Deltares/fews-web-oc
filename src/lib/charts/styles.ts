@@ -218,7 +218,7 @@ export function chartMarkerFromFews(
 ): SymbolOptions {
   const marker: SymbolOptions = {
     id: SymbolType.Circle,
-    size: (pointSize / 0.75) ** 2,
+    size: pointSize ** 2,
     skip: 1,
   }
   switch (style) {
