@@ -8,13 +8,9 @@
         <div class="weboc-login-provider">
           <v-btn
             @click="login"
-            color="primary"
-            variant="elevated"
+            v-bind="buttonProps"
             class="weboc-login-provider__button"
-            :prepend-icon="prependIcon"
-            :append-icon="appendIcon"
           >
-            <span>{{ label }}</span>
           </v-btn>
         </div>
       </div>
@@ -23,27 +19,34 @@
 </template>
 
 <script setup lang="ts">
-import { useTemplateRef, onMounted } from 'vue'
+import { useTemplateRef, onMounted, ref } from 'vue'
 import { configManager } from '@/services/application-config'
 import { useRoute } from 'vue-router'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.js'
+import { VBtn } from "vuetify/components"
 
 const route = useRoute()
 
 const appName = useTemplateRef('app-name')
+const buttonProps = ref<VBtn['$props']>({
+  prependIcon: 'mdi-login',
+  text: 'Login',
+  color: 'primary',
+  variant: 'elevated',
+})
 
-const label = configManager.getWithDefault(
-  'VITE_LOGIN_PROVIDER_LABEL',
-  'Sign in',
-)
-const appendIcon = configManager.getWithDefault(
-  'VITE_LOGIN_PROVIDER_APPEND_ICON',
-  '',
-)
-const prependIcon = configManager.getWithDefault(
-  'VITE_LOGIN_PROVIDER_PREPEND_ICON',
-  '',
-)
+onMounted(() => {
+  const buttonPropsSetting = configManager.get('VITE_LOGIN_PROVIDER_BUTTON_PROPS')
+  if (typeof buttonPropsSetting === 'string') {
+    try {
+      Object.assign(buttonProps.value, JSON.parse(buttonPropsSetting))
+    } catch (e) {
+      console.error('Failed to parse VITE_LOGIN_PROVIDER_BUTTON_PROPS', e)
+    }
+  } else {
+    Object.assign(buttonProps.value, buttonPropsSetting)
+  }
+})
 
 onMounted(() => {
   const name = configManager.getWithDefault(
@@ -59,4 +62,3 @@ function login(): void {
   authenticationManager.userManager.signinRedirect({ state: redirect })
 }
 </script>
-
