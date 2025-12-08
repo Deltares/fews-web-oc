@@ -14,5 +14,6 @@ export type ApplicationConfig = {
   VITE_LOGIN_PROVIDER_LABEL: string
   VITE_LOGIN_PROVIDER_APPEND_ICON: string
   VITE_LOGIN_PROVIDER_PREPEND_ICON: string
+  VITE_LOGIN_STYLESHEET_URL: string
   VITE_REQUEST_HEADER_AUTHORIZATION: RequestHeaderAuthorization
 }
