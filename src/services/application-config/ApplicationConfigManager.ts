@@ -23,7 +23,10 @@ export class ApplicationConfigManager {
     throw new Error(`Cannot find config for '${name}'`)
   }
 
-  getWithDefault<T extends keyof ApplicationConfig>(name: T, defaultValue: ApplicationConfig[T]): ApplicationConfig[T] {
+  getWithDefault<T extends keyof ApplicationConfig>(
+    name: T,
+    defaultValue: ApplicationConfig[T],
+  ): ApplicationConfig[T] {
     const configValue = this._config[name]
     if (configValue !== undefined) return configValue
     const envValue = import.meta.env[name]
@@ -32,7 +35,6 @@ export class ApplicationConfigManager {
     }
     return defaultValue
   }
-
 
   get authenticationIsEnabled(): boolean {
     return this._authenticationIsEnabled

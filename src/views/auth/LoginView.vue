@@ -23,7 +23,7 @@ import { useTemplateRef, onMounted, ref } from 'vue'
 import { configManager } from '@/services/application-config'
 import { useRoute } from 'vue-router'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.js'
-import { VBtn } from "vuetify/components"
+import { VBtn } from 'vuetify/components'
 
 const route = useRoute()
 
@@ -36,7 +36,9 @@ const buttonProps = ref<VBtn['$props']>({
 })
 
 onMounted(() => {
-  const buttonPropsSetting = configManager.get('VITE_LOGIN_PROVIDER_BUTTON_PROPS')
+  const buttonPropsSetting = configManager.get(
+    'VITE_LOGIN_PROVIDER_BUTTON_PROPS',
+  )
   if (typeof buttonPropsSetting === 'string') {
     try {
       Object.assign(buttonProps.value, JSON.parse(buttonPropsSetting))
