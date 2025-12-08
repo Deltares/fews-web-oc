@@ -88,7 +88,10 @@ export function timeSeriesDisplayToChartConfig(
 
     if (item.markerStyle !== undefined && item.markerStyle !== 'none') {
       const chartSeries: ChartSeries = getChartSeries([item], 'marker', config)
-      chartSeries.marker = chartMarkerFromFews(item.markerStyle)
+      chartSeries.marker = chartMarkerFromFews(
+        item.markerStyle,
+        item.markerSize,
+      )
       chartSeries.style = cssStyleFromFewsMarker(item)
       chartSeriesArray.push(chartSeries)
     }
