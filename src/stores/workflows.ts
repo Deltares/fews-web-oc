@@ -86,7 +86,7 @@ export const useWorkflowsStore = defineStore('workflows', {
           authenticationManager.getAccessToken(),
         )
       } else if (type === WorkflowType.RunTask) {
-        await webServiceProvider.postRunTask(filter, options?.body ?? '')
+        return await webServiceProvider.postRunTask(filter, options?.body ?? '')
       }
     },
   },
