@@ -169,7 +169,10 @@ const props = withDefaults(defineProps<Props>(), {
   configurationTitle: 'Scenario configuration',
 })
 
-const emit = defineEmits(['postTask'])
+interface Emits {
+  postTask: [taskId: string | undefined]
+}
+const emit = defineEmits<Emits>()
 
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
 const alertStore = useAlertsStore()
@@ -320,7 +323,11 @@ async function submit() {
       }, 500)
     }
 
-    await workflowsStore.startWorkflow(workflowType, filter, { fileName })
+    const result = await workflowsStore.startWorkflow(workflowType, filter, {
+      fileName,
+    })
+
+    emit('postTask', result)
 
     if (workflowType === WorkflowType.ProcessData) {
       showSuccessMessage('File download completed')
