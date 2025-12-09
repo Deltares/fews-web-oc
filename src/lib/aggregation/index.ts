@@ -9,8 +9,8 @@ import { Duration, type DurationLikeObject } from 'luxon'
  *
  * @example
  * ```typescript
- * shortLabel("1 day") // returns "1 d" (in Dutch locale)
- * shortLabel("2 hours") // returns "2 u" (in Dutch locale)
+ * shortLabel("1 day") // returns "1d" (in English locale)
+ * shortLabel("2 hours") // returns "2h" (in English locale)
  * ```
  */
 export function shortLabel(label: string): string {
