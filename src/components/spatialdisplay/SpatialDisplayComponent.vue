@@ -308,7 +308,8 @@ const aggregationLabels = computed<string[]>(() => {
   // For now, we only ever have one entry for aggregation: "Accumulation".
   return props.layerCapabilities?.aggregation?.[0].labels ?? []
 })
-const doShowAggregated = ref<boolean>(false)
+
+const doShowAggregated = ref<boolean>(true)
 const selectedAggregationLabel = ref<string | null>(
   aggregationLabels.value[0] ?? null,
 )
