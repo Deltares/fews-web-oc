@@ -326,6 +326,19 @@ const aggregations = computed(() => {
   )
 })
 
+watch(
+  () => aggregations.value,
+  (items) => {
+    if (
+      selectedAggregationLabel.value === null ||
+      !items.find((item) => item.id === selectedAggregationLabel.value)
+    ) {
+      selectedAggregationLabel.value = items[0]?.id ?? null
+    }
+  },
+  { immediate: true },
+)
+
 watch([doShowAggregated, selectedAggregationLabel], () => setLayerOptions())
 
 const layerOptions = ref<AnimatedRasterLayerOptions>()

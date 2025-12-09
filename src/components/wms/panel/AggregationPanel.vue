@@ -46,8 +46,6 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
-
 interface Props {
   items: {
     id: string
@@ -61,17 +59,4 @@ const props = defineProps<Props>()
 
 const modelValue = defineModel<string | null>('modelValue', { required: true })
 const active = defineModel<boolean>('active', { required: true })
-
-watch(
-  () => props.items,
-  (items) => {
-    if (
-      modelValue.value === null ||
-      !items.find((item) => item.id === modelValue.value)
-    ) {
-      modelValue.value = items[0]?.id ?? null
-    }
-  },
-  { immediate: true },
-)
 </script>
