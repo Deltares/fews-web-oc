@@ -1,30 +1,46 @@
 <template>
-  <v-list-item prepend-icon="mdi-sigma">
-    <v-list-item-title>Show accumulated data</v-list-item-title>
+  <v-list-item prepend-icon="mdi-clock-end">
+    <div>Show accumulated data</div>
     <template v-slot:append>
       <v-switch
-        v-model="doShowAggregated"
+        v-model="active"
         color="primary"
         density="compact"
         hide-details
       ></v-switch>
     </template>
-    <v-list-item-content> </v-list-item-content>
   </v-list-item>
-  <v-list-item v-if="doShowAggregated">
+  <v-list-item v-if="active">
     <template v-slot:prepend>
       <v-icon></v-icon>
     </template>
     <v-list-item-action>
-      <v-select
-        v-model="selectedAggregationLabel"
-        label="Accumulation period"
-        :items="aggregationLabels"
+      <v-btn-toggle
+        v-model="modelValue"
         density="compact"
-        variant="solo-filled"
-        flat
-        hide-details
-      />
+        variant="outlined"
+        divided
+      >
+        <v-tooltip
+          v-for="item in items"
+          :key="item.id"
+          :text="`${item.type} ${item.id}`"
+          location="top"
+        >
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              v-bind="tooltipProps"
+              :value="item.id"
+              class="tab text-none px-1"
+              size="small"
+              :text="item.shortLabel"
+              :icon="item.icon"
+              min-width="35px"
+            >
+            </v-btn>
+          </template>
+        </v-tooltip>
+      </v-btn-toggle>
     </v-list-item-action>
   </v-list-item>
 </template>
@@ -33,25 +49,27 @@
 import { watch } from 'vue'
 
 interface Props {
-  aggregationLabels: string[]
+  items: {
+    id: string
+    type: string
+    label: string
+    shortLabel: string
+    icon?: string
+  }[]
 }
 const props = defineProps<Props>()
-const doShowAggregated = defineModel<boolean>('doShowAggregated', {
-  required: true,
-})
-const selectedAggregationLabel = defineModel<string | null>(
-  'selectedAggregationLabel',
-  { required: true },
-)
+
+const modelValue = defineModel<string | null>('modelValue', { required: true })
+const active = defineModel<boolean>('active', { required: true })
 
 watch(
-  () => props.aggregationLabels,
-  (newLabels) => {
+  () => props.items,
+  (items) => {
     if (
-      selectedAggregationLabel.value === null ||
-      !newLabels.includes(selectedAggregationLabel.value)
+      modelValue.value === null ||
+      !items.find((item) => item.id === modelValue.value)
     ) {
-      selectedAggregationLabel.value = newLabels[0] ?? null
+      modelValue.value = items[0]?.id ?? null
     }
   },
   { immediate: true },

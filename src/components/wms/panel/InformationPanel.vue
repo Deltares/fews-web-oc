@@ -68,6 +68,40 @@
       <v-progress-circular v-if="isLoading" size="20" indeterminate />
       <v-icon v-else>mdi-animation-play</v-icon>
     </v-btn>
+    <template #extension v-if="doShowAggregated && aggregations.length > 0">
+      <v-btn-toggle
+        v-model="selectedAggregationLabel"
+        density="compact"
+        variant="flat"
+        mandatory
+      >
+        <v-tooltip
+          v-for="item in aggregations"
+          :key="item.id"
+          :text="`${item.type} ${item.id}`"
+          location="top"
+        >
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              v-bind="tooltipProps"
+              :value="item.id"
+              class="information-panel__tab text-none"
+              size="small"
+              :class="{ active: item.id === selectedAggregationLabel }"
+              :prepend-icon="
+                item.id === selectedAggregationLabel
+                  ? 'mdi-clock-end'
+                  : undefined
+              "
+              :append-icon="item.icon"
+              :text="item.shortLabel"
+              min-width="35px"
+            >
+            </v-btn>
+          </template>
+        </v-tooltip>
+      </v-btn-toggle>
+    </template>
   </ControlChip>
 </template>
 
@@ -91,6 +125,13 @@ interface Props {
   firstValueTime?: Date
   lastValueTime?: Date
   canUseStreamlines?: boolean
+  aggregations: {
+    id: string
+    type: string
+    label: string
+    shortLabel: string
+    icon?: string
+  }[]
 }
 
 const userSettingsStore = useUserSettingsStore()
@@ -101,6 +142,13 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const showLayer = defineModel<boolean>('showLayer')
 const layerKind = defineModel<LayerKind>('layerKind', { required: true })
+const selectedAggregationLabel = defineModel<string | null>(
+  'selectedAggregationLabel',
+  { required: true },
+)
+const doShowAggregated = defineModel<boolean>('doShowAggregated', {
+  required: true,
+})
 
 const emit = defineEmits(['style-click'])
 
@@ -145,8 +193,15 @@ function toggleLayerType(): void {
   justify-content: center;
 }
 
-:deep(.information-panel-list > .v-list-item > .v-list-item__prepend) {
-  align-self: start;
-  transform: translateY(8px);
+.information-panel__tab {
+  padding: 5px 10px;
+  background-color: rgba(var(--v-theme-surface), 0.8);
+  cursor: pointer;
+  display: none; /* hidden */
+}
+
+.information-panel__tab.active {
+  border-radius: 3px;
+  display: inherit; /* visible */
 }
 </style>

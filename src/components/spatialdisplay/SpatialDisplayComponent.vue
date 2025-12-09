@@ -90,13 +90,17 @@
           :canUseStreamlines="canUseStreamlines"
           v-model:layer-kind="layerKind"
           v-model:show-layer="showLayer"
+
+          :aggregations="aggregations"
+          v-model:do-show-aggregated="doShowAggregated"
+          v-model:selected-aggregation-label="selectedAggregationLabel"
         >
-          <template v-if="aggregationLabels.length > 0">
+          <template v-if="aggregations.length > 0">
             <v-divider />
             <AggregationPanel
-              :aggregation-labels="aggregationLabels"
-              v-model:do-show-aggregated="doShowAggregated"
-              v-model:selected-aggregation-label="selectedAggregationLabel"
+              v-model="selectedAggregationLabel"
+              v-model:active="doShowAggregated"
+              :items="aggregations"
             />
           </template>
           <template v-if="layerOptions">
@@ -219,6 +223,7 @@ import { isInDatesRange } from '@/lib/date'
 import { getLocationWithChilds, mapIds } from '@/lib/map'
 import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
+import { shortLabel } from '@/lib/aggregation'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -307,6 +312,20 @@ const doShowAggregated = ref<boolean>(false)
 const selectedAggregationLabel = ref<string | null>(
   aggregationLabels.value[0] ?? null,
 )
+
+const aggregations = computed(() => {
+  return props.layerCapabilities?.aggregation?.[0].labels?.map(
+    (label) => ({
+      id: label,
+      type: props.layerCapabilities?.aggregation?.[0].aggregationType ?? 'unknown',
+      label: label,
+      shortLabel: shortLabel(label),
+      icon: label === 'to Display Time' ? 'mdi-swap-horizontal' : undefined,
+    }),
+  )
+  ?? []
+})
+
 watch([doShowAggregated, selectedAggregationLabel], () => setLayerOptions())
 
 const layerOptions = ref<AnimatedRasterLayerOptions>()
