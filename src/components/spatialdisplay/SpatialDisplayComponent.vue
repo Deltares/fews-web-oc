@@ -90,7 +90,6 @@
           :canUseStreamlines="canUseStreamlines"
           v-model:layer-kind="layerKind"
           v-model:show-layer="showLayer"
-
           :aggregations="aggregations"
           v-model:do-show-aggregated="doShowAggregated"
           v-model:selected-aggregation-label="selectedAggregationLabel"
@@ -315,16 +314,16 @@ const selectedAggregationLabel = ref<string | null>(
 )
 
 const aggregations = computed(() => {
-  return props.layerCapabilities?.aggregation?.[0].labels?.map(
-    (label) => ({
+  return (
+    props.layerCapabilities?.aggregation?.[0].labels?.map((label) => ({
       id: label,
-      type: props.layerCapabilities?.aggregation?.[0].aggregationType ?? 'unknown',
+      type:
+        props.layerCapabilities?.aggregation?.[0].aggregationType ?? 'unknown',
       label: label,
       shortLabel: shortLabel(label),
       icon: label === 'to Display Time' ? 'mdi-swap-horizontal' : undefined,
-    }),
+    })) ?? []
   )
-  ?? []
 })
 
 watch([doShowAggregated, selectedAggregationLabel], () => setLayerOptions())
