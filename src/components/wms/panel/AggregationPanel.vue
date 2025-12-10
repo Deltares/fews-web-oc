@@ -55,7 +55,7 @@ interface Props {
     icon?: string
   }[]
 }
-const props = defineProps<Props>()
+const { items } = defineProps<Props>()
 
 const modelValue = defineModel<string | null>('modelValue', { required: true })
 const active = defineModel<boolean>('active', { required: true })
