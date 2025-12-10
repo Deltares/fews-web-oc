@@ -11,13 +11,41 @@
         class="px-4"
         append-inner-icon="mdi-magnify"
       ></v-text-field>
-      <v-btn prepend-icon="mdi-filter-variant">
+      <v-btn :prepend-icon="fileType ? 'mdi-filter-variant-remove' : 'mdi-filter-variant-plus'">
         <v-menu activator="parent">
           <v-list density="compact">
             <v-list-subheader>Filter</v-list-subheader>
             <v-item-group>
-              <v-list-item prepend-icon="mdi-file-pdf-box">PDF</v-list-item>
-              <v-list-item prepend-icon="mdi-file-image">Images</v-list-item>
+              <v-list-item
+                prepend-icon="mdi-file-pdf-box"
+                @click="filterByType('pdf')"
+                :active="fileType === 'pdf'"
+              >
+                PDF
+                <template v-slot:append v-if="fileType === 'pdf'">
+                  <v-icon color="primary" icon="mdi-check"></v-icon>
+                </template>
+              </v-list-item>
+              <v-list-item
+                prepend-icon="mdi-file-image"
+                @click="filterByType('img')"
+                :active="fileType === 'img'"
+              >
+                Images
+                <template v-slot:append v-if="fileType === 'img'">
+                  <v-icon color="primary" icon="mdi-check"></v-icon>
+                </template>
+              </v-list-item>
+              <v-list-item
+                prepend-icon="mdi-file-document"
+                @click="filterByType('html')"
+                :active="fileType === 'html'"
+              >
+                HTML Documents
+                <template v-slot:append v-if="fileType === 'html'">
+                  <v-icon color="primary" icon="mdi-check"></v-icon>
+                </template>
+              </v-list-item>
             </v-item-group>
           </v-list>
         </v-menu>
@@ -186,6 +214,7 @@ import { configManager } from '@/services/application-config'
 import { getProductURL } from './productTools'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { getFileExtension, getViewMode } from '@/lib/products/utils'
 
 interface AttributeHeader {
   attribute: string
@@ -227,6 +256,11 @@ const groupByKey = ref([''])
 const groupByOrder = ref<[boolean | 'asc' | 'desc']>(['asc'])
 const selectedColumns = ref<string[]>([])
 const selectedRows = ref<string[]>([])
+const fileType = ref<string>('')
+// Function to filter products by type - toggle if already selected
+const filterByType = (type: string) => {
+  fileType.value = fileType.value === type ? '' : type
+}
 
 const groupBy = computed(() => {
   return {
@@ -301,7 +335,12 @@ const items = computed(() => {
       dataSetCreationTime: toHumanReadableDateTime(product.dataSetCreationTime),
     })),
   )
-
+  if (fileType.value) {
+    return items.filter((item) => {
+      const viewMode = getViewMode(getFileExtension(item.relativePathProducts[0])) ?? 'unknown'
+      return fileType.value === viewMode
+    })
+  }
   return items
 })
 
