@@ -93,6 +93,8 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { IntervalItem, periodToIntervalItem } from '@/lib/TimeControl/interval'
 import { attributesToObject, useProducts } from '@/services/useProducts'
 import {
+  ArchiveProductsMetadataAttribute,
+  DocumentDisplayArchiveProductAttribute,
   LogDisplayDisseminationAction,
   LogDisplayLogsActionRequest,
   PiWebserviceProvider,
@@ -124,6 +126,11 @@ const isEditing = ref(false) // Example flag to toggle editing mode
 const htmlContent = ref('') // Placeholder for HTML content
 const actionIsActive = ref(false) // Flag to indicate if a dissemination action is active
 
+// TODO: remove type assertion after fixing type in schema
+function isRequiredKV(obj: DocumentDisplayArchiveProductAttribute): obj is ArchiveProductsMetadataAttribute {
+  return typeof obj.key === "string" && typeof obj.value === "string";
+}
+
 const filter = computed(() => {
   if (
     viewPeriod.value.start === undefined ||
@@ -137,7 +144,8 @@ const filter = computed(() => {
     return {}
   }
 
-  const attribute = attributesToObject(archiveProduct.attributes)
+  const archiveProductAttributes = archiveProduct.attributes?.filter(isRequiredKV) ?? []
+  const attribute = attributesToObject(archiveProductAttributes)
 
   const result: ProductsMetaDataFilter = {
     versionKey: archiveProduct.versionKeys,
