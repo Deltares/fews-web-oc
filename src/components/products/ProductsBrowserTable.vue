@@ -214,8 +214,6 @@ interface Props {
   template?: ProductMetaDataType
   config: ProductBrowserTableConfig
   productId?: string
-  areaId: string
-  sourceId: string
 }
 
 const props = defineProps<Props>()

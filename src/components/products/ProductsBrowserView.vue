@@ -5,8 +5,6 @@
       :config="tableLayout"
       class="product-browser__table"
       :productId="productId"
-      :areaId="areaId"
-      :sourceId="sourceId"
       @refresh="fetchProducts()"
     >
       <template #footer>
