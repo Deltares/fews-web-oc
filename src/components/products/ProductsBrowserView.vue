@@ -1,9 +1,10 @@
 <template>
-  <div class="d-flex flex-row h-100 w-100">
+  <div class="d-flex flex-row h-100 w-100 position-relative">
     <ProductsBrowserTable
       :products="filteredProducts"
       :config="tableLayout"
       class="product-browser__table"
+      :style="{ width: tableWidth + 'px' }"
       :productId="productId"
       @refresh="fetchProducts()"
     >
@@ -181,17 +182,18 @@
               append-icon="mdi-chevron-down"
               variant="text"
               class="text-start"
+              v-if="productVersions.length > 1 && showTimezeroSelect"
             >
               <v-list-item
                 class="ps-0 pe-2"
-                :title="selectedProduct?.timeZero"
+                :title="toHumanReadableDate(selectedProduct?.timeZero)"
                 :subtitle="`Version ${selectedProduct?.version}`"
               >
               </v-list-item>
               <v-menu activator="parent">
                 <v-list density="compact">
                   <v-list-item
-                    v-for="(item, index) in filteredProducts"
+                    v-for="(item, index) in productVersions"
                     :key="item.key"
                     :title="item.timeZero"
                     :subtitle="`Version ${item.version}`"
@@ -222,7 +224,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, toValue, watch, watchEffect } from 'vue'
+import { computed, ref, toValue, watch, watchEffect, onMounted } from 'vue'
 import ProductsBrowserTable, {
   type ProductBrowserTableConfig,
 } from '@/components/products/ProductsBrowserTable.vue'
@@ -252,13 +254,42 @@ import { postFileProduct, postProduct } from '@/lib/products/requests'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import { convert } from 'html-to-text'
 import { clickDownloadUrl } from '@/lib/download'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const LOG_DISPLAY_ID = 'email_reports'
+
+const showTimezeroSelect = ref(false)
+
+const tableWidth = ref(600) // Default width
+
+onMounted(() => {
+  // Set the initial CSS variable
+  document.documentElement.style.setProperty(
+    '--table-width',
+    `${tableWidth.value}px`,
+  )
+})
 
 interface Props {
   config?: DocumentBrowserDisplay
   productId?: string
 }
+
+const productVersions = computed(() => {
+  return filteredProducts.value.filter((product) => {
+    console.log(product)
+    if (product.key === selectedProduct?.value.key) return true
+    if (product.attributes.productId) {
+      return (
+        product.attributes.productId ===
+          selectedProduct?.value.attributes.productId &&
+        product.timeZero === selectedProduct?.value.timeZero
+      )
+    }
+  })
+})
 
 const { config, productId } = defineProps<Props>()
 const src = ref('')
@@ -394,6 +425,20 @@ watchEffect(() => {
   const documentDisplay = toValue(config)
   if (documentDisplay?.relativeViewPeriod) {
     viewPeriod.value = periodToIntervalItem(documentDisplay.relativeViewPeriod)
+  }
+})
+
+watchEffect(() => {
+  if (!productId) {
+    if (filteredProducts.value.length > 0) {
+      console.log(filteredProducts.value[0].key)
+      router.push({
+        name: 'TopologyDocumentDisplay',
+        params: {
+          productId: filteredProducts.value[0].key,
+        },
+      })
+    }
   }
 })
 
@@ -653,9 +698,10 @@ img {
 }
 
 .product-browser__table {
-  width: 600px;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+  position: relative;
+  transition: width 0.1s ease;
 }
 </style>

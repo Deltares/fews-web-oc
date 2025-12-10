@@ -48,6 +48,7 @@
             append-icon="mdi-chevron-down"
             variant="text"
             class="text-start"
+            v-if="showTimezeroSelect"
           >
             <v-list-item
               class="ps-0 pe-2"
@@ -122,6 +123,7 @@ const editorEnabled = ref(false) // Example flag to enable editor mode
 const isEditing = ref(false) // Example flag to toggle editing mode
 const htmlContent = ref('') // Placeholder for HTML content
 const actionIsActive = ref(false) // Flag to indicate if a dissemination action is active
+const showTimezeroSelect = ref(false)
 
 const archiveProductConfig = computed(() => {
   config?.report.archiveProduct
