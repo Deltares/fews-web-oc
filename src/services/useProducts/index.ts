@@ -63,16 +63,14 @@ export function useProducts(
       // FIXME: Configure correct versionKey
       // filterValue.versionKey = product.versionKeys
       // Set all attributes from the product
-      filterValue.attribute = product.attributes.reduce(
-        (
-          acc: Record<string, string>,
-          attr: ArchiveProductsMetadataAttribute,
-        ) => {
-          acc[attr.key] = attr.value
-          return acc
-        },
-        {} as Record<string, string>,
-      )
+      let attributes: Record<string, string> = {}
+      product.attributes?.forEach((attr) => {
+        if (attr.key && attr.value) {
+          attributes[attr.key] = attr.value
+        }
+      })
+      filterValue.attribute = attributes
+
       if (product.id) {
         filterValue.attribute['productId'] = product.id
       }
@@ -124,16 +122,22 @@ export function useProducts(
         return
       }
       const allValid = toValue(constraint)?.allValid
+      let attributes: Record<string, string> = {}
       if (allValid) {
-        filterValue.attribute = allValid.reduce(
-          (acc: Record<string, string>, constraint) => {
-            acc[constraint.attributeTextEquals.id] =
-              constraint.attributeTextEquals.equals
-            return acc
-          },
-          {} as Record<string, string>,
-        )
+        allValid.forEach((constraint) => {
+          if (
+            constraint.attributeTextEquals?.id &&
+            constraint.attributeTextEquals?.equals
+          ) {
+            attributes = {
+              ...attributes,
+              [constraint.attributeTextEquals.id]:
+                constraint.attributeTextEquals.equals,
+            }
+          }
+        })
       }
+      filterValue.attribute = attributes
       const anyValid = toValue(constraint)?.anyValid
       try {
         const response = await fetchProductsMetaData(baseUrl, filterValue)
@@ -142,8 +146,9 @@ export function useProducts(
             return (
               anyValid.some(
                 (constraint) =>
+                  constraint.attributeTextEquals?.id &&
                   p.attributes[constraint.attributeTextEquals.id] ===
-                  constraint.attributeTextEquals.equals,
+                    constraint.attributeTextEquals.equals,
               ) &&
               p.sourceId === toValue(sourceId) &&
               p.areaId === toValue(areaId) &&
