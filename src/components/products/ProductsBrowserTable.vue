@@ -11,7 +11,11 @@
         class="px-4"
         append-inner-icon="mdi-magnify"
       ></v-text-field>
-      <v-btn :prepend-icon="fileType ? 'mdi-filter-variant-remove' : 'mdi-filter-variant-plus'">
+      <v-btn
+        :prepend-icon="
+          fileType ? 'mdi-filter-variant-remove' : 'mdi-filter-variant-plus'
+        "
+      >
         <v-menu activator="parent">
           <v-list density="compact">
             <v-list-subheader>Filter</v-list-subheader>
@@ -337,7 +341,8 @@ const items = computed(() => {
   )
   if (fileType.value) {
     return items.filter((item) => {
-      const viewMode = getViewMode(getFileExtension(item.relativePathProducts[0])) ?? 'unknown'
+      const viewMode =
+        getViewMode(getFileExtension(item.relativePathProducts[0])) ?? 'unknown'
       return fileType.value === viewMode
     })
   }
