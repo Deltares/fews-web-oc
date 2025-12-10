@@ -128,7 +128,6 @@ const archiveProductConfig = computed(() => {
   return []
 })
 
-
 const filteredProducts = computed(() => {
   if (showAllVersions) {
     return products.value.toReversed()
@@ -147,7 +146,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { products, fetchProducts } = useProducts(
   baseUrl,
   viewPeriod,
-  archiveProductConfig
+  archiveProductConfig,
 )
 const { logDisplay } = useLogDisplay(baseUrl, () => LOG_DISPLAY_ID)
 

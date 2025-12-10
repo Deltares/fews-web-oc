@@ -351,7 +351,7 @@ const canCreateNew = computed(() => {
 const archiveProductConfig = computed(() => {
   if (archiveProducts.value.length) {
     return archiveProducts.value
-  } 
+  }
   if (archiveProductSets.value.length) {
     return archiveProductSets.value
   }
@@ -374,11 +374,7 @@ const {
   fetchProducts,
   lastUpdated,
   mostRecentTemplate,
-} = useProducts(
-  baseUrl,
-  viewPeriod,
-  archiveProductConfig,
-)
+} = useProducts(baseUrl, viewPeriod, archiveProductConfig)
 
 const filteredProducts = computed(() => {
   if (showAllVersions.value) {
