@@ -5,8 +5,6 @@
       :config="tableLayout"
       class="product-browser__table"
       :productId="productId"
-      :areaId="areaId"
-      :sourceId="sourceId"
       @refresh="fetchProducts()"
     >
       <template #footer>
@@ -235,7 +233,6 @@ import {
   type LogDisplayDisseminationAction,
   type LogDisplayLogsActionRequest,
   PiWebserviceProvider,
-  type ProductsMetaDataFilter,
 } from '@deltares/fews-pi-requests'
 import { hashObject, useProducts } from '@/services/useProducts'
 import { type DocumentBrowserDisplay } from '@/lib/products/documentDisplay'
@@ -297,20 +294,6 @@ const htmlContent = ref('')
 const isEditing = ref(false)
 const showAllVersions = ref(false)
 
-const filter = computed(() => {
-  if (
-    viewPeriod.value.start === undefined ||
-    viewPeriod.value.end === undefined
-  ) {
-    return {}
-  }
-
-  const result: ProductsMetaDataFilter = {
-    versionKey: ['productId'],
-  }
-  return result
-})
-
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const actionIsActive = ref(false) // Flag to indicate if a dissemination action is active
 const { logDisplay } = useLogDisplay(baseUrl, () => LOG_DISPLAY_ID)
@@ -365,6 +348,16 @@ const canCreateNew = computed(() => {
   return mostRecentTemplate.value !== undefined
 })
 
+const archiveProductConfig = computed(() => {
+  if (archiveProducts.value.length) {
+    return archiveProducts.value
+  }
+  if (archiveProductSets.value.length) {
+    return archiveProductSets.value
+  }
+  return []
+})
+
 const sourceId = computed(() => {
   if (archiveProducts.value.length)
     return archiveProducts.value[0].sourceId || ''
@@ -381,15 +374,7 @@ const {
   fetchProducts,
   lastUpdated,
   mostRecentTemplate,
-} = useProducts(
-  baseUrl,
-  filter,
-  viewPeriod,
-  sourceId,
-  areaId,
-  archiveProductSets,
-  archiveProducts,
-)
+} = useProducts(baseUrl, viewPeriod, archiveProductConfig)
 
 const filteredProducts = computed(() => {
   if (showAllVersions.value) {
@@ -407,7 +392,7 @@ const filteredProducts = computed(() => {
 
 watchEffect(() => {
   const documentDisplay = toValue(config)
-  if (documentDisplay) {
+  if (documentDisplay?.relativeViewPeriod) {
     viewPeriod.value = periodToIntervalItem(documentDisplay.relativeViewPeriod)
   }
 })

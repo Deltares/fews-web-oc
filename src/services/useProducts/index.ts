@@ -10,6 +10,7 @@ import { ProductMetaDataType, ProductMetaDataWithoutAttributes } from './types'
 import {
   ArchiveProduct,
   ArchiveProductSet,
+  Constraints,
 } from '@/lib/products/documentDisplay'
 import {
   IntervalItem,
@@ -26,12 +27,10 @@ export const FEWS_PRODUCT_ATTRIBUTE_DELETE = 'fews:delete'
  */
 export function useProducts(
   baseUrl: string,
-  filter: MaybeRefOrGetter<ProductsMetaDataFilter>,
   viewPeriod: MaybeRefOrGetter<IntervalItem>,
-  sourceId: MaybeRefOrGetter = ref('weboc'),
-  areaId: MaybeRefOrGetter = ref('products'),
-  archiveProductSets: MaybeRefOrGetter<ArchiveProductSet[]> = ref([]),
-  archiveProducts: MaybeRefOrGetter<ArchiveProduct[]> = ref([]),
+  archiveProducts: MaybeRefOrGetter<
+    ArchiveProductSet[] | ArchiveProduct[]
+  > = ref([]),
 ) {
   const products = ref<ProductMetaDataType[]>([])
   const error = ref<string | null>(null)
@@ -44,124 +43,29 @@ export function useProducts(
   }
 
   const fetchProducts = async () => {
-    products.value = [] // Reset products before fetching new ones
     const period = toValue(viewPeriod)
     const [startForecastTime, endForecastTime] =
       intervalToFewsPiDateRange(period)
 
-    for (const product of toValue(archiveProducts)) {
-      const filterValue = toValue(filter)
+    if (!startForecastTime || !endForecastTime) {
+      products.value = []
+      return
+    }
 
-      filterValue.startForecastTime = startForecastTime
-      filterValue.endForecastTime = endForecastTime
+    const _archiveProducts = toValue(archiveProducts)
 
-      // Ensure the filter has a valid date range
-      if (!filterValue.startForecastTime || !filterValue.endForecastTime) {
-        return
-      }
-
-      // FIXME: Configure correct versionKey
-      // filterValue.versionKey = product.versionKeys
-      // Set all attributes from the product
-      filterValue.attribute = product.attributes.reduce(
-        (
-          acc: Record<string, string>,
-          attr: ArchiveProductsMetadataAttribute,
-        ) => {
-          acc[attr.key] = attr.value
-          return acc
-        },
-        {} as Record<string, string>,
+    if (isArchiveProductSet(_archiveProducts)) {
+      products.value = await getArchiveProductSets(
+        baseUrl,
+        _archiveProducts,
+        toValue(viewPeriod),
       )
-      if (product.id) {
-        filterValue.attribute['productId'] = product.id
-      }
-      try {
-        const response = await fetchProductsMetaData(baseUrl, filterValue)
-        const filteredProducts = response.filter((p) => {
-          return (
-            p.sourceId === toValue(sourceId) &&
-            p.areaId === toValue(areaId) &&
-            p.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true'
-          )
-        })
-        products.value.push(...filteredProducts)
-        lastUpdated.value = new Date()
-        if (product.id) {
-          // If the product has an ID, we check for templates
-          filterValue.attribute['productId'] = 'template_' + product.id
-          const response = await fetchProductsMetaData(baseUrl, filterValue)
-          if (response.length > 0) {
-            // If we find a template, we set it as the most recent template
-            mostRecentTemplate.value = response[response.length - 1]
-          } else {
-            mostRecentTemplate.value = null
-          }
-        }
-      } catch (err) {
-        error.value = 'Error fetching product metadata'
-        console.error(err)
-      }
-    }
-    if (toValue(archiveProducts).length > 0) return
-
-    // if we have product sets, we need to fetch for each set
-    const constraints = toValue(archiveProductSets).map(
-      (set) => set.constraints,
-    )
-    // if we get no explicit constraints, we use the default filter
-    if (constraints.length === 0) {
-      constraints.push({ areaId: toValue(areaId), sourceId: toValue(sourceId) })
-    }
-    for (const constraint of constraints) {
-      const filterValue = toValue(filter)
-
-      filterValue.startForecastTime = startForecastTime
-      filterValue.endForecastTime = endForecastTime
-
-      // Ensure the filter has a valid date range
-      if (!filterValue.startForecastTime || !filterValue.endForecastTime) {
-        return
-      }
-      const allValid = toValue(constraint)?.allValid
-      if (allValid) {
-        filterValue.attribute = allValid.reduce(
-          (acc: Record<string, string>, constraint) => {
-            acc[constraint.attributeTextEquals.id] =
-              constraint.attributeTextEquals.equals
-            return acc
-          },
-          {} as Record<string, string>,
-        )
-      }
-      const anyValid = toValue(constraint)?.anyValid
-      try {
-        const response = await fetchProductsMetaData(baseUrl, filterValue)
-        const filteredProducts = response.filter((p) => {
-          if (anyValid) {
-            return (
-              anyValid.some(
-                (constraint) =>
-                  p.attributes[constraint.attributeTextEquals.id] ===
-                  constraint.attributeTextEquals.equals,
-              ) &&
-              p.sourceId === toValue(sourceId) &&
-              p.areaId === toValue(areaId) &&
-              p.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true'
-            )
-          }
-          return (
-            p.sourceId === toValue(sourceId) &&
-            p.areaId === toValue(areaId) &&
-            p.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true'
-          )
-        })
-        products.value = filteredProducts
-        lastUpdated.value = new Date()
-      } catch (err) {
-        error.value = 'Error fetching product metadata'
-        console.error(err)
-      }
+    } else {
+      products.value = await getArchiveProducts(
+        baseUrl,
+        _archiveProducts,
+        toValue(viewPeriod),
+      )
     }
   }
 
@@ -182,6 +86,121 @@ export function useProducts(
     error,
     mostRecentTemplate,
   }
+}
+
+async function getArchiveProducts(
+  baseUrl: string,
+  archiveProducts: ArchiveProduct[],
+  viewPeriod: IntervalItem,
+) {
+  const period = toValue(viewPeriod)
+  const [startForecastTime, endForecastTime] = intervalToFewsPiDateRange(period)
+
+  if (!startForecastTime || !endForecastTime) {
+    return []
+  }
+
+  const promises: Promise<ProductMetaDataType[]>[] = []
+  for (const product of archiveProducts) {
+    const filter = {} as ProductsMetaDataFilter
+    filter.startForecastTime = startForecastTime
+    filter.endForecastTime = endForecastTime
+    filter.versionKey = product.versionKeys
+      ? ['productId', ...product.versionKeys]
+      : ['productId']
+    // FIXME: Configure correct versionKey
+    // filterValue.versionKey = product.versionKeys
+    // Set all attributes from the product
+    let attributes: Record<string, string> = {}
+
+    product.attributes?.forEach((attr) => {
+      if (attr.key && attr.value) {
+        attributes[attr.key] = attr.value
+      }
+    })
+    filter.attribute = attributes
+    if (product.id) {
+      filter.attribute['productId'] = product.id
+    }
+
+    console.log('Fetching products with filter:', filter)
+    promises.push(fetchProductsMetaData(baseUrl, filter))
+  }
+
+  return [...(await Promise.all(promises)).flat()].filter(
+    (product) => product.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true',
+  )
+}
+
+async function getArchiveProductSets(
+  baseUrl: string,
+  archiveProductSets: ArchiveProductSet[],
+  viewPeriod: IntervalItem,
+) {
+  const constraints = toValue(archiveProductSets).map((set) => set.constraints)
+  return await getArchiveProductForConstraint(
+    baseUrl,
+    constraints[0],
+    viewPeriod,
+  )
+}
+
+async function getArchiveProductForConstraint(
+  baseUrl: string,
+  constraint: Constraints,
+  viewPeriod: IntervalItem,
+) {
+  const [startForecastTime, endForecastTime] =
+    intervalToFewsPiDateRange(viewPeriod)
+
+  if (!startForecastTime || !endForecastTime) {
+    return []
+  }
+  const filter = {} as ProductsMetaDataFilter
+  filter.startForecastTime = startForecastTime
+  filter.endForecastTime = endForecastTime
+
+  const allValid = constraint?.allValid
+  let attributes: Record<string, string> = {}
+  if (allValid) {
+    allValid.forEach((constraint) => {
+      if (
+        constraint.attributeTextEquals?.id &&
+        constraint.attributeTextEquals?.equals
+      ) {
+        attributes = {
+          ...attributes,
+          [constraint.attributeTextEquals.id]:
+            constraint.attributeTextEquals.equals,
+        }
+      }
+    })
+  }
+  filter.attribute = attributes
+  const response = await fetchProductsMetaData(baseUrl, filter)
+  let filteredProducts = response.filter(
+    (product) =>
+      product.areaId === constraint.areaId &&
+      product.sourceId === constraint.sourceId &&
+      product.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true',
+  )
+  if (constraint.anyValid) {
+    filteredProducts = filteredProducts.filter((product) => {
+      return constraint.anyValid?.some((constraint) => {
+        if (
+          constraint.attributeTextEquals?.id &&
+          constraint.attributeTextEquals?.equals
+        ) {
+          return (
+            product.attributes[constraint.attributeTextEquals.id] ===
+            constraint.attributeTextEquals.equals
+          )
+        }
+        return false
+      })
+    })
+  }
+  return filteredProducts
 }
 
 /**
@@ -329,4 +348,10 @@ function bufferToHex(buffer: ArrayBuffer): string {
   return Array.from(new Uint8Array(buffer))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
+}
+
+function isArchiveProductSet(
+  products: ArchiveProductSet[] | ArchiveProduct[],
+): products is ArchiveProductSet[] {
+  return (products as ArchiveProductSet[])[0]?.constraints !== undefined
 }

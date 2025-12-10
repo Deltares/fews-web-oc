@@ -91,12 +91,11 @@
 import { getProductURL } from '@/components/products/productTools'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { IntervalItem, periodToIntervalItem } from '@/lib/TimeControl/interval'
-import { attributesToObject, useProducts } from '@/services/useProducts'
+import { useProducts } from '@/services/useProducts'
 import {
   LogDisplayDisseminationAction,
   LogDisplayLogsActionRequest,
   PiWebserviceProvider,
-  ProductsMetaDataFilter,
 } from '@deltares/fews-pi-requests'
 import { computed, ref, toValue, watchEffect } from 'vue'
 import { type ReportDisplay } from '@/lib/products/documentDisplay'
@@ -124,26 +123,9 @@ const isEditing = ref(false) // Example flag to toggle editing mode
 const htmlContent = ref('') // Placeholder for HTML content
 const actionIsActive = ref(false) // Flag to indicate if a dissemination action is active
 
-const filter = computed(() => {
-  if (
-    viewPeriod.value.start === undefined ||
-    viewPeriod.value.end === undefined
-  ) {
-    return {}
-  }
-  const archiveProduct = config?.report?.archiveProduct
-  if (!archiveProduct) {
-    console.warn('No archive product defined in the report configuration.')
-    return {}
-  }
-
-  const attribute = attributesToObject(archiveProduct.attributes)
-
-  const result: ProductsMetaDataFilter = {
-    versionKey: archiveProduct.versionKeys,
-    attribute,
-  }
-  return result
+const archiveProductConfig = computed(() => {
+  config?.report.archiveProduct
+  return []
 })
 
 const filteredProducts = computed(() => {
@@ -160,20 +142,11 @@ const filteredProducts = computed(() => {
   return Array.from(latestMap.values()).toReversed()
 })
 
-const sourceId = computed(() => {
-  return config?.report?.archiveProduct.sourceId ?? ''
-})
-const areaId = computed(() => {
-  return config?.report?.archiveProduct.areaId ?? ''
-})
-
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { products, fetchProducts } = useProducts(
   baseUrl,
-  filter,
   viewPeriod,
-  sourceId,
-  areaId,
+  archiveProductConfig,
 )
 const { logDisplay } = useLogDisplay(baseUrl, () => LOG_DISPLAY_ID)
 
@@ -186,7 +159,7 @@ const src = ref('')
 
 watchEffect(() => {
   const documentDisplay = toValue(config)
-  if (documentDisplay) {
+  if (documentDisplay?.relativeViewPeriod) {
     viewPeriod.value = periodToIntervalItem(documentDisplay.relativeViewPeriod)
     editorEnabled.value = documentDisplay.editPermissions ?? false
   }
