@@ -4,15 +4,16 @@
     aria-label="Coordinate Selector Control"
   >
     <v-icon start>mdi-map-marker</v-icon>
-
-    <span
-      class="coordinate-selector__value text-right text-medium-emphasis mr-1"
-    >
-      {{ coordinateStringParts[0] }}
-    </span>
-    <span class="coordinate-selector__value text-right text-medium-emphasis">
-      {{ coordinateStringParts[1] }}
-    </span>
+    <div role="status" aria-label="Selected coordinates">
+      <span
+        class="coordinate-selector__value text-right text-medium-emphasis mr-1"
+      >
+        {{ coordinateStringParts[0] }}
+      </span>
+      <span class="coordinate-selector__value text-right text-medium-emphasis">
+        {{ coordinateStringParts[1] }}
+      </span>
+    </div>
     <v-btn
       :disabled="coordinate === null"
       @click="onFinish"
