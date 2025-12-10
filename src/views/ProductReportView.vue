@@ -186,7 +186,7 @@ const src = ref('')
 
 watchEffect(() => {
   const documentDisplay = toValue(config)
-  if (documentDisplay) {
+  if (documentDisplay?.relativeViewPeriod) {
     viewPeriod.value = periodToIntervalItem(documentDisplay.relativeViewPeriod)
     editorEnabled.value = documentDisplay.editPermissions ?? false
   }
