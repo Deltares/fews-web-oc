@@ -44,7 +44,6 @@
       </v-btn>
     </v-toolbar>
     <v-data-table
-      v-if="items.length > 0"
       v-model="selectedRows"
       :items="items"
       :headers="headers"
