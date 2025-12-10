@@ -3,6 +3,7 @@ import { createTransformRequestFn } from '../requests/transformRequest.js'
 import type { PostResponse } from './types.js'
 import { PiArchiveWebserviceProvider } from '@deltares/fews-pi-requests'
 import { FEWS_PRODUCT_ATTRIBUTE_DELETE } from '@/services/useProducts/index.js'
+import { getFileExtension } from './utils.js'
 
 /**
  * Determines if a given string contains HTML content.
@@ -151,7 +152,7 @@ export async function postFileProduct(
     url = `${url}&attribute(${key})=${attributes[key]}`
   }
   const transformRequest = createTransformRequestFn()
-  const fileExtension = file.name.split('.').pop()?.toLowerCase() || ''
+  const fileExtension = getFileExtension(file.name) || ''
   const fileName = file.name.substring(0, file.name.lastIndexOf('.'))
   const newFileName = `${fileName}.${fileExtension}`
 
