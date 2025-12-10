@@ -71,7 +71,9 @@ test.describe('Run Tasks Panel', () => {
     // Open coordinate selector
     await selectCoordBtn.click()
     await expect(coordSelector).toBeVisible()
-    const coordSelectorDiv = coordSelector.locator('div')
+    const coordSelectorDiv = coordSelector.locator('div[role="status"]', {
+      name: 'Selected coordinates',
+    })
     await expect(coordSelectorDiv).toContainText('-29.83000°N31.06000°E')
 
     // Close coordinate selector
@@ -133,7 +135,9 @@ test.describe('Run Tasks Panel', () => {
     // Open bounding box selector
     await drawBboxBtn.click()
     await expect(bboxSelector).toBeVisible()
-    const bboxSelectorDiv = bboxSelector.locator('div')
+    const bboxSelectorDiv = bboxSelector.getByRole('status', {
+      name: 'Selected bounding box coordinates',
+    })
     await expect(bboxSelectorDiv).toContainText('25°E -33°N, 38°E -25°N')
 
     // Close bounding box selector
