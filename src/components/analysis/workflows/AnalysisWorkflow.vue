@@ -33,7 +33,9 @@ const workflows = computed(() => {
   return workflow ? [workflow] : []
 })
 
-function addChart(taskId: string) {
+function addChart(taskId: string | undefined) {
+  if (taskId === undefined) return
+
   const results = props.customToolBox.results
   const title = props.customToolBox.name
 
