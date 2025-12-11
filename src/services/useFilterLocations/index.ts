@@ -23,7 +23,7 @@ const emptyFeatureCollection: FeatureCollection<Geometry, Location> = {
 export function useFilterLocations(
   baseUrl: string,
   filterIds: MaybeRefOrGetter<string[]>,
-  filterOptions?: Partial<LocationsFilter>,
+  filterOptions?: MaybeRefOrGetter<Partial<LocationsFilter>>,
 ): UseFilterLocationsReturn {
   const geojson = shallowRef<
     GeoJSON.FeatureCollection<GeoJSON.Geometry, Location>
@@ -50,7 +50,11 @@ export function useFilterLocations(
     isReady.value = false
 
     try {
-      geojson.value = await fetchLocationsAsGeoJson(baseUrl, ids, filterOptions)
+      geojson.value = await fetchLocationsAsGeoJson(
+        baseUrl,
+        ids,
+        toValue(filterOptions),
+      )
       locations.value = convertGeoJsonToFewsPiLocation(geojson.value)
     } catch (error) {
       error = 'error-loading'
