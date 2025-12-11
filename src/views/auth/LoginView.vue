@@ -45,7 +45,7 @@ onMounted(() => {
     } catch (e) {
       console.error('Failed to parse VITE_LOGIN_BUTTON_PROPS', e)
     }
-  } else {
+  } else if (buttonPropsSetting !== null && buttonPropsSetting !== undefined) {
     Object.assign(buttonProps.value, buttonPropsSetting)
   }
 })
