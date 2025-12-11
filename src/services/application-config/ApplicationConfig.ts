@@ -13,7 +13,7 @@ export type ApplicationConfig = {
   VITE_AUTH_SCOPE: string
   VITE_FEWS_ARCHIVE_WEBSERVICES_URL: string
   VITE_FEWS_WEBSERVICES_URL: string
-  VITE_LOGIN_PROVIDER_BUTTON_PROPS: string | VBtn['$props']
+  VITE_LOGIN_BUTTON_PROPS: string | VBtn['$props']
   VITE_LOGIN_STYLESHEET_URL: string
   VITE_REQUEST_HEADER_AUTHORIZATION: RequestHeaderAuthorization
 }

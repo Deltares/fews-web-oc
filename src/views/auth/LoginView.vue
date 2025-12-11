@@ -39,11 +39,12 @@ onMounted(() => {
   const buttonPropsSetting = configManager.get(
     'VITE_LOGIN_PROVIDER_BUTTON_PROPS',
   )
+  const buttonPropsSetting = configManager.get('VITE_LOGIN_BUTTON_PROPS')
   if (typeof buttonPropsSetting === 'string') {
     try {
       Object.assign(buttonProps.value, JSON.parse(buttonPropsSetting))
     } catch (e) {
-      console.error('Failed to parse VITE_LOGIN_PROVIDER_BUTTON_PROPS', e)
+      console.error('Failed to parse VITE_LOGIN_BUTTON_PROPS', e)
     }
   } else {
     Object.assign(buttonProps.value, buttonPropsSetting)
