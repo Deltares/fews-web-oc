@@ -29,7 +29,3 @@
   background-clip: text;
   padding-bottom: 20px;
 }
-
-.weboc-login-provider__button:hover {
-  background-color: red;
-}
