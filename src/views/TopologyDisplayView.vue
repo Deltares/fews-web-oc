@@ -45,7 +45,7 @@
           :topologyNode="topologyNode"
         />
       </SidePanelControl>
-      <v-menu location="bottom right" v-if="secondaryControls.length > 1">
+      <v-menu location="bottom right" v-if="activeSecondaryControlCount">
         <template #activator="{ isActive, props }">
           <v-btn
             icon
@@ -167,9 +167,12 @@ const nodesStore = useNodesStore()
 
 // For managing which control is active in the button group
 const activeControl = ref<SidePanel>('thresholds')
-const secondaryControl = ref<SidePanel>('tasks')
+const secondaryControl = ref<SidePanel>()
 const activeSecondaryControl = computed(() =>
   secondaryControls.value.find((s) => s.type === secondaryControl.value),
+)
+const activeSecondaryControlCount = computed(
+  () => secondaryControls.value.filter((s) => !s.disabled).length,
 )
 
 interface SecondaryControl {
@@ -188,40 +191,35 @@ const secondaryControls = computed<SecondaryControl[]>(() => {
       title: t('task_overview'),
       icon: 'mdi-clipboard-text-clock',
       component: TaskRunsOverview,
-      disabled:
-        !showTaskMenu.value && sidePanelConfig?.taskOverview?.enabled === false,
+      disabled: !sidePanelConfig?.taskOverview?.enabled,
     },
     {
       type: 'import',
       title: t('import_status'),
       icon: 'mdi-database-import',
       component: ImportStatusControl,
-      disabled:
-        !showTaskMenu.value && sidePanelConfig?.importStatus?.enabled === false,
+      disabled: !sidePanelConfig?.importStatus?.enabled,
     },
     {
       type: 'visualize',
       title: t('noncurrent_data'),
       icon: 'mdi-chart-box-multiple',
       component: VisualizeDataControl,
-      disabled:
-        !showTaskMenu.value &&
-        sidePanelConfig?.nonCurrentData?.enabled === false,
+      disabled: !sidePanelConfig?.nonCurrentData?.enabled,
     },
     {
       type: 'workflows',
       title: t('run_tasks'),
       icon: 'mdi-cog-play',
       component: WorkflowsControl,
-      disabled:
-        !showTaskRuns.value && sidePanelConfig?.runTask?.enabled === false,
+      disabled: !sidePanelConfig?.runTask?.enabled,
     },
     {
       type: 'info',
       title: t('more_info'),
       icon: 'mdi-information-outline',
       component: InformationDisplayView,
-      disabled: sidePanelConfig?.documentFile?.enabled === false,
+      disabled: !sidePanelConfig?.documentFile?.enabled,
     },
   ]
 })
@@ -247,10 +245,6 @@ const menuType = computed(() => {
   const configured = settings.get('ui.hierarchical-menu-style')?.value as string
   return configured ?? 'auto'
 })
-
-const showTaskMenu = computed(
-  () => configStore.general.sidePanel?.runTask?.enabled,
-)
 
 const active = ref<string | undefined>(undefined)
 watch(
