@@ -8,6 +8,7 @@ import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { getResourcesStaticUrl } from './lib/fews-config/index.js'
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
@@ -27,10 +28,12 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
     configManager.update(data)
     const link = document.createElement('link')
     link.rel = 'stylesheet'
-    link.href = configManager.getWithDefault(
+    const resource = configManager.getWithDefault(
       'VITE_LOGIN_STYLESHEET_URL',
       'css/login.css',
     )
+    const href = getResourcesStaticUrl(resource)
+    link.href = href
     document.head.appendChild(link)
     if (configManager.authenticationIsEnabled) {
       await authenticationManager.init(configManager.getUserManagerSettings())
