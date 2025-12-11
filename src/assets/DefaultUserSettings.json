@@ -127,7 +127,7 @@
     "id": "ui.map.showDataAvailability",
     "type": "boolean",
     "label": "Show data availability",
-    "value": true,
+    "value": false,
     "group": "Map"
   },
   {
