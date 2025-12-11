@@ -2,8 +2,8 @@
   <v-app>
     <v-main class="weboc-login__main">
       <div class="weboc-login__container">
-        <h1 class="weboc-login__title" ref="app-name">
-          Delft-FEWS Web Operator Client
+        <h1 class="weboc-login__title">
+          {{ appName }}
         </h1>
         <div class="weboc-login-provider">
           <v-btn
@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { useTemplateRef, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { configManager } from '@/services/application-config'
 import { useRoute } from 'vue-router'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.js'
@@ -27,7 +27,6 @@ import { VBtn } from 'vuetify/components'
 
 const route = useRoute()
 
-const appName = useTemplateRef('app-name')
 const buttonProps = ref<VBtn['$props']>({
   prependIcon: 'mdi-login',
   text: 'Login',
@@ -35,10 +34,16 @@ const buttonProps = ref<VBtn['$props']>({
   variant: 'elevated',
 })
 
+const appName = ref('Delft-FEWS Web OC')
+
 onMounted(() => {
-  const buttonPropsSetting = configManager.get(
-    'VITE_LOGIN_PROVIDER_BUTTON_PROPS',
+  const name = configManager.getWithDefault(
+    'VITE_APP_NAME',
+    'Delft-FEWS Web OC',
   )
+  document.title = name
+  appName.value = name
+
   const buttonPropsSetting = configManager.get('VITE_LOGIN_BUTTON_PROPS')
   if (typeof buttonPropsSetting === 'string') {
     try {
@@ -49,15 +54,6 @@ onMounted(() => {
   } else {
     Object.assign(buttonProps.value, buttonPropsSetting)
   }
-})
-
-onMounted(() => {
-  const name = configManager.getWithDefault(
-    'VITE_APP_NAME',
-    'Delft-FEWS Web OC',
-  )
-  appName.value!.textContent = name
-  document.title = name
 })
 
 function login(): void {
