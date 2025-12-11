@@ -5,14 +5,8 @@
         <h1 class="weboc-login__title">
           {{ appName }}
         </h1>
-        <div class="weboc-login-provider">
-          <v-btn
-            @click="login"
-            v-bind="buttonProps"
-            class="weboc-login-provider__button"
-          >
-          </v-btn>
-        </div>
+        <v-btn @click="login" v-bind="buttonProps" class="weboc-login__button">
+        </v-btn>
       </div>
     </v-main>
   </v-app>
