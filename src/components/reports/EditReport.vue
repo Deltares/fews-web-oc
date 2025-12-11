@@ -48,10 +48,16 @@ function extractStylesFromHTML(htmlContent: string): {
   let css = ''
 
   // Extract all style tags content
-  const cleanedHtml = htmlContent.replace(styleRegex, (match, styleContent) => {
-    css += styleContent
-    return '' // Remove the style tag from HTML
-  })
+  let cleanedHtml = htmlContent
+  let match
+  do {
+    match = false
+    cleanedHtml = cleanedHtml.replace(styleRegex, (found, styleContent) => {
+      css += styleContent
+      match = true
+      return ''
+    })
+  } while (match)
 
   return {
     html: cleanedHtml,
