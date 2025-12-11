@@ -88,20 +88,32 @@ const emit = defineEmits<Emits>()
 
 const warningLevelsStore = useWarningLevelsStore()
 const locationNamesStore = useLocationNamesStore()
+const userSettings = useUserSettingsStore()
 
 const { thresholds } = useDisplay()
 const containerRef = useTemplateRef('container')
 
 const boundingBox = computed(() => props.topologyNode?.boundingBox)
 const filterIds = computed(() => props.topologyNode?.filterIds ?? [])
+const filterOptions = computed(() => {
+  if (userSettings.get('ui.map.showDataAvailability')?.value === true) {
+    return {
+      showTimeSeriesInfo: true,
+    }
+  }
+  return {}
+})
 
-const userSettings = useUserSettingsStore()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { layerCapabilities, times } = useWmsLayerCapabilities(
   baseUrl,
   () => props.layerName,
 )
-const { locations, geojson } = useFilterLocations(baseUrl, filterIds)
+const { locations, geojson } = useFilterLocations(
+  baseUrl,
+  filterIds,
+  filterOptions,
+)
 watch(locations, (newLocations) =>
   locationNamesStore.addLocationNames(newLocations ?? []),
 )
