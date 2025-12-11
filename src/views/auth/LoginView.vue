@@ -38,7 +38,10 @@ onMounted(() => {
   document.title = name
   appName.value = name
 
-  const buttonPropsSetting = configManager.get('VITE_LOGIN_BUTTON_PROPS')
+  const buttonPropsSetting = configManager.getWithDefault(
+    'VITE_LOGIN_BUTTON_PROPS',
+    {},
+  )
   if (typeof buttonPropsSetting === 'string') {
     try {
       Object.assign(buttonProps.value, JSON.parse(buttonPropsSetting))
