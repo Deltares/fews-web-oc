@@ -315,10 +315,6 @@ const showActiveThresholdCrossingsForFilters = computed(() => {
   )
 })
 
-const showTaskRuns = computed(
-  () => topologyComponentConfig.value?.enableTaskRuns ?? false,
-)
-
 const topologyNodesStore = useTopologyNodesStore()
 topologyNodesStore
   .fetch()
