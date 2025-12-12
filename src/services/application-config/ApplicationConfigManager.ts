@@ -14,7 +14,6 @@ export class ApplicationConfigManager {
   }
 
   get<T extends keyof ApplicationConfig>(name: T): ApplicationConfig[T] {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const configValue = this._config[name]
     if (configValue !== undefined) return configValue
     const envValue = import.meta.env[name]
@@ -22,6 +21,19 @@ export class ApplicationConfigManager {
       return envValue
     }
     throw new Error(`Cannot find config for '${name}'`)
+  }
+
+  getWithDefault<T extends keyof ApplicationConfig>(
+    name: T,
+    defaultValue: ApplicationConfig[T],
+  ): ApplicationConfig[T] {
+    const configValue = this._config[name]
+    if (configValue !== undefined) return configValue
+    const envValue = import.meta.env[name]
+    if (envValue !== undefined) {
+      return envValue
+    }
+    return defaultValue
   }
 
   get authenticationIsEnabled(): boolean {
