@@ -28,7 +28,7 @@ test.describe('Login view is customized', () => {
     await expect(app).toBeVisible()
     await expect(app).toHaveCSS(
       'background-image',
-      'url("http://localhost:8080/FewsWebServices/rest/fewspiservice/v1/resources/static/css/images/Luchtfoto_Noordzee_small.jpg")',
+      'url("http://fews-web-services:8080/FewsWebServices/rest/fewspiservice/v1/resources/static/css/images/Luchtfoto_Noordzee_small.jpg")',
     )
   })
 })
