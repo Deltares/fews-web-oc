@@ -269,7 +269,15 @@ const selectedProduct = computed(() => {
   return filteredProducts.value[selected.value]
 })
 const selectedProductVersions = computed(() => {
-  return filteredProducts.value.filter(p => p.attributes['productId'] === selectedProduct.value?.attributes['productId']) 
+  if (productKey) {
+    const product = getProductByKey(productKey)
+    if (product) {
+      return filteredProducts.value.filter((p) => {
+        return p.attributes.productId === product.attributes.productId
+      })
+    }
+  }
+  return []
 })
 
 const tableLayout = computed(() => {
