@@ -37,9 +37,10 @@ export function useProducts(
   const lastUpdated = ref<Date | null>(null)
   const mostRecentTemplate = ref<ProductMetaDataType | null>(null)
 
-  const refresh = () => {
+  const refresh = async () => {
     error.value = null
-    fetchProducts()
+    await fetchProducts()
+    lastUpdated.value = new Date()
   }
 
   const fetchProducts = async () => {
@@ -74,7 +75,8 @@ export function useProducts(
   }
 
   watchEffect(async () => {
-    fetchProducts()
+    await fetchProducts()
+    lastUpdated.value = new Date()
   })
 
   return {
