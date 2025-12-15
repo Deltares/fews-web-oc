@@ -246,7 +246,7 @@ interface Props {
   products: ProductMetaDataType[]
   template?: ProductMetaDataType
   config: ProductBrowserTableConfig
-  productId?: string
+  productKey?: string
 }
 
 const props = defineProps<Props>()
@@ -281,8 +281,8 @@ function groupName(key: string) {
 }
 
 watchEffect(() => {
-  if (props.productId) {
-    selectedRows.value = [props.productId]
+  if (props.productKey) {
+    selectedRows.value = [props.productKey]
   }
 })
 
@@ -363,7 +363,7 @@ async function onDeleteProduct(product: ProductMetaDataType) {
       router.replace({
         name: 'TopologyDocumentDisplay',
         params: {
-          productId: previousItem.key,
+          productKey: previousItem.key,
         },
       })
     }
@@ -380,7 +380,7 @@ function onClick(
   router.push({
     name: 'TopologyDocumentDisplay',
     params: {
-      productId: entry.item.key,
+      productKey: entry.item.key,
     },
   })
 }
