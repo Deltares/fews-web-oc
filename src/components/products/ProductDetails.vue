@@ -32,7 +32,7 @@ function routeForProduct(product: ProductMetaDataType) {
   return {
     name: 'TopologyDocumentDisplay',
     params: {
-      productId: product.key,
+      productKey: product.key,
     },
   }
 }

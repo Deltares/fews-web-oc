@@ -186,7 +186,7 @@
           size="small"
           variant="text"
           @click.stop="onDeleteProduct(item)"
-          :title="'Delete product'"
+          aria-label="Delete product"
           class="delete-action-btn"
           :hover="true"
         ></v-btn>
@@ -246,7 +246,7 @@ interface Props {
   products: ProductMetaDataType[]
   template?: ProductMetaDataType
   config: ProductBrowserTableConfig
-  productId?: string
+  productKey?: string
 }
 
 const props = defineProps<Props>()
@@ -281,8 +281,8 @@ function groupName(key: string) {
 }
 
 watchEffect(() => {
-  if (props.productId) {
-    selectedRows.value = [props.productId]
+  if (props.productKey) {
+    selectedRows.value = [props.productKey]
   }
 })
 
@@ -363,7 +363,7 @@ async function onDeleteProduct(product: ProductMetaDataType) {
       router.replace({
         name: 'TopologyDocumentDisplay',
         params: {
-          productId: previousItem.key,
+          productKey: previousItem.key,
         },
       })
     }
@@ -380,7 +380,7 @@ function onClick(
   router.push({
     name: 'TopologyDocumentDisplay',
     params: {
-      productId: entry.item.key,
+      productKey: entry.item.key,
     },
   })
 }
@@ -426,10 +426,6 @@ async function onNewProduct(item: ProductMetaDataType) {
 
 :deep(.selected-row) {
   background-color: rgb(var(--v-theme-on-surface), var(--v-activated-opacity));
-}
-
-.delete-action {
-  opacity: 0;
 }
 
 :deep(.v-data-table__tr:hover) .delete-action-btn {

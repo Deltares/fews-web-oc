@@ -4,7 +4,7 @@
       :products="filteredProducts"
       :config="tableLayout"
       class="product-browser__table"
-      :productId="productId"
+      :productKey="productKey"
       @refresh="fetchProducts()"
     >
       <template #footer>
@@ -191,7 +191,7 @@
               <v-menu activator="parent">
                 <v-list density="compact">
                   <v-list-item
-                    v-for="(item, index) in filteredProducts"
+                    v-for="(item, index) in selectedProductVersions"
                     :key="item.key"
                     :title="item.timeZero"
                     :subtitle="`Version ${item.version}`"
@@ -257,16 +257,27 @@ const LOG_DISPLAY_ID = 'email_reports'
 
 interface Props {
   config?: DocumentBrowserDisplay
-  productId?: string
+  productKey?: string
 }
 
-const { config, productId } = defineProps<Props>()
+const { config, productKey } = defineProps<Props>()
 const src = ref('')
 const viewMode = ref('')
 
 const selected = ref(0) // Example timeZero
 const selectedProduct = computed(() => {
   return filteredProducts.value[selected.value]
+})
+const selectedProductVersions = computed(() => {
+  if (productKey) {
+    const product = getProductByKey(productKey)
+    if (product) {
+      return filteredProducts.value.filter((p) => {
+        return p.attributes.productId === product.attributes.productId
+      })
+    }
+  }
+  return []
 })
 
 const tableLayout = computed(() => {
@@ -398,14 +409,14 @@ watchEffect(() => {
 })
 
 watchEffect(() => {
-  if (productId) {
-    const productMetaData = getProductByKey(productId)
+  if (productKey) {
+    const productMetaData = getProductByKey(productKey)
     if (productMetaData) {
       selected.value = filteredProducts.value.findIndex(
         (p) => p.key === productMetaData.key,
       )
     } else {
-      console.warn(`Product with ID ${productId} not found.`)
+      console.warn(`Product with Key ${productKey} not found.`)
       selected.value = -1
     }
   } else {
