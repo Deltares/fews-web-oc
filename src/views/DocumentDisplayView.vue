@@ -2,7 +2,7 @@
   <ProductsBrowserView
     v-if="viewMode === 'browser'"
     :config="documentBrowserDisplay"
-    :productId="props.productId"
+    :productKey="props.productKey"
   ></ProductsBrowserView>
   <ProductReportView
     v-else-if="viewMode === 'report'"
@@ -36,7 +36,7 @@ import ProductReportView from './ProductReportView.vue'
 interface Props {
   nodeId?: string | string[]
   topologyNode?: TopologyNode
-  productId?: string
+  productKey?: string
 }
 
 const props = defineProps<Props>()

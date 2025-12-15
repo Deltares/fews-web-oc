@@ -4,7 +4,7 @@
       :products="filteredProducts"
       :config="tableLayout"
       class="product-browser__table"
-      :productId="productId"
+      :productKey="productKey"
       @refresh="fetchProducts()"
     >
       <template #footer>
@@ -257,10 +257,10 @@ const LOG_DISPLAY_ID = 'email_reports'
 
 interface Props {
   config?: DocumentBrowserDisplay
-  productId?: string
+  productKey?: string
 }
 
-const { config, productId } = defineProps<Props>()
+const { config, productKey } = defineProps<Props>()
 const src = ref('')
 const viewMode = ref('')
 
@@ -401,14 +401,14 @@ watchEffect(() => {
 })
 
 watchEffect(() => {
-  if (productId) {
-    const productMetaData = getProductByKey(productId)
+  if (productKey) {
+    const productMetaData = getProductByKey(productKey)
     if (productMetaData) {
       selected.value = filteredProducts.value.findIndex(
         (p) => p.key === productMetaData.key,
       )
     } else {
-      console.warn(`Product with ID ${productId} not found.`)
+      console.warn(`Product with Key ${productKey} not found.`)
       selected.value = -1
     }
   } else {
