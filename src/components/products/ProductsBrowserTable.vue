@@ -428,10 +428,6 @@ async function onNewProduct(item: ProductMetaDataType) {
   background-color: rgb(var(--v-theme-on-surface), var(--v-activated-opacity));
 }
 
-.delete-action {
-  opacity: 0;
-}
-
 :deep(.v-data-table__tr:hover) .delete-action-btn {
   opacity: 1;
 }
