@@ -191,7 +191,7 @@
               <v-menu activator="parent">
                 <v-list density="compact">
                   <v-list-item
-                    v-for="(item, index) in filteredProducts"
+                    v-for="(item, index) in selectedProductVersions"
                     :key="item.key"
                     :title="item.timeZero"
                     :subtitle="`Version ${item.version}`"
@@ -267,6 +267,9 @@ const viewMode = ref('')
 const selected = ref(0) // Example timeZero
 const selectedProduct = computed(() => {
   return filteredProducts.value[selected.value]
+})
+const selectedProductVersions = computed(() => {
+  return filteredProducts.value.filter(p => p.attributes['productId'] === selectedProduct.value?.attributes['productId']) 
 })
 
 const tableLayout = computed(() => {
