@@ -186,7 +186,7 @@
           size="small"
           variant="text"
           @click.stop="onDeleteProduct(item)"
-          :title="'Delete product'"
+          aria-label="Delete product"
           class="delete-action-btn"
           :hover="true"
         ></v-btn>
