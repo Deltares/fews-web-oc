@@ -6,16 +6,18 @@
           {{ appName }}
         </h1>
         <v-text-field
+          bg-color="white"
           v-model="username"
           label="Username"
-          class="weboc-login__input"
+          class="weboc-login__input weboc-login__input--white-bg"
           autocomplete="username"
         />
         <v-text-field
+          bg-color="white"
           v-model="password"
           label="Password"
           type="password"
-          class="weboc-login__input"
+          class="weboc-login__input weboc-login__input--white-bg"
           autocomplete="current-password"
         />
         <v-btn @click="login" v-bind="buttonProps" class="weboc-login__button">
@@ -97,3 +99,4 @@ async function login(): Promise<void> {
   }
 }
 </script>
+
