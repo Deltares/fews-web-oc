@@ -7,6 +7,7 @@ import {
 } from 'vue-router'
 import AboutView from '../views/AboutView.vue'
 import LoginView from '../views/auth/LoginView.vue'
+import LoginBasicView from '../views/auth/LoginBasicView.vue'
 import Callback from '../views/auth/Callback.vue'
 import Logout from '../views/auth/Logout.vue'
 import Silent from '../views/auth/Silent.vue'
@@ -55,6 +56,13 @@ const routesBase: Readonly<RouteRecordRaw[]> = [
     meta: { title: 'About' },
     component: AboutView,
   },
+  {
+    path: '/login-basic',
+    name: 'Login-basic',
+    meta: { layout: 'EmptyLayout' },
+    component: LoginBasicView,
+  },
+
   {
     path: '/login',
     name: 'Login',
