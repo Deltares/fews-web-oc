@@ -8,8 +8,13 @@ import type {
   DocumentDisplayBrowser,
 } from '@deltares/fews-pi-requests'
 
+export type DocumentDisplay =
+  | DocumentBrowserDisplay
+  | ReportDisplay
+  | DisplayCompose
+
 export interface DocumentDisplaysConfig {
-  documentDisplays: (DocumentBrowserDisplay | ReportDisplay | DisplayCompose)[]
+  documentDisplays: DocumentDisplay[]
 }
 
 export interface DocumentBrowserDisplay
@@ -93,19 +98,19 @@ export interface ShowReports {
 }
 
 export function isDocumentBrowser(
-  documentDisplay: DocumentBrowserDisplay | ReportDisplay | DisplayCompose,
+  documentDisplay: DocumentDisplay | undefined,
 ): documentDisplay is DocumentBrowserDisplay {
-  return (documentDisplay as DocumentBrowserDisplay).type === 'browser'
+  return documentDisplay?.type === 'browser'
 }
 
 export function isReportDisplay(
-  documentDisplay: DocumentBrowserDisplay | ReportDisplay | DisplayCompose,
+  documentDisplay: DocumentDisplay | undefined,
 ): documentDisplay is ReportDisplay {
-  return (documentDisplay as ReportDisplay).type === 'report'
+  return documentDisplay?.type === 'report'
 }
 
-export function isDisplayCompose(
-  documentDisplay: DocumentBrowserDisplay | ReportDisplay | DisplayCompose,
+export function isComposeDisplay(
+  documentDisplay: DocumentDisplay | undefined,
 ): documentDisplay is DisplayCompose {
-  return (documentDisplay as DisplayCompose).type === 'compose'
+  return documentDisplay?.type === 'compose'
 }
