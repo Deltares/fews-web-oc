@@ -81,7 +81,12 @@
     </v-toolbar>
     <div class="logs-container">
       <div class="flex-0-0 d-flex justify-center py-2">
-        <div class="flex-0-0 d-flex ga-2 align-left">
+        <div class="flex-0-0 d-flex flex-column ga-2 align-left">
+          <NewLogMessage
+            v-if="noteGroup"
+            :noteGroup="noteGroup"
+            @newNote="refreshLogs"
+          />
           <v-text-field
             v-model="search"
             placeholder="Search"
@@ -90,13 +95,7 @@
             rounded
             clearable
             hide-details
-            class="px-2"
             density="compact"
-          />
-          <NewLogMessageDialog
-            v-if="noteGroup"
-            :noteGroup="noteGroup"
-            @newNote="refreshLogs"
           />
         </div>
       </div>
@@ -165,7 +164,7 @@ import { configManager } from '@/services/application-config'
 import { debouncedRef } from '@vueuse/core'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
-import NewLogMessageDialog from './NewLogMessageDialog.vue'
+import NewLogMessage from './NewLogMessage.vue'
 import { useTaskRuns } from '@/services/useTaskRuns'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
