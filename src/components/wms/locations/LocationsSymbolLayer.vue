@@ -46,6 +46,7 @@ const childLayout: SymbolLayerSpecification['layout'] = {
   'text-justify': 'auto',
   'text-anchor': 'right',
   'text-max-width': 15,
+  'text-offset': [-0.5, 0],
 }
 
 const parentLayout: SymbolLayerSpecification['layout'] = {

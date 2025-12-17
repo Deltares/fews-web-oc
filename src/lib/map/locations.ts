@@ -37,13 +37,14 @@ export function addPropertiesToLocationGeojson(
   geojson: FeatureCollection<Geometry, Location>,
   selectedLocationIds: string[],
   showNames: boolean,
+  showDataAvailability: boolean,
 ): FeatureCollection<Geometry, ExtendedLocation> {
   const features = geojson.features.map((feature) => ({
     ...feature,
     properties: {
       ...feature.properties,
       locationName: showNames ? feature.properties.locationName : '',
-      iconName: getIconName(feature),
+      iconName: getIconName(feature, showDataAvailability),
       sortKey: getSortKey(feature),
       invertedSortKey: getInvertedSortKey(feature),
       selected: selectedLocationIds.includes(feature.properties.locationId),
@@ -56,8 +57,18 @@ export function addPropertiesToLocationGeojson(
   }
 }
 
-function getIconName({ properties }: Feature<Geometry, Location>) {
-  return properties.thresholdIconName ?? properties.iconName
+function getIconName(
+  { properties }: Feature<Geometry, Location>,
+  showDataAvailability: boolean,
+) {
+  const iconName = properties.thresholdIconName ?? properties.iconName
+  if (properties.hasDataInViewPeriod || !showDataAvailability) {
+    return iconName
+  }
+
+  return properties.hasDataOutsideViewPeriod
+    ? `${iconName}-has-outside-data`
+    : `${iconName}-has-no-data`
 }
 
 function getSortKey({ properties }: Feature<Geometry, Location>): number {
