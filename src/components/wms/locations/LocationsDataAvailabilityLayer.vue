@@ -34,6 +34,8 @@ const layout: SymbolLayerSpecification['layout'] = {
     'overlay:eye-off',
     'overlay:remove',
   ],
+  'symbol-sort-key': ['get', 'sortKey'],
+  'icon-ignore-placement': true,
   'icon-overlap': 'always',
   'icon-size': 1,
   'icon-offset': [9, 9],
