@@ -253,6 +253,14 @@ function updateUserSettingBaseMaps(config: MapLayerConfig) {
   const baseMaps = getBaseMapsFromConfig(config)
   baseMapsStore.setBaseMaps(baseMaps)
 
+  if (config.defaultDarkModeMapLayerId) {
+    baseMapsStore.defaultDarkId = config.defaultDarkModeMapLayerId
+  }
+
+  if (config.defaultLightModeMapLayerId) {
+    baseMapsStore.defaultLightId = config.defaultLightModeMapLayerId
+  }
+
   const settingItems = baseMapsStore.allBaseMaps.map(
     convertBaseMapToUserSetting,
   )

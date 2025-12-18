@@ -4,11 +4,15 @@ import DefaultBaseMaps from '@/assets/DefaultBaseMaps.json'
 
 interface State {
   baseMaps: BaseMap[]
+  defaultLightId: string
+  defaultDarkId: string
 }
 
 export const useBaseMapsStore = defineStore('basemaps', {
   state: (): State => ({
     baseMaps: [],
+    defaultDarkId: 'dark',
+    defaultLightId: 'light',
   }),
   getters: {
     allBaseMaps(): BaseMap[] {
@@ -21,7 +25,7 @@ export const useBaseMapsStore = defineStore('basemaps', {
     },
     getBaseMapById(id: string, isDark: boolean): BaseMap {
       if (id === 'automatic') {
-        const newId = isDark ? 'dark' : 'light'
+        const newId = isDark ? this.defaultDarkId : this.defaultLightId
         return this.getBaseMapById(newId, isDark)
       }
 
