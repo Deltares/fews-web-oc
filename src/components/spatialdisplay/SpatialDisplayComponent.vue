@@ -223,6 +223,7 @@ import { getLocationWithChilds, mapIds } from '@/lib/map'
 import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 import { shortLabel } from '@/lib/aggregation'
+import { useSelectedElevation } from '@/services/useSelectedElevation'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -266,7 +267,7 @@ onBeforeMount(() => {
   })
 })
 
-const currentElevation = ref<number>(0)
+const currentElevation = useSelectedElevation()
 const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
