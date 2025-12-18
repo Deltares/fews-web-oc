@@ -33,7 +33,7 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
       '',
     )
     if (!resource) {
-      link.href = 'css/login.css'
+      link.href = `${import.meta.env.BASE_URL}css/login.css`
     } else {
       const href = getResourcesStaticUrl(resource)
       link.href = href
