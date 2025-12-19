@@ -260,11 +260,9 @@ const emit = defineEmits([
 
 const { mobile } = useDisplay()
 
-onBeforeMount(() => {
-  debouncedSetLayerOptions = debounce(setLayerOptions, 240, {
-    leading: true,
-    trailing: true,
-  })
+const debouncedSetLayerOptions = debounce(setLayerOptions, 240, {
+  leading: true,
+  trailing: true,
 })
 
 const currentElevation = useSelectedElevation()
@@ -345,7 +343,6 @@ watch([doShowAggregated, selectedAggregationLabel], () => setLayerOptions())
 const layerOptions = ref<AnimatedRasterLayerOptions>()
 const forecastTime = ref<Date>()
 const isLoading = ref(false)
-let debouncedSetLayerOptions!: () => void
 
 const legendLayerStyles = ref<Style[]>()
 const userSettings = useUserSettingsStore()
@@ -542,7 +539,7 @@ watch(
 )
 
 watch(currentElevation, () => {
-  setLayerOptions()
+  debouncedSetLayerOptions()
   emit('update:elevation', currentElevation.value)
 })
 
