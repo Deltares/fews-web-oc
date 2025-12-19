@@ -25,8 +25,7 @@
   },
   "thresholds": {
     "thresholds": "Schwellenwerte",
-    "noThresholdCrossing": "Zurzeit keine Schwellenwertüberschreitungen",
-    "thresholdOverview": "Übersicht Schwellenwerte"
+    "noThresholdCrossing": "Zurzeit keine Schwellenwertüberschreitungen"
   },
   "download": {
     "downloadTimeSeries": "Zeitreihe herunterladen",
@@ -45,6 +44,7 @@
     "timeRange": "Zeitbereich"
   },
   "sidePanel": {
+    "thresholdOverview": "Übersicht Schwellenwerte",
     "taskOverview": "Aufgaben Übersicht",
     "importStatus": "Import Status",
     "noncurrentData": "Nicht-Aktuelle Daten",
