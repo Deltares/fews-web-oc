@@ -4,7 +4,7 @@
       <div class="icon-group" v-bind="props">
         <div class="icon-group__underlay"></div>
         <span class="icon-group__label">
-          {{ d(store.systemTime, 'timeControlMenu__appBar') }}
+          {{ d(store.systemTime, 'timeControl__appBar') }}
         </span>
         <v-btn icon size="small" class="last-btn">
           <v-icon size="large">{{
@@ -59,7 +59,7 @@
       <v-card-actions>
         <span>{{ t('timeControl.browserTime') }}</span>
         <v-chip small>
-          {{ d(new Date(), 'timeControlMenu__browserTime') }}
+          {{ d(new Date(), 'timeControl__browserTime') }}
         </v-chip>
       </v-card-actions>
     </v-card>
