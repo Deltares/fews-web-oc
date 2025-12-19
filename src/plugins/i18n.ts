@@ -1,9 +1,8 @@
 import { createI18n, I18n, I18nOptions } from 'vue-i18n'
-
-export const SUPPORT_LOCALES = ['en', 'de']
+import messages from '@intlify/unplugin-vue-i18n/messages'
 
 const datetimeFormats: I18nOptions['datetimeFormats'] = {
-  'en': {
+  en: {
     timeControlAppBar: {
       hour: '2-digit',
       minute: '2-digit',
@@ -17,7 +16,7 @@ const datetimeFormats: I18nOptions['datetimeFormats'] = {
       timeZoneName: 'short',
     },
   },
-  'de': {
+  de: {
     timeControlAppBar: {
       hour: '2-digit',
       minute: '2-digit',
@@ -31,7 +30,7 @@ const datetimeFormats: I18nOptions['datetimeFormats'] = {
       timeZoneName: 'short',
     },
   },
-  'nl': {
+  nl: {
     timeControlAppBar: {
       hour: '2-digit',
       minute: '2-digit',
@@ -58,24 +57,15 @@ export async function setI18nLanguage(
   i18n: I18n<{}, {}, {}, string, false>,
   locale: string,
 ) {
-  console.log(' Setting locale to', locale)
   i18n.global.locale.value = locale
-  const localeMessages = await loadLocaleMessages(locale)
-  i18n.global.setLocaleMessage(locale, localeMessages)
-  i18n.global.setDateTimeFormat(locale, {
-    short: {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    },
-    long: { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' },
-  })
   document.querySelector('html')?.setAttribute('lang', locale)
 }
 
 export const i18n = createI18n({
   legacy: false,
   fallbackLocale: 'en',
+  messages,
   datetimeFormats,
   fallbackWarn: false,
+  missingWarn: false,
 })

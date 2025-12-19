@@ -4,6 +4,7 @@ import vuetify from 'vite-plugin-vuetify'
 import { dirname, resolve } from 'path'
 import { execSync } from 'child_process'
 import { fileURLToPath } from 'url'
+import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 
 const commitHash = execSync('git rev-parse --short HEAD').toString()
 const commitTag = execSync('git tag --points-at HEAD').toString()
@@ -93,6 +94,13 @@ export default defineConfig(({ mode }) => {
             },
           })
         : vuetify(),
+      VueI18nPlugin({
+        include: resolve(
+          dirname(fileURLToPath(import.meta.url)),
+          './src/locales/**',
+        ),
+        strictMessage: false,
+      }),
     ],
     optimizeDeps: {
       exclude: ['@deltares/fews-ssd-webcomponent', 'vuetify'],
