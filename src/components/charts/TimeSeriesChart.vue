@@ -64,7 +64,6 @@ import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
 import { getThresholdValues, isUniqueThreshold } from '@/lib/charts/thresholds'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 
-
 interface Props {
   config: ChartConfig
   series: Record<string, Series>

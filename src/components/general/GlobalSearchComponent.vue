@@ -100,7 +100,7 @@ interface GlobalSearchItemWithTreeIds extends GlobalSearchItem {
   treeIds: string[]
 }
 
-const { t } = useI18n();
+const { t } = useI18n()
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
 const search = ref<string | undefined>()
