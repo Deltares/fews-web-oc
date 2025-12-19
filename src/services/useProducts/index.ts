@@ -35,7 +35,6 @@ export function useProducts(
   const products = ref<ProductMetaDataType[]>([])
   const error = ref<string | null>(null)
   const lastUpdated = ref<Date | null>(null)
-  const mostRecentTemplate = ref<ProductMetaDataType | null>(null)
 
   const refresh = async () => {
     error.value = null
@@ -86,7 +85,35 @@ export function useProducts(
     refresh,
     lastUpdated,
     error,
-    mostRecentTemplate,
+  }
+}
+
+export function useProduct(
+  baseUrl: string,
+  viewPeriod: MaybeRefOrGetter<IntervalItem>,
+  archiveProduct: MaybeRefOrGetter<ArchiveProduct | undefined>,
+) {
+  const product = ref<ProductMetaDataType>()
+
+  const fetchProduct = async () => {
+    const _archiveProduct = toValue(archiveProduct)
+    if (!_archiveProduct) {
+      product.value = undefined
+      return
+    }
+    const products = await getArchiveProducts(
+      baseUrl,
+      [_archiveProduct],
+      toValue(viewPeriod),
+    )
+    console.log('Fetched products for useProduct:', products, _archiveProduct)
+    product.value = products[0]
+  }
+
+  watchEffect(fetchProduct)
+
+  return {
+    product,
   }
 }
 
