@@ -2,7 +2,7 @@
   <v-dialog v-model="showDialog" max-width="400">
     <v-card>
       <v-card-title class="headline">{{
-        t('download.downloadTimeseries')
+        t('download.downloadTimeSeries')
       }}</v-card-title>
       <v-card-text>
         <v-text-field
