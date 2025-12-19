@@ -30,6 +30,7 @@ export interface ReportDisplay extends Omit<DocumentDisplayReport, 'type'> {
 
 export interface DisplayCompose extends Omit<DocumentDisplayCompose, 'type'> {
   type: 'compose'
+  compose: DocumentCompose
 }
 
 export interface DocumentBrowser {
@@ -37,6 +38,11 @@ export interface DocumentBrowser {
   reports: Reports
   archiveProducts: ArchiveProduct[]
   archiveProductSets: ArchiveProductSet[]
+}
+
+export interface DocumentCompose {
+  archiveProduct: ArchiveProduct
+  template: ArchiveProduct
 }
 
 export interface ArchiveProductSet

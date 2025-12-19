@@ -6,9 +6,10 @@
     :productKey="productKey"
   />
   <ProductReportView v-else-if="isReportDisplay(config)" :config="config" />
-  <span v-else-if="isComposeDisplay(config)" class="overflow-auto">
-    <pre>{{ config }}</pre>
-  </span>
+  <ProductsComposeView v-else-if="isComposeDisplay(config)" class="overflow-auto"
+    :config="config"
+    :productKey="productKey"
+  />
   <span v-else class="text-center">
     Document display is not supported in this view mode.
   </span>
@@ -16,6 +17,7 @@
 
 <script setup lang="ts">
 import ProductsBrowserView from '@/components/products/ProductsBrowserView.vue'
+import ProductsComposeView from '@/components/products/ProductsComposeView.vue'
 import {
   isDocumentBrowser,
   isReportDisplay,
