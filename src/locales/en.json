@@ -7,7 +7,7 @@
     "default": "Default",
     "end": "End",
     "selected": "Selected",
-    "selectAll": "Select All",
+    "selectAll": "Select all",
     "start": "Start"
   },
   "layout": {
@@ -37,18 +37,18 @@
     "searchLocation": "Search locations"
   },
   "userSettings": {
-    "allSettings": "All Settings",
+    "allSettings": "All settings",
     "settings": "Settings"
   },
   "wms": {
     "overlays": "Overlays",
-    "timeRange": "Time Range"
+    "timeRange": "Time range"
   },
   "tasks": {
     "taskOverview": "Task overview",
     "importStatus": "Import status",
-    "noncurrentData": "Non-Current Data",
-    "runTasks": "Run Tasks",
-    "moreInfo": "More Info"
+    "noncurrentData": "Non-current data",
+    "runTasks": "Run tasks",
+    "moreInfo": "More info"
   }
 }
