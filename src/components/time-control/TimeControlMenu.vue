@@ -26,7 +26,9 @@
                 variant="solo-filled"
                 flat
                 :rules="[
-                  () => dateOrderIsCorrect || t('timeControl.startDateBeforeEndDate'),
+                  () =>
+                    dateOrderIsCorrect ||
+                    t('timeControl.startDateBeforeEndDate'),
                 ]"
               />
               <v-date-input
@@ -36,7 +38,9 @@
                 variant="solo-filled"
                 flat
                 :rules="[
-                  () => dateOrderIsCorrect || t('timeControl.endDateAfterStartDate'),
+                  () =>
+                    dateOrderIsCorrect ||
+                    t('timeControl.endDateAfterStartDate'),
                 ]"
               />
             </div>
