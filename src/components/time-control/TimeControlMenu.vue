@@ -4,13 +4,7 @@
       <div class="icon-group" v-bind="props">
         <div class="icon-group__underlay"></div>
         <span class="icon-group__label">
-          {{
-            Intl.DateTimeFormat(t('locale'), {
-              hour: '2-digit',
-              minute: '2-digit',
-              timeZoneName: 'short',
-            }).format(store.systemTime)
-          }}
+          {{ d(store.systemTime, 'timeControlAppBar') }}
         </span>
         <v-btn icon size="small" class="last-btn">
           <v-icon size="large">{{
@@ -61,13 +55,7 @@
       <v-card-actions>
         <span>{{ t('browser_time') }}</span>
         <v-chip small>
-          {{
-            Intl.DateTimeFormat('de', {
-              hour: '2-digit',
-              minute: '2-digit',
-              timeZoneName: 'short',
-            }).format(store.systemTime)
-          }}
+          {{ d(new Date(), 'timeControlBrowserTime') }}
         </v-chip>
       </v-card-actions>
     </v-card>
@@ -85,7 +73,7 @@ import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
 import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
+const { t, d } = useI18n()
 
 const store = useSystemTimeStore()
 const configStore = useConfigStore()
