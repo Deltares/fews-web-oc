@@ -34,6 +34,7 @@ import { provideChartHandlers } from '@/services/useChartHandlers'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useDynamicCss } from '@/services/useDynamicCss'
 import DashboardGroup from './DashboardGroup.vue'
+import { provideSelectedElevation } from '@/services/useSelectedElevation'
 
 interface Props {
   dashboard: WebOCDashboard
@@ -61,6 +62,7 @@ function setupDates() {
   return createDateRegistry()
 }
 
+provideSelectedElevation()
 provideChartHandlers()
 
 const groups = computed(() => props.dashboard.groups)

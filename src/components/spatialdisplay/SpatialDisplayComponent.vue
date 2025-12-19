@@ -172,7 +172,7 @@ import DateTimeSliderValues from '@/components/general/DateTimeSliderValues.vue'
 import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
-import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
+import { ref, computed, watch, watchEffect } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
   useWmsCapabilities,
@@ -223,6 +223,7 @@ import { getLocationWithChilds, mapIds } from '@/lib/map'
 import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 import { shortLabel } from '@/lib/aggregation'
+import { useSelectedElevation } from '@/services/useSelectedElevation'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -259,14 +260,12 @@ const emit = defineEmits([
 
 const { mobile } = useDisplay()
 
-onBeforeMount(() => {
-  debouncedSetLayerOptions = debounce(setLayerOptions, 240, {
-    leading: true,
-    trailing: true,
-  })
+const debouncedSetLayerOptions = debounce(setLayerOptions, 240, {
+  leading: true,
+  trailing: true,
 })
 
-const currentElevation = ref<number>(0)
+const currentElevation = useSelectedElevation()
 const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
@@ -344,7 +343,6 @@ watch([doShowAggregated, selectedAggregationLabel], () => setLayerOptions())
 const layerOptions = ref<AnimatedRasterLayerOptions>()
 const forecastTime = ref<Date>()
 const isLoading = ref(false)
-let debouncedSetLayerOptions!: () => void
 
 const legendLayerStyles = ref<Style[]>()
 const userSettings = useUserSettingsStore()
@@ -541,7 +539,7 @@ watch(
 )
 
 watch(currentElevation, () => {
-  setLayerOptions()
+  debouncedSetLayerOptions()
   emit('update:elevation', currentElevation.value)
 })
 
