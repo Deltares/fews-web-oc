@@ -29,6 +29,10 @@ import { type Location } from '@deltares/fews-pi-requests'
 import { useGlobalSearchState } from '@/stores/globalSearch'
 import ControlChip from '@/components/wms/ControlChip.vue'
 
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 interface Props {
   locations?: Location[]
   locationToChildrenMap?: Map<string, Location[]>
@@ -111,7 +115,7 @@ function onSelectLocationIds(ids: string[]) {
 }
 
 function formatLocationsText(locations: Location[]) {
-  if (!locations.length) return 'Search locations'
+  if (!locations.length) return t('search.searchLocation')
   if (locations.length > 1) {
     return (
       locations

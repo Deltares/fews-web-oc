@@ -72,6 +72,7 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
@@ -95,6 +96,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const { t } = useI18n()
 
 const userSettings = useUserSettingsStore()
 
@@ -120,7 +123,7 @@ const displayActionItems = computed(() => {
   return [
     {
       icon: 'mdi-download',
-      label: 'Download time series ...',
+      label: t('download.downloadTimeSeries') + ' ...',
       action: () => {
         showDownloadDialog.value = true
       },

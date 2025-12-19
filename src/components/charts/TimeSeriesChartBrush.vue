@@ -12,6 +12,7 @@ import { getAxisOptions } from '@/lib/charts/axisOptions'
 import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
 import { getSubplotWithDomain } from '@/lib/display'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   config: ChartConfig
@@ -25,6 +26,8 @@ const domain = defineModel<[Date, Date]>('domain')
 
 const brushContainer = useTemplateRef('brushContainer')
 
+const { locale } = useI18n()
+
 let axis!: CartesianAxes
 let brushHandler!: BrushHandler
 
@@ -37,6 +40,7 @@ onMounted(() => {
 
   const axisOptions = getAxisOptions(chartConfig.value, props.settings, {
     isBrush: true,
+    locale: locale.value,
   })
   axis = new CartesianAxes(brushContainer.value, null, null, axisOptions)
 

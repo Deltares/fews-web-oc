@@ -17,10 +17,7 @@ export class ApplicationConfigManager {
     const configValue = this._config[name]
     if (configValue !== undefined) return configValue
     const envValue = import.meta.env[name]
-    if (envValue !== undefined) {
-      return envValue
-    }
-    throw new Error(`Cannot find config for '${name}'`)
+    return envValue
   }
 
   getWithDefault<T extends keyof ApplicationConfig>(

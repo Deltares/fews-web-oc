@@ -31,7 +31,7 @@
     </v-chip>
   </v-chip-group>
   <div v-if="warningLevels.length === 0" class="pa-2">
-    No active threshold crossings
+    {{ t('thresholds.noThresholdCrossing') }}
   </div>
   <!-- Important to have item-height as it greatly improves performance -->
   <v-virtual-scroll
@@ -59,6 +59,10 @@ import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
 import ThresholdSummary from '@/components/thresholds/ThresholdSummary.vue'
 import { computed, watch, nextTick, onMounted, useTemplateRef } from 'vue'
 import { NavigateRoute } from '@/lib/router/types'
+
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Props {
   warningLevels: WarningLevel[]

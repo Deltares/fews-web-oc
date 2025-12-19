@@ -1,11 +1,13 @@
 <template>
   <v-dialog v-model="showDialog" max-width="400">
     <v-card>
-      <v-card-title class="headline">Download timeseries</v-card-title>
+      <v-card-title class="headline">{{
+        t('download.downloadTimeSeries')
+      }}</v-card-title>
       <v-card-text>
         <v-text-field
           v-model="fileName"
-          label="File Name"
+          :label="t('download.fileName')"
           variant="underlined"
           density="compact"
         >
@@ -40,7 +42,7 @@
         >
           Download
         </v-btn>
-        <v-btn @click="() => cancelDialog()">Cancel</v-btn>
+        <v-btn @click="() => cancelDialog()">{{ t('common.cancel') }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -77,6 +79,9 @@ import {
 } from '@/lib/filters'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 interface Props {
   config?: DisplayConfig | null
   options?: UseDisplayConfigOptions

@@ -1,0 +1,54 @@
+{
+  "common": {
+    "all": "Alle",
+    "cancel": "Abbrechen",
+    "clearAll": "Entfernen",
+    "custom": "Benutzerdefiniert",
+    "default": "Standard",
+    "end": "Ende",
+    "selected": "Ausgewählt",
+    "selectAll": "Alle auswählen",
+    "start": "Start"
+  },
+  "layout": {
+    "about": "Über",
+    "switchTo": "Wechseln zu"
+  },
+  "auth": {
+    "signOut": "Abmelden"
+  },
+  "timeControl": {
+    "browserTime": "Browser Zeit",
+    "periodPresets": "Zeitraum-Voreinstellungen",
+    "startDateBeforeEndDate": "Startdatum muss vor Enddatum liegen",
+    "endDateAfterStartDate": "Enddatum muss nach Startdtaum liegen"
+  },
+  "thresholds": {
+    "thresholds": "Schwellenwerte",
+    "noThresholdCrossing": "Zurzeit keine Schwellenwertüberschreitungen"
+  },
+  "download": {
+    "downloadTimeSeries": "Zeitreihe herunterladen",
+    "fileName": "Dateiname"
+  },
+  "search": {
+    "searchForLocations": "Messstelle",
+    "searchLocation": "Messstelle"
+  },
+  "userSettings": {
+    "allSettings": "Alle Einstellungen",
+    "settings": "Einstellungen"
+  },
+  "wms": {
+    "overlays": "Layerauswahl",
+    "timeRange": "Zeitbereich"
+  },
+  "sidePanel": {
+    "thresholdOverview": "Übersicht Schwellenwerte",
+    "taskOverview": "Aufgaben Übersicht",
+    "importStatus": "Import Status",
+    "noncurrentData": "Nicht-Aktuelle Daten",
+    "runTasks": "Aufgabe ausführen",
+    "moreInfo": "Informationen"
+  }
+}

@@ -4,13 +4,7 @@
       <div class="icon-group" v-bind="props">
         <div class="icon-group__underlay"></div>
         <span class="icon-group__label">
-          {{
-            Intl.DateTimeFormat('nl', {
-              hour: '2-digit',
-              minute: '2-digit',
-              timeZoneName: 'short',
-            }).format(store.systemTime)
-          }}
+          {{ d(store.systemTime, 'timeControl__appBar') }}
         </span>
         <v-btn icon size="small" class="last-btn">
           <v-icon size="large">{{
@@ -27,24 +21,26 @@
             <div class="pa-4">
               <v-date-input
                 v-model="customStartDate"
-                label="Start"
+                :label="t('common.start')"
                 density="compact"
                 variant="solo-filled"
                 flat
                 :rules="[
                   () =>
-                    dateOrderIsCorrect || 'Start date must be before end date',
+                    dateOrderIsCorrect ||
+                    t('timeControl.startDateBeforeEndDate'),
                 ]"
               />
               <v-date-input
                 v-model="customEndDate"
-                label="End"
+                :label="t('common.end')"
                 density="compact"
                 variant="solo-filled"
                 flat
                 :rules="[
                   () =>
-                    dateOrderIsCorrect || 'End date must be after start date',
+                    dateOrderIsCorrect ||
+                    t('timeControl.endDateAfterStartDate'),
                 ]"
               />
             </div>
@@ -61,15 +57,9 @@
         </v-col>
       </v-row>
       <v-card-actions>
-        <span>Browser time:</span>
+        <span>{{ t('timeControl.browserTime') }}:</span>
         <v-chip small>
-          {{
-            Intl.DateTimeFormat('nl', {
-              hour: '2-digit',
-              minute: '2-digit',
-              timeZoneName: 'short',
-            }).format(store.systemTime)
-          }}
+          {{ d(new Date(), 'timeControl__browserTime') }}
         </v-chip>
       </v-card-actions>
     </v-card>
@@ -85,6 +75,9 @@ import { ref, computed, watchEffect, watch } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
+import { useI18n } from 'vue-i18n'
+
+const { t, d } = useI18n()
 
 const store = useSystemTimeStore()
 const configStore = useConfigStore()

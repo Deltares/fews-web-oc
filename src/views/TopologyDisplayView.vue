@@ -140,6 +140,7 @@ import { useTaskRunsStore } from '@/stores/taskRuns'
 import type { NavigateRoute } from '@/lib/router'
 import { SidePanel, useSidePanelStore } from '@/stores/sidePanel'
 import VisualizeDataControl from '@/components/tasks/VisualizeDataControl.vue'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   topologyId?: string
@@ -151,6 +152,8 @@ interface Props {
   longitude?: string
   productKey?: string
 }
+
+const { t } = useI18n()
 
 const props = defineProps<Props>()
 
@@ -185,35 +188,35 @@ const secondaryControls = computed<SecondaryControl[]>(() => {
   return [
     {
       type: 'tasks',
-      title: 'Task Overview',
+      title: t('sidePanel.taskOverview'),
       icon: 'mdi-clipboard-text-clock',
       component: TaskRunsOverview,
       disabled: !sidePanelConfig?.taskOverview?.enabled,
     },
     {
       type: 'import',
-      title: 'Import Status',
+      title: t('sidePanel.importStatus'),
       icon: 'mdi-database-import',
       component: ImportStatusControl,
       disabled: !sidePanelConfig?.importStatus?.enabled,
     },
     {
       type: 'visualize',
-      title: 'Non-Current Data',
+      title: t('sidePanel.noncurrentData'),
       icon: 'mdi-chart-box-multiple',
       component: VisualizeDataControl,
       disabled: !sidePanelConfig?.nonCurrentData?.enabled,
     },
     {
       type: 'workflows',
-      title: 'Run Tasks',
+      title: t('sidePanel.runTasks'),
       icon: 'mdi-cog-play',
       component: WorkflowsControl,
       disabled: !sidePanelConfig?.runTask?.enabled,
     },
     {
       type: 'info',
-      title: 'More Info',
+      title: t('sidePanel.moreInfo'),
       icon: 'mdi-information-outline',
       component: InformationDisplayView,
       disabled: !sidePanelConfig?.documentFile?.enabled,

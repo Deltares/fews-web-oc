@@ -12,7 +12,7 @@
       <v-toolbar density="compact">
         <v-text-field
           v-model="search"
-          placeholder="Search for locations"
+          :placeholder="t('search.searchForLocations')"
           variant="outlined"
           hide-details
           clearable
@@ -26,12 +26,12 @@
       <div class="d-flex px-1 pt-3 pb-2 align-center">
         <span class="pe-1">Filter</span>
         <v-btn-toggle density="compact" v-model="showOnlySelected">
-          <v-btn variant="tonal" :value="false">All </v-btn>
+          <v-btn variant="tonal" :value="false">{{ t('all') }}</v-btn>
           <v-btn
             prepend-icon="mdi-checkbox-marked"
             variant="tonal"
             :value="true"
-            >Selected
+            >{{ t('selected') }}
           </v-btn>
         </v-btn-toggle>
         <v-spacer />
@@ -40,7 +40,7 @@
           variant="tonal"
           rounded
           @click.stop="state.selectedItems = []"
-          >Clear all</v-btn
+          >{{ t('clear_all') }}</v-btn
         >
       </div>
       <v-list slim class="search-scroll-container py-0">
@@ -94,11 +94,13 @@ import { GlobalSearchItem, useGlobalSearchState } from '@/stores/globalSearch'
 import HighlightMatch from './HighlightMatch.vue'
 import { cascadeStrategy } from '@/lib/selection'
 import { debouncedRef } from '@vueuse/core'
+import { useI18n } from 'vue-i18n'
 
 interface GlobalSearchItemWithTreeIds extends GlobalSearchItem {
   treeIds: string[]
 }
 
+const { t } = useI18n()
 const { mobile } = useDisplay()
 const state = useGlobalSearchState()
 const search = ref<string | undefined>()

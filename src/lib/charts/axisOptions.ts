@@ -108,6 +108,16 @@ function getBrushOptions(): Partial<CartesianAxesOptions> {
   }
 }
 
+function getLocaleOptions(locale: string): Partial<CartesianAxesOptions> {
+  return {
+    x: [
+      {
+        locale,
+      },
+    ],
+  }
+}
+
 export function getAxisOptions(
   config: ChartConfig,
   settings:
@@ -116,6 +126,7 @@ export function getAxisOptions(
   options?: {
     isVerticalProfile?: boolean
     isBrush?: boolean
+    locale?: string
   },
 ): CartesianAxesOptions {
   const configOptions: Partial<CartesianAxesOptions> = {
@@ -143,6 +154,9 @@ export function getAxisOptions(
 
   if (options?.isBrush) {
     extraOptions.push(getBrushOptions())
+  }
+  if (options?.locale && !options?.isVerticalProfile) {
+    extraOptions.push(getLocaleOptions(options.locale))
   }
 
   return merge(getDefaultOptions(), ...extraOptions)

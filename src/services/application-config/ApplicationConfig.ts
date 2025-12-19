@@ -16,4 +16,5 @@ export type ApplicationConfig = {
   VITE_LOGIN_BUTTON_PROPS: string | VBtn['$props']
   VITE_LOGIN_STYLESHEET_URL: string
   VITE_REQUEST_HEADER_AUTHORIZATION: RequestHeaderAuthorization
+  VITE_I18N_LOCALE: string
 }

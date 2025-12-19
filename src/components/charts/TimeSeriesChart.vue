@@ -63,6 +63,7 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
 import { getThresholdValues, isUniqueThreshold } from '@/lib/charts/thresholds'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   config: ChartConfig
@@ -84,6 +85,8 @@ defineExpose({
   axisAccept,
 })
 
+const { locale } = useI18n()
+
 let thresholdLines!: ThresholdLine[]
 let thresholdLinesVisitor!: AlertLines
 let axis!: CartesianAxes
@@ -99,6 +102,7 @@ onMounted(() => {
   if (chartContainer.value) {
     const axisOptions = getAxisOptions(props.config, props.settings, {
       isVerticalProfile: props.verticalProfile,
+      locale: locale.value,
     })
     axis = new CartesianAxes(
       chartContainer.value,

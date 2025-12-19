@@ -9,6 +9,7 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { getResourcesStaticUrl } from './lib/fews-config/index.js'
+import { i18n, setI18nLanguage } from './plugins/i18n.js'
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
@@ -42,6 +43,9 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
     if (configManager.authenticationIsEnabled) {
       await authenticationManager.init(configManager.getUserManagerSettings())
     }
+    const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en')
+    await setI18nLanguage(i18n, locale)
+    app.use(i18n)
     app.use(router)
     app.mount('#app')
   })
