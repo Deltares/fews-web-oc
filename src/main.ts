@@ -44,10 +44,10 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
     if (configManager.authenticationIsEnabled) {
       await authenticationManager.init(configManager.getUserManagerSettings())
     }
-    const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en_EN')
+    const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en-EN')
     const i18n = createI18n({
       legacy: false,
-      fallbackLocale: 'en_EN',
+      fallbackLocale: 'en-EN',
       fallbackWarn: false,
     })
     await setI18nLanguage(i18n, locale)

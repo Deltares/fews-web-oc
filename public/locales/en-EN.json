@@ -1,5 +1,4 @@
 {
-  "locale": "nl",
   "thresholds": "Thresholds",
   "download_time_series": "Download time series ...",
   "switch_to": "Switch to",
@@ -28,8 +27,8 @@
   "browser_time": "Browser time:",
   "startDateBeforeEndDate": "Start date must be before end date",
   "EndDateAfterStartDate": "End date must be after start date",
-  "task_overview": "Task Overview",
-  "import_status": "Import Status",
+  "task_overview": "Task overview",
+  "import_status": "Import status",
   "noncurrent_data": "Non-Current Data",
   "run_tasks": "Run Tasks",
   "more_info": "More Info"
