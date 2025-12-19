@@ -172,7 +172,7 @@ import DateTimeSliderValues from '@/components/general/DateTimeSliderValues.vue'
 import MapComponent from '@/components/map/MapComponent.vue'
 import AnimatedStreamlineRasterLayer from '@/components/wms/AnimatedStreamlineRasterLayer.vue'
 
-import { ref, computed, onBeforeMount, watch, watchEffect } from 'vue'
+import { ref, computed, watch, watchEffect } from 'vue'
 import {
   convertBoundingBoxToLngLatBounds,
   useWmsCapabilities,
