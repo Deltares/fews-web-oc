@@ -1,35 +1,54 @@
 {
-  "thresholds": "Schwellenwerte",
-  "download_time_series": "Zeitreihe herunterladen ...",
-  "switch_to": "Wechseln zu",
-  "about": "Über",
-  "default": "Standard",
-  "custom": "Benutzerdefiniert",
-  "period_presets": "Zeitraum-Voreinstellungen",
-  "all_settings": "Einstellungen",
-  "settings": "Einstellungen",
-  "search_for_locations": "Messstelle",
-  "search_location": "Messstelle",
-  "cancel": "Abbrechen",
-  "download_timeseries": "Zeitreihe herunterladen",
-  "file_name": "Dateiname",
-  "no_threshold_crossing": "Zurzeit keine Schwellenwertüberschreitungen",
-  "threshold_overview": "Übersicht Schwellenwerte",
-  "time_range": "Zeitbereich",
-  "sign_out": "Abmelden",
-  "select_all": "Alle auswählen",
-  "overlays": "Layerauswahl",
-  "all": "Alle",
-  "clear_all": "Entfernen",
-  "selected": "Ausgewählt",
-  "start": "Start",
-  "end": "Ende",
-  "browser_time": "Browser Zeit:",
-  "startDateBeforeEndDate": "Startdatum muss vor Enddatum liegen",
-  "EndDateAfterStartDate": "Enddatum muss nach Startdtaum liegen",
-  "task_overview": "Aufgaben Übersicht",
-  "import_status": "Import Status",
-  "noncurrent_data": "Nicht-Aktuelle Daten",
-  "run_tasks": "Aufgabe ausführen",
-  "more_info": "Informationen"
+  "common": {
+    "all": "Alle",
+    "cancel": "Abbrechen",
+    "clearAll": "Entfernen",
+    "custom": "Benutzerdefiniert",
+    "default": "Standard",
+    "end": "Ende",
+    "selected": "Ausgewählt",
+    "selectAll": "Alle auswählen",
+    "start": "Start"
+  },
+  "layout": {
+    "about": "Über",
+    "switchTo": "Wechseln zu"
+  },
+  "auth": {
+    "signOut": "Abmelden"
+  },
+  "timeControl": {
+    "browserTime": "Browser Zeit:",
+    "periodPresets": "Zeitraum-Voreinstellungen",
+    "startDateBeforeEndDate": "Startdatum muss vor Enddatum liegen",
+    "endDateAfterStartDate": "Enddatum muss nach Startdtaum liegen"
+  },
+  "thresholds": {
+    "thresholds": "Schwellenwerte",
+    "noThresholdCrossing": "Zurzeit keine Schwellenwertüberschreitungen",
+    "thresholdOverview": "Übersicht Schwellenwerte"
+  },
+  "download": {
+    "downloadTimeSeries": "Zeitreihe herunterladen",
+    "fileName": "Dateiname"
+  },
+  "search": {
+    "searchForLocations": "Messstelle",
+    "searchLocation": "Messstelle"
+  },
+  "userSettings": {
+    "allSettings": "Alle Einstellungen",
+    "settings": "Einstellungen"
+  },
+  "wms": {
+    "overlays": "Layerauswahl",
+    "timeRange": "Zeitbereich"
+  },
+  "tasks": {
+    "taskOverview": "Aufgaben Übersicht",
+    "importStatus": "Import Status",
+    "noncurrentData": "Nicht-Aktuelle Daten",
+    "runTasks": "Aufgabe ausführen",
+    "moreInfo": "Informationen"
+  }
 }

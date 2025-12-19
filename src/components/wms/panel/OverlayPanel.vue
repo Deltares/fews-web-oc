@@ -1,8 +1,8 @@
 <template>
   <v-list-item prepend-icon="mdi-layers-outline">
-    <span class="pa-0">{{ t('overlays') }}</span>
+    <span class="pa-0">{{ t('wms.overlays') }}</span>
     <v-list-item
-      :title="t('select_all')"
+      :title="t('common.selectAll')"
       @click="toggleAll"
       class="ps-1"
       density="compact"

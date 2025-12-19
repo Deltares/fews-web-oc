@@ -91,7 +91,7 @@
             aria-label="All User Settings"
             role="button"
           >
-            {{ t('all_settings') }}
+            {{ t('userSettings.allSettings') }} ...
           </v-list-item>
         </template>
       </UserSettingsDialog>

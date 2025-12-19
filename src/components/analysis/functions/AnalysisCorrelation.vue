@@ -35,7 +35,7 @@
       />
       <div class="flex-1-1 w-100">
         <v-toolbar height="32" color="transparent">
-          <span>{{ t('thresholds') }}</span>
+          <span>{{ t('thresholds.thresholds') }}</span>
         </v-toolbar>
 
         <v-number-input

@@ -2,12 +2,12 @@
   <v-dialog v-model="showDialog" max-width="400">
     <v-card>
       <v-card-title class="headline">{{
-        t('download_timeseries')
+        t('download.downloadTimeseries')
       }}</v-card-title>
       <v-card-text>
         <v-text-field
           v-model="fileName"
-          :label="t('file_name')"
+          :label="t('download.fileName')"
           variant="underlined"
           density="compact"
         >
@@ -42,7 +42,7 @@
         >
           Download
         </v-btn>
-        <v-btn @click="() => cancelDialog()">{{ t('cancel') }}</v-btn>
+        <v-btn @click="() => cancelDialog()">{{ t('common.cancel') }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

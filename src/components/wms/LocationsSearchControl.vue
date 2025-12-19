@@ -115,7 +115,7 @@ function onSelectLocationIds(ids: string[]) {
 }
 
 function formatLocationsText(locations: Location[]) {
-  if (!locations.length) return t('search_location')
+  if (!locations.length) return t('search.searchLocation')
   if (locations.length > 1) {
     return (
       locations

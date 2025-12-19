@@ -21,22 +21,22 @@
             <div class="pa-4">
               <v-date-input
                 v-model="customStartDate"
-                :label="t('start')"
+                :label="t('common.start')"
                 density="compact"
                 variant="solo-filled"
                 flat
                 :rules="[
-                  () => dateOrderIsCorrect || t('startDateBeforeEndDate'),
+                  () => dateOrderIsCorrect || t('timeControl.startDateBeforeEndDate'),
                 ]"
               />
               <v-date-input
                 v-model="customEndDate"
-                :label="t('end')"
+                :label="t('common.end')"
                 density="compact"
                 variant="solo-filled"
                 flat
                 :rules="[
-                  () => dateOrderIsCorrect || t('EndDateAfterStartDate'),
+                  () => dateOrderIsCorrect || t('timeControl.endDateAfterStartDate'),
                 ]"
               />
             </div>
@@ -53,7 +53,7 @@
         </v-col>
       </v-row>
       <v-card-actions>
-        <span>{{ t('browser_time') }}</span>
+        <span>{{ t('timeControl.browserTime') }}</span>
         <v-chip small>
           {{ d(new Date(), 'timeControlMenu__browserTime') }}
         </v-chip>

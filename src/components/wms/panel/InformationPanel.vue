@@ -36,7 +36,7 @@
         </v-list-item>
         <v-divider></v-divider>
         <v-list-item
-          :title="t('time_range')"
+          :title="t('wms.timeRange')"
           :subtitle="formattedTimeRange"
           prepend-icon="mdi-clock-time-four-outline"
         >

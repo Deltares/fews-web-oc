@@ -1,20 +1,20 @@
 <template>
   <v-list class="interval-list" density="compact">
     <v-list-item :active="0 === selectedIndex" @click="onSelectInterval(0)">
-      {{ $t('default') }}
+      {{ $t('common.default') }}
       <template v-slot:append="{ isActive }">
         <v-icon v-show="isActive" small> mdi-check </v-icon>
       </template>
     </v-list-item>
     <v-list-item :active="1 === selectedIndex" @click="onSelectInterval(1)">
-      {{ $t('custom') }}
+      {{ $t('common.custom') }}
       <template v-slot:append="{ isActive }">
         <v-icon v-show="isActive" small> mdi-check </v-icon>
       </template>
     </v-list-item>
     <template v-if="props.items.length">
       <v-divider></v-divider>
-      <v-list-subheader>{{ $t('period_presets') }}</v-list-subheader>
+      <v-list-subheader>{{ $t('timeControl.periodPresets') }}</v-list-subheader>
       <v-list-item
         v-for="(item, index) in props.items"
         :key="index"

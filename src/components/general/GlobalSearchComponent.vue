@@ -12,7 +12,7 @@
       <v-toolbar density="compact">
         <v-text-field
           v-model="search"
-          :placeholder="t('search_for_locations')"
+          :placeholder="t('search.searchForLocations')"
           variant="outlined"
           hide-details
           clearable

@@ -11,7 +11,7 @@
         <v-list density="compact">
           <v-list-item>{{ name }}</v-list-item>
           <v-list-item @click="logout">
-            <v-list-item-title>{{ t('sign_out') }}</v-list-item-title>
+            <v-list-item-title>{{ t('auth.signOut') }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>

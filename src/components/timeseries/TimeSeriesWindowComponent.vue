@@ -123,7 +123,7 @@ const displayActionItems = computed(() => {
   return [
     {
       icon: 'mdi-download',
-      label: t('download_time_series'),
+      label: t('download.downloadTimeseries') + ' ...',
       action: () => {
         showDownloadDialog.value = true
       },

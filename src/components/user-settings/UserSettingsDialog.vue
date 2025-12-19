@@ -9,7 +9,7 @@
       <slot name="activator" :props="props"></slot>
     </template>
     <v-card>
-      <v-toolbar :title="t('settings')" density="compact">
+      <v-toolbar :title="t('userSettings.settings')" density="compact">
         <v-btn
           icon="mdi-close"
           @click="dialog = false"

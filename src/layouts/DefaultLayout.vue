@@ -49,7 +49,7 @@
           v-else-if="configStore.activeComponents.length > 1"
           density="compact"
         >
-          <v-list-subheader>{{ $t('switch_to') }}</v-list-subheader>
+          <v-list-subheader>{{ $t('layout.switchTo') }}</v-list-subheader>
           <v-menu origin="bottom" width="320">
             <template #activator="{ props }">
               <v-list-item
