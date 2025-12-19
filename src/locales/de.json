@@ -44,7 +44,7 @@
     "overlays": "Layerauswahl",
     "timeRange": "Zeitbereich"
   },
-  "tasks": {
+  "sidePanel": {
     "taskOverview": "Aufgaben Übersicht",
     "importStatus": "Import Status",
     "noncurrentData": "Nicht-Aktuelle Daten",

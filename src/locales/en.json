@@ -44,7 +44,7 @@
     "overlays": "Overlays",
     "timeRange": "Time range"
   },
-  "tasks": {
+  "sidePanel": {
     "taskOverview": "Task overview",
     "importStatus": "Import status",
     "noncurrentData": "Non-current data",
