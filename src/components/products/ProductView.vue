@@ -268,6 +268,7 @@ interface Props {
   editPermissions?: boolean
   showAllVersions?: boolean
   productKey?: string
+  template?: ProductMetaDataType
 }
 
 const {
@@ -278,6 +279,7 @@ const {
   editPermissions = false,
   productKey,
   showAllVersions = false,
+  template,
 } = defineProps<Props>()
 const src = ref('')
 const viewMode = ref('')
@@ -329,9 +331,9 @@ function newUploadFile() {
 
 function newProduct() {
   uploadData.value = {
-    name: mostRecentTemplate.value?.attributes.name || '',
+    name: template?.attributes.name || '',
     author: userName.value || '',
-    timeZero: mostRecentTemplate.value?.timeZero,
+    timeZero: template?.timeZero,
   }
 }
 
@@ -343,7 +345,7 @@ watch(file, (newFile) => {
 const uploadIsValid = ref(false)
 
 const canCreateNew = computed(() => {
-  return mostRecentTemplate.value !== undefined
+  return template !== undefined
 })
 
 const archiveProductConfig = computed(() => {
@@ -361,13 +363,11 @@ const areaId = computed(() => {
   return archiveProductSets[0].constraints?.areaId || 'weboc'
 })
 
-const {
-  products,
-  getProductByKey,
-  fetchProducts,
-  lastUpdated,
-  mostRecentTemplate,
-} = useProducts(baseUrl, viewPeriod, archiveProductConfig)
+const { products, getProductByKey, fetchProducts, lastUpdated } = useProducts(
+  baseUrl,
+  viewPeriod,
+  archiveProductConfig,
+)
 
 const filteredProducts = computed(() => {
   if (showAllVersions) {
@@ -476,31 +476,23 @@ function resetUpload() {
 async function uploadProduct() {
   if (canUpload.value && uploadData.value && file.value) {
     await uploadProductFile(file.value)
-  } else if (
-    canCreateNew.value &&
-    uploadData.value &&
-    mostRecentTemplate.value
-  ) {
-    const url = getProductURL(baseUrl, mostRecentTemplate.value)
+  } else if (canCreateNew.value && uploadData.value && template) {
+    const url = getProductURL(baseUrl, template)
     const transformRequest = createTransformRequestFn()
     const request = await transformRequest(new Request(url, {}))
     const response = await fetch(request)
     const htmlContent = await response.text()
     const newProductEntry: ProductMetaDataType = {
-      ...mostRecentTemplate.value,
+      ...template,
       attributes: {
-        ...mostRecentTemplate.value.attributes,
+        ...template.attributes,
         author: uploadData.value.author,
         name: uploadData.value.name,
-        productId: mostRecentTemplate.value.attributes.productId.replace(
-          /^template_/,
-          '',
-        ),
+        productId: template.attributes.productId.replace(/^template_/, ''),
       },
     }
     const fileName =
-      mostRecentTemplate.value.relativePathProducts[0].split('/').pop() ??
-      'unknown'
+      template.relativePathProducts[0].split('/').pop() ?? 'unknown'
     await uploadHtmlProduct(newProductEntry, htmlContent, fileName)
   }
 }

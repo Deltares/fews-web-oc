@@ -5,6 +5,7 @@
     :archiveProducts="archiveProducts"
     :relativeViewPeriod="config?.relativeViewPeriod"
     :editPermissions="config?.editPermissions"
+    :template="template"
   />
 </template>
 
@@ -13,9 +14,12 @@ import type { DisplayCompose } from '@/lib/products'
 import ProductView from '@/components/products/ProductView.vue'
 import { computed } from 'vue'
 import type { ProductBrowserTableConfig } from '@/components/products/ProductsBrowserTable.vue'
+import { configManager } from '@/services/application-config'
+import { useProduct } from '@/services/useProducts'
+import { periodToIntervalItem } from '@/lib/TimeControl/interval'
 
 interface Props {
-  config?: DisplayCompose
+  config: DisplayCompose
   productKey?: string
 }
 
@@ -26,9 +30,35 @@ const archiveProducts = computed(() => {
   return product ? [product] : []
 })
 
+const viewPeriod = computed(() =>
+  config.relativeViewPeriod
+    ? periodToIntervalItem(config.relativeViewPeriod)
+    : {},
+)
+
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { product: template } = useProduct(
+  baseUrl,
+  viewPeriod,
+  () => config.compose?.template,
+)
+
 const tableLayout: ProductBrowserTableConfig = {
   preview: false,
   type: 'table',
-  headers: [],
+  headers: [
+    {
+      title: 'Name',
+      attribute: 'name',
+    },
+    {
+      title: 'Author',
+      attribute: 'author',
+    },
+    {
+      title: 'Creation Time',
+      property: 'timeZero',
+    },
+  ],
 }
 </script>
