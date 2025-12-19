@@ -147,7 +147,7 @@
               type="datetime-local"
             />
             <div v-else>
-              {{ dateFormatter.format(item.date) }}
+              {{ d(item.date, 'timeSeriesTable__date') }}
             </div>
           </td>
           <td v-for="id in seriesIds">
@@ -183,7 +183,6 @@ import { getUniqueSeriesIds } from '@/lib/charts/getUniqueSeriesIds'
 import type { TableHeaders } from '@/lib/table/types/TableHeaders'
 import { createTableHeaders } from '@/lib/table/createTableHeaders'
 import {
-  dateFormatter,
   createTableData,
   tableDataToTimeSeries,
   type TableData,
@@ -200,6 +199,7 @@ import {
   toISOString,
 } from '@/lib/date'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   config: ChartConfig
@@ -222,6 +222,8 @@ const emit = defineEmits(['change', 'update:isEditing'])
 
 const store = useFewsPropertiesStore()
 const configStore = useConfigStore()
+const { d } = useI18n()
+
 const readOnlyMode = ref<boolean>(configStore.general.readonlyMode ?? false)
 
 const seriesIds = ref<string[]>([])

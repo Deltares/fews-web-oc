@@ -3,45 +3,45 @@ import messages from '@intlify/unplugin-vue-i18n/messages'
 
 const datetimeFormats: I18nOptions['datetimeFormats'] = {
   en: {
-    timeControlAppBar: {
+    timeControlMenu__appBar: {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
       timeZoneName: 'short',
     },
-    timeControlBrowserTime: {
+    timeControlMenu__browserTime: {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
       timeZoneName: 'short',
+    },
+    timeSeriesTable__date: {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
     },
   },
   de: {
-    timeControlAppBar: {
+    timeControlMenu__appBar: {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
       timeZoneName: 'short',
     },
-    timeControlBrowserTime: {
+    timeControlMenu__browserTime: {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
       timeZoneName: 'short',
     },
-  },
-  nl: {
-    timeControlAppBar: {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-      timeZoneName: 'short',
-    },
-    timeControlBrowserTime: {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-      timeZoneName: 'short',
+    timeSeriesTable__date: {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
     },
   },
 }
