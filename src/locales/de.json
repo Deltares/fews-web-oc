@@ -18,7 +18,7 @@
     "signOut": "Abmelden"
   },
   "timeControl": {
-    "browserTime": "Browser Zeit:",
+    "browserTime": "Browser Zeit",
     "periodPresets": "Zeitraum-Voreinstellungen",
     "startDateBeforeEndDate": "Startdatum muss vor Enddatum liegen",
     "endDateAfterStartDate": "Enddatum muss nach Startdtaum liegen"

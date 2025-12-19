@@ -18,7 +18,7 @@
     "signOut": "Sign out"
   },
   "timeControl": {
-    "browserTime": "Browser time:",
+    "browserTime": "Browser time",
     "periodPresets": "period presets",
     "startDateBeforeEndDate": "Start date must be before end date",
     "endDateAfterStartDate": "End date must be after start date"
@@ -26,7 +26,7 @@
   "thresholds": {
     "thresholds": "Thresholds",
     "noThresholdCrossing": "No active threshold crossings",
-    "thresholdOverview": "Thresholds Overview"
+    "thresholdOverview": "Thresholds overview"
   },
   "download": {
     "downloadTimeSeries": "Download time series",

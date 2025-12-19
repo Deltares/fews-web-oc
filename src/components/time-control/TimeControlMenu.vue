@@ -57,7 +57,7 @@
         </v-col>
       </v-row>
       <v-card-actions>
-        <span>{{ t('timeControl.browserTime') }}</span>
+        <span>{{ t('timeControl.browserTime') }}:</span>
         <v-chip small>
           {{ d(new Date(), 'timeControl__browserTime') }}
         </v-chip>
