@@ -27,10 +27,10 @@ export const locationLayerIds = Object.values(locationMapIds.layer)
 
 // NOTE: When multiple layers are clicked the order of the layers here is important.
 export const clickableLocationLayerIds = [
-  locationMapIds.layer.fill,
   locationMapIds.layer.circle,
   locationMapIds.layer.symbol,
   locationMapIds.layer.childSymbol,
+  locationMapIds.layer.fill,
 ]
 
 export function addPropertiesToLocationGeojson(
