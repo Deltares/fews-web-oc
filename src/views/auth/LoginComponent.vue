@@ -31,12 +31,11 @@ const { t } = useI18n()
 
 function initialsFromName(givenName: string): string {
   let initialsString = ''
-  for (let i = 0; i < givenName.length; i++) {
-    const character = givenName[i]
+  for (const character of givenName){
     if (character !== character.toLowerCase()) {
       initialsString = initialsString + character
     }
-    if (initialsString.length == 2) return initialsString
+    if (initialsString.length === 2) return initialsString
   }
   return initialsString
 }
