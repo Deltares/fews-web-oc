@@ -20,8 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
-import { ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
 import { useRoute } from 'vue-router'
 import type { User } from 'oidc-client-ts'
