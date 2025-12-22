@@ -110,7 +110,8 @@ watch(capabilities, () => {
   }
   if (props.panelId !== '' && foundGroup) {
     foundPanel =
-      foundGroup.displayPanels.find((panel) => panel.name === props.panelId) ?? null
+      foundGroup.displayPanels.find((panel) => panel.name === props.panelId) ??
+      null
   }
 
   if (!foundGroup || !foundPanel) {
