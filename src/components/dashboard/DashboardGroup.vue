@@ -59,7 +59,7 @@ function getDashboardItem(items: WebOCDashboardItem[]) {
   const _actionId = activeActionId.value
   if (_actionId === undefined) return items[0]
 
-  const item = items.find((item) => item.actionIds?.includes(_actionId))
-  return item ?? items[0]
+  const foundItem = items.find((item) => item.actionIds?.includes(_actionId))
+  return foundItem ?? items[0]
 }
 </script>
