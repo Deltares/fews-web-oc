@@ -51,10 +51,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import packageConfig from '../../package.json'
 import { PiWebserviceProvider, Version } from '@deltares/fews-pi-requests'
-import { onMounted } from 'vue'
 import { useConfigStore } from '../stores/config.ts'
 import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'

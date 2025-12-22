@@ -17,8 +17,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, useTemplateRef } from 'vue'
-import { ref, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
   addD3ZoomToSvg,

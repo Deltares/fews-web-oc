@@ -36,10 +36,6 @@ const showToolBar = computed(() => {
 })
 
 const fullscreen = ref(false)
-
-// const fullscreenIcon = computed(() => {
-//   return fullscreen.value ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
-// })
 </script>
 
 <style scoped>

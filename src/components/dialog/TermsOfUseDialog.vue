@@ -49,8 +49,8 @@ const url = computed(() => {
     .getComponentsByType('HtmlDisplay')
     ?.find((c) => c.path === termsPath)
 
-  const url = matchingComponent?.url
-  return url ? getResourcesStaticUrl(url) : url
+  const componentUrl = matchingComponent?.url
+  return componentUrl ? getResourcesStaticUrl(componentUrl) : componentUrl
 })
 
 function onAgreeClick() {

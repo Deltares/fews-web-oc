@@ -40,10 +40,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch, watchEffect } from 'vue'
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/antd.css'
-import { watchEffect } from 'vue'
 import { scaleLinear } from 'd3-scale'
 import { floatPrecision } from '@/lib/utils/math'
 

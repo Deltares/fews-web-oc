@@ -19,8 +19,7 @@ import { useConfigStore } from '@/stores/config.ts'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { useUserSettingsStore } from './stores/userSettings'
 import { useTheme } from 'vuetify'
-import { usePreferredDark } from '@vueuse/core'
-import { useDark, useToggle } from '@vueuse/core'
+import { useDark, usePreferredDark, useToggle } from '@vueuse/core'
 
 import '@/assets/fews-flags.css'
 

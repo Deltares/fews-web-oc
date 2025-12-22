@@ -77,13 +77,13 @@ function updateSliderValues(): void {
 
   // Create a <rect> element for each data point that should align nicely with
   // the centres of the slider positions.
-  const data: SliderEvent[] = props.values.map((event, index) => ({
+  const eventData: SliderEvent[] = props.values.map((event, index) => ({
     index,
     value: event.y,
   }))
   svg
     .selectAll('rect')
-    .data(data)
+    .data(eventData)
     .join('rect')
     .attr('x', xFunc)
     .attr('width', widthFunc)
