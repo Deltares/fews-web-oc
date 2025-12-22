@@ -1,6 +1,6 @@
 <template>
   <div class="w-100 h-100 d-flex flex-column">
-    <v-navigation-drawer right permanent width="350">
+    <v-navigation-drawer v-model="showFilters" right width="350">
       <v-list>
         <template v-if="manualFilters.length && systemFilters.length">
           <v-list-subheader>Types</v-list-subheader>
@@ -73,6 +73,15 @@
       </v-footer>
     </v-navigation-drawer>
     <v-toolbar density="compact">
+      <v-btn
+        icon
+        @click="showFilters = !showFilters"
+        :aria-label="showFilters ? 'Hide filters' : 'Show filters'"
+      >
+        <v-icon>{{
+          showFilters ? 'mdi-filter-multiple' : 'mdi-filter-multiple-outline'
+        }}</v-icon>
+      </v-btn>
       <v-spacer />
       <v-btn @click="refreshLogs" :loading="isLoading" icon="mdi-refresh">
       </v-btn>
@@ -134,6 +143,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import { VDateInput } from 'vuetify/labs/components'
 import LogItem from './LogItem.vue'
 import DateSeparator from './DateSeparator.vue'
@@ -176,6 +186,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { mobile } = useDisplay()
+
+const showFilters = ref<boolean>(!mobile.value)
 
 const search = ref<string>()
 const maxCount = ref<number>(20000)

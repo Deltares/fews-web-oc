@@ -4,7 +4,11 @@
       <div class="icon-group" v-bind="props">
         <div class="icon-group__underlay"></div>
         <span class="icon-group__label">
-          {{ d(store.systemTime, 'timeControl__appBar') }}
+          {{
+            mobile
+              ? d(store.systemTime, 'timeControl__mobile')
+              : d(store.systemTime, 'timeControl')
+          }}
         </span>
         <v-btn icon size="small" class="last-btn">
           <v-icon size="large">{{
@@ -14,7 +18,7 @@
       </div>
     </template>
 
-    <v-card width="500px">
+    <v-card :style="{ width: '90vw', maxWidth: '500px' }">
       <v-row no-gutters>
         <v-col>
           <v-form ref="form">
@@ -59,7 +63,7 @@
       <v-card-actions>
         <span>{{ t('timeControl.browserTime') }}:</span>
         <v-chip small>
-          {{ d(new Date(), 'timeControl__browserTime') }}
+          {{ d(new Date(), 'timeControl') }}
         </v-chip>
       </v-card-actions>
     </v-card>
@@ -67,20 +71,22 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watchEffect, watch } from 'vue'
 import IntervalSelector from './IntervalSelector.vue'
 import { VDateInput } from 'vuetify/labs/components'
 import type { VForm } from 'vuetify/components'
+import { useI18n } from 'vue-i18n'
+import { useDisplay } from 'vuetify'
 
-import { ref, computed, watchEffect, watch } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime'
 import { useConfigStore } from '@/stores/config'
 import { periodPresetToIntervalItem } from '@/lib/TimeControl/interval'
-import { useI18n } from 'vue-i18n'
 
 const { t, d } = useI18n()
 
 const store = useSystemTimeStore()
 const configStore = useConfigStore()
+const { mobile } = useDisplay()
 
 const form = ref<VForm>()
 

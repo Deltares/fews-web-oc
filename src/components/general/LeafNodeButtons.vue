@@ -1,5 +1,5 @@
 <template>
-  <v-menu v-if="items.length > 0">
+  <v-menu v-if="items.length > 1">
     <template #activator="{ props }">
       <v-btn :variant v-bind="props" class="text-none" aria-label="Leaf node">
         <v-icon start>mdi-filter-variant</v-icon>

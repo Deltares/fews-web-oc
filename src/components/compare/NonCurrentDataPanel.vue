@@ -1,10 +1,10 @@
 <template>
-  <div class="task-runs-panel h-100">
+  <div class="non-current-data__panel h-100">
     <div class="d-flex pt-3 pb-2 align-center">
       <v-spacer />
       <PeriodFilterControl v-model="period" />
     </div>
-    <div class="task-content">
+    <div class="non-current-data__content">
       <v-list-item v-if="sortedTasks.length === 0">
         No tasks with data to visualize for this display.
       </v-list-item>
@@ -39,21 +39,23 @@
       </v-virtual-scroll>
     </div>
     <v-divider />
-    <v-list-item :title="`Last updated: ${lastUpdatedString}`">
-      <template #append>
-        <v-btn
-          density="compact"
-          variant="plain"
-          icon="mdi-refresh"
-          :loading="isLoading"
-          @click="refreshTaskRuns()"
-        >
-          <template #loader>
-            <v-progress-circular size="20" indeterminate />
-          </template>
-        </v-btn>
-      </template>
-    </v-list-item>
+    <v-footer>
+      <div class="refresh-container ms-3">
+        Last updated: {{ lastUpdatedString }}
+      </div>
+      <v-spacer />
+      <v-btn
+        density="compact"
+        variant="plain"
+        icon="mdi-refresh"
+        :loading="isLoading"
+        @click="refreshTaskRuns()"
+      >
+        <template #loader>
+          <v-progress-circular size="20" indeterminate />
+        </template>
+      </v-btn>
+    </v-footer>
   </div>
 </template>
 <script setup lang="ts">
@@ -206,15 +208,14 @@ const lastUpdatedString = computed<string>(() => {
   height: 28px;
 }
 
-.task-runs-panel {
-  width: 450px;
+.non-current-data__panel {
   display: grid;
   grid-template-rows: auto 1fr auto auto;
   height: 100%;
   overflow: hidden;
 }
 
-.task-content {
+.non-current-data__content {
   overflow: hidden;
   position: relative;
 }

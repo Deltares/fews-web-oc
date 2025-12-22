@@ -3,8 +3,8 @@
     <v-btn
       icon
       :active="sidePanelStore.isActive(type)"
-      @click="sidePanelStore.toggleActive(type)"
       size="small"
+      @click="sidePanelStore.toggleActive(type)"
     >
       <v-icon :icon="icon" size="large"></v-icon>
     </v-btn>
@@ -14,10 +14,13 @@
     <div
       v-if="sidePanelStore.isActive(type)"
       class="d-flex flex-column h-100 side-panel"
+      :style="mobile ? 'width: 100vw;' : 'width: 450px;'"
       aria-label="Side panel"
     >
       <v-toolbar density="compact">
-        <span class="ms-4">{{ title }}</span>
+        <span class="ms-4">
+          {{ title }}
+        </span>
         <template #append>
           <v-btn
             @click="sidePanelStore.toggleActive(type)"
@@ -36,6 +39,7 @@
 
 <script setup lang="ts">
 import { type SidePanel, useSidePanelStore } from '@/stores/sidePanel'
+import { useDisplay } from 'vuetify'
 
 interface Props {
   type: SidePanel
@@ -45,6 +49,7 @@ interface Props {
 defineProps<Props>()
 
 const sidePanelStore = useSidePanelStore()
+const { mobile } = useDisplay()
 </script>
 
 <style scoped>

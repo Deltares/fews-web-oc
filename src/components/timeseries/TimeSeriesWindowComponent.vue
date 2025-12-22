@@ -15,11 +15,11 @@
           :aria-label="item.label"
           :text="item.label"
           :active="displayType === item.value"
+          :disabled="item.disabled"
           variant="text"
-          width="20px"
+          min-width="48"
           class="pa-0 text-capitalize"
           @click="displayType = item.value"
-          :disabled="item.disabled"
         >
           <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
         </v-btn>

@@ -39,21 +39,23 @@
       </v-virtual-scroll>
     </div>
     <v-divider />
-    <v-list-item :title="`Last updated: ${lastUpdatedString}`">
-      <template #append>
-        <v-btn
-          density="compact"
-          variant="plain"
-          icon="mdi-refresh"
-          :loading="isLoading"
-          @click="refreshTaskRuns()"
-        >
-          <template #loader>
-            <v-progress-circular size="20" indeterminate />
-          </template>
-        </v-btn>
-      </template>
-    </v-list-item>
+    <v-footer>
+      <div class="refresh-container ms-3">
+        Last updated: {{ lastUpdatedString }}
+      </div>
+      <v-spacer />
+      <v-btn
+        density="compact"
+        variant="plain"
+        icon="mdi-refresh"
+        :loading="isLoading"
+        @click="refreshTaskRuns()"
+      >
+        <template #loader>
+          <v-progress-circular size="20" indeterminate />
+        </template>
+      </v-btn>
+    </v-footer>
   </div>
 </template>
 <script setup lang="ts">
@@ -186,7 +188,6 @@ const lastUpdatedString = computed<string>(() => {
 }
 
 .task-runs-panel {
-  width: 450px;
   display: grid;
   grid-template-rows: auto 1fr auto auto;
   height: 100%;

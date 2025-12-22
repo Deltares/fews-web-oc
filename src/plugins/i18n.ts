@@ -2,17 +2,16 @@ import { createI18n, I18n, I18nOptions } from 'vue-i18n'
 
 const datetimeFormats: I18nOptions['datetimeFormats'] = {
   en: {
-    timeControl__appBar: {
+    timeControl: {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
       timeZoneName: 'short',
     },
-    timeControl__browserTime: {
+    timeControl__mobile: {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
-      timeZoneName: 'short',
     },
     timeSeriesTable__date: {
       year: 'numeric',
@@ -23,17 +22,16 @@ const datetimeFormats: I18nOptions['datetimeFormats'] = {
     },
   },
   de: {
-    timeControl__appBar: {
+    timeControl: {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
       timeZoneName: 'short',
     },
-    timeControl__browserTime: {
+    timeControl__mobile: {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
-      timeZoneName: 'short',
     },
     timeSeriesTable__date: {
       year: 'numeric',
