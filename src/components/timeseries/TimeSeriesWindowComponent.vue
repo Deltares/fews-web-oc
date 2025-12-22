@@ -15,12 +15,11 @@
           :aria-label="item.label"
           :text="item.label"
           :active="displayType === item.value"
-          variant="text"
-          width="20px"
-          class="pa-0 text-capitalize"
-          :style="`min-width: ${mobile ? 48 : 64}px !important`"
-          @click="displayType = item.value"
           :disabled="item.disabled"
+          variant="text"
+          min-width="48"
+          class="pa-0 text-capitalize"
+          @click="displayType = item.value"
         >
           <v-icon :style="item.iconStyle">{{ item.icon }}</v-icon>
         </v-btn>
@@ -74,7 +73,6 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { useDisplay } from 'vuetify'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
@@ -100,7 +98,6 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t } = useI18n()
-const { mobile } = useDisplay()
 
 const userSettings = useUserSettingsStore()
 
