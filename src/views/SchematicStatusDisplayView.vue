@@ -99,21 +99,21 @@ const { capabilities } = useSsdCapabilities(baseUrl, () => props.panelId)
 // If the capabilities changes, make sure our currently selected groupId and panelId are still
 // valid. If invalid or empty, select the first group and panel.
 watch(capabilities, () => {
-  let group: SsdDisplayGroup | null = null
-  let panel: SsdDisplayPanel | null = null
+  let foundGroup: SsdDisplayGroup | null = null
+  let foundPanel: SsdDisplayPanel | null = null
 
   if (props.groupId !== '' && capabilities.value) {
-    group =
+    foundGroup =
       capabilities.value.displayGroups.find(
         (group) => group.name === props.groupId,
       ) ?? null
   }
-  if (props.panelId !== '' && group) {
-    panel =
-      group.displayPanels.find((panel) => panel.name === props.panelId) ?? null
+  if (props.panelId !== '' && foundGroup) {
+    foundPanel =
+      foundGroup.displayPanels.find((panel) => panel.name === props.panelId) ?? null
   }
 
-  if (!group || !panel) {
+  if (!foundGroup || !foundPanel) {
     // Update the route with the first member of capabilities, but only if it exists.
     const newGroupId = capabilities.value?.displayGroups[0].name
     const newPanelId =
