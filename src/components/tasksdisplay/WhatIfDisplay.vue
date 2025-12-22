@@ -1,6 +1,8 @@
 <template>
-  <div class="d-flex w-100 h-100 justify-center overflow-y-auto">
-    <div class="whatif-container w-100 d-flex flex-column gr-4 pa-4">
+  <div class="d-flex w-100 h-100 flex-column overflow-y-hidden">
+    <div
+      class="whatif-container w-100 d-flex flex-column overflow-y-auto gr-4 pa-4"
+    >
       <div v-if="whatIfTemplates.length === 1">
         {{ whatIfTemplates[0].name }}
       </div>
@@ -107,22 +109,20 @@
           class="ps-0 mb-2"
           :workflow="selectedWorkflow"
         />
-        <div class="d-flex w-100">
-          <v-spacer />
-          <v-btn
-            variant="flat"
-            color="primary"
-            :disabled="!canSubmit"
-            @click="submit"
-            width="300"
-            class="my-2"
-            :loading="isPosting"
-          >
-            Submit
-          </v-btn>
-        </div>
       </div>
     </div>
+    <v-footer class="d-flex w-100">
+      <v-spacer />
+      <v-btn
+        variant="flat"
+        color="primary"
+        :disabled="!canSubmit"
+        @click="submit"
+        :loading="isPosting"
+      >
+        Submit
+      </v-btn>
+    </v-footer>
   </div>
 </template>
 <script setup lang="ts">
