@@ -8,7 +8,7 @@
     </div>
     <div class="task-content">
       <v-list-item v-if="sortedTasks.length === 0">
-        No tasks available.
+        {{ t('workflow.noTasksAvailable') }}
       </v-list-item>
 
       <!-- Important to have item-height as it greatly improves performance -->
@@ -60,6 +60,7 @@
 </template>
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import { RelativePeriod } from '@/lib/period'
 import { sortTasks, isTaskRun, TaskStatus } from '@/lib/taskruns'
@@ -81,6 +82,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
+const { t } = useI18n()
 
 const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
 const expandedItems = ref<Record<string, boolean>>({})
