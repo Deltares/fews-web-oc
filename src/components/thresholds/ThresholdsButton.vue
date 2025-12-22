@@ -42,9 +42,9 @@ const maxWarningLevelColor = computed(() => {
   const maxWarningLevel = props.warningLevels.find(
     (warningLevel) => warningLevel.count > 0,
   )
-  const crossing = props.crossings.find(
+  const foundCrossing = props.crossings.find(
     (crossing) => crossing.warningLevelId === maxWarningLevel?.id,
   )
-  return crossing?.color
+  return foundCrossing?.color
 })
 </script>
