@@ -27,7 +27,11 @@
       </v-toolbar-items>
 
       <slot name="toolbar-title">
-        <span class="ml-5" :style="`font-size: ${mobile ? 0.75 : 1.25}rem !important`">{{ displayConfig?.title }}</span>
+        <span
+          class="ml-5"
+          :style="`font-size: ${mobile ? 0.75 : 1.25}rem !important`"
+          >{{ displayConfig?.title }}</span
+        >
       </slot>
       <v-spacer />
     </template>

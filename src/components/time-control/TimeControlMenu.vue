@@ -4,7 +4,11 @@
       <div class="icon-group" v-bind="props">
         <div class="icon-group__underlay"></div>
         <span class="icon-group__label">
-          {{ mobile ? d(store.systemTime, 'timeControl__mobile') : d(store.systemTime, 'timeControl') }}
+          {{
+            mobile
+              ? d(store.systemTime, 'timeControl__mobile')
+              : d(store.systemTime, 'timeControl')
+          }}
         </span>
         <v-btn icon size="small" class="last-btn">
           <v-icon size="large">{{
