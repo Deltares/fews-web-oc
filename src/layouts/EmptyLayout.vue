@@ -9,8 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { onBeforeMount } from 'vue'
+import { onBeforeMount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const currentItem = ref('')
