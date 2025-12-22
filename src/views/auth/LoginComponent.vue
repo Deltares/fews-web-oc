@@ -30,15 +30,15 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 
 function initialsFromName(givenName: string): string {
-  let initials = ''
+  let initialsString = ''
   for (let i = 0; i < givenName.length; i++) {
     const character = givenName[i]
     if (character !== character.toLowerCase()) {
-      initials = initials + character
+      initialsString = initialsString + character
     }
-    if (initials.length == 2) return initials
+    if (initialsString.length == 2) return initialsString
   }
-  return initials
+  return initialsString
 }
 
 const route = useRoute()
