@@ -20,7 +20,6 @@
       <v-toolbar density="compact">
         <span
           class="ms-4"
-          :style="`font-size: ${mobile ? 0.75 : 1.25}rem !important`"
         >
           {{ title }}
         </span>
