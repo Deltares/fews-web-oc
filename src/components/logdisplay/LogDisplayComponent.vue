@@ -143,6 +143,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import { VDateInput } from 'vuetify/labs/components'
 import LogItem from './LogItem.vue'
 import DateSeparator from './DateSeparator.vue'
@@ -185,6 +186,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { mobile } = useDisplay()
+
+const showFilters = ref<boolean>(!mobile.value)
 
 const search = ref<string>()
 const maxCount = ref<number>(20000)
@@ -198,7 +202,6 @@ const startDate = computed(
 )
 const endDate = ref<Date>(new Date())
 
-const showFilters = ref<boolean>(true)
 
 const expandedItems = ref<Record<string, boolean>>({})
 watch(
