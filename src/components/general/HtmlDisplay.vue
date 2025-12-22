@@ -20,8 +20,7 @@ const htmlText = computedAsync(async () => {
     const text = await response.text()
     if (response.ok) {
       // Remove style since this leaks into our global styles
-      const textWithoutStyle = text.replaceAll(/<style>(.|\n)*?<\/style>/g, '')
-      return textWithoutStyle
+      return text.replaceAll(/<style>(.|\n)*?<\/style>/g, '')
     }
   } catch (error) {
     // Handle fetch error
