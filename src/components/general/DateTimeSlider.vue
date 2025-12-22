@@ -102,11 +102,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, type WatchHandle } from 'vue'
+import { computed, onMounted, ref, watch, type WatchHandle } from 'vue'
 import { scaleTime } from 'd3-scale'
 import { DateTime } from 'luxon'
 
-import { onMounted } from 'vue'
 import { findDateIndex } from '@/lib/utils/dates'
 
 import VueSlider from 'vue-slider-component'
