@@ -18,9 +18,7 @@
       aria-label="Side panel"
     >
       <v-toolbar density="compact">
-        <span
-          class="ms-4"
-        >
+        <span class="ms-4">
           {{ title }}
         </span>
         <template #append>
