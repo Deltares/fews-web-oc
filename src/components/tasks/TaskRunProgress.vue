@@ -13,7 +13,7 @@
 </template>
 <script setup lang="ts">
 import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
-import { Duration, DurationUnit } from 'luxon'
+import { Duration } from 'luxon'
 import { onMounted, ref } from 'vue'
 
 interface Props {
