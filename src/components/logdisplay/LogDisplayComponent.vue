@@ -1,6 +1,6 @@
 <template>
   <div class="w-100 h-100 d-flex flex-column">
-    <v-navigation-drawer right permanent width="350">
+    <v-navigation-drawer v-model="showFilters" right width="350">
       <v-list>
         <template v-if="manualFilters.length && systemFilters.length">
           <v-list-subheader>Types</v-list-subheader>
@@ -73,6 +73,15 @@
       </v-footer>
     </v-navigation-drawer>
     <v-toolbar density="compact">
+      <v-btn
+        icon
+        @click="showFilters = !showFilters"
+        :aria-label="showFilters ? 'Hide filters' : 'Show filters'"
+      >
+        <v-icon>{{
+          showFilters ? 'mdi-filter-multiple' : 'mdi-filter-multiple-outline'
+        }}</v-icon>
+      </v-btn>
       <v-spacer />
       <v-btn @click="refreshLogs" :loading="isLoading" icon="mdi-refresh">
       </v-btn>
@@ -188,6 +197,8 @@ const startDate = computed(
   () => new Date(endDate.value.getTime() - daysBack.value * DAY_IN_MS),
 )
 const endDate = ref<Date>(new Date())
+
+const showFilters = ref<boolean>(true)
 
 const expandedItems = ref<Record<string, boolean>>({})
 watch(
