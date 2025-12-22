@@ -8,8 +8,8 @@
     >
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-        <v-btn :to="{ name: 'Default' }">
-          <img :height="mobile ? '28' : '36'" :src="logoSrc" />
+        <v-btn :to="{ name: 'Default' }" v-if="mdAndUp">
+          <img :src="logoSrc" />
         </v-btn>
         <div id="app-bar-content-start" />
       </template>
@@ -196,7 +196,7 @@ import { useBaseMapsStore } from '@/stores/baseMaps.ts'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
-const { mobile } = useDisplay()
+const { mobile, mdAndUp } = useDisplay()
 const alertsStore = useAlertsStore()
 
 const theme = useTheme()
