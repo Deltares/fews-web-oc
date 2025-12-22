@@ -171,7 +171,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, type StyleValue, watch } from 'vue'
 import { useDisplay, useRtl, useTheme } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
 import { Alert, useAlertsStore } from '../stores/alerts.ts'
@@ -184,7 +184,6 @@ import GlobalSearchComponent from '@/components/general/GlobalSearchComponent.vu
 
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
-import { StyleValue, nextTick } from 'vue'
 import packageConfig from '@/../package.json'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { toCharacterIcon } from '@/lib/icons/index.ts'
