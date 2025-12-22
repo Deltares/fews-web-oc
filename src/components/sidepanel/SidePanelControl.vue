@@ -3,7 +3,6 @@
     <v-btn
       icon
       :active="sidePanelStore.isActive(type)"
-      :style="`min-width: ${mobile ? 48 : 64}px !important`"
       size="small"
       @click="sidePanelStore.toggleActive(type)"
     >
