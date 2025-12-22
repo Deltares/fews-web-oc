@@ -19,7 +19,7 @@
   },
   "timeControl": {
     "browserTime": "Browser time",
-    "periodPresets": "period presets",
+    "periodPresets": "Period presets",
     "startDateBeforeEndDate": "Start date must be before end date",
     "endDateAfterStartDate": "End date must be after start date"
   },
@@ -50,5 +50,10 @@
     "noncurrentData": "Non-current data",
     "runTasks": "Run tasks",
     "moreInfo": "More info"
+  },
+  "workflow": {
+    "expectedRuntime": "Expected runtime",
+    "noTasksAvailable": "No tasks available",
+    "numberOfAvailableServers": "Number of available servers"
   }
 }
