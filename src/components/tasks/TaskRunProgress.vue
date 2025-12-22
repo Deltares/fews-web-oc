@@ -105,24 +105,11 @@ function getRemainingTimeString(): string {
 function formatDuration(durationMilliseconds: number): string {
   // Convert to human-readable duration in hours, minutes and seconds; drop
   // the milliseconds.
-  // FIXME: workaround for Luxon's weird behaviour of toHuman(), which leaves
-  //        units that are 0 in the final string.
-  const units: DurationUnit[] = ['seconds']
-  if (durationMilliseconds > 1000 * 60) {
-    units.push('minutes')
-  }
-  if (durationMilliseconds > 1000 * 60 * 60) {
-    units.push('hours')
-  }
-  if (durationMilliseconds > 1000 * 60 * 60 * 24) {
-    units.push('days')
-  }
-
-  const duration = Duration.fromMillis(durationMilliseconds).shiftTo(...units)
+  const duration = Duration.fromMillis(durationMilliseconds)
   // Remove milliseconds.
   const durationWithoutMilliseconds = duration.set({
     seconds: Math.round(duration.seconds),
   })
-  return durationWithoutMilliseconds.toHuman()
+  return durationWithoutMilliseconds.toHuman({ showZeros: false })
 }
 </script>
