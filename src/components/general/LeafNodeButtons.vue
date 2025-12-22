@@ -52,7 +52,6 @@ const props = withDefaults(defineProps<Props>(), {
 const activeNodeId = defineModel<string>('activeNodeId', { required: true })
 
 const activeNode = computed(() => {
-  const node = props.items.find((item) => item.id === activeNodeId.value)
-  return node
+  return props.items.find((item) => item.id === activeNodeId.value)
 })
 </script>
