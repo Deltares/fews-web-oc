@@ -49,10 +49,7 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
     app.use(i18n)
     const manifestUrl = configManager.get('VITE_FEWS_WEBOC_MF_MANIFEST_URL')
     if (manifestUrl) {
-      console.log(`Loading manifest from: ${manifestUrl}`)
-      const response = await fetch(manifestUrl)
-      const manifestJson = await response.json()
-      app.use(moduleFederationPlugin, manifestJson)
+      app.use(moduleFederationPlugin, { manifestUrl })
     }
     app.use(router)
     app.mount('#app')
