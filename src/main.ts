@@ -7,12 +7,12 @@ import vuetify from './plugins/vuetify.js'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
-import { init } from '@module-federation/enhanced/runtime'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './assets/maplibre-override.css'
 
 import { getResourcesStaticUrl } from './lib/fews-config/index.js'
 import { i18n, setI18nLanguage } from './plugins/i18n.js'
+import moduleFederationPlugin from './plugins/moduleFederation.js'
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
@@ -67,7 +67,7 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
       console.log(`Loading manifest from: ${manifestUrl}`)
       const response = await fetch(manifestUrl)
       const manifestJson = await response.json()
-      init(manifestJson)
+      app.use(moduleFederationPlugin, { manifest: manifestJson })
     }
     app.use(router)
     app.mount('#app')
