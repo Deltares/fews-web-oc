@@ -59,6 +59,9 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
     if (configManager.authenticationIsEnabled) {
       authenticationManager.init(configManager.getUserManagerSettings())
     }
+    const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en')
+    await setI18nLanguage(i18n, locale)
+    app.use(i18n)
     const manifestUrl = configManager.get('VITE_FEWS_WEBOC_MF_MANIFEST_URL')
     if (manifestUrl) {
       console.log(`Loading manifest from: ${manifestUrl}`)
