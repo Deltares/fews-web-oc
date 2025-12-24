@@ -17,4 +17,5 @@ export type ApplicationConfig = {
   VITE_LOGIN_STYLESHEET_URL: string
   VITE_REQUEST_HEADER_AUTHORIZATION: RequestHeaderAuthorization
   VITE_I18N_LOCALE: string
+  VITE_FEWS_WEBOC_MF_MANIFEST_URL: string
 }
