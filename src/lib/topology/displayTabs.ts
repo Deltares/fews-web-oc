@@ -122,9 +122,8 @@ export function displayTabsForNode(
         tab.to.params = { ...params }
         break
       case 'micro-frontend-display':
-        const customComponent = node.id.split('-')[1]
         tab.active = nodeHasMF(node)
-        tab.to.params = { ...params, customComponent }
+        tab.to.params = { ...params }
         break
     }
   }

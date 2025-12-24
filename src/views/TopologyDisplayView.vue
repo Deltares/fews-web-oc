@@ -85,7 +85,6 @@
           :is="Component"
           :topologyNode="topologyNode"
           :settings="componentSettings"
-          :customComponent="props.customComponent"
           @navigate="onNavigate"
         />
       </keep-alive>
@@ -152,7 +151,6 @@ interface Props {
   latitude?: string
   longitude?: string
   productKey?: string
-  customComponent?: string
 }
 
 const { t } = useI18n()
@@ -463,7 +461,6 @@ function onNavigate(to: NavigateRoute) {
         name,
         params: {
           nodeId: props.nodeId,
-          customComponent: props.customComponent,
           locationIds: to.params?.locationIds,
         },
         query: route.query,
