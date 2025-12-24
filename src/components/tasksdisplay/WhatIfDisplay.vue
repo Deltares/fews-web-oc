@@ -1,7 +1,8 @@
 <template>
   <div class="d-flex w-100 h-100 flex-column overflow-y-hidden">
-    <div
+    <v-form
       class="whatif-container w-100 d-flex flex-column overflow-y-auto gr-4 pa-4"
+      @submit.prevent
     >
       <div v-if="whatIfTemplates.length === 1">
         {{ whatIfTemplates[0].name }}
@@ -110,9 +111,6 @@
           :workflow="selectedWorkflow"
         />
       </div>
-    </div>
-    <v-footer class="d-flex w-100">
-      <v-spacer />
       <v-btn
         variant="flat"
         color="primary"
@@ -122,7 +120,7 @@
       >
         Submit
       </v-btn>
-    </v-footer>
+    </v-form>
   </div>
 </template>
 <script setup lang="ts">
