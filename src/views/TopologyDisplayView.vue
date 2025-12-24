@@ -49,7 +49,6 @@
         :is="Component"
         :topologyNode="topologyNode"
         :settings="componentSettings"
-        :customComponent="props.customComponent"
         @navigate="onNavigate"
       />
     </router-view>
@@ -97,7 +96,6 @@ interface Props {
   hasAppBar?: boolean
   hasSideBar?: boolean
   embed?: string
-  customComponent?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -269,7 +267,6 @@ function onNavigate(to: NavigateRoute) {
         name,
         params: {
           nodeId: props.nodeId,
-          customComponent: props.customComponent,
           locationIds: to.params?.locationIds,
         },
         query: route.query,
