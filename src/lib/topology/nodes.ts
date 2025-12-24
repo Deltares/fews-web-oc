@@ -201,5 +201,5 @@ export function nodeHasDocumentDisplay(node: TopologyNode) {
 }
 
 export function nodeHasMF(node: TopologyNode) {
-  return node.id.startsWith('micro_frontend')
+  return !!node.microFrontEnds?.length
 }
