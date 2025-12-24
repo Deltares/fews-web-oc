@@ -52,7 +52,7 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
       console.log(`Loading manifest from: ${manifestUrl}`)
       const response = await fetch(manifestUrl)
       const manifestJson = await response.json()
-      app.use(moduleFederationPlugin, { manifest: manifestJson })
+      app.use(moduleFederationPlugin, manifestJson)
     }
     app.use(router)
     app.mount('#app')
