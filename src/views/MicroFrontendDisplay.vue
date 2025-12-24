@@ -68,14 +68,12 @@ async function loadRemoteVueComponent(entryId: string) {
 }
 
 interface Props {
-  customComponent?: string
   locationIds?: string
   topologyNode?: TopologyNode
   settings?: ComponentSettings
 }
 
 const {
-  customComponent = 'Sankey',
   locationIds,
   topologyNode,
   settings = getDefaultSettings(),
@@ -87,21 +85,9 @@ interface Emits {
 const emit = defineEmits<Emits>()
 const userSettings = useUserSettingsStore()
 
-onMounted(async () => {
-  console.log(
-    'Mounted MicroFrontendDisplay with customComponent:',
-    customComponent,
-  )
-})
-
 watchEffect(async () => {
   loaded.value = false
-  const entryId =
-    customComponent === 'sankey'
-      ? 'mdba-micro-frontend/sankey'
-      : customComponent === 'basin_storage'
-        ? 'mdba-micro-frontend/basin-storage'
-        : customComponent
+  const entryId = ''
   PluginComponent.value = await loadRemoteVueComponent(entryId)
   loaded.value = true
 })
@@ -208,14 +194,6 @@ const filter = computed(() => {
     return getFilterActionsFilter(locationIds)
   }
   return {}
-})
-
-watchEffect(() => {
-  // Reset the selected date when the component changes
-  console.log(
-    'Custom component changed, resetting selected date',
-    customComponent,
-  )
 })
 
 function onNavigate(event: any) {

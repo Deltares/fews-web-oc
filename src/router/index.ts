@@ -290,7 +290,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         meta: { sidebar: true },
       },
       {
-        path: 'mf/:customComponent',
+        path: 'mf',
         name: 'TopologyMicroFrontendDisplay',
         component: MicroFrontendDisplay,
         props: true,
