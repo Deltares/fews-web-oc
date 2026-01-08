@@ -11,6 +11,7 @@ export type ComponentType =
 
 export const ComponentType = {
   dashboard: 'dashboard',
+  'micro-frontend-display': 'micro-frontend-display',
   map: 'map',
   charts: 'charts',
   'data-download-display': 'data-download-display',
@@ -23,7 +24,6 @@ export const ComponentType = {
   'log-display': 'log-display',
   'data-analysis-display': 'data-analysis-display',
   'documents-display': 'documents-display',
-  'micro-frontend-display': 'micro-frontend-display',
 } satisfies Record<ComponentType, ComponentType>
 
 export const componentTypeToIconMap = {
@@ -45,6 +45,7 @@ export const componentTypeToIconMap = {
 
 export const componentTypeToTitleMap = {
   dashboard: 'Dashboard',
+  'micro-frontend-display': 'Micro Frontend',
   map: 'Map',
   charts: 'Charts',
   'data-download-display': 'Download',
@@ -57,11 +58,11 @@ export const componentTypeToTitleMap = {
   'log-display': 'Log',
   'data-analysis-display': 'Data Analysis',
   'documents-display': 'Documents Browser',
-  'micro-frontend-display': 'Micro Frontend',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToRouteNameMap = {
   dashboard: 'TopologyDashboard',
+  'micro-frontend-display': 'TopologyMicroFrontendDisplay',
   map: 'TopologySpatialDisplay',
   charts: 'TopologyTimeSeries',
   'data-download-display': 'TopologyDataDownload',
@@ -74,11 +75,11 @@ export const componentTypeToRouteNameMap = {
   'log-display': 'TopologyLogDisplay',
   'data-analysis-display': 'TopologyDataAnalysisDisplay',
   'documents-display': 'TopologyDocumentDisplay',
-  'micro-frontend-display': 'TopologyMicroFrontendDisplay',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToIdMap = {
   dashboard: 'dashboard',
+  'micro-frontend-display': 'mf',
   map: 'spatial',
   charts: 'timeseries',
   'data-download-display': 'download',
@@ -91,5 +92,4 @@ export const componentTypeToIdMap = {
   'log-display': 'log',
   'data-analysis-display': 'analysis',
   'documents-display': 'documents',
-  'micro-frontend-display': 'mf',
 } satisfies Record<ComponentType, string>
