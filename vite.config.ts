@@ -88,6 +88,14 @@ export default defineConfig(({ mode }) => {
           },
         },
       }),
+      federation({
+        name: 'delft-fews-weboc',
+        shared: {
+          vue: { 
+            singleton: true,
+          },
+        },
+      }),
       mode === 'production'
         ? vuetify({
             styles: {
@@ -95,14 +103,6 @@ export default defineConfig(({ mode }) => {
             },
           })
         : vuetify(),
-      federation({
-        name: 'weboc-micro-frontend',
-        shared: {
-          vue: {
-            singleton: true,
-          },
-        },
-      }),
     ],
     optimizeDeps: {
       exclude: ['@deltares/fews-ssd-webcomponent', 'vuetify'],
