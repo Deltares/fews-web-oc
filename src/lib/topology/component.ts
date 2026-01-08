@@ -7,9 +7,11 @@ export type ComponentType =
   | 'dynamic-report-display'
   | 'data-analysis-display'
   | 'html-display'
+  | 'micro-frontend-display'
 
 export const ComponentType = {
   dashboard: 'dashboard',
+  'micro-frontend-display': 'micro-frontend-display',
   map: 'map',
   charts: 'charts',
   'data-download-display': 'data-download-display',
@@ -38,10 +40,12 @@ export const componentTypeToIconMap = {
   'log-display': 'mdi-file-document',
   'data-analysis-display': 'mdi-database-search',
   'documents-display': 'mdi-file-document-multiple',
+  'micro-frontend-display': 'mdi-toy-brick',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToTitleMap = {
   dashboard: 'Dashboard',
+  'micro-frontend-display': 'Micro Frontend',
   map: 'Map',
   charts: 'Charts',
   'data-download-display': 'Download',
@@ -58,6 +62,7 @@ export const componentTypeToTitleMap = {
 
 export const componentTypeToRouteNameMap = {
   dashboard: 'TopologyDashboard',
+  'micro-frontend-display': 'TopologyMicroFrontendDisplay',
   map: 'TopologySpatialDisplay',
   charts: 'TopologyTimeSeries',
   'data-download-display': 'TopologyDataDownload',
@@ -74,6 +79,7 @@ export const componentTypeToRouteNameMap = {
 
 export const componentTypeToIdMap = {
   dashboard: 'dashboard',
+  'micro-frontend-display': 'mf',
   map: 'spatial',
   charts: 'timeseries',
   'data-download-display': 'download',

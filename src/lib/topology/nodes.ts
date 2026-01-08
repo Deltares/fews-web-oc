@@ -140,7 +140,8 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
     nodeHasLogDisplay(node) ||
     nodeHasDynamicReportDisplay(node) ||
     nodeHasDataAnalysisDisplay(node) ||
-    nodeHasDocumentDisplay(node)
+    nodeHasDocumentDisplay(node) ||
+    nodeHasMF(node)
   )
 }
 
@@ -197,4 +198,8 @@ export function nodeHasDataAnalysisDisplay(node: TopologyNode) {
 
 export function nodeHasDocumentDisplay(node: TopologyNode) {
   return node.documentDisplayId !== undefined
+}
+
+export function nodeHasMF(node: TopologyNode) {
+  return !!node.microFrontEnds?.length
 }
