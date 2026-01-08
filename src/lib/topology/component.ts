@@ -11,6 +11,7 @@ export type ComponentType =
 
 export const ComponentType = {
   dashboard: 'dashboard',
+  'micro-frontend-display': 'micro-frontend-display',
   map: 'map',
   charts: 'charts',
   'data-analysis-display': 'data-analysis-display',
@@ -23,7 +24,6 @@ export const ComponentType = {
   'runtask-display': 'runtask-display',
   'log-display': 'log-display',
   'documents-display': 'documents-display',
-  'micro-frontend-display': 'micro-frontend-display',
 } satisfies Record<ComponentType, ComponentType>
 
 export const componentTypeToIconMap = {
@@ -45,6 +45,7 @@ export const componentTypeToIconMap = {
 
 export const componentTypeToTitleMap = {
   dashboard: 'Dashboard',
+  'micro-frontend-display': 'Micro Frontend',
   map: 'Map',
   charts: 'Charts',
   'data-analysis-display': 'Data Analysis',
@@ -57,11 +58,11 @@ export const componentTypeToTitleMap = {
   'runtask-display': 'Run Task',
   'log-display': 'Log',
   'documents-display': 'Documents Browser',
-  'micro-frontend-display': 'Micro Frontend',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToRouteNameMap = {
   dashboard: 'TopologyDashboard',
+  'micro-frontend-display': 'TopologyMicroFrontendDisplay',
   map: 'TopologySpatialDisplay',
   charts: 'TopologyTimeSeries',
   'data-analysis-display': 'TopologyDataAnalysisDisplay',
@@ -74,11 +75,11 @@ export const componentTypeToRouteNameMap = {
   'runtask-display': 'TopologyWhatIfDisplay',
   'log-display': 'TopologyLogDisplay',
   'documents-display': 'TopologyDocumentDisplay',
-  'micro-frontend-display': 'TopologyMicroFrontendDisplay',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToIdMap = {
   dashboard: 'dashboard',
+  'micro-frontend-display': 'mf',
   map: 'spatial',
   charts: 'timeseries',
   'data-analysis-display': 'analysis',
@@ -91,5 +92,4 @@ export const componentTypeToIdMap = {
   'dynamic-report-display': 'dynamicreport',
   'log-display': 'log',
   'documents-display': 'documents',
-  'micro-frontend-display': 'mf',
 } satisfies Record<ComponentType, string>
