@@ -1,11 +1,13 @@
 <template>
   <div class="d-flex w-100 h-100 flex-row">
     <div class="h-100 d-flex flex-column child-container">
-      <div class="w-100 d-flex flex-1-1 overflow-x-auto overflow-y-hidden">
-        <PluginComponent
+      <div class="w-100 d-flex flex-1-1 overflow-x-auto overflow-y-auto">
+        <component
           v-if="loaded"
+          :is="PluginComponent"
           :timeSeries="timeSeries"
           :time="selectedDateOfSlider"
+          :topologyNode="topologyNode"
           @navigate="onNavigate"
         />
       </div>
@@ -31,7 +33,6 @@
 import {
   computed,
   defineAsyncComponent,
-  onMounted,
   ref,
   shallowRef,
   watchEffect,
@@ -58,14 +59,13 @@ import {
   UseTimeSeriesOptions,
 } from '@/services/useFilterTimeSeries'
 import { configManager } from '@/services/application-config'
-import { loadRemote } from '@module-federation/enhanced/runtime'
+import { useMicroFrontEnd } from '@/composables/useMicroFrontEnd'
+import { useFilterLocations } from '@/services/useFilterLocations'
 
 const loaded = ref(false)
 const PluginComponent = shallowRef<any>(null)
 
-async function loadRemoteVueComponent(entryId: string) {
-  return ((await loadRemote(entryId)) as any).default
-}
+const { loadWebOCRemote } = useMicroFrontEnd()
 
 interface Props {
   locationIds?: string
@@ -87,8 +87,12 @@ const userSettings = useUserSettingsStore()
 
 watchEffect(async () => {
   loaded.value = false
-  const entryId = ''
-  PluginComponent.value = await loadRemoteVueComponent(entryId)
+  const microFrontEndId = topologyNode?.microFrontEnds?.map((mf) => mf.id)[0]
+  if (!microFrontEndId) {
+    loaded.value = true
+    return
+  }
+  PluginComponent.value = await loadWebOCRemote(microFrontEndId)
   loaded.value = true
 })
 
