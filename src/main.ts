@@ -48,8 +48,9 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
     await setI18nLanguage(i18n, locale)
     app.use(i18n)
     const manifestUrl = configManager.get('VITE_FEWS_WEBOC_MF_MANIFEST_URL')
+    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
     if (manifestUrl) {
-      app.use(moduleFederationPlugin, { manifestUrl })
+      app.use(moduleFederationPlugin, { manifestUrl, baseUrl })
     }
     app.use(router)
     app.mount('#app')
