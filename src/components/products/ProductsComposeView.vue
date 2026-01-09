@@ -5,7 +5,7 @@
     :archiveProducts="archiveProducts"
     :relativeViewPeriod="config?.relativeViewPeriod"
     :editPermissions="config?.editPermissions"
-    :template="template"
+    :templates="latestTemplateProducts"
   />
 </template>
 
@@ -15,8 +15,9 @@ import ProductView from '@/components/products/ProductView.vue'
 import { computed } from 'vue'
 import type { ProductBrowserTableConfig } from '@/components/products/ProductsBrowserTable.vue'
 import { configManager } from '@/services/application-config'
-import { useProduct } from '@/services/useProducts'
+import { useProducts } from '@/services/useProducts'
 import { periodToIntervalItem } from '@/lib/TimeControl/interval'
+import { ProductMetaDataType } from '@/services/useProducts/types'
 
 interface Props {
   config: DisplayCompose
@@ -26,8 +27,11 @@ interface Props {
 const { config, productKey } = defineProps<Props>()
 
 const archiveProducts = computed(() => {
-  const product = config?.compose?.archiveProduct
-  return product ? [product] : []
+  return config?.compose?.map((item) => item.archiveProduct) ?? []
+})
+
+const templates = computed(() => {
+  return config?.compose?.map((item) => item.template) ?? []
 })
 
 const viewPeriod = computed(() =>
@@ -37,11 +41,31 @@ const viewPeriod = computed(() =>
 )
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { product: template } = useProduct(
+const { products: templateProducts } = useProducts(
   baseUrl,
   viewPeriod,
-  () => config.compose?.template,
+  templates,
 )
+
+function isNewer(a: ProductMetaDataType, b: ProductMetaDataType): boolean {
+  if (a.version !== b.version) {
+    return a.version > b.version
+  }
+  return new Date(a.timeZero).getTime() > new Date(b.timeZero).getTime()
+}
+
+const latestTemplateProducts = computed(() => {
+  const latestMap = new Map<string, ProductMetaDataType>()
+  for (const product of templateProducts.value) {
+    const key = product.attributes['productId']
+
+    const existing = latestMap.get(key)
+    if (!existing || isNewer(product, existing)) {
+      latestMap.set(key, product)
+    }
+  }
+  return Array.from(latestMap.values())
+})
 
 const tableLayout: ProductBrowserTableConfig = {
   preview: false,

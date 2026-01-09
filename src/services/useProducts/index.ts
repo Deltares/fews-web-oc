@@ -88,35 +88,6 @@ export function useProducts(
   }
 }
 
-export function useProduct(
-  baseUrl: string,
-  viewPeriod: MaybeRefOrGetter<IntervalItem>,
-  archiveProduct: MaybeRefOrGetter<ArchiveProduct | undefined>,
-) {
-  const product = ref<ProductMetaDataType>()
-
-  const fetchProduct = async () => {
-    const _archiveProduct = toValue(archiveProduct)
-    if (!_archiveProduct) {
-      product.value = undefined
-      return
-    }
-    const products = await getArchiveProducts(
-      baseUrl,
-      [_archiveProduct],
-      toValue(viewPeriod),
-    )
-    console.log('Fetched products for useProduct:', products, _archiveProduct)
-    product.value = products[0]
-  }
-
-  watchEffect(fetchProduct)
-
-  return {
-    product,
-  }
-}
-
 async function getArchiveProducts(
   baseUrl: string,
   archiveProducts: ArchiveProduct[],
@@ -156,9 +127,8 @@ async function getArchiveProducts(
     promises.push(fetchProductsMetaData(baseUrl, filter))
   }
 
-  return [...(await Promise.all(promises)).flat()].filter(
-    (product) => product.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true',
-  )
+  const products = await Promise.all(promises)
+  return products.flat()
 }
 
 async function getArchiveProductSets(
@@ -210,8 +180,7 @@ async function getArchiveProductForConstraint(
   let filteredProducts = response.filter(
     (product) =>
       product.areaId === constraint.areaId &&
-      product.sourceId === constraint.sourceId &&
-      product.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true',
+      product.sourceId === constraint.sourceId,
   )
   if (constraint.anyValid) {
     filteredProducts = filteredProducts.filter((product) => {
@@ -249,10 +218,11 @@ export async function fetchProductsMetaData(
 
   try {
     const response = await provider.getProductsMetaData(filter)
-    const itemPromises = response.productsMetadata.map(
-      convertToProductMetaDataType,
+    const promises = response.productsMetadata.map(convertToProductMetaDataType)
+    const products = await Promise.all(promises)
+    return products.filter(
+      (product) => product.attributes[FEWS_PRODUCT_ATTRIBUTE_DELETE] !== 'true',
     )
-    return await Promise.all(itemPromises)
   } catch (err) {
     console.error(err)
     throw new Error('Error fetching product metadata')

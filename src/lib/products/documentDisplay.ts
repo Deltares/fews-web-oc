@@ -28,9 +28,10 @@ export interface ReportDisplay extends Omit<DocumentDisplayReport, 'type'> {
   report: ReportDisplayConfig
 }
 
-export interface DisplayCompose extends Omit<DocumentDisplayCompose, 'type'> {
+export interface DisplayCompose
+  extends Omit<DocumentDisplayCompose, 'type' | 'compose'> {
   type: 'compose'
-  compose: DocumentCompose
+  compose: DocumentCompose[]
 }
 
 export interface DocumentBrowser {
