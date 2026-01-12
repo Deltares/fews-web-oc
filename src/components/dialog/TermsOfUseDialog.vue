@@ -6,7 +6,7 @@
     role="dialog"
     aria-labelledby="terms-dialog-title"
   >
-    <v-card style="cursor: default">
+    <v-card class="cursor-default">
       <v-card-title class="text-h5" id="terms-dialog-title"
         >Terms and Conditions</v-card-title
       >
