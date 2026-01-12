@@ -2,8 +2,8 @@
   <v-container>
     <v-card title="Make a selection to download data" flat>
       <v-form v-model="selectionIsValid">
-        <v-row class="ma-1">
-          <v-col v-for="(item, index) in attributes">
+        <v-row align="start" class="ma-1">
+          <v-col v-for="(item, index) in nodeAttributes">
             <v-autocomplete
               v-model="selectedAttributes[index]"
               :items="selectableAttributes[index]"
@@ -13,13 +13,12 @@
               variant="outlined"
               clearable
               chips
-              closable-chips
               prepend-icon="mdi-filter"
-              @update:modelValue="updateLocations"
+              @update:modelValue="updateLocations(index)"
             />
           </v-col>
         </v-row>
-        <v-row class="ma-1">
+        <v-row align="start" class="ma-1">
           <v-col>
             <v-autocomplete
               v-model="selectedParameterQualifiers"
@@ -32,7 +31,6 @@
               variant="outlined"
               clearable
               prepend-icon="mdi-scale"
-              :rules="[rules.noEmptySelection]"
             >
               <template v-slot:selection="{ item, index }">
                 <span v-if="index < 4">{{ item.title }}</span>
@@ -46,12 +44,12 @@
             </v-autocomplete>
           </v-col>
         </v-row>
-        <v-row class="ma-1">
+        <v-row align="start" class="ma-1">
           <v-col>
             <v-autocomplete
               v-model="selectedLocations"
               :items="locations"
-              :item-title="(item) => getLocationName(item)"
+              :item-title="(item) => item.title"
               label="Locations"
               multiple
               return-object
@@ -59,7 +57,6 @@
               variant="outlined"
               clearable
               prepend-icon="mdi-map-marker-multiple"
-              :rules="[rules.noEmptySelection]"
             >
               <template v-slot:selection="{ item, index }">
                 <span v-if="index < 3">{{ item.title }}</span>
@@ -73,19 +70,14 @@
             </v-autocomplete>
           </v-col>
         </v-row>
-        <v-row class="ma-1">
+        <v-row align="start" class="ma-1">
           <v-col>
             <v-text-field
               v-model="startDateString"
               label="Start date"
               density="compact"
-              :rules="[
-                rules.required,
-                rules.date,
-                rules.startDateBeforeEndDate,
-              ]"
+              :rules="[rules.required, rules.date]"
               variant="outlined"
-              :key="endDateString"
             >
               <template v-slot:prepend>
                 <v-menu offset-y :close-on-content-click="false">
@@ -104,9 +96,8 @@
               v-model="endDateString"
               label="End date"
               density="compact"
-              :rules="[rules.required, rules.date, rules.endDateAfterStartDate]"
+              :rules="[rules.required, rules.date]"
               variant="outlined"
-              :key="startDateString"
             >
               <template v-slot:prepend>
                 <v-menu offset-y :close-on-content-click="false">
@@ -153,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onBeforeMount, onMounted } from 'vue'
 import {
   DocumentFormat,
   Location,
@@ -175,14 +166,28 @@ import { ParameterQualifiersHeader } from '@/lib/download/types'
 import { isEqual, uniqWith } from 'lodash-es'
 import { filterToParams } from '@/lib/download/downloadFiles.ts'
 import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
+import loki from 'lokijs'
+import { onMounted } from 'vue'
 
 interface Props {
   nodeId?: string | string[]
   topologyNode: TopologyNode
 }
 
+interface FlattendLocation {
+  locationId: string
+  title: string
+  [key: string]: string
+}
+
 const props = defineProps<Props>()
 const settings = useUserSettingsStore()
+
+const db = new loki('download.db')
+let locationColl!: Collection<FlattendLocation>
+
+const locationsLoading = ref(false)
+const parametersLoading = ref(false)
 
 const options = computed<UseDisplayConfigOptions>(() => {
   return {
@@ -205,90 +210,108 @@ const piProvider = new PiWebserviceProvider(baseUrl, {
 const filterId = props.topologyNode.filterIds
   ? props.topologyNode.filterIds[0]
   : undefined
-const attributes = props.topologyNode.dataDownloadDisplay?.attributes
-
-const allLocations = ref<Location[]>([])
-const locations = ref<Location[]>([])
-const selectedLocations = ref<Location[]>([])
+const nodeAttributes = props.topologyNode.dataDownloadDisplay?.attributes ?? []
 
 const allParameters = ref<TimeSeriesParameter[]>([])
-
+const locations = ref<FlattendLocation[]>([])
+const selectedLocations = ref<FlattendLocation[]>([])
 const parameterQualifiers = ref<ParameterQualifiersHeader[]>([])
 const selectedParameterQualifiers = ref<ParameterQualifiersHeader[]>([])
 const selectableAttributes = ref<string[][]>([])
 const onlyDownloadMetaData = ref(false)
 const errors = ref<string[]>([])
 
-const selectedAttributes = ref<string[][]>([])
+onBeforeMount(() => {
+  const nodeIds = nodeAttributes.map((item) => item.id)
+  locationColl = db.addCollection('locations', {
+    indices: ['locationId', ...nodeIds],
+  })
+})
 
-const DATE_FMT = 'yyyy-MM-dd HH:mm'
+onMounted(async () => {
+  await init()
+})
 
+const init = async () => {
+  console.time('init')
+  locationsLoading.value = true
+  getLocations().then((locationsResponse) => {
+    // flatten locations
+    const flattenedLocations = locationsResponse.map((location) => {
+      let result = {
+        locationId: location.locationId,
+        title: getLocationName(location),
+      }
+      if (location.attributes) {
+        const attributes = Object.fromEntries(
+          location.attributes?.map((item) => [item.id, item.value]),
+        )
+        result = {
+          ...result,
+          ...attributes,
+        }
+      }
+      locationColl.insert(result)
+      return result
+    })
+
+    locations.value = locationColl
+      .chain([
+        { type: 'simplesort', property: 'title', desc: false },
+        {
+          type: 'limit',
+          value: 1000,
+        },
+      ])
+      .data()
+    selectedLocations.value = flattenedLocations
+    locationsLoading.value = false
+    selectableAttributes.value = getAttributeValues(flattenedLocations)
+  })
+
+  // get parameters
+  parametersLoading.value = true
+  allParameters.value = await getParameters()
+  parametersLoading.value = false
+
+  console.time('get time series headers')
+  getTimeSeriesHeaders().then((headersResponse) => {
+    const parameterQualifiersHeaders: ParameterQualifiersHeader[] = []
+    headersResponse?.forEach((timeSeriesResult) => {
+      const parameterQualifiersHeader: ParameterQualifiersHeader = {
+        parameterId: timeSeriesResult.header?.parameterId,
+        qualifiers: timeSeriesResult.header?.qualifierId,
+      }
+      parameterQualifiersHeaders.push(parameterQualifiersHeader)
+    })
+    parameterQualifiers.value = uniqWith(parameterQualifiersHeaders, isEqual)
+    selectedParameterQualifiers.value = parameterQualifiers.value
+  })
+  console.timeEnd('get time series headers')
+  console.timeEnd('init')
+}
+
+let errors = ref<string[]>([])
 const startDate = ref<Date>(getStartDateValue())
-const startDateString = ref<string>(
-  DateTime.fromJSDate(startDate.value).toFormat(DATE_FMT),
-)
-
 const endDate = ref<Date>(getEndDateValue())
-const endDateString = ref<string>(
-  DateTime.fromJSDate(endDate.value).toFormat(DATE_FMT),
-)
-
-const parameterQualifiersHeaders: ParameterQualifiersHeader[] = []
+const selectedAttributes = ref<string[][]>([])
+nodeAttributes.forEach(() => selectedAttributes.value.push([]))
 
 const rules = {
-  noEmptySelection: (value: any[]) => {
-    return (
-      (value !== undefined && value.length > 0) || 'Select one or more items'
-    )
-  },
   required: (value: string) => (value !== undefined && !!value) || 'Required',
   date: (value: string) => {
     const date = DateTime.fromFormat(value || '', DATE_FMT)
     return !isNaN(date.valueOf()) || 'Invalid date'
   },
-  startDateBeforeEndDate: (value: string) => {
-    const startDate = DateTime.fromFormat(value || '', DATE_FMT).toJSDate()
-    return startDate < endDate.value || 'Start date should be before end date'
-  },
-  endDateAfterStartDate: (value: string) => {
-    const endDate = DateTime.fromFormat(value || '', DATE_FMT).toJSDate()
-    return endDate > startDate.value || 'End date should be after start date'
-  },
 }
 
-onMounted(async () => {
-  loadLocations()
-  loadParameters()
-  loadTimeSeriesHeaders()
-  if (attributes) {
-    selectedAttributes.value = attributes.map(() => [])
-  }
-})
-
-async function loadLocations() {
-  const locationsResponse = await getLocations()
-  allLocations.value = locationsResponse
-  locations.value = locationsResponse
-  selectedLocations.value = locationsResponse
-  selectableAttributes.value = getAttributeValues(locationsResponse)
-}
-
-async function loadParameters() {
-  allParameters.value = await getParameters()
-}
-
-async function loadTimeSeriesHeaders() {
-  const headersResponse = await getTimeSeriesHeaders()
-  headersResponse?.forEach((timeSeriesResult) => {
-    const parameterQualifiersHeader: ParameterQualifiersHeader = {
-      parameterId: timeSeriesResult.header?.parameterId,
-      qualifiers: timeSeriesResult.header?.qualifierId,
-    }
-    parameterQualifiersHeaders.push(parameterQualifiersHeader)
-  })
-  parameterQualifiers.value = uniqWith(parameterQualifiersHeaders, isEqual)
-  selectedParameterQualifiers.value = parameterQualifiers.value
-}
+const DATE_FMT = 'yyyy-MM-dd HH:mm'
+const startDateString = ref<string>(
+  DateTime.fromJSDate(getStartDateValue()).toFormat(DATE_FMT),
+)
+const endDateString = ref<string>(
+  DateTime.fromJSDate(getEndDateValue()).toFormat(DATE_FMT),
+)
 
 watch(startDateString, (newValue) => {
   let newDateTime: DateTimeMaybeValid = DateTime.fromFormat(newValue, DATE_FMT)
@@ -324,34 +347,64 @@ watch(endDate, (newValue) => {
   endDateString.value = DateTime.fromJSDate(newValue).toFormat(DATE_FMT)
 })
 
-function updateLocations() {
-  const attributeIds =
-    props.topologyNode.dataDownloadDisplay?.attributes.map((item) => item.id) ??
-    []
-  locations.value = getNewLocationList(
-    allLocations.value,
-    attributeIds,
-    selectedAttributes.value,
-  )
-  selectedLocations.value = locations.value
-  for (let index = 0; index < selectableAttributes.value.length; index++) {
-    const selectedAttributesForOtherAttributes = selectedAttributes.value.map(
-      (item, itemIndex) => (index == itemIndex ? [] : item),
-    )
-    const locationsFor = getNewLocationList(
-      allLocations.value,
-      attributeIds,
-      selectedAttributesForOtherAttributes,
-    )
-    const newAttributeValues = getAttributeValues(locationsFor)
-    selectableAttributes.value[index] = newAttributeValues[index]
+function updateLocations(index: number) {
+  // no filter set select all locations
+
+  const resetAll = selectedAttributes.value.every((item) => item.length === 0)
+
+  if (resetAll) {
+    console.time('resetAll')
+    locations.value = locationColl
+      .chain([
+        { type: 'simplesort', property: 'title', desc: false },
+        {
+          type: 'limit',
+          value: 1000,
+        },
+      ])
+      .data()
+    selectedLocations.value = locationColl
+      .chain([{ type: 'simplesort', property: 'title', desc: false }])
+      .data()
+    console.timeEnd('resetAll')
+  } else {
+    locations.value = filterLocations(selectedAttributes.value)
+    selectedLocations.value = locations.value
   }
-  for (let index = 0; index < selectableAttributes.value.length; index++) {
-    selectedAttributes.value[index] = selectedAttributes.value[index].filter(
-      (item) => selectableAttributes.value[index].includes(item),
+
+  // update selectable attributes
+  console.time('update selectable attributes')
+  const newAttributeValues = getAttributeValues(locations.value)
+  console.timeEnd('update selectable attributes')
+
+  console.time('update selected attributes')
+  for (let i = 0; i < selectableAttributes.value.length; i++) {
+    if (!resetAll && i === index) continue
+    selectableAttributes.value[i] = newAttributeValues[i]
+    selectedAttributes.value[i] = selectedAttributes.value[i].filter((item) =>
+      selectableAttributes.value[i].includes(item),
     )
   }
+  console.timeEnd('update selected attributes')
 }
+
+// function endIntersect(_entries, _observer, isIntersecting: boolean) {
+//   if (isIntersecting) {
+//     const moreLocations = locationColl
+//       .chain([
+//         {
+//           type: 'offset',
+//           value: locations.value.length,
+//         },
+//         {
+//           type: 'limit',
+//           value: 100,
+//         },
+//       ])
+//       .data()
+//     locations.value = [...locations.value, ...moreLocations]
+//   }
+// }
 
 function copyCurrentHoursAndMinutesToNewDateValue(
   currentDisplayTime: DateTimeMaybeValid,
@@ -481,6 +534,7 @@ async function getTimeSeriesHeaders(): Promise<TimeSeriesResult[] | undefined> {
 }
 
 async function getLocations(): Promise<Location[]> {
+  console.time('getLocations')
   const filter: LocationsFilter = {
     showAttributes: true,
     showParentLocations: false,
@@ -491,80 +545,56 @@ async function getLocations(): Promise<Location[]> {
     documentFormat: DocumentFormat.PI_JSON,
   }
   const locationsResponse = await piProvider.getLocations(filter)
+  console.timeEnd('getLocations')
   return locationsResponse.locations
 }
 
-function getAttributeValues(locations: Location[]): string[][] {
-  const attributes = props.topologyNode.dataDownloadDisplay?.attributes
-  if (!attributes) return []
+function getAttributeValues(locations: FlattendLocation[]): string[][] {
+  console.time('getAttributeValues')
+  if (nodeAttributes.length === 0) return []
+  const attributeValuesMap: string[][] = nodeAttributes.map(() => [])
+  const configuredAttributeIds = nodeAttributes.map((item) => item.id)
 
-  const attributeValuesMap: string[][] = attributes.map(() => [])
-
-  locations.forEach((location) => {
-    location.attributes?.forEach((attribute) => {
-      const index = attributes.findIndex((attr) => attr.id === attribute.id)
-      if (
-        index !== -1 &&
-        attribute.value &&
-        !attributeValuesMap[index].includes(attribute.value)
-      ) {
-        attributeValuesMap[index].push(attribute.value)
+  for (const newLocation of locations) {
+    for (let i = 0; i < configuredAttributeIds.length; i++) {
+      const id = configuredAttributeIds[i]
+      const arrayForAttribute = attributeValuesMap[i]
+      if (newLocation[id] && !arrayForAttribute.includes(newLocation[id])) {
+        arrayForAttribute.push(newLocation[id])
       }
-    })
-  })
-
-  attributeValuesMap.forEach((values) => values.sort())
+    }
+  }
+  attributeValuesMap.forEach((value) => value.sort())
+  console.timeEnd('getAttributeValues')
   return attributeValuesMap
 }
 
 async function getParameters(): Promise<TimeSeriesParameter[]> {
+  console.time('getParameters')
   if (props.topologyNode?.filterIds === undefined) return []
   const filter: ParametersFilter = {
     filterId: filterId,
     documentFormat: DocumentFormat.PI_JSON,
   }
   const parametersResponse = await piProvider.getParameters(filter)
+  console.timeEnd('getParameters')
   return parametersResponse.timeSeriesParameters
 }
 
-function getNewLocationList(
-  allLocations: Location[],
-  attributes: string[],
-  selectedAttributes: string[][],
-): Location[] {
-  const newLocationList = []
-  for (const location of allLocations) {
-    if (isSelected(location, selectedAttributes, attributes)) {
-      newLocationList.push(location)
-    }
-  }
-  return newLocationList
-}
-
-function isSelected(
-  location: Location,
-  selectedValues: string[][],
-  attributes: string[],
-): boolean {
-  for (let i = 0; i < attributes.length; i++) {
-    const selectedValue: string[] = selectedValues[i]
-    if (
-      selectedValue === undefined ||
-      selectedValue.length === 0 ||
-      location.attributes === undefined
-    )
-      continue
-    const foundAttribute = location.attributes?.find(
-      (attribute) => attribute.id === attributes[i],
-    )
-    if (foundAttribute === undefined || foundAttribute.value === undefined)
-      return false
-    const attributeValue = foundAttribute.value
-    if (
-      selectedValue.filter((item) => attributeValue.includes(item)).length === 0
-    )
-      return false
-  }
-  return true
+function filterLocations(selectedAttributes: string[][]): FlattendLocation[] {
+  console.time('filterLocations')
+  const filter: any = {}
+  selectedAttributes.forEach((item, index) => {
+    if (item.length === 0) return
+    filter[nodeAttributes[index].id] = { $in: item }
+  })
+  const result = locationColl
+    .chain([
+      { type: 'find', value: filter },
+      { type: 'simplesort', property: 'title', desc: false },
+    ])
+    .data()
+  console.timeEnd('filterLocations')
+  return result
 }
 </script>
