@@ -1,6 +1,6 @@
 <template>
-  <div style="dislay: flex; flex-direction: column; height: 100%; width: 100%">
-    <div style="flex: 1 1 100%; height: 100%">
+  <div class="d-flex flex-column w-100 h-100">
+    <div class="d-flex flex-1-1-100 h-100">
       <TimeSeriesWindowComponent
         :displayConfig="displayConfig"
         :elevationChartDisplayconfig="elevationChartDisplayconfig"
