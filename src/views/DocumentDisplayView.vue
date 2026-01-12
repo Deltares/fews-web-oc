@@ -6,7 +6,9 @@
     :productKey="productKey"
   />
   <ProductReportView v-else-if="isReportDisplay(config)" :config="config" />
-  <ProductsComposeView v-else-if="isComposeDisplay(config)" class="overflow-auto"
+  <ProductsComposeView
+    v-else-if="isComposeDisplay(config)"
+    class="overflow-auto"
     :config="config"
     :productKey="productKey"
   />
