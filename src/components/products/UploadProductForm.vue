@@ -22,9 +22,9 @@
             <v-row v-if="type === 'new'">
               <v-col cols="12">
                 <v-select
-                  v-model="selectedTemplate"
-                  :items="templates"
-                  item-title="attributes.name"
+                  v-model="selectedCompose"
+                  :items="compose"
+                  :item-title="(item) => item.template.name"
                   label="Select Template"
                   variant="outlined"
                   return-object
@@ -46,26 +46,13 @@
                 ></v-text-field>
               </v-col>
             </v-row>
-            <v-row>
+            <v-row v-if="type === 'upload'">
               <v-col cols="12">
                 <v-text-field
                   v-model="author"
                   label="Author"
                   variant="outlined"
                   :rules="[(v) => !!v || 'Author name is required']"
-                  hide-details
-                  density="compact"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-            <v-row v-if="selectedTemplate?.timeZero">
-              <v-col cols="12">
-                <v-text-field
-                  readonly
-                  v-model="selectedTemplate.timeZero"
-                  label="Time"
-                  variant="outlined"
-                  :rules="[(v) => !!v || 'Time is required']"
                   hide-details
                   density="compact"
                 ></v-text-field>
@@ -87,7 +74,7 @@
             size="small"
             :disabled="!formIsValid"
             @click="onSave()"
-            text="Save"
+            :text="type === 'upload' ? 'Upload' : 'Create'"
           />
         </v-card-actions>
       </v-card>
@@ -96,14 +83,16 @@
 </template>
 
 <script setup lang="ts">
+import type { ArchiveProduct, DocumentCompose } from '@/lib/products'
 import {
+  fetchLatestArchiveProduct,
   fetchProduct,
   postFileProduct,
   postProduct,
 } from '@/lib/products/requests'
+import { IntervalItem } from '@/lib/TimeControl/interval'
 import { configManager } from '@/services/application-config'
 import { hashObject } from '@/services/useProducts'
-import { ProductMetaDataType } from '@/services/useProducts/types'
 import { DateTime } from 'luxon'
 import { ref } from 'vue'
 
@@ -113,7 +102,8 @@ interface Props {
   author?: string
   areaId?: string
   sourceId?: string
-  templates?: ProductMetaDataType[]
+  compose?: DocumentCompose[]
+  viewPeriod: IntervalItem
 }
 
 const props = defineProps<Props>()
@@ -129,7 +119,7 @@ const file = ref<File>()
 
 const name = ref(props.name ?? '')
 const author = ref(props.author ?? '')
-const selectedTemplate = ref(props.templates?.[0])
+const selectedCompose = ref(props.compose?.[0])
 
 async function onSave() {
   switch (props.type) {
@@ -143,11 +133,19 @@ async function onSave() {
       )
       break
     case 'new':
-      createNewProduct(name.value, author.value, selectedTemplate.value)
+      const compose = selectedCompose.value
+      createNewProduct(
+        compose?.archiveProduct.name ?? '',
+        author.value,
+        compose?.archiveProduct,
+        compose?.template,
+        props.viewPeriod,
+      )
       break
   }
 
   emit('saved')
+  emit('close')
 }
 
 const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -202,30 +200,76 @@ async function uploadProduct(
 async function createNewProduct(
   name: string,
   author: string,
-  template: ProductMetaDataType | undefined,
+  archiveProduct: ArchiveProduct | undefined,
+  template: ArchiveProduct | undefined,
+  viewPeriod: IntervalItem,
 ) {
   if (!template) {
     console.error('No template selected for new product')
     return
   }
 
-  const htmlContent = await fetchProduct(piUrl, template)
-
-  const productId = template.attributes.productId.replace(/^template_/, '')
-  const attributes = {
-    ...template.attributes,
-    author,
-    name,
-    productId,
+  if (!archiveProduct) {
+    console.error('No archive product provided for new product')
+    return
   }
+
+  if (!archiveProduct.areaId) {
+    console.error('No areaId in archive product for new product')
+    return
+  }
+
+  if (!archiveProduct.sourceId) {
+    console.error('No sourceId in archive product for new product')
+    return
+  }
+
+  const templateMetaData = await fetchLatestArchiveProduct(
+    piUrl,
+    template,
+    viewPeriod,
+  )
+
+  if (!templateMetaData) {
+    console.error('No template metadata found for new product')
+    return
+  }
+
+  const htmlContent = await fetchProduct(piUrl, templateMetaData)
+
+  const productId = archiveProduct.id
+
+  const attributes: Record<string, string> = {}
+  archiveProduct.attributes?.forEach((attr) => {
+    if (attr.key && attr.value) {
+      attributes[attr.key] = attr.value
+    }
+  })
+
+  if (!('author' in attributes) && author) {
+    attributes['author'] = author
+  }
+
+  if (!('name' in attributes) && name) {
+    attributes['name'] = name
+  }
+
+  if (!('productId' in attributes) && productId) {
+    attributes['productId'] = productId
+  }
+
   const fileName =
-    template.relativePathProducts[0].split('/').pop() ?? 'unknown'
+    templateMetaData.relativePathProducts[0].split('/').pop() ?? 'unknown'
+
+  const timeZero = DateTime.now().toUTC().startOf('second').toISO({
+    suppressMilliseconds: true,
+  })
 
   await postProduct(
     archiveUrl,
-    template.areaId,
-    template.sourceId,
-    template.timeZero,
+    archiveProduct.areaId,
+    archiveProduct.sourceId,
+    archiveProduct.timeZero ?? timeZero,
     htmlContent,
     fileName,
     attributes,

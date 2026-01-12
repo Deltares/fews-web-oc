@@ -88,7 +88,7 @@ export function useProducts(
   }
 }
 
-async function getArchiveProducts(
+export async function getArchiveProducts(
   baseUrl: string,
   archiveProducts: ArchiveProduct[],
   viewPeriod: IntervalItem,

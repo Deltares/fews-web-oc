@@ -30,7 +30,8 @@
           :sourceId="sourceId"
           :areaId="areaId"
           :author="userName"
-          :templates="templates"
+          :viewPeriod="viewPeriod"
+          :compose="compose"
           @saved="fetchProducts()"
           @close="showUploadProductForm = false"
         />
@@ -174,6 +175,7 @@ import { useProducts } from '@/services/useProducts'
 import type {
   ArchiveProduct,
   ArchiveProductSet,
+  DocumentCompose,
 } from '@/lib/products/documentDisplay'
 import { toHumanReadableDateTime } from '@/lib/date'
 import { getFileExtension, getViewMode } from '@/lib/products'
@@ -201,7 +203,7 @@ interface Props {
   editPermissions?: boolean
   showAllVersions?: boolean
   productKey?: string
-  templates?: ProductMetaDataType[]
+  compose?: DocumentCompose[]
 }
 
 const {
@@ -212,7 +214,7 @@ const {
   editPermissions = false,
   productKey,
   showAllVersions = false,
-  templates = [],
+  compose = [],
 } = defineProps<Props>()
 const src = ref('')
 const viewMode = ref('')
@@ -248,7 +250,7 @@ const showUploadProductForm = ref(false)
 const { userName } = useCurrentUser()
 
 const canCreateNew = computed(() => {
-  return templates.length > 0
+  return compose.length > 0
 })
 
 const archiveProductConfig = computed(() => {

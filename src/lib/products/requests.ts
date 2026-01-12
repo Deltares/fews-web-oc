@@ -1,10 +1,15 @@
-import { ProductMetaDataType } from '@/services/useProducts/types.js'
+import type { ProductMetaDataType } from '@/services/useProducts/types.js'
 import { createTransformRequestFn } from '../requests/transformRequest.js'
 import type { PostResponse } from './types.js'
 import { PiArchiveWebserviceProvider } from '@deltares/fews-pi-requests'
-import { FEWS_PRODUCT_ATTRIBUTE_DELETE } from '@/services/useProducts/index.js'
+import {
+  FEWS_PRODUCT_ATTRIBUTE_DELETE,
+  getArchiveProducts,
+} from '@/services/useProducts/index.js'
 import { getFileExtension } from './utils.js'
 import { getProductURL } from '@/components/products/productTools.js'
+import { ArchiveProduct } from './documentDisplay.js'
+import { IntervalItem } from '../TimeControl/interval.js'
 
 /**
  * Determines if a given string contains HTML content.
@@ -200,6 +205,40 @@ export async function fetchProduct(
   }
 
   return await response.text()
+}
+
+function isNewer(a: ProductMetaDataType, b: ProductMetaDataType): boolean {
+  if (a.version !== b.version) {
+    return a.version > b.version
+  }
+  return new Date(a.timeZero).getTime() > new Date(b.timeZero).getTime()
+}
+
+/**
+ * Fetches the latest product metadata based on the provided filter criteria.
+ * @param baseUrl - The base URL of the archive endpoint.
+ * @param archiveProduct - The archive product criteria to filter the products.
+ * @param viewPeriod - The time interval to consider for fetching products.
+ * @returns A promise that resolves to the latest product metadata of type `ProductMetaDataType`.
+ */
+export async function fetchLatestArchiveProduct(
+  baseUrl: string,
+  archiveProduct: ArchiveProduct,
+  viewPeriod: IntervalItem,
+) {
+  const products = await getArchiveProducts(
+    baseUrl,
+    [archiveProduct],
+    viewPeriod,
+  )
+  if (products.length === 0) {
+    return undefined
+  }
+
+  const latestProduct = products.reduce((prev, current) =>
+    isNewer(prev, current) ? prev : current,
+  )
+  return latestProduct
 }
 
 export async function deleteProduct(
