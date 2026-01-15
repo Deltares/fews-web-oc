@@ -40,8 +40,8 @@ import {
   toggleChartVisibility,
   CartesianAxes,
   MouseOver,
-  VerticalMouseOver,
   Visitor,
+  MouseOverDirection,
 } from '@deltares/fews-web-oc-charts'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -122,11 +122,11 @@ onMounted(() => {
     })
     margin.value = { ...axis.margin }
 
-    // Use custom number formatter that just converts the value to a string;
-    // appropriate rounding has already been done by the backend.
-    const mouseOver = props.verticalProfile
-      ? new VerticalMouseOver(undefined, (value: number) => value.toString())
-      : new MouseOver(undefined, (value: number) => value.toString())
+    const mouseOver = new MouseOver({
+      direction: props.verticalProfile
+        ? MouseOverDirection.Vertical
+        : MouseOverDirection.Horizontal,
+    })
 
     const wheelMode = userSettingsStore.scrollZoomMode
     const scrollModifierKey = ModifierKey.Shift
