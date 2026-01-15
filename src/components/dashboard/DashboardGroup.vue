@@ -29,6 +29,9 @@ import { ref } from 'vue'
 import type { SsdActionResult } from '@deltares/fews-ssd-requests'
 import type { DashboardActionEventBus } from '@/lib/topology/dashboardActions'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
+import { provideMapSync } from '@/services/useMapSync'
+import { provideSelectedElevation } from '@/services/useSelectedElevation'
+import { provideChartHandlers } from '@/services/useChartHandlers'
 
 interface Props {
   group: WebOCDashboardGroup
@@ -36,6 +39,11 @@ interface Props {
 }
 
 defineProps<Props>()
+
+// Provide group level shared state
+provideMapSync()
+provideSelectedElevation()
+provideChartHandlers()
 
 const activeActionId = ref<string>()
 function onDashboardAction(action: SsdActionResult) {
