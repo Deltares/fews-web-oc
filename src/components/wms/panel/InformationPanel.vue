@@ -74,6 +74,7 @@
         density="compact"
         variant="flat"
         mandatory
+        class="overflow-visible"
       >
         <v-tooltip v-for="item in aggregations" :key="item.id" location="top">
           <template #activator="{ props: tooltipProps }">
