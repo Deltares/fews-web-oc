@@ -80,14 +80,12 @@
   </Teleport>
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
-      <keep-alive include="SpatialDisplay">
-        <component
-          :is="Component"
-          :topologyNode="topologyNode"
-          :settings="componentSettings"
-          @navigate="onNavigate"
-        />
-      </keep-alive>
+      <component
+        :is="Component"
+        :topologyNode="topologyNode"
+        :settings="componentSettings"
+        @navigate="onNavigate"
+      />
     </router-view>
   </div>
 </template>
