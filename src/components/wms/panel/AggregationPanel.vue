@@ -39,12 +39,19 @@
         </v-tooltip>
       </v-btn-toggle>
     </v-list-item-action>
+    <v-list-item-subtitle class="pt-1">{{
+      toDateRangeString(
+        selectedAggregation?.startDate,
+        selectedAggregation?.endDate,
+      )
+    }}</v-list-item-subtitle>
   </v-list-item>
 </template>
 
 <script setup lang="ts">
 import type { AggregationItem } from '@/lib/aggregation'
 import { toDateRangeString } from '@/lib/date'
+import { computed } from 'vue'
 
 interface Props {
   items: AggregationItem[]
@@ -53,4 +60,8 @@ const { items } = defineProps<Props>()
 
 const modelValue = defineModel<string | null>('modelValue', { required: true })
 const active = defineModel<boolean>('active', { required: true })
+
+const selectedAggregation = computed(() => {
+  return items.find((item) => item.id === modelValue.value)
+})
 </script>
