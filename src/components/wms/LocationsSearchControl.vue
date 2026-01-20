@@ -21,13 +21,18 @@
       {{ formatLocationsText(selectedLocations) }}
     </v-btn>
   </ControlChip>
+  <SearchDialog
+    v-model="showSearch"
+    v-model:selectedItems="selectedItems"
+    :items="items"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { type Location } from '@deltares/fews-pi-requests'
-import { useGlobalSearchState } from '@/stores/globalSearch'
 import ControlChip from '@/components/wms/ControlChip.vue'
+import SearchDialog from '@/components/general/SearchDialog.vue'
 
 import { useI18n } from 'vue-i18n'
 
@@ -49,19 +54,17 @@ const props = withDefaults(defineProps<Props>(), {
 
 const showLocations = defineModel<boolean>('showLocations', { default: true })
 
-const state = useGlobalSearchState()
+const showSearch = ref(false)
+const selectedItems = ref<string[]>([])
+const items = ref<TreeNode[]>([])
 
-watch(
-  () => state.selectedItems,
-  (items) => onSelectLocationIds(items),
-  { deep: true },
-)
+watch(selectedItems, (items) => onSelectLocationIds(items), { deep: true })
 
 watch(
   () => props.selectedLocationIds,
   (ids) => {
-    if (ids.length === 0 && state.selectedItems.length === 0) return
-    return (state.selectedItems = ids)
+    if (ids.length === 0 && selectedItems.value.length === 0) return
+    return (selectedItems.value = ids)
   },
   { immediate: true, deep: true },
 )
@@ -81,7 +84,7 @@ function getLocationsFromIds(locationIds: string[]) {
 }
 
 function showLocationsSearch() {
-  state.active = true
+  showSearch.value = true
 }
 
 type TreeNode = {
@@ -103,7 +106,7 @@ function buildTree(location: Location): TreeNode {
 watch(
   () => props.locations,
   () => {
-    state.items = props.locations
+    items.value = props.locations
       .filter((location) => location.parentLocationId === undefined)
       .map(buildTree)
   },
