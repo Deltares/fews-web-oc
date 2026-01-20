@@ -77,22 +77,11 @@
       >
         <v-tooltip v-for="item in aggregations" :key="item.id" location="top">
           <template #activator="{ props: tooltipProps }">
-            <v-btn
-              v-bind="tooltipProps"
-              :value="item.id"
-              class="information-panel__tab text-none"
-              size="small"
-              :class="{ active: item.id === selectedAggregationLabel }"
-              :prepend-icon="
-                item.id === selectedAggregationLabel
-                  ? 'mdi-clock-end'
-                  : undefined
-              "
-              :append-icon="item.icon"
-              :text="item.shortLabel"
-              min-width="35px"
-            >
-            </v-btn>
+            <AggregationButton
+              :item="item"
+              :selectedAggregationLabel="selectedAggregationLabel"
+              :tooltipProps="tooltipProps"
+            />
           </template>
           <b>{{ item.type }} {{ item.id }}</b>
           <p>{{ toDateRangeString(item.startDate, item.endDate) }}</p>
@@ -105,6 +94,7 @@
 <script setup lang="ts">
 import { computed, nextTick } from 'vue'
 import { LayerKind } from '@/lib/streamlines'
+import AggregationButton from '@/components/wms/panel/AggregationButton.vue'
 import ControlChip from '@/components/wms/ControlChip.vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { toDateRangeString, toHumanReadableDateTime } from '@/lib/date'
