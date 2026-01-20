@@ -1,5 +1,5 @@
 <template>
-  <v-list-item prepend-icon="mdi-clock-end">
+  <v-list-item prepend-icon="mdi-clock-end" class="pb-0">
     <div>Show accumulated data</div>
     <template v-slot:append>
       <v-switch
@@ -10,7 +10,7 @@
       ></v-switch>
     </template>
   </v-list-item>
-  <v-list-item v-if="active">
+  <v-list-item v-if="active" class="pt-0">
     <template v-slot:prepend>
       <v-icon></v-icon>
     </template>
