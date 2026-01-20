@@ -222,9 +222,13 @@ import { isInDatesRange } from '@/lib/date'
 import { getLocationWithChilds, mapIds } from '@/lib/map'
 import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
-import { shortLabel } from '@/lib/aggregation'
 import { useSelectedElevation } from '@/services/useSelectedElevation'
 import { clamp } from '@/lib/utils/math'
+import {
+  type AggregationItem,
+  getRelativeStartDateForLabel,
+  shortLabel,
+} from '@/lib/aggregation'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -313,17 +317,36 @@ const selectedAggregationLabel = ref<string | null>(
   aggregationLabels.value[0] ?? null,
 )
 
-const aggregations = computed(() => {
-  return (
-    props.layerCapabilities?.aggregation?.[0].labels?.map((label) => ({
-      id: label,
-      type:
-        props.layerCapabilities?.aggregation?.[0].aggregationType ?? 'unknown',
-      label: label,
-      shortLabel: shortLabel(label),
-      icon: label === 'to Display Time' ? 'mdi-swap-horizontal' : undefined,
-    })) ?? []
-  )
+const aggregations = computed<AggregationItem[]>(() => {
+  const forecastTimeIsBeforeSelectedDate =
+    forecastTime.value !== undefined &&
+    selectedDate.value !== undefined &&
+    forecastTime.value < selectedDate.value
+
+  const displayTimeStartDate = forecastTimeIsBeforeSelectedDate
+    ? forecastTime.value
+    : selectedDate.value
+  const displayTimeEndDate = forecastTimeIsBeforeSelectedDate
+    ? selectedDate.value
+    : forecastTime.value
+
+  const aggregation = props.layerCapabilities?.aggregation?.[0]
+  const aggregationType = aggregation?.aggregationType ?? 'unknown'
+  const labels = aggregation?.labels ?? []
+
+  return labels.map((label) => ({
+    id: label,
+    type: aggregationType,
+    label: label,
+    shortLabel: shortLabel(label),
+    icon: label === 'to Display Time' ? 'mdi-swap-horizontal' : undefined,
+    startDate:
+      label === 'to Display Time'
+        ? displayTimeStartDate
+        : getRelativeStartDateForLabel(label, selectedDate.value),
+    endDate:
+      label === 'to Display Time' ? displayTimeEndDate : selectedDate.value,
+  }))
 })
 
 watch(

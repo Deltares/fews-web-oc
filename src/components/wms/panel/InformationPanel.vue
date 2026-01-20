@@ -75,12 +75,7 @@
         variant="flat"
         mandatory
       >
-        <v-tooltip
-          v-for="item in aggregations"
-          :key="item.id"
-          :text="`${item.type} ${item.id}`"
-          location="top"
-        >
+        <v-tooltip v-for="item in aggregations" :key="item.id" location="top">
           <template #activator="{ props: tooltipProps }">
             <v-btn
               v-bind="tooltipProps"
@@ -99,6 +94,8 @@
             >
             </v-btn>
           </template>
+          <b>{{ item.type }} {{ item.id }}</b>
+          <p>{{ toDateRangeString(item.startDate, item.endDate) }}</p>
         </v-tooltip>
       </v-btn-toggle>
     </template>
@@ -111,6 +108,7 @@ import { LayerKind } from '@/lib/streamlines'
 import ControlChip from '@/components/wms/ControlChip.vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { toDateRangeString, toHumanReadableDateTime } from '@/lib/date'
+import { AggregationItem } from '@/lib/aggregation'
 
 import { useI18n } from 'vue-i18n'
 
@@ -125,13 +123,7 @@ interface Props {
   firstValueTime?: Date
   lastValueTime?: Date
   canUseStreamlines?: boolean
-  aggregations: {
-    id: string
-    type: string
-    label: string
-    shortLabel: string
-    icon?: string
-  }[]
+  aggregations: AggregationItem[]
 }
 
 const userSettingsStore = useUserSettingsStore()

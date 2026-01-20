@@ -21,12 +21,7 @@
         variant="outlined"
         divided
       >
-        <v-tooltip
-          v-for="item in items"
-          :key="item.id"
-          :text="`${item.type} ${item.id}`"
-          location="top"
-        >
+        <v-tooltip v-for="item in items" :key="item.id" location="top">
           <template #activator="{ props: tooltipProps }">
             <v-btn
               v-bind="tooltipProps"
@@ -39,6 +34,8 @@
             >
             </v-btn>
           </template>
+          <b>{{ item.type }} {{ item.id }}</b>
+          <p>{{ toDateRangeString(item.startDate, item.endDate) }}</p>
         </v-tooltip>
       </v-btn-toggle>
     </v-list-item-action>
@@ -46,14 +43,11 @@
 </template>
 
 <script setup lang="ts">
+import type { AggregationItem } from '@/lib/aggregation'
+import { toDateRangeString } from '@/lib/date'
+
 interface Props {
-  items: {
-    id: string
-    type: string
-    label: string
-    shortLabel: string
-    icon?: string
-  }[]
+  items: AggregationItem[]
 }
 const { items } = defineProps<Props>()
 
