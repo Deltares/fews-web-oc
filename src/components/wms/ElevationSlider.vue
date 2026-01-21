@@ -44,7 +44,7 @@ import { computed, nextTick, ref, watch, watchEffect } from 'vue'
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/antd.css'
 import { scaleLinear } from 'd3-scale'
-import { floatPrecision } from '@/lib/utils/math'
+import { clamp, floatPrecision } from '@/lib/utils/math'
 
 interface Props {
   modelValue: number
@@ -123,13 +123,7 @@ const closeTooltip = () => {
 }
 
 const acceptEdit = () => {
-  if (editValue.value > props.maxValue) {
-    currentValue.value = props.maxValue
-  } else if (editValue.value < props.minValue) {
-    currentValue.value = props.minValue
-  } else {
-    currentValue.value = editValue.value
-  }
+  currentValue.value = clamp(editValue.value, props.minValue, props.maxValue)
   emit('update:modelValue', currentValue.value)
   closeTooltip()
 }
@@ -139,7 +133,7 @@ const interval = computed(() => {
 })
 
 const onValueChange = () => {
-  currentValue.value = props.modelValue
+  currentValue.value = clamp(props.modelValue, props.minValue, props.maxValue)
 }
 
 watch(() => props.modelValue, onValueChange)

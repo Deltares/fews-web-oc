@@ -4,6 +4,7 @@
 
 import { expect, test, describe } from 'vitest'
 import {
+  clamp,
   floatPrecision,
   roundToStepPrecision,
   roundToDecimalPlaces,
@@ -80,5 +81,39 @@ describe('roundToDecimalPlaces', () => {
 
   test('round with negative number', () => {
     expect(roundToDecimalPlaces(-54.6545, 2)).toEqual(-54.65)
+  })
+})
+
+describe('clamp', () => {
+  test('within range', () => {
+    expect(clamp(5, 0, 10)).toEqual(5)
+  })
+  
+  test('below range', () => {
+    expect(clamp(-5, 0, 10)).toEqual(0)
+  })
+
+  test('above range', () => {
+    expect(clamp(15, 0, 10)).toEqual(10)
+  })
+  
+  test('at lower boundary', () => {
+    expect(clamp(0, 0, 10)).toEqual(0)
+  })
+  
+  test('at upper boundary', () => {
+    expect(clamp(10, 0, 10)).toEqual(10)
+  })
+
+  test('with negative range', () => {
+    expect(clamp(-5, -10, -1)).toEqual(-5)
+  })
+
+  test('below negative range', () => {
+    expect(clamp(-15, -10, -1)).toEqual(-10)
+  })
+
+  test('above negative range', () => {
+    expect(clamp(0, -10, -1)).toEqual(-1)
   })
 })

@@ -44,3 +44,22 @@ export function roundToDecimalPlaces(
   const num = Number(`${value}e+${decimalPlaces}`)
   return Number(Math.round(num) + `e-${decimalPlaces}`)
 }
+
+/**
+ * Clamp a number between a minimum and maximum value
+  * @param {number} value - The number to clamp.
+  * @param {number} min - The minimum value.
+  * @param {number} max - The maximum value.
+  * @returns {number} The clamped number.
+  * @example
+  * clamp(10, 0, 5) // 5
+  * clamp(-2, 0, 5) // 0
+  * clamp(3, 0, 5) // 3
+  */
+export function clamp(
+  value: number,
+  min: number,
+  max: number,
+): number {
+  return Math.min(Math.max(value, min), max)
+}
