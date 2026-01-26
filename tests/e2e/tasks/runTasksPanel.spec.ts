@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { describeFromVersion } from '../utils/versionedTest'
 
 const base = '/topology/early_warning/node'
 
@@ -13,7 +14,7 @@ async function openTasksPanel(page: Page) {
   await runTasksListItem.click()
 }
 
-test.describe('Run Tasks Panel', () => {
+describeFromVersion('202402', 'Run Tasks Panel', () => {
   test('should open Run Tasks panel, verify scenario, default values, coordinates, and toggle selector', async ({
     page,
   }) => {
