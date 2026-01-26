@@ -37,7 +37,11 @@
     >
       <slot name="left" />
     </div>
-    <div class="vci--slider" :style="sliderStyle">
+    <div
+      class="vci--slider"
+      :style="sliderStyle"
+      ref="sliderRef"
+    >
       <div class="vci--slider-line" :style="lineStyle" />
       <div v-if="handle" class="vci--custom-handle" v-html="handle" />
       <div v-else class="vci--default-handle" :style="handleDefaultStyle">
@@ -77,7 +81,6 @@
 
 <!-- eslint-disable no-irregular-whitespace -->
 <script setup lang="ts">
-
 // utilities
 import type { CSSProperties } from 'vue'
 import {
@@ -88,6 +91,7 @@ import {
   onMounted,
   ref,
   toRefs,
+  useTemplateRef,
   watch,
 } from 'vue'
 
@@ -115,7 +119,7 @@ const props = withDefaults(defineProps<Props>(), {
   keyboard: false,
   keyboardStep: 0.01,
   hover: false,
-  slideOnClick: true,
+  slideOnClick: false,
   handleSize: 40,
   sliderLineWidth: 2,
   sliderPositionPercentage: 0.5,
@@ -154,9 +158,11 @@ const {
 const componentId = Math.random().toString(36).substr(2, 9)
 
 const horizontal = !vertical.value
-const containerRef = ref()
-const rightImageRef = ref<HTMLImageElement | null>(null)
-const leftImageRef = ref<HTMLImageElement | null>(null)
+const containerRef = useTemplateRef<HTMLDivElement>('containerRef')
+const rightImageRef = useTemplateRef<HTMLImageElement>('rightImageRef')
+const leftImageRef = useTemplateRef<HTMLImageElement>('leftImageRef')
+const sliderRef = useTemplateRef('sliderRef')
+
 const sliderPosition = ref(sliderPositionPercentage.value)
 const containerWidth = ref(0)
 const containerHeight = ref(0)
@@ -177,9 +183,8 @@ const leftImageClip = computed(() => 1 - sliderPosition.value)
 
 // computed styles
 const containerStyle = computed((): CSSProperties => {
-  console.log('containerStyle computed called', allImagesLoaded.value)
   return {
-    display: allImagesLoaded.value ? 'flex' : 'none',
+    display: 'flex',
     height: `${containerHeight.value}px`,
   }
 })
@@ -342,6 +347,8 @@ function handleSliding(event: MouseEvent | TouchEvent | KeyboardEvent) {
 }
 
 function startSliding(e: MouseEvent | TouchEvent | KeyboardEvent) {
+  if (e.target !== sliderRef.value) return // do not start sliding when clicking on the handle directly{
+
   isSliding.value = true
   emit('slideStart', sliderPosition.value)
   emit('isSliding', isSliding.value)
@@ -432,9 +439,11 @@ function forceRenderHover(): void {
 // Make the component responsive
 onMounted(() => {
   const containerElement = containerRef.value
+  if (!containerElement) return
   const resizeObserver = new ResizeObserver(([entry]) => {
-    const currentContainerWidth = entry.target.getBoundingClientRect().width
-    containerWidth.value = currentContainerWidth
+    const boundingBoxRect = entry.target.getBoundingClientRect()
+    containerWidth.value = boundingBoxRect.width
+    // containerHeight.value = boundingBoxRect.height
   })
   resizeObserver.observe(containerElement)
 
@@ -446,9 +455,13 @@ onMounted(() => {
         if (leftImg.complete) {
           leftImgLoaded.value = true
         } else {
-          leftImg.addEventListener('load', () => {
-            leftImgLoaded.value = true
-          }, { once: true })
+          leftImg.addEventListener(
+            'load',
+            () => {
+              leftImgLoaded.value = true
+            },
+            { once: true },
+          )
         }
       } else {
         leftImgLoaded.value = true
@@ -461,9 +474,13 @@ onMounted(() => {
         if (rightImg.complete) {
           rightImgLoaded.value = true
         } else {
-          rightImg.addEventListener('load', () => {
-            rightImgLoaded.value = true
-          }, { once: true })
+          rightImg.addEventListener(
+            'load',
+            () => {
+              rightImgLoaded.value = true
+            },
+            { once: true },
+          )
         }
       } else {
         rightImgLoaded.value = true
@@ -486,7 +503,7 @@ onMounted(() => {
   }
 
   window.addEventListener('click', handleOnClickOutside)
-  // containerElement?.addEventListener('mouseleave', finishSliding)
+  containerElement?.addEventListener('mouseleave', finishSliding)
 })
 
 onBeforeUnmount(() => {
@@ -511,9 +528,13 @@ watch(leftImageRef, () => {
       if (img.complete) {
         leftImgLoaded.value = true
       } else {
-        img.addEventListener('load', () => {
-          leftImgLoaded.value = true
-        }, { once: true })
+        img.addEventListener(
+          'load',
+          () => {
+            leftImgLoaded.value = true
+          },
+          { once: true },
+        )
       }
     } else {
       // If no img found, assume content is loaded
@@ -525,15 +546,20 @@ watch(leftImageRef, () => {
 // Watch for changes in rightImage slot content
 watch(rightImageRef, () => {
   rightImgLoaded.value = false
+  console.log('right image slot changed', rightImageRef.value)
   if (rightImageRef.value) {
     const img = rightImageRef.value.querySelector('img')
     if (img) {
       if (img.complete) {
         rightImgLoaded.value = true
       } else {
-        img.addEventListener('load', () => {
-          rightImgLoaded.value = true
-        }, { once: true })
+        img.addEventListener(
+          'load',
+          () => {
+            rightImgLoaded.value = true
+          },
+          { once: true },
+        )
       }
     } else {
       // If no img found, assume content is loaded
@@ -556,18 +582,31 @@ watch(
   ],
   () => {
     if (!leftImageRef.value || !rightImageRef.value) return
-    
-    const leftImg = leftImageRef.value.querySelector('img')
-    const rightImg = rightImageRef.value.querySelector('img')
-    
-    if (!leftImg || !rightImg) {
+
+    if (leftImageRef.value !== null && rightImageRef.value !== null) {
+      const leftImgRect = leftImageRef.value.firstElementChild!.getBoundingClientRect()
+      const rightImgRect = rightImageRef.value.firstElementChild!.getBoundingClientRect()
+      console.log(
+        'No images found in slots, using container dimensions',
+        leftImgRect,
+        rightImgRect,
+      ) 
       // If no images found, use a default aspect ratio
-      containerHeight.value = containerWidth.value * 0.6
+      containerHeight.value = Math.max(leftImgRect.height, rightImgRect.height)
       return
     }
 
-    const leftImageWidthHeightRatio = leftImg.naturalHeight / leftImg.naturalWidth
-    const rightImageWidthHeightRatio = rightImg.naturalHeight / rightImg.naturalWidth
+
+
+    const leftImg = leftImageRef.value.querySelector('img')
+    const rightImg = rightImageRef.value.querySelector('img')
+
+    if (!leftImg || !rightImg) return
+
+    const leftImageWidthHeightRatio =
+      leftImg.naturalHeight / leftImg.naturalWidth
+    const rightImageWidthHeightRatio =
+      rightImg.naturalHeight / rightImg.naturalWidth
 
     const idealWidthHeightRatio =
       aspectRatio.value === 'taller'
@@ -587,6 +626,7 @@ watch(
   display: flex;
   overflow: hidden;
   width: 100%;
+  height: fit-content;
 }
 
 .vci--right-container {
@@ -619,6 +659,7 @@ watch(
 }
 
 .vci--slider-line {
+  pointer-events: none;
   flex: 0 1 auto;
   box-shadow:
     0px 3px 1px -2px rgba(0, 0, 0, 0.2),
@@ -627,6 +668,7 @@ watch(
 }
 
 .vci--custom-handle {
+  pointer-events: none;
   box-sizing: border-box;
   display: flex;
   flex: 1 0 auto;
@@ -637,6 +679,7 @@ watch(
 }
 
 .vci--default-handle {
+  pointer-events: none;
   box-sizing: border-box;
   display: flex;
   flex: 1 0 auto;
