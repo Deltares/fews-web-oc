@@ -123,7 +123,6 @@ export async function getArchiveProducts(
       filter.attribute['productId'] = product.id
     }
 
-    console.log('Fetching products with filter:', filter)
     promises.push(fetchProductsMetaData(baseUrl, filter))
   }
 
