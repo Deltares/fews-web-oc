@@ -224,6 +224,7 @@ import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 import { shortLabel } from '@/lib/aggregation'
 import { useSelectedElevation } from '@/services/useSelectedElevation'
+import { clamp } from '@/lib/utils/math'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -566,7 +567,11 @@ function setLayerOptions(): void {
       bbox: props.layerCapabilities?.boundingBox
         ? convertBoundingBoxToLngLatBounds(props.layerCapabilities.boundingBox)
         : undefined,
-      elevation: currentElevation.value,
+      elevation: clamp(
+        currentElevation.value,
+        minElevation.value,
+        maxElevation.value,
+      ),
       colorScaleRange: currentColourScale.value?.range
         ? rangeToString(currentColourScale.value?.range)
         : undefined,

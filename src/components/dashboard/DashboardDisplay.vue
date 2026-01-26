@@ -30,11 +30,9 @@ import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import { useDisplay } from 'vuetify'
 import { createDateRegistry } from '@/services/useDateRegistry'
 import { provideSelectedDate } from '@/services/useSelectedDate'
-import { provideChartHandlers } from '@/services/useChartHandlers'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useDynamicCss } from '@/services/useDynamicCss'
 import DashboardGroup from './DashboardGroup.vue'
-import { provideSelectedElevation } from '@/services/useSelectedElevation'
 
 interface Props {
   dashboard: WebOCDashboard
@@ -61,9 +59,6 @@ function setupDates() {
   provideSelectedDate(selectedDate)
   return createDateRegistry()
 }
-
-provideSelectedElevation()
-provideChartHandlers()
 
 const groups = computed(() => props.dashboard.groups)
 const cssUrl = computed(() =>
