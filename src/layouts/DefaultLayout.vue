@@ -165,7 +165,6 @@
         </v-alert>
       </div>
       <StartupDialog />
-      <GlobalSearchComponent />
     </v-main>
   </v-layout>
 </template>
@@ -180,7 +179,6 @@ import LoginComponent from '../views/auth/LoginComponent.vue'
 import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
 import StartupDialog from '@/components/dialog/StartupDialog.vue'
-import GlobalSearchComponent from '@/components/general/GlobalSearchComponent.vue'
 
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'

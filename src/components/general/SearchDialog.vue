@@ -1,12 +1,12 @@
 <template>
   <v-dialog
-    v-model="state.active"
+    v-model="active"
     transition="dialog-top-transition"
     :fullscreen="mobile"
     scrollable
     :max-width="mobile ? undefined : '900'"
     class="align-start"
-    @keydown.esc="state.active = false"
+    @keydown.esc="active = false"
   >
     <v-card>
       <v-toolbar density="compact">
@@ -21,7 +21,7 @@
           prepend-icon="mdi-map-marker"
           class="ps-3"
         />
-        <v-btn icon="mdi-close" @click="state.active = false" />
+        <v-btn icon="mdi-close" @click="active = false" />
       </v-toolbar>
       <div class="d-flex px-1 pt-3 pb-2 align-center">
         <span class="pe-1">Filter</span>
@@ -39,7 +39,7 @@
           prepend-icon="mdi-close-circle"
           variant="tonal"
           rounded
-          @click.stop="state.selectedItems = []"
+          @click.stop="selectedItems = []"
           >{{ t('clear_all') }}</v-btn
         >
       </div>
@@ -89,27 +89,39 @@ import { useDisplay } from 'vuetify'
 
 import { containsSubstring } from '@/lib/search'
 
-import { GlobalSearchItem, useGlobalSearchState } from '@/stores/globalSearch'
-
 import HighlightMatch from './HighlightMatch.vue'
 import { cascadeStrategy } from '@/lib/selection'
 import { debouncedRef } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 
-interface GlobalSearchItemWithTreeIds extends GlobalSearchItem {
+interface SearchItem {
+  id: string
+  title: string
+  children?: SearchItem[]
+}
+
+interface SearchItemWithTreeIds extends SearchItem {
   treeIds: string[]
 }
 
+interface Props {
+  items: SearchItem[]
+}
+
+const props = defineProps<Props>()
+
+const active = defineModel<boolean>({ required: true })
+const selectedItems = defineModel<string[]>('selectedItems', { required: true })
+
 const { t } = useI18n()
 const { mobile } = useDisplay()
-const state = useGlobalSearchState()
 const search = ref<string | undefined>()
 const debouncedSearch = debouncedRef(search, 100)
 const showOnlySelected = ref(false)
 
 const itemWithTreeIds = computed(() => {
   // Return all items from the store, add property with all children ids for easier filtering
-  return state.items.map((item) => {
+  return props.items.map((item) => {
     const childIds = item.children?.flatMap((child) => child.id) ?? []
     return {
       ...item,
@@ -121,7 +133,7 @@ const itemWithTreeIds = computed(() => {
 const filteredNodes = computed(() => {
   const items = showOnlySelected.value
     ? itemWithTreeIds.value.filter((item) => {
-        return item.treeIds.some((id) => state.selectedItems.includes(id))
+        return item.treeIds.some((id) => selectedItems.value.includes(id))
       })
     : itemWithTreeIds.value
 
@@ -133,7 +145,7 @@ const filteredNodes = computed(() => {
   return items.filter((node) => isMatchingItem(node, searchString))
 })
 
-function showId(item: GlobalSearchItemWithTreeIds): boolean {
+function showId(item: SearchItemWithTreeIds): boolean {
   const query = search.value
   if (!query) return false
 
@@ -143,23 +155,23 @@ function showId(item: GlobalSearchItemWithTreeIds): boolean {
   return isMatchingId && !isMatchingName
 }
 
-function selectedChildren(item: GlobalSearchItemWithTreeIds) {
-  return state.selectedItems.filter((id) => item.treeIds.includes(id))
+function selectedChildren(item: SearchItemWithTreeIds) {
+  return selectedItems.value.filter((id) => item.treeIds.includes(id))
 }
 
 function updateSelectedChildren(
-  item: GlobalSearchItemWithTreeIds,
+  item: SearchItemWithTreeIds,
   selection: string[],
 ) {
   // Remove any previously selected child IDs of this item.
-  const filtered = state.selectedItems.filter(
+  const filtered = selectedItems.value.filter(
     (id) => !item.treeIds.includes(id),
   )
   // Add the newly selected child IDs.
-  state.selectedItems = filtered.concat(selection)
+  selectedItems.value = filtered.concat(selection)
 }
 
-function isMatchingItem(item: GlobalSearchItem, query: string): boolean {
+function isMatchingItem(item: SearchItem, query: string): boolean {
   if (
     containsSubstring(item.id, query) ||
     containsSubstring(item.title, query)
@@ -173,7 +185,7 @@ function isMatchingItem(item: GlobalSearchItem, query: string): boolean {
 }
 
 function showAll(
-  item: GlobalSearchItemWithTreeIds,
+  item: SearchItemWithTreeIds,
   query: string | undefined,
 ): boolean {
   if (!query) {
