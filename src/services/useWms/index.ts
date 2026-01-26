@@ -4,11 +4,12 @@ import {
 } from '@deltares/fews-pi-requests'
 import {
   BoundingBox,
+  GetCapabilitiesFilter,
   GetCapabilitiesResponse,
   Layer,
   WMSProvider,
 } from '@deltares/fews-wms-requests'
-import { MaybeRefOrGetter, ref, Ref, toValue, watchEffect } from 'vue'
+import { MaybeRefOrGetter, ref, Ref, toValue, watch, watchEffect } from 'vue'
 // @ts-ignore
 import { toWgs84 } from '@turf/projection'
 // @ts-ignore
@@ -37,20 +38,20 @@ export function useWmsLayerCapabilities(
   const layerCapabilities = ref<Layer>()
 
   async function loadLayer(): Promise<void> {
-    const _layers = toValue(layerName)
-    if (_layers === '') {
+    const _layerName = toValue(layerName)
+    if (_layerName === '') {
       layerCapabilities.value = undefined
     } else {
       try {
         const capabilities = await wmsProvider.getCapabilities({
-          layers: _layers,
+          layers: _layerName,
           importFromExternalDataSource: false,
           onlyHeaders: false,
           forecastCount: 1,
         })
         if (capabilities.layers.length > 0) {
           layerCapabilities.value =
-            capabilities.layers.find((l) => l.name === _layers) ??
+            capabilities.layers.find((l) => l.name === _layerName) ??
             capabilities.layers[0]
         }
       } catch (error) {
@@ -208,25 +209,60 @@ export function fetchWmsLegend(
   }
 }
 
-export function useWmsCapilities(
+export interface UseWmsCapabilitiesReturn {
+  capabilities: Ref<GetCapabilitiesResponse | undefined>
+  outputStartTime: Ref<Date | null>
+  outputEndTime: Ref<Date | null>
+}
+
+export function useWmsCapabilities(
   baseUrl: string,
-): Ref<GetCapabilitiesResponse | undefined> {
+  filter?: MaybeRefOrGetter<GetCapabilitiesFilter>,
+): UseWmsCapabilitiesReturn {
   const capabilities = ref<GetCapabilitiesResponse>()
+  const outputStartTime = ref<Date | null>(null)
+  const outputEndTime = ref<Date | null>(null)
+
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
 
   async function loadCapabilities(): Promise<void> {
+    const _filter = toValue(filter) ?? {}
     try {
-      capabilities.value = await wmsProvider.getCapabilities({})
+      capabilities.value = await wmsProvider.getCapabilities(_filter)
     } catch (error) {
       console.error(error)
     }
   }
 
+  watch(() => toValue(filter), loadCapabilities)
+
   loadCapabilities()
-  return capabilities
+
+  watchEffect(() => {
+    const minStartTime = capabilities.value?.layers.reduce(
+      (min, task) =>
+        task.firstValueTime
+          ? Math.min(min, new Date(task.firstValueTime).getTime())
+          : min,
+      Infinity,
+    )
+    outputStartTime.value =
+      minStartTime === Infinity ? null : new Date(minStartTime!)
+    const maxEndTime = capabilities.value?.layers.reduce(
+      (max, task) =>
+        task.lastValueTime
+          ? Math.max(max, new Date(task.lastValueTime).getTime())
+          : max,
+      -Infinity,
+    )
+    outputEndTime.value =
+      maxEndTime === -Infinity ? null : new Date(maxEndTime!)
+  })
+
+  return { capabilities, outputStartTime, outputEndTime }
 }
 
 export function convertBoundingBoxToLngLatBounds(

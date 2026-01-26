@@ -19,7 +19,7 @@
 import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
 import { computed, ref, watch } from 'vue'
 import { ColumnItem } from '../components/general/ColumnItem'
-import { useWmsCapilities } from '@/services/useWms'
+import { useWmsCapabilities } from '@/services/useWms'
 import { configManager } from '@/services/application-config'
 import { Layer, LayerGroup } from '@deltares/fews-wms-requests'
 import SpatialDisplay from '@/components/spatialdisplay/SpatialDisplay.vue'
@@ -41,7 +41,7 @@ const route = useRoute()
 const router = useRouter()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const capabilities = useWmsCapilities(baseUrl)
+const { capabilities } = useWmsCapabilities(baseUrl)
 
 const settings = useUserSettingsStore()
 
