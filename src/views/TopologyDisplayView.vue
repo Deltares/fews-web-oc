@@ -43,6 +43,7 @@
     <VisualizeDataControl
       v-if="secondaryControl === 'visualize' && showTaskMenu"
       :topologyNode="topologyNode"
+      :layerName="props.layerName"
     />
     <WorkflowsControl
       v-if="secondaryControl === 'workflows'"
