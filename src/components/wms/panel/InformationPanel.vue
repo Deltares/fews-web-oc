@@ -74,31 +74,18 @@
         density="compact"
         variant="flat"
         mandatory
+        class="overflow-visible"
       >
-        <v-tooltip
-          v-for="item in aggregations"
-          :key="item.id"
-          :text="`${item.type} ${item.id}`"
-          location="top"
-        >
+        <v-tooltip v-for="item in aggregations" :key="item.id" location="top">
           <template #activator="{ props: tooltipProps }">
-            <v-btn
-              v-bind="tooltipProps"
-              :value="item.id"
-              class="information-panel__tab text-none"
-              size="small"
-              :class="{ active: item.id === selectedAggregationLabel }"
-              :prepend-icon="
-                item.id === selectedAggregationLabel
-                  ? 'mdi-clock-end'
-                  : undefined
-              "
-              :append-icon="item.icon"
-              :text="item.shortLabel"
-              min-width="35px"
-            >
-            </v-btn>
+            <AggregationButton
+              :item="item"
+              :selectedAggregationLabel="selectedAggregationLabel"
+              :tooltipProps="tooltipProps"
+            />
           </template>
+          <b>{{ item.type }} {{ item.id }}</b>
+          <p>{{ toDateRangeString(item.startDate, item.endDate) }}</p>
         </v-tooltip>
       </v-btn-toggle>
     </template>
@@ -108,9 +95,11 @@
 <script setup lang="ts">
 import { computed, nextTick } from 'vue'
 import { LayerKind } from '@/lib/streamlines'
+import AggregationButton from '@/components/wms/panel/AggregationButton.vue'
 import ControlChip from '@/components/wms/ControlChip.vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { toDateRangeString, toHumanReadableDateTime } from '@/lib/date'
+import { AggregationItem } from '@/lib/aggregation'
 
 import { useI18n } from 'vue-i18n'
 
@@ -125,13 +114,7 @@ interface Props {
   firstValueTime?: Date
   lastValueTime?: Date
   canUseStreamlines?: boolean
-  aggregations: {
-    id: string
-    type: string
-    label: string
-    shortLabel: string
-    icon?: string
-  }[]
+  aggregations: AggregationItem[]
 }
 
 const userSettingsStore = useUserSettingsStore()

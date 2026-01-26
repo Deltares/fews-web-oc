@@ -1,5 +1,15 @@
 import { Duration, type DurationLikeObject } from 'luxon'
 
+export interface AggregationItem {
+  id: string
+  type: string
+  label: string
+  shortLabel: string
+  icon?: string
+  startDate?: Date
+  endDate?: Date
+}
+
 /**
  * Converts a FEWS aggregation label to a short, human-readable duration label.
  *
@@ -18,6 +28,36 @@ export function shortLabel(label: string): string {
     locale: 'en',
   })
   return duration.toHuman({ unitDisplay: 'narrow' }) ?? label
+}
+
+/**
+ * Calculates the start date based on a FEWS aggregation label and an optional end date.
+ * If the end date is not provided, the function returns undefined.
+ *
+ * @param label - A FEWS aggregation label string in the format "number unit(s)"
+ * @param endDate - An optional end date to calculate the start date from
+ * @returns The calculated start date, or undefined if the end date is not provided or parsing fails
+ * @example
+ * ```typescript
+ * getRelativeStartDateForLabel("5 days", new Date("2024-06-10")) // returns Date representing "2024-06-05"
+ * getRelativeStartDateForLabel("1 hour", new Date("2024-06-10T12:00:00")) // returns Date representing "2024-06-10T11:00:00"
+ * getRelativeStartDateForLabel("invalid", new Date("2024-06-10")) // returns undefined
+ * ```
+ */
+export function getRelativeStartDateForLabel(
+  label: string,
+  endDate: Date | undefined,
+): Date | undefined {
+  if (!endDate) return
+
+  const durationObj = fewsAggregationLabelToDuration(label)
+  if (Object.keys(durationObj).length === 0) return
+
+  const duration = Duration.fromObject(durationObj)
+  const endDateTime = Duration.fromMillis(endDate.getTime())
+  const startDateTime = endDateTime.minus(duration)
+
+  return new Date(startDateTime.toMillis())
 }
 
 /**
