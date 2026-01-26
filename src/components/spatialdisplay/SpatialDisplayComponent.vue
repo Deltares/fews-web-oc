@@ -317,6 +317,8 @@ const selectedAggregationLabel = ref<string | null>(
   aggregationLabels.value[0] ?? null,
 )
 
+const forecastTime = ref<Date>()
+
 const aggregations = computed<AggregationItem[]>(() => {
   const forecastTimeIsBeforeSelectedDate =
     forecastTime.value !== undefined &&
@@ -365,7 +367,6 @@ watch(
 watch([doShowAggregated, selectedAggregationLabel], () => setLayerOptions())
 
 const layerOptions = ref<AnimatedRasterLayerOptions>()
-const forecastTime = ref<Date>()
 const isLoading = ref(false)
 
 const legendLayerStyles = ref<Style[]>()
