@@ -8,46 +8,44 @@
   >
     <v-card-text class="py-2 px-1 h-100 flex-grow-1">
       <div class="d-flex w-100">
-        <div class="w-100">
-          <div class="d-flex align-center ga-1 w-100">
-            <v-checkbox-btn
-              v-model="selected"
-              class="flex-0-0"
-              density="compact"
-              :color="taskRunColor"
-              :disabled="task.isCurrent"
-              @click.stop="taskRunsStore.toggleTaskRun(task)"
-            >
-              <v-tooltip
-                text="Visualize in charts"
-                open-delay="500"
-                activator="parent"
-              />
-            </v-checkbox-btn>
+        <div class="d-flex align-center ga-1 w-100">
+          <v-checkbox-btn
+            v-model="selected"
+            class="flex-0-0"
+            density="compact"
+            :color="taskRunColor"
+            :disabled="task.isCurrent"
+            @click.stop="taskRunsStore.toggleTaskRun(task)"
+          >
+            <v-tooltip
+              text="Visualize in charts"
+              open-delay="500"
+              activator="parent"
+            />
+          </v-checkbox-btn>
 
-            <div class="flex-1-1 overflow-hidden">
-              <div :class="{ 'text-wrap': expanded }">
-                {{ workflowTitle }}
-              </div>
-              <v-list-item-subtitle
-                v-if="whatIfTemplate"
-                :class="{ 'text-wrap': expanded, 'text-wrap-no': !expanded }"
-              >
-                {{ `${whatIfTemplate.name}` }}
-              </v-list-item-subtitle>
-              <v-list-item-subtitle
-                :class="{ 'text-wrap': expanded, 'text-wrap-no': !expanded }"
-              >
-                {{ timeZeroString }}
-              </v-list-item-subtitle>
+          <div class="flex-1-1 overflow-hidden">
+            <div :class="{ 'text-wrap': expanded }">
+              {{ workflowTitle }}
             </div>
-            <v-btn
-              density="compact"
-              :icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-              @click.stop="onExpansionPanelToggle"
-              end
-            ></v-btn>
+            <v-list-item-subtitle
+              v-if="whatIfTemplate"
+              :class="{ 'text-wrap': expanded, 'text-wrap-no': !expanded }"
+            >
+              {{ `${whatIfTemplate.name}` }}
+            </v-list-item-subtitle>
+            <v-list-item-subtitle
+              :class="{ 'text-wrap': expanded, 'text-wrap-no': !expanded }"
+            >
+              {{ timeZeroString }}
+            </v-list-item-subtitle>
           </div>
+          <v-btn
+            density="compact"
+            :icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+            @click.stop="onExpansionPanelToggle"
+            end
+          ></v-btn>
         </div>
       </div>
       <DataTable v-if="expanded" class="mt-4" :tableData="tableData" />
