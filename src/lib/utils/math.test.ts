@@ -88,7 +88,7 @@ describe('clamp', () => {
   test('within range', () => {
     expect(clamp(5, 0, 10)).toEqual(5)
   })
-  
+
   test('below range', () => {
     expect(clamp(-5, 0, 10)).toEqual(0)
   })
@@ -96,11 +96,11 @@ describe('clamp', () => {
   test('above range', () => {
     expect(clamp(15, 0, 10)).toEqual(10)
   })
-  
+
   test('at lower boundary', () => {
     expect(clamp(0, 0, 10)).toEqual(0)
   })
-  
+
   test('at upper boundary', () => {
     expect(clamp(10, 0, 10)).toEqual(10)
   })
