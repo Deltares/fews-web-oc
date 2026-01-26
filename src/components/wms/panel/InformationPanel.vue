@@ -68,7 +68,10 @@
       <v-progress-circular v-if="isLoading" size="20" indeterminate />
       <v-icon v-else>mdi-animation-play</v-icon>
     </v-btn>
-    <template #extension v-if="doShowAggregated && aggregations.length > 0">
+    <template
+      #extension
+      v-if="showLayer && doShowAggregated && aggregations.length > 0"
+    >
       <v-btn-toggle
         v-model="selectedAggregationLabel"
         density="compact"
