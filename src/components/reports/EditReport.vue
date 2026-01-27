@@ -1,4 +1,18 @@
 <template>
+  <UnsavedChangesGuard
+    ref="guard"
+    :when="hasChanges"
+    @confirm="showModal = true"
+  />
+  <ConfirmModal
+    v-model="showModal"
+    title="Unsaved changes"
+    message="You have unsaved changes. Leave without saving?"
+    confirm-text="Leave"
+    cancel-text="Stay"
+    @confirm="confirmLeave"
+    @cancel="cancelLeave"
+  />
   <v-toolbar v-if="editor" density="compact">
     <TableMenu :editor="editor" ref="EditMenu" />
     <v-spacer />
@@ -23,17 +37,40 @@ import { ref, watch, onMounted, onBeforeUnmount, computed } from 'vue'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { extensions } from '@/components/reports/tiptap/extensions'
 import TableMenu from '@/components/reports/tiptap/TableMenu.vue'
+import UnsavedChangesGuard from '@/components/reports/UnsavedChangesGuard.vue'
+import ConfirmModal from '@/components/reports/ConfirmModal.vue'
 
 const modelValue = defineModel<string>()
 
 interface Emits {
   save: []
   close: []
+  change: [isDirty: boolean]
 }
 const emit = defineEmits<Emits>()
 
 const initialContent = ref('')
 const extractedStyles = ref('')
+
+// Initialize editor with HTML (excluding style tags)
+const editor = useEditor({
+  extensions,
+  content: '', // Start empty, we'll set content after processing
+})
+const guard = ref<InstanceType<typeof UnsavedChangesGuard> | null>(null)
+
+const showModal = ref<boolean>(false)
+
+function confirmLeave(): void {
+  showModal.value = false
+  guard.value?.allowNavigation()
+  emit('close')
+}
+
+function cancelLeave(): void {
+  showModal.value = false
+  guard.value?.cancelNavigation()
+}
 
 // Convert hasChanges from ref to computed property
 const hasChanges = computed(() => {
@@ -76,12 +113,6 @@ function applyCssToEditor(css: string) {
   styleElement.textContent = css
   extractedStyles.value = css
 }
-
-// Initialize editor with HTML (excluding style tags)
-const editor = useEditor({
-  extensions,
-  content: '', // Start empty, we'll set content after processing
-})
 
 // Process modelValue when it changes
 watch(
@@ -129,15 +160,7 @@ async function onSave() {
 }
 
 function onClose() {
-  if ( hasChanges.value ) {
-    const confirmClose = confirm(
-      'You have unsaved changes. Are you sure you want to close without saving?',
-    )
-    if (!confirmClose) {
-      return
-    }
-  }
-  emit('close')
+  showModal.value = true
 }
 
 onBeforeUnmount(() => {
