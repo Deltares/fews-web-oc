@@ -53,3 +53,17 @@ const data = computed(() => {
   }
 })
 </script>
+
+<style scoped>
+.information-panel__tab {
+  padding: 5px 10px;
+  background-color: rgba(var(--v-theme-surface), 0.8);
+  cursor: pointer;
+  display: none; /* hidden */
+}
+
+.information-panel__tab.active {
+  border-radius: 3px;
+  display: inherit; /* visible */
+}
+</style>
