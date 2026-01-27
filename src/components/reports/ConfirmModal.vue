@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-
 interface Props {
   modelValue: boolean
   title?: string
@@ -13,7 +11,6 @@ interface Props {
 interface Emits {
   confirm: []
   cancel: []
-  'update:modelValue': [value: boolean]   
 }
 
 const {
@@ -22,29 +19,25 @@ const {
   confirmText = 'Leave',
   cancelText = 'Stay',
   persistent = true,
-  modelValue
 } = defineProps<Props>()
 
 const emit = defineEmits<Emits>()
 
-const dialog = computed({
-  get: () => modelValue,
-  set: (val: boolean) => emit('update:modelValue', val),
-})
+const modelValue = defineModel<boolean>()
 
 function onConfirm(): void {
   emit('confirm')
-  emit('update:modelValue', false)
+  modelValue.value = false
 }
 
 function onCancel(): void {
   emit('cancel')
-  emit('update:modelValue', false)
+  modelValue.value = false
 }
 </script>
 
 <template>
-  <v-dialog v-model="dialog" :persistent="persistent" max-width="420">
+  <v-dialog v-model="modelValue" :persistent="persistent" max-width="420">
     <v-card class="pa-2">
       <v-card-title class="text-h6 font-weight-medium">
         {{ title }}
