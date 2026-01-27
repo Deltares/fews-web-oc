@@ -62,7 +62,12 @@
       </template>
     </ProductsBrowserTable>
     <div class="flex-1-1 h-100 flex-column position-relative">
-      <EditReport v-if="isEditing" v-model="htmlContent" @save="onSave" />
+      <EditReport
+        v-if="isEditing"
+        v-model="htmlContent"
+        @save="onSave"
+        @close="onClose"
+      />
       <template v-else>
         <v-toolbar density="compact" absolute>
           <template v-if="viewMode === 'html' && editPermissions">
@@ -336,6 +341,10 @@ async function onSave() {
   } finally {
     isEditing.value = false
   }
+}
+
+function onClose() {
+  isEditing.value = false
 }
 
 async function runDisseminateAction(

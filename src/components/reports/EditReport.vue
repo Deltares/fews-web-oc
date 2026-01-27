@@ -11,6 +11,7 @@
     >
       Save
     </v-btn>
+    <v-btn icon="mdi-close" @click="onClose"></v-btn>
   </v-toolbar>
   <v-sheet theme="light" class="flex-1-1 h-100 position-relative">
     <editor-content :editor="editor" class="shadow-frame" />
@@ -27,6 +28,7 @@ const modelValue = defineModel<string>()
 
 interface Emits {
   save: []
+  close: []
 }
 const emit = defineEmits<Emits>()
 
@@ -124,6 +126,18 @@ async function onSave() {
   modelValue.value = html
   emit('save')
   initialContent.value = editor.value.getHTML()
+}
+
+function onClose() {
+  if ( hasChanges.value ) {
+    const confirmClose = confirm(
+      'You have unsaved changes. Are you sure you want to close without saving?',
+    )
+    if (!confirmClose) {
+      return
+    }
+  }
+  emit('close')
 }
 
 onBeforeUnmount(() => {
