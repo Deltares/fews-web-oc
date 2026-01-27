@@ -8,8 +8,6 @@
     v-model="showModal"
     title="Unsaved changes"
     message="You have unsaved changes. Leave without saving?"
-    confirm-text="Leave"
-    cancel-text="Stay"
     @confirm="confirmLeave"
     @cancel="cancelLeave"
   />

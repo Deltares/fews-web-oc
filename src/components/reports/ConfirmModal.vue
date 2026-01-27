@@ -17,7 +17,7 @@ const {
   title = 'Confirm action',
   message = 'Are you sure?',
   confirmText = 'Leave',
-  cancelText = 'Stay',
+  cancelText = 'Cancel',
   persistent = true,
 } = defineProps<Props>()
 
