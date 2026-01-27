@@ -581,30 +581,31 @@ watch(selectedDate, () => {
 })
 
 function setLayerOptions(): void {
-  if (props.layerName) {
-    layerOptions.value = {
-      name: props.layerName,
-      time: selectedDate.value,
-      aggregationLabel: doShowAggregated.value
-        ? (selectedAggregationLabel.value ?? undefined)
-        : undefined,
-      bbox: props.layerCapabilities?.boundingBox
-        ? convertBoundingBoxToLngLatBounds(props.layerCapabilities.boundingBox)
-        : undefined,
-      elevation: clamp(
-        currentElevation.value,
-        minElevation.value,
-        maxElevation.value,
-      ),
-      colorScaleRange: currentColourScale.value?.range
-        ? rangeToString(currentColourScale.value?.range)
-        : undefined,
-      style: currentColourScale.value?.style.name,
-      useDisplayUnits: userSettings.useDisplayUnits,
-      useLastValue: isInDatesRange(selectedDate.value, props.times),
-    }
-  } else {
+  if (!props.layerName || !selectedDate.value || !props.layerCapabilities) {
     layerOptions.value = undefined
+    return
+  }
+
+  layerOptions.value = {
+    name: props.layerName,
+    time: selectedDate.value,
+    aggregationLabel: doShowAggregated.value
+      ? (selectedAggregationLabel.value ?? undefined)
+      : undefined,
+    bbox: props.layerCapabilities.boundingBox
+      ? convertBoundingBoxToLngLatBounds(props.layerCapabilities.boundingBox)
+      : undefined,
+    elevation: clamp(
+      currentElevation.value,
+      minElevation.value,
+      maxElevation.value,
+    ),
+    colorScaleRange: currentColourScale.value?.range
+      ? rangeToString(currentColourScale.value.range)
+      : undefined,
+    style: currentColourScale.value?.style.name,
+    useDisplayUnits: userSettings.useDisplayUnits,
+    useLastValue: isInDatesRange(selectedDate.value, props.times),
   }
 }
 
