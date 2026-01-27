@@ -228,11 +228,7 @@ import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 import { useSelectedElevation } from '@/services/useSelectedElevation'
 import { clamp } from '@/lib/utils/math'
-import {
-  type AggregationItem,
-  getRelativeStartDateForLabel,
-  shortLabel,
-} from '@/lib/aggregation'
+import { useAggregations } from '@/services/useAggregations'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -311,62 +307,10 @@ watch(
 
 const selectedLocationIds = computed(() => props.locationIds?.split(',') ?? [])
 
-const aggregationLabels = computed<string[]>(() => {
-  // For now, we only ever have one entry for aggregation: "Accumulation".
-  return props.layerCapabilities?.aggregation?.[0].labels ?? []
-})
-
-const doShowAggregated = ref<boolean>(true)
-const selectedAggregationLabel = ref<string | null>(
-  aggregationLabels.value[0] ?? null,
-)
-
 const forecastTime = ref<Date>()
 
-const aggregations = computed<AggregationItem[]>(() => {
-  const forecastTimeIsBeforeSelectedDate =
-    forecastTime.value !== undefined &&
-    selectedDate.value !== undefined &&
-    forecastTime.value < selectedDate.value
-
-  const displayTimeStartDate = forecastTimeIsBeforeSelectedDate
-    ? forecastTime.value
-    : selectedDate.value
-  const displayTimeEndDate = forecastTimeIsBeforeSelectedDate
-    ? selectedDate.value
-    : forecastTime.value
-
-  const aggregation = props.layerCapabilities?.aggregation?.[0]
-  const aggregationType = aggregation?.aggregationType ?? 'unknown'
-  const labels = aggregation?.labels ?? []
-
-  return labels.map((label) => ({
-    id: label,
-    type: aggregationType,
-    label: label,
-    shortLabel: shortLabel(label),
-    icon: label === 'to Display Time' ? 'mdi-swap-horizontal' : undefined,
-    startDate:
-      label === 'to Display Time'
-        ? displayTimeStartDate
-        : getRelativeStartDateForLabel(label, selectedDate.value),
-    endDate:
-      label === 'to Display Time' ? displayTimeEndDate : selectedDate.value,
-  }))
-})
-
-watch(
-  () => aggregations.value,
-  (items) => {
-    if (
-      selectedAggregationLabel.value === null ||
-      !items.find((item) => item.id === selectedAggregationLabel.value)
-    ) {
-      selectedAggregationLabel.value = items[0]?.id ?? null
-    }
-  },
-  { immediate: true },
-)
+const { doShowAggregated, selectedAggregationLabel, aggregations } =
+  useAggregations(selectedDate, () => props.layerCapabilities)
 
 watch([doShowAggregated, selectedAggregationLabel], () => setLayerOptions())
 
