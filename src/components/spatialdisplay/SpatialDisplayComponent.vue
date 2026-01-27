@@ -105,7 +105,7 @@
             <OverlayPanel
               :overlays="settings.overlays"
               v-model:selected-overlay-ids="selectedOverlayIds"
-              :capabilties="staticCapabilities"
+              :capabilities="staticCapabilities"
             />
           </template>
           <template #chip-append>
