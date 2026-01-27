@@ -44,31 +44,11 @@
         </v-list-item>
 
         <slot></slot>
-
-        <v-list-item v-if="canUseStreamlines" prepend-icon="mdi-animation-play">
-          <v-list-item-title>Animate</v-list-item-title>
-          <template v-slot:append>
-            <v-switch
-              v-model="doAnimateStreamlines"
-              color="primary"
-              density="compact"
-              hide-details
-            ></v-switch>
-          </template>
-        </v-list-item>
       </v-list>
     </v-menu>
-    <v-btn
-      v-if="showLayer && canUseStreamlines"
-      @click="toggleLayerType"
-      icon
-      density="compact"
-      variant="plain"
-      :color="doAnimateStreamlines ? 'primary' : undefined"
-    >
-      <v-progress-circular v-if="isLoading" size="20" indeterminate />
-      <v-icon v-else>mdi-animation-play</v-icon>
-    </v-btn>
+
+    <slot v-if="showLayer" name="chip-append" />
+
     <template #extension v-if="showLayer">
       <slot name="extension" />
     </template>
@@ -76,10 +56,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick } from 'vue'
-import { LayerKind } from '@/lib/streamlines'
+import { computed } from 'vue'
 import ControlChip from '@/components/wms/ControlChip.vue'
-import { useUserSettingsStore } from '@/stores/userSettings'
 import type { Layer } from '@deltares/fews-wms-requests'
 import { useI18n } from 'vue-i18n'
 import {
@@ -93,23 +71,12 @@ interface Props {
   isLoading: boolean
   currentTime?: Date
   layerCapabilities?: Layer
-  canUseStreamlines?: boolean
 }
-
-const userSettingsStore = useUserSettingsStore()
 
 const props = defineProps<Props>()
 const showLayer = defineModel<boolean>('showLayer')
-const layerKind = defineModel<LayerKind>('layerKind', { required: true })
 
 const emit = defineEmits(['style-click'])
-
-const doAnimateStreamlines = computed<boolean>({
-  get: () => layerKind.value === LayerKind.Streamline,
-  set: (doAnimate) => {
-    layerKind.value = doAnimate ? LayerKind.Streamline : LayerKind.Static
-  },
-})
 
 const title = computed(() => props.layerCapabilities?.title ?? '')
 const completelyMissing = computed(
@@ -121,23 +88,4 @@ const analysisTime = computed(() =>
 const formattedTimeRange = computed(() =>
   getValueTimeRangeString(props.layerCapabilities),
 )
-
-function toggleLayerType(): void {
-  doAnimateStreamlines.value = !doAnimateStreamlines.value
-
-  // If we are in this function, the user manually selected a layer kind, so
-  // store their preference. Wait for the layerkind to update based on the
-  // change in the doAnimateStreamlines boolean, then store the newly updated
-  // layerKind.
-  nextTick(() => {
-    userSettingsStore.preferredLayerKind = layerKind.value
-  })
-}
 </script>
-
-<style scoped>
-#toggle {
-  display: flex;
-  justify-content: center;
-}
-</style>
