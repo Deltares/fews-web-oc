@@ -48,12 +48,12 @@ function onCancel(): void {
       </v-card-text>
 
       <v-card-actions class="justify-end">
-        <v-btn variant="text" @click="onCancel">
-          {{ cancelText }}
+        <v-btn color="primary" variant="flat" @click="onConfirm">
+          {{ confirmText }}
         </v-btn>
 
-        <v-btn color="error" variant="flat" @click="onConfirm">
-          {{ confirmText }}
+        <v-btn variant="text" @click="onCancel">
+          {{ cancelText }}
         </v-btn>
       </v-card-actions>
     </v-card>
