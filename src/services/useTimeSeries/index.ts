@@ -10,6 +10,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import {
   computed,
+  onScopeDispose,
   onUnmounted,
   ref,
   shallowRef,
@@ -77,6 +78,10 @@ export function useTimeSeries(
     .map((p) => () => toValue(p))
   watch(watchedParams, () => {
     loadTimeSeries()
+  })
+
+  onScopeDispose(() => {
+    controller.abort()
   })
 
   async function loadTimeSeries() {
