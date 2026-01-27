@@ -6,8 +6,8 @@
   />
   <ConfirmModal
     v-model="showModal"
-    title="Unsaved changes"
-    message="You have unsaved changes. Leave without saving?"
+    :title="t('common.unsavedChanges')"
+    :message="t('common.unsavedChangesExitWarning')"
     @confirm="confirmLeave"
     @cancel="cancelLeave"
   />
@@ -37,6 +37,9 @@ import { extensions } from '@/components/reports/tiptap/extensions'
 import TableMenu from '@/components/reports/tiptap/TableMenu.vue'
 import UnsavedChangesGuard from '@/components/reports/UnsavedChangesGuard.vue'
 import ConfirmModal from '@/components/reports/ConfirmModal.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const modelValue = defineModel<string>()
 

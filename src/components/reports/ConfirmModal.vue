@@ -2,20 +2,20 @@
   <v-dialog v-model="modelValue" :persistent="persistent" max-width="420">
     <v-card class="pa-2">
       <v-card-title class="text-h6 font-weight-medium">
-        {{ title }}
+        {{ title ? title : t('common.confirmAction') }}
       </v-card-title>
 
       <v-card-text class="text-body-1">
-        {{ message }}
+        {{ message ? message : t('common.areYouSure') }}
       </v-card-text>
 
       <v-card-actions class="justify-end">
         <v-btn color="primary" variant="flat" @click="onConfirm">
-          {{ confirmText }}
+          {{ confirmText ? confirmText : t('common.leave') }}
         </v-btn>
 
         <v-btn variant="text" @click="onCancel">
-          {{ cancelText }}
+          {{ cancelText ? cancelText : t('common.cancel') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -23,6 +23,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
+
 interface Props {
   modelValue: boolean
   title?: string
@@ -38,10 +41,10 @@ interface Emits {
 }
 
 const {
-  title = 'Confirm action',
-  message = 'Are you sure?',
-  confirmText = 'Leave',
-  cancelText = 'Cancel',
+  title,
+  message,
+  confirmText,
+  cancelText,
   persistent = true,
 } = defineProps<Props>()
 
