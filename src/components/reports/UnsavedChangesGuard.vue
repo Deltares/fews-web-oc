@@ -1,3 +1,8 @@
+<template>
+  <!-- Renderless component -->
+  <slot />
+</template>
+
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount } from 'vue'
 import { NavigationGuardNext, onBeforeRouteUpdate } from 'vue-router'
@@ -62,8 +67,3 @@ defineExpose({
   cancelNavigation,
 })
 </script>
-
-<template>
-  <!-- Renderless component -->
-  <slot />
-</template>
