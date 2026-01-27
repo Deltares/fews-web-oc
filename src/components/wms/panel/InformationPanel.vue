@@ -22,14 +22,15 @@
         >
           <span
             class="me-2"
-            :class="{ 'text-decoration-line-through': props.completelyMissing }"
-            >{{ layerTitle }}</span
+            :class="{ 'text-decoration-line-through': completelyMissing }"
           >
+            {{ title }}
+          </span>
         </v-btn>
       </template>
       <v-list class="information-panel-list">
         <v-list-item
-          :title="props.layerTitle"
+          :title="title"
           :subtitle="analysisTime"
           prepend-icon="mdi-layers"
         >
@@ -79,29 +80,25 @@ import { computed, nextTick } from 'vue'
 import { LayerKind } from '@/lib/streamlines'
 import ControlChip from '@/components/wms/ControlChip.vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { toDateRangeString, toHumanReadableDateTime } from '@/lib/date'
-
+import type { Layer } from '@deltares/fews-wms-requests'
 import { useI18n } from 'vue-i18n'
+import {
+  getForecastTimeString,
+  getValueTimeRangeString,
+} from '@/lib/capabilities'
 
 const { t } = useI18n()
 
 interface Props {
-  layerTitle?: string
   isLoading: boolean
   currentTime?: Date
-  forecastTime?: Date
-  completelyMissing?: boolean
-  firstValueTime?: Date
-  lastValueTime?: Date
+  layerCapabilities?: Layer
   canUseStreamlines?: boolean
 }
 
 const userSettingsStore = useUserSettingsStore()
 
-const props = withDefaults(defineProps<Props>(), {
-  layerTitle: '',
-  completelyMissing: false,
-})
+const props = defineProps<Props>()
 const showLayer = defineModel<boolean>('showLayer')
 const layerKind = defineModel<LayerKind>('layerKind', { required: true })
 
@@ -114,20 +111,16 @@ const doAnimateStreamlines = computed<boolean>({
   },
 })
 
-const analysisTime = computed(() => {
-  if (!props.forecastTime) return undefined
-
-  if (isNaN(props.forecastTime.getTime())) {
-    return 'Analysis time not available'
-  }
-
-  return `Analysis time: ${toHumanReadableDateTime(props.forecastTime)}`
-})
-
-const formattedTimeRange = computed(() => {
-  if (props.completelyMissing) return 'Currently no data available'
-  return toDateRangeString(props.firstValueTime, props.lastValueTime)
-})
+const title = computed(() => props.layerCapabilities?.title ?? '')
+const completelyMissing = computed(
+  () => props.layerCapabilities?.completelyMissing ?? false,
+)
+const analysisTime = computed(() =>
+  getForecastTimeString(props.layerCapabilities),
+)
+const formattedTimeRange = computed(() =>
+  getValueTimeRangeString(props.layerCapabilities),
+)
 
 function toggleLayerType(): void {
   doAnimateStreamlines.value = !doAnimateStreamlines.value

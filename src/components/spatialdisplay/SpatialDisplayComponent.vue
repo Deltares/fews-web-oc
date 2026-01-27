@@ -76,19 +76,9 @@
       <template v-else>
         <InformationPanel
           v-if="layerOptions"
-          :layerTitle="props.layerCapabilities?.title"
           :isLoading="isLoading"
           :currentTime="selectedDate"
-          :forecastTime="forecastTime"
-          :completelyMissing="
-            props.layerCapabilities?.completelyMissing ?? false
-          "
-          :firstValueTime="
-            new Date(props.layerCapabilities?.firstValueTime ?? '')
-          "
-          :lastValueTime="
-            new Date(props.layerCapabilities?.lastValueTime ?? '')
-          "
+          :layerCapabilities="layerCapabilities"
           :canUseStreamlines="canUseStreamlines"
           v-model:layer-kind="layerKind"
           v-model:show-layer="showLayer"
@@ -312,8 +302,6 @@ watch(
 
 const selectedLocationIds = computed(() => props.locationIds?.split(',') ?? [])
 
-const forecastTime = ref<Date>()
-
 const { doShowAggregated, selectedAggregationLabel, aggregations } =
   useAggregations(selectedDate, () => props.layerCapabilities)
 
@@ -488,9 +476,6 @@ const layerHasElevation = computed(() => {
 watch(
   () => props.layerCapabilities,
   (layer) => {
-    const _forecastTime = layer?.keywordList?.[0].forecastTime
-    forecastTime.value = _forecastTime ? new Date(_forecastTime) : undefined
-
     legendLayerStyles.value = props.layerCapabilities?.styles
     if (legendLayerStyles.value === undefined && props.layerName) {
       legendLayerStyles.value = [
