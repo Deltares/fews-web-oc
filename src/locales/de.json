@@ -1,14 +1,19 @@
 {
   "common": {
     "all": "Alle",
+    "areYouSure": "Sind Sie sicher?",
     "cancel": "Abbrechen",
     "clearAll": "Entfernen",
+    "confirmAction": "Aktion bestätigen",
     "custom": "Benutzerdefiniert",
     "default": "Standard",
     "end": "Ende",
+    "leave": "Verlassen",
     "selected": "Ausgewählt",
     "selectAll": "Alle auswählen",
-    "start": "Start"
+    "start": "Start",
+    "unsavedChanges": "Ungespeicherte Änderungen",
+    "unsavedChangesExitWarning": "Sie haben ungespeicherte Änderungen. Ohne Speichern verlassen?"
   },
   "layout": {
     "about": "Über",

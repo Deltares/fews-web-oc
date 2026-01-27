@@ -1,4 +1,16 @@
 <template>
+  <UnsavedChangesGuard
+    ref="guard"
+    :when="hasChanges"
+    @confirm="showModal = true"
+  />
+  <ConfirmModal
+    v-model="showModal"
+    :title="t('common.unsavedChanges')"
+    :message="t('common.unsavedChangesExitWarning')"
+    @confirm="confirmLeave"
+    @cancel="cancelLeave"
+  />
   <v-toolbar v-if="editor" density="compact">
     <TableMenu :editor="editor" ref="EditMenu" />
     <v-spacer />
@@ -11,6 +23,7 @@
     >
       Save
     </v-btn>
+    <v-btn icon="mdi-close" @click="onClose"></v-btn>
   </v-toolbar>
   <v-sheet theme="light" class="flex-1-1 h-100 position-relative">
     <editor-content :editor="editor" class="shadow-frame" />
@@ -22,16 +35,43 @@ import { ref, watch, onMounted, onBeforeUnmount, computed } from 'vue'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { extensions } from '@/components/reports/tiptap/extensions'
 import TableMenu from '@/components/reports/tiptap/TableMenu.vue'
+import UnsavedChangesGuard from '@/components/reports/UnsavedChangesGuard.vue'
+import ConfirmModal from '@/components/reports/ConfirmModal.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const modelValue = defineModel<string>()
 
 interface Emits {
   save: []
+  close: []
+  change: [isDirty: boolean]
 }
 const emit = defineEmits<Emits>()
 
 const initialContent = ref('')
 const extractedStyles = ref('')
+
+// Initialize editor with HTML (excluding style tags)
+const editor = useEditor({
+  extensions,
+  content: '', // Start empty, we'll set content after processing
+})
+const guard = ref<InstanceType<typeof UnsavedChangesGuard> | null>(null)
+
+const showModal = ref<boolean>(false)
+
+function confirmLeave(): void {
+  showModal.value = false
+  guard.value?.allowNavigation()
+  emit('close')
+}
+
+function cancelLeave(): void {
+  showModal.value = false
+  guard.value?.cancelNavigation()
+}
 
 // Convert hasChanges from ref to computed property
 const hasChanges = computed(() => {
@@ -74,12 +114,6 @@ function applyCssToEditor(css: string) {
   styleElement.textContent = css
   extractedStyles.value = css
 }
-
-// Initialize editor with HTML (excluding style tags)
-const editor = useEditor({
-  extensions,
-  content: '', // Start empty, we'll set content after processing
-})
 
 // Process modelValue when it changes
 watch(
@@ -124,6 +158,10 @@ async function onSave() {
   modelValue.value = html
   emit('save')
   initialContent.value = editor.value.getHTML()
+}
+
+function onClose() {
+  showModal.value = true
 }
 
 onBeforeUnmount(() => {

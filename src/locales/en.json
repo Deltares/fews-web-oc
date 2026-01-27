@@ -1,14 +1,19 @@
 {
   "common": {
     "all": "All",
+    "areYouSure": "Are you sure?",
     "cancel": "Cancel",
     "clearAll": "Clear all",
+    "confirmAction": "Confirm action",
     "custom": "Custom",
     "default": "Default",
+    "leave": "Leave",
     "end": "End",
     "selected": "Selected",
     "selectAll": "Select all",
-    "start": "Start"
+    "start": "Start",
+    "unsavedChanges": "Unsaved changes",
+    "unsavedChangesExitWarning": "You have unsaved changes. Leave without saving?"
   },
   "layout": {
     "about": "About",
