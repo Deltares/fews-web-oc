@@ -1,6 +1,6 @@
 <template>
-  <div style="dislay: flex; flex-direction: column; height: 100%; width: 100%">
-    <div style="flex: 1 1 100%; height: 100%">
+  <div class="d-flex flex-column h-100 w-100">
+    <div class="flex-1-1-100 h-100">
       <WindowComponent>
         <template v-slot:toolbar>
           <span class="mx-5">{{ displayConfig?.title }}</span>
