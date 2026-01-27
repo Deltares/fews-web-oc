@@ -59,13 +59,13 @@ const { t } = useI18n()
 
 interface Props {
   overlays: Overlay[]
-  capabilties?: GetCapabilitiesResponse
+  capabilities?: GetCapabilitiesResponse
 }
 
 const props = defineProps<Props>()
 
 function getTitle(overlay: Overlay): string {
-  const foundLayer = props.capabilties?.layers.find(
+  const foundLayer = props.capabilities?.layers.find(
     (layer) => layer.name === overlay.id,
   )
   return foundLayer?.title ?? overlay.id ?? 'Unnamed overlay'
