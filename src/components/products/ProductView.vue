@@ -112,30 +112,6 @@
               :disabled="!selectedProduct"
               @click="downloadProduct()"
             />
-            <v-btn
-              append-icon="mdi-chevron-down"
-              variant="text"
-              class="text-start"
-            >
-              <v-list-item
-                class="ps-0 pe-2"
-                :title="selectedProduct?.timeZero"
-                :subtitle="`Version ${selectedProduct?.version}`"
-              >
-              </v-list-item>
-              <v-menu activator="parent">
-                <v-list density="compact">
-                  <v-list-item
-                    v-for="(item, index) in selectedProductVersions"
-                    :key="item.key"
-                    :title="item.timeZero"
-                    :subtitle="`Version ${item.version}`"
-                    @click="selected = index"
-                  >
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <iframe
@@ -222,17 +198,6 @@ const viewMode = ref('')
 const selected = ref(0) // Example timeZero
 const selectedProduct = computed(() => {
   return filteredProducts.value[selected.value]
-})
-const selectedProductVersions = computed(() => {
-  if (productKey) {
-    const product = getProductByKey(productKey)
-    if (product) {
-      return filteredProducts.value.filter((p) => {
-        return p.attributes.productId === product.attributes.productId
-      })
-    }
-  }
-  return []
 })
 
 const viewPeriod = ref<IntervalItem>({})
