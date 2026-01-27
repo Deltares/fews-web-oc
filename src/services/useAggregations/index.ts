@@ -5,6 +5,7 @@ import {
   shortLabel,
 } from '@/lib/aggregation'
 import { Layer } from '@deltares/fews-wms-requests'
+import { getForecastTime } from '@/lib/capabilities'
 
 export function useAggregations(
   selectedDate: MaybeRefOrGetter<Date | undefined>,
@@ -23,10 +24,7 @@ export function useAggregations(
 
   const aggregations = computed<AggregationItem[]>(() => {
     const capabilities = toValue(layerCapabilities)
-    const forecastTimeString = capabilities?.keywordList?.[0].forecastTime
-    const forecastTime = forecastTimeString
-      ? new Date(forecastTimeString)
-      : undefined
+    const forecastTime = getForecastTime(capabilities)
 
     const _selectedDate = toValue(selectedDate)
 
