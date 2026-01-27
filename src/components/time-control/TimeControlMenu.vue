@@ -73,6 +73,7 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect, watch } from 'vue'
 import IntervalSelector from './IntervalSelector.vue'
+import SelectIcon from '@/components/general/SelectIcon.vue'
 import { VDateInput } from 'vuetify/labs/components'
 import type { VForm } from 'vuetify/components'
 import { useI18n } from 'vue-i18n'

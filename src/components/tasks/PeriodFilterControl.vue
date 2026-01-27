@@ -11,9 +11,7 @@
         <template #default>
           <span>{{ selectedOption?.title }}</span>
           <v-spacer />
-          <v-icon>{{
-            isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'
-          }}</v-icon>
+          <SelectIcon :active="isActive" />
         </template>
       </v-chip>
     </template>
@@ -29,7 +27,8 @@
   </v-menu>
 </template>
 <script setup lang="ts">
-import { RelativePeriod } from '@/lib/period'
+import SelectIcon from '@/components/general/SelectIcon.vue'
+import type { RelativePeriod } from '@/lib/period'
 import { computed, ref, watchEffect } from 'vue'
 
 const period = defineModel<RelativePeriod | null>({ required: true })
