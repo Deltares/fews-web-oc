@@ -37,7 +37,6 @@ function handleBeforeUnload(event: BeforeUnloadEvent): void {
 }
 
 onMounted(() => {
-  console.log('Mounting UnsavedChangesGuard and adding beforeunload listener')
   window.addEventListener('beforeunload', handleBeforeUnload)
 })
 
