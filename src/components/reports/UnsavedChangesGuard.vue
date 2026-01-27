@@ -4,23 +4,22 @@ import { NavigationGuardNext, onBeforeRouteUpdate } from 'vue-router'
 
 interface Props {
   when: boolean
-  message?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  message: 'You have unsaved changes. Are you sure you want to leave?',
-})
+interface Emits {
+  confirm: []
+  cancel: []
+}
 
-const emit = defineEmits<{
-  (e: 'confirm'): void
-  (e: 'cancel'): void
-}>()
+const { when } = defineProps<Props>()
+
+const emit = defineEmits<Emits>()
 
 let pendingNext: NavigationGuardNext | null = null
 
 // ---- Router navigation guard ----
 onBeforeRouteUpdate((_to, _from, next) => {
-  if (!props.when) {
+  if (!when) {
     next()
     return
   }
@@ -31,8 +30,7 @@ onBeforeRouteUpdate((_to, _from, next) => {
 
 // ---- Browser refresh / tab close ----
 function handleBeforeUnload(event: BeforeUnloadEvent): void {
-  if (!props.when) return
-
+  if (!when) return
   event.preventDefault()
 }
 
