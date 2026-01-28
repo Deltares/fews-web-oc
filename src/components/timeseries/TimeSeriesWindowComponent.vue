@@ -4,6 +4,7 @@
       <v-toolbar-items
         class="flex-0-0"
         v-model="displayType"
+        v-resize="computeTitleOverflow"
         mandatory
         size="small"
       >
@@ -26,7 +27,9 @@
       </v-toolbar-items>
 
       <slot name="toolbar-title">
-        <span class="ml-5">{{ displayConfig?.title }}</span>
+        <div class="ml-2 text-container" ref="toolbar-title-text" tabindex="0">
+          <span class="text-span">{{ displayConfig?.title }}</span>
+        </div>
       </slot>
       <v-spacer />
     </template>
@@ -72,19 +75,34 @@
 </template>
 
 <script setup lang="ts">
+import {
+  computed,
+  nextTick,
+  ref,
+  type StyleValue,
+  useTemplateRef,
+  watch,
+} from 'vue'
 import { useI18n } from 'vue-i18n'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { DisplayConfig, DisplayType } from '@/lib/display/DisplayConfig'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
-import { computed, ref, StyleValue, watch } from 'vue'
 import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type {
   filterActionsFilter,
   timeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
+
+interface DisplayTypeItem {
+  icon: string
+  label: string
+  value: DisplayType
+  iconStyle?: StyleValue
+  disabled?: boolean
+}
 
 interface Props {
   displayConfig?: DisplayConfig | null
@@ -108,12 +126,24 @@ const options = computed<UseDisplayConfigOptions>(() => {
   }
 })
 
-interface DisplayTypeItem {
-  icon: string
-  label: string
-  value: DisplayType
-  iconStyle?: StyleValue
-  disabled?: boolean
+const toolbarTitleText = useTemplateRef('toolbar-title-text')
+watch(
+  () => props.displayConfig?.title,
+  () => {
+    nextTick(() => {
+      computeTitleOverflow()
+    })
+  },
+)
+
+function computeTitleOverflow() {
+  if (toolbarTitleText.value) {
+    const textElement =
+      toolbarTitleText.value.querySelector<HTMLSpanElement>('.text-span')!
+    const overflow =
+      textElement.scrollWidth - toolbarTitleText.value.clientWidth
+    textElement.style.setProperty('--shift', `-${overflow}px`)
+  }
 }
 
 const showDownloadDialog = ref(false)
@@ -219,3 +249,26 @@ watch(displayTypeItems, () => {
   }
 })
 </script>
+<style scoped>
+.text-container {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Move text left on hover */
+.text-container:hover .text-span,
+.text-container.active .text-span,
+.text-container:focus .text-span {
+  transform: translateX(var(--shift));
+}
+
+.text-container:not(:hover):not(.active):not(:focus) .text-span {
+  transition: transform 0.4s ease-out;
+  transform: translateX(0);
+}
+
+.text-span {
+  display: inline-block;
+  transition: transform 2s linear;
+}
+</style>
