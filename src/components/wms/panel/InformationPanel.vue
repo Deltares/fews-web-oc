@@ -29,11 +29,18 @@
         </v-btn>
       </template>
       <v-list class="information-panel-list">
-        <v-list-item
-          :title="title"
-          :subtitle="analysisTime"
-          prepend-icon="mdi-layers"
-        >
+        <v-list-item prepend-icon="mdi-layers">
+          <v-select
+            v-model="layer"
+            :items="layers"
+            density="compact"
+            item-value="name"
+            hide-details
+            class="pb-1"
+          />
+          <v-list-item-subtitle>
+            {{ analysisTime }}
+          </v-list-item-subtitle>
         </v-list-item>
         <v-divider></v-divider>
         <v-list-item
@@ -56,11 +63,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import ControlChip from '@/components/wms/ControlChip.vue'
 import type { Layer } from '@deltares/fews-wms-requests'
 import { useI18n } from 'vue-i18n'
 import {
+  fetchWmsCapabilitiesHeaders,
   getForecastTimeString,
   getValueTimeRangeString,
 } from '@/lib/capabilities'
@@ -68,6 +76,8 @@ import {
 const { t } = useI18n()
 
 interface Props {
+  layerName?: string
+  groupId?: string
   isLoading: boolean
   currentTime?: Date
   layerCapabilities?: Layer
@@ -76,7 +86,10 @@ interface Props {
 const props = defineProps<Props>()
 const showLayer = defineModel<boolean>('showLayer')
 
-const emit = defineEmits(['style-click'])
+interface Emits {
+  changeLayer: [string]
+}
+const emit = defineEmits<Emits>()
 
 const title = computed(() => props.layerCapabilities?.title ?? '')
 const completelyMissing = computed(
@@ -87,5 +100,26 @@ const analysisTime = computed(() =>
 )
 const formattedTimeRange = computed(() =>
   getValueTimeRangeString(props.layerCapabilities),
+)
+
+const capabilities = await fetchWmsCapabilitiesHeaders()
+const layers = computed(() =>
+  props.groupId
+    ? capabilities.layers.filter((layer) => layer.groupName === props.groupId)
+    : [capabilities.layers.find((layer) => layer.name === props.layerName)],
+)
+const layer = ref(props.layerName)
+watch(
+  () => props.layerName,
+  (newName) => {
+    layer.value = newName
+  },
+)
+watch(
+  layer,
+  (newLayer) => {
+    emit('changeLayer', newLayer ?? '')
+  },
+  { immediate: true },
 )
 </script>

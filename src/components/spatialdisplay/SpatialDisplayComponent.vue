@@ -74,10 +74,13 @@
       <template v-else>
         <InformationPanel
           v-if="layerOptions"
+          :layerName="layerName"
+          :groupId="groupId"
           :isLoading="isLoading"
           :currentTime="selectedDate"
           :layerCapabilities="layerCapabilities"
           v-model:show-layer="showLayer"
+          @changeLayer="onLayerChange"
         >
           <template v-if="canUseStreamlines">
             <v-divider />
@@ -249,6 +252,7 @@ interface Props {
   locationIds?: string
   latitude?: string
   longitude?: string
+  groupId?: string
   boundingBox?: BoundingBox
   settings: ComponentSettings['map']
 }
@@ -261,6 +265,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits([
   'changeLocationIds',
   'coordinateClick',
+  'changeLayer',
   'update:elevation',
   'update:currentTime',
 ])
@@ -447,6 +452,10 @@ function onLocationClick(event: MapLayerMouseEvent | MapLayerTouchEvent): void {
 
 function onLocationsChange(locationIds: string[]): void {
   emit('changeLocationIds', locationIds)
+}
+
+function onLayerChange(newLayerName: string): void {
+  emit('changeLayer', newLayerName)
 }
 
 const canUseStreamlines = computed(
