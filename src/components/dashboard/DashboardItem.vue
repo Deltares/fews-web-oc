@@ -12,27 +12,41 @@
 </template>
 
 <script setup lang="ts">
-import { type WebOCDashboardItem } from '@deltares/fews-pi-requests'
+import type {
+  TopologyNode,
+  WebOCDashboardItem,
+} from '@deltares/fews-pi-requests'
 import {
+  type ComponentType,
   componentTypeToIconMap,
   componentTypeToTitleMap,
 } from '@/lib/topology/component'
 import {
   componentTypeToComponentMap,
   getComponentPropsForNode,
+  type PropsForComponentType,
 } from '@/lib/topology/dashboard'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { configManager } from '@/services/application-config'
 import { useComponentSettings } from '@/services/useComponentSettings'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import { computed, ref, watch } from 'vue'
+import { type Component, ref, shallowRef, watch } from 'vue'
 import type { RouteParamsGeneric } from 'vue-router'
 import type {
   DashboardActionEventBus,
   DashboardActionParams,
 } from '@/lib/topology/dashboardActions'
-import { SsdActionResult } from '@deltares/fews-ssd-requests'
+import type { SsdActionResult } from '@deltares/fews-ssd-requests'
 import type { NavigateRoute } from '@/lib/router'
+
+interface ComponentItem {
+  title: string
+  icon: string
+  component: Component
+  componentProps: PropsForComponentType<ComponentType> | undefined
+  componentName: string
+  topologyNode: TopologyNode | undefined
+}
 
 interface Props {
   item: WebOCDashboardItem
@@ -50,6 +64,7 @@ const emit = defineEmits<Emits>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const topologyNodesStore = useTopologyNodesStore()
+const routeParams = ref<RouteParamsGeneric>({})
 
 const actionParams = ref<DashboardActionParams>({})
 watch(
@@ -66,13 +81,18 @@ watch(
   },
 )
 
-const componentItem = computed(() => {
-  return convertItemToComponentItem(
-    props.item,
-    routeParams.value,
-    actionParams.value,
-  )
-})
+const componentItem = shallowRef<ComponentItem>()
+watch(
+  [() => props.item, actionParams, routeParams],
+  async () => {
+    componentItem.value = await convertItemToComponentItem(
+      props.item,
+      routeParams.value,
+      actionParams.value,
+    )
+  },
+  { immediate: true },
+)
 
 const { componentSettings } = useComponentSettings(
   baseUrl,
@@ -80,15 +100,15 @@ const { componentSettings } = useComponentSettings(
   () => props.settings,
 )
 
-function convertItemToComponentItem(
+async function convertItemToComponentItem(
   item: WebOCDashboardItem,
   routeParams: RouteParamsGeneric,
   actionParams: DashboardActionParams,
-) {
+): Promise<ComponentItem> {
   const componentName = item.component
   const topologyNode = topologyNodesStore.getNodeById(item.topologyNodeId)
   const component = componentTypeToComponentMap[componentName]
-  const componentProps = getComponentPropsForNode(
+  const componentProps = await getComponentPropsForNode(
     componentName,
     topologyNode,
     routeParams,
@@ -106,19 +126,20 @@ function convertItemToComponentItem(
   }
 }
 
-const routeParams = ref<RouteParamsGeneric>({})
-
 function onNavigate(to: NavigateRoute) {
   switch (to.name) {
     case 'SpatialTimeSeriesDisplay':
       const hasChartSibling = props.siblings.some(
         (item) => item.component === 'charts',
       )
-      if (hasChartSibling) {
-        emitDashboardAction(to)
-      } else {
-        navigateTo(to)
+      const locationIds = to.params?.locationIds
+
+      if (hasChartSibling && locationIds) {
+        emitChartLocationAction(locationIds)
+        delete to.params?.locationIds
       }
+
+      navigateTo(to)
       break
     case 'SpatialDisplay':
     case 'SpatialTimeSeriesDisplayWithCoordinates':
@@ -137,10 +158,10 @@ function navigateTo(to: NavigateRoute) {
   }
 }
 
-function emitDashboardAction(to: NavigateRoute) {
-  const locationId = Array.isArray(to.params?.locationIds)
-    ? to.params.locationIds[0]
-    : to.params?.locationIds.split(',')[0]
+function emitChartLocationAction(locationIds: string[] | string) {
+  const locationId = Array.isArray(locationIds)
+    ? locationIds[0]
+    : locationIds.split(',')[0]
   if (locationId) {
     emit('dashboardAction', {
       type: 'WEBOC_DASHBOARD',
