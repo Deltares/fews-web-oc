@@ -1,15 +1,19 @@
 <template>
   <v-list-item prepend-icon="mdi-timer" density="compact">
-    Expected runtime: {{ formattedRuntime }}
+    {{ t('workflow.expectedRuntime') }}: {{ formattedRuntime }}
   </v-list-item>
 </template>
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { WorkflowItem } from '@/lib/workflows'
 import { computed } from 'vue'
+
+const { t } = useI18n()
 
 interface Props {
   workflow: WorkflowItem | undefined
 }
+
 const props = defineProps<Props>()
 
 const placeholder = '—'

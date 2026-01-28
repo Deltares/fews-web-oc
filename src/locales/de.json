@@ -55,5 +55,10 @@
     "noncurrentData": "Nicht-Aktuelle Daten",
     "runTasks": "Aufgabe ausführen",
     "moreInfo": "Informationen"
+  },
+  "workflow": {
+    "expectedRuntime": "Erwartete Laufzeit",
+    "noTasksAvailable": "Keine Aufgaben verfügbar",
+    "numberOfAvailableServers": "Anzahl verfügbarer Server"
   }
 }
