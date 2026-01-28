@@ -144,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 import ProductsBrowserTable, {
   type ProductBrowserTableConfig,
 } from '@/components/products/ProductsBrowserTable.vue'
@@ -179,6 +179,7 @@ import { postProduct } from '@/lib/products/requests'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import { convert } from 'html-to-text'
 import { clickDownloadUrl } from '@/lib/download'
+import router from '@/router'
 
 const LOG_DISPLAY_ID = 'email_reports'
 
@@ -271,21 +272,39 @@ watchEffect(() => {
   }
 })
 
-watchEffect(() => {
-  if (productKey) {
-    const productMetaData = getProductByKey(productKey)
-    if (productMetaData) {
-      selected.value = filteredProducts.value.findIndex(
-        (p) => p.key === productMetaData.key,
-      )
-    } else {
-      console.warn(`Product with Key ${productKey} not found.`)
-      selected.value = -1
+watch(
+  () => filteredProducts.value,
+  () => {
+    if (!productKey) {
+      if (filteredProducts.value.length > 0) {
+        const firstProductMetaData = filteredProducts.value[0]
+        selected.value = 0
+        router.push({
+          name: 'TopologyDocumentDisplay',
+          params: {
+            productKey: firstProductMetaData.key,
+          },
+        })
+      }
     }
-  } else {
-    selected.value = -1
-  }
-})
+  },
+)
+
+watch(
+  () => productKey,
+  () => {
+    if (productKey) {
+      const productMetaData = getProductByKey(productKey)
+      if (productMetaData) {
+        selected.value = filteredProducts.value.findIndex(
+          (p) => p.key === productMetaData.key,
+        )
+      } else {
+        selected.value = -1
+      }
+    }
+  },
+)
 
 watchEffect(async () => {
   if (selected.value > -1) {
