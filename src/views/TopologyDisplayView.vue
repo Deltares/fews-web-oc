@@ -407,13 +407,15 @@ watchEffect(async () => {
 
 function onNavigate(to: NavigateRoute) {
   const name = `Topology${String(to.name)}`
+  const layerName = to.params?.layerName ?? props.layerName
+
   switch (to.name) {
     case 'SpatialTimeSeriesDisplay':
       router.push({
         name,
         params: {
           nodeId: props.nodeId,
-          layerName: props.layerName,
+          layerName,
           locationIds: to.params?.locationIds,
         },
         query: route.query,
@@ -424,7 +426,7 @@ function onNavigate(to: NavigateRoute) {
         name,
         params: {
           nodeId: props.nodeId,
-          layerName: props.layerName,
+          layerName,
           latitude: to.params?.latitude,
           longitude: to.params?.longitude,
         },
@@ -436,7 +438,7 @@ function onNavigate(to: NavigateRoute) {
         name,
         params: {
           nodeId: props.nodeId,
-          layerName: props.layerName,
+          layerName,
         },
         query: route.query,
       })

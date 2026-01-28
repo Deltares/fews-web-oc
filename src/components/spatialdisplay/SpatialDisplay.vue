@@ -6,9 +6,11 @@
         :location-ids="props.locationIds"
         :latitude="props.latitude"
         :longitude="props.longitude"
+        :group-id="groupId"
         :locations="filteredLocations"
         :geojson="filteredGeojson"
         @changeLocationIds="onLocationsChange"
+        @changeLayer="onLayerChange"
         :layer-capabilities="layerCapabilities"
         :bounding-box="boundingBox"
         :times="times"
@@ -109,6 +111,12 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
   baseUrl,
   () => props.layerName,
 )
+
+const groupId = computed(
+  // @ts-expect-error
+  () => props.topologyNode?.gridDisplaySelection?.groupId,
+)
+
 const { locations, geojson } = useFilterLocations(
   baseUrl,
   filterIds,
@@ -286,6 +294,35 @@ function onLocationsChange(locationIds: string[]): void {
   }
 }
 
+function onLayerChange(layerName: string): void {
+  if (props.locationIds) {
+    emit('navigate', {
+      name: 'SpatialTimeSeriesDisplay',
+      params: { layerName, locationIds: props.locationIds },
+    })
+    return
+  }
+
+  if (props.longitude && props.latitude) {
+    emit('navigate', {
+      name: 'SpatialTimeSeriesDisplayWithCoordinates',
+      params: {
+        layerName,
+        latitude: props.latitude,
+        longitude: props.longitude,
+      },
+    })
+    return
+  }
+
+  emit('navigate', {
+    name: 'SpatialDisplay',
+    params: {
+      layerName,
+    },
+  })
+}
+
 function openLocationsTimeSeriesDisplay(locationIds: string[]) {
   const to = {
     name: 'SpatialTimeSeriesDisplay',
@@ -295,12 +332,12 @@ function openLocationsTimeSeriesDisplay(locationIds: string[]) {
 }
 
 function onCoordinateClick(latitude: number, longitude: number): void {
+  if (!onlyCoverageLayersAvailable.value) return
+
   openCoordinatesTimeSeriesDisplay(latitude, longitude)
 }
 
 function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
-  if (!onlyCoverageLayersAvailable.value) return
-
   const _latitude = latitude.toFixed(3)
   const _longitude = longitude.toFixed(3)
 
