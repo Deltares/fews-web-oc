@@ -13,6 +13,7 @@ import {
   nodeHasWebDisplay,
   nodeHasDataAnalysisDisplay,
   nodeHasDocumentDisplay,
+  nodeHasMF,
 } from './nodes'
 import {
   ComponentType,
@@ -118,6 +119,10 @@ export function displayTabsForNode(
         break
       case 'documents-display':
         tab.active = nodeHasDocumentDisplay(node)
+        tab.to.params = { ...params }
+        break
+      case 'micro-frontend-display':
+        tab.active = nodeHasMF(node)
         tab.to.params = { ...params }
         break
     }

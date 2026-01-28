@@ -10,6 +10,7 @@ import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { getResourcesStaticUrl } from './lib/fews-config/index.js'
 import { i18n, setI18nLanguage } from './plugins/i18n.js'
+import moduleFederationPlugin from './plugins/moduleFederation.js'
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
@@ -46,6 +47,11 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
     const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en')
     await setI18nLanguage(i18n, locale)
     app.use(i18n)
+    const manifestUrl = configManager.get('VITE_FEWS_WEBOC_MF_MANIFEST_URL')
+    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+    if (manifestUrl) {
+      app.use(moduleFederationPlugin, { manifestUrl, baseUrl })
+    }
     app.use(router)
     app.mount('#app')
   })
