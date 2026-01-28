@@ -78,9 +78,7 @@
         @click="showFilters = !showFilters"
         :aria-label="showFilters ? 'Hide filters' : 'Show filters'"
       >
-        <v-icon>{{
-          showFilters ? 'mdi-filter-multiple' : 'mdi-filter-multiple-outline'
-        }}</v-icon>
+        <v-icon>{{ showFilters ? 'mdi-menu-open' : 'mdi-menu-close' }}</v-icon>
       </v-btn>
       <v-spacer />
       <v-btn @click="refreshLogs" :loading="isLoading" icon="mdi-refresh">
