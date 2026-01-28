@@ -1,5 +1,11 @@
-import type { Layer } from '@deltares/fews-wms-requests'
+import {
+  WMSProvider,
+  type GetCapabilitiesResponse,
+  type Layer,
+} from '@deltares/fews-wms-requests'
 import { toDateRangeString, toHumanReadableDateTime } from '@/lib/date'
+import { configManager } from '@/services/application-config'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 export function getForecastTime(capabilities: Layer | undefined) {
   const forecastTime = capabilities?.keywordList?.[0].forecastTime
@@ -27,4 +33,32 @@ export function getValueTimeRangeString(capabilities: Layer | undefined) {
     capabilities?.firstValueTime,
     capabilities?.lastValueTime,
   )
+}
+
+let cachedCapabilities: GetCapabilitiesResponse | null = null
+let capabilitiesPromise: Promise<GetCapabilitiesResponse> | null = null
+
+export async function fetchWmsCapabilitiesHeaders() {
+  if (cachedCapabilities) {
+    return cachedCapabilities
+  }
+  if (capabilitiesPromise) {
+    return await capabilitiesPromise
+  }
+
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const wmsUrl = `${baseUrl}/wms`
+  const provider = new WMSProvider(wmsUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+
+  capabilitiesPromise = provider.getCapabilities({ onlyHeaders: true })
+
+  try {
+    const capabilities = await capabilitiesPromise
+    cachedCapabilities = capabilities
+    return capabilities
+  } finally {
+    capabilitiesPromise = null
+  }
 }
