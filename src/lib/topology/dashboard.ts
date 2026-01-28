@@ -4,6 +4,7 @@ import { ComponentProps } from '@/lib/utils/types'
 import { ComponentType } from '@/lib/topology/component'
 import { RouteParamsGeneric } from 'vue-router'
 import { DashboardActionParams } from './dashboardActions'
+import { getLayerNameForNode } from './displayTabs'
 
 const SpatialDisplay = defineAsyncComponent(
   () => import('@/components/spatialdisplay/SpatialDisplay.vue'),
@@ -57,12 +58,12 @@ export type PropsForComponentType<T extends ComponentType> = ComponentProps<
   (typeof componentTypeToComponentMap)[T]
 >
 
-export function getComponentPropsForNode(
+export async function getComponentPropsForNode(
   componentType: ComponentType,
   node?: TopologyNode,
   routeParams?: RouteParamsGeneric,
   actionParams?: DashboardActionParams,
-): PropsForComponentType<ComponentType> | undefined {
+): Promise<PropsForComponentType<ComponentType> | undefined> {
   if (!node) return
 
   if (routeParams && !isAllStringRouteParams(routeParams)) {
@@ -71,7 +72,7 @@ export function getComponentPropsForNode(
 
   if (componentType === 'map') {
     const result: PropsForComponentType<'map'> = {
-      layerName: node.gridDisplaySelection?.plotId,
+      layerName: routeParams?.layerName ?? (await getLayerNameForNode(node)),
       locationIds: routeParams?.locationIds ?? actionParams?.map?.locationId,
       longitude: routeParams?.longitude,
       latitude: routeParams?.latitude,
