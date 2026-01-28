@@ -75,134 +75,138 @@
         </v-menu>
       </v-btn>
     </v-toolbar>
-    <v-data-table
-      v-model="selectedRows"
-      :items="items"
-      :headers="headers"
-      :expanded="[]"
-      :items-per-page="-1"
-      item-value="key"
-      hover
-      :group-by="[groupBy]"
-      :search="search"
-      hide-default-footer
-      :row-props="
-        (data) => ({
-          class: selectedRows.includes(data.item.key)
-            ? 'selected-row'
-            : 'unselected-row',
-        })
-      "
-      class="d-flex flex-1-1"
-      density="compact"
-      fixed-header
-      height="400"
-      @click:row="onClick"
-    >
-      <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }">
-        <tr>
-          <template v-for="(column, index) in columns" :key="column.key">
-            <th v-if="index === 0"></th>
-            <th v-else-if="column.key === 'actions'" class="pa-0">
-              <v-btn icon size="small" variant="plain">
-                <v-icon icon="mdi-dots-vertical" />
-                <v-menu
-                  activator="parent"
-                  :close-on-content-click="false"
-                  location="bottom end"
-                >
-                  <v-list
-                    v-model:selected="selectedColumns"
-                    select-strategy="independent"
-                    density="compact"
-                  >
-                    <v-list-subheader>View columns</v-list-subheader>
-                    <v-list-item
-                      v-for="column in availableColumns"
-                      :key="column.key"
-                      :value="column.key"
-                    >
-                      {{ column.title }}
-                      <template v-slot:prepend="{ isSelected, select }">
-                        <v-list-item-action start>
-                          <v-checkbox-btn
-                            :model-value="isSelected"
-                            @update:modelValue="select"
-                          ></v-checkbox-btn>
-                        </v-list-item-action>
-                      </template>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </v-btn>
-            </th>
-            <th v-else>
-              <div class="d-flex align-center">
-                <span
-                  class="me-2 cursor-pointer"
-                  @click="toggleSort(column)"
-                  v-text="column.title"
-                ></span>
-
-                <v-icon
-                  v-if="isSorted(column)"
-                  :icon="getSortIcon(column)"
-                  color="medium-emphasis"
-                ></v-icon>
-              </div>
-            </th>
-          </template>
-        </tr>
-      </template>
-      <template
-        v-slot:group-header="{ item, columns, toggleGroup, isGroupOpen }"
+    <div class="d-flex flex-column flex-1-1 w-100">
+      <v-data-table
+        v-model="selectedRows"
+        :items="items"
+        :headers="headers"
+        :expanded="[]"
+        :items-per-page="-1"
+        item-value="key"
+        hover
+        :group-by="[groupBy]"
+        :search="search"
+        hide-default-footer
+        :row-props="
+          (data) => ({
+            class: selectedRows.includes(data.item.key)
+              ? 'selected-row'
+              : 'unselected-row',
+          })
+        "
+        class="d-flex flex-1-1"
+        density="compact"
+        fixed-header
+        height="400"
+        @click:row="onClick"
       >
-        <tr>
-          <td :colspan="columns.length">
-            <v-list-item density="compact" class="px-0">
-              <v-list-item-subtitle>
-                {{ groupBy.name }}
-                <span> {{ item.value }} </span>
-                <v-chip class="ms-4" size="small">{{
-                  item.items.length
-                }}</v-chip>
-              </v-list-item-subtitle>
-              <template v-slot:prepend>
-                <v-btn
-                  :icon="isGroupOpen(item) ? '$expand' : '$next'"
-                  color="medium-emphasis"
-                  density="comfortable"
-                  @click="toggleGroup(item)"
-                ></v-btn>
-              </template>
-            </v-list-item>
-          </td>
-        </tr>
-      </template>
-      <template v-slot:item.actions="{ item }">
-        <v-btn
-          v-if="item.attributes.name !== 'Create new'"
-          icon="mdi-delete"
-          size="small"
-          variant="text"
-          @click.stop="onDeleteProduct(item)"
-          aria-label="Delete product"
-          class="delete-action-btn"
-          :hover="true"
-        ></v-btn>
-        <v-btn
-          v-else
-          icon="mdi-plus"
-          size="small"
-          variant="text"
-          @click="onNewProduct(template ?? item)"
-          :title="'Create new product'"
-        ></v-btn>
-      </template>
-      <template v-slot:body.prepend="props">
-        <slot name="prepend" v-bind="props"></slot>
-      </template>
-    </v-data-table>
+        <template
+          v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }"
+        >
+          <tr>
+            <template v-for="(column, index) in columns" :key="column.key">
+              <th v-if="index === 0"></th>
+              <th v-else-if="column.key === 'actions'" class="pa-0">
+                <v-btn icon size="small" variant="plain">
+                  <v-icon icon="mdi-dots-vertical" />
+                  <v-menu
+                    activator="parent"
+                    :close-on-content-click="false"
+                    location="bottom end"
+                  >
+                    <v-list
+                      v-model:selected="selectedColumns"
+                      select-strategy="independent"
+                      density="compact"
+                    >
+                      <v-list-subheader>View columns</v-list-subheader>
+                      <v-list-item
+                        v-for="column in availableColumns"
+                        :key="column.key"
+                        :value="column.key"
+                      >
+                        {{ column.title }}
+                        <template v-slot:prepend="{ isSelected, select }">
+                          <v-list-item-action start>
+                            <v-checkbox-btn
+                              :model-value="isSelected"
+                              @update:modelValue="select"
+                            ></v-checkbox-btn>
+                          </v-list-item-action>
+                        </template>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                </v-btn>
+              </th>
+              <th v-else>
+                <div class="d-flex align-center">
+                  <span
+                    class="me-2 cursor-pointer"
+                    @click="toggleSort(column)"
+                    v-text="column.title"
+                  ></span>
+
+                  <v-icon
+                    v-if="isSorted(column)"
+                    :icon="getSortIcon(column)"
+                    color="medium-emphasis"
+                  ></v-icon>
+                </div>
+              </th>
+            </template>
+          </tr>
+        </template>
+        <template
+          v-slot:group-header="{ item, columns, toggleGroup, isGroupOpen }"
+        >
+          <tr>
+            <td :colspan="columns.length">
+              <v-list-item density="compact" class="px-0">
+                <v-list-item-subtitle>
+                  {{ groupBy.name }}
+                  <span> {{ item.value }} </span>
+                  <v-chip class="ms-4" size="small">{{
+                    item.items.length
+                  }}</v-chip>
+                </v-list-item-subtitle>
+                <template v-slot:prepend>
+                  <v-btn
+                    :icon="isGroupOpen(item) ? '$expand' : '$next'"
+                    color="medium-emphasis"
+                    density="comfortable"
+                    @click="toggleGroup(item)"
+                  ></v-btn>
+                </template>
+              </v-list-item>
+            </td>
+          </tr>
+        </template>
+        <template v-slot:item.actions="{ item }">
+          <v-btn
+            v-if="item.attributes.name !== 'Create new'"
+            icon="mdi-delete"
+            size="small"
+            variant="text"
+            @click.stop="onDeleteProduct(item)"
+            aria-label="Delete product"
+            class="delete-action-btn"
+            :hover="true"
+          ></v-btn>
+          <v-btn
+            v-else
+            icon="mdi-plus"
+            size="small"
+            variant="text"
+            @click="onNewProduct(template ?? item)"
+            :title="'Create new product'"
+          ></v-btn>
+        </template>
+        <template v-slot:body.prepend="props">
+          <slot name="prepend" v-bind="props"></slot>
+        </template>
+      </v-data-table>
+    </div>
     <div>
       <slot name="footer"> </slot>
     </div>

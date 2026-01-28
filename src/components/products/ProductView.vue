@@ -1,66 +1,68 @@
 <template>
   <div class="d-flex flex-row h-100 w-100">
-    <ProductsBrowserTable
-      v-if="tableConfig"
-      :products="filteredProducts"
-      :config="tableConfig"
-      class="product-browser__table"
-      :productKey="productKey"
-      @refresh="fetchProducts()"
-    >
-      <template #footer>
-        <v-list-item density="compact">
-          Last updated: {{ toHumanReadableDateTime(lastUpdated) }}
-          <template #append>
-            <v-btn
-              class="refresh-container"
-              variant="text"
-              icon
-              @click="fetchProducts()"
-            >
-              <v-icon>mdi-refresh</v-icon>
-            </v-btn>
-          </template>
-        </v-list-item>
-      </template>
-      <template #prepend="{ headers }">
-        <UploadProductForm
-          v-if="showUploadProductForm"
-          :type="canUpload ? 'upload' : 'new'"
-          :sourceId="sourceId"
-          :areaId="areaId"
-          :author="userName"
-          :viewPeriod="viewPeriod"
-          :compose="compose"
-          @saved="fetchProducts()"
-          @close="showUploadProductForm = false"
-        />
+    <v-navigation-drawer v-model="drawer" :width="600">
+      <ProductsBrowserTable
+        v-if="tableConfig"
+        :products="filteredProducts"
+        :config="tableConfig"
+        class="w-100 h-100"
+        :productKey="productKey"
+        @refresh="fetchProducts()"
+      >
+        <template #footer>
+          <v-list-item density="compact">
+            Last updated: {{ toHumanReadableDateTime(lastUpdated) }}
+            <template #append>
+              <v-btn
+                class="refresh-container"
+                variant="text"
+                icon
+                @click="fetchProducts()"
+              >
+                <v-icon>mdi-refresh</v-icon>
+              </v-btn>
+            </template>
+          </v-list-item>
+        </template>
+        <template #prepend="{ headers }">
+          <UploadProductForm
+            v-if="showUploadProductForm"
+            :type="canUpload ? 'upload' : 'new'"
+            :sourceId="sourceId"
+            :areaId="areaId"
+            :author="userName"
+            :viewPeriod="viewPeriod"
+            :compose="compose"
+            @saved="fetchProducts()"
+            @close="showUploadProductForm = false"
+          />
 
-        <tr v-else-if="canUpload">
-          <td :colspan="headers[0].length + 3" class="ps-4">
-            <v-btn
-              prepend-icon="mdi-plus"
-              size="small"
-              variant="tonal"
-              @click="showUploadProductForm = true"
-            >
-              Upload</v-btn
-            >
-          </td>
-        </tr>
-        <tr v-else-if="canCreateNew">
-          <td :colspan="headers[0].length + 3" class="ps-4">
-            <v-btn
-              prepend-icon="mdi-plus"
-              size="small"
-              variant="tonal"
-              @click="showUploadProductForm = true"
-              >New</v-btn
-            >
-          </td>
-        </tr>
-      </template>
-    </ProductsBrowserTable>
+          <tr v-else-if="canUpload">
+            <td :colspan="headers[0].length + 3" class="ps-4">
+              <v-btn
+                prepend-icon="mdi-plus"
+                size="small"
+                variant="tonal"
+                @click="showUploadProductForm = true"
+              >
+                Upload</v-btn
+              >
+            </td>
+          </tr>
+          <tr v-else-if="canCreateNew">
+            <td :colspan="headers[0].length + 3" class="ps-4">
+              <v-btn
+                prepend-icon="mdi-plus"
+                size="small"
+                variant="tonal"
+                @click="showUploadProductForm = true"
+                >New</v-btn
+              >
+            </td>
+          </tr>
+        </template>
+      </ProductsBrowserTable>
+    </v-navigation-drawer>
     <div class="flex-1-1 h-100 flex-column position-relative">
       <EditReport
         v-if="isEditing"
@@ -70,6 +72,10 @@
       />
       <template v-else>
         <v-toolbar density="compact" absolute>
+          <v-btn
+            :icon="drawer ? 'mdi-menu-open' : 'mdi-menu-close'"
+            @click="drawer = !drawer"
+          ></v-btn>
           <template v-if="viewMode === 'html' && editPermissions">
             <v-btn
               color="primary"
@@ -208,6 +214,7 @@ const selectedProduct = computed(() => {
 const viewPeriod = ref<IntervalItem>({})
 const htmlContent = ref('')
 const isEditing = ref(false)
+const drawer = ref(true)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const actionIsActive = ref(false) // Flag to indicate if a dissemination action is active
@@ -429,12 +436,5 @@ img {
   box-sizing: border-box;
   background-color: white;
   box-shadow: 0 0.5mm 2mm rgba(0, 0, 0, 0.3);
-}
-
-.product-browser__table {
-  width: 600px;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 </style>
