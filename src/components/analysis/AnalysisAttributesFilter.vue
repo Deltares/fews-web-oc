@@ -101,7 +101,7 @@ const locationAttributes = computed(() => {
       if (!attribute.id || !attribute.value) return
 
       const configAttribute = props.attributes?.find(
-        (attr) => attr.attributeId === attribute.id,
+        (a) => a.attributeId === attribute.id,
       )
       if (!configAttribute) return
 
