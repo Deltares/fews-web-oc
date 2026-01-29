@@ -7,6 +7,7 @@
         :latitude="props.latitude"
         :longitude="props.longitude"
         :group-id="groupId"
+        :task-run-id="taskRunId"
         :locations="filteredLocations"
         :geojson="filteredGeojson"
         @changeLocationIds="onLocationsChange"
@@ -88,6 +89,8 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
+const taskRunId = 'sqmsdevmc00:000001856'
+
 const warningLevelsStore = useWarningLevelsStore()
 const locationNamesStore = useLocationNamesStore()
 const userSettings = useUserSettingsStore()
@@ -110,6 +113,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { layerCapabilities, times } = useWmsLayerCapabilities(
   baseUrl,
   () => props.layerName,
+  taskRunId,
 )
 
 const groupId = computed(

@@ -47,6 +47,7 @@ export interface AnimatedRasterLayerOptions {
   style?: string
   useLastValue?: boolean
   layerType?: string
+  taskRunId?: string
 }
 
 interface Props {
@@ -213,6 +214,9 @@ function getImageSourceOptions() {
       'useDisplayUnits',
       props.layer.useDisplayUnits ? 'true' : 'false',
     )
+  }
+  if (props.layer.taskRunId) {
+    getMapUrl.searchParams.append('taskRunId', props.layer.taskRunId)
   }
   return {
     url: getMapUrl.toString(),
