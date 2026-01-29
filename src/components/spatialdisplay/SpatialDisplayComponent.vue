@@ -257,6 +257,7 @@ interface Props {
   latitude?: string
   longitude?: string
   groupId?: string
+  taskRunId?: string
   boundingBox?: BoundingBox
   settings: ComponentSettings['map']
 }
@@ -564,6 +565,7 @@ function setLayerOptions(): void {
     style: currentColourScale.value?.style.name,
     useDisplayUnits: userSettings.useDisplayUnits,
     useLastValue: isInDatesRange(selectedDate.value, props.times),
+    taskRunId: props.taskRunId,
   }
 }
 

@@ -31,6 +31,7 @@ export interface UseWmsReturn {
 export function useWmsLayerCapabilities(
   baseUrl: string,
   layerName: MaybeRefOrGetter<string>,
+  taskRunId: MaybeRefOrGetter<string | undefined>,
 ): UseWmsReturn {
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
@@ -40,25 +41,39 @@ export function useWmsLayerCapabilities(
   const layerCapabilities = ref<Layer>()
 
   async function loadLayer(): Promise<void> {
-    const _layers = toValue(layerName)
-    if (_layers === '') {
+    const _layerName = toValue(layerName)
+
+    if (_layerName === '') {
       layerCapabilities.value = undefined
-    } else {
-      try {
-        const capabilities = await wmsProvider.getCapabilities({
-          layers: _layers,
-          importFromExternalDataSource: false,
-          onlyHeaders: false,
-          forecastCount: 1,
-        })
-        if (capabilities.layers.length > 0) {
-          layerCapabilities.value =
-            capabilities.layers.find((l) => l.name === _layers) ??
-            capabilities.layers[0]
-        }
-      } catch (error) {
-        console.error(error)
+      return
+    }
+
+    const filter: GetCapabilitiesFilter = {
+      layers: _layerName,
+      importFromExternalDataSource: false,
+      onlyHeaders: false,
+      forecastCount: 1,
+    }
+
+    const _taskRunId = toValue(taskRunId)
+    if (_taskRunId) {
+      // @ts-expect-error taskRunId is not yet in the type definition
+      filter.taskRunId = _taskRunId
+    }
+
+    try {
+      const capabilities = await wmsProvider.getCapabilities(filter)
+
+      if (!capabilities.layers) {
+        layerCapabilities.value = undefined
+        return
       }
+
+      layerCapabilities.value =
+        capabilities.layers.find((l) => l.name === _layerName) ??
+        capabilities.layers[0]
+    } catch (error) {
+      console.error(error)
     }
   }
 
