@@ -8,7 +8,7 @@
     >
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-        <v-btn :to="{ name: 'Default' }" v-if="mdAndUp">
+        <v-btn :to="{ name: 'Default' }" v-if="!isInstalledPWA && mdAndUp">
           <img height="36px" :src="logoSrc" />
         </v-btn>
         <div id="app-bar-content-start" />
@@ -198,6 +198,8 @@ const theme = useTheme()
 const drawer = ref(true)
 const { isRtl } = useRtl()
 const route = useRoute()
+
+const isInstalledPWA = window.matchMedia('(display-mode: standalone)').matches
 
 const showHash = ref(false)
 const appBarStyle = ref<StyleValue>()
