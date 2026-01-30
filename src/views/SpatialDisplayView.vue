@@ -4,7 +4,7 @@
       v-model:active="active"
       v-model:open="open"
       :type="menuType"
-      :items="items"
+      :items="menuItems"
     />
   </Teleport>
   <SpatialDisplay
@@ -47,7 +47,7 @@ const settings = useUserSettingsStore()
 
 const active = ref<string>('root')
 const open = ref<string[]>([])
-const items = ref<ColumnItem[]>([])
+const menuItems = ref<ColumnItem[]>([])
 
 const menuType = computed(() => {
   const configured = settings.get('ui.hierarchical-menu-style')?.value as string
@@ -61,7 +61,7 @@ watch(capabilities, () => {
 
   if (layers === undefined) return []
   if (groups === undefined) return []
-  items.value = fillMenuItems(layers, groups)
+  menuItems.value = fillMenuItems(layers, groups)
 })
 
 function fillMenuItems(layers: Layer[], groups: LayerGroup[]): ColumnItem[] {
