@@ -207,6 +207,10 @@ function updateAppBarColor() {
   appBarColor.value = getComputedStyle(document.body).getPropertyValue(
     '--weboc-app-bar-bg-color',
   )
+  const meta = document.querySelector('meta[name="theme-color"]')
+  if (meta) {
+    meta.setAttribute('content', appBarColor.value)
+  }
 }
 
 watch(
