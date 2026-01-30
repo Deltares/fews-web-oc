@@ -10,11 +10,16 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch, computed } from 'vue'
-import * as d3 from 'd3'
-import * as webOcCharts from '@deltares/fews-web-oc-charts'
+import { select } from 'd3'
+import {
+  type ColourMap,
+  type ColourBarOptions,
+  ColourBar,
+  AxisPosition,
+} from '@deltares/fews-web-oc-charts'
 
 interface Props {
-  colourMap?: webOcCharts.ColourMap
+  colourMap?: ColourMap
   useGradients?: boolean
 }
 
@@ -23,7 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const groupRef = ref(null)
-const group = computed(() => d3.select(groupRef.value))
+const group = computed(() => select(groupRef.value))
 
 onMounted(updateColourStrip)
 watch(props, updateColourStrip)
@@ -34,19 +39,13 @@ function updateColourStrip() {
 
   group.value.selectAll('*').remove()
 
-  const options: webOcCharts.ColourBarOptions = {
+  const options: ColourBarOptions = {
     type: 'nonlinear',
     useGradients: props.useGradients,
-    position: webOcCharts.AxisPosition.Bottom,
+    position: AxisPosition.Bottom,
     ticks: 0,
   }
-  new webOcCharts.ColourBar(
-    group.value as any,
-    props.colourMap,
-    200,
-    10,
-    options,
-  )
+  new ColourBar(group.value as any, props.colourMap, 200, 10, options)
 }
 </script>
 

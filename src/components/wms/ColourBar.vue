@@ -22,8 +22,13 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import * as d3 from 'd3'
-import * as webOcCharts from '@deltares/fews-web-oc-charts'
+import { select, type Selection } from 'd3'
+import {
+  ColourBar,
+  ColourBarOptions,
+  ColourMap,
+  AxisPosition,
+} from '@deltares/fews-web-oc-charts'
 import LegendInput from '@/components/wms/LegendInput.vue'
 
 type Range = {
@@ -32,7 +37,7 @@ type Range = {
 }
 
 interface Props {
-  colourMap?: webOcCharts.ColourMap
+  colourMap?: ColourMap
   title?: string
   useGradients?: boolean
 }
@@ -49,11 +54,11 @@ const isVisible = ref<boolean>(true)
 
 const isEditingMin = ref<boolean>(false)
 const isEditingMax = ref<boolean>(false)
-let group: d3.Selection<SVGGElement, unknown, null, unknown>
+let group: Selection<SVGGElement, unknown, null, unknown>
 
 onMounted(() => {
   if (colourbarElement.value !== undefined) {
-    const svg = d3.select(colourbarElement.value)
+    const svg = select(colourbarElement.value)
     group = svg
       .append('g')
       .attr('transform', 'translate(25, 25)')
@@ -72,19 +77,17 @@ function updateColourBar() {
   // Remove possible previous colour map.
   group.selectAll('*').remove()
   // Create new colour bar and make it visible.
-  const options: webOcCharts.ColourBarOptions = {
+  const options: ColourBarOptions = {
     type: 'nonlinear',
     useGradients: props.useGradients,
-    position: webOcCharts.AxisPosition.Bottom,
+    position: AxisPosition.Bottom,
     title: props.title,
   }
-  new webOcCharts.ColourBar(group as any, props.colourMap, 250, 10, options)
+  new ColourBar(group as any, props.colourMap, 250, 10, options)
   isVisible.value = true
 
-  const firstChild = d3.select('#colourbar > g > g.axis').selectChild()
-  const lastChild = d3
-    .select('#colourbar > g > g.axis')
-    .selectChild(':last-child')
+  const firstChild = select('#colourbar > g > g.axis').selectChild()
+  const lastChild = select('#colourbar > g > g.axis').selectChild(':last-child')
 
   firstChild.on('click', () => (isEditingMin.value = true))
   lastChild.on('click', () => (isEditingMax.value = true))
