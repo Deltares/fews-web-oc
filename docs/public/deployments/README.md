@@ -146,17 +146,21 @@ The WebOC requires the following policies:
 | Header | Value |
 | ------ | ----- |
 | default-src | 'none'|
-| script-src | 'self'|
-| manifest-src | 'self' `FEWS_WEBSERVICES_DOMAIN`|
-| font-src | 'self'| |
-| style-src | 'self' 'unsafe-inline'|
-| worker-src | blob:|
-| img-src | 'self' data: blob: `FEWS_WEBSERVICES_DOMAIN` |
 | connect-src | 'self' https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com `FEWS_WEBSERVICES_DOMAIN` `AUTHORITY_DOMAIN`|
+| font-src | 'self' `FEWS_WEBSERVICES_DOMAIN`[^2] |
+| frame-src | 'self' blob: `FEWS_WEBSERVICES_DOMAIN`|
+| img-src | 'self' data: blob: `FEWS_WEBSERVICES_DOMAIN`[^1],[^2] |
+| manifest-src | 'self' `FEWS_WEBSERVICES_DOMAIN`[^1] |
+| media-src | 'self' |
+| script-src | 'self'  blob:|
+| style-src | 'self' 'unsafe-inline' `FEWS_WEBSERVICES_DOMAIN`[^2] |
+| worker-src | blob:|
 
 Replace `FEWS_WEBSERVICES_DOMAIN` with the domain of the FEWS web services are available. Leave empty when this is the same domain as where the Web OC is hosted. 
 Replace `AUTHORITY_DOMAIN` with the domain of the configured OIDC authority provider (e.g. https://login.microsoftonline.com for Microsoft identity platform). Leave empty when no authority provider is used.
-When a custom `VITE_APP_MANIFEST_URL` is configured make sure the `manifest-src` configuration includes the `FEWS_WEBSERVICES_DOMAIN` value, otherwise it can be left out.
+
+[^1]: When a custom `VITE_APP_MANIFEST_URL` is configured make sure the `manifest-src` and `img-src`  configuration includes the `FEWS_WEBSERVICES_DOMAIN` value.  
+[^2]: When a custom `customStyleSheet` is configured in the `WebOperatorClient.xml` make sure the `style-src` configuration includes the `FEWS_WEBSERVICES_DOMAIN` value.
 
 For more information, refer to the MDN documentation:
 [Content Security Policy (CSP) - MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
