@@ -98,7 +98,7 @@ function getIcon(node: TopologyNode): string | undefined {
 
 function updateItems(): void {
   if (topologyNodes.value) {
-    const _items = recursiveUpdateNode(topologyNodes  .value)
+    const _items = recursiveUpdateNode(topologyNodes.value)
     items.value = _items
     open.value = [_items[0].id]
   }
