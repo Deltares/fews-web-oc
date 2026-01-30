@@ -1,5 +1,5 @@
 <template>
-  <table>
+  <table description="Colour Legend Table">
     <tr v-for="item in colourMap">
       <td>
         <div class="box" :style="{ backgroundColor: item.color }" />
