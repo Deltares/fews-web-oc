@@ -1,5 +1,5 @@
 <template>
-  <iframe v-if="src" class="w-100 h-100" :src="src"></iframe>
+  <iframe v-if="src" class="w-100 h-100" :src="src" title="Web Display"></iframe>
 </template>
 
 <script setup lang="ts">
