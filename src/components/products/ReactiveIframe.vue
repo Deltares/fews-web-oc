@@ -2,7 +2,7 @@
   <iframe
     v-if="props.src"
     ref="iframeRef"
-    title="embeded subproduct"
+    title="Product Viewer"
     :src="props.src"
     class="iframe"
     :class="{ loading: isLoading }"

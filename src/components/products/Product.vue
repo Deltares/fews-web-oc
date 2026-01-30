@@ -5,7 +5,7 @@
   <template v-else>
     <img v-if="viewMode === 'img'" :src="src" />
     <template v-if="['html', 'pdf', 'iframe'].includes(viewMode)">
-      <iframe :src="src" />
+      <iframe :src="src" title="Document Viewer" />
     </template>
   </template>
 </template>

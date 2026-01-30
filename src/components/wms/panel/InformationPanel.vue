@@ -87,7 +87,7 @@
               :tooltipProps="tooltipProps"
             />
           </template>
-          <b>{{ item.type }} {{ item.id }}</b>
+          <strong>{{ item.type }} {{ item.id }}</strong>
           <p>{{ toDateRangeString(item.startDate, item.endDate) }}</p>
         </v-tooltip>
       </v-btn-toggle>

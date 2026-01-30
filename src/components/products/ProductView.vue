@@ -128,6 +128,7 @@
         <iframe
           v-if="viewMode === 'iframe' || viewMode === 'pdf'"
           :src="src"
+          title="Document Viewer"
           class="pdf-iframe"
         ></iframe>
         <div v-else class="products-browser-view__canvas overflow-y-auto w-100">
