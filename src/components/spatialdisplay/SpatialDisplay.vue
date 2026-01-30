@@ -7,7 +7,7 @@
         :latitude="props.latitude"
         :longitude="props.longitude"
         :group-id="groupId"
-        :task-run-id="taskRunId"
+        v-model:task-run-id="taskRunId"
         :locations="filteredLocations"
         :geojson="filteredGeojson"
         @changeLocationIds="onLocationsChange"
@@ -89,7 +89,7 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-const taskRunId = 'sqmsdevmc00:000001856'
+const taskRunId = ref<string>()
 
 const warningLevelsStore = useWarningLevelsStore()
 const locationNamesStore = useLocationNamesStore()

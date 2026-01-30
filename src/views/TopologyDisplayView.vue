@@ -140,6 +140,7 @@ import { SidePanel, useSidePanelStore } from '@/stores/sidePanel'
 import VisualizeDataControl from '@/components/tasks/VisualizeDataControl.vue'
 import { useI18n } from 'vue-i18n'
 import { fetchWmsCapabilitiesHeaders } from '@/lib/capabilities'
+import { provideNodeTasks } from '@/services/useNodeTaskRuns'
 
 interface Props {
   topologyId?: string
@@ -523,6 +524,8 @@ async function reroute(
   const tab = tabs.find((t) => t.to.name === from?.name) ?? tabs[0]
   return tab?.to
 }
+
+provideNodeTasks(() => topologyNode.value?.id)
 </script>
 
 <style scoped></style>
