@@ -76,12 +76,12 @@ const taskRunIds = computed(() =>
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { taskRuns, interval: taskRunInterval } = useTaskRuns(
   baseUrl,
-  taskRunIds,
+  () => ({ taskRunIds: taskRunIds.value }),
   TASK_RUN_REFRESH_INTERVAL,
 )
 const task = computed(() => {
   if (!taskRuns.value?.length) return
-  return convertFewsPiTaskRunToTaskRun(taskRuns.value?.[0])
+  return taskRuns.value?.[0]
 })
 
 const category = computed(() => {
