@@ -26,7 +26,7 @@ import '@/assets/fews-flags.css'
 const route = useRoute()
 const configStore = useConfigStore()
 const userSettingsStore = useUserSettingsStore()
-const theme = useTheme()
+const { change } = useTheme()
 const prefersDark = usePreferredDark()
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
@@ -77,7 +77,7 @@ function updateTheme(theme?: string) {
 }
 
 function setTheme(setDark: boolean): void {
-  theme.global.name.value = setDark ? 'dark' : 'light'
+  change(setDark ? 'dark' : 'light')
   if (setDark !== isDark.value) {
     toggleDark()
   }
