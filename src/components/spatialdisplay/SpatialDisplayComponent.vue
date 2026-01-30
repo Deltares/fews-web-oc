@@ -80,6 +80,7 @@
           :currentTime="selectedDate"
           :layerCapabilities="layerCapabilities"
           v-model:show-layer="showLayer"
+          v-model:taskRunId="taskRunId"
           @changeLayer="onLayerChange"
         >
           <template v-if="canUseStreamlines">
@@ -253,7 +254,6 @@ interface Props {
   latitude?: string
   longitude?: string
   groupId?: string
-  taskRunId?: string
   boundingBox?: BoundingBox
   settings: ComponentSettings['map']
 }
@@ -277,6 +277,8 @@ const debouncedSetLayerOptions = debounce(setLayerOptions, 240, {
   leading: true,
   trailing: true,
 })
+
+const taskRunId = defineModel<string>('taskRunId')
 
 const currentElevation = useSelectedElevation()
 const minElevation = ref<number>(-Infinity)
@@ -561,7 +563,7 @@ function setLayerOptions(): void {
     style: currentColourScale.value?.style.name,
     useDisplayUnits: userSettings.useDisplayUnits,
     useLastValue: isInDatesRange(selectedDate.value, props.times),
-    taskRunId: props.taskRunId,
+    taskRunId: taskRunId.value,
   }
 }
 

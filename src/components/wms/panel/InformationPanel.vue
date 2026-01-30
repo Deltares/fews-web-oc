@@ -43,6 +43,35 @@
           </v-list-item-subtitle>
         </v-list-item>
         <v-divider></v-divider>
+        <v-list-item prepend-icon="mdi-chart-box-multiple">
+          <v-select
+            v-model="taskRunId"
+            :items="nonCurrentTaskRuns"
+            :item-title="
+              (item) =>
+                availableWorkflowsStore.byId(item.workflowId)?.name ??
+                'Unknown workflow'
+            "
+            :item-value="(item) => item.taskId"
+            clearable
+            density="compact"
+            hide-details
+            placeholder="Select non-current task"
+          >
+            <template #item="{ item, props }">
+              <v-list-item
+                v-bind="props"
+                :title="
+                  availableWorkflowsStore.byId(item.raw.workflowId)?.name ??
+                  'Unknown workflow'
+                "
+                :subtitle="toHumanReadableDateTime(item.raw.timeZeroTimestamp)"
+              />
+            </template>
+          </v-select>
+        </v-list-item>
+
+        <v-divider></v-divider>
         <v-list-item
           :title="t('wms.timeRange')"
           :subtitle="formattedTimeRange"
@@ -72,6 +101,10 @@ import {
   getForecastTimeString,
   getValueTimeRangeString,
 } from '@/lib/capabilities'
+import { useNodeTasks } from '@/services/useNodeTaskRuns'
+import { toHumanReadableDateTime } from '@/lib/date'
+import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+import { sortTasks } from '@/lib/taskruns'
 
 const { t } = useI18n()
 
@@ -85,11 +118,19 @@ interface Props {
 
 const props = defineProps<Props>()
 const showLayer = defineModel<boolean>('showLayer')
+const taskRunId = defineModel<string>('taskRunId')
 
 interface Emits {
   changeLayer: [string]
 }
 const emit = defineEmits<Emits>()
+
+const availableWorkflowsStore = useAvailableWorkflowsStore()
+const taskRuns = useNodeTasks()
+
+const nonCurrentTaskRuns = computed(() =>
+  taskRuns.value.filter((task) => !task.isCurrent).toSorted(sortTasks),
+)
 
 const title = computed(() => props.layerCapabilities?.title ?? '')
 const completelyMissing = computed(
