@@ -39,6 +39,7 @@ export default defineConfig(({ mode }) => {
       headers: {
         'content-security-policy': [
           `default-src 'none'`,
+          `manifest-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
           `script-src 'self' blob: ${env.DEV_CSP_MEDIA_SRC}`,
           `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_FONT_SRC}`,
           `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_STYLE_SRC} 'unsafe-inline'`, // vuetify

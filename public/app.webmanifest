@@ -1,0 +1,20 @@
+{
+  "name": "Delft-FEWS Web Operator Client",
+  "short_name": "FEWS Web OC",
+  "id": "fews-web-oc",
+  "icons": [
+    {
+      "src": "images/FEWS-logo-macOS-Default-1024x1024@1x.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    },
+    {
+      "src": "images/FEWS-logo-macOS-Default-76x76@2x.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff"
+}

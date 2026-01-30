@@ -7,6 +7,7 @@ export enum RequestHeaderAuthorization {
 
 export type ApplicationConfig = {
   VITE_APP_NAME: string
+  VITE_APP_MANIFEST_URL: string
   VITE_AUTH_AUTHORITY: string
   VITE_AUTH_ID: string
   VITE_AUTH_METADATA_URL: string
