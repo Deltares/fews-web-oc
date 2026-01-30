@@ -36,7 +36,7 @@ const formattedRuntime = computed<string>(() => {
     factor = 1
     unit = 'seconds'
   }
-  const formattedRuntime = (runtime * factor).toFixed(1)
-  return `${formattedRuntime} ${unit}`
+  const formattedRunTimeString = (runtime * factor).toFixed(1)
+  return `${formattedRunTimeString} ${unit}`
 })
 </script>
