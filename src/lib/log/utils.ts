@@ -2,10 +2,10 @@ import type {
   LogDisplayDisseminationAction,
   LogDisplayLogsFilter,
   LogDisplaySystemLog,
-  TaskRun,
 } from '@deltares/fews-pi-requests'
 import type { LogLevel, LogMessage, LogType } from './types'
 import { WorkflowItem } from '../workflows'
+import { TaskRun } from '@/lib/taskruns'
 
 export function getTitleForLog(
   log: LogMessage,
@@ -14,7 +14,7 @@ export function getTitleForLog(
   workflows: WorkflowItem[],
 ) {
   const workflowId = taskRuns.find(
-    (taskRun) => taskRun.id === log.taskRunId,
+    (taskRun) => taskRun.taskId === log.taskRunId,
   )?.workflowId
 
   const workflow = workflowId
@@ -49,8 +49,8 @@ export function filterLog(
   const text = log.text.toLowerCase()
   const searchText = search?.toLowerCase()
   const taskRunId = log.taskRunId?.toLowerCase()
-  const taskRun = taskRuns.find((tr) => tr.id === log.taskRunId)
-  const taskRunUser = taskRun?.user?.toLowerCase()
+  const taskRun = taskRuns.find((tr) => tr.taskId === log.taskRunId)
+  const taskRunUser = taskRun?.userId?.toLowerCase()
   const title = getTitleForLog(log, '', taskRuns, workflows)?.toLowerCase()
   return (
     !searchText ||

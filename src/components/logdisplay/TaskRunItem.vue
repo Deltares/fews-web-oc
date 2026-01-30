@@ -24,7 +24,7 @@
             }}</v-card-subtitle>
           </div>
           <v-card-subtitle class="pa-0">
-            T0: {{ toHumanReadableDateTime(taskRun?.time0) }}
+            T0: {{ toHumanReadableDateTime(taskRun?.timeZeroTimestamp) }}
           </v-card-subtitle>
         </div>
         <v-spacer />
@@ -51,7 +51,6 @@
 
 <script setup lang="ts">
 import DataTable from '@/components/general/DataTable.vue'
-import type { TaskRun } from '@deltares/fews-pi-requests'
 import {
   type LogMessage,
   levelToIcon,
@@ -70,6 +69,7 @@ import {
   getColorForTaskStatus,
   getIconForTaskStatus,
   isTaskStatus,
+  type TaskRun,
 } from '@/lib/taskruns'
 
 interface Props {
@@ -94,62 +94,61 @@ const levelCount = computed(() =>
   ),
 )
 
-const tableData = computed(() => [
-  {
-    columns: [
-      {
-        header: 'User',
-        value: props.taskRun?.user ?? 'No user',
-      },
-      {
-        header: 'Task run ID',
-        value: props.taskRun?.id,
-      },
-      {
-        header: 'FSS ID',
-        value: props.taskRun?.fssId,
-      },
-    ],
-  },
-  {
-    columns: [
-      {
-        header: 'T0',
-        value: toHumanReadableDateTime(props.taskRun?.time0),
-      },
-    ],
-  },
-  {
-    columns: [
-      {
-        header: `Output time span`,
-        subHeader: toDateAbsDifferenceString(
-          props.taskRun?.outputStartTime ?? props.taskRun?.time0,
-          props.taskRun?.outputEndTime ?? props.taskRun?.time0,
-        ),
-        value: toDateRangeString(
-          props.taskRun?.outputStartTime ?? props.taskRun?.time0,
-          props.taskRun?.outputEndTime ?? props.taskRun?.time0,
-        ),
-      },
-    ],
-  },
-  {
-    columns: [
-      {
-        header: 'Task duration',
-        subHeader: toDateAbsDifferenceString(
-          props.taskRun?.dispatchTime,
-          props.taskRun?.completionTime,
-        ),
-        value: toDateRangeString(
-          props.taskRun?.dispatchTime,
-          props.taskRun?.completionTime,
-        ),
-      },
-    ],
-  },
-])
+const tableData = computed(() => {
+  const timeZero = props.taskRun?.timeZeroTimestamp
+  const outputStart = props.taskRun?.outputStartTimestamp ?? timeZero
+  const outputEnd = props.taskRun?.outputEndTimestamp ?? timeZero
+  return [
+    {
+      columns: [
+        {
+          header: 'User',
+          value: props.taskRun?.userId ?? 'No user',
+        },
+        {
+          header: 'Task run ID',
+          value: props.taskRun?.taskId,
+        },
+        {
+          header: 'FSS ID',
+          value: props.taskRun?.fssId,
+        },
+      ],
+    },
+    {
+      columns: [
+        {
+          header: 'T0',
+          value: toHumanReadableDateTime(props.taskRun?.timeZeroTimestamp),
+        },
+      ],
+    },
+    {
+      columns: [
+        {
+          header: `Output time span`,
+          subHeader: toDateAbsDifferenceString(outputStart, outputEnd),
+          value: toDateRangeString(outputStart, outputEnd),
+        },
+      ],
+    },
+    {
+      columns: [
+        {
+          header: 'Task duration',
+          subHeader: toDateAbsDifferenceString(
+            props.taskRun?.dispatchTimestamp,
+            props.taskRun?.completionTimestamp,
+          ),
+          value: toDateRangeString(
+            props.taskRun?.dispatchTimestamp,
+            props.taskRun?.completionTimestamp,
+          ),
+        },
+      ],
+    },
+  ]
+})
 
 function getIconForStatus(status: string | undefined) {
   return status && isTaskStatus(status)

@@ -22,6 +22,7 @@ export enum TaskStatusCategory {
 export interface TaskRun {
   taskId: string
   workflowId: string
+  fssId: string | null
   status: TaskStatus
   description: string | null
   timeZeroTimestamp: number

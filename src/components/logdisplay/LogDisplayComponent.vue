@@ -407,7 +407,9 @@ const taskRunIds = computed(() => {
   return uniqueTaskRunIds
 })
 
-const { taskRuns } = useTaskRuns(baseUrl, taskRunIds)
+const { taskRuns } = useTaskRuns(baseUrl, () => ({
+  taskRunIds: taskRunIds.value,
+}))
 
 const disseminations = computed(
   () => props.logDisplay.logDissemination?.disseminationActions ?? [],

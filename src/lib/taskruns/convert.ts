@@ -22,6 +22,7 @@ export function convertFewsPiTaskRunToTaskRun(taskRun: FewsPiTaskRun): TaskRun {
     taskId: taskRun.id,
     workflowId: taskRun.workflowId,
     userId: taskRun.user,
+    fssId: taskRun.fssId ?? null,
     status: convertToTaskStatus(taskRun.status),
     description,
     timeZeroTimestamp,

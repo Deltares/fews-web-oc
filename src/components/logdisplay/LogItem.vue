@@ -45,7 +45,6 @@ import LogTable from './LogTable.vue'
 import type {
   ForecasterNoteGroup,
   LogDisplayDisseminationAction,
-  TaskRun,
 } from '@deltares/fews-pi-requests'
 import {
   type LogActionEmit,
@@ -55,6 +54,7 @@ import {
 } from '@/lib/log'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed, ref } from 'vue'
+import type { TaskRun } from '@/lib/taskruns'
 
 interface Props {
   userName: string
@@ -74,7 +74,7 @@ const expanded = defineModel<boolean>('expanded', {
 })
 
 const taskRun = computed(() =>
-  props.taskRuns.find((taskRun) => taskRun.id === props.logs[0].taskRunId),
+  props.taskRuns.find((taskRun) => taskRun.taskId === props.logs[0].taskRunId),
 )
 
 const log = computed(() => props.logs[0])
@@ -83,7 +83,7 @@ const emit = defineEmits<LogActionEmit>()
 
 function getTitleForLog(log: LogMessage, userName: string) {
   const workflowId = props.taskRuns.find(
-    (taskRun) => taskRun.id === log.taskRunId,
+    (taskRun) => taskRun.taskId === log.taskRunId,
   )?.workflowId
 
   const workflow = workflowId ? availableWorkflows.byId(workflowId) : undefined

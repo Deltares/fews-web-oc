@@ -49,12 +49,10 @@ import {
   LogActionEmit,
   type LogDisseminationStatus,
 } from '@/lib/log'
-import {
-  LogDisplayDisseminationAction,
-  TaskRun,
-} from '@deltares/fews-pi-requests'
+import { LogDisplayDisseminationAction } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
 import LogDisseminations from '@/components/logdisplay/LogDisseminations.vue'
+import type { TaskRun } from '@/lib/taskruns'
 
 interface Props {
   logs: LogMessage[]

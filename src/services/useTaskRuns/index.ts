@@ -1,6 +1,5 @@
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
-  type TaskRun,
   type TaskRunsFilter,
   DocumentFormat,
   PiWebserviceProvider,
@@ -9,10 +8,11 @@ import type { MaybeRefOrGetter } from 'vue'
 import { ref, shallowRef, toValue, watch } from 'vue'
 import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 import { Pausable } from '@vueuse/core'
+import { convertFewsPiTaskRunToTaskRun, type TaskRun } from '@/lib/taskruns'
 
 export function useTaskRuns(
   baseUrl: string,
-  taskRunIds: MaybeRefOrGetter<string[]>,
+  filter: MaybeRefOrGetter<TaskRunsFilter>,
   refreshInterval?: number,
 ) {
   const taskRuns = shallowRef<TaskRun[]>([])
@@ -24,23 +24,27 @@ export function useTaskRuns(
     isLoading.value = true
 
     try {
-      const _taskRunIds = toValue(taskRunIds)
-      if (!_taskRunIds.length) {
+      const _filter = toValue(filter)
+
+      if (!_filter.taskRunIds?.length && !_filter.topologyNodeId) {
         taskRuns.value = []
         return
       }
+
       const provider = new PiWebserviceProvider(baseUrl, {
         transformRequestFn: createTransformRequestFn(),
         maxUrlLength: 8000,
       })
-      const filter: TaskRunsFilter = {
-        taskRunIds: _taskRunIds,
+
+      const response = await provider.getTaskRuns({
+        ..._filter,
         documentFormat: DocumentFormat.PI_JSON,
-      }
-      const response = await provider.getTaskRuns(filter)
+      })
+
       if (!response) throw new Error('TaskRuns response is undefined')
 
-      taskRuns.value = response.taskRuns ?? []
+      taskRuns.value =
+        response.taskRuns.map(convertFewsPiTaskRunToTaskRun) ?? []
     } catch {
       error.value = 'Error loading taskRuns'
       taskRuns.value = []
@@ -57,7 +61,7 @@ export function useTaskRuns(
     loadTaskRun()
   }
 
-  watch(() => toValue(taskRunIds), loadTaskRun)
+  watch(() => toValue(filter), loadTaskRun)
 
   return {
     taskRuns,
