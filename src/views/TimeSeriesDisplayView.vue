@@ -38,9 +38,9 @@ watch(
   { immediate: true },
 )
 
-const nodes = ref<TopologyNode[]>()
+const topologyNodes = ref<TopologyNode[]>()
 getTopologyNodes().then((response) => {
-  nodes.value = response
+  topologyNodes.value = response
 })
 
 function anyChildNodeIsVisible(nodes: TopologyNode[] | undefined): boolean {
@@ -97,12 +97,12 @@ function getIcon(node: TopologyNode): string | undefined {
 }
 
 function updateItems(): void {
-  if (nodes.value) {
-    const _items = recursiveUpdateNode(nodes.value)
+  if (topologyNodes.value) {
+    const _items = recursiveUpdateNode(topologyNodes  .value)
     items.value = _items
     open.value = [_items[0].id]
   }
 }
 
-watch(nodes, updateItems)
+watch(topologyNodes, updateItems)
 </script>
