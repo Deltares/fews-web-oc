@@ -40,6 +40,19 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
       link.href = href
     }
     document.head.appendChild(link)
+    const manifestLink = document.createElement('link')
+    manifestLink.rel = 'manifest'
+    const manifestUrl = configManager.getWithDefault(
+      'VITE_APP_MANIFEST_URL',
+      '',
+    )
+    if (!manifestUrl) {
+      manifestLink.href = `${import.meta.env.BASE_URL}app.webmanifest`
+    } else {
+      const href = getResourcesStaticUrl(manifestUrl)
+      manifestLink.href = href
+    }
+    document.head.appendChild(manifestLink)
     if (configManager.authenticationIsEnabled) {
       await authenticationManager.init(configManager.getUserManagerSettings())
     }
