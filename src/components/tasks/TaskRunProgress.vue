@@ -103,13 +103,17 @@ function getRemainingTimeString(): string {
 }
 
 function formatDuration(durationMilliseconds: number): string {
-  // Convert to human-readable duration in hours, minutes and seconds; drop
-  // the milliseconds.
+  if (durationMilliseconds < 1000) {
+    return '0 seconds'
+  }
+
   const duration = Duration.fromMillis(durationMilliseconds)
-  // Remove milliseconds.
-  const durationWithoutMilliseconds = duration.set({
-    seconds: Math.round(duration.seconds),
-  })
-  return durationWithoutMilliseconds.toHuman({ showZeros: false })
+
+  // Normalize and remove milliseconds
+  const normalized = duration
+    .shiftTo('day', 'hours', 'minutes', 'seconds')
+    .mapUnits(Math.floor)
+
+  return normalized.toHuman({ showZeros: false })
 }
 </script>
