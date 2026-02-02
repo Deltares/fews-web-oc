@@ -1,52 +1,67 @@
 <template></template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, watch } from 'vue'
+import { onBeforeUnmount, watch, onMounted } from 'vue'
 import { useMap } from '@/services/useMap'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import MeasuresControl from 'maplibre-gl-measures'
+import { MaplibreMeasureControl } from '@watergis/maplibre-gl-terradraw'
 
 const { map } = useMap()
 const settings = useUserSettingsStore()
 
-let measureControls: MeasuresControl | null = null
+let measureControl: MaplibreMeasureControl | null = null
 
 const addControl = () => {
-  if (!map || measureControls) return
+  if (!map || measureControl) return
 
-  measureControls = new MeasuresControl({
-    units: 'metric',
+  measureControl = new MaplibreMeasureControl({
+    modes: [
+      'render',
+      'linestring',
+      'rectangle',
+      'polygon',
+      'freehand',
+      'circle',
+      'select',
+      'delete',
+      'download',
+    ],
+    open: true,
   })
-  map.addControl(measureControls, 'top-right')
+  map.addControl(measureControl, 'top-right')
 }
 
 const removeControl = () => {
-  if (!map || !measureControls) return
-
-  map.removeControl(measureControls)
-  measureControls = null
+  if (!map || !measureControl) return
+  map.removeControl(measureControl)
+  measureControl = null
 }
 
-watch(
-  () => settings.get('ui.map.tools')?.value ?? false,
-  (enabled) => {
-    if (!map) return
+onMounted(() => {
+  watch(
+    () => settings.get('ui.map.tools')?.value ?? false,
+    (enabled) => {
+      if (!map) {
+        console.warn('Map is not available')
+        return
+      }
 
-    if (enabled) {
-      if (!measureControls) {
-        addControl()
+      if (enabled) {
+        if (!measureControl) {
+          addControl()
+        }
+      } else {
+        if (measureControl) {
+          removeControl()
+        }
       }
-    } else {
-      if (measureControls) {
-        removeControl()
-      }
-    }
-  },
-  { immediate: true },
-)
+    },
+    { immediate: true },
+  )
+})
 
 onBeforeUnmount(() => {
-  if (measureControls) {
+  if (measureControl) {
     removeControl()
   }
 })

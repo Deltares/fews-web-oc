@@ -133,7 +133,14 @@
   {
     "id": "ui.map.tools",
     "type": "boolean",
-    "label": "Measurement tools (distance & area)",
+    "label": "Show map tools",
+    "value": false,
+    "group": "Map"
+  },
+  {
+    "id": "ui.map.showCoordinates",
+    "type": "boolean",
+    "label": "Show mouse coordinates",
     "value": false,
     "group": "Map"
   },

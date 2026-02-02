@@ -8,6 +8,7 @@ import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { defineCustomElements } from '@deltares/fews-ssd-webcomponent/loader'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import '@watergis/maplibre-gl-terradraw/dist/maplibre-gl-terradraw.css'
 import { getResourcesStaticUrl } from './lib/fews-config/index.js'
 import { i18n, setI18nLanguage } from './plugins/i18n.js'
 
