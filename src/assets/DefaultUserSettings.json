@@ -131,6 +131,13 @@
     "group": "Map"
   },
   {
+    "id": "ui.map.tools",
+    "type": "boolean",
+    "label": "Measurement tools (distance & area)",
+    "value": false,
+    "group": "Map"
+  },
+  {
     "id": "charts.scrollZoomMode",
     "type": "oneOfMultiple",
     "label": "Scroll wheel zoom mode",
