@@ -3,17 +3,28 @@
     <v-icon icon="mdi-chart-box-multiple" class="mx-2" />
     <v-menu transition="slide-y-transition">
       <template #activator="{ props, isActive }">
-        <v-btn
+        <v-list-item
           v-bind="props"
-          variant="plain"
           aria-label="Select Task Run"
+          variant="plain"
+          density="compact"
           class="text-capitalize"
-          :text="getWorkflowName(taskRunId)"
         >
+          <v-list-item-title class="selected-task-run-title">
+            {{ selectedWorkflowName }}
+          </v-list-item-title>
+
+          <v-list-item-subtitle
+            v-if="selectedTaskRunTimeZero"
+            class="selected-task-run-subtitle"
+          >
+            {{ selectedTaskRunTimeZero }}
+          </v-list-item-subtitle>
+
           <template #append>
             <SelectIcon :active="isActive" />
           </template>
-        </v-btn>
+        </v-list-item>
       </template>
       <v-list>
         <v-list-item
@@ -23,7 +34,7 @@
         />
         <v-list-item
           v-for="item in selectedTaskRuns"
-          :title="getWorkflowName(item.taskId)"
+          :title="getWorkflowName(item)"
           :subtitle="toHumanReadableDateTime(item.timeZeroTimestamp)"
           @click="taskRunId = item.taskId"
           :active="item.taskId === taskRunId"
@@ -40,22 +51,28 @@ import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { useTaskRunsStore } from '@/stores/taskRuns'
 import { computed, watch } from 'vue'
 import { toHumanReadableDateTime } from '@/lib/date'
+import { TaskRun } from '@/lib/taskruns'
 
 const taskRunId = defineModel<string>('taskRunId')
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const { selectedTaskRuns } = useTaskRunsStore()
 
-function getWorkflowName(taskRunId: string | undefined): string {
-  if (!taskRunId) {
-    return 'Current'
-  }
+const selectedTaskRun = computed(() =>
+  selectedTaskRuns.find((taskRun) => taskRun.taskId === taskRunId.value),
+)
+const selectedWorkflowName = computed(() =>
+  getWorkflowName(selectedTaskRun.value),
+)
+const selectedTaskRunTimeZero = computed(() =>
+  selectedTaskRun.value
+    ? toHumanReadableDateTime(selectedTaskRun.value.timeZeroTimestamp)
+    : undefined,
+)
 
-  const taskRun = selectedTaskRuns.find(
-    (taskRun) => taskRun.taskId === taskRunId,
-  )
+function getWorkflowName(taskRun: TaskRun | undefined): string {
   if (!taskRun) {
-    return 'Unknown task run'
+    return 'Current'
   }
   const workflow = availableWorkflowsStore.byId(taskRun.workflowId)
   return workflow ? workflow.name : 'Unknown workflow'
@@ -78,3 +95,13 @@ watch(selectedTaskRuns, (newRuns) => {
   }
 })
 </script>
+
+<style scoped>
+.selected-task-run-title {
+  line-height: 1;
+}
+
+.selected-task-run-subtitle {
+  font-size: 0.75rem;
+}
+</style>
