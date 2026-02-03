@@ -46,12 +46,8 @@
         <v-list-item prepend-icon="mdi-chart-box-multiple">
           <v-select
             v-model="taskRunId"
-            :items="nonCurrentTaskRuns"
-            :item-title="
-              (item) =>
-                availableWorkflowsStore.byId(item.workflowId)?.name ??
-                'Unknown workflow'
-            "
+            :items="selectedTaskRuns"
+            :item-title="getWorkflowName"
             :item-value="(item) => item.taskId"
             clearable
             density="compact"
@@ -61,10 +57,7 @@
             <template #item="{ item, props }">
               <v-list-item
                 v-bind="props"
-                :title="
-                  availableWorkflowsStore.byId(item.raw.workflowId)?.name ??
-                  'Unknown workflow'
-                "
+                :title="getWorkflowName(item.raw)"
                 :subtitle="toHumanReadableDateTime(item.raw.timeZeroTimestamp)"
               />
             </template>
@@ -101,10 +94,10 @@ import {
   getForecastTimeString,
   getValueTimeRangeString,
 } from '@/lib/capabilities'
-import { useNodeTasks } from '@/services/useNodeTaskRuns'
 import { toHumanReadableDateTime } from '@/lib/date'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
-import { sortTasks } from '@/lib/taskruns'
+import { useTaskRunsStore } from '@/stores/taskRuns'
+import { TaskRun } from '@/lib/taskruns'
 
 const { t } = useI18n()
 
@@ -126,11 +119,16 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
-const taskRuns = useNodeTasks()
+const { selectedTaskRuns } = useTaskRunsStore()
 
-const nonCurrentTaskRuns = computed(() =>
-  taskRuns.value.filter((task) => !task.isCurrent).toSorted(sortTasks),
-)
+watch(selectedTaskRuns, (newRuns) => {
+  if (
+    taskRunId.value &&
+    !newRuns.find((taskRun) => taskRun.taskId === taskRunId.value)
+  ) {
+    taskRunId.value = undefined
+  }
+})
 
 const title = computed(() => props.layerCapabilities?.title ?? '')
 const completelyMissing = computed(
@@ -142,6 +140,11 @@ const analysisTime = computed(() =>
 const formattedTimeRange = computed(() =>
   getValueTimeRangeString(props.layerCapabilities),
 )
+
+function getWorkflowName(taskRun: TaskRun): string {
+  const workflow = availableWorkflowsStore.byId(taskRun.workflowId)
+  return workflow ? workflow.name : 'Unknown workflow'
+}
 
 const capabilities = await fetchWmsCapabilitiesHeaders()
 const layers = computed(() =>
