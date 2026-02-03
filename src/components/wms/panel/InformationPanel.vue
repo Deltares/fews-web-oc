@@ -30,7 +30,11 @@
       </template>
       <v-list class="information-panel-list">
         <v-list-item prepend-icon="mdi-layers">
+          <div v-if="layers.length <= 1">
+            {{ title }}
+          </div>
           <v-select
+            v-else
             v-model="layer"
             :items="layers"
             density="compact"
