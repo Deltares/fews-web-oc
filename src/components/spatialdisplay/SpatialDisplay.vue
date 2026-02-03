@@ -189,6 +189,7 @@ function getFilterActionsFilter(
     filterId: filterIds.value ? filterIds.value[0] : undefined,
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
+    fullDataPeriod: userSettings.get('charts.brush')?.value === true,
   }
 }
 
