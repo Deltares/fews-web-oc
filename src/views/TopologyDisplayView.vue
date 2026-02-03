@@ -246,18 +246,15 @@ const menuType = computed(() => {
 })
 
 const active = ref<string | undefined>(undefined)
-watch(
-  () => nodesStore.activeNodeId,
-  () => {
-    // Clear the bounding box and stop drawing when we switch nodes while selecting a bounding box.
-    workflowsStore.boundingBox = null
-    workflowsStore.isDrawingBoundingBox = false
-    workflowsStore.coordinate = null
-    workflowsStore.isSelectingCoordinate = false
+watch([() => nodesStore.activeNodeId, active], () => {
+  // Clear the bounding box and stop drawing when we switch nodes while selecting a bounding box.
+  workflowsStore.boundingBox = null
+  workflowsStore.isDrawingBoundingBox = false
+  workflowsStore.coordinate = null
+  workflowsStore.isSelectingCoordinate = false
 
-    taskRunsStore.clearSelectedTaskRuns()
-  },
-)
+  taskRunsStore.clearSelectedTaskRuns()
+})
 
 // Clear the preferred workflow IDs when we unmount.
 onUnmounted(() => availableWorkflowsStore.clearPreferredWorkflowIds())

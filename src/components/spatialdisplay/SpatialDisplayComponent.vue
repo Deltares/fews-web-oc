@@ -82,7 +82,6 @@
           :currentTime="selectedDate"
           :layerCapabilities="layerCapabilities"
           v-model:show-layer="showLayer"
-          v-model:taskRunId="taskRunId"
           @changeLayer="onLayerChange"
         >
           <template v-if="canUseStreamlines">
@@ -143,6 +142,7 @@
           :selectedLocationIds="selectedLocationIds"
           @changeLocationIds="onLocationsChange"
         />
+        <TaskRunControl v-model:taskRunId="taskRunId" />
       </template>
     </div>
     <ElevationSlider
@@ -207,6 +207,7 @@ import MapToolsControl from '@/components/map/MapToolsControl.vue'
 import CoordinatesDisplay from '@/components/map/CoordinatesDisplay.vue'
 import StreamlinesPanel from '@/components/wms/panel/StreamlinesPanel.vue'
 import StreamlinesButton from '@/components/wms/panel/StreamlinesButton.vue'
+import TaskRunControl from '@/components/wms/TaskRunControl.vue'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
@@ -537,15 +538,25 @@ watch(
   { deep: true },
 )
 
-watch(selectedDate, () => {
-  debouncedSetLayerOptions()
-})
+watch(
+  () => selectedDate.value,
+  () => {
+    console.log('Selected date changed', selectedDate.value)
+    debouncedSetLayerOptions()
+  },
+)
 
 function setLayerOptions(): void {
+  console.log(
+    'Setting layer options triggered',
+    props.layerName,
+    selectedDate.value,
+  )
   if (!props.layerName || !selectedDate.value || !props.layerCapabilities) {
     layerOptions.value = undefined
     return
   }
+  console.log('Setting layer options')
 
   layerOptions.value = {
     name: props.layerName,

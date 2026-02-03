@@ -43,28 +43,6 @@
           </v-list-item-subtitle>
         </v-list-item>
         <v-divider></v-divider>
-        <v-list-item prepend-icon="mdi-chart-box-multiple">
-          <v-select
-            v-model="taskRunId"
-            :items="selectedTaskRuns"
-            :item-title="getWorkflowName"
-            :item-value="(item) => item.taskId"
-            clearable
-            density="compact"
-            hide-details
-            placeholder="Select non-current task"
-          >
-            <template #item="{ item, props }">
-              <v-list-item
-                v-bind="props"
-                :title="getWorkflowName(item.raw)"
-                :subtitle="toHumanReadableDateTime(item.raw.timeZeroTimestamp)"
-              />
-            </template>
-          </v-select>
-        </v-list-item>
-
-        <v-divider></v-divider>
         <v-list-item
           :title="t('wms.timeRange')"
           :subtitle="formattedTimeRange"
@@ -94,10 +72,6 @@ import {
   getForecastTimeString,
   getValueTimeRangeString,
 } from '@/lib/capabilities'
-import { toHumanReadableDateTime } from '@/lib/date'
-import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
-import { useTaskRunsStore } from '@/stores/taskRuns'
-import { TaskRun } from '@/lib/taskruns'
 
 const { t } = useI18n()
 
@@ -111,24 +85,11 @@ interface Props {
 
 const props = defineProps<Props>()
 const showLayer = defineModel<boolean>('showLayer')
-const taskRunId = defineModel<string>('taskRunId')
 
 interface Emits {
   changeLayer: [string]
 }
 const emit = defineEmits<Emits>()
-
-const availableWorkflowsStore = useAvailableWorkflowsStore()
-const { selectedTaskRuns } = useTaskRunsStore()
-
-watch(selectedTaskRuns, (newRuns) => {
-  if (
-    taskRunId.value &&
-    !newRuns.find((taskRun) => taskRun.taskId === taskRunId.value)
-  ) {
-    taskRunId.value = undefined
-  }
-})
 
 const title = computed(() => props.layerCapabilities?.title ?? '')
 const completelyMissing = computed(
@@ -140,11 +101,6 @@ const analysisTime = computed(() =>
 const formattedTimeRange = computed(() =>
   getValueTimeRangeString(props.layerCapabilities),
 )
-
-function getWorkflowName(taskRun: TaskRun): string {
-  const workflow = availableWorkflowsStore.byId(taskRun.workflowId)
-  return workflow ? workflow.name : 'Unknown workflow'
-}
 
 const capabilities = await fetchWmsCapabilitiesHeaders()
 const layers = computed(() =>
