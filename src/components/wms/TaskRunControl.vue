@@ -17,7 +17,12 @@
       </template>
       <v-list>
         <v-list-item
-          v-for="item in taskRunsStore.selectedTaskRuns"
+          title="Current"
+          @click="taskRunId = undefined"
+          :active="taskRunId === undefined"
+        />
+        <v-list-item
+          v-for="item in selectedTaskRuns"
           :title="getWorkflowName(item.taskId)"
           :subtitle="toHumanReadableDateTime(item.timeZeroTimestamp)"
           @click="taskRunId = item.taskId"
@@ -39,10 +44,14 @@ import { toHumanReadableDateTime } from '@/lib/date'
 const taskRunId = defineModel<string>('taskRunId')
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
-const taskRunsStore = useTaskRunsStore()
+const { selectedTaskRuns } = useTaskRunsStore()
 
 function getWorkflowName(taskRunId: string | undefined): string {
-  const taskRun = taskRunsStore.selectedTaskRuns.find(
+  if (!taskRunId) {
+    return 'Current'
+  }
+
+  const taskRun = selectedTaskRuns.find(
     (taskRun) => taskRun.taskId === taskRunId,
   )
   if (!taskRun) {
@@ -52,23 +61,20 @@ function getWorkflowName(taskRunId: string | undefined): string {
   return workflow ? workflow.name : 'Unknown workflow'
 }
 
-const numberOfTaskRuns = computed(() => taskRunsStore.selectedTaskRuns.length)
+const numberOfTaskRuns = computed(() => selectedTaskRuns.length)
 
 watch(numberOfTaskRuns, (newNumberOfTaskRuns, oldNumberOfTaskRuns) => {
   if (newNumberOfTaskRuns > 0 && oldNumberOfTaskRuns == 0) {
-    taskRunId.value = taskRunsStore.selectedTaskRuns[0].taskId
+    taskRunId.value = selectedTaskRuns[0].taskId
   }
 })
 
-watch(
-  () => taskRunsStore.selectedTaskRuns,
-  (newRuns) => {
-    if (
-      taskRunId.value &&
-      !newRuns.find((taskRun) => taskRun.taskId === taskRunId.value)
-    ) {
-      taskRunId.value = undefined
-    }
-  },
-)
+watch(selectedTaskRuns, (newRuns) => {
+  if (
+    taskRunId.value &&
+    !newRuns.find((taskRun) => taskRun.taskId === taskRunId.value)
+  ) {
+    taskRunId.value = selectedTaskRuns[0]?.taskId
+  }
+})
 </script>
