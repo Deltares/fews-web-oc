@@ -226,6 +226,7 @@ watch(
       }
     }
   },
+  { immediate: true },
 )
 
 const maxIndex = computed(() => {
