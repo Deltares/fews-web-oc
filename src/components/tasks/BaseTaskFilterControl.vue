@@ -1,6 +1,6 @@
 <template>
   <v-menu :close-on-content-click="false">
-    <template #activator="{ props }">
+    <template #activator="{ props, isActive }">
       <v-chip
         variant="tonal"
         pilled
@@ -19,7 +19,8 @@
           />
         </template>
         {{ label }}
-        <v-icon>mdi-chevron-down</v-icon>
+        <v-spacer />
+        <SelectIcon :active="isActive" />
       </v-chip>
     </template>
     <v-sheet max-height="400">
@@ -68,6 +69,7 @@
 </template>
 <script setup lang="ts" generic="T">
 import { computed } from 'vue'
+import SelectIcon from '@/components/general/SelectIcon.vue'
 
 interface SelectItem {
   id: string

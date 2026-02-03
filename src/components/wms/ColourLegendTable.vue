@@ -1,11 +1,28 @@
 <template>
   <table description="Colour Legend Table">
-    <tr v-for="item in colourMap">
-      <td>
-        <div class="box" :style="{ backgroundColor: item.color }" />
-      </td>
-      <td>{{ item.label }}</td>
-    </tr>
+    <tbody>
+      <template v-if="horizontal">
+        <tr>
+          <td v-for="item in colourMap" :key="item.label">
+            <div class="box" :style="{ backgroundColor: item.color }" />
+          </td>
+        </tr>
+        <tr v-if="!hideLabels">
+          <td v-for="item in colourMap" :key="item.label">
+            {{ item.label }}
+          </td>
+        </tr>
+      </template>
+
+      <template v-else>
+        <tr v-for="item in colourMap" :key="item.label">
+          <td>
+            <div class="box" :style="{ backgroundColor: item.color }" />
+          </td>
+          <td v-if="!hideLabels">{{ item.label }}</td>
+        </tr>
+      </template>
+    </tbody>
   </table>
 </template>
 
@@ -14,6 +31,8 @@ import type { ColourMap } from '@deltares/fews-wms-requests'
 
 interface Props {
   colourMap: ColourMap
+  horizontal?: boolean
+  hideLabels?: boolean
 }
 
 defineProps<Props>()
