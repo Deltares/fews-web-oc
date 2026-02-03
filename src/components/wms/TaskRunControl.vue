@@ -33,7 +33,7 @@
           :active="taskRunId === undefined"
         />
         <v-list-item
-          v-for="item in selectedTaskRuns"
+          v-for="item in taskRunsStore.selectedTaskRuns"
           :title="getWorkflowName(item)"
           :subtitle="toHumanReadableDateTime(item.timeZeroTimestamp)"
           @click="taskRunId = item.taskId"
@@ -56,10 +56,12 @@ import { TaskRun } from '@/lib/taskruns'
 const taskRunId = defineModel<string>('taskRunId')
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
-const { selectedTaskRuns } = useTaskRunsStore()
+const taskRunsStore = useTaskRunsStore()
 
 const selectedTaskRun = computed(() =>
-  selectedTaskRuns.find((taskRun) => taskRun.taskId === taskRunId.value),
+  taskRunsStore.selectedTaskRuns.find(
+    (taskRun) => taskRun.taskId === taskRunId.value,
+  ),
 )
 const selectedWorkflowName = computed(() =>
   getWorkflowName(selectedTaskRun.value),
@@ -78,22 +80,25 @@ function getWorkflowName(taskRun: TaskRun | undefined): string {
   return workflow ? workflow.name : 'Unknown workflow'
 }
 
-const numberOfTaskRuns = computed(() => selectedTaskRuns.length)
+const numberOfTaskRuns = computed(() => taskRunsStore.selectedTaskRuns.length)
 
 watch(numberOfTaskRuns, (newNumberOfTaskRuns, oldNumberOfTaskRuns) => {
   if (newNumberOfTaskRuns > 0 && oldNumberOfTaskRuns == 0) {
-    taskRunId.value = selectedTaskRuns[0].taskId
+    taskRunId.value = taskRunsStore.selectedTaskRuns[0].taskId
   }
 })
 
-watch(selectedTaskRuns, (newRuns) => {
-  if (
-    taskRunId.value &&
-    !newRuns.find((taskRun) => taskRun.taskId === taskRunId.value)
-  ) {
-    taskRunId.value = selectedTaskRuns[0]?.taskId
-  }
-})
+watch(
+  () => taskRunsStore.selectedTaskRuns,
+  (newRuns) => {
+    if (
+      taskRunId.value &&
+      !newRuns.find((taskRun) => taskRun.taskId === taskRunId.value)
+    ) {
+      taskRunId.value = taskRunsStore.selectedTaskRuns[0]?.taskId
+    }
+  },
+)
 </script>
 
 <style scoped>
