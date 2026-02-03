@@ -28,12 +28,12 @@
       </template>
       <v-list>
         <v-list-item
-          title="Current"
+          title="Default view"
           @click="taskRunId = undefined"
           :active="taskRunId === undefined"
         />
         <v-list-item
-          v-for="item in taskRunsStore.selectedTaskRuns"
+          v-for="item in taskRuns"
           :title="getWorkflowName(item)"
           :subtitle="toHumanReadableDateTime(item.timeZeroTimestamp)"
           @click="taskRunId = item.taskId"
@@ -51,17 +51,17 @@ import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { useTaskRunsStore } from '@/stores/taskRuns'
 import { computed, watch } from 'vue'
 import { toHumanReadableDateTime } from '@/lib/date'
-import { TaskRun } from '@/lib/taskruns'
+import { sortTasks, type TaskRun } from '@/lib/taskruns'
 
 const taskRunId = defineModel<string>('taskRunId')
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const taskRunsStore = useTaskRunsStore()
 
+const taskRuns = computed(() => taskRunsStore.selectedTaskRuns.sort(sortTasks))
+
 const selectedTaskRun = computed(() =>
-  taskRunsStore.selectedTaskRuns.find(
-    (taskRun) => taskRun.taskId === taskRunId.value,
-  ),
+  taskRuns.value.find((taskRun) => taskRun.taskId === taskRunId.value),
 )
 const selectedWorkflowName = computed(() =>
   getWorkflowName(selectedTaskRun.value),
@@ -74,31 +74,28 @@ const selectedTaskRunTimeZero = computed(() =>
 
 function getWorkflowName(taskRun: TaskRun | undefined): string {
   if (!taskRun) {
-    return 'Current'
+    return 'Default view'
   }
   const workflow = availableWorkflowsStore.byId(taskRun.workflowId)
   return workflow ? workflow.name : 'Unknown workflow'
 }
 
-const numberOfTaskRuns = computed(() => taskRunsStore.selectedTaskRuns.length)
+const numberOfTaskRuns = computed(() => taskRuns.value.length)
 
 watch(numberOfTaskRuns, (newNumberOfTaskRuns, oldNumberOfTaskRuns) => {
   if (newNumberOfTaskRuns > 0 && oldNumberOfTaskRuns == 0) {
-    taskRunId.value = taskRunsStore.selectedTaskRuns[0].taskId
+    taskRunId.value = taskRuns.value[0].taskId
   }
 })
 
-watch(
-  () => taskRunsStore.selectedTaskRuns,
-  (newRuns) => {
-    if (
-      taskRunId.value &&
-      !newRuns.find((taskRun) => taskRun.taskId === taskRunId.value)
-    ) {
-      taskRunId.value = taskRunsStore.selectedTaskRuns[0]?.taskId
-    }
-  },
-)
+watch(taskRuns, (newRuns) => {
+  if (
+    taskRunId.value &&
+    !newRuns.find((taskRun) => taskRun.taskId === taskRunId.value)
+  ) {
+    taskRunId.value = newRuns[0]?.taskId
+  }
+})
 </script>
 
 <style scoped>
