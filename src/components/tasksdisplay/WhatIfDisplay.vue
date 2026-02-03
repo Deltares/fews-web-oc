@@ -111,16 +111,17 @@
           :workflow="selectedWorkflow"
         />
       </div>
-      <v-btn
-        variant="flat"
-        color="primary"
-        :disabled="!canSubmit"
-        @click="submit"
-        :loading="isPosting"
-      >
-        Submit
-      </v-btn>
     </v-form>
+    <v-btn
+      variant="flat"
+      color="primary"
+      class="my-2 sticky-bottom mx-4"
+      :disabled="!canSubmit"
+      @click="submit"
+      :loading="isPosting"
+    >
+      Submit
+    </v-btn>
   </div>
 </template>
 <script setup lang="ts">
@@ -392,5 +393,12 @@ function showSuccessMessage(message: string) {
 
 .datetime-field :deep(.v-field) {
   padding-right: 0;
+}
+
+.sticky-bottom {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: inherit;
 }
 </style>
