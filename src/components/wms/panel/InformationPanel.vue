@@ -68,29 +68,8 @@
       <v-progress-circular v-if="isLoading" size="20" indeterminate />
       <v-icon v-else>mdi-animation-play</v-icon>
     </v-btn>
-    <template
-      #extension
-      v-if="showLayer && doShowAggregated && aggregations.length > 0"
-    >
-      <v-btn-toggle
-        v-model="selectedAggregationLabel"
-        density="compact"
-        variant="flat"
-        mandatory
-        class="overflow-visible"
-      >
-        <v-tooltip v-for="item in aggregations" :key="item.id" location="top">
-          <template #activator="{ props: tooltipProps }">
-            <AggregationButton
-              :item="item"
-              :selectedAggregationLabel="selectedAggregationLabel"
-              :tooltipProps="tooltipProps"
-            />
-          </template>
-          <strong>{{ item.type }} {{ item.id }}</strong>
-          <p>{{ toDateRangeString(item.startDate, item.endDate) }}</p>
-        </v-tooltip>
-      </v-btn-toggle>
+    <template #extension v-if="showLayer">
+      <slot name="extension" />
     </template>
   </ControlChip>
 </template>
@@ -98,11 +77,9 @@
 <script setup lang="ts">
 import { computed, nextTick } from 'vue'
 import { LayerKind } from '@/lib/streamlines'
-import AggregationButton from '@/components/wms/panel/AggregationButton.vue'
 import ControlChip from '@/components/wms/ControlChip.vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { toDateRangeString, toHumanReadableDateTime } from '@/lib/date'
-import { AggregationItem } from '@/lib/aggregation'
 
 import { useI18n } from 'vue-i18n'
 
@@ -117,7 +94,6 @@ interface Props {
   firstValueTime?: Date
   lastValueTime?: Date
   canUseStreamlines?: boolean
-  aggregations: AggregationItem[]
 }
 
 const userSettingsStore = useUserSettingsStore()
@@ -128,13 +104,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const showLayer = defineModel<boolean>('showLayer')
 const layerKind = defineModel<LayerKind>('layerKind', { required: true })
-const selectedAggregationLabel = defineModel<string | null>(
-  'selectedAggregationLabel',
-  { required: true },
-)
-const doShowAggregated = defineModel<boolean>('doShowAggregated', {
-  required: true,
-})
 
 const emit = defineEmits(['style-click'])
 
@@ -177,17 +146,5 @@ function toggleLayerType(): void {
 #toggle {
   display: flex;
   justify-content: center;
-}
-
-.information-panel__tab {
-  padding: 5px 10px;
-  background-color: rgba(var(--v-theme-surface), 0.8);
-  cursor: pointer;
-  display: none; /* hidden */
-}
-
-.information-panel__tab.active {
-  border-radius: 3px;
-  display: inherit; /* visible */
 }
 </style>

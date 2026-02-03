@@ -92,9 +92,6 @@
           :canUseStreamlines="canUseStreamlines"
           v-model:layer-kind="layerKind"
           v-model:show-layer="showLayer"
-          :aggregations="aggregations"
-          v-model:do-show-aggregated="doShowAggregated"
-          v-model:selected-aggregation-label="selectedAggregationLabel"
         >
           <template v-if="aggregations.length > 0">
             <v-divider />
@@ -117,6 +114,13 @@
               :overlays="settings.overlays"
               v-model:selected-overlay-ids="selectedOverlayIds"
               :capabilties="staticCapabilities"
+            />
+          </template>
+          <template #extension>
+            <AggregationExtension
+              v-if="doShowAggregated"
+              :aggregations="aggregations"
+              v-model:selected-aggregation-label="selectedAggregationLabel"
             />
           </template>
         </InformationPanel>
@@ -190,6 +194,7 @@ import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vu
 import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
 import OverlayInformationPanel from '@/components/wms/panel/OverlayInformationPanel.vue'
 import AggregationPanel from '../wms/panel/AggregationPanel.vue'
+import AggregationExtension from '@/components/wms/panel/AggregationExtension.vue'
 import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
 import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
