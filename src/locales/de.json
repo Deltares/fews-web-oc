@@ -60,5 +60,10 @@
     "expectedRuntime": "Erwartete Laufzeit",
     "noTasksAvailable": "Keine Aufgaben verfügbar",
     "numberOfAvailableServers": "Anzahl verfügbarer Server"
+  },
+  "taskDuration": {
+    "noExpectedRuntime": "Keine erwartete Laufzeit",
+    "expectedTimeRemaining": "Verbleibende erwartete Zeit",
+    "overranExpectedTimeBy": "Erwartete Zeit überschritten um"
   }
 }

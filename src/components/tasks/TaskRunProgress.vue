@@ -15,6 +15,7 @@
 import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 import { Duration } from 'luxon'
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   dispatchTimestamp: number | null
@@ -26,6 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
   updateIntervalSeconds: 0.5,
 })
 
+const { t, locale } = useI18n()
 const progress = ref(0)
 const isUnknownProgress = ref(false)
 const isOverTime = ref(false)
@@ -84,7 +86,7 @@ function getRemainingTimeString(): string {
     props.dispatchTimestamp === null ||
     props.expectedRuntimeSeconds === null
   ) {
-    return 'No expected runtime'
+    return t('taskDuration.noExpectedRuntime')
   }
   const currentDurationMilliseconds = currentTimestamp - props.dispatchTimestamp
   const remainingMilliseconds =
@@ -95,21 +97,27 @@ function getRemainingTimeString(): string {
     // We have overrun our expected task duration, negate the remaining time and
     // format this as the amount of time we've overrun.
     const remaining = formatDuration(-remainingMilliseconds)
-    return `Overran expected time by: ${remaining}`
+    return `${t('taskDuration.overranExpectedTimeBy')}: ${remaining}`
   } else {
     const remaining = formatDuration(remainingMilliseconds)
-    return `Expected time remaining: ${remaining}`
+    return `${t('taskDuration.expectedTimeRemaining')}: ${remaining}`
   }
 }
 
 function formatDuration(durationMilliseconds: number): string {
-  // Convert to human-readable duration in hours, minutes and seconds; drop
-  // the milliseconds.
-  const duration = Duration.fromMillis(durationMilliseconds)
-  // Remove milliseconds.
-  const durationWithoutMilliseconds = duration.set({
-    seconds: Math.round(duration.seconds),
+  const duration = Duration.fromMillis(durationMilliseconds, {
+    locale: locale.value,
   })
-  return durationWithoutMilliseconds.toHuman({ showZeros: false })
+
+  if (durationMilliseconds < 1000) {
+    return duration.shiftTo('seconds').mapUnits(Math.floor).toHuman()
+  }
+
+  // Normalize and remove milliseconds
+  const normalized = duration
+    .shiftTo('days', 'hours', 'minutes', 'seconds')
+    .mapUnits(Math.floor)
+
+  return normalized.toHuman({ showZeros: false })
 }
 </script>
