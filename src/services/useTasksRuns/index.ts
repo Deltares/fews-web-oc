@@ -132,9 +132,7 @@ async function fetchTaskRuns(
   const startDispatchTime = period
     ? convertTimestampToFewsPiParameter(period.startTimestamp)
     : undefined
-  const endDispatchTime = period
-    ? convertTimestampToFewsPiParameter(period.endTimestamp)
-    : undefined
+  const endDispatchTime = undefined
 
   const filter = {
     documentFormat: DocumentFormat.PI_JSON,
