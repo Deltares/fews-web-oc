@@ -210,15 +210,7 @@ function getTimeSeriesGridActionsFilter(
   }
 }
 
-const shouldFetchFilter = computed(
-  () =>
-    props.settings.charts.timeSeriesChart.enabled ||
-    props.settings.charts.timeSeriesTable.enabled,
-)
-
 const filter = computed(() => {
-  if (!shouldFetchFilter.value) return
-
   if (props.locationIds) {
     return getFilterActionsFilter(props.locationIds)
   }
