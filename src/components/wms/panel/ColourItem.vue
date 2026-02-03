@@ -13,6 +13,7 @@
         :colourMap="item.colourMap"
         horizontal
         hideLabels
+        style="max-width: 250px"
       />
     </div>
     <template #append>
