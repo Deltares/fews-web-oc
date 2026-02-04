@@ -31,6 +31,10 @@
       position="top-right"
     />
     <mgl-scale-control v-if="showScale" position="bottom-right" />
+    <NetCdfDownloadControl
+      :layer-name="layerName"
+      :layer-capabilities="layerCapabilities"
+    />
     <slot></slot>
   </mgl-map>
 </template>
@@ -40,6 +44,7 @@ import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import SyncMap from '@/components/map/SyncMap.vue'
 import MaintainLayerOrder from '@/components/map/MaintainLayerOrder.vue'
+import NetCdfDownloadControl from '@/components/map/NetCdfDownloadControl.vue'
 import {
   MglAttributionControl,
   MglGeolocateControl,
@@ -64,6 +69,11 @@ interface Props {
   showGeolocation?: boolean
   showNavigation?: boolean
   showScale?: boolean
+  layerName?: string
+  layerCapabilities?: {
+    firstValueTime?: string | null
+    lastValueTime?: string | null
+  }
 }
 
 const props = withDefaults(defineProps<Props>(), {
