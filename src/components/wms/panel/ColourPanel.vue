@@ -1,9 +1,14 @@
 <template>
-  <v-list-item prepend-icon="mdi-palette" v-if="currentScales" class="pe-1">
-    <v-menu v-model="showMenu" :close-on-content-click="false">
+  <v-list-item prepend-icon="mdi-palette" v-if="currentScale && currentScales" class="pe-1">
+    <ColourItem
+      v-if="currentScales.length === 1"
+      :item="currentScale"
+      rounded
+      class="px-1"
+    />
+    <v-menu v-else v-model="showMenu" :close-on-content-click="false">
       <template #activator="{ props, isActive }">
         <ColourItem
-          v-if="currentScale"
           :item="currentScale"
           v-bind="props"
           rounded
@@ -25,7 +30,7 @@
       </v-list>
     </v-menu>
     <div
-      v-if="mutableColorScaleRange && currentScale?.useGradients !== false"
+      v-if="mutableColorScaleRange && currentScale.useGradients !== false"
       class="d-flex ga-2 pt-3"
     >
       <v-text-field
