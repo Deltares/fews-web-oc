@@ -9,7 +9,7 @@ async function openTasksPanel(page: Page) {
   })
   await moreOptionsBtn.click()
   const runTasksItem = page
-    .getByRole('link')
+    .getByRole('listitem')
     .filter({ hasText: 'Run Tasks' })
   await runTasksItem.click()
 }
