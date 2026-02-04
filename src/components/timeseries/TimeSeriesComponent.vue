@@ -125,6 +125,7 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
   config?: DisplayConfig
+  brushChartConfig?: DisplayConfig | null
   elevationChartConfig?: DisplayConfig
   displayType: DisplayType
   currentTime?: Date
@@ -156,6 +157,21 @@ const props = withDefaults(defineProps<Props>(), {
       plotId: '',
       index: 0,
       displayType: DisplayType.ElevationChart,
+      class: '',
+      requests: [],
+      subplots: [],
+      period: undefined,
+      forecastLegend: undefined,
+    }
+  },
+  brushChartConfig: () => {
+    return {
+      title: '',
+      id: '',
+      nodeId: '',
+      plotId: '',
+      index: 0,
+      displayType: DisplayType.TimeSeriesChart,
       class: '',
       requests: [],
       subplots: [],
@@ -196,7 +212,26 @@ function getDefaultBrushDomain(): [Date, Date] {
   return [startDate, endDate]
 }
 
-const fullBrushDomain = getDefaultBrushDomain()
+const fullBrushDomain = computed<[Date, Date]>(() => {
+  if (
+    props.brushChartConfig?.period?.startDate?.date &&
+    props.brushChartConfig?.period?.endDate?.date
+  ) {
+    const start = new Date(
+      `${props.brushChartConfig.period.startDate.date}T${props.brushChartConfig.period.startDate.time}`,
+    )
+    const end = new Date(
+      `${props.brushChartConfig.period.endDate.date}T${props.brushChartConfig.period.endDate.time}`,
+    )
+    if (!fullDomain.value) return [start, end]
+    return [
+      fullDomain.value[0] < start ? fullDomain.value[0] : start,
+      fullDomain.value[1] > end ? fullDomain.value[1] : end,
+    ]
+  } else {
+    return getDefaultBrushDomain()
+  }
+})
 
 const showBrush = computed(
   () => userSettings.get('charts.brush')?.value === true,
@@ -206,11 +241,13 @@ const chartOptions = ref<UseTimeSeriesOptions>({
   endTime: store.endTime,
   thinning: true,
 })
-const brushOptions = ref<UseTimeSeriesOptions>({
-  startTime: fullBrushDomain[0],
-  endTime: fullBrushDomain[1],
+
+const brushOptions = computed<UseTimeSeriesOptions>(() => ({
+  startTime: fullBrushDomain.value[0],
+  endTime: fullBrushDomain.value[1],
   thinning: true,
-})
+}))
+
 const tableOptions = computed<UseTimeSeriesOptions>(() => ({
   startTime: store.startTime,
   endTime: store.endTime,

@@ -25,6 +25,7 @@
       <SpatialTimeSeriesDisplay
         @close="closeTimeSeriesDisplay"
         :filter="filter"
+        :brushFilter="brushFilter"
         :elevation-chart-filter="elevationChartFilter"
         :locations-tooltip-filter="locationsTooltipFilter"
         :current-time="currentTime"
@@ -183,13 +184,14 @@ const onlyCoverageLayersAvailable = computed(() => {
 
 function getFilterActionsFilter(
   locationIds: string,
+  fullDataPeriod?: boolean,
 ): filterActionsFilter & UseDisplayConfigOptions {
   return {
     locationIds: locationIds,
     filterId: filterIds.value ? filterIds.value[0] : undefined,
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
-    fullDataPeriod: userSettings.get('charts.brush')?.value === true,
+    fullDataPeriod: fullDataPeriod,
   }
 }
 
@@ -226,6 +228,28 @@ function getTimeSeriesGridActionsFilter(
     // convertDatum: settings.convertDatum,
   }
 }
+
+const brushFilter = computed(() => {
+  if (!userSettings.get('charts.brush')) {
+    return
+  }
+  if (props.locationIds) {
+    return getFilterActionsFilter(props.locationIds, true)
+  }
+  if (props.longitude && props.latitude) {
+    const actionsFilter = getTimeSeriesGridActionsFilter(
+      props.longitude,
+      props.latitude,
+    )
+    if (actionsFilter) {
+      return {
+        ...actionsFilter,
+        fullDataPeriod: true,
+      }
+    }
+  }
+  return {}
+})
 
 const filter = computed(() => {
   if (props.locationIds) {
