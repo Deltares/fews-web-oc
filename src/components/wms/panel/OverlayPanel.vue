@@ -1,23 +1,6 @@
 <template>
   <v-list-item prepend-icon="mdi-layers-outline">
     <span class="pa-0">{{ t('wms.overlays') }}</span>
-    <v-list-item
-      :title="t('common.selectAll')"
-      @click="toggleAll"
-      class="ps-1"
-      density="compact"
-    >
-      <template #prepend>
-        <v-list-item-action start>
-          <v-checkbox-btn
-            :indeterminate="someSelected && !allSelected"
-            :model-value="allSelected"
-            density="compact"
-          />
-        </v-list-item-action>
-      </template>
-    </v-list-item>
-    <v-divider />
     <v-list
       v-model:selected="selectedOverlayIds"
       select-strategy="leaf"
@@ -31,8 +14,10 @@
         :title="getTitle(overlay)"
         :value="overlay.id"
         :active="false"
-        class="ps-1"
+        class="ps-1 pa-0"
         density="compact"
+        min-height="32"
+        rounded
       >
         <template #prepend="{ isSelected, select }">
           <v-list-item-action start>
@@ -51,7 +36,6 @@
 <script setup lang="ts">
 import type { Overlay } from '@deltares/fews-pi-requests'
 import type { GetCapabilitiesResponse } from '@deltares/fews-wms-requests'
-import { computed } from 'vue'
 
 import { useI18n } from 'vue-i18n'
 
@@ -74,24 +58,4 @@ function getTitle(overlay: Overlay): string {
 const selectedOverlayIds = defineModel<string[]>('selectedOverlayIds', {
   required: true,
 })
-
-const allSelected = computed(
-  () => props.overlays.length === selectedOverlayIds.value.length,
-)
-
-const someSelected = computed(
-  () =>
-    selectedOverlayIds.value.length > 0 &&
-    selectedOverlayIds.value.length < props.overlays.length,
-)
-
-function toggleAll() {
-  if (allSelected.value) {
-    selectedOverlayIds.value = []
-  } else {
-    selectedOverlayIds.value = props.overlays
-      .map((overlay) => overlay.id)
-      .filter((id) => id !== undefined)
-  }
-}
 </script>
