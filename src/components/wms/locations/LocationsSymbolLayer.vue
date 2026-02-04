@@ -1,7 +1,7 @@
 <template>
   <mgl-symbol-layer
     :layerId="layerId"
-    :layout="layout"
+    :layout="layout as any"
     :filter="filter"
     :paint="paint"
   />
@@ -53,7 +53,8 @@ const parentLayout: SymbolLayerSpecification['layout'] = {
   'icon-overlap': 'always',
 }
 
-const layout = computed<SymbolLayerSpecification['layout']>(() => {
+// const layout = computed<SymbolLayerSpecification['layout']>(() => {
+const layout = computed<any>(() => {
   return props.child ? childLayout : parentLayout
 })
 

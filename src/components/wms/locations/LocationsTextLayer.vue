@@ -27,7 +27,8 @@ const filter: SymbolLayerSpecification['filter'] = [
   ['any', ['!has', 'iconName'], shouldBehaveLikeChildFilter(props.child)],
 ]
 
-const layout: SymbolLayerSpecification['layout'] = {
+// const layout: SymbolLayerSpecification['layout'] = {
+const layout: any = {
   'text-field': ['get', 'locationName'],
   'text-size': 12,
   'text-overlap': 'never',
