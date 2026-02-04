@@ -81,13 +81,15 @@
     "unnamedLayer": "Unbenannter Layer"
   },
   "sidePanel": {
-    "thresholds": "Übersicht Schwellenwerte",
-    "taskOverview": "Aufgaben Übersicht",
+    "documentFile": "Informationen",
     "importStatus": "Import Status",
+    "logDisplay": "Logs",
+    "moreInfo": "Informationen",
     "nonCurrentData": "Nicht-Aktuelle Daten",
     "runTask": "Aufgabe ausführen",
-    "documentFile": "Informationen",
-    "share": "Teilen"
+    "share": "Teilen",
+    "taskOverview": "Aufgaben Übersicht",
+    "thresholds": "Übersicht Schwellenwerte"
   },
   "workflow": {
     "expectedRuntime": "Erwartete Laufzeit",
