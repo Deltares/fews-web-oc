@@ -1,7 +1,7 @@
 <template>
   <mgl-symbol-layer
     :layerId="layerId"
-    :layout="layout as any"
+    :layout="layout"
     :filter="filter"
     :paint="paint"
   />
