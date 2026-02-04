@@ -1,5 +1,6 @@
 <template>
   <DateTimeTextField
+    v-if="!hidden"
     v-model="timeZeroDate"
     label="Time zero"
     class="datetime-field"
@@ -36,8 +37,9 @@ import { ref, watch } from 'vue'
 
 interface Props {
   workflowId: string | undefined
+  hidden?: boolean
 }
-const props = defineProps<Props>()
+const { workflowId, hidden = false } = defineProps<Props>()
 
 const timeZeroDate = ref<Date>(new Date())
 const timeZeroString = defineModel<string>()
@@ -46,7 +48,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { selectedTimeZero, nextTimeZero, previousTimeZero, valid } =
   useForecastTimes(
     baseUrl,
-    () => props.workflowId,
+    () => workflowId,
     () => convertJSDateToFewsPiParameter(timeZeroDate.value),
   )
 

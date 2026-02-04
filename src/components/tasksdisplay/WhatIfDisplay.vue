@@ -86,12 +86,11 @@
           </v-card-text>
         </v-card>
 
-        <div v-if="!hideTimeZeroSelect">
-          <WhatIfTimeZeroSelect
-            v-model="timeZero"
-            :workflowId="selectedWorkflow?.id"
-          />
-        </div>
+        <WhatIfTimeZeroSelect
+          v-model="timeZero"
+          :workflowId="selectedWorkflow?.id"
+          :hidden="hideTimeZeroSelect || hideT0Property"
+        />
 
         <div v-if="!hideDescription">
           <v-textarea
@@ -220,6 +219,15 @@ watchEffect(() => {
   selectedProperties.value = getJsonDataFromProperties(
     selectedWhatIfTemplate.value?.properties,
     selectedWhatIfScenario.value?.properties,
+  )
+})
+
+const hideT0Property = computed(() => {
+  return (
+    selectedWhatIfTemplate.value?.properties?.some(
+      (p) =>
+        p.id === 'hideT0' && p.type === 'boolean' && p.defaultValue === true,
+    ) ?? false
   )
 })
 

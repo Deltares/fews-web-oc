@@ -125,6 +125,11 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
     await expect(xCellSize).toHaveValue('0.50')
     await expect(yCellSize).toHaveValue('0.50')
 
+    const timeZero = page.getByRole('textbox', {
+      name: 'Time zero',
+    })
+    await expect(timeZero).toBeVisible()
+
     // Toggle bounding box selector control visibility
     const bboxSelector = page.getByLabel('Bounding Box Control')
     const drawBboxBtn = page.getByRole('button', {
@@ -145,5 +150,56 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
     const bboxSelectorCloseBtn = bboxSelector.getByRole('button')
     await bboxSelectorCloseBtn.click()
     await expect(bboxSelector).not.toBeVisible()
+  })
+
+  test('should open Run Tasks panel, verify particle tracking task, default values, coordinates, hideT0', async ({
+    page,
+  }) => {
+    await page.goto(
+      `${base}/viewer_coastal_particle_tracking/viewer_coastal_particle_tracking_d3d/map/part`,
+    )
+
+    await openTasksPanel(page)
+
+    const sidePanel = page.getByLabel('Side panel')
+    await expect(sidePanel).toContainText('Particle tracking')
+
+    // Check coordinate values
+    const latitude = page.getByRole('textbox', {
+      name: 'Latitude [degrees]',
+    })
+    const longitude = page.getByRole('textbox', {
+      name: 'Longitude [degrees]',
+    })
+    const coordinate = page.getByRole('textbox', {
+      name: 'Coordinate Coordinate',
+    })
+    await expect(latitude).toHaveValue('-29.83')
+    await expect(longitude).toHaveValue('31.06')
+    await expect(coordinate).toHaveValue('-29.83000°N 31.06000°E')
+
+    // Check default input values
+    const radiusBox = page.getByRole('textbox', {
+      name: 'Radius [degrees]*',
+    })
+    const nrParticlesBox = page.getByRole('textbox', {
+      name: 'Nr. of particles*',
+    })
+    const totalMassBox = page.getByRole('textbox', {
+      name: 'Total mass [kilogram]*',
+    })
+    const simulationPeriodBox = page.getByRole('textbox', {
+      name: 'Simulation period [seconds]*',
+    })
+
+    await expect(radiusBox).toHaveValue('0.01')
+    await expect(nrParticlesBox).toHaveValue('10')
+    await expect(totalMassBox).toHaveValue('30')
+    await expect(simulationPeriodBox).toHaveValue('86400')
+
+    const timeZero = page.getByRole('textbox', {
+      name: 'Time zero',
+    })
+    await expect(timeZero).not.toBeVisible()
   })
 })
