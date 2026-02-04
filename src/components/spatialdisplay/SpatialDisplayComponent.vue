@@ -75,7 +75,7 @@
       />
       <template v-else>
         <InformationPanel
-          v-if="layerOptions"
+          v-if="layerCapabilities"
           :layerName="layerName"
           :groupId="groupId"
           :isLoading="isLoading"
