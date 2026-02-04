@@ -86,12 +86,11 @@
           </v-card-text>
         </v-card>
 
-        <div v-show="!hideTimeZeroSelect && !hideT0Property">
-          <WhatIfTimeZeroSelect
-            v-model="timeZero"
-            :workflowId="selectedWorkflow?.id"
-          />
-        </div>
+        <WhatIfTimeZeroSelect
+          v-model="timeZero"
+          :workflowId="selectedWorkflow?.id"
+          :hidden="hideTimeZeroSelect || hideT0Property"
+        />
 
         <div v-if="!hideDescription">
           <v-textarea
