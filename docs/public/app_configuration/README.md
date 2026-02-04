@@ -18,3 +18,15 @@ The following settings can be provided:
 |  `VITE_APP_MANIFEST_URL`            | Use a custom PWA manifest. The manifest file and referenced assets must be placed in the web resources of the FEWS config. |  
 | `VITE_LOGIN_STYLESHEET_URL`         | Use a custom stylesheet for the Login screen. The stylesheet and referenced assets must be placed in the web resources of the FEWS config.  |
 | `VITE_LOGIN_BUTTON_PROPS` | An object or JSON string containing properties that are passed to the login button. See https://vuetifyjs.com/en/api/v-btn/#props for which property can be set. Helpful properties are `"prependIcon"`, `"text"`, `"appendIcon"` and `"color"`. |
+
+
+## Progressive Web Application Manifest File
+
+The standard build of the Web OC includes an `app.webmanifest` file, a Progressive Web Application (PWA) manifest file. This enables installing Web OC as a standalone application on Windows, macOS, iOS, and Android. The file can be customized to match your company style and branding. You can do this in one of two ways:
+
+1. Edit the `app.webmanifest` file directly and add your icon files to the webserver hosting the Web OC.
+2. Configure the `VITE_APP_MANIFEST_URL` and place the manifest file along with the referenced icon files in the `WebResourceFiles` folder of the FEWS configuration. Refer to the [Delft-FEWS Configuration Guide](https://publicwiki.deltares.nl/display/FEWSDOC/Configuring+Delft-FEWS+-+Configuration+Guide) for more details.
+
+For additional information, see the [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest). It is recommended to check browser warnings when editing the manifest file, as incorrect settings or missing icons can break the Progressive Web Application functionality. 
+
+Ensure the correct Content Security Policy is applied. Refer to the [Content Security Policy](https://deltares.github.io/fews-web-oc/deployments/#content-security-policy-csp-headers) documentation. If the manifest file is hosted on a different domain, the `start_url` property must include the fully qualified domain name of the server hosting the Web OC.
