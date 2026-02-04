@@ -131,6 +131,20 @@
     "group": "Map"
   },
   {
+    "id": "ui.map.tools",
+    "type": "boolean",
+    "label": "Show map tools",
+    "value": false,
+    "group": "Map"
+  },
+  {
+    "id": "ui.map.showCoordinates",
+    "type": "boolean",
+    "label": "Show mouse coordinates",
+    "value": false,
+    "group": "Map"
+  },
+  {
     "id": "charts.scrollZoomMode",
     "type": "oneOfMultiple",
     "label": "Scroll wheel zoom mode",

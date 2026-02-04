@@ -1,11 +1,17 @@
 <template>
   <MapComponent :bounds :style="mapStyle" :showScaleControl="false">
+    <MapToolsControl />
+    <div class="mapcomponent__controls-container pa-2 ga-2">
+      <CoordinatesDisplay />
+    </div>
     <slot />
   </MapComponent>
 </template>
 
 <script setup lang="ts">
 import MapComponent from '@/components/map/MapComponent.vue'
+import MapToolsControl from '@/components/map/MapToolsControl.vue'
+import CoordinatesDisplay from '@/components/map/CoordinatesDisplay.vue'
 import { useBaseMap } from '@/services/useBaseMap'
 import { convertBoundingBoxToLngLatBounds } from '@/services/useWms'
 import type { BoundingBox } from '@deltares/fews-pi-requests'

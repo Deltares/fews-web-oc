@@ -60,7 +60,9 @@
       :overlay="overlay"
       :beforeId="baseMap.beforeId"
     />
+    <MapToolsControl />
     <div class="mapcomponent__controls-container pa-2 ga-2">
+      <CoordinatesDisplay />
       <BoundingBoxControl
         v-if="workflowsStore.isDrawingBoundingBox"
         v-model:active="workflowsStore.isDrawingBoundingBox"
@@ -193,6 +195,8 @@ import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
+import MapToolsControl from '@/components/map/MapToolsControl.vue'
+import CoordinatesDisplay from '@/components/map/CoordinatesDisplay.vue'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
