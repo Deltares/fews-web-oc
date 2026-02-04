@@ -19,6 +19,10 @@ export const useTaskRunColorsStore = defineStore('taskRunColors', () => {
     return colorMap.value.get(taskRunId)
   }
 
+  function hasColor(taskRunId: string): boolean {
+    return colorMap.value.has(taskRunId)
+  }
+
   function clearColors() {
     colorMap.value.clear()
     currentColors.value = [...colors.value]
@@ -48,6 +52,7 @@ export const useTaskRunColorsStore = defineStore('taskRunColors', () => {
     setColor,
     fetchColors,
     getColor,
+    hasColor,
     clearColors,
     setColorMap,
   }

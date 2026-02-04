@@ -12,7 +12,7 @@
     </v-btn>
 
     <v-btn
-      variant="plain"
+      variant="text"
       v-if="showLocations"
       class="locations-search text-capitalize"
       hide-details

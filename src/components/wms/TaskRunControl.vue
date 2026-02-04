@@ -6,7 +6,7 @@
         <v-list-item
           v-bind="props"
           aria-label="Select Task Run"
-          variant="plain"
+          variant="text"
           density="compact"
           class="text-capitalize"
         >
@@ -22,6 +22,12 @@
           </v-list-item-subtitle>
 
           <template #append>
+            <v-icon
+              v-if="selectedTaskRunColor"
+              icon="mdi-circle"
+              :color="selectedTaskRunColor"
+              class="me-2"
+            />
             <SelectIcon :active="isActive" />
           </template>
         </v-list-item>
@@ -38,7 +44,16 @@
           :subtitle="toHumanReadableDateTime(item.timeZeroTimestamp)"
           @click="taskRunId = item.taskId"
           :active="item.taskId === taskRunId"
-        />
+        >
+          <template #append>
+            <v-icon
+              v-if="taskRunColorsStore.hasColor(item.taskId)"
+              icon="mdi-circle"
+              :color="taskRunColorsStore.getColor(item.taskId)"
+              size="sm"
+            />
+          </template>
+        </v-list-item>
       </v-list>
     </v-menu>
   </ControlChip>
@@ -52,11 +67,13 @@ import { useTaskRunsStore } from '@/stores/taskRuns'
 import { computed, watch } from 'vue'
 import { toHumanReadableDateTime } from '@/lib/date'
 import { sortTasks, type TaskRun } from '@/lib/taskruns'
+import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 
 const taskRunId = defineModel<string>('taskRunId')
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const taskRunsStore = useTaskRunsStore()
+const taskRunColorsStore = useTaskRunColorsStore()
 
 const taskRuns = computed(() => taskRunsStore.selectedTaskRuns.sort(sortTasks))
 
@@ -69,6 +86,11 @@ const selectedWorkflowName = computed(() =>
 const selectedTaskRunTimeZero = computed(() =>
   selectedTaskRun.value
     ? toHumanReadableDateTime(selectedTaskRun.value.timeZeroTimestamp)
+    : undefined,
+)
+const selectedTaskRunColor = computed(() =>
+  selectedTaskRun.value
+    ? taskRunColorsStore.getColor(selectedTaskRun.value.taskId)
     : undefined,
 )
 
@@ -88,14 +110,18 @@ watch(numberOfTaskRuns, (newNumberOfTaskRuns, oldNumberOfTaskRuns) => {
   }
 })
 
-watch(taskRuns, (newRuns) => {
-  if (
-    taskRunId.value &&
-    !newRuns.find((taskRun) => taskRun.taskId === taskRunId.value)
-  ) {
-    taskRunId.value = newRuns[0]?.taskId
-  }
-})
+watch(
+  taskRuns,
+  (newRuns) => {
+    if (
+      taskRunId.value &&
+      !newRuns.find((taskRun) => taskRun.taskId === taskRunId.value)
+    ) {
+      taskRunId.value = newRuns[0]?.taskId
+    }
+  },
+  { deep: true },
+)
 </script>
 
 <style scoped>

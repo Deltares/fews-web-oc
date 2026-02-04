@@ -15,7 +15,7 @@
     >
       <template v-slot:activator="{ props }">
         <v-btn
-          variant="plain"
+          variant="text"
           v-bind="props"
           class="pe-0 text-none"
           aria-label="Layer information"
