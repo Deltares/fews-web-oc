@@ -33,7 +33,7 @@ export function provideMapSync() {
  * infinite loops or interrupting prolonged movements.
  */
 export function useMapSync(mapInstance: MaplibreMap | undefined) {
-  const mapSync = inject(MAP_SYNC_KEY)
+  const mapSync = inject(MAP_SYNC_KEY, undefined)
 
   if (!mapSync) {
     // Do nothing if mapSync is not provided
