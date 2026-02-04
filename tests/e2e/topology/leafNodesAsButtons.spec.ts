@@ -22,7 +22,7 @@ test.describe('Leaf nodes as buttons enabled', () => {
 
     await leafNodeButton.click()
     await page
-      .getByRole('listitem')
+      .getByRole('link')
       .filter({ hasText: 'Regional NWP 4x4' })
       .click()
 
