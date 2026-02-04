@@ -1,7 +1,14 @@
 <template>
   <ControlChip v-if="numberOfTaskRuns > 0">
-    <v-icon icon="mdi-chart-box-multiple" class="mx-2" />
-    <v-menu transition="slide-y-transition">
+    <v-btn
+      variant="plain"
+      density="compact"
+      @click="toggleTaskRunId"
+      :icon="
+        taskRunId ? 'mdi-chart-box-multiple' : 'mdi-chart-box-multiple-outline'
+      "
+    />
+    <v-menu v-if="taskRunId" transition="slide-y-transition">
       <template #activator="{ props, isActive }">
         <v-list-item
           v-bind="props"
@@ -33,11 +40,6 @@
         </v-list-item>
       </template>
       <v-list>
-        <v-list-item
-          title="Default view"
-          @click="taskRunId = undefined"
-          :active="taskRunId === undefined"
-        />
         <v-list-item
           v-for="item in taskRuns"
           :title="getWorkflowName(item)"
@@ -122,6 +124,24 @@ watch(
   },
   { deep: true },
 )
+
+let lastSelectedTaskRunId: string | undefined = undefined
+
+function toggleTaskRunId() {
+  if (taskRunId.value === undefined) {
+    if (
+      lastSelectedTaskRunId &&
+      taskRuns.value.find((t) => t.taskId === lastSelectedTaskRunId)
+    ) {
+      taskRunId.value = lastSelectedTaskRunId
+    } else {
+      taskRunId.value = taskRuns.value[0]?.taskId
+    }
+  } else {
+    lastSelectedTaskRunId = taskRunId.value
+    taskRunId.value = undefined
+  }
+}
 </script>
 
 <style scoped>
