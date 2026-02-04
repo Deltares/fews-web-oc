@@ -61,6 +61,10 @@ function setTimeZero(date: string | undefined): void {
 }
 
 watch(selectedTimeZero, (newTimeZero) => {
-  timeZeroString.value = newTimeZero
+  if (!newTimeZero) {
+    timeZeroString.value = ''
+    return
+  }
+  timeZeroString.value = convertJSDateToFewsPiParameter(new Date(newTimeZero))
 })
 </script>
