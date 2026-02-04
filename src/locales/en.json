@@ -54,6 +54,7 @@
     "importStatus": "Import status",
     "noncurrentData": "Non-current data",
     "runTasks": "Run tasks",
+    "logDisplay": "Logs",
     "moreInfo": "More info"
   },
   "workflow": {
