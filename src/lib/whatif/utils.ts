@@ -12,7 +12,7 @@ export type ScenarioProperty = NonNullable<
 export type ScenarioValue = string | number | boolean | Date
 export type ScenarioData = Record<string, ScenarioValue | undefined>
 
-const EXCLUDED_PROPERTY_IDS = ['GET_PROCESS_DATA']
+const EXCLUDED_PROPERTY_IDS = ['GET_PROCESS_DATA', 'hideT0']
 
 function isValidPropertyId(id: string | undefined) {
   return id !== undefined && !EXCLUDED_PROPERTY_IDS.includes(id)
@@ -138,6 +138,9 @@ function convertPropertyToJsonSchemaProperty(
         title: property.name,
         default: property.default,
       }
+    default:
+      console.warn('Unsupported property type:', property)
+      return {}
   }
 }
 
