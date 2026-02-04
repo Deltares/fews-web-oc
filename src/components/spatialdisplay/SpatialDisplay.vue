@@ -90,6 +90,12 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 const taskRunId = ref<string>()
+watch(
+  () => props.layerName,
+  () => {
+    taskRunId.value = undefined
+  },
+)
 
 const warningLevelsStore = useWarningLevelsStore()
 const locationNamesStore = useLocationNamesStore()
