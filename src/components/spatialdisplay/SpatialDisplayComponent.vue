@@ -1,5 +1,10 @@
 <template>
-  <MapComponent :bounds="bounds" :style="mapStyle">
+  <MapComponent
+    :bounds="bounds"
+    :style="mapStyle"
+    :layer-name="layerName"
+    :layer-capabilities="layerCapabilities"
+  >
     <AnimatedRasterLayer
       v-if="layerKind === LayerKind.Static && showLayer && layerOptions"
       v-model:isLoading="isLoading"
