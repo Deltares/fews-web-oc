@@ -8,10 +8,10 @@ async function openTasksPanel(page: Page) {
     name: 'More Sidepanel Options',
   })
   await moreOptionsBtn.click()
-  const runTasksListItem = page
-    .getByRole('listitem')
+  const runTasksItem = page
+    .getByRole('link')
     .filter({ hasText: 'Run Tasks' })
-  await runTasksListItem.click()
+  await runTasksItem.click()
 }
 
 describeFromVersion('202402', 'Run Tasks Panel', () => {
