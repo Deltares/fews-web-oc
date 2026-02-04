@@ -8,23 +8,19 @@ import type {
 
 // needs to be fixed in Open API schema
 
-export interface WebOcSpatialDisplayConfig
-  extends WebOcSpatialDisplayConfigUnTyped {
+export interface WebOcSpatialDisplayConfig extends WebOcSpatialDisplayConfigUnTyped {
   type: 'SpatialDisplay'
 }
 
-export interface WebOcSchematicStatusDisplayConfig
-  extends WebOcSchematicStatusDisplayConfigUnTyped {
+export interface WebOcSchematicStatusDisplayConfig extends WebOcSchematicStatusDisplayConfigUnTyped {
   type: 'SchematicStatusDisplay'
 }
 
-export interface WebOcTopologyDisplayConfig
-  extends WebOcTopologyDisplayConfigUnTyped {
+export interface WebOcTopologyDisplayConfig extends WebOcTopologyDisplayConfigUnTyped {
   type: 'TopologyDisplay'
 }
 
-export interface WebOcSystemMonitorConfig
-  extends WebOcSystemMonitorConfigUnTyped {
+export interface WebOcSystemMonitorConfig extends WebOcSystemMonitorConfigUnTyped {
   type: 'SystemMonitor'
 }
 
