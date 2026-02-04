@@ -30,21 +30,41 @@
       </template>
       <v-list class="information-panel-list">
         <v-list-item prepend-icon="mdi-layers">
-          <div v-if="layers.length <= 1">
-            {{ title }}
-          </div>
-          <v-select
-            v-else
-            v-model="layer"
-            :items="layers"
-            density="compact"
-            item-value="name"
-            hide-details
-            class="pb-1"
+          <v-list-item
+            v-if="layers.length <= 1"
+            :title="title"
+            :subtitle="analysisTime"
+            class="px-0"
           />
-          <v-list-item-subtitle>
-            {{ analysisTime }}
-          </v-list-item-subtitle>
+          <v-menu
+            v-else
+            v-model="showMenu"
+            transition="slide-y-transition"
+            :close-on-content-click="false"
+          >
+            <template v-slot:activator="{ props, isActive }">
+              <v-list-item
+                v-bind="props"
+                :title="title"
+                :subtitle="analysisTime"
+                rounded
+                class="px-0"
+              >
+                <template #append>
+                  <SelectIcon :active="isActive" />
+                </template>
+              </v-list-item>
+            </template>
+            <v-list density="compact">
+              <v-list-item
+                v-for="layerOption in layers"
+                :key="layerOption?.name"
+                :title="layerOption?.title"
+                :active="layerOption?.name === layer"
+                @click="updateLayer(layerOption?.name)"
+              />
+            </v-list>
+          </v-menu>
         </v-list-item>
         <v-divider></v-divider>
         <v-list-item
@@ -69,6 +89,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import ControlChip from '@/components/wms/ControlChip.vue'
+import SelectIcon from '@/components/general/SelectIcon.vue'
 import type { Layer } from '@deltares/fews-wms-requests'
 import { useI18n } from 'vue-i18n'
 import {
@@ -89,6 +110,8 @@ interface Props {
 
 const props = defineProps<Props>()
 const showLayer = defineModel<boolean>('showLayer')
+
+const showMenu = ref(false)
 
 interface Emits {
   changeLayer: [string]
@@ -126,4 +149,9 @@ watch(
   },
   { immediate: true },
 )
+
+function updateLayer(newLayerName?: string) {
+  layer.value = newLayerName
+  showMenu.value = false
+}
 </script>

@@ -1,19 +1,18 @@
 <template>
-  <v-list-item prepend-icon="mdi-palette" v-if="currentScale && currentScales" class="pe-1">
+  <v-list-item
+    prepend-icon="mdi-palette"
+    v-if="currentScale && currentScales"
+    class="pe-1"
+  >
     <ColourItem
       v-if="currentScales.length === 1"
       :item="currentScale"
       rounded
-      class="px-1"
+      class="px-0"
     />
     <v-menu v-else v-model="showMenu" :close-on-content-click="false">
       <template #activator="{ props, isActive }">
-        <ColourItem
-          :item="currentScale"
-          v-bind="props"
-          rounded
-          class="px-1"
-        >
+        <ColourItem :item="currentScale" v-bind="props" rounded class="px-0">
           <template #append>
             <SelectIcon :active="isActive" />
           </template>
