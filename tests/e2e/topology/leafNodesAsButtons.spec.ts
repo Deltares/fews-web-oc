@@ -44,7 +44,7 @@ test.describe('Leaf nodes as buttons enabled', () => {
     await expect(menuButton).toContainText('Early Warning')
 
     await menuButton.click()
-    await page.getByRole('option', { name: 'Admin' }).click()
+    await page.getByRole('link', { name: 'Admin' }).click()
 
     await expect(menuButton).not.toContainText('Early Warning')
     await expect(leafNodeButton).not.toBeVisible()
@@ -72,7 +72,7 @@ test.describe('Leaf nodes as buttons disabled', () => {
 
     await menuButton.click()
 
-    await page.getByRole('option', { name: 'Early Warning' }).click()
+    await page.getByRole('link', { name: 'Early Warning' }).click()
     await expect(menuButton).not.toContainText('Admin')
 
     const leafNodeButton = page.getByRole('button', { name: 'Leaf node' })
