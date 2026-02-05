@@ -3,13 +3,16 @@
     <div class="control-chip__extension-slot">
       <slot name="extension"></slot>
     </div>
-    <v-chip pill label class="control-chip">
+    <v-chip pill label class="control-chip" v-bind="$attrs">
       <slot></slot>
     </v-chip>
   </div>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+// Pass through all attributes to the v-chip instead of the container div
+defineOptions({ inheritAttrs: false })
+</script>
 
 <style scoped>
 .control-chip--container {

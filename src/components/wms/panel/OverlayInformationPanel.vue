@@ -5,9 +5,7 @@
         <v-icon>mdi-layers-outline</v-icon>
       </ControlChip>
     </template>
-    <v-list class="information-panel-list">
-      <slot></slot>
-    </v-list>
+    <slot></slot>
   </v-menu>
 </template>
 

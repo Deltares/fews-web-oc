@@ -1,36 +1,32 @@
 <template>
-  <v-list-item prepend-icon="mdi-layers-outline">
-    <span class="pa-0">{{ t('wms.overlays') }}</span>
-    <v-list
-      v-model:selected="selectedOverlayIds"
-      select-strategy="leaf"
-      class="pa-0"
-      density="compact"
-      max-height="160"
+  <v-list
+    v-model:selected="selectedOverlayIds"
+    select-strategy="leaf"
+    density="compact"
+  >
+    <v-list-item-subtitle class="ps-3 pb-1">
+      {{ t('wms.overlays') }}
+    </v-list-item-subtitle>
+    <v-list-item
+      v-for="overlay in overlays"
+      :key="overlay.id"
+      :title="getTitle(overlay)"
+      :value="overlay.id"
+      :active="false"
+      min-height="32"
+      rounded
     >
-      <v-list-item
-        v-for="overlay in overlays"
-        :key="overlay.id"
-        :title="getTitle(overlay)"
-        :value="overlay.id"
-        :active="false"
-        class="ps-1 pa-0"
-        density="compact"
-        min-height="32"
-        rounded
-      >
-        <template #prepend="{ isSelected, select }">
-          <v-list-item-action start>
-            <v-checkbox-btn
-              :model-value="isSelected"
-              @update:model-value="select"
-              density="compact"
-            />
-          </v-list-item-action>
-        </template>
-      </v-list-item>
-    </v-list>
-  </v-list-item>
+      <template #prepend="{ isSelected, select }">
+        <v-list-item-action start>
+          <v-checkbox-btn
+            :model-value="isSelected"
+            @update:model-value="select"
+            density="compact"
+          />
+        </v-list-item-action>
+      </template>
+    </v-list-item>
+  </v-list>
 </template>
 
 <script setup lang="ts">
@@ -43,7 +39,7 @@ const { t } = useI18n()
 
 interface Props {
   overlays: Overlay[]
-  capabilities?: GetCapabilitiesResponse
+  capabilities: GetCapabilitiesResponse | undefined
 }
 
 const props = defineProps<Props>()

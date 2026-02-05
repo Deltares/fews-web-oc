@@ -99,14 +99,6 @@
               v-model:currentColourScaleIndex="currentColourScaleIndex"
             />
           </template>
-          <template v-if="settings.overlays.length">
-            <v-divider />
-            <OverlayPanel
-              :overlays="settings.overlays"
-              v-model:selected-overlay-ids="selectedOverlayIds"
-              :capabilities="staticCapabilities"
-            />
-          </template>
           <template #chip-append>
             <StreamlinesButton
               v-if="canUseStreamlines"
@@ -122,10 +114,11 @@
             />
           </template>
         </InformationPanel>
-        <OverlayInformationPanel v-else-if="settings.overlays.length">
+        <OverlayInformationPanel v-if="settings.overlays.length">
           <OverlayPanel
             :overlays="settings.overlays"
             v-model:selected-overlay-ids="selectedOverlayIds"
+            :capabilities="staticCapabilities"
           />
         </OverlayInformationPanel>
         <LocationsSearchControl
