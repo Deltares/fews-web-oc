@@ -79,10 +79,12 @@
           :isLoading="isLoading"
           :currentTime="selectedDate"
           :layerCapabilities="layerCapabilities"
-          :canUseStreamlines="canUseStreamlines"
-          v-model:layer-kind="layerKind"
           v-model:show-layer="showLayer"
         >
+          <template v-if="canUseStreamlines">
+            <v-divider />
+            <StreamlinesPanel v-model:layer-kind="layerKind" />
+          </template>
           <template v-if="aggregations.length > 0">
             <v-divider />
             <AggregationPanel
@@ -104,6 +106,13 @@
               :overlays="settings.overlays"
               v-model:selected-overlay-ids="selectedOverlayIds"
               :capabilties="staticCapabilities"
+            />
+          </template>
+          <template #chip-append>
+            <StreamlinesButton
+              v-if="canUseStreamlines"
+              :isLoading="isLoading"
+              v-model:layer-kind="layerKind"
             />
           </template>
           <template #extension>
@@ -192,6 +201,8 @@ import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
 import MapToolsControl from '@/components/map/MapToolsControl.vue'
 import CoordinatesDisplay from '@/components/map/CoordinatesDisplay.vue'
+import StreamlinesPanel from '@/components/wms/panel/StreamlinesPanel.vue'
+import StreamlinesButton from '@/components/wms/panel/StreamlinesButton.vue'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
