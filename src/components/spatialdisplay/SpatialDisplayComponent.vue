@@ -355,18 +355,17 @@ const { selectedOverlayIds, selectedOverlays } = useOverlays(
 )
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const start = computed<Date | null>(() => props.times?.[0] ?? null)
-const end = computed<Date | null>(() => {
-  if (!props.times || props.times.length === 0) return null
-  return props.times[props.times.length - 1]
-})
-const maxValuesTimeSeries = useWmsMaxValuesTimeSeries(
+const maxValuesStartTime = ref<Date | null>(null)
+const maxValuesEndTime = ref<Date | null>(null)
+const maxValuesTaskRunId = ref<string>()
+const { timeSeries: maxValuesTimeSeries } = useWmsMaxValuesTimeSeries(
   baseUrl,
   () => props.layerName,
-  start,
-  end,
+  maxValuesStartTime,
+  maxValuesEndTime,
   doShowAggregated,
   selectedAggregationLabel,
+  maxValuesTaskRunId,
 )
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
@@ -508,6 +507,11 @@ watch(
         (layer.elevation as ElevationWithUnitSymbol).unitSymbol ?? ''
       elevationTicks.value = layer.elevation.irregularTicks
     }
+
+    maxValuesStartTime.value = props.times?.[0] ?? null
+    maxValuesEndTime.value = props.times?.at(-1) ?? null
+    maxValuesTaskRunId.value = taskRunId.value
+
     setLayerOptions()
   },
   { immediate: true, deep: true },
