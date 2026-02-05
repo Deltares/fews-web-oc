@@ -31,7 +31,7 @@ test.describe('WMS Legend with different display and system units', () => {
         const json = await response.json()
 
         if (json.layers) {
-          json.layers = json.layers.map((layer) => {
+          json.layers = json.layers.map((layer: any) => {
             return {
               ...layer,
               animatedVectors: undefined,
@@ -65,7 +65,7 @@ test.describe('WMS Legend with different display and system units', () => {
 
     await page.getByRole('button', { name: 'Layer information' }).click()
 
-    const maxInput = page.getByRole('textbox', { name: 'Max Max' })
+    const maxInput = page.getByRole('textbox', { name: 'Max' })
     await maxInput.click()
     await maxInput.fill('100')
     await maxInput.press('Enter')
@@ -115,7 +115,7 @@ test.describe('WMS Legend with the same display and system units', () => {
 
     await page.getByRole('button', { name: 'Layer information' }).click()
 
-    const maxInput = page.getByRole('textbox', { name: 'Max Max' })
+    const maxInput = page.getByRole('textbox', { name: 'Max' })
     await maxInput.click()
     await maxInput.fill('100')
     await maxInput.press('Enter')
@@ -124,7 +124,7 @@ test.describe('WMS Legend with the same display and system units', () => {
       '04204060100Regional NWP forecast (1x1 km)',
     )
 
-    const minInput = page.getByRole('textbox', { name: 'Min Min' })
+    const minInput = page.getByRole('textbox', { name: 'Min' })
     await minInput.click()
     await minInput.fill('20')
     await minInput.press('Enter')
@@ -148,7 +148,7 @@ test.describe('WMS Legend with the same display and system units', () => {
 
     await page.getByRole('button', { name: 'Layer information' }).click()
 
-    const maxInput = page.getByRole('textbox', { name: 'Max Max' })
+    const maxInput = page.getByRole('textbox', { name: 'Max' })
     await maxInput.click()
     await maxInput.fill('100')
     await maxInput.press('Enter')
