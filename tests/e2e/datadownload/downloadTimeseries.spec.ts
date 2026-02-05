@@ -17,6 +17,9 @@ test.describe('Download Time Series', () => {
   test('Should download in CSV format', async ({ page }) => {
     await page.getByText('Download time series').click()
 
+    // Select JSON format instead of default CSV
+    await page.getByRole('button', { name: 'csv' }).click()
+    await page.getByRole('listitem').filter({ hasText: 'csv' }).click()
     await expect(page.getByRole('button', { name: 'csv' })).toBeVisible()
 
     // Set up the download promise before clicking the download button
