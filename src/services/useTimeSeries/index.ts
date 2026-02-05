@@ -2,11 +2,12 @@ import {
   PiWebserviceProvider,
   type ActionRequest,
   type TimeSeriesEvent,
-  TimeSeriesResult,
-  TimeSeriesResponse,
-  type DomainAxisEventValuesStringArray,
+  type TimeSeriesResult,
+  type TimeSeriesResponse,
   type Header,
   type TimeSeriesFilter,
+  type DomainAxisValue,
+  type DomainAxisEventValuesStringArray,
 } from '@deltares/fews-pi-requests'
 import {
   computed,
@@ -24,7 +25,6 @@ import { Series } from '../../lib/timeseries/timeSeries'
 import { SeriesUrlRequest } from '../../lib/timeseries/timeSeriesResource'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { difference } from 'lodash-es'
-import { SeriesData } from '@/lib/timeseries/types/SeriesData'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 import { type Pausable } from '@vueuse/core'
 import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
@@ -72,7 +72,7 @@ export function useTimeSeries(
   const loadingSeriesIds = ref<string[]>([])
   const isLoading = computed(() => loadingSeriesIds.value.length > 0)
 
-  const watchedParams = [requests, options, fetchingEnabled, selectedTime]
+  const watchedParams = [requests, options, fetchingEnabled]
     .filter((p) => p !== undefined)
     .map((p) => () => toValue(p))
   watch(watchedParams, () => {
@@ -146,57 +146,6 @@ export function useTimeSeries(
     }
   }
 
-  function convertTimeSeriesResultToSeries(
-    timeSeries: TimeSeriesResult,
-    response: TimeSeriesResponse,
-    resourceId: string,
-    selectedTime?: Date,
-  ): Series | undefined {
-    const header = timeSeries.header
-    if (header === undefined) return undefined
-
-    const resource = new SeriesUrlRequest(
-      'fews-pi',
-      `dummyUrl-for-resource-${resourceId}`,
-    )
-    const series = new Series(resource)
-
-    series.missingValue = header.missVal
-    const timeZone =
-      response.timeZone === undefined
-        ? 'Z'
-        : timeZoneOffsetString(+response.timeZone)
-    series.header.timeZone = response.timeZone
-    series.header.version = response.version
-    series.header.name = `${header.stationName} - ${header.parameterId} (${header.moduleInstanceId})`
-
-    series.header.unit = header.units
-    series.header.timeStep = header.timeStep
-    series.header.parameter = header.parameterId
-    series.header.location = header.stationName
-    series.header.source = header.moduleInstanceId
-    series.start = convertFewsPiDateTimeToJsDate(header.startDate, timeZone)
-    series.end = convertFewsPiDateTimeToJsDate(header.endDate, timeZone)
-    if (timeSeries.events) {
-      series.data = timeSeries.events.map((event) => {
-        return {
-          x: convertFewsPiDateTimeToJsDate(event, timeZone),
-          y: event.value === series.missingValue ? null : +event.value,
-          flag: event.flag,
-          flagSource: event.flagSource,
-          comment: event.comment,
-          user: event.user,
-        }
-      })
-    } else if (timeSeries.domains && selectedTime) {
-      series.domains = timeSeries.domains
-      fillSeriesForElevation(series, selectedTime, timeZone)
-    }
-    series.lastUpdated = new Date()
-
-    return series
-  }
-
   let interval: Pausable | undefined = undefined
   if (refresh) {
     interval = useFocusAwareInterval(
@@ -206,6 +155,29 @@ export function useTimeSeries(
     )
   } else {
     loadTimeSeries()
+  }
+
+  if (selectedTime !== undefined) {
+    watch(
+      () => toValue(selectedTime),
+      () => {
+        // Re-process all series to fill elevation data for the new selected time.
+        const _selectedTime = toValue(selectedTime)
+        Object.keys(series.value).forEach((seriesId) => {
+          const _series = series.value[seriesId]
+          if (
+            _series.domains !== undefined &&
+            _series.domains.length > 0 &&
+            _selectedTime !== undefined
+          ) {
+            fillSeriesForElevation(_series, _selectedTime)
+            _series.lastUpdated = new Date()
+          }
+        })
+
+        series.value = { ...series.value }
+      },
+    )
   }
 
   onUnmounted(() => {
@@ -395,54 +367,131 @@ export async function postTimeSeriesEdit(
   }
 }
 
-function fillSeriesForElevation(
+function convertTimeSeriesResultToSeries(
+  timeSeries: TimeSeriesResult,
+  response: TimeSeriesResponse,
+  resourceId: string,
+  selectedTime?: Date,
+): Series | undefined {
+  const header = timeSeries.header
+  if (header === undefined) return undefined
+
+  const resource = new SeriesUrlRequest(
+    'fews-pi',
+    `dummyUrl-for-resource-${resourceId}`,
+  )
+  const series = new Series(resource)
+
+  series.missingValue = header.missVal
+  const timeZone =
+    response.timeZone === undefined
+      ? 'Z'
+      : timeZoneOffsetString(+response.timeZone)
+  series.header.timeZone = timeZone
+  series.header.version = response.version
+  series.header.name = `${header.stationName} - ${header.parameterId} (${header.moduleInstanceId})`
+
+  series.header.unit = header.units
+  series.header.timeStep = header.timeStep
+  series.header.parameter = header.parameterId
+  series.header.location = header.stationName
+  series.header.source = header.moduleInstanceId
+  series.start = convertFewsPiDateTimeToJsDate(header.startDate, timeZone)
+  series.end = convertFewsPiDateTimeToJsDate(header.endDate, timeZone)
+  if (timeSeries.events) {
+    series.data = timeSeries.events.map((event) => {
+      return {
+        x: convertFewsPiDateTimeToJsDate(event, timeZone),
+        y: event.value === series.missingValue ? null : +event.value,
+        flag: event.flag,
+        flagSource: event.flagSource,
+        comment: event.comment,
+        user: event.user,
+      }
+    })
+  } else if (timeSeries.domains && selectedTime) {
+    series.domains = timeSeries.domains
+    fillSeriesForElevation(series, selectedTime)
+  }
+  series.lastUpdated = new Date()
+
+  return series
+}
+
+/**
+ * Finds the event in the time series that matches the current date and returns it along the most recent domainAxisValues, which are needed to fill the elevation data.
+ */
+function findCurrentEventWithCorrespondingDomainAxisValues(
   timeSeries: Series,
   currentDate: Date,
-  timeZone: string,
-): void {
+) {
   if (timeSeries.domains === undefined) {
     throw new Error('No domains found')
   }
-  const domainAxisValues = timeSeries.domains[0].domainAxisValues
-  if (domainAxisValues !== undefined) {
-    const domain = domainAxisValues[0]
-    if (domain.values === undefined || domain.values.length < 1) {
-      throw new Error('No domain values found')
+
+  const timeZone = timeSeries.header.timeZone
+
+  let domainAxisValues: DomainAxisValue | undefined = undefined
+
+  for (const domain of timeSeries.domains) {
+    if (domain.domainAxisValues) {
+      domainAxisValues = domain.domainAxisValues[0]
     }
 
-    // convert domain.values to an array of numbers
-    const domainValues = domain.values.map(
-      (value: DomainAxisEventValuesStringArray) => {
-        return +value[0]
-      },
-    )
-    const events = timeSeries.domains.slice(0)
+    if (domain.events === undefined) continue
 
-    // find the event in the events that matches the date
-    const event = events.find((event) => {
-      const time = event.events![0].time
-      const date = event.events![0].date
-      if (time === undefined || date === undefined) {
-        return false
-      }
+    for (const event of domain.events) {
+      const date = event.date
+      const time = event.time
+      if (date === undefined || time === undefined) continue
+
       const eventDate = convertFewsPiDateTimeToJsDate({ date, time }, timeZone)
-      return eventDate.getTime() === currentDate.getTime()
-    })
-
-    timeSeries.data = domainValues
-      .map((domainValue, index) => {
-        const eventValue = event?.events?.[0]?.values?.[index]
-        if (eventValue?.includes(timeSeries.missingValue ?? '')) {
-          return
-        }
-        const eventFlag = event?.events?.[0]?.flag
-        const x = eventValue === undefined ? null : +eventValue
+      if (eventDate.getTime() === currentDate.getTime()) {
         return {
-          x,
-          y: domainValue,
-          flag: eventFlag,
+          domainAxisValues,
+          event,
         }
-      })
-      .filter((value) => !!value) as SeriesData[]
+      }
+    }
   }
+}
+
+function fillSeriesForElevation(timeSeries: Series, currentDate: Date): void {
+  const result = findCurrentEventWithCorrespondingDomainAxisValues(
+    timeSeries,
+    currentDate,
+  )
+
+  // convert domain.values to an array of numbers
+  const domainValues =
+    result?.domainAxisValues?.values?.map((value) => +value[0]) ?? []
+  const event = result?.event
+
+  const missingValue = timeSeries.missingValue
+
+  if (event === undefined) {
+    timeSeries.data = []
+    return
+  }
+
+  const isMissing = (value: DomainAxisEventValuesStringArray | undefined) => {
+    return missingValue !== undefined && value?.includes(missingValue)
+  }
+
+  timeSeries.data = domainValues.flatMap((domainValue, index) => {
+    const eventValue = event.values?.[index]
+    const eventFlag = event.flag as TimeSeriesEvent['flag']
+
+    if (isMissing(eventValue)) return []
+
+    const x = eventValue === undefined ? null : +eventValue
+
+    return [
+      {
+        x,
+        y: domainValue,
+        flag: eventFlag,
+      },
+    ]
+  })
 }
