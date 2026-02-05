@@ -84,10 +84,6 @@
           v-model:show-layer="showLayer"
           @changeLayer="onLayerChange"
         >
-          <template v-if="canUseStreamlines">
-            <v-divider />
-            <StreamlinesPanel v-model:layer-kind="layerKind" />
-          </template>
           <template v-if="aggregations.length > 0">
             <v-divider />
             <AggregationPanel
@@ -205,7 +201,6 @@ import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
 import MapToolsControl from '@/components/map/MapToolsControl.vue'
 import CoordinatesDisplay from '@/components/map/CoordinatesDisplay.vue'
-import StreamlinesPanel from '@/components/wms/panel/StreamlinesPanel.vue'
 import StreamlinesButton from '@/components/wms/panel/StreamlinesButton.vue'
 import TaskRunControl from '@/components/wms/TaskRunControl.vue'
 import debounce from 'lodash-es/debounce'
