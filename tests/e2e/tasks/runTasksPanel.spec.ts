@@ -112,10 +112,10 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
       name: 'Maximum latitude [degrees]*',
     })
     const xCellSize = page.getByRole('textbox', {
-      name: 'X cell size [degrees]* X cell',
+      name: 'X cell size [degrees]*',
     })
     const yCellSize = page.getByRole('textbox', {
-      name: 'Y cell size [degrees]* Y cell',
+      name: 'Y cell size [degrees]*',
     })
     await expect(boundingBox).toHaveValue('25°E -33°N, 38°E -25°N')
     await expect(lonMin).toHaveValue('25.00')
