@@ -55,7 +55,7 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
       name: 'Longitude [degrees]',
     })
     const coordinate = page.getByRole('textbox', {
-      name: 'Coordinate Coordinate',
+      name: 'Coordinate',
     })
     await expect(latitude).toHaveValue('-29.83')
     await expect(longitude).toHaveValue('31.06')
@@ -172,7 +172,7 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
       name: 'Longitude [degrees]',
     })
     const coordinate = page.getByRole('textbox', {
-      name: 'Coordinate Coordinate',
+      name: 'Coordinate',
     })
     await expect(latitude).toHaveValue('-29.83')
     await expect(longitude).toHaveValue('31.06')
