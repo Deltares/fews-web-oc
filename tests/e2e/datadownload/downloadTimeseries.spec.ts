@@ -17,9 +17,12 @@ test.describe('Download Time Series', () => {
   test('Should download in CSV format', async ({ page }) => {
     await page.getByText('Download time series').click()
 
+    const dialog = page.getByTestId('time-series-file-download')
+    await expect(dialog).toBeVisible()
+
     // Set up the download promise before clicking the download button
     const downloadPromise = page.waitForEvent('download')
-    await page.getByRole('button', { name: 'Download' }).click()
+    await dialog.getByRole('button', { name: 'Download' }).click()
     // Wait for the download to complete
     const download = await downloadPromise
     const path = await download.path()
@@ -44,13 +47,16 @@ test.describe('Download Time Series', () => {
   test('Should download in JSON format', async ({ page }) => {
     await page.getByText('Download time series').click()
 
+    const dialog = page.getByTestId('time-series-file-download')
+    await expect(dialog).toBeVisible()
+
     // Select JSON format instead of default CSV
-    await page.getByRole('button', { name: 'csv' }).click()
-    await page.getByText('json').click()
+    await dialog.getByRole('button', { name: 'csv' }).click()
+    await dialog.getByText('json').click()
 
     // Set up the download promise before clicking the download button
     const downloadPromise = page.waitForEvent('download')
-    await page.getByRole('button', { name: 'Download' }).click()
+    await dialog.getByRole('button', { name: 'Download' }).click()
     // Wait for the download to complete
     const download = await downloadPromise
     const path = await download.path()
@@ -103,13 +109,16 @@ test.describe('Download Time Series', () => {
   test('Should download in XML format', async ({ page }) => {
     await page.getByText('Download time series').click()
 
+    const dialog = page.getByTestId('time-series-file-download')
+    await expect(dialog).toBeVisible()
+
     // Select XML format instead of default CSV
-    await page.getByRole('button', { name: 'csv' }).click()
-    await page.getByText('xml').click()
+    await dialog.getByRole('button', { name: 'csv' }).click()
+    await dialog.getByText('xml').click()
 
     // Set up the download promise before clicking the download button
     const downloadPromise = page.waitForEvent('download')
-    await page.getByRole('button', { name: 'Download' }).click()
+    await dialog.getByRole('button', { name: 'Download' }).click()
     // Wait for the download to complete
     const download = await downloadPromise
     const path = await download.path()
