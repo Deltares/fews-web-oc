@@ -22,7 +22,7 @@ test.describe('Switching Nodes with ReportsDisplayView', () => {
     await expect(combo).toBeVisible()
 
     await combo.click()
-    const list = await page.getByRole('listbox', { name: 'Analysis time-list' })
+    const list = await page.getByRole('listbox', { name: 'Analysis time' })
     await expect(list.getByText('2025-03-14T10:00:00Z')).toBeVisible()
     await expect(list.getByText('Current', { exact: true })).toBeVisible()
   })
