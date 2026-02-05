@@ -9,7 +9,7 @@ test.describe('Download Time Series', () => {
       await page.goto(
         `${base}/viewer_coastal_water_levels/viewer_coastal_water_levels_d3d/map/kzn_waterlevel/location/NSRI_Tide_Gauge_level`,
       )
-      const actionmenu = page.locator('[aria-labelledby="display-action-menu"]')
+      const actionmenu = page.locator('button[name="Time series actions"]')
       // Wait for the action menu to be visible
       await expect(actionmenu).toBeVisible()
       await actionmenu.click()
