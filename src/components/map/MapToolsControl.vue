@@ -16,13 +16,12 @@ const addControl = () => {
 
   measureControl = new MaplibreMeasureControl({
     modes: [
-      'render',
+      'select',
       'linestring',
       'rectangle',
       'polygon',
-      'freehand',
       'circle',
-      'select',
+      'freehand',
       'delete',
       'download',
     ],
