@@ -123,7 +123,7 @@
                   >{{ item.name }}</v-list-item
                 >
                 <v-list-item :to="{ name: 'About' }">{{
-                  $t('about')
+                  $t('layout.about')
                 }}</v-list-item>
               </v-list>
             </v-menu>
