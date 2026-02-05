@@ -97,7 +97,7 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
 
     // Check default input values
     const boundingBox = page.getByRole('textbox', {
-      name: 'Bounding box Bounding box',
+      name: 'Bounding box',
     })
     const lonMin = page.getByRole('textbox', {
       name: 'Minimum longitude [degrees]*',
