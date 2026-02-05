@@ -21,10 +21,7 @@ test.describe('Leaf nodes as buttons enabled', () => {
     await expect(layerInfo).toContainText('Regional NWP forecast (1x1 km)')
 
     await leafNodeButton.click()
-    await page
-      .getByRole('link')
-      .filter({ hasText: 'Regional NWP 4x4' })
-      .click()
+    await page.getByRole('link').filter({ hasText: 'Regional NWP 4x4' }).click()
 
     await expect(layerInfo).toContainText('Regional NWP forecast (4x4 km)')
   })
