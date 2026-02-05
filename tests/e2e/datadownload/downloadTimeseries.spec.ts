@@ -52,7 +52,7 @@ test.describe('Download Time Series', () => {
 
     // Select JSON format instead of default CSV
     await dialog.getByRole('button', { name: 'csv' }).click()
-    await dialog.getByText('json').click()
+    await page.getByRole('listitem').filter({ hasText: 'json' }).click
 
     // Set up the download promise before clicking the download button
     const downloadPromise = page.waitForEvent('download')
@@ -114,7 +114,7 @@ test.describe('Download Time Series', () => {
 
     // Select XML format instead of default CSV
     await dialog.getByRole('button', { name: 'csv' }).click()
-    await dialog.getByText('xml').click()
+    await page.getByRole('listitem').filter({ hasText: 'xml' }).click()
 
     // Set up the download promise before clicking the download button
     const downloadPromise = page.waitForEvent('download')
