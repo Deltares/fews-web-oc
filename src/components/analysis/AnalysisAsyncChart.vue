@@ -24,10 +24,7 @@ import {
   type CollectionEmits,
   type ProductChart,
 } from '@/lib/analysis'
-import {
-  convertFewsPiTaskRunToTaskRun,
-  getTaskStatusCategory,
-} from '@/lib/taskruns'
+import { getTaskStatusCategory } from '@/lib/taskruns'
 import { configManager } from '@/services/application-config'
 import { useTaskRuns } from '@/services/useTaskRuns'
 import { useTaskRunStatus } from '@/services/useTaskRunStatus'
@@ -76,12 +73,12 @@ const taskRunIds = computed(() =>
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { taskRuns, interval: taskRunInterval } = useTaskRuns(
   baseUrl,
-  taskRunIds,
+  () => ({ taskRunIds: taskRunIds.value }),
   TASK_RUN_REFRESH_INTERVAL,
 )
 const task = computed(() => {
   if (!taskRuns.value?.length) return
-  return convertFewsPiTaskRunToTaskRun(taskRuns.value?.[0])
+  return taskRuns.value?.[0]
 })
 
 const category = computed(() => {

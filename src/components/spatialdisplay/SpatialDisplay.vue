@@ -6,9 +6,12 @@
         :location-ids="props.locationIds"
         :latitude="props.latitude"
         :longitude="props.longitude"
+        :group-id="groupId"
+        v-model:task-run-id="taskRunId"
         :locations="filteredLocations"
         :geojson="filteredGeojson"
         @changeLocationIds="onLocationsChange"
+        @changeLayer="onLayerChange"
         :layer-capabilities="layerCapabilities"
         :bounding-box="boundingBox"
         :times="times"
@@ -86,6 +89,14 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
+const taskRunId = ref<string>()
+watch(
+  () => props.layerName,
+  () => {
+    taskRunId.value = undefined
+  },
+)
+
 const warningLevelsStore = useWarningLevelsStore()
 const locationNamesStore = useLocationNamesStore()
 const userSettings = useUserSettingsStore()
@@ -108,7 +119,13 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { layerCapabilities, times } = useWmsLayerCapabilities(
   baseUrl,
   () => props.layerName,
+  taskRunId,
 )
+
+const groupId = computed(
+  () => props.topologyNode?.gridDisplaySelection?.groupId,
+)
+
 const { locations, geojson } = useFilterLocations(
   baseUrl,
   filterIds,
@@ -284,6 +301,35 @@ function onLocationsChange(locationIds: string[]): void {
   } else {
     closeTimeSeriesDisplay()
   }
+}
+
+function onLayerChange(layerName: string): void {
+  if (props.locationIds) {
+    emit('navigate', {
+      name: 'SpatialTimeSeriesDisplay',
+      params: { layerName, locationIds: props.locationIds },
+    })
+    return
+  }
+
+  if (props.longitude && props.latitude) {
+    emit('navigate', {
+      name: 'SpatialTimeSeriesDisplayWithCoordinates',
+      params: {
+        layerName,
+        latitude: props.latitude,
+        longitude: props.longitude,
+      },
+    })
+    return
+  }
+
+  emit('navigate', {
+    name: 'SpatialDisplay',
+    params: {
+      layerName,
+    },
+  })
 }
 
 function openLocationsTimeSeriesDisplay(locationIds: string[]) {

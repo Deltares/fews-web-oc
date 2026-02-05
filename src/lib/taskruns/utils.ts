@@ -17,3 +17,23 @@ export function sortTasks(a: TaskRun, b: TaskRun): number {
     return b.dispatchTimestamp! - a.dispatchTimestamp!
   }
 }
+
+export function getTasksOutputTimeRange(tasks: TaskRun[]) {
+  const minStartTime = tasks.reduce(
+    (min, task) =>
+      task.outputStartTimestamp
+        ? Math.min(min, task.outputStartTimestamp)
+        : min,
+    Infinity,
+  )
+  const outputStartTime =
+    minStartTime === Infinity ? null : new Date(minStartTime)
+  const maxEndTime = tasks.reduce(
+    (max, task) =>
+      task.outputEndTimestamp ? Math.max(max, task.outputEndTimestamp) : max,
+    -Infinity,
+  )
+  const outputEndTime = maxEndTime === -Infinity ? null : new Date(maxEndTime)
+
+  return { outputStartTime, outputEndTime }
+}

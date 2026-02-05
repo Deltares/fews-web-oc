@@ -1,75 +1,74 @@
 <template>
-  <v-list-item prepend-icon="mdi-palette" v-if="currentScales" class="pe-1">
-    <v-list max-height="130">
-      <v-list-item
-        v-for="(item, index) of currentScales"
-        :key="index"
-        @click="currentColourScaleIndex = index"
-        class="ps-0"
-        :title="item.style.title"
-      >
-        <div class="d-flex align-center ga-1">
-          <template v-if="item.useGradients !== false">
-            <span class="mb-1">{{ item.range?.min ?? '' }}</span>
-            <ColourStrip
-              :colourMap="item.colourMap"
-              :useGradients="item.useGradients"
-            />
-            <span class="mb-1">{{ item.range?.max ?? '' }}</span>
+  <v-list-item
+    prepend-icon="mdi-palette"
+    v-if="currentScale && currentScales"
+    class="pe-1"
+  >
+    <ColourItem
+      v-if="currentScales.length === 1"
+      :item="currentScale"
+      rounded
+      class="px-0"
+    />
+    <v-menu v-else v-model="showMenu" :close-on-content-click="false">
+      <template #activator="{ props, isActive }">
+        <ColourItem :item="currentScale" v-bind="props" rounded class="px-0">
+          <template #append>
+            <SelectIcon :active="isActive" />
           </template>
-          <template v-else>
-            <ColourLegendTable :colourMap="item.colourMap" />
-          </template>
-        </div>
-        <template #append v-if="index === currentColourScaleIndex">
-          <v-icon>mdi-check</v-icon>
-        </template>
-      </v-list-item>
-    </v-list>
-    <template v-if="currentScale?.useGradients !== false">
-      <v-row v-if="mutableColorScaleRange">
-        <v-col cols="5">
-          <v-text-field
-            v-model.number="mutableColorScaleRange.min"
-            label="Min"
-            variant="plain"
-            hide-details
-            density="comfortable"
-            @keydown.enter.stop="changeCurrentColourScaleRange"
-            @blur="changeCurrentColourScaleRange"
-            :rules="[rules.required, rules.smallerThanMax]"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="5">
-          <v-text-field
-            v-model.number="mutableColorScaleRange.max"
-            label="Max"
-            variant="plain"
-            hide-details
-            density="comfortable"
-            @keydown.enter.stop="changeCurrentColourScaleRange"
-            @blur="changeCurrentColourScaleRange"
-            :rules="[rules.required, rules.biggerThanMin]"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="2" class="d-flex align-center justify-center">
-          <v-btn
-            v-if="!currentScaleIsInitialRange"
-            icon="mdi-restore"
-            variant="flat"
-            density="compact"
-            aria-label="Reset current colour scale range"
-            @click="resetCurrentScaleRange"
-          />
-        </v-col>
-      </v-row>
-    </template>
+        </ColourItem>
+      </template>
+
+      <v-list density="compact">
+        <ColourItem
+          v-for="(item, index) in currentScales"
+          :item="item"
+          :active="index === currentColourScaleIndex"
+          @click="updateColourScaleIndex(index)"
+        />
+      </v-list>
+    </v-menu>
+    <div
+      v-if="mutableColorScaleRange && currentScale.useGradients !== false"
+      class="d-flex ga-2 pt-3"
+    >
+      <v-text-field
+        v-model.number="mutableColorScaleRange.min"
+        label="Min"
+        variant="plain"
+        hide-details
+        density="compact"
+        @keydown.enter.stop="changeCurrentColourScaleRange"
+        @blur="changeCurrentColourScaleRange"
+        :rules="[rules.required, rules.smallerThanMax]"
+      />
+      <v-text-field
+        v-model.number="mutableColorScaleRange.max"
+        label="Max"
+        variant="plain"
+        hide-details
+        density="compact"
+        @keydown.enter.stop="changeCurrentColourScaleRange"
+        @blur="changeCurrentColourScaleRange"
+        :rules="[rules.required, rules.biggerThanMin]"
+      />
+      <div class="d-flex align-center pe-2">
+        <v-btn
+          icon="mdi-restore"
+          variant="plain"
+          density="compact"
+          aria-label="Reset current colour scale range"
+          :disabled="currentScaleIsInitialRange"
+          @click="resetCurrentScaleRange"
+        />
+      </div>
+    </div>
   </v-list-item>
 </template>
 
 <script setup lang="ts">
-import ColourStrip from '@/components/wms/ColourStrip.vue'
-import ColourLegendTable from '@/components/wms/ColourLegendTable.vue'
+import ColourItem from '@/components/wms/panel/ColourItem.vue'
+import SelectIcon from '@/components/general/SelectIcon.vue'
 import { useColourScalesStore, type Range } from '@/stores/colourScales'
 import { useColourScales } from '@/services/useColourScales'
 import { ref, watch } from 'vue'
@@ -89,6 +88,8 @@ watch(
     currentColourScaleIndex.value = 0
   },
 )
+
+const showMenu = ref(false)
 
 const rules = {
   required: (v: number) =>
@@ -131,6 +132,11 @@ const changeCurrentColourScaleRange = () => {
   if (currentScale.value === undefined) return
 
   currentScale.value.range = mutableColorScaleRange.value
+}
+
+function updateColourScaleIndex(index: number) {
+  currentColourScaleIndex.value = index
+  showMenu.value = false
 }
 </script>
 

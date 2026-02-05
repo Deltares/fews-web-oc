@@ -1,57 +1,37 @@
 <template>
-  <v-list-item prepend-icon="mdi-layers-outline">
-    <span class="pa-0">{{ t('wms.overlays') }}</span>
+  <v-list
+    v-model:selected="selectedOverlayIds"
+    select-strategy="leaf"
+    density="compact"
+  >
+    <v-list-item-subtitle class="ps-3 pb-1">
+      {{ t('wms.overlays') }}
+    </v-list-item-subtitle>
     <v-list-item
-      :title="t('common.selectAll')"
-      @click="toggleAll"
-      class="ps-1"
-      density="compact"
+      v-for="overlay in overlays"
+      :key="overlay.id"
+      :title="getTitle(overlay)"
+      :value="overlay.id"
+      :active="false"
+      min-height="32"
+      rounded
     >
-      <template #prepend>
+      <template #prepend="{ isSelected, select }">
         <v-list-item-action start>
           <v-checkbox-btn
-            :indeterminate="someSelected && !allSelected"
-            :model-value="allSelected"
+            :model-value="isSelected"
+            @update:model-value="select"
             density="compact"
           />
         </v-list-item-action>
       </template>
     </v-list-item>
-    <v-divider />
-    <v-list
-      v-model:selected="selectedOverlayIds"
-      select-strategy="leaf"
-      class="pa-0"
-      density="compact"
-      max-height="160"
-    >
-      <v-list-item
-        v-for="overlay in overlays"
-        :key="overlay.id"
-        :title="getTitle(overlay)"
-        :value="overlay.id"
-        :active="false"
-        class="ps-1"
-        density="compact"
-      >
-        <template #prepend="{ isSelected, select }">
-          <v-list-item-action start>
-            <v-checkbox-btn
-              :model-value="isSelected"
-              @update:model-value="select"
-              density="compact"
-            />
-          </v-list-item-action>
-        </template>
-      </v-list-item>
-    </v-list>
-  </v-list-item>
+  </v-list>
 </template>
 
 <script setup lang="ts">
 import type { Overlay } from '@deltares/fews-pi-requests'
 import type { GetCapabilitiesResponse } from '@deltares/fews-wms-requests'
-import { computed } from 'vue'
 
 import { useI18n } from 'vue-i18n'
 
@@ -59,13 +39,13 @@ const { t } = useI18n()
 
 interface Props {
   overlays: Overlay[]
-  capabilties?: GetCapabilitiesResponse
+  capabilities: GetCapabilitiesResponse | undefined
 }
 
 const props = defineProps<Props>()
 
 function getTitle(overlay: Overlay): string {
-  const foundLayer = props.capabilties?.layers.find(
+  const foundLayer = props.capabilities?.layers.find(
     (layer) => layer.name === overlay.id,
   )
   return foundLayer?.title ?? overlay.id ?? 'Unnamed overlay'
@@ -74,24 +54,4 @@ function getTitle(overlay: Overlay): string {
 const selectedOverlayIds = defineModel<string[]>('selectedOverlayIds', {
   required: true,
 })
-
-const allSelected = computed(
-  () => props.overlays.length === selectedOverlayIds.value.length,
-)
-
-const someSelected = computed(
-  () =>
-    selectedOverlayIds.value.length > 0 &&
-    selectedOverlayIds.value.length < props.overlays.length,
-)
-
-function toggleAll() {
-  if (allSelected.value) {
-    selectedOverlayIds.value = []
-  } else {
-    selectedOverlayIds.value = props.overlays
-      .map((overlay) => overlay.id)
-      .filter((id) => id !== undefined)
-  }
-}
 </script>

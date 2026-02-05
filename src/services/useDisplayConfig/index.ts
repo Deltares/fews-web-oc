@@ -11,7 +11,6 @@ import {
   isFilterActionsFilter,
   isTimeSeriesGridActionsFilter,
 } from '@/lib/filters'
-import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import {
   actionsResponseToDisplayConfig,
   addFilterPeriodToConfig,
@@ -48,17 +47,11 @@ export function useDisplayConfig(
 
   const response = ref<ActionsResponse>()
   const displays = ref<DisplayConfig[] | null>(null)
-  const taskRunColorsStore = useTaskRunColorsStore()
-  const prevNodeId = ref<string | undefined>(undefined)
 
   watch(
     [() => toValue(nodeId), () => toValue(taskRunIds), () => toValue(options)],
     async ([_nodeId, _taskRunIds, _options]) => {
       if (_nodeId === undefined) return
-      if (_nodeId !== prevNodeId.value) {
-        taskRunColorsStore.clearColors()
-        prevNodeId.value = _nodeId
-      }
 
       const filter = {
         nodeId: _nodeId,
@@ -74,14 +67,6 @@ export function useDisplayConfig(
       response.value = await piProvider.getTopologyActions(
         _taskRunIds?.length ? taskRunsFilter : filter,
       )
-      // Assign a color to each task run id in the actions response
-      // and add it to the colorsMapping
-      for (const taskRunId of _taskRunIds ?? []) {
-        // If it is not current and doesn't have a color already, assign a color to the taskRunId
-        if (!taskRunColorsStore.getColor(taskRunId)) {
-          taskRunColorsStore.setColor(taskRunId)
-        }
-      }
 
       displays.value = actionsResponseToDisplayConfig(response.value, _nodeId)
     },
@@ -122,8 +107,6 @@ export function useDisplayConfigFilter(
   const displayConfig = ref<DisplayConfig | null>(null)
   const displays = ref<DisplayConfig[] | null>(null)
   const response = ref<ActionsResponse>()
-  const taskRunColorsStore = useTaskRunColorsStore()
-  const prevFilterId = ref<string | undefined>(undefined)
 
   watch(
     [() => toValue(filter), () => toValue(taskRunIds)],
@@ -135,23 +118,10 @@ export function useDisplayConfigFilter(
           return
         }
 
-        if (_filter.filterId !== prevFilterId.value) {
-          taskRunColorsStore.clearColors()
-          prevFilterId.value = _filter.filterId
-        }
-
         const taskRunsFilter = {
           ..._filter,
           taskRunIds: _taskRunIds?.join(','),
           currentForecastsAlwaysVisible: true,
-        }
-        // Assign a color to each task run id in the actions response
-        // and add it to the colorsMapping
-        for (const taskRunId of _taskRunIds ?? []) {
-          // If it is not current and doesn't have a color already, assign a color to the taskRunId
-          if (!taskRunColorsStore.getColor(taskRunId)) {
-            taskRunColorsStore.setColor(taskRunId)
-          }
         }
         const _response = await piProvider.getFilterActions(
           _taskRunIds?.length ? taskRunsFilter : _filter,

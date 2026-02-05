@@ -14,6 +14,7 @@ import { RelativePeriod } from '@/lib/period'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
   convertFewsPiTaskRunToTaskRun,
+  getTasksOutputTimeRange,
   TaskRun,
   TaskStatus,
 } from '@/lib/taskruns'
@@ -73,24 +74,9 @@ export function useTaskRuns(
 
     allTaskRuns.value = fetchedTaskRuns.map(convertFewsPiTaskRunToTaskRun)
     if (allTaskRuns.value.length > 0) {
-      const minStartTime = allTaskRuns.value.reduce(
-        (min, task) =>
-          task.outputStartTimestamp
-            ? Math.min(min, task.outputStartTimestamp)
-            : min,
-        Infinity,
-      )
-      outputStartTime.value =
-        minStartTime === Infinity ? null : new Date(minStartTime)
-      const maxEndTime = allTaskRuns.value.reduce(
-        (max, task) =>
-          task.outputEndTimestamp
-            ? Math.max(max, task.outputEndTimestamp)
-            : max,
-        -Infinity,
-      )
-      outputEndTime.value =
-        maxEndTime === -Infinity ? null : new Date(maxEndTime)
+      const range = getTasksOutputTimeRange(allTaskRuns.value)
+      outputStartTime.value = range.outputStartTime
+      outputEndTime.value = range.outputEndTime
     }
 
     lastUpdatedTimestamp.value = Date.now()

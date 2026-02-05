@@ -21,6 +21,7 @@ import {
   componentTypeToRouteNameMap,
   componentTypeToTitleMap,
 } from './component'
+import { fetchWmsCapabilitiesHeaders } from '@/lib/capabilities'
 
 export interface DisplayTab {
   type: ComponentType
@@ -44,7 +45,22 @@ const displayTabs: DisplayTab[] = Object.values(ComponentType).map((type) => {
   }
 })
 
-export function displayTabsForNode(
+export async function getLayerNameForNode(node: TopologyNode) {
+  const groupId = node.gridDisplaySelection?.groupId
+  if (groupId) {
+    const capabilities = await fetchWmsCapabilitiesHeaders()
+    const layers = capabilities.layers.filter(
+      (layer) => layer.groupName === groupId,
+    )
+    const firstLayer = layers[0]
+    return firstLayer?.name ?? ''
+  }
+
+  const plotId = node.gridDisplaySelection?.plotId
+  return plotId ?? ''
+}
+
+export async function displayTabsForNode(
   node: TopologyNode,
   parentNodeId?: string,
   topologyId?: string,
@@ -60,7 +76,7 @@ export function displayTabsForNode(
         tab.active = nodeHasMap(node)
         tab.to.params = {
           ...params,
-          layerName: node.gridDisplaySelection?.plotId ?? '',
+          layerName: await getLayerNameForNode(node),
         }
 
         if (from?.params.locationIds) {

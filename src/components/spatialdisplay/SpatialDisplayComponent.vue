@@ -75,26 +75,14 @@
       />
       <template v-else>
         <InformationPanel
-          v-if="layerOptions"
-          :layerTitle="props.layerCapabilities?.title"
+          v-if="layerCapabilities"
+          :layerName="layerName"
+          :groupId="groupId"
           :isLoading="isLoading"
           :currentTime="selectedDate"
-          :forecastTime="forecastTime"
-          :completelyMissing="
-            props.layerCapabilities?.completelyMissing ?? false
-          "
-          :firstValueTime="
-            new Date(props.layerCapabilities?.firstValueTime ?? '')
-          "
-          :lastValueTime="
-            new Date(props.layerCapabilities?.lastValueTime ?? '')
-          "
-          :canUseStreamlines="canUseStreamlines"
-          v-model:layer-kind="layerKind"
+          :layerCapabilities="layerCapabilities"
           v-model:show-layer="showLayer"
-          :aggregations="aggregations"
-          v-model:do-show-aggregated="doShowAggregated"
-          v-model:selected-aggregation-label="selectedAggregationLabel"
+          @changeLayer="onLayerChange"
         >
           <template v-if="aggregations.length > 0">
             <v-divider />
@@ -111,19 +99,26 @@
               v-model:currentColourScaleIndex="currentColourScaleIndex"
             />
           </template>
-          <template v-if="settings.overlays.length">
-            <v-divider />
-            <OverlayPanel
-              :overlays="settings.overlays"
-              v-model:selected-overlay-ids="selectedOverlayIds"
-              :capabilties="staticCapabilities"
+          <template #chip-append>
+            <StreamlinesButton
+              v-if="canUseStreamlines"
+              :isLoading="isLoading"
+              v-model:layer-kind="layerKind"
+            />
+          </template>
+          <template #extension>
+            <AggregationExtension
+              v-if="doShowAggregated"
+              :aggregations="aggregations"
+              v-model:selected-aggregation-label="selectedAggregationLabel"
             />
           </template>
         </InformationPanel>
-        <OverlayInformationPanel v-else-if="settings.overlays.length">
+        <OverlayInformationPanel v-if="settings.overlays.length">
           <OverlayPanel
             :overlays="settings.overlays"
             v-model:selected-overlay-ids="selectedOverlayIds"
+            :capabilities="staticCapabilities"
           />
         </OverlayInformationPanel>
         <LocationsSearchControl
@@ -136,6 +131,7 @@
           :selectedLocationIds="selectedLocationIds"
           @changeLocationIds="onLocationsChange"
         />
+        <TaskRunControl v-model:taskRunId="taskRunId" />
       </template>
     </div>
     <ElevationSlider
@@ -190,6 +186,7 @@ import SelectedCoordinateLayer from '@/components/wms/SelectedCoordinateLayer.vu
 import InformationPanel from '@/components/wms/panel/InformationPanel.vue'
 import OverlayInformationPanel from '@/components/wms/panel/OverlayInformationPanel.vue'
 import AggregationPanel from '../wms/panel/AggregationPanel.vue'
+import AggregationExtension from '@/components/wms/panel/AggregationExtension.vue'
 import ColourPanel from '@/components/wms/panel/ColourPanel.vue'
 import OverlayPanel from '@/components/wms/panel/OverlayPanel.vue'
 import ElevationSlider from '@/components/wms/ElevationSlider.vue'
@@ -197,6 +194,8 @@ import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
 import MapToolsControl from '@/components/map/MapToolsControl.vue'
 import CoordinatesDisplay from '@/components/map/CoordinatesDisplay.vue'
+import StreamlinesButton from '@/components/wms/panel/StreamlinesButton.vue'
+import TaskRunControl from '@/components/wms/TaskRunControl.vue'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
@@ -228,11 +227,7 @@ import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 import { useSelectedElevation } from '@/services/useSelectedElevation'
 import { clamp } from '@/lib/utils/math'
-import {
-  type AggregationItem,
-  getRelativeStartDateForLabel,
-  shortLabel,
-} from '@/lib/aggregation'
+import { useAggregations } from '@/services/useAggregations'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -251,6 +246,7 @@ interface Props {
   locationIds?: string
   latitude?: string
   longitude?: string
+  groupId?: string
   boundingBox?: BoundingBox
   settings: ComponentSettings['map']
 }
@@ -263,6 +259,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits([
   'changeLocationIds',
   'coordinateClick',
+  'changeLayer',
   'update:elevation',
   'update:currentTime',
 ])
@@ -273,6 +270,8 @@ const debouncedSetLayerOptions = debounce(setLayerOptions, 240, {
   leading: true,
   trailing: true,
 })
+
+const taskRunId = defineModel<string>('taskRunId')
 
 const currentElevation = useSelectedElevation()
 const minElevation = ref<number>(-Infinity)
@@ -311,62 +310,8 @@ watch(
 
 const selectedLocationIds = computed(() => props.locationIds?.split(',') ?? [])
 
-const aggregationLabels = computed<string[]>(() => {
-  // For now, we only ever have one entry for aggregation: "Accumulation".
-  return props.layerCapabilities?.aggregation?.[0].labels ?? []
-})
-
-const doShowAggregated = ref<boolean>(true)
-const selectedAggregationLabel = ref<string | null>(
-  aggregationLabels.value[0] ?? null,
-)
-
-const forecastTime = ref<Date>()
-
-const aggregations = computed<AggregationItem[]>(() => {
-  const forecastTimeIsBeforeSelectedDate =
-    forecastTime.value !== undefined &&
-    selectedDate.value !== undefined &&
-    forecastTime.value < selectedDate.value
-
-  const displayTimeStartDate = forecastTimeIsBeforeSelectedDate
-    ? forecastTime.value
-    : selectedDate.value
-  const displayTimeEndDate = forecastTimeIsBeforeSelectedDate
-    ? selectedDate.value
-    : forecastTime.value
-
-  const aggregation = props.layerCapabilities?.aggregation?.[0]
-  const aggregationType = aggregation?.aggregationType ?? 'unknown'
-  const labels = aggregation?.labels ?? []
-
-  return labels.map((label) => ({
-    id: label,
-    type: aggregationType,
-    label: label,
-    shortLabel: shortLabel(label),
-    icon: label === 'to Display Time' ? 'mdi-swap-horizontal' : undefined,
-    startDate:
-      label === 'to Display Time'
-        ? displayTimeStartDate
-        : getRelativeStartDateForLabel(label, selectedDate.value),
-    endDate:
-      label === 'to Display Time' ? displayTimeEndDate : selectedDate.value,
-  }))
-})
-
-watch(
-  () => aggregations.value,
-  (items) => {
-    if (
-      selectedAggregationLabel.value === null ||
-      !items.find((item) => item.id === selectedAggregationLabel.value)
-    ) {
-      selectedAggregationLabel.value = items[0]?.id ?? null
-    }
-  },
-  { immediate: true },
-)
+const { doShowAggregated, selectedAggregationLabel, aggregations } =
+  useAggregations(selectedDate, () => props.layerCapabilities)
 
 watch([doShowAggregated, selectedAggregationLabel], () => setLayerOptions())
 
@@ -410,18 +355,17 @@ const { selectedOverlayIds, selectedOverlays } = useOverlays(
 )
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const start = computed<Date | null>(() => props.times?.[0] ?? null)
-const end = computed<Date | null>(() => {
-  if (!props.times || props.times.length === 0) return null
-  return props.times[props.times.length - 1]
-})
-const maxValuesTimeSeries = useWmsMaxValuesTimeSeries(
+const maxValuesStartTime = ref<Date | null>(null)
+const maxValuesEndTime = ref<Date | null>(null)
+const maxValuesTaskRunId = ref<string>()
+const { timeSeries: maxValuesTimeSeries } = useWmsMaxValuesTimeSeries(
   baseUrl,
   () => props.layerName,
-  start,
-  end,
+  maxValuesStartTime,
+  maxValuesEndTime,
   doShowAggregated,
   selectedAggregationLabel,
+  maxValuesTaskRunId,
 )
 
 // Set the start and end time for the workflow based on the WMS layer capabilities.
@@ -505,6 +449,10 @@ function onLocationsChange(locationIds: string[]): void {
   emit('changeLocationIds', locationIds)
 }
 
+function onLayerChange(newLayerName: string): void {
+  emit('changeLayer', newLayerName)
+}
+
 const canUseStreamlines = computed(
   () => props.layerCapabilities?.animatedVectors !== undefined,
 )
@@ -539,9 +487,6 @@ const layerHasElevation = computed(() => {
 watch(
   () => props.layerCapabilities,
   (layer) => {
-    const _forecastTime = layer?.keywordList?.[0].forecastTime
-    forecastTime.value = _forecastTime ? new Date(_forecastTime) : undefined
-
     legendLayerStyles.value = props.layerCapabilities?.styles
     if (legendLayerStyles.value === undefined && props.layerName) {
       legendLayerStyles.value = [
@@ -562,6 +507,11 @@ watch(
         (layer.elevation as ElevationWithUnitSymbol).unitSymbol ?? ''
       elevationTicks.value = layer.elevation.irregularTicks
     }
+
+    maxValuesStartTime.value = props.times?.[0] ?? null
+    maxValuesEndTime.value = props.times?.at(-1) ?? null
+    maxValuesTaskRunId.value = taskRunId.value
+
     setLayerOptions()
   },
   { immediate: true, deep: true },
@@ -610,6 +560,7 @@ function setLayerOptions(): void {
     style: currentColourScale.value?.style.name,
     useDisplayUnits: userSettings.useDisplayUnits,
     useLastValue: isInDatesRange(selectedDate.value, props.times),
+    taskRunId: taskRunId.value,
   }
 }
 

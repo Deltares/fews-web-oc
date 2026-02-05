@@ -4,7 +4,7 @@
     flat
     density="compact"
     :ripple="false"
-    @click="taskRunsStore.toggleTaskRun(task)"
+    @click="toggleTaskSelection"
   >
     <v-card-text class="py-2 px-1 h-100 flex-grow-1">
       <div class="d-flex w-100">
@@ -16,7 +16,7 @@
               density="compact"
               :color="taskRunColor"
               :disabled="task.isCurrent"
-              @click.stop="taskRunsStore.toggleTaskRun(task)"
+              @click.stop="toggleTaskSelection"
             >
               <v-tooltip
                 text="Visualize in charts"
@@ -207,6 +207,16 @@ function onExpansionPanelToggle() {
   // Only expand when no text is selected
   if (window.getSelection()?.toString() === '') {
     expanded.value = !expanded.value
+  }
+}
+
+function toggleTaskSelection() {
+  if (task.isCurrent) return
+  taskRunsStore.toggleTaskRun(task)
+
+  // Assign a color to the task if it doesn't have one already
+  if (!taskRunColorsStore.getColor(task.taskId)) {
+    taskRunColorsStore.assignColor(task.taskId)
   }
 }
 </script>

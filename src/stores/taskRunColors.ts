@@ -10,13 +10,17 @@ export const useTaskRunColorsStore = defineStore('taskRunColors', () => {
   const colors = ref<string[]>([])
   const currentColors = ref<string[]>([])
 
-  function setColor(taskRunId: string) {
+  function assignColor(taskRunId: string) {
     // pop the first color from the currentColors array and set it to the colorMap
     colorMap.value.set(taskRunId, currentColors.value.pop() ?? '')
   }
 
   function getColor(taskRunId: string): undefined | string {
     return colorMap.value.get(taskRunId)
+  }
+
+  function hasColor(taskRunId: string): boolean {
+    return colorMap.value.has(taskRunId)
   }
 
   function clearColors() {
@@ -45,9 +49,10 @@ export const useTaskRunColorsStore = defineStore('taskRunColors', () => {
   return {
     colors,
     colorMap,
-    setColor,
+    assignColor,
     fetchColors,
     getColor,
+    hasColor,
     clearColors,
     setColorMap,
   }

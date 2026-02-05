@@ -139,6 +139,8 @@ import type { NavigateRoute } from '@/lib/router'
 import { SidePanel, useSidePanelStore } from '@/stores/sidePanel'
 import VisualizeDataControl from '@/components/tasks/VisualizeDataControl.vue'
 import { useI18n } from 'vue-i18n'
+import { fetchWmsCapabilitiesHeaders } from '@/lib/capabilities'
+import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 
 interface Props {
   topologyId?: string
@@ -160,6 +162,7 @@ const settings = useUserSettingsStore()
 const workflowsStore = useWorkflowsStore()
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const taskRunsStore = useTaskRunsStore()
+const taskRunColorsStore = useTaskRunColorsStore()
 const sidePanelStore = useSidePanelStore()
 const nodesStore = useNodesStore()
 
@@ -245,18 +248,16 @@ const menuType = computed(() => {
 })
 
 const active = ref<string | undefined>(undefined)
-watch(
-  () => nodesStore.activeNodeId,
-  () => {
-    // Clear the bounding box and stop drawing when we switch nodes while selecting a bounding box.
-    workflowsStore.boundingBox = null
-    workflowsStore.isDrawingBoundingBox = false
-    workflowsStore.coordinate = null
-    workflowsStore.isSelectingCoordinate = false
+watch([() => nodesStore.activeNodeId, active], () => {
+  // Clear the bounding box and stop drawing when we switch nodes while selecting a bounding box.
+  workflowsStore.boundingBox = null
+  workflowsStore.isDrawingBoundingBox = false
+  workflowsStore.coordinate = null
+  workflowsStore.isSelectingCoordinate = false
 
-    taskRunsStore.clearSelectedTaskRuns()
-  },
-)
+  taskRunColorsStore.clearColors()
+  taskRunsStore.clearSelectedTaskRuns()
+})
 
 // Clear the preferred workflow IDs when we unmount.
 onUnmounted(() => availableWorkflowsStore.clearPreferredWorkflowIds())
@@ -318,13 +319,16 @@ topologyNodesStore
   .fetch()
   .catch(() => console.error('Failed to fetch topology nodes'))
 
+// Pre-fetch WMS capabilities headers for better performance later on.
+fetchWmsCapabilitiesHeaders()
+
 const subNodes = computed(() =>
   topologyNodesStore.getSubNodesForIds(topologyDisplayNodes.value),
 )
 watch(
   () => topologyNodesStore.nodes,
-  () => {
-    const to = reroute(route)
+  async () => {
+    const to = await reroute(route)
     if (to) router.push(to)
   },
 )
@@ -360,7 +364,7 @@ const { componentSettings } = useComponentSettings(baseUrl, () => [
 
 // Update the displayTabs if the active node changes (or if the topologyMap changes).
 // Redirect to the corresponding display of the updated active tab.
-watchEffect(() => {
+watchEffect(async () => {
   // Check if the current displayTab already matches the active node.
   if (!props.nodeId) return
   const activeNodeId = Array.isArray(props.nodeId)
@@ -396,20 +400,22 @@ watchEffect(() => {
   }
 
   // Create the displayTabs for the active node.
-  displayTabs.value = displayTabsForNode(node, parentNodeIdNodeId)
+  displayTabs.value = await displayTabsForNode(node, parentNodeIdNodeId)
 
   externalLink.value = node.url
 })
 
 function onNavigate(to: NavigateRoute) {
   const name = `Topology${String(to.name)}`
+  const layerName = to.params?.layerName ?? props.layerName
+
   switch (to.name) {
     case 'SpatialTimeSeriesDisplay':
       router.push({
         name,
         params: {
           nodeId: props.nodeId,
-          layerName: props.layerName,
+          layerName,
           locationIds: to.params?.locationIds,
         },
         query: route.query,
@@ -420,7 +426,7 @@ function onNavigate(to: NavigateRoute) {
         name,
         params: {
           nodeId: props.nodeId,
-          layerName: props.layerName,
+          layerName,
           latitude: to.params?.latitude,
           longitude: to.params?.longitude,
         },
@@ -432,7 +438,7 @@ function onNavigate(to: NavigateRoute) {
         name,
         params: {
           nodeId: props.nodeId,
-          layerName: props.layerName,
+          layerName,
         },
         query: route.query,
       })
@@ -452,7 +458,10 @@ function onNavigate(to: NavigateRoute) {
 
 onBeforeRouteUpdate(reroute)
 
-function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
+async function reroute(
+  to: RouteLocationNormalized,
+  from?: RouteLocationNormalized,
+) {
   if (!to.params.nodeId) {
     const firstSubNodeId = topologyNodesStore.getFirstLeafNodeForId(
       subNodes.value[0].id,
@@ -505,7 +514,7 @@ function reroute(to: RouteLocationNormalized, from?: RouteLocationNormalized) {
     }
   }
 
-  const tabs = displayTabsForNode(
+  const tabs = await displayTabsForNode(
     node,
     showLeafNodesAsButtons ? parentNodeId : undefined,
     topologyId,
