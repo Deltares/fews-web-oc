@@ -17,6 +17,8 @@ test.describe('Download Time Series', () => {
   test('Should download in CSV format', async ({ page }) => {
     await page.getByText('Download time series').click()
 
+    await expect(page.getByRole('button', { name: 'csv' })).toBeVisible()
+
     // Set up the download promise before clicking the download button
     const downloadPromise = page.waitForEvent('download')
     await page.getByRole('button', { name: 'Download' }).click()
