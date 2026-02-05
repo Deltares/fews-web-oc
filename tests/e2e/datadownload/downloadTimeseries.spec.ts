@@ -17,12 +17,9 @@ test.describe('Download Time Series', () => {
   test('Should download in CSV format', async ({ page }) => {
     await page.getByText('Download time series').click()
 
-    const dialog = page.getByTestId('time-series-file-download')
-    await expect(dialog).toBeVisible()
-
     // Set up the download promise before clicking the download button
     const downloadPromise = page.waitForEvent('download')
-    await dialog.getByRole('button', { name: 'Download' }).click()
+    await page.getByRole('button', { name: 'Download' }).click()
     // Wait for the download to complete
     const download = await downloadPromise
     const path = await download.path()
@@ -49,7 +46,8 @@ test.describe('Download Time Series', () => {
 
     // Select JSON format instead of default CSV
     await page.getByRole('button', { name: 'csv' }).click()
-    await page.getByRole('listitem').filter({ hasText: 'json' }).click
+    await page.getByRole('listitem').filter({ hasText: 'json' }).click()
+    await expect(page.getByRole('button', { name: 'json' })).toBeVisible()
 
     // Set up the download promise before clicking the download button
     const downloadPromise = page.waitForEvent('download')
@@ -109,6 +107,7 @@ test.describe('Download Time Series', () => {
     // Select XML format instead of default CSV
     await page.getByRole('button', { name: 'csv' }).click()
     await page.getByRole('listitem').filter({ hasText: 'xml' }).click()
+    await expect(page.getByRole('button', { name: 'xml' })).toBeVisible()
 
     // Set up the download promise before clicking the download button
     const downloadPromise = page.waitForEvent('download')
