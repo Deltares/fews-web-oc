@@ -1,13 +1,17 @@
 import type { TimeSeriesEvent } from '@deltares/fews-pi-requests'
 
-export interface SeriesData
-  extends Pick<TimeSeriesEvent, 'flag' | 'flagSource' | 'comment' | 'user'> {
+export interface SeriesData extends Pick<
+  TimeSeriesEvent,
+  'flag' | 'flagSource' | 'comment' | 'user'
+> {
   x: Date | number | null
   y: number | null
 }
 
-export interface SeriesArrayData
-  extends Pick<TimeSeriesEvent, 'flag' | 'flagSource' | 'comment' | 'user'> {
+export interface SeriesArrayData extends Pick<
+  TimeSeriesEvent,
+  'flag' | 'flagSource' | 'comment' | 'user'
+> {
   x: Date | number | null
   y: (number | null)[]
 }

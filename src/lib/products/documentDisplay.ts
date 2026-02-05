@@ -17,8 +17,10 @@ export interface DocumentDisplaysConfig {
   documentDisplays: DocumentDisplay[]
 }
 
-export interface DocumentBrowserDisplay
-  extends Omit<DocumentDisplayBrowser, 'type' | 'browser'> {
+export interface DocumentBrowserDisplay extends Omit<
+  DocumentDisplayBrowser,
+  'type' | 'browser'
+> {
   type: 'browser'
   browser: DocumentBrowser
 }
@@ -28,8 +30,10 @@ export interface ReportDisplay extends Omit<DocumentDisplayReport, 'type'> {
   report: ReportDisplayConfig
 }
 
-export interface DisplayCompose
-  extends Omit<DocumentDisplayCompose, 'type' | 'compose'> {
+export interface DisplayCompose extends Omit<
+  DocumentDisplayCompose,
+  'type' | 'compose'
+> {
   type: 'compose'
   compose: DocumentCompose[]
 }
@@ -46,8 +50,10 @@ export interface DocumentCompose {
   template: ArchiveProduct
 }
 
-export interface ArchiveProductSet
-  extends Omit<DocumentDisplayArchiveProductSet, 'constraints'> {
+export interface ArchiveProductSet extends Omit<
+  DocumentDisplayArchiveProductSet,
+  'constraints'
+> {
   constraints: Constraints
 }
 
@@ -95,8 +101,10 @@ export interface Reports {
   reportModuleInstanceId: string[]
 }
 
-export interface ReportDisplayConfig
-  extends Omit<DocumentDisplayReportType, 'archiveProduct'> {
+export interface ReportDisplayConfig extends Omit<
+  DocumentDisplayReportType,
+  'archiveProduct'
+> {
   archiveProduct: ArchiveProduct
 }
 

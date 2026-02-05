@@ -1,6 +1,11 @@
 <template>
   <v-btn icon size="small" :active="active" aria-label="Thresholds button">
-    <v-avatar size="24" :rounded="false" v-if="maxWarningLevelColor">
+    <v-avatar
+      size="24"
+      :rounded="false"
+      v-if="maxWarningLevelColor"
+      variant="text"
+    >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
         <path
           stroke="black"

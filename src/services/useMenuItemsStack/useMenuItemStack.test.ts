@@ -1,5 +1,4 @@
-import { ref } from 'vue'
-import { flushPromises } from '@vue/test-utils'
+import { ref, nextTick } from 'vue'
 import { useMenuItemsStack } from './index.js'
 import { ColumnItem } from '@/components/general/ColumnItem.js'
 import { test, expect } from 'vitest'
@@ -35,10 +34,11 @@ test('should react to active changes', async () => {
   expect(stack.value.length).toBe(2)
 
   active.value = '1'
-  await flushPromises()
+  await nextTick()
+
   expect(stack.value.length).toBe(2)
 
   active.value = '1.1'
-  await flushPromises()
+  await nextTick()
   expect(stack.value.length).toBe(3)
 })

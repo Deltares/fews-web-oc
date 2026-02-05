@@ -35,7 +35,7 @@
         size="small"
         icon
         v-if="displayActionItems.length"
-        aria-labelledby="display-action-menu"
+        name="Time series actions"
       >
         <v-icon>mdi-dots-horizontal</v-icon>
         <v-menu activator="parent" density="compact">

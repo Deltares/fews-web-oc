@@ -41,7 +41,7 @@ test.describe('Default Selection in Topology', () => {
     expect(url).toMatch(/\/topology\/early_warning\/node\/[^/]+/)
 
     // Verify that the first node in the topology tree is selected (has active class or visual indicator)
-    const firstNode = topologyTree.getByRole('listitem').first()
+    const firstNode = topologyTree.getByRole('link').first()
     await expect(firstNode).toHaveClass(/active/)
 
     // Verify that content related to the selected node is displayed
@@ -94,7 +94,7 @@ test.describe('Default Selection in Topology', () => {
 
     // Verify that the specified node is selected in the topology tree
     const nodeLink = await topologyTree
-      .getByRole('listitem')
+      .getByRole('link')
       .filter({ hasText: 'Hazard map' })
     await expect(nodeLink).toHaveClass(/active/)
 

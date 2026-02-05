@@ -8,10 +8,10 @@ async function openTasksPanel(page: Page) {
     name: 'More Sidepanel Options',
   })
   await moreOptionsBtn.click()
-  const runTasksListItem = page
+  const runTasksItem = page
     .getByRole('listitem')
     .filter({ hasText: 'Run Tasks' })
-  await runTasksListItem.click()
+  await runTasksItem.click()
 }
 
 describeFromVersion('202402', 'Run Tasks Panel', () => {
@@ -55,7 +55,7 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
       name: 'Longitude [degrees]',
     })
     const coordinate = page.getByRole('textbox', {
-      name: 'Coordinate Coordinate',
+      name: 'Coordinate',
     })
     await expect(latitude).toHaveValue('-29.83')
     await expect(longitude).toHaveValue('31.06')
@@ -97,7 +97,7 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
 
     // Check default input values
     const boundingBox = page.getByRole('textbox', {
-      name: 'Bounding box Bounding box',
+      name: 'Bounding box',
     })
     const lonMin = page.getByRole('textbox', {
       name: 'Minimum longitude [degrees]*',
@@ -112,10 +112,10 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
       name: 'Maximum latitude [degrees]*',
     })
     const xCellSize = page.getByRole('textbox', {
-      name: 'X cell size [degrees]* X cell',
+      name: 'X cell size [degrees]*',
     })
     const yCellSize = page.getByRole('textbox', {
-      name: 'Y cell size [degrees]* Y cell',
+      name: 'Y cell size [degrees]*',
     })
     await expect(boundingBox).toHaveValue('25°E -33°N, 38°E -25°N')
     await expect(lonMin).toHaveValue('25.00')
@@ -172,7 +172,7 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
       name: 'Longitude [degrees]',
     })
     const coordinate = page.getByRole('textbox', {
-      name: 'Coordinate Coordinate',
+      name: 'Coordinate',
     })
     await expect(latitude).toHaveValue('-29.83')
     await expect(longitude).toHaveValue('31.06')

@@ -13,10 +13,7 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplay', () => {
     await expect(page.getByText('Water Level (m + MSL)')).toBeVisible()
 
     await page.getByText('Rivers').click()
-    await page
-      .getByRole('listitem')
-      .filter({ hasText: 'Level stations' })
-      .click()
+    await page.getByRole('link').filter({ hasText: 'Level stations' }).click()
 
     await expect(page.getByText('Water Level (m + MSL)')).toBeVisible()
     await expect(page.getByText('Total Water Depth (m)')).toBeVisible()
@@ -33,7 +30,7 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplay', () => {
     await expect(page.getByRole('button', { name: 'Chart' })).toBeVisible()
 
     await page.getByText('Rivers').click()
-    await page.getByRole('listitem').filter({ hasText: 'Palmiet' }).click()
+    await page.getByRole('link').filter({ hasText: 'Palmiet' }).click()
 
     await expect(page.getByText('Water Level (m + MSL)')).not.toBeVisible()
     await expect(page.getByRole('button', { name: 'Chart' })).not.toBeVisible()
@@ -48,7 +45,7 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplayWithCoordina
     await expect(page.getByText('Precipitation Rate (mm)')).toBeVisible()
 
     await page.getByText('Coastal processes').click()
-    await page.getByRole('listitem').filter({ hasText: 'Currents' }).click()
+    await page.getByRole('link').filter({ hasText: 'Currents' }).click()
 
     await expect(page.getByText('Current Speed [1] Delft3D')).toBeVisible()
     await expect(
@@ -66,10 +63,7 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplayWithCoordina
     await expect(page.getByText('Water Level (m + MSL)')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Chart' })).toBeVisible()
 
-    await page
-      .getByRole('listitem')
-      .filter({ hasText: 'Critical points' })
-      .click()
+    await page.getByRole('link').filter({ hasText: 'Critical points' }).click()
 
     await expect(page.getByText('Water Level (m + MSL)')).not.toBeVisible()
     await expect(page.getByRole('button', { name: 'Chart' })).not.toBeVisible()
