@@ -22,8 +22,9 @@
 .maplibregl-ctrl button.maplibregl-ctrl-compass .maplibregl-ctrl-icon,
 .maplibregl-ctrl button.maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon,
 .maplibregl-ctrl button.maplibregl-ctrl-geolocate .maplibregl-ctrl-icon,
-.maplibregl-ctrl button.maplibregl-ctrl-geolocate:disabled .maplibregl-ctrl-icon
-{
+.maplibregl-ctrl
+  button.maplibregl-ctrl-geolocate:disabled
+  .maplibregl-ctrl-icon {
   background-image: unset;
 }
 
@@ -48,13 +49,17 @@
   line-height: 32px;
 }
 
-.maplibregl-ctrl button.maplibregl-ctrl-geolocate .maplibregl-ctrl-icon::before {
+.maplibregl-ctrl
+  button.maplibregl-ctrl-geolocate
+  .maplibregl-ctrl-icon::before {
   font-family: 'Material Design Icons';
   content: '\F01A4'; /* mdi-crosshairs-gps */
   font-size: 22px;
   line-height: 32px;
 }
-.maplibregl-ctrl button.maplibregl-ctrl-geolocate:disabled .maplibregl-ctrl-icon::before {
+.maplibregl-ctrl
+  button.maplibregl-ctrl-geolocate:disabled
+  .maplibregl-ctrl-icon::before {
   font-family: 'Material Design Icons';
   content: '\F0F45'; /* mdi-crosshairs-off */
   font-size: 22px;
@@ -62,11 +67,10 @@
   opacity: 0.5;
 }
 
-
 .maplibregl-terradraw-add-control.active,
 .maplibregl-terradraw-measure-add-control.active,
 .maplibregl-terradraw-valhalla-add-control.active {
-  background-color: color-mix(in srgb, currentColor 20%, transparent);  
+  background-color: color-mix(in srgb, currentColor 20%, transparent);
 }
 
 .maplibregl-terradraw-measure-add-control:disabled {
