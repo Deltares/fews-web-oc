@@ -538,25 +538,15 @@ watch(
   { deep: true },
 )
 
-watch(
-  () => selectedDate.value,
-  () => {
-    console.log('Selected date changed', selectedDate.value)
-    debouncedSetLayerOptions()
-  },
-)
+watch(selectedDate, () => {
+  debouncedSetLayerOptions()
+})
 
 function setLayerOptions(): void {
-  console.log(
-    'Setting layer options triggered',
-    props.layerName,
-    selectedDate.value,
-  )
   if (!props.layerName || !selectedDate.value || !props.layerCapabilities) {
     layerOptions.value = undefined
     return
   }
-  console.log('Setting layer options')
 
   layerOptions.value = {
     name: props.layerName,

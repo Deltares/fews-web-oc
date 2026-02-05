@@ -342,12 +342,12 @@ function openLocationsTimeSeriesDisplay(locationIds: string[]) {
 }
 
 function onCoordinateClick(latitude: number, longitude: number): void {
-  if (!onlyCoverageLayersAvailable.value) return
-
   openCoordinatesTimeSeriesDisplay(latitude, longitude)
 }
 
 function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
+  if (!onlyCoverageLayersAvailable.value) return
+
   const _latitude = latitude.toFixed(3)
   const _longitude = longitude.toFixed(3)
 

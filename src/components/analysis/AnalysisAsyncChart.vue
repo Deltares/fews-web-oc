@@ -24,10 +24,7 @@ import {
   type CollectionEmits,
   type ProductChart,
 } from '@/lib/analysis'
-import {
-  convertFewsPiTaskRunToTaskRun,
-  getTaskStatusCategory,
-} from '@/lib/taskruns'
+import { getTaskStatusCategory } from '@/lib/taskruns'
 import { configManager } from '@/services/application-config'
 import { useTaskRuns } from '@/services/useTaskRuns'
 import { useTaskRunStatus } from '@/services/useTaskRunStatus'
