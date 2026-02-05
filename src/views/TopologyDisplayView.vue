@@ -140,6 +140,7 @@ import { SidePanel, useSidePanelStore } from '@/stores/sidePanel'
 import VisualizeDataControl from '@/components/tasks/VisualizeDataControl.vue'
 import { useI18n } from 'vue-i18n'
 import { fetchWmsCapabilitiesHeaders } from '@/lib/capabilities'
+import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 
 interface Props {
   topologyId?: string
@@ -161,6 +162,7 @@ const settings = useUserSettingsStore()
 const workflowsStore = useWorkflowsStore()
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const taskRunsStore = useTaskRunsStore()
+const taskRunColorsStore = useTaskRunColorsStore()
 const sidePanelStore = useSidePanelStore()
 const nodesStore = useNodesStore()
 
@@ -253,6 +255,7 @@ watch([() => nodesStore.activeNodeId, active], () => {
   workflowsStore.coordinate = null
   workflowsStore.isSelectingCoordinate = false
 
+  taskRunColorsStore.clearColors()
   taskRunsStore.clearSelectedTaskRuns()
 })
 

@@ -213,6 +213,11 @@ function onExpansionPanelToggle() {
 function toggleTaskSelection() {
   if (task.isCurrent) return
   taskRunsStore.toggleTaskRun(task)
+
+  // Assign a color to the task if it doesn't have one already
+  if (!taskRunColorsStore.getColor(task.taskId)) {
+    taskRunColorsStore.assignColor(task.taskId)
+  }
 }
 </script>
 
