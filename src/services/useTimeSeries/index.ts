@@ -435,6 +435,8 @@ function findCurrentEventWithCorrespondingDomainAxisValues(
 
   for (const domain of timeSeries.domains) {
     if (domain.domainAxisValues) {
+      // Keep track of the most recent domain axis values encountered while iterating.
+      // These latest values are then paired with the matching event found later in this loop.
       domainAxisValues = domain.domainAxisValues[0]
     }
 
