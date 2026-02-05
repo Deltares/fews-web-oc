@@ -46,7 +46,6 @@ const displayTabs: DisplayTab[] = Object.values(ComponentType).map((type) => {
 })
 
 export async function getLayerNameForNode(node: TopologyNode) {
-  // @ts-expect-error fix when groupId has been added to types
   const groupId = node.gridDisplaySelection?.groupId
   if (groupId) {
     const capabilities = await fetchWmsCapabilitiesHeaders()

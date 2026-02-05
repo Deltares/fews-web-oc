@@ -123,7 +123,6 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
 )
 
 const groupId = computed(
-  // @ts-expect-error
   () => props.topologyNode?.gridDisplaySelection?.groupId,
 )
 
