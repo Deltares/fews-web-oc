@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="showDialog" max-width="400">
-    <v-card data-testid="time-series-file-download">
+    <v-card>
       <v-card-title class="headline">{{
         t('download.downloadTimeSeries')
       }}</v-card-title>
