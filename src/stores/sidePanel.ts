@@ -1,22 +1,15 @@
+import { SidePanelType } from '@/lib/topology/sidePanel'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-export type SidePanel =
-  | 'tasks'
-  | 'thresholds'
-  | 'info'
-  | 'workflows'
-  | 'visualize'
-  | 'import'
-
 export const useSidePanelStore = defineStore('sidePanel', () => {
-  const activeSidePanel = ref<SidePanel>()
+  const activeSidePanel = ref<SidePanelType>()
 
-  function isActive(sidePanel: SidePanel): boolean {
+  function isActive(sidePanel: SidePanelType): boolean {
     return activeSidePanel.value === sidePanel
   }
 
-  function toggleActive(sidePanel: SidePanel): void {
+  function toggleActive(sidePanel: SidePanelType): void {
     if (activeSidePanel.value === sidePanel) {
       activeSidePanel.value = undefined
     } else {
@@ -24,7 +17,7 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
     }
   }
 
-  function setActive(sidePanel: SidePanel): void {
+  function setActive(sidePanel: SidePanelType): void {
     activeSidePanel.value = sidePanel
   }
 

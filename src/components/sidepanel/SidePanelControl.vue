@@ -38,11 +38,12 @@
 </template>
 
 <script setup lang="ts">
-import { type SidePanel, useSidePanelStore } from '@/stores/sidePanel'
+import type { SidePanelType } from '@/lib/topology/sidePanel'
+import { useSidePanelStore } from '@/stores/sidePanel'
 import { useDisplay } from 'vuetify'
 
 interface Props {
-  type: SidePanel
+  type: SidePanelType
   title: string
   icon?: string
 }
