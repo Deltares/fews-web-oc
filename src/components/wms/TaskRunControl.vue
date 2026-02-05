@@ -1,5 +1,5 @@
 <template>
-  <ControlChip v-if="numberOfTaskRuns > 0">
+  <ControlChip v-if="numberOfTaskRuns > 0" :class="{ 'pr-0': taskRunId }">
     <v-btn
       variant="plain"
       density="compact"
@@ -15,46 +15,53 @@
           aria-label="Select Task Run"
           variant="text"
           density="compact"
-          class="text-capitalize"
+          class="text-capitalize px-2"
         >
-          <v-list-item-title class="selected-task-run-title">
-            {{ selectedWorkflowName }}
-          </v-list-item-title>
+          <div class="d-flex align-center ga-2">
+            <v-icon icon="mdi-circle" :color="selectedTaskRunColor" />
 
-          <v-list-item-subtitle
-            v-if="selectedTaskRunTimeZero"
-            class="selected-task-run-subtitle"
-          >
-            {{ selectedTaskRunTimeZero }}
-          </v-list-item-subtitle>
+            <div>
+              <v-list-item-title class="selected-task-run-title">
+                {{ selectedWorkflowName }}
+              </v-list-item-title>
 
-          <template #append>
-            <v-icon
-              v-if="selectedTaskRunColor"
-              icon="mdi-circle"
-              :color="selectedTaskRunColor"
-              class="me-2"
-            />
+              <v-list-item-subtitle
+                v-if="selectedTaskRunTimeZero"
+                class="selected-task-run-subtitle"
+              >
+                {{ selectedTaskRunTimeZero }}
+              </v-list-item-subtitle>
+            </div>
             <SelectIcon :active="isActive" />
-          </template>
+          </div>
         </v-list-item>
       </template>
-      <v-list>
+      <v-list density="compact">
         <v-list-item
           v-for="item in taskRuns"
-          :title="getWorkflowName(item)"
-          :subtitle="toHumanReadableDateTime(item.timeZeroTimestamp)"
           @click="taskRunId = item.taskId"
           :active="item.taskId === taskRunId"
         >
-          <template #append>
+          <div class="d-flex align-center ga-2">
             <v-icon
-              v-if="taskRunColorsStore.hasColor(item.taskId)"
               icon="mdi-circle"
               :color="taskRunColorsStore.getColor(item.taskId)"
               size="sm"
             />
-          </template>
+
+            <div>
+              <v-list-item-title class="selected-task-run-title">
+                {{ getWorkflowName(item) }}
+              </v-list-item-title>
+
+              <v-list-item-subtitle
+                v-if="selectedTaskRunTimeZero"
+                class="selected-task-run-subtitle"
+              >
+                {{ toHumanReadableDateTime(item.timeZeroTimestamp) }}
+              </v-list-item-subtitle>
+            </div>
+          </div>
         </v-list-item>
       </v-list>
     </v-menu>
@@ -147,6 +154,7 @@ function toggleTaskRunId() {
 <style scoped>
 .selected-task-run-title {
   line-height: 1;
+  font-size: 0.875rem;
 }
 
 .selected-task-run-subtitle {
