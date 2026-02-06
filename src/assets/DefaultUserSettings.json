@@ -131,9 +131,9 @@
     "group": "Map"
   },
   {
-    "id": "ui.map.tools",
+    "id": "ui.map.measuringTools",
     "type": "boolean",
-    "label": "Show map tools",
+    "label": "Show measuring tools",
     "value": false,
     "group": "Map"
   },
