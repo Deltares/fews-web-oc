@@ -11,16 +11,23 @@ import {
   getPointLayerLabelSpec,
   getPolygonLayerSpec,
 } from '@/lib/map/terraDraw'
-import { useDark } from '@vueuse/core'
+import { useDark, useStorage } from '@vueuse/core'
+import { GeoJSONStoreFeatures } from 'terra-draw'
 
 const { map } = useMap()
 const settings = useUserSettingsStore()
 const isDark = useDark()
+const features = useStorage<GeoJSONStoreFeatures[]>(
+  'weboc-map-features-v1.0.0',
+  [],
+  sessionStorage,
+  { mergeDefaults: true, writeDefaults: false },
+)
 
 let measureControl: MaplibreMeasureControl | null = null
 
 const addControl = () => {
-  if (!map || measureControl) return
+  if (!map) return
 
   measureControl = new MaplibreMeasureControl({
     modes: [
@@ -40,6 +47,18 @@ const addControl = () => {
     polygonLayerSpec: getPolygonLayerSpec(isDark.value),
   })
   map.addControl(measureControl, 'top-right')
+
+  const terraDrawInstance = measureControl.getTerraDrawInstance()
+  terraDrawInstance.on('finish', (e) => {
+    features.value = terraDrawInstance.getSnapshot()
+  })
+
+  if (features.value.length > 0) {
+    map.once('idle', () => {
+      terraDrawInstance.addFeatures(features.value)
+      measureControl?.recalc()
+    })
+  }
 }
 
 const removeControl = () => {
