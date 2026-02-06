@@ -135,6 +135,8 @@ watch(locations, (newLocations) =>
   locationNamesStore.addLocationNames(newLocations ?? []),
 )
 
+const openingCoordinatesTimeSeriesDisplay = ref(false)
+
 const selectedCrossings = computed(() => {
   if (warningLevelsStore.selectedWarningLevelIds.length === 0) return []
   return warningLevelsStore.selectedThresholdCrossings
@@ -357,6 +359,7 @@ function onCoordinateClick(latitude: number, longitude: number): void {
 function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
   if (!onlyCoverageLayersAvailable.value) return
 
+  openingCoordinatesTimeSeriesDisplay.value = true
   const _latitude = latitude.toFixed(3)
   const _longitude = longitude.toFixed(3)
 
@@ -371,6 +374,10 @@ function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
 }
 
 function closeTimeSeriesDisplay(): void {
+  if (openingCoordinatesTimeSeriesDisplay.value) {
+    openingCoordinatesTimeSeriesDisplay.value = false
+    return
+  }
   emit('navigate', { name: 'SpatialDisplay' })
 }
 
