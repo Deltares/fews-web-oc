@@ -38,7 +38,6 @@ const addControl = () => {
       'circle',
       'freehand',
       'delete',
-      'download',
     ],
     open: true,
     modeOptions: getModeOtions(isDark.value),
