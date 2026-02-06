@@ -5,6 +5,7 @@
     density="compact"
     variant="plain"
     :color="doAnimateStreamlines ? 'primary' : undefined"
+    class="me-2"
   >
     <v-progress-circular v-if="isLoading" size="20" indeterminate />
     <v-icon v-else>mdi-animation-play</v-icon>

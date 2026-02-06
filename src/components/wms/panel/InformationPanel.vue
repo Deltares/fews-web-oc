@@ -1,5 +1,5 @@
 <template>
-  <ControlChip>
+  <ControlChip :class="{ 'pe-0': showLayer }">
     <v-btn
       @click="showLayer = !showLayer"
       density="compact"
@@ -8,24 +8,27 @@
     >
       <v-icon>{{ showLayer ? 'mdi-layers' : 'mdi-layers-off' }}</v-icon>
     </v-btn>
+
+    <slot v-if="showLayer" name="chip-prepend" />
+
     <v-menu
       transition="slide-y-transition"
       :close-on-content-click="false"
       v-if="showLayer"
     >
-      <template v-slot:activator="{ props }">
+      <template v-slot:activator="{ props, isActive }">
         <v-btn
           variant="text"
           v-bind="props"
-          class="pe-0 text-none"
+          class="text-none"
           aria-label="Layer information"
         >
-          <span
-            class="me-2"
-            :class="{ 'text-decoration-line-through': completelyMissing }"
-          >
+          <span :class="{ 'text-decoration-line-through': completelyMissing }">
             {{ title }}
           </span>
+          <template #append>
+            <SelectIcon :active="isActive" />
+          </template>
         </v-btn>
       </template>
       <v-list class="information-panel-list">
