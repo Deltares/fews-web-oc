@@ -88,6 +88,7 @@
     "vue-i18n": "^11.2.8",
     "vue-router": "^5.0.2",
     "vue-slider-component": "^4.1.0-beta.7",
+    "vuedraggable": "^4.1.0",
     "vuetify": "^3.11.8"
   },
   "devDependencies": {
