@@ -4,6 +4,7 @@
     :key="logDisplay.id"
     :logDisplay
     :noteGroup
+    :isSidepanel
   />
 </template>
 
@@ -15,6 +16,7 @@ import { useNoteGroup } from '@/services/useNoteGroup'
 
 interface Props {
   logDisplayId?: string
+  isSidepanel?: boolean
 }
 
 const props = defineProps<Props>()

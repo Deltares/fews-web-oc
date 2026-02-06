@@ -1,6 +1,11 @@
 <template>
   <div class="w-100 h-100 d-flex flex-column">
-    <v-navigation-drawer v-model="showFilters" right width="350">
+    <v-navigation-drawer
+      v-model="showFilters"
+      right
+      width="350"
+      v-if="!isSidepanel"
+    >
       <v-list>
         <template v-if="manualFilters.length && systemFilters.length">
           <v-list-subheader>Types</v-list-subheader>
@@ -72,22 +77,43 @@
         <v-spacer />
       </v-footer>
     </v-navigation-drawer>
-    <v-toolbar density="compact">
-      <v-btn
-        icon
-        @click="showFilters = !showFilters"
-        :aria-label="showFilters ? 'Hide filters' : 'Show filters'"
-      >
-        <v-icon>{{ showFilters ? 'mdi-menu-open' : 'mdi-menu-close' }}</v-icon>
-      </v-btn>
+    <v-toolbar density="compact" :class="{ 'sidepanel-toolbar': isSidepanel }">
+      <template v-if="isSidepanel">
+        <v-select
+          label="Log level"
+          v-model="selectedLevels"
+          :items="logLevels"
+          variant="outlined"
+          clearable
+          hide-details
+          multiple
+          density="compact"
+          :item-title="levelToTitle"
+          :item-value="(item) => item"
+          class="logs-filter px-1"
+        />
+      </template>
+      <template v-else>
+        <v-btn
+          icon
+          @click="showFilters = !showFilters"
+          :aria-label="showFilters ? 'Hide filters' : 'Show filters'"
+        >
+          <v-icon>{{
+            showFilters ? 'mdi-menu-open' : 'mdi-menu-close'
+          }}</v-icon>
+        </v-btn>
+      </template>
       <v-spacer />
       <v-btn @click="refreshLogs" :loading="isLoading" icon="mdi-refresh">
       </v-btn>
-      <span class="mx-2">Total:</span>
-      <span style="width: 4rem"> {{ logMessages.length }}</span>
+      <div v-if="!isSidepanel">
+        <span class="mx-2">Total:</span>
+        <span style="width: 4rem"> {{ logMessages.length }}</span>
+      </div>
     </v-toolbar>
     <div class="logs-container">
-      <div class="flex-0-0 d-flex justify-center py-2">
+      <div class="flex-0-0 d-flex flex-column align-center py-2 ga-2">
         <div class="flex-0-0 d-flex ga-2 align-left">
           <v-text-field
             v-model="search"
@@ -181,6 +207,7 @@ import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 interface Props {
   logDisplay: LogsDisplay
   noteGroup?: ForecasterNoteGroup
+  isSidepanel?: boolean
 }
 
 const props = defineProps<Props>()
@@ -581,5 +608,15 @@ async function refreshLogs() {
 
 .logs-filter {
   max-width: 200px;
+}
+
+.sidepanel-toolbar {
+  height: auto !important;
+}
+
+.sidepanel-toolbar :deep(.v-toolbar__content) {
+  height: auto !important;
+  flex-wrap: wrap;
+  padding-block: 4px;
 }
 </style>

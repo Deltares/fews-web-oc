@@ -80,10 +80,11 @@ export function getSidePanelConfigs(
       title: t('sidePanel.logDisplay'),
       icon: 'mdi-file-document-outline',
       component: LogDisplay,
-      // @ts-expect-error fix once logdisplay has been added to fews-pi-requests
       disabled: !config.logDisplay?.enabled,
-      // @ts-expect-error fix once logdisplay has been added to fews-pi-requests
-      props: { logDisplayId: config.logDisplay?.logDisplayId },
+      props: {
+        logDisplayId: config.logDisplay?.logDisplayId,
+        isSidepanel: true,
+      },
     },
     {
       type: 'info',
