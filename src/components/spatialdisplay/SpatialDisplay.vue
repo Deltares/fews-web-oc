@@ -220,7 +220,6 @@ function getTimeSeriesGridActionsFilter(
     endTime,
     bbox: mercatorBbox,
     documentFormat: 'PI_JSON',
-    elevation: elevation.value ?? layerCapabilities.value.elevation?.upperValue,
     useDisplayUnits: userSettings.useDisplayUnits,
     // Should be available according to the docs, but errors
     // convertDatum: settings.convertDatum,
@@ -231,9 +230,21 @@ const filter = computed(() => {
   if (props.locationIds) {
     return getFilterActionsFilter(props.locationIds)
   }
+
   if (props.longitude && props.latitude) {
-    return getTimeSeriesGridActionsFilter(props.longitude, props.latitude)
+    const actionsFilter = getTimeSeriesGridActionsFilter(
+      props.longitude,
+      props.latitude,
+    )
+    if (!actionsFilter) return {}
+
+    return {
+      ...actionsFilter,
+      elevation:
+        elevation.value ?? layerCapabilities.value?.elevation?.upperValue,
+    }
   }
+
   return {}
 })
 
@@ -249,19 +260,18 @@ const shouldFetchElevationChart = computed(
 
 const elevationChartFilter = computed(() => {
   if (!shouldFetchElevationChart.value) return
-
   if (!layerCapabilities.value?.elevation) return
+
   if (props.longitude && props.latitude) {
     const actionsFilter = getTimeSeriesGridActionsFilter(
       props.longitude,
       props.latitude,
     )
-    if (actionsFilter) {
-      return {
-        ...actionsFilter,
-        elevation: undefined,
-        showVerticalProfile: true,
-      }
+    if (!actionsFilter) return
+
+    return {
+      ...actionsFilter,
+      showVerticalProfile: true,
     }
   }
 })

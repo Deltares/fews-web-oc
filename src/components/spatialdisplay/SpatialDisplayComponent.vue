@@ -519,8 +519,16 @@ watch(
 
 watch(currentElevation, () => {
   debouncedSetLayerOptions()
-  emit('update:elevation', currentElevation.value)
 })
+
+watch(
+  () => layerOptions.value?.elevation,
+  (elevation) => {
+    // Follow the debounced layerOption's elevation value.
+    emit('update:elevation', elevation)
+  },
+  { immediate: true },
+)
 
 watch(
   [() => currentColourScale.value?.range, () => userSettings.useDisplayUnits],
