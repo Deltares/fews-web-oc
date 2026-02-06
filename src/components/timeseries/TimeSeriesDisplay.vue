@@ -1,6 +1,7 @@
 <template>
   <TimeSeriesWindowComponent
     :displayConfig="displayConfig"
+    :elevationChartDisplayconfig="scalar1DDisplayConfig"
     :settings="settings.charts"
   >
     <template #toolbar-title>
@@ -76,7 +77,7 @@ const nodeId = computed(() =>
     ? props.nodeId[props.nodeId.length - 1]
     : props.nodeId,
 )
-const { displays, displayConfig } = useDisplayConfig(
+const { displays, displayConfig, scalar1DDisplayConfig } = useDisplayConfig(
   baseUrl,
   nodeId,
   selectedPlotId,

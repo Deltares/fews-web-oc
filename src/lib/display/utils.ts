@@ -41,44 +41,104 @@ function applyColorsToSubplotItems(subPlot: TimeSeriesDisplaySubplot): void {
  * @param actionsResponse The actions response object.
  * @returns An array of display configurations.
  */
+type DisplayConfigKey = 'timeSeriesDisplay' | 'scalar1DDisplay'
+
+type TimeSeriesDisplayConfig = {
+  title?: string
+  index?: number
+  plotId?: string
+  forecastLegend?: string
+  subplots?: TimeSeriesDisplaySubplot[]
+  period?: ActionPeriod
+}
+
+function getDisplayConfigFromResult(
+  result: ActionResult,
+  displayKey: DisplayConfigKey,
+  nodeId: string | undefined,
+  uniquePlotIds: Set<string>,
+): DisplayConfig | undefined {
+  const resultConfig = result.config as
+    | {
+        timeSeriesDisplay?: TimeSeriesDisplayConfig
+        scalar1DDisplay?: TimeSeriesDisplayConfig
+      }
+    | undefined
+
+  const displayConfig = resultConfig?.[displayKey]
+  if (!displayConfig) return
+
+  const title = displayConfig.title ?? ''
+  const displayIndex = displayConfig.index
+  // TODO: Remove this when the backend is fixed to always return an unique plotId.
+  let plotId = displayConfig.plotId ?? uid()
+  if (uniquePlotIds.has(plotId)) {
+    console.warn(
+      `Duplicate plotId found: ${plotId}. Adding index to make it unique.`,
+    )
+    plotId = `${plotId}-${displayIndex}`
+  }
+  uniquePlotIds.add(plotId)
+
+  const subplots =
+    displayConfig.subplots?.map((subPlot) => {
+      applyColorsToSubplotItems(subPlot)
+      return timeSeriesDisplayToChartConfig(subPlot)
+    }) ?? []
+  const period = displayConfig.period
+  const display: DisplayConfig = {
+    id: title,
+    title,
+    forecastLegend: displayConfig.forecastLegend,
+    plotId,
+    nodeId: nodeId,
+    class: 'singles',
+    index: displayIndex,
+    requests: addPeriodIfNotSet(result.requests, period),
+    period,
+    subplots,
+  }
+  return display
+}
+
 export function actionsResponseToDisplayConfig(
   actionsResponse: ActionsResponse,
   nodeId: string | undefined,
+): DisplayConfig[] {
+  return actionsResponseToDisplayConfigByKey(
+    actionsResponse,
+    nodeId,
+    'timeSeriesDisplay',
+  )
+}
+
+export function actionsResponseToScalar1DDisplayConfig(
+  actionsResponse: ActionsResponse,
+  nodeId: string | undefined,
+): DisplayConfig[] {
+  return actionsResponseToDisplayConfigByKey(
+    actionsResponse,
+    nodeId,
+    'scalar1DDisplay',
+  )
+}
+
+function actionsResponseToDisplayConfigByKey(
+  actionsResponse: ActionsResponse,
+  nodeId: string | undefined,
+  displayKey: DisplayConfigKey,
 ): DisplayConfig[] {
   const displays: DisplayConfig[] = []
   const uniquePlotIds = new Set<string>()
   for (const result of actionsResponse.results) {
     if (result.config === undefined) continue
-    const title = result.config.timeSeriesDisplay.title ?? ''
-    const timeSeriesDisplayIndex = result.config.timeSeriesDisplay.index
-    // TODO: Remove this when the backend is fixed to always return an unique plotId.
-    let plotId = result.config.timeSeriesDisplay.plotId ?? uid()
-    if (uniquePlotIds.has(plotId)) {
-      console.warn(
-        `Duplicate plotId found: ${plotId}. Adding index to make it unique.`,
-      )
-      plotId = `${plotId}-${timeSeriesDisplayIndex}`
-    }
-    uniquePlotIds.add(plotId)
-
-    const subplots =
-      result.config.timeSeriesDisplay.subplots?.map((subPlot) => {
-        applyColorsToSubplotItems(subPlot)
-        return timeSeriesDisplayToChartConfig(subPlot)
-      }) ?? []
-    const period = result.config.timeSeriesDisplay.period
-    const display: DisplayConfig = {
-      id: title,
-      title,
-      forecastLegend: result.config.timeSeriesDisplay.forecastLegend,
-      plotId,
-      nodeId: nodeId,
-      class: 'singles',
-      index: timeSeriesDisplayIndex,
-      requests: addPeriodIfNotSet(result.requests, period),
-      period,
-      subplots,
-    }
+    const display = getDisplayConfigFromResult(
+      result,
+      displayKey,
+      nodeId,
+      uniquePlotIds,
+    )
+    if (!display) continue
     displays.push(display)
   }
   return displays

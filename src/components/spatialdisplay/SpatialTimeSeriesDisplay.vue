@@ -49,15 +49,21 @@ const emit = defineEmits(['close'])
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const filter = computed(() => props.filter)
-const { displayConfig } = useDisplayConfigFilter(
+const { displayConfig, scalar1DDisplayConfig } = useDisplayConfigFilter(
   baseUrl,
   filter,
   () => taskRunsStore.selectedTaskRunIds,
 )
-const { displayConfig: elevationChartDisplayconfig } = useDisplayConfigFilter(
-  baseUrl,
-  () => props.elevationChartFilter ?? {},
-  () => taskRunsStore.selectedTaskRunIds,
+const { displayConfig: elevationChartDisplayconfigFromGrid } =
+  useDisplayConfigFilter(
+    baseUrl,
+    () => props.elevationChartFilter ?? {},
+    () => taskRunsStore.selectedTaskRunIds,
+  )
+
+const elevationChartDisplayconfig = computed(
+  () =>
+    scalar1DDisplayConfig?.value ?? elevationChartDisplayconfigFromGrid.value,
 )
 
 const { tooltip } = useLocationTooltip(

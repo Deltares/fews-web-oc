@@ -13,6 +13,7 @@ import {
 } from '@/lib/filters'
 import {
   actionsResponseToDisplayConfig,
+  actionsResponseToScalar1DDisplayConfig,
   addFilterPeriodToConfig,
   addIndexToKeys,
 } from '@/lib/display'
@@ -20,6 +21,7 @@ import {
 export interface UseDisplayConfigReturn {
   displayConfig: Ref<DisplayConfig | null>
   displays: Ref<DisplayConfig[] | null>
+  scalar1DDisplayConfig?: Ref<DisplayConfig | null>
 }
 
 export interface UseDisplayConfigOptions {
@@ -47,6 +49,7 @@ export function useDisplayConfig(
 
   const response = ref<ActionsResponse>()
   const displays = ref<DisplayConfig[] | null>(null)
+  const scalar1DDisplayConfig = ref<DisplayConfig | null>(null)
 
   watch(
     [() => toValue(nodeId), () => toValue(taskRunIds), () => toValue(options)],
@@ -56,6 +59,7 @@ export function useDisplayConfig(
       const filter = {
         nodeId: _nodeId,
         ..._options,
+        fullDataPeriod: true,
       }
       const taskRunsFilter = {
         ...filter,
@@ -69,6 +73,11 @@ export function useDisplayConfig(
       )
 
       displays.value = actionsResponseToDisplayConfig(response.value, _nodeId)
+      const scalarDisplays = actionsResponseToScalar1DDisplayConfig(
+        response.value,
+        _nodeId,
+      )
+      scalar1DDisplayConfig.value = scalarDisplays[0] ?? null
     },
     { immediate: true },
   )
@@ -86,6 +95,7 @@ export function useDisplayConfig(
   return {
     displays,
     displayConfig,
+    scalar1DDisplayConfig,
   }
 }
 
@@ -106,6 +116,7 @@ export function useDisplayConfigFilter(
   })
   const displayConfig = ref<DisplayConfig | null>(null)
   const displays = ref<DisplayConfig[] | null>(null)
+  const scalar1DDisplayConfig = ref<DisplayConfig | null>(null)
   const response = ref<ActionsResponse>()
 
   watch(
@@ -150,17 +161,25 @@ export function useDisplayConfigFilter(
     if (!_reponse) {
       displayConfig.value = null
       displays.value = null
+      scalar1DDisplayConfig.value = null
       return
     }
 
     const _displays = actionsResponseToDisplayConfig(_reponse, undefined)
     displays.value = _displays
     displayConfig.value = _displays[0]
+
+    const _scalarDisplays = actionsResponseToScalar1DDisplayConfig(
+      _reponse,
+      undefined,
+    )
+    scalar1DDisplayConfig.value = _scalarDisplays[0] ?? null
   })
 
   const shell = {
     displays,
     displayConfig,
+    scalar1DDisplayConfig,
   }
 
   return shell
