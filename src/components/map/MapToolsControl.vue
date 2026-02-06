@@ -49,27 +49,31 @@ const removeControl = () => {
 }
 
 onMounted(() => {
-  watch(
-    () => settings.get('ui.map.measuringTools')?.value ?? false,
-    (enabled) => {
-      if (!map) {
-        console.warn('Map is not available')
-        return
-      }
-
-      if (enabled) {
-        if (!measureControl) {
-          addControl()
-        }
-      } else {
-        if (measureControl) {
-          removeControl()
-        }
-      }
-    },
-    { immediate: true },
-  )
+  const enabled = settings.get('ui.map.measuringTools')?.value ?? false
+  if (enabled) {
+    addControl()
+  }
 })
+
+watch(
+  () => settings.get('ui.map.measuringTools')?.value ?? false,
+  (enabled) => {
+    if (!map) {
+      console.warn('Map is not available')
+      return
+    }
+
+    if (enabled) {
+      if (!measureControl) {
+        addControl()
+      }
+    } else {
+      if (measureControl) {
+        removeControl()
+      }
+    }
+  },
+)
 
 onBeforeUnmount(() => {
   if (measureControl) {
