@@ -3,7 +3,7 @@
     <div class="control-chip__extension-slot">
       <slot name="extension"></slot>
     </div>
-    <v-chip pill label class="control-chip" v-bind="$attrs">
+    <v-chip pill label class="control-chip px-2" v-bind="$attrs">
       <slot></slot>
     </v-chip>
   </div>
