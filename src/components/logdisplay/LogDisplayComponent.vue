@@ -1,6 +1,11 @@
 <template>
   <div class="w-100 h-100 d-flex flex-column">
-    <v-navigation-drawer v-model="showFilters" right width="350">
+    <v-navigation-drawer
+      v-model="showFilters"
+      right
+      width="350"
+      v-if="!isSidepanelMode"
+    >
       <v-list>
         <template v-if="manualFilters.length && systemFilters.length">
           <v-list-subheader>Types</v-list-subheader>
@@ -72,7 +77,7 @@
         <v-spacer />
       </v-footer>
     </v-navigation-drawer>
-    <v-toolbar density="compact">
+    <v-toolbar density="compact" v-if="!isSidepanelMode">
       <v-btn
         icon
         @click="showFilters = !showFilters"
@@ -87,7 +92,7 @@
       <span style="width: 4rem"> {{ logMessages.length }}</span>
     </v-toolbar>
     <div class="logs-container">
-      <div class="flex-0-0 d-flex justify-center py-2">
+      <div class="flex-0-0 d-flex flex-column align-center py-2 ga-2">
         <div class="flex-0-0 d-flex ga-2 align-left">
           <v-text-field
             v-model="search"
@@ -104,6 +109,21 @@
             v-if="noteGroup"
             :noteGroup="noteGroup"
             @newNote="refreshLogs"
+          />
+        </div>
+        <div class="d-flex align-center ga-2" v-if="isSidepanelMode">
+          Level:
+          <v-select
+            label="Log level"
+            v-model="selectedLevels"
+            :items="logLevels"
+            variant="outlined"
+            clearable
+            hide-details
+            multiple
+            density="compact"
+            :item-title="levelToTitle"
+            :item-value="(item) => item"
           />
         </div>
       </div>
@@ -177,6 +197,7 @@ import NewLogMessageDialog from './NewLogMessageDialog.vue'
 import { useTaskRuns } from '@/services/useTaskRuns'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+import { useSidePanelStore } from '@/stores/sidePanel'
 
 interface Props {
   logDisplay: LogsDisplay
@@ -210,6 +231,9 @@ watch(
 
 const { preferredUsername } = useCurrentUser()
 const { workflows } = useAvailableWorkflowsStore()
+const { activeSidePanel } = useSidePanelStore()
+
+const isSidepanelMode = computed(() => activeSidePanel === 'logs')
 
 const baseFilters = computed(() => {
   const startTime = convertJSDateToFewsPiParameter(startDate.value)
