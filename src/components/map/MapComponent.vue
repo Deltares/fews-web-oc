@@ -39,7 +39,6 @@ import type {
   Map,
 } from 'maplibre-gl'
 import { useTemplateRef, watch } from 'vue'
-import { transformStyle } from '@/lib/map'
 
 interface Props {
   bounds?: LngLatBounds
@@ -62,7 +61,7 @@ watch(
 
     // @ts-expect-error map is not exposed in the types
     const map: Map | undefined = mapRef.value?.map
-    map?.setStyle(newBaseStyle, { transformStyle })
+    map?.setStyle(newBaseStyle, { diff: true })
   },
 )
 
