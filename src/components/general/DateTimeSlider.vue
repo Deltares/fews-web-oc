@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, type WatchHandle } from 'vue'
+import { computed, ref, watch, type WatchHandle } from 'vue'
 import { scaleTime } from 'd3-scale'
 import { DateTime } from 'luxon'
 
@@ -115,7 +115,6 @@ interface Properties {
   selectedDate?: Date
   dates: Date[]
   isLoading?: boolean
-  doFollowNow?: boolean
   playInterval?: number
   followNowInterval?: number
   hideSpeedControls?: boolean
@@ -123,12 +122,13 @@ interface Properties {
 
 const props = withDefaults(defineProps<Properties>(), {
   isLoading: false,
-  doFollowNow: true,
   playInterval: 1000,
   followNowInterval: 60000,
   hideSpeedControls: false,
 })
-const emit = defineEmits(['update:selectedDate', 'update:doFollowNow'])
+const emit = defineEmits(['update:selectedDate'])
+
+const doFollowNow = defineModel<boolean>('doFollowNow', { default: true })
 
 // Step size when playing an animation, and when clicking the previous and next frame buttons.
 const playIncrement = 1
@@ -141,16 +141,9 @@ const availableSpeeds = [0.5, 1, 2, 4]
 
 const playTimeoutTimer = ref<ReturnType<typeof setTimeout>>()
 
-const doFollowNow = ref(props.doFollowNow)
 let followNowIntervalTimer: ReturnType<typeof setInterval> | null = null
 
 const hideLabel = ref(true)
-
-onMounted(() => {
-  if (props.doFollowNow) {
-    startFollowNow()
-  }
-})
 
 const marks = computed(() => {
   const dayMarks: Record<string, any> = {}
@@ -191,18 +184,6 @@ watch(
     let index = findDateIndex(props.dates, selectedDate)
     if (index === dateIndex.value) return
     dateIndex.value = index
-  },
-)
-
-// Synchronise doFollowNow property and local variable.
-watch(doFollowNow, (doFollowNow) => {
-  emit('update:doFollowNow', doFollowNow)
-})
-
-watch(
-  () => props.doFollowNow,
-  (doFollowNowProp) => {
-    doFollowNow.value = doFollowNowProp
   },
 )
 
@@ -258,22 +239,27 @@ const dateString = computed(() =>
 
 function toggleFollowNow(): void {
   doFollowNow.value = !doFollowNow.value
-  if (doFollowNow.value) {
-    startFollowNow()
-  } else {
-    stopFollowNow()
-  }
 }
 
+watch(
+  doFollowNow,
+  (newVal) => {
+    if (newVal) {
+      startFollowNow()
+    } else {
+      stopFollowNow()
+    }
+  },
+  { immediate: true },
+)
+
 function startFollowNow(): void {
-  doFollowNow.value = true
   stopPlay()
   setDateToNow()
   followNowIntervalTimer = setInterval(setDateToNow, props.followNowInterval)
 }
 
 function stopFollowNow(): void {
-  doFollowNow.value = false
   if (followNowIntervalTimer) clearInterval(followNowIntervalTimer)
   followNowIntervalTimer = null
 }
