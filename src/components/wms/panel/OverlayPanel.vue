@@ -16,7 +16,7 @@
             <v-list-item-action start>
               <v-icon
                 v-if="enabled"
-                icon="mdi-drag"
+                icon="mdi-drag-vertical"
                 size="small"
                 class="drag-handle"
               />
