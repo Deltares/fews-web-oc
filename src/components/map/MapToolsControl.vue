@@ -51,6 +51,9 @@ const addControl = () => {
   terraDrawInstance.on('finish', (e) => {
     features.value = terraDrawInstance.getSnapshot()
   })
+  measureControl.on('feature-deleted', () => {
+    features.value = terraDrawInstance.getSnapshot()
+  })
 
   if (features.value.length > 0) {
     map.once('idle', () => {
