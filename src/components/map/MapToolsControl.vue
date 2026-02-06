@@ -50,7 +50,7 @@ const removeControl = () => {
 
 onMounted(() => {
   watch(
-    () => settings.get('ui.map.tools')?.value ?? false,
+    () => settings.get('ui.map.measuringTools')?.value ?? false,
     (enabled) => {
       if (!map) {
         console.warn('Map is not available')
