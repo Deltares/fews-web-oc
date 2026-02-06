@@ -14,12 +14,14 @@
           </template>
           <span>{{ getStringForStatus(taskRun?.status) }}</span>
         </v-tooltip>
-        <div class="d-flex flex-column user-select-text cursor-pointer">
-          <div class="d-flex align-center ga-2">
-            <v-list-item-title>
+        <div
+          class="d-flex flex-column user-select-text cursor-pointer overflow-hidden"
+        >
+          <div class="d-flex align-center ga-2 flex-wrap">
+            <v-list-item-title class="flex-0-1 text-wrap">
               {{ title }}
             </v-list-item-title>
-            <v-card-subtitle class="pa-0">{{
+            <v-card-subtitle class="pa-0 flex-0-0">{{
               toHumanReadableDateTime(entryTime)
             }}</v-card-subtitle>
           </div>
@@ -36,7 +38,7 @@
             :color="levelToColor(level)"
             label
             density="compact"
-            class="ms-2"
+            class="ms-2 flex-0-0"
           />
         </template>
       </div>
