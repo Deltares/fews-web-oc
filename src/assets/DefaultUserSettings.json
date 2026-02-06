@@ -131,6 +131,20 @@
     "group": "Map"
   },
   {
+    "id": "ui.map.navigationControl",
+    "type": "boolean",
+    "label": "Show navigation control",
+    "value": false,
+    "group": "Map"
+  },
+  {
+    "id": "ui.map.geolocationControl",
+    "type": "boolean",
+    "label": "Show your location",
+    "value": false,
+    "group": "Map"
+  },
+  {
     "id": "ui.map.tools",
     "type": "boolean",
     "label": "Show map tools",
