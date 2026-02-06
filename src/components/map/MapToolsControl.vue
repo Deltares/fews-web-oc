@@ -5,9 +5,17 @@ import { onBeforeUnmount, watch, onMounted } from 'vue'
 import { useMap } from '@/services/useMap'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { MaplibreMeasureControl } from '@watergis/maplibre-gl-terradraw'
+import {
+  getLineLayerLabelSpec,
+  getModeOtions,
+  getPointLayerLabelSpec,
+  getPolygonLayerSpec,
+} from '@/lib/map/terraDraw'
+import { useDark } from '@vueuse/core'
 
 const { map } = useMap()
 const settings = useUserSettingsStore()
+const isDark = useDark()
 
 let measureControl: MaplibreMeasureControl | null = null
 
@@ -26,6 +34,10 @@ const addControl = () => {
       'download',
     ],
     open: true,
+    modeOptions: getModeOtions(isDark.value),
+    pointLayerLabelSpec: getPointLayerLabelSpec(isDark.value),
+    lineLayerLabelSpec: getLineLayerLabelSpec(isDark.value),
+    polygonLayerSpec: getPolygonLayerSpec(isDark.value),
   })
   map.addControl(measureControl, 'top-right')
 }
