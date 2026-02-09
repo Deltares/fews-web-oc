@@ -122,6 +122,7 @@ import {
   getSubplotWithDomain,
 } from '@/lib/display/utils'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 
 interface Props {
   config?: DisplayConfig
@@ -217,13 +218,15 @@ const fullBrushDomain = computed<[Date, Date]>(() => {
     props.brushChartConfig?.period?.startDate?.date &&
     props.brushChartConfig?.period?.endDate?.date
   ) {
-    const start = new Date(
-      `${props.brushChartConfig.period.startDate.date}T${props.brushChartConfig.period.startDate.time}`,
+    const start = convertFewsPiDateTimeToJsDate(
+      props.brushChartConfig.period.startDate,
     )
-    const end = new Date(
-      `${props.brushChartConfig.period.endDate.date}T${props.brushChartConfig.period.endDate.time}`,
+    const end = convertFewsPiDateTimeToJsDate(
+      props.brushChartConfig.period.endDate,
     )
     if (!fullDomain.value) return [start, end]
+    // Ensure the brush domain always includes the full domain of the chart
+    // If the brush domain is smaller than the chart domain, it can lead to issues with zooming and panning in the chart
     return [
       fullDomain.value[0] < start ? fullDomain.value[0] : start,
       fullDomain.value[1] > end ? fullDomain.value[1] : end,
