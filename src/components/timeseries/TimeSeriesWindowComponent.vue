@@ -56,6 +56,7 @@
     <TimeSeriesComponent
       :config="displayConfig ?? undefined"
       :elevation-chart-config="elevationChartDisplayconfig ?? undefined"
+      :brush-chart-config="brushChartConfig ?? undefined"
       :current-time="currentTime"
       :displayType="displayType"
       :information-content="informationContent"
@@ -88,6 +89,7 @@ import type {
 
 interface Props {
   displayConfig?: DisplayConfig | null
+  brushChartConfig?: DisplayConfig | null
   elevationChartDisplayconfig?: DisplayConfig | null
   currentTime?: Date
   informationContent?: string | null

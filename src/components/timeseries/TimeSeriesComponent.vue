@@ -122,9 +122,11 @@ import {
   getSubplotWithDomain,
 } from '@/lib/display/utils'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 
 interface Props {
   config?: DisplayConfig
+  brushChartConfig?: DisplayConfig | null
   elevationChartConfig?: DisplayConfig
   displayType: DisplayType
   currentTime?: Date
@@ -156,6 +158,21 @@ const props = withDefaults(defineProps<Props>(), {
       plotId: '',
       index: 0,
       displayType: DisplayType.ElevationChart,
+      class: '',
+      requests: [],
+      subplots: [],
+      period: undefined,
+      forecastLegend: undefined,
+    }
+  },
+  brushChartConfig: () => {
+    return {
+      title: '',
+      id: '',
+      nodeId: '',
+      plotId: '',
+      index: 0,
+      displayType: DisplayType.TimeSeriesChart,
       class: '',
       requests: [],
       subplots: [],
@@ -196,7 +213,28 @@ function getDefaultBrushDomain(): [Date, Date] {
   return [startDate, endDate]
 }
 
-const fullBrushDomain = getDefaultBrushDomain()
+const fullBrushDomain = computed<[Date, Date]>(() => {
+  if (
+    props.brushChartConfig?.period?.startDate?.date &&
+    props.brushChartConfig?.period?.endDate?.date
+  ) {
+    const start = convertFewsPiDateTimeToJsDate(
+      props.brushChartConfig.period.startDate,
+    )
+    const end = convertFewsPiDateTimeToJsDate(
+      props.brushChartConfig.period.endDate,
+    )
+    if (!fullDomain.value) return [start, end]
+    // Ensure the brush domain always includes the full domain of the chart
+    // If the brush domain is smaller than the chart domain, it can lead to issues with zooming and panning in the chart
+    return [
+      fullDomain.value[0] < start ? fullDomain.value[0] : start,
+      fullDomain.value[1] > end ? fullDomain.value[1] : end,
+    ]
+  } else {
+    return getDefaultBrushDomain()
+  }
+})
 
 const showBrush = computed(
   () => userSettings.get('charts.brush')?.value === true,
@@ -206,11 +244,13 @@ const chartOptions = ref<UseTimeSeriesOptions>({
   endTime: store.endTime,
   thinning: true,
 })
-const brushOptions = ref<UseTimeSeriesOptions>({
-  startTime: fullBrushDomain[0],
-  endTime: fullBrushDomain[1],
+
+const brushOptions = computed<UseTimeSeriesOptions>(() => ({
+  startTime: fullBrushDomain.value[0],
+  endTime: fullBrushDomain.value[1],
   thinning: true,
-})
+}))
+
 const tableOptions = computed<UseTimeSeriesOptions>(() => ({
   startTime: store.startTime,
   endTime: store.endTime,
