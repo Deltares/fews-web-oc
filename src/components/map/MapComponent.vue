@@ -19,6 +19,10 @@
     <!-- Fade duration is set to 100ms instead of 0ms to avoid flickering -->
     <mgl-attribution-control position="top-right" :compact="true" />
     <mgl-scale-control v-if="showScaleControl" position="bottom-right" />
+    <NetCdfDownloadControl
+      :layer-name="layerName"
+      :layer-capabilities="layerCapabilities"
+    />
     <slot></slot>
   </mgl-map>
 </template>
@@ -27,6 +31,7 @@
 import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import SyncMap from '@/components/map/SyncMap.vue'
+import NetCdfDownloadControl from '@/components/map/NetCdfDownloadControl.vue'
 import {
   MglAttributionControl,
   MglMap,
@@ -45,6 +50,11 @@ interface Props {
   bounds?: LngLatBounds
   style: string
   showScaleControl?: boolean
+  layerName?: string
+  layerCapabilities?: {
+    firstValueTime?: string | null
+    lastValueTime?: string | null
+  }
 }
 
 const props = withDefaults(defineProps<Props>(), {

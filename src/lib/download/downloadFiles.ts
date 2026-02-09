@@ -20,6 +20,8 @@ export function getExtension(documentFormat: DocumentFormat): string {
     case DocumentFormat.PI_CSV_ID_AND_NAME:
     case DocumentFormat.PI_CSV:
       return '.csv'
+    case 'PI_NETCDF' as any:
+      return '.nc'
     default:
       return ''
   }

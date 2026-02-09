@@ -34,7 +34,20 @@
   },
   "download": {
     "downloadTimeSeries": "Zeitreihe herunterladen",
-    "fileName": "Dateiname"
+    "fileName": "Dateiname",
+    "downloadNetCdf": "NetCDF herunterladen",
+    "downloadType": "Download-Typ",
+    "fullGrid": "Vollständiges Raster",
+    "pointCloud": "Punktwolke",
+    "boundingBox": "Begrenzungsrahmen",
+    "selectBoundingBox": "Begrenzungsrahmen auswählen",
+    "drawBoundingBox": "Begrenzungsrahmen zeichnen",
+    "areaSelected": "Bereich ausgewählt",
+    "redraw": "Neu zeichnen",
+    "startTime": "Startzeit",
+    "endTime": "Endzeit",
+    "download": "Herunterladen",
+    "downloadFailed": "Download fehlgeschlagen"
   },
   "search": {
     "searchForLocations": "Messstelle",

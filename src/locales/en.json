@@ -34,7 +34,20 @@
   },
   "download": {
     "downloadTimeSeries": "Download time series",
-    "fileName": "File Name"
+    "fileName": "File Name",
+    "downloadNetCdf": "Download NetCDF",
+    "downloadType": "Download Type",
+    "fullGrid": "Full Grid",
+    "pointCloud": "Point Cloud",
+    "boundingBox": "Bounding box",
+    "selectBoundingBox": "Select bounding box",
+    "drawBoundingBox": "Draw Bounding Box",
+    "areaSelected": "Area selected",
+    "redraw": "Redraw",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "download": "Download",
+    "downloadFailed": "Download failed"
   },
   "search": {
     "searchForLocations": "Search for locations",
