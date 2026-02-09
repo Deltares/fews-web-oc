@@ -138,6 +138,13 @@
     "group": "Map"
   },
   {
+    "id": "ui.map.data-download-tools",
+    "type": "boolean",
+    "label": "Show map data download tools",
+    "value": false,
+    "group": "Map"
+  },
+  {
     "id": "ui.map.showCoordinates",
     "type": "boolean",
     "label": "Show mouse coordinates",

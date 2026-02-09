@@ -12,6 +12,7 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, watch, onMounted, computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useMap } from '@/services/useMap'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type { IControl } from 'maplibre-gl'
@@ -29,6 +30,7 @@ const props = defineProps<Props>()
 
 const { map } = useMap()
 const settings = useUserSettingsStore()
+const { t } = useI18n()
 
 let control: IControl | null = null
 let container: HTMLElement | null = null
@@ -47,11 +49,9 @@ const createControl = (): IControl => ({
     const button = document.createElement('button')
     button.className = 'maplibregl-ctrl-icon'
     button.type = 'button'
-    button.title = 'Download NetCDF'
-    // SVG icon for download (MDI icon)
-    button.innerHTML = `<svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: currentColor;">
-      <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2v9.67z"/>
-    </svg>`
+    button.title = t('download.downloadNetCdf')
+    // MDI icon for download
+    button.innerHTML = `<i class="mdi mdi-download" style="font-size: 20px;"></i>`
 
     button.addEventListener('click', handleButtonClick)
     container.appendChild(button)
@@ -77,7 +77,10 @@ const removeControl = () => {
 }
 
 const shouldShowControl = computed(() => {
-  return (settings.get('ui.map.tools')?.value ?? false) && !!props.layerName
+  return (
+    (settings.get('ui.map.data-download-tools')?.value ?? false) &&
+    !!props.layerName
+  )
 })
 
 onMounted(() => {

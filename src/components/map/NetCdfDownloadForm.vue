@@ -5,12 +5,14 @@
   />
   <v-dialog v-model="showDialog" max-width="400">
     <v-card>
-      <v-card-title class="text-h6">Download NetCDF</v-card-title>
+      <v-card-title class="text-h6">{{
+        t('download.downloadNetCdf')
+      }}</v-card-title>
       <v-card-text>
         <v-select
           v-model="downloadType"
           :items="downloadOptions"
-          label="Download Type"
+          :label="t('download.downloadType')"
           item-title="title"
           item-value="value"
           density="compact"
@@ -19,30 +21,41 @@
           class="mb-3"
         />
 
-        <v-btn
-          v-if="downloadType === 'pointCloud' && !bbox"
-          color="primary"
-          variant="outlined"
-          block
-          class="mb-3"
-          @click="isDrawingBbox = true"
-        >
-          <v-icon start>mdi-vector-rectangle</v-icon>
-          Draw Bounding Box
-        </v-btn>
-
-        <v-alert
-          v-if="downloadType === 'pointCloud' && bbox"
-          type="success"
-          density="compact"
-          class="mb-3"
-        >
-          Area selected
-        </v-alert>
+        <div v-if="downloadType === 'pointCloud'" class="mb-3">
+          <div class="d-flex align-center">
+            <v-textarea
+              v-model="boundingBoxString"
+              readonly
+              variant="plain"
+              :label="
+                bbox
+                  ? t('download.boundingBox')
+                  : t('download.selectBoundingBox')
+              "
+              rows="2"
+              auto-grow
+              hide-details
+            />
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props: tooltipProps }">
+                <v-btn
+                  v-bind="tooltipProps"
+                  icon="mdi-selection-drag"
+                  variant="tonal"
+                  density="comfortable"
+                  :aria-label="t('download.drawBoundingBox')"
+                  :active="isDrawingBbox"
+                  @click="toggleDrawingMode"
+                />
+              </template>
+              <span>{{ t('download.selectBoundingBox') }}</span>
+            </v-tooltip>
+          </div>
+        </div>
 
         <v-text-field
           v-model="startTimeInput"
-          label="Start Time"
+          :label="t('download.startTime')"
           type="datetime-local"
           density="compact"
           variant="outlined"
@@ -52,7 +65,7 @@
 
         <v-text-field
           v-model="endTimeInput"
-          label="End Time"
+          :label="t('download.endTime')"
           type="datetime-local"
           density="compact"
           variant="outlined"
@@ -72,7 +85,9 @@
 
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" @click="dialogOpen = false">Cancel</v-btn>
+        <v-btn variant="text" @click="dialogOpen = false">{{
+          t('common.cancel')
+        }}</v-btn>
         <v-btn
           color="primary"
           variant="flat"
@@ -80,7 +95,7 @@
           :disabled="!canDownload"
           @click="download"
         >
-          Download
+          {{ t('download.download') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -89,6 +104,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { configManager } from '@/services/application-config'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
@@ -96,6 +112,7 @@ import { convertDateToDateTimeString } from '@/lib/date'
 import { toMercator } from '@turf/projection'
 import DrawBoundingBoxControl from './DrawBoundingBoxControl.vue'
 import type { BoundingBox } from '@/services/useBoundingBox'
+import { boundingBoxToString } from '@/services/useBoundingBox'
 import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
 
 interface Props {
@@ -106,6 +123,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const dialogOpen = defineModel<boolean>({ default: false })
+const { t } = useI18n()
 const bbox = ref<BoundingBox | null>(null)
 const downloadType = ref<'fullGrid' | 'pointCloud'>('fullGrid')
 const startTimeInput = ref('')
@@ -113,16 +131,21 @@ const endTimeInput = ref('')
 const isDownloading = ref(false)
 const errorMessage = ref('')
 
-const downloadOptions = [
-  { title: 'Full Grid', value: 'fullGrid' },
-  { title: 'Point Cloud', value: 'pointCloud' },
-]
+const downloadOptions = computed(() => [
+  { title: t('download.fullGrid'), value: 'fullGrid' },
+  { title: t('download.pointCloud'), value: 'pointCloud' },
+])
+
+const boundingBoxString = computed(() => {
+  return bbox.value ? boundingBoxToString(bbox.value) : ''
+})
 
 const isDrawingBbox = ref(false)
 
 const showDialog = computed({
   get() {
-    if (isDrawingBbox.value) {
+    // Hide dialog when actively drawing
+    if (isDrawingBbox.value && !bbox.value) {
       return false
     }
     return dialogOpen.value
@@ -144,7 +167,7 @@ watch(downloadType, (newType) => {
 })
 
 watch(bbox, (newBbox) => {
-  if (newBbox && isDrawingBbox.value) {
+  if (newBbox) {
     isDrawingBbox.value = false
   }
 })
@@ -181,6 +204,13 @@ const canDownload = computed(() => {
   return basicRequirements
 })
 
+function toggleDrawingMode() {
+  if (bbox.value && !isDrawingBbox.value) {
+    bbox.value = null
+  }
+  isDrawingBbox.value = !isDrawingBbox.value
+}
+
 async function download() {
   if (!props.layerName) return
 
@@ -212,7 +242,6 @@ async function download() {
         const [minX, minY] = toMercator([bbox.value.lonMin, bbox.value.latMin])
         const [maxX, maxY] = toMercator([bbox.value.lonMax, bbox.value.latMax])
         filter.bbox = `${minX},${minY},${maxX},${maxY}`
-        bbox.value = null // reset bbox after use
       }
     }
 
@@ -230,7 +259,7 @@ async function download() {
     dialogOpen.value = false
   } catch (error) {
     console.error('NetCDF download error:', error)
-    errorMessage.value = 'Download failed'
+    errorMessage.value = t('download.downloadFailed')
   } finally {
     isDownloading.value = false
   }
