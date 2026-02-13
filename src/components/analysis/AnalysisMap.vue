@@ -1,5 +1,11 @@
 <template>
-  <MapComponent :bounds :style="mapStyle" :showScaleControl="false">
+  <MapComponent
+    :bounds
+    :style="mapStyle"
+    :showScale="false"
+    :showGeolocation="false"
+    :showNavigation="false"
+  >
     <MapToolsControl />
     <div class="mapcomponent__controls-container pa-2 ga-2">
       <CoordinatesDisplay />

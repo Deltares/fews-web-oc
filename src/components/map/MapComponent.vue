@@ -18,7 +18,15 @@
     <SyncMap />
     <!-- Fade duration is set to 100ms instead of 0ms to avoid flickering -->
     <mgl-attribution-control position="top-right" :compact="true" />
-    <mgl-scale-control v-if="showScaleControl" position="bottom-right" />
+    <mgl-navigation-control
+      v-if="showNavigation && showNavigationSetting"
+      position="top-right"
+    />
+    <mgl-geolocate-control
+      v-if="showGeolocation && showGeolocationSetting"
+      position="top-right"
+    />
+    <mgl-scale-control v-if="showScale" position="bottom-right" />
     <slot></slot>
   </mgl-map>
 </template>
@@ -29,7 +37,9 @@ import { authenticationManager } from '@/services/authentication/AuthenticationM
 import SyncMap from '@/components/map/SyncMap.vue'
 import {
   MglAttributionControl,
+  MglGeolocateControl,
   MglMap,
+  MglNavigationControl,
   MglScaleControl,
 } from '@indoorequal/vue-maplibre-gl'
 import type {
@@ -38,20 +48,26 @@ import type {
   LngLatBounds,
   Map,
 } from 'maplibre-gl'
-import { useTemplateRef, watch } from 'vue'
+import { computed, useTemplateRef, watch } from 'vue'
 import { transformStyle } from '@/lib/map'
+import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
   bounds?: LngLatBounds
   style: string
-  showScaleControl?: boolean
+  showGeolocation?: boolean
+  showNavigation?: boolean
+  showScale?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  showScaleControl: true,
+  showGeolocation: true,
+  showNavigation: true,
+  showScale: true,
 })
 
 const mapRef = useTemplateRef('map')
+const userSettings = useUserSettingsStore()
 
 const initialStyle = props.style
 
@@ -64,6 +80,13 @@ watch(
     const map: Map | undefined = mapRef.value?.map
     map?.setStyle(newBaseStyle, { transformStyle })
   },
+)
+
+const showGeolocationSetting = computed(
+  () => userSettings.get('ui.map.geolocationControl')?.value ?? false,
+)
+const showNavigationSetting = computed(
+  () => userSettings.get('ui.map.navigationControl')?.value ?? false,
 )
 
 function transformRequest(
