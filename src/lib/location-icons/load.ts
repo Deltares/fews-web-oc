@@ -28,24 +28,14 @@ async function addIconToMap(
   map: Map,
   iconId: string,
   url: string,
+  badgeUrl?: string,
 ): Promise<void> {
   if (map.hasImage(iconId)) return
-
-  if (url.toLowerCase().endsWith('.svg')) {
-    // Load SVG as 128x128 bitmap.
-    const image = await convertSvgToBitmap(url, 128, 128)
-    map.addImage(iconId, image)
-  } else {
-    const image = await map.loadImage(url)
-    map.addImage(iconId, image.data)
-  }
+  const image = await createImageBitmapFromUrls(url, badgeUrl)
+  map.addImage(iconId, image)
 }
 
-async function convertSvgToBitmap(
-  url: string,
-  width: number,
-  height: number,
-): Promise<ImageBitmap> {
+async function loadImage(url: string) {
   // We cannot directly set the SVG as the image source to to CSP headers, so
   // we load the SVG as a blob, then create a data URL and use that as the image
   // source.
@@ -53,26 +43,84 @@ async function convertSvgToBitmap(
   const blob = await response.blob()
   const imageUrl = URL.createObjectURL(blob)
 
-  const image = new Image(width, height)
+  const image = new Image()
   image.src = imageUrl
   await image.decode()
 
-  // Finally, we create an image bitmap from the image and free the data URL.
-  const bitmap = await createImageBitmap(image)
   URL.revokeObjectURL(imageUrl)
 
-  return bitmap
+  return image
+}
+
+async function createImageBitmapFromUrls(
+  mainUrl: string,
+  badgeUrl?: string,
+  canvasSize = 32,
+  badgeSize = 24,
+): Promise<ImageBitmap> {
+  // Load main image
+  const mainImage = await loadImage(mainUrl)
+
+  // Create canvas
+  const canvas = document.createElement('canvas')
+  canvas.width = canvasSize
+  canvas.height = canvasSize
+  const ctx = canvas.getContext('2d')!
+
+  // Draw main image in the center of the canvas
+  ctx.drawImage(
+    mainImage,
+    (canvasSize - mainImage.width) / 2,
+    (canvasSize - mainImage.height) / 2,
+    mainImage.width,
+    mainImage.height,
+  )
+
+  // Draw badge if provided in the centered on the canvas
+  if (badgeUrl) {
+    try {
+      const badgeImage = await loadImage(badgeUrl)
+      ctx.drawImage(
+        badgeImage,
+        (canvasSize - badgeSize) / 2,
+        (canvasSize - badgeSize) / 2,
+        badgeSize,
+        badgeSize,
+      )
+    } catch (err) {
+      console.warn('Failed to load badge image:', err)
+    }
+  }
+
+  // Convert canvas to ImageBitmap
+  return await createImageBitmap(canvas)
 }
 
 async function addCustomLocationIconsToMap(
   map: Map,
   locations: FeatureCollection<Geometry, Location>,
 ): Promise<void> {
+  const images = `${import.meta.env.BASE_URL}images/`
+  const extraIcons = [
+    { id: 'has-no-data', path: 'has-no-data.svg' },
+    { id: 'has-outside-data', path: 'has-outside-data.svg' },
+  ]
+
   const locationIcons = getUniqueIconNames(locations)
   await Promise.allSettled(
-    locationIcons.map(async (iconName) => {
+    locationIcons.flatMap(async (iconName) => {
       const url = getResourcesIconsUrl(iconName)
-      await addIconToMap(map, iconName, url)
+      return [
+        addIconToMap(map, iconName, url),
+        ...extraIcons.map((extraIcon) =>
+          addIconToMap(
+            map,
+            `${iconName}-${extraIcon.id}`,
+            url,
+            `${images}${extraIcon.path}`,
+          ),
+        ),
+      ]
     }),
   )
 }
