@@ -31,7 +31,6 @@ async function addIconToMap(
   badgeUrl?: string,
 ): Promise<void> {
   if (map.hasImage(iconId)) return
-
   const image = await createImageBitmapFromUrls(url, badgeUrl)
   map.addImage(iconId, image)
 }
@@ -57,7 +56,7 @@ async function createImageBitmapFromUrls(
   mainUrl: string,
   badgeUrl?: string,
   canvasSize = 32,
-  badgeSize = 12,
+  badgeSize = 24,
 ): Promise<ImageBitmap> {
   // Load main image
   const mainImage = await loadImage(mainUrl)
@@ -77,14 +76,14 @@ async function createImageBitmapFromUrls(
     mainImage.height,
   )
 
-  // Draw badge if provided in the bottom right of the canvas
+  // Draw badge if provided in the centered on the canvas
   if (badgeUrl) {
     try {
       const badgeImage = await loadImage(badgeUrl)
       ctx.drawImage(
         badgeImage,
-        canvasSize - badgeSize,
-        canvasSize - badgeSize,
+        (canvasSize - badgeSize) / 2,
+        (canvasSize - badgeSize) / 2,
         badgeSize,
         badgeSize,
       )
