@@ -35,7 +35,7 @@ export default function usePermissionExcludes() {
 }
 
 export function getPermissionExcludesHeader(): Headers {
-  // all unused permissions sohould be included in the header
+  // all unused permissions should be included in the header
   const headerValue = permissions
     .flatMap((perm) => (!perm.used ? perm.id : []))
     .join(',')
