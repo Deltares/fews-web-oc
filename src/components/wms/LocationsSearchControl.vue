@@ -66,7 +66,7 @@ watch(
     if (ids.length === 0 && selectedItems.value.length === 0) return
     return (selectedItems.value = ids)
   },
-  { immediate: true, deep: true },
+  { deep: true },
 )
 
 const emit = defineEmits(['changeLocationIds'])

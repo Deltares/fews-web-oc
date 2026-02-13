@@ -308,6 +308,9 @@ const hideMap = computed(() => {
 function onLocationsChange(locationIds: string[]): void {
   if (locationIds.length) {
     openLocationsTimeSeriesDisplay(locationIds)
+  } else if (props.longitude && props.latitude) {
+    // Opening a coordinates display so do not close time series display
+    return
   } else {
     closeTimeSeriesDisplay()
   }
