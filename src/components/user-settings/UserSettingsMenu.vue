@@ -98,14 +98,14 @@
           <UserSettings />
         </template>
       </SettingsDialog>
-      <SettingsDialog title="Select Used Permissions">
+      <SettingsDialog :title="t('usersettings.selectUsedPermissions')">
         <template #activator="{ props }">
           <v-list-item
             v-bind="props"
             aria-label="Select Used Permissions"
             role="button"
           >
-            Select Used Permissions
+            {{ t('userSettings.selectUsedPermissions') }}
           </v-list-item>
         </template>
         <template #settings>
