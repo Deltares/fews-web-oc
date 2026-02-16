@@ -98,7 +98,7 @@
           <UserSettings />
         </template>
       </SettingsDialog>
-      <SettingsDialog :title="t('usersettings.selectUsedPermissions')">
+      <SettingsDialog :title="t('userSettings.selectUsedPermissions')">
         <template #activator="{ props }">
           <v-list-item
             v-bind="props"
@@ -109,9 +109,7 @@
           </v-list-item>
         </template>
         <template #settings>
-          <Suspense>
-            <ExcludePermissions />
-          </Suspense>
+          <ExcludePermissions />
         </template>
       </SettingsDialog>
     </v-list>

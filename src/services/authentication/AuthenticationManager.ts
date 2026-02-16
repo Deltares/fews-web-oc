@@ -2,6 +2,8 @@ import { configManager } from '../application-config/'
 import { UserManager, User, UserManagerSettings } from 'oidc-client-ts'
 import { RequestHeaderAuthorization } from '../application-config/ApplicationConfig'
 import { mergeHeaders } from '@/lib/requests/transformRequest'
+// import { permissionExcludesManager } from '../permissionExcludesManager'
+import { getPermissionExcludesHeader } from '../usePermissionExcludes'
 
 export class AuthenticationManager {
   userManager!: UserManager
@@ -74,6 +76,23 @@ export class AuthenticationManager {
   }
 
   public transformRequestAuth(request: Request, signal?: AbortSignal): Request {
+    const requestWithAuthHeaders = this.transformRequestAuthNoExcludes(
+      request,
+      signal,
+    )
+    const requestPermExcludesHeaders = getPermissionExcludesHeader()
+    const headers = mergeHeaders(
+      requestWithAuthHeaders.headers,
+      requestPermExcludesHeaders,
+    )
+    const newRequest = new Request(requestWithAuthHeaders, { headers })
+    return newRequest
+  }
+
+  public transformRequestAuthNoExcludes(
+    request: Request,
+    signal?: AbortSignal,
+  ): Request {
     const requestAuthHeaders = this.getAuthorizationHeaders()
     const requestInit = {
       headers: mergeHeaders(request.headers, requestAuthHeaders),

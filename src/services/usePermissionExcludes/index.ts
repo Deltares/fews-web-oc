@@ -1,44 +1,48 @@
-import { Reactive, reactive } from 'vue'
-import {
-  Permission as PermissionWithoutUsed,
-  PiWebserviceProvider,
-} from '@deltares/fews-pi-requests'
+import { ref } from 'vue'
+import { Permission, PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { configManager } from '../application-config'
-import { createTransformRequestFn } from '@/lib/requests/transformRequest'
+import { authenticationManager } from '../authentication/AuthenticationManager'
 
-export interface Permission extends PermissionWithoutUsed {
-  used: boolean
-}
+// export interface Permission extends PermissionWithoutUsed {
+// }
 
-let permissions = Array<Reactive<Permission>>()
+let permissions = ref(Array<Permission>())
+let excludedPermissions = ref(Array<string>())
 
-export default function usePermissionExcludes() {
-  async function getPermissions(): Promise<Reactive<Permission>[]> {
-    if (permissions.length == 0) {
-      const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-      const piProvider = new PiWebserviceProvider(baseUrl, {
-        transformRequestFn: createTransformRequestFn(),
-      })
-      const response = await piProvider.getPermissions()
-      const permissionsWithoutUsed: PermissionWithoutUsed[] =
-        response.permissions ?? []
-      const permissionsWithUsed: Permission[] = []
-      for (const perm of permissionsWithoutUsed) {
-        permissionsWithUsed.push(reactive({ ...perm, used: true }))
-      }
-      permissions = permissionsWithUsed
-    }
-    return permissions
+export default async function usePermissionExcludes() {
+  if (permissions.value.length === 0) {
+    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+    const piProvider = new PiWebserviceProvider(baseUrl, {
+      transformRequestFn: (request: Request) => {
+        return Promise.resolve(
+          authenticationManager.transformRequestAuthNoExcludes(request),
+        )
+      },
+    })
+    piProvider.getPermissions().then((res) => {
+      permissions.value = res.permissions ?? []
+    })
   }
 
-  return { getPermissions, getPermissionExcludesHeader }
+  function togglePermission(permissionId: string, included: boolean) {
+    if (included) {
+      excludedPermissions.value = excludedPermissions.value.filter(
+        (perm) => perm !== permissionId,
+      )
+    } else {
+      excludedPermissions.value.push(permissionId)
+    }
+  }
+
+  function isEnabled(permissionId: string): boolean {
+    return !excludedPermissions.value.includes(permissionId)
+  }
+
+  return { permissions, togglePermission, isEnabled }
 }
 
 export function getPermissionExcludesHeader(): Headers {
-  // all unused permissions should be included in the header
-  const headerValue = permissions
-    .flatMap((perm) => (!perm.used ? perm.id : []))
-    .join(',')
+  const headerValue = excludedPermissions.value.join(',')
   if (headerValue.length == 0) {
     return new Headers({})
   }
