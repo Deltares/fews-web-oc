@@ -11,7 +11,7 @@
       <slot name="activator" :props="props"></slot>
     </template>
     <v-card class="d-flex flex-column">
-      <v-toolbar :title="t('userSettings.settings')" density="compact">
+      <v-toolbar :title="title" density="compact">
         <v-btn
           icon="mdi-close"
           @click="dialog = false"
@@ -19,7 +19,7 @@
         />
       </v-toolbar>
       <v-card-text class="flex-grow-1 overflow-y-auto">
-        <UserSettings />
+        <slot name="settings"></slot>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -27,11 +27,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import UserSettings from './UserSettings.vue'
 import { useDisplay } from 'vuetify'
-import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
+defineProps({ title: String })
 
 const { mobile } = useDisplay()
 const dialog = ref(false)

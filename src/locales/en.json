@@ -42,7 +42,8 @@
   },
   "userSettings": {
     "allSettings": "All settings",
-    "settings": "Settings"
+    "settings": "Settings",
+    "selectUsedPermissions": "Select used permissions"
   },
   "wms": {
     "overlays": "Overlays",

@@ -84,7 +84,7 @@
       </v-list-item>
 
       <v-divider />
-      <UserSettingsDialog>
+      <SettingsDialog :title="t('userSettings.settings')">
         <template #activator="{ props }">
           <v-list-item
             v-bind="props"
@@ -94,7 +94,24 @@
             {{ t('userSettings.allSettings') }} ...
           </v-list-item>
         </template>
-      </UserSettingsDialog>
+        <template #settings>
+          <UserSettings />
+        </template>
+      </SettingsDialog>
+      <SettingsDialog :title="t('userSettings.selectUsedPermissions')">
+        <template #activator="{ props }">
+          <v-list-item
+            v-bind="props"
+            aria-label="Select Used Permissions"
+            role="button"
+          >
+            {{ t('userSettings.selectUsedPermissions') }}
+          </v-list-item>
+        </template>
+        <template #settings>
+          <ExcludePermissions />
+        </template>
+      </SettingsDialog>
     </v-list>
   </v-menu>
 </template>
@@ -104,7 +121,9 @@ import {
   type UserSettingsItem,
   useUserSettingsStore,
 } from '@/stores/userSettings'
-import UserSettingsDialog from './UserSettingsDialog.vue'
+import SettingsDialog from './SettingsDialog.vue'
+import UserSettings from './UserSettings.vue'
+import ExcludePermissions from './ExcludePermissions.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()

@@ -42,7 +42,8 @@
   },
   "userSettings": {
     "allSettings": "Alle Einstellungen",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "selectUsedPermissions": "Berechtigungen auswählen"
   },
   "wms": {
     "overlays": "Layerauswahl",
