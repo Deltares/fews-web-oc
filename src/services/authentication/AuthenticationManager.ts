@@ -61,6 +61,12 @@ export class AuthenticationManager {
   }
 
   public getAuthorizationHeaders(): Headers {
+    const permExcludeHeaders = getPermissionExcludesHeader()
+    const authHeaders = this.getAuthorizationHeadersNoExcludes()
+    return mergeHeaders(permExcludeHeaders, authHeaders)
+  }
+
+  getAuthorizationHeadersNoExcludes(): Headers {
     if (!configManager.authenticationIsEnabled) return new Headers({})
     switch (configManager.get('VITE_REQUEST_HEADER_AUTHORIZATION')) {
       case RequestHeaderAuthorization.BEARER: {
@@ -76,16 +82,12 @@ export class AuthenticationManager {
   }
 
   public transformRequestAuth(request: Request, signal?: AbortSignal): Request {
-    const requestWithAuthHeaders = this.transformRequestAuthNoExcludes(
-      request,
-      signal,
-    )
-    const requestPermExcludesHeaders = getPermissionExcludesHeader()
-    const headers = mergeHeaders(
-      requestWithAuthHeaders.headers,
-      requestPermExcludesHeaders,
-    )
-    const newRequest = new Request(requestWithAuthHeaders, { headers })
+    const requestAuthHeaders = this.getAuthorizationHeaders()
+    const requestInit = {
+      headers: mergeHeaders(request.headers, requestAuthHeaders),
+      signal: signal,
+    }
+    const newRequest = new Request(request, requestInit)
     return newRequest
   }
 
@@ -93,7 +95,7 @@ export class AuthenticationManager {
     request: Request,
     signal?: AbortSignal,
   ): Request {
-    const requestAuthHeaders = this.getAuthorizationHeaders()
+    const requestAuthHeaders = this.getAuthorizationHeadersNoExcludes()
     const requestInit = {
       headers: mergeHeaders(request.headers, requestAuthHeaders),
       signal: signal,
