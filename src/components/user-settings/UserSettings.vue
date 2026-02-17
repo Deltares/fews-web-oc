@@ -36,17 +36,19 @@
           </v-list-item>
         </template>
       </v-select>
-      <v-switch
-        v-else-if="setting.type === 'boolean'"
-        v-model="setting.value"
-        color="primary"
-        :label="setting.label"
-        :disabled="setting.disabled"
-        hide-details
-        @update:modelValue="onValueChange(setting)"
-        :aria-label="`${group} ${setting.label}`"
-      >
-      </v-switch>
+      <template #prepend>
+        <v-switch
+          v-if="setting.type === 'boolean'"
+          v-model="setting.value"
+          color="primary"
+          :label="setting.label"
+          :disabled="setting.disabled"
+          hide-details
+          @update:modelValue="onValueChange(setting)"
+          :aria-label="`${group} ${setting.label}`"
+        >
+        </v-switch>
+      </template>
       <template v-slot:append>
         <v-btn
           color="grey-lighten-1"
