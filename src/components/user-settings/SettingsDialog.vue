@@ -15,7 +15,7 @@
         <v-btn
           icon="mdi-close"
           @click="dialog = false"
-          aria-label="Close User Settings"
+          aria-label="Close Settings"
         />
       </v-toolbar>
       <v-card-text class="flex-grow-1 overflow-y-auto">
@@ -29,7 +29,10 @@
 import { ref } from 'vue'
 import { useDisplay } from 'vuetify'
 
-defineProps({ title: String })
+interface Props {
+  title: string
+}
+defineProps<Props>()
 
 const { mobile } = useDisplay()
 const dialog = ref(false)
