@@ -6,20 +6,7 @@ import { authenticationManager } from '../authentication/AuthenticationManager'
 const permissions = ref<Permission[]>([])
 const excludedPermissions = ref<string[]>([])
 
-export default async function usePermissionExcludes() {
-  if (permissions.value.length === 0) {
-    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-    const piProvider = new PiWebserviceProvider(baseUrl, {
-      transformRequestFn: (request: Request) => {
-        return Promise.resolve(
-          authenticationManager.transformRequestAuthNoExcludes(request),
-        )
-      },
-    })
-    const result = await piProvider.getPermissions()
-    permissions.value = result.permissions ?? []
-  }
-
+export default function usePermissionExcludes() {
   function togglePermission(permissionId: string, included: boolean) {
     if (included) {
       excludedPermissions.value = excludedPermissions.value.filter(
@@ -34,7 +21,27 @@ export default async function usePermissionExcludes() {
     return !excludedPermissions.value.includes(permissionId)
   }
 
-  return { permissions, togglePermission, isEnabled }
+  async function loadPermissions() {
+    if (permissions.value.length === 0) {
+      const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+      const piProvider = new PiWebserviceProvider(baseUrl, {
+        transformRequestFn: (request: Request) => {
+          return Promise.resolve(
+            authenticationManager.transformRequestAuthNoExcludes(request),
+          )
+        },
+      })
+      const result = await piProvider.getPermissions()
+      permissions.value = result.permissions ?? []
+    }
+  }
+
+  loadPermissions()
+  return {
+    permissions,
+    togglePermission,
+    isEnabled,
+  }
 }
 
 export function getPermissionExcludesHeader(): Headers {
