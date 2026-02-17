@@ -3,11 +3,8 @@ import { Permission, PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { configManager } from '../application-config'
 import { authenticationManager } from '../authentication/AuthenticationManager'
 
-// export interface Permission extends PermissionWithoutUsed {
-// }
-
-let permissions = ref(Array<Permission>())
-let excludedPermissions = ref(Array<string>())
+const permissions = ref<Permission[]>([])
+const excludedPermissions = ref<string[]>([])
 
 export default async function usePermissionExcludes() {
   if (permissions.value.length === 0) {

@@ -111,7 +111,7 @@ function transformRequest(
   resourceType?: ResourceType,
 ): RequestParameters {
   if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
-    const requestAuthHeaders = authenticationManager.getAuthorizationHeaders()
+    const requestAuthHeaders = authenticationManager.getRequestHeaders()
     return {
       url,
       headers: requestAuthHeaders,
