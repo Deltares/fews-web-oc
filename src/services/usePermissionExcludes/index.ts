@@ -16,9 +16,8 @@ export default async function usePermissionExcludes() {
         )
       },
     })
-    piProvider.getPermissions().then((res) => {
-      permissions.value = res.permissions ?? []
-    })
+    const result = await piProvider.getPermissions()
+    permissions.value = result.permissions ?? []
   }
 
   function togglePermission(permissionId: string, included: boolean) {
