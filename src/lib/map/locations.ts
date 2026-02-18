@@ -5,7 +5,7 @@ import type { LegacyFilterSpecification } from 'maplibre-gl'
 
 export interface ExtendedLocation extends Location {
   locationName: string | undefined
-  iconName: string | undefined
+  webocIcon: string | undefined
   sortKey: number
   invertedSortKey: number
   selected?: boolean
@@ -44,7 +44,9 @@ export function addPropertiesToLocationGeojson(
     properties: {
       ...feature.properties,
       locationName: showNames ? feature.properties.locationName : '',
-      iconName: getIconName(feature, showDataAvailability),
+      iconName:
+        feature.properties.thresholdIconName ?? feature.properties.iconName,
+      webocIcon: getIconName(feature, showDataAvailability),
       sortKey: getSortKey(feature),
       invertedSortKey: getInvertedSortKey(feature),
       selected: selectedLocationIds.includes(feature.properties.locationId),
