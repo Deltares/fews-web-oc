@@ -77,7 +77,16 @@ function getIconName({ properties }: Feature<Geometry, Location>) {
 }
 
 function getSortKey({ properties }: Feature<Geometry, Location>): number {
-  return properties.thresholdSeverity ?? 0
+  const severityOffset = properties.thresholdSeverity
+    ? properties.thresholdSeverity * 10
+    : 0
+  const offset =
+    properties.hasDataInViewPeriod === true
+      ? 2
+      : properties.hasDataOutsideViewPeriod === true
+        ? 1
+        : 0
+  return severityOffset + offset
 }
 
 function getInvertedSortKey(feature: Feature<Geometry, Location>): number {
