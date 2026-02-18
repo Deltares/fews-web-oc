@@ -5,13 +5,12 @@ import type {
   TimeSeriesFlagSource,
 } from '@deltares/fews-pi-requests'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
+import { createTransformRequestFn } from '../requests/transformRequest'
 
 export async function loadTimeSeriesFlags(): Promise<TimeSeriesFlag[]> {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const transformRequestFn = (request: Request) =>
-    Promise.resolve(authenticationManager.transformRequestAuth(request))
   const webServiceProvider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn,
+    transformRequestFn: createTransformRequestFn(),
   })
   const flagResponse = await webServiceProvider.getFlags()
   if (flagResponse.flags === undefined) return []
