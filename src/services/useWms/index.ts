@@ -23,6 +23,7 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { styleToId } from '@/lib/legend'
 import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
+import { getTimesFromCapabilities } from '@/lib/capabilities'
 
 export interface UseWmsReturn {
   layerCapabilities: Ref<Layer | undefined>
@@ -40,7 +41,7 @@ export function useWmsLayerCapabilities(
   const times = ref<Date[]>()
   const layerCapabilities = ref<Layer>()
 
-  async function loadLayer(): Promise<void> {
+  async function fetch() {
     const _layerName = toValue(layerName)
 
     if (_layerName === '') {
@@ -75,36 +76,12 @@ export function useWmsLayerCapabilities(
     } catch (error) {
       console.error(error)
     }
+
+    times.value = getTimesFromCapabilities(layerCapabilities.value)
   }
 
-  function loadTimes(): void {
-    let valueDates: Date[] = []
-    if (layerCapabilities.value) {
-      if (layerCapabilities.value.times) {
-        const dates = layerCapabilities.value.times.map((time) => {
-          return new Date(time)
-        })
-        let firstValueDate = dates[0]
-        let lastValueDate = dates[dates.length - 1]
-        if (layerCapabilities.value.firstValueTime) {
-          firstValueDate = new Date(layerCapabilities.value.firstValueTime)
-        }
-        if (layerCapabilities.value.lastValueTime) {
-          lastValueDate = new Date(layerCapabilities.value.lastValueTime)
-        }
-        valueDates = dates.filter(
-          (d) => d >= firstValueDate && d <= lastValueDate,
-        )
-      }
-    }
-    times.value = valueDates
-  }
+  watchEffect(fetch)
 
-  watchEffect(() => {
-    loadLayer().then(() => {
-      loadTimes()
-    })
-  })
   return { layerCapabilities, times }
 }
 
