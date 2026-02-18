@@ -49,7 +49,6 @@ import type {
   Map,
 } from 'maplibre-gl'
 import { computed, useTemplateRef, watch } from 'vue'
-import { transformStyle } from '@/lib/map'
 import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
@@ -78,7 +77,7 @@ watch(
 
     // @ts-expect-error map is not exposed in the types
     const map: Map | undefined = mapRef.value?.map
-    map?.setStyle(newBaseStyle, { transformStyle })
+    map?.setStyle(newBaseStyle, { diff: true })
   },
 )
 
