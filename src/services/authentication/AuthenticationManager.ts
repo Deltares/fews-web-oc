@@ -1,8 +1,6 @@
 import { configManager } from '../application-config/'
 import { UserManager, User, UserManagerSettings } from 'oidc-client-ts'
 import { RequestHeaderAuthorization } from '../application-config/ApplicationConfig'
-import { mergeHeaders } from '@/lib/requests/transformRequest'
-import { getPermissionExcludesHeader } from '../usePermissionExcludes'
 
 export class AuthenticationManager {
   userManager!: UserManager
@@ -59,13 +57,7 @@ export class AuthenticationManager {
     throw new Error('User is undefined')
   }
 
-  public getRequestHeaders(): Headers {
-    const permExcludeHeaders = getPermissionExcludesHeader()
-    const authHeaders = this.getAuthorizationHeaders()
-    return mergeHeaders(permExcludeHeaders, authHeaders)
-  }
-
-  getAuthorizationHeaders(): Headers {
+  public getAuthorizationHeaders(): Headers {
     if (!configManager.authenticationIsEnabled) return new Headers({})
     switch (configManager.get('VITE_REQUEST_HEADER_AUTHORIZATION')) {
       case RequestHeaderAuthorization.BEARER: {
@@ -78,29 +70,6 @@ export class AuthenticationManager {
       default:
         return new Headers({})
     }
-  }
-
-  public transformRequestAuth(request: Request, signal?: AbortSignal): Request {
-    const requestAuthHeaders = this.getRequestHeaders()
-    const requestInit = {
-      headers: mergeHeaders(request.headers, requestAuthHeaders),
-      signal: signal,
-    }
-    const newRequest = new Request(request, requestInit)
-    return newRequest
-  }
-
-  public transformRequestAuthNoExcludes(
-    request: Request,
-    signal?: AbortSignal,
-  ): Request {
-    const requestAuthHeaders = this.getAuthorizationHeaders()
-    const requestInit = {
-      headers: mergeHeaders(request.headers, requestAuthHeaders),
-      signal: signal,
-    }
-    const newRequest = new Request(request, requestInit)
-    return newRequest
   }
 }
 
