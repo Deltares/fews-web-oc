@@ -20,6 +20,5 @@
 <script setup lang="ts">
 import usePermissionExcludes from '@/services/usePermissionExcludes'
 
-const { permissions, togglePermission, isEnabled } =
-  await usePermissionExcludes()
+const { permissions, togglePermission, isEnabled } = usePermissionExcludes()
 </script>
