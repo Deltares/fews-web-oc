@@ -5,7 +5,7 @@ import type { LegacyFilterSpecification } from 'maplibre-gl'
 
 export interface ExtendedLocation extends Location {
   locationName: string | undefined
-  iconName: string | undefined
+  webocIcon: string | undefined
   sortKey: number
   invertedSortKey: number
   selected?: boolean
@@ -37,13 +37,16 @@ export function addPropertiesToLocationGeojson(
   geojson: FeatureCollection<Geometry, Location>,
   selectedLocationIds: string[],
   showNames: boolean,
+  showDataAvailability: boolean,
 ): FeatureCollection<Geometry, ExtendedLocation> {
   const features = geojson.features.map((feature) => ({
     ...feature,
     properties: {
       ...feature.properties,
       locationName: showNames ? feature.properties.locationName : '',
-      iconName: getIconName(feature),
+      iconName:
+        feature.properties.thresholdIconName ?? feature.properties.iconName,
+      webocIcon: getIconName(feature),
       sortKey: getSortKey(feature),
       invertedSortKey: getInvertedSortKey(feature),
       selected: selectedLocationIds.includes(feature.properties.locationId),
@@ -57,11 +60,33 @@ export function addPropertiesToLocationGeojson(
 }
 
 function getIconName({ properties }: Feature<Geometry, Location>) {
-  return properties.thresholdIconName ?? properties.iconName
+  const iconName = properties.thresholdIconName ?? properties.iconName
+  if (
+    properties.hasDataInViewPeriod === false &&
+    properties.hasDataOutsideViewPeriod === true
+  ) {
+    return `${iconName}-has-outside-data`
+  }
+  if (
+    properties.hasDataInViewPeriod === false &&
+    properties.hasDataOutsideViewPeriod === false
+  ) {
+    return `${iconName}-has-no-data`
+  }
+  return iconName
 }
 
 function getSortKey({ properties }: Feature<Geometry, Location>): number {
-  return properties.thresholdSeverity ?? 0
+  const severityOffset = properties.thresholdSeverity
+    ? properties.thresholdSeverity * 10
+    : 0
+  const offset =
+    properties.hasDataInViewPeriod === true
+      ? 2
+      : properties.hasDataOutsideViewPeriod === true
+        ? 1
+        : 0
+  return severityOffset + offset
 }
 
 function getInvertedSortKey(feature: Feature<Geometry, Location>): number {

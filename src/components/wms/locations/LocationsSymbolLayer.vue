@@ -23,13 +23,13 @@ const props = defineProps<Props>()
 
 const filter: SymbolLayerSpecification['filter'] = [
   'all',
-  ['has', 'iconName'],
+  ['has', 'webocIcon'],
   ['==', '$type', 'Point'],
   shouldBehaveLikeChildFilter(props.child),
 ]
 
 const baseLayout: SymbolLayerSpecification['layout'] = {
-  'icon-image': ['get', 'iconName'],
+  'icon-image': ['get', 'webocIcon'],
   'symbol-sort-key': ['get', 'sortKey'],
 }
 
@@ -46,6 +46,7 @@ const childLayout: SymbolLayerSpecification['layout'] = {
   'text-justify': 'auto',
   'text-anchor': 'right',
   'text-max-width': 15,
+  'text-offset': [-0.5, 0],
 }
 
 const parentLayout: SymbolLayerSpecification['layout'] = {
