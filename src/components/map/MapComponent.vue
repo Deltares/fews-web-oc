@@ -24,7 +24,6 @@
 </template>
 
 <script setup lang="ts">
-import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import SyncMap from '@/components/map/SyncMap.vue'
 import {
   MglAttributionControl,
@@ -34,6 +33,7 @@ import {
 import { ResourceType, RequestParameters, LngLatBounds, Map } from 'maplibre-gl'
 import { useTemplateRef, watch } from 'vue'
 import { transformStyle } from '@/lib/map'
+import { getRequestHeaders } from '@/lib/requests/transformRequest'
 
 interface Props {
   bounds?: LngLatBounds
@@ -65,7 +65,7 @@ function transformRequest(
   resourceType?: ResourceType,
 ): RequestParameters {
   if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
-    const requestAuthHeaders = authenticationManager.getRequestHeaders()
+    const requestAuthHeaders = getRequestHeaders()
     return {
       url,
       headers: requestAuthHeaders,
