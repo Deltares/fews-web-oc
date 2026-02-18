@@ -46,7 +46,7 @@ export function addPropertiesToLocationGeojson(
       locationName: showNames ? feature.properties.locationName : '',
       iconName:
         feature.properties.thresholdIconName ?? feature.properties.iconName,
-      webocIcon: getIconName(feature, showDataAvailability),
+      webocIcon: getIconName(feature),
       sortKey: getSortKey(feature),
       invertedSortKey: getInvertedSortKey(feature),
       selected: selectedLocationIds.includes(feature.properties.locationId),
@@ -59,18 +59,21 @@ export function addPropertiesToLocationGeojson(
   }
 }
 
-function getIconName(
-  { properties }: Feature<Geometry, Location>,
-  showDataAvailability: boolean,
-) {
+function getIconName({ properties }: Feature<Geometry, Location>) {
   const iconName = properties.thresholdIconName ?? properties.iconName
-  if (properties.hasDataInViewPeriod || !showDataAvailability) {
-    return iconName
+  if (
+    properties.hasDataInViewPeriod === false &&
+    properties.hasDataOutsideViewPeriod === true
+  ) {
+    return `${iconName}-has-outside-data`
   }
-
-  return properties.hasDataOutsideViewPeriod
-    ? `${iconName}-has-outside-data`
-    : `${iconName}-has-no-data`
+  if (
+    properties.hasDataInViewPeriod === false &&
+    properties.hasDataOutsideViewPeriod === false
+  ) {
+    return `${iconName}-has-no-data`
+  }
+  return iconName
 }
 
 function getSortKey({ properties }: Feature<Geometry, Location>): number {
