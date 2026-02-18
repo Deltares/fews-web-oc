@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { Permission, PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { configManager } from '../application-config'
-import { authenticationManager } from '../authentication/AuthenticationManager'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
 const permissions = ref<Permission[]>([])
 const excludedPermissions = ref<string[]>([])
@@ -25,12 +25,11 @@ export default function usePermissionExcludes() {
     if (permissions.value.length === 0) {
       const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
       const piProvider = new PiWebserviceProvider(baseUrl, {
-        transformRequestFn: (request: Request) => {
-          return Promise.resolve(
-            authenticationManager.transformRequestAuthNoExcludes(request),
-          )
-        },
+        transformRequestFn: createTransformRequestFn(),
       })
+      // note: piProvider getPermissions should be called without excluded
+      // permissions. Since this code only runs when this composable is first
+      // called, we assume that excludedPermissions is empty.
       const result = await piProvider.getPermissions()
       permissions.value = result.permissions ?? []
     }
