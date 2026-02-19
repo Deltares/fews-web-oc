@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { toDateAbsDifferenceString } from '.'
+import { convertJSDateToFewsPiParameter, toDateAbsDifferenceString } from '.'
 
 describe('toDateAbsDifferenceString', () => {
   test('with valid dates', () => {
@@ -121,5 +121,50 @@ describe('toDateAbsDifferenceString', () => {
     const endDate = new Date('2023-10-08T05:00:00Z')
     const result = toDateAbsDifferenceString(startDate, endDate)
     expect(result).toBe('1w 5h')
+  })
+})
+
+describe('convertJSDateToFewsPiParameter', () => {
+  test('with standard date', () => {
+    const date = new Date('2023-10-01T12:30:45.123Z')
+    const result = convertJSDateToFewsPiParameter(date)
+    expect(result).toBe('2023-10-01T12:30:45Z')
+  })
+
+  test('with midnight time', () => {
+    const date = new Date('2023-10-01T00:00:00.000Z')
+    const result = convertJSDateToFewsPiParameter(date)
+    expect(result).toBe('2023-10-01T00:00:00Z')
+  })
+
+  test('with end of day time', () => {
+    const date = new Date('2023-10-01T23:59:59.999Z')
+    const result = convertJSDateToFewsPiParameter(date)
+    expect(result).toBe('2023-10-01T23:59:59Z')
+  })
+
+  test('removes milliseconds', () => {
+    const date = new Date('2023-10-15T14:25:36.567Z')
+    const result = convertJSDateToFewsPiParameter(date)
+    expect(result).not.toContain('.')
+    expect(result).toBe('2023-10-15T14:25:36Z')
+  })
+
+  test('with single digit milliseconds', () => {
+    const date = new Date('2023-10-15T14:25:36.001Z')
+    const result = convertJSDateToFewsPiParameter(date)
+    expect(result).toBe('2023-10-15T14:25:36Z')
+  })
+
+  test('check date with other timezones', () => {
+    const date = new Date('2023-10-15T14:25:36.789+02:00')
+    const result = convertJSDateToFewsPiParameter(date)
+    expect(result).toBe('2023-10-15T12:25:36Z')
+  })
+
+  test('ends with Z', () => {
+    const date = new Date('2023-10-15T14:25:36.789Z')
+    const result = convertJSDateToFewsPiParameter(date)
+    expect(result).toMatch(/Z$/)
   })
 })
