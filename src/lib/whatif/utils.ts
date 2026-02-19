@@ -4,6 +4,7 @@ import type {
   WhatIfScenarioDescriptor,
   WhatIfTemplate,
 } from '@deltares/fews-pi-requests'
+import { convertJSDateToFewsPiParameter } from '@/lib/date'
 
 export type TemplateProperty = NonNullable<WhatIfTemplate['properties']>[number]
 export type ScenarioProperty = NonNullable<
@@ -224,4 +225,38 @@ function isNumber(value: string) {
 
 function isInteger(value: string) {
   return Number.isInteger(Number(value))
+}
+
+/**
+ * Converts scenario properties to a format compatible with FEWS PI API.
+ * @param properties - A record of property key-value pairs to be converted
+ * @param template - The WhatIfTemplate that defines the property types and conversion rules
+ * @returns A record of converted properties with string or number values compatible with FEWS PI
+ * @remarks
+ * - If no template is provided, properties are returned as-is cast to the appropriate type
+ * - Handles type-specific conversions:
+ *   - string: converts to String type
+ *   - number: converts to Number type
+ *   - dateTime: converts Date to FEWS PI query parameter format
+ *   - other types: passed through unchanged
+ * - Properties without matching template definitions are skipped
+ */
+export function convertPropertiesToFewsPi(
+  properties: Record<string, any>,
+  template: WhatIfTemplate | undefined,
+): Record<string, string | number> {
+  if (!template) return properties as Record<string, string | number>
+  const converted: Record<string, string | number> = {}
+  for (const key in properties) {
+    const prop = template.properties?.find((p) => p.id === key)
+    switch (prop?.type) {
+      case 'dateTime':
+        converted[key] =
+          convertJSDateToFewsPiParameter(new Date(properties[key])) ?? ''
+        break
+      default:
+        converted[key] = properties[key]
+    }
+  }
+  return converted
 }
