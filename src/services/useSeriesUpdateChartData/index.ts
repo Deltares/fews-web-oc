@@ -11,7 +11,7 @@ export function useSeriesUpdateChartData(
   axis: MaybeRefOrGetter<CartesianAxes>,
 ) {
   const hasResetAxes = ref(false)
-  const hasRenderedOnce = ref(false)
+  let hasRenderedOnce = false
 
   watch(
     () =>
@@ -37,9 +37,9 @@ export function useSeriesUpdateChartData(
           hasResetAxes.value,
         )
 
-        if (!hasRenderedOnce.value) {
+        if (!hasRenderedOnce) {
           redraw(_axis, _config)
-          hasRenderedOnce.value = true
+          hasRenderedOnce = true
         }
       }
     },
