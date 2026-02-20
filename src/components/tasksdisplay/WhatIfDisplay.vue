@@ -294,7 +294,7 @@ async function submit() {
   const whatIfTemplateId = selectedWhatIfTemplate.value.id
   const properties = convertPropertiesToFewsPi(
     selectedProperties.value,
-    selectedWhatIfTemplate.value,
+    selectedWhatIfTemplate.value.properties,
   )
 
   const scenarioFilter: PostWhatIfScenarioFilter = {

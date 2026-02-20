@@ -5,6 +5,7 @@ import type {
   WhatIfTemplate,
 } from '@deltares/fews-pi-requests'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
+import { WhatIfProperty } from './types'
 
 export type TemplateProperty = NonNullable<WhatIfTemplate['properties']>[number]
 export type ScenarioProperty = NonNullable<
@@ -241,12 +242,12 @@ function isInteger(value: string) {
  */
 export function convertPropertiesToFewsPi(
   properties: Record<string, any>,
-  template: WhatIfTemplate | undefined,
+  templateProperties: WhatIfProperty[] | undefined,
 ): Record<string, string | number> {
-  if (!template) return properties as Record<string, string | number>
+  if (!templateProperties) return properties as Record<string, string | number>
   const converted: Record<string, string | number> = {}
   for (const [key, property] of Object.entries(properties)) {
-    const prop = template.properties?.find((p) => p.id === key)
+    const prop = templateProperties?.find((p) => p.id === key)
     switch (prop?.type) {
       case 'dateTime': {
         const convertedValue = convertJSDateToFewsPiParameter(
