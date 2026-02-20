@@ -310,6 +310,7 @@ const beforeDestroy = () => {
 
 watch(domain, (newDomain) => {
   axis.redraw({ x: { domain: newDomain } })
+  resetAxes(!zoomedY)
 })
 
 const { resetAxes } = useSeriesUpdateChartData(
