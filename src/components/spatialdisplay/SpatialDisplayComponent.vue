@@ -338,7 +338,6 @@ const {
 )
 
 const workflowsStore = useWorkflowsStore()
-const userSettingsStore = useUserSettingsStore()
 
 const showLocationsLayer = ref<boolean>(props.settings.locationsLayer.show)
 watch(
@@ -468,9 +467,9 @@ function getDefaultLayerKind() {
   if (!canUseStreamlines.value) {
     return LayerKind.Static
   }
-  if (userSettingsStore.preferredLayerKind !== null) {
+  if (userSettings.preferredLayerKind !== null) {
     // If we have a preference, use that.
-    return userSettingsStore.preferredLayerKind
+    return userSettings.preferredLayerKind
   }
   // Otherwise, use streamlines.
   return LayerKind.Streamline
