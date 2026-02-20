@@ -3,7 +3,7 @@ import { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { CartesianAxes } from '@deltares/fews-web-oc-charts'
 import { difference } from 'lodash-es'
-import { MaybeRefOrGetter, ref, toValue, watch } from 'vue'
+import { MaybeRefOrGetter, toValue, watch } from 'vue'
 
 export function useSeriesUpdateChartData(
   series: MaybeRefOrGetter<Record<string, Series>>,
