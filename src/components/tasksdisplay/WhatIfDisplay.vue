@@ -142,6 +142,7 @@ import type {
   WhatIfTemplate,
 } from '@deltares/fews-pi-requests'
 import {
+  convertPropertiesToFewsPi,
   getErrorsForProperties,
   getJsonDataFromProperties,
   ScenarioData,
@@ -291,7 +292,10 @@ async function submit() {
   }
   const workflowId = selectedWorkflow.value.id
   const whatIfTemplateId = selectedWhatIfTemplate.value.id
-  const properties = selectedProperties.value as Record<string, string | number>
+  const properties = convertPropertiesToFewsPi(
+    selectedProperties.value,
+    selectedWhatIfTemplate.value.properties,
+  )
 
   const scenarioFilter: PostWhatIfScenarioFilter = {
     whatIfTemplateId,
