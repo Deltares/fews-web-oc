@@ -228,18 +228,16 @@ function isInteger(value: string) {
 }
 
 /**
- * Converts scenario properties to a format compatible with FEWS PI API.
+ * Converts scenario properties to a format compatible with the FEWS PI API.
  * @param properties - A record of property key-value pairs to be converted
- * @param template - The WhatIfTemplate that defines the property types and conversion rules
- * @returns A record of converted properties with string or number values compatible with FEWS PI
+ * @param template - The WhatIfTemplate that defines property types used for conversion
+ * @returns A record of properties with values compatible with FEWS PI
  * @remarks
- * - If no template is provided, properties are returned as-is cast to the appropriate type
- * - Handles type-specific conversions:
- *   - string: converts to String type
- *   - number: converts to Number type
- *   - dateTime: converts Date to FEWS PI query parameter format
- *   - other types: passed through unchanged
- * - Properties without matching template definitions are skipped
+ * - If no template is provided, properties are returned as-is.
+ * - Handles type-specific conversions only for:
+ *   - dateTime: converts Date-like values to FEWS PI query parameter format.
+ * - All other property types, including those without matching template definitions,
+ *   are passed through unchanged.
  */
 export function convertPropertiesToFewsPi(
   properties: Record<string, any>,
