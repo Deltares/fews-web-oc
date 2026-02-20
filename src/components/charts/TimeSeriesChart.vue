@@ -42,6 +42,8 @@ import {
   MouseOver,
   Visitor,
   MouseOverDirection,
+  ZoomMode,
+  ZoomEvent,
 } from '@deltares/fews-web-oc-charts'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -97,6 +99,7 @@ const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = useTemplateRef('chartContainer')
 const axisTime = ref<CrossSectionSelect<Date>>()
+let zoomedY = false
 
 onMounted(() => {
   if (chartContainer.value) {
@@ -136,6 +139,8 @@ onMounted(() => {
     } else {
       zoom = new ZoomHandler(wheelMode, scrollModifierKey)
     }
+    zoom.addEventListener('zoom', onZoom)
+    zoom.addEventListener('reset-zoom', onResetZoom)
 
     const currentTime = new CurrentTime({ x: { axisIndex: 0 } })
 
@@ -184,7 +189,6 @@ watch(
 )
 
 function onUpdateXDomain(event: DomainChangeEvent): void {
-  hasResetAxes.value = event.fromZoomReset
   domain.value = event.new as [Date, Date]
 }
 
@@ -193,6 +197,16 @@ function onCrossValueChange(value: Date) {
     axisTime.value.value = value
     axisTime.value.redraw()
   }
+}
+
+function onZoom(event: ZoomEvent) {
+  zoomedY = zoomedY || event.mode === ZoomMode.Y || event.mode === ZoomMode.XY
+  hasResetAxes.value = !zoomedY
+}
+
+function onResetZoom() {
+  zoomedY = false
+  hasResetAxes.value = true
 }
 
 function setThresholdLines() {
@@ -288,6 +302,8 @@ const onValueChange = () => {
 
 const beforeDestroy = () => {
   window.removeEventListener('resize', resize)
+  zoom.removeEventListener('zoom', onZoom)
+  zoom.removeEventListener('reset-zoom', onResetZoom)
 }
 
 watch(domain, (newDomain) => {
