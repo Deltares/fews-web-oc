@@ -195,7 +195,7 @@ function onCrossValueChange(value: Date) {
   }
 }
 
-const setThresholdLines = () => {
+function setThresholdLines() {
   const series = props.config.series
   if (!series.some((s) => s.thresholds?.length)) return
 
@@ -224,10 +224,9 @@ const setThresholdLines = () => {
         axisIndexMap.set(yAxisIndex, list)
       })
 
-    const config = props.config.yAxis ?? [{}, {}]
+    const config = [{}, {}]
     for (const [yAxisIndex, values] of axisIndexMap.entries()) {
       const yDomain = yDomains?.[yAxisIndex]
-
       const domain =
         yDomain && isNumberDomain(yDomain)
           ? extent([...yDomain, ...values])
@@ -236,10 +235,10 @@ const setThresholdLines = () => {
         config[yAxisIndex] = { defaultDomain: domain, nice: true }
       }
     }
-    axis.setOptions({ y: config })
+    return { y: config }
   } else {
     thresholdLinesVisitor.options = []
-    axis.setOptions({ y: props.config.yAxis })
+    return { y: props.config.yAxis }
   }
 }
 
@@ -260,10 +259,13 @@ function setTags() {
 const toggleLine = (tag: Tag) => {
   if (tag.id === 'Thresholds') {
     showThresholds.value = !tag.disabled
-    setThresholdLines()
-    redraw(axis, props.config)
+    const zoomOptions = setThresholdLines()
+    if (zoomOptions === undefined) return
+    axis.setOptions(zoomOptions)
+    axis.redraw({ x: { autoScale: false }, y: { autoScale: true } })
   } else {
     tag.seriesIds?.forEach((id) => toggleChartVisibility(axis, id))
+    axis.redraw({ x: { autoScale: false }, y: { autoScale: true } })
   }
 }
 
