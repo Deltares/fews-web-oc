@@ -1,5 +1,5 @@
 <template>
-  <div v-for="group in groups" :key="group" class="mb-2">
+  <v-list v-for="group in groups" :key="group" class="mb-2" density="compact">
     <v-list-subheader>{{ group }}</v-list-subheader>
     <v-list-item
       v-for="(setting, index) in store.listByGroup(group)"
@@ -63,7 +63,7 @@
         </v-btn>
       </template>
     </v-list-item>
-  </div>
+  </v-list>
 </template>
 
 <script setup lang="ts">
