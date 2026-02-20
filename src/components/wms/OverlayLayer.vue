@@ -2,6 +2,7 @@
   <AnimatedRasterLayer
     v-if="options"
     :layer="options"
+    :opacity="overlay.opacity"
     :layerId="getLayerId(`overlay-${options.name}`)"
     :sourceId="getSourceId(`overlay-${options.name}`)"
     :beforeId="beforeId"

@@ -53,6 +53,7 @@ export interface AnimatedRasterLayerOptions {
 interface Props {
   layer: AnimatedRasterLayerOptions
   layerId: string
+  opacity?: number
   sourceId: string
   beforeId?: string
   enableDoubleClick?: boolean
@@ -60,6 +61,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   enableDoubleClick: false,
+  opacity: 1,
 })
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 
@@ -105,7 +107,7 @@ function onDataChange(event: MapSourceDataEvent): void {
     event.tile !== undefined &&
     event.isSourceLoaded
   ) {
-    map?.setPaintProperty(props.layerId, 'raster-opacity', 1)
+    map?.setPaintProperty(props.layerId, 'raster-opacity', props.opacity)
   }
 }
 
@@ -241,6 +243,15 @@ async function updateSource() {
 
   source.updateImage(imageOptions)
 }
+
+watch(
+  () => props.opacity,
+  (newOpacity) => {
+    if (map?.getLayer(props.layerId)) {
+      map.setPaintProperty(props.layerId, 'raster-opacity', newOpacity ?? 1)
+    }
+  },
+)
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
   const sw = toMercator(point(bounds.getSouthWest().toArray()))
