@@ -276,10 +276,10 @@ const toggleLine = (tag: Tag) => {
     const zoomOptions = setThresholdLines()
     if (zoomOptions === undefined) return
     axis.setOptions(zoomOptions)
-    axis.redraw({ y: { autoScale: true } })
+    axis.redraw({ y: { autoScale: !zoomedY } })
   } else {
     tag.seriesIds?.forEach((id) => toggleChartVisibility(axis, id))
-    axis.redraw({ y: { autoScale: true } })
+    axis.redraw({ y: { autoScale: !zoomedY } })
   }
 }
 
@@ -299,7 +299,6 @@ const onValueChange = () => {
     axis.setOptions(zoomOptions)
   }
   resetAxes(false)
-
   setTags()
 }
 
