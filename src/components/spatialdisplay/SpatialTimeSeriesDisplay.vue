@@ -4,6 +4,7 @@
       <TimeSeriesWindowComponent
         :displayConfig="displayConfig"
         :elevationChartDisplayconfig="elevationChartDisplayconfig"
+        :brushChartConfig="brushChartConfig"
         :currentTime="currentTime"
         :filter="filter"
         :settings="settings.charts"
@@ -34,6 +35,7 @@ import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useTaskRunsStore } from '@/stores/taskRuns'
 
 interface Props {
+  brushFilter?: filterActionsFilter | timeSeriesGridActionsFilter
   filter?: filterActionsFilter | timeSeriesGridActionsFilter
   elevationChartFilter?: timeSeriesGridActionsFilter
   locationsTooltipFilter?: LocationsTooltipFilter
@@ -64,6 +66,12 @@ const { displayConfig: elevationChartDisplayconfigFromGrid } =
 const elevationChartDisplayconfig = computed(
   () =>
     scalar1DDisplayConfig?.value ?? elevationChartDisplayconfigFromGrid.value,
+)
+
+const { displayConfig: brushChartConfig } = useDisplayConfigFilter(
+  baseUrl,
+  () => props.brushFilter ?? {},
+  () => taskRunsStore.selectedTaskRunIds,
 )
 
 const { tooltip } = useLocationTooltip(
