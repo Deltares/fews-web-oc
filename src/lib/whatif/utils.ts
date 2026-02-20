@@ -245,7 +245,7 @@ export function convertPropertiesToFewsPi(
 ): Record<string, string | number> {
   if (!template) return properties as Record<string, string | number>
   const converted: Record<string, string | number> = {}
-  for (const key in properties) {
+  for (const [key, property] of Object.entries(properties)) {
     const prop = template.properties?.find((p) => p.id === key)
     switch (prop?.type) {
       case 'dateTime': {
@@ -258,7 +258,7 @@ export function convertPropertiesToFewsPi(
         break
       }
       default:
-        converted[key] = properties[key]
+        converted[key] = property
     }
   }
   return converted
