@@ -249,7 +249,7 @@ export function convertPropertiesToFewsPi(
     const prop = template.properties?.find((p) => p.id === key)
     switch (prop?.type) {
       case 'dateTime': {
-        const convertedValue = convertJSDateToFewsPiQueryParameter(
+        const convertedValue = convertJSDateToFewsPiParameter(
           new Date(properties[key]),
         )
         if (convertedValue != null) {
