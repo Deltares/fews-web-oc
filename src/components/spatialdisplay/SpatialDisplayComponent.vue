@@ -74,6 +74,13 @@
         :coordinate="workflowsStore.coordinate"
       />
       <template v-else>
+        <OverlayInformationPanel v-if="settings.overlays.length">
+          <OverlayPanel
+            :overlays="settings.overlays"
+            v-model:selected-overlay-ids="selectedOverlayIds"
+            :capabilities="staticCapabilities"
+          />
+        </OverlayInformationPanel>
         <InformationPanel
           v-if="layerCapabilities"
           :layerName="layerName"
@@ -114,13 +121,6 @@
             />
           </template>
         </InformationPanel>
-        <OverlayInformationPanel v-if="settings.overlays.length">
-          <OverlayPanel
-            :overlays="settings.overlays"
-            v-model:selected-overlay-ids="selectedOverlayIds"
-            :capabilities="staticCapabilities"
-          />
-        </OverlayInformationPanel>
         <LocationsSearchControl
           v-if="settings.locationsLayer.locationSearchEnabled"
           v-model:showLocations="showLocationsLayer"
