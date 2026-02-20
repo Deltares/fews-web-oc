@@ -42,6 +42,8 @@ import {
   MouseOver,
   Visitor,
   MouseOverDirection,
+  ZoomMode,
+  ZoomEvent,
 } from '@deltares/fews-web-oc-charts'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -97,6 +99,7 @@ const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = useTemplateRef('chartContainer')
 const axisTime = ref<CrossSectionSelect<Date>>()
+let zoomedY = false
 
 onMounted(() => {
   if (chartContainer.value) {
@@ -136,6 +139,8 @@ onMounted(() => {
     } else {
       zoom = new ZoomHandler(wheelMode, scrollModifierKey)
     }
+    zoom.addEventListener('zoom', onZoom)
+    zoom.addEventListener('reset-zoom', onResetZoom)
 
     const currentTime = new CurrentTime({ x: { axisIndex: 0 } })
 
@@ -184,7 +189,6 @@ watch(
 )
 
 function onUpdateXDomain(event: DomainChangeEvent): void {
-  hasResetAxes.value = event.fromZoomReset
   domain.value = event.new as [Date, Date]
 }
 
@@ -195,7 +199,17 @@ function onCrossValueChange(value: Date) {
   }
 }
 
-const setThresholdLines = () => {
+function onZoom(event: ZoomEvent) {
+  zoomedY = zoomedY || event.mode === ZoomMode.Y || event.mode === ZoomMode.XY
+  resetAxes(!zoomedY)
+}
+
+function onResetZoom() {
+  zoomedY = false
+  resetAxes(true)
+}
+
+function setThresholdLines() {
   const series = props.config.series
   if (!series.some((s) => s.thresholds?.length)) return
 
@@ -224,10 +238,9 @@ const setThresholdLines = () => {
         axisIndexMap.set(yAxisIndex, list)
       })
 
-    const config = props.config.yAxis ?? [{}, {}]
+    const config = [{}, {}]
     for (const [yAxisIndex, values] of axisIndexMap.entries()) {
       const yDomain = yDomains?.[yAxisIndex]
-
       const domain =
         yDomain && isNumberDomain(yDomain)
           ? extent([...yDomain, ...values])
@@ -236,10 +249,10 @@ const setThresholdLines = () => {
         config[yAxisIndex] = { defaultDomain: domain, nice: true }
       }
     }
-    axis.setOptions({ y: config })
+    return { y: config }
   } else {
     thresholdLinesVisitor.options = []
-    axis.setOptions({ y: props.config.yAxis })
+    return { y: props.config.yAxis }
   }
 }
 
@@ -260,10 +273,13 @@ function setTags() {
 const toggleLine = (tag: Tag) => {
   if (tag.id === 'Thresholds') {
     showThresholds.value = !tag.disabled
-    setThresholdLines()
-    redraw(axis, props.config)
+    const zoomOptions = setThresholdLines()
+    if (zoomOptions === undefined) return
+    axis.setOptions(zoomOptions)
+    axis.redraw({ y: { autoScale: !zoomedY } })
   } else {
     tag.seriesIds?.forEach((id) => toggleChartVisibility(axis, id))
+    axis.redraw({ y: { autoScale: !zoomedY } })
   }
 }
 
@@ -278,21 +294,25 @@ const onValueChange = () => {
 
   refreshChart(axis, props.config, props.series)
   redraw(axis, props.config)
-  setThresholdLines()
-  hasResetAxes.value = true
-
+  const zoomOptions = setThresholdLines()
+  if (zoomOptions) {
+    axis.setOptions(zoomOptions)
+  }
+  resetAxes(false)
   setTags()
 }
 
 const beforeDestroy = () => {
   window.removeEventListener('resize', resize)
+  zoom.removeEventListener('zoom', onZoom)
+  zoom.removeEventListener('reset-zoom', onResetZoom)
 }
 
 watch(domain, (newDomain) => {
   axis.redraw({ x: { domain: newDomain } })
 })
 
-const { hasResetAxes } = useSeriesUpdateChartData(
+const { resetAxes } = useSeriesUpdateChartData(
   () => props.series,
   () => props.config,
   () => axis,

@@ -3,15 +3,15 @@ import { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import { Series } from '@/lib/timeseries/timeSeries'
 import { CartesianAxes } from '@deltares/fews-web-oc-charts'
 import { difference } from 'lodash-es'
-import { MaybeRefOrGetter, ref, toValue, watch } from 'vue'
+import { MaybeRefOrGetter, toValue, watch } from 'vue'
 
 export function useSeriesUpdateChartData(
   series: MaybeRefOrGetter<Record<string, Series>>,
   config: MaybeRefOrGetter<ChartConfig>,
   axis: MaybeRefOrGetter<CartesianAxes>,
 ) {
-  const hasResetAxes = ref(false)
-  const hasRenderedOnce = ref(false)
+  let hasResetAxes = false
+  let hasRenderedOnce = false
 
   watch(
     () =>
@@ -30,20 +30,24 @@ export function useSeriesUpdateChartData(
         s.dataResources.some((resourceId) => newSeriesIds.includes(resourceId)),
       )
       if (requiredSeries.length > 0) {
-        hasResetAxes.value = updateChartData(
+        hasResetAxes = updateChartData(
           _axis,
           requiredSeries,
           _series,
-          hasResetAxes.value,
+          hasResetAxes,
         )
 
-        if (!hasRenderedOnce.value) {
+        if (!hasRenderedOnce) {
           redraw(_axis, _config)
-          hasRenderedOnce.value = true
+          hasRenderedOnce = true
         }
       }
     },
   )
 
-  return { hasResetAxes }
+  const resetAxes = (value: boolean) => {
+    hasResetAxes = value
+  }
+
+  return { resetAxes }
 }
