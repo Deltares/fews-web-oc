@@ -298,7 +298,7 @@ const onValueChange = () => {
   if (zoomOptions) {
     axis.setOptions(zoomOptions)
   }
-  resetAxes(true)
+  resetAxes(false)
 
   setTags()
 }
