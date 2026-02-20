@@ -294,7 +294,10 @@ const onValueChange = () => {
 
   refreshChart(axis, props.config, props.series)
   redraw(axis, props.config)
-  setThresholdLines()
+  const zoomOptions = setThresholdLines()
+  if (zoomOptions) {
+    axis.setOptions(zoomOptions)
+  }
   resetAxes(true)
 
   setTags()
