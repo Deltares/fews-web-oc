@@ -10,7 +10,7 @@ export function useSeriesUpdateChartData(
   config: MaybeRefOrGetter<ChartConfig>,
   axis: MaybeRefOrGetter<CartesianAxes>,
 ) {
-  const hasResetAxes = ref(false)
+  let hasResetAxes = false
   let hasRenderedOnce = false
 
   watch(
@@ -30,11 +30,11 @@ export function useSeriesUpdateChartData(
         s.dataResources.some((resourceId) => newSeriesIds.includes(resourceId)),
       )
       if (requiredSeries.length > 0) {
-        hasResetAxes.value = updateChartData(
+        hasResetAxes = updateChartData(
           _axis,
           requiredSeries,
           _series,
-          hasResetAxes.value,
+          hasResetAxes,
         )
 
         if (!hasRenderedOnce) {
@@ -45,5 +45,9 @@ export function useSeriesUpdateChartData(
     },
   )
 
-  return { hasResetAxes }
+  const resetAxes = (value: boolean) => {
+    hasResetAxes = value
+  }
+
+  return { resetAxes }
 }

@@ -201,12 +201,12 @@ function onCrossValueChange(value: Date) {
 
 function onZoom(event: ZoomEvent) {
   zoomedY = zoomedY || event.mode === ZoomMode.Y || event.mode === ZoomMode.XY
-  hasResetAxes.value = !zoomedY
+  resetAxes(!zoomedY)
 }
 
 function onResetZoom() {
   zoomedY = false
-  hasResetAxes.value = true
+  resetAxes(true)
 }
 
 function setThresholdLines() {
@@ -295,7 +295,7 @@ const onValueChange = () => {
   refreshChart(axis, props.config, props.series)
   redraw(axis, props.config)
   setThresholdLines()
-  hasResetAxes.value = true
+  resetAxes(true)
 
   setTags()
 }
@@ -310,7 +310,7 @@ watch(domain, (newDomain) => {
   axis.redraw({ x: { domain: newDomain } })
 })
 
-const { hasResetAxes } = useSeriesUpdateChartData(
+const { resetAxes } = useSeriesUpdateChartData(
   () => props.series,
   () => props.config,
   () => axis,
