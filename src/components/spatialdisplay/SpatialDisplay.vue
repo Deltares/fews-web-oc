@@ -187,11 +187,11 @@ function getFilterActionsFilter(
   fullDataPeriod?: boolean,
 ): filterActionsFilter & UseDisplayConfigOptions {
   return {
-    locationIds: locationIds,
+    locationIds,
     filterId: filterIds.value ? filterIds.value[0] : undefined,
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,
-    fullDataPeriod: fullDataPeriod,
+    fullDataPeriod,
   }
 }
 
