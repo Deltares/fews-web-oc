@@ -252,6 +252,8 @@ function setThresholdLines() {
     return { y: config }
   } else {
     thresholdLinesVisitor.options = []
+    // FIXME: fix setOptions to make it possible to delete settings like defaultDomain without having to reset the entire axis options
+    axis.options.y?.forEach((y) => delete y.defaultDomain)
     return { y: props.config.yAxis }
   }
 }
