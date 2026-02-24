@@ -100,7 +100,7 @@ const numberOfLines = computed(() => {
 
 const height = computed(() => {
   const chipHeight = 34
-  return numberOfLines.value * chipHeight + 4
+  return numberOfLines.value * chipHeight
 })
 
 const heightStyle = computed(() => {
@@ -211,6 +211,10 @@ function onToggleExpand() {
   pointer-events: auto;
   overflow: hidden;
   z-index: 10;
+}
+
+.chart-legend {
+  margin-top: 2px;
 }
 
 .chart-legend.require-expand {
