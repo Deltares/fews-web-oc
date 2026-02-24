@@ -6,30 +6,33 @@
       v-click-outside="onOutsideClick"
       class="chart-controls position-relative semi-transparent"
       :style="chartControlsStyle"
-      :elevation="expanded && !overlay ? 5 : 0"
+      :elevation="expanded && !overlay ? 1 : 0"
       :border="overlay"
     >
       <div
         ref="chartLegendContainer"
         :style="chartLegendContainerStyle"
         class="chart-legend-container w-100"
-        :class="{ 'mt-auto': !overlay }"
+        :class="{ overlay }"
       >
         <v-chip-group
           ref="chartLegend"
           class="chart-legend"
-          :class="{ overlay }"
+          :class="{ overlay, 'require-expand': requiresExpand }"
           multiple
           :column="!overlay"
+          :direction="overlay ? 'vertical' : 'horizontal'"
           selected-class=""
         >
           <v-chip
             v-for="tag in tags"
             :key="tag.id"
             label
+            :tile="overlay"
             size="small"
             role="button"
-            :density="overlay ? 'compact' : 'default'"
+            :density="overlay ? 'default' : 'default'"
+            :class="overlay ? 'ma-0' : ''"
             :variant="tag.disabled || overlay ? 'text' : 'tonal'"
             @click="toggleLine(tag)"
             :disabled="!tag.interactive"
@@ -57,6 +60,7 @@
         :icon="expandIcon"
         :size="overlay ? 'x-small' : 'small'"
         variant="plain"
+        class="position-absolute"
         :style="expandButtonStyle"
         @click="onToggleExpand()"
       />
@@ -104,13 +108,9 @@ const numberOfLines = computed(() => {
 })
 
 const height = computed(() => {
-  if (numberOfLines.value === props.tags.length) {
-    return
-  }
-
   if (overlay.value) {
     const chipHeight = 26
-    return numberOfLines.value * chipHeight + 4
+    return numberOfLines.value * chipHeight
   } else {
     const chipHeight = 34
     return numberOfLines.value * chipHeight + 4
@@ -118,7 +118,7 @@ const height = computed(() => {
 })
 const heightStyle = computed(() => {
   if (numberOfLines.value === props.tags.length) {
-    return `${legendHeight.value}px`
+    return `${height.value}px`
   }
 
   return `${height.value}px`
@@ -148,7 +148,9 @@ const chartControlsStyle = computed(() => {
   const offset = overlay.value ? -chipMargin : chipMargin
 
   const maxHeight =
-    expanded.value || !requiresExpand.value ? '95%' : `${height.value}px`
+    expanded.value || !requiresExpand.value
+      ? `min(${legendHeight.value + 2}px, calc(100% - ${top + bottom}px))`
+      : `${height.value + 2}px`
   const minHeight = overlay.value ? undefined : heightStyle.value
   const marginRight = right ? `${right - offset}px` : undefined
   const marginLeft = left ? `${left - offset}px` : undefined
@@ -168,7 +170,6 @@ const chartControlsStyle = computed(() => {
     : 'flex-start'
 
   return {
-    maxHeight,
     minHeight,
     height: expanded.value ? maxHeight : undefined,
     marginRight,
@@ -276,6 +277,10 @@ function onToggleExpand() {
 
 :deep(.v-chip--outlined) {
   opacity: 0.5;
+}
+
+:deep(.v-slide-group--vertical) {
+  max-height: unset;
 }
 
 :deep(.v-chip__content) {
