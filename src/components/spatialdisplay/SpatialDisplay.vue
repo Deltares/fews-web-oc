@@ -237,16 +237,7 @@ const brushFilter = computed(() => {
     return getFilterActionsFilter(props.locationIds, true)
   }
   if (props.longitude && props.latitude) {
-    const actionsFilter = getTimeSeriesGridActionsFilter(
-      props.longitude,
-      props.latitude,
-    )
-    if (actionsFilter) {
-      return {
-        ...actionsFilter,
-        fullDataPeriod: true,
-      }
-    }
+    return getTimeSeriesGridActionsFilter(props.longitude, props.latitude)
   }
   return {}
 })

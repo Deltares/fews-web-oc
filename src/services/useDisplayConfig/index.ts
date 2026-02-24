@@ -59,7 +59,6 @@ export function useDisplayConfig(
       const filter = {
         nodeId: _nodeId,
         ..._options,
-        fullDataPeriod: true,
       }
       const taskRunsFilter = {
         ...filter,
