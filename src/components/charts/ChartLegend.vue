@@ -1,39 +1,34 @@
 <template>
   <!-- Fills up space as v-sheet is absolutely positioned -->
-  <div v-if="!overlay" class="flex-0-0" :style="{ height: heightStyle }" />
+  <div class="flex-0-0" :style="{ height: heightStyle }" />
   <div class="chart-controls-container">
     <v-sheet
       v-click-outside="onOutsideClick"
       class="chart-controls position-relative semi-transparent"
       :style="chartControlsStyle"
-      :elevation="expanded && !overlay ? 1 : 0"
-      :border="overlay"
+      :elevation="expanded ? 1 : 0"
     >
       <div
         ref="chartLegendContainer"
         :style="chartLegendContainerStyle"
         class="chart-legend-container w-100"
-        :class="{ overlay }"
       >
         <v-chip-group
           ref="chartLegend"
           class="chart-legend"
-          :class="{ overlay, 'require-expand': requiresExpand }"
+          :class="{ 'require-expand': requiresExpand }"
           multiple
-          :column="!overlay"
-          :direction="overlay ? 'vertical' : 'horizontal'"
+          :column="true"
           selected-class=""
         >
           <v-chip
             v-for="tag in tags"
             :key="tag.id"
             label
-            :tile="overlay"
             size="small"
             role="button"
-            :density="overlay ? 'default' : 'default'"
-            :class="overlay ? 'ma-0' : ''"
-            :variant="tag.disabled || overlay ? 'text' : 'tonal'"
+            density="default"
+            :variant="tag.disabled ? 'text' : 'tonal'"
             @click="toggleLine(tag)"
             :disabled="!tag.interactive"
           >
@@ -58,7 +53,7 @@
       <v-btn
         v-show="requiresExpand"
         :icon="expandIcon"
-        :size="overlay ? 'x-small' : 'small'"
+        size="small"
         variant="plain"
         class="position-absolute"
         :style="expandButtonStyle"
@@ -78,16 +73,12 @@ import type { ChartsSettings } from '@/lib/topology/componentSettings'
 interface Props {
   tags: Tag[]
   margin: Margin
-  settings:
-    | ChartsSettings['timeSeriesChart']['legend']
-    | ChartsSettings['verticalProfileChart']['legend']
+  settings: ChartsSettings['timeSeriesChart']['legend'] | ChartsSettings['verticalProfileChart']['legend']
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits(['toggleLine'])
-
-const overlay = computed(() => props.settings.placement.includes('inside'))
 
 const numberOfLines = computed(() => {
   const minLines =
@@ -108,19 +99,11 @@ const numberOfLines = computed(() => {
 })
 
 const height = computed(() => {
-  if (overlay.value) {
-    const chipHeight = 26
-    return numberOfLines.value * chipHeight
-  } else {
-    const chipHeight = 34
-    return numberOfLines.value * chipHeight + 4
-  }
+  const chipHeight = 34
+  return numberOfLines.value * chipHeight + 4
 })
-const heightStyle = computed(() => {
-  if (numberOfLines.value === props.tags.length) {
-    return `${height.value}px`
-  }
 
+const heightStyle = computed(() => {
   return `${height.value}px`
 })
 
@@ -130,11 +113,13 @@ const { height: legendHeight } = useElementSize(chartLegend)
 const requiresExpand = computed(
   () => height.value && legendHeight.value > height.value,
 )
+
 watch(requiresExpand, () => {
   if (!requiresExpand.value) {
     toggleExpand(false)
   }
 })
+
 const [expanded, toggleExpand] = useToggle(false)
 
 function toggleLine(tag: Tag) {
@@ -145,53 +130,38 @@ function toggleLine(tag: Tag) {
 const chipMargin = 8
 const chartControlsStyle = computed(() => {
   const { left = 0, right = 0, top = 0, bottom = 0 } = props.margin
-  const offset = overlay.value ? -chipMargin : chipMargin
 
   const maxHeight =
     expanded.value || !requiresExpand.value
       ? `min(${legendHeight.value + 2}px, calc(100% - ${top + bottom}px))`
       : `${height.value + 2}px`
-  const minHeight = overlay.value ? undefined : heightStyle.value
-  const marginRight = right ? `${right - offset}px` : undefined
-  const marginLeft = left ? `${left - offset}px` : undefined
-  const marginTop = overlay.value ? `${top - offset}px` : undefined
-  const marginBottom = overlay.value ? `${bottom - offset}px` : undefined
-  const width = overlay.value
-    ? 'min-content'
-    : `calc(100% - ${marginRight ?? 0} - ${marginLeft ?? 0})`
+
+  const marginRight = right ? `${right - chipMargin}px` : undefined
+  const marginLeft = left ? `${left - chipMargin}px` : undefined
+  const width = `calc(100% - ${marginRight ?? 0} - ${marginLeft ?? 0})`
 
   const alignSelf =
-    props.settings.placement.includes('lower') ||
     props.settings.placement.includes('under')
       ? 'flex-end'
       : 'flex-start'
-  const justifySelf = props.settings.placement.includes('right')
-    ? 'flex-end'
-    : 'flex-start'
 
   return {
-    minHeight,
+    minHeight: heightStyle.value,
     height: expanded.value ? maxHeight : undefined,
     marginRight,
     marginLeft,
-    marginTop,
-    marginBottom,
     width,
     alignSelf,
-    justifySelf,
+    justifySelf: 'flex-start',
   }
 })
 
 const expandButtonStyle = computed(() => {
-  const bottom = '0px'
-  const right = '0px'
-  const height = overlay.value ? '26px' : undefined
-  const width = overlay.value ? '26px' : undefined
   return {
-    bottom,
-    right,
-    height,
-    width,
+    height: '34px',
+    width: '34px',
+    bottom: '0px',
+    right: '0px',
   }
 })
 
@@ -199,20 +169,16 @@ const expandIcon = computed(() => {
   const isLower =
     props.settings.placement.includes('lower') ||
     props.settings.placement.includes('under')
-  if (isLower) {
-    return expanded.value ? 'mdi-chevron-down' : 'mdi-chevron-up'
-  } else {
-    return expanded.value ? 'mdi-chevron-up' : 'mdi-chevron-down'
-  }
+  return isLower
+    ? expanded.value ? 'mdi-chevron-down' : 'mdi-chevron-up'
+    : expanded.value ? 'mdi-chevron-up' : 'mdi-chevron-down'
 })
 
 const chartLegendContainerStyle = computed(() => {
   return {
     height: expanded.value ? '100%' : heightStyle.value,
     overflow: expanded.value ? 'auto' : 'hidden',
-    marginBottom: props.settings.placement.includes('under')
-      ? '2px'
-      : undefined,
+    marginBottom: props.settings.placement.includes('under') ? '2px' : undefined,
   }
 })
 
@@ -225,7 +191,6 @@ function onOutsideClick() {
 function onToggleExpand() {
   toggleExpand()
   if (chartLegendContainer.value) {
-    // Scroll to top when closing expand
     chartLegendContainer.value.scrollTop = 0
   }
 }
@@ -252,10 +217,6 @@ function onToggleExpand() {
   padding-right: 28px;
 }
 
-.chart-legend.overlay.require-expand {
-  padding-right: 26px;
-}
-
 .semi-transparent {
   background-color: rgba(var(--v-theme-surface), 0.9);
 }
@@ -263,10 +224,6 @@ function onToggleExpand() {
 .chart-legend-container {
   max-height: 100%;
   margin-left: v-bind(chipMargin + 'px');
-}
-
-.chart-legend-container.overlay {
-  margin-left: 0;
 }
 
 .legend-symbol {
@@ -291,12 +248,8 @@ function onToggleExpand() {
   padding: 0;
 }
 
-.overlay .hidden {
+.hidden {
   opacity: 0;
-}
-
-.pre-line {
-  white-space: pre-line;
 }
 
 :deep(.v-chip.v-chip--disabled) {
