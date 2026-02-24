@@ -158,8 +158,8 @@ const chartControlsStyle = computed(() => {
 
 const expandButtonStyle = computed(() => {
   return {
-    height: '34px',
-    width: '34px',
+    height: '32px',
+    width: '32px',
     bottom: '0px',
     right: '0px',
   }
