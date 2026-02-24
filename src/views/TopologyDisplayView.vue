@@ -165,15 +165,8 @@ const taskRunsStore = useTaskRunsStore()
 const taskRunColorsStore = useTaskRunColorsStore()
 const sidePanelStore = useSidePanelStore()
 const nodesStore = useNodesStore()
-
-// For managing which control is active in the button group
-const activeControl = ref<SidePanel>('thresholds')
-const secondaryControl = ref<SidePanel>()
-const activeSecondaryControl = computed(() =>
-  secondaryControls.value.find((s) => s.type === secondaryControl.value),
-)
-const activeSecondaryControlCount = computed(
-  () => secondaryControls.value.filter((s) => !s.disabled).length,
+const topologyComponentConfig = computed(() =>
+  getComponentConfig(props.topologyId),
 )
 
 interface SecondaryControl {
@@ -224,6 +217,26 @@ const secondaryControls = computed<SecondaryControl[]>(() => {
     },
   ]
 })
+
+const showActiveThresholdCrossingsForFilters = computed(() => {
+  return (
+    topologyComponentConfig.value?.showActiveThresholdCrossingsForFilters ??
+    false
+  )
+})
+
+const activeControl = ref<SidePanel>('thresholds')
+
+// For managing which control is active in the button group
+const secondaryControl = ref<SidePanel>(
+  secondaryControls.value.find((c) => !c.disabled)?.type ?? 'thresholds',
+)
+const activeSecondaryControl = computed(() =>
+  secondaryControls.value.find((s) => s.type === secondaryControl.value),
+)
+const activeSecondaryControlCount = computed(
+  () => secondaryControls.value.filter((s) => !s.disabled).length,
+)
 
 // Sync activeControl and secondaryControl with sidePanelStore
 watch(
@@ -293,10 +306,6 @@ watch(
   { immediate: true },
 )
 
-const topologyComponentConfig = computed(() =>
-  getComponentConfig(props.topologyId),
-)
-
 const topologyDisplayNodes = computed<string[] | undefined>(() => {
   // FIXME: Update when the types are updated
   // @ts-expect-error
@@ -305,13 +314,6 @@ const topologyDisplayNodes = computed<string[] | undefined>(() => {
 
 const showLeafsAsButton = computed(() => {
   return topologyComponentConfig.value?.showLeafNodesAsButtons ?? false
-})
-
-const showActiveThresholdCrossingsForFilters = computed(() => {
-  return (
-    topologyComponentConfig.value?.showActiveThresholdCrossingsForFilters ??
-    false
-  )
 })
 
 const topologyNodesStore = useTopologyNodesStore()
