@@ -4,8 +4,7 @@
   <div class="chart-controls-container">
     <v-sheet
       v-click-outside="onOutsideClick"
-      class="chart-controls"
-      :class="{ 'semi-transparent': overlay }"
+      class="chart-controls position-relative semi-transparent"
       :style="chartControlsStyle"
       :elevation="expanded && !overlay ? 5 : 0"
       :border="overlay"
@@ -183,15 +182,13 @@ const chartControlsStyle = computed(() => {
 })
 
 const expandButtonStyle = computed(() => {
-  const alignSelf =
-    props.settings.placement.includes('lower') ||
-    props.settings.placement.includes('under')
-      ? 'flex-start'
-      : 'flex-end'
-  const height = overlay.value ? '28px' : undefined
-  const width = overlay.value ? '28px' : undefined
+  const bottom = '0px'
+  const right = '0px'
+  const height = overlay.value ? '26px' : undefined
+  const width = overlay.value ? '26px' : undefined
   return {
-    alignSelf,
+    bottom,
+    right,
     height,
     width,
   }
@@ -250,22 +247,25 @@ function onToggleExpand() {
   z-index: 10;
 }
 
+.chart-legend.require-expand {
+  padding-right: 28px;
+}
+
+.chart-legend.overlay.require-expand {
+  padding-right: 26px;
+}
+
 .semi-transparent {
   background-color: rgba(var(--v-theme-surface), 0.9);
-}
-
-.chart-legend {
-  margin-top: 2px;
-  margin-bottom: 2px;
-}
-
-.overlay :deep(.v-slide-group__content) {
-  flex-direction: column;
 }
 
 .chart-legend-container {
   max-height: 100%;
   margin-left: v-bind(chipMargin + 'px');
+}
+
+.chart-legend-container.overlay {
+  margin-left: 0;
 }
 
 .legend-symbol {
