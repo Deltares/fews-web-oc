@@ -9,7 +9,10 @@
     }"
   >
     <ChartLegend
-      v-if="settings.legend.placement === 'above chart' || settings.legend.placement === 'under chart'"
+      v-if="
+        settings.legend.placement === 'above chart' ||
+        settings.legend.placement === 'under chart'
+      "
       :tags="legendTags"
       :margin="margin"
       :settings="settings.legend"

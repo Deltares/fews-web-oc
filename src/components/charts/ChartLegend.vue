@@ -73,7 +73,9 @@ import type { ChartsSettings } from '@/lib/topology/componentSettings'
 interface Props {
   tags: Tag[]
   margin: Margin
-  settings: ChartsSettings['timeSeriesChart']['legend'] | ChartsSettings['verticalProfileChart']['legend']
+  settings:
+    | ChartsSettings['timeSeriesChart']['legend']
+    | ChartsSettings['verticalProfileChart']['legend']
 }
 
 const props = defineProps<Props>()
@@ -140,10 +142,9 @@ const chartControlsStyle = computed(() => {
   const marginLeft = left ? `${left - chipMargin}px` : undefined
   const width = `calc(100% - ${marginRight ?? 0} - ${marginLeft ?? 0})`
 
-  const alignSelf =
-    props.settings.placement.includes('under')
-      ? 'flex-end'
-      : 'flex-start'
+  const alignSelf = props.settings.placement.includes('under')
+    ? 'flex-end'
+    : 'flex-start'
 
   return {
     minHeight: heightStyle.value,
@@ -170,15 +171,21 @@ const expandIcon = computed(() => {
     props.settings.placement.includes('lower') ||
     props.settings.placement.includes('under')
   return isLower
-    ? expanded.value ? 'mdi-chevron-down' : 'mdi-chevron-up'
-    : expanded.value ? 'mdi-chevron-up' : 'mdi-chevron-down'
+    ? expanded.value
+      ? 'mdi-chevron-down'
+      : 'mdi-chevron-up'
+    : expanded.value
+      ? 'mdi-chevron-up'
+      : 'mdi-chevron-down'
 })
 
 const chartLegendContainerStyle = computed(() => {
   return {
     height: expanded.value ? '100%' : heightStyle.value,
     overflow: expanded.value ? 'auto' : 'hidden',
-    marginBottom: props.settings.placement.includes('under') ? '2px' : undefined,
+    marginBottom: props.settings.placement.includes('under')
+      ? '2px'
+      : undefined,
   }
 })
 
