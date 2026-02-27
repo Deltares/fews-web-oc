@@ -16,6 +16,7 @@
     :fadeDuration="100"
     :renderWorldCopies="true"
     :min-zoom="minZoom"
+    @map:resize="updateMinZoom"
   >
     <SyncMap />
     <!-- Fade duration is set to 100ms instead of 0ms to avoid flickering -->
@@ -45,14 +46,7 @@ import {
   MglScaleControl,
 } from '@indoorequal/vue-maplibre-gl'
 import { ResourceType, RequestParameters, LngLatBounds, Map } from 'maplibre-gl'
-import {
-  computed,
-  onMounted,
-  onUnmounted,
-  ref,
-  useTemplateRef,
-  watch,
-} from 'vue'
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
@@ -77,12 +71,7 @@ const minZoom = ref(0)
 const initialStyle = props.style
 
 onMounted(() => {
-  window.addEventListener('resize', updateMinZoom)
   updateMinZoom()
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', updateMinZoom)
 })
 
 watch(
@@ -112,7 +101,7 @@ function updateMinZoom() {
   // Set minZoom based on the world width, with a base zoom level of 0 at a width of 512 pixels
   const worldSizeAtZoom0 = 512 // default tile size
   const worldWidth = map?.getContainer().clientWidth
-  minZoom.value = Math.log2(worldWidth! / worldSizeAtZoom0)
+  if (worldWidth) minZoom.value = Math.log2(worldWidth / worldSizeAtZoom0)
 }
 
 function transformRequest(
