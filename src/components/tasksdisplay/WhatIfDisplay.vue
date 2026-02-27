@@ -182,6 +182,11 @@ const workflowsStore = useWorkflowsStore()
 const selectedWhatIfTemplate = ref<WhatIfTemplate>()
 const selectedWhatIfScenario = ref<WhatIfScenarioDescriptor>()
 const selectedProperties = ref<ScenarioData>({})
+watch(
+  selectedProperties,
+  () => console.log('properties changed', selectedProperties.value),
+  { immediate: true },
+)
 
 watch(selectedWhatIfTemplate, () => (selectedWhatIfScenario.value = undefined))
 
@@ -218,6 +223,69 @@ watch(
   whatIfTemplates,
   (templates) => {
     selectedWhatIfTemplate.value = templates[0]
+    if (!selectedWhatIfTemplate.value) return
+    selectedWhatIfTemplate.value.properties = [
+      {
+        id: 'mass_total_kg',
+        name: 'Total mass [kilogram]',
+        type: 'integer',
+        defaultValue: 30,
+        maxValue: 500,
+        minValue: 1,
+      },
+      {
+        id: 'spill.startTime',
+        name: 'Start of spill',
+        type: 'dateTime',
+        defaultValue: '2025-03-14T10:00:00Z',
+        relativeViewPeriod: {
+          unit: 'day',
+          start: '-9',
+          end: '1',
+        },
+        cardinalTimeStep: {
+          timeZone: 'GMT',
+          unit: 'hour',
+          multiplier: 1,
+        },
+      },
+      {
+        id: 'spill.endTime',
+        name: 'End of spill',
+        type: 'dateTime',
+        defaultValue: '2025-03-14T10:00:00Z',
+      },
+      // {
+      //   id: 'DateTimeAsDurationRelativeToStartOfSpill',
+      //   name: 'Spill duration',
+      //   type: 'dateTime',
+      //   defaultValue: '2025-03-14T10:00:00Z',
+      //   relativeViewPeriod: {
+      //     unit: 'day',
+      //     start: '0',
+      //     end: '2',
+      //   },
+      //   cardinalTimeStep: {
+      //     timeZone: 'GMT',
+      //     unit: 'hour',
+      //     multiplier: 1,
+      //   },
+      // },
+      // {
+      //   id: 'DurationAsDateTimeRelativeToStartOfSpill',
+      //   name: 'End date',
+      //   type: 'integer',
+      //   defaultValue: 0,
+      //   maxValue: 86400,
+      //   minValue: 0,
+      // },
+      // {
+      //   id: 'hideT0',
+      //   name: 'hideT0',
+      //   type: 'boolean',
+      //   defaultValue: true,
+      // },
+    ]
   },
   { immediate: true },
 )
