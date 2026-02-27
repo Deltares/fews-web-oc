@@ -35,11 +35,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { configManager } from '@/services/application-config'
-import { useSsdPi } from '@/services/useSsdPi/index.ts'
+import { useSsdPi, UseSsdPiOptions } from '@/services/useSsdPi/index.ts'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import { DisplayType } from '@/lib/display/DisplayConfig'
-import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
@@ -58,7 +57,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const settings = useUserSettingsStore()
 
-const options = computed<UseDisplayConfigOptions>(() => {
+const options = computed<UseSsdPiOptions>(() => {
   return {
     useDisplayUnits: settings.useDisplayUnits,
     convertDatum: settings.convertDatum,

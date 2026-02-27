@@ -2,6 +2,7 @@
   <TimeSeriesWindowComponent
     :displayConfig="displayConfig"
     :elevationChartDisplayconfig="scalar1DDisplayConfig"
+    :brushChartConfig="brushChartConfig"
     :settings="settings.charts"
   >
     <template #toolbar-title>
@@ -37,10 +38,7 @@
 import TimeSeriesWindowComponent from './TimeSeriesWindowComponent.vue'
 import { ref, watch, computed, watchEffect } from 'vue'
 import { configManager } from '@/services/application-config'
-import {
-  useDisplayConfig,
-  type UseDisplayConfigOptions,
-} from '@/services/useDisplayConfig/index.ts'
+import { useDisplayConfig } from '@/services/useDisplayConfig/index.ts'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useTaskRunsStore } from '@/stores/taskRuns'
 import {
@@ -65,23 +63,44 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const selectedPlotId = ref<string>()
 
-const options = computed<UseDisplayConfigOptions>(() => {
-  return {
-    useDisplayUnits: userSettings.useDisplayUnits,
-    convertDatum: userSettings.convertDatum,
-  }
-})
-
 const nodeId = computed(() =>
   Array.isArray(props.nodeId)
     ? props.nodeId[props.nodeId.length - 1]
     : props.nodeId,
 )
+
+const filter = computed(() => {
+  if (!nodeId.value) {
+    return
+  }
+  return {
+    nodeId: nodeId.value,
+    useDisplayUnits: userSettings.useDisplayUnits,
+    convertDatum: userSettings.convertDatum,
+  }
+})
+
 const { displays, displayConfig, scalar1DDisplayConfig } = useDisplayConfig(
   baseUrl,
-  nodeId,
+  filter,
   selectedPlotId,
-  options,
+  () => taskRunsStore.selectedTaskRunIds,
+)
+
+const brushFilter = computed(() => {
+  if (!userSettings.get('charts.brush')?.value || !nodeId.value) {
+    return
+  }
+  return {
+    nodeId: nodeId.value,
+    fullDataPeriod: true,
+  }
+})
+
+const { displayConfig: brushChartConfig } = useDisplayConfig(
+  baseUrl,
+  brushFilter,
+  selectedPlotId,
   () => taskRunsStore.selectedTaskRunIds,
 )
 
