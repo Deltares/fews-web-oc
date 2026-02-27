@@ -1,23 +1,35 @@
 <template>
   <div class="d-flex flex-column h-100 w-100">
-    <v-toolbar v-if="hasSelectableLocations" density="compact">
-      <v-select
-        v-model="selectedLocation"
-        :items="locations"
-        item-title="name"
-        item-value="id"
-        density="compact"
-        variant="plain"
-        hide-details
-        class="locations-select"
-        :placeholder="
-          locations.length ? 'Select location' : 'No locations available'
-        "
-      />
+    <v-toolbar v-if="locations.length" density="compact">
+      <v-menu
+        v-if="locations && locations.length > 1"
+        location="bottom"
+        z-index="10000"
+        max-height="400"
+      >
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            class="text-capitalize"
+            variant="text"
+            append-icon="mdi-chevron-down"
+            :text="selectedLocation?.name"
+          />
+        </template>
+        <v-list v-model="selectedLocation" density="compact">
+          <v-list-item
+            v-for="location in locations"
+            @click="selectedLocation = location"
+            :title="location.id"
+            :active="selectedLocation === location"
+          />
+        </v-list>
+      </v-menu>
+      <span class="mx-5">{{ selectedLocation?.name }}</span>
     </v-toolbar>
     <ShadowFrame :htmlContent="reportHtml" />
     <DateTimeSlider
-      v-if="dateTimeSliderEnabled && times?.length && hasTimeDimension"
+      v-if="dateTimeSliderEnabled && times?.length"
       v-model:selectedDate="selectedDateOfSlider"
       :dates="times"
       :hide-speed-controls="mobile"
@@ -65,22 +77,27 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const selectedLocation = ref<string | undefined>(undefined)
+const selectedLocation = ref<{ id: string; name: string } | undefined>(undefined)
 const selectedDateOfSlider = ref<Date | undefined>(undefined)
 const { selectedDate, dateTimeSliderEnabled } =
   useSelectedDate(selectedDateOfSlider)
 
+const filter = computed(() => {
+  return {
+    locationId: selectedLocation.value?.id,
+    time: selectedDate.value?.toISOString(),  
+  }
+})
+
 const { reportHtml, capabilities } = useDynamicReport(
   baseUrl,
   () => props.topologyNode?.dynamicReportDisplay?.id,
-  () => selectedDate.value?.toISOString(),
-  () => selectedLocation.value,
-  () => undefined,
+  filter
 )
 
 const locations = computed(() => {
   return (
-    capabilities.value?.dynamicReportDisplayCapabilities.selectableLocations ??
+    capabilities.value?.selectableLocations ??
     []
   )
 })
@@ -88,7 +105,7 @@ const locations = computed(() => {
 const times = computed(() => {
   if (!dateTimeSliderEnabled.value) return []
   const dimension =
-    capabilities.value?.dynamicReportDisplayCapabilities.dimension
+    capabilities.value?.dimension
   if (!dimension) return []
   if (isDimensionWithPeriod(dimension)) return toDateArray(dimension.period)
 })
@@ -96,33 +113,12 @@ const times = computed(() => {
 useDateRegistry(() => times.value ?? [])
 
 const maxValuesTimeSeries = ref<TimeSeriesData[]>([])
-const hasTimeDimension = computed(() => {
-  return (
-    capabilities.value?.dynamicReportDisplayCapabilities.dimension?.name ===
-    'time'
-  )
-})
-
-const hasSelectableLocations = computed(() => {
-  return (
-    capabilities.value?.dynamicReportDisplayCapabilities.selectableLocations
-      ?.length ?? 0 > 0
-  )
-})
 
 watch(locations, (newLocations) => {
-  if (newLocations.length > 0 && !selectedLocation.value) {
-    selectedLocation.value = newLocations[0].id
+  if (newLocations.findIndex((loc) => loc.id === selectedLocation.value?.id) === -1) {
+    selectedLocation.value = newLocations[0]
   }
 })
 
 const { mobile } = useDisplay()
 </script>
-
-<style scoped>
-.locations-select {
-  max-width: 20%;
-  min-width: 16em;
-  padding-left: 0.75em;
-}
-</style>
