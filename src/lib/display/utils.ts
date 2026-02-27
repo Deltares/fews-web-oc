@@ -173,7 +173,7 @@ export function addIndexToKeys(results: ActionResult[]) {
     result.requests.forEach((request) => {
       request.key = MD5(request.request).toString()
     })
-    if (result.config?.timeSeriesDisplay.subplots) {
+    if (result.config?.timeSeriesDisplay?.subplots) {
       let i = 0
       result.config.timeSeriesDisplay.subplots.forEach((subPlot) => {
         subPlot.items.forEach((item) => {
@@ -199,8 +199,7 @@ export function addFilterPeriodToConfig(
   results.forEach((result) => {
     if (!result.config) return
 
-    const hasPeriod = result.config.timeSeriesDisplay.period !== undefined
-    if (hasPeriod) return
+    if (!result.config.timeSeriesDisplay?.period) return
 
     result.config.timeSeriesDisplay.period = {
       startDate,
@@ -218,7 +217,7 @@ export function replaceDuplicateColors(
 
   const results = response.results
   const subplots = results.flatMap(
-    (result) => result.config?.timeSeriesDisplay.subplots ?? [],
+    (result) => result.config?.timeSeriesDisplay?.subplots ?? [],
   )
   const subplotItems = subplots.flatMap((subplot) => subplot.items)
 
