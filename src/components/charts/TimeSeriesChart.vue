@@ -9,6 +9,17 @@
     }"
   >
     <ChartLegend
+      v-if="
+        settings.legend.placement === 'above chart' ||
+        settings.legend.placement === 'under chart'
+      "
+      :tags="legendTags"
+      :margin="margin"
+      :settings="settings.legend"
+      @toggle-line="toggleLine"
+    />
+    <ChartLegendOverlay
+      v-else
       :tags="legendTags"
       :margin="margin"
       :settings="settings.legend"
@@ -46,6 +57,7 @@ import {
   ZoomEvent,
 } from '@deltares/fews-web-oc-charts'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
+import ChartLegendOverlay from '@/components/charts/ChartLegendOverlay.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { ThresholdLine } from '@/lib/charts/types/ThresholdLine'
 import { Series } from '@/lib/timeseries/timeSeries'
