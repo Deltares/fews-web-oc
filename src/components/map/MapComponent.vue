@@ -13,6 +13,7 @@
     :touchPitch="false"
     :attributionControl="false"
     :bounds="bounds"
+    :max-bounds="maxBounds"
     :fadeDuration="100"
   >
     <SyncMap />
@@ -42,11 +43,12 @@ import {
   MglNavigationControl,
   MglScaleControl,
 } from '@indoorequal/vue-maplibre-gl'
-import type {
+import {
   ResourceType,
   RequestParameters,
   LngLatBounds,
   Map,
+  LngLat,
 } from 'maplibre-gl'
 import { computed, useTemplateRef, watch } from 'vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
@@ -69,6 +71,24 @@ const mapRef = useTemplateRef('map')
 const userSettings = useUserSettingsStore()
 
 const initialStyle = props.style
+
+const maxBounds = computed<LngLatBounds>(() => {
+  // Our streamline visualiser does not support rendering multiple worlds, so we
+  // want to prevent world copies from showing up. However, the default setting
+  // to prevent world copies centres the map around 0 longitude, which is not
+  // what we want for e.g. Australia. Therefore, we set the maximum map bounds
+  // instead. If default map bounds are specified, the maximum map bounds are
+  // centred around those. Otherwise, we just centre around Greenwich.
+  const longitudeCentre = props.bounds?.getCenter()?.lng ?? 0.0
+
+  // Setting maxBounds to a longitude range of 360 degrees crashes MapLibre, so
+  // make it ever so slightly smaller, see issue:
+  //     https://github.com/maplibre/maplibre-gl-js/issues/6148
+  return new LngLatBounds(
+    new LngLat(longitudeCentre - 179.999, -90),
+    new LngLat(longitudeCentre + 179.999, 90),
+  )
+})
 
 watch(
   () => props.style,
