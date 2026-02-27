@@ -47,13 +47,13 @@ export async function createNewChartForFilter(
 
   const requests = result.requests
 
-  const subplot = result.config?.timeSeriesDisplay.subplots?.[0]
+  const subplot = result.config?.timeSeriesDisplay?.subplots?.[0]
   if (!subplot) return
 
   actions.slice(1).forEach((action) => {
     const requestsToAdd = action.results[0].requests
     const subplotItemsToAdd =
-      action.results[0].config?.timeSeriesDisplay.subplots?.[0].items ?? []
+      action.results[0].config?.timeSeriesDisplay?.subplots?.[0].items ?? []
     requests.push(...requestsToAdd)
     subplot.items.push(...subplotItemsToAdd)
   })
@@ -76,7 +76,7 @@ export async function createNewChartForFilter(
     subplot: filterSubplot,
     requests,
   }
-  const period = result.config?.timeSeriesDisplay.period
+  const period = result.config?.timeSeriesDisplay?.period
   if (useDataDomain && period) {
     const periodStart = convertFewsPiDateTimeToJsDate(period.startDate, 'Z')
     const periodEnd = convertFewsPiDateTimeToJsDate(period.endDate, 'Z')

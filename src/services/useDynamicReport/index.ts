@@ -2,18 +2,29 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
   DynamicReportDisplayCapabilitiesResponse,
   PiWebserviceProvider,
+  DynamicReportDisplayFilter,
 } from '@deltares/fews-pi-requests'
-import { MaybeRefOrGetter, ref, shallowRef, toValue, watchEffect } from 'vue'
+import {
+  MaybeRefOrGetter,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchEffect,
+} from 'vue'
 
 export function useDynamicReport(
   baseUrl: string,
   displayId: MaybeRefOrGetter<string | undefined>,
-  time: MaybeRefOrGetter<string | undefined>,
-  locationId: MaybeRefOrGetter<string | undefined>,
-  timeZero: MaybeRefOrGetter<string | undefined>,
+  filter: MaybeRefOrGetter<
+    Omit<DynamicReportDisplayFilter, 'displayId'> | undefined
+  >,
 ) {
   const reportHtml = ref<string>('')
-  const capabilities = ref<DynamicReportDisplayCapabilitiesResponse>()
+  const capabilities =
+    ref<
+      DynamicReportDisplayCapabilitiesResponse['dynamicReportDisplayCapabilities']
+    >()
   const isReady = ref(false)
   const isLoading = ref(false)
   const error = shallowRef<string>()
@@ -27,32 +38,32 @@ export function useDynamicReport(
     const response = await provider.getDynamicReportDisplayCapabilities({
       displayId: _displayId,
     })
-    capabilities.value = response
+    capabilities.value = response.dynamicReportDisplayCapabilities
   }
 
   async function loadReport() {
     const _displayId = toValue(displayId)
-    const _time = toValue(time)
-    const _locationId = toValue(locationId)
-    const _timeZero = toValue(timeZero)
+    const _filter = toValue(filter)
 
-    if (_displayId === undefined) {
+    if (!capabilities.value || _displayId === undefined) {
       reportHtml.value = ''
       return
     }
 
+    if (!hasRequiredParameters(capabilities.value, _filter)) {
+      return
+    }
     isLoading.value = true
     isReady.value = false
     try {
       const provider = new PiWebserviceProvider(baseUrl, {
         transformRequestFn: createTransformRequestFn(),
       })
+
       const response = await provider.getDynamicReportDisplay({
         displayId: _displayId,
-        time: _time,
-        locationId: _locationId,
-        timeZero: _timeZero,
         useLastValue: true,
+        ..._filter,
       })
       reportHtml.value = response
     } catch {
@@ -63,9 +74,8 @@ export function useDynamicReport(
       isReady.value = true
     }
   }
-
-  watchEffect(loadReport)
   watchEffect(loadCapability)
+  watch(() => filter, loadReport, { deep: true })
 
   return {
     reportHtml,
@@ -74,4 +84,19 @@ export function useDynamicReport(
     isLoading,
     error,
   }
+}
+
+function hasRequiredParameters(
+  capabilities: DynamicReportDisplayCapabilitiesResponse['dynamicReportDisplayCapabilities'],
+  filter: Omit<DynamicReportDisplayFilter, 'displayId'> | undefined,
+): boolean {
+  if (!capabilities) return false
+  const validTimeParameter =
+    !(capabilities.dimension?.name === 'time') || filter?.time !== undefined
+  const validLocationParameter =
+    !capabilities.selectableLocations ||
+    capabilities.selectableLocations.findIndex(
+      (loc) => loc.id === filter?.locationId,
+    ) !== -1
+  return validTimeParameter && validLocationParameter
 }
