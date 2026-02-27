@@ -14,6 +14,8 @@
     :attributionControl="false"
     :bounds="bounds"
     :fadeDuration="100"
+    :renderWorldCopies="true"
+    :min-zoom="minZoom"
   >
     <SyncMap />
     <!-- Fade duration is set to 100ms instead of 0ms to avoid flickering -->
@@ -42,13 +44,15 @@ import {
   MglNavigationControl,
   MglScaleControl,
 } from '@indoorequal/vue-maplibre-gl'
-import type {
-  ResourceType,
-  RequestParameters,
-  LngLatBounds,
-  Map,
-} from 'maplibre-gl'
-import { computed, useTemplateRef, watch } from 'vue'
+import { ResourceType, RequestParameters, LngLatBounds, Map } from 'maplibre-gl'
+import {
+  computed,
+  onMounted,
+  onUnmounted,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 
 interface Props {
@@ -68,7 +72,18 @@ const props = withDefaults(defineProps<Props>(), {
 const mapRef = useTemplateRef('map')
 const userSettings = useUserSettingsStore()
 
+const minZoom = ref(0)
+
 const initialStyle = props.style
+
+onMounted(() => {
+  window.addEventListener('resize', updateMinZoom)
+  updateMinZoom()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateMinZoom)
+})
 
 watch(
   () => props.style,
@@ -87,6 +102,18 @@ const showGeolocationSetting = computed(
 const showNavigationSetting = computed(
   () => userSettings.get('ui.map.navigationControl')?.value ?? false,
 )
+
+function updateMinZoom() {
+  if (!mapRef.value) return
+
+  // @ts-expect-error map is not exposed in the types
+  const map: Map | undefined = mapRef.value?.map
+
+  // Set minZoom based on the world width, with a base zoom level of 0 at a width of 512 pixels
+  const worldSizeAtZoom0 = 512 // default tile size
+  const worldWidth = map?.getContainer().clientWidth
+  minZoom.value = Math.log2(worldWidth! / worldSizeAtZoom0)
+}
 
 function transformRequest(
   url: string,
