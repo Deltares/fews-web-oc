@@ -93,15 +93,14 @@ const showNavigationSetting = computed(
 )
 
 function updateMinZoom() {
-  if (!mapRef.value) return
-
   // @ts-expect-error map is not exposed in the types
   const map: Map | undefined = mapRef.value?.map
+  if (!map) return
 
   // Set minZoom based on the world width, with a base zoom level of 0 at a width of 512 pixels
   const worldSizeAtZoom0 = 512 // default tile size
-  const worldWidth = map?.getContainer().clientWidth
-  if (worldWidth) minZoom.value = Math.log2(worldWidth / worldSizeAtZoom0)
+  const worldWidth = map.getContainer().clientWidth
+  minZoom.value = Math.log2(worldWidth / worldSizeAtZoom0)
 }
 
 function transformRequest(
