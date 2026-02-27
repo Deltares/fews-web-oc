@@ -76,7 +76,7 @@
               :schema="jsonSchema"
               :uischema="uiSchema"
               :data="selectedProperties"
-              :renderers="Object.freeze(vuetifyRenderers)"
+              :renderers="formRenderers"
               :ajv="undefined"
               validation-mode="NoValidation"
               :config="jsonFormsConfig"
@@ -124,10 +124,12 @@
   </div>
 </template>
 <script setup lang="ts">
+import CustomDateTimeControl from './customFormRenderers/CustomDateTimeControl.vue'
 import jsonFormsConfig from '@/assets/JsonFormsConfig.json'
 import WhatIfScenarioSelect from './WhatIfScenarioSelect.vue'
 import WhatIfTimeZeroSelect from './WhatIfTimeZeroSelect.vue'
 
+import { isDateTimeControl, rankWith } from '@jsonforms/core'
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
 import { computed, ref, watch, watchEffect } from 'vue'
 import { ErrorObject } from 'ajv'
@@ -197,6 +199,14 @@ const selectedWorkflow = computed(() =>
     (wf) => wf.whatIfTemplateId === selectedWhatIfTemplate.value?.id,
   ),
 )
+
+// We override all date/time controls with our own, to make sure they are
+// consistent with each other.
+const customDateTimeTester = rankWith(3, isDateTimeControl)
+const formRenderers = Object.freeze([
+  { tester: customDateTimeTester, renderer: CustomDateTimeControl },
+  ...vuetifyRenderers,
+])
 
 const whatIfTemplates = computed(() =>
   props.workflows
