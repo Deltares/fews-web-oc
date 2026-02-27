@@ -2,9 +2,16 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
   DynamicReportDisplayCapabilitiesResponse,
   PiWebserviceProvider,
-  DynamicReportDisplayFilter
+  DynamicReportDisplayFilter,
 } from '@deltares/fews-pi-requests'
-import { MaybeRefOrGetter, ref, shallowRef, toValue, watch, watchEffect } from 'vue'
+import {
+  MaybeRefOrGetter,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchEffect,
+} from 'vue'
 
 export function useDynamicReport(
   baseUrl: string,

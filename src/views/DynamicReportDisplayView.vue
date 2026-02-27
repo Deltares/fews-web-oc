@@ -77,7 +77,9 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const selectedLocation = ref<{ id: string; name: string } | undefined>(undefined)
+const selectedLocation = ref<{ id: string; name: string } | undefined>(
+  undefined,
+)
 const selectedDateOfSlider = ref<Date | undefined>(undefined)
 const { selectedDate, dateTimeSliderEnabled } =
   useSelectedDate(selectedDateOfSlider)
@@ -85,27 +87,23 @@ const { selectedDate, dateTimeSliderEnabled } =
 const filter = computed(() => {
   return {
     locationId: selectedLocation.value?.id,
-    time: selectedDate.value?.toISOString(),  
+    time: selectedDate.value?.toISOString(),
   }
 })
 
 const { reportHtml, capabilities } = useDynamicReport(
   baseUrl,
   () => props.topologyNode?.dynamicReportDisplay?.id,
-  filter
+  filter,
 )
 
 const locations = computed(() => {
-  return (
-    capabilities.value?.selectableLocations ??
-    []
-  )
+  return capabilities.value?.selectableLocations ?? []
 })
 
 const times = computed(() => {
   if (!dateTimeSliderEnabled.value) return []
-  const dimension =
-    capabilities.value?.dimension
+  const dimension = capabilities.value?.dimension
   if (!dimension) return []
   if (isDimensionWithPeriod(dimension)) return toDateArray(dimension.period)
 })
@@ -115,7 +113,10 @@ useDateRegistry(() => times.value ?? [])
 const maxValuesTimeSeries = ref<TimeSeriesData[]>([])
 
 watch(locations, (newLocations) => {
-  if (newLocations.findIndex((loc) => loc.id === selectedLocation.value?.id) === -1) {
+  if (
+    newLocations.findIndex((loc) => loc.id === selectedLocation.value?.id) ===
+    -1
+  ) {
     selectedLocation.value = newLocations[0]
   }
 })
