@@ -52,7 +52,6 @@ import circle from '@turf/circle'
 import bbox from '@turf/bbox'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useFilterLocations } from '@/services/useFilterLocations'
-import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import {
   type ComponentSettings,
   getDefaultSettings,
@@ -185,7 +184,7 @@ const onlyCoverageLayersAvailable = computed(() => {
 function getFilterActionsFilter(
   locationIds: string,
   fullDataPeriod?: boolean,
-): filterActionsFilter & UseDisplayConfigOptions {
+): filterActionsFilter {
   return {
     locationIds,
     filterId: filterIds.value ? filterIds.value[0] : undefined,
@@ -198,7 +197,7 @@ function getFilterActionsFilter(
 function getTimeSeriesGridActionsFilter(
   longitude: string,
   latitude: string,
-): (timeSeriesGridActionsFilter & UseDisplayConfigOptions) | undefined {
+): (timeSeriesGridActionsFilter & { useDisplayUnits: boolean }) | undefined {
   if (!longitude || !latitude) return
   if (!layerCapabilities.value?.boundingBox) return
   if (!layerCapabilities.value?.firstValueTime) return

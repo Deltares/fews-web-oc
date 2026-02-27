@@ -60,7 +60,6 @@ import {
 } from '@deltares/fews-pi-requests'
 import { configManager } from '@/services/application-config'
 import { DisplayConfig } from '@/lib/display/DisplayConfig.ts'
-import type { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
 import { computed, onUpdated, ref, toValue, watchEffect } from 'vue'
@@ -84,7 +83,9 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 interface Props {
   config?: DisplayConfig | null
-  options?: UseDisplayConfigOptions
+  options?:
+    | Pick<filterActionsFilter, 'useDisplayUnits' | 'convertDatum'>
+    | undefined
   filter?:
     | filterActionsFilter
     | timeSeriesGridActionsFilter

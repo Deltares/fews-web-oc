@@ -80,7 +80,6 @@ import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFil
 import { DisplayConfig, DisplayType } from '@/lib/display/DisplayConfig'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { computed, ref, StyleValue, watch } from 'vue'
-import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type {
   filterActionsFilter,
@@ -103,7 +102,9 @@ const { t } = useI18n()
 
 const userSettings = useUserSettingsStore()
 
-const options = computed<UseDisplayConfigOptions>(() => {
+const options = computed<
+  Pick<filterActionsFilter, 'useDisplayUnits' | 'convertDatum'>
+>(() => {
   return {
     useDisplayUnits: userSettings.useDisplayUnits,
     convertDatum: userSettings.convertDatum,

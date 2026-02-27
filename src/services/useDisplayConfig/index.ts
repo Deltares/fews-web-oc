@@ -1,5 +1,6 @@
 import {
   PiWebserviceProvider,
+  TopologyActionFilter,
   type ActionsResponse,
 } from '@deltares/fews-pi-requests'
 import { computed, ref, toValue, watch } from 'vue'
@@ -24,23 +25,19 @@ export interface UseDisplayConfigReturn {
   scalar1DDisplayConfig?: Ref<DisplayConfig | null>
 }
 
-export interface UseDisplayConfigOptions {
-  convertDatum?: boolean
-  useDisplayUnits?: boolean
-}
-
 /**
  * Create the displays and the display configs of a node and selected time series display.
  *
- * @param {string} baseUrl  url of the FEWS web services.
- * @param {string} nodeId  id of the topology node.
- * @param {number} plotId  number of the plot node of a display group.
+ * @param baseUrl  url of the FEWS web services.
+ * @param filter  filter for the topology actions.
+ * @param plotId  number of the plot node of a display group.
+ * @param taskRunIds  list of task run ids to filter the actions by.
+ * @returns An object with `displays` and `displayConfig` properties.
  */
 export function useDisplayConfig(
   baseUrl: string,
-  nodeId: MaybeRefOrGetter<string | undefined>,
+  filter: MaybeRefOrGetter<TopologyActionFilter | undefined>,
   plotId: MaybeRefOrGetter<string | undefined>,
-  options?: MaybeRefOrGetter<UseDisplayConfigOptions>,
   taskRunIds?: MaybeRefOrGetter<string[]>,
 ): UseDisplayConfigReturn {
   const piProvider = new PiWebserviceProvider(baseUrl, {
@@ -52,29 +49,24 @@ export function useDisplayConfig(
   const scalar1DDisplayConfig = ref<DisplayConfig | null>(null)
 
   watch(
-    [() => toValue(nodeId), () => toValue(taskRunIds), () => toValue(options)],
-    async ([_nodeId, _taskRunIds, _options]) => {
-      if (_nodeId === undefined) return
-
-      const filter = {
-        nodeId: _nodeId,
-        ..._options,
-      }
+    [() => toValue(filter), () => toValue(taskRunIds)],
+    async ([_filter, _taskRunIds]) => {
+      if (_filter === undefined) return
+      const nodeId = _filter.nodeId
       const taskRunsFilter = {
-        ...filter,
+        ..._filter,
         // TODO: Change this to string.join(',') when the backend is fixed
         taskRunIds: _taskRunIds,
         currentForecastsAlwaysVisible: true,
       }
-
       response.value = await piProvider.getTopologyActions(
-        _taskRunIds?.length ? taskRunsFilter : filter,
+        _taskRunIds?.length ? taskRunsFilter : _filter,
       )
 
-      displays.value = actionsResponseToDisplayConfig(response.value, _nodeId)
+      displays.value = actionsResponseToDisplayConfig(response.value, nodeId)
       const scalarDisplays = actionsResponseToScalar1DDisplayConfig(
         response.value,
-        _nodeId,
+        nodeId,
       )
       scalar1DDisplayConfig.value = scalarDisplays[0] ?? null
     },

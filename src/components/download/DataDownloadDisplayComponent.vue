@@ -162,13 +162,13 @@ import {
   PiWebserviceProvider,
   TimeSeriesFilter,
   TimeSeriesParameter,
+  TopologyActionFilter,
   TopologyNode,
 } from '@deltares/fews-pi-requests'
 import { DateTime, type DateTimeMaybeValid } from 'luxon'
 import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.ts'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
-import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { TimeSeriesResult } from '@deltares/fews-pi-requests'
 import { ParameterQualifiersHeader } from '@/lib/download/types'
@@ -184,7 +184,9 @@ interface Props {
 const props = defineProps<Props>()
 const settings = useUserSettingsStore()
 
-const options = computed<UseDisplayConfigOptions>(() => {
+const options = computed<
+  Pick<TopologyActionFilter, 'useDisplayUnits' | 'convertDatum'>
+>(() => {
   return {
     useDisplayUnits: settings.useDisplayUnits,
     convertDatum: settings.convertDatum,
