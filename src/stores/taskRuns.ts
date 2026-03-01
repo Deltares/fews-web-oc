@@ -1,9 +1,18 @@
-import { TaskRun } from '@/lib/taskruns'
+import { sortTasks, TaskRun } from '@/lib/taskruns'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
 export const useTaskRunsStore = defineStore('taskRuns', () => {
+  const currentTaskRuns = ref<TaskRun[]>([])
   const selectedTaskRuns = ref<TaskRun[]>([])
+
+  function getTaskRunById(taskId: string | undefined) {
+    if (!taskId) return
+    return (
+      currentTaskRuns.value.find((tr) => tr.taskId === taskId) ??
+      selectedTaskRuns.value.find((tr) => tr.taskId === taskId)
+    )
+  }
 
   function toggleTaskRun(taskRun: TaskRun) {
     const index = selectedTaskRuns.value.findIndex(
@@ -16,6 +25,10 @@ export const useTaskRunsStore = defineStore('taskRuns', () => {
     }
   }
 
+  function setCurrentTaskRuns(taskRuns: TaskRun[]) {
+    currentTaskRuns.value = taskRuns
+  }
+
   function taskRunIsSelected(taskRun: TaskRun) {
     return selectedTaskRuns.value.some((tr) => tr.taskId === taskRun.taskId)
   }
@@ -24,16 +37,26 @@ export const useTaskRunsStore = defineStore('taskRuns', () => {
     selectedTaskRuns.value = []
   }
 
+  const sortedCurrentTaskRuns = computed(() =>
+    currentTaskRuns.value.toSorted(sortTasks),
+  )
+
+  const sortedSelectedTaskRuns = computed(() =>
+    selectedTaskRuns.value.toSorted(sortTasks),
+  )
+
   const selectedTaskRunIds = computed(() =>
-    selectedTaskRuns.value
-      .toSorted((a, b) => a.timeZeroTimestamp - b.timeZeroTimestamp)
-      .reverse()
-      .map((taskRun) => taskRun.taskId),
+    sortedSelectedTaskRuns.value.map((taskRun) => taskRun.taskId),
   )
 
   return {
+    currentTaskRuns,
     selectedTaskRuns,
     selectedTaskRunIds,
+    sortedCurrentTaskRuns,
+    sortedSelectedTaskRuns,
+    getTaskRunById,
+    setCurrentTaskRuns,
     taskRunIsSelected,
     toggleTaskRun,
     clearSelectedTaskRuns,

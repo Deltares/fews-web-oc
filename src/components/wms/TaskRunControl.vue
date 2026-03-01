@@ -10,59 +10,36 @@
     />
     <v-menu v-if="taskRunId" transition="slide-y-transition">
       <template #activator="{ props, isActive }">
-        <v-list-item
+        <TaskRunControlItem
           v-bind="props"
           aria-label="Select Task Run"
           variant="text"
           density="compact"
           class="text-capitalize px-2"
+          :item="selectedTaskRun"
         >
-          <div class="d-flex align-center ga-2">
-            <v-icon icon="mdi-circle" :color="selectedTaskRunColor" />
-
-            <div>
-              <v-list-item-title class="selected-task-run-title">
-                {{ selectedWorkflowName }}
-              </v-list-item-title>
-
-              <v-list-item-subtitle
-                v-if="selectedTaskRunTimeZero"
-                class="selected-task-run-subtitle"
-              >
-                {{ selectedTaskRunTimeZero }}
-              </v-list-item-subtitle>
-            </div>
+          <template #append>
             <SelectIcon :active="isActive" />
-          </div>
-        </v-list-item>
+          </template>
+        </TaskRunControlItem>
       </template>
       <v-list density="compact">
-        <v-list-item
+        <v-list-subheader>Current</v-list-subheader>
+        <TaskRunControlItem
+          v-for="item in currentTaskRuns"
+          :key="item.taskId"
+          @click="taskRunId = item?.taskId"
+          :active="item?.taskId === taskRunId"
+          :item="item"
+        />
+        <v-list-subheader>Non Current</v-list-subheader>
+        <TaskRunControlItem
           v-for="item in taskRuns"
-          @click="taskRunId = item.taskId"
-          :active="item.taskId === taskRunId"
-        >
-          <div class="d-flex align-center ga-2">
-            <v-icon
-              icon="mdi-circle"
-              :color="taskRunColorsStore.getColor(item.taskId)"
-              size="sm"
-            />
-
-            <div>
-              <v-list-item-title class="selected-task-run-title">
-                {{ getWorkflowName(item) }}
-              </v-list-item-title>
-
-              <v-list-item-subtitle
-                v-if="selectedTaskRunTimeZero"
-                class="selected-task-run-subtitle"
-              >
-                {{ toHumanReadableDateTime(item.timeZeroTimestamp) }}
-              </v-list-item-subtitle>
-            </div>
-          </div>
-        </v-list-item>
+          :key="item.taskId"
+          :item="item"
+          @click="taskRunId = item?.taskId"
+          :active="item?.taskId === taskRunId"
+        />
       </v-list>
     </v-menu>
   </ControlChip>
@@ -71,45 +48,20 @@
 <script setup lang="ts">
 import ControlChip from '@/components/wms/ControlChip.vue'
 import SelectIcon from '@/components/general/SelectIcon.vue'
-import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+import TaskRunControlItem from '@/components/wms/TaskRunControlItem.vue'
 import { useTaskRunsStore } from '@/stores/taskRuns'
 import { computed, watch } from 'vue'
-import { toHumanReadableDateTime } from '@/lib/date'
-import { sortTasks, type TaskRun } from '@/lib/taskruns'
-import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 
 const taskRunId = defineModel<string>('taskRunId')
 
-const availableWorkflowsStore = useAvailableWorkflowsStore()
 const taskRunsStore = useTaskRunsStore()
-const taskRunColorsStore = useTaskRunColorsStore()
 
-const taskRuns = computed(() => taskRunsStore.selectedTaskRuns.sort(sortTasks))
+const currentTaskRuns = computed(() => taskRunsStore.currentTaskRuns)
+const taskRuns = computed(() => taskRunsStore.sortedSelectedTaskRuns)
 
 const selectedTaskRun = computed(() =>
-  taskRuns.value.find((taskRun) => taskRun.taskId === taskRunId.value),
+  taskRunsStore.getTaskRunById(taskRunId.value),
 )
-const selectedWorkflowName = computed(() =>
-  getWorkflowName(selectedTaskRun.value),
-)
-const selectedTaskRunTimeZero = computed(() =>
-  selectedTaskRun.value
-    ? toHumanReadableDateTime(selectedTaskRun.value.timeZeroTimestamp)
-    : undefined,
-)
-const selectedTaskRunColor = computed(() =>
-  selectedTaskRun.value
-    ? taskRunColorsStore.getColor(selectedTaskRun.value.taskId)
-    : undefined,
-)
-
-function getWorkflowName(taskRun: TaskRun | undefined): string {
-  if (!taskRun) {
-    return 'Default view'
-  }
-  const workflow = availableWorkflowsStore.byId(taskRun.workflowId)
-  return workflow ? workflow.name : 'Unknown workflow'
-}
 
 const numberOfTaskRuns = computed(() => taskRuns.value.length)
 
@@ -150,14 +102,3 @@ function toggleTaskRunId() {
   }
 }
 </script>
-
-<style scoped>
-.selected-task-run-title {
-  line-height: 1;
-  font-size: 0.875rem;
-}
-
-.selected-task-run-subtitle {
-  font-size: 0.75rem;
-}
-</style>
