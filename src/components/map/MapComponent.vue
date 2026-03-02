@@ -100,7 +100,10 @@ function updateMinZoom() {
   // Set minZoom based on the world width, with a base zoom level of 0 at a width of 512 pixels
   const worldSizeAtZoom0 = 512 // default tile size
   const worldWidth = map.getContainer().clientWidth
-  minZoom.value = Math.log2(worldWidth / worldSizeAtZoom0)
+  // Add a small epsilon to ensure that the latitudinal extent is smaller than 360.0 degrees
+  // Otherwise we trigger the > 360.0 condition in WMSStreamlineLayer (@deltares/wms-streamline-layer).
+  minZoom.value =
+    Math.log2(worldWidth / worldSizeAtZoom0) + 100 * Number.EPSILON
 }
 
 function transformRequest(
