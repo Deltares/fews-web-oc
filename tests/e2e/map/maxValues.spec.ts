@@ -10,9 +10,10 @@ test.describe('Maximum values legend on the date time slider', () => {
   })
 
   test('should contain a max value on initial load', async ({ page }) => {
-    const maxValues = page.getByLabel('map maximum values').getByRole('img')
+    const maxValues = page.getByLabel('Maximum value per time step')
 
     await expect(maxValues).toBeVisible()
+    await expect(maxValues).toHaveRole('img')
 
     const maxValuesRects = maxValues.locator('rect')
     await expect(maxValuesRects.first()).toBeVisible()
@@ -21,9 +22,10 @@ test.describe('Maximum values legend on the date time slider', () => {
   test('should contain a max value on node switch', async ({ page }) => {
     await page.getByRole('link').filter({ hasText: 'Observed' }).click()
 
-    const maxValues = page.getByLabel('map maximum values').getByRole('img')
+    const maxValues = page.getByLabel('Maximum value per time step')
 
     await expect(maxValues).toBeVisible()
+    await expect(maxValues).toHaveRole('img')
 
     const maxValuesRects = maxValues.locator('rect')
     await expect(maxValuesRects.first()).toBeVisible()
