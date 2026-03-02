@@ -159,6 +159,7 @@
           height="6px"
           class="mb-1"
           style="margin-top: -7px"
+          aria-label="map maximum values"
         />
       </template>
     </DateTimeSlider>
