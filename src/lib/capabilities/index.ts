@@ -62,3 +62,21 @@ export async function fetchWmsCapabilitiesHeaders() {
     capabilitiesPromise = null
   }
 }
+
+export function getTimesFromCapabilities(
+  capabilities: Layer | undefined,
+): Date[] {
+  if (!capabilities?.times) return []
+
+  const dates = capabilities.times.map((time) => new Date(time))
+
+  const firstValueDate = capabilities.firstValueTime
+    ? new Date(capabilities.firstValueTime)
+    : dates[0]
+
+  const lastValueDate = capabilities.lastValueTime
+    ? new Date(capabilities.lastValueTime)
+    : dates[dates.length - 1]
+
+  return dates.filter((d) => d >= firstValueDate && d <= lastValueDate)
+}

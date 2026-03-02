@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import * as d3 from 'd3'
-import { onMounted, ref, watchEffect } from 'vue'
+import { onMounted, useTemplateRef, watchEffect } from 'vue'
 
 import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 
@@ -17,7 +17,7 @@ interface Props {
 }
 const props = withDefaults(defineProps<Props>(), { height: '5px' })
 
-const container = ref<HTMLDivElement | null>(null)
+const container = useTemplateRef<HTMLDivElement>('container')
 
 const viewboxWidth = 100
 const viewboxHeight = 10
@@ -35,6 +35,22 @@ onMounted(() => {
     .attr('shape-rendering', 'crispEdges')
     .style('width', '100%')
     .style('height', '100%')
+
+    .attr('role', 'img')
+    .attr('aria-labelledby', 'time-max-title time-max-desc')
+    .attr('focusable', 'false')
+
+  svg
+    .append('title')
+    .attr('id', 'time-max-title')
+    .text('Maximum value per time step')
+  svg
+    .append('desc')
+    .attr('id', 'time-max-desc')
+    .text(
+      'Chart showing spatially aggregated maximum values for each available time in the time slider.',
+    )
+
   container.value.replaceChildren(svg.node()!)
 
   // Only set the watcher after we have created the SVG.
