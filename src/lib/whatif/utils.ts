@@ -14,6 +14,22 @@ export type ScenarioProperty = NonNullable<
 export type ScenarioValue = string | number | boolean | Date
 export type ScenarioData = Record<string, ScenarioValue | undefined>
 
+export interface RelativeViewPeriodOptions {
+  startOffsetHours: number
+  endOffsetHours: number
+}
+export interface CardinalTimeStepOptions {
+  timeZoneOffset: number
+  timeStepHours: number
+}
+export interface DateValidationOptions {
+  relativeViewPeriod?: RelativeViewPeriodOptions
+  cardinalTimeStep?: CardinalTimeStepOptions
+}
+export interface ExtendedJsonSchema7 extends JsonSchema7 {
+  dateValidation?: DateValidationOptions
+}
+
 const EXCLUDED_PROPERTY_IDS = ['GET_PROCESS_DATA', 'hideT0']
 
 function isValidPropertyId(id: string | undefined) {
@@ -27,8 +43,8 @@ function isValidPropertyId(id: string | undefined) {
  */
 export function generateJsonSchema(
   properties: WhatIfTemplate['properties'],
-): JsonSchema7 {
-  const schemaProperties: NonNullable<JsonSchema7['properties']> = {}
+): ExtendedJsonSchema7 {
+  const schemaProperties: NonNullable<ExtendedJsonSchema7['properties']> = {}
 
   properties?.forEach((property) => {
     if (!isValidPropertyId(property.id)) return
@@ -72,7 +88,7 @@ export function getJsonDataFromProperties(
 
 function convertPropertyToJsonSchemaProperty(
   property: TemplateProperty,
-): JsonSchema7 {
+): ExtendedJsonSchema7 {
   switch (property.type) {
     case 'string':
       return {
@@ -122,11 +138,13 @@ function convertPropertyToJsonSchemaProperty(
         title: property.name,
       }
     case 'dateTime':
+      const dateValidation = convertPropertyToDateValidationOptions(property)
       return {
         type: 'string',
         format: 'date-time',
         default: property.defaultValue,
         title: property.name,
+        dateValidation,
       }
     case 'whatIfTemplateTemplateId':
       return {
@@ -146,9 +164,86 @@ function convertPropertyToJsonSchemaProperty(
   }
 }
 
+// TODO: these types should come from fews-pi-requests instead; they should be
+//       added to the API specification?
+interface RawRelativeViewPeriod {
+  unit: string
+  start: string
+  end: string
+}
+
+interface RawCardinalTimeStep {
+  timeZone: string
+  unit: string
+  multiplier: number
+}
+
+function convertPropertyToDateValidationOptions(
+  property: TemplateProperty,
+): DateValidationOptions | undefined {
+  const relativeViewPeriod = convertRelativeViewPeriodToOptions(property)
+  const cardinalTimeStep = convertCardinalTimeStepToOptions(property)
+  if (relativeViewPeriod || cardinalTimeStep) {
+    return { relativeViewPeriod, cardinalTimeStep }
+  } else {
+    return undefined
+  }
+}
+
+function convertRelativeViewPeriodToOptions(
+  property: TemplateProperty,
+): RelativeViewPeriodOptions | undefined {
+  // @ts-expect-error  this field should be added to the type.
+  const raw = property.relativeViewPeriod as RawRelativeViewPeriod | undefined
+  if (!raw) return undefined
+
+  return {
+    startOffsetHours: convertMultiplierToHours(parseFloat(raw.start), raw.unit),
+    endOffsetHours: convertMultiplierToHours(parseFloat(raw.end), raw.unit),
+  }
+}
+
+function convertCardinalTimeStepToOptions(
+  property: TemplateProperty,
+): CardinalTimeStepOptions | undefined {
+  // @ts-expect-error  this field should be added to the type.
+  const raw = property.cardinalTimeStep as RawCardinalTimeStep | undefined
+  if (!raw) return undefined
+
+  if (raw?.timeZone !== 'GMT') {
+    console.warn(
+      `Only "GMT" time zone is supported; time zone "${raw.timeZone}" is ignored.`,
+    )
+  }
+  return {
+    timeZoneOffset: 0,
+    timeStepHours: convertMultiplierToHours(raw.multiplier, raw.unit),
+  }
+}
+
+function convertMultiplierToHours(multiplier: number, unit: string): number {
+  if (unit !== 'minute' && unit !== 'day' && unit !== 'hour') {
+    throw new Error(
+      `Invalid unit "${unit}" for time multiplier, use "minute", "hour" or "day".`,
+    )
+  }
+  switch (unit) {
+    case 'minute':
+      return multiplier / 60
+    case 'hour':
+      return multiplier
+    case 'day':
+      return multiplier * 24
+    default:
+      throw new Error(
+        `Invalid unit "${unit}" for time multiplier, use "minute", "hour" or "day".`,
+      )
+  }
+}
+
 export function getErrorsForProperties(
   properties: ScenarioData,
-  schema: JsonSchema7 | undefined,
+  schema: ExtendedJsonSchema7 | undefined,
 ) {
   const errors: ErrorObject[] = []
   for (const key in properties) {
