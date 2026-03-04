@@ -147,7 +147,7 @@
       v-if="showDateTimeSlider"
       v-model:selectedDate="selectedDateOfSlider"
       :dates="times ?? []"
-      @update:doFollowNow="setLayerOptions"
+      v-model:doFollowNow="doFollowNow"
       class="spatial-display__slider"
       :hide-speed-controls="mobile"
       :isLoading="isLoading"
@@ -278,6 +278,15 @@ const minElevation = ref<number>(-Infinity)
 const maxElevation = ref<number>(Infinity)
 const elevationTicks = ref<number[]>()
 const elevationUnit = ref('')
+
+const doFollowNow = ref(taskRunId.value === undefined)
+// Set follow now to false when a task run is selected because taskRun data is typically historical data,
+// so it doesn't make sense to follow now.
+watch(taskRunId, () => {
+  if (taskRunId.value !== undefined) {
+    doFollowNow.value = false
+  }
+})
 
 const locationToChildrenMap = computed(() =>
   createLocationToChildrenMap(props.locations ?? []),
