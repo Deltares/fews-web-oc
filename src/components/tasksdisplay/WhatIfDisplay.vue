@@ -76,7 +76,7 @@
               :schema="jsonSchema"
               :uischema="uiSchema"
               :data="selectedProperties"
-              :renderers="Object.freeze(vuetifyRenderers)"
+              :renderers="Object.freeze(renderers)"
               :ajv="undefined"
               validation-mode="NoValidation"
               :config="jsonFormsConfig"
@@ -128,8 +128,7 @@ import jsonFormsConfig from '@/assets/JsonFormsConfig.json'
 import WhatIfScenarioSelect from './WhatIfScenarioSelect.vue'
 import WhatIfTimeZeroSelect from './WhatIfTimeZeroSelect.vue'
 
-import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
-import { computed, ref, watch, watchEffect } from 'vue'
+import { computed, markRaw, ref, watch, watchEffect } from 'vue'
 import { ErrorObject } from 'ajv'
 
 import { JsonForms } from '@jsonforms/vue'
@@ -157,6 +156,8 @@ import { useWorkflowsStore, WorkflowType } from '@/stores/workflows'
 import { useWorkflowBoundingBox } from '@/services/useWorkflowBoundingBox'
 import { useWhatIfTemplateSchemas } from '@/services/useWhatIfTemplateSchemas'
 
+const { extendedVuetifyRenderers } = await import('@jsonforms/vue-vuetify')
+
 interface Props {
   workflows: WorkflowItem[]
   configurationTitle?: string
@@ -172,6 +173,8 @@ interface Emits {
   postTask: [taskId: string | undefined]
 }
 const emit = defineEmits<Emits>()
+
+const renderers = markRaw([...extendedVuetifyRenderers])
 
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
 const alertStore = useAlertsStore()
