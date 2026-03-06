@@ -1,5 +1,9 @@
 <template>
-  <DateTimeTextField v-model="constrainedDate" :label="label" />
+  <DateTimeTextField
+    v-model="constrainedDate"
+    :label="label"
+    :messages="messages"
+  />
 </template>
 
 <script setup lang="ts">
@@ -50,6 +54,10 @@ const validDateRange = computed<[Date, Date] | null>(() => {
     dateFromOffset(options.startOffsetHours),
     dateFromOffset(options.endOffsetHours),
   ]
+})
+
+const messages = computed<string[]>(() => {
+  return [...createTimeStepMessages(), ...createDateRangeMessages()]
 })
 
 const date = ref<Date>(getDateFromProperty())
@@ -117,5 +125,26 @@ function limitToRelativeViewPeriod(
   if (date < startDate) return startDate
   if (date > endDate) return endDate
   return date
+}
+
+function createTimeStepMessages(): string[] {
+  const timeStepHours = dateValidation.value?.cardinalTimeStep?.timeStepHours
+  if (!timeStepHours) return []
+
+  const useMinutes = timeStepHours < 1
+  const unit = useMinutes ? 'minute' : 'hour'
+  const multiplier = useMinutes ? timeStepHours * 60 : timeStepHours
+
+  if (multiplier === 1) return [`1 ${unit}`]
+  return [`Time step: ${multiplier} ${unit}s`]
+}
+
+function createDateRangeMessages(): string[] {
+  if (validDateRange.value === null) return []
+  const [startDate, endDate] = validDateRange.value
+  return [
+    `Earliest valid time: ${startDate.toLocaleString()}`,
+    `Latest valid time: ${endDate.toLocaleString()}`,
+  ]
 }
 </script>

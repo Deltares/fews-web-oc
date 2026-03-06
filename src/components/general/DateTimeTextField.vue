@@ -6,7 +6,8 @@
     density="compact"
     variant="outlined"
     class="datetime-field"
-    hide-details
+    :messages="messages"
+    :hide-details="hideDetails"
     @change="updateModelValue()"
   >
     <template v-for="(_, slot) of slots" v-slot:[slot]="scope">
@@ -16,13 +17,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useSlots, watch } from 'vue'
+import { computed, ref, useSlots, watch } from 'vue'
 
 interface Props {
   label: string
+  messages?: string[]
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 // tsc doesnt understand useSlots type
 const slots = useSlots() as Record<string, () => void>
@@ -30,6 +32,9 @@ const slots = useSlots() as Record<string, () => void>
 const modelValue = defineModel<Date>({ required: true })
 
 const dateString = ref(toLocalDateString(modelValue.value))
+const hideDetails = computed<boolean>(
+  () => props.messages === undefined || props.messages.length === 0,
+)
 
 function toLocalDateString(date: Date) {
   const offset = date.getTimezoneOffset()
