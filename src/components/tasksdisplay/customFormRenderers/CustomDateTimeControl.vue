@@ -3,20 +3,21 @@
 </template>
 
 <script setup lang="ts">
-import DateTimeTextField from '@/components/general/DateTimeTextField.vue'
-import {
-  CardinalTimeStepOptions,
-  DateValidationOptions,
-  ExtendedJsonSchema7,
-} from '@/lib/whatif'
 import { ControlElement } from '@jsonforms/core'
 import {
   ControlProps,
   rendererProps,
   useJsonFormsControl,
 } from '@jsonforms/vue'
+import { computed, inject, type Ref, ref, watch } from 'vue'
 
-import { computed, ref, watch } from 'vue'
+import {
+  CardinalTimeStepOptions,
+  DateValidationOptions,
+  ExtendedJsonSchema7,
+} from '@/lib/whatif'
+
+import DateTimeTextField from '@/components/general/DateTimeTextField.vue'
 
 const props = withDefaults(defineProps<ControlProps>(), {
   ...rendererProps<ControlElement>(),
@@ -30,6 +31,25 @@ const propertyValue = computed<string | undefined>(
 const dateValidation = computed<DateValidationOptions | null>(() => {
   const schema = control.control.value.schema as ExtendedJsonSchema7
   return schema.dateValidation ?? null
+})
+
+const timeZero = inject<Ref<string | undefined>>('whatIfTimeZero')
+// Reference time used to set relative period limits.
+const referenceTime = computed<Date>(() => {
+  if (timeZero?.value === undefined) return new Date()
+  const parsed = new Date(timeZero.value)
+  return isNaN(parsed.getTime()) ? new Date() : parsed
+})
+const validDateRange = computed<[Date, Date] | null>(() => {
+  const options = dateValidation.value?.relativeViewPeriod
+  if (!options) return null
+
+  const dateFromOffset = (offsetHours: number) =>
+    new Date(referenceTime.value.getTime() + offsetHours * 60 * 60 * 1000)
+  return [
+    dateFromOffset(options.startOffsetHours),
+    dateFromOffset(options.endOffsetHours),
+  ]
 })
 
 const date = ref<Date>(getDateFromProperty())
@@ -71,7 +91,10 @@ function constrainDate(date: Date): Date {
   const aligned = dateValidation.value?.cardinalTimeStep
     ? alignToCardinalTimeStep(date, dateValidation.value?.cardinalTimeStep)
     : date
-  return aligned
+  const limited = validDateRange.value
+    ? limitToRelativeViewPeriod(aligned, validDateRange.value)
+    : aligned
+  return limited
 }
 
 function alignToCardinalTimeStep(
@@ -84,5 +107,15 @@ function alignToCardinalTimeStep(
     Math.round(timestamp / timeStepMilliseconds) * timeStepMilliseconds
   const rounded = new Date(roundedTimestamp)
   return rounded.getTime() === date.getTime() ? date : rounded
+}
+
+function limitToRelativeViewPeriod(
+  date: Date,
+  validDateRange: [Date, Date],
+): Date {
+  const [startDate, endDate] = validDateRange
+  if (date < startDate) return startDate
+  if (date > endDate) return endDate
+  return date
 }
 </script>

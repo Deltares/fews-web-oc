@@ -131,7 +131,7 @@ import WhatIfTimeZeroSelect from './WhatIfTimeZeroSelect.vue'
 
 import { isDateTimeControl, rankWith } from '@jsonforms/core'
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
-import { computed, ref, watch, watchEffect } from 'vue'
+import { computed, provide, ref, watch, watchEffect } from 'vue'
 import { ErrorObject } from 'ajv'
 
 import { JsonForms } from '@jsonforms/vue'
@@ -192,6 +192,8 @@ const isPosting = ref<boolean>(false)
 const temporaryWhatIfScenarioName = 'Temporary'
 
 const timeZero = ref<string>()
+provide('whatIfTimeZero', timeZero)
+
 const description = ref<string>()
 
 const selectedWorkflow = computed(() =>
