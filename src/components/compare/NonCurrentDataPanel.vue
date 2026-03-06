@@ -77,6 +77,7 @@ import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import ForecastSummary from './ForecastSummary.vue'
 import PeriodFilterControl from '@/components/tasks/PeriodFilterControl.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
+import { useTaskRunsStore } from '@/stores/taskRuns'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -85,6 +86,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {})
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
+const taskRunsStore = useTaskRunsStore()
 
 const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
 
@@ -151,15 +153,26 @@ const sortedTasks = computed(() => filteredTaskRuns.value.toSorted(sortTasks))
 const showCurrent = ref(true)
 const showNonCurrent = ref(true)
 
+const currentTasks = computed(() =>
+  sortedTasks.value.filter((task) => task.isCurrent),
+)
+
+watch(
+  currentTasks,
+  (newCurrentTasks) => {
+    taskRunsStore.setCurrentTaskRuns(newCurrentTasks)
+  },
+  { immediate: true },
+)
+
 const groupedTasks = computed(() => {
-  const currentTasks = sortedTasks.value.filter((task) => task.isCurrent)
   const nonCurrentTasks = sortedTasks.value.filter((task) => !task.isCurrent)
 
   const result = []
-  if (currentTasks.length) {
+  if (currentTasks.value.length) {
     result.push({ isHeader: true, label: 'Current' })
     if (showCurrent.value) {
-      result.push(...currentTasks)
+      result.push(...currentTasks.value)
     }
   }
   if (nonCurrentTasks.length) {
