@@ -1,6 +1,8 @@
 <template>
   <DateTimeTextField
     v-model="date"
+    :min="validDateRange?.[0]"
+    :max="validDateRange?.[1]"
     :label="label"
     :messages="messages"
     :error-messages="errorMessages"
