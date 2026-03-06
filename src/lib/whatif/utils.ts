@@ -244,17 +244,18 @@ function convertMultiplierToHours(multiplier: number, unit: string): number {
 export function getErrorsForProperties(
   properties: ScenarioData,
   schema: ExtendedJsonSchema7 | undefined,
+  referenceTime: Date,
 ) {
   const errors: ErrorObject[] = []
   for (const key in properties) {
     if (!schema?.properties) continue
 
-    const property = schema.properties[key]
+    const property = schema.properties[key] as ExtendedJsonSchema7
     if (!property) continue
 
+    const title = property.title
     if (property.type === 'integer') {
       const value = properties[key] as number
-      const title = property.title
       if (!isInteger(value.toString())) {
         errors.push({
           keyword: 'type',
@@ -282,7 +283,6 @@ export function getErrorsForProperties(
       const value = properties[key] as number
       const min = property.minimum
       const max = property.maximum
-      const title = property.title
       if (!isNumber(value.toString())) {
         errors.push({
           keyword: 'type',
@@ -311,7 +311,70 @@ export function getErrorsForProperties(
         })
       }
     }
+
+    if (
+      property.type === 'string' &&
+      property.format === 'date-time' &&
+      property.dateValidation
+    ) {
+      const parsed = new Date(properties[key] as string)
+      if (isNaN(parsed.getTime())) {
+        errors.push({
+          keyword: 'invalid',
+          instancePath: `/${key}`,
+          schemaPath: `#/properties/${key}/format`,
+          params: {},
+          message: `"${title}" must be a valid date/time string`,
+        })
+        continue
+      }
+      // Check whether we match the cardinal time step, if specified.
+      if (
+        property.dateValidation.cardinalTimeStep &&
+        !matchesCardinalTimeStep(
+          parsed,
+          property.dateValidation.cardinalTimeStep.timeStepHours,
+        )
+      ) {
+        const timeStepHours =
+          property.dateValidation.cardinalTimeStep.timeStepHours
+        errors.push({
+          keyword: 'invalid',
+          instancePath: `/${key}`,
+          schemaPath: `#/properties/${key}/dateValidation/cardinalTimeStep`,
+          params: {
+            timeStepHours,
+          },
+          message: `"${title}" must be aligned to a time step of ${formatTimeStep(timeStepHours)}`,
+        })
+      }
+      // Check whether we are in the specified date range with respect to a
+      // reference time.
+      if (property.dateValidation?.relativeViewPeriod) {
+        const [startDate, endDate] = computeValidDateRange(
+          referenceTime,
+          property.dateValidation.relativeViewPeriod,
+        )
+        if (parsed < startDate || parsed > endDate) {
+          const message =
+            parsed < startDate
+              ? `"${title}" must be on or after ${startDate.toLocaleString()}`
+              : `"${title}" must be on or before ${endDate.toLocaleString()}`
+          errors.push({
+            keyword: 'date-out-of-range',
+            instancePath: `/${key}`,
+            schemaPath: `#/properties/${key}/dateValidation/relativeViewPeriod`,
+            params: {
+              startDate,
+              endDate,
+            },
+            message,
+          })
+        }
+      }
+    }
   }
+
   return errors
 }
 
@@ -321,6 +384,27 @@ function isNumber(value: string) {
 
 function isInteger(value: string) {
   return Number.isInteger(Number(value))
+}
+
+export function matchesCardinalTimeStep(
+  value: Date,
+  timeStepHours: number,
+): boolean {
+  const timestamp = value.getTime()
+  const timeStepMilliseconds = timeStepHours * 60 * 60 * 1000
+  return timestamp % timeStepMilliseconds === 0
+}
+
+export function computeValidDateRange(
+  referenceTime: Date,
+  options: RelativeViewPeriodOptions,
+): [Date, Date] {
+  const dateFromOffset = (offsetHours: number) =>
+    new Date(referenceTime.getTime() + offsetHours * 60 * 60 * 1000)
+  return [
+    dateFromOffset(options.startOffsetHours),
+    dateFromOffset(options.endOffsetHours),
+  ]
 }
 
 /**
@@ -358,4 +442,13 @@ export function convertPropertiesToFewsPi(
     }
   }
   return converted
+}
+
+export function formatTimeStep(timeStepHours: number): string {
+  const useMinutes = timeStepHours < 1
+  const unit = useMinutes ? 'minute' : 'hour'
+  const multiplier = useMinutes ? timeStepHours * 60 : timeStepHours
+
+  if (multiplier === 1) return `1 ${unit}`
+  return `${multiplier} ${unit}s`
 }

@@ -1,8 +1,9 @@
 <template>
   <DateTimeTextField
-    v-model="constrainedDate"
+    v-model="date"
     :label="label"
     :messages="messages"
+    :error-messages="errorMessages"
   >
     <template #append-inner v-if="cardinalTimeStepHours !== null">
       <v-divider vertical />
@@ -38,7 +39,13 @@ import {
 } from '@jsonforms/vue'
 import { computed, inject, type Ref, ref, watch } from 'vue'
 
-import { DateValidationOptions, ExtendedJsonSchema7 } from '@/lib/whatif'
+import {
+  computeValidDateRange,
+  DateValidationOptions,
+  ExtendedJsonSchema7,
+  formatTimeStep,
+  matchesCardinalTimeStep,
+} from '@/lib/whatif'
 
 import DateTimeTextField from '@/components/general/DateTimeTextField.vue'
 
@@ -48,6 +55,10 @@ const props = withDefaults(defineProps<ControlProps>(), {
 const control = useJsonFormsControl(props)
 
 const label = computed<string>(() => control.control.value.label)
+const errorMessages = computed<string[] | undefined>(() => {
+  const message = control.control.value.errors
+  return message === '' ? [] : message.split('\n')
+})
 const propertyValue = computed<string | undefined>(
   () => control.control.value.data,
 )
@@ -60,61 +71,40 @@ const cardinalTimeStepHours = computed<number | null>(
   () => dateValidation.value?.cardinalTimeStep?.timeStepHours ?? null,
 )
 
-const timeZero = inject<Ref<string | undefined>>('whatIfTimeZero')
-// Reference time used to set relative period limits.
-const referenceTime = computed<Date>(() => {
-  if (timeZero?.value === undefined) return new Date()
-  const parsed = new Date(timeZero.value)
-  return isNaN(parsed.getTime()) ? new Date() : parsed
-})
+const referenceTime = inject<Ref<Date>>('whatIfReferenceTime')
 const validDateRange = computed<[Date, Date] | null>(() => {
   const options = dateValidation.value?.relativeViewPeriod
   if (!options) return null
-
-  const dateFromOffset = (offsetHours: number) =>
-    new Date(referenceTime.value.getTime() + offsetHours * 60 * 60 * 1000)
-  return [
-    dateFromOffset(options.startOffsetHours),
-    dateFromOffset(options.endOffsetHours),
-  ]
+  return computeValidDateRange(referenceTime?.value ?? new Date(), options)
 })
 
 const messages = computed<string[]>(() => {
   return [...createTimeStepMessages(), ...createDateRangeMessages()]
 })
 
-const date = ref<Date>(getDateFromProperty())
-
-const constrainedDate = computed<Date>({
-  get: () => constrainDate(date.value),
-  set: (value: Date) => {
-    date.value = constrainDate(value)
-    // Prevent reactivity loop by only writing when the date has changed.
-    const newProperty = date.value.toISOString()
-    if (propertyValue.value === newProperty) return
-    control.handleChange(control.control.value.path, newProperty)
-  },
-})
+const date = ref<Date>(constrainDate(getDateFromPropertyOrDefault()))
 watch(
-  propertyValue,
-  () => {
-    const updated = getDateFromProperty()
-    if (updated == date.value) return
-    date.value = updated
+  date,
+  (newDate) => {
+    if (isNaN(newDate.getTime())) return
+    control.handleChange(control.control.value.path, newDate.toISOString())
   },
+  // Immediately set the possibly constrained initial value to the property.
   { immediate: true },
 )
+watch(propertyValue, () => {
+  const updated = getDateFromPropertyOrDefault()
+  // Prevent reactivity loop by only updating if our value changed.
+  if (updated.getTime() == date.value.getTime()) return
+  date.value = updated
+})
 
-function getDateFromProperty(): Date {
-  return constrainDate(
-    propertyValue.value ? new Date(propertyValue.value) : getDefaultDate(),
-  )
-}
-
-function getDefaultDate(): Date {
-  const defaultString = control.control.value.schema.default
-  if (!defaultString) return new Date()
-  return new Date(defaultString)
+function getDateFromPropertyOrDefault(): Date {
+  const dateString: string | undefined =
+    propertyValue.value ?? control.control.value.schema.default
+  if (dateString === undefined) return new Date()
+  const parsed = new Date(dateString)
+  return isNaN(parsed.getTime()) ? new Date() : parsed
 }
 
 function constrainDate(date: Date): Date {
@@ -123,41 +113,51 @@ function constrainDate(date: Date): Date {
     cardinalTimeStepHours.value !== null
       ? alignToTimeStep(date, cardinalTimeStepHours.value)
       : date
+  // If a date range was specified, make sure the value does not exceed it, and
+  // keep it aligned with the time step.
   const limited = validDateRange.value
-    ? limitToRelativeViewPeriod(aligned, validDateRange.value)
+    ? limitToAlignedRelativeViewPeriod(aligned, validDateRange.value)
     : aligned
   return limited
 }
 
-function alignToTimeStep(date: Date, timeStepHours: number): Date {
+function alignToTimeStep(
+  date: Date,
+  timeStepHours: number,
+  mode: 'round' | 'floor' | 'ceil' = 'round',
+): Date {
   const timestamp = date.getTime()
   const timeStepMilliseconds = timeStepHours * 60 * 60 * 1000
+  const roundFunc =
+    mode === 'round' ? Math.round : mode === 'floor' ? Math.floor : Math.ceil
   const roundedTimestamp =
-    Math.round(timestamp / timeStepMilliseconds) * timeStepMilliseconds
+    roundFunc(timestamp / timeStepMilliseconds) * timeStepMilliseconds
   const rounded = new Date(roundedTimestamp)
   return rounded.getTime() === date.getTime() ? date : rounded
 }
 
-function limitToRelativeViewPeriod(
+function limitToAlignedRelativeViewPeriod(
   date: Date,
   validDateRange: [Date, Date],
 ): Date {
   const [startDate, endDate] = validDateRange
-  if (date < startDate) return startDate
-  if (date > endDate) return endDate
+  if (date < startDate) {
+    return cardinalTimeStepHours.value === null
+      ? startDate
+      : alignToTimeStep(startDate, cardinalTimeStepHours.value, 'ceil')
+  }
+  if (date > endDate) {
+    return cardinalTimeStepHours.value === null
+      ? endDate
+      : alignToTimeStep(endDate, cardinalTimeStepHours.value, 'floor')
+  }
   return date
 }
 
 function createTimeStepMessages(): string[] {
   const timeStepHours = cardinalTimeStepHours.value
   if (!timeStepHours) return []
-
-  const useMinutes = timeStepHours < 1
-  const unit = useMinutes ? 'minute' : 'hour'
-  const multiplier = useMinutes ? timeStepHours * 60 : timeStepHours
-
-  if (multiplier === 1) return [`1 ${unit}`]
-  return [`Time step: ${multiplier} ${unit}s`]
+  return [`Time step: ${formatTimeStep(timeStepHours)}`]
 }
 
 function createDateRangeMessages(): string[] {
@@ -172,13 +172,38 @@ function createDateRangeMessages(): string[] {
 function stepTime(isNext: boolean): Date {
   const timeStepHours = cardinalTimeStepHours.value
   if (timeStepHours === null) return date.value
+  // If we are outside a specified date range, make sure we go to the nearest
+  // valid date.
+  if (validDateRange.value) {
+    const [startDate, endDate] = validDateRange.value
+    if (date.value < startDate || date.value > endDate) {
+      return constrainDate(date.value)
+    }
+  }
+  // If we do not match the cardinal time step, we should go to the
+  // previous/next valid time step.
+  if (
+    cardinalTimeStepHours.value &&
+    !matchesCardinalTimeStep(date.value, cardinalTimeStepHours.value)
+  ) {
+    const roundMode = isNext ? 'ceil' : 'floor'
+    return constrainDate(
+      alignToTimeStep(date.value, cardinalTimeStepHours.value, roundMode),
+    )
+  }
 
+  // Otherwise, increase or decrease the date with the specified time step.
   const offsetHours = isNext ? timeStepHours : -timeStepHours
   const next = new Date(date.value.getTime() + offsetHours * 60 * 60 * 1000)
   return constrainDate(next)
 }
 
 function canStepTime(isNext: boolean): boolean {
+  if (validDateRange.value !== null) {
+    const [startDate, endDate] = validDateRange.value
+    if (date.value < startDate) return isNext
+    if (date.value > endDate) return !isNext
+  }
   return stepTime(isNext).getTime() !== date.value.getTime()
 }
 </script>

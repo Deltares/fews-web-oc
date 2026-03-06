@@ -192,7 +192,14 @@ const isPosting = ref<boolean>(false)
 const temporaryWhatIfScenarioName = 'Temporary'
 
 const timeZero = ref<string>()
-provide('whatIfTimeZero', timeZero)
+
+// Reference time for computing relative periods.
+const referenceTime = computed<Date>(() => {
+  if (timeZero?.value === undefined) return new Date()
+  const parsed = new Date(timeZero.value)
+  return isNaN(parsed.getTime()) ? new Date() : parsed
+})
+provide('whatIfReferenceTime', referenceTime)
 
 const description = ref<string>()
 
@@ -279,8 +286,12 @@ function onPropertiesChange(event: { data: ScenarioData }): void {
   selectedProperties.value = updatedProperties
 }
 
-watch(selectedProperties, (properties) => {
-  additionalErrors.value = getErrorsForProperties(properties, jsonSchema.value)
+watch([selectedProperties, referenceTime], ([properties, referenceTime]) => {
+  additionalErrors.value = getErrorsForProperties(
+    properties,
+    jsonSchema.value,
+    referenceTime,
+  )
 })
 
 const isProcessDataTask = computed<boolean>(

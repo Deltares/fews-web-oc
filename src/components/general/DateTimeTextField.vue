@@ -7,6 +7,7 @@
     variant="outlined"
     class="datetime-field"
     :messages="messages"
+    :error-messages="errorMessages"
     :hide-details="hideDetails"
     @change="updateModelValue()"
   >
@@ -22,6 +23,7 @@ import { computed, ref, useSlots, watch } from 'vue'
 interface Props {
   label: string
   messages?: string[]
+  errorMessages?: string[]
 }
 
 const props = defineProps<Props>()
@@ -32,9 +34,12 @@ const slots = useSlots() as Record<string, () => void>
 const modelValue = defineModel<Date>({ required: true })
 
 const dateString = ref(toLocalDateString(modelValue.value))
-const hideDetails = computed<boolean>(
-  () => props.messages === undefined || props.messages.length === 0,
-)
+const hideDetails = computed<boolean>(() => {
+  const hasMessages = props.messages !== undefined && props.messages.length > 0
+  const hasErrorMessages =
+    props.errorMessages !== undefined && props.errorMessages.length > 0
+  return !hasMessages && !hasErrorMessages
+})
 
 function toLocalDateString(date: Date) {
   const offset = date.getTimezoneOffset()
