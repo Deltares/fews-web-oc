@@ -3,7 +3,30 @@
     v-model="constrainedDate"
     :label="label"
     :messages="messages"
-  />
+  >
+    <template #append-inner v-if="cardinalTimeStepHours !== null">
+      <v-divider vertical />
+      <v-btn
+        variant="text"
+        icon
+        size="small"
+        @click="date = stepTime(false)"
+        :disabled="!canStepTime(false)"
+      >
+        <v-icon>mdi-chevron-down</v-icon>
+      </v-btn>
+      <v-divider vertical />
+      <v-btn
+        variant="text"
+        icon
+        size="small"
+        @click="date = stepTime(true)"
+        :disabled="!canStepTime(true)"
+      >
+        <v-icon>mdi-chevron-up</v-icon>
+      </v-btn>
+    </template>
+  </DateTimeTextField>
 </template>
 
 <script setup lang="ts">
@@ -15,11 +38,7 @@ import {
 } from '@jsonforms/vue'
 import { computed, inject, type Ref, ref, watch } from 'vue'
 
-import {
-  CardinalTimeStepOptions,
-  DateValidationOptions,
-  ExtendedJsonSchema7,
-} from '@/lib/whatif'
+import { DateValidationOptions, ExtendedJsonSchema7 } from '@/lib/whatif'
 
 import DateTimeTextField from '@/components/general/DateTimeTextField.vue'
 
@@ -36,6 +55,10 @@ const dateValidation = computed<DateValidationOptions | null>(() => {
   const schema = control.control.value.schema as ExtendedJsonSchema7
   return schema.dateValidation ?? null
 })
+
+const cardinalTimeStepHours = computed<number | null>(
+  () => dateValidation.value?.cardinalTimeStep?.timeStepHours ?? null,
+)
 
 const timeZero = inject<Ref<string | undefined>>('whatIfTimeZero')
 // Reference time used to set relative period limits.
@@ -96,21 +119,19 @@ function getDefaultDate(): Date {
 
 function constrainDate(date: Date): Date {
   // If a cardinal time step was specified, align the date/time to it.
-  const aligned = dateValidation.value?.cardinalTimeStep
-    ? alignToCardinalTimeStep(date, dateValidation.value?.cardinalTimeStep)
-    : date
+  const aligned =
+    cardinalTimeStepHours.value !== null
+      ? alignToTimeStep(date, cardinalTimeStepHours.value)
+      : date
   const limited = validDateRange.value
     ? limitToRelativeViewPeriod(aligned, validDateRange.value)
     : aligned
   return limited
 }
 
-function alignToCardinalTimeStep(
-  date: Date,
-  options: CardinalTimeStepOptions,
-): Date {
+function alignToTimeStep(date: Date, timeStepHours: number): Date {
   const timestamp = date.getTime()
-  const timeStepMilliseconds = options.timeStepHours * 60 * 60 * 1000
+  const timeStepMilliseconds = timeStepHours * 60 * 60 * 1000
   const roundedTimestamp =
     Math.round(timestamp / timeStepMilliseconds) * timeStepMilliseconds
   const rounded = new Date(roundedTimestamp)
@@ -128,7 +149,7 @@ function limitToRelativeViewPeriod(
 }
 
 function createTimeStepMessages(): string[] {
-  const timeStepHours = dateValidation.value?.cardinalTimeStep?.timeStepHours
+  const timeStepHours = cardinalTimeStepHours.value
   if (!timeStepHours) return []
 
   const useMinutes = timeStepHours < 1
@@ -146,5 +167,18 @@ function createDateRangeMessages(): string[] {
     `Earliest valid time: ${startDate.toLocaleString()}`,
     `Latest valid time: ${endDate.toLocaleString()}`,
   ]
+}
+
+function stepTime(isNext: boolean): Date {
+  const timeStepHours = cardinalTimeStepHours.value
+  if (timeStepHours === null) return date.value
+
+  const offsetHours = isNext ? timeStepHours : -timeStepHours
+  const next = new Date(date.value.getTime() + offsetHours * 60 * 60 * 1000)
+  return constrainDate(next)
+}
+
+function canStepTime(isNext: boolean): boolean {
+  return stepTime(isNext).getTime() !== date.value.getTime()
 }
 </script>
