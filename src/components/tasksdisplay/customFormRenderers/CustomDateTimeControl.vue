@@ -51,10 +51,13 @@ import {
 
 import DateTimeTextField from '@/components/general/DateTimeTextField.vue'
 
+// FIXME: some type hackery here, because the json-forms types are a little
+//        weird. This seems to be how the API is expected to work, and it gives
+//        no issues at runtime.
 const props = withDefaults(defineProps<ControlProps>(), {
   ...rendererProps<ControlElement>(),
-})
-const control = useJsonFormsControl(props)
+} as any)
+const control = useJsonFormsControl(props as ControlProps)
 
 const label = computed<string>(() => control.control.value.label)
 const errorMessages = computed<string[] | undefined>(() => {
