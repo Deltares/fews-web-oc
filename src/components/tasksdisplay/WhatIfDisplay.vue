@@ -76,7 +76,7 @@
               :schema="jsonSchema"
               :uischema="uiSchema"
               :data="selectedProperties"
-              :renderers="Object.freeze(vuetifyRenderers)"
+              :renderers="formRenderers"
               :ajv="undefined"
               validation-mode="NoValidation"
               :config="jsonFormsConfig"
@@ -124,12 +124,14 @@
   </div>
 </template>
 <script setup lang="ts">
+import CustomDateTimeControl from './customFormRenderers/CustomDateTimeControl.vue'
 import jsonFormsConfig from '@/assets/JsonFormsConfig.json'
 import WhatIfScenarioSelect from './WhatIfScenarioSelect.vue'
 import WhatIfTimeZeroSelect from './WhatIfTimeZeroSelect.vue'
 
+import { isDateTimeControl, rankWith } from '@jsonforms/core'
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
-import { computed, ref, watch, watchEffect } from 'vue'
+import { computed, provide, ref, watch, watchEffect } from 'vue'
 import { ErrorObject } from 'ajv'
 
 import { JsonForms } from '@jsonforms/vue'
@@ -190,6 +192,15 @@ const isPosting = ref<boolean>(false)
 const temporaryWhatIfScenarioName = 'Temporary'
 
 const timeZero = ref<string>()
+
+// Reference time for computing relative periods.
+const referenceTime = computed<Date>(() => {
+  if (timeZero?.value === undefined) return new Date()
+  const parsed = new Date(timeZero.value)
+  return isNaN(parsed.getTime()) ? new Date() : parsed
+})
+provide('whatIfReferenceTime', referenceTime)
+
 const description = ref<string>()
 
 const selectedWorkflow = computed(() =>
@@ -197,6 +208,14 @@ const selectedWorkflow = computed(() =>
     (wf) => wf.whatIfTemplateId === selectedWhatIfTemplate.value?.id,
   ),
 )
+
+// We override all date/time controls with our own, to make sure they are
+// consistent with each other.
+const customDateTimeTester = rankWith(3, isDateTimeControl)
+const formRenderers = Object.freeze([
+  { tester: customDateTimeTester, renderer: CustomDateTimeControl },
+  ...vuetifyRenderers,
+])
 
 const whatIfTemplates = computed(() =>
   props.workflows
@@ -267,8 +286,12 @@ function onPropertiesChange(event: { data: ScenarioData }): void {
   selectedProperties.value = updatedProperties
 }
 
-watch(selectedProperties, (properties) => {
-  additionalErrors.value = getErrorsForProperties(properties, jsonSchema.value)
+watch([selectedProperties, referenceTime], ([properties, referenceTime]) => {
+  additionalErrors.value = getErrorsForProperties(
+    properties,
+    jsonSchema.value,
+    referenceTime,
+  )
 })
 
 const isProcessDataTask = computed<boolean>(

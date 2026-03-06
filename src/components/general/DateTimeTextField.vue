@@ -2,11 +2,15 @@
   <v-text-field
     v-model="dateString"
     type="datetime-local"
+    :min="minString"
+    :max="maxString"
     :label="label"
     density="compact"
     variant="outlined"
     class="datetime-field"
-    hide-details
+    :messages="messages"
+    :error-messages="errorMessages"
+    :hide-details="hideDetails"
     @change="updateModelValue()"
   >
     <template v-for="(_, slot) of slots" v-slot:[slot]="scope">
@@ -16,13 +20,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useSlots, watch } from 'vue'
+import { computed, ref, useSlots, watch } from 'vue'
 
 interface Props {
   label: string
+  messages?: string[]
+  errorMessages?: string[]
+  min?: Date
+  max?: Date
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 // tsc doesnt understand useSlots type
 const slots = useSlots() as Record<string, () => void>
@@ -30,6 +38,18 @@ const slots = useSlots() as Record<string, () => void>
 const modelValue = defineModel<Date>({ required: true })
 
 const dateString = ref(toLocalDateString(modelValue.value))
+const minString = computed<string | undefined>(() =>
+  props.min ? toLocalDateString(props.min) : undefined,
+)
+const maxString = computed<string | undefined>(() =>
+  props.max ? toLocalDateString(props.max) : undefined,
+)
+const hideDetails = computed<boolean>(() => {
+  const hasMessages = props.messages !== undefined && props.messages.length > 0
+  const hasErrorMessages =
+    props.errorMessages !== undefined && props.errorMessages.length > 0
+  return !hasMessages && !hasErrorMessages
+})
 
 function toLocalDateString(date: Date) {
   const offset = date.getTimezoneOffset()
