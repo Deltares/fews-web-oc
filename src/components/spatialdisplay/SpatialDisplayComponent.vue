@@ -106,11 +106,12 @@
               v-model:currentColourScaleIndex="currentColourScaleIndex"
             />
           </template>
-          <template #chip-append>
+          <template #chip-append-inner>
             <StreamlinesButton
               v-if="canUseStreamlines"
               :isLoading="isLoading"
               v-model:layer-kind="layerKind"
+              @click.stop.prevent
             />
           </template>
           <template #extension>

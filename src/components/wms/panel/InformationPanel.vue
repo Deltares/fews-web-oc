@@ -26,6 +26,7 @@
           <span :class="{ 'text-decoration-line-through': completelyMissing }">
             {{ title }}
           </span>
+          <slot name="chip-append-inner"></slot>
           <template #append>
             <SelectIcon :active="isActive" />
           </template>
