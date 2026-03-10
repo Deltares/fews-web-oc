@@ -41,6 +41,7 @@ import {
 } from '@jsonforms/vue'
 import { computed, inject, type Ref, ref, watch } from 'vue'
 
+import { toHumanReadableDateTime } from '@/lib/date'
 import {
   computeValidDateRange,
   DateValidationOptions,
@@ -169,8 +170,8 @@ function createDateRangeMessages(): string[] {
   if (validDateRange.value === null) return []
   const [startDate, endDate] = validDateRange.value
   return [
-    `Earliest valid time: ${startDate.toLocaleString()}`,
-    `Latest valid time: ${endDate.toLocaleString()}`,
+    `Earliest valid time: ${toHumanReadableDateTime(startDate)}`,
+    `Latest valid time: ${toHumanReadableDateTime(endDate)}`,
   ]
 }
 
