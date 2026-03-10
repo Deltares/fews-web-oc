@@ -68,6 +68,7 @@ jobs:
               "rewrite": "index.html"
             }
           }
+          EOL
         shell: bash
       - name: Deploy Azure Static Web Apps Rivieren
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -89,6 +90,7 @@ jobs:
               "rewrite": "index.html"
             }
           }
+          EOL
         shell: bash
       - name: Deploy Azure Static Web Apps FEWS Map
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -110,6 +112,7 @@ jobs:
               "rewrite": "index.html"
             }
           }
+          EOL
         shell: bash
       - name: Deploy Azure Static Web Apps IWP Public App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -131,6 +134,7 @@ jobs:
               "rewrite": "index.html"
             }
           }
+          EOL
         shell: bash
       - name: Deploy Azure Static Web Apps IWP Public App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -153,6 +157,7 @@ jobs:
               "rewrite": "index.html"
             }
           }
+          EOL
         shell: bash
       - name: Deploy Azure Static Web Apps BOM App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -174,6 +179,7 @@ jobs:
               "rewrite": "index.html"
             }
           }
+          EOL
         shell: bash
       - name: Deploy Azure Static Web Apps SAVA App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -195,6 +201,7 @@ jobs:
               "rewrite": "index.html"
             }
           }
+          EOL
         shell: bash
       - name: Deploy Azure Static Web Apps GLOSSIS App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -216,6 +223,7 @@ jobs:
               "rewrite": "index.html"
             }
           }
+          EOL
         shell: bash
       - name: Deploy Azure Static Web Apps Noordzee App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -231,7 +239,7 @@ jobs:
           rm -f dist/app-config.json
           echo "${{ vars.DURBAN_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
           rm -f dist/staticwebapp.config.json
-#          Temporarily disable the webapp.
+          # Temporarily disable the webapp.
           cat > dist/staticwebapp.config.json <<EOL
           {
             "routes": [
@@ -269,6 +277,7 @@ jobs:
               "rewrite": "index.html"
             }
           }
+          EOL
         shell: bash
       - name: Deploy Azure Static Web Apps Navy App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -290,6 +299,7 @@ jobs:
               "rewrite": "index.html"
             }
           }
+          EOL
         shell: bash
       - name: Deploy Azure Static Web Apps Volvo Ocean Race App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -311,6 +321,7 @@ jobs:
               "rewrite": "index.html"
             }
           }
+          EOL
         shell: bash
       - name: Deploy Azure Static Web Apps Trend Hyd
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -332,6 +343,7 @@ jobs:
               "rewrite": "index.html"
             }
           }
+          EOL
         shell: bash
       - name: Deploy Azure Static Web Apps IWP SWM
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
