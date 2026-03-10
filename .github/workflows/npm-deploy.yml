@@ -30,6 +30,15 @@ jobs:
 
       - name: Create the staticwebapp.config.json file
         run: |
+          touch dist/staticwebapp.config.json
+          touch dist/app-config.json
+        shell: bash
+
+      - name: Create the app-config.json file for the Pulau Tekong App
+        run: |
+          rm -f dist/app-config.json
+          echo "${{ vars.PULAU_TEKONG_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+          rm -f dist/staticwebapp.config.json
           cat > dist/staticwebapp.config.json <<EOL
           {
             "navigationFallback": {
@@ -37,13 +46,7 @@ jobs:
             }
           }
           EOL
-          touch dist/app-config.json
-        shell: bash
 
-      - name: Create the app-config.json file for the Pulau Tekong App
-        run: |
-          rm dist/app-config.json
-          echo "${{ vars.PULAU_TEKONG_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
         shell: bash
       - name: Deploy Azure Static Web Apps Pulau Tekong
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -56,8 +59,15 @@ jobs:
 
       - name: Create the app-config.json file for the Rivieren App
         run: |
-          rm dist/app-config.json
+          rm -f dist/app-config.json
           echo "${{ vars.RIVIEREN_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+          rm -f dist/staticwebapp.config.json
+          cat > dist/staticwebapp.config.json <<EOL
+          {
+            "navigationFallback": {
+              "rewrite": "index.html"
+            }
+          }
         shell: bash
       - name: Deploy Azure Static Web Apps Rivieren
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -70,8 +80,15 @@ jobs:
 
       - name: Create the app-config.json file for the FEWS Map App
         run: |
-          rm dist/app-config.json
+          rm -f dist/app-config.json
           echo "${{ vars.FEWS_MAP_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+          rm -f dist/staticwebapp.config.json
+          cat > dist/staticwebapp.config.json <<EOL
+          {
+            "navigationFallback": {
+              "rewrite": "index.html"
+            }
+          }
         shell: bash
       - name: Deploy Azure Static Web Apps FEWS Map
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -84,8 +101,15 @@ jobs:
 
       - name: Overwrite the app-config.json file for IWP Public App
         run: |
-          rm dist/app-config.json
+          rm -f dist/app-config.json
           echo "${{ vars.IWP_PUBLIC_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+          rm -f dist/staticwebapp.config.json
+          cat > dist/staticwebapp.config.json <<EOL
+          {
+            "navigationFallback": {
+              "rewrite": "index.html"
+            }
+          }
         shell: bash
       - name: Deploy Azure Static Web Apps IWP Public App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -98,8 +122,15 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.IWP_PUBLIC_APP_AZURE_STATIC_WEB_APP_TOKEN }}
       - name: Overwrite the app-config.json file for IWP Secured App
         run: |
-          rm dist/app-config.json
+          rm -f dist/app-config.json
           echo "${{ vars.IWP_SECURED_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+          rm -f dist/staticwebapp.config.json
+          cat > dist/staticwebapp.config.json <<EOL
+          {
+            "navigationFallback": {
+              "rewrite": "index.html"
+            }
+          }
         shell: bash
       - name: Deploy Azure Static Web Apps IWP Public App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -113,8 +144,15 @@ jobs:
 
       - name: Overwrite the app-config.json file for BOM App
         run: |
-          rm dist/app-config.json
+          rm -f dist/app-config.json
           echo "${{ vars.BOM_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+          rm -f dist/staticwebapp.config.json
+          cat > dist/staticwebapp.config.json <<EOL
+          {
+            "navigationFallback": {
+              "rewrite": "index.html"
+            }
+          }
         shell: bash
       - name: Deploy Azure Static Web Apps BOM App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -127,8 +165,15 @@ jobs:
 
       - name: Overwrite the app-config.json file for SAVA App
         run: |
-          rm dist/app-config.json
+          rm -f dist/app-config.json
           echo "${{ vars.SAVA_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+          rm -f dist/staticwebapp.config.json
+          cat > dist/staticwebapp.config.json <<EOL
+          {
+            "navigationFallback": {
+              "rewrite": "index.html"
+            }
+          }
         shell: bash
       - name: Deploy Azure Static Web Apps SAVA App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -141,8 +186,15 @@ jobs:
 
       - name: Create app-config.json file for GLOSSIS App
         run: |
-          rm dist/app-config.json
+          rm -f dist/app-config.json
           echo "${{ vars.GLOSSIS_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+          rm -f dist/staticwebapp.config.json
+          cat > dist/staticwebapp.config.json <<EOL
+          {
+            "navigationFallback": {
+              "rewrite": "index.html"
+            }
+          }
         shell: bash
       - name: Deploy Azure Static Web Apps GLOSSIS App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -157,6 +209,13 @@ jobs:
         run: |
           rm dist/app-config.json
           echo "${{ vars.NOORDZEE_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+          rm -f dist/staticwebapp.config.json
+          cat > dist/staticwebapp.config.json <<EOL
+          {
+            "navigationFallback": {
+              "rewrite": "index.html"
+            }
+          }
         shell: bash
       - name: Deploy Azure Static Web Apps Noordzee App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -169,8 +228,26 @@ jobs:
 
       - name: Create the app-config.json file for Durban App
         run: |
-          rm dist/app-config.json
+          rm -f dist/app-config.json
           echo "${{ vars.DURBAN_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+          rm -f dist/staticwebapp.config.json
+#          Temporarily disable the webapp.
+          cat > dist/staticwebapp.config.json <<EOL
+          {
+            "routes": [
+              {
+                "route": "/*",
+                "allowedRoles": []
+              }
+            ],
+            "responseOverrides": {
+              "401": {
+                "statusCode": 503,
+                "body": "Site temporarily unavailable"
+              }
+            }
+          }
+          EOL
         shell: bash
       - name: Deploy Azure Static Web Apps Durban App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -183,8 +260,15 @@ jobs:
 
       - name: Create the app-config.json file for Navy App
         run: |
-          rm dist/app-config.json
+          rm -f dist/app-config.json
           echo "${{ vars.NAVY_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+          rm -f dist/staticwebapp.config.json
+          cat > dist/staticwebapp.config.json <<EOL
+          {
+            "navigationFallback": {
+              "rewrite": "index.html"
+            }
+          }
         shell: bash
       - name: Deploy Azure Static Web Apps Navy App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -199,6 +283,13 @@ jobs:
         run: |
           rm dist/app-config.json
           echo "${{ vars.VOLVO_OCEAN_RACE_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+          rm -f dist/staticwebapp.config.json
+          cat > dist/staticwebapp.config.json <<EOL
+          {
+            "navigationFallback": {
+              "rewrite": "index.html"
+            }
+          }
         shell: bash
       - name: Deploy Azure Static Web Apps Volvo Ocean Race App
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -213,6 +304,13 @@ jobs:
         run: |
           rm dist/app-config.json
           echo "${{ vars.TREND_HYD_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+          rm -f dist/staticwebapp.config.json
+          cat > dist/staticwebapp.config.json <<EOL
+          {
+            "navigationFallback": {
+              "rewrite": "index.html"
+            }
+          }
         shell: bash
       - name: Deploy Azure Static Web Apps Trend Hyd
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
@@ -227,6 +325,13 @@ jobs:
         run: |
           rm dist/app-config.json
           echo "${{ vars.IWP_SWM_APP_CONFIG_JSON_BASE64 }}" | base64 --decode > dist/app-config.json
+          rm -f dist/staticwebapp.config.json
+          cat > dist/staticwebapp.config.json <<EOL
+          {
+            "navigationFallback": {
+              "rewrite": "index.html"
+            }
+          }
         shell: bash
       - name: Deploy Azure Static Web Apps IWP SWM
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
