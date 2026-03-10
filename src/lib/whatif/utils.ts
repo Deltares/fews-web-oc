@@ -4,7 +4,10 @@ import type {
   WhatIfScenarioDescriptor,
   WhatIfTemplate,
 } from '@deltares/fews-pi-requests'
-import { convertJSDateToFewsPiParameter } from '@/lib/date'
+import {
+  convertJSDateToFewsPiParameter,
+  toHumanReadableDateTime,
+} from '@/lib/date'
 import { WhatIfProperty } from './types'
 
 export type TemplateProperty = NonNullable<WhatIfTemplate['properties']>[number]
@@ -358,8 +361,8 @@ export function getErrorsForProperties(
         if (parsed < startDate || parsed > endDate) {
           const message =
             parsed < startDate
-              ? `"${title}" must be on or after ${startDate.toLocaleString()}`
-              : `"${title}" must be on or before ${endDate.toLocaleString()}`
+              ? `"${title}" must be on or after ${toHumanReadableDateTime(startDate)}`
+              : `"${title}" must be on or before ${toHumanReadableDateTime(endDate)}`
           errors.push({
             keyword: 'date-out-of-range',
             instancePath: `/${key}`,
