@@ -40,6 +40,21 @@ function initialsFromName(givenName: string): string {
   return initialsString
 }
 
+function initialsFromPreferredUserName(givenName: string): string {
+  if (!givenName) return ''
+  const firstChar = givenName.charAt(0)
+  const separators = ['.', ',', '_', '-', ' ']
+  for (const sep of separators) {
+    const idx = givenName.indexOf(sep)
+    if (idx !== -1 && idx + 1 < givenName.length) {
+      return firstChar + givenName.charAt(idx + 1)
+    }
+  }
+  // If no separator found, return first two characters if available
+  return givenName.length >= 2 ? givenName.substring(0, 2) : firstChar
+}
+
+
 const route = useRoute()
 const initials = ref('')
 const roles = ref([''])
@@ -77,6 +92,14 @@ watch(user, () => {
         ? (user.value.profile.roles as string[])
         : []
     }
+    else if (user.value.profile?.preferred_username !== undefined) {
+      name.value = user.value.profile.preferred_username
+      initials.value = initialsFromPreferredUserName(user.value.profile.preferred_username)
+      roles.value = user.value.profile.roles
+          ? (user.value.profile.roles as string[])
+          : []
+    }
+
   } else {
     requiresLogin.value = true
   }
