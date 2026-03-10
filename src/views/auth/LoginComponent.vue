@@ -54,7 +54,6 @@ function initialsFromPreferredUserName(givenName: string): string {
   return givenName.length >= 2 ? givenName.substring(0, 2) : firstChar
 }
 
-
 const route = useRoute()
 const initials = ref('')
 const roles = ref([''])
@@ -91,15 +90,15 @@ watch(user, () => {
       roles.value = user.value.profile.roles
         ? (user.value.profile.roles as string[])
         : []
-    }
-    else if (user.value.profile?.preferred_username !== undefined) {
+    } else if (user.value.profile?.preferred_username !== undefined) {
       name.value = user.value.profile.preferred_username
-      initials.value = initialsFromPreferredUserName(user.value.profile.preferred_username)
+      initials.value = initialsFromPreferredUserName(
+        user.value.profile.preferred_username,
+      )
       roles.value = user.value.profile.roles
-          ? (user.value.profile.roles as string[])
-          : []
+        ? (user.value.profile.roles as string[])
+        : []
     }
-
   } else {
     requiresLogin.value = true
   }
