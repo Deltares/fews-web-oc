@@ -45,9 +45,15 @@ import {
   MglNavigationControl,
   MglScaleControl,
 } from '@indoorequal/vue-maplibre-gl'
-import { ResourceType, RequestParameters, LngLatBounds, Map } from 'maplibre-gl'
+import type {
+  ResourceType,
+  RequestParameters,
+  LngLatBounds,
+  Map,
+} from 'maplibre-gl'
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { transformStyle } from '@/lib/map'
 
 interface Props {
   bounds?: LngLatBounds
@@ -81,7 +87,7 @@ watch(
 
     // @ts-expect-error map is not exposed in the types
     const map: Map | undefined = mapRef.value?.map
-    map?.setStyle(newBaseStyle, { diff: true })
+    map?.setStyle(newBaseStyle, { transformStyle })
   },
 )
 
