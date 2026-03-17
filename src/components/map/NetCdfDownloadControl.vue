@@ -60,6 +60,7 @@ const createControl = (): IControl => ({
   },
 
   onRemove(): void {
+    container?.remove()
     container = null
   },
 })

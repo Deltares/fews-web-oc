@@ -241,7 +241,7 @@ async function download() {
       if (bbox.value) {
         const [minX, minY] = toMercator([bbox.value.lonMin, bbox.value.latMin])
         const [maxX, maxY] = toMercator([bbox.value.lonMax, bbox.value.latMax])
-        filter.bbox = `${minX},${minY},${maxX},${maxY}`
+        filter.bbox = [minX, minY, maxX, maxY]
       }
     }
 
