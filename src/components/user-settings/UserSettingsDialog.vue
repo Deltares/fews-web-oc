@@ -1,7 +1,6 @@
 <template>
   <v-dialog
     v-model="dialog"
-    persistent
     :fullscreen="mobile"
     hide-overlay
     :max-width="mobile ? undefined : '600'"
