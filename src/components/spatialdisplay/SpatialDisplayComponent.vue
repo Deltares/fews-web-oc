@@ -112,6 +112,7 @@
               :isLoading="isLoading"
               v-model:layer-kind="layerKind"
               @click.stop.prevent
+              class="ms-2"
             />
           </template>
           <template #extension>
