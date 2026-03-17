@@ -20,6 +20,7 @@ import {
 export function useLayer(
   layerId: string,
   layer: MaybeRefOrGetter<AddLayerObject>,
+  layerOrder: MaybeRefOrGetter<string[]>,
   source?: MaybeRefOrGetter<Source | undefined>,
 ) {
   const isLoaded = inject(isLoadedSymbol)!
@@ -52,7 +53,28 @@ export function useLayer(
     if (!map) return
 
     const _layer = toValue(layer)
-    map.addLayer(_layer)
+    const _layerOrder = toValue(layerOrder)
+    const currentOrder = new Set(map.getLayersOrder())
+
+    // Find where _layer.id should be in _layerOrder
+    const desiredIdx = _layerOrder.indexOf(_layer.id)
+
+    // Find the next layer in _layerOrder that is present on the map after _layer.id
+    const beforeId = _layerOrder
+      .slice(desiredIdx + 1)
+      .find((id) => currentOrder.has(id))
+
+    map.addLayer(_layer, beforeId)
+
+    // Reorder existing layers to match _layerOrder
+    let lastId: string | undefined
+    for (const id of _layerOrder) {
+      if (id === _layer.id || !currentOrder.has(id)) continue
+      if (lastId) {
+        map.moveLayer(id, lastId)
+      }
+      lastId = id
+    }
   }
 
   function removeLayer(): void {

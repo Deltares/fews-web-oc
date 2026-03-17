@@ -1,7 +1,7 @@
 <template></template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { toMercator } from '@turf/projection'
 import {
   Coordinates,
@@ -15,7 +15,6 @@ import {
 import { configManager } from '@/services/application-config'
 import { useMap } from '@/services/useMap'
 import { point } from '@turf/helpers'
-import { getBeforeId } from '@/lib/map'
 import { debounce } from 'lodash-es'
 import { useLayer, useSource } from '@/services/useLayer'
 
@@ -37,16 +36,14 @@ interface Props {
   layer: AnimatedRasterLayerOptions
   layerId: string
   sourceId: string
-  beforeId?: string
   enableDoubleClick?: boolean
+  layerOrder: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   enableDoubleClick: false,
 })
 const isLoading = defineModel<boolean>('isLoading', { default: false })
-
-const beforeId = computed(() => getBeforeId(map, props.layerId, props.beforeId))
 
 const emit = defineEmits(['doubleclick'])
 
@@ -225,6 +222,7 @@ useLayer(
       'raster-fade-duration': 0,
     },
   },
+  () => props.layerOrder,
   source,
 )
 

@@ -7,7 +7,7 @@
       :key="`layer-${layerOptions.name}`"
       :layerId="mapIds.wms.layer"
       :sourceId="mapIds.wms.source"
-      :beforeId="baseMap.beforeId"
+      :layerOrder="layerOrder"
       :enableDoubleClick="settings.wmsLayer.doubleClickAction"
       @doubleclick="onCoordinateClick"
     />
@@ -18,7 +18,7 @@
       :layerOptions="layerOptions"
       :streamlineOptions="layerCapabilities?.animatedVectors"
       :layerId="mapIds.wms.layer"
-      :beforeId="baseMap.beforeId"
+      :layerOrder="layerOrder"
       :enableDoubleClick="settings.wmsLayer.doubleClickAction"
       @doubleclick="onCoordinateClick"
     />
@@ -59,7 +59,7 @@
       v-for="overlay in selectedOverlays"
       :key="overlay.id"
       :overlay="overlay"
-      :beforeId="baseMap.beforeId"
+      :layerOrder="layerOrder"
     />
     <MapToolsControl />
     <div class="mapcomponent__controls-container pa-2 ga-2">
@@ -225,7 +225,7 @@ import { useSelectedDate } from '@/services/useSelectedDate'
 import { useOverlays } from '@/services/useOverlays'
 import { useBaseMap } from '@/services/useBaseMap'
 import { isInDatesRange } from '@/lib/date'
-import { getLocationWithChilds, mapIds } from '@/lib/map'
+import { getLayerId, getLocationWithChilds, mapIds } from '@/lib/map'
 import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 import { useSelectedElevation } from '@/services/useSelectedElevation'
@@ -352,6 +352,18 @@ watch(
 )
 
 const { baseMap, mapStyle } = useBaseMap()
+
+const layerOrder = computed(() => {
+  const layers = props.settings.overlays
+
+  const order = layers.map((layer) =>
+    layer.type === 'overLay'
+      ? getLayerId(`overlay-${layer.id}`)
+      : mapIds.wms.layer,
+  )
+
+  return baseMap.value.beforeId ? [...order, baseMap.value.beforeId] : order
+})
 
 const { selectedOverlayIds, selectedOverlays } = useOverlays(
   () => props.settings.overlays,

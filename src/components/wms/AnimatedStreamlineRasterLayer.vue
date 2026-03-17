@@ -49,8 +49,8 @@ interface Props {
   layerOptions: AnimatedRasterLayerOptions
   streamlineOptions?: StreamlineLayerOptionsFews
   layerId: string
-  beforeId?: string
   enableDoubleClick: boolean
+  layerOrder: string[]
 }
 const props = withDefaults(defineProps<Props>(), {
   enableDoubleClick: false,
@@ -62,7 +62,7 @@ const { map } = useMap()
 
 let layer: WMSStreamlineLayer | null = null
 
-useLayer(props.layerId, setupLayer)
+useLayer(props.layerId, setupLayer, () => props.layerOrder)
 
 onMounted(() => {
   addHooksToMapObject()
