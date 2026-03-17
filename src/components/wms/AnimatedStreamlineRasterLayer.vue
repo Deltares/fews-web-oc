@@ -1,6 +1,4 @@
-<template>
-  <div></div>
-</template>
+<template></template>
 
 <script setup lang="ts">
 import { type Layer } from '@deltares/fews-wms-requests'
@@ -11,14 +9,13 @@ import {
   TrailParticleShape,
 } from '@deltares/webgl-streamline-visualizer'
 import { useMap } from '@/services/useMap'
-import { inject, onMounted, onUnmounted, watch } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 
 import { configManager } from '@/services/application-config'
 import { type AnimatedRasterLayerOptions } from '@/components/wms/AnimatedRasterLayer.vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
-import { getBeforeId } from '@/lib/map'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
-import { isLoadedSymbol } from '@indoorequal/vue-maplibre-gl'
+import { useLayer } from '@/services/useLayer'
 
 type StreamlineLayerOptionsFews = Layer['animatedVectors']
 
@@ -49,7 +46,7 @@ const DEFAULT_WAVECREST_OPTIONS = {
 }
 
 interface Props {
-  layerOptions?: AnimatedRasterLayerOptions
+  layerOptions: AnimatedRasterLayerOptions
   streamlineOptions?: StreamlineLayerOptionsFews
   layerId: string
   beforeId?: string
@@ -65,12 +62,13 @@ const { map } = useMap()
 
 let layer: WMSStreamlineLayer | null = null
 
+useLayer(props.layerId, setupLayer)
+
 onMounted(() => {
   addHooksToMapObject()
 })
 
 onUnmounted(() => {
-  removeLayer()
   removeHooksFromMapObject()
 })
 
@@ -90,23 +88,6 @@ function addHooksToMapObject() {
 
 function removeHooksFromMapObject(): void {
   map?.off('dblclick', onDoubleClick)
-}
-
-const isLoaded = inject(isLoadedSymbol)!
-
-watch(
-  [isLoaded, () => props.layerOptions?.name],
-  ([loaded]) => {
-    if (loaded) {
-      updateLayer()
-    }
-  },
-  { immediate: true },
-)
-
-function updateLayer() {
-  removeLayer()
-  addLayer()
 }
 
 // Allow only one simultaneous request to wait for layer initialisation; abort
@@ -134,21 +115,21 @@ function addUpdateWatcher<T>(
 // Update the velocity field when the time, elevation or color scale range is
 // changed, abort all but the last change.
 addUpdateWatcher(
-  () => props.layerOptions?.time,
+  () => props.layerOptions.time,
   async (time) => {
     if (!layer || !time) return
     await layer.setTime(time)
   },
 )
 addUpdateWatcher(
-  () => props.layerOptions?.elevation,
+  () => props.layerOptions.elevation,
   (elevation) => {
     if (!layer) return
     layer.setElevation(elevation ?? null)
   },
 )
 addUpdateWatcher(
-  () => props.layerOptions?.colorScaleRange,
+  () => props.layerOptions.colorScaleRange,
   (colorScaleRange) => {
     if (!layer) return
     layer.setColorScaleRange(
@@ -157,30 +138,28 @@ addUpdateWatcher(
   },
 )
 addUpdateWatcher(
-  () => props.layerOptions?.useDisplayUnits,
+  () => props.layerOptions.useDisplayUnits,
   (useDisplayUnits) => {
     if (!layer) return
     layer.setDisplayUnits(useDisplayUnits)
   },
 )
 addUpdateWatcher(
-  () => props.layerOptions?.style,
+  () => props.layerOptions.style,
   (style) => {
     if (!layer || !style) return
     layer.setStyle(style)
   },
 )
 addUpdateWatcher(
-  () => props.layerOptions?.useLastValue,
+  () => props.layerOptions.useLastValue,
   (useLastValue) => {
     if (!layer) return
     layer.setUseLastValue(useLastValue ?? false)
   },
 )
 
-function addLayer(): void {
-  if (!map) return
-  if (!props.layerOptions || !props.streamlineOptions) return
+function setupLayer(): WMSStreamlineLayer {
   const options: WMSStreamlineLayerOptions = {
     ...mergeOptions(props.layerOptions, props.streamlineOptions),
     transformRequest: createTransformRequestFn(),
@@ -203,28 +182,7 @@ function addLayer(): void {
     )
   })
 
-  const beforeId = getBeforeId(map, props.layerId, props.beforeId)
-  map?.addLayer(layer, beforeId)
-}
-
-watch(
-  () => props.beforeId,
-  (newBeforeId) => {
-    if (!map?.getLayer(props.layerId)) return
-
-    const beforeId = getBeforeId(map, props.layerId, newBeforeId)
-    map.moveLayer(props.layerId, beforeId)
-  },
-)
-
-function removeLayer(): void {
-  if (
-    map !== undefined &&
-    map.style !== undefined &&
-    map.getLayer(props.layerId)
-  ) {
-    map.removeLayer(props.layerId)
-  }
+  return layer
 }
 
 function onDoubleClick(event: MapLayerMouseEvent | MapLayerTouchEvent) {

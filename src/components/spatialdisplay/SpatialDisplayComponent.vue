@@ -14,6 +14,7 @@
     <AnimatedStreamlineRasterLayer
       v-if="layerKind === LayerKind.Streamline && showLayer && layerOptions"
       v-model:isLoading="isLoading"
+      :key="`streamline-layer-${layerOptions.name}`"
       :layerOptions="layerOptions"
       :streamlineOptions="layerCapabilities?.animatedVectors"
       :layerId="mapIds.wms.layer"
