@@ -16,6 +16,7 @@
             :panHandler="sharedPanHandler"
             :settings="settings.timeSeriesChart"
             :forecastLegend="config.forecastLegend"
+            v-slot="{ margin: chartMargin }"
           >
             <TimeSeriesChartBrush
               v-if="showBrush"
@@ -24,6 +25,7 @@
               :config="subplot"
               :series="brushChartSeries"
               :settings="settings.timeSeriesChart"
+              :mainChartMargin="chartMargin"
             />
           </TimeSeriesChart>
         </template>
