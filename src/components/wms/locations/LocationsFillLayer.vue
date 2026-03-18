@@ -1,14 +1,14 @@
-<template>
-  <mgl-fill-layer :layerId="layerId" :paint="paint" :filter="filter" />
-</template>
+<template></template>
 
 <script setup lang="ts">
-import type { FillLayerSpecification } from 'maplibre-gl'
-import { MglFillLayer } from '@indoorequal/vue-maplibre-gl'
+import type { FillLayerSpecification, Source } from 'maplibre-gl'
 import { computed } from 'vue'
+import { useLayer } from '@/services/useLayer'
+import { locationMapIds } from '@/lib/map'
 
 interface Props {
   layerId: string
+  source: Source | undefined
   selectedLocationIds: string[] | undefined
   isDark: boolean
   hoveredStateId: string | undefined
@@ -16,12 +16,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Type definition for FillLayerSpecification does not match with @indoorequal/vue-maplibre-gl
-const filter: FillLayerSpecification['filter'] | any = [
-  '==',
-  '$type',
-  'Polygon',
-]
+const filter: FillLayerSpecification['filter'] = ['==', '$type', 'Polygon']
 
 const paint = computed(() => {
   const selectedIds = props.selectedLocationIds?.length
@@ -35,6 +30,19 @@ const paint = computed(() => {
     ? getDarkPaint(selectedIds, hoverId)
     : getLightPaint(selectedIds, hoverId)
 })
+
+useLayer(
+  props.layerId,
+  () => ({
+    id: props.layerId,
+    type: 'fill',
+    paint: paint.value,
+    filter: filter,
+    source: locationMapIds.source,
+  }),
+  [],
+  () => props.source,
+)
 
 function getDarkPaint(
   selectedIds: string[],

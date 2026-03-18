@@ -1,4 +1,4 @@
-import type { Map, StyleSpecification } from 'maplibre-gl'
+import type { StyleSpecification } from 'maplibre-gl'
 
 const LAYER_PREFIX = 'weboc-layer-'
 const SOURCE_PREFIX = 'weboc-source-'
@@ -53,7 +53,7 @@ export function transformStyle(
     }
   })
 
-  const sources = newStyle.sources
+  const sources = { ...newStyle.sources }
   for (const [key, value] of Object.entries(oldStyle.sources)) {
     if (isCustomSource(key)) {
       sources[key] = value
@@ -71,17 +71,23 @@ export function transformStyle(
 }
 
 export function getBeforeId(
-  map: Map | undefined,
-  layerId?: string,
-  customId?: string,
-) {
-  const layerIds = map?.getLayersOrder() ?? []
+  layerId: string,
+  desiredOrder: string[],
+  currentOrder: string[],
+): string | undefined {
+  // Find the index of the target layer in the desired order
+  const desiredIdx = desiredOrder.indexOf(layerId)
 
-  // Use the customId if provided or the first custom layer id
-  return (
-    layerIds.find((id) => id === customId) ??
-    layerIds.find(
-      (id) => isCustomLayer(id) && id !== layerId && id !== mapIds.wms.layer,
-    )
+  if (desiredIdx !== -1) {
+    // Look for the next layer (after layerId) in layerOrder that exists in currentOrder
+    const nextInOrder = desiredOrder
+      .slice(desiredIdx + 1)
+      .find((id) => currentOrder.includes(id))
+    if (nextInOrder) return nextInOrder
+  }
+
+  // If not found, return the first custom layer in currentOrder that is not layerId and not in layerOrder
+  return currentOrder.find(
+    (id) => isCustomLayer(id) && id !== layerId && !desiredOrder.includes(id),
   )
 }

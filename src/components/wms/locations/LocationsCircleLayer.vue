@@ -1,16 +1,16 @@
-<template>
-  <mgl-circle-layer :layerId="layerId" :paint="paint" :filter="filter" />
-</template>
+<template></template>
 
 <script setup lang="ts">
-import type { CircleLayerSpecification } from 'maplibre-gl'
-import { MglCircleLayer } from '@indoorequal/vue-maplibre-gl'
+import type { CircleLayerSpecification, Source } from 'maplibre-gl'
+import { useLayer } from '@/services/useLayer'
+import { locationMapIds } from '@/lib/map'
 
 interface Props {
   layerId: string
+  source: Source | undefined
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const paint: CircleLayerSpecification['paint'] = {
   'circle-radius': 5,
@@ -24,4 +24,17 @@ const filter: CircleLayerSpecification['filter'] = [
   ['!has', 'iconName'],
   ['==', '$type', 'Point'],
 ]
+
+useLayer(
+  props.layerId,
+  {
+    id: props.layerId,
+    type: 'circle',
+    paint,
+    filter,
+    source: locationMapIds.source,
+  },
+  [],
+  () => props.source,
+)
 </script>

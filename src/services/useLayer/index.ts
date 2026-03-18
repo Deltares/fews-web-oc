@@ -1,7 +1,7 @@
 import {
+  computed,
   inject,
   MaybeRefOrGetter,
-  onMounted,
   onScopeDispose,
   shallowRef,
   toValue,
@@ -11,11 +11,14 @@ import { isLoadedSymbol } from '@indoorequal/vue-maplibre-gl'
 import { useMap } from '@/services/useMap'
 import {
   AddLayerObject,
+  GeoJSONSource,
+  GeoJSONSourceSpecification,
   ImageSource,
   ImageSourceSpecification,
   Source,
   SourceSpecification,
 } from 'maplibre-gl'
+import { getBeforeId } from '@/lib/map'
 
 export function useLayer(
   layerId: string,
@@ -49,32 +52,55 @@ export function useLayer(
     )
   }
 
+  const layout = computed(() => {
+    const _layer = toValue(layer)
+    return 'layout' in _layer ? _layer.layout : undefined
+  })
+
+  const paint = computed(() => {
+    const _layer = toValue(layer)
+    return 'paint' in _layer ? _layer.paint : undefined
+  })
+
+  const filter = computed(() => {
+    const _layer = toValue(layer)
+    return 'filter' in _layer ? _layer.filter : undefined
+  })
+
+  watch(layout, (newLayout) => {
+    if (!map) return
+    if (!newLayout) return
+
+    Object.entries(newLayout).forEach(([property, value]) => {
+      map.setLayoutProperty(layerId, property, value)
+    })
+  })
+
+  watch(paint, (newPaint) => {
+    if (!map) return
+    if (!newPaint) return
+
+    Object.entries(newPaint).forEach(([property, value]) => {
+      map.setPaintProperty(layerId, property, value)
+    })
+  })
+
+  watch(filter, (newFilter) => {
+    if (!map) return
+
+    map.setFilter(layerId, newFilter)
+  })
+
   function addLayer(): void {
     if (!map) return
 
     const _layer = toValue(layer)
     const _layerOrder = toValue(layerOrder)
-    const currentOrder = new Set(map.getLayersOrder())
+    const currentOrder = map.getLayersOrder()
 
-    // Find where _layer.id should be in _layerOrder
-    const desiredIdx = _layerOrder.indexOf(_layer.id)
-
-    // Find the next layer in _layerOrder that is present on the map after _layer.id
-    const beforeId = _layerOrder
-      .slice(desiredIdx + 1)
-      .find((id) => currentOrder.has(id))
+    const beforeId = getBeforeId(layerId, _layerOrder, currentOrder)
 
     map.addLayer(_layer, beforeId)
-
-    // Reorder existing layers to match _layerOrder
-    let lastId: string | undefined
-    for (const id of _layerOrder) {
-      if (id === _layer.id || !currentOrder.has(id)) continue
-      if (lastId) {
-        map.moveLayer(id, lastId)
-      }
-      lastId = id
-    }
   }
 
   function removeLayer(): void {
@@ -112,8 +138,9 @@ export function useSource(
       if (!loaded) return
       if (!options) return
 
-      if (source.value) {
-        updateSource(options)
+      const source = map?.getSource(sourceId)
+      if (source) {
+        updateSource(source, options)
       } else {
         addSource(options)
       }
@@ -121,10 +148,16 @@ export function useSource(
     { immediate: true },
   )
 
-  function updateSource(options: SourceSpecification) {
+  function updateSource(source: Source, options: SourceSpecification) {
     if (isImageSource(options)) {
-      const imageSource = source.value as ImageSource
+      const imageSource = source as ImageSource
       imageSource.updateImage(options)
+      return
+    }
+
+    if (isGeojsonSource(options)) {
+      const geojsonSource = source as GeoJSONSource
+      geojsonSource.setData(options.data)
       return
     }
 
@@ -149,25 +182,8 @@ export function useSource(
     map.removeSource(sourceId)
   }
 
-  function addEvents() {
-    if (!map) return
-
-    map.on('style.load', addSource)
-  }
-
-  function removeEvents() {
-    if (!map) return
-
-    map.off('style.load', addSource)
-  }
-
-  onMounted(() => {
-    addEvents()
-  })
-
   onScopeDispose(() => {
     removeSource()
-    removeEvents()
   })
 
   return {
@@ -179,4 +195,10 @@ function isImageSource(
   source: SourceSpecification | undefined,
 ): source is ImageSourceSpecification {
   return source?.type === 'image'
+}
+
+function isGeojsonSource(
+  source: SourceSpecification | undefined,
+): source is GeoJSONSourceSpecification {
+  return source?.type === 'geojson' && 'data' in source
 }

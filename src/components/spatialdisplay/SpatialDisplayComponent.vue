@@ -43,6 +43,7 @@
     <SelectedCoordinateLayer
       :coordinate="selectedCoordinate"
       @coordinate-moved="onCoordinateMoved"
+      :layerOrder="layerOrder"
     />
     <LocationsLayer
       v-if="showLocationsLayer && hasLocations"
@@ -51,7 +52,7 @@
       :locationsClickable="settings.locationsLayer.singleClickAction"
       @click="onLocationClick"
     />
-    <CoordinateSelectorLayer
+    <CoordinateSelectorMarker
       v-if="workflowsStore.isSelectingCoordinate"
       v-model:coordinate="workflowsStore.coordinate"
     />
@@ -215,7 +216,7 @@ import { useDisplay } from 'vuetify'
 import ColourLegend from '@/components/wms/ColourLegend.vue'
 import { rangeToString, styleToId } from '@/lib/legend'
 import { useWorkflowsStore } from '@/stores/workflows'
-import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
+import CoordinateSelectorMarker from '@/components/wms/CoordinateSelectorMarker.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
 import { FeatureCollection, Geometry } from 'geojson'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
@@ -356,11 +357,26 @@ const { baseMap, mapStyle } = useBaseMap()
 const layerOrder = computed(() => {
   const layers = props.settings.overlays
 
-  const order = layers.map((layer) =>
-    layer.type === 'overLay'
-      ? getLayerId(`overlay-${layer.id}`)
-      : mapIds.wms.layer,
-  )
+  const order = layers.map((layer) => {
+    if (layer.type === 'gridLayer') {
+      return mapIds.wms.layer
+    }
+
+    if (layer.type === 'overLay') {
+      return getLayerId(`overlay-${layer.id}`)
+    }
+
+    throw new Error(`Unknown layer type: ${layer.type}`)
+  })
+
+  const wmsLayerCount = order.filter((id) => id === mapIds.wms.layer).length
+  if (wmsLayerCount === 0) {
+    order.unshift(mapIds.wms.layer)
+  } else if (wmsLayerCount > 1) {
+    throw new Error(
+      `There should be exactly one layer with id ${mapIds.wms.layer} in the layer order.`,
+    )
+  }
 
   return baseMap.value.beforeId ? [...order, baseMap.value.beforeId] : order
 })

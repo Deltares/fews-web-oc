@@ -1,26 +1,34 @@
 <template>
-  <mgl-geo-json-source :source-id="locationMapIds.source" :data="geojson">
-    <LocationsFillLayer
-      :layerId="locationMapIds.layer.fill"
-      :selectedLocationIds="selectedLocationIds"
-      :isDark="isDark"
-      :hoveredStateId="hoveredStateId"
-    />
+  <LocationsFillLayer
+    :layerId="locationMapIds.layer.fill"
+    :source="source"
+    :selectedLocationIds="selectedLocationIds"
+    :isDark="isDark"
+    :hoveredStateId="hoveredStateId"
+  />
 
-    <LocationsCircleLayer :layerId="locationMapIds.layer.circle" />
+  <LocationsCircleLayer
+    :layerId="locationMapIds.layer.circle"
+    :source="source"
+  />
 
-    <LocationsSymbolLayer
-      :layerId="locationMapIds.layer.symbol"
-      :isDark="isDark"
-    />
-    <LocationsSymbolLayer
-      :layerId="locationMapIds.layer.childSymbol"
-      :isDark="isDark"
-      child
-    />
+  <LocationsSymbolLayer
+    :layerId="locationMapIds.layer.symbol"
+    :isDark="isDark"
+    :source="source"
+  />
+  <LocationsSymbolLayer
+    :layerId="locationMapIds.layer.childSymbol"
+    :isDark="isDark"
+    :source="source"
+    child
+  />
 
-    <LocationsTextLayer :layerId="locationMapIds.layer.text" :isDark="isDark" />
-  </mgl-geo-json-source>
+  <LocationsTextLayer
+    :layerId="locationMapIds.layer.text"
+    :source="source"
+    :isDark="isDark"
+  />
 
   <LocationsMarkers :geojson="geojson" />
 </template>
@@ -31,7 +39,6 @@ import LocationsCircleLayer from '@/components/wms/locations/LocationsCircleLaye
 import LocationsSymbolLayer from '@/components/wms/locations/LocationsSymbolLayer.vue'
 import LocationsTextLayer from '@/components/wms/locations/LocationsTextLayer.vue'
 import LocationsMarkers from '@/components/wms/locations/LocationsMarkers.vue'
-import { MglGeoJsonSource } from '@indoorequal/vue-maplibre-gl'
 import type { FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
 import {
@@ -50,6 +57,7 @@ import {
   addPropertiesToLocationGeojson,
 } from '@/lib/map'
 import { useMap } from '@/services/useMap'
+import { useSource } from '@/services/useLayer'
 
 const settings = useUserSettingsStore()
 const isDark = useDark()
@@ -89,6 +97,11 @@ const geojson = computed(() =>
 )
 
 const emit = defineEmits(['click'])
+
+const { source } = useSource(locationMapIds.source, () => ({
+  type: 'geojson',
+  data: geojson.value,
+}))
 
 watch(geojson, () => {
   addLocationIcons()
@@ -178,6 +191,7 @@ function addHooksToMapObject() {
 
     map.on('mousemove', locationMapIds.layer.fill, onFillMouseMove)
     map.on('mouseleave', locationMapIds.layer.fill, onFillMouseLeave)
+    map.on('style.load', addLocationIcons)
   }
 }
 
@@ -191,6 +205,7 @@ function removeHooksFromMapObject() {
 
     map.on('mousemove', locationMapIds.layer.fill, onFillMouseMove)
     map.on('mouseleave', locationMapIds.layer.fill, onFillMouseLeave)
+    map.off('style.load', addLocationIcons)
   }
 }
 </script>
