@@ -2,6 +2,7 @@ import { configManager } from '../application-config/'
 import { UserManager, User, UserManagerSettings } from 'oidc-client-ts'
 import { RequestHeaderAuthorization } from '../application-config/ApplicationConfig'
 import { mergeHeaders } from '@/lib/requests/transformRequest'
+import { basicAuthManager } from './BasicAuthManager'
 
 export class AuthenticationManager {
   userManager!: UserManager
@@ -63,10 +64,16 @@ export class AuthenticationManager {
     switch (configManager.get('VITE_REQUEST_HEADER_AUTHORIZATION')) {
       case RequestHeaderAuthorization.BEARER: {
         const token = this.getAccessToken()
-        const requestAuthHeaders = new Headers({
+        return new Headers({
           Authorization: `Bearer ${token}`,
         })
-        return requestAuthHeaders
+      }
+      case RequestHeaderAuthorization.BASIC: {
+        const header = basicAuthManager.getAuthorizationHeader()
+        if (header) {
+          return new Headers({ Authorization: header })
+        }
+        return new Headers({})
       }
       default:
         return new Headers({})

@@ -22,12 +22,16 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
-import { useRoute } from 'vue-router'
+import { basicAuthManager } from '../../services/authentication/BasicAuthManager'
+import { configManager } from '../../services/application-config'
+import { useRoute, useRouter } from 'vue-router'
 import type { User } from 'oidc-client-ts'
 
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+
+const isBasicAuth = configManager.authType === 'basic'
 
 function initialsFromName(givenName: string): string {
   let initialsString = ''
@@ -41,6 +45,7 @@ function initialsFromName(givenName: string): string {
 }
 
 const route = useRoute()
+const router = useRouter()
 const initials = ref('')
 const roles = ref([''])
 const name = ref('')
@@ -48,6 +53,17 @@ const user = ref<User | null>(null)
 const requiresLogin = ref(true)
 
 function setUser() {
+  if (isBasicAuth) {
+    if (basicAuthManager.isAuthenticated()) {
+      requiresLogin.value = false
+      const username = basicAuthManager.getUsername()
+      name.value = username
+      initials.value = username.slice(0, 2).toUpperCase()
+    } else {
+      requiresLogin.value = true
+    }
+    return
+  }
   authenticationManager.userManager
     .getUser()
     .then((response) => {
@@ -58,10 +74,12 @@ function setUser() {
     })
 }
 
-authenticationManager.userManager.events.addUserLoaded(() => {
-  requiresLogin.value = false
-  setUser()
-})
+if (!isBasicAuth) {
+  authenticationManager.userManager.events.addUserLoaded(() => {
+    requiresLogin.value = false
+    setUser()
+  })
+}
 
 onMounted((): void => {
   setUser()
@@ -77,18 +95,27 @@ watch(user, () => {
         ? (user.value.profile.roles as string[])
         : []
     }
-  } else {
+  } else if (!isBasicAuth) {
     requiresLogin.value = true
   }
 })
 
 function login(): void {
-  authenticationManager.userManager.signinRedirect({ state: route.path })
+  if (isBasicAuth) {
+    router.push({ name: 'Login', query: { redirect: route.path } })
+  } else {
+    authenticationManager.userManager.signinRedirect({ state: route.path })
+  }
 }
 
 function logout(): void {
   requiresLogin.value = true
-  authenticationManager.userManager.signoutRedirect({ state: '/login' })
+  if (isBasicAuth) {
+    basicAuthManager.logout()
+    router.push({ name: 'Login' })
+  } else {
+    authenticationManager.userManager.signoutRedirect({ state: '/login' })
+  }
 }
 </script>
 

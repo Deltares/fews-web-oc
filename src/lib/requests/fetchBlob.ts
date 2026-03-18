@@ -10,15 +10,16 @@ import { authenticationManager } from '@/services/authentication/AuthenticationM
  * @throws {Error} If the request fails or the response is not a blob.
  */
 export async function fetchBlob(url: string): Promise<Blob> {
-  const accessToken = authenticationManager.getAccessToken()
+  const authHeaders = authenticationManager.getAuthorizationHeaders()
 
   return new Promise((resolve, reject) => {
     const req = new XMLHttpRequest()
     req.responseType = 'blob'
     req.open('GET', url)
 
-    if (accessToken) {
-      req.setRequestHeader('Authorization', `Bearer ${accessToken}`)
+    const authValue = authHeaders.get('Authorization')
+    if (authValue) {
+      req.setRequestHeader('Authorization', authValue)
     }
 
     req.onload = () => {

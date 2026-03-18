@@ -12,6 +12,7 @@ import Logout from '../views/auth/Logout.vue'
 import Silent from '../views/auth/Silent.vue'
 import { configManager } from '../services/application-config'
 import { authenticationManager } from '../services/authentication/AuthenticationManager'
+import { basicAuthManager } from '../services/authentication/BasicAuthManager'
 import { useConfigStore } from '../stores/config.ts'
 import { hasDefaultPath } from '@/lib/fews-config/types.ts'
 
@@ -305,6 +306,15 @@ const router = createRouter({
 let routesAreInitialized = false
 
 async function handleAuthorization(to: RouteLocationNormalized) {
+  if (configManager.authType === 'basic') {
+    if (!basicAuthManager.isAuthenticated()) {
+      return {
+        name: 'Login',
+        query: { redirect: to.redirectedFrom?.path ?? to.path },
+      }
+    }
+    return
+  }
   const currentUser = await authenticationManager.userManager.getUser()
   if (currentUser === null) {
     return {
@@ -405,7 +415,7 @@ function defaultRouteParams(to: RouteLocationNormalized) {
 router.beforeEach(async (to, from) => {
   let redirect: string | undefined = undefined
   if (to.name === 'Login' || to.name === 'AuthLogout') return
-  if (to.name === 'AuthCallback') {
+  if (to.name === 'AuthCallback' && configManager.authType === 'oidc') {
     try {
       const user =
         await authenticationManager.userManager.signinRedirectCallback()

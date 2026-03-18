@@ -55,7 +55,10 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
       manifestLink.href = href
     }
     document.head.appendChild(manifestLink)
-    if (configManager.authenticationIsEnabled) {
+    if (
+      configManager.authenticationIsEnabled &&
+      configManager.authType === 'oidc'
+    ) {
       await authenticationManager.init(configManager.getUserManagerSettings())
     }
     const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en')

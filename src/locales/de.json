@@ -20,7 +20,12 @@
     "switchTo": "Wechseln zu"
   },
   "auth": {
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "signIn": "Anmelden",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "loginFailed": "Anmeldung fehlgeschlagen.",
+    "invalidCredentials": "Ungültiger Benutzername oder Passwort."
   },
   "timeControl": {
     "browserTime": "Browser Zeit",

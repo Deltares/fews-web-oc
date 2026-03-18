@@ -1,21 +1,31 @@
 import { ref, onMounted, computed } from 'vue'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.js'
+import { basicAuthManager } from '@/services/authentication/BasicAuthManager'
+import { configManager } from '@/services/application-config'
 import type { User } from 'oidc-client-ts'
 
 export function useCurrentUser() {
   const user = ref<User | null>(null)
+  const isBasicAuth = configManager.authType === 'basic'
 
-  const userName = computed(() => user.value?.profile?.name ?? 'Current User')
-  const preferredUsername = computed(
-    () =>
+  const userName = computed(() => {
+    if (isBasicAuth) return basicAuthManager.getUsername() || 'Current User'
+    return user.value?.profile?.name ?? 'Current User'
+  })
+  const preferredUsername = computed(() => {
+    if (isBasicAuth)
+      return basicAuthManager.getUsername() || 'Current User Preferred Username'
+    return (
       user.value?.profile?.preferred_username ??
-      'Current User Preferred Username',
-  )
+      'Current User Preferred Username'
+    )
+  })
   const userEmail = computed(
     () => user.value?.profile?.email ?? 'Current User Email',
   )
 
   const fetchCurrentUser = async () => {
+    if (isBasicAuth) return
     try {
       user.value = await authenticationManager.getUser()
     } catch (error) {

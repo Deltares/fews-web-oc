@@ -8,6 +8,7 @@ The following settings can be provided:
 | ----------------------------------- |-----------------------------------------------------------------------------------------------------------------------|
 | `VITE_FEWS_WEBSERVICES_URL`         | Url of the FewsWebServices, e.g. "https://my-server/FewsWebServices"                                                  |
 | `VITE_REQUEST_HEADER_AUTHORIZATION` | 'Bearer': pass OIDC `access_token` as bearer for request to the FewsWebServices                                       |
+|                                     | 'Basic': use HTTP Basic authentication with username and password credentials                                          |
 |                                     | 'Off': no Authorization request header                                                                                |
 | `VITE_AUTH_AUTHORITY`               | Url of the OIDC authority, e.g. "https://login.microsoftonline.com/MYTENANTID/".                                      |
 |                                     | If not configured the web oc can be accessed without authentication.                                                  |

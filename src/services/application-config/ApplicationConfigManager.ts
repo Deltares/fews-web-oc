@@ -1,16 +1,35 @@
 import { UserManagerSettings } from 'oidc-client-ts'
-import { ApplicationConfig } from './ApplicationConfig'
+import {
+  ApplicationConfig,
+  RequestHeaderAuthorization,
+} from './ApplicationConfig'
 import { getOidcSettings } from '@/services/authentication/oidcSettings'
+
+export type AuthType = 'oidc' | 'basic' | 'none'
 
 export class ApplicationConfigManager {
   _config!: ApplicationConfig
   _authenticationIsEnabled: boolean = true
+  _authType: AuthType = 'none'
 
   update(config: Partial<ApplicationConfig>) {
     this._config = { ...this._config, ...config }
-    this._authenticationIsEnabled =
+    const hasOidcAuthority =
       Object.keys(this._config).includes('VITE_AUTH_AUTHORITY') ||
       !!import.meta.env['VITE_AUTH_AUTHORITY']
+    const authHeaderValue =
+      this._config['VITE_REQUEST_HEADER_AUTHORIZATION'] ??
+      import.meta.env['VITE_REQUEST_HEADER_AUTHORIZATION']
+    const isBasicAuth =
+      authHeaderValue === RequestHeaderAuthorization.BASIC && !hasOidcAuthority
+    if (hasOidcAuthority) {
+      this._authType = 'oidc'
+    } else if (isBasicAuth) {
+      this._authType = 'basic'
+    } else {
+      this._authType = 'none'
+    }
+    this._authenticationIsEnabled = this._authType !== 'none'
   }
 
   get<T extends keyof ApplicationConfig>(name: T): ApplicationConfig[T] {
@@ -35,6 +54,10 @@ export class ApplicationConfigManager {
 
   get authenticationIsEnabled(): boolean {
     return this._authenticationIsEnabled
+  }
+
+  get authType(): AuthType {
+    return this._authType
   }
 
   getUserManagerSettings(): UserManagerSettings {
