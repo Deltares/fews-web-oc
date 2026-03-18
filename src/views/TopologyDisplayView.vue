@@ -48,7 +48,7 @@ import { useConfigStore } from '@/stores/config'
 
 import type { WebOcTopologyDisplayConfig } from '@deltares/fews-pi-requests'
 
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, onUnmounted, watch } from 'vue'
 import {
   onBeforeRouteUpdate,
   RouteLocationNormalized,
@@ -74,6 +74,7 @@ interface Props {
   productKey?: string
   hasAppBar?: boolean
   hasSideBar?: boolean
+  embed?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {

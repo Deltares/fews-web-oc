@@ -24,7 +24,10 @@ import { useTaskRunMonitorStore } from './stores/taskRunMonitor'
 
 import '@/assets/fews-flags.css'
 import { useBaseMapsStore } from './stores/baseMaps'
-import { convertBaseMapToUserSetting, getBaseMapsFromConfig } from './lib/basemap'
+import {
+  convertBaseMapToUserSetting,
+  getBaseMapsFromConfig,
+} from './lib/basemap'
 import { MapLayerConfig } from '@deltares/fews-pi-requests'
 
 const route = useRoute()
@@ -43,8 +46,11 @@ onMounted(() => {
 })
 
 const layoutComponent = computed(() => {
+  if (window.location.href.includes('/embed/')) {
+    return EmptyLayout
+  }
+
   switch (route.meta.layout) {
-    case 'EmbedLayout':
     case 'EmptyLayout':
       return EmptyLayout
     default:
@@ -100,7 +106,6 @@ function updateUserSettingBaseMaps(config: MapLayerConfig) {
   )
   settings.updateSettingItems('ui.map.theme', settingItems)
 }
-
 
 watch(prefersDark, () => updateTheme())
 
