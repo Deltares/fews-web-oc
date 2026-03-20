@@ -8,7 +8,7 @@ import {
   convertJSDateToFewsPiParameter,
   toHumanReadableDateTime,
 } from '@/lib/date'
-import { WhatIfProperty } from './types'
+import { WhatIfTemplateProperty } from './types'
 
 export type TemplateProperty = NonNullable<WhatIfTemplate['properties']>[number]
 export type ScenarioProperty = NonNullable<
@@ -424,7 +424,7 @@ export function computeValidDateRange(
  */
 export function convertPropertiesToFewsPi(
   properties: Record<string, any>,
-  templateProperties: WhatIfProperty[] | undefined,
+  templateProperties: WhatIfTemplateProperty[] | undefined,
 ): Record<string, string | number> {
   if (!templateProperties) return properties as Record<string, string | number>
   const converted: Record<string, string | number> = {}
