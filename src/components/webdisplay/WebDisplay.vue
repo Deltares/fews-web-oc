@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { TopologyNode } from '@deltares/fews-pi-requests'
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
 
 interface Props {
   nodeId?: string | string[]
@@ -17,11 +17,6 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-
-onMounted(() => {
-  console.log('IFrame mounted', props)
-})
-
 const src = computed(() => {
   return props.topologyNode?.embedUrl ?? ''
 })

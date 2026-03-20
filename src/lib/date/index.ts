@@ -207,7 +207,6 @@ export function toDateAbsDifferenceString(
     endDate === undefined ||
     endDate === null
   ) {
-    console.log(startDate, endDate)
     return '—'
   }
   const startDateObj = new Date(startDate)
