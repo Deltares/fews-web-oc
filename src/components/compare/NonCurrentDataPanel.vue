@@ -146,6 +146,7 @@ const {
   selectedWorkflowIds,
   selectedTaskStatuses,
   () => props.topologyNode?.id,
+  true,
 )
 
 const sortedTasks = computed(() => filteredTaskRuns.value.toSorted(sortTasks))

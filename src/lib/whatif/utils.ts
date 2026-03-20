@@ -33,7 +33,7 @@ export interface ExtendedJsonSchema7 extends JsonSchema7 {
   dateValidation?: DateValidationOptions
 }
 
-const EXCLUDED_PROPERTY_IDS = ['GET_PROCESS_DATA', 'hideT0']
+export const EXCLUDED_PROPERTY_IDS = ['GET_PROCESS_DATA', 'hideT0']
 
 function isValidPropertyId(id: string | undefined) {
   return id !== undefined && !EXCLUDED_PROPERTY_IDS.includes(id)

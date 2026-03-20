@@ -40,6 +40,10 @@
         </div>
       </div>
       <DataTable v-if="expanded" class="mt-4" :tableData="tableData" />
+      <div v-if="expanded && task.whatIfScenario">
+        <v-divider class="my-2" />
+        <WhatIfScenarioSummary :what-if-scenario="task.whatIfScenario" />
+      </div>
     </v-card-text>
     <TaskRunProgress
       v-if="isRunning"
@@ -67,6 +71,7 @@ import {
   toHumanReadableDateTime,
 } from '@/lib/date'
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
+import WhatIfScenarioSummary from './WhatIfScenarioSummary.vue'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
