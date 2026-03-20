@@ -44,7 +44,9 @@ export function useTaskRuns(
       if (!response) throw new Error('TaskRuns response is undefined')
 
       taskRuns.value =
-        response.taskRuns.map(convertFewsPiTaskRunToTaskRun) ?? []
+        response.taskRuns.map((taskRun) =>
+          convertFewsPiTaskRunToTaskRun(taskRun),
+        ) ?? []
     } catch {
       error.value = 'Error loading taskRuns'
       taskRuns.value = []

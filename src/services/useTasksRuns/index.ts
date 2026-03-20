@@ -3,6 +3,7 @@ import {
   PiWebserviceProvider,
   TaskStatus as TaskStatusId,
   TaskRun as FewsPiTaskRun,
+  WhatIfScenarioDescriptor,
 } from '@deltares/fews-pi-requests'
 import { computed, MaybeRefOrGetter, ref, toValue, watch } from 'vue'
 
@@ -36,6 +37,7 @@ export function useTaskRuns(
   workflowIds: MaybeRefOrGetter<string[]>,
   statuses: MaybeRefOrGetter<TaskStatus[]>,
   topologyNodeId?: MaybeRefOrGetter<string | undefined>,
+  doIncludeWhatIfScenario?: MaybeRefOrGetter<boolean>,
 ) {
   const isLoading = ref(false)
   const lastUpdatedTimestamp = ref<number | null>(null)
@@ -64,15 +66,32 @@ export function useTaskRuns(
   async function fetch(): Promise<void> {
     const _dispatchPeriod = toValue(dispatchPeriod)
     const _topologyNodeId = toValue(topologyNodeId)
+    const _doIncludeWhatIfScenario = !!toValue(doIncludeWhatIfScenario)
+
+    const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+    const piProvider = new PiWebserviceProvider(baseUrl, {
+      transformRequestFn: createTransformRequestFn(),
+    })
 
     isLoading.value = true
     const fetchedTaskRuns = await fetchTaskRuns(
+      piProvider,
       _dispatchPeriod,
       _topologyNodeId,
     )
+
+    if (_doIncludeWhatIfScenario) {
+      allTaskRuns.value = await convertTaskRunsWithWhatIfScenario(
+        piProvider,
+        fetchedTaskRuns,
+      )
+    } else {
+      allTaskRuns.value = fetchedTaskRuns.map((fetchedTaskRun) =>
+        convertFewsPiTaskRunToTaskRun(fetchedTaskRun, null),
+      )
+    }
     isLoading.value = false
 
-    allTaskRuns.value = fetchedTaskRuns.map(convertFewsPiTaskRunToTaskRun)
     if (allTaskRuns.value.length > 0) {
       const range = getTasksOutputTimeRange(allTaskRuns.value)
       outputStartTime.value = range.outputStartTime
@@ -104,14 +123,10 @@ export function useTaskRuns(
 }
 
 async function fetchTaskRuns(
+  piProvider: PiWebserviceProvider,
   dispatchPeriod?: RelativePeriod | null,
   topologyNodeId?: string,
 ): Promise<FewsPiTaskRun[]> {
-  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const piProvider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-
   const period = dispatchPeriod
     ? convertRelativeToAbsolutePeriod(dispatchPeriod)
     : undefined
@@ -143,4 +158,49 @@ async function fetchTaskRuns(
   )
 
   return response.taskRuns
+}
+
+async function convertTaskRunsWithWhatIfScenario(
+  piProvider: PiWebserviceProvider,
+  fetchedTaskRuns: FewsPiTaskRun[],
+): Promise<TaskRun[]> {
+  // Convert the fetched task runs to our internal representation, including
+  // what-if scenario information if available.
+  return Promise.all(
+    fetchedTaskRuns.map(async (fetchedTaskRun) => {
+      // Note: we cannot fetch this what-if scenario information for multiple
+      //       what-if scenario IDs in a single request, as the endpoint does
+      //       not support this.
+      const whatIfScenario = await fetchWhatIfScenarioForTaskRun(
+        piProvider,
+        fetchedTaskRun,
+      )
+      return convertFewsPiTaskRunToTaskRun(fetchedTaskRun, whatIfScenario)
+    }),
+  )
+}
+
+async function fetchWhatIfScenarioForTaskRun(
+  piProvider: PiWebserviceProvider,
+  fetchedTaskRun: FewsPiTaskRun,
+): Promise<WhatIfScenarioDescriptor | null> {
+  // @ts-expect-error  types are not yet properly specified.
+  const whatIfScenarioId: string | undefined = fetchedTaskRun.whatIfScenarioId
+
+  if (!whatIfScenarioId) return null
+
+  try {
+    const response = await piProvider.getWhatIfScenarios({
+      // @ts-expect-error  types are not yet properly specified.
+      whatIfScenarioId,
+    })
+    // We should always get a single what-if scenario in the response when we
+    // specify the ID.
+    return response.whatIfScenarioDescriptors[0] ?? null
+  } catch (error) {
+    console.warn(
+      `Failed to fetch what-if scenario with ID "${whatIfScenarioId}": ${error}`,
+    )
+    return null
+  }
 }
