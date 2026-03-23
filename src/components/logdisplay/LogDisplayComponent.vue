@@ -77,40 +77,37 @@
         <v-spacer />
       </v-footer>
     </v-navigation-drawer>
-    <v-toolbar density="compact" :class="{ 'sidepanel-toolbar': isSidepanel }">
-      <template v-if="isSidepanel">
-        <v-select
-          label="Log level"
-          v-model="selectedLevels"
-          :items="logLevels"
-          variant="outlined"
-          clearable
-          hide-details
-          multiple
-          density="compact"
-          :item-title="levelToTitle"
-          :item-value="(item) => item"
-          class="logs-filter px-1"
-        />
-      </template>
-      <template v-else>
-        <v-btn
-          icon
-          @click="showFilters = !showFilters"
-          :aria-label="showFilters ? 'Hide filters' : 'Show filters'"
-        >
-          <v-icon>{{
-            showFilters ? 'mdi-menu-open' : 'mdi-menu-close'
-          }}</v-icon>
-        </v-btn>
-      </template>
+    <div v-if="isSidepanel" class="d-flex align-center mt-2 px-4">
+      <v-select
+        label="Log level"
+        v-model="selectedLevels"
+        :items="logLevels"
+        variant="outlined"
+        clearable
+        hide-details
+        multiple
+        density="compact"
+        :item-title="levelToTitle"
+        :item-value="(item) => item"
+      />
       <v-spacer />
-      <v-btn @click="refreshLogs" :loading="isLoading" icon="mdi-refresh">
-      </v-btn>
-      <div v-if="!isSidepanel">
-        <span class="mx-2">Total:</span>
-        <span style="width: 4rem"> {{ logMessages.length }}</span>
-      </div>
+      <v-btn
+        @click="refreshLogs"
+        :loading="isLoading"
+        icon="mdi-refresh"
+        size="small"
+      />
+    </div>
+    <v-toolbar density="compact" v-else>
+      <v-btn
+        :icon="showFilters ? 'mdi-menu-open' : 'mdi-menu-close'"
+        @click="showFilters = !showFilters"
+        :aria-label="showFilters ? 'Hide filters' : 'Show filters'"
+      />
+      <v-spacer />
+      <v-btn @click="refreshLogs" :loading="isLoading" icon="mdi-refresh" />
+      <span class="mx-2">Total:</span>
+      <span style="width: 4rem"> {{ logMessages.length }}</span>
     </v-toolbar>
     <div class="logs-container">
       <div class="flex-0-0 d-flex flex-column align-center py-2 ga-2">
@@ -603,14 +600,6 @@ async function refreshLogs() {
 
 .spacer {
   flex-grow: 0.5;
-}
-
-.logs-filter {
-  max-width: 200px;
-}
-
-.sidepanel-toolbar {
-  height: auto !important;
 }
 
 .sidepanel-toolbar :deep(.v-toolbar__content) {
