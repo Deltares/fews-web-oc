@@ -55,6 +55,7 @@ function getVerticalProfileOptions(): Partial<CartesianAxesOptions> {
     x: [
       {
         type: AxisType.value, // x-axis is never time for vertical profile
+        nice: true,
       },
     ],
   }
