@@ -144,7 +144,7 @@
       <v-sheet class="w-100 h-100 d-flex flex-row">
         <div class="flex-1-1 overflow-hidden">
           <Suspense>
-            <router-view></router-view>
+            <router-view :key="permissionsKey"></router-view>
           </Suspense>
         </div>
         <div class="border-s h-100" id="main-side-panel" />
@@ -187,6 +187,7 @@ import {
 } from '@/lib/basemap/index.ts'
 import type { MapLayerConfig } from '@deltares/fews-pi-requests'
 import { useBaseMapsStore } from '@/stores/baseMaps.ts'
+import { permissionsKey } from '@/services/usePermissionExcludes'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()

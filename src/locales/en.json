@@ -43,7 +43,8 @@
   "userSettings": {
     "allSettings": "All settings",
     "settings": "Settings",
-    "selectUsedPermissions": "Select used permissions"
+    "selectUsedPermissions": "Select used permissions",
+    "permissions": "Permissions"
   },
   "wms": {
     "overlays": "Overlays",

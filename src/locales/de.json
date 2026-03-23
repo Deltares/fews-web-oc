@@ -43,7 +43,8 @@
   "userSettings": {
     "allSettings": "Alle Einstellungen",
     "settings": "Einstellungen",
-    "selectUsedPermissions": "Berechtigungen auswählen"
+    "selectUsedPermissions": "Berechtigungen auswählen",
+    "permissions": "Berechtigungen"
   },
   "wms": {
     "overlays": "Layerauswahl",

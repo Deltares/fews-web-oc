@@ -87,6 +87,25 @@
           </template>
         </v-switch>
       </v-list-item>
+      <v-list-item v-for="perm in favoritePermissionsList" :key="perm.id">
+        <v-switch
+          density="compact"
+          :model-value="isPermissionEnabled(perm.id)"
+          @update:model-value="(val) => togglePermission(perm.id, val ?? true)"
+          :label="perm.id"
+          color="primary"
+          class="ml-3"
+          :disabled="!perm.assigned"
+          hide-details
+          :aria-label="perm.id"
+        >
+          <template v-slot:label>
+            <v-label class="text-subtitle-2 text-medium-emphasis">{{
+              perm.id
+            }}</v-label>
+          </template>
+        </v-switch>
+      </v-list-item>
       <v-divider />
       <SettingsDialog :title="t('userSettings.settings')">
         <template #activator="{ props }">
@@ -102,20 +121,6 @@
           <UserSettings />
         </template>
       </SettingsDialog>
-      <SettingsDialog :title="t('userSettings.selectUsedPermissions')">
-        <template #activator="{ props }">
-          <v-list-item
-            v-bind="props"
-            aria-label="Select Used Permissions"
-            role="button"
-          >
-            {{ t('userSettings.selectUsedPermissions') }}
-          </v-list-item>
-        </template>
-        <template #settings>
-          <ExcludePermissions />
-        </template>
-      </SettingsDialog>
     </v-list>
   </v-menu>
 </template>
@@ -127,12 +132,17 @@ import {
 } from '@/stores/userSettings'
 import SettingsDialog from './SettingsDialog.vue'
 import UserSettings from './UserSettings.vue'
-import ExcludePermissions from './ExcludePermissions.vue'
+import usePermissionExcludes from '@/services/usePermissionExcludes'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
 const store = useUserSettingsStore()
+const {
+  favoritePermissionsList,
+  isEnabled: isPermissionEnabled,
+  togglePermission,
+} = usePermissionExcludes()
 
 function onValueChange(item: UserSettingsItem) {
   store.add(item)
