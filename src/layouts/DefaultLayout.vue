@@ -148,7 +148,7 @@
       <v-sheet class="w-100 h-100 d-flex flex-row">
         <div class="flex-1-1 overflow-hidden">
           <Suspense>
-            <router-view></router-view>
+            <router-view :key="permissionsKey"></router-view>
           </Suspense>
         </div>
         <div class="border-s h-100" id="main-side-panel" />
@@ -172,8 +172,9 @@ import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import packageConfig from '@/../package.json'
 import { toCharacterIcon } from '@/lib/icons/index.ts'
-import { useUserSettingsStore } from '@/stores/userSettings.ts'
-import { useCustomStyleSheet } from '@/services/useCustomStyleSheet/index.ts'
+import { permissionsKey } from '@/services/usePermissionExcludes'
+import { useCustomStyleSheet } from '@/services/useCustomStyleSheet'
+import { useUserSettingsStore } from '@/stores/userSettings'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()

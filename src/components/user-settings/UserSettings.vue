@@ -41,6 +41,10 @@
       </UserSettingsBoolean>
     </template>
   </v-list>
+  <v-list class="mb-2" density="compact">
+    <v-list-subheader>{{ t('userSettings.permissions') }}</v-list-subheader>
+    <ExcludePermissions />
+  </v-list>
 </template>
 
 <script setup lang="ts">
@@ -48,7 +52,10 @@ import UserSettingsBoolean from './UserSettingsBoolean.vue'
 import UserSettingsOneOfMultiple from './UserSettingsOneOfMultiple.vue'
 import UserSettingsFavorite from './UserSettingsFavorite.vue'
 import { UserSettingsItem, useUserSettingsStore } from '@/stores/userSettings'
+import ExcludePermissions from './ExcludePermissions.vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const store = useUserSettingsStore()
 
 const onValueChange = (item: UserSettingsItem) => {

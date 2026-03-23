@@ -35,20 +35,6 @@
           <UserSettings />
         </template>
       </SettingsDialog>
-      <SettingsDialog :title="t('userSettings.selectUsedPermissions')">
-        <template #activator="{ props }">
-          <v-list-item
-            v-bind="props"
-            aria-label="Select Used Permissions"
-            role="button"
-          >
-            {{ t('userSettings.selectUsedPermissions') }}
-          </v-list-item>
-        </template>
-        <template #settings>
-          <ExcludePermissions />
-        </template>
-      </SettingsDialog>
     </v-list>
   </v-menu>
 </template>
@@ -60,12 +46,17 @@ import {
 } from '@/stores/userSettings'
 import SettingsDialog from './SettingsDialog.vue'
 import UserSettings from './UserSettings.vue'
-import ExcludePermissions from './ExcludePermissions.vue'
+import usePermissionExcludes from '@/services/usePermissionExcludes'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
 const store = useUserSettingsStore()
+const {
+  favoritePermissionsList,
+  isEnabled: isPermissionEnabled,
+  togglePermission,
+} = usePermissionExcludes()
 
 function updateModelValue(setting: UserSettingsItem) {
   store.add(setting)
