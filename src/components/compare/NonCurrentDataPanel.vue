@@ -88,35 +88,7 @@ const props = withDefaults(defineProps<Props>(), {})
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const taskRunsStore = useTaskRunsStore()
 
-const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
-
 const expandedItems = ref<Record<string, boolean>>({})
-
-// Set preferred workflow IDs for the running tasks menu, if this node has
-// associated workflows.
-watch(
-  () => props.topologyNode,
-  (node) => {
-    const primaryWorkflowId = node?.workflowId ? [node.workflowId] : []
-    const secondaryWorkflowIds =
-      node?.secondaryWorkflows?.map(
-        (workflow) => workflow.secondaryWorkflowId,
-      ) ?? []
-    // Note: this list of workflow IDs may be empty, in which case we have no
-    //       preferred workflow.
-    const preferredWorkflowIds = [...primaryWorkflowId, ...secondaryWorkflowIds]
-    availableWorkflowsStore.setPreferredWorkflowIds(preferredWorkflowIds)
-
-    if (preferredWorkflowIds.length > 0) {
-      // If we have preferred workflow IDs, select them.
-      selectedWorkflowIds.value = preferredWorkflowIds
-    } else {
-      // Otherwise, select all available workflows.
-      selectedWorkflowIds.value = availableWorkflowsStore.workflowIds
-    }
-  },
-  { immediate: true },
-)
 
 const visualizeMenuTaskStatuses = getTaskStatusesForCategories([
   TaskStatusCategory.Completed,
@@ -143,7 +115,7 @@ const {
 } = useTaskRuns(
   TASKS_REFRESH_INTERVAL_SECONDS,
   period,
-  selectedWorkflowIds,
+  availableWorkflowsStore.workflowIds,
   selectedTaskStatuses,
   () => props.topologyNode?.id,
 )
