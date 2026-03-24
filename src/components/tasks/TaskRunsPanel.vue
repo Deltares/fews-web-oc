@@ -3,6 +3,18 @@
     <div class="d-flex pt-3 pb-2 align-center">
       <WorkflowFilterControl v-model="selectedWorkflowIds" />
       <TaskStatusFilterControl v-model="selectedTaskStatuses" />
+      <v-chip
+        variant="tonal"
+        pilled
+        label
+        class="ms-2 px-2"
+        :color="showCurrentUserOnly ? 'primary' : undefined"
+      >
+        <v-icon
+          :icon="showCurrentUserOnly ? 'mdi-account' : 'mdi-account-multiple'"
+          @click="showCurrentUserOnly = !showCurrentUserOnly"
+        />
+      </v-chip>
       <v-spacer />
       <PeriodFilterControl v-model="period" />
     </div>
@@ -90,10 +102,14 @@ const { t } = useI18n()
 const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
 const expandedItems = ref<Record<string, boolean>>({})
 
+const showCurrentUserOnly = ref(false)
 const userId = computedAsync(async () => {
   const user = await authenticationManager.getUser()
   return user?.profile.preferred_username ?? null
 }, null)
+const usernameFilter = computed<string | null>(() =>
+  showCurrentUserOnly.value ? userId.value : null,
+)
 
 // Set preferred workflow IDs for the running tasks menu, if this node has
 // associated workflows.
@@ -140,6 +156,7 @@ const {
   period,
   selectedWorkflowIds,
   selectedTaskStatuses,
+  usernameFilter,
   () => props.topologyNode?.id,
 )
 
