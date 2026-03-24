@@ -147,7 +147,6 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
   const { panelId, objectId, results } = event.detail
   if (results.length === 0) return
 
-  const now = new Date()
   const result = results[0]
   const request = result.requests?.[0]
   switch (result.type) {
@@ -168,7 +167,6 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
       break
     default:
       alertsStore.addAlert({
-        id: `action-${result.type}-${now.toISOString()}`,
         type: 'error',
         message: `Action '${result.type}' not supported yet.`,
       })

@@ -7,12 +7,14 @@
       <span>Loading...</span>
     </template>
   </Suspense>
+  <Alerts />
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import EmptyLayout from './layouts/EmptyLayout.vue'
+import Alerts from '@/components/general/Alerts.vue'
 
 import { useRoute } from 'vue-router'
 import { useConfigStore } from '@/stores/config.ts'

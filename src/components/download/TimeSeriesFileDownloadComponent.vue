@@ -293,7 +293,6 @@ async function downloadFileSafe(
   } catch (error) {
     if (error instanceof Error) {
       alertStore.addAlert({
-        id: `data-download-error`,
         type: 'error',
         message: error.message,
       })

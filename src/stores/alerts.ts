@@ -1,3 +1,4 @@
+import { uid } from '@/lib/utils/uid'
 import { defineStore } from 'pinia'
 
 export type AlertType = 'success' | 'error' | 'warning' | 'info'
@@ -18,8 +19,11 @@ const useAlertsStore = defineStore('alerts', {
   }),
 
   actions: {
-    addAlert(alert: Alert) {
-      this.alerts.push(alert)
+    addAlert(alert: Omit<Alert, 'id'>) {
+      this.alerts.push({
+        id: uid(),
+        ...alert,
+      })
     },
     removeAlert(id: string) {
       this.alerts = this.alerts.filter((alert) => alert.id !== id)

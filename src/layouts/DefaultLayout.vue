@@ -149,17 +149,6 @@
         </div>
         <div class="border-s h-100" id="main-side-panel" />
       </v-sheet>
-      <div class="alerts__container" v-if="alertsStore.hasAlerts">
-        <v-alert
-          v-for="alert in alertsStore.alerts"
-          :type="alert.type"
-          closable
-          density="compact"
-          @click:close="onCloseAlert(alert)"
-        >
-          {{ alert.message }}
-        </v-alert>
-      </div>
       <StartupDialog />
     </v-main>
   </v-layout>
@@ -169,7 +158,6 @@
 import { computed, nextTick, ref, type StyleValue, watch } from 'vue'
 import { useDisplay, useRtl, useTheme } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
-import { Alert, useAlertsStore } from '../stores/alerts.ts'
 import { useRoute } from 'vue-router'
 import LoginComponent from '../views/auth/LoginComponent.vue'
 import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
@@ -186,7 +174,6 @@ import { useCustomStyleSheet } from '@/services/useCustomStyleSheet/index.ts'
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
 const { mobile, mdAndUp } = useDisplay()
-const alertsStore = useAlertsStore()
 
 const theme = useTheme()
 
@@ -256,10 +243,6 @@ const shouldRenderInfoMenu = computed(() => {
   return !currentRoute.meta?.sidebar
 })
 
-function onCloseAlert(alert: Alert) {
-  alertsStore.removeAlert(alert.id)
-}
-
 const useRail = computed(
   () => settings.get('ui.sidebar-style')?.value === 'minimal' && !mobile.value,
 )
@@ -278,34 +261,8 @@ body {
   overflow: hidden;
 }
 
-.alert-container {
-  position: absolute;
-  margin: 0 auto;
-  width: 80%;
-  max-width: 100vw;
-  bottom: 0px;
-  right: 10%;
-  z-index: 9000;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 #web-oc-toolbar-target:empty {
   display: none !important;
-}
-
-.alerts__container {
-  position: absolute;
-  width: 500px;
-  max-width: 100%;
-  bottom: 0;
-  left: 0;
-  z-index: 10000;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
 }
 
 .v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)
