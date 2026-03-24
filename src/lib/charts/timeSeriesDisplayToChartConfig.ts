@@ -36,7 +36,7 @@ export function timeSeriesDisplayToChartConfig(
   const chartSeriesArray: ChartSeries[] = []
   const areaLegendLabels: string[] = []
 
-  for (const item of subplot.items) {
+  for (const [index, item] of subplot.items.entries()) {
     if (item.type === 'area' && item.legend) {
       if (areaLegendLabels.includes(item.legend)) {
         // Create second item as dummy for item.type 'area'
@@ -46,20 +46,16 @@ export function timeSeriesDisplayToChartConfig(
       }
       areaLegendLabels.push(item.legend)
 
-      // Area has two data resources
+      // Area can have two data resources
       const secondItemIndex = subplot.items.findLastIndex(
         (i) => i.legend === item.legend,
       )
-      if (secondItemIndex > -1) {
-        const secondItem = subplot.items[secondItemIndex]
-        const chartType = item.lineStyle === undefined ? 'area' : 'rule'
-        const chartSeries: ChartSeries = getChartSeries(
-          [item, secondItem],
-          chartType,
-          config,
-        )
-        chartSeriesArray.push(chartSeries)
-      }
+      const chartType = item.lineStyle === undefined ? 'area' : 'rule'
+      const secondItem = subplot.items[secondItemIndex]
+      const items = secondItemIndex === index ? [item] : [item, secondItem]
+
+      const chartSeries = getChartSeries(items, chartType, config)
+      chartSeriesArray.push(chartSeries)
     }
 
     if (item.type === 'horizontalColorCode') {
