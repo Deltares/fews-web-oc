@@ -34,6 +34,8 @@ export const useTaskRunsStore = defineStore('taskRuns', () => {
   }
 
   function clearSelectedTaskRuns() {
+    // Avoid unnecessary reactivity
+    if (selectedTaskRuns.value.length === 0) return
     selectedTaskRuns.value = []
   }
 
