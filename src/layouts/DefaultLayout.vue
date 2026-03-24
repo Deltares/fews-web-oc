@@ -181,6 +181,7 @@ import { getResourcesStaticUrl } from '@/lib/fews-config'
 import packageConfig from '@/../package.json'
 import { toCharacterIcon } from '@/lib/icons/index.ts'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
+import { useCustomStyleSheet } from '@/services/useCustomStyleSheet/index.ts'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
@@ -199,7 +200,7 @@ const showHash = ref(false)
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
 
-function updateAppBarColor() {
+function updateAppBarStyles() {
   appBarColor.value = getComputedStyle(document.body).getPropertyValue(
     '--weboc-app-bar-bg-color',
   )
@@ -207,37 +208,21 @@ function updateAppBarColor() {
   if (meta) {
     meta.setAttribute('content', appBarColor.value)
   }
+
+  appBarStyle.value = {
+    backgroundImage: 'var(--weboc-app-bar-bg-image)',
+    backgroundSize: 'cover',
+  }
 }
 
 watch(
   () => theme.global.current.value,
   () => {
-    nextTick(updateAppBarColor)
+    nextTick(updateAppBarStyles)
   },
 )
 
-watch(
-  () => configStore.general,
-  async () => {
-    const css = document.getElementById('custom-style-sheet') as HTMLLinkElement
-    if (css !== null) {
-      updateAppBarColor()
-    } else {
-      const link = document.createElement('link')
-      link.id = 'custom-style-sheet'
-      link.rel = 'stylesheet'
-      link.href = await configStore.getCustomStyleSheet()
-      link.onload = () => {
-        appBarStyle.value = {
-          backgroundImage: 'var(--weboc-app-bar-bg-image)',
-          backgroundSize: 'cover',
-        }
-        updateAppBarColor()
-      }
-      document.head.appendChild(link)
-    }
-  },
-)
+useCustomStyleSheet({ onload: updateAppBarStyles })
 
 const activeComponent = computed(() => configStore.getComponentByRoute(route))
 const currentItemTitle = computed(

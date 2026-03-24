@@ -13,6 +13,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCustomStyleSheet } from '@/services/useCustomStyleSheet'
 import { onBeforeMount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -29,6 +30,8 @@ watch(
     currentItem.value = name?.toString() ?? ''
   },
 )
+
+useCustomStyleSheet()
 </script>
 
 <style scoped>
