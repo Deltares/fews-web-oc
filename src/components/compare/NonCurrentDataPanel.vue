@@ -31,6 +31,7 @@
               :canVisualize="true"
               :startTime="outputStartTime"
               :endTime="outputEndTime"
+              :is-current-users-task="userId !== null && task.userId === userId"
               :key="task.taskId"
               v-model:expanded="expandedItems[task.taskId]"
             />
@@ -59,6 +60,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import { computedAsync } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 
 import { RelativePeriod } from '@/lib/period'
@@ -70,6 +72,7 @@ import {
   TaskStatusCategory,
 } from '@/lib/taskruns'
 
+import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import { useTaskRuns } from '@/services/useTasksRuns'
 
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
@@ -89,6 +92,11 @@ const availableWorkflowsStore = useAvailableWorkflowsStore()
 const taskRunsStore = useTaskRunsStore()
 
 const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
+
+const userId = computedAsync(async () => {
+  const user = await authenticationManager.getUser()
+  return user?.profile.preferred_username ?? null
+}, null)
 
 const expandedItems = ref<Record<string, boolean>>({})
 
