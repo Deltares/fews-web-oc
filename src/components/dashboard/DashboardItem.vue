@@ -153,7 +153,10 @@ function onNavigate(to: NavigateRoute) {
 }
 
 function navigateTo(to: NavigateRoute) {
+  const layerName = to.params?.layerName ?? routeParams.value.layerName
+
   routeParams.value = {
+    layerName,
     ...to.params,
   }
 }
