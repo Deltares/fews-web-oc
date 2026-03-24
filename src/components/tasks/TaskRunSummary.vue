@@ -9,8 +9,9 @@
     <v-card-text class="py-2 h-100 flex-grow-1">
       <div class="d-flex w-100">
         <div class="w-100">
-          <v-list-item-subtitle class="mb-1">
-            {{ timeZeroString }}
+          <v-list-item-subtitle class="mb-1 d-flex justify-space-between">
+            <span>{{ timeZeroString }}</span>
+            <v-icon v-if="isCurrentUsersTask" icon="mdi-account" size="small" />
           </v-list-item-subtitle>
           <div class="d-flex align-center ga-1 w-100">
             <v-tooltip>
@@ -78,8 +79,9 @@ const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
 
 interface Props {
   task: TaskRun
+  isCurrentUsersTask?: boolean
 }
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { isCurrentUsersTask: false })
 
 const expanded = defineModel<boolean>('expanded', {
   required: false,

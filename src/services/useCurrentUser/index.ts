@@ -23,6 +23,15 @@ export function useCurrentUser() {
     }
   }
 
+  function hasCurrentUser(): boolean {
+    return user !== null
+  }
+
+  function isCurrentUser(userIdToCheck: string | null): boolean {
+    if (!hasCurrentUser() || userIdToCheck === null) return false
+    return userIdToCheck === preferredUsername.value
+  }
+
   onMounted(() => {
     fetchCurrentUser()
   })
@@ -33,5 +42,7 @@ export function useCurrentUser() {
     preferredUsername,
     userEmail,
     fetchCurrentUser,
+    hasCurrentUser,
+    isCurrentUser,
   }
 }

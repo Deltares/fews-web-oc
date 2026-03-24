@@ -32,6 +32,7 @@
             <TaskRunSummary
               :task="task"
               :key="task.taskId"
+              :is-current-users-task="user.isCurrentUser(task.userId)"
               v-model:expanded="expandedItems[task.taskId]"
             />
           </div>
@@ -65,6 +66,7 @@ import { useI18n } from 'vue-i18n'
 import { RelativePeriod } from '@/lib/period'
 import { sortTasks, isTaskRun, TaskStatus } from '@/lib/taskruns'
 
+import { useCurrentUser } from '@/services/useCurrentUser'
 import { useTaskRuns } from '@/services/useTasksRuns'
 
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
@@ -82,6 +84,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
+const user = useCurrentUser()
 const { t } = useI18n()
 
 const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)

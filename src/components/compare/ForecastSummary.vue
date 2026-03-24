@@ -41,6 +41,7 @@
                 {{ timeZeroString }}
               </v-list-item-subtitle>
             </div>
+            <v-icon v-if="isCurrentUsersTask" icon="mdi-account" />
             <v-btn
               density="compact"
               :icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
@@ -91,9 +92,13 @@ interface Props {
   task: TaskRun
   startTime: Date | null
   endTime: Date | null
+  isCurrentUsersTask?: boolean
 }
 
-const { task, startTime, endTime } = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  isCurrentUsersTask: false,
+})
+const { task, startTime, endTime } = props
 
 const taskRunColor = computed(() => {
   // Get color from store, fallback to contrast color if not found
