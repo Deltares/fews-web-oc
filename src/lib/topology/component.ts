@@ -31,7 +31,7 @@ export const componentTypeToIconMap = {
   'data-download-display': 'mdi-download',
   report: 'mdi-file-document',
   'schematic-status-display': 'mdi-application',
-  'dynamic-report-display': 'mdi-file-document-edit',
+  'dynamic-report-display': 'mdi-table-clock',
   'system-monitor': 'mdi-monitor',
   'html-display': 'mdi-web',
   'runtask-display': 'mdi-cog',
