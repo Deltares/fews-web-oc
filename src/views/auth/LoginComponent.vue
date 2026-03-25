@@ -24,21 +24,14 @@ import { onMounted, ref, watch } from 'vue'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
 import { useRoute } from 'vue-router'
 import type { User } from 'oidc-client-ts'
+import {
+  initialsFromUpperCaseName,
+  initialsFromPreferredUserName,
+} from '@/lib/auth/initials.ts'
 
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-
-function initialsFromName(givenName: string): string {
-  let initialsString = ''
-  for (const character of givenName) {
-    if (character !== character.toLowerCase()) {
-      initialsString = initialsString + character
-    }
-    if (initialsString.length === 2) return initialsString
-  }
-  return initialsString
-}
 
 const route = useRoute()
 const initials = ref('')
@@ -72,7 +65,15 @@ watch(user, () => {
     requiresLogin.value = false
     if (user.value.profile?.name !== undefined) {
       name.value = user.value.profile.name
-      initials.value = initialsFromName(user.value.profile.name)
+      initials.value = initialsFromUpperCaseName(user.value.profile.name)
+      roles.value = user.value.profile.roles
+        ? (user.value.profile.roles as string[])
+        : []
+    } else if (user.value.profile?.preferred_username !== undefined) {
+      name.value = user.value.profile.preferred_username
+      initials.value = initialsFromPreferredUserName(
+        user.value.profile.preferred_username,
+      )
       roles.value = user.value.profile.roles
         ? (user.value.profile.roles as string[])
         : []
