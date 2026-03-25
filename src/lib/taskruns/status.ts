@@ -21,10 +21,16 @@ const STATUS_CATEGORIES: TaskStatusCategoryDefinition[] = [
     category: TaskStatusCategory.Completed,
     statuses: [
       TaskStatus.CompletedFullySuccessful,
-      TaskStatus.CompletePartlySuccessful,
       TaskStatus.Approved,
-      TaskStatus.ApprovedPartlySuccessful,
       TaskStatus.Amalgamated,
+    ],
+  },
+  {
+    name: 'Partly Completed',
+    category: TaskStatusCategory.PartlyCompleted,
+    statuses: [
+      TaskStatus.CompletePartlySuccessful,
+      TaskStatus.ApprovedPartlySuccessful,
       TaskStatus.PartlyCompleted,
     ],
   },
@@ -95,6 +101,8 @@ export function getIconForTaskStatus(status: TaskStatus): string {
       return 'mdi-spin mdi-cog'
     case TaskStatusCategory.Completed:
       return 'mdi-check'
+    case TaskStatusCategory.PartlyCompleted:
+      return 'mdi-check'
     case TaskStatusCategory.Failed:
       return 'mdi-alert-circle'
   }
@@ -110,6 +118,9 @@ export function getColorForTaskStatus(status: TaskStatus, isCurrent = true) {
     case TaskStatusCategory.Completed:
       if (!isCurrent) return
       return 'success'
+    case TaskStatusCategory.PartlyCompleted:
+      if (!isCurrent) return 'grey-lighten-2'
+      return 'light-green-lighten-3'
     case TaskStatusCategory.Failed:
       return 'error'
   }

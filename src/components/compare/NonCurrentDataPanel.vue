@@ -95,6 +95,7 @@ const expandedItems = ref<Record<string, boolean>>({})
 
 const visualizeMenuTaskStatuses = getTaskStatusesForCategories([
   TaskStatusCategory.Completed,
+  TaskStatusCategory.PartlyCompleted,
   TaskStatusCategory.Pending,
   TaskStatusCategory.Running,
 ])

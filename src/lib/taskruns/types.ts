@@ -18,6 +18,7 @@ export enum TaskStatusCategory {
   Pending = 'pending',
   Running = 'running',
   Completed = 'completed',
+  PartlyCompleted = 'partly completed',
   Failed = 'failed',
 }
 
