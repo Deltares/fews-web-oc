@@ -522,7 +522,10 @@ async function reroute(
     topologyId,
     from,
   )
-  const tab = tabs.find((t) => t.to.name === from?.name) ?? tabs[0]
+  // If a dashboard is configured, always navigate to it
+  const dashboardTab = tabs.find((t) => t.type === 'dashboard')
+  const tab =
+    dashboardTab ?? tabs.find((t) => t.to.name === from?.name) ?? tabs[0]
   return tab?.to
 }
 </script>
