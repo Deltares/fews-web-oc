@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { configManager } from '@/services/application-config'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager'
+import { authenticationManager } from '@/services/authentication'
 import SyncMap from '@/components/map/SyncMap.vue'
 import {
   MglAttributionControl,

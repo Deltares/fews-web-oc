@@ -88,7 +88,7 @@ import {
 } from '@/lib/topology/componentSettings'
 import ReactiveIframe from '@/components/products/ReactiveIframe.vue'
 import { getReportUrl, useReport } from '@/services/useReport'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager'
+import { authenticationManager } from '@/services/authentication'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -178,7 +178,11 @@ async function downloadFile() {
   })
 
   const fileName = `${report.timeZero}-${report.moduleInstanceId}`
-  downloadFileWithXhr(url, fileName, authenticationManager.getAccessToken())
+  downloadFileWithXhr(
+    url,
+    fileName,
+    authenticationManager.getAuthorizationHeaders(),
+  )
 }
 </script>
 

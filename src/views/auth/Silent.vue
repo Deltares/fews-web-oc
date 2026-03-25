@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { authenticationManager } from '../../services/authentication/AuthenticationManager'
+import {
+  authenticationManager,
+  OidcAuthManager,
+} from '@/services/authentication'
 
 onMounted((): void => {
-  authenticationManager.userManager.signinSilentCallback()
+  const oidcManager = authenticationManager as unknown as OidcAuthManager
+  oidcManager.userManager.signinSilentCallback()
 })
 </script>

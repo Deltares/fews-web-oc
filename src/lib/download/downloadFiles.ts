@@ -28,28 +28,30 @@ export async function downloadFileAttachment(
   url: string,
   fileName: string,
   documentFormat: DocumentFormat,
-  accessToken: string,
+  authHeaders: Headers,
 ) {
-  const headers = new Headers()
-  if (accessToken) {
+  const hasAuth = authHeaders.has('Authorization')
+  if (hasAuth) {
     const extension = getExtension(documentFormat)
     const downloadFileName = fileName + extension
-    await downloadFileWithFetch(headers, url, downloadFileName, accessToken)
+    await downloadFileWithFetch(authHeaders, url, downloadFileName)
+  } else {
+    downloadWithLink(url, fileName)
   }
-  if (!accessToken || accessToken == '') downloadWithLink(url, fileName)
 }
 
 export async function downloadFileWithXhr(
   url: string | URL,
   fileName: string,
-  accessToken: string,
+  authHeaders: Headers,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const req = new XMLHttpRequest()
     req.responseType = 'blob'
     req.open('GET', url)
-    if (accessToken !== '') {
-      req.setRequestHeader('Authorization', `Bearer ${accessToken}`)
+    const authValue = authHeaders.get('Authorization')
+    if (authValue) {
+      req.setRequestHeader('Authorization', authValue)
     }
 
     req.onload = () => {
@@ -89,9 +91,7 @@ async function downloadFileWithFetch(
   headers: Headers,
   url: string,
   fileName: string,
-  accessToken: string,
 ) {
-  headers.append('Authorization', `Bearer ${accessToken}`)
   const response = await fetch(url, {
     method: 'GET',
     headers: headers,

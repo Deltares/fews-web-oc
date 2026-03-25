@@ -66,8 +66,7 @@
 import { onMounted, ref } from 'vue'
 import { configManager } from '@/services/application-config'
 import { useRoute, useRouter } from 'vue-router'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager.js'
-import { basicAuthManager } from '@/services/authentication/BasicAuthManager'
+import { authenticationManager } from '@/services/authentication'
 import { VBtn } from 'vuetify/components'
 import { useI18n } from 'vue-i18n'
 
@@ -123,32 +122,32 @@ onMounted(() => {
 async function basicLogin(): Promise<void> {
   loading.value = true
   errorMessage.value = ''
-  basicAuthManager.login(username.value, password.value)
   try {
     const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+    const encoded = btoa(`${username.value}:${password.value}`)
     const response = await fetch(`${baseUrl}rest/fewspiservice/v1/version`, {
-      headers: {
-        Authorization: basicAuthManager.getAuthorizationHeader(),
-      },
+      headers: { Authorization: `Basic ${encoded}` },
     })
     if (!response.ok) {
-      basicAuthManager.logout()
       errorMessage.value = t('auth.invalidCredentials')
       return
     }
   } catch {
-    basicAuthManager.logout()
     errorMessage.value = t('auth.loginFailed')
     return
   } finally {
     loading.value = false
   }
+  await authenticationManager.login({
+    username: username.value,
+    password: password.value,
+  })
   const redirect = (route.query.redirect as string) ?? '/'
   router.push(redirect)
 }
 
 function oidcLogin(): void {
-  const redirect = route.query.redirect ?? '/'
-  authenticationManager.userManager.signinRedirect({ state: redirect })
+  const redirect = (route.query.redirect as string) ?? '/'
+  authenticationManager.login({ redirectPath: redirect })
 }
 </script>

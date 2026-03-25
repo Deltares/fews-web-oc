@@ -11,7 +11,7 @@ import { configManager } from '@/services/application-config'
 import type { BoundingBox } from '@/services/useBoundingBox'
 import type { LngLat } from 'maplibre-gl'
 import { toISOString } from '@/lib/date'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager'
+import { authenticationManager } from '@/services/authentication'
 
 interface WorkflowsState {
   startTime: string | null
@@ -83,7 +83,7 @@ export const useWorkflowsStore = defineStore('workflows', {
         await downloadFileWithXhr(
           url.toString(),
           fileName,
-          authenticationManager.getAccessToken(),
+          authenticationManager.getAuthorizationHeaders(),
         )
       } else if (type === WorkflowType.RunTask) {
         return await webServiceProvider.postRunTask(filter, options?.body ?? '')

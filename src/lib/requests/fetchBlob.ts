@@ -1,4 +1,4 @@
-import { authenticationManager } from '@/services/authentication/AuthenticationManager'
+import { authenticationManager } from '@/services/authentication'
 
 /**
  * Fetches a blob from the given URL and returns a promise that resolves to a blob URL.

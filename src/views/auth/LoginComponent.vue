@@ -21,17 +21,12 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
-import { basicAuthManager } from '../../services/authentication/BasicAuthManager'
-import { configManager } from '../../services/application-config'
-import { useRoute, useRouter } from 'vue-router'
-import type { User } from 'oidc-client-ts'
+import { authenticationManager, type AuthUser } from '@/services/authentication'
+import { useRoute } from 'vue-router'
 
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-
-const isBasicAuth = configManager.authType === 'basic'
 
 function initialsFromName(givenName: string): string {
   let initialsString = ''
@@ -45,41 +40,30 @@ function initialsFromName(givenName: string): string {
 }
 
 const route = useRoute()
-const router = useRouter()
 const initials = ref('')
-const roles = ref([''])
+const roles = ref<string[]>([])
 const name = ref('')
-const user = ref<User | null>(null)
+const user = ref<AuthUser | null>(null)
 const requiresLogin = ref(true)
 
-function setUser() {
-  if (isBasicAuth) {
-    if (basicAuthManager.isAuthenticated()) {
-      requiresLogin.value = false
-      const username = basicAuthManager.getUsername()
-      name.value = username
-      initials.value = username.slice(0, 2).toUpperCase()
-    } else {
-      requiresLogin.value = true
-    }
-    return
+async function setUser() {
+  const authUser = await authenticationManager.getUser()
+  user.value = authUser
+  if (authUser) {
+    requiresLogin.value = false
+    name.value = authUser.name
+    initials.value =
+      initialsFromName(authUser.name) || authUser.name.slice(0, 2).toUpperCase()
+    roles.value = authUser.roles ?? []
+  } else {
+    requiresLogin.value = true
   }
-  authenticationManager.userManager
-    .getUser()
-    .then((response) => {
-      user.value = response
-    })
-    .catch((err) => {
-      console.error({ err })
-    })
 }
 
-if (!isBasicAuth) {
-  authenticationManager.userManager.events.addUserLoaded(() => {
-    requiresLogin.value = false
-    setUser()
-  })
-}
+authenticationManager.onUserLoaded(() => {
+  requiresLogin.value = false
+  setUser()
+})
 
 onMounted((): void => {
   setUser()
@@ -88,34 +72,18 @@ onMounted((): void => {
 watch(user, () => {
   if (user.value !== null) {
     requiresLogin.value = false
-    if (user.value.profile?.name !== undefined) {
-      name.value = user.value.profile.name
-      initials.value = initialsFromName(user.value.profile.name)
-      roles.value = user.value.profile.roles
-        ? (user.value.profile.roles as string[])
-        : []
-    }
-  } else if (!isBasicAuth) {
+  } else {
     requiresLogin.value = true
   }
 })
 
 function login(): void {
-  if (isBasicAuth) {
-    router.push({ name: 'Login', query: { redirect: route.path } })
-  } else {
-    authenticationManager.userManager.signinRedirect({ state: route.path })
-  }
+  authenticationManager.login({ redirectPath: route.path })
 }
 
-function logout(): void {
+async function logout(): Promise<void> {
   requiresLogin.value = true
-  if (isBasicAuth) {
-    basicAuthManager.logout()
-    router.push({ name: 'Login' })
-  } else {
-    authenticationManager.userManager.signoutRedirect({ state: '/login' })
-  }
+  await authenticationManager.logout()
 }
 </script>
 

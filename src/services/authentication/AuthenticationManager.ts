@@ -1,18 +1,21 @@
-import { configManager } from '../application-config/'
 import { UserManager, User, UserManagerSettings } from 'oidc-client-ts'
-import { RequestHeaderAuthorization } from '../application-config/ApplicationConfig'
-import { mergeHeaders } from '@/lib/requests/transformRequest'
-import { basicAuthManager } from './BasicAuthManager'
+import type { AuthManager, AuthUser } from './AuthManager'
+import { transformRequestWithAuth } from './AuthManager'
 
-export class AuthenticationManager {
+export class OidcAuthManager implements AuthManager {
   userManager!: UserManager
   private user: User | null = null
   private initPromise: Promise<void> | null = null
+  private settings: UserManagerSettings
 
-  async init(settings: UserManagerSettings): Promise<void> {
+  constructor(settings: UserManagerSettings) {
+    this.settings = settings
+  }
+
+  async init(): Promise<void> {
     if (!this.initPromise) {
       this.initPromise = (async () => {
-        this.userManager = new UserManager(settings)
+        this.userManager = new UserManager(this.settings)
         this.user = await this.userManager.getUser()
         if (this.user?.expired) {
           try {
@@ -37,58 +40,52 @@ export class AuthenticationManager {
     return this.initPromise
   }
 
-  public async getUser(): Promise<User | null> {
-    if (!this.initPromise) {
-      // Authentication is disabled
-      return null
-    }
+  async isAuthenticated(): Promise<boolean> {
+    if (!this.initPromise) return false
     await this.initPromise
-    return this.user
+    return this.user !== null && !this.user.expired
   }
 
-  public getAccessToken(): string {
-    if (!configManager.authenticationIsEnabled) return ''
-    if (
-      configManager.get('VITE_REQUEST_HEADER_AUTHORIZATION') !==
-      RequestHeaderAuthorization.BEARER
-    )
-      return ''
+  async login(options?: { redirectPath?: string }): Promise<void> {
+    await this.userManager.signinRedirect({
+      state: options?.redirectPath ?? '/',
+    })
+  }
+
+  async logout(): Promise<void> {
+    await this.userManager.signoutRedirect({ state: '/login' })
+  }
+
+  async getUser(): Promise<AuthUser | null> {
+    if (!this.initPromise) return null
+    await this.initPromise
+    if (!this.user) return null
+    return {
+      name: this.user.profile?.name ?? 'Current User',
+      preferredUsername:
+        this.user.profile?.preferred_username ??
+        'Current User Preferred Username',
+      email: this.user.profile?.email,
+      roles: this.user.profile?.roles as string[] | undefined,
+    }
+  }
+
+  getAuthorizationHeaders(): Headers {
     if (this.user !== null) {
-      return this.user.access_token
+      return new Headers({
+        Authorization: `Bearer ${this.user.access_token}`,
+      })
     }
-    throw new Error('User is undefined')
+    return new Headers({})
   }
 
-  public getAuthorizationHeaders(): Headers {
-    if (!configManager.authenticationIsEnabled) return new Headers({})
-    switch (configManager.get('VITE_REQUEST_HEADER_AUTHORIZATION')) {
-      case RequestHeaderAuthorization.BEARER: {
-        const token = this.getAccessToken()
-        return new Headers({
-          Authorization: `Bearer ${token}`,
-        })
-      }
-      case RequestHeaderAuthorization.BASIC: {
-        const header = basicAuthManager.getAuthorizationHeader()
-        if (header) {
-          return new Headers({ Authorization: header })
-        }
-        return new Headers({})
-      }
-      default:
-        return new Headers({})
-    }
+  transformRequestAuth(request: Request, signal?: AbortSignal): Request {
+    return transformRequestWithAuth(this, request, signal)
   }
 
-  public transformRequestAuth(request: Request, signal?: AbortSignal): Request {
-    const requestAuthHeaders = this.getAuthorizationHeaders()
-    const requestInit = {
-      headers: mergeHeaders(request.headers, requestAuthHeaders),
-      signal: signal,
-    }
-    const newRequest = new Request(request, requestInit)
-    return newRequest
+  onUserLoaded(callback: () => void): void {
+    this.userManager.events.addUserLoaded(() => {
+      callback()
+    })
   }
 }
-
-export const authenticationManager = new AuthenticationManager()

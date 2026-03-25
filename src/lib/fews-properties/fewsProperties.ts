@@ -4,7 +4,7 @@ import type {
   TimeSeriesFlag,
   TimeSeriesFlagSource,
 } from '@deltares/fews-pi-requests'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager'
+import { authenticationManager } from '@/services/authentication'
 
 export async function loadTimeSeriesFlags(): Promise<TimeSeriesFlag[]> {
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')

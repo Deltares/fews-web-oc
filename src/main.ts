@@ -1,7 +1,10 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import { configManager } from './services/application-config'
-import { authenticationManager } from './services/authentication/AuthenticationManager.js'
+import {
+  initAuthManager,
+  authenticationManager,
+} from './services/authentication'
 import router from './router/index.js'
 import vuetify from './plugins/vuetify.js'
 import { createPinia } from 'pinia'
@@ -55,12 +58,12 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
       manifestLink.href = href
     }
     document.head.appendChild(manifestLink)
-    if (
-      configManager.authenticationIsEnabled &&
+    const oidcSettings =
       configManager.authType === 'oidc'
-    ) {
-      await authenticationManager.init(configManager.getUserManagerSettings())
-    }
+        ? configManager.getUserManagerSettings()
+        : undefined
+    initAuthManager(configManager.authType, oidcSettings)
+    await authenticationManager.init()
     const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en')
     await setI18nLanguage(i18n, locale)
     app.use(i18n)

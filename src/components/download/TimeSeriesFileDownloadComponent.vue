@@ -60,7 +60,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import { configManager } from '@/services/application-config'
 import { DisplayConfig } from '@/lib/display/DisplayConfig.ts'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
+import { authenticationManager } from '@/services/authentication'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
 import { computed, onUpdated, ref, toValue, watchEffect } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime.ts'
@@ -277,19 +277,19 @@ function getDownloadFileUrl(downloadFormat: DocumentFormat) {
 
 async function downloadFile(downloadFormat: DocumentFormat) {
   const url = getDownloadFileUrl(downloadFormat)
-  const accessToken = authenticationManager.getAccessToken()
+  const authHeaders = authenticationManager.getAuthorizationHeaders()
 
-  await downloadFileSafe(url.href, fileName.value, downloadFormat, accessToken)
+  await downloadFileSafe(url.href, fileName.value, downloadFormat, authHeaders)
 }
 
 async function downloadFileSafe(
   url: string,
   fileName: string,
   documentFormat: DocumentFormat,
-  accessToken: string,
+  authHeaders: Headers,
 ) {
   try {
-    await downloadFileAttachment(url, fileName, documentFormat, accessToken)
+    await downloadFileAttachment(url, fileName, documentFormat, authHeaders)
   } catch (error) {
     if (error instanceof Error) {
       alertStore.addAlert({

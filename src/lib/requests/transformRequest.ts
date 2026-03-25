@@ -1,4 +1,4 @@
-import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
+import { authenticationManager } from '@/services/authentication'
 
 export function createTransformRequestFn(controller?: AbortController) {
   return async (request: Request): Promise<Request> => {

@@ -11,8 +11,10 @@ import Callback from '../views/auth/Callback.vue'
 import Logout from '../views/auth/Logout.vue'
 import Silent from '../views/auth/Silent.vue'
 import { configManager } from '../services/application-config'
-import { authenticationManager } from '../services/authentication/AuthenticationManager'
-import { basicAuthManager } from '../services/authentication/BasicAuthManager'
+import {
+  authenticationManager,
+  OidcAuthManager,
+} from '../services/authentication'
 import { useConfigStore } from '../stores/config.ts'
 import { hasDefaultPath } from '@/lib/fews-config/types.ts'
 
@@ -306,17 +308,8 @@ const router = createRouter({
 let routesAreInitialized = false
 
 async function handleAuthorization(to: RouteLocationNormalized) {
-  if (configManager.authType === 'basic') {
-    if (!basicAuthManager.isAuthenticated()) {
-      return {
-        name: 'Login',
-        query: { redirect: to.redirectedFrom?.path ?? to.path },
-      }
-    }
-    return
-  }
-  const currentUser = await authenticationManager.userManager.getUser()
-  if (currentUser === null) {
+  const isAuthenticated = await authenticationManager.isAuthenticated()
+  if (!isAuthenticated) {
     return {
       name: 'Login',
       query: { redirect: to.redirectedFrom?.path ?? to.path },
@@ -417,8 +410,8 @@ router.beforeEach(async (to, from) => {
   if (to.name === 'Login' || to.name === 'AuthLogout') return
   if (to.name === 'AuthCallback' && configManager.authType === 'oidc') {
     try {
-      const user =
-        await authenticationManager.userManager.signinRedirectCallback()
+      const oidcManager = authenticationManager as unknown as OidcAuthManager
+      const user = await oidcManager.userManager.signinRedirectCallback()
       if (user.state) redirect = user.state.toString()
     } catch (error) {
       console.error(error)
