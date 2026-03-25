@@ -24,7 +24,10 @@ import { onMounted, ref, watch } from 'vue'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
 import { useRoute } from 'vue-router'
 import type { User } from 'oidc-client-ts'
-import { initialsFromName, initialsFromPreferredUserName } from '@/lib/auth/initials.ts'
+import {
+  initialsFromUpperCaseName,
+  initialsFromPreferredUserName,
+} from '@/lib/auth/initials.ts'
 
 import { useI18n } from 'vue-i18n'
 
@@ -62,7 +65,7 @@ watch(user, () => {
     requiresLogin.value = false
     if (user.value.profile?.name !== undefined) {
       name.value = user.value.profile.name
-      initials.value = initialsFromName(user.value.profile.name)
+      initials.value = initialsFromUpperCaseName(user.value.profile.name)
       roles.value = user.value.profile.roles
         ? (user.value.profile.roles as string[])
         : []

@@ -1,17 +1,20 @@
 import { describe, expect, test } from 'vitest'
-import { initialsFromName, initialsFromPreferredUserName } from './initials'
+import {
+  initialsFromUpperCaseName,
+  initialsFromPreferredUserName,
+} from './initials'
 
-describe('initialsFromName', () => {
+describe('initialsFromUpperCaseName', () => {
   test('returns first two uppercase characters', () => {
-    expect(initialsFromName('John Doe')).toEqual('JD')
+    expect(initialsFromUpperCaseName('John Doe')).toEqual('JD')
   })
 
   test('returns empty string when no uppercase characters are present', () => {
-    expect(initialsFromName('john doe')).toEqual('')
+    expect(initialsFromUpperCaseName('john doe')).toEqual('')
   })
 
   test('returns one uppercase character when only one exists', () => {
-    expect(initialsFromName('john Doe')).toEqual('D')
+    expect(initialsFromUpperCaseName('john Doe')).toEqual('D')
   })
 })
 

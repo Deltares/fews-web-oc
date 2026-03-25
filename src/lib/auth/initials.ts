@@ -1,13 +1,12 @@
-
 /**
  * Extracts initials from a name by finding uppercase characters.
  * @param givenName - The name to extract initials from
  * @returns A string containing up to 2 uppercase characters found in the name
  * @example
- * initialsFromName("JohnDoe") // Returns "JD"
- * initialsFromName("john") // Returns ""
+ * initialsFromUpperCaseName("JohnDoe") // Returns "JD"
+ * initialsFromUpperCaseName("john") // Returns ""
  */
-export function initialsFromName(givenName: string): string {
+export function initialsFromUpperCaseName(givenName: string): string {
   let initialsString = ''
   for (const character of givenName) {
     if (character !== character.toLowerCase()) {
