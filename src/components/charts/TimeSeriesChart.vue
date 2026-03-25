@@ -26,7 +26,7 @@
       @toggle-line="toggleLine"
     />
     <div ref="chartContainer" class="chart-container"></div>
-    <slot :margin="margin" />
+    <slot name="brush" :margin="margin" />
   </div>
 </template>
 
