@@ -24,35 +24,11 @@ import { onMounted, ref, watch } from 'vue'
 import { authenticationManager } from '../../services/authentication/AuthenticationManager.js'
 import { useRoute } from 'vue-router'
 import type { User } from 'oidc-client-ts'
+import { initialsFromName, initialsFromPreferredUserName } from '@/lib/auth/initials.ts'
 
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-
-function initialsFromName(givenName: string): string {
-  let initialsString = ''
-  for (const character of givenName) {
-    if (character !== character.toLowerCase()) {
-      initialsString = initialsString + character
-    }
-    if (initialsString.length === 2) return initialsString
-  }
-  return initialsString
-}
-
-function initialsFromPreferredUserName(givenName: string): string {
-  if (!givenName) return ''
-  const firstChar = givenName.charAt(0)
-  const separators = ['.', ',', '_', '-', ' ']
-  for (const sep of separators) {
-    const idx = givenName.indexOf(sep)
-    if (idx !== -1 && idx + 1 < givenName.length) {
-      return firstChar + givenName.charAt(idx + 1)
-    }
-  }
-  // If no separator found, return first two characters if available
-  return givenName.length >= 2 ? givenName.substring(0, 2) : firstChar
-}
 
 const route = useRoute()
 const initials = ref('')
