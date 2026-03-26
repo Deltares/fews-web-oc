@@ -2,6 +2,7 @@
   <div class="alerts__container" v-if="alertsStore.hasAlerts">
     <v-alert
       v-for="alert in alertsStore.alerts"
+      :key="alert.id"
       :type="alert.type"
       density="compact"
     >
