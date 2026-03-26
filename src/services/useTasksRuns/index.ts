@@ -37,7 +37,7 @@ export function useTaskRuns(
   workflowIds: MaybeRefOrGetter<string[]>,
   statuses: MaybeRefOrGetter<TaskStatus[]>,
   topologyNodeId?: MaybeRefOrGetter<string | undefined>,
-  doIncludeWhatIfScenario?: MaybeRefOrGetter<boolean>,
+  includeWhatIfScenario?: MaybeRefOrGetter<boolean>,
 ) {
   const isLoading = ref(false)
   const lastUpdatedTimestamp = ref<number | null>(null)
@@ -66,7 +66,7 @@ export function useTaskRuns(
   async function fetch(): Promise<void> {
     const _dispatchPeriod = toValue(dispatchPeriod)
     const _topologyNodeId = toValue(topologyNodeId)
-    const _doIncludeWhatIfScenario = !!toValue(doIncludeWhatIfScenario)
+    const _includeWhatIfScenario = !!toValue(includeWhatIfScenario)
 
     const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
     const piProvider = new PiWebserviceProvider(baseUrl, {
@@ -80,7 +80,7 @@ export function useTaskRuns(
       _topologyNodeId,
     )
 
-    if (_doIncludeWhatIfScenario) {
+    if (_includeWhatIfScenario) {
       allTaskRuns.value = await convertTaskRunsWithWhatIfScenario(
         piProvider,
         fetchedTaskRuns,
