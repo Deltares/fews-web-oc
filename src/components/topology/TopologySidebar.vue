@@ -8,7 +8,6 @@ import { type ColumnItem } from '@/components/general/ColumnItem'
 import { recursiveUpdateNode } from '@/lib/topology/nodes'
 import { useNodesStore } from '@/stores/nodes'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
-import { useTaskRunsStore } from '@/stores/taskRuns'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useWorkflowsStore } from '@/stores/workflows'
 import {
@@ -29,7 +28,6 @@ interface Props {
 const props = defineProps<Props>()
 
 const workflowsStore = useWorkflowsStore()
-const taskRunsStore = useTaskRunsStore()
 const taskRunColorsStore = useTaskRunColorsStore()
 const nodesStore = useNodesStore()
 const settings = useUserSettingsStore()
@@ -43,7 +41,6 @@ watch([() => nodesStore.activeNodeId, active], () => {
   workflowsStore.isSelectingCoordinate = false
 
   taskRunColorsStore.clearColors()
-  taskRunsStore.clearSelectedTaskRuns()
 })
 
 const menuType = computed(() => {

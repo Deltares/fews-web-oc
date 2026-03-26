@@ -40,7 +40,6 @@ export const useTaskRunsStore = defineStore('taskRuns', () => {
     if (selectedTaskRuns.value.length === 0) return
     selectedTaskRuns.value = []
   }
-
   const sortedCurrentTaskRuns = computed(() =>
     currentTaskRuns.value.toSorted(sortTasks),
   )

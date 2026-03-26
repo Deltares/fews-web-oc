@@ -2,7 +2,7 @@
   <div class="non-current-data__panel h-100">
     <div class="d-flex pt-3 pb-2 align-center">
       <v-spacer />
-      <PeriodFilterControl v-model="period" />
+      <PeriodFilterControl v-model="dispatchPeriod" />
     </div>
     <div class="non-current-data__content">
       <v-list-item v-if="sortedTasks.length === 0">
@@ -62,7 +62,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-import { RelativePeriod } from '@/lib/period'
 import {
   sortTasks,
   isTaskRun,
@@ -102,12 +101,6 @@ const visualizeMenuTaskStatuses = getTaskStatusesForCategories([
 
 const selectedTaskStatuses = ref<TaskStatus[]>(visualizeMenuTaskStatuses)
 
-// Look 1 day back by default.
-const period = ref<RelativePeriod | null>({
-  startOffsetSeconds: -24 * 60 * 60,
-  endOffsetSeconds: 0,
-})
-
 const TASKS_REFRESH_INTERVAL_SECONDS = 15
 const {
   filteredTaskRuns,
@@ -115,10 +108,10 @@ const {
   lastUpdatedTimestamp,
   outputStartTime,
   outputEndTime,
+  dispatchPeriod,
   fetch: refreshTaskRuns,
 } = useTaskRuns(
   TASKS_REFRESH_INTERVAL_SECONDS,
-  period,
   availableWorkflowsStore.workflowIds,
   selectedTaskStatuses,
   null,
@@ -134,6 +127,16 @@ const showNonCurrent = ref(true)
 const currentTasks = computed(() =>
   sortedTasks.value.filter((task) => task.isCurrent),
 )
+
+watch(sortedTasks, (newSortedTasks) => {
+  // Remove any selected task runs that are no longer in the list of current or non-current tasks
+  taskRunsStore.selectedTaskRuns = taskRunsStore.selectedTaskRuns.filter(
+    (selectedTaskRun) =>
+      newSortedTasks.some(
+        (task) => task.taskRunId === selectedTaskRun.taskRunId,
+      ),
+  )
+})
 
 watch(
   currentTasks,

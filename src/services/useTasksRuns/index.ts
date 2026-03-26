@@ -26,6 +26,10 @@ import { useFocusAwareInterval } from '@/services/useFocusAwareInterval'
 
 const shouldRefreshTaskRuns = ref(false)
 
+export const dispatchPeriod = ref<RelativePeriod | null>({
+  startOffsetSeconds: -24 * 60 * 60,
+  endOffsetSeconds: 0,
+})
 // Allow other components to trigger a refresh of the task runs.
 export function refreshTaskRuns() {
   shouldRefreshTaskRuns.value = !shouldRefreshTaskRuns.value
@@ -33,7 +37,6 @@ export function refreshTaskRuns() {
 
 export function useTaskRuns(
   refreshIntervalSeconds: number,
-  dispatchPeriod: MaybeRefOrGetter<RelativePeriod | null>,
   workflowIds: MaybeRefOrGetter<string[]>,
   statuses: MaybeRefOrGetter<TaskStatus[]>,
   userId: MaybeRefOrGetter<string | null>,
@@ -57,7 +60,7 @@ export function useTaskRuns(
 
   watch(
     [
-      () => toValue(dispatchPeriod),
+      dispatchPeriod,
       () => toValue(topologyNodeId),
       () => shouldRefreshTaskRuns.value,
     ],
@@ -120,6 +123,7 @@ export function useTaskRuns(
     lastUpdatedTimestamp,
     outputStartTime,
     outputEndTime,
+    dispatchPeriod,
     isLoading,
     fetch,
   }
