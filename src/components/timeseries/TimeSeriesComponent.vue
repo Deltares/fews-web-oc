@@ -17,14 +17,17 @@
             :settings="settings.timeSeriesChart"
             :forecastLegend="config.forecastLegend"
           >
-            <TimeSeriesChartBrush
-              v-if="showBrush"
-              v-model:domain="visibleDomain"
-              :fullDomain="fullBrushDomain"
-              :config="subplot"
-              :series="brushChartSeries"
-              :settings="settings.timeSeriesChart"
-            />
+            <template #brush="{ margin: chartMargin }">
+              <TimeSeriesChartBrush
+                v-if="showBrush"
+                v-model:domain="visibleDomain"
+                :fullDomain="fullBrushDomain"
+                :config="subplot"
+                :series="brushChartSeries"
+                :settings="settings.timeSeriesChart"
+                :mainChartMargin="chartMargin"
+              />
+            </template>
           </TimeSeriesChart>
         </template>
       </KeepAlive>

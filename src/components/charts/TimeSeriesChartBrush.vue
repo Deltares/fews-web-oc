@@ -7,7 +7,8 @@ import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import { BrushHandler, CartesianAxes } from '@deltares/fews-web-oc-charts'
 import type { ChartsSettings } from '@/lib/topology/componentSettings'
-import { computed, onMounted, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, onMounted, useTemplateRef, watch } from 'vue'
+import type { Margin } from '@deltares/fews-web-oc-charts'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
 import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
 import { useSeriesUpdateChartData } from '@/services/useSeriesUpdateChartData'
@@ -19,6 +20,7 @@ interface Props {
   series: Record<string, Series>
   settings: ChartsSettings['timeSeriesChart']
   fullDomain: [Date, Date]
+  mainChartMargin?: Margin
 }
 
 const props = defineProps<Props>()
@@ -73,6 +75,18 @@ watch(chartConfig, (newConfig) => onValueChange(newConfig))
 watch(domain, (newDomain) => {
   brushHandler.setBrushDomain({ x: newDomain })
 })
+
+// Keep margin in sync with main chart
+watch(
+  () => props.mainChartMargin,
+  (newMargin) => {
+    if (!axis || !newMargin) return
+    if (newMargin.left !== undefined) axis.margin.left = newMargin.left
+    if (newMargin.right !== undefined) axis.margin.right = newMargin.right
+    nextTick(() => axis.resize())
+  },
+  { deep: true },
+)
 </script>
 
 <style scoped>
