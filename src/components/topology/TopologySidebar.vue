@@ -19,6 +19,7 @@ import { watch, ref, computed } from 'vue'
 
 interface Props {
   nodeId?: string | string[]
+  topologyId?: string
   topologyNode?: TopologyNode
   showActiveThresholdCrossingsForFilters?: boolean
   showLeafNodesAsButton?: boolean
@@ -79,7 +80,7 @@ function updateItems(): void {
     props.subNodes,
     props.thresholds,
     props.showActiveThresholdCrossingsForFilters,
-    props.topologyNode?.id,
+    props.topologyId,
     props.showLeafNodesAsButton,
   )
 }

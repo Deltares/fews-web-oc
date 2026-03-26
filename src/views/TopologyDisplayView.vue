@@ -2,6 +2,7 @@
   <Teleport v-if="hasSideBar" to="#web-oc-sidebar-target">
     <TopologySidebar
       :nodeId="nodeId"
+      :topologyId="topologyId"
       :topologyNode="topologyNode"
       :showActiveThresholdCrossingsForFilters="
         showActiveThresholdCrossingsForFilters
