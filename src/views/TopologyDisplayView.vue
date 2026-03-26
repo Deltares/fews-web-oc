@@ -6,11 +6,22 @@
       :showActiveThresholdCrossingsForFilters="
         showActiveThresholdCrossingsForFilters
       "
+      :thresholds="thresholds"
       :subNodes="subNodes"
+      :showLeafNodesAsButton="showLeafsAsButton"
     />
   </Teleport>
 
   <template v-if="hasAppBar">
+    <Teleport to="#app-bar-content-start">
+      <LeafNodeButtons
+        v-if="nodesStore.nodeButtons.length > 0 && showLeafsAsButton"
+        v-model:activeNodeId="nodesStore.activeNodeId"
+        :items="nodesStore.nodeButtons"
+        variant="tonal"
+      />
+    </Teleport>
+
     <Teleport to="#app-bar-content-center">
       <DisplayTabs :nodeId="nodeId" />
     </Teleport>
@@ -40,6 +51,7 @@
 </template>
 
 <script setup lang="ts">
+import LeafNodeButtons from '@/components/general/LeafNodeButtons.vue'
 import DisplayTabs from '@/components/DisplayTabs.vue'
 import TopologySidebar from '@/components/topology/TopologySidebar.vue'
 import TopologyControls from '@/components/topology/TopologyControls.vue'
@@ -48,7 +60,7 @@ import { useConfigStore } from '@/stores/config'
 
 import type { WebOcTopologyDisplayConfig } from '@deltares/fews-pi-requests'
 
-import { computed, onUnmounted, watch } from 'vue'
+import { computed, onUnmounted, watch, watchEffect } from 'vue'
 import {
   onBeforeRouteUpdate,
   RouteLocationNormalized,
@@ -62,6 +74,9 @@ import { useComponentSettings } from '@/services/useComponentSettings'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import type { NavigateRoute } from '@/lib/router'
 import { fetchWmsCapabilitiesHeaders } from '@/lib/capabilities'
+import { useNodesStore } from '@/stores/nodes'
+import { nodeButtonItems } from '@/lib/topology/nodes'
+import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 
 interface Props {
   topologyId?: string
@@ -85,11 +100,12 @@ const props = withDefaults(defineProps<Props>(), {
 const route = useRoute()
 const router = useRouter()
 
+const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const { thresholds } = useTopologyThresholds(baseUrl)
+
 const configStore = useConfigStore()
 const availableWorkflowsStore = useAvailableWorkflowsStore()
-const topologyComponentConfig = computed(() =>
-  getComponentConfig(props.topologyId),
-)
+const nodesStore = useNodesStore()
 
 // Clear the preferred workflow IDs when we unmount.
 onUnmounted(() => availableWorkflowsStore.clearPreferredWorkflowIds())
@@ -102,13 +118,25 @@ const topologyNode = computed(() => {
   return topologyNodesStore.getNodeById(id)
 })
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+const topologyComponentConfig = computed(() =>
+  getComponentConfig(props.topologyId),
+)
 
 const topologyDisplayNodes = computed<string[] | undefined>(() => {
   // FIXME: Update when the types are updated
   // @ts-expect-error
   return topologyComponentConfig.value?.topologyDisplayNodes
 })
+
+const showLeafsAsButton = computed(
+  () => topologyComponentConfig.value?.showLeafNodesAsButtons ?? false,
+)
+
+const showActiveThresholdCrossingsForFilters = computed(
+  () =>
+    topologyComponentConfig.value?.showActiveThresholdCrossingsForFilters ??
+    false,
+)
 
 const topologyNodesStore = useTopologyNodesStore()
 topologyNodesStore
@@ -143,11 +171,21 @@ const { componentSettings } = useComponentSettings(baseUrl, () => [
   topologyNode.value?.componentSettingsId,
 ])
 
-const showActiveThresholdCrossingsForFilters = computed(() => {
-  return (
-    topologyComponentConfig.value?.showActiveThresholdCrossingsForFilters ??
-    false
-  )
+watchEffect(() => {
+  if (showLeafsAsButton.value && Array.isArray(props.nodeId)) {
+    const menuNodeId = props.nodeId[0]
+    const menuNode = topologyNodesStore.getNodeById(menuNodeId)
+    if (!menuNode) return
+    nodesStore.setNodeButtons(
+      nodeButtonItems(
+        menuNode,
+        props.topologyId,
+        thresholds.value,
+        showActiveThresholdCrossingsForFilters.value,
+      ),
+    )
+    nodesStore.activeNodeId = props.nodeId[1]
+  }
 })
 
 function onNavigate(to: NavigateRoute) {
@@ -227,7 +265,44 @@ async function reroute(
   const node = topologyNodesStore.getNodeById(nodeId)
   if (!node) return
 
-  const tabs = await displayTabsForNode(node, undefined, topologyId, from)
+  const parentNode = topologyNodesStore.getParentNodeById(nodeId)
+  const parentNodeId = parentNode?.id
+
+  const componentConfig = getComponentConfig(topologyId)
+
+  const showLeafNodesAsButtons =
+    componentConfig?.showLeafNodesAsButtons ?? false
+  const hasOneNodeId =
+    typeof to.params.nodeId === 'string' ||
+    (Array.isArray(to.params.nodeId) && to.params.nodeId.length === 1)
+
+  if (showLeafNodesAsButtons && hasOneNodeId) {
+    if (node.topologyNodes === undefined && parentNodeId) {
+      return {
+        name: 'TopologyDisplay',
+        params: {
+          nodeId: [parentNodeId, nodeId],
+          topologyId,
+        },
+      }
+    } else {
+      return nodesStore.getRouteTarget(
+        nodeButtonItems(
+          node,
+          topologyId,
+          thresholds.value,
+          showActiveThresholdCrossingsForFilters.value,
+        ),
+      )
+    }
+  }
+
+  const tabs = await displayTabsForNode(
+    node,
+    showLeafNodesAsButtons ? parentNodeId : undefined,
+    topologyId,
+    from,
+  )
   const tab = tabs.find((t) => t.to.name === from?.name) ?? tabs[0]
   return tab?.to
 }

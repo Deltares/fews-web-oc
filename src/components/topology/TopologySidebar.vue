@@ -6,21 +6,24 @@
 import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
 import { type ColumnItem } from '@/components/general/ColumnItem'
 import { recursiveUpdateNode } from '@/lib/topology/nodes'
-import { configManager } from '@/services/application-config'
-import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { useNodesStore } from '@/stores/nodes'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import { useTaskRunsStore } from '@/stores/taskRuns'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useWorkflowsStore } from '@/stores/workflows'
-import { type TopologyNode } from '@deltares/fews-pi-requests'
+import {
+  type TopologyThresholdNode,
+  type TopologyNode,
+} from '@deltares/fews-pi-requests'
 import { watch, ref, computed } from 'vue'
 
 interface Props {
   nodeId?: string | string[]
   topologyNode?: TopologyNode
   showActiveThresholdCrossingsForFilters?: boolean
+  showLeafNodesAsButton?: boolean
   subNodes?: TopologyNode[]
+  thresholds?: TopologyThresholdNode[]
 }
 const props = defineProps<Props>()
 
@@ -66,20 +69,18 @@ watch(
 
 const items = ref<ColumnItem[]>([])
 
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { thresholds } = useTopologyThresholds(baseUrl)
-
 watch(() => props.subNodes, updateItems)
-watch(thresholds, updateItems)
+watch(() => props.thresholds, updateItems)
 
 function updateItems(): void {
   if (!props.subNodes) return
 
   items.value = recursiveUpdateNode(
     props.subNodes,
-    thresholds.value,
+    props.thresholds,
     props.showActiveThresholdCrossingsForFilters,
     props.topologyNode?.id,
+    props.showLeafNodesAsButton,
   )
 }
 </script>
