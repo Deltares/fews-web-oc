@@ -69,25 +69,3 @@ export function transformStyle(
     glyphs,
   }
 }
-
-export function getBeforeId(
-  layerId: string,
-  desiredOrder: string[],
-  currentOrder: string[],
-): string | undefined {
-  // Find the index of the target layer in the desired order
-  const desiredIdx = desiredOrder.indexOf(layerId)
-
-  if (desiredIdx !== -1) {
-    // Look for the next layer (after layerId) in layerOrder that exists in currentOrder
-    const nextInOrder = desiredOrder
-      .slice(desiredIdx + 1)
-      .find((id) => currentOrder.includes(id))
-    if (nextInOrder) return nextInOrder
-  }
-
-  // If not found, return the first custom layer in currentOrder that is not layerId and not in layerOrder
-  return currentOrder.find(
-    (id) => isCustomLayer(id) && id !== layerId && !desiredOrder.includes(id),
-  )
-}

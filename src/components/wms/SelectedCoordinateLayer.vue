@@ -15,7 +15,6 @@ import { useLayer, useSource } from '@/services/useLayer'
 
 interface Props {
   coordinate?: LngLat
-  layerOrder: string[]
 }
 
 const props = defineProps<Props>()
@@ -93,7 +92,6 @@ useLayer(
     paint: paintSpecification,
     source: sourceId,
   }),
-  () => props.layerOrder,
   source,
 )
 

@@ -40,7 +40,6 @@ useLayer(
     filter: filter,
     source: locationMapIds.source,
   }),
-  [],
   () => props.source,
 )
 

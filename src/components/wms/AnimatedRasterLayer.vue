@@ -37,7 +37,6 @@ interface Props {
   layerId: string
   sourceId: string
   enableDoubleClick?: boolean
-  layerOrder: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -222,7 +221,6 @@ useLayer(
       'raster-fade-duration': 0,
     },
   },
-  () => props.layerOrder,
   source,
 )
 

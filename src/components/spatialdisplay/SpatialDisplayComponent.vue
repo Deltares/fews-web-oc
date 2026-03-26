@@ -7,7 +7,6 @@
       :key="`layer-${layerOptions.name}`"
       :layerId="mapIds.wms.layer"
       :sourceId="mapIds.wms.source"
-      :layerOrder="layerOrder"
       :enableDoubleClick="settings.wmsLayer.doubleClickAction"
       @doubleclick="onCoordinateClick"
     />
@@ -18,7 +17,6 @@
       :layerOptions="layerOptions"
       :streamlineOptions="layerCapabilities?.animatedVectors"
       :layerId="mapIds.wms.layer"
-      :layerOrder="layerOrder"
       :enableDoubleClick="settings.wmsLayer.doubleClickAction"
       @doubleclick="onCoordinateClick"
     />
@@ -43,7 +41,6 @@
     <SelectedCoordinateLayer
       :coordinate="selectedCoordinate"
       @coordinate-moved="onCoordinateMoved"
-      :layerOrder="layerOrder"
     />
     <LocationsLayer
       v-if="showLocationsLayer && hasLocations"
@@ -60,7 +57,6 @@
       v-for="overlay in selectedOverlays"
       :key="overlay.id"
       :overlay="overlay"
-      :layerOrder="layerOrder"
     />
     <MapToolsControl />
     <div class="mapcomponent__controls-container pa-2 ga-2">
@@ -232,6 +228,7 @@ import { configManager } from '@/services/application-config'
 import { useSelectedElevation } from '@/services/useSelectedElevation'
 import { clamp } from '@/lib/utils/math'
 import { useAggregations } from '@/services/useAggregations'
+import { provideLayerOrder, useLayerOrder } from '@/services/useLayerOrder'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -354,32 +351,7 @@ watch(
 
 const { baseMap, mapStyle } = useBaseMap()
 
-const layerOrder = computed(() => {
-  const layers = props.settings.overlays
-
-  const order = layers.map((layer) => {
-    if (layer.type === 'gridLayer') {
-      return mapIds.wms.layer
-    }
-
-    if (layer.type === 'overLay') {
-      return getLayerId(`overlay-${layer.id}`)
-    }
-
-    throw new Error(`Unknown layer type: ${layer.type}`)
-  })
-
-  const wmsLayerCount = order.filter((id) => id === mapIds.wms.layer).length
-  if (wmsLayerCount === 0) {
-    order.unshift(mapIds.wms.layer)
-  } else if (wmsLayerCount > 1) {
-    throw new Error(
-      `There should be exactly one layer with id ${mapIds.wms.layer} in the layer order.`,
-    )
-  }
-
-  return baseMap.value.beforeId ? [...order, baseMap.value.beforeId] : order
-})
+provideLayerOrder(() => props.settings.overlays, baseMap)
 
 const { selectedOverlayIds, selectedOverlays } = useOverlays(
   () => props.settings.overlays,

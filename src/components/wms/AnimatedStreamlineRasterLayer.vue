@@ -50,7 +50,6 @@ interface Props {
   streamlineOptions?: StreamlineLayerOptionsFews
   layerId: string
   enableDoubleClick: boolean
-  layerOrder: string[]
 }
 const props = withDefaults(defineProps<Props>(), {
   enableDoubleClick: false,
@@ -62,7 +61,7 @@ const { map } = useMap()
 
 let layer: WMSStreamlineLayer | null = null
 
-useLayer(props.layerId, setupLayer, () => props.layerOrder)
+useLayer(props.layerId, setupLayer)
 
 onMounted(() => {
   addHooksToMapObject()

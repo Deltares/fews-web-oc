@@ -18,17 +18,17 @@ import {
   Source,
   SourceSpecification,
 } from 'maplibre-gl'
-import { getBeforeId } from '@/lib/map'
+import { useLayerOrder } from '@/services/useLayerOrder'
 
 export function useLayer(
   layerId: string,
   layer: MaybeRefOrGetter<AddLayerObject>,
-  layerOrder: MaybeRefOrGetter<string[]>,
   source?: MaybeRefOrGetter<Source | undefined>,
 ) {
   const isLoaded = inject(isLoadedSymbol)!
 
   const { map } = useMap()
+  const { getBeforeId } = useLayerOrder()
 
   if (source) {
     watch(
@@ -95,10 +95,7 @@ export function useLayer(
     if (!map) return
 
     const _layer = toValue(layer)
-    const _layerOrder = toValue(layerOrder)
-    const currentOrder = map.getLayersOrder()
-
-    const beforeId = getBeforeId(layerId, _layerOrder, currentOrder)
+    const beforeId = getBeforeId(layerId, map)
 
     map.addLayer(_layer, beforeId)
   }

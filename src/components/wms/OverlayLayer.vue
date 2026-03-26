@@ -5,7 +5,6 @@
     :layerId="getLayerId(`overlay-${options.name}`)"
     :sourceId="getSourceId(`overlay-${options.name}`)"
     :key="`overlay-${options.name}`"
-    :layerOrder="layerOrder"
   />
 </template>
 
@@ -17,7 +16,6 @@ import { computed } from 'vue'
 
 interface Props {
   overlay: Overlay
-  layerOrder: string[]
 }
 
 const props = defineProps<Props>()

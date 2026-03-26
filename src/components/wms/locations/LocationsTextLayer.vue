@@ -52,7 +52,6 @@ useLayer(
     paint: paint.value,
     source: locationMapIds.source,
   }),
-  [],
   () => props.source,
 )
 </script>
