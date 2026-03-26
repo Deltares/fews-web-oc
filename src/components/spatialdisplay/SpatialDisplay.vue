@@ -65,6 +65,7 @@ import { useDateRegistry } from '@/services/useDateRegistry'
 import type { NavigateRoute } from '@/lib/router'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 import { useLocationNamesStore } from '@/stores/locationNames'
+import { useTaskRunsStore } from '@/stores/taskRuns'
 import {
   filterFeaturesByThresholds,
   filterLocationsByThresholds,
@@ -94,10 +95,15 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 const taskRunId = ref<string>()
+const taskRunsStore = useTaskRunsStore()
 watch(
   () => props.layerName,
-  () => {
-    taskRunId.value = undefined
+  (newLayerName) => {
+    const taskRun = taskRunsStore.getTaskRunById(taskRunId.value)
+    const layerIds = taskRun?.topologyAssociations?.layerIds ?? []
+    if (!newLayerName || !layerIds.includes(newLayerName)) {
+      taskRunId.value = undefined
+    }
   },
 )
 

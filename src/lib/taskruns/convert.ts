@@ -38,6 +38,7 @@ export function convertFewsPiTaskRunToTaskRun(
     outputStartTimestamp,
     outputEndTimestamp,
     whatIfScenario,
+    topologyAssociations: taskRun.topologyAssociations,
   }
 }
 

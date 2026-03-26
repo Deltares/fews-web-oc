@@ -36,6 +36,9 @@ export interface TaskRun {
   outputStartTimestamp: number | null
   outputEndTimestamp: number | null
   whatIfScenario: WhatIfScenarioDescriptor | null
+  topologyAssociations?: {
+    layerIds: string[]
+  }
 }
 
 export function isTaskStatus(value: string): value is TaskStatus {
