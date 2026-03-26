@@ -222,13 +222,13 @@ import { useSelectedDate } from '@/services/useSelectedDate'
 import { useOverlays } from '@/services/useOverlays'
 import { useBaseMap } from '@/services/useBaseMap'
 import { isInDatesRange } from '@/lib/date'
-import { getLayerId, getLocationWithChilds, mapIds } from '@/lib/map'
+import { getLocationWithChilds, mapIds } from '@/lib/map'
 import { createLocationToChildrenMap } from '@/lib/topology/locations'
 import { configManager } from '@/services/application-config'
 import { useSelectedElevation } from '@/services/useSelectedElevation'
 import { clamp } from '@/lib/utils/math'
 import { useAggregations } from '@/services/useAggregations'
-import { provideLayerOrder, useLayerOrder } from '@/services/useLayerOrder'
+import { provideLayerOrder } from '@/services/useLayerOrder'
 
 interface ElevationWithUnitSymbol {
   units?: string

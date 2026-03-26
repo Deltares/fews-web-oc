@@ -19,6 +19,7 @@
     @map:resize="updateMinZoom"
   >
     <SyncMap />
+    <MaintainLayerOrder />
     <!-- Fade duration is set to 100ms instead of 0ms to avoid flickering -->
     <mgl-attribution-control position="top-right" :compact="true" />
     <mgl-navigation-control

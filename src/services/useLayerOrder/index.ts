@@ -23,26 +23,8 @@ export function provideLayerOrder(
     const _layers = toValue(layers)
     const _baseMap = toValue(baseMap)
 
-    const order = _layers.map((layer) => {
-      if (layer.type === 'gridLayer') {
-        return mapIds.wms.layer
-      }
-
-      if (layer.type === 'overLay') {
-        return getLayerId(`overlay-${layer.id}`)
-      }
-
-      throw new Error(`Unknown layer type: ${layer.type}`)
-    })
-
-    const wmsLayerCount = order.filter((id) => id === mapIds.wms.layer).length
-    if (wmsLayerCount === 0) {
-      order.unshift(mapIds.wms.layer)
-    } else if (wmsLayerCount > 1) {
-      throw new Error(
-        `There should be exactly one layer with id ${mapIds.wms.layer} in the layer order.`,
-      )
-    }
+    const layerIds = _layers.map(convertOverlayToLayerId)
+    const order = ensureExactlyOneWmsLayer(layerIds)
 
     return _baseMap.beforeId ? [...order, _baseMap.beforeId] : order
   })
@@ -52,6 +34,10 @@ export function provideLayerOrder(
 
 export function useLayerOrder() {
   const layerOrder = inject(LAYER_ORDER_KEY, undefined)
+
+  if (!layerOrder) {
+    throw new Error('Layer order is not provided')
+  }
 
   function getBeforeId(layerId: string, map: Map): string | undefined {
     const _layerOrder = toValue(layerOrder)
@@ -80,4 +66,33 @@ export function useLayerOrder() {
   }
 
   return { layerOrder, getBeforeId }
+}
+
+function convertOverlayToLayerId(overlay: Overlay): string {
+  if (overlay.type === 'gridLayer') {
+    return mapIds.wms.layer
+  }
+
+  if (overlay.type === 'overLay') {
+    return getLayerId(`overlay-${overlay.id}`)
+  }
+
+  throw new Error(`Unknown layer type: ${overlay.type}`)
+}
+
+function ensureExactlyOneWmsLayer(layerIds: string[]) {
+  const wmsLayerCount = layerIds.filter((id) => id === mapIds.wms.layer).length
+
+  if (wmsLayerCount === 0) {
+    // If there is no WMS layer, we add it at the beginning of the layer order
+    return [mapIds.wms.layer, ...layerIds]
+  }
+
+  if (wmsLayerCount > 1) {
+    throw new Error(
+      `There should be exactly one layer with id ${mapIds.wms.layer} in the layer order.`,
+    )
+  }
+
+  return layerIds
 }
