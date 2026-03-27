@@ -35,6 +35,12 @@
               >
                 {{ whatIfTemplate.name }}
               </v-list-item-subtitle>
+              <v-list-item-subtitle v-if="task.description">
+                <SingleLineWithOverflowTooltip
+                  :text="task.description"
+                  max-width="400"
+                />
+              </v-list-item-subtitle>
             </div>
           </div>
         </div>
@@ -72,6 +78,7 @@ import {
 } from '@/lib/date'
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
 import WhatIfScenarioSummary from './WhatIfScenarioSummary.vue'
+import SingleLineWithOverflowTooltip from '../general/SingleLineWithOverflowTooltip.vue'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
