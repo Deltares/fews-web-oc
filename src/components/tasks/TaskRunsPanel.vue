@@ -6,7 +6,7 @@
       <v-spacer />
       <PeriodFilterControl v-model="period" />
     </div>
-    <div class="task-content">
+    <div v-if="hasLoadedAtLeastOnce" class="task-content">
       <v-list-item v-if="sortedTasks.length === 0">
         {{ t('workflow.noTasksAvailable') }}
       </v-list-item>
@@ -133,6 +133,10 @@ const {
   selectedWorkflowIds,
   selectedTaskStatuses,
   () => props.topologyNode?.id,
+  true,
+)
+const hasLoadedAtLeastOnce = computed<boolean>(
+  () => lastUpdatedTimestamp.value !== null,
 )
 
 const sortedTasks = computed(() => filteredTaskRuns.value.toSorted(sortTasks))

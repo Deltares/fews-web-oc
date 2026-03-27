@@ -1,3 +1,5 @@
+import { WhatIfScenarioDescriptor } from '@deltares/fews-pi-requests'
+
 export enum TaskStatus {
   Invalid = 'invalid',
   Pending = 'pending',
@@ -32,6 +34,7 @@ export interface TaskRun {
   isCurrent: boolean
   outputStartTimestamp: number | null
   outputEndTimestamp: number | null
+  whatIfScenario: WhatIfScenarioDescriptor | null
 }
 
 export function isTaskStatus(value: string): value is TaskStatus {

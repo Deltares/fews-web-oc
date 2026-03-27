@@ -70,7 +70,6 @@ function addRow(after: boolean = false): void {
   if (!tableRow) return
 
   const { node, pos } = tableRow
-  console.log(node)
   const cellNodes = node.content.content
   const insertPos = after ? pos + node.content.size : pos
 

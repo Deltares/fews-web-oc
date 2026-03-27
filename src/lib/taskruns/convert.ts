@@ -1,8 +1,14 @@
-import { TaskRun as FewsPiTaskRun } from '@deltares/fews-pi-requests'
+import {
+  TaskRun as FewsPiTaskRun,
+  WhatIfScenarioDescriptor,
+} from '@deltares/fews-pi-requests'
 
 import { TaskRun, TaskStatus } from './types'
 
-export function convertFewsPiTaskRunToTaskRun(taskRun: FewsPiTaskRun): TaskRun {
+export function convertFewsPiTaskRunToTaskRun(
+  taskRun: FewsPiTaskRun,
+  whatIfScenario: WhatIfScenarioDescriptor | null = null,
+): TaskRun {
   const timeZeroTimestamp = new Date(taskRun.time0).getTime()
   const dispatchTimestamp = taskRun.dispatchTime
     ? new Date(taskRun.dispatchTime).getTime()
@@ -31,6 +37,7 @@ export function convertFewsPiTaskRunToTaskRun(taskRun: FewsPiTaskRun): TaskRun {
     isCurrent: taskRun.current,
     outputStartTimestamp,
     outputEndTimestamp,
+    whatIfScenario,
   }
 }
 

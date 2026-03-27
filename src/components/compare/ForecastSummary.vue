@@ -51,6 +51,10 @@
         </div>
       </div>
       <DataTable v-if="expanded" class="mt-4" :tableData="tableData" />
+      <div v-if="expanded && task.whatIfScenario">
+        <v-divider class="my-2" />
+        <WhatIfScenarioSummary :what-if-scenario="task.whatIfScenario" />
+      </div>
     </v-card-text>
     <ForecastRange
       v-if="startTime && endTime"
@@ -76,6 +80,7 @@ import {
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
 import { useTaskRunsStore } from '@/stores/taskRuns'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
+import WhatIfScenarioSummary from '@/components/tasks/WhatIfScenarioSummary.vue'
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
