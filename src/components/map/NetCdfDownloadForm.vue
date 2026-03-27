@@ -22,20 +22,14 @@
         />
 
         <div v-if="downloadType === 'pointCloud'" class="mb-3">
-          <div class="d-flex align-center">
-            <v-textarea
-              v-model="boundingBoxString"
-              readonly
-              variant="plain"
-              :label="
+          <div class="d-flex align-center gap-2 mb-1">
+            <span class="text-body-2 text-medium-emphasis flex-grow-1">
+              {{
                 bbox
                   ? t('download.boundingBox')
                   : t('download.selectBoundingBox')
-              "
-              rows="2"
-              auto-grow
-              hide-details
-            />
+              }}
+            </span>
             <v-tooltip location="top">
               <template v-slot:activator="{ props: tooltipProps }">
                 <v-btn
@@ -50,6 +44,54 @@
               </template>
               <span>{{ t('download.selectBoundingBox') }}</span>
             </v-tooltip>
+          </div>
+          <div v-if="bbox" class="d-flex flex-column gap-3 mt-2">
+            <div class="d-flex gap-3 py-2">
+              <v-text-field
+                type="number"
+                :model-value="Math.round(bbox.lonMin * 10000) / 10000"
+                @update:model-value="bbox = { ...bbox!, lonMin: +$event }"
+                label="Longitude"
+                suffix="°E"
+                density="compact"
+                variant="outlined"
+                hide-details
+                style="padding-right: 4px"
+              />
+              <v-text-field
+                type="number"
+                :model-value="Math.round(bbox.lonMax * 10000) / 10000"
+                @update:model-value="bbox = { ...bbox!, lonMax: +$event }"
+                label="Longitude"
+                suffix="°E"
+                density="compact"
+                variant="outlined"
+                hide-details
+              />
+            </div>
+            <div class="d-flex gap-3">
+              <v-text-field
+                type="number"
+                :model-value="Math.round(bbox.latMin * 10000) / 10000"
+                @update:model-value="bbox = { ...bbox!, latMin: +$event }"
+                label="Latitude"
+                suffix="°N"
+                density="compact"
+                variant="outlined"
+                hide-details
+                style="padding-right: 4px"
+              />
+              <v-text-field
+                type="number"
+                :model-value="Math.round(bbox.latMax * 10000) / 10000"
+                @update:model-value="bbox = { ...bbox!, latMax: +$event }"
+                label="Latitude"
+                suffix="°N"
+                density="compact"
+                variant="outlined"
+                hide-details
+              />
+            </div>
           </div>
         </div>
 
@@ -112,7 +154,6 @@ import { convertDateToDateTimeString } from '@/lib/date'
 import { toMercator } from '@turf/projection'
 import DrawBoundingBoxControl from './DrawBoundingBoxControl.vue'
 import type { BoundingBox } from '@/services/useBoundingBox'
-import { boundingBoxToString } from '@/services/useBoundingBox'
 import { PiWebserviceProvider } from '@deltares/fews-pi-requests'
 
 interface Props {
@@ -135,10 +176,6 @@ const downloadOptions = computed(() => [
   { title: t('download.fullGrid'), value: 'fullGrid' },
   { title: t('download.pointCloud'), value: 'pointCloud' },
 ])
-
-const boundingBoxString = computed(() => {
-  return bbox.value ? boundingBoxToString(bbox.value) : ''
-})
 
 const isDrawingBbox = ref(false)
 
