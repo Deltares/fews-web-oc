@@ -46,17 +46,11 @@
           </div>
         </div>
       </div>
-      <DataTable
-        v-if="expanded && taskRun"
-        class="mt-4"
-        :tableData="tableData"
-      />
     </v-card-text>
   </v-card>
 </template>
 
 <script setup lang="ts">
-import DataTable from '@/components/general/DataTable.vue'
 import {
   type LogMessage,
   levelToIcon,
@@ -65,11 +59,7 @@ import {
   manualLogLevels,
 } from '@/lib/log'
 import { computed } from 'vue'
-import {
-  toDateAbsDifferenceString,
-  toDateRangeString,
-  toHumanReadableDateTime,
-} from '@/lib/date'
+import { toHumanReadableDateTime } from '@/lib/date'
 import {
   convertTaskStatusToString,
   getColorForTaskStatus,
@@ -99,62 +89,6 @@ const levelCount = computed(() =>
     {} as Record<LogMessage['level'], number>,
   ),
 )
-
-const tableData = computed(() => {
-  const timeZero = props.taskRun?.timeZeroTimestamp
-  const outputStart = props.taskRun?.outputStartTimestamp ?? timeZero
-  const outputEnd = props.taskRun?.outputEndTimestamp ?? timeZero
-  return [
-    {
-      columns: [
-        {
-          header: 'User',
-          value: props.taskRun?.userId ?? 'No user',
-        },
-        {
-          header: 'Task run ID',
-          value: props.taskRun?.taskId,
-        },
-        {
-          header: 'FSS ID',
-          value: props.taskRun?.fssId,
-        },
-      ],
-    },
-    {
-      columns: [
-        {
-          header: 'T0',
-          value: toHumanReadableDateTime(props.taskRun?.timeZeroTimestamp),
-        },
-      ],
-    },
-    {
-      columns: [
-        {
-          header: `Output time span`,
-          subHeader: toDateAbsDifferenceString(outputStart, outputEnd),
-          value: toDateRangeString(outputStart, outputEnd),
-        },
-      ],
-    },
-    {
-      columns: [
-        {
-          header: 'Task duration',
-          subHeader: toDateAbsDifferenceString(
-            props.taskRun?.dispatchTimestamp,
-            props.taskRun?.completionTimestamp,
-          ),
-          value: toDateRangeString(
-            props.taskRun?.dispatchTimestamp,
-            props.taskRun?.completionTimestamp,
-          ),
-        },
-      ],
-    },
-  ]
-})
 
 function getIconForStatus(status: string | undefined) {
   return status && isTaskStatus(status)
