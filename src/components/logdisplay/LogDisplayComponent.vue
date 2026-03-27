@@ -555,6 +555,10 @@ async function refreshLogs() {
   height: calc(100% - 104px);
 }
 
+.side-panel .logs-container {
+  height: calc(100% - 156px);
+}
+
 .logs-container > * > * {
   width: clamp(400px, calc(100% - 10px), 1100px);
 }
