@@ -59,7 +59,9 @@
   "workflow": {
     "expectedRuntime": "Expected runtime",
     "noTasksAvailable": "No tasks available",
-    "numberOfAvailableServers": "Number of available servers"
+    "numberOfAvailableServers": "Number of available servers",
+    "showingCurrentUsersTaskOnly": "Showing current users' tasks only",
+    "showingAllUsersTasks": "Showing all user's tasks"
   },
   "taskDuration": {
     "noExpectedRuntime": "No expected runtime",

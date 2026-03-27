@@ -31,6 +31,7 @@
               :canVisualize="true"
               :startTime="outputStartTime"
               :endTime="outputEndTime"
+              :is-current-users-task="user.isCurrentUser(task.userId)"
               :key="task.taskId"
               v-model:expanded="expandedItems[task.taskId]"
             />
@@ -70,6 +71,7 @@ import {
   TaskStatusCategory,
 } from '@/lib/taskruns'
 
+import { useCurrentUser } from '@/services/useCurrentUser'
 import { useTaskRuns } from '@/services/useTasksRuns'
 
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
@@ -87,6 +89,7 @@ const props = withDefaults(defineProps<Props>(), {})
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const taskRunsStore = useTaskRunsStore()
+const user = useCurrentUser()
 
 const expandedItems = ref<Record<string, boolean>>({})
 
@@ -117,6 +120,7 @@ const {
   period,
   availableWorkflowsStore.workflowIds,
   selectedTaskStatuses,
+  null,
   () => props.topologyNode?.id,
   true,
 )
