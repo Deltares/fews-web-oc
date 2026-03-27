@@ -15,32 +15,36 @@
           <span>{{ getStringForStatus(taskRun?.status) }}</span>
         </v-tooltip>
         <div
-          class="d-flex flex-column user-select-text cursor-pointer overflow-hidden"
+          class="d-flex flex-column user-select-text cursor-pointer overflow-hidden w-100"
         >
-          <div class="d-flex align-center ga-2 flex-wrap">
-            <v-list-item-title class="flex-0-1 text-wrap">
-              {{ title }}
-            </v-list-item-title>
-            <v-card-subtitle class="pa-0 flex-0-0">{{
-              toHumanReadableDateTime(entryTime)
-            }}</v-card-subtitle>
+          <v-list-item-title class="flex-0-1 text-ellipsis">
+            {{ title }}
+          </v-list-item-title>
+          <div class="d-flex">
+            <div class="d-flex flex-column flex-wrap">
+              <v-card-subtitle class="pa-0 flex-0-0">{{
+                toHumanReadableDateTime(entryTime)
+              }}</v-card-subtitle>
+              <v-card-subtitle class="pa-0">
+                T0: {{ toHumanReadableDateTime(taskRun?.timeZeroTimestamp) }}
+              </v-card-subtitle>
+            </div>
+            <v-spacer />
+            <v-chip
+              v-for="level in manualLogLevels
+                .toReversed()
+                .filter((l) => levelCount[logLevelToPiLogLevel(l)])"
+              :key="level"
+              :prepend-icon="levelToIcon(level)"
+              :text="levelCount[logLevelToPiLogLevel(level)].toString()"
+              :color="levelToColor(level)"
+              label
+              density="compact"
+              class="ms-2 flex-0-0 align-self-end"
+            >
+            </v-chip>
           </div>
-          <v-card-subtitle class="pa-0">
-            T0: {{ toHumanReadableDateTime(taskRun?.timeZeroTimestamp) }}
-          </v-card-subtitle>
         </div>
-        <v-spacer />
-        <template v-for="level in manualLogLevels.toReversed()">
-          <v-chip
-            v-if="levelCount[logLevelToPiLogLevel(level)]"
-            :prepend-icon="levelToIcon(level)"
-            :text="levelCount[logLevelToPiLogLevel(level)].toString()"
-            :color="levelToColor(level)"
-            label
-            density="compact"
-            class="ms-2 flex-0-0"
-          />
-        </template>
       </div>
       <DataTable
         v-if="expanded && taskRun"
