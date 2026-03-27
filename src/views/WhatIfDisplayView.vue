@@ -1,5 +1,12 @@
 <template>
-  <WhatIfDisplay :key="props.topologyNode?.id" :workflows="whatIfWorkflows" />
+  <div v-if="whatIfWorkflows.length === 0" class="ma-4">
+    {{ t('workflow.noTasksConfiguredForNode') }}
+  </div>
+  <WhatIfDisplay
+    v-else
+    :key="props.topologyNode?.id"
+    :workflows="whatIfWorkflows"
+  />
 </template>
 <script setup lang="ts">
 import { computed } from 'vue'
@@ -8,6 +15,9 @@ import { getWorkflowIdsForNode } from '@/lib/workflows/tasks'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { WorkflowItem } from '@/lib/workflows'
 import WhatIfDisplay from '@/components/tasksdisplay/WhatIfDisplay.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Props {
   topologyNode?: TopologyNode
