@@ -3,6 +3,7 @@
     <div class="d-flex pt-3 pb-2 align-center">
       <WorkflowFilterControl v-model="selectedWorkflowIds" />
       <TaskStatusFilterControl v-model="selectedTaskStatuses" />
+      <CurrentUserFilterControl v-model="showCurrentUserOnly" />
       <v-spacer />
       <PeriodFilterControl v-model="period" />
     </div>
@@ -75,6 +76,7 @@ import TaskStatusFilterControl from './TaskStatusFilterControl.vue'
 import TaskRunSummary from './TaskRunSummary.vue'
 import WorkflowFilterControl from './WorkflowFilterControl.vue'
 import PeriodFilterControl from './PeriodFilterControl.vue'
+import CurrentUserFilterControl from './CurrentUserFilterControl.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 
 interface Props {
@@ -89,6 +91,8 @@ const { t } = useI18n()
 
 const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
 const expandedItems = ref<Record<string, boolean>>({})
+
+const showCurrentUserOnly = ref(false)
 
 // Set preferred workflow IDs for the running tasks menu, if this node has
 // associated workflows.
@@ -125,6 +129,10 @@ const period = ref<RelativePeriod | null>({
 })
 
 const TASKS_REFRESH_INTERVAL_SECONDS = 15
+const selectedUserId = computed<string | null>(() => {
+  if (!showCurrentUserOnly.value || !user.hasCurrentUser()) return null
+  return user.preferredUsername.value
+})
 const {
   filteredTaskRuns,
   isLoading,
@@ -135,6 +143,7 @@ const {
   period,
   selectedWorkflowIds,
   selectedTaskStatuses,
+  selectedUserId,
   () => props.topologyNode?.id,
   true,
 )

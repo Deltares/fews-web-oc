@@ -36,6 +36,7 @@ export function useTaskRuns(
   dispatchPeriod: MaybeRefOrGetter<RelativePeriod | null>,
   workflowIds: MaybeRefOrGetter<string[]>,
   statuses: MaybeRefOrGetter<TaskStatus[]>,
+  userId: MaybeRefOrGetter<string | null>,
   topologyNodeId?: MaybeRefOrGetter<string | undefined>,
   includeWhatIfScenario?: MaybeRefOrGetter<boolean>,
 ) {
@@ -104,10 +105,12 @@ export function useTaskRuns(
   function filterTasks(): TaskRun[] {
     const _workflowIds = toValue(workflowIds)
     const _statuses = toValue(statuses)
+    const _userId = toValue(userId)
     return allTaskRuns.value.filter(
       (task) =>
         _workflowIds.includes(task.workflowId) &&
-        _statuses.includes(task.status),
+        _statuses.includes(task.status) &&
+        (_userId === null || task.userId === _userId),
     )
   }
 

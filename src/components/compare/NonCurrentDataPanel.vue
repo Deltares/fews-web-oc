@@ -120,6 +120,7 @@ const {
   period,
   availableWorkflowsStore.workflowIds,
   selectedTaskStatuses,
+  null,
   () => props.topologyNode?.id,
   true,
 )
