@@ -107,7 +107,7 @@ const tableData = computed(() => {
         },
         {
           header: 'Task run ID',
-          value: props.taskRun?.taskId,
+          value: props.taskRun?.taskRunId,
         },
         {
           header: 'FSS ID',

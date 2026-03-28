@@ -111,7 +111,7 @@ const {
 
 const taskRunColor = computed(() => {
   // Get color from store, fallback to contrast color if not found
-  return taskRunColorsStore.getColor(task.taskId) || '--contrast-color'
+  return taskRunColorsStore.getColor(task.taskRunId) || '--contrast-color'
 })
 
 const expanded = defineModel<boolean>('expanded', {
@@ -142,7 +142,7 @@ const tableData = computed(() => [
   {
     columns: [
       { header: 'User', value: task.userId ?? 'No user' },
-      { header: 'Task run ID', value: task.taskId },
+      { header: 'Task run ID', value: task.taskRunId },
     ],
   },
   {
@@ -234,8 +234,8 @@ function toggleTaskSelection() {
   taskRunsStore.toggleTaskRun(task)
 
   // Assign a color to the task if it doesn't have one already
-  if (!taskRunColorsStore.getColor(task.taskId)) {
-    taskRunColorsStore.assignColor(task.taskId)
+  if (!taskRunColorsStore.getColor(task.taskRunId)) {
+    taskRunColorsStore.assignColor(task.taskRunId)
   }
 }
 </script>

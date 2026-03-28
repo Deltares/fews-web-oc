@@ -6,17 +6,17 @@ export const useTaskRunsStore = defineStore('taskRuns', () => {
   const currentTaskRuns = ref<TaskRun[]>([])
   const selectedTaskRuns = ref<TaskRun[]>([])
 
-  function getTaskRunById(taskId: string | undefined) {
-    if (!taskId) return
+  function getTaskRunById(taskRunId: string | undefined) {
+    if (!taskRunId) return
     return (
-      currentTaskRuns.value.find((tr) => tr.taskId === taskId) ??
-      selectedTaskRuns.value.find((tr) => tr.taskId === taskId)
+      currentTaskRuns.value.find((tr) => tr.taskRunId === taskRunId) ??
+      selectedTaskRuns.value.find((tr) => tr.taskRunId === taskRunId)
     )
   }
 
   function toggleTaskRun(taskRun: TaskRun) {
     const index = selectedTaskRuns.value.findIndex(
-      (tr) => tr.taskId === taskRun.taskId,
+      (tr) => tr.taskRunId === taskRun.taskRunId,
     )
     if (index === -1) {
       selectedTaskRuns.value.push(taskRun)
@@ -30,7 +30,9 @@ export const useTaskRunsStore = defineStore('taskRuns', () => {
   }
 
   function taskRunIsSelected(taskRun: TaskRun) {
-    return selectedTaskRuns.value.some((tr) => tr.taskId === taskRun.taskId)
+    return selectedTaskRuns.value.some(
+      (tr) => tr.taskRunId === taskRun.taskRunId,
+    )
   }
 
   function clearSelectedTaskRuns() {
@@ -48,7 +50,7 @@ export const useTaskRunsStore = defineStore('taskRuns', () => {
   )
 
   const selectedTaskRunIds = computed(() =>
-    sortedSelectedTaskRuns.value.map((taskRun) => taskRun.taskId),
+    sortedSelectedTaskRuns.value.map((taskRun) => taskRun.taskRunId),
   )
 
   return {

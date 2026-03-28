@@ -45,7 +45,7 @@ const timeZeroString = computed(() => {
 
 const color = computed(() => {
   if (!item) return
-  return taskRunColorsStore.getColor(item.taskId)
+  return taskRunColorsStore.getColor(item.taskRunId)
 })
 </script>
 

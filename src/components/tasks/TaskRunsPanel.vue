@@ -32,9 +32,9 @@
           <div v-else class="my-1 mx-2">
             <TaskRunSummary
               :task="task"
-              :key="task.taskId"
+              :key="task.taskRunId"
               :is-current-users-task="user.isCurrentUser(task.userId)"
-              v-model:expanded="expandedItems[task.taskId]"
+              v-model:expanded="expandedItems[task.taskRunId]"
             />
           </div>
         </template>

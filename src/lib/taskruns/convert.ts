@@ -25,7 +25,7 @@ export function convertFewsPiTaskRunToTaskRun(
   // Set null for undefined and empty descriptions.
   const description = taskRun.description ? taskRun.description : null
   return {
-    taskId: taskRun.id,
+    taskRunId: taskRun.id,
     workflowId: taskRun.workflowId,
     userId: taskRun.user,
     fssId: taskRun.fssId ?? null,

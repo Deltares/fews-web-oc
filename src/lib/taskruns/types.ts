@@ -22,7 +22,7 @@ export enum TaskStatusCategory {
 }
 
 export interface TaskRun {
-  taskId: string
+  taskRunId: string
   workflowId: string
   fssId: string | null
   status: TaskStatus
@@ -42,5 +42,5 @@ export function isTaskStatus(value: string): value is TaskStatus {
 }
 
 export function isTaskRun(value: unknown): value is TaskRun {
-  return typeof value === 'object' && value !== null && 'taskId' in value
+  return typeof value === 'object' && value !== null && 'taskRunId' in value
 }

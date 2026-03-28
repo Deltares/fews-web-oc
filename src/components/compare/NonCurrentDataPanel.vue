@@ -32,8 +32,8 @@
               :startTime="outputStartTime"
               :endTime="outputEndTime"
               :is-current-users-task="user.isCurrentUser(task.userId)"
-              :key="task.taskId"
-              v-model:expanded="expandedItems[task.taskId]"
+              :key="task.taskRunId"
+              v-model:expanded="expandedItems[task.taskRunId]"
             />
           </div>
         </template>

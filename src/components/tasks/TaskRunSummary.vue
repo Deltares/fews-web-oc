@@ -107,7 +107,7 @@ const tableData = computed(() => [
   {
     columns: [
       { header: 'User', value: props.task.userId ?? 'No user' },
-      { header: 'Task run ID', value: props.task.taskId },
+      { header: 'Task run ID', value: props.task.taskRunId },
     ],
   },
   {
