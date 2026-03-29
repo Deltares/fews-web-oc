@@ -11,7 +11,19 @@
         <div class="w-100">
           <v-list-item-subtitle class="mb-1 d-flex justify-space-between">
             <span>{{ timeZeroString }}</span>
-            <v-icon v-if="isCurrentUsersTask" icon="mdi-account" size="small" />
+            <div class="d-flex gc-1">
+              <v-icon
+                v-if="isCurrentUsersTask"
+                icon="mdi-account"
+                size="small"
+              />
+              <v-icon
+                v-if="canBeFollowed"
+                :icon="isFollowed ? 'mdi-bell' : 'mdi-bell-off'"
+                size="small"
+                @click.stop="toggleFollow"
+              />
+            </div>
           </v-list-item-subtitle>
           <div class="d-flex align-center ga-1 w-100">
             <v-tooltip>
@@ -65,8 +77,10 @@ import {
   convertTaskStatusToString,
   getColorForTaskStatus,
   getIconForTaskStatus,
+  getTaskStatusCategory,
   TaskRun,
   TaskStatus,
+  TaskStatusCategory,
 } from '@/lib/taskruns'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed } from 'vue'
@@ -87,8 +101,18 @@ const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
 interface Props {
   task: TaskRun
   isCurrentUsersTask?: boolean
+  isFollowed?: boolean
 }
-const props = withDefaults(defineProps<Props>(), { isCurrentUsersTask: false })
+const props = withDefaults(defineProps<Props>(), {
+  isCurrentUsersTask: false,
+  isFollowed: false,
+})
+
+interface Emits {
+  follow: [taskRunId: string]
+  unfollow: [taskRunId: string]
+}
+const emit = defineEmits<Emits>()
 
 const expanded = defineModel<boolean>('expanded', {
   required: false,
@@ -217,6 +241,22 @@ function onExpansionPanelToggle() {
   // Only expand when no text is selected
   if (window.getSelection()?.toString() === '') {
     expanded.value = !expanded.value
+  }
+}
+
+const canBeFollowed = computed<boolean>(() => {
+  const category = getTaskStatusCategory(props.task.status)
+  return (
+    category !== TaskStatusCategory.Completed &&
+    category !== TaskStatusCategory.Failed
+  )
+})
+
+function toggleFollow(): void {
+  if (props.isFollowed) {
+    emit('unfollow', props.task.taskRunId)
+  } else {
+    emit('follow', props.task.taskRunId)
   }
 }
 </script>

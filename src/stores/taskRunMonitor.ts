@@ -151,11 +151,16 @@ export const useTaskRunMonitorStore = defineStore(
       )
     }
 
+    function isFollowed(taskRunId: string): boolean {
+      return monitoredTaskRunIds.value.includes(taskRunId)
+    }
+
     return {
       monitoredTaskRunIds,
       followByTaskId,
       follow,
       unfollow,
+      isFollowed,
     }
   },
   {
