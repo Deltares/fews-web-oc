@@ -158,6 +158,7 @@ import { useAlertsStore } from '@/stores/alerts'
 import { useWorkflowsStore, WorkflowType } from '@/stores/workflows'
 import { useWorkflowBoundingBox } from '@/services/useWorkflowBoundingBox'
 import { useWhatIfTemplateSchemas } from '@/services/useWhatIfTemplateSchemas'
+import { useTaskRunMonitorStore } from '@/stores/taskRunMonitor'
 
 interface Props {
   workflows: WorkflowItem[]
@@ -178,6 +179,7 @@ const emit = defineEmits<Emits>()
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
 const alertStore = useAlertsStore()
 const workflowsStore = useWorkflowsStore()
+const taskRunMonitor = useTaskRunMonitorStore()
 
 const selectedWhatIfTemplate = ref<WhatIfTemplate>()
 const selectedWhatIfScenario = ref<WhatIfScenarioDescriptor>()
@@ -366,6 +368,18 @@ async function submit() {
     if (workflowType === WorkflowType.ProcessData) {
       showSuccessMessage('File download completed')
     } else {
+      // The result is a taskId (note: not a taskRunId!); monitor this task's
+      // progress to notify the user when it completes or fails.
+      if (result) {
+        taskRunMonitor
+          .followByTaskId(result)
+          .catch((error) =>
+            console.error(
+              `Failed to monitor task with taskId ${result}: ${error}`,
+            ),
+          )
+      }
+
       showStartMessage(
         'Workflow submitted successfully. You can monitor the task progress using the Task Overview.',
       )

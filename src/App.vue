@@ -20,6 +20,7 @@ import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { useUserSettingsStore } from './stores/userSettings'
 import { useTheme } from 'vuetify'
 import { useDark, usePreferredDark, useToggle } from '@vueuse/core'
+import { useTaskRunMonitorStore } from './stores/taskRunMonitor'
 
 import '@/assets/fews-flags.css'
 
@@ -30,6 +31,9 @@ const { change } = useTheme()
 const prefersDark = usePreferredDark()
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
+
+// Initialise task run monitoring.
+useTaskRunMonitorStore()
 
 onMounted(() => {
   updateTheme()

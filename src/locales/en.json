@@ -13,7 +13,9 @@
     "selectAll": "Select all",
     "start": "Start",
     "unsavedChanges": "Unsaved changes",
-    "unsavedChangesExitWarning": "You have unsaved changes. Leave without saving?"
+    "unsavedChangesExitWarning": "You have unsaved changes. Leave without saving?",
+    "finished": "finished",
+    "failed": "failed"
   },
   "layout": {
     "about": "About",
@@ -66,7 +68,9 @@
     "noTasksConfiguredForNode": "No tasks have been configured.",
     "numberOfAvailableServers": "Number of available servers",
     "showingCurrentUsersTaskOnly": "Showing current users' tasks only",
-    "showingAllUsersTasks": "Showing all user's tasks"
+    "showingAllUsersTasks": "Showing all user's tasks",
+    "unknownWorkflow": "Unknown workflow",
+    "taskRunFinishedMessage": "Task run for workflow {name} started at {datetime} has {statusVerb}."
   },
   "taskDuration": {
     "noExpectedRuntime": "No expected runtime",
