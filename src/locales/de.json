@@ -13,7 +13,8 @@
     "selectAll": "Alle auswählen",
     "start": "Start",
     "unsavedChanges": "Ungespeicherte Änderungen",
-    "unsavedChangesExitWarning": "Sie haben ungespeicherte Änderungen. Ohne Speichern verlassen?"
+    "unsavedChangesExitWarning": "Sie haben ungespeicherte Änderungen. Ohne Speichern verlassen?",
+    "apply": "Anwenden"
   },
   "layout": {
     "about": "Über",

@@ -46,7 +46,6 @@ import {
 import { ResourceType, RequestParameters, LngLatBounds, Map } from 'maplibre-gl'
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { transformStyle } from '@/lib/map'
 import { getRequestHeaders } from '@/lib/requests/transformRequest'
 
 interface Props {

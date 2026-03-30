@@ -3,11 +3,11 @@ import { Permission, PiWebserviceProvider } from '@deltares/fews-pi-requests'
 import { configManager } from '../application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 
-const STORAGE_KEY = 'weboc-permission-excludes'
-const FAVORITES_KEY = 'weboc-permission-favorites'
+const STORAGE_KEY = 'v1-weboc-permission-excludes'
 
-function loadFromStorage(key: string): string[] {
-  const stored = window.localStorage.getItem(key)
+function loadFromStorage(key: string, useSession = false): string[] {
+  const storage = useSession ? window.sessionStorage : window.localStorage
+  const stored = storage.getItem(key)
   if (!stored) return []
   try {
     const parsed = JSON.parse(stored)
@@ -17,22 +17,15 @@ function loadFromStorage(key: string): string[] {
   }
 }
 
+
 const permissions = ref<Permission[]>([])
-const excludedPermissions = ref<string[]>(loadFromStorage(STORAGE_KEY))
-const favoritePermissions = ref<string[]>(loadFromStorage(FAVORITES_KEY))
+// Store excludedPermissions in sessionStorage
+const excludedPermissions = ref<string[]>(loadFromStorage(STORAGE_KEY, true))
 
 watch(
   excludedPermissions,
   (value) => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
-  },
-  { deep: true },
-)
-
-watch(
-  favoritePermissions,
-  (value) => {
-    window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(value))
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(value))
   },
   { deep: true },
 )
@@ -53,23 +46,6 @@ export default function usePermissionExcludes() {
   function isEnabled(permissionId: string): boolean {
     return !excludedPermissions.value.includes(permissionId)
   }
-
-  function toggleFavorite(permissionId: string) {
-    const index = favoritePermissions.value.indexOf(permissionId)
-    if (index >= 0) {
-      favoritePermissions.value.splice(index, 1)
-    } else {
-      favoritePermissions.value.push(permissionId)
-    }
-  }
-
-  function isFavorite(permissionId: string): boolean {
-    return favoritePermissions.value.includes(permissionId)
-  }
-
-  const favoritePermissionsList = computed(() =>
-    permissions.value.filter((p) => favoritePermissions.value.includes(p.id)),
-  )
 
   async function loadPermissions() {
     if (permissions.value.length === 0) {
@@ -94,9 +70,6 @@ export default function usePermissionExcludes() {
     excludedPermissions: readonly(excludedPermissions),
     togglePermission,
     isEnabled,
-    toggleFavorite,
-    isFavorite,
-    favoritePermissionsList,
   }
 }
 

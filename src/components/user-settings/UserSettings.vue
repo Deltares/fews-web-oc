@@ -66,19 +66,12 @@
       </template>
     </v-list-item>
   </v-list>
-  <v-list class="mb-2" density="compact">
-    <v-list-subheader>{{ t('userSettings.permissions') }}</v-list-subheader>
-    <ExcludePermissions />
-  </v-list>
 </template>
 
 <script setup lang="ts">
 import { UserSettingsItem, useUserSettingsStore } from '@/stores/userSettings'
-import ExcludePermissions from './ExcludePermissions.vue'
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
 const store = useUserSettingsStore()
 const groups = computed(() => store.listGroups)
 
