@@ -59,6 +59,7 @@
   "workflow": {
     "expectedRuntime": "Erwartete Laufzeit",
     "noTasksAvailable": "Keine Aufgaben verfügbar",
+    "noTasksConfiguredForNode": "Keine Aufgaben konfiguriert.",
     "numberOfAvailableServers": "Anzahl verfügbarer Server",
     "showingCurrentUsersTaskOnly": "Zeigt nur Aufgaben des aktuellen Benutzers",
     "showingAllUsersTasks": "Zeigt Aufgaben aller Benutzer"
