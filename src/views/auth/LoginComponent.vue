@@ -20,20 +20,28 @@
               <span class="user-name">{{ name }}</span>
             </div>
           </v-list-item>
-          <template v-if="disableablePermissions.length > 0">
+          <template v-if="disableablePermissions.length > 0 || hasSessionPermissions">
             <v-list-item>
               <v-list-item-title class="mb-1">{{
                 t('userSettings.permissions')
               }}</v-list-item-title>
               <template v-slot:append>
                 <v-btn
-                  v-if="permissionsChanged"
+                  v-if="permissionsChanged || hasSessionPermissions"
                   color="primary"
-                  @click="applyPermissionsAndClose"
+                  @click="
+                    permissionsChanged
+                      ? applyPermissionsAndClose()
+                      : resetPermissions()
+                  "
                   size="small"
                   variant="flat"
                 >
-                  {{ t('common.apply') }}
+                  {{
+                    hasSessionPermissions
+                      ? t('common.reset')
+                      : t('common.apply')
+                  }}
                 </v-btn>
               </template>
             </v-list-item>
@@ -100,13 +108,34 @@ const user = ref<User | null>(null)
 const requiresLogin = ref(hasUserManager)
 
 const { permissions, isEnabled, togglePermission } = usePermissionExcludes()
+
 const permissionsChanged = ref(false)
 const pendingEnabled = ref<Record<string, boolean>>({})
 const menuOpen = ref(false)
 
+const STORAGE_KEY = 'v1-weboc-permission-excludes'
+const hasSessionPermissions = computed(() => {
+  try {
+    const stored = window.sessionStorage.getItem(STORAGE_KEY)
+    return stored && JSON.parse(stored).length > 0
+  } catch {
+    return false
+  }
+})
+
 const disableablePermissions = computed(() =>
   permissions.value.filter((p) => p.assigned && isEnabled(p.id)),
 )
+function resetPermissions() {
+  window.sessionStorage.removeItem(STORAGE_KEY)
+  // Reset local state
+  Object.keys(pendingEnabled.value).forEach((key) => {
+    pendingEnabled.value[key] = true
+  })
+  permissionsChanged.value = false
+  menuOpen.value = false
+  window.location.reload()
+}
 
 watch(
   permissions,
