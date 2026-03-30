@@ -25,43 +25,44 @@
               <v-list-item-title class="mb-1">{{
                 t('userSettings.permissions')
               }}</v-list-item-title>
-              <div>
-                <v-list density="compact" class="pa-0">
-                  <v-list-item
-                    v-for="perm in disableablePermissions"
-                    :key="perm.id"
-                    class="pa-0"
-                  >
-                    <v-switch
-                      density="compact"
-                      color="primary"
-                      :model-value="isPendingEnabled(perm.id)"
-                      @update:model-value="
-                        (val) => onPermissionChange(perm.id, val ?? true)
-                      "
-                      hide-details
-                      class="ml-3"
-                      :label="perm.id"
-                    >
-                      <template #label>
-                        <v-label class="text-subtitle-2 text-medium-emphasis">{{
-                          perm.id
-                        }}</v-label>
-                      </template>
-                    </v-switch>
-                  </v-list-item>
-                </v-list>
+              <template v-slot:append>
                 <v-btn
                   v-if="permissionsChanged"
                   color="primary"
                   @click="applyPermissionsAndClose"
-                  class="mt-2"
                   size="small"
                   variant="flat"
                 >
                   {{ t('common.apply') }}
                 </v-btn>
-              </div>
+              </template>
+            </v-list-item>
+            <v-list-item>
+              <v-list density="compact" class="pa-0">
+                <v-list-item
+                  v-for="perm in disableablePermissions"
+                  :key="perm.id"
+                  class="pa-0"
+                >
+                  <v-checkbox
+                    density="compact"
+                    color="primary"
+                    :model-value="isPendingEnabled(perm.id)"
+                    @update:model-value="
+                      (val) => onPermissionChange(perm.id, val ?? true)
+                    "
+                    hide-details
+                    class="ml-3"
+                    :label="perm.id"
+                  >
+                    <template #label>
+                      <v-label class="text-subtitle-2 text-medium-emphasis">{{
+                        perm.id
+                      }}</v-label>
+                    </template>
+                  </v-checkbox>
+                </v-list-item>
+              </v-list>
             </v-list-item>
           </template>
           <v-list-item @click="logout" v-if="hasUserManager">
