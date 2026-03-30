@@ -14,7 +14,8 @@
     "start": "Start",
     "unsavedChanges": "Ungespeicherte Änderungen",
     "unsavedChangesExitWarning": "Sie haben ungespeicherte Änderungen. Ohne Speichern verlassen?",
-    "apply": "Anwenden"
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen"
   },
   "layout": {
     "about": "Über",

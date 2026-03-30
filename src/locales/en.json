@@ -14,7 +14,8 @@
     "start": "Start",
     "unsavedChanges": "Unsaved changes",
     "unsavedChangesExitWarning": "You have unsaved changes. Leave without saving?",
-    "apply": "Apply"
+    "apply": "Apply",
+    "reset": "Reset"
   },
   "layout": {
     "about": "About",
