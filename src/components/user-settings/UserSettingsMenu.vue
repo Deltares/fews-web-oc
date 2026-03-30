@@ -46,17 +46,11 @@ import {
 } from '@/stores/userSettings'
 import SettingsDialog from './SettingsDialog.vue'
 import UserSettings from './UserSettings.vue'
-import usePermissionExcludes from '@/services/usePermissionExcludes'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
 const store = useUserSettingsStore()
-const {
-  favoritePermissionsList,
-  isEnabled: isPermissionEnabled,
-  togglePermission,
-} = usePermissionExcludes()
 
 function updateModelValue(setting: UserSettingsItem) {
   store.add(setting)
