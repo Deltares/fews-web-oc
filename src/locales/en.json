@@ -18,7 +18,8 @@
     "failed": "failed",
     "maximizeChart": "Maximize chart",
     "restoreChart": "Restore chart",
-    "apply": "Apply"
+    "apply": "Apply",
+    "reset": "Reset"
   },
   "layout": {
     "about": "About",

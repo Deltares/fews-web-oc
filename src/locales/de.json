@@ -18,7 +18,8 @@
     "failed": "fehlgeschlagen",
     "maximizeChart": "Diagramm maximieren",
     "restoreChart": "Diagramm wiederherstellen",
-    "apply": "Anwenden"
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen"
   },
   "layout": {
     "about": "Über",
