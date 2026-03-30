@@ -12,17 +12,29 @@
           <v-list-item-subtitle class="mb-1 d-flex justify-space-between">
             <span>{{ timeZeroString }}</span>
             <div class="d-flex gc-1">
-              <v-icon
+              <v-tooltip
                 v-if="isCurrentUsersTask"
-                icon="mdi-account"
-                size="small"
-              />
-              <v-icon
+                :text="t('workflow.startedByMe')"
+              >
+                <template #activator="{ props }">
+                  <v-icon v-bind="props" icon="mdi-account" size="small" />
+                </template>
+              </v-tooltip>
+              <v-tooltip
                 v-if="canBeFollowed"
-                :icon="isFollowed ? 'mdi-bell' : 'mdi-bell-off'"
-                size="small"
-                @click.stop="toggleFollow"
-              />
+                :text="
+                  t(isFollowed ? 'workflow.following' : 'workflow.notFollowing')
+                "
+              >
+                <template #activator="{ props }">
+                  <v-icon
+                    v-bind="props"
+                    :icon="isFollowed ? 'mdi-bell' : 'mdi-bell-off'"
+                    size="small"
+                    @click.stop="toggleFollow"
+                  />
+                </template>
+              </v-tooltip>
             </div>
           </v-list-item-subtitle>
           <div class="d-flex align-center ga-1 w-100">
@@ -94,6 +106,9 @@ import {
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
 import WhatIfScenarioSummary from './WhatIfScenarioSummary.vue'
 import SingleLineWithOverflowTooltip from '../general/SingleLineWithOverflowTooltip.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()

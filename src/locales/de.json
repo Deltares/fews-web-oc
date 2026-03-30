@@ -69,8 +69,11 @@
     "numberOfAvailableServers": "Anzahl verfügbarer Server",
     "showingCurrentUsersTaskOnly": "Zeigt nur Aufgaben des aktuellen Benutzers",
     "showingAllUsersTasks": "Zeigt Aufgaben aller Benutzer",
+    "startedByMe": "Von mir gestartet",
     "unknownWorkflow": "Unbekannter Workflow",
-    "taskRunFinishedMessage": "Die Aufgabenausführung für Workflow {name}, gestartet am {datetime}, ist {statusVerb}."
+    "taskRunFinishedMessage": "Die Aufgabenausführung für Workflow {name}, gestartet am {datetime}, ist {statusVerb}.",
+    "following": "Benachrichtigung bei Aufgabenabschluss oder -fehler wird angezeigt",
+    "notFollowing": "Benachrichtigung bei Aufgabenabschluss oder -fehler wird nicht angezeigt"
   },
   "taskDuration": {
     "noExpectedRuntime": "Keine erwartete Laufzeit",

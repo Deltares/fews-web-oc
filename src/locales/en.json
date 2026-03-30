@@ -69,8 +69,11 @@
     "numberOfAvailableServers": "Number of available servers",
     "showingCurrentUsersTaskOnly": "Showing current users' tasks only",
     "showingAllUsersTasks": "Showing all user's tasks",
+    "startedByMe": "Started by me",
     "unknownWorkflow": "Unknown workflow",
-    "taskRunFinishedMessage": "Task run for workflow {name} started at {datetime} has {statusVerb}."
+    "taskRunFinishedMessage": "Task run for workflow {name} started at {datetime} has {statusVerb}.",
+    "following": "Showing notification upon task completion or failure",
+    "notFollowing": "Not showing notification upon task completion or failure"
   },
   "taskDuration": {
     "noExpectedRuntime": "No expected runtime",
