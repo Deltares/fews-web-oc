@@ -102,8 +102,10 @@ function updateMinZoom() {
   const worldWidth = map.getContainer().clientWidth
   // Add a small epsilon to ensure that the latitudinal extent is smaller than 360.0 degrees
   // Otherwise we trigger the > 360.0 condition in WMSStreamlineLayer (@deltares/wms-streamline-layer).
-  minZoom.value =
+  const computedMinZoom =
     Math.log2(worldWidth / worldSizeAtZoom0) + 100 * Number.EPSILON
+  // MapLibre does not allow zoom levels below -2.
+  minZoom.value = Math.max(-2, computedMinZoom)
 }
 
 function transformRequest(
