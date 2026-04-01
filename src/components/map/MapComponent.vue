@@ -35,8 +35,6 @@
 </template>
 
 <script setup lang="ts">
-import { configManager } from '@/services/application-config'
-import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import SyncMap from '@/components/map/SyncMap.vue'
 import {
   MglAttributionControl,
@@ -48,6 +46,7 @@ import {
 import { ResourceType, RequestParameters, LngLatBounds, Map } from 'maplibre-gl'
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { getRequestHeaders } from '@/lib/requests/transformRequest'
 
 interface Props {
   bounds?: LngLatBounds
@@ -112,12 +111,8 @@ function transformRequest(
   url: string,
   resourceType?: ResourceType,
 ): RequestParameters {
-  if (!configManager.authenticationIsEnabled)
-    return {
-      url,
-    }
   if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
-    const requestAuthHeaders = authenticationManager.getAuthorizationHeaders()
+    const requestAuthHeaders = getRequestHeaders()
     return {
       url,
       headers: requestAuthHeaders,

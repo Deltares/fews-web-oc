@@ -13,7 +13,9 @@
     "selectAll": "Alle auswählen",
     "start": "Start",
     "unsavedChanges": "Ungespeicherte Änderungen",
-    "unsavedChangesExitWarning": "Sie haben ungespeicherte Änderungen. Ohne Speichern verlassen?"
+    "unsavedChangesExitWarning": "Sie haben ungespeicherte Änderungen. Ohne Speichern verlassen?",
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen"
   },
   "layout": {
     "about": "Über",
@@ -42,7 +44,9 @@
   },
   "userSettings": {
     "allSettings": "Alle Einstellungen",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "selectUsedPermissions": "Berechtigungen auswählen",
+    "permissions": "Berechtigungen"
   },
   "wms": {
     "overlays": "Layerauswahl",

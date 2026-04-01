@@ -13,7 +13,9 @@
     "selectAll": "Select all",
     "start": "Start",
     "unsavedChanges": "Unsaved changes",
-    "unsavedChangesExitWarning": "You have unsaved changes. Leave without saving?"
+    "unsavedChangesExitWarning": "You have unsaved changes. Leave without saving?",
+    "apply": "Apply",
+    "reset": "Reset"
   },
   "layout": {
     "about": "About",
@@ -42,7 +44,9 @@
   },
   "userSettings": {
     "allSettings": "All settings",
-    "settings": "Settings"
+    "settings": "Settings",
+    "selectUsedPermissions": "Select used permissions",
+    "permissions": "Permissions"
   },
   "wms": {
     "overlays": "Overlays",

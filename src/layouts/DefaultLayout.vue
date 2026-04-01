@@ -18,7 +18,7 @@
         <div id="app-bar-content-end" />
         <TimeControlMenu />
         <UserSettingsMenu />
-        <LoginComponent v-if="configManager.authenticationIsEnabled" />
+        <LoginComponent v-if="hasAnyAuthentication"/>
       </template>
     </v-app-bar>
 
@@ -144,7 +144,7 @@
       <v-sheet class="w-100 h-100 d-flex flex-row">
         <div class="flex-1-1 overflow-hidden">
           <Suspense>
-            <router-view></router-view>
+            <router-view :key="permissionsKey"></router-view>
           </Suspense>
         </div>
         <div class="border-s h-100" id="main-side-panel" />
@@ -176,7 +176,6 @@ import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
 import StartupDialog from '@/components/dialog/StartupDialog.vue'
 
-import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import packageConfig from '@/../package.json'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
@@ -187,6 +186,7 @@ import {
 } from '@/lib/basemap/index.ts'
 import type { MapLayerConfig } from '@deltares/fews-pi-requests'
 import { useBaseMapsStore } from '@/stores/baseMaps.ts'
+import { permissionsKey } from '@/services/usePermissionExcludes'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
@@ -204,6 +204,10 @@ const isInstalledPWA = window.matchMedia('(display-mode: standalone)').matches
 const showHash = ref(false)
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
+
+const hasAnyAuthentication = computed(() => {
+  return import.meta.env.VITE_REQUEST_HEADER_AUTHORIZATION == 'Bearer' || import.meta.env.VITE_REQUEST_HEADER_AUTHORIZATION == 'Basic'
+})
 
 function updateAppBarColor() {
   appBarColor.value = getComputedStyle(document.body).getPropertyValue(
