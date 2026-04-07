@@ -39,18 +39,6 @@ export const useOverlaysStore = defineStore('overlays', {
     removeOverlay(id: string) {
       this.overlays = this.overlays.filter((overlay) => overlay.id !== id)
     },
-    updateOverlayVisibility(id: string, visible: boolean) {
-      const overlay = this.overlays.find((o) => o.id === id)
-      if (overlay) {
-        overlay.visible = visible
-      }
-    },
-    updateOverlayOpacity(id: string, opacity: number) {
-      const overlay = this.overlays.find((o) => o.id === id)
-      if (overlay) {
-        overlay.opacity = Math.max(0, Math.min(1, opacity))
-      }
-    },
   },
 
   persist: [
