@@ -190,6 +190,7 @@ The classbreaks (legend) on the Spatial Display is only shown in the Web-OC when
 
 Optionally, gridded vector data can be shown as an animated layer in Web OC by configuring the `<animatedVectors>` settings in [Spatial Display](https://publicwiki.deltares.nl/display/FEWSDOC/01+Grid+Display).
 
+The desired mapExtentId should be configured on the topologyNode, through the <mapExtentId>Example</mapExtentId> element.
 ---
 
 
@@ -198,7 +199,10 @@ Optionally, gridded vector data can be shown as an animated layer in Web OC by c
 In `Topology.xml`, a dashboard is linked to a node using `<webOCDashboardId>`.  
 For further configuration, see: [WebOCDashboards.xml](https://publicwiki.deltares.nl/spaces/FEWSDOC/pages/356779153/38+Web+OC+Dashboards).
 
+The desired mapExtentId should be configured on the topologyNode, through the <mapExtentId>Example</mapExtentId> element.
+
 ---
+
 
 ## Threshold Information in WebOC
 
@@ -222,6 +226,7 @@ In **WebOC**, the following options exist for displaying threshold information:
    By double-clicking, the threshold overview becomes visible in a side panel.  
    This option is only visible if  
    `<showActiveThresholdCrossingsForFilters>true</showActiveThresholdCrossingsForFilters>`
+
 
 ## Web OC side panel
 
