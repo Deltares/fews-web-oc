@@ -16,7 +16,7 @@ jobs:
       - name: Get installed Playwright version
         id: playwright-version
         run: |
-          echo "PLAYWRIGHT_VERSION=$(npm ls playwright --depth=0 --package-lock-only --json \
+          echo "PLAYWRIGHT_VERSION=$(npm ls playwright --depth=1 --package-lock-only --json \
             | sed -n '/\"playwright\": {/,/}/ s/.*\"version\": \"\([^\"]*\)\".*/playwright@\1/p')" >> $GITHUB_ENV
       - name: Cache playwright binaries
         uses: actions/cache@v5
