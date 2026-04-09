@@ -47,7 +47,9 @@
           @click="updateLayer(layerOption?.name)"
           ><template #prepend>
             <v-icon class="ps-6" size="x-small">{{
-              layerOption?.name === props.layerName ? 'mdi-check' : ''
+              layerOption?.name === props.layerName
+                ? 'mdi-radiobox-marked'
+                : 'mdi-radiobox-blank'
             }}</v-icon>
           </template>
         </v-list-item>
