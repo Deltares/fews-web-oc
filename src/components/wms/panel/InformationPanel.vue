@@ -42,7 +42,6 @@
         <v-list-item
           v-for="layerOption in layers"
           :title="layerOption?.title"
-          :subtitle="getForecastTimeString(layerOption)"
           :active="layerOption?.name === props.layerName"
           @click="updateLayer(layerOption?.name)"
           ><template #prepend>
