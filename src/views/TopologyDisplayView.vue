@@ -61,9 +61,7 @@
         </template>
         <v-list>
           <v-list-item
-            v-for="control in secondaryControls.filter(
-              (c) => !c.disabled && c.type !== secondaryControl,
-            )"
+            v-for="control in secondaryControls.filter((c) => !c.disabled)"
             :prepend-icon="control.icon"
             :title="control.title"
             @click="
