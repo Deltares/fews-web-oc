@@ -2,6 +2,7 @@ import type { Map } from 'maplibre-gl'
 
 const LAYER_PREFIX = 'weboc-layer-'
 const SOURCE_PREFIX = 'weboc-source-'
+const TERRADRAW_PREFIX = 'td-measure-'
 
 export function getLayerId(id: string) {
   return `${LAYER_PREFIX}${id}`
@@ -12,11 +13,11 @@ export function getSourceId(id: string) {
 }
 
 export function isCustomLayer(id: string) {
-  return id.startsWith(LAYER_PREFIX)
+  return id.startsWith(LAYER_PREFIX) || id.startsWith(TERRADRAW_PREFIX)
 }
 
 export function isCustomSource(id: string) {
-  return id.startsWith(SOURCE_PREFIX)
+  return id.startsWith(SOURCE_PREFIX) || id.startsWith(TERRADRAW_PREFIX)
 }
 
 export const mapIds = {
