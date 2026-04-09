@@ -54,13 +54,15 @@
           </template>
         </v-list-item>
         <v-divider></v-divider>
-        <v-list-item
-          :title="analysisTime"
-          :subtitle="formattedTimeRange"
-          prepend-icon="mdi-clock-time-four-outline"
-        >
+        <v-list-item prepend-icon="mdi-clock-time-four-outline">
+          <v-list-item-title>
+            <span class="text-medium-emphasis">T0:</span>
+            {{ analysisTime }}
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            {{ formattedTimeRange }}
+          </v-list-item-subtitle>
         </v-list-item>
-
         <slot></slot>
       </v-list>
     </v-menu>
