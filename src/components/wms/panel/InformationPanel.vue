@@ -41,6 +41,7 @@
         </v-list-item>
         <v-list-item
           v-for="layerOption in layers"
+          :key="layerOption?.name"
           :title="layerOption?.title"
           :active="layerOption?.name === props.layerName"
           @click="updateLayer(layerOption?.name)"
