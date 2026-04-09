@@ -44,6 +44,7 @@
           :title="layerOption?.title"
           :active="layerOption?.name === props.layerName"
           @click="updateLayer(layerOption?.name)"
+          density="compact"
           ><template #prepend>
             <v-icon class="ps-6" size="x-small">{{
               layerOption?.name === props.layerName
