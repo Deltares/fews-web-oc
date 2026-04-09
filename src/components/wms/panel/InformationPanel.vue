@@ -34,50 +34,35 @@
       </template>
       <v-list class="information-panel-list">
         <v-list-item prepend-icon="mdi-layers">
-          <v-list-item
-            v-if="layers.length <= 1"
-            :title="title"
-            :subtitle="analysisTime"
-            class="px-0"
-          />
-          <v-menu
-            v-else
-            v-model="showMenu"
-            transition="slide-y-transition"
-            :close-on-content-click="false"
-          >
-            <template v-slot:activator="{ props, isActive }">
-              <v-list-item
-                v-bind="props"
-                :title="title"
-                :subtitle="analysisTime"
-                rounded
-                class="px-0"
-              >
-                <template #append>
-                  <SelectIcon :active="isActive" />
-                </template>
-              </v-list-item>
-            </template>
-            <v-list density="compact">
-              <v-list-item
-                v-for="layerOption in layers"
-                :key="layerOption?.name"
-                :title="layerOption?.title"
-                :active="layerOption?.name === layer"
-                @click="updateLayer(layerOption?.name)"
-              />
-            </v-list>
-          </v-menu>
+          <v-list-item-subtitle>{{
+            t('wms.selectLayers')
+          }}</v-list-item-subtitle>
+          <v-list-item-title>{{ layers[0]?.groupTitle }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item
+          v-for="layerOption in layers"
+          :key="layerOption?.name"
+          :title="layerOption?.title"
+          :active="layerOption?.name === props.layerName"
+          @click="updateLayer(layerOption?.name)"
+          ><template #prepend>
+            <v-icon class="ps-6" size="x-small">{{
+              layerOption?.name === props.layerName
+                ? 'mdi-radiobox-marked'
+                : 'mdi-radiobox-blank'
+            }}</v-icon>
+          </template>
         </v-list-item>
         <v-divider></v-divider>
-        <v-list-item
-          :title="t('wms.timeRange')"
-          :subtitle="formattedTimeRange"
-          prepend-icon="mdi-clock-time-four-outline"
-        >
+        <v-list-item prepend-icon="mdi-clock-time-four-outline">
+          <v-list-item-title>
+            <span class="text-medium-emphasis">T0:</span>
+            {{ analysisTime }}
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            {{ formattedTimeRange }}
+          </v-list-item-subtitle>
         </v-list-item>
-
         <slot></slot>
       </v-list>
     </v-menu>

@@ -22,7 +22,7 @@ export function getForecastTimeString(capabilities: Layer | undefined) {
     return 'Analysis time not available'
   }
 
-  return `Analysis time: ${toHumanReadableDateTime(forecastTime)}`
+  return `${toHumanReadableDateTime(forecastTime)}`
 }
 
 export function getValueTimeRangeString(capabilities: Layer | undefined) {
