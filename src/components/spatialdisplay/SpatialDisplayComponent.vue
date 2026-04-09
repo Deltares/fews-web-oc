@@ -89,6 +89,7 @@
           :currentTime="selectedDate"
           :layerCapabilities="layerCapabilities"
           v-model:show-layer="showLayer"
+          v-model:taskRunId="taskRunId"
           @changeLayer="onLayerChange"
         >
           <template v-if="aggregations.length > 0">
@@ -122,7 +123,6 @@
             />
           </template>
         </InformationPanel>
-        <TaskRunControl v-model:taskRunId="taskRunId" />
         <LocationsSearchControl
           v-if="settings.locationsLayer.locationSearchEnabled"
           v-model:showLocations="showLocationsLayer"
@@ -196,7 +196,6 @@ import BoundingBoxControl from '@/components/map/BoundingBoxControl.vue'
 import MapToolsControl from '@/components/map/MapToolsControl.vue'
 import CoordinatesDisplay from '@/components/map/CoordinatesDisplay.vue'
 import StreamlinesButton from '@/components/wms/panel/StreamlinesButton.vue'
-import TaskRunControl from '@/components/wms/TaskRunControl.vue'
 import debounce from 'lodash-es/debounce'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
