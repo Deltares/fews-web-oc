@@ -46,6 +46,7 @@
   },
   "wms": {
     "overlays": "Layerauswahl",
+    "selectLayers": "Layerauswahl",
     "timeRange": "Zeitbereich"
   },
   "sidePanel": {

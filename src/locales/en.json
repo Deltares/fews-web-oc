@@ -46,7 +46,8 @@
   },
   "wms": {
     "overlays": "Overlays",
-    "timeRange": "Time range"
+    "timeRange": "Time range",
+    "selectLayers": "Select layers"
   },
   "sidePanel": {
     "thresholdOverview": "Thresholds overview",
