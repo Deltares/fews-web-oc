@@ -1,22 +1,17 @@
-<template>
-  <mgl-geo-json-source :source-id="sourceId" :data="geoJson">
-    <mgl-circle-layer
-      :layer-id="layerId"
-      :paint="paintSpecification"
-      @mouseenter="mouseenter"
-      @mouseleave="mouseleave"
-      @mousedown="mousedown"
-      @touchstart="touchstart"
-    />
-  </mgl-geo-json-source>
-</template>
+<template></template>
 
 <script setup lang="ts">
-import { LngLat, MapMouseEvent, MapTouchEvent, Popup } from 'maplibre-gl'
-import { computed, ref, watch } from 'vue'
-import { MglGeoJsonSource, MglCircleLayer } from '@indoorequal/vue-maplibre-gl'
-import { getLayerId, getSourceId } from '@/lib/map'
+import {
+  type GeoJSONSourceSpecification,
+  type MapMouseEvent,
+  type MapTouchEvent,
+  type LngLat,
+  Popup,
+} from 'maplibre-gl'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useMap } from '@/services/useMap'
+import { useLayer, useSource } from '@/services/useLayer'
+import { mapIds } from '@/lib/map'
 
 interface Props {
   coordinate?: LngLat
@@ -29,8 +24,8 @@ const { map } = useMap()
 if (!map) throw new Error('Map is not available to show selected coordinate')
 const canvas = map.getCanvasContainer()
 
-const layerId = getLayerId('selected-coordinate')
-const sourceId = getSourceId('selected-coordinate')
+const layerId = mapIds.coordinate.layer
+const sourceId = mapIds.coordinate.source
 
 const paintSpecification = {
   'circle-radius': 8,
@@ -66,7 +61,7 @@ watch(coordinate, () => {
     .setLngLat(coordinate.value)
 })
 
-type DataType = InstanceType<typeof MglGeoJsonSource>['data']
+type DataType = GeoJSONSourceSpecification['data']
 const geoJson = computed<DataType>(() => {
   if (!coordinate.value) {
     return {
@@ -84,6 +79,21 @@ const geoJson = computed<DataType>(() => {
     },
   }
 })
+
+const { source } = useSource(mapIds.coordinate.source, () => ({
+  type: 'geojson',
+  data: geoJson.value,
+}))
+useLayer(
+  layerId,
+  () => ({
+    id: layerId,
+    type: 'circle',
+    paint: paintSpecification,
+    source: sourceId,
+  }),
+  source,
+)
 
 const onMove = (e: MapMouseEvent) => {
   coordinate.value = e.lngLat
@@ -129,6 +139,24 @@ const touchstart = (e: MapTouchEvent) => {
   map.on('touchmove', onMove)
   document.addEventListener('touchend', onUp, { once: true })
 }
+
+onMounted(() => {
+  if (!map) return
+
+  map.on('mouseenter', layerId, mouseenter)
+  map.on('mouseleave', layerId, mouseleave)
+  map.on('mousedown', layerId, mousedown)
+  map.on('touchstart', layerId, touchstart)
+})
+
+onUnmounted(() => {
+  if (!map) return
+
+  map.off('mouseenter', layerId, mouseenter)
+  map.off('mouseleave', layerId, mouseleave)
+  map.off('mousedown', layerId, mousedown)
+  map.off('touchstart', layerId, touchstart)
+})
 </script>
 
 <!-- Has to be unscoped since tooltip is placed in map canvas dom element -->

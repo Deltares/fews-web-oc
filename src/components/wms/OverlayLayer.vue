@@ -4,7 +4,6 @@
     :layer="options"
     :layerId="getLayerId(`overlay-${options.name}`)"
     :sourceId="getSourceId(`overlay-${options.name}`)"
-    :beforeId="beforeId"
     :key="`overlay-${options.name}`"
   />
 </template>
@@ -17,7 +16,6 @@ import { computed } from 'vue'
 
 interface Props {
   overlay: Overlay
-  beforeId?: string
 }
 
 const props = defineProps<Props>()

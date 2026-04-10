@@ -1,40 +1,22 @@
-<template>
-  <mgl-image-source
-    v-if="sourceOptions"
-    :sourceId="sourceId"
-    :url="sourceOptions.url"
-    :coordinates="sourceOptions.coordinates"
-  >
-    <mgl-raster-layer
-      :layerId="layerId"
-      :before="beforeId"
-      :key="beforeId"
-      :paint="{
-        'raster-opacity': 0,
-        'raster-fade-duration': 0,
-      }"
-    />
-  </mgl-image-source>
-</template>
+<template></template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { toMercator } from '@turf/projection'
 import {
   Coordinates,
-  ImageSource,
+  ImageSourceSpecification,
   LngLat,
   LngLatBounds,
   MapLayerMouseEvent,
   MapLayerTouchEvent,
   type MapSourceDataEvent,
 } from 'maplibre-gl'
-import { MglImageSource, MglRasterLayer } from '@indoorequal/vue-maplibre-gl'
 import { configManager } from '@/services/application-config'
 import { useMap } from '@/services/useMap'
 import { point } from '@turf/helpers'
-import { getBeforeId } from '@/lib/map'
 import { debounce } from 'lodash-es'
+import { useLayer, useSource } from '@/services/useLayer'
 
 export interface AnimatedRasterLayerOptions {
   name: string
@@ -54,7 +36,6 @@ interface Props {
   layer: AnimatedRasterLayerOptions
   layerId: string
   sourceId: string
-  beforeId?: string
   enableDoubleClick?: boolean
 }
 
@@ -63,13 +44,11 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 
-const beforeId = computed(() => getBeforeId(map, props.layerId, props.beforeId))
-
 const emit = defineEmits(['doubleclick'])
 
 const { map } = useMap()
 
-const sourceOptions = ref<ReturnType<typeof getImageSourceOptions>>()
+const sourceOptions = ref<ImageSourceSpecification>()
 
 onMounted(() => {
   isLoading.value = true
@@ -158,10 +137,8 @@ function removeHooksFromMapObject(): void {
   map?.off('error', onError)
 }
 
-function getImageSourceOptions() {
-  if (map === undefined) {
-    return
-  }
+function getImageSourceOptions(): ImageSourceSpecification | undefined {
+  if (!map) return
 
   const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
   let bounds = map.getBounds()
@@ -219,6 +196,7 @@ function getImageSourceOptions() {
     getMapUrl.searchParams.append('taskRunId', props.layer.taskRunId)
   }
   return {
+    type: 'image',
     url: getMapUrl.toString(),
     coordinates: getCoordsFromBounds(bounds),
   }
@@ -228,19 +206,23 @@ watch(() => props.layer, debouncedUpdate, { immediate: true })
 async function updateSource() {
   if (!map || map.isMoving()) return
 
-  if (!sourceOptions.value) {
-    sourceOptions.value = getImageSourceOptions()
-    return
-  }
-
-  const source = map.getSource(props.sourceId) as ImageSource
-  if (!source) return
-
-  const imageOptions = getImageSourceOptions()
-  if (!imageOptions) return
-
-  source.updateImage(imageOptions)
+  sourceOptions.value = getImageSourceOptions()
 }
+
+const { source } = useSource(props.sourceId, sourceOptions)
+useLayer(
+  props.layerId,
+  {
+    type: 'raster',
+    id: props.layerId,
+    source: props.sourceId,
+    paint: {
+      'raster-opacity': 0,
+      'raster-fade-duration': 0,
+    },
+  },
+  source,
+)
 
 function getMercatorBboxFromBounds(bounds: LngLatBounds): number[] {
   const sw = toMercator(point(bounds.getSouthWest().toArray()))

@@ -7,17 +7,16 @@
       :key="`layer-${layerOptions.name}`"
       :layerId="mapIds.wms.layer"
       :sourceId="mapIds.wms.source"
-      :beforeId="baseMap.beforeId"
       :enableDoubleClick="settings.wmsLayer.doubleClickAction"
       @doubleclick="onCoordinateClick"
     />
     <AnimatedStreamlineRasterLayer
       v-if="layerKind === LayerKind.Streamline && showLayer && layerOptions"
       v-model:isLoading="isLoading"
+      :key="`streamline-layer-${layerOptions.name}`"
       :layerOptions="layerOptions"
       :streamlineOptions="layerCapabilities?.animatedVectors"
       :layerId="mapIds.wms.layer"
-      :beforeId="baseMap.beforeId"
       :enableDoubleClick="settings.wmsLayer.doubleClickAction"
       @doubleclick="onCoordinateClick"
     />
@@ -50,7 +49,7 @@
       :locationsClickable="settings.locationsLayer.singleClickAction"
       @click="onLocationClick"
     />
-    <CoordinateSelectorLayer
+    <CoordinateSelectorMarker
       v-if="workflowsStore.isSelectingCoordinate"
       v-model:coordinate="workflowsStore.coordinate"
     />
@@ -58,7 +57,6 @@
       v-for="overlay in selectedOverlays"
       :key="overlay.id"
       :overlay="overlay"
-      :beforeId="baseMap.beforeId"
     />
     <MapToolsControl />
     <div class="mapcomponent__controls-container pa-2 ga-2">
@@ -112,6 +110,7 @@
               :isLoading="isLoading"
               v-model:layer-kind="layerKind"
               @click.stop.prevent
+              class="ms-2"
             />
           </template>
           <template #extension>
@@ -213,7 +212,7 @@ import { useDisplay } from 'vuetify'
 import ColourLegend from '@/components/wms/ColourLegend.vue'
 import { rangeToString, styleToId } from '@/lib/legend'
 import { useWorkflowsStore } from '@/stores/workflows'
-import CoordinateSelectorLayer from '@/components/wms/CoordinateSelectorLayer.vue'
+import CoordinateSelectorMarker from '@/components/wms/CoordinateSelectorMarker.vue'
 import CoordinateSelectorControl from '@/components/map/CoordinateSelectorControl.vue'
 import { FeatureCollection, Geometry } from 'geojson'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
@@ -229,6 +228,7 @@ import { configManager } from '@/services/application-config'
 import { useSelectedElevation } from '@/services/useSelectedElevation'
 import { clamp } from '@/lib/utils/math'
 import { useAggregations } from '@/services/useAggregations'
+import { provideLayerOrder } from '@/services/useLayerOrder'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -359,6 +359,8 @@ watch(
 )
 
 const { baseMap, mapStyle } = useBaseMap()
+
+provideLayerOrder(() => props.settings.overlays, baseMap)
 
 const { selectedOverlayIds, selectedOverlays } = useOverlays(
   () => props.settings.overlays,

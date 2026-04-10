@@ -19,6 +19,7 @@
     @map:resize="updateMinZoom"
   >
     <SyncMap />
+    <MaintainLayerOrder />
     <!-- Fade duration is set to 100ms instead of 0ms to avoid flickering -->
     <mgl-attribution-control position="top-right" :compact="true" />
     <mgl-navigation-control
@@ -38,6 +39,7 @@
 import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import SyncMap from '@/components/map/SyncMap.vue'
+import MaintainLayerOrder from '@/components/map/MaintainLayerOrder.vue'
 import {
   MglAttributionControl,
   MglGeolocateControl,
@@ -45,9 +47,16 @@ import {
   MglNavigationControl,
   MglScaleControl,
 } from '@indoorequal/vue-maplibre-gl'
-import { ResourceType, RequestParameters, LngLatBounds, Map } from 'maplibre-gl'
+import type {
+  ResourceType,
+  RequestParameters,
+  LngLatBounds,
+  Map,
+} from 'maplibre-gl'
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
+import { transformStyle } from '@/lib/map'
+import { useLayerOrder } from '@/services/useLayerOrder'
 
 interface Props {
   bounds?: LngLatBounds
@@ -74,6 +83,8 @@ onMounted(() => {
   updateMinZoom()
 })
 
+const { getBeforeId } = useLayerOrder()
+
 watch(
   () => props.style,
   (newBaseStyle) => {
@@ -81,7 +92,9 @@ watch(
 
     // @ts-expect-error map is not exposed in the types
     const map: Map | undefined = mapRef.value?.map
-    map?.setStyle(newBaseStyle, { diff: true })
+    map?.setStyle(newBaseStyle, {
+      transformStyle: (prev, next) => transformStyle(prev, next, getBeforeId),
+    })
   },
 )
 

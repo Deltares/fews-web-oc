@@ -1,20 +1,15 @@
-<template>
-  <mgl-symbol-layer
-    :layerId="layerId"
-    :layout="layout"
-    :filter="filter"
-    :paint="paint"
-  />
-</template>
+<template></template>
 
 <script setup lang="ts">
-import type { SymbolLayerSpecification } from 'maplibre-gl'
+import type { Source, SymbolLayerSpecification } from 'maplibre-gl'
 import { shouldBehaveLikeChildFilter } from '@/lib/map'
-import { MglSymbolLayer } from '@indoorequal/vue-maplibre-gl'
 import { computed } from 'vue'
+import { useLayer } from '@/services/useLayer'
 
 interface Props {
   layerId: string
+  sourceId: string
+  source: Source | undefined
   isDark: boolean
   child?: boolean
 }
@@ -54,8 +49,7 @@ const parentLayout: SymbolLayerSpecification['layout'] = {
   'icon-overlap': 'always',
 }
 
-// const layout = computed<SymbolLayerSpecification['layout']>(() => {
-const layout = computed<any>(() => {
+const layout = computed<SymbolLayerSpecification['layout']>(() => {
   return props.child ? childLayout : parentLayout
 })
 
@@ -68,4 +62,17 @@ const paint = computed<SymbolLayerSpecification['paint']>(() => {
     'text-translate': [-10, 0],
   }
 })
+
+useLayer(
+  props.layerId,
+  () => ({
+    id: props.layerId,
+    type: 'symbol',
+    filter,
+    layout: layout.value,
+    paint: paint.value,
+    source: props.sourceId,
+  }),
+  () => props.source,
+)
 </script>

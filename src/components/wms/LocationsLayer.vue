@@ -1,26 +1,39 @@
 <template>
-  <mgl-geo-json-source :source-id="locationMapIds.source" :data="geojson">
-    <LocationsFillLayer
-      :layerId="locationMapIds.layer.fill"
-      :selectedLocationIds="selectedLocationIds"
-      :isDark="isDark"
-      :hoveredStateId="hoveredStateId"
-    />
+  <LocationsFillLayer
+    :layerId="mapIds.location.layer.fill"
+    :sourceId="mapIds.location.source"
+    :source="source"
+    :selectedLocationIds="selectedLocationIds"
+    :isDark="isDark"
+    :hoveredStateId="hoveredStateId"
+  />
 
-    <LocationsCircleLayer :layerId="locationMapIds.layer.circle" />
+  <LocationsCircleLayer
+    :layerId="mapIds.location.layer.circle"
+    :sourceId="mapIds.location.source"
+    :source="source"
+  />
 
-    <LocationsSymbolLayer
-      :layerId="locationMapIds.layer.symbol"
-      :isDark="isDark"
-    />
-    <LocationsSymbolLayer
-      :layerId="locationMapIds.layer.childSymbol"
-      :isDark="isDark"
-      child
-    />
+  <LocationsSymbolLayer
+    :layerId="mapIds.location.layer.symbol"
+    :sourceId="mapIds.location.source"
+    :isDark="isDark"
+    :source="source"
+  />
+  <LocationsSymbolLayer
+    :layerId="mapIds.location.layer.childSymbol"
+    :sourceId="mapIds.location.source"
+    :isDark="isDark"
+    :source="source"
+    child
+  />
 
-    <LocationsTextLayer :layerId="locationMapIds.layer.text" :isDark="isDark" />
-  </mgl-geo-json-source>
+  <LocationsTextLayer
+    :layerId="mapIds.location.layer.text"
+    :sourceId="mapIds.location.source"
+    :source="source"
+    :isDark="isDark"
+  />
 
   <LocationsMarkers :geojson="geojson" />
 </template>
@@ -31,7 +44,6 @@ import LocationsCircleLayer from '@/components/wms/locations/LocationsCircleLaye
 import LocationsSymbolLayer from '@/components/wms/locations/LocationsSymbolLayer.vue'
 import LocationsTextLayer from '@/components/wms/locations/LocationsTextLayer.vue'
 import LocationsMarkers from '@/components/wms/locations/LocationsMarkers.vue'
-import { MglGeoJsonSource } from '@indoorequal/vue-maplibre-gl'
 import type { FeatureCollection, Geometry } from 'geojson'
 import { type Location } from '@deltares/fews-pi-requests'
 import {
@@ -45,11 +57,12 @@ import { addLocationIconsToMap } from '@/lib/location-icons'
 import { useDark } from '@vueuse/core'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
-  locationMapIds,
+  mapIds,
   clickableLocationLayerIds,
   addPropertiesToLocationGeojson,
 } from '@/lib/map'
 import { useMap } from '@/services/useMap'
+import { useSource } from '@/services/useLayer'
 
 const settings = useUserSettingsStore()
 const isDark = useDark()
@@ -89,6 +102,11 @@ const geojson = computed(() =>
 )
 
 const emit = defineEmits(['click'])
+
+const { source } = useSource(mapIds.location.source, () => ({
+  type: 'geojson',
+  data: geojson.value,
+}))
 
 watch(geojson, () => {
   addLocationIcons()
@@ -176,8 +194,9 @@ function addHooksToMapObject() {
       }
     }
 
-    map.on('mousemove', locationMapIds.layer.fill, onFillMouseMove)
-    map.on('mouseleave', locationMapIds.layer.fill, onFillMouseLeave)
+    map.on('mousemove', mapIds.location.layer.fill, onFillMouseMove)
+    map.on('mouseleave', mapIds.location.layer.fill, onFillMouseLeave)
+    map.on('style.load', addLocationIcons)
   }
 }
 
@@ -189,8 +208,9 @@ function removeHooksFromMapObject() {
       map.off('mouseleave', layerId, unsetCursorPointer)
     }
 
-    map.on('mousemove', locationMapIds.layer.fill, onFillMouseMove)
-    map.on('mouseleave', locationMapIds.layer.fill, onFillMouseLeave)
+    map.on('mousemove', mapIds.location.layer.fill, onFillMouseMove)
+    map.on('mouseleave', mapIds.location.layer.fill, onFillMouseLeave)
+    map.off('style.load', addLocationIcons)
   }
 }
 </script>
