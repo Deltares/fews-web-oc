@@ -54,7 +54,7 @@
       v-model:coordinate="workflowsStore.coordinate"
     />
     <OverlayLayer
-      v-for="overlay in selectedOverlays"
+      v-for="overlay in overlayStore.visibleOverlays"
       :key="overlay.id"
       :overlay="overlay"
     />
@@ -72,10 +72,9 @@
         :coordinate="workflowsStore.coordinate"
       />
       <template v-else>
-        <OverlayInformationPanel v-if="overlays.length">
+        <OverlayInformationPanel v-if="overlayStore.listOverlays.length">
           <OverlayPanel
-            :overlays="overlays"
-            v-model:selected-overlay-ids="selectedOverlayIds"
+            :overlays="overlayStore.listOverlays"
             :capabilities="staticCapabilities"
           />
         </OverlayInformationPanel>
@@ -219,7 +218,7 @@ import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import OverlayLayer from '@/components/wms/OverlayLayer.vue'
 import { useColourScales } from '@/services/useColourScales'
 import { useSelectedDate } from '@/services/useSelectedDate'
-import { useOverlays } from '@/services/useOverlays'
+import { useOverlaysStore } from '@/stores/overlays'
 import { useBaseMap } from '@/services/useBaseMap'
 import { isInDatesRange } from '@/lib/date'
 import { getLocationWithChilds, mapIds } from '@/lib/map'
@@ -309,6 +308,15 @@ const showDateTimeSlider = computed(() => {
 })
 
 watch(
+  () => props.settings.overlays,
+  (newOverlays) => {
+    newOverlays.forEach((overlay) => {
+      overlayStore.addOverlay(overlay)
+    })
+  },
+)
+
+watch(
   () => props.times,
   (times) => {
     if (!times || times.length === 0) {
@@ -361,9 +369,7 @@ const { baseMap, mapStyle } = useBaseMap()
 
 provideLayerOrder(() => props.settings.overlays, baseMap)
 
-const { selectedOverlayIds, selectedOverlays, overlays } = useOverlays(
-  () => props.settings.overlays,
-)
+const overlayStore = useOverlaysStore()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const maxValuesStartTime = ref<Date | null>(null)

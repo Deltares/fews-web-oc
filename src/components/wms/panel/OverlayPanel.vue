@@ -5,7 +5,7 @@
     </v-list-item-subtitle>
     <draggable
       v-model="overlays"
-      :disabled="!enabled" 
+      :disabled="!enabled"
       item-key="name"
       class="list-group"
       ghost-class="ghost"
@@ -22,17 +22,7 @@
               />
             </v-list-item-action>
             <v-list-item-action start>
-              <v-checkbox-btn
-                :modelValue="
-                  selectedOverlayIds.includes(element.id ?? '')
-                "
-                @update:model-value="
-                  (value) => {
-                    selectOverlayId(element.id ?? '', value as boolean)
-                  }
-                "
-                density="compact"
-              />
+              <v-checkbox-btn v-model="element.visible" density="compact" />
             </v-list-item-action>
           </template>
           <v-list-item-title>{{ getTitle(element) }}</v-list-item-title>
@@ -70,7 +60,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const overlays = defineModel<Overlay[]>('overlays', {
-  default: () => []
+  default: () => [],
 })
 
 function getTitle(overlay: Overlay): string {
@@ -79,24 +69,6 @@ function getTitle(overlay: Overlay): string {
   )
   return foundLayer?.title ?? overlay.id ?? 'Unnamed overlay'
 }
-
-const selectedOverlayIds = defineModel<string[]>('selectedOverlayIds', {
-  required: true,
-})
-
-function selectOverlayId(overlayId: string, value: boolean) {
-  const index = selectedOverlayIds.value.indexOf(overlayId)
-  if (value) {
-    if (index === -1) {
-      selectedOverlayIds.value.push(overlayId)
-    }
-  } else {
-    if (index !== -1) {
-      selectedOverlayIds.value.splice(index, 1)
-    }
-  }
-}
-
 
 const enabled = ref(true)
 </script>
