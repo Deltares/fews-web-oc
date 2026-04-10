@@ -54,7 +54,7 @@
       v-model:coordinate="workflowsStore.coordinate"
     />
     <OverlayLayer
-      v-for="overlay in overlayStore.visibleOverlays"
+      v-for="overlay in visibleOverlays"
       :key="overlay.id"
       :overlay="overlay"
     />
@@ -72,9 +72,10 @@
         :coordinate="workflowsStore.coordinate"
       />
       <template v-else>
-        <OverlayInformationPanel v-if="overlayStore.overlays.length">
+        <OverlayInformationPanel v-if="overlays.length">
           <OverlayPanel
-            v-model:overlays="overlayStore.overlays"
+            v-model:overlays="overlays"
+            :layer="layerCapabilities"
             :capabilities="staticCapabilities"
           />
         </OverlayInformationPanel>
@@ -218,7 +219,6 @@ import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import OverlayLayer from '@/components/wms/OverlayLayer.vue'
 import { useColourScales } from '@/services/useColourScales'
 import { useSelectedDate } from '@/services/useSelectedDate'
-import { useOverlaysStore } from '@/stores/overlays'
 import { useBaseMap } from '@/services/useBaseMap'
 import { isInDatesRange } from '@/lib/date'
 import { getLocationWithChilds, mapIds } from '@/lib/map'
@@ -228,6 +228,7 @@ import { useSelectedElevation } from '@/services/useSelectedElevation'
 import { clamp } from '@/lib/utils/math'
 import { useAggregations } from '@/services/useAggregations'
 import { provideLayerOrder } from '@/services/useLayerOrder'
+import { useOverlays } from '@/services/useOverlays'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -308,15 +309,6 @@ const showDateTimeSlider = computed(() => {
 })
 
 watch(
-  () => props.settings.overlays,
-  (newOverlays) => {
-    newOverlays.forEach((overlay) => {
-      overlayStore.addOverlay(overlay)
-    })
-  },
-)
-
-watch(
   () => props.times,
   (times) => {
     if (!times || times.length === 0) {
@@ -367,9 +359,9 @@ watch(
 
 const { baseMap, mapStyle } = useBaseMap()
 
-const overlayStore = useOverlaysStore()
+const { overlays, visibleOverlays } = useOverlays(() => props.settings.overlays)
 
-provideLayerOrder(() => overlayStore.overlays, baseMap)
+provideLayerOrder(overlays, baseMap)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const maxValuesStartTime = ref<Date | null>(null)

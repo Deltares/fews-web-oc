@@ -5,28 +5,26 @@
     </v-list-item-subtitle>
     <draggable
       v-model="overlays"
-      :disabled="!enabled"
-      item-key="name"
+      item-key="id"
       class="list-group"
       ghost-class="ghost"
     >
       <template #item="{ element }">
-        <v-list-item :class="{ 'not-draggable': !enabled }" density="compact">
+        <v-list-item density="compact">
           <template #prepend>
             <v-list-item-action start>
               <v-icon
-                v-if="enabled"
                 icon="mdi-drag-vertical"
                 size="small"
                 class="drag-handle"
               />
             </v-list-item-action>
-            <v-list-item-action start>
-              <v-checkbox-btn v-model="element.visible" density="compact" />
+            <v-list-item-action start v-if="element.type === 'overLay'">
+              <v-checkbox-btn v-model="element.visible" />
             </v-list-item-action>
           </template>
           <v-list-item-title>{{ getTitle(element) }}</v-list-item-title>
-          <v-list-item-subtitle>
+          <v-list-item-subtitle v-if="element.type === 'overLay'">
             <v-slider
               v-model="element.opacity"
               :min="0"
@@ -47,14 +45,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import draggable from 'vuedraggable'
-import type { Overlay } from '@deltares/fews-pi-requests'
-import type { GetCapabilitiesResponse } from '@deltares/fews-wms-requests'
+import type {
+  GetCapabilitiesResponse,
+  Layer,
+} from '@deltares/fews-wms-requests'
 import { useI18n } from 'vue-i18n'
+import type { Overlay } from '@/services/useOverlays'
 const { t } = useI18n()
 
 interface Props {
+  layer: Layer | undefined
   capabilities: GetCapabilitiesResponse | undefined
 }
 
@@ -62,23 +63,21 @@ const props = defineProps<Props>()
 const overlays = defineModel<Overlay[]>('overlays')
 
 function getTitle(overlay: Overlay): string {
+  if (overlay.type === 'gridLayer') {
+    return props.layer?.title ?? 'wms'
+  }
+
   const foundLayer = props.capabilities?.layers.find(
     (layer) => layer.name === overlay.id,
   )
   return foundLayer?.title ?? overlay.id ?? 'Unnamed overlay'
 }
-
-const enabled = ref(true)
 </script>
 
 <style scoped>
 .ghost {
   opacity: 0.5;
   background: #c8ebfb;
-}
-
-.not-draggable {
-  cursor: no-drop;
 }
 
 :deep(.v-slider.v-input--horizontal > .v-input__control) {

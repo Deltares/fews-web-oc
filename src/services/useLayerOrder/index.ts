@@ -1,6 +1,6 @@
 import type { BaseMap } from '@/lib/basemap'
 import { getLayerId, isCustomLayer, mapIds } from '@/lib/map'
-import type { Overlay } from '@/stores/overlays'
+import type { Overlay } from '@/services/useOverlays'
 import {
   computed,
   type ComputedRef,
@@ -24,9 +24,7 @@ export function provideLayerOrder(
     const _layers = toValue(layers)
     const _baseMap = toValue(baseMap)
 
-    const layerIds = ensureExactlyOneWmsLayer(
-      _layers.map(convertOverlayToLayerId),
-    )
+    const layerIds = _layers.map(convertOverlayToLayerId)
     const layerIdsWithBeforeId = _baseMap.beforeId
       ? [...layerIds, _baseMap.beforeId]
       : layerIds
@@ -94,21 +92,4 @@ function convertOverlayToLayerId(overlay: Overlay): string {
   }
 
   throw new Error(`Unknown layer type: ${overlay.type}`)
-}
-
-function ensureExactlyOneWmsLayer(layerIds: string[]) {
-  const wmsLayerCount = layerIds.filter((id) => id === mapIds.wms.layer).length
-
-  if (wmsLayerCount === 0) {
-    // If there is no WMS layer, we add it at the beginning of the layer order
-    return [mapIds.wms.layer, ...layerIds]
-  }
-
-  if (wmsLayerCount > 1) {
-    throw new Error(
-      `There should be exactly one layer with id ${mapIds.wms.layer} in the layer order.`,
-    )
-  }
-
-  return layerIds
 }
