@@ -27,14 +27,14 @@ export const useOverlaysStore = defineStore('overlays', {
   actions: {
     addOverlay(overlay: Overlay) {
       const index = this.overlays.findIndex((o) => o.id === overlay.id)
-      const defauts = {
+      const defaults = {
         opacity: 1,
       }
       if (index === -1) {
-        this.overlays.push({ ...defauts, ...overlay })
+        this.overlays.push({ ...defaults, ...overlay })
       } else {
         const current = this.overlays[index]
-        this.overlays[index] = { ...defauts, ...overlay, ...current }
+        this.overlays[index] = { ...defaults, ...overlay, ...current }
       }
     },
     removeOverlay(id: string) {
