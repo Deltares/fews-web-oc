@@ -121,6 +121,7 @@
   },
   "overrides": {
     "sonarqube-scanner": {
+      "axios": "^1.15.0",
       "node-forge": "^1.4.0"
     }
   },
