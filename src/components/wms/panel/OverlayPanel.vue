@@ -80,10 +80,13 @@ const enabled = ref(true)
 .not-draggable {
   cursor: no-drop;
 }
-</style>
 
-<style>
-.gradient-slider .v-slider-track__background {
+:deep(.v-slider.v-input--horizontal > .v-input__control) {
+  height: 12px !important;
+  min-height: 12px !important;
+}
+
+.gradient-slider :deep(.v-slider-track__background) {
   background: linear-gradient(
     to right,
     rgba(var(--v-theme-on-surface), 0) 0%,
@@ -91,12 +94,7 @@ const enabled = ref(true)
   ) !important;
 }
 
-.gradient-slider .v-slider-track__fill {
+.gradient-slider :deep(.v-slider-track__fill) {
   opacity: 0 !important;
-}
-
-.v-slider.v-input--horizontal > .v-input__control {
-  height: 12px !important;
-  min-height: 12px !important;
 }
 </style>
