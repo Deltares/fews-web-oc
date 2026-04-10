@@ -146,13 +146,13 @@ export function useSource(
   )
 
   function updateSource(source: Source, options: SourceSpecification) {
-    if (isImageSource(options)) {
+    if (isImageSourceSpecification(options)) {
       const imageSource = source as ImageSource
       imageSource.updateImage(options)
       return
     }
 
-    if (isGeojsonSource(options)) {
+    if (isGeojsonSourceSpecification(options)) {
       const geojsonSource = source as GeoJSONSource
       geojsonSource.setData(options.data)
       return
@@ -188,13 +188,13 @@ export function useSource(
   }
 }
 
-function isImageSource(
+function isImageSourceSpecification(
   source: SourceSpecification | undefined,
 ): source is ImageSourceSpecification {
   return source?.type === 'image'
 }
 
-function isGeojsonSource(
+function isGeojsonSourceSpecification(
   source: SourceSpecification | undefined,
 ): source is GeoJSONSourceSpecification {
   return source?.type === 'geojson' && 'data' in source
