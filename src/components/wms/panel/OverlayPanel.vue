@@ -59,9 +59,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const overlays = defineModel<Overlay[]>('overlays', {
-  default: () => [],
-})
+const overlays = defineModel<Overlay[]>('overlays')
 
 function getTitle(overlay: Overlay): string {
   const foundLayer = props.capabilities?.layers.find(

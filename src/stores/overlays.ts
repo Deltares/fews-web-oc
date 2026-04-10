@@ -11,9 +11,6 @@ export const useOverlaysStore = defineStore('overlays', {
   }),
 
   getters: {
-    listOverlays: (state) => {
-      return state.overlays
-    },
     getOverlay: (state) => (id: string) => {
       return state.overlays.find((overlay) => overlay.id === id)
     },
@@ -32,7 +29,6 @@ export const useOverlaysStore = defineStore('overlays', {
         this.overlays.push({ ...defauts, ...overlay })
       } else {
         const current = this.overlays[index]
-        console.log('Updating overlay', { ...defauts, ...overlay, ...current })
         this.overlays[index] = { ...defauts, ...overlay, ...current }
       }
     },

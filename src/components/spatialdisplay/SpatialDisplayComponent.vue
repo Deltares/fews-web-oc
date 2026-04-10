@@ -72,9 +72,9 @@
         :coordinate="workflowsStore.coordinate"
       />
       <template v-else>
-        <OverlayInformationPanel v-if="overlayStore.listOverlays.length">
+        <OverlayInformationPanel v-if="overlayStore.overlays.length">
           <OverlayPanel
-            :overlays="overlayStore.listOverlays"
+            v-model:overlays="overlayStore.overlays"
             :capabilities="staticCapabilities"
           />
         </OverlayInformationPanel>
@@ -367,9 +367,9 @@ watch(
 
 const { baseMap, mapStyle } = useBaseMap()
 
-provideLayerOrder(() => props.settings.overlays, baseMap)
-
 const overlayStore = useOverlaysStore()
+
+provideLayerOrder(() => overlayStore.overlays, baseMap)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const maxValuesStartTime = ref<Date | null>(null)
