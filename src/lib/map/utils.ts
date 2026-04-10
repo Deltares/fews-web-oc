@@ -32,6 +32,7 @@ export function transformStyle(
 ): StyleSpecification {
   if (!oldStyle) return newStyle
 
+  // Collect all custom layers from the old style, along with the id of the layer that follows them
   const customLayers = oldStyle.layers.flatMap((layer, i) => {
     if (!isCustomLayer(layer.id)) return []
 
@@ -43,6 +44,7 @@ export function transformStyle(
 
   const layers = [...newStyle.layers]
 
+  // Insert each custom layer into the new style's layers, preserving their relative order
   customLayers.forEach(({ layer, beforeId }) => {
     const beforeIndex = layers.findIndex((l) => l.id === beforeId)
 
@@ -53,6 +55,7 @@ export function transformStyle(
     }
   })
 
+  // Merge custom sources from the old style into the new style's sources
   const sources = { ...newStyle.sources }
   for (const [key, value] of Object.entries(oldStyle.sources)) {
     if (isCustomSource(key)) {
