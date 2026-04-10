@@ -29,40 +29,41 @@ export const mapIds = {
 export function transformStyle(
   oldStyle: StyleSpecification | undefined,
   newStyle: StyleSpecification,
+  getBeforeId: (layerId: string, currentOrder: string[]) => string | undefined,
 ): StyleSpecification {
   if (!oldStyle) return newStyle
 
-  // Collect all custom layers from the old style, along with the id of the layer that follows them
-  const customLayers = oldStyle.layers.flatMap((layer, i) => {
-    if (!isCustomLayer(layer.id)) return []
-
-    return {
-      layer,
-      beforeId: oldStyle.layers[i + 1]?.id,
-    }
-  })
-
   const layers = [...newStyle.layers]
+  // Insert custom layers from the old style into the new style's layers array,
+  // using the desired layer order on the new style's layers to determine the correct position
+  // for each custom layer
+  for (const layer of oldStyle.layers) {
+    if (isCustomLayer(layer.id)) {
+      const beforeId = getBeforeId(
+        layer.id,
+        layers.map((l) => l.id),
+      )
+      const beforeIndex = layers.findIndex((l) => l.id === beforeId)
 
-  // Insert each custom layer into the new style's layers, preserving their relative order
-  customLayers.forEach(({ layer, beforeId }) => {
-    const beforeIndex = layers.findIndex((l) => l.id === beforeId)
-
-    if (beforeIndex !== -1) {
-      layers.splice(beforeIndex, 0, layer)
-    } else {
-      layers.push(layer)
+      if (beforeIndex !== -1) {
+        // Insert the custom layer before the found index
+        layers.splice(beforeIndex, 0, layer)
+      } else {
+        // If no suitable position is found, append the custom layer at the end
+        layers.push(layer)
+      }
     }
-  })
+  }
 
-  // Merge custom sources from the old style into the new style's sources
   const sources = { ...newStyle.sources }
+  // Add custom sources from the old style to the new style's sources
   for (const [key, value] of Object.entries(oldStyle.sources)) {
     if (isCustomSource(key)) {
       sources[key] = value
     }
   }
 
+  // Prefer newStyle.glyphs, fallback to oldStyle.glyphs if not present
   const glyphs = newStyle.glyphs ?? oldStyle.glyphs
 
   return {

@@ -95,7 +95,7 @@ export function useLayer(
     if (!map) return
 
     const _layer = toValue(layer)
-    const beforeId = getBeforeId(layerId, map)
+    const beforeId = getBeforeId(layerId, map.getLayersOrder())
 
     map.addLayer(_layer, beforeId)
   }

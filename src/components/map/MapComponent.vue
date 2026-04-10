@@ -39,6 +39,7 @@
 import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import SyncMap from '@/components/map/SyncMap.vue'
+import MaintainLayerOrder from '@/components/map/MaintainLayerOrder.vue'
 import {
   MglAttributionControl,
   MglGeolocateControl,
@@ -55,6 +56,7 @@ import type {
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { transformStyle } from '@/lib/map'
+import { useLayerOrder } from '@/services/useLayerOrder'
 
 interface Props {
   bounds?: LngLatBounds
@@ -81,6 +83,8 @@ onMounted(() => {
   updateMinZoom()
 })
 
+const { getBeforeId } = useLayerOrder()
+
 watch(
   () => props.style,
   (newBaseStyle) => {
@@ -88,7 +92,9 @@ watch(
 
     // @ts-expect-error map is not exposed in the types
     const map: Map | undefined = mapRef.value?.map
-    map?.setStyle(newBaseStyle, { transformStyle })
+    map?.setStyle(newBaseStyle, {
+      transformStyle: (prev, next) => transformStyle(prev, next, getBeforeId),
+    })
   },
 )
 

@@ -1,7 +1,6 @@
 import type { BaseMap } from '@/lib/basemap'
 import { getLayerId, isCustomLayer, mapIds } from '@/lib/map'
 import type { Overlay } from '@deltares/fews-pi-requests'
-import type { Map } from 'maplibre-gl'
 import {
   computed,
   type ComputedRef,
@@ -39,14 +38,16 @@ export function useLayerOrder() {
     throw new Error('Layer order is not provided')
   }
 
-  function getBeforeId(layerId: string, map: Map): string | undefined {
+  function getBeforeId(
+    layerId: string,
+    currentOrder: string[],
+  ): string | undefined {
     const _layerOrder = toValue(layerOrder)
     if (!_layerOrder) {
       console.warn('Layer order is not provided')
     }
 
     const desiredOrder = _layerOrder ?? []
-    const currentOrder = map.getLayersOrder()
 
     // Find the index of the target layer in the desired order
     const desiredIdx = desiredOrder.indexOf(layerId)
