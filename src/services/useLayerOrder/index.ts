@@ -1,6 +1,6 @@
 import type { BaseMap } from '@/lib/basemap'
 import { getLayerId, isCustomLayer, mapIds } from '@/lib/map'
-import type { Overlay } from '@deltares/fews-pi-requests'
+import type { Overlay } from '@/stores/overlays'
 import {
   computed,
   type ComputedRef,

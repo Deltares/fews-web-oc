@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import AnimatedRasterLayer from '@/components/wms/AnimatedRasterLayer.vue'
 import { getLayerId, getSourceId } from '@/lib/map'
-import { Overlay } from '@deltares/fews-pi-requests'
+import type { Overlay } from '@/stores/overlays'
 import { computed } from 'vue'
 
 interface Props {

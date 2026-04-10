@@ -1,5 +1,10 @@
-import { Overlay } from '@deltares/fews-pi-requests'
+import { Overlay as FewsPiOverlay } from '@deltares/fews-pi-requests'
 import { defineStore } from 'pinia'
+
+export interface Overlay extends FewsPiOverlay {
+  visible?: boolean
+  opacity?: number
+}
 
 export interface OverlaysState {
   overlays: (Overlay & { visible?: boolean; opacity?: number })[]
