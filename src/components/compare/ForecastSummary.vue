@@ -102,10 +102,12 @@ interface Props {
   isCurrentUsersTask?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  isCurrentUsersTask: false,
-})
-const { task, startTime, endTime } = props
+const {
+  task,
+  startTime,
+  endTime,
+  isCurrentUsersTask = false,
+} = defineProps<Props>()
 
 const taskRunColor = computed(() => {
   // Get color from store, fallback to contrast color if not found
