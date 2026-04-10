@@ -1,6 +1,7 @@
 <template>
   <LocationsFillLayer
-    :layerId="locationMapIds.layer.fill"
+    :layerId="mapIds.location.layer.fill"
+    :sourceId="mapIds.location.source"
     :source="source"
     :selectedLocationIds="selectedLocationIds"
     :isDark="isDark"
@@ -8,24 +9,28 @@
   />
 
   <LocationsCircleLayer
-    :layerId="locationMapIds.layer.circle"
+    :layerId="mapIds.location.layer.circle"
+    :sourceId="mapIds.location.source"
     :source="source"
   />
 
   <LocationsSymbolLayer
-    :layerId="locationMapIds.layer.symbol"
+    :layerId="mapIds.location.layer.symbol"
+    :sourceId="mapIds.location.source"
     :isDark="isDark"
     :source="source"
   />
   <LocationsSymbolLayer
-    :layerId="locationMapIds.layer.childSymbol"
+    :layerId="mapIds.location.layer.childSymbol"
+    :sourceId="mapIds.location.source"
     :isDark="isDark"
     :source="source"
     child
   />
 
   <LocationsTextLayer
-    :layerId="locationMapIds.layer.text"
+    :layerId="mapIds.location.layer.text"
+    :sourceId="mapIds.location.source"
     :source="source"
     :isDark="isDark"
   />
@@ -52,7 +57,7 @@ import { addLocationIconsToMap } from '@/lib/location-icons'
 import { useDark } from '@vueuse/core'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
-  locationMapIds,
+  mapIds,
   clickableLocationLayerIds,
   addPropertiesToLocationGeojson,
 } from '@/lib/map'
@@ -98,7 +103,7 @@ const geojson = computed(() =>
 
 const emit = defineEmits(['click'])
 
-const { source } = useSource(locationMapIds.source, () => ({
+const { source } = useSource(mapIds.location.source, () => ({
   type: 'geojson',
   data: geojson.value,
 }))
@@ -189,8 +194,8 @@ function addHooksToMapObject() {
       }
     }
 
-    map.on('mousemove', locationMapIds.layer.fill, onFillMouseMove)
-    map.on('mouseleave', locationMapIds.layer.fill, onFillMouseLeave)
+    map.on('mousemove', mapIds.location.layer.fill, onFillMouseMove)
+    map.on('mouseleave', mapIds.location.layer.fill, onFillMouseLeave)
     map.on('style.load', addLocationIcons)
   }
 }
@@ -203,8 +208,8 @@ function removeHooksFromMapObject() {
       map.off('mouseleave', layerId, unsetCursorPointer)
     }
 
-    map.on('mousemove', locationMapIds.layer.fill, onFillMouseMove)
-    map.on('mouseleave', locationMapIds.layer.fill, onFillMouseLeave)
+    map.on('mousemove', mapIds.location.layer.fill, onFillMouseMove)
+    map.on('mouseleave', mapIds.location.layer.fill, onFillMouseLeave)
     map.off('style.load', addLocationIcons)
   }
 }

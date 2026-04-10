@@ -2,12 +2,13 @@
 
 <script setup lang="ts">
 import type { Source, SymbolLayerSpecification } from 'maplibre-gl'
-import { locationMapIds, shouldBehaveLikeChildFilter } from '@/lib/map'
+import { shouldBehaveLikeChildFilter } from '@/lib/map'
 import { computed } from 'vue'
 import { useLayer } from '@/services/useLayer'
 
 interface Props {
   layerId: string
+  sourceId: string
   source: Source | undefined
   isDark: boolean
   child?: boolean
@@ -50,7 +51,7 @@ useLayer(
     filter,
     layout,
     paint: paint.value,
-    source: locationMapIds.source,
+    source: props.sourceId,
   }),
   () => props.source,
 )

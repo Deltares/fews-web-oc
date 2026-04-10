@@ -3,10 +3,10 @@
 <script setup lang="ts">
 import type { CircleLayerSpecification, Source } from 'maplibre-gl'
 import { useLayer } from '@/services/useLayer'
-import { locationMapIds } from '@/lib/map'
 
 interface Props {
   layerId: string
+  sourceId: string
   source: Source | undefined
 }
 
@@ -32,7 +32,7 @@ useLayer(
     type: 'circle',
     paint,
     filter,
-    source: locationMapIds.source,
+    source: props.sourceId,
   },
   () => props.source,
 )

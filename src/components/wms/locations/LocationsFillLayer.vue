@@ -4,10 +4,10 @@
 import type { FillLayerSpecification, Source } from 'maplibre-gl'
 import { computed } from 'vue'
 import { useLayer } from '@/services/useLayer'
-import { locationMapIds } from '@/lib/map'
 
 interface Props {
   layerId: string
+  sourceId: string
   source: Source | undefined
   selectedLocationIds: string[] | undefined
   isDark: boolean
@@ -38,7 +38,7 @@ useLayer(
     type: 'fill',
     paint: paint.value,
     filter: filter,
-    source: locationMapIds.source,
+    source: props.sourceId,
   }),
   () => props.source,
 )

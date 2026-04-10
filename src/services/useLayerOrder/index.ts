@@ -18,14 +18,29 @@ export function provideLayerOrder(
   layers: MaybeRefOrGetter<Overlay[]>,
   baseMap: MaybeRefOrGetter<BaseMap>,
 ) {
+  // This computed property defines the desired relative layer order for a subset of layers
+  // (e.g. custom layers, base map layer) in the map style.
   const layerOrder = computed(() => {
     const _layers = toValue(layers)
     const _baseMap = toValue(baseMap)
 
-    const layerIds = _layers.map(convertOverlayToLayerId)
-    const order = ensureExactlyOneWmsLayer(layerIds)
+    const layerIds = ensureExactlyOneWmsLayer(
+      _layers.map(convertOverlayToLayerId),
+    )
+    const layerIdsWithBeforeId = _baseMap.beforeId
+      ? [...layerIds, _baseMap.beforeId]
+      : layerIds
 
-    return _baseMap.beforeId ? [...order, _baseMap.beforeId] : order
+    // From bottom to top (i.e. the last layer is rendered on top of all the previous layers)
+    return [
+      ...layerIdsWithBeforeId,
+      mapIds.location.layer.fill,
+      mapIds.location.layer.circle,
+      mapIds.location.layer.childSymbol,
+      mapIds.location.layer.symbol,
+      mapIds.location.layer.text,
+      mapIds.coordinate.layer,
+    ]
   })
 
   provide(LAYER_ORDER_KEY, layerOrder)

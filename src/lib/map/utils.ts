@@ -19,13 +19,6 @@ export function isCustomSource(id: string) {
   return id.startsWith(SOURCE_PREFIX)
 }
 
-export const mapIds = {
-  wms: {
-    layer: getLayerId('wms'),
-    source: getSourceId('wms'),
-  },
-}
-
 export function transformStyle(
   oldStyle: StyleSpecification | undefined,
   newStyle: StyleSpecification,
