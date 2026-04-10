@@ -15,7 +15,8 @@ watch(
     if (!map) return
 
     // Reorder layers based on the new layer order
-    newOrder.forEach((layerId) => {
+    // We reverse the order to ensure that layers are moved in the correct sequence
+    newOrder.toReversed().forEach((layerId) => {
       if (!isCustomLayer(layerId)) return
       if (!map.getLayer(layerId)) return
 
