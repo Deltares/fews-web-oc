@@ -72,9 +72,9 @@
         :coordinate="workflowsStore.coordinate"
       />
       <template v-else>
-        <OverlayInformationPanel v-if="settings.overlays.length">
+        <OverlayInformationPanel v-if="overlays.length">
           <OverlayPanel
-            :overlays="settings.overlays"
+            :overlays="overlays"
             v-model:selected-overlay-ids="selectedOverlayIds"
             :capabilities="staticCapabilities"
           />
@@ -361,7 +361,7 @@ const { baseMap, mapStyle } = useBaseMap()
 
 provideLayerOrder(() => props.settings.overlays, baseMap)
 
-const { selectedOverlayIds, selectedOverlays } = useOverlays(
+const { selectedOverlayIds, selectedOverlays, overlays } = useOverlays(
   () => props.settings.overlays,
 )
 
