@@ -42,8 +42,8 @@ export function useLayer(
     )
   } else {
     watch(
-      [isLoaded],
-      ([loaded]) => {
+      isLoaded,
+      (loaded) => {
         if (loaded) {
           addLayer()
         }
