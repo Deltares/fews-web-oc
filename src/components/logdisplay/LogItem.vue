@@ -6,21 +6,28 @@
       :taskRun="taskRun"
       :logs="logs"
       :expanded="expanded"
-      class="mt-2"
       :ripple="false"
       @click="onExpansionPanelToggle"
     />
-    <LogTable
-      v-if="expanded"
-      :logs="logs"
-      :taskRun="taskRun"
-      :disseminations="disseminations"
-      :disseminationStatus="disseminationStatus"
-      @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
-      @edit-log="emit('editLog', $event)"
-      @delete-log="emit('deleteLog', $event)"
-      v-bind="$attrs"
-    />
+    <v-timeline side="end" v-if="expanded" density="compact">
+      <v-timeline-item
+        v-for="log in logs"
+        :key="log.id"
+        fill-dot
+        dot-color="transparent"
+        size="x-small"
+      >
+        <template #icon>
+          <v-icon :icon="levelToIcon(log.level)" :color="levelToColor(log.level)" />
+        </template>
+        <div class="d-flex flex-column log_item__content">
+          <div class="log-item__text">{{ log.text }}</div>
+          <span class="text-caption text-grey">{{
+            toHumanReadableDateTime(log.entryTime)
+          }}</span>
+        </div>
+      </v-timeline-item>
+    </v-timeline>
   </template>
   <LogMessageItem
     v-if="log.type === 'manual' && noteGroup"
@@ -41,12 +48,13 @@
 <script setup lang="ts">
 import LogMessageItem from '@/components/logdisplay/LogMessageItem.vue'
 import TaskRunItem from './TaskRunItem.vue'
-import LogTable from './LogTable.vue'
 import type {
   ForecasterNoteGroup,
   LogDisplayDisseminationAction,
 } from '@deltares/fews-pi-requests'
 import {
+  levelToColor,
+  levelToIcon,
   type LogActionEmit,
   type LogDisseminationStatus,
   type LogMessage,
@@ -55,6 +63,7 @@ import {
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed, ref } from 'vue'
 import type { TaskRun } from '@/lib/taskruns'
+import { toHumanReadableDateTime } from '@/lib/date'
 
 interface Props {
   userName: string
@@ -107,3 +116,14 @@ function onExpansionPanelToggle() {
   }, 200)
 }
 </script>
+
+<style>
+.v-timeline .v-timeline-divider__dot {
+  background-color: transparent;
+}
+
+.log-item__text {
+  font-size: 0.875rem;
+  word-break: break-all;
+}
+</style>

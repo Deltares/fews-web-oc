@@ -14,43 +14,43 @@
           </template>
           <span>{{ getStringForStatus(taskRun?.status) }}</span>
         </v-tooltip>
-        <div class="d-flex flex-column user-select-text cursor-pointer">
-          <div class="d-flex align-center ga-2">
-            <v-list-item-title>
-              {{ title }}
-            </v-list-item-title>
-            <v-card-subtitle class="pa-0">{{
-              toHumanReadableDateTime(entryTime)
-            }}</v-card-subtitle>
+        <div
+          class="d-flex flex-column user-select-text cursor-pointer overflow-hidden w-100"
+        >
+          <v-list-item-title class="flex-0-1 text-ellipsis">
+            {{ title }}
+          </v-list-item-title>
+          <div class="d-flex">
+            <div class="d-flex flex-column flex-wrap">
+              <v-card-subtitle class="pa-0 flex-0-0">{{
+                toHumanReadableDateTime(entryTime)
+              }}</v-card-subtitle>
+              <v-card-subtitle class="pa-0">
+                T0: {{ toHumanReadableDateTime(taskRun?.timeZeroTimestamp) }}
+              </v-card-subtitle>
+            </div>
+            <v-spacer />
+            <v-chip
+              v-for="level in manualLogLevels
+                .toReversed()
+                .filter((l) => levelCount[logLevelToPiLogLevel(l)])"
+              :key="level"
+              :prepend-icon="levelToIcon(level)"
+              :text="levelCount[logLevelToPiLogLevel(level)].toString()"
+              :color="levelToColor(level)"
+              label
+              density="compact"
+              class="ms-2 flex-0-0 align-self-end"
+            >
+            </v-chip>
           </div>
-          <v-card-subtitle class="pa-0">
-            T0: {{ toHumanReadableDateTime(taskRun?.timeZeroTimestamp) }}
-          </v-card-subtitle>
         </div>
-        <v-spacer />
-        <template v-for="level in manualLogLevels.toReversed()">
-          <v-chip
-            v-if="levelCount[logLevelToPiLogLevel(level)]"
-            :prepend-icon="levelToIcon(level)"
-            :text="levelCount[logLevelToPiLogLevel(level)].toString()"
-            :color="levelToColor(level)"
-            label
-            density="compact"
-            class="ms-2"
-          />
-        </template>
       </div>
-      <DataTable
-        v-if="expanded && taskRun"
-        class="mt-4"
-        :tableData="tableData"
-      />
     </v-card-text>
   </v-card>
 </template>
 
 <script setup lang="ts">
-import DataTable from '@/components/general/DataTable.vue'
 import {
   type LogMessage,
   levelToIcon,
@@ -59,11 +59,7 @@ import {
   manualLogLevels,
 } from '@/lib/log'
 import { computed } from 'vue'
-import {
-  toDateAbsDifferenceString,
-  toDateRangeString,
-  toHumanReadableDateTime,
-} from '@/lib/date'
+import { toHumanReadableDateTime } from '@/lib/date'
 import {
   convertTaskStatusToString,
   getColorForTaskStatus,
@@ -93,62 +89,6 @@ const levelCount = computed(() =>
     {} as Record<LogMessage['level'], number>,
   ),
 )
-
-const tableData = computed(() => {
-  const timeZero = props.taskRun?.timeZeroTimestamp
-  const outputStart = props.taskRun?.outputStartTimestamp ?? timeZero
-  const outputEnd = props.taskRun?.outputEndTimestamp ?? timeZero
-  return [
-    {
-      columns: [
-        {
-          header: 'User',
-          value: props.taskRun?.userId ?? 'No user',
-        },
-        {
-          header: 'Task run ID',
-          value: props.taskRun?.taskId,
-        },
-        {
-          header: 'FSS ID',
-          value: props.taskRun?.fssId,
-        },
-      ],
-    },
-    {
-      columns: [
-        {
-          header: 'T0',
-          value: toHumanReadableDateTime(props.taskRun?.timeZeroTimestamp),
-        },
-      ],
-    },
-    {
-      columns: [
-        {
-          header: `Output time span`,
-          subHeader: toDateAbsDifferenceString(outputStart, outputEnd),
-          value: toDateRangeString(outputStart, outputEnd),
-        },
-      ],
-    },
-    {
-      columns: [
-        {
-          header: 'Task duration',
-          subHeader: toDateAbsDifferenceString(
-            props.taskRun?.dispatchTimestamp,
-            props.taskRun?.completionTimestamp,
-          ),
-          value: toDateRangeString(
-            props.taskRun?.dispatchTimestamp,
-            props.taskRun?.completionTimestamp,
-          ),
-        },
-      ],
-    },
-  ]
-})
 
 function getIconForStatus(status: string | undefined) {
   return status && isTaskStatus(status)

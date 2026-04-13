@@ -37,7 +37,7 @@ const HtmlDisplayView = () => import('../views/HtmlDisplayView.vue')
 const ReportsDisplayView = () => import('../views/ReportsDisplayView.vue')
 const WebDisplay = () => import('../components/webdisplay/WebDisplay.vue')
 const DashboardView = () => import('../views/DashboardView.vue')
-const LogDisplay = () => import('../components/logdisplay/LogDisplay.vue')
+const LogDisplayView = () => import('../views/LogDisplayView.vue')
 const DataAnalysisDisplay = () =>
   import('../components/analysis/DataAnalysisDisplay.vue')
 const Empty = () => import('../views/Empty.vue')
@@ -241,7 +241,7 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
       {
         path: 'log',
         name: 'TopologyLogDisplay',
-        component: LogDisplay,
+        component: LogDisplayView,
         props: true,
         meta: { sidebar: true },
       },

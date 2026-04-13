@@ -43,6 +43,7 @@
         <component
           :is="activeSecondaryControl.component"
           :topologyNode="topologyNode"
+          v-bind="activeSecondaryControl.props"
         />
       </SidePanelControl>
       <v-menu location="bottom right" v-if="activeSecondaryControlCount">
@@ -90,7 +91,6 @@
 
 <script setup lang="ts">
 import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
-import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
 import LeafNodeButtons from '@/components/general/LeafNodeButtons.vue'
 import SidePanelControl from '@/components/sidepanel/SidePanelControl.vue'
 import BtnGroup from '@/components/general/BtnGroup.vue'
@@ -103,14 +103,7 @@ import { useWorkflowsStore } from '@/stores/workflows'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import type { WebOcTopologyDisplayConfig } from '@deltares/fews-pi-requests'
 
-import {
-  type Component,
-  computed,
-  onUnmounted,
-  ref,
-  watch,
-  watchEffect,
-} from 'vue'
+import { computed, onUnmounted, ref, watch, watchEffect } from 'vue'
 import {
   onBeforeRouteUpdate,
   RouteLocationNormalized,
@@ -119,9 +112,6 @@ import {
 } from 'vue-router'
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
-import InformationDisplayView from '@/views/InformationDisplayView.vue'
-import TaskRunsOverview from '@/components/tasks/TaskRunsOverview.vue'
-import ImportStatusControl from '@/components/systemmonitor/ImportStatusControl.vue'
 import ThresholdsControl from '@/components/thresholds/ThresholdsControl.vue'
 import { useNodesStore } from '@/stores/nodes'
 import { nodeButtonItems, recursiveUpdateNode } from '@/lib/topology/nodes'
@@ -134,11 +124,14 @@ import { useComponentSettings } from '@/services/useComponentSettings'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { useTaskRunsStore } from '@/stores/taskRuns'
 import type { NavigateRoute } from '@/lib/router'
-import { SidePanel, useSidePanelStore } from '@/stores/sidePanel'
-import VisualizeDataControl from '@/components/tasks/VisualizeDataControl.vue'
-import { useI18n } from 'vue-i18n'
 import { fetchWmsCapabilitiesHeaders } from '@/lib/capabilities'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
+import { useSidePanelStore } from '@/stores/sidePanel'
+import {
+  getSidePanelConfigs,
+  type SidePanel,
+  type SidePanelType,
+} from '@/lib/topology/sidePanel'
 
 interface Props {
   topologyId?: string
@@ -150,8 +143,6 @@ interface Props {
   longitude?: string
   productKey?: string
 }
-
-const { t } = useI18n()
 
 const props = defineProps<Props>()
 
@@ -167,54 +158,19 @@ const topologyComponentConfig = computed(() =>
   getComponentConfig(props.topologyId),
 )
 
-interface SecondaryControl {
-  type: SidePanel
-  title: string
-  icon: string
-  component: Component
-  disabled?: boolean
-}
+// For managing which control is active in the button group
+const activeControl = ref<SidePanelType>('thresholds')
+const secondaryControl = ref<SidePanelType>()
+const activeSecondaryControl = computed(() =>
+  secondaryControls.value.find((s) => s.type === secondaryControl.value),
+)
+const activeSecondaryControlCount = computed(
+  () => secondaryControls.value.filter((s) => !s.disabled).length,
+)
 
-const secondaryControls = computed<SecondaryControl[]>(() => {
-  const sidePanelConfig = configStore.general.sidePanel
-  return [
-    {
-      type: 'tasks',
-      title: t('sidePanel.taskOverview'),
-      icon: 'mdi-clipboard-text-clock',
-      component: TaskRunsOverview,
-      disabled: !sidePanelConfig?.taskOverview?.enabled,
-    },
-    {
-      type: 'import',
-      title: t('sidePanel.importStatus'),
-      icon: 'mdi-database-import',
-      component: ImportStatusControl,
-      disabled: !sidePanelConfig?.importStatus?.enabled,
-    },
-    {
-      type: 'visualize',
-      title: t('sidePanel.noncurrentData'),
-      icon: 'mdi-chart-box-multiple',
-      component: VisualizeDataControl,
-      disabled: !sidePanelConfig?.nonCurrentData?.enabled,
-    },
-    {
-      type: 'workflows',
-      title: t('sidePanel.runTasks'),
-      icon: 'mdi-cog-play',
-      component: WorkflowsControl,
-      disabled: !sidePanelConfig?.runTask?.enabled,
-    },
-    {
-      type: 'info',
-      title: t('sidePanel.moreInfo'),
-      icon: 'mdi-information-outline',
-      component: InformationDisplayView,
-      disabled: !sidePanelConfig?.documentFile?.enabled,
-    },
-  ]
-})
+const secondaryControls = computed<SidePanel[]>(() =>
+  getSidePanelConfigs(configStore.general.sidePanel),
+)
 
 const showActiveThresholdCrossingsForFilters = computed(() => {
   return (
@@ -222,19 +178,6 @@ const showActiveThresholdCrossingsForFilters = computed(() => {
     false
   )
 })
-
-const activeControl = ref<SidePanel>('thresholds')
-
-// For managing which control is active in the button group
-const secondaryControl = ref<SidePanel>(
-  secondaryControls.value.find((c) => !c.disabled)?.type ?? 'thresholds',
-)
-const activeSecondaryControl = computed(() =>
-  secondaryControls.value.find((s) => s.type === secondaryControl.value),
-)
-const activeSecondaryControlCount = computed(
-  () => secondaryControls.value.filter((s) => !s.disabled).length,
-)
 
 // Sync activeControl and secondaryControl with sidePanelStore
 watch(
