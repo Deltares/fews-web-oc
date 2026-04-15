@@ -7,7 +7,7 @@
       v-model="overlays"
       item-key="id"
       class="list-group"
-      ghost-class="ghost"
+      ghost-class="overlay-panel__ghost"
     >
       <template #item="{ element }">
         <v-list-item density="compact">
@@ -22,6 +22,9 @@
             <v-list-item-action start v-if="element.type === 'overLay'">
               <v-checkbox-btn v-model="element.visible" />
             </v-list-item-action>
+            <v-list-item-action class="overlay-panel__wms-icon" v-else >
+              <v-icon icon="mdi-layers"/>
+            </v-list-item-action>
           </template>
           <v-list-item-title>{{ getTitle(element) }}</v-list-item-title>
           <v-list-item-subtitle v-if="element.type === 'overLay'">
@@ -35,7 +38,7 @@
               hide-details
               thumb-size="12"
               height="12"
-              class="gradient-slider"
+              class="overlay-panel__gradient-slider"
             />
           </v-list-item-subtitle>
         </v-list-item>
@@ -75,7 +78,7 @@ function getTitle(overlay: Overlay): string {
 </script>
 
 <style scoped>
-.ghost {
+.overlay-panel__ghost {
   opacity: 0.5;
   background: #c8ebfb;
 }
@@ -85,7 +88,7 @@ function getTitle(overlay: Overlay): string {
   min-height: 12px !important;
 }
 
-.gradient-slider :deep(.v-slider-track__background) {
+.overlay-panel__gradient-slider :deep(.v-slider-track__background) {
   background: linear-gradient(
     to right,
     rgba(var(--v-theme-on-surface), 0) 0%,
@@ -93,7 +96,12 @@ function getTitle(overlay: Overlay): string {
   ) !important;
 }
 
-.gradient-slider :deep(.v-slider-track__fill) {
+.overlay-panel__gradient-slider :deep(.v-slider-track__fill) {
   opacity: 0 !important;
+}
+
+.overlay-panel__wms-icon {
+  width: 28px;
+  justify-content: center;
 }
 </style>
