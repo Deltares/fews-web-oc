@@ -1,7 +1,7 @@
 <template>
   <v-list density="compact">
     <v-list-item-subtitle class="ps-3 pb-1">
-      {{ t('wms.overlays') }}
+      {{ t('wms.layers') }}
     </v-list-item-subtitle>
     <draggable
       v-model="overlays"

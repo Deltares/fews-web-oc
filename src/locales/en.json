@@ -45,9 +45,10 @@
     "settings": "Settings"
   },
   "wms": {
+    "layers": "Layers",
     "overlays": "Overlays",
-    "timeRange": "Time range",
-    "selectLayers": "Select layers"
+    "selectLayers": "Select layers",
+    "timeRange": "Time range"
   },
   "sidePanel": {
     "thresholdOverview": "Thresholds overview",

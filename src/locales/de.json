@@ -45,6 +45,7 @@
     "settings": "Einstellungen"
   },
   "wms": {
+    "layers": "Layer",
     "overlays": "Layerauswahl",
     "selectLayers": "Layerauswahl",
     "timeRange": "Zeitbereich"
