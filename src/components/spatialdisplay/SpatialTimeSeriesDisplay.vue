@@ -8,6 +8,7 @@
         :currentTime="currentTime"
         :filter="filter"
         :settings="settings.charts"
+        :location="location"
         :informationContent="tooltip"
       >
         <template #toolbar-append>
@@ -26,6 +27,7 @@ import TimeSeriesWindowComponent from '@/components/timeseries/TimeSeriesWindowC
 import { useDisplayConfigFilter } from '@/services/useDisplayConfig'
 import type {
   filterActionsFilter,
+  Location,
   LocationsTooltipFilter,
   timeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
@@ -41,6 +43,7 @@ interface Props {
   locationsTooltipFilter?: LocationsTooltipFilter
   currentTime?: Date
   settings: ComponentSettings
+  location?: Location
 }
 
 const taskRunsStore = useTaskRunsStore()

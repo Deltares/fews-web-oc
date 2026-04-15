@@ -30,6 +30,7 @@
         :locations-tooltip-filter="locationsTooltipFilter"
         :current-time="currentTime"
         :settings="settings"
+        :location="selectedLocation"
       />
     </div>
   </div>
@@ -43,6 +44,7 @@ import { configManager } from '@/services/application-config'
 import { useWmsLayerCapabilities } from '@/services/useWms'
 import {
   filterActionsFilter,
+  Location,
   LocationsTooltipFilter,
   timeSeriesGridActionsFilter,
   type TopologyNode,
@@ -107,12 +109,16 @@ const containerRef = useTemplateRef('container')
 const boundingBox = computed(() => props.topologyNode?.boundingBox)
 const filterIds = computed(() => props.topologyNode?.filterIds ?? [])
 const filterOptions = computed(() => {
-  if (userSettings.get('ui.map.showDataAvailability')?.value === true) {
-    return {
-      showTimeSeriesInfo: true,
-    }
+  const attributeIds = [
+    props.settings.charts.timeSeriesChart.locationEnabledAttribute,
+    props.settings.charts.timeSeriesTable.locationEnabledAttribute,
+  ].filter((id): id is string => !!id)
+  return {
+    ...(userSettings.get('ui.map.showDataAvailability')?.value === true
+      ? { showTimeSeriesInfo: true }
+      : {}),
+    ...(attributeIds.length > 0 ? { showAttributes: true, attributeIds } : {}),
   }
-  return {}
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -134,6 +140,12 @@ const { locations, geojson } = useFilterLocations(
 watch(locations, (newLocations) =>
   locationNamesStore.addLocationNames(newLocations ?? []),
 )
+
+const selectedLocation = computed<Location | undefined>(() => {
+  if (!props.locationIds) return undefined
+  const firstId = props.locationIds.split(',')[0]
+  return locations.value?.find((l) => l.locationId === firstId)
+})
 
 const selectedCrossings = computed(() => {
   if (warningLevelsStore.selectedWarningLevelIds.length === 0) return []
