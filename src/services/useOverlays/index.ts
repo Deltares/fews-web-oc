@@ -9,6 +9,7 @@ export function useOverlays(
   overlaySettings: MaybeRefOrGetter<FewsPiOverlay[]>,
 ) {
   const overlays = ref<Overlay[]>([])
+  const hasOverlays = ref(false)
 
   watch(
     () => toValue(overlaySettings),
@@ -21,7 +22,9 @@ export function useOverlays(
       const newOverlaysWithGrid = newOverlays.find(isFewsPiGridLayer)
         ? newOverlays
         : [gridLayer, ...newOverlays]
-
+      hasOverlays.value = newOverlays.some(
+        (overlay) => overlay.type === 'overLay',
+      )
       overlays.value = newOverlaysWithGrid.map(convertFewsPiOverlayToOverlay)
     },
     { immediate: true },
@@ -33,6 +36,7 @@ export function useOverlays(
 
   return {
     overlays,
+    hasOverlays,
     visibleOverlays,
   }
 }
