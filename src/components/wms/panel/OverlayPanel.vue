@@ -39,11 +39,7 @@
             />
           </v-list-item-subtitle>
         </v-list-item>
-        <v-list-item
-          v-else-if="element.type === 'gridLayer'"
-          density="compact"
-          disabled
-        >
+        <v-list-item v-else-if="element.type === 'gridLayer'" density="compact">
           <template #prepend>
             <v-list-item-action start>
               <v-icon
@@ -52,11 +48,17 @@
                 class="drag-handle"
               />
             </v-list-item-action>
-            <v-list-item-action class="overlay-panel__data-layer-icon">
+            <v-list-item-action
+              class="overlay-panel__data-layer-icon text-disabled"
+            >
               <v-icon icon="mdi-layers" />
             </v-list-item-action>
           </template>
-          <v-list-item-title class="overlay-panel__data-layer-title">{{ getTitle(element) }}</v-list-item-title>
+          <v-list-item-title
+            class="overlay-panel__data-layer-title text-disabled"
+            disabled
+            >{{ getTitle(element) }}</v-list-item-title
+          >
         </v-list-item>
       </template>
     </draggable>
