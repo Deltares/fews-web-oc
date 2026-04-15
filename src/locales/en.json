@@ -46,9 +46,11 @@
   },
   "wms": {
     "layers": "Layers",
+    "noDataLayer": "No data layer available",
     "overlays": "Overlays",
     "selectLayers": "Select layers",
-    "timeRange": "Time range"
+    "timeRange": "Time range",
+    "unnamedLayer": "Unnamed layer"
   },
   "sidePanel": {
     "thresholdOverview": "Thresholds overview",

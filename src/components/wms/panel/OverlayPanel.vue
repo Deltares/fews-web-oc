@@ -10,7 +10,7 @@
       ghost-class="overlay-panel__ghost"
     >
       <template #item="{ element }">
-        <v-list-item density="compact">
+        <v-list-item v-if="element.type === 'overLay'" density="compact">
           <template #prepend>
             <v-list-item-action start>
               <v-icon
@@ -19,15 +19,12 @@
                 class="drag-handle"
               />
             </v-list-item-action>
-            <v-list-item-action start v-if="element.type === 'overLay'">
+            <v-list-item-action start>
               <v-checkbox-btn v-model="element.visible" />
-            </v-list-item-action>
-            <v-list-item-action class="overlay-panel__wms-icon" v-else >
-              <v-icon icon="mdi-layers"/>
             </v-list-item-action>
           </template>
           <v-list-item-title>{{ getTitle(element) }}</v-list-item-title>
-          <v-list-item-subtitle v-if="element.type === 'overLay'">
+          <v-list-item-subtitle>
             <v-slider
               v-model="element.opacity"
               :min="0"
@@ -41,6 +38,25 @@
               class="overlay-panel__gradient-slider"
             />
           </v-list-item-subtitle>
+        </v-list-item>
+        <v-list-item
+          v-else-if="element.type === 'gridLayer'"
+          density="compact"
+          disabled
+        >
+          <template #prepend>
+            <v-list-item-action start>
+              <v-icon
+                icon="mdi-drag-vertical"
+                size="small"
+                class="drag-handle"
+              />
+            </v-list-item-action>
+            <v-list-item-action class="overlay-panel__data-layer-icon">
+              <v-icon icon="mdi-layers" />
+            </v-list-item-action>
+          </template>
+          <v-list-item-title class="overlay-panel__data-layer-title">{{ getTitle(element) }}</v-list-item-title>
         </v-list-item>
       </template>
     </draggable>
@@ -67,7 +83,7 @@ const overlays = defineModel<Overlay[]>('overlays')
 
 function getTitle(overlay: Overlay): string {
   if (overlay.type === 'gridLayer') {
-    return props.layer?.title ?? 'wms'
+    return props.layer?.title ?? t('wms.noDataLayer')
   }
 
   const foundLayer = props.capabilities?.layers.find(
@@ -100,8 +116,12 @@ function getTitle(overlay: Overlay): string {
   opacity: 0 !important;
 }
 
-.overlay-panel__wms-icon {
+.overlay-panel__data-layer-icon {
   width: 28px;
   justify-content: center;
+}
+
+.overlay-panel__data-layer-title {
+  text-decoration-style: dashed;
 }
 </style>
