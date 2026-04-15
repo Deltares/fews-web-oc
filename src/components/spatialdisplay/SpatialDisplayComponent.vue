@@ -54,7 +54,7 @@
       v-model:coordinate="workflowsStore.coordinate"
     />
     <OverlayLayer
-      v-for="overlay in selectedOverlays"
+      v-for="overlay in visibleOverlays"
       :key="overlay.id"
       :overlay="overlay"
     />
@@ -72,10 +72,10 @@
         :coordinate="workflowsStore.coordinate"
       />
       <template v-else>
-        <OverlayInformationPanel v-if="settings.overlays.length">
+        <OverlayInformationPanel v-if="hasOverlays">
           <OverlayPanel
-            :overlays="settings.overlays"
-            v-model:selected-overlay-ids="selectedOverlayIds"
+            v-model:overlays="overlays"
+            :layer="layerCapabilities"
             :capabilities="staticCapabilities"
           />
         </OverlayInformationPanel>
@@ -219,7 +219,6 @@ import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import OverlayLayer from '@/components/wms/OverlayLayer.vue'
 import { useColourScales } from '@/services/useColourScales'
 import { useSelectedDate } from '@/services/useSelectedDate'
-import { useOverlays } from '@/services/useOverlays'
 import { useBaseMap } from '@/services/useBaseMap'
 import { isInDatesRange } from '@/lib/date'
 import { getLocationWithChilds, mapIds } from '@/lib/map'
@@ -229,6 +228,7 @@ import { useSelectedElevation } from '@/services/useSelectedElevation'
 import { clamp } from '@/lib/utils/math'
 import { useAggregations } from '@/services/useAggregations'
 import { provideLayerOrder } from '@/services/useLayerOrder'
+import { useOverlays } from '@/services/useOverlays'
 
 interface ElevationWithUnitSymbol {
   units?: string
@@ -348,7 +348,6 @@ const {
 )
 
 const workflowsStore = useWorkflowsStore()
-const userSettingsStore = useUserSettingsStore()
 
 const showLocationsLayer = ref<boolean>(props.settings.locationsLayer.show)
 watch(
@@ -360,11 +359,11 @@ watch(
 
 const { baseMap, mapStyle } = useBaseMap()
 
-provideLayerOrder(() => props.settings.overlays, baseMap)
-
-const { selectedOverlayIds, selectedOverlays } = useOverlays(
+const { overlays, hasOverlays, visibleOverlays } = useOverlays(
   () => props.settings.overlays,
 )
+
+provideLayerOrder(overlays, baseMap)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const maxValuesStartTime = ref<Date | null>(null)
@@ -480,9 +479,9 @@ function getDefaultLayerKind() {
   if (!canUseStreamlines.value) {
     return LayerKind.Static
   }
-  if (userSettingsStore.preferredLayerKind !== null) {
+  if (userSettings.preferredLayerKind !== null) {
     // If we have a preference, use that.
-    return userSettingsStore.preferredLayerKind
+    return userSettings.preferredLayerKind
   }
   // Otherwise, use streamlines.
   return LayerKind.Streamline

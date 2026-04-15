@@ -45,9 +45,12 @@
     "settings": "Einstellungen"
   },
   "wms": {
+    "layers": "Layer",
+    "noDataLayer": "Kein Datenlayer verfügbar",
     "overlays": "Layerauswahl",
     "selectLayers": "Layerauswahl",
-    "timeRange": "Zeitbereich"
+    "timeRange": "Zeitbereich",
+    "unnamedLayer": "Unbenannter Layer"
   },
   "sidePanel": {
     "thresholdOverview": "Übersicht Schwellenwerte",

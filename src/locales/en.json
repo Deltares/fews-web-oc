@@ -45,9 +45,12 @@
     "settings": "Settings"
   },
   "wms": {
+    "layers": "Layers",
+    "noDataLayer": "No data layer available",
     "overlays": "Overlays",
+    "selectLayers": "Select layers",
     "timeRange": "Time range",
-    "selectLayers": "Select layers"
+    "unnamedLayer": "Unnamed layer"
   },
   "sidePanel": {
     "thresholdOverview": "Thresholds overview",

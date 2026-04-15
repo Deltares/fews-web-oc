@@ -35,12 +35,14 @@ export interface AnimatedRasterLayerOptions {
 interface Props {
   layer: AnimatedRasterLayerOptions
   layerId: string
+  opacity?: number
   sourceId: string
   enableDoubleClick?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   enableDoubleClick: false,
+  opacity: 1,
 })
 const isLoading = defineModel<boolean>('isLoading', { default: false })
 
@@ -84,7 +86,7 @@ function onDataChange(event: MapSourceDataEvent): void {
     event.tile !== undefined &&
     event.isSourceLoaded
   ) {
-    map?.setPaintProperty(props.layerId, 'raster-opacity', 1)
+    map?.setPaintProperty(props.layerId, 'raster-opacity', props.opacity)
   }
 }
 
@@ -212,15 +214,15 @@ async function updateSource() {
 const { source } = useSource(props.sourceId, sourceOptions)
 useLayer(
   props.layerId,
-  {
+  () => ({
     type: 'raster',
     id: props.layerId,
     source: props.sourceId,
     paint: {
-      'raster-opacity': 0,
+      'raster-opacity': props.opacity ?? 1,
       'raster-fade-duration': 0,
     },
-  },
+  }),
   source,
 )
 

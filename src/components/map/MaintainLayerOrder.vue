@@ -9,20 +9,18 @@ import { watch } from 'vue'
 const { map } = useMap()
 const { layerOrder, getBeforeId } = useLayerOrder()
 
-watch(
-  layerOrder,
-  (newOrder) => {
-    if (!map) return
+watch(layerOrder, (newOrder) => {
+  if (!map) return
 
-    // Reorder layers based on the new layer order
-    newOrder.forEach((layerId) => {
-      if (!isCustomLayer(layerId)) return
-      if (!map.getLayer(layerId)) return
+  // Reorder layers based on the new layer order
+  // We reverse the order to ensure that layers are moved in the correct sequence
+  newOrder.toReversed().forEach((layerId) => {
+    if (!isCustomLayer(layerId)) return
+    if (!map.getLayer(layerId)) return
 
-      const beforeId = getBeforeId(layerId, map.getLayersOrder())
-      map.moveLayer(layerId, beforeId)
-    })
-  },
-  { deep: true },
-)
+    const beforeOrder = map.getLayersOrder()
+    const beforeId = getBeforeId(layerId, beforeOrder)
+    map.moveLayer(layerId, beforeId)
+  })
+})
 </script>

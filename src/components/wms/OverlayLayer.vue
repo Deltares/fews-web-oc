@@ -2,6 +2,7 @@
   <AnimatedRasterLayer
     v-if="options"
     :layer="options"
+    :opacity="overlay.opacity"
     :layerId="getLayerId(`overlay-${options.name}`)"
     :sourceId="getSourceId(`overlay-${options.name}`)"
     :key="`overlay-${options.name}`"
@@ -11,7 +12,7 @@
 <script setup lang="ts">
 import AnimatedRasterLayer from '@/components/wms/AnimatedRasterLayer.vue'
 import { getLayerId, getSourceId } from '@/lib/map'
-import { Overlay } from '@deltares/fews-pi-requests'
+import type { Overlay } from '@/services/useOverlays'
 import { computed } from 'vue'
 
 interface Props {
