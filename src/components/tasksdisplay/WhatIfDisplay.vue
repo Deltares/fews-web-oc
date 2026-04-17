@@ -174,7 +174,7 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-const renderers = markRaw([...extendedVuetifyRenderers])
+const renderers = markRaw(extendedVuetifyRenderers)
 
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
 const alertStore = useAlertsStore()
