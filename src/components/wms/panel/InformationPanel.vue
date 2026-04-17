@@ -39,21 +39,25 @@
           }}</v-list-item-subtitle>
           <v-list-item-title>{{ layers[0]?.groupTitle }}</v-list-item-title>
         </v-list-item>
-        <v-list-item
-          v-for="layerOption in layers"
-          :key="layerOption?.name"
-          :title="layerOption?.title"
-          :active="layerOption?.name === props.layerName"
-          @click="updateLayer(layerOption?.name)"
-          density="compact"
-          ><template #prepend>
-            <v-icon class="ps-6" size="x-small">{{
-              layerOption?.name === props.layerName
-                ? 'mdi-radiobox-marked'
-                : 'mdi-radiobox-blank'
-            }}</v-icon>
-          </template>
-        </v-list-item>
+        <div class="information-panel-list__layers overflow-y-auto">
+          <v-list-item
+            v-for="layerOption in layers"
+            :key="layerOption?.name"
+            :title="layerOption?.title"
+            :active="layerOption?.name === props.layerName"
+            @click="updateLayer(layerOption?.name)"
+            density="compact"
+            ><template #prepend>
+              <v-icon class="ps-6" size="x-small">{{
+                layers.length === 1
+                  ? ''
+                  : layerOption?.name === props.layerName
+                    ? 'mdi-radiobox-marked'
+                    : 'mdi-radiobox-blank'
+              }}</v-icon>
+            </template>
+          </v-list-item>
+        </div>
         <v-divider></v-divider>
         <v-list-item prepend-icon="mdi-clock-time-four-outline">
           <v-list-item-title>
@@ -145,3 +149,9 @@ function updateLayer(newLayerName?: string) {
   showMenu.value = false
 }
 </script>
+
+<style scoped>
+.information-panel-list__layers {
+  max-height: 220px;
+}
+</style>
