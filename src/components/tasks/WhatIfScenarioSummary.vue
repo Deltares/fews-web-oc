@@ -54,7 +54,7 @@ function convertPropertyToColumn(property: ScenarioProperty) {
     columns: [
       {
         header,
-        value: formatWhatIfScenarioProperty(property),
+        value: formatWhatIfScenarioProperty(property, whatIfTemplateProperty),
       },
     ],
   }
