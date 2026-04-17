@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { convertPropertiesToFewsPi } from './utils'
-import { WhatIfTemplateProperty } from './types'
+import type { PartialWhatIfTemplateProperty } from './types'
 
 describe('convertPropertiesToFewsPi', () => {
   it('should convert dateTime properties to FEWS PI format', () => {
-    const templateProperties: WhatIfTemplateProperty[] = [
+    const templateProperties: PartialWhatIfTemplateProperty[] = [
       {
         id: 'startDate',
         type: 'dateTime',
@@ -35,7 +35,7 @@ describe('convertPropertiesToFewsPi', () => {
   })
 
   it('should return properties unchanged if template does not define types', () => {
-    const templateProperties: WhatIfTemplateProperty[] = [
+    const templateProperties: PartialWhatIfTemplateProperty[] = [
       { id: 'someKey', type: 'string' },
       { id: 'anotherKey', type: 'number' },
       { id: 'multiValueKey', type: 'multiProperty' },
