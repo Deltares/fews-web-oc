@@ -5,10 +5,13 @@
         <tr>
           <th
             v-for="column in table.filteredColumns"
-            class="font-weight-medium"
+            class="font-weight-medium text-medium-emphasis"
           >
             {{ column.header }}
-            <span v-if="column.subHeader" class="text-medium-emphasis">
+            <span
+              v-if="column.subHeader"
+              class="text-medium-emphasis ml-2 subtitle"
+            >
               {{ column.subHeader }}
             </span>
           </th>
@@ -18,7 +21,6 @@
         <tr>
           <td
             v-for="column in table.filteredColumns"
-            class="text-medium-emphasis"
             :style="{ width: column.width }"
           >
             {{ column.value }}
@@ -78,5 +80,9 @@ const filteredTableData = computed(() =>
 
 .data-table td {
   padding-bottom: 5px;
+}
+
+.subtitle {
+  font-size: 0.9em;
 }
 </style>
