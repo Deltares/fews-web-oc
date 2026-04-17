@@ -17,7 +17,7 @@
                 :text="t('workflow.startedByMe')"
               >
                 <template #activator="{ props }">
-                  <v-icon v-bind="props" icon="mdi-account" size="small" />
+                  <v-icon v-bind="props" icon="mdi-account" />
                 </template>
               </v-tooltip>
               <v-tooltip
@@ -30,7 +30,6 @@
                   <v-icon
                     v-bind="props"
                     :icon="isFollowed ? 'mdi-bell' : 'mdi-bell-off'"
-                    size="small"
                     @click.stop="toggleFollow"
                   />
                 </template>
