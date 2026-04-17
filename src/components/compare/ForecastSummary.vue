@@ -67,7 +67,10 @@
       <DataTable v-if="expanded" class="mt-4" :tableData="tableData" />
       <div v-if="expanded && task.whatIfScenario">
         <v-divider class="my-2" />
-        <WhatIfScenarioSummary :what-if-scenario="task.whatIfScenario" />
+        <WhatIfScenarioSummary
+          :what-if-scenario="task.whatIfScenario"
+          :num-columns="2"
+        />
       </div>
     </v-card-text>
     <ForecastRange

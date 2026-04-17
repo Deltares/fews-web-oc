@@ -1,6 +1,6 @@
 <template>
   <div class="table-container">
-    <table v-for="table in filteredTableData" class="data-table">
+    <table v-for="table in filteredTableData" class="data-table w-100">
       <thead>
         <tr>
           <th
@@ -19,6 +19,7 @@
           <td
             v-for="column in table.filteredColumns"
             class="text-medium-emphasis"
+            :style="{ width: column.width }"
           >
             {{ column.value }}
           </td>
@@ -35,6 +36,7 @@ interface Column {
   header: string
   subHeader?: string
   value: string | undefined | null
+  width?: string
 }
 
 interface Table {

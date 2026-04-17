@@ -20,13 +20,15 @@ import {
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
 
 import DataTable from '@/components/general/DataTable.vue'
+import { chunk } from 'lodash-es'
 
 const whatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
 
 interface Props {
   whatIfScenario: WhatIfScenarioDescriptor
+  numColumns?: number
 }
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { numColumns: 1 })
 
 const whatIfTemplate = computed<WhatIfTemplate | null>(
   () =>
@@ -41,22 +43,30 @@ const visibleProperties = computed<ScenarioProperty[]>(() => {
   )
 })
 
-const tableData = computed(() =>
-  visibleProperties.value.map(convertPropertyToColumn),
-)
+const tableData = computed(() => {
+  // Group properties in rows of numColumns, then convert those to a format
+  // accepted by DataTable.
+  const chunkedProperties = chunk(visibleProperties.value, props.numColumns)
+  const columnWidth = `${100 / props.numColumns}%`
+  return chunkedProperties.map((rowProperties) => ({
+    columns: rowProperties.map((property) =>
+      convertPropertyToColumn(property, columnWidth),
+    ),
+  }))
+})
 
-function convertPropertyToColumn(property: ScenarioProperty) {
+function convertPropertyToColumn(
+  property: ScenarioProperty,
+  columnWidth: string,
+) {
   const whatIfTemplateProperty = whatIfTemplate.value?.properties?.find(
     (templateProperty) => templateProperty.id === property.id,
   )
   const header = whatIfTemplateProperty?.name ?? property.id
   return {
-    columns: [
-      {
-        header,
-        value: formatWhatIfScenarioProperty(property, whatIfTemplateProperty),
-      },
-    ],
+    header,
+    value: formatWhatIfScenarioProperty(property, whatIfTemplateProperty),
+    width: columnWidth,
   }
 }
 </script>
