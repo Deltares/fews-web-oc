@@ -14,7 +14,7 @@ export function getTitleForLog(
   workflows: WorkflowItem[],
 ) {
   const workflowId = taskRuns.find(
-    (taskRun) => taskRun.taskId === log.taskRunId,
+    (taskRun) => taskRun.taskRunId === log.taskRunId,
   )?.workflowId
 
   const workflow = workflowId
@@ -49,7 +49,7 @@ export function filterLog(
   const text = log.text.toLowerCase()
   const searchText = search?.toLowerCase()
   const taskRunId = log.taskRunId?.toLowerCase()
-  const taskRun = taskRuns.find((tr) => tr.taskId === log.taskRunId)
+  const taskRun = taskRuns.find((tr) => tr.taskRunId === log.taskRunId)
   const taskRunUser = taskRun?.userId?.toLowerCase()
   const title = getTitleForLog(log, '', taskRuns, workflows)?.toLowerCase()
   return (

@@ -74,7 +74,9 @@ const expanded = defineModel<boolean>('expanded', {
 })
 
 const taskRun = computed(() =>
-  props.taskRuns.find((taskRun) => taskRun.taskId === props.logs[0].taskRunId),
+  props.taskRuns.find(
+    (taskRun) => taskRun.taskRunId === props.logs[0].taskRunId,
+  ),
 )
 
 const log = computed(() => props.logs[0])
@@ -83,7 +85,7 @@ const emit = defineEmits<LogActionEmit>()
 
 function getTitleForLog(log: LogMessage, userName: string) {
   const workflowId = props.taskRuns.find(
-    (taskRun) => taskRun.taskId === log.taskRunId,
+    (taskRun) => taskRun.taskRunId === log.taskRunId,
   )?.workflowId
 
   const workflow = workflowId ? availableWorkflows.byId(workflowId) : undefined

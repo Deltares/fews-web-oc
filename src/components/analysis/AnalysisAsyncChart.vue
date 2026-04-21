@@ -98,7 +98,7 @@ watch(
   category,
   async () => {
     if (category.value === 'completed') {
-      const taskRunId = task.value?.taskId
+      const taskRunId = task.value?.taskRunId
       if (!taskRunId) {
         throw new Error('Task run ID is not available')
       }

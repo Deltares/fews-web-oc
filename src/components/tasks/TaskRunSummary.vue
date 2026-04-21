@@ -11,7 +11,31 @@
         <div class="w-100">
           <v-list-item-subtitle class="mb-1 d-flex justify-space-between">
             <span>{{ timeZeroString }}</span>
-            <v-icon v-if="isCurrentUsersTask" icon="mdi-account" size="small" />
+            <div class="d-flex gc-1">
+              <v-tooltip
+                v-if="isCurrentUsersTask"
+                :text="t('workflow.startedByMe')"
+              >
+                <template #activator="{ props }">
+                  <v-icon v-bind="props" icon="mdi-account" size="small" />
+                </template>
+              </v-tooltip>
+              <v-tooltip
+                v-if="canBeFollowed"
+                :text="
+                  t(isFollowed ? 'workflow.following' : 'workflow.notFollowing')
+                "
+              >
+                <template #activator="{ props }">
+                  <v-icon
+                    v-bind="props"
+                    :icon="isFollowed ? 'mdi-bell' : 'mdi-bell-off'"
+                    size="small"
+                    @click.stop="toggleFollow"
+                  />
+                </template>
+              </v-tooltip>
+            </div>
           </v-list-item-subtitle>
           <div class="d-flex align-center ga-1 w-100">
             <v-tooltip>
@@ -65,8 +89,10 @@ import {
   convertTaskStatusToString,
   getColorForTaskStatus,
   getIconForTaskStatus,
+  getTaskStatusCategory,
   TaskRun,
   TaskStatus,
+  TaskStatusCategory,
 } from '@/lib/taskruns'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed } from 'vue'
@@ -80,6 +106,9 @@ import {
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
 import WhatIfScenarioSummary from './WhatIfScenarioSummary.vue'
 import SingleLineWithOverflowTooltip from '../general/SingleLineWithOverflowTooltip.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
@@ -87,8 +116,18 @@ const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
 interface Props {
   task: TaskRun
   isCurrentUsersTask?: boolean
+  isFollowed?: boolean
 }
-const props = withDefaults(defineProps<Props>(), { isCurrentUsersTask: false })
+const props = withDefaults(defineProps<Props>(), {
+  isCurrentUsersTask: false,
+  isFollowed: false,
+})
+
+interface Emits {
+  follow: [taskRunId: string]
+  unfollow: [taskRunId: string]
+}
+const emit = defineEmits<Emits>()
 
 const expanded = defineModel<boolean>('expanded', {
   required: false,
@@ -107,7 +146,7 @@ const tableData = computed(() => [
   {
     columns: [
       { header: 'User', value: props.task.userId ?? 'No user' },
-      { header: 'Task run ID', value: props.task.taskId },
+      { header: 'Task run ID', value: props.task.taskRunId },
     ],
   },
   {
@@ -217,6 +256,22 @@ function onExpansionPanelToggle() {
   // Only expand when no text is selected
   if (window.getSelection()?.toString() === '') {
     expanded.value = !expanded.value
+  }
+}
+
+const canBeFollowed = computed<boolean>(() => {
+  const category = getTaskStatusCategory(props.task.status)
+  return (
+    category !== TaskStatusCategory.Completed &&
+    category !== TaskStatusCategory.Failed
+  )
+})
+
+function toggleFollow(): void {
+  if (props.isFollowed) {
+    emit('unfollow', props.task.taskRunId)
+  } else {
+    emit('follow', props.task.taskRunId)
   }
 }
 </script>

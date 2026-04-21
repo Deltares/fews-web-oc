@@ -27,18 +27,18 @@
         <v-list-subheader>Current</v-list-subheader>
         <TaskRunControlItem
           v-for="item in currentTaskRuns"
-          :key="item.taskId"
-          @click="taskRunId = item?.taskId"
-          :active="item?.taskId === taskRunId"
+          :key="item.taskRunId"
+          @click="taskRunId = item?.taskRunId"
+          :active="item?.taskRunId === taskRunId"
           :item="item"
         />
         <v-list-subheader>Non Current</v-list-subheader>
         <TaskRunControlItem
           v-for="item in taskRuns"
-          :key="item.taskId"
+          :key="item.taskRunId"
           :item="item"
-          @click="taskRunId = item?.taskId"
-          :active="item?.taskId === taskRunId"
+          @click="taskRunId = item?.taskRunId"
+          :active="item?.taskRunId === taskRunId"
         />
       </v-list>
     </v-menu>
@@ -67,7 +67,7 @@ const numberOfTaskRuns = computed(() => taskRuns.value.length)
 
 watch(numberOfTaskRuns, (newNumberOfTaskRuns, oldNumberOfTaskRuns) => {
   if (newNumberOfTaskRuns > 0 && oldNumberOfTaskRuns == 0) {
-    taskRunId.value = taskRuns.value[0].taskId
+    taskRunId.value = taskRuns.value[0].taskRunId
   }
 })
 
@@ -76,9 +76,9 @@ watch(
   (newRuns) => {
     if (
       taskRunId.value &&
-      !newRuns.find((taskRun) => taskRun.taskId === taskRunId.value)
+      !newRuns.find((taskRun) => taskRun.taskRunId === taskRunId.value)
     ) {
-      taskRunId.value = newRuns[0]?.taskId
+      taskRunId.value = newRuns[0]?.taskRunId
     }
   },
   { deep: true },
@@ -90,11 +90,11 @@ function toggleTaskRunId() {
   if (taskRunId.value === undefined) {
     if (
       lastSelectedTaskRunId &&
-      taskRuns.value.find((t) => t.taskId === lastSelectedTaskRunId)
+      taskRuns.value.find((t) => t.taskRunId === lastSelectedTaskRunId)
     ) {
       taskRunId.value = lastSelectedTaskRunId
     } else {
-      taskRunId.value = taskRuns.value[0]?.taskId
+      taskRunId.value = taskRuns.value[0]?.taskRunId
     }
   } else {
     lastSelectedTaskRunId = taskRunId.value

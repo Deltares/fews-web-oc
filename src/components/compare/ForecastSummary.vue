@@ -47,7 +47,14 @@
                 {{ timeZeroString }}
               </v-list-item-subtitle>
             </div>
-            <v-icon v-if="isCurrentUsersTask" icon="mdi-account" />
+            <v-tooltip
+              v-if="isCurrentUsersTask"
+              :text="t('workflow.startedByMe')"
+            >
+              <template #activator="{ props }">
+                <v-icon v-bind="props" icon="mdi-account" size="small" />
+              </template>
+            </v-tooltip>
             <v-btn
               density="compact"
               :icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
@@ -77,6 +84,7 @@
 import { TaskRun, TaskStatus } from '@/lib/taskruns'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ForecastRange from './ForecastRange.vue'
 import DataTable from '@/components/general/DataTable.vue'
 import {
@@ -89,6 +97,8 @@ import { useTaskRunsStore } from '@/stores/taskRuns'
 import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import WhatIfScenarioSummary from '@/components/tasks/WhatIfScenarioSummary.vue'
 import SingleLineWithOverflowTooltip from '../general/SingleLineWithOverflowTooltip.vue'
+
+const { t } = useI18n()
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
 const availableWhatIfTemplatesStore = useAvailableWhatIfTemplatesStore()
@@ -111,7 +121,7 @@ const {
 
 const taskRunColor = computed(() => {
   // Get color from store, fallback to contrast color if not found
-  return taskRunColorsStore.getColor(task.taskId) || '--contrast-color'
+  return taskRunColorsStore.getColor(task.taskRunId) || '--contrast-color'
 })
 
 const expanded = defineModel<boolean>('expanded', {
@@ -142,7 +152,7 @@ const tableData = computed(() => [
   {
     columns: [
       { header: 'User', value: task.userId ?? 'No user' },
-      { header: 'Task run ID', value: task.taskId },
+      { header: 'Task run ID', value: task.taskRunId },
     ],
   },
   {
@@ -234,8 +244,8 @@ function toggleTaskSelection() {
   taskRunsStore.toggleTaskRun(task)
 
   // Assign a color to the task if it doesn't have one already
-  if (!taskRunColorsStore.getColor(task.taskId)) {
-    taskRunColorsStore.assignColor(task.taskId)
+  if (!taskRunColorsStore.getColor(task.taskRunId)) {
+    taskRunColorsStore.assignColor(task.taskRunId)
   }
 }
 </script>

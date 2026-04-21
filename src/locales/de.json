@@ -13,7 +13,9 @@
     "selectAll": "Alle auswählen",
     "start": "Start",
     "unsavedChanges": "Ungespeicherte Änderungen",
-    "unsavedChangesExitWarning": "Sie haben ungespeicherte Änderungen. Ohne Speichern verlassen?"
+    "unsavedChangesExitWarning": "Sie haben ungespeicherte Änderungen. Ohne Speichern verlassen?",
+    "finished": "abgeschlossen",
+    "failed": "fehlgeschlagen"
   },
   "layout": {
     "about": "Über",
@@ -66,7 +68,12 @@
     "noTasksConfiguredForNode": "Keine Aufgaben konfiguriert.",
     "numberOfAvailableServers": "Anzahl verfügbarer Server",
     "showingCurrentUsersTaskOnly": "Zeigt nur Aufgaben des aktuellen Benutzers",
-    "showingAllUsersTasks": "Zeigt Aufgaben aller Benutzer"
+    "showingAllUsersTasks": "Zeigt Aufgaben aller Benutzer",
+    "startedByMe": "Von mir gestartet",
+    "unknownWorkflow": "Unbekannter Workflow",
+    "taskRunFinishedMessage": "Die Aufgabenausführung für Workflow {name}, gestartet am {datetime}, ist {statusVerb}.",
+    "following": "Benachrichtigung bei Aufgabenabschluss oder -fehler wird angezeigt",
+    "notFollowing": "Benachrichtigung bei Aufgabenabschluss oder -fehler wird nicht angezeigt"
   },
   "taskDuration": {
     "noExpectedRuntime": "Keine erwartete Laufzeit",

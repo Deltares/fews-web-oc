@@ -5,12 +5,15 @@ import {
   fetchWorkflowsWithExpectedRunTime,
   WorkflowItem,
 } from '@/lib/workflows'
+import { until } from '@vueuse/core'
 
 export const useAvailableWorkflowsStore = defineStore(
   'availableWorkflows',
   () => {
     const workflows = ref<WorkflowItem[]>([])
     const preferredWorkflowIds = ref<string[]>([])
+
+    const hasFetched = ref(false)
 
     const workflowIds = computed(() => {
       return workflows.value.map((workflow) => workflow.id)
@@ -47,7 +50,15 @@ export const useAvailableWorkflowsStore = defineStore(
     }
 
     async function fetch() {
-      workflows.value = await fetchWorkflowsWithExpectedRunTime()
+      try {
+        workflows.value = await fetchWorkflowsWithExpectedRunTime()
+      } finally {
+        hasFetched.value = true
+      }
+    }
+
+    async function waitForFetch(): Promise<void> {
+      await until(hasFetched).toBeTruthy()
     }
 
     function setPreferredWorkflowIds(workflowIds: string[]): void {
@@ -76,6 +87,7 @@ export const useAvailableWorkflowsStore = defineStore(
       byWhatIfTemplateId,
       hasWhatIfTemplate,
       fetch,
+      waitForFetch,
       setPreferredWorkflowIds,
       clearPreferredWorkflowIds,
     }

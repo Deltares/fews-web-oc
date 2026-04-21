@@ -32,9 +32,12 @@
           <div v-else class="my-1 mx-2">
             <TaskRunSummary
               :task="task"
-              :key="task.taskId"
+              :key="task.taskRunId"
               :is-current-users-task="user.isCurrentUser(task.userId)"
-              v-model:expanded="expandedItems[task.taskId]"
+              :is-followed="taskRunMonitor.isFollowed(task.taskRunId)"
+              v-model:expanded="expandedItems[task.taskRunId]"
+              @follow="taskRunMonitor.follow"
+              @unfollow="taskRunMonitor.unfollow"
             />
           </div>
         </template>
@@ -71,6 +74,7 @@ import { useCurrentUser } from '@/services/useCurrentUser'
 import { useTaskRuns } from '@/services/useTasksRuns'
 
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+import { useTaskRunMonitorStore } from '@/stores/taskRunMonitor'
 
 import TaskStatusFilterControl from './TaskStatusFilterControl.vue'
 import TaskRunSummary from './TaskRunSummary.vue'
@@ -86,6 +90,8 @@ interface Props {
 const props = defineProps<Props>()
 
 const availableWorkflowsStore = useAvailableWorkflowsStore()
+const taskRunMonitor = useTaskRunMonitorStore()
+
 const user = useCurrentUser()
 const { t } = useI18n()
 
