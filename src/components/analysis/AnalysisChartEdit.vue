@@ -29,7 +29,7 @@
               </template>
 
               <v-card class="pa-2" width="200">
-                <v-row dense>
+                <v-row density="compact">
                   <v-col
                     v-for="style in markerStyles"
                     :key="style.icon"
