@@ -21,9 +21,6 @@
       "density": "compact",
       "variant": "outlined",
       "hide-details": "auto"
-    },
-    "v-col": {
-      "class": "pa-2"
     }
   }
 }
