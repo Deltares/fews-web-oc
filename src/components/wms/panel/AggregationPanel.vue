@@ -19,6 +19,7 @@
         v-model="modelValue"
         density="compact"
         variant="outlined"
+        mandatory
         divided
       >
         <v-tooltip v-for="item in items" :key="item.id" location="top">
