@@ -2,7 +2,7 @@
   <v-btn
     v-bind="tooltipProps"
     :value="item.id"
-    class="information-panel__tab"
+    class="information-panel__tab text-label-medium"
     size="small"
     :class="{ active }"
     :prepend-icon="data.prependIcon"
