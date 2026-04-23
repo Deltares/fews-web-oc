@@ -36,7 +36,7 @@
             </v-btn>
           </template>
           <strong>{{ item.type }} {{ item.id }}</strong>
-          <p>{{ toDateRangeString(item.startDate, item.endDate) }}</p>
+          <div>{{ toDateRangeString(item.startDate, item.endDate) }}</div>
         </v-tooltip>
       </v-btn-toggle>
     </v-list-item-action>
