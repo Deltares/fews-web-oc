@@ -196,7 +196,7 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
     props.settings.timeSeriesTable.locationEnabledAttribute,
   )
   const elevationChartEnabled =
-    props.settings.verticalProfileChart.enabled && elevationChartsDefined  
+    props.settings.verticalProfileChart.enabled && elevationChartsDefined
   const metaDataEnabled = props.settings.metaDataPanel.enabled && tooltipDefined
   return [
     {

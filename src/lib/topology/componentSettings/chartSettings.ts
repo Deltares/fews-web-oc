@@ -9,7 +9,9 @@ export type ChartsSettings = Omit<
   'timeSeriesChart' | 'timeSeriesTable'
 > & {
   timeSeriesChart: DeepRequired<PiChart> & { locationEnabledAttribute?: string }
-  timeSeriesTable: DeepRequired<PiTimeSeriesTable> & { locationEnabledAttribute?: string }
+  timeSeriesTable: DeepRequired<PiTimeSeriesTable> & {
+    locationEnabledAttribute?: string
+  }
 }
 
 export const defaultChartSettings: ChartsSettings = {

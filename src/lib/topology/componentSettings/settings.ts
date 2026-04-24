@@ -9,7 +9,10 @@ import { WebOCComponentSettingsClass } from '@deltares/fews-pi-requests'
 import { DeepRequired } from '@/lib/utils/types'
 import { merge } from 'lodash-es'
 
-export type ComponentSettings = Omit<DeepRequired<WebOCComponentSettingsClass>, 'charts'> & {
+export type ComponentSettings = Omit<
+  DeepRequired<WebOCComponentSettingsClass>,
+  'charts'
+> & {
   charts: ChartsSettings
 }
 
