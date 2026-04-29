@@ -46,7 +46,7 @@ const props = defineProps<Props>()
 const userSettings = useUserSettingsStore()
 const showDownloadDialog = ref(false)
 
-const domain = computed(
+const xDomain = computed(
   () =>
     props.chart.domain ??
     (props.startTime && props.endTime
@@ -69,7 +69,7 @@ const zoomHandler = computed(() =>
 const config = computed(() =>
   getSubplotWithDomain(
     timeSeriesDisplayToChartConfig(props.chart.subplot),
-    domain.value,
+    xDomain.value,
   ),
 )
 
