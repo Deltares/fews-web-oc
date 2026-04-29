@@ -103,8 +103,7 @@ const stack = useMenuItemsStack(() => props.items, active)
 
 const currentParent = computed((): ColumnItem | undefined => {
   const s = stack.value
-  const item = s.length > 0 ? s[s.length - 1] : undefined
-  return item
+  return s.length > 0 ? s[s.length - 1] : undefined
 })
 
 const currentLevel = computed((): number => {
