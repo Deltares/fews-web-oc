@@ -239,23 +239,16 @@ async function createNewProduct(
 
   const productId = archiveProduct.id
 
-  const attributes: Record<string, string> = {}
+  const archiveProductAttributes: Record<string, string> = {}
   archiveProduct.attributes?.forEach((attr) => {
     if (attr.key && attr.value) {
-      attributes[attr.key] = attr.value
+      archiveProductAttributes[attr.key] = attr.value
     }
   })
 
-  if (!('author' in attributes) && author) {
-    attributes['author'] = author
-  }
-
-  if (!('name' in attributes) && name) {
-    attributes['name'] = name
-  }
-
-  if (!('productId' in attributes) && productId) {
-    attributes['productId'] = productId
+  const attributes = {
+    ...{ author, name, ...(productId && { productId }) },
+    ...archiveProductAttributes,
   }
 
   const fileName =
