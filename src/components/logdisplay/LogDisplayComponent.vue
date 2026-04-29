@@ -170,7 +170,7 @@ import {
 } from '@deltares/fews-pi-requests'
 import { useLogDisplayLogs } from '@/services/useLogDisplayLogs'
 import { configManager } from '@/services/application-config'
-import { debouncedRef } from '@vueuse/core'
+import { refDebounced } from '@vueuse/core'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import NewLogMessageDialog from './NewLogMessageDialog.vue'
@@ -259,7 +259,7 @@ const filters = computed(() => {
 })
 
 const requestDebounce = 500
-const debouncedFilters = debouncedRef(filters, requestDebounce)
+const debouncedFilters = refDebounced(filters, requestDebounce)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { logMessages: manualLogMessages, isLoading: manualIsLoading } =
@@ -283,9 +283,9 @@ const logMessages = computed(() => {
 const isLoading = computed(() => manualIsLoading.value || systemIsLoading.value)
 
 const filterDebounce = 100
-const debouncedSelectedLevels = debouncedRef(selectedLevels, filterDebounce)
-const debouncedSelectedLogTypes = debouncedRef(selectedLogTypes, filterDebounce)
-const debouncedSearch = debouncedRef(search, filterDebounce)
+const debouncedSelectedLevels = refDebounced(selectedLevels, filterDebounce)
+const debouncedSelectedLogTypes = refDebounced(selectedLogTypes, filterDebounce)
+const debouncedSearch = refDebounced(search, filterDebounce)
 
 const filteredLogMessages = computed(() => {
   // Filter log messages based on selected levels, types, search text, task runs, and workflows

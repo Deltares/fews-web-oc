@@ -91,7 +91,7 @@ import { containsSubstring } from '@/lib/search'
 
 import HighlightMatch from './HighlightMatch.vue'
 import { cascadeStrategy } from '@/lib/selection'
-import { debouncedRef } from '@vueuse/core'
+import { refDebounced } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 
 interface SearchItem {
@@ -116,7 +116,7 @@ const selectedItems = defineModel<string[]>('selectedItems', { required: true })
 const { t } = useI18n()
 const { mobile } = useDisplay()
 const search = ref<string | undefined>()
-const debouncedSearch = debouncedRef(search, 100)
+const debouncedSearch = refDebounced(search, 100)
 const showOnlySelected = ref(false)
 
 const itemWithTreeIds = computed(() => {

@@ -192,33 +192,22 @@ function determineViewPeriod() {
     endDate = convertFewsPiDateTimeToJsDate(period.endDate)
   }
 
-  let startTime: string | null = null
-  let endTime: string | null = null
-  if (startDate || endDate) {
-    // if either startTime or endTime is set, use it.
-    if (startDate) {
-      startTime = DateTime.fromJSDate(startDate, {
-        zone: 'UTC',
-      })
-        .set({ millisecond: 0 })
-        .toISO({ suppressMilliseconds: true })
-    }
-    if (endDate) {
-      endTime = DateTime.fromJSDate(endDate, {
-        zone: 'UTC',
-      })
-        .set({ millisecond: 0 })
-        .toISO({ suppressMilliseconds: true })
-    }
-  }
-
   const result: Pick<TimeSeriesFilter, 'startTime' | 'endTime'> = {}
-
   if (startDate) {
-    result.startTime = startTime ?? undefined
+    const startTime = DateTime.fromJSDate(startDate, {
+      zone: 'UTC',
+    })
+      .set({ millisecond: 0 })
+      .toISO({ suppressMilliseconds: true })
+    if (startTime) result.startTime = startTime
   }
   if (endDate) {
-    result.endTime = endTime ?? undefined
+    const endTime = DateTime.fromJSDate(endDate, {
+      zone: 'UTC',
+    })
+      .set({ millisecond: 0 })
+      .toISO({ suppressMilliseconds: true })
+    if (endTime) result.endTime = endTime
   }
 
   return result

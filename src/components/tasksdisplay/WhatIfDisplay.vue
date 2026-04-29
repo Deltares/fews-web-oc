@@ -288,13 +288,16 @@ function onPropertiesChange(event: { data: ScenarioData }): void {
   selectedProperties.value = updatedProperties
 }
 
-watch([selectedProperties, referenceTime], ([properties, referenceTime]) => {
-  additionalErrors.value = getErrorsForProperties(
-    properties,
-    jsonSchema.value,
-    referenceTime,
-  )
-})
+watch(
+  [selectedProperties, referenceTime],
+  ([newProperties, newReferenceTime]) => {
+    additionalErrors.value = getErrorsForProperties(
+      newProperties,
+      jsonSchema.value,
+      newReferenceTime,
+    )
+  },
+)
 
 const isProcessDataTask = computed<boolean>(
   () =>
@@ -348,11 +351,11 @@ async function submit() {
       ? getProcessDataFilter(workflowId)
       : getRunTaskFilter(workflowId, scenarioResult.data.id)
 
-  let error = false
+  let errorOccurred = false
   try {
     if (workflowType === WorkflowType.ProcessData) {
       setTimeout(() => {
-        if (error) return
+        if (errorOccurred) return
         showStartMessage(
           'Task submitted successfully. Your file will be available for download shortly.',
         )
@@ -389,7 +392,7 @@ async function submit() {
       }, 1500)
     }
   } catch (e) {
-    error = true
+    errorOccurred = true
     if (typeof e === 'string') {
       showErrorMessage(e)
     } else if (e instanceof Error) {

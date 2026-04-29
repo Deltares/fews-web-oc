@@ -64,20 +64,20 @@ function addRow(after: boolean = false): void {
     nodes.push({ node, pos })
   })
 
-  const tableRow = nodes
-    .reverse()
-    .find((item) => item.node.type.name === 'tableRow')
+  const tableRow = nodes.findLast((item) => item.node.type.name === 'tableRow')
   if (!tableRow) return
 
-  const { node, pos } = tableRow
-  const cellNodes = node.content.content
-  const insertPos = after ? pos + node.content.size : pos
+  const { node: tableRowNode, pos: tableRowPos } = tableRow
+  const cellNodes = tableRowNode.content.content
+  const insertPos = after
+    ? tableRowPos + tableRowNode.content.size
+    : tableRowPos
 
   props.editor
     .chain()
     .insertContentAt(insertPos, {
       type: 'tableRow',
-      attrs: node.attrs,
+      attrs: tableRowNode.attrs,
       content: cellNodes.map((c: any) => ({
         type: 'tableCell',
         attrs: c.attrs,

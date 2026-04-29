@@ -43,7 +43,7 @@ import { useSsd, useSsdCapabilities } from '@/services/useSsd/index.ts'
 import DateTimeSlider from '@/components/general/DateTimeSlider.vue'
 import SsdComponent from '@/components/ssd/SsdComponent.vue'
 import { useDisplay } from 'vuetify'
-import { debouncedRef, useElementSize } from '@vueuse/core'
+import { refDebounced, useElementSize } from '@vueuse/core'
 import {
   getDefaultSettings,
   type ComponentSettings,
@@ -115,7 +115,7 @@ const selectedDateString = computed(() => {
 
 // Debounce the selected date string from the slider input,
 // so we do not send hundreds of requests when dragging the slider around.
-const debouncedDateString = debouncedRef(
+const debouncedDateString = refDebounced(
   selectedDateString,
   sliderDebounceInterval,
 )

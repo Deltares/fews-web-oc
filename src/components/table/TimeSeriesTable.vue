@@ -24,6 +24,7 @@
             <th
               v-if="column.key === 'date'"
               class="table-header table-date sticky-column"
+              scope="col"
               :class="{
                 'v-data-table__th--sorted': isSorted(column),
                 'v-data-table__th--sortable': column.sortable && !isEditing,
@@ -72,6 +73,7 @@
             <th
               v-else
               class="table-header"
+              scope="col"
               :class="{
                 'table-header--editing': isEditingTimeSeries(
                   column.key as string,
