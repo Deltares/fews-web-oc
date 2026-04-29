@@ -64,9 +64,7 @@ function addRow(after: boolean = false): void {
     nodes.push({ node, pos })
   })
 
-  const tableRow = nodes
-    .reverse()
-    .find((item) => item.node.type.name === 'tableRow')
+  const tableRow = nodes.findLast((item) => item.node.type.name === 'tableRow')
   if (!tableRow) return
 
   const { node: tableRowNode, pos: tableRowPos } = tableRow
