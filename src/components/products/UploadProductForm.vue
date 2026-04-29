@@ -246,8 +246,14 @@ async function createNewProduct(
     }
   })
 
+  const attributesForProvidedValues = {
+    ...(author && { author }),
+    ...(name && { name }),
+    ...(productId && { productId }),
+  }
+
   const attributes = {
-    ...{ author, name, ...(productId && { productId }) },
+    ...attributesForProvidedValues,
     ...archiveProductAttributes,
   }
 
