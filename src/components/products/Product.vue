@@ -24,13 +24,13 @@ interface Props {
 const props = defineProps<Props>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const url = computed(() => getProductURL(baseUrl, props.product))
-const viewMode = computed(() => getViewMode(getFileExtension(url.value)))
+const productUrl = computed(() => getProductURL(baseUrl, props.product))
+const viewMode = computed(() => getViewMode(getFileExtension(productUrl.value)))
 
 const isLoading = ref(true)
 const src = ref('')
 watch(
-  url,
+  productUrl,
   async (newUrl) => {
     isLoading.value = true
     src.value = await getUrl(newUrl)
