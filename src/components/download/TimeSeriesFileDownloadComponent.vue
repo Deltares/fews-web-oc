@@ -172,7 +172,7 @@ watch(
     const FILE_FORMAT_DATE_FMT = 'yyyyMMddHHmmss'
     const defaultDateTimeString = DateTime.now().toFormat(FILE_FORMAT_DATE_FMT)
     fileNameInput.value = `timeseries_${defaultDateTimeString}`
-  }
+  },
 )
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
