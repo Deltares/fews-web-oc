@@ -335,8 +335,8 @@ const headers = computed(() => {
 })
 
 const items = computed(() => {
-  const items: ProductMetaDataType[] = []
-  items.push(
+  const results: ProductMetaDataType[] = []
+  results.push(
     ...props.products.map((product) => ({
       ...product,
       timeZero: toHumanReadableDateTime(product.timeZero),
@@ -344,13 +344,14 @@ const items = computed(() => {
     })),
   )
   if (fileType.value) {
-    return items.filter((item) => {
+    return results.filter((product) => {
       const viewMode =
-        getViewMode(getFileExtension(item.relativePathProducts[0])) ?? 'unknown'
+        getViewMode(getFileExtension(product.relativePathProducts[0])) ??
+        'unknown'
       return fileType.value === viewMode
     })
   }
-  return items
+  return results
 })
 
 async function onDeleteProduct(product: ProductMetaDataType) {
