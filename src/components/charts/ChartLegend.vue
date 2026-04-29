@@ -170,13 +170,11 @@ const expandIcon = computed(() => {
   const isLower =
     props.settings.placement.includes('lower') ||
     props.settings.placement.includes('under')
-  return isLower
-    ? expanded.value
-      ? 'mdi-chevron-down'
-      : 'mdi-chevron-up'
-    : expanded.value
-      ? 'mdi-chevron-up'
-      : 'mdi-chevron-down'
+  if (isLower) {
+    return expanded.value ? 'mdi-chevron-down' : 'mdi-chevron-up'
+  } else {
+    return expanded.value ? 'mdi-chevron-up' : 'mdi-chevron-down'
+  }
 })
 
 const chartLegendContainerStyle = computed(() => {
