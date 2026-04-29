@@ -18,11 +18,11 @@ import packageConfig from '@/../package.json'
 import { computed } from 'vue'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { useConfigStore } from '@/stores/config'
-import { asyncComputed, useStorage } from '@vueuse/core'
+import { computedAsync, useStorage } from '@vueuse/core'
 
 const configStore = useConfigStore()
 
-const splashSrc = asyncComputed(async () => {
+const splashSrc = computedAsync(async () => {
   if (!configStore.general.splashScreen) return
 
   return getResourcesStaticUrl(configStore.general.splashScreen)
