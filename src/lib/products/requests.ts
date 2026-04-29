@@ -145,14 +145,14 @@ export async function postProduct(
  * @throws Will throw an error if the request fails or the response is not OK.
  */
 export async function postFileProduct(
-  archiveUrl: string,
+  piUrl: string,
   areaId: string,
   sourceId: string,
   timeZero: string,
   file: File,
   attributes: Record<string, string | boolean>,
 ): Promise<PostResponse> {
-  let url = `${archiveUrl}products?areaId=${areaId}&sourceId=${sourceId}&timeZero=${timeZero}`
+  let url = `${piUrl}rest/fewspiservice/v1/archive/products?areaId=${areaId}&sourceId=${sourceId}&timeZero=${timeZero}`
 
   for (const key in attributes) {
     url = `${url}&attribute(${key})=${attributes[key]}`

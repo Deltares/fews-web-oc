@@ -347,13 +347,12 @@ function downloadProduct() {
 
 async function onSave() {
   const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-  const archiveUrl = `${piUrl}rest/fewspiservice/v1/archive/`
   const metaData = selectedProduct.value
   const fileName =
     metaData.relativePathProducts[0].split('/').pop() ?? 'unknown'
   try {
     await postProduct(
-      archiveUrl,
+      piUrl,
       metaData.areaId,
       metaData.sourceId,
       metaData.timeZero,

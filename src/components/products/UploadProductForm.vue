@@ -83,17 +83,11 @@
 </template>
 
 <script setup lang="ts">
-import type { ArchiveProduct, DocumentCompose } from '@/lib/products'
-import {
-  fetchLatestArchiveProduct,
-  fetchProduct,
-  postFileProduct,
-  postProduct,
-} from '@/lib/products/requests'
+import type { DocumentCompose } from '@/lib/products'
+import { uploadProduct } from '@/lib/products/uploadProduct'
+import { createNewProduct } from '@/lib/products/createNewProduct'
 import { IntervalItem } from '@/lib/TimeControl/interval'
 import { configManager } from '@/services/application-config'
-import { hashObject } from '@/services/useProducts'
-import { DateTime } from 'luxon'
 import { ref } from 'vue'
 
 interface Props {
@@ -106,7 +100,15 @@ interface Props {
   viewPeriod: IntervalItem
 }
 
-const props = defineProps<Props>()
+const {
+  name = '',
+  author = '',
+  compose,
+  areaId,
+  sourceId,
+  viewPeriod,
+  type,
+} = defineProps<Props>()
 
 interface Emits {
   (e: 'saved'): void
@@ -117,161 +119,29 @@ const emit = defineEmits<Emits>()
 const formIsValid = ref(false)
 const file = ref<File>()
 
-const name = ref(props.name ?? '')
-const author = ref(props.author ?? '')
-const selectedCompose = ref(props.compose?.[0])
+const selectedCompose = ref(compose?.[0])
+
+const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 async function onSave() {
-  switch (props.type) {
+  switch (type) {
     case 'upload':
-      uploadProduct(
-        name.value,
-        author.value,
-        props.areaId,
-        props.sourceId,
-        file.value,
-      )
+      await uploadProduct(piUrl, name, author, areaId, sourceId, file.value)
       break
     case 'new':
       const compose = selectedCompose.value
-      createNewProduct(
+      await createNewProduct(
+        piUrl,
         compose?.archiveProduct.name ?? '',
-        author.value,
+        author,
         compose?.archiveProduct,
         compose?.template,
-        props.viewPeriod,
+        viewPeriod,
       )
       break
   }
 
   emit('saved')
   emit('close')
-}
-
-const piUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const archiveUrl = `${piUrl}rest/fewspiservice/v1/archive/`
-
-async function uploadProduct(
-  name: string,
-  author: string,
-  areaId: string | undefined,
-  sourceId: string | undefined,
-  file: File | undefined,
-) {
-  if (!file) {
-    console.error('No file selected for upload')
-    return
-  }
-
-  if (!areaId) {
-    console.error('No areaId provided for upload')
-    return
-  }
-
-  if (!sourceId) {
-    console.error('No sourceId provided for upload')
-    return
-  }
-
-  const formInput = {
-    name,
-    author,
-  }
-  const productId = await hashObject(formInput)
-  const attributes = {
-    ...formInput,
-    productId,
-  }
-
-  const timeZero = DateTime.now().toUTC().startOf('second').toISO({
-    suppressMilliseconds: true,
-  })
-
-  await postFileProduct(
-    archiveUrl,
-    areaId,
-    sourceId,
-    timeZero,
-    file,
-    attributes,
-  )
-}
-
-async function createNewProduct(
-  name: string,
-  author: string,
-  archiveProduct: ArchiveProduct | undefined,
-  template: ArchiveProduct | undefined,
-  viewPeriod: IntervalItem,
-) {
-  if (!template) {
-    console.error('No template selected for new product')
-    return
-  }
-
-  if (!archiveProduct) {
-    console.error('No archive product provided for new product')
-    return
-  }
-
-  if (!archiveProduct.areaId) {
-    console.error('No areaId in archive product for new product')
-    return
-  }
-
-  if (!archiveProduct.sourceId) {
-    console.error('No sourceId in archive product for new product')
-    return
-  }
-
-  const templateMetaData = await fetchLatestArchiveProduct(
-    piUrl,
-    template,
-    viewPeriod,
-  )
-
-  if (!templateMetaData) {
-    console.error('No template metadata found for new product')
-    return
-  }
-
-  const htmlContent = await fetchProduct(piUrl, templateMetaData)
-
-  const productId = archiveProduct.id
-
-  const archiveProductAttributes: Record<string, string> = {}
-  archiveProduct.attributes?.forEach((attr) => {
-    if (attr.key && attr.value) {
-      archiveProductAttributes[attr.key] = attr.value
-    }
-  })
-
-  const attributesForProvidedValues = {
-    ...(author && { author }),
-    ...(name && { name }),
-    ...(productId && { productId }),
-  }
-
-  const attributes = {
-    ...attributesForProvidedValues,
-    ...archiveProductAttributes,
-  }
-
-  const fileName =
-    templateMetaData.relativePathProducts[0].split('/').pop() ?? 'unknown'
-
-  const timeZero = DateTime.now().toUTC().startOf('second').toISO({
-    suppressMilliseconds: true,
-  })
-
-  await postProduct(
-    archiveUrl,
-    archiveProduct.areaId,
-    archiveProduct.sourceId,
-    archiveProduct.timeZero ?? timeZero,
-    htmlContent,
-    fileName,
-    attributes,
-  )
 }
 </script>
