@@ -23,6 +23,9 @@ import { useDark, usePreferredDark, useToggle } from '@vueuse/core'
 import { useTaskRunMonitorStore } from './stores/taskRunMonitor'
 
 import '@/assets/fews-flags.css'
+import { useBaseMapsStore } from './stores/baseMaps'
+import { convertBaseMapToUserSetting, getBaseMapsFromConfig } from './lib/basemap'
+import { MapLayerConfig } from '@deltares/fews-pi-requests'
 
 const route = useRoute()
 const configStore = useConfigStore()
@@ -66,6 +69,38 @@ watch(
     }
   },
 )
+
+watch(
+  () => configStore.general.mapLayerConfig,
+  async () => {
+    if (configStore.general.mapLayerConfig) {
+      updateUserSettingBaseMaps(configStore.general.mapLayerConfig)
+    }
+  },
+)
+
+const settings = useUserSettingsStore()
+
+const baseMapsStore = useBaseMapsStore()
+
+function updateUserSettingBaseMaps(config: MapLayerConfig) {
+  const baseMaps = getBaseMapsFromConfig(config)
+  baseMapsStore.setBaseMaps(baseMaps)
+
+  if (config.defaultDarkModeMapLayerId) {
+    baseMapsStore.defaultDarkId = config.defaultDarkModeMapLayerId
+  }
+
+  if (config.defaultLightModeMapLayerId) {
+    baseMapsStore.defaultLightId = config.defaultLightModeMapLayerId
+  }
+
+  const settingItems = baseMapsStore.allBaseMaps.map(
+    convertBaseMapToUserSetting,
+  )
+  settings.updateSettingItems('ui.map.theme', settingItems)
+}
+
 
 watch(prefersDark, () => updateTheme())
 

@@ -2,7 +2,11 @@
   <v-layout id="app">
     <v-main id="main" class="d-flex align-center justify-center">
       <Suspense>
-        <router-view style="height: 100%"> </router-view>
+        <router-view
+          style="height: 100%"
+          :hasAppBar="false"
+          :hasSideBar="false"
+        />
       </Suspense>
     </v-main>
   </v-layout>

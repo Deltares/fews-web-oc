@@ -179,14 +179,8 @@ import StartupDialog from '@/components/dialog/StartupDialog.vue'
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import packageConfig from '@/../package.json'
-import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { toCharacterIcon } from '@/lib/icons/index.ts'
-import {
-  convertBaseMapToUserSetting,
-  getBaseMapsFromConfig,
-} from '@/lib/basemap/index.ts'
-import type { MapLayerConfig } from '@deltares/fews-pi-requests'
-import { useBaseMapsStore } from '@/stores/baseMaps.ts'
+import { useUserSettingsStore } from '@/stores/userSettings.ts'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
@@ -242,31 +236,8 @@ watch(
       }
       document.head.appendChild(link)
     }
-    if (configStore.general.mapLayerConfig) {
-      updateUserSettingBaseMaps(configStore.general.mapLayerConfig)
-    }
   },
 )
-
-const baseMapsStore = useBaseMapsStore()
-
-function updateUserSettingBaseMaps(config: MapLayerConfig) {
-  const baseMaps = getBaseMapsFromConfig(config)
-  baseMapsStore.setBaseMaps(baseMaps)
-
-  if (config.defaultDarkModeMapLayerId) {
-    baseMapsStore.defaultDarkId = config.defaultDarkModeMapLayerId
-  }
-
-  if (config.defaultLightModeMapLayerId) {
-    baseMapsStore.defaultLightId = config.defaultLightModeMapLayerId
-  }
-
-  const settingItems = baseMapsStore.allBaseMaps.map(
-    convertBaseMapToUserSetting,
-  )
-  settings.updateSettingItems('ui.map.theme', settingItems)
-}
 
 const activeComponent = computed(() => configStore.getComponentByRoute(route))
 const currentItemTitle = computed(
