@@ -81,5 +81,11 @@
     "noExpectedRuntime": "Keine erwartete Laufzeit",
     "expectedTimeRemaining": "Verbleibende erwartete Zeit",
     "overranExpectedTimeBy": "Erwartete Zeit überschritten um"
+  },
+  "share": {
+    "title": "Teilen",
+    "copyLink": "Link kopieren",
+    "linkCopied": "Kopiert",
+    "linkCopyFailed": "Link konnte nicht kopiert werden"
   }
 }

@@ -19,6 +19,7 @@
       <template #append>
         <div id="app-bar-content-end" />
         <TimeControlMenu />
+        <ShareMenu />
         <UserSettingsMenu />
         <LoginComponent v-if="configManager.authenticationIsEnabled" />
       </template>
@@ -166,6 +167,7 @@ import { useRoute } from 'vue-router'
 import LoginComponent from '../views/auth/LoginComponent.vue'
 import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
 import TimeControlMenu from '../components/time-control/TimeControlMenu.vue'
+import ShareMenu from '@/components/share/ShareMenu.vue'
 import StartupDialog from '@/components/dialog/StartupDialog.vue'
 
 import { configManager } from '@/services/application-config'

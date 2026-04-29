@@ -81,5 +81,11 @@
     "noExpectedRuntime": "No expected runtime",
     "expectedTimeRemaining": "Expected time remaining",
     "overranExpectedTimeBy": "Overran expected time by"
+  },
+  "share": {
+    "title": "Share",
+    "copyLink": "Copy link",
+    "linkCopied": "Copied",
+    "linkCopyFailed": "Failed to copy link"
   }
 }
