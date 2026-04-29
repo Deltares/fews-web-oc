@@ -7,15 +7,35 @@
     <v-card :title="t('share.title')" min-width="400" density="compact">
       <v-divider />
       <v-card-text>
-        <v-list density="compact">
-          <v-list-item density="compact" :title="t('share.dark')">
-            <template #prepend>
-              <v-list-item-action start>
-                <v-checkbox-btn />
-              </v-list-item-action>
-            </template>
-          </v-list-item>
+        <v-list
+          v-for="group in groups"
+          :key="group"
+          class="mb-2"
+          density="compact"
+        >
+          <v-list-subheader>{{ group }}</v-list-subheader>
+          <template
+            v-for="setting in store.listByGroup(group)"
+            :key="setting.id"
+          >
+            <UserSettingsOneOfMultiple
+              v-if="setting.type === 'oneOfMultiple'"
+              :setting="setting"
+              :model-value="setting.value"
+              :aria-label="`${group} ${setting.label}`"
+              inline
+            />
+
+            <UserSettingsBoolean
+              v-else-if="setting.type === 'boolean'"
+              :setting="setting"
+              :model-value="setting.value"
+              :aria-label="`${group} ${setting.label}`"
+              inline
+            />
+          </template>
         </v-list>
+
         <CopyUrlField :url="embedUrl" />
       </v-card-text>
     </v-card>
@@ -24,13 +44,19 @@
 
 <script lang="ts" setup>
 import CopyUrlField from './CopyUrlField.vue'
-import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+
+import UserSettingsBoolean from '@/components/user-settings/UserSettingsBoolean.vue'
+import UserSettingsOneOfMultiple from '@/components/user-settings/UserSettingsOneOfMultiple.vue'
+import { useUserSettingsStore } from '@/stores/userSettings'
+import { computed } from 'vue'
 
 const { t } = useI18n()
 
 const route = useRoute()
+const store = useUserSettingsStore()
+const groups = computed(() => store.listGroups)
 
 const embedUrl = computed(() => {
   const url = new URL(window.location.href)
