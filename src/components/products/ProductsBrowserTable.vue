@@ -105,8 +105,8 @@
         >
           <tr>
             <template v-for="(column, index) in columns" :key="column.key">
-              <th v-if="index === 0"></th>
-              <th v-else-if="column.key === 'actions'" class="pa-0">
+              <th v-if="index === 0" scope="col"></th>
+              <th v-else-if="column.key === 'actions'" scope="col" class="pa-0">
                 <v-btn icon size="small" variant="plain">
                   <v-icon icon="mdi-dots-vertical" />
                   <v-menu
@@ -139,7 +139,7 @@
                   </v-menu>
                 </v-btn>
               </th>
-              <th v-else>
+              <th v-else scope="col">
                 <div class="d-flex align-center">
                   <span
                     class="me-2 cursor-pointer"
