@@ -14,7 +14,7 @@ interface UserSettingsItemBase {
   id: string
   label: string
   disabled?: boolean
-  favorite?: boolean
+  favorite: boolean
   group: string
 }
 

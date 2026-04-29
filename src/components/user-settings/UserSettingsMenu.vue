@@ -1,21 +1,23 @@
 <template>
   <v-menu left bottom :close-on-content-click="false" class="menu">
-    <template v-slot:activator="{ props }">
+    <template #activator="{ props }">
       <v-btn v-bind="props" icon="mdi-cog" aria-label="User Settings" />
     </template>
     <v-list density="compact">
-      <template v-for="(setting, index) in store.listFavorite" :key="index">
+      <template v-for="setting in store.listFavorite" :key="setting.id">
         <UserSettingsOneOfMultiple
           v-if="setting.type === 'oneOfMultiple'"
           :setting="setting"
           :model-value="setting.value"
           @update:modelValue="updateModelValue({ ...setting, value: $event })"
+          :aria-label="setting.label"
         />
         <UserSettingsBoolean
           v-else-if="setting.type === 'boolean'"
           :setting="setting"
           :model-value="setting.value"
           @update:modelValue="updateModelValue({ ...setting, value: $event })"
+          :aria-label="setting.label"
         />
       </template>
       <v-divider />
