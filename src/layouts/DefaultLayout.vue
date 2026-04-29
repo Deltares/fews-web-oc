@@ -5,6 +5,8 @@
       :style="appBarStyle"
       density="compact"
       data-test-id="app-bar"
+      role="banner"
+      aria-label="Application header"
     >
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
@@ -30,6 +32,8 @@
       expand-on-hover
       :rail="useRail"
       onmouseover=""
+      role="navigation"
+      aria-label="Main navigation"
     >
       <template v-slot:prepend>
         <v-list density="compact" v-if="shouldRenderInfoMenu">

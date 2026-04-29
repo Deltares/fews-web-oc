@@ -24,7 +24,11 @@
     </Teleport>
 
     <Teleport to="#app-bar-content-center">
-      <DisplayTabs :nodeId="nodeId" />
+      <DisplayTabs
+        :nodeId="nodeId"
+        role="tablist"
+        aria-label="Node tab selection"
+      />
     </Teleport>
 
     <Teleport to="#app-bar-content-end">
