@@ -1,12 +1,13 @@
 <template>
   <BtnGroup class="me-2">
-    <template v-slot:persistent v-if="showActiveThresholdCrossingsForFilters">
+    <template #persistent v-if="showActiveThresholdCrossingsForFilters">
       <ThresholdsControl
         :topologyNode="topologyNode"
         @navigate="emit('navigate', $event)"
         :locationIds="locationIds"
       />
     </template>
+
     <SidePanelControl
       v-if="activeSecondaryControl"
       :type="activeSecondaryControl.type"
@@ -18,32 +19,29 @@
         :topologyNode="topologyNode"
       />
     </SidePanelControl>
+
     <v-menu location="bottom right" v-if="activeSecondaryControlCount">
       <template #activator="{ isActive, props }">
         <v-btn
           icon
           v-bind="props"
           aria-label="More Sidepanel Options"
-          class="last-btn"
           size="small"
-          ><v-icon
+        >
+          <v-icon
             :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"
             size="large"
-          ></v-icon>
+          />
         </v-btn>
       </template>
+
       <v-list>
         <v-list-item
           v-for="control in secondaryControls.filter((c) => !c.disabled)"
           :prepend-icon="control.icon"
           :title="control.title"
-          @click="
-            () => {
-              activeControl = control.type
-              secondaryControl = control.type
-              sidePanelStore.setActive(control.type)
-            }
-          "
+          :active="sidePanelStore.isActive(control.type)"
+          @click="setActiveControl(control.type)"
         />
       </v-list>
     </v-menu>
@@ -161,4 +159,9 @@ watch(activeControl, (newControl) => {
     sidePanelStore.setActive(newControl)
   }
 })
+
+function setActiveControl(type: SidePanel) {
+  activeControl.value = type
+  secondaryControl.value = type
+}
 </script>
