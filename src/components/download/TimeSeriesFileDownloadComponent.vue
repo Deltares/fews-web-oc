@@ -6,7 +6,7 @@
       }}</v-card-title>
       <v-card-text>
         <v-text-field
-          v-model="fileName"
+          v-model="fileNameInput"
           :label="t('download.fileName')"
           variant="underlined"
           density="compact"
@@ -163,12 +163,12 @@ watchEffect(() => {
 const cancelDialog = () => {
   showDialog.value = false
 }
-const fileName = ref('timeseries')
+const fileNameInput = ref('timeseries')
 onUpdated(() => {
   if (!showDialog.value) return
   const FILE_FORMAT_DATE_FMT = 'yyyyMMddHHmmss'
   const defaultDateTimeString = DateTime.now().toFormat(FILE_FORMAT_DATE_FMT)
-  fileName.value = `timeseries_${defaultDateTimeString}`
+  fileNameInput.value = `timeseries_${defaultDateTimeString}`
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -268,7 +268,12 @@ async function downloadFile(downloadFormat: DocumentFormat) {
   const url = getDownloadFileUrl(downloadFormat)
   const accessToken = authenticationManager.getAccessToken()
 
-  await downloadFileSafe(url.href, fileName.value, downloadFormat, accessToken)
+  await downloadFileSafe(
+    url.href,
+    fileNameInput.value,
+    downloadFormat,
+    accessToken,
+  )
 }
 
 async function downloadFileSafe(
