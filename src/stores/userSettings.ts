@@ -3,14 +3,6 @@ import { defineStore } from 'pinia'
 import DefaultUserSettings from '@/assets/DefaultUserSettings.json'
 import { LayerKind } from '@/lib/streamlines'
 
-export const UserSettingsType = {
-  oneOfMultiple: 'oneOfMultiple',
-  boolean: 'boolean',
-} as const
-
-export type UserSettingsType =
-  (typeof UserSettingsType)[keyof typeof UserSettingsType]
-
 export interface UserSettingsWithIcon {
   value: string
   title: string
@@ -18,26 +10,24 @@ export interface UserSettingsWithIcon {
   icon?: string
 }
 
-export interface UserSettingsItemBoolean {
+interface UserSettingsItemBase {
   id: string
-  type: 'boolean'
   label: string
-  value: boolean
   disabled?: boolean
   favorite?: boolean
   group: string
 }
 
-export interface UserSettingsItemOneOf {
-  id: string
+export interface UserSettingsItemBoolean extends UserSettingsItemBase {
+  type: 'boolean'
+  value: boolean
+}
+
+export interface UserSettingsItemOneOf extends UserSettingsItemBase {
   type: 'oneOfMultiple'
-  label: string
   value: string
   initialStorageValue?: string
-  disabled?: boolean
-  items?: UserSettingsWithIcon[]
-  favorite?: boolean
-  group: string
+  items: UserSettingsWithIcon[]
 }
 
 export type UserSettingsItem = UserSettingsItemBoolean | UserSettingsItemOneOf
