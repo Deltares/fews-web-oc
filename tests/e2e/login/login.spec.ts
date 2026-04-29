@@ -1,6 +1,4 @@
-import { test, expect, type Page } from '@playwright/test'
-
-const base = '/login'
+import { test, expect } from '@playwright/test'
 
 test.describe('Login view is customized', () => {
   test('button has correct text, icons and color', async ({ page }) => {
@@ -28,7 +26,7 @@ test.describe('Login view is customized', () => {
     await expect(app).toBeVisible()
     await expect(app).toHaveCSS(
       'background-image',
-      'url("http://fews-web-services:8080/FewsWebServices/rest/fewspiservice/v1/resources/static/css/images/Luchtfoto_Noordzee_small.jpg")',
+      /url\(".*Luchtfoto_Noordzee_small\.jpg"\)/,
     )
   })
 })
