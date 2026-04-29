@@ -129,15 +129,15 @@ const layers = computed(() =>
     ? capabilities.layers.filter((layer) => layer.groupName === props.groupId)
     : [capabilities.layers.find((layer) => layer.name === props.layerName)],
 )
-const layer = ref(props.layerName)
+const selectedLayer = ref(props.layerName)
 watch(
   () => props.layerName,
   (newName) => {
-    layer.value = newName
+    selectedLayer.value = newName
   },
 )
 watch(
-  layer,
+  selectedLayer,
   (newLayer) => {
     emit('changeLayer', newLayer ?? '')
   },
@@ -145,7 +145,7 @@ watch(
 )
 
 function updateLayer(newLayerName?: string) {
-  layer.value = newLayerName
+  selectedLayer.value = newLayerName
   showMenu.value = false
 }
 </script>
