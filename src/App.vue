@@ -7,12 +7,14 @@
       <span>Loading...</span>
     </template>
   </Suspense>
+  <Alerts />
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import EmptyLayout from './layouts/EmptyLayout.vue'
+import Alerts from '@/components/general/Alerts.vue'
 
 import { useRoute } from 'vue-router'
 import { useConfigStore } from '@/stores/config.ts'
@@ -23,6 +25,12 @@ import { useDark, usePreferredDark, useToggle } from '@vueuse/core'
 import { useTaskRunMonitorStore } from './stores/taskRunMonitor'
 
 import '@/assets/fews-flags.css'
+import { useBaseMapsStore } from './stores/baseMaps'
+import {
+  convertBaseMapToUserSetting,
+  getBaseMapsFromConfig,
+} from './lib/basemap'
+import { MapLayerConfig } from '@deltares/fews-pi-requests'
 
 const route = useRoute()
 const configStore = useConfigStore()
@@ -40,8 +48,11 @@ onMounted(() => {
 })
 
 const layoutComponent = computed(() => {
+  if (window.location.href.includes('/embed/')) {
+    return EmptyLayout
+  }
+
   switch (route.meta.layout) {
-    case 'EmbedLayout':
     case 'EmptyLayout':
       return EmptyLayout
     default:
@@ -66,6 +77,37 @@ watch(
     }
   },
 )
+
+watch(
+  () => configStore.general.mapLayerConfig,
+  async () => {
+    if (configStore.general.mapLayerConfig) {
+      updateUserSettingBaseMaps(configStore.general.mapLayerConfig)
+    }
+  },
+)
+
+const settings = useUserSettingsStore()
+
+const baseMapsStore = useBaseMapsStore()
+
+function updateUserSettingBaseMaps(config: MapLayerConfig) {
+  const baseMaps = getBaseMapsFromConfig(config)
+  baseMapsStore.setBaseMaps(baseMaps)
+
+  if (config.defaultDarkModeMapLayerId) {
+    baseMapsStore.defaultDarkId = config.defaultDarkModeMapLayerId
+  }
+
+  if (config.defaultLightModeMapLayerId) {
+    baseMapsStore.defaultLightId = config.defaultLightModeMapLayerId
+  }
+
+  const settingItems = baseMapsStore.allBaseMaps.map(
+    convertBaseMapToUserSetting,
+  )
+  settings.updateSettingItems('ui.map.theme', settingItems)
+}
 
 watch(prefersDark, () => updateTheme())
 

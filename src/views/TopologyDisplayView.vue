@@ -1,81 +1,48 @@
 <template>
-  <Teleport to="#web-oc-sidebar-target">
-    <HierarchicalMenu v-model:active="active" :type="menuType" :items="items" />
-  </Teleport>
-  <Teleport to="#app-bar-content-start">
-    <LeafNodeButtons
-      v-if="nodesStore.nodeButtons.length > 0 && showLeafsAsButton"
-      v-model:activeNodeId="nodesStore.activeNodeId"
-      :items="nodesStore.nodeButtons"
-      variant="tonal"
+  <Teleport v-if="hasSideBar" to="#web-oc-sidebar-target">
+    <TopologySidebar
+      :nodeId="nodeId"
+      :topologyId="topologyId"
+      :topologyNode="topologyNode"
+      :showActiveThresholdCrossingsForFilters="
+        showActiveThresholdCrossingsForFilters
+      "
+      :thresholds="thresholds"
+      :subNodes="subNodes"
+      :showLeafNodesAsButton="showLeafsAsButton"
     />
   </Teleport>
-  <Teleport to="#app-bar-content-center">
-    <v-toolbar-items v-if="displayTabs.length > 1">
-      <v-btn
-        variant="text"
-        v-for="tab in displayTabs"
-        :key="tab.id"
-        :value="tab.type"
-        :href="tab.href"
-        :target="tab.target"
-        :to="tab.to"
-      >
-        <v-icon>{{ tab.icon }}</v-icon>
-      </v-btn>
-    </v-toolbar-items>
-  </Teleport>
-  <Teleport to="#app-bar-content-end">
-    <BtnGroup class="me-2">
-      <template v-slot:persistent v-if="showActiveThresholdCrossingsForFilters">
-        <ThresholdsControl
-          :topologyNode="topologyNode"
-          @navigate="onNavigate"
-          :locationIds="locationIds"
-        />
-      </template>
-      <SidePanelControl
-        v-if="activeSecondaryControl"
-        :type="activeSecondaryControl.type"
-        :title="activeSecondaryControl.title"
-        :icon="activeSecondaryControl.icon"
-      >
-        <component
-          :is="activeSecondaryControl.component"
-          :topologyNode="topologyNode"
-        />
-      </SidePanelControl>
-      <v-menu location="bottom right" v-if="activeSecondaryControlCount">
-        <template #activator="{ isActive, props }">
-          <v-btn
-            icon
-            v-bind="props"
-            aria-label="More Sidepanel Options"
-            class="last-btn"
-            size="small"
-            ><v-icon
-              :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-              size="large"
-            ></v-icon>
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item
-            v-for="control in secondaryControls.filter((c) => !c.disabled)"
-            :prepend-icon="control.icon"
-            :title="control.title"
-            @click="
-              () => {
-                activeControl = control.type
-                secondaryControl = control.type
-                sidePanelStore.setActive(control.type)
-              }
-            "
-          />
-        </v-list>
-      </v-menu>
-    </BtnGroup>
-  </Teleport>
+
+  <template v-if="hasAppBar">
+    <Teleport to="#app-bar-content-start">
+      <LeafNodeButtons
+        v-if="nodesStore.nodeButtons.length > 0 && showLeafsAsButton"
+        v-model:activeNodeId="nodesStore.activeNodeId"
+        :items="nodesStore.nodeButtons"
+        variant="tonal"
+      />
+    </Teleport>
+
+    <Teleport to="#app-bar-content-center">
+      <DisplayTabs
+        :nodeId="nodeId"
+        role="tablist"
+        aria-label="Node tab selection"
+      />
+    </Teleport>
+
+    <Teleport to="#app-bar-content-end">
+      <TopologyControls
+        :topologyNode="topologyNode"
+        :locationIds="locationIds"
+        :showActiveThresholdCrossingsForFilters="
+          showActiveThresholdCrossingsForFilters
+        "
+        @navigate="onNavigate"
+      />
+    </Teleport>
+  </template>
+
   <div class="d-flex w-100 h-100">
     <router-view v-slot="{ Component }">
       <component
@@ -89,56 +56,32 @@
 </template>
 
 <script setup lang="ts">
-import HierarchicalMenu from '@/components/general/HierarchicalMenu.vue'
-import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
 import LeafNodeButtons from '@/components/general/LeafNodeButtons.vue'
-import SidePanelControl from '@/components/sidepanel/SidePanelControl.vue'
-import BtnGroup from '@/components/general/BtnGroup.vue'
+import DisplayTabs from '@/components/DisplayTabs.vue'
+import TopologySidebar from '@/components/topology/TopologySidebar.vue'
+import TopologyControls from '@/components/topology/TopologyControls.vue'
 
-import type { ColumnItem } from '@/components/general/ColumnItem'
 import { useConfigStore } from '@/stores/config'
-import { useUserSettingsStore } from '@/stores/userSettings'
-import { useWorkflowsStore } from '@/stores/workflows'
 
-import type { TopologyNode } from '@deltares/fews-pi-requests'
 import type { WebOcTopologyDisplayConfig } from '@deltares/fews-pi-requests'
 
-import {
-  type Component,
-  computed,
-  onUnmounted,
-  ref,
-  watch,
-  watchEffect,
-} from 'vue'
+import { computed, onUnmounted, watch, watchEffect } from 'vue'
 import {
   onBeforeRouteUpdate,
   RouteLocationNormalized,
   useRoute,
   useRouter,
 } from 'vue-router'
-import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 import { configManager } from '@/services/application-config'
-import InformationDisplayView from '@/views/InformationDisplayView.vue'
-import TaskRunsOverview from '@/components/tasks/TaskRunsOverview.vue'
-import ImportStatusControl from '@/components/systemmonitor/ImportStatusControl.vue'
-import ThresholdsControl from '@/components/thresholds/ThresholdsControl.vue'
-import { useNodesStore } from '@/stores/nodes'
-import { nodeButtonItems, recursiveUpdateNode } from '@/lib/topology/nodes'
-import {
-  displayTabsForNode,
-  type DisplayTab,
-} from '@/lib/topology/displayTabs.js'
+import { displayTabsForNode } from '@/lib/topology/displayTabs.js'
 import { useTopologyNodesStore } from '@/stores/topologyNodes'
 import { useComponentSettings } from '@/services/useComponentSettings'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
-import { useTaskRunsStore } from '@/stores/taskRuns'
 import type { NavigateRoute } from '@/lib/router'
-import { SidePanel, useSidePanelStore } from '@/stores/sidePanel'
-import VisualizeDataControl from '@/components/tasks/VisualizeDataControl.vue'
-import { useI18n } from 'vue-i18n'
 import { fetchWmsCapabilitiesHeaders } from '@/lib/capabilities'
-import { useTaskRunColorsStore } from '@/stores/taskRunColors'
+import { useNodesStore } from '@/stores/nodes'
+import { nodeButtonItems } from '@/lib/topology/nodes'
+import { useTopologyThresholds } from '@/services/useTopologyThresholds'
 
 interface Props {
   topologyId?: string
@@ -149,137 +92,15 @@ interface Props {
   latitude?: string
   longitude?: string
   productKey?: string
+  hasAppBar?: boolean
+  hasSideBar?: boolean
+  embed?: string
 }
 
-const { t } = useI18n()
-
-const props = defineProps<Props>()
-
-const configStore = useConfigStore()
-const settings = useUserSettingsStore()
-const workflowsStore = useWorkflowsStore()
-const availableWorkflowsStore = useAvailableWorkflowsStore()
-const taskRunsStore = useTaskRunsStore()
-const taskRunColorsStore = useTaskRunColorsStore()
-const sidePanelStore = useSidePanelStore()
-const nodesStore = useNodesStore()
-const topologyComponentConfig = computed(() =>
-  getComponentConfig(props.topologyId),
-)
-
-interface SecondaryControl {
-  type: SidePanel
-  title: string
-  icon: string
-  component: Component
-  disabled?: boolean
-}
-
-const secondaryControls = computed<SecondaryControl[]>(() => {
-  const sidePanelConfig = configStore.general.sidePanel
-  return [
-    {
-      type: 'tasks',
-      title: t('sidePanel.taskOverview'),
-      icon: 'mdi-clipboard-text-clock',
-      component: TaskRunsOverview,
-      disabled: !sidePanelConfig?.taskOverview?.enabled,
-    },
-    {
-      type: 'import',
-      title: t('sidePanel.importStatus'),
-      icon: 'mdi-database-import',
-      component: ImportStatusControl,
-      disabled: !sidePanelConfig?.importStatus?.enabled,
-    },
-    {
-      type: 'visualize',
-      title: t('sidePanel.noncurrentData'),
-      icon: 'mdi-chart-box-multiple',
-      component: VisualizeDataControl,
-      disabled: !sidePanelConfig?.nonCurrentData?.enabled,
-    },
-    {
-      type: 'workflows',
-      title: t('sidePanel.runTasks'),
-      icon: 'mdi-cog-play',
-      component: WorkflowsControl,
-      disabled: !sidePanelConfig?.runTask?.enabled,
-    },
-    {
-      type: 'info',
-      title: t('sidePanel.moreInfo'),
-      icon: 'mdi-information-outline',
-      component: InformationDisplayView,
-      disabled: !sidePanelConfig?.documentFile?.enabled,
-    },
-  ]
+const props = withDefaults(defineProps<Props>(), {
+  hasAppBar: true,
+  hasSideBar: true,
 })
-
-const showActiveThresholdCrossingsForFilters = computed(() => {
-  return (
-    topologyComponentConfig.value?.showActiveThresholdCrossingsForFilters ??
-    false
-  )
-})
-
-const activeControl = ref<SidePanel>('thresholds')
-
-// For managing which control is active in the button group
-const secondaryControl = ref<SidePanel>(
-  secondaryControls.value.find((c) => !c.disabled)?.type ?? 'thresholds',
-)
-const activeSecondaryControl = computed(() =>
-  secondaryControls.value.find((s) => s.type === secondaryControl.value),
-)
-const activeSecondaryControlCount = computed(
-  () => secondaryControls.value.filter((s) => !s.disabled).length,
-)
-
-// Sync activeControl and secondaryControl with sidePanelStore
-watch(
-  () => sidePanelStore.activeSidePanel,
-  (newPanel) => {
-    if (newPanel && newPanel !== 'thresholds') {
-      activeControl.value = newPanel
-    }
-  },
-)
-
-// When activeControl changes, update the side panel if needed
-watch(activeControl, (newControl) => {
-  if (!sidePanelStore.isActive(newControl)) {
-    sidePanelStore.setActive(newControl)
-  }
-})
-
-const menuType = computed(() => {
-  const configured = settings.get('ui.hierarchical-menu-style')?.value as string
-  return configured ?? 'auto'
-})
-
-const active = ref<string | undefined>(undefined)
-watch([() => nodesStore.activeNodeId, active], () => {
-  // Clear the bounding box and stop drawing when we switch nodes while selecting a bounding box.
-  workflowsStore.boundingBox = null
-  workflowsStore.isDrawingBoundingBox = false
-  workflowsStore.coordinate = null
-  workflowsStore.isSelectingCoordinate = false
-
-  taskRunColorsStore.clearColors()
-  taskRunsStore.clearSelectedTaskRuns()
-})
-
-// Clear the preferred workflow IDs when we unmount.
-onUnmounted(() => availableWorkflowsStore.clearPreferredWorkflowIds())
-
-const items = ref<ColumnItem[]>([])
-
-const topologyNode = ref<TopologyNode | undefined>(undefined)
-
-const displayTabs = ref<DisplayTab[]>([])
-
-const externalLink = ref<string | undefined>('')
 
 const route = useRoute()
 const router = useRouter()
@@ -287,21 +108,23 @@ const router = useRouter()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { thresholds } = useTopologyThresholds(baseUrl)
 
-watch(
-  () => props.nodeId,
-  () => {
-    if (props.nodeId) {
-      if (typeof props.nodeId === 'string' && active.value !== props.nodeId) {
-        active.value = props.nodeId
-      } else if (
-        Array.isArray(props.nodeId) &&
-        active.value !== props.nodeId[0]
-      ) {
-        active.value = props.nodeId[0]
-      }
-    }
-  },
-  { immediate: true },
+const configStore = useConfigStore()
+const availableWorkflowsStore = useAvailableWorkflowsStore()
+const nodesStore = useNodesStore()
+
+// Clear the preferred workflow IDs when we unmount.
+onUnmounted(() => availableWorkflowsStore.clearPreferredWorkflowIds())
+
+const topologyNode = computed(() => {
+  const nodeId = props.nodeId
+  if (!nodeId) return
+
+  const id = Array.isArray(nodeId) ? nodeId[nodeId.length - 1] : nodeId
+  return topologyNodesStore.getNodeById(id)
+})
+
+const topologyComponentConfig = computed(() =>
+  getComponentConfig(props.topologyId),
 )
 
 const topologyDisplayNodes = computed<string[] | undefined>(() => {
@@ -310,9 +133,15 @@ const topologyDisplayNodes = computed<string[] | undefined>(() => {
   return topologyComponentConfig.value?.topologyDisplayNodes
 })
 
-const showLeafsAsButton = computed(() => {
-  return topologyComponentConfig.value?.showLeafNodesAsButtons ?? false
-})
+const showLeafsAsButton = computed(
+  () => topologyComponentConfig.value?.showLeafNodesAsButtons ?? false,
+)
+
+const showActiveThresholdCrossingsForFilters = computed(
+  () =>
+    topologyComponentConfig.value?.showActiveThresholdCrossingsForFilters ??
+    false,
+)
 
 const topologyNodesStore = useTopologyNodesStore()
 topologyNodesStore
@@ -333,18 +162,6 @@ watch(
   },
 )
 
-function updateItems(): void {
-  if (subNodes.value) {
-    items.value = recursiveUpdateNode(
-      subNodes.value,
-      thresholds.value,
-      showActiveThresholdCrossingsForFilters.value,
-      props.topologyId,
-      showLeafsAsButton.value,
-    )
-  }
-}
-
 function getComponentConfig(topologyId?: string) {
   const component = topologyId
     ? configStore.getComponentById(topologyId)
@@ -353,37 +170,13 @@ function getComponentConfig(topologyId?: string) {
   return config ?? configStore.getComponentByType('TopologyDisplay')
 }
 
-watch(subNodes, updateItems)
-watch(thresholds, updateItems)
-
 const { componentSettings } = useComponentSettings(baseUrl, () => [
   // @ts-expect-error FIXME: Update when the types are updated
   topologyComponentConfig.value?.componentSettingsId,
   topologyNode.value?.componentSettingsId,
 ])
 
-// Update the displayTabs if the active node changes (or if the topologyMap changes).
-// Redirect to the corresponding display of the updated active tab.
-watchEffect(async () => {
-  // Check if the current displayTab already matches the active node.
-  if (!props.nodeId) return
-  const activeNodeId = Array.isArray(props.nodeId)
-    ? props.nodeId.length > 1
-      ? props.nodeId[props.nodeId.length - 1]
-      : props.nodeId[0]
-    : props.nodeId
-
-  const parentNodeIdNodeId =
-    Array.isArray(props.nodeId) && props.nodeId.length > 1
-      ? props.nodeId[0]
-      : undefined
-
-  // Check if the active node is a leaf.
-  const node = topologyNodesStore.getNodeById(activeNodeId)
-  if (node === undefined) {
-    return
-  }
-  topologyNode.value = node
+watchEffect(() => {
   if (showLeafsAsButton.value && Array.isArray(props.nodeId)) {
     const menuNodeId = props.nodeId[0]
     const menuNode = topologyNodesStore.getNodeById(menuNodeId)
@@ -398,11 +191,6 @@ watchEffect(async () => {
     )
     nodesStore.activeNodeId = props.nodeId[1]
   }
-
-  // Create the displayTabs for the active node.
-  displayTabs.value = await displayTabsForNode(node, parentNodeIdNodeId)
-
-  externalLink.value = node.url
 })
 
 function onNavigate(to: NavigateRoute) {
@@ -524,5 +312,3 @@ async function reroute(
   return tab?.to
 }
 </script>
-
-<style scoped></style>

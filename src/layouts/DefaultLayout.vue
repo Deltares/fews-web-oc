@@ -5,6 +5,8 @@
       :style="appBarStyle"
       density="compact"
       data-test-id="app-bar"
+      role="banner"
+      aria-label="Application header"
     >
       <template #prepend>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
@@ -30,6 +32,8 @@
       expand-on-hover
       :rail="useRail"
       onmouseover=""
+      role="navigation"
+      aria-label="Main navigation"
     >
       <template v-slot:prepend>
         <v-list density="compact" v-if="shouldRenderInfoMenu">
@@ -149,17 +153,6 @@
         </div>
         <div class="border-s h-100" id="main-side-panel" />
       </v-sheet>
-      <div class="alerts__container" v-if="alertsStore.hasAlerts">
-        <v-alert
-          v-for="alert in alertsStore.alerts"
-          :type="alert.type"
-          closable
-          density="compact"
-          @click:close="onCloseAlert(alert)"
-        >
-          {{ alert.message }}
-        </v-alert>
-      </div>
       <StartupDialog />
     </v-main>
   </v-layout>
@@ -169,7 +162,6 @@
 import { computed, nextTick, ref, type StyleValue, watch } from 'vue'
 import { useDisplay, useRtl, useTheme } from 'vuetify'
 import { useConfigStore } from '../stores/config.ts'
-import { Alert, useAlertsStore } from '../stores/alerts.ts'
 import { useRoute } from 'vue-router'
 import LoginComponent from '../views/auth/LoginComponent.vue'
 import UserSettingsMenu from '../components/user-settings/UserSettingsMenu.vue'
@@ -179,19 +171,13 @@ import StartupDialog from '@/components/dialog/StartupDialog.vue'
 import { configManager } from '@/services/application-config'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import packageConfig from '@/../package.json'
-import { useUserSettingsStore } from '@/stores/userSettings.ts'
 import { toCharacterIcon } from '@/lib/icons/index.ts'
-import {
-  convertBaseMapToUserSetting,
-  getBaseMapsFromConfig,
-} from '@/lib/basemap/index.ts'
-import type { MapLayerConfig } from '@deltares/fews-pi-requests'
-import { useBaseMapsStore } from '@/stores/baseMaps.ts'
+import { useUserSettingsStore } from '@/stores/userSettings.ts'
+import { useCustomStyleSheet } from '@/services/useCustomStyleSheet/index.ts'
 
 const configStore = useConfigStore()
 const settings = useUserSettingsStore()
 const { mobile, mdAndUp } = useDisplay()
-const alertsStore = useAlertsStore()
 
 const theme = useTheme()
 
@@ -205,7 +191,7 @@ const showHash = ref(false)
 const appBarStyle = ref<StyleValue>()
 const appBarColor = ref<string>('')
 
-function updateAppBarColor() {
+function updateAppBarStyles() {
   appBarColor.value = getComputedStyle(document.body).getPropertyValue(
     '--weboc-app-bar-bg-color',
   )
@@ -213,60 +199,21 @@ function updateAppBarColor() {
   if (meta) {
     meta.setAttribute('content', appBarColor.value)
   }
+
+  appBarStyle.value = {
+    backgroundImage: 'var(--weboc-app-bar-bg-image)',
+    backgroundSize: 'cover',
+  }
 }
 
 watch(
   () => theme.global.current.value,
   () => {
-    nextTick(updateAppBarColor)
+    nextTick(updateAppBarStyles)
   },
 )
 
-watch(
-  () => configStore.general,
-  async () => {
-    const css = document.getElementById('custom-style-sheet') as HTMLLinkElement
-    if (css !== null) {
-      updateAppBarColor()
-    } else {
-      const link = document.createElement('link')
-      link.id = 'custom-style-sheet'
-      link.rel = 'stylesheet'
-      link.href = await configStore.getCustomStyleSheet()
-      link.onload = () => {
-        appBarStyle.value = {
-          backgroundImage: 'var(--weboc-app-bar-bg-image)',
-          backgroundSize: 'cover',
-        }
-        updateAppBarColor()
-      }
-      document.head.appendChild(link)
-    }
-    if (configStore.general.mapLayerConfig) {
-      updateUserSettingBaseMaps(configStore.general.mapLayerConfig)
-    }
-  },
-)
-
-const baseMapsStore = useBaseMapsStore()
-
-function updateUserSettingBaseMaps(config: MapLayerConfig) {
-  const baseMaps = getBaseMapsFromConfig(config)
-  baseMapsStore.setBaseMaps(baseMaps)
-
-  if (config.defaultDarkModeMapLayerId) {
-    baseMapsStore.defaultDarkId = config.defaultDarkModeMapLayerId
-  }
-
-  if (config.defaultLightModeMapLayerId) {
-    baseMapsStore.defaultLightId = config.defaultLightModeMapLayerId
-  }
-
-  const settingItems = baseMapsStore.allBaseMaps.map(
-    convertBaseMapToUserSetting,
-  )
-  settings.updateSettingItems('ui.map.theme', settingItems)
-}
+useCustomStyleSheet({ onload: updateAppBarStyles })
 
 const activeComponent = computed(() => configStore.getComponentByRoute(route))
 const currentItemTitle = computed(
@@ -300,10 +247,6 @@ const shouldRenderInfoMenu = computed(() => {
   return !currentRoute.meta?.sidebar
 })
 
-function onCloseAlert(alert: Alert) {
-  alertsStore.removeAlert(alert.id)
-}
-
 const useRail = computed(
   () => settings.get('ui.sidebar-style')?.value === 'minimal' && !mobile.value,
 )
@@ -322,34 +265,8 @@ body {
   overflow: hidden;
 }
 
-.alert-container {
-  position: absolute;
-  margin: 0 auto;
-  width: 80%;
-  max-width: 100vw;
-  bottom: 0px;
-  right: 10%;
-  z-index: 9000;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 #web-oc-toolbar-target:empty {
   display: none !important;
-}
-
-.alerts__container {
-  position: absolute;
-  width: 500px;
-  max-width: 100%;
-  bottom: 0;
-  left: 0;
-  z-index: 10000;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
 }
 
 .v-navigation-drawer--rail:not(.v-navigation-drawer--is-hovering)

@@ -153,7 +153,6 @@ import { postWhatIfScenario } from '@/lib/whatif/fetch'
 import type { WorkflowItem } from '@/lib/workflows'
 import { refreshTaskRuns } from '@/services/useTasksRuns'
 import { useAvailableWhatIfTemplatesStore } from '@/stores/availableWhatIfTemplates'
-import { uid } from '@/lib/utils/uid'
 import { useAlertsStore } from '@/stores/alerts'
 import { useWorkflowsStore, WorkflowType } from '@/stores/workflows'
 import { useWorkflowBoundingBox } from '@/services/useWorkflowBoundingBox'
@@ -416,13 +415,7 @@ function getRunTaskFilter(
 }
 
 function showMessage(message: string, type: 'error' | 'success'): void {
-  // Generate a new unique ID for each alert.
-  const id = uid()
-  alertStore.addAlert({
-    id,
-    type,
-    message,
-  })
+  alertStore.addAlert({ type, message })
 }
 
 function showErrorMessage(message: string) {
