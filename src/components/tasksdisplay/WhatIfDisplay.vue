@@ -351,11 +351,11 @@ async function submit() {
       ? getProcessDataFilter(workflowId)
       : getRunTaskFilter(workflowId, scenarioResult.data.id)
 
-  let errorOccured = false
+  let errorOccurred = false
   try {
     if (workflowType === WorkflowType.ProcessData) {
       setTimeout(() => {
-        if (errorOccured) return
+        if (errorOccurred) return
         showStartMessage(
           'Task submitted successfully. Your file will be available for download shortly.',
         )
@@ -392,7 +392,7 @@ async function submit() {
       }, 1500)
     }
   } catch (e) {
-    errorOccured = true
+    errorOccurred = true
     if (typeof e === 'string') {
       showErrorMessage(e)
     } else if (e instanceof Error) {
