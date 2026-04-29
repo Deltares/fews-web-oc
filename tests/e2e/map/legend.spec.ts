@@ -5,8 +5,8 @@ const base = '/topology/early_warning/node'
 async function switchToSystemUnits(page: Page) {
   await page.getByRole('button', { name: 'User Settings' }).click()
   await page.getByRole('button', { name: 'All User Settings' }).click()
-  await page.getByRole('combobox').filter({ hasText: 'Display' }).click();
-  await page.getByRole('option', { name: 'Unit System System' }).click();
+  await page.getByRole('combobox').filter({ hasText: 'Display' }).click()
+  await page.getByRole('option', { name: 'Unit System System' }).click()
   await page.getByRole('button', { name: 'Close User Settings' }).click()
 }
 

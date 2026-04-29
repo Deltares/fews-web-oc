@@ -1,5 +1,9 @@
 <template>
-  <v-list-item :disabled="setting.disabled" :subtitle="subtitle" density="compact">
+  <v-list-item
+    :disabled="setting.disabled"
+    :subtitle="subtitle"
+    density="compact"
+  >
     <v-list-item-action>
       <v-btn-toggle
         v-if="setting.items.length < 4 && !inline"
