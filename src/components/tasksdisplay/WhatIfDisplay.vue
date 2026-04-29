@@ -318,81 +318,33 @@ async function submit() {
     showErrorMessage('No what-if template selected')
     return
   }
-  const workflowId = selectedWorkflow.value.id
-  const whatIfTemplateId = selectedWhatIfTemplate.value.id
-  const properties = convertPropertiesToFewsPi(
-    selectedProperties.value,
-    selectedWhatIfTemplate.value.properties,
-  )
-
-  const scenarioFilter: PostWhatIfScenarioFilter = {
-    whatIfTemplateId,
-    name: temporaryWhatIfScenarioName,
-    properties,
-  }
 
   isPosting.value = true
-  const scenarioResult = await postWhatIfScenario(scenarioFilter)
-
-  if (scenarioResult.status === 'error') {
-    isPosting.value = false
-    showErrorMessage(scenarioResult.error)
-    return
-  }
-
-  const workflowType = isProcessDataTask.value
-    ? WorkflowType.ProcessData
-    : WorkflowType.RunTask
-
-  const fileName = selectedProperties.value['FILE_NAME'] as string
-
-  const filter =
-    workflowType === WorkflowType.ProcessData
-      ? getProcessDataFilter(workflowId)
-      : getRunTaskFilter(workflowId, scenarioResult.data.id)
-
-  let errorOccurred = false
   try {
-    if (workflowType === WorkflowType.ProcessData) {
-      setTimeout(() => {
-        if (errorOccurred) return
-        showStartMessage(
-          'Task submitted successfully. Your file will be available for download shortly.',
-        )
-      }, 500)
-    }
+    const scenarioId = await createScenario(selectedWhatIfTemplate.value)
+    if (scenarioId === null) return
+
+    const workflowType = isProcessDataTask.value
+      ? WorkflowType.ProcessData
+      : WorkflowType.RunTask
+    const workflowId = selectedWorkflow.value.id
+    const fileName = selectedProperties.value['FILE_NAME'] as string
+    const filter =
+      workflowType === WorkflowType.ProcessData
+        ? getProcessDataFilter(workflowId)
+        : getRunTaskFilter(workflowId, scenarioId)
 
     const result = await workflowsStore.startWorkflow(workflowType, filter, {
       fileName,
     })
-
     emit('postTask', result)
 
     if (workflowType === WorkflowType.ProcessData) {
       showSuccessMessage('File download completed')
     } else {
-      // The result is a taskId (note: not a taskRunId!); monitor this task's
-      // progress to notify the user when it completes or fails.
-      if (result) {
-        taskRunMonitor
-          .followByTaskId(result)
-          .catch((error) =>
-            console.error(
-              `Failed to monitor task with taskId ${result}: ${error}`,
-            ),
-          )
-      }
-
-      showStartMessage(
-        'Workflow submitted successfully. You can monitor the task progress using the Task Overview.',
-      )
-
-      setTimeout(() => {
-        refreshTaskRuns()
-      }, 1500)
+      handleWorkflowSuccess(result)
     }
   } catch (e) {
-    errorOccurred = true
     if (typeof e === 'string') {
       showErrorMessage(e)
     } else if (e instanceof Error) {
@@ -401,6 +353,42 @@ async function submit() {
   } finally {
     isPosting.value = false
   }
+}
+
+async function createScenario(
+  template: WhatIfTemplate,
+): Promise<string | null> {
+  const properties = convertPropertiesToFewsPi(
+    selectedProperties.value,
+    template.properties,
+  )
+  const scenarioFilter: PostWhatIfScenarioFilter = {
+    whatIfTemplateId: template.id,
+    name: temporaryWhatIfScenarioName,
+    properties,
+  }
+  const scenarioResult = await postWhatIfScenario(scenarioFilter)
+  if (scenarioResult.status === 'error') {
+    showErrorMessage(scenarioResult.error)
+    return null
+  }
+  return scenarioResult.data.id
+}
+
+function handleWorkflowSuccess(result: string | undefined): void {
+  // The result is a taskId (note: not a taskRunId!); monitor this task's
+  // progress to notify the user when it completes or fails.
+  if (result) {
+    taskRunMonitor
+      .followByTaskId(result)
+      .catch((error) =>
+        console.error(`Failed to monitor task with taskId ${result}: ${error}`),
+      )
+  }
+  showStartMessage(
+    'Workflow submitted successfully. You can monitor the task progress using the Task Overview.',
+  )
+  setTimeout(() => refreshTaskRuns(), 1500)
 }
 
 function getRunTaskFilter(
