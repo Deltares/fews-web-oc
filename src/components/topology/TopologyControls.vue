@@ -46,15 +46,20 @@
 
   <SidePanelContent
     v-if="activeSecondaryControl"
-    :type="activeSecondaryControl.type"
     :title="activeSecondaryControl.title"
+    :isActive="sidePanelStore.isActive(activeSecondaryControl.type)"
+    @close="sidePanelStore.toggleActive(activeSecondaryControl.type)"
   >
     <component
       :is="activeSecondaryControl.component"
       :topologyNode="topologyNode"
     />
   </SidePanelContent>
-  <SidePanelContent type="thresholds" :title="t('sidePanel.thresholdOverview')">
+  <SidePanelContent
+    :title="t('sidePanel.thresholdOverview')"
+    :isActive="sidePanelStore.isActive('thresholds')"
+    @close="sidePanelStore.toggleActive('thresholds')"
+  >
     <ThresholdsOverview
       :topologyNode="topologyNode"
       :locationIds="locationIds"
