@@ -32,9 +32,15 @@ export interface UserSettingsItemOneOf extends UserSettingsItemBase {
 
 export type UserSettingsItem = UserSettingsItemBoolean | UserSettingsItemOneOf
 
+export interface UserSettingsGroup {
+  id: string
+  title: string
+  icon: string
+}
+
 export interface UserSettingsState {
   items: UserSettingsItem[]
-  groups: string[]
+  groups: UserSettingsGroup[]
   convertDatum: boolean
   useDisplayUnits: boolean
   preferredLayerKind: LayerKind | null
@@ -43,18 +49,23 @@ export interface UserSettingsState {
 const defaultUserSettings = DefaultUserSettings as UserSettingsItem[]
 const parameterGroupKey = 'units.parameterGroup.'
 
+const defaultGroups: UserSettingsGroup[] = [
+  { id: 'Units', title: 'Units', icon: 'mdi-ruler' },
+  { id: 'Datum', title: 'Datum', icon: 'mdi-arrow-expand-vertical' },
+  { id: 'UI', title: 'UI', icon: 'mdi-palette' },
+  { id: 'Map', title: 'Map', icon: 'mdi-map' },
+  { id: 'Charts', title: 'Charts', icon: 'mdi-chart-line' },
+]
+
 export const useUserSettingsStore = defineStore('userSettings', {
   state: (): UserSettingsState => ({
-    groups: ['Units', 'Datum', 'UI', 'Map', 'Charts'],
+    groups: defaultGroups,
     items: defaultUserSettings,
     convertDatum: false,
     useDisplayUnits: true,
     preferredLayerKind: null,
   }),
   getters: {
-    listGroups: (state) => {
-      return state.groups
-    },
     listByGroup: (state) => (group: string) => {
       return state.items.filter((item) => item.group === group)
     },

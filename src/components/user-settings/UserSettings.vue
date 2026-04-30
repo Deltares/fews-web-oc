@@ -1,7 +1,13 @@
 <template>
-  <v-list v-for="group in groups" :key="group" class="mb-2" density="compact">
-    <v-list-subheader>{{ group }}</v-list-subheader>
-    <template v-for="setting in store.listByGroup(group)" :key="setting.id">
+  <v-list
+    v-for="group in store.groups"
+    :key="group.id"
+    class="py-1"
+    density="compact"
+  >
+    <v-list-subheader>{{ group.title }}</v-list-subheader>
+
+    <template v-for="setting in store.listByGroup(group.id)" :key="setting.id">
       <UserSettingsOneOfMultiple
         v-if="setting.type === 'oneOfMultiple'"
         :setting="setting"
@@ -42,10 +48,8 @@ import UserSettingsBoolean from './UserSettingsBoolean.vue'
 import UserSettingsOneOfMultiple from './UserSettingsOneOfMultiple.vue'
 import UserSettingsFavorite from './UserSettingsFavorite.vue'
 import { UserSettingsItem, useUserSettingsStore } from '@/stores/userSettings'
-import { computed } from 'vue'
 
 const store = useUserSettingsStore()
-const groups = computed(() => store.listGroups)
 
 const onValueChange = (item: UserSettingsItem) => {
   store.add(item)
