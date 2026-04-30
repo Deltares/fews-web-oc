@@ -1,24 +1,21 @@
 <template>
   <BtnGroup class="me-2">
     <template #persistent v-if="showActiveThresholdCrossingsForFilters">
-      <ThresholdsControl
-        :topologyNode="topologyNode"
-        @navigate="emit('navigate', $event)"
-        :locationIds="locationIds"
+      <ThresholdsButton
+        :active="sidePanelStore.isActive('thresholds')"
+        @click="sidePanelStore.toggleActive('thresholds')"
       />
     </template>
 
-    <SidePanelControl
+    <v-btn
       v-if="activeSecondaryControl"
-      :type="activeSecondaryControl.type"
-      :title="activeSecondaryControl.title"
-      :icon="activeSecondaryControl.icon"
+      :active="sidePanelStore.isActive(activeSecondaryControl.type)"
+      size="small"
+      icon
+      @click="sidePanelStore.toggleActive(activeSecondaryControl.type)"
     >
-      <component
-        :is="activeSecondaryControl.component"
-        :topologyNode="topologyNode"
-      />
-    </SidePanelControl>
+      <v-icon :icon="activeSecondaryControl.icon" size="large"></v-icon>
+    </v-btn>
 
     <v-menu location="bottom right" v-if="activeSecondaryControlCount">
       <template #activator="{ isActive, props }">
@@ -46,17 +43,35 @@
       </v-list>
     </v-menu>
   </BtnGroup>
+
+  <SidePanelContent
+    v-if="activeSecondaryControl"
+    :type="activeSecondaryControl.type"
+    :title="activeSecondaryControl.title"
+  >
+    <component
+      :is="activeSecondaryControl.component"
+      :topologyNode="topologyNode"
+    />
+  </SidePanelContent>
+  <ThresholdsOverview
+    :topologyNode="topologyNode"
+    @navigate="emit('navigate', $event)"
+    :locationIds="locationIds"
+  />
 </template>
 
 <script setup lang="ts">
-import SidePanelControl from '@/components/sidepanel/SidePanelControl.vue'
-import ThresholdsControl from '@/components/thresholds/ThresholdsControl.vue'
+import SidePanelContent from '@/components/sidepanel/SidePanelContent.vue'
+import ThresholdsOverview from '@/components/thresholds/ThresholdsOverview.vue'
 import InformationDisplayView from '@/views/InformationDisplayView.vue'
 import TaskRunsOverview from '@/components/tasks/TaskRunsOverview.vue'
 import ImportStatusControl from '@/components/systemmonitor/ImportStatusControl.vue'
 import VisualizeDataControl from '@/components/tasks/VisualizeDataControl.vue'
 import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
 import BtnGroup from '@/components/general/BtnGroup.vue'
+import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
+
 import { useI18n } from 'vue-i18n'
 import { SidePanel, useSidePanelStore } from '@/stores/sidePanel'
 import { type Component, computed, ref, watch } from 'vue'

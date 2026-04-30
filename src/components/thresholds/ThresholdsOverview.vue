@@ -1,14 +1,5 @@
 <template>
-  <SidePanelControl type="thresholds" title="Thresholds">
-    <template #button>
-      <ThresholdsButton
-        :active="sidePanelStore.isActive('thresholds')"
-        :warningLevels="warningLevelsStore.warningLevels"
-        :crossings="warningLevelsStore.thresholdCrossings"
-        @click="sidePanelStore.toggleActive('thresholds')"
-      />
-    </template>
-
+  <SidePanelContent type="thresholds" title="Thresholds">
     <ThresholdsPanel
       v-model:selectedWarningLevelIds="
         warningLevelsStore.selectedWarningLevelIds
@@ -23,13 +14,12 @@
       @close="sidePanelStore.toggleActive('thresholds')"
       @navigate="emit('navigate', $event)"
     />
-  </SidePanelControl>
+  </SidePanelContent>
 </template>
 <script setup lang="ts">
-import SidePanelControl from '@/components/sidepanel/SidePanelControl.vue'
+import SidePanelContent from '@/components/sidepanel/SidePanelContent.vue'
 import { ref, watch } from 'vue'
 import ThresholdsPanel from '@/components/thresholds/ThresholdsPanel.vue'
-import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
 import type { TopologyNode } from '@deltares/fews-pi-requests'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 import { useSidePanelStore } from '@/stores/sidePanel'
