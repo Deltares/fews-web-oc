@@ -61,7 +61,7 @@ const { map } = useMap()
 
 let layer: WMSStreamlineLayer | null = null
 
-useLayer(props.layerId, setupLayer)
+useLayer(props.layerId, setupLayer())
 
 onMounted(() => {
   addHooksToMapObject()
