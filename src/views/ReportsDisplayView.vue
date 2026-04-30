@@ -178,7 +178,8 @@ async function downloadFile() {
   })
 
   const fileName = `${report.timeZero}-${report.moduleInstanceId}`
-  downloadFileWithXhr(url, fileName, authenticationManager.getAccessToken())
+  const headers = await authenticationManager.getAuthorizationHeaders()
+  await downloadFileWithXhr(url, fileName, headers)
 }
 </script>
 
