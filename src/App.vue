@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, watch, watchEffect } from 'vue'
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import EmptyLayout from './layouts/EmptyLayout.vue'
 import Alerts from '@/components/general/Alerts.vue'
@@ -42,10 +42,6 @@ const toggleDark = useToggle(isDark)
 
 // Initialise task run monitoring.
 useTaskRunMonitorStore()
-
-onMounted(() => {
-  updateTheme()
-})
 
 const layoutComponent = computed(() => {
   if (window.location.href.includes('/embed/')) {
@@ -109,10 +105,8 @@ function updateUserSettingBaseMaps(config: MapLayerConfig) {
   settings.updateSettingItems('ui.map.theme', settingItems)
 }
 
-watch(prefersDark, () => updateTheme())
-
-function updateTheme(theme?: string) {
-  const themeSetting = theme ? theme : userSettingsStore.get('ui.theme')?.value
+watchEffect(() => {
+  const themeSetting = userSettingsStore.get('ui.theme')?.value
   if (typeof themeSetting === 'string') {
     if (themeSetting === 'auto') {
       setTheme(prefersDark.value)
@@ -120,7 +114,7 @@ function updateTheme(theme?: string) {
       setTheme(themeSetting === 'dark')
     }
   }
-}
+})
 
 function setTheme(setDark: boolean): void {
   change(setDark ? 'dark' : 'light')
@@ -128,18 +122,6 @@ function setTheme(setDark: boolean): void {
     toggleDark()
   }
 }
-
-userSettingsStore.$onAction(({ name, args }) => {
-  if (name === 'add') {
-    const item = args[0]
-    switch (item.id) {
-      case 'ui.theme':
-        updateTheme(item.value as string)
-        break
-      default:
-    }
-  }
-})
 </script>
 
 <style>
