@@ -130,7 +130,7 @@ export const useUserSettingsStore = defineStore(
     }
 
     function updateSettingItems(id: string, newItems: UserSettingsWithIcon[]) {
-      const current = get.value(id)
+      const current = get(id)
       if (current?.type !== 'oneOfMultiple') return
 
       current.items = newItems

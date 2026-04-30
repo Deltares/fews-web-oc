@@ -6,41 +6,53 @@
       <v-sheet border rounded class="mt-4">
         <v-tabs v-model="tab" grow>
           <v-tab value="user-settings" class="text-none">User settings</v-tab>
-          <v-tab value="component-settings" class="text-none"
-            >Component settings</v-tab
-          >
+          <v-tab value="component-settings" class="text-none">
+            Component settings
+          </v-tab>
         </v-tabs>
 
-        <v-list density="compact" class="py-0">
-          <v-list-group v-for="group in store.groups" :key="group.id">
-            <template #activator="{ props }">
-              <v-list-item
-                v-bind="props"
-                :title="group.title"
-                :prepend-icon="group.icon"
-              />
-            </template>
+        <v-divider />
 
-            <template
-              v-for="setting in getSettingsByGroup(group.id)"
-              :key="setting.id"
-            >
-              <UserSettingsOneOfMultiple
-                v-if="setting.type === 'oneOfMultiple'"
-                v-model="setting.value"
-                :setting="setting"
-                inline
-              />
+        <v-tabs-window v-model="tab">
+          <v-tabs-window-item value="user-settings">
+            <v-list density="compact" class="py-0">
+              <v-list-group v-for="group in store.groups" :key="group.id">
+                <template #activator="{ props }">
+                  <v-list-item
+                    v-bind="props"
+                    :title="group.title"
+                    :prepend-icon="group.icon"
+                  />
+                </template>
 
-              <UserSettingsBoolean
-                v-else-if="setting.type === 'boolean'"
-                v-model="setting.value"
-                :setting="setting"
-                inline
-              />
-            </template>
-          </v-list-group>
-        </v-list>
+                <template
+                  v-for="setting in getSettingsByGroup(group.id)"
+                  :key="setting.id"
+                >
+                  <UserSettingsOneOfMultiple
+                    v-if="setting.type === 'oneOfMultiple'"
+                    v-model="setting.value"
+                    :setting="setting"
+                    inline
+                  />
+
+                  <UserSettingsBoolean
+                    v-else-if="setting.type === 'boolean'"
+                    v-model="setting.value"
+                    :setting="setting"
+                    inline
+                  />
+                </template>
+              </v-list-group>
+            </v-list>
+          </v-tabs-window-item>
+
+          <v-tabs-window-item value="component-settings">
+            <v-card-text class="text-center">
+              <p class="mb-2">Component settings are not supported yet.</p>
+            </v-card-text>
+          </v-tabs-window-item>
+        </v-tabs-window>
       </v-sheet>
     </v-card-text>
   </v-card>
@@ -88,7 +100,6 @@ const embedUrl = computed(() => {
       params.set(setting.id, setting.value)
     }
   })
-
 
   // Example of getting these params using vue router
   // const route = useRoute()
