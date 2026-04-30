@@ -1,55 +1,49 @@
 <template>
-  <v-menu :close-on-content-click="false">
-    <template #activator="{ props }">
-      <v-btn v-bind="props" icon="mdi-share-variant" />
-    </template>
+  <v-card min-width="400" density="compact">
+    <v-card-text>
+      <CopyUrlField :url="embedUrl" />
 
-    <v-card min-width="400" density="compact">
-      <v-card-text>
-        <CopyUrlField :url="embedUrl" />
+      <v-sheet border rounded class="mt-4">
+        <v-tabs v-model="tab" grow>
+          <v-tab value="user-settings" class="text-none">User settings</v-tab>
+          <v-tab value="component-settings" class="text-none"
+            >Component settings</v-tab
+          >
+        </v-tabs>
 
-        <v-sheet border rounded class="mt-4">
-          <v-tabs v-model="tab" grow>
-            <v-tab value="user-settings" class="text-none">User settings</v-tab>
-            <v-tab value="component-settings" class="text-none"
-              >Component settings</v-tab
+        <v-list density="compact" class="py-0">
+          <v-list-group v-for="group in store.groups" :key="group.id">
+            <template #activator="{ props }">
+              <v-list-item
+                v-bind="props"
+                :title="group.title"
+                :prepend-icon="group.icon"
+              />
+            </template>
+
+            <template
+              v-for="setting in getSettingsByGroup(group.id)"
+              :key="setting.id"
             >
-          </v-tabs>
+              <UserSettingsOneOfMultiple
+                v-if="setting.type === 'oneOfMultiple'"
+                v-model="setting.value"
+                :setting="setting"
+                inline
+              />
 
-          <v-list density="compact" class="py-0">
-            <v-list-group v-for="group in store.groups" :key="group.id">
-              <template #activator="{ props }">
-                <v-list-item
-                  v-bind="props"
-                  :title="group.title"
-                  :prepend-icon="group.icon"
-                />
-              </template>
-
-              <template
-                v-for="setting in store.listByGroup(group.id)"
-                :key="setting.id"
-              >
-                <UserSettingsOneOfMultiple
-                  v-if="setting.type === 'oneOfMultiple'"
-                  :setting="setting"
-                  :model-value="setting.value"
-                  inline
-                />
-
-                <UserSettingsBoolean
-                  v-else-if="setting.type === 'boolean'"
-                  :setting="setting"
-                  :model-value="setting.value"
-                  inline
-                />
-              </template>
-            </v-list-group>
-          </v-list>
-        </v-sheet>
-      </v-card-text>
-    </v-card>
-  </v-menu>
+              <UserSettingsBoolean
+                v-else-if="setting.type === 'boolean'"
+                v-model="setting.value"
+                :setting="setting"
+                inline
+              />
+            </template>
+          </v-list-group>
+        </v-list>
+      </v-sheet>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script lang="ts" setup>
@@ -66,6 +60,12 @@ const store = useUserSettingsStore()
 
 const tab = ref('user-settings')
 
+const settings = ref(store.items.map((item) => ({ ...item })))
+
+function getSettingsByGroup(groupId: string) {
+  return settings.value.filter((s) => s.group === groupId)
+}
+
 const embedUrl = computed(() => {
   const url = new URL(window.location.href)
   // Insert '/embed' after the base path (route.matched[0].path)
@@ -78,6 +78,25 @@ const embedUrl = computed(() => {
   } else {
     url.pathname = '/embed' + url.pathname
   }
+
+  const params = url.searchParams
+
+  settings.value.forEach((setting) => {
+    if (setting.type === 'boolean') {
+      params.set(setting.id, setting.value ? 'true' : 'false')
+    } else if (setting.type === 'oneOfMultiple') {
+      params.set(setting.id, setting.value)
+    }
+  })
+
+
+  // Example of getting these params using vue router
+  // const route = useRoute()
+  // const mySettingValue = route.query['my-setting-id']
+  // You can also parse boolean values if needed
+  // const mySettingBoolean = mySettingValue === 'true'
+  // This way you can apply the settings when the component is created based on the URL params
+
   return url.toString()
 })
 </script>
