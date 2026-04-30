@@ -54,11 +54,14 @@
       :topologyNode="topologyNode"
     />
   </SidePanelContent>
-  <ThresholdsOverview
-    :topologyNode="topologyNode"
-    @navigate="emit('navigate', $event)"
-    :locationIds="locationIds"
-  />
+  <SidePanelContent type="thresholds" :title="t('sidePanel.thresholdOverview')">
+    <ThresholdsOverview
+      :topologyNode="topologyNode"
+      :locationIds="locationIds"
+      @close="sidePanelStore.toggleActive('thresholds')"
+      @navigate="emit('navigate', $event)"
+    />
+  </SidePanelContent>
 </template>
 
 <script setup lang="ts">
