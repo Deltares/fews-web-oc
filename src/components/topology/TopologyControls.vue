@@ -2,22 +2,22 @@
   <BtnGroup class="me-2">
     <template #persistent v-if="showActiveThresholdCrossingsForFilters">
       <ThresholdsButton
-        :active="sidePanelStore.isActive('thresholds')"
-        @click="sidePanelStore.toggleActive('thresholds')"
+        :active="activeSidePanelType === 'thresholds'"
+        @click="toggleActiveSidePanel('thresholds')"
       />
     </template>
 
     <v-btn
-      v-if="activeSecondaryControl"
-      :active="sidePanelStore.isActive(activeSecondaryControl.type)"
+      v-if="currentGeneralSidePanel !== null"
+      :active="activeSidePanelType === currentGeneralSidePanel.type"
       size="small"
       icon
-      @click="sidePanelStore.toggleActive(activeSecondaryControl.type)"
+      @click="toggleActiveSidePanel(currentGeneralSidePanel.type)"
     >
-      <v-icon :icon="activeSecondaryControl.icon" size="large"></v-icon>
+      <v-icon :icon="currentGeneralSidePanel.icon" size="large"></v-icon>
     </v-btn>
 
-    <v-menu location="bottom right" v-if="activeSecondaryControlCount">
+    <v-menu v-if="hasMultipleEnabledSidePanels" location="bottom right">
       <template #activator="{ isActive, props }">
         <v-btn
           icon
@@ -34,34 +34,35 @@
 
       <v-list>
         <v-list-item
-          v-for="control in enabledSecondaryControls"
-          :prepend-icon="control.icon"
-          :title="control.title"
-          :active="sidePanelStore.isActive(control.type)"
-          @click="setActiveControl(control.type)"
+          v-for="generalSidePanel in enabledGeneralSidePanels"
+          :key="generalSidePanel.type"
+          :prepend-icon="generalSidePanel.icon"
+          :title="generalSidePanel.title"
+          :active="activeSidePanelType === generalSidePanel.type"
+          @click="setCurrentGeneralSidePanel(generalSidePanel)"
         />
       </v-list>
     </v-menu>
   </BtnGroup>
 
   <SidePanelContent
-    v-for="sidePanel in enabledSecondaryControls"
+    v-for="sidePanel in enabledGeneralSidePanels"
     :key="sidePanel.type"
     :title="sidePanel.title"
-    :isActive="sidePanelStore.isActive(sidePanel.type)"
-    @close="sidePanelStore.toggleActive(sidePanel.type)"
+    :isActive="activeSidePanelType === sidePanel.type"
+    @close="closeSidePanel()"
   >
     <component :is="sidePanel.component" :topologyNode="topologyNode" />
   </SidePanelContent>
   <SidePanelContent
     :title="t('sidePanel.thresholdOverview')"
-    :isActive="sidePanelStore.isActive('thresholds')"
-    @close="sidePanelStore.toggleActive('thresholds')"
+    :isActive="activeSidePanelType === 'thresholds'"
+    @close="toggleActiveSidePanel('thresholds')"
   >
     <ThresholdsOverview
       :topologyNode="topologyNode"
       :locationIds="locationIds"
-      @close="sidePanelStore.toggleActive('thresholds')"
+      @close="closeSidePanel()"
       @navigate="emit('navigate', $event)"
     />
   </SidePanelContent>
@@ -79,11 +80,13 @@ import BtnGroup from '@/components/general/BtnGroup.vue'
 import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
 
 import { useI18n } from 'vue-i18n'
-import { SidePanel, useSidePanelStore } from '@/stores/sidePanel'
-import { type Component, computed, ref, watch } from 'vue'
+import { type Component, computed, ref } from 'vue'
 import { useConfigStore } from '@/stores/config'
 import { TopologyNode } from '@deltares/fews-pi-requests'
 import { NavigateRoute } from '@/lib/router'
+
+const { t } = useI18n()
+const configStore = useConfigStore()
 
 interface Props {
   topologyNode?: TopologyNode
@@ -97,22 +100,24 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-const { t } = useI18n()
+type GeneralSidePanelType =
+  | 'tasks'
+  | 'info'
+  | 'workflows'
+  | 'visualize'
+  | 'import'
+type SpecialSidePanelType = 'thresholds'
+type SidePanelType = GeneralSidePanelType | SpecialSidePanelType
 
-const sidePanelStore = useSidePanelStore()
-const configStore = useConfigStore()
-
-const activeControl = ref<SidePanel>('thresholds')
-
-interface SecondaryControl {
-  type: SidePanel
+interface GeneralSidePanel {
+  type: GeneralSidePanelType
   title: string
   icon: string
   component: Component
-  disabled?: boolean
+  enabled: boolean
 }
 
-const secondaryControls = computed<SecondaryControl[]>(() => {
+const generalSidePanels = computed<GeneralSidePanel[]>(() => {
   const sidePanelConfig = configStore.general.sidePanel
   return [
     {
@@ -120,72 +125,62 @@ const secondaryControls = computed<SecondaryControl[]>(() => {
       title: t('sidePanel.taskOverview'),
       icon: 'mdi-clipboard-text-clock',
       component: TaskRunsOverview,
-      disabled: !sidePanelConfig?.taskOverview?.enabled,
+      enabled: !!sidePanelConfig?.taskOverview?.enabled,
     },
     {
       type: 'import',
       title: t('sidePanel.importStatus'),
       icon: 'mdi-database-import',
       component: ImportStatusControl,
-      disabled: !sidePanelConfig?.importStatus?.enabled,
+      enabled: !!sidePanelConfig?.importStatus?.enabled,
     },
     {
       type: 'visualize',
       title: t('sidePanel.noncurrentData'),
       icon: 'mdi-chart-box-multiple',
       component: VisualizeDataControl,
-      disabled: !sidePanelConfig?.nonCurrentData?.enabled,
+      enabled: !!sidePanelConfig?.nonCurrentData?.enabled,
     },
     {
       type: 'workflows',
       title: t('sidePanel.runTasks'),
       icon: 'mdi-cog-play',
       component: WorkflowsControl,
-      disabled: !sidePanelConfig?.runTask?.enabled,
+      enabled: !!sidePanelConfig?.runTask?.enabled,
     },
     {
       type: 'info',
       title: t('sidePanel.moreInfo'),
       icon: 'mdi-information-outline',
       component: InformationDisplayView,
-      disabled: !sidePanelConfig?.documentFile?.enabled,
+      enabled: !!sidePanelConfig?.documentFile?.enabled,
     },
   ]
 })
-const enabledSecondaryControls = computed<SecondaryControl[]>(() =>
-  secondaryControls.value.filter((c) => !c.disabled),
+const enabledGeneralSidePanels = computed<GeneralSidePanel[]>(() =>
+  generalSidePanels.value.filter((c) => c.enabled),
 )
+const hasMultipleEnabledSidePanels = computed<boolean>(
+  () => enabledGeneralSidePanels.value.length > 1,
+)
+// Only one "general" side panel is shown in the top bar at all times. "Special"
+// side panels (e.g. thresholds) have their own permanent button.
+const currentGeneralSidePanel = ref<GeneralSidePanel | null>(
+  enabledGeneralSidePanels.value[0] ?? null,
+)
+// There can be only one active side panel, special or general, at a time.
+const activeSidePanelType = ref<SidePanelType | null>(null)
 
-// For managing which control is active in the button group
-const secondaryControl = ref<SidePanel>(
-  secondaryControls.value.find((c) => !c.disabled)?.type ?? 'thresholds',
-)
-const activeSecondaryControl = computed(() =>
-  secondaryControls.value.find((s) => s.type === secondaryControl.value),
-)
-const activeSecondaryControlCount = computed(
-  () => secondaryControls.value.filter((s) => !s.disabled).length,
-)
+function setCurrentGeneralSidePanel(sidePanel: GeneralSidePanel): void {
+  currentGeneralSidePanel.value = sidePanel
+  activeSidePanelType.value = sidePanel.type
+}
 
-// Sync activeControl and secondaryControl with sidePanelStore
-watch(
-  () => sidePanelStore.activeSidePanel,
-  (newPanel) => {
-    if (newPanel && newPanel !== 'thresholds') {
-      activeControl.value = newPanel
-    }
-  },
-)
+function closeSidePanel(): void {
+  activeSidePanelType.value = null
+}
 
-// When activeControl changes, update the side panel if needed
-watch(activeControl, (newControl) => {
-  if (!sidePanelStore.isActive(newControl)) {
-    sidePanelStore.setActive(newControl)
-  }
-})
-
-function setActiveControl(type: SidePanel) {
-  activeControl.value = type
-  secondaryControl.value = type
+function toggleActiveSidePanel(type: SidePanelType): void {
+  activeSidePanelType.value = activeSidePanelType.value === type ? null : type
 }
 </script>
