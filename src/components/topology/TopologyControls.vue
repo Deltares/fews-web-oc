@@ -34,7 +34,7 @@
 
       <v-list>
         <v-list-item
-          v-for="control in secondaryControls.filter((c) => !c.disabled)"
+          v-for="control in enabledSecondaryControls"
           :prepend-icon="control.icon"
           :title="control.title"
           :active="sidePanelStore.isActive(control.type)"
@@ -45,15 +45,13 @@
   </BtnGroup>
 
   <SidePanelContent
-    v-if="activeSecondaryControl"
-    :title="activeSecondaryControl.title"
-    :isActive="sidePanelStore.isActive(activeSecondaryControl.type)"
-    @close="sidePanelStore.toggleActive(activeSecondaryControl.type)"
+    v-for="sidePanel in enabledSecondaryControls"
+    :key="sidePanel.type"
+    :title="sidePanel.title"
+    :isActive="sidePanelStore.isActive(sidePanel.type)"
+    @close="sidePanelStore.toggleActive(sidePanel.type)"
   >
-    <component
-      :is="activeSecondaryControl.component"
-      :topologyNode="topologyNode"
-    />
+    <component :is="sidePanel.component" :topologyNode="topologyNode" />
   </SidePanelContent>
   <SidePanelContent
     :title="t('sidePanel.thresholdOverview')"
@@ -154,6 +152,9 @@ const secondaryControls = computed<SecondaryControl[]>(() => {
     },
   ]
 })
+const enabledSecondaryControls = computed<SecondaryControl[]>(() =>
+  secondaryControls.value.filter((c) => !c.disabled),
+)
 
 // For managing which control is active in the button group
 const secondaryControl = ref<SidePanel>(
