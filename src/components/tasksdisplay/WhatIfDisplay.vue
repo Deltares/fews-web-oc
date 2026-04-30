@@ -321,7 +321,7 @@ async function submit() {
 
   isPosting.value = true
   try {
-    const scenarioId = await createScenario(selectedWhatIfTemplate.value)
+    const scenarioId = await submitWhatIfScenario(selectedWhatIfTemplate.value)
     if (scenarioId === null) return
 
     const workflowType = isProcessDataTask.value
@@ -355,7 +355,7 @@ async function submit() {
   }
 }
 
-async function createScenario(
+async function submitWhatIfScenario(
   template: WhatIfTemplate,
 ): Promise<string | null> {
   const properties = convertPropertiesToFewsPi(
