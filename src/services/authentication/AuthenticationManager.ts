@@ -12,14 +12,13 @@ export class AuthenticationManager {
     this.userReady = new Promise(async (resolve, reject) => {
       try {
         this.userManager = new UserManager(settings)
-        this.userManager.events.addUserLoaded(async (newUser: User) => {
-          await this.setUser(newUser)
-          if (newUser) resolve()
+        this.userManager.events.addUserLoaded((user) => {
+          this.user = user
+          if (this.user) resolve()
         })
 
-        const initialUser = await this.userManager.getUser()
-        await this.setUser(initialUser)
-        if (initialUser) resolve()
+        this.user = await this.userManager.getUser()
+        if (this.user) resolve()
       } catch (err) {
         reject(err)
       }
@@ -27,28 +26,28 @@ export class AuthenticationManager {
   }
 
   public async getUser(): Promise<User | null> {
-    if (!this.userReady) {
+    if (this.userReady == null) {
       // Authentication is disabled
       return null
     }
     await this.userReady
+    await this.checkExpired(this.user)
     return this.user
   }
 
-  public async setUser(user: User | null): Promise<void> {
-    this.user = user
+  private async checkExpired(user: User | null): Promise<void> {
+    if (!user) return
+    if (!user.expired) return
 
-    if (user?.expired) {
-      try {
-        this.user = await this.userManager.signinSilent()
-      } catch (error) {
-        console.error('Silent sign-in failed:', error)
-        // Redirect to interactive login as a fallback
-        await this.userManager.removeUser()
-        const base = `${import.meta.env.BASE_URL}`
-        const redirect = window.location.pathname.slice(base.length)
-        window.location.href = base + 'login?redirect=' + redirect
-      }
+    try {
+      this.user = await this.userManager.signinSilent()
+    } catch (error) {
+      console.error('Silent sign-in failed:', error)
+      // Redirect to interactive login as a fallback
+      await this.userManager.removeUser()
+      const base = `${import.meta.env.BASE_URL}`
+      const redirect = window.location.pathname.slice(base.length)
+      window.location.href = base + 'login?redirect=' + redirect
     }
   }
 
@@ -92,10 +91,6 @@ export class AuthenticationManager {
     }
     const newRequest = new Request(request, requestInit)
     return newRequest
-  }
-
-  public async signinRedirectCallback(url?: string): Promise<User> {
-    return await this.userManager.signinRedirectCallback(url)
   }
 }
 
