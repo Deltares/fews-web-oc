@@ -334,15 +334,15 @@ async function submit() {
         ? getProcessDataFilter(workflowId)
         : getRunTaskFilter(workflowId, scenarioId)
 
-    const result = await workflowsStore.startWorkflow(workflowType, filter, {
+    const taskId = await workflowsStore.startWorkflow(workflowType, filter, {
       fileName,
     })
-    emit('postTask', result)
+    emit('postTask', taskId)
 
     if (workflowType === WorkflowType.ProcessData) {
       showSuccessMessage('File download completed')
     } else {
-      handleWorkflowSuccess(result)
+      monitorWorkflowTaskProgress(taskId)
     }
   } catch (e) {
     if (typeof e === 'string') {
@@ -375,14 +375,14 @@ async function submitWhatIfScenario(
   return scenarioResult.data.id
 }
 
-function handleWorkflowSuccess(result: string | undefined): void {
+function monitorWorkflowTaskProgress(taskId: string | undefined): void {
   // The result is a taskId (note: not a taskRunId!); monitor this task's
   // progress to notify the user when it completes or fails.
-  if (result) {
+  if (taskId) {
     taskRunMonitor
-      .followByTaskId(result)
+      .followByTaskId(taskId)
       .catch((error) =>
-        console.error(`Failed to monitor task with taskId ${result}: ${error}`),
+        console.error(`Failed to monitor task with taskId ${taskId}: ${error}`),
       )
   }
   showStartMessage(
