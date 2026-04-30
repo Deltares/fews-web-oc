@@ -5,6 +5,7 @@
         <tr>
           <th
             v-for="column in table.filteredColumns"
+            scope="col"
             class="font-weight-medium text-medium-emphasis"
           >
             {{ column.header }}

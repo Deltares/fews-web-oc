@@ -278,8 +278,8 @@ const groupBy = computed(() => {
   }
 })
 function groupName(key: string) {
-  const column = availableColumns.value.find((column) => {
-    return column.key === key
+  const column = availableColumns.value.find((col) => {
+    return col.key === key
   })
   return column?.title || key
 }
