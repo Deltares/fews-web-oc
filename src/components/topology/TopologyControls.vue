@@ -45,44 +45,42 @@
     </v-menu>
   </BtnGroup>
 
-  <SidePanelContent
-    v-for="sidePanel in enabledGeneralSidePanels"
-    :key="sidePanel.type"
-    :title="sidePanel.title"
-    :isActive="activeSidePanelType === sidePanel.type"
-    @close="closeSidePanel()"
-  >
-    <component :is="sidePanel.component" :topologyNode="topologyNode" />
-  </SidePanelContent>
-  <SidePanelContent
-    :title="t('sidePanel.thresholdOverview')"
-    :isActive="activeSidePanelType === 'thresholds'"
-    @close="toggleActiveSidePanel('thresholds')"
-  >
-    <ThresholdsOverview
-      :topologyNode="topologyNode"
-      :locationIds="locationIds"
-      @navigate="emit('navigate', $event)"
+  <template v-for="sidePanel in enabledGeneralSidePanels" :key="sidePanel.type">
+    <component
+      :is="sidePanel.component"
+      :is-active="activeSidePanelType === sidePanel.type"
+      :topology-node="topologyNode"
+      @close="closeSidePanel()"
     />
-  </SidePanelContent>
+  </template>
+
+  <ThresholdsSidePanel
+    :isActive="activeSidePanelType === 'thresholds'"
+    :topologyNode="topologyNode"
+    :locationIds="locationIds"
+    @close="toggleActiveSidePanel('thresholds')"
+    @navigate="emit('navigate', $event)"
+  />
 </template>
 
 <script setup lang="ts">
-import SidePanelContent from '@/components/sidepanel/SidePanelContent.vue'
-import ThresholdsOverview from '@/components/thresholds/ThresholdsOverview.vue'
-import InformationDisplayView from '@/views/InformationDisplayView.vue'
-import TaskRunsOverview from '@/components/tasks/TaskRunsOverview.vue'
-import ImportStatusControl from '@/components/systemmonitor/ImportStatusControl.vue'
-import VisualizeDataControl from '@/components/tasks/VisualizeDataControl.vue'
-import WorkflowsControl from '@/components/workflows/WorkflowsControl.vue'
+import { TopologyNode } from '@deltares/fews-pi-requests'
+import { type Component, computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+import { NavigateRoute } from '@/lib/router'
+
+import { useConfigStore } from '@/stores/config'
+
 import BtnGroup from '@/components/general/BtnGroup.vue'
 import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
 
-import { useI18n } from 'vue-i18n'
-import { type Component, computed, ref } from 'vue'
-import { useConfigStore } from '@/stores/config'
-import { TopologyNode } from '@deltares/fews-pi-requests'
-import { NavigateRoute } from '@/lib/router'
+import ImportStatusSidePanel from '@/components/sidepanel/ImportStatusSidePanel.vue'
+import MoreInfoSidePanel from '@/components/sidepanel/MoreInfoSidePanel.vue'
+import NonCurrentDataSidePanel from '@/components/sidepanel/NonCurrentDataSidePanel.vue'
+import RunTasksSidePanel from '@/components/sidepanel/RunTasksSidePanel.vue'
+import TaskOverviewSidePanel from '@/components/sidepanel/TaskOverviewSidePanel.vue'
+import ThresholdsSidePanel from '@/components/sidepanel/ThresholdsSidePanel.vue'
 
 const { t } = useI18n()
 const configStore = useConfigStore()
@@ -123,35 +121,35 @@ const generalSidePanels = computed<GeneralSidePanel[]>(() => {
       type: 'tasks',
       title: t('sidePanel.taskOverview'),
       icon: 'mdi-clipboard-text-clock',
-      component: TaskRunsOverview,
+      component: TaskOverviewSidePanel,
       enabled: !!sidePanelConfig?.taskOverview?.enabled,
     },
     {
       type: 'import',
       title: t('sidePanel.importStatus'),
       icon: 'mdi-database-import',
-      component: ImportStatusControl,
+      component: ImportStatusSidePanel,
       enabled: !!sidePanelConfig?.importStatus?.enabled,
     },
     {
       type: 'visualize',
       title: t('sidePanel.noncurrentData'),
       icon: 'mdi-chart-box-multiple',
-      component: VisualizeDataControl,
+      component: NonCurrentDataSidePanel,
       enabled: !!sidePanelConfig?.nonCurrentData?.enabled,
     },
     {
       type: 'workflows',
       title: t('sidePanel.runTasks'),
       icon: 'mdi-cog-play',
-      component: WorkflowsControl,
+      component: RunTasksSidePanel,
       enabled: !!sidePanelConfig?.runTask?.enabled,
     },
     {
       type: 'info',
       title: t('sidePanel.moreInfo'),
       icon: 'mdi-information-outline',
-      component: InformationDisplayView,
+      component: MoreInfoSidePanel,
       enabled: !!sidePanelConfig?.documentFile?.enabled,
     },
   ]
