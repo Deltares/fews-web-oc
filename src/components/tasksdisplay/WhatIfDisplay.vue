@@ -131,7 +131,7 @@ import WhatIfTimeZeroSelect from './WhatIfTimeZeroSelect.vue'
 
 import { isDateTimeControl, rankWith } from '@jsonforms/core'
 import { vuetifyRenderers } from '@jsonforms/vue-vuetify'
-import { computed, provide, ref, watch, watchEffect } from 'vue'
+import { computed, provide, ref, watch } from 'vue'
 import { ErrorObject } from 'ajv'
 
 import { JsonForms } from '@jsonforms/vue'
@@ -238,8 +238,17 @@ watch(
 const { jsonSchema, uiSchema } = useWhatIfTemplateSchemas(
   selectedWhatIfTemplate,
 )
-
-watchEffect(() => {
+// NOTE: we update the default properties when the JSON schema is updated, but
+//       obtain these default values from the what-if-template and (optionally)
+//       scenario. That may seem surprising.
+//       The properties set by the JSON-forms component depend on the JSON
+//       schema. The JSON schema is an async reference, which gets updated when
+//       the selected what-if template ID updates, so it will arrive later than
+//       the what-if template update. If we update the properties before the
+//       schema updates, values from the previously selected JSON schema will be
+//       inserted by JSON-forms. Hence, we wait for the schema to be up to date,
+//       and only then update the default properties.
+watch(jsonSchema, () => {
   selectedProperties.value = getJsonDataFromProperties(
     selectedWhatIfTemplate.value?.properties,
     selectedWhatIfScenario.value?.properties,
