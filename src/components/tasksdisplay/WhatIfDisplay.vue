@@ -204,11 +204,14 @@ provide('whatIfReferenceTime', referenceTime)
 
 const description = ref<string>()
 
-const selectedWorkflow = computed(() =>
-  props.workflows.find(
-    (wf) => wf.whatIfTemplateId === selectedWhatIfTemplate.value?.id,
-  ),
-)
+const selectedWorkflow = computed<WorkflowItem | undefined>(() => {
+  const selectedWhatIfTemplateId = selectedWhatIfTemplate.value?.id
+  return selectedWhatIfTemplateId === undefined
+    ? undefined
+    : props.workflows.find(
+        (wf) => wf.whatIfTemplateId === selectedWhatIfTemplateId,
+      )
+})
 
 // We override all date/time controls with our own, to make sure they are
 // consistent with each other.
