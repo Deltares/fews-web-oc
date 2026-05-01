@@ -1,6 +1,11 @@
 <template>
   <SidePanelContent :title="t('sidePanel.documentFile')" @close="emit('close')">
+    <template #prepend>
+      <v-btn icon="mdi-home" @click="goHome" />
+    </template>
+
     <iframe
+      ref="frame"
       v-if="url !== null"
       :src="url"
       title="Information Document"
@@ -13,7 +18,7 @@
 </template>
 <script setup lang="ts">
 import type { TopologyNode } from '@deltares/fews-pi-requests'
-import { computed } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { getResourcesStaticUrl } from '@/lib/fews-config'
@@ -32,10 +37,21 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
+const frame = useTemplateRef('frame')
+
 const url = computed<string | null>(() => {
   const resource = props.topologyNode?.documentFile
   if (!resource) return null
 
   return getResourcesStaticUrl(resource)
 })
+
+function goHome(): void {
+  if (frame.value === null || url.value === null) return
+  // When navigating with links in an iframe, the "src" attribute will not
+  // change. We remove the src attribute and set it again to navigate back to
+  // the home page.
+  frame.value.removeAttribute('src')
+  frame.value.src = url.value
+}
 </script>

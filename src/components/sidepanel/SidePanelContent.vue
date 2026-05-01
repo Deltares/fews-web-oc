@@ -6,7 +6,10 @@
       aria-label="Side panel"
     >
       <v-toolbar density="compact">
-        <span class="ms-4">
+        <template #prepend>
+          <slot name="prepend"></slot>
+        </template>
+        <span class="ps-4 w-100">
           {{ title }}
         </span>
         <template #append>
@@ -20,7 +23,7 @@
       </v-toolbar>
 
       <!-- Main slot -->
-      <slot />
+      <slot></slot>
     </div>
   </Teleport>
 </template>
