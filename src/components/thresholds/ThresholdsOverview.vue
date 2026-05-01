@@ -82,7 +82,6 @@ const props = defineProps<Props>()
 
 interface Emits {
   navigate: [to: NavigateRoute]
-  close: []
 }
 const emit = defineEmits<Emits>()
 

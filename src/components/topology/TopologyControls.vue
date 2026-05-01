@@ -62,7 +62,6 @@
     <ThresholdsOverview
       :topologyNode="topologyNode"
       :locationIds="locationIds"
-      @close="closeSidePanel()"
       @navigate="emit('navigate', $event)"
     />
   </SidePanelContent>
