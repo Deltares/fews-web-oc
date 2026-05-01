@@ -1,25 +1,235 @@
 <template>
   <SidePanelContent :title="t('sidePanel.taskOverview')" @close="emit('close')">
-    <TaskRunsPanel :topology-node="topologyNode" />
+    <div class="task-runs-panel h-100">
+      <div class="d-flex pt-3 pb-2 align-center">
+        <WorkflowFilterControl v-model="selectedWorkflowIds" />
+        <TaskStatusFilterControl v-model="selectedTaskStatuses" />
+        <CurrentUserFilterControl v-model="showCurrentUserOnly" />
+        <v-spacer />
+        <PeriodFilterControl v-model="period" />
+      </div>
+      <div v-if="hasLoadedAtLeastOnce" class="task-content">
+        <v-list-item v-if="sortedTasks.length === 0">
+          {{ t('workflow.noTasksAvailable') }}
+        </v-list-item>
+
+        <!-- Important to have item-height as it greatly improves performance -->
+        <v-virtual-scroll
+          v-else
+          class="overflow-y-auto h-100"
+          :items="groupedTasks"
+          :item-height="62"
+        >
+          <template #default="{ item: task }">
+            <v-btn
+              v-if="!isTaskRun(task)"
+              class="mx-2 px-1 text-none"
+              variant="plain"
+              :append-icon="getTaskSectionIcon(task.label)"
+              @click="toggleTaskSection(task.label)"
+            >
+              {{ task.label }}
+            </v-btn>
+            <div v-else class="my-1 mx-2">
+              <TaskRunSummary
+                :task="task"
+                :key="task.taskRunId"
+                :is-current-users-task="user.isCurrentUser(task.userId)"
+                :is-followed="taskRunMonitor.isFollowed(task.taskRunId)"
+                v-model:expanded="expandedItems[task.taskRunId]"
+                @follow="taskRunMonitor.follow"
+                @unfollow="taskRunMonitor.unfollow"
+              />
+            </div>
+          </template>
+        </v-virtual-scroll>
+      </div>
+      <v-divider />
+      <v-footer>
+        <div class="refresh-container ms-3">
+          Last updated: {{ lastUpdatedString }}
+        </div>
+        <v-spacer />
+        <v-btn
+          density="compact"
+          variant="plain"
+          icon="mdi-refresh"
+          :loading="isLoading"
+          @click="refreshTaskRuns()"
+        >
+          <template #loader>
+            <v-progress-circular size="20" indeterminate />
+          </template>
+        </v-btn>
+      </v-footer>
+    </div>
   </SidePanelContent>
 </template>
 
 <script setup lang="ts">
 import type { TopologyNode } from '@deltares/fews-pi-requests'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import { RelativePeriod } from '@/lib/period'
+import { sortTasks, isTaskRun, TaskStatus } from '@/lib/taskruns'
+
+import { useCurrentUser } from '@/services/useCurrentUser'
+import { useTaskRuns } from '@/services/useTasksRuns'
+
+import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
+import { useTaskRunMonitorStore } from '@/stores/taskRunMonitor'
+
+import CurrentUserFilterControl from '@/components/tasks/CurrentUserFilterControl.vue'
+import PeriodFilterControl from '@/components/tasks/PeriodFilterControl.vue'
+import TaskRunSummary from '@/components/tasks/TaskRunSummary.vue'
+import TaskStatusFilterControl from '@/components/tasks/TaskStatusFilterControl.vue'
+import WorkflowFilterControl from '@/components/tasks/WorkflowFilterControl.vue'
+
 import SidePanelContent from './SidePanelContent.vue'
-import TaskRunsPanel from '@/components/tasks/TaskRunsPanel.vue'
 
 const { t } = useI18n()
 
 interface Props {
   topologyNode?: TopologyNode
 }
-defineProps<Props>()
+const props = defineProps<Props>()
 
 interface Emits {
   close: []
 }
 const emit = defineEmits<Emits>()
+
+const availableWorkflowsStore = useAvailableWorkflowsStore()
+const taskRunMonitor = useTaskRunMonitorStore()
+
+const user = useCurrentUser()
+
+const selectedWorkflowIds = ref<string[]>(availableWorkflowsStore.workflowIds)
+const expandedItems = ref<Record<string, boolean>>({})
+
+const showCurrentUserOnly = ref(false)
+
+// Set preferred workflow IDs for the running tasks menu, if this node has
+// associated workflows.
+watch(
+  () => props.topologyNode,
+  (node) => {
+    const primaryWorkflowId = node?.workflowId ? [node.workflowId] : []
+    const secondaryWorkflowIds =
+      node?.secondaryWorkflows?.map(
+        (workflow) => workflow.secondaryWorkflowId,
+      ) ?? []
+    // Note: this list of workflow IDs may be empty, in which case we have no
+    //       preferred workflow.
+    const preferredWorkflowIds = [...primaryWorkflowId, ...secondaryWorkflowIds]
+    availableWorkflowsStore.setPreferredWorkflowIds(preferredWorkflowIds)
+
+    if (preferredWorkflowIds.length > 0) {
+      // If we have preferred workflow IDs, select them.
+      selectedWorkflowIds.value = preferredWorkflowIds
+    } else {
+      // Otherwise, select all available workflows.
+      selectedWorkflowIds.value = availableWorkflowsStore.workflowIds
+    }
+  },
+  { immediate: true },
+)
+
+const allTaskStatuses = Object.values(TaskStatus)
+const selectedTaskStatuses = ref<TaskStatus[]>(allTaskStatuses)
+// Look 1 day back by default.
+const period = ref<RelativePeriod | null>({
+  startOffsetSeconds: -24 * 60 * 60,
+  endOffsetSeconds: 0,
+})
+
+const TASKS_REFRESH_INTERVAL_SECONDS = 15
+const selectedUserId = computed<string | null>(() => {
+  if (!showCurrentUserOnly.value || !user.hasCurrentUser()) return null
+  return user.preferredUsername.value
+})
+const {
+  filteredTaskRuns,
+  isLoading,
+  lastUpdatedTimestamp,
+  fetch: refreshTaskRuns,
+} = useTaskRuns(
+  TASKS_REFRESH_INTERVAL_SECONDS,
+  period,
+  selectedWorkflowIds,
+  selectedTaskStatuses,
+  selectedUserId,
+  () => props.topologyNode?.id,
+  true,
+)
+const hasLoadedAtLeastOnce = computed<boolean>(
+  () => lastUpdatedTimestamp.value !== null,
+)
+
+const sortedTasks = computed(() => filteredTaskRuns.value.toSorted(sortTasks))
+const showCurrent = ref(true)
+const showNonCurrent = ref(true)
+
+const groupedTasks = computed(() => {
+  const currentTasks = sortedTasks.value.filter((task) => task.isCurrent)
+  const nonCurrentTasks = sortedTasks.value.filter((task) => !task.isCurrent)
+
+  const result = []
+  if (currentTasks.length) {
+    result.push({ isHeader: true, label: 'Current' })
+    if (showCurrent.value) {
+      result.push(...currentTasks)
+    }
+  }
+  if (nonCurrentTasks.length) {
+    result.push({ isHeader: true, label: 'Non Current' })
+    if (showNonCurrent.value) {
+      result.push(...nonCurrentTasks)
+    }
+  }
+
+  return result
+})
+
+function toggleTaskSection(label: string) {
+  if (label === 'Current') {
+    showCurrent.value = !showCurrent.value
+  } else if (label === 'Non Current') {
+    showNonCurrent.value = !showNonCurrent.value
+  }
+}
+
+function getTaskSectionIcon(label: string) {
+  if (label === 'Current') {
+    return showCurrent.value ? 'mdi-chevron-down' : 'mdi-chevron-right'
+  } else if (label === 'Non Current') {
+    return showNonCurrent.value ? 'mdi-chevron-down' : 'mdi-chevron-right'
+  }
+  return ''
+}
+
+const lastUpdatedString = computed<string>(() => {
+  const lastUpdated = lastUpdatedTimestamp.value
+  if (lastUpdated === null) return '—'
+  return new Date(lastUpdated).toLocaleString()
+})
 </script>
+
+<style scoped>
+.refresh-container {
+  height: 28px;
+}
+
+.task-runs-panel {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  height: 100%;
+  overflow: hidden;
+}
+
+.task-content {
+  overflow: hidden;
+  position: relative;
+}
+</style>
