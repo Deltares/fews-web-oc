@@ -85,14 +85,6 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-watch(
-  () => props.topologyNode?.id,
-  (newId) => {
-    warningLevelsStore.setTopologyNodeId(newId)
-    warningLevelsStore.selectedWarningLevelIds = []
-  },
-)
-
 const selectable = computed<boolean>(() => {
   const node = props.topologyNode
   return node !== undefined && nodeHasMap(node)

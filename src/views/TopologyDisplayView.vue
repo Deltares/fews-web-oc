@@ -82,6 +82,7 @@ import { fetchWmsCapabilitiesHeaders } from '@/lib/capabilities'
 import { useNodesStore } from '@/stores/nodes'
 import { nodeButtonItems } from '@/lib/topology/nodes'
 import { useTopologyThresholds } from '@/services/useTopologyThresholds'
+import { useWarningLevelsStore } from '@/stores/warningLevels'
 
 interface Props {
   topologyId?: string
@@ -110,7 +111,13 @@ const { thresholds } = useTopologyThresholds(baseUrl)
 
 const configStore = useConfigStore()
 const availableWorkflowsStore = useAvailableWorkflowsStore()
+const warningLevelsStore = useWarningLevelsStore()
 const nodesStore = useNodesStore()
+const topologyNodesStore = useTopologyNodesStore()
+
+topologyNodesStore
+  .fetch()
+  .catch(() => console.error('Failed to fetch topology nodes'))
 
 // Clear the preferred workflow IDs when we unmount.
 onUnmounted(() => availableWorkflowsStore.clearPreferredWorkflowIds())
@@ -122,6 +129,18 @@ const topologyNode = computed(() => {
   const id = Array.isArray(nodeId) ? nodeId[nodeId.length - 1] : nodeId
   return topologyNodesStore.getNodeById(id)
 })
+
+// Make sure the threshold levels are up to date for the current topology node.
+watch(
+  () => topologyNode.value?.id,
+  (newId) => {
+    if (!newId) return
+
+    warningLevelsStore.setTopologyNodeId(newId)
+    warningLevelsStore.selectedWarningLevelIds = []
+  },
+  { immediate: true },
+)
 
 const topologyComponentConfig = computed(() =>
   getComponentConfig(props.topologyId),
@@ -142,11 +161,6 @@ const showActiveThresholdCrossingsForFilters = computed(
     topologyComponentConfig.value?.showActiveThresholdCrossingsForFilters ??
     false,
 )
-
-const topologyNodesStore = useTopologyNodesStore()
-topologyNodesStore
-  .fetch()
-  .catch(() => console.error('Failed to fetch topology nodes'))
 
 // Pre-fetch WMS capabilities headers for better performance later on.
 fetchWmsCapabilitiesHeaders()
