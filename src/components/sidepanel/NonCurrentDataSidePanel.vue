@@ -1,6 +1,6 @@
 <template>
   <SidePanelContent
-    :title="t('sidePanel.noncurrentData')"
+    :title="t('sidePanel.nonCurrentData')"
     @close="emit('close')"
   >
     <NonCurrentDataPanel :topologyNode="topologyNode" />

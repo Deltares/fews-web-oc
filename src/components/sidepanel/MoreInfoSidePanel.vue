@@ -1,5 +1,5 @@
 <template>
-  <SidePanelContent :title="t('sidePanel.moreInfo')" @close="emit('close')">
+  <SidePanelContent :title="t('sidePanel.documentFile')" @close="emit('close')">
     <iframe
       v-if="url !== null"
       :src="url"

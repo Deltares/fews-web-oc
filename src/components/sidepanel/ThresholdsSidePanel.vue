@@ -1,8 +1,5 @@
 <template>
-  <SidePanelContent
-    :title="t('sidePanel.thresholdOverview')"
-    @close="emit('close')"
-  >
+  <SidePanelContent :title="t('sidePanel.thresholds')" @close="emit('close')">
     <div>
       <v-chip-group
         class="px-2 py-2 d-flex flex-wrap flex-0-0"

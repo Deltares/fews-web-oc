@@ -55,12 +55,12 @@
     "unnamedLayer": "Unnamed layer"
   },
   "sidePanel": {
-    "thresholdOverview": "Thresholds overview",
+    "thresholds": "Thresholds overview",
     "taskOverview": "Task overview",
     "importStatus": "Import status",
-    "noncurrentData": "Non-current data",
-    "runTasks": "Run tasks",
-    "moreInfo": "More info"
+    "nonCurrentData": "Non-current data",
+    "runTask": "Run tasks",
+    "documentFile": "More info"
   },
   "workflow": {
     "expectedRuntime": "Expected runtime",

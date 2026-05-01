@@ -1,5 +1,5 @@
 <template>
-  <SidePanelContent :title="t('sidePanel.runTasks')" @close="emit('close')">
+  <SidePanelContent :title="t('sidePanel.runTask')" @close="emit('close')">
     <WhatIfDisplayView :topologyNode="topologyNode" />
   </SidePanelContent>
 </template>

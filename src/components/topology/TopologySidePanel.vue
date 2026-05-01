@@ -37,7 +37,7 @@
           v-for="generalSidePanel in enabledGeneralSidePanels"
           :key="generalSidePanel.type"
           :prepend-icon="generalSidePanel.icon"
-          :title="generalSidePanel.title"
+          :title="t(`sidePanel.${generalSidePanel.type}`)"
           :active="activeSidePanelType === generalSidePanel.type"
           @click="setCurrentGeneralSidePanel(generalSidePanel)"
         />
@@ -64,11 +64,11 @@
 </template>
 
 <script setup lang="ts">
-import { TopologyNode } from '@deltares/fews-pi-requests'
+import type { SidePanelConfig, TopologyNode } from '@deltares/fews-pi-requests'
 import { type Component, computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { NavigateRoute } from '@/lib/router'
+import type { NavigateRoute } from '@/lib/router'
 
 import { useConfigStore } from '@/stores/config'
 
@@ -97,68 +97,51 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-type GeneralSidePanelType =
-  | 'tasks'
-  | 'info'
-  | 'workflows'
-  | 'visualize'
-  | 'import'
+type GeneralSidePanelType = Exclude<
+  keyof SidePanelConfig,
+  'exportStatus' | 'logDisplay'
+>
 type SpecialSidePanelType = 'thresholds'
 type SidePanelType = GeneralSidePanelType | SpecialSidePanelType
 
 interface GeneralSidePanel {
   type: GeneralSidePanelType
-  title: string
   icon: string
   component: Component
 }
+const generalSidePanels: GeneralSidePanel[] = [
+  {
+    type: 'taskOverview',
+    icon: 'mdi-clipboard-text-clock',
+    component: TaskOverviewSidePanel,
+  },
+  {
+    type: 'importStatus',
+    icon: 'mdi-database-import',
+    component: ImportStatusSidePanel,
+  },
+  {
+    type: 'nonCurrentData',
+    icon: 'mdi-chart-box-multiple',
+    component: NonCurrentDataSidePanel,
+  },
+  {
+    type: 'runTask',
+    icon: 'mdi-cog-play',
+    component: RunTasksSidePanel,
+  },
+  {
+    type: 'documentFile',
+    icon: 'mdi-information-outline',
+    component: MoreInfoSidePanel,
+  },
+]
 
 const enabledGeneralSidePanels = computed<GeneralSidePanel[]>(() => {
   const sidePanelConfig = configStore.general.sidePanel
-  const sidePanels: GeneralSidePanel[] = []
-
-  if (sidePanelConfig?.taskOverview?.enabled) {
-    sidePanels.push({
-      type: 'tasks',
-      title: t('sidePanel.taskOverview'),
-      icon: 'mdi-clipboard-text-clock',
-      component: TaskOverviewSidePanel,
-    })
-  }
-  if (sidePanelConfig?.importStatus?.enabled) {
-    sidePanels.push({
-      type: 'import',
-      title: t('sidePanel.importStatus'),
-      icon: 'mdi-database-import',
-      component: ImportStatusSidePanel,
-    })
-  }
-  if (sidePanelConfig?.nonCurrentData?.enabled) {
-    sidePanels.push({
-      type: 'visualize',
-      title: t('sidePanel.noncurrentData'),
-      icon: 'mdi-chart-box-multiple',
-      component: NonCurrentDataSidePanel,
-    })
-  }
-  if (sidePanelConfig?.runTask?.enabled) {
-    sidePanels.push({
-      type: 'workflows',
-      title: t('sidePanel.runTasks'),
-      icon: 'mdi-cog-play',
-      component: RunTasksSidePanel,
-    })
-  }
-  if (sidePanelConfig?.documentFile?.enabled) {
-    sidePanels.push({
-      type: 'info',
-      title: t('sidePanel.moreInfo'),
-      icon: 'mdi-information-outline',
-      component: MoreInfoSidePanel,
-    })
-  }
-
-  return sidePanels
+  return generalSidePanels.filter(
+    (sidePanel) => sidePanelConfig?.[sidePanel.type]?.enabled,
+  )
 })
 const hasMultipleEnabledSidePanels = computed<boolean>(
   () => enabledGeneralSidePanels.value.length > 1,

@@ -55,12 +55,12 @@
     "unnamedLayer": "Unbenannter Layer"
   },
   "sidePanel": {
-    "thresholdOverview": "Übersicht Schwellenwerte",
+    "thresholds": "Übersicht Schwellenwerte",
     "taskOverview": "Aufgaben Übersicht",
     "importStatus": "Import Status",
-    "noncurrentData": "Nicht-Aktuelle Daten",
-    "runTasks": "Aufgabe ausführen",
-    "moreInfo": "Informationen"
+    "nonCurrentData": "Nicht-Aktuelle Daten",
+    "runTask": "Aufgabe ausführen",
+    "documentFile": "Informationen"
   },
   "workflow": {
     "expectedRuntime": "Erwartete Laufzeit",
