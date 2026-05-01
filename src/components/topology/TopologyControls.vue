@@ -55,6 +55,7 @@
   </template>
 
   <ThresholdsSidePanel
+    v-if="showActiveThresholdCrossingsForFilters"
     :isActive="activeSidePanelType === 'thresholds'"
     :topologyNode="topologyNode"
     :locationIds="locationIds"
@@ -111,52 +112,55 @@ interface GeneralSidePanel {
   title: string
   icon: string
   component: Component
-  enabled: boolean
 }
 
-const generalSidePanels = computed<GeneralSidePanel[]>(() => {
+const enabledGeneralSidePanels = computed<GeneralSidePanel[]>(() => {
   const sidePanelConfig = configStore.general.sidePanel
-  return [
-    {
+  const sidePanels: GeneralSidePanel[] = []
+
+  if (sidePanelConfig?.taskOverview?.enabled) {
+    sidePanels.push({
       type: 'tasks',
       title: t('sidePanel.taskOverview'),
       icon: 'mdi-clipboard-text-clock',
       component: TaskOverviewSidePanel,
-      enabled: !!sidePanelConfig?.taskOverview?.enabled,
-    },
-    {
+    })
+  }
+  if (sidePanelConfig?.importStatus?.enabled) {
+    sidePanels.push({
       type: 'import',
       title: t('sidePanel.importStatus'),
       icon: 'mdi-database-import',
       component: ImportStatusSidePanel,
-      enabled: !!sidePanelConfig?.importStatus?.enabled,
-    },
-    {
+    })
+  }
+  if (sidePanelConfig?.nonCurrentData?.enabled) {
+    sidePanels.push({
       type: 'visualize',
       title: t('sidePanel.noncurrentData'),
       icon: 'mdi-chart-box-multiple',
       component: NonCurrentDataSidePanel,
-      enabled: !!sidePanelConfig?.nonCurrentData?.enabled,
-    },
-    {
+    })
+  }
+  if (sidePanelConfig?.runTask?.enabled) {
+    sidePanels.push({
       type: 'workflows',
       title: t('sidePanel.runTasks'),
       icon: 'mdi-cog-play',
       component: RunTasksSidePanel,
-      enabled: !!sidePanelConfig?.runTask?.enabled,
-    },
-    {
+    })
+  }
+  if (sidePanelConfig?.documentFile?.enabled) {
+    sidePanels.push({
       type: 'info',
       title: t('sidePanel.moreInfo'),
       icon: 'mdi-information-outline',
       component: MoreInfoSidePanel,
-      enabled: !!sidePanelConfig?.documentFile?.enabled,
-    },
-  ]
+    })
+  }
+
+  return sidePanels
 })
-const enabledGeneralSidePanels = computed<GeneralSidePanel[]>(() =>
-  generalSidePanels.value.filter((c) => c.enabled),
-)
 const hasMultipleEnabledSidePanels = computed<boolean>(
   () => enabledGeneralSidePanels.value.length > 1,
 )
