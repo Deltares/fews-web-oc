@@ -1,9 +1,5 @@
 <template>
-  <SidePanelContent
-    :is-active="isActive"
-    :title="t('sidePanel.moreInfo')"
-    @close="emit('close')"
-  >
+  <SidePanelContent :title="t('sidePanel.moreInfo')" @close="emit('close')">
     <iframe
       v-if="url !== null"
       :src="url"
@@ -27,7 +23,6 @@ import SidePanelContent from './SidePanelContent.vue'
 const { t } = useI18n()
 
 interface Props {
-  isActive: boolean
   topologyNode?: TopologyNode
 }
 const props = defineProps<Props>()

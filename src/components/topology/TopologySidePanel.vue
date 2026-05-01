@@ -47,16 +47,15 @@
 
   <template v-for="sidePanel in enabledGeneralSidePanels" :key="sidePanel.type">
     <component
+      v-if="activeSidePanelType === sidePanel.type"
       :is="sidePanel.component"
-      :is-active="activeSidePanelType === sidePanel.type"
       :topology-node="topologyNode"
       @close="closeSidePanel()"
     />
   </template>
 
   <ThresholdsSidePanel
-    v-if="showActiveThresholdCrossingsForFilters"
-    :isActive="activeSidePanelType === 'thresholds'"
+    v-if="activeSidePanelType === 'thresholds'"
     :topologyNode="topologyNode"
     :locationIds="locationIds"
     @close="toggleActiveSidePanel('thresholds')"

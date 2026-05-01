@@ -1,7 +1,6 @@
 <template>
   <Teleport to="#main-side-panel" defer>
     <div
-      v-if="isActive"
       class="d-flex flex-column h-100 side-panel"
       :style="mobile ? 'width: 100vw;' : 'width: 450px;'"
       aria-label="Side panel"
@@ -31,7 +30,6 @@ import { useDisplay } from 'vuetify'
 
 interface Props {
   title: string
-  isActive: boolean
 }
 defineProps<Props>()
 

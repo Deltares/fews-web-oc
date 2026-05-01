@@ -1,9 +1,5 @@
 <template>
-  <SidePanelContent
-    :is-active="isActive"
-    :title="t('sidePanel.runTasks')"
-    @close="emit('close')"
-  >
+  <SidePanelContent :title="t('sidePanel.runTasks')" @close="emit('close')">
     <WhatIfDisplayView :topologyNode="topologyNode" />
   </SidePanelContent>
 </template>
@@ -18,7 +14,6 @@ import WhatIfDisplayView from '@/views/WhatIfDisplayView.vue'
 const { t } = useI18n()
 
 interface Props {
-  isActive: boolean
   topologyNode?: TopologyNode
 }
 defineProps<Props>()

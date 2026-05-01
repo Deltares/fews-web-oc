@@ -16,7 +16,6 @@ import NonCurrentDataPanel from '@/components/compare/NonCurrentDataPanel.vue'
 const { t } = useI18n()
 
 interface Props {
-  isActive: boolean
   topologyNode?: TopologyNode
 }
 defineProps<Props>()

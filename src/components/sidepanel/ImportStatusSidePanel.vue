@@ -1,9 +1,5 @@
 <template>
-  <SidePanelContent
-    :is-active="isActive"
-    :title="t('sidePanel.importStatus')"
-    @close="emit('close')"
-  >
+  <SidePanelContent :title="t('sidePanel.importStatus')" @close="emit('close')">
     <ImportStatusControl :topology-node="topologyNode" />
   </SidePanelContent>
 </template>
@@ -18,7 +14,6 @@ import ImportStatusControl from '@/components/systemmonitor/ImportStatusControl.
 const { t } = useI18n()
 
 interface Props {
-  isActive: boolean
   topologyNode?: TopologyNode
 }
 defineProps<Props>()

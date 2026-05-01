@@ -1,6 +1,5 @@
 <template>
   <SidePanelContent
-    :is-active="isActive"
     :title="t('sidePanel.thresholdOverview')"
     @close="emit('close')"
   >
@@ -24,7 +23,6 @@ import ThresholdsOverview from '@/components/thresholds/ThresholdsOverview.vue'
 const { t } = useI18n()
 
 interface Props {
-  isActive: boolean
   topologyNode?: TopologyNode
   locationIds?: string
 }
