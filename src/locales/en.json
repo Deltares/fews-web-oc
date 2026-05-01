@@ -15,7 +15,9 @@
     "unsavedChanges": "Unsaved changes",
     "unsavedChangesExitWarning": "You have unsaved changes. Leave without saving?",
     "finished": "finished",
-    "failed": "failed"
+    "failed": "failed",
+    "maximizeChart": "Maximize chart",
+    "restoreChart": "Restore chart"
   },
   "layout": {
     "about": "About",

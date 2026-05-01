@@ -8,6 +8,9 @@
       <KeepAlive>
         <template v-for="subplot in subplots" :key="subplot.id">
           <TimeSeriesChart
+            v-show="
+              maximizedSubplotId === null || maximizedSubplotId === subplot.id
+            "
             v-model:domain="visibleDomain"
             :config="subplot"
             :series="chartSeries"
@@ -16,6 +19,9 @@
             :panHandler="sharedPanHandler"
             :settings="settings.timeSeriesChart"
             :forecastLegend="config.forecastLegend"
+            :show-maximize-button="subplots.length > 1"
+            :maximized="maximizedSubplotId === subplot.id"
+            @toggle-maximize="toggleMaximizeSubplot(subplot.id)"
           >
             <template #brush="{ margin: chartMargin }">
               <TimeSeriesChartBrush
@@ -194,6 +200,12 @@ const confirmationDialog = ref(false)
 const { xs } = useDisplay()
 const { sharedZoomHandler, sharedPanHandler, sharedVerticalZoomHandler } =
   useChartHandlers()
+
+const maximizedSubplotId = ref<string | null>(null)
+
+function toggleMaximizeSubplot(id: string): void {
+  maximizedSubplotId.value = maximizedSubplotId.value === id ? null : id
+}
 
 const tab = ref<DisplayType>(props.displayType)
 

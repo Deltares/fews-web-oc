@@ -1,7 +1,7 @@
 <template>
   <div
     class="chart-with-chips"
-    :class="{ 'vertical-profile': verticalProfile }"
+    :class="{ 'vertical-profile': verticalProfile, maximized: maximized }"
     :style="{
       'flex-direction': settings.legend.placement.includes('under')
         ? 'column-reverse'
@@ -27,6 +27,21 @@
     />
     <div ref="chartContainer" class="chart-container"></div>
     <slot name="brush" :margin="margin" />
+    <v-btn
+      v-if="showMaximizeButton"
+      class="chart-maximize-btn"
+      size="x-small"
+      icon
+      variant="flat"
+      :title="
+        maximized ? $t('common.restoreChart') : $t('common.maximizeChart')
+      "
+      @click="$emit('toggle-maximize')"
+    >
+      <v-icon>{{
+        maximized ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'
+      }}</v-icon>
+    </v-btn>
   </div>
 </template>
 
@@ -88,12 +103,17 @@ interface Props {
   verticalProfile?: boolean
   forecastLegend?: string
   settings: ChartsSettings['timeSeriesChart']
+  showMaximizeButton?: boolean
+  maximized?: boolean
 }
 
 const props = defineProps<Props>()
 const domain = defineModel<[Date, Date]>('domain')
 
 const userSettingsStore = useUserSettingsStore()
+const emit = defineEmits<{
+  'toggle-maximize': []
+}>()
 defineExpose({
   getSvgElement,
   axisAccept,
@@ -372,6 +392,24 @@ function axisAccept(visitor: Visitor) {
   flex: 1 1 80%;
   max-height: max(50%, 400px);
   width: 100%;
+}
+
+.chart-with-chips.maximized {
+  flex: 1 1 100%;
+  max-height: none;
+}
+
+.chart-maximize-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 1;
+}
+
+.chart-with-chips:hover .chart-maximize-btn {
+  opacity: 1;
 }
 
 .chart-with-chips.vertical-profile {
