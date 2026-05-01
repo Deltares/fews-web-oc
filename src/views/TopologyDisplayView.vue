@@ -32,7 +32,7 @@
     </Teleport>
 
     <Teleport to="#app-bar-content-end">
-      <TopologyControls
+      <TopologySidePanel
         :topologyNode="topologyNode"
         :locationIds="locationIds"
         :showActiveThresholdCrossingsForFilters="
@@ -59,7 +59,7 @@
 import LeafNodeButtons from '@/components/general/LeafNodeButtons.vue'
 import DisplayTabs from '@/components/DisplayTabs.vue'
 import TopologySidebar from '@/components/topology/TopologySidebar.vue'
-import TopologyControls from '@/components/topology/TopologyControls.vue'
+import TopologySidePanel from '@/components/topology/TopologySidePanel.vue'
 
 import { useConfigStore } from '@/stores/config'
 
