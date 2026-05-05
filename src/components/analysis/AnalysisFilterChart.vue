@@ -6,6 +6,8 @@
     :settings
     :zoomHandler
     :panHandler
+    :startTime
+    :endTime
     v-bind="$attrs"
     @update:x-domain="updateDomain"
     @download="downloadChart"

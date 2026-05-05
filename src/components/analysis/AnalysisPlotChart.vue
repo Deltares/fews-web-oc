@@ -6,13 +6,26 @@
     @save-as-image="downloadChartImage"
   >
     <TimeSeriesChart
+      v-model:domain="visibleDomain"
       :config
       :series
       :zoomHandler
       :panHandler
       :settings="settings.charts.timeSeriesChart"
       @update:x-domain="updateDomain"
-    />
+    >
+      <template #brush="{ margin: chartMargin }">
+        <TimeSeriesChartBrush
+          v-if="showBrush && fullDomain"
+          v-model:domain="visibleDomain"
+          :fullDomain="fullDomain"
+          :config
+          :series
+          :settings="settings.charts.timeSeriesChart"
+          :mainChartMargin="chartMargin"
+        />
+      </template>
+    </TimeSeriesChart>
     <!-- Used to render the chart for downloading as image. -->
     <!-- This is done to have the same chart size across different devices. -->
     <div v-if="renderingChart" class="render-chart-container">
@@ -33,10 +46,12 @@
 import AnalysisChartCard from '@/components/analysis/AnalysisChartCard.vue'
 import AnalysisChartEdit from '@/components/analysis/AnalysisChartEdit.vue'
 import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
+import TimeSeriesChartBrush from '@/components/charts/TimeSeriesChartBrush.vue'
 import type { PlotChart } from '@/lib/analysis'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
+import { useUserSettingsStore } from '@/stores/userSettings'
 import {
   Legend,
   type ZoomHandler,
@@ -63,15 +78,29 @@ interface Props {
   panHandler?: PanHandler
   settings: ComponentSettings
   config: ChartConfig
+  startTime?: Date
+  endTime?: Date
 }
 
 const props = defineProps<Props>()
 const chartRef = useTemplateRef('render-chart')
 const legendRef = useTemplateRef('render-chart-legend')
 const configStore = useConfigStore()
+const userSettingsStore = useUserSettingsStore()
 
 const renderingChart = ref(false)
 const editing = ref(false)
+const visibleDomain = ref<[Date, Date]>()
+
+const showBrush = computed(
+  () => userSettingsStore.get('charts.brush')?.value === true,
+)
+
+const fullDomain = computed<[Date, Date] | undefined>(() =>
+  props.startTime && props.endTime
+    ? [props.startTime, props.endTime]
+    : undefined,
+)
 
 const emit = defineEmits<UpdateDomainEmits>()
 
@@ -140,6 +169,10 @@ async function downloadChartImage() {
 </script>
 
 <style scoped>
+:deep(.chart-with-chips) {
+  height: 400px;
+}
+
 .render-chart-container {
   visibility: hidden;
   position: fixed;
