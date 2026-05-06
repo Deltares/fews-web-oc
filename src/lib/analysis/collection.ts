@@ -21,7 +21,7 @@ export function createCollection(
       startTime,
       endTime,
       liveUpdate: {
-        enabled: false,
+        enabled: true,
         daysBeforeNow: 2,
         daysAfterNow: 2,
       },
