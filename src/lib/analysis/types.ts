@@ -60,12 +60,14 @@ export interface FilterChart extends BaseChart {
   requests: ActionRequest[]
   subplot: FilterSubplot
   domain?: [Date, Date]
+  forecastLegend?: string
 }
 
 export interface CorrelationChart extends BaseChart {
   type: 'correlation'
   filter: Omit<CorrelationFilter, 'startTime' | 'endTime'>
   subplot: TimeSeriesDisplaySubplot
+  forecastLegend?: string
 }
 
 export interface AsyncChart extends BaseChart {

@@ -12,6 +12,7 @@
       :zoomHandler
       :panHandler
       :settings="settings.charts.timeSeriesChart"
+      :forecast-legend="chart.forecastLegend"
       @update:x-domain="updateDomain"
     >
       <template #brush="{ margin: chartMargin }">

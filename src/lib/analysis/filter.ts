@@ -47,6 +47,7 @@ export async function createNewChartForFilter(
 
   const requests = result.requests
 
+  const forecastLegend = result.config?.timeSeriesDisplay?.forecastLegend
   const subplot = result.config?.timeSeriesDisplay?.subplots?.[0]
   if (!subplot) return
 
@@ -75,6 +76,7 @@ export async function createNewChartForFilter(
     title: getFilterSubplotTitle(filterSubplot),
     subplot: filterSubplot,
     requests,
+    forecastLegend,
   }
   const period = result.config?.timeSeriesDisplay?.period
   if (useDataDomain && period) {
