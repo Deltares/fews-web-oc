@@ -32,6 +32,8 @@
               :title="getItemGroupTitle(groupItems[0])"
               density="compact"
               v-bind="props"
+              min-height="25"
+              class="py-0"
             >
               <template #prepend>
                 <v-list-item-action start>
@@ -64,6 +66,8 @@
             density="compact"
             :title="getItemTitle(item)"
             :value="getItemValue(item)"
+            min-height="25"
+            class="py-0"
           >
             <template #prepend="{ isSelected, select }">
               <v-list-item-action start>
@@ -190,5 +194,13 @@ function clearSelection() {
 
 .active-menu-icon {
   transform: rotate(180deg);
+}
+
+:deep(.v-list-item) {
+  font-size: 0.875rem;
+}
+
+:deep(.v-list-item-title) {
+  font-size: 0.875rem;
 }
 </style>
