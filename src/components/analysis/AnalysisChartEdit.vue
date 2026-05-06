@@ -19,13 +19,10 @@
             </v-menu>
             <v-menu>
               <template #activator="{ props }">
-                <v-btn v-bind="props" icon>
-                  <v-icon>{{
-                    markerStyles.find(
-                      (style) => style.value === item.markerStyle,
-                    )?.icon
-                  }}</v-icon>
-                </v-btn>
+                <v-btn
+                  v-bind="props"
+                  :icon="getIconForMarkerStyle(item.markerStyle ?? 'none')"
+                />
               </template>
 
               <v-card class="pa-2" width="200">
@@ -38,6 +35,7 @@
                   >
                     <v-btn
                       :icon="style.icon"
+                      :active="(item.markerStyle ?? 'none') === style.value"
                       @click="() => (item.markerStyle = style.value)"
                     />
                   </v-col>
@@ -85,4 +83,8 @@ defineProps<Props>()
 const editing = defineModel<boolean>({
   required: true,
 })
+
+function getIconForMarkerStyle(style: string) {
+  return markerStyles.find((s) => s.value === style)?.icon ?? ''
+}
 </script>
