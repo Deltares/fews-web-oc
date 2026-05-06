@@ -63,7 +63,9 @@
           v-if="selectedCollection.charts.length"
           v-model:collection="selectedCollection"
           v-model:domain="visibleDomain"
+          :fullBrushDomain="fullBrushDomain"
           :series="series"
+          :brushSeries="brushSeries"
           :settings="settings"
           :startTime="startTime"
           :endTime="endTime"
@@ -105,6 +107,7 @@ import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
 import { addDuration } from '@/lib/date'
 import { useFetchDomain } from '@/services/useFetchDomain'
+import { getBrushDomain } from '@/lib/charts/brush'
 
 interface Props {
   collections: Collection[]
@@ -167,6 +170,19 @@ const requests = computed<ActionRequest[]>((prevRequests) => {
   return newRequests
 })
 
+const fullDomain = computed<[Date, Date] | undefined>(() => {
+  const fullDomainTimes = selectedCollection.value.charts
+    .filter((chart) => chart.type === 'filter')
+    .flatMap((chart) => chart.fullDomain?.map((d) => d.getTime()) ?? [])
+
+  if (fullDomainTimes.length < 2) return
+
+  return [
+    new Date(Math.min(...fullDomainTimes)),
+    new Date(Math.max(...fullDomainTimes)),
+  ]
+})
+
 const startTime = computed(() => {
   const settings = selectedCollection.value.settings
   const liveUpdate = settings.liveUpdate
@@ -214,6 +230,31 @@ const { series } = useTimeSeries(
   requests,
   timeSeriesOptions,
   true,
+  undefined,
+  false,
+)
+
+const showBrush = computed(
+  () => userSettings.get('charts.brush')?.value === true,
+)
+const fullBrushDomain = computed(() =>
+  getBrushDomain(fullDomain.value?.[0], fullDomain.value?.[1], [
+    startTime.value,
+    endTime.value,
+  ]),
+)
+const brushOptions = computed(() => ({
+  startTime: fullBrushDomain.value[0],
+  endTime: fullBrushDomain.value[1],
+  useDisplayUnits: userSettings.useDisplayUnits,
+  convertDatum: userSettings.convertDatum,
+  thinning: true,
+}))
+const { series: brushSeries } = useTimeSeries(
+  baseUrl,
+  requests,
+  brushOptions,
+  showBrush,
   undefined,
   false,
 )

@@ -4,6 +4,8 @@
     :chart
     :config
     :series
+    :brushSeries
+    :fullBrushDomain
     :settings
     :zoomHandler
     :panHandler
@@ -35,6 +37,8 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 interface Props {
   chart: FilterChart
   series: Record<string, Series>
+  brushSeries: Record<string, Series>
+  fullBrushDomain: [Date, Date]
   zoomHandler?: ZoomHandler
   panHandler?: PanHandler
   settings: ComponentSettings

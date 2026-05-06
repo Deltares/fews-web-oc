@@ -7,6 +7,8 @@
         :chart
         :subplot="chart.subplot"
         :series
+        :brushSeries
+        :fullBrushDomain
         :zoomHandler="sharedZoomHandler"
         :panHandler="sharedPanHandler"
         :settings
@@ -55,6 +57,8 @@ import { useChartHandlers } from '@/services/useChartHandlers'
 
 interface Props {
   series: Record<string, Series>
+  brushSeries: Record<string, Series>
+  fullBrushDomain: [Date, Date]
   settings: ComponentSettings
   startTime: Date
   endTime: Date

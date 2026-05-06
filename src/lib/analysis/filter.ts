@@ -3,6 +3,7 @@ import { fetchTimeSeriesHeaders } from '@/services/useTimeSeries'
 import { useParametersStore } from '@/stores/parameters'
 import {
   ActionRequest,
+  ActionResult,
   filterActionsFilter,
   Header,
   TimeSeriesDisplaySubplot,
@@ -28,6 +29,16 @@ export async function createNewChartsForFilters(
   return charts.filter((chart) => chart !== undefined)
 }
 
+async function fetchActionAndFullAction(filter: filterActionsFilter) {
+  return {
+    action: await fetchActions(baseUrl, filter),
+    fullAction: await fetchActions(baseUrl, {
+      ...filter,
+      fullDataPeriod: true,
+    }),
+  }
+}
+
 export async function createNewChartForFilter(
   filter: filterActionsFilter,
   useDataDomain: boolean = false,
@@ -37,13 +48,13 @@ export async function createNewChartForFilter(
   }
 
   const promises = filter.filterId.split(',').map((id) =>
-    fetchActions(baseUrl, {
+    fetchActionAndFullAction({
       ...filter,
       filterId: id,
     }),
   )
   const actions = await Promise.all(promises)
-  const result = actions[0].results[0]
+  const result = actions[0].action.results[0]
 
   const requests = result.requests
 
@@ -52,9 +63,10 @@ export async function createNewChartForFilter(
   if (!subplot) return
 
   actions.slice(1).forEach((action) => {
-    const requestsToAdd = action.results[0].requests
+    const requestsToAdd = action.action.results[0].requests
     const subplotItemsToAdd =
-      action.results[0].config?.timeSeriesDisplay?.subplots?.[0].items ?? []
+      action.action.results[0].config?.timeSeriesDisplay?.subplots?.[0].items ??
+      []
     requests.push(...requestsToAdd)
     subplot.items.push(...subplotItemsToAdd)
   })
@@ -77,14 +89,21 @@ export async function createNewChartForFilter(
     subplot: filterSubplot,
     requests,
     forecastLegend,
+    fullDomain: getDomainFromResult(actions[0].fullAction.results[0]),
   }
-  const period = result.config?.timeSeriesDisplay?.period
-  if (useDataDomain && period) {
-    const periodStart = convertFewsPiDateTimeToJsDate(period.startDate, 'Z')
-    const periodEnd = convertFewsPiDateTimeToJsDate(period.endDate, 'Z')
-    newChart.domain = [periodStart, periodEnd]
+  if (useDataDomain) {
+    newChart.domain = getDomainFromResult(result)
   }
   return newChart
+}
+
+function getDomainFromResult(result: ActionResult) {
+  const period = result.config?.timeSeriesDisplay?.period
+  if (!period) return
+
+  const periodStart = convertFewsPiDateTimeToJsDate(period.startDate, 'Z')
+  const periodEnd = convertFewsPiDateTimeToJsDate(period.endDate, 'Z')
+  return [periodStart, periodEnd] as [Date, Date]
 }
 
 function subplotToFilterSubplot(
@@ -243,6 +262,20 @@ async function addFilterToChartPosition(
   chart.requests = uniqBy(newRequests, (req) => req.request)
 
   chart.title = getFilterSubplotTitle(chart.subplot)
+
+  if (chart.fullDomain && newChart.fullDomain) {
+    const fullDomainTimes = [
+      ...(chart.fullDomain ?? []),
+      ...(newChart.fullDomain ?? []),
+    ].map((date) => date.getTime())
+
+    chart.fullDomain = [
+      new Date(Math.min(...fullDomainTimes)),
+      new Date(Math.max(...fullDomainTimes)),
+    ]
+  } else {
+    chart.fullDomain = chart.fullDomain ?? newChart.fullDomain
+  }
 }
 
 function addLocationNameToLegend(item: FilterSubplotItem) {

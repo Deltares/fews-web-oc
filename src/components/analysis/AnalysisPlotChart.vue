@@ -16,11 +16,11 @@
     >
       <template #brush="{ margin: chartMargin }">
         <TimeSeriesChartBrush
-          v-if="showBrush && fullDomain"
+          v-if="showBrush"
           v-model:domain="visibleDomain"
-          :fullDomain="fullDomain"
+          :fullDomain="fullBrushDomain"
           :config
-          :series
+          :series="brushSeries"
           :settings="settings.charts.timeSeriesChart"
           :mainChartMargin="chartMargin"
         />
@@ -73,6 +73,8 @@ import { getSubplotWithDomain } from '@/lib/display'
 interface Props {
   chart: PlotChart
   series: Record<string, Series>
+  brushSeries: Record<string, Series>
+  fullBrushDomain: [Date, Date]
   zoomHandler?: ZoomHandler
   panHandler?: PanHandler
   settings: ComponentSettings
@@ -93,12 +95,6 @@ const visibleDomain = defineModel<[Date, Date]>('domain')
 
 const showBrush = computed(
   () => userSettingsStore.get('charts.brush')?.value === true,
-)
-
-const fullDomain = computed<[Date, Date] | undefined>(() =>
-  props.startTime && props.endTime
-    ? [props.startTime, props.endTime]
-    : undefined,
 )
 
 const renderConfig = computed(() =>

@@ -60,6 +60,7 @@ export interface FilterChart extends BaseChart {
   requests: ActionRequest[]
   subplot: FilterSubplot
   domain?: [Date, Date]
+  fullDomain?: [Date, Date]
   forecastLegend?: string
 }
 

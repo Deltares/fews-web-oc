@@ -132,6 +132,7 @@ import {
 } from '@/lib/display/utils'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
+import { getBrushDomain } from '@/lib/charts/brush.ts'
 
 interface Props {
   config?: DisplayConfig
@@ -214,41 +215,15 @@ const fullDomain = computed(() =>
   getDomainWithConfigFallback(store.startTime, store.endTime, props.config),
 )
 
-function getDefaultBrushDomain(): [Date, Date] {
-  const now = new Date()
-
-  // now - 2 years
-  const startDate = new Date(now)
-  startDate.setFullYear(startDate.getFullYear() - 2)
-
-  // now + 2 months
-  const endDate = new Date(now)
-  endDate.setMonth(endDate.getMonth() + 2)
-
-  return [startDate, endDate]
-}
-
 const fullBrushDomain = computed<[Date, Date]>(() => {
-  if (
-    props.brushChartConfig?.period?.startDate?.date &&
-    props.brushChartConfig?.period?.endDate?.date
-  ) {
-    const start = convertFewsPiDateTimeToJsDate(
-      props.brushChartConfig.period.startDate,
-    )
-    const end = convertFewsPiDateTimeToJsDate(
-      props.brushChartConfig.period.endDate,
-    )
-    if (!fullDomain.value) return [start, end]
-    // Ensure the brush domain always includes the full domain of the chart
-    // If the brush domain is smaller than the chart domain, it can lead to issues with zooming and panning in the chart
-    return [
-      fullDomain.value[0] < start ? fullDomain.value[0] : start,
-      fullDomain.value[1] > end ? fullDomain.value[1] : end,
-    ]
-  } else {
-    return getDefaultBrushDomain()
-  }
+  const startDate = props.brushChartConfig?.period?.startDate
+  const endDate = props.brushChartConfig?.period?.endDate
+
+  return getBrushDomain(
+    startDate ? convertFewsPiDateTimeToJsDate(startDate) : undefined,
+    endDate ? convertFewsPiDateTimeToJsDate(endDate) : undefined,
+    fullDomain.value,
+  )
 })
 
 const showBrush = computed(
