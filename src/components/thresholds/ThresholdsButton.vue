@@ -32,22 +32,20 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue'
-import type { WarningLevel } from '@/lib/thresholds'
-import { LevelThresholdCrossings } from '@deltares/fews-pi-requests'
+import { useWarningLevelsStore } from '@/stores/warningLevels'
+
+const warningLevelsStore = useWarningLevelsStore()
 
 interface Props {
-  warningLevels: WarningLevel[]
-  crossings: LevelThresholdCrossings[]
   active: boolean
 }
-
 const props = defineProps<Props>()
 
 const maxWarningLevelColor = computed(() => {
-  const maxWarningLevel = props.warningLevels.find(
+  const maxWarningLevel = warningLevelsStore.warningLevels.find(
     (warningLevel) => warningLevel.count > 0,
   )
-  const foundCrossing = props.crossings.find(
+  const foundCrossing = warningLevelsStore.thresholdCrossings.find(
     (crossing) => crossing.warningLevelId === maxWarningLevel?.id,
   )
   return foundCrossing?.color
