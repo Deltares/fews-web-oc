@@ -34,8 +34,8 @@
               prepend-icon="mdi-scale"
               :rules="[rules.noEmptySelection]"
             >
-              <template v-slot:selection="{ item, index }">
-                <span v-if="index < 4">{{ item.title }}</span>
+              <template v-slot:selection="{ internalItem, index }">
+                <span v-if="index < 4">{{ internalItem.title }}</span>
                 <span v-else-if="index === 4"
                   >... ({{ selectedParameterQualifiers.length }} selected)</span
                 >
@@ -61,8 +61,8 @@
               prepend-icon="mdi-map-marker-multiple"
               :rules="[rules.noEmptySelection]"
             >
-              <template v-slot:selection="{ item, index }">
-                <span v-if="index < 3">{{ item.title }}</span>
+              <template v-slot:selection="{ internalItem, index }">
+                <span v-if="index < 3">{{ internalItem.title }}</span>
                 <span v-else-if="index === 3"
                   >... ({{ selectedLocations.length }} selected)</span
                 >
