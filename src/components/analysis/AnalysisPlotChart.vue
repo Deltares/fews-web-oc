@@ -13,7 +13,6 @@
       :panHandler
       :settings="settings.charts.timeSeriesChart"
       :forecast-legend="chart.forecastLegend"
-      @update:x-domain="updateDomain"
     >
       <template #brush="{ margin: chartMargin }">
         <TimeSeriesChartBrush
@@ -70,7 +69,6 @@ import { toSnakeCase } from '@/lib/utils/toSnakeCase'
 import { fetchAndInlineCssAndFonts } from '@/lib/css'
 import { getSeriesByLegend } from '@/lib/legend'
 import { getSubplotWithDomain } from '@/lib/display'
-import { UpdateDomainEmits } from '@/lib/charts/domain'
 
 interface Props {
   chart: PlotChart
@@ -91,7 +89,7 @@ const userSettingsStore = useUserSettingsStore()
 
 const renderingChart = ref(false)
 const editing = ref(false)
-const visibleDomain = ref<[Date, Date]>()
+const visibleDomain = defineModel<[Date, Date]>('domain')
 
 const showBrush = computed(
   () => userSettingsStore.get('charts.brush')?.value === true,
@@ -103,16 +101,8 @@ const fullDomain = computed<[Date, Date] | undefined>(() =>
     : undefined,
 )
 
-const emit = defineEmits<UpdateDomainEmits>()
-
-const renderDomain = ref<[Date, Date]>()
-function updateDomain(domain: [Date, Date]) {
-  renderDomain.value = domain
-  emit('update:x-domain', domain)
-}
-
 const renderConfig = computed(() =>
-  getSubplotWithDomain(props.config, renderDomain.value),
+  getSubplotWithDomain(props.config, visibleDomain.value),
 )
 
 async function downloadChartImage() {

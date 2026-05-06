@@ -62,13 +62,13 @@
         <AnalysisCollectionCharts
           v-if="selectedCollection.charts.length"
           v-model:collection="selectedCollection"
+          v-model:domain="visibleDomain"
           :series="series"
           :settings="settings"
           :startTime="startTime"
           :endTime="endTime"
           class="flex-1-1"
           @addChart="addChart"
-          @update:x-domain="debouncedRefetchChartTimeSeries"
         />
         <v-card-text v-else> Select some data to display </v-card-text>
       </div>
@@ -189,19 +189,18 @@ const endTime = computed(() => {
   return settings.endTime
 })
 
+const visibleDomain = ref<[Date, Date]>()
 const domainOptions = ref({
   startTime: startTime.value,
   endTime: endTime.value,
 })
 
-watch([startTime, endTime], () => {
-  domainOptions.value = {
-    startTime: startTime.value,
-    endTime: endTime.value,
-  }
-})
-
 const { debouncedRefetchChartTimeSeries } = useFetchDomain(domainOptions)
+
+watch(visibleDomain, (newDomain) => {
+  if (!newDomain) return
+  debouncedRefetchChartTimeSeries(newDomain)
+})
 
 const timeSeriesOptions = computed(() => ({
   ...domainOptions.value,
