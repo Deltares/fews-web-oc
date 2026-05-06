@@ -29,7 +29,7 @@
         :elevation-chart-filter="elevationChartFilter"
         :locations-tooltip-filter="locationsTooltipFilter"
         :current-time="currentTime"
-        :settings="settings"
+        :settings="currSettings"
         :location="selectedLocation"
       />
     </div>
@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, useTemplateRef, watch } from 'vue'
+import { computed, defineAsyncComponent, reactive, ref, useTemplateRef, watch, watchEffect } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
@@ -128,6 +128,37 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
   taskRunId,
 )
 
+const currSettings = reactive<ComponentSettings>(structuredClone(props.settings))
+
+watch(
+  () => props.settings,
+  (newSettings) => {
+    Object.assign(currSettings, structuredClone(newSettings))
+    updateDisplaySettings(selectedLocations.value ?? [])
+  },
+  { deep: true },
+)
+
+function getDisplayEnabledFromLocationAttributes(
+  locations: Location[],
+  attributeId: string | undefined,
+  defaultVal: boolean,
+): boolean {
+  for (let location of locations) {
+    const attr = location?.attributes?.find((a) => a.id === attributeId)
+    if (attr !== undefined) {
+      if (defaultVal && attr.value === 'false') return false
+      if (!defaultVal && attr.value === 'true') return true;
+    }    
+  }
+  return defaultVal;
+}
+
+function updateDisplaySettings(locations: Location[]) {
+  currSettings.charts.timeSeriesChart.enabled = getDisplayEnabledFromLocationAttributes(locations, props.settings.charts.timeSeriesChart.locationEnabledAttribute, props.settings.charts.timeSeriesChart.enabled);
+  currSettings.charts.timeSeriesTable.enabled = getDisplayEnabledFromLocationAttributes(locations, props.settings.charts.timeSeriesTable.locationEnabledAttribute, props.settings.charts.timeSeriesTable.enabled);
+}
+
 const groupId = computed(
   () => props.topologyNode?.gridDisplaySelection?.groupId,
 )
@@ -137,14 +168,31 @@ const { locations, geojson } = useFilterLocations(
   filterIds,
   filterOptions,
 )
-watch(locations, (newLocations) =>
-  locationNamesStore.addLocationNames(newLocations ?? []),
+watch(locations, (newLocations) => {
+    locationNamesStore.addLocationNames(newLocations ?? []);
+  }
 )
 
-const selectedLocation = computed<Location | undefined>(() => {
+const selectedLocations = computed<Location[]>(() => {
   if (!props.locationIds) return undefined
-  const firstId = props.locationIds.split(',')[0]
-  return locations.value?.find((l) => l.locationId === firstId)
+  const locationIdList = props.locationIds.split(',') ?? [];
+  const locationList: Location[] = [];
+
+  for (let locId of locationIdList) {
+    let locMatch = locations.value?.find((l) => l.locationId === locId);
+    if (locMatch) {
+      locationList.push(locMatch);
+    }
+  }
+  return locationList;
+})
+
+const selectedLocation = computed<Location | undefined>(() => {
+  return selectedLocations.value[0];
+})
+
+watchEffect(() => {
+  updateDisplaySettings(selectedLocations.value ?? [])
 })
 
 const selectedCrossings = computed(() => {

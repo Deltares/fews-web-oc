@@ -83,7 +83,6 @@ import { computed, ref, StyleValue, watch } from 'vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type {
   filterActionsFilter,
-  Location,
   timeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
 
@@ -95,7 +94,6 @@ interface Props {
   informationContent?: string | null
   filter?: filterActionsFilter | timeSeriesGridActionsFilter
   settings: ChartsSettings
-  location?: Location
 }
 
 const props = defineProps<Props>()
@@ -168,16 +166,6 @@ watch(
   { immediate: true },
 )
 
-function getDisplayEnabled(
-  settingsEnabled: boolean,
-  attributeId: string | undefined,
-): boolean {
-  if (!attributeId) return settingsEnabled
-  const attr = props.location?.attributes?.find((a) => a.id === attributeId)
-  if (attr === undefined) return settingsEnabled
-  return attr.value !== 'false'
-}
-
 const displayTypeItems = computed<DisplayTypeItem[]>(() => {
   const noElevationCharts = !(
     (props.elevationChartDisplayconfig?.subplots?.length ?? 0) > 0
@@ -187,16 +175,10 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
   const noTooltip = props.informationContent === null
   const tooltipDefined = props.informationContent !== undefined
 
-  const chartEnabled = getDisplayEnabled(
-    props.settings.timeSeriesChart.enabled,
-    props.settings.timeSeriesChart.locationEnabledAttribute,
-  )
-  const tableEnabled = getDisplayEnabled(
-    props.settings.timeSeriesTable.enabled,
-    props.settings.timeSeriesTable.locationEnabledAttribute,
-  )
+  const chartEnabled = props.settings.timeSeriesChart.enabled
   const elevationChartEnabled =
     props.settings.verticalProfileChart.enabled && elevationChartsDefined
+  const tableEnabled = props.settings.timeSeriesTable.enabled
   const metaDataEnabled = props.settings.metaDataPanel.enabled && tooltipDefined
   return [
     {
