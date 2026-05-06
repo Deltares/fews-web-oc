@@ -27,7 +27,7 @@
             <v-btn
               v-bind="tooltipProps"
               :value="item.id"
-              class="tab text-none px-1"
+              class="tab px-1"
               size="small"
               :text="item.shortLabel"
               :icon="item.icon"

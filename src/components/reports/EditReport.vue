@@ -18,7 +18,7 @@
       variant="flat"
       @click="onSave"
       color="primary"
-      class="text-none mr-5"
+      class="mr-5"
       :disabled="!hasChanges"
     >
       Save

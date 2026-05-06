@@ -20,7 +20,6 @@
         <v-btn
           variant="text"
           v-bind="props"
-          class="text-none"
           aria-label="Layer information"
         >
           <span :class="{ 'text-decoration-line-through': completelyMissing }">

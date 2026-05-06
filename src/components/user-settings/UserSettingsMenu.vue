@@ -25,7 +25,6 @@
                 :key="item.value"
                 :value="item.value"
                 :disabled="item.disabled"
-                class="text-none"
                 :aria-label="`${setting.label} ${item.title}`"
               >
                 <v-icon v-if="item.icon">{{ item.icon }}</v-icon>

@@ -1,7 +1,7 @@
 <template>
   <div class="products-browser-panel h-100">
     <v-toolbar density="compact">
-      <v-btn prepend-icon="mdi-file-upload" class="text-none" variant="flat"
+      <v-btn prepend-icon="mdi-file-upload" variant="flat"
         >Upload</v-btn
       >
       <v-spacer />

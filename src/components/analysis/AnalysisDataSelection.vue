@@ -54,7 +54,6 @@
           density="compact"
           :active="showMap"
           text="Show map"
-          class="text-none"
           @click="showMap = !showMap"
         />
       </template>

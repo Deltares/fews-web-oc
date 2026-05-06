@@ -6,7 +6,6 @@
         :prepend-icon="icon"
         :text="text"
         variant="tonal"
-        class="text-none"
       />
     </template>
 
