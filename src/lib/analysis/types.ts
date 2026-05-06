@@ -103,6 +103,11 @@ export function validateDisplayCollections(data: DisplayCollections): boolean {
     return false
   }
 
+  if (data.collections.length === 0) {
+    console.error('At least one collection is required')
+    return false
+  }
+
   data.collections.forEach((collection, index) => {
     if (typeof collection.name !== 'string') {
       console.error(`Collection at index ${index} must have a string name`)

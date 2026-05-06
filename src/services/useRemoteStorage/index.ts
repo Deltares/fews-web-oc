@@ -21,13 +21,16 @@ export function useRemoteStorage<T>(
   options: UseRemoteStorageOptions<T>,
 ) {
   const { debounce = 1000, serializer = getJsonSerializer<T>() } = options
+  const isLoading = ref(true)
 
   // Use local storage if we have no user
   if (!configManager.authenticationIsEnabled) {
+    isLoading.value = false
     return {
       state: useStorage(key, defaultValueCallback(), undefined, {
         serializer,
       }),
+      isLoading,
     }
   }
 
@@ -45,6 +48,7 @@ export function useRemoteStorage<T>(
 
   // Load from server on mount
   onMounted(async () => {
+    isLoading.value = true
     try {
       const response = await piProvider.getUserSettings<T>(
         {
@@ -64,6 +68,8 @@ export function useRemoteStorage<T>(
       } else {
         console.error('Remote load failed', e)
       }
+    } finally {
+      isLoading.value = false
     }
   })
 
@@ -88,5 +94,5 @@ export function useRemoteStorage<T>(
     { debounce, deep: true },
   )
 
-  return { state }
+  return { state, isLoading }
 }
