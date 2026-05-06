@@ -14,16 +14,8 @@
       :settings="settings.charts.timeSeriesChart"
       :forecast-legend="chart.forecastLegend"
     >
-      <template #brush="{ margin: chartMargin }">
-        <TimeSeriesChartBrush
-          v-if="showBrush"
-          v-model:domain="visibleDomain"
-          :fullDomain="fullBrushDomain"
-          :config
-          :series="brushSeries"
-          :settings="settings.charts.timeSeriesChart"
-          :mainChartMargin="chartMargin"
-        />
+      <template #brush="{ margin }">
+        <slot name="brush" :margin />
       </template>
     </TimeSeriesChart>
     <!-- Used to render the chart for downloading as image. -->
@@ -46,12 +38,10 @@
 import AnalysisChartCard from '@/components/analysis/AnalysisChartCard.vue'
 import AnalysisChartEdit from '@/components/analysis/AnalysisChartEdit.vue'
 import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
-import TimeSeriesChartBrush from '@/components/charts/TimeSeriesChartBrush.vue'
 import type { PlotChart } from '@/lib/analysis'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
-import { useUserSettingsStore } from '@/stores/userSettings'
 import {
   Legend,
   type ZoomHandler,
@@ -73,8 +63,6 @@ import { getSubplotWithDomain } from '@/lib/display'
 interface Props {
   chart: PlotChart
   series: Record<string, Series>
-  brushSeries: Record<string, Series>
-  fullBrushDomain: [Date, Date]
   zoomHandler?: ZoomHandler
   panHandler?: PanHandler
   settings: ComponentSettings
@@ -87,15 +75,10 @@ const props = defineProps<Props>()
 const chartRef = useTemplateRef('render-chart')
 const legendRef = useTemplateRef('render-chart-legend')
 const configStore = useConfigStore()
-const userSettingsStore = useUserSettingsStore()
 
 const renderingChart = ref(false)
 const editing = ref(false)
 const visibleDomain = defineModel<[Date, Date]>('domain')
-
-const showBrush = computed(
-  () => userSettingsStore.get('charts.brush')?.value === true,
-)
 
 const renderConfig = computed(() =>
   getSubplotWithDomain(props.config, visibleDomain.value),

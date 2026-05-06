@@ -4,8 +4,6 @@
     :chart
     :config
     :series
-    :brushSeries
-    :fullBrushDomain
     :settings
     :zoomHandler
     :panHandler
@@ -13,7 +11,19 @@
     :endTime
     v-bind="$attrs"
     @download="downloadChart"
-  />
+  >
+    <template #brush="{ margin }">
+      <TimeSeriesChartBrush
+        v-if="showBrush"
+        v-model:domain="visibleDomain"
+        :fullDomain="fullBrushDomain"
+        :config
+        :series="brushSeries"
+        :settings="settings.charts.timeSeriesChart"
+        :mainChartMargin="margin"
+      />
+    </template>
+  </AnalysisPlotChart>
   <TimeSeriesFileDownloadComponent
     v-model="showDownloadDialog"
     :filter
@@ -24,6 +34,7 @@
 
 <script setup lang="ts">
 import AnalysisPlotChart from '@/components/analysis/AnalysisPlotChart.vue'
+import TimeSeriesChartBrush from '@/components/charts/TimeSeriesChartBrush.vue'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import type { FilterChart } from '@/lib/analysis'
@@ -50,6 +61,10 @@ const props = defineProps<Props>()
 
 const userSettings = useUserSettingsStore()
 const showDownloadDialog = ref(false)
+
+const showBrush = computed(
+  () => userSettings.get('charts.brush')?.value === true,
+)
 
 const xDomain = computed(
   () =>
