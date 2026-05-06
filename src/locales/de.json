@@ -62,7 +62,8 @@
     "importStatus": "Import Status",
     "nonCurrentData": "Nicht-Aktuelle Daten",
     "runTask": "Aufgabe ausführen",
-    "documentFile": "Informationen"
+    "documentFile": "Informationen",
+    "share": "Teilen",
   },
   "workflow": {
     "expectedRuntime": "Erwartete Laufzeit",
@@ -83,7 +84,6 @@
     "overranExpectedTimeBy": "Erwartete Zeit überschritten um"
   },
   "share": {
-    "title": "Teilen",
     "copyLink": "Link kopieren",
     "linkCopied": "Kopiert",
     "linkCopyFailed": "Link konnte nicht kopiert werden"

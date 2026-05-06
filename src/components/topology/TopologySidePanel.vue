@@ -78,6 +78,7 @@ import NonCurrentDataSidePanel from '@/components/sidepanel/NonCurrentDataSidePa
 import RunTasksSidePanel from '@/components/sidepanel/RunTasksSidePanel.vue'
 import TaskOverviewSidePanel from '@/components/sidepanel/TaskOverviewSidePanel.vue'
 import ThresholdsSidePanel from '@/components/sidepanel/ThresholdsSidePanel.vue'
+import ShareSidePanel from '@/components/sidepanel/ShareSidePanel.vue'
 
 const { t } = useI18n()
 const configStore = useConfigStore()
@@ -94,8 +95,9 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
+// FIXME: Remove 'share' once SidePanel configuration is implemented for it.
 type GeneralSidePanelType = Exclude<
-  keyof SidePanelConfig,
+  keyof SidePanelConfig | 'share',
   'exportStatus' | 'logDisplay'
 >
 type SpecialSidePanelType = 'thresholds'
@@ -132,12 +134,20 @@ const generalSidePanels: GeneralSidePanel[] = [
     icon: 'mdi-information-outline',
     component: MoreInfoSidePanel,
   },
+  {
+    type: 'share',
+    icon: 'mdi-share-variant',
+    component: ShareSidePanel,
+  },
 ]
 
 const enabledGeneralSidePanels = computed<GeneralSidePanel[]>(() => {
   const sidePanelConfig = configStore.general.sidePanel
+
+  // FIXME: For now we always enable share, should be removed once SidePanel configuration is implemented for it.
   return generalSidePanels.filter(
-    (sidePanel) => sidePanelConfig?.[sidePanel.type]?.enabled,
+    (sidePanel) =>
+      sidePanel.type === 'share' || sidePanelConfig?.[sidePanel.type]?.enabled,
   )
 })
 const hasMultipleEnabledSidePanels = computed<boolean>(

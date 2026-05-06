@@ -62,7 +62,8 @@
     "importStatus": "Import status",
     "nonCurrentData": "Non-current data",
     "runTask": "Run tasks",
-    "documentFile": "More info"
+    "documentFile": "More info",
+    "share": "Share"
   },
   "workflow": {
     "expectedRuntime": "Expected runtime",
@@ -83,7 +84,6 @@
     "overranExpectedTimeBy": "Overran expected time by"
   },
   "share": {
-    "title": "Share",
     "copyLink": "Copy link",
     "linkCopied": "Copied",
     "linkCopyFailed": "Failed to copy link"
