@@ -1,8 +1,5 @@
 <template>
-  <SidePanelContent
-    :title="t('sidePanel.share')"
-    @close="emit('close')"
-  >
+  <SidePanelContent :title="t('sidePanel.share')" @close="emit('close')">
     <ShareMenu />
   </SidePanelContent>
 </template>

@@ -90,7 +90,7 @@ export const useUserSettingsStore = defineStore(
           return WheelMode.X
       }
     })
-    
+
     function listByGroup(group: string) {
       return items.value.filter((item) => item.group === group)
     }
