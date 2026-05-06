@@ -156,10 +156,6 @@ async function downloadChartImage() {
 </script>
 
 <style scoped>
-:deep(.chart-with-chips) {
-  height: 400px;
-}
-
 .render-chart-container {
   visibility: hidden;
   position: fixed;
