@@ -30,12 +30,6 @@
       <div v-show="tab === 'workflows'">
         <AnalysisWorkflows :workflows="workflows" @addChart="addChart" />
       </div>
-      <div v-show="tab === 'settings'">
-        <AnalysisSettings
-          :collection="selectedCollection"
-          @delete-collection="deleteSelectedCollection"
-        />
-      </div>
     </v-navigation-drawer>
     <div class="flex-0-0">
       <v-toolbar-items class="flex-column mt-2 border-e border-t border-b">
@@ -57,6 +51,11 @@
           v-model:selectedCollectionName="selectedCollectionName"
           :collections="collections"
           :config="config"
+        />
+        <AnalysisDateRange
+          :collection="selectedCollection"
+          :startTime="startTime"
+          :endTime="endTime"
         />
       </v-card-title>
       <div class="w-100 overflow-y-auto">
@@ -83,7 +82,7 @@ import AnalysisCollectionCharts from './AnalysisCollectionCharts.vue'
 import AnalysisCollection from '@/components/analysis/AnalysisCollection.vue'
 import AnalysisFunctions from '@/components/analysis/functions/AnalysisFunctions.vue'
 import AnalysisWorkflows from '@/components/analysis/workflows/AnalysisWorkflows.vue'
-import AnalysisSettings from '@/components/analysis/AnalysisSettings.vue'
+import AnalysisDateRange from '@/components/analysis/AnalysisDateRange.vue'
 import type {
   ActionRequest,
   BoundingBox,
@@ -99,7 +98,6 @@ import {
 import {
   type Chart,
   type Collection,
-  createCollection,
   hasValidFilterCharts,
 } from '@/lib/analysis'
 import { useUserSettingsStore } from '@/stores/userSettings'
@@ -148,19 +146,6 @@ const selectedCollection = computed<Collection>(() => {
   }
   return collection
 })
-
-function deleteSelectedCollection() {
-  const index = props.collections.findIndex(
-    (c) => c.name === selectedCollectionName.value,
-  )
-  if (index !== -1) {
-    props.collections.splice(index, 1)
-    if (props.collections.length === 0) {
-      props.collections.push(createCollection('Default', props.config))
-    }
-    selectedCollectionName.value = props.collections[0].name
-  }
-}
 
 function addChart(chart: Chart) {
   selectedCollection.value.charts = [chart, ...selectedCollection.value.charts]
@@ -273,7 +258,6 @@ const tabs = computed(() =>
       text: 'Analysis Workflows',
       enabled: workflows.value.length > 0,
     },
-    { value: 'settings', icon: 'mdi-cog-outline', text: 'Settings' },
   ].filter((tab) => tab.enabled !== false),
 )
 

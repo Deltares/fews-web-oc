@@ -10,6 +10,40 @@
     density="compact"
     max-width="250"
   >
+    <template #item="{ item, props }">
+      <v-list-item v-bind="props" :title="item.title">
+        <template #append>
+          <v-menu :close-on-content-click="false">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" icon="mdi-delete" size="small" />
+            </template>
+            <template #default="{ isActive }">
+              <v-card
+                title="Delete Collection"
+                text="Are you sure you want to delete this collection?"
+              >
+                <v-card-actions>
+                  <v-spacer />
+                  <v-btn
+                    variant="flat"
+                    color="primary"
+                    @click="isActive.value = false"
+                    text="cancel"
+                  />
+                  <v-btn
+                    text="delete"
+                    @click="
+                      (deleteCollection(item.value), (isActive.value = false))
+                    "
+                  />
+                </v-card-actions>
+              </v-card>
+            </template>
+          </v-menu>
+        </template>
+      </v-list-item>
+    </template>
+
     <template #append-item>
       <v-divider class="mt-2" />
       <v-list-item
@@ -71,5 +105,16 @@ function addCollection(): void {
   }
   newCollectionName.value = ''
   dialog.value = false
+}
+
+function deleteCollection(collectionName: string) {
+  const index = props.collections.findIndex((c) => c.name === collectionName)
+  if (index !== -1) {
+    props.collections.splice(index, 1)
+    if (props.collections.length === 0) {
+      props.collections.push(createCollection('Default', props.config))
+    }
+    selectedCollectionName.value = props.collections[0].name
+  }
 }
 </script>
