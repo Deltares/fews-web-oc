@@ -48,6 +48,9 @@ export class AuthenticationManager {
       const base = `${import.meta.env.BASE_URL}`
       const redirect = window.location.pathname.slice(base.length)
       window.location.href = base + 'login?redirect=' + redirect
+      // The following return ensures no further code is executed after signinRedirect,
+      // as it performs a full-page navigation and interrupts the current execution.
+      return
     }
   }
 
