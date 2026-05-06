@@ -209,6 +209,13 @@ const domainOptions = ref({
   endTime: endTime.value,
 })
 
+watch([startTime, endTime], () => {
+  domainOptions.value = {
+    startTime: startTime.value,
+    endTime: endTime.value,
+  }
+})
+
 const { debouncedRefetchChartTimeSeries } = useFetchDomain(domainOptions)
 
 const timeSeriesOptions = computed(() => ({
