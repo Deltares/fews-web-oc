@@ -1,12 +1,7 @@
 <template>
   <v-menu :close-on-content-click="false" eager>
     <template #activator="{ props }">
-      <v-btn
-        v-bind="props"
-        :prepend-icon="icon"
-        :text="text"
-        variant="tonal"
-      />
+      <v-btn v-bind="props" :prepend-icon="icon" :text="text" variant="tonal" />
     </template>
 
     <template v-for="(_, slot) of slots" v-slot:[slot]="scope">

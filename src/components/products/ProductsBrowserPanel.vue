@@ -1,9 +1,7 @@
 <template>
   <div class="products-browser-panel h-100">
     <v-toolbar density="compact">
-      <v-btn prepend-icon="mdi-file-upload" variant="flat"
-        >Upload</v-btn
-      >
+      <v-btn prepend-icon="mdi-file-upload" variant="flat">Upload</v-btn>
       <v-spacer />
       <v-btn prepend-icon="mdi-magnify"></v-btn>
       <v-btn prepend-icon="mdi-filter-variant">

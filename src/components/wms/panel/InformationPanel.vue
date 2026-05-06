@@ -17,11 +17,7 @@
       v-if="showLayer"
     >
       <template v-slot:activator="{ props, isActive }">
-        <v-btn
-          variant="text"
-          v-bind="props"
-          aria-label="Layer information"
-        >
+        <v-btn variant="text" v-bind="props" aria-label="Layer information">
           <span :class="{ 'text-decoration-line-through': completelyMissing }">
             {{ title }}
           </span>

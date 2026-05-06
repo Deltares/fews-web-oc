@@ -11,7 +11,7 @@
           :active="displayType === item.value"
           size="small"
           @click="displayType = item.value"
-        > 
+        >
           <v-icon>{{ item.icon }}</v-icon>
         </v-btn>
       </v-toolbar-items>
@@ -98,7 +98,6 @@ watch(
   },
   { deep: true },
 )
-
 
 function onClose(): void {
   emit('close', props.objectId)
