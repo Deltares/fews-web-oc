@@ -38,7 +38,7 @@ export async function postWhatIfScenario(
   } catch (error) {
     console.error(error)
     return {
-      error: 'Error while posting WhatIf scenario',
+      error: 'Error while posting what-if scenario',
       status: 'error',
     }
   }
