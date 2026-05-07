@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { useDark } from '@vueuse/core'
+import { useDark } from '@/services/useDark'
 import { watch, onMounted, useTemplateRef } from 'vue'
 
 interface Props {

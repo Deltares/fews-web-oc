@@ -1,7 +1,7 @@
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { useBaseMapsStore } from '@/stores/baseMaps'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { useDark } from '@vueuse/core'
+import { useDark } from '@/services/useDark'
 import { computed } from 'vue'
 
 export function useBaseMap() {

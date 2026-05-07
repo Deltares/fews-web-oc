@@ -21,7 +21,7 @@ import { useConfigStore } from '@/stores/config.ts'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { useUserSettingsStore } from './stores/userSettings'
 import { useTheme } from 'vuetify'
-import { useDark, usePreferredDark, useToggle } from '@vueuse/core'
+import { useDark, usePreferredDark } from '@vueuse/core'
 import { useTaskRunMonitorStore } from './stores/taskRunMonitor'
 
 import '@/assets/fews-flags.css'
@@ -35,10 +35,9 @@ import { MapLayerConfig } from '@deltares/fews-pi-requests'
 const route = useRoute()
 const configStore = useConfigStore()
 const userSettingsStore = useUserSettingsStore()
-const { change } = useTheme()
+const { change: changeTheme } = useTheme()
 const prefersDark = usePreferredDark()
 const isDark = useDark()
-const toggleDark = useToggle(isDark)
 
 // Initialise task run monitoring.
 useTaskRunMonitorStore()
@@ -107,19 +106,19 @@ function updateUserSettingBaseMaps(config: MapLayerConfig) {
 
 watchEffect(() => {
   const themeSetting = userSettingsStore.get('ui.theme')?.value
-  if (typeof themeSetting === 'string') {
-    if (themeSetting === 'auto') {
-      setTheme(prefersDark.value)
-    } else {
-      setTheme(themeSetting === 'dark')
-    }
+  if (typeof themeSetting !== 'string') return
+
+  if (themeSetting === 'auto') {
+    setTheme(prefersDark.value)
+  } else {
+    setTheme(themeSetting === 'dark')
   }
 })
 
 function setTheme(setDark: boolean): void {
-  change(setDark ? 'dark' : 'light')
+  changeTheme(setDark ? 'dark' : 'light')
   if (setDark !== isDark.value) {
-    toggleDark()
+    isDark.value = setDark
   }
 }
 </script>
