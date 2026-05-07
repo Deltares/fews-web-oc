@@ -1,9 +1,11 @@
 <template>
   <v-layout id="app">
-    <v-main id="main" class="d-flex align-center justify-center">
-      <Suspense>
-        <router-view :hasAppBar="false" :hasSideBar="false" />
-      </Suspense>
+    <v-main id="main">
+      <v-sheet class="w-100 h-100">
+        <Suspense>
+          <router-view :hasAppBar="false" :hasSideBar="false" />
+        </Suspense>
+      </v-sheet>
     </v-main>
   </v-layout>
 </template>
