@@ -121,16 +121,17 @@ function updateMinZoom() {
   minZoom.value = Math.max(-2, computedMinZoom)
 }
 
-function transformRequest(
+async function transformRequest(
   url: string,
   resourceType?: ResourceType,
-): RequestParameters {
+): Promise<RequestParameters> {
   if (!configManager.authenticationIsEnabled)
     return {
       url,
     }
   if (resourceType === 'Image' && url.indexOf('GetMap') > -1) {
-    const requestAuthHeaders = authenticationManager.getAuthorizationHeaders()
+    const requestAuthHeaders =
+      await authenticationManager.getAuthorizationHeaders()
     return {
       url,
       headers: requestAuthHeaders,
