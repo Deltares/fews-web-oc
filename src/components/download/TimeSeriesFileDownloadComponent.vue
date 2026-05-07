@@ -270,24 +270,19 @@ function getDownloadFileUrl(downloadFormat: DocumentFormat) {
 
 async function downloadFile(downloadFormat: DocumentFormat) {
   const url = getDownloadFileUrl(downloadFormat)
-  const accessToken = authenticationManager.getAccessToken()
+  const headers = await authenticationManager.getAuthorizationHeaders()
 
-  await downloadFileSafe(
-    url.href,
-    fileNameInput.value,
-    downloadFormat,
-    accessToken,
-  )
+  await downloadFileSafe(url.href, fileNameInput.value, downloadFormat, headers)
 }
 
 async function downloadFileSafe(
   url: string,
   fileName: string,
   documentFormat: DocumentFormat,
-  accessToken: string,
+  headers: Headers,
 ) {
   try {
-    await downloadFileAttachment(url, fileName, documentFormat, accessToken)
+    await downloadFileAttachment(url, fileName, documentFormat, headers)
   } catch (error) {
     if (error instanceof Error) {
       alertStore.addAlert({

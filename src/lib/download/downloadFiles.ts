@@ -28,29 +28,26 @@ export async function downloadFileAttachment(
   url: string,
   fileName: string,
   documentFormat: DocumentFormat,
-  accessToken: string,
+  headers: Headers,
 ) {
-  const headers = new Headers()
-  if (accessToken) {
-    const extension = getExtension(documentFormat)
-    const downloadFileName = fileName + extension
-    await downloadFileWithFetch(headers, url, downloadFileName, accessToken)
-  }
-  if (!accessToken || accessToken == '') downloadWithLink(url, fileName)
+  const extension = getExtension(documentFormat)
+  const downloadFileName = fileName + extension
+  await downloadFileWithFetch(url, downloadFileName, headers)
 }
 
 export async function downloadFileWithXhr(
   url: string | URL,
   fileName: string,
-  accessToken: string,
+  headers: Headers,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const req = new XMLHttpRequest()
     req.responseType = 'blob'
     req.open('GET', url)
-    if (accessToken !== '') {
-      req.setRequestHeader('Authorization', `Bearer ${accessToken}`)
-    }
+
+    headers.forEach((value, key) => {
+      req.setRequestHeader(key, value)
+    })
 
     req.onload = () => {
       if (req.status < 200 || req.status >= 300) {
@@ -86,12 +83,10 @@ export async function downloadFileWithXhr(
 }
 
 async function downloadFileWithFetch(
-  headers: Headers,
   url: string,
   fileName: string,
-  accessToken: string,
+  headers: Headers,
 ) {
-  headers.append('Authorization', `Bearer ${accessToken}`)
   const response = await fetch(url, {
     method: 'GET',
     headers: headers,
@@ -109,12 +104,6 @@ function clickDownloadBlob(blob: Blob, fileName: string) {
   const blobUrl = window.URL.createObjectURL(blob)
   clickDownloadUrl(blobUrl, fileName)
   window.URL.revokeObjectURL(blobUrl)
-}
-
-function downloadWithLink(url: string, fileName: string) {
-  const encodedFileName = encodeURIComponent(fileName)
-  url = `${url}&downloadAsFile=${encodedFileName}`
-  clickDownloadUrl(url, fileName)
 }
 
 export function clickDownloadUrl(url: string, fileName: string) {

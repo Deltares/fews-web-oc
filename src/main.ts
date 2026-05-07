@@ -56,7 +56,7 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
     }
     document.head.appendChild(manifestLink)
     if (configManager.authenticationIsEnabled) {
-      await authenticationManager.init(configManager.getUserManagerSettings())
+      authenticationManager.init(configManager.getUserManagerSettings())
     }
     const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en')
     await setI18nLanguage(i18n, locale)

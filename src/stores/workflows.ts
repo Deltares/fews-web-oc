@@ -79,12 +79,9 @@ export const useWorkflowsStore = defineStore('workflows', {
           .replaceAll('-', '')
           .replaceAll(':', '')
         const fileName = `${now}${options?.fileName ?? '_DATA'}`
+        const headers = await authenticationManager.getAuthorizationHeaders()
 
-        await downloadFileWithXhr(
-          url.toString(),
-          fileName,
-          authenticationManager.getAccessToken(),
-        )
+        await downloadFileWithXhr(url.toString(), fileName, headers)
       } else if (type === WorkflowType.RunTask) {
         return await webServiceProvider.postRunTask(filter, options?.body ?? '')
       }
