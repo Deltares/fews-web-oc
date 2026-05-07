@@ -35,6 +35,7 @@
           v-tooltip:bottom="state.tooltip"
           @click.stop="copyToClipboard"
           density="comfortable"
+          aria-label="Copy to clipboard"
         />
       </template>
     </v-text-field>
