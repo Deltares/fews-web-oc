@@ -41,7 +41,7 @@
     />
 
     <v-spacer />
-    <div class="d-flex">
+    <div class="d-flex ga-2">
       <v-spacer />
       <AnalysisAddToButton
         :charts

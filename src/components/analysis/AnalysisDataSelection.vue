@@ -74,7 +74,12 @@
       </template>
     </SelectCard>
 
-    <div class="d-flex pt-2">
+    <div class="d-flex pt-2 align-center">
+      <AnalysisDataDownload
+        :filters="filters"
+        :startTime="startTime"
+        :endTime="endTime"
+      />
       <v-spacer />
       <AnalysisAddToButton
         :charts
@@ -98,6 +103,7 @@ import SelectCard from '@/components/general/SelectCard.vue'
 import AnalysisMap from '@/components/analysis/AnalysisMap.vue'
 import AnalysisAddToButton from '@/components/analysis/AnalysisAddToButton.vue'
 import AnalysisAttributesFilter from '@/components/analysis/AnalysisAttributesFilter.vue'
+import AnalysisDataDownload from '@/components/analysis/AnalysisDataDownload.vue'
 import LocationsLayer from '@/components/wms/LocationsLayer.vue'
 import { computed, ref, watch } from 'vue'
 import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl'
@@ -118,6 +124,8 @@ interface Props {
   filters?: Filter[]
   boundingBox?: BoundingBox
   isActive?: boolean
+  startTime: Date
+  endTime: Date
 }
 
 const props = defineProps<Props>()

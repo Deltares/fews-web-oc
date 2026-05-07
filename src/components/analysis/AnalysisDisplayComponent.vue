@@ -13,6 +13,8 @@
           :filters="config.filters"
           :boundingBox="boundingBox"
           :config="config.selectionPanel"
+          :startTime="startTime"
+          :endTime="endTime"
           @addChart="addChart"
         />
       </div>

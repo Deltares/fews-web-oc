@@ -1,6 +1,7 @@
 import type {
   CorrelationFilter,
   TimeSeriesFilter,
+  TimeSeriesTopologyActionsFilter,
   filterActionsFilter,
   timeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
@@ -12,6 +13,7 @@ export type Filter =
   | TimeSeriesFilter
   | DataDownloadFilter
   | CorrelationFilter
+  | TimeSeriesTopologyActionsFilter
 
 export function isFilterActionsFilter(
   filter: Filter,
@@ -38,4 +40,13 @@ export function isCorrelationFilter(
   filter: Filter,
 ): filter is CorrelationFilter {
   return (filter as CorrelationFilter).timeSeriesIdXaxis !== undefined
+}
+
+export function isTimeSeriesTopologyActionsFilter(
+  filter: Filter,
+): filter is TimeSeriesTopologyActionsFilter {
+  return (
+    (filter as TimeSeriesTopologyActionsFilter).timeSeriesDisplayIndex !==
+    undefined
+  )
 }
