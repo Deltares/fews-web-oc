@@ -1,31 +1,73 @@
 <template>
-  <v-text-field
-    :model-value="url"
-    readonly
-    hide-details
-    density="compact"
-    ref="field"
-    @focus="selectEmbedUrl"
-    :disabled="!url"
-  >
-    <template #append>
-      <v-btn
-        :icon="state.icon"
-        :color="state.color"
-        v-tooltip:bottom="state.tooltip"
-        @click.stop="copyToClipboard"
-        density="comfortable"
+  <div class="d-flex flex-column ga-4">
+    <div>
+      <v-tabs v-model="tab">
+        <v-tab
+          value="link"
+          :text="t('share.link')"
+          prepend-icon="mdi-link-variant"
+          class="text-none"
+        />
+        <v-tab
+          value="iframe"
+          :text="t('share.iframe')"
+          prepend-icon="mdi-code-tags"
+          class="text-none"
+        />
+      </v-tabs>
+      <v-divider />
+    </div>
+
+    <v-text-field
+      :model-value="displayValue"
+      readonly
+      hide-details
+      density="compact"
+      ref="field"
+      @focus="selectEmbedUrl"
+      :disabled="!url"
+      class="text-mono"
+    >
+      <template #append>
+        <v-btn
+          :icon="state.icon"
+          :color="state.color"
+          v-tooltip:bottom="state.tooltip"
+          @click.stop="copyToClipboard"
+          density="comfortable"
+        />
+      </template>
+    </v-text-field>
+
+    <div v-if="tab === 'iframe'" class="d-flex ga-2">
+      <v-number-input
+        v-model.number="iframeWidth"
+        :min="1"
+        label="Width"
+        density="compact"
+        hide-details
+        control-variant="stacked"
+        variant="outlined"
       />
-    </template>
-  </v-text-field>
+      <v-number-input
+        v-model.number="iframeHeight"
+        :min="1"
+        label="Height"
+        density="compact"
+        hide-details
+        control-variant="stacked"
+        variant="outlined"
+      />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
+import { ref, computed, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 interface Props {
-  url?: string
+  url: string
 }
 const props = defineProps<Props>()
 
@@ -41,16 +83,36 @@ const initialState = {
 
 const state = ref({ ...initialState })
 
+const tab = ref<'link' | 'iframe'>('link')
+const iframeWidth = ref(600)
+const iframeHeight = ref(400)
+
+const displayValue = computed(() => {
+  switch (tab.value) {
+    case 'link':
+      return props.url
+    case 'iframe':
+      return `<iframe src="${props.url}" width="${iframeWidth.value}" height="${iframeHeight.value}" frameborder="0" allowfullscreen></iframe>`
+  }
+})
+
+watch(tab, () => {
+  resetCopyState()
+})
+
+function resetCopyState() {
+  state.value = { ...initialState }
+}
+
 function delayedResetCopyState() {
   setTimeout(() => {
-    state.value = { ...initialState }
+    resetCopyState()
   }, 3000)
 }
 
 async function copyToClipboard() {
-  if (!props.url) return
   try {
-    await navigator.clipboard.writeText(props.url)
+    await navigator.clipboard.writeText(displayValue.value)
     state.value = {
       icon: 'mdi-check',
       tooltip: t('share.linkCopied'),

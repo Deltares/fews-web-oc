@@ -4,7 +4,7 @@
 
     <v-card flat border class="my-4">
       <v-toolbar density="compact">
-        <div class="ms-4">User settings</div>
+        <div class="ms-4">Settings</div>
       </v-toolbar>
       <v-divider />
 
