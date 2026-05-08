@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { describeFromVersion } from '../utils/versionedTest'
 
 const base = '/topology/early_warning/node'
 const url = `${base}/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1`
@@ -10,7 +11,7 @@ async function copyToClipboard(page: Page) {
   return await page.evaluate(() => navigator.clipboard.readText())
 }
 
-test.describe('Share', () => {
+describeFromVersion('202402', 'Share', () => {
   test.beforeEach(async ({ page, context }) => {
     context.grantPermissions(['clipboard-read', 'clipboard-write'])
 
