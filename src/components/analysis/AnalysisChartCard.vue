@@ -7,10 +7,12 @@
         <template #activator="{ props }">
           <v-btn
             icon="mdi-dots-horizontal"
-            variant="text"
+            size="small"
             density="compact"
             v-bind="props"
-          />
+          >
+            <v-icon size="small">mdi-dots-horizontal</v-icon>
+          </v-btn>
         </template>
         <v-list density="compact">
           <v-list-item

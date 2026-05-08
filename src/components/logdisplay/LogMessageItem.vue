@@ -24,11 +24,12 @@
               <v-btn
                 v-if="!isEditing"
                 density="compact"
-                icon="mdi-dots-horizontal"
-                variant="plain"
+                icon
                 size="small"
                 v-bind="props"
-              />
+              >
+                <v-icon size="small">mdi-dots-horizontal</v-icon>
+              </v-btn>
             </template>
             <v-list density="compact">
               <v-list-item

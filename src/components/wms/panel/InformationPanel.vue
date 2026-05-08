@@ -1,12 +1,9 @@
 <template>
   <ControlChip :class="{ 'pe-0': showLayer }">
-    <v-btn
-      @click="showLayer = !showLayer"
-      density="compact"
-      variant="plain"
-      icon
-    >
-      <v-icon>{{ showLayer ? 'mdi-layers' : 'mdi-layers-off' }}</v-icon>
+    <v-btn @click="showLayer = !showLayer" density="compact" icon>
+      <v-icon size="large">{{
+        showLayer ? 'mdi-layers' : 'mdi-layers-off'
+      }}</v-icon>
     </v-btn>
 
     <slot v-if="showLayer" name="chip-prepend" />
