@@ -4,11 +4,17 @@
 
     <v-card flat border class="my-4">
       <v-toolbar density="compact">
-        <div class="ms-4">{{ t('share.applySettings') }}</div>
+        <v-switch
+          v-model="applySettings"
+          :label="t('share.applySettings')"
+          class="ms-4"
+          color="primary"
+          hide-details
+        />
       </v-toolbar>
       <v-divider />
 
-      <v-list density="compact" class="py-0">
+      <v-list v-if="applySettings" density="compact" class="py-0">
         <v-list-group v-for="group in store.groups" :key="group.id">
           <template #activator="{ props }">
             <v-list-item
@@ -56,6 +62,7 @@ const route = useRoute()
 const store = useUserSettingsStore()
 const { t } = useI18n()
 
+const applySettings = ref(false)
 const settings = ref(store.items.map((item) => ({ ...item })))
 
 function getSettingsByGroup(groupId: string) {
@@ -75,15 +82,16 @@ const embedUrl = computed(() => {
     url.pathname = '/embed' + url.pathname
   }
 
-  const params = url.searchParams
-
-  settings.value.forEach((setting) => {
-    if (setting.type === 'boolean') {
-      params.set(setting.id, setting.value ? 'true' : 'false')
-    } else if (setting.type === 'oneOfMultiple') {
-      params.set(setting.id, setting.value)
-    }
-  })
+  if (applySettings.value) {
+    const params = url.searchParams
+    settings.value.forEach((setting) => {
+      if (setting.type === 'boolean') {
+        params.set(setting.id, setting.value ? 'true' : 'false')
+      } else if (setting.type === 'oneOfMultiple') {
+        params.set(setting.id, setting.value)
+      }
+    })
+  }
 
   return url.toString()
 })
