@@ -1,14 +1,20 @@
 import './assets/config-error.css'
 
 ;(function () {
-  var marker = 'config-error.html'
+  var marker = 'error.html'
+  var legacyMarker = 'error.html'
   var path = window.location.pathname
 
-  if (path.indexOf(marker) === -1) {
+  var markerIndex = path.indexOf(marker)
+  if (markerIndex === -1) {
+    markerIndex = path.indexOf(legacyMarker)
+  }
+
+  if (markerIndex === -1) {
     return
   }
 
-  var appRoot = path.slice(0, path.indexOf(marker))
+  var appRoot = path.slice(0, markerIndex)
   if (!appRoot.endsWith('/')) {
     appRoot += '/'
   }

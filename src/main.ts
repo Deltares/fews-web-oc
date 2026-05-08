@@ -87,6 +87,8 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
       console.error(
         'Reason: Config file missing or server returned non-200 status',
       )
+    } else if (configError.message.includes('Invalid app-config.json')) {
+      console.error('Reason: Invalid app-config.json content')
     } else {
       console.error('Reason: Unknown startup error')
     }
