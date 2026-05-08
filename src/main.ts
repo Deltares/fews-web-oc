@@ -32,7 +32,22 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
         `Failed to load app-config.json (${res.status} ${res.statusText})`,
       )
     }
-    return res.json()
+    const contentType = res.headers.get('Content-Type') ?? ''
+    if (contentType.includes('text/html')) {
+      throw new Error(
+        'app-config.json is missing — server returned an HTML page instead of JSON',
+      )
+    }
+    return res.text().then((text) => {
+      try {
+        return JSON.parse(text)
+      } catch (err) {
+        throw new Error(
+          'Invalid JSON in app-config.json: ' +
+            (err instanceof Error ? err.message : String(err)),
+        )
+      }
+    })
   })
   .then(async (data) => {
     configManager.update(data)
@@ -93,12 +108,16 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
       console.error('Reason: Unknown startup error')
     }
 
-    const redirectDelayMs = import.meta.env.DEV ? 8000 : 2000
+    const redirectDelayMs = import.meta.env.DEV ? 3000 : 1000
     console.error(
       `Redirecting to config-error page in ${redirectDelayMs} ms...`,
     )
 
-    // Delay redirect so console output remains visible.
+    sessionStorage.setItem(
+      'configError',
+      configError.message || String(configError),
+    )
+
     window.setTimeout(() => {
       window.location.replace(`${import.meta.env.BASE_URL}error.html`)
     }, redirectDelayMs)

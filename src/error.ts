@@ -7,8 +7,21 @@ import './assets/config-error.css'
     return
   }
 
-  if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+  const navEntries = performance.getEntriesByType(
+    'navigation',
+  ) as PerformanceNavigationTiming[]
+  const isReload = navEntries.length > 0 && navEntries[0].type === 'reload'
+
+  if (isReload) {
     window.location.replace(import.meta.env.BASE_URL)
     return
+  }
+
+  const errorMessage = sessionStorage.getItem('configError')
+  if (errorMessage) {
+    const errorDetailsElement = document.getElementById('error-message')
+    if (errorDetailsElement) {
+      errorDetailsElement.textContent = errorMessage
+    }
   }
 })()
