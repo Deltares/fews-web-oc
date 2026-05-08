@@ -43,6 +43,14 @@ export default defineConfig(({ mode }) => {
       __GIT_TAG__: JSON.stringify(commitTag),
       __BUILD_DATE__: JSON.stringify(buildDate),
     },
+    build: {
+      rollupOptions: {
+        input: {
+          main: 'index.html',
+          error: 'error.html',
+        },
+      },
+    },
     server: {
       port: 5173,
       proxy: {

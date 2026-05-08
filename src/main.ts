@@ -26,7 +26,14 @@ app.use(pinia)
 app.use(vuetify)
 
 fetch(`${import.meta.env.BASE_URL}app-config.json`)
-  .then((res) => res.json())
+  .then((res) => {
+    if (!res.ok) {
+      throw new Error(
+        `Failed to load app-config.json (${res.status} ${res.statusText})`,
+      )
+    }
+    return res.json()
+  })
   .then(async (data) => {
     configManager.update(data)
     const link = document.createElement('link')
@@ -63,4 +70,34 @@ fetch(`${import.meta.env.BASE_URL}app-config.json`)
     app.use(i18n)
     app.use(router)
     app.mount('#app')
+  })
+  .catch((err) => {
+    const configError = err instanceof Error ? err : new Error(String(err))
+
+    console.error('Config Load Error:', configError)
+    if (configError.stack) {
+      console.error('Config Load Error Stack:', configError.stack)
+    }
+
+    if (configError instanceof SyntaxError) {
+      console.error('Reason: Invalid JSON syntax in app-config.json')
+    } else if (configError instanceof TypeError) {
+      console.error('Reason: Network failure while loading app-config.json')
+    } else if (configError.message.includes('Failed to load app-config.json')) {
+      console.error(
+        'Reason: Config file missing or server returned non-200 status',
+      )
+    } else {
+      console.error('Reason: Unknown startup error')
+    }
+
+    const redirectDelayMs = import.meta.env.DEV ? 8000 : 2000
+    console.error(
+      `Redirecting to config-error page in ${redirectDelayMs} ms...`,
+    )
+
+    // Delay redirect so console output remains visible.
+    window.setTimeout(() => {
+      window.location.replace(`${import.meta.env.BASE_URL}error.html`)
+    }, redirectDelayMs)
   })

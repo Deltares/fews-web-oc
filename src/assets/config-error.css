@@ -1,0 +1,18 @@
+body {
+  font-family: var(--font-family, Arial, sans-serif);
+  text-align: center;
+  margin: 0;
+  padding: 50px;
+}
+
+.retry-btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+}
