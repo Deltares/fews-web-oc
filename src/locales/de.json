@@ -84,10 +84,11 @@
     "overranExpectedTimeBy": "Erwartete Zeit überschritten um"
   },
   "share": {
-    "link": "Link",
+    "applySettings": "Einstellungen anwenden",
     "copyLink": "Link kopieren",
+    "iframe": "Iframe",
+    "link": "Link",
     "linkCopied": "Kopiert",
-    "linkCopyFailed": "Link konnte nicht kopiert werden",
-    "iframe": "Iframe"
+    "linkCopyFailed": "Link konnte nicht kopiert werden"
   }
 }

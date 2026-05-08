@@ -84,10 +84,11 @@
     "overranExpectedTimeBy": "Overran expected time by"
   },
   "share": {
-    "link": "Link",
+    "applySettings": "Apply settings",
     "copyLink": "Copy link",
+    "iframe": "Iframe",
+    "link": "Link",
     "linkCopied": "Copied",
-    "linkCopyFailed": "Failed to copy link",
-    "iframe": "Iframe"
+    "linkCopyFailed": "Failed to copy link"
   }
 }

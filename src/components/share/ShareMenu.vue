@@ -4,7 +4,7 @@
 
     <v-card flat border class="my-4">
       <v-toolbar density="compact">
-        <div class="ms-4">Settings</div>
+        <div class="ms-4">{{ t('share.applySettings') }}</div>
       </v-toolbar>
       <v-divider />
 
@@ -50,9 +50,11 @@ import UserSettingsBoolean from '@/components/user-settings/UserSettingsBoolean.
 import UserSettingsOneOfMultiple from '@/components/user-settings/UserSettingsOneOfMultiple.vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const route = useRoute()
 const store = useUserSettingsStore()
+const { t } = useI18n()
 
 const settings = ref(store.items.map((item) => ({ ...item })))
 
