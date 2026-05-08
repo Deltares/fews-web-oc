@@ -1,24 +1,14 @@
 import './assets/config-error.css'
-
 ;(function () {
-  var marker = 'error.html'
-  var legacyMarker = 'error.html'
-  var path = window.location.pathname
+  const marker = 'error.html'
+  const path = window.location.pathname
 
-  var markerIndex = path.indexOf(marker)
-  if (markerIndex === -1) {
-    markerIndex = path.indexOf(legacyMarker)
-  }
-
-  if (markerIndex === -1) {
+  if (!path.includes(marker)) {
     return
   }
 
-  var appRoot = path.slice(0, markerIndex)
-  if (!appRoot.endsWith('/')) {
-    appRoot += '/'
+  if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+    window.location.replace(import.meta.env.BASE_URL)
+    return
   }
-
-  var target = appRoot + window.location.search + window.location.hash
-  window.history.replaceState(null, '', target)
 })()
