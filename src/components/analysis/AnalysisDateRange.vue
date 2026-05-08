@@ -37,6 +37,7 @@
           v-model="settings.liveUpdate.enabled"
           label="Live Update"
           hide-details
+          color="primary"
         />
         <div class="d-flex ga-2">
           <v-number-input
