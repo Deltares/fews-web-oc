@@ -1,6 +1,9 @@
 <template>
   <div class="container" ref="container">
-    <div class="child-container" :class="{ 'd-none': hideMap || maximized }">
+    <div
+      class="child-container flex-column"
+      :class="{ 'd-none': hideMap, 'd-flex': !hideMap }"
+    >
       <SpatialDisplayComponent
         :layer-name="props.layerName"
         :location-ids="props.locationIds"
@@ -21,7 +24,7 @@
         @coordinate-click="onCoordinateClick"
       ></SpatialDisplayComponent>
     </div>
-    <div v-if="showChartPanel" class="child-container">
+    <div v-if="showChartPanel" class="child-container flex-column d-flex">
       <SpatialTimeSeriesDisplay
         @close="closeTimeSeriesDisplay"
         v-model:maximized="maximized"
@@ -319,7 +322,9 @@ const containerIsMobileSize = computed(() => {
 })
 
 const hideMap = computed(() => {
-  return containerIsMobileSize.value && showChartPanel.value
+  return (
+    maximized.value || (containerIsMobileSize.value && showChartPanel.value)
+  )
 })
 
 function onLocationsChange(locationIds: string[]): void {
@@ -424,8 +429,6 @@ watch(
 
 .child-container {
   position: relative;
-  display: flex;
-  flex-direction: column;
   width: 50%;
   max-width: 100%;
   flex: 1 1 0px;
