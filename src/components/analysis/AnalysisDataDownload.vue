@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { convertJSDateToFewsPiParameter } from '@/lib/date'
+import { convertJSDateToFewsPiParameter, getFilenameTimestamp } from '@/lib/date'
 import { downloadFileAttachment } from '@/lib/download'
 import { getDownloadFileUrl } from '@/lib/download/download'
 import { configManager } from '@/services/application-config'
@@ -69,12 +69,11 @@ async function downloadFilters() {
 
   const fileType = selectedFileType.value
 
-  const date = new Date()
-  const dateString = date.toISOString().replace(/[-:T]/g, '').slice(0, 14)
+  const timestamp = getFilenameTimestamp()
 
   props.filters.forEach((filter) => {
     const url = getDownloadFileUrl(baseUrl, filter, fileType.format, viewPeriod)
-    const fileName = `timeseries_${filter.parameterIds}_${dateString}`
+    const fileName = `timeseries_${filter.parameterIds}_${timestamp}`
 
     downloadFileSafe(url.href, fileName, selectedFileType.value.format, headers)
   })

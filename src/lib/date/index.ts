@@ -291,3 +291,11 @@ export function isInDatesRange(
   const [start, end] = [dates[0], dates[dates.length - 1]]
   return date >= start && date <= end
 }
+
+/**
+ * Generates a timestamp string in the format 'YYYYMMDDHHmmss' for use in filenames.
+ * @returns A timestamp string representing the current date and time.
+ */
+export function getFilenameTimestamp() {
+  return DateTime.now().toFormat('yyyyMMddHHmmss')
+}

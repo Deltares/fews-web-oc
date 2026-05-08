@@ -68,7 +68,7 @@ import { DateTime } from 'luxon'
 import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
 import { useAlertsStore } from '@/stores/alerts'
 import { isCorrelationFilter, isDataDownloadFilter } from '@/lib/filters'
-import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
+import { convertFewsPiDateTimeToJsDate, getFilenameTimestamp } from '@/lib/date'
 
 import { useI18n } from 'vue-i18n'
 import { getDownloadFileUrl } from '@/lib/download/download'
@@ -162,9 +162,8 @@ watch(
   () => showDialog.value,
   (newValue) => {
     if (!newValue) return
-    const FILE_FORMAT_DATE_FMT = 'yyyyMMddHHmmss'
-    const defaultDateTimeString = DateTime.now().toFormat(FILE_FORMAT_DATE_FMT)
-    fileNameInput.value = `timeseries_${defaultDateTimeString}`
+    const timestamp = getFilenameTimestamp()
+    fileNameInput.value = `timeseries_${timestamp}`
   },
 )
 
