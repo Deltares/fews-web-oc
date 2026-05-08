@@ -50,6 +50,10 @@
             :min="0"
             :disabled="!settings.liveUpdate.enabled"
             control-variant="stacked"
+            @blur="
+              settings.liveUpdate.daysBeforeNow =
+                settings.liveUpdate.daysBeforeNow ?? 0
+            "
           />
           <v-number-input
             v-model="settings.liveUpdate.daysAfterNow"
@@ -61,6 +65,10 @@
             :min="0"
             :disabled="!settings.liveUpdate.enabled"
             control-variant="stacked"
+            @blur="
+              settings.liveUpdate.daysAfterNow =
+                settings.liveUpdate.daysAfterNow ?? 0
+            "
           />
         </div>
       </v-card-text>
