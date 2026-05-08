@@ -24,9 +24,10 @@
       ref="field"
       @focus="selectEmbedUrl"
       :disabled="!url"
+      variant="outlined"
       class="text-mono"
     >
-      <template #append>
+      <template #append-inner>
         <v-btn
           :icon="state.icon"
           :color="state.color"
@@ -34,7 +35,9 @@
           @click.stop="copyToClipboard"
           density="comfortable"
           aria-label="Copy to clipboard"
-        />
+        >
+          <v-icon size="small">{{ state.icon }}</v-icon>
+        </v-btn>
       </template>
     </v-text-field>
 
