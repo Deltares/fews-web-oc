@@ -19,6 +19,7 @@
         v-model="modelValue"
         density="compact"
         variant="outlined"
+        mandatory
         divided
       >
         <v-tooltip v-for="item in items" :key="item.id" location="top">
@@ -26,7 +27,7 @@
             <v-btn
               v-bind="tooltipProps"
               :value="item.id"
-              class="tab text-none px-1"
+              class="tab px-1"
               size="small"
               :text="item.shortLabel"
               :icon="item.icon"
@@ -35,7 +36,7 @@
             </v-btn>
           </template>
           <strong>{{ item.type }} {{ item.id }}</strong>
-          <p>{{ toDateRangeString(item.startDate, item.endDate) }}</p>
+          <div>{{ toDateRangeString(item.startDate, item.endDate) }}</div>
         </v-tooltip>
       </v-btn-toggle>
     </v-list-item-action>

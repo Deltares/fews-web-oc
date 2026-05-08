@@ -1,12 +1,9 @@
 <template>
   <ControlChip :class="{ 'pe-0': showLayer }">
-    <v-btn
-      @click="showLayer = !showLayer"
-      density="compact"
-      variant="plain"
-      icon
-    >
-      <v-icon>{{ showLayer ? 'mdi-layers' : 'mdi-layers-off' }}</v-icon>
+    <v-btn @click="showLayer = !showLayer" density="compact" icon>
+      <v-icon size="large">{{
+        showLayer ? 'mdi-layers' : 'mdi-layers-off'
+      }}</v-icon>
     </v-btn>
 
     <slot v-if="showLayer" name="chip-prepend" />
@@ -17,12 +14,7 @@
       v-if="showLayer"
     >
       <template v-slot:activator="{ props, isActive }">
-        <v-btn
-          variant="text"
-          v-bind="props"
-          class="text-none"
-          aria-label="Layer information"
-        >
+        <v-btn variant="text" v-bind="props" aria-label="Layer information">
           <span :class="{ 'text-decoration-line-through': completelyMissing }">
             {{ title }}
           </span>

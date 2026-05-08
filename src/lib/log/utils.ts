@@ -70,7 +70,7 @@ export function logToColor(log: LogMessage) {
     case 'WARN':
       return 'warning'
     case 'ERROR':
-      return 'red-darken-4'
+      return 'error'
   }
 }
 

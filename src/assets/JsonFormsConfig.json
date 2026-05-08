@@ -7,7 +7,7 @@
       "persistent-hint": true
     },
     "v-number-input": {
-      "precision": 2,
+      "precision": null,
       "density": "compact",
       "variant": "outlined",
       "hide-details": "auto",
@@ -21,9 +21,6 @@
       "density": "compact",
       "variant": "outlined",
       "hide-details": "auto"
-    },
-    "v-col": {
-      "class": "pa-2"
     }
   }
 }

@@ -13,12 +13,9 @@
         >
         <v-menu location="bottom left">
           <template #activator="{ props }">
-            <v-btn
-              icon="mdi-dots-horizontal"
-              variant="text"
-              v-bind="props"
-              :loading="actionIsActive"
-            />
+            <v-btn icon size="small" v-bind="props" :loading="actionIsActive">
+              <v-icon size="small">mdi-dots-horizontal</v-icon>
+            </v-btn>
           </template>
           <v-list density="compact">
             <v-list-item

@@ -444,6 +444,5 @@ function showSuccessMessage(message: string) {
   position: sticky;
   bottom: 0;
   z-index: 1;
-  background: inherit;
 }
 </style>

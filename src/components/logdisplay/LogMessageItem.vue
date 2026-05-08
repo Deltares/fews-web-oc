@@ -24,11 +24,12 @@
               <v-btn
                 v-if="!isEditing"
                 density="compact"
-                icon="mdi-dots-horizontal"
-                variant="plain"
+                icon
                 size="small"
                 v-bind="props"
-              />
+              >
+                <v-icon size="small">mdi-dots-horizontal</v-icon>
+              </v-btn>
             </template>
             <v-list density="compact">
               <v-list-item
@@ -121,11 +122,13 @@
               <template #activator="{ props }">
                 <v-btn
                   density="compact"
-                  icon="mdi-close"
+                  icon
                   variant="plain"
                   v-bind="props"
                   @click="toggleEditing"
-                />
+                >
+                  <v-icon size="small">mdi-close</v-icon>
+                </v-btn>
               </template>
               <span>Discard changes</span>
             </v-tooltip>

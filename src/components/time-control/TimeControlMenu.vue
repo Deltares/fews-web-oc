@@ -11,7 +11,7 @@
           }}
         </span>
         <v-btn icon size="small" class="last-btn">
-          <v-icon size="large">{{
+          <v-icon>{{
             isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'
           }}</v-icon>
         </v-btn>
@@ -123,15 +123,10 @@ function onIntervalChange() {
   store.changeInterval()
 }
 </script>
-<style>
+<style scoped>
 .menu {
   position: relative;
   z-index: 10000;
-}
-
-input {
-  width: 100%;
-  color: white;
 }
 
 .icon-group {

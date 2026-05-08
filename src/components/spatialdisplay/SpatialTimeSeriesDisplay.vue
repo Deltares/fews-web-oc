@@ -17,7 +17,7 @@
             }}</v-icon>
           </v-btn>
           <v-btn size="small" icon @click="onClose">
-            <v-icon>mdi-close</v-icon>
+            <v-icon size="small">mdi-close</v-icon>
           </v-btn>
         </template>
       </TimeSeriesWindowComponent>

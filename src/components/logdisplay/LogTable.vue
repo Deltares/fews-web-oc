@@ -19,7 +19,9 @@
         :close-on-content-click="false"
       >
         <template #activator="{ props }">
-          <v-btn v-bind="props" icon="mdi-dots-horizontal" density="compact" />
+          <v-btn v-bind="props" icon>
+            <v-icon size="small">mdi-dots-horizontal</v-icon>
+          </v-btn>
         </template>
         <v-list density="compact">
           <v-list-item

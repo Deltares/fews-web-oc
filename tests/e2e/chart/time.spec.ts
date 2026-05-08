@@ -70,7 +70,7 @@ test.describe('Default time settings', () => {
     // Get the first timeline image
     const timelineImage = page
       .getByRole('img')
-      .filter({ hasText: 'Mar 09Tue 11Thu 13Sat 15Mon 17Wed 19' })
+      .filter({ hasText: 'Mar 09Tue 11Thu 13Sat 15Mon 17Wed ' })
       .first()
 
     // Wait for the timeline to be visible
@@ -152,7 +152,7 @@ test.describe('Default time settings', () => {
     // Verify that the time range has been panned
     const pannedTimelineImages = page
       .getByRole('img')
-      .filter({ hasText: 'Tue 11Thu 13Sat 15Mon 17Wed 19Fri 21' })
+      .filter({ hasText: 'Thu 13Sat 15Mon 17Wed 19Fri 21Mar 23' })
 
     // Check that we have elements with the panned time range
     await expect(pannedTimelineImages).toHaveCount(2)

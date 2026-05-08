@@ -14,7 +14,6 @@
         :value="tab.value"
         :prepend-icon="tab.icon"
         :text="tab.text"
-        class="text-none"
       />
     </v-tabs>
     <div class="flex-1-1 overflow-auto">

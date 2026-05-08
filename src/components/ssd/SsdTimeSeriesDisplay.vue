@@ -1,35 +1,31 @@
 <template>
-  <div class="d-flex flex-column h-100 w-100">
-    <div class="flex-1-1-100 h-100">
-      <WindowComponent>
-        <template v-slot:toolbar>
-          <span class="mx-5">{{ displayConfig?.title }}</span>
-          <v-spacer />
-          <v-btn-toggle class="mr-5" v-model="displayType" mandatory>
-            <v-btn
-              v-for="item in displayTypeItems"
-              :key="item.value"
-              :value="item.value"
-              :aria-label="item.label"
-              :text="item.label"
-              size="small"
-              variant="text"
-              class="text-capitalize"
-            >
-              <v-icon>{{ item.icon }}</v-icon>
-            </v-btn>
-          </v-btn-toggle>
-        </template>
-        <template v-slot:toolbar-append>
-          <v-btn size="small" variant="text" @click="onClose">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </template>
-        <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
-        </TimeSeriesComponent>
-      </WindowComponent>
-    </div>
-  </div>
+  <WindowComponent>
+    <template v-slot:toolbar>
+      <v-toolbar-items mandatory>
+        <v-btn
+          v-for="item in displayTypeItems"
+          :key="item.value"
+          :value="item.value"
+          :aria-label="item.label"
+          :text="item.label"
+          :active="displayType === item.value"
+          size="small"
+          @click="displayType = item.value"
+        >
+          <v-icon>{{ item.icon }}</v-icon>
+        </v-btn>
+      </v-toolbar-items>
+      <span class="mx-5">{{ displayConfig?.title }}</span>
+      <v-spacer />
+    </template>
+    <template v-slot:toolbar-append>
+      <v-btn size="small" variant="text" @click="onClose">
+        <v-icon size="small">mdi-close</v-icon>
+      </v-btn>
+    </template>
+    <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
+    </TimeSeriesComponent>
+  </WindowComponent>
 </template>
 
 <script setup lang="ts">
@@ -44,6 +40,12 @@ import { useUserSettingsStore } from '@/stores/userSettings'
 interface Props {
   panelId?: string
   objectId?: string
+}
+
+interface DisplayTypeItem {
+  icon: string
+  label: string
+  value: DisplayType
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -64,6 +66,20 @@ const options = computed<UseSsdPiOptions>(() => {
   }
 })
 
+const displayType = ref(DisplayType.TimeSeriesChart)
+const displayTypeItems: DisplayTypeItem[] = [
+  {
+    icon: 'mdi-chart-line',
+    label: 'Chart',
+    value: DisplayType.TimeSeriesChart,
+  },
+  {
+    icon: 'mdi-table',
+    label: 'Table',
+    value: DisplayType.TimeSeriesTable,
+  },
+]
+
 const { displayConfig } = useSsdPi(
   baseUrl,
   () => props.panelId,
@@ -82,26 +98,6 @@ watch(
   },
   { deep: true },
 )
-
-interface DisplayTypeItem {
-  icon: string
-  label: string
-  value: DisplayType
-}
-
-const displayType = ref(DisplayType.TimeSeriesChart)
-const displayTypeItems: DisplayTypeItem[] = [
-  {
-    icon: 'mdi-chart-line',
-    label: 'Chart',
-    value: DisplayType.TimeSeriesChart,
-  },
-  {
-    icon: 'mdi-table',
-    label: 'Table',
-    value: DisplayType.TimeSeriesTable,
-  },
-]
 
 function onClose(): void {
   emit('close', props.objectId)

@@ -18,7 +18,7 @@
         <template #default="{ item: task }">
           <v-btn
             v-if="!isTaskRun(task)"
-            class="mx-2 px-1 text-none"
+            class="mx-2 px-1"
             variant="plain"
             :append-icon="getTaskSectionIcon(task.label)"
             @click="toggleTaskSection(task.label)"

@@ -37,7 +37,7 @@
         v-if="displayActionItems.length"
         name="Time series actions"
       >
-        <v-icon>mdi-dots-horizontal</v-icon>
+        <v-icon size="small">mdi-dots-horizontal</v-icon>
         <v-menu activator="parent" density="compact">
           <v-list>
             <v-list-item

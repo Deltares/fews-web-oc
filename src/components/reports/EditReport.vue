@@ -18,12 +18,14 @@
       variant="flat"
       @click="onSave"
       color="primary"
-      class="text-none mr-5"
+      class="mr-5"
       :disabled="!hasChanges"
     >
       Save
     </v-btn>
-    <v-btn icon="mdi-close" @click="onClose"></v-btn>
+    <v-btn size="small" icon @click="onClose">
+      <v-icon size="small">mdi-close</v-icon>
+    </v-btn>
   </v-toolbar>
   <v-sheet theme="light" class="flex-1-1 h-100 position-relative">
     <editor-content :editor="editor" class="shadow-frame" />
