@@ -14,7 +14,7 @@
           d="M8.2679491924311 3.7727586640478a2 2 0 0 1 3.4641016151378 0l6.0358983848622 10.454482671904a2 2 0 0 1 -1.7320508075689 3l-12.071796769724 0a2 2 0 0 1 -1.7320508075689 -3z"
         />
         <text
-          x="11"
+          x="10"
           y="14"
           text-anchor="middle"
           fill="black"
@@ -26,7 +26,7 @@
         </text>
       </svg>
     </v-avatar>
-    <v-icon size="large" v-else icon="mdi-alert" />
+    <v-icon v-else icon="mdi-alert" />
   </v-btn>
 </template>
 
