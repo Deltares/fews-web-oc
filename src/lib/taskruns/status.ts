@@ -92,7 +92,10 @@ export function getTaskStatusesForCategories(
   return categories.flatMap((category) => category.statuses)
 }
 
-export function getIconForTaskStatus(status: TaskStatus): string {
+export function getIconForTaskStatus(
+  status: TaskStatus,
+  isCurrent = true,
+): string {
   const category = getTaskStatusCategory(status)
   switch (category) {
     case TaskStatusCategory.Pending:
@@ -100,11 +103,11 @@ export function getIconForTaskStatus(status: TaskStatus): string {
     case TaskStatusCategory.Running:
       return 'mdi-spin mdi-cog'
     case TaskStatusCategory.Completed:
-      return 'mdi-check'
+      return isCurrent ? 'mdi-check-circle' : 'mdi-check'
     case TaskStatusCategory.PartlyCompleted:
-      return 'mdi-check'
+      return 'mdi-progress-check'
     case TaskStatusCategory.Failed:
-      return 'mdi-alert-circle'
+      return 'mdi-alert-circle-outline'
   }
 }
 
