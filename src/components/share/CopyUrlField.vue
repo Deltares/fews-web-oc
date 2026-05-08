@@ -48,7 +48,6 @@
         label="Width"
         density="compact"
         hide-details
-        control-variant="stacked"
         variant="outlined"
       />
       <v-number-input
@@ -57,7 +56,6 @@
         label="Height"
         density="compact"
         hide-details
-        control-variant="stacked"
         variant="outlined"
       />
     </div>
