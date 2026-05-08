@@ -44,7 +44,8 @@
     <div v-if="tab === 'iframe'" class="d-flex ga-2">
       <v-number-input
         v-model.number="iframeWidth"
-        :min="1"
+        :min="0"
+        :step="100"
         label="Width"
         density="compact"
         hide-details
@@ -52,7 +53,8 @@
       />
       <v-number-input
         v-model.number="iframeHeight"
-        :min="1"
+        :min="0"
+        :step="100"
         label="Height"
         density="compact"
         hide-details
