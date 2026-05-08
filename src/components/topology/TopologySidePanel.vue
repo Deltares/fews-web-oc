@@ -14,7 +14,7 @@
       icon
       @click="toggleActiveSidePanel(currentGeneralSidePanel.type)"
     >
-      <v-icon :icon="currentGeneralSidePanel.icon" size="large"></v-icon>
+      <v-icon :icon="currentGeneralSidePanel.icon"></v-icon>
     </v-btn>
 
     <v-menu v-if="hasMultipleEnabledSidePanels" location="bottom right">
@@ -25,10 +25,7 @@
           aria-label="More Sidepanel Options"
           size="small"
         >
-          <v-icon
-            :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-            size="large"
-          />
+          <v-icon :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'" />
         </v-btn>
       </template>
 

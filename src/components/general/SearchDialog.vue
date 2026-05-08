@@ -21,7 +21,9 @@
           prepend-icon="mdi-map-marker"
           class="ps-3"
         />
-        <v-btn icon="mdi-close" @click="active = false" />
+        <v-btn size="small" icon @click="active = false">
+          <v-icon size="small">mdi-close</v-icon>
+        </v-btn>
       </v-toolbar>
       <div class="d-flex px-1 pt-3 pb-2 align-center">
         <span class="pe-1">Filter</span>

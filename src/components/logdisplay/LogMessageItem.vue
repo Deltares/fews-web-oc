@@ -121,11 +121,13 @@
               <template #activator="{ props }">
                 <v-btn
                   density="compact"
-                  icon="mdi-close"
+                  icon
                   variant="plain"
                   v-bind="props"
                   @click="toggleEditing"
-                />
+                >
+                  <v-icon size="small">mdi-close</v-icon>
+                </v-btn>
               </template>
               <span>Discard changes</span>
             </v-tooltip>

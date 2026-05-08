@@ -10,10 +10,11 @@
         <v-btn
           variant="text"
           size="small"
-          icon="mdi-close"
           @click="onCloseAlert(alert)"
           :aria-label="'Close alert: ' + alert.message"
-        />
+        >
+          <v-icon size="small">mdi-close</v-icon>
+        </v-btn>
       </template>
 
       {{ alert.message }}

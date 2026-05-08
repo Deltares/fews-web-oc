@@ -12,10 +12,13 @@
     <v-card class="d-flex flex-column">
       <v-toolbar :title="t('userSettings.settings')" density="compact">
         <v-btn
-          icon="mdi-close"
+          size="small"
+          icon
           @click="dialog = false"
           aria-label="Close User Settings"
-        />
+        >
+          <v-icon size="small">mdi-close</v-icon>
+        </v-btn>
       </v-toolbar>
       <v-card-text class="flex-grow-1 overflow-y-auto">
         <UserSettings />

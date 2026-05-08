@@ -13,12 +13,9 @@
           {{ title }}
         </span>
         <template #append>
-          <v-btn
-            @click="emit('close')"
-            size="small"
-            variant="text"
-            icon="mdi-close"
-          />
+          <v-btn @click="emit('close')" icon size="small">
+            <v-icon size="small">mdi-close</v-icon>
+          </v-btn>
         </template>
       </v-toolbar>
 

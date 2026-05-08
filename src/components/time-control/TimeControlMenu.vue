@@ -11,7 +11,7 @@
           }}
         </span>
         <v-btn icon size="small" class="last-btn">
-          <v-icon size="large">{{
+          <v-icon>{{
             isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'
           }}</v-icon>
         </v-btn>

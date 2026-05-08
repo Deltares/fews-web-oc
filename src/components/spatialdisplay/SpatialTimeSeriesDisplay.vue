@@ -12,7 +12,7 @@
       >
         <template #toolbar-append>
           <v-btn size="small" icon @click="onClose">
-            <v-icon>mdi-close</v-icon>
+            <v-icon size="small">mdi-close</v-icon>
           </v-btn>
         </template>
       </TimeSeriesWindowComponent>

@@ -20,7 +20,7 @@
     </template>
     <template v-slot:toolbar-append>
       <v-btn size="small" variant="text" @click="onClose">
-        <v-icon>mdi-close</v-icon>
+        <v-icon size="small">mdi-close</v-icon>
       </v-btn>
     </template>
     <TimeSeriesComponent :config="displayConfig" :displayType="displayType">
