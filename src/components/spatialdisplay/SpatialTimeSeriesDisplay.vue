@@ -46,7 +46,6 @@ interface Props {
   locationsTooltipFilter?: LocationsTooltipFilter
   currentTime?: Date
   settings: ComponentSettings
-  maximized?: boolean
 }
 
 const taskRunsStore = useTaskRunsStore()
@@ -54,8 +53,9 @@ const taskRunsStore = useTaskRunsStore()
 const props = defineProps<Props>()
 const emit = defineEmits<{
   close: []
-  'update:maximized': [value: boolean]
 }>()
+
+const maximized = defineModel<boolean>('maximized', { default: false })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -93,6 +93,6 @@ function onClose(): void {
 }
 
 function onToggleMaximize(): void {
-  emit('update:maximized', !props.maximized)
+  maximized.value = !maximized.value
 }
 </script>
