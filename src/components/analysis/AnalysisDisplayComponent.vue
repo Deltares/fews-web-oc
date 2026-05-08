@@ -55,7 +55,7 @@
           :config="config"
         />
         <AnalysisDateRange
-          :collection="selectedCollection"
+          v-model:settings="selectedCollection.settings"
           :startTime="startTime"
           :endTime="endTime"
         />

@@ -17,11 +17,11 @@ export interface DisplayCollections {
 
 export interface Collection {
   name: string
-  settings: Settings
+  settings: CollectionSettings
   charts: Chart[]
 }
 
-export interface Settings {
+export interface CollectionSettings {
   startTime: Date
   endTime: Date
   liveUpdate: {

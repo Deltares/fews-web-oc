@@ -8,52 +8,52 @@
       <v-card-text>
         <div class="d-flex ga-2">
           <v-date-input
-            v-model="collection.settings.startTime"
+            v-model="settings.startTime"
             label="Start Date"
             variant="outlined"
             hide-details
             density="compact"
             prepend-icon=""
             min-width="120"
-            :disabled="collection.settings.liveUpdate.enabled"
+            :disabled="settings.liveUpdate.enabled"
           />
           <v-date-input
-            v-model="collection.settings.endTime"
+            v-model="settings.endTime"
             label="End Date"
             variant="outlined"
             hide-details
             density="compact"
             prepend-icon=""
             min-width="120"
-            :disabled="collection.settings.liveUpdate.enabled"
+            :disabled="settings.liveUpdate.enabled"
           />
         </div>
         <v-switch
-          v-model="collection.settings.liveUpdate.enabled"
+          v-model="settings.liveUpdate.enabled"
           label="Live Update"
           hide-details
         />
         <div class="d-flex ga-2">
           <v-number-input
-            v-model="collection.settings.liveUpdate.daysBeforeNow"
+            v-model="settings.liveUpdate.daysBeforeNow"
             label="Days Before Now"
             variant="outlined"
             hide-details
             density="compact"
             type="number"
             :min="0"
-            :disabled="!collection.settings.liveUpdate.enabled"
+            :disabled="!settings.liveUpdate.enabled"
             control-variant="stacked"
           />
           <v-number-input
-            v-model="collection.settings.liveUpdate.daysAfterNow"
+            v-model="settings.liveUpdate.daysAfterNow"
             label="Days After Now"
             variant="outlined"
             hide-details
             density="compact"
             type="number"
             :min="0"
-            :disabled="!collection.settings.liveUpdate.enabled"
+            :disabled="!settings.liveUpdate.enabled"
             control-variant="stacked"
           />
         </div>
@@ -64,17 +64,18 @@
 
 <script setup lang="ts">
 import { VDateInput } from 'vuetify/labs/components'
-import { type Collection } from '@/lib/analysis'
+import type { CollectionSettings } from '@/lib/analysis'
 import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
 
 interface Props {
-  collection: Collection
   startTime: Date
   endTime: Date
 }
 
 const props = defineProps<Props>()
+
+const settings = defineModel<CollectionSettings>('settings', { required: true })
 
 const { locale } = useI18n()
 
