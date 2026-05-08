@@ -13,7 +13,7 @@
     <template #item="{ item, props }">
       <v-list-item v-bind="props" :title="item.title">
         <template #append>
-          <v-menu :close-on-content-click="false">
+          <v-dialog max-width="400">
             <template #activator="{ props }">
               <v-btn v-bind="props" icon="mdi-delete" size="small" />
             </template>
@@ -39,7 +39,7 @@
                 </v-card-actions>
               </v-card>
             </template>
-          </v-menu>
+          </v-dialog>
         </template>
       </v-list-item>
     </template>
