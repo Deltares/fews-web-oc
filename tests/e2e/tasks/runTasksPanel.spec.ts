@@ -57,9 +57,9 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
     const coordinate = page.getByRole('textbox', {
       name: 'Coordinate',
     })
-    await expect(latitude).toHaveValue('-29.83')
-    await expect(longitude).toHaveValue('31.06')
-    await expect(coordinate).toHaveValue('-29.83000°N 31.06000°E')
+    await expect(latitude).toHaveValue('-29.83491')
+    await expect(longitude).toHaveValue('31.06229')
+    await expect(coordinate).toHaveValue('-29.83491°N 31.06229°E')
 
     // Toggle coordinate selector control visibility
     const coordSelector = page.getByLabel('Coordinate Selector Control')
@@ -75,7 +75,7 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
     const coordSelectorDiv = coordSelector.locator('div[role="status"]', {
       name: 'Selected coordinates',
     })
-    await expect(coordSelectorDiv).toContainText('-29.83000°N31.06000°E')
+    await expect(coordSelectorDiv).toContainText('-29.83491°N31.06229°E')
 
     // Close coordinate selector
     const coordSelectorCloseBtn = coordSelector.getByRole('button')
@@ -118,12 +118,12 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
       name: 'Y cell size [degrees]*',
     })
     await expect(boundingBox).toHaveValue('25°E -33°N, 38°E -25°N')
-    await expect(lonMin).toHaveValue('25.00')
-    await expect(lonMax).toHaveValue('38.00')
-    await expect(latMin).toHaveValue('-33.00')
-    await expect(latMax).toHaveValue('-25.00')
-    await expect(xCellSize).toHaveValue('0.50')
-    await expect(yCellSize).toHaveValue('0.50')
+    await expect(lonMin).toHaveValue('25')
+    await expect(lonMax).toHaveValue('38')
+    await expect(latMin).toHaveValue('-33')
+    await expect(latMax).toHaveValue('-25')
+    await expect(xCellSize).toHaveValue('0.5')
+    await expect(yCellSize).toHaveValue('0.5')
 
     const timeZero = page.getByRole('textbox', {
       name: 'Time zero',
@@ -174,9 +174,9 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
     const coordinate = page.getByRole('textbox', {
       name: 'Coordinate',
     })
-    await expect(latitude).toHaveValue('-29.83')
-    await expect(longitude).toHaveValue('31.06')
-    await expect(coordinate).toHaveValue('-29.83000°N 31.06000°E')
+    await expect(latitude).toHaveValue('-29.83491')
+    await expect(longitude).toHaveValue('31.06229')
+    await expect(coordinate).toHaveValue('-29.83491°N 31.06229°E')
 
     // Check default input values
     const radiusBox = page.getByRole('textbox', {
