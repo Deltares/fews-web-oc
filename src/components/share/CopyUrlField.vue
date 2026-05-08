@@ -6,13 +6,11 @@
           value="link"
           :text="t('share.link')"
           prepend-icon="mdi-link-variant"
-          class="text-none"
         />
         <v-tab
           value="iframe"
           :text="t('share.iframe')"
           prepend-icon="mdi-code-tags"
-          class="text-none"
         />
       </v-tabs>
       <v-divider />

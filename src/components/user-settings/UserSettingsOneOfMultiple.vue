@@ -18,7 +18,6 @@
           :key="item.value"
           :value="item.value"
           :disabled="item.disabled"
-          class="text-none"
           :aria-label="`${setting.label} ${item.title}`"
           v-tooltip:top="item.title"
         >
@@ -43,17 +42,17 @@
         :class="{ 'mt-2': !inline, inline }"
       >
         <template #selection="{ item }">
-          <v-icon class="me-2" size="small" v-if="item.raw.icon">
-            {{ item.raw.icon }}
+          <v-icon class="me-2" size="small" v-if="item.icon">
+            {{ item.icon }}
           </v-icon>
-          {{ item.raw.title }}
+          {{ item.title }}
         </template>
         <template #item="{ item, props }">
           <v-list-item
             v-bind="props"
-            :disabled="item.raw.disabled === true"
-            :aria-label="`${setting.label} ${item.raw.title}`"
-            :prepend-icon="item.raw.icon"
+            :disabled="item.disabled === true"
+            :aria-label="`${setting.label} ${item.title}`"
+            :prepend-icon="item.icon"
           />
         </template>
       </v-select>
