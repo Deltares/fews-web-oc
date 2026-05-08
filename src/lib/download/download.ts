@@ -6,9 +6,7 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
   type Filter,
   isCorrelationFilter,
-  isDataDownloadFilter,
   isFilterActionsFilter,
-  isTimeSeriesFilter,
   isTimeSeriesGridActionsFilter,
   isTimeSeriesTopologyActionsFilter,
 } from '@/lib/filters'
@@ -22,14 +20,6 @@ export function getDownloadFileUrl(
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
-
-  if (isDataDownloadFilter(filter) || isTimeSeriesFilter(filter)) {
-    return piProvider.timeSeriesUrl({
-      ...filter,
-      documentFormat: downloadFormat,
-      ...viewPeriod,
-    })
-  }
 
   if (isFilterActionsFilter(filter)) {
     return piProvider.timeSeriesFilterActionsUrl({
@@ -62,5 +52,9 @@ export function getDownloadFileUrl(
     })
   }
 
-  throw new Error('Unsupported filter type for download')
+  return piProvider.timeSeriesUrl({
+    ...filter,
+    documentFormat: downloadFormat,
+    ...viewPeriod,
+  })
 }
