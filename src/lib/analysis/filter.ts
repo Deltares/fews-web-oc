@@ -30,13 +30,15 @@ export async function createNewChartsForFilters(
 }
 
 async function fetchActionAndFullAction(filter: filterActionsFilter) {
-  return {
-    action: await fetchActions(baseUrl, filter),
-    fullAction: await fetchActions(baseUrl, {
+  const [action, fullAction] = await Promise.all([
+    fetchActions(baseUrl, filter),
+    fetchActions(baseUrl, {
       ...filter,
       fullDataPeriod: true,
     }),
-  }
+  ])
+
+  return { action, fullAction }
 }
 
 export async function createNewChartForFilter(
