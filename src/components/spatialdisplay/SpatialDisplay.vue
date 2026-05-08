@@ -1,6 +1,6 @@
 <template>
   <div class="container" ref="container">
-    <div class="child-container" :class="{ 'd-none': hideMap }">
+    <div class="child-container" :class="{ 'd-none': hideMap || maximized }">
       <SpatialDisplayComponent
         :layer-name="props.layerName"
         :location-ids="props.locationIds"
@@ -24,6 +24,7 @@
     <div v-if="showChartPanel" class="child-container">
       <SpatialTimeSeriesDisplay
         @close="closeTimeSeriesDisplay"
+        v-model:maximized="maximized"
         :filter="filter"
         :brushFilter="brushFilter"
         :elevation-chart-filter="elevationChartFilter"
@@ -309,6 +310,7 @@ const locationsTooltipFilter = computed<LocationsTooltipFilter | undefined>(
 
 const elevation = ref<number | undefined>()
 const currentTime = ref<Date>()
+const maximized = ref(false)
 
 const { width: containerWidth } = useElementSize(containerRef)
 
@@ -389,6 +391,7 @@ function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
 }
 
 function closeTimeSeriesDisplay(): void {
+  maximized.value = false
   emit('navigate', { name: 'SpatialDisplay' })
 }
 

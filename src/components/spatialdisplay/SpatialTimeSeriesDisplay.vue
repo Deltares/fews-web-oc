@@ -11,6 +11,11 @@
         :informationContent="tooltip"
       >
         <template #toolbar-append>
+          <v-btn size="small" icon @click="onToggleMaximize">
+            <v-icon>{{
+              maximized ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
+            }}</v-icon>
+          </v-btn>
           <v-btn size="small" icon @click="onClose">
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -41,12 +46,16 @@ interface Props {
   locationsTooltipFilter?: LocationsTooltipFilter
   currentTime?: Date
   settings: ComponentSettings
+  maximized?: boolean
 }
 
 const taskRunsStore = useTaskRunsStore()
 
 const props = defineProps<Props>()
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  close: []
+  'update:maximized': [value: boolean]
+}>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -81,5 +90,9 @@ const { tooltip } = useLocationTooltip(
 
 function onClose(): void {
   emit('close')
+}
+
+function onToggleMaximize(): void {
+  emit('update:maximized', !props.maximized)
 }
 </script>

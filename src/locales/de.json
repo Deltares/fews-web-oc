@@ -15,7 +15,9 @@
     "unsavedChanges": "Ungespeicherte Änderungen",
     "unsavedChangesExitWarning": "Sie haben ungespeicherte Änderungen. Ohne Speichern verlassen?",
     "finished": "abgeschlossen",
-    "failed": "fehlgeschlagen"
+    "failed": "fehlgeschlagen",
+    "maximizeChart": "Diagramm maximieren",
+    "restoreChart": "Diagramm wiederherstellen"
   },
   "layout": {
     "about": "Über",
