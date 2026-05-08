@@ -109,12 +109,14 @@ function addCollection(): void {
 
 function deleteCollection(collectionName: string) {
   const index = props.collections.findIndex((c) => c.name === collectionName)
-  if (index !== -1) {
-    props.collections.splice(index, 1)
-    if (props.collections.length === 0) {
-      props.collections.push(createCollection('Default', props.config))
-    }
-    selectedCollectionName.value = props.collections[0].name
+  if (index === -1) return
+
+  props.collections.splice(index, 1)
+
+  if (props.collections.length === 0) {
+    const newCollection = createCollection('Default', props.config)
+    props.collections.push(newCollection)
+    selectedCollectionName.value = newCollection.name
   }
 }
 </script>
