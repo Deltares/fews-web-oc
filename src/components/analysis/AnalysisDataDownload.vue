@@ -29,7 +29,10 @@
 </template>
 
 <script setup lang="ts">
-import { convertJSDateToFewsPiParameter, getFilenameTimestamp } from '@/lib/date'
+import {
+  convertJSDateToFewsPiParameter,
+  getFilenameTimestamp,
+} from '@/lib/date'
 import { downloadFileAttachment } from '@/lib/download'
 import { getDownloadFileUrl } from '@/lib/download/download'
 import { configManager } from '@/services/application-config'
@@ -88,12 +91,11 @@ async function downloadFileSafe(
   try {
     await downloadFileAttachment(url, fileName, documentFormat, headers)
   } catch (error) {
-    if (error instanceof Error) {
-      alertStore.addAlert({
-        type: 'error',
-        message: error.message,
-      })
-    }
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    alertStore.addAlert({
+      type: 'error',
+      message,
+    })
   }
 }
 </script>

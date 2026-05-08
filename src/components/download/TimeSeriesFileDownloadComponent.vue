@@ -237,13 +237,12 @@ async function downloadFileSafe(
   try {
     await downloadFileAttachment(url, fileName, documentFormat, headers)
   } catch (error) {
-    if (error instanceof Error) {
-      alertStore.addAlert({
-        type: 'error',
-        message: error.message,
-      })
-      showDialog.value = false
-    }
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    alertStore.addAlert({
+      type: 'error',
+      message,
+    })
+    showDialog.value = false
   }
 }
 </script>
