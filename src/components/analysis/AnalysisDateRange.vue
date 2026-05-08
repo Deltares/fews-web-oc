@@ -1,7 +1,12 @@
 <template>
   <v-menu :close-on-content-click="false">
-    <template #activator="{ props }">
-      <v-btn v-bind="props" :text="getDateRangeString()" />
+    <template #activator="{ props, isActive }">
+      <!-- with down arrow -->
+      <v-btn v-bind="props" :text="getDateRangeString()" class="text-none">
+        <template #append>
+          <SelectIcon :active="isActive" />
+        </template>
+      </v-btn>
     </template>
 
     <v-card flat width="400">
@@ -63,6 +68,7 @@
 </template>
 
 <script setup lang="ts">
+import SelectIcon from '@/components/general/SelectIcon.vue'
 import { VDateInput } from 'vuetify/labs/components'
 import type { CollectionSettings } from '@/lib/analysis'
 import { useI18n } from 'vue-i18n'
