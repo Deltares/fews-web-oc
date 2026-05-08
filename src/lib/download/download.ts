@@ -6,7 +6,6 @@ import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import {
   type Filter,
   isCorrelationFilter,
-  isFilterActionsFilter,
   isTimeSeriesGridActionsFilter,
   isTimeSeriesTopologyActionsFilter,
 } from '@/lib/filters'
@@ -20,14 +19,6 @@ export function getDownloadFileUrl(
   const piProvider = new PiWebserviceProvider(baseUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
-
-  if (isFilterActionsFilter(filter)) {
-    return piProvider.timeSeriesFilterActionsUrl({
-      ...filter,
-      documentFormat: downloadFormat,
-      ...viewPeriod,
-    })
-  }
 
   if (isTimeSeriesGridActionsFilter(filter)) {
     return piProvider.timeSeriesGridUrl({

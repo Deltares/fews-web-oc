@@ -45,8 +45,5 @@ export function isCorrelationFilter(
 export function isTimeSeriesTopologyActionsFilter(
   filter: Filter,
 ): filter is TimeSeriesTopologyActionsFilter {
-  return (
-    (filter as TimeSeriesTopologyActionsFilter).timeSeriesDisplayIndex !==
-    undefined
-  )
+  return (filter as TimeSeriesTopologyActionsFilter).nodeId !== undefined
 }
