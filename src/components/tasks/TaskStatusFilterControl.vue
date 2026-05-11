@@ -30,7 +30,7 @@ import { ref } from 'vue'
 
 import {
   getAllTaskStatusCategories,
-  getCompleteTaskStatusCategories,
+  getExhaustiveTaskStatusCategories,
   getTaskStatusesForCategories,
   getTaskStatusCategoryName,
   TaskStatus,
@@ -68,7 +68,7 @@ function updateSelectedCategories(newStatuses: TaskStatus[]): void {
   if (newStatuses.length === taskStatusOptions.length) {
     selectedCategories.value = []
   } else {
-    selectedCategories.value = getCompleteTaskStatusCategories(newStatuses)
+    selectedCategories.value = getExhaustiveTaskStatusCategories(newStatuses)
   }
 }
 

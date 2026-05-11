@@ -69,18 +69,18 @@ export function getTaskStatusCategory(status: TaskStatus): TaskStatusCategory {
   return definition.category
 }
 
-export function getCompleteTaskStatusCategories(
+export function getExhaustiveTaskStatusCategories(
   statuses: TaskStatus[],
 ): TaskStatusCategory[] {
-  const completeCategories: TaskStatusCategory[] = []
+  const exhaustiveCategories: TaskStatusCategory[] = []
   for (const category of STATUS_CATEGORIES) {
     // If all statuses in this category are in the specified array, the category
     // is defined "complete" and included.
     if (category.statuses.every((status) => statuses.includes(status))) {
-      completeCategories.push(category.category)
+      exhaustiveCategories.push(category.category)
     }
   }
-  return completeCategories
+  return exhaustiveCategories
 }
 
 export function getTaskStatusesForCategories(

@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'vitest'
 
-import { getCompleteTaskStatusCategories } from './status'
+import { getExhaustiveTaskStatusCategories } from './status'
 import { TaskStatus, TaskStatusCategory } from './types'
 
-describe('getCompleteTaskStatusCategories', () => {
+describe('getExhaustiveTaskStatusCategories', () => {
   test('returns categories for which all statuses are present', () => {
-    const result = getCompleteTaskStatusCategories([
+    const result = getExhaustiveTaskStatusCategories([
       TaskStatus.Pending,
       TaskStatus.Running,
       TaskStatus.CompletedFullySuccessful,
@@ -22,7 +22,7 @@ describe('getCompleteTaskStatusCategories', () => {
   })
 
   test('does not include categories with only a subset of required statuses', () => {
-    const result = getCompleteTaskStatusCategories([
+    const result = getExhaustiveTaskStatusCategories([
       TaskStatus.CompletedFullySuccessful,
       TaskStatus.Approved,
       TaskStatus.CompletePartlySuccessful,
@@ -33,7 +33,7 @@ describe('getCompleteTaskStatusCategories', () => {
   })
 
   test('returns an empty array for empty input', () => {
-    const result = getCompleteTaskStatusCategories([])
+    const result = getExhaustiveTaskStatusCategories([])
 
     expect(result).toEqual([])
   })
