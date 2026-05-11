@@ -46,29 +46,31 @@
         />
       </template>
       <template #append-title>
-        <!-- show map toggle -->
-        <v-btn
-          prepend-icon="mdi-map"
-          :append-icon="showMap ? 'mdi-chevron-down' : 'mdi-chevron-right'"
-          variant="plain"
-          density="compact"
-          :active="showMap"
-          text="Show map"
-          @click="showMap = !showMap"
-        />
-      </template>
-      <template #prepend>
-        <div v-if="showMap" class="border rounded mb-1 flex-0-0 h-50">
-          <AnalysisMap :boundingBox>
-            <LocationsLayer
-              v-if="filterLocationGeoJson.features.length"
-              :locationsGeoJson="filterLocationGeoJson"
-              :selectedLocationIds="selectedLocationIds"
-              :locationsClickable="true"
-              @click="onLocationClick"
+        <v-menu :close-on-content-click="false">
+          <template #activator="{ props, isActive }">
+            <v-btn
+              prepend-icon="mdi-map"
+              :append-icon="isActive ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+              variant="plain"
+              density="compact"
+              :active="showMap"
+              text="Show map"
+              v-bind="props"
             />
-          </AnalysisMap>
-        </div>
+          </template>
+
+          <v-sheet width="400" height="300" class="overflow-hidden">
+            <AnalysisMap :boundingBox>
+              <LocationsLayer
+                v-if="filterLocationGeoJson.features.length"
+                :locationsGeoJson="filterLocationGeoJson"
+                :selectedLocationIds="selectedLocationIds"
+                :locationsClickable="true"
+                @click="onLocationClick"
+              />
+            </AnalysisMap>
+          </v-sheet>
+        </v-menu>
       </template>
     </SelectCard>
 
