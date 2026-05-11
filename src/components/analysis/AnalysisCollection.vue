@@ -11,11 +11,11 @@
     max-width="250"
   >
     <template #item="{ item, props }">
-      <v-list-item v-bind="props" :title="item.title">
+      <v-list-item v-bind="props" :title="item">
         <template #append>
           <v-dialog max-width="400">
             <template #activator="{ props }">
-              <v-btn v-bind="props" icon="mdi-delete" size="small" />
+              <v-btn v-bind="props" icon="mdi-delete" size="x-small" />
             </template>
             <template #default="{ isActive }">
               <v-card
@@ -28,13 +28,11 @@
                     variant="flat"
                     color="primary"
                     @click="isActive.value = false"
-                    text="cancel"
+                    text="Cancel"
                   />
                   <v-btn
-                    text="delete"
-                    @click="
-                      (deleteCollection(item.value), (isActive.value = false))
-                    "
+                    text="Delete"
+                    @click="(deleteCollection(item), (isActive.value = false))"
                   />
                 </v-card-actions>
               </v-card>

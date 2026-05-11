@@ -2,10 +2,14 @@
   <div>
     <v-menu>
       <template #activator="{ props }">
-        <v-btn v-bind="props" size="small" variant="tonal" :disabled>
-          {{ selectedFileType.title }}
-          <v-icon>mdi-chevron-down</v-icon>
-        </v-btn>
+        <v-btn
+          v-bind="props"
+          size="small"
+          variant="tonal"
+          :disabled
+          :text="selectedFileType.title"
+          append-icon="mdi-chevron-down"
+        />
       </template>
       <v-list>
         <v-list-item

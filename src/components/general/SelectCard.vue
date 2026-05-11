@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex flex-column overflow-auto">
-    <v-toolbar height="32" color="transparent">
+    <v-toolbar height="32" class="toolbar">
       <span class="ms-2">{{ label }}</span>
       <slot name="prepend-title" />
       <v-btn
@@ -101,5 +101,9 @@ function clearSelected() {
 
 :deep(.v-list-item-title) {
   font-size: 0.875rem;
+}
+
+.toolbar {
+  background-color: transparent;
 }
 </style>

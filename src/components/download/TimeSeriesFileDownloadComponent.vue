@@ -1,9 +1,6 @@
 <template>
   <v-dialog v-model="showDialog" max-width="400">
-    <v-card>
-      <v-card-title class="headline">{{
-        t('download.downloadTimeSeries')
-      }}</v-card-title>
+    <v-card :title="t('download.downloadTimeSeries')">
       <v-card-text>
         <v-text-field
           v-model="fileNameInput"
@@ -11,13 +8,16 @@
           variant="underlined"
           density="compact"
         >
-          <template v-slot:append>
+          <template #append>
             <v-menu>
               <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" size="small" variant="tonal">
-                  {{ fileType.title }}
-                  <v-icon>mdi-chevron-down</v-icon>
-                </v-btn>
+                <v-btn
+                  v-bind="props"
+                  size="small"
+                  variant="tonal"
+                  :text="fileType.title"
+                  append-icon="mdi-chevron-down"
+                />
               </template>
               <v-list>
                 <v-list-item

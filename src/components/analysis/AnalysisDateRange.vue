@@ -1,7 +1,7 @@
 <template>
   <v-menu :close-on-content-click="false">
     <template #activator="{ props, isActive }">
-      <v-btn v-bind="props" :text="getDateRangeString()">
+      <v-btn v-bind="props" :text="getDateRangeString()" class="date-range-btn">
         <template #append>
           <SelectIcon :active="isActive" />
         </template>
@@ -48,7 +48,6 @@
             type="number"
             :min="0"
             :disabled="!settings.liveUpdate.enabled"
-            control-variant="stacked"
             @blur="
               settings.liveUpdate.daysBeforeNow =
                 settings.liveUpdate.daysBeforeNow ?? 0
@@ -63,7 +62,6 @@
             type="number"
             :min="0"
             :disabled="!settings.liveUpdate.enabled"
-            control-variant="stacked"
             @blur="
               settings.liveUpdate.daysAfterNow =
                 settings.liveUpdate.daysAfterNow ?? 0
@@ -105,3 +103,9 @@ function getDateRangeString() {
   return rangeFormatter.value.formatRange(props.startTime, props.endTime)
 }
 </script>
+
+<style scoped>
+.date-range-btn {
+  font-size: 1rem;
+}
+</style>
