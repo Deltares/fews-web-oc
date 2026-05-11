@@ -40,6 +40,8 @@ describeFromVersion('202402', 'Share', () => {
   test('should change user setting of url', async ({ page }) => {
     let clipboardContent = await copyToClipboard(page)
 
+    await page.getByText('Apply settings').click()
+
     await page.getByText('Datum', { exact: true }).click()
 
     await page
