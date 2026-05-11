@@ -190,7 +190,7 @@ The classbreaks (legend) on the Spatial Display is only shown in the Web-OC when
 
 Optionally, gridded vector data can be shown as an animated layer in Web OC by configuring the `<animatedVectors>` settings in [Spatial Display](https://publicwiki.deltares.nl/display/FEWSDOC/01+Grid+Display).
 
-The desired mapExtentId should be configured on the topologyNode, through the <mapExtentId>Example</mapExtentId> element.
+In `Topology.xml`, the desired mapExtentId should be configured on the topologyNode through the ``<mapExtentId>myExtent</mapExtentId>`` element.
 ---
 
 
