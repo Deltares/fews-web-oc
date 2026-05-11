@@ -11,7 +11,12 @@
         :informationContent="tooltip"
       >
         <template #toolbar-append>
-          <v-btn size="small" icon @click="onToggleMaximize">
+          <v-btn
+            v-if="!props.hideFullscreenButton"
+            size="small"
+            icon
+            @click="onToggleMaximize"
+          >
             <v-icon>{{
               maximized ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
             }}</v-icon>
@@ -46,6 +51,8 @@ interface Props {
   locationsTooltipFilter?: LocationsTooltipFilter
   currentTime?: Date
   settings: ComponentSettings
+  maximized?: boolean
+  hideFullscreenButton?: boolean
 }
 
 const taskRunsStore = useTaskRunsStore()

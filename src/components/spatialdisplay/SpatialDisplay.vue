@@ -28,6 +28,7 @@
       <SpatialTimeSeriesDisplay
         @close="closeTimeSeriesDisplay"
         v-model:maximized="maximized"
+        :hide-fullscreen-button="containerIsMobileSize"
         :filter="filter"
         :brushFilter="brushFilter"
         :elevation-chart-filter="elevationChartFilter"
