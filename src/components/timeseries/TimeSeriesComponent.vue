@@ -19,7 +19,7 @@
             :panHandler="sharedPanHandler"
             :settings="settings.timeSeriesChart"
             :forecastLegend="config.forecastLegend"
-            :show-maximize-button="subplots.length > 1"
+            :show-maximize-button="subplots.length > 0"
             :maximized="maximizedSubplotId === subplot.id"
             @toggle-maximize="toggleMaximizeSubplot(subplot.id)"
           >
