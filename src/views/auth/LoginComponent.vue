@@ -84,7 +84,9 @@ watch(user, () => {
 })
 
 function login(): void {
-  authenticationManager.userManager.signinRedirect({ state: route.path })
+  authenticationManager.userManager.signinRedirect({
+    state: encodeURIComponent(route.fullPath),
+  })
 }
 
 function logout(): void {

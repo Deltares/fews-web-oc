@@ -2,14 +2,8 @@ import { WheelMode } from '@deltares/fews-web-oc-charts'
 import { defineStore } from 'pinia'
 import DefaultUserSettings from '@/assets/DefaultUserSettings.json'
 import { LayerKind } from '@/lib/streamlines'
-
-export const UserSettingsType = {
-  oneOfMultiple: 'oneOfMultiple',
-  boolean: 'boolean',
-} as const
-
-export type UserSettingsType =
-  (typeof UserSettingsType)[keyof typeof UserSettingsType]
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 
 export interface UserSettingsWithIcon {
   value: string
@@ -18,33 +12,37 @@ export interface UserSettingsWithIcon {
   icon?: string
 }
 
-export interface UserSettingsItemBoolean {
+interface UserSettingsItemBase {
   id: string
-  type: 'boolean'
   label: string
-  value: boolean
   disabled?: boolean
-  favorite?: boolean
+  favorite: boolean
   group: string
 }
 
-export interface UserSettingsItemOneOf {
-  id: string
+export interface UserSettingsItemBoolean extends UserSettingsItemBase {
+  type: 'boolean'
+  value: boolean
+}
+
+export interface UserSettingsItemOneOf extends UserSettingsItemBase {
   type: 'oneOfMultiple'
-  label: string
   value: string
   initialStorageValue?: string
-  disabled?: boolean
-  items?: UserSettingsWithIcon[]
-  favorite?: boolean
-  group: string
+  items: UserSettingsWithIcon[]
 }
 
 export type UserSettingsItem = UserSettingsItemBoolean | UserSettingsItemOneOf
 
+export interface UserSettingsGroup {
+  id: string
+  title: string
+  icon: string
+}
+
 export interface UserSettingsState {
   items: UserSettingsItem[]
-  groups: string[]
+  groups: UserSettingsGroup[]
   convertDatum: boolean
   useDisplayUnits: boolean
   preferredLayerKind: LayerKind | null
@@ -53,29 +51,30 @@ export interface UserSettingsState {
 const defaultUserSettings = DefaultUserSettings as UserSettingsItem[]
 const parameterGroupKey = 'units.parameterGroup.'
 
-export const useUserSettingsStore = defineStore('userSettings', {
-  state: (): UserSettingsState => ({
-    groups: ['Units', 'Datum', 'UI', 'Map', 'Charts'],
-    items: defaultUserSettings,
-    convertDatum: false,
-    useDisplayUnits: true,
-    preferredLayerKind: null,
-  }),
-  getters: {
-    listGroups: (state) => {
-      return state.groups
-    },
-    listByGroup: (state) => (group: string) => {
-      return state.items.filter((item) => item.group === group)
-    },
-    listFavorite: (state) => {
-      return state.items.filter((item) => item.favorite)
-    },
-    get: (state) => (id: string) => {
-      return state.items.find((item) => item.id === id)
-    },
-    scrollZoomMode: (state): WheelMode => {
-      const item = state.items.find(
+const defaultGroups: UserSettingsGroup[] = [
+  { id: 'Units', title: 'Units', icon: 'mdi-ruler' },
+  { id: 'Datum', title: 'Datum', icon: 'mdi-arrow-expand-vertical' },
+  { id: 'UI', title: 'UI', icon: 'mdi-palette' },
+  { id: 'Map', title: 'Map', icon: 'mdi-map' },
+  { id: 'Charts', title: 'Charts', icon: 'mdi-chart-line' },
+]
+
+export const useUserSettingsStore = defineStore(
+  'userSettings',
+  () => {
+    const groups = ref<UserSettingsGroup[]>(defaultGroups)
+    const items = ref<UserSettingsItem[]>([...defaultUserSettings])
+    const convertDatum = ref(false)
+    const useDisplayUnits = ref(true)
+    const preferredLayerKind = ref<LayerKind | null>(null)
+
+    const route = useRoute()
+
+    const listFavorite = computed(() =>
+      items.value.filter((item) => item.favorite),
+    )
+    const scrollZoomMode = computed<WheelMode>(() => {
+      const item = items.value.find(
         (item) => item.id === 'charts.scrollZoomMode',
       )
       switch (item?.value) {
@@ -90,43 +89,62 @@ export const useUserSettingsStore = defineStore('userSettings', {
         default:
           return WheelMode.X
       }
-    },
-  },
-  actions: {
-    add(item: UserSettingsItem) {
-      // Logic to add or update the item
-      const index = this.items.findIndex((i) => i.id === item.id)
+    })
+
+    function listByGroup(group: string) {
+      return items.value.filter((item) => item.group === group)
+    }
+
+    function get(id: string) {
+      if (route.query[id]) {
+        const item = items.value.find((item) => item.id === id)
+        if (item) {
+          if (item.type === 'boolean') {
+            return { ...item, value: route.query[id] === 'true' }
+          } else {
+            return { ...item, value: route.query[id] }
+          }
+        }
+      }
+
+      return items.value.find((item) => item.id === id)
+    }
+
+    function add(item: UserSettingsItem) {
+      const index = items.value.findIndex((i) => i.id === item.id)
       if (index === -1) {
-        this.items.push(item)
+        items.value.push(item)
       } else {
-        this.items[index] = item
+        items.value[index] = item
       }
       switch (item.id) {
         case 'units.displayUnits':
-          this.changeUseDisplayUnits(item.value as string)
+          changeUseDisplayUnits(item.value as string)
           break
         case 'datum.verticalDatum':
-          this.convertDatum = item.value as boolean
+          convertDatum.value = item.value as boolean
           break
         default:
           break
       }
-    },
-    updateSettingItems(id: string, items: UserSettingsWithIcon[]) {
-      const current = this.get(id)
+    }
+
+    function updateSettingItems(id: string, newItems: UserSettingsWithIcon[]) {
+      const current = get(id)
       if (current?.type !== 'oneOfMultiple') return
 
-      current.items = items
+      current.items = newItems
       if (
         current.initialStorageValue &&
         current.items.find((item) => item.value === current.initialStorageValue)
       ) {
         current.value = current.initialStorageValue
       }
-    },
-    changeUseDisplayUnits(payload: string) {
+    }
+
+    function changeUseDisplayUnits(payload: string) {
       const unitSettings: UserSettingsItemOneOf[] = []
-      for (const item of this.items) {
+      for (const item of items.value) {
         if (
           item.id.startsWith(parameterGroupKey) &&
           item.type === 'oneOfMultiple'
@@ -134,66 +152,85 @@ export const useUserSettingsStore = defineStore('userSettings', {
           unitSettings.push(item)
         }
       }
-      this.useDisplayUnits = payload === 'display'
+      useDisplayUnits.value = payload === 'display'
       if (payload !== 'custom') {
         const i = payload === 'system' ? 0 : 1
         for (const s of unitSettings) {
           const newValue = s.items ? s.items[i].value : ''
           s.value = newValue
-          this.add(s)
+          add(s)
         }
       }
-    },
+    }
+
+    return {
+      groups,
+      items,
+      convertDatum,
+      useDisplayUnits,
+      preferredLayerKind,
+      listByGroup,
+      listFavorite,
+      get,
+      scrollZoomMode,
+      add,
+      updateSettingItems,
+    }
   },
-  persist: [
-    {
-      key: 'weboc-user-settings-v1.0.0',
-      storage: window.localStorage,
-      pick: ['items'],
-      afterHydrate: (context) => {
-        const specialActionItems = ['units.displayUnits', 'datum.verticalDatum']
-        specialActionItems.forEach((id) => {
-          const item = context.store.items.find(
-            (item: UserSettingsItem) => item.id === id,
-          )
-          if (item) {
-            context.store.add(item)
-          }
-        })
-      },
-      serializer: {
-        serialize: (context) => {
-          return JSON.stringify(context)
-        },
-        deserialize: (data) => {
-          const parsedState = JSON.parse(data)
-          const newState = [...defaultUserSettings]
-          for (const prop of newState) {
-            const storedProp = parsedState.items.find(
-              (item: UserSettingsItem) => item.id === prop.id,
+  {
+    persist: [
+      {
+        key: 'weboc-user-settings-v1.0.0',
+        storage: window.localStorage,
+        pick: ['items'],
+        afterHydrate: (context) => {
+          const specialActionItems = [
+            'units.displayUnits',
+            'datum.verticalDatum',
+          ]
+          specialActionItems.forEach((id) => {
+            const item = context.store.items.find(
+              (item: UserSettingsItem) => item.id === id,
             )
-            if (storedProp) {
-              if (
-                prop.type === 'oneOfMultiple' &&
-                !prop.items
-                  ?.map((i: UserSettingsWithIcon) => i.value)
-                  .includes(storedProp.value)
-              ) {
-                const index = storedProp.items?.findIndex(
-                  (i: UserSettingsWithIcon) => i.value === storedProp.value,
-                )
-                const newValue = prop.items?.[index ?? -1]?.value
-                if (newValue) prop.value = newValue
-                prop.initialStorageValue = storedProp.value
-              } else {
-                prop.value = storedProp.value
-              }
-              prop.favorite = storedProp.favorite
+            if (item) {
+              context.store.add(item)
             }
-          }
-          return newState
+          })
+        },
+        serializer: {
+          serialize: (context) => {
+            return JSON.stringify(context)
+          },
+          deserialize: (data) => {
+            const parsedState = JSON.parse(data)
+            const newState = [...defaultUserSettings]
+            for (const prop of newState) {
+              const storedProp = parsedState.items.find(
+                (item: UserSettingsItem) => item.id === prop.id,
+              )
+              if (storedProp) {
+                if (
+                  prop.type === 'oneOfMultiple' &&
+                  !prop.items
+                    ?.map((i: UserSettingsWithIcon) => i.value)
+                    .includes(storedProp.value)
+                ) {
+                  const index = storedProp.items?.findIndex(
+                    (i: UserSettingsWithIcon) => i.value === storedProp.value,
+                  )
+                  const newValue = prop.items?.[index ?? -1]?.value
+                  if (newValue) prop.value = newValue
+                  prop.initialStorageValue = storedProp.value
+                } else {
+                  prop.value = storedProp.value
+                }
+                prop.favorite = storedProp.favorite
+              }
+            }
+            return newState
+          },
         },
       },
-    },
-  ],
-})
+    ],
+  },
+)

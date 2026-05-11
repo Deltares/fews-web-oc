@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, watch, watchEffect } from 'vue'
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import EmptyLayout from './layouts/EmptyLayout.vue'
 import Alerts from '@/components/general/Alerts.vue'
@@ -21,7 +21,7 @@ import { useConfigStore } from '@/stores/config.ts'
 import { getResourcesStaticUrl } from '@/lib/fews-config'
 import { useUserSettingsStore } from './stores/userSettings'
 import { useTheme } from 'vuetify'
-import { useDark, usePreferredDark, useToggle } from '@vueuse/core'
+import { useDark, usePreferredDark } from '@vueuse/core'
 import { useTaskRunMonitorStore } from './stores/taskRunMonitor'
 
 import '@/assets/fews-flags.css'
@@ -35,17 +35,12 @@ import { MapLayerConfig } from '@deltares/fews-pi-requests'
 const route = useRoute()
 const configStore = useConfigStore()
 const userSettingsStore = useUserSettingsStore()
-const { change } = useTheme()
+const { change: changeTheme } = useTheme()
 const prefersDark = usePreferredDark()
 const isDark = useDark()
-const toggleDark = useToggle(isDark)
 
 // Initialise task run monitoring.
 useTaskRunMonitorStore()
-
-onMounted(() => {
-  updateTheme()
-})
 
 const layoutComponent = computed(() => {
   if (window.location.href.includes('/embed/')) {
@@ -109,37 +104,23 @@ function updateUserSettingBaseMaps(config: MapLayerConfig) {
   settings.updateSettingItems('ui.map.theme', settingItems)
 }
 
-watch(prefersDark, () => updateTheme())
+watchEffect(() => {
+  const themeSetting = userSettingsStore.get('ui.theme')?.value
+  if (typeof themeSetting !== 'string') return
 
-function updateTheme(theme?: string) {
-  const themeSetting = theme ? theme : userSettingsStore.get('ui.theme')?.value
-  if (typeof themeSetting === 'string') {
-    if (themeSetting === 'auto') {
-      setTheme(prefersDark.value)
-    } else {
-      setTheme(themeSetting === 'dark')
-    }
-  }
-}
-
-function setTheme(setDark: boolean): void {
-  change(setDark ? 'dark' : 'light')
-  if (setDark !== isDark.value) {
-    toggleDark()
-  }
-}
-
-userSettingsStore.$onAction(({ name, args }) => {
-  if (name === 'add') {
-    const item = args[0]
-    switch (item.id) {
-      case 'ui.theme':
-        updateTheme(item.value as string)
-        break
-      default:
-    }
+  if (themeSetting === 'auto') {
+    setTheme(prefersDark.value)
+  } else {
+    setTheme(themeSetting === 'dark')
   }
 })
+
+function setTheme(setDark: boolean): void {
+  changeTheme(setDark ? 'dark' : 'light')
+  if (setDark !== isDark.value) {
+    isDark.value = setDark
+  }
+}
 </script>
 
 <style>

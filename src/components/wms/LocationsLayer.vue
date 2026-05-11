@@ -54,7 +54,7 @@ import {
 import { watch, onBeforeUnmount, computed, ref } from 'vue'
 import { onBeforeMount } from 'vue'
 import { addLocationIconsToMap } from '@/lib/location-icons'
-import { useDark } from '@vueuse/core'
+import { useDark } from '@/services/useDark'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import {
   mapIds,

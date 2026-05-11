@@ -1,91 +1,25 @@
 <template>
   <v-menu left bottom :close-on-content-click="false" class="menu">
-    <template v-slot:activator="{ props }">
+    <template #activator="{ props }">
       <v-btn v-bind="props" icon="mdi-cog" aria-label="User Settings" />
     </template>
     <v-list density="compact">
-      <v-list-item
-        v-for="(setting, index) in store.listFavorite"
-        :key="index"
-        :disabled="setting?.disabled"
-      >
-        <template v-if="setting.type === 'oneOfMultiple' && setting.items">
-          <v-list-item-subtitle>{{ setting.label }} </v-list-item-subtitle>
-          <v-list-item-action>
-            <v-btn-toggle
-              v-if="setting.items.length < 4"
-              density="compact"
-              class="my-2 multi-line-toggle"
-              v-model="setting.value"
-              mandatory
-              @update:model-value="onValueChange(setting)"
-            >
-              <v-btn
-                v-for="item of setting.items"
-                :key="item.value"
-                :value="item.value"
-                :disabled="item.disabled"
-                :aria-label="`${setting.label} ${item.title}`"
-              >
-                <v-icon v-if="item.icon">{{ item.icon }}</v-icon>
-                <span v-else>{{ item.title }}</span>
-                <v-tooltip activator="parent" location="top">{{
-                  item.title
-                }}</v-tooltip>
-              </v-btn>
-            </v-btn-toggle>
-            <v-select
-              v-else
-              v-model="setting.value"
-              :items="setting.items"
-              :disabled="setting.disabled"
-              variant="solo-filled"
-              density="compact"
-              item-title="title"
-              item-value="value"
-              :item-props="true"
-              flat
-              hide-details
-              :aria-label="`${setting.label}`"
-              class="my-2"
-              @click.preventDefault
-              @update:modelValue="onValueChange(setting)"
-            >
-              <template #item="{ props }">
-                <v-list-item
-                  v-bind="props"
-                  :disabled="props?.disabled === true"
-                  :aria-label="`${setting.label} ${props.title}`"
-                >
-                  <template #prepend>
-                    <v-icon>
-                      {{ props.icon }}
-                    </v-icon>
-                  </template>
-                </v-list-item>
-              </template>
-            </v-select>
-          </v-list-item-action>
-        </template>
-        <v-switch
-          v-if="setting.type === 'boolean'"
-          density="compact"
-          v-model="setting.value"
-          :label="setting.label"
-          color="primary"
-          class="ml-3"
-          :disabled="setting.disabled"
-          @update:modelValue="onValueChange(setting)"
-          hide-details
+      <template v-for="setting in store.listFavorite" :key="setting.id">
+        <UserSettingsOneOfMultiple
+          v-if="setting.type === 'oneOfMultiple'"
+          :setting="setting"
+          :model-value="setting.value"
+          @update:modelValue="updateModelValue({ ...setting, value: $event })"
           :aria-label="setting.label"
-        >
-          <template v-slot:label>
-            <v-label class="text-subtitle-2 text-medium-emphasis">{{
-              setting.label
-            }}</v-label>
-          </template>
-        </v-switch>
-      </v-list-item>
+        />
+        <UserSettingsBoolean
+          v-else-if="setting.type === 'boolean'"
+          :setting="setting"
+          :model-value="setting.value"
+          @update:modelValue="updateModelValue({ ...setting, value: $event })"
+          :aria-label="setting.label"
+        />
+      </template>
       <v-divider />
       <UserSettingsDialog>
         <template #activator="{ props }">
@@ -103,10 +37,9 @@
 </template>
 
 <script setup lang="ts">
-import {
-  type UserSettingsItem,
-  useUserSettingsStore,
-} from '@/stores/userSettings'
+import UserSettingsOneOfMultiple from './UserSettingsOneOfMultiple.vue'
+import UserSettingsBoolean from './UserSettingsBoolean.vue'
+import { UserSettingsItem, useUserSettingsStore } from '@/stores/userSettings'
 import UserSettingsDialog from './UserSettingsDialog.vue'
 import { useI18n } from 'vue-i18n'
 
@@ -114,8 +47,8 @@ const { t } = useI18n()
 
 const store = useUserSettingsStore()
 
-function onValueChange(item: UserSettingsItem) {
-  store.add(item)
+function updateModelValue(setting: UserSettingsItem) {
+  store.add(setting)
 }
 </script>
 
@@ -123,18 +56,5 @@ function onValueChange(item: UserSettingsItem) {
 .menu {
   position: relative;
   z-index: 10000;
-}
-
-.multi-line-toggle {
-  width: 200px;
-  flex-wrap: wrap;
-}
-
-.multi-line-toggle .v-btn {
-  height: 36px !important;
-}
-
-:deep(.v-btn-group--density-compact.v-btn-group) {
-  height: unset;
 }
 </style>

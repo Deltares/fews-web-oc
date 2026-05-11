@@ -62,7 +62,8 @@
     "importStatus": "Import Status",
     "nonCurrentData": "Nicht-Aktuelle Daten",
     "runTask": "Aufgabe ausführen",
-    "documentFile": "Informationen"
+    "documentFile": "Informationen",
+    "share": "Teilen"
   },
   "workflow": {
     "expectedRuntime": "Erwartete Laufzeit",
@@ -81,5 +82,13 @@
     "noExpectedRuntime": "Keine erwartete Laufzeit",
     "expectedTimeRemaining": "Verbleibende erwartete Zeit",
     "overranExpectedTimeBy": "Erwartete Zeit überschritten um"
+  },
+  "share": {
+    "applySettings": "Einstellungen anwenden",
+    "copyLink": "Link kopieren",
+    "iframe": "Iframe",
+    "link": "Link",
+    "linkCopied": "Kopiert",
+    "linkCopyFailed": "Link konnte nicht kopiert werden"
   }
 }

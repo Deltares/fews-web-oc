@@ -97,7 +97,7 @@
 <script setup lang="ts">
 import type { ImportStatus } from '@deltares/fews-pi-requests'
 import { toHumanReadableDateTime } from '@/lib/date'
-import { useDark } from '@vueuse/core'
+import { useDark } from '@/services/useDark'
 
 export interface ImportStatusDirectory extends ImportStatus {
   directory: string

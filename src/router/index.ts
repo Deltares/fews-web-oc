@@ -290,7 +290,11 @@ async function handleAuthorization(to: RouteLocationNormalized) {
   if (currentUser === null) {
     return {
       name: 'Login',
-      query: { redirect: to.redirectedFrom?.path ?? to.path },
+      query: {
+        redirect: encodeURIComponent(
+          to.redirectedFrom?.fullPath ?? to.fullPath,
+        ),
+      },
     }
   }
 }
@@ -380,14 +384,14 @@ function defaultRouteParams(to: RouteLocationNormalized) {
   return
 }
 
-router.beforeEach(async (to, from) => {
+router.beforeEach(async (to) => {
   let redirect: string | undefined = undefined
   if (to.name === 'Login' || to.name === 'AuthLogout') return
   if (to.name === 'AuthCallback') {
     try {
       const user =
         await authenticationManager.userManager.signinRedirectCallback()
-      if (user.state) redirect = user.state.toString()
+      if (user.state) redirect = decodeURIComponent(user.state.toString())
     } catch (error) {
       console.error(error)
     }

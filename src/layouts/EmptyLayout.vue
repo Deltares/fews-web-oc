@@ -1,35 +1,17 @@
 <template>
   <v-layout id="app">
-    <v-main id="main" class="d-flex align-center justify-center">
-      <Suspense>
-        <router-view
-          style="height: 100%"
-          :hasAppBar="false"
-          :hasSideBar="false"
-        />
-      </Suspense>
+    <v-main id="main">
+      <v-sheet class="w-100 h-100">
+        <Suspense>
+          <router-view :hasAppBar="false" :hasSideBar="false" />
+        </Suspense>
+      </v-sheet>
     </v-main>
   </v-layout>
 </template>
 
 <script setup lang="ts">
 import { useCustomStyleSheet } from '@/services/useCustomStyleSheet'
-import { onBeforeMount, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
-
-const currentItem = ref('')
-const route = useRoute()
-
-onBeforeMount(async () => {
-  currentItem.value = route.name?.toString() ?? ''
-})
-
-watch(
-  () => route.name,
-  async (name) => {
-    currentItem.value = name?.toString() ?? ''
-  },
-)
 
 useCustomStyleSheet()
 </script>
