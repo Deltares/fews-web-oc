@@ -251,7 +251,7 @@ const statusColor = computed(() =>
   getColorForTaskStatus(props.task.status, props.task.isCurrent),
 )
 const statusIcon = computed<string>(() =>
-  getIconForTaskStatus(props.task.status),
+  getIconForTaskStatus(props.task.status, props.task.isCurrent),
 )
 
 function onExpansionPanelToggle() {

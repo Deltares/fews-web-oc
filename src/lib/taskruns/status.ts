@@ -21,10 +21,16 @@ const STATUS_CATEGORIES: TaskStatusCategoryDefinition[] = [
     category: TaskStatusCategory.Completed,
     statuses: [
       TaskStatus.CompletedFullySuccessful,
-      TaskStatus.CompletePartlySuccessful,
       TaskStatus.Approved,
-      TaskStatus.ApprovedPartlySuccessful,
       TaskStatus.Amalgamated,
+    ],
+  },
+  {
+    name: 'Partly Completed',
+    category: TaskStatusCategory.PartlyCompleted,
+    statuses: [
+      TaskStatus.CompletePartlySuccessful,
+      TaskStatus.ApprovedPartlySuccessful,
       TaskStatus.PartlyCompleted,
     ],
   },
@@ -63,18 +69,18 @@ export function getTaskStatusCategory(status: TaskStatus): TaskStatusCategory {
   return definition.category
 }
 
-export function getCompleteTaskStatusCategories(
+export function getExhaustiveTaskStatusCategories(
   statuses: TaskStatus[],
 ): TaskStatusCategory[] {
-  const completeCategories: TaskStatusCategory[] = []
+  const exhaustiveCategories: TaskStatusCategory[] = []
   for (const category of STATUS_CATEGORIES) {
     // If all statuses in this category are in the specified array, the category
     // is defined "complete" and included.
     if (category.statuses.every((status) => statuses.includes(status))) {
-      completeCategories.push(category.category)
+      exhaustiveCategories.push(category.category)
     }
   }
-  return completeCategories
+  return exhaustiveCategories
 }
 
 export function getTaskStatusesForCategories(
@@ -86,7 +92,10 @@ export function getTaskStatusesForCategories(
   return categories.flatMap((category) => category.statuses)
 }
 
-export function getIconForTaskStatus(status: TaskStatus): string {
+export function getIconForTaskStatus(
+  status: TaskStatus,
+  isCurrent = false,
+): string {
   const category = getTaskStatusCategory(status)
   switch (category) {
     case TaskStatusCategory.Pending:
@@ -94,13 +103,15 @@ export function getIconForTaskStatus(status: TaskStatus): string {
     case TaskStatusCategory.Running:
       return 'mdi-spin mdi-cog'
     case TaskStatusCategory.Completed:
-      return 'mdi-check'
+      return isCurrent ? 'mdi-check-circle' : 'mdi-check'
+    case TaskStatusCategory.PartlyCompleted:
+      return 'mdi-progress-check'
     case TaskStatusCategory.Failed:
-      return 'mdi-alert-circle'
+      return 'mdi-alert-circle-outline'
   }
 }
 
-export function getColorForTaskStatus(status: TaskStatus, isCurrent = true) {
+export function getColorForTaskStatus(status: TaskStatus, isCurrent = false) {
   const category = getTaskStatusCategory(status)
   switch (category) {
     case TaskStatusCategory.Pending:
@@ -110,6 +121,9 @@ export function getColorForTaskStatus(status: TaskStatus, isCurrent = true) {
     case TaskStatusCategory.Completed:
       if (!isCurrent) return
       return 'success'
+    case TaskStatusCategory.PartlyCompleted:
+      if (!isCurrent) return 'grey-lighten-2'
+      return 'light-green-lighten-3'
     case TaskStatusCategory.Failed:
       return 'error'
   }
