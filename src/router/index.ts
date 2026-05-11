@@ -24,6 +24,8 @@ const SchematicStatusDisplay = () =>
 const SpatialDisplayView = () => import('../views/SpatialDisplayView.vue')
 const SpatialDisplay = () =>
   import('../components/spatialdisplay/SpatialDisplay.vue')
+const SpatialTimeSeriesDisplay = () =>
+  import('../components/spatialdisplay/SpatialTimeSeriesDisplay.vue')
 const WhatIfDisplayView = () => import('../views/WhatIfDisplayView.vue')
 const TimeSeriesDisplayView = () => import('../views/TimeSeriesDisplayView.vue')
 const TopologyDisplayView = () => import('../views/TopologyDisplayView.vue')
@@ -119,14 +121,14 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
     children: [
       {
         path: 'coordinates/:latitude/:longitude',
-        name: 'SpatialTimeSeriesDisplayWithCoordinates',
+        name: 'SpatialDisplayWithCoordinates',
         component: Empty,
         props: true,
         meta: { sidebar: true },
       },
       {
         path: 'location/:locationId',
-        name: 'SpatialTimeSeriesDisplay',
+        name: 'SpatialDisplayWithLocation',
         component: Empty,
         props: true,
         meta: { sidebar: true },
@@ -227,6 +229,29 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         meta: { sidebar: true },
       },
       {
+        path: 'chart/:layerName?',
+        name: 'TopologySpatialTimeSeriesDisplay',
+        component: SpatialTimeSeriesDisplay,
+        props: true,
+        meta: { sidebar: true },
+        children: [
+          {
+            path: 'location/:locationIds',
+            name: 'TopologySpatialTimeSeriesDisplayWithLocation',
+            component: Empty,
+            props: true,
+            meta: { sidebar: true },
+          },
+          {
+            path: 'coordinates/:latitude/:longitude',
+            name: 'TopologySpatialTimeSeriesDisplayWithCoordinates',
+            component: Empty,
+            props: true,
+            meta: { sidebar: true },
+          },
+        ],
+      },
+      {
         path: 'map/:layerName?',
         name: 'TopologySpatialDisplay',
         component: SpatialDisplay,
@@ -235,14 +260,14 @@ export const dynamicRoutes: Readonly<RouteRecordRaw[]> = [
         children: [
           {
             path: 'location/:locationIds',
-            name: 'TopologySpatialTimeSeriesDisplay',
+            name: 'TopologySpatialDisplayWithLocation',
             component: Empty,
             props: true,
             meta: { sidebar: true },
           },
           {
             path: 'coordinates/:latitude/:longitude',
-            name: 'TopologySpatialTimeSeriesDisplayWithCoordinates',
+            name: 'TopologySpatialDisplayWithCoordinates',
             component: Empty,
             props: true,
             meta: { sidebar: true },

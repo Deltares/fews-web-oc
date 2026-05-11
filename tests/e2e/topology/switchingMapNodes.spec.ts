@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 const base = '/topology/early_warning/node'
 
-test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplay', () => {
+test.describe('Switching Nodes with TopologySpatialDisplayWithLocation', () => {
   test('when switching nodes the location has to be remembered', async ({
     page,
   }) => {
@@ -41,7 +41,7 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplay', () => {
   })
 })
 
-test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplayWithCoordinates', () => {
+test.describe('Switching Nodes with TopologySpatialDisplayWithCoordinates', () => {
   test('when switching nodes the coordinates remembered', async ({ page }) => {
     await page.goto(
       `${base}/viewer_meteorology_rainfall_forecast/viewer_meteorology_rainfall_forecast_saws_1x1/map/saws1/coordinates/-29.115/32.083`,

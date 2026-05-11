@@ -80,10 +80,10 @@ export async function displayTabsForNode(
         }
 
         if (from?.params.locationIds) {
-          tab.to.name = 'TopologySpatialTimeSeriesDisplay'
+          tab.to.name = 'TopologySpatialDisplayWithLocation'
           tab.to.params.locationIds = from.params.locationIds
         } else if (from?.params.latitude && from?.params.longitude) {
-          tab.to.name = 'TopologySpatialTimeSeriesDisplayWithCoordinates'
+          tab.to.name = 'TopologySpatialDisplayWithCoordinates'
           tab.to.params.latitude = from.params.latitude
           tab.to.params.longitude = from.params.longitude
         } else {

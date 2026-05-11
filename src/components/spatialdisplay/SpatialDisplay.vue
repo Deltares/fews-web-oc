@@ -26,16 +26,29 @@
     </div>
     <div v-if="showChartPanel" class="child-container flex-column d-flex">
       <SpatialTimeSeriesDisplay
-        @close="closeTimeSeriesDisplay"
-        v-model:maximized="maximized"
-        :hide-fullscreen-button="containerIsMobileSize"
-        :filter="filter"
-        :brushFilter="brushFilter"
-        :elevation-chart-filter="elevationChartFilter"
-        :locations-tooltip-filter="locationsTooltipFilter"
-        :current-time="currentTime"
+        :layerName="layerName"
+        :locationIds="locationIds"
+        :latitude="latitude"
+        :longitude="longitude"
+        :topologyNode="topologyNode"
         :settings="settings"
-      />
+        :currentTime="currentTime"
+        :elevation="elevation"
+        :hide-fullscreen-button="containerIsMobileSize"
+      >
+        <template #toolbar-append>
+          <v-btn
+            size="small"
+            :icon="maximized ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
+            @click="maximized = !maximized"
+          />
+          <v-btn
+            size="small"
+            icon="mdi-close"
+            @click="closeTimeSeriesDisplay"
+          />
+        </template>
+      </SpatialTimeSeriesDisplay>
     </div>
   </div>
 </template>
@@ -46,15 +59,7 @@ import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayC
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
 import { useWmsLayerCapabilities } from '@/services/useWms'
-import {
-  filterActionsFilter,
-  LocationsTooltipFilter,
-  timeSeriesGridActionsFilter,
-  type TopologyNode,
-} from '@deltares/fews-pi-requests'
-import { toMercator } from '@turf/projection'
-import circle from '@turf/circle'
-import bbox from '@turf/bbox'
+import { type TopologyNode } from '@deltares/fews-pi-requests'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import {
@@ -186,131 +191,9 @@ const onlyCoverageLayersAvailable = computed(() => {
   return capabilities.onlyGrids ?? true
 })
 
-function getFilterActionsFilter(
-  locationIds: string,
-  fullDataPeriod?: boolean,
-): filterActionsFilter {
-  return {
-    locationIds,
-    filterId: filterIds.value ? filterIds.value[0] : undefined,
-    useDisplayUnits: userSettings.useDisplayUnits,
-    convertDatum: userSettings.convertDatum,
-    fullDataPeriod,
-  }
-}
-
-function getTimeSeriesGridActionsFilter(
-  longitude: string,
-  latitude: string,
-): (timeSeriesGridActionsFilter & { useDisplayUnits: boolean }) | undefined {
-  if (!longitude || !latitude) return
-  if (!layerCapabilities.value?.boundingBox) return
-  if (!layerCapabilities.value?.firstValueTime) return
-  if (!layerCapabilities.value?.lastValueTime) return
-
-  const coordinates = [+longitude, +latitude]
-  const [x, y] = toMercator(coordinates)
-  const clickRadius = circle(coordinates, 10, { steps: 4, units: 'kilometers' })
-  const bboxArray = bbox(clickRadius)
-  const mercatorBbox = [
-    ...toMercator(bboxArray.slice(0, 2)),
-    ...toMercator(bboxArray.slice(-2)),
-  ]
-  const startTime = layerCapabilities.value.firstValueTime
-  const endTime = layerCapabilities.value.lastValueTime
-
-  return {
-    layers: props.layerName,
-    x,
-    y,
-    startTime,
-    endTime,
-    bbox: mercatorBbox,
-    documentFormat: 'PI_JSON',
-    useDisplayUnits: userSettings.useDisplayUnits,
-    // Should be available according to the docs, but errors
-    // convertDatum: settings.convertDatum,
-  }
-}
-
-const brushFilter = computed(() => {
-  if (!userSettings.get('charts.brush')?.value) {
-    return
-  }
-  if (props.locationIds) {
-    return getFilterActionsFilter(props.locationIds, true)
-  }
-  if (props.longitude && props.latitude) {
-    return getTimeSeriesGridActionsFilter(props.longitude, props.latitude)
-  }
-  return {}
-})
-
-const filter = computed(() => {
-  if (props.locationIds) {
-    return getFilterActionsFilter(props.locationIds)
-  }
-
-  if (props.longitude && props.latitude) {
-    const actionsFilter = getTimeSeriesGridActionsFilter(
-      props.longitude,
-      props.latitude,
-    )
-    if (!actionsFilter) return {}
-
-    return {
-      ...actionsFilter,
-      elevation:
-        elevation.value ?? layerCapabilities.value?.elevation?.upperValue,
-    }
-  }
-
-  return {}
-})
-
 const showChartPanel = computed(() => {
   return props.locationIds || (props.longitude && props.latitude)
 })
-
-const shouldFetchElevationChart = computed(
-  () =>
-    props.settings.charts.verticalProfileChart.enabled ||
-    props.settings.charts.verticalProfileTable.enabled,
-)
-
-const elevationChartFilter = computed(() => {
-  if (!shouldFetchElevationChart.value) return
-  if (!layerCapabilities.value?.elevation) return
-
-  if (props.longitude && props.latitude) {
-    const actionsFilter = getTimeSeriesGridActionsFilter(
-      props.longitude,
-      props.latitude,
-    )
-    if (!actionsFilter) return
-
-    return {
-      ...actionsFilter,
-      showVerticalProfile: true,
-    }
-  }
-})
-
-const shouldFetchLocationsTooltip = computed(
-  () => props.settings.charts.metaDataPanel.enabled,
-)
-
-const locationsTooltipFilter = computed<LocationsTooltipFilter | undefined>(
-  () => {
-    if (!shouldFetchLocationsTooltip.value) return
-    if (props.locationIds === undefined) return
-    if (filterIds.value.length === 0) return
-    return {
-      locationId: props.locationIds?.split(',')[0],
-      filterId: filterIds.value[0],
-    }
-  },
-)
 
 const elevation = ref<number | undefined>()
 const currentTime = ref<Date>()
@@ -342,7 +225,7 @@ function onLocationsChange(locationIds: string[]): void {
 function onLayerChange(layerName: string): void {
   if (props.locationIds) {
     emit('navigate', {
-      name: 'SpatialTimeSeriesDisplay',
+      name: 'SpatialDisplayWithLocation',
       params: { layerName, locationIds: props.locationIds },
     })
     return
@@ -350,7 +233,7 @@ function onLayerChange(layerName: string): void {
 
   if (props.longitude && props.latitude) {
     emit('navigate', {
-      name: 'SpatialTimeSeriesDisplayWithCoordinates',
+      name: 'SpatialDisplayWithCoordinates',
       params: {
         layerName,
         latitude: props.latitude,
@@ -370,7 +253,7 @@ function onLayerChange(layerName: string): void {
 
 function openLocationsTimeSeriesDisplay(locationIds: string[]) {
   const to = {
-    name: 'SpatialTimeSeriesDisplay',
+    name: 'SpatialDisplayWithLocation',
     params: { locationIds: locationIds.join(',') },
   }
   emit('navigate', to)
@@ -387,7 +270,7 @@ function openCoordinatesTimeSeriesDisplay(latitude: number, longitude: number) {
   const _longitude = longitude.toFixed(3)
 
   const to = {
-    name: 'SpatialTimeSeriesDisplayWithCoordinates',
+    name: 'SpatialDisplayWithCoordinates',
     params: {
       latitude: _latitude,
       longitude: _longitude,

@@ -11,19 +11,7 @@
         :informationContent="tooltip"
       >
         <template #toolbar-append>
-          <v-btn
-            v-if="!props.hideFullscreenButton"
-            size="small"
-            icon
-            @click="onToggleMaximize"
-          >
-            <v-icon>{{
-              maximized ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
-            }}</v-icon>
-          </v-btn>
-          <v-btn size="small" icon @click="onClose">
-            <v-icon size="small">mdi-close</v-icon>
-          </v-btn>
+          <slot name="toolbar-append" />
         </template>
       </TimeSeriesWindowComponent>
     </div>
@@ -57,11 +45,6 @@ interface Props {
 const taskRunsStore = useTaskRunsStore()
 
 const props = defineProps<Props>()
-const emit = defineEmits<{
-  close: []
-}>()
-
-const maximized = defineModel<boolean>('maximized', { default: false })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
@@ -93,12 +76,4 @@ const { tooltip } = useLocationTooltip(
   baseUrl,
   () => props.locationsTooltipFilter,
 )
-
-function onClose(): void {
-  emit('close')
-}
-
-function onToggleMaximize(): void {
-  maximized.value = !maximized.value
-}
 </script>

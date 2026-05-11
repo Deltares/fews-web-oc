@@ -9,7 +9,16 @@ import {
   Layer,
   WMSProvider,
 } from '@deltares/fews-wms-requests'
-import { MaybeRefOrGetter, ref, Ref, toValue, watchEffect } from 'vue'
+import {
+  inject,
+  InjectionKey,
+  MaybeRefOrGetter,
+  provide,
+  ref,
+  Ref,
+  toValue,
+  watchEffect,
+} from 'vue'
 // @ts-ignore
 import { toWgs84 } from '@turf/projection'
 // @ts-ignore
@@ -25,6 +34,10 @@ import { TimeSeriesData } from '@/lib/timeseries/types/SeriesData'
 import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
 import { getTimesFromCapabilities } from '@/lib/capabilities'
 
+const WMS_LAYER_CAPABILITIES_KEY: InjectionKey<UseWmsReturn> = Symbol(
+  'wmsLayerCapabilities',
+)
+
 export interface UseWmsReturn {
   layerCapabilities: Ref<Layer | undefined>
   times: Ref<Date[] | undefined>
@@ -34,6 +47,12 @@ export function useWmsLayerCapabilities(
   layerName: MaybeRefOrGetter<string>,
   taskRunId: MaybeRefOrGetter<string | undefined>,
 ): UseWmsReturn {
+  // If a parent component has already provided WMS layer capabilities, use those instead of fetching them again.
+  const parent = inject(WMS_LAYER_CAPABILITIES_KEY, undefined)
+  if (parent) {
+    return parent
+  }
+
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
     transformRequestFn: createTransformRequestFn(),
@@ -82,7 +101,9 @@ export function useWmsLayerCapabilities(
 
   watchEffect(fetch)
 
-  return { layerCapabilities, times }
+  const result = { layerCapabilities, times }
+  provide(WMS_LAYER_CAPABILITIES_KEY, result)
+  return result
 }
 
 export function useWmsLegend(

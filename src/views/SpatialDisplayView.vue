@@ -135,7 +135,7 @@ function attachLayersToMenu(
 
 function onNavigate(to: NavigateRoute) {
   switch (to.name) {
-    case 'SpatialTimeSeriesDisplay':
+    case 'SpatialDisplayWithLocation':
       router.push({
         name: to.name,
         params: {
@@ -145,7 +145,7 @@ function onNavigate(to: NavigateRoute) {
         query: route.query,
       })
       break
-    case 'SpatialTimeSeriesDisplayWithCoordinates':
+    case 'SpatialDisplayWithCoordinates':
       router.push({
         name: to.name,
         params: {
