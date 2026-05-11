@@ -94,7 +94,7 @@ export function getTaskStatusesForCategories(
 
 export function getIconForTaskStatus(
   status: TaskStatus,
-  isCurrent = true,
+  isCurrent = false,
 ): string {
   const category = getTaskStatusCategory(status)
   switch (category) {
@@ -111,7 +111,7 @@ export function getIconForTaskStatus(
   }
 }
 
-export function getColorForTaskStatus(status: TaskStatus, isCurrent = true) {
+export function getColorForTaskStatus(status: TaskStatus, isCurrent = false) {
   const category = getTaskStatusCategory(status)
   switch (category) {
     case TaskStatusCategory.Pending:
