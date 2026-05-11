@@ -25,23 +25,25 @@
       :settings="settings.legend"
       @toggle-line="toggleLine"
     />
+    <v-tooltip
+      :text="maximized ? $t('common.restoreChart') : $t('common.maximizeChart')"
+    >
+      <template v-slot:activator="{ props }">
+        <v-btn
+          class="chart-maximize-btn"
+          icon
+          variant="plain"
+          v-bind="props"
+          @click="$emit('toggle-maximize')"
+        >
+          <v-icon>{{
+            maximized ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'
+          }}</v-icon>
+        </v-btn>
+      </template>
+    </v-tooltip>
     <div ref="chartContainer" class="chart-container"></div>
     <slot name="brush" :margin="margin" />
-    <v-btn
-      v-if="showMaximizeButton"
-      class="chart-maximize-btn"
-      size="x-small"
-      icon
-      variant="flat"
-      :title="
-        maximized ? $t('common.restoreChart') : $t('common.maximizeChart')
-      "
-      @click="$emit('toggle-maximize')"
-    >
-      <v-icon>{{
-        maximized ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'
-      }}</v-icon>
-    </v-btn>
   </div>
 </template>
 
@@ -103,7 +105,6 @@ interface Props {
   verticalProfile?: boolean
   forecastLegend?: string
   settings: ChartsSettings['timeSeriesChart']
-  showMaximizeButton?: boolean
   maximized?: boolean
 }
 
@@ -401,9 +402,11 @@ function axisAccept(visitor: Visitor) {
 
 .chart-maximize-btn {
   position: absolute;
-  top: 8px;
+  top: 0px;
   right: 8px;
   opacity: 0;
+  width: 32px;
+  height: 32px;
   transition: opacity 0.15s;
   z-index: 1;
 }
