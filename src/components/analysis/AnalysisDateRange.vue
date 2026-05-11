@@ -1,8 +1,7 @@
 <template>
   <v-menu :close-on-content-click="false">
     <template #activator="{ props, isActive }">
-      <!-- with down arrow -->
-      <v-btn v-bind="props" :text="getDateRangeString()" class="text-none">
+      <v-btn v-bind="props" :text="getDateRangeString()">
         <template #append>
           <SelectIcon :active="isActive" />
         </template>

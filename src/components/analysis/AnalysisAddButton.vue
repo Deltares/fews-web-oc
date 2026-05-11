@@ -7,7 +7,6 @@
     :color="disabled ? undefined : 'primary'"
     :loading="loading"
     @click="emit('click', $event)"
-    class="text-none"
   />
 </template>
 
