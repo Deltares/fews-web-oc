@@ -1,6 +1,57 @@
 <template>
   <div class="pa-4 h-100 overflow-auto">
-    <CopyUrlField :url="embedUrl" />
+    <div class="d-flex flex-column ga-4">
+      <div class="d-flex ga-2">
+        <v-btn-toggle v-model="embedType" density="compact" border mandatory>
+          <v-btn
+            value="link"
+            :text="t('share.link')"
+            prepend-icon="mdi-link-variant"
+          />
+          <v-btn
+            value="iframe"
+            :text="t('share.iframe')"
+            prepend-icon="mdi-code-tags"
+          />
+        </v-btn-toggle>
+        <v-btn-toggle
+          v-if="routeHasMap"
+          v-model="viewType"
+          density="compact"
+          border
+          mandatory
+        >
+          <v-btn value="map" :text="t('share.map')" prepend-icon="mdi-map" />
+          <v-btn
+            value="chart"
+            :text="t('share.chart')"
+            prepend-icon="mdi-chart-line"
+            :class="{ disabled: !routeHasChart }"
+          />
+        </v-btn-toggle>
+      </div>
+      <CopyUrlField :url />
+      <div v-if="embedType === 'iframe'" class="d-flex ga-2">
+        <v-number-input
+          v-model.number="iframeWidth"
+          :min="0"
+          :step="100"
+          label="Width"
+          density="compact"
+          hide-details
+          variant="outlined"
+        />
+        <v-number-input
+          v-model.number="iframeHeight"
+          :min="0"
+          :step="100"
+          label="Height"
+          density="compact"
+          hide-details
+          variant="outlined"
+        />
+      </div>
+    </div>
 
     <v-card flat border class="my-4">
       <v-toolbar density="compact">
@@ -50,55 +101,104 @@
 
 <script lang="ts" setup>
 import CopyUrlField from './CopyUrlField.vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import UserSettingsBoolean from '@/components/user-settings/UserSettingsBoolean.vue'
 import UserSettingsOneOfMultiple from '@/components/user-settings/UserSettingsOneOfMultiple.vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const route = useRoute()
+const router = useRouter()
 const store = useUserSettingsStore()
 const { t } = useI18n()
 
 const applySettings = ref(false)
+const embedType = ref<'link' | 'iframe'>('link')
+const viewType = ref<'map' | 'chart'>('map')
 const settings = ref(store.items.map((item) => ({ ...item })))
 
 function getSettingsByGroup(groupId: string) {
   return settings.value.filter((s) => s.group === groupId)
 }
 
+const routeHasMap = computed(() => {
+  return (
+    typeof route.name === 'string' &&
+    route.name.startsWith('TopologySpatialDisplay')
+  )
+})
+
+const routeHasChart = computed(() => {
+  return (
+    route.params.locationIds !== undefined ||
+    route.params.latitude !== undefined ||
+    route.params.longitude !== undefined
+  )
+})
+
+watch(routeHasChart, (newValue) => {
+  if (!newValue && viewType.value === 'chart') {
+    viewType.value = 'map'
+  }
+})
+
 const embedUrl = computed(() => {
-  const url = new URL(window.location.href)
-  // Insert '/embed' after the base path (route.matched[0].path)
-  const basePath = route.matched[0]?.path || ''
-  if (url.pathname.startsWith(basePath)) {
-    url.pathname =
-      basePath.replace(/\/$/, '') +
-      '/embed' +
-      url.pathname.slice(basePath.length)
-  } else {
-    url.pathname = '/embed' + url.pathname
+  const newRoute = {
+    name: route.name,
+    params: { ...route.params },
+    query: { ...route.query },
   }
 
+  newRoute.params['embed'] = 'embed'
+
   if (applySettings.value) {
-    const params = url.searchParams
     settings.value.forEach((setting) => {
       if (setting.type === 'boolean') {
-        params.set(setting.id, setting.value ? 'true' : 'false')
+        newRoute.query[setting.id] = setting.value ? 'true' : 'false'
       } else if (setting.type === 'oneOfMultiple') {
-        params.set(setting.id, setting.value)
+        newRoute.query[setting.id] = setting.value
       }
     })
   }
 
-  return url.toString()
+  if (
+    routeHasMap.value &&
+    viewType.value === 'chart' &&
+    typeof route.name === 'string'
+  ) {
+    newRoute.name = route.name.replace(
+      'TopologySpatialDisplay',
+      'TopologySpatialTimeSeriesDisplay',
+    )
+  }
+
+  const href = router.resolve(newRoute).href
+
+  return new URL(href, window.location.origin).toString()
+})
+
+const iframeWidth = ref(600)
+const iframeHeight = ref(400)
+
+const url = computed(() => {
+  switch (embedType.value) {
+    case 'link':
+      return embedUrl.value
+    case 'iframe':
+      return `<iframe src="${embedUrl.value}" width="${iframeWidth.value}" height="${iframeHeight.value}" frameborder="0" allowfullscreen></iframe>`
+  }
 })
 </script>
 
 <style scoped>
 :deep(.v-list-group__items .v-list-item) {
   --indent-padding: 0px;
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: var(--v-disabled-opacity);
 }
 </style>

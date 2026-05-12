@@ -102,6 +102,8 @@
     "iframe": "Iframe",
     "link": "Link",
     "linkCopied": "Copied",
-    "linkCopyFailed": "Failed to copy link"
+    "linkCopyFailed": "Failed to copy link",
+    "map": "Map",
+    "chart": "Chart"
   }
 }

@@ -1,71 +1,32 @@
 <template>
-  <div class="d-flex flex-column ga-4">
-    <div>
-      <v-tabs v-model="tab">
-        <v-tab
-          value="link"
-          :text="t('share.link')"
-          prepend-icon="mdi-link-variant"
-        />
-        <v-tab
-          value="iframe"
-          :text="t('share.iframe')"
-          prepend-icon="mdi-code-tags"
-        />
-      </v-tabs>
-      <v-divider />
-    </div>
-
-    <v-text-field
-      :model-value="displayValue"
-      readonly
-      hide-details
-      density="compact"
-      ref="field"
-      @focus="selectEmbedUrl"
-      :disabled="!url"
-      variant="outlined"
-      class="text-mono"
-    >
-      <template #append-inner>
-        <v-btn
-          :icon="state.icon"
-          :color="state.color"
-          v-tooltip:bottom="state.tooltip"
-          @click.stop="copyToClipboard"
-          density="comfortable"
-          aria-label="Copy to clipboard"
-        >
-          <v-icon size="small">{{ state.icon }}</v-icon>
-        </v-btn>
-      </template>
-    </v-text-field>
-
-    <div v-if="tab === 'iframe'" class="d-flex ga-2">
-      <v-number-input
-        v-model.number="iframeWidth"
-        :min="0"
-        :step="100"
-        label="Width"
-        density="compact"
-        hide-details
-        variant="outlined"
-      />
-      <v-number-input
-        v-model.number="iframeHeight"
-        :min="0"
-        :step="100"
-        label="Height"
-        density="compact"
-        hide-details
-        variant="outlined"
-      />
-    </div>
-  </div>
+  <v-text-field
+    :model-value="url"
+    readonly
+    hide-details
+    density="compact"
+    ref="field"
+    @focus="selectEmbedUrl"
+    :disabled="!url"
+    variant="outlined"
+    class="text-mono"
+  >
+    <template #append-inner>
+      <v-btn
+        :icon="state.icon"
+        :color="state.color"
+        v-tooltip:bottom="state.tooltip"
+        @click.stop="copyToClipboard"
+        density="comfortable"
+        aria-label="Copy to clipboard"
+      >
+        <v-icon size="small">{{ state.icon }}</v-icon>
+      </v-btn>
+    </template>
+  </v-text-field>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, useTemplateRef, watch } from 'vue'
+import { ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 interface Props {
@@ -85,22 +46,12 @@ const initialState = {
 
 const state = ref({ ...initialState })
 
-const tab = ref<'link' | 'iframe'>('link')
-const iframeWidth = ref(600)
-const iframeHeight = ref(400)
-
-const displayValue = computed(() => {
-  switch (tab.value) {
-    case 'link':
-      return props.url
-    case 'iframe':
-      return `<iframe src="${props.url}" width="${iframeWidth.value}" height="${iframeHeight.value}" frameborder="0" allowfullscreen></iframe>`
-  }
-})
-
-watch(tab, () => {
-  resetCopyState()
-})
+watch(
+  () => props.url,
+  () => {
+    resetCopyState()
+  },
+)
 
 function resetCopyState() {
   state.value = { ...initialState }
@@ -114,7 +65,7 @@ function delayedResetCopyState() {
 
 async function copyToClipboard() {
   try {
-    await navigator.clipboard.writeText(displayValue.value)
+    await navigator.clipboard.writeText(props.url)
     state.value = {
       icon: 'mdi-check',
       tooltip: t('share.linkCopied'),

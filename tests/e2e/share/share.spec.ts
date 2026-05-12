@@ -29,7 +29,7 @@ describeFromVersion('202402', 'Share', () => {
   })
 
   test('should copy iframe with embed url', async ({ page }) => {
-    await page.getByRole('tab', { name: 'Iframe' }).click()
+    await page.getByRole('button', { name: 'Iframe' }).click()
 
     const clipboardContent = await copyToClipboard(page)
 
