@@ -1,7 +1,18 @@
 import type { DeepRequired } from '@/lib/utils/types'
 import type { ChartsSettings as PiChartsSettings } from '@deltares/fews-pi-requests'
 
-export type ChartsSettings = DeepRequired<PiChartsSettings>
+type PiChart = NonNullable<PiChartsSettings['timeSeriesChart']>
+type PiTimeSeriesTable = NonNullable<PiChartsSettings['timeSeriesTable']>
+
+export type ChartsSettings = Omit<
+  DeepRequired<PiChartsSettings>,
+  'timeSeriesChart' | 'timeSeriesTable'
+> & {
+  timeSeriesChart: DeepRequired<PiChart> & { locationEnabledAttribute?: string }
+  timeSeriesTable: DeepRequired<PiTimeSeriesTable> & {
+    locationEnabledAttribute?: string
+  }
+}
 
 export const defaultChartSettings: ChartsSettings = {
   general: {

@@ -3,12 +3,18 @@ import {
   defaultMapSettings,
   defaultSchematicStatusDisplaySettings,
   defaultReportSettings,
+  type ChartsSettings,
 } from '.'
 import { WebOCComponentSettingsClass } from '@deltares/fews-pi-requests'
 import { DeepRequired } from '@/lib/utils/types'
 import { merge } from 'lodash-es'
 
-export type ComponentSettings = DeepRequired<WebOCComponentSettingsClass>
+export type ComponentSettings = Omit<
+  DeepRequired<WebOCComponentSettingsClass>,
+  'charts'
+> & {
+  charts: ChartsSettings
+}
 
 export function getDefaultSettings(): ComponentSettings {
   return {
