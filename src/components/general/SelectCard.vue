@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex flex-column overflow-auto">
-    <v-toolbar height="32" color="transparent">
+    <v-toolbar height="32" class="toolbar">
       <span class="ms-2">{{ label }}</span>
       <slot name="prepend-title" />
       <v-btn
@@ -28,6 +28,8 @@
         :title="getItemTitle?.(item) ?? String(item)"
         :lines="false"
         density="compact"
+        min-height="25"
+        class="py-0"
       >
         <template v-if="multiple" #prepend="{ isSelected, select }">
           <v-list-item-action start>
@@ -91,3 +93,17 @@ function clearSelected() {
   }
 }
 </script>
+
+<style scoped>
+:deep(.v-list-item) {
+  font-size: 0.875rem;
+}
+
+:deep(.v-list-item-title) {
+  font-size: 0.875rem;
+}
+
+.toolbar {
+  background-color: transparent;
+}
+</style>

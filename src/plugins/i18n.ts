@@ -1,7 +1,7 @@
 import { createI18n, I18n, I18nOptions } from 'vue-i18n'
 
 const datetimeFormats: I18nOptions['datetimeFormats'] = {
-  en: {
+  'en-GB': {
     timeControl: {
       hour: '2-digit',
       minute: '2-digit',
@@ -58,13 +58,16 @@ const appLocales: Record<string, LocaleModule> = {
 export async function loadLocale(locale: string) {
   const messages: Record<string, any> = {}
 
-  if (vuetifyLocales[locale]) {
-    const v = await vuetifyLocales[locale]()
+  // Use only the language code (e.g., 'en' from 'en-US')
+  const languageCode = locale.split('-')[0]
+
+  if (vuetifyLocales[languageCode]) {
+    const v = await vuetifyLocales[languageCode]()
     Object.assign(messages, { $vuetify: v.default })
   }
 
-  if (appLocales[locale]) {
-    const a = await appLocales[locale]()
+  if (appLocales[languageCode]) {
+    const a = await appLocales[languageCode]()
     Object.assign(messages, a.default)
   }
   i18n.global.setLocaleMessage(locale, messages)
@@ -88,7 +91,7 @@ export async function setI18nLanguage(
 
 export const i18n = createI18n({
   legacy: false,
-  fallbackLocale: 'en',
+  fallbackLocale: 'en-GB',
   messages: {},
   datetimeFormats,
   fallbackWarn: false,

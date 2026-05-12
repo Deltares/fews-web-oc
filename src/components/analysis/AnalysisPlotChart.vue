@@ -6,13 +6,18 @@
     @save-as-image="downloadChartImage"
   >
     <TimeSeriesChart
+      v-model:domain="visibleDomain"
       :config
       :series
       :zoomHandler
       :panHandler
       :settings="settings.charts.timeSeriesChart"
-      @update:x-domain="updateDomain"
-    />
+      :forecast-legend="chart.forecastLegend"
+    >
+      <template #brush="{ margin }">
+        <slot name="brush" :margin />
+      </template>
+    </TimeSeriesChart>
     <!-- Used to render the chart for downloading as image. -->
     <!-- This is done to have the same chart size across different devices. -->
     <div v-if="renderingChart" class="render-chart-container">
@@ -54,7 +59,6 @@ import { toSnakeCase } from '@/lib/utils/toSnakeCase'
 import { fetchAndInlineCssAndFonts } from '@/lib/css'
 import { getSeriesByLegend } from '@/lib/legend'
 import { getSubplotWithDomain } from '@/lib/display'
-import { UpdateDomainEmits } from '@/lib/charts/domain'
 
 interface Props {
   chart: PlotChart
@@ -63,6 +67,8 @@ interface Props {
   panHandler?: PanHandler
   settings: ComponentSettings
   config: ChartConfig
+  startTime?: Date
+  endTime?: Date
 }
 
 const props = defineProps<Props>()
@@ -72,17 +78,10 @@ const configStore = useConfigStore()
 
 const renderingChart = ref(false)
 const editing = ref(false)
-
-const emit = defineEmits<UpdateDomainEmits>()
-
-const renderDomain = ref<[Date, Date]>()
-function updateDomain(domain: [Date, Date]) {
-  renderDomain.value = domain
-  emit('update:x-domain', domain)
-}
+const visibleDomain = defineModel<[Date, Date]>('domain')
 
 const renderConfig = computed(() =>
-  getSubplotWithDomain(props.config, renderDomain.value),
+  getSubplotWithDomain(props.config, visibleDomain.value),
 )
 
 async function downloadChartImage() {

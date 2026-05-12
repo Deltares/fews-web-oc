@@ -1,9 +1,6 @@
 <template>
   <v-dialog v-model="showDialog" max-width="400">
-    <v-card>
-      <v-card-title class="headline">{{
-        t('download.downloadTimeSeries')
-      }}</v-card-title>
+    <v-card :title="t('download.downloadTimeSeries')">
       <v-card-text>
         <v-text-field
           v-model="fileNameInput"
@@ -11,13 +8,16 @@
           variant="underlined"
           density="compact"
         >
-          <template v-slot:append>
+          <template #append>
             <v-menu>
               <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" size="small" variant="tonal">
-                  {{ fileType.title }}
-                  <v-icon>mdi-chevron-down</v-icon>
-                </v-btn>
+                <v-btn
+                  v-bind="props"
+                  size="small"
+                  variant="tonal"
+                  :text="fileType.title"
+                  append-icon="mdi-chevron-down"
+                />
               </template>
               <v-list>
                 <v-list-item
@@ -53,7 +53,6 @@ import {
   CorrelationFilter,
   DocumentFormat,
   filterActionsFilter,
-  PiWebserviceProvider,
   TimeSeriesFilter,
   timeSeriesGridActionsFilter,
   TimeSeriesTopologyActionsFilter,
@@ -62,23 +61,17 @@ import { configManager } from '@/services/application-config'
 import { DisplayConfig } from '@/lib/display/DisplayConfig.ts'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager.ts'
 import { downloadFileAttachment } from '@/lib/download/downloadFiles.ts'
-import { computed, ref, toValue, watchEffect, watch } from 'vue'
+import { computed, ref, watchEffect, watch } from 'vue'
 import { useSystemTimeStore } from '@/stores/systemTime.ts'
 import { UseTimeSeriesOptions } from '@/services/useTimeSeries'
 import { DateTime } from 'luxon'
 import { DataDownloadFilter } from '@/lib/download/types/DataDownloadFilter.ts'
-import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { useAlertsStore } from '@/stores/alerts'
-import {
-  isCorrelationFilter,
-  isDataDownloadFilter,
-  isFilterActionsFilter,
-  isTimeSeriesFilter,
-  isTimeSeriesGridActionsFilter,
-} from '@/lib/filters'
-import { convertFewsPiDateTimeToJsDate } from '@/lib/date'
+import { isCorrelationFilter, isDataDownloadFilter } from '@/lib/filters'
+import { convertFewsPiDateTimeToJsDate, getFilenameTimestamp } from '@/lib/date'
 
 import { useI18n } from 'vue-i18n'
+import { getDownloadFileUrl } from '@/lib/download/download'
 
 const { t } = useI18n()
 interface Props {
@@ -169,9 +162,8 @@ watch(
   () => showDialog.value,
   (newValue) => {
     if (!newValue) return
-    const FILE_FORMAT_DATE_FMT = 'yyyyMMddHHmmss'
-    const defaultDateTimeString = DateTime.now().toFormat(FILE_FORMAT_DATE_FMT)
-    fileNameInput.value = `timeseries_${defaultDateTimeString}`
+    const timestamp = getFilenameTimestamp()
+    fileNameInput.value = `timeseries_${timestamp}`
   },
 )
 
@@ -179,7 +171,7 @@ const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 // use startTime and endTime if set, otherwise use the options from the store, otherwise use the period form the config
 function determineViewPeriod() {
-  const _options = toValue(viewPeriodFromStore)
+  const _options = viewPeriodFromStore.value
   let startDate: Date | null | undefined = props.startTime
     ? props.startTime
     : _options?.startTime
@@ -217,59 +209,20 @@ function determineViewPeriod() {
   return result
 }
 
-function getDownloadFileUrl(downloadFormat: DocumentFormat) {
-  const viewPeriod = determineViewPeriod()
-
-  const piProvider = new PiWebserviceProvider(baseUrl, {
-    transformRequestFn: createTransformRequestFn(),
-  })
-
-  if (props.filter) {
-    if (
-      isDataDownloadFilter(props.filter) ||
-      isTimeSeriesFilter(props.filter)
-    ) {
-      return piProvider.timeSeriesUrl({
-        ...props.filter,
-        documentFormat: downloadFormat,
-        ...viewPeriod,
-      })
-    }
-    if (isFilterActionsFilter(props.filter)) {
-      return piProvider.timeSeriesFilterActionsUrl({
-        ...props.filter,
-        documentFormat: downloadFormat,
-        ...viewPeriod,
-      })
-    }
-    if (isTimeSeriesGridActionsFilter(props.filter)) {
-      return piProvider.timeSeriesGridUrl({
-        ...props.filter,
-        documentFormat: downloadFormat,
-        ...viewPeriod,
-      })
-    }
-    if (isCorrelationFilter(props.filter)) {
-      return piProvider.correlationUrl({
-        ...props.filter,
-        ...viewPeriod,
-      })
-    }
-  }
-
-  const timeSeriesFilter: TimeSeriesTopologyActionsFilter = {
-    documentFormat: downloadFormat,
+function getTopologyActionsFilter(): TimeSeriesTopologyActionsFilter {
+  return {
     nodeId: props.config?.nodeId ?? '',
     timeSeriesDisplayIndex: props.config?.index ?? 0,
     convertDatum: props.options?.convertDatum,
     useDisplayUnits: props.options?.useDisplayUnits,
-    ...viewPeriod,
   }
-  return piProvider.timeSeriesTopologyActionsUrl(timeSeriesFilter)
 }
 
 async function downloadFile(downloadFormat: DocumentFormat) {
-  const url = getDownloadFileUrl(downloadFormat)
+  const viewPeriod = determineViewPeriod()
+  const filter = props.filter ?? getTopologyActionsFilter()
+
+  const url = getDownloadFileUrl(baseUrl, filter, downloadFormat, viewPeriod)
   const headers = await authenticationManager.getAuthorizationHeaders()
 
   await downloadFileSafe(url.href, fileNameInput.value, downloadFormat, headers)
@@ -284,13 +237,12 @@ async function downloadFileSafe(
   try {
     await downloadFileAttachment(url, fileName, documentFormat, headers)
   } catch (error) {
-    if (error instanceof Error) {
-      alertStore.addAlert({
-        type: 'error',
-        message: error.message,
-      })
-      showDialog.value = false
-    }
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    alertStore.addAlert({
+      type: 'error',
+      message,
+    })
+    showDialog.value = false
   }
 }
 </script>

@@ -32,6 +32,8 @@ async function addIconToMap(
 ): Promise<void> {
   if (map.hasImage(iconId)) return
   const image = await createImageBitmapFromUrls(url, badgeUrl)
+  // Check again if the image was added while we were loading, to avoid adding it twice in case of concurrent calls
+  if (map.hasImage(iconId)) return
   map.addImage(iconId, image)
 }
 

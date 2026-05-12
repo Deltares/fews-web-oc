@@ -3,16 +3,18 @@
     <template v-for="chart in collection.charts" :key="chart.id">
       <AnalysisFilterChart
         v-if="chart.type === 'filter'"
+        v-model:domain="visibleDomain"
         :chart
         :subplot="chart.subplot"
         :series
+        :brushSeries
+        :fullBrushDomain
         :zoomHandler="sharedZoomHandler"
         :panHandler="sharedPanHandler"
         :settings
         :startTime
         :endTime
         @remove="removeChart(chart)"
-        @update:x-domain="emit('update:x-domain', $event)"
       />
       <AnalysisCorrelationChart
         v-else-if="chart.type === 'correlation'"
@@ -52,22 +54,24 @@ import type { Chart, Collection, CollectionEmits } from '@/lib/analysis'
 import type { Series } from '@/lib/timeseries/timeSeries'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useChartHandlers } from '@/services/useChartHandlers'
-import type { UpdateDomainEmits } from '@/lib/charts/domain'
 
 interface Props {
   series: Record<string, Series>
+  brushSeries: Record<string, Series>
+  fullBrushDomain: [Date, Date]
   settings: ComponentSettings
   startTime: Date
   endTime: Date
 }
 
 defineProps<Props>()
+const visibleDomain = defineModel<[Date, Date]>('domain')
 
 const collection = defineModel<Collection>('collection', {
   required: true,
 })
 
-const emit = defineEmits<CollectionEmits & UpdateDomainEmits>()
+const emit = defineEmits<CollectionEmits>()
 
 const { sharedZoomHandler, sharedPanHandler } = useChartHandlers()
 

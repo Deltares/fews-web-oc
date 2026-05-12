@@ -1,7 +1,7 @@
 <template>
   <AnalysisDisplayComponent
-    v-if="isValidDisplayCollections && state?.collections.length"
-    :collections="state?.collections"
+    v-if="isValidDisplayCollections && state"
+    :collections="state.collections"
     :config
     :boundingBox
   />
@@ -49,6 +49,8 @@ const isValidDisplayCollections = computed(() =>
 watch(
   () => state.value?.version,
   (newVersion) => {
+    if (!state.value) return
+
     if (!newVersion || newVersion !== '1.0') {
       // In the future handle version migrations here
       state.value = createDefaultDisplayCollections(props.config)

@@ -13,6 +13,8 @@
           :filters="config.filters"
           :boundingBox="boundingBox"
           :config="config.selectionPanel"
+          :startTime="startTime"
+          :endTime="endTime"
           @addChart="addChart"
         />
       </div>
@@ -29,12 +31,6 @@
       </div>
       <div v-show="tab === 'workflows'">
         <AnalysisWorkflows :workflows="workflows" @addChart="addChart" />
-      </div>
-      <div v-show="tab === 'settings'">
-        <AnalysisSettings
-          :collection="selectedCollection"
-          @delete-collection="deleteSelectedCollection"
-        />
       </div>
     </v-navigation-drawer>
     <div class="flex-0-0">
@@ -58,18 +54,25 @@
           :collections="collections"
           :config="config"
         />
+        <AnalysisDateRange
+          v-model:settings="selectedCollection.settings"
+          :startTime="startTime"
+          :endTime="endTime"
+        />
       </v-card-title>
       <div class="w-100 overflow-y-auto">
         <AnalysisCollectionCharts
           v-if="selectedCollection.charts.length"
           v-model:collection="selectedCollection"
+          v-model:domain="visibleDomain"
+          :fullBrushDomain="fullBrushDomain"
           :series="series"
+          :brushSeries="brushSeries"
           :settings="settings"
           :startTime="startTime"
           :endTime="endTime"
           class="flex-1-1"
           @addChart="addChart"
-          @update:x-domain="debouncedRefetchChartTimeSeries"
         />
         <v-card-text v-else> Select some data to display </v-card-text>
       </div>
@@ -83,7 +86,7 @@ import AnalysisCollectionCharts from './AnalysisCollectionCharts.vue'
 import AnalysisCollection from '@/components/analysis/AnalysisCollection.vue'
 import AnalysisFunctions from '@/components/analysis/functions/AnalysisFunctions.vue'
 import AnalysisWorkflows from '@/components/analysis/workflows/AnalysisWorkflows.vue'
-import AnalysisSettings from '@/components/analysis/AnalysisSettings.vue'
+import AnalysisDateRange from '@/components/analysis/AnalysisDateRange.vue'
 import type {
   ActionRequest,
   BoundingBox,
@@ -99,7 +102,6 @@ import {
 import {
   type Chart,
   type Collection,
-  createCollection,
   hasValidFilterCharts,
 } from '@/lib/analysis'
 import { useUserSettingsStore } from '@/stores/userSettings'
@@ -107,6 +109,7 @@ import { useTaskRunColorsStore } from '@/stores/taskRunColors'
 import { useAvailableTimeStepsStore } from '@/stores/availableTimeSteps'
 import { addDuration } from '@/lib/date'
 import { useFetchDomain } from '@/services/useFetchDomain'
+import { getBrushDomain } from '@/lib/charts/brush'
 
 interface Props {
   collections: Collection[]
@@ -149,19 +152,6 @@ const selectedCollection = computed<Collection>(() => {
   return collection
 })
 
-function deleteSelectedCollection() {
-  const index = props.collections.findIndex(
-    (c) => c.name === selectedCollectionName.value,
-  )
-  if (index !== -1) {
-    props.collections.splice(index, 1)
-    if (props.collections.length === 0) {
-      props.collections.push(createCollection('Default', props.config))
-    }
-    selectedCollectionName.value = props.collections[0].name
-  }
-}
-
 function addChart(chart: Chart) {
   selectedCollection.value.charts = [chart, ...selectedCollection.value.charts]
 }
@@ -180,6 +170,19 @@ const requests = computed<ActionRequest[]>((prevRequests) => {
   }
 
   return newRequests
+})
+
+const fullDomain = computed<[Date, Date] | undefined>(() => {
+  const fullDomainTimes = selectedCollection.value.charts
+    .filter((chart) => chart.type === 'filter')
+    .flatMap((chart) => chart.fullDomain?.map((d) => d.getTime()) ?? [])
+
+  if (fullDomainTimes.length < 2) return
+
+  return [
+    new Date(Math.min(...fullDomainTimes)),
+    new Date(Math.max(...fullDomainTimes)),
+  ]
 })
 
 const startTime = computed(() => {
@@ -204,12 +207,18 @@ const endTime = computed(() => {
   return settings.endTime
 })
 
+const visibleDomain = ref<[Date, Date]>()
 const domainOptions = ref({
   startTime: startTime.value,
   endTime: endTime.value,
 })
 
 const { debouncedRefetchChartTimeSeries } = useFetchDomain(domainOptions)
+
+watch(visibleDomain, (newDomain) => {
+  if (!newDomain) return
+  debouncedRefetchChartTimeSeries(newDomain)
+})
 
 const timeSeriesOptions = computed(() => ({
   ...domainOptions.value,
@@ -223,6 +232,31 @@ const { series } = useTimeSeries(
   requests,
   timeSeriesOptions,
   true,
+  undefined,
+  false,
+)
+
+const showBrush = computed(
+  () => userSettings.get('charts.brush')?.value === true,
+)
+const fullBrushDomain = computed(() =>
+  getBrushDomain(fullDomain.value?.[0], fullDomain.value?.[1], [
+    startTime.value,
+    endTime.value,
+  ]),
+)
+const brushOptions = computed(() => ({
+  startTime: fullBrushDomain.value[0],
+  endTime: fullBrushDomain.value[1],
+  useDisplayUnits: userSettings.useDisplayUnits,
+  convertDatum: userSettings.convertDatum,
+  thinning: true,
+}))
+const { series: brushSeries } = useTimeSeries(
+  baseUrl,
+  requests,
+  brushOptions,
+  showBrush,
   undefined,
   false,
 )
@@ -266,7 +300,6 @@ const tabs = computed(() =>
       text: 'Analysis Workflows',
       enabled: workflows.value.length > 0,
     },
-    { value: 'settings', icon: 'mdi-cog-outline', text: 'Settings' },
   ].filter((tab) => tab.enabled !== false),
 )
 

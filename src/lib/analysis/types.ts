@@ -17,11 +17,11 @@ export interface DisplayCollections {
 
 export interface Collection {
   name: string
-  settings: Settings
+  settings: CollectionSettings
   charts: Chart[]
 }
 
-export interface Settings {
+export interface CollectionSettings {
   startTime: Date
   endTime: Date
   liveUpdate: {
@@ -60,12 +60,15 @@ export interface FilterChart extends BaseChart {
   requests: ActionRequest[]
   subplot: FilterSubplot
   domain?: [Date, Date]
+  fullDomain?: [Date, Date]
+  forecastLegend?: string
 }
 
 export interface CorrelationChart extends BaseChart {
   type: 'correlation'
   filter: Omit<CorrelationFilter, 'startTime' | 'endTime'>
   subplot: TimeSeriesDisplaySubplot
+  forecastLegend?: string
 }
 
 export interface AsyncChart extends BaseChart {
@@ -100,6 +103,11 @@ export function validateDisplayCollections(data: DisplayCollections): boolean {
 
   if (!Array.isArray(data.collections)) {
     console.error('Collections must be an array')
+    return false
+  }
+
+  if (data.collections.length === 0) {
+    console.error('At least one collection is required')
     return false
   }
 

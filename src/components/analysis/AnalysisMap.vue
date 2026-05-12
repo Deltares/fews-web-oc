@@ -23,6 +23,7 @@ import { convertBoundingBoxToLngLatBounds } from '@/services/useWms'
 import type { BoundingBox } from '@deltares/fews-pi-requests'
 import type { LngLatBounds } from 'maplibre-gl'
 import { ref, watch } from 'vue'
+import { provideLayerOrder } from '@/services/useLayerOrder'
 
 interface Props {
   boundingBox?: BoundingBox
@@ -30,7 +31,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { mapStyle } = useBaseMap()
+const { mapStyle, baseMap } = useBaseMap()
+
+provideLayerOrder([], baseMap)
 
 const bounds = ref<LngLatBounds>()
 watch(

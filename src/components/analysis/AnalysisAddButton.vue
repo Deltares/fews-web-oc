@@ -1,6 +1,6 @@
 <template>
   <v-btn
-    variant="flat"
+    :variant="disabled ? 'text' : 'flat'"
     :disabled="disabled"
     :prepend-icon="icon"
     :text="title"

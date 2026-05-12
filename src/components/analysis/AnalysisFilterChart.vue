@@ -1,25 +1,40 @@
 <template>
   <AnalysisPlotChart
+    v-model:domain="visibleDomain"
     :chart
     :config
     :series
     :settings
     :zoomHandler
     :panHandler
+    :startTime
+    :endTime
     v-bind="$attrs"
-    @update:x-domain="updateDomain"
     @download="downloadChart"
-  />
+  >
+    <template #brush="{ margin }">
+      <TimeSeriesChartBrush
+        v-if="showBrush"
+        v-model:domain="visibleDomain"
+        :fullDomain="fullBrushDomain"
+        :config
+        :series="brushSeries"
+        :settings="settings.charts.timeSeriesChart"
+        :mainChartMargin="margin"
+      />
+    </template>
+  </AnalysisPlotChart>
   <TimeSeriesFileDownloadComponent
     v-model="showDownloadDialog"
     :filter
-    :startTime="downloadDomain?.[0] ?? startTime"
-    :endTime="downloadDomain?.[1] ?? endTime"
+    :startTime="visibleDomain?.[0] ?? startTime"
+    :endTime="visibleDomain?.[1] ?? endTime"
   />
 </template>
 
 <script setup lang="ts">
 import AnalysisPlotChart from '@/components/analysis/AnalysisPlotChart.vue'
+import TimeSeriesChartBrush from '@/components/charts/TimeSeriesChartBrush.vue'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
 import type { FilterChart } from '@/lib/analysis'
@@ -29,11 +44,12 @@ import type { PanHandler, ZoomHandler } from '@deltares/fews-web-oc-charts'
 import { computed, ref } from 'vue'
 import { getSubplotWithDomain } from '@/lib/display'
 import { useUserSettingsStore } from '@/stores/userSettings'
-import { UpdateDomainEmits } from '@/lib/charts/domain'
 
 interface Props {
   chart: FilterChart
   series: Record<string, Series>
+  brushSeries: Record<string, Series>
+  fullBrushDomain: [Date, Date]
   zoomHandler?: ZoomHandler
   panHandler?: PanHandler
   settings: ComponentSettings
@@ -46,6 +62,10 @@ const props = defineProps<Props>()
 const userSettings = useUserSettingsStore()
 const showDownloadDialog = ref(false)
 
+const showBrush = computed(
+  () => userSettings.get('charts.brush')?.value === true,
+)
+
 const xDomain = computed(
   () =>
     props.chart.domain ??
@@ -54,13 +74,7 @@ const xDomain = computed(
       : undefined),
 )
 
-const emit = defineEmits<UpdateDomainEmits>()
-
-const downloadDomain = ref<[Date, Date]>()
-function updateDomain(domain: [Date, Date]) {
-  downloadDomain.value = domain
-  emit('update:x-domain', domain)
-}
+const visibleDomain = defineModel<[Date, Date]>('domain')
 
 const zoomHandler = computed(() =>
   props.chart.domain ? undefined : props.zoomHandler,
