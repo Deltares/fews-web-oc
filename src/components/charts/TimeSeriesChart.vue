@@ -34,6 +34,9 @@
           icon
           variant="plain"
           v-bind="props"
+          :aria-label="
+            maximized ? $t('common.restoreChart') : $t('common.maximizeChart')
+          "
           @click="$emit('toggle-maximize')"
         >
           <v-icon>{{
