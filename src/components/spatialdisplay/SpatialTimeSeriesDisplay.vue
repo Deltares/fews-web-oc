@@ -51,7 +51,6 @@ interface Props {
   locationsTooltipFilter?: LocationsTooltipFilter
   currentTime?: Date
   settings: ComponentSettings
-  maximized?: boolean
   hideFullscreenButton?: boolean
 }
 
