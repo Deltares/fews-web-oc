@@ -34,10 +34,10 @@
         :settings="settings"
         :currentTime="currentTime"
         :elevation="elevation"
-        :hide-fullscreen-button="containerIsMobileSize"
       >
         <template #toolbar-append>
           <v-btn
+            v-if="!containerIsMobileSize"
             size="small"
             :icon="maximized ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
             @click="maximized = !maximized"
