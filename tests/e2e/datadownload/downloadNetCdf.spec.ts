@@ -9,7 +9,7 @@ async function enableDataDownloadTools(page: Page) {
   await page.getByRole('button', { name: 'User Settings' }).click()
   await page.getByRole('button', { name: 'All User Settings' }).click()
   const toggle = page.getByRole('checkbox', {
-    name: 'Map Show map data download',
+    name: 'Show map data download',
   })
   await toggle.click()
   await page.getByRole('button', { name: 'Close User Settings' }).click()
@@ -24,18 +24,14 @@ describeFromVersion('202502', 'Download NetCDF', () => {
   test('should show the NetCDF download button on the map', async ({
     page,
   }) => {
-    const downloadButton = page.locator(
-      '.maplibregl-ctrl button[title="Download NetCDF"]',
-    )
+    const downloadButton = page.getByTitle('Download NetCDF')
     await expect(downloadButton).toBeVisible()
   })
 
   test('should open the download dialog when clicking the download button', async ({
     page,
   }) => {
-    const downloadButton = page.locator(
-      '.maplibregl-ctrl button[title="Download NetCDF"]',
-    )
+    const downloadButton = page.getByTitle('Download NetCDF')
     await downloadButton.click()
 
     const dialog = page.getByRole('dialog')
@@ -46,9 +42,7 @@ describeFromVersion('202502', 'Download NetCDF', () => {
   test('should have start and end time pre-filled from layer capabilities', async ({
     page,
   }) => {
-    const downloadButton = page.locator(
-      '.maplibregl-ctrl button[title="Download NetCDF"]',
-    )
+    const downloadButton = page.getByTitle('Download NetCDF')
     await downloadButton.click()
 
     const startTime = page.getByLabel('Start Time')
@@ -66,9 +60,7 @@ describeFromVersion('202502', 'Download NetCDF', () => {
   }) => {
     test.setTimeout(60_000)
 
-    const downloadButton = page.locator(
-      '.maplibregl-ctrl button[title="Download NetCDF"]',
-    )
+    const downloadButton = page.getByTitle('Download NetCDF')
     await downloadButton.click()
 
     const dialog = page.getByRole('dialog')
@@ -99,9 +91,7 @@ describeFromVersion('202502', 'Download NetCDF', () => {
   test('should show point cloud options when selecting Point Cloud download type', async ({
     page,
   }) => {
-    const downloadButton = page.locator(
-      '.maplibregl-ctrl button[title="Download NetCDF"]',
-    )
+    const downloadButton = page.getByTitle('Download NetCDF')
     await downloadButton.click()
 
     const dialog = page.getByRole('dialog')
@@ -123,9 +113,7 @@ describeFromVersion('202502', 'Download NetCDF', () => {
   })
 
   test('should close the dialog when clicking cancel', async ({ page }) => {
-    const downloadButton = page.locator(
-      '.maplibregl-ctrl button[title="Download NetCDF"]',
-    )
+    const downloadButton = page.getByTitle('Download NetCDF')
     await downloadButton.click()
 
     const dialog = page.getByRole('dialog')
