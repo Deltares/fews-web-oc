@@ -156,7 +156,7 @@ import { useWorkflowsStore, WorkflowType } from '@/stores/workflows'
 import { useWorkflowBoundingBox } from '@/services/useWorkflowBoundingBox'
 import { useWhatIfTemplateSchemas } from '@/services/useWhatIfTemplateSchemas'
 
-const { extendedVuetifyRenderers } = await import('@jsonforms/vue-vuetify')
+const { vuetifyRenderers } = await import('@jsonforms/vue-vuetify')
 
 interface Props {
   workflows: WorkflowItem[]
