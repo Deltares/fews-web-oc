@@ -27,13 +27,17 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplay', () => {
     )
 
     await expect(page.getByText('Water Level (m + MSL)')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Chart' })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Chart', exact: true }),
+    ).toBeVisible()
 
     await page.getByText('Rivers').click()
     await page.getByRole('link').filter({ hasText: 'Palmiet' }).click()
 
     await expect(page.getByText('Water Level (m + MSL)')).not.toBeVisible()
-    await expect(page.getByRole('button', { name: 'Chart' })).not.toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Chart', exact: true }),
+    ).not.toBeVisible()
   })
 })
 
@@ -61,11 +65,15 @@ test.describe('Switching Nodes with TopologySpatialTimeSeriesDisplayWithCoordina
     )
 
     await expect(page.getByText('Water Level (m + MSL)')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Chart' })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Chart', exact: true }),
+    ).toBeVisible()
 
     await page.getByRole('link').filter({ hasText: 'Critical points' }).click()
 
     await expect(page.getByText('Water Level (m + MSL)')).not.toBeVisible()
-    await expect(page.getByRole('button', { name: 'Chart' })).not.toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Chart', exact: true }),
+    ).not.toBeVisible()
   })
 })

@@ -20,7 +20,9 @@ test.describe('Maximize individual chart', () => {
 
     // Hover over first chart to reveal the maximize button
     await charts.first().hover()
-    const maximizeBtn = charts.first().getByRole('button', { name: 'Maximize chart' })
+    const maximizeBtn = charts
+      .first()
+      .getByRole('button', { name: 'Maximize chart' })
     await expect(maximizeBtn).toBeVisible()
 
     // Click maximize
@@ -47,7 +49,9 @@ test.describe('Maximize individual chart', () => {
 
     // Restore via the restore button
     await charts.first().hover()
-    const restoreBtn = charts.first().getByRole('button', { name: 'Restore chart' })
+    const restoreBtn = charts
+      .first()
+      .getByRole('button', { name: 'Restore chart' })
     await expect(restoreBtn).toBeVisible()
     await restoreBtn.click()
 
