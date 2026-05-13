@@ -212,7 +212,7 @@ function onNavigate(to: NavigateRoute) {
   const layerName = to.params?.layerName ?? props.layerName
 
   switch (to.name) {
-    case 'SpatialTimeSeriesDisplay':
+    case 'SpatialDisplayWithLocation':
       router.push({
         name,
         params: {
@@ -223,7 +223,7 @@ function onNavigate(to: NavigateRoute) {
         query: route.query,
       })
       break
-    case 'SpatialTimeSeriesDisplayWithCoordinates':
+    case 'SpatialDisplayWithCoordinates':
       router.push({
         name,
         params: {

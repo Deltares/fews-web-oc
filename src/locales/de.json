@@ -102,6 +102,8 @@
     "iframe": "Iframe",
     "link": "Link",
     "linkCopied": "Kopiert",
-    "linkCopyFailed": "Link konnte nicht kopiert werden"
+    "linkCopyFailed": "Link konnte nicht kopiert werden",
+    "map": "Karte",
+    "chart": "Diagramm"
   }
 }

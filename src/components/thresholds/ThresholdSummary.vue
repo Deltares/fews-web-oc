@@ -64,7 +64,7 @@ function onMouseLeave() {
 function onPanelClick() {
   // Route to open the crossing in the map
   const to = {
-    name: 'SpatialTimeSeriesDisplay',
+    name: 'SpatialDisplayWithLocation',
     params: {
       locationIds: crossings[0].locationId,
     },
