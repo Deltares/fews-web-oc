@@ -2,7 +2,7 @@
   <LogDisplayComponent
     v-if="logDisplay"
     :key="logDisplay.id"
-    :logDisplay
+    :logDisplay="logDisplay"
     :noteGroup
   />
 </template>
@@ -12,10 +12,9 @@ import LogDisplayComponent from './LogDisplayComponent.vue'
 import { configManager } from '@/services/application-config'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import { useNoteGroup } from '@/services/useNoteGroup'
-import type { TopologyNode } from '@deltares/fews-pi-requests'
 
 interface Props {
-  topologyNode?: TopologyNode
+  logDisplayId?: string
 }
 
 const props = defineProps<Props>()
@@ -23,7 +22,7 @@ const props = defineProps<Props>()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 const { logDisplay } = useLogDisplay(
   baseUrl,
-  () => props.topologyNode?.logDisplay?.id,
+  () => props.logDisplayId,
 )
 const { noteGroup } = useNoteGroup(
   baseUrl,
