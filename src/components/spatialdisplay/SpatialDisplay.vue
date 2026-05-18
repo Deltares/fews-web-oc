@@ -71,6 +71,8 @@ import { useDateRegistry } from '@/services/useDateRegistry'
 import type { NavigateRoute } from '@/lib/router'
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 import { useLocationNamesStore } from '@/stores/locationNames'
+import { useTaskRunsStore } from '@/stores/taskRuns'
+import { refreshTaskRuns } from '@/services/useTasksRuns'
 import {
   filterFeaturesByThresholds,
   filterLocationsByThresholds,
@@ -100,10 +102,30 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 const taskRunId = ref<string>()
+const taskRunsStore = useTaskRunsStore()
 watch(
-  () => props.layerName,
+  [() => props.layerName, () => props.topologyNode],
+  ([newLayerName, newTopologyNode], [_, oldTopologyNode]) => {
+    const topologyNodeChanged = newTopologyNode?.id !== oldTopologyNode?.id
+    if (topologyNodeChanged) {
+      refreshTaskRuns()
+      return
+    }
+    const taskRun = taskRunsStore.getTaskRunById(taskRunId.value)
+    const layerIds = taskRun?.topologyAssociations?.layerIds ?? []
+    if (!newLayerName || !layerIds.includes(newLayerName)) {
+      taskRunId.value = undefined
+    }
+  },
+)
+
+watch(
+  () => [taskRunsStore.currentTaskRuns, taskRunsStore.selectedTaskRuns],
   () => {
-    taskRunId.value = undefined
+    if (!taskRunId.value) return
+    if (!taskRunsStore.getTaskRunById(taskRunId.value)) {
+      taskRunId.value = undefined
+    }
   },
 )
 

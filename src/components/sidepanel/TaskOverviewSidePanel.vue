@@ -156,7 +156,6 @@ const {
   fetch: refreshTaskRuns,
 } = useTaskRuns(
   TASKS_REFRESH_INTERVAL_SECONDS,
-  period,
   selectedWorkflowIds,
   selectedTaskStatuses,
   selectedUserId,
