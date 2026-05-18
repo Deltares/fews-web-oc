@@ -20,10 +20,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { logDisplay } = useLogDisplay(
-  baseUrl,
-  () => props.logDisplayId,
-)
+const { logDisplay } = useLogDisplay(baseUrl, () => props.logDisplayId)
 const { noteGroup } = useNoteGroup(
   baseUrl,
   () => logDisplay.value?.manualLog?.noteGroupId,
