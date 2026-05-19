@@ -73,12 +73,13 @@ import BtnGroup from '@/components/general/BtnGroup.vue'
 import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
 
 import ImportStatusSidePanel from '@/components/sidepanel/ImportStatusSidePanel.vue'
+import LogsSidePanel from '@/components/sidepanel/LogsSidePanel.vue'
 import MoreInfoSidePanel from '@/components/sidepanel/MoreInfoSidePanel.vue'
 import NonCurrentDataSidePanel from '@/components/sidepanel/NonCurrentDataSidePanel.vue'
 import RunTasksSidePanel from '@/components/sidepanel/RunTasksSidePanel.vue'
+import ShareSidePanel from '@/components/sidepanel/ShareSidePanel.vue'
 import TaskOverviewSidePanel from '@/components/sidepanel/TaskOverviewSidePanel.vue'
 import ThresholdsSidePanel from '@/components/sidepanel/ThresholdsSidePanel.vue'
-import ShareSidePanel from '@/components/sidepanel/ShareSidePanel.vue'
 
 const { t } = useI18n()
 const configStore = useConfigStore()
@@ -98,7 +99,7 @@ const emit = defineEmits<Emits>()
 // FIXME: Remove 'share' once SidePanel configuration is implemented for it.
 type GeneralSidePanelType = Exclude<
   keyof SidePanelConfig | 'share',
-  'exportStatus' | 'logDisplay'
+  'exportStatus'
 >
 type SpecialSidePanelType = 'thresholds'
 type SidePanelType = GeneralSidePanelType | SpecialSidePanelType
@@ -133,6 +134,11 @@ const generalSidePanels: GeneralSidePanel[] = [
     type: 'documentFile',
     icon: 'mdi-information-outline',
     component: MoreInfoSidePanel,
+  },
+  {
+    type: 'logDisplay',
+    icon: 'mdi-file-document-outline',
+    component: LogsSidePanel,
   },
   {
     type: 'share',

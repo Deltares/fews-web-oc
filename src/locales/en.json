@@ -85,13 +85,14 @@
     "unnamedLayer": "Unnamed layer"
   },
   "sidePanel": {
-    "thresholds": "Thresholds overview",
-    "taskOverview": "Task overview",
+    "documentFile": "More info",
     "importStatus": "Import status",
+    "logDisplay": "Logs",
     "nonCurrentData": "Non-current data",
     "runTask": "Run tasks",
-    "documentFile": "More info",
-    "share": "Share"
+    "share": "Share",
+    "taskOverview": "Task overview",
+    "thresholds": "Thresholds overview"
   },
   "workflow": {
     "expectedRuntime": "Expected runtime",
