@@ -39,13 +39,13 @@ const warningLevelsStore = useWarningLevelsStore()
 interface Props {
   active: boolean
 }
-const props = defineProps<Props>()
+defineProps<Props>()
 
 const maxWarningLevelColor = computed(() => {
   const maxWarningLevel = warningLevelsStore.warningLevels.find(
     (warningLevel) => warningLevel.count > 0,
   )
-  const foundCrossing = warningLevelsStore.thresholdCrossings.find(
+  const foundCrossing = warningLevelsStore.crossings.find(
     (crossing) => crossing.warningLevelId === maxWarningLevel?.id,
   )
   return foundCrossing?.color

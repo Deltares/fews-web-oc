@@ -146,13 +146,10 @@ watch(locations, (newLocations) =>
 )
 
 const selectedCrossings = computed(() => {
-  if (warningLevelsStore.selectedWarningLevelIds.length === 0) return []
-  return warningLevelsStore.selectedThresholdCrossings
-    .sort((a, b) => b.severity - a.severity)
-    .filter(
-      (crossing, index, self) =>
-        index === self.findIndex((c) => c.locationId === crossing.locationId),
-    )
+  return warningLevelsStore.selectedCrossings.filter(
+    (crossing, index, self) =>
+      index === self.findIndex((c) => c.locationId === crossing.locationId),
+  )
 })
 const selectedSeverities = computed(() =>
   warningLevelsStore.selectedWarningLevels.map((level) => level.severity),

@@ -97,7 +97,7 @@ const virtualScroll = useTemplateRef('virtualScroll')
 
 const groupedCrossings = computed(() => {
   const grouped: Record<string, LevelThresholdCrossings[]> = {}
-  warningLevelsStore.selectedThresholdCrossings.forEach((crossing) => {
+  warningLevelsStore.selectedCrossings.forEach((crossing) => {
     const key = crossing.locationId
     if (!grouped[key]) {
       grouped[key] = []
