@@ -13,7 +13,7 @@ export const useWarningLevelsStore = defineStore('warningLevels', () => {
   const selectedWarningLevels = ref<LevelThresholdWarningLevels[]>([])
   const showCrossingDetails = ref(false)
 
-  const { thresholds } = useTopologyThresholds(baseUrl, () => nodeId.value)
+  const { thresholds } = useTopologyThresholds(baseUrl, nodeId)
 
   const aggregatedWarningLevels = computed(() => {
     if (thresholds.value === undefined || thresholds.value.length === 0) {

@@ -29,10 +29,18 @@ export function useTopologyThresholds(
   const error = shallowRef<string>()
 
   async function loadTopologyThresholds() {
+    const _nodeId = toValue(nodeId)
+    const hasNodeId = nodeId !== undefined
+
+    if (hasNodeId && _nodeId === undefined) {
+      thresholds.value = undefined
+      error.value = undefined
+      return
+    }
+
     isLoading.value = true
     isReady.value = false
     try {
-      const _nodeId = toValue(nodeId)
       const provider = new PiWebserviceProvider(baseUrl, {
         transformRequestFn: createTransformRequestFn(),
       })
