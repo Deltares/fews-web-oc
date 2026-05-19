@@ -20,6 +20,9 @@ export const useWarningLevelsStore = defineStore('warningLevels', () => {
   const _crossings = computed(
     () => thresholds.value?.levelThresholdCrossings ?? [],
   )
+  const aggregatedWarningLevels = computed(
+    () => thresholds.value?.aggregatedLevelThresholdWarningLevels ?? [],
+  )
   const _warningLevels = computed(
     () => thresholds.value?.levelThresholdWarningLevels ?? [],
   )
@@ -31,9 +34,15 @@ export const useWarningLevelsStore = defineStore('warningLevels', () => {
         const count = parameters.reduce((a, b) => a + b.count, 0) ?? 0
         const icon = level.icon ? getResourcesIconsUrl(level.icon) : undefined
 
+        const aggregatedLevel = aggregatedWarningLevels.value.find(
+          (aggLevel) => aggLevel.id === level.id,
+        )
+        const locationCount = aggregatedLevel?.count ?? 0
+
         return {
           ...level,
           count,
+          locationCount,
           icon,
         }
       })

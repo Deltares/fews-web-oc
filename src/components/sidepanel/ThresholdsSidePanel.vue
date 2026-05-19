@@ -1,5 +1,17 @@
 <template>
   <SidePanelContent :title="t('sidePanel.thresholds')" @close="emit('close')">
+    <template #append>
+      <v-select
+        v-model="countType"
+        :items="countTypes"
+        variant="outlined"
+        density="compact"
+        hide-details
+        prepend-inner-icon="mdi-filter-variant"
+        min-width="170px"
+        label="Count by"
+      />
+    </template>
     <div>
       <v-chip-group
         class="px-2 py-2 d-flex flex-wrap flex-0-0"
@@ -23,7 +35,9 @@
           </template>
           <template #append>
             <v-chip
-              :text="level.count"
+              :text="
+                countType === 'Location' ? level.locationCount : level.count
+              "
               density="compact"
               variant="flat"
               class="ms-2 pa-1 pointer-events-none"
@@ -62,7 +76,7 @@ import type {
   LevelThresholdCrossings,
   TopologyNode,
 } from '@deltares/fews-pi-requests'
-import { computed, watch, nextTick, onMounted, useTemplateRef } from 'vue'
+import { computed, watch, nextTick, onMounted, useTemplateRef, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import type { NavigateRoute } from '@/lib/router/types'
@@ -94,6 +108,9 @@ const selectable = computed<boolean>(() => {
 })
 
 const virtualScroll = useTemplateRef('virtualScroll')
+
+const countTypes = ['Location', 'Parameter'] as const
+const countType = ref<(typeof countTypes)[number]>('Location')
 
 const groupedCrossings = computed(() => {
   const grouped: Record<string, LevelThresholdCrossings[]> = {}

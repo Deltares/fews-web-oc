@@ -1,7 +1,7 @@
 <template>
   <Teleport to="#main-side-panel" defer>
     <div
-      class="d-flex flex-column h-100 side-panel"
+      class="d-flex flex-column h-100"
       :style="mobile ? 'width: 100vw;' : 'width: 450px;'"
       aria-label="Side panel"
     >
@@ -13,6 +13,7 @@
           {{ title }}
         </span>
         <template #append>
+          <slot name="append"></slot>
           <v-btn @click="emit('close')" icon size="small">
             <v-icon size="small">mdi-close</v-icon>
           </v-btn>
@@ -44,9 +45,5 @@ const { mobile } = useDisplay()
 <style scoped>
 :deep(.v-window__container) {
   height: 100%;
-}
-
-.side-panel {
-  width: 450px;
 }
 </style>

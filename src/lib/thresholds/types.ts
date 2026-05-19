@@ -4,4 +4,5 @@ export interface WarningLevel {
   severity: number
   icon?: string
   count: number
+  locationCount: number
 }
