@@ -327,7 +327,7 @@ function sortObjectKeys(obj: any): any {
     return obj.map(sortObjectKeys)
   } else if (obj && typeof obj === 'object') {
     return Object.keys(obj)
-      .sort()
+      .sort() // NOSONAR(S2871) - Sort keys to ensure consistent ordering for hashing
       .reduce((result: any, key) => {
         result[key] = sortObjectKeys(obj[key])
         return result
