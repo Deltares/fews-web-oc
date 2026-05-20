@@ -24,9 +24,8 @@ export async function getFewsConfig(): Promise<WebOcConfiguration> {
     }
   } catch (error) {
     console.error(error)
-  } finally {
-    return webOcConfiguration
   }
+  return webOcConfiguration
 }
 
 export function getResourcesStaticUrl(resource: string) {
