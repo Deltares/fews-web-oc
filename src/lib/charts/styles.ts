@@ -20,9 +20,9 @@ type SymbolType = (typeof SymbolType)[keyof typeof SymbolType]
  * @returns The RGB or RGBA representation of the color code.
  */
 function hexToRGB(hex: string, alpha?: string | number) {
-  var r = parseInt(hex.slice(1, 3), 16),
-    g = parseInt(hex.slice(3, 5), 16),
-    b = parseInt(hex.slice(5, 7), 16)
+  const r = Number.parseInt(hex.slice(1, 3), 16),
+    g = Number.parseInt(hex.slice(3, 5), 16),
+    b = Number.parseInt(hex.slice(5, 7), 16)
 
   if (alpha) {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`
@@ -37,9 +37,9 @@ function hexToRGB(hex: string, alpha?: string | number) {
  * @returns 'black' or 'white'.
  */
 export function getContrastColor(hex: string) {
-  var r = parseInt(hex.slice(1, 3), 16),
-    g = parseInt(hex.slice(3, 5), 16),
-    b = parseInt(hex.slice(5, 7), 16)
+  const r = Number.parseInt(hex.slice(1, 3), 16),
+    g = Number.parseInt(hex.slice(3, 5), 16),
+    b = Number.parseInt(hex.slice(5, 7), 16)
   const brightness = (r * 299 + g * 587 + b * 114) / 1000
   return brightness > 128 ? 'black' : 'white'
 }
