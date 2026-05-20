@@ -8,7 +8,7 @@ import { useMap } from '@/services/useMap'
 import { BoundingBox } from '@/services/useBoundingBox'
 import { Position, Feature, Polygon } from 'geojson'
 
-type FeatureId = string | number 
+type FeatureId = string | number
 type GeoJSONStoreFeatures = Feature<Polygon, { mode: string }>
 
 const modelValue = defineModel<BoundingBox | null>({ default: null })
