@@ -198,7 +198,7 @@ const timeZero = ref<string>()
 const referenceTime = computed<Date>(() => {
   if (timeZero?.value === undefined) return new Date()
   const parsed = new Date(timeZero.value)
-  return isNaN(parsed.getTime()) ? new Date() : parsed
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed
 })
 provide('whatIfReferenceTime', referenceTime)
 

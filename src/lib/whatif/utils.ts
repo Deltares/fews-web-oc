@@ -321,7 +321,7 @@ export function getErrorsForProperties(
       property.dateValidation
     ) {
       const parsed = new Date(properties[key] as string)
-      if (isNaN(parsed.getTime())) {
+      if (Number.isNaN(parsed.getTime())) {
         errors.push({
           keyword: 'invalid',
           instancePath: `/${key}`,
@@ -382,7 +382,7 @@ export function getErrorsForProperties(
 }
 
 function isNumber(value: string) {
-  return !isNaN(Number(value))
+  return !Number.isNaN(Number(value))
 }
 
 function isInteger(value: string) {

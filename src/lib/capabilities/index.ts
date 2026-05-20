@@ -18,7 +18,7 @@ export function getForecastTimeString(capabilities: Layer | undefined) {
   const forecastTime = getForecastTime(capabilities)
   if (!forecastTime) return
 
-  if (isNaN(forecastTime.getTime())) {
+  if (Number.isNaN(forecastTime.getTime())) {
     return 'Analysis time not available'
   }
 
