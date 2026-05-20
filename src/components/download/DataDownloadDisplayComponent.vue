@@ -246,7 +246,7 @@ const rules = {
   required: (value: string) => (value !== undefined && !!value) || 'Required',
   date: (value: string) => {
     const date = DateTime.fromFormat(value || '', DATE_FMT)
-    return !isNaN(date.valueOf()) || 'Invalid date'
+    return !Number.isNaN(date.valueOf()) || 'Invalid date'
   },
   startDateBeforeEndDate: (value: string) => {
     const startDate = DateTime.fromFormat(value || '', DATE_FMT).toJSDate()

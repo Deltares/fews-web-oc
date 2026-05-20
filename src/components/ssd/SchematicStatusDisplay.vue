@@ -102,7 +102,7 @@ const { selectedDate, dateTimeSliderEnabled } =
 
 const selectedDateString = computed(() => {
   const isInvalidDate =
-    !selectedDate.value || isNaN(selectedDate.value.getTime())
+    !selectedDate.value || Number.isNaN(selectedDate.value.getTime())
   const isOutOfRange = !isInDatesRange(selectedDate.value, dates.value)
 
   if (isInvalidDate || isOutOfRange) {

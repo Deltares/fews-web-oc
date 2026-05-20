@@ -34,7 +34,7 @@ function createDateTimes(
   const dates: Date[] = []
   for (const dataResource of dataResources) {
     const series = seriesRecord[dataResource]
-    if (series !== undefined && series.data !== undefined) {
+    if (series?.data !== undefined) {
       dates.push(...series.data.map((d: any) => d.x))
     }
   }
@@ -82,17 +82,17 @@ export function dataFromResources(
     }
     if (allFound) {
       const dateTimes = createDateTimes(dataResourceIds, series)
-      const pointers = Array(dataResourceIds.length).fill(0)
+      const pointers = new Array(dataResourceIds.length).fill(0)
       data = dateTimes.map((date: Date) => {
         const result: any = { x: date }
-        const values = Array(dataResourceIds.length).fill(null)
-        const flags = Array(dataResourceIds.length).fill(undefined)
+        const values = new Array(dataResourceIds.length).fill(null)
+        const flags = new Array(dataResourceIds.length).fill(undefined)
         for (const j in dataResourceIds) {
           const resourceId = dataResourceIds[j]
           const s = series[resourceId]
-          if (s && s.data) {
+          if (s?.data) {
             const event = s.data[pointers[j]] as TimeSeriesData
-            if (event && date.getTime() === event.x.getTime()) {
+            if (date.getTime() === event?.x.getTime()) {
               values[j] = event.y
               flags[j] = event.flag
               pointers[j]++

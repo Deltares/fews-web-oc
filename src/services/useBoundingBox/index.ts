@@ -17,10 +17,10 @@ function isValidBoundingBox(boundingBox: BoundingBox): boolean {
     return false
   }
   return (
-    !isNaN(boundingBox.lonMin) &&
-    !isNaN(boundingBox.lonMax) &&
-    !isNaN(boundingBox.latMin) &&
-    !isNaN(boundingBox.latMax)
+    !Number.isNaN(boundingBox.lonMin) &&
+    !Number.isNaN(boundingBox.lonMax) &&
+    !Number.isNaN(boundingBox.latMin) &&
+    !Number.isNaN(boundingBox.latMax)
   )
 }
 

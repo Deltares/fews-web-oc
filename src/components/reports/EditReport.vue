@@ -176,9 +176,7 @@ onBeforeUnmount(() => {
   editor.value?.destroy()
   // Remove the injected styles
   const styleElement = document.getElementById('tiptap-injected-styles')
-  if (styleElement) {
-    styleElement.parentNode?.removeChild(styleElement)
-  }
+  styleElement?.remove()
 })
 </script>
 

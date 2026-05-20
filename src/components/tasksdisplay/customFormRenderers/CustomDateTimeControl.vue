@@ -92,7 +92,7 @@ const date = ref<Date>(constrainDate(getDateFromPropertyOrDefault()))
 watch(
   date,
   (newDate) => {
-    if (isNaN(newDate.getTime())) return
+    if (Number.isNaN(newDate.getTime())) return
     control.handleChange(control.control.value.path, newDate.toISOString())
   },
   // Immediately set the possibly constrained initial value to the property.
@@ -110,7 +110,7 @@ function getDateFromPropertyOrDefault(): Date {
     propertyValue.value ?? control.control.value.schema.default
   if (dateString === undefined) return new Date()
   const parsed = new Date(dateString)
-  return isNaN(parsed.getTime()) ? new Date() : parsed
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed
 }
 
 function constrainDate(date: Date): Date {
