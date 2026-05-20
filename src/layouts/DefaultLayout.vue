@@ -185,7 +185,9 @@ const drawer = ref(true)
 const { isRtl } = useRtl()
 const route = useRoute()
 
-const isInstalledPWA = globalThis.matchMedia('(display-mode: standalone)').matches
+const isInstalledPWA = globalThis.matchMedia(
+  '(display-mode: standalone)',
+).matches
 
 const showHash = ref(false)
 const appBarStyle = ref<StyleValue>()
