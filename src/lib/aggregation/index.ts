@@ -77,12 +77,15 @@ export function getRelativeStartDateForLabel(
 export function fewsAggregationLabelToDuration(
   label: string,
 ): DurationLikeObject {
-  const regex =
-    /^(?<value>\d+)\s(?<unit>year|month|week|day|minute|hour|second)s?$/
-  const match = new RegExp(regex).exec(label)
+  const regex = new RegExp(
+    /^(?<value>\d+)\s(?<unit>year|month|week|day|minute|hour|second)s?$/,
+    'i',
+  )
+  const match = regex.exec(label)
   if (match?.groups) {
     const { unit, value } = match.groups
-    return { [unit]: Number.parseInt(value) }
+    const normalizedUnit = unit.toLowerCase()
+    return { [normalizedUnit]: Number.parseInt(value) }
   }
   return {}
 }

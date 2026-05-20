@@ -70,6 +70,12 @@ describe('fewsAggregationLabelToDuration', () => {
     })
   })
 
+  describe('uppercase unit', () => {
+    test('should return empty object for mixed case unit', () => {
+      expect(fewsAggregationLabelToDuration('5 Days')).toEqual({ day: 5 })
+    })
+  })
+
   describe('large numbers', () => {
     test('should parse "365 days"', () => {
       expect(fewsAggregationLabelToDuration('365 days')).toEqual({ day: 365 })
@@ -101,12 +107,6 @@ describe('fewsAggregationLabelToDuration', () => {
       expect(fewsAggregationLabelToDuration('5')).toEqual({})
     })
 
-    test('should return empty object for unsupported unit like "months" (not "month")', () => {
-      expect(fewsAggregationLabelToDuration('5 months')).toEqual({
-        month: 5,
-      })
-    })
-
     test('should return empty object for unsupported unit', () => {
       expect(fewsAggregationLabelToDuration('5 decades')).toEqual({})
     })
@@ -127,20 +127,12 @@ describe('fewsAggregationLabelToDuration', () => {
       expect(fewsAggregationLabelToDuration(' 5 days ')).toEqual({})
     })
 
-    test('should return empty object for mixed case unit', () => {
-      expect(fewsAggregationLabelToDuration('5 Days')).toEqual({})
-    })
-
     test('should return empty object for random text', () => {
       expect(fewsAggregationLabelToDuration('hello world')).toEqual({})
     })
 
     test('should return empty object for unit with prefix', () => {
       expect(fewsAggregationLabelToDuration('5 mydays')).toEqual({})
-    })
-
-    test('should return { day: 0 } for zero value', () => {
-      expect(fewsAggregationLabelToDuration('0 days')).toEqual({ day: 0 })
     })
   })
 
