@@ -122,7 +122,6 @@ const htmlContent = ref('') // Placeholder for HTML content
 const actionIsActive = ref(false) // Flag to indicate if a dissemination action is active
 
 const archiveProductConfig = computed(() => {
-  config?.report.archiveProduct
   return []
 })
 
