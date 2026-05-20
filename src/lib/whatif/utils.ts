@@ -201,8 +201,8 @@ function convertRelativeViewPeriodToOptions(
   if (!raw) return undefined
 
   return {
-    startOffsetHours: convertMultiplierToHours(parseFloat(raw.start), raw.unit),
-    endOffsetHours: convertMultiplierToHours(parseFloat(raw.end), raw.unit),
+    startOffsetHours: convertMultiplierToHours(Number.parseFloat(raw.start), raw.unit),
+    endOffsetHours: convertMultiplierToHours(Number.parseFloat(raw.end), raw.unit),
   }
 }
 
