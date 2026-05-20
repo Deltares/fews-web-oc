@@ -128,7 +128,7 @@ async function convertItemToComponentItem(
 
 function onNavigate(to: NavigateRoute) {
   switch (to.name) {
-    case 'SpatialDisplayWithLocation':
+    case 'SpatialDisplayWithLocation': {
       const hasChartSibling = props.siblings.some(
         (item) => item.component === 'charts',
       )
@@ -141,6 +141,7 @@ function onNavigate(to: NavigateRoute) {
 
       navigateTo(to)
       break
+    }
     case 'SpatialDisplay':
     case 'SpatialDisplayWithCoordinates':
     case 'SSDTimeSeriesDisplay':
