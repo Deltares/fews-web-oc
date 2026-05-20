@@ -150,9 +150,6 @@ const marks = computed(() => {
   const dateScale = scaleTime().domain(props.dates)
   const ticks = dateScale.ticks(5)
   let tickIndex = 0
-  let now = DateTime.now()
-  const remainder = 10 - (now.minute % 10)
-  now = now.plus({ minutes: remainder }).startOf('minute')
   for (const index in props.dates) {
     const date = DateTime.fromJSDate(props.dates[index])
     if (
