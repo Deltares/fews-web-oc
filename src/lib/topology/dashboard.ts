@@ -37,7 +37,9 @@ const DataAnalysisDisplay = defineAsyncComponent(
 )
 
 const Empty = defineAsyncComponent(() => import('@/views/Empty.vue'))
-const WebDisplay = defineAsyncComponent(() => import('@/components/webdisplay/WebDisplay.vue'))
+const WebDisplay = defineAsyncComponent(
+  () => import('@/components/webdisplay/WebDisplay.vue'),
+)
 
 export const componentTypeToComponentMap = {
   dashboard: Empty,
