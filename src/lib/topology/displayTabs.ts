@@ -113,6 +113,7 @@ export async function displayTabsForNode(
         tab.to.params = { ...params }
         break
       case 'html-display':
+      case 'embed-url':
         tab.active = nodeHasWebDisplay(node)
         tab.to.params = { ...params }
         break
