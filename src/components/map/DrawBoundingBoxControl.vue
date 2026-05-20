@@ -5,12 +5,11 @@ import { onBeforeUnmount, watch, onBeforeMount } from 'vue'
 import { TerraDraw, TerraDrawRectangleMode } from 'terra-draw'
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter'
 import { useMap } from '@/services/useMap'
-import type {
-  FeatureId,
-  GeoJSONStoreFeatures,
-} from 'node_modules/terra-draw/dist/store/store'
 import { BoundingBox } from '@/services/useBoundingBox'
-import { Position } from 'geojson'
+import { Position, Feature, Polygon } from 'geojson'
+
+type FeatureId = string | number 
+type GeoJSONStoreFeatures = Feature<Polygon, { mode: string }>
 
 const modelValue = defineModel<BoundingBox | null>({ default: null })
 
