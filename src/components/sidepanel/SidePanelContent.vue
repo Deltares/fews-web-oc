@@ -13,7 +13,6 @@
           {{ title }}
         </span>
         <template #append>
-          <slot name="append"></slot>
           <v-btn @click="emit('close')" icon size="small">
             <v-icon size="small">mdi-close</v-icon>
           </v-btn>

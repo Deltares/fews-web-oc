@@ -1,18 +1,33 @@
 <template>
   <SidePanelContent :title="t('sidePanel.thresholds')" @close="emit('close')">
-    <template #append>
-      <v-select
-        v-model="countType"
-        :items="countTypes"
-        variant="outlined"
-        density="compact"
-        hide-details
-        prepend-inner-icon="mdi-filter-variant"
-        min-width="170px"
-        label="Count by"
-      />
-    </template>
     <div>
+      <v-menu>
+        <template #activator="{ props, isActive }">
+          <v-chip
+            variant="tonal"
+            pilled
+            label
+            v-bind="props"
+            class="mt-2 ms-2"
+            prepend-icon="mdi-sigma"
+          >
+            <template #default>
+              <span>{{ countType }}</span>
+              <v-spacer />
+              <SelectIcon :active="isActive" />
+            </template>
+          </v-chip>
+        </template>
+        <v-list density="compact">
+          <v-list-subheader>Count by</v-list-subheader>
+          <v-list-item
+            v-for="type in countTypes"
+            :title="type"
+            :active="countType === type"
+            @click="countType = type"
+          />
+        </v-list>
+      </v-menu>
       <v-chip-group
         class="px-2 py-2 d-flex flex-wrap flex-0-0"
         v-model="warningLevelsStore.selectedWarningLevelIds"
@@ -84,6 +99,7 @@ import { nodeHasMap } from '@/lib/topology/nodes'
 
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 
+import SelectIcon from '@/components/general/SelectIcon.vue'
 import ThresholdSummary from '@/components/thresholds/ThresholdSummary.vue'
 import SidePanelContent from './SidePanelContent.vue'
 
@@ -147,30 +163,3 @@ onMounted(() => {
   scrollToSelectedItem()
 })
 </script>
-
-<style scoped>
-.threshold-summary-container {
-  width: 450px;
-}
-
-.warning-count {
-  text-align: center;
-}
-
-.v-list-item-subtitle {
-  font-size: 0.8em;
-  color: var(--v-theme-on-surface);
-  opacity: 1;
-  width: 100%;
-  text-align: center;
-}
-
-:deep(.v-list-item__content) {
-  overflow: visible !important;
-  width: 65px;
-}
-
-:deep(.v-chip__content) {
-  width: 100%;
-}
-</style>
