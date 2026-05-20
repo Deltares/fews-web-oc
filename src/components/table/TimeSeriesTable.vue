@@ -176,7 +176,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeMount, ref, watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import TableTooltip from './TableTooltip.vue'
 import type { ChartConfig } from '@/lib/charts/types/ChartConfig'
@@ -192,7 +192,6 @@ import {
 } from '@/lib/table/tableData'
 import { useFewsPropertiesStore } from '@/stores/fewsProperties'
 import { useConfigStore } from '@/stores/config'
-import { onBeforeMount } from 'vue'
 import TableCellEdit from '@/components/table/TableCellEdit.vue'
 import TableCell from '@/components/table/TableCell.vue'
 import {
@@ -340,7 +339,7 @@ watchDebounced(
 
 const showTooltip = (event: MouseEvent, item: any) => {
   if (!item.tooltip) return
-  const id = 'tooltip' + Math.random().toString(16).slice(2)
+  const id = 'tooltip' + Math.random().toString(16).slice(2) // NOSONAR(S2245) non-cryptographic PRNG
   const element = event.target as HTMLElement
   if (!element) return
   element.id = id
@@ -427,9 +426,10 @@ function addRowToTimeSeries(
   const index = tableData.value.findIndex((item) => item.date === row.date)
   const siblingIndex = addBefore ? index - 1 : index + 1
 
+  const minutesOffset = addBefore ? -1 : 1
   const newDate = indexIsInRange(tableData.value, siblingIndex)
     ? getMidpointOfDates(row.date, tableData.value[siblingIndex].date)
-    : getDateWithMinutesOffset(row.date, addBefore ? -1 : 1)
+    : getDateWithMinutesOffset(row.date, minutesOffset)
 
   const newRow = getNewRow(newDate)
 
@@ -482,27 +482,35 @@ watch(editedSeriesIds, () => {
   }
 })
 
+function removeSeriesFromNewTableData(seriesId: string) {
+  for (let i = newTableData.value.length - 1; i >= 0; i--) {
+    if (newTableData.value[i][seriesId] !== undefined) {
+      delete newTableData.value[i][seriesId]
+      if (Object.keys(newTableData.value[i]).length === 1) {
+        newTableData.value.splice(i, 1)
+      }
+    }
+  }
+}
+
+function cleanupNewRows() {
+  tableData.value = tableData.value.filter((item) => !item.isNewRow)
+  if (selected.value?.isNewRow) clearSelected()
+}
+
 function stopEditTimeSeries(seriesId: string) {
   const index = editedSeriesIds.value.indexOf(seriesId)
   if (index > -1) {
     editedSeriesIds.value.splice(index, 1)
-    if (editedSeriesIds.value.length === 0) stopEdit()
-    else {
-      for (let i = newTableData.value.length - 1; i >= 0; i--) {
-        if (newTableData.value[i][seriesId] !== undefined) {
-          delete newTableData.value[i][seriesId]
-          if (Object.keys(newTableData.value[i]).length === 1) {
-            newTableData.value.splice(i, 1)
-          }
-        }
-      }
+    if (editedSeriesIds.value.length === 0) {
+      stopEdit()
+    } else {
+      removeSeriesFromNewTableData(seriesId)
     }
   }
 
   if (!isEditing.value) {
-    // Filter out new rows that were not saved
-    tableData.value = tableData.value.filter((item) => !item.isNewRow)
-    if (selected.value?.isNewRow) clearSelected()
+    cleanupNewRows()
   }
 }
 
