@@ -34,7 +34,8 @@
   },
   "thresholds": {
     "thresholds": "Thresholds",
-    "noThresholdCrossing": "No active threshold crossings"
+    "noThresholdCrossing": "No active threshold crossings",
+    "countBy": "Count by"
   },
   "download": {
     "downloadTimeSeries": "Download time series",

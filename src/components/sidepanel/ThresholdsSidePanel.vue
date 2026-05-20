@@ -19,7 +19,7 @@
           </v-chip>
         </template>
         <v-list density="compact">
-          <v-list-subheader>Count by</v-list-subheader>
+          <v-list-subheader>{{ t('thresholds.countBy') }}</v-list-subheader>
           <v-list-item
             v-for="type in countTypes"
             :title="type"

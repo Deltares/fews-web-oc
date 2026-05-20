@@ -34,7 +34,8 @@
   },
   "thresholds": {
     "thresholds": "Schwellenwerte",
-    "noThresholdCrossing": "Zurzeit keine Schwellenwertüberschreitungen"
+    "noThresholdCrossing": "Zurzeit keine Schwellenwertüberschreitungen",
+    "countBy": "Zählen nach"
   },
   "download": {
     "downloadTimeSeries": "Zeitreihe herunterladen",
