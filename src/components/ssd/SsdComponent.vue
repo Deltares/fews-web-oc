@@ -180,7 +180,6 @@ function getSvgElement() {
 
 .ssd {
   pointer-events: auto !important;
-  user-drag: none;
   -webkit-user-drag: none;
   user-select: none;
   -moz-user-select: none;

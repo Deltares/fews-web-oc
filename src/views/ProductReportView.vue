@@ -122,7 +122,6 @@ const htmlContent = ref('') // Placeholder for HTML content
 const actionIsActive = ref(false) // Flag to indicate if a dissemination action is active
 
 const archiveProductConfig = computed(() => {
-  config?.report.archiveProduct
   return []
 })
 
@@ -233,7 +232,7 @@ function openEmailClient(subject: string, content: string) {
     ],
   })
   const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(textContent)}`
-  window.location.href = mailtoLink
+  globalThis.location.href = mailtoLink
 }
 
 async function runDisseminateAction(

@@ -120,8 +120,8 @@ export function combineSvgParts(
   let maxWidth = 0
 
   svgElements.forEach((svg) => {
-    const width = parseFloat(svg.getAttribute('width') ?? '100')
-    const height = parseFloat(svg.getAttribute('height') ?? '100')
+    const width = Number.parseFloat(svg.getAttribute('width') ?? '100')
+    const height = Number.parseFloat(svg.getAttribute('height') ?? '100')
     maxWidth = Math.max(maxWidth, width)
 
     // Wrap the contents in a <g> with transform to offset vertically
@@ -152,6 +152,6 @@ function getSvgViewBoxAspectRatio(svg: SVGSVGElement): number | null {
 
   const [_offsetX, _offsetY, viewBoxWidth, viewBoxHeight] = viewBox
     .split(' ')
-    .map(parseFloat) as [number, number, number, number]
+    .map(Number.parseFloat) as [number, number, number, number]
   return viewBoxWidth / viewBoxHeight
 }

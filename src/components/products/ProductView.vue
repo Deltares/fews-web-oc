@@ -419,7 +419,7 @@ function openEmailClient(subject: string, content: string) {
     ],
   })
   const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(textContent)}`
-  window.location.href = mailtoLink
+  globalThis.location.href = mailtoLink
 }
 </script>
 

@@ -102,7 +102,7 @@ function onExpansionPanelToggle() {
   }
   clickTimer.value = setTimeout(() => {
     // Only expand when no text is selected
-    if (window.getSelection()?.toString() === '') {
+    if (globalThis.getSelection()?.toString() === '') {
       expanded.value = !expanded.value
       clickTimer.value = null
     }

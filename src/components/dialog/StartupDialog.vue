@@ -35,7 +35,7 @@ const shouldAgreeToTerms = computed(
 const showTermsDialog = useStorage(
   'weboc-show-agree-to-terms-v1.0.0',
   true,
-  window.localStorage,
+  globalThis.localStorage,
   { mergeDefaults: true, writeDefaults: false },
 )
 

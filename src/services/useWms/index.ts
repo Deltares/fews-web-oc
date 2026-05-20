@@ -265,10 +265,10 @@ export function convertBoundingBoxToLngLatBounds(
 ): LngLatBounds {
   const crs = boundingBox.crs
 
-  const minx = parseFloat(boundingBox.minx)
-  const miny = parseFloat(boundingBox.miny)
-  const maxx = parseFloat(boundingBox.maxx)
-  const maxy = parseFloat(boundingBox.maxy)
+  const minx = Number.parseFloat(boundingBox.minx)
+  const miny = Number.parseFloat(boundingBox.miny)
+  const maxx = Number.parseFloat(boundingBox.maxx)
+  const maxy = Number.parseFloat(boundingBox.maxy)
 
   const p1 = toWgs84(point([minx, miny], { crs: crs }))
   const p2 = toWgs84(point([maxx, maxy], { crs: crs }))

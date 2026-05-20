@@ -40,11 +40,11 @@ function handleBeforeUnload(event: BeforeUnloadEvent): void {
 }
 
 onMounted(() => {
-  window.addEventListener('beforeunload', handleBeforeUnload)
+  globalThis.addEventListener('beforeunload', handleBeforeUnload)
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('beforeunload', handleBeforeUnload)
+  globalThis.removeEventListener('beforeunload', handleBeforeUnload)
 })
 
 // ---- Exposed methods ----

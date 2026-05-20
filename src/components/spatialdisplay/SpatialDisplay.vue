@@ -173,13 +173,11 @@ const filteredGeojson = computed(() => {
   }
   return {
     ...geojson.value,
-    ...{
-      features: filterFeaturesByThresholds(
-        geojson.value.features,
-        selectedSeverities.value,
-        selectedCrossings.value,
-      ),
-    },
+    features: filterFeaturesByThresholds(
+      geojson.value.features,
+      selectedSeverities.value,
+      selectedCrossings.value,
+    ),
   }
 })
 

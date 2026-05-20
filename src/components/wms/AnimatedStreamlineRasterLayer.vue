@@ -235,6 +235,9 @@ function getColorScaleRangeFromString(
   colorScaleRangeString?: string,
 ): [number, number] | undefined {
   if (!colorScaleRangeString) return undefined
-  return colorScaleRangeString.split(',', 2).map(parseFloat) as [number, number]
+  return colorScaleRangeString.split(',', 2).map(Number.parseFloat) as [
+    number,
+    number,
+  ]
 }
 </script>

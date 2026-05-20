@@ -26,8 +26,7 @@ export const KeepHtmlAttributes = Extension.create({
         ],
         attributes: {
           dataStatus: {
-            parseHTML: (element: HTMLElement) =>
-              element.getAttribute('data-status'),
+            parseHTML: (element: HTMLElement) => element.dataset.status,
             renderHTML: (attributes) => {
               if (attributes.dataStatus === null) {
                 return {}
@@ -37,7 +36,7 @@ export const KeepHtmlAttributes = Extension.create({
           },
           dataStatusDefinition: {
             parseHTML: (element: HTMLElement) =>
-              element.getAttribute('data-status-definition'),
+              element.dataset.statusDefinition,
             renderHTML: (attributes) => {
               if (attributes.dataStatus === null) {
                 return {}

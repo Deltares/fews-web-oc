@@ -13,6 +13,8 @@ onMounted((): void => {
       store.$reset()
     })
     .catch((err) => console.error(err))
-    .finally(() => (window.location.href = import.meta.env.BASE_URL + 'login'))
+    .finally(
+      () => (globalThis.location.href = import.meta.env.BASE_URL + 'login'),
+    )
 })
 </script>

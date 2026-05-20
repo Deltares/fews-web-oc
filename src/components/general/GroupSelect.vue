@@ -148,7 +148,7 @@ function isGroupSelected(group: string): boolean {
   const ids = getIds(group)
   return props.multiple
     ? ids.every((id) => (selected.value as Id[]).includes(id))
-    : ids.some((id) => id === selected.value)
+    : ids.includes(selected.value as Id)
 }
 
 function isGroupIndeterminate(group: string): boolean {

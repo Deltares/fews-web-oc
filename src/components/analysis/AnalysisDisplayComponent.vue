@@ -134,7 +134,7 @@ const selectedCollectionName = ref<string>(props.collections[0].name)
 watch(
   () => props.collections,
   (newCollections) => {
-    if (!newCollections.find((c) => c.name === selectedCollectionName.value)) {
+    if (!newCollections.some((c) => c.name === selectedCollectionName.value)) {
       selectedCollectionName.value = newCollections[0].name
     }
   },

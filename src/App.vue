@@ -43,7 +43,7 @@ const isDark = useDark()
 useTaskRunMonitorStore()
 
 const layoutComponent = computed(() => {
-  if (window.location.href.includes('/embed/')) {
+  if (globalThis.location.href.includes('/embed/')) {
     return EmptyLayout
   }
 

@@ -151,13 +151,13 @@ function onAction(event: CustomEvent<SsdActionEventPayload>): void {
   const request = result.requests?.[0]
   switch (result.type) {
     case 'PDF':
-      if (request) window.open(new URL(request.request))
+      if (request) globalThis.open(new URL(request.request))
       break
     case 'SSD':
       if (request) switchPanel(request)
       break
     case 'URL':
-      if (request) window.open(new URL(request.request))
+      if (request) globalThis.open(new URL(request.request))
       break
     case 'PI':
       openTimeSeriesDisplay(panelId, objectId)
