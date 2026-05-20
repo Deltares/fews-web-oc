@@ -263,124 +263,167 @@ export function getErrorsForProperties(
     if (!property) continue
 
     const title = property.title
+
     if (property.type === 'integer') {
-      const value = properties[key] as number
-      if (!isInteger(value.toString())) {
-        errors.push({
-          keyword: 'type',
-          instancePath: `/${key}`,
-          schemaPath: `#/properties/${key}/type`,
-          params: { type: 'integer' },
-          message: `"${title}" must be an integer`,
-        })
-      }
+      errors.push(...getIntegerErrors(properties[key], key, title))
     }
-
-    if (schema.required && schema.required.includes(key)) {
-      if (properties[key] === undefined || properties[key] === null) {
-        errors.push({
-          keyword: 'required',
-          instancePath: `/${key}`,
-          schemaPath: `#/required`,
-          params: { missingProperty: key },
-          message: `"${key}" is a required property`,
-        })
-      }
+    if (schema.required?.includes(key)) {
+      errors.push(...getRequiredErrors(properties[key], key))
     }
-
     if (property.type === 'number') {
-      const value = properties[key] as number
-      const min = property.minimum
-      const max = property.maximum
-      if (!isNumber(value.toString())) {
-        errors.push({
-          keyword: 'type',
-          instancePath: `/${key}`,
-          schemaPath: `#/properties/${key}/type`,
-          params: { type: 'number' },
-          message: `"${title}" must be a number`,
-        })
-      }
-      if (min !== undefined && (value as number) < min) {
-        errors.push({
-          keyword: 'minimum',
-          instancePath: `/${key}`,
-          schemaPath: `#/properties/${key}/minimum`,
-          params: { comparison: '>=', limit: min },
-          message: `"${title}" must be greater than or equal to ${min}`,
-        })
-      }
-      if (max !== undefined && (value as number) > max) {
-        errors.push({
-          keyword: 'maximum',
-          instancePath: `/${key}`,
-          schemaPath: `#/properties/${key}/maximum`,
-          params: { comparison: '<=', limit: max },
-          message: `"${title}" must be less than or equal to ${max}`,
-        })
-      }
+      errors.push(...getNumberErrors(properties[key], key, title, property))
     }
-
     if (
       property.type === 'string' &&
       property.format === 'date-time' &&
       property.dateValidation
     ) {
-      const parsed = new Date(properties[key] as string)
-      if (Number.isNaN(parsed.getTime())) {
-        errors.push({
-          keyword: 'invalid',
-          instancePath: `/${key}`,
-          schemaPath: `#/properties/${key}/format`,
-          params: {},
-          message: `"${title}" must be a valid date/time string`,
-        })
-        continue
-      }
-      // Check whether we match the cardinal time step, if specified.
-      if (
-        property.dateValidation.cardinalTimeStep &&
-        !matchesCardinalTimeStep(
-          parsed,
-          property.dateValidation.cardinalTimeStep.timeStepHours,
-        )
-      ) {
-        const timeStepHours =
-          property.dateValidation.cardinalTimeStep.timeStepHours
-        errors.push({
-          keyword: 'invalid',
-          instancePath: `/${key}`,
-          schemaPath: `#/properties/${key}/dateValidation/cardinalTimeStep`,
-          params: {
-            timeStepHours,
-          },
-          message: `"${title}" must be aligned to a time step of ${formatTimeStep(timeStepHours)}`,
-        })
-      }
-      // Check whether we are in the specified date range with respect to a
-      // reference time.
-      if (property.dateValidation?.relativeViewPeriod) {
-        const [startDate, endDate] = computeValidDateRange(
+      errors.push(
+        ...getDateTimeErrors(
+          properties[key],
+          key,
+          title,
+          property,
           referenceTime,
-          property.dateValidation.relativeViewPeriod,
-        )
-        if (parsed < startDate || parsed > endDate) {
-          const message =
-            parsed < startDate
-              ? `"${title}" must be on or after ${toHumanReadableDateTime(startDate)}`
-              : `"${title}" must be on or before ${toHumanReadableDateTime(endDate)}`
-          errors.push({
-            keyword: 'date-out-of-range',
-            instancePath: `/${key}`,
-            schemaPath: `#/properties/${key}/dateValidation/relativeViewPeriod`,
-            params: {
-              startDate,
-              endDate,
-            },
-            message,
-          })
-        }
-      }
+        ),
+      )
+    }
+  }
+
+  return errors
+}
+
+function getIntegerErrors(
+  value: ScenarioValue | undefined,
+  key: string,
+  title: string | undefined,
+): ErrorObject[] {
+  if (isInteger(String(value))) return []
+  return [
+    {
+      keyword: 'type',
+      instancePath: `/${key}`,
+      schemaPath: `#/properties/${key}/type`,
+      params: { type: 'integer' },
+      message: `"${title}" must be an integer`,
+    },
+  ]
+}
+
+function getRequiredErrors(
+  value: ScenarioValue | undefined,
+  key: string,
+): ErrorObject[] {
+  if (value !== undefined && value !== null) return []
+  return [
+    {
+      keyword: 'required',
+      instancePath: `/${key}`,
+      schemaPath: `#/required`,
+      params: { missingProperty: key },
+      message: `"${key}" is a required property`,
+    },
+  ]
+}
+
+function getNumberErrors(
+  value: ScenarioValue | undefined,
+  key: string,
+  title: string | undefined,
+  property: ExtendedJsonSchema7,
+): ErrorObject[] {
+  const errors: ErrorObject[] = []
+  const num = value as number
+  const min = property.minimum
+  const max = property.maximum
+
+  if (!isNumber(String(value))) {
+    errors.push({
+      keyword: 'type',
+      instancePath: `/${key}`,
+      schemaPath: `#/properties/${key}/type`,
+      params: { type: 'number' },
+      message: `"${title}" must be a number`,
+    })
+  }
+  if (min !== undefined && num < min) {
+    errors.push({
+      keyword: 'minimum',
+      instancePath: `/${key}`,
+      schemaPath: `#/properties/${key}/minimum`,
+      params: { comparison: '>=', limit: min },
+      message: `"${title}" must be greater than or equal to ${min}`,
+    })
+  }
+  if (max !== undefined && num > max) {
+    errors.push({
+      keyword: 'maximum',
+      instancePath: `/${key}`,
+      schemaPath: `#/properties/${key}/maximum`,
+      params: { comparison: '<=', limit: max },
+      message: `"${title}" must be less than or equal to ${max}`,
+    })
+  }
+
+  return errors
+}
+
+function getDateTimeErrors(
+  value: ScenarioValue | undefined,
+  key: string,
+  title: string | undefined,
+  property: ExtendedJsonSchema7,
+  referenceTime: Date,
+): ErrorObject[] {
+  const errors: ErrorObject[] = []
+  const parsed = new Date(value as string)
+
+  if (Number.isNaN(parsed.getTime())) {
+    return [
+      {
+        keyword: 'invalid',
+        instancePath: `/${key}`,
+        schemaPath: `#/properties/${key}/format`,
+        params: {},
+        message: `"${title}" must be a valid date/time string`,
+      },
+    ]
+  }
+
+  if (
+    property.dateValidation?.cardinalTimeStep &&
+    !matchesCardinalTimeStep(
+      parsed,
+      property.dateValidation.cardinalTimeStep.timeStepHours,
+    )
+  ) {
+    const timeStepHours = property.dateValidation.cardinalTimeStep.timeStepHours
+    errors.push({
+      keyword: 'invalid',
+      instancePath: `/${key}`,
+      schemaPath: `#/properties/${key}/dateValidation/cardinalTimeStep`,
+      params: { timeStepHours },
+      message: `"${title}" must be aligned to a time step of ${formatTimeStep(timeStepHours)}`,
+    })
+  }
+
+  if (property.dateValidation?.relativeViewPeriod) {
+    const [startDate, endDate] = computeValidDateRange(
+      referenceTime,
+      property.dateValidation.relativeViewPeriod,
+    )
+    if (parsed < startDate || parsed > endDate) {
+      const message =
+        parsed < startDate
+          ? `"${title}" must be on or after ${toHumanReadableDateTime(startDate)}`
+          : `"${title}" must be on or before ${toHumanReadableDateTime(endDate)}`
+      errors.push({
+        keyword: 'date-out-of-range',
+        instancePath: `/${key}`,
+        schemaPath: `#/properties/${key}/dateValidation/relativeViewPeriod`,
+        params: { startDate, endDate },
+        message,
+      })
     }
   }
 
