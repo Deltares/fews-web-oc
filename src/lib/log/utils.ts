@@ -30,7 +30,7 @@ export function filterLog(
   search: string | undefined,
   taskRuns: TaskRun[],
   workflows: WorkflowItem[],
-) {
+): boolean {
   switch (log.type) {
     case 'system':
       if (levels.length > 0 && !levels.includes(log.level)) return false
@@ -59,7 +59,7 @@ export function filterLog(
     text.includes(searchText) ||
     taskRunId?.includes(searchText) ||
     title?.includes(searchText) ||
-    taskRunUser?.includes(searchText)
+    taskRunUser?.includes(searchText) || false
   )
 }
 
