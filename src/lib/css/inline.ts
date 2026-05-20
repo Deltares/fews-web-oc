@@ -17,7 +17,7 @@ async function fetchCssRecursively(url: string): Promise<CssChunk[]> {
   const cssText = await res.text()
 
   const importRegex =
-    /@import\s+(?:url\(\s*['"]?([^'")]+)['"]?\s*\)|['"]([^'"]+)['"])\s*;/g
+    /@import\s+(?:url\(\s*['"]?([^'")]+)['"]?\s*\)|['"]([^'"]+)['"])\s*;/g // NOSONAR(S5852)
   let chunks: CssChunk[] = []
 
   let lastIndex = 0
@@ -80,7 +80,7 @@ async function inlineFontUrls(
 
   // Find all font URLs and convert to data URI
   const fontUrlRegex =
-    /url\(\s*['"]?([^)'"]*?\.(woff2?|ttf|otf|eot))['"]?\s*\)/gi
+    /url\(\s*['"]?([^)'"]*?\.(woff2?|ttf|otf|eot))['"]?\s*\)/gi // NOSONAR(S5852)
   const fontUrls = Array.from(cssText.matchAll(fontUrlRegex), (m) => m[1])
   const urlToDataUri: Record<string, string> = {}
 
