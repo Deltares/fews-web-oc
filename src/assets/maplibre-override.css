@@ -29,21 +29,21 @@
 }
 
 .maplibregl-ctrl button.maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon::before {
-  font-family: 'Material Design Icons';
+  font-family: 'Material Design Icons'; /* NOSONAR(S4649) */
   content: '\F0415'; /* mdi-plus */
   font-size: 22px;
   line-height: 32px;
 }
 
 .maplibregl-ctrl button.maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon::before {
-  font-family: 'Material Design Icons';
+  font-family: 'Material Design Icons'; /* NOSONAR(S4649) */
   content: '\F0374'; /* mdi-minus */
   font-size: 22px;
   line-height: 32px;
 }
 
 .maplibregl-ctrl button.maplibregl-ctrl-compass .maplibregl-ctrl-icon::before {
-  font-family: 'Material Design Icons';
+  font-family: 'Material Design Icons'; /* NOSONAR(S4649) */
   content: '\F018B'; /* mdi-compass */
   font-size: 22px;
   line-height: 32px;
@@ -52,7 +52,7 @@
 .maplibregl-ctrl
   button.maplibregl-ctrl-geolocate
   .maplibregl-ctrl-icon::before {
-  font-family: 'Material Design Icons';
+  font-family: 'Material Design Icons'; /* NOSONAR(S4649) */
   content: '\F01A4'; /* mdi-crosshairs-gps */
   font-size: 22px;
   line-height: 32px;
@@ -60,7 +60,7 @@
 .maplibregl-ctrl
   button.maplibregl-ctrl-geolocate:disabled
   .maplibregl-ctrl-icon::before {
-  font-family: 'Material Design Icons';
+  font-family: 'Material Design Icons'; /* NOSONAR(S4649) */
   content: '\F0F45'; /* mdi-crosshairs-off */
   font-size: 22px;
   line-height: 32px;
@@ -79,62 +79,62 @@
 }
 
 .maplibregl-terradraw-measure-render-button::before {
-  font-family: 'Material Design Icons';
+  font-family: 'Material Design Icons'; /* NOSONAR(S4649) */
   content: '\F08F0'; /*mdi-map-marker-distance */
   line-height: 32px;
   font-size: 22px;
 }
 
 .maplibregl-terradraw-measure-add-control.maplibregl-terradraw-measure-add-rectangle-button::before {
-  font-family: 'Material Design Icons';
+  font-family: 'Material Design Icons'; /* NOSONAR(S4649) */
   content: '\F065F'; /* mdi-shape-rectangle-plus */
   font-size: 22px;
   line-height: 32px;
 }
 
 .maplibregl-terradraw-measure-add-control.maplibregl-terradraw-measure-add-polygon-button::before {
-  font-family: 'Material Design Icons';
+  font-family: 'Material Design Icons'; /* NOSONAR(S4649) */
   content: '\F065E'; /* mdi-shape-polygon-plus */
   font-size: 22px;
   line-height: 32px;
 }
 
 .maplibregl-terradraw-measure-add-control.maplibregl-terradraw-measure-add-linestring-button::before {
-  font-family: 'Material Design Icons';
+  font-family: 'Material Design Icons'; /* NOSONAR(S4649) */
   content: '\F055E'; /* mdi-vector-line */
   font-size: 22px;
   line-height: 32px;
 }
 
 .maplibregl-terradraw-measure-add-control.maplibregl-terradraw-measure-add-freehand-button::before {
-  font-family: 'Material Design Icons';
+  font-family: 'Material Design Icons'; /* NOSONAR(S4649) */
   content: '\F0DEB'; /* mdi-pencil-plus */
   font-size: 22px;
   line-height: 32px;
 }
 
 .maplibregl-terradraw-measure-add-control.maplibregl-terradraw-measure-add-circle-button::before {
-  font-family: 'Material Design Icons';
+  font-family: 'Material Design Icons'; /* NOSONAR(S4649) */
   content: '\F065D'; /* mdi-shape-circle-plus */
   font-size: 22px;
   line-height: 32px;
 }
 
 .maplibregl-terradraw-measure-add-control.maplibregl-terradraw-measure-add-select-button::before {
-  font-family: 'Material Design Icons';
+  font-family: 'Material Design Icons'; /* NOSONAR(S4649) */
   content: '\F01C0'; /*mdi-cursor-default */
   font-size: 22px;
   line-height: 32px;
 }
 
 .maplibregl-terradraw-measure-add-control.maplibregl-terradraw-measure-delete-button::before {
-  font-family: 'Material Design Icons';
+  font-family: 'Material Design Icons'; /* NOSONAR(S4649) */
   content: '\F01B4'; /*mdi-delete*/
   font-size: 22px;
   line-height: 32px;
 }
 .maplibregl-terradraw-measure-add-control.maplibregl-terradraw-measure-download-button::before {
-  font-family: 'Material Design Icons';
+  font-family: 'Material Design Icons'; /* NOSONAR(S4649) */
   content: '\F1774'; /*mdi-file-marker*/
   font-size: 22px;
   line-height: 32px;

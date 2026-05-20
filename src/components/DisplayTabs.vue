@@ -36,11 +36,13 @@ const topologyNodesStore = useTopologyNodesStore()
 watchEffect(async () => {
   // Check if the current displayTab already matches the active node.
   if (!props.nodeId) return
-  const activeNodeId = Array.isArray(props.nodeId)
-    ? props.nodeId.length > 1
-      ? props.nodeId[props.nodeId.length - 1]
-      : props.nodeId[0]
-    : props.nodeId
+  const nodeId = props.nodeId
+  let activeNodeId: string
+  if (Array.isArray(nodeId)) {
+    activeNodeId = nodeId.length > 1 ? nodeId[nodeId.length - 1] : nodeId[0]
+  } else {
+    activeNodeId = nodeId
+  }
 
   const parentNodeIdNodeId =
     Array.isArray(props.nodeId) && props.nodeId.length > 1

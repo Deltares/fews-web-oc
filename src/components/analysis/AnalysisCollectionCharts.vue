@@ -76,9 +76,6 @@ const emit = defineEmits<CollectionEmits>()
 const { sharedZoomHandler, sharedPanHandler } = useChartHandlers()
 
 function removeChart(chart: Chart) {
-  collection.value.charts.splice(
-    collection.value.charts.findIndex((c) => c === chart),
-    1,
-  )
+  collection.value.charts.splice(collection.value.charts.indexOf(chart), 1)
 }
 </script>

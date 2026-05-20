@@ -4,7 +4,7 @@
     aria-label="Coordinate Selector Control"
   >
     <v-icon start>mdi-map-marker</v-icon>
-    <div role="status" aria-label="Selected coordinates">
+    <output aria-label="Selected coordinates">
       <span
         class="coordinate-selector__value text-right text-medium-emphasis mr-1"
       >
@@ -13,7 +13,7 @@
       <span class="coordinate-selector__value text-right text-medium-emphasis">
         {{ coordinateStringParts[1] }}
       </span>
-    </div>
+    </output>
     <v-btn
       :disabled="coordinate === null"
       @click="onFinish"
