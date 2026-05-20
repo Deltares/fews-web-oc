@@ -139,7 +139,7 @@ describe('fewsAggregationLabelToDuration', () => {
       expect(fewsAggregationLabelToDuration('5 mydays')).toEqual({})
     })
 
-    test('should return empty object for zero value', () => {
+    test('should return { day: 0 } for zero value', () => {
       expect(fewsAggregationLabelToDuration('0 days')).toEqual({ day: 0 })
     })
   })
