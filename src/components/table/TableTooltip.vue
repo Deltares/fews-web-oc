@@ -31,5 +31,3 @@ const props = withDefaults(defineProps<Props>(), {
   comment: '',
 })
 </script>
-
-<style scoped></style>
