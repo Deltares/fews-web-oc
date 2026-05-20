@@ -162,6 +162,7 @@ import {
   PiWebserviceProvider,
   TimeSeriesFilter,
   TimeSeriesParameter,
+  TimeSeriesResult,
   TopologyActionFilter,
   TopologyNode,
 } from '@deltares/fews-pi-requests'
@@ -170,7 +171,6 @@ import { configManager } from '@/services/application-config'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest.ts'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { useUserSettingsStore } from '@/stores/userSettings.ts'
-import { TimeSeriesResult } from '@deltares/fews-pi-requests'
 import { ParameterQualifiersHeader } from '@/lib/download/types'
 import { isEqual, uniqWith } from 'lodash-es'
 import { filterToParams } from '@/lib/download/downloadFiles.ts'

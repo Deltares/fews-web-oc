@@ -75,6 +75,8 @@ import {
   MouseOverDirection,
   ZoomMode,
   ZoomEvent,
+  ModifierKey,
+  PanHandler,
 } from '@deltares/fews-web-oc-charts'
 import ChartLegend from '@/components/charts/ChartLegend.vue'
 import ChartLegendOverlay from '@/components/charts/ChartLegendOverlay.vue'
@@ -90,8 +92,6 @@ import {
 } from '@/lib/charts/tags'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { getAxisOptions } from '@/lib/charts/axisOptions'
-import { PanHandler } from '@deltares/fews-web-oc-charts'
-import { ModifierKey } from '@deltares/fews-web-oc-charts'
 import { useUserSettingsStore } from '@/stores/userSettings'
 
 import { clearChart, redraw, refreshChart } from '@/lib/charts/timeSeriesChart'
