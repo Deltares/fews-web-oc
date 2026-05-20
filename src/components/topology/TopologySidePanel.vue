@@ -137,7 +137,7 @@ const generalSidePanels: GeneralSidePanel[] = [
   },
   {
     type: 'logDisplay',
-    icon: 'mdi-file-document-outline',
+    icon: 'mdi-message-text-clock',
     component: LogsSidePanel,
   },
   {
