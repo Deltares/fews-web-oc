@@ -79,10 +79,10 @@ export function fewsAggregationLabelToDuration(
 ): DurationLikeObject {
   const regex =
     /^(?<value>\d+)\s(?<unit>year|month|week|day|minute|hour|second)s?$/
-  const match = label.match(regex)
+  const match = new RegExp(regex).exec(label)
   if (match?.groups) {
     const { unit, value } = match.groups
-    return { [unit]: parseInt(value) }
+    return { [unit]: Number.parseInt(value) }
   }
   return {}
 }
