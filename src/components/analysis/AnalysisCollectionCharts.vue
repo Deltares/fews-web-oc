@@ -77,7 +77,7 @@ const { sharedZoomHandler, sharedPanHandler } = useChartHandlers()
 
 function removeChart(chart: Chart) {
   collection.value.charts.splice(
-    collection.value.charts.findIndex((c) => c === chart),
+    collection.value.charts.indexOf(chart),
     1,
   )
 }
