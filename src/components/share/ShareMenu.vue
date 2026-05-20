@@ -176,7 +176,7 @@ const embedUrl = computed(() => {
 
   const href = router.resolve(newRoute).href
 
-  return new URL(href, window.location.origin).toString()
+  return new URL(href, globalThis.location.origin).toString()
 })
 
 const iframeWidth = ref(600)

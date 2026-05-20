@@ -66,7 +66,7 @@ async function startEditing() {
   // Select all text in the editable div
   const range = document.createRange()
   range.selectNodeContents(editableDiv.value)
-  const selection = window.getSelection()
+  const selection = globalThis.getSelection()
   if (selection) {
     selection.removeAllRanges()
     selection.addRange(range)

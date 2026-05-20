@@ -117,7 +117,7 @@ const isDark = useDark()
 
 function onExpansionPanelToggle() {
   // Only expand when no text is selected
-  if (window.getSelection()?.toString() === '') {
+  if (globalThis.getSelection()?.toString() === '') {
     expanded.value = !expanded.value
   }
 }

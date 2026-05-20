@@ -201,7 +201,7 @@ onMounted(() => {
     axis.accept(currentTime)
     resize()
     onValueChange()
-    window.addEventListener('resize', resize)
+    globalThis.addEventListener('resize', resize)
   }
 })
 
@@ -341,7 +341,7 @@ const onValueChange = () => {
 }
 
 const beforeDestroy = () => {
-  window.removeEventListener('resize', resize)
+  globalThis.removeEventListener('resize', resize)
   zoom.removeEventListener('zoom', onZoom)
   zoom.removeEventListener('reset-zoom', onResetZoom)
 }

@@ -124,7 +124,7 @@ const reportItems = computed(() => {
 const src = computed(() => {
   if (!reportHtml.value) return ''
   const blob = new Blob([reportHtml.value], { type: 'text/html' })
-  const url = window.URL.createObjectURL(blob)
+  const url = globalThis.URL.createObjectURL(blob)
   return url
 })
 

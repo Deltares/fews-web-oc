@@ -343,11 +343,11 @@ watch(isEditing, () => {
     useTimeSeriesInterval?.resume()
   }
   // Can't set a custom message in modern browsers
-  window.onbeforeunload = isEditing.value ? () => true : null
+  globalThis.onbeforeunload = isEditing.value ? () => true : null
 })
 
 onUnmounted(() => {
-  window.onbeforeunload = null
+  globalThis.onbeforeunload = null
 })
 
 onBeforeRouteLeave(confirmUnsavedChanges)
