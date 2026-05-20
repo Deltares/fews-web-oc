@@ -6,13 +6,12 @@
     <v-icon start>mdi-selection-drag</v-icon>
     <DrawBoundingBoxControl v-if="isActive" v-model="boundingBox" />
 
-    <span
+    <output
       class="text-medium-emphasis"
-      role="status"
       aria-label="Selected bounding box coordinates"
     >
       {{ boundingBoxString }}
-    </span>
+    </output>
 
     <v-btn
       :disabled="boundingBox === null"
