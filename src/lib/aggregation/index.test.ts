@@ -70,8 +70,8 @@ describe('fewsAggregationLabelToDuration', () => {
     })
   })
 
-  describe('uppercase unit', () => {
-    test('should return empty object for mixed case unit', () => {
+  describe('case-insensitive units', () => {
+    test('should parse mixed case unit', () => {
       expect(fewsAggregationLabelToDuration('5 Days')).toEqual({ day: 5 })
     })
   })
