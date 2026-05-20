@@ -72,7 +72,7 @@ describeFromVersion('202402', 'Run Tasks Panel', () => {
     // Open coordinate selector
     await selectCoordBtn.click()
     await expect(coordSelector).toBeVisible()
-    const coordSelectorDiv = coordSelector.locator('div[role="status"]', {
+    const coordSelectorDiv = coordSelector.getByRole('status', {
       name: 'Selected coordinates',
     })
     await expect(coordSelectorDiv).toContainText('-29.83491°N31.06229°E')
