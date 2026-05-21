@@ -1,7 +1,7 @@
 <template>
   <SidePanelContent :title="t('sidePanel.thresholds')" @close="emit('close')">
     <div>
-      <v-menu>
+      <v-menu v-if="!onlyOneParameter">
         <template #activator="{ props, isActive }">
           <v-chip
             variant="tonal"
@@ -139,6 +139,12 @@ const groupedCrossings = computed(() => {
   })
   return Object.values(grouped)
 })
+
+const onlyOneParameter = computed(() =>
+  warningLevelsStore.warningLevels.every(
+    (level) => level.parameterWarningLevelCount?.length === 1,
+  ),
+)
 
 // Scroll to the selected item
 async function scrollToSelectedItem() {
