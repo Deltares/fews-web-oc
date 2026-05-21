@@ -20,12 +20,25 @@ export const useWarningLevelsStore = defineStore('warningLevels', () => {
   const _crossings = computed(
     () => thresholds.value?.levelThresholdCrossings ?? [],
   )
-  const aggregatedWarningLevels = computed(
+  const _aggregatedWarningLevels = computed(
     () => thresholds.value?.aggregatedLevelThresholdWarningLevels ?? [],
   )
   const _warningLevels = computed(
     () => thresholds.value?.levelThresholdWarningLevels ?? [],
   )
+
+  function getCrossingsCountForLevel(levelId: string): number {
+    return _crossings.value.filter(
+      (crossing) => crossing.warningLevelId === levelId,
+    ).length
+  }
+
+  function getAggregatedCountForLevel(levelId: string): number {
+    const aggregatedLevel = _aggregatedWarningLevels.value.find(
+      (aggLevel) => aggLevel.id === levelId,
+    )
+    return aggregatedLevel?.count ?? 0
+  }
 
   const warningLevels = computed<WarningLevel[]>(() =>
     _warningLevels.value
@@ -34,10 +47,11 @@ export const useWarningLevelsStore = defineStore('warningLevels', () => {
         const count = parameters.reduce((a, b) => a + b.count, 0) ?? 0
         const icon = level.icon ? getResourcesIconsUrl(level.icon) : undefined
 
-        const aggregatedLevel = aggregatedWarningLevels.value.find(
-          (aggLevel) => aggLevel.id === level.id,
-        )
-        const locationCount = aggregatedLevel?.count ?? 0
+        // For warning levels with severity 0 we have no crossings
+        const locationCount =
+          level.severity === 0
+            ? getAggregatedCountForLevel(level.id)
+            : getCrossingsCountForLevel(level.id)
 
         return {
           ...level,
