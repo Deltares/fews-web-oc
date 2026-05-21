@@ -49,7 +49,14 @@ function generateChartSeriesArray(
 
   for (const [index, item] of subplot.items.entries()) {
     if (item.type === 'area' && item.legend) {
-      handleAreaType(item, index, subplot, areaLegendLabels, chartSeriesArray, config)
+      handleAreaType(
+        item,
+        index,
+        subplot,
+        areaLegendLabels,
+        chartSeriesArray,
+        config,
+      )
     } else if (item.type === 'horizontalColorCode') {
       handleHorizontalColorCodeType(item, chartSeriesArray, config)
     } else if (item.type === 'line' && isValidLineStyle(item.lineStyle)) {
