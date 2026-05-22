@@ -35,31 +35,39 @@
         column
         selected-class="v-chip--variant-tonal"
       >
-        <v-chip
-          v-for="level in warningLevelsStore.warningLevels"
+        <template
+          v-for="(level, index) in warningLevelsStore.warningLevels"
           :key="level.id"
-          :value="level.id"
-          :text="level.name"
-          label
-          variant="text"
-          class="pe-0 ps-2"
-          border
         >
-          <template #prepend>
-            <v-img width="20" height="20" :src="level.icon" class="me-1" />
-          </template>
-          <template #append>
-            <v-chip
-              :text="
-                countType === 'Location' ? level.locationCount : level.count
-              "
-              density="compact"
-              variant="flat"
-              class="ms-2 pa-1 pointer-events-none"
-              size="small"
-            />
-          </template>
-        </v-chip>
+          <div
+            v-if="showSeverityZeroSeparator(index)"
+            class="w-100 my-1 severity-zero-separator"
+            aria-hidden="true"
+          ></div>
+          <v-chip
+            :value="level.id"
+            :text="level.name"
+            label
+            variant="text"
+            class="pe-0 ps-2"
+            border
+          >
+            <template #prepend>
+              <v-img width="20" height="20" :src="level.icon" class="me-1" />
+            </template>
+            <template #append>
+              <v-chip
+                :text="
+                  countType === 'Location' ? level.locationCount : level.count
+                "
+                density="compact"
+                variant="flat"
+                class="ms-2 pa-1 pointer-events-none"
+                size="small"
+              />
+            </template>
+          </v-chip>
+        </template>
       </v-chip-group>
       <div v-if="warningLevelsStore.warningLevels.length === 0" class="pa-2">
         {{ t('thresholds.noThresholdCrossing') }}
@@ -168,4 +176,18 @@ watch([() => props.locationIds, groupedCrossings], () => {
 onMounted(() => {
   scrollToSelectedItem()
 })
+
+function showSeverityZeroSeparator(index: number): boolean {
+  if (index <= 0) return false
+  const levels = warningLevelsStore.warningLevels
+  const currentSeverity = levels[index]?.severity
+  const previousSeverity = levels[index - 1]?.severity
+  return currentSeverity === 0 && previousSeverity !== 0
+}
 </script>
+
+<style scoped>
+.severity-zero-separator {
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.2);
+}
+</style>
