@@ -1,6 +1,35 @@
 <template>
   <SidePanelContent :title="t('sidePanel.thresholds')" @close="emit('close')">
     <div>
+      <v-list-item v-if="warningLevelsStore.warningLevels.length > 0">
+        <v-list-item-title>
+          {{ t('thresholds.warningLevels') }}
+        </v-list-item-title>
+        <template #append>
+          <v-menu>
+            <template #activator="{ props, isActive }">
+              <v-chip variant="tonal" pilled v-bind="props" class="mt-2 ms-2">
+                <template #default>
+                  <span
+                    >{{ t('thresholds.count') }}:
+                    {{ t(`thresholds.countBy.${countType}`) }}</span
+                  >
+                  <v-spacer />
+                  <SelectIcon :active="isActive" />
+                </template>
+              </v-chip>
+            </template>
+            <v-list density="compact">
+              <v-list-item
+                v-for="type in countTypes"
+                :title="t(`thresholds.countBy.${type}`)"
+                :active="countType === type"
+                @click="countType = type"
+              />
+            </v-list>
+          </v-menu>
+        </template>
+      </v-list-item>
       <v-chip-group
         class="px-2 py-2 d-flex flex-wrap flex-0-0"
         v-model="warningLevelsStore.selectedWarningLevelIds"
@@ -8,33 +37,49 @@
         column
         selected-class="v-chip--variant-tonal"
       >
-        <v-chip
-          v-for="level in warningLevelsStore.warningLevels"
+        <template
+          v-for="(level, index) in warningLevelsStore.warningLevels"
           :key="level.id"
-          :value="level.id"
-          :text="level.name"
-          label
-          variant="text"
-          class="pe-0 ps-2"
-          border
         >
-          <template #prepend>
-            <v-img width="20" height="20" :src="level.icon" class="me-1" />
-          </template>
-          <template #append>
-            <v-chip
-              :text="level.count"
-              density="compact"
-              variant="flat"
-              class="ms-2 pa-1 pointer-events-none"
-              size="small"
-            />
-          </template>
-        </v-chip>
+          <div
+            v-if="showSeverityZeroSeparator(index)"
+            class="w-100 my-1 severity-zero-separator"
+            aria-hidden="true"
+          ></div>
+          <v-chip
+            :value="level.id"
+            :text="level.name"
+            label
+            variant="text"
+            class="pe-0 ps-2"
+            border
+          >
+            <template #prepend>
+              <v-img width="20" height="20" :src="level.icon" class="me-1" />
+            </template>
+            <template #append>
+              <v-chip
+                :text="
+                  countType === 'Locations' ? level.locationCount : level.count
+                "
+                density="compact"
+                variant="flat"
+                class="ms-2 pa-1 pointer-events-none"
+                size="small"
+              />
+            </template>
+          </v-chip>
+        </template>
       </v-chip-group>
-      <div v-if="warningLevelsStore.warningLevels.length === 0" class="pa-2">
-        {{ t('thresholds.noThresholdCrossing') }}
-      </div>
+      <v-list-item>
+        <v-list-item-title>
+          {{
+            warningLevelsStore.warningLevels.length === 0
+              ? t('thresholds.noThresholdCrossing')
+              : t('thresholds.activeThresholdCrossings')
+          }}
+        </v-list-item-title>
+      </v-list-item>
       <!-- Important to have item-height as it greatly improves performance -->
       <v-virtual-scroll
         ref="virtualScroll"
@@ -62,7 +107,7 @@ import type {
   LevelThresholdCrossings,
   TopologyNode,
 } from '@deltares/fews-pi-requests'
-import { computed, watch, nextTick, onMounted, useTemplateRef } from 'vue'
+import { computed, watch, nextTick, onMounted, useTemplateRef, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import type { NavigateRoute } from '@/lib/router/types'
@@ -70,6 +115,7 @@ import { nodeHasMap } from '@/lib/topology/nodes'
 
 import { useWarningLevelsStore } from '@/stores/warningLevels'
 
+import SelectIcon from '@/components/general/SelectIcon.vue'
 import ThresholdSummary from '@/components/thresholds/ThresholdSummary.vue'
 import SidePanelContent from './SidePanelContent.vue'
 
@@ -95,9 +141,12 @@ const selectable = computed<boolean>(() => {
 
 const virtualScroll = useTemplateRef('virtualScroll')
 
+const countTypes = ['Locations', 'Crossings'] as const
+const countType = ref<(typeof countTypes)[number]>('Locations')
+
 const groupedCrossings = computed(() => {
   const grouped: Record<string, LevelThresholdCrossings[]> = {}
-  warningLevelsStore.selectedThresholdCrossings.forEach((crossing) => {
+  warningLevelsStore.selectedCrossings.forEach((crossing) => {
     const key = crossing.locationId
     if (!grouped[key]) {
       grouped[key] = []
@@ -129,31 +178,18 @@ watch([() => props.locationIds, groupedCrossings], () => {
 onMounted(() => {
   scrollToSelectedItem()
 })
+
+function showSeverityZeroSeparator(index: number): boolean {
+  if (index <= 0) return false
+  const levels = warningLevelsStore.warningLevels
+  const currentSeverity = levels[index]?.severity
+  const previousSeverity = levels[index - 1]?.severity
+  return currentSeverity === 0 && previousSeverity !== 0
+}
 </script>
 
 <style scoped>
-.threshold-summary-container {
-  width: 450px;
-}
-
-.warning-count {
-  text-align: center;
-}
-
-.v-list-item-subtitle {
-  font-size: 0.8em;
-  color: var(--v-theme-on-surface);
-  opacity: 1;
-  width: 100%;
-  text-align: center;
-}
-
-:deep(.v-list-item__content) {
-  overflow: visible !important;
-  width: 65px;
-}
-
-:deep(.v-chip__content) {
-  width: 100%;
+.severity-zero-separator {
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.2);
 }
 </style>

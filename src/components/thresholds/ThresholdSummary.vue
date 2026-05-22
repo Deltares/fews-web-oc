@@ -62,12 +62,22 @@ function onMouseLeave() {
 }
 
 function onPanelClick() {
-  // Route to open the crossing in the map
+  if (isSelected) {
+    closeTimeSeriesDisplay()
+  } else {
+    // Route to open the crossing in the map
+    navigateToLocation(crossings[0].locationId)
+  }
+}
+
+function closeTimeSeriesDisplay() {
+  emit('navigate', { name: 'SpatialDisplay' })
+}
+
+function navigateToLocation(locationIds: string) {
   const to = {
     name: 'SpatialDisplayWithLocation',
-    params: {
-      locationIds: crossings[0].locationId,
-    },
+    params: { locationIds },
   }
   emit('navigate', to)
 }

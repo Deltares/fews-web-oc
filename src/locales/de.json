@@ -33,8 +33,16 @@
     "endDateAfterStartDate": "Enddatum muss nach Startdtaum liegen"
   },
   "thresholds": {
+    "activeThresholdCrossings": "Aktive Schwellenwertüberschreitungen",
+    "count": "Anzahl",
+    "countBy": {
+      "Locations": "Messstellen",
+      "Crossings": "Überschreitungen"
+    },
+    "countCrossings": "Überschreitungen",
+    "noThresholdCrossing": "Zurzeit keine Schwellenwertüberschreitungen",
     "thresholds": "Schwellenwerte",
-    "noThresholdCrossing": "Zurzeit keine Schwellenwertüberschreitungen"
+    "warningLevels": "Warnstufen"
   },
   "download": {
     "downloadTimeSeries": "Zeitreihe herunterladen",

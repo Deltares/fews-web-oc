@@ -1,7 +1,6 @@
-export interface WarningLevel {
-  id: string
-  name: string
-  severity: number
-  icon?: string
+import { ParameterLevelThresholdWarningLevels } from '@deltares/fews-pi-requests'
+
+export interface WarningLevel extends ParameterLevelThresholdWarningLevels {
   count: number
+  locationCount: number
 }
