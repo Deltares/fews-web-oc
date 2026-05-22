@@ -59,13 +59,15 @@ function generateChartSeriesArray(
       )
     } else if (item.type === 'horizontalColorCode') {
       handleHorizontalColorCodeType(item, chartSeriesArray, config)
-    } else if (item.type === 'line' && isValidLineStyle(item.lineStyle)) {
-      handleLineType(item, chartSeriesArray, config)
-    } else if (isValidMarkerStyle(item.markerStyle)) {
-      handleMarkerType(item, chartSeriesArray, config)
+    } else {
+      if (item.type === 'line' && isValidLineStyle(item.lineStyle)) {
+        handleLineType(item, chartSeriesArray, config)
+      }
+      if (isValidMarkerStyle(item.markerStyle)) {
+        handleMarkerType(item, chartSeriesArray, config)
+      }
     }
   }
-
   return chartSeriesArray
 }
 
