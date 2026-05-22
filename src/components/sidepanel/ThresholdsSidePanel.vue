@@ -73,12 +73,13 @@
       </v-chip-group>
       <v-list-item>
         <v-list-item-title>
-          {{ t('thresholds.activeThresholdCrossings') }}
+          {{
+            warningLevelsStore.warningLevels.length === 0
+              ? t('thresholds.noThresholdCrossing')
+              : t('thresholds.activeThresholdCrossings')
+          }}
         </v-list-item-title>
       </v-list-item>
-      <div v-if="warningLevelsStore.warningLevels.length === 0" class="pa-2">
-        {{ t('thresholds.noThresholdCrossing') }}
-      </div>
       <!-- Important to have item-height as it greatly improves performance -->
       <v-virtual-scroll
         ref="virtualScroll"
