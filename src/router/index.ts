@@ -13,7 +13,7 @@ import Silent from '../views/auth/Silent.vue'
 import { configManager } from '../services/application-config'
 import { authenticationManager } from '../services/authentication/AuthenticationManager'
 import { useConfigStore } from '../stores/config.ts'
-import { hasDefaultPath } from '@/lib/fews-config/types.ts'
+import { hasDefaultPath, type WebOcComponent } from '@/lib/fews-config/types.ts'
 
 const SystemMonitorDisplayView = () =>
   import('../views/SystemMonitorDisplayView.vue')
@@ -370,43 +370,49 @@ async function addDynamicRoutes() {
   }
 }
 
+function applyDefaultPathParams(
+  component: WebOcComponent,
+  params: RouteLocationNormalized['params'],
+): boolean {
+  if (!hasDefaultPath(component) || !component.defaultPath) return false
+
+  let changed = false
+  for (const [key, value] of Object.entries(component.defaultPath)) {
+    if (value === undefined || params[key]) continue
+    params[key] =
+      component.type === 'TopologyDisplay' && key === 'nodeId'
+        ? value.split('/')
+        : value
+    changed = true
+  }
+  return changed
+}
+
+function applyHtmlDisplayPath(
+  component: WebOcComponent,
+  params: RouteLocationNormalized['params'],
+): boolean {
+  if (component.type !== 'HtmlDisplay' || !component.path || params.path) {
+    return false
+  }
+  params.path = component.path
+  return true
+}
+
 function defaultRouteParams(to: RouteLocationNormalized) {
   const store = useConfigStore()
   const route = to.name === undefined ? router.resolve(to) : to
   const component = store.getComponentByRoute(route)
-  if (component !== undefined) {
-    const params = to.params
-    let requiresRedirect = false
-    if (hasDefaultPath(component) && component.defaultPath) {
-      const defaultPath = component.defaultPath
-      for (const [key, value] of Object.entries(defaultPath)) {
-        if (value !== undefined) {
-          if (!params[key]) {
-            if (component.type === 'TopologyDisplay' && key === 'nodeId') {
-              params[key] = value.split('/')
-            } else {
-              params[key] = value
-            }
-            requiresRedirect = true
-          }
-        }
-      }
-    }
+  if (component === undefined) return
 
-    if (component.type === 'HtmlDisplay' && component.path) {
-      const path = component.path
-      if (path && !params.path) {
-        params.path = path
-        requiresRedirect = true
-      }
-    }
+  const params = to.params
+  const pathChanged = applyDefaultPathParams(component, params)
+  const htmlChanged = applyHtmlDisplayPath(component, params)
 
-    if (requiresRedirect) {
-      to.params = params
-      return to
-    }
+  if (pathChanged || htmlChanged) {
+    to.params = params
+    return to
   }
-  return
 }
 
 router.beforeEach(async (to) => {

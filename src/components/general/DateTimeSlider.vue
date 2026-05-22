@@ -197,11 +197,9 @@ watch(
       ) {
         emit('update:selectedDate', props.dates[dateIndex.value])
       }
-    } else {
-      if (props.selectedDate) {
-        const oldDate = props.selectedDate
-        dateIndex.value = findDateIndex(props.dates, oldDate)
-      }
+    } else if (props.selectedDate) {
+      const oldDate = props.selectedDate
+      dateIndex.value = findDateIndex(props.dates, oldDate)
     }
   },
   { immediate: true },

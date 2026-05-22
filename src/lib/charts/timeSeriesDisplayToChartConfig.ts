@@ -24,8 +24,8 @@ export function timeSeriesDisplayToChartConfig(
   subplot: TimeSeriesDisplaySubplot,
 ): ChartConfig {
   const xAxis = subplot.xAxis ? xAxisFromPlotItemXAxis(subplot.xAxis) : []
-
   const subplotId = subplot.items.map((plot) => plot.request).toString()
+
   const config: ChartConfig = {
     id: subplotId,
     title: '',
@@ -33,67 +33,115 @@ export function timeSeriesDisplayToChartConfig(
     yAxis: yAxisFromSubplot(subplot),
     series: [],
   }
+
+  const chartSeriesArray = generateChartSeriesArray(subplot, config)
+  config.series = chartSeriesArray
+
+  return config
+}
+
+function generateChartSeriesArray(
+  subplot: TimeSeriesDisplaySubplot,
+  config: ChartConfig,
+): ChartSeries[] {
   const chartSeriesArray: ChartSeries[] = []
   const areaLegendLabels: string[] = []
 
   for (const [index, item] of subplot.items.entries()) {
     if (item.type === 'area' && item.legend) {
-      if (areaLegendLabels.includes(item.legend)) {
-        // Create second item as dummy for item.type 'area'
-        const chartSeries = getChartSeries([item], 'dummy', config)
-        chartSeriesArray.push(chartSeries)
-        continue
+      handleAreaType(
+        item,
+        index,
+        subplot,
+        areaLegendLabels,
+        chartSeriesArray,
+        config,
+      )
+    } else if (item.type === 'horizontalColorCode') {
+      handleHorizontalColorCodeType(item, chartSeriesArray, config)
+    } else {
+      if (item.type === 'line' && isValidLineStyle(item.lineStyle)) {
+        handleLineType(item, chartSeriesArray, config)
       }
-      areaLegendLabels.push(item.legend)
-
-      // Area can have two data resources
-      const secondItemIndex = subplot.items.findLastIndex(
-        (i) => i.legend === item.legend,
-      )
-      const chartType = item.lineStyle === undefined ? 'area' : 'rule'
-      const secondItem = subplot.items[secondItemIndex]
-      const items = secondItemIndex === index ? [item] : [item, secondItem]
-
-      const chartSeries = getChartSeries(items, chartType, config)
-      chartSeriesArray.push(chartSeries)
-    }
-
-    if (item.type === 'horizontalColorCode') {
-      const chartSeries: ChartSeries = getChartSeries(
-        [item],
-        'horizontalColorCode',
-        config,
-      )
-      chartSeriesArray.unshift(chartSeries)
-    }
-
-    if (
-      item.type === 'line' &&
-      item.lineStyle !== undefined &&
-      !item.lineStyle.startsWith('none')
-    ) {
-      const chartSeries: ChartSeries = getChartSeries(
-        [item],
-        item.lineStyle === 'area' || item.lineStyle === 'bar'
-          ? item.lineStyle
-          : 'line',
-        config,
-      )
-      chartSeriesArray.push(chartSeries)
-    }
-
-    if (item.markerStyle !== undefined && item.markerStyle !== 'none') {
-      const chartSeries: ChartSeries = getChartSeries([item], 'marker', config)
-      chartSeries.marker = chartMarkerFromFews(
-        item.markerStyle,
-        item.markerSize,
-      )
-      chartSeries.style = cssStyleFromFewsMarker(item)
-      chartSeriesArray.push(chartSeries)
+      if (isValidMarkerStyle(item.markerStyle)) {
+        handleMarkerType(item, chartSeriesArray, config)
+      }
     }
   }
-  config.series = chartSeriesArray
-  return config
+  return chartSeriesArray
+}
+
+function handleAreaType(
+  item: TimeSeriesDisplaySubplotItem,
+  index: number,
+  subplot: TimeSeriesDisplaySubplot,
+  areaLegendLabels: string[],
+  chartSeriesArray: ChartSeries[],
+  config: ChartConfig,
+) {
+  if (!item.legend) return
+  if (areaLegendLabels.includes(item.legend)) {
+    const chartSeries = getChartSeries([item], 'dummy', config)
+    chartSeriesArray.push(chartSeries)
+    return
+  }
+
+  areaLegendLabels.push(item.legend)
+  const secondItemIndex = subplot.items.findLastIndex(
+    (i) => i.legend === item.legend,
+  )
+  const chartType = item.lineStyle === undefined ? 'area' : 'rule'
+  const secondItem = subplot.items[secondItemIndex]
+  const items = secondItemIndex === index ? [item] : [item, secondItem]
+
+  const chartSeries = getChartSeries(items, chartType, config)
+  chartSeriesArray.push(chartSeries)
+}
+
+function handleHorizontalColorCodeType(
+  item: TimeSeriesDisplaySubplotItem,
+  chartSeriesArray: ChartSeries[],
+  config: ChartConfig,
+) {
+  const chartSeries: ChartSeries = getChartSeries(
+    [item],
+    'horizontalColorCode',
+    config,
+  )
+  chartSeriesArray.unshift(chartSeries)
+}
+
+function handleLineType(
+  item: TimeSeriesDisplaySubplotItem,
+  chartSeriesArray: ChartSeries[],
+  config: ChartConfig,
+) {
+  const chartType =
+    item.lineStyle === 'area' || item.lineStyle === 'bar'
+      ? item.lineStyle
+      : 'line'
+  const chartSeries: ChartSeries = getChartSeries([item], chartType, config)
+  chartSeriesArray.push(chartSeries)
+}
+
+function handleMarkerType(
+  item: TimeSeriesDisplaySubplotItem,
+  chartSeriesArray: ChartSeries[],
+  config: ChartConfig,
+) {
+  const chartSeries: ChartSeries = getChartSeries([item], 'marker', config)
+  if (item.markerStyle === undefined) return
+  chartSeries.marker = chartMarkerFromFews(item.markerStyle, item.markerSize)
+  chartSeries.style = cssStyleFromFewsMarker(item)
+  chartSeriesArray.push(chartSeries)
+}
+
+function isValidLineStyle(lineStyle?: string): boolean {
+  return lineStyle !== undefined && !lineStyle.startsWith('none')
+}
+
+function isValidMarkerStyle(markerStyle?: string): boolean {
+  return markerStyle !== undefined && markerStyle !== 'none'
 }
 
 function getChartSeries(
