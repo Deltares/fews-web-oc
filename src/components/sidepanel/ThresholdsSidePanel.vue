@@ -1,33 +1,35 @@
 <template>
   <SidePanelContent :title="t('sidePanel.thresholds')" @close="emit('close')">
     <div>
-      <v-menu v-if="!onlyOneParameter">
-        <template #activator="{ props, isActive }">
-          <v-chip
-            variant="tonal"
-            pilled
-            label
-            v-bind="props"
-            class="mt-2 ms-2"
-            prepend-icon="mdi-sigma"
-          >
-            <template #default>
-              <span>{{ countType }}</span>
-              <v-spacer />
-              <SelectIcon :active="isActive" />
+      <v-list-item>
+        <v-list-item-title>
+          {{ t('thresholds.warningLevels') }}
+        </v-list-item-title>
+        <template #append>
+          <v-menu>
+            <template #activator="{ props, isActive }">
+              <v-chip variant="tonal" pilled v-bind="props" class="mt-2 ms-2">
+                <template #default>
+                  <span
+                    >{{ t('thresholds.count') }}:
+                    {{ t(`thresholds.countBy.${countType}`) }}</span
+                  >
+                  <v-spacer />
+                  <SelectIcon :active="isActive" />
+                </template>
+              </v-chip>
             </template>
-          </v-chip>
+            <v-list density="compact">
+              <v-list-item
+                v-for="type in countTypes"
+                :title="t(`thresholds.countBy.${type}`)"
+                :active="countType === type"
+                @click="countType = type"
+              />
+            </v-list>
+          </v-menu>
         </template>
-        <v-list density="compact">
-          <v-list-subheader>{{ t('thresholds.countBy') }}</v-list-subheader>
-          <v-list-item
-            v-for="type in countTypes"
-            :title="type"
-            :active="countType === type"
-            @click="countType = type"
-          />
-        </v-list>
-      </v-menu>
+      </v-list-item>
       <v-chip-group
         class="px-2 py-2 d-flex flex-wrap flex-0-0"
         v-model="warningLevelsStore.selectedWarningLevelIds"
@@ -58,7 +60,7 @@
             <template #append>
               <v-chip
                 :text="
-                  countType === 'Location' ? level.locationCount : level.count
+                  countType === 'Locations' ? level.locationCount : level.count
                 "
                 density="compact"
                 variant="flat"
@@ -69,6 +71,11 @@
           </v-chip>
         </template>
       </v-chip-group>
+      <v-list-item>
+        <v-list-item-title>
+          {{ t('thresholds.activeThresholdCrossings') }}
+        </v-list-item-title>
+      </v-list-item>
       <div v-if="warningLevelsStore.warningLevels.length === 0" class="pa-2">
         {{ t('thresholds.noThresholdCrossing') }}
       </div>
@@ -133,8 +140,8 @@ const selectable = computed<boolean>(() => {
 
 const virtualScroll = useTemplateRef('virtualScroll')
 
-const countTypes = ['Location', 'Parameter'] as const
-const countType = ref<(typeof countTypes)[number]>('Location')
+const countTypes = ['Locations', 'Crossings'] as const
+const countType = ref<(typeof countTypes)[number]>('Locations')
 
 const groupedCrossings = computed(() => {
   const grouped: Record<string, LevelThresholdCrossings[]> = {}
@@ -147,12 +154,6 @@ const groupedCrossings = computed(() => {
   })
   return Object.values(grouped)
 })
-
-const onlyOneParameter = computed(() =>
-  warningLevelsStore.warningLevels.every(
-    (level) => level.parameterWarningLevelCount?.length === 1,
-  ),
-)
 
 // Scroll to the selected item
 async function scrollToSelectedItem() {

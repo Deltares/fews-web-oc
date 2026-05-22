@@ -33,9 +33,15 @@
     "endDateAfterStartDate": "End date must be after start date"
   },
   "thresholds": {
-    "thresholds": "Thresholds",
+    "count": "Count",
+    "countBy": {
+      "Locations": "Locations",
+      "Crossings": "Crossings"
+    },
+    "activeThresholdCrossings": "Active threshold crossings",
     "noThresholdCrossing": "No active threshold crossings",
-    "countBy": "Count by"
+    "thresholds": "Thresholds",
+    "warningLevels": "Levels"
   },
   "download": {
     "downloadTimeSeries": "Download time series",
