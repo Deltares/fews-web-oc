@@ -1,7 +1,7 @@
 <template>
   <SidePanelContent :title="t('sidePanel.thresholds')" @close="emit('close')">
     <div>
-      <v-list-item>
+      <v-list-item v-if="warningLevelsStore.warningLevels.length > 0">
         <v-list-item-title>
           {{ t('thresholds.warningLevels') }}
         </v-list-item-title>
