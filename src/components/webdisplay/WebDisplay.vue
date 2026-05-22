@@ -1,7 +1,7 @@
 <template>
   <iframe
     v-if="src"
-    class="w-100 h-100"
+    class="w-100 h-100 web-display__iframe"
     :src="src"
     title="Web Display"
   ></iframe>
@@ -21,3 +21,9 @@ const src = computed(() => {
   return props.topologyNode?.embedUrl ?? ''
 })
 </script>
+
+<style scoped>
+.web-display__iframe {
+  border: none;
+}
+</style>

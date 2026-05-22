@@ -7,6 +7,7 @@ export type ComponentType =
   | 'dynamic-report-display'
   | 'data-analysis-display'
   | 'html-display'
+  | 'embed-url'
 
 export const ComponentType = {
   dashboard: 'dashboard',
@@ -22,6 +23,7 @@ export const ComponentType = {
   'runtask-display': 'runtask-display',
   'log-display': 'log-display',
   'documents-display': 'documents-display',
+  'embed-url': 'embed-url',
 } satisfies Record<ComponentType, ComponentType>
 
 export const componentTypeToIconMap = {
@@ -38,6 +40,7 @@ export const componentTypeToIconMap = {
   'runtask-display': 'mdi-cog',
   'log-display': 'mdi-file-document',
   'documents-display': 'mdi-file-document-multiple',
+  'embed-url': 'mdi-link',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToTitleMap = {
@@ -54,6 +57,7 @@ export const componentTypeToTitleMap = {
   'runtask-display': 'Run Task',
   'log-display': 'Log',
   'documents-display': 'Documents Browser',
+  'embed-url': 'Embedded Content',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToRouteNameMap = {
@@ -70,6 +74,7 @@ export const componentTypeToRouteNameMap = {
   'runtask-display': 'TopologyWhatIfDisplay',
   'log-display': 'TopologyLogDisplay',
   'documents-display': 'TopologyDocumentDisplay',
+  'embed-url': 'TopologyWebDisplay',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToIdMap = {
@@ -86,4 +91,5 @@ export const componentTypeToIdMap = {
   'dynamic-report-display': 'dynamicreport',
   'log-display': 'log',
   'documents-display': 'documents',
+  'embed-url': 'embed',
 } satisfies Record<ComponentType, string>

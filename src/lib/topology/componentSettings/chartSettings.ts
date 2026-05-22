@@ -1,7 +1,38 @@
 import type { DeepRequired } from '@/lib/utils/types'
 import type { ChartsSettings as PiChartsSettings } from '@deltares/fews-pi-requests'
 
-export type ChartsSettings = DeepRequired<PiChartsSettings>
+type DeepRequiredChartsSettings = DeepRequired<PiChartsSettings>
+
+type WithOptionalLocationEnabledAttribute<
+  T extends { locationEnabledAttribute: unknown },
+> = Omit<T, 'locationEnabledAttribute'> & {
+  locationEnabledAttribute?: T['locationEnabledAttribute']
+}
+
+export type ChartsSettings = Omit<
+  DeepRequiredChartsSettings,
+  | 'timeSeriesChart'
+  | 'timeSeriesTable'
+  | 'verticalProfileChart'
+  | 'verticalProfileTable'
+  | 'metaDataPanel'
+> & {
+  timeSeriesChart: WithOptionalLocationEnabledAttribute<
+    DeepRequiredChartsSettings['timeSeriesChart']
+  >
+  timeSeriesTable: WithOptionalLocationEnabledAttribute<
+    DeepRequiredChartsSettings['timeSeriesTable']
+  >
+  verticalProfileChart: WithOptionalLocationEnabledAttribute<
+    DeepRequiredChartsSettings['verticalProfileChart']
+  >
+  verticalProfileTable: WithOptionalLocationEnabledAttribute<
+    DeepRequiredChartsSettings['verticalProfileTable']
+  >
+  metaDataPanel: WithOptionalLocationEnabledAttribute<
+    DeepRequiredChartsSettings['metaDataPanel']
+  >
+}
 
 export const defaultChartSettings: ChartsSettings = {
   general: {

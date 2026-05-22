@@ -37,6 +37,9 @@ const DataAnalysisDisplay = defineAsyncComponent(
 )
 
 const Empty = defineAsyncComponent(() => import('@/views/Empty.vue'))
+const WebDisplay = defineAsyncComponent(
+  () => import('@/components/webdisplay/WebDisplay.vue'),
+)
 
 export const componentTypeToComponentMap = {
   dashboard: Empty,
@@ -52,6 +55,7 @@ export const componentTypeToComponentMap = {
   'runtask-display': WhatIfDisplayView,
   'data-analysis-display': DataAnalysisDisplay,
   'documents-display': Empty,
+  'embed-url': WebDisplay,
 } satisfies Record<ComponentType, Component>
 
 export type PropsForComponentType<T extends ComponentType> = ComponentProps<
