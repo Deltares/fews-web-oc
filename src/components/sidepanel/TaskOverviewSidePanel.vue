@@ -160,7 +160,7 @@ const {
   selectedWorkflowIds,
   selectedTaskStatuses,
   selectedUserId,
-  () => props.topologyNode?.id,
+  undefined,
   true,
 )
 const hasLoadedAtLeastOnce = computed<boolean>(
