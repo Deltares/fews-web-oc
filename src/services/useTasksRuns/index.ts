@@ -31,14 +31,20 @@ export function refreshTaskRuns() {
   shouldRefreshTaskRuns.value = !shouldRefreshTaskRuns.value
 }
 
+const DEFAULT_REFRESH_INTERVAL_SECONDS = 15
+
+interface UseTaskRunsOptions {
+  userId?: MaybeRefOrGetter<string | null>
+  topologyNodeId?: MaybeRefOrGetter<string | undefined>
+  includeWhatIfScenario?: MaybeRefOrGetter<boolean>
+  refreshIntervalSeconds?: number
+}
+
 export function useTaskRuns(
-  refreshIntervalSeconds: number,
   dispatchPeriod: MaybeRefOrGetter<RelativePeriod | null>,
   workflowIds: MaybeRefOrGetter<string[]>,
   statuses: MaybeRefOrGetter<TaskStatus[]>,
-  userId: MaybeRefOrGetter<string | null>,
-  topologyNodeId?: MaybeRefOrGetter<string | undefined>,
-  includeWhatIfScenario?: MaybeRefOrGetter<boolean>,
+  options: UseTaskRunsOptions = {},
 ) {
   const isLoading = ref(false)
   const lastUpdatedTimestamp = ref<number | null>(null)
@@ -46,6 +52,8 @@ export function useTaskRuns(
   const filteredTaskRuns = computed<TaskRun[]>(filterTasks)
   const outputStartTime = ref<Date | null>(null)
   const outputEndTime = ref<Date | null>(null)
+  const refreshIntervalSeconds =
+    options.refreshIntervalSeconds ?? DEFAULT_REFRESH_INTERVAL_SECONDS
 
   useFocusAwareInterval(
     () => {
@@ -58,7 +66,7 @@ export function useTaskRuns(
   watch(
     [
       () => toValue(dispatchPeriod),
-      () => toValue(topologyNodeId),
+      () => toValue(options.topologyNodeId),
       () => shouldRefreshTaskRuns.value,
     ],
     fetch,
@@ -66,8 +74,9 @@ export function useTaskRuns(
 
   async function fetch(): Promise<void> {
     const _dispatchPeriod = toValue(dispatchPeriod)
-    const _topologyNodeId = toValue(topologyNodeId)
-    const _includeWhatIfScenario = !!toValue(includeWhatIfScenario)
+    const _topologyNodeId = toValue(options.topologyNodeId)
+    const _includeWhatIfScenario =
+      toValue(options.includeWhatIfScenario) ?? true
 
     const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
     const piProvider = new PiWebserviceProvider(baseUrl, {
@@ -105,7 +114,7 @@ export function useTaskRuns(
   function filterTasks(): TaskRun[] {
     const _workflowIds = toValue(workflowIds)
     const _statuses = toValue(statuses)
-    const _userId = toValue(userId)
+    const _userId = toValue(options.userId) ?? null
     return allTaskRuns.value.filter(
       (task) =>
         _workflowIds.includes(task.workflowId) &&

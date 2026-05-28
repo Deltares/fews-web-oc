@@ -108,7 +108,6 @@ const period = ref<RelativePeriod | null>({
   endOffsetSeconds: 0,
 })
 
-const TASKS_REFRESH_INTERVAL_SECONDS = 15
 const {
   filteredTaskRuns,
   isLoading,
@@ -117,13 +116,12 @@ const {
   outputEndTime,
   fetch: refreshTaskRuns,
 } = useTaskRuns(
-  TASKS_REFRESH_INTERVAL_SECONDS,
   period,
   availableWorkflowsStore.workflowIds,
   selectedTaskStatuses,
-  null,
-  () => props.topologyNode?.id,
-  true,
+  {
+    topologyNodeId: () => props.topologyNode?.id,
+  },
 )
 
 const sortedTasks = computed(() => filteredTaskRuns.value.toSorted(sortTasks))

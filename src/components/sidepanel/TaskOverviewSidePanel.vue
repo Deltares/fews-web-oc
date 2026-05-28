@@ -144,7 +144,6 @@ const period = ref<RelativePeriod | null>({
   endOffsetSeconds: 0,
 })
 
-const TASKS_REFRESH_INTERVAL_SECONDS = 15
 const selectedUserId = computed<string | null>(() => {
   if (!showCurrentUserOnly.value || !user.hasCurrentUser()) return null
   return user.preferredUsername.value
@@ -154,15 +153,9 @@ const {
   isLoading,
   lastUpdatedTimestamp,
   fetch: refreshTaskRuns,
-} = useTaskRuns(
-  TASKS_REFRESH_INTERVAL_SECONDS,
-  period,
-  selectedWorkflowIds,
-  selectedTaskStatuses,
-  selectedUserId,
-  undefined,
-  true,
-)
+} = useTaskRuns(period, selectedWorkflowIds, selectedTaskStatuses, {
+  userId: selectedUserId,
+})
 const hasLoadedAtLeastOnce = computed<boolean>(
   () => lastUpdatedTimestamp.value !== null,
 )
