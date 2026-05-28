@@ -41,7 +41,7 @@
     "activeThresholdCrossings": "Active threshold crossings",
     "noThresholdCrossing": "No active threshold crossings",
     "thresholds": "Thresholds",
-    "warningLevels": "Levels"
+    "warningSeverityLevels": "Severity levels"
   },
   "download": {
     "downloadTimeSeries": "Download time series",
@@ -52,7 +52,7 @@
     "pointCloud": "Point Cloud",
     "boundingBox": "Bounding box",
     "selectBoundingBox": "Select bounding box",
-    "drawBoundingBox": "Draw Bounding Box",
+    "drawBoundingBox": "Draw bounding box",
     "areaSelected": "Area selected",
     "redraw": "Redraw",
     "startTime": "Start Time",

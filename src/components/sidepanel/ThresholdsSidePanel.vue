@@ -3,7 +3,7 @@
     <div>
       <v-list-item v-if="warningLevelsStore.warningLevels.length > 0">
         <v-list-item-title>
-          {{ t('thresholds.warningLevels') }}
+          {{ t('thresholds.warningSeverityLevels') }}
         </v-list-item-title>
         <template #append>
           <v-menu>
