@@ -43,7 +43,7 @@
         >
           <div
             v-if="showSeverityZeroSeparator(index)"
-            class="w-100 my-1 severity-zero-separator"
+            class="my-1 severity-zero-separator v-chip"
             aria-hidden="true"
           ></div>
           <v-chip
@@ -190,6 +190,6 @@ function showSeverityZeroSeparator(index: number): boolean {
 
 <style scoped>
 .severity-zero-separator {
-  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.2);
+  border-left: 1px solid rgba(var(--v-theme-on-surface), 0.2);
 }
 </style>
