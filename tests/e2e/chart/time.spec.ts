@@ -7,9 +7,7 @@ test.describe('Default time settings', () => {
   test('should display the correct time settings', async ({ page }) => {
     // TODO: Remove these listeners after debugging
     page.on('request', (request) => {
-      console.log(
-        'REQUEST:' + request.url() + ' ' + request.failure().errorText,
-      )
+      console.log('REQUEST:' + request.url() + ' ' + request.method())
     })
     page.on('response', async (response) => {
       console.log('RESPONSE:' + response.url(), await response.body())
