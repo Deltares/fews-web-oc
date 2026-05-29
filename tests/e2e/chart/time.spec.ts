@@ -5,6 +5,24 @@ const url = `${base}/viewer_rivers_level_stations/viewer_rivers_level_stations_f
 
 test.describe('Default time settings', () => {
   test('should display the correct time settings', async ({ page }) => {
+    // TODO: Remove these listeners after debugging
+    page.on('request', (request) => {
+      console.log(
+        'REQUEST:' + request.url() + ' ' + request.failure().errorText,
+      )
+    })
+    page.on('response', async (response) => {
+      console.log('RESPONSE:' + response.url(), await response.body())
+    })
+    page.on('requestfinished', (request) => {
+      console.log('REQUEST FINISHED:' + request.url())
+    })
+    page.on('requestfailed', (request) => {
+      console.log(
+        'REQUEST FAILED:' + request.url() + ' ' + request.failure().errorText,
+      )
+    })
+
     await page.goto(url)
     // Get all image elements with the specified text
     const timelineImages = page
