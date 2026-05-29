@@ -89,7 +89,7 @@ p {
   color: #ffffff;
   border: 1px solid transparent;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--error-accent), #ea6b43);
+  background: linear-gradient(135deg, var(--error-accent-dark), #a6341c);
   transition:
     transform 120ms ease,
     box-shadow 120ms ease,

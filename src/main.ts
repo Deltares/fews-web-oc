@@ -19,7 +19,7 @@ pinia.use(piniaPluginPersistedstate)
 
 const app = createApp(App)
 
-defineCustomElements(globalThis as unknown as Window)
+defineCustomElements(globalThis.window)
 app.config.compilerOptions.isCustomElement = (tag) =>
   tag === 'schematic-status-display'
 

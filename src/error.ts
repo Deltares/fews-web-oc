@@ -1,7 +1,7 @@
 import './assets/config-error.css'
 ;(function () {
   const marker = 'error.html'
-  const path = window.location.pathname
+  const path = globalThis.location.pathname
 
   if (!path.includes(marker)) {
     return
@@ -13,7 +13,7 @@ import './assets/config-error.css'
   const isReload = navEntries.length > 0 && navEntries[0].type === 'reload'
 
   if (isReload) {
-    window.location.replace(import.meta.env.BASE_URL)
+    globalThis.location.replace(import.meta.env.BASE_URL)
     return
   }
 
