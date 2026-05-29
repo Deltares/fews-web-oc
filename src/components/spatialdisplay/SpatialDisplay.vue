@@ -31,7 +31,7 @@
         :latitude="latitude"
         :longitude="longitude"
         :topologyNode="topologyNode"
-        :settings="settings"
+        :settings="currSettings"
         :currentTime="currentTime"
         :elevation="elevation"
       >
@@ -54,12 +54,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, useTemplateRef, watch } from 'vue'
+import {
+  computed,
+  defineAsyncComponent,
+  reactive,
+  ref,
+  useTemplateRef,
+  watch,
+  watchEffect,
+} from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
 import { useWmsLayerCapabilities } from '@/services/useWms'
-import { type TopologyNode } from '@deltares/fews-pi-requests'
+import type { TopologyNode, Location } from '@deltares/fews-pi-requests'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import {
@@ -117,12 +125,16 @@ const containerRef = useTemplateRef('container')
 const boundingBox = computed(() => props.topologyNode?.boundingBox)
 const filterIds = computed(() => props.topologyNode?.filterIds ?? [])
 const filterOptions = computed(() => {
-  if (userSettings.get('ui.map.showDataAvailability')?.value === true) {
-    return {
-      showTimeSeriesInfo: true,
-    }
+  const attributeIds = [
+    props.settings.charts.timeSeriesChart.locationEnabledAttribute,
+    props.settings.charts.timeSeriesTable.locationEnabledAttribute,
+  ].filter((id): id is string => !!id)
+  return {
+    ...(userSettings.get('ui.map.showDataAvailability')?.value === true
+      ? { showTimeSeriesInfo: true }
+      : {}),
+    ...(attributeIds.length > 0 ? { showAttributes: true, attributeIds } : {}),
   }
-  return {}
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -131,6 +143,49 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
   () => props.layerName,
   taskRunId,
 )
+
+const currSettings = reactive<ComponentSettings>(
+  structuredClone(props.settings),
+)
+
+watch(
+  () => props.settings,
+  (newSettings) => {
+    Object.assign(currSettings, structuredClone(newSettings))
+    updateDisplaySettings(selectedLocations.value ?? [])
+  },
+  { deep: true },
+)
+
+function getDisplayEnabledFromLocationAttributes(
+  locations: Location[],
+  attributeId: string | undefined,
+  defaultVal: boolean,
+): boolean {
+  for (let location of locations) {
+    const attr = location?.attributes?.find((a) => a.id === attributeId)
+    if (attr !== undefined) {
+      if (defaultVal && attr.value === 'false') return false
+      if (!defaultVal && attr.value === 'true') return true
+    }
+  }
+  return defaultVal
+}
+
+function updateDisplaySettings(locations: Location[]) {
+  currSettings.charts.timeSeriesChart.enabled =
+    getDisplayEnabledFromLocationAttributes(
+      locations,
+      props.settings.charts.timeSeriesChart.locationEnabledAttribute,
+      props.settings.charts.timeSeriesChart.enabled,
+    )
+  currSettings.charts.timeSeriesTable.enabled =
+    getDisplayEnabledFromLocationAttributes(
+      locations,
+      props.settings.charts.timeSeriesTable.locationEnabledAttribute,
+      props.settings.charts.timeSeriesTable.enabled,
+    )
+}
 
 const groupId = computed(
   () => props.topologyNode?.gridDisplaySelection?.groupId,
@@ -141,9 +196,27 @@ const { locations, geojson } = useFilterLocations(
   filterIds,
   filterOptions,
 )
-watch(locations, (newLocations) =>
-  locationNamesStore.addLocationNames(newLocations ?? []),
-)
+watch(locations, (newLocations) => {
+  locationNamesStore.addLocationNames(newLocations ?? [])
+})
+
+const selectedLocations = computed<Location[] | undefined>(() => {
+  if (!props.locationIds) return undefined
+  const locationIdList = props.locationIds.split(',') ?? []
+  const locationList: Location[] = []
+
+  for (let locId of locationIdList) {
+    let locMatch = locations.value?.find((l) => l.locationId === locId)
+    if (locMatch) {
+      locationList.push(locMatch)
+    }
+  }
+  return locationList
+})
+
+watchEffect(() => {
+  updateDisplaySettings(selectedLocations.value ?? [])
+})
 
 const selectedCrossings = computed(() => {
   return warningLevelsStore.selectedCrossings.filter(
