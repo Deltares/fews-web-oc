@@ -5,8 +5,9 @@ const baseViteConfig = getViteConfig({
   mode: 'test',
 })
 
-const legacyRollupOptions = (baseViteConfig.build as Record<string, unknown> | undefined)
-  ?.['rollupOptions']
+const legacyRollupOptions = (
+  baseViteConfig.build as Record<string, unknown> | undefined
+)?.['rollupOptions']
 
 const viteConfig = {
   ...baseViteConfig,
