@@ -1,9 +1,22 @@
 import { defineConfig, devices } from '@playwright/experimental-ct-vue'
 import getViteConfig from './vite.config'
-const viteConfig = getViteConfig({
+const baseViteConfig = getViteConfig({
   command: 'build',
   mode: 'test',
 })
+
+const legacyRollupOptions = (baseViteConfig.build as Record<string, unknown> | undefined)
+  ?.['rollupOptions']
+
+const viteConfig = {
+  ...baseViteConfig,
+  build: {
+    ...baseViteConfig.build,
+    // Vite 8 CT runs with rolldown and expects rolldownOptions.
+    rolldownOptions: legacyRollupOptions,
+    rollupOptions: undefined,
+  },
+}
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -32,7 +45,8 @@ export default defineConfig({
 
     /* Port to use for Playwright component endpoint. */
     ctPort: 3100,
-    ctViteConfig: viteConfig,
+    // Playwright CT may resolve its own Vite types; runtime config shape is compatible.
+    ctViteConfig: viteConfig as never,
   },
   /* Configure projects for major browsers */
   projects: [
