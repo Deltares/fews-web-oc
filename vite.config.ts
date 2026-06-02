@@ -2,11 +2,33 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vuetify from 'vite-plugin-vuetify'
 import { dirname, resolve } from 'node:path'
-import { execSync } from 'node:child_process'
+import { execFileSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-const commitHash = execSync('git rev-parse --short HEAD').toString()
-const commitTag = execSync('git tag --points-at HEAD').toString()
+const GIT_CANDIDATE_PATHS =
+  process.platform === 'win32'
+    ? [
+        'C:/Program Files/Git/cmd/git.exe',
+        'C:/Program Files/Git/bin/git.exe',
+        'C:/Program Files (x86)/Git/cmd/git.exe',
+      ]
+    : ['/usr/bin/git', '/usr/local/bin/git']
+
+function runGit(args: string[], fallback = ''): string {
+  try {
+    const gitPath =
+      process.env.GIT_EXECUTABLE ??
+      GIT_CANDIDATE_PATHS.find((path) => existsSync(path))
+    if (!gitPath) return fallback
+    return execFileSync(gitPath, args, { encoding: 'utf8' }).trim()
+  } catch {
+    return fallback
+  }
+}
+
+const commitHash = runGit(['rev-parse', '--short', 'HEAD'], 'unknown')
+const commitTag = runGit(['tag', '--points-at', 'HEAD'])
 const buildDate = new Date().toISOString()
 
 const __filename = fileURLToPath(import.meta.url)
