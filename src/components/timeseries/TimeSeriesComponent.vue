@@ -45,13 +45,18 @@
       <KeepAlive>
         <TimeSeriesChart
           v-for="subplot in elevationChartSubplots"
+          v-show="
+            maximizedSubplotId === null || maximizedSubplotId === subplot.id
+          "
           verticalProfile
           :config="subplot"
           :series="elevationChartSeries"
           :key="subplot.id"
-          :style="`min-width: ${xs ? 100 : 50}%`"
+          :style="{ minWidth: `${getElevationChartMinWidth(subplot.id)}%` }"
           :zoomHandler="sharedVerticalZoomHandler"
           :settings="settings.verticalProfileChart"
+          :maximized="maximizedSubplotId === subplot.id"
+          @toggle-maximize="toggleMaximizeSubplot(subplot.id)"
         >
         </TimeSeriesChart>
       </KeepAlive>
@@ -205,6 +210,14 @@ const maximizedSubplotId = ref<string | null>(null)
 
 function toggleMaximizeSubplot(id: string): void {
   maximizedSubplotId.value = maximizedSubplotId.value === id ? null : id
+}
+
+function getElevationChartMinWidth(subplotId: string): number {
+  if (maximizedSubplotId.value === null) {
+    return xs.value ? 100 : 50
+  }
+
+  return maximizedSubplotId.value === subplotId ? 100 : 0
 }
 
 const tab = ref<DisplayType>(props.displayType)
