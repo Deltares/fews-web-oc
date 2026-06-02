@@ -128,6 +128,8 @@ const filterOptions = computed(() => {
   const attributeIds = [
     props.settings.charts.timeSeriesChart.locationEnabledAttribute,
     props.settings.charts.timeSeriesTable.locationEnabledAttribute,
+    props.settings.charts.verticalProfileChart.locationEnabledAttribute,
+    props.settings.charts.metaDataPanel.locationEnabledAttribute,
   ].filter((id): id is string => !!id)
   return {
     ...(userSettings.get('ui.map.showDataAvailability')?.value === true
@@ -184,6 +186,18 @@ function updateDisplaySettings(locations: Location[]) {
       locations,
       props.settings.charts.timeSeriesTable.locationEnabledAttribute,
       props.settings.charts.timeSeriesTable.enabled,
+    )
+  currSettings.charts.verticalProfileChart.enabled =
+    getDisplayEnabledFromLocationAttributes(
+      locations,
+      props.settings.charts.verticalProfileChart.locationEnabledAttribute,
+      props.settings.charts.verticalProfileChart.enabled,
+    )
+  currSettings.charts.metaDataPanel.enabled =
+    getDisplayEnabledFromLocationAttributes(
+      locations,
+      props.settings.charts.metaDataPanel.locationEnabledAttribute,
+      props.settings.charts.metaDataPanel.enabled,
     )
 }
 
