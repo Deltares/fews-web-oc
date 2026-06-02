@@ -23,9 +23,9 @@ import { configManager } from '@/services/application-config'
 import TimeSeriesWindowComponent from '@/components/timeseries/TimeSeriesWindowComponent.vue'
 import { useDisplayConfigFilter } from '@/services/useDisplayConfig'
 import type {
-  filterActionsFilter,
+  FilterActionsFilter,
   LocationsTooltipFilter,
-  timeSeriesGridActionsFilter,
+  TimeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
@@ -33,9 +33,9 @@ import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useTaskRunsStore } from '@/stores/taskRuns'
 
 interface Props {
-  brushFilter?: filterActionsFilter | timeSeriesGridActionsFilter
-  filter?: filterActionsFilter | timeSeriesGridActionsFilter
-  elevationChartFilter?: timeSeriesGridActionsFilter
+  brushFilter?: FilterActionsFilter | TimeSeriesGridActionsFilter
+  filter?: FilterActionsFilter | TimeSeriesGridActionsFilter
+  elevationChartFilter?: TimeSeriesGridActionsFilter
   locationsTooltipFilter?: LocationsTooltipFilter
   currentTime?: Date
   settings: ComponentSettings

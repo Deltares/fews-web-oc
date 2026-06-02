@@ -33,12 +33,12 @@
 <script setup lang="ts">
 import AnalysisAddButton from './AnalysisAddButton.vue'
 import { canAddFilterToChart, Chart } from '@/lib/analysis'
-import type { filterActionsFilter } from '@deltares/fews-pi-requests'
+import type { FilterActionsFilter } from '@deltares/fews-pi-requests'
 import { computed } from 'vue'
 
 interface Props {
   charts: Chart[]
-  filters: filterActionsFilter[]
+  filters: FilterActionsFilter[]
   loadingNewCharts?: boolean
   loadingAddToChart?: boolean
 }

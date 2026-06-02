@@ -3,7 +3,7 @@ import type {
   ActionRequest,
   CorrelationFilter,
   TimeSeriesDisplaySubplot,
-  filterActionsFilter,
+  FilterActionsFilter,
   TimeSeriesDisplaySubplotItem,
   Results,
 } from '@deltares/fews-pi-requests'
@@ -40,7 +40,7 @@ export interface BaseChart {
 export interface FilterSubplotItem extends TimeSeriesDisplaySubplotItem {
   id: string
   filter: Omit<
-    filterActionsFilter,
+    FilterActionsFilter,
     'resamplingMethod' | 'resamplingTimeStepId'
   > & {
     moduleInstanceIds?: string

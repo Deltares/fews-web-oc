@@ -19,9 +19,9 @@ import { computed } from 'vue'
 import { configManager } from '@/services/application-config'
 import { useWmsLayerCapabilities } from '@/services/useWms'
 import {
-  filterActionsFilter,
+  FilterActionsFilter,
   LocationsTooltipFilter,
-  timeSeriesGridActionsFilter,
+  TimeSeriesGridActionsFilter,
   type TopologyNode,
 } from '@deltares/fews-pi-requests'
 import { toMercator } from '@turf/projection'
@@ -74,7 +74,7 @@ const currentTime = computed(() => {
 function getFilterActionsFilter(
   locationIds: string,
   fullDataPeriod?: boolean,
-): filterActionsFilter {
+): FilterActionsFilter {
   return {
     locationIds,
     filterId: filterIds.value ? filterIds.value[0] : undefined,
@@ -87,7 +87,7 @@ function getFilterActionsFilter(
 function getTimeSeriesGridActionsFilter(
   longitude: string,
   latitude: string,
-): (timeSeriesGridActionsFilter & { useDisplayUnits: boolean }) | undefined {
+): TimeSeriesGridActionsFilter | undefined {
   if (!longitude || !latitude) return
   if (!layerCapabilities.value?.boundingBox) return
   if (!layerCapabilities.value?.firstValueTime) return

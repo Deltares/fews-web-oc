@@ -2,14 +2,14 @@ import type {
   CorrelationFilter,
   TimeSeriesFilter,
   TimeSeriesTopologyActionsFilter,
-  filterActionsFilter,
-  timeSeriesGridActionsFilter,
+  FilterActionsFilter,
+  TimeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
 import type { DataDownloadFilter } from '@/lib/download/types'
 
 export type Filter =
-  | timeSeriesGridActionsFilter
-  | filterActionsFilter
+  | TimeSeriesGridActionsFilter
+  | FilterActionsFilter
   | TimeSeriesFilter
   | DataDownloadFilter
   | CorrelationFilter
@@ -17,14 +17,14 @@ export type Filter =
 
 export function isFilterActionsFilter(
   filter: Filter,
-): filter is filterActionsFilter {
-  return (filter as filterActionsFilter).filterId !== undefined
+): filter is FilterActionsFilter {
+  return (filter as FilterActionsFilter).filterId !== undefined
 }
 
 export function isTimeSeriesGridActionsFilter(
   filter: Filter,
-): filter is timeSeriesGridActionsFilter {
-  return (filter as timeSeriesGridActionsFilter).x !== undefined
+): filter is TimeSeriesGridActionsFilter {
+  return (filter as TimeSeriesGridActionsFilter).x !== undefined
 }
 
 export function isDataDownloadFilter(
