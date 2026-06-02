@@ -42,7 +42,7 @@
     "countCrossings": "Überschreitungen",
     "noThresholdCrossing": "Zurzeit keine Schwellenwertüberschreitungen",
     "thresholds": "Schwellenwerte",
-    "warningLevels": "Warnstufen"
+    "warningSeverityLevels": "Warnstufen"
   },
   "download": {
     "downloadTimeSeries": "Zeitreihe herunterladen",
