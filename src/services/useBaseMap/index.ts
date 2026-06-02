@@ -14,7 +14,8 @@ export function useBaseMap() {
     const baseMapId = userSettingsStore.get('ui.map.theme')?.value as
       | string
       | undefined
-    return baseMapsStore.getBaseMapById(baseMapId ?? 'automatic', isDark.value)
+    const defaultBaseMapId = baseMapsStore.baseMaps[0]?.id
+    return baseMapsStore.getBaseMapById(baseMapId ?? defaultBaseMapId, isDark.value)
   })
 
   const mapStyle = computed(() => {
