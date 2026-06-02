@@ -160,16 +160,16 @@ watch(
 function getDisplayEnabledFromLocationAttributes(
   locations: Location[],
   attributeId: string | undefined,
-  defaultVal: boolean,
+  defaultValue: boolean,
 ): boolean {
   for (let location of locations) {
     const attr = location?.attributes?.find((a) => a.id === attributeId)
     if (attr !== undefined) {
-      if (defaultVal && attr.value === 'false') return false
-      if (!defaultVal && attr.value === 'true') return true
+      if (defaultValue && attr.value === 'false') return false
+      if (!defaultValue && attr.value === 'true') return true
     }
   }
-  return defaultVal
+  return defaultValue
 }
 
 function updateDisplaySettings(locations: Location[]) {
