@@ -282,7 +282,7 @@ async function download() {
       }
     }
 
-    const accessToken = authenticationManager.getAccessToken()
+    const headers = await authenticationManager.getAuthorizationHeaders()
 
     const url = piProvider.timeSeriesGridUrl(filter)
 
@@ -291,7 +291,7 @@ async function download() {
       `${props.layerName}_${startTime}_${endTime}`,
       // @ts-expect-error enum value should be added to fews-pi-requests
       'PI_NETCDF',
-      accessToken,
+      headers,
     )
     dialogOpen.value = false
   } catch (error) {
