@@ -21,6 +21,16 @@
           class="mb-3"
         />
 
+        <v-select
+          v-model="netcdfFormat"
+          :items="netcdfFormatOptions"
+          label="NetCDF format"
+          density="compact"
+          variant="outlined"
+          hide-details
+          class="mb-3"
+        />
+
         <div v-if="downloadType === 'pointCloud'" class="mb-3">
           <div class="d-flex align-center gap-2 mb-1">
             <span class="text-body-2 text-medium-emphasis flex-grow-1">
@@ -167,6 +177,7 @@ const dialogOpen = defineModel<boolean>({ default: false })
 const { t } = useI18n()
 const bbox = ref<BoundingBox | null>(null)
 const downloadType = ref<'fullGrid' | 'pointCloud'>('fullGrid')
+const netcdfFormat = ref<'netcdf3' | 'netcdf4'>('netcdf4')
 const startTimeInput = ref('')
 const endTimeInput = ref('')
 const isDownloading = ref(false)
@@ -176,6 +187,11 @@ const downloadOptions = computed(() => [
   { title: t('download.fullGrid'), value: 'fullGrid' },
   { title: t('download.pointCloud'), value: 'pointCloud' },
 ])
+
+const netcdfFormatOptions = [
+  { title: 'netcdf4', value: 'netcdf4' },
+  { title: 'netcdf3', value: 'netcdf3' },
+]
 
 const isDrawingBbox = ref(false)
 
@@ -268,6 +284,8 @@ async function download() {
       layers: props.layerName,
       importFromExternalDataSource: false,
       useDisplayUnits: false,
+      netcdfFormat:
+        netcdfFormat.value !== 'netcdf4' ? netcdfFormat.value : undefined,
       startTime,
       endTime,
     }
