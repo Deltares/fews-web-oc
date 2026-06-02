@@ -285,7 +285,7 @@ async function download() {
       importFromExternalDataSource: false,
       useDisplayUnits: false,
       netcdfFormat:
-        netcdfFormat.value !== 'netcdf4' ? netcdfFormat.value : undefined,
+        netcdfFormat.value === 'netcdf3' ? netcdfFormat.value : undefined,
       startTime,
       endTime,
     }

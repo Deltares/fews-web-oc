@@ -94,22 +94,20 @@ describeFromVersion('202502', 'Download NetCDF', () => {
     const downloadButton = page.getByTitle('Download NetCDF')
     await downloadButton.click()
 
-    const dialog = page.getByRole('dialog')
+    const dialog = page.getByRole('dialog').getByText('Full Grid')
     await expect(dialog).toBeVisible()
 
     // Switch to Point Cloud download type
-    await dialog.locator('.v-select').click()
+    await dialog.click()
     await page.getByRole('option', { name: 'Point Cloud' }).click()
 
     // The draw bounding box button should appear
     await expect(
-      dialog.getByRole('button', { name: 'Draw Bounding Box' }),
+      page.getByRole('button', { name: 'Draw Bounding Box' }),
     ).toBeVisible()
 
     // Download button should be disabled without a bounding box
-    await expect(
-      dialog.getByRole('button', { name: 'Download' }),
-    ).toBeDisabled()
+    await expect(page.getByRole('button', { name: 'Download' })).toBeDisabled()
   })
 
   test('should close the dialog when clicking cancel', async ({ page }) => {
