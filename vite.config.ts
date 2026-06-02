@@ -1,9 +1,9 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vuetify from 'vite-plugin-vuetify'
-import { dirname, resolve } from 'path'
-import { execSync } from 'child_process'
-import { fileURLToPath } from 'url'
+import { dirname, resolve } from 'node:path'
+import { execSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 
 const commitHash = execSync('git rev-parse --short HEAD').toString()
 const commitTag = execSync('git tag --points-at HEAD').toString()
