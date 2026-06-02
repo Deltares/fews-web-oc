@@ -34,6 +34,7 @@
         :settings="settings"
         :currentTime="currentTime"
         :elevation="elevation"
+        :taskRunId="taskRunId"
       >
         <template #toolbar-append>
           <v-btn

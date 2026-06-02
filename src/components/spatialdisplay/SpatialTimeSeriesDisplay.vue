@@ -42,6 +42,7 @@ interface Props {
   settings?: ComponentSettings
   currentTime?: Date
   elevation?: number
+  taskRunId?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -113,6 +114,7 @@ function getTimeSeriesGridActionsFilter(
     bbox: mercatorBbox,
     documentFormat: 'PI_JSON',
     useDisplayUnits: userSettings.useDisplayUnits,
+    taskRunId: props.taskRunId,
     // Should be available according to the docs, but errors
     // convertDatum: settings.convertDatum,
   }
