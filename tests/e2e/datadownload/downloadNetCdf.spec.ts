@@ -21,28 +21,26 @@ describeFromVersion('202502', 'Download NetCDF', () => {
     await enableDataDownloadTools(page)
   })
 
-  test('should show the NetCDF download button on the map', async ({
-    page,
-  }) => {
-    const downloadButton = page.getByTitle('Download NetCDF')
+  test('should show the Data download button on the map', async ({ page }) => {
+    const downloadButton = page.getByTitle('Download data')
     await expect(downloadButton).toBeVisible()
   })
 
   test('should open the download dialog when clicking the download button', async ({
     page,
   }) => {
-    const downloadButton = page.getByTitle('Download NetCDF')
+    const downloadButton = page.getByTitle('Download data')
     await downloadButton.click()
 
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
-    await expect(dialog.getByText('Download NetCDF')).toBeVisible()
+    await expect(dialog.getByText('Download data')).toBeVisible()
   })
 
   test('should have start and end time pre-filled from layer capabilities', async ({
     page,
   }) => {
-    const downloadButton = page.getByTitle('Download NetCDF')
+    const downloadButton = page.getByTitle('Download data')
     await downloadButton.click()
 
     const startTime = page.getByLabel('Start Time')
@@ -60,7 +58,7 @@ describeFromVersion('202502', 'Download NetCDF', () => {
   }) => {
     test.setTimeout(60_000)
 
-    const downloadButton = page.getByTitle('Download NetCDF')
+    const downloadButton = page.getByTitle('Download data')
     await downloadButton.click()
 
     const dialog = page.getByRole('dialog')
@@ -91,29 +89,27 @@ describeFromVersion('202502', 'Download NetCDF', () => {
   test('should show point cloud options when selecting Point Cloud download type', async ({
     page,
   }) => {
-    const downloadButton = page.getByTitle('Download NetCDF')
+    const downloadButton = page.getByTitle('Download data')
     await downloadButton.click()
 
-    const dialog = page.getByRole('dialog')
+    const dialog = page.getByRole('dialog').getByText('Full Grid')
     await expect(dialog).toBeVisible()
 
     // Switch to Point Cloud download type
-    await dialog.locator('.v-select').click()
+    await dialog.click()
     await page.getByRole('option', { name: 'Point Cloud' }).click()
 
     // The draw bounding box button should appear
     await expect(
-      dialog.getByRole('button', { name: 'Draw Bounding Box' }),
+      page.getByRole('button', { name: 'Draw Bounding Box' }),
     ).toBeVisible()
 
     // Download button should be disabled without a bounding box
-    await expect(
-      dialog.getByRole('button', { name: 'Download' }),
-    ).toBeDisabled()
+    await expect(page.getByRole('button', { name: 'Download' })).toBeDisabled()
   })
 
   test('should close the dialog when clicking cancel', async ({ page }) => {
-    const downloadButton = page.getByTitle('Download NetCDF')
+    const downloadButton = page.getByTitle('Download data')
     await downloadButton.click()
 
     const dialog = page.getByRole('dialog')

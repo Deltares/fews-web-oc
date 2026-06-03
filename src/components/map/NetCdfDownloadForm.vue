@@ -6,15 +6,25 @@
   <v-dialog v-model="showDialog" max-width="400">
     <v-card>
       <v-card-title class="text-h6">{{
-        t('download.downloadNetCdf')
+        t('download.downloadData')
       }}</v-card-title>
       <v-card-text>
         <v-select
           v-model="downloadType"
           :items="downloadOptions"
-          :label="t('download.downloadType')"
+          :label="t('download.dataType')"
           item-title="title"
           item-value="value"
+          density="compact"
+          variant="outlined"
+          hide-details
+          class="mb-3"
+        />
+
+        <v-select
+          v-model="fileFormat"
+          :items="fileFormatOptions"
+          :label="t('download.fileFormat')"
           density="compact"
           variant="outlined"
           hide-details
@@ -167,6 +177,7 @@ const dialogOpen = defineModel<boolean>({ default: false })
 const { t } = useI18n()
 const bbox = ref<BoundingBox | null>(null)
 const downloadType = ref<'fullGrid' | 'pointCloud'>('fullGrid')
+const fileFormat = ref<'netcdf3' | 'netcdf4'>('netcdf4')
 const startTimeInput = ref('')
 const endTimeInput = ref('')
 const isDownloading = ref(false)
@@ -176,6 +187,11 @@ const downloadOptions = computed(() => [
   { title: t('download.fullGrid'), value: 'fullGrid' },
   { title: t('download.pointCloud'), value: 'pointCloud' },
 ])
+
+const fileFormatOptions = [
+  { title: 'netcdf4', value: 'netcdf4' },
+  { title: 'netcdf3', value: 'netcdf3' },
+]
 
 const isDrawingBbox = ref(false)
 
@@ -268,6 +284,8 @@ async function download() {
       layers: props.layerName,
       importFromExternalDataSource: false,
       useDisplayUnits: false,
+      netcdfFormat:
+        fileFormat.value === 'netcdf3' ? fileFormat.value : undefined,
       startTime,
       endTime,
     }
@@ -282,7 +300,7 @@ async function download() {
       }
     }
 
-    const accessToken = authenticationManager.getAccessToken()
+    const headers = await authenticationManager.getAuthorizationHeaders()
 
     const url = piProvider.timeSeriesGridUrl(filter)
 
@@ -291,12 +309,12 @@ async function download() {
       `${props.layerName}_${startTime}_${endTime}`,
       // @ts-expect-error enum value should be added to fews-pi-requests
       'PI_NETCDF',
-      accessToken,
+      headers,
     )
     dialogOpen.value = false
   } catch (error) {
     console.error('NetCDF download error:', error)
-    errorMessage.value = t('download.downloadFailed')
+    errorMessage.value = t('download.errors.failed')
   } finally {
     isDownloading.value = false
   }

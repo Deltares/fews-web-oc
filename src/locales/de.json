@@ -45,21 +45,24 @@
     "warningSeverityLevels": "Warnstufen"
   },
   "download": {
+    "areaSelected": "Bereich ausgewählt",
+    "boundingBox": "Begrenzungsrahmen",
+    "dataType": "Datentyp",
+    "download": "Herunterladen",
+    "downloadData": "Daten herunterladen",
     "downloadTimeSeries": "Zeitreihe herunterladen",
+    "drawBoundingBox": "Begrenzungsrahmen zeichnen",
+    "endTime": "Endzeit",
+    "errors": {
+      "failed": "Download fehlgeschlagen"
+    },
+    "fileFormat": "Dateiformat",
     "fileName": "Dateiname",
-    "downloadNetCdf": "NetCDF herunterladen",
-    "downloadType": "Download-Typ",
     "fullGrid": "Vollständiges Raster",
     "pointCloud": "Punktwolke",
-    "boundingBox": "Begrenzungsrahmen",
-    "selectBoundingBox": "Begrenzungsrahmen auswählen",
-    "drawBoundingBox": "Begrenzungsrahmen zeichnen",
-    "areaSelected": "Bereich ausgewählt",
     "redraw": "Neu zeichnen",
-    "startTime": "Startzeit",
-    "endTime": "Endzeit",
-    "download": "Herunterladen",
-    "downloadFailed": "Download fehlgeschlagen"
+    "selectBoundingBox": "Begrenzungsrahmen auswählen",
+    "startTime": "Startzeit"
   },
   "search": {
     "searchForLocations": "Messstelle",
