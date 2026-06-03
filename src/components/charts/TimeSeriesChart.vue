@@ -407,7 +407,7 @@ function axisAccept(visitor: Visitor) {
 .chart-maximize-btn {
   position: absolute;
   top: 0px;
-  right: 8px;
+  right: 0px;
   opacity: 0;
   width: 32px;
   height: 32px;
