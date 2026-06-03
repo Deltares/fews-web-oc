@@ -401,17 +401,18 @@ function axisAccept(visitor: Visitor) {
 .chart-with-chips.maximized {
   flex: 1 1 100%;
   max-height: none;
+  max-width: none;
 }
 
 .chart-maximize-btn {
   position: absolute;
   top: 0px;
-  right: 8px;
+  right: 0px;
   opacity: 0;
   width: 32px;
   height: 32px;
   transition: opacity 0.15s;
-  z-index: 1;
+  z-index: 100;
 }
 
 .chart-with-chips:hover .chart-maximize-btn {
