@@ -3,14 +3,17 @@
     <v-window-item
       v-if="settings.timeSeriesChart.enabled"
       :value="DisplayType.TimeSeriesChart"
-      class="time-series-component__container scroll"
+      class="time-series-component__container"
     >
       <KeepAlive>
-        <template v-for="subplot in subplots" :key="subplot.id">
+        <div
+          v-for="(subplot, index) in subplots"
+          :key="subplot.id"
+          class="time-series-subplot"
+          :style="getSubplotLayoutStyle(index)"
+          v-show="maximizedSubplotId === null || maximizedSubplotId === subplot.id"
+        >
           <TimeSeriesChart
-            v-show="
-              maximizedSubplotId === null || maximizedSubplotId === subplot.id
-            "
             v-model:domain="visibleDomain"
             :config="subplot"
             :series="chartSeries"
@@ -34,7 +37,7 @@
               />
             </template>
           </TimeSeriesChart>
-        </template>
+        </div>
       </KeepAlive>
     </v-window-item>
     <v-window-item
@@ -313,6 +316,57 @@ const subplots = computed(() =>
   ),
 )
 
+const subplotLayoutWeights = computed(() => {
+  const weighted = subplots.value.map((subplot) => {
+    const rawWeight = subplot.series.find(
+      (series) => typeof series.plotWeight === 'number' && series.plotWeight > 0,
+    )?.plotWeight
+    const weight = rawWeight && rawWeight > 0 ? rawWeight : 1
+
+    if (weight >= 10) {
+      return {
+        minHeight: weight,
+        grow: 0,
+      }
+    }
+
+    return {
+      minHeight: 0,
+      grow: weight,
+    }
+  })
+
+  if (weighted.every((item) => item.grow === 0)) {
+    return weighted.map((item) => ({ ...item, grow: 1 }))
+  }
+
+  return weighted
+})
+
+function getSubplotLayoutStyle(index: number) {
+  if (maximizedSubplotId.value !== null) {
+    return {
+      flex: '1 1 0',
+      minHeight: '0',
+    }
+  }
+
+  const layout = subplotLayoutWeights.value[index]
+  if (!layout) {
+    return {
+      flex: '1 1 0',
+      minHeight: '0',
+    }
+  }
+
+  const shrink = layout.grow > 0 ? 1 : 0
+
+  return {
+    flex: `${layout.grow} ${shrink} ${layout.minHeight}px`,
+    minHeight: `${layout.minHeight}px`,
+  }
+}
+
 const elevationChartSubplots = computed(() => {
   if (props.elevationChartConfig) {
     return props.elevationChartConfig.subplots
@@ -398,6 +452,13 @@ watch(visibleDomain, (newDomain) => {
   flex: 1 1 100%;
   width: 100%;
   flex-direction: column;
+  overflow-y: hidden;
+}
+
+.time-series-subplot {
+  display: flex;
+  min-height: 0;
+  width: 100%;
 }
 
 .elevation-chart-component__container {

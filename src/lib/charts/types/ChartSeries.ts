@@ -18,6 +18,7 @@ type SubplotItem = Pick<
   | 'visibleInLegend'
   | 'visibleInPlot'
   | 'visibleInTable'
+  | 'plotWeight'
 >
 
 export interface ChartSeries extends SubplotItem {
