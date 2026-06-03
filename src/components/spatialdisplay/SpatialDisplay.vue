@@ -164,7 +164,8 @@ function getDisplayEnabledFromLocationAttributes(
   attributeId: string | undefined,
   defaultValue: boolean,
 ): boolean {
-  for (let location of locations) {
+  if (!attributeId) return defaultValue
+  for (const location of locations) {
     const attr = location?.attributes?.find((a) => a.id === attributeId)
     if (attr !== undefined) {
       if (defaultValue && attr.value === 'false') return false
