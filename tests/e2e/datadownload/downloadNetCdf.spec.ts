@@ -21,9 +21,7 @@ describeFromVersion('202502', 'Download NetCDF', () => {
     await enableDataDownloadTools(page)
   })
 
-  test('should show the Data download button on the map', async ({
-    page,
-  }) => {
+  test('should show the Data download button on the map', async ({ page }) => {
     const downloadButton = page.getByTitle('Download data')
     await expect(downloadButton).toBeVisible()
   })
