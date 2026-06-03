@@ -158,6 +158,7 @@ function getChartSeries(
     visibleInLegend: items[0].visibleInLegend,
     visibleInPlot: items[0].visibleInPlot,
     visibleInTable: items[0].visibleInTable,
+    plotWeight: items[0].plotWeight,
     locationId: items[0].locationId,
     classBreaks: items[0].classBreaks,
     barMargin: items[0].barMargin,
