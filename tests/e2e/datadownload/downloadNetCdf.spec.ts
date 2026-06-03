@@ -21,28 +21,28 @@ describeFromVersion('202502', 'Download NetCDF', () => {
     await enableDataDownloadTools(page)
   })
 
-  test('should show the NetCDF download button on the map', async ({
+  test('should show the Data download button on the map', async ({
     page,
   }) => {
-    const downloadButton = page.getByTitle('Download NetCDF')
+    const downloadButton = page.getByTitle('Download Data')
     await expect(downloadButton).toBeVisible()
   })
 
   test('should open the download dialog when clicking the download button', async ({
     page,
   }) => {
-    const downloadButton = page.getByTitle('Download NetCDF')
+    const downloadButton = page.getByTitle('Download Data')
     await downloadButton.click()
 
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
-    await expect(dialog.getByText('Download NetCDF')).toBeVisible()
+    await expect(dialog.getByText('Download Data')).toBeVisible()
   })
 
   test('should have start and end time pre-filled from layer capabilities', async ({
     page,
   }) => {
-    const downloadButton = page.getByTitle('Download NetCDF')
+    const downloadButton = page.getByTitle('Download Data')
     await downloadButton.click()
 
     const startTime = page.getByLabel('Start Time')
@@ -60,7 +60,7 @@ describeFromVersion('202502', 'Download NetCDF', () => {
   }) => {
     test.setTimeout(60_000)
 
-    const downloadButton = page.getByTitle('Download NetCDF')
+    const downloadButton = page.getByTitle('Download Data')
     await downloadButton.click()
 
     const dialog = page.getByRole('dialog')

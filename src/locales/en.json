@@ -44,21 +44,25 @@
     "warningSeverityLevels": "Severity levels"
   },
   "download": {
+    "areaSelected": "Area selected",
+    "boundingBox": "Bounding box",
+    "dataType": "Data type",
+    "download": "Download",
+    "downloadData": "Download data",
     "downloadTimeSeries": "Download time series",
+    "drawBoundingBox": "Draw Bounding Box",
+    "endTime": "End Time",
+    "errors": {
+      "failed": "Download failed"
+    },
+    "failed": "Download failed",
+    "fileFormat": "File format",
     "fileName": "File Name",
-    "downloadNetCdf": "Download NetCDF",
-    "downloadType": "Download Type",
     "fullGrid": "Full Grid",
     "pointCloud": "Point Cloud",
-    "boundingBox": "Bounding box",
-    "selectBoundingBox": "Select bounding box",
-    "drawBoundingBox": "Draw bounding box",
-    "areaSelected": "Area selected",
     "redraw": "Redraw",
-    "startTime": "Start Time",
-    "endTime": "End Time",
-    "download": "Download",
-    "downloadFailed": "Download failed"
+    "selectBoundingBox": "Select bounding box",
+    "startTime": "Start Time"
   },
   "search": {
     "searchForLocations": "Search for locations",

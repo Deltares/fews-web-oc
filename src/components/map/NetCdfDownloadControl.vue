@@ -49,7 +49,7 @@ const createControl = (): IControl => ({
     const button = document.createElement('button')
     button.className = 'maplibregl-ctrl-icon'
     button.type = 'button'
-    button.title = t('download.downloadNetCdf')
+    button.title = t('download.downloadData')
     // MDI icon for download
     button.innerHTML = `<i class="mdi mdi-download" style="font-size: 20px;"></i>`
 
