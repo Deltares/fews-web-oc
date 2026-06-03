@@ -24,25 +24,25 @@ describeFromVersion('202502', 'Download NetCDF', () => {
   test('should show the Data download button on the map', async ({
     page,
   }) => {
-    const downloadButton = page.getByTitle('Download Data')
+    const downloadButton = page.getByTitle('Download data')
     await expect(downloadButton).toBeVisible()
   })
 
   test('should open the download dialog when clicking the download button', async ({
     page,
   }) => {
-    const downloadButton = page.getByTitle('Download Data')
+    const downloadButton = page.getByTitle('Download data')
     await downloadButton.click()
 
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
-    await expect(dialog.getByText('Download Data')).toBeVisible()
+    await expect(dialog.getByText('Download data')).toBeVisible()
   })
 
   test('should have start and end time pre-filled from layer capabilities', async ({
     page,
   }) => {
-    const downloadButton = page.getByTitle('Download Data')
+    const downloadButton = page.getByTitle('Download data')
     await downloadButton.click()
 
     const startTime = page.getByLabel('Start Time')
@@ -60,7 +60,7 @@ describeFromVersion('202502', 'Download NetCDF', () => {
   }) => {
     test.setTimeout(60_000)
 
-    const downloadButton = page.getByTitle('Download Data')
+    const downloadButton = page.getByTitle('Download data')
     await downloadButton.click()
 
     const dialog = page.getByRole('dialog')
@@ -91,7 +91,7 @@ describeFromVersion('202502', 'Download NetCDF', () => {
   test('should show point cloud options when selecting Point Cloud download type', async ({
     page,
   }) => {
-    const downloadButton = page.getByTitle('Download NetCDF')
+    const downloadButton = page.getByTitle('Download data')
     await downloadButton.click()
 
     const dialog = page.getByRole('dialog').getByText('Full Grid')
@@ -111,7 +111,7 @@ describeFromVersion('202502', 'Download NetCDF', () => {
   })
 
   test('should close the dialog when clicking cancel', async ({ page }) => {
-    const downloadButton = page.getByTitle('Download NetCDF')
+    const downloadButton = page.getByTitle('Download data')
     await downloadButton.click()
 
     const dialog = page.getByRole('dialog')
