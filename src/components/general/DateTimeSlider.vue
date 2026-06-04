@@ -9,7 +9,7 @@
         :tooltipFormatter="dateString"
         silent
         :max="maxIndex"
-        @change="stopFollowNow"
+        @change="disableFollowNow"
       >
         <template v-slot:step="{ active, style, activeStyle }">
           <div
@@ -236,6 +236,10 @@ function toggleFollowNow(): void {
   doFollowNow.value = !doFollowNow.value
 }
 
+function disableFollowNow(): void {
+  doFollowNow.value = false
+}
+
 watch(
   doFollowNow,
   (newVal) => {
@@ -273,7 +277,7 @@ function togglePlay(): void {
 }
 
 function startPlay(): void {
-  stopFollowNow()
+  disableFollowNow()
   play()
 }
 
@@ -327,12 +331,12 @@ function continuePlay(): void {
 }
 
 function stepBackward(): void {
-  stopFollowNow()
+  disableFollowNow()
   decrement(stepIncrement)
 }
 
 function stepForward(): void {
-  stopFollowNow()
+  disableFollowNow()
   increment(stepIncrement)
 }
 

@@ -27,7 +27,7 @@ import type {
   LocationsTooltipFilter,
   timeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useLocationTooltip } from '@/services/useLocationTooltip'
 import type { ComponentSettings } from '@/lib/topology/componentSettings'
 import { useTaskRunsStore } from '@/stores/taskRuns'
@@ -49,7 +49,7 @@ const props = defineProps<Props>()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const filter = computed(() => props.filter)
-const { displayConfig, scalar1DDisplayConfig } = useDisplayConfigFilter(
+const { displayConfig, scalar1DDisplayConfig, fetchDisplayConfig } = useDisplayConfigFilter(
   baseUrl,
   filter,
   () => taskRunsStore.selectedTaskRunIds,
@@ -76,4 +76,19 @@ const { tooltip } = useLocationTooltip(
   baseUrl,
   () => props.locationsTooltipFilter,
 )
+
+const DISPLAY_CONFIG_REFRESH_INTERVAL = 1000 * 30
+let displayConfigRefreshInterval: ReturnType<typeof setInterval> | undefined
+
+onMounted(() => {
+  displayConfigRefreshInterval = setInterval(() => {
+    void fetchDisplayConfig()
+  }, DISPLAY_CONFIG_REFRESH_INTERVAL)
+})
+
+onUnmounted(() => {
+  if (displayConfigRefreshInterval) {
+    clearInterval(displayConfigRefreshInterval)
+  }
+})
 </script>

@@ -54,11 +54,13 @@ const userSettings = useUserSettingsStore()
 const filterIds = computed(() => props.topologyNode?.filterIds ?? [])
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { layerCapabilities } = useWmsLayerCapabilities(
+const { layerCapabilities } = useWmsLayerCapabilities({
   baseUrl,
-  () => props.layerName,
-  undefined,
-)
+  layerName: () => props.layerName,
+  taskRunId: undefined,
+  refreshInterval: () => props.settings.map.wmsLayer.autoRefreshInterval,
+  enabled: () => props.settings.map.wmsLayer.autoRefreshInterval > 0,
+})
 
 const currentTime = computed(() => {
   if (props.currentTime) {
