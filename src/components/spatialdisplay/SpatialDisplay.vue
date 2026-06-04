@@ -172,10 +172,10 @@ const selectedLocations = computed<Location[] | undefined>(() => {
   const locationIdList = props.locationIds.split(',') ?? []
   const locationList: Location[] = []
 
-  for (let locId of locationIdList) {
-    let locMatch = locations.value?.find((l) => l.locationId === locId)
-    if (locMatch) {
-      locationList.push(locMatch)
+  for (let locationId of locationIdList) {
+    let match = locations.value?.find((l) => l.locationId === locationId)
+    if (match) {
+      locationList.push(match)
     }
   }
   return locationList
