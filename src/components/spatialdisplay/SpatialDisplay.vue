@@ -31,7 +31,7 @@
         :latitude="latitude"
         :longitude="longitude"
         :topologyNode="topologyNode"
-        :settings="currSettings"
+        :settings="resolvedSettings"
         :currentTime="currentTime"
         :elevation="elevation"
       >
@@ -54,15 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  defineAsyncComponent,
-  reactive,
-  ref,
-  useTemplateRef,
-  watch,
-  watchEffect,
-} from 'vue'
+import { computed, defineAsyncComponent, ref, useTemplateRef, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
@@ -146,19 +138,6 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
   taskRunId,
 )
 
-const currSettings = reactive<ComponentSettings>(
-  structuredClone(props.settings),
-)
-
-watch(
-  () => props.settings,
-  (newSettings) => {
-    Object.assign(currSettings, structuredClone(newSettings))
-    updateDisplaySettings(selectedLocations.value ?? [])
-  },
-  { deep: true },
-)
-
 function getDisplayEnabledFromLocationAttributes(
   locations: Location[],
   attributeId: string | undefined,
@@ -173,33 +152,6 @@ function getDisplayEnabledFromLocationAttributes(
     }
   }
   return defaultValue
-}
-
-function updateDisplaySettings(locations: Location[]) {
-  currSettings.charts.timeSeriesChart.enabled =
-    getDisplayEnabledFromLocationAttributes(
-      locations,
-      props.settings.charts.timeSeriesChart.locationEnabledAttribute,
-      props.settings.charts.timeSeriesChart.enabled,
-    )
-  currSettings.charts.timeSeriesTable.enabled =
-    getDisplayEnabledFromLocationAttributes(
-      locations,
-      props.settings.charts.timeSeriesTable.locationEnabledAttribute,
-      props.settings.charts.timeSeriesTable.enabled,
-    )
-  currSettings.charts.verticalProfileChart.enabled =
-    getDisplayEnabledFromLocationAttributes(
-      locations,
-      props.settings.charts.verticalProfileChart.locationEnabledAttribute,
-      props.settings.charts.verticalProfileChart.enabled,
-    )
-  currSettings.charts.metaDataPanel.enabled =
-    getDisplayEnabledFromLocationAttributes(
-      locations,
-      props.settings.charts.metaDataPanel.locationEnabledAttribute,
-      props.settings.charts.metaDataPanel.enabled,
-    )
 }
 
 const groupId = computed(
@@ -229,8 +181,46 @@ const selectedLocations = computed<Location[] | undefined>(() => {
   return locationList
 })
 
-watchEffect(() => {
-  updateDisplaySettings(selectedLocations.value ?? [])
+const resolvedSettings = computed<ComponentSettings>(() => {
+  const selected = selectedLocations.value ?? []
+  return {
+    ...props.settings,
+    charts: {
+      ...props.settings.charts,
+      timeSeriesChart: {
+        ...props.settings.charts.timeSeriesChart,
+        enabled: getDisplayEnabledFromLocationAttributes(
+          selected,
+          props.settings.charts.timeSeriesChart.locationEnabledAttribute,
+          props.settings.charts.timeSeriesChart.enabled,
+        ),
+      },
+      timeSeriesTable: {
+        ...props.settings.charts.timeSeriesTable,
+        enabled: getDisplayEnabledFromLocationAttributes(
+          selected,
+          props.settings.charts.timeSeriesTable.locationEnabledAttribute,
+          props.settings.charts.timeSeriesTable.enabled,
+        ),
+      },
+      verticalProfileChart: {
+        ...props.settings.charts.verticalProfileChart,
+        enabled: getDisplayEnabledFromLocationAttributes(
+          selected,
+          props.settings.charts.verticalProfileChart.locationEnabledAttribute,
+          props.settings.charts.verticalProfileChart.enabled,
+        ),
+      },
+      metaDataPanel: {
+        ...props.settings.charts.metaDataPanel,
+        enabled: getDisplayEnabledFromLocationAttributes(
+          selected,
+          props.settings.charts.metaDataPanel.locationEnabledAttribute,
+          props.settings.charts.metaDataPanel.enabled,
+        ),
+      },
+    },
+  }
 })
 
 const selectedCrossings = computed(() => {
