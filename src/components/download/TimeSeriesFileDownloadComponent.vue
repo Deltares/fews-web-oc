@@ -52,9 +52,9 @@
 import {
   CorrelationFilter,
   DocumentFormat,
-  filterActionsFilter,
+  FilterActionsFilter,
   TimeSeriesFilter,
-  timeSeriesGridActionsFilter,
+  TimeSeriesGridActionsFilter,
   TimeSeriesTopologyActionsFilter,
 } from '@deltares/fews-pi-requests'
 import { configManager } from '@/services/application-config'
@@ -77,11 +77,11 @@ const { t } = useI18n()
 interface Props {
   config?: DisplayConfig | null
   options?:
-    | Pick<filterActionsFilter, 'useDisplayUnits' | 'convertDatum'>
+    | Pick<FilterActionsFilter, 'useDisplayUnits' | 'convertDatum'>
     | undefined
   filter?:
-    | filterActionsFilter
-    | timeSeriesGridActionsFilter
+    | FilterActionsFilter
+    | TimeSeriesGridActionsFilter
     | DataDownloadFilter
     | CorrelationFilter
     | undefined

@@ -82,8 +82,8 @@ import { type ChartsSettings } from '@/lib/topology/componentSettings'
 import { computed, ref, StyleValue, watch } from 'vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type {
-  filterActionsFilter,
-  timeSeriesGridActionsFilter,
+  FilterActionsFilter,
+  TimeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
 
 interface Props {
@@ -92,7 +92,7 @@ interface Props {
   elevationChartDisplayconfig?: DisplayConfig | null
   currentTime?: Date
   informationContent?: string | null
-  filter?: filterActionsFilter | timeSeriesGridActionsFilter
+  filter?: FilterActionsFilter | TimeSeriesGridActionsFilter
   settings: ChartsSettings
 }
 
@@ -103,7 +103,7 @@ const { t } = useI18n()
 const userSettings = useUserSettingsStore()
 
 const options = computed<
-  Pick<filterActionsFilter, 'useDisplayUnits' | 'convertDatum'>
+  Pick<FilterActionsFilter, 'useDisplayUnits' | 'convertDatum'>
 >(() => {
   return {
     useDisplayUnits: userSettings.useDisplayUnits,

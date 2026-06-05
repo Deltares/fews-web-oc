@@ -5,7 +5,7 @@ import type {
   ActionResult,
   ActionsResponse,
   TimeSeriesDisplaySubplot,
-  timeSeriesGridActionsFilter,
+  TimeSeriesGridActionsFilter,
 } from '@deltares/fews-pi-requests'
 import type { DisplayConfig } from './DisplayConfig'
 import { timeSeriesDisplayToChartConfig } from '@/lib/charts/timeSeriesDisplayToChartConfig'
@@ -189,7 +189,7 @@ export function addIndexToKeys(results: ActionResult[]) {
 
 export function addFilterPeriodToConfig(
   results: ActionResult[],
-  filter: timeSeriesGridActionsFilter,
+  filter: TimeSeriesGridActionsFilter,
 ) {
   if (!filter.startTime || !filter.endTime) return
 

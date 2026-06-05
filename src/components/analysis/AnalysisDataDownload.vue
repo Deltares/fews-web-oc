@@ -43,11 +43,11 @@ import { configManager } from '@/services/application-config'
 import { authenticationManager } from '@/services/authentication/AuthenticationManager'
 import { useAlertsStore } from '@/stores/alerts'
 import { DocumentFormat } from '@deltares/fews-pi-requests'
-import type { filterActionsFilter } from '@deltares/fews-pi-requests'
+import type { FilterActionsFilter } from '@deltares/fews-pi-requests'
 import { computed, ref } from 'vue'
 
 interface Props {
-  filters: filterActionsFilter[]
+  filters: FilterActionsFilter[]
   startTime: Date
   endTime: Date
 }

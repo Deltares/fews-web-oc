@@ -4,7 +4,7 @@ import { useParametersStore } from '@/stores/parameters'
 import {
   ActionRequest,
   ActionResult,
-  filterActionsFilter,
+  FilterActionsFilter,
   Header,
   TimeSeriesDisplaySubplot,
 } from '@deltares/fews-pi-requests'
@@ -19,7 +19,7 @@ import { uid } from '@/lib/utils/uid'
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 export async function createNewChartsForFilters(
-  filters: filterActionsFilter[],
+  filters: FilterActionsFilter[],
   useDataDomain: boolean = false,
 ) {
   const promises = filters.map((filter) =>
@@ -29,7 +29,7 @@ export async function createNewChartsForFilters(
   return charts.filter((chart) => chart !== undefined)
 }
 
-async function fetchActionAndFullAction(filter: filterActionsFilter) {
+async function fetchActionAndFullAction(filter: FilterActionsFilter) {
   const [action, fullAction] = await Promise.all([
     fetchActions(baseUrl, filter),
     fetchActions(baseUrl, {
@@ -42,7 +42,7 @@ async function fetchActionAndFullAction(filter: filterActionsFilter) {
 }
 
 export async function createNewChartForFilter(
-  filter: filterActionsFilter,
+  filter: FilterActionsFilter,
   useDataDomain: boolean = false,
 ) {
   if (!filter.filterId) {
@@ -190,7 +190,7 @@ export function getFilterSubplotTitle(subplot: FilterSubplot) {
 
 export function canAddFilterToChart(
   chart: FilterChart,
-  filter: filterActionsFilter,
+  filter: FilterActionsFilter,
 ): boolean {
   const addPosition = getAddPositionForFilter(chart, filter)
   return addPosition !== undefined
@@ -198,7 +198,7 @@ export function canAddFilterToChart(
 
 function getAddPositionForFilter(
   chart: FilterChart,
-  filter: filterActionsFilter,
+  filter: FilterActionsFilter,
 ) {
   const parametersStore = useParametersStore()
 
@@ -231,7 +231,7 @@ function getAddPositionForFilter(
 
 export async function addFilterToChart(
   chart: FilterChart,
-  filter: filterActionsFilter,
+  filter: FilterActionsFilter,
 ) {
   const position = getAddPositionForFilter(chart, filter)
   if (!position) return
@@ -241,7 +241,7 @@ export async function addFilterToChart(
 
 async function addFilterToChartPosition(
   chart: FilterChart,
-  filter: filterActionsFilter,
+  filter: FilterActionsFilter,
   position: 'left' | 'right',
 ) {
   const newChart = await createNewChartForFilter(filter)
