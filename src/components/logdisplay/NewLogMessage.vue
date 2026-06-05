@@ -1,6 +1,14 @@
 <template>
-  <v-card flat border class="new-log-card" density="compact">
-    <v-card-actions>
+  <v-card
+    ref="composerCardRef"
+    flat
+    border
+    class="new-log-card"
+    density="compact"
+    @mouseup="handleClick"
+    @focusin="handleFocusIn"
+  >
+    <v-card-actions v-if="showExpandedUi" class="pt-0">
       <v-menu location="bottom start">
         <template #activator="{ props: menuProps }">
           <v-btn
@@ -24,16 +32,19 @@
       </v-menu>
       <v-spacer />
       <v-btn
-        icon="mdi-delete"
+        icon="mdi-close"
         size="x-small"
-        :disabled="(!text && !newLogLevelChanged) || isPosting"
+        :disabled="isPosting"
         @click="discard"
       />
     </v-card-actions>
     <v-textarea
+      ref="messageTextareaRef"
       v-model="text"
-      :placeholder="noteGroup?.note.messageTemplate.message"
-      :rows="Math.min(maxLines, 5)"
+      :placeholder="
+        props.noteGroup?.note.messageTemplate.message ?? 'Enter log message...'
+      "
+      :rows="showExpandedUi ? Math.min(maxLines, 5) : 1"
       :max-length="maxLines * maxChars"
       :error="isError"
       :error-messages="errorMessage"
@@ -51,7 +62,7 @@
       :title="postErrorMessage"
       class="mt-1 mb-1"
     />
-    <v-card-actions>
+    <v-card-actions v-if="showExpandedUi" class="pb-0">
       <span class="text-medium-emphasis text-label-medium">
         {{ lineCount }}/{{ maxLines }} lines, {{ charCount }}/{{ maxChars }}
         characters per line
@@ -66,7 +77,6 @@
         @click="saveNewMessage"
         >Send</v-btn
       >
-      <div class="flex-spacer" />
     </v-card-actions>
   </v-card>
 </template>
@@ -81,7 +91,7 @@ import {
   PiWebserviceProvider,
   type ForecasterNoteGroup,
 } from '@deltares/fews-pi-requests'
-import { computed, ref } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 
 interface Props {
   noteGroup?: ForecasterNoteGroup
@@ -98,6 +108,8 @@ const text = ref('')
 const newLogLevel = ref<ManualLogLevel>('INFO')
 const postErrorMessage = ref<string>()
 const isPosting = ref(false)
+const isUiExpanded = ref(false)
+const messageTextareaRef = useTemplateRef('messageTextareaRef')
 
 const lineCount = computed(() => text.value.split('\n').length)
 const charCount = computed(() =>
@@ -126,6 +138,27 @@ function validateInput() {
   text.value = lines.join('\n')
 }
 
+function expandUi() {
+  isUiExpanded.value = true
+}
+
+function focusTextarea() {
+  const textareaComponent = messageTextareaRef.value
+  if (textareaComponent?.focus) {
+    textareaComponent.focus()
+  }
+}
+
+async function handleClick(event: MouseEvent) {
+  expandUi()
+  focusTextarea()
+}
+
+async function handleFocusIn(event: FocusEvent) {
+  expandUi()
+  focusTextarea()
+}
+
 async function saveNewMessage() {
   if (!props.noteGroup) return
   postErrorMessage.value = undefined
@@ -139,6 +172,7 @@ async function saveNewMessage() {
   if (response.success) {
     text.value = ''
     newLogLevel.value = 'INFO'
+    isUiExpanded.value = false
     emit('newNote')
   } else {
     postErrorMessage.value = response.error
@@ -149,10 +183,16 @@ function discard() {
   text.value = ''
   newLogLevel.value = 'INFO'
   postErrorMessage.value = undefined
+  isUiExpanded.value = false
 }
 
-const initialLevel = 'INFO'
-const newLogLevelChanged = computed(() => newLogLevel.value !== initialLevel)
+const showExpandedUi = computed(
+  () =>
+    isUiExpanded.value ||
+    !!text.value.trim() ||
+    isPosting.value ||
+    !!postErrorMessage.value,
+)
 
 async function postNewLogMessage(
   noteGroupId: string,
@@ -179,6 +219,7 @@ async function postNewLogMessage(
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .new-log-card:focus-within {
@@ -200,11 +241,5 @@ async function postNewLogMessage(
 /* Remove native browser focus ring on the <textarea> element */
 :deep(.message-textarea textarea:focus) {
   outline: none !important;
-}
-
-@media (max-width: 700px) {
-  .inner {
-    padding: 8px;
-  }
 }
 </style>
