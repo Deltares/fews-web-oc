@@ -1,61 +1,74 @@
 <template>
-  <div class="new-log-inline" v-if="noteGroup">
-    <v-card flat class="new-log-card">
-      <div class="inner">
-        <v-textarea
-          v-model="text"
-          :label="`New message (${lineCount}/${maxLines} lines, ${charCount}/${maxChars} characters per line)`"
-          :placeholder="noteGroup.note.messageTemplate.message"
-          :rows="Math.min(maxLines, 5)"
-          :max-length="maxLines * maxChars"
-          :error="isError"
-          :error-messages="errorMessage"
-          class="message-textarea mb-1"
-          density="compact"
-          no-resize
-          variant="outlined"
-          @input="validateInput"
-        />
-        <v-alert
-          v-if="postErrorMessage"
-          type="error"
-          density="compact"
-          :title="postErrorMessage"
-          class="mt-1 mb-1"
-        />
-        <div class="actions-row">
-          <v-select
-            v-model="newLogLevel"
-            :items="manualLogLevels"
-            :item-title="levelToTitle"
-            :item-value="(item) => item"
-            class="level-select"
-            hide-details
-            density="compact"
-            variant="outlined"
-            label="Message level"
-          />
-          <div class="flex-spacer" />
+  <v-card flat border class="new-log-card" density="compact">
+    <v-card-actions>
+      <v-menu location="bottom start">
+        <template #activator="{ props: menuProps }">
           <v-btn
-            variant="flat"
+            v-bind="menuProps"
+            variant="tonal"
             size="small"
-            :disabled="(!text && !newLogLevelChanged) || isPosting"
-            @click="discard"
-            >Discard</v-btn
+            append-icon="mdi-menu-down"
           >
-          <v-btn
-            variant="flat"
-            size="small"
-            color="primary"
-            :disabled="!text.trim() || isError || isPosting"
-            :loading="isPosting"
-            @click="saveNewMessage"
-            >Send</v-btn
+            {{ levelToTitle(newLogLevel) }}
+          </v-btn>
+        </template>
+        <v-list density="compact">
+          <v-list-item
+            v-for="level in manualLogLevels"
+            :key="level"
+            @click="newLogLevel = level"
           >
-        </div>
-      </div>
-    </v-card>
-  </div>
+            <v-list-item-title>{{ levelToTitle(level) }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+      <v-spacer />
+      <v-btn
+        icon="mdi-delete"
+        size="x-small"
+        :disabled="(!text && !newLogLevelChanged) || isPosting"
+        @click="discard"
+      />
+    </v-card-actions>
+    <v-textarea
+      v-model="text"
+      :placeholder="noteGroup?.note.messageTemplate.message"
+      :rows="Math.min(maxLines, 5)"
+      :max-length="maxLines * maxChars"
+      :error="isError"
+      :error-messages="errorMessage"
+      density="compact"
+      no-resize
+      hide-details="auto"
+      variant="plain"
+      class="message-textarea"
+      @input="validateInput"
+    />
+    <v-alert
+      v-if="postErrorMessage"
+      type="error"
+      density="compact"
+      :title="postErrorMessage"
+      class="mt-1 mb-1"
+    />
+    <v-card-actions>
+      <span class="text-medium-emphasis text-label-medium">
+        {{ lineCount }}/{{ maxLines }} lines, {{ charCount }}/{{ maxChars }}
+        characters per line
+      </span>
+      <v-spacer />
+      <v-btn
+        variant="flat"
+        size="small"
+        color="primary"
+        :disabled="!text.trim() || isError || isPosting"
+        :loading="isPosting"
+        @click="saveNewMessage"
+        >Send</v-btn
+      >
+      <div class="flex-spacer" />
+    </v-card-actions>
+  </v-card>
 </template>
 
 <script setup lang="ts">
@@ -162,38 +175,36 @@ async function postNewLogMessage(
 </script>
 
 <style scoped>
-.new-log-inline {
-  width: 100%;
-}
 .new-log-card {
-  border: 1px solid var(--v-theme-surface-variant, #ddd);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
-.inner {
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
+
+.new-log-card:focus-within {
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
 }
-.message-textarea {
-  width: 100%;
+
+:deep(.message-textarea .v-field__input) {
+  padding: 0px 8px;
 }
-.actions-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-top: 2px;
+
+:deep(.message-textarea .v-field),
+:deep(.message-textarea .v-field__input),
+:deep(.message-textarea textarea) {
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
 }
-.level-select {
-  max-width: 150px;
+
+/* Remove native browser focus ring on the <textarea> element */
+:deep(.message-textarea textarea:focus) {
+  outline: none !important;
 }
-.flex-spacer {
-  flex: 1 1 auto;
-}
-:deep(.message-textarea .v-field) {
-  --v-field-padding-bottom: 2px;
-}
+
 @media (max-width: 700px) {
-  .level-select {
-    max-width: 120px;
+  .inner {
+    padding: 8px;
   }
 }
 </style>
