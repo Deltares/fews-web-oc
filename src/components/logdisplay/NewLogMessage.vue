@@ -184,6 +184,10 @@ function discard() {
   newLogLevel.value = 'INFO'
   postErrorMessage.value = undefined
   isUiExpanded.value = false
+  const activeEl = document.activeElement
+  if (activeEl instanceof HTMLElement) {
+    activeEl.blur()
+  }
 }
 
 const showExpandedUi = computed(
