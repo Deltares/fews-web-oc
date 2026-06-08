@@ -72,7 +72,7 @@
       <v-btn
         variant="flat"
         size="small"
-        color="primary"
+        :color="levelToColor(newLogLevel)"
         :disabled="!text.trim() || isError || isPosting"
         :loading="isPosting"
         @click="saveNewMessage"
