@@ -1,6 +1,5 @@
 <template>
   <SidePanelContent :title="t('sidePanel.logDisplay')" @close="emit('close')">
-    <v-progress-linear :indeterminate="isLoading" />
     <div class="d-flex align-center pa-2 ga-2">
       <LogLevelFilter v-model="selectedLevels" />
     </div>
