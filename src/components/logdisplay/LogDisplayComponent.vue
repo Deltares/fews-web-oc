@@ -25,13 +25,24 @@
             v-model="selectedLevels"
             :items="logLevels"
             variant="outlined"
+            chips
             clearable
             hide-details
             multiple
             density="compact"
             :item-title="levelToTitle"
             :item-value="(item) => item"
-          />
+          >
+            <template #chip="{ item }">
+              <v-chip
+                :color="levelToColor(item)"
+                label
+                :prepend-icon="levelToIcon(item)"
+              >
+                {{ levelToTitle(item) }}
+              </v-chip>
+            </template>
+          </v-select>
         </v-list-item>
         <v-list-subheader>Date</v-list-subheader>
         <v-list-item>
@@ -149,6 +160,8 @@ import {
   levelToTitle,
   LogDisseminationStatus,
   getLogDisseminationKey,
+  levelToColor,
+  levelToIcon,
 } from '@/lib/log'
 import {
   ForecasterNoteKeysRequest,
