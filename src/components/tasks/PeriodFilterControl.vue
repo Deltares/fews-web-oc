@@ -4,7 +4,6 @@
       <v-btn
         variant="tonal"
         v-bind="props"
-        width="110px"
         class="text-label-large pe-1"
       >
         <template #default>
