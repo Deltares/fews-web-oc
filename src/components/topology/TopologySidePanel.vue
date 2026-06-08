@@ -47,6 +47,7 @@
       v-if="activeSidePanelType === sidePanel.type"
       :is="sidePanel.component"
       :topology-node="topologyNode"
+      :settings="settingsForSidePanel(sidePanel.type)"
       @close="closeSidePanel()"
     />
   </template>
@@ -73,7 +74,7 @@ import BtnGroup from '@/components/general/BtnGroup.vue'
 import ThresholdsButton from '@/components/thresholds/ThresholdsButton.vue'
 
 import ImportStatusSidePanel from '@/components/sidepanel/ImportStatusSidePanel.vue'
-import LogsSidePanel from '@/components/sidepanel/LogsSidePanel.vue'
+import LogSidePanel from '@/components/sidepanel/LogSidePanel.vue'
 import MoreInfoSidePanel from '@/components/sidepanel/MoreInfoSidePanel.vue'
 import NonCurrentDataSidePanel from '@/components/sidepanel/NonCurrentDataSidePanel.vue'
 import RunTasksSidePanel from '@/components/sidepanel/RunTasksSidePanel.vue'
@@ -138,7 +139,7 @@ const generalSidePanels: GeneralSidePanel[] = [
   {
     type: 'logDisplay',
     icon: 'mdi-message-text-clock',
-    component: LogsSidePanel,
+    component: LogSidePanel,
   },
   {
     type: 'share',
@@ -156,6 +157,14 @@ const enabledGeneralSidePanels = computed<GeneralSidePanel[]>(() => {
       sidePanel.type === 'share' || sidePanelConfig?.[sidePanel.type]?.enabled,
   )
 })
+
+function settingsForSidePanel(type: GeneralSidePanelType): any {
+  const sidePanelConfig = configStore.general.sidePanel
+  if (type === 'logDisplay') {
+    return { logDisplayId: sidePanelConfig?.[type]?.logDisplayId ?? '' }
+  }
+}
+
 const hasMultipleEnabledSidePanels = computed<boolean>(
   () => enabledGeneralSidePanels.value.length > 1,
 )
