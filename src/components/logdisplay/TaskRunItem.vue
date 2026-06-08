@@ -1,5 +1,11 @@
 <template>
-  <v-card border flat density="compact">
+  <v-card
+    border
+    flat
+    density="compact"
+    @click="onExpansionPanelToggle"
+    @dblclick.prevent
+  >
     <v-card-text class="py-2 h-100">
       <div class="d-flex gap-2 align-center">
         <v-tooltip>
@@ -14,7 +20,10 @@
           </template>
           <span>{{ getStringForStatus(taskRun?.status) }}</span>
         </v-tooltip>
-        <div class="d-flex flex-column user-select-text cursor-pointer">
+        <div
+          class="d-flex flex-column user-select-text cursor-pointer"
+          @click.stop
+        >
           <div class="d-flex align-center ga-2">
             <v-list-item-title>
               {{ title }}
@@ -40,11 +49,18 @@
           />
         </template>
       </div>
-      <DataTable
-        v-if="expanded && taskRun"
-        class="mt-4"
-        :tableData="tableData"
-      />
+      <slot
+        name="expansion"
+        :expanded="expanded"
+        :logs="logs"
+        :taskRun="taskRun"
+      >
+        <DataTable
+          v-if="expanded && taskRun"
+          class="mt-4"
+          :tableData="tableData"
+        />
+      </slot>
     </v-card-text>
   </v-card>
 </template>
@@ -58,7 +74,7 @@ import {
   logLevelToPiLogLevel,
   manualLogLevels,
 } from '@/lib/log'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
   toDateAbsDifferenceString,
   toDateRangeString,
@@ -77,12 +93,13 @@ interface Props {
   entryTime?: string
   taskRun?: TaskRun
   logs: LogMessage[]
-  expanded: boolean
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits(['disseminateLog'])
+
+const expanded = ref(false)
 
 const levelCount = computed(() =>
   props.logs.reduce(
@@ -166,5 +183,11 @@ function getColorForStatus(status: string | undefined) {
   return status && isTaskStatus(status)
     ? getColorForTaskStatus(status)
     : 'yellow-darken-1'
+}
+
+function onExpansionPanelToggle(event: MouseEvent) {
+  // Ignore subsequent clicks in a double-click sequence.
+  if (event.detail > 1) return
+  expanded.value = !expanded.value
 }
 </script>
