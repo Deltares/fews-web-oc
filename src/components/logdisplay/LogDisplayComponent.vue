@@ -517,7 +517,7 @@ async function unacknowledgeLog(log: LogMessage) {
 
 async function refreshLogs() {
   // Set endDate to now + 5 seconds to ensure the backend will return the latest logs
-  endDate.value = new Date(new Date().getTime() + 5000)
+  endDate.value = new Date(Date.now() + 5000)
 }
 </script>
 
@@ -553,7 +553,7 @@ async function refreshLogs() {
 }
 
 :deep(.v-expansion-panel-text__wrapper) {
-  padding-right: 0;
+  padding: 0px 0px 5px 0px;
 }
 
 .expand-icon-container {
@@ -580,11 +580,6 @@ async function refreshLogs() {
 
 :deep(.v-expansion-panel-title__overlay) {
   background-color: transparent;
-}
-
-:deep(.v-expansion-panel-text__wrapper) {
-  padding: 0;
-  padding-bottom: 5px;
 }
 
 .spacer {
