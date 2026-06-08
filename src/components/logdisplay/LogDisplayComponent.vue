@@ -25,13 +25,24 @@
             v-model="selectedLevels"
             :items="logLevels"
             variant="outlined"
+            chips
             clearable
             hide-details
             multiple
             density="compact"
             :item-title="levelToTitle"
             :item-value="(item) => item"
-          />
+          >
+            <template #chip="{ item }">
+              <v-chip
+                :color="levelToColor(item)"
+                label
+                :prepend-icon="levelToIcon(item)"
+              >
+                {{ levelToTitle(item) }}
+              </v-chip>
+            </template>
+          </v-select>
         </v-list-item>
         <v-list-subheader>Date</v-list-subheader>
         <v-list-item>
@@ -157,6 +168,8 @@ import {
   levelToTitle,
   LogDisseminationStatus,
   getLogDisseminationKey,
+  levelToColor,
+  levelToIcon,
 } from '@/lib/log'
 import {
   ForecasterNoteKeysRequest,
@@ -189,7 +202,7 @@ const showFilters = ref<boolean>(!mobile.value)
 
 const search = ref<string>()
 const maxCount = ref<number>(20000)
-const selectedLevels = ref<LogLevel[]>([])
+const selectedLevels = ref<LogLevel[]>([...logLevels])
 const selectedLogTypes = ref<LogType | null>(null)
 
 const daysBack = ref<number>(2)
