@@ -16,6 +16,7 @@
             variant="tonal"
             size="small"
             append-icon="mdi-menu-down"
+            :color="levelToColor(newLogLevel)"
           >
             {{ levelToTitle(newLogLevel) }}
           </v-btn>
@@ -82,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { levelToTitle, manualLogLevels, type ManualLogLevel } from '@/lib/log'
+import { levelToColor, levelToTitle, manualLogLevels, type ManualLogLevel } from '@/lib/log'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { configManager } from '@/services/application-config'
 import {
