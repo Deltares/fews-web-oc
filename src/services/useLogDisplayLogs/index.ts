@@ -87,6 +87,7 @@ export function useLogDisplayLogs(
   const manualIsLoading = ref(false)
   const systemIsLoading = ref(false)
   const error = shallowRef<string>()
+  const lastUpdatedTimestamp = ref<number | null>(null)
 
   const logMessages = computed(() => {
     if (
@@ -132,6 +133,7 @@ export function useLogDisplayLogs(
       const logPromises = _filters.map(fetchLogsForFilter)
       const newLogs = await Promise.all(logPromises)
 
+      lastUpdatedTimestamp.value = Date.now()
       manualLogMessages.value = newLogs.flat()
     } catch {
       error.value = 'Error loading logDisplayLogs'
@@ -168,6 +170,7 @@ export function useLogDisplayLogs(
       const logPromises = _filters.map(fetchLogsForFilter)
       const newLogs = await Promise.all(logPromises)
 
+      lastUpdatedTimestamp.value = Date.now()
       systemLogMessages.value = newLogs.flat()
     } catch {
       error.value = 'Error loading logDisplayLogs'
@@ -204,6 +207,7 @@ export function useLogDisplayLogs(
     logMessages,
     filteredLogMessages,
     groupedByTaskRunId,
+    lastUpdatedTimestamp,
     isLoading,
     error,
   }

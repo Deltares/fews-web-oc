@@ -15,10 +15,9 @@
       />
     </div>
     <v-virtual-scroll
-      class="scroll-container h-100"
+      class="d-flex flex-1-1 flex-column h-100 px-1 pb-1"
       :items="groupedByTaskRunId"
       :item-height="50"
-      v-if="groupedByTaskRunId.length"
     >
       <template #default="{ item }">
         <DateSeparator v-if="item.type === 'dateSeparator'" :date="item.date" />
@@ -55,7 +54,7 @@
     <v-divider />
     <v-footer class="d-flex flex-0">
       <div class="refresh-container ms-3">
-        Last updated: 
+        Last updated: {{ lastUpdatedString }}
       </div>
       <v-spacer />
       <v-btn
@@ -204,7 +203,7 @@ const customFilter = (message: LogMessage) =>
     [],
   )
 
-const { logMessages, isLoading, groupedByTaskRunId } = useLogDisplayLogs(
+const { logMessages, isLoading, lastUpdatedTimestamp, groupedByTaskRunId } = useLogDisplayLogs(
   baseUrl,
   () => debouncedFilters.value,
   customFilter,
@@ -232,4 +231,10 @@ async function refreshLogs() {
   // Set endDate to now + 5 seconds to ensure the backend will return the latest logs
   endDate.value = new Date(Date.now() + 5000)
 }
+
+const lastUpdatedString = computed<string>(() => {
+  const lastUpdated = lastUpdatedTimestamp.value
+  if (lastUpdated === null) return '—'
+  return new Date(lastUpdated).toLocaleString()
+})
 </script>
