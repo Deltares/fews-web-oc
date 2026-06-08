@@ -1,5 +1,5 @@
 <template>
-  <v-icon class="select-icon" :class="{ active }" :icon />
+  <v-icon class="select-icon" :class="{ active }" :icon size="large"/>
 </template>
 
 <script setup lang="ts">

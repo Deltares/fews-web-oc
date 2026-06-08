@@ -1,17 +1,16 @@
 <template>
   <v-tooltip :text="tooltipText">
     <template #activator="{ props }">
-      <v-chip
+      <v-btn
         v-bind="props"
         variant="tonal"
-        pilled
-        label
-        class="ms-2 px-2"
+        class="px-1"
+        min-width="36px"
         :color="color"
         @click="toggleShowCurrentUserOnly"
       >
         <v-icon :icon="icon" />
-      </v-chip>
+      </v-btn>
     </template>
   </v-tooltip>
 </template>

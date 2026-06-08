@@ -1,19 +1,16 @@
 <template>
   <v-menu :close-on-content-click="false">
     <template #activator="{ props, isActive }">
-      <v-chip
+      <v-btn
         variant="tonal"
-        pilled
-        label
         :color="isAllSelected ? undefined : 'primary'"
         v-bind="props"
-        class="ms-2 px-2"
+        class="pe-1 text-label-large"
       >
         <template #prepend>
-          <v-btn
-            class="mr-1"
-            size="20"
+          <v-icon
             variant="plain"
+            size="large"
             :icon="isAllSelected ? 'mdi-filter-plus' : 'mdi-filter-remove'"
             @click="removeFilterIfEnabled"
           />
@@ -21,7 +18,7 @@
         {{ label }}
         <v-spacer />
         <SelectIcon :active="isActive" />
-      </v-chip>
+      </v-btn>
     </template>
     <v-sheet max-height="400">
       <slot name="actions">
