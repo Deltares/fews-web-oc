@@ -3,7 +3,7 @@
     ref="composerCardRef"
     flat
     border
-    class="new-log-card"
+    :class="['new-log-card', `new-log-card--${levelToColor(newLogLevel)}`]"
     density="compact"
     @mouseup="handleClick"
     @focusin="handleFocusIn"
@@ -227,9 +227,19 @@ async function postNewLogMessage(
   -webkit-tap-highlight-color: transparent;
 }
 
-.new-log-card:focus-within {
-  border-color: rgb(var(--v-theme-primary));
-  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
+.new-log-card--info:focus-within {
+  border-color: rgb(var(--v-theme-info));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-info));
+}
+
+.new-log-card--warning:focus-within {
+  border-color: rgb(var(--v-theme-warning));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-warning));
+}
+
+.new-log-card--error:focus-within {
+  border-color: rgb(var(--v-theme-error));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-error));
 }
 
 :deep(.message-textarea .v-field__input) {
