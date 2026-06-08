@@ -1,6 +1,9 @@
 <template>
   <SidePanelContent :title="t('sidePanel.logDisplay')" @close="emit('close')">
-    <v-progress-linear :indeterminate="isLoading" class="mb-2" />
+    <v-progress-linear :indeterminate="isLoading" />
+    <div class="d-flex align-center pa-2 ga-2">
+      <LogLevelFilter v-model="selectedLevels" />
+    </div>
     <div class="w-100">
       <v-text-field
         v-model="search"
@@ -10,7 +13,7 @@
         rounded
         clearable
         hide-details
-        class="px-2"
+        class="px-2 pb-1"
         density="compact"
       />
     </div>
@@ -81,16 +84,18 @@ import {
   type TopologyNode,
 } from '@deltares/fews-pi-requests'
 
-import type {
-  LogDisseminationStatus,
-  LogLevel,
-  LogMessage,
-  LogType,
+import {
+  logLevels,
+  type LogDisseminationStatus,
+  type LogLevel,
+  type LogMessage,
+  type LogType,
 } from '@/lib/log/types'
 
 import SidePanelContent from './SidePanelContent.vue'
 import TaskRunItem from '@/components/logdisplay/TaskRunItem.vue'
 import LogTimeLine from '@/components/logdisplay/LogTimeLine.vue'
+import LogLevelFilter from '@/components/logdisplay/LogLevelFilter.vue'
 import DateSeparator from '@/components/logdisplay/DateSeparator.vue'
 
 import { refDebounced } from '@vueuse/core'
@@ -127,7 +132,7 @@ useAvailableWorkflowsStore()
 
 const search = ref<string>()
 const maxCount = ref<number>(20000)
-const selectedLevels = ref<LogLevel[]>([])
+const selectedLevels = ref<LogLevel[]>([...logLevels])
 const selectedLogTypes = ref<LogType | null>(null)
 
 const daysBack = ref<number>(2)
