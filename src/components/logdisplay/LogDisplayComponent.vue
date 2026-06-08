@@ -191,7 +191,7 @@ const props = defineProps<Props>()
 
 const search = ref<string>()
 const maxCount = ref<number>(20000)
-const selectedLevels = ref<LogLevel[]>([])
+const selectedLevels = ref<LogLevel[]>([...logLevels])
 const selectedLogTypes = ref<LogType | null>(null)
 
 const daysBack = ref<number>(2)
