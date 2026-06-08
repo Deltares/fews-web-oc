@@ -504,7 +504,7 @@ async function unacknowledgeLog(log: LogMessage) {
 
 async function refreshLogs() {
   // Set endDate to now + 5 seconds to ensure the backend will return the latest logs
-  endDate.value = new Date(new Date().getTime() + 5000)
+  endDate.value = new Date(Date.now() + 5000)
 }
 </script>
 
