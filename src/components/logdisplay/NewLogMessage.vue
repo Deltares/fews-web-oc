@@ -3,7 +3,7 @@
     ref="composerCardRef"
     flat
     border
-    class="new-log-card"
+    :class="['new-log-card', `new-log-card--${levelToColor(newLogLevel)}`]"
     density="compact"
     @mouseup="handleClick"
     @focusin="handleFocusIn"
@@ -16,6 +16,7 @@
             variant="tonal"
             size="small"
             append-icon="mdi-menu-down"
+            :color="levelToColor(newLogLevel)"
           >
             {{ levelToTitle(newLogLevel) }}
           </v-btn>
@@ -38,51 +39,65 @@
         @click="discard"
       />
     </v-card-actions>
-    <v-textarea
-      ref="messageTextareaRef"
-      v-model="text"
-      :placeholder="
-        props.noteGroup?.note.messageTemplate.message ?? 'Enter log message...'
-      "
-      :rows="showExpandedUi ? Math.min(maxLines, 5) : 1"
-      :max-length="maxLines * maxChars"
-      :error="isError"
-      :error-messages="errorMessage"
-      density="compact"
-      no-resize
-      hide-details="auto"
-      variant="plain"
-      class="message-textarea"
-      @input="validateInput"
-    />
-    <v-alert
-      v-if="postErrorMessage"
-      type="error"
-      density="compact"
-      :title="postErrorMessage"
-      class="mt-1 mb-1"
-    />
-    <v-card-actions v-if="showExpandedUi" class="pb-0">
-      <span class="text-medium-emphasis text-label-medium">
-        {{ lineCount }}/{{ maxLines }} lines, {{ charCount }}/{{ maxChars }}
-        characters per line
-      </span>
-      <v-spacer />
-      <v-btn
-        variant="flat"
-        size="small"
-        color="primary"
-        :disabled="!text.trim() || isError || isPosting"
-        :loading="isPosting"
-        @click="saveNewMessage"
-        >Send</v-btn
-      >
-    </v-card-actions>
+    <div class="d-flex" :class="showExpandedUi ? 'flex-column' : 'flex-row'">
+      <v-textarea
+        ref="messageTextareaRef"
+        v-model="text"
+        :placeholder="
+          props.noteGroup?.note.messageTemplate.message ??
+          'Enter log message...'
+        "
+        :rows="1"
+        :max-rows="Math.max(maxLines, 5)"
+        :max-length="maxLines * maxChars"
+        :error="isError"
+        :error-messages="errorMessage"
+        density="compact"
+        auto-grow
+        no-resize
+        hide-details="auto"
+        variant="plain"
+        class="message-textarea"
+        :class="showExpandedUi ? 'expanded' : 'collapsed'"
+        @input="validateInput"
+      />
+      <v-alert
+        v-if="postErrorMessage"
+        type="error"
+        density="compact"
+        :title="postErrorMessage"
+        class="mt-1 mb-1"
+      />
+      <div class="d-flex align-center ma-2">
+        <span
+          class="text-medium-emphasis text-label-medium"
+          v-if="showExpandedUi"
+        >
+          {{ lineCount }}/{{ maxLines }} lines, {{ charCount }}/{{ maxChars }}
+          characters per line
+        </span>
+        <v-spacer />
+        <v-btn
+          variant="flat"
+          size="small"
+          :color="levelToColor(newLogLevel)"
+          :disabled="!text.trim() || isError || isPosting"
+          :loading="isPosting"
+          @click="saveNewMessage"
+          >Send</v-btn
+        >
+      </div>
+    </div>
   </v-card>
 </template>
 
 <script setup lang="ts">
-import { levelToTitle, manualLogLevels, type ManualLogLevel } from '@/lib/log'
+import {
+  levelToColor,
+  levelToTitle,
+  manualLogLevels,
+  type ManualLogLevel,
+} from '@/lib/log'
 import { createTransformRequestFn } from '@/lib/requests/transformRequest'
 import { configManager } from '@/services/application-config'
 import {
@@ -226,12 +241,26 @@ async function postNewLogMessage(
   -webkit-tap-highlight-color: transparent;
 }
 
-.new-log-card:focus-within {
-  border-color: rgb(var(--v-theme-primary));
-  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
+.new-log-card--info:focus-within {
+  border-color: rgb(var(--v-theme-info));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-info));
 }
 
-:deep(.message-textarea .v-field__input) {
+.new-log-card--warning:focus-within {
+  border-color: rgb(var(--v-theme-warning));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-warning));
+}
+
+.new-log-card--error:focus-within {
+  border-color: rgb(var(--v-theme-error));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-error));
+}
+
+:deep(.message-textarea.collapsed .v-field__input) {
+  padding: 8px;
+}
+
+:deep(.message-textarea.expanded .v-field__input) {
   padding: 0px 8px;
 }
 
