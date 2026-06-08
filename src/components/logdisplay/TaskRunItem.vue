@@ -20,10 +20,7 @@
           </template>
           <span>{{ getStringForStatus(taskRun?.status) }}</span>
         </v-tooltip>
-        <div
-          class="d-flex flex-column user-select-text cursor-pointer"
-          @click.stop
-        >
+        <div class="d-flex flex-column user-select-text cursor-pointer">
           <div class="d-flex align-center ga-2">
             <v-list-item-title>
               {{ title }}
@@ -186,6 +183,11 @@ function getColorForStatus(status: string | undefined) {
 }
 
 function onExpansionPanelToggle(event: MouseEvent) {
+  const selectedText = globalThis.getSelection?.()?.toString().trim()
+
+  // Do not toggle when click concludes a text selection gesture.
+  if (selectedText) return
+
   // Ignore subsequent clicks in a double-click sequence.
   if (event.detail > 1) return
   expanded.value = !expanded.value
