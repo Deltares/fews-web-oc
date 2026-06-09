@@ -114,6 +114,7 @@ import 'vue-slider-component/theme/antd.css'
 interface Properties {
   selectedDate?: Date
   dates: Date[]
+  followDate?: Date
   isLoading?: boolean
   playInterval?: number
   followNowInterval?: number
@@ -190,19 +191,21 @@ watch(
   () => props.dates,
   () => {
     if (doFollowNow.value) {
-      setDateToNow()
-      if (
-        props.selectedDate?.getTime() !==
-        props.dates[dateIndex.value]?.getTime()
-      ) {
-        emit('update:selectedDate', props.dates[dateIndex.value])
-      }
+      syncToFollowDate()
     } else if (props.selectedDate) {
       const oldDate = props.selectedDate
       dateIndex.value = findDateIndex(props.dates, oldDate)
     }
   },
   { immediate: true },
+)
+
+watch(
+  () => props.followDate,
+  () => {
+    if (!doFollowNow.value) return
+    syncToFollowDate()
+  },
 )
 
 const maxIndex = computed(() => {
@@ -254,7 +257,7 @@ watch(
 
 function startFollowNow(): void {
   stopPlay()
-  setDateToNow()
+  syncToFollowDate()
   followNowIntervalTimer = setInterval(setDateToNow, props.followNowInterval)
 }
 
@@ -264,8 +267,15 @@ function stopFollowNow(): void {
 }
 
 function setDateToNow(): void {
-  const now = new Date()
-  dateIndex.value = findDateIndex(props.dates, now)
+  const followDate = props.followDate ?? new Date()
+  dateIndex.value = findDateIndex(props.dates, followDate)
+}
+
+function syncToFollowDate(): void {
+  setDateToNow()
+  if (props.selectedDate?.getTime() !== props.dates[dateIndex.value]?.getTime()) {
+    emit('update:selectedDate', props.dates[dateIndex.value])
+  }
 }
 
 function togglePlay(): void {

@@ -152,6 +152,7 @@
       v-if="showDateTimeSlider"
       v-model:selectedDate="selectedDateOfSlider"
       :dates="times ?? []"
+      :follow-date="followDate"
       v-model:doFollowNow="doFollowNow"
       class="spatial-display__slider"
       :hide-speed-controls="mobile"
@@ -313,7 +314,48 @@ const showDateTimeSlider = computed(() => {
   )
 })
 
+const followDate = computed(() => {
+  const timesDefault = props.layerCapabilities?.timesDefault
+  if (!timesDefault) return undefined
+
+  const date = new Date(timesDefault)
+  if (Number.isNaN(date.getTime())) return undefined
+
+  return date
+})
+
 const DEBUG_SLIDER_AUTO_ADVANCE = import.meta.env.DEV
+
+watch(
+  () => props.layerCapabilities?.timesDefault,
+  (timesDefault) => {
+    if (!DEBUG_SLIDER_AUTO_ADVANCE) return
+
+    const parsed = timesDefault ? new Date(timesDefault) : undefined
+    const parsedIso =
+      parsed && !Number.isNaN(parsed.getTime())
+        ? parsed.toISOString()
+        : undefined
+
+    console.log('[SpatialSlider] timesDefault update', {
+      timesDefault,
+      parsedIso,
+      followNow: doFollowNow.value,
+      selected: selectedDateOfSlider.value?.toISOString(),
+    })
+  },
+  { immediate: true },
+)
+
+watch(doFollowNow, (isFollowing) => {
+  if (!DEBUG_SLIDER_AUTO_ADVANCE) return
+
+  console.log('[SpatialSlider] follow-now toggled', {
+    isFollowing,
+    followDate: followDate.value?.toISOString(),
+    selected: selectedDateOfSlider.value?.toISOString(),
+  })
+})
 
 watch(
   () => props.times,
@@ -329,6 +371,16 @@ watch(
     const newLatest = newTimes[newTimes.length - 1]
     const prevLatest = oldTimes?.[oldTimes.length - 1]
 
+    if (DEBUG_SLIDER_AUTO_ADVANCE) {
+      console.log('[SpatialSlider] times refresh snapshot', {
+        doFollowNow: doFollowNow.value,
+        followDate: followDate.value?.toISOString(),
+        selected: selectedDateOfSlider.value?.toISOString(),
+        prevLatest: prevLatest?.toISOString(),
+        newLatest: newLatest.toISOString(),
+      })
+    }
+
     // Only act when new timesteps are appended
     if (!prevLatest || newLatest.getTime() <= prevLatest.getTime()) {
       if (DEBUG_SLIDER_AUTO_ADVANCE) {
@@ -341,8 +393,17 @@ watch(
       return
     }
 
-    // Disable wall-clock follow so setDateToNow() doesn't override our update
-    doFollowNow.value = false
+    if (doFollowNow.value) {
+      if (DEBUG_SLIDER_AUTO_ADVANCE) {
+        console.log('[SpatialSlider] New latest detected while following timesDefault', {
+          prevLatest: prevLatest.toISOString(),
+          newLatest: newLatest.toISOString(),
+          followDate: followDate.value?.toISOString(),
+          selected: selectedDateOfSlider.value?.toISOString(),
+        })
+      }
+      return
+    }
 
     // Advance to the new latest whenever the user is currently at the last
     // timestamp — regardless of whether they got there by dragging or by a
