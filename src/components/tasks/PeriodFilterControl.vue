@@ -1,19 +1,17 @@
 <template>
   <v-menu>
     <template #activator="{ props, isActive }">
-      <v-chip
+      <v-btn
         variant="tonal"
-        pilled
-        label
         v-bind="props"
-        class="me-2 px-2 period-filter-chip"
+        class="text-label-large pe-1"
       >
         <template #default>
           <span>{{ selectedOption?.title }}</span>
           <v-spacer />
           <SelectIcon :active="isActive" />
         </template>
-      </v-chip>
+      </v-btn>
     </template>
     <v-list density="compact">
       <v-list-item
@@ -104,13 +102,3 @@ watchEffect(() => {
   numSecondsBack.value = selectedOption.value?.numSecondsBack ?? null
 })
 </script>
-
-<style scoped>
-.period-filter-chip {
-  width: 105px;
-}
-
-.period-filter-chip :deep(.v-chip__content) {
-  width: 100%;
-}
-</style>

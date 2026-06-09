@@ -1,6 +1,6 @@
 <template>
   <div class="non-current-data__panel h-100">
-    <div class="d-flex pt-3 pb-2 align-center">
+    <div class="d-flex pa-2 ga-2 align-center">
       <v-spacer />
       <PeriodFilterControl v-model="period" />
     </div>

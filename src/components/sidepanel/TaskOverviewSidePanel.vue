@@ -1,7 +1,7 @@
 <template>
   <SidePanelContent :title="t('sidePanel.taskOverview')" @close="emit('close')">
     <div class="task-runs-panel h-100">
-      <div class="d-flex pt-3 pb-2 align-center">
+      <div class="d-flex pa-2 align-center ga-2">
         <WorkflowFilterControl v-model="selectedWorkflowIds" />
         <TaskStatusFilterControl v-model="selectedTaskStatuses" />
         <CurrentUserFilterControl v-model="showCurrentUserOnly" />

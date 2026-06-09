@@ -11,7 +11,6 @@
         multiple
         density="compact"
         variant="outlined"
-        class="ma-2"
       >
         <v-btn
           v-for="category in getAllTaskStatusCategories()"

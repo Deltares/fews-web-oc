@@ -5,22 +5,25 @@
       :entryTime="log.entryTime"
       :taskRun="taskRun"
       :logs="logs"
-      :expanded="expanded"
       class="mt-2"
       :ripple="false"
-      @click="onExpansionPanelToggle"
-    />
-    <LogTable
-      v-if="expanded"
-      :logs="logs"
-      :taskRun="taskRun"
-      :disseminations="disseminations"
-      :disseminationStatus="disseminationStatus"
-      @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
-      @edit-log="emit('editLog', $event)"
-      @delete-log="emit('deleteLog', $event)"
-      v-bind="$attrs"
-    />
+    >
+      <template
+        #expansion="{ expanded, logs: slotLogs, taskRun: slotTaskRun }"
+      >
+        <LogTable
+          v-if="expanded"
+          :logs="slotLogs"
+          :taskRun="slotTaskRun"
+          :disseminations="disseminations"
+          :disseminationStatus="disseminationStatus"
+          @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
+          @edit-log="emit('editLog', $event)"
+          @delete-log="emit('deleteLog', $event)"
+          v-bind="$attrs"
+        />
+      </template>
+    </TaskRunItem>
   </template>
   <LogMessageItem
     v-if="log.type === 'manual' && noteGroup"
@@ -53,7 +56,7 @@ import {
   logToUser,
 } from '@/lib/log'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import type { TaskRun } from '@/lib/taskruns'
 
 interface Props {
@@ -67,11 +70,6 @@ interface Props {
 
 const props = defineProps<Props>()
 const availableWorkflows = useAvailableWorkflowsStore()
-
-const expanded = defineModel<boolean>('expanded', {
-  required: false,
-  default: false,
-})
 
 const taskRun = computed(() =>
   props.taskRuns.find(
@@ -90,22 +88,5 @@ function getTitleForLog(log: LogMessage, userName: string) {
 
   const workflow = workflowId ? availableWorkflows.byId(workflowId) : undefined
   return workflow?.name ?? logToUser(log, userName)
-}
-
-const clickTimer = ref<NodeJS.Timeout | null>(null)
-
-function onExpansionPanelToggle() {
-  // discard double clicks
-  if (clickTimer.value) {
-    clearTimeout(clickTimer.value)
-    clickTimer.value = null
-  }
-  clickTimer.value = setTimeout(() => {
-    // Only expand when no text is selected
-    if (globalThis.getSelection()?.toString() === '') {
-      expanded.value = !expanded.value
-      clickTimer.value = null
-    }
-  }, 200)
 }
 </script>

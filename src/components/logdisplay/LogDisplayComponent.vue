@@ -26,7 +26,7 @@
             :items="logLevels"
             variant="outlined"
             chips
-            clearable
+            closable-chips
             hide-details
             multiple
             density="compact"
@@ -259,14 +259,14 @@ const filters = computed(() => {
     (hasSystem && !systemFilters.value.length)
   ) {
     return {
-      manualFilters: [],
-      systemFilters: [],
+      manual: [],
+      system: [],
     }
   }
 
   return {
-    manualFilters: manualFilters.value,
-    systemFilters: systemFilters.value,
+    manual: manualFilters.value,
+    system: systemFilters.value,
   }
 })
 
@@ -274,142 +274,29 @@ const requestDebounce = 500
 const debouncedFilters = refDebounced(filters, requestDebounce)
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { logMessages: manualLogMessages, isLoading: manualIsLoading } =
-  useLogDisplayLogs(baseUrl, () => debouncedFilters.value.manualFilters)
-const { logMessages: systemLogMessages, isLoading: systemIsLoading } =
-  useLogDisplayLogs(baseUrl, () => debouncedFilters.value.systemFilters)
-
-const logMessages = computed(() => {
-  if (
-    (manualIsLoading.value || systemIsLoading.value) &&
-    manualLogMessages.value.length === 0 &&
-    systemLogMessages.value.length === 0
-  ) {
-    return []
-  }
-  return [...manualLogMessages.value, ...systemLogMessages.value].toSorted(
-    (a, b) => b.entryTime.localeCompare(a.entryTime),
-  )
-})
-
-const isLoading = computed(() => manualIsLoading.value || systemIsLoading.value)
 
 const filterDebounce = 100
 const debouncedSelectedLevels = refDebounced(selectedLevels, filterDebounce)
 const debouncedSelectedLogTypes = refDebounced(selectedLogTypes, filterDebounce)
 const debouncedSearch = refDebounced(search, filterDebounce)
 
-const filteredLogMessages = computed(() => {
-  // Filter log messages based on selected levels, types, search text, task runs, and workflows
-  // We filter in two passes, first we find which taskRuns have any logs that match the filter criteria
-  // and then we filter the log messages based on those taskRuns.
-  const filteredTaskRunIds = new Set<string>()
-
-  logMessages.value
-    .filter((log) =>
-      filterLog(
-        log,
-        debouncedSelectedLevels.value,
-        debouncedSelectedLogTypes.value
-          ? [debouncedSelectedLogTypes.value]
-          : [],
-        debouncedSearch.value,
-        taskRuns.value,
-        workflows,
-      ),
-    )
-    .forEach((log) => filteredTaskRunIds.add(log.taskRunId))
-  return logMessages.value.filter(
-    (log) =>
-      filterLog(
-        log,
-        debouncedSelectedLevels.value,
-        debouncedSelectedLogTypes.value
-          ? [debouncedSelectedLogTypes.value]
-          : [],
-        debouncedSearch.value,
-        taskRuns.value,
-        workflows,
-      ) || filteredTaskRunIds.has(log.taskRunId),
+const customFilter = (log: LogMessage) =>
+  Boolean(
+    filterLog(
+      log,
+      debouncedSelectedLevels.value,
+      debouncedSelectedLogTypes.value ? [debouncedSelectedLogTypes.value] : [],
+      debouncedSearch.value,
+      taskRuns.value,
+      workflows,
+    ),
   )
-})
 
-// Helper function to get the date string from a log entry time
-function getDateString(entryTime: string): string {
-  const date = new Date(entryTime)
-  return date.toISOString().split('T')[0] // Get YYYY-MM-DD format
-}
-
-// Define types for our virtual scroll items
-type DateSeparatorItem = {
-  type: 'dateSeparator'
-  date: string
-}
-
-type LogItem = {
-  type: 'logItem'
-  logs: LogMessage[]
-}
-
-type VirtualScrollItem = DateSeparatorItem | LogItem
-
-// Group logs by task run ID
-const groupedByTaskRunId = computed(() => {
-  // First, group logs by date
-  const logsByDate: Record<string, LogMessage[]> = {}
-
-  filteredLogMessages.value.forEach((log) => {
-    const dateStr = getDateString(log.entryTime)
-    if (!logsByDate[dateStr]) {
-      logsByDate[dateStr] = []
-    }
-    logsByDate[dateStr].push(log)
-  })
-
-  // Now, for each date, group logs by task run ID
-  const result: VirtualScrollItem[] = []
-
-  // Sort dates in descending order (newest first)
-  const sortedDates = Object.keys(logsByDate).sort((a, b) => b.localeCompare(a))
-
-  sortedDates.forEach((date) => {
-    // Add date separator
-    result.push({
-      type: 'dateSeparator',
-      date,
-    })
-
-    // Add log items for this date
-    const logsForDate = logsByDate[date]
-
-    // Group by task run ID for this date
-    const groupedByTaskId = logsForDate.reduce(
-      (grouped, log) => {
-        // In case of manual don't group
-        const taskRunId =
-          log.type === 'system'
-            ? log.taskRunId
-            : `${log.taskRunId}-${log.id}-${log.user}`
-        if (!grouped[taskRunId]) {
-          grouped[taskRunId] = []
-        }
-        grouped[taskRunId].push(log)
-        return grouped
-      },
-      {} as Record<string, LogMessage[]>,
-    )
-
-    // Add each group as a log item
-    Object.values(groupedByTaskId).forEach((logs) => {
-      result.push({
-        type: 'logItem',
-        logs,
-      })
-    })
-  })
-
-  return result
-})
+const { logMessages, isLoading, groupedByTaskRunId } = useLogDisplayLogs(
+  baseUrl,
+  () => debouncedFilters.value,
+  customFilter,
+)
 
 const taskRunIds = computed(() => {
   const _taskRunIds = logMessages.value.map((logs) => logs.taskRunId)
