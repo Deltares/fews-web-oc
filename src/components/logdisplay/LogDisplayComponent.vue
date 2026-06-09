@@ -26,7 +26,7 @@
             :items="logLevels"
             variant="outlined"
             chips
-            clearable
+            closable-chips
             hide-details
             multiple
             density="compact"
