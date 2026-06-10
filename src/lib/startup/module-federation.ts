@@ -8,7 +8,7 @@ export async function setupModuleFederation() {
   console.log(`Loading remote manifest from: ${remoteManifest}`)
 
   const initOptions = {
-    name: 'weboc',
+    name: 'weboc-micro-frontend',
     remotes: [
       {
         // mf-manifest.json is a file type generated in the new version of Module Federation build tools, providing richer functionality compared to remoteEntry
