@@ -91,9 +91,9 @@ watchEffect(async () => {
   loaded.value = false
   const entryId =
     customComponent === 'sankey'
-      ? 'weboc_mdba_plugins/sankey'
+      ? 'mdba-micro-frontend/sankey'
       : customComponent === 'basin_storage'
-        ? 'weboc_mdba_plugins/basin-storage'
+        ? 'mdba-micro-frontend/basin-storage'
         : customComponent
 
   PluginComponent.value = await loadRemoteVueComponent(entryId)
