@@ -6,6 +6,7 @@ import { i18n, setI18nLanguage } from '../../plugins/i18n.js'
 import { loadApplicationConfig } from './config-loader.js'
 import { appendConfiguredHeadLinks } from './resource-links.js'
 import { handleStartupError } from './startup-error.js'
+import { setupModuleFederation } from './module-federation.js'
 
 export { loadApplicationConfig } from './config-loader.js'
 export {
@@ -27,6 +28,8 @@ async function bootstrapApp(app: VueApp<Element>): Promise<void> {
 
   const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en')
   await setI18nLanguage(i18n, locale)
+
+  await setupModuleFederation()
 
   app.use(i18n)
   app.use(router)
