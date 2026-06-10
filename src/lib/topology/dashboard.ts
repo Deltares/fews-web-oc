@@ -56,6 +56,7 @@ export const componentTypeToComponentMap = {
   'data-analysis-display': DataAnalysisDisplay,
   'documents-display': Empty,
   'embed-url': WebDisplay,
+  'plugin-display': Empty,
 } satisfies Record<ComponentType, Component>
 
 export type PropsForComponentType<T extends ComponentType> = ComponentProps<
