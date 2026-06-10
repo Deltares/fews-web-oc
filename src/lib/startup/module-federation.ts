@@ -1,7 +1,7 @@
 import { init } from '@module-federation/enhanced/runtime'
 import { configManager } from '../../services/application-config'
 
-export async function setupModuleFederation() {
+export function setupModuleFederation() {
   const remoteManifest = configManager.get('VITE_FEWS_WEBOC_MF_MANIFEST_URL')
   if (!remoteManifest) return
 
@@ -18,5 +18,5 @@ export async function setupModuleFederation() {
       },
     ],
   }
-  await init(initOptions)
+  init(initOptions)
 }
