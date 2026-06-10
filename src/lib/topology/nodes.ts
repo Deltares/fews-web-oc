@@ -140,7 +140,8 @@ function hasSupportedDisplay(node: TopologyNode): boolean {
     nodeHasLogDisplay(node) ||
     nodeHasDynamicReportDisplay(node) ||
     nodeHasDataAnalysisDisplay(node) ||
-    nodeHasDocumentDisplay(node)
+    nodeHasDocumentDisplay(node) ||
+    nodeHasPlugin(node)
   )
 }
 
@@ -197,4 +198,8 @@ export function nodeHasDataAnalysisDisplay(node: TopologyNode) {
 
 export function nodeHasDocumentDisplay(node: TopologyNode) {
   return node.documentDisplayId !== undefined
+}
+
+export function nodeHasPlugin(node: TopologyNode) {
+  return node.id === 'viewer_coastal_flooding_warning_warning'
 }
