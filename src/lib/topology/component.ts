@@ -12,6 +12,7 @@ export type ComponentType =
 
 export const ComponentType = {
   dashboard: 'dashboard',
+  'micro-frontend-display': 'micro-frontend-display',
   map: 'map',
   charts: 'charts',
   'data-analysis-display': 'data-analysis-display',
@@ -25,7 +26,6 @@ export const ComponentType = {
   'log-display': 'log-display',
   'documents-display': 'documents-display',
   'embed-url': 'embed-url',
-  'micro-frontend-display': 'micro-frontend-display',
 } satisfies Record<ComponentType, ComponentType>
 
 export const componentTypeToIconMap = {
@@ -48,6 +48,7 @@ export const componentTypeToIconMap = {
 
 export const componentTypeToTitleMap = {
   dashboard: 'Dashboard',
+  'micro-frontend-display': 'Micro Frontend',
   map: 'Map',
   charts: 'Charts',
   'data-analysis-display': 'Data Analysis',
@@ -61,11 +62,11 @@ export const componentTypeToTitleMap = {
   'log-display': 'Log',
   'documents-display': 'Documents Browser',
   'embed-url': 'Embedded Content',
-  'micro-frontend-display': 'Micro Frontend',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToRouteNameMap = {
   dashboard: 'TopologyDashboard',
+  'micro-frontend-display': 'TopologyMicroFrontendDisplay',
   map: 'TopologySpatialDisplay',
   charts: 'TopologyTimeSeries',
   'data-analysis-display': 'TopologyDataAnalysisDisplay',
@@ -79,11 +80,11 @@ export const componentTypeToRouteNameMap = {
   'log-display': 'TopologyLogDisplay',
   'documents-display': 'TopologyDocumentDisplay',
   'embed-url': 'TopologyWebDisplay',
-  'micro-frontend-display': 'TopologyMicroFrontendDisplay',
 } satisfies Record<ComponentType, string>
 
 export const componentTypeToIdMap = {
   dashboard: 'dashboard',
+  'micro-frontend-display': 'mf',
   map: 'spatial',
   charts: 'timeseries',
   'data-analysis-display': 'analysis',
@@ -97,5 +98,4 @@ export const componentTypeToIdMap = {
   'log-display': 'log',
   'documents-display': 'documents',
   'embed-url': 'embed',
-  'micro-frontend-display': 'mf',
 } satisfies Record<ComponentType, string>
