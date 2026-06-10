@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { federation } from '@module-federation/vite'
 
 const GIT_CANDIDATE_PATHS =
   process.platform === 'win32'
@@ -54,18 +55,18 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       proxy: {
-        '/FewsWebServices/': `${env.DEV_SERVER_PROXY_FEWS_PI}`,
+        '/FewsWebServices/': `${env.DEV_PROXY_FEWS_PI}`,
       },
       headers: {
         'content-security-policy': [
           `default-src 'none'`,
           `manifest-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
-          `script-src 'self' blob: ${env.DEV_CSP_MEDIA_SRC}`,
           `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_FONT_SRC}`,
-          `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_STYLE_SRC} 'unsafe-inline'`, // vuetify
-          `worker-src blob: ${env.DEV_CSP_WORKER_SRC}`, // maplibre-gl
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_IMG_SRC}`, // FEWS webservices
           `media-src 'self' ${env.DEV_CSP_MEDIA_SRC}`,
+          `script-src 'self' blob: ${env.DEV_CSP_SCRIPT_SRC}`,
+          `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_STYLE_SRC} 'unsafe-inline'`, // vuetify
+          `worker-src blob: ${env.DEV_CSP_WORKER_SRC}`, // maplibre-gl
           [
             `connect-src`,
             `'self'`,
@@ -104,6 +105,14 @@ export default defineConfig(({ mode }) => {
           compilerOptions: {
             isCustomElement: (tag) => tag === 'schematic-status-display',
             // ...
+          },
+        },
+      }),
+      federation({
+        name: 'delft-fews-weboc',
+        shared: {
+          vue: { 
+            singleton: true,
           },
         },
       }),
