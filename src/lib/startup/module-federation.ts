@@ -1,7 +1,8 @@
-import { init } from '@module-federation/enhanced/runtime'
-import { configManager } from '../../services/application-config'
+import type { App as VueApp } from 'vue'
+import { configManager } from '@/services/application-config'
+import moduleFederationPlugin from '@/plugins/moduleFederation.js'
 
-export async function setupModuleFederation() {
+export async function setupModuleFederation(app: VueApp<Element>) {
   const manifestUrl = configManager.get('VITE_FEWS_WEBOC_MF_MANIFEST_URL')
   if (!manifestUrl) return
 
@@ -10,5 +11,5 @@ export async function setupModuleFederation() {
   const response = await fetch(manifestUrl)
   const manifestJson = await response.json()
 
-  init(manifestJson)
+  app.use(moduleFederationPlugin, { manifest: manifestJson })
 }
