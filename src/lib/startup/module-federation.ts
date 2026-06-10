@@ -1,6 +1,6 @@
 import type { App as VueApp } from 'vue'
 import { configManager } from '@/services/application-config'
-import moduleFederationPlugin from '@/plugins/moduleFederation.js'
+import moduleFederationPlugin from '@/plugins/moduleFederation'
 
 export async function setupModuleFederation(app: VueApp<Element>) {
   const manifestUrl = configManager.get('VITE_FEWS_WEBOC_MF_MANIFEST_URL')
@@ -11,5 +11,5 @@ export async function setupModuleFederation(app: VueApp<Element>) {
   const response = await fetch(manifestUrl)
   const manifestJson = await response.json()
 
-  app.use(moduleFederationPlugin, { manifest: manifestJson })
+  app.use(moduleFederationPlugin, manifestJson)
 }
