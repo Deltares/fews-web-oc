@@ -6,7 +6,7 @@ import { i18n, setI18nLanguage } from '../../plugins/i18n.js'
 import { loadApplicationConfig } from './config-loader.js'
 import { appendConfiguredHeadLinks } from './resource-links.js'
 import { handleStartupError } from './startup-error.js'
-import { setupModuleFederation } from './module-federation.js'
+import moduleFederationPlugin from '@/plugins/moduleFederation'
 
 export { loadApplicationConfig } from './config-loader.js'
 export {
@@ -30,7 +30,10 @@ async function bootstrapApp(app: VueApp<Element>): Promise<void> {
   await setI18nLanguage(i18n, locale)
   app.use(i18n)
 
-  await setupModuleFederation(app)
+  const manifestUrl = configManager.get('VITE_FEWS_WEBOC_MF_MANIFEST_URL')
+  if (manifestUrl) {
+    app.use(moduleFederationPlugin, manifestUrl)
+  }
 
   app.use(router)
   app.mount('#app')
