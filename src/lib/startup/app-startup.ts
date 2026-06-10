@@ -28,10 +28,10 @@ async function bootstrapApp(app: VueApp<Element>): Promise<void> {
 
   const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en')
   await setI18nLanguage(i18n, locale)
-
-  await setupModuleFederation()
-
   app.use(i18n)
+
+  await setupModuleFederation(app)
+
   app.use(router)
   app.mount('#app')
 }
