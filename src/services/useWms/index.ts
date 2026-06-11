@@ -43,6 +43,8 @@ export interface UseWmsReturn {
   times: Ref<Date[] | undefined>
   refresh: () => Promise<void>
   loading: Ref<boolean>
+  startPolling: (interval: number) => void
+  stopPolling: () => void
 }
 export function useWmsLayerCapabilities(
   baseUrl: string,
@@ -56,6 +58,7 @@ export function useWmsLayerCapabilities(
   }
 
   const loading = ref(false)
+  let pollingId: ReturnType<typeof globalThis.setInterval> | undefined
 
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
@@ -106,9 +109,28 @@ export function useWmsLayerCapabilities(
     times.value = getTimesFromCapabilities(layerCapabilities.value)
   }
 
+  const startPolling = (intervalMs: number) => {
+    stopPolling()
+    pollingId = globalThis.setInterval(refresh, intervalMs)
+  }
+
+  const stopPolling = () => {
+    if (pollingId !== undefined) {
+      clearInterval(pollingId)
+      pollingId = undefined
+    }
+  }
+
   watchEffect(refresh)
 
-  const result = { layerCapabilities, times, refresh, loading }
+  const result = {
+    layerCapabilities,
+    times,
+    refresh,
+    loading,
+    startPolling,
+    stopPolling,
+  }
   provide(WMS_LAYER_CAPABILITIES_KEY, result)
   return result
 }
