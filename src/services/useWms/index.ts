@@ -41,6 +41,7 @@ const WMS_LAYER_CAPABILITIES_KEY: InjectionKey<UseWmsReturn> = Symbol(
 export interface UseWmsReturn {
   layerCapabilities: Ref<Layer | undefined>
   times: Ref<Date[] | undefined>
+  refresh: () => Promise<void>
 }
 export function useWmsLayerCapabilities(
   baseUrl: string,
@@ -60,7 +61,7 @@ export function useWmsLayerCapabilities(
   const times = ref<Date[]>()
   const layerCapabilities = ref<Layer>()
 
-  async function fetch() {
+  async function refresh() {
     const _layerName = toValue(layerName)
 
     if (_layerName === '') {
@@ -99,9 +100,9 @@ export function useWmsLayerCapabilities(
     times.value = getTimesFromCapabilities(layerCapabilities.value)
   }
 
-  watchEffect(fetch)
+  watchEffect(refresh)
 
-  const result = { layerCapabilities, times }
+  const result = { layerCapabilities, times, refresh }
   provide(WMS_LAYER_CAPABILITIES_KEY, result)
   return result
 }
