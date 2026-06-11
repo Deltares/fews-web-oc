@@ -42,6 +42,7 @@ export interface UseWmsReturn {
   layerCapabilities: Ref<Layer | undefined>
   times: Ref<Date[] | undefined>
   refresh: () => Promise<void>
+  loading: Ref<boolean>
 }
 export function useWmsLayerCapabilities(
   baseUrl: string,
@@ -53,6 +54,8 @@ export function useWmsLayerCapabilities(
   if (parent) {
     return parent
   }
+
+  const loading = ref(false)
 
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
@@ -69,6 +72,7 @@ export function useWmsLayerCapabilities(
       return
     }
 
+    loading.value = true
     const filter: GetCapabilitiesFilter = {
       layers: _layerName,
       importFromExternalDataSource: false,
@@ -95,6 +99,8 @@ export function useWmsLayerCapabilities(
         capabilities.layers[0]
     } catch (error) {
       console.error(error)
+    } finally {
+      loading.value = false
     }
 
     times.value = getTimesFromCapabilities(layerCapabilities.value)
@@ -102,7 +108,7 @@ export function useWmsLayerCapabilities(
 
   watchEffect(refresh)
 
-  const result = { layerCapabilities, times, refresh }
+  const result = { layerCapabilities, times, refresh, loading }
   provide(WMS_LAYER_CAPABILITIES_KEY, result)
   return result
 }
