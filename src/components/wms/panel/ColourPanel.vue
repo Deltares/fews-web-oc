@@ -23,8 +23,8 @@
         <ColourItem
           v-for="(item, index) in currentScales"
           :item="item"
-          :active="index === currentColourScaleIndex"
-          @click="updateColourScaleIndex(index)"
+          :active="item.id === currentScale?.id"
+          @click="selectScale(index)"
         />
       </v-list>
     </v-menu>
@@ -69,25 +69,15 @@
 <script setup lang="ts">
 import ColourItem from '@/components/wms/panel/ColourItem.vue'
 import SelectIcon from '@/components/general/SelectIcon.vue'
-import { useColourScalesStore, type Range } from '@/stores/colourScales'
-import { useColourScales } from '@/services/useColourScales'
-import { ref, watch } from 'vue'
+import { type ColourScale, type Range } from '@/stores/colourScales'
+import { computed, ref, watch } from 'vue'
 
 interface Props {
-  currentColourScaleIds: string[]
+  items: ColourScale[]
 }
 
 const props = defineProps<Props>()
-
-const currentColourScaleIndex = defineModel<number>('currentColourScaleIndex', {
-  required: true,
-})
-watch(
-  () => props.currentColourScaleIds,
-  () => {
-    currentColourScaleIndex.value = 0
-  },
-)
+const modelValue = defineModel<ColourScale | undefined>()
 
 const showMenu = ref(false)
 
@@ -104,17 +94,16 @@ const rules = {
     'Value must be bigger than min',
 }
 
-const colourScalesStore = useColourScalesStore()
-const {
-  currentScale,
-  currentScales,
-  currentScaleIsInitialRange,
-  resetCurrentScaleRange,
-} = useColourScales(
-  currentColourScaleIndex,
-  () => props.currentColourScaleIds,
-  colourScalesStore.scales,
-)
+const currentScale = computed(() => modelValue.value)
+const currentScales = computed(() => props.items)
+
+const currentScaleIsInitialRange = computed(() => {
+  if (!currentScale.value) return false
+  return (
+    currentScale.value.range.min === currentScale.value.initialRange.min &&
+    currentScale.value.range.max === currentScale.value.initialRange.max
+  )
+})
 
 const mutableColorScaleRange = ref<Range>()
 watch(
@@ -134,8 +123,13 @@ const changeCurrentColourScaleRange = () => {
   currentScale.value.range = mutableColorScaleRange.value
 }
 
-function updateColourScaleIndex(index: number) {
-  currentColourScaleIndex.value = index
+function resetCurrentScaleRange() {
+  if (!currentScale.value) return
+  currentScale.value.range = currentScale.value.initialRange
+}
+
+function selectScale(index: number) {
+  modelValue.value = currentScales.value[index]
   showMenu.value = false
 }
 </script>

@@ -1,38 +1,33 @@
 import type { ColourScale } from '@/stores/colourScales'
 import type { MaybeRefOrGetter, ShallowRef } from 'vue'
-import { computed, toValue } from 'vue'
+import { computed, ref, toValue, watchEffect } from 'vue'
 
 export interface UseColourScalesReturn {
-  currentScaleId: ShallowRef<string | undefined>
   currentScale: ShallowRef<ColourScale | undefined>
   currentScaleTitle: ShallowRef<string>
   currentScales: ShallowRef<ColourScale[]>
   currentScaleIsInitialRange: ShallowRef<boolean>
-  resetCurrentScaleRange: () => void
 }
 
 export function useColourScales(
-  currentIndex: MaybeRefOrGetter<number>,
   currentIds: MaybeRefOrGetter<string[]>,
   scales: MaybeRefOrGetter<Record<string, ColourScale>>,
   title?: MaybeRefOrGetter<string>,
 ): UseColourScalesReturn {
-  const currentScaleId = computed<string | undefined>(() => {
-    const _currentIndex = toValue(currentIndex)
-    const _currentIds = toValue(currentIds)
-    return _currentIds[_currentIndex]
-  })
+  const currentScale = ref<ColourScale | undefined>(undefined)
+  const currentScales = ref<ColourScale[]>([])
 
-  const currentScale = computed(() => {
-    const _scales = toValue(scales)
-    if (!currentScaleId.value) return
-    return _scales[currentScaleId.value]
-  })
-
-  const currentScales = computed(() => {
-    const _scales = toValue(scales)
+  watchEffect(() => {
     const _currentIds = toValue(currentIds)
-    return _currentIds.map((id) => _scales[id])
+    const _scales = toValue(scales)
+    const updatedScales = _currentIds.map((id) => _scales[id])
+    const currentId = currentScale.value?.id
+    if (currentId && _currentIds.includes(currentId)) {
+      currentScale.value = _scales[currentId]
+    } else {
+      currentScale.value = updatedScales[0]
+    }
+    currentScales.value = updatedScales
   })
 
   const currentScaleIsInitialRange = computed(() => {
@@ -49,17 +44,10 @@ export function useColourScales(
     return `${toValue(title)}${unitString}`
   })
 
-  function resetCurrentScaleRange() {
-    if (!currentScale.value) return
-    currentScale.value.range = currentScale.value.initialRange
-  }
-
   return {
-    currentScaleId,
     currentScale,
     currentScaleTitle,
     currentScales,
     currentScaleIsInitialRange,
-    resetCurrentScaleRange,
   }
 }
