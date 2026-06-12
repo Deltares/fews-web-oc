@@ -267,21 +267,25 @@ watch(
   doFollowNow,
   (newVal) => {
     if (newVal) {
-      startFollowNow()
+      startFollowTimer()
     } else {
-      stopFollowNow()
+      stopFollowTimer()
     }
   },
   { immediate: true },
 )
 
-function startFollowNow(): void {
+function startFollowTimer(): void {
   stopPlay()
   setDateToNow()
   followNowIntervalTimer = setInterval(setDateToNow, props.followNowInterval)
 }
 
 function stopFollowNow(): void {
+  doFollowNow.value = false
+}
+
+function stopFollowTimer(): void {
   if (followNowIntervalTimer) clearInterval(followNowIntervalTimer)
   followNowIntervalTimer = null
 }
