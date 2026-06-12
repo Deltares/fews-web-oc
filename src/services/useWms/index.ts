@@ -41,9 +41,10 @@ const WMS_LAYER_CAPABILITIES_KEY: InjectionKey<UseWmsReturn> = Symbol(
 export interface UseWmsReturn {
   layerCapabilities: Ref<Layer | undefined>
   times: Ref<Date[] | undefined>
+  timesDefault: Ref<Date | undefined>
   refresh: () => Promise<void>
   loading: Ref<boolean>
-  startPolling: (interval: number) => void
+  startPolling: (intervalMs: number) => void
   stopPolling: () => void
 }
 export function useWmsLayerCapabilities(
@@ -65,6 +66,7 @@ export function useWmsLayerCapabilities(
     transformRequestFn: createTransformRequestFn(),
   })
   const times = ref<Date[]>()
+  const timesDefault = ref<Date>()
   const layerCapabilities = ref<Layer>()
 
   async function refresh() {
@@ -72,6 +74,8 @@ export function useWmsLayerCapabilities(
 
     if (_layerName === '') {
       layerCapabilities.value = undefined
+      times.value = undefined
+      timesDefault.value = undefined
       return
     }
 
@@ -94,6 +98,8 @@ export function useWmsLayerCapabilities(
 
       if (!capabilities.layers) {
         layerCapabilities.value = undefined
+        times.value = undefined
+        timesDefault.value = undefined
         return
       }
 
@@ -107,6 +113,15 @@ export function useWmsLayerCapabilities(
     }
 
     times.value = getTimesFromCapabilities(layerCapabilities.value)
+    const defaultTime = layerCapabilities.value?.timesDefault
+    if (defaultTime) {
+      const parsedDefaultTime = new Date(defaultTime)
+      timesDefault.value = Number.isNaN(parsedDefaultTime.getTime())
+        ? undefined
+        : parsedDefaultTime
+    } else {
+      timesDefault.value = undefined
+    }
   }
 
   const startPolling = (intervalMs: number) => {
@@ -126,6 +141,7 @@ export function useWmsLayerCapabilities(
   const result = {
     layerCapabilities,
     times,
+    timesDefault,
     refresh,
     loading,
     startPolling,
