@@ -152,6 +152,7 @@
       v-if="showDateTimeSlider"
       v-model:selectedDate="selectedDateOfSlider"
       :dates="times ?? []"
+      :now="timesDefault"
       v-model:doFollowNow="doFollowNow"
       class="spatial-display__slider"
       :hide-speed-controls="mobile"
@@ -245,6 +246,7 @@ interface ElevationWithUnitSymbol {
 interface Props {
   layerName?: string
   times?: Date[]
+  timesDefault?: Date
   layerCapabilities?: Layer
   elevation?: number
   locations?: Location[]

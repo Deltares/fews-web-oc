@@ -18,6 +18,7 @@
         :layer-capabilities="layerCapabilities"
         :bounding-box="boundingBox"
         :times="times"
+        :times-default="timesDefault"
         :settings="settings.map"
         v-model:elevation="elevation"
         @update:current-time="currentTime = $event"
@@ -55,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, useTemplateRef, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
@@ -127,7 +128,7 @@ const filterOptions = computed(() => {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { layerCapabilities, times } = useWmsLayerCapabilities(
+const { layerCapabilities, times, timesDefault, startPolling, stopPolling } = useWmsLayerCapabilities(
   baseUrl,
   () => props.layerName,
   taskRunId,
@@ -279,6 +280,14 @@ function closeTimeSeriesDisplay(): void {
   maximized.value = false
   emit('navigate', { name: 'SpatialDisplay' })
 }
+
+onMounted(() => {
+  startPolling(60_000)
+})
+
+onUnmounted(() => {
+  stopPolling()
+})
 
 watch(locations, () => {
   if (
