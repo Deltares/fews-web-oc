@@ -223,7 +223,7 @@ const maxIndex = computed(() => {
 
 // Now and play button styling is dependent on properties.
 const nowButtonIcon = computed(() => {
-  if (props.isLoading && doFollowNow.value) return 'mdi-loading mdi-spin'
+  if (props.isLoading && !playTimeoutTimer.value) return 'mdi-loading mdi-spin'
   const hasSpecifiedNow = props.now !== undefined
   const iconName = 'mdi-clock'
   return hasSpecifiedNow ? iconName : `${iconName}-outline`
