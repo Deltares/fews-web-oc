@@ -1,38 +1,45 @@
 import type { ColourScale } from '@/stores/colourScales'
 import type { MaybeRefOrGetter, ShallowRef } from 'vue'
-import { computed, toValue } from 'vue'
+import { computed, ref, toValue, watchEffect } from 'vue'
 
 export interface UseColourScalesReturn {
-  currentScaleId: ShallowRef<string | undefined>
+  currentScaleIndex: ShallowRef<number | undefined>
   currentScale: ShallowRef<ColourScale | undefined>
   currentScaleTitle: ShallowRef<string>
   currentScales: ShallowRef<ColourScale[]>
   currentScaleIsInitialRange: ShallowRef<boolean>
+  select: (index: number) => void
   resetCurrentScaleRange: () => void
 }
 
 export function useColourScales(
-  currentIndex: MaybeRefOrGetter<number>,
   currentIds: MaybeRefOrGetter<string[]>,
-  scales: MaybeRefOrGetter<Record<string, ColourScale>>,
+  allScales: MaybeRefOrGetter<Record<string, ColourScale>>,
   title?: MaybeRefOrGetter<string>,
 ): UseColourScalesReturn {
-  const currentScaleId = computed<string | undefined>(() => {
-    const _currentIndex = toValue(currentIndex)
-    const _currentIds = toValue(currentIds)
-    return _currentIds[_currentIndex]
-  })
+  const currentScaleIndex = ref<number | undefined>(0)
+  const currentScale = ref<ColourScale>()
+  const currentScales = ref<ColourScale[]>([])
 
-  const currentScale = computed(() => {
-    const _scales = toValue(scales)
-    if (!currentScaleId.value) return
-    return _scales[currentScaleId.value]
-  })
+  function select(index: number | undefined) {
+    currentScaleIndex.value = index
+  }
 
-  const currentScales = computed(() => {
-    const _scales = toValue(scales)
+  watchEffect(() => {
     const _currentIds = toValue(currentIds)
-    return _currentIds.map((id) => _scales[id])
+    const _allScales = toValue(allScales)
+    const newScales = _currentIds.map((id) => _allScales[id])
+    if (
+      currentScaleIndex.value !== undefined &&
+      !_currentIds.includes(_currentIds[currentScaleIndex.value])
+    ) {
+      currentScaleIndex.value = 0
+    }
+    currentScales.value = newScales
+    currentScale.value =
+      currentScaleIndex.value === undefined
+        ? undefined
+        : _allScales[_currentIds[currentScaleIndex.value]]
   })
 
   const currentScaleIsInitialRange = computed(() => {
@@ -55,11 +62,12 @@ export function useColourScales(
   }
 
   return {
-    currentScaleId,
+    currentScaleIndex,
     currentScale,
     currentScaleTitle,
     currentScales,
     currentScaleIsInitialRange,
+    select,
     resetCurrentScaleRange,
   }
 }
