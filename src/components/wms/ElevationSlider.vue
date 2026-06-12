@@ -20,10 +20,13 @@
         :thumb-label="false"
         thumb-color="primary"
         thumb-size="16px"
+        track-size="6px"
+        tick-size="3px"
         height="200px"
         hide-details
         no-keyboard
-        elevetion="2"
+        elevation="0"
+        rounded
         density="compact"
         @update:model-value="onSliderInput"
         @keydown="onSliderKeydown"
@@ -268,6 +271,11 @@ watchEffect(() => {
 
 .elevation-slider {
   position: relative;
+}
+
+.elevation-slider :deep(.v-slider-track__fill) {
+  backdrop-filter: blur(5px);
+  opacity: 0.8;
 }
 
 .elevation-slider__unit-label {
