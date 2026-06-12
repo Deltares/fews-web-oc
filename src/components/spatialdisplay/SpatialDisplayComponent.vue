@@ -343,7 +343,6 @@ const layerKind = ref(LayerKind.Static)
 
 const colourScalesStore = useColourScalesStore()
 const currentColourScaleIds = ref<string[]>([])
-const currentColourScaleIndex = ref(0)
 const {
   currentScale: currentColourScale,
   currentScales: currentColourScales,
