@@ -406,7 +406,6 @@ watch(
   { immediate: true },
 )
 
-
 watch(
   () => userSettings.useDisplayUnits,
   () => {
