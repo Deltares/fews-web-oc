@@ -23,7 +23,7 @@
         <ColourItem
           v-for="(item, index) in currentScales"
           :item="item"
-          :active="item === currentScale"
+          :active="item.id === currentScale?.id"
           @click="selectScale(index)"
         />
       </v-list>
