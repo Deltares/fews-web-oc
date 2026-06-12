@@ -105,8 +105,8 @@
           <template v-if="layerOptions">
             <v-divider />
             <ColourPanel
-              :currentColourScaleIds="currentColourScaleIds"
-              v-model:currentColourScaleIndex="currentColourScaleIndex"
+              v-model="currentColourScale"
+              :items="currentColourScales"
             />
           </template>
           <template #chip-append-inner>
@@ -346,9 +346,9 @@ const currentColourScaleIds = ref<string[]>([])
 const currentColourScaleIndex = ref(0)
 const {
   currentScale: currentColourScale,
+  currentScales: currentColourScales,
   currentScaleTitle: currentColourScaleTitle,
 } = useColourScales(
-  currentColourScaleIndex,
   currentColourScaleIds,
   () => colourScalesStore.scales,
   () => props.layerCapabilities?.title ?? props.layerName,
@@ -406,6 +406,10 @@ watch(
   },
   { immediate: true },
 )
+
+watch(currentColourScaleIds, () => {
+  currentColourScaleIndex.value = 0
+})
 
 watch(
   () => userSettings.useDisplayUnits,
