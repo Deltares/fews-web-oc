@@ -23,7 +23,7 @@
         <ColourItem
           v-for="(item, index) in currentScales"
           :item="item"
-          :active="index === currentColourScaleIndex"
+          :active="index === currentScaleIndex"
           @click="updateColourScaleIndex(index)"
         />
       </v-list>
@@ -78,16 +78,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-
-const currentColourScaleIndex = defineModel<number>('currentColourScaleIndex', {
-  required: true,
-})
-watch(
-  () => props.currentColourScaleIds,
-  () => {
-    currentColourScaleIndex.value = 0
-  },
-)
+const emit = defineEmits<{
+  (e: 'update:colourScaleIndex', index: number): void
+}>()
 
 const showMenu = ref(false)
 
@@ -106,15 +99,13 @@ const rules = {
 
 const colourScalesStore = useColourScalesStore()
 const {
+  currentScaleIndex,
   currentScale,
   currentScales,
   currentScaleIsInitialRange,
+  select,
   resetCurrentScaleRange,
-} = useColourScales(
-  currentColourScaleIndex,
-  () => props.currentColourScaleIds,
-  colourScalesStore.scales,
-)
+} = useColourScales(() => props.currentColourScaleIds, colourScalesStore.scales)
 
 const mutableColorScaleRange = ref<Range>()
 watch(
@@ -135,7 +126,8 @@ const changeCurrentColourScaleRange = () => {
 }
 
 function updateColourScaleIndex(index: number) {
-  currentColourScaleIndex.value = index
+  select(index)
+  emit('update:colourScaleIndex', index)
   showMenu.value = false
 }
 </script>
