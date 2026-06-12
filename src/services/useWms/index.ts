@@ -126,7 +126,10 @@ export function useWmsLayerCapabilities(
 
   const startPolling = (intervalMs: number) => {
     stopPolling()
-    pollingId = globalThis.setInterval(refresh, intervalMs)
+    pollingId = globalThis.setInterval(() => {
+      if (loading.value) return
+      void refresh()
+    }, intervalMs)
   }
 
   const stopPolling = () => {
