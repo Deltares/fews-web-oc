@@ -406,9 +406,6 @@ watch(
   { immediate: true },
 )
 
-watch(currentColourScaleIds, () => {
-  currentColourScaleIndex.value = 0
-})
 
 watch(
   () => userSettings.useDisplayUnits,
