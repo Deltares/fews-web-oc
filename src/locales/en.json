@@ -28,9 +28,13 @@
   },
   "timeControl": {
     "browserTime": "Browser time",
+    "endDateAfterStartDate": "End date must be after start date",
+    "followCurrentTime": "Follow current time",
+    "followSpecifiedTime": "Follow specified time",
     "periodPresets": "Period presets",
     "startDateBeforeEndDate": "Start date must be before end date",
-    "endDateAfterStartDate": "End date must be after start date"
+    "trackingCurrentTime": "Following current time",
+    "trackingSpecifiedTime": "Following specified time"
   },
   "thresholds": {
     "count": "Count",

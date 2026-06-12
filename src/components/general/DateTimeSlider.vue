@@ -38,13 +38,18 @@
     <div class="datetime-slider__actions">
       <slot name="prepend"></slot>
       <div class="now-tracking-control">
-        <v-btn
-          density="compact"
-          variant="text"
-          :icon="nowButtonIcon"
-          :color="nowButtonColor"
-          @click="toggleFollowNow"
-        />
+        <v-tooltip :text="nowTrackingTooltip" location="top">
+          <template v-slot:activator="{ props: tooltipProps }">
+            <v-btn
+              v-bind="tooltipProps"
+              density="compact"
+              variant="text"
+              :icon="nowButtonIcon"
+              :color="nowButtonColor"
+              @click="toggleFollowNow"
+            />
+          </template>
+        </v-tooltip>
         <span class="datetime-slider__datefield">{{ dateString }}</span>
       </div>
       <v-spacer />
@@ -105,6 +110,7 @@
 import { computed, ref, watch, type WatchHandle } from 'vue'
 import { scaleTime } from 'd3-scale'
 import { DateTime } from 'luxon'
+import { useI18n } from 'vue-i18n'
 
 import { findDateIndex } from '@/lib/utils/dates'
 
@@ -114,6 +120,7 @@ import 'vue-slider-component/theme/antd.css'
 interface Properties {
   selectedDate?: Date
   dates: Date[]
+  now?: Date
   isLoading?: boolean
   playInterval?: number
   followNowInterval?: number
@@ -127,6 +134,8 @@ const props = withDefaults(defineProps<Properties>(), {
   hideSpeedControls: false,
 })
 const emit = defineEmits(['update:selectedDate'])
+
+const { t } = useI18n()
 
 const doFollowNow = defineModel<boolean>('doFollowNow', { default: true })
 
@@ -213,9 +222,12 @@ const maxIndex = computed(() => {
 })
 
 // Now and play button styling is dependent on properties.
-const nowButtonIcon = computed(() =>
-  props.isLoading ? 'mdi-loading mdi-spin' : 'mdi-clock',
-)
+const nowButtonIcon = computed(() => {
+  if (props.isLoading && doFollowNow.value) return 'mdi-loading mdi-spin'
+  const hasSpecifiedNow = props.now !== undefined
+  const iconName = 'mdi-clock'
+  return hasSpecifiedNow ? iconName : `${iconName}-outline`
+})
 const playButtonIcon = computed(() =>
   playTimeoutTimer.value ? 'mdi-pause' : 'mdi-play',
 )
@@ -231,6 +243,21 @@ const dateString = computed(() =>
     ? props.dates[dateIndex.value].toLocaleString()
     : '',
 )
+
+// Tooltip text for now-tracking control depending on if we use Date.now() or specified time
+const nowTrackingTooltip = computed(() => {
+  if (doFollowNow.value) {
+    if (props.now) {
+      return t('timeControl.trackingSpecifiedTime')
+    }
+    return t('timeControl.trackingCurrentTime')
+  }
+
+  if (props.now) {
+    return t('timeControl.followSpecifiedTime')
+  }
+  return t('timeControl.followCurrentTime')
+})
 
 function toggleFollowNow(): void {
   doFollowNow.value = !doFollowNow.value
@@ -260,7 +287,7 @@ function stopFollowNow(): void {
 }
 
 function setDateToNow(): void {
-  const now = new Date()
+  const now = props.now ?? new Date(Date.now())
   dateIndex.value = findDateIndex(props.dates, now)
 }
 
