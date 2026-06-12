@@ -4,6 +4,9 @@ import type { MapSettings as PiMapSettings } from '@deltares/fews-pi-requests'
 type DeepRequiredMapSettings = DeepRequired<PiMapSettings>
 
 export type MapSettings = Omit<DeepRequiredMapSettings, 'locationsLayer'> & {
+  wmsLayer: DeepRequiredMapSettings['wmsLayer'] & {
+    autoRefreshInterval: number
+  }
   locationsLayer: Omit<
     DeepRequiredMapSettings['locationsLayer'],
     'minZoom' | 'maxZoom'
@@ -12,14 +15,15 @@ export type MapSettings = Omit<DeepRequiredMapSettings, 'locationsLayer'> & {
 
 export const defaultMapSettings: MapSettings = {
   wmsLayer: {
-    show: true, // TODO: Implement
-    autoPlay: false, // TODO: Implement
-    animateVectors: true, // TODO: Implement
+    show: true,
+    autoPlay: false,
+    animateVectors: true,
     doubleClickAction: true,
+    autoRefreshInterval: 60000,
   },
   locationsLayer: {
     show: true,
-    locationNames: true, // TODO: Implement
+    locationNames: true,
     singleClickAction: true,
     locationSearchEnabled: true,
   },

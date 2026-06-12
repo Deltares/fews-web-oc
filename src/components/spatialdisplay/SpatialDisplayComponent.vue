@@ -313,13 +313,64 @@ const showDateTimeSlider = computed(() => {
   )
 })
 
+const DEBUG_SLIDER_AUTO_ADVANCE = import.meta.env.DEV
+
 watch(
   () => props.times,
-  (times) => {
-    if (!times || times.length === 0) {
+  (newTimes, oldTimes) => {
+    if (!newTimes || newTimes.length === 0) {
+      if (DEBUG_SLIDER_AUTO_ADVANCE) {
+        console.log('[SpatialSlider] No times available, clearing selection')
+      }
       selectedDateOfSlider.value = undefined
       return
     }
+
+    const newLatest = newTimes[newTimes.length - 1]
+    const prevLatest = oldTimes?.[oldTimes.length - 1]
+
+    // Only act when new timesteps are appended
+    if (!prevLatest || newLatest.getTime() <= prevLatest.getTime()) {
+      if (DEBUG_SLIDER_AUTO_ADVANCE) {
+        console.log('[SpatialSlider] No new latest appended', {
+          prevLatest: prevLatest?.toISOString(),
+          newLatest: newLatest.toISOString(),
+          selected: selectedDateOfSlider.value?.toISOString(),
+        })
+      }
+      return
+    }
+
+    // Disable wall-clock follow so setDateToNow() doesn't override our update
+    doFollowNow.value = false
+
+    // Advance to the new latest whenever the user is currently at the last
+    // timestamp — regardless of whether they got there by dragging or by a
+    // previous auto-advance. This means follow-latest is position-based, not
+    // flag-based, so it re-engages automatically after manual interaction.
+    const isAtLatest =
+      selectedDateOfSlider.value === undefined ||
+      selectedDateOfSlider.value.getTime() === prevLatest.getTime()
+
+    if (DEBUG_SLIDER_AUTO_ADVANCE) {
+      console.log('[SpatialSlider] New latest detected', {
+        prevLatest: prevLatest.toISOString(),
+        newLatest: newLatest.toISOString(),
+        selected: selectedDateOfSlider.value?.toISOString(),
+        isAtLatest,
+      })
+    }
+
+    if (isAtLatest) {
+      selectedDateOfSlider.value = newLatest
+      if (DEBUG_SLIDER_AUTO_ADVANCE) {
+        console.log('[SpatialSlider] Auto-advanced to new latest', {
+          selected: selectedDateOfSlider.value?.toISOString(),
+        })
+      }
+    }
+    // else: user is at an older time; the slider's own dates watcher calls
+    // findDateIndex(newDates, selectedDate) and keeps them at their position
   },
 )
 

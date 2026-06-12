@@ -13,6 +13,7 @@ import {
   inject,
   InjectionKey,
   MaybeRefOrGetter,
+  onUnmounted,
   provide,
   ref,
   Ref,
@@ -41,11 +42,48 @@ const WMS_LAYER_CAPABILITIES_KEY: InjectionKey<UseWmsReturn> = Symbol(
 export interface UseWmsReturn {
   layerCapabilities: Ref<Layer | undefined>
   times: Ref<Date[] | undefined>
+  fetchLayerCapabilities: () => Promise<void>
 }
+
+export interface UseWmsLayerCapabilitiesOptions {
+  baseUrl: string
+  layerName: MaybeRefOrGetter<string>
+  taskRunId: MaybeRefOrGetter<string | undefined>
+  refreshInterval?: MaybeRefOrGetter<number | undefined>
+  enabled?: MaybeRefOrGetter<boolean | undefined>
+}
+
+type LayerFetchRefreshMetadata = {
+  autoRefreshInterval?: unknown
+  autorefreshinterval?: unknown
+}
+
+type LayerRefreshMetadata = Layer & {
+  autoRefreshInterval?: unknown
+  autorefreshinterval?: unknown
+  fetch?: LayerFetchRefreshMetadata
+}
+
+function toPositiveMs(value: unknown): number | undefined {
+  if (typeof value !== 'number') {
+    return
+  }
+  if (!Number.isFinite(value) || value <= 0) {
+    return
+  }
+  return value
+}
+
+function hasLayerRefreshMetadata(layer: Layer): layer is LayerRefreshMetadata {
+  return (
+    'autoRefreshInterval' in layer ||
+    'autorefreshinterval' in layer ||
+    'fetch' in layer
+  )
+}
+
 export function useWmsLayerCapabilities(
-  baseUrl: string,
-  layerName: MaybeRefOrGetter<string>,
-  taskRunId: MaybeRefOrGetter<string | undefined>,
+  options: UseWmsLayerCapabilitiesOptions,
 ): UseWmsReturn {
   // If a parent component has already provided WMS layer capabilities, use those instead of fetching them again.
   const parent = inject(WMS_LAYER_CAPABILITIES_KEY, undefined)
@@ -53,14 +91,30 @@ export function useWmsLayerCapabilities(
     return parent
   }
 
+  const { baseUrl, layerName, taskRunId, refreshInterval, enabled } = options
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
   const times = ref<Date[]>()
   const layerCapabilities = ref<Layer>()
+  let interval: ReturnType<typeof setInterval> | undefined
 
-  async function fetch() {
+  function getCapabilitiesRefreshInterval(): number | undefined {
+    const capabilities = layerCapabilities.value
+    if (!capabilities || !hasLayerRefreshMetadata(capabilities)) {
+      return
+    }
+
+    return (
+      toPositiveMs(capabilities.autoRefreshInterval) ??
+      toPositiveMs(capabilities.autorefreshinterval) ??
+      toPositiveMs(capabilities.fetch?.autoRefreshInterval) ??
+      toPositiveMs(capabilities.fetch?.autorefreshinterval)
+    )
+  }
+
+  async function fetchLayerCapabilities() {
     const _layerName = toValue(layerName)
 
     if (_layerName === '') {
@@ -99,9 +153,43 @@ export function useWmsLayerCapabilities(
     times.value = getTimesFromCapabilities(layerCapabilities.value)
   }
 
-  watchEffect(fetch)
+  watchEffect(() => {
+    void fetchLayerCapabilities()
+  })
 
-  const result = { layerCapabilities, times }
+  watchEffect((onCleanup) => {
+    if (interval) {
+      clearInterval(interval)
+      interval = undefined
+    }
+
+    const _refreshInterval =
+      toPositiveMs(toValue(refreshInterval)) ?? getCapabilitiesRefreshInterval()
+    const _enabled = toValue(enabled) ?? _refreshInterval !== undefined
+    if (!_enabled || !_refreshInterval) {
+      return
+    }
+
+    interval = setInterval(() => {
+      void fetchLayerCapabilities()
+    }, _refreshInterval)
+
+    onCleanup(() => {
+      if (interval) {
+        clearInterval(interval)
+        interval = undefined
+      }
+    })
+  })
+
+  onUnmounted(() => {
+    if (interval) {
+      clearInterval(interval)
+      interval = undefined
+    }
+  })
+
+  const result = { layerCapabilities, times, fetchLayerCapabilities }
   provide(WMS_LAYER_CAPABILITIES_KEY, result)
   return result
 }
@@ -182,7 +270,7 @@ export function useWmsMaxValuesTimeSeries(
         filter.taskRunId = _taskRunId
       }
       const response = await piProvider.getTimeSeriesGridMaxValues(filter)
-      if (response && response.timeSeries && response.timeSeries.length > 0) {
+      if (response?.timeSeries && response.timeSeries.length > 0) {
         // We will always have only one series of maximum values for a layer.
         const series = response.timeSeries[0]
         if (series.events) {
@@ -224,17 +312,17 @@ export function fetchWmsLegend(
     transformRequestFn: createTransformRequestFn(),
   })
 
-  try {
-    return wmsProvider.getLegendGraphic({
+  return wmsProvider
+    .getLegendGraphic({
       layers: layerName,
       colorscalerange: colorScaleRange,
       useDisplayUnits: useDisplayUnits,
       style: style?.name,
     })
-  } catch (error) {
-    console.error(error)
-    return Promise.reject(error)
-  }
+    .catch((error) => {
+      console.error(error)
+      throw error
+    })
 }
 
 export function useWmsCapabilities(

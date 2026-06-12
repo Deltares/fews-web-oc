@@ -23,6 +23,7 @@ export interface UseDisplayConfigReturn {
   displayConfig: Ref<DisplayConfig | null>
   displays: Ref<DisplayConfig[] | null>
   scalar1DDisplayConfig?: Ref<DisplayConfig | null>
+  fetchDisplayConfig: () => Promise<void>
 }
 
 /**
@@ -48,30 +49,31 @@ export function useDisplayConfig(
   const displays = ref<DisplayConfig[] | null>(null)
   const scalar1DDisplayConfig = ref<DisplayConfig | null>(null)
 
-  watch(
-    [() => toValue(filter), () => toValue(taskRunIds)],
-    async ([_filter, _taskRunIds]) => {
-      if (_filter === undefined) return
-      const nodeId = _filter.nodeId
-      const taskRunsFilter = {
-        ..._filter,
-        // TODO: Change this to string.join(',') when the backend is fixed
-        taskRunIds: _taskRunIds,
-        currentForecastsAlwaysVisible: true,
-      }
-      response.value = await piProvider.getTopologyActions(
-        _taskRunIds?.length ? taskRunsFilter : _filter,
-      )
+  async function fetchDisplayConfig(): Promise<void> {
+    const _filter = toValue(filter)
+    const _taskRunIds = toValue(taskRunIds)
+    if (_filter === undefined) return
+    const nodeId = _filter.nodeId
+    const taskRunsFilter = {
+      ..._filter,
+      taskRunIds: _taskRunIds,
+      currentForecastsAlwaysVisible: true,
+    }
+    response.value = await piProvider.getTopologyActions(
+      _taskRunIds?.length ? taskRunsFilter : _filter,
+    )
 
-      displays.value = actionsResponseToDisplayConfig(response.value, nodeId)
-      const scalarDisplays = actionsResponseToScalar1DDisplayConfig(
-        response.value,
-        nodeId,
-      )
-      scalar1DDisplayConfig.value = scalarDisplays[0] ?? null
-    },
-    { immediate: true },
-  )
+    displays.value = actionsResponseToDisplayConfig(response.value, nodeId)
+    const scalarDisplays = actionsResponseToScalar1DDisplayConfig(
+      response.value,
+      nodeId,
+    )
+    scalar1DDisplayConfig.value = scalarDisplays[0] ?? null
+  }
+
+  watch([() => toValue(filter), () => toValue(taskRunIds)], fetchDisplayConfig, {
+    immediate: true,
+  })
 
   const displayConfig = computed<DisplayConfig | null>((oldDisplayConfig) => {
     const _plotId = toValue(plotId)
@@ -87,6 +89,7 @@ export function useDisplayConfig(
     displays,
     displayConfig,
     scalar1DDisplayConfig,
+    fetchDisplayConfig,
   }
 }
 
@@ -110,42 +113,43 @@ export function useDisplayConfigFilter(
   const scalar1DDisplayConfig = ref<DisplayConfig | null>(null)
   const response = ref<ActionsResponse>()
 
-  watch(
-    [() => toValue(filter), () => toValue(taskRunIds)],
-    async ([_filter, _taskRunIds]) => {
-      if (_filter === undefined) return
-      if (isFilterActionsFilter(_filter)) {
-        if (!_filter.filterId) {
-          response.value = undefined
-          return
-        }
-
-        const taskRunsFilter = {
-          ..._filter,
-          taskRunIds: _taskRunIds?.join(','),
-          currentForecastsAlwaysVisible: true,
-        }
-        const _response = await piProvider.getFilterActions(
-          _taskRunIds?.length ? taskRunsFilter : _filter,
-        )
-        response.value = _response
-      } else if (isTimeSeriesGridActionsFilter(_filter)) {
-        const _response = await piProvider.getTimeSeriesGridActions(_filter)
-        // Grid actions normally do not return a period, if that is the case,
-        // we add the requested period from the filter to the config.
-        // This is done to have a default period for necessary for resetting
-        // the domain of a chart after zooming in.
-        addFilterPeriodToConfig(_response.results, _filter)
-        addIndexToKeys(_response.results)
-        response.value = _response
-      } else {
-        displayConfig.value = null
-        displays.value = null
+  async function fetchDisplayConfig(): Promise<void> {
+    const _filter = toValue(filter)
+    const _taskRunIds = toValue(taskRunIds)
+    if (_filter === undefined) return
+    if (isFilterActionsFilter(_filter)) {
+      if (!_filter.filterId) {
+        response.value = undefined
         return
       }
-    },
-    { immediate: true },
-  )
+
+      const taskRunsFilter = {
+        ..._filter,
+        taskRunIds: _taskRunIds?.join(','),
+        currentForecastsAlwaysVisible: true,
+      }
+      const _response = await piProvider.getFilterActions(
+        _taskRunIds?.length ? taskRunsFilter : _filter,
+      )
+      response.value = _response
+    } else if (isTimeSeriesGridActionsFilter(_filter)) {
+      const _response = await piProvider.getTimeSeriesGridActions(_filter)
+      // Grid actions normally do not return a period, if that is the case,
+      // we add the requested period from the filter to the config.
+      // This is done to have a default period for necessary for resetting
+      // the domain of a chart after zooming in.
+      addFilterPeriodToConfig(_response.results, _filter)
+      addIndexToKeys(_response.results)
+      response.value = _response
+    } else {
+      displayConfig.value = null
+      displays.value = null
+    }
+  }
+
+  watch([() => toValue(filter), () => toValue(taskRunIds)], fetchDisplayConfig, {
+    immediate: true,
+  })
 
   // Use a second watchEffect to not trigger a fetch on these reactive variables
   watch(response, (_reponse) => {
@@ -171,6 +175,7 @@ export function useDisplayConfigFilter(
     displays,
     displayConfig,
     scalar1DDisplayConfig,
+    fetchDisplayConfig,
   }
 
   return shell
