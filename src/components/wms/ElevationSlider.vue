@@ -1,50 +1,51 @@
 <template>
-  <vue-slider
-    class="elevation-slider"
-    :model-value="currentValue"
-    :duration="0"
-    :max="maxValue"
-    :min="minValue"
-    :marks="marks"
-    :interval="interval"
-    :keydownHook="onSliderKeydown"
-    hideLabel
-    silent
-    direction="btt"
-    tooltip="always"
-    tooltipPlacement="left"
-    height="200px"
-    ref="sliderComponent"
-    @update:model-value="onInputChange"
-  >
-    <template v-slot:tooltip>
-      <div
-        class="vue-slider-dot-tooltip-inner vue-slider-dot-tooltip-inner-left vue-slider-dot-tooltip-text"
+  <v-theme-provider :theme="isDark ? 'light' : 'dark'">
+    <div class="elevation-slider-container">
+      <span
+        v-if="props.unit"
+        class="elevation-slider__tick-label elevation-slider__unit-label"
       >
-        <input
-          ref="tooltipInput"
-          v-if="isEditing"
-          v-model.number="editValue"
-          @blur="acceptEdit"
-          @keydown.stop="onKeydown"
-          type="number"
-          class="tooltip-input body-1"
-        />
-        <span v-else class="body-1" @click="activateEdit">{{
-          Math.round(currentValue)
-        }}</span>
-        {{ props.unit }}
-      </div>
-    </template>
-  </vue-slider>
+        [{{ props.unit }}]
+      </span>
+      <v-slider
+        ref="sliderComponent"
+        class="elevation-slider"
+        :model-value="currentValue"
+        :max="maxValue"
+        :min="minValue"
+        :interval="interval"
+        :ticks="marks"
+        direction="vertical"
+        show-ticks="always"
+        :thumb-label="false"
+        thumb-color="primary"
+        thumb-size="16px"
+        height="200px"
+        hide-details
+        no-keyboard
+        elevetion="2"
+        density="compact"
+        @update:model-value="onInputChange"
+        @keydown="onSliderKeydown"
+      >
+        <template #tick-label="{ tick }">
+          <span
+            v-if="shouldShowTickLabel(tick.value)"
+            class="elevation-slider__tick-label"
+          >
+            {{ formatTickLabel(tick.value) }}
+          </span>
+        </template>
+      </v-slider>
+    </div>
+  </v-theme-provider>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch, watchEffect } from 'vue'
-import VueSlider from 'vue-slider-component'
-import 'vue-slider-component/theme/antd.css'
+import { computed, ref, watch, watchEffect } from 'vue'
 import { scaleLinear } from 'd3-scale'
 import { clamp, floatPrecision } from '@/lib/utils/math'
+import { useDark } from '@/services/useDark'
 
 interface Props {
   modelValue: number
@@ -62,70 +63,56 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const emit = defineEmits(['update:modelValue'])
 
-const currentValue = ref(props.modelValue)
-const editValue = ref(0)
+const currentValue = ref(
+  clamp(props.modelValue, props.minValue, props.maxValue),
+)
+
+const isDark = useDark()
+
 const numberOfMarks = 8
 const marks = ref<number[]>([])
-const isEditing = ref(false)
-
-const tooltipInput = ref<HTMLElement>()
-const sliderComponent = ref<typeof VueSlider>()
 
 const onInputChange = (value: number) => {
-  currentValue.value = value
-  emit('update:modelValue', value)
+  const nextValue = clamp(value, props.minValue, props.maxValue)
+  currentValue.value = nextValue
+  emit('update:modelValue', nextValue)
 }
 
-const onKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Enter') {
-    acceptEdit()
-  } else if (e.key === 'Escape') {
-    closeTooltip()
-  }
+const isRoundNumber = (value: number) => Number.isInteger(value)
+
+const shouldShowTickLabel = (value: number) => {
+  const isBoundary = value === props.minValue || value === props.maxValue
+  return !isBoundary || isRoundNumber(value)
+}
+
+const formatTickLabel = (value: number) => {
+  return isRoundNumber(value) ? value : Number(value.toFixed(2))
 }
 
 function onSliderKeydown(e: KeyboardEvent) {
-  let newValue: number | undefined = 0
+  let newValue: number | undefined
   switch (e.key) {
     case 'ArrowRight':
     case 'ArrowUp':
+      e.preventDefault()
       newValue = marks.value.find((value) => value > currentValue.value)
-      onInputChange(newValue ?? marks.value[marks.value.length - 1])
+      if (newValue !== undefined) {
+        onInputChange(newValue)
+      } else if (marks.value.length > 0) {
+        onInputChange(marks.value[marks.value.length - 1])
+      }
       break
     case 'ArrowLeft':
     case 'ArrowDown':
+      e.preventDefault()
       newValue = marks.value.findLast((value) => value < currentValue.value)
-      onInputChange(newValue ?? marks.value[0])
-      break
-    case 'Enter':
-      activateEdit()
+      if (newValue !== undefined) {
+        onInputChange(newValue)
+      } else if (marks.value.length > 0) {
+        onInputChange(marks.value[0])
+      }
       break
   }
-  return false
-}
-
-const activateEdit = () => {
-  isEditing.value = true
-  editValue.value = Math.round(currentValue.value)
-  nextTick(() => {
-    if (tooltipInput.value) {
-      tooltipInput.value.focus()
-    }
-    if (sliderComponent.value) sliderComponent.value.blur()
-  })
-}
-
-const closeTooltip = () => {
-  isEditing.value = false
-  if (sliderComponent.value) {
-    sliderComponent.value.focus({}, {})
-  }
-}
-
-const acceptEdit = () => {
-  currentValue.value = clamp(editValue.value, props.minValue, props.maxValue)
-  emit('update:modelValue', currentValue.value)
-  closeTooltip()
 }
 
 const interval = computed(() => {
@@ -136,7 +123,7 @@ const onValueChange = () => {
   currentValue.value = clamp(props.modelValue, props.minValue, props.maxValue)
 }
 
-watch(() => props.modelValue, onValueChange)
+watch(() => props.modelValue, onValueChange, { immediate: true })
 
 watchEffect(() => {
   if (props.ticks) {
@@ -154,21 +141,41 @@ watchEffect(() => {
 </script>
 
 <style scoped>
-.vue-slider-dot-tooltip-text {
+.elevation-slider__thumb-label {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
   font-family: var(--font-primary);
+  white-space: nowrap;
+}
+
+.elevation-slider-container {
+  z-index: 2000;
+  position: absolute;
+  right: 25px;
+  bottom: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .elevation-slider {
-  z-index: 2000;
-  position: absolute;
-  right: 5px;
-  bottom: 115px;
+  position: relative;
 }
 
-.tooltip-input {
-  width: 50px;
-  height: 30px;
-  margin: 0;
-  padding: 0;
+.elevation-slider__unit-label {
+  padding-left: 50px;
+  margin-bottom: 0px;
+}
+
+.elevation-slider__tick-label {
+  color: white;
+  font-family: var(--font-primary);
+  font-size: 0.9rem;
+  text-shadow:
+    -1px 0 1px rgba(0, 0, 0, 0.6),
+    1px 0 1px rgba(0, 0, 0, 0.6),
+    0 1px 1px rgba(0, 0, 0, 0.6),
+    0 -1px 1px rgba(0, 0, 0, 0.6);
 }
 </style>
