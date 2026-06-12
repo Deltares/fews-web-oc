@@ -31,7 +31,7 @@
         :latitude="latitude"
         :longitude="longitude"
         :topologyNode="topologyNode"
-        :settings="settings"
+        :settings="resolvedSettings"
         :currentTime="currentTime"
         :elevation="elevation"
         :taskRunId="taskRunId"
@@ -60,7 +60,7 @@ import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayC
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
 import { useWmsLayerCapabilities } from '@/services/useWms'
-import { type TopologyNode } from '@deltares/fews-pi-requests'
+import type { TopologyNode, Location } from '@deltares/fews-pi-requests'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import { useFilterLocations } from '@/services/useFilterLocations'
 import {
@@ -118,12 +118,18 @@ const containerRef = useTemplateRef('container')
 const boundingBox = computed(() => props.topologyNode?.boundingBox)
 const filterIds = computed(() => props.topologyNode?.filterIds ?? [])
 const filterOptions = computed(() => {
-  if (userSettings.get('ui.map.showDataAvailability')?.value === true) {
-    return {
-      showTimeSeriesInfo: true,
-    }
+  const attributeIds = [
+    props.settings.charts.timeSeriesChart.locationEnabledAttribute,
+    props.settings.charts.timeSeriesTable.locationEnabledAttribute,
+    props.settings.charts.verticalProfileChart.locationEnabledAttribute,
+    props.settings.charts.metaDataPanel.locationEnabledAttribute,
+  ].filter((id): id is string => !!id)
+  return {
+    ...(userSettings.get('ui.map.showDataAvailability')?.value === true
+      ? { showTimeSeriesInfo: true }
+      : {}),
+    ...(attributeIds.length > 0 ? { showAttributes: true, attributeIds } : {}),
   }
-  return {}
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
@@ -132,6 +138,22 @@ const { layerCapabilities, times } = useWmsLayerCapabilities(
   () => props.layerName,
   taskRunId,
 )
+
+function getDisplayEnabledFromLocationAttributes(
+  locations: Location[],
+  attributeId: string | undefined,
+  defaultValue: boolean,
+): boolean {
+  if (!attributeId) return defaultValue
+  for (const location of locations) {
+    const attr = location?.attributes?.find((a) => a.id === attributeId)
+    if (attr !== undefined) {
+      if (defaultValue && attr.value === 'false') return false
+      if (!defaultValue && attr.value === 'true') return true
+    }
+  }
+  return defaultValue
+}
 
 const groupId = computed(
   () => props.topologyNode?.gridDisplaySelection?.groupId,
@@ -142,9 +164,65 @@ const { locations, geojson } = useFilterLocations(
   filterIds,
   filterOptions,
 )
-watch(locations, (newLocations) =>
-  locationNamesStore.addLocationNames(newLocations ?? []),
-)
+watch(locations, (newLocations) => {
+  locationNamesStore.addLocationNames(newLocations ?? [])
+})
+
+const selectedLocations = computed<Location[] | undefined>(() => {
+  if (!props.locationIds) return undefined
+  const locationIdList = props.locationIds.split(',') ?? []
+  const locationList: Location[] = []
+
+  for (let locationId of locationIdList) {
+    let match = locations.value?.find((l) => l.locationId === locationId)
+    if (match) {
+      locationList.push(match)
+    }
+  }
+  return locationList
+})
+
+const resolvedSettings = computed<ComponentSettings>(() => {
+  const selected = selectedLocations.value ?? []
+  return {
+    ...props.settings,
+    charts: {
+      ...props.settings.charts,
+      timeSeriesChart: {
+        ...props.settings.charts.timeSeriesChart,
+        enabled: getDisplayEnabledFromLocationAttributes(
+          selected,
+          props.settings.charts.timeSeriesChart.locationEnabledAttribute,
+          props.settings.charts.timeSeriesChart.enabled,
+        ),
+      },
+      timeSeriesTable: {
+        ...props.settings.charts.timeSeriesTable,
+        enabled: getDisplayEnabledFromLocationAttributes(
+          selected,
+          props.settings.charts.timeSeriesTable.locationEnabledAttribute,
+          props.settings.charts.timeSeriesTable.enabled,
+        ),
+      },
+      verticalProfileChart: {
+        ...props.settings.charts.verticalProfileChart,
+        enabled: getDisplayEnabledFromLocationAttributes(
+          selected,
+          props.settings.charts.verticalProfileChart.locationEnabledAttribute,
+          props.settings.charts.verticalProfileChart.enabled,
+        ),
+      },
+      metaDataPanel: {
+        ...props.settings.charts.metaDataPanel,
+        enabled: getDisplayEnabledFromLocationAttributes(
+          selected,
+          props.settings.charts.metaDataPanel.locationEnabledAttribute,
+          props.settings.charts.metaDataPanel.enabled,
+        ),
+      },
+    },
+  }
+})
 
 const selectedCrossings = computed(() => {
   return warningLevelsStore.selectedCrossings.filter(

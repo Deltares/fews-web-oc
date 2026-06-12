@@ -58,7 +58,7 @@
       :elevation-chart-config="elevationChartDisplayconfig ?? undefined"
       :brush-chart-config="brushChartConfig ?? undefined"
       :current-time="currentTime"
-      :displayType="displayType"
+      v-model:displayType="displayType"
       :information-content="informationContent"
       :settings="settings"
     >
@@ -73,13 +73,13 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref, StyleValue, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import WindowComponent from '@/components/general/WindowComponent.vue'
 import TimeSeriesComponent from '@/components/timeseries/TimeSeriesComponent.vue'
 import TimeSeriesFileDownloadComponent from '@/components/download/TimeSeriesFileDownloadComponent.vue'
 import { DisplayConfig, DisplayType } from '@/lib/display/DisplayConfig'
 import { type ChartsSettings } from '@/lib/topology/componentSettings'
-import { computed, ref, StyleValue, watch } from 'vue'
 import { useUserSettingsStore } from '@/stores/userSettings'
 import type {
   FilterActionsFilter,
@@ -166,10 +166,11 @@ watch(
   { immediate: true },
 )
 
-const displayTypeItems = computed<DisplayTypeItem[]>(() => {
-  const noElevationCharts = !(
-    (props.elevationChartDisplayconfig?.subplots?.length ?? 0) > 0
-  )
+const displayTypeItems = ref<DisplayTypeItem[]>([])
+
+watchEffect(() => {
+  const noElevationCharts =
+    (props.elevationChartDisplayconfig?.subplots?.length ?? 0) === 0
   const elevationChartsDefined = props.elevationChartDisplayconfig !== undefined
 
   const noTooltip = props.informationContent === null
@@ -180,7 +181,7 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
     props.settings.verticalProfileChart.enabled && elevationChartsDefined
   const tableEnabled = props.settings.timeSeriesTable.enabled
   const metaDataEnabled = props.settings.metaDataPanel.enabled && tooltipDefined
-  return [
+  const enabledItems = [
     {
       icon: 'mdi-chart-line',
       label: 'Chart',
@@ -208,17 +209,13 @@ const displayTypeItems = computed<DisplayTypeItem[]>(() => {
       disabled: noTooltip,
       hidden: !metaDataEnabled,
     },
-    // Mdi icon for metatdata at the current location
-    //    {
-    //     icon: 'mdi-information',
-    //    label: 'Metadata',
   ].filter((item) => !item.hidden)
-})
-
-watch(displayTypeItems, () => {
-  const activeItems = displayTypeItems.value.map((dt) => dt.value)
-  if (!activeItems.includes(displayType.value) && activeItems.length > 0) {
-    displayType.value = activeItems[0]
+  const activeItems = enabledItems
+    .filter((item) => !item.disabled)
+    .map((dt) => dt.value)
+  if (!activeItems.includes(displayType.value)) {
+    displayType.value = activeItems[0] ?? DisplayType.Unknown
   }
+  displayTypeItems.value = enabledItems
 })
 </script>

@@ -142,7 +142,6 @@ interface Props {
   config?: DisplayConfig
   brushChartConfig?: DisplayConfig | null
   elevationChartConfig?: DisplayConfig
-  displayType: DisplayType
   currentTime?: Date
   informationContent?: string | null
   settings?: ChartsSettings
@@ -220,7 +219,10 @@ function getElevationChartMinWidth(subplotId: string): number {
   return maximizedSubplotId.value === subplotId ? 100 : 0
 }
 
-const tab = ref<DisplayType>(props.displayType)
+const tab = defineModel<DisplayType>('displayType', {
+  default: DisplayType.Unknown,
+  required: true,
+})
 
 const visibleDomain = ref<[Date, Date]>()
 const fullDomain = computed(() =>
@@ -339,13 +341,6 @@ watch(
       title: props.config.title,
       series,
     }
-  },
-)
-
-watch(
-  () => props.displayType,
-  () => {
-    tab.value = props.displayType
   },
 )
 

@@ -2,10 +2,11 @@ import { ChartConfig } from '../charts/types/ChartConfig.js'
 import { ActionPeriod, ActionRequest } from '@deltares/fews-pi-requests'
 
 export enum DisplayType {
-  TimeSeriesChart = 'TimeSeriesChart',
-  TimeSeriesTable = 'TimeSeriesTable',
-  ElevationChart = 'ElevationChart',
-  Information = 'Information',
+  TimeSeriesChart = 'timeSeriesChart',
+  TimeSeriesTable = 'timeSeriesTable',
+  ElevationChart = 'elevationChart',
+  Information = 'information',
+  Unknown = '',
 }
 
 export interface DisplayConfig {
