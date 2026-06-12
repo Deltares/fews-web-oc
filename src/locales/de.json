@@ -28,9 +28,13 @@
   },
   "timeControl": {
     "browserTime": "Browser Zeit",
+    "endDateAfterStartDate": "Enddatum muss nach Startdatum liegen",
+    "followCurrentTime": "Aktuelle Zeit verfolgen",
+    "followSpecifiedTime": "Angegebene Zeit verfolgen",
     "periodPresets": "Zeitraum-Voreinstellungen",
     "startDateBeforeEndDate": "Startdatum muss vor Enddatum liegen",
-    "endDateAfterStartDate": "Enddatum muss nach Startdtaum liegen"
+    "trackingCurrentTime": "Aktuelle Zeit wird verfolgt",
+    "trackingSpecifiedTime": "Angegebene Zeit wird verfolgt"
   },
   "thresholds": {
     "activeThresholdCrossings": "Aktive Schwellenwertüberschreitungen",

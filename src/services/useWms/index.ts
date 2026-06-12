@@ -41,6 +41,11 @@ const WMS_LAYER_CAPABILITIES_KEY: InjectionKey<UseWmsReturn> = Symbol(
 export interface UseWmsReturn {
   layerCapabilities: Ref<Layer | undefined>
   times: Ref<Date[] | undefined>
+  timesDefault: Ref<Date | undefined>
+  refresh: () => Promise<void>
+  loading: Ref<boolean>
+  startPolling: (intervalMs: number) => void
+  stopPolling: () => void
 }
 export function useWmsLayerCapabilities(
   baseUrl: string,
@@ -53,21 +58,28 @@ export function useWmsLayerCapabilities(
     return parent
   }
 
+  const loading = ref(false)
+  let pollingId: ReturnType<typeof globalThis.setInterval> | undefined
+
   const wmsUrl = `${baseUrl}/wms`
   const wmsProvider = new WMSProvider(wmsUrl, {
     transformRequestFn: createTransformRequestFn(),
   })
   const times = ref<Date[]>()
+  const timesDefault = ref<Date>()
   const layerCapabilities = ref<Layer>()
 
-  async function fetch() {
+  async function refresh() {
     const _layerName = toValue(layerName)
 
     if (_layerName === '') {
       layerCapabilities.value = undefined
+      times.value = undefined
+      timesDefault.value = undefined
       return
     }
 
+    loading.value = true
     const filter: GetCapabilitiesFilter = {
       layers: _layerName,
       importFromExternalDataSource: false,
@@ -86,6 +98,8 @@ export function useWmsLayerCapabilities(
 
       if (!capabilities.layers) {
         layerCapabilities.value = undefined
+        times.value = undefined
+        timesDefault.value = undefined
         return
       }
 
@@ -94,14 +108,48 @@ export function useWmsLayerCapabilities(
         capabilities.layers[0]
     } catch (error) {
       console.error(error)
+    } finally {
+      loading.value = false
     }
 
     times.value = getTimesFromCapabilities(layerCapabilities.value)
+    const defaultTime = layerCapabilities.value?.timesDefault
+    if (defaultTime) {
+      const parsedDefaultTime = new Date(defaultTime)
+      timesDefault.value = Number.isNaN(parsedDefaultTime.getTime())
+        ? undefined
+        : parsedDefaultTime
+    } else {
+      timesDefault.value = undefined
+    }
   }
 
-  watchEffect(fetch)
+  const startPolling = (intervalMs: number) => {
+    stopPolling()
+    pollingId = globalThis.setInterval(() => {
+      if (loading.value) return
+      void refresh()
+    }, intervalMs)
+  }
 
-  const result = { layerCapabilities, times }
+  const stopPolling = () => {
+    if (pollingId !== undefined) {
+      clearInterval(pollingId)
+      pollingId = undefined
+    }
+  }
+
+  watchEffect(refresh)
+
+  const result = {
+    layerCapabilities,
+    times,
+    timesDefault,
+    refresh,
+    loading,
+    startPolling,
+    stopPolling,
+  }
   provide(WMS_LAYER_CAPABILITIES_KEY, result)
   return result
 }
