@@ -107,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, type WatchHandle } from 'vue'
+import { computed, onUnmounted, ref, watch, type WatchHandle } from 'vue'
 import { scaleTime } from 'd3-scale'
 import { DateTime } from 'luxon'
 import { useI18n } from 'vue-i18n'
@@ -382,6 +382,10 @@ function setSpeed(speed: number) {
 function formatSpeed(speed: number) {
   return speed === defaultSpeed ? 'Normal' : `${speed}x`
 }
+
+onUnmounted(() => {
+  stopFollowTimer()
+})
 </script>
 
 <style scoped>
