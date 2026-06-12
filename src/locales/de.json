@@ -28,7 +28,7 @@
   },
   "timeControl": {
     "browserTime": "Browser Zeit",
-    "endDateAfterStartDate": "Enddatum muss nach Startdtaum liegen",
+    "endDateAfterStartDate": "Enddatum muss nach Startdatum liegen",
     "followCurrentTime": "Aktuelle Zeit verfolgen",
     "followSpecifiedTime": "Angegebene Zeit verfolgen",
     "periodPresets": "Zeitraum-Voreinstellungen",
