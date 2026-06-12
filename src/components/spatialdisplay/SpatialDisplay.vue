@@ -56,7 +56,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import {
+  computed,
+  defineAsyncComponent,
+  onMounted,
+  onUnmounted,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue'
 import SpatialDisplayComponent from '@/components/spatialdisplay/SpatialDisplayComponent.vue'
 import { useDisplay } from 'vuetify'
 import { configManager } from '@/services/application-config'
@@ -128,11 +136,8 @@ const filterOptions = computed(() => {
 })
 
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { layerCapabilities, times, timesDefault, startPolling, stopPolling } = useWmsLayerCapabilities(
-  baseUrl,
-  () => props.layerName,
-  taskRunId,
-)
+const { layerCapabilities, times, timesDefault, startPolling, stopPolling } =
+  useWmsLayerCapabilities(baseUrl, () => props.layerName, taskRunId)
 
 const groupId = computed(
   () => props.topologyNode?.gridDisplaySelection?.groupId,
