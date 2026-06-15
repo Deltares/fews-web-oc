@@ -5,9 +5,10 @@
         <component
           v-if="loaded"
           :is="PluginComponent"
-          :timeSeries="timeSeries"
           :time="selectedDateOfSlider"
           :topologyNode="topologyNode"
+          :webservicesUrl="webservicesUrl"
+          :getHeaders="getHeaders"
           @navigate="onNavigate"
         />
       </div>
@@ -22,9 +23,17 @@
       <SpatialTimeSeriesDisplay
         :current-time="selectedDateOfSlider"
         :settings="settings"
-        :filter="filter"
-        @close="closeTimeSeriesDisplay"
-      />
+        :locationIds="locationIds"
+        :topologyNode="topologyNode"
+      >
+        <template #toolbar-append>
+          <v-btn
+            size="small"
+            icon="mdi-close"
+            @click="closeTimeSeriesDisplay"
+          />
+        </template>
+      </SpatialTimeSeriesDisplay>
     </div>
   </div>
 </template>
@@ -43,24 +52,15 @@ const SpatialTimeSeriesDisplay = defineAsyncComponent(
 )
 import { DateTime } from 'luxon'
 import type { NavigateRoute } from '@/lib/router'
-import {
-  filterActionsFilter,
-  type TopologyNode,
-} from '@deltares/fews-pi-requests'
+import { type TopologyNode } from '@deltares/fews-pi-requests'
 
 import {
   type ComponentSettings,
   getDefaultSettings,
 } from '@/lib/topology/componentSettings'
-import { useUserSettingsStore } from '@/stores/userSettings'
-import { UseDisplayConfigOptions } from '@/services/useDisplayConfig'
-import {
-  useFilterTimeSeries,
-  UseTimeSeriesOptions,
-} from '@/services/useFilterTimeSeries'
-import { configManager } from '@/services/application-config'
 import { useMicroFrontEnd } from '@/composables/useMicroFrontEnd'
-import { useFilterLocations } from '@/services/useFilterLocations'
+import { authenticationManager } from '@/services/authentication/AuthenticationManager'
+import { configManager } from '@/services/application-config'
 
 const loaded = ref(false)
 const PluginComponent = shallowRef<any>(null)
@@ -83,7 +83,12 @@ interface Emits {
   navigate: [to: NavigateRoute]
 }
 const emit = defineEmits<Emits>()
-const userSettings = useUserSettingsStore()
+
+const webservicesUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+
+async function getHeaders() {
+  return await authenticationManager.getAuthorizationHeaders()
+}
 
 watchEffect(async () => {
   loaded.value = false
@@ -148,57 +153,6 @@ const showChartPanel = computed(() => {
 })
 
 const selectedDateOfSlider = ref<Date>(times.value[0])
-
-const filterIds = computed(() => topologyNode?.filterIds ?? [])
-
-const timeSeriesFilter = computed(() => {
-  console.log('Creating time series filter with filterIds:', filterIds.value)
-  return {
-    filterId: filterIds.value ? filterIds.value[0] : undefined,
-    startTime:
-      DateTime.fromJSDate(times.value[0])
-        .toUTC()
-        .toISO({ suppressMilliseconds: true }) ?? undefined,
-    endTime:
-      DateTime.fromJSDate(times.value[times.value.length - 1])
-        .toUTC()
-        .toISO({ suppressMilliseconds: true }) ?? undefined,
-  }
-})
-
-const timeSeriesOptions = ref<UseTimeSeriesOptions>({
-  thinning: false,
-})
-
-const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
-const { series } = useFilterTimeSeries(
-  baseUrl,
-  timeSeriesFilter,
-  timeSeriesOptions,
-)
-
-const timeSeries = computed(() => {
-  console.log('Time series data:', series.value)
-  return Object.values(series.value)
-})
-
-function getFilterActionsFilter(
-  locationIds: string,
-): filterActionsFilter & UseDisplayConfigOptions {
-  return {
-    locationIds: locationIds,
-    filterId: filterIds.value.length ? filterIds.value[0] : undefined,
-    useDisplayUnits: userSettings.useDisplayUnits,
-    convertDatum: userSettings.convertDatum,
-  }
-}
-
-const filter = computed(() => {
-  if (locationIds) {
-    return getFilterActionsFilter(locationIds)
-  }
-  return {}
-})
 
 function onNavigate(event: any) {
   emit('navigate', event)
