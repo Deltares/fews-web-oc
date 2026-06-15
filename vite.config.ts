@@ -35,6 +35,15 @@ const buildDate = new Date().toISOString()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
+const localhostURLs = [
+  `ws://localhost:*`,
+  `http://localhost:*`,
+  `https://localhost:*`,
+  `ws://127.0.0.1:*`,
+  `http://127.0.0.1:*`,
+  `https://127.0.0.1:*`,
+].join(' ')
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
@@ -61,11 +70,30 @@ export default defineConfig(({ mode }) => {
         'content-security-policy': [
           `default-src 'none'`,
           `manifest-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
-          `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_FONT_SRC}`,
+          [
+            `font-src`,
+            `'self'`,
+            `${env.VITE_FEWS_WEBSERVICES_URL}`,
+            `${env.DEV_CSP_FONT_SRC}`,
+            localhostURLs,
+          ].join(' '),
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_IMG_SRC}`, // FEWS webservices
           `media-src 'self' ${env.DEV_CSP_MEDIA_SRC}`,
-          `script-src 'self' blob: ${env.DEV_CSP_SCRIPT_SRC}`,
-          `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_STYLE_SRC} 'unsafe-inline'`, // vuetify
+          [
+            `script-src`,
+            `'self'`,
+            `blob:`,
+            `${env.DEV_CSP_SCRIPT_SRC}`,
+            localhostURLs,
+          ].join(' '),
+          [
+            `style-src`,
+            `'self'`,
+            `blob:`,
+            `${env.VITE_FEWS_WEBSERVICES_URL}`,
+            `${env.DEV_CSP_STYLE_SRC}`,
+            `'unsafe-inline'`, // vuetify
+          ].join(' '),
           `worker-src blob: ${env.DEV_CSP_WORKER_SRC}`, // maplibre-gl
           [
             `connect-src`,
@@ -75,6 +103,7 @@ export default defineConfig(({ mode }) => {
             `https://login.microsoftonline.com`,
             `${env.VITE_FEWS_WEBSERVICES_URL}`,
             `${env.DEV_CSP_CONNECT_SRC}`,
+            localhostURLs,
           ].join(' '), // FEWS webservices, Authentication, Basemaps
           [
             `frame-src`,
@@ -111,7 +140,7 @@ export default defineConfig(({ mode }) => {
       federation({
         name: 'delft-fews-weboc',
         shared: {
-          vue: { 
+          vue: {
             singleton: true,
           },
         },
