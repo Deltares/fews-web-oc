@@ -26,7 +26,7 @@ async function bootstrapApp(app: VueApp<Element>): Promise<void> {
     authenticationManager.init(configManager.getUserManagerSettings())
   }
 
-  const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en')
+  const locale = configManager.getWithDefault('VITE_I18N_LOCALE', 'en-GB')
   await setI18nLanguage(i18n, locale)
   app.use(i18n)
 
