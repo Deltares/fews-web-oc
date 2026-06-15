@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { federation } from '@module-federation/vite'
 
 const GIT_CANDIDATE_PATHS =
   process.platform === 'win32'
@@ -34,6 +35,15 @@ const buildDate = new Date().toISOString()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
+const localhostURLs = [
+  `ws://localhost:*`,
+  `http://localhost:*`,
+  `https://localhost:*`,
+  `ws://127.0.0.1:*`,
+  `http://127.0.0.1:*`,
+  `https://127.0.0.1:*`,
+].join(' ')
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
@@ -54,18 +64,37 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       proxy: {
-        '/FewsWebServices/': `${env.DEV_SERVER_PROXY_FEWS_PI}`,
+        '/FewsWebServices/': `${env.DEV_PROXY_FEWS_PI}`,
       },
       headers: {
         'content-security-policy': [
           `default-src 'none'`,
           `manifest-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL}`,
-          `script-src 'self' blob: ${env.DEV_CSP_MEDIA_SRC}`,
-          `font-src 'self' ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_FONT_SRC}`,
-          `style-src 'self' blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_STYLE_SRC} 'unsafe-inline'`, // vuetify
-          `worker-src blob: ${env.DEV_CSP_WORKER_SRC}`, // maplibre-gl
+          [
+            `font-src`,
+            `'self'`,
+            `${env.VITE_FEWS_WEBSERVICES_URL}`,
+            `${env.DEV_CSP_FONT_SRC}`,
+            localhostURLs,
+          ].join(' '),
           `img-src 'self' data: blob: ${env.VITE_FEWS_WEBSERVICES_URL} ${env.DEV_CSP_IMG_SRC}`, // FEWS webservices
           `media-src 'self' ${env.DEV_CSP_MEDIA_SRC}`,
+          [
+            `script-src`,
+            `'self'`,
+            `blob:`,
+            `${env.DEV_CSP_SCRIPT_SRC}`,
+            localhostURLs,
+          ].join(' '),
+          [
+            `style-src`,
+            `'self'`,
+            `blob:`,
+            `${env.VITE_FEWS_WEBSERVICES_URL}`,
+            `${env.DEV_CSP_STYLE_SRC}`,
+            `'unsafe-inline'`, // vuetify
+          ].join(' '),
+          `worker-src blob: ${env.DEV_CSP_WORKER_SRC}`, // maplibre-gl
           [
             `connect-src`,
             `'self'`,
@@ -74,6 +103,7 @@ export default defineConfig(({ mode }) => {
             `https://login.microsoftonline.com`,
             `${env.VITE_FEWS_WEBSERVICES_URL}`,
             `${env.DEV_CSP_CONNECT_SRC}`,
+            localhostURLs,
           ].join(' '), // FEWS webservices, Authentication, Basemaps
           [
             `frame-src`,
@@ -104,6 +134,14 @@ export default defineConfig(({ mode }) => {
           compilerOptions: {
             isCustomElement: (tag) => tag === 'schematic-status-display',
             // ...
+          },
+        },
+      }),
+      federation({
+        name: 'delft-fews-weboc',
+        shared: {
+          vue: {
+            singleton: true,
           },
         },
       }),
