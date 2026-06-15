@@ -1,47 +1,52 @@
 import { inject, type InjectionKey } from 'vue'
-import { WebOCMicroFrontEndsResponse } from '@deltares/fews-pi-requests'
-import { getInstance } from '@module-federation/enhanced/runtime'
+import { type WebOCMicroFrontEndsResponse } from '@deltares/fews-pi-requests'
+import { loadRemote } from '@module-federation/enhanced/runtime'
 
 interface ModuleFederationState {
-  config: {
-    microFrontEnds: Required<WebOCMicroFrontEndsResponse>['microFrontEnds']
-  }
+  config: WebOCMicroFrontEndsResponse
   options: { manifestUrl: string; baseUrl: string }
 }
 
-export const MF_REGISTRY_KEY: InjectionKey<ModuleFederationState> = Symbol('WebOCMicroFrontEnd')
+export const MF_REGISTRY_KEY: InjectionKey<ModuleFederationState> =
+  Symbol('WebOCMicroFrontEnd')
 
 export function useMicroFrontEnd() {
   const moduleFederation = inject(MF_REGISTRY_KEY)
   if (!moduleFederation) {
     throw new Error('Module Federation plugin is not installed.')
   }
+  const frontends = moduleFederation.config.microFrontEnds ?? []
 
   async function loadWebOCRemote(microFrontEndId: string) {
-    const microFrontEnd = moduleFederation!.config.microFrontEnds.find(
-      (mfe) => mfe.id === microFrontEndId,
-    )
+    const microFrontEnd = frontends.find((mfe) => mfe.id === microFrontEndId)
     if (!microFrontEnd) {
       throw new Error(`Micro Frontend with ID ${microFrontEndId} not found.`)
     }
     const entryId = `${microFrontEnd.remoteId}/${microFrontEnd.componentId}`
-    const instance = getInstance()
-    const remoteComponent = await instance.loadRemote(entryId) as any
-    return remoteComponent.default
+
+    const remoteComponent = await loadRemote(entryId)
+    if (!remoteComponent) return
+
+    if (typeof remoteComponent === 'object' && 'default' in remoteComponent) {
+      return remoteComponent.default
+    }
+
+    return remoteComponent
   }
 
   function getMicroFrontEndIcon(microFrontEndId: string): string {
-    const microFrontEnd = moduleFederation!.config.microFrontEnds.find(
-      (mfe) => mfe.id === microFrontEndId,
-    )
+    const microFrontEnd = frontends.find((mfe) => mfe.id === microFrontEndId)
     if (!microFrontEnd) {
       throw new Error(`Micro Frontend with ID ${microFrontEndId} not found.`)
     }
-    return microFrontEnd.icon || ''
+    return microFrontEnd.icon
   }
 
-  function getMicroFrontEndId(microFrontEndIds: string[], display: string): string {
-    const microFrontEnd = moduleFederation!.config.microFrontEnds.find(
+  function getMicroFrontEndId(
+    microFrontEndIds: string[],
+    display: string,
+  ): string {
+    const microFrontEnd = frontends.find(
       (mfe) => microFrontEndIds.includes(mfe.id) && mfe.display === display,
     )
     if (!microFrontEnd) {
