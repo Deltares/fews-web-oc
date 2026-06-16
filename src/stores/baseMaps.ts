@@ -10,13 +10,13 @@ interface State {
 
 export const useBaseMapsStore = defineStore('basemaps', {
   state: (): State => ({
-    baseMaps: [],
+    baseMaps: DefaultBaseMaps,
     defaultDarkId: 'dark',
     defaultLightId: 'light',
   }),
   getters: {
     allBaseMaps(): BaseMap[] {
-      return [...DefaultBaseMaps, ...this.baseMaps]
+      return this.baseMaps
     },
   },
   actions: {
@@ -31,11 +31,6 @@ export const useBaseMapsStore = defineStore('basemaps', {
 
       const baseMap = this.baseMaps.find((b) => b.id === id)
       if (baseMap) return baseMap
-
-      const defaultBaseMap = DefaultBaseMaps.find(
-        (basemap) => basemap.id === id,
-      )
-      if (defaultBaseMap) return defaultBaseMap
 
       return this.getBaseMapById('automatic', isDark)
     },
