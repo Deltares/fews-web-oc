@@ -6,38 +6,34 @@
       class="time-series-component__container"
     >
       <KeepAlive>
-        <div
-          v-for="(subplot, index) in subplots"
+        <TimeSeriesChart
+          v-for="subplot in subplots"
+          v-model:domain="visibleDomain"
           :key="subplot.id"
-          class="time-series-subplot"
-          :style="getSubplotLayoutStyle(index)"
+          class="time-series-chart-item"
           v-show="maximizedSubplotId === null || maximizedSubplotId === subplot.id"
+          :config="subplot"
+          :series="chartSeries"
+          :highlightTime="selectedDate"
+          :zoomHandler="sharedZoomHandler"
+          :panHandler="sharedPanHandler"
+          :settings="settings.timeSeriesChart"
+          :forecastLegend="config.forecastLegend"
+          :maximized="maximizedSubplotId === subplot.id"
+          @toggle-maximize="toggleMaximizeSubplot(subplot.id)"
         >
-          <TimeSeriesChart
-            v-model:domain="visibleDomain"
-            :config="subplot"
-            :series="chartSeries"
-            :highlightTime="selectedDate"
-            :zoomHandler="sharedZoomHandler"
-            :panHandler="sharedPanHandler"
-            :settings="settings.timeSeriesChart"
-            :forecastLegend="config.forecastLegend"
-            :maximized="maximizedSubplotId === subplot.id"
-            @toggle-maximize="toggleMaximizeSubplot(subplot.id)"
-          >
-            <template #brush="{ margin: chartMargin }">
-              <TimeSeriesChartBrush
-                v-if="showBrush"
-                v-model:domain="visibleDomain"
-                :fullDomain="fullBrushDomain"
-                :config="subplot"
-                :series="brushChartSeries"
-                :settings="settings.timeSeriesChart"
-                :mainChartMargin="chartMargin"
-              />
-            </template>
-          </TimeSeriesChart>
-        </div>
+          <template #brush="{ margin: chartMargin }">
+            <TimeSeriesChartBrush
+              v-if="showBrush"
+              v-model:domain="visibleDomain"
+              :fullDomain="fullBrushDomain"
+              :config="subplot"
+              :series="brushChartSeries"
+              :settings="settings.timeSeriesChart"
+              :mainChartMargin="chartMargin"
+            />
+          </template>
+        </TimeSeriesChart>
       </KeepAlive>
     </v-window-item>
     <v-window-item
@@ -316,57 +312,6 @@ const subplots = computed(() =>
   ),
 )
 
-const subplotLayoutWeights = computed(() => {
-  const weighted = subplots.value.map((subplot) => {
-    const rawWeight = subplot.series.find(
-      (series) => typeof series.plotWeight === 'number' && series.plotWeight > 0,
-    )?.plotWeight
-    const weight = rawWeight && rawWeight > 0 ? rawWeight : 1
-
-    if (weight >= 10) {
-      return {
-        minHeight: weight,
-        grow: 0,
-      }
-    }
-
-    return {
-      minHeight: 0,
-      grow: weight,
-    }
-  })
-
-  if (weighted.every((item) => item.grow === 0)) {
-    return weighted.map((item) => ({ ...item, grow: 1 }))
-  }
-
-  return weighted
-})
-
-function getSubplotLayoutStyle(index: number) {
-  if (maximizedSubplotId.value !== null) {
-    return {
-      flex: '1 1 0',
-      minHeight: '0',
-    }
-  }
-
-  const layout = subplotLayoutWeights.value[index]
-  if (!layout) {
-    return {
-      flex: '1 1 0',
-      minHeight: '0',
-    }
-  }
-
-  const shrink = layout.grow > 0 ? 1 : 0
-
-  return {
-    flex: `${layout.grow} ${shrink} ${layout.minHeight}px`,
-    minHeight: `${layout.minHeight}px`,
-  }
-}
-
 const elevationChartSubplots = computed(() => {
   if (props.elevationChartConfig) {
     return props.elevationChartConfig.subplots
@@ -455,7 +400,7 @@ watch(visibleDomain, (newDomain) => {
   overflow-y: hidden;
 }
 
-.time-series-subplot {
+.time-series-chart-item {
   display: flex;
   min-height: 0;
   width: 100%;

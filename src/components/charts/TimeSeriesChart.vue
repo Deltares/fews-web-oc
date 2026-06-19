@@ -2,22 +2,22 @@
   <div
     class="chart-with-chips"
     :class="{ 'vertical-profile': verticalProfile, maximized: maximized }"
-    :style="{
-      'flex-direction': settings.legend.placement.includes('under')
-        ? 'column-reverse'
-        : 'column',
-    }"
+    :style="getPlotContainerStyle()"
   >
-    <ChartLegend
+    <div
       v-if="
         settings.legend.placement === 'above chart' ||
         settings.legend.placement === 'under chart'
       "
-      :tags="legendTags"
-      :margin="margin"
-      :settings="settings.legend"
-      @toggle-line="toggleLine"
-    />
+      ref="legendContainer"
+    >
+      <ChartLegend
+        :tags="legendTags"
+        :margin="margin"
+        :settings="settings.legend"
+        @toggle-line="toggleLine"
+      />
+    </div>
     <ChartLegendOverlay
       v-else
       :tags="legendTags"
@@ -45,8 +45,14 @@
         </v-btn>
       </template>
     </v-tooltip>
-    <div ref="chartContainer" class="chart-container"></div>
-    <slot name="brush" :margin="margin" />
+    <div
+      ref="chartContainer"
+      class="chart-container"
+      :style="getChartLayoutStyle()"
+    ></div>
+    <div ref="brushContainer" class="brush-container">
+      <slot name="brush" :margin="margin" />
+    </div>
   </div>
 </template>
 
@@ -59,6 +65,7 @@ import {
   nextTick,
   computed,
   useTemplateRef,
+  type CSSProperties,
 } from 'vue'
 import {
   AlertLines,
@@ -134,75 +141,66 @@ const margin = ref<Margin>({})
 const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = useTemplateRef('chartContainer')
+const legendContainer = useTemplateRef('legendContainer')
+const brushContainer = useTemplateRef('brushContainer')
+const legendContainerHeight = ref(0)
+const brushContainerHeight = ref(0)
 const axisTime = ref<CrossSectionSelect<Date>>()
 let zoomedY = false
+let legendResizeObserver: ResizeObserver | undefined
+let brushResizeObserver: ResizeObserver | undefined
 
 onMounted(() => {
-  if (chartContainer.value) {
-    const axisOptions = getAxisOptions(props.config, props.settings, {
-      isVerticalProfile: props.verticalProfile,
-      locale: locale.value,
-    })
-    axis = new CartesianAxes(
-      chartContainer.value,
-      props.verticalProfile ? 800 : null,
-      props.verticalProfile ? 1200 : null,
-      axisOptions,
-    )
-    axis.addEventListener('update:x-domain', onUpdateXDomain)
+  if (!chartContainer.value) return
 
-    // Keep margin in sync with axis.margin
-    axis.margin = new Proxy(axis.margin, {
-      set: (target, property, value) => {
-        const res = Reflect.set(target, property, value)
-        margin.value = { ...target }
-        return res
-      },
-    })
-    margin.value = { ...axis.margin }
+  const axisOptions = getAxisOptions(props.config, props.settings, {
+    isVerticalProfile: props.verticalProfile,
+    locale: locale.value,
+  })
+  axis = new CartesianAxes(
+    chartContainer.value,
+    props.verticalProfile ? 800 : null,
+    props.verticalProfile ? 1200 : null,
+    axisOptions,
+  )
+  axis.addEventListener('update:x-domain', onUpdateXDomain)
 
-    const mouseOver = new MouseOver({
-      direction: props.verticalProfile
-        ? MouseOverDirection.Vertical
-        : MouseOverDirection.Horizontal,
-    })
+  // Keep margin in sync with axis.margin
+  axis.margin = new Proxy(axis.margin, {
+    set: (target, property, value) => {
+      const res = Reflect.set(target, property, value)
+      margin.value = { ...target }
+      return res
+    },
+  })
+  margin.value = { ...axis.margin }
 
-    const wheelMode = userSettingsStore.scrollZoomMode
-    const scrollModifierKey = ModifierKey.Shift
-    if (props.zoomHandler) {
-      zoom = props.zoomHandler
-      zoom.updateOptions({ wheelMode, scrollModifierKey })
-    } else {
-      zoom = new ZoomHandler(wheelMode, scrollModifierKey)
-    }
-    zoom.addEventListener('zoom', onZoom)
-    zoom.addEventListener('reset-zoom', onResetZoom)
+  const mouseOver = new MouseOver({
+    direction: props.verticalProfile
+      ? MouseOverDirection.Vertical
+      : MouseOverDirection.Horizontal,
+  })
 
-    const currentTime = new CurrentTime({ x: { axisIndex: 0 } })
-
-    thresholdLinesVisitor = new AlertLines(thresholdLines)
-
-    if (props.highlightTime !== undefined) {
-      axisTime.value = new CrossSectionSelect(
-        props.highlightTime,
-        onCrossValueChange,
-        { x: { axisIndex: 0 }, draggable: false },
-        [],
-      )
-      axis.accept(axisTime.value)
-    }
-    if (props.panHandler) {
-      axis.accept(props.panHandler)
-    }
-
-    axis.accept(thresholdLinesVisitor)
-    axis.accept(zoom)
-    axis.accept(mouseOver)
-    axis.accept(currentTime)
-    resize()
-    onValueChange()
-    globalThis.addEventListener('resize', resize)
+  const wheelMode = userSettingsStore.scrollZoomMode
+  const scrollModifierKey = ModifierKey.Shift
+  if (props.zoomHandler) {
+    zoom = props.zoomHandler
+    zoom.updateOptions({ wheelMode, scrollModifierKey })
+  } else {
+    zoom = new ZoomHandler(wheelMode, scrollModifierKey)
   }
+  zoom.addEventListener('zoom', onZoom)
+  zoom.addEventListener('reset-zoom', onResetZoom)
+
+  const currentTime = new CurrentTime({ x: { axisIndex: 0 } })
+
+  thresholdLinesVisitor = new AlertLines(thresholdLines)
+  attachAxisVisitors(mouseOver, currentTime)
+  resize()
+  onValueChange()
+  setupLegendMeasurement()
+  setupBrushMeasurement()
+  globalThis.addEventListener('resize', resize)
 })
 
 watch(
@@ -221,6 +219,13 @@ watch(
   () => props.highlightTime,
   (newValue) => {
     if (newValue !== undefined) onCrossValueChange(newValue)
+  },
+)
+
+watch(
+  () => props.settings.legend.placement,
+  () => {
+    setupLegendMeasurement()
   },
 )
 
@@ -344,6 +349,10 @@ const beforeDestroy = () => {
   globalThis.removeEventListener('resize', resize)
   zoom.removeEventListener('zoom', onZoom)
   zoom.removeEventListener('reset-zoom', onResetZoom)
+  legendResizeObserver?.disconnect()
+  legendResizeObserver = undefined
+  brushResizeObserver?.disconnect()
+  brushResizeObserver = undefined
 }
 
 watch(domain, (newDomain) => {
@@ -368,6 +377,96 @@ function getSvgElement() {
 
 function axisAccept(visitor: Visitor) {
   axis?.accept(visitor)
+}
+
+function getPlotWeight(): number {
+  const rawWeight = props.config.series.find(
+    (series) => typeof series.plotWeight === 'number' && series.plotWeight > 0,
+  )?.plotWeight
+  return rawWeight && rawWeight > 0 ? rawWeight : 1
+}
+
+function updateBrushContainerHeight() {
+  brushContainerHeight.value = brushContainer.value?.offsetHeight ?? 0
+}
+
+function attachAxisVisitors(mouseOver: MouseOver, currentTime: CurrentTime) {
+  if (props.highlightTime !== undefined) {
+    axisTime.value = new CrossSectionSelect(
+      props.highlightTime,
+      onCrossValueChange,
+      { x: { axisIndex: 0 }, draggable: false },
+      [],
+    )
+    axis.accept(axisTime.value)
+  }
+
+  if (props.panHandler) {
+    axis.accept(props.panHandler)
+  }
+
+  axis.accept(thresholdLinesVisitor)
+  axis.accept(zoom)
+  axis.accept(mouseOver)
+  axis.accept(currentTime)
+}
+
+function setupBrushMeasurement() {
+  updateBrushContainerHeight()
+  if (!brushContainer.value) return
+
+  brushResizeObserver = new ResizeObserver(() => {
+    updateBrushContainerHeight()
+  })
+  brushResizeObserver.observe(brushContainer.value)
+}
+
+function updateLegendContainerHeight() {
+  legendContainerHeight.value = legendContainer.value?.offsetHeight ?? 0
+}
+
+function setupLegendMeasurement() {
+  nextTick(() => {
+    legendResizeObserver?.disconnect()
+    legendResizeObserver = undefined
+
+    if (legendContainer.value) {
+      updateLegendContainerHeight()
+      legendResizeObserver = new ResizeObserver(() => {
+        updateLegendContainerHeight()
+      })
+      legendResizeObserver.observe(legendContainer.value)
+      return
+    }
+
+    legendContainerHeight.value = 0
+  })
+}
+
+function getPlotContainerStyle(): CSSProperties {
+  return {
+    flexDirection: props.settings.legend.placement.includes('under')
+      ? 'column-reverse'
+      : 'column',
+    flexBasis: `${getPlotContainerBasis()}px`,
+    flexGrow: getPlotWeight(),
+    flexShrink: 0,
+  }
+}
+
+
+function getPlotContainerBasis() {
+  const flexbasis =
+    25 + 40 + brushContainerHeight.value + legendContainerHeight.value // axis.top + axis.bottom + brush slot height + legend height
+  return flexbasis
+}
+
+function getChartLayoutStyle() {
+  const grow = getPlotWeight()
+  const flexbasis = 25 + 40 // axis.top + axis.bottom
+  return {
+    flex: `${grow} 0 ${flexbasis}px`,
+  }
 }
 </script>
 
