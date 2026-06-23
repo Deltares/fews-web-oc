@@ -3,15 +3,16 @@
     <v-window-item
       v-if="settings.timeSeriesChart.enabled"
       :value="DisplayType.TimeSeriesChart"
-      class="time-series-component__container"
+      class="d-flex flex-column h-100 overflow-y-auto"
     >
       <KeepAlive>
         <TimeSeriesChart
           v-for="subplot in subplots"
           v-model:domain="visibleDomain"
           :key="subplot.id"
-          class="time-series-chart-item"
-          v-show="maximizedSubplotId === null || maximizedSubplotId === subplot.id"
+          v-show="
+            maximizedSubplotId === null || maximizedSubplotId === subplot.id
+          "
           :config="subplot"
           :series="chartSeries"
           :highlightTime="selectedDate"
@@ -39,7 +40,7 @@
     <v-window-item
       v-if="settings.verticalProfileChart.enabled"
       :value="DisplayType.ElevationChart"
-      class="elevation-chart-component__container scroll"
+      class="d-flex flex-column h-100 overflow-y-auto"
     >
       <KeepAlive>
         <TimeSeriesChart
@@ -63,7 +64,7 @@
     <v-window-item
       v-if="settings.timeSeriesTable.enabled"
       :value="DisplayType.TimeSeriesTable"
-      class="time-series-component__container max-height"
+      class="d-flex flex-column h-100 overflow-y-hidden"
     >
       <TimeSeriesTable
         :config="tableConfig"
@@ -390,34 +391,3 @@ watch(visibleDomain, (newDomain) => {
   debouncedRefetchChartTimeSeries(newDomain)
 })
 </script>
-
-<style scoped>
-.time-series-component__container {
-  display: flex;
-  flex: 1 1 100%;
-  width: 100%;
-  flex-direction: column;
-  overflow-y: hidden;
-}
-
-.time-series-chart-item {
-  display: flex;
-  min-height: 0;
-  width: 100%;
-}
-
-.elevation-chart-component__container {
-  display: flex;
-  flex: 1 1 100%;
-  flex-direction: row;
-  overflow-x: auto;
-}
-
-.scroll {
-  overflow-y: auto;
-}
-
-.max-height {
-  height: 100%;
-}
-</style>
