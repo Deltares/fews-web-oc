@@ -25,7 +25,7 @@ export function timeSeriesDisplayToChartConfig(
 ): ChartConfig {
   const xAxis = subplot.xAxis ? xAxisFromPlotItemXAxis(subplot.xAxis) : []
   const subplotId = subplot.items.map((plot) => plot.request).toString()
-  const plotWeight = subplot.items[0].plotWeight
+  const plotWeight = subplot.items?.[0]?.plotWeight
 
   const config: ChartConfig = {
     id: subplotId,
