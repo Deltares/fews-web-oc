@@ -153,7 +153,7 @@ const tableData = computed(() => {
 function getIconForStatus(status: string | undefined) {
   return status && isTaskStatus(status)
     ? getIconForTaskStatus(status)
-    : 'mdi-bell-outline'
+    : 'mdi-help-circle-outline'
 }
 
 function getStringForStatus(status: string | undefined) {

@@ -18,7 +18,8 @@ The following settings can be provided:
 |  `VITE_APP_MANIFEST_URL`            | Use a custom PWA manifest. The manifest file and referenced assets must be placed in the web resources of the FEWS config. |  
 | `VITE_LOGIN_STYLESHEET_URL`         | Use a custom stylesheet for the Login screen. The stylesheet and referenced assets must be placed in the web resources of the FEWS config.  |
 | `VITE_LOGIN_BUTTON_PROPS` | An object or JSON string containing properties that are passed to the login button. See https://vuetifyjs.com/en/api/v-btn/#props for which property can be set. Helpful properties are `"prependIcon"`, `"text"`, `"appendIcon"` and `"color"`. |
-
+| `VITE_FEWS_WEBSERVICES_MAX_URL_LENGTH` | Maximum URL length (number) for FEWS WebServices requests. When exceeded, the request is split into multiple requests. If not set, no limit is applied, so very long URLs may fail (for example with HTTP 414 URI Too Long). |
+| `VITE_FEWS_WEBSERVICES_EXPLODE_QUERY_PARAMETERS` | Controls how array query parameters are serialized (boolean). `true` uses repeated keys (for example `taskRunIds=id1&taskRunIds=id2`), `false` uses comma-separated values (for example `taskRunIds=id1,id2`). If not set, the default is `true`. |
 
 ## Progressive Web Application Manifest File
 
