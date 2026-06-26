@@ -150,7 +150,6 @@ let brushResizeObserver: ResizeObserver | undefined
 onMounted(() => {
   if (!chartContainer.value) return
 
-
   const axisOptions = getAxisOptions(props.config, props.settings, {
     isVerticalProfile: props.verticalProfile,
     locale: locale.value,

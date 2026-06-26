@@ -33,7 +33,7 @@ export function timeSeriesDisplayToChartConfig(
     xAxis,
     yAxis: yAxisFromSubplot(subplot),
     series: [],
-    plotWeight
+    plotWeight,
   }
 
   const chartSeriesArray = generateChartSeriesArray(subplot, config)
