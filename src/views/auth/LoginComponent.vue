@@ -61,7 +61,9 @@ onMounted((): void => {
 })
 
 watch(user, () => {
-  if (user.value !== null) {
+  if (user.value === null) {
+    requiresLogin.value = true
+  } else {
     requiresLogin.value = false
     if (user.value.profile?.name !== undefined) {
       name.value = user.value.profile.name
@@ -78,8 +80,6 @@ watch(user, () => {
         ? (user.value.profile.roles as string[])
         : []
     }
-  } else {
-    requiresLogin.value = true
   }
 })
 

@@ -36,9 +36,11 @@ export function filterLog(
       if (levels.length > 0 && !levels.includes(log.level)) return false
       break
     case 'manual':
-      // In case of manual logs, ERROR is CRITICAL
-      const level = log.level === 'ERROR' ? 'CRITICAL' : log.level
-      if (levels.length > 0 && !levels.includes(level)) return false
+      {
+        // In case of manual logs, ERROR is CRITICAL
+        const level = log.level === 'ERROR' ? 'CRITICAL' : log.level
+        if (levels.length > 0 && !levels.includes(level)) return false
+      }
       break
   }
 
@@ -64,14 +66,7 @@ export function filterLog(
 }
 
 export function logToColor(log: LogMessage) {
-  switch (log.level) {
-    case 'INFO':
-      return 'info'
-    case 'WARN':
-      return 'warning'
-    case 'ERROR':
-      return 'error'
-  }
+  return levelToColor(log.level)
 }
 
 export function logToUserIcon(log: LogMessage) {
