@@ -1,23 +1,20 @@
 <template>
   <div
-    class="chart-with-chips"
+    class="chart-with-chips d-flex flex-column"
     :class="{ 'vertical-profile': verticalProfile, maximized: maximized }"
     :style="getPlotContainerStyle()"
   >
-    <div
+    <ChartLegend
       v-if="
         settings.legend.placement === 'above chart' ||
         settings.legend.placement === 'under chart'
       "
+      :tags="legendTags"
+      :margin="margin"
+      :settings="settings.legend"
+      @toggle-line="toggleLine"
       ref="legendContainer"
-    >
-      <ChartLegend
-        :tags="legendTags"
-        :margin="margin"
-        :settings="settings.legend"
-        @toggle-line="toggleLine"
-      />
-    </div>
+    />
     <ChartLegendOverlay
       v-else
       :tags="legendTags"
@@ -141,7 +138,7 @@ const margin = ref<Margin>({})
 const legendTags = ref<Tag[]>([])
 const showThresholds = ref(true)
 const chartContainer = useTemplateRef('chartContainer')
-const legendContainer = useTemplateRef('legendContainer')
+const legendContainer = useTemplateRef<HTMLDivElement>('legendContainer')
 const brushContainer = useTemplateRef('brushContainer')
 const legendContainerHeight = ref(0)
 const brushContainerHeight = ref(0)
@@ -152,6 +149,8 @@ let brushResizeObserver: ResizeObserver | undefined
 
 onMounted(() => {
   if (!chartContainer.value) return
+
+  console.log('TimeSeriesChart mounted config:', props.config)
 
   const axisOptions = getAxisOptions(props.config, props.settings, {
     isVerticalProfile: props.verticalProfile,
@@ -379,12 +378,9 @@ function axisAccept(visitor: Visitor) {
   axis?.accept(visitor)
 }
 
-function getPlotWeight(): number {
-  const rawWeight = props.config.series.find(
-    (series) => typeof series.plotWeight === 'number' && series.plotWeight > 0,
-  )?.plotWeight
-  return rawWeight && rawWeight > 0 ? rawWeight : 1
-}
+const plotWeight = computed(() => {
+  return props.config.plotWeight
+})
 
 function updateBrushContainerHeight() {
   brushContainerHeight.value = brushContainer.value?.offsetHeight ?? 0
@@ -444,16 +440,24 @@ function setupLegendMeasurement() {
 }
 
 function getPlotContainerStyle(): CSSProperties {
+  if (plotWeight.value === undefined) {
+    return {
+      flexDirection: props.settings.legend.placement.includes('under')
+        ? 'column-reverse'
+        : 'column',
+    }
+  }
+  const plotContainerBasis = getPlotContainerBasis()
   return {
     flexDirection: props.settings.legend.placement.includes('under')
       ? 'column-reverse'
       : 'column',
-    flexBasis: `${getPlotContainerBasis()}px`,
-    flexGrow: getPlotWeight(),
+    flexBasis: `${plotContainerBasis}px`,
+    flexGrow: plotWeight.value,
+    minHeight: `${plotContainerBasis + plotWeight.value}px`,
     flexShrink: 0,
   }
 }
-
 
 function getPlotContainerBasis() {
   const flexbasis =
@@ -462,7 +466,12 @@ function getPlotContainerBasis() {
 }
 
 function getChartLayoutStyle() {
-  const grow = getPlotWeight()
+  const grow = plotWeight.value
+  if (grow === undefined) {
+    return {
+      flex: '1 1 332px',
+    }
+  }
   const flexbasis = 25 + 40 // axis.top + axis.bottom
   return {
     flex: `${grow} 0 ${flexbasis}px`,
