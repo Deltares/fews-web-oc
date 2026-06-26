@@ -9,4 +9,5 @@ export interface ChartConfig {
   radialAxis?: AxisOptions[]
   angularAxis?: AxisOptions[]
   series: ChartSeries[]
+  plotWeight?: number
 }

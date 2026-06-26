@@ -1,65 +1,67 @@
 <template>
   <!-- Fills up space as v-sheet is absolutely positioned -->
-  <div class="flex-0-0" :style="{ height: heightStyle }" />
-  <div class="chart-controls-container">
-    <v-sheet
-      v-click-outside="onOutsideClick"
-      class="chart-controls position-relative semi-transparent"
-      :style="chartControlsStyle"
-      :elevation="expanded ? 1 : 0"
-    >
-      <div
-        ref="chartLegendContainer"
-        :style="chartLegendContainerStyle"
-        class="chart-legend-container w-100"
+  <div class="position-relative">
+    <div class="flex-0-0" :style="{ height: heightStyle }" />
+    <div class="chart-controls-container">
+      <v-sheet
+        v-click-outside="onOutsideClick"
+        class="chart-controls position-relative semi-transparent"
+        :style="chartControlsStyle"
+        :elevation="expanded ? 1 : 0"
       >
-        <v-chip-group
-          ref="chartLegend"
-          class="chart-legend"
-          :class="{ 'require-expand': requiresExpand }"
-          multiple
-          :column="true"
-          selected-class=""
+        <div
+          ref="chartLegendContainer"
+          :style="chartLegendContainerStyle"
+          class="chart-legend-container w-100"
         >
-          <v-chip
-            v-for="tag in tags"
-            :key="tag.id"
-            label
-            size="small"
-            role="button"
-            density="default"
-            :variant="tag.disabled ? 'text' : 'tonal'"
-            @click="toggleLine(tag)"
-            :disabled="!tag.interactive"
+          <v-chip-group
+            ref="chartLegend"
+            class="chart-legend"
+            :class="{ 'require-expand': requiresExpand }"
+            multiple
+            :column="true"
+            selected-class=""
           >
-            <div
-              v-if="tag.legendSvg"
-              class="legend-symbol me-2"
-              :class="{ hidden: tag.disabled }"
-              v-html="tag.legendSvg"
-            />
+            <v-chip
+              v-for="tag in tags"
+              :key="tag.id"
+              label
+              size="small"
+              role="button"
+              density="default"
+              :variant="tag.disabled ? 'text' : 'tonal'"
+              @click="toggleLine(tag)"
+              :disabled="!tag.interactive"
+            >
+              <div
+                v-if="tag.legendSvg"
+                class="legend-symbol me-2"
+                :class="{ hidden: tag.disabled }"
+                v-html="tag.legendSvg"
+              />
 
-            <span class="text-truncate">{{ tag.name }}</span>
+              <span class="text-truncate">{{ tag.name }}</span>
 
-            <v-tooltip
-              v-if="tag.tooltip"
-              activator="parent"
-              location="top"
-              :text="tag.tooltip"
-            />
-          </v-chip>
-        </v-chip-group>
-      </div>
-      <v-btn
-        v-show="requiresExpand"
-        :icon="expandIcon"
-        size="small"
-        variant="plain"
-        class="position-absolute"
-        :style="expandButtonStyle"
-        @click="onToggleExpand()"
-      />
-    </v-sheet>
+              <v-tooltip
+                v-if="tag.tooltip"
+                activator="parent"
+                location="top"
+                :text="tag.tooltip"
+              />
+            </v-chip>
+          </v-chip-group>
+        </div>
+        <v-btn
+          v-show="requiresExpand"
+          :icon="expandIcon"
+          size="small"
+          variant="plain"
+          class="position-absolute"
+          :style="expandButtonStyle"
+          @click="onToggleExpand()"
+        />
+      </v-sheet>
+    </div>
   </div>
 </template>
 
@@ -205,6 +207,7 @@ function onToggleExpand() {
 .chart-controls-container {
   display: grid;
   position: absolute;
+  top: 0px;
   flex: 0 0 auto;
   width: 100%;
   height: 100%;

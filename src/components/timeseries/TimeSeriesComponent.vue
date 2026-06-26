@@ -3,44 +3,44 @@
     <v-window-item
       v-if="settings.timeSeriesChart.enabled"
       :value="DisplayType.TimeSeriesChart"
-      class="time-series-component__container scroll"
+      class="d-flex flex-column h-100 overflow-y-auto"
     >
       <KeepAlive>
-        <template v-for="subplot in subplots" :key="subplot.id">
-          <TimeSeriesChart
-            v-show="
-              maximizedSubplotId === null || maximizedSubplotId === subplot.id
-            "
-            v-model:domain="visibleDomain"
-            :config="subplot"
-            :series="chartSeries"
-            :highlightTime="selectedDate"
-            :zoomHandler="sharedZoomHandler"
-            :panHandler="sharedPanHandler"
-            :settings="settings.timeSeriesChart"
-            :forecastLegend="config.forecastLegend"
-            :maximized="maximizedSubplotId === subplot.id"
-            @toggle-maximize="toggleMaximizeSubplot(subplot.id)"
-          >
-            <template #brush="{ margin: chartMargin }">
-              <TimeSeriesChartBrush
-                v-if="showBrush"
-                v-model:domain="visibleDomain"
-                :fullDomain="fullBrushDomain"
-                :config="subplot"
-                :series="brushChartSeries"
-                :settings="settings.timeSeriesChart"
-                :mainChartMargin="chartMargin"
-              />
-            </template>
-          </TimeSeriesChart>
-        </template>
+        <TimeSeriesChart
+          v-for="subplot in subplots"
+          v-model:domain="visibleDomain"
+          :key="subplot.id"
+          v-show="
+            maximizedSubplotId === null || maximizedSubplotId === subplot.id
+          "
+          :config="subplot"
+          :series="chartSeries"
+          :highlightTime="selectedDate"
+          :zoomHandler="sharedZoomHandler"
+          :panHandler="sharedPanHandler"
+          :settings="settings.timeSeriesChart"
+          :forecastLegend="config.forecastLegend"
+          :maximized="maximizedSubplotId === subplot.id"
+          @toggle-maximize="toggleMaximizeSubplot(subplot.id)"
+        >
+          <template #brush="{ margin: chartMargin }">
+            <TimeSeriesChartBrush
+              v-if="showBrush"
+              v-model:domain="visibleDomain"
+              :fullDomain="fullBrushDomain"
+              :config="subplot"
+              :series="brushChartSeries"
+              :settings="settings.timeSeriesChart"
+              :mainChartMargin="chartMargin"
+            />
+          </template>
+        </TimeSeriesChart>
       </KeepAlive>
     </v-window-item>
     <v-window-item
       v-if="settings.verticalProfileChart.enabled"
       :value="DisplayType.ElevationChart"
-      class="elevation-chart-component__container scroll"
+      class="d-flex flex-row h-100 overflow-x-auto"
     >
       <KeepAlive>
         <TimeSeriesChart
@@ -64,7 +64,7 @@
     <v-window-item
       v-if="settings.timeSeriesTable.enabled"
       :value="DisplayType.TimeSeriesTable"
-      class="time-series-component__container max-height"
+      class="d-flex flex-column h-100 overflow-y-hidden"
     >
       <TimeSeriesTable
         :config="tableConfig"
@@ -391,27 +391,3 @@ watch(visibleDomain, (newDomain) => {
   debouncedRefetchChartTimeSeries(newDomain)
 })
 </script>
-
-<style scoped>
-.time-series-component__container {
-  display: flex;
-  flex: 1 1 100%;
-  width: 100%;
-  flex-direction: column;
-}
-
-.elevation-chart-component__container {
-  display: flex;
-  flex: 1 1 100%;
-  flex-direction: row;
-  overflow-x: auto;
-}
-
-.scroll {
-  overflow-y: auto;
-}
-
-.max-height {
-  height: 100%;
-}
-</style>

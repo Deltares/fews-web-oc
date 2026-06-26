@@ -93,8 +93,8 @@ watch(
 .brush-container {
   display: flex;
   position: relative;
-  flex: 1 1 65px;
-  max-height: 65px;
+  flex: 0 0 60px;
+  max-height: 60px;
   width: 100%;
   fill: currentColor;
   margin: 0px auto;
