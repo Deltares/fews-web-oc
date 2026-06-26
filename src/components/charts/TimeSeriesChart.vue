@@ -150,7 +150,6 @@ let brushResizeObserver: ResizeObserver | undefined
 onMounted(() => {
   if (!chartContainer.value) return
 
-  console.log('TimeSeriesChart mounted config:', props.config)
 
   const axisOptions = getAxisOptions(props.config, props.settings, {
     isVerticalProfile: props.verticalProfile,
