@@ -25,6 +25,7 @@ export function timeSeriesDisplayToChartConfig(
 ): ChartConfig {
   const xAxis = subplot.xAxis ? xAxisFromPlotItemXAxis(subplot.xAxis) : []
   const subplotId = subplot.items.map((plot) => plot.request).toString()
+  const plotWeight = subplot.items[0].plotWeight
 
   const config: ChartConfig = {
     id: subplotId,
@@ -32,6 +33,7 @@ export function timeSeriesDisplayToChartConfig(
     xAxis,
     yAxis: yAxisFromSubplot(subplot),
     series: [],
+    plotWeight
   }
 
   const chartSeriesArray = generateChartSeriesArray(subplot, config)
@@ -158,7 +160,6 @@ function getChartSeries(
     visibleInLegend: items[0].visibleInLegend,
     visibleInPlot: items[0].visibleInPlot,
     visibleInTable: items[0].visibleInTable,
-    plotWeight: items[0].plotWeight,
     locationId: items[0].locationId,
     classBreaks: items[0].classBreaks,
     barMargin: items[0].barMargin,
