@@ -16,7 +16,7 @@ export class ApplicationConfigManager {
   get<T extends keyof ApplicationConfig>(name: T): ApplicationConfig[T] {
     const configValue = this._config[name]
     if (configValue !== undefined) return configValue
-    const envValue = import.meta.env[name]
+    const envValue = import.meta.env[name] as ApplicationConfig[T]
     return envValue
   }
 
@@ -26,7 +26,7 @@ export class ApplicationConfigManager {
   ): ApplicationConfig[T] {
     const configValue = this._config[name]
     if (configValue !== undefined) return configValue
-    const envValue = import.meta.env[name]
+    const envValue = import.meta.env[name] as ApplicationConfig[T] | undefined
     if (envValue !== undefined) {
       return envValue
     }
@@ -40,12 +40,10 @@ export class ApplicationConfigManager {
   getUserManagerSettings(): UserManagerSettings {
     return {
       ...getOidcSettings(),
-      ...{
-        authority: this.get('VITE_AUTH_AUTHORITY'),
-        client_id: this.get('VITE_AUTH_ID'),
-        scope: this.get('VITE_AUTH_SCOPE'),
-        metadataUrl: this.get('VITE_AUTH_METADATA_URL'),
-      },
+      authority: this.get('VITE_AUTH_AUTHORITY'),
+      client_id: this.get('VITE_AUTH_ID'),
+      scope: this.get('VITE_AUTH_SCOPE'),
+      metadataUrl: this.get('VITE_AUTH_METADATA_URL'),
     }
   }
 }
