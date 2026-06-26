@@ -460,9 +460,9 @@ function getPlotContainerStyle(): CSSProperties {
 }
 
 function getPlotContainerBasis() {
-  const flexbasis =
-    25 + 40 + brushContainerHeight.value + legendContainerHeight.value // axis.top + axis.bottom + brush slot height + legend height
-  return flexbasis
+  const top = margin.value.top ?? 0
+  const bottom = margin.value.bottom ?? 0
+  return top + bottom + brushContainerHeight.value + legendContainerHeight.value
 }
 
 function getChartLayoutStyle() {
