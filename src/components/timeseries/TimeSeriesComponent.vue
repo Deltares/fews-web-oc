@@ -40,7 +40,7 @@
     <v-window-item
       v-if="settings.verticalProfileChart.enabled"
       :value="DisplayType.ElevationChart"
-      class="d-flex flex-column h-100 overflow-y-auto"
+      class="d-flex flex-row h-100 overflow-x-auto"
     >
       <KeepAlive>
         <TimeSeriesChart
