@@ -9,7 +9,7 @@
         <v-icon
           :icon="levelToIcon(log.level)"
           :color="levelToColor(log.level)"
-          size="medium"
+          size="small"
         />
       </template>
       <div class="d-flex flex-column log_item__content">
