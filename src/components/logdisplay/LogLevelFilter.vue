@@ -1,15 +1,30 @@
 <template>
-  <BaseTasksFilterControl
+  <v-btn-toggle
     v-model="selected"
-    :items="logLevelsItems"
-    label="Log Levels"
-    sortItems
-  />
+    variant="tonal"
+    density="compact"
+    mandatory
+    multiple
+  >
+    <v-btn
+      v-for="item in logLevelsItems"
+      :key="item.id"
+      :value="item.value"
+      density="compact"
+      :color="item.color"
+      :prepend-icon="item.icon"
+      class="text-label-large"
+      height="32px"
+      size="small"
+    >
+      {{ item.title }}
+    </v-btn>
+  </v-btn-toggle>
 </template>
+
 <script setup lang="ts">
-import BaseTasksFilterControl from '@/components/tasks/BaseTaskFilterControl.vue'
 import { computed } from 'vue'
-import { levelToIcon, logLevels } from '@/lib/log'
+import { levelToIcon, levelToColor, levelToTitle, logLevels } from '@/lib/log'
 
 const selected = defineModel<string[]>({ required: true })
 
@@ -18,7 +33,8 @@ const logLevelsItems = computed(() =>
     return {
       id: logLevel,
       icon: levelToIcon(logLevel),
-      title: logLevel,
+      title: levelToTitle(logLevel),
+      color: levelToColor(logLevel),
       value: logLevel,
     }
   }),

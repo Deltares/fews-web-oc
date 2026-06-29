@@ -1,7 +1,6 @@
 <template>
   <SidePanelContent :title="t('sidePanel.logDisplay')" @close="emit('close')">
     <div class="d-flex align-center pa-2 ga-2">
-      <LogLevelFilter v-model="selectedLevels" />
       <v-spacer />
       <PeriodFilterControl v-model="period" />
     </div>
@@ -17,6 +16,9 @@
         class="px-2 pb-1"
         density="compact"
       />
+    </div>
+    <div class="d-flex py-2 mx-auto">
+      <LogLevelFilter v-model="selectedLevels" />
     </div>
     <v-virtual-scroll
       class="d-flex flex-1-1 flex-column h-100 px-1 pb-1"
