@@ -27,34 +27,21 @@
     >
       <template #default="{ item }">
         <DateSeparator v-if="item.type === 'dateSeparator'" :date="item.date" />
-        <template v-else-if="item.type === 'logItem'">
-          <TaskRunItem
-            :entryTime="item.logs[0].entryTime"
-            :taskRun="taskRunForLog(item.logs[0])"
+          <LogItem
+            v-else-if="item.type === 'logItem'"
             :logs="item.logs"
-            :expanded="true"
-            class="mt-2"
-            :ripple="false"
-          >
-            <template
-              #expansion="{
-                expanded: slotExpanded,
-                logs: slotLogs,
-                taskRun: slotTaskRun,
-              }"
-            >
-              <LogDetails
-                v-if="slotExpanded"
-                :logs="slotLogs"
-                :taskRun="slotTaskRun"
-                :disseminations="disseminations"
-                :disseminationStatus="disseminationStatus"
-                :userName="preferredUsername"
-                v-bind="$attrs"
-              />
-            </template>
-          </TaskRunItem>
-        </template>
+            :taskRuns="taskRuns"
+            :disseminations="disseminations"
+            :disseminationStatus="disseminationStatus"
+            :userName="preferredUsername"
+            :noteGroup="noteGroup"
+            v-model:expanded="expandedItems[item.logs[0].taskRunId]"
+            @disseminate-log="disseminateLog"
+            @delete-log="deleteLog"
+            @edit-log="editLog"
+            @acknowledge-log="acknowledgeLog"
+            @unacknowledge-log="unacknowledgeLog"
+          />
       </template>
     </v-virtual-scroll>
     <div class="pa-2">
@@ -90,6 +77,10 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import {
+  ForecasterNoteKeysRequest,
+  ForecasterNoteRequest,
+  LogDisplayLogsActionRequest,
+  PiWebserviceProvider,
   type LogDisplayDisseminationAction,
   type TopologyNode,
 } from '@deltares/fews-pi-requests'
@@ -103,8 +94,7 @@ import {
 } from '@/lib/log/types'
 
 import SidePanelContent from './SidePanelContent.vue'
-import TaskRunItem from '@/components/logdisplay/TaskRunItem.vue'
-import LogDetails from '@/components/logdisplay/LogDetails.vue'
+import LogItem from '@/components/logdisplay/LogItem.vue'
 import LogLevelFilter from '@/components/logdisplay/LogLevelFilter.vue'
 import DateSeparator from '@/components/logdisplay/DateSeparator.vue'
 import PeriodFilterControl from '@/components/tasks/PeriodFilterControl.vue'
@@ -113,7 +103,7 @@ import NewLogMessage from '@/components/logdisplay/NewLogMessage.vue'
 import { refDebounced } from '@vueuse/core'
 import { configManager } from '@/services/application-config'
 import { useLogDisplayLogs } from '@/services/useLogDisplayLogs'
-import { filterLog, getManualFilters, getSystemFilters } from '@/lib/log/utils'
+import { filterLog, getLogDisseminationKey, getManualFilters, getSystemFilters } from '@/lib/log/utils'
 import { convertJSDateToFewsPiParameter } from '@/lib/date'
 import { useLogDisplay } from '@/services/useLogDisplay'
 import { useCurrentUser } from '@/services/useCurrentUser'
@@ -121,6 +111,7 @@ import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { useTaskRuns } from '@/services/useTaskRuns'
 import { RelativePeriod } from '@/lib/period/types.ts'
 import { useNoteGroup } from '@/services/useNoteGroup/index.ts'
+import { createTransformRequestFn } from '@/lib/requests/transformRequest.ts'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -158,6 +149,7 @@ const search = ref<string>()
 const maxCount = ref<number>(20000)
 const selectedLevels = ref<LogLevel[]>([...logLevels])
 const selectedLogTypes = ref<LogType | null>(null)
+const expandedItems = ref<Record<string, boolean>>({})
 
 const requestDebounce = 500
 
@@ -165,7 +157,7 @@ const filterDebounce = 100
 const debouncedSelectedLevels = refDebounced(selectedLevels, filterDebounce)
 const debouncedSelectedLogTypes = refDebounced(selectedLogTypes, filterDebounce)
 const debouncedSearch = refDebounced(search, filterDebounce)
-const now = ref(new Date())
+const now = ref<Date>(new Date())
 
 const baseFilters = computed(() => {
   const start = new Date(
@@ -175,6 +167,7 @@ const baseFilters = computed(() => {
   const end = new Date(
     now.value.getTime() + (period.value?.endOffsetSeconds ?? 0) * 1000,
   )
+  console.log('Base filters', start, end)
   const startTime = convertJSDateToFewsPiParameter(start)
   const endTime = convertJSDateToFewsPiParameter(end)
   return {
@@ -186,7 +179,7 @@ const baseFilters = computed(() => {
 })
 
 const manualFilters = computed(() => {
-  const manualEventCodeId = false
+  const manualEventCodeId = noteGroup.value?.note.eventCodeId
   return manualEventCodeId
     ? getManualFilters(baseFilters.value, manualEventCodeId)
     : []
@@ -201,6 +194,7 @@ const systemFilters = computed(() => {
 
 // To keep requests in sync between manual and system logs
 const filters = computed(() => {
+  console.log('Filters', manualFilters.value, systemFilters.value)
   const hasManual = logDisplay.value?.manualLog
   const hasSystem = logDisplay.value?.systemLog
   if (
@@ -252,7 +246,98 @@ const disseminationStatus = ref<Record<string, LogDisseminationStatus>>({})
 const taskRunForLog = (log: LogMessage) =>
   taskRuns.value.find((taskRun) => taskRun.taskRunId === log.taskRunId)
 
-async function refreshLogs() {
+
+async function disseminateLog(
+  log: LogMessage,
+  dissemination: LogDisplayDisseminationAction,
+) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const request: LogDisplayLogsActionRequest = {
+    logDisplayId: props.logDisplay.id,
+    actionId: dissemination.id,
+    logMessage: log.text,
+    logLevel: log.level,
+  }
+  const key = getLogDisseminationKey(log, dissemination)
+
+  disseminationStatus.value[key] = {
+    isLoading: true,
+  }
+
+  try {
+    await provider.postLogDisplaysAction(request)
+  } catch (error) {
+    disseminationStatus.value[key] = {
+      isLoading: false,
+      error: (error as Error).message,
+    }
+    return
+  }
+
+  disseminationStatus.value[key] = {
+    isLoading: false,
+    success: true,
+  }
+}
+
+
+async function deleteLog(log: LogMessage) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const keys: ForecasterNoteKeysRequest = {
+    logs: [{ id: log.id, taskRunId: log.taskRunId }],
+  }
+  await provider.deleteForecasterNote(keys)
+  refreshLogs()
+}
+
+async function editLog(log: LogMessage) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const note: ForecasterNoteRequest = {
+    noteGroupId: noteGroup.value?.id ?? '',
+    logMessage: log.text,
+    logLevel: log.level,
+    id: log.id,
+    taskRunId: log.taskRunId,
+    userId: log.user,
+  }
+  await provider.postForecasterNote(note)
+  refreshLogs()
+}
+
+async function acknowledgeLog(log: LogMessage) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const keys: ForecasterNoteKeysRequest = {
+    logs: [{ id: log.id, taskRunId: log.taskRunId }],
+  }
+  await provider.acknowledgeForecasterNote(keys)
+  refreshLogs()
+}
+
+async function unacknowledgeLog(log: LogMessage) {
+  const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
+  const provider = new PiWebserviceProvider(baseUrl, {
+    transformRequestFn: createTransformRequestFn(),
+  })
+  const keys: ForecasterNoteKeysRequest = {
+    logs: [{ id: log.id, taskRunId: log.taskRunId }],
+  }
+  await provider.unacknowledgeForecasterNote(keys)
+  refreshLogs()
+}
+
+function refreshLogs() {
   now.value = new Date()
 }
 

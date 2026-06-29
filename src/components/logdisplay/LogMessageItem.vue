@@ -1,24 +1,32 @@
 <template>
   <div>
     <v-card
-      :class="
+      :class="[
         isLogMessageByCurrentUser(props.log, props.userName)
           ? 'current-user-message'
-          : 'other-message'
-      "
+          : 'other-message',
+        'log-message-card',
+        `log-message-card--${logToColor(log).toLowerCase()}`,
+      ]"
       border
       flat
+      :color="logToUserColor(log, userName)"
       density="compact"
-      width="60%"
     >
       <template #title>
         <div class="d-flex align-center ga-2">
-          <v-list-item-title :style="{ color: logToUserColor(log, userName) }">
+          <v-icon
+            v-if="log.level!=='INFO'  && !isEditing"
+            size="x-small"
+            :icon="logToIcon(log)"
+            :color="isAcknowledged ? undefined : logToColor(log)"
+          />
+          <span class="text-label-large text-medium-emphasis">
             {{ logToUser(log, userName) }}
-          </v-list-item-title>
-          <v-card-subtitle class="align-self-end">{{
-            toHumanReadableTime(log.entryTime)
-          }}</v-card-subtitle>
+          </span>
+          <span class="text-label-large text-medium-emphasis">
+            {{ toHumanReadableTime(log.entryTime) }}
+          </span>
           <v-menu location="bottom" :close-on-content-click="false">
             <template #activator="{ props }">
               <v-btn
@@ -28,7 +36,7 @@
                 size="small"
                 v-bind="props"
               >
-                <v-icon size="small">mdi-dots-horizontal</v-icon>
+                <v-icon size="x-small">mdi-dots-horizontal</v-icon>
               </v-btn>
             </template>
             <v-list density="compact">
@@ -154,17 +162,6 @@
         </div>
       </v-card-text>
       <template #append>
-        <div class="level-label">
-          <v-icon
-            v-if="logToIcon(log) && !isEditing"
-            size="small"
-            :icon="logToIcon(log)"
-            :color="isAcknowledged ? undefined : logToColor(log)"
-          />
-          <v-card-subtitle class="pa-1">
-            {{ levelToTitle(log.level === 'ERROR' ? 'CRITICAL' : log.level) }}
-          </v-card-subtitle>
-        </div>
       </template>
     </v-card>
   </div>
@@ -289,6 +286,18 @@ function saveEdit() {
 </script>
 
 <style scoped>
+.log-message-card {
+  transition: border-color 0.15s ease;
+}
+
+.log-message-card--warning {
+  border-color: rgb(var(--v-theme-warning));
+}
+
+.log-message-card--error {
+  border-color: rgb(var(--v-theme-error));
+}
+
 .message-text {
   white-space: pre-wrap;
   word-wrap: break-word;
