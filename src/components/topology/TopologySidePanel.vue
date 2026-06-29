@@ -132,14 +132,14 @@ const generalSidePanels: GeneralSidePanel[] = [
     component: RunTasksSidePanel,
   },
   {
-    type: 'documentFile',
-    icon: 'mdi-information-outline',
-    component: MoreInfoSidePanel,
-  },
-  {
     type: 'logDisplay',
     icon: 'mdi-message-text-clock',
     component: LogSidePanel,
+  },
+  {
+    type: 'documentFile',
+    icon: 'mdi-information-outline',
+    component: MoreInfoSidePanel,
   },
   {
     type: 'share',
