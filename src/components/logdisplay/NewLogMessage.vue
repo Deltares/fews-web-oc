@@ -3,6 +3,7 @@
     ref="composerCardRef"
     flat
     border
+    class="w-100"
     :class="['new-log-card', `new-log-card--${levelToColor(newLogLevel)}`]"
     density="compact"
     @mouseup="handleClick"
@@ -15,8 +16,10 @@
             v-bind="menuProps"
             variant="tonal"
             size="small"
+            :prepend-icon="levelToIcon(newLogLevel)"
             append-icon="mdi-menu-down"
             :color="levelToColor(newLogLevel)"
+            class="text-label-large"
           >
             {{ levelToTitle(newLogLevel) }}
           </v-btn>
@@ -94,6 +97,7 @@
 <script setup lang="ts">
 import {
   levelToColor,
+  levelToIcon,
   levelToTitle,
   manualLogLevels,
   type ManualLogLevel,

@@ -57,6 +57,13 @@
         </template>
       </template>
     </v-virtual-scroll>
+    <div class="pa-2">
+      <NewLogMessage
+        v-if="noteGroup"
+        :noteGroup="noteGroup"
+        @newNote="refreshLogs"
+      />
+    </div>
     <v-divider />
     <v-footer class="d-flex flex-0">
       <div class="refresh-container ms-3">
@@ -101,6 +108,7 @@ import LogDetails from '@/components/logdisplay/LogDetails.vue'
 import LogLevelFilter from '@/components/logdisplay/LogLevelFilter.vue'
 import DateSeparator from '@/components/logdisplay/DateSeparator.vue'
 import PeriodFilterControl from '@/components/tasks/PeriodFilterControl.vue'
+import NewLogMessage from '@/components/logdisplay/NewLogMessage.vue'
 
 import { refDebounced } from '@vueuse/core'
 import { configManager } from '@/services/application-config'
@@ -112,6 +120,7 @@ import { useCurrentUser } from '@/services/useCurrentUser'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { useTaskRuns } from '@/services/useTaskRuns'
 import { RelativePeriod } from '@/lib/period/types.ts'
+import { useNoteGroup } from '@/services/useNoteGroup/index.ts'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -132,6 +141,11 @@ const emit = defineEmits<Emits>()
 const baseUrl = configManager.get('VITE_FEWS_WEBSERVICES_URL')
 
 const { logDisplay } = useLogDisplay(baseUrl, () => props.settings.logDisplayId)
+const { noteGroup } = useNoteGroup(
+  baseUrl,
+  () => logDisplay.value?.manualLog?.noteGroupId,
+)
+
 const { preferredUsername } = useCurrentUser()
 useAvailableWorkflowsStore()
 
