@@ -1,5 +1,5 @@
 <template>
-  <v-timeline side="end" density="compact"  truncate-line="end">
+  <v-timeline side="end" density="compact"  truncate-line="end" class="ps-4 pe-2">
     <v-timeline-item
       v-for="log in logs"
       :key="log.id"
@@ -10,7 +10,6 @@
         <v-icon
           :icon="levelToIcon(log.level)"
           :color="levelToColor(log.level)"
-          size="large"
         />
       </template>
       <div class="d-flex flex-column log_item__content">
