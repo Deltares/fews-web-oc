@@ -49,7 +49,7 @@
               />
               <v-list-item
                 v-if="!isEditing && isAcknowledged"
-                prepend-icon="mdi-check-all"
+                prepend-icon="mdi-undo"
                 title="Remove acknowledgement"
                 @click="emit('unacknowledgeLog', log)"
               />
@@ -83,12 +83,11 @@
                   icon
                   size="small"
                   v-if="!isEditing && isAcknowledged"
-                  color="success"
                   title="Remove acknowledgement"
                   @click="emit('unacknowledgeLog', log)"
                   v-bind="props"
                 >
-                  <v-icon size="x-small">mdi-check-all</v-icon>
+                  <v-icon size="x-small">mdi-check</v-icon>
                 </v-btn>
               </template>
               <span>Remove acknowledgement</span>
