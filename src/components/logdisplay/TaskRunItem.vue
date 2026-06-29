@@ -1,13 +1,12 @@
 <template>
-  <v-card
-    border
-    flat
-    density="compact"
-    @click="onExpansionPanelToggle"
-    @dblclick.prevent
-  >
-    <v-card-text class="py-2 h-100 log-item">
-      <div class="d-flex align-center ga-2">
+  <v-card border flat density="compact">
+    <div class="pa-0 h-100 log-item">
+      <v-card
+        flat
+        class="d-flex align-center px-2 ga-2 w-100"
+        @click="onExpansionPanelToggle"
+        @dblclick.prevent
+      >
         <v-tooltip>
           <template #activator="{ props }">
             <v-icon
@@ -20,8 +19,11 @@
           </template>
           <span>{{ getStringForStatus(taskRun?.status) }}</span>
         </v-tooltip>
-        <div class="flex-grow-1 min-w-0 user-select-text cursor-pointer">
-          <div class="d-flex align-center ga-2 min-w-0">
+        <div
+          class="py-2 w-100 user-select-text cursor-pointer"
+          style="max-width: calc(100% - 40px)"
+        >
+          <div class="d-flex align-center ga-2">
             <v-list-item-title class="text-truncate">
               {{ title }}
             </v-list-item-title>
@@ -58,7 +60,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </v-card>
       <slot
         name="expansion"
         :expanded="expanded"
@@ -67,11 +69,11 @@
       >
         <DataTable
           v-if="expanded && taskRun"
-          class="mt-4"
+          class="mt-4 wide-only"
           :tableData="tableData"
         />
       </slot>
-    </v-card-text>
+    </div>
   </v-card>
 </template>
 
