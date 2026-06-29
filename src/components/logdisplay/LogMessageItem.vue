@@ -98,6 +98,7 @@
       <NewLogMessage
         v-if="isEditing"
         mode="edit"
+          :inline="true"
         :note-group="noteGroup"
         :initial-text="log.text"
         :initial-log-level="editedLogLevel"
@@ -202,10 +203,6 @@ function acknowledgedLogToColor(log: LogMessage) {
 <style scoped>
 .log-message-card {
   transition: border-color 0.15s ease;
-}
-
-.log-message-card--info {
-  border-color: rgb(var(--v-theme-info));
 }
 
 .log-message-card--warning {

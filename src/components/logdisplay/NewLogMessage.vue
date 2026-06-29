@@ -3,7 +3,11 @@
     flat
     border
     class="w-100"
-    :class="['new-log-card', `new-log-card--${levelToColor(newLogLevel)}`]"
+    :class="[
+      'new-log-card',
+      { 'new-log-card--inline': props.inline },
+      `new-log-card--${levelToColor(newLogLevel)}`,
+    ]"
     density="compact"
     @mouseup="handleClick"
     @focusin="handleFocusIn"
@@ -129,12 +133,14 @@ interface Props {
   initialText?: string
   initialLogLevel?: ManualLogLevel
   saveButtonLabel?: string
+  inline?: boolean
 }
 const props = withDefaults(defineProps<Props>(), {
   mode: 'create',
   initialText: '',
   initialLogLevel: 'INFO',
   saveButtonLabel: 'Send',
+  inline: false,
 })
 const emit = defineEmits<{
   newNote: []
@@ -271,17 +277,17 @@ async function postNewLogMessage(
   -webkit-tap-highlight-color: transparent;
 }
 
-.new-log-card--info:focus-within {
+.new-log-card:not(.new-log-card--inline).new-log-card--info:focus-within {
   border-color: rgb(var(--v-theme-info));
   box-shadow: 0 0 0 1px rgb(var(--v-theme-info));
 }
 
-.new-log-card--warning:focus-within {
+.new-log-card:not(.new-log-card--inline).new-log-card--warning:focus-within {
   border-color: rgb(var(--v-theme-warning));
   box-shadow: 0 0 0 1px rgb(var(--v-theme-warning));
 }
 
-.new-log-card--error:focus-within {
+.new-log-card:not(.new-log-card--inline).new-log-card--error:focus-within {
   border-color: rgb(var(--v-theme-error));
   box-shadow: 0 0 0 1px rgb(var(--v-theme-error));
 }
