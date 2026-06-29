@@ -1,4 +1,5 @@
 @use 'vuetify/settings' with (
   $data-table-footer-padding: 0px 4px,
+  $body-font-family: (var(--font-family), sans-serif),
   $color-pack: false
 );

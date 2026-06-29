@@ -3,18 +3,18 @@
     <v-timeline-item
       v-for="log in logs"
       :key="log.id"
-      dot-color="none"
       size="0"
     >
       <template #icon>
         <v-icon
           :icon="levelToIcon(log.level)"
           :color="levelToColor(log.level)"
+          size="medium"
         />
       </template>
       <div class="d-flex flex-column log_item__content">
-        <div class="log-item__text">{{ log.text }}</div>
-        <span class="text-caption text-medium-emphasis">{{
+        <div class="text-body-medium">{{ log.text }}</div>
+        <span class="text-label-large text-medium-emphasis">{{
           toHumanReadableDateTime(log.entryTime)
         }}</span>
       </div>
@@ -50,14 +50,3 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<LogActionEmit>()
 </script>
-
-<style>
-.v-timeline .v-timeline-divider__dot {
-  background-color: transparent;
-}
-
-.log-item__text {
-  font-size: 0.875rem;
-  word-break: break-all;
-}
-</style>
