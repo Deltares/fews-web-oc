@@ -2,6 +2,8 @@
   <SidePanelContent :title="t('sidePanel.logDisplay')" @close="emit('close')">
     <div class="d-flex align-center pa-2 ga-2">
       <LogLevelFilter v-model="selectedLevels" />
+      <v-spacer />
+      <PeriodFilterControl v-model="period" />
     </div>
     <div class="w-100">
       <v-text-field
@@ -96,6 +98,7 @@ import TaskRunItem from '@/components/logdisplay/TaskRunItem.vue'
 import LogDetails from '@/components/logdisplay/LogDetails.vue'
 import LogLevelFilter from '@/components/logdisplay/LogLevelFilter.vue'
 import DateSeparator from '@/components/logdisplay/DateSeparator.vue'
+import PeriodFilterControl from '@/components/tasks/PeriodFilterControl.vue'
 
 import { refDebounced } from '@vueuse/core'
 import { configManager } from '@/services/application-config'
@@ -106,6 +109,7 @@ import { useLogDisplay } from '@/services/useLogDisplay'
 import { useCurrentUser } from '@/services/useCurrentUser'
 import { useAvailableWorkflowsStore } from '@/stores/availableWorkflows'
 import { useTaskRuns } from '@/services/useTaskRuns'
+import { RelativePeriod } from '@/lib/period/types.ts'
 
 interface Props {
   topologyNode?: TopologyNode
@@ -129,17 +133,15 @@ const { logDisplay } = useLogDisplay(baseUrl, () => props.settings.logDisplayId)
 const { preferredUsername } = useCurrentUser()
 useAvailableWorkflowsStore()
 
+const period = ref<RelativePeriod | null>({
+  startOffsetSeconds: -24 * 60 * 60,
+  endOffsetSeconds: 0,
+})
+
 const search = ref<string>()
 const maxCount = ref<number>(20000)
 const selectedLevels = ref<LogLevel[]>([...logLevels])
 const selectedLogTypes = ref<LogType | null>(null)
-
-const daysBack = ref<number>(2)
-const DAY_IN_MS = 1000 * 60 * 60 * 24
-const startDate = computed(
-  () => new Date(endDate.value.getTime() - daysBack.value * DAY_IN_MS),
-)
-const endDate = ref<Date>(new Date())
 
 const requestDebounce = 500
 
@@ -147,12 +149,16 @@ const filterDebounce = 100
 const debouncedSelectedLevels = refDebounced(selectedLevels, filterDebounce)
 const debouncedSelectedLogTypes = refDebounced(selectedLogTypes, filterDebounce)
 const debouncedSearch = refDebounced(search, filterDebounce)
+const now = ref(new Date())
+
 
 const baseFilters = computed(() => {
-  const startTime = convertJSDateToFewsPiParameter(startDate.value)
-  // Set endTime to 23:59:59 of the endDate
-  endDate.value.setHours(23, 59, 59, 999)
-  const endTime = convertJSDateToFewsPiParameter(endDate.value)
+  const start = new Date(
+    now.value.getTime() + (period.value?.startOffsetSeconds ?? -24 * 60 * 60) * 1000,
+  )
+  const end = new Date(now.value.getTime() + (period.value?.endOffsetSeconds ?? 0) * 1000)
+  const startTime = convertJSDateToFewsPiParameter(start)
+  const endTime = convertJSDateToFewsPiParameter(end)
   return {
     logDisplayId: logDisplay.value?.id ?? '',
     maxCount: maxCount.value,
@@ -207,11 +213,8 @@ const customFilter = (message: LogMessage) =>
     [],
   )
 
-const { logMessages, isLoading, lastUpdatedTimestamp, groupedByTaskRunId } = useLogDisplayLogs(
-  baseUrl,
-  () => debouncedFilters.value,
-  customFilter,
-)
+const { logMessages, isLoading, lastUpdatedTimestamp, groupedByTaskRunId } =
+  useLogDisplayLogs(baseUrl, () => debouncedFilters.value, customFilter)
 
 const taskRunIds = computed(() => {
   const _taskRunIds = logMessages.value.map((logs) => logs.taskRunId)
@@ -232,8 +235,7 @@ const taskRunForLog = (log: LogMessage) =>
   taskRuns.value.find((taskRun) => taskRun.taskRunId === log.taskRunId)
 
 async function refreshLogs() {
-  // Set endDate to now + 5 seconds to ensure the backend will return the latest logs
-  endDate.value = new Date(Date.now() + 5000)
+  now.value = new Date()
 }
 
 const lastUpdatedString = computed<string>(() => {
