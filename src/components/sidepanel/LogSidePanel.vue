@@ -243,10 +243,6 @@ const disseminations = computed<LogDisplayDisseminationAction[]>(
 )
 const disseminationStatus = ref<Record<string, LogDisseminationStatus>>({})
 
-const taskRunForLog = (log: LogMessage) =>
-  taskRuns.value.find((taskRun) => taskRun.taskRunId === log.taskRunId)
-
-
 async function disseminateLog(
   log: LogMessage,
   dissemination: LogDisplayDisseminationAction,
