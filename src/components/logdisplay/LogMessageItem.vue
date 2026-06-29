@@ -10,6 +10,7 @@
       ]"
       border
       flat
+      :variant="isDark ? undefined : 'tonal'"
       :color="logToUserColor(log, userName)"
       density="compact"
     >
@@ -146,6 +147,7 @@ import type {
 } from '@deltares/fews-pi-requests'
 import LogDisseminations from '@/components/logdisplay/LogDisseminations.vue'
 import NewLogMessage from '@/components/logdisplay/NewLogMessage.vue'
+import { useDark } from '@/services/useDark'
 
 interface Props {
   noteGroup: ForecasterNoteGroup
@@ -157,6 +159,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const emit = defineEmits<LogActionEmit>()
+const isDark = useDark()
 
 const isEditing = ref(false)
 const editedLogLevel = ref<ManualLogLevel>('INFO')
