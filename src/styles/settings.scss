@@ -1,6 +1,9 @@
 @forward 'vuetify/settings' with (
   $data-table-footer-padding: 0px 4px,
-  $body-font-family: (var(--font-family), sans-serif),
+  $body-font-family: (
+    var(--font-family),
+    sans-serif,
+  ),
   $timeline-item-padding: 12px,
   $color-pack: false
 );
