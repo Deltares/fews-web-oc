@@ -6,7 +6,7 @@
           ? 'current-user-message'
           : 'other-message',
         'log-message-card',
-        `log-message-card--${acknowledgedLogToColor(log, isAcknowledged).toLowerCase()}`,
+        `log-message-card--${acknowledgedLogToColor(log).toLowerCase()}`,
       ]"
       border
       flat
@@ -95,67 +95,20 @@
           </template>
         </div>
       </template>
-      <v-card-text>
-        <div v-if="isEditing" class="d-flex flex-column">
-          <v-select
-            v-model="editedLogLevel"
-            :items="manualLogLevels"
-            :item-title="levelToTitle"
-            :item-value="(item) => item"
-            label="Log level"
-            variant="outlined"
-            density="compact"
-            class="mb-2"
-          />
-          <v-textarea
-            v-model="editedText"
-            :label="`Message (${lineCount}/${maxLines} lines, ${charCount}/${maxChars} characters per line)`"
-            auto-grow
-            variant="outlined"
-            density="compact"
-            :rows="maxLines"
-            :max-length="maxLines * maxChars"
-            :error="isError"
-            :error-messages="errorMessage"
-            no-resize
-            @input="validateInput"
-            class="edit-message-textarea"
-          ></v-textarea>
-          <div class="d-flex justify-end">
-            <v-tooltip location="top">
-              <template #activator="{ props }">
-                <v-btn
-                  density="compact"
-                  icon
-                  variant="plain"
-                  v-bind="props"
-                  @click="toggleEditing"
-                >
-                  <v-icon size="small">mdi-close</v-icon>
-                </v-btn>
-              </template>
-              <span>Discard changes</span>
-            </v-tooltip>
-            <v-tooltip location="top">
-              <template #activator="{ props }">
-                <v-btn
-                  density="compact"
-                  icon="mdi-check"
-                  variant="plain"
-                  color="success"
-                  v-bind="props"
-                  @click="saveEdit"
-                />
-              </template>
-              <span>Save changes</span>
-            </v-tooltip>
-          </div>
-        </div>
-        <div v-else class="d-flex">
-          <span class="message-text"> {{ log.text }} </span>
-          <v-spacer />
-          <slot name="actions"></slot>
-        </div>
+      <NewLogMessage
+        v-if="isEditing"
+        mode="edit"
+        :note-group="noteGroup"
+        :initial-text="log.text"
+        :initial-log-level="editedLogLevel"
+        save-button-label="Save changes"
+        @save="saveEdit"
+        @discard="toggleEditing"
+      />
+      <v-card-text v-else>
+        <span class="message-text"> {{ log.text }} </span>
+        <v-spacer />
+        <slot name="actions"></slot>
       </v-card-text>
       <template #append>
         <v-icon
@@ -183,8 +136,6 @@ import {
   logToActions,
   type LogMessage,
   type LogActionEmit,
-  levelToTitle,
-  manualLogLevels,
   type ManualLogLevel,
   type LogDisseminationStatus,
 } from '@/lib/log'
@@ -193,6 +144,7 @@ import type {
   LogDisplayDisseminationAction,
 } from '@deltares/fews-pi-requests'
 import LogDisseminations from '@/components/logdisplay/LogDisseminations.vue'
+import NewLogMessage from '@/components/logdisplay/NewLogMessage.vue'
 
 interface Props {
   noteGroup: ForecasterNoteGroup
@@ -206,16 +158,9 @@ const props = defineProps<Props>()
 const emit = defineEmits<LogActionEmit>()
 
 const isEditing = ref(false)
-const editedText = ref('')
 const editedLogLevel = ref<ManualLogLevel>('INFO')
 
 const isAcknowledged = computed(() => props.log.eventAcknowledged)
-
-// Text validation constants
-const maxLines = computed(() => props.noteGroup.note.maxNumberOfLines)
-const maxChars = computed(
-  () => props.noteGroup.note.maxNumberOfCharactersInLine,
-)
 
 const canEdit = computed(() => {
   // Allow editing only for manual logs created by the current user
@@ -225,80 +170,42 @@ const canEdit = computed(() => {
   )
 })
 
-// Text validation computed properties
-const lineCount = computed(() => editedText.value.split('\n').length)
-const charCount = computed(() =>
-  Math.max(...editedText.value.split('\n').map((line) => line.length)),
-)
-
-const isError = computed(
-  () => lineCount.value > maxLines.value || charCount.value > maxChars.value,
-)
-
-const errorMessage = computed(() => {
-  if (lineCount.value > maxLines.value)
-    return `Maximum ${maxLines} lines allowed`
-  if (charCount.value > maxChars.value)
-    return `Maximum ${maxChars} characters per line allowed`
-  return ''
-})
-
-function validateInput() {
-  let lines = editedText.value.split('\n')
-
-  // Trim lines if more than allowed
-  if (lines.length > maxLines.value) {
-    lines = lines.slice(0, maxLines.value)
+function toggleEditing() {
+  if (canEdit.value) {
+    if (isEditing.value) {
+      isEditing.value = false
+    } else {
+      editedLogLevel.value =
+        props.log.level == 'ERROR' ? 'CRITICAL' : props.log.level
+      isEditing.value = true
+    }
   }
-
-  // Trim characters per line if more than allowed
-  lines = lines.map((line) => line.slice(0, maxChars.value))
-
-  editedText.value = lines.join('\n')
 }
 
-function toggleEditing() {
-  if (!canEdit.value) {
-    return
-  }
-  if (!isEditing.value) {
-    editedText.value = props.log.text
-    editedLogLevel.value =
-      props.log.level == 'ERROR' ? 'CRITICAL' : props.log.level
-    isEditing.value = true
-  } else {
+function saveEdit(payload: { text: string; logLevel: ManualLogLevel }) {
+  if (canEdit.value) {
+    const updatedLog = {
+      ...props.log,
+      text: payload.text,
+      level: payload.logLevel === 'CRITICAL' ? 'ERROR' : payload.logLevel,
+    }
+    emit('editLog', updatedLog as LogMessage)
     isEditing.value = false
   }
 }
 
-function saveEdit() {
-  if (!canEdit.value) {
-    return
-  }
-  if (isError.value) {
-    return
-  }
-  const updatedLog = {
-    ...props.log,
-    text: editedText.value,
-    level: editedLogLevel.value === 'CRITICAL' ? 'ERROR' : editedLogLevel.value,
-  }
-  emit('editLog', updatedLog as LogMessage)
-  isEditing.value = false
-}
-
 function acknowledgedLogToColor(log: LogMessage) {
-  if (log.eventAcknowledged) {
-    return 'ACKNOWLEDGED'
-  }
   return logToColor(log)
 }
-
 </script>
 
 <style scoped>
 .log-message-card {
   transition: border-color 0.15s ease;
+}
+
+.log-message-card--info {
+  border-color: rgb(var(--v-theme-info));
 }
 
 .log-message-card--warning {

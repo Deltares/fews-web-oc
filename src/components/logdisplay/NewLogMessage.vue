@@ -1,6 +1,5 @@
 <template>
   <v-card
-    ref="composerCardRef"
     flat
     border
     class="w-100"
@@ -10,7 +9,10 @@
     @focusin="handleFocusIn"
   >
     <v-card-actions v-if="showExpandedUi" class="pt-0">
-      <v-menu location="bottom start">
+      <v-menu
+        v-if="props.noteGroup || props.mode === 'edit'"
+        location="bottom start"
+      >
         <template #activator="{ props: menuProps }">
           <v-btn
             v-bind="menuProps"
@@ -44,11 +46,12 @@
     </v-card-actions>
     <div class="d-flex" :class="showExpandedUi ? 'flex-column' : 'flex-row'">
       <v-textarea
-        ref="messageTextareaRef"
         v-model="text"
         :placeholder="
-          props.noteGroup?.note.messageTemplate.message ??
-          'Enter log message...'
+          props.mode === 'edit'
+            ? 'Edit log message...'
+            : (props.noteGroup?.note.messageTemplate.message ??
+              'Enter log message...')
         "
         :rows="1"
         :max-rows="Math.max(maxLines, 5)"
@@ -73,8 +76,8 @@
       />
       <div class="d-flex align-center ma-2">
         <span
-          class="text-medium-emphasis text-label-medium"
           v-if="showExpandedUi"
+          class="text-medium-emphasis text-label-medium"
         >
           {{ lineCount }}/{{ maxLines }} lines, {{ charCount }}/{{ maxChars }}
           characters per line
@@ -86,9 +89,10 @@
           :color="levelToColor(newLogLevel)"
           :disabled="!text.trim() || isError || isPosting"
           :loading="isPosting"
-          @click="saveNewMessage"
-          >Send</v-btn
+          @click="saveMessage"
         >
+          {{ saveButtonLabel }}
+        </v-btn>
       </div>
     </div>
   </v-card>
@@ -110,25 +114,44 @@ import {
   PiWebserviceProvider,
   type ForecasterNoteGroup,
 } from '@deltares/fews-pi-requests'
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, ref } from 'vue'
+
+type LogEditorMode = 'create' | 'edit'
+
+type SavePayload = {
+  text: string
+  logLevel: ManualLogLevel
+}
 
 interface Props {
   noteGroup?: ForecasterNoteGroup
+  mode?: LogEditorMode
+  initialText?: string
+  initialLogLevel?: ManualLogLevel
+  saveButtonLabel?: string
 }
-const props = defineProps<Props>()
-const emit = defineEmits(['newNote'])
+const props = withDefaults(defineProps<Props>(), {
+  mode: 'create',
+  initialText: '',
+  initialLogLevel: 'INFO',
+  saveButtonLabel: 'Send',
+})
+const emit = defineEmits<{
+  newNote: []
+  save: [payload: SavePayload]
+  discard: []
+}>()
 
 const maxLines = computed(() => props.noteGroup?.note.maxNumberOfLines ?? 0)
 const maxChars = computed(
   () => props.noteGroup?.note.maxNumberOfCharactersInLine ?? 0,
 )
 
-const text = ref('')
-const newLogLevel = ref<ManualLogLevel>('INFO')
+const text = ref(props.initialText)
+const newLogLevel = ref<ManualLogLevel>(props.initialLogLevel)
 const postErrorMessage = ref<string>()
 const isPosting = ref(false)
 const isUiExpanded = ref(false)
-const messageTextareaRef = useTemplateRef('messageTextareaRef')
 
 const lineCount = computed(() => text.value.split('\n').length)
 const charCount = computed(() =>
@@ -161,24 +184,23 @@ function expandUi() {
   isUiExpanded.value = true
 }
 
-function focusTextarea() {
-  const textareaComponent = messageTextareaRef.value
-  if (textareaComponent?.focus) {
-    textareaComponent.focus()
-  }
-}
-
 async function handleClick(event: MouseEvent) {
   expandUi()
-  focusTextarea()
 }
 
 async function handleFocusIn(event: FocusEvent) {
   expandUi()
-  focusTextarea()
 }
 
-async function saveNewMessage() {
+async function saveMessage() {
+  if (props.mode === 'edit') {
+    emit('save', {
+      text: text.value,
+      logLevel: newLogLevel.value as ManualLogLevel,
+    })
+    return
+  }
+
   if (!props.noteGroup) return
   postErrorMessage.value = undefined
   isPosting.value = true
@@ -199,23 +221,27 @@ async function saveNewMessage() {
 }
 
 function discard() {
-  text.value = ''
-  newLogLevel.value = 'INFO'
+  text.value = props.mode === 'edit' ? props.initialText : ''
+  newLogLevel.value = props.initialLogLevel
   postErrorMessage.value = undefined
   isUiExpanded.value = false
   const activeEl = document.activeElement
   if (activeEl instanceof HTMLElement) {
     activeEl.blur()
   }
+  emit('discard')
 }
 
 const showExpandedUi = computed(
   () =>
+    props.mode === 'edit' ||
     isUiExpanded.value ||
     !!text.value.trim() ||
     isPosting.value ||
     !!postErrorMessage.value,
 )
+
+const saveButtonLabel = computed(() => props.saveButtonLabel)
 
 async function postNewLogMessage(
   noteGroupId: string,
