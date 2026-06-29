@@ -6,7 +6,7 @@
           ? 'current-user-message'
           : 'other-message',
         'log-message-card',
-        `log-message-card--${logToColor(log).toLowerCase()}`,
+        `log-message-card--${acknowledgedLogToColor(log, isAcknowledged).toLowerCase()}`,
       ]"
       border
       flat
@@ -15,12 +15,6 @@
     >
       <template #title>
         <div class="d-flex align-center ga-2">
-          <v-icon
-            v-if="log.level!=='INFO'  && !isEditing"
-            size="x-small"
-            :icon="logToIcon(log)"
-            :color="isAcknowledged ? undefined : logToColor(log)"
-          />
           <span class="text-label-large text-medium-emphasis">
             {{ logToUser(log, userName) }}
           </span>
@@ -85,14 +79,16 @@
               <template #activator="{ props }">
                 <v-btn
                   density="compact"
+                  icon
                   size="small"
                   v-if="!isEditing && isAcknowledged"
-                  icon="mdi-check-all"
-                  color="primary"
+                  color="success"
                   title="Remove acknowledgement"
                   @click="emit('unacknowledgeLog', log)"
                   v-bind="props"
-                />
+                >
+                  <v-icon size="x-small">mdi-check-all</v-icon>
+                </v-btn>
               </template>
               <span>Remove acknowledgement</span>
             </v-tooltip>
@@ -162,6 +158,13 @@
         </div>
       </v-card-text>
       <template #append>
+        <v-icon
+          v-if="log.level !== 'INFO' && !isEditing"
+          size="small"
+          :icon="logToIcon(log)"
+          :color="logToColor(log)"
+          :disabled="isAcknowledged"
+        />
       </template>
     </v-card>
   </div>
@@ -283,6 +286,14 @@ function saveEdit() {
   emit('editLog', updatedLog as LogMessage)
   isEditing.value = false
 }
+
+function acknowledgedLogToColor(log: LogMessage) {
+  if (log.eventAcknowledged) {
+    return 'ACKNOWLEDGED'
+  }
+  return logToColor(log)
+}
+
 </script>
 
 <style scoped>
