@@ -39,10 +39,10 @@
                 taskRun: slotTaskRun,
               }"
             >
-              <LogTimeLine
+              <LogDetails
                 v-if="slotExpanded"
                 :logs="slotLogs"
-                :taskRuns="slotTaskRun ? [slotTaskRun] : []"
+                :taskRun="slotTaskRun"
                 :disseminations="disseminations"
                 :disseminationStatus="disseminationStatus"
                 :userName="preferredUsername"
@@ -93,7 +93,7 @@ import {
 
 import SidePanelContent from './SidePanelContent.vue'
 import TaskRunItem from '@/components/logdisplay/TaskRunItem.vue'
-import LogTimeLine from '@/components/logdisplay/LogTimeLine.vue'
+import LogDetails from '@/components/logdisplay/LogDetails.vue'
 import LogLevelFilter from '@/components/logdisplay/LogLevelFilter.vue'
 import DateSeparator from '@/components/logdisplay/DateSeparator.vue'
 

@@ -11,12 +11,13 @@
       <template
         #expansion="{ expanded, logs: slotLogs, taskRun: slotTaskRun }"
       >
-        <LogTable
+        <LogDetails
           v-if="expanded"
           :logs="slotLogs"
           :taskRun="slotTaskRun"
           :disseminations="disseminations"
           :disseminationStatus="disseminationStatus"
+          :userName="userName"
           @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
           @edit-log="emit('editLog', $event)"
           @delete-log="emit('deleteLog', $event)"
@@ -44,7 +45,7 @@
 <script setup lang="ts">
 import LogMessageItem from '@/components/logdisplay/LogMessageItem.vue'
 import TaskRunItem from './TaskRunItem.vue'
-import LogTable from './LogTable.vue'
+import LogDetails from './LogDetails.vue'
 import type {
   ForecasterNoteGroup,
   LogDisplayDisseminationAction,
