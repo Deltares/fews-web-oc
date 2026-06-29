@@ -61,7 +61,8 @@ export function filterLog(
     text.includes(searchText) ||
     taskRunId?.includes(searchText) ||
     title?.includes(searchText) ||
-    taskRunUser?.includes(searchText) || false
+    taskRunUser?.includes(searchText) ||
+    false
   )
 }
 

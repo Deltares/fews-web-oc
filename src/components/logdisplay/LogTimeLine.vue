@@ -1,10 +1,11 @@
 <template>
-  <v-timeline side="end" density="compact"  truncate-line="end" class="ps-4 pe-2">
-    <v-timeline-item
-      v-for="log in logs"
-      :key="log.id"
-      size="0"
-    >
+  <v-timeline
+    side="end"
+    density="compact"
+    truncate-line="end"
+    class="ps-4 pe-2"
+  >
+    <v-timeline-item v-for="log in logs" :key="log.id" size="0">
       <template #icon>
         <v-icon
           :icon="levelToIcon(log.level)"

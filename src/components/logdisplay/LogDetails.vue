@@ -58,8 +58,8 @@ const emit = defineEmits<LogActionEmit>()
 const logDetailsContainer = ref<HTMLElement>()
 const { width: containerWidth } = useElementSize(logDetailsContainer)
 
-const taskRunsForTimeline = computed(() =>
-  props.taskRuns ?? (props.taskRun ? [props.taskRun] : []),
+const taskRunsForTimeline = computed(
+  () => props.taskRuns ?? (props.taskRun ? [props.taskRun] : []),
 )
 
 const resolvedMode = computed<Exclude<LogDetailsMode, 'auto'>>(() => {

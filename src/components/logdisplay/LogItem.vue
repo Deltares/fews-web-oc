@@ -8,9 +8,7 @@
       class="mt-2"
       :ripple="false"
     >
-      <template
-        #expansion="{ expanded, logs: slotLogs, taskRun: slotTaskRun }"
-      >
+      <template #expansion="{ expanded, logs: slotLogs, taskRun: slotTaskRun }">
         <LogDetails
           v-if="expanded"
           :logs="slotLogs"

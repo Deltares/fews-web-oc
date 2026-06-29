@@ -153,12 +153,14 @@ const debouncedSelectedLogTypes = refDebounced(selectedLogTypes, filterDebounce)
 const debouncedSearch = refDebounced(search, filterDebounce)
 const now = ref(new Date())
 
-
 const baseFilters = computed(() => {
   const start = new Date(
-    now.value.getTime() + (period.value?.startOffsetSeconds ?? -24 * 60 * 60) * 1000,
+    now.value.getTime() +
+      (period.value?.startOffsetSeconds ?? -24 * 60 * 60) * 1000,
   )
-  const end = new Date(now.value.getTime() + (period.value?.endOffsetSeconds ?? 0) * 1000)
+  const end = new Date(
+    now.value.getTime() + (period.value?.endOffsetSeconds ?? 0) * 1000,
+  )
   const startTime = convertJSDateToFewsPiParameter(start)
   const endTime = convertJSDateToFewsPiParameter(end)
   return {
