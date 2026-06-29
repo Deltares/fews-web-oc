@@ -1,27 +1,30 @@
 <template>
-  <LogTable
-    v-if="resolvedMode === 'table'"
-    :logs="logs"
-    :taskRun="taskRun"
-    :disseminations="disseminations"
-    :disseminationStatus="disseminationStatus"
-    @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
-    @edit-log="emit('editLog', $event)"
-    @delete-log="emit('deleteLog', $event)"
-    v-bind="$attrs"
-  />
-  <LogTimeLine
-    v-else
-    :logs="logs"
-    :taskRuns="taskRunsForTimeline"
-    :disseminations="disseminations"
-    :disseminationStatus="disseminationStatus"
-    :userName="userName"
-    v-bind="$attrs"
-  />
+  <div ref="logDetailsContainer">
+    <LogTable
+      v-if="resolvedMode === 'table'"
+      :logs="logs"
+      :taskRun="taskRun"
+      :disseminations="disseminations"
+      :disseminationStatus="disseminationStatus"
+      @disseminate-log="(log, dis) => emit('disseminateLog', log, dis)"
+      @edit-log="emit('editLog', $event)"
+      @delete-log="emit('deleteLog', $event)"
+      v-bind="$attrs"
+    />
+    <LogTimeLine
+      v-else
+      :logs="logs"
+      :taskRuns="taskRunsForTimeline"
+      :disseminations="disseminations"
+      :disseminationStatus="disseminationStatus"
+      :userName="userName"
+      v-bind="$attrs"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
+import { useElementSize } from '@vueuse/core'
 import type { LogDisplayDisseminationAction } from '@deltares/fews-pi-requests'
 import type { TaskRun } from '@/lib/taskruns'
 import {
@@ -29,8 +32,7 @@ import {
   type LogDisseminationStatus,
   type LogMessage,
 } from '@/lib/log'
-import { computed } from 'vue'
-import { useDisplay } from 'vuetify'
+import { computed, ref } from 'vue'
 import LogTable from './LogTable.vue'
 import LogTimeLine from './LogTimeLine.vue'
 
@@ -53,7 +55,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<LogActionEmit>()
 
-const { mobile } = useDisplay()
+const logDetailsContainer = ref<HTMLElement>()
+const { width: containerWidth } = useElementSize(logDetailsContainer)
 
 const taskRunsForTimeline = computed(() =>
   props.taskRuns ?? (props.taskRun ? [props.taskRun] : []),
@@ -64,6 +67,8 @@ const resolvedMode = computed<Exclude<LogDetailsMode, 'auto'>>(() => {
     return props.mode
   }
 
-  return mobile.value ? 'timeline' : 'table'
+  return containerWidth.value > 0 && containerWidth.value <= 600
+    ? 'timeline'
+    : 'table'
 })
 </script>

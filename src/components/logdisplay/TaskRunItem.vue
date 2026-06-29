@@ -218,7 +218,7 @@ function onExpansionPanelToggle(event: MouseEvent) {
   display: none;
 }
 
-@container (max-width: 500px) {
+@container (max-width: 600px) {
   .wide-only {
     display: none;
   }
