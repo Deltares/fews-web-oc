@@ -3,7 +3,6 @@
     v-model="selected"
     variant="tonal"
     density="compact"
-    mandatory
     multiple
   >
     <v-btn
