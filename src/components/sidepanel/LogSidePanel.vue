@@ -1,6 +1,7 @@
 <template>
   <SidePanelContent :title="t('sidePanel.logDisplay')" @close="emit('close')">
     <div class="d-flex align-center pa-2 ga-2">
+      <LogTypeFilter v-if="manualFilters.length && systemFilters.length" v-model="selectedLogTypes" />
       <v-spacer />
       <PeriodFilterControl v-model="period" />
     </div>
@@ -87,6 +88,7 @@ import {
 
 import {
   logLevels,
+  logTypes,
   type LogDisseminationStatus,
   type LogLevel,
   type LogMessage,
@@ -96,6 +98,7 @@ import {
 import SidePanelContent from './SidePanelContent.vue'
 import LogItem from '@/components/logdisplay/LogItem.vue'
 import LogLevelFilter from '@/components/logdisplay/LogLevelFilter.vue'
+import LogTypeFilter from '@/components/logdisplay/LogTypeFilter.vue'
 import DateSeparator from '@/components/logdisplay/DateSeparator.vue'
 import PeriodFilterControl from '@/components/tasks/PeriodFilterControl.vue'
 import NewLogMessage from '@/components/logdisplay/NewLogMessage.vue'
@@ -153,7 +156,7 @@ const period = ref<RelativePeriod | null>({
 const search = ref<string>()
 const maxCount = ref<number>(20000)
 const selectedLevels = ref<LogLevel[]>([...logLevels])
-const selectedLogTypes = ref<LogType | null>(null)
+const selectedLogTypes = ref<LogType[]>([...logTypes])
 const expandedItems = ref<Record<string, boolean>>({})
 
 const requestDebounce = 500
