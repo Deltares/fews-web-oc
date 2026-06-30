@@ -54,7 +54,7 @@
         :placeholder="
           props.mode === 'edit'
             ? 'Edit log message...'
-            : (props.noteGroup?.note.messageTemplate.message ??
+            : (props.noteGroup?.note.messageTemplate?.message ??
               'Enter log message...')
         "
         :rows="1"
