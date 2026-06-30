@@ -143,7 +143,7 @@ const { noteGroup } = useNoteGroup(
 )
 
 const { preferredUsername } = useCurrentUser()
-useAvailableWorkflowsStore()
+const { workflows } = useAvailableWorkflowsStore()
 
 const period = ref<RelativePeriod | null>({
   startOffsetSeconds: -24 * 60 * 60,
@@ -226,8 +226,8 @@ const customFilter = (message: LogMessage) =>
     debouncedSelectedLevels.value,
     debouncedSelectedLogTypes.value ? [debouncedSelectedLogTypes.value] : [],
     debouncedSearch.value,
-    [],
-    [],
+    taskRuns.value,
+    workflows,
   )
 
 const { logMessages, isLoading, lastUpdatedTimestamp, groupedByTaskRunId } =
