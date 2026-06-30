@@ -197,6 +197,9 @@ function saveEdit(payload: { text: string; logLevel: ManualLogLevel }) {
 }
 
 function acknowledgedLogToColor(log: LogMessage) {
+  if (log.eventAcknowledged) {
+    return 'INFO'
+  }
   return logToColor(log)
 }
 </script>
