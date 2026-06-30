@@ -25,15 +25,13 @@
           <span class="text-label-large text-medium-emphasis">
             {{ toHumanReadableTime(log.entryTime) }}
           </span>
-          <v-menu location="bottom" :close-on-content-click="false">
+          <v-menu
+            location="bottom"
+            :close-on-content-click="false"
+            v-if="!isEditing"
+          >
             <template #activator="{ props }">
-              <v-btn
-                v-if="!isEditing"
-                density="compact"
-                icon
-                size="small"
-                v-bind="props"
-              >
+              <v-btn density="compact" icon size="small" v-bind="props">
                 <v-icon size="x-small">mdi-dots-horizontal</v-icon>
               </v-btn>
             </template>
