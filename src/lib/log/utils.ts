@@ -145,9 +145,9 @@ export function logToUser(log: LogMessage, userName: string) {
   return isLogMessageByCurrentUser(log, userName) ? 'You' : log.user
 }
 
-export function logToUserColor(log: LogMessage, userName: string) {
+export function logToUserColor(log: LogMessage, userName: string, opacity = 1) {
   const user = logToUser(log, userName)
-  return nameToNiceColor(user ?? '')
+  return nameToNiceColor(user ?? '', opacity)
 }
 
 export function isLogMessageByCurrentUser(log: LogMessage, userName: string) {
@@ -229,9 +229,6 @@ const niceColors = [
   '#FFCA28',
   '#FFA726',
   '#FF7043',
-  '#8D6E63',
-  '#BDBDBD',
-  '#78909C',
   '#FF5252',
   '#E040FB',
   '#7C4DFF',
@@ -265,13 +262,17 @@ const niceColors = [
   '#0091EA',
 ]
 
-function nameToNiceColor(name: string) {
+function nameToNiceColor(name: string, opacity: number) {
   let hash = 0
   for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+    hash = (name.codePointAt(i) ?? 0) + ((hash << 5) - hash)
   }
-  let index = Math.abs(hash) % niceColors.length
-  return niceColors[index]
+  const index = Math.abs(hash) % niceColors.length
+  const alphaHex = Math.round(Math.min(Math.max(opacity, 0), 1) * 255)
+    .toString(16)
+    .padStart(2, '0')
+    .toUpperCase()
+  return `${niceColors[index]}${alphaHex}`
 }
 
 export function getLogDisseminationKey(

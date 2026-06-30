@@ -10,8 +10,10 @@
       ]"
       border
       flat
-      :variant="isDark ? undefined : 'tonal'"
-      :color="logToUserColor(log, userName)"
+      variant="flat"
+      :style="{
+        '--log-card-bg': logToUserColor(log, userName, 0.2),
+      }"
       density="compact"
       width="95%"
     >
@@ -147,7 +149,6 @@ import type {
 } from '@deltares/fews-pi-requests'
 import LogDisseminations from '@/components/logdisplay/LogDisseminations.vue'
 import NewLogMessage from '@/components/logdisplay/NewLogMessage.vue'
-import { useDark } from '@/services/useDark'
 
 interface Props {
   noteGroup: ForecasterNoteGroup
@@ -159,7 +160,6 @@ interface Props {
 
 const props = defineProps<Props>()
 const emit = defineEmits<LogActionEmit>()
-const isDark = useDark()
 
 const isEditing = ref(false)
 const editedLogLevel = ref<ManualLogLevel>('INFO')
@@ -206,6 +206,20 @@ function acknowledgedLogToColor(log: LogMessage) {
 <style scoped>
 .log-message-card {
   transition: border-color 0.15s ease;
+  background-color: var(--log-card-bg);
+  background-image: linear-gradient(
+    rgba(var(--v-theme-surface), 1),
+    rgba(var(--v-theme-surface), 0.5),
+    rgba(var(--v-theme-surface), 0.6)
+  );
+}
+
+.log-message-card.v-theme--dark {
+  background-image: linear-gradient(
+    rgba(var(--v-theme-surface), 1),
+    rgba(var(--v-theme-surface), 0.1),
+    rgba(var(--v-theme-surface), 0)
+  );
 }
 
 .log-message-card--warning {
